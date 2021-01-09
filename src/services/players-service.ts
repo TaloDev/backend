@@ -18,8 +18,8 @@ export const routes: ServiceRoute[] = [
 export default class PlayersService implements Service {
   @Validate({
     query: {
-      alias: 'Please provide a player alias provider (e.g. Steam)',
-      id: 'Please provide an ID for the given alias'
+      alias: 'Missing query parameter: alias',
+      id: 'Missing query parameter: id'
     }
   })
   @Resource(PlayerResource, 'player')
@@ -50,11 +50,7 @@ export default class PlayersService implements Service {
           return 'Invalid privacy scope'
         }
       },
-      gameId: async (val: number, req: ServiceRequest) => {
-        const em: EntityManager = req.ctx.em
-        const game = await em.getRepository(Game).findOne(val)
-        if (!game) return 'The specified game doesn\'t exist'
-      }
+      gameId: 'Missing body parameter: gameId'
     }
   })
   @Resource(PlayerResource, 'player')
@@ -66,9 +62,12 @@ export default class PlayersService implements Service {
     player.aliases = aliases
     player.privacyScope = privacyScope ?? PlayerPrivacyScope.ANONYMOUS
     player.game = await em.getRepository(Game).findOne(gameId)
-    await em.persistAndFlush(player)
 
-    console.log(player)
+    if (!player.game) {
+      req.ctx.throw(400, 'The specified game doesn\'t exist')
+    }
+
+    await em.persistAndFlush(player)
 
     return {
       status: 200,

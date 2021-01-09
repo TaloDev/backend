@@ -8,7 +8,7 @@ import Game from '../entities/game'
 export default class APIKeysService {
   @Validate({
     body: {
-      gameId: 'Please specify a game to attach the API key to'
+      gameId: 'Missing parameter: gameId'
     }
   })
   async post(req: ServiceRequest): Promise<ServiceResponse> {

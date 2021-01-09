@@ -6,22 +6,22 @@ import Player from '../entities/player'
 export default class EventsService implements Service {
   @Validate({
     body: {
-      name: 'Event needs a name',
-      playerId: async (val: string, req: ServiceRequest) => {
-        const em: EntityManager = req.ctx.em
-        const player = await em.getRepository(Player).findOne(val)
-        if (!player) return 'The specified player doesn\'t exist'
-      }
+      name: 'Missing parameter: name',
+      playerId: 'Missing parameter: playerId'
     }
   })
   async post(req: ServiceRequest): Promise<ServiceResponse> {
     const { name, playerId, props } = req.body
+    const em: EntityManager = req.ctx.em
 
     const event = new Event(name)
-    event.props = props
-    
-    const em: EntityManager = req.ctx.em
+    event.props = props    
     event.player = await em.getRepository(Player).findOne(playerId)
+
+    if (!event.player) {
+      req.ctx.throw(400, 'The specified player doesn\'t exist')
+    }
+
     await em.persistAndFlush(event)
 
     return {

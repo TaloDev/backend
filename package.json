@@ -7,7 +7,8 @@
     "start": "node dist/index.js",
     "dev": "nodemon src/index.ts",
     "schema:create": "mikro-orm schema:create -r",
-    "schema:update": "mikro-orm schema:update -r"
+    "schema:update": "mikro-orm schema:update -r",
+    "seed": "ts-node tests/index.ts"
   },
   "author": "Sleepy Studios",
   "license": "MIT",

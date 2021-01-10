@@ -3,7 +3,7 @@ import { Service, ServiceRequest, ServiceResponse, Validate } from 'koa-rest-ser
 import Event from '../../entities/event'
 import Player from '../../entities/player'
 
-export default class EventsService implements Service {
+export default class EventsAPIService implements Service {
   @Validate({
     body: {
       name: 'Missing body parameter: name',

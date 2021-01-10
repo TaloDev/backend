@@ -6,13 +6,15 @@ import bodyParser from 'koa-bodyparser'
 import jwt from 'koa-jwt'
 import { EntityManager, MikroORM, RequestContext } from '@mikro-orm/core'
 import EventsService from './services/api/events-api.service'
-import PlayersService, { routes as playersRoutes } from './services/api/players-api.service'
+import PlayersService, { playerAPIRoutes } from './services/api/players-api.service'
 import GamesService from './services/api/games-api.service'
 import APIKeysService from './services/api-keys.service'
+import UsersPublicService, { usersPublicRoutes } from './services/public/users-public.service'
 
 const initRoutes = (app: Koa) => {
-  app.use(service('users-public', new APIKeysService(), {
-    basePath: '/public/users'
+  app.use(service('users-public', new UsersPublicService(), {
+    basePath: '/public/users',
+    routes: usersPublicRoutes
   }))
 
   app.use(service('apiKeys', new APIKeysService(), {
@@ -27,7 +29,7 @@ const initAPIRoutes = (app: Koa) => {
 
   app.use(service('players-api', new PlayersService(), {
     basePath: '/api/players',
-    routes: playersRoutes
+    routes: playerAPIRoutes
   }))
 
   app.use(service('games-api', new GamesService(), {

@@ -4,7 +4,7 @@ import Game from '../../entities/game'
 import Team from '../../entities/team'
 import GameResource from '../../resources/game.resource'
 
-export default class GamesService implements Service {
+export default class GamesAPIService implements Service {
   @Validate({
     body: {
       name: 'Missing body parameter: name',

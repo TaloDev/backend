@@ -4,7 +4,7 @@ import Game from '../../entities/game'
 import Player, { PlayerPrivacyScope } from '../../entities/player'
 import PlayerResource from '../../resources/player.resource'
 
-export const routes: ServiceRoute[] = [
+export const playerAPIRoutes: ServiceRoute[] = [
   {
     method: 'GET',
     path: '/identify',
@@ -15,7 +15,7 @@ export const routes: ServiceRoute[] = [
   }
 ]
 
-export default class PlayersService implements Service {
+export default class PlayersAPIService implements Service {
   @Validate({
     query: {
       alias: 'Missing query parameter: alias',

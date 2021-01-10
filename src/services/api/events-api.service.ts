@@ -1,13 +1,13 @@
 import { EntityManager } from '@mikro-orm/core'
 import { Service, ServiceRequest, ServiceResponse, Validate } from 'koa-rest-services'
-import Event from '../entities/event'
-import Player from '../entities/player'
+import Event from '../../entities/event'
+import Player from '../../entities/player'
 
 export default class EventsService implements Service {
   @Validate({
     body: {
-      name: 'Missing parameter: name',
-      playerId: 'Missing parameter: playerId'
+      name: 'Missing body parameter: name',
+      playerId: 'Missing body parameter: playerId'
     }
   })
   async post(req: ServiceRequest): Promise<ServiceResponse> {

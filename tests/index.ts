@@ -1,19 +1,19 @@
 import { MikroORM } from '@mikro-orm/core'
 import config from '../src/mikro-orm.config'
-import generateTeams from './fixtures/team-fixtures'
-import generateUsers from './fixtures/user-fixtures'
-import generateGames from './fixtures/game-fixtures'
-import generatePlayers from './fixtures/player-fixtures'
+import genTeams from './fixtures/teams.fixture'
+import genUsers from './fixtures/users.fixture'
+import genGames from './fixtures/games.fixture'
+import genPlayers from './fixtures/players.fixture'
 
 const init = async () => {
   const orm = await MikroORM.init(config)
   await orm.getSchemaGenerator().dropSchema()
   await orm.getSchemaGenerator().createSchema()
   
-  await generateTeams(orm.em)
-  await generateUsers(orm.em)
-  await generateGames(orm.em)
-  await generatePlayers(orm.em)
+  await genTeams(orm.em)
+  await genUsers(orm.em)
+  await genGames(orm.em)
+  await genPlayers(orm.em)
 
   process.exit(0)
 }

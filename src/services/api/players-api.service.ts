@@ -1,8 +1,8 @@
 import { EntityManager, expr } from '@mikro-orm/core'
 import { Resource, Service, ServiceRequest, ServiceResponse, ServiceRoute, Validate } from 'koa-rest-services'
-import Game from '../entities/game'
-import Player, { PlayerPrivacyScope } from '../entities/player'
-import PlayerResource from '../resources/player-resource'
+import Game from '../../entities/game'
+import Player, { PlayerPrivacyScope } from '../../entities/player'
+import PlayerResource from '../../resources/player.resource'
 
 export const routes: ServiceRoute[] = [
   {

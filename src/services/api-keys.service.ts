@@ -8,7 +8,7 @@ import Game from '../entities/game'
 export default class APIKeysService {
   @Validate({
     body: {
-      gameId: 'Missing parameter: gameId'
+      gameId: 'Missing body parameter: gameId'
     }
   })
   async post(req: ServiceRequest): Promise<ServiceResponse> {
@@ -25,7 +25,7 @@ export default class APIKeysService {
       iat: Math.floor(apiKey.createdAt.getTime() / 1000)
     }
 
-    const token = jwt.sign(payload, process.env.JWT_SIGNING_KEY)
+    const token = jwt.sign(payload, process.env.JWT_SECRET)
 
     return {
       status: 200,

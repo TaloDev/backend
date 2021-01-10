@@ -1,8 +1,8 @@
 import { EntityManager } from '@mikro-orm/core'
 import { Resource, Service, ServiceRequest, ServiceResponse, Validate } from 'koa-rest-services'
-import Game from '../entities/game'
-import Team from '../entities/team'
-import GameResource from '../resources/game-resource'
+import Game from '../../entities/game'
+import Team from '../../entities/team'
+import GameResource from '../../resources/game.resource'
 
 export default class GamesService implements Service {
   @Validate({

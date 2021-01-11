@@ -5,11 +5,14 @@ import logger from 'koa-logger'
 import bodyParser from 'koa-bodyparser'
 import jwt from 'koa-jwt'
 import { EntityManager, MikroORM, RequestContext } from '@mikro-orm/core'
-import EventsService from './services/api/events-api.service'
-import PlayersService, { playerAPIRoutes } from './services/api/players-api.service'
-import GamesService from './services/api/games-api.service'
+import EventsAPIService from './services/api/events-api.service'
+import PlayersAPIService, { playerAPIRoutes } from './services/api/players-api.service'
+import GamesAPIService from './services/api/games-api.service'
 import APIKeysService from './services/api-keys.service'
+import EventsService from './services/events.service'
 import UsersPublicService, { usersPublicRoutes } from './services/public/users-public.service'
+import PlayersService from './services/players.service'
+import GamesService from './services/games.service'
 
 const initRoutes = (app: Koa) => {
   app.use(service('users-public', new UsersPublicService(), {
@@ -20,19 +23,31 @@ const initRoutes = (app: Koa) => {
   app.use(service('apiKeys', new APIKeysService(), {
     basePath: '/api-keys'
   }))
+
+  app.use(service('events', new EventsService(), {
+    basePath: '/events'
+  }))
+
+  app.use(service('players', new PlayersService(), {
+    basePath: '/players'
+  }))
+
+  app.use(service('games', new GamesService(), {
+    basePath: '/games'
+  }))
 }
 
 const initAPIRoutes = (app: Koa) => {
-  app.use(service('events-api', new EventsService(), {
+  app.use(service('events-api', new EventsAPIService('events'), {
     basePath: '/api/events'
   }))
 
-  app.use(service('players-api', new PlayersService(), {
+  app.use(service('players-api', new PlayersAPIService('players'), {
     basePath: '/api/players',
     routes: playerAPIRoutes
   }))
 
-  app.use(service('games-api', new GamesService(), {
+  app.use(service('games-api', new GamesAPIService('games'), {
     basePath: '/api/games'
   }))
 }

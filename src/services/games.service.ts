@@ -1,15 +1,10 @@
 import { EntityManager } from '@mikro-orm/core'
 import { Resource, Service, ServiceRequest, ServiceResponse, Validate } from 'koa-rest-services'
-import Game from '../../entities/game'
-import Team from '../../entities/team'
-import GameResource from '../../resources/game.resource'
-import APIService from './api-service'
+import Game from '../entities/game'
+import Team from '../entities/team'
+import GameResource from '../resources/game.resource'
 
-export default class GamesAPIService extends APIService {
-  constructor(serviceName: string) {
-    super(serviceName)
-  }
-
+export default class GamesService implements Service {
   @Validate({
     body: {
       name: 'Missing body parameter: name',

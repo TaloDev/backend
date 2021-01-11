@@ -12,18 +12,18 @@ export default class PlayersService implements Service {
           return 'Invalid privacy scope'
         }
       },
-      gameId: 'Missing body parameter: gameId'
+      game: 'Missing body parameter: game'
     }
   })
   @Resource(PlayerResource, 'player')
   async post(req: ServiceRequest): Promise<ServiceResponse> {
-    const { aliases, privacyScope, gameId } = req.body
+    const { aliases, privacyScope, game } = req.body
     const em: EntityManager = req.ctx.em
 
     const player = new Player()
     player.aliases = aliases
     player.privacyScope = privacyScope ?? PlayerPrivacyScope.ANONYMOUS
-    player.game = await em.getRepository(Game).findOne(gameId)
+    player.game = await em.getRepository(Game).findOne(game)
 
     if (!player.game) {
       req.ctx.throw(400, 'The specified game doesn\'t exist')

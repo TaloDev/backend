@@ -7,16 +7,16 @@ export default class EventsService implements Service {
   @Validate({
     body: {
       name: 'Missing body parameter: name',
-      playerId: 'Missing body parameter: playerId'
+      player: 'Missing body parameter: player'
     }
   })
   async post(req: ServiceRequest): Promise<ServiceResponse> {
-    const { name, playerId, props } = req.body
+    const { name, player, props } = req.body
     const em: EntityManager = req.ctx.em
 
     const event = new Event(name)
     event.props = props    
-    event.player = await em.getRepository(Player).findOne(playerId)
+    event.player = await em.getRepository(Player).findOne(player)
 
     if (!event.player) {
       req.ctx.throw(400, 'The specified player doesn\'t exist')

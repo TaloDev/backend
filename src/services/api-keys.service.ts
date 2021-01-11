@@ -8,20 +8,20 @@ import Game from '../entities/game'
 export default class APIKeysService {
   @Validate({
     body: {
-      gameId: 'Missing body parameter: gameId'
+      game: 'Missing body parameter: game'
     }
   })
   async post(req: ServiceRequest): Promise<ServiceResponse> {
-    const { scopes, gameId } = req.body
+    const { scopes, game } = req.body
     const em: EntityManager = req.ctx.em
 
     const apiKey = new APIKey()
     apiKey.scopes = scopes?.map((scope) => new APIKeyScope(apiKey, scope))
-    apiKey.game = await em.getRepository(Game).findOne({ id: gameId })    
+    apiKey.game = await em.getRepository(Game).findOne(game)    
     await em.getRepository(APIKey).persistAndFlush(apiKey)
 
     const payload = {
-      apiKeyId: apiKey.id,
+      sub: apiKey.id,
       iat: Math.floor(apiKey.createdAt.getTime() / 1000)
     }
 

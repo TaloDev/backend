@@ -1,5 +1,5 @@
 import { MikroORM } from '@mikro-orm/core'
-import config from '../src/mikro-orm.config'
+import config from '../src/config/mikro-orm.config'
 import genTeams from './fixtures/teams.fixture'
 import genUsers from './fixtures/users.fixture'
 import genGames from './fixtures/games.fixture'

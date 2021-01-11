@@ -29,6 +29,7 @@
     "jsonwebtoken": "^8.5.1",
     "koa": "^2.13.0",
     "koa-bodyparser": "^4.3.0",
+    "koa-helmet": "^6.0.0",
     "koa-jwt": "^4.0.0",
     "koa-logger": "^3.2.1",
     "koa-rest-services": "^0.0.8",
@@ -37,8 +38,8 @@
   "mikro-orm": {
     "useTsNode": true,
     "configPaths": [
-      "./src/mikro-orm.config.ts",
-      "./dist/mikro-orm.config.js"
+      "./src/config/mikro-orm.config.ts",
+      "./dist/config/mikro-orm.config.js"
     ]
   }
 }

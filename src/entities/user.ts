@@ -1,4 +1,4 @@
-import { Entity, PrimaryKey, Property } from '@mikro-orm/core';
+import { Entity, PrimaryKey, Property } from '@mikro-orm/core'
 
 @Entity()
 export default class User {
@@ -7,6 +7,9 @@ export default class User {
 
   @Property()
   email: string
+
+  @Property({ hidden: true })
+  password: string
 
   @Property()
   createdAt: Date = new Date()

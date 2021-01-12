@@ -20,11 +20,7 @@ export default class APIKeysService {
     apiKey.game = await em.getRepository(Game).findOne(game)    
     await em.getRepository(APIKey).persistAndFlush(apiKey)
 
-    const payload = {
-      sub: apiKey.id,
-      iat: Math.floor(apiKey.createdAt.getTime() / 1000)
-    }
-
+    const payload = { sub: apiKey.id }
     const token = jwt.sign(payload, process.env.JWT_SECRET)
 
     return {

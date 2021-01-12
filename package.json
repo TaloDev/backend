@@ -25,6 +25,8 @@
   "dependencies": {
     "@mikro-orm/core": "^4.3.4",
     "@mikro-orm/mysql": "^4.3.4",
+    "bcrypt": "^5.0.0",
+    "date-fns": "^2.16.1",
     "dotenv": "^8.2.0",
     "jsonwebtoken": "^8.5.1",
     "koa": "^2.13.0",

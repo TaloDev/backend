@@ -1,12 +1,20 @@
 import { EntityManager } from '@mikro-orm/core'
-import { ServiceRequest, ServiceResponse } from 'koa-rest-services'
+import { ServiceRequest, ServiceResponse, Validate } from 'koa-rest-services'
+import User from '../entities/user'
 import UserSession from '../entities/user-session'
+import { buildTokenPair } from '../utils/auth'
+import bcrypt from 'bcrypt'
 
 export const usersRoutes = [
   {
     method: 'POST',
     path: '/logout',
     handler: 'logout'
+  },
+  {
+    method: 'POST',
+    path: '/change_password',
+    handler: 'changePassword'
   }
 ]
 
@@ -22,6 +30,43 @@ export default class UsersService {
 
     return {
       status: 204
+    }
+  }
+
+  @Validate({
+    body: {
+      currentPassword: 'Missing body parameter: currentPassword',
+      newPassword: 'Missing body parameter: newPassword'
+    }
+  })
+  async changePassword(req: ServiceRequest): Promise<ServiceResponse> {
+    const { currentPassword, newPassword } = req.body
+    
+    const em: EntityManager = req.ctx.em
+    const user = await em.getRepository(User).findOne(req.ctx.state.user.sub)
+
+    const passwordMatches = await bcrypt.compare(currentPassword, user.password)
+    if (!passwordMatches) {
+      req.ctx.throw(401, 'Current password is incorrect')
+    }
+
+    const isSamePassword = await bcrypt.compare(newPassword, user.password)
+    if (isSamePassword) {
+      req.ctx.throw(400, 'Please choose a different password')
+    }
+
+    user.password = await bcrypt.hash(newPassword, 10)
+    const userSessionRepo = em.getRepository(UserSession)
+    const sessions = await userSessionRepo.find({ user })
+    await userSessionRepo.remove(sessions)
+
+    const accessToken = await buildTokenPair(req.ctx, user)
+
+    return {
+      status: 200,
+      body: {
+        accessToken
+      }
     }
   }
 }

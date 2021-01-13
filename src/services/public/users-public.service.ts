@@ -135,7 +135,8 @@ export default class UsersPublicService implements Service {
       const payload = { sub: user.id }
       const sign = promisify(jwt.sign)
       const accessToken = await sign(payload, secret, { expiresIn: '15m' })
-      // send accessToken in email
+
+      // TODO send accessToken in email
       temp = accessToken
     } catch (err) {
       console.warn(`User with email ${email} not found for password reset`)
@@ -152,7 +153,7 @@ export default class UsersPublicService implements Service {
   @Validate({
     body: {
       password: 'Missing body parameter: password',
-      token: 'Missing token parameter: token'
+      token: 'Missing body parameter: token'
     }
   })
   async changePassword(req: ServiceRequest): Promise<ServiceResponse> {
@@ -169,8 +170,8 @@ export default class UsersPublicService implements Service {
       req.ctx.throw(401, 'Request expired')
     }
 
-    const passwordMatches = await bcrypt.compare(password, user.password)
-    if (passwordMatches) {
+    const isSamePassword = await bcrypt.compare(password, user.password)
+    if (isSamePassword) {
       req.ctx.throw(400, 'Please choose a different password')
     }
 

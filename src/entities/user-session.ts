@@ -11,6 +11,9 @@ export default class UserSession {
   @Property()
   token: string = v4()
 
+  @Property()
+  userAgent: string
+
   @OneToOne(() => User)
   user: User
 

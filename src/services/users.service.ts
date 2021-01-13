@@ -14,13 +14,14 @@ export default class UsersService {
   async logout(req: ServiceRequest): Promise<ServiceResponse> {
     const em: EntityManager = req.ctx.em
     const userId: number = req.ctx.state.user.sub
+    const userAgent: string = req.headers['user-agent']
 
-    const existingSession = await em.getRepository(UserSession).findOne({ user: userId })
-    if (existingSession) await em.removeAndFlush(existingSession)
+    const sessions = await em.getRepository(UserSession).find({ user: userId, userAgent })
+    if (sessions.length > 0) await em.removeAndFlush(sessions)
     req.ctx.cookies.set('refreshToken', null, { expires: new Date(0) })
 
     return {
-      status: 200
+      status: 204
     }
   }
 }

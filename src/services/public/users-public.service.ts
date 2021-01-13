@@ -4,8 +4,8 @@ import jwt from 'jsonwebtoken'
 import { promisify } from 'util'
 import { EntityManager } from '@mikro-orm/core'
 import UserSession from '../../entities/user-session'
-import { Context } from 'koa'
 import bcrypt from 'bcrypt'
+import { buildTokenPair } from '../../utils/auth'
 
 export const usersPublicRoutes: ServiceRoute[] = [
   {
@@ -27,36 +27,20 @@ export const usersPublicRoutes: ServiceRoute[] = [
     method: 'POST',
     path: '/refresh',
     handler: 'refresh'
+  },
+  {
+    method: 'POST',
+    path: '/forgot_password',
+    handler: 'forgotPassword'
+  },
+  {
+    method: 'POST',
+    path: '/change_password',
+    handler: 'changePassword'
   }
 ]
 
 export default class UsersPublicService implements Service {
-  async genAccessToken(user: User): Promise<string[]> {
-    const payload = { sub: user.id }
-    const sign = promisify(jwt.sign)
-    const accessToken = await sign(payload, process.env.JWT_SECRET, { expiresIn: '5m' })
-    return accessToken
-  }
-
-  async createSession(user: User, em: EntityManager): Promise<UserSession> {
-    const existingSession = await em.getRepository(UserSession).findOne({ user })
-    if (existingSession) {
-      await em.removeAndFlush(existingSession)
-    }
-
-    const session = new UserSession(user)
-    await em.persistAndFlush(session)
-    return session
-  }
-
-  setRefreshToken(session: UserSession, ctx: Context): void {
-    const refreshToken = session.token
-    ctx.cookies.set('refreshToken', refreshToken, {
-      secure: ctx.request.secure,
-      expires: session.validUntil
-    })
-  }
-
   @Validate({
     body: {
       email: 'Missing body parameter: email',
@@ -72,9 +56,7 @@ export default class UsersPublicService implements Service {
     user.password = await bcrypt.hash(password, 10)
     await em.getRepository(User).persistAndFlush(user)
 
-    const accessToken = await this.genAccessToken(user)
-    const session = await this.createSession(user, em)
-    this.setRefreshToken(session, req.ctx)
+    const accessToken = await buildTokenPair(req.ctx, user)
 
     return {
       status: 200,
@@ -101,9 +83,7 @@ export default class UsersPublicService implements Service {
       req.ctx.throw(401, 'Email address or password incorrect')
     }
 
-    const accessToken = await this.genAccessToken(user)
-    const session = await this.createSession(user, em)
-    this.setRefreshToken(session, req.ctx)
+    const accessToken = await buildTokenPair(req.ctx, user)
 
     return {
       status: 200,
@@ -115,9 +95,10 @@ export default class UsersPublicService implements Service {
 
   async refresh(req: ServiceRequest): Promise<ServiceResponse> {
     const token = req.ctx.cookies.get('refreshToken')
+    const userAgent = req.headers['user-agent']
     const em: EntityManager = req.ctx.em
 
-    let session = await em.getRepository(UserSession).findOne({ token })
+    let session = await em.getRepository(UserSession).findOne({ token, userAgent })
     if (!session) {
       req.ctx.throw(401, 'Session not found')
     }
@@ -127,9 +108,78 @@ export default class UsersPublicService implements Service {
       req.ctx.throw(403, 'Refresh token expired')
     }
 
-    const accessToken = await this.genAccessToken(session.user)
-    session = await this.createSession(session.user, em)
-    this.setRefreshToken(session, req.ctx)
+    const accessToken = await buildTokenPair(req.ctx, session.user)
+
+    return {
+      status: 200,
+      body: {
+        accessToken
+      }
+    }
+  }
+
+  @Validate({
+    body: {
+      email: 'Missing body parameter: email'
+    }
+  })
+  async forgotPassword(req: ServiceRequest): Promise<ServiceResponse> {
+    const { email } = req.body
+    const em: EntityManager = req.ctx.em
+
+    let temp = null
+
+    try {
+      const user = await em.getRepository(User).findOneOrFail({ email })
+      const secret = user.password.substring(0, 10)
+      const payload = { sub: user.id }
+      const sign = promisify(jwt.sign)
+      const accessToken = await sign(payload, secret, { expiresIn: '15m' })
+      // send accessToken in email
+      temp = accessToken
+    } catch (err) {
+      console.warn(`User with email ${email} not found for password reset`)
+    }
+
+    return {
+      status: 200,
+      body: {
+        accessToken: temp
+      }
+    }
+  }
+
+  @Validate({
+    body: {
+      password: 'Missing body parameter: password',
+      token: 'Missing token parameter: token'
+    }
+  })
+  async changePassword(req: ServiceRequest): Promise<ServiceResponse> {
+    const { password, token } = req.body
+    const decodedToken = jwt.decode(token)
+    
+    const em: EntityManager = req.ctx.em
+    const user = await em.getRepository(User).findOne(decodedToken.sub)
+    const secret = user.password.substring(0, 10)
+
+    try {
+      await promisify(jwt.verify)(token, secret)
+    } catch (err) {
+      req.ctx.throw(401, 'Request expired')
+    }
+
+    const passwordMatches = await bcrypt.compare(password, user.password)
+    if (passwordMatches) {
+      req.ctx.throw(400, 'Please choose a different password')
+    }
+
+    user.password = await bcrypt.hash(password, 10)
+    const userSessionRepo = em.getRepository(UserSession)
+    const sessions = await userSessionRepo.find({ user })
+    await userSessionRepo.remove(sessions)
+
+    const accessToken = await buildTokenPair(req.ctx, user)
 
     return {
       status: 200,

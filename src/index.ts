@@ -1,5 +1,5 @@
 import 'dotenv/config'
-import Koa from 'koa'
+import Koa, { Context } from 'koa'
 import logger from 'koa-logger'
 import bodyParser from 'koa-bodyparser'
 import jwt from 'koa-jwt'
@@ -26,9 +26,9 @@ const init = async () => {
   app.context.em = em
   app.use(logger())
   app.use(bodyParser())
-  app.use((ctx, next) => RequestContext.createAsync(ctx.em, next))
-  app.use(jwt({ secret: process.env.JWT_SECRET }).unless({ path: [/^\/public/] }))
   app.use(helmet())
+  app.use(jwt({ secret: process.env.JWT_SECRET }).unless({ path: [/^\/public/] }))
+  app.use((ctx: Context, next) => RequestContext.createAsync(ctx.em, next))
 
   configureProtectedRoutes(app)
   configurePublicRoutes(app)

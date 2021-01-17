@@ -1,4 +1,4 @@
-import { Entity, OneToOne, PrimaryKey, Property } from '@mikro-orm/core'
+import { Entity, ManyToOne, OneToOne, PrimaryKey, Property } from '@mikro-orm/core'
 import { v4 } from 'uuid'
 import User from './user'
 import add from 'date-fns/add'
@@ -14,7 +14,7 @@ export default class UserSession {
   @Property()
   userAgent: string
 
-  @OneToOne(() => User)
+  @ManyToOne(() => User)
   user: User
 
   @Property()

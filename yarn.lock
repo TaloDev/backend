@@ -2,6 +2,13 @@
 # yarn lockfile v1
 
 
+"@koa/cors@^3.1.0":
+  version "3.1.0"
+  resolved "https://registry.yarnpkg.com/@koa/cors/-/cors-3.1.0.tgz#618bb073438cfdbd3ebd0e648a76e33b84f3a3b2"
+  integrity sha512-7ulRC1da/rBa6kj6P4g2aJfnET3z8Uf3SWu60cjbtxTA5g8lxRdX/Bd2P92EagGwwAhANeNw8T8if99rJliR6Q==
+  dependencies:
+    vary "^1.1.2"
+
 "@mikro-orm/cli@^4.3.4":
   version "4.3.4"
   resolved "https://registry.yarnpkg.com/@mikro-orm/cli/-/cli-4.3.4.tgz#c927cf5edcf1913d7bd09911afd0fcf59b8b0c98"
@@ -1942,10 +1949,10 @@ koa-logger@^3.2.1:
     humanize-number "0.0.2"
     passthrough-counter "^1.0.0"
 
-koa-rest-services@^0.0.8:
-  version "0.0.8"
-  resolved "https://registry.yarnpkg.com/koa-rest-services/-/koa-rest-services-0.0.8.tgz#145d48e452c8e315e5610404e04055088fb690a4"
-  integrity sha512-I6IAg5J+P1usylGKnCZOUeE3vHjOLuabsLu6GYmunDajvfPdB/9g/zWLBSkAo/33m3w5zUo6IiD5H13boMvVNA==
+koa-rest-services@^0.0.9:
+  version "0.0.9"
+  resolved "https://registry.yarnpkg.com/koa-rest-services/-/koa-rest-services-0.0.9.tgz#584487ba7712773cba375ea34aa0c9f71d1a484d"
+  integrity sha512-p5g5D+VEcwlPpLW0N0mHHppRslaw8YcUSb7hVi6ECA1A6QEhVQjSGpiMN4R5NZYaUaKfREsqYZ0W0yVKCN/RSg==
   dependencies:
     path-to-regexp "^6.2.0"
 

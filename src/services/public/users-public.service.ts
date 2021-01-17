@@ -24,7 +24,7 @@ export const usersPublicRoutes: ServiceRoute[] = [
     handler: 'logout'
   },
   {
-    method: 'POST',
+    method: 'GET',
     path: '/refresh',
     handler: 'refresh'
   },

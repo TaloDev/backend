@@ -4,6 +4,7 @@ import logger from 'koa-logger'
 import bodyParser from 'koa-bodyparser'
 import jwt from 'koa-jwt'
 import helmet from 'koa-helmet'
+import cors from '@koa/cors'
 import { EntityManager, MikroORM, RequestContext } from '@mikro-orm/core'
 import configureProtectedRoutes from './config/protected-routes.config'
 import configurePublicRoutes from './config/public-routes.config'
@@ -26,6 +27,7 @@ const init = async () => {
   app.context.em = em
   app.use(logger())
   app.use(bodyParser())
+  app.use(cors())
   app.use(helmet())
   app.use(jwt({ secret: process.env.JWT_SECRET }).unless({ path: [/^\/public/] }))
   app.use((ctx: Context, next) => RequestContext.createAsync(ctx.em, next))

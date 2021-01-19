@@ -38,4 +38,14 @@ export default class PlayersService implements Service {
       }
     }
   }
+
+  @Resource(PlayerResource, 'players')
+  async get(req: ServiceRequest): Promise<ServiceResponse> {
+    return {
+      status: 200,
+      body: {
+        players: []
+      }
+    }
+  }
 }

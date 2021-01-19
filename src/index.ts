@@ -6,9 +6,10 @@ import jwt from 'koa-jwt'
 import helmet from 'koa-helmet'
 import cors from '@koa/cors'
 import { EntityManager, MikroORM, RequestContext } from '@mikro-orm/core'
-import configureProtectedRoutes from './config/protected-routes.config'
-import configurePublicRoutes from './config/public-routes.config'
-import configureAPIRoutes from './config/api-routes.config'
+import configureProtectedRoutes from './config/protected-routes'
+import configurePublicRoutes from './config/public-routes'
+import configureAPIRoutes from './config/api-routes'
+import corsMiddleware from './config/cors-middleware'
 
 const init = async () => {
   let em: EntityManager
@@ -27,9 +28,12 @@ const init = async () => {
   app.context.em = em
   app.use(logger())
   app.use(bodyParser())
-  app.use(cors({ credentials: true }))
   app.use(helmet())
+
+  app.use(corsMiddleware)
+
   app.use(jwt({ secret: process.env.JWT_SECRET }).unless({ path: [/^\/public/] }))
+
   app.use((ctx: Context, next) => RequestContext.createAsync(ctx.em, next))
 
   configureProtectedRoutes(app)

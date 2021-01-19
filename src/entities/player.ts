@@ -33,6 +33,13 @@ export default class Player {
   @ManyToOne(() => Game)
   game: Game
 
+  // TODO: how do we know when they go offline?
+  // @Property()
+  // online: boolean
+
+  @Property()
+  lastSeenAt: Date = new Date()
+
   @Property()
   createdAt: Date = new Date()
 

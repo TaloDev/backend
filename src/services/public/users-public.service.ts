@@ -1,11 +1,12 @@
-import { Service, ServiceRequest, ServiceResponse, ServiceRoute, Validate } from 'koa-rest-services'
+import { After, Service, ServiceRequest, ServiceResponse, ServiceRoute, Validate } from 'koa-rest-services'
 import User from '../../entities/user'
 import jwt from 'jsonwebtoken'
 import { promisify } from 'util'
-import { EntityManager } from '@mikro-orm/core'
+import { EntityManager, wrap } from '@mikro-orm/core'
 import UserSession from '../../entities/user-session'
 import bcrypt from 'bcrypt'
 import { buildTokenPair } from '../../utils/auth'
+import setUserLastSeenAt from '../../utils/setUserLastSeenAt'
 
 export const usersPublicRoutes: ServiceRoute[] = [
   {
@@ -72,6 +73,7 @@ export default class UsersPublicService implements Service {
       password: 'Missing body parameter: password'
     }
   })
+  @After(setUserLastSeenAt)
   async login(req: ServiceRequest): Promise<ServiceResponse> {
     const { email, password } = req.body
     const em: EntityManager = req.ctx.em
@@ -93,12 +95,13 @@ export default class UsersPublicService implements Service {
     }
   }
 
+  @After(setUserLastSeenAt)
   async refresh(req: ServiceRequest): Promise<ServiceResponse> {
     const token = req.ctx.cookies.get('refreshToken')
     const userAgent = req.headers['user-agent']
     const em: EntityManager = req.ctx.em
 
-    let session = await em.getRepository(UserSession).findOne({ token, userAgent })
+    let session = await em.getRepository(UserSession).findOne({ token, userAgent }, ['user'])
     if (!session) {
       req.ctx.throw(401, 'Session not found')
     }

@@ -1,9 +1,10 @@
 import { EntityManager } from '@mikro-orm/core'
-import { ServiceRequest, ServiceResponse, Validate } from 'koa-rest-services'
+import { Resource, ServiceRequest, ServiceResponse, Validate } from 'koa-rest-services'
 import User from '../entities/user'
 import UserSession from '../entities/user-session'
 import { buildTokenPair } from '../utils/auth'
 import bcrypt from 'bcrypt'
+import UserResource from '../resources/user.resource'
 
 export const usersRoutes = [
   {
@@ -15,6 +16,11 @@ export const usersRoutes = [
     method: 'POST',
     path: '/change_password',
     handler: 'changePassword'
+  },
+  {
+    method: 'GET',
+    path: '/me',
+    handler: 'me'
   }
 ]
 
@@ -66,6 +72,24 @@ export default class UsersService {
       status: 200,
       body: {
         accessToken
+      }
+    }
+  }
+
+  @Resource(UserResource, 'user')
+  async me(req: ServiceRequest): Promise<ServiceResponse> {
+    const userId: number = req.ctx.state.user.sub
+    const em: EntityManager = req.ctx.em
+
+    const user = await em.getRepository(User).findOne(userId)
+    if (!user) {
+      req.ctx.throw(404, 'User not found')
+    }
+
+    return {
+      status: 200,
+      body: {
+        user
       }
     }
   }

@@ -12,6 +12,9 @@ export default class User {
   password: string
 
   @Property()
+  lastSeenAt: Date = new Date()
+
+  @Property()
   createdAt: Date = new Date()
 
   @Property({ onUpdate: () => new Date() })

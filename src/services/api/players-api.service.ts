@@ -40,6 +40,9 @@ export default class PlayersAPIService extends APIService {
       req.ctx.throw(404, 'User not found')
     }
 
+    player.lastSeenAt = new Date()
+    await em.flush()
+
     return {
       status: 200,
       body: {

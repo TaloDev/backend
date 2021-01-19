@@ -27,7 +27,7 @@ const init = async () => {
   app.context.em = em
   app.use(logger())
   app.use(bodyParser())
-  app.use(cors())
+  app.use(cors({ credentials: true }))
   app.use(helmet())
   app.use(jwt({ secret: process.env.JWT_SECRET }).unless({ path: [/^\/public/] }))
   app.use((ctx: Context, next) => RequestContext.createAsync(ctx.em, next))

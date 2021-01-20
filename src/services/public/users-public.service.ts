@@ -83,7 +83,7 @@ export default class UsersPublicService implements Service {
     const passwordMatches = await bcrypt.compare(password, user?.password ?? '')
 
     if (!user || !passwordMatches) {
-      req.ctx.throw(401, 'Incorrect email address or password')
+      req.ctx.throw(401, 'Incorrect email address or password', { showHint: true })
     }
 
     const accessToken = await buildTokenPair(req.ctx, user)

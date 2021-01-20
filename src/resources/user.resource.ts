@@ -4,10 +4,12 @@ import User from '../entities/user'
 export default class UserResource extends EntityResource<User> {
   id: number
   lastSeenAt: Date
+  emailConfirmed: boolean
 
   constructor(entity: User) {
     super(entity)
     this.id = entity.id
     this.lastSeenAt = entity.lastSeenAt
+    this.emailConfirmed = entity.emailConfirmed
   }
 }

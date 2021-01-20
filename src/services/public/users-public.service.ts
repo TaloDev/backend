@@ -43,14 +43,16 @@ export const usersPublicRoutes: ServiceRoute[] = [
 
 export default class UsersPublicService implements Service {
   @Validate({
-    body: {
-      email: 'Missing body parameter: email',
-      password: 'Missing body parameter: password'
-    }
+    body: ['email', 'password']
   })
   async register(req: ServiceRequest): Promise<ServiceResponse> {
     const { email, password } = req.body
     const em: EntityManager = req.ctx.em
+
+    const userWithEmail = await em.getRepository(User).findOne({ email })
+    if (userWithEmail) {
+      req.ctx.throw(400, 'That email address is already in use')
+    }
 
     const user = new User()
     user.email = email
@@ -58,6 +60,8 @@ export default class UsersPublicService implements Service {
     await em.getRepository(User).persistAndFlush(user)
 
     const accessToken = await buildTokenPair(req.ctx, user)
+
+    // TODO send confirm email
 
     return {
       status: 200,
@@ -68,10 +72,7 @@ export default class UsersPublicService implements Service {
   }
 
   @Validate({
-    body: {
-      email: 'Missing body parameter: email',
-      password: 'Missing body parameter: password'
-    }
+    body: ['email', 'password']
   })
   @After(setUserLastSeenAt)
   async login(req: ServiceRequest): Promise<ServiceResponse> {
@@ -79,10 +80,10 @@ export default class UsersPublicService implements Service {
     const em: EntityManager = req.ctx.em
 
     const user = await em.getRepository(User).findOne({ email })
-    const passwordMatches = await bcrypt.compare(password, user?.password)
+    const passwordMatches = await bcrypt.compare(password, user?.password ?? '')
 
     if (!user || !passwordMatches) {
-      req.ctx.throw(401, 'Email address or password incorrect')
+      req.ctx.throw(401, 'Incorrect email address or password')
     }
 
     const accessToken = await buildTokenPair(req.ctx, user)
@@ -122,9 +123,7 @@ export default class UsersPublicService implements Service {
   }
 
   @Validate({
-    body: {
-      email: 'Missing body parameter: email'
-    }
+    body: ['email']
   })
   async forgotPassword(req: ServiceRequest): Promise<ServiceResponse> {
     const { email } = req.body

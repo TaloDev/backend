@@ -1,10 +1,10 @@
 import { EntityManager } from '@mikro-orm/core'
 import { Resource, ServiceRequest, ServiceResponse, Validate } from 'koa-rest-services'
-import User from '../entities/user'
 import UserSession from '../entities/user-session'
 import { buildTokenPair } from '../utils/auth'
 import bcrypt from 'bcrypt'
 import UserResource from '../resources/user.resource'
+import getUserFromToken from '../utils/getUserFromToken'
 
 export const usersRoutes = [
   {
@@ -21,6 +21,11 @@ export const usersRoutes = [
     method: 'GET',
     path: '/me',
     handler: 'me'
+  },
+  {
+    method: 'POST',
+    path: '/confirm_email',
+    handler: 'confirmEmail'
   }
 ]
 
@@ -49,7 +54,7 @@ export default class UsersService {
     const { currentPassword, newPassword } = req.body
     
     const em: EntityManager = req.ctx.em
-    const user = await em.getRepository(User).findOne(req.ctx.state.user.sub)
+    const user = await getUserFromToken(req.ctx)
 
     const passwordMatches = await bcrypt.compare(currentPassword, user.password)
     if (!passwordMatches) {
@@ -78,10 +83,7 @@ export default class UsersService {
 
   @Resource(UserResource, 'user')
   async me(req: ServiceRequest): Promise<ServiceResponse> {
-    const userId: number = req.ctx.state.user.sub
-    const em: EntityManager = req.ctx.em
-
-    const user = await em.getRepository(User).findOne(userId)
+    const user = await getUserFromToken(req.ctx)
     if (!user) {
       req.ctx.throw(404, 'User not found')
     }
@@ -91,6 +93,16 @@ export default class UsersService {
       body: {
         user
       }
+    }
+  }
+
+  async confirmEmail(req: ServiceRequest): Promise<ServiceResponse> {
+    const user = await getUserFromToken(req.ctx)
+    user.emailConfirmed = true
+    await req.ctx.em.flush()
+
+    return {
+      status: 204
     }
   }
 }

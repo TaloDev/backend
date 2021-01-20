@@ -15,6 +15,9 @@ export default class User {
   lastSeenAt: Date = new Date()
 
   @Property()
+  emailConfirmed: boolean
+
+  @Property()
   createdAt: Date = new Date()
 
   @Property({ onUpdate: () => new Date() })

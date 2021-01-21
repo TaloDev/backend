@@ -5,6 +5,7 @@ import { buildTokenPair } from '../utils/auth'
 import bcrypt from 'bcrypt'
 import UserResource from '../resources/user.resource'
 import getUserFromToken from '../utils/getUserFromToken'
+import UserAccessCode from '../entities/user-access-code'
 
 export const usersRoutes = [
   {
@@ -96,13 +97,33 @@ export default class UsersService {
     }
   }
 
+  @Validate({
+    body: ['code']
+  })
+  @Resource(UserResource, 'user')
   async confirmEmail(req: ServiceRequest): Promise<ServiceResponse> {
+    const { code } = req.body
+    const em: EntityManager = req.ctx.em
+
     const user = await getUserFromToken(req.ctx)
+    let accessCode: UserAccessCode
+
+    try {
+      accessCode = await em.getRepository(UserAccessCode).findOneOrFail({ user, code })
+    } catch (err) {
+      req.ctx.throw(400, 'Invalid code')
+    }
+
     user.emailConfirmed = true
+    await em.getRepository(UserAccessCode).remove(accessCode)
+
     await req.ctx.em.flush()
 
     return {
-      status: 204
+      status: 200,
+      body: {
+        user
+      }
     }
   }
 }

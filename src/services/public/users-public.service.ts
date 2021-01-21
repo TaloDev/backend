@@ -1,12 +1,14 @@
-import { After, Service, ServiceRequest, ServiceResponse, ServiceRoute, Validate } from 'koa-rest-services'
+import { After, HookParams, Service, ServiceRequest, ServiceResponse, ServiceRoute, Validate } from 'koa-rest-services'
 import User from '../../entities/user'
 import jwt from 'jsonwebtoken'
 import { promisify } from 'util'
-import { EntityManager, wrap } from '@mikro-orm/core'
+import { EntityManager } from '@mikro-orm/core'
 import UserSession from '../../entities/user-session'
 import bcrypt from 'bcrypt'
 import { buildTokenPair } from '../../utils/auth'
 import setUserLastSeenAt from '../../utils/setUserLastSeenAt'
+import getUserFromToken from '../../utils/getUserFromToken'
+import UserAccessCode from '../../entities/user-access-code'
 
 export const usersPublicRoutes: ServiceRoute[] = [
   {
@@ -45,6 +47,7 @@ export default class UsersPublicService implements Service {
   @Validate({
     body: ['email', 'password']
   })
+  @After('sendEmailConfirm')
   async register(req: ServiceRequest): Promise<ServiceResponse> {
     const { email, password } = req.body
     const em: EntityManager = req.ctx.em
@@ -61,13 +64,22 @@ export default class UsersPublicService implements Service {
 
     const accessToken = await buildTokenPair(req.ctx, user)
 
-    // TODO send confirm email
-
     return {
       status: 200,
       body: {
         accessToken
       }
+    }
+  }
+
+  async sendEmailConfirm(hook: HookParams): Promise<void> {
+    if (hook.result.status === 200) {
+      hook.req.ctx.state.user = jwt.decode(hook.result.body.accessToken)
+      const user: User = await getUserFromToken(hook.req.ctx)
+      const em: EntityManager = hook.req.ctx.em
+
+      const accesscode = new UserAccessCode(user)
+      await em.persistAndFlush(accesscode)
     }
   }
 

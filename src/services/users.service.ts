@@ -84,7 +84,7 @@ export default class UsersService {
 
   @Resource(UserResource, 'user')
   async me(req: ServiceRequest): Promise<ServiceResponse> {
-    const user = await getUserFromToken(req.ctx)
+    const user = await getUserFromToken(req.ctx, ['games'])
     if (!user) {
       req.ctx.throw(404, 'User not found')
     }

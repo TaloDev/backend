@@ -20,7 +20,7 @@ export default class Game {
   @OneToMany(() => Player, (player) => player.game)
   players: Collection<Player> = new Collection<Player>(this)
 
-  @ManyToMany(() => User)
+  @ManyToMany(() => User, (user) => user.games, { owner: true })
   teamMembers: Collection<User> = new Collection<User>(this)
 
   @Property()

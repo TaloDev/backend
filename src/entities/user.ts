@@ -1,4 +1,5 @@
-import { Entity, PrimaryKey, Property } from '@mikro-orm/core'
+import { Collection, Entity, ManyToMany, PrimaryKey, Property } from '@mikro-orm/core'
+import Game from './game'
 
 @Entity()
 export default class User {
@@ -16,6 +17,9 @@ export default class User {
 
   @Property()
   emailConfirmed: boolean
+
+  @ManyToMany(() => Game, (game) => game.teamMembers)
+  games: Collection<Game> = new Collection<Game>(this)
 
   @Property()
   createdAt: Date = new Date()

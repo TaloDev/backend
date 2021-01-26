@@ -39,12 +39,19 @@ export default class PlayersService implements Service {
     }
   }
 
+  @Validate({
+    query: ['game']
+  })
   @Resource(PlayerResource, 'players')
   async get(req: ServiceRequest): Promise<ServiceResponse> {
+    const { game } = req.query
+    const em: EntityManager = req.ctx.em
+    const players = await em.getRepository(Player).find({ game })
+
     return {
       status: 200,
       body: {
-        players: []
+        players
       }
     }
   }

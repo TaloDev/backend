@@ -5,10 +5,7 @@ import Player from '../entities/player'
 
 export default class EventsService implements Service {
   @Validate({
-    body: {
-      name: 'Missing body parameter: name',
-      player: 'Missing body parameter: player'
-    }
+    body: ['name', 'player']
   })
   async post(req: ServiceRequest): Promise<ServiceResponse> {
     const { name, player, props } = req.body

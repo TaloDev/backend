@@ -1,28 +1,20 @@
 import { EntityManager } from '@mikro-orm/core'
 import { Resource, Service, ServiceRequest, ServiceResponse, Validate } from 'koa-rest-services'
 import Game from '../entities/game'
-import Player, { PlayerPrivacyScope } from '../entities/player'
+import Player from '../entities/player'
 import PlayerResource from '../resources/player.resource'
 
 export default class PlayersService implements Service {
   @Validate({
-    body: {
-      privacyScope: (val: number) => {
-        if (val !== undefined && !(val in PlayerPrivacyScope)) {
-          return 'Invalid privacy scope'
-        }
-      },
-      game: 'Missing body parameter: game'
-    }
+    body: ['game']
   })
   @Resource(PlayerResource, 'player')
   async post(req: ServiceRequest): Promise<ServiceResponse> {
-    const { aliases, privacyScope, game } = req.body
+    const { aliases, game } = req.body
     const em: EntityManager = req.ctx.em
 
     const player = new Player()
     player.aliases = aliases
-    player.privacyScope = privacyScope ?? PlayerPrivacyScope.ANONYMOUS
     player.game = await em.getRepository(Game).findOne(game)
 
     if (!player.game) {

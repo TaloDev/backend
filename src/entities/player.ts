@@ -7,12 +7,6 @@ export type PlayerAliases = {
   [key: string]: string
 }
 
-export enum PlayerPrivacyScope {
-  ANONYMOUS,
-  BASIC,
-  FULL
-}
-
 @Entity()
 export default class Player {
   @PrimaryKey()
@@ -20,9 +14,6 @@ export default class Player {
 
   @Property({ type: JsonType, nullable: true })
   aliases: PlayerAliases
-
-  @Property()
-  privacyScope: PlayerPrivacyScope
 
   @Property({ type: JsonType, nullable: true })
   props?: { [key: string]: any }

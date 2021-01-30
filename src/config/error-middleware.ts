@@ -4,6 +4,8 @@ export default async (ctx: Context, next: Next) => {
   try {
     await next()
   } catch (err) {
+    console.log(err.stack)
+
     const keys = Object.keys(err).length
     if (keys > 0) {
       ctx.status = err.status ?? 500

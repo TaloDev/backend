@@ -5,9 +5,9 @@ import { promisify } from 'util'
 import { EntityManager } from '@mikro-orm/core'
 import UserSession from '../../entities/user-session'
 import bcrypt from 'bcrypt'
-import { buildTokenPair } from '../../utils/auth'
-import setUserLastSeenAt from '../../utils/setUserLastSeenAt'
-import getUserFromToken from '../../utils/getUserFromToken'
+import buildTokenPair from '../../lib/auth/buildTokenPair'
+import setUserLastSeenAt from '../../lib/users/setUserLastSeenAt'
+import getUserFromToken from '../../lib/auth/getUserFromToken'
 import UserAccessCode from '../../entities/user-access-code'
 
 export const usersPublicRoutes: ServiceRoute[] = [

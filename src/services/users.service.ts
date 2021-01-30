@@ -1,10 +1,10 @@
 import { EntityManager } from '@mikro-orm/core'
 import { Resource, ServiceRequest, ServiceResponse, Validate } from 'koa-rest-services'
 import UserSession from '../entities/user-session'
-import { buildTokenPair } from '../utils/auth'
+import buildTokenPair from '../lib/auth/buildTokenPair'
 import bcrypt from 'bcrypt'
 import UserResource from '../resources/user.resource'
-import getUserFromToken from '../utils/getUserFromToken'
+import getUserFromToken from '../lib/auth/getUserFromToken'
 import UserAccessCode from '../entities/user-access-code'
 
 export const usersRoutes = [

@@ -2,17 +2,17 @@ import { EntityManager } from '@mikro-orm/core'
 import jwt from 'jsonwebtoken'
 import { promisify } from 'util'
 import { Context } from 'koa'
-import User from '../entities/user'
-import UserSession from '../entities/user-session'
+import User from '../../entities/user'
+import UserSession from '../../entities/user-session'
 
-export async function genAccessToken(user: User): Promise<string> {
+async function genAccessToken(user: User): Promise<string> {
   const payload = { sub: user.id }
   const sign = promisify(jwt.sign)
   const accessToken = await sign(payload, process.env.JWT_SECRET, { expiresIn: '5m' })
   return accessToken
 }
 
-export async function createSession(ctx: Context, user: User): Promise<UserSession> {
+async function createSession(ctx: Context, user: User): Promise<UserSession> {
   const userAgent = ctx.headers['user-agent']
   const em: EntityManager = ctx.em
 
@@ -25,7 +25,7 @@ export async function createSession(ctx: Context, user: User): Promise<UserSessi
   return session
 }
 
-export function setRefreshToken(ctx: Context, session: UserSession): void {
+const setRefreshToken = (ctx: Context, session: UserSession): void => {
   const refreshToken = session.token
   ctx.cookies.set('refreshToken', refreshToken, {
     secure: ctx.request.secure,
@@ -33,9 +33,11 @@ export function setRefreshToken(ctx: Context, session: UserSession): void {
   })
 }
 
-export async function buildTokenPair(ctx: Context, user: User): Promise<string> {
+const buildTokenPair = async (ctx: Context, user: User): Promise<string> => {
   const accessToken = await genAccessToken(user)
   const session = await createSession(ctx, user)
   setRefreshToken(ctx, session)
   return accessToken
 }
+
+export default buildTokenPair

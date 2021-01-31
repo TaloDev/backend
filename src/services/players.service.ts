@@ -2,8 +2,8 @@ import { EntityManager } from '@mikro-orm/core'
 import { Resource, Service, ServiceRequest, ServiceResponse, Validate } from 'koa-rest-services'
 import Game from '../entities/game'
 import Player from '../entities/player'
-import HasPermission from '../lib/permissions/hasPermission'
-import PlayersPermission from '../lib/permissions/players.permission'
+import HasPermission from '../lib/policies/hasPermission'
+import PlayersPolicy from '../lib/policies/players.policy'
 import PlayerResource from '../resources/player.resource'
 
 export default class PlayersService implements Service {
@@ -36,7 +36,7 @@ export default class PlayersService implements Service {
   @Validate({
     query: ['gameId']
   })
-  @HasPermission(PlayersPermission, 'get')
+  @HasPermission(PlayersPolicy, 'get')
   @Resource(PlayerResource, 'players')
   async get(req: ServiceRequest): Promise<ServiceResponse> {
     const { gameId } = req.query

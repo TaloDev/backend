@@ -2,7 +2,7 @@ import { EntityManager } from '@mikro-orm/core'
 import { ServiceRequest } from 'koa-rest-services'
 import Game from '../../entities/game'
 
-export default class PlayersPermission {
+export default class PlayersPolicy {
   async get(req: ServiceRequest): Promise<boolean> {
     const { gameId } = req.query
     const userId: number = req.ctx.state.user.sub

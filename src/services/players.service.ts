@@ -8,16 +8,17 @@ import PlayerResource from '../resources/player.resource'
 
 export default class PlayersService implements Service {
   @Validate({
-    body: ['game']
+    body: ['gameId']
   })
+  @HasPermission(PlayersPolicy, 'post')
   @Resource(PlayerResource, 'player')
   async post(req: ServiceRequest): Promise<ServiceResponse> {
-    const { aliases, game } = req.body
+    const { aliases, gameId } = req.body
     const em: EntityManager = req.ctx.em
 
     const player = new Player()
     player.aliases = aliases
-    player.game = await em.getRepository(Game).findOne(game)
+    player.game = await em.getRepository(Game).findOne(gameId)
 
     if (!player.game) {
       req.ctx.throw(400, 'The specified game doesn\'t exist')

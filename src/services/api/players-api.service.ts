@@ -22,10 +22,7 @@ export default class PlayersAPIService extends APIService {
   }
 
   @Validate({
-    query: {
-      alias: 'Missing query parameter: alias',
-      id: 'Missing query parameter: id'
-    }
+    query: ['alias', 'id']
   })
   @Resource(PlayerResource, 'player')
   async identify(req: ServiceRequest): Promise<ServiceResponse> {
@@ -51,6 +48,9 @@ export default class PlayersAPIService extends APIService {
     }
   }
 
+  @Validate({
+    body: ['gameId']
+  })
   async post(req: ServiceRequest): Promise<ServiceResponse> {
     return await this.getService<PlayersService>(req).post(req)
   }

@@ -1,4 +1,4 @@
-import Koa from 'koa'
+import Koa, { Context, Next } from 'koa'
 import { service } from 'koa-rest-services'
 import APIKeysService from '../services/api-keys.service'
 import EventsService from '../services/events.service'
@@ -7,6 +7,13 @@ import PlayersService from '../services/players.service'
 import UsersService, { usersRoutes } from '../services/users.service'
 
 export default (app: Koa) => {
+  app.use(async (ctx: Context, next: Next): Promise<void> => {
+    if (!ctx.path.match(/^\/(public|api)\//)) {
+      if (Array.isArray(ctx.state.user.scopes)) ctx.throw(403)
+    }
+    await next()
+  })
+
   app.use(service('apiKeys', new APIKeysService(), {
     basePath: '/api-keys'
   }))

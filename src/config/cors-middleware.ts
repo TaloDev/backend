@@ -1,8 +1,8 @@
 import { Context, Next } from 'koa'
 import cors from '@koa/cors'
 
-export default async (ctx: Context, next: Next) => {
-  if (ctx.path.match(/^\/(api)/)) {
+export default async (ctx: Context, next: Next): Promise<void> => {
+  if (ctx.path.match(/^\/(api)\//)) {
     await next()
   } else {
     return cors({ 

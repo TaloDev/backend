@@ -18,7 +18,7 @@ export default class APIKeysService {
     apiKey.game = await em.getRepository(Game).findOne(gameId)    
     await em.getRepository(APIKey).persistAndFlush(apiKey)
 
-    const payload = { sub: apiKey.id, api: true }
+    const payload = { sub: apiKey.id, scopes: apiKey.scopes }
     const token = jwt.sign(payload, process.env.JWT_SECRET)
 
     return {

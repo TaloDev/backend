@@ -3,6 +3,7 @@ import { Context } from 'koa'
 import { EntityManager } from '@mikro-orm/core'
 import { ServiceRequest } from 'koa-rest-services'
 import Game from '../../entities/game'
+
 export default class PlayersPolicy extends Policy {
   constructor(ctx: Context) {
     super(ctx)

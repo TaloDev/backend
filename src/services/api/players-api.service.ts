@@ -1,11 +1,16 @@
 import { EntityManager, expr } from '@mikro-orm/core'
 import { Resource, ServiceRequest, ServiceResponse, ServiceRoute, Validate } from 'koa-rest-services'
 import Player from '../../entities/player'
+import PlayersAPIPolicy from '../../lib/policies/api/players-api.policy'
+import HasPermission from '../../lib/policies/hasPermission'
 import PlayerResource from '../../resources/player.resource'
 import PlayersService from '../players.service'
 import APIService from './api-service'
 
 export const playerAPIRoutes: ServiceRoute[] = [
+  {
+    method: 'GET'
+  },
   {
     method: 'GET',
     path: '/identify',
@@ -46,6 +51,14 @@ export default class PlayersAPIService extends APIService {
         player
       }
     }
+  }
+
+  @Validate({
+    query: ['gameId']
+  })
+  @HasPermission(PlayersAPIPolicy, 'get')
+  async get(req: ServiceRequest): Promise<ServiceResponse> {
+    return await this.getService<PlayersService>(req).get(req)
   }
 
   @Validate({

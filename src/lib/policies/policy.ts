@@ -1,6 +1,7 @@
 import { EntityManager } from '@mikro-orm/core'
 import { Context } from 'vm'
 import APIKey from '../../entities/api-key'
+import Game from '../../entities/game'
 import User from '../../entities/user'
 
 export default class Policy {
@@ -26,5 +27,18 @@ export default class Policy {
   async getAPIKey(): Promise<APIKey> {
     const key = await (<EntityManager>this.ctx.em).getRepository(APIKey).findOne(this.ctx.state.user.sub)
     return key
+  }
+
+  async canAccessGame(gameId: number): Promise<boolean> {
+    const game = await this.ctx.em.getRepository(Game).findOne(gameId, ['teamMembers'])
+    if (!game) return false
+
+    if (this.isAPICall()) {
+      const key = await this.getAPIKey()
+      return key.game.id === game.id
+    } else {
+      const team = game.teamMembers.toArray().map((user) => user.id)
+      if (!team.includes(this.getSub())) return false
+    }
   }
 }

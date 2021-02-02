@@ -53,10 +53,10 @@ export default class PlayersAPIService extends APIService {
     }
   }
 
+  @HasPermission(PlayersAPIPolicy, 'get')
   @Validate({
     query: ['gameId']
   })
-  @HasPermission(PlayersAPIPolicy, 'get')
   async get(req: ServiceRequest): Promise<ServiceResponse> {
     return await this.getService<PlayersService>(req).get(req)
   }

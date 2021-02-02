@@ -1,14 +1,13 @@
 import { EntityManager } from '@mikro-orm/core'
-import { Context } from 'vm'
+import { ServicePolicy } from 'koa-rest-services'
+import { Context } from 'koa'
 import APIKey from '../../entities/api-key'
 import Game from '../../entities/game'
 import User from '../../entities/user'
 
-export default class Policy {
-  ctx: Context
-
+export default class Policy extends ServicePolicy {
   constructor(ctx: Context) {
-    this.ctx = ctx
+    super(ctx)
   }
 
   isAPICall(): boolean {

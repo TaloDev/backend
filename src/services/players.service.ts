@@ -1,8 +1,7 @@
 import { EntityManager } from '@mikro-orm/core'
-import { Resource, Service, ServiceRequest, ServiceResponse, Validate } from 'koa-rest-services'
+import { Resource, Service, ServiceRequest, ServiceResponse, Validate, HasPermission } from 'koa-rest-services'
 import Game from '../entities/game'
 import Player from '../entities/player'
-import HasPermission from '../lib/policies/hasPermission'
 import PlayersPolicy from '../lib/policies/players.policy'
 import PlayerResource from '../resources/player.resource'
 
@@ -43,7 +42,7 @@ export default class PlayersService implements Service {
     const { gameId } = req.query
     const em: EntityManager = req.ctx.em
 
-    const players = await em.getRepository(Player).find({ game: gameId })
+    const players = await em.getRepository(Player).find({ game: Number(gameId) })
 
     return {
       status: 200,

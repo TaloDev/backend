@@ -1,21 +1,17 @@
 import { EntityManager } from '@mikro-orm/core'
 import { ServicePolicy } from 'koa-rest-services'
-import { Context } from 'koa'
 import APIKey from '../../entities/api-key'
 import Game from '../../entities/game'
 import User from '../../entities/user'
 
 export default class Policy extends ServicePolicy {
-  constructor(ctx: Context) {
-    super(ctx)
-  }
-
   isAPICall(): boolean {
     return this.ctx.state.user.api === true
   }
 
   async getUser(): Promise<User> {
     const user = await (<EntityManager>this.ctx.em).getRepository(User).findOne(this.ctx.state.user.sub)
+    if (user.deletedAt) this.ctx.throw(401)
     return user
   }
 
@@ -25,6 +21,7 @@ export default class Policy extends ServicePolicy {
 
   async getAPIKey(): Promise<APIKey> {
     const key = await (<EntityManager>this.ctx.em).getRepository(APIKey).findOne(this.ctx.state.user.sub)
+    if (key.revokedAt) this.ctx.throw(401)
     return key
   }
 

@@ -8,9 +8,6 @@ export default class APIKey {
   @PrimaryKey()
   id: string = v4()
 
-  // @ManyToOne(() => User)
-  // user: User
-
   @OneToMany(() => APIKeyScope, (scope) => scope.apiKey)
   scopes = new Collection<APIKeyScope>(this)
 

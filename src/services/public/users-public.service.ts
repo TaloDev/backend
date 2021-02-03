@@ -1,4 +1,4 @@
-import { After, HookParams, Service, ServiceRequest, ServiceResponse, ServiceRoute, Validate } from 'koa-rest-services'
+import { After, HookParams, Resource, Service, ServiceRequest, ServiceResponse, ServiceRoute, Validate } from 'koa-rest-services'
 import User from '../../entities/user'
 import jwt from 'jsonwebtoken'
 import { promisify } from 'util'
@@ -9,6 +9,7 @@ import buildTokenPair from '../../lib/auth/buildTokenPair'
 import setUserLastSeenAt from '../../lib/users/setUserLastSeenAt'
 import getUserFromToken from '../../lib/auth/getUserFromToken'
 import UserAccessCode from '../../entities/user-access-code'
+import UserResource from '../../resources/user.resource'
 
 export const usersPublicRoutes: ServiceRoute[] = [
   {
@@ -47,6 +48,7 @@ export default class UsersPublicService implements Service {
   @Validate({
     body: ['email', 'password']
   })
+  @Resource(UserResource, 'user')
   @After('sendEmailConfirm')
   async register(req: ServiceRequest): Promise<ServiceResponse> {
     const { email, password } = req.body
@@ -67,7 +69,8 @@ export default class UsersPublicService implements Service {
     return {
       status: 200,
       body: {
-        accessToken
+        accessToken,
+        user
       }
     }
   }
@@ -86,6 +89,7 @@ export default class UsersPublicService implements Service {
   @Validate({
     body: ['email', 'password']
   })
+  @Resource(UserResource, 'user')
   @After(setUserLastSeenAt)
   async login(req: ServiceRequest): Promise<ServiceResponse> {
     const { email, password } = req.body
@@ -103,11 +107,13 @@ export default class UsersPublicService implements Service {
     return {
       status: 200,
       body: {
-        accessToken
+        accessToken,
+        user
       }
     }
   }
 
+  @Resource(UserResource, 'user')
   @After(setUserLastSeenAt)
   async refresh(req: ServiceRequest): Promise<ServiceResponse> {
     const token = req.ctx.cookies.get('refreshToken')
@@ -129,7 +135,8 @@ export default class UsersPublicService implements Service {
     return {
       status: 200,
       body: {
-        accessToken
+        accessToken,
+        user: session.user
       }
     }
   }
@@ -137,14 +144,16 @@ export default class UsersPublicService implements Service {
   @Validate({
     body: ['email']
   })
+  @Resource(UserResource, 'user')
   async forgotPassword(req: ServiceRequest): Promise<ServiceResponse> {
     const { email } = req.body
     const em: EntityManager = req.ctx.em
 
     let temp = null
+    let user: User
 
     try {
-      const user = await em.getRepository(User).findOneOrFail({ email })
+      user = await em.getRepository(User).findOneOrFail({ email })
       const secret = user.password.substring(0, 10)
       const payload = { sub: user.id }
       const sign = promisify(jwt.sign)
@@ -159,7 +168,8 @@ export default class UsersPublicService implements Service {
     return {
       status: 200,
       body: {
-        accessToken: temp
+        accessToken: temp,
+        user
       }
     }
   }
@@ -170,6 +180,7 @@ export default class UsersPublicService implements Service {
       token: 'Missing body parameter: token'
     }
   })
+  @Resource(UserResource, 'user')
   async changePassword(req: ServiceRequest): Promise<ServiceResponse> {
     const { password, token } = req.body
     const decodedToken = jwt.decode(token)
@@ -199,7 +210,8 @@ export default class UsersPublicService implements Service {
     return {
       status: 200,
       body: {
-        accessToken
+        accessToken,
+        user
       }
     }
   }

@@ -4,16 +4,18 @@ import User from '../entities/user'
 import GameResource from './game.resource'
 
 export default class UserResource extends EntityResource<User> {
-  id: number
-  lastSeenAt: Date
-  emailConfirmed: boolean
-  games: GameResource[]
+  async transform(): Promise<any> {
+    const items = await this.entity.games.loadItems()
+    const games = await Promise.all(items.map(async (game) => {
+      const resource = new GameResource(game)
+      return await resource.transform()
+    }))
 
-  constructor(entity: User) {
-    super(entity)
-    this.id = entity.id
-    this.lastSeenAt = entity.lastSeenAt
-    this.emailConfirmed = entity.emailConfirmed
-    this.games = entity.games.toArray().map((game: Game) => new GameResource(game))
+    return {
+      id: this.entity.id,
+      lastSeenAt: this.entity.lastSeenAt,
+      emailConfirmed: this.entity.emailConfirmed,
+      games
+    }
   }
 }

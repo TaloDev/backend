@@ -34,7 +34,7 @@ export default class Policy extends ServicePolicy {
       return key.game.id === game.id
     } else {
       const team = game.teamMembers.toArray().map((user) => user.id)
-      if (!team.includes(this.getSub())) return false
+      return team.includes(this.getSub())
     }
   }
 }

@@ -4,14 +4,11 @@ export default async (ctx: Context, next: Next) => {
   try {
     await next()
   } catch (err) {
-    if (err.status === 500) console.log(err.stack)
-
-    const keys = Object.keys(err).length
-    if (keys > 0) {
-      ctx.status = err.status ?? 500
-      ctx.body = err
-    } else {
-      ctx.onerror(err)
+    ctx.status = err.status || 500
+    ctx.body = {
+      ...err
     }
+
+    if (ctx.status === 500) console.error(err.stack)
   }
 }

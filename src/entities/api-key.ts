@@ -3,10 +3,10 @@ import Game from './game'
 import { v4 } from 'uuid'
 
 export enum APIKeyScope {
-  READ_PLAYERS,
-  WRITE_PLAYERS,
-  READ_EVENTS,
-  WRITE_EVENTS
+  READ_PLAYERS = 'read:players',
+  WRITE_PLAYERS = 'write:players',
+  READ_EVENTS = 'read:events',
+  WRITE_EVENTS = 'write:events'
 }
 
 @Entity()

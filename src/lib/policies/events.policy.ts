@@ -1,5 +1,4 @@
 import Policy from './policy'
-import { Context } from 'koa'
 import { ServiceRequest } from 'koa-rest-services'
 
 export default class EventsPolicy extends Policy {

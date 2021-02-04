@@ -1,7 +1,7 @@
 import Koa, { Context, Next } from 'koa'
 import { service } from 'koa-rest-services'
 import EventsAPIService from '../services/api/events-api.service'
-import PlayersAPIService, { playerAPIRoutes } from '../services/api/players-api.service'
+import PlayersAPIService, { playersAPIRoutes } from '../services/api/players-api.service'
 
 export default (app: Koa) => {
   app.use(async (ctx: Context, next: Next): Promise<void> => {
@@ -18,6 +18,6 @@ export default (app: Koa) => {
 
   app.use(service('players-api', new PlayersAPIService('players'), {
     basePath: '/api/players',
-    routes: playerAPIRoutes
+    routes: playersAPIRoutes
   }))
 }

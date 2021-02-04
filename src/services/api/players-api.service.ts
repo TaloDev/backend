@@ -6,7 +6,7 @@ import PlayerResource from '../../resources/player.resource'
 import PlayersService from '../players.service'
 import APIService from './api-service'
 
-export const playerAPIRoutes: ServiceRoute[] = [
+export const playersAPIRoutes: ServiceRoute[] = [
   {
     method: 'GET'
   },

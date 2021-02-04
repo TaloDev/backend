@@ -6,10 +6,10 @@ import PlayersPolicy from '../lib/policies/players.policy'
 import PlayerResource from '../resources/player.resource'
 
 export default class PlayersService implements Service {
-  @HasPermission(PlayersPolicy, 'post')
   @Validate({
     body: ['gameId']
   })
+  @HasPermission(PlayersPolicy, 'post')
   @Resource(PlayerResource, 'player')
   async post(req: ServiceRequest): Promise<ServiceResponse> {
     const { aliases, gameId } = req.body
@@ -17,11 +17,10 @@ export default class PlayersService implements Service {
 
     const player = new Player()
     player.aliases = aliases
+    player.props = {}
     player.game = await em.getRepository(Game).findOne(gameId)
 
-    if (!player.game) {
-      req.ctx.throw(400, 'The specified game doesn\'t exist')
-    }
+    if (!player.game) req.ctx.throw(400, 'The specified game doesn\'t exist')
 
     await em.persistAndFlush(player)
 
@@ -33,10 +32,10 @@ export default class PlayersService implements Service {
     }
   }
 
-  @HasPermission(PlayersPolicy, 'get')
   @Validate({
     query: ['gameId']
   })
+  @HasPermission(PlayersPolicy, 'get')
   @Resource(PlayerResource, 'players')
   async get(req: ServiceRequest): Promise<ServiceResponse> {
     const { gameId } = req.query

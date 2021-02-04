@@ -3,10 +3,6 @@ import { Context } from 'koa'
 import { ServiceRequest } from 'koa-rest-services'
 
 export default class EventsPolicy extends Policy {
-  constructor(ctx: Context) {
-    super(ctx)
-  }
-
   async get(req: ServiceRequest): Promise<boolean> {
     const { gameId } = req.query
 

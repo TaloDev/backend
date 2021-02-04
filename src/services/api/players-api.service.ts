@@ -21,10 +21,6 @@ export const playerAPIRoutes: ServiceRoute[] = [
 ]
 
 export default class PlayersAPIService extends APIService {
-  constructor(serviceName: string) {
-    super(serviceName)
-  }
-
   @Validate({
     query: ['alias', 'id']
   })
@@ -52,10 +48,10 @@ export default class PlayersAPIService extends APIService {
     }
   }
 
-  @HasPermission(PlayersAPIPolicy, 'get')
   @Validate({
     query: ['gameId']
   })
+  @HasPermission(PlayersAPIPolicy, 'get')
   async get(req: ServiceRequest): Promise<ServiceResponse> {
     return await this.getService<PlayersService>(req).get(req)
   }
@@ -63,6 +59,7 @@ export default class PlayersAPIService extends APIService {
   @Validate({
     body: ['gameId']
   })
+  @HasPermission(PlayersAPIPolicy, 'post')
   async post(req: ServiceRequest): Promise<ServiceResponse> {
     return await this.getService<PlayersService>(req).post(req)
   }

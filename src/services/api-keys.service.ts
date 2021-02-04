@@ -1,13 +1,15 @@
 import { EntityManager } from '@mikro-orm/core'
-import { ServiceRequest, ServiceResponse, Validate } from 'koa-rest-services'
+import { HasPermission, ServiceRequest, ServiceResponse, Validate } from 'koa-rest-services'
 import APIKey from '../entities/api-key'
 import jwt from 'jsonwebtoken'
 import Game from '../entities/game'
+import APIKeysPolicy from '../lib/policies/api-keys.policy'
 
 export default class APIKeysService {
   @Validate({
     body: ['gameId']
   })
+  @HasPermission(APIKeysPolicy, 'post')
   async post(req: ServiceRequest): Promise<ServiceResponse> {
     const { scopes, gameId } = req.body
     const em: EntityManager = req.ctx.em

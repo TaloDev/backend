@@ -45,4 +45,8 @@ export default class Policy extends ServicePolicy {
       return team.includes(this.getSub())
     }
   }
+
+  hasScope(scope: string): boolean {
+    return this.ctx.state.user.scopes.includes(scope)
+  }
 }

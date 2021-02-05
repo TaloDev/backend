@@ -1,6 +1,7 @@
 import { Entity, Enum, ManyToOne, PrimaryKey, Property } from '@mikro-orm/core'
 import Game from './game'
 import { v4 } from 'uuid'
+import User from './user'
 
 export enum APIKeyScope {
   READ_PLAYERS = 'read:players',
@@ -19,6 +20,9 @@ export default class APIKey {
 
   @ManyToOne(() => Game)
   game: Game
+
+  @ManyToOne(() => User)
+  createdByUser: User
 
   @Property()
   createdAt: Date = new Date()

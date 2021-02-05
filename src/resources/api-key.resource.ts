@@ -7,11 +7,13 @@ export default class APIKeyResource extends EntityResource<APIKey> {
     const iat = new Date(this.entity.createdAt).getTime()
     const payload = { sub: this.entity.id, scopes: this.entity.scopes, iat: Math.floor(iat / 1000) }
     const token = jwt.sign(payload, process.env.JWT_SECRET)
+    const createdBy = this.entity.createdByUser.email // todo, user name field
 
     return {
       id: this.entity.id,
       token: token.substring(token.length - 5, token.length),
       scopes: this.entity.scopes,
+      createdBy,
       createdAt: this.entity.createdAt
     }
   }

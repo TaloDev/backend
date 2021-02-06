@@ -35,7 +35,7 @@
     "koa-helmet": "^6.0.0",
     "koa-jwt": "^4.0.0",
     "koa-logger": "^3.2.1",
-    "koa-rest-services": "^0.3.0",
+    "koa-rest-services": "^0.3.1",
     "lodash.groupby": "^4.6.0",
     "uuid": "^8.3.2"
   },

@@ -21,9 +21,7 @@ export const apiKeysRoutes: ServiceRoute[] = [
     handler: 'scopes'
   },
   {
-    method: 'DELETE',
-    // bug in krs, shouldn't need this
-    path: '/:id'
+    method: 'DELETE'
   }
 ]
 

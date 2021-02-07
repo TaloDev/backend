@@ -41,7 +41,7 @@ const init = async () => {
   configurePublicRoutes(app)
   configureAPIRoutes(app)
 
-  app.listen(3000, async () => {
+  app.listen(3000, () => {
     console.log('Server listening...')
   })
 }

@@ -6,12 +6,12 @@ services:
     command: --default-authentication-plugin=mysql_native_password --sql_mode=
     restart: always
     environment:
-      MYSQL_DATABASE: gs
-      MYSQL_ROOT_PASSWORD: password
+      MYSQL_DATABASE: ${DB_NAME}
+      MYSQL_ROOT_PASSWORD: ${DB_PASS}
     ports:
       - 3306:3306
     volumes:
-      - gs-dev-db:/var/lib/mysql
+      - data:/var/lib/mysql
 
 volumes:
-  gs-dev-db:
+  data:

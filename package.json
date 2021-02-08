@@ -10,7 +10,9 @@
     "env": "./setup-env",
     "schema:create": "mikro-orm schema:create -r",
     "schema:update": "mikro-orm schema:update -r",
-    "seed": "ts-node tests/index.ts"
+    "pretest": "docker-compose -f docker-compose.test.yml up -d",
+    "test": "env TS_NODE_COMPILER_OPTIONS='{\"module\": \"commonjs\" }' mocha -r ts-node/register 'tests/**/*.ts'",
+    "posttest": "docker-compose -f docker-compose.test.yml down"
   },
   "author": "Sleepy Studios",
   "license": "MIT",
@@ -19,7 +21,11 @@
     "@types/koa": "^2.11.6",
     "@types/koa-bodyparser": "^4.3.0",
     "@types/koa-logger": "^3.1.1",
+    "@types/mocha": "^8.2.0",
     "@types/node": "^14.14.16",
+    "chai": "^4.3.0",
+    "chai-http": "^4.3.0",
+    "mocha": "^8.2.1",
     "nodemon": "^2.0.6",
     "ts-node": "^9.1.1",
     "typescript": "^4.1.3"

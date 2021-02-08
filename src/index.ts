@@ -10,8 +10,9 @@ import configurePublicRoutes from './config/public-routes'
 import configureAPIRoutes from './config/api-routes'
 import corsMiddleware from './config/cors-middleware'
 import errorMiddleware from './config/error-middleware'
+import { Server } from 'http'
 
-const init = async () => {
+const init = async (): Promise<Server> => {
   let em: EntityManager
   try {
     console.log('Starting DB...')
@@ -41,9 +42,11 @@ const init = async () => {
   configurePublicRoutes(app)
   configureAPIRoutes(app)
 
-  app.listen(3000, () => {
+  return app.listen(3000, () => {
     console.log('Server listening...')
   })
 }
 
-init()
+const server = init()
+export default server
+

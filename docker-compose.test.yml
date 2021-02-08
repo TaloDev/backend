@@ -1,7 +1,7 @@
 version: '3.7'
 
 services:
-  db:
+  test-db:
     image: mysql
     command: --default-authentication-plugin=mysql_native_password --sql_mode=
     restart: always

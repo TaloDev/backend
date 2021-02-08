@@ -6,6 +6,8 @@
   "scripts": {
     "start": "node dist/index.js",
     "dev": "nodemon src/index.ts",
+    "build": "tsc -p tsconfig.build.json",
+    "env": "./setup-env",
     "schema:create": "mikro-orm schema:create -r",
     "schema:update": "mikro-orm schema:update -r",
     "seed": "ts-node tests/index.ts"

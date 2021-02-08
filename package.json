@@ -10,9 +10,7 @@
     "env": "./envs/setup-env.sh",
     "schema:create": "mikro-orm schema:create -r",
     "schema:update": "mikro-orm schema:update -r",
-    "pretest": "docker-compose -f docker-compose.test.yml up -d",
-    "test": "./tests/setup-tests.sh",
-    "posttest": "docker-compose -f docker-compose.test.yml down"
+    "test": "./tests/setup-tests.sh"
   },
   "author": "Sleepy Studios",
   "license": "MIT",

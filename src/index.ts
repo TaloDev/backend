@@ -12,7 +12,7 @@ import corsMiddleware from './config/cors-middleware'
 import errorMiddleware from './config/error-middleware'
 import { Server } from 'http'
 
-const init = async (): Promise<Server> => {
+export const init = async (): Promise<Server> => {
   let em: EntityManager
   try {
     console.log('Starting DB...')
@@ -42,11 +42,9 @@ const init = async (): Promise<Server> => {
   configurePublicRoutes(app)
   configureAPIRoutes(app)
 
-  return app.listen(3000, () => {
-    console.log('Server listening...')
+  return app.listen(process.env.SERVER_PORT, () => {
+    console.log(`Listening on port ${process.env.SERVER_PORT}`)
   })
 }
 
-const server = init()
-export default server
-
+if (process.env.NODE_ENV !== 'test') init()

@@ -10,18 +10,19 @@ import configurePublicRoutes from './config/public-routes'
 import configureAPIRoutes from './config/api-routes'
 import corsMiddleware from './config/cors-middleware'
 import errorMiddleware from './config/error-middleware'
-import { Server } from 'http'
+import opts from './config/mikro-orm.config'
 
-export const init = async (): Promise<Server> => {
+const isTest = process.env.NODE_ENV === 'test'
+
+export const init = async (): Promise<Koa> => {
   let em: EntityManager
   try {
-    console.log('Starting DB...')
-    const orm = await MikroORM.init()
+    if (!isTest) console.log('Starting DB...')
+    const orm = await MikroORM.init(opts)
     em = orm.em
-    console.log('DB ready')
+    if (!isTest) console.log('DB ready')
   } catch (err) {
     console.error(err)
-    console.log('DB failed to start')
     process.exit(1)
   }
 
@@ -29,7 +30,7 @@ export const init = async (): Promise<Server> => {
   app.context.em = em
 
   app.use(errorMiddleware)
-  app.use(logger())
+  if (!isTest) app.use(logger())
   app.use(bodyParser())
   app.use(helmet())
 
@@ -42,9 +43,15 @@ export const init = async (): Promise<Server> => {
   configurePublicRoutes(app)
   configureAPIRoutes(app)
 
-  return app.listen(process.env.SERVER_PORT, () => {
-    console.log(`Listening on port ${process.env.SERVER_PORT}`)
-  })
+  if (!isTest) {
+    app.listen(process.env.SERVER_PORT, () => {
+      console.log(`Listening on port ${process.env.SERVER_PORT}`)
+    })
+  }
+
+  return app
 }
 
-if (process.env.NODE_ENV !== 'test') init()
+if (!isTest) init()
+
+export default init

@@ -9,4 +9,4 @@ services:
       MYSQL_DATABASE: ${DB_NAME}
       MYSQL_ROOT_PASSWORD: ${DB_PASS}
     ports:
-      - 3307:3307
+      - 3307:3306

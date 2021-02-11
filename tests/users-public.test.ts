@@ -1,3 +1,4 @@
+import { EntityManager } from '@mikro-orm/core'
 import Koa from 'koa'
 import init from '../src'
 import request from 'supertest'
@@ -9,6 +10,10 @@ describe('Users public service', () => {
 
   beforeAll(async () => {
     app = await init()
+  })
+
+  afterAll(async () => {
+    await (<EntityManager>app.context.em).getConnection().close()
   })
 
   it('should register a user', async () => {

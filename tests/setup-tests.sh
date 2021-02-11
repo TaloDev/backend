@@ -5,11 +5,7 @@ cp envs/.env.test .env
 
 docker-compose -f docker-compose.test.yml -p gs-test up -d
 
-echo 'Waiting for DB to be ready...'
-
-sleep 20
-
-yarn schema:create
+./node_modules/.bin/ts-node tests/create-schema.ts 
 
 ./node_modules/.bin/jest
 

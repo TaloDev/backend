@@ -20,8 +20,6 @@ export default class PlayersService implements Service {
     player.props = {}
     player.game = await em.getRepository(Game).findOne(gameId)
 
-    if (!player.game) req.ctx.throw(400, 'The specified game doesn\'t exist')
-
     await em.persistAndFlush(player)
 
     return {

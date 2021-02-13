@@ -35,7 +35,7 @@ export default class Policy extends ServicePolicy {
 
   async canAccessGame(gameId: number): Promise<boolean> {
     const game = await this.em.getRepository(Game).findOne(gameId, ['teamMembers'])
-    if (!game) return false
+    if (!game) this.ctx.throw(404, 'The specified game doesn\'t exist')
 
     if (this.isAPICall()) {
       const key = await this.getAPIKey()

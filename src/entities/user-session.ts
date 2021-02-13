@@ -11,8 +11,8 @@ export default class UserSession {
   @Property()
   token: string = v4()
 
-  @Property()
-  userAgent: string
+  @Property({ nullable: true })
+  userAgent?: string
 
   @ManyToOne(() => User)
   user: User

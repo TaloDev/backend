@@ -5,7 +5,7 @@ import { Context } from 'koa'
 import User from '../../entities/user'
 import UserSession from '../../entities/user-session'
 
-async function genAccessToken(user: User): Promise<string> {
+export async function genAccessToken(user: User): Promise<string> {
   const payload = { sub: user.id }
   const sign = promisify(jwt.sign)
   const accessToken = await sign(payload, process.env.JWT_SECRET, { expiresIn: '5m' })

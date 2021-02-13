@@ -15,12 +15,12 @@ import opts from './config/mikro-orm.config'
 const isTest = process.env.NODE_ENV === 'test'
 
 export const init = async (): Promise<Koa> => {
+  let orm: MikroORM
   let em: EntityManager
+
   try {
-    if (!isTest) console.log('Starting DB...')
-    const orm = await MikroORM.init(opts)
+    orm = await MikroORM.init(opts)
     em = orm.em
-    if (!isTest) console.log('DB ready')
   } catch (err) {
     console.error(err)
     process.exit(1)
@@ -28,6 +28,7 @@ export const init = async (): Promise<Koa> => {
 
   const app = new Koa()
   app.context.em = em
+  if (isTest) app.context.orm = orm
 
   app.use(errorMiddleware)
   if (!isTest) app.use(logger())

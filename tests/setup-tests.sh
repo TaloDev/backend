@@ -10,6 +10,6 @@ docker-compose -f docker-compose.test.yml -p gs-test up -d
 ./node_modules/.bin/jest
 
 rm .env
-mv .env.backup .env
+[ -f .env.backup ] && mv .env.backup .env
 
 docker-compose -p gs-test down

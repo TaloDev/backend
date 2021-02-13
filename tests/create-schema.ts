@@ -20,7 +20,7 @@ const createSchema = async (): Promise<void> => {
 
 process.stdout.write(`${log}\r`)
 
-interval = setInterval(async () => {
+interval = setInterval(() => {
   log += '.'
   process.stdout.write(`${log}\r`)
 

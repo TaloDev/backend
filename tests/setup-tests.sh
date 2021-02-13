@@ -1,6 +1,6 @@
 #!/bin/sh
 export $(grep -v '^#' envs/.env.test | xargs)
-mv .env .env.backup
+[ -f .env ] && mv .env .env.backup
 cp envs/.env.test .env
 
 docker-compose -f docker-compose.test.yml -p gs-test up -d

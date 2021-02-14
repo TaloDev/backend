@@ -19,9 +19,7 @@ describe('Players service', () => {
     app = await init()
 
     user = new User()
-    await (<EntityManager>app.context.em).persistAndFlush(user)
-
-    validGame = new Game('Superstatic')
+    validGame = new Game('Updraft')
     validGame.teamMembers.add(user)
     await (<EntityManager>app.context.em).persistAndFlush(validGame)
 
@@ -82,17 +80,8 @@ describe('Players service', () => {
   })
 
   it('should return a list of players', async () => {
-    const playerRepo = (<EntityManager>app.context.em).getRepository(Player)
-    const existingPlayers = await playerRepo.findAll()
-    await playerRepo.removeAndFlush(existingPlayers)
-
-    const players: Player[] = [...new Array(2)].map(() => {
-      const player = new Player()
-      player.game = validGame
-      return player
-    })
-
-    await playerRepo.persistAndFlush(players)
+    const num = await validGame.players.loadCount()
+    await (<EntityManager>app.context.em).flush()
 
     const res = await request(app.callback())
       .get(`${baseUrl}`)
@@ -100,7 +89,7 @@ describe('Players service', () => {
       .auth(token, { type: 'bearer' })
       .expect(200)
 
-    expect(res.body.players).toHaveLength(2)
+    expect(res.body.players).toHaveLength(num)
   })
 
   it('should not return a list of players for a non-existent game', async () => {

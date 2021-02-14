@@ -7,7 +7,7 @@ docker-compose -f docker-compose.test.yml -p gs-test up -d
 
 ./node_modules/.bin/ts-node tests/create-schema.ts 
 
-./node_modules/.bin/jest
+./node_modules/.bin/jest --runInBand
 
 rm .env
 [ -f .env.backup ] && mv .env.backup .env

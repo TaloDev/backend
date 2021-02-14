@@ -7,6 +7,7 @@ import APIKeysPolicy from '../lib/policies/api-keys.policy'
 import APIKeyResource from '../resources/api-key.resource'
 import groupBy from 'lodash.groupby'
 import User from '../entities/user'
+import { promisify } from 'util'
 
 export const apiKeysRoutes: ServiceRoute[] = [
   {
@@ -25,6 +26,12 @@ export const apiKeysRoutes: ServiceRoute[] = [
   }
 ]
 
+export async function createToken(apiKey: APIKey, payloadParams?: { [key: string]: any }): Promise<string> {
+  const payload = { sub: apiKey.id, scopes: apiKey.scopes, ...payloadParams }
+  const token = await promisify(jwt.sign)(payload, process.env.JWT_SECRET)
+  return token
+}
+
 export default class APIKeysService {
   @Validate({
     body: ['gameId']
@@ -41,8 +48,7 @@ export default class APIKeysService {
     apiKey.createdByUser = await em.getRepository(User).findOne(req.ctx.state.user.sub)
     await em.getRepository(APIKey).persistAndFlush(apiKey)
 
-    const payload = { sub: apiKey.id, scopes: apiKey.scopes }
-    const token = jwt.sign(payload, process.env.JWT_SECRET)
+    const token = await createToken(apiKey)
 
     return {
       status: 200,

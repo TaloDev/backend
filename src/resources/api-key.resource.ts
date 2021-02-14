@@ -1,12 +1,12 @@
 import { EntityResource } from 'koa-rest-services'
 import APIKey from '../entities/api-key'
 import jwt from 'jsonwebtoken'
+import { createToken } from '../services/api-keys.service'
 
 export default class APIKeyResource extends EntityResource<APIKey> {
   async transform(): Promise<any> {
     const iat = new Date(this.entity.createdAt).getTime()
-    const payload = { sub: this.entity.id, scopes: this.entity.scopes, iat: Math.floor(iat / 1000) }
-    const token = jwt.sign(payload, process.env.JWT_SECRET)
+    const token = await createToken(this.entity, { iat: Math.floor(iat / 1000) })
     const createdBy = this.entity.createdByUser.email // todo, user name field
 
     return {

@@ -19,7 +19,7 @@ describe('Players service', () => {
     app = await init()
 
     user = new User()
-    validGame = new Game('Updraft')
+    validGame = new Game('Uplift')
     validGame.teamMembers.add(user)
     await (<EntityManager>app.context.em).persistAndFlush(validGame)
 

@@ -21,7 +21,7 @@ describe('Events API service', () => {
     app = await init()
 
     apiKey = new APIKey()
-    apiKey.game = new Game('Updraft')
+    apiKey.game = new Game('Uplift')
     apiKey.createdByUser = new User()
     token = await createToken(apiKey)
 

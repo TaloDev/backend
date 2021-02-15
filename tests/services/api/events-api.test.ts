@@ -20,9 +20,7 @@ describe('Events API service', () => {
   beforeAll(async () => {
     app = await init()
 
-    apiKey = new APIKey()
-    apiKey.game = new Game('Uplift')
-    apiKey.createdByUser = new User()
+    apiKey = new APIKey(new Game('Uplift'), new User())
     token = await createToken(apiKey)
 
     validPlayer = new Player(apiKey.game)
@@ -70,8 +68,8 @@ describe('Events API service', () => {
 
     const res = await request(app.callback())
       .post(`${baseUrl}`)
-      .auth(token, { type: 'bearer' })
       .send({ name: 'Craft bow', playerId: validPlayer.id })
+      .auth(token, { type: 'bearer' })
       .expect(200)
 
     expect(res.body.event.gameId).toBe(apiKey.game.id)
@@ -83,8 +81,8 @@ describe('Events API service', () => {
 
     await request(app.callback())
       .post(`${baseUrl}`)
-      .auth(token, { type: 'bearer' })
       .send({ name: 'Craft bow', playerId: validPlayer.id })
+      .auth(token, { type: 'bearer' })
       .expect(403)
   })
 })

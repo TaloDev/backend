@@ -29,4 +29,9 @@ export default class APIKey {
 
   @Property({ nullable: true })
   revokedAt?: Date
+
+  constructor(game: Game, createdByUser: User) {
+    this.game = game
+    this.createdByUser = createdByUser
+  }
 }

@@ -18,9 +18,7 @@ describe('Players API service', () => {
   beforeAll(async () => {
     app = await init()
 
-    apiKey = new APIKey()
-    apiKey.game = new Game('Uplift')
-    apiKey.createdByUser = new User()
+    apiKey = new APIKey(new Game('Uplift'), new User())
     token = await createToken(apiKey)
 
     await (<EntityManager>app.context.em).persistAndFlush(apiKey)
@@ -78,7 +76,6 @@ describe('Players API service', () => {
     await request(app.callback())
       .post(`${baseUrl}`)
       .auth(token, { type: 'bearer' })
-      .send()
       .expect(403)
   })
 

@@ -42,10 +42,11 @@ export default class APIKeysService {
     const { scopes, gameId } = req.body
     const em: EntityManager = req.ctx.em
 
-    const apiKey = new APIKey()
+    const game = await em.getRepository(Game).findOne(gameId)
+    const createdByUser = await em.getRepository(User).findOne(req.ctx.state.user.sub)
+
+    const apiKey = new APIKey(game, createdByUser)
     apiKey.scopes = scopes ?? []
-    apiKey.game = await em.getRepository(Game).findOne(gameId)
-    apiKey.createdByUser = await em.getRepository(User).findOne(req.ctx.state.user.sub)
     await em.getRepository(APIKey).persistAndFlush(apiKey)
 
     const token = await createToken(apiKey)
@@ -82,6 +83,7 @@ export default class APIKeysService {
   async delete(req: ServiceRequest): Promise<ServiceResponse> {
     const { id } = req.params
     const em: EntityManager = req.ctx.em
+
     const apiKey = await em.getRepository(APIKey).findOne(id)
     apiKey.revokedAt = new Date()
     await em.flush()

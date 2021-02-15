@@ -5,7 +5,6 @@ import request from 'supertest'
 import User from '../../src/entities/user'
 import { genAccessToken } from '../../src/lib/auth/buildTokenPair'
 import Game from '../../src/entities/game'
-import Player from '../../src/entities/player'
 
 const baseUrl = '/players'
 
@@ -33,10 +32,10 @@ describe('Players service', () => {
   it('should create a player', async () => {
     const res = await request(app.callback())
       .post(`${baseUrl}`)
-      .auth(token, { type: 'bearer' })
       .send({
         gameId: validGame.id
       })
+      .auth(token, { type: 'bearer' })
       .expect(200)
 
     expect(res.body.player).toBeDefined()
@@ -45,13 +44,13 @@ describe('Players service', () => {
   it('should create a player with aliases', async () => {
     const res = await request(app.callback())
       .post(`${baseUrl}`)
-      .auth(token, { type: 'bearer' })
       .send({
         aliases: {
           steam: '12345'
         },
         gameId: validGame.id
       })
+      .auth(token, { type: 'bearer' })
       .expect(200)
 
     expect(res.body.player).toBeDefined()
@@ -61,8 +60,8 @@ describe('Players service', () => {
   it('should not create a player for a non-existent game', async () => {
     const res = await request(app.callback())
       .post(`${baseUrl}`)
+      .send({ gameId: 99 })
       .auth(token, { type: 'bearer' })
-      .send({ gameId: 8 })
       .expect(404)
 
     expect(res.body).toStrictEqual({ message: 'The specified game doesn\'t exist' })
@@ -74,8 +73,8 @@ describe('Players service', () => {
 
     await request(app.callback())
       .post(`${baseUrl}`)
-      .auth(token, { type: 'bearer' })
       .send({ gameId: otherGame.id })
+      .auth(token, { type: 'bearer' })
       .expect(403)
   })
 
@@ -94,7 +93,7 @@ describe('Players service', () => {
   it('should not return a list of players for a non-existent game', async () => {
     const res = await request(app.callback())
       .get(`${baseUrl}`)
-      .query({ gameId: 8 })
+      .query({ gameId: 99 })
       .auth(token, { type: 'bearer' })
       .expect(404)
 

@@ -13,6 +13,7 @@ export default class APIKeyResource extends EntityResource<APIKey> {
       id: this.entity.id,
       token: token.substring(token.length - 5, token.length),
       scopes: this.entity.scopes,
+      gameId: this.entity.game.id,
       createdBy,
       createdAt: this.entity.createdAt
     }

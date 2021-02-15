@@ -48,7 +48,7 @@ describe('Events service', () => {
   it('should not return a list of events for a non-existent game', async () => {
     const res = await request(app.callback())
       .get(`${baseUrl}`)
-      .query({ gameId: 8 })
+      .query({ gameId: 99 })
       .auth(token, { type: 'bearer' })
       .expect(404)
 

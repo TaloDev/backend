@@ -16,6 +16,8 @@ export default class APIKeysPolicy extends Policy {
   async delete(req: ServiceRequest): Promise<boolean> {
     const { id } = req.params
     const apiKey = await this.em.getRepository(APIKey).findOne(id)
+    if (!apiKey) req.ctx.throw(404, 'API key not found')
+
     return this.canAccessGame(apiKey.game.id)
   }
 }

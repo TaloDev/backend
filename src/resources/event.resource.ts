@@ -8,6 +8,7 @@ export default class EventResource extends EntityResource<Event> {
       name: this.entity.name,
       props: this.entity.props,
       playerId: this.entity.player.id,
+      gameId: this.entity.player.game.id,
       createdAt: this.entity.createdAt
     }
   }

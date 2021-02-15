@@ -8,7 +8,6 @@ import APIKey, { APIKeyScope } from '../../../src/entities/api-key'
 import User from '../../../src/entities/user'
 import { createToken } from '../../../src/services/api-keys.service'
 import Event from '../../../src/entities/event'
-import EventResource from '../../../src/resources/event.resource'
 
 const baseUrl = '/api/events'
 
@@ -35,7 +34,7 @@ describe('Events API service', () => {
     await (<EntityManager>app.context.em).getConnection().close()
   })
 
-  it('should return the player\'s events if the scope exists', async () => {
+  it('should return the game\'s events if the scope is valid', async () => {
     const events: Event[] = [...new Array(3)].map(() => new Event('Open inventory', validPlayer))
     await (<EntityManager>app.context.em).persistAndFlush(events)
 
@@ -49,8 +48,46 @@ describe('Events API service', () => {
 
     expect(res.body.events).toHaveLength(3)
 
-    for (let e of res.body.events) {
-      expect(e.playerId).toStrictEqual(validPlayer.id)
+    for (let event of res.body.events) {
+      expect(event.playerId).toBe(validPlayer.id)
+      expect(event.gameId).toBe(apiKey.game.id)
     }
+  })
+
+  it('should not return the game\'s events without the valid scope', async () => {
+    const otherGame = new Game('Crawle')
+    await (<EntityManager>app.context.em).persistAndFlush(otherGame)
+
+    apiKey.scopes = []
+    token = await createToken(apiKey)
+
+    await request(app.callback())
+      .get(`${baseUrl}`)
+      .auth(token, { type: 'bearer' })
+      .expect(403)
+  })
+
+  it('should create an event if the scope is valid', async () => {
+    apiKey.scopes = [APIKeyScope.WRITE_EVENTS]
+    token = await createToken(apiKey)
+
+    const res = await request(app.callback())
+      .post(`${baseUrl}`)
+      .auth(token, { type: 'bearer' })
+      .send({ name: 'Craft bow', playerId: validPlayer.id })
+      .expect(200)
+
+    expect(res.body.event.gameId).toBe(apiKey.game.id)
+  })
+
+  it('should not create an event if the scope is valid', async () => {
+    apiKey.scopes = []
+    token = await createToken(apiKey)
+
+    const res = await request(app.callback())
+      .post(`${baseUrl}`)
+      .auth(token, { type: 'bearer' })
+      .send({ name: 'Craft bow', playerId: validPlayer.id })
+      .expect(403)
   })
 })

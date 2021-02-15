@@ -13,7 +13,7 @@ export default class EventsService implements Service {
   async get(req: ServiceRequest): Promise<ServiceResponse> {
     const { gameId } = req.query
     const em: EntityManager = req.ctx.em
-    const events = await em.getRepository(Event).find({ player: { game: Number(gameId) }})
+    const events = await em.getRepository(Event).find({ player: { game: Number(gameId) }}, ['player.game'])
 
     return {
       status: 200,

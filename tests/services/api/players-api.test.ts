@@ -81,4 +81,47 @@ describe('Players API service', () => {
       .send()
       .expect(403)
   })
+
+  it('should identify a player', async () => {
+    apiKey.scopes = [APIKeyScope.READ_PLAYERS]
+    token = await createToken(apiKey)
+
+    const player = new Player(apiKey.game)
+    player.aliases = {
+      steam: '4568382'
+    }
+    await (<EntityManager>app.context.em).persistAndFlush(player)
+
+    const res = await request(app.callback())
+      .get(`${baseUrl}/identify`)
+      .query({ alias: 'steam', id: '4568382' })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    expect(res.body.player.id).toBe(player.id)
+  })
+
+  it('should not identify a player if the scope is missing', async () => {
+    apiKey.scopes = []
+    token = await createToken(apiKey)
+
+    await request(app.callback())
+      .get(`${baseUrl}/identify`)
+      .query({ alias: 'steam', id: '2131231' })
+      .auth(token, { type: 'bearer' })
+      .expect(403)
+  })
+
+  it('should not identify a non-existent player', async () => {
+    apiKey.scopes = [APIKeyScope.READ_PLAYERS]
+    token = await createToken(apiKey)
+
+    const res = await request(app.callback())
+      .get(`${baseUrl}/identify`)
+      .query({ alias: 'steam', id: '2131231' })
+      .auth(token, { type: 'bearer' })
+      .expect(404)
+
+    expect(res.body).toStrictEqual({ message: 'Player not found' })
+  })
 })

@@ -25,6 +25,7 @@ export default class PlayersAPIService extends APIService {
   @Validate({
     query: ['alias', 'id']
   })
+  @HasPermission(PlayersAPIPolicy, 'identify')
   @Resource(PlayerResource, 'player')
   async identify(req: ServiceRequest): Promise<ServiceResponse> {
     const { alias, id } = req.query
@@ -37,7 +38,7 @@ export default class PlayersAPIService extends APIService {
       game: key.game
     })
 
-    if (!player)  req.ctx.throw(404, 'Player not found')
+    if (!player) req.ctx.throw(404, 'Player not found')
 
     player.lastSeenAt = new Date()
     await em.flush()

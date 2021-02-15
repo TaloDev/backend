@@ -34,7 +34,9 @@ export default class PlayersAPIService extends APIService {
     const key: APIKey = await this.getAPIKey(req.ctx)
 
     const player = await em.getRepository(Player).findOne({
-      [expr(`json_extract(aliases, '$.${alias}')`)]: id,
+      aliases: {
+        [alias]: id
+      },
       game: key.game
     })
 

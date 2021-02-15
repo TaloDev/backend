@@ -1,5 +1,6 @@
 import { EntityManager, expr } from '@mikro-orm/core'
 import { Resource, ServiceRequest, ServiceResponse, ServiceRoute, Validate, HasPermission } from 'koa-rest-services'
+import APIKey from '../../entities/api-key'
 import Player from '../../entities/player'
 import PlayersAPIPolicy from '../../lib/policies/api/players-api.policy'
 import PlayerResource from '../../resources/player.resource'
@@ -29,13 +30,14 @@ export default class PlayersAPIService extends APIService {
     const { alias, id } = req.query
     const em: EntityManager = req.ctx.em
 
+    const key: APIKey = await this.getAPIKey(req.ctx)
+
     const player = await em.getRepository(Player).findOne({
-      [expr(`json_extract(aliases, '$.${alias}')`)]: id
+      [expr(`json_extract(aliases, '$.${alias}')`)]: id,
+      game: key.game
     })
 
-    if (!player) {
-      req.ctx.throw(404, 'User not found')
-    }
+    if (!player)  req.ctx.throw(404, 'Player not found')
 
     player.lastSeenAt = new Date()
     await em.flush()
@@ -48,19 +50,23 @@ export default class PlayersAPIService extends APIService {
     }
   }
 
-  @Validate({
-    query: ['gameId']
-  })
   @HasPermission(PlayersAPIPolicy, 'get')
   async get(req: ServiceRequest): Promise<ServiceResponse> {
+    const key: APIKey = await this.getAPIKey(req.ctx)
+    req.query = {
+      gameId: key.game.id.toString()
+    }
+
     return await this.getService<PlayersService>(req).get(req)
   }
 
-  @Validate({
-    body: ['gameId']
-  })
   @HasPermission(PlayersAPIPolicy, 'post')
   async post(req: ServiceRequest): Promise<ServiceResponse> {
+    const key: APIKey = await this.getAPIKey(req.ctx)
+    req.body = {
+      gameId: key.game.id
+    }
+
     return await this.getService<PlayersService>(req).post(req)
   }
 }

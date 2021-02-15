@@ -39,7 +39,6 @@ export default class PlayersService implements Service {
   async get(req: ServiceRequest): Promise<ServiceResponse> {
     const { gameId } = req.query
     const em: EntityManager = req.ctx.em
-
     const players = await em.getRepository(Player).find({ game: Number(gameId) })
 
     return {

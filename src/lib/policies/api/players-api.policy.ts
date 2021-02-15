@@ -3,12 +3,12 @@ import { ServiceRequest } from 'koa-rest-services'
 
 export default class PlayersAPIPolicy extends Policy {
   async get(req: ServiceRequest): Promise<boolean> {
-    const { gameId } = req.query
-    return this.hasScope('read:players') && this.canAccessGame(Number(gameId))
+    const key = await this.getAPIKey()
+    return this.hasScope('read:players') && this.canAccessGame(key.game.id)
   }
 
   async post(req: ServiceRequest): Promise<boolean> {
-    const { gameId } = req.body
-    return this.hasScope('write:players') && this.canAccessGame(Number(gameId))
+    const key = await this.getAPIKey()
+    return this.hasScope('write:players') && this.canAccessGame(key.game.id)
   }
 }

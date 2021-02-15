@@ -5,8 +5,8 @@ import Event from '../../entities/event'
 import EventsAPIPolicy from '../../lib/policies/api/events-api.policy'
 import EventsService from '../events.service'
 import APIService from './api-service'
-import getAPIKeyFromToken from '../../lib/auth/getAPIKeyFromToken'
 import EventResource from '../../resources/event.resource'
+import APIKey from '../../entities/api-key'
 
 export default class EventsAPIService extends APIService {
   @Validate({
@@ -36,7 +36,11 @@ export default class EventsAPIService extends APIService {
 
   @HasPermission(EventsAPIPolicy, 'get')
   async get(req: ServiceRequest): Promise<ServiceResponse> {
-    req.query.gameId = ((await getAPIKeyFromToken(req.ctx)).game.id).toString()
+    const key: APIKey = await this.getAPIKey(req.ctx)
+    req.query = {
+      gameId: key.game.id.toString()
+    }
+
     return await this.getService<EventsService>(req).get(req)
   }
 }

@@ -28,7 +28,6 @@ export const init = async (): Promise<Koa> => {
 
   const app = new Koa()
   app.context.em = em
-  if (isTest) app.context.orm = orm
 
   app.use(errorMiddleware)
   if (!isTest) app.use(logger())

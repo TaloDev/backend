@@ -81,7 +81,6 @@ describe('Players service', () => {
 
   it('should return a list of players', async () => {
     const num = await validGame.players.loadCount()
-    await (<EntityManager>app.context.em).flush()
 
     const res = await request(app.callback())
       .get(`${baseUrl}`)

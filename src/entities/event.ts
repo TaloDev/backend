@@ -3,10 +3,6 @@ import Player from './player'
 
 @Entity()
 export default class Event {
-  constructor(name: string) {
-    this.name = name
-  }
-
   @PrimaryKey()
   id: number
 
@@ -27,4 +23,9 @@ export default class Event {
 
   @Property({ nullable: true })
   deletedAt?: Date
+
+  constructor(name: string, player: Player) {
+    this.name = name
+    this.player = player
+  }
 }

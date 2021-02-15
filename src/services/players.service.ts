@@ -15,10 +15,11 @@ export default class PlayersService implements Service {
     const { aliases, gameId } = req.body
     const em: EntityManager = req.ctx.em
 
-    const player = new Player()
+    const game = await em.getRepository(Game).findOne(gameId)
+
+    const player = new Player(game)
     player.aliases = aliases
     player.props = {}
-    player.game = await em.getRepository(Game).findOne(gameId)
 
     await em.persistAndFlush(player)
 

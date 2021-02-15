@@ -8,6 +8,7 @@ import APIKey, { APIKeyScope } from '../../../src/entities/api-key'
 import User from '../../../src/entities/user'
 import { createToken } from '../../../src/services/api-keys.service'
 import Event from '../../../src/entities/event'
+import EventResource from '../../../src/resources/event.resource'
 
 const baseUrl = '/api/events'
 
@@ -25,8 +26,7 @@ describe('Events API service', () => {
     apiKey.createdByUser = new User()
     token = await createToken(apiKey)
 
-    validPlayer = new Player()
-    validPlayer.game = apiKey.game
+    validPlayer = new Player(apiKey.game)
 
     await (<EntityManager>app.context.em).persistAndFlush([apiKey, validPlayer])
   })
@@ -36,9 +36,8 @@ describe('Events API service', () => {
   })
 
   it('should return the player\'s events if the scope exists', async () => {
-    const events: Event[] = [...new Array(3)].map(() => new Event('Open inventory'))
-    validPlayer.events.add(...events)
-    await (<EntityManager>app.context.em).persistAndFlush(validPlayer)
+    const events: Event[] = [...new Array(3)].map(() => new Event('Open inventory', validPlayer))
+    await (<EntityManager>app.context.em).persistAndFlush(events)
 
     apiKey.scopes = [APIKeyScope.READ_EVENTS]
     token = await createToken(apiKey)
@@ -49,15 +48,9 @@ describe('Events API service', () => {
       .expect(200)
 
     expect(res.body.events).toHaveLength(3)
-  })
 
-  it('should not return the player\'s events if the scope does not exist', async () => {
-    apiKey.scopes = []
-    token = await createToken(apiKey)
-
-    await request(app.callback())
-      .get(`${baseUrl}`)
-      .auth(token, { type: 'bearer' })
-      .expect(403)
+    for (let e of res.body.events) {
+      expect(e.playerId).toStrictEqual(validPlayer.id)
+    }
   })
 })

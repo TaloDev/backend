@@ -39,4 +39,8 @@ export default class Player {
 
   @Property({ nullable: true })
   deletedAt?: Date
+
+  constructor(game: Game) {
+    this.game = game
+  }
 }

@@ -81,10 +81,9 @@ export default class APIKeysService {
   @HasPermission(APIKeysPolicy, 'delete')
   @Resource(APIKeyResource, 'apiKey')
   async delete(req: ServiceRequest): Promise<ServiceResponse> {
-    const { id } = req.params
     const em: EntityManager = req.ctx.em
 
-    const apiKey = await em.getRepository(APIKey).findOne(id)
+    const apiKey = req.ctx.state.apiKey // set in the policy
     apiKey.revokedAt = new Date()
     await em.flush()
 

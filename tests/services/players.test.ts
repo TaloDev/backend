@@ -5,6 +5,7 @@ import request from 'supertest'
 import User from '../../src/entities/user'
 import { genAccessToken } from '../../src/lib/auth/buildTokenPair'
 import Game from '../../src/entities/game'
+import Player from '../../src/entities/player'
 
 const baseUrl = '/players'
 
@@ -107,6 +108,60 @@ describe('Players service', () => {
     await request(app.callback())
       .get(`${baseUrl}`)
       .query({ gameId: otherGame.id })
+      .auth(token, { type: 'bearer' })
+      .expect(403)
+  })
+
+  it('should update a player\'s properties', async () => {
+    const player = new Player(validGame)
+    player.props = {
+      collectibles: 0,
+      zonesExplored: 1
+    }
+    await (<EntityManager>app.context.em).persistAndFlush(player)
+
+    const res = await request(app.callback())
+      .patch(`${baseUrl}/${player.id}`)
+      .send({
+        props: {
+          collectibles: 1
+        }
+      })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    expect(res.body.player.props).toStrictEqual({
+      collectibles: 1,
+      zonesExplored: 1
+    })
+  })
+
+  it('should not update a non-existent player\'s properties', async () => {
+    const res = await request(app.callback())
+      .patch(`${baseUrl}/2313`)
+      .send({
+        props: {
+          collectibles: 2
+        }
+      })
+      .auth(token, { type: 'bearer' })
+      .expect(404)
+
+    expect(res.body).toStrictEqual({ message: 'Player not found' })
+  })
+
+  it('should not update a player\'s properties for a game the user has no access to', async () => {
+    const otherGame = new Game('Trigeon')
+    const player = new Player(otherGame)
+    await (<EntityManager>app.context.em).persistAndFlush(player)
+
+    const res = await request(app.callback())
+      .patch(`${baseUrl}/${player.id}`)
+      .send({
+        props: {
+          collectibles: 2
+        }
+      })
       .auth(token, { type: 'bearer' })
       .expect(403)
   })

@@ -72,4 +72,9 @@ export default class PlayersAPIService extends APIService {
 
     return await this.getService<PlayersService>(req).post(req)
   }
+
+  @HasPermission(PlayersAPIPolicy, 'patch')
+  async patch(req: ServiceRequest): Promise<ServiceResponse> {
+    return await this.getService<PlayersService>(req).patch(req)
+  }
 }

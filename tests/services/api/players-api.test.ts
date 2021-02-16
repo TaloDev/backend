@@ -121,4 +121,70 @@ describe('Players API service', () => {
 
     expect(res.body).toStrictEqual({ message: 'Player not found' })
   })
+
+  it('should update a player\'s properties', async () => {
+    const player = new Player(apiKey.game)
+    player.props = {
+      collectibles: 0,
+      zonesExplored: 1
+    }
+    await (<EntityManager>app.context.em).persistAndFlush(player)
+
+    apiKey.scopes = [APIKeyScope.WRITE_PLAYERS]
+    token = await createToken(apiKey)
+
+    const res = await request(app.callback())
+      .patch(`${baseUrl}/${player.id}`)
+      .send({
+        props: {
+          collectibles: 1
+        }
+      })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    expect(res.body.player.props).toStrictEqual({
+      collectibles: 1,
+      zonesExplored: 1
+    })
+  })
+
+  it('should not update a player\'s properties if the scope is missing', async () => {
+    const player = new Player(apiKey.game)
+    player.props = {
+      collectibles: 0,
+      zonesExplored: 1
+    }
+    await (<EntityManager>app.context.em).persistAndFlush(player)
+
+    apiKey.scopes = []
+    token = await createToken(apiKey)
+
+    const res = await request(app.callback())
+      .patch(`${baseUrl}/${player.id}`)
+      .send({
+        props: {
+          collectibles: 1
+        }
+      })
+      .auth(token, { type: 'bearer' })
+      .expect(403)
+  })
+
+  it('should not update a non-existent player\'s properties', async () => {
+    apiKey.scopes = [APIKeyScope.WRITE_PLAYERS]
+    token = await createToken(apiKey)
+
+    const res = await request(app.callback())
+      .patch(`${baseUrl}/546`)
+      .send({
+        props: {
+          collectibles: 1
+        }
+      })
+      .auth(token, { type: 'bearer' })
+      .expect(404)
+
+    expect(res.body).toStrictEqual({ message: 'Player not found' })
+  })
 })

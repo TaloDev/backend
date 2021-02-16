@@ -1,5 +1,6 @@
 import Policy from './policy'
 import { ServiceRequest } from 'koa-rest-services'
+import Player from '../../entities/player'
 
 export default class PlayersPolicy extends Policy {
   async get(req: ServiceRequest): Promise<boolean> {
@@ -14,5 +15,16 @@ export default class PlayersPolicy extends Policy {
 
     if (this.isAPICall()) return true
     return this.canAccessGame(Number(gameId))
+  }
+
+  async patch(req: ServiceRequest): Promise<boolean> {
+    const { id } = req.params
+
+    const player = await this.em.getRepository(Player).findOne(id)
+    if (!player) this.ctx.throw(404, 'Player not found')
+    this.ctx.state.player = player
+
+    if (this.isAPICall()) return true
+    return this.canAccessGame(player.game.id)
   }
 }

@@ -15,4 +15,8 @@ export default class PlayersAPIPolicy extends Policy {
   async identify(req: ServiceRequest): Promise<boolean> {
     return this.hasScope('read:players')
   }
+
+  async patch(req: ServiceRequest): Promise<boolean> {
+    return this.hasScope('write:players')
+  }
 }

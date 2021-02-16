@@ -48,4 +48,26 @@ export default class PlayersService implements Service {
       }
     }
   }
+
+  @HasPermission(PlayersPolicy, 'patch')
+  @Resource(PlayerResource, 'player')
+  async patch(req: ServiceRequest): Promise<ServiceResponse> {
+    const { props } = req.body
+    const em: EntityManager = req.ctx.em
+
+    const player = req.ctx.state.player // set in the policy
+    player.props = {
+      ...player.props,
+      ...props
+    }
+
+    await em.flush()
+
+    return {
+      status: 200,
+      body: {
+        player
+      }
+    }
+  }
 }

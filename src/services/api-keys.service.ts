@@ -39,13 +39,11 @@ export default class APIKeysService {
   @HasPermission(APIKeysPolicy, 'post')
   @Resource(APIKeyResource, 'apiKey')
   async post(req: ServiceRequest): Promise<ServiceResponse> {
-    const { scopes, gameId } = req.body
+    const { scopes } = req.body
     const em: EntityManager = req.ctx.em
 
-    const game = await em.getRepository(Game).findOne(gameId)
     const createdByUser = await em.getRepository(User).findOne(req.ctx.state.user.sub)
-
-    const apiKey = new APIKey(game, createdByUser)
+    const apiKey = new APIKey(req.ctx.state.game, createdByUser)
     apiKey.scopes = scopes ?? []
     await em.getRepository(APIKey).persistAndFlush(apiKey)
 

@@ -4,6 +4,8 @@ import { Context } from 'koa'
 import APIKey from '../../entities/api-key'
 import Game from '../../entities/game'
 import User from '../../entities/user'
+import getUserFromToken from '../auth/getUserFromToken'
+import getAPIKeyFromToken from '../auth/getAPIKeyFromToken'
 
 export default class Policy extends ServicePolicy {
   em: EntityManager
@@ -18,8 +20,9 @@ export default class Policy extends ServicePolicy {
   }
 
   async getUser(): Promise<User> {
-    const user = await this.em.getRepository(User).findOne(this.ctx.state.user.sub)
+    const user = await getUserFromToken(this.ctx)
     if (user.deletedAt) this.ctx.throw(401)
+    this.ctx.state.user = user
     return user
   }
 
@@ -28,22 +31,19 @@ export default class Policy extends ServicePolicy {
   }
 
   async getAPIKey(): Promise<APIKey> {
-    const key = await this.em.getRepository(APIKey).findOne(this.ctx.state.user.sub)
+    const key = await getAPIKeyFromToken(this.ctx)
     if (key.revokedAt) this.ctx.throw(401)
+    this.ctx.state.apiKey = key
     return key
   }
 
   async canAccessGame(gameId: number): Promise<boolean> {
     const game = await this.em.getRepository(Game).findOne(gameId, ['teamMembers'])
     if (!game) this.ctx.throw(404, 'The specified game doesn\'t exist')
+    this.ctx.state.game = game
 
-    if (this.isAPICall()) {
-      const key = await this.getAPIKey()
-      return key.game.id === game.id
-    } else {
-      const team = game.teamMembers.toArray().map((user) => user.id)
-      return team.includes(this.getSub())
-    }
+    const team = game.teamMembers.toArray().map((user) => user.id)
+    return team.includes(this.getSub())
   }
 
   hasScope(scope: string): boolean {

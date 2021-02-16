@@ -15,13 +15,10 @@ export default class EventsAPIService extends APIService {
   @HasPermission(EventsAPIPolicy, 'post')
   @Resource(EventResource, 'event')
   async post(req: ServiceRequest): Promise<ServiceResponse> {
-    const { name, playerId, props } = req.body
+    const { name, props } = req.body
     const em: EntityManager = req.ctx.em
 
-    const player = await em.getRepository(Player).findOne(playerId)
-    if (!player) req.ctx.throw(400, 'The specified player doesn\'t exist')
-
-    const event = new Event(name, player)
+    const event = new Event(name, req.ctx.state.player) // set in the policy
     event.props = props    
 
     await em.persistAndFlush(event)

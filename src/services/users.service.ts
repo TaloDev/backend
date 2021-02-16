@@ -85,9 +85,6 @@ export default class UsersService {
   @Resource(UserResource, 'user')
   async me(req: ServiceRequest): Promise<ServiceResponse> {
     const user = await getUserFromToken(req.ctx, ['games'])
-    if (!user) {
-      req.ctx.throw(404, 'User not found')
-    }
 
     return {
       status: 200,
@@ -109,7 +106,13 @@ export default class UsersService {
     let accessCode: UserAccessCode
 
     try {
-      accessCode = await em.getRepository(UserAccessCode).findOneOrFail({ user, code })
+      accessCode = await em.getRepository(UserAccessCode).findOneOrFail({
+        user,
+        code,
+        validUntil: {
+          $lt: new Date()
+        }
+      })
     } catch (err) {
       req.ctx.throw(400, 'Invalid code')
     }

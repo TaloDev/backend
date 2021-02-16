@@ -4,6 +4,7 @@ import init from '../../../src/index'
 import request from 'supertest'
 import User from '../../../src/entities/user'
 import UserSession from '../../../src/entities/user-session'
+import UserAccessCode from '../../../src/entities/user-access-code'
 
 const baseUrl = '/public/users'
 
@@ -36,6 +37,21 @@ describe('Users public service', () => {
 
     expect(res.body.accessToken).toBeDefined()
     expect(res.body.user).toBeDefined()
+  })
+
+  it('should create an access code for a new user', async () => {
+    await request(app.callback())
+      .post(`${baseUrl}/register`)
+      .send({ email: 'darrel@sleepystudios.net', password: 'password' })
+      .expect(200)
+
+    const accessCode = await (<EntityManager>app.context.em).getRepository(UserAccessCode).findOne({
+      user: {
+        email: 'darrel@sleepystudios.net'
+      }
+    })
+
+    expect(accessCode).toBeTruthy()
   })
 
   it('should let a user login', async () => {

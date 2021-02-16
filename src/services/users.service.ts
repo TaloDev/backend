@@ -58,14 +58,10 @@ export default class UsersService {
     const user = await getUserFromToken(req.ctx)
 
     const passwordMatches = await bcrypt.compare(currentPassword, user.password)
-    if (!passwordMatches) {
-      req.ctx.throw(401, 'Current password is incorrect')
-    }
+    if (!passwordMatches) req.ctx.throw(401, 'Current password is incorrect')
 
     const isSamePassword = await bcrypt.compare(newPassword, user.password)
-    if (isSamePassword) {
-      req.ctx.throw(400, 'Please choose a different password')
-    }
+    if (isSamePassword) req.ctx.throw(400, 'Please choose a different password')
 
     user.password = await bcrypt.hash(newPassword, 10)
     const userSessionRepo = em.getRepository(UserSession)
@@ -110,7 +106,7 @@ export default class UsersService {
         user,
         code,
         validUntil: {
-          $lt: new Date()
+          $gt: new Date()
         }
       })
     } catch (err) {

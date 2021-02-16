@@ -6,6 +6,7 @@ import User from '../../src/entities/user'
 import { genAccessToken } from '../../src/lib/auth/buildTokenPair'
 import Game from '../../src/entities/game'
 import UserAccessCode from '../../src/entities/user-access-code'
+import bcrypt from 'bcrypt'
 
 const baseUrl = '/users'
 
@@ -35,12 +36,12 @@ describe('Users service', () => {
   })
 
   it('should let users change their password', async () => {
-    user.password = 'password'
+    user.password = await bcrypt.hash('password', 10)
     await (<EntityManager>app.context.em).flush()
 
     const res = await request(app.callback())
       .post(`${baseUrl}/change_password`)
-      .send({ currentPassword: 'password', newPassword: 'password2' })
+      .send({ currentPassword: 'password', newPassword: 'mynewpassword' })
       .auth(token, { type: 'bearer' })
       .expect(200)
     
@@ -48,7 +49,7 @@ describe('Users service', () => {
   })
 
   it('should not let users change their password if their current password is wrong', async () => {
-    user.password = 'password'
+    user.password = await bcrypt.hash('password', 10)
     await (<EntityManager>app.context.em).flush()
 
     const res = await request(app.callback())
@@ -61,7 +62,7 @@ describe('Users service', () => {
   })
 
   it('should not let users change their password to the same one', async () => {
-    user.password = 'password'
+    user.password = await bcrypt.hash('password', 10)
     await (<EntityManager>app.context.em).flush()
 
     const res = await request(app.callback())
@@ -104,11 +105,13 @@ describe('Users service', () => {
     await (<EntityManager>app.context.em).clear()
     const updatedAccessCode = await (<EntityManager>app.context.em).getRepository(UserAccessCode).findOne({ code: accessCode.code })
 
-    expect(updatedAccessCode).toBeUndefined()
+    expect(updatedAccessCode).toBeNull()
   })
 
   it('should not let a user confirm their email with an expired code', async () => {
-    const accessCode = new UserAccessCode(user, new Date())
+    const date = new Date()
+    date.setDate(date.getDate() - 1)
+    const accessCode = new UserAccessCode(user, date)
     await (<EntityManager>app.context.em).persistAndFlush(accessCode)
 
     const res = await request(app.callback())

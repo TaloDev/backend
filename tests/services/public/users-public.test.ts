@@ -49,6 +49,7 @@ describe('Users public service', () => {
 
     expect(res.body.accessToken).toBeDefined()
     expect(res.body.user).toBeDefined()
+    expect(res.body.user.games).toBeDefined()
     expect(new Date(res.body.user.lastSeenAt).getDay()).toBe(new Date().getDay())
   })
 

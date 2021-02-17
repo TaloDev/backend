@@ -1,3 +1,4 @@
+import 'dotenv/config'
 import { Options } from '@mikro-orm/core'
 
 const opts: Options = {

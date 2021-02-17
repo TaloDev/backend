@@ -7,7 +7,6 @@
     "start": "node dist/index.js",
     "dev": "nodemon src/index.ts",
     "build": "tsc -p tsconfig.build.json",
-    "env": "./envs/setup-env.sh",
     "schema:create": "mikro-orm schema:create -r",
     "schema:update": "mikro-orm schema:update -r",
     "test": "./tests/setup-tests.sh"

@@ -4,6 +4,7 @@ import { exec } from 'child_process'
 
 let interval: NodeJS.Timeout
 let log: string = 'Waiting for DB to be ready '
+let tries = 0
 
 const createSchema = async (): Promise<void> => {
   try {
@@ -29,6 +30,12 @@ interval = setInterval(() => {
       clearInterval(interval)
       await createSchema()
       process.exit(0)
+    } else {
+      tries++
+      if (tries > 6) {
+        console.error('Database connection failed')
+        process.exit(1)
+      }
     }
   })
 }, 5000)

@@ -1,5 +1,4 @@
 #!/bin/sh
-export $(grep -v '^#' envs/.env.test | xargs)
 [ -f .env ] && mv .env .env.backup
 cp envs/.env.test .env
 

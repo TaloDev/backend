@@ -61,6 +61,12 @@ export default class PlayersService implements Service {
       ...props
     }
 
+    for (let key in player.props) {
+      if (player.props[key] === null) {
+        delete player.props[key]
+      }
+    }
+
     await em.flush()
 
     return {

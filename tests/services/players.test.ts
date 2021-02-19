@@ -136,6 +136,30 @@ describe('Players service', () => {
     })
   })
 
+  it('should update delete null player\ properties', async () => {
+    const player = new Player(validGame)
+    player.props = {
+      collectibles: 0,
+      zonesExplored: 1
+    }
+    await (<EntityManager>app.context.em).persistAndFlush(player)
+
+    const res = await request(app.callback())
+      .patch(`${baseUrl}/${player.id}`)
+      .send({
+        props: {
+          collectibles: 1,
+          zonesExplored: null
+        }
+      })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    expect(res.body.player.props).toStrictEqual({
+      collectibles: 1
+    })
+  })
+
   it('should not update a non-existent player\'s properties', async () => {
     const res = await request(app.callback())
       .patch(`${baseUrl}/2313`)

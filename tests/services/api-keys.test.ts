@@ -5,8 +5,6 @@ import request from 'supertest'
 import User from '../../src/entities/user'
 import { genAccessToken } from '../../src/lib/auth/buildTokenPair'
 import Game from '../../src/entities/game'
-import Event from '../../src/entities/event'
-import Player from '../../src/entities/player'
 import APIKey, { APIKeyScope } from '../../src/entities/api-key'
 
 const baseUrl = '/api-keys'
@@ -78,7 +76,18 @@ describe('API keys service', () => {
       .expect(403)
   })
 
-  it('should create an api key', async () => {
+  it('should not create an api key if the user\'s email is not confirmed', async () => {
+    const res = await request(app.callback())
+      .post(`${baseUrl}`)
+      .send({ gameId: validGame.id, scopes: ['read:players', 'write:events'] })
+      .auth(token, { type: 'bearer' })
+      .expect(403)
+  })
+
+  it('should create an api key if the user\'s email is confirmed', async () => {
+    user.emailConfirmed = true
+    await (<EntityManager>app.context.em).persistAndFlush(user)
+
     const res = await request(app.callback())
       .post(`${baseUrl}`)
       .send({ gameId: validGame.id, scopes: ['read:players', 'write:events'] })

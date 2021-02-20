@@ -7,14 +7,14 @@ export default class PlayersPolicy extends Policy {
     const { gameId } = req.query
 
     if (this.isAPICall()) return true
-    return this.canAccessGame(Number(gameId))
+    return await this.canAccessGame(Number(gameId))
   }
 
   async post(req: ServiceRequest): Promise<boolean> {
     const { gameId } = req.body
 
     if (this.isAPICall()) return true
-    return this.canAccessGame(Number(gameId))
+    return await this.canAccessGame(Number(gameId))
   }
 
   async patch(req: ServiceRequest): Promise<boolean> {
@@ -25,6 +25,6 @@ export default class PlayersPolicy extends Policy {
     this.ctx.state.player = player
 
     if (this.isAPICall()) return true
-    return this.canAccessGame(player.game.id)
+    return await this.canAccessGame(player.game.id)
   }
 }

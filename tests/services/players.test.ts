@@ -112,6 +112,25 @@ describe('Players service', () => {
       .expect(403)
   })
 
+  it('should return a filtered list of players', async () => {
+    const players: Player[] = [...new Array(2)].map(() => {
+      const player = new Player(validGame)
+      player.props = {
+        guildName: 'The Best Guild'
+      }
+      return player
+    })
+    await (<EntityManager>app.context.em).persistAndFlush(players)
+
+    const res = await request(app.callback())
+      .get(`${baseUrl}`)
+      .query({ gameId: validGame.id, search: 'The Best Guild' })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    expect(res.body.players).toHaveLength(2)
+  })
+
   it('should update a player\'s properties', async () => {
     const player = new Player(validGame)
     player.props = {

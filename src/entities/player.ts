@@ -12,11 +12,11 @@ export default class Player {
   @PrimaryKey()
   id: string = v4()
 
-  @Property({ type: JsonType, nullable: true })
-  aliases: PlayerAliases
+  @Property({ type: JsonType })
+  aliases: PlayerAliases = {}
 
-  @Property({ type: JsonType, nullable: true })
-  props?: { [key: string]: any }
+  @Property({ type: JsonType })
+  props: { [key: string]: any } = {}
 
   @OneToMany(() => Event, (event) => event.player)
   events = new Collection<Event>(this)

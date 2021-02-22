@@ -4,6 +4,13 @@ import Game from '../entities/game'
 import Player from '../entities/player'
 import PlayersPolicy from '../lib/policies/players.policy'
 import PlayerResource from '../resources/player.resource'
+import Fuse from 'fuse.js'
+
+interface SearchablePlayer {
+  id: string
+  allAliases: string[]
+  allProps: string[]
+}
 
 export default class PlayersService implements Service {
   @Validate({
@@ -18,8 +25,7 @@ export default class PlayersService implements Service {
     const game = await em.getRepository(Game).findOne(gameId)
 
     const player = new Player(game)
-    player.aliases = aliases
-    player.props = {}
+    player.aliases = aliases ?? {}
 
     await em.persistAndFlush(player)
 
@@ -37,9 +43,20 @@ export default class PlayersService implements Service {
   @HasPermission(PlayersPolicy, 'get')
   @Resource(PlayerResource, 'players')
   async get(req: ServiceRequest): Promise<ServiceResponse> {
-    const { gameId } = req.query
+    const { gameId, search } = req.query
     const em: EntityManager = req.ctx.em
-    const players = await em.getRepository(Player).find({ game: Number(gameId) })
+    let players = await em.getRepository(Player).find({ game: Number(gameId) })
+
+    if (search) {
+      const items: SearchablePlayer[] = players.map((player) => ({
+        id: player.id,
+        allAliases: Object.keys(player.aliases).map((key) => player.aliases[key]),
+        allProps: Object.keys(player.props).map((key) => player.props[key])
+      }))
+
+      const fuse = new Fuse(items, { keys: ['id', 'allAliases', 'allProps'] })
+      players = fuse.search(search).map((fuseItem) => players[fuseItem.refIndex])
+    }
 
     return {
       status: 200,

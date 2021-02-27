@@ -31,6 +31,6 @@ jobs:
         key: ${{ runner.os }}-modules-${{ hashFiles('**/yarn.lock') }}
 
     - name: Install deps
-      run: yarn --frozen-lockfile
+      run: yarn --prefer-offline
 
     - run: yarn test

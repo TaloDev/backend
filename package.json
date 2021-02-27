@@ -9,6 +9,7 @@
     "build": "tsc -p tsconfig.build.json",
     "schema:create": "mikro-orm schema:create -r",
     "schema:update": "mikro-orm schema:update -r",
+    "seed": "ts-node tests/seed.ts",
     "test": "./tests/setup-tests.sh"
   },
   "author": "Sleepy Studios",
@@ -21,6 +22,7 @@
     "@types/koa-logger": "^3.1.1",
     "@types/node": "^14.14.16",
     "@types/supertest": "^2.0.10",
+    "hefty": "^0.0.3",
     "jest": "^26.6.3",
     "nodemon": "^2.0.6",
     "supertest": "^6.1.3",

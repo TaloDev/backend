@@ -2622,6 +2622,11 @@ has@^1.0.3:
   dependencies:
     function-bind "^1.1.1"
 
+hefty@^0.0.3:
+  version "0.0.3"
+  resolved "https://registry.yarnpkg.com/hefty/-/hefty-0.0.3.tgz#eed6b7c233ff2b949f54b69eb042144031ea4dfe"
+  integrity sha512-igcprweosvvx5TNf9PTK293YlcCrObyjwLhxl1co4rCRECnEZ+f2XCldOBkSx8guGyDF3YXXQdusSgHrj59FCw==
+
 helmet@^4.1.1:
   version "4.3.1"
   resolved "https://registry.yarnpkg.com/helmet/-/helmet-4.3.1.tgz#e374e2fb3f8da045d0233f13299b1fde6e59e4e1"

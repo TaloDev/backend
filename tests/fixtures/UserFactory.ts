@@ -25,7 +25,7 @@ export default class UserFactory extends Factory<User> {
 
   protected async loginable(): Promise<Partial<User>> {
     return {
-      email: 'admin@trytalo.com',
+      email: 'dev@trytalo.com',
       password: await bcrypt.hash('password', 10)
     }
   }

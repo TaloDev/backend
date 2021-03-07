@@ -2,7 +2,7 @@ import { EntityManager } from '@mikro-orm/core'
 import jwt from 'jsonwebtoken'
 import { HookParams } from 'koa-rest-services'
 import User from '../../entities/user'
-import differenceInDays from 'date-fns/differenceInDays'
+import { differenceInDays } from 'date-fns'
 
 export default async (hook: HookParams): Promise<void> => {
   if (hook.result.status === 200) {

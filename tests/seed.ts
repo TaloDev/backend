@@ -1,10 +1,9 @@
 import 'dotenv/config'
-import { Collection, MikroORM } from '@mikro-orm/core'
+import { MikroORM } from '@mikro-orm/core'
 import UserFactory from './fixtures/UserFactory'
 import User from '../src/entities/user'
 import GameFactory from './fixtures/GameFactory'
 import PlayerFactory from './fixtures/PlayerFactory'
-import Game from '../src/entities/game'
 import EventFactory from './fixtures/EventFactory'
 
 (async () => {
@@ -14,24 +13,28 @@ import EventFactory from './fixtures/EventFactory'
   await generator.createSchema()
 
   const userFactory = new UserFactory()
-  const users = await userFactory.many(20)
+  const users = await userFactory.many(10)
   const defaultUser = await userFactory.state('loginable').one()
 
   const gameFactory = new GameFactory([...users, defaultUser])
-  const games = await gameFactory.state('team').many(5)
+  const games = await gameFactory.state('team').many(2)
 
   const playerFactory = new PlayerFactory(games)
   const players = await playerFactory.many(30)
 
   const eventFactory = new EventFactory(players)
-  const events = await eventFactory.many(100)
+  // const eventsThisWeek = await eventFactory.state('thisWeek').many(100)
+  const eventsThisMonth = await eventFactory.state('thisMonth').many(100)
+  // const eventsThisYear = await eventFactory.state('thisYear').many(100)
 
   await orm.em.getRepository(User).persistAndFlush([
     defaultUser,
     ...users,
     ...games,
     ...players,
-    ...events
+    // ...eventsThisWeek,
+    ...eventsThisMonth,
+    // ...eventsThisYear
   ])
 
   await orm.close(true)

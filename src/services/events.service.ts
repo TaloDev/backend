@@ -1,88 +1,51 @@
 import { EntityManager } from '@mikro-orm/core'
-import { HasPermission, Resource, Service, ServiceRequest, ServiceResponse, Validate } from 'koa-rest-services'
+import { HasPermission, Service, ServiceRequest, ServiceResponse, Validate } from 'koa-rest-services'
 import Event from '../entities/event'
 import EventsPolicy from '../lib/policies/events.policy'
-import EventResource from '../resources/event.resource'
 import groupBy from 'lodash.groupby'
-
-// const data = groupBy(eventResources, 'name')
-// for (let eventName in data) {
-//   data[eventName] = data[eventName].reduce((acc, curr: Event) => {
-//     const date = curr.createdAt.toISOString().split('T')[0]
-//     return {
-//       ...acc,
-//       [date]: (acc[date] ?? 0) + 1
-//     }
-//   }, {})
-// }
-// events: {
-//   'Zone Explored': {
-//     '2020-01-01': 3,
-//     '2020-01-02': 1,
-//     '2020-01-03': 6
-//   }
-// }
-
-// const data = groupBy(eventResources, (event) => event.createdAt.toISOString().split('T')[0])
-
-// for (let day in data) {
-//   data[day] = data[day].reduce((acc, curr: Event) => {
-//     return {
-//       ...acc,
-//       [curr.name]: (acc[curr.name] ?? 0) + 1 
-//     }
-//   }, {})
-// }
-// events: {
-//   '2020-01-01': {
-//     'Death': 5,
-//     'Loot Item': 3
-//   },
-//   '2020-01-02': {
-//     'Loot Item': 5
-//   }
-// }
+import { isSameDay, sub } from 'date-fns'
 
 export default class EventsService implements Service {
   @HasPermission(EventsPolicy, 'get')
   @Validate({
     query: ['gameId']
   })
-  // @Resource(EventResource, 'events')
   async get(req: ServiceRequest): Promise<ServiceResponse> {
     const { gameId } = req.query
+    const startDate = sub(new Date(), { months: 1 }), endDate = new Date()
     const em: EntityManager = req.ctx.em
 
-    const events = await em.getRepository(Event).find({ player: { game: Number(gameId) }}, ['player.game'])
-    const eventResources: EventResource[] = await Promise.all(events.map(async (e) => await new EventResource(e).transform()))
-    const data = groupBy(eventResources, 'name')
+    const events = await em.getRepository(Event).find({
+      player: { game: Number(gameId) },
+      createdAt: {
+        $gte: startDate,
+        $lte: endDate
+      }
+    }, ['player.game'])
 
     // events: {
     //   'Zone explored': [
-    //     { date: '2021-01-01', count: 3 },
-    //     { date: '2021-01-02', count: 1 }
+    //     { date: 1577836800000, count: 3 },
+    //     { date: 1577923200000, count: 1 }
     //   ],
     //   'Loot item': [
-    //     { date: '2021-01-04', count: 2 }
+    //     { date: '1577836800000, count: 0 }
+    //     { date: '1577923200000, count: 2 }
     //   ]
     // }
 
+    const data = groupBy(events, 'name')
     for (let eventName in data) {
-      data[eventName] = data[eventName].reduce((acc, event: Event) => {
-        const date = event.createdAt.toISOString().split('T')[0]
+      let processed = []
 
-        if (acc.find((datum) => datum.date === date)) {
-          return acc.map((datum) => {
-            if (datum.date === date) return { ...datum, count: datum.count + 1 }
-            return datum
-          })
-        } else {
-          return [
-            ...acc,
-            { date, count: 1 }
-          ]
-        }
-      }, []).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+      for (let i = startDate.getTime(); i < endDate.getTime(); i += 86400000 /* 24 hours in ms */) {
+        processed.push({
+          date: i,
+          count: data[eventName].filter((event: Event) => isSameDay(new Date(i), new Date(event.createdAt))).length
+        })
+      }
+
+      data[eventName] = processed
     }
 
     return {

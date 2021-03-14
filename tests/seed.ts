@@ -23,18 +23,14 @@ import EventFactory from './fixtures/EventFactory'
   const players = await playerFactory.many(30)
 
   const eventFactory = new EventFactory(players)
-  // const eventsThisWeek = await eventFactory.state('thisWeek').many(100)
   const eventsThisMonth = await eventFactory.state('thisMonth').many(300)
-  // const eventsThisYear = await eventFactory.state('thisYear').many(100)
 
   await orm.em.getRepository(User).persistAndFlush([
     defaultUser,
     ...users,
     ...games,
     ...players,
-    // ...eventsThisWeek,
-    ...eventsThisMonth,
-    // ...eventsThisYear
+    ...eventsThisMonth
   ])
 
   await orm.close(true)

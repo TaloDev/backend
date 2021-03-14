@@ -24,7 +24,7 @@ import EventFactory from './fixtures/EventFactory'
 
   const eventFactory = new EventFactory(players)
   // const eventsThisWeek = await eventFactory.state('thisWeek').many(100)
-  const eventsThisMonth = await eventFactory.state('thisMonth').many(100)
+  const eventsThisMonth = await eventFactory.state('thisMonth').many(300)
   // const eventsThisYear = await eventFactory.state('thisYear').many(100)
 
   await orm.em.getRepository(User).persistAndFlush([

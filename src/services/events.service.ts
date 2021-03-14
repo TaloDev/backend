@@ -25,12 +25,12 @@ export default class EventsService implements Service {
 
     // events: {
     //   'Zone explored': [
-    //     { date: 1577836800000, count: 3 },
-    //     { date: 1577923200000, count: 1 }
+    //     { name: 'Zone explored', date: 1577836800000, count: 3 },
+    //     { name: 'Zone explored', date: 1577923200000, count: 1 }
     //   ],
     //   'Loot item': [
-    //     { date: '1577836800000, count: 0 }
-    //     { date: '1577923200000, count: 2 }
+    //     { name: 'Loot item', date: '1577836800000, count: 0 }
+    //     { name: 'Loot item', date: '1577923200000, count: 2 }
     //   ]
     // }
 
@@ -40,6 +40,7 @@ export default class EventsService implements Service {
 
       for (let i = startDate.getTime(); i < endDate.getTime(); i += 86400000 /* 24 hours in ms */) {
         processed.push({
+          name: eventName,
           date: i,
           count: data[eventName].filter((event: Event) => isSameDay(new Date(i), new Date(event.createdAt))).length
         })

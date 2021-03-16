@@ -52,7 +52,8 @@ export default class EventsService implements Service {
     return {
       status: 200,
       body: {
-        events: data
+        events: data,
+        eventNames: Object.keys(data)
       }
     }
   }

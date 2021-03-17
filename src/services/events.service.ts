@@ -3,23 +3,42 @@ import { HasPermission, Service, ServiceRequest, ServiceResponse, Validate } fro
 import Event from '../entities/event'
 import EventsPolicy from '../lib/policies/events.policy'
 import groupBy from 'lodash.groupby'
-import { isSameDay, sub } from 'date-fns'
+import { isSameDay, isValid, isAfter } from 'date-fns'
 
 export default class EventsService implements Service {
   @HasPermission(EventsPolicy, 'get')
   @Validate({
-    query: ['gameId']
+    query: {
+      gameId: 'Missing query key: gameId',
+      startDate: (val: string, req: ServiceRequest) => {
+        if (!val) return 'Missing query key: startDate'
+
+        const startDate = new Date(val)
+        if (!isValid(startDate)) return 'Invalid start date, please use YYYY-MM-DD'
+
+        const endDate = new Date(req.ctx.query.endDate)
+        if (isValid(endDate) && isAfter(startDate, endDate)) return 'Invalid start date, it should be before the end date'
+      },
+      endDate: (val: string, req: ServiceRequest) => {
+        if (!val) return 'Missing query key: endDate'
+
+        const endDate = new Date(val)
+        if (!isValid(endDate)) return 'Invalid end date, please use YYYY-MM-DD'
+
+        const startDate = new Date(req.ctx.query.endDate)
+        if (isValid(startDate) && isAfter(endDate, startDate)) return 'Invalid end date, it should be after the start date'
+      }
+    }
   })
   async get(req: ServiceRequest): Promise<ServiceResponse> {
-    const { gameId } = req.query
-    const startDate = sub(new Date(), { months: 1 }), endDate = new Date()
+    const { gameId, startDate, endDate } = req.query
     const em: EntityManager = req.ctx.em
 
     const events = await em.getRepository(Event).find({
       player: { game: Number(gameId) },
       createdAt: {
-        $gte: startDate,
-        $lte: endDate
+        $gte: new Date(startDate),
+        $lte: new Date(endDate)
       }
     }, ['player.game'])
 
@@ -38,7 +57,7 @@ export default class EventsService implements Service {
     for (let eventName in data) {
       let processed = []
 
-      for (let i = startDate.getTime(); i < endDate.getTime(); i += 86400000 /* 24 hours in ms */) {
+      for (let i = new Date(startDate).getTime(); i < new Date(endDate).getTime(); i += 86400000 /* 24 hours in ms */) {
         processed.push({
           name: eventName,
           date: i,

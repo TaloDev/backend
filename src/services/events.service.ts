@@ -3,7 +3,14 @@ import { HasPermission, Service, ServiceRequest, ServiceResponse, Validate } fro
 import Event from '../entities/event'
 import EventsPolicy from '../lib/policies/events.policy'
 import groupBy from 'lodash.groupby'
-import { isSameDay, isValid, isAfter } from 'date-fns'
+import { isSameDay, isValid, isAfter, sub } from 'date-fns'
+
+interface EventData {
+  name: string
+  date: number
+  count: number
+  change: number
+}
 
 export default class EventsService implements Service {
   @HasPermission(EventsPolicy, 'get')
@@ -54,18 +61,22 @@ export default class EventsService implements Service {
     // }
 
     const data = groupBy(events, 'name')
-    for (let eventName in data) {
-      let processed = []
+    for (let name in data) {
+      let processed: EventData[] = []
 
-      for (let i = new Date(startDate).getTime(); i < new Date(endDate).getTime(); i += 86400000 /* 24 hours in ms */) {
+      for (let date = new Date(startDate).getTime(); date < new Date(endDate).getTime(); date += 86400000 /* 24 hours in ms */) {
+        const count = data[name].filter((event: Event) => isSameDay(new Date(date), new Date(event.createdAt))).length
+        const change = processed.length > 0 ? this.calculateChange(name, date, count, processed[processed.length - 1]) : 1
+
         processed.push({
-          name: eventName,
-          date: i,
-          count: data[eventName].filter((event: Event) => isSameDay(new Date(i), new Date(event.createdAt))).length
+          name,
+          date,
+          count,
+          change
         })
       }
 
-      data[eventName] = processed
+      data[name] = processed
     }
 
     return {
@@ -74,6 +85,17 @@ export default class EventsService implements Service {
         events: data,
         eventNames: Object.keys(data)
       }
+    }
+  }
+
+  calculateChange(name: string, date: number, count: number, lastEvent: EventData): number {
+    const useLastEvent = lastEvent.name === name && isSameDay(new Date(lastEvent.date), sub(new Date(date), { days: 1 }))
+
+    if (useLastEvent) {
+      if (lastEvent.count === 0) return 1 
+      return (count - lastEvent.count) / lastEvent.count
+    } else {
+      return 1
     }
   }
 }

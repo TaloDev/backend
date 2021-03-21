@@ -2635,10 +2635,10 @@ has@^1.0.3:
   dependencies:
     function-bind "^1.1.1"
 
-hefty@^0.1.0:
-  version "0.1.0"
-  resolved "https://registry.yarnpkg.com/hefty/-/hefty-0.1.0.tgz#37b1b5c0a1bcf3e8f217facc263c460b881aa477"
-  integrity sha512-yBjt+NSNNFa1IRV4K4wxuZxfXGesdfW5K6CD6ypCpZxqMeuaEgbBTr2nBsRVtS1fGitkGEQDIj6O3JBgtQqFTQ==
+hefty@^1.0.0:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/hefty/-/hefty-1.0.0.tgz#e5d03eb84ea8e8931f0fb6425be59bd197fcf859"
+  integrity sha512-WAu2NvzXj+pdRdRjyQ+SwI52BQs1nyhzWIVjPeYubQysmmAlhDp8iv8Usz9ozN6S/mXLLmWbqooDGfeHubbDQw==
 
 helmet@^4.1.1:
   version "4.3.1"
@@ -3774,10 +3774,10 @@ koa-logger@^3.2.1:
     humanize-number "0.0.2"
     passthrough-counter "^1.0.0"
 
-koa-rest-services@^0.3.1:
-  version "0.3.1"
-  resolved "https://registry.yarnpkg.com/koa-rest-services/-/koa-rest-services-0.3.1.tgz#501b5de6f874c35bd25b6a7bb9b37987ca5c8ea7"
-  integrity sha512-8+VlUbQ9te2GvVnWFmbC2K+q9E6C8BdS/8gLG6CmQLszUOSuNRRxN5US0mLxRMQKAHhmrSENmGOB9p1sF82j4Q==
+koa-rest-services@^1.0.0:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/koa-rest-services/-/koa-rest-services-1.0.0.tgz#06188c6b691342d05f68532cbfcfdd5bd2285855"
+  integrity sha512-yQFmOAOz02TzDqTMpgBRxNlaU+Lv/Grs4KCo78nVA2ZvniQk59WLFFlmHaJEdOnMbK++jVCc5ICZ7J49aoMFhQ==
   dependencies:
     path-to-regexp "^6.2.0"
 

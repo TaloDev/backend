@@ -7,6 +7,7 @@ import { genAccessToken } from '../../src/lib/auth/buildTokenPair'
 import Game from '../../src/entities/game'
 import Event from '../../src/entities/event'
 import Player from '../../src/entities/player'
+import EventFactory from '../fixtures/EventFactory'
 
 const baseUrl = '/events'
 
@@ -27,24 +28,97 @@ describe('Events service', () => {
     token = await genAccessToken(user)
   })
 
+  beforeEach(async () => {
+    const repo = (<EntityManager>app.context.em).getRepository(Event)
+    const events = await repo.findAll()
+    await repo.removeAndFlush(events)
+  })
+
   afterAll(async () => {
     await (<EntityManager>app.context.em).getConnection().close()
   })
 
-  // TODO
-  // it('should return a list of events', async () => {
-  //   const player = new Player(validGame)
-  //   const events: Event[] = [...new Array(3)].map(() => new Event('Open inventory', player))
-  //   await (<EntityManager>app.context.em).persistAndFlush(events)
+  it('should return a list of events', async () => {
+    const player = new Player(validGame)
+    const now = new Date('2021-01-01')
 
-  //   const res = await request(app.callback())
-  //     .get(`${baseUrl}`)
-  //     .query({ gameId: validGame.id })
-  //     .auth(token, { type: 'bearer' })
-  //     .expect(200)
+    const dayInMs = 86400000
 
-  //   expect(res.body.events).toHaveLength(events.length)
-  // })
+    const events: Event[] = await new EventFactory([player]).with((event, idx) => ({
+      name: 'Open inventory',
+      createdAt: new Date(now.getTime() + (dayInMs * idx))
+    })).many(2)
+
+    await (<EntityManager>app.context.em).persistAndFlush(events)
+
+    const res = await request(app.callback())
+      .get(`${baseUrl}`)
+      .query({ gameId: validGame.id, startDate: '2021-01-01', endDate: '2021-01-03' })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    expect(res.body.events['Open inventory']).toHaveLength(2)
+
+    expect(res.body.events['Open inventory'][0]).toEqual({
+      name: 'Open inventory',
+      date: new Date(now.getTime()).getTime(),
+      count: 1,
+      change: 1
+    })
+
+    expect(res.body.events['Open inventory'][1]).toEqual({
+      name: 'Open inventory',
+      date: new Date(now.getTime() + dayInMs).getTime(),
+      count: 1,
+      change: 0
+    })
+  })
+
+  it('should correctly calculate event changes', async () => {
+    const player = new Player(validGame)
+    const now = new Date('2021-01-01')
+
+    const dayInMs = 86400000
+
+    const eventFactory = new EventFactory([player])
+    const firstEvent: Event = await eventFactory.with((event) => ({
+      name: 'Open inventory',
+      createdAt: now
+    })).one()
+
+    const moreEvents: Event[] = await eventFactory.with((event) => ({
+      name: 'Open inventory',
+      createdAt: new Date(now.getTime() + dayInMs)
+    })).many(2)
+
+    const evenMoreEvents: Event[] = await eventFactory.with((event) => ({
+      name: 'Open inventory',
+      createdAt: new Date(now.getTime() + dayInMs * 2)
+    })).many(3)
+
+    const lastEvent: Event = await eventFactory.with((event) => ({
+      name: 'Open inventory',
+      createdAt: new Date(now.getTime() + dayInMs * 3)
+    })).one()
+
+    await (<EntityManager>app.context.em).persistAndFlush([
+      firstEvent,
+      ...moreEvents,
+      ...evenMoreEvents,
+      lastEvent
+    ])
+
+    const res = await request(app.callback())
+      .get(`${baseUrl}`)
+      .query({ gameId: validGame.id, startDate: '2021-01-01', endDate: '2021-01-05' })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    expect(res.body.events['Open inventory'][0].change).toBe(1)
+    expect(res.body.events['Open inventory'][1].change).toBe(1)
+    expect(res.body.events['Open inventory'][2].change).toBe(0.5)
+    expect(res.body.events['Open inventory'][3].change.toFixed(2)).toBe('-0.67')
+  })
 
   it('should not return a list of events for a non-existent game', async () => {
     const res = await request(app.callback())

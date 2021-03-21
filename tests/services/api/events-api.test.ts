@@ -8,6 +8,7 @@ import APIKey, { APIKeyScope } from '../../../src/entities/api-key'
 import User from '../../../src/entities/user'
 import { createToken } from '../../../src/services/api-keys.service'
 import Event from '../../../src/entities/event'
+import EventFactory from '../../fixtures/EventFactory'
 
 const baseUrl = '/api/events'
 
@@ -33,7 +34,11 @@ describe('Events API service', () => {
   })
 
   it('should return the game\'s events if the scope is valid', async () => {
-    const events: Event[] = [...new Array(3)].map(() => new Event('Open inventory', validPlayer))
+    const events: Event[] = await new EventFactory([validPlayer]).with((event) => ({
+      name: 'Open inventory',
+      createdAt: new Date('2021-01-01')
+    })).many(3)
+
     await (<EntityManager>app.context.em).persistAndFlush(events)
 
     apiKey.scopes = [APIKeyScope.READ_EVENTS]
@@ -41,15 +46,11 @@ describe('Events API service', () => {
 
     const res = await request(app.callback())
       .get(`${baseUrl}`)
+      .query({ startDate: '2021-01-01', endDate: '2021-01-02' })
       .auth(token, { type: 'bearer' })
       .expect(200)
 
-    expect(res.body.events).toHaveLength(3)
-
-    for (let event of res.body.events) {
-      expect(event.playerId).toBe(validPlayer.id)
-      expect(event.gameId).toBe(apiKey.game.id)
-    }
+    expect(res.body.events['Open inventory'][0].count).toBe(3)
   })
 
   it('should not return the game\'s events without the valid scope', async () => {

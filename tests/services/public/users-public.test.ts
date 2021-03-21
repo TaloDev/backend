@@ -20,9 +20,9 @@ describe('Users public service', () => {
   })
 
   beforeEach(async () => {
-    const sessionRepo = (<EntityManager>app.context.em).getRepository(UserSession)
-    const sessions = await sessionRepo.findAll()
-    await sessionRepo.removeAndFlush(sessions)
+    const repo = (<EntityManager>app.context.em).getRepository(UserSession)
+    const sessions = await repo.findAll()
+    await repo.removeAndFlush(sessions)
   })
 
   afterAll(async () => {

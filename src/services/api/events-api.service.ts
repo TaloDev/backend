@@ -35,7 +35,8 @@ export default class EventsAPIService extends APIService {
   async get(req: ServiceRequest): Promise<ServiceResponse> {
     const key: APIKey = await this.getAPIKey(req.ctx)
     req.query = {
-      gameId: key.game.id.toString()
+      gameId: key.game.id.toString(),
+      ...req.query
     }
 
     return await this.getService<EventsService>(req).get(req)

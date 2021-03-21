@@ -86,4 +86,17 @@ describe('Events API service', () => {
       .auth(token, { type: 'bearer' })
       .expect(403)
   })
+
+  it('should not create an event if the player doesn\'t exist', async () => {
+    apiKey.scopes = [APIKeyScope.WRITE_EVENTS]
+    token = await createToken(apiKey)
+
+    const res = await request(app.callback())
+      .post(`${baseUrl}`)
+      .send({ name: 'Craft bow', playerId: 'blah' })
+      .auth(token, { type: 'bearer' })
+      .expect(404)
+
+    expect(res.body.message).toBe('Player not found')
+  })
 })

@@ -21,7 +21,7 @@ export default class EventsService implements Service {
         if (!val) return 'Missing query key: startDate'
 
         const startDate = new Date(val)
-        if (!isValid(startDate)) return 'Invalid start date, please use YYYY-MM-DD'
+        if (!isValid(startDate)) return 'Invalid start date, please use YYYY-MM-DD or a timestamp'
 
         const endDate = new Date(req.ctx.query.endDate)
         if (isValid(endDate) && isAfter(startDate, endDate)) return 'Invalid start date, it should be before the end date'
@@ -30,10 +30,7 @@ export default class EventsService implements Service {
         if (!val) return 'Missing query key: endDate'
 
         const endDate = new Date(val)
-        if (!isValid(endDate)) return 'Invalid end date, please use YYYY-MM-DD'
-
-        const startDate = new Date(req.ctx.query.endDate)
-        if (isValid(startDate) && isAfter(endDate, startDate)) return 'Invalid end date, it should be after the start date'
+        if (!isValid(endDate)) return 'Invalid end date, please use YYYY-MM-DD or a timestamp'
       }
     }
   })

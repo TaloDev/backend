@@ -74,6 +74,56 @@ describe('Events service', () => {
     })
   })
 
+  it('should require a startDate query key to get events', async () => {
+    const res = await request(app.callback())
+      .get(`${baseUrl}`)
+      .query({ gameId: validGame.id })
+      .auth(token, { type: 'bearer' })
+      .expect(400)
+
+    expect(res.body.message).toBe('Missing query key: startDate')
+  })
+
+  it('should require a valid startDate query key to get events', async () => {
+    const res = await request(app.callback())
+      .get(`${baseUrl}`)
+      .query({ gameId: validGame.id, startDate: '2015-02-32' })
+      .auth(token, { type: 'bearer' })
+      .expect(400)
+
+    expect(res.body.message).toBe('Invalid start date, please use YYYY-MM-DD or a timestamp')
+  })
+
+  it('should require a startDate that comes before the endDate query key to get events', async () => {
+    const res = await request(app.callback())
+      .get(`${baseUrl}`)
+      .query({ gameId: validGame.id, startDate: '2003-02-01', endDate: '2001-01-01' })
+      .auth(token, { type: 'bearer' })
+      .expect(400)
+
+    expect(res.body.message).toBe('Invalid start date, it should be before the end date')
+  })
+
+  it('should require a endDate query key to get events', async () => {
+    const res = await request(app.callback())
+      .get(`${baseUrl}`)
+      .query({ gameId: validGame.id, startDate: '2021-01-01' })
+      .auth(token, { type: 'bearer' })
+      .expect(400)
+
+    expect(res.body.message).toBe('Missing query key: endDate')
+  })
+
+  it('should require a valid endDate query key to get events', async () => {
+    const res = await request(app.callback())
+      .get(`${baseUrl}`)
+      .query({ gameId: validGame.id, startDate: '2015-01-29', endDate: '2015-02-32' })
+      .auth(token, { type: 'bearer' })
+      .expect(400)
+
+    expect(res.body.message).toBe('Invalid end date, please use YYYY-MM-DD or a timestamp')
+  })
+
   it('should correctly calculate event changes', async () => {
     const player = new Player(validGame)
     const now = new Date('2021-01-01')

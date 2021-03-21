@@ -6,5 +6,6 @@ module.exports = {
     '/tests/fixtures/',
     '/tests/utils/'
   ],
-  coverageReporters: ['lcov']
+  coverageReporters: ['lcov'],
+  collectCoverage: true
 }

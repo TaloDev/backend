@@ -21,7 +21,11 @@ export const playersAPIRoutes: ServiceRoute[] = [
   }
 ]
 
-export default class PlayersAPIService extends APIService {
+export default class PlayersAPIService extends APIService<PlayersService> {
+  constructor() {
+    super('players')
+  }
+
   @Validate({
     query: ['alias', 'id']
   })
@@ -60,21 +64,22 @@ export default class PlayersAPIService extends APIService {
       gameId: key.game.id.toString()
     }
 
-    return await this.getService<PlayersService>(req).get(req)
+    return await this.getService(req.ctx).get(req)
   }
 
   @HasPermission(PlayersAPIPolicy, 'post')
   async post(req: ServiceRequest): Promise<ServiceResponse> {
     const key: APIKey = await this.getAPIKey(req.ctx)
     req.body = {
+      ...req.body,
       gameId: key.game.id
     }
 
-    return await this.getService<PlayersService>(req).post(req)
+    return await this.getService(req.ctx).post(req)
   }
 
   @HasPermission(PlayersAPIPolicy, 'patch')
   async patch(req: ServiceRequest): Promise<ServiceResponse> {
-    return await this.getService<PlayersService>(req).patch(req)
+    return await this.getService(req.ctx).patch(req)
   }
 }

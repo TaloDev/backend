@@ -3,7 +3,7 @@ import { Context } from 'koa'
 import APIKey from '../../entities/api-key'
 import getAPIKeyFromToken from '../../lib/auth/getAPIKeyFromToken'
 
-export default class APIService implements Service {
+export default class APIService<T> implements Service {
   serviceName: string
 
   constructor(serviceName: string) {
@@ -15,7 +15,7 @@ export default class APIService implements Service {
     return key
   }
 
-  getService<T>(req: ServiceRequest): T {
-    return req.ctx.services[this.serviceName]
+  getService(ctx: Context): T {
+    return ctx.services[this.serviceName]
   }
 }

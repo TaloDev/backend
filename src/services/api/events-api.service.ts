@@ -1,6 +1,5 @@
 import { EntityManager } from '@mikro-orm/core'
 import { HasPermission, Resource, ServiceRequest, ServiceResponse, Validate } from 'koa-rest-services'
-import Player from '../../entities/player'
 import Event from '../../entities/event'
 import EventsAPIPolicy from '../../lib/policies/api/events-api.policy'
 import EventsService from '../events.service'
@@ -8,7 +7,11 @@ import APIService from './api-service'
 import EventResource from '../../resources/event.resource'
 import APIKey from '../../entities/api-key'
 
-export default class EventsAPIService extends APIService {
+export default class EventsAPIService extends APIService<EventsService> {
+  constructor() {
+    super('events')
+  }
+
   @Validate({
     body: ['name', 'playerId']
   })
@@ -39,6 +42,6 @@ export default class EventsAPIService extends APIService {
       ...req.query
     }
 
-    return await this.getService<EventsService>(req).get(req)
+    return await this.getService(req.ctx).get(req)
   }
 }

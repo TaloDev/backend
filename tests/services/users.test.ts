@@ -7,6 +7,7 @@ import { genAccessToken } from '../../src/lib/auth/buildTokenPair'
 import Game from '../../src/entities/game'
 import UserAccessCode from '../../src/entities/user-access-code'
 import bcrypt from 'bcrypt'
+import UserFactory from '../fixtures/UserFactory'
 
 const baseUrl = '/users'
 
@@ -18,7 +19,7 @@ describe('Users service', () => {
   beforeAll(async () => {
     app = await init()
 
-    user = new User()
+    user = await new UserFactory().one()
     await (<EntityManager>app.context.em).persistAndFlush(user)
 
     token = await genAccessToken(user)

@@ -7,6 +7,7 @@ import Game from '../../../src/entities/game'
 import APIKey, { APIKeyScope } from '../../../src/entities/api-key'
 import User from '../../../src/entities/user'
 import { createToken } from '../../../src/services/api-keys.service'
+import UserFactory from '../../fixtures/UserFactory'
 
 const baseUrl = '/api/players'
 
@@ -18,7 +19,8 @@ describe('Players API service', () => {
   beforeAll(async () => {
     app = await init()
 
-    apiKey = new APIKey(new Game('Uplift'), new User())
+    const user = await new UserFactory().one()
+    apiKey = new APIKey(new Game('Uplift'), user)
     token = await createToken(apiKey)
 
     await (<EntityManager>app.context.em).persistAndFlush(apiKey)

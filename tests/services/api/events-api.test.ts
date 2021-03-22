@@ -9,6 +9,7 @@ import User from '../../../src/entities/user'
 import { createToken } from '../../../src/services/api-keys.service'
 import Event from '../../../src/entities/event'
 import EventFactory from '../../fixtures/EventFactory'
+import UserFactory from '../../fixtures/UserFactory'
 
 const baseUrl = '/api/events'
 
@@ -21,7 +22,8 @@ describe('Events API service', () => {
   beforeAll(async () => {
     app = await init()
 
-    apiKey = new APIKey(new Game('Uplift'), new User())
+    const user = await new UserFactory().one()
+    apiKey = new APIKey(new Game('Uplift'), user)
     token = await createToken(apiKey)
 
     validPlayer = new Player(apiKey.game)

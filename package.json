@@ -16,6 +16,7 @@
   "license": "MIT",
   "devDependencies": {
     "@mikro-orm/cli": "^4.3.4",
+    "@mikro-orm/sqlite": "^4.5.0",
     "@types/jest": "^26.0.20",
     "@types/koa": "^2.11.6",
     "@types/koa-bodyparser": "^4.3.0",
@@ -33,7 +34,7 @@
   },
   "dependencies": {
     "@koa/cors": "^3.1.0",
-    "@mikro-orm/core": "^4.4.3",
+    "@mikro-orm/core": "^4.5.0",
     "@mikro-orm/mysql": "^4.4.3",
     "@types/lodash": "^4.14.168",
     "bcrypt": "^5.0.0",
@@ -51,10 +52,6 @@
     "uuid": "^8.3.2"
   },
   "mikro-orm": {
-    "useTsNode": true,
-    "configPaths": [
-      "./src/config/mikro-orm.config.ts",
-      "./dist/config/mikro-orm.config.js"
-    ]
+    "useTsNode": true
   }
 }

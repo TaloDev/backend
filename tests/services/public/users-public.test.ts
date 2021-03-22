@@ -5,18 +5,15 @@ import request from 'supertest'
 import User from '../../../src/entities/user'
 import UserSession from '../../../src/entities/user-session'
 import UserAccessCode from '../../../src/entities/user-access-code'
+import UserFactory from '../../fixtures/UserFactory'
 
 const baseUrl = '/public/users'
 
 describe('Users public service', () => {
   let app: Koa
-  let user: User
 
   beforeAll(async () => {
     app = await init()
-
-    user = new User()
-    await (<EntityManager>app.context.em).persistAndFlush(user)
   })
 
   beforeEach(async () => {
@@ -64,6 +61,7 @@ describe('Users public service', () => {
   })
 
   it('should let a user login', async () => {
+    const user = await new UserFactory().state('loginable').one()
     user.lastSeenAt = new Date(2020, 1, 1)
     await (<EntityManager>app.context.em).persistAndFlush(user)
 
@@ -88,6 +86,7 @@ describe('Users public service', () => {
   })
 
   it('should let a user refresh their session if they have one', async () => {
+    const user = await new UserFactory().one()
     user.lastSeenAt = new Date(2020, 1, 1)
     const session = new UserSession(user)
     await (<EntityManager>app.context.em).persistAndFlush(session)
@@ -111,6 +110,7 @@ describe('Users public service', () => {
   })
 
   it('should not let a user refresh their session if it expired', async () => {
+    const user = await new UserFactory().one()
     const session = new UserSession(user)
     session.validUntil = new Date(2020, 1, 1)
     await (<EntityManager>app.context.em).persistAndFlush(session)

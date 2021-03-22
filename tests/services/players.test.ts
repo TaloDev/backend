@@ -6,6 +6,7 @@ import User from '../../src/entities/user'
 import { genAccessToken } from '../../src/lib/auth/buildTokenPair'
 import Game from '../../src/entities/game'
 import Player from '../../src/entities/player'
+import UserFactory from '../fixtures/UserFactory'
 
 const baseUrl = '/players'
 
@@ -18,7 +19,7 @@ describe('Players service', () => {
   beforeAll(async () => {
     app = await init()
 
-    user = new User()
+    user = await new UserFactory().one()
     validGame = new Game('Uplift')
     validGame.teamMembers.add(user)
     await (<EntityManager>app.context.em).persistAndFlush(validGame)

@@ -6,6 +6,7 @@ import User from '../../src/entities/user'
 import { genAccessToken } from '../../src/lib/auth/buildTokenPair'
 import Game from '../../src/entities/game'
 import APIKey, { APIKeyScope } from '../../src/entities/api-key'
+import UserFactory from '../fixtures/UserFactory'
 
 const baseUrl = '/api-keys'
 
@@ -18,7 +19,7 @@ describe('API keys service', () => {
   beforeAll(async () => {
     app = await init()
 
-    user = new User()
+    user = await new UserFactory().one()
     validGame = new Game('Uplift')
     validGame.teamMembers.add(user)
     await (<EntityManager>app.context.em).persistAndFlush(validGame)
@@ -144,7 +145,8 @@ describe('API keys service', () => {
   })
 
   it('should not delete an api key for a game the user has no access to', async () => {
-    const key = new APIKey(new Game('Crawle'), new User())
+    const invalidUser = await new UserFactory().one()
+    const key = new APIKey(new Game('Crawle'), invalidUser)
     await (<EntityManager>app.context.em).persistAndFlush(key)
 
     await request(app.callback())

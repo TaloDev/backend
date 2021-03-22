@@ -8,6 +8,7 @@ import Game from '../../src/entities/game'
 import Event from '../../src/entities/event'
 import Player from '../../src/entities/player'
 import EventFactory from '../fixtures/EventFactory'
+import UserFactory from '../fixtures/UserFactory'
 
 const baseUrl = '/events'
 
@@ -20,7 +21,7 @@ describe('Events service', () => {
   beforeAll(async () => {
     app = await init()
 
-    user = new User()
+    user = await new UserFactory().one()
     validGame = new Game('Uplift')
     validGame.teamMembers.add(user)
     await (<EntityManager>app.context.em).persistAndFlush(validGame)

@@ -13,7 +13,8 @@ export default class UserFactory extends Factory<User> {
 
   protected base(): Partial<User> {
     return {
-      email: casual.email
+      email: casual.email,
+      password: ''
     }
   }
 

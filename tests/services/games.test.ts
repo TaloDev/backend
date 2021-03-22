@@ -5,6 +5,7 @@ import request from 'supertest'
 import User from '../../src/entities/user'
 import { genAccessToken } from '../../src/lib/auth/buildTokenPair'
 import Game from '../../src/entities/game'
+import UserFactory from '../fixtures/UserFactory'
 
 const baseUrl = '/games'
 
@@ -16,7 +17,7 @@ describe('Games service', () => {
   beforeAll(async () => {
     app = await init()
 
-    user = new User()
+    user = await new UserFactory().one()
     await (<EntityManager>app.context.em).persistAndFlush(user)
 
     token = await genAccessToken(user)

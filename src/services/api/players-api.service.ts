@@ -64,7 +64,7 @@ export default class PlayersAPIService extends APIService<PlayersService> {
       gameId: key.game.id.toString()
     }
 
-    return await this.getService(req.ctx).get(req)
+    return await this.forwardRequest('get', req)
   }
 
   @HasPermission(PlayersAPIPolicy, 'post')
@@ -75,11 +75,11 @@ export default class PlayersAPIService extends APIService<PlayersService> {
       gameId: key.game.id
     }
 
-    return await this.getService(req.ctx).post(req)
+    return await this.forwardRequest('post', req)
   }
 
   @HasPermission(PlayersAPIPolicy, 'patch')
   async patch(req: ServiceRequest): Promise<ServiceResponse> {
-    return await this.getService(req.ctx).patch(req)
+    return await this.forwardRequest('patch', req)
   }
 }

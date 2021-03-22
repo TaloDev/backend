@@ -42,6 +42,6 @@ export default class EventsAPIService extends APIService<EventsService> {
       ...req.query
     }
 
-    return await this.getService(req.ctx).get(req)
+    return await this.forwardRequest('get', req)
   }
 }

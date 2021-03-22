@@ -1,4 +1,4 @@
-import { Service, ServiceRequest } from 'koa-rest-services'
+import { Service, ServiceRequest, ServiceResponse } from 'koa-rest-services'
 import { Context } from 'koa'
 import APIKey from '../../entities/api-key'
 import getAPIKeyFromToken from '../../lib/auth/getAPIKeyFromToken'
@@ -17,5 +17,10 @@ export default class APIService<T> implements Service {
 
   getService(ctx: Context): T {
     return ctx.services[this.serviceName]
+  }
+
+  forwardRequest(funcName: string, req: ServiceRequest): Promise<ServiceResponse> {
+    const func = this.getService(req.ctx)[funcName]
+    return func(req)
   }
 }

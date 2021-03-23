@@ -4,7 +4,7 @@ import logger from 'koa-logger'
 import bodyParser from 'koa-bodyparser'
 import jwt from 'koa-jwt'
 import helmet from 'koa-helmet'
-import { EntityManager, MikroORM, RequestContext } from '@mikro-orm/core'
+import { MikroORM, RequestContext } from '@mikro-orm/core'
 import configureProtectedRoutes from './config/protected-routes'
 import configurePublicRoutes from './config/public-routes'
 import configureAPIRoutes from './config/api-routes'
@@ -15,19 +15,15 @@ import opts from './config/mikro-orm.config'
 const isTest = process.env.NODE_ENV === 'test'
 
 export const init = async (): Promise<Koa> => {
-  let orm: MikroORM
-  let em: EntityManager
+  const app = new Koa()
 
   try {
-    orm = await MikroORM.init(opts)
-    em = orm.em
+    const orm = await MikroORM.init(opts)
+    app.context.em = orm.em
   } catch (err) {
     console.error(err)
     process.exit(1)
   }
-
-  const app = new Koa()
-  app.context.em = em
 
   if (!isTest) app.use(logger())
   app.use(errorMiddleware)

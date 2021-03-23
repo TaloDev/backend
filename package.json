@@ -52,6 +52,10 @@
     "uuid": "^8.3.2"
   },
   "mikro-orm": {
-    "useTsNode": true
+    "useTsNode": true,
+    "configPaths": [
+      "./src/config/mikro-orm.config.ts",
+      "./dist/config/mikro-orm.config.js"
+    ]
   }
 }

@@ -1,4 +1,3 @@
-import 'dotenv/config'
 import { MikroORM } from '@mikro-orm/core'
 
 const createSchema = async (): Promise<void> => {

@@ -5,7 +5,6 @@ import request from 'supertest'
 import Player from '../../../src/entities/player'
 import Game from '../../../src/entities/game'
 import APIKey, { APIKeyScope } from '../../../src/entities/api-key'
-import User from '../../../src/entities/user'
 import { createToken } from '../../../src/services/api-keys.service'
 import UserFactory from '../../fixtures/UserFactory'
 

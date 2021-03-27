@@ -7,6 +7,7 @@ import APIKeysPolicy from '../lib/policies/api-keys.policy'
 import APIKeyResource from '../resources/api-key.resource'
 import groupBy from 'lodash.groupby'
 import User from '../entities/user'
+import { promisify } from 'util'
 
 export const apiKeysRoutes: ServiceRoute[] = [
   {
@@ -25,6 +26,12 @@ export const apiKeysRoutes: ServiceRoute[] = [
   }
 ]
 
+export async function createToken(apiKey: APIKey, payloadParams?: { [key: string]: any }): Promise<string> {
+  const payload = { sub: apiKey.id, scopes: apiKey.scopes, ...payloadParams }
+  const token = await promisify(jwt.sign)(payload, process.env.JWT_SECRET)
+  return token
+}
+
 export default class APIKeysService {
   @Validate({
     body: ['gameId']
@@ -32,17 +39,15 @@ export default class APIKeysService {
   @HasPermission(APIKeysPolicy, 'post')
   @Resource(APIKeyResource, 'apiKey')
   async post(req: ServiceRequest): Promise<ServiceResponse> {
-    const { scopes, gameId } = req.body
+    const { scopes } = req.body
     const em: EntityManager = req.ctx.em
 
-    const apiKey = new APIKey()
+    const createdByUser = await em.getRepository(User).findOne(req.ctx.state.user.sub)
+    const apiKey = new APIKey(req.ctx.state.game, createdByUser)
     apiKey.scopes = scopes ?? []
-    apiKey.game = await em.getRepository(Game).findOne(gameId)
-    apiKey.createdByUser = await em.getRepository(User).findOne(req.ctx.state.user.sub)
     await em.getRepository(APIKey).persistAndFlush(apiKey)
 
-    const payload = { sub: apiKey.id, scopes: apiKey.scopes }
-    const token = jwt.sign(payload, process.env.JWT_SECRET)
+    const token = await createToken(apiKey)
 
     return {
       status: 200,
@@ -74,9 +79,9 @@ export default class APIKeysService {
   @HasPermission(APIKeysPolicy, 'delete')
   @Resource(APIKeyResource, 'apiKey')
   async delete(req: ServiceRequest): Promise<ServiceResponse> {
-    const { id } = req.params
     const em: EntityManager = req.ctx.em
-    const apiKey = await em.getRepository(APIKey).findOne(id)
+
+    const apiKey = req.ctx.state.apiKey // set in the policy
     apiKey.revokedAt = new Date()
     await em.flush()
 

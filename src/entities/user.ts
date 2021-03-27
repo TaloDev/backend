@@ -15,7 +15,7 @@ export default class User {
   @Property()
   lastSeenAt: Date = new Date()
 
-  @Property()
+  @Property({ default: false })
   emailConfirmed: boolean
 
   @ManyToMany(() => Game, (game) => game.teamMembers)

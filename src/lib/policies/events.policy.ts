@@ -6,6 +6,6 @@ export default class EventsPolicy extends Policy {
     const { gameId } = req.query
 
     if (this.isAPICall()) return true
-    return this.canAccessGame(Number(gameId))
+    return await this.canAccessGame(Number(gameId))
   }
 }

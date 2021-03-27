@@ -1,27 +1,28 @@
 import { EntityManager } from '@mikro-orm/core'
-import { HasPermission, ServiceRequest, ServiceResponse, Validate } from 'koa-rest-services'
-import Player from '../../entities/player'
+import { HasPermission, Resource, ServiceRequest, ServiceResponse, Validate } from 'koa-rest-services'
 import Event from '../../entities/event'
 import EventsAPIPolicy from '../../lib/policies/api/events-api.policy'
 import EventsService from '../events.service'
 import APIService from './api-service'
+import EventResource from '../../resources/event.resource'
+import APIKey from '../../entities/api-key'
 
-export default class EventsAPIService extends APIService {
+export default class EventsAPIService extends APIService<EventsService> {
+  constructor() {
+    super('events')
+  }
+
   @Validate({
     body: ['name', 'playerId']
   })
   @HasPermission(EventsAPIPolicy, 'post')
+  @Resource(EventResource, 'event')
   async post(req: ServiceRequest): Promise<ServiceResponse> {
-    const { name, playerId, props } = req.body
+    const { name, props } = req.body
     const em: EntityManager = req.ctx.em
 
-    const event = new Event(name)
+    const event = new Event(name, req.ctx.state.player) // set in the policy
     event.props = props    
-    event.player = await em.getRepository(Player).findOne(playerId)
-
-    if (!event.player) {
-      req.ctx.throw(400, 'The specified player doesn\'t exist')
-    }
 
     await em.persistAndFlush(event)
 
@@ -33,7 +34,14 @@ export default class EventsAPIService extends APIService {
     }
   }
 
+  @HasPermission(EventsAPIPolicy, 'get')
   async get(req: ServiceRequest): Promise<ServiceResponse> {
-    return await this.getService<EventsService>(req).get(req)
+    const key: APIKey = await this.getAPIKey(req.ctx)
+    req.query = {
+      gameId: key.game.id.toString(),
+      ...req.query
+    }
+
+    return await this.forwardRequest('get', req)
   }
 }

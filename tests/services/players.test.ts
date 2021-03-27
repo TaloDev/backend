@@ -6,6 +6,7 @@ import User from '../../src/entities/user'
 import { genAccessToken } from '../../src/lib/auth/buildTokenPair'
 import Game from '../../src/entities/game'
 import Player from '../../src/entities/player'
+import UserFactory from '../fixtures/UserFactory'
 
 const baseUrl = '/players'
 
@@ -18,10 +19,8 @@ describe('Players service', () => {
   beforeAll(async () => {
     app = await init()
 
-    user = new User()
-    await (<EntityManager>app.context.em).persistAndFlush(user)
-
-    validGame = new Game('Superstatic')
+    user = await new UserFactory().one()
+    validGame = new Game('Uplift')
     validGame.teamMembers.add(user)
     await (<EntityManager>app.context.em).persistAndFlush(validGame)
 
@@ -35,10 +34,10 @@ describe('Players service', () => {
   it('should create a player', async () => {
     const res = await request(app.callback())
       .post(`${baseUrl}`)
-      .auth(token, { type: 'bearer' })
       .send({
         gameId: validGame.id
       })
+      .auth(token, { type: 'bearer' })
       .expect(200)
 
     expect(res.body.player).toBeDefined()
@@ -47,13 +46,13 @@ describe('Players service', () => {
   it('should create a player with aliases', async () => {
     const res = await request(app.callback())
       .post(`${baseUrl}`)
-      .auth(token, { type: 'bearer' })
       .send({
         aliases: {
           steam: '12345'
         },
         gameId: validGame.id
       })
+      .auth(token, { type: 'bearer' })
       .expect(200)
 
     expect(res.body.player).toBeDefined()
@@ -63,8 +62,8 @@ describe('Players service', () => {
   it('should not create a player for a non-existent game', async () => {
     const res = await request(app.callback())
       .post(`${baseUrl}`)
+      .send({ gameId: 99 })
       .auth(token, { type: 'bearer' })
-      .send({ gameId: 8 })
       .expect(404)
 
     expect(res.body).toStrictEqual({ message: 'The specified game doesn\'t exist' })
@@ -76,23 +75,13 @@ describe('Players service', () => {
 
     await request(app.callback())
       .post(`${baseUrl}`)
-      .auth(token, { type: 'bearer' })
       .send({ gameId: otherGame.id })
+      .auth(token, { type: 'bearer' })
       .expect(403)
   })
 
   it('should return a list of players', async () => {
-    const playerRepo = (<EntityManager>app.context.em).getRepository(Player)
-    const existingPlayers = await playerRepo.findAll()
-    await playerRepo.removeAndFlush(existingPlayers)
-
-    const players: Player[] = [...new Array(2)].map(() => {
-      const player = new Player()
-      player.game = validGame
-      return player
-    })
-
-    await playerRepo.persistAndFlush(players)
+    const num = await validGame.players.loadCount()
 
     const res = await request(app.callback())
       .get(`${baseUrl}`)
@@ -100,13 +89,13 @@ describe('Players service', () => {
       .auth(token, { type: 'bearer' })
       .expect(200)
 
-    expect(res.body.players).toHaveLength(2)
+    expect(res.body.players).toHaveLength(num)
   })
 
   it('should not return a list of players for a non-existent game', async () => {
     const res = await request(app.callback())
       .get(`${baseUrl}`)
-      .query({ gameId: 8 })
+      .query({ gameId: 99 })
       .auth(token, { type: 'bearer' })
       .expect(404)
 
@@ -120,6 +109,103 @@ describe('Players service', () => {
     await request(app.callback())
       .get(`${baseUrl}`)
       .query({ gameId: otherGame.id })
+      .auth(token, { type: 'bearer' })
+      .expect(403)
+  })
+
+  it('should return a filtered list of players', async () => {
+    const players: Player[] = [...new Array(2)].map(() => {
+      const player = new Player(validGame)
+      player.props = {
+        guildName: 'The Best Guild'
+      }
+      return player
+    })
+    await (<EntityManager>app.context.em).persistAndFlush(players)
+
+    const res = await request(app.callback())
+      .get(`${baseUrl}`)
+      .query({ gameId: validGame.id, search: 'The Best Guild' })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    expect(res.body.players).toHaveLength(2)
+  })
+
+  it('should update a player\'s properties', async () => {
+    const player = new Player(validGame)
+    player.props = {
+      collectibles: 0,
+      zonesExplored: 1
+    }
+    await (<EntityManager>app.context.em).persistAndFlush(player)
+
+    const res = await request(app.callback())
+      .patch(`${baseUrl}/${player.id}`)
+      .send({
+        props: {
+          collectibles: 1
+        }
+      })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    expect(res.body.player.props).toStrictEqual({
+      collectibles: 1,
+      zonesExplored: 1
+    })
+  })
+
+  it('should update delete null player\ properties', async () => {
+    const player = new Player(validGame)
+    player.props = {
+      collectibles: 0,
+      zonesExplored: 1
+    }
+    await (<EntityManager>app.context.em).persistAndFlush(player)
+
+    const res = await request(app.callback())
+      .patch(`${baseUrl}/${player.id}`)
+      .send({
+        props: {
+          collectibles: 1,
+          zonesExplored: null
+        }
+      })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    expect(res.body.player.props).toStrictEqual({
+      collectibles: 1
+    })
+  })
+
+  it('should not update a non-existent player\'s properties', async () => {
+    const res = await request(app.callback())
+      .patch(`${baseUrl}/2313`)
+      .send({
+        props: {
+          collectibles: 2
+        }
+      })
+      .auth(token, { type: 'bearer' })
+      .expect(404)
+
+    expect(res.body).toStrictEqual({ message: 'Player not found' })
+  })
+
+  it('should not update a player\'s properties for a game the user has no access to', async () => {
+    const otherGame = new Game('Trigeon')
+    const player = new Player(otherGame)
+    await (<EntityManager>app.context.em).persistAndFlush(player)
+
+    const res = await request(app.callback())
+      .patch(`${baseUrl}/${player.id}`)
+      .send({
+        props: {
+          collectibles: 2
+        }
+      })
       .auth(token, { type: 'bearer' })
       .expect(403)
   })

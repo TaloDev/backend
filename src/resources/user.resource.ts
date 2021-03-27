@@ -13,6 +13,7 @@ export default class UserResource extends EntityResource<User> {
 
     return {
       id: this.entity.id,
+      email: this.entity.email,
       lastSeenAt: this.entity.lastSeenAt,
       emailConfirmed: this.entity.emailConfirmed,
       games

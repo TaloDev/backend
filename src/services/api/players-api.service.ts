@@ -1,5 +1,6 @@
 import { EntityManager, expr } from '@mikro-orm/core'
 import { Resource, ServiceRequest, ServiceResponse, ServiceRoute, Validate, HasPermission } from 'koa-rest-services'
+import APIKey from '../../entities/api-key'
 import Player from '../../entities/player'
 import PlayersAPIPolicy from '../../lib/policies/api/players-api.policy'
 import PlayerResource from '../../resources/player.resource'
@@ -20,22 +21,30 @@ export const playersAPIRoutes: ServiceRoute[] = [
   }
 ]
 
-export default class PlayersAPIService extends APIService {
+export default class PlayersAPIService extends APIService<PlayersService> {
+  constructor() {
+    super('players')
+  }
+
   @Validate({
     query: ['alias', 'id']
   })
+  @HasPermission(PlayersAPIPolicy, 'identify')
   @Resource(PlayerResource, 'player')
   async identify(req: ServiceRequest): Promise<ServiceResponse> {
     const { alias, id } = req.query
     const em: EntityManager = req.ctx.em
 
+    const key: APIKey = await this.getAPIKey(req.ctx)
+
     const player = await em.getRepository(Player).findOne({
-      [expr(`json_extract(aliases, '$.${alias}')`)]: id
+      aliases: {
+        [alias]: id
+      },
+      game: key.game
     })
 
-    if (!player) {
-      req.ctx.throw(404, 'User not found')
-    }
+    if (!player) req.ctx.throw(404, 'Player not found')
 
     player.lastSeenAt = new Date()
     await em.flush()
@@ -48,19 +57,29 @@ export default class PlayersAPIService extends APIService {
     }
   }
 
-  @Validate({
-    query: ['gameId']
-  })
   @HasPermission(PlayersAPIPolicy, 'get')
   async get(req: ServiceRequest): Promise<ServiceResponse> {
-    return await this.getService<PlayersService>(req).get(req)
+    const key: APIKey = await this.getAPIKey(req.ctx)
+    req.query = {
+      gameId: key.game.id.toString()
+    }
+
+    return await this.forwardRequest('get', req)
   }
 
-  @Validate({
-    body: ['gameId']
-  })
   @HasPermission(PlayersAPIPolicy, 'post')
   async post(req: ServiceRequest): Promise<ServiceResponse> {
-    return await this.getService<PlayersService>(req).post(req)
+    const key: APIKey = await this.getAPIKey(req.ctx)
+    req.body = {
+      ...req.body,
+      gameId: key.game.id
+    }
+
+    return await this.forwardRequest('post', req)
+  }
+
+  @HasPermission(PlayersAPIPolicy, 'patch')
+  async patch(req: ServiceRequest): Promise<ServiceResponse> {
+    return await this.forwardRequest('patch', req)
   }
 }

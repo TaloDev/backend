@@ -12,11 +12,11 @@ export default (app: Koa) => {
     await next()
   })
   
-  app.use(service('events-api', new EventsAPIService('events'), {
+  app.use(service('events-api', new EventsAPIService(), {
     basePath: '/api/events'
   }))
 
-  app.use(service('players-api', new PlayersAPIService('players'), {
+  app.use(service('players-api', new PlayersAPIService(), {
     basePath: '/api/players',
     routes: playersAPIRoutes
   }))

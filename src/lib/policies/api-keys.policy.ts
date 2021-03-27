@@ -5,17 +5,22 @@ import APIKey from '../../entities/api-key'
 export default class APIKeysPolicy extends Policy {
   async post(req: ServiceRequest): Promise<boolean> {
     const { gameId } = req.body
-    return this.canAccessGame(gameId)
+    const canAccessGame = await this.canAccessGame(gameId)
+    const user = await this.getUser()
+    return canAccessGame && user.emailConfirmed
   }
 
   async get(req: ServiceRequest): Promise<boolean> {
     const { gameId } = req.query
-    return this.canAccessGame(Number(gameId))
+    return await this.canAccessGame(Number(gameId))
   }
 
   async delete(req: ServiceRequest): Promise<boolean> {
     const { id } = req.params
     const apiKey = await this.em.getRepository(APIKey).findOne(id)
-    return this.canAccessGame(apiKey.game.id)
+    if (!apiKey) req.ctx.throw(404, 'API key not found')
+    this.ctx.state.apiKey = apiKey
+
+    return await this.canAccessGame(apiKey.game.id)
   }
 }

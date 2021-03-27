@@ -9,6 +9,7 @@ import Event from '../../src/entities/event'
 import Player from '../../src/entities/player'
 import EventFactory from '../fixtures/EventFactory'
 import UserFactory from '../fixtures/UserFactory'
+import OrganisationFactory from '../fixtures/OrganisationFactory'
 
 const baseUrl = '/events'
 
@@ -22,9 +23,8 @@ describe('Events service', () => {
     app = await init()
 
     user = await new UserFactory().one()
-    validGame = new Game('Uplift')
-    validGame.teamMembers.add(user)
-    await (<EntityManager>app.context.em).persistAndFlush(validGame)
+    validGame = new Game('Uplift', user.organisation)
+    await (<EntityManager>app.context.em).persistAndFlush([user, validGame])
 
     token = await genAccessToken(user)
   })
@@ -182,7 +182,8 @@ describe('Events service', () => {
   })
 
   it('should not return a list of events for a game the user has no access to', async () => {
-    const otherGame = new Game('Crawle')
+    const otherOrg = await new OrganisationFactory().one()
+    const otherGame = new Game('Crawle', otherOrg)
     await (<EntityManager>app.context.em).persistAndFlush(otherGame)
 
     await request(app.callback())

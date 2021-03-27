@@ -28,17 +28,26 @@ describe('Users public service', () => {
   it('should register a user', async () => {
     const res = await request(app.callback())
       .post(`${baseUrl}/register`)
-      .send({ email: 'dev@trytalo.com', password: 'password' })
+      .send({ email: 'dev@trytalo.com', password: 'password', organisationName: 'Talo' })
       .expect(200)
 
     expect(res.body.accessToken).toBeDefined()
     expect(res.body.user).toBeDefined()
   })
 
-  it('should not let a user register if the email already exists', async () => {
+  it('should not register a user without an organisation name', async () => {
     const res = await request(app.callback())
       .post(`${baseUrl}/register`)
       .send({ email: 'dev@trytalo.com', password: 'password' })
+      .expect(400)
+
+      expect(res.body).toStrictEqual({ message: 'Missing body key: organisationName' })
+  })
+
+  it('should not let a user register if the email already exists', async () => {
+    const res = await request(app.callback())
+      .post(`${baseUrl}/register`)
+      .send({ email: 'dev@trytalo.com', password: 'password', organisationName: 'Talo' })
       .expect(400)
 
       expect(res.body).toStrictEqual({ message: 'That email address is already in use' })
@@ -47,7 +56,7 @@ describe('Users public service', () => {
   it('should create an access code for a new user', async () => {
     await request(app.callback())
       .post(`${baseUrl}/register`)
-      .send({ email: 'bob@trytalo.com', password: 'password' })
+      .send({ email: 'bob@trytalo.com', password: 'password', organisationName: 'Talo' })
       .expect(200)
 
     const accessCode = await (<EntityManager>app.context.em).getRepository(UserAccessCode).findOne({
@@ -71,7 +80,7 @@ describe('Users public service', () => {
 
     expect(res.body.accessToken).toBeDefined()
     expect(res.body.user).toBeDefined()
-    expect(res.body.user.games).toBeDefined()
+    expect(res.body.user.organisation).toBeDefined()
     expect(new Date(res.body.user.lastSeenAt).getDay()).toBe(new Date().getDay())
   })
 

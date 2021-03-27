@@ -46,10 +46,7 @@ export default class UsersService {
   }
 
   @Validate({
-    body: {
-      currentPassword: 'Missing body parameter: currentPassword',
-      newPassword: 'Missing body parameter: newPassword'
-    }
+    body: ['currentPassword', 'newPassword']
   })
   async changePassword(req: ServiceRequest): Promise<ServiceResponse> {
     const { currentPassword, newPassword } = req.body
@@ -80,7 +77,7 @@ export default class UsersService {
 
   @Resource(UserResource, 'user')
   async me(req: ServiceRequest): Promise<ServiceResponse> {
-    const user = await getUserFromToken(req.ctx, ['games'])
+    const user = await getUserFromToken(req.ctx)
 
     return {
       status: 200,

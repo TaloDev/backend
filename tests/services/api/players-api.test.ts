@@ -19,7 +19,7 @@ describe('Players API service', () => {
     app = await init()
 
     const user = await new UserFactory().one()
-    apiKey = new APIKey(new Game('Uplift'), user)
+    apiKey = new APIKey(new Game('Uplift', user.organisation), user)
     token = await createToken(apiKey)
 
     await (<EntityManager>app.context.em).persistAndFlush(apiKey)

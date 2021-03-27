@@ -1,31 +1,22 @@
 import { Factory } from 'hefty'
 import Game from '../../src/entities/game'
 import casual from 'casual'
-import User from '../../src/entities/user'
+import Organisation from '../../src/entities/organisation'
 
 export default class GameFactory extends Factory<Game> {
-  private availableUsers: User[]
+  private organisation: Organisation
 
-  constructor(availableUsers: User[]) {
+  constructor(organisation: Organisation) {
     super(Game, 'base')
     this.register('base', this.base)
-    this.register('team', this.team)
 
-    this.availableUsers = availableUsers
+    this.organisation = organisation
   }
 
   protected base(): Partial<Game> {
     return {
-      name: casual.title
+      name: casual.title,
+      organisation: this.organisation
     }
-  }
-
-  protected team(game: Game): Partial<Game> {
-    const count = casual.integer(0, 2)
-    const users: User[] = [...new Array(count)].map(() => casual.random_element(this.availableUsers))
-    game.teamMembers.add(...users)
-    game.teamMembers.add(this.availableUsers.find((user) => user.password))
-
-    return {}
   }
 }

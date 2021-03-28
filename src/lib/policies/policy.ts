@@ -21,7 +21,6 @@ export default class Policy extends ServicePolicy {
 
   async getUser(): Promise<User> {
     const user = await getUserFromToken(this.ctx)
-    if (user.deletedAt) this.ctx.throw(401)
     return user
   }
 

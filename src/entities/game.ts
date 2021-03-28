@@ -26,9 +26,6 @@ export default class Game {
   @Property({ onUpdate: () => new Date() })
   updatedAt: Date = new Date()
 
-  @Property({ nullable: true })
-  deletedAt?: Date
-
   constructor(name: string, organisation: Organisation) {
     this.name = name
     this.organisation = organisation

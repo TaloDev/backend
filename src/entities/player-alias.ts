@@ -20,7 +20,4 @@ export default class PlayerAlias {
 
   @Property({ onUpdate: () => new Date() })
   updatedAt: Date = new Date()
-
-  @Property({ nullable: true })
-  deletedAt?: Date
 }

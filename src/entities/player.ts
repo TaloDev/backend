@@ -30,9 +30,6 @@ export default class Player {
   @Property({ onUpdate: () => new Date() })
   updatedAt: Date = new Date()
 
-  @Property({ nullable: true })
-  deletedAt?: Date
-
   constructor(game: Game) {
     this.game = game
   }

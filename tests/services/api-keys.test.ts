@@ -7,6 +7,7 @@ import { genAccessToken } from '../../src/lib/auth/buildTokenPair'
 import Game from '../../src/entities/game'
 import APIKey, { APIKeyScope } from '../../src/entities/api-key'
 import UserFactory from '../fixtures/UserFactory'
+import OrganisationFactory from '../fixtures/OrganisationFactory'
 
 const baseUrl = '/api-keys'
 
@@ -20,9 +21,8 @@ describe('API keys service', () => {
     app = await init()
 
     user = await new UserFactory().one()
-    validGame = new Game('Uplift')
-    validGame.teamMembers.add(user)
-    await (<EntityManager>app.context.em).persistAndFlush(validGame)
+    validGame = new Game('Uplift', user.organisation)
+    await (<EntityManager>app.context.em).persistAndFlush([user, validGame])
 
     token = await genAccessToken(user)
   })
@@ -67,7 +67,8 @@ describe('API keys service', () => {
   })
 
   it('should not return a list of api keys for a game the user has no access to', async () => {
-    const otherGame = new Game('Crawle')
+    const otherOrg = await new OrganisationFactory().one()
+    const otherGame = new Game('Crawle', otherOrg)
     await (<EntityManager>app.context.em).persistAndFlush(otherGame)
 
     await request(app.callback())
@@ -110,7 +111,8 @@ describe('API keys service', () => {
   })
 
   it('should not create an api key for a game the user has no access to', async () => {
-    const otherGame = new Game('Crawle')
+    const otherOrg = await new OrganisationFactory().one()
+    const otherGame = new Game('Crawle', otherOrg)
     await (<EntityManager>app.context.em).persistAndFlush(otherGame)
 
     await request(app.callback())
@@ -145,8 +147,9 @@ describe('API keys service', () => {
   })
 
   it('should not delete an api key for a game the user has no access to', async () => {
+    const otherOrg = await new OrganisationFactory().one()
     const invalidUser = await new UserFactory().one()
-    const key = new APIKey(new Game('Crawle'), invalidUser)
+    const key = new APIKey(new Game('Crawle', otherOrg), invalidUser)
     await (<EntityManager>app.context.em).persistAndFlush(key)
 
     await request(app.callback())

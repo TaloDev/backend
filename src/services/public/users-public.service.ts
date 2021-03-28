@@ -1,5 +1,5 @@
 import { After, HookParams, Resource, Service, ServiceRequest, ServiceResponse, ServiceRoute, Validate } from 'koa-rest-services'
-import User from '../../entities/user'
+import User, { UserType } from '../../entities/user'
 import jwt from 'jsonwebtoken'
 import { promisify } from 'util'
 import { EntityManager } from '@mikro-orm/core'
@@ -10,6 +10,7 @@ import setUserLastSeenAt from '../../lib/users/setUserLastSeenAt'
 import getUserFromToken from '../../lib/auth/getUserFromToken'
 import UserAccessCode from '../../entities/user-access-code'
 import UserResource from '../../resources/user.resource'
+import Organisation from '../../entities/organisation'
 
 export const usersPublicRoutes: ServiceRoute[] = [
   {
@@ -46,22 +47,28 @@ export const usersPublicRoutes: ServiceRoute[] = [
 
 export default class UsersPublicService implements Service {
   @Validate({
-    body: ['email', 'password']
+    body: ['email', 'password', 'organisationName']
   })
   @Resource(UserResource, 'user')
   @After('sendEmailConfirm')
   async register(req: ServiceRequest): Promise<ServiceResponse> {
-    const { email, password } = req.body
+    const { email, password, organisationName } = req.body
     const em: EntityManager = req.ctx.em
 
     const userWithEmail = await em.getRepository(User).findOne({ email })
-    if (userWithEmail) {
-      req.ctx.throw(400, 'That email address is already in use')
-    }
+    const orgWithEmail = await em.getRepository(Organisation).findOne({ email })
+    if (userWithEmail || orgWithEmail) req.ctx.throw(400, 'That email address is already in use')
+
+    const organisation = new Organisation()
+    organisation.email = email
+    organisation.name = organisationName
 
     const user = new User()
     user.email = email
     user.password = await bcrypt.hash(password, 10)
+    user.organisation = organisation
+    user.type = UserType.ADMIN
+
     await em.getRepository(User).persistAndFlush(user)
 
     const accessToken = await buildTokenPair(req.ctx, user)
@@ -175,10 +182,7 @@ export default class UsersPublicService implements Service {
   }
 
   @Validate({
-    body: {
-      password: 'Missing body parameter: password',
-      token: 'Missing body parameter: token'
-    }
+    body: ['password', 'token']
   })
   @Resource(UserResource, 'user')
   async changePassword(req: ServiceRequest): Promise<ServiceResponse> {

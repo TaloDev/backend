@@ -7,8 +7,7 @@ export default class GameResource extends EntityResource<Game> {
       id: this.entity.id,
       name: this.entity.name,
       props: this.entity.props,
-      createdAt: this.entity.createdAt,
-      updatedAt: this.entity.updatedAt
+      createdAt: this.entity.createdAt
     }
   }
 }

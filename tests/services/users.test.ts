@@ -76,8 +76,8 @@ describe('Users service', () => {
   })
 
   it('should return the user\'s data', async () => {
-    user.games.add(new Game('Vigilante 2084'))
-    await (<EntityManager>app.context.em).flush()
+    const game = new Game('Vigilante 2084', user.organisation)
+    await (<EntityManager>app.context.em).persistAndFlush(game)
 
     const res = await request(app.callback())
       .get(`${baseUrl}/me`)
@@ -85,8 +85,9 @@ describe('Users service', () => {
       .expect(200)
     
     expect(res.body.user).toBeDefined()
-    expect(res.body.user.games).toHaveLength(1)
-    expect(res.body.user.games[0].name).toBe('Vigilante 2084')
+    expect(res.body.user.organisation).toBeDefined()
+    expect(res.body.user.organisation.games).toHaveLength(1)
+    expect(res.body.user.organisation.games[0].name).toBe('Vigilante 2084')
   })
 
   it('should let a user confirm their email', async () => {

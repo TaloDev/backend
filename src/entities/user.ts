@@ -1,5 +1,11 @@
-import { Collection, Entity, ManyToMany, PrimaryKey, Property } from '@mikro-orm/core'
+import { Collection, Entity, Enum, ManyToMany, ManyToOne, PrimaryKey, Property } from '@mikro-orm/core'
 import Game from './game'
+import Organisation from './organisation'
+
+export enum UserType {
+  DEV,
+  ADMIN
+}
 
 @Entity()
 export default class User {
@@ -12,14 +18,17 @@ export default class User {
   @Property({ hidden: true })
   password: string
 
+  @ManyToOne(() => Organisation, { eager: true })
+  organisation: Organisation
+
+  @Enum(() => UserType)
+  type: UserType = UserType.DEV
+
   @Property()
   lastSeenAt: Date = new Date()
 
   @Property({ default: false })
   emailConfirmed: boolean
-
-  @ManyToMany(() => Game, (game) => game.teamMembers)
-  games: Collection<Game> = new Collection<Game>(this)
 
   @Property()
   createdAt: Date = new Date()

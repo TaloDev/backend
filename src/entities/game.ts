@@ -1,27 +1,24 @@
-import { Collection, Entity, JsonType, ManyToMany, OneToMany, PrimaryKey, Property } from '@mikro-orm/core'
+import { Collection, Entity, JsonType, ManyToMany, ManyToOne, OneToMany, PrimaryKey, Property } from '@mikro-orm/core'
+import Organisation from './organisation'
 import Player from './player'
 import User from './user'
 
 @Entity()
 export default class Game {
-  constructor(name: string) {
-    this.name = name
-  }
-
   @PrimaryKey()
   id: number
 
   @Property()
   name: string
 
+  @ManyToOne(() => Organisation)
+  organisation: Organisation
+
   @Property({ type: JsonType, nullable: true })
   props?: { [key: string]: any }
 
   @OneToMany(() => Player, (player) => player.game)
   players: Collection<Player> = new Collection<Player>(this)
-
-  @ManyToMany(() => User, (user) => user.games, { owner: true })
-  teamMembers: Collection<User> = new Collection<User>(this)
 
   @Property()
   createdAt: Date = new Date()
@@ -31,4 +28,9 @@ export default class Game {
 
   @Property({ nullable: true })
   deletedAt?: Date
+
+  constructor(name: string, organisation: Organisation) {
+    this.name = name
+    this.organisation = organisation
+  }
 }

@@ -15,7 +15,7 @@ export default class APIKey {
   @PrimaryKey()
   id: string = v4()
 
-  @Enum()
+  @Enum({ items: () => APIKeyScope, array: true })
   scopes: APIKeyScope[] = []
 
   @ManyToOne(() => Game)

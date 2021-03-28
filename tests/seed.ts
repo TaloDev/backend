@@ -1,10 +1,10 @@
 import 'dotenv/config'
 import { MikroORM } from '@mikro-orm/core'
 import UserFactory from './fixtures/UserFactory'
-import User from '../src/entities/user'
 import GameFactory from './fixtures/GameFactory'
 import PlayerFactory from './fixtures/PlayerFactory'
 import EventFactory from './fixtures/EventFactory'
+import OrganisationFactory from './fixtures/OrganisationFactory'
 
 (async () => {
   const orm = await MikroORM.init()
@@ -12,26 +12,41 @@ import EventFactory from './fixtures/EventFactory'
   await generator.dropSchema()
   await generator.createSchema()
 
-  const userFactory = new UserFactory()
-  const users = await userFactory.many(10)
-  const defaultUser = await userFactory.state('loginable').one()
+  const organisations = await new OrganisationFactory().many(3)
 
-  const gameFactory = new GameFactory([...users, defaultUser])
-  const games = await gameFactory.state('team').many(2)
+  for (let organisation of organisations) {
+    const userFactory = new UserFactory()
+    const users = await userFactory.with(() => ({ organisation })).many(4)
 
-  const playerFactory = new PlayerFactory(games)
-  const players = await playerFactory.many(30)
+    const devUser = await userFactory.state('loginable').with(() => ({
+      organisation,
+      email: `dev${organisations.indexOf(organisation) + 1}@trytalo.com`
+    })).one()
 
-  const eventFactory = new EventFactory(players)
-  const eventsThisMonth = await eventFactory.state('thisMonth').many(300)
+    const adminUser = await userFactory.state('loginable').state('admin').with(() => ({
+      organisation,
+      email: `admin${organisations.indexOf(organisation) + 1}@trytalo.com`
+    })).one()
 
-  await orm.em.getRepository(User).persistAndFlush([
-    defaultUser,
-    ...users,
-    ...games,
-    ...players,
-    ...eventsThisMonth
-  ])
+    const gameFactory = new GameFactory(organisation)
+    const games = await gameFactory.many(2)
+
+    const playerFactory = new PlayerFactory(games)
+    const players = await playerFactory.many(30)
+  
+    const eventFactory = new EventFactory(players)
+    const eventsThisMonth = await eventFactory.state('thisMonth').many(300)
+
+    await orm.em.persistAndFlush([
+      organisation,
+      devUser,
+      adminUser,
+      ...users,
+      ...games,
+      ...players,
+      ...eventsThisMonth
+    ])
+  }
 
   await orm.close(true)
 })()

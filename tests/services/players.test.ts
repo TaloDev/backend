@@ -7,6 +7,7 @@ import { genAccessToken } from '../../src/lib/auth/buildTokenPair'
 import Game from '../../src/entities/game'
 import Player from '../../src/entities/player'
 import UserFactory from '../fixtures/UserFactory'
+import OrganisationFactory from '../fixtures/OrganisationFactory'
 
 const baseUrl = '/players'
 
@@ -20,9 +21,8 @@ describe('Players service', () => {
     app = await init()
 
     user = await new UserFactory().one()
-    validGame = new Game('Uplift')
-    validGame.teamMembers.add(user)
-    await (<EntityManager>app.context.em).persistAndFlush(validGame)
+    validGame = new Game('Uplift', user.organisation)
+    await (<EntityManager>app.context.em).persistAndFlush([user, validGame])
 
     token = await genAccessToken(user)
   })
@@ -70,7 +70,8 @@ describe('Players service', () => {
   })
 
   it('should not create a player for a game the user has no access to', async () => {
-    const otherGame = new Game('Crawle')
+    const otherOrg = await new OrganisationFactory().one()
+    const otherGame = new Game('Crawle', otherOrg)
     await (<EntityManager>app.context.em).persistAndFlush(otherGame)
 
     await request(app.callback())
@@ -103,7 +104,8 @@ describe('Players service', () => {
   })
 
   it('should not return a list of players for a game the user has no access to', async () => {
-    const otherGame = new Game('Crawle')
+    const otherOrg = await new OrganisationFactory().one()
+    const otherGame = new Game('Crawle', otherOrg)
     await (<EntityManager>app.context.em).persistAndFlush(otherGame)
 
     await request(app.callback())
@@ -195,7 +197,8 @@ describe('Players service', () => {
   })
 
   it('should not update a player\'s properties for a game the user has no access to', async () => {
-    const otherGame = new Game('Trigeon')
+    const otherOrg = await new OrganisationFactory().one()
+    const otherGame = new Game('Trigeon', otherOrg)
     const player = new Player(otherGame)
     await (<EntityManager>app.context.em).persistAndFlush(player)
 

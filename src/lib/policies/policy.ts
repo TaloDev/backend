@@ -36,12 +36,12 @@ export default class Policy extends ServicePolicy {
   }
 
   async canAccessGame(gameId: number): Promise<boolean> {
-    const game = await this.em.getRepository(Game).findOne(gameId, ['teamMembers'])
+    const game = await this.em.getRepository(Game).findOne(gameId, ['organisation'])
     if (!game) this.ctx.throw(404, 'The specified game doesn\'t exist')
     this.ctx.state.game = game
 
-    const team = game.teamMembers.toArray().map((user) => user.id)
-    return team.includes(this.getSub())
+    const user = await this.getUser()
+    return game.organisation.id === user.organisation.id
   }
 
   hasScope(scope: string): boolean {

@@ -39,12 +39,12 @@ export default class EventsService implements Service {
     const em: EntityManager = req.ctx.em
 
     const events = await em.getRepository(Event).find({
-      player: { game: Number(gameId) },
+      game: Number(gameId),
       createdAt: {
         $gte: new Date(startDate),
         $lte: new Date(endDate)
       }
-    }, ['player.game'])
+    })
 
     // events: {
     //   'Zone explored': [

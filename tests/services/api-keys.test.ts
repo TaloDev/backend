@@ -84,6 +84,8 @@ describe('API keys service', () => {
       .send({ gameId: validGame.id, scopes: ['read:players', 'write:events'] })
       .auth(token, { type: 'bearer' })
       .expect(403)
+
+    expect(res.body).toStrictEqual({ message: 'You need to confirm your email address to do this' })
   })
 
   it('should create an api key if the user\'s email is confirmed', async () => {

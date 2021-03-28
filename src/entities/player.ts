@@ -1,25 +1,18 @@
 import { Collection, Entity, JsonType, ManyToOne, OneToMany, PrimaryKey, Property } from '@mikro-orm/core'
-import Event from './event'
 import Game from './game'
 import { v4 } from 'uuid'
-
-export type PlayerAliases = {
-  [key: string]: string
-}
+import PlayerAlias from './player-alias'
 
 @Entity()
 export default class Player {
   @PrimaryKey()
   id: string = v4()
 
-  @Property({ type: JsonType })
-  aliases: PlayerAliases = {}
+  @OneToMany(() => PlayerAlias, (alias) => alias.player)
+  aliases: Collection<PlayerAlias> = new Collection<PlayerAlias>(this)
 
   @Property({ type: JsonType })
   props: { [key: string]: any } = {}
-
-  @OneToMany(() => Event, (event) => event.player)
-  events = new Collection<Event>(this)
 
   @ManyToOne(() => Game)
   game: Game

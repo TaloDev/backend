@@ -13,16 +13,17 @@ export default class EventsAPIService extends APIService<EventsService> {
   }
 
   @Validate({
-    body: ['name', 'playerId']
+    body: ['name', 'aliasId']
   })
   @HasPermission(EventsAPIPolicy, 'post')
   @Resource(EventResource, 'event')
   async post(req: ServiceRequest): Promise<ServiceResponse> {
-    const { name, props } = req.body
+    const { name, props, aliasId } = req.body
     const em: EntityManager = req.ctx.em
 
-    const event = new Event(name, req.ctx.state.player) // set in the policy
-    event.props = props    
+    const event = new Event(name, req.ctx.state.game) // set in the policy
+    event.props = props
+    event.playerAlias = aliasId
 
     await em.persistAndFlush(event)
 
@@ -38,8 +39,8 @@ export default class EventsAPIService extends APIService<EventsService> {
   async get(req: ServiceRequest): Promise<ServiceResponse> {
     const key: APIKey = await this.getAPIKey(req.ctx)
     req.query = {
-      gameId: key.game.id.toString(),
-      ...req.query
+      ...req.query,
+      gameId: key.game.id.toString()
     }
 
     return await this.forwardRequest('get', req)

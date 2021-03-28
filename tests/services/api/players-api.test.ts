@@ -2,11 +2,11 @@ import { EntityManager } from '@mikro-orm/core'
 import Koa from 'koa'
 import init from '../../../src/index'
 import request from 'supertest'
-import Player from '../../../src/entities/player'
 import Game from '../../../src/entities/game'
 import APIKey, { APIKeyScope } from '../../../src/entities/api-key'
 import { createToken } from '../../../src/services/api-keys.service'
 import UserFactory from '../../fixtures/UserFactory'
+import PlayerFactory from '../../fixtures/PlayerFactory'
 
 const baseUrl = '/api/players'
 
@@ -30,7 +30,8 @@ describe('Players API service', () => {
   })
 
   it('should return the game\'s players if the scope is valid', async () => {
-    const players: Player[] = [...new Array(3)].map(() => new Player(apiKey.game))
+    const players = await new PlayerFactory([apiKey.game]).many(3)
+
     await (<EntityManager>app.context.em).persistAndFlush(players)
 
     apiKey.scopes = [APIKeyScope.READ_PLAYERS]
@@ -84,15 +85,13 @@ describe('Players API service', () => {
     apiKey.scopes = [APIKeyScope.READ_PLAYERS]
     token = await createToken(apiKey)
 
-    const player = new Player(apiKey.game)
-    player.aliases = {
-      steam: '4568382'
-    }
+    const player = await new PlayerFactory([apiKey.game]).one()
+
     await (<EntityManager>app.context.em).persistAndFlush(player)
 
     const res = await request(app.callback())
       .get(`${baseUrl}/identify`)
-      .query({ alias: 'steam', id: '4568382' })
+      .query({ service: player.aliases[0].service, identifier: player.aliases[0].identifier })
       .auth(token, { type: 'bearer' })
       .expect(200)
 
@@ -105,7 +104,7 @@ describe('Players API service', () => {
 
     await request(app.callback())
       .get(`${baseUrl}/identify`)
-      .query({ alias: 'steam', id: '2131231' })
+      .query({ service: 'steam', identifier: '2131231' })
       .auth(token, { type: 'bearer' })
       .expect(403)
   })
@@ -116,7 +115,7 @@ describe('Players API service', () => {
 
     const res = await request(app.callback())
       .get(`${baseUrl}/identify`)
-      .query({ alias: 'steam', id: '2131231' })
+      .query({ service: 'steam', identifier: '2131231' })
       .auth(token, { type: 'bearer' })
       .expect(404)
 
@@ -124,7 +123,7 @@ describe('Players API service', () => {
   })
 
   it('should update a player\'s properties', async () => {
-    const player = new Player(apiKey.game)
+    const player = await new PlayerFactory([apiKey.game]).one()
     player.props = {
       collectibles: 0,
       zonesExplored: 1
@@ -151,7 +150,7 @@ describe('Players API service', () => {
   })
 
   it('should not update a player\'s properties if the scope is missing', async () => {
-    const player = new Player(apiKey.game)
+    const player = await new PlayerFactory([apiKey.game]).one()
     player.props = {
       collectibles: 0,
       zonesExplored: 1

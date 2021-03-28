@@ -2,6 +2,9 @@ import { Factory } from 'hefty'
 import Game from '../../src/entities/game'
 import casual from 'casual'
 import Player from '../../src/entities/player'
+import PlayerAliasFactory from './PlayerAliasFactory'
+import { Collection } from '@mikro-orm/core'
+import PlayerAlias from '../../src/entities/player-alias'
 
 export default class PlayerFactory extends Factory<Player> {
   private availableGames: Game[]
@@ -13,16 +16,7 @@ export default class PlayerFactory extends Factory<Player> {
     this.availableGames = availableGames
   }
 
-  protected base(): Partial<Player> {
-    const aliasProviders = ['steam', 'origin', 'epic', 'username']
-    const aliasValues = [casual.uuid, casual.username, casual.card_number()]
-    const aliasCount = casual.integer(0, 3)
-    const aliases = {}
-
-    for (let i = 0; i < aliasCount; i++) {
-      aliases[casual.random_element(aliasProviders)] = casual.random_element(aliasValues)
-    }
-
+  protected async base(player: Player): Promise<Partial<Player>> {
     const availableProps = ['zonesExplored', 'currentArea', 'position.x', 'position.y', 'deaths']
     const propsCount = casual.integer(0, 3)
     const props = {}
@@ -30,6 +24,10 @@ export default class PlayerFactory extends Factory<Player> {
     for (let i = 0; i < propsCount; i++) {
       props[casual.random_element(availableProps)] = casual.integer(0, 99)
     }
+
+    const playerAliasFactory = new PlayerAliasFactory()
+    const items = await playerAliasFactory.with(() => ({ player })).many(casual.integer(1, 3))
+    const aliases = new Collection<PlayerAlias>(this, items)
 
     return {  
       aliases,

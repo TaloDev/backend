@@ -1,5 +1,6 @@
 import { EntityResource } from 'koa-rest-services'
 import Event from '../entities/event'
+import PlayerAliasResource from './player-alias.resource'
 
 export default class EventResource extends EntityResource<Event> {
   async transform(): Promise<any> {
@@ -7,8 +8,8 @@ export default class EventResource extends EntityResource<Event> {
       id: this.entity.id,
       name: this.entity.name,
       props: this.entity.props,
-      playerId: this.entity.player.id,
-      gameId: this.entity.player.game.id,
+      playerAlias: await new PlayerAliasResource(this.entity.playerAlias).transform(),
+      gameId: this.entity.game.id,
       createdAt: this.entity.createdAt
     }
   }

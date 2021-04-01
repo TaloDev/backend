@@ -5,9 +5,9 @@ import request from 'supertest'
 import User from '../../src/entities/user'
 import { genAccessToken } from '../../src/lib/auth/buildTokenPair'
 import Game from '../../src/entities/game'
-import Player from '../../src/entities/player'
 import UserFactory from '../fixtures/UserFactory'
 import OrganisationFactory from '../fixtures/OrganisationFactory'
+import PlayerFactory from '../fixtures/PlayerFactory'
 
 const baseUrl = '/players'
 
@@ -47,9 +47,10 @@ describe('Players service', () => {
     const res = await request(app.callback())
       .post(`${baseUrl}`)
       .send({
-        aliases: {
-          steam: '12345'
-        },
+        aliases: [{
+          service: 'steam',
+          identifier: '12345'
+        }],
         gameId: validGame.id
       })
       .auth(token, { type: 'bearer' })
@@ -116,13 +117,12 @@ describe('Players service', () => {
   })
 
   it('should return a filtered list of players', async () => {
-    const players: Player[] = [...new Array(2)].map(() => {
-      const player = new Player(validGame)
-      player.props = {
+    const players = await new PlayerFactory([validGame]).with(() => ({
+      props: {
         guildName: 'The Best Guild'
       }
-      return player
-    })
+    })).many(2)
+
     await (<EntityManager>app.context.em).persistAndFlush(players)
 
     const res = await request(app.callback())
@@ -135,7 +135,8 @@ describe('Players service', () => {
   })
 
   it('should update a player\'s properties', async () => {
-    const player = new Player(validGame)
+    const player = await new PlayerFactory([validGame]).one()
+
     player.props = {
       collectibles: 0,
       zonesExplored: 1
@@ -159,7 +160,8 @@ describe('Players service', () => {
   })
 
   it('should update delete null player\ properties', async () => {
-    const player = new Player(validGame)
+    const player = await new PlayerFactory([validGame]).one()
+
     player.props = {
       collectibles: 0,
       zonesExplored: 1
@@ -199,7 +201,8 @@ describe('Players service', () => {
   it('should not update a player\'s properties for a game the user has no access to', async () => {
     const otherOrg = await new OrganisationFactory().one()
     const otherGame = new Game('Trigeon', otherOrg)
-    const player = new Player(otherGame)
+    const player = await new PlayerFactory([otherGame]).one()
+
     await (<EntityManager>app.context.em).persistAndFlush(player)
 
     const res = await request(app.callback())

@@ -1,5 +1,6 @@
 import { Entity, JsonType, ManyToOne, PrimaryKey, Property } from '@mikro-orm/core'
-import Player from './player'
+import Game from './game'
+import PlayerAlias from './player-alias'
 
 @Entity()
 export default class Event {
@@ -12,8 +13,11 @@ export default class Event {
   @Property({ type: JsonType, nullable: true })
   props?: { [key: string]: any }
 
-  @ManyToOne(() => Player)
-  player: Player
+  @ManyToOne(() => Game)
+  game: Game
+
+  @ManyToOne(() => PlayerAlias)
+  playerAlias: PlayerAlias
 
   @Property()
   createdAt: Date = new Date()
@@ -21,11 +25,8 @@ export default class Event {
   @Property({ onUpdate: () => new Date() })
   updatedAt: Date = new Date()
 
-  @Property({ nullable: true })
-  deletedAt?: Date
-
-  constructor(name: string, player: Player) {
+  constructor(name: string, game: Game) {
     this.name = name
-    this.player = player
+    this.game = game
   }
 }

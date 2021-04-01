@@ -25,7 +25,4 @@ export default class Organisation {
 
   @Property({ onUpdate: () => new Date() })
   updatedAt: Date = new Date()
-
-  @Property({ nullable: true })
-  deletedAt?: Date
 }

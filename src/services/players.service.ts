@@ -5,6 +5,7 @@ import Player from '../entities/player'
 import PlayersPolicy from '../lib/policies/players.policy'
 import PlayerResource from '../resources/player.resource'
 import Fuse from 'fuse.js'
+import PlayerAlias from '../entities/player-alias'
 
 interface SearchablePlayer {
   id: string
@@ -25,7 +26,14 @@ export default class PlayersService implements Service {
     const game = await em.getRepository(Game).findOne(gameId)
 
     const player = new Player(game)
-    player.aliases = aliases ?? {}
+    if (aliases) {
+      player.aliases = aliases.map((item) => {
+        const alias = new PlayerAlias()
+        alias.service = item.service
+        alias.identifier = item.identifier
+        return alias
+      })
+    }
 
     await em.persistAndFlush(player)
 

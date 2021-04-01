@@ -6,10 +6,10 @@ import User from '../../src/entities/user'
 import { genAccessToken } from '../../src/lib/auth/buildTokenPair'
 import Game from '../../src/entities/game'
 import Event from '../../src/entities/event'
-import Player from '../../src/entities/player'
 import EventFactory from '../fixtures/EventFactory'
 import UserFactory from '../fixtures/UserFactory'
 import OrganisationFactory from '../fixtures/OrganisationFactory'
+import PlayerFactory from '../fixtures/PlayerFactory'
 
 const baseUrl = '/events'
 
@@ -40,7 +40,7 @@ describe('Events service', () => {
   })
 
   it('should return a list of events', async () => {
-    const player = new Player(validGame)
+    const player = await new PlayerFactory([validGame]).one()
     const now = new Date('2021-01-01')
 
     const dayInMs = 86400000
@@ -126,7 +126,7 @@ describe('Events service', () => {
   })
 
   it('should correctly calculate event changes', async () => {
-    const player = new Player(validGame)
+    const player = await new PlayerFactory([validGame]).one()
     const now = new Date('2021-01-01')
 
     const dayInMs = 86400000

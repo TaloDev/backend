@@ -7,7 +7,8 @@ export default class APIKeysPolicy extends Policy {
     const { gameId } = req.body
     const canAccessGame = await this.canAccessGame(gameId)
     const user = await this.getUser()
-    return canAccessGame && user.emailConfirmed
+    if (!user.emailConfirmed) req.ctx.throw(403, 'You need to confirm your email address to do this')
+    return canAccessGame
   }
 
   async get(req: ServiceRequest): Promise<boolean> {

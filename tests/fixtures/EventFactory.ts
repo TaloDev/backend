@@ -20,10 +20,13 @@ export default class EventFactory extends Factory<Event> {
     this.eventTitles = ['Zone Explored', 'Death', 'Item Looted', 'Treasure Discovered', 'Levelled up']
   }
 
-  protected base(): Partial<Event> {
+  protected async base(): Promise<Partial<Event>> {
+    const player: Player = casual.random_element(this.availablePlayers)
+
     return {
       name: casual.random_element(this.eventTitles),
-      player: casual.random_element(this.availablePlayers)
+      game: player.game,
+      playerAlias: casual.random_element(player.aliases.getItems())
     }
   }
 
@@ -44,5 +47,4 @@ export default class EventFactory extends Factory<Event> {
       createdAt: randomDate(sub(new Date(), { years: 1 }), new Date())
     }
   }
-
 }

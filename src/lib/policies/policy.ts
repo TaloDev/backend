@@ -21,7 +21,6 @@ export default class Policy extends ServicePolicy {
 
   async getUser(): Promise<User> {
     const user = await getUserFromToken(this.ctx)
-    if (user.deletedAt) this.ctx.throw(401)
     return user
   }
 
@@ -30,7 +29,7 @@ export default class Policy extends ServicePolicy {
   }
 
   async getAPIKey(): Promise<APIKey> {
-    const key = await getAPIKeyFromToken(this.ctx)
+    const key = await getAPIKeyFromToken(this.ctx, ['game'])
     if (key.revokedAt) this.ctx.throw(401)
     return key
   }

@@ -1,7 +1,7 @@
-import { EntityManager, expr } from '@mikro-orm/core'
+import { EntityManager } from '@mikro-orm/core'
 import { Resource, ServiceRequest, ServiceResponse, ServiceRoute, Validate, HasPermission } from 'koa-rest-services'
 import APIKey from '../../entities/api-key'
-import Player from '../../entities/player'
+import PlayerAlias from '../../entities/player-alias'
 import PlayersAPIPolicy from '../../lib/policies/api/players-api.policy'
 import PlayerResource from '../../resources/player.resource'
 import PlayersService from '../players.service'
@@ -27,32 +27,33 @@ export default class PlayersAPIService extends APIService<PlayersService> {
   }
 
   @Validate({
-    query: ['alias', 'id']
+    query: ['service', 'identifier']
   })
   @HasPermission(PlayersAPIPolicy, 'identify')
   @Resource(PlayerResource, 'player')
   async identify(req: ServiceRequest): Promise<ServiceResponse> {
-    const { alias, id } = req.query
+    const { service, identifier } = req.query
     const em: EntityManager = req.ctx.em
 
     const key: APIKey = await this.getAPIKey(req.ctx)
 
-    const player = await em.getRepository(Player).findOne({
-      aliases: {
-        [alias]: id
-      },
-      game: key.game
-    })
+    const alias = await em.getRepository(PlayerAlias).findOne({
+      service,
+      identifier,
+      player: {
+        game: key.game
+      }
+    }, ['player'])
 
-    if (!player) req.ctx.throw(404, 'Player not found')
+    if (!alias) req.ctx.throw(404, 'Player not found')
 
-    player.lastSeenAt = new Date()
+    alias.player.lastSeenAt = new Date()
     await em.flush()
 
     return {
       status: 200,
       body: {
-        player
+        player: alias.player
       }
     }
   }

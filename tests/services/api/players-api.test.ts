@@ -7,6 +7,7 @@ import APIKey, { APIKeyScope } from '../../../src/entities/api-key'
 import { createToken } from '../../../src/services/api-keys.service'
 import UserFactory from '../../fixtures/UserFactory'
 import PlayerFactory from '../../fixtures/PlayerFactory'
+import { isToday, sub } from 'date-fns'
 
 const baseUrl = '/api/players'
 
@@ -96,6 +97,25 @@ describe('Players API service', () => {
       .expect(200)
 
     expect(res.body.player.id).toBe(player.id)
+  })
+
+  it('should update the lastSeenAt when a player identifies', async () => {
+    apiKey.scopes = [APIKeyScope.READ_PLAYERS]
+    token = await createToken(apiKey)
+
+    const player = await new PlayerFactory([apiKey.game]).with(() => ({
+      lastSeenAt: sub(new Date(), { days: 3 })
+    })).one()
+
+    await (<EntityManager>app.context.em).persistAndFlush(player)
+
+    const res = await request(app.callback())
+      .get(`${baseUrl}/identify`)
+      .query({ service: player.aliases[0].service, identifier: player.aliases[0].identifier })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    expect(isToday(new Date(res.body.player.lastSeenAt))).toBe(true)
   })
 
   it('should not identify a player if the scope is missing', async () => {

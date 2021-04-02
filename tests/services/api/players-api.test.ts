@@ -103,9 +103,7 @@ describe('Players API service', () => {
     apiKey.scopes = [APIKeyScope.READ_PLAYERS]
     token = await createToken(apiKey)
 
-    const player = await new PlayerFactory([apiKey.game]).with(() => ({
-      lastSeenAt: sub(new Date(), { days: 3 })
-    })).one()
+    const player = await new PlayerFactory([apiKey.game]).state('not seen today').one()
 
     await (<EntityManager>app.context.em).persistAndFlush(player)
 

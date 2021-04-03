@@ -5,6 +5,9 @@ import request from 'supertest'
 import UserSession from '../../../src/entities/user-session'
 import UserAccessCode from '../../../src/entities/user-access-code'
 import UserFactory from '../../fixtures/UserFactory'
+import bcrypt from 'bcrypt'
+import jwt from 'jsonwebtoken'
+import { promisify } from 'util'
 
 const baseUrl = '/public/users'
 
@@ -93,6 +96,15 @@ describe('Users public service', () => {
       expect(res.body).toStrictEqual({ message: 'Incorrect email address or password', showHint: true })
   })
 
+  it('should not let a user login with the wrong email', async () => {
+    const res = await request(app.callback())
+      .post(`${baseUrl}/login`)
+      .send({ email: 'dev@trytal0.com', password: 'password' })
+      .expect(401)
+
+      expect(res.body).toStrictEqual({ message: 'Incorrect email address or password', showHint: true })
+  })
+
   it('should let a user refresh their session if they have one', async () => {
     const user = await new UserFactory().one()
     user.lastSeenAt = new Date(2020, 1, 1)
@@ -129,5 +141,79 @@ describe('Users public service', () => {
       .expect(403)
 
     expect(res.body).toStrictEqual({ message: 'Refresh token expired' })
+  })
+
+  it('should let a user request a forgot password email for an existing user', async () => {
+    const user = await new UserFactory().with(() => ({ password: 'p4ssw0rd' })).one()
+    await (<EntityManager>app.context.em).persistAndFlush(user)
+
+    const res = await request(app.callback())
+      .post(`${baseUrl}/forgot_password`)
+      .send({ email: user.email })
+      .expect(200)
+
+    expect(res.body.user.id).toBe(user.id)
+  })
+
+  it('should let a user request a forgot password email for a non-existent user', async () => {
+    const res = await request(app.callback())
+      .post(`${baseUrl}/forgot_password`)
+      .send({ email: 'blah' })
+      .expect(204)
+
+    expect(res.body.user).not.toBeDefined()
+  })
+
+  it('should let a user change their password', async () => {
+    const password = await bcrypt.hash('p4ssw0rd112233', 10)
+    const user = await new UserFactory().with(() => ({ password })).one()
+    await (<EntityManager>app.context.em).persistAndFlush(user)
+
+    let res = await request(app.callback())
+      .post(`${baseUrl}/forgot_password`)
+      .send({ email: user.email })
+      .expect(200)
+
+    const token = res.body.accessToken
+
+    res = await request(app.callback())
+      .post(`${baseUrl}/change_password`)
+      .send({ token, password: 'my-new-passw0rd1!' })
+      .expect(200)
+
+    expect(res.body.user.id).toBe(user.id)
+    expect(res.body.accessToken).toBeDefined()
+  })
+
+  it('should not let a user change their password if they supply the same one', async () => {
+    const password = await bcrypt.hash('p4ssw0rd112233', 10)
+    const user = await new UserFactory().with(() => ({ password })).one()
+    await (<EntityManager>app.context.em).persistAndFlush(user)
+
+    let res = await request(app.callback())
+      .post(`${baseUrl}/forgot_password`)
+      .send({ email: user.email })
+      .expect(200)
+
+    const token = res.body.accessToken
+
+    res = await request(app.callback())
+      .post(`${baseUrl}/change_password`)
+      .send({ token, password: 'p4ssw0rd112233' })
+      .expect(400)
+
+    expect(res.body).toStrictEqual({ message: 'Please choose a different password' })
+  })
+
+  it('should not let a user change their password if the token is invalid', async () => {
+    const sign = promisify(jwt.sign)
+    const token = await sign({ sub: 1 }, 'wrong secret', { expiresIn: '15m' })
+
+    const res = await request(app.callback())
+      .post(`${baseUrl}/change_password`)
+      .send({ token, password: '3432ndjwedn1' })
+      .expect(401)
+
+    expect(res.body).toStrictEqual({ message: 'Request expired' })
   })
 })

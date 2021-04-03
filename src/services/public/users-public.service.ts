@@ -93,6 +93,10 @@ export default class UsersPublicService implements Service {
     }
   }
 
+  handleFailedLogin(req: ServiceRequest) {
+    req.ctx.throw(401, { message: 'Incorrect email address or password', showHint: true })
+  }
+
   @Validate({
     body: ['email', 'password']
   })
@@ -103,11 +107,10 @@ export default class UsersPublicService implements Service {
     const em: EntityManager = req.ctx.em
 
     const user = await em.getRepository(User).findOne({ email })
-    const passwordMatches = await bcrypt.compare(password, user?.password ?? '')
+    if (!user) this.handleFailedLogin(req)
 
-    if (!user || !passwordMatches) {
-      req.ctx.throw(401, { message: 'Incorrect email address or password', showHint: true })
-    }
+    const passwordMatches = await bcrypt.compare(password, user.password)
+    if (!passwordMatches) this.handleFailedLogin(req)
 
     const accessToken = await buildTokenPair(req.ctx, user)
 
@@ -161,6 +164,7 @@ export default class UsersPublicService implements Service {
 
     try {
       user = await em.getRepository(User).findOneOrFail({ email })
+
       const secret = user.password.substring(0, 10)
       const payload = { sub: user.id }
       const sign = promisify(jwt.sign)
@@ -169,7 +173,9 @@ export default class UsersPublicService implements Service {
       // TODO send accessToken in email
       temp = accessToken
     } catch (err) {
-      console.warn(`User with email ${email} not found for password reset`)
+      return {
+        status: 204
+      }
     }
 
     return {

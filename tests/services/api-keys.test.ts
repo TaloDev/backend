@@ -90,7 +90,7 @@ describe('API keys service', () => {
 
   it('should create an api key if the user\'s email is confirmed', async () => {
     user.emailConfirmed = true
-    await (<EntityManager>app.context.em).persistAndFlush(user)
+    await (<EntityManager>app.context.em).flush()
 
     const res = await request(app.callback())
       .post(`${baseUrl}`)

@@ -1,7 +1,7 @@
 import { EntityManager } from '@mikro-orm/core'
 import { ServicePolicy } from 'koa-rest-services'
 import { Context } from 'koa'
-import APIKey from '../../entities/api-key'
+import APIKey, { APIKeyScope } from '../../entities/api-key'
 import Game from '../../entities/game'
 import User from '../../entities/user'
 import getUserFromToken from '../auth/getUserFromToken'
@@ -39,7 +39,8 @@ export default class Policy extends ServicePolicy {
     return game.organisation.id === user.organisation.id
   }
 
-  hasScope(scope: string): boolean {
-    return this.ctx.state.user.scopes.includes(scope)
+  async hasScope(scope: string): Promise<boolean> {
+    const key = await this.getAPIKey()
+    return key.scopes.includes(scope as APIKeyScope)
   }
 }

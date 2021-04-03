@@ -36,6 +36,7 @@ describe('Players API service', () => {
     await (<EntityManager>app.context.em).persistAndFlush(players)
 
     apiKey.scopes = [APIKeyScope.READ_PLAYERS]
+    await (<EntityManager>app.context.em).flush()
     token = await createToken(apiKey)
 
     const res = await request(app.callback())
@@ -52,6 +53,7 @@ describe('Players API service', () => {
 
   it('should not return the game\'s players without the valid scope', async () => {
     apiKey.scopes = []
+    await (<EntityManager>app.context.em).flush()
     token = await createToken(apiKey)
 
     await request(app.callback())
@@ -62,6 +64,7 @@ describe('Players API service', () => {
 
   it('should create a player if the scope is valid', async () => {
     apiKey.scopes = [APIKeyScope.WRITE_PLAYERS]
+    await (<EntityManager>app.context.em).flush()
     token = await createToken(apiKey)
 
     const res = await request(app.callback())
@@ -74,6 +77,7 @@ describe('Players API service', () => {
 
   it('should not create a player if the scope is valid', async () => {
     apiKey.scopes = []
+    await (<EntityManager>app.context.em).flush()
     token = await createToken(apiKey)
 
     await request(app.callback())
@@ -84,6 +88,7 @@ describe('Players API service', () => {
 
   it('should identify a player', async () => {
     apiKey.scopes = [APIKeyScope.READ_PLAYERS]
+    await (<EntityManager>app.context.em).flush()
     token = await createToken(apiKey)
 
     const player = await new PlayerFactory([apiKey.game]).one()
@@ -101,6 +106,7 @@ describe('Players API service', () => {
 
   it('should update the lastSeenAt when a player identifies', async () => {
     apiKey.scopes = [APIKeyScope.READ_PLAYERS]
+    await (<EntityManager>app.context.em).flush()
     token = await createToken(apiKey)
 
     const player = await new PlayerFactory([apiKey.game]).state('not seen today').one()
@@ -118,6 +124,7 @@ describe('Players API service', () => {
 
   it('should not identify a player if the scope is missing', async () => {
     apiKey.scopes = []
+    await (<EntityManager>app.context.em).flush()
     token = await createToken(apiKey)
 
     await request(app.callback())
@@ -129,6 +136,7 @@ describe('Players API service', () => {
 
   it('should not identify a non-existent player', async () => {
     apiKey.scopes = [APIKeyScope.READ_PLAYERS]
+    await (<EntityManager>app.context.em).flush()
     token = await createToken(apiKey)
 
     const res = await request(app.callback())
@@ -149,6 +157,7 @@ describe('Players API service', () => {
     await (<EntityManager>app.context.em).persistAndFlush(player)
 
     apiKey.scopes = [APIKeyScope.WRITE_PLAYERS]
+    await (<EntityManager>app.context.em).flush()
     token = await createToken(apiKey)
 
     const res = await request(app.callback())
@@ -176,6 +185,7 @@ describe('Players API service', () => {
     await (<EntityManager>app.context.em).persistAndFlush(player)
 
     apiKey.scopes = []
+    await (<EntityManager>app.context.em).flush()
     token = await createToken(apiKey)
 
     const res = await request(app.callback())
@@ -191,6 +201,7 @@ describe('Players API service', () => {
 
   it('should not update a non-existent player\'s properties', async () => {
     apiKey.scopes = [APIKeyScope.WRITE_PLAYERS]
+    await (<EntityManager>app.context.em).flush()
     token = await createToken(apiKey)
 
     const res = await request(app.callback())

@@ -9,7 +9,7 @@ import UsersService, { usersRoutes } from '../services/users.service'
 export default (app: Koa) => {
   app.use(async (ctx: Context, next: Next): Promise<void> => {
     if (!ctx.path.match(/^\/(public|api)\//)) {
-      if (Array.isArray(ctx.state.user.scopes)) ctx.throw(403)
+      if (ctx.state.user.api) ctx.throw(403)
     }
     await next()
   })

@@ -2,7 +2,6 @@ import { EntityManager } from '@mikro-orm/core'
 import { HasPermission, Resource, ServiceRequest, ServiceResponse, ServiceRoute, Validate } from 'koa-rest-services'
 import APIKey, { APIKeyScope } from '../entities/api-key'
 import jwt from 'jsonwebtoken'
-import Game from '../entities/game'
 import APIKeysPolicy from '../lib/policies/api-keys.policy'
 import APIKeyResource from '../resources/api-key.resource'
 import groupBy from 'lodash.groupby'
@@ -27,7 +26,7 @@ export const apiKeysRoutes: ServiceRoute[] = [
 ]
 
 export async function createToken(apiKey: APIKey, payloadParams?: { [key: string]: any }): Promise<string> {
-  const payload = { sub: apiKey.id, scopes: apiKey.scopes, ...payloadParams }
+  const payload = { sub: apiKey.id, api: true, ...payloadParams }
   const token = await promisify(jwt.sign)(payload, process.env.JWT_SECRET)
   return token
 }

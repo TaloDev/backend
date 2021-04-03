@@ -6,8 +6,7 @@ import PlayersAPIService, { playersAPIRoutes } from '../services/api/players-api
 export default (app: Koa) => {
   app.use(async (ctx: Context, next: Next): Promise<void> => {
     if (ctx.path.match(/^\/(api)\//)) {
-      if (!Array.isArray(ctx.state.user.scopes)) ctx.throw(403)
-      ctx.state.user.api = true
+      if (ctx.state.user.api !== true) ctx.throw(403)
     }
     await next()
   })

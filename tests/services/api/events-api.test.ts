@@ -45,6 +45,7 @@ describe('Events API service', () => {
     await (<EntityManager>app.context.em).persistAndFlush(events)
 
     apiKey.scopes = [APIKeyScope.READ_EVENTS]
+    await (<EntityManager>app.context.em).flush()
     token = await createToken(apiKey)
 
     const res = await request(app.callback())
@@ -58,6 +59,7 @@ describe('Events API service', () => {
 
   it('should not return the game\'s events without the valid scope', async () => {
     apiKey.scopes = []
+    await (<EntityManager>app.context.em).flush()
     token = await createToken(apiKey)
 
     await request(app.callback())
@@ -68,6 +70,7 @@ describe('Events API service', () => {
 
   it('should create an event if the scope is valid', async () => {
     apiKey.scopes = [APIKeyScope.WRITE_EVENTS]
+    await (<EntityManager>app.context.em).flush()
     token = await createToken(apiKey)
 
     const res = await request(app.callback())
@@ -81,6 +84,7 @@ describe('Events API service', () => {
 
   it('should not create an event if the scope is invalid', async () => {
     apiKey.scopes = []
+    await (<EntityManager>app.context.em).flush()
     token = await createToken(apiKey)
 
     await request(app.callback())
@@ -92,6 +96,7 @@ describe('Events API service', () => {
 
   it('should not create an event if the game doesn\'t exist', async () => {
     apiKey.scopes = [APIKeyScope.WRITE_EVENTS]
+    await (<EntityManager>app.context.em).flush()
     token = await createToken(apiKey)
 
     const res = await request(app.callback())
@@ -105,6 +110,7 @@ describe('Events API service', () => {
 
   it('should not create an event if the alias belongs to a player from another game', async () => {
     apiKey.scopes = [APIKeyScope.WRITE_EVENTS]
+    await (<EntityManager>app.context.em).flush()
     token = await createToken(apiKey)
 
     const otherGame = await new GameFactory(apiKey.game.organisation).one()

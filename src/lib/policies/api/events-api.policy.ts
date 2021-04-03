@@ -5,7 +5,7 @@ import APIKey from '../../../entities/api-key'
 
 export default class EventsAPIPolicy extends Policy {
   async get(req: ServiceRequest): Promise<boolean> {
-    return this.hasScope('read:events')
+    return await this.hasScope('read:events')
   }
 
   async post(req: ServiceRequest): Promise<boolean> {
@@ -19,6 +19,6 @@ export default class EventsAPIPolicy extends Policy {
 
     this.ctx.state.game = key.game.id
 
-    return this.hasScope('write:events')
+    return await this.hasScope('write:events')
   }
 }

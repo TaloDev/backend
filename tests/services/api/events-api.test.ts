@@ -10,6 +10,7 @@ import Event from '../../../src/entities/event'
 import EventFactory from '../../fixtures/EventFactory'
 import UserFactory from '../../fixtures/UserFactory'
 import PlayerFactory from '../../fixtures/PlayerFactory'
+import GameFactory from '../../fixtures/GameFactory'
 
 const baseUrl = '/api/events'
 
@@ -71,7 +72,7 @@ describe('Events API service', () => {
 
     const res = await request(app.callback())
       .post(`${baseUrl}`)
-      .send({ name: 'Craft bow', gameId: apiKey.game.id, aliasId: validPlayer.aliases[0].id })
+      .send({ name: 'Craft bow', aliasId: validPlayer.aliases[0].id })
       .auth(token, { type: 'bearer' })
       .expect(200)
 
@@ -84,7 +85,7 @@ describe('Events API service', () => {
 
     await request(app.callback())
       .post(`${baseUrl}`)
-      .send({ name: 'Craft bow', gameId: apiKey.game.id, aliasId: validPlayer.aliases[0].id })
+      .send({ name: 'Craft bow', aliasId: validPlayer.aliases[0].id })
       .auth(token, { type: 'bearer' })
       .expect(403)
   })
@@ -100,5 +101,20 @@ describe('Events API service', () => {
       .expect(404)
 
     expect(res.body.message).toBe('Player alias not found')
+  })
+
+  it('should not create an event if the alias belongs to a player from another game', async () => {
+    apiKey.scopes = [APIKeyScope.WRITE_EVENTS]
+    token = await createToken(apiKey)
+
+    const otherGame = await new GameFactory(apiKey.game.organisation).one()
+    const invalidPlayer = await new PlayerFactory([otherGame]).one()
+    await (<EntityManager>app.context.em).persistAndFlush([invalidPlayer])
+
+    await request(app.callback())
+      .post(`${baseUrl}`)
+      .send({ name: 'Craft bow', aliasId: invalidPlayer.aliases[0].id })
+      .auth(token, { type: 'bearer' })
+      .expect(403)
   })
 })

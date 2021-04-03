@@ -24,10 +24,6 @@ export default class Policy extends ServicePolicy {
     return user
   }
 
-  getSub(): number {
-    return this.ctx.state.user.sub
-  }
-
   async getAPIKey(): Promise<APIKey> {
     const key = await getAPIKeyFromToken(this.ctx, ['game'])
     if (key.revokedAt) this.ctx.throw(401)

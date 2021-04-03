@@ -28,7 +28,7 @@ export default class PlayerFactory extends Factory<Player> {
     }
 
     const playerAliasFactory = new PlayerAliasFactory()
-    const items = await playerAliasFactory.with(() => ({ player })).many(casual.integer(1, 3))
+    const items = await playerAliasFactory.with(() => ({ player })).many(casual.integer(1, 2))
     const aliases = new Collection<PlayerAlias>(this, items)
 
     return {  

@@ -4,7 +4,8 @@ module.exports = {
   coveragePathIgnorePatterns: [
     '/node_modules/',
     '/tests/fixtures/',
-    '/tests/utils/'
+    '/tests/utils/',
+    '/src/index.ts'
   ],
   coverageReporters: ['lcov'],
   collectCoverage: true

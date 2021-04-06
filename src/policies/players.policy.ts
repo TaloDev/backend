@@ -1,6 +1,6 @@
 import Policy from './policy'
 import { ServiceRequest } from 'koa-rest-services'
-import Player from '../../entities/player'
+import Player from '../entities/player'
 
 export default class PlayersPolicy extends Policy {
   async get(req: ServiceRequest): Promise<boolean> {

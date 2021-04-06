@@ -1,7 +1,7 @@
 import { EntityManager } from '@mikro-orm/core'
 import { HasPermission, Service, ServiceRequest, ServiceResponse, Validate } from 'koa-rest-services'
 import Event from '../entities/event'
-import EventsPolicy from '../lib/policies/events.policy'
+import EventsPolicy from '../policies/events.policy'
 import groupBy from 'lodash.groupby'
 import { isSameDay, isValid, isAfter, sub } from 'date-fns'
 

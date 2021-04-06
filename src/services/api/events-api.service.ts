@@ -1,7 +1,7 @@
 import { EntityManager } from '@mikro-orm/core'
 import { HasPermission, Resource, ServiceRequest, ServiceResponse, Validate } from 'koa-rest-services'
 import Event from '../../entities/event'
-import EventsAPIPolicy from '../../lib/policies/api/events-api.policy'
+import EventsAPIPolicy from '../../policies/api/events-api.policy'
 import EventsService from '../events.service'
 import APIService from './api-service'
 import EventResource from '../../resources/event.resource'

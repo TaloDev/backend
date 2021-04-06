@@ -1,7 +1,7 @@
 import Policy from '../policy'
 import { ServiceRequest } from 'koa-rest-services'
-import PlayerAlias from '../../../entities/player-alias'
-import APIKey from '../../../entities/api-key'
+import PlayerAlias from '../../entities/player-alias'
+import APIKey from '../../entities/api-key'
 
 export default class EventsAPIPolicy extends Policy {
   async get(req: ServiceRequest): Promise<boolean> {

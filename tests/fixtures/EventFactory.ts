@@ -12,9 +12,9 @@ export default class EventFactory extends Factory<Event> {
   constructor(availablePlayers: Player[]) {
     super(Event, 'base')
     this.register('base', this.base)
-    this.register('thisWeek', this.thisWeek)
-    this.register('thisMonth', this.thisMonth)
-    this.register('thisYear', this.thisYear)
+    this.register('this week', this.thisWeek)
+    this.register('this month', this.thisMonth)
+    this.register('this year', this.thisYear)
 
     this.availablePlayers = availablePlayers
     this.eventTitles = ['Zone Explored', 'Death', 'Item Looted', 'Treasure Discovered', 'Levelled up']

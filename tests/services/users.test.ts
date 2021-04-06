@@ -8,6 +8,7 @@ import Game from '../../src/entities/game'
 import UserAccessCode from '../../src/entities/user-access-code'
 import bcrypt from 'bcrypt'
 import UserFactory from '../fixtures/UserFactory'
+import UserSession from '../../src/entities/user-session'
 
 const baseUrl = '/users'
 
@@ -29,11 +30,19 @@ describe('Users service', () => {
     await (<EntityManager>app.context.em).getConnection().close()
   })
 
-  it('should be able to log a user out', async () => {
+  it('should be able to log a user out and clear sessions', async () => {
+    const session = new UserSession(user)
+    session.userAgent = 'testybrowser'
+    await (<EntityManager>app.context.em).persistAndFlush(session)
+
     await request(app.callback())
       .post(`${baseUrl}/logout`)
+      .set('user-agent', 'testybrowser')
       .auth(token, { type: 'bearer' })
       .expect(204)
+
+    const sessions = await (<EntityManager>app.context.em).getRepository(UserSession).find({ user })
+    expect(sessions).toHaveLength(0)
   })
 
   it('should let users change their password', async () => {

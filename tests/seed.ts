@@ -35,7 +35,7 @@ import OrganisationFactory from './fixtures/OrganisationFactory'
     const players = await playerFactory.many(20)
   
     const eventFactory = new EventFactory(players)
-    const eventsThisMonth = await eventFactory.state('thisMonth').many(200)
+    const eventsThisMonth = await eventFactory.state('this month').many(200)
 
     await orm.em.persistAndFlush([
       organisation,

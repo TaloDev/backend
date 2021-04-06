@@ -4,7 +4,7 @@ import { Service, ServiceRequest, ServiceResponse, Validate, HasPermission, Serv
 import { groupBy } from 'lodash'
 import Event from '../entities/event'
 import Player from '../entities/player'
-import HeadlinesPolicy from '../lib/policies/headlines.policy'
+import HeadlinesPolicy from '../policies/headlines.policy'
 
 export const headlinesRoutes: ServiceRoute[] = [
   {

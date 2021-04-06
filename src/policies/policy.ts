@@ -1,11 +1,11 @@
 import { EntityManager } from '@mikro-orm/core'
 import { ServicePolicy } from 'koa-rest-services'
 import { Context } from 'koa'
-import APIKey, { APIKeyScope } from '../../entities/api-key'
-import Game from '../../entities/game'
-import User from '../../entities/user'
-import getUserFromToken from '../auth/getUserFromToken'
-import getAPIKeyFromToken from '../auth/getAPIKeyFromToken'
+import APIKey, { APIKeyScope } from '../entities/api-key'
+import Game from '../entities/game'
+import User from '../entities/user'
+import getUserFromToken from '../lib/auth/getUserFromToken'
+import getAPIKeyFromToken from '../lib/auth/getAPIKeyFromToken'
 
 export default class Policy extends ServicePolicy {
   em: EntityManager

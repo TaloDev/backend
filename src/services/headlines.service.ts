@@ -24,7 +24,7 @@ export const headlinesRoutes: ServiceRoute[] = [
   },
   {
     method: 'GET',
-    path: '/unique_events_submitters',
+    path: '/unique_event_submitters',
     handler: 'uniqueEventSubmitters'
   }
 ]

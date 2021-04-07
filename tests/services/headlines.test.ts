@@ -104,7 +104,7 @@ describe('Headlines service', () => {
     ])
 
     const res = await request(app.callback())
-      .get(`${baseUrl}/unique_events_submitters`)
+      .get(`${baseUrl}/unique_event_submitters`)
       .query({ gameId: validGame.id })
       .auth(token, { type: 'bearer' })
       .expect(200)

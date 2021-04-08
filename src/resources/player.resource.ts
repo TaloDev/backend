@@ -14,7 +14,6 @@ export default class PlayerResource extends EntityResource<Player> {
       id: this.entity.id,
       props: this.entity.props,
       aliases,
-      gameId: this.entity.game.id,
       createdAt: this.entity.createdAt,
       lastSeenAt: this.entity.lastSeenAt
     }

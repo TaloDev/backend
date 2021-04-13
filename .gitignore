@@ -4,5 +4,6 @@ thumbs.db
 dist/
 *.log
 .env
+.env.backup
 coverage/
 tests/test.db

@@ -2,6 +2,7 @@ import Koa, { Context, Next } from 'koa'
 import { service } from 'koa-rest-services'
 import EventsAPIService from '../services/api/events-api.service'
 import PlayersAPIService, { playersAPIRoutes } from '../services/api/players-api.service'
+import limiterMiddleware from './limiter-middleware'
 
 export default (app: Koa) => {
   app.use(async (ctx: Context, next: Next): Promise<void> => {
@@ -10,6 +11,8 @@ export default (app: Koa) => {
     }
     await next()
   })
+
+  app.use(limiterMiddleware)
   
   app.use(service('events-api', new EventsAPIService(), {
     basePath: '/api/events'

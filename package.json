@@ -17,6 +17,7 @@
   "devDependencies": {
     "@mikro-orm/cli": "^4.3.4",
     "@mikro-orm/sqlite": "^4.5.0",
+    "@types/ioredis": "^4.22.3",
     "@types/jest": "^26.0.20",
     "@types/koa": "^2.11.6",
     "@types/koa-bodyparser": "^4.3.0",
@@ -41,6 +42,7 @@
     "date-fns": "^2.16.1",
     "dotenv": "^8.2.0",
     "fuse.js": "^6.4.6",
+    "ioredis": "^4.26.0",
     "jsonwebtoken": "^8.5.1",
     "koa": "^2.13.0",
     "koa-bodyparser": "^4.3.0",

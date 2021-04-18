@@ -46,8 +46,8 @@ describe('Players API service', () => {
 
     expect(res.body.players).toHaveLength(3)
 
-    for (let player of res.body.players) {
-      expect(player.gameId).toBe(apiKey.game.id)
+    for (let i = 0; i < res.body.players.length; i++) {
+      expect(res.body.players[i].id).toBe(players[i].id)
     }
   })
 
@@ -67,12 +67,10 @@ describe('Players API service', () => {
     await (<EntityManager>app.context.em).flush()
     token = await createToken(apiKey)
 
-    const res = await request(app.callback())
+    await request(app.callback())
       .post(`${baseUrl}`)
       .auth(token, { type: 'bearer' })
       .expect(200)
-
-    expect(res.body.player.gameId).toBe(apiKey.game.id)
   })
 
   it('should not create a player if the scope is valid', async () => {

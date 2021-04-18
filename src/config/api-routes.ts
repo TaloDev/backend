@@ -12,7 +12,9 @@ export default (app: Koa) => {
     await next()
   })
 
-  app.use(limiterMiddleware)
+  if (process.env.NODE_ENV !== 'test') {
+    app.use(limiterMiddleware)
+  }
   
   app.use(service('events-api', new EventsAPIService(), {
     basePath: '/api/events'

@@ -5,7 +5,8 @@ module.exports = {
     '/node_modules/',
     '/tests/fixtures/',
     '/tests/utils/',
-    '/src/index.ts'
+    '/src/index.ts',
+    '/src/config/'
   ],
   coverageReporters: ['lcov'],
   collectCoverage: true

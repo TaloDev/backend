@@ -94,7 +94,7 @@ describe('Events API service', () => {
     await (<EntityManager>app.context.em).flush()
     token = await createToken(apiKey)
 
-    await request(app.callback())
+    const res = await request(app.callback())
       .post(`${baseUrl}`)
       .send({
         events: [
@@ -106,8 +106,7 @@ describe('Events API service', () => {
       .auth(token, { type: 'bearer' })
       .expect(200)
 
-    const events = await (<EntityManager>app.context.em).getRepository(Event).findAll()
-    expect(events).toHaveLength(3)
+    expect(res.body.events).toHaveLength(3)
   })
 
   it('should not create an event if the scope is invalid', async () => {

@@ -22,7 +22,7 @@ export default class EventsAPIService extends APIService<EventsService> {
     }
   })
   @HasPermission(EventsAPIPolicy, 'post')
-  @Resource(EventResource, 'event')
+  @Resource(EventResource, 'events')
   async post(req: ServiceRequest): Promise<ServiceResponse> {
     const { events } = req.body
     const em: EntityManager = req.ctx.em
@@ -68,6 +68,7 @@ export default class EventsAPIService extends APIService<EventsService> {
     return {
       status: 200,
       body: {
+        events: items,
         errors
       }
     }

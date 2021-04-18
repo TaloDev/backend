@@ -32,6 +32,12 @@ describe('Events API service', () => {
     await (<EntityManager>app.context.em).persistAndFlush([apiKey, validPlayer])
   })
 
+  beforeEach(async () => {
+    const repo = (<EntityManager>app.context.em).getRepository(Event)
+    const events = await repo.findAll()
+    await repo.removeAndFlush(events)
+  })
+
   afterAll(async () => {
     await (<EntityManager>app.context.em).getConnection().close()
   })
@@ -73,13 +79,35 @@ describe('Events API service', () => {
     await (<EntityManager>app.context.em).flush()
     token = await createToken(apiKey)
 
-    const res = await request(app.callback())
+    await request(app.callback())
       .post(`${baseUrl}`)
-      .send({ name: 'Craft bow', aliasId: validPlayer.aliases[0].id })
+      .send({ events: [{ name: 'Craft bow', aliasId: validPlayer.aliases[0].id, timestamp: Date.now() }] })
       .auth(token, { type: 'bearer' })
       .expect(200)
 
-    expect(res.body.event.gameId).toBe(apiKey.game.id)
+    const event = await (<EntityManager>app.context.em).getRepository(Event).findOne({ name: 'Craft bow'})
+    expect(event).toBeTruthy()
+  })
+
+  it('should create multiple events if the scope is valid', async () => {
+    apiKey.scopes = [APIKeyScope.WRITE_EVENTS]
+    await (<EntityManager>app.context.em).flush()
+    token = await createToken(apiKey)
+
+    await request(app.callback())
+      .post(`${baseUrl}`)
+      .send({
+        events: [
+          { name: 'Craft bow', aliasId: validPlayer.aliases[0].id, timestamp: Date.now() },
+          { name: 'Equip bow', aliasId: validPlayer.aliases[0].id, timestamp: Date.now(), props: { itemId: 5 } },
+          { name: 'Shoot arrow', aliasId: validPlayer.aliases[0].id, timestamp: Date.now() }
+        ]
+      })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    const events = await (<EntityManager>app.context.em).getRepository(Event).findAll()
+    expect(events).toHaveLength(3)
   })
 
   it('should not create an event if the scope is invalid', async () => {
@@ -89,23 +117,37 @@ describe('Events API service', () => {
 
     await request(app.callback())
       .post(`${baseUrl}`)
-      .send({ name: 'Craft bow', aliasId: validPlayer.aliases[0].id })
+      .send({ events: [{ name: 'Craft bow', aliasId: validPlayer.aliases[0].id, timestamp: Date.now() }]})
       .auth(token, { type: 'bearer' })
       .expect(403)
   })
 
-  it('should not create an event if the game doesn\'t exist', async () => {
+  it('should not create an event if the alias is a string', async () => {
     apiKey.scopes = [APIKeyScope.WRITE_EVENTS]
     await (<EntityManager>app.context.em).flush()
     token = await createToken(apiKey)
 
     const res = await request(app.callback())
       .post(`${baseUrl}`)
-      .send({ name: 'Craft bow', aliasId: 'blah' })
+      .send({ events: [{ name: 'Craft bow', aliasId: 'blah', timestamp: Date.now() }]})
       .auth(token, { type: 'bearer' })
-      .expect(404)
+      .expect(200)
 
-    expect(res.body.message).toBe('Player alias not found')
+    expect(res.body.errors[0]).toStrictEqual(['No alias was found for aliasId blah'])
+  })
+
+  it('should not create an event if the alias doesn\'t exist', async () => {
+    apiKey.scopes = [APIKeyScope.WRITE_EVENTS]
+    await (<EntityManager>app.context.em).flush()
+    token = await createToken(apiKey)
+
+    const res = await request(app.callback())
+      .post(`${baseUrl}`)
+      .send({ events: [{ name: 'Craft bow', aliasId: 574, timestamp: Date.now() }]})
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    expect(res.body.errors[0]).toStrictEqual(['No alias was found for aliasId 574'])
   })
 
   it('should not create an event if the alias belongs to a player from another game', async () => {
@@ -115,12 +157,56 @@ describe('Events API service', () => {
 
     const otherGame = await new GameFactory(apiKey.game.organisation).one()
     const invalidPlayer = await new PlayerFactory([otherGame]).one()
-    await (<EntityManager>app.context.em).persistAndFlush([invalidPlayer])
+    await (<EntityManager>app.context.em).persistAndFlush(invalidPlayer)
 
-    await request(app.callback())
+    const res = await request(app.callback())
       .post(`${baseUrl}`)
-      .send({ name: 'Craft bow', aliasId: invalidPlayer.aliases[0].id })
+      .send({ events: [{ name: 'Craft bow', aliasId: invalidPlayer.aliases[0].id, timestamp: Date.now() }] })
       .auth(token, { type: 'bearer' })
-      .expect(403)
+      .expect(200)
+
+    expect(res.body.errors[0]).toStrictEqual([`No alias was found for aliasId ${invalidPlayer.aliases[0].id}`])
+  })
+
+  it('should not create an event if the name is missing', async () => {
+    apiKey.scopes = [APIKeyScope.WRITE_EVENTS]
+    await (<EntityManager>app.context.em).flush()
+    token = await createToken(apiKey)
+
+    const res = await request(app.callback())
+      .post(`${baseUrl}`)
+      .send({ events: [{ aliasId: validPlayer.aliases[0].id, timestamp: Date.now() }]})
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    expect(res.body.errors[0]).toStrictEqual(['Event is missing the key: name'])
+  })
+
+  it('should not create an event if the timestamp is missing', async () => {
+    apiKey.scopes = [APIKeyScope.WRITE_EVENTS]
+    await (<EntityManager>app.context.em).flush()
+    token = await createToken(apiKey)
+
+    const res = await request(app.callback())
+      .post(`${baseUrl}`)
+      .send({ events: [{ name: 'Craft bow', aliasId: validPlayer.aliases[0].id }]})
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    expect(res.body.errors[0]).toStrictEqual(['Event is missing the key: timestamp'])
+  })
+
+  it('should not create any events if the events body key is not an array', async () => {
+    apiKey.scopes = [APIKeyScope.WRITE_EVENTS]
+    await (<EntityManager>app.context.em).flush()
+    token = await createToken(apiKey)
+
+    const res = await request(app.callback())
+      .post(`${baseUrl}`)
+      .send({ name: 'Craft bow', aliasId: validPlayer.aliases[0].id })
+      .auth(token, { type: 'bearer' })
+      .expect(400)
+
+    expect(res.body.message).toBe('Events must be an array')
   })
 })

@@ -26,7 +26,7 @@ export default class EventsService implements Service {
         const endDate = new Date(req.ctx.query.endDate)
         if (isValid(endDate) && isAfter(startDate, endDate)) return 'Invalid start date, it should be before the end date'
       },
-      endDate: (val: string, req: ServiceRequest) => {
+      endDate: (val: string) => {
         if (!val) return 'Missing query key: endDate'
 
         const endDate = new Date(val)

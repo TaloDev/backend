@@ -34,9 +34,7 @@ describe('Players service', () => {
   it('should create a player', async () => {
     const res = await request(app.callback())
       .post(`${baseUrl}`)
-      .send({
-        gameId: validGame.id
-      })
+      .send({ gameId: validGame.id })
       .auth(token, { type: 'bearer' })
       .expect(200)
 

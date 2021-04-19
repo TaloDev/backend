@@ -53,16 +53,17 @@ export default class PlayersService implements Service {
   async get(req: ServiceRequest): Promise<ServiceResponse> {
     const { gameId, search } = req.query
     const em: EntityManager = req.ctx.em
-    let players = await em.getRepository(Player).find({ game: Number(gameId) })
+
+    let players = await em.getRepository(Player).find({ game: Number(gameId) }, ['aliases'])
 
     if (search) {
       const items: SearchablePlayer[] = players.map((player) => ({
         id: player.id,
-        allAliases: Object.keys(player.aliases).map((key) => player.aliases[key]),
+        allAliases: player.aliases.getItems().map((alias) => alias.identifier),
         allProps: Object.keys(player.props).map((key) => player.props[key])
       }))
 
-      const fuse = new Fuse(items, { keys: ['id', 'allAliases', 'allProps'] })
+      const fuse = new Fuse(items, { keys: ['id', 'allAliases', 'allProps'], threshold: 0.2 })
       players = fuse.search(search).map((fuseItem) => players[fuseItem.refIndex])
     }
 

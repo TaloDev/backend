@@ -55,7 +55,9 @@ describe('Players service', () => {
       .expect(200)
 
     expect(res.body.player).toBeDefined()
-    expect(res.body.player.aliases).toStrictEqual({ steam: '12345' })
+    expect(res.body.player.aliases).toHaveLength(1)
+    expect(res.body.player.aliases[0].service).toBe('steam')
+    expect(res.body.player.aliases[0].identifier).toBe('12345')
   })
 
   it('should not create a player for a non-existent game', async () => {

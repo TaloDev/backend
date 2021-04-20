@@ -37,8 +37,8 @@ describe('API keys service', () => {
       .auth(token, { type: 'bearer' })
       .expect(200)
 
-    const length = Object.keys(res.body.scopes).reduce((acc, cur) => {
-      return acc + res.body.scopes[cur].length
+    const length = Object.keys(res.body.scopes).reduce((acc, curr) => {
+      return acc + res.body.scopes[curr].length
     }, 0)
     expect(length).toBe(Object.keys(APIKeyScope).length)
   })

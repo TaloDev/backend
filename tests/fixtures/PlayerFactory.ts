@@ -24,7 +24,7 @@ export default class PlayerFactory extends Factory<Player> {
     const props = {}
 
     for (let i = 0; i < propsCount; i++) {
-      props[casual.random_element(availableProps)] = casual.integer(0, 99)
+      props[casual.random_element(availableProps)] = String(casual.integer(0, 99))
     }
 
     const playerAliasFactory = new PlayerAliasFactory()

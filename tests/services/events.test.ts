@@ -64,7 +64,7 @@ describe('Events service', () => {
       name: 'Open inventory',
       date: new Date(now.getTime()).getTime(),
       count: 1,
-      change: 1
+      change: 0
     })
 
     expect(res.body.events['Open inventory'][1]).toEqual({
@@ -165,10 +165,35 @@ describe('Events service', () => {
       .auth(token, { type: 'bearer' })
       .expect(200)
 
-    expect(res.body.events['Open inventory'][0].change).toBe(1)
+    expect(res.body.events['Open inventory'][0].change).toBe(0)
     expect(res.body.events['Open inventory'][1].change).toBe(1)
     expect(res.body.events['Open inventory'][2].change).toBe(0.5)
     expect(res.body.events['Open inventory'][3].change.toFixed(2)).toBe('-0.67')
+  })
+
+  it('should mark the change between 0 events and 1 event as 100%', async () => {
+    const player = await new PlayerFactory([validGame]).one()
+    const now = new Date('2021-01-01')
+
+    const dayInMs = 86400000
+
+    const eventFactory = new EventFactory([player])
+
+    const event: Event = await eventFactory.with((event) => ({
+      name: 'Join guild',
+      createdAt: new Date(now.getTime() + dayInMs)
+    })).one()
+
+    await (<EntityManager>app.context.em).persistAndFlush(event)
+
+    const res = await request(app.callback())
+      .get(`${baseUrl}`)
+      .query({ gameId: validGame.id, startDate: '2021-01-01', endDate: '2021-01-05' })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    expect(res.body.events['Join guild'][0].change).toBe(0)
+    expect(res.body.events['Join guild'][1].change).toBe(1)
   })
 
   it('should not return a list of events for a non-existent game', async () => {

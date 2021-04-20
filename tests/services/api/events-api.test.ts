@@ -99,7 +99,7 @@ describe('Events API service', () => {
       .send({
         events: [
           { name: 'Craft bow', aliasId: validPlayer.aliases[0].id, timestamp: Date.now() },
-          { name: 'Equip bow', aliasId: validPlayer.aliases[0].id, timestamp: Date.now(), props: { itemId: 5 } },
+          { name: 'Equip bow', aliasId: validPlayer.aliases[0].id, timestamp: Date.now(), props: [{ key: 'itemId', value: 5 }] },
           { name: 'Shoot arrow', aliasId: validPlayer.aliases[0].id, timestamp: Date.now() }
         ]
       })
@@ -207,5 +207,60 @@ describe('Events API service', () => {
       .expect(400)
 
     expect(res.body.message).toBe('Events must be an array')
+  })
+
+  it('should sanitise event props into strings', async () => {
+    apiKey.scopes = [APIKeyScope.WRITE_EVENTS]
+    await (<EntityManager>app.context.em).flush()
+    token = await createToken(apiKey)
+
+    const res = await request(app.callback())
+      .post(`${baseUrl}`)
+      .send({
+        events: [
+          { name: 'Equip bow', aliasId: validPlayer.aliases[0].id, timestamp: Date.now(), props: [{ key: 'itemId', value: 5 }] }
+        ]
+      })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    expect(res.body.events[0].props[0].key).toBe('itemId')
+    expect(res.body.events[0].props[0].value).toBe('5')
+  })
+
+  it('should delete null event props', async () => {
+    apiKey.scopes = [APIKeyScope.WRITE_EVENTS]
+    await (<EntityManager>app.context.em).flush()
+    token = await createToken(apiKey)
+
+    const res = await request(app.callback())
+      .post(`${baseUrl}`)
+      .send({
+        events: [
+          { name: 'Equip bow', aliasId: validPlayer.aliases[0].id, timestamp: Date.now(), props: [{ key: 'itemId', value: 5 }, { key: 'name', value: null }] }
+        ]
+      })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    expect(res.body.events[0].props).toHaveLength(1)
+  })
+
+  it('should capture an error if the event props are not an array', async () => {
+    apiKey.scopes = [APIKeyScope.WRITE_EVENTS]
+    await (<EntityManager>app.context.em).flush()
+    token = await createToken(apiKey)
+
+    const res = await request(app.callback())
+      .post(`${baseUrl}`)
+      .send({
+        events: [
+          { name: 'Equip bow', aliasId: validPlayer.aliases[0].id, timestamp: Date.now(), props: { itemId: 5 } }
+        ]
+      })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+      expect(res.body.errors[0]).toStrictEqual(['Props must be an array'])
   })
 })

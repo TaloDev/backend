@@ -149,8 +149,8 @@ describe('Players API service', () => {
   it('should update a player\'s properties', async () => {
     const player = await new PlayerFactory([apiKey.game]).one()
     player.props = {
-      collectibles: 0,
-      zonesExplored: 1
+      collectibles: '0',
+      zonesExplored: '1'
     }
     await (<EntityManager>app.context.em).persistAndFlush(player)
 
@@ -161,24 +161,33 @@ describe('Players API service', () => {
     const res = await request(app.callback())
       .patch(`${baseUrl}/${player.id}`)
       .send({
-        props: {
-          collectibles: 1
-        }
+        props: [
+          {
+            key: 'collectibles',
+            value: '1'
+          }
+        ]
       })
       .auth(token, { type: 'bearer' })
       .expect(200)
 
-    expect(res.body.player.props).toStrictEqual({
-      collectibles: 1,
-      zonesExplored: 1
-    })
+    expect(res.body.player.props).toStrictEqual([
+      {
+        key: 'collectibles',
+        value: '1'
+      },
+      {
+        key: 'zonesExplored',
+        value: '1'
+      }
+    ])
   })
 
   it('should not update a player\'s properties if the scope is missing', async () => {
     const player = await new PlayerFactory([apiKey.game]).one()
     player.props = {
-      collectibles: 0,
-      zonesExplored: 1
+      collectibles: '0',
+      zonesExplored: '1'
     }
     await (<EntityManager>app.context.em).persistAndFlush(player)
 
@@ -189,9 +198,12 @@ describe('Players API service', () => {
     const res = await request(app.callback())
       .patch(`${baseUrl}/${player.id}`)
       .send({
-        props: {
-          collectibles: 1
-        }
+        props: [
+          {
+            key: 'collectibles',
+            value: '1'
+          }
+        ]
       })
       .auth(token, { type: 'bearer' })
       .expect(403)
@@ -205,9 +217,12 @@ describe('Players API service', () => {
     const res = await request(app.callback())
       .patch(`${baseUrl}/546`)
       .send({
-        props: {
-          collectibles: 1
-        }
+        props: [
+          {
+            key: 'collectibles',
+            value: '1'
+          }
+        ]
       })
       .auth(token, { type: 'bearer' })
       .expect(404)

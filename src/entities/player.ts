@@ -2,6 +2,7 @@ import { Collection, Entity, JsonType, ManyToOne, OneToMany, PrimaryKey, Propert
 import Game from './game'
 import { v4 } from 'uuid'
 import PlayerAlias from './player-alias'
+import Props from '../lib/types/props'
 
 @Entity()
 export default class Player {
@@ -12,7 +13,7 @@ export default class Player {
   aliases: Collection<PlayerAlias> = new Collection<PlayerAlias>(this)
 
   @Property({ type: JsonType })
-  props: { [key: string]: any } = {}
+  props: Props = {}
 
   @ManyToOne(() => Game)
   game: Game

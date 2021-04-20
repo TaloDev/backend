@@ -63,7 +63,7 @@ export default class EventsService implements Service {
 
       for (let date = new Date(startDate).getTime(); date < new Date(endDate).getTime(); date += 86400000 /* 24 hours in ms */) {
         const count = data[name].filter((event: Event) => isSameDay(new Date(date), new Date(event.createdAt))).length
-        const change = processed.length > 0 ? this.calculateChange(name, date, count, processed[processed.length - 1]) : 1
+        const change = processed.length > 0 ? this.calculateChange(count, processed[processed.length - 1]) : 0
 
         processed.push({
           name,
@@ -85,14 +85,8 @@ export default class EventsService implements Service {
     }
   }
 
-  calculateChange(name: string, date: number, count: number, lastEvent: EventData): number {
-    const useLastEvent = lastEvent.name === name && isSameDay(new Date(lastEvent.date), sub(new Date(date), { days: 1 }))
-
-    if (useLastEvent) {
-      if (lastEvent.count === 0) return 1 
-      return (count - lastEvent.count) / lastEvent.count
-    } else {
-      return 1
-    }
+  calculateChange(count: number, lastEvent: EventData): number {
+    if (lastEvent.count === 0) return 1
+    return (count - lastEvent.count) / lastEvent.count
   }
 }

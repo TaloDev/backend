@@ -60,6 +60,25 @@ describe('Players service', () => {
     expect(res.body.player.aliases[0].identifier).toBe('12345')
   })
 
+  it('should create a player with props', async () => {
+    const res = await request(app.callback())
+      .post(`${baseUrl}`)
+      .send({
+        gameId: validGame.id,
+        props: [
+          {
+            key: 'characterName',
+            value: 'Bob John'
+          }
+        ]
+      })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+      expect(res.body.player.props[0].key).toBe('characterName')
+      expect(res.body.player.props[0].value).toBe('Bob John')
+  })
+
   it('should not create a player for a non-existent game', async () => {
     const res = await request(app.callback())
       .post(`${baseUrl}`)
@@ -80,6 +99,21 @@ describe('Players service', () => {
       .send({ gameId: otherGame.id })
       .auth(token, { type: 'bearer' })
       .expect(403)
+  })
+
+  it('should not create a player if props are in the incorrect format', async () => {
+    const res = await request(app.callback())
+      .post(`${baseUrl}`)
+      .send({
+        gameId: validGame.id,
+        props: {
+          characterName: 'Bob John'
+        }
+      })
+      .auth(token, { type: 'bearer' })
+      .expect(400)
+
+      expect(res.body.message).toBe('Props must be an array')
   })
 
   it('should return a list of players', async () => {
@@ -138,33 +172,76 @@ describe('Players service', () => {
     const player = await new PlayerFactory([validGame]).one()
 
     player.props = {
-      collectibles: 0,
-      zonesExplored: 1
+      collectibles: '0',
+      zonesExplored: '1'
     }
     await (<EntityManager>app.context.em).persistAndFlush(player)
 
     const res = await request(app.callback())
       .patch(`${baseUrl}/${player.id}`)
       .send({
-        props: {
-          collectibles: 1
-        }
+        props: [
+          {
+            key: 'collectibles',
+            value: '1'
+          }
+        ]
       })
       .auth(token, { type: 'bearer' })
       .expect(200)
 
-    expect(res.body.player.props).toStrictEqual({
-      collectibles: 1,
-      zonesExplored: 1
-    })
+      expect(res.body.player.props).toStrictEqual([
+        {
+          key: 'collectibles',
+          value: '1'
+        },
+        {
+          key: 'zonesExplored',
+          value: '1'
+        }
+      ])
   })
 
   it('should update delete null player\ properties', async () => {
     const player = await new PlayerFactory([validGame]).one()
 
     player.props = {
-      collectibles: 0,
-      zonesExplored: 1
+      collectibles: '0',
+      zonesExplored: '1'
+    }
+    await (<EntityManager>app.context.em).persistAndFlush(player)
+
+    const res = await request(app.callback())
+      .patch(`${baseUrl}/${player.id}`)
+      .send({
+        props: [
+          {
+            key: 'collectibles',
+            value: '1'
+          },
+          {
+            key: 'zonesExplored',
+            value: null
+          }
+        ]
+      })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    expect(res.body.player.props).toStrictEqual([
+      {
+        key: 'collectibles',
+        value: '1'
+      }
+    ])
+  })
+
+  it('should throw an error if props are present but aren\'t an array', async () => {
+    const player = await new PlayerFactory([validGame]).one()
+
+    player.props = {
+      collectibles: '0',
+      zonesExplored: '1'
     }
     await (<EntityManager>app.context.em).persistAndFlush(player)
 
@@ -172,25 +249,25 @@ describe('Players service', () => {
       .patch(`${baseUrl}/${player.id}`)
       .send({
         props: {
-          collectibles: 1,
-          zonesExplored: null
+          collectibles: '3'
         }
       })
       .auth(token, { type: 'bearer' })
-      .expect(200)
+      .expect(400)
 
-    expect(res.body.player.props).toStrictEqual({
-      collectibles: 1
-    })
+    expect(res.body.message).toBe('Props must be an array')
   })
 
   it('should not update a non-existent player\'s properties', async () => {
     const res = await request(app.callback())
       .patch(`${baseUrl}/2313`)
       .send({
-        props: {
-          collectibles: 2
-        }
+        props: [
+          {
+            key: 'collectibles',
+            value: '2'
+          }
+        ]
       })
       .auth(token, { type: 'bearer' })
       .expect(404)
@@ -208,9 +285,12 @@ describe('Players service', () => {
     const res = await request(app.callback())
       .patch(`${baseUrl}/${player.id}`)
       .send({
-        props: {
-          collectibles: 2
-        }
+        props: [
+          {
+            key: 'collectibles',
+            value: '2'
+          }
+        ]
       })
       .auth(token, { type: 'bearer' })
       .expect(403)

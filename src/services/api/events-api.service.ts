@@ -8,6 +8,7 @@ import EventResource from '../../resources/event.resource'
 import APIKey from '../../entities/api-key'
 import PlayerAlias from '../../entities/player-alias'
 import groupBy from 'lodash.groupby'
+import propsArrayToObject from '../../lib/props/propsArrayToObject'
 
 export default class EventsAPIService extends APIService<EventsService> {
   constructor() {
@@ -16,7 +17,7 @@ export default class EventsAPIService extends APIService<EventsService> {
 
   @Validate({
     body: {
-      events: (val: string) => {
+      events: (val: unknown) => {
         if (!Array.isArray(val)) return 'Events must be an array'
       }
     }
@@ -47,19 +48,27 @@ export default class EventsAPIService extends APIService<EventsService> {
 
       requiredKeys.forEach((key) => {
         if (!item[key]) {
-          errors[i] = [ ...errors[i], `Event is missing the key: ${key}` ]
+          errors[i].push(`Event is missing the key: ${key}`)
         }
       })
 
       const alias = aliases.find((alias) => alias.id === item.aliasId)
       if (!alias) {
-        errors[i] = [ ...errors[i], `No alias was found for aliasId ${item.aliasId}` ]
+        errors[i].push(`No alias was found for aliasId ${item.aliasId}`)
       } else if (errors[i].length === 0) {
         const event = new Event(item.name, game)
-        event.props = item.props ?? {}
         event.playerAlias = alias
         event.createdAt = new Date(item.timestamp)
-        items.push(event)
+
+        if (item.props) {
+          try {
+            event.props = propsArrayToObject(item.props, true)
+          } catch (err) {
+            errors[i].push(err.message)
+          }
+        }
+    
+        if (errors[i].length === 0) items.push(event)
       }
     }
 

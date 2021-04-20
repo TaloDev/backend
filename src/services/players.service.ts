@@ -6,6 +6,7 @@ import PlayersPolicy from '../policies/players.policy'
 import PlayerResource from '../resources/player.resource'
 import Fuse from 'fuse.js'
 import PlayerAlias from '../entities/player-alias'
+import propsArrayToObject from '../lib/props/propsArrayToObject'
 
 interface SearchablePlayer {
   id: string
@@ -20,7 +21,7 @@ export default class PlayersService implements Service {
   @HasPermission(PlayersPolicy, 'post')
   @Resource(PlayerResource, 'player')
   async post(req: ServiceRequest): Promise<ServiceResponse> {
-    const { aliases, gameId } = req.body
+    const { aliases, gameId, props } = req.body
     const em: EntityManager = req.ctx.em
 
     const game = await em.getRepository(Game).findOne(gameId)
@@ -33,6 +34,14 @@ export default class PlayersService implements Service {
         alias.identifier = item.identifier
         return alias
       })
+    }
+
+    if (props) {
+      try {
+        player.props = propsArrayToObject(props)
+      } catch (err) {
+        req.ctx.throw(400, err.message)
+      }
     }
 
     await em.persistAndFlush(player)
@@ -75,21 +84,33 @@ export default class PlayersService implements Service {
     }
   }
 
+  @Validate({
+    body: {
+      props: (val: unknown) => {
+        if (val && !Array.isArray(val)) {
+          return 'Props must be an array'
+        }
+      }
+    }
+  })
   @HasPermission(PlayersPolicy, 'patch')
   @Resource(PlayerResource, 'player')
   async patch(req: ServiceRequest): Promise<ServiceResponse> {
     const { props } = req.body
+    const player = req.ctx.state.player // set in the policy
+  
     const em: EntityManager = req.ctx.em
 
-    const player = req.ctx.state.player // set in the policy
-    player.props = {
-      ...player.props,
-      ...props
-    }
-
-    for (let key in player.props) {
-      if (player.props[key] === null) {
-        delete player.props[key]
+    if (props && Array.isArray(props)) {
+      player.props = {
+        ...player.props,
+        ...propsArrayToObject(props)
+      }
+  
+      for (let key in player.props) {
+        if (player.props[key] === null) {
+          delete player.props[key]
+        }
       }
     }
 

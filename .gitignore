@@ -3,7 +3,6 @@ node_modules/
 thumbs.db
 dist/
 *.log
-.env
-.env.backup
+.env*
 coverage/
 tests/test.db

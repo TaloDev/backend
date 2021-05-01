@@ -15,8 +15,8 @@
   "author": "Sleepy Studios",
   "license": "MIT",
   "devDependencies": {
-    "@mikro-orm/cli": "^4.3.4",
-    "@mikro-orm/sqlite": "^4.5.0",
+    "@mikro-orm/cli": "^4.5.3",
+    "@mikro-orm/sqlite": "^4.5.4",
     "@types/ioredis": "^4.22.3",
     "@types/jest": "^26.0.20",
     "@types/koa": "^2.11.6",
@@ -35,8 +35,8 @@
   },
   "dependencies": {
     "@koa/cors": "^3.1.0",
-    "@mikro-orm/core": "^4.5.0",
-    "@mikro-orm/mysql": "^4.4.3",
+    "@mikro-orm/core": "^4.5.4",
+    "@mikro-orm/mysql": "^4.5.4",
     "@types/lodash": "^4.14.168",
     "bcrypt": "^5.0.0",
     "date-fns": "^2.16.1",

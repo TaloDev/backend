@@ -6,7 +6,7 @@ import PlayersPolicy from '../policies/players.policy'
 import PlayerResource from '../resources/player.resource'
 import Fuse from 'fuse.js'
 import PlayerAlias from '../entities/player-alias'
-import propsArrayToObject from '../lib/props/propsArrayToObject'
+import sanitiseProps from '../lib/props/sanitiseProps'
 
 interface SearchablePlayer {
   id: string
@@ -38,7 +38,7 @@ export default class PlayersService implements Service {
 
     if (props) {
       try {
-        player.props = propsArrayToObject(props)
+        player.props = sanitiseProps(props)
       } catch (err) {
         req.ctx.throw(400, err.message)
       }
@@ -69,7 +69,7 @@ export default class PlayersService implements Service {
       const items: SearchablePlayer[] = players.map((player) => ({
         id: player.id,
         allAliases: player.aliases.getItems().map((alias) => alias.identifier),
-        allProps: Object.keys(player.props).map((key) => player.props[key])
+        allProps: player.props.map((prop) => prop.value)
       }))
 
       const fuse = new Fuse(items, { keys: ['id', 'allAliases', 'allProps'], threshold: 0.2 })
@@ -97,20 +97,21 @@ export default class PlayersService implements Service {
   @Resource(PlayerResource, 'player')
   async patch(req: ServiceRequest): Promise<ServiceResponse> {
     const { props } = req.body
-    const player = req.ctx.state.player // set in the policy
+    const player: Player = req.ctx.state.player // set in the policy
   
     const em: EntityManager = req.ctx.em
 
-    if (props && Array.isArray(props)) {
-      player.props = {
-        ...player.props,
-        ...propsArrayToObject(props)
-      }
-  
-      for (let key in player.props) {
-        if (player.props[key] === null) {
-          delete player.props[key]
-        }
+    if (props) {
+      try {
+        const existingProps = player.props.filter((existingProp) => {
+          return !props.find((incomingProp) => incomingProp.key === existingProp.key)
+        })
+
+        const propsSet = new Set([ ...existingProps, ...sanitiseProps(props) ])
+
+        player.props = sanitiseProps([...propsSet], true)
+      } catch (err) {
+        req.ctx.throw(400, err.message)
       }
     }
 

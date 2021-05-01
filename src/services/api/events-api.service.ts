@@ -8,7 +8,7 @@ import EventResource from '../../resources/event.resource'
 import APIKey from '../../entities/api-key'
 import PlayerAlias from '../../entities/player-alias'
 import groupBy from 'lodash.groupby'
-import propsArrayToObject from '../../lib/props/propsArrayToObject'
+import sanitiseProps from '../../lib/props/sanitiseProps'
 
 export default class EventsAPIService extends APIService<EventsService> {
   constructor() {
@@ -62,7 +62,7 @@ export default class EventsAPIService extends APIService<EventsService> {
 
         if (item.props) {
           try {
-            event.props = propsArrayToObject(item.props, true)
+            event.props = sanitiseProps(item.props, true)
           } catch (err) {
             errors[i].push(err.message)
           }

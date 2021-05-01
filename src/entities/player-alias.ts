@@ -1,4 +1,4 @@
-import { Entity, ManyToOne, PrimaryKey, Property } from '@mikro-orm/core'
+import { Cascade, Entity, ManyToOne, PrimaryKey, Property } from '@mikro-orm/core'
 import Player from './player'
 
 @Entity()
@@ -12,7 +12,7 @@ export default class PlayerAlias {
   @Property()
   identifier: string
 
-  @ManyToOne(() => Player)
+  @ManyToOne(() => Player, { cascade: [Cascade.REMOVE] })
   player: Player
 
   @Property()

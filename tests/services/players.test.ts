@@ -152,9 +152,12 @@ describe('Players service', () => {
 
   it('should return a filtered list of players', async () => {
     const players = await new PlayerFactory([validGame]).with(() => ({
-      props: {
-        guildName: 'The Best Guild'
-      }
+      props: [
+        {
+          key: 'guildName',
+          value: 'The Best Guild'
+        }
+      ]
     })).many(2)
 
     await (<EntityManager>app.context.em).persistAndFlush(players)
@@ -169,12 +172,19 @@ describe('Players service', () => {
   })
 
   it('should update a player\'s properties', async () => {
-    const player = await new PlayerFactory([validGame]).one()
+    const player = await new PlayerFactory([validGame]).with(() => ({
+      props: [
+        {
+          key: 'collectibles',
+          value: '0'
+        },
+        {
+          key: 'zonesExplored',
+          value: '1'
+        }
+      ]
+    })).one()
 
-    player.props = {
-      collectibles: '0',
-      zonesExplored: '1'
-    }
     await (<EntityManager>app.context.em).persistAndFlush(player)
 
     const res = await request(app.callback())
@@ -190,7 +200,7 @@ describe('Players service', () => {
       .auth(token, { type: 'bearer' })
       .expect(200)
 
-      expect(res.body.player.props).toStrictEqual([
+      expect(res.body.player.props).toEqual(expect.arrayContaining([
         {
           key: 'collectibles',
           value: '1'
@@ -199,16 +209,23 @@ describe('Players service', () => {
           key: 'zonesExplored',
           value: '1'
         }
-      ])
+      ]))
   })
 
-  it('should update delete null player\ properties', async () => {
-    const player = await new PlayerFactory([validGame]).one()
+  it('should delete null player\ properties', async () => {
+    const player = await new PlayerFactory([validGame]).with(() => ({
+      props: [
+        {
+          key: 'collectibles',
+          value: '1'
+        },
+        {
+          key: 'zonesExplored',
+          value: '1'
+        }
+      ]
+    })).one()
 
-    player.props = {
-      collectibles: '0',
-      zonesExplored: '1'
-    }
     await (<EntityManager>app.context.em).persistAndFlush(player)
 
     const res = await request(app.callback())
@@ -238,11 +255,6 @@ describe('Players service', () => {
 
   it('should throw an error if props are present but aren\'t an array', async () => {
     const player = await new PlayerFactory([validGame]).one()
-
-    player.props = {
-      collectibles: '0',
-      zonesExplored: '1'
-    }
     await (<EntityManager>app.context.em).persistAndFlush(player)
 
     const res = await request(app.callback())

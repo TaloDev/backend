@@ -1,7 +1,7 @@
-import { Entity, JsonType, ManyToOne, PrimaryKey, Property } from '@mikro-orm/core'
-import Props from '../lib/types/props'
+import { Entity, Embedded, ManyToOne, PrimaryKey, Property } from '@mikro-orm/core'
 import Game from './game'
 import PlayerAlias from './player-alias'
+import Prop from './prop'
 
 @Entity()
 export default class Event {
@@ -11,8 +11,8 @@ export default class Event {
   @Property()
   name: string
 
-  @Property({ type: JsonType })
-  props: Props = {}
+  @Embedded(() => Prop, { array: true })
+  props: Prop[] = []
 
   @ManyToOne(() => Game)
   game: Game

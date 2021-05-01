@@ -43,7 +43,7 @@ export default class PlayersAPIService extends APIService<PlayersService> {
       player: {
         game: key.game
       }
-    }, ['player'])
+    }, ['player.game'])
 
     if (!alias) req.ctx.throw(404, 'Player not found')
 

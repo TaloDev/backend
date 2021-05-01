@@ -21,6 +21,7 @@ export default class PlayersPolicy extends Policy {
     const { id } = req.params
 
     const player = await this.em.getRepository(Player).findOne(id)
+
     if (!player) this.ctx.throw(404, 'Player not found')
     this.ctx.state.player = player
 

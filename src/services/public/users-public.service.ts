@@ -100,7 +100,7 @@ export default class UsersPublicService implements Service {
   @Validate({
     body: ['email', 'password']
   })
-  @Resource(UserResource, 'user')
+  // @Resource(UserResource, 'user')
   @After(setUserLastSeenAt)
   async login(req: ServiceRequest): Promise<ServiceResponse> {
     const { email, password } = req.body

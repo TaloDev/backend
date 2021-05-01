@@ -8,6 +8,7 @@ import { createToken } from '../../../src/services/api-keys.service'
 import UserFactory from '../../fixtures/UserFactory'
 import PlayerFactory from '../../fixtures/PlayerFactory'
 import { isToday, sub } from 'date-fns'
+import Prop from '../../../src/entities/prop'
 
 const baseUrl = '/api/players'
 
@@ -46,9 +47,10 @@ describe('Players API service', () => {
 
     expect(res.body.players).toHaveLength(3)
 
-    for (let i = 0; i < res.body.players.length; i++) {
-      expect(res.body.players[i].id).toBe(players[i].id)
-    }
+    const allIds: string[] = res.body.players.map((p) => p.id)
+    expect(allIds.includes(players[0].id)).toBe(true)
+    expect(allIds.includes(players[1].id)).toBe(true)
+    expect(allIds.includes(players[2].id)).toBe(true)
   })
 
   it('should not return the game\'s players without the valid scope', async () => {
@@ -147,11 +149,12 @@ describe('Players API service', () => {
   })
 
   it('should update a player\'s properties', async () => {
-    const player = await new PlayerFactory([apiKey.game]).one()
-    player.props = {
-      collectibles: '0',
-      zonesExplored: '1'
-    }
+    const player = await new PlayerFactory([apiKey.game]).with(() => ({
+      props: [
+        new Prop('collectibles', '0'),
+        new Prop('zonesExplored', '1')
+      ]
+    })).one()
     await (<EntityManager>app.context.em).persistAndFlush(player)
 
     apiKey.scopes = [APIKeyScope.WRITE_PLAYERS]
@@ -171,7 +174,7 @@ describe('Players API service', () => {
       .auth(token, { type: 'bearer' })
       .expect(200)
 
-    expect(res.body.player.props).toStrictEqual([
+    expect(res.body.player.props).toEqual(expect.arrayContaining([
       {
         key: 'collectibles',
         value: '1'
@@ -180,15 +183,22 @@ describe('Players API service', () => {
         key: 'zonesExplored',
         value: '1'
       }
-    ])
+    ]))
   })
 
   it('should not update a player\'s properties if the scope is missing', async () => {
-    const player = await new PlayerFactory([apiKey.game]).one()
-    player.props = {
-      collectibles: '0',
-      zonesExplored: '1'
-    }
+    const player = await new PlayerFactory([apiKey.game]).with(() => ({
+      props: [
+        {
+          key: 'collectibles',
+          value: '0'
+        },
+        {
+          key: 'zonesExplored',
+          value: '1'
+        }
+      ]
+    })).one()
     await (<EntityManager>app.context.em).persistAndFlush(player)
 
     apiKey.scopes = []

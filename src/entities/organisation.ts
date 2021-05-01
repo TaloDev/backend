@@ -17,7 +17,7 @@ export default class Organisation {
   @Property({ default: false })
   emailConfirmed: boolean
 
-  @OneToMany(() => Game, (game) => game.organisation)
+  @OneToMany(() => Game, (game) => game.organisation, { eager: true })
   games: Collection<Game> = new Collection<Game>(this)
 
   @Property()
@@ -25,4 +25,12 @@ export default class Organisation {
 
   @Property({ onUpdate: () => new Date() })
   updatedAt: Date = new Date()
+
+  toJSON() {
+    return {
+      id: this.id,
+      name: this.name,
+      games: this.games
+    }
+  }
 }

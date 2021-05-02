@@ -32,7 +32,7 @@ jobs:
       run: yarn --prefer-offline
 
     - name: Start Docker
-      run: docker compose up -d test-db
+      run: docker-compose up -d test-db
 
     - name: Wait for DB to be ready
       run: sleep '10s'

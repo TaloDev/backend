@@ -31,13 +31,10 @@ jobs:
     - name: Install deps
       run: yarn --prefer-offline
 
-    # - name: Setup env
-    #   run: cp envs/.env.dev .env
-
-    - name: Start Docker
-      run: docker-compose up -d test-db
-
-    - name: Wait for DB to be ready
-      run: sleep '10s'
+    - name: Docker
+      run: |
+        cp envs/.env.dev .env
+        docker-compose up -d test-db
+        sleep '10s'
 
     - run: yarn test

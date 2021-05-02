@@ -102,17 +102,13 @@ export default class PlayersService implements Service {
     const em: EntityManager = req.ctx.em
 
     if (props) {
-      try {
-        const existingProps = player.props.filter((existingProp) => {
-          return !props.find((incomingProp) => incomingProp.key === existingProp.key)
-        })
+      const existingProps = player.props.filter((existingProp) => {
+        return !props.find((incomingProp) => incomingProp.key === existingProp.key)
+      })
 
-        const propsSet = new Set([ ...existingProps, ...sanitiseProps(props) ])
+      const propsSet = new Set([ ...existingProps, ...sanitiseProps(props) ])
 
-        player.props = sanitiseProps([...propsSet], true)
-      } catch (err) {
-        req.ctx.throw(400, err.message)
-      }
+      player.props = sanitiseProps([...propsSet], true)
     }
 
     await em.flush()

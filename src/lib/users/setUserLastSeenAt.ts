@@ -5,15 +5,13 @@ import User from '../../entities/user'
 import { differenceInDays } from 'date-fns'
 
 export default async (hook: HookParams): Promise<void> => {
-  if (hook.result.status === 200) {
-    const em: EntityManager = hook.req.ctx.em
-    const token: string = hook.result.body.accessToken
-    const userId = jwt.decode(token).sub
-      
-    const user = await em.getRepository(User).findOne(userId)
-    if (differenceInDays(new Date(), user.lastSeenAt) >= 1) {
-      user.lastSeenAt = new Date()
-      await em.flush() 
-    }
+  const em: EntityManager = hook.req.ctx.em
+  const token: string = hook.result.body.accessToken
+  const userId = jwt.decode(token).sub
+    
+  const user = await em.getRepository(User).findOne(userId)
+  if (differenceInDays(new Date(), user.lastSeenAt) >= 1) {
+    user.lastSeenAt = new Date()
+    await em.flush() 
   }
 }

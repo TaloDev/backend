@@ -18,8 +18,6 @@ services:
     env_file: envs/.env.test
     ports:
       - 3307:3306
-    profiles:
-      - testing
 
   redis:
     image: redis:alpine

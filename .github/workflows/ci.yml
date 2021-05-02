@@ -31,8 +31,8 @@ jobs:
     - name: Install deps
       run: yarn --prefer-offline
 
-    - name: Setup env
-      run: cp envs/.env.dev .env
+    # - name: Setup env
+    #   run: cp envs/.env.dev .env
 
     - name: Start Docker
       run: docker-compose up -d test-db

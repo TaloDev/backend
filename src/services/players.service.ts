@@ -1,9 +1,8 @@
 import { EntityManager } from '@mikro-orm/core'
-import { Resource, Service, ServiceRequest, ServiceResponse, Validate, HasPermission } from 'koa-rest-services'
+import { Service, ServiceRequest, ServiceResponse, Validate, HasPermission } from 'koa-rest-services'
 import Game from '../entities/game'
 import Player from '../entities/player'
 import PlayersPolicy from '../policies/players.policy'
-import PlayerResource from '../resources/player.resource'
 import Fuse from 'fuse.js'
 import PlayerAlias from '../entities/player-alias'
 import sanitiseProps from '../lib/props/sanitiseProps'
@@ -19,7 +18,6 @@ export default class PlayersService implements Service {
     body: ['gameId']
   })
   @HasPermission(PlayersPolicy, 'post')
-  @Resource(PlayerResource, 'player')
   async post(req: ServiceRequest): Promise<ServiceResponse> {
     const { aliases, gameId, props } = req.body
     const em: EntityManager = req.ctx.em
@@ -58,7 +56,6 @@ export default class PlayersService implements Service {
     query: ['gameId']
   })
   @HasPermission(PlayersPolicy, 'get')
-  @Resource(PlayerResource, 'players')
   async get(req: ServiceRequest): Promise<ServiceResponse> {
     const { gameId, search } = req.query
     const em: EntityManager = req.ctx.em
@@ -94,7 +91,6 @@ export default class PlayersService implements Service {
     }
   })
   @HasPermission(PlayersPolicy, 'patch')
-  @Resource(PlayerResource, 'player')
   async patch(req: ServiceRequest): Promise<ServiceResponse> {
     const { props } = req.body
     const player: Player = req.ctx.state.player // set in the policy

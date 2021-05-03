@@ -1,9 +1,8 @@
 import { EntityManager } from '@mikro-orm/core'
-import { HasPermission, Resource, ServiceRequest, ServiceResponse, ServiceRoute, Validate } from 'koa-rest-services'
+import { HasPermission, ServiceRequest, ServiceResponse, ServiceRoute, Validate } from 'koa-rest-services'
 import APIKey, { APIKeyScope } from '../entities/api-key'
 import jwt from 'jsonwebtoken'
 import APIKeysPolicy from '../policies/api-keys.policy'
-import APIKeyResource from '../resources/api-key.resource'
 import groupBy from 'lodash.groupby'
 import User from '../entities/user'
 import { promisify } from 'util'
@@ -25,10 +24,29 @@ export const apiKeysRoutes: ServiceRoute[] = [
   }
 ]
 
-export async function createToken(apiKey: APIKey, payloadParams?: { [key: string]: any }): Promise<string> {
-  const payload = { sub: apiKey.id, api: true, ...payloadParams }
+interface TokenPayload {
+  sub: string
+  api: boolean
+  iat?: number
+}
+
+interface ExtraTokenPayloadParams {
+  iat?: number
+}
+
+const getAPIKeyTokenPayload = (apiKey: APIKey, payloadParams?: ExtraTokenPayloadParams): TokenPayload => {
+  return { sub: apiKey.id, api: true, ...payloadParams }
+}
+
+export async function createToken(apiKey: APIKey, payloadParams?: ExtraTokenPayloadParams): Promise<string> {
+  const payload = getAPIKeyTokenPayload(apiKey, payloadParams)
   const token = await promisify(jwt.sign)(payload, process.env.JWT_SECRET)
   return token
+}
+
+export function createTokenSync(apiKey: APIKey, payloadParams?: ExtraTokenPayloadParams) {
+  const payload = getAPIKeyTokenPayload(apiKey, payloadParams)
+  return jwt.sign(payload, process.env.JWT_SECRET)
 }
 
 export default class APIKeysService {
@@ -36,7 +54,6 @@ export default class APIKeysService {
     body: ['gameId']
   })
   @HasPermission(APIKeysPolicy, 'post')
-  @Resource(APIKeyResource, 'apiKey')
   async post(req: ServiceRequest): Promise<ServiceResponse> {
     const { scopes } = req.body
     const em: EntityManager = req.ctx.em
@@ -61,7 +78,6 @@ export default class APIKeysService {
     query: ['gameId']
   })
   @HasPermission(APIKeysPolicy, 'get')
-  @Resource(APIKeyResource, 'apiKeys')
   async get(req: ServiceRequest): Promise<ServiceResponse> {
     const { gameId } = req.query
     const em: EntityManager = req.ctx.em
@@ -76,7 +92,6 @@ export default class APIKeysService {
   }
 
   @HasPermission(APIKeysPolicy, 'delete')
-  @Resource(APIKeyResource, 'apiKey')
   async delete(req: ServiceRequest): Promise<ServiceResponse> {
     const em: EntityManager = req.ctx.em
 

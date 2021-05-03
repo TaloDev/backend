@@ -30,4 +30,15 @@ export default class Event {
     this.name = name
     this.game = game
   }
+
+  toJSON() {
+    return {
+      id: this.id,
+      name: this.name,
+      props: this.props,
+      playerAlias: this.playerAlias,
+      gameId: this.game.id,
+      createdAt: this.createdAt
+    }
+  }
 }

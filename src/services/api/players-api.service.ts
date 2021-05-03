@@ -1,9 +1,8 @@
 import { EntityManager } from '@mikro-orm/core'
-import { Resource, ServiceRequest, ServiceResponse, ServiceRoute, Validate, HasPermission } from 'koa-rest-services'
+import { ServiceRequest, ServiceResponse, ServiceRoute, Validate, HasPermission } from 'koa-rest-services'
 import APIKey from '../../entities/api-key'
 import PlayerAlias from '../../entities/player-alias'
 import PlayersAPIPolicy from '../../policies/api/players-api.policy'
-import PlayerResource from '../../resources/player.resource'
 import PlayersService from '../players.service'
 import APIService from './api-service'
 
@@ -30,7 +29,6 @@ export default class PlayersAPIService extends APIService<PlayersService> {
     query: ['service', 'identifier']
   })
   @HasPermission(PlayersAPIPolicy, 'identify')
-  @Resource(PlayerResource, 'player')
   async identify(req: ServiceRequest): Promise<ServiceResponse> {
     const { service, identifier } = req.query
     const em: EntityManager = req.ctx.em

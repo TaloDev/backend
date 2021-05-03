@@ -1,10 +1,9 @@
 import { EntityManager } from '@mikro-orm/core'
-import { HasPermission, Resource, ServiceRequest, ServiceResponse, Validate } from 'koa-rest-services'
+import { HasPermission, ServiceRequest, ServiceResponse, Validate } from 'koa-rest-services'
 import Event from '../../entities/event'
 import EventsAPIPolicy from '../../policies/api/events-api.policy'
 import EventsService from '../events.service'
 import APIService from './api-service'
-import EventResource from '../../resources/event.resource'
 import APIKey from '../../entities/api-key'
 import PlayerAlias from '../../entities/player-alias'
 import groupBy from 'lodash.groupby'
@@ -23,7 +22,6 @@ export default class EventsAPIService extends APIService<EventsService> {
     }
   })
   @HasPermission(EventsAPIPolicy, 'post')
-  @Resource(EventResource, 'events')
   async post(req: ServiceRequest): Promise<ServiceResponse> {
     const { events } = req.body
     const em: EntityManager = req.ctx.em

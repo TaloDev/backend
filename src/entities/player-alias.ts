@@ -20,4 +20,12 @@ export default class PlayerAlias {
 
   @Property({ onUpdate: () => new Date() })
   updatedAt: Date = new Date()
+
+  toJSON() {
+    return {
+      id: this.id,
+      service: this.service,
+      identifier: this.identifier
+    }
+  }
 }

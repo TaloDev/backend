@@ -34,4 +34,14 @@ export default class Player {
   constructor(game: Game) {
     this.game = game
   }
+
+  toJSON() {
+    return {
+      id: this.id,
+      props: this.props,
+      aliases: this.aliases,
+      createdAt: this.createdAt,
+      lastSeenAt: this.lastSeenAt
+    }
+  }
 }

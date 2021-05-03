@@ -176,7 +176,7 @@ describe('Events API service', () => {
       .post(`${baseUrl}`)
       .send({ events: [{ aliasId: validPlayer.aliases[0].id, timestamp: Date.now() }]})
       .auth(token, { type: 'bearer' })
-      .expect(200)
+      .expect(300)
 
     expect(res.body.errors[0]).toStrictEqual(['Event is missing the key: name'])
   })

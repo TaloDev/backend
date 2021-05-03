@@ -8,7 +8,7 @@ on:
     branches: [ develop ]
 
 jobs:
-  build:
+  test:
 
     runs-on: ubuntu-latest
 
@@ -34,7 +34,7 @@ jobs:
     - name: Setup Docker
       run: |
         cp envs/.env.dev .env
-        docker-compose up -d test-db
+        docker-compose up -f docker-compose.test.yml -d
         echo Waiting for DB to be ready...
         sleep '10s'
 

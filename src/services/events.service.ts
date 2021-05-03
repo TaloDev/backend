@@ -23,7 +23,7 @@ export default class EventsService implements Service {
         const startDate = new Date(val)
         if (!isValid(startDate)) return 'Invalid start date, please use YYYY-MM-DD or a timestamp'
 
-        const endDate = new Date(req.ctx.query.endDate)
+        const endDate = new Date(req.ctx.query.endDate as string)
         if (isValid(endDate) && isAfter(startDate, endDate)) return 'Invalid start date, it should be before the end date'
       },
       endDate: (val: string) => {

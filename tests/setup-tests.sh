@@ -1,4 +1,6 @@
 #!/bin/sh
+set -e
+
 [ -f .env ] && mv .env .env.backup
 cp envs/.env.test .env
 

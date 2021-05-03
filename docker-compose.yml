@@ -4,6 +4,7 @@ services:
   app:
     build:
       context: .
+    image: gs
     ports:
       - 3000:3000
     depends_on:

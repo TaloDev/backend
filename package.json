@@ -10,8 +10,8 @@
     "schema:update": "mikro-orm schema:update -r",
     "seed": "ts-node tests/seed.ts",
     "test": "./tests/setup-tests.sh",
-    "dev": "docker compose -f docker-compose.yml -f docker-compose.test.yml -f docker-compose.dev.yml up --build",
-    "prod": "docker compose -f docker-compose.yml -f docker-compose.prod.yml up"
+    "dev": "docker compose -f docker-compose.yml -f docker-compose.test.yml -f docker-compose.dev.yml up --build -d",
+    "prod": "docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d"
   },
   "author": "Sleepy Studios",
   "license": "MIT",

@@ -7,6 +7,8 @@ import APIKey, { APIKeyScope } from '../../../src/entities/api-key'
 import { createToken } from '../../../src/services/api-keys.service'
 import UserFactory from '../../fixtures/UserFactory'
 import PlayerFactory from '../../fixtures/PlayerFactory'
+import { isToday, sub } from 'date-fns'
+import Prop from '../../../src/entities/prop'
 
 const baseUrl = '/api/players'
 
@@ -35,6 +37,7 @@ describe('Players API service', () => {
     await (<EntityManager>app.context.em).persistAndFlush(players)
 
     apiKey.scopes = [APIKeyScope.READ_PLAYERS]
+    await (<EntityManager>app.context.em).flush()
     token = await createToken(apiKey)
 
     const res = await request(app.callback())
@@ -44,13 +47,15 @@ describe('Players API service', () => {
 
     expect(res.body.players).toHaveLength(3)
 
-    for (let player of res.body.players) {
-      expect(player.gameId).toBe(apiKey.game.id)
-    }
+    const allIds: string[] = res.body.players.map((p) => p.id)
+    expect(allIds.includes(players[0].id)).toBe(true)
+    expect(allIds.includes(players[1].id)).toBe(true)
+    expect(allIds.includes(players[2].id)).toBe(true)
   })
 
   it('should not return the game\'s players without the valid scope', async () => {
     apiKey.scopes = []
+    await (<EntityManager>app.context.em).flush()
     token = await createToken(apiKey)
 
     await request(app.callback())
@@ -61,18 +66,18 @@ describe('Players API service', () => {
 
   it('should create a player if the scope is valid', async () => {
     apiKey.scopes = [APIKeyScope.WRITE_PLAYERS]
+    await (<EntityManager>app.context.em).flush()
     token = await createToken(apiKey)
 
-    const res = await request(app.callback())
+    await request(app.callback())
       .post(`${baseUrl}`)
       .auth(token, { type: 'bearer' })
       .expect(200)
-
-    expect(res.body.player.gameId).toBe(apiKey.game.id)
   })
 
   it('should not create a player if the scope is valid', async () => {
     apiKey.scopes = []
+    await (<EntityManager>app.context.em).flush()
     token = await createToken(apiKey)
 
     await request(app.callback())
@@ -83,6 +88,7 @@ describe('Players API service', () => {
 
   it('should identify a player', async () => {
     apiKey.scopes = [APIKeyScope.READ_PLAYERS]
+    await (<EntityManager>app.context.em).flush()
     token = await createToken(apiKey)
 
     const player = await new PlayerFactory([apiKey.game]).one()
@@ -98,8 +104,27 @@ describe('Players API service', () => {
     expect(res.body.player.id).toBe(player.id)
   })
 
+  it('should update the lastSeenAt when a player identifies', async () => {
+    apiKey.scopes = [APIKeyScope.READ_PLAYERS]
+    await (<EntityManager>app.context.em).flush()
+    token = await createToken(apiKey)
+
+    const player = await new PlayerFactory([apiKey.game]).state('not seen today').one()
+
+    await (<EntityManager>app.context.em).persistAndFlush(player)
+
+    const res = await request(app.callback())
+      .get(`${baseUrl}/identify`)
+      .query({ service: player.aliases[0].service, identifier: player.aliases[0].identifier })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    expect(isToday(new Date(res.body.player.lastSeenAt))).toBe(true)
+  })
+
   it('should not identify a player if the scope is missing', async () => {
     apiKey.scopes = []
+    await (<EntityManager>app.context.em).flush()
     token = await createToken(apiKey)
 
     await request(app.callback())
@@ -111,6 +136,7 @@ describe('Players API service', () => {
 
   it('should not identify a non-existent player', async () => {
     apiKey.scopes = [APIKeyScope.READ_PLAYERS]
+    await (<EntityManager>app.context.em).flush()
     token = await createToken(apiKey)
 
     const res = await request(app.callback())
@@ -123,49 +149,71 @@ describe('Players API service', () => {
   })
 
   it('should update a player\'s properties', async () => {
-    const player = await new PlayerFactory([apiKey.game]).one()
-    player.props = {
-      collectibles: 0,
-      zonesExplored: 1
-    }
+    const player = await new PlayerFactory([apiKey.game]).with(() => ({
+      props: [
+        new Prop('collectibles', '0'),
+        new Prop('zonesExplored', '1')
+      ]
+    })).one()
     await (<EntityManager>app.context.em).persistAndFlush(player)
 
     apiKey.scopes = [APIKeyScope.WRITE_PLAYERS]
+    await (<EntityManager>app.context.em).flush()
     token = await createToken(apiKey)
 
     const res = await request(app.callback())
       .patch(`${baseUrl}/${player.id}`)
       .send({
-        props: {
-          collectibles: 1
-        }
+        props: [
+          {
+            key: 'collectibles',
+            value: '1'
+          }
+        ]
       })
       .auth(token, { type: 'bearer' })
       .expect(200)
 
-    expect(res.body.player.props).toStrictEqual({
-      collectibles: 1,
-      zonesExplored: 1
-    })
+    expect(res.body.player.props).toEqual(expect.arrayContaining([
+      {
+        key: 'collectibles',
+        value: '1'
+      },
+      {
+        key: 'zonesExplored',
+        value: '1'
+      }
+    ]))
   })
 
   it('should not update a player\'s properties if the scope is missing', async () => {
-    const player = await new PlayerFactory([apiKey.game]).one()
-    player.props = {
-      collectibles: 0,
-      zonesExplored: 1
-    }
+    const player = await new PlayerFactory([apiKey.game]).with(() => ({
+      props: [
+        {
+          key: 'collectibles',
+          value: '0'
+        },
+        {
+          key: 'zonesExplored',
+          value: '1'
+        }
+      ]
+    })).one()
     await (<EntityManager>app.context.em).persistAndFlush(player)
 
     apiKey.scopes = []
+    await (<EntityManager>app.context.em).flush()
     token = await createToken(apiKey)
 
     const res = await request(app.callback())
       .patch(`${baseUrl}/${player.id}`)
       .send({
-        props: {
-          collectibles: 1
-        }
+        props: [
+          {
+            key: 'collectibles',
+            value: '1'
+          }
+        ]
       })
       .auth(token, { type: 'bearer' })
       .expect(403)
@@ -173,14 +221,18 @@ describe('Players API service', () => {
 
   it('should not update a non-existent player\'s properties', async () => {
     apiKey.scopes = [APIKeyScope.WRITE_PLAYERS]
+    await (<EntityManager>app.context.em).flush()
     token = await createToken(apiKey)
 
     const res = await request(app.callback())
       .patch(`${baseUrl}/546`)
       .send({
-        props: {
-          collectibles: 1
-        }
+        props: [
+          {
+            key: 'collectibles',
+            value: '1'
+          }
+        ]
       })
       .auth(token, { type: 'bearer' })
       .expect(404)

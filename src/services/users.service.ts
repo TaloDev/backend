@@ -1,9 +1,8 @@
 import { EntityManager } from '@mikro-orm/core'
-import { Resource, ServiceRequest, ServiceResponse, Validate } from 'koa-rest-services'
+import { ServiceRequest, ServiceResponse, Validate } from 'koa-rest-services'
 import UserSession from '../entities/user-session'
 import buildTokenPair from '../lib/auth/buildTokenPair'
 import bcrypt from 'bcrypt'
-import UserResource from '../resources/user.resource'
 import getUserFromToken from '../lib/auth/getUserFromToken'
 import UserAccessCode from '../entities/user-access-code'
 
@@ -75,7 +74,6 @@ export default class UsersService {
     }
   }
 
-  @Resource(UserResource, 'user')
   async me(req: ServiceRequest): Promise<ServiceResponse> {
     const user = await getUserFromToken(req.ctx)
 
@@ -90,7 +88,6 @@ export default class UsersService {
   @Validate({
     body: ['code']
   })
-  @Resource(UserResource, 'user')
   async confirmEmail(req: ServiceRequest): Promise<ServiceResponse> {
     const { code } = req.body
     const em: EntityManager = req.ctx.em

@@ -3,13 +3,14 @@ import { service } from 'koa-rest-services'
 import APIKeysService, { apiKeysRoutes } from '../services/api-keys.service'
 import EventsService from '../services/events.service'
 import GamesService from '../services/games.service'
+import HeadlinesService, { headlinesRoutes } from '../services/headlines.service'
 import PlayersService from '../services/players.service'
 import UsersService, { usersRoutes } from '../services/users.service'
 
 export default (app: Koa) => {
   app.use(async (ctx: Context, next: Next): Promise<void> => {
     if (!ctx.path.match(/^\/(public|api)\//)) {
-      if (Array.isArray(ctx.state.user.scopes)) ctx.throw(403)
+      if (ctx.state.user.api) ctx.throw(403)
     }
     await next()
   })
@@ -34,5 +35,10 @@ export default (app: Koa) => {
   app.use(service('users', new UsersService(), {
     basePath: '/users',
     routes: usersRoutes
+  }))
+
+  app.use(service('headlines', new HeadlinesService(), {
+    basePath: '/headlines',
+    routes: headlinesRoutes
   }))
 }

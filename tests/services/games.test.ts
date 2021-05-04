@@ -6,6 +6,7 @@ import User from '../../src/entities/user'
 import { genAccessToken } from '../../src/lib/auth/buildTokenPair'
 import Game from '../../src/entities/game'
 import UserFactory from '../fixtures/UserFactory'
+import OrganisationFactory from '../fixtures/OrganisationFactory'
 
 const baseUrl = '/games'
 

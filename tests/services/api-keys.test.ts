@@ -37,8 +37,8 @@ describe('API keys service', () => {
       .auth(token, { type: 'bearer' })
       .expect(200)
 
-    const length = Object.keys(res.body.scopes).reduce((acc, cur) => {
-      return acc + res.body.scopes[cur].length
+    const length = Object.keys(res.body.scopes).reduce((acc, curr) => {
+      return acc + res.body.scopes[curr].length
     }, 0)
     expect(length).toBe(Object.keys(APIKeyScope).length)
   })
@@ -90,7 +90,7 @@ describe('API keys service', () => {
 
   it('should create an api key if the user\'s email is confirmed', async () => {
     user.emailConfirmed = true
-    await (<EntityManager>app.context.em).persistAndFlush(user)
+    await (<EntityManager>app.context.em).flush()
 
     const res = await request(app.callback())
       .post(`${baseUrl}`)

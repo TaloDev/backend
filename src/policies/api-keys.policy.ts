@@ -1,6 +1,6 @@
 import Policy from './policy'
 import { ServiceRequest } from 'koa-rest-services'
-import APIKey from '../../entities/api-key'
+import APIKey from '../entities/api-key'
 
 export default class APIKeysPolicy extends Policy {
   async post(req: ServiceRequest): Promise<boolean> {

@@ -1,9 +1,11 @@
 #!/bin/sh
+set -e
+
 [ -f .env ] && mv .env .env.backup
 cp envs/.env.test .env
 
 ./node_modules/.bin/ts-node tests/create-schema.ts 
-./node_modules/.bin/jest "$@"
+./node_modules/.bin/jest "$@" --runInBand
 
 if [ -z "$CI" ]
 then

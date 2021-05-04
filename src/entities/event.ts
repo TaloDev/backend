@@ -1,6 +1,7 @@
-import { Entity, JsonType, ManyToOne, PrimaryKey, Property } from '@mikro-orm/core'
+import { Entity, Embedded, ManyToOne, PrimaryKey, Property } from '@mikro-orm/core'
 import Game from './game'
 import PlayerAlias from './player-alias'
+import Prop from './prop'
 
 @Entity()
 export default class Event {
@@ -10,8 +11,8 @@ export default class Event {
   @Property()
   name: string
 
-  @Property({ type: JsonType, nullable: true })
-  props?: { [key: string]: any }
+  @Embedded(() => Prop, { array: true })
+  props: Prop[] = []
 
   @ManyToOne(() => Game)
   game: Game
@@ -28,5 +29,16 @@ export default class Event {
   constructor(name: string, game: Game) {
     this.name = name
     this.game = game
+  }
+
+  toJSON() {
+    return {
+      id: this.id,
+      name: this.name,
+      props: this.props,
+      playerAlias: this.playerAlias,
+      gameId: this.game.id,
+      createdAt: this.createdAt
+    }
   }
 }

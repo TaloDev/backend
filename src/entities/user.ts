@@ -35,4 +35,14 @@ export default class User {
 
   @Property({ onUpdate: () => new Date() })
   updatedAt: Date = new Date()
+
+  toJSON() {
+    return {
+      id: this.id,
+      email: this.email,
+      lastSeenAt: this.lastSeenAt,
+      emailConfirmed: this.emailConfirmed,
+      organisation: this.organisation
+    }
+  }
 }

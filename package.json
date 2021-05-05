@@ -11,7 +11,8 @@
     "seed": "ts-node tests/seed.ts",
     "test": "./tests/setup-tests.sh",
     "dev": "docker compose -f docker-compose.yml -f docker-compose.test.yml -f docker-compose.dev.yml up --build -d",
-    "prod": "docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d"
+    "prod": "docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d",
+    "update": "docker compose build app && docker compose up --no-deps -d app"
   },
   "author": "Sleepy Studios",
   "license": "MIT",
@@ -58,7 +59,7 @@
     "useTsNode": true,
     "configPaths": [
       "./src/config/mikro-orm.config.ts",
-      "./dist/config/mikro-orm.config.js"
+      "./config/mikro-orm.config.js"
     ]
   }
 }

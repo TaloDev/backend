@@ -13,8 +13,3 @@ services:
 
   db:
     env_file: .env
-    volumes:
-      - data:/var/lib/mysql
-
-volumes:
-  data:

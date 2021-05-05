@@ -4,7 +4,7 @@ services:
   app:
     build:
       context: .
-    image: gs
+    image: app
     ports:
       - 3000:3000
     depends_on:
@@ -17,8 +17,13 @@ services:
     restart: always
     ports:
       - 3306:3306
-
+    volumes:
+      - data:/var/lib/mysql
+    
   redis:
     image: redis:alpine
     ports:
       - 6379:6379
+
+volumes:
+  data:

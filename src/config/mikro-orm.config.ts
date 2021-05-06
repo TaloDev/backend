@@ -9,8 +9,7 @@ const opts: Options = {
   port: Number(process.env.DB_PORT),
   dbName: process.env.MYSQL_DATABASE,
   user: process.env.DB_USER,
-  password: process.env.MYSQL_ROOT_PASSWORD,
-  debug: true
+  password: process.env.MYSQL_ROOT_PASSWORD
 }
 
 export default opts

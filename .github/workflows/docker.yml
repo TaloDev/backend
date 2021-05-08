@@ -24,7 +24,7 @@ jobs:
         uses: docker/build-push-action@v2
         with:
           push: true
-          tags: talo/backend:latest
+          tags: tudorrr/backend:latest
           target: prod
 
       - name: Image digest

@@ -2,5 +2,5 @@ version: '3.9'
 
 services:
   backend:
-    image: talo/backend:latest
+    image: tudorrr/backend:latest
     command: node index.js

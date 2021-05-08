@@ -1,6 +1,6 @@
 version: '3.9'
 
 services:
-  app:
-    build:
-      target: prod
+  backend:
+    image: talo/backend:latest
+    command: node index.js

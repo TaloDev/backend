@@ -1,8 +1,8 @@
 FROM node:lts-alpine AS base
-WORKDIR /usr/app
+WORKDIR /usr/backend
+COPY tsconfig.json .
 COPY package.json .
 COPY yarn.lock .
-COPY tsconfig.json .
 
 FROM base AS dev
 COPY .env .
@@ -18,11 +18,5 @@ RUN yarn build
 
 FROM base AS prod
 ENV NODE_ENV production
-# temp
-COPY .env .
 RUN yarn
-COPY --from=build /usr/app/dist .
-# RUN npm install pm2 -g
-# EXPOSE 80
-# CMD [ "pm2-runtime", "index.js" ]
-CMD [ "node", "index.js" ]
+COPY --from=build /usr/backend/dist .

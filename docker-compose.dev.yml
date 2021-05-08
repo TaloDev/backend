@@ -1,15 +1,15 @@
 version: '3.9'
 
 services:
-  app:
+  backend:
     build:
+      context: .
       target: dev
+    image: backend
     volumes:
-      - ./src:/usr/app/src
+      - ./src:/usr/backend/src
     depends_on:
-      - db
       - test-db
-      - redis
 
   db:
     env_file: .env

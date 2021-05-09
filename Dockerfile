@@ -8,7 +8,7 @@ FROM base AS dev
 COPY .env .
 RUN yarn
 EXPOSE 3000
-CMD [ "yarn", "start" ]
+CMD [ "yarn", "watch" ]
 
 FROM base AS build
 COPY tsconfig.build.json .

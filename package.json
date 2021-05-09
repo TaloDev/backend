@@ -4,15 +4,14 @@
   "description": "",
   "main": "src/index.ts",
   "scripts": {
-    "start": "tsnd --respawn src/index.ts",
+    "watch": "tsnd --respawn src/index.ts",
     "build": "tsc -p tsconfig.build.json",
     "schema:create": "mikro-orm schema:create -r",
     "schema:update": "mikro-orm schema:update -r",
     "seed": "ts-node tests/seed.ts",
     "test": "./tests/setup-tests.sh",
-    "dev:up": "docker compose -f docker-compose.yml -f docker-compose.test.yml -f docker-compose.dev.yml up --build -d",
-    "dev:down": "docker compose -f docker-compose.yml -f docker-compose.test.yml -f docker-compose.dev.yml down",
-    "prod": "docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d"
+    "up": "docker compose -f docker-compose.yml -f docker-compose.test.yml -f docker-compose.dev.yml up --build -d",
+    "down": "docker compose -f docker-compose.yml -f docker-compose.test.yml -f docker-compose.dev.yml down"
   },
   "author": "Sleepy Studios",
   "license": "MIT",

@@ -7,10 +7,10 @@ import APIKey, { APIKeyScope } from '../../../src/entities/api-key'
 import { createToken } from '../../../src/services/api-keys.service'
 import UserFactory from '../../fixtures/UserFactory'
 import PlayerFactory from '../../fixtures/PlayerFactory'
-import { isToday, sub } from 'date-fns'
+import { isToday } from 'date-fns'
 import Prop from '../../../src/entities/prop'
 
-const baseUrl = '/api/players'
+const baseUrl = '/v1/players'
 
 describe('Players API service', () => {
   let app: Koa

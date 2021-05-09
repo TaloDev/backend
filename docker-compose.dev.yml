@@ -1,0 +1,15 @@
+version: '3.9'
+
+services:
+  backend:
+    build:
+      context: .
+      target: dev
+    image: backend
+    volumes:
+      - ./src:/usr/backend/src
+    depends_on:
+      - test-db
+
+  db:
+    env_file: .env

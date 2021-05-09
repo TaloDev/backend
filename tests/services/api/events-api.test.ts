@@ -12,7 +12,7 @@ import UserFactory from '../../fixtures/UserFactory'
 import PlayerFactory from '../../fixtures/PlayerFactory'
 import GameFactory from '../../fixtures/GameFactory'
 
-const baseUrl = '/api/events'
+const baseUrl = '/v1/events'
 
 describe('Events API service', () => {
   let app: Koa

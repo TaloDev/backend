@@ -6,7 +6,7 @@ import limiterMiddleware from './limiter-middleware'
 
 export default (app: Koa) => {
   app.use(async (ctx: Context, next: Next): Promise<void> => {
-    if (ctx.path.match(/^\/(api)\//)) {
+    if (ctx.path.match(/^\/(v1)\//)) {
       if (ctx.state.user.api !== true) ctx.throw(403)
     }
     await next()
@@ -17,11 +17,11 @@ export default (app: Koa) => {
   }
   
   app.use(service('events-api', new EventsAPIService(), {
-    basePath: '/api/events'
+    basePath: '/v1/events'
   }))
 
   app.use(service('players-api', new PlayersAPIService(), {
-    basePath: '/api/players',
+    basePath: '/v1/players',
     routes: playersAPIRoutes
   }))
 }

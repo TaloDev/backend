@@ -2,7 +2,7 @@ import 'dotenv/config'
 import { Options } from '@mikro-orm/core'
 
 const opts: Options = {
-  entities: ['./dist/entities/*.js'],
+  entities: ['./entities/*.js'],
   entitiesTs: ['./src/entities/*.ts'],
   type: 'mysql',
   host: process.env.DB_HOST,

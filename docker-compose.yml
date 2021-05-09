@@ -1,28 +1,34 @@
 version: '3.9'
 
 services:
+  backend:
+    depends_on:
+      - db
+      - redis
+
   db:
     image: mysql:8
     command: --default-authentication-plugin=mysql_native_password --sql_mode=
     restart: always
-    env_file: .env
     ports:
       - 3306:3306
     volumes:
       - data:/var/lib/mysql
-
-  test-db:
-    image: mysql:8
-    command: --default-authentication-plugin=mysql_native_password --sql_mode=
-    restart: always
-    env_file: envs/.env.test
-    ports:
-      - 3307:3306
-
+    
   redis:
-    image: redis:alpine
+    image: redis:6.2-alpine
     ports:
       - 6379:6379
+
+  web:
+    image: nginx:1.20-alpine
+    ports:
+      - 80:80
+      - 443:443
+    volumes:
+      - ./config/nginx:/etc/nginx/conf.d
+    depends_on:
+      - backend
 
 volumes:
   data:

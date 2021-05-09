@@ -1,0 +1,10 @@
+version: '3.9'
+
+services:
+  test-db:
+    image: mysql:8
+    command: --default-authentication-plugin=mysql_native_password --sql_mode=
+    restart: always
+    env_file: envs/.env.test
+    ports:
+      - 3307:3306

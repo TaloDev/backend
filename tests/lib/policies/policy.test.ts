@@ -27,7 +27,7 @@ describe('Policy base class', () => {
 
     const token = await createToken(apiKey)
     await request(app.callback())
-      .get('/api/events')
+      .get('/v1/events')
       .query({ startDate: '2021-01-01', endDate: '2021-01-02' })
       .auth(token, { type: 'bearer' })
       .expect(401)

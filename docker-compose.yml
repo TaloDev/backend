@@ -20,15 +20,5 @@ services:
     ports:
       - 6379:6379
 
-  web:
-    image: nginx:1.20-alpine
-    ports:
-      - 80:80
-      - 443:443
-    volumes:
-      - ./config/nginx:/etc/nginx/conf.d
-    depends_on:
-      - backend
-
 volumes:
   data:

@@ -42,8 +42,7 @@ export default class User {
       email: this.email,
       lastSeenAt: this.lastSeenAt,
       emailConfirmed: this.emailConfirmed,
-      organisation: this.organisation,
-      testThing: 'testy'
+      organisation: this.organisation
     }
   }
 }

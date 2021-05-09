@@ -18,5 +18,6 @@ RUN yarn build
 
 FROM base AS prod
 ENV NODE_ENV production
+LABEL com.centurylinklabs.watchtower.enable="true"
 RUN yarn
 COPY --from=build /usr/backend/dist .

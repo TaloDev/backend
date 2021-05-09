@@ -4,3 +4,13 @@ services:
   backend:
     image: tudorrr/backend:latest
     command: node index.js
+    volumes:
+      - ./.env:/usr/backend/.env
+
+  watchtower:
+    image: containrrr/watchtower
+    environment:
+      WATCHTOWER_LABEL_ENABLE: 1
+      WATCHTOWER_POLL_INTERVAL: 300
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock

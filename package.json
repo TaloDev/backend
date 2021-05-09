@@ -12,8 +12,7 @@
     "test": "./tests/setup-tests.sh",
     "dev:up": "docker compose -f docker-compose.yml -f docker-compose.test.yml -f docker-compose.dev.yml up --build -d",
     "dev:down": "docker compose -f docker-compose.yml -f docker-compose.test.yml -f docker-compose.dev.yml down",
-    "prod": "docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d",
-    "update": "docker compose build app && docker compose up --no-deps -d app"
+    "prod": "docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d"
   },
   "author": "Sleepy Studios",
   "license": "MIT",

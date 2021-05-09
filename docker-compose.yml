@@ -16,12 +16,12 @@ services:
       - data:/var/lib/mysql
     
   redis:
-    image: redis:alpine
+    image: redis:6.2-alpine
     ports:
       - 6379:6379
 
   web:
-    image: nginx:alpine
+    image: nginx:1.20-alpine
     ports:
       - 80:80
       - 443:443

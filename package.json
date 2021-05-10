@@ -11,7 +11,8 @@
     "seed": "ts-node tests/seed.ts",
     "test": "./tests/setup-tests.sh",
     "up": "docker compose -f docker-compose.yml -f docker-compose.test.yml -f docker-compose.dev.yml up --build -d",
-    "down": "docker compose -f docker-compose.yml -f docker-compose.test.yml -f docker-compose.dev.yml down"
+    "down": "docker compose -f docker-compose.yml -f docker-compose.test.yml -f docker-compose.dev.yml down",
+    "restart": "yarn down && yarn up"
   },
   "author": "Sleepy Studios",
   "license": "MIT",

@@ -14,9 +14,6 @@ export default class Organisation {
   @Property()
   name: string
 
-  @Property({ default: false })
-  emailConfirmed: boolean
-
   @OneToMany(() => Game, (game) => game.organisation, { eager: true })
   games: Collection<Game> = new Collection<Game>(this)
 

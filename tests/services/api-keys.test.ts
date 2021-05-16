@@ -20,7 +20,7 @@ describe('API keys service', () => {
   beforeAll(async () => {
     app = await init()
 
-    user = await new UserFactory().one()
+    user = await new UserFactory().state('admin').one()
     validGame = new Game('Uplift', user.organisation)
     await (<EntityManager>app.context.em).persistAndFlush([user, validGame])
 
@@ -158,5 +158,20 @@ describe('API keys service', () => {
       .delete(`${baseUrl}/${key.id}`)
       .auth(token, { type: 'bearer' })
       .expect(403)
+  })
+
+  it('should not create an api key if the user is not an admin', async () => {
+    const invalidUser = await new UserFactory().one()
+    await (<EntityManager>app.context.em).persistAndFlush(invalidUser)
+
+    const invalidUserToken = await genAccessToken(invalidUser)
+
+    const res = await request(app.callback())
+      .post(`${baseUrl}`)
+      .send({ gameId: validGame.id, scopes: ['read:players', 'write:events'] })
+      .auth(invalidUserToken, { type: 'bearer' })
+      .expect(403)
+
+    expect(res.body).toStrictEqual({ message: 'You do not have permissions to manage API keys' })
   })
 })

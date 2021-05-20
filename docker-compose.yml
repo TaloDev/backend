@@ -16,7 +16,9 @@ services:
       - data:/var/lib/mysql
     
   redis:
-    image: redis:6.2-alpine
+    image: bitnami/redis:6.2
+    environment:
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
     ports:
       - 6379:6379
 

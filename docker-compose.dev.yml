@@ -11,7 +11,4 @@ services:
     volumes:
       - ./src:/usr/backend/src
     depends_on:
-      - test-db
-
-  db:
-    env_file: .env
+      - db

@@ -5,7 +5,6 @@ COPY package.json .
 COPY yarn.lock .
 
 FROM base AS dev
-COPY .env .
 RUN yarn
 EXPOSE 3000
 CMD [ "yarn", "watch" ]

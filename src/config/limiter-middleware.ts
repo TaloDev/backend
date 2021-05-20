@@ -8,7 +8,7 @@ const EXPIRE_TIME = 1
 export default async (ctx: Context, next: Next): Promise<void> => {
   if (ctx.path.match(/^\/(v1)\//)) {
     // do it in here so redis constructor only gets called if limiter gets called
-    if (!redis) redis = new Redis()
+    if (!redis) redis = new Redis({ host: 'redis', password: process.env.REDIS_PASSWORD })
     const current = await redis.get(`requests-${ctx.state.user.sub}`)
 
     if (Number(current) > MAX_REQUESTS) {

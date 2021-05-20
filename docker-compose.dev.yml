@@ -6,10 +6,9 @@ services:
       context: .
       target: dev
     image: backend
+    ports:
+      - 3000:3000
     volumes:
       - ./src:/usr/backend/src
     depends_on:
-      - test-db
-
-  db:
-    env_file: .env
+      - db

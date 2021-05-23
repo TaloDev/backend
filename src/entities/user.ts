@@ -1,5 +1,4 @@
-import { Collection, Entity, Enum, ManyToMany, ManyToOne, PrimaryKey, Property } from '@mikro-orm/core'
-import Game from './game'
+import { Entity, Enum, ManyToOne, PrimaryKey, Property } from '@mikro-orm/core'
 import Organisation from './organisation'
 
 export enum UserType {

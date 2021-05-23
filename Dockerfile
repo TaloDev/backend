@@ -19,4 +19,4 @@ FROM base AS prod
 ENV NODE_ENV production
 RUN yarn
 COPY --from=build /usr/backend/dist .
-RUN yarn global add pm2
+CMD [ "node", "index.js" ]

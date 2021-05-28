@@ -28,4 +28,16 @@ export default class PlayersPolicy extends Policy {
     if (this.isAPICall()) return true
     return await this.canAccessGame(player.game.id)
   }
+
+  async getEvents(req: ServiceRequest): Promise<boolean> {
+    const { id } = req.params
+
+    const player = await this.em.getRepository(Player).findOne(id, ['aliases'])
+
+    if (!player) this.ctx.throw(404, 'Player not found')
+    this.ctx.state.player = player
+
+    if (this.isAPICall()) return true
+    return await this.canAccessGame(player.game.id)
+  }
 }

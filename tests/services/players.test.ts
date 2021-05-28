@@ -8,6 +8,7 @@ import Game from '../../src/entities/game'
 import UserFactory from '../fixtures/UserFactory'
 import OrganisationFactory from '../fixtures/OrganisationFactory'
 import PlayerFactory from '../fixtures/PlayerFactory'
+import EventFactory from '../fixtures/EventFactory'
 
 const baseUrl = '/players'
 
@@ -304,6 +305,33 @@ describe('Players service', () => {
           }
         ]
       })
+      .auth(token, { type: 'bearer' })
+      .expect(403)
+  })
+
+  it('should get a player\'s events', async () => {
+    const player = await new PlayerFactory([validGame]).one()
+    const events = await new EventFactory([player]).many(3)
+
+    await (<EntityManager>app.context.em).persistAndFlush([player, ...events])
+
+    const res = await request(app.callback())
+      .get(`${baseUrl}/${player.id}/events`)
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+      expect(res.body.events).toHaveLength(3)
+  })
+
+  it('should not get a player\'s events for a player they have no access to', async () => {
+    const otherOrg = await new OrganisationFactory().one()
+    const otherGame = new Game('Trigeon', otherOrg)
+    const player = await new PlayerFactory([otherGame]).one()
+
+    await (<EntityManager>app.context.em).persistAndFlush(player)
+
+    await request(app.callback())
+      .get(`${baseUrl}/${player.id}/events`)
       .auth(token, { type: 'bearer' })
       .expect(403)
   })

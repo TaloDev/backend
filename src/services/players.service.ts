@@ -1,11 +1,29 @@
 import { EntityManager } from '@mikro-orm/core'
-import { Service, ServiceRequest, ServiceResponse, Validate, HasPermission } from 'koa-rest-services'
+import { Service, ServiceRequest, ServiceResponse, Validate, HasPermission, ServiceRoute } from 'koa-rest-services'
 import Game from '../entities/game'
 import Player from '../entities/player'
 import PlayersPolicy from '../policies/players.policy'
 import Fuse from 'fuse.js'
 import PlayerAlias from '../entities/player-alias'
 import sanitiseProps from '../lib/props/sanitiseProps'
+import Event from '../entities/event'
+
+export const playersRoutes: ServiceRoute[] = [
+  {
+    method: 'POST'
+  },
+  {
+    method: 'GET'
+  },
+  {
+    method: 'PATCH'
+  },
+  {
+    method: 'GET',
+    path: '/:id/events',
+    handler: 'events'
+  }
+]
 
 interface SearchablePlayer {
   id: string
@@ -113,6 +131,29 @@ export default class PlayersService implements Service {
       status: 200,
       body: {
         player
+      }
+    }
+  }
+
+  @HasPermission(PlayersPolicy, 'getEvents')
+  async events(req: ServiceRequest): Promise<ServiceResponse> {
+    const em: EntityManager = req.ctx.em
+    const player: Player = req.ctx.state.player // set in the policy
+
+    const events = await em.getRepository(Event).find({
+      playerAlias: player.aliases.getItems()
+    })
+
+    // TODO, don't need this yet but useful bit of code for later
+    // const propColumns = events.reduce((acc: string[], curr: Event): string[] => {
+    //   const allKeys: string[] = curr.props.map((prop: Prop) => prop.key)
+    //   return [...new Set([...acc, ...allKeys])]
+    // }, [])
+
+    return {
+      status: 200,
+      body: {
+        events
       }
     }
   }

@@ -42,7 +42,6 @@
     "bcrypt": "^5.0.0",
     "date-fns": "^2.16.1",
     "dotenv": "^8.2.0",
-    "fuse.js": "^6.4.6",
     "ioredis": "^4.26.0",
     "jsonwebtoken": "^8.5.1",
     "koa": "^2.13.0",

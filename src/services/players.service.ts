@@ -1,12 +1,11 @@
-import { EntityManager, FilterQuery } from '@mikro-orm/core'
 import { Service, ServiceRequest, ServiceResponse, Validate, HasPermission, ServiceRoute } from 'koa-rest-services'
 import Game from '../entities/game'
 import Player from '../entities/player'
 import PlayersPolicy from '../policies/players.policy'
-import Fuse from 'fuse.js'
 import PlayerAlias from '../entities/player-alias'
 import sanitiseProps from '../lib/props/sanitiseProps'
 import Event from '../entities/event'
+import { EntityManager } from '@mikro-orm/mysql'
 
 export const playersRoutes: ServiceRoute[] = [
   {
@@ -24,12 +23,6 @@ export const playersRoutes: ServiceRoute[] = [
     handler: 'events'
   }
 ]
-
-interface SearchablePlayer {
-  id: string
-  allAliases: string[]
-  allProps: string[]
-}
 
 const itemsPerPage = 25
 
@@ -80,31 +73,32 @@ export default class PlayersService implements Service {
     const { gameId, search, page } = req.query
     const em: EntityManager = req.ctx.em
 
-    const whereOptions: FilterQuery<Player> = {
-      game: Number(gameId)
-    }
-
-    // TODO, construct whereOptions from search string like "prop:52 alias:3423423"
-
-    let [players, count] = await em.getRepository(Player).findAndCount(
-      whereOptions,
-      {
-        populate: ['aliases'],
-        limit: itemsPerPage,
-        offset: Number(page) * itemsPerPage
-      }
-    )
+    let baseQuery = em.createQueryBuilder(Player, 'p')  
+      .where({ game: Number(gameId) })
 
     if (search) {
-      const items: SearchablePlayer[] = players.map((player) => ({
-        id: player.id,
-        allAliases: player.aliases.getItems().map((alias) => alias.identifier),
-        allProps: player.props.map((prop) => prop.value)
-      }))
-
-      const fuse = new Fuse(items, { keys: ['id', 'allAliases', 'allProps'], threshold: 0.2 })
-      players = fuse.search(search).map((fuseItem) => players[fuseItem.refIndex])
+      baseQuery = baseQuery
+        .andWhere('json_extract(props, \'$[*].value\') like ?', [`%${search}%`])
+        .orWhere({
+          aliases: {
+            identifier: {
+              $like: `%${search}%`
+            }
+          }
+        })
     }
+
+    const { count } = await baseQuery
+      .count('p.id', true)
+      .execute('get')
+
+    const players = await baseQuery
+      .select('p.*', true)
+      .limit(itemsPerPage)
+      .offset(Number(page) * itemsPerPage)
+      .getResultList()
+
+    await em.populate(players, 'aliases')
 
     return {
       status: 200,
@@ -157,19 +151,32 @@ export default class PlayersService implements Service {
     const em: EntityManager = req.ctx.em
     const player: Player = req.ctx.state.player // set in the policy
 
-    // TODO, construct whereOptions from search string like "prop:52 alias:3423423"
-
-    let [events, count] = await em.getRepository(Event).findAndCount({
-      playerAlias: player.aliases.getItems()
-    }, {
-      limit: itemsPerPage,
-      offset: Number(page) * itemsPerPage
-    })
+    let baseQuery = em.createQueryBuilder(Event, 'e')
+      .where({
+        playerAlias: {
+          player
+        }
+      })
 
     if (search) {
-      const fuse = new Fuse(events, { keys: ['name'], threshold: 0.2 })
-      events = fuse.search(search).map((fuseItem) => events[fuseItem.refIndex])
+      baseQuery = baseQuery
+        .andWhere('json_extract(props, \'$[*].value\') like ?', [`%${search}%`])
+        .orWhere({
+          name: {
+            $like: `%${search}%`
+          }
+        })
     }
+
+    const { count } = await baseQuery
+      .count('e.id', true)
+      .execute('get')
+
+    const events = await baseQuery
+      .select('e.*', true)
+      .limit(itemsPerPage)
+      .offset(Number(page) * itemsPerPage)
+      .getResultList()
 
     // TODO, don't need this yet but useful bit of code for later
     // const propColumns = events.reduce((acc: string[], curr: Event): string[] => {

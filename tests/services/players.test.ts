@@ -161,7 +161,16 @@ describe('Players service', () => {
       ]
     })).many(2)
 
-    await (<EntityManager>app.context.em).persistAndFlush(players)
+    const otherPlayers = await new PlayerFactory([validGame]).with(() => ({
+      props: [
+        {
+          key: 'guildName',
+          value: 'The Worst Guild'
+        }
+      ]
+    })).many(3)
+
+    await (<EntityManager>app.context.em).persistAndFlush([...players, ...otherPlayers])
 
     const res = await request(app.callback())
       .get(`${baseUrl}`)
@@ -170,6 +179,24 @@ describe('Players service', () => {
       .expect(200)
 
     expect(res.body.players).toHaveLength(2)
+  })
+
+  it('should paginate results when getting players', async () => {
+    const existingNum = await validGame.players.loadCount()
+    const players = await new PlayerFactory([validGame]).many(36)
+    await (<EntityManager>app.context.em).persistAndFlush(players)
+
+    const count = existingNum + players.length
+    const page = Math.floor(count / 25)
+
+    const res = await request(app.callback())
+      .get(`${baseUrl}`)
+      .query({ gameId: validGame.id, page })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    expect(res.body.players).toHaveLength(count % 25)
+    expect(res.body.count).toBe(count)
   })
 
   it('should update a player\'s properties', async () => {
@@ -334,5 +361,39 @@ describe('Players service', () => {
       .get(`${baseUrl}/${player.id}/events`)
       .auth(token, { type: 'bearer' })
       .expect(403)
+  })
+
+  it('should return a filtered list of events', async () => {
+    const player = await new PlayerFactory([validGame]).one()
+    const events = await new EventFactory([player]).with(() => ({ name: 'Find secret' })).many(3)
+    const otherEvents = await new EventFactory([player]).with(() => ({ name: 'Kill boss' })).many(3)
+    await (<EntityManager>app.context.em).persistAndFlush([...events, ...otherEvents])
+
+    const res = await request(app.callback())
+      .get(`${baseUrl}/${player.id}/events`)
+      .query({ search: 'Find secret' })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    expect(res.body.events).toHaveLength(3)
+  })
+
+  it('should paginate results when getting player events', async () => {
+    const count = 42
+
+    const player = await new PlayerFactory([validGame]).one()
+    const events = await new EventFactory([player]).many(count)
+    await (<EntityManager>app.context.em).persistAndFlush(events)
+
+    const page = Math.floor(count / 25)
+
+    const res = await request(app.callback())
+      .get(`${baseUrl}/${player.id}/events`)
+      .query({ page })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    expect(res.body.events).toHaveLength(count % 25)
+    expect(res.body.count).toBe(count)
   })
 })

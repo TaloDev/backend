@@ -1,4 +1,4 @@
-import { EntityManager } from '@mikro-orm/core'
+import { EntityManager, FilterQuery } from '@mikro-orm/core'
 import { Service, ServiceRequest, ServiceResponse, Validate, HasPermission, ServiceRoute } from 'koa-rest-services'
 import Game from '../entities/game'
 import Player from '../entities/player'
@@ -30,6 +30,8 @@ interface SearchablePlayer {
   allAliases: string[]
   allProps: string[]
 }
+
+const itemsPerPage = 25
 
 export default class PlayersService implements Service {
   @Validate({
@@ -75,10 +77,23 @@ export default class PlayersService implements Service {
   })
   @HasPermission(PlayersPolicy, 'get')
   async get(req: ServiceRequest): Promise<ServiceResponse> {
-    const { gameId, search } = req.query
+    const { gameId, search, page } = req.query
     const em: EntityManager = req.ctx.em
 
-    let players = await em.getRepository(Player).find({ game: Number(gameId) }, ['aliases'])
+    const whereOptions: FilterQuery<Player> = {
+      game: Number(gameId)
+    }
+
+    // TODO, construct whereOptions from search string like "prop:52 alias:3423423"
+
+    let [players, count] = await em.getRepository(Player).findAndCount(
+      whereOptions,
+      {
+        populate: ['aliases'],
+        limit: itemsPerPage,
+        offset: Number(page) * itemsPerPage
+      }
+    )
 
     if (search) {
       const items: SearchablePlayer[] = players.map((player) => ({
@@ -94,7 +109,8 @@ export default class PlayersService implements Service {
     return {
       status: 200,
       body: {
-        players
+        players,
+        count
       }
     }
   }
@@ -137,12 +153,23 @@ export default class PlayersService implements Service {
 
   @HasPermission(PlayersPolicy, 'getEvents')
   async events(req: ServiceRequest): Promise<ServiceResponse> {
+    const { search, page } = req.query
     const em: EntityManager = req.ctx.em
     const player: Player = req.ctx.state.player // set in the policy
 
-    const events = await em.getRepository(Event).find({
+    // TODO, construct whereOptions from search string like "prop:52 alias:3423423"
+
+    let [events, count] = await em.getRepository(Event).findAndCount({
       playerAlias: player.aliases.getItems()
+    }, {
+      limit: itemsPerPage,
+      offset: Number(page) * itemsPerPage
     })
+
+    if (search) {
+      const fuse = new Fuse(events, { keys: ['name'], threshold: 0.2 })
+      events = fuse.search(search).map((fuseItem) => events[fuseItem.refIndex])
+    }
 
     // TODO, don't need this yet but useful bit of code for later
     // const propColumns = events.reduce((acc: string[], curr: Event): string[] => {
@@ -153,7 +180,8 @@ export default class PlayersService implements Service {
     return {
       status: 200,
       body: {
-        events
+        events,
+        count
       }
     }
   }

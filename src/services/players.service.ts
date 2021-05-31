@@ -74,11 +74,10 @@ export default class PlayersService implements Service {
     const em: EntityManager = req.ctx.em
 
     let baseQuery = em.createQueryBuilder(Player, 'p')  
-      .where({ game: Number(gameId) })
 
     if (search) {
       baseQuery = baseQuery
-        .andWhere('json_extract(props, \'$[*].value\') like ?', [`%${search}%`])
+        .where('json_extract(props, \'$[*].value\') like ?', [`%${search}%`])
         .orWhere({
           aliases: {
             identifier: {
@@ -87,6 +86,8 @@ export default class PlayersService implements Service {
           }
         })
     }
+
+    baseQuery = baseQuery.andWhere({ game: Number(gameId) })
 
     const { count } = await baseQuery
       .count('p.id', true)
@@ -152,21 +153,22 @@ export default class PlayersService implements Service {
     const player: Player = req.ctx.state.player // set in the policy
 
     let baseQuery = em.createQueryBuilder(Event, 'e')
-      .where({
-        playerAlias: {
-          player
-        }
-      })
 
     if (search) {
       baseQuery = baseQuery
-        .andWhere('json_extract(props, \'$[*].value\') like ?', [`%${search}%`])
+        .where('json_extract(props, \'$[*].value\') like ?', [`%${search}%`])
         .orWhere({
           name: {
             $like: `%${search}%`
           }
         })
     }
+
+    baseQuery = baseQuery.andWhere({
+      playerAlias: {
+        player
+      }
+    })
 
     const { count } = await baseQuery
       .count('e.id', true)

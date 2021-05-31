@@ -1,19 +1,19 @@
 import { EntityManager } from '@mikro-orm/core'
 import Koa from 'koa'
-import init from '../../src/index'
+import init from '../../../src/index'
 import request from 'supertest'
-import User from '../../src/entities/user'
-import { genAccessToken } from '../../src/lib/auth/buildTokenPair'
-import Game from '../../src/entities/game'
-import Event from '../../src/entities/event'
-import EventFactory from '../fixtures/EventFactory'
-import UserFactory from '../fixtures/UserFactory'
-import OrganisationFactory from '../fixtures/OrganisationFactory'
-import PlayerFactory from '../fixtures/PlayerFactory'
+import User from '../../../src/entities/user'
+import { genAccessToken } from '../../../src/lib/auth/buildTokenPair'
+import Game from '../../../src/entities/game'
+import Event from '../../../src/entities/event'
+import EventFactory from '../../fixtures/EventFactory'
+import UserFactory from '../../fixtures/UserFactory'
+import OrganisationFactory from '../../fixtures/OrganisationFactory'
+import PlayerFactory from '../../fixtures/PlayerFactory'
 
 const baseUrl = '/events'
 
-describe('Events service', () => {
+describe('Events service - get', () => {
   let app: Koa
   let user: User
   let validGame: Game

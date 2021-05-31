@@ -1,16 +1,15 @@
 import { EntityManager } from '@mikro-orm/core'
 import Koa from 'koa'
-import init from '../../src/index'
+import init from '../../../src/index'
 import request from 'supertest'
-import User from '../../src/entities/user'
-import { genAccessToken } from '../../src/lib/auth/buildTokenPair'
-import Game from '../../src/entities/game'
-import UserFactory from '../fixtures/UserFactory'
-import OrganisationFactory from '../fixtures/OrganisationFactory'
+import User from '../../../src/entities/user'
+import { genAccessToken } from '../../../src/lib/auth/buildTokenPair'
+import Game from '../../../src/entities/game'
+import UserFactory from '../../fixtures/UserFactory'
 
 const baseUrl = '/games'
 
-describe('Games service', () => {
+describe('Games service - post', () => {
   let app: Koa
   let user: User
   let token: string

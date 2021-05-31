@@ -1,22 +1,22 @@
 import { EntityManager } from '@mikro-orm/core'
 import Koa from 'koa'
-import init from '../../src/index'
+import init from '../../../src/index'
 import request from 'supertest'
-import User from '../../src/entities/user'
-import { genAccessToken } from '../../src/lib/auth/buildTokenPair'
-import Game from '../../src/entities/game'
-import Event from '../../src/entities/event'
-import EventFactory from '../fixtures/EventFactory'
-import UserFactory from '../fixtures/UserFactory'
-import PlayerFactory from '../fixtures/PlayerFactory'
-import Player from '../../src/entities/player'
-import GameFactory from '../fixtures/GameFactory'
+import User from '../../../src/entities/user'
+import { genAccessToken } from '../../../src/lib/auth/buildTokenPair'
+import Game from '../../../src/entities/game'
+import Event from '../../../src/entities/event'
+import EventFactory from '../../fixtures/EventFactory'
+import UserFactory from '../../fixtures/UserFactory'
+import PlayerFactory from '../../fixtures/PlayerFactory'
+import Player from '../../../src/entities/player'
+import GameFactory from '../../fixtures/GameFactory'
 import { sub } from 'date-fns'
-import OrganisationFactory from '../fixtures/OrganisationFactory'
+import OrganisationFactory from '../../fixtures/OrganisationFactory'
 
 const baseUrl = '/headlines'
 
-describe('Headlines service', () => {
+describe('Headlines service - get', () => {
   let app: Koa
   let user: User
   let validGame: Game

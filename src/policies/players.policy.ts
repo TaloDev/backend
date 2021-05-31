@@ -37,7 +37,6 @@ export default class PlayersPolicy extends Policy {
     if (!player) this.ctx.throw(404, 'Player not found')
     this.ctx.state.player = player
 
-    if (this.isAPICall()) return true
     return await this.canAccessGame(player.game.id)
   }
 }

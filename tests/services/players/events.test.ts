@@ -92,4 +92,13 @@ describe('Players service - get events', () => {
     expect(res.body.events).toHaveLength(count % 25)
     expect(res.body.count).toBe(count)
   })
+
+  it('should not get a player\'s events if they do not exist', async () => {
+    const res = await request(app.callback())
+      .get(`${baseUrl}/21312321321/events`)
+      .auth(token, { type: 'bearer' })
+      .expect(404)
+
+    expect(res.body.message).toBe('Player not found')
+  })
 })

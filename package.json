@@ -8,7 +8,7 @@
     "build": "tsc -p tsconfig.build.json",
     "schema:create": "mikro-orm schema:create -r",
     "schema:update": "mikro-orm schema:update -r",
-    "seed": "ts-node tests/seed.ts",
+    "seed": "docker compose -f docker-compose.yml -f docker-compose.test.yml -f docker-compose.dev.yml exec backend yarn ts-node tests/seed.ts",
     "test": "./tests/setup-tests.sh",
     "up": "docker compose -f docker-compose.yml -f docker-compose.test.yml -f docker-compose.dev.yml up --build -d",
     "down": "docker compose -f docker-compose.yml -f docker-compose.test.yml -f docker-compose.dev.yml down",

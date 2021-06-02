@@ -10,5 +10,6 @@ services:
       - 3000:3000
     volumes:
       - ./src:/usr/backend/src
+      - ./tests:/usr/backend/tests
     depends_on:
       - db

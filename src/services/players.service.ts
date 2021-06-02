@@ -1,17 +1,30 @@
-import { EntityManager } from '@mikro-orm/core'
-import { Service, ServiceRequest, ServiceResponse, Validate, HasPermission } from 'koa-rest-services'
+import { Service, ServiceRequest, ServiceResponse, Validate, HasPermission, ServiceRoute } from 'koa-rest-services'
 import Game from '../entities/game'
 import Player from '../entities/player'
 import PlayersPolicy from '../policies/players.policy'
-import Fuse from 'fuse.js'
 import PlayerAlias from '../entities/player-alias'
 import sanitiseProps from '../lib/props/sanitiseProps'
+import Event from '../entities/event'
+import { EntityManager } from '@mikro-orm/mysql'
 
-interface SearchablePlayer {
-  id: string
-  allAliases: string[]
-  allProps: string[]
-}
+export const playersRoutes: ServiceRoute[] = [
+  {
+    method: 'POST'
+  },
+  {
+    method: 'GET'
+  },
+  {
+    method: 'PATCH'
+  },
+  {
+    method: 'GET',
+    path: '/:id/events',
+    handler: 'events'
+  }
+]
+
+const itemsPerPage = 25
 
 export default class PlayersService implements Service {
   @Validate({
@@ -57,26 +70,42 @@ export default class PlayersService implements Service {
   })
   @HasPermission(PlayersPolicy, 'get')
   async get(req: ServiceRequest): Promise<ServiceResponse> {
-    const { gameId, search } = req.query
+    const { gameId, search, page } = req.query
     const em: EntityManager = req.ctx.em
 
-    let players = await em.getRepository(Player).find({ game: Number(gameId) }, ['aliases'])
+    let baseQuery = em.createQueryBuilder(Player, 'p')  
 
     if (search) {
-      const items: SearchablePlayer[] = players.map((player) => ({
-        id: player.id,
-        allAliases: player.aliases.getItems().map((alias) => alias.identifier),
-        allProps: player.props.map((prop) => prop.value)
-      }))
-
-      const fuse = new Fuse(items, { keys: ['id', 'allAliases', 'allProps'], threshold: 0.2 })
-      players = fuse.search(search).map((fuseItem) => players[fuseItem.refIndex])
+      baseQuery = baseQuery
+        .where('json_extract(props, \'$[*].value\') like ?', [`%${search}%`])
+        .orWhere({
+          aliases: {
+            identifier: {
+              $like: `%${search}%`
+            }
+          }
+        })
     }
+
+    baseQuery = baseQuery.andWhere({ game: Number(gameId) })
+
+    const { count } = await baseQuery
+      .count('p.id', true)
+      .execute('get')
+
+    const players = await baseQuery
+      .select('p.*', true)
+      .limit(itemsPerPage)
+      .offset(Number(page) * itemsPerPage)
+      .getResultList()
+
+    await em.populate(players, 'aliases')
 
     return {
       status: 200,
       body: {
-        players
+        players,
+        count
       }
     }
   }
@@ -113,6 +142,55 @@ export default class PlayersService implements Service {
       status: 200,
       body: {
         player
+      }
+    }
+  }
+
+  @HasPermission(PlayersPolicy, 'getEvents')
+  async events(req: ServiceRequest): Promise<ServiceResponse> {
+    const { search, page } = req.query
+    const em: EntityManager = req.ctx.em
+    const player: Player = req.ctx.state.player // set in the policy
+
+    let baseQuery = em.createQueryBuilder(Event, 'e')
+
+    if (search) {
+      baseQuery = baseQuery
+        .where('json_extract(props, \'$[*].value\') like ?', [`%${search}%`])
+        .orWhere({
+          name: {
+            $like: `%${search}%`
+          }
+        })
+    }
+
+    baseQuery = baseQuery.andWhere({
+      playerAlias: {
+        player
+      }
+    })
+
+    const { count } = await baseQuery
+      .count('e.id', true)
+      .execute('get')
+
+    const events = await baseQuery
+      .select('e.*', true)
+      .limit(itemsPerPage)
+      .offset(Number(page) * itemsPerPage)
+      .getResultList()
+
+    // TODO, don't need this yet but useful bit of code for later
+    // const propColumns = events.reduce((acc: string[], curr: Event): string[] => {
+    //   const allKeys: string[] = curr.props.map((prop: Prop) => prop.key)
+    //   return [...new Set([...acc, ...allKeys])]
+    // }, [])
+
+    return {
+      status: 200,
+      body: {
+        events,
+        count
       }
     }
   }

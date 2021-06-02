@@ -1,22 +1,22 @@
 import { EntityManager } from '@mikro-orm/core'
 import Koa from 'koa'
-import init from '../../src/index'
+import init from '../../../src/index'
 import request from 'supertest'
-import User from '../../src/entities/user'
-import { genAccessToken } from '../../src/lib/auth/buildTokenPair'
-import Game from '../../src/entities/game'
-import Event from '../../src/entities/event'
-import EventFactory from '../fixtures/EventFactory'
-import UserFactory from '../fixtures/UserFactory'
-import PlayerFactory from '../fixtures/PlayerFactory'
-import Player from '../../src/entities/player'
-import GameFactory from '../fixtures/GameFactory'
+import User from '../../../src/entities/user'
+import { genAccessToken } from '../../../src/lib/auth/buildTokenPair'
+import Game from '../../../src/entities/game'
+import Event from '../../../src/entities/event'
+import EventFactory from '../../fixtures/EventFactory'
+import UserFactory from '../../fixtures/UserFactory'
+import PlayerFactory from '../../fixtures/PlayerFactory'
+import Player from '../../../src/entities/player'
+import GameFactory from '../../fixtures/GameFactory'
 import { sub } from 'date-fns'
-import OrganisationFactory from '../fixtures/OrganisationFactory'
+import OrganisationFactory from '../../fixtures/OrganisationFactory'
 
 const baseUrl = '/headlines'
 
-describe('Headlines service', () => {
+describe('Headlines service - get', () => {
   let app: Koa
   let user: User
   let validGame: Game
@@ -57,8 +57,10 @@ describe('Headlines service', () => {
   })
 
   it('should return the correct number of new players this week', async () => {
-    const players = await new PlayerFactory([validGame]).many(10)
-    await (<EntityManager>app.context.em).persistAndFlush(players)
+    const newPlayers = await new PlayerFactory([validGame]).state('created this week').many(10)
+    const oldPlayers = await new PlayerFactory([validGame]).state('not created this week').many(10)
+
+    await (<EntityManager>app.context.em).persistAndFlush([...newPlayers, ...oldPlayers])
 
     const res = await request(app.callback())
       .get(`${baseUrl}/new_players`)
@@ -69,16 +71,17 @@ describe('Headlines service', () => {
     expect(res.body.count).toBe(10)
   })
 
-  it('should return the correct number of new players this week', async () => {
-    const playersNotSeenThisWeek = await new PlayerFactory([validGame]).with(() => ({
-      lastSeenAt: sub(new Date(), { weeks: 2 })
-    })).many(6)
+  it('should return the correct number of returning players this week', async () => {
+    const playersNotSeenThisWeek = await new PlayerFactory([validGame]).state('not seen this week').many(6)
 
-    const playersSeenThisWeek = await new PlayerFactory([validGame]).with(() => ({
-      lastSeenAt: new Date()
-    })).many(4)
+    const returningPlayersSeenThisWeek = await new PlayerFactory([validGame])
+      .state('seen this week')
+      .state('not created this week')
+      .many(4)
 
-    await (<EntityManager>app.context.em).persistAndFlush([...playersNotSeenThisWeek, ...playersSeenThisWeek])
+    const playersSignedupThisWeek = await new PlayerFactory([validGame]).state('created this week').many(5)
+
+    await (<EntityManager>app.context.em).persistAndFlush([...playersNotSeenThisWeek, ...returningPlayersSeenThisWeek, ...playersSignedupThisWeek])
 
     const res = await request(app.callback())
       .get(`${baseUrl}/returning_players`)

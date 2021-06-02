@@ -65,6 +65,9 @@ export default class HeadlinesService implements Service {
       game: Number(gameId),
       lastSeenAt: {
         $gte: sub(new Date(), { weeks: 1 })
+      },
+      createdAt: {
+        $lt: sub(new Date(), { weeks: 1 })
       }
     })
 

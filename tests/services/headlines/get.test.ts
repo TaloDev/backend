@@ -57,8 +57,10 @@ describe('Headlines service - get', () => {
   })
 
   it('should return the correct number of new players this week', async () => {
-    const players = await new PlayerFactory([validGame]).many(10)
-    await (<EntityManager>app.context.em).persistAndFlush(players)
+    const newPlayers = await new PlayerFactory([validGame]).state('created this week').many(10)
+    const oldPlayers = await new PlayerFactory([validGame]).state('not created this week').many(10)
+
+    await (<EntityManager>app.context.em).persistAndFlush([...newPlayers, ...oldPlayers])
 
     const res = await request(app.callback())
       .get(`${baseUrl}/new_players`)
@@ -69,16 +71,17 @@ describe('Headlines service - get', () => {
     expect(res.body.count).toBe(10)
   })
 
-  it('should return the correct number of new players this week', async () => {
-    const playersNotSeenThisWeek = await new PlayerFactory([validGame]).with(() => ({
-      lastSeenAt: sub(new Date(), { weeks: 2 })
-    })).many(6)
+  it('should return the correct number of returning players this week', async () => {
+    const playersNotSeenThisWeek = await new PlayerFactory([validGame]).state('not seen this week').many(6)
 
-    const playersSeenThisWeek = await new PlayerFactory([validGame]).with(() => ({
-      lastSeenAt: new Date()
-    })).many(4)
+    const returningPlayersSeenThisWeek = await new PlayerFactory([validGame])
+      .state('seen this week')
+      .state('not created this week')
+      .many(4)
 
-    await (<EntityManager>app.context.em).persistAndFlush([...playersNotSeenThisWeek, ...playersSeenThisWeek])
+    const playersSignedupThisWeek = await new PlayerFactory([validGame]).state('created this week').many(5)
+
+    await (<EntityManager>app.context.em).persistAndFlush([...playersNotSeenThisWeek, ...returningPlayersSeenThisWeek, ...playersSignedupThisWeek])
 
     const res = await request(app.callback())
       .get(`${baseUrl}/returning_players`)

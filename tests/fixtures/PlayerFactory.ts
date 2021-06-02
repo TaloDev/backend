@@ -15,6 +15,10 @@ export default class PlayerFactory extends Factory<Player> {
     super(Player, 'base')
     this.register('base', this.base)
     this.register('not seen today', this.notSeenToday)
+    this.register('not created this week', this.notCreatedThisWeek)
+    this.register('not seen this week', this.notSeenThisWeek)
+    this.register('seen this week', this.seenThisWeek)
+    this.register('created this week', this.createdThisWeek)
 
     this.availableGames = availableGames
   }
@@ -32,17 +36,44 @@ export default class PlayerFactory extends Factory<Player> {
     const items = await playerAliasFactory.with(() => ({ player })).many(casual.integer(1, 2))
     const aliases = new Collection<PlayerAlias>(this, items)
 
+    const lastSeenAt = sub(new Date(), { days: casual.integer(0, 10) })
+
     return {
       aliases,
       game: casual.random_element(this.availableGames),
       props,
-      lastSeenAt: sub(new Date(), { days: casual.integer(0, 3) })
+      lastSeenAt
     }
   }
 
   protected notSeenToday(): Partial<Player> {
     return {
-      lastSeenAt: sub(new Date(), { days: casual.integer(1, 7) })
+      lastSeenAt: sub(new Date(), { days: casual.integer(1, 99) })
+    }
+  }
+
+  protected notCreatedThisWeek(): Partial<Player> {
+    return {
+      createdAt: sub(new Date(), { days: 8 })
+    }
+  }
+
+  protected notSeenThisWeek(): Partial<Player> {
+    return {
+      lastSeenAt: sub(new Date(), { days: 8 })
+    }
+  }
+
+  protected seenThisWeek(): Partial<Player> {
+    return {
+      lastSeenAt: sub(new Date(), { days: casual.integer(0, 6) })
+    }
+  }
+
+  protected createdThisWeek(): Partial<Player> {
+    return {
+      lastSeenAt: sub(new Date(), { days: casual.integer(0, 6) }),
+      createdAt: sub(new Date(), { days: casual.integer(0, 6) })
     }
   }
 }

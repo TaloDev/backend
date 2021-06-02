@@ -85,6 +85,11 @@ export default class PlayersService implements Service {
             }
           }
         })
+        .orWhere({
+          id: {
+            $like: `%${search}%`
+          }
+        })
     }
 
     baseQuery = baseQuery.andWhere({ game: Number(gameId) })

@@ -10,7 +10,7 @@ import configurePublicRoutes from './config/public-routes'
 import configureAPIRoutes from './config/api-routes'
 import corsMiddleware from './config/cors-middleware'
 import errorMiddleware from './config/error-middleware'
-import opts from './config/mikro-orm.config'
+import ormConfig from './config/mikro-orm.config'
 
 const isTest = process.env.NODE_ENV === 'test'
 
@@ -18,7 +18,7 @@ export const init = async (): Promise<Koa> => {
   const app = new Koa()
 
   try {
-    const orm = await MikroORM.init(opts)
+    const orm = await MikroORM.init(ormConfig)
     app.context.em = orm.em
   } catch (err) {
     console.error(err)

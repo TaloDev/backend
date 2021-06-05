@@ -2,7 +2,7 @@ import 'dotenv/config'
 import { Options } from '@mikro-orm/core'
 import entities from '../entities'
 
-const opts: Options = {
+const ormConfig: Options = {
   entities,
   type: 'mysql',
   host: process.env.DB_HOST,
@@ -12,4 +12,4 @@ const opts: Options = {
   password: process.env.MYSQL_ROOT_PASSWORD
 }
 
-export default opts
+export default ormConfig

@@ -1,5 +1,6 @@
 import { Context, Next } from 'koa'
 import Redis from 'ioredis'
+import redisConfig from './redis.config'
 
 let redis: Redis.Redis 
 const MAX_REQUESTS = 50
@@ -7,14 +8,16 @@ const EXPIRE_TIME = 1
 
 export default async (ctx: Context, next: Next): Promise<void> => {
   if (ctx.path.match(/^\/(v1)\//)) {
+    const key = `requests:${ctx.state.user.sub}`
+
     // do it in here so redis constructor only gets called if limiter gets called
-    if (!redis) redis = new Redis({ host: 'redis', password: process.env.REDIS_PASSWORD })
-    const current = await redis.get(`requests-${ctx.state.user.sub}`)
+    if (!redis) redis = new Redis(redisConfig)
+    const current = await redis.get(key)
 
     if (Number(current) > MAX_REQUESTS) {
       ctx.throw(429)
     } else {
-      await redis.set(`requests-${ctx.state.user.sub}`, Number(current) + 1, 'ex', EXPIRE_TIME)
+      await redis.set(key, Number(current) + 1, 'ex', EXPIRE_TIME)
     }
   }
 

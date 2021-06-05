@@ -2,7 +2,6 @@ import { Factory } from 'hefty'
 import casual from 'casual'
 import Event from '../../src/entities/event'
 import Player from '../../src/entities/player'
-import { randomDate } from '../utils/randomDate'
 import { sub } from 'date-fns'
 import Prop from '../../src/entities/prop'
 
@@ -42,19 +41,23 @@ export default class EventFactory extends Factory<Event> {
 
   protected thisWeek(): Partial<Event> {
     return {
-      createdAt: randomDate(sub(new Date(), { weeks: 1 }), new Date())
+      createdAt: this.randomDate(sub(new Date(), { weeks: 1 }), new Date())
     }
   }
 
   protected thisMonth(): Partial<Event> {
     return {
-      createdAt: randomDate(sub(new Date(), { months: 1 }), new Date())
+      createdAt: this.randomDate(sub(new Date(), { months: 1 }), new Date())
     }
   }
 
   protected thisYear(): Partial<Event> {
     return {
-      createdAt: randomDate(sub(new Date(), { years: 1 }), new Date())
+      createdAt: this.randomDate(sub(new Date(), { years: 1 }), new Date())
     }
+  }
+
+  private randomDate(start: Date, end: Date): Date {
+    return new Date(start.getTime() + Math.random() * (end.getTime() - start.getTime()));
   }
 }

@@ -1,10 +1,10 @@
 import { EntityManager } from '@mikro-orm/core'
 import Koa from 'koa'
-import APIKey, { APIKeyScope } from '../../../src/entities/api-key'
-import Game from '../../../src/entities/game'
-import init from '../../../src/index'
-import { createToken } from '../../../src/services/api-keys.service'
-import UserFactory from '../../fixtures/UserFactory'
+import APIKey, { APIKeyScope } from '../../src/entities/api-key'
+import Game from '../../src/entities/game'
+import init from '../../src/index'
+import { createToken } from '../../src/services/api-keys.service'
+import UserFactory from '../fixtures/UserFactory'
 import request from 'supertest'
 
 describe('Policy base class', () => {

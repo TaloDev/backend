@@ -1,5 +1,8 @@
+import { MikroORM } from '@mikro-orm/core'
 import Queue from 'bee-queue'
+import ormConfig from '../../config/mikro-orm.config'
 import redisConfig from '../../config/redis.config'
+import FailedJob from '../../entities/failed-job'
 
 const createQueue = (name: string): Queue => {
   const queue = new Queue(name, {
@@ -7,12 +10,16 @@ const createQueue = (name: string): Queue => {
     activateDelayedJobs: true
   })
 
-  queue.on('error', (err) => {
-    console.log(`A queue error happened: ${err.message}`)
-  })
+  queue.on('failed', async (job, err) => {
+    const orm = await MikroORM.init(ormConfig)
 
-  queue.on('failed', (job, err) => {
-    console.log(`Job ${job.id} failed with error ${err.message}`);
+    const failedJob = new FailedJob()
+    failedJob.payload = job.data
+    failedJob.queue = job.queue.name
+    failedJob.reason = err.message
+
+    await orm.em.getRepository(FailedJob).persistAndFlush(failedJob)
+    await orm.close()
   })
 
   return queue

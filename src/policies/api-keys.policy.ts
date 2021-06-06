@@ -23,7 +23,7 @@ export default class APIKeysPolicy extends Policy {
 
   async delete(req: ServiceRequest): Promise<boolean> {
     const { id } = req.params
-    const apiKey = await this.em.getRepository(APIKey).findOne(id)
+    const apiKey = await this.em.getRepository(APIKey).findOne(Number(id))
     if (!apiKey) req.ctx.throw(404, 'API key not found')
     this.ctx.state.apiKey = apiKey
 

@@ -25,7 +25,7 @@ export const apiKeysRoutes: ServiceRoute[] = [
 ]
 
 interface TokenPayload {
-  sub: string
+  sub: number
   api: boolean
   iat?: number
 }

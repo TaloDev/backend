@@ -1,6 +1,5 @@
 import { Entity, Enum, ManyToOne, PrimaryKey, Property } from '@mikro-orm/core'
 import Game from './game'
-import { v4 } from 'uuid'
 import User from './user'
 import { createTokenSync } from '../services/api-keys.service'
 
@@ -14,7 +13,7 @@ export enum APIKeyScope {
 @Entity()
 export default class APIKey {
   @PrimaryKey()
-  id: string = v4()
+  id: number
 
   @Enum({ items: () => APIKeyScope, array: true })
   scopes: APIKeyScope[] = []

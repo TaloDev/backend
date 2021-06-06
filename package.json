@@ -12,6 +12,7 @@
     "test": "./tests/setup-tests.sh",
     "up": "docker compose -f docker-compose.yml -f docker-compose.test.yml -f docker-compose.dev.yml up --build -d",
     "down": "docker compose -f docker-compose.yml -f docker-compose.test.yml -f docker-compose.dev.yml down",
+    "logs": "docker compose -f docker-compose.yml -f docker-compose.test.yml -f docker-compose.dev.yml logs backend --follow",
     "restart": "yarn down && yarn up"
   },
   "author": "Sleepy Studios",
@@ -40,6 +41,7 @@
     "@mikro-orm/core": "^4.5.5",
     "@mikro-orm/mysql": "^4.5.5",
     "bcrypt": "^5.0.0",
+    "bee-queue": "^1.4.0",
     "date-fns": "^2.16.1",
     "dotenv": "^8.2.0",
     "ioredis": "^4.26.0",

@@ -1,0 +1,72 @@
+import { After, HookParams, Service, ServiceRequest, ServiceResponse } from 'koa-rest-services'
+import User, { UserType } from '../../entities/user'
+import { EntityManager, MikroORM } from '@mikro-orm/core'
+import buildTokenPair from '../../lib/auth/buildTokenPair'
+import Queue from 'bee-queue'
+import Organisation from '../../entities/organisation'
+import redisConfig from '../../config/redis.config'
+import { add } from 'date-fns'
+import ormConfig from '../../config/mikro-orm.config'
+
+export default class DemoService implements Service {
+  queue: Queue
+
+  constructor() {
+    this.queue = new Queue('demo', {
+      redis: redisConfig,
+      activateDelayedJobs: true
+    })
+
+    this.queue.process(async (job: Queue.Job<any>) => {
+      const { userId } = job.data
+
+      const orm = await MikroORM.init(ormConfig)
+      const user = await orm.em.getRepository(User).findOne(userId)
+
+      await orm.em.removeAndFlush(user)
+      await orm.close()
+    })
+
+    this.queue.on('error', (err) => {
+      console.log(`A queue error happened: ${err.message}`)
+    })
+
+    this.queue.on('succeeded', (job, result) => {
+      console.log(`Job ${job.id} succeeded with result: ${result}`);
+    })
+
+    this.queue.on('failed', (job, err) => {
+      console.log(`Job ${job.id} failed with error ${err.message}`);
+    })
+  }
+
+  @After('scheduleDeletion')
+  async post(req: ServiceRequest): Promise<ServiceResponse> {
+    const em: EntityManager = req.ctx.em
+
+    const user = new User()
+    user.email = `demo+${Date.now()}@demo.io`
+    user.type = UserType.DEMO
+    user.organisation = await em.getRepository(Organisation).findOne({ name: 'Talo Demo' })
+    user.emailConfirmed = true
+
+    const accessToken = await buildTokenPair(req.ctx, user)
+
+    return {
+      status: 200,
+      body: {
+        accessToken,
+        user
+      }
+    }
+  }
+
+  async scheduleDeletion(hook: HookParams): Promise<void> {
+    if (hook.result.status === 200) {
+      await (<DemoService>hook.caller).queue
+        .createJob({ userId: hook.result.body.user.id })
+        .delayUntil(add(Date.now(), { seconds: 30 }))
+        .save()
+    }
+  }
+}

@@ -4,7 +4,8 @@ import UserAccessCode from './user-access-code'
 
 export enum UserType {
   DEV,
-  ADMIN
+  ADMIN,
+  DEMO
 }
 
 @Entity()

@@ -47,7 +47,7 @@ export default class DemoService implements Service {
     const user = new User()
     user.email = `demo+${Date.now()}@demo.io`
     user.type = UserType.DEMO
-    user.organisation = await em.getRepository(Organisation).findOne({ name: 'Talo Demo' })
+    user.organisation = await em.getRepository(Organisation).findOne({ name: process.env.DEMO_ORGANISATION_NAME })
     user.emailConfirmed = true
 
     const accessToken = await buildTokenPair(req.ctx, user)

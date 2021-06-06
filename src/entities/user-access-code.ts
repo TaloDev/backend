@@ -9,7 +9,7 @@ export default class UserAccessCode {
   @Property()
   code: string = this.generateCode()
 
-  @OneToOne(() => User)
+  @OneToOne(() => User, (user) => user.accessCode)
   user: User
 
   @Property()

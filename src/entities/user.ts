@@ -1,5 +1,6 @@
-import { Entity, Enum, ManyToOne, PrimaryKey, Property } from '@mikro-orm/core'
+import { Entity, Enum, ManyToOne, OneToOne, PrimaryKey, Property } from '@mikro-orm/core'
 import Organisation from './organisation'
+import UserAccessCode from './user-access-code'
 
 export enum UserType {
   DEV,
@@ -28,6 +29,9 @@ export default class User {
 
   @Property({ default: false })
   emailConfirmed: boolean
+
+  @OneToOne(() => UserAccessCode, (accessCode) => accessCode.user, { owner: true, orphanRemoval: true, nullable: true })
+  accessCode: UserAccessCode
 
   @Property()
   createdAt: Date = new Date()

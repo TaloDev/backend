@@ -186,7 +186,7 @@ export default class UsersPublicService implements Service {
     
     const em: EntityManager = req.ctx.em
     const user = await em.getRepository(User).findOne(decodedToken.sub)
-    const secret = user.password.substring(0, 10)
+    const secret = user?.password.substring(0, 10)
 
     try {
       await promisify(jwt.verify)(token, secret)

@@ -14,7 +14,7 @@ export default class UserSession {
   @Property({ nullable: true })
   userAgent?: string
 
-  @ManyToOne(() => User, { cascade: [Cascade.REMOVE] })
+  @ManyToOne(() => User, { cascade: [Cascade.ALL] })
   user: User
 
   @Property()

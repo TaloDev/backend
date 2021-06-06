@@ -4,39 +4,24 @@ import { EntityManager, MikroORM } from '@mikro-orm/core'
 import buildTokenPair from '../../lib/auth/buildTokenPair'
 import Queue from 'bee-queue'
 import Organisation from '../../entities/organisation'
-import redisConfig from '../../config/redis.config'
 import { add } from 'date-fns'
 import ormConfig from '../../config/mikro-orm.config'
+import createQueue from '../../lib/queues/createQueue'
 
 export default class DemoService implements Service {
   queue: Queue
 
   constructor() {
-    this.queue = new Queue('demo', {
-      redis: redisConfig,
-      activateDelayedJobs: true
-    })
+    this.queue = createQueue('demo')
 
     this.queue.process(async (job: Queue.Job<any>) => {
       const { userId } = job.data
-
+  
       const orm = await MikroORM.init(ormConfig)
       const user = await orm.em.getRepository(User).findOne(userId)
-
+  
       await orm.em.removeAndFlush(user)
       await orm.close()
-    })
-
-    this.queue.on('error', (err) => {
-      console.log(`A queue error happened: ${err.message}`)
-    })
-
-    this.queue.on('succeeded', (job, result) => {
-      console.log(`Job ${job.id} succeeded with result: ${result}`);
-    })
-
-    this.queue.on('failed', (job, err) => {
-      console.log(`Job ${job.id} failed with error ${err.message}`);
     })
   }
 

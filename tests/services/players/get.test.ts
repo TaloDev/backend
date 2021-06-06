@@ -65,7 +65,7 @@ describe('Players service - get', () => {
       .expect(403)
   })
 
-  it('should return a filtered list of players', async () => {
+  it('should filter players by props', async () => {
     const players = await new PlayerFactory([validGame]).with(() => ({
       props: [
         {
@@ -75,14 +75,7 @@ describe('Players service - get', () => {
       ]
     })).many(2)
 
-    const otherPlayers = await new PlayerFactory([validGame]).with(() => ({
-      props: [
-        {
-          key: 'guildName',
-          value: 'The Worst Guild'
-        }
-      ]
-    })).many(3)
+    const otherPlayers = await new PlayerFactory([validGame]).many(3)
 
     await (<EntityManager>app.context.em).persistAndFlush([...players, ...otherPlayers])
 
@@ -93,6 +86,36 @@ describe('Players service - get', () => {
       .expect(200)
 
     expect(res.body.players).toHaveLength(2)
+  })
+
+  it('should filter players by aliases', async () => {
+    const player = await new PlayerFactory([validGame]).one()
+    const otherPlayers = await new PlayerFactory([validGame]).many(3)
+
+    await (<EntityManager>app.context.em).persistAndFlush([player, ...otherPlayers])
+
+    const res = await request(app.callback())
+      .get(`${baseUrl}`)
+      .query({ gameId: validGame.id, search: player.aliases[0].identifier })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    expect(res.body.players).toHaveLength(1)
+  })
+
+  it('should filter players by id', async () => {
+    const player = await new PlayerFactory([validGame]).with(() => ({ id: 'abc12345678' })).one()
+    const otherPlayers = await new PlayerFactory([validGame]).many(3)
+
+    await (<EntityManager>app.context.em).persistAndFlush([player, ...otherPlayers])
+
+    const res = await request(app.callback())
+      .get(`${baseUrl}`)
+      .query({ gameId: validGame.id, search: 'abc12345678' })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    expect(res.body.players).toHaveLength(1)
   })
 
   it('should paginate results when getting players', async () => {

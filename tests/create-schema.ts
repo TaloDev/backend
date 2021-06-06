@@ -1,6 +1,6 @@
 import { MikroORM } from '@mikro-orm/core'
 
-const createSchema = async (): Promise<void> => {
+(async (): Promise<void> => {
   try {
     const orm = await MikroORM.init()
     const generator = orm.getSchemaGenerator()
@@ -12,6 +12,4 @@ const createSchema = async (): Promise<void> => {
     console.error(err)
     process.exit(1)
   }
-}
-
-createSchema()
+})()

@@ -16,7 +16,7 @@ export default class APIKeysPolicy extends Policy {
     return canAccessGame
   }
 
-  async get(req: ServiceRequest): Promise<boolean> {
+  async index(req: ServiceRequest): Promise<boolean> {
     const { gameId } = req.query
     return await this.canAccessGame(Number(gameId))
   }

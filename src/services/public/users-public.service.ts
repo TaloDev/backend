@@ -11,35 +11,35 @@ import getUserFromToken from '../../lib/auth/getUserFromToken'
 import UserAccessCode from '../../entities/user-access-code'
 import Organisation from '../../entities/organisation'
 
-export const usersPublicRoutes: ServiceRoute[] = [
-  {
-    method: 'POST',
-    path: '/register',
-    handler: 'register'
-  },
-  {
-    method: 'POST',
-    path: '/login',
-    handler: 'login'
-  },
-  {
-    method: 'GET',
-    path: '/refresh',
-    handler: 'refresh'
-  },
-  {
-    method: 'POST',
-    path: '/forgot_password',
-    handler: 'forgotPassword'
-  },
-  {
-    method: 'POST',
-    path: '/change_password',
-    handler: 'changePassword'
-  }
-]
-
 export default class UsersPublicService implements Service {
+  routes: ServiceRoute[] = [
+    {
+      method: 'POST',
+      path: '/register',
+      handler: 'register'
+    },
+    {
+      method: 'POST',
+      path: '/login',
+      handler: 'login'
+    },
+    {
+      method: 'GET',
+      path: '/refresh',
+      handler: 'refresh'
+    },
+    {
+      method: 'POST',
+      path: '/forgot_password',
+      handler: 'forgotPassword'
+    },
+    {
+      method: 'POST',
+      path: '/change_password',
+      handler: 'changePassword'
+    }
+  ]
+
   @Validate({
     body: ['email', 'password', 'organisationName']
   })

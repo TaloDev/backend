@@ -3739,10 +3739,10 @@ koa-logger@^3.2.1:
     humanize-number "0.0.2"
     passthrough-counter "^1.0.0"
 
-koa-rest-services@^1.0.0:
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/koa-rest-services/-/koa-rest-services-1.0.0.tgz#06188c6b691342d05f68532cbfcfdd5bd2285855"
-  integrity sha512-yQFmOAOz02TzDqTMpgBRxNlaU+Lv/Grs4KCo78nVA2ZvniQk59WLFFlmHaJEdOnMbK++jVCc5ICZ7J49aoMFhQ==
+koa-rest-services@^2.0.1:
+  version "2.0.1"
+  resolved "https://registry.yarnpkg.com/koa-rest-services/-/koa-rest-services-2.0.1.tgz#397c02304dbbba1e3af68b0320fb8acbe726ae83"
+  integrity sha512-xG+4UKHSS9d6acYmzvHBfDFNdewmBkTfbiEI4iOIHURJvoco7j+61mFCA9d//UdBsHEFooHartiNX447OiG7UA==
   dependencies:
     path-to-regexp "^6.2.0"
 

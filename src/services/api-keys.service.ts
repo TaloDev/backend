@@ -1,28 +1,11 @@
 import { EntityManager } from '@mikro-orm/core'
-import { HasPermission, ServiceRequest, ServiceResponse, ServiceRoute, Validate } from 'koa-rest-services'
+import { HasPermission, Service, ServiceRequest, ServiceResponse, ServiceRoute, Validate } from 'koa-rest-services'
 import APIKey, { APIKeyScope } from '../entities/api-key'
 import jwt from 'jsonwebtoken'
 import APIKeysPolicy from '../policies/api-keys.policy'
 import groupBy from 'lodash.groupby'
 import User from '../entities/user'
 import { promisify } from 'util'
-
-export const apiKeysRoutes: ServiceRoute[] = [
-  {
-    method: 'POST'
-  },
-  {
-    method: 'GET'
-  },
-  {
-    method: 'GET',
-    path: '/scopes',
-    handler: 'scopes'
-  },
-  {
-    method: 'DELETE'
-  }
-]
 
 interface TokenPayload {
   sub: number
@@ -49,7 +32,25 @@ export function createTokenSync(apiKey: APIKey, payloadParams?: ExtraTokenPayloa
   return jwt.sign(payload, process.env.JWT_SECRET)
 }
 
-export default class APIKeysService {
+export default class APIKeysService implements Service {
+  routes: ServiceRoute[] = [
+    {
+      method: 'POST'
+    },
+    {
+      method: 'GET',
+      handler: 'index'
+    },
+    {
+      method: 'GET',
+      path: '/scopes',
+      handler: 'scopes'
+    },
+    {
+      method: 'DELETE'
+    }
+  ]
+
   @Validate({
     body: ['gameId']
   })
@@ -77,8 +78,8 @@ export default class APIKeysService {
   @Validate({
     query: ['gameId']
   })
-  @HasPermission(APIKeysPolicy, 'get')
-  async get(req: ServiceRequest): Promise<ServiceResponse> {
+  @HasPermission(APIKeysPolicy, 'index')
+  async index(req: ServiceRequest): Promise<ServiceResponse> {
     const { gameId } = req.query
     const em: EntityManager = req.ctx.em
     const apiKeys = await em.getRepository(APIKey).find({ game: Number(gameId), revokedAt: null })

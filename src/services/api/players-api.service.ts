@@ -6,21 +6,22 @@ import PlayersAPIPolicy from '../../policies/api/players-api.policy'
 import PlayersService from '../players.service'
 import APIService from './api-service'
 
-export const playersAPIRoutes: ServiceRoute[] = [
-  {
-    method: 'GET'
-  },
-  {
-    method: 'GET',
-    path: '/identify',
-    handler: 'identify'
-  },
-  {
-    method: 'POST'
-  }
-]
-
 export default class PlayersAPIService extends APIService<PlayersService> {
+  routes: ServiceRoute[] = [
+    {
+      method: 'GET',
+      handler: 'index'
+    },
+    {
+      method: 'GET',
+      path: '/identify',
+      handler: 'identify'
+    },
+    {
+      method: 'POST'
+    }
+  ]
+
   constructor() {
     super('players')
   }
@@ -56,14 +57,14 @@ export default class PlayersAPIService extends APIService<PlayersService> {
     }
   }
 
-  @HasPermission(PlayersAPIPolicy, 'get')
-  async get(req: ServiceRequest): Promise<ServiceResponse> {
+  @HasPermission(PlayersAPIPolicy, 'index')
+  async index(req: ServiceRequest): Promise<ServiceResponse> {
     const key: APIKey = await this.getAPIKey(req.ctx)
     req.query = {
       gameId: key.game.id.toString()
     }
 
-    return await this.forwardRequest('get', req)
+    return await this.forwardRequest('index', req)
   }
 
   @HasPermission(PlayersAPIPolicy, 'post')

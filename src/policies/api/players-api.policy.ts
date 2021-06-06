@@ -2,7 +2,7 @@ import Policy from '../policy'
 import { ServiceRequest } from 'koa-rest-services'
 
 export default class PlayersAPIPolicy extends Policy {
-  async get(req: ServiceRequest): Promise<boolean> {
+  async index(req: ServiceRequest): Promise<boolean> {
     return await this.hasScope('read:players')
   }
 

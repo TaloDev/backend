@@ -35,6 +35,8 @@ export default class DemoService implements Service {
     user.organisation = await em.getRepository(Organisation).findOne({ name: process.env.DEMO_ORGANISATION_NAME })
     user.emailConfirmed = true
 
+    await em.getRepository(User).persistAndFlush(user)
+
     const accessToken = await buildTokenPair(req.ctx, user)
 
     return {

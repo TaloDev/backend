@@ -7,7 +7,7 @@ import limiterMiddleware from './limiter-middleware'
 export default (app: Koa) => {
   app.use(async (ctx: Context, next: Next): Promise<void> => {
     if (ctx.path.match(/^\/(v1)\//)) {
-      if (ctx.state.user?.api !== true) ctx.throw(403)
+      if (ctx.state.user?.api !== true) ctx.throw(401)
     }
     await next()
   })

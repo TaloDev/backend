@@ -5,10 +5,10 @@ import getUserFromToken from '../lib/auth/getUserFromToken'
 import GamesPolicy from '../policies/games.policy'
 
 export default class GamesService implements Service {
-  @HasPermission(GamesPolicy, 'post')
   @Validate({
     body: ['name']
   })
+  @HasPermission(GamesPolicy, 'post')
   async post(req: ServiceRequest): Promise<ServiceResponse> {
     const { name } = req.body
     const em: EntityManager = req.ctx.em

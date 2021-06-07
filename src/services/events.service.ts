@@ -13,7 +13,6 @@ interface EventData {
 }
 
 export default class EventsService implements Service {
-  @HasPermission(EventsPolicy, 'index')
   @Validate({
     query: {
       gameId: 'Missing query key: gameId',
@@ -34,6 +33,7 @@ export default class EventsService implements Service {
       }
     }
   })
+  @HasPermission(EventsPolicy, 'index')
   async index(req: ServiceRequest): Promise<ServiceResponse> {
     const { gameId, startDate, endDate } = req.query
     const em: EntityManager = req.ctx.em

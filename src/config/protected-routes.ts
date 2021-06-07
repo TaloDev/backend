@@ -10,7 +10,7 @@ import UsersService from '../services/users.service'
 export default (app: Koa) => {
   app.use(async (ctx: Context, next: Next): Promise<void> => {
     if (!ctx.path.match(/^\/(public|v1)\//)) {
-      if (ctx.state.user?.api) ctx.throw(403)
+      if (ctx.state.user?.api) ctx.throw(401)
     }
     await next()
   })

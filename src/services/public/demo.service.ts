@@ -12,17 +12,19 @@ export default class DemoService implements Service {
   queue: Queue
 
   constructor() {
-    this.queue = createQueue('demo')
+    if (process.env.NODE_ENV !== 'test') {
+      this.queue = createQueue('demo')
 
-    this.queue.process(async (job: Queue.Job<any>) => {
-      const { userId } = job.data
-  
-      const orm = await MikroORM.init(ormConfig)
-      const user = await orm.em.getRepository(User).findOne(userId)
-  
-      await orm.em.removeAndFlush(user)
-      await orm.close()
-    })
+      this.queue.process(async (job: Queue.Job<any>) => {
+        const { userId } = job.data
+    
+        const orm = await MikroORM.init(ormConfig)
+        const user = await orm.em.getRepository(User).findOne(userId)
+    
+        await orm.em.removeAndFlush(user)
+        await orm.close()
+      })
+    }
   }
 
   @After('scheduleDeletion')

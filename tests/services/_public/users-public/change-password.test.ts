@@ -79,4 +79,16 @@ describe('Users public service - change password', () => {
 
     expect(res.body).toStrictEqual({ message: 'Request expired' })
   })
+
+  it('should not let a non-existent', async () => {
+    const sign = promisify(jwt.sign)
+    const token = await sign({ sub: 21313123 }, 'whatever', { expiresIn: '15m' })
+
+    const res = await request(app.callback())
+      .post(`${baseUrl}/change_password`)
+      .send({ token, password: '3432ndjwedn1' })
+      .expect(401)
+
+    expect(res.body).toStrictEqual({ message: 'Request expired' })
+  })
 })

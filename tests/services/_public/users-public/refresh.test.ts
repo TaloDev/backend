@@ -57,7 +57,7 @@ describe('Users public service - refresh', () => {
     const res = await request(app.callback())
       .get(`${baseUrl}/refresh`)
       .set('Cookie', [`refreshToken=${session.token}`])
-      .expect(403)
+      .expect(401)
 
     expect(res.body).toStrictEqual({ message: 'Refresh token expired' })
   })

@@ -128,7 +128,7 @@ export default class UsersPublicService implements Service {
 
     if (new Date() > session.validUntil) {
       await em.getRepository(UserSession).removeAndFlush(session)
-      req.ctx.throw(403, 'Refresh token expired')
+      req.ctx.throw(401, 'Refresh token expired')
     }
 
     const accessToken = await buildTokenPair(req.ctx, session.user)

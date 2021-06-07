@@ -31,7 +31,7 @@ describe('Policy base class', () => {
       .get('/v1/events')
       .query({ startDate: '2021-01-01', endDate: '2021-01-02' })
       .auth(token, { type: 'bearer' })
-      .expect(403)
+      .expect(401)
   })
 
   it('should reject a non-existent user', async () => {
@@ -45,6 +45,6 @@ describe('Policy base class', () => {
       .get('/v1/events')
       .query({ startDate: '2021-01-01', endDate: '2021-01-02' })
       .auth(token, { type: 'bearer' })
-      .expect(403)
+      .expect(401)
   })
 })

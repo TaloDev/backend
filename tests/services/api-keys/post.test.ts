@@ -57,7 +57,7 @@ describe('API keys service - post', () => {
   it('should not create an api key for a non-existent game', async () => {
     const res = await request(app.callback())
       .post(`${baseUrl}`)
-      .send({ gameId: 99 })
+      .send({ gameId: 99, scopes: [] })
       .auth(token, { type: 'bearer' })
       .expect(404)
 
@@ -71,7 +71,7 @@ describe('API keys service - post', () => {
 
     await request(app.callback())
       .post(`${baseUrl}`)
-      .send({ gameId: otherGame.id })
+      .send({ gameId: otherGame.id, scopes: [] })
       .auth(token, { type: 'bearer' })
       .expect(403)
   })

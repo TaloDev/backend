@@ -52,7 +52,7 @@ export default class APIKeysService implements Service {
   ]
 
   @Validate({
-    body: ['gameId']
+    body: ['gameId', 'scopes']
   })
   @HasPermission(APIKeysPolicy, 'post')
   async post(req: ServiceRequest): Promise<ServiceResponse> {
@@ -61,7 +61,7 @@ export default class APIKeysService implements Service {
 
     const createdByUser = await em.getRepository(User).findOne(req.ctx.state.user.sub)
     const apiKey = new APIKey(req.ctx.state.game, createdByUser)
-    apiKey.scopes = scopes ?? []
+    apiKey.scopes = scopes
     await em.getRepository(APIKey).persistAndFlush(apiKey)
 
     const token = await createToken(apiKey)

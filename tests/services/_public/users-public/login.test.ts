@@ -41,9 +41,12 @@ describe('Users public service - login', () => {
   })
 
   it('should not let a user login with the wrong password', async () => {
+    const user = await new UserFactory().one()
+    await (<EntityManager>app.context.em).persistAndFlush(user)
+
     const res = await request(app.callback())
       .post(`${baseUrl}/login`)
-      .send({ email: 'dev@trytalo.com', password: 'asdasdadasd' })
+      .send({ email: user.email, password: 'asdasdadasd' })
       .expect(401)
 
       expect(res.body).toStrictEqual({ message: 'Incorrect email address or password', showHint: true })

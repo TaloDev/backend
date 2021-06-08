@@ -53,7 +53,7 @@ export default class DemoService implements Service {
   async scheduleDeletion(hook: HookParams): Promise<void> {
     if (hook.result.status === 200) {
       await (<DemoService>hook.caller).queue
-        .createJob({ userId: hook.result.body.user.id })
+        ?.createJob({ userId: hook.result.body.user.id })
         .delayUntil(add(Date.now(), { hours: 1 }))
         .save()
     }

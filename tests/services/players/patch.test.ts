@@ -155,7 +155,7 @@ describe('Players service - patch', () => {
 
     await (<EntityManager>app.context.em).persistAndFlush(player)
 
-    const res = await request(app.callback())
+    await request(app.callback())
       .patch(`${baseUrl}/${player.id}`)
       .send({
         props: [
@@ -167,5 +167,29 @@ describe('Players service - patch', () => {
       })
       .auth(token, { type: 'bearer' })
       .expect(403)
+  })
+
+  it('should not update a player\'s properties if using a demo account', async () => {
+    const demoUser = await new UserFactory().state('demo').one()
+    const player = await new PlayerFactory([validGame]).one()
+
+    await (<EntityManager>app.context.em).persistAndFlush([demoUser, player])
+
+    const demoToken = await genAccessToken(demoUser)
+
+    const res = await request(app.callback())
+      .patch(`${baseUrl}/${player.id}`)
+      .send({
+        props: [
+          {
+            key: 'collectibles',
+            value: '2'
+          }
+        ]
+      })
+      .auth(demoToken, { type: 'bearer' })
+      .expect(403)
+
+    expect(res.body).toStrictEqual({ message: 'Demo accounts cannot update player properties' })
   })
 })

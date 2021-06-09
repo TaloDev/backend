@@ -1,45 +1,41 @@
 import Koa, { Context, Next } from 'koa'
 import { service } from 'koa-rest-services'
-import APIKeysService, { apiKeysRoutes } from '../services/api-keys.service'
+import APIKeysService from '../services/api-keys.service'
 import EventsService from '../services/events.service'
 import GamesService from '../services/games.service'
-import HeadlinesService, { headlinesRoutes } from '../services/headlines.service'
-import PlayersService, { playersRoutes } from '../services/players.service'
-import UsersService, { usersRoutes } from '../services/users.service'
+import HeadlinesService from '../services/headlines.service'
+import PlayersService from '../services/players.service'
+import UsersService from '../services/users.service'
 
 export default (app: Koa) => {
   app.use(async (ctx: Context, next: Next): Promise<void> => {
     if (!ctx.path.match(/^\/(public|v1)\//)) {
-      if (ctx.state.user?.api) ctx.throw(403)
+      if (ctx.state.user?.api) ctx.throw(401)
     }
     await next()
   })
 
   app.use(service('apiKeys', new APIKeysService(), {
-    basePath: '/api-keys',
-    routes: apiKeysRoutes
+    prefix: '/api-keys'
   }))
 
   app.use(service('events', new EventsService(), {
-    basePath: '/events'
+    prefix: '/events'
   }))
 
   app.use(service('players', new PlayersService(), {
-    basePath: '/players',
-    routes: playersRoutes
+    prefix: '/players'
   }))
 
   app.use(service('games', new GamesService(), {
-    basePath: '/games'
+    prefix: '/games'
   }))
 
   app.use(service('users', new UsersService(), {
-    basePath: '/users',
-    routes: usersRoutes
+    prefix: '/users'
   }))
 
   app.use(service('headlines', new HeadlinesService(), {
-    basePath: '/headlines',
-    routes: headlinesRoutes
+    prefix: '/headlines'
   }))
 }

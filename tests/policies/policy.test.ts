@@ -6,6 +6,8 @@ import init from '../../src/index'
 import { createToken } from '../../src/services/api-keys.service'
 import UserFactory from '../fixtures/UserFactory'
 import request from 'supertest'
+import { genAccessToken } from '../../src/lib/auth/buildTokenPair'
+import GameFactory from '../fixtures/GameFactory'
 
 describe('Policy base class', () => {
   let app: Koa
@@ -29,6 +31,21 @@ describe('Policy base class', () => {
     await request(app.callback())
       .get('/v1/events')
       .query({ startDate: '2021-01-01', endDate: '2021-01-02' })
+      .auth(token, { type: 'bearer' })
+      .expect(401)
+  })
+
+  it('should reject a non-existent user', async () => {
+    const user = await new UserFactory().one()
+    const game = await new GameFactory(user.organisation).one()
+    await (<EntityManager>app.context.em).persistAndFlush([user, game])
+
+    const token = await genAccessToken(user)
+    await (<EntityManager>app.context.em).removeAndFlush(user)
+
+    const res = await request(app.callback())
+      .get('/events')
+      .query({ gameId: game.id,startDate: '2021-01-01', endDate: '2021-01-02' })
       .auth(token, { type: 'bearer' })
       .expect(401)
   })

@@ -24,8 +24,8 @@ export default class PlayerFactory extends Factory<Player> {
   }
 
   protected async base(player: Player): Promise<Partial<Player>> {
-    const availableProps = ['zonesExplored', 'currentArea', 'position.x', 'position.y', 'deaths']
-    const propsCount = casual.integer(0, 3)
+    const availableProps = ['zonesExplored', 'currentArea', 'position.x', 'position.y', 'deaths', 'position.z', 'currentLevel', 'inventorySpace', 'currentHealth', 'currentMana', 'currentEnergy', 'npcKills', 'playerKills']
+    const propsCount = casual.integer(0, 5)
     const props: Prop[] = []
 
     for (let i = 0; i < propsCount; i++) {

@@ -45,7 +45,7 @@ describe('Users public service - change password', () => {
       .expect(200)
 
     expect(res.body.user.id).toBe(user.id)
-    expect(res.body.accessToken).toBeDefined()
+    expect(res.body.accessToken).toBeTruthy()
   })
 
   it('should not let a user change their password if they supply the same one', async () => {
@@ -71,6 +71,18 @@ describe('Users public service - change password', () => {
   it('should not let a user change their password if the token is invalid', async () => {
     const sign = promisify(jwt.sign)
     const token = await sign({ sub: 1 }, 'wrong secret', { expiresIn: '15m' })
+
+    const res = await request(app.callback())
+      .post(`${baseUrl}/change_password`)
+      .send({ token, password: '3432ndjwedn1' })
+      .expect(401)
+
+    expect(res.body).toStrictEqual({ message: 'Request expired' })
+  })
+
+  it('should not let a non-existent', async () => {
+    const sign = promisify(jwt.sign)
+    const token = await sign({ sub: 21313123 }, 'whatever', { expiresIn: '15m' })
 
     const res = await request(app.callback())
       .post(`${baseUrl}/change_password`)

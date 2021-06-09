@@ -17,18 +17,18 @@ export default class EventFactory extends Factory<Event> {
     this.register('this year', this.thisYear)
 
     this.availablePlayers = availablePlayers
-    this.eventTitles = ['Zone Explored', 'Death', 'Item Looted', 'Treasure Discovered', 'Levelled up']
+    this.eventTitles = ['Zone Explored', 'Item Looted', 'Treasure Discovered', 'Levelled up', 'Potion Used', 'Item Crafted', 'Secret Discovered', 'Item Bought', 'Talked to NPC']
   }
 
   protected async base(): Promise<Partial<Event>> {
     const player: Player = casual.random_element(this.availablePlayers)
 
-    const availableProps = ['itemId', 'zoneId', 'treasureId', 'newLevel', 'timeTaken', 'positionX', 'positionY']
-    const propsCount = casual.integer(0, 3)
+    const availableProps = ['itemId', 'zoneId', 'treasureId', 'currentLevel', 'timeTaken', 'positionX', 'positionY', 'objectId', 'actionId', 'positionZ', 'currentHealth', 'currentMana', 'currentEnergy', 'npcId']
+    const propsCount = casual.integer(0, 4)
     const props: Prop[] = []
 
     for (let i = 0; i < propsCount; i++) {
-      props.push(new Prop(casual.random_element(availableProps), String(casual.integer(0, 99))))
+      props.push(new Prop(casual.random_element(availableProps), String(casual.integer(0, 999))))
     }
 
     return {

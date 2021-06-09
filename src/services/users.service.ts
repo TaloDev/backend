@@ -1,35 +1,35 @@
 import { EntityManager } from '@mikro-orm/core'
-import { ServiceRequest, ServiceResponse, Validate } from 'koa-rest-services'
+import { Service, ServiceRequest, ServiceResponse, ServiceRoute, Validate } from 'koa-rest-services'
 import UserSession from '../entities/user-session'
 import buildTokenPair from '../lib/auth/buildTokenPair'
 import bcrypt from 'bcrypt'
 import getUserFromToken from '../lib/auth/getUserFromToken'
 import UserAccessCode from '../entities/user-access-code'
 
-export const usersRoutes = [
-  {
-    method: 'POST',
-    path: '/logout',
-    handler: 'logout'
-  },
-  {
-    method: 'POST',
-    path: '/change_password',
-    handler: 'changePassword'
-  },
-  {
-    method: 'GET',
-    path: '/me',
-    handler: 'me'
-  },
-  {
-    method: 'POST',
-    path: '/confirm_email',
-    handler: 'confirmEmail'
-  }
-]
+export default class UsersService implements Service {
+  routes: ServiceRoute[] = [
+    {
+      method: 'POST',
+      path: '/logout',
+      handler: 'logout'
+    },
+    {
+      method: 'POST',
+      path: '/change_password',
+      handler: 'changePassword'
+    },
+    {
+      method: 'GET',
+      path: '/me',
+      handler: 'me'
+    },
+    {
+      method: 'POST',
+      path: '/confirm_email',
+      handler: 'confirmEmail'
+    }
+  ]
 
-export default class UsersService {
   async logout(req: ServiceRequest): Promise<ServiceResponse> {
     const em: EntityManager = req.ctx.em
     const userId: number = req.ctx.state.user.sub

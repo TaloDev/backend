@@ -1,10 +1,14 @@
 import Koa from 'koa'
 import { service } from 'koa-rest-services'
-import UsersPublicService, { usersPublicRoutes } from '../services/public/users-public.service'
+import DemoService from '../services/public/demo.service'
+import UsersPublicService from '../services/public/users-public.service'
 
 export default (app: Koa) => {
   app.use(service('users-public', new UsersPublicService(), {
-    basePath: '/public/users',
-    routes: usersPublicRoutes
+    prefix: '/public/users'
+  }))
+
+  app.use(service('demo', new DemoService(), {
+    prefix: '/public/demo'
   }))
 }

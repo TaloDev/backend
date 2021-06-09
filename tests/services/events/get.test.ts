@@ -199,7 +199,7 @@ describe('Events service - get', () => {
   it('should not return a list of events for a non-existent game', async () => {
     const res = await request(app.callback())
       .get(`${baseUrl}`)
-      .query({ gameId: 99 })
+      .query({ gameId: 99, startDate: '2021-01-01', endDate: '2021-01-05' })
       .auth(token, { type: 'bearer' })
       .expect(404)
 
@@ -213,7 +213,7 @@ describe('Events service - get', () => {
 
     await request(app.callback())
       .get(`${baseUrl}`)
-      .query({ gameId: otherGame.id })
+      .query({ gameId: otherGame.id, startDate: '2021-01-01', endDate: '2021-01-05' })
       .auth(token, { type: 'bearer' })
       .expect(403)
   })

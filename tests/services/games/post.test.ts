@@ -39,4 +39,19 @@ describe('Games service - post', () => {
     const game = await (<EntityManager>app.context.em).getRepository(Game).findOne(res.body.game.id, ['organisation'])
     expect(game.organisation.id).toBe(user.organisation.id)
   })
+
+  it('should not create a game if using a demo account', async () => {
+    const demoUser = await new UserFactory().state('demo').one()
+    await (<EntityManager>app.context.em).persistAndFlush(demoUser)
+
+    const demoToken = await genAccessToken(demoUser)
+
+    const res = await request(app.callback())
+      .post(`${baseUrl}`)
+      .send({ name: 'Twodoors' })
+      .auth(demoToken, { type: 'bearer' })
+      .expect(403)
+
+    expect(res.body).toStrictEqual({ message: 'Demo accounts cannot create games' })
+  })
 })

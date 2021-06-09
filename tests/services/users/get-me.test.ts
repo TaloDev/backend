@@ -36,8 +36,8 @@ describe('Users service - get me', () => {
       .auth(token, { type: 'bearer' })
       .expect(200)
     
-    expect(res.body.user).toBeDefined()
-    expect(res.body.user.organisation).toBeDefined()
+    expect(res.body.user).toBeTruthy()
+    expect(res.body.user.organisation).toBeTruthy()
     expect(res.body.user.organisation.games).toHaveLength(1)
     expect(res.body.user.organisation.games[0].name).toBe('Vigilante 2084')
   })

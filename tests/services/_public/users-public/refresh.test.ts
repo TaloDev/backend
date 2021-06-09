@@ -35,8 +35,8 @@ describe('Users public service - refresh', () => {
       .set('Cookie', [`refreshToken=${session.token}`])
       .expect(200)
 
-    expect(res.body.accessToken).toBeDefined()
-    expect(res.body.user).toBeDefined()
+    expect(res.body.accessToken).toBeTruthy()
+    expect(res.body.user).toBeTruthy()
     expect(new Date(res.body.user.lastSeenAt).getDay()).toBe(new Date().getDay())
   })
 
@@ -57,7 +57,7 @@ describe('Users public service - refresh', () => {
     const res = await request(app.callback())
       .get(`${baseUrl}/refresh`)
       .set('Cookie', [`refreshToken=${session.token}`])
-      .expect(403)
+      .expect(401)
 
     expect(res.body).toStrictEqual({ message: 'Refresh token expired' })
   })

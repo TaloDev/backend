@@ -32,8 +32,8 @@ describe('Users public service - register', () => {
       .send({ email: casual.email, password: 'password', organisationName: 'Talo' })
       .expect(200)
 
-    expect(res.body.accessToken).toBeDefined()
-    expect(res.body.user).toBeDefined()
+    expect(res.body.accessToken).toBeTruthy()
+    expect(res.body.user).toBeTruthy()
   })
 
   it('should not register a user without an organisation name', async () => {

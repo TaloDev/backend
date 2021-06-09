@@ -11,6 +11,7 @@ export default class UserFactory extends Factory<User> {
     this.register('email confirmed', this.emailConfirmed)
     this.register('loginable', this.loginable)
     this.register('admin', this.admin)
+    this.register('demo', this.demo)
   }
 
   protected async base(): Promise<Partial<User>> {
@@ -39,6 +40,14 @@ export default class UserFactory extends Factory<User> {
   protected admin(): Partial<User> {
     return {
       type: UserType.ADMIN 
+    }
+  }
+
+  protected demo(): Partial<User> {
+    return {
+      type: UserType.DEMO,
+      email: `demo+${Date.now()}@demo.io`,
+      emailConfirmed: true
     }
   }
 }

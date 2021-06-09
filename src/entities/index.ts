@@ -1,5 +1,6 @@
 import APIKey from './api-key'
 import Event from './event'
+import FailedJob from './failed-job'
 import Game from './game'
 import Organisation from './organisation'
 import Player from './player'
@@ -13,6 +14,7 @@ export default [
   APIKey,
   Event,
   Game,
+  FailedJob,
   Organisation,
   PlayerAlias,
   Player,

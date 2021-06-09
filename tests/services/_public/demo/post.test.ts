@@ -23,7 +23,7 @@ describe('Demo service - post', () => {
     await (<EntityManager>app.context.em).getConnection().close()
   })
 
-  it('should create a demo user', async () => {
+  it('should create a demo user and then delete them', async () => {
     const res = await request(app.callback())
       .post(`${baseUrl}`)
       .expect(200)
@@ -35,7 +35,6 @@ describe('Demo service - post', () => {
     expect(res.body.accessToken).toBeTruthy()
 
     const user = await (<EntityManager>app.context.em).getRepository(User).findOne(res.body.user.id)
-
     expect(user).toBeNull()
   })
 })

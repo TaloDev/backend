@@ -7,6 +7,7 @@ import Organisation from '../../entities/organisation'
 import { add } from 'date-fns'
 import ormConfig from '../../config/mikro-orm.config'
 import createQueue from '../../lib/queues/createQueue'
+import UserSession from '../../entities/user-session'
 
 export default class DemoService implements Service {
   queue: Queue
@@ -20,8 +21,11 @@ export default class DemoService implements Service {
   
       try {
         orm = await MikroORM.init(ormConfig)
+
+        const sessions = await orm.em.getRepository(UserSession).findAll({ user: userId })
         const user = await orm.em.getRepository(User).findOne(userId)
-        await orm.em.removeAndFlush(user)
+
+        await orm.em.removeAndFlush([user, ...sessions])
       } finally {
         await orm.close()
       }

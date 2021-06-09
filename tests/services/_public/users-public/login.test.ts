@@ -63,18 +63,16 @@ describe('Users public service - login', () => {
   })
 
   it('should not update the last seen at if the user was last seen today', async () => {
-    const lastSeenAt = sub(new Date(), { minutes: 5 })
+    const lastSeenAt = sub(new Date(), { hours: 1 })
 
-    const user = await new UserFactory().state('loginable').one()
-    user.lastSeenAt = lastSeenAt
+    const user = await new UserFactory().state('loginable').with(() => ({ lastSeenAt, email: 'admin@trytalo.com' })).one()
     await (<EntityManager>app.context.em).persistAndFlush(user)
 
     const res = await request(app.callback())
       .post(`${baseUrl}/login`)
-      .send({ email: 'dev@trytalo.com', password: 'password' })
+      .send({ email: 'admin@trytalo.com', password: 'password' })
       .expect(200)
 
-    // the dates are out by miliseconds for some reason
-    expect(differenceInMinutes(new Date(res.body.user.lastSeenAt), lastSeenAt)).toBeLessThanOrEqual(1)
+    expect(Math.abs(differenceInMinutes(new Date(res.body.user.lastSeenAt), lastSeenAt))).toBe(0)
   })
 })

@@ -1,4 +1,4 @@
-import { Entity, OneToOne, PrimaryKey, Property } from '@mikro-orm/core'
+import { Entity, ManyToOne, PrimaryKey, Property } from '@mikro-orm/core'
 import User from './user'
 
 @Entity()
@@ -9,7 +9,7 @@ export default class UserAccessCode {
   @Property()
   code: string = this.generateCode()
 
-  @OneToOne(() => User, (user) => user.accessCode)
+  @ManyToOne(() => User)
   user: User
 
   @Property()

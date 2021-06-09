@@ -17,7 +17,7 @@ export default class EventFactory extends Factory<Event> {
     this.register('this year', this.thisYear)
 
     this.availablePlayers = availablePlayers
-    this.eventTitles = ['Zone Explored', 'Killed By Player', 'Killed By NPC', 'Item Looted', 'Treasure Discovered', 'Levelled up', 'Potion Used', 'Item Crafted', 'Respawned', 'Secret Discovered', 'Item Bought', 'Talked to NPC', 'Killed NPC', 'Killed Player', 'Revived Player', 'Revived by Player']
+    this.eventTitles = ['Zone Explored', 'Item Looted', 'Treasure Discovered', 'Levelled up', 'Potion Used', 'Item Crafted', 'Secret Discovered', 'Item Bought', 'Talked to NPC']
   }
 
   protected async base(): Promise<Partial<Event>> {

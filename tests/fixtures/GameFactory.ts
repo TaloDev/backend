@@ -15,7 +15,7 @@ export default class GameFactory extends Factory<Game> {
 
   protected base(): Partial<Game> {
     return {
-      name: casual.title,
+      name: casual.random_element(['Crawle', 'ISMAK', 'Sorce', 'The Trial', 'You Only Got One Shot', 'Vigilante 2084', 'Trigeon', 'Twodoors', 'Keyboard Twister', 'Spacewatch', 'I Wanna Be The Ghostbuster', 'In Air', 'Superstatic', 'Heart Heist', 'Entropy', 'Shattered', 'Boatyio', 'Scrunk', 'No-thing Island', 'Night Keeper', 'Curse of the Loop', 'Shook']),
       organisation: this.organisation
     }
   }

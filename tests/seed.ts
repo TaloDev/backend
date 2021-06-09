@@ -19,19 +19,19 @@ import OrganisationFactory from './fixtures/OrganisationFactory'
 
   const devUser = await userFactory.state('loginable').with(() => ({
     organisation,
-    email: `dev@trytalo.com`
+    email: 'dev@trytalo.com'
   })).one()
 
   const adminUser = await userFactory.state('loginable').state('admin').with(() => ({
     organisation,
-    email: `admin@trytalo.com`
+    email: 'admin@trytalo.com'
   })).one()
 
   const gameFactory = new GameFactory(organisation)
   const games = await gameFactory.many(2)
 
   const playerFactory = new PlayerFactory(games)
-  const players = await playerFactory.many(20)
+  const players = await playerFactory.many(50)
 
   const eventFactory = new EventFactory(players)
   const eventsThisMonth = await eventFactory.state('this month').many(300)

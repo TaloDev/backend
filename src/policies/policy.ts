@@ -16,11 +16,13 @@ export default class Policy extends ServicePolicy {
   }
 
   isAPICall(): boolean {
-    return this.ctx.state.user?.api === true
+    return this.ctx.state.user.api === true
   }
 
   async getUser(): Promise<User> {
     const user = await getUserFromToken(this.ctx)
+    if (!user) this.ctx.throw(401)
+
     return user
   }
 

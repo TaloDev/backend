@@ -42,6 +42,6 @@ describe('Users public service - forgot password', () => {
       .send({ email: 'blah' })
       .expect(204)
 
-    expect(res.body.user).not.toBeDefined()
+    expect(res.body.user).not.toBeTruthy()
   })
 })

@@ -6,34 +6,34 @@ import Event from '../entities/event'
 import Player from '../entities/player'
 import HeadlinesPolicy from '../policies/headlines.policy'
 
-export const headlinesRoutes: ServiceRoute[] = [
-  {
-    method: 'GET',
-    path: '/new_players',
-    handler: 'newPlayers'
-  },
-  {
-    method: 'GET',
-    path: '/returning_players',
-    handler: 'returningPlayers'
-  },
-  {
-    method: 'GET',
-    path: '/events',
-    handler: 'events'
-  },
-  {
-    method: 'GET',
-    path: '/unique_event_submitters',
-    handler: 'uniqueEventSubmitters'
-  }
-]
-
 export default class HeadlinesService implements Service {
+  routes: ServiceRoute[] = [
+    {
+      method: 'GET',
+      path: '/new_players',
+      handler: 'newPlayers'
+    },
+    {
+      method: 'GET',
+      path: '/returning_players',
+      handler: 'returningPlayers'
+    },
+    {
+      method: 'GET',
+      path: '/events',
+      handler: 'events'
+    },
+    {
+      method: 'GET',
+      path: '/unique_event_submitters',
+      handler: 'uniqueEventSubmitters'
+    }
+  ]
+
   @Validate({
     query: ['gameId']
   })
-  @HasPermission(HeadlinesPolicy, 'get')
+  @HasPermission(HeadlinesPolicy, 'index')
   async newPlayers(req: ServiceRequest): Promise<ServiceResponse> {
     const { gameId } = req.query
     const em: EntityManager = req.ctx.em
@@ -56,7 +56,7 @@ export default class HeadlinesService implements Service {
   @Validate({
     query: ['gameId']
   })
-  @HasPermission(HeadlinesPolicy, 'get')
+  @HasPermission(HeadlinesPolicy, 'index')
   async returningPlayers(req: ServiceRequest): Promise<ServiceResponse> {
     const { gameId } = req.query
     const em: EntityManager = req.ctx.em
@@ -82,7 +82,7 @@ export default class HeadlinesService implements Service {
   @Validate({
     query: ['gameId']
   })
-  @HasPermission(HeadlinesPolicy, 'get')
+  @HasPermission(HeadlinesPolicy, 'index')
   async events(req: ServiceRequest): Promise<ServiceResponse> {
     const { gameId } = req.query
     const em: EntityManager = req.ctx.em
@@ -105,7 +105,7 @@ export default class HeadlinesService implements Service {
   @Validate({
     query: ['gameId']
   })
-  @HasPermission(HeadlinesPolicy, 'get')
+  @HasPermission(HeadlinesPolicy, 'index')
   async uniqueEventSubmitters(req: ServiceRequest): Promise<ServiceResponse> {
     const { gameId } = req.query
     const em: EntityManager = req.ctx.em

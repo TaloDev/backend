@@ -7,26 +7,27 @@ import sanitiseProps from '../lib/props/sanitiseProps'
 import Event from '../entities/event'
 import { EntityManager } from '@mikro-orm/mysql'
 
-export const playersRoutes: ServiceRoute[] = [
-  {
-    method: 'POST'
-  },
-  {
-    method: 'GET'
-  },
-  {
-    method: 'PATCH'
-  },
-  {
-    method: 'GET',
-    path: '/:id/events',
-    handler: 'events'
-  }
-]
-
 const itemsPerPage = 25
 
 export default class PlayersService implements Service {
+  routes: ServiceRoute[] = [
+    {
+      method: 'POST'
+    },
+    {
+      method: 'GET',
+      handler: 'index'
+    },
+    {
+      method: 'PATCH'
+    },
+    {
+      method: 'GET',
+      path: '/:id/events',
+      handler: 'events'
+    }
+  ]
+
   @Validate({
     body: ['gameId']
   })
@@ -68,8 +69,8 @@ export default class PlayersService implements Service {
   @Validate({
     query: ['gameId']
   })
-  @HasPermission(PlayersPolicy, 'get')
-  async get(req: ServiceRequest): Promise<ServiceResponse> {
+  @HasPermission(PlayersPolicy, 'index')
+  async index(req: ServiceRequest): Promise<ServiceResponse> {
     const { gameId, search, page } = req.query
     const em: EntityManager = req.ctx.em
 

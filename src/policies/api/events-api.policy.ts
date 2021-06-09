@@ -1,7 +1,7 @@
 import Policy from '../policy'
 
 export default class EventsAPIPolicy extends Policy {
-  async get(): Promise<boolean> {
+  async index(): Promise<boolean> {
     return await this.hasScope('read:events')
   }
 

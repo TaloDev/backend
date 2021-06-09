@@ -81,14 +81,14 @@ export default class EventsAPIService extends APIService<EventsService> {
     }
   }
 
-  @HasPermission(EventsAPIPolicy, 'get')
-  async get(req: ServiceRequest): Promise<ServiceResponse> {
+  @HasPermission(EventsAPIPolicy, 'index')
+  async index(req: ServiceRequest): Promise<ServiceResponse> {
     const key: APIKey = await this.getAPIKey(req.ctx)
     req.query = {
       ...req.query,
       gameId: key.game.id.toString()
     }
 
-    return await this.forwardRequest('get', req)
+    return await this.forwardRequest('index', req)
   }
 }

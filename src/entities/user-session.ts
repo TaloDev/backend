@@ -1,4 +1,4 @@
-import { Cascade, Entity, ManyToOne, PrimaryKey, Property } from '@mikro-orm/core'
+import { Entity, ManyToOne, PrimaryKey, Property } from '@mikro-orm/core'
 import { v4 } from 'uuid'
 import User from './user'
 import { add } from 'date-fns'
@@ -14,7 +14,7 @@ export default class UserSession {
   @Property({ nullable: true })
   userAgent?: string
 
-  @ManyToOne(() => User, { cascade: [Cascade.ALL] })
+  @ManyToOne(() => User)
   user: User
 
   @Property()

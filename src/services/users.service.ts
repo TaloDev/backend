@@ -108,9 +108,7 @@ export default class UsersService implements Service {
     }
 
     user.emailConfirmed = true
-    await em.getRepository(UserAccessCode).remove(accessCode)
-
-    await req.ctx.em.flush()
+    await em.getRepository(UserAccessCode).removeAndFlush(accessCode)
 
     return {
       status: 200,

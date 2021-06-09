@@ -45,7 +45,7 @@ describe('Users public service - change password', () => {
       .expect(200)
 
     expect(res.body.user.id).toBe(user.id)
-    expect(res.body.accessToken).toBeDefined()
+    expect(res.body.accessToken).toBeTruthy()
   })
 
   it('should not let a user change their password if they supply the same one', async () => {

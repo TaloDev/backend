@@ -21,12 +21,16 @@ export default class PlayersPolicy extends Policy {
   async patch(req: ServiceRequest): Promise<boolean | ServicePolicyDenial> {
     const { id } = req.params
 
-    const user = await this.getUser()
-    if (user.type === UserType.DEMO) return new ServicePolicyDenial({ message: 'Demo accounts cannot update player properties' })
+    if (!this.isAPICall()) {
+      const user = await this.getUser()
+      if (user.type === UserType.DEMO) {
+        return new ServicePolicyDenial({ message: 'Demo accounts cannot update player properties' })
+      }
+    }
 
     const player = await this.em.getRepository(Player).findOne(id)
-
     if (!player) this.ctx.throw(404, 'Player not found')
+
     this.ctx.state.player = player
 
     if (this.isAPICall()) return true

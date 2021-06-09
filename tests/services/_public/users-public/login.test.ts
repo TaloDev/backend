@@ -4,6 +4,7 @@ import init from '../../../../src/index'
 import request from 'supertest'
 import UserSession from '../../../../src/entities/user-session'
 import UserFactory from '../../../fixtures/UserFactory'
+import { differenceInMinutes, sub } from 'date-fns'
 
 const baseUrl = '/public/users'
 
@@ -34,9 +35,9 @@ describe('Users public service - login', () => {
       .send({ email: 'dev@trytalo.com', password: 'password' })
       .expect(200)
 
-    expect(res.body.accessToken).toBeDefined()
-    expect(res.body.user).toBeDefined()
-    expect(res.body.user.organisation).toBeDefined()
+    expect(res.body.accessToken).toBeTruthy()
+    expect(res.body.user).toBeTruthy()
+    expect(res.body.user.organisation).toBeTruthy()
     expect(new Date(res.body.user.lastSeenAt).getDay()).toBe(new Date().getDay())
   })
 
@@ -59,5 +60,21 @@ describe('Users public service - login', () => {
       .expect(401)
 
       expect(res.body).toStrictEqual({ message: 'Incorrect email address or password', showHint: true })
+  })
+
+  it('should not update the last seen at if the user was last seen today', async () => {
+    const lastSeenAt = sub(new Date(), { minutes: 5 })
+
+    const user = await new UserFactory().state('loginable').one()
+    user.lastSeenAt = lastSeenAt
+    await (<EntityManager>app.context.em).persistAndFlush(user)
+
+    const res = await request(app.callback())
+      .post(`${baseUrl}/login`)
+      .send({ email: 'dev@trytalo.com', password: 'password' })
+      .expect(200)
+
+    // the dates are out by miliseconds for some reason
+    expect(differenceInMinutes(new Date(res.body.user.lastSeenAt), lastSeenAt)).toBeLessThanOrEqual(1)
   })
 })

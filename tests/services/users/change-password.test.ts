@@ -37,7 +37,7 @@ describe('Users service - change password', () => {
       .auth(token, { type: 'bearer' })
       .expect(200)
     
-    expect(res.body.accessToken).toBeDefined()
+    expect(res.body.accessToken).toBeTruthy()
   })
 
   it('should not let users change their password if their current password is wrong', async () => {

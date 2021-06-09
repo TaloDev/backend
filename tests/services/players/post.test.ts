@@ -37,7 +37,7 @@ describe('Players service - post', () => {
       .auth(token, { type: 'bearer' })
       .expect(200)
 
-    expect(res.body.player).toBeDefined()
+    expect(res.body.player).toBeTruthy()
   })
 
   it('should create a player with aliases', async () => {
@@ -53,7 +53,7 @@ describe('Players service - post', () => {
       .auth(token, { type: 'bearer' })
       .expect(200)
 
-    expect(res.body.player).toBeDefined()
+    expect(res.body.player).toBeTruthy()
     expect(res.body.player.aliases).toHaveLength(1)
     expect(res.body.player.aliases[0].service).toBe('steam')
     expect(res.body.player.aliases[0].identifier).toBe('12345')

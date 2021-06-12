@@ -42,7 +42,7 @@ export default class PlayersAPIService extends APIService<PlayersService> {
       player: {
         game: key.game
       }
-    }, ['player.game'])
+    }, ['player'])
 
     if (!alias) req.ctx.throw(404, 'Player not found')
 
@@ -52,7 +52,7 @@ export default class PlayersAPIService extends APIService<PlayersService> {
     return {
       status: 200,
       body: {
-        player: alias.player
+        alias
       }
     }
   }

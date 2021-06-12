@@ -25,7 +25,8 @@ export default class PlayerAlias {
     return {
       id: this.id,
       service: this.service,
-      identifier: this.identifier
+      identifier: this.identifier,
+      playerId: this.player.id
     }
   }
 }

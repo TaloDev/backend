@@ -47,6 +47,7 @@ describe('Players API service - identify', () => {
       .expect(200)
 
     expect(res.body.alias.identifier).toBe(player.aliases[0].identifier)
+    expect(res.body.alias.playerId).toBe(player.id)
   })
 
   it('should update the lastSeenAt when a player identifies', async () => {

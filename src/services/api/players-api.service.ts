@@ -110,6 +110,11 @@ export default class PlayersAPIService extends APIService<PlayersService> {
     return await this.forwardRequest('post', req)
   }
 
+  @HasPermission(PlayersAPIPolicy, 'patch')
+   async patch(req: ServiceRequest): Promise<ServiceResponse> {
+     return await this.forwardRequest('patch', req)
+   }
+
   @HasPermission(PlayersAPIPolicy, 'merge')
   async merge(req: ServiceRequest): Promise<ServiceResponse> {
     const { alias1, alias2 } = req.body

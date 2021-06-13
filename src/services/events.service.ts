@@ -3,7 +3,7 @@ import { HasPermission, Service, ServiceRequest, ServiceResponse, Validate } fro
 import Event from '../entities/event'
 import EventsPolicy from '../policies/events.policy'
 import groupBy from 'lodash.groupby'
-import { isSameDay, isValid, isAfter, sub } from 'date-fns'
+import { isSameDay, isValid, isAfter, endOfDay } from 'date-fns'
 
 interface EventData {
   name: string
@@ -42,7 +42,7 @@ export default class EventsService implements Service {
       game: Number(gameId),
       createdAt: {
         $gte: new Date(startDate),
-        $lte: new Date(endDate)
+        $lte: endOfDay(new Date(endDate))
       }
     })
 

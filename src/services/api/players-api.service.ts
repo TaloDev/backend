@@ -1,6 +1,6 @@
 import { EntityManager } from '@mikro-orm/core'
 import { ServiceRequest, ServiceResponse, ServiceRoute, Validate, HasPermission } from 'koa-rest-services'
-import APIKey from '../../entities/api-key'
+import APIKey, { APIKeyScope } from '../../entities/api-key'
 import PlayerAlias from '../../entities/player-alias'
 import PlayersAPIPolicy from '../../policies/api/players-api.policy'
 import PlayersService from '../players.service'
@@ -19,6 +19,9 @@ export default class PlayersAPIService extends APIService<PlayersService> {
     },
     {
       method: 'POST'
+    },
+    {
+      method: 'PATCH'
     }
   ]
 
@@ -44,7 +47,31 @@ export default class PlayersAPIService extends APIService<PlayersService> {
       }
     }, ['player'])
 
-    if (!alias) req.ctx.throw(404, 'Player not found')
+    if (!alias) {
+      if (req.ctx.state.key.scopes.includes(APIKeyScope.WRITE_PLAYERS)) {
+        const createReq = Object.assign(req, {
+          body: {
+            aliases: [
+              {
+                service, 
+                identifier
+              }
+            ]
+          }
+        })
+
+        const res = await this.post(createReq)
+  
+        return {
+          status: res.status,
+          body: {
+            alias: res.body.player?.aliases[0]
+          }
+        }
+      } else {
+        req.ctx.throw(404, 'Player not found')
+      }
+    }
 
     alias.player.lastSeenAt = new Date()
     await em.flush()

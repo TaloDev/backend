@@ -17,4 +17,8 @@ export default class PlayersAPIPolicy extends Policy {
   async patch(req: ServiceRequest): Promise<boolean> {
     return await this.hasScope('write:players')
   }
+
+  async merge(req: ServiceRequest): Promise<boolean> {
+    return await this.hasScope('write:players')
+  }
 }

@@ -27,11 +27,12 @@ export default class Policy extends ServicePolicy {
   }
 
   async getAPIKey(): Promise<APIKey> {
+    if (this.ctx.state.key) return this.ctx.state.key
+
     const key = await getAPIKeyFromToken(this.ctx, ['game'])
     if (key.revokedAt) this.ctx.throw(401)
 
     this.ctx.state.key = key
-
     return key
   }
 
@@ -47,5 +48,10 @@ export default class Policy extends ServicePolicy {
   async hasScope(scope: string): Promise<boolean> {
     const key = await this.getAPIKey()
     return key.scopes.includes(scope as APIKeyScope)
+  }
+
+  async hasScopes(scopes: string[]): Promise<boolean> {
+    const key = await this.getAPIKey()
+    return scopes.every((scope) => key.scopes.includes(scope as APIKeyScope))
   }
 }

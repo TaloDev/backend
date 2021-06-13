@@ -84,7 +84,7 @@ describe('Players API service - identify', () => {
       .expect(403)
   })
 
-  it('should not identify a non-existent player', async () => {
+  it('should not identify a non-existent player without the write scope', async () => {
     const apiKey = new APIKey(game, user)
     apiKey.scopes = [APIKeyScope.READ_PLAYERS]
     await (<EntityManager>app.context.em).persistAndFlush(apiKey)
@@ -97,5 +97,21 @@ describe('Players API service - identify', () => {
       .expect(404)
 
     expect(res.body).toStrictEqual({ message: 'Player not found' })
+  })
+
+  it('should identify a non-existent player by creating a new player with the write scope', async () => {
+    const apiKey = new APIKey(game, user)
+    apiKey.scopes = [APIKeyScope.READ_PLAYERS, APIKeyScope.WRITE_PLAYERS]
+    await (<EntityManager>app.context.em).persistAndFlush(apiKey)
+    token = await createToken(apiKey)
+
+    const res = await request(app.callback())
+      .get(`${baseUrl}/identify`)
+      .query({ service: 'steam', identifier: '2131231' })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+    
+    expect(res.body.alias.identifier).toBe('2131231')
+    expect(res.body.alias.playerId).toBeTruthy()
   })
 })

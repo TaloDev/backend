@@ -59,7 +59,7 @@ describe('Events service - get', () => {
       .auth(token, { type: 'bearer' })
       .expect(200)
 
-    expect(res.body.events['Open inventory']).toHaveLength(2)
+    expect(res.body.events['Open inventory']).toHaveLength(3)
 
     expect(res.body.events['Open inventory'][0]).toEqual({
       name: 'Open inventory',

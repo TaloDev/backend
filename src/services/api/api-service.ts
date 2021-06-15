@@ -20,7 +20,8 @@ export default class APIService<T> implements Service {
   }
 
   forwardRequest(funcName: string, req: ServiceRequest): Promise<ServiceResponse> {
-    const func = this.getService(req.ctx)[funcName]
-    return func(req)
+    const service = this.getService(req.ctx)
+    const func = service[funcName]
+    return func.call(service, req)
   }
 }

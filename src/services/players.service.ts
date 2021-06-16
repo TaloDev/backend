@@ -169,9 +169,6 @@ export default class PlayersService implements Service {
             $like: `%${search}%`
           }
         })
-        .orderBy({
-          createdAt: QueryOrder.DESC
-        })
     }
 
     baseQuery = baseQuery.andWhere({
@@ -186,6 +183,9 @@ export default class PlayersService implements Service {
 
     const events = await baseQuery
       .select('e.*', true)
+      .orderBy({
+        createdAt: QueryOrder.DESC
+      })
       .limit(itemsPerPage)
       .offset(Number(page) * itemsPerPage)
       .getResultList()

@@ -10,6 +10,7 @@ import EventFactory from '../../fixtures/EventFactory'
 import UserFactory from '../../fixtures/UserFactory'
 import OrganisationFactory from '../../fixtures/OrganisationFactory'
 import PlayerFactory from '../../fixtures/PlayerFactory'
+import { sub } from 'date-fns'
 
 const baseUrl = '/events'
 
@@ -58,7 +59,7 @@ describe('Events service - get', () => {
       .auth(token, { type: 'bearer' })
       .expect(200)
 
-    expect(res.body.events['Open inventory']).toHaveLength(2)
+    expect(res.body.events['Open inventory']).toHaveLength(3)
 
     expect(res.body.events['Open inventory'][0]).toEqual({
       name: 'Open inventory',
@@ -216,5 +217,19 @@ describe('Events service - get', () => {
       .query({ gameId: otherGame.id, startDate: '2021-01-01', endDate: '2021-01-05' })
       .auth(token, { type: 'bearer' })
       .expect(403)
+  })
+
+  it('should return events from today if the endDate is today', async () => {
+    const player = await new PlayerFactory([validGame]).one()
+    const events = await new EventFactory([player]).with(() => ({ name: 'Talk to NPC', createdAt: new Date() })).many(3)
+    await (<EntityManager>app.context.em).persistAndFlush(events)
+
+    const res = await request(app.callback())
+      .get(`${baseUrl}`)
+      .query({ gameId: validGame.id, startDate: sub(new Date(), { days: 1 }), endDate: new Date() })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    expect(res.body.events['Talk to NPC'][1].count).toBe(3)
   })
 })

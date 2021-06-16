@@ -22,6 +22,11 @@ export default class PlayersAPIService extends APIService<PlayersService> {
     },
     {
       method: 'PATCH'
+    },
+    {
+      method: 'POST',
+      path: '/merge',
+      handler: 'merge'
     }
   ]
 
@@ -106,7 +111,21 @@ export default class PlayersAPIService extends APIService<PlayersService> {
   }
 
   @HasPermission(PlayersAPIPolicy, 'patch')
-  async patch(req: ServiceRequest): Promise<ServiceResponse> {
-    return await this.forwardRequest('patch', req)
+   async patch(req: ServiceRequest): Promise<ServiceResponse> {
+     return await this.forwardRequest('patch', req)
+   }
+
+  @HasPermission(PlayersAPIPolicy, 'merge')
+  async merge(req: ServiceRequest): Promise<ServiceResponse> {
+    const { alias1, alias2 } = req.body
+    const em: EntityManager = req.ctx.em
+
+    // todo, should be in policy and propagated to the state
+    const firstAlias = await em.getRepository(PlayerAlias).findOne(alias1, ['player'])
+    const secondAlias = await em.getRepository(PlayerAlias).findOne(alias2, ['player'])
+
+    return {
+      status: 200
+    }
   }
 }

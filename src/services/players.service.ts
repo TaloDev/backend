@@ -6,6 +6,7 @@ import PlayerAlias from '../entities/player-alias'
 import sanitiseProps from '../lib/props/sanitiseProps'
 import Event from '../entities/event'
 import { EntityManager } from '@mikro-orm/mysql'
+import { QueryOrder } from '@mikro-orm/core'
 
 const itemsPerPage = 25
 
@@ -167,6 +168,9 @@ export default class PlayersService implements Service {
           name: {
             $like: `%${search}%`
           }
+        })
+        .orderBy({
+          createdAt: QueryOrder.DESC
         })
     }
 

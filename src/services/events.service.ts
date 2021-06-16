@@ -61,7 +61,7 @@ export default class EventsService implements Service {
     for (let name in data) {
       let processed: EventData[] = []
 
-      for (let date = new Date(startDate).getTime(); date < new Date(endDate).getTime(); date += 86400000 /* 24 hours in ms */) {
+      for (let date = new Date(startDate).getTime(); date <= new Date(endDate).getTime(); date += 86400000 /* 24 hours in ms */) {
         const count = data[name].filter((event: Event) => isSameDay(new Date(date), new Date(event.createdAt))).length
         const change = processed.length > 0 ? this.calculateChange(count, processed[processed.length - 1]) : 0
 

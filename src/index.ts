@@ -11,6 +11,7 @@ import configureAPIRoutes from './config/api-routes'
 import corsMiddleware from './config/cors-middleware'
 import errorMiddleware from './config/error-middleware'
 import ormConfig from './config/mikro-orm.config'
+import initProviders from './config/providers'
 
 const isTest = process.env.NODE_ENV === 'test'
 
@@ -24,6 +25,8 @@ export const init = async (): Promise<Koa> => {
     console.error(err)
     process.exit(1)
   }
+
+  initProviders(app)
 
   if (!isTest) app.use(logger())
   app.use(errorMiddleware)

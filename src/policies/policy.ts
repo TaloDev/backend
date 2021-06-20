@@ -1,5 +1,5 @@
 import { EntityManager } from '@mikro-orm/core'
-import { ServicePolicy } from 'koa-rest-services'
+import { ServicePolicy, ServicePolicyDenial } from 'koa-rest-services'
 import { Context } from 'koa'
 import APIKey, { APIKeyScope } from '../entities/api-key'
 import Game from '../entities/game'
@@ -45,13 +45,17 @@ export default class Policy extends ServicePolicy {
     return game.organisation.id === user.organisation.id
   }
 
-  async hasScope(scope: string): Promise<boolean> {
+  async hasScope(scope: string): Promise<boolean | ServicePolicyDenial> {
     const key = await this.getAPIKey()
-    return key.scopes.includes(scope as APIKeyScope)
+    const hasScope = key.scopes.includes(scope as APIKeyScope)
+
+    return hasScope || new ServicePolicyDenial({ message: `Missing access key scope: ${scope}` }) 
   }
 
-  async hasScopes(scopes: string[]): Promise<boolean> {
+  async hasScopes(scopes: string[]): Promise<boolean | ServicePolicyDenial> {
     const key = await this.getAPIKey()
-    return scopes.every((scope) => key.scopes.includes(scope as APIKeyScope))
+    const missing = scopes.filter((scope) => !key.scopes.includes(scope as APIKeyScope))
+
+    return missing.length === 0 || new ServicePolicyDenial({ message: `Missing access key scope(s): ${missing.join(', ')}` }) 
   }
 }

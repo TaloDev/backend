@@ -4,6 +4,7 @@ import { promisify } from 'util'
 import { Context } from 'koa'
 import User from '../../entities/user'
 import UserSession from '../../entities/user-session'
+import * as Sentry from '@sentry/node'
 
 export async function genAccessToken(user: User): Promise<string> {
   const payload = { sub: user.id }
@@ -37,6 +38,9 @@ const buildTokenPair = async (ctx: Context, user: User): Promise<string> => {
   const accessToken = await genAccessToken(user)
   const session = await createSession(ctx, user)
   setRefreshToken(ctx, session)
+
+  Sentry.setUser({ id: String(user.id) })
+  
   return accessToken
 }
 

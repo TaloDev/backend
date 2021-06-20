@@ -43,6 +43,7 @@
     "@mikro-orm/core": "^4.5.5",
     "@mikro-orm/mysql": "^4.5.5",
     "@sendgrid/mail": "^7.4.5",
+    "@sentry/node": "^6.7.1",
     "bcrypt": "^5.0.0",
     "bee-queue": "^1.4.0",
     "date-fns": "^2.16.1",

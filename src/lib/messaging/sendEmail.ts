@@ -4,7 +4,7 @@ interface TemplateData {
   [key: string]: any
 }
 
-export default async (to: string, templateId: boolean, dynamicTemplateData?: TemplateData): Promise<void> => {
+export default async (to: string, templateId: string, dynamicTemplateData?: TemplateData): Promise<void> => {
   try {
     await SendGrid.send({
       to,

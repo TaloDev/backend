@@ -1,4 +1,5 @@
 import SendGrid from '@sendgrid/mail'
+import * as Sentry from '@sentry/node'
 
 interface TemplateData {
   [key: string]: any
@@ -13,7 +14,12 @@ export default async (to: string, templateId: string, dynamicTemplateData?: Temp
       dynamicTemplateData
     })
   } catch (err) {
-    //console.error(err.response.body.errors) TODO sentry capture
-    throw new Error(`Failed to send email with templateId ${templateId}`)
+    Sentry.captureException(err, {
+      extra: {
+        errors: err.response.body.errors,
+        to,
+        templateId
+      }
+    })
   }
 }

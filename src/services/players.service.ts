@@ -7,6 +7,7 @@ import sanitiseProps from '../lib/props/sanitiseProps'
 import Event from '../entities/event'
 import { EntityManager } from '@mikro-orm/mysql'
 import { QueryOrder } from '@mikro-orm/core'
+import uniqWith from 'lodash.uniqwith'
 
 const itemsPerPage = 25
 
@@ -134,13 +135,12 @@ export default class PlayersService implements Service {
     const em: EntityManager = req.ctx.em
 
     if (props) {
-      const existingProps = player.props.filter((existingProp) => {
-        return !props.find((incomingProp) => incomingProp.key === existingProp.key)
-      })
+      const mergedProps = uniqWith([
+        ...sanitiseProps(props),
+        ...player.props
+      ], (a, b) => a.key === b.key)
 
-      const propsSet = new Set([ ...existingProps, ...sanitiseProps(props) ])
-
-      player.props = sanitiseProps([...propsSet], true)
+      player.props = sanitiseProps(mergedProps, true)
     }
 
     await em.flush()

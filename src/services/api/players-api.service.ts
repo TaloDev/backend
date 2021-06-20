@@ -1,10 +1,13 @@
 import { EntityManager } from '@mikro-orm/core'
+import { DefaultState } from 'koa'
 import { ServiceRequest, ServiceResponse, ServiceRoute, Validate, HasPermission } from 'koa-rest-services'
 import APIKey, { APIKeyScope } from '../../entities/api-key'
+import Player from '../../entities/player'
 import PlayerAlias from '../../entities/player-alias'
 import PlayersAPIPolicy from '../../policies/api/players-api.policy'
 import PlayersService from '../players.service'
 import APIService from './api-service'
+import uniqWith from 'lodash.uniqwith'
 
 export default class PlayersAPIService extends APIService<PlayersService> {
   routes: ServiceRoute[] = [
@@ -115,17 +118,49 @@ export default class PlayersAPIService extends APIService<PlayersService> {
      return await this.forwardRequest('patch', req)
    }
 
+   @Validate({
+    body: ['alias1', 'alias2']
+  })
   @HasPermission(PlayersAPIPolicy, 'merge')
   async merge(req: ServiceRequest): Promise<ServiceResponse> {
-    const { alias1, alias2 } = req.body
     const em: EntityManager = req.ctx.em
+    const { alias1, alias2 } = req.body
 
-    // todo, should be in policy and propagated to the state
-    const firstAlias = await em.getRepository(PlayerAlias).findOne(alias1, ['player'])
-    const secondAlias = await em.getRepository(PlayerAlias).findOne(alias2, ['player'])
+    const key = await this.getAPIKey(req.ctx)
+
+    const player1 = await em.getRepository(Player).findOne({
+      aliases: {
+        id: alias1
+      },
+      game: key.game
+    }, ['aliases'])
+
+    const player2 = await em.getRepository(Player).findOne({
+      aliases: {
+        id: alias2
+      },
+      game: key.game
+    }, ['aliases'])
+
+    player2.aliases
+      .getItems()
+      .map((alias) => alias.player = player1)
+
+    const mergedProps = uniqWith([
+      ...player2.props,
+      ...player1.props
+    ], (a, b) => a.key === b.key)
+
+    player1.props = Array.from(mergedProps)
+
+    await em.remove(player2)
+    await em.flush()
 
     return {
-      status: 200
+      status: 200,
+      body: {
+        player: player1
+      }
     }
   }
 }

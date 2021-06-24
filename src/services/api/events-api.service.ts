@@ -16,8 +16,9 @@ export default class EventsAPIService extends APIService<EventsService> {
 
   @Validate({
     body: {
-      events: (val: unknown) => {
-        if (!Array.isArray(val)) return 'Events must be an array'
+      events: async (val: unknown): Promise<boolean> => {
+        if (!Array.isArray(val)) throw new Error('Events must be an array')
+        return true
       }
     }
   })

@@ -11,7 +11,7 @@ import UserFactory from '../../fixtures/UserFactory'
 import PlayerFactory from '../../fixtures/PlayerFactory'
 import Player from '../../../src/entities/player'
 import GameFactory from '../../fixtures/GameFactory'
-import { sub } from 'date-fns'
+import { sub, format } from 'date-fns'
 import OrganisationFactory from '../../fixtures/OrganisationFactory'
 
 const baseUrl = '/headlines'
@@ -21,6 +21,9 @@ describe('Headlines service - get', () => {
   let user: User
   let validGame: Game
   let token: string
+
+  const startDate = format(sub(new Date(), { days: 7 }), 'yyyy-MM-dd')
+  const endDate = format(new Date(), 'yyyy-MM-dd')
 
   beforeAll(async () => {
     app = await init()
@@ -49,7 +52,7 @@ describe('Headlines service - get', () => {
 
     const res = await request(app.callback())
       .get(`${baseUrl}/events`)
-      .query({ gameId: validGame.id })
+      .query({ gameId: validGame.id, startDate, endDate })
       .auth(token, { type: 'bearer' })
       .expect(200)
 
@@ -64,7 +67,7 @@ describe('Headlines service - get', () => {
 
     const res = await request(app.callback())
       .get(`${baseUrl}/new_players`)
-      .query({ gameId: validGame.id })
+      .query({ gameId: validGame.id, startDate, endDate })
       .auth(token, { type: 'bearer' })
       .expect(200)
 
@@ -85,7 +88,7 @@ describe('Headlines service - get', () => {
 
     const res = await request(app.callback())
       .get(`${baseUrl}/returning_players`)
-      .query({ gameId: validGame.id })
+      .query({ gameId: validGame.id, startDate, endDate })
       .auth(token, { type: 'bearer' })
       .expect(200)
 
@@ -108,7 +111,7 @@ describe('Headlines service - get', () => {
 
     const res = await request(app.callback())
       .get(`${baseUrl}/unique_event_submitters`)
-      .query({ gameId: validGame.id })
+      .query({ gameId: validGame.id, startDate, endDate })
       .auth(token, { type: 'bearer' })
       .expect(200)
 
@@ -122,7 +125,7 @@ describe('Headlines service - get', () => {
 
     await request(app.callback())
       .get(`${baseUrl}/new_players`)
-      .query({ gameId: otherGame.id })
+      .query({ gameId: otherGame.id, startDate, endDate })
       .auth(token, { type: 'bearer' })
       .expect(403)
   })

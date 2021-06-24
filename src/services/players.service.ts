@@ -120,10 +120,12 @@ export default class PlayersService implements Service {
 
   @Validate({
     body: {
-      props: (val: unknown) => {
+      props: async (val: unknown): Promise<boolean> => {
         if (val && !Array.isArray(val)) {
-          return 'Props must be an array'
+          throw new Error('Props must be an array')
         }
+
+        return true
       }
     }
   })

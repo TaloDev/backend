@@ -3,7 +3,8 @@ import { HasPermission, Service, ServiceRequest, ServiceResponse, Validate } fro
 import Event from '../entities/event'
 import EventsPolicy from '../policies/events.policy'
 import groupBy from 'lodash.groupby'
-import { isSameDay, isValid, isAfter, endOfDay } from 'date-fns'
+import { isSameDay, endOfDay } from 'date-fns'
+import dateValidationSchema from '../lib/dates/dateValidationSchema'
 
 interface EventData {
   name: string
@@ -15,22 +16,8 @@ interface EventData {
 export default class EventsService implements Service {
   @Validate({
     query: {
-      gameId: 'Missing query key: gameId',
-      startDate: (val: string, req: ServiceRequest) => {
-        if (!val) return 'Missing query key: startDate'
-
-        const startDate = new Date(val)
-        if (!isValid(startDate)) return 'Invalid start date, please use YYYY-MM-DD or a timestamp'
-
-        const endDate = new Date(req.ctx.query.endDate as string)
-        if (isValid(endDate) && isAfter(startDate, endDate)) return 'Invalid start date, it should be before the end date'
-      },
-      endDate: (val: string) => {
-        if (!val) return 'Missing query key: endDate'
-
-        const endDate = new Date(val)
-        if (!isValid(endDate)) return 'Invalid end date, please use YYYY-MM-DD or a timestamp'
-      }
+      gameId: true,
+      ...dateValidationSchema
     }
   })
   @HasPermission(EventsPolicy, 'index')

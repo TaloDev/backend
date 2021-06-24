@@ -1,10 +1,11 @@
 import { EntityManager } from '@mikro-orm/core'
-import { sub } from 'date-fns'
+import { endOfDay, isSameDay } from 'date-fns'
 import { Service, ServiceRequest, ServiceResponse, Validate, HasPermission, ServiceRoute } from 'koa-rest-services'
 import { groupBy } from 'lodash'
 import Event from '../entities/event'
 import Player from '../entities/player'
 import HeadlinesPolicy from '../policies/headlines.policy'
+import dateValidationSchema from '../lib/dates/dateValidationSchema'
 
 export default class HeadlinesService implements Service {
   routes: ServiceRoute[] = [
@@ -31,17 +32,21 @@ export default class HeadlinesService implements Service {
   ]
 
   @Validate({
-    query: ['gameId']
+    query: {
+      gameId: true,
+      ...dateValidationSchema
+    }
   })
   @HasPermission(HeadlinesPolicy, 'index')
   async newPlayers(req: ServiceRequest): Promise<ServiceResponse> {
-    const { gameId } = req.query
+    const { gameId, startDate, endDate } = req.query
     const em: EntityManager = req.ctx.em
 
     const players = await em.getRepository(Player).find({
       game: Number(gameId),
       createdAt: {
-        $gte: sub(new Date(), { weeks: 1 })
+        $gte: new Date(startDate),
+        $lte: endOfDay(new Date(endDate))
       }
     })
 
@@ -54,22 +59,28 @@ export default class HeadlinesService implements Service {
   }
 
   @Validate({
-    query: ['gameId']
+    query: {
+      gameId: true,
+      ...dateValidationSchema
+    }
   })
   @HasPermission(HeadlinesPolicy, 'index')
   async returningPlayers(req: ServiceRequest): Promise<ServiceResponse> {
-    const { gameId } = req.query
+    const { gameId, startDate, endDate } = req.query
     const em: EntityManager = req.ctx.em
 
-    const players = await em.getRepository(Player).find({
+    let players = await em.getRepository(Player).find({
       game: Number(gameId),
       lastSeenAt: {
-        $gte: sub(new Date(), { weeks: 1 })
+        $gte: new Date(startDate),
+        $lte: endOfDay(new Date(endDate))
       },
       createdAt: {
-        $lt: sub(new Date(), { weeks: 1 })
+        $lt: new Date(startDate)
       }
     })
+
+    players = players.filter((player) => !isSameDay(new Date(player.createdAt), new Date(player.lastSeenAt)))
 
     return {
       status: 200,
@@ -80,17 +91,21 @@ export default class HeadlinesService implements Service {
   }
 
   @Validate({
-    query: ['gameId']
+    query: {
+      gameId: true,
+      ...dateValidationSchema
+    }
   })
   @HasPermission(HeadlinesPolicy, 'index')
   async events(req: ServiceRequest): Promise<ServiceResponse> {
-    const { gameId } = req.query
+    const { gameId, startDate, endDate } = req.query
     const em: EntityManager = req.ctx.em
 
     const events = await em.getRepository(Event).find({
       game: Number(gameId),
       createdAt: {
-        $gte: sub(new Date(), { weeks: 1 })
+        $gte: new Date(startDate),
+        $lte: endOfDay(new Date(endDate))
       }
     })
 
@@ -103,17 +118,21 @@ export default class HeadlinesService implements Service {
   }
 
   @Validate({
-    query: ['gameId']
+    query: {
+      gameId: true,
+      ...dateValidationSchema
+    }
   })
   @HasPermission(HeadlinesPolicy, 'index')
   async uniqueEventSubmitters(req: ServiceRequest): Promise<ServiceResponse> {
-    const { gameId } = req.query
+    const { gameId, startDate, endDate } = req.query
     const em: EntityManager = req.ctx.em
 
     const events = await em.getRepository(Event).find({
       game: Number(gameId),
       createdAt: {
-        $gte: sub(new Date(), { weeks: 1 })
+        $gte: new Date(startDate),
+        $lte: endOfDay(new Date(endDate))
       }
     }, ['playerAlias.player'])
 

@@ -58,6 +58,6 @@ export default class EventFactory extends Factory<Event> {
   }
 
   private randomDate(start: Date, end: Date): Date {
-    return new Date(start.getTime() + Math.random() * (end.getTime() - start.getTime()));
+    return new Date(start.getTime() + Math.random() * (end.getTime() - start.getTime()))
   }
 }

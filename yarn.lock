@@ -2708,10 +2708,10 @@ has@^1.0.3:
   dependencies:
     function-bind "^1.1.1"
 
-hefty@^1.0.0:
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/hefty/-/hefty-1.0.0.tgz#e5d03eb84ea8e8931f0fb6425be59bd197fcf859"
-  integrity sha512-WAu2NvzXj+pdRdRjyQ+SwI52BQs1nyhzWIVjPeYubQysmmAlhDp8iv8Usz9ozN6S/mXLLmWbqooDGfeHubbDQw==
+hefty@^1.1.0:
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/hefty/-/hefty-1.1.0.tgz#3bed766395d51e1be8eabcaebb7321e4bb7e01d0"
+  integrity sha512-d16k01Rzb9fbCOqS0lCFkBVghKd2YFnaT+6Tg+5l5r1O9eaKp0gKQMoJiEb+GpUcHUMrG1y1LvDGB3GPEriVwQ==
 
 helmet@^4.1.1:
   version "4.3.1"

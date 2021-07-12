@@ -26,7 +26,12 @@ export default class PlayerAlias {
       id: this.id,
       service: this.service,
       identifier: this.identifier,
-      player: this.player
+      player: {
+        id: this.player.id,
+        props: this.player.props,
+        createdAt: this.player.createdAt,
+        lastSeenAt: this.player.lastSeenAt
+      }
     }
   }
 }

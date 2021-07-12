@@ -12,7 +12,7 @@ export default class PlayerAlias {
   @Property()
   identifier: string
 
-  @ManyToOne(() => Player, { cascade: [Cascade.REMOVE] })
+  @ManyToOne(() => Player, { cascade: [Cascade.REMOVE], eager: true })
   player: Player
 
   @Property()
@@ -26,7 +26,7 @@ export default class PlayerAlias {
       id: this.id,
       service: this.service,
       identifier: this.identifier,
-      playerId: this.player.id
+      player: this.player
     }
   }
 }

@@ -1,5 +1,4 @@
 import { EntityManager } from '@mikro-orm/core'
-import { DefaultState } from 'koa'
 import { ServiceRequest, ServiceResponse, ServiceRoute, Validate, HasPermission } from 'koa-rest-services'
 import APIKey, { APIKeyScope } from '../../entities/api-key'
 import Player from '../../entities/player'
@@ -53,7 +52,7 @@ export default class PlayersAPIService extends APIService<PlayersService> {
       player: {
         game: key.game
       }
-    }, ['player'])
+    })
 
     if (!alias) {
       if (req.ctx.state.key.scopes.includes(APIKeyScope.WRITE_PLAYERS)) {

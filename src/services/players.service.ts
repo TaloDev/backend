@@ -185,18 +185,10 @@ export default class PlayersService implements Service {
 
     const events = await baseQuery
       .select('e.*', true)
-      .orderBy({
-        createdAt: QueryOrder.DESC
-      })
+      .orderBy({ createdAt: QueryOrder.DESC })
       .limit(itemsPerPage)
       .offset(Number(page) * itemsPerPage)
       .getResultList()
-
-    // TODO, don't need this yet but useful bit of code for later
-    // const propColumns = events.reduce((acc: string[], curr: Event): string[] => {
-    //   const allKeys: string[] = curr.props.map((prop: Prop) => prop.key)
-    //   return [...new Set([...acc, ...allKeys])]
-    // }, [])
 
     return {
       status: 200,

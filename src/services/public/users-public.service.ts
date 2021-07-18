@@ -10,8 +10,9 @@ import setUserLastSeenAt from '../../lib/users/setUserLastSeenAt'
 import getUserFromToken from '../../lib/auth/getUserFromToken'
 import UserAccessCode from '../../entities/user-access-code'
 import Organisation from '../../entities/organisation'
-import sendEmail from '../../lib/messaging/sendEmail'
+import { EmailConfig } from '../../lib/messaging/sendEmail'
 import { add } from 'date-fns'
+import Queue from 'bee-queue'
 
 export default class UsersPublicService implements Service {
   routes: ServiceRoute[] = [
@@ -86,7 +87,16 @@ export default class UsersPublicService implements Service {
       const accessCode = new UserAccessCode(user, add(new Date(), { weeks: 1 }))
       await em.persistAndFlush(accessCode)
 
-      await sendEmail(user.email, 'd-3cc7bc45abd247f0b6fb6028d336423b', { code: accessCode.code })
+      await (<Queue>hook.req.ctx.emailQueue)
+        .createJob<EmailConfig>({
+          to: user.email,
+          subject: 'Your Talo access code',
+          templateId: 'confirm-email',
+          templateData: {
+            code: accessCode.code 
+          }
+        })
+        .save()
     }
   }
 

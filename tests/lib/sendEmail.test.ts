@@ -13,4 +13,17 @@ describe('Send email', () => {
       expect(err.status).toBe(403)
     }
   })
+
+  it('should gracefully handle non-sendgrid errors', async () => {
+    try {
+      await sendEmail({
+        to: 'bob@bob.com',
+        subject: 'fail',
+        templateId: 'blah',
+        templateData: {}
+      })
+    } catch (err) {
+      expect(err.message).toContain('ENOENT')
+    }
+  })
 })

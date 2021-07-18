@@ -1,5 +1,5 @@
 import { EntityManager } from '@mikro-orm/core'
-import { ServiceRequest, ServiceResponse, ServiceRoute, Validate, HasPermission } from 'koa-rest-services'
+import { ServiceRequest, ServiceResponse, Routes, Validate, HasPermission } from 'koa-rest-services'
 import APIKey, { APIKeyScope } from '../../entities/api-key'
 import Player from '../../entities/player'
 import PlayerAlias from '../../entities/player-alias'
@@ -8,30 +8,29 @@ import PlayersService from '../players.service'
 import APIService from './api-service'
 import uniqWith from 'lodash.uniqwith'
 
+@Routes([
+  {
+    method: 'GET',
+    handler: 'index'
+  },
+  {
+    method: 'GET',
+    path: '/identify',
+    handler: 'identify'
+  },
+  {
+    method: 'POST'
+  },
+  {
+    method: 'PATCH'
+  },
+  {
+    method: 'POST',
+    path: '/merge',
+    handler: 'merge'
+  }
+])
 export default class PlayersAPIService extends APIService<PlayersService> {
-  routes: ServiceRoute[] = [
-    {
-      method: 'GET',
-      handler: 'index'
-    },
-    {
-      method: 'GET',
-      path: '/identify',
-      handler: 'identify'
-    },
-    {
-      method: 'POST'
-    },
-    {
-      method: 'PATCH'
-    },
-    {
-      method: 'POST',
-      path: '/merge',
-      handler: 'merge'
-    }
-  ]
-
   constructor() {
     super('players')
   }

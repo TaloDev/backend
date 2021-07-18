@@ -1,36 +1,35 @@
 import { EntityManager } from '@mikro-orm/core'
 import { endOfDay, isSameDay } from 'date-fns'
-import { Service, ServiceRequest, ServiceResponse, Validate, HasPermission, ServiceRoute } from 'koa-rest-services'
+import { Service, ServiceRequest, ServiceResponse, Validate, HasPermission, Routes } from 'koa-rest-services'
 import { groupBy } from 'lodash'
 import Event from '../entities/event'
 import Player from '../entities/player'
 import HeadlinesPolicy from '../policies/headlines.policy'
 import dateValidationSchema from '../lib/dates/dateValidationSchema'
 
+@Routes([
+  {
+    method: 'GET',
+    path: '/new_players',
+    handler: 'newPlayers'
+  },
+  {
+    method: 'GET',
+    path: '/returning_players',
+    handler: 'returningPlayers'
+  },
+  {
+    method: 'GET',
+    path: '/events',
+    handler: 'events'
+  },
+  {
+    method: 'GET',
+    path: '/unique_event_submitters',
+    handler: 'uniqueEventSubmitters'
+  }
+])
 export default class HeadlinesService implements Service {
-  routes: ServiceRoute[] = [
-    {
-      method: 'GET',
-      path: '/new_players',
-      handler: 'newPlayers'
-    },
-    {
-      method: 'GET',
-      path: '/returning_players',
-      handler: 'returningPlayers'
-    },
-    {
-      method: 'GET',
-      path: '/events',
-      handler: 'events'
-    },
-    {
-      method: 'GET',
-      path: '/unique_event_submitters',
-      handler: 'uniqueEventSubmitters'
-    }
-  ]
-
   @Validate({
     query: {
       gameId: true,

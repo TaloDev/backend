@@ -1,4 +1,4 @@
-import { After, HookParams, Service, ServiceRequest, ServiceResponse, ServiceRoute, Validate } from 'koa-rest-services'
+import { After, HookParams, Service, ServiceRequest, ServiceResponse, Routes, Validate } from 'koa-rest-services'
 import User, { UserType } from '../../entities/user'
 import jwt from 'jsonwebtoken'
 import { promisify } from 'util'
@@ -14,35 +14,34 @@ import { EmailConfig } from '../../lib/messaging/sendEmail'
 import { add } from 'date-fns'
 import Queue from 'bee-queue'
 
+@Routes([
+  {
+    method: 'POST',
+    path: '/register',
+    handler: 'register'
+  },
+  {
+    method: 'POST',
+    path: '/login',
+    handler: 'login'
+  },
+  {
+    method: 'GET',
+    path: '/refresh',
+    handler: 'refresh'
+  },
+  {
+    method: 'POST',
+    path: '/forgot_password',
+    handler: 'forgotPassword'
+  },
+  {
+    method: 'POST',
+    path: '/change_password',
+    handler: 'changePassword'
+  }
+])
 export default class UsersPublicService implements Service {
-  routes: ServiceRoute[] = [
-    {
-      method: 'POST',
-      path: '/register',
-      handler: 'register'
-    },
-    {
-      method: 'POST',
-      path: '/login',
-      handler: 'login'
-    },
-    {
-      method: 'GET',
-      path: '/refresh',
-      handler: 'refresh'
-    },
-    {
-      method: 'POST',
-      path: '/forgot_password',
-      handler: 'forgotPassword'
-    },
-    {
-      method: 'POST',
-      path: '/change_password',
-      handler: 'changePassword'
-    }
-  ]
-
   @Validate({
     body: ['email', 'password', 'organisationName']
   })

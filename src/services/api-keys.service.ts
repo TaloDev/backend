@@ -1,5 +1,5 @@
 import { EntityManager } from '@mikro-orm/core'
-import { HasPermission, Service, ServiceRequest, ServiceResponse, ServiceRoute, Validate } from 'koa-rest-services'
+import { HasPermission, Service, ServiceRequest, ServiceResponse, Routes, Validate } from 'koa-rest-services'
 import APIKey, { APIKeyScope } from '../entities/api-key'
 import jwt from 'jsonwebtoken'
 import APIKeysPolicy from '../policies/api-keys.policy'
@@ -32,25 +32,24 @@ export function createTokenSync(apiKey: APIKey, payloadParams?: ExtraTokenPayloa
   return jwt.sign(payload, process.env.JWT_SECRET)
 }
 
+@Routes([
+  {
+    method: 'POST'
+  },
+  {
+    method: 'GET',
+    handler: 'index'
+  },
+  {
+    method: 'GET',
+    path: '/scopes',
+    handler: 'scopes'
+  },
+  {
+    method: 'DELETE'
+  }
+])
 export default class APIKeysService implements Service {
-  routes: ServiceRoute[] = [
-    {
-      method: 'POST'
-    },
-    {
-      method: 'GET',
-      handler: 'index'
-    },
-    {
-      method: 'GET',
-      path: '/scopes',
-      handler: 'scopes'
-    },
-    {
-      method: 'DELETE'
-    }
-  ]
-
   @Validate({
     body: ['gameId', 'scopes']
   })

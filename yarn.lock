@@ -3881,10 +3881,10 @@ koa-logger@^3.2.1:
     humanize-number "0.0.2"
     passthrough-counter "^1.0.0"
 
-koa-rest-services@^3.0.0:
-  version "3.0.0"
-  resolved "https://registry.yarnpkg.com/koa-rest-services/-/koa-rest-services-3.0.0.tgz#878d89757b4a8c103a8c2031b4ab96ea2ae81b1b"
-  integrity sha512-ESp/bwKR21hMom6pz77zijiHCbDjNwgwoy0BydS/zP84qL2HKol+qzbsJiC7H6NIaroVwT6KWrheAmJTa+6RuQ==
+koa-rest-services@^3.1.1:
+  version "3.1.1"
+  resolved "https://registry.yarnpkg.com/koa-rest-services/-/koa-rest-services-3.1.1.tgz#fbad4ea9f74f89105ee36f3e0192c4d489509bdc"
+  integrity sha512-69BfDKRXxHuhHgarYsa3Q1nXM4JtIZ82WG7XL3NS5rvILo7n2404VFE5Nc/IEmCZpUlz9zBtpvOxYw1YHl8lWQ==
   dependencies:
     path-to-regexp "^6.2.0"
 

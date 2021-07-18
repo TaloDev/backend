@@ -1,4 +1,4 @@
-import { Service, ServiceRequest, ServiceResponse, Validate, HasPermission, ServiceRoute } from 'koa-rest-services'
+import { Service, ServiceRequest, ServiceResponse, Validate, HasPermission, Routes } from 'koa-rest-services'
 import Game from '../entities/game'
 import Player from '../entities/player'
 import PlayersPolicy from '../policies/players.policy'
@@ -11,25 +11,24 @@ import uniqWith from 'lodash.uniqwith'
 
 const itemsPerPage = 25
 
+@Routes([
+  {
+    method: 'POST'
+  },
+  {
+    method: 'GET',
+    handler: 'index'
+  },
+  {
+    method: 'PATCH'
+  },
+  {
+    method: 'GET',
+    path: '/:id/events',
+    handler: 'events'
+  }
+])
 export default class PlayersService implements Service {
-  routes: ServiceRoute[] = [
-    {
-      method: 'POST'
-    },
-    {
-      method: 'GET',
-      handler: 'index'
-    },
-    {
-      method: 'PATCH'
-    },
-    {
-      method: 'GET',
-      path: '/:id/events',
-      handler: 'events'
-    }
-  ]
-
   @Validate({
     body: ['gameId']
   })

@@ -6,6 +6,7 @@
   "scripts": {
     "watch": "tsnd --respawn src/index.ts",
     "build": "tsc -p tsconfig.build.json",
+    "postbuild": "copyfiles src/**/*.html dist/",
     "schema:create": "mikro-orm schema:create -r",
     "schema:update": "mikro-orm schema:update -r",
     "seed": "docker compose -f docker-compose.yml -f docker-compose.test.yml -f docker-compose.dev.yml exec backend yarn ts-node tests/seed.ts",
@@ -29,6 +30,7 @@
     "@types/redis": "^2.8.29",
     "@types/supertest": "^2.0.10",
     "casual": "^1.6.2",
+    "copyfiles": "^2.4.1",
     "hefty": "^1.1.0",
     "jest": "^26.6.3",
     "supertest": "^6.1.3",

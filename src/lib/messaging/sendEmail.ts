@@ -23,7 +23,7 @@ export default async (emailConfig: EmailConfig): Promise<void> => {
 
     await SendGrid.send({
       to: emailConfig.to,
-      from: emailConfig.from || 'hello@trytalo.com',
+      from: emailConfig.from || process.env.FROM_EMAIL,
       subject: emailConfig.subject,
       html: template(emailConfig.templateData)
     })

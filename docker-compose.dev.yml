@@ -7,7 +7,7 @@ services:
       target: dev
     image: backend
     ports:
-      - 3000:3000
+      - ${SERVER_PORT}:${SERVER_PORT}
     volumes:
       - ./src:/usr/backend/src
       - ./tests:/usr/backend/tests

@@ -63,6 +63,7 @@ export default class UsersPublicService implements Service {
     user.password = await bcrypt.hash(password, 10)
     user.organisation = organisation
     user.type = UserType.ADMIN
+    user.emailConfirmed = Boolean(process.env.AUTO_CONFIRM_EMAIL)
 
     await em.getRepository(User).persistAndFlush(user)
 

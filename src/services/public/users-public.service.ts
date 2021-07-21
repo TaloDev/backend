@@ -1,4 +1,4 @@
-import { After, HookParams, Service, ServiceRequest, ServiceResponse, ServiceRoute, Validate } from 'koa-rest-services'
+import { After, HookParams, Service, ServiceRequest, ServiceResponse, Routes, Validate } from 'koa-rest-services'
 import User, { UserType } from '../../entities/user'
 import jwt from 'jsonwebtoken'
 import { promisify } from 'util'
@@ -10,38 +10,38 @@ import setUserLastSeenAt from '../../lib/users/setUserLastSeenAt'
 import getUserFromToken from '../../lib/auth/getUserFromToken'
 import UserAccessCode from '../../entities/user-access-code'
 import Organisation from '../../entities/organisation'
-import sendEmail from '../../lib/messaging/sendEmail'
+import { EmailConfig } from '../../lib/messaging/sendEmail'
 import { add } from 'date-fns'
+import Queue from 'bee-queue'
 
+@Routes([
+  {
+    method: 'POST',
+    path: '/register',
+    handler: 'register'
+  },
+  {
+    method: 'POST',
+    path: '/login',
+    handler: 'login'
+  },
+  {
+    method: 'GET',
+    path: '/refresh',
+    handler: 'refresh'
+  },
+  {
+    method: 'POST',
+    path: '/forgot_password',
+    handler: 'forgotPassword'
+  },
+  {
+    method: 'POST',
+    path: '/change_password',
+    handler: 'changePassword'
+  }
+])
 export default class UsersPublicService implements Service {
-  routes: ServiceRoute[] = [
-    {
-      method: 'POST',
-      path: '/register',
-      handler: 'register'
-    },
-    {
-      method: 'POST',
-      path: '/login',
-      handler: 'login'
-    },
-    {
-      method: 'GET',
-      path: '/refresh',
-      handler: 'refresh'
-    },
-    {
-      method: 'POST',
-      path: '/forgot_password',
-      handler: 'forgotPassword'
-    },
-    {
-      method: 'POST',
-      path: '/change_password',
-      handler: 'changePassword'
-    }
-  ]
-
   @Validate({
     body: ['email', 'password', 'organisationName']
   })
@@ -86,7 +86,16 @@ export default class UsersPublicService implements Service {
       const accessCode = new UserAccessCode(user, add(new Date(), { weeks: 1 }))
       await em.persistAndFlush(accessCode)
 
-      await sendEmail(user.email, 'd-3cc7bc45abd247f0b6fb6028d336423b', { code: accessCode.code })
+      await (<Queue>hook.req.ctx.emailQueue)
+        .createJob<EmailConfig>({
+          to: user.email,
+          subject: 'Your Talo access code',
+          templateId: 'confirm-email',
+          templateData: {
+            code: accessCode.code 
+          }
+        })
+        .save()
     }
   }
 

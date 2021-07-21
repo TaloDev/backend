@@ -1,4 +1,4 @@
-import { Service, ServiceRequest, ServiceResponse, Validate, HasPermission, ServiceRoute } from 'koa-rest-services'
+import { Service, ServiceRequest, ServiceResponse, Validate, HasPermission, Routes } from 'koa-rest-services'
 import Game from '../entities/game'
 import Player from '../entities/player'
 import PlayersPolicy from '../policies/players.policy'
@@ -11,25 +11,24 @@ import uniqWith from 'lodash.uniqwith'
 
 const itemsPerPage = 25
 
+@Routes([
+  {
+    method: 'POST'
+  },
+  {
+    method: 'GET',
+    handler: 'index'
+  },
+  {
+    method: 'PATCH'
+  },
+  {
+    method: 'GET',
+    path: '/:id/events',
+    handler: 'events'
+  }
+])
 export default class PlayersService implements Service {
-  routes: ServiceRoute[] = [
-    {
-      method: 'POST'
-    },
-    {
-      method: 'GET',
-      handler: 'index'
-    },
-    {
-      method: 'PATCH'
-    },
-    {
-      method: 'GET',
-      path: '/:id/events',
-      handler: 'events'
-    }
-  ]
-
   @Validate({
     body: ['gameId']
   })
@@ -185,18 +184,10 @@ export default class PlayersService implements Service {
 
     const events = await baseQuery
       .select('e.*', true)
-      .orderBy({
-        createdAt: QueryOrder.DESC
-      })
+      .orderBy({ createdAt: QueryOrder.DESC })
       .limit(itemsPerPage)
       .offset(Number(page) * itemsPerPage)
       .getResultList()
-
-    // TODO, don't need this yet but useful bit of code for later
-    // const propColumns = events.reduce((acc: string[], curr: Event): string[] => {
-    //   const allKeys: string[] = curr.props.map((prop: Prop) => prop.key)
-    //   return [...new Set([...acc, ...allKeys])]
-    // }, [])
 
     return {
       status: 200,

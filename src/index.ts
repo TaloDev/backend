@@ -12,6 +12,7 @@ import corsMiddleware from './config/cors-middleware'
 import errorMiddleware from './config/error-middleware'
 import ormConfig from './config/mikro-orm.config'
 import initProviders from './config/providers'
+import createEmailQueue from './lib/queues/email-queue'
 
 const isTest = process.env.NODE_ENV === 'test'
 
@@ -41,6 +42,8 @@ export const init = async (): Promise<Koa> => {
   configureProtectedRoutes(app)
   configurePublicRoutes(app)
   configureAPIRoutes(app)
+
+  app.context.emailQueue = createEmailQueue()
 
   if (!isTest) {
     app.listen(process.env.SERVER_PORT, () => {

@@ -2,6 +2,9 @@ version: '3.9'
 
 services:
   backend:
+    build:
+      args:
+        - SERVER_PORT=${SERVER_PORT}
     volumes:
       - ./.env:/usr/backend/.env
     depends_on:

@@ -3,9 +3,27 @@ import sendEmail from "../../src/lib/messaging/sendEmail"
 describe('Send email', () => {
   it('should gracefully handle errors', async () => {
     try {
-      await sendEmail('bob@bob.com', 'fail-123', { errors: ['403 Forbidden'] })
+      await sendEmail({
+        to: 'bob@bob.com',
+        subject: 'fail',
+        templateId: 'confirm-email',
+        templateData: {}
+      })
     } catch (err) {
-      expect(err.message).toBe('Failed to send email with templateId fail-123')
+      expect(err.status).toBe(403)
+    }
+  })
+
+  it('should gracefully handle non-sendgrid errors', async () => {
+    try {
+      await sendEmail({
+        to: 'bob@bob.com',
+        subject: 'fail',
+        templateId: 'blah',
+        templateData: {}
+      })
+    } catch (err) {
+      expect(err.message).toContain('ENOENT')
     }
   })
 })

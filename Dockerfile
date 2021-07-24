@@ -1,7 +1,5 @@
 FROM node:lts-alpine AS base
-
-ENV SERVER_PORT=9000
-
+EXPOSE 80
 WORKDIR /usr/backend
 COPY tsconfig.json .
 COPY package.json .
@@ -9,7 +7,6 @@ COPY yarn.lock .
 
 FROM base AS dev
 RUN yarn
-EXPOSE $SERVER_PORT
 CMD [ "yarn", "watch" ]
 
 FROM base AS build

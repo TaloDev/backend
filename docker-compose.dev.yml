@@ -6,6 +6,8 @@ services:
       context: .
       target: dev
     image: backend
+    ports:
+      - 3000:80
     volumes:
       - ./src:/usr/backend/src
       - ./tests:/usr/backend/tests

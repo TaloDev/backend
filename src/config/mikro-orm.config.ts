@@ -7,9 +7,9 @@ const ormConfig: Options = {
   type: 'mysql',
   host: process.env.DB_HOST,
   port: Number(process.env.DB_PORT),
-  dbName: process.env.MYSQL_DATABASE,
+  dbName: process.env.DB_NAME,
   user: process.env.DB_USER,
-  password: process.env.MYSQL_ROOT_PASSWORD
+  password: process.env.DB_PASS
 }
 
 export default ormConfig

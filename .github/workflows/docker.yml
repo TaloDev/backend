@@ -43,4 +43,6 @@ jobs:
           username: ${{ secrets.USERNAME }}
           key: ${{ secrets.KEY }}
           passphrase: ${{ secrets.PASSPHRASE }}
-          script: cd ../usr/talo && ./scripts/update.sh
+          script: |
+            cd /usr/talo
+            ./scripts/update.sh

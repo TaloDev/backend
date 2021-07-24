@@ -1,6 +1,7 @@
-ARG SERVER_PORT
-
 FROM node:lts-alpine AS base
+
+ENV SERVER_PORT=9000
+
 WORKDIR /usr/backend
 COPY tsconfig.json .
 COPY package.json .

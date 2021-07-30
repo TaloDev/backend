@@ -15,5 +15,5 @@ set -e
 [ -f .env ] && mv .env .env.backup
 cp envs/.env.test .env
 
-./node_modules/.bin/ts-node tests/refresh-test-db.ts 
+./node_modules/.bin/ts-node tests/refresh-db.ts 
 ./node_modules/.bin/jest "$@" --runInBand

@@ -6,19 +6,18 @@
   "scripts": {
     "watch": "tsnd --respawn src/index.ts",
     "build": "tsc -p tsconfig.build.json",
-    "postbuild": "copyfiles -u 1 src/**/*.html dist",
     "seed": "docker-compose -f docker-compose.yml -f docker-compose.dev.yml exec backend yarn ts-node tests/seed.ts",
     "test": "./tests/setup-tests.sh",
     "up": "docker-compose -f docker-compose.yml -f docker-compose.test.yml -f docker-compose.dev.yml up --build -d",
     "down": "docker-compose -f docker-compose.yml -f docker-compose.test.yml -f docker-compose.dev.yml down",
-    "logs": "docker-compose -f docker-compose.yml -f docker-compose.test.yml -f docker-compose.dev.yml logs backend --follow",
+    "logs": "docker-compose -f docker-compose.yml -f docker-compose.dev.yml logs --follow backend",
     "restart": "yarn down && yarn up",
     "migration:create": "DB_HOST=127.0.0.1 mikro-orm migration:create"
   },
   "author": "Sleepy Studios",
   "license": "MIT",
   "devDependencies": {
-    "@mikro-orm/cli": "^4.5.5",
+    "@mikro-orm/cli": "^4.5.7",
     "@types/ioredis": "^4.22.3",
     "@types/jest": "^26.0.20",
     "@types/koa": "^2.11.6",
@@ -42,6 +41,7 @@
   "dependencies": {
     "@koa/cors": "^3.1.0",
     "@mikro-orm/core": "^4.5.5",
+    "@mikro-orm/migrations": "^4.5.7",
     "@mikro-orm/mysql": "^4.5.5",
     "@sendgrid/mail": "^7.4.5",
     "@sentry/node": "^6.7.1",

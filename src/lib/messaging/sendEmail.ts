@@ -1,8 +1,7 @@
 import SendGrid from '@sendgrid/mail'
 import * as Sentry from '@sentry/node'
-import { promises as fs } from 'fs'
-import path from 'path'
 import * as Handlebars from 'handlebars'
+import emails from '../../emails'
 
 interface TemplateData {
   [key: string]: any
@@ -18,8 +17,7 @@ export interface EmailConfig {
 
 export default async (emailConfig: EmailConfig): Promise<void> => {
   try {
-    const html = await fs.readFile(path.resolve(__dirname + `../../../emails/${emailConfig.templateId}.html`), 'utf8')
-    const template = Handlebars.compile(html)
+    const template = Handlebars.compile(emails[emailConfig.templateId])
 
     await SendGrid.send({
       to: emailConfig.to,

@@ -23,7 +23,18 @@ describe('Send email', () => {
         templateData: {}
       })
     } catch (err) {
-      expect(err.message).toContain('ENOENT')
+      expect(err.message).toContain('You passed undefined')
     }
+  })
+
+  it('should send valid templates', () => {
+    expect(async () => {
+      await sendEmail({
+        to: 'bob@bob.com',
+        subject: 'Your confirmation code',
+        templateId: 'confirm-email',
+        templateData: {}
+      })
+    }).not.toThrow()
   })
 })

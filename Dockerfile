@@ -3,7 +3,6 @@ WORKDIR /usr/backend
 COPY tsconfig.json .
 COPY package.json .
 COPY yarn.lock .
-COPY migrations ./migrations
 EXPOSE 80
 
 FROM base AS dev

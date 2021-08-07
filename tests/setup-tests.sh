@@ -1,7 +1,7 @@
 #!/bin/sh
 
 export $(grep -e DB_NAME -e DB_PASS .env | xargs)
-export DB_HOST=127.0.0.1
+export $(cat envs/.env.test | xargs)
 
 trap 'cleanup' EXIT
 

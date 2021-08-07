@@ -9,6 +9,9 @@ import { MikroORM } from '@mikro-orm/core'
 
     await orm.em.getConnection().execute(`drop table if exists mikro_orm_migrations`)
 
+    const migrator = orm.getMigrator()
+    await migrator.up()
+
     await orm.close(true)
     process.exit(0)
   } catch (err) {

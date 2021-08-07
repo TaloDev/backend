@@ -35,7 +35,7 @@ jobs:
     - name: Setup Docker
       run: |
         cp envs/.env.dev .env
-        docker-compose -f docker-compose.test.yml up -d
+        yarn dc up -d db
         echo Waiting for DB to be ready...
         sleep '10s'
 

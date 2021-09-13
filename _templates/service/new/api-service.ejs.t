@@ -1,5 +1,5 @@
 ---
-to: src/services/api/<%= name %>s-api.service.ts
+to: "<%= (typeof api !== 'undefined') ? `src/services/api/${name}s-api.service.ts` : null %>"
 ---
 import { HasPermission, ServiceRequest, ServiceResponse } from 'koa-rest-services'
 import <%= h.changeCase.pascal(name) %>sAPIPolicy from '../../policies/api/<%= name %>s-api.policy'

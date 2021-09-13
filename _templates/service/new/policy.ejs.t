@@ -1,11 +1,11 @@
 ---
-to: src/policies/<%= name %>.policy.ts
+to: src/policies/<%= name %>s.policy.ts
 ---
 import Policy from './policy'
 import { ServicePolicyDenial } from 'koa-rest-services'
 import { UserType } from '../entities/user'
 
-export default class <%= h.changeCase.pascal(name) %>Policy extends Policy {
+export default class <%= h.changeCase.pascal(name) %>sPolicy extends Policy {
   async get(): Promise<boolean> {
     return true
   }

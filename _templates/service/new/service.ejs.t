@@ -1,20 +1,20 @@
 ---
-to: src/services/<%= name %>.service.ts
+to: src/services/<%= name %>s.service.ts
 ---
 import { EntityManager } from '@mikro-orm/core'
 import { HasPermission, Service, ServiceRequest, ServiceResponse, Validate } from 'koa-rest-services'
 import <%= h.changeCase.pascal(name) %> from '../entities/<%= name %>'
-import <%= h.changeCase.pascal(name) %>Policy from '../policies/game-stats.policy'
+import <%= h.changeCase.pascal(name) %>sPolicy from '../policies/<%= name %>s.policy'
 
-export default class <%= h.changeCase.pascal(name) %> implements Service {
+export default class <%= h.changeCase.pascal(name) %>sService implements Service {
   @Validate({
-    query: [ '<%= h.changeCase.camel(name) %>Id' ]
+    query: ['<%= h.changeCase.camel(name) %>Id']
   })
-  @HasPermission(<%= h.changeCase.pascal(name) %>Policy, 'get')
+  @HasPermission(<%= h.changeCase.pascal(name) %>sPolicy, 'get')
   async get(req: ServiceRequest): Promise<ServiceResponse> {
     const { <%= h.changeCase.camel(name) %>Id } = req.query
     const em: EntityManager = req.ctx.em
-    const <%= h.changeCase.camel(name) %> = await em.getRepository(<%= h.changeCase.pascal(name) %>).findOne(<%= h.changeCase.camel(name) %>Id)
+    const <%= h.changeCase.camel(name) %> = await em.getRepository(<%= h.changeCase.pascal(name) %>).findOne(Number(<%= h.changeCase.camel(name) %>Id))
 
     return {
       status: 200,
@@ -27,7 +27,7 @@ export default class <%= h.changeCase.pascal(name) %> implements Service {
   @Validate({
     body: []
   })
-  @HasPermission(<%= h.changeCase.pascal(name) %>Policy, 'post')
+  @HasPermission(<%= h.changeCase.pascal(name) %>sPolicy, 'post')
   async post(req: ServiceRequest): Promise<ServiceResponse> {
     const {} = req.body
     const em: EntityManager = req.ctx.em

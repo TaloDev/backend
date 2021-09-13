@@ -3,6 +3,6 @@ inject: true
 to: src/config/api-routes.ts
 before: app\.use\(service
 ---
-  app.use(service('<%= h.changeCase.camel(name) %>s-api', new <%= h.changeCase.pascal(name) %>APIService(), {
+  app.use(service('<%= h.changeCase.camel(name) %>s-api', new <%= h.changeCase.pascal(name) %>sAPIService(), {
     prefix: '/v1/<%= name %>s'
   }))

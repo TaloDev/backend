@@ -17,17 +17,10 @@ Our docs are [available here](https://docs.trytalo.com).
 
 See the [self-hosting docs](https://docs.trytalo.com/docs/selfhosting/overview) and the [self-hosting example repo](https://github.com/TaloDev/hosting).
 
-## Installation
+## Contributing
 
-1. Clone the repo and run `yarn` or `npm install`.
-2. Copy `envs/.env.dev` to the project root and rename it to `.env`.
-3. Run `yarn up` (or `npm run up`) to spin up the Docker Compose containers.
-4. The backend will be accessible via `http://localhost:3000`.
+Looking to contribute? Head over to our [contribution guide](CONTRIBUTING.md) to learn how to install the project, run the tests and generate new services.
 
-## Testing
+## Discord
 
-Run `yarn test` (or `npm test`) to run the Jest unit tests.
-
-The tests run against your database container. They'll automatically backup and restore the current state of your database before executing the tests.
-
-Your `.env` file will be used along with any additional env vars you define in `envs/.env.test`.
+For help and support, [join our Discord](https://discord.gg/2RWwxXVY3v).

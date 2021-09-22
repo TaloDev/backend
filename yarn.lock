@@ -4041,11 +4041,12 @@ koa-logger@^3.2.1:
     humanize-number "0.0.2"
     passthrough-counter "^1.0.0"
 
-koa-rest-services@^3.1.1:
-  version "3.1.1"
-  resolved "https://registry.yarnpkg.com/koa-rest-services/-/koa-rest-services-3.1.1.tgz#fbad4ea9f74f89105ee36f3e0192c4d489509bdc"
-  integrity sha512-69BfDKRXxHuhHgarYsa3Q1nXM4JtIZ82WG7XL3NS5rvILo7n2404VFE5Nc/IEmCZpUlz9zBtpvOxYw1YHl8lWQ==
+koa-rest-services@^4.0.0:
+  version "4.0.0"
+  resolved "https://registry.yarnpkg.com/koa-rest-services/-/koa-rest-services-4.0.0.tgz#2c9b7c00ce1d8baf999c027798246058d1afb495"
+  integrity sha512-PHwi7hbLMaE5zv5kcMY+kHdIVSqDQJFYad8TUrFckyaiI39BEcDrA5QKnf9CJxRvkRFNNjaRhm2N1LTNHaaDNQ==
   dependencies:
+    lodash.set "^4.3.2"
     path-to-regexp "^6.2.0"
 
 koa-unless@^1.0.7:
@@ -4176,6 +4177,11 @@ lodash.once@^4.0.0:
   version "4.1.1"
   resolved "https://registry.yarnpkg.com/lodash.once/-/lodash.once-4.1.1.tgz#0dd3971213c7c56df880977d504c88fb471a97ac"
   integrity sha1-DdOXEhPHxW34gJd9UEyI+0cal6w=
+
+lodash.set@^4.3.2:
+  version "4.3.2"
+  resolved "https://registry.yarnpkg.com/lodash.set/-/lodash.set-4.3.2.tgz#d8757b1da807dde24816b0d6a84bea1a76230b23"
+  integrity sha1-2HV7HagH3eJIFrDWqEvqGnYjCyM=
 
 lodash.sortby@^4.7.0:
   version "4.7.0"

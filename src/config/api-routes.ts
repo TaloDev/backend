@@ -16,11 +16,6 @@ export default (app: Koa) => {
     app.use(limiterMiddleware)
   }
   
-  app.use(service('events-api', new EventsAPIService(), {
-    prefix: '/v1/events'
-  }))
-
-  app.use(service('players-api', new PlayersAPIService(), {
-    prefix: '/v1/players'
-  }))
+  app.use(service('/v1/events', new EventsAPIService()))
+  app.use(service('/v1/players', new PlayersAPIService()))
 }

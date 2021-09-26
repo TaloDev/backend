@@ -26,3 +26,7 @@ You can create a new service using the `yarn service:create` command. You need t
 For example, if you are adding a "Global Stats" service, you would run: `yarn service:create global-stat` (note that the entity name is singular and not a plural).
 
 This will create a policy, entity and REST API for your new entity. If you want to expose API endpoints (so that it can be used by the Unity SDK), add `--api` to the end of the command.
+
+## Migrations
+
+To create a migration, use `yarn migration:create`. This will create a migration class in the `migrations` folder. You will then need to import that migration class into the `index.ts` in the same folder.

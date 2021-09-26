@@ -5,7 +5,6 @@ import APIKey, { APIKeyScope } from '../entities/api-key'
 import Game from '../entities/game'
 import User from '../entities/user'
 import getUserFromToken from '../lib/auth/getUserFromToken'
-import getAPIKeyFromToken from '../lib/auth/getAPIKeyFromToken'
 
 export default class Policy extends ServicePolicy {
   em: EntityManager
@@ -29,7 +28,7 @@ export default class Policy extends ServicePolicy {
   async getAPIKey(): Promise<APIKey> {
     if (this.ctx.state.key) return this.ctx.state.key
 
-    const key = await getAPIKeyFromToken(this.ctx, ['game'])
+    const key = await (<EntityManager>this.ctx.em).getRepository(APIKey).findOne(this.ctx.state.user.sub, ['game'])
     if (key.revokedAt) this.ctx.throw(401)
 
     this.ctx.state.key = key
@@ -37,6 +36,8 @@ export default class Policy extends ServicePolicy {
   }
 
   async canAccessGame(gameId: number): Promise<boolean> {
+    if (!gameId) this.ctx.throw(404, 'The specified game doesn\'t exist')
+
     const game = await this.em.getRepository(Game).findOne(gameId, ['organisation'])
     if (!game) this.ctx.throw(404, 'The specified game doesn\'t exist')
     this.ctx.state.game = game

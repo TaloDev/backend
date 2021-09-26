@@ -1,7 +1,7 @@
 import { Service, ServiceRequest, ServiceResponse } from 'koa-rest-services'
 import { Context } from 'koa'
 import APIKey from '../../entities/api-key'
-import getAPIKeyFromToken from '../../lib/auth/getAPIKeyFromToken'
+import { EntityManager } from '@mikro-orm/core'
 
 export default class APIService<T> implements Service {
   serviceName: string
@@ -11,7 +11,7 @@ export default class APIService<T> implements Service {
   }
 
   async getAPIKey(ctx: Context): Promise<APIKey> {
-    const key: APIKey = await getAPIKeyFromToken(ctx)
+    const key = await (<EntityManager>ctx.em).getRepository(APIKey).findOne(ctx.state.user.sub)
     return key
   }
 

@@ -7,29 +7,14 @@ import groupBy from 'lodash.groupby'
 import User from '../entities/user'
 import { promisify } from 'util'
 
-interface TokenPayload {
-  sub: number
-  api: boolean
-  iat?: number
-}
-
 interface ExtraTokenPayloadParams {
   iat?: number
 }
 
-const getAPIKeyTokenPayload = (apiKey: APIKey, payloadParams?: ExtraTokenPayloadParams): TokenPayload => {
-  return { sub: apiKey.id, api: true, ...payloadParams }
-}
-
 export async function createToken(apiKey: APIKey, payloadParams?: ExtraTokenPayloadParams): Promise<string> {
-  const payload = getAPIKeyTokenPayload(apiKey, payloadParams)
+  const payload = { sub: apiKey.id, api: true, ...payloadParams }
   const token = await promisify(jwt.sign)(payload, process.env.JWT_SECRET)
   return token
-}
-
-export function createTokenSync(apiKey: APIKey, payloadParams?: ExtraTokenPayloadParams) {
-  const payload = getAPIKeyTokenPayload(apiKey, payloadParams)
-  return jwt.sign(payload, process.env.JWT_SECRET)
 }
 
 @Routes([

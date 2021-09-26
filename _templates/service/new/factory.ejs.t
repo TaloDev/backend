@@ -13,6 +13,7 @@ export default class <%= h.changeCase.pascal(name) %>Factory extends Factory<<%=
 
   protected base(): Partial<<%= h.changeCase.pascal(name) %>> {
     return {
+
     }
   }
 }

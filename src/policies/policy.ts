@@ -19,9 +19,13 @@ export default class Policy extends ServicePolicy {
   }
 
   async getUser(): Promise<User> {
+    // check its been initialised
+    if (this.ctx.state.user.email) return this.ctx.state.user
+
     const user = await getUserFromToken(this.ctx)
     if (!user) this.ctx.throw(401)
 
+    this.ctx.state.user = user
     return user
   }
 
@@ -36,8 +40,6 @@ export default class Policy extends ServicePolicy {
   }
 
   async canAccessGame(gameId: number): Promise<boolean> {
-    if (!gameId) this.ctx.throw(404, 'The specified game doesn\'t exist')
-
     const game = await this.em.getRepository(Game).findOne(gameId, ['organisation'])
     if (!game) this.ctx.throw(404, 'The specified game doesn\'t exist')
     this.ctx.state.game = game

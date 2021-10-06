@@ -1,0 +1,58 @@
+import { Entity, Enum, ManyToOne, PrimaryKey, Property } from '@mikro-orm/core'
+import User from './user'
+import Game from './game'
+
+export enum DataExportStatus {
+  REQUESTED,
+  QUEUED,
+  GENERATED,
+  SENT
+}
+
+export enum DataExportAvailableServices {
+  EVENTS = 'events',
+  PLAYERS = 'players',
+  PLAYER_ALIASES = 'playerAliases'
+}
+
+@Entity()
+export default class DataExport {
+  @PrimaryKey()
+  id: number
+
+  @ManyToOne(() => User)
+  createdByUser: User
+
+  @ManyToOne(() => Game)
+  game: Game
+
+  @Enum({ items: () => DataExportAvailableServices, array: true })
+  services: DataExportAvailableServices[] = []
+
+  @Enum(() => DataExportStatus)
+  status: DataExportStatus = DataExportStatus.REQUESTED
+
+  @Property({ nullable: true })
+  failedAt: Date
+
+  @Property()
+  createdAt: Date = new Date()
+
+  @Property({ onUpdate: () => new Date() })
+  updatedAt: Date = new Date()
+
+  constructor(createdByUser: User, game: Game) {
+    this.createdByUser = createdByUser
+    this.game = game
+  }
+
+  toJSON() {
+    return {
+      id: this.id,
+      services: this.services,
+      createdBy: this.createdByUser.email, // todo user name field
+      status: this.status,
+      createdAt: this.createdAt
+    }
+  }
+}

@@ -43,8 +43,7 @@ export default class APIKeysService implements Service {
     const { scopes } = req.body
     const em: EntityManager = req.ctx.em
 
-    const createdByUser = await em.getRepository(User).findOne(req.ctx.state.user.sub)
-    const apiKey = new APIKey(req.ctx.state.game, createdByUser)
+    const apiKey = new APIKey(req.ctx.state.game, req.ctx.state.user)
     apiKey.scopes = scopes
     await em.getRepository(APIKey).persistAndFlush(apiKey)
 

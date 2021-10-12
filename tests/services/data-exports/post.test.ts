@@ -7,7 +7,7 @@ import { genAccessToken } from '../../../src/lib/auth/buildTokenPair'
 import UserFactory from '../../fixtures/UserFactory'
 import Game from '../../../src/entities/game'
 import GameFactory from '../../fixtures/GameFactory'
-import { DataExportAvailableServices } from '../../../src/entities/data-export'
+import { DataExportAvailableEntities } from '../../../src/entities/data-export'
 
 const baseUrl = '/data-exports'
 
@@ -34,12 +34,12 @@ describe('Data exports service - post', () => {
   it('should create a data export', async () => {
     const res = await request(app.callback())
       .post(`${baseUrl}`)
-      .send({ gameId: game.id, services: [DataExportAvailableServices.PLAYER_ALIASES, DataExportAvailableServices.PLAYERS, DataExportAvailableServices.EVENTS] })
+      .send({ gameId: game.id, entities: [DataExportAvailableEntities.PLAYER_ALIASES, DataExportAvailableEntities.PLAYERS, DataExportAvailableEntities.EVENTS] })
       .auth(token, { type: 'bearer' })
       .expect(200)
 
     expect(res.body.dataExport).toBeTruthy()
-    expect(res.body.dataExport.services).toStrictEqual([DataExportAvailableServices.PLAYER_ALIASES, DataExportAvailableServices.PLAYERS, DataExportAvailableServices.EVENTS])
+    expect(res.body.dataExport.entities).toStrictEqual([DataExportAvailableEntities.PLAYER_ALIASES, DataExportAvailableEntities.PLAYERS, DataExportAvailableEntities.EVENTS])
   })
 
   it('should not create a data export for dev users', async () => {
@@ -50,7 +50,7 @@ describe('Data exports service - post', () => {
 
     const res = await request(app.callback())
       .post(`${baseUrl}`)
-      .send({ gameId: game.id, services: [DataExportAvailableServices.PLAYERS] })
+      .send({ gameId: game.id, entities: [DataExportAvailableEntities.PLAYERS] })
       .auth(invalidUserToken, { type: 'bearer' })
       .expect(403)
 
@@ -65,17 +65,17 @@ describe('Data exports service - post', () => {
 
     const res = await request(app.callback())
       .post(`${baseUrl}`)
-      .send({ gameId: game.id, services: [DataExportAvailableServices.PLAYER_ALIASES] })
+      .send({ gameId: game.id, entities: [DataExportAvailableEntities.PLAYER_ALIASES] })
       .auth(invalidUserToken, { type: 'bearer' })
       .expect(403)
 
     expect(res.body.message).toBe('You need to confirm your email address to create data exports')
   })
 
-  it('should not create a data export for empty services', async () => {
+  it('should not create a data export for empty entities', async () => {
     await request(app.callback())
       .post(`${baseUrl}`)
-      .send({ gameId: game.id, services: [] })
+      .send({ gameId: game.id, entities: [] })
       .auth(token, { type: 'bearer' })
       .expect(400)
 

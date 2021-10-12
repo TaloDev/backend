@@ -9,7 +9,7 @@ export enum DataExportStatus {
   SENT
 }
 
-export enum DataExportAvailableServices {
+export enum DataExportAvailableEntities {
   EVENTS = 'events',
   PLAYERS = 'players',
   PLAYER_ALIASES = 'playerAliases'
@@ -26,8 +26,8 @@ export default class DataExport {
   @ManyToOne(() => Game)
   game: Game
 
-  @Enum({ items: () => DataExportAvailableServices, array: true })
-  services: DataExportAvailableServices[] = []
+  @Enum({ items: () => DataExportAvailableEntities, array: true })
+  entities: DataExportAvailableEntities[] = []
 
   @Enum(() => DataExportStatus)
   status: DataExportStatus = DataExportStatus.REQUESTED
@@ -49,10 +49,11 @@ export default class DataExport {
   toJSON() {
     return {
       id: this.id,
-      services: this.services,
+      entities: this.entities,
       createdBy: this.createdByUser.email, // todo user name field
       status: this.status,
-      createdAt: this.createdAt
+      createdAt: this.createdAt,
+      failedAt: this.failedAt
     }
   }
 }

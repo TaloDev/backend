@@ -1,6 +1,6 @@
 import { EntityManager, MikroORM } from '@mikro-orm/core'
-import { HasPermission, Service, ServiceRequest, ServiceResponse, Validate } from 'koa-rest-services'
-import DataExport, { DataExportAvailableServices, DataExportStatus } from '../entities/data-export'
+import { HasPermission, Routes, Service, ServiceRequest, ServiceResponse, Validate } from 'koa-rest-services'
+import DataExport, { DataExportAvailableEntities, DataExportStatus } from '../entities/data-export'
 import DataExportsPolicy from '../policies/data-exports.policy'
 import Event from '../entities/event'
 import AdmZip from 'adm-zip'
@@ -24,6 +24,20 @@ interface UpdatedDataExportStatus {
   failedAt?: Date
 }
 
+@Routes([
+  {
+    method: 'POST'
+  },
+  {
+    method: 'GET',
+    handler: 'index'
+  },
+  {
+    method: 'GET',
+    path: '/entities',
+    handler: 'entities'
+  }
+])
 export default class DataExportsService implements Service {
   queue: Queue
   emailQueue: Queue
@@ -99,33 +113,33 @@ export default class DataExportsService implements Service {
   private async createZip(dataExport: DataExport, em: EntityManager): Promise<AdmZip> {
     const zip = new AdmZip()
 
-    if (dataExport.services.includes(DataExportAvailableServices.EVENTS)) {
+    if (dataExport.entities.includes(DataExportAvailableEntities.EVENTS)) {
       const events = await em.getRepository(Event).find({ game: dataExport.game }, ['playerAlias'])
-      zip.addFile('events.csv', this.buildCSV(DataExportAvailableServices.EVENTS, events))
+      zip.addFile('events.csv', this.buildCSV(DataExportAvailableEntities.EVENTS, events))
     }
     
-    if (dataExport.services.includes(DataExportAvailableServices.PLAYERS)) {
+    if (dataExport.entities.includes(DataExportAvailableEntities.PLAYERS)) {
       const players = await em.getRepository(Player).find({ game: dataExport.game })
-      zip.addFile('players.csv', this.buildCSV(DataExportAvailableServices.PLAYERS, players))
+      zip.addFile('players.csv', this.buildCSV(DataExportAvailableEntities.PLAYERS, players))
     }
 
-    if (dataExport.services.includes(DataExportAvailableServices.PLAYER_ALIASES)) {
+    if (dataExport.entities.includes(DataExportAvailableEntities.PLAYER_ALIASES)) {
       const aliases = await em.getRepository(PlayerAlias).find({
         player: { game: dataExport.game }
       })
-      zip.addFile('player-aliases.csv', this.buildCSV(DataExportAvailableServices.PLAYER_ALIASES, aliases))
+      zip.addFile('player-aliases.csv', this.buildCSV(DataExportAvailableEntities.PLAYER_ALIASES, aliases))
     }
 
     return zip
   }
 
-  private getColumns(service: DataExportAvailableServices): string[] {
+  private getColumns(service: DataExportAvailableEntities): string[] {
     switch (service) {
-      case DataExportAvailableServices.EVENTS:
+      case DataExportAvailableEntities.EVENTS:
         return ['id', 'name', 'playerAlias.id', 'playerAlias.service', 'playerAlias.identifier', 'playerAlias.player.id', 'createdAt', 'updatedAt', 'props']
-      case DataExportAvailableServices.PLAYERS:
+      case DataExportAvailableEntities.PLAYERS:
         return ['id', 'lastSeenAt', 'createdAt', 'updatedAt', 'props']
-      case DataExportAvailableServices.PLAYER_ALIASES:
+      case DataExportAvailableEntities.PLAYER_ALIASES:
         return ['id', 'service', 'identifier', 'player.id', 'createdAt', 'updatedAt']
     }
   }
@@ -159,7 +173,7 @@ export default class DataExportsService implements Service {
     return columns
   }
 
-  private buildCSV(service: DataExportAvailableServices, objects: any[]): Buffer {
+  private buildCSV(service: DataExportAvailableEntities, objects: any[]): Buffer {
     let columns = this.getColumns(service)
     if (columns.includes('props')) columns = this.buildPropColumns(columns, objects)
 
@@ -185,7 +199,7 @@ export default class DataExportsService implements Service {
   async index(req: ServiceRequest): Promise<ServiceResponse> {
     const { gameId } = req.query
     const em: EntityManager = req.ctx.em
-    const dataExports = await em.getRepository(DataExport).find({ game: Number(gameId) })
+    const dataExports = await em.getRepository(DataExport).find({ game: Number(gameId) }, ['createdByUser'])
 
     return {
       status: 200,
@@ -198,7 +212,7 @@ export default class DataExportsService implements Service {
   @Validate({
     body: {
       gameId: true,
-      services: async (val: string[]): Promise<boolean> => {
+      entities: async (val: string[]): Promise<boolean> => {
         return val?.length > 0
       }
     }
@@ -207,11 +221,11 @@ export default class DataExportsService implements Service {
   async post(req: ServiceRequest): Promise<ServiceResponse> {
     if (!this.emailQueue) this.emailQueue = req.ctx.emailQueue
     
-    const { services } = req.body
+    const { entities } = req.body
     const em: EntityManager = req.ctx.em
 
     const dataExport = new DataExport(req.ctx.state.user, req.ctx.state.game)
-    dataExport.services = services
+    dataExport.entities = entities
     await em.persistAndFlush(dataExport)
 
     await this.queue.createJob({ dataExportId: dataExport.id }).save()
@@ -220,6 +234,17 @@ export default class DataExportsService implements Service {
       status: 200,
       body: {
         dataExport
+      }
+    }
+  }
+
+  async entities(): Promise<ServiceResponse> {
+    const entities = Object.keys(DataExportAvailableEntities).map((key) => DataExportAvailableEntities[key])
+
+    return {
+      status: 200,
+      body: {
+        entities
       }
     }
   }

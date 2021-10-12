@@ -88,7 +88,7 @@ export default class APIKeysService implements Service {
     }
   }
 
-  async scopes(req: ServiceRequest): Promise<ServiceResponse> {
+  async scopes(): Promise<ServiceResponse> {
     const scopes = Object.keys(APIKeyScope).map((key) => APIKeyScope[key])
 
     return {

@@ -6,7 +6,7 @@ import { genAccessToken } from '../../../src/lib/auth/buildTokenPair'
 import UserFactory from '../../fixtures/UserFactory'
 import Game from '../../../src/entities/game'
 import GameFactory from '../../fixtures/GameFactory'
-import DataExport, { DataExportAvailableServices, DataExportStatus } from '../../../src/entities/data-export'
+import DataExport, { DataExportAvailableEntities, DataExportStatus } from '../../../src/entities/data-export'
 import DataExportsService from '../../../src/services/data-exports.service'
 import EventFactory from '../../fixtures/EventFactory'
 import PlayerFactory from '../../fixtures/PlayerFactory'
@@ -81,7 +81,7 @@ describe('Data exports service - post', () => {
 
     const player = await new PlayerFactory([game]).one()
 
-    const csv: Buffer = proto.buildCSV(DataExportAvailableServices.PLAYER_ALIASES, player.aliases)
+    const csv: Buffer = proto.buildCSV(DataExportAvailableEntities.PLAYER_ALIASES, player.aliases)
 
     const lines = csv.toString().split('\n')
     expect(lines[0]).toBe('id,service,identifier,player.id,createdAt,updatedAt')
@@ -104,7 +104,7 @@ describe('Data exports service - post', () => {
       ]
     })).one()
 
-    const csv: Buffer = proto.buildCSV(DataExportAvailableServices.EVENTS, [event])
+    const csv: Buffer = proto.buildCSV(DataExportAvailableEntities.EVENTS, [event])
 
     const lines = csv.toString().split('\n')
     expect(lines[0]).toBe('id,name,playerAlias.id,playerAlias.service,playerAlias.identifier,playerAlias.player.id,createdAt,updatedAt,props.prevTime,props.timeTaken')

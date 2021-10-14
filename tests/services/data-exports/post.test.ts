@@ -42,6 +42,39 @@ describe('Data exports service - post', () => {
     expect(res.body.dataExport.entities).toStrictEqual([DataExportAvailableEntities.PLAYER_ALIASES, DataExportAvailableEntities.PLAYERS, DataExportAvailableEntities.EVENTS])
   })
 
+  it('should create a data export for player aliases', async () => {
+    const res = await request(app.callback())
+      .post(`${baseUrl}`)
+      .send({ gameId: game.id, entities: [DataExportAvailableEntities.PLAYER_ALIASES] })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    expect(res.body.dataExport).toBeTruthy()
+    expect(res.body.dataExport.entities).toStrictEqual([DataExportAvailableEntities.PLAYER_ALIASES])
+  })
+
+  it('should create a data export for players', async () => {
+    const res = await request(app.callback())
+      .post(`${baseUrl}`)
+      .send({ gameId: game.id, entities: [DataExportAvailableEntities.PLAYERS] })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    expect(res.body.dataExport).toBeTruthy()
+    expect(res.body.dataExport.entities).toStrictEqual([DataExportAvailableEntities.PLAYERS])
+  })
+
+  it('should create a data export for events', async () => {
+    const res = await request(app.callback())
+      .post(`${baseUrl}`)
+      .send({ gameId: game.id, entities: [DataExportAvailableEntities.EVENTS] })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    expect(res.body.dataExport).toBeTruthy()
+    expect(res.body.dataExport.entities).toStrictEqual([DataExportAvailableEntities.EVENTS])
+  })
+
   it('should not create a data export for dev users', async () => {
     const invalidUser = await new UserFactory().with(() => ({ organisation: game.organisation })).one()
     await (<EntityManager>app.context.em).persistAndFlush(invalidUser)

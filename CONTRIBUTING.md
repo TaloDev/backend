@@ -9,6 +9,12 @@ Want to add a new system? Are the docs not clear enough? We're always accepting 
 3. Run `yarn up` (or `npm run up`) to spin up the Docker Compose containers.
 4. The backend will be accessible via `http://localhost:3000`.
 
+## Seeding data
+
+Run `yarn seed` to seed your database with some fake data like users, events, games and players.
+
+The seed command will create two users: `admin@trytalo.com` (an admin user) and `dev@trytalo.com` (a dev user with less permissions), both can be logged in with using the password `password`.
+
 ## Testing
 
 Run `yarn test` (or `npm test`) to run the Jest unit tests.

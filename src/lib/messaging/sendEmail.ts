@@ -7,12 +7,21 @@ interface TemplateData {
   [key: string]: any
 }
 
+interface AttachmentData {
+  content: string;
+  filename: string;
+  type?: string;
+  disposition?: string;
+  content_id?: string;
+}
+
 export interface EmailConfig {
   to: string
   from?: string
   subject: string
   templateId: string
-  templateData: TemplateData
+  templateData?: TemplateData,
+  attachments?: AttachmentData[]
 }
 
 export default async (emailConfig: EmailConfig): Promise<void> => {
@@ -23,7 +32,8 @@ export default async (emailConfig: EmailConfig): Promise<void> => {
       to: emailConfig.to,
       from: emailConfig.from || process.env.FROM_EMAIL,
       subject: emailConfig.subject,
-      html: template(emailConfig.templateData)
+      html: template(emailConfig.templateData),
+      attachments: emailConfig.attachments || []
     })
   } catch (err) {
     Sentry.captureException(err, {

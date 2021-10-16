@@ -17,19 +17,15 @@ export default class DemoService implements Service {
     this.queue = createQueue('demo')
 
     this.queue.process(async (job: Queue.Job<any>) => {
-      let orm: MikroORM
       const { userId } = job.data
   
-      try {
-        orm = await MikroORM.init(ormConfig)
+      const orm = await MikroORM.init(ormConfig)
 
-        const sessions = await orm.em.getRepository(UserSession).findAll({ user: userId })
-        const user = await orm.em.getRepository(User).findOne(userId)
+      const sessions = await orm.em.getRepository(UserSession).findAll({ user: userId })
+      const user = await orm.em.getRepository(User).findOne(userId)
 
-        await orm.em.removeAndFlush([user, ...sessions])
-      } finally {
-        await orm.close()
-      }
+      await orm.em.removeAndFlush([user, ...sessions])
+      await orm.close()
     })
   }
 

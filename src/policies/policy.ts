@@ -1,11 +1,10 @@
 import { EntityManager } from '@mikro-orm/core'
-import { ServicePolicy, ServicePolicyDenial } from 'koa-rest-services'
+import { ServicePolicy, ServicePolicyDenial, ServicePolicyResponse } from 'koa-rest-services'
 import { Context } from 'koa'
 import APIKey, { APIKeyScope } from '../entities/api-key'
 import Game from '../entities/game'
 import User from '../entities/user'
 import getUserFromToken from '../lib/auth/getUserFromToken'
-import getAPIKeyFromToken from '../lib/auth/getAPIKeyFromToken'
 
 export default class Policy extends ServicePolicy {
   em: EntityManager
@@ -20,16 +19,20 @@ export default class Policy extends ServicePolicy {
   }
 
   async getUser(): Promise<User> {
+    // check its been initialised
+    if (this.ctx.state.user.email) return this.ctx.state.user
+
     const user = await getUserFromToken(this.ctx)
     if (!user) this.ctx.throw(401)
 
+    this.ctx.state.user = user
     return user
   }
 
   async getAPIKey(): Promise<APIKey> {
     if (this.ctx.state.key) return this.ctx.state.key
 
-    const key = await getAPIKeyFromToken(this.ctx, ['game'])
+    const key = await (<EntityManager>this.ctx.em).getRepository(APIKey).findOne(this.ctx.state.user.sub, ['game'])
     if (key.revokedAt) this.ctx.throw(401)
 
     this.ctx.state.key = key
@@ -45,14 +48,14 @@ export default class Policy extends ServicePolicy {
     return game.organisation.id === user.organisation.id
   }
 
-  async hasScope(scope: string): Promise<boolean | ServicePolicyDenial> {
+  async hasScope(scope: string): Promise<ServicePolicyResponse> {
     const key = await this.getAPIKey()
     const hasScope = key.scopes.includes(scope as APIKeyScope)
 
     return hasScope || new ServicePolicyDenial({ message: `Missing access key scope: ${scope}` }) 
   }
 
-  async hasScopes(scopes: string[]): Promise<boolean | ServicePolicyDenial> {
+  async hasScopes(scopes: string[]): Promise<ServicePolicyResponse> {
     const key = await this.getAPIKey()
     const missing = scopes.filter((scope) => !key.scopes.includes(scope as APIKeyScope))
 

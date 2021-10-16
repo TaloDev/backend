@@ -1,12 +1,12 @@
+import { ServicePolicyResponse } from 'koa-rest-services'
 import Policy from '../policy'
-import { ServicePolicyDenial } from 'koa-rest-services'
 
 export default class EventsAPIPolicy extends Policy {
-  async index(): Promise<boolean | ServicePolicyDenial> {
+  async index(): Promise<ServicePolicyResponse> {
     return await this.hasScope('read:events')
   }
 
-  async post(): Promise<boolean | ServicePolicyDenial> {
+  async post(): Promise<ServicePolicyResponse> {
     return await this.hasScope('write:events')
   }
 }

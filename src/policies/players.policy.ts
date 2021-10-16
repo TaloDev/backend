@@ -1,5 +1,5 @@
 import Policy from './policy'
-import { ServicePolicyDenial, ServiceRequest } from 'koa-rest-services'
+import { ServicePolicyDenial, ServiceRequest, ServicePolicyResponse } from 'koa-rest-services'
 import Player from '../entities/player'
 import { UserType } from '../entities/user'
 
@@ -18,7 +18,7 @@ export default class PlayersPolicy extends Policy {
     return await this.canAccessGame(Number(gameId))
   }
 
-  async patch(req: ServiceRequest): Promise<boolean | ServicePolicyDenial> {
+  async patch(req: ServiceRequest): Promise<ServicePolicyResponse> {
     const { id } = req.params
 
     if (!this.isAPICall()) {
@@ -29,7 +29,7 @@ export default class PlayersPolicy extends Policy {
     }
 
     const player = await this.em.getRepository(Player).findOne(id)
-    if (!player) this.ctx.throw(404, 'Player not found')
+    if (!player) return new ServicePolicyDenial({ message: 'Player not found' }, 404)
 
     this.ctx.state.player = player
 
@@ -37,12 +37,12 @@ export default class PlayersPolicy extends Policy {
     return await this.canAccessGame(player.game.id)
   }
 
-  async getEvents(req: ServiceRequest): Promise<boolean> {
+  async getEvents(req: ServiceRequest): Promise<ServicePolicyResponse> {
     const { id } = req.params
 
     const player = await this.em.getRepository(Player).findOne(id, ['aliases'])
 
-    if (!player) this.ctx.throw(404, 'Player not found')
+    if (!player) return new ServicePolicyDenial({ message: 'Player not found' }, 404)
     this.ctx.state.player = player
 
     return await this.canAccessGame(player.game.id)

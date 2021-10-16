@@ -11,7 +11,7 @@ import configureAPIRoutes from './config/api-routes'
 import corsMiddleware from './config/cors-middleware'
 import errorMiddleware from './config/error-middleware'
 import initProviders from './config/providers'
-import createEmailQueue from './lib/queues/email-queue'
+import createEmailQueue from './lib/queues/createEmailQueue'
 
 const isTest = process.env.NODE_ENV === 'test'
 

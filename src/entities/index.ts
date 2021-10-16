@@ -1,4 +1,5 @@
 import APIKey from './api-key'
+import DataExport from './data-export'
 import Event from './event'
 import FailedJob from './failed-job'
 import Game from './game'
@@ -11,6 +12,7 @@ import UserAccessCode from './user-access-code'
 import UserSession from './user-session'
 
 export default [
+  DataExport,
   APIKey,
   Event,
   Game,

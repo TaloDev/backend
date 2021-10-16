@@ -1,9 +1,9 @@
 import Policy from './policy'
-import { ServicePolicyDenial, ServiceRequest } from 'koa-rest-services'
+import { ServicePolicyDenial, ServiceRequest, ServicePolicyResponse } from 'koa-rest-services'
 import { UserType } from '../entities/user'
 
 export default class DataExportsPolicy extends Policy {
-  async index(req: ServiceRequest): Promise<boolean | ServicePolicyDenial> {
+  async index(req: ServiceRequest): Promise<ServicePolicyResponse> {
     const { gameId } = req.query
 
     const user = await this.getUser()
@@ -12,7 +12,7 @@ export default class DataExportsPolicy extends Policy {
     return await this.canAccessGame(Number(gameId))
   }
 
-  async post(req: ServiceRequest): Promise<boolean | ServicePolicyDenial> {
+  async post(req: ServiceRequest): Promise<ServicePolicyResponse> {
     const { gameId } = req.body
 
     const user = await this.getUser()

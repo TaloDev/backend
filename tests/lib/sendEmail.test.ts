@@ -1,3 +1,4 @@
+import confirmEmail from "../../src/emails/confirm-email"
 import sendEmail from "../../src/lib/messaging/sendEmail"
 
 describe('Send email', () => {
@@ -6,7 +7,7 @@ describe('Send email', () => {
       await sendEmail({
         to: 'bob@bob.com',
         subject: 'fail',
-        templateId: 'confirm-email',
+        template: confirmEmail,
         templateData: {}
       })
     } catch (err) {
@@ -14,16 +15,16 @@ describe('Send email', () => {
     }
   })
 
-  it('should gracefully handle non-sendgrid errors', async () => {
+  it('should gracefully handle handlebars errors', async () => {
     try {
       await sendEmail({
         to: 'bob@bob.com',
         subject: 'fail',
-        templateId: 'blah',
+        template: null,
         templateData: {}
       })
     } catch (err) {
-      expect(err.message).toContain('You passed undefined')
+      expect(err.message).toBe('You must pass a string or Handlebars AST to Handlebars.compile. You passed null')
     }
   })
 
@@ -32,7 +33,7 @@ describe('Send email', () => {
       await sendEmail({
         to: 'bob@bob.com',
         subject: 'Your confirmation code',
-        templateId: 'confirm-email',
+        template: confirmEmail,
         templateData: {}
       })
     }).not.toThrow()

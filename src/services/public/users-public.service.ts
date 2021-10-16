@@ -13,6 +13,7 @@ import Organisation from '../../entities/organisation'
 import { EmailConfig } from '../../lib/messaging/sendEmail'
 import { add } from 'date-fns'
 import Queue from 'bee-queue'
+import confirmEmail from '../../emails/confirm-email'
 
 @Routes([
   {
@@ -91,7 +92,7 @@ export default class UsersPublicService implements Service {
         .createJob<EmailConfig>({
           to: user.email,
           subject: 'Your Talo access code',
-          templateId: 'confirm-email',
+          template: confirmEmail,
           templateData: {
             code: accessCode.code 
           }

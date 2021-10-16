@@ -13,6 +13,7 @@ import createQueue from '../lib/queues/createQueue'
 import ormConfig from '../config/mikro-orm.config'
 import { EmailConfig } from '../lib/messaging/sendEmail'
 import { unlink } from 'fs/promises'
+import dataExportReady from '../emails/data-export-ready'
 
 interface EntityWithProps {
   props: Prop[]
@@ -68,7 +69,7 @@ export default class DataExportsService implements Service {
         .createJob<EmailConfig>({
           to: dataExport.createdByUser.email,
           subject: 'Your Talo data export',
-          templateId: 'data-export-ready',
+          template: dataExportReady,
           attachments: [
             {
               content: zip.toBuffer().toString('base64'),

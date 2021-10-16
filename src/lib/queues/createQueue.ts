@@ -10,7 +10,7 @@ const createQueue = (name: string): Queue => {
     activateDelayedJobs: true
   })
 
-  queue.on('failed', async (job, err) => {
+  queue.on('failed', async (job: Queue.Job<any>, err: Error) => {
     const orm = await MikroORM.init(ormConfig)
 
     const failedJob = new FailedJob()

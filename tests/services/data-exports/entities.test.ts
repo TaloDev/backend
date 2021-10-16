@@ -1,6 +1,3 @@
----
-to: tests/services/<%= name %>s/get.test.ts
----
 import { EntityManager } from '@mikro-orm/core'
 import Koa from 'koa'
 import init from '../../../src/index'
@@ -9,9 +6,9 @@ import User from '../../../src/entities/user'
 import { genAccessToken } from '../../../src/lib/auth/buildTokenPair'
 import UserFactory from '../../fixtures/UserFactory'
 
-const baseUrl = '/<%= name %>s'
+const baseUrl = '/data-exports'
 
-describe('<%= h.changeCase.sentenceCase(name) %>s service - get', () => {
+describe('Data exports service - available entities', () => {
   let app: Koa
   let user: User
   let token: string
@@ -19,7 +16,7 @@ describe('<%= h.changeCase.sentenceCase(name) %>s service - get', () => {
   beforeAll(async () => {
     app = await init()
 
-    user = await new UserFactory().one()
+    user = await new UserFactory().state('admin').one()
     await (<EntityManager>app.context.em).persistAndFlush(user)
 
     token = await genAccessToken(user)
@@ -29,10 +26,12 @@ describe('<%= h.changeCase.sentenceCase(name) %>s service - get', () => {
     await (<EntityManager>app.context.em).getConnection().close()
   })
 
-  it('should return a list of <%= h.changeCase.noCase(name) %>s', async () => {
-    await request(app.callback())
-      .get(`${baseUrl}`)
+  it('should return a list of available data export entities', async () => {
+    const res = await request(app.callback())
+      .get(`${baseUrl}/entities`)
       .auth(token, { type: 'bearer' })
       .expect(200)
+
+    expect(res.body.entities).toStrictEqual([ 'events', 'players', 'playerAliases' ])
   })
 })

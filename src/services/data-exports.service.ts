@@ -56,10 +56,9 @@ export default class DataExportsService implements Service {
 
       const filename = `export-${dataExport.game.id}-${dataExport.createdAt.getTime()}.zip`
       const filepath = './storage/' + filename
+
       const zip: AdmZip = await this.createZip(dataExport, orm.em)
-  
       zip.writeZip(filepath)
-      job.data.filepath = filepath
 
       dataExport.status = DataExportStatus.QUEUED
       await orm.em.flush()

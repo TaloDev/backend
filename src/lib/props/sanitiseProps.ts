@@ -5,7 +5,7 @@ const sanitiseProps = (props: Prop[], deleteNull = false): Prop[] => {
 
   if (deleteNull) props = props.filter((prop) => prop.value !== null)
 
-  return props.map((prop) => new Prop(prop.key, prop.value))
+  return props.map((prop) => new Prop(String(prop.key), prop.value ? String(prop.value) : null))
 }
 
 export default sanitiseProps

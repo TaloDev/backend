@@ -90,15 +90,18 @@ export default class DataExportsService implements Service {
 
       await unlink(filepath)
 
+      /* istanbul ignore next */
       emailJob.on('succeeded', async () => {
         await this.updateDataExportStatus(dataExportId, { id: DataExportStatus.SENT })
       })
 
+      /* istanbul ignore next */
       emailJob.on('failed', async () => {
         await this.updateDataExportStatus(dataExportId, { failedAt: new Date() })
       })
     })
 
+    /* istanbul ignore next */
     this.queue.on('failed', async (job: Queue.Job<DataExportJob>) => {
       const { dataExportId } = job.data
       await this.updateDataExportStatus(dataExportId, { failedAt: new Date() })

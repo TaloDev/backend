@@ -1,8 +1,6 @@
 name: Lint
 
 on:
-  push:
-    branches-ignore: [main]
   pull_request:
     branches: [develop, main]
 

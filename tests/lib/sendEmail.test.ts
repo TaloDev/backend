@@ -1,5 +1,5 @@
-import confirmEmail from "../../src/emails/confirm-email"
-import sendEmail from "../../src/lib/messaging/sendEmail"
+import confirmEmail from '../../src/emails/confirm-email'
+import sendEmail from '../../src/lib/messaging/sendEmail'
 
 describe('Send email', () => {
   it('should gracefully handle errors', async () => {
@@ -21,7 +21,13 @@ describe('Send email', () => {
         to: 'bob@bob.com',
         subject: 'fail',
         template: null,
-        templateData: {}
+        templateData: {},
+        attachments: [
+          {
+            content: 'content',
+            filename: 'file.zip'
+          }
+        ]
       })
     } catch (err) {
       expect(err.message).toBe('You must pass a string or Handlebars AST to Handlebars.compile. You passed null')

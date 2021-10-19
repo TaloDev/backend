@@ -35,7 +35,7 @@ export default class UsersService implements Service {
     const userAgent: string = req.headers['user-agent']
 
     const sessions = await em.getRepository(UserSession).find({ user: userId, userAgent })
-    if (sessions.length > 0) await em.removeAndFlush(sessions)
+    await em.removeAndFlush(sessions)
     req.ctx.cookies.set('refreshToken', null, { expires: new Date(0) })
 
     return {

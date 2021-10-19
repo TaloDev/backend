@@ -59,7 +59,7 @@ export default class PlayersAPIService extends APIService<PlayersService> {
           body: {
             aliases: [
               {
-                service, 
+                service,
                 identifier
               }
             ]
@@ -67,7 +67,7 @@ export default class PlayersAPIService extends APIService<PlayersService> {
         })
 
         const res = await this.post(createReq)
-  
+
         return {
           status: res.status,
           body: {
@@ -112,13 +112,13 @@ export default class PlayersAPIService extends APIService<PlayersService> {
   }
 
   @HasPermission(PlayersAPIPolicy, 'patch')
-   async patch(req: ServiceRequest): Promise<ServiceResponse> {
-     return await this.forwardRequest('patch', req)
-   }
+  async patch(req: ServiceRequest): Promise<ServiceResponse> {
+    return await this.forwardRequest('patch', req)
+  }
 
    @Validate({
-    body: ['alias1', 'alias2']
-  })
+     body: ['alias1', 'alias2']
+   })
   @HasPermission(PlayersAPIPolicy, 'merge')
   async merge(req: ServiceRequest): Promise<ServiceResponse> {
     const em: EntityManager = req.ctx.em

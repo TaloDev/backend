@@ -94,7 +94,7 @@ export default class UsersPublicService implements Service {
           subject: 'Your Talo access code',
           template: confirmEmail,
           templateData: {
-            code: accessCode.code 
+            code: accessCode.code
           }
         })
         .save()
@@ -136,7 +136,7 @@ export default class UsersPublicService implements Service {
     const userAgent = req.headers['user-agent']
     const em: EntityManager = req.ctx.em
 
-    let session = await em.getRepository(UserSession).findOne({ token, userAgent }, ['user'])
+    const session = await em.getRepository(UserSession).findOne({ token, userAgent }, ['user'])
     if (!session) {
       req.ctx.throw(401, 'Session not found')
     }
@@ -198,7 +198,7 @@ export default class UsersPublicService implements Service {
   async changePassword(req: ServiceRequest): Promise<ServiceResponse> {
     const { password, token } = req.body
     const decodedToken = jwt.decode(token)
-    
+
     const em: EntityManager = req.ctx.em
     const user = await em.getRepository(User).findOne(decodedToken.sub)
     const secret = user?.password.substring(0, 10)

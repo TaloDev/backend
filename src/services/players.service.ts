@@ -75,7 +75,7 @@ export default class PlayersService implements Service {
     const { gameId, search, page } = req.query
     const em: EntityManager = req.ctx.em
 
-    let baseQuery = em.createQueryBuilder(Player, 'p')  
+    let baseQuery = em.createQueryBuilder(Player, 'p')
 
     if (search) {
       baseQuery = baseQuery
@@ -132,7 +132,7 @@ export default class PlayersService implements Service {
   async patch(req: ServiceRequest): Promise<ServiceResponse> {
     const { props } = req.body
     const player: Player = req.ctx.state.player // set in the policy
-  
+
     const em: EntityManager = req.ctx.em
 
     if (props) {

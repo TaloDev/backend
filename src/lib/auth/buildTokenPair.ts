@@ -40,7 +40,7 @@ const buildTokenPair = async (ctx: Context, user: User): Promise<string> => {
   setRefreshToken(ctx, session)
 
   Sentry.setUser({ id: String(user.id) })
-  
+
   return accessToken
 }
 

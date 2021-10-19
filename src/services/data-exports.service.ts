@@ -17,13 +17,19 @@ import dataExportReady from '../emails/data-export-ready'
 
 interface EntityWithProps {
   props: Prop[]
-  [key: string]: any
 }
 
 interface UpdatedDataExportStatus {
   id?: DataExportStatus
   failedAt?: Date
 }
+
+interface DataExportJob {
+  dataExportId: number
+}
+
+type ExportableEntity = Event | Player | PlayerAlias
+type ExportableEntityWithProps = ExportableEntity & EntityWithProps
 
 @Routes([
   {
@@ -46,7 +52,7 @@ export default class DataExportsService implements Service {
   constructor() {
     this.queue = createQueue('data-export')
 
-    this.queue.process(async (job: Queue.Job<any>) => {
+    this.queue.process(async (job: Queue.Job<DataExportJob>) => {
       const { dataExportId } = job.data
 
       const orm = await MikroORM.init(ormConfig)
@@ -93,7 +99,7 @@ export default class DataExportsService implements Service {
       })
     })
 
-    this.queue.on('failed', async (job: Queue.Job<any>) => {
+    this.queue.on('failed', async (job: Queue.Job<DataExportJob>) => {
       const { dataExportId } = job.data
       await this.updateDataExportStatus(dataExportId, { failedAt: new Date() })
     })
@@ -117,7 +123,7 @@ export default class DataExportsService implements Service {
       const events = await em.getRepository(Event).find({ game: dataExport.game }, ['playerAlias'])
       zip.addFile('events.csv', this.buildCSV(DataExportAvailableEntities.EVENTS, events))
     }
-    
+
     if (dataExport.entities.includes(DataExportAvailableEntities.PLAYERS)) {
       const players = await em.getRepository(Player).find({ game: dataExport.game })
       zip.addFile('players.csv', this.buildCSV(DataExportAvailableEntities.PLAYERS, players))
@@ -144,9 +150,9 @@ export default class DataExportsService implements Service {
     }
   }
 
-  private transformColumn(column: string, object: any): string {
+  private transformColumn(column: string, object: ExportableEntity): string {
     if (column.startsWith('props')) {
-      return (object as EntityWithProps).props.find((prop) => column.endsWith(prop.key))?.value ?? ''
+      return (object as ExportableEntityWithProps).props.find((prop) => column.endsWith(prop.key))?.value ?? ''
     }
 
     const value = get(object, column)
@@ -173,14 +179,14 @@ export default class DataExportsService implements Service {
     return columns
   }
 
-  private buildCSV(service: DataExportAvailableEntities, objects: any[]): Buffer {
+  private buildCSV(service: DataExportAvailableEntities, objects: ExportableEntity[]): Buffer {
     let columns = this.getColumns(service)
-    if (columns.includes('props')) columns = this.buildPropColumns(columns, objects)
+    if (columns.includes('props')) columns = this.buildPropColumns(columns, (objects as ExportableEntityWithProps[]))
 
     let content = columns.join(',') + '\n'
 
     for (const object of objects) {
-      let entry = []
+      const entry = []
 
       for (const key of columns) {
         entry.push(this.transformColumn(key, object))
@@ -220,7 +226,7 @@ export default class DataExportsService implements Service {
   @HasPermission(DataExportsPolicy, 'post')
   async post(req: ServiceRequest): Promise<ServiceResponse> {
     if (!this.emailQueue) this.emailQueue = req.ctx.emailQueue
-    
+
     const { entities } = req.body
     const em: EntityManager = req.ctx.em
 

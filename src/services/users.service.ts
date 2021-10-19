@@ -48,7 +48,7 @@ export default class UsersService implements Service {
   })
   async changePassword(req: ServiceRequest): Promise<ServiceResponse> {
     const { currentPassword, newPassword } = req.body
-    
+
     const em: EntityManager = req.ctx.em
     const user = await getUserFromToken(req.ctx)
 

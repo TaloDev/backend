@@ -4,7 +4,11 @@ import ormConfig from '../../config/mikro-orm.config'
 import FailedJob from '../../entities/failed-job'
 import * as Sentry from '@sentry/node'
 
-const handleJobFailure = async (job: Queue.Job<any>, err: Error): Promise<void> => {
+interface UnknownJob {
+  [key: string]: unknown
+}
+
+const handleJobFailure = async (job: Queue.Job<UnknownJob>, err: Error): Promise<void> => {
   const orm = await MikroORM.init(ormConfig)
 
   const failedJob = new FailedJob()

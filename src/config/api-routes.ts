@@ -15,7 +15,7 @@ export default (app: Koa) => {
   if (process.env.NODE_ENV !== 'test') {
     app.use(limiterMiddleware)
   }
-  
+
   app.use(service('/v1/events', new EventsAPIService()))
   app.use(service('/v1/players', new PlayersAPIService()))
 }

@@ -3,7 +3,7 @@ import * as Sentry from '@sentry/node'
 import * as Handlebars from 'handlebars'
 
 interface TemplateData {
-  [key: string]: any
+  [key: string]: string | number | boolean
 }
 
 interface AttachmentData {

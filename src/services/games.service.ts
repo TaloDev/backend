@@ -13,7 +13,7 @@ export default class GamesService implements Service {
     const { name } = req.body
     const em: EntityManager = req.ctx.em
     const user = await getUserFromToken(req.ctx)
-    
+
     const game = new Game(name, user.organisation)
     await em.persistAndFlush(game)
 

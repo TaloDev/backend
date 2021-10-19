@@ -13,14 +13,14 @@ export default async (ctx: Context, next: Next) => {
     if (ctx.status === 500) {
       Sentry.withScope((scope) => {
         scope.addEventProcessor((event) => {
-          return Sentry.Handlers.parseRequest(event, ctx.request);
+          return Sentry.Handlers.parseRequest(event, ctx.request)
         })
-  
+
         if (ctx.state.user) {
           Sentry.setUser({ id: ctx.state.user.id })
           Sentry.setTag('apiKey', ctx.state.user.api ?? false)
         }
-  
+
         Sentry.captureException(err)
       })
 

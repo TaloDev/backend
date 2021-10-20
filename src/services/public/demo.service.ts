@@ -10,18 +10,22 @@ import createQueue from '../../lib/queues/createQueue'
 import UserSession from '../../entities/user-session'
 import Event from '../../entities/event'
 
+interface DemoUserJob {
+  userId: number
+}
+
 export default class DemoService implements Service {
   queue: Queue
 
   constructor() {
     this.queue = createQueue('demo')
 
-    this.queue.process(async (job: Queue.Job<any>) => {
+    this.queue.process(async (job: Queue.Job<DemoUserJob>) => {
       const { userId } = job.data
-  
+
       const orm = await MikroORM.init(ormConfig)
 
-      const sessions = await orm.em.getRepository(UserSession).findAll({ user: userId })
+      const sessions = await orm.em.getRepository(UserSession).findAll({ user: { id: userId } })
       const user = await orm.em.getRepository(User).findOne(userId)
 
       await orm.em.removeAndFlush([user, ...sessions])
@@ -56,7 +60,7 @@ export default class DemoService implements Service {
   async scheduleDeletion(hook: HookParams): Promise<void> {
     if (hook.result.status === 200) {
       await (<DemoService>hook.caller).queue
-        .createJob({ userId: hook.result.body.user.id })
+        .createJob<DemoUserJob>({ userId: hook.result.body.user.id })
         .delayUntil(add(Date.now(), { hours: 1 }))
         .save()
     }

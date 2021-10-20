@@ -5,7 +5,7 @@ export default async (ctx: Context, next: Next): Promise<void> => {
   if (ctx.path.match(/^\/(v1)\//)) {
     await next()
   } else {
-    return cors({ 
+    return cors({
       credentials: true,
       origin: process.env.ALLOWED_ORIGIN
     })(ctx, next)

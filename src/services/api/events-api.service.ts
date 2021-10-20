@@ -66,7 +66,7 @@ export default class EventsAPIService extends APIService<EventsService> {
             errors[i].push(err.message)
           }
         }
-    
+
         if (errors[i].length === 0) items.push(event)
       }
     }

@@ -1,10 +1,9 @@
 import SendGrid from '@sendgrid/mail'
 import * as Sentry from '@sentry/node'
 import * as Handlebars from 'handlebars'
-import emails from '../../emails'
 
 interface TemplateData {
-  [key: string]: any
+  [key: string]: string | number | boolean
 }
 
 interface AttachmentData {
@@ -19,14 +18,14 @@ export interface EmailConfig {
   to: string
   from?: string
   subject: string
-  templateId: string
+  template: string
   templateData?: TemplateData,
   attachments?: AttachmentData[]
 }
 
 export default async (emailConfig: EmailConfig): Promise<void> => {
   try {
-    const template = Handlebars.compile(emails[emailConfig.templateId])
+    const template = Handlebars.compile(emailConfig.template)
 
     await SendGrid.send({
       to: emailConfig.to,
@@ -40,7 +39,8 @@ export default async (emailConfig: EmailConfig): Promise<void> => {
       extra: {
         errors: err.response?.body.errors ?? err.message,
         to: emailConfig.to,
-        templateId: emailConfig.templateId
+        subject: emailConfig.subject,
+        attachments: emailConfig.attachments?.map((attachment) => attachment.filename)
       }
     })
 

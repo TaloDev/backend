@@ -45,8 +45,8 @@ export default class EventsService implements Service {
     // }
 
     const data = groupBy(events, 'name')
-    for (let name in data) {
-      let processed: EventData[] = []
+    for (const name in data) {
+      const processed: EventData[] = []
 
       for (let date = new Date(startDate).getTime(); date <= new Date(endDate).getTime(); date += 86400000 /* 24 hours in ms */) {
         const count = data[name].filter((event: Event) => isSameDay(new Date(date), new Date(event.createdAt))).length

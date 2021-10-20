@@ -32,7 +32,7 @@ export default class Policy extends ServicePolicy {
   async getAPIKey(): Promise<APIKey> {
     if (this.ctx.state.key) return this.ctx.state.key
 
-    const key = await (<EntityManager>this.ctx.em).getRepository(APIKey).findOne(this.ctx.state.user.sub, ['game'])
+    const key = await (<EntityManager> this.ctx.em).getRepository(APIKey).findOne(this.ctx.state.user.sub, ['game'])
     if (key.revokedAt) this.ctx.throw(401)
 
     this.ctx.state.key = key
@@ -52,13 +52,13 @@ export default class Policy extends ServicePolicy {
     const key = await this.getAPIKey()
     const hasScope = key.scopes.includes(scope as APIKeyScope)
 
-    return hasScope || new ServicePolicyDenial({ message: `Missing access key scope: ${scope}` }) 
+    return hasScope || new ServicePolicyDenial({ message: `Missing access key scope: ${scope}` })
   }
 
   async hasScopes(scopes: string[]): Promise<ServicePolicyResponse> {
     const key = await this.getAPIKey()
     const missing = scopes.filter((scope) => !key.scopes.includes(scope as APIKeyScope))
 
-    return missing.length === 0 || new ServicePolicyDenial({ message: `Missing access key scope(s): ${missing.join(', ')}` }) 
+    return missing.length === 0 || new ServicePolicyDenial({ message: `Missing access key scope(s): ${missing.join(', ')}` })
   }
 }

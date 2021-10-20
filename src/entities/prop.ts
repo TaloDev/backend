@@ -4,12 +4,12 @@ import { Embeddable, Property } from '@mikro-orm/core'
 export default class Prop {
   @Property()
   key: string
-  
+
   @Property()
   value: string|null
 
-  constructor(key: any, value: any) {
-    this.key = String(key)
-    this.value = value !== null ? String(value) : value
+  constructor(key: string, value?: string) {
+    this.key = key
+    this.value = value
   }
 }

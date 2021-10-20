@@ -9,7 +9,7 @@ export default class APIKeysPolicy extends Policy {
 
     const user = await this.getUser()
 
-    if (user.type !== UserType.ADMIN) return new ServicePolicyDenial({ message: 'You do not have permissions to manage API keys'})
+    if (user.type !== UserType.ADMIN) return new ServicePolicyDenial({ message: 'You do not have permissions to manage API keys' })
     if (!user.emailConfirmed) return new ServicePolicyDenial({ message: 'You need to confirm your email address to do this' })
 
     const canAccessGame = await this.canAccessGame(gameId)

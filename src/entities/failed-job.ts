@@ -9,7 +9,7 @@ export default class FailedJob {
   queue: string
 
   @Property({ type: 'json', nullable: true })
-  payload: { [key: string]: any }
+  payload: { [key: string]: unknown }
 
   @Property()
   reason: string

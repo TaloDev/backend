@@ -4,7 +4,6 @@ import APIKey, { APIKeyScope } from '../entities/api-key'
 import jwt from 'jsonwebtoken'
 import APIKeysPolicy from '../policies/api-keys.policy'
 import groupBy from 'lodash.groupby'
-import User from '../entities/user'
 import { promisify } from 'util'
 
 interface ExtraTokenPayloadParams {

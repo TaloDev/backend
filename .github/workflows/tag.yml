@@ -10,7 +10,7 @@ jobs:
     steps:
     - uses: actions/checkout@v2
       with:
-        persist-credentials: false
+        token: ${{ secrets.PAT }}
     
     - name: Check version change
       id: check

@@ -9,8 +9,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
-      with:
-        token: ${{ secrets.PAT }}
     
     - name: Check version change
       id: check
@@ -20,5 +18,5 @@ jobs:
       if: steps.check.outputs.changed == 'true'
       uses: tvdias/github-tagger@v0.0.1
       with:
-        repo-token: ${{ secrets.GITHUB_TOKEN }}
+        repo-token: ${{ secrets.PAT }}
         tag: ${{ steps.check.outputs.version }}

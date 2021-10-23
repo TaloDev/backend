@@ -1,0 +1,22 @@
+name: Tag
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    
+    - name: Check version change
+      id: check
+      uses: EndBug/version-check@v1
+
+    - name: Create tag
+      if: steps.check.outputs.changed == 'true'
+      run: |
+        node -p -e '`PACKAGE_VERSION=${require("./package.json").version}`' >> $GITHUB_ENV
+        git tag ${{ env.PACKAGE_VERSION }}
+        git push origin ${{ env.PACKAGE_VERSION }}

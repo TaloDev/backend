@@ -36,10 +36,7 @@ export const init = async (): Promise<Koa> => {
 
   app.context.emailQueue = createEmailQueue()
 
-  if (!isTest) {
-    const port = 80
-    app.listen(port, () => console.log(`Listening on port ${port}`))
-  }
+  if (!isTest) app.listen(80, () => console.log('Listening on port 80'))
 
   return app
 }

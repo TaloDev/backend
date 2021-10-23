@@ -5,7 +5,7 @@ on:
     branches: [ main ]
 
 jobs:
-  check:
+  tag:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
@@ -16,7 +16,7 @@ jobs:
 
     - name: Create tag
       if: steps.check.outputs.changed == 'true'
-      run: |
-        node -p -e '`PACKAGE_VERSION=${require("./package.json").version}`' >> $GITHUB_ENV
-        git tag ${{ env.PACKAGE_VERSION }}
-        git push origin ${{ env.PACKAGE_VERSION }}
+      uses: tvdias/github-tagger@v0.0.1
+      with:
+        repo-token: ${{ secrets.GITHUB_TOKEN }}
+        tag: ${{ steps.check.outputs.version }}

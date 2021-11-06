@@ -121,8 +121,8 @@ export default class PlayersAPIService extends APIService<PlayersService> {
    })
   @HasPermission(PlayersAPIPolicy, 'merge')
   async merge(req: ServiceRequest): Promise<ServiceResponse> {
-    const em: EntityManager = req.ctx.em
     const { alias1, alias2 } = req.body
+    const em: EntityManager = req.ctx.em
 
     const key = await this.getAPIKey(req.ctx)
 

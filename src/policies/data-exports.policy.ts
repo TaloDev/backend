@@ -19,8 +19,6 @@ export default class DataExportsPolicy extends Policy {
     if (user.type !== UserType.ADMIN) return new ServicePolicyDenial({ message: 'You do not have permissions to create data exports' })
     if (!user.emailConfirmed) return new ServicePolicyDenial({ message: 'You need to confirm your email address to create data exports' })
 
-    req.ctx.state.user = user
-
     return await this.canAccessGame(gameId)
   }
 }

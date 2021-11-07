@@ -9,10 +9,11 @@ import LeaderboardFactory from '../../fixtures/LeaderboardFactory'
 import GameFactory from '../../fixtures/GameFactory'
 import Game from '../../../src/entities/game'
 import OrganisationFactory from '../../fixtures/OrganisationFactory'
+import PlayerFactory from '../../fixtures/PlayerFactory'
 
 const baseUrl = '/leaderboards'
 
-describe('Leaderboards service - get', () => {
+describe('Leaderboards service - entries', () => {
   let app: Koa
   let user: User
   let validGame: Game
@@ -23,7 +24,8 @@ describe('Leaderboards service - get', () => {
 
     user = await new UserFactory().one()
     validGame = await new GameFactory(user.organisation).one()
-    await (<EntityManager>app.context.em).persistAndFlush([user, validGame])
+    const players = await new PlayerFactory([validGame]).many(10)
+    await (<EntityManager>app.context.em).persistAndFlush([user, validGame, ...players])
 
     token = await genAccessToken(user)
   })
@@ -32,22 +34,22 @@ describe('Leaderboards service - get', () => {
     await (<EntityManager>app.context.em).getConnection().close()
   })
 
-  it('should return a leaderboard', async () => {
+  it('should return a leaderboard\'s entries', async () => {
     const leaderboard = await new LeaderboardFactory([validGame]).one()
     await (<EntityManager>app.context.em).persistAndFlush(leaderboard)
 
     const res = await request(app.callback())
-      .get(`${baseUrl}/${leaderboard.internalName}`)
+      .get(`${baseUrl}/${leaderboard.internalName}/entries`)
       .query({ gameId: validGame.id })
       .auth(token, { type: 'bearer' })
       .expect(200)
 
-    expect(res.body.leaderboard.id).toBe(leaderboard.id)
+    expect(res.body.entries).toHaveLength(leaderboard.entries.length)
   })
 
-  it('should not return a non-existent leaderboard', async () => {
+  it('should not return entries for a non-existent leaderboard', async () => {
     const res = await request(app.callback())
-      .get(`${baseUrl}/blah`)
+      .get(`${baseUrl}/blah/entries`)
       .query({ gameId: 99 })
       .auth(token, { type: 'bearer' })
       .expect(404)
@@ -55,36 +57,14 @@ describe('Leaderboards service - get', () => {
     expect(res.body).toStrictEqual({ message: 'Leaderboard not found' })
   })
 
-  it('should not return a leaderboard for a game the user has no access to', async () => {
+  it('should not return a leaderboard\'s entries for a game the user has no access to', async () => {
     const otherOrg = await new OrganisationFactory().one()
     const otherGame = await new GameFactory(otherOrg).one()
     const leaderboard = await new LeaderboardFactory([otherGame]).one()
     await (<EntityManager>app.context.em).persistAndFlush(leaderboard)
 
     await request(app.callback())
-      .get(`${baseUrl}/${leaderboard.internalName}`)
-      .query({ gameId: otherGame.id })
-      .auth(token, { type: 'bearer' })
-      .expect(403)
-  })
-
-  it('should not return a leaderboard with the same name as a valid leaderboard for a game the user has no access to', async () => {
-    const otherOrg = await new OrganisationFactory().one()
-    const otherGame = await new GameFactory(otherOrg).one()
-    const validLeaderboard = await new LeaderboardFactory([validGame]).with(() => ({ internalName: 'points' })).one()
-    const otherLeaderboard = await new LeaderboardFactory([otherGame]).with(() => ({ internalName: 'points' })).one()
-    await (<EntityManager>app.context.em).persistAndFlush([validLeaderboard, otherLeaderboard])
-
-    const res = await request(app.callback())
-      .get(`${baseUrl}/${validLeaderboard.internalName}`)
-      .query({ gameId: validGame.id })
-      .auth(token, { type: 'bearer' })
-      .expect(200)
-
-    expect(res.body.leaderboard.id).toBe(validLeaderboard.id)
-
-    await request(app.callback())
-      .get(`${baseUrl}/${validLeaderboard.internalName}`)
+      .get(`${baseUrl}/${leaderboard.internalName}/entries`)
       .query({ gameId: otherGame.id })
       .auth(token, { type: 'bearer' })
       .expect(403)

@@ -26,6 +26,7 @@ export default class LeaderboardsService implements Service {
   @Validate({
     query: ['gameId']
   })
+  @HasPermission(LeaderboardsPolicy, 'index')
   async index(req: ServiceRequest): Promise<ServiceResponse> {
     const { gameId } = req.query
     const em: EntityManager = req.ctx.em
@@ -39,6 +40,9 @@ export default class LeaderboardsService implements Service {
     }
   }
 
+  @Validate({
+    query: ['gameId']
+  })
   @HasPermission(LeaderboardsPolicy, 'get')
   async get(req: ServiceRequest): Promise<ServiceResponse> {
     return {
@@ -49,6 +53,7 @@ export default class LeaderboardsService implements Service {
     }
   }
 
+  // todo unique internal names
   @Validate({
     body: ['gameId', 'internalName', 'name', 'sortMode']
   })
@@ -72,12 +77,15 @@ export default class LeaderboardsService implements Service {
     }
   }
 
+  @Validate({
+    query: ['gameId']
+  })
   @HasPermission(LeaderboardsPolicy, 'get')
   async entries(req: ServiceRequest): Promise<ServiceResponse> {
     return {
       status: 200,
       body: {
-        entries: req.ctx.state.leaderboard.getSortedEntries()
+        entries: (req.ctx.state.leaderboard as Leaderboard).getSortedEntries()
       }
     }
   }

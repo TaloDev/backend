@@ -11,6 +11,8 @@ export default class LeaderboardsPolicy extends Policy {
 
   async get(req: ServiceRequest): Promise<ServicePolicyResponse> {
     const { internalName } = req.params
+    const { gameId } = req.query
+
     // get and entries endpoints share this policy
     const relations = req.path.endsWith('entries') ? ['entries'] : []
 
@@ -19,8 +21,7 @@ export default class LeaderboardsPolicy extends Policy {
 
     this.ctx.state.leaderboard = leaderboard
 
-    if (this.isAPICall()) return true
-    return await this.canAccessGame(leaderboard.game.id)
+    return await this.canAccessGame(Number(gameId))
   }
 
   async post(req: ServiceRequest): Promise<ServicePolicyResponse> {

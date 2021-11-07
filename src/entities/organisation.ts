@@ -1,8 +1,6 @@
 import { Collection, Entity, OneToMany, PrimaryKey, Property } from '@mikro-orm/core'
 import Game from './game'
 
-// TODO billing plan
-
 @Entity()
 export default class Organisation {
   @PrimaryKey()

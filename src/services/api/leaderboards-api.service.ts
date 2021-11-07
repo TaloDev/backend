@@ -1,30 +1,41 @@
-import { HasPermission, ServiceRequest, ServiceResponse, Validate } from 'koa-rest-services'
+import { HasPermission, Routes, ServiceRequest, ServiceResponse, Validate } from 'koa-rest-services'
 import LeaderboardsAPIPolicy from '../../policies/api/leaderboards-api.policy'
 import LeaderboardsService from '../leaderboards.service'
 import APIService from './api-service'
-import { EntityManager } from '@mikro-orm/core'
+import { EntityManager, FilterQuery } from '@mikro-orm/core'
 import LeaderboardEntry from '../../entities/leaderboard-entry'
 
+@Routes([
+  {
+    method: 'GET',
+    path: '/:internalName/entries'
+  },
+  {
+    method: 'POST',
+    path: '/:internalName/entries'
+  }
+])
 export default class LeaderboardAPIService extends APIService<LeaderboardsService> {
   constructor() {
     super('leaderboards')
   }
 
-  @Validate({
-    query: ['aliasId', 'internalName']
-  })
-  @HasPermission(LeaderboardsAPIPolicy, 'index')
-  async index(req: ServiceRequest): Promise<ServiceResponse> {
-    const { aliasId, internalName } = req.query
+  @HasPermission(LeaderboardsAPIPolicy, 'get')
+  async get(req: ServiceRequest): Promise<ServiceResponse> {
+    const { internalName } = req.params
+    const { aliasId } = req.query
     const em: EntityManager = req.ctx.em
 
-    const entries = await em.getRepository(LeaderboardEntry).find({
-      playerAlias: Number(aliasId),
+    const whereOptions: FilterQuery<LeaderboardEntry> = {
       leaderboard: {
         game: req.ctx.state.key.game,
         internalName
       }
-    })
+    }
+
+    if (aliasId) whereOptions.playerAlias = Number(aliasId)
+
+    const entries = await em.getRepository(LeaderboardEntry).find(whereOptions)
 
     return {
       status: 200,
@@ -34,8 +45,9 @@ export default class LeaderboardAPIService extends APIService<LeaderboardsServic
     }
   }
 
+  // todo maybe shouldn't update? add unique property on leaderboard?
   @Validate({
-    body: ['aliasId', 'internalName', 'score']
+    body: ['aliasId', 'score']
   })
   @HasPermission(LeaderboardsAPIPolicy, 'post')
   async post(req: ServiceRequest): Promise<ServiceResponse> {

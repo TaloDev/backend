@@ -8,6 +8,8 @@ export enum LeaderboardSortMode {
   ASC = 'asc'
 }
 
+type SortedLeaderboardEntry = LeaderboardEntry & { position: number }
+
 @Entity()
 export default class Leaderboard {
   @PrimaryKey()
@@ -38,8 +40,8 @@ export default class Leaderboard {
     this.game = game
   }
 
-  getSortedEntries() {
-    return orderBy(this.entries, ['entry'], [this.sortMode])
+  getSortedEntries(): SortedLeaderboardEntry {
+    return orderBy(this.entries, ['entry'], [this.sortMode]).map((entry, idx) => ({ ...entry.toJSON(), position: idx }))
   }
 
   toJSON() {

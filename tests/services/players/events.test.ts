@@ -43,7 +43,7 @@ describe('Players service - get events', () => {
       .auth(token, { type: 'bearer' })
       .expect(200)
 
-      expect(res.body.events).toHaveLength(3)
+    expect(res.body.events).toHaveLength(3)
   })
 
   it('should not get a player\'s events for a player they have no access to', async () => {

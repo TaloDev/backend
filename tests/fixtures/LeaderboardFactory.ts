@@ -19,7 +19,9 @@ export default class LeaderboardFactory extends Factory<Leaderboard> {
   protected async base(leaderboard: Leaderboard): Promise<Partial<Leaderboard>> {
     const game = casual.random_element(this.availableGames)
     const entryFactory = new LeaderboardEntryFactory(leaderboard, game.players)
-    const entries = await entryFactory.many(casual.integer(0, 20))
+    const entries = game.players.length > 0 ?
+      await entryFactory.many(casual.integer(0, 20))
+      : []
 
     return {
       game,

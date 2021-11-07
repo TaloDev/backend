@@ -8,6 +8,8 @@ import UserFactory from '../../fixtures/UserFactory'
 import GameFactory from '../../fixtures/GameFactory'
 import Game from '../../../src/entities/game'
 import OrganisationFactory from '../../fixtures/OrganisationFactory'
+import LeaderboardFactory from '../../fixtures/LeaderboardFactory'
+import Leaderboard from '../../../src/entities/leaderboard'
 
 const baseUrl = '/leaderboards'
 
@@ -25,6 +27,12 @@ describe('Leaderboards service - post', () => {
     await (<EntityManager>app.context.em).persistAndFlush([user, validGame])
 
     token = await genAccessToken(user)
+  })
+
+  beforeEach(async () => {
+    const repo = (<EntityManager>app.context.em).getRepository(Leaderboard)
+    const leaderboards = await repo.findAll()
+    await repo.removeAndFlush(leaderboards)
   })
 
   afterAll(async () => {
@@ -78,5 +86,28 @@ describe('Leaderboards service - post', () => {
       .expect(404)
 
     expect(res.body).toStrictEqual({ message: 'The specified game doesn\'t exist' })
+  })
+
+  it('should not create a leaderboard with an invalid sort mode', async () => {
+    const res = await request(app.callback())
+      .post(`${baseUrl}`)
+      .send({ gameId: validGame.id, internalName: 'highscores', name: 'Highscores', sortMode: 'blah' })
+      .auth(token, { type: 'bearer' })
+      .expect(400)
+
+    expect(res.body).toStrictEqual({ message: 'Sort mode must be one of desc, asc' })
+  })
+
+  it('should not create a leaderboard with a duplicate internal name', async () => {
+    const leaderboard = await new LeaderboardFactory([validGame]).with(() => ({ internalName: 'highscores' })).one()
+    await (<EntityManager>app.context.em).persistAndFlush(leaderboard)
+
+    const res = await request(app.callback())
+      .post(`${baseUrl}`)
+      .send({ gameId: validGame.id, internalName: 'highscores', name: 'Highscores', sortMode: 'blah' })
+      .auth(token, { type: 'bearer' })
+      .expect(400)
+
+    expect(res.body).toStrictEqual({ message: 'A leaderboard with the internalName highscores already exists' })
   })
 })

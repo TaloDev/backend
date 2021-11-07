@@ -1,6 +1,6 @@
 import { EntityManager } from '@mikro-orm/core'
 import { HasPermission, Routes, Service, ServiceRequest, ServiceResponse, Validate } from 'koa-rest-services'
-import Leaderboard from '../entities/leaderboard'
+import Leaderboard, { LeaderboardSortMode } from '../entities/leaderboard'
 import LeaderboardsPolicy from '../policies/leaderboards.policy'
 
 @Routes([
@@ -53,9 +53,25 @@ export default class LeaderboardsService implements Service {
     }
   }
 
-  // todo unique internal names
   @Validate({
-    body: ['gameId', 'internalName', 'name', 'sortMode']
+    body: {
+      gameId: true,
+      internalName: async (val: string, req: ServiceRequest): Promise<boolean> => {
+        const em: EntityManager = req.ctx.em
+        const duplicateInternalName = await em.getRepository(Leaderboard).findOne({ internalName: val })
+
+        if (duplicateInternalName) throw new Error(`A leaderboard with the internalName ${val} already exists`)
+
+        return true
+      },
+      name: true,
+      sortMode: async (val: string): Promise<boolean> => {
+        const keys = Object.keys(LeaderboardSortMode).map((key) => LeaderboardSortMode[key])
+        if (!keys.includes(val)) throw new Error(`Sort mode must be one of ${keys.join(', ')}`)
+
+        return true
+      }
+    }
   })
   @HasPermission(LeaderboardsPolicy, 'post')
   async post(req: ServiceRequest): Promise<ServiceResponse> {

@@ -70,18 +70,20 @@ export default class LeaderboardsService implements Service {
         if (!keys.includes(val)) throw new Error(`Sort mode must be one of ${keys.join(', ')}`)
 
         return true
-      }
+      },
+      unique: true
     }
   })
   @HasPermission(LeaderboardsPolicy, 'post')
   async post(req: ServiceRequest): Promise<ServiceResponse> {
-    const { internalName, name, sortMode } = req.body
+    const { internalName, name, sortMode, unique } = req.body
     const em: EntityManager = req.ctx.em
 
     const leaderboard = new Leaderboard(req.ctx.state.game)
     leaderboard.internalName = internalName
     leaderboard.name = name
     leaderboard.sortMode = sortMode
+    leaderboard.unique = unique
 
     await em.persistAndFlush(leaderboard)
 

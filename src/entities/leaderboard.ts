@@ -24,6 +24,9 @@ export default class Leaderboard {
   @Enum(() => LeaderboardSortMode)
   sortMode: LeaderboardSortMode = LeaderboardSortMode.DESC
 
+  @Property()
+  unique: boolean
+
   @OneToMany(() => LeaderboardEntry, (entry) => entry.leaderboard)
   entries: Collection<LeaderboardEntry> = new Collection<LeaderboardEntry>(this)
 

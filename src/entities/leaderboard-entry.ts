@@ -1,4 +1,4 @@
-import { Entity, ManyToOne, PrimaryKey, Property } from '@mikro-orm/core'
+import { Cascade, Entity, ManyToOne, PrimaryKey, Property } from '@mikro-orm/core'
 import Leaderboard from './leaderboard'
 import PlayerAlias from './player-alias'
 
@@ -10,10 +10,10 @@ export default class LeaderboardEntry {
   @Property({ type: 'double' })
   score: number
 
-  @ManyToOne(() => Leaderboard)
+  @ManyToOne(() => Leaderboard, { cascade: [Cascade.REMOVE] })
   leaderboard: Leaderboard
 
-  @ManyToOne(() => PlayerAlias, { eager: true })
+  @ManyToOne(() => PlayerAlias, { cascade: [Cascade.REMOVE], eager: true })
   playerAlias: PlayerAlias
 
   @Property()

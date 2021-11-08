@@ -42,7 +42,7 @@ describe('Leaderboards service - post', () => {
   it('should create a leaderboard', async () => {
     const res = await request(app.callback())
       .post(`${baseUrl}`)
-      .send({ gameId: validGame.id, internalName: 'highscores', name: 'Highscores', sortMode: 'desc' })
+      .send({ gameId: validGame.id, internalName: 'highscores', name: 'Highscores', sortMode: 'desc', unique: true })
       .auth(token, { type: 'bearer' })
       .expect(200)
 
@@ -59,7 +59,7 @@ describe('Leaderboards service - post', () => {
 
     const res = await request(app.callback())
       .post(`${baseUrl}`)
-      .send({ gameId: validGame.id, internalName: 'highscores', name: 'Highscores', sortMode: 'desc' })
+      .send({ gameId: validGame.id, internalName: 'highscores', name: 'Highscores', sortMode: 'desc', unique: true })
       .auth(invalidUserToken, { type: 'bearer' })
       .expect(403)
 
@@ -73,7 +73,7 @@ describe('Leaderboards service - post', () => {
 
     await request(app.callback())
       .post(`${baseUrl}`)
-      .send({ gameId: otherGame.id, internalName: 'highscores', name: 'Highscores', sortMode: 'desc' })
+      .send({ gameId: otherGame.id, internalName: 'highscores', name: 'Highscores', sortMode: 'desc', unique: true })
       .auth(token, { type: 'bearer' })
       .expect(403)
   })
@@ -81,7 +81,7 @@ describe('Leaderboards service - post', () => {
   it('should not create a leaderboard for a non-existent game', async () => {
     const res = await request(app.callback())
       .post(`${baseUrl}`)
-      .send({ gameId: 99, internalName: 'highscores', name: 'Highscores', sortMode: 'desc' })
+      .send({ gameId: 99, internalName: 'highscores', name: 'Highscores', sortMode: 'desc', unique: true })
       .auth(token, { type: 'bearer' })
       .expect(404)
 
@@ -91,7 +91,7 @@ describe('Leaderboards service - post', () => {
   it('should not create a leaderboard with an invalid sort mode', async () => {
     const res = await request(app.callback())
       .post(`${baseUrl}`)
-      .send({ gameId: validGame.id, internalName: 'highscores', name: 'Highscores', sortMode: 'blah' })
+      .send({ gameId: validGame.id, internalName: 'highscores', name: 'Highscores', sortMode: 'blah', unique: true })
       .auth(token, { type: 'bearer' })
       .expect(400)
 
@@ -104,7 +104,7 @@ describe('Leaderboards service - post', () => {
 
     const res = await request(app.callback())
       .post(`${baseUrl}`)
-      .send({ gameId: validGame.id, internalName: 'highscores', name: 'Highscores', sortMode: 'blah' })
+      .send({ gameId: validGame.id, internalName: 'highscores', name: 'Highscores', sortMode: 'blah', unique: true })
       .auth(token, { type: 'bearer' })
       .expect(400)
 

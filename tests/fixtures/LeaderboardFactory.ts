@@ -12,6 +12,8 @@ export default class LeaderboardFactory extends Factory<Leaderboard> {
   constructor(availableGames: Game[]) {
     super(Leaderboard, 'base')
     this.register('base', this.base)
+    this.register('unique', this.unique)
+    this.register('not unique', this.notUnique)
 
     this.availableGames = availableGames
   }
@@ -28,7 +30,20 @@ export default class LeaderboardFactory extends Factory<Leaderboard> {
       internalName: casual.word,
       name: casual.title,
       sortMode: casual.random_element(Object.keys(LeaderboardSortMode)),
+      unique: casual.boolean,
       entries: new Collection<LeaderboardEntry>(leaderboard, entries)
+    }
+  }
+
+  protected unique(): Partial<Leaderboard> {
+    return {
+      unique: true
+    }
+  }
+
+  protected notUnique(): Partial<Leaderboard> {
+    return {
+      unique: false
     }
   }
 }

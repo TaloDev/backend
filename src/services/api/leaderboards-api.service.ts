@@ -4,6 +4,7 @@ import LeaderboardsService from '../leaderboards.service'
 import APIService from './api-service'
 import { EntityManager, FilterQuery } from '@mikro-orm/core'
 import LeaderboardEntry from '../../entities/leaderboard-entry'
+import Leaderboard from '../../entities/leaderboard'
 
 @Routes([
   {
@@ -45,7 +46,18 @@ export default class LeaderboardAPIService extends APIService<LeaderboardsServic
     }
   }
 
-  // todo maybe shouldn't update? add unique property on leaderboard?
+  async createEntry(req: ServiceRequest): Promise<LeaderboardEntry> {
+    const em: EntityManager = req.ctx.em
+
+    const entry = new LeaderboardEntry(req.ctx.state.leaderboard)
+    entry.playerAlias = req.ctx.state.playerAlias
+    entry.score = req.body.score
+
+    await em.persistAndFlush(entry)
+
+    return entry
+  }
+
   @Validate({
     body: ['aliasId', 'score']
   })
@@ -57,20 +69,19 @@ export default class LeaderboardAPIService extends APIService<LeaderboardsServic
     let entry = null
 
     try {
-      entry = await em.getRepository(LeaderboardEntry).findOneOrFail({
-        leaderboard: req.ctx.state.leaderboard,
-        playerAlias: req.ctx.state.playerAlias
-      })
+      if ((req.ctx.state.leaderboard as Leaderboard).unique) {
+        entry = await em.getRepository(LeaderboardEntry).findOneOrFail({
+          leaderboard: req.ctx.state.leaderboard,
+          playerAlias: req.ctx.state.playerAlias
+        })
 
-      entry.score = score
-
-      await em.flush()
+        entry.score = score
+        await em.flush()
+      } else {
+        entry = await this.createEntry(req)
+      }
     } catch (err) {
-      entry = new LeaderboardEntry(req.ctx.state.leaderboard)
-      entry.playerAlias = req.ctx.state.playerAlias
-      entry.score = score
-
-      await em.persistAndFlush(entry)
+      entry = await this.createEntry(req)
     }
 
     return {

@@ -27,7 +27,7 @@ describe('Leaderboards API service - post', () => {
 
     const user = await new UserFactory().one()
     game = await new GameFactory(user.organisation).one()
-    leaderboard = await new LeaderboardFactory([game]).one()
+    leaderboard = await new LeaderboardFactory([game]).state('not unique').one()
 
     apiKey = new APIKey(game, user)
     token = await createToken(apiKey)
@@ -89,7 +89,9 @@ describe('Leaderboards API service - post', () => {
       .expect(404)
   })
 
-  it('should update an existing entry', async () => {
+  it('should update an existing entry for unique leaderboards', async () => {
+    leaderboard.unique = true
+
     const player = await new PlayerFactory([game]).one()
     await (<EntityManager>app.context.em).persistAndFlush([player])
 
@@ -109,6 +111,31 @@ describe('Leaderboards API service - post', () => {
       .expect(200)
 
     expect(res.body.entry.id).toBe(prevId)
+    expect(res.body.entry.score).toBe(360)
+  })
+
+  it('should add new entries for non-unique leaderboards', async () => {
+    leaderboard.unique = false
+
+    const player = await new PlayerFactory([game]).one()
+    await (<EntityManager>app.context.em).persistAndFlush([player])
+
+    let res = await request(app.callback())
+      .post(`${baseUrl}/${leaderboard.internalName}/entries`)
+      .send({ aliasId: player.aliases[0].id, score: 300 })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    const prevId = res.body.entry.id
+    expect(res.body.entry.score).toBe(300)
+
+    res = await request(app.callback())
+      .post(`${baseUrl}/${leaderboard.internalName}/entries`)
+      .send({ aliasId: player.aliases[0].id, score: 360 })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    expect(res.body.entry.id).not.toBe(prevId)
     expect(res.body.entry.score).toBe(360)
   })
 })

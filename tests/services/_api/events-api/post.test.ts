@@ -52,7 +52,7 @@ describe('Events API service - post', () => {
       .auth(token, { type: 'bearer' })
       .expect(200)
 
-    const event = await (<EntityManager>app.context.em).getRepository(Event).findOne({ name: 'Craft bow'})
+    const event = await (<EntityManager>app.context.em).getRepository(Event).findOne({ name: 'Craft bow' })
     expect(event).toBeTruthy()
   })
 
@@ -83,7 +83,7 @@ describe('Events API service - post', () => {
 
     await request(app.callback())
       .post(`${baseUrl}`)
-      .send({ events: [{ name: 'Craft bow', aliasId: validPlayer.aliases[0].id, timestamp: Date.now() }]})
+      .send({ events: [{ name: 'Craft bow', aliasId: validPlayer.aliases[0].id, timestamp: Date.now() }] })
       .auth(token, { type: 'bearer' })
       .expect(403)
   })
@@ -95,7 +95,7 @@ describe('Events API service - post', () => {
 
     const res = await request(app.callback())
       .post(`${baseUrl}`)
-      .send({ events: [{ name: 'Craft bow', aliasId: 'blah', timestamp: Date.now() }]})
+      .send({ events: [{ name: 'Craft bow', aliasId: 'blah', timestamp: Date.now() }] })
       .auth(token, { type: 'bearer' })
       .expect(200)
 
@@ -109,7 +109,7 @@ describe('Events API service - post', () => {
 
     const res = await request(app.callback())
       .post(`${baseUrl}`)
-      .send({ events: [{ name: 'Craft bow', aliasId: 574, timestamp: Date.now() }]})
+      .send({ events: [{ name: 'Craft bow', aliasId: 574, timestamp: Date.now() }] })
       .auth(token, { type: 'bearer' })
       .expect(200)
 
@@ -141,7 +141,7 @@ describe('Events API service - post', () => {
 
     const res = await request(app.callback())
       .post(`${baseUrl}`)
-      .send({ events: [{ aliasId: validPlayer.aliases[0].id, timestamp: Date.now() }]})
+      .send({ events: [{ aliasId: validPlayer.aliases[0].id, timestamp: Date.now() }] })
       .auth(token, { type: 'bearer' })
       .expect(200)
 
@@ -155,7 +155,7 @@ describe('Events API service - post', () => {
 
     const res = await request(app.callback())
       .post(`${baseUrl}`)
-      .send({ events: [{ name: 'Craft bow', aliasId: validPlayer.aliases[0].id }]})
+      .send({ events: [{ name: 'Craft bow', aliasId: validPlayer.aliases[0].id }] })
       .auth(token, { type: 'bearer' })
       .expect(200)
 
@@ -228,6 +228,6 @@ describe('Events API service - post', () => {
       .auth(token, { type: 'bearer' })
       .expect(200)
 
-      expect(res.body.errors[0]).toStrictEqual(['Props must be an array'])
+    expect(res.body.errors[0]).toStrictEqual(['Props must be an array'])
   })
 })

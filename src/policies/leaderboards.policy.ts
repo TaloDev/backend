@@ -16,11 +16,16 @@ export default class LeaderboardsPolicy extends Policy {
     // get and entries endpoints share this policy
     const relations = req.path.endsWith('entries') ? ['entries'] : []
 
-    const leaderboard = await this.em.getRepository(Leaderboard).findOne({ internalName }, relations)
+    const leaderboard = await this.em.getRepository(Leaderboard).findOne({
+      internalName,
+      game: Number(gameId)
+    }, relations)
+
     if (!leaderboard) return new ServicePolicyDenial({ message: 'Leaderboard not found' }, 404)
 
     this.ctx.state.leaderboard = leaderboard
 
+    if (this.isAPICall()) return true
     return await this.canAccessGame(Number(gameId))
   }
 

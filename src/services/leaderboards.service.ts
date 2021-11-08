@@ -1,6 +1,7 @@
-import { EntityManager } from '@mikro-orm/core'
+import { EntityManager, FilterQuery } from '@mikro-orm/core'
 import { HasPermission, Routes, Service, ServiceRequest, ServiceResponse, Validate } from 'koa-rest-services'
 import Leaderboard, { LeaderboardSortMode } from '../entities/leaderboard'
+import LeaderboardEntry from '../entities/leaderboard-entry'
 import LeaderboardsPolicy from '../policies/leaderboards.policy'
 
 @Routes([
@@ -96,14 +97,34 @@ export default class LeaderboardsService implements Service {
   }
 
   @Validate({
-    query: ['gameId']
+    query: ['gameId', 'page']
   })
   @HasPermission(LeaderboardsPolicy, 'get')
   async entries(req: ServiceRequest): Promise<ServiceResponse> {
+    const itemsPerPage = 50
+
+    const { page, aliasId } = req.query
+    const em: EntityManager = req.ctx.em
+
+    const leaderboard: Leaderboard = req.ctx.state.leaderboard
+
+    const whereOptions: FilterQuery<LeaderboardEntry> = {
+      leaderboard
+    }
+    if (aliasId) whereOptions.playerAlias = Number(aliasId)
+
+    const entries = await em.getRepository(LeaderboardEntry).find(whereOptions, {
+      orderBy: {
+        score: leaderboard.sortMode
+      },
+      offset: itemsPerPage * Number(page),
+      limit: itemsPerPage
+    })
+
     return {
       status: 200,
       body: {
-        entries: (req.ctx.state.leaderboard as Leaderboard).getSortedEntries()
+        entries: entries.map((entry) => ({ position: entries.indexOf(entry) + (Number(page) * itemsPerPage), ...entry.toJSON() }))
       }
     }
   }

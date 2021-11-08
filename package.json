@@ -69,7 +69,6 @@
     "koa-rest-services": "^4.0.2",
     "lodash.get": "^4.4.2",
     "lodash.groupby": "^4.6.0",
-    "lodash.orderby": "^4.6.0",
     "lodash.uniqwith": "^4.5.0",
     "uuid": "^8.3.2"
   },

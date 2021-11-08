@@ -50,6 +50,7 @@ describe('Leaderboards API service - get', () => {
 
     const res = await request(app.callback())
       .get(`${baseUrl}/${leaderboard.internalName}/entries`)
+      .query({ page: 0 })
       .auth(token, { type: 'bearer' })
       .expect(200)
 
@@ -68,7 +69,7 @@ describe('Leaderboards API service - get', () => {
 
     const res = await request(app.callback())
       .get(`${baseUrl}/${leaderboard.internalName}/entries`)
-      .query({ aliasId: player.aliases[0].id })
+      .query({ aliasId: player.aliases[0].id, page: 0 })
       .auth(token, { type: 'bearer' })
       .expect(200)
 
@@ -83,6 +84,7 @@ describe('Leaderboards API service - get', () => {
 
     await request(app.callback())
       .get(`${baseUrl}/${leaderboard.internalName}/entries`)
+      .query({ page: 0 })
       .auth(token, { type: 'bearer' })
       .expect(403)
   })
@@ -95,6 +97,7 @@ describe('Leaderboards API service - get', () => {
 
     await request(app.callback())
       .get(`${baseUrl}/blah/entries`)
+      .query({ page: 0 })
       .auth(token, { type: 'bearer' })
       .expect(404)
   })

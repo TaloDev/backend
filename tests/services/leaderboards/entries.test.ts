@@ -40,7 +40,7 @@ describe('Leaderboards service - entries', () => {
 
     const res = await request(app.callback())
       .get(`${baseUrl}/${leaderboard.internalName}/entries`)
-      .query({ gameId: validGame.id })
+      .query({ gameId: validGame.id, page: 0 })
       .auth(token, { type: 'bearer' })
       .expect(200)
 
@@ -50,7 +50,7 @@ describe('Leaderboards service - entries', () => {
   it('should not return entries for a non-existent leaderboard', async () => {
     const res = await request(app.callback())
       .get(`${baseUrl}/blah/entries`)
-      .query({ gameId: 99 })
+      .query({ gameId: 99, page: 0 })
       .auth(token, { type: 'bearer' })
       .expect(404)
 
@@ -65,7 +65,7 @@ describe('Leaderboards service - entries', () => {
 
     await request(app.callback())
       .get(`${baseUrl}/${leaderboard.internalName}/entries`)
-      .query({ gameId: otherGame.id })
+      .query({ gameId: otherGame.id, page: 0 })
       .auth(token, { type: 'bearer' })
       .expect(403)
   })

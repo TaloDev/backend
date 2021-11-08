@@ -22,7 +22,7 @@ export default (app: Koa) => {
   app.use(service('/api-keys', new APIKeysService()))
   app.use(service('/events', new EventsService()))
   app.use(service('/players', new PlayersService()))
-  app.use(service('/games', new GamesService))
+  app.use(service('/games', new GamesService()))
   app.use(service('/users', new UsersService()))
   app.use(service('/headlines', new HeadlinesService()))
 }

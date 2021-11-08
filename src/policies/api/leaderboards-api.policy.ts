@@ -18,14 +18,8 @@ export default class LeaderboardsAPIPolicy extends Policy {
     return leaderboard
   }
 
-  async get(req: ServiceRequest): Promise<ServicePolicyResponse> {
-    const scopeCheck = await this.hasScope('read:leaderboards')
-    if (scopeCheck !== true) return scopeCheck
-
-    const leaderboard = await this.getLeaderboard(req)
-    if (!leaderboard) return new ServicePolicyDenial({ message: 'Leaderboard not found' }, 404)
-
-    return true
+  async get(): Promise<ServicePolicyResponse> {
+    return await this.hasScope('read:leaderboards')
   }
 
   async post(req: ServiceRequest): Promise<ServicePolicyResponse> {

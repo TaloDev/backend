@@ -2,7 +2,7 @@ import { HasPermission, Routes, ServiceRequest, ServiceResponse, Validate } from
 import LeaderboardsAPIPolicy from '../../policies/api/leaderboards-api.policy'
 import LeaderboardsService from '../leaderboards.service'
 import APIService from './api-service'
-import { EntityManager, FilterQuery } from '@mikro-orm/core'
+import { EntityManager } from '@mikro-orm/core'
 import LeaderboardEntry from '../../entities/leaderboard-entry'
 import Leaderboard from '../../entities/leaderboard'
 
@@ -23,27 +23,9 @@ export default class LeaderboardAPIService extends APIService<LeaderboardsServic
 
   @HasPermission(LeaderboardsAPIPolicy, 'get')
   async get(req: ServiceRequest): Promise<ServiceResponse> {
-    const { internalName } = req.params
-    const { aliasId } = req.query
-    const em: EntityManager = req.ctx.em
-
-    const whereOptions: FilterQuery<LeaderboardEntry> = {
-      leaderboard: {
-        game: req.ctx.state.key.game,
-        internalName
-      }
-    }
-
-    if (aliasId) whereOptions.playerAlias = Number(aliasId)
-
-    const entries = await em.getRepository(LeaderboardEntry).find(whereOptions)
-
-    return {
-      status: 200,
-      body: {
-        entries
-      }
-    }
+    const key = await this.getAPIKey(req.ctx)
+    req.query.gameId = key.game.id.toString()
+    return this.forwardRequest('entries', req)
   }
 
   async createEntry(req: ServiceRequest): Promise<LeaderboardEntry> {

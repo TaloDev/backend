@@ -1,5 +1,4 @@
 import { Collection, Entity, Enum, ManyToOne, OneToMany, PrimaryKey, Property } from '@mikro-orm/core'
-import orderBy from 'lodash.orderby'
 import Game from './game'
 import LeaderboardEntry from './leaderboard-entry'
 
@@ -7,8 +6,6 @@ export enum LeaderboardSortMode {
   DESC = 'desc',
   ASC = 'asc'
 }
-
-type SortedLeaderboardEntry = LeaderboardEntry & { position: number }
 
 @Entity()
 export default class Leaderboard {
@@ -41,10 +38,6 @@ export default class Leaderboard {
 
   constructor(game: Game) {
     this.game = game
-  }
-
-  getSortedEntries(): SortedLeaderboardEntry {
-    return orderBy(this.entries, ['entry'], [this.sortMode]).map((entry, idx) => ({ ...entry.toJSON(), position: idx }))
   }
 
   toJSON() {

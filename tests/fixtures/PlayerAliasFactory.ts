@@ -12,7 +12,7 @@ export default class PlayerAliasFactory extends Factory<PlayerAlias> {
     const services = ['steam', 'origin', 'epic', 'username']
     const identifiers = [casual.uuid, casual.username, casual.card_number()]
 
-    return {  
+    return {
       service: casual.random_element(services),
       identifier: casual.random_element(identifiers)
     }

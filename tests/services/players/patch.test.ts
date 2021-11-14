@@ -8,7 +8,6 @@ import Game from '../../../src/entities/game'
 import UserFactory from '../../fixtures/UserFactory'
 import OrganisationFactory from '../../fixtures/OrganisationFactory'
 import PlayerFactory from '../../fixtures/PlayerFactory'
-import EventFactory from '../../fixtures/EventFactory'
 
 const baseUrl = '/players'
 
@@ -61,7 +60,8 @@ describe('Players service - patch', () => {
       .auth(token, { type: 'bearer' })
       .expect(200)
 
-      expect(res.body.player.props).toEqual(expect.arrayContaining([
+    expect(res.body.player.props).toEqual(expect.arrayContaining(
+      [
         {
           key: 'collectibles',
           value: '1'
@@ -70,10 +70,11 @@ describe('Players service - patch', () => {
           key: 'zonesExplored',
           value: '1'
         }
-      ]))
+      ]
+    ))
   })
 
-  it('should delete null player\ properties', async () => {
+  it('should delete null player properties', async () => {
     const player = await new PlayerFactory([validGame]).with(() => ({
       props: [
         {

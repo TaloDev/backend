@@ -15,7 +15,8 @@
     "restart": "yarn down && yarn up",
     "migration:create": "DB_HOST=127.0.0.1 mikro-orm migration:create",
     "service:create": "hygen service new",
-    "prepare": "husky install"
+    "prepare": "husky install",
+    "lint": "eslint src/**/*.ts tests/**/*.ts"
   },
   "author": "Sleepy Studios",
   "license": "MIT",
@@ -80,6 +81,6 @@
     ]
   },
   "lint-staged": {
-    "*.{js,ts}": "eslint --cache --fix"
+    "*.{js,ts}": "eslint --fix"
   }
 }

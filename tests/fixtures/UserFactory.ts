@@ -39,7 +39,7 @@ export default class UserFactory extends Factory<User> {
 
   protected admin(): Partial<User> {
     return {
-      type: UserType.ADMIN 
+      type: UserType.ADMIN
     }
   }
 

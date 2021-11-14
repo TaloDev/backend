@@ -93,6 +93,7 @@ describe('Leaderboards API service - post', () => {
 
   it('should update an existing entry for unique leaderboards', async () => {
     leaderboard.unique = true
+    leaderboard.sortMode = LeaderboardSortMode.DESC
 
     const player = await new PlayerFactory([game]).one()
     await (<EntityManager>app.context.em).persistAndFlush([player])

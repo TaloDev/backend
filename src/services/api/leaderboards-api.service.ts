@@ -2,9 +2,9 @@ import { HasPermission, Routes, ServiceRequest, ServiceResponse, Validate } from
 import LeaderboardsAPIPolicy from '../../policies/api/leaderboards-api.policy'
 import LeaderboardsService from '../leaderboards.service'
 import APIService from './api-service'
-import { EntityManager } from '@mikro-orm/core'
+import { EntityManager } from '@mikro-orm/mysql'
 import LeaderboardEntry from '../../entities/leaderboard-entry'
-import Leaderboard from '../../entities/leaderboard'
+import Leaderboard, { LeaderboardSortMode } from '../../entities/leaderboard'
 
 @Routes([
   {
@@ -48,17 +48,24 @@ export default class LeaderboardAPIService extends APIService<LeaderboardsServic
     const { score } = req.body
     const em: EntityManager = req.ctx.em
 
-    let entry = null
+    const leaderboard: Leaderboard = req.ctx.state.leaderboard
+
+    let entry: LeaderboardEntry = null
+    let updated = false
 
     try {
-      if ((req.ctx.state.leaderboard as Leaderboard).unique) {
+      if (leaderboard.unique) {
         entry = await em.getRepository(LeaderboardEntry).findOneOrFail({
-          leaderboard: req.ctx.state.leaderboard,
+          leaderboard,
           playerAlias: req.ctx.state.playerAlias
         })
 
-        entry.score = score
-        await em.flush()
+        if ((leaderboard.sortMode === LeaderboardSortMode.ASC && score < entry.score) || (leaderboard.sortMode === LeaderboardSortMode.DESC && score > entry.score)) {
+          entry.score = score
+          await em.flush()
+
+          updated = true
+        }
       } else {
         entry = await this.createEntry(req)
       }
@@ -66,10 +73,17 @@ export default class LeaderboardAPIService extends APIService<LeaderboardsServic
       entry = await this.createEntry(req)
     }
 
+    const entries = await em.createQueryBuilder(LeaderboardEntry, 'le')
+      .where({ leaderboard: entry.leaderboard })
+      .select('le.*', true)
+      .orderBy({ score: entry.leaderboard.sortMode })
+      .getResultList()
+
     return {
       status: 200,
       body: {
-        entry
+        entry: { position: entries.indexOf(entry), ...entry.toJSON() },
+        updated
       }
     }
   }

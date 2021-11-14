@@ -1,4 +1,4 @@
-import { EntityManager, FilterQuery } from '@mikro-orm/core'
+import { EntityManager } from '@mikro-orm/mysql'
 import { HasPermission, Routes, Service, ServiceRequest, ServiceResponse, Validate } from 'koa-rest-services'
 import Leaderboard, { LeaderboardSortMode } from '../entities/leaderboard'
 import LeaderboardEntry from '../entities/leaderboard-entry'
@@ -108,23 +108,30 @@ export default class LeaderboardsService implements Service {
 
     const leaderboard: Leaderboard = req.ctx.state.leaderboard
 
-    const whereOptions: FilterQuery<LeaderboardEntry> = {
-      leaderboard
-    }
-    if (aliasId) whereOptions.playerAlias = Number(aliasId)
+    let baseQuery = em.createQueryBuilder(LeaderboardEntry, 'le')
+      .where({ leaderboard })
 
-    const entries = await em.getRepository(LeaderboardEntry).find(whereOptions, {
-      orderBy: {
-        score: leaderboard.sortMode
-      },
-      offset: itemsPerPage * Number(page),
-      limit: itemsPerPage
-    })
+    if (aliasId) {
+      baseQuery = baseQuery
+        .where({ playerAlias: Number(aliasId) })
+    }
+
+    const { count } = await baseQuery
+      .count('le.id', true)
+      .execute('get')
+
+    const entries = await baseQuery
+      .select('le.*', true)
+      .orderBy({ score: leaderboard.sortMode })
+      .limit(itemsPerPage)
+      .offset(Number(page) * itemsPerPage)
+      .getResultList()
 
     return {
       status: 200,
       body: {
-        entries: entries.map((entry) => ({ position: entries.indexOf(entry) + (Number(page) * itemsPerPage), ...entry.toJSON() }))
+        entries: entries.map((entry, idx) => ({ position: idx + (Number(page) * itemsPerPage), ...entry.toJSON() })),
+        count
       }
     }
   }

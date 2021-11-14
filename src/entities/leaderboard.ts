@@ -46,6 +46,7 @@ export default class Leaderboard {
       internalName: this.internalName,
       name: this.name,
       sortMode: this.sortMode,
+      unique: this.unique,
       createdAt: this.createdAt
     }
   }

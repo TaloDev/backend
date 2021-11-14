@@ -18,7 +18,7 @@ export default class Organisation {
   @Property()
   createdAt: Date = new Date()
 
-  @Property({ onUpdate: () => new Date() })
+  @Property()
   updatedAt: Date = new Date()
 
   toJSON() {

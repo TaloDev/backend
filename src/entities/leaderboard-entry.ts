@@ -30,8 +30,13 @@ export default class LeaderboardEntry {
     return {
       id: this.id,
       score: this.score,
-      playerAlias: this.playerAlias,
-      createdAt: this.createdAt
+      leaderboardName: this.leaderboard.name,
+      playerAlias: {
+        id: this.playerAlias.id,
+        service: this.playerAlias.service,
+        identifier: this.playerAlias.identifier
+      },
+      updatedAt: this.updatedAt
     }
   }
 }

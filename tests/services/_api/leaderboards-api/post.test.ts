@@ -6,7 +6,7 @@ import APIKey, { APIKeyScope } from '../../../../src/entities/api-key'
 import { createToken } from '../../../../src/services/api-keys.service'
 import UserFactory from '../../../fixtures/UserFactory'
 import GameFactory from '../../../fixtures/GameFactory'
-import Leaderboard from '../../../../src/entities/leaderboard'
+import Leaderboard, { LeaderboardSortMode } from '../../../../src/entities/leaderboard'
 import LeaderboardFactory from '../../../fixtures/LeaderboardFactory'
 import PlayerFactory from '../../../fixtures/PlayerFactory'
 import Game from '../../../../src/entities/game'
@@ -53,6 +53,8 @@ describe('Leaderboards API service - post', () => {
       .expect(200)
 
     expect(res.body.entry.score).toBe(300)
+    expect(res.body.updated).toBe(false)
+    expect(res.body.entry.position).toBeDefined()
   })
 
   it('should not create a leaderboard entry if the scope is not valid', async () => {
@@ -112,6 +114,7 @@ describe('Leaderboards API service - post', () => {
 
     expect(res.body.entry.id).toBe(prevId)
     expect(res.body.entry.score).toBe(360)
+    expect(res.body.updated).toBe(true)
   })
 
   it('should add new entries for non-unique leaderboards', async () => {
@@ -137,5 +140,55 @@ describe('Leaderboards API service - post', () => {
 
     expect(res.body.entry.id).not.toBe(prevId)
     expect(res.body.entry.score).toBe(360)
+  })
+
+  it('should not update an existing entry if the score is less than the current score and the sortMode is DESC', async () => {
+    leaderboard.unique = true
+    leaderboard.sortMode = LeaderboardSortMode.DESC
+
+    const player = await new PlayerFactory([game]).one()
+    await (<EntityManager>app.context.em).persistAndFlush([player])
+
+    let res = await request(app.callback())
+      .post(`${baseUrl}/${leaderboard.internalName}/entries`)
+      .send({ aliasId: player.aliases[0].id, score: 300 })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    expect(res.body.entry.score).toBe(300)
+
+    res = await request(app.callback())
+      .post(`${baseUrl}/${leaderboard.internalName}/entries`)
+      .send({ aliasId: player.aliases[0].id, score: 290 })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    expect(res.body.entry.score).toBe(300)
+    expect(res.body.updated).toBe(false)
+  })
+
+  it('should not update an existing entry if the score is greater than the current score and the sortMode is ASC', async () => {
+    leaderboard.unique = true
+    leaderboard.sortMode = LeaderboardSortMode.ASC
+
+    const player = await new PlayerFactory([game]).one()
+    await (<EntityManager>app.context.em).persistAndFlush([player])
+
+    let res = await request(app.callback())
+      .post(`${baseUrl}/${leaderboard.internalName}/entries`)
+      .send({ aliasId: player.aliases[0].id, score: 300 })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    expect(res.body.entry.score).toBe(300)
+
+    res = await request(app.callback())
+      .post(`${baseUrl}/${leaderboard.internalName}/entries`)
+      .send({ aliasId: player.aliases[0].id, score: 310 })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    expect(res.body.entry.score).toBe(300)
+    expect(res.body.updated).toBe(false)
   })
 })

@@ -1,8 +1,6 @@
 import { Collection, Entity, OneToMany, PrimaryKey, Property } from '@mikro-orm/core'
 import Game from './game'
 
-// TODO billing plan
-
 @Entity()
 export default class Organisation {
   @PrimaryKey()
@@ -20,7 +18,7 @@ export default class Organisation {
   @Property()
   createdAt: Date = new Date()
 
-  @Property({ onUpdate: () => new Date() })
+  @Property()
   updatedAt: Date = new Date()
 
   toJSON() {

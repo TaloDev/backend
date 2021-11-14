@@ -43,7 +43,7 @@ describe('<%= h.changeCase.sentenceCase(name) %>s API service - post', () => {
       .expect(200)
   })
 
-  it('should not create a <%= h.changeCase.noCase(name) %> if the scope is valid', async () => {
+  it('should not create a <%= h.changeCase.noCase(name) %> if the scope is not valid', async () => {
     apiKey.scopes = []
     await (<EntityManager>app.context.em).flush()
     token = await createToken(apiKey)

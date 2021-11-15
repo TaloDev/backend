@@ -40,5 +40,5 @@ describe('Create queue', () => {
     expect(failedJob.payload).toStrictEqual(payload)
     expect(failedJob.reason).toBe('Something went wrong')
     expect(differenceInMinutes(new Date(failedJob.failedAt), Date.now())).toBeLessThan(2)
-  })  
+  })
 })

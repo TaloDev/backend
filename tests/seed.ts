@@ -5,6 +5,7 @@ import GameFactory from './fixtures/GameFactory'
 import PlayerFactory from './fixtures/PlayerFactory'
 import EventFactory from './fixtures/EventFactory'
 import OrganisationFactory from './fixtures/OrganisationFactory'
+import LeaderboardFactory from './fixtures/LeaderboardFactory'
 
 (async () => {
   const orm = await MikroORM.init()
@@ -27,14 +28,13 @@ import OrganisationFactory from './fixtures/OrganisationFactory'
     email: 'admin@trytalo.com'
   })).one()
 
-  const gameFactory = new GameFactory(organisation)
-  const games = await gameFactory.many(2)
+  const games = await new GameFactory(organisation).many(2)
 
-  const playerFactory = new PlayerFactory(games)
-  const players = await playerFactory.many(50)
+  const players = await new PlayerFactory(games).many(50)
 
-  const eventFactory = new EventFactory(players)
-  const eventsThisMonth = await eventFactory.state('this month').many(300)
+  const eventsThisMonth = await new EventFactory(players).state('this month').many(300)
+
+  const leaderboards = await new LeaderboardFactory(games).many(6)
 
   await orm.em.persistAndFlush([
     devUser,
@@ -43,7 +43,8 @@ import OrganisationFactory from './fixtures/OrganisationFactory'
     ...users,
     ...games,
     ...players,
-    ...eventsThisMonth
+    ...eventsThisMonth,
+    ...leaderboards
   ])
 
   await orm.close(true)

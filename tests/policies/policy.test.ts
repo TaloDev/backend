@@ -43,7 +43,7 @@ describe('Policy base class', () => {
     const token = await genAccessToken(user)
     await (<EntityManager>app.context.em).removeAndFlush(user)
 
-    const res = await request(app.callback())
+    await request(app.callback())
       .get('/events')
       .query({ gameId: game.id,startDate: '2021-01-01', endDate: '2021-01-02' })
       .auth(token, { type: 'bearer' })

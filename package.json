@@ -1,6 +1,6 @@
 {
   "name": "game-services",
-  "version": "0.0.6",
+  "version": "0.1.0",
   "description": "",
   "main": "src/index.ts",
   "scripts": {
@@ -15,7 +15,8 @@
     "restart": "yarn down && yarn up",
     "migration:create": "DB_HOST=127.0.0.1 mikro-orm migration:create",
     "service:create": "hygen service new",
-    "prepare": "husky install"
+    "prepare": "husky install",
+    "lint": "eslint src/**/*.ts tests/**/*.ts"
   },
   "author": "Sleepy Studios",
   "license": "MIT",
@@ -26,7 +27,7 @@
     "@types/koa": "^2.11.6",
     "@types/koa-bodyparser": "^4.3.0",
     "@types/koa-logger": "^3.1.1",
-    "@types/lodash": "^4.14.170",
+    "@types/lodash": "^4.14.176",
     "@types/node": "^14.14.16",
     "@types/redis": "^2.8.29",
     "@types/supertest": "^2.0.10",
@@ -66,7 +67,7 @@
     "koa-helmet": "^6.0.0",
     "koa-jwt": "^4.0.0",
     "koa-logger": "^3.2.1",
-    "koa-rest-services": "^4.0.1",
+    "koa-rest-services": "^4.0.2",
     "lodash.get": "^4.4.2",
     "lodash.groupby": "^4.6.0",
     "lodash.uniqwith": "^4.5.0",
@@ -80,6 +81,6 @@
     ]
   },
   "lint-staged": {
-    "*.{js,ts}": "eslint --cache --fix"
+    "*.{js,ts}": "eslint --fix"
   }
 }

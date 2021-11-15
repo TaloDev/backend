@@ -1,3 +1,5 @@
+import Leaderboard from './leaderboard'
+import LeaderboardEntry from './leaderboard-entry'
 import APIKey from './api-key'
 import DataExport from './data-export'
 import Event from './event'
@@ -12,6 +14,8 @@ import UserAccessCode from './user-access-code'
 import UserSession from './user-session'
 
 export default [
+  Leaderboard,
+  LeaderboardEntry,
   DataExport,
   APIKey,
   Event,

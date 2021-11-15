@@ -175,7 +175,7 @@ export default class UsersPublicService implements Service {
       const sign = promisify(jwt.sign)
       const accessToken = await sign(payload, secret, { expiresIn: '15m' })
 
-      // TODO send accessToken in email
+      // todo send accessToken in email
       temp = accessToken
     } catch (err) {
       return {

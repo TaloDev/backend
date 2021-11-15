@@ -29,7 +29,9 @@ jobs:
         uses: docker/build-push-action@v2
         with:
           push: true
-          tags: ghcr.io/talodev/backend:${{ env.TAG }}
+          tags: |
+            ghcr.io/talodev/backend:latest
+            ghcr.io/talodev/backend:${{ env.TAG }}
           target: prod
 
       - name: Image digest

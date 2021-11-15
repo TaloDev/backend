@@ -104,10 +104,22 @@ describe('Leaderboards service - post', () => {
 
     const res = await request(app.callback())
       .post(`${baseUrl}`)
-      .send({ gameId: validGame.id, internalName: 'highscores', name: 'Highscores', sortMode: 'blah', unique: true })
+      .send({ gameId: validGame.id, internalName: 'highscores', name: 'Highscores', sortMode: 'asc', unique: true })
       .auth(token, { type: 'bearer' })
       .expect(400)
 
     expect(res.body).toStrictEqual({ message: 'A leaderboard with the internalName highscores already exists' })
+  })
+
+  it('should create a leaderboard with a duplicate internal name for another game', async () => {
+    const otherGame = await new GameFactory(user.organisation).one()
+    const otherLeaderboard = await new LeaderboardFactory([otherGame]).with(() => ({ internalName: 'time-survived' })).one()
+    await (<EntityManager>app.context.em).persistAndFlush(otherLeaderboard)
+
+    await request(app.callback())
+      .post(`${baseUrl}`)
+      .send({ gameId: validGame.id, internalName: 'time-survived', name: 'Time survived', sortMode: 'asc', unique: true })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
   })
 })

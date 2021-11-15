@@ -4544,10 +4544,10 @@ koa-logger@^3.2.1:
     humanize-number "0.0.2"
     passthrough-counter "^1.0.0"
 
-koa-rest-services@^4.0.2:
-  version "4.0.2"
-  resolved "https://registry.yarnpkg.com/koa-rest-services/-/koa-rest-services-4.0.2.tgz#329b4524c855522d1cf53498701830f8686441f1"
-  integrity sha512-UhqTsAgQCkeHJQb8V54tBvWltvyfbp2s5+JH58D8t5U6CwAb42f1Qw4RCkUjnS8bhFdqgvkzg+pBXYWjpkyagA==
+koa-rest-services@^4.0.3:
+  version "4.0.3"
+  resolved "https://registry.yarnpkg.com/koa-rest-services/-/koa-rest-services-4.0.3.tgz#13e4ee866445ac107d6c5b2390ed9c30772ed564"
+  integrity sha512-VuH55JS4P+fiMI+gpkKHxHlX7n+AiWNPmZNACtpqT9m8jU4wyyGHLoXb2rO3IDPWt09+nLAECAR8gQt2LCaGBg==
   dependencies:
     lodash.set "^4.3.2"
     path-to-regexp "^6.2.0"

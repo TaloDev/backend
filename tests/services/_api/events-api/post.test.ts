@@ -30,12 +30,6 @@ describe('Events API service - post', () => {
     await (<EntityManager>app.context.em).persistAndFlush([apiKey, validPlayer])
   })
 
-  beforeEach(async () => {
-    // const repo = (<EntityManager>app.context.em).getRepository(Event)
-    // const events = await repo.findAll()
-    // await repo.removeAndFlush(events)
-  })
-
   afterAll(async () => {
     await (<EntityManager>app.context.em).getConnection().close()
   })

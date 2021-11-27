@@ -59,7 +59,7 @@ export default class LeaderboardsService implements Service {
       gameId: true,
       internalName: async (val: string, req: ServiceRequest): Promise<boolean> => {
         const em: EntityManager = req.ctx.em
-        const duplicateInternalName = await em.getRepository(Leaderboard).findOne({ internalName: val })
+        const duplicateInternalName = await em.getRepository(Leaderboard).findOne({ internalName: val, game: req.body.gameId })
 
         if (duplicateInternalName) throw new Error(`A leaderboard with the internalName ${val} already exists`)
 

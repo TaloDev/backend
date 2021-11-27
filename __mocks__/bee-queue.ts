@@ -3,20 +3,32 @@ import { EventEmitter } from 'events'
 class Job<T> extends EventEmitter {
   data: T
   queue: Queue<T>
+  date: Date
 
   constructor(data: T, queue: Queue<T>)  {
     super()
     this.data = data
     this.queue = queue
+    this.date = new Date()
   }
 
-  async process(handler: (job: Job<T>) => Promise<T>): Promise<void> {
-    await handler(this)
+  delayUntil(date: Date): Job<T> {
+    this.date = date
+    return this
+  }
+
+  async save(): Promise<Job<T>> {
+    try {
+      await this.queue.handler(this)
+    } catch (err) {
+      this.emit('failed', err)
+    }
+
+    return this
   }
 }
 
-export default class Queue<T = any> extends EventEmitter {
-  job: Job<T>
+export default class Queue<T = unknown> extends EventEmitter {
   handler: (job: Job<T>) => Promise<T>
   name: string
 
@@ -29,22 +41,12 @@ export default class Queue<T = any> extends EventEmitter {
     this.handler = handler
   }
 
-  createJob(data: T): Queue<T> {
-    this.job = new Job(data, this)
-    return this
-  }
+  createJob(data: T): Job<T> {
+    const job = new Job<T>(data, this)
+    job.on('failed', (err: Error) => {
+      this.emit('failed', job, err)
+    })
 
-  delayUntil(date: Date): Queue<T> {
-    return this
-  }
-
-  async save(): Promise<Queue<T>> {
-    try {
-      await this.job.process(this.handler)
-    } catch (err) {
-      this.emit('failed', this.job, err)
-    }
-
-    return this
+    return job
   }
 }

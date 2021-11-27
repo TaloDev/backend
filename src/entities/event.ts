@@ -1,4 +1,4 @@
-import { Entity, Embedded, ManyToOne, PrimaryKey, Property } from '@mikro-orm/core'
+import { Entity, Embedded, ManyToOne, PrimaryKey, Property, Cascade } from '@mikro-orm/core'
 import Game from './game'
 import PlayerAlias from './player-alias'
 import Prop from './prop'
@@ -17,7 +17,7 @@ export default class Event {
   @ManyToOne(() => Game)
   game: Game
 
-  @ManyToOne(() => PlayerAlias)
+  @ManyToOne(() => PlayerAlias, { cascade: [Cascade.REMOVE] })
   playerAlias: PlayerAlias
 
   @Property()

@@ -6,7 +6,6 @@ import Player from '../../../../src/entities/player'
 import Game from '../../../../src/entities/game'
 import APIKey, { APIKeyScope } from '../../../../src/entities/api-key'
 import { createToken } from '../../../../src/services/api-keys.service'
-import Event from '../../../../src/entities/event'
 import UserFactory from '../../../fixtures/UserFactory'
 import PlayerFactory from '../../../fixtures/PlayerFactory'
 import GameFactory from '../../../fixtures/GameFactory'
@@ -31,12 +30,6 @@ describe('Events API service - post', () => {
     await (<EntityManager>app.context.em).persistAndFlush([apiKey, validPlayer])
   })
 
-  beforeEach(async () => {
-    const repo = (<EntityManager>app.context.em).getRepository(Event)
-    const events = await repo.findAll()
-    await repo.removeAndFlush(events)
-  })
-
   afterAll(async () => {
     await (<EntityManager>app.context.em).getConnection().close()
   })
@@ -46,14 +39,15 @@ describe('Events API service - post', () => {
     await (<EntityManager>app.context.em).flush()
     token = await createToken(apiKey)
 
-    await request(app.callback())
+    const res = await request(app.callback())
       .post(`${baseUrl}`)
       .send({ events: [{ name: 'Craft bow', aliasId: validPlayer.aliases[0].id, timestamp: Date.now() }] })
       .auth(token, { type: 'bearer' })
       .expect(200)
 
-    const event = await (<EntityManager>app.context.em).getRepository(Event).findOne({ name: 'Craft bow' })
-    expect(event).toBeTruthy()
+    expect(res.body.events).toHaveLength(1)
+    expect(res.body.events[0].name).toBe('Craft bow')
+    expect(res.body.events[0].playerAlias.id).toBe(validPlayer.aliases[0].id)
   })
 
   it('should create multiple events if the scope is valid', async () => {

@@ -5,6 +5,9 @@ import buildTokenPair from '../lib/auth/buildTokenPair'
 import bcrypt from 'bcrypt'
 import getUserFromToken from '../lib/auth/getUserFromToken'
 import UserAccessCode from '../entities/user-access-code'
+import { authenticator } from '@otplib/preset-default'
+import UserTwoFactorAuth from '../entities/user-two-factor-auth'
+import qrcode from 'qrcode'
 
 @Routes([
   {
@@ -26,6 +29,21 @@ import UserAccessCode from '../entities/user-access-code'
     method: 'POST',
     path: '/confirm_email',
     handler: 'confirmEmail'
+  },
+  {
+    method: 'GET',
+    path: '/2fa/enable',
+    handler: 'enable2fa'
+  },
+  {
+    method: 'POST',
+    path: '/2fa/enable',
+    handler: 'confirm2fa'
+  },
+  {
+    method: 'POST',
+    path: '/2fa/disable',
+    handler: 'disable2fa'
   }
 ])
 export default class UsersService implements Service {
@@ -103,11 +121,85 @@ export default class UsersService implements Service {
         }
       })
     } catch (err) {
-      req.ctx.throw(400, 'Invalid code')
+      req.ctx.throw(400, 'Invalid or expired code')
     }
 
     user.emailConfirmed = true
     await em.getRepository(UserAccessCode).removeAndFlush(accessCode)
+
+    return {
+      status: 200,
+      body: {
+        user
+      }
+    }
+  }
+
+  async enable2fa(req: ServiceRequest): Promise<ServiceResponse> {
+    const em: EntityManager = req.ctx.em
+
+    const user = await getUserFromToken(req.ctx)
+
+    const secret = authenticator.generateSecret()
+    const keyUri = authenticator.keyuri(user.email, 'Talo', secret)
+    const qr = await qrcode.toDataURL(keyUri)
+
+    user.twoFactorAuth = new UserTwoFactorAuth(secret)
+    await em.flush()
+
+    return {
+      status: 200,
+      body: {
+        qr
+      }
+    }
+  }
+
+  @Validate({
+    body: ['token']
+  })
+  async confirm2fa(req: ServiceRequest): Promise<ServiceResponse> {
+    const { token } = req.body
+    const em: EntityManager = req.ctx.em
+
+    const user = await getUserFromToken(req.ctx, ['twoFactorAuth'])
+
+    if (user.twoFactorAuth?.enabled) {
+      req.ctx.throw(403, 'Two factor authentication is already enabled')
+    }
+
+    if (!authenticator.check(token, user.twoFactorAuth.secret)) {
+      req.ctx.throw(403, 'Invalid token')
+    }
+
+    user.twoFactorAuth.enabled = true
+    await em.flush()
+
+    return {
+      status: 200,
+      body: {
+        user
+      }
+    }
+  }
+
+  @Validate({
+    body: ['password']
+  })
+  async disable2fa(req: ServiceRequest): Promise<ServiceResponse> {
+    const { password } = req.body
+    const em: EntityManager = req.ctx.em
+
+    const user = await getUserFromToken(req.ctx, ['twoFactorAuth'])
+
+    if (user.twoFactorAuth?.enabled) {
+      req.ctx.throw(403, 'Two factor authentication is already enabled')
+    }
+
+    const passwordMatches = await bcrypt.compare(password, user.password)
+    if (!passwordMatches) req.ctx.throw(401, 'Incorrect password')
+
+    await em.removeAndFlush(user.twoFactorAuth)
 
     return {
       status: 200,

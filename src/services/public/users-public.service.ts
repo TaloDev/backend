@@ -14,6 +14,9 @@ import { EmailConfig } from '../../lib/messaging/sendEmail'
 import { add } from 'date-fns'
 import Queue from 'bee-queue'
 import confirmEmail from '../../emails/confirm-email'
+import { authenticator } from '@otplib/preset-default'
+import Redis from 'ioredis'
+import redisConfig from '../../config/redis.config'
 
 @Routes([
   {
@@ -40,6 +43,11 @@ import confirmEmail from '../../emails/confirm-email'
     method: 'POST',
     path: '/change_password',
     handler: 'changePassword'
+  },
+  {
+    method: 'POST',
+    path: '/2fa',
+    handler: 'verify2fa'
   }
 ])
 export default class UsersPublicService implements Service {
@@ -113,11 +121,24 @@ export default class UsersPublicService implements Service {
     const { email, password } = req.body
     const em: EntityManager = req.ctx.em
 
-    const user = await em.getRepository(User).findOne({ email })
+    const user = await em.getRepository(User).findOne({ email }, ['twoFactorAuth'])
     if (!user) this.handleFailedLogin(req)
 
     const passwordMatches = await bcrypt.compare(password, user.password)
     if (!passwordMatches) this.handleFailedLogin(req)
+
+    if (user.twoFactorAuth?.enabled) {
+      const redis = new Redis(redisConfig)
+      await redis.set(`2fa:${user.id}`, 'true', 'ex', 300)
+
+      return {
+        status: 200,
+        body: {
+          twoFactorAuthRequired: true,
+          userId: user.id
+        }
+      }
+    }
 
     const accessToken = await buildTokenPair(req.ctx, user)
 
@@ -220,6 +241,39 @@ export default class UsersPublicService implements Service {
     await userSessionRepo.remove(sessions)
 
     const accessToken = await buildTokenPair(req.ctx, user)
+
+    return {
+      status: 200,
+      body: {
+        accessToken,
+        user
+      }
+    }
+  }
+
+  @Validate({
+    body: ['token', 'userId']
+  })
+  @After(setUserLastSeenAt)
+  async verify2fa(req: ServiceRequest): Promise<ServiceResponse> {
+    const { token, userId } = req.body
+    const em: EntityManager = req.ctx.em
+
+    const user = await em.getRepository(User).findOne(userId, ['twoFactorAuth'])
+
+    const redis = new Redis(redisConfig)
+    const hasSession = (await redis.get(`2fa:${user.id}`)) === 'true'
+
+    if (!hasSession) {
+      req.ctx.throw(403, 'Session expired')
+    }
+
+    if (!authenticator.check(token, user.twoFactorAuth.secret)) {
+      req.ctx.throw(403, 'Invalid token')
+    }
+
+    const accessToken = await buildTokenPair(req.ctx, user)
+    await redis.del(`2fa:${user.id}`)
 
     return {
       status: 200,

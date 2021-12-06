@@ -1,5 +1,6 @@
-import { Entity, Enum, ManyToOne, PrimaryKey, Property } from '@mikro-orm/core'
+import { Entity, Enum, ManyToOne, OneToOne, PrimaryKey, Property } from '@mikro-orm/core'
 import Organisation from './organisation'
+import UserTwoFactorAuth from './user-two-factor-auth'
 
 export enum UserType {
   DEV,
@@ -30,6 +31,9 @@ export default class User {
   @Property({ default: false })
   emailConfirmed: boolean
 
+  @OneToOne({ nullable: true })
+  twoFactorAuth: UserTwoFactorAuth
+
   @Property()
   createdAt: Date = new Date()
 
@@ -43,7 +47,8 @@ export default class User {
       lastSeenAt: this.lastSeenAt,
       emailConfirmed: this.emailConfirmed,
       organisation: this.organisation,
-      type: this.type
+      type: this.type,
+      has2fa: this.twoFactorAuth?.enabled ?? false
     }
   }
 }

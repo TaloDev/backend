@@ -12,8 +12,10 @@ import Prop from './prop'
 import User from './user'
 import UserAccessCode from './user-access-code'
 import UserSession from './user-session'
+import UserTwoFactorAuth from './user-two-factor-auth'
 
 export default [
+  UserTwoFactorAuth,
   Leaderboard,
   LeaderboardEntry,
   DataExport,

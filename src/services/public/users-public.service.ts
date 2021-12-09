@@ -17,6 +17,8 @@ import confirmEmail from '../../emails/confirm-email'
 import { authenticator } from '@otplib/preset-default'
 import Redis from 'ioredis'
 import redisConfig from '../../config/redis.config'
+import UserRecoveryCode from '../../entities/user-recovery-code'
+import generateRecoveryCodes from '../../lib/auth/generateRecoveryCodes'
 
 @Routes([
   {
@@ -48,6 +50,11 @@ import redisConfig from '../../config/redis.config'
     method: 'POST',
     path: '/2fa',
     handler: 'verify2fa'
+  },
+  {
+    method: 'POST',
+    path: '/2fa/recover',
+    handler: 'useRecoveryCode'
   }
 ])
 export default class UsersPublicService implements Service {
@@ -280,6 +287,53 @@ export default class UsersPublicService implements Service {
       body: {
         accessToken,
         user
+      }
+    }
+  }
+
+  @Validate({
+    body: ['code', 'userId']
+  })
+  async useRecoveryCode(req: ServiceRequest): Promise<ServiceResponse> {
+    const { code, userId } = req.body
+    const em: EntityManager = req.ctx.em
+
+    const user = await em.getRepository(User).findOne(userId, ['recoveryCodes'])
+
+    const redis = new Redis(redisConfig)
+    const hasSession = (await redis.get(`2fa:${user.id}`)) === 'true'
+
+    if (!hasSession) {
+      req.ctx.throw(403, 'Session expired')
+    }
+
+    const recoveryCode = user.recoveryCodes.getItems().find((recoveryCode) => {
+      return recoveryCode.getPlainCode() === code
+    })
+
+    if (!recoveryCode) {
+      req.ctx.throw(403, 'Invalid code')
+    }
+
+    em.remove(recoveryCode)
+
+    let newRecoveryCodes: UserRecoveryCode[]
+    if (user.recoveryCodes.count() === 0) {
+      newRecoveryCodes = generateRecoveryCodes(user)
+      user.recoveryCodes.set(newRecoveryCodes)
+    }
+
+    await em.flush()
+
+    const accessToken = await buildTokenPair(req.ctx, user)
+    await redis.del(`2fa:${user.id}`)
+
+    return {
+      status: 200,
+      body: {
+        user,
+        accessToken,
+        newRecoveryCodes
       }
     }
   }

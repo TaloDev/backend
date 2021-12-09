@@ -2,6 +2,7 @@ import { Migration20210725211129 } from './Migration20210725211129'
 import { Migration20210926160859 } from './Migration20210926160859'
 import { Migration20211107233610 } from './Migration20211107233610'
 import { Migration20211205171927 } from './Migration20211205171927'
+import { Migration20211209003017 } from './Migration20211209003017'
 
 export default [
   {
@@ -19,5 +20,9 @@ export default [
   {
     name: 'Migration20211205171927',
     class: Migration20211205171927
+  },
+  {
+    name: 'Migration20211209003017',
+    class: Migration20211209003017
   }
 ]

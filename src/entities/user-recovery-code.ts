@@ -1,4 +1,4 @@
-import { Cascade, Entity, ManyToOne, PrimaryKey, Property } from '@mikro-orm/core'
+import { Entity, ManyToOne, PrimaryKey, Property } from '@mikro-orm/core'
 import User from './user'
 import crypto from 'crypto'
 

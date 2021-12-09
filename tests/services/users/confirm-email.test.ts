@@ -59,7 +59,7 @@ describe('Users service - confirm email', () => {
       .auth(token, { type: 'bearer' })
       .expect(400)
 
-      expect(res.body).toStrictEqual({ message: 'Invalid code' })
+    expect(res.body).toStrictEqual({ message: 'Invalid or expired code' })
   })
 
   it('should not let a user confirm their email with an invalid code', async () => {
@@ -69,6 +69,6 @@ describe('Users service - confirm email', () => {
       .auth(token, { type: 'bearer' })
       .expect(400)
 
-    expect(res.body).toStrictEqual({ message: 'Invalid code' })
+    expect(res.body).toStrictEqual({ message: 'Invalid or expired code' })
   })
 })

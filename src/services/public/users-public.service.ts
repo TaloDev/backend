@@ -95,6 +95,7 @@ export default class UsersPublicService implements Service {
   }
 
   async sendEmailConfirm(hook: HookParams): Promise<void> {
+    /* istanbul ignore else */
     if (hook.result.status === 200) {
       hook.req.ctx.state.user = jwt.decode(hook.result.body.accessToken)
       const user: User = await getUserFromToken(hook.req.ctx)
@@ -318,7 +319,7 @@ export default class UsersPublicService implements Service {
     em.remove(recoveryCode)
 
     let newRecoveryCodes: UserRecoveryCode[]
-    if (user.recoveryCodes.count() === 0) {
+    if (user.recoveryCodes.count() === 1) { // hasn't been flushed yet so still 1, not 0
       newRecoveryCodes = generateRecoveryCodes(user)
       user.recoveryCodes.set(newRecoveryCodes)
     }

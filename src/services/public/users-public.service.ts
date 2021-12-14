@@ -129,7 +129,7 @@ export default class UsersPublicService implements Service {
     const { email, password } = req.body
     const em: EntityManager = req.ctx.em
 
-    const user = await em.getRepository(User).findOne({ email }, ['twoFactorAuth'])
+    const user = await em.getRepository(User).findOne({ email })
     if (!user) this.handleFailedLogin(req)
 
     const passwordMatches = await bcrypt.compare(password, user.password)
@@ -260,14 +260,14 @@ export default class UsersPublicService implements Service {
   }
 
   @Validate({
-    body: ['token', 'userId']
+    body: ['code', 'userId']
   })
   @After(setUserLastSeenAt)
   async verify2fa(req: ServiceRequest): Promise<ServiceResponse> {
-    const { token, userId } = req.body
+    const { code, userId } = req.body
     const em: EntityManager = req.ctx.em
 
-    const user = await em.getRepository(User).findOne(userId, ['twoFactorAuth'])
+    const user = await em.getRepository(User).findOne(userId)
 
     const redis = new Redis(redisConfig)
     const hasSession = (await redis.get(`2fa:${user.id}`)) === 'true'
@@ -276,8 +276,8 @@ export default class UsersPublicService implements Service {
       req.ctx.throw(403, 'Session expired')
     }
 
-    if (!authenticator.check(token, user.twoFactorAuth.secret)) {
-      req.ctx.throw(403, 'Invalid token')
+    if (!authenticator.check(code, user.twoFactorAuth.secret)) {
+      req.ctx.throw(403, 'Invalid code')
     }
 
     const accessToken = await buildTokenPair(req.ctx, user)

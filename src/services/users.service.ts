@@ -150,7 +150,7 @@ export default class UsersService implements Service {
   async enable2fa(req: ServiceRequest): Promise<ServiceResponse> {
     const em: EntityManager = req.ctx.em
 
-    const user = await getUserFromToken(req.ctx, ['twoFactorAuth'])
+    const user = await getUserFromToken(req.ctx)
 
     if (user.twoFactorAuth?.enabled) {
       req.ctx.throw(403, 'Two factor authentication is already enabled')
@@ -172,20 +172,20 @@ export default class UsersService implements Service {
   }
 
   @Validate({
-    body: ['token']
+    body: ['code']
   })
   async confirm2fa(req: ServiceRequest): Promise<ServiceResponse> {
-    const { token } = req.body
+    const { code } = req.body
     const em: EntityManager = req.ctx.em
 
-    const user = await getUserFromToken(req.ctx, ['twoFactorAuth'])
+    const user = await getUserFromToken(req.ctx)
 
     if (user.twoFactorAuth?.enabled) {
       req.ctx.throw(403, 'Two factor authentication is already enabled')
     }
 
-    if (!authenticator.check(token, user.twoFactorAuth?.secret)) {
-      req.ctx.throw(403, 'Invalid token')
+    if (!authenticator.check(code, user.twoFactorAuth?.secret)) {
+      req.ctx.throw(403, 'Invalid code')
     }
 
     user.recoveryCodes.set(generateRecoveryCodes(user))
@@ -211,7 +211,7 @@ export default class UsersService implements Service {
   }
 
   async requires2fa(hook: HookParams): Promise<void> {
-    const user = await getUserFromToken(hook.req.ctx, ['twoFactorAuth'])
+    const user = await getUserFromToken(hook.req.ctx)
 
     if (!user.twoFactorAuth?.enabled) {
       hook.req.ctx.throw(403, 'Two factor authentication needs to be enabled')

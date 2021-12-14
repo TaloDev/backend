@@ -23,7 +23,7 @@ export default class UserRecoveryCode {
   }
 
   generateCode(): string {
-    const code = Math.random().toString(36).slice(2)
+    const code = Math.random().toString(36).slice(3)
 
     const iv = Buffer.from(crypto.randomBytes(IV_LENGTH)).toString('hex').slice(0, IV_LENGTH)
     const cipher = crypto.createCipheriv('aes-256-cbc', Buffer.from(process.env.RECOVERY_CODES_SECRET), iv)

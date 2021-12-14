@@ -36,7 +36,7 @@ describe('Users service - confirm 2fa', () => {
 
     const res = await request(app.callback())
       .post(`${baseUrl}/2fa/enable`)
-      .send({ token: '123456' })
+      .send({ code: '123456' })
       .auth(token, { type: 'bearer' })
       .expect(200)
 
@@ -54,7 +54,7 @@ describe('Users service - confirm 2fa', () => {
 
     const res = await request(app.callback())
       .post(`${baseUrl}/2fa/enable`)
-      .send({ token: '123456' })
+      .send({ code: '123456' })
       .auth(token, { type: 'bearer' })
       .expect(403)
 
@@ -69,11 +69,11 @@ describe('Users service - confirm 2fa', () => {
 
     const res = await request(app.callback())
       .post(`${baseUrl}/2fa/enable`)
-      .send({ token: '123456' })
+      .send({ code: '123456' })
       .auth(token, { type: 'bearer' })
       .expect(403)
 
-    expect(res.body).toStrictEqual({ message: 'Invalid token' })
+    expect(res.body).toStrictEqual({ message: 'Invalid code' })
   })
 
   it('should not let users confirm enabling 2fa if it was not requested to be enabled', async () => {
@@ -82,10 +82,10 @@ describe('Users service - confirm 2fa', () => {
 
     const res = await request(app.callback())
       .post(`${baseUrl}/2fa/enable`)
-      .send({ token: '123456' })
+      .send({ code: '123456' })
       .auth(token, { type: 'bearer' })
       .expect(403)
 
-    expect(res.body).toStrictEqual({ message: 'Invalid token' })
+    expect(res.body).toStrictEqual({ message: 'Invalid code' })
   })
 })

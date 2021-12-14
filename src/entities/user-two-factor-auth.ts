@@ -9,7 +9,7 @@ export default class UserTwoFactorAuth {
   @OneToOne(() => User, (user) => user.twoFactorAuth)
   user: User
 
-  @Property()
+  @Property({ hidden: true })
   secret: string
 
   @Property()

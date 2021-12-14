@@ -41,7 +41,7 @@ describe('Users public service - verify 2fa', () => {
 
     const res = await request(app.callback())
       .post(`${baseUrl}/2fa`)
-      .send({ token: '123456', userId: user.id })
+      .send({ code: '123456', userId: user.id })
       .auth(token, { type: 'bearer' })
       .expect(200)
 
@@ -55,7 +55,7 @@ describe('Users public service - verify 2fa', () => {
   it('should not let users verify their 2fa without a session', async () => {
     const res = await request(app.callback())
       .post(`${baseUrl}/2fa`)
-      .send({ token: '123456', userId: user.id })
+      .send({ code: '123456', userId: user.id })
       .auth(token, { type: 'bearer' })
       .expect(403)
 
@@ -69,10 +69,10 @@ describe('Users public service - verify 2fa', () => {
 
     const res = await request(app.callback())
       .post(`${baseUrl}/2fa`)
-      .send({ token: '123456', userId: user.id })
+      .send({ code: '123456', userId: user.id })
       .auth(token, { type: 'bearer' })
       .expect(403)
 
-    expect(res.body).toStrictEqual({ message: 'Invalid token' })
+    expect(res.body).toStrictEqual({ message: 'Invalid code' })
   })
 })

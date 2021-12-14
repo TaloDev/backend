@@ -32,7 +32,7 @@ export default class User {
   @Property({ default: false })
   emailConfirmed: boolean
 
-  @OneToOne({ nullable: true, orphanRemoval: true })
+  @OneToOne({ nullable: true, orphanRemoval: true, eager: true })
   twoFactorAuth: UserTwoFactorAuth
 
   @OneToMany(() => UserRecoveryCode, (recoveryCode) => recoveryCode.user, { orphanRemoval: true })

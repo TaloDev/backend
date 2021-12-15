@@ -23,7 +23,12 @@ export default class UserRecoveryCode {
   }
 
   generateCode(): string {
-    const code = Math.random().toString(36).slice(3)
+    const characters = 'ABCDEFGHIJKMNOPQRSTUVWXYZ0123456789'
+    let code = ''
+
+    for (let i = 0; i < 10; i++ ) {
+      code += characters.charAt(Math.floor(Math.random() * characters.length))
+    }
 
     const iv = Buffer.from(crypto.randomBytes(IV_LENGTH)).toString('hex').slice(0, IV_LENGTH)
     const cipher = crypto.createCipheriv('aes-256-cbc', Buffer.from(process.env.RECOVERY_CODES_SECRET), iv)
@@ -36,7 +41,7 @@ export default class UserRecoveryCode {
   getPlainCode(): string {
     const textParts: string[] = this.code.split(':')
 
-    const iv = Buffer.from(textParts.shift() || '', 'binary')
+    const iv = Buffer.from(textParts.shift(), 'binary')
     const encryptedText = Buffer.from(textParts.join(':'), 'hex')
     const decipher = crypto.createDecipheriv('aes-256-cbc', Buffer.from(process.env.RECOVERY_CODES_SECRET), iv)
     let decrypted = decipher.update(encryptedText)

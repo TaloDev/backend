@@ -36,7 +36,7 @@ describe('Users service - change password', () => {
       .send({ currentPassword: 'password', newPassword: 'mynewpassword' })
       .auth(token, { type: 'bearer' })
       .expect(200)
-    
+
     expect(res.body.accessToken).toBeTruthy()
   })
 
@@ -49,7 +49,7 @@ describe('Users service - change password', () => {
       .send({ currentPassword: 'passw0rd', newPassword: 'password2' })
       .auth(token, { type: 'bearer' })
       .expect(401)
-    
+
     expect(res.body).toStrictEqual({ message: 'Current password is incorrect' })
   })
 
@@ -62,7 +62,7 @@ describe('Users service - change password', () => {
       .send({ currentPassword: 'password', newPassword: 'password' })
       .auth(token, { type: 'bearer' })
       .expect(400)
-    
+
     expect(res.body).toStrictEqual({ message: 'Please choose a different password' })
   })
 })

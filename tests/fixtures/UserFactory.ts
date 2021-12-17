@@ -3,6 +3,10 @@ import User, { UserType } from '../../src/entities/user'
 import casual from 'casual'
 import bcrypt from 'bcrypt'
 import OrganisationFactory from './OrganisationFactory'
+import UserTwoFactorAuth from '../../src/entities/user-two-factor-auth'
+import UserRecoveryCode from '../../src/entities/user-recovery-code'
+import generateRecoveryCodes from '../../src/lib/auth/generateRecoveryCodes'
+import { Collection } from '@mikro-orm/core'
 
 export default class UserFactory extends Factory<User> {
   constructor() {
@@ -12,6 +16,7 @@ export default class UserFactory extends Factory<User> {
     this.register('loginable', this.loginable)
     this.register('admin', this.admin)
     this.register('demo', this.demo)
+    this.register('has2fa', this.has2fa)
   }
 
   protected async base(): Promise<Partial<User>> {
@@ -32,7 +37,7 @@ export default class UserFactory extends Factory<User> {
 
   protected async loginable(): Promise<Partial<User>> {
     return {
-      email: 'dev@trytalo.com',
+      email: casual.email,
       password: await bcrypt.hash('password', 10)
     }
   }
@@ -48,6 +53,18 @@ export default class UserFactory extends Factory<User> {
       type: UserType.DEMO,
       email: `demo+${Date.now()}@demo.io`,
       emailConfirmed: true
+    }
+  }
+
+  protected has2fa(user: User): Partial<User> {
+    const twoFactorAuth = new UserTwoFactorAuth(casual.word)
+    twoFactorAuth.enabled = true
+
+    const recoveryCodes = new Collection<UserRecoveryCode>(user, generateRecoveryCodes(user))
+
+    return {
+      twoFactorAuth,
+      recoveryCodes
     }
   }
 }

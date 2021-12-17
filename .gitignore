@@ -7,3 +7,4 @@ dist/
 coverage/
 backup.sql
 .eslintcache
+tests/cache.json

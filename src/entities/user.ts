@@ -1,5 +1,7 @@
-import { Entity, Enum, ManyToOne, PrimaryKey, Property } from '@mikro-orm/core'
+import { Collection, Entity, Enum, ManyToOne, OneToMany, OneToOne, PrimaryKey, Property } from '@mikro-orm/core'
 import Organisation from './organisation'
+import UserRecoveryCode from './user-recovery-code'
+import UserTwoFactorAuth from './user-two-factor-auth'
 
 export enum UserType {
   DEV,
@@ -30,6 +32,12 @@ export default class User {
   @Property({ default: false })
   emailConfirmed: boolean
 
+  @OneToOne({ nullable: true, orphanRemoval: true, eager: true })
+  twoFactorAuth: UserTwoFactorAuth
+
+  @OneToMany(() => UserRecoveryCode, (recoveryCode) => recoveryCode.user, { orphanRemoval: true })
+  recoveryCodes: Collection<UserRecoveryCode> = new Collection<UserRecoveryCode>(this)
+
   @Property()
   createdAt: Date = new Date()
 
@@ -43,7 +51,8 @@ export default class User {
       lastSeenAt: this.lastSeenAt,
       emailConfirmed: this.emailConfirmed,
       organisation: this.organisation,
-      type: this.type
+      type: this.type,
+      has2fa: this.twoFactorAuth?.enabled ?? false
     }
   }
 }

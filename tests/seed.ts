@@ -9,9 +9,9 @@ import LeaderboardFactory from './fixtures/LeaderboardFactory'
 
 (async () => {
   const orm = await MikroORM.init()
-  const generator = orm.getSchemaGenerator()
-  await generator.dropSchema()
-  await generator.createSchema()
+  await orm.getSchemaGenerator().dropSchema()
+  await orm.em.getConnection().execute('drop table if exists mikro_orm_migrations')
+  await orm.getMigrator().up()
 
   const organisation = await new OrganisationFactory().with(() => ({ name: process.env.DEMO_ORGANISATION_NAME })).one()
 

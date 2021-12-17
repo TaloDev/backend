@@ -14,6 +14,11 @@ import { EmailConfig } from '../../lib/messaging/sendEmail'
 import { add } from 'date-fns'
 import Queue from 'bee-queue'
 import confirmEmail from '../../emails/confirm-email'
+import { authenticator } from '@otplib/preset-default'
+import Redis from 'ioredis'
+import redisConfig from '../../config/redis.config'
+import UserRecoveryCode from '../../entities/user-recovery-code'
+import generateRecoveryCodes from '../../lib/auth/generateRecoveryCodes'
 
 @Routes([
   {
@@ -40,6 +45,16 @@ import confirmEmail from '../../emails/confirm-email'
     method: 'POST',
     path: '/change_password',
     handler: 'changePassword'
+  },
+  {
+    method: 'POST',
+    path: '/2fa',
+    handler: 'verify2fa'
+  },
+  {
+    method: 'POST',
+    path: '/2fa/recover',
+    handler: 'useRecoveryCode'
   }
 ])
 export default class UsersPublicService implements Service {
@@ -80,6 +95,7 @@ export default class UsersPublicService implements Service {
   }
 
   async sendEmailConfirm(hook: HookParams): Promise<void> {
+    /* istanbul ignore else */
     if (hook.result.status === 200) {
       hook.req.ctx.state.user = jwt.decode(hook.result.body.accessToken)
       const user: User = await getUserFromToken(hook.req.ctx)
@@ -118,6 +134,19 @@ export default class UsersPublicService implements Service {
 
     const passwordMatches = await bcrypt.compare(password, user.password)
     if (!passwordMatches) this.handleFailedLogin(req)
+
+    if (user.twoFactorAuth?.enabled) {
+      const redis = new Redis(redisConfig)
+      await redis.set(`2fa:${user.id}`, 'true', 'ex', 300)
+
+      return {
+        status: 200,
+        body: {
+          twoFactorAuthRequired: true,
+          userId: user.id
+        }
+      }
+    }
 
     const accessToken = await buildTokenPair(req.ctx, user)
 
@@ -226,6 +255,86 @@ export default class UsersPublicService implements Service {
       body: {
         accessToken,
         user
+      }
+    }
+  }
+
+  @Validate({
+    body: ['code', 'userId']
+  })
+  @After(setUserLastSeenAt)
+  async verify2fa(req: ServiceRequest): Promise<ServiceResponse> {
+    const { code, userId } = req.body
+    const em: EntityManager = req.ctx.em
+
+    const user = await em.getRepository(User).findOne(userId)
+
+    const redis = new Redis(redisConfig)
+    const hasSession = (await redis.get(`2fa:${user.id}`)) === 'true'
+
+    if (!hasSession) {
+      req.ctx.throw(403, 'Session expired')
+    }
+
+    if (!authenticator.check(code, user.twoFactorAuth.secret)) {
+      req.ctx.throw(403, 'Invalid code')
+    }
+
+    const accessToken = await buildTokenPair(req.ctx, user)
+    await redis.del(`2fa:${user.id}`)
+
+    return {
+      status: 200,
+      body: {
+        accessToken,
+        user
+      }
+    }
+  }
+
+  @Validate({
+    body: ['code', 'userId']
+  })
+  async useRecoveryCode(req: ServiceRequest): Promise<ServiceResponse> {
+    const { code, userId } = req.body
+    const em: EntityManager = req.ctx.em
+
+    const user = await em.getRepository(User).findOne(userId, ['recoveryCodes'])
+
+    const redis = new Redis(redisConfig)
+    const hasSession = (await redis.get(`2fa:${user.id}`)) === 'true'
+
+    if (!hasSession) {
+      req.ctx.throw(403, 'Session expired')
+    }
+
+    const recoveryCode = user.recoveryCodes.getItems().find((recoveryCode) => {
+      return recoveryCode.getPlainCode() === code
+    })
+
+    if (!recoveryCode) {
+      req.ctx.throw(403, 'Invalid code')
+    }
+
+    em.remove(recoveryCode)
+
+    let newRecoveryCodes: UserRecoveryCode[]
+    if (user.recoveryCodes.count() === 1) { // hasn't been flushed yet so still 1, not 0
+      newRecoveryCodes = generateRecoveryCodes(user)
+      user.recoveryCodes.set(newRecoveryCodes)
+    }
+
+    await em.flush()
+
+    const accessToken = await buildTokenPair(req.ctx, user)
+    await redis.del(`2fa:${user.id}`)
+
+    return {
+      status: 200,
+      body: {
+        user,
+        accessToken,
+        newRecoveryCodes
       }
     }
   }

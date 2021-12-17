@@ -58,6 +58,7 @@ export default class DemoService implements Service {
   }
 
   async scheduleDeletion(hook: HookParams): Promise<void> {
+    /* istanbul ignore else */
     if (hook.result.status === 200) {
       await (<DemoService>hook.caller).queue
         .createJob<DemoUserJob>({ userId: hook.result.body.user.id })

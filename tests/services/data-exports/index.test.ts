@@ -56,6 +56,6 @@ describe('Data exports service - index', () => {
       .auth(invalidUserToken, { type: 'bearer' })
       .expect(403)
 
-    expect(res.body.message).toBe('You do not have permissions to view data exports')
+    expect(res.body).toStrictEqual({ message: 'You do not have permissions to view data exports' })
   })
 })

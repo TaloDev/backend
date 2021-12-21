@@ -74,8 +74,8 @@ describe('Players service - post', () => {
       .auth(token, { type: 'bearer' })
       .expect(200)
 
-      expect(res.body.player.props[0].key).toBe('characterName')
-      expect(res.body.player.props[0].value).toBe('Bob John')
+    expect(res.body.player.props[0].key).toBe('characterName')
+    expect(res.body.player.props[0].value).toBe('Bob John')
   })
 
   it('should not create a player for a non-existent game', async () => {
@@ -112,6 +112,6 @@ describe('Players service - post', () => {
       .auth(token, { type: 'bearer' })
       .expect(400)
 
-      expect(res.body.message).toBe('Props must be an array')
+    expect(res.body).toStrictEqual({ message: 'Props must be an array' })
   })
 })

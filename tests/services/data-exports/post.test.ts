@@ -87,7 +87,7 @@ describe('Data exports service - post', () => {
       .auth(invalidUserToken, { type: 'bearer' })
       .expect(403)
 
-    expect(res.body.message).toBe('You do not have permissions to create data exports')
+    expect(res.body).toStrictEqual({ message: 'You do not have permissions to create data exports' })
   })
 
   it('should not create a data export for users with unconfirmed emails', async () => {
@@ -102,7 +102,7 @@ describe('Data exports service - post', () => {
       .auth(invalidUserToken, { type: 'bearer' })
       .expect(403)
 
-    expect(res.body.message).toBe('You need to confirm your email address to create data exports')
+    expect(res.body).toStrictEqual({ message: 'You need to confirm your email address to create data exports' })
   })
 
   it('should not create a data export for empty entities', async () => {

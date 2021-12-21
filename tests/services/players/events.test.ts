@@ -99,6 +99,6 @@ describe('Players service - get events', () => {
       .auth(token, { type: 'bearer' })
       .expect(404)
 
-    expect(res.body.message).toBe('Player not found')
+    expect(res.body).toStrictEqual({ message: 'Player not found' })
   })
 })

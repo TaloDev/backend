@@ -129,7 +129,7 @@ describe('Players service - patch', () => {
       .auth(token, { type: 'bearer' })
       .expect(400)
 
-    expect(res.body.message).toBe('Props must be an array')
+    expect(res.body).toStrictEqual({ message: 'Props must be an array' })
   })
 
   it('should not update a non-existent player\'s properties', async () => {

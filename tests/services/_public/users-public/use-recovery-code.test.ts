@@ -78,7 +78,7 @@ describe('Users public service - use recovery code', () => {
       .auth(token, { type: 'bearer' })
       .expect(403)
 
-    expect(res.body).toStrictEqual({ message: 'Session expired' })
+    expect(res.body).toStrictEqual({ message: 'Session expired', sessionExpired: true })
   })
 
   it('should not let users login with an invalid recovery code', async () => {

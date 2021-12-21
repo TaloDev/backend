@@ -1,6 +1,6 @@
 import { Migration } from '@mikro-orm/migrations'
 
-export class Migration20210926160859 extends Migration {
+export class CreateDataExportsTable extends Migration {
 
   async up(): Promise<void> {
     this.addSql('create table `data_export` (`id` int unsigned not null auto_increment primary key, `created_by_user_id` int(11) unsigned not null, `game_id` int(11) unsigned not null, `entities` text not null, `status` tinyint not null, `failed_at` datetime null, `created_at` datetime not null, `updated_at` datetime not null) default character set utf8mb4 engine = InnoDB;')

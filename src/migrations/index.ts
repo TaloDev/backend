@@ -1,28 +1,33 @@
-import { Migration20210725211129 } from './Migration20210725211129'
-import { Migration20210926160859 } from './Migration20210926160859'
-import { Migration20211107233610 } from './Migration20211107233610'
-import { Migration20211205171927 } from './Migration20211205171927'
-import { Migration20211209003017 } from './Migration20211209003017'
+import { InitialMigration } from './20210725211129InitialMigration'
+import { CreateDataExportsTable } from './20210926160859CreateDataExportsTable'
+import { CreateLeaderboardsTable } from './20211107233610CreateLeaderboardsTable'
+import { CreateUserTwoFactorAuthTable } from './20211205171927CreateUserTwoFactorAuthTable'
+import { CreateUserRecoveryCodeTable } from './20211209003017CreateUserRecoveryCodeTable'
+import { CascadeDeletePlayerAliasEvents } from './20211221195514CascadeDeletePlayerAliasEvents'
 
 export default [
   {
-    name: 'Migration20210725211129',
-    class: Migration20210725211129
+    name: 'InitialMigration',
+    class: InitialMigration
   },
   {
-    name: 'Migration20210926160859',
-    class: Migration20210926160859
+    name: 'CreateDataExportsTable',
+    class: CreateDataExportsTable
   },
   {
-    name: 'Migration20211107233610',
-    class: Migration20211107233610
+    name: 'CreateLeaderboardsTable',
+    class: CreateLeaderboardsTable
   },
   {
-    name: 'Migration20211205171927',
-    class: Migration20211205171927
+    name: 'CreateUserTwoFactorAuthTable',
+    class: CreateUserTwoFactorAuthTable
   },
   {
-    name: 'Migration20211209003017',
-    class: Migration20211209003017
+    name: 'CreateUserRecoveryCodeTable',
+    class: CreateUserRecoveryCodeTable
+  },
+  {
+    name: 'CascadeDeletePlayerAliasEvents',
+    class: CascadeDeletePlayerAliasEvents
   }
 ]

@@ -1,6 +1,6 @@
 import { Migration } from '@mikro-orm/migrations'
 
-export class Migration20211107233610 extends Migration {
+export class CreateLeaderboardsTable extends Migration {
 
   async up(): Promise<void> {
     this.addSql('create table `leaderboard` (`id` int unsigned not null auto_increment primary key, `internal_name` varchar(255) not null, `name` varchar(255) not null, `sort_mode` enum(\'desc\', \'asc\') not null, `unique` tinyint(1) not null, `game_id` int(11) unsigned not null, `created_at` datetime not null, `updated_at` datetime not null) default character set utf8mb4 engine = InnoDB;')

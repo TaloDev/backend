@@ -1,6 +1,6 @@
 import { Migration } from '@mikro-orm/migrations'
 
-export class Migration20211221195514 extends Migration {
+export class CascadeDeletePlayerAliasEvents extends Migration {
 
   async up(): Promise<void> {
     this.addSql('alter table `event` modify `player_alias_id` int(11) unsigned null;')

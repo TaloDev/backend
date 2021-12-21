@@ -167,7 +167,7 @@ describe('Events API service - post', () => {
       .auth(token, { type: 'bearer' })
       .expect(400)
 
-    expect(res.body.message).toBe('Events must be an array')
+    expect(res.body).toStrictEqual({ message: 'Events must be an array' })
   })
 
   it('should sanitise event props into strings', async () => {

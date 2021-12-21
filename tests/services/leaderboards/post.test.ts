@@ -63,7 +63,7 @@ describe('Leaderboards service - post', () => {
       .auth(invalidUserToken, { type: 'bearer' })
       .expect(403)
 
-    expect(res.body.message).toBe('Demo accounts cannot create leaderboards')
+    expect(res.body).toStrictEqual({ message: 'Demo accounts cannot create leaderboards' })
   })
 
   it('should not create a leaderboard for a game the user has no access to', async () => {

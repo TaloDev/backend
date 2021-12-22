@@ -14,6 +14,7 @@ import ormConfig from '../config/mikro-orm.config'
 import { EmailConfig } from '../lib/messaging/sendEmail'
 import { unlink } from 'fs/promises'
 import dataExportReady from '../emails/data-export-ready'
+import LeaderboardEntry from '../entities/leaderboard-entry'
 
 interface EntityWithProps {
   props: Prop[]
@@ -28,7 +29,7 @@ interface DataExportJob {
   dataExportId: number
 }
 
-type ExportableEntity = Event | Player | PlayerAlias
+type ExportableEntity = Event | Player | PlayerAlias | LeaderboardEntry
 type ExportableEntityWithProps = ExportableEntity & EntityWithProps
 
 @Routes([
@@ -124,19 +125,26 @@ export default class DataExportsService implements Service {
 
     if (dataExport.entities.includes(DataExportAvailableEntities.EVENTS)) {
       const events = await em.getRepository(Event).find({ game: dataExport.game }, ['playerAlias'])
-      zip.addFile('events.csv', this.buildCSV(DataExportAvailableEntities.EVENTS, events))
+      zip.addFile(`${DataExportAvailableEntities.EVENTS}.csv`, this.buildCSV(DataExportAvailableEntities.EVENTS, events))
     }
 
     if (dataExport.entities.includes(DataExportAvailableEntities.PLAYERS)) {
       const players = await em.getRepository(Player).find({ game: dataExport.game })
-      zip.addFile('players.csv', this.buildCSV(DataExportAvailableEntities.PLAYERS, players))
+      zip.addFile(`${DataExportAvailableEntities.PLAYERS}.csv`, this.buildCSV(DataExportAvailableEntities.PLAYERS, players))
     }
 
     if (dataExport.entities.includes(DataExportAvailableEntities.PLAYER_ALIASES)) {
       const aliases = await em.getRepository(PlayerAlias).find({
         player: { game: dataExport.game }
       })
-      zip.addFile('player-aliases.csv', this.buildCSV(DataExportAvailableEntities.PLAYER_ALIASES, aliases))
+      zip.addFile(`${DataExportAvailableEntities.PLAYER_ALIASES}.csv`, this.buildCSV(DataExportAvailableEntities.PLAYER_ALIASES, aliases))
+    }
+
+    if (dataExport.entities.includes(DataExportAvailableEntities.LEADERBOARD_ENTRIES)) {
+      const entries = await em.getRepository(LeaderboardEntry).find({
+        leaderboard: { game: dataExport.game }
+      }, ['leaderboard'])
+      zip.addFile(`${DataExportAvailableEntities.LEADERBOARD_ENTRIES}.csv`, this.buildCSV(DataExportAvailableEntities.LEADERBOARD_ENTRIES, entries))
     }
 
     return zip
@@ -150,6 +158,8 @@ export default class DataExportsService implements Service {
         return ['id', 'lastSeenAt', 'createdAt', 'updatedAt', 'props']
       case DataExportAvailableEntities.PLAYER_ALIASES:
         return ['id', 'service', 'identifier', 'player.id', 'createdAt', 'updatedAt']
+      case DataExportAvailableEntities.LEADERBOARD_ENTRIES:
+        return ['id', 'score', 'leaderboard.id', 'leaderboard.internalName', 'playerAlias.id', 'playerAlias.service', 'playerAlias.identifier', 'playerAlias.player.id', 'createdAt', 'updatedAt']
     }
   }
 

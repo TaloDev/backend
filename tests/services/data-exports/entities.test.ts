@@ -32,6 +32,6 @@ describe('Data exports service - available entities', () => {
       .auth(token, { type: 'bearer' })
       .expect(200)
 
-    expect(res.body.entities).toStrictEqual([ 'events', 'players', 'playerAliases' ])
+    expect(res.body.entities).toStrictEqual([ 'events', 'players', 'playerAliases', 'leaderboardEntries' ])
   })
 })

@@ -21,6 +21,11 @@ import LeaderboardsPolicy from '../policies/leaderboards.policy'
     method: 'GET',
     path: '/:internalName/entries',
     handler: 'entries'
+  },
+  {
+    method: 'PATCH',
+    path: '/:internalName/entries/:id',
+    handler: 'updateEntry'
   }
 ])
 export default class LeaderboardsService implements Service {
@@ -132,6 +137,33 @@ export default class LeaderboardsService implements Service {
       body: {
         entries: entries.map((entry, idx) => ({ position: idx + (Number(page) * itemsPerPage), ...entry.toJSON() })),
         count
+      }
+    }
+  }
+
+  @Validate({
+    query: ['gameId']
+  })
+  @HasPermission(LeaderboardsPolicy, 'get')
+  async updateEntry(req: ServiceRequest): Promise<ServiceResponse> {
+    const { id } = req.params
+    const em: EntityManager = req.ctx.em
+
+    const entry = await em.getRepository(LeaderboardEntry).findOne(Number(id))
+    if (!entry) {
+      req.ctx.throw(404, 'Leaderboard entry not found')
+    }
+
+    const { hidden } = req.body
+
+    if (typeof hidden === 'boolean') {
+      entry.hidden = hidden
+    }
+
+    return {
+      status: 200,
+      body: {
+        entry
       }
     }
   }

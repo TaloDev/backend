@@ -16,6 +16,9 @@ export default class LeaderboardEntry {
   @ManyToOne(() => PlayerAlias, { cascade: [Cascade.REMOVE], eager: true })
   playerAlias: PlayerAlias
 
+  @Property({ default: false })
+  hidden: boolean
+
   @Property()
   createdAt: Date = new Date()
 
@@ -36,6 +39,7 @@ export default class LeaderboardEntry {
         service: this.playerAlias.service,
         identifier: this.playerAlias.identifier
       },
+      hidden: this.hidden,
       updatedAt: this.updatedAt
     }
   }

@@ -160,6 +160,8 @@ export default class LeaderboardsService implements Service {
       entry.hidden = hidden
     }
 
+    await em.flush()
+
     return {
       status: 200,
       body: {

@@ -40,8 +40,7 @@ describe('Leaderboards service - update entry', () => {
   it('should mark a leaderboard entry as hidden', async () => {
     const res = await request(app.callback())
       .patch(`${baseUrl}/${leaderboard.internalName}/entries/${leaderboard.entries[0].id}`)
-      .query({ gameId: validGame.id })
-      .send({ hidden: true })
+      .send({ gameId: validGame.id, hidden: true })
       .auth(token, { type: 'bearer' })
       .expect(200)
 
@@ -54,8 +53,7 @@ describe('Leaderboards service - update entry', () => {
 
     const res = await request(app.callback())
       .patch(`${baseUrl}/${leaderboard.internalName}/entries/${leaderboard.entries[0].id}`)
-      .query({ gameId: validGame.id })
-      .send({})
+      .send({ gameId: validGame.id })
       .auth(token, { type: 'bearer' })
       .expect(200)
 
@@ -65,8 +63,7 @@ describe('Leaderboards service - update entry', () => {
   it('should not update a non-existent entry', async () => {
     const res = await request(app.callback())
       .patch(`${baseUrl}/${leaderboard.internalName}/entries/12312321`)
-      .query({ gameId: validGame.id })
-      .send({ hidden: true })
+      .send({ gameId: validGame.id, hidden: true })
       .auth(token, { type: 'bearer' })
       .expect(404)
 

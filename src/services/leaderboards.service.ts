@@ -142,9 +142,9 @@ export default class LeaderboardsService implements Service {
   }
 
   @Validate({
-    query: ['gameId']
+    body: ['gameId']
   })
-  @HasPermission(LeaderboardsPolicy, 'get')
+  @HasPermission(LeaderboardsPolicy, 'updateEntry')
   async updateEntry(req: ServiceRequest): Promise<ServiceResponse> {
     const { id } = req.params
     const em: EntityManager = req.ctx.em

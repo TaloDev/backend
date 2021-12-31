@@ -37,4 +37,13 @@ export default class LeaderboardsPolicy extends Policy {
 
     return await this.canAccessGame(gameId)
   }
+
+  async updateEntry(req: ServiceRequest): Promise<ServicePolicyResponse> {
+    return await this.get({
+      ...req,
+      query: {
+        gameId: req.body.gameId
+      }
+    })
+  }
 }

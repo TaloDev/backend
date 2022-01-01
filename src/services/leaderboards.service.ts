@@ -26,6 +26,11 @@ import LeaderboardsPolicy from '../policies/leaderboards.policy'
     method: 'PATCH',
     path: '/:internalName/entries/:id',
     handler: 'updateEntry'
+  },
+  {
+    method: 'PATCH',
+    path: '/:internalName',
+    handler: 'updateLeaderboard'
   }
 ])
 export default class LeaderboardsService implements Service {
@@ -166,6 +171,30 @@ export default class LeaderboardsService implements Service {
       status: 200,
       body: {
         entry
+      }
+    }
+  }
+
+  @Validate({
+    body: ['gameId']
+  })
+  @HasPermission(LeaderboardsPolicy, 'updateLeaderboard')
+  async updateLeaderboard(req: ServiceRequest): Promise<ServiceResponse> {
+    const em: EntityManager = req.ctx.em
+
+    const { name, sortMode, unique } = req.body
+    const leaderboard = req.ctx.state.leaderboard
+
+    if (name) leaderboard.name = name
+    if (sortMode) leaderboard.sortMode = sortMode
+    if (typeof unique === 'boolean') leaderboard.unique = unique
+
+    await em.flush()
+
+    return {
+      status: 200,
+      body: {
+        leaderboard
       }
     }
   }

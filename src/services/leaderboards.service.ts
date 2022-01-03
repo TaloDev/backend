@@ -122,8 +122,11 @@ export default class LeaderboardsService implements Service {
       .where({ leaderboard })
 
     if (aliasId) {
-      baseQuery = baseQuery
-        .where({ playerAlias: Number(aliasId) })
+      baseQuery = baseQuery.andWhere({ playerAlias: Number(aliasId) })
+    }
+
+    if (req.ctx.state.user.api === true) {
+      baseQuery = baseQuery.andWhere({ hidden: false })
     }
 
     const { count } = await baseQuery

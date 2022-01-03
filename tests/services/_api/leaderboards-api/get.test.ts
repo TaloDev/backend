@@ -6,11 +6,11 @@ import APIKey, { APIKeyScope } from '../../../../src/entities/api-key'
 import { createToken } from '../../../../src/services/api-keys.service'
 import UserFactory from '../../../fixtures/UserFactory'
 import GameFactory from '../../../fixtures/GameFactory'
-import Leaderboard from '../../../../src/entities/leaderboard'
 import LeaderboardFactory from '../../../fixtures/LeaderboardFactory'
 import PlayerFactory from '../../../fixtures/PlayerFactory'
 import Game from '../../../../src/entities/game'
 import LeaderboardEntryFactory from '../../../fixtures/LeaderboardEntryFactory'
+import { LeaderboardSortMode } from '../../../../src/entities/leaderboard'
 
 const baseUrl = '/v1/leaderboards'
 
@@ -18,7 +18,6 @@ describe('Leaderboards API service - get', () => {
   let app: Koa
 
   let game: Game
-  let leaderboard: Leaderboard
 
   let apiKey: APIKey
   let token: string
@@ -28,12 +27,11 @@ describe('Leaderboards API service - get', () => {
 
     const user = await new UserFactory().one()
     game = await new GameFactory(user.organisation).one()
-    leaderboard = await new LeaderboardFactory([game]).one()
 
     apiKey = new APIKey(game, user)
     token = await createToken(apiKey)
 
-    await (<EntityManager>app.context.em).persistAndFlush([apiKey, leaderboard])
+    await (<EntityManager>app.context.em).persistAndFlush(apiKey)
   })
 
   afterAll(async () => {
@@ -41,6 +39,8 @@ describe('Leaderboards API service - get', () => {
   })
 
   it('should get leaderboard entries if the scope is valid', async () => {
+    const leaderboard = await new LeaderboardFactory([game]).one()
+
     apiKey.scopes = [APIKeyScope.READ_LEADERBOARDS]
     const players = await new PlayerFactory([game]).many(3)
     const entries = await new LeaderboardEntryFactory(leaderboard, players).many(5)
@@ -57,7 +57,37 @@ describe('Leaderboards API service - get', () => {
     expect(res.body.entries).toHaveLength(entries.length)
   })
 
+  it('should get leaderboard entries if the scope is valid', async () => {
+    const leaderboard = await new LeaderboardFactory([game]).one()
+
+    apiKey.scopes = [APIKeyScope.READ_LEADERBOARDS]
+    const players = await new PlayerFactory([game]).many(3)
+    const entries = await new LeaderboardEntryFactory(leaderboard, players).many(5)
+    const hiddenEntries = await new LeaderboardEntryFactory(leaderboard, players).state('hidden').many(3)
+
+    await (<EntityManager>app.context.em).persistAndFlush([...players, ...entries, ...hiddenEntries])
+    token = await createToken(apiKey)
+
+    const res = await request(app.callback())
+      .get(`${baseUrl}/${leaderboard.internalName}/entries`)
+      .query({ page: 0 })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    expect(res.body.entries).toHaveLength(entries.length)
+
+    if (leaderboard.sortMode === LeaderboardSortMode.ASC) {
+      expect(res.body.entries[0].score).toBeLessThanOrEqual(res.body.entries[res.body.entries.length - 1].score)
+      expect(res.body.entries[0].position).toBeLessThanOrEqual(res.body.entries[res.body.entries.length - 1].position)
+    } else {
+      expect(res.body.entries[0].score).toBeGreaterThanOrEqual(res.body.entries[res.body.entries.length - 1].score)
+      expect(res.body.entries[0].position).toBeLessThanOrEqual(res.body.entries[res.body.entries.length - 1].position)
+    }
+  })
+
   it('should get leaderboard entries for a specific alias', async () => {
+    const leaderboard = await new LeaderboardFactory([game]).one()
+
     const player = await new PlayerFactory([game]).one()
     const entries = await new LeaderboardEntryFactory(leaderboard, [player]).with(() => ({ playerAlias: player.aliases[0] })).many(2)
 
@@ -74,9 +104,19 @@ describe('Leaderboards API service - get', () => {
       .expect(200)
 
     expect(res.body.entries).toHaveLength(entries.length)
+
+    if (leaderboard.sortMode === LeaderboardSortMode.ASC) {
+      expect(res.body.entries[0].score).toBeLessThanOrEqual(res.body.entries[res.body.entries.length - 1].score)
+      expect(res.body.entries[0].position).toBeLessThanOrEqual(res.body.entries[res.body.entries.length - 1].position)
+    } else {
+      expect(res.body.entries[0].score).toBeGreaterThanOrEqual(res.body.entries[res.body.entries.length - 1].score)
+      expect(res.body.entries[0].position).toBeLessThanOrEqual(res.body.entries[res.body.entries.length - 1].position)
+    }
   })
 
   it('should not get leaderboard entries if the scope is not valid', async () => {
+    const leaderboard = await new LeaderboardFactory([game]).one()
+
     apiKey.scopes = []
 
     await (<EntityManager>app.context.em).flush()

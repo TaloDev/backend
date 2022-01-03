@@ -1,6 +1,6 @@
 import { Migration } from '@mikro-orm/migrations'
 
-export class Migration20211205171927 extends Migration {
+export class CreateUserTwoFactorAuthTable extends Migration {
 
   async up(): Promise<void> {
     this.addSql('create table `user_two_factor_auth` (`id` int unsigned not null auto_increment primary key, `secret` varchar(255) not null, `enabled` tinyint(1) not null) default character set utf8mb4 engine = InnoDB;')

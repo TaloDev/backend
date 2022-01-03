@@ -35,4 +35,10 @@ This will create a policy, entity and REST API for your new entity. If you want 
 
 ## Migrations
 
-To create a migration, use `yarn migration:create`. This will create a migration class in the `migrations` folder. You will then need to import that migration class into the `index.ts` in the same folder.
+To create a migration, use `yarn migration:create`. This will create a migration class in the `migrations` folder.
+
+Modify the default name of the file from `Migration[Timestamp].ts` to `[Timestamp][PascalCaseDescriptionOfTheMigration].ts`.
+
+You should also rename the exported class to be `[PascalCaseDescriptionOfTheMigration]`.
+
+You will then need to import and add that migration class to the end of the list of migrations inside `index.ts` in the same folder.

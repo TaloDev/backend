@@ -31,17 +31,6 @@ describe('Data exports service - post', () => {
     await (<EntityManager>app.context.em).getConnection().close()
   })
 
-  it('should create a data export', async () => {
-    const res = await request(app.callback())
-      .post(`${baseUrl}`)
-      .send({ gameId: game.id, entities: [DataExportAvailableEntities.PLAYER_ALIASES, DataExportAvailableEntities.PLAYERS, DataExportAvailableEntities.EVENTS] })
-      .auth(token, { type: 'bearer' })
-      .expect(200)
-
-    expect(res.body.dataExport).toBeTruthy()
-    expect(res.body.dataExport.entities).toStrictEqual([DataExportAvailableEntities.PLAYER_ALIASES, DataExportAvailableEntities.PLAYERS, DataExportAvailableEntities.EVENTS])
-  })
-
   it('should create a data export for player aliases', async () => {
     const res = await request(app.callback())
       .post(`${baseUrl}`)
@@ -75,6 +64,17 @@ describe('Data exports service - post', () => {
     expect(res.body.dataExport.entities).toStrictEqual([DataExportAvailableEntities.EVENTS])
   })
 
+  it('should create a data export for events', async () => {
+    const res = await request(app.callback())
+      .post(`${baseUrl}`)
+      .send({ gameId: game.id, entities: [DataExportAvailableEntities.LEADERBOARD_ENTRIES] })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    expect(res.body.dataExport).toBeTruthy()
+    expect(res.body.dataExport.entities).toStrictEqual([DataExportAvailableEntities.LEADERBOARD_ENTRIES])
+  })
+
   it('should not create a data export for dev users', async () => {
     const invalidUser = await new UserFactory().with(() => ({ organisation: game.organisation })).one()
     await (<EntityManager>app.context.em).persistAndFlush(invalidUser)
@@ -87,7 +87,7 @@ describe('Data exports service - post', () => {
       .auth(invalidUserToken, { type: 'bearer' })
       .expect(403)
 
-    expect(res.body.message).toBe('You do not have permissions to create data exports')
+    expect(res.body).toStrictEqual({ message: 'You do not have permissions to create data exports' })
   })
 
   it('should not create a data export for users with unconfirmed emails', async () => {
@@ -102,7 +102,7 @@ describe('Data exports service - post', () => {
       .auth(invalidUserToken, { type: 'bearer' })
       .expect(403)
 
-    expect(res.body.message).toBe('You need to confirm your email address to create data exports')
+    expect(res.body).toStrictEqual({ message: 'You need to confirm your email address to create data exports' })
   })
 
   it('should not create a data export for empty entities', async () => {

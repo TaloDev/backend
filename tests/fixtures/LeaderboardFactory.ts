@@ -29,7 +29,7 @@ export default class LeaderboardFactory extends Factory<Leaderboard> {
       game,
       internalName: casual.word,
       name: casual.title,
-      sortMode: casual.random_element(Object.keys(LeaderboardSortMode)),
+      sortMode: casual.random_element([LeaderboardSortMode.ASC, LeaderboardSortMode.DESC]),
       unique: casual.boolean,
       entries: new Collection<LeaderboardEntry>(leaderboard, entries)
     }

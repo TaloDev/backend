@@ -59,7 +59,7 @@ describe('Users public service - verify 2fa', () => {
       .auth(token, { type: 'bearer' })
       .expect(403)
 
-    expect(res.body).toStrictEqual({ message: 'Session expired' })
+    expect(res.body).toStrictEqual({ message: 'Session expired', sessionExpired: true })
   })
 
   it('should not let users verify their 2fa with an invalid code', async () => {

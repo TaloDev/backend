@@ -273,7 +273,7 @@ export default class UsersPublicService implements Service {
     const hasSession = (await redis.get(`2fa:${user.id}`)) === 'true'
 
     if (!hasSession) {
-      req.ctx.throw(403, 'Session expired')
+      req.ctx.throw(403, { message: 'Session expired', sessionExpired: true })
     }
 
     if (!authenticator.check(code, user.twoFactorAuth.secret)) {
@@ -305,7 +305,7 @@ export default class UsersPublicService implements Service {
     const hasSession = (await redis.get(`2fa:${user.id}`)) === 'true'
 
     if (!hasSession) {
-      req.ctx.throw(403, 'Session expired')
+      req.ctx.throw(403, { message: 'Session expired', sessionExpired: true })
     }
 
     const recoveryCode = user.recoveryCodes.getItems().find((recoveryCode) => {

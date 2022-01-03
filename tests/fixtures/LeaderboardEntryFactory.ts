@@ -11,6 +11,7 @@ export default class LeaderboardEntryFactory extends Factory<LeaderboardEntry> {
   constructor(leaderboard: Leaderboard, availablePlayers: Player[]) {
     super(LeaderboardEntry, 'base')
     this.register('base', this.base)
+    this.register('hidden', this.hidden)
 
     this.leaderboard = leaderboard
     this.availablePlayers = availablePlayers
@@ -24,6 +25,12 @@ export default class LeaderboardEntryFactory extends Factory<LeaderboardEntry> {
       leaderboard: this.leaderboard,
       playerAlias: casual.random_element(player.aliases.getItems()),
       score: Number(casual.double(10, 100000).toFixed(2))
+    }
+  }
+
+  protected hidden(): Partial<LeaderboardEntry> {
+    return {
+      hidden: true
     }
   }
 }

@@ -4,6 +4,7 @@ import Event from '../../src/entities/event'
 import Player from '../../src/entities/player'
 import { sub } from 'date-fns'
 import Prop from '../../src/entities/prop'
+import randomDate from '../../src/lib/dates/randomDate'
 
 export default class EventFactory extends Factory<Event> {
   private availablePlayers: Player[]
@@ -41,23 +42,19 @@ export default class EventFactory extends Factory<Event> {
 
   protected thisWeek(): Partial<Event> {
     return {
-      createdAt: this.randomDate(sub(new Date(), { weeks: 1 }), new Date())
+      createdAt: randomDate(sub(new Date(), { weeks: 1 }), new Date())
     }
   }
 
   protected thisMonth(): Partial<Event> {
     return {
-      createdAt: this.randomDate(sub(new Date(), { months: 1 }), new Date())
+      createdAt: randomDate(sub(new Date(), { months: 1 }), new Date())
     }
   }
 
   protected thisYear(): Partial<Event> {
     return {
-      createdAt: this.randomDate(sub(new Date(), { years: 1 }), new Date())
+      createdAt: randomDate(sub(new Date(), { years: 1 }), new Date())
     }
-  }
-
-  private randomDate(start: Date, end: Date): Date {
-    return new Date(start.getTime() + Math.random() * (end.getTime() - start.getTime()))
   }
 }

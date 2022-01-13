@@ -6,6 +6,7 @@ import PlayerFactory from './fixtures/PlayerFactory'
 import EventFactory from './fixtures/EventFactory'
 import OrganisationFactory from './fixtures/OrganisationFactory'
 import LeaderboardFactory from './fixtures/LeaderboardFactory'
+import GameSaveFactory from './fixtures/GameSaveFactory'
 
 (async () => {
   const orm = await MikroORM.init()
@@ -36,6 +37,8 @@ import LeaderboardFactory from './fixtures/LeaderboardFactory'
 
   const leaderboards = await new LeaderboardFactory(games).many(6)
 
+  const gameSaves = await new GameSaveFactory(players).many(10)
+
   await orm.em.persistAndFlush([
     devUser,
     adminUser,
@@ -44,7 +47,8 @@ import LeaderboardFactory from './fixtures/LeaderboardFactory'
     ...games,
     ...players,
     ...eventsThisMonth,
-    ...leaderboards
+    ...leaderboards,
+    ...gameSaves
   ])
 
   await orm.close(true)

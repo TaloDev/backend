@@ -12,26 +12,20 @@ export default class LeaderboardFactory extends Factory<Leaderboard> {
   constructor(availableGames: Game[]) {
     super(Leaderboard, 'base')
     this.register('base', this.base)
+    this.register('with entries', this.withEntries)
     this.register('unique', this.unique)
     this.register('not unique', this.notUnique)
 
     this.availableGames = availableGames
   }
 
-  protected async base(leaderboard: Leaderboard): Promise<Partial<Leaderboard>> {
-    const game = casual.random_element(this.availableGames)
-    const entryFactory = new LeaderboardEntryFactory(leaderboard, game.players)
-    const entries = game.players.length > 0 ?
-      await entryFactory.many(casual.integer(0, 20))
-      : []
-
+  protected async base(): Promise<Partial<Leaderboard>> {
     return {
-      game,
+      game: casual.random_element(this.availableGames),
       internalName: casual.word,
       name: casual.title,
       sortMode: casual.random_element([LeaderboardSortMode.ASC, LeaderboardSortMode.DESC]),
-      unique: casual.boolean,
-      entries: new Collection<LeaderboardEntry>(leaderboard, entries)
+      unique: casual.boolean
     }
   }
 
@@ -44,6 +38,17 @@ export default class LeaderboardFactory extends Factory<Leaderboard> {
   protected notUnique(): Partial<Leaderboard> {
     return {
       unique: false
+    }
+  }
+
+  protected async withEntries(leaderboard: Leaderboard): Promise<Partial<Leaderboard>> {
+    const entryFactory = new LeaderboardEntryFactory(leaderboard, leaderboard.game.players.getItems())
+    const entries = leaderboard.game.players.length > 0 ?
+      await entryFactory.many(casual.integer(0, 20))
+      : []
+
+    return {
+      entries: new Collection<LeaderboardEntry>(leaderboard, entries)
     }
   }
 }

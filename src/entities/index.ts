@@ -1,3 +1,4 @@
+import GameActivity from './game-activity'
 import GameSave from './game-save'
 import Leaderboard from './leaderboard'
 import LeaderboardEntry from './leaderboard-entry'
@@ -17,6 +18,7 @@ import UserTwoFactorAuth from './user-two-factor-auth'
 import UserRecoveryCode from './user-recovery-code'
 
 export default [
+  GameActivity,
   GameSave,
   UserRecoveryCode,
   UserTwoFactorAuth,

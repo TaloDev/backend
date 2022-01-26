@@ -35,7 +35,7 @@ import GameSaveFactory from './fixtures/GameSaveFactory'
 
   const eventsThisMonth = await new EventFactory(players).state('this month').many(300)
 
-  const leaderboards = await new LeaderboardFactory(games).many(6)
+  const leaderboards = await new LeaderboardFactory(games).state('with entries').many(6)
 
   const gameSaves = await new GameSaveFactory(players).many(10)
 

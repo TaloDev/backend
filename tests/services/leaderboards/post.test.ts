@@ -10,6 +10,7 @@ import Game from '../../../src/entities/game'
 import OrganisationFactory from '../../fixtures/OrganisationFactory'
 import LeaderboardFactory from '../../fixtures/LeaderboardFactory'
 import Leaderboard from '../../../src/entities/leaderboard'
+import GameActivity, { GameActivityType } from '../../../src/entities/game-activity'
 
 const baseUrl = '/leaderboards'
 
@@ -49,6 +50,15 @@ describe('Leaderboards service - post', () => {
     expect(res.body.leaderboard.internalName).toBe('highscores')
     expect(res.body.leaderboard.name).toBe('Highscores')
     expect(res.body.leaderboard.sortMode).toBe('desc')
+
+    const activity = await (<EntityManager>app.context.em).getRepository(GameActivity).findOne({
+      type: GameActivityType.LEADERBOARD_CREATED,
+      extra: {
+        leaderboardInternalName: res.body.leaderboard.internalName
+      }
+    })
+
+    expect(activity).not.toBeNull()
   })
 
   it('should not create a leaderboard for demo users', async () => {

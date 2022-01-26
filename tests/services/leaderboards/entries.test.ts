@@ -35,7 +35,7 @@ describe('Leaderboards service - entries', () => {
   })
 
   it('should return a leaderboard\'s entries', async () => {
-    const leaderboard = await new LeaderboardFactory([validGame]).one()
+    const leaderboard = await new LeaderboardFactory([validGame]).state('with entries').one()
     await (<EntityManager>app.context.em).persistAndFlush(leaderboard)
 
     const res = await request(app.callback())
@@ -60,7 +60,7 @@ describe('Leaderboards service - entries', () => {
   it('should not return a leaderboard\'s entries for a game the user has no access to', async () => {
     const otherOrg = await new OrganisationFactory().one()
     const otherGame = await new GameFactory(otherOrg).one()
-    const leaderboard = await new LeaderboardFactory([otherGame]).one()
+    const leaderboard = await new LeaderboardFactory([otherGame]).state('with entries').one()
     await (<EntityManager>app.context.em).persistAndFlush(leaderboard)
 
     await request(app.callback())

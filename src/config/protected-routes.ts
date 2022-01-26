@@ -1,5 +1,6 @@
 import Koa, { Context, Next } from 'koa'
 import { service } from 'koa-rest-services'
+import GameActivitiesService from '../services/game-activities.service'
 import LeaderboardsService from '../services/leaderboards.service'
 import DataExportsService from '../services/data-exports.service'
 import APIKeysService from '../services/api-keys.service'
@@ -17,6 +18,7 @@ export default (app: Koa) => {
     await next()
   })
 
+  app.use(service('/game-activities', new GameActivitiesService()))
   app.use(service('/leaderboards', new LeaderboardsService()))
   app.use(service('/data-exports', new DataExportsService()))
   app.use(service('/api-keys', new APIKeysService()))

@@ -1,7 +1,9 @@
 import { EntityManager } from '@mikro-orm/mysql'
 import { HasPermission, Routes, Service, ServiceRequest, ServiceResponse, Validate } from 'koa-rest-services'
+import GameActivity, { GameActivityType } from '../entities/game-activity'
 import Leaderboard, { LeaderboardSortMode } from '../entities/leaderboard'
 import LeaderboardEntry from '../entities/leaderboard-entry'
+import createGameActivity from '../lib/logging/createGameActivity'
 import LeaderboardsPolicy from '../policies/leaderboards.policy'
 
 @Routes([
@@ -31,6 +33,9 @@ import LeaderboardsPolicy from '../policies/leaderboards.policy'
     method: 'PATCH',
     path: '/:internalName',
     handler: 'updateLeaderboard'
+  },
+  {
+    method: 'DELETE'
   }
 ])
 export default class LeaderboardsService implements Service {
@@ -95,6 +100,15 @@ export default class LeaderboardsService implements Service {
     leaderboard.name = name
     leaderboard.sortMode = sortMode
     leaderboard.unique = unique
+
+    await createGameActivity(em, {
+      user: req.ctx.state.user,
+      game: leaderboard.game,
+      type: GameActivityType.LEADERBOARD_CREATED,
+      extra: {
+        leaderboardInternalName: leaderboard.internalName
+      }
+    })
 
     await em.persistAndFlush(leaderboard)
 
@@ -164,8 +178,22 @@ export default class LeaderboardsService implements Service {
 
     const { hidden } = req.body
 
-    if (typeof hidden === 'boolean') {
+    const toggleVisibility = typeof hidden === 'boolean'
+    if (toggleVisibility) {
       entry.hidden = hidden
+
+      await createGameActivity(em, {
+        user: req.ctx.state.user,
+        game: entry.leaderboard.game,
+        type: hidden ? GameActivityType.LEADERBOARD_ENTRY_HIDDEN : GameActivityType.LEADERBOARD_ENTRY_RESTORED,
+        extra: {
+          leaderboardInternalName: entry.leaderboard.internalName,
+          display: {
+            'Player': entry.playerAlias.player.id,
+            'Score': entry.score
+          }
+        }
+      })
     }
 
     await em.flush()
@@ -192,6 +220,18 @@ export default class LeaderboardsService implements Service {
     if (sortMode) leaderboard.sortMode = sortMode
     if (typeof unique === 'boolean') leaderboard.unique = unique
 
+    await createGameActivity(em, {
+      user: req.ctx.state.user,
+      game: leaderboard.game,
+      type: GameActivityType.LEADERBOARD_UPDATED,
+      extra: {
+        leaderboardInternalName: leaderboard.internalName,
+        display: {
+          'Updated properties': Object.keys(req.body).map((key) => `${key}: ${req.body[key]}`).join(', ')
+        }
+      }
+    })
+
     await em.flush()
 
     return {
@@ -199,6 +239,29 @@ export default class LeaderboardsService implements Service {
       body: {
         leaderboard
       }
+    }
+  }
+
+  @Validate({
+    body: ['gameId']
+  })
+  @HasPermission(LeaderboardsPolicy, 'delete')
+  async delete(req: ServiceRequest): Promise<ServiceResponse> {
+    const em: EntityManager = req.ctx.em
+
+    await createGameActivity(em, {
+      user: req.ctx.state.user,
+      game: req.ctx.state.leaderboard.game,
+      type: GameActivityType.LEADERBOARD_DELETED,
+      extra: {
+        leaderboardInternalName: req.ctx.state.leaderboard.internalName
+      }
+    })
+
+    await em.getRepository(GameActivity).removeAndFlush(req.ctx.state.leaderboard)
+
+    return {
+      status: 200
     }
   }
 }

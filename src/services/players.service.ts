@@ -8,6 +8,8 @@ import Event from '../entities/event'
 import { EntityManager } from '@mikro-orm/mysql'
 import { QueryOrder } from '@mikro-orm/core'
 import uniqWith from 'lodash.uniqwith'
+import createGameActivity from '../lib/logging/createGameActivity'
+import { GameActivityType } from '../entities/game-activity'
 
 const itemsPerPage = 25
 
@@ -142,6 +144,20 @@ export default class PlayersService implements Service {
       ], (a, b) => a.key === b.key)
 
       player.props = sanitiseProps(mergedProps, true)
+    }
+
+    if (req.ctx.state.user.api !== true) {
+      await createGameActivity(em, {
+        user: req.ctx.state.user,
+        game: player.game,
+        type: GameActivityType.PLAYER_PROPS_UPDATED,
+        extra: {
+          playerId: player.id,
+          display: {
+            'Updated props': props.map((prop) => `${prop.key}: ${prop.value ?? 'Deleted'}`).join(', ')
+          }
+        }
+      })
     }
 
     await em.flush()

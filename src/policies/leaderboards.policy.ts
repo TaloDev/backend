@@ -58,7 +58,7 @@ export default class LeaderboardsPolicy extends Policy {
 
   async delete(req: ServiceRequest): Promise<ServicePolicyResponse> {
     const user = await this.getUser()
-    if (user.type !== UserType.ADMIN) return new ServicePolicyDenial({ message: 'You do not have permissions to manage API keys' })
+    if (user.type !== UserType.ADMIN) return new ServicePolicyDenial({ message: 'You do not have permissions to delete leaderboards' })
 
     return await this.get({
       ...req,

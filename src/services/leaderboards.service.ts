@@ -35,7 +35,8 @@ import LeaderboardsPolicy from '../policies/leaderboards.policy'
     handler: 'updateLeaderboard'
   },
   {
-    method: 'DELETE'
+    method: 'DELETE',
+    path: '/:internalName'
   }
 ])
 export default class LeaderboardsService implements Service {

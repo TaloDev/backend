@@ -8,7 +8,8 @@ export enum GameActivityType {
   LEADERBOARD_UPDATED,
   LEADERBOARD_DELETED,
   LEADERBOARD_ENTRY_HIDDEN,
-  LEADERBOARD_ENTRY_RESTORED
+  LEADERBOARD_ENTRY_RESTORED,
+  API_KEY_CREATED
 }
 
 @Entity()
@@ -47,7 +48,7 @@ export default class GameActivity {
   private getActivity(): string {
     switch (this.type) {
       case GameActivityType.PLAYER_PROPS_UPDATED:
-        return `${this.user.email} updated player ${this.extra.playerId}'s props`
+        return `${this.user.email} updated a player's props`
       case GameActivityType.LEADERBOARD_CREATED:
         return `${this.user.email} created the leaderboard ${this.extra.leaderboardInternalName}`
       case GameActivityType.LEADERBOARD_UPDATED:
@@ -58,6 +59,8 @@ export default class GameActivity {
         return `${this.user.email} hid a leaderboard entry in ${this.extra.leaderboardInternalName}`
       case GameActivityType.LEADERBOARD_ENTRY_RESTORED:
         return `${this.user.email} restored a leaderboard entry in ${this.extra.leaderboardInternalName}`
+      case GameActivityType.API_KEY_CREATED:
+        return `${this.user.email} created an access key`
       default:
         return ''
     }
@@ -66,8 +69,9 @@ export default class GameActivity {
   toJSON() {
     return {
       id: this.id,
+      type: this.type,
       activity: this.getActivity(),
-      extra: this.extra.displayable,
+      extra: this.extra.display,
       createdAt: this.createdAt
     }
   }

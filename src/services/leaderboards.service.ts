@@ -189,6 +189,7 @@ export default class LeaderboardsService implements Service {
         type: hidden ? GameActivityType.LEADERBOARD_ENTRY_HIDDEN : GameActivityType.LEADERBOARD_ENTRY_RESTORED,
         extra: {
           leaderboardInternalName: entry.leaderboard.internalName,
+          entryId: entry.id,
           display: {
             'Player': entry.playerAlias.player.id,
             'Score': entry.score

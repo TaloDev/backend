@@ -154,7 +154,8 @@ export default class PlayersService implements Service {
         extra: {
           playerId: player.id,
           display: {
-            'Updated props': props.map((prop) => `${prop.key}: ${prop.value ?? 'Deleted'}`).join(', ')
+            'Player': player.id,
+            'Updated props': props.map((prop) => `${prop.key}: ${prop.value ?? '[deleted]'}`).join(', ')
           }
         }
       })

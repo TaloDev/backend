@@ -9,7 +9,8 @@ export enum GameActivityType {
   LEADERBOARD_DELETED,
   LEADERBOARD_ENTRY_HIDDEN,
   LEADERBOARD_ENTRY_RESTORED,
-  API_KEY_CREATED
+  API_KEY_CREATED,
+  API_KEY_REVOKED
 }
 
 @Entity()
@@ -45,6 +46,7 @@ export default class GameActivity {
     this.user = user
   }
 
+  /* istanbul ignore next */
   private getActivity(): string {
     switch (this.type) {
       case GameActivityType.PLAYER_PROPS_UPDATED:
@@ -61,6 +63,8 @@ export default class GameActivity {
         return `${this.user.email} restored a leaderboard entry in ${this.extra.leaderboardInternalName}`
       case GameActivityType.API_KEY_CREATED:
         return `${this.user.email} created an access key`
+      case GameActivityType.API_KEY_REVOKED:
+        return `${this.user.email} remove an access key`
       default:
         return ''
     }

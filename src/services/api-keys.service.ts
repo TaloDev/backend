@@ -93,8 +93,21 @@ export default class APIKeysService implements Service {
   async delete(req: ServiceRequest): Promise<ServiceResponse> {
     const em: EntityManager = req.ctx.em
 
-    const apiKey = req.ctx.state.apiKey // set in the policy
+    const apiKey = req.ctx.state.apiKey as APIKey // set in the policy
     apiKey.revokedAt = new Date()
+
+    await createGameActivity(em, {
+      user: req.ctx.state.user,
+      game: req.ctx.state.game,
+      type: GameActivityType.API_KEY_REVOKED,
+      extra: {
+        keyId: apiKey.id,
+        display: {
+          'Key ending in': apiKey.toJSON().token
+        }
+      }
+    })
+
     await em.flush()
 
     return {

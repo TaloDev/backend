@@ -38,9 +38,6 @@ export default class GameActivity {
   @Property()
   createdAt: Date = new Date()
 
-  @Property({ onUpdate: () => new Date() })
-  updatedAt: Date = new Date()
-
   constructor(game: Game, user: User) {
     this.game = game
     this.user = user

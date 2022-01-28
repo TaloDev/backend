@@ -70,7 +70,7 @@ export default class GameActivity {
     return {
       id: this.id,
       type: this.type,
-      activity: this.getActivity(),
+      description: this.getActivity(),
       extra: this.extra.display,
       createdAt: this.createdAt
     }

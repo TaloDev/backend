@@ -6,7 +6,7 @@ import { ServicePolicyResponse, ServicePolicyDenial } from 'koa-rest-services'
 import { UserType } from '../entities/user'
 
 export default class <%= h.changeCase.pascal(name) %>sPolicy extends Policy {
-  async get(): Promise<boolean> {
+  async get(): Promise<ServicePolicyResponse> {
     return true
   }
 

@@ -4,11 +4,12 @@ import { EntityManager, MikroORM } from '@mikro-orm/core'
 import buildTokenPair from '../../lib/auth/buildTokenPair'
 import Queue from 'bee-queue'
 import Organisation from '../../entities/organisation'
-import { add, startOfMonth, sub } from 'date-fns'
+import { add, sub } from 'date-fns'
 import ormConfig from '../../config/mikro-orm.config'
 import createQueue from '../../lib/queues/createQueue'
 import UserSession from '../../entities/user-session'
 import Event from '../../entities/event'
+import randomDate from '../../lib/dates/randomDate'
 
 interface DemoUserJob {
   userId: number
@@ -85,11 +86,8 @@ export default class DemoService implements Service {
       }
     })
 
-    const min = startOfMonth(new Date())
-    const max = new Date()
-
     for (const event of events) {
-      event.createdAt = new Date(min.getTime() + Math.random() * (max.getTime() - min.getTime()))
+      event.createdAt = randomDate(sub(new Date(), { months: 2 }), new Date())
     }
 
     await em.flush()

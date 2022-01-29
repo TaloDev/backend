@@ -8,6 +8,7 @@ import Game from '../../../src/entities/game'
 import UserFactory from '../../fixtures/UserFactory'
 import OrganisationFactory from '../../fixtures/OrganisationFactory'
 import PlayerFactory from '../../fixtures/PlayerFactory'
+import GameActivity, { GameActivityType } from '../../../src/entities/game-activity'
 
 const baseUrl = '/players'
 
@@ -72,6 +73,15 @@ describe('Players service - patch', () => {
         }
       ]
     ))
+
+    const activity = await (<EntityManager>app.context.em).getRepository(GameActivity).findOne({
+      type: GameActivityType.PLAYER_PROPS_UPDATED,
+      extra: {
+        playerId: player.id
+      }
+    })
+
+    expect(activity).not.toBeNull()
   })
 
   it('should delete null player properties', async () => {

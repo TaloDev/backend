@@ -9,6 +9,7 @@ import LeaderboardFactory from '../../fixtures/LeaderboardFactory'
 import GameFactory from '../../fixtures/GameFactory'
 import Game from '../../../src/entities/game'
 import Leaderboard, { LeaderboardSortMode } from '../../../src/entities/leaderboard'
+import GameActivity, { GameActivityType } from '../../../src/entities/game-activity'
 
 const baseUrl = '/leaderboards'
 
@@ -43,6 +44,15 @@ describe('Leaderboards service - update leaderboard', () => {
       .expect(200)
 
     expect(res.body.leaderboard.name).toBe('The new name')
+
+    const activity = await (<EntityManager>app.context.em).getRepository(GameActivity).findOne({
+      type: GameActivityType.LEADERBOARD_UPDATED,
+      extra: {
+        leaderboardInternalName: res.body.leaderboard.internalName
+      }
+    })
+
+    expect(activity).not.toBeNull()
   })
 
   it('should update a leaderboard\'s sort mode', async () => {

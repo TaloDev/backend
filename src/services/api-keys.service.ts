@@ -5,6 +5,8 @@ import jwt from 'jsonwebtoken'
 import APIKeysPolicy from '../policies/api-keys.policy'
 import groupBy from 'lodash.groupby'
 import { promisify } from 'util'
+import createGameActivity from '../lib/logging/createGameActivity'
+import { GameActivityType } from '../entities/game-activity'
 
 interface ExtraTokenPayloadParams {
   iat?: number
@@ -44,6 +46,19 @@ export default class APIKeysService implements Service {
 
     const apiKey = new APIKey(req.ctx.state.game, req.ctx.state.user)
     apiKey.scopes = scopes
+
+    await createGameActivity(em, {
+      user: req.ctx.state.user,
+      game: req.ctx.state.game,
+      type: GameActivityType.API_KEY_CREATED,
+      extra: {
+        keyId: apiKey.id,
+        display: {
+          'Scopes': scopes.join(', ')
+        }
+      }
+    })
+
     await em.getRepository(APIKey).persistAndFlush(apiKey)
 
     const token = await createToken(apiKey)
@@ -78,8 +93,21 @@ export default class APIKeysService implements Service {
   async delete(req: ServiceRequest): Promise<ServiceResponse> {
     const em: EntityManager = req.ctx.em
 
-    const apiKey = req.ctx.state.apiKey // set in the policy
+    const apiKey = req.ctx.state.apiKey as APIKey // set in the policy
     apiKey.revokedAt = new Date()
+
+    await createGameActivity(em, {
+      user: req.ctx.state.user,
+      game: req.ctx.state.game,
+      type: GameActivityType.API_KEY_REVOKED,
+      extra: {
+        keyId: apiKey.id,
+        display: {
+          'Key ending in': apiKey.toJSON().token
+        }
+      }
+    })
+
     await em.flush()
 
     return {

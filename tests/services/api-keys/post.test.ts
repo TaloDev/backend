@@ -7,6 +7,7 @@ import { genAccessToken } from '../../../src/lib/auth/buildTokenPair'
 import Game from '../../../src/entities/game'
 import UserFactory from '../../fixtures/UserFactory'
 import OrganisationFactory from '../../fixtures/OrganisationFactory'
+import GameActivity, { GameActivityType } from '../../../src/entities/game-activity'
 
 const baseUrl = '/api-keys'
 
@@ -52,6 +53,17 @@ describe('API keys service - post', () => {
 
     expect(res.body.apiKey.gameId).toBe(validGame.id)
     expect(res.body.apiKey.scopes).toStrictEqual(['read:players', 'write:events'])
+
+    const activity = await (<EntityManager>app.context.em).getRepository(GameActivity).findOne({
+      type: GameActivityType.API_KEY_CREATED,
+      extra: {
+        display: {
+          'Scopes': 'read:players, write:events'
+        }
+      }
+    })
+
+    expect(activity).not.toBeNull()
   })
 
   it('should not create an api key for a non-existent game', async () => {

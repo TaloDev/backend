@@ -8,6 +8,7 @@ import Game from '../../../src/entities/game'
 import APIKey from '../../../src/entities/api-key'
 import UserFactory from '../../fixtures/UserFactory'
 import OrganisationFactory from '../../fixtures/OrganisationFactory'
+import GameActivity, { GameActivityType } from '../../../src/entities/game-activity'
 
 const baseUrl = '/api-keys'
 
@@ -44,6 +45,15 @@ describe('API keys service - delete', () => {
     const updatedKey = await (<EntityManager>app.context.em).getRepository(APIKey).findOne(key.id)
 
     expect(updatedKey.revokedAt).toBeTruthy()
+
+    const activity = await (<EntityManager>app.context.em).getRepository(GameActivity).findOne({
+      type: GameActivityType.API_KEY_REVOKED,
+      extra: {
+        keyId: key.id
+      }
+    })
+
+    expect(activity).not.toBeNull()
   })
 
   it('should not delete an api key that doesn\'t exist', async () => {

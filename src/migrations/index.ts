@@ -6,6 +6,7 @@ import { CreateUserRecoveryCodeTable } from './20211209003017CreateUserRecoveryC
 import { CascadeDeletePlayerAliasEvents } from './20211221195514CascadeDeletePlayerAliasEvents'
 import { AddLeaderboardEntryHiddenColumn } from './20211224154919AddLeaderboardEntryHiddenColumn'
 import { CreateGameSavesTable } from './20220109144435CreateGameSavesTable'
+import { CreateGameActivitiesTable } from './20220125220401CreateGameActivitiesTable'
 
 export default [
   {
@@ -39,5 +40,9 @@ export default [
   {
     name: 'CreateGameSavesTable',
     class: CreateGameSavesTable
+  },
+  {
+    name: 'CreateGameActivitiesTable',
+    class: CreateGameActivitiesTable
   }
 ]

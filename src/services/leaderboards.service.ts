@@ -229,7 +229,7 @@ export default class LeaderboardsService implements Service {
       extra: {
         leaderboardInternalName: leaderboard.internalName,
         display: {
-          'Updated properties': Object.keys(req.body).map((key) => `${key}: ${req.body[key]}`).join(', ')
+          'Updated properties': Object.keys(req.body).filter((key) => key !== 'gameId').map((key) => `${key}: ${req.body[key]}`).join(', ')
         }
       }
     })

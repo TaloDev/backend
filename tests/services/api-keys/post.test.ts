@@ -73,7 +73,7 @@ describe('API keys service - post', () => {
       .auth(token, { type: 'bearer' })
       .expect(404)
 
-    expect(res.body).toStrictEqual({ message: 'The specified game doesn\'t exist' })
+    expect(res.body).toStrictEqual({ message: 'Game not found' })
   })
 
   it('should not create an api key for a game the user has no access to', async () => {

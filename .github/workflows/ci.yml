@@ -27,6 +27,9 @@ jobs:
       - name: Install deps
         run: yarn --prefer-offline
 
+      - name: Setup environment
+        run: cp envs/.env.dev .env
+
       - name: Run tests
         run: yarn test
 

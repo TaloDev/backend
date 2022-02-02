@@ -7,7 +7,7 @@ import { MikroORM } from '@mikro-orm/core'
     const generator = orm.getSchemaGenerator()
     await generator.dropSchema()
 
-    await orm.em.getConnection().execute(`drop table if exists mikro_orm_migrations`)
+    await orm.em.getConnection().execute('drop table if exists mikro_orm_migrations')
 
     const migrator = orm.getMigrator()
     await migrator.up()

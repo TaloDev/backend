@@ -1,24 +1,31 @@
 #!/bin/sh
 
-export $(grep -e DB_NAME -e DB_PASS .env | xargs)
 export $(cat envs/.env.test | xargs)
 
-trap 'cleanup' EXIT
+CONTAINER=test-db
+
+trap "cleanup" EXIT
 
 cleanup() {
   if [ -z "$CI" ]
   then
-    cat backup.sql | yarn dc exec -i db /usr/bin/mysql --password=$DB_PASS
-    rm -rf backup.sql
+    docker rm --force $CONTAINER -v
   fi
 }
 
 set -e
 
-if [ -z "$CI" ]
-then
-  yarn dc exec db /usr/bin/mysqldump $DB_NAME --password=$DB_PASS > backup.sql
-fi
+docker run --name $CONTAINER -e MYSQL_DATABASE=$DB_NAME -e MYSQL_ROOT_PASSWORD=$DB_PASS -p $DB_PORT:3306 -d mysql:8
+
+echo "Waiting for database..."
+
+TIME_TAKEN=0
+while ! docker exec $CONTAINER mysql --password=$DB_PASS --port=$DB_PORT -e "SELECT 1" >/dev/null 2>&1; do
+  TIME_TAKEN=$(( TIME_TAKEN + 1 ))
+  sleep 1
+done
+
+echo "Database took $TIME_TAKEN seconds to get ready"
 
 ./node_modules/.bin/ts-node tests/refresh-db.ts 
 node --trace-warnings ./node_modules/.bin/jest "$@" --runInBand

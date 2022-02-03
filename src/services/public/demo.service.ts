@@ -10,6 +10,7 @@ import createQueue from '../../lib/queues/createQueue'
 import UserSession from '../../entities/user-session'
 import Event from '../../entities/event'
 import randomDate from '../../lib/dates/randomDate'
+import bcrypt from 'bcrypt'
 
 interface DemoUserJob {
   userId: number
@@ -44,6 +45,7 @@ export default class DemoService implements Service {
     user.type = UserType.DEMO
     user.organisation = await em.getRepository(Organisation).findOne({ name: process.env.DEMO_ORGANISATION_NAME })
     user.emailConfirmed = true
+    user.password = await bcrypt.hash(user.email, 10)
 
     await em.getRepository(User).persistAndFlush(user)
 

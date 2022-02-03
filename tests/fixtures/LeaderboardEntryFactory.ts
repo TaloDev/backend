@@ -24,7 +24,8 @@ export default class LeaderboardEntryFactory extends Factory<LeaderboardEntry> {
     return {
       leaderboard: this.leaderboard,
       playerAlias: casual.random_element(player.aliases.getItems()),
-      score: Number(casual.double(10, 100000).toFixed(2))
+      score: Number(casual.double(10, 100000).toFixed(2)),
+      hidden: false
     }
   }
 

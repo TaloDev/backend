@@ -7,6 +7,7 @@ import { CascadeDeletePlayerAliasEvents } from './20211221195514CascadeDeletePla
 import { AddLeaderboardEntryHiddenColumn } from './20211224154919AddLeaderboardEntryHiddenColumn'
 import { CreateGameSavesTable } from './20220109144435CreateGameSavesTable'
 import { CreateGameActivitiesTable } from './20220125220401CreateGameActivitiesTable'
+import { SetUserTwoFactorAuthEnabledDefaultFalse } from './20220203130919SetUserTwoFactorAuthEnabledDefaultFalse'
 
 export default [
   {
@@ -44,5 +45,9 @@ export default [
   {
     name: 'CreateGameActivitiesTable',
     class: CreateGameActivitiesTable
+  },
+  {
+    name: 'SetUserTwoFactorAuthEnabledDefaultFalse',
+    class: SetUserTwoFactorAuthEnabledDefaultFalse
   }
 ]

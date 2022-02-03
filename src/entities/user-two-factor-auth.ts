@@ -12,7 +12,7 @@ export default class UserTwoFactorAuth {
   @Property({ hidden: true })
   secret: string
 
-  @Property()
+  @Property({ default: false })
   enabled: boolean
 
   constructor(secret: string) {

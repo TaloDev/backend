@@ -43,26 +43,7 @@ describe('Leaderboards API service - get', () => {
 
     apiKey.scopes = [APIKeyScope.READ_LEADERBOARDS]
     const players = await new PlayerFactory([game]).many(3)
-    const entries = await new LeaderboardEntryFactory(leaderboard, players).many(5)
-
-    await (<EntityManager>app.context.em).persistAndFlush([...players, ...entries])
-    token = await createToken(apiKey)
-
-    const res = await request(app.callback())
-      .get(`${baseUrl}/${leaderboard.internalName}/entries`)
-      .query({ page: 0 })
-      .auth(token, { type: 'bearer' })
-      .expect(200)
-
-    expect(res.body.entries).toHaveLength(entries.length)
-  })
-
-  it('should get leaderboard entries if the scope is valid', async () => {
-    const leaderboard = await new LeaderboardFactory([game]).one()
-
-    apiKey.scopes = [APIKeyScope.READ_LEADERBOARDS]
-    const players = await new PlayerFactory([game]).many(3)
-    const entries = await new LeaderboardEntryFactory(leaderboard, players).many(5)
+    const entries = await new LeaderboardEntryFactory(leaderboard, players).many(3)
     const hiddenEntries = await new LeaderboardEntryFactory(leaderboard, players).state('hidden').many(3)
 
     await (<EntityManager>app.context.em).persistAndFlush([...players, ...entries, ...hiddenEntries])

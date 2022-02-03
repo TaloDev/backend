@@ -51,14 +51,14 @@ describe('Demo service - post', () => {
 
     let oldEvents = events.filter((event) => event.createdAt < sub(new Date(), { months: 3 }))
     expect(oldEvents.length).toBeGreaterThan(0)
- 
+
     await request(app.callback())
       .post(`${baseUrl}`)
       .expect(200)
 
     await (<EntityManager>app.context.em).clear()
 
-    const updatedEvents = await (<EntityManager>app.context.em).getRepository(Event).findAll() 
+    const updatedEvents = await (<EntityManager>app.context.em).getRepository(Event).findAll()
     oldEvents = updatedEvents.filter((event) => event.createdAt < sub(new Date(), { months: 3 }))
 
     expect(oldEvents).toHaveLength(0)

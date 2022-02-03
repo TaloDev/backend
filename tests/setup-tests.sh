@@ -17,7 +17,7 @@ set -e
 
 docker run --name $CONTAINER -e MYSQL_DATABASE=$DB_NAME -e MYSQL_ROOT_PASSWORD=$DB_PASS -p $DB_PORT:3306 -d mysql:8
 
-echo "Waiting for database..."
+echo "\nWaiting for database..."
 
 TIME_TAKEN=0
 while ! docker exec $CONTAINER mysql --password=$DB_PASS --port=$DB_PORT -e "SELECT 1" >/dev/null 2>&1; do
@@ -25,7 +25,10 @@ while ! docker exec $CONTAINER mysql --password=$DB_PASS --port=$DB_PORT -e "SEL
   sleep 1
 done
 
-echo "Database took $TIME_TAKEN seconds to get ready"
+echo "Database took $TIME_TAKEN seconds to get ready\n"
 
-./node_modules/.bin/ts-node tests/refresh-db.ts 
+yarn mikro-orm migration:up
+
+echo "\n"
+
 node --trace-warnings ./node_modules/.bin/jest "$@" --runInBand

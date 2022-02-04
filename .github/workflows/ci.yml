@@ -27,14 +27,11 @@ jobs:
       - name: Install deps
         run: yarn --prefer-offline
 
-      - name: Setup Docker
-        run: |
-          cp envs/.env.dev .env
-          yarn dc up -d db
-          echo Waiting for DB to be ready...
-          sleep '10s'
+      - name: Setup environment
+        run: cp envs/.env.dev .env
 
-      - run: yarn test
+      - name: Run tests
+        run: yarn test
 
       - uses: codecov/codecov-action@v1
         with:

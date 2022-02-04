@@ -41,7 +41,7 @@ export default class Policy extends ServicePolicy {
 
   async canAccessGame(gameId: number): Promise<boolean> {
     const game = await this.em.getRepository(Game).findOne(gameId, ['organisation'])
-    if (!game) this.ctx.throw(404, 'The specified game doesn\'t exist')
+    if (!game) this.ctx.throw(404, 'Game not found')
     this.ctx.state.game = game
 
     const user = await this.getUser()

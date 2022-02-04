@@ -54,7 +54,7 @@ describe('Leaderboards service - index', () => {
       .auth(token, { type: 'bearer' })
       .expect(404)
 
-    expect(res.body).toStrictEqual({ message: 'The specified game doesn\'t exist' })
+    expect(res.body).toStrictEqual({ message: 'Game not found' })
   })
 
   it('should not return leaderboards for a game the user has no access to', async () => {

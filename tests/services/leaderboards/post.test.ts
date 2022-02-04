@@ -95,7 +95,7 @@ describe('Leaderboards service - post', () => {
       .auth(token, { type: 'bearer' })
       .expect(404)
 
-    expect(res.body).toStrictEqual({ message: 'The specified game doesn\'t exist' })
+    expect(res.body).toStrictEqual({ message: 'Game not found' })
   })
 
   it('should not create a leaderboard with an invalid sort mode', async () => {

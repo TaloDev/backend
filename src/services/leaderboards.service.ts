@@ -1,10 +1,10 @@
 import { EntityManager } from '@mikro-orm/mysql'
-import { HasPermission, Routes, Service, ServiceRequest, ServiceResponse, Validate } from 'koa-rest-services'
+import { HasPermission, Routes, Service, Request, Response, Validate } from 'koa-clay'
 import GameActivity, { GameActivityType } from '../entities/game-activity'
 import Leaderboard, { LeaderboardSortMode } from '../entities/leaderboard'
 import LeaderboardEntry from '../entities/leaderboard-entry'
 import createGameActivity from '../lib/logging/createGameActivity'
-import LeaderboardsPolicy from '../policies/leaderboards.policy'
+import LeaderboardPolicy from '../policies/leaderboards.policy'
 
 @Routes([
   {
@@ -39,12 +39,12 @@ import LeaderboardsPolicy from '../policies/leaderboards.policy'
     path: '/:internalName'
   }
 ])
-export default class LeaderboardsService implements Service {
+export default class LeaderboardService implements Service {
   @Validate({
     query: ['gameId']
   })
-  @HasPermission(LeaderboardsPolicy, 'index')
-  async index(req: ServiceRequest): Promise<ServiceResponse> {
+  @HasPermission(LeaderboardPolicy, 'index')
+  async index(req: Request): Promise<Response> {
     const { gameId } = req.query
     const em: EntityManager = req.ctx.em
     const leaderboards = await em.getRepository(Leaderboard).find({ game: Number(gameId) })
@@ -60,8 +60,8 @@ export default class LeaderboardsService implements Service {
   @Validate({
     query: ['gameId']
   })
-  @HasPermission(LeaderboardsPolicy, 'get')
-  async get(req: ServiceRequest): Promise<ServiceResponse> {
+  @HasPermission(LeaderboardPolicy, 'get')
+  async get(req: Request): Promise<Response> {
     return {
       status: 200,
       body: {
@@ -73,7 +73,7 @@ export default class LeaderboardsService implements Service {
   @Validate({
     body: {
       gameId: true,
-      internalName: async (val: string, req: ServiceRequest): Promise<boolean> => {
+      internalName: async (val: string, req: Request): Promise<boolean> => {
         const em: EntityManager = req.ctx.em
         const duplicateInternalName = await em.getRepository(Leaderboard).findOne({ internalName: val, game: req.body.gameId })
 
@@ -91,8 +91,8 @@ export default class LeaderboardsService implements Service {
       unique: true
     }
   })
-  @HasPermission(LeaderboardsPolicy, 'post')
-  async post(req: ServiceRequest): Promise<ServiceResponse> {
+  @HasPermission(LeaderboardPolicy, 'post')
+  async post(req: Request): Promise<Response> {
     const { internalName, name, sortMode, unique } = req.body
     const em: EntityManager = req.ctx.em
 
@@ -124,8 +124,8 @@ export default class LeaderboardsService implements Service {
   @Validate({
     query: ['gameId', 'page']
   })
-  @HasPermission(LeaderboardsPolicy, 'get')
-  async entries(req: ServiceRequest): Promise<ServiceResponse> {
+  @HasPermission(LeaderboardPolicy, 'get')
+  async entries(req: Request): Promise<Response> {
     const itemsPerPage = 50
 
     const { page, aliasId } = req.query
@@ -167,8 +167,8 @@ export default class LeaderboardsService implements Service {
   @Validate({
     body: ['gameId']
   })
-  @HasPermission(LeaderboardsPolicy, 'updateEntry')
-  async updateEntry(req: ServiceRequest): Promise<ServiceResponse> {
+  @HasPermission(LeaderboardPolicy, 'updateEntry')
+  async updateEntry(req: Request): Promise<Response> {
     const { id } = req.params
     const em: EntityManager = req.ctx.em
 
@@ -211,8 +211,8 @@ export default class LeaderboardsService implements Service {
   @Validate({
     body: ['gameId']
   })
-  @HasPermission(LeaderboardsPolicy, 'updateLeaderboard')
-  async updateLeaderboard(req: ServiceRequest): Promise<ServiceResponse> {
+  @HasPermission(LeaderboardPolicy, 'updateLeaderboard')
+  async updateLeaderboard(req: Request): Promise<Response> {
     const em: EntityManager = req.ctx.em
 
     const { name, sortMode, unique } = req.body
@@ -247,8 +247,8 @@ export default class LeaderboardsService implements Service {
   @Validate({
     body: ['gameId']
   })
-  @HasPermission(LeaderboardsPolicy, 'delete')
-  async delete(req: ServiceRequest): Promise<ServiceResponse> {
+  @HasPermission(LeaderboardPolicy, 'delete')
+  async delete(req: Request): Promise<Response> {
     const em: EntityManager = req.ctx.em
 
     await createGameActivity(em, {

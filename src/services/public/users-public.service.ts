@@ -1,4 +1,4 @@
-import { After, HookParams, Service, ServiceRequest, ServiceResponse, Routes, Validate } from 'koa-rest-services'
+import { After, Service, Request, Response, Routes, Validate } from 'koa-clay'
 import User, { UserType } from '../../entities/user'
 import jwt from 'jsonwebtoken'
 import { promisify } from 'util'
@@ -19,6 +19,29 @@ import Redis from 'ioredis'
 import redisConfig from '../../config/redis.config'
 import UserRecoveryCode from '../../entities/user-recovery-code'
 import generateRecoveryCodes from '../../lib/auth/generateRecoveryCodes'
+
+async function sendEmailConfirm(req: Request, res: Response): Promise<void> {
+  /* istanbul ignore else */
+  if (res.status === 200) {
+    req.ctx.state.user = jwt.decode(res.body.accessToken)
+    const user: User = await getUserFromToken(req.ctx)
+    const em: EntityManager = req.ctx.em
+
+    const accessCode = new UserAccessCode(user, add(new Date(), { weeks: 1 }))
+    await em.persistAndFlush(accessCode)
+
+    await (<Queue>req.ctx.emailQueue)
+      .createJob<EmailConfig>({
+        to: user.email,
+        subject: 'Your Talo access code',
+        template: confirmEmail,
+        templateData: {
+          code: accessCode.code
+        }
+      })
+      .save()
+  }
+}
 
 @Routes([
   {
@@ -57,12 +80,12 @@ import generateRecoveryCodes from '../../lib/auth/generateRecoveryCodes'
     handler: 'useRecoveryCode'
   }
 ])
-export default class UsersPublicService implements Service {
+export default class UserPublicService implements Service {
   @Validate({
     body: ['email', 'password', 'organisationName']
   })
-  @After('sendEmailConfirm')
-  async register(req: ServiceRequest): Promise<ServiceResponse> {
+  @After(sendEmailConfirm)
+  async register(req: Request): Promise<Response> {
     const { email, password, organisationName } = req.body
     const em: EntityManager = req.ctx.em
 
@@ -94,30 +117,7 @@ export default class UsersPublicService implements Service {
     }
   }
 
-  async sendEmailConfirm(hook: HookParams): Promise<void> {
-    /* istanbul ignore else */
-    if (hook.result.status === 200) {
-      hook.req.ctx.state.user = jwt.decode(hook.result.body.accessToken)
-      const user: User = await getUserFromToken(hook.req.ctx)
-      const em: EntityManager = hook.req.ctx.em
-
-      const accessCode = new UserAccessCode(user, add(new Date(), { weeks: 1 }))
-      await em.persistAndFlush(accessCode)
-
-      await (<Queue>hook.req.ctx.emailQueue)
-        .createJob<EmailConfig>({
-          to: user.email,
-          subject: 'Your Talo access code',
-          template: confirmEmail,
-          templateData: {
-            code: accessCode.code
-          }
-        })
-        .save()
-    }
-  }
-
-  handleFailedLogin(req: ServiceRequest) {
+  handleFailedLogin(req: Request) {
     req.ctx.throw(401, { message: 'Incorrect email address or password', showHint: true })
   }
 
@@ -125,7 +125,7 @@ export default class UsersPublicService implements Service {
     body: ['email', 'password']
   })
   @After(setUserLastSeenAt)
-  async login(req: ServiceRequest): Promise<ServiceResponse> {
+  async login(req: Request): Promise<Response> {
     const { email, password } = req.body
     const em: EntityManager = req.ctx.em
 
@@ -160,7 +160,7 @@ export default class UsersPublicService implements Service {
   }
 
   @After(setUserLastSeenAt)
-  async refresh(req: ServiceRequest): Promise<ServiceResponse> {
+  async refresh(req: Request): Promise<Response> {
     const token = req.ctx.cookies.get('refreshToken')
     const userAgent = req.headers['user-agent']
     const em: EntityManager = req.ctx.em
@@ -189,7 +189,7 @@ export default class UsersPublicService implements Service {
   @Validate({
     body: ['email']
   })
-  async forgotPassword(req: ServiceRequest): Promise<ServiceResponse> {
+  async forgotPassword(req: Request): Promise<Response> {
     const { email } = req.body
     const em: EntityManager = req.ctx.em
 
@@ -224,7 +224,7 @@ export default class UsersPublicService implements Service {
   @Validate({
     body: ['password', 'token']
   })
-  async changePassword(req: ServiceRequest): Promise<ServiceResponse> {
+  async changePassword(req: Request): Promise<Response> {
     const { password, token } = req.body
     const decodedToken = jwt.decode(token)
 
@@ -263,7 +263,7 @@ export default class UsersPublicService implements Service {
     body: ['code', 'userId']
   })
   @After(setUserLastSeenAt)
-  async verify2fa(req: ServiceRequest): Promise<ServiceResponse> {
+  async verify2fa(req: Request): Promise<Response> {
     const { code, userId } = req.body
     const em: EntityManager = req.ctx.em
 
@@ -295,7 +295,7 @@ export default class UsersPublicService implements Service {
   @Validate({
     body: ['code', 'userId']
   })
-  async useRecoveryCode(req: ServiceRequest): Promise<ServiceResponse> {
+  async useRecoveryCode(req: Request): Promise<Response> {
     const { code, userId } = req.body
     const em: EntityManager = req.ctx.em
 

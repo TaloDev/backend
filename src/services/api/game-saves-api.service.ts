@@ -1,5 +1,5 @@
-import { HasPermission, ServiceRequest, ServiceResponse, Validate } from 'koa-rest-services'
-import GameSavesAPIPolicy from '../../policies/api/game-saves-api.policy'
+import { HasPermission, Request, Response, Validate } from 'koa-clay'
+import GameSaveAPIPolicy from '../../policies/api/game-saves-api.policy'
 import APIService from './api-service'
 import GameSave from '../../entities/game-save'
 import { EntityManager } from '@mikro-orm/core'
@@ -12,8 +12,8 @@ export default class GameSaveAPIService extends APIService<void> {
   @Validate({
     query: ['aliasId']
   })
-  @HasPermission(GameSavesAPIPolicy, 'index')
-  async index(req: ServiceRequest): Promise<ServiceResponse> {
+  @HasPermission(GameSaveAPIPolicy, 'index')
+  async index(req: Request): Promise<Response> {
     const em: EntityManager = req.ctx.em
 
     const saves = await em.getRepository(GameSave).find({
@@ -31,8 +31,8 @@ export default class GameSaveAPIService extends APIService<void> {
   @Validate({
     body: ['name', 'content', 'aliasId']
   })
-  @HasPermission(GameSavesAPIPolicy, 'post')
-  async post(req: ServiceRequest): Promise<ServiceResponse> {
+  @HasPermission(GameSaveAPIPolicy, 'post')
+  async post(req: Request): Promise<Response> {
     const { name, content } = req.body
 
     const em: EntityManager = req.ctx.em
@@ -53,8 +53,8 @@ export default class GameSaveAPIService extends APIService<void> {
   @Validate({
     body: ['content', 'aliasId']
   })
-  @HasPermission(GameSavesAPIPolicy, 'patch')
-  async patch(req: ServiceRequest): Promise<ServiceResponse> {
+  @HasPermission(GameSaveAPIPolicy, 'patch')
+  async patch(req: Request): Promise<Response> {
     const { name, content } = req.body
 
     const em: EntityManager = req.ctx.em

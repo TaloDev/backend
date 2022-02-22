@@ -1,14 +1,14 @@
 import Koa, { Context, Next } from 'koa'
-import { service } from 'koa-rest-services'
-import GameActivitiesService from '../services/game-activities.service'
-import LeaderboardsService from '../services/leaderboards.service'
-import DataExportsService from '../services/data-exports.service'
-import APIKeysService from '../services/api-keys.service'
-import EventsService from '../services/events.service'
-import GamesService from '../services/games.service'
-import HeadlinesService from '../services/headlines.service'
-import PlayersService from '../services/players.service'
-import UsersService from '../services/users.service'
+import { service } from 'koa-clay'
+import GameActivitieService from '../services/game-activities.service'
+import LeaderboardService from '../services/leaderboards.service'
+import DataExportService from '../services/data-exports.service'
+import APIKeyService from '../services/api-keys.service'
+import EventService from '../services/events.service'
+import GameService from '../services/games.service'
+import HeadlineService from '../services/headlines.service'
+import PlayerService from '../services/players.service'
+import UserService from '../services/users.service'
 
 export default (app: Koa) => {
   app.use(async (ctx: Context, next: Next): Promise<void> => {
@@ -18,13 +18,13 @@ export default (app: Koa) => {
     await next()
   })
 
-  app.use(service('/game-activities', new GameActivitiesService()))
-  app.use(service('/leaderboards', new LeaderboardsService()))
-  app.use(service('/data-exports', new DataExportsService()))
-  app.use(service('/api-keys', new APIKeysService()))
-  app.use(service('/events', new EventsService()))
-  app.use(service('/players', new PlayersService()))
-  app.use(service('/games', new GamesService()))
-  app.use(service('/users', new UsersService()))
-  app.use(service('/headlines', new HeadlinesService()))
+  app.use(service('/game-activities', new GameActivitieService()))
+  app.use(service('/leaderboards', new LeaderboardService()))
+  app.use(service('/data-exports', new DataExportService()))
+  app.use(service('/api-keys', new APIKeyService()))
+  app.use(service('/events', new EventService()))
+  app.use(service('/players', new PlayerService()))
+  app.use(service('/games', new GameService()))
+  app.use(service('/users', new UserService()))
+  app.use(service('/headlines', new HeadlineService()))
 }

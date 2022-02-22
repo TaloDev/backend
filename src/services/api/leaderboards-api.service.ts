@@ -1,6 +1,6 @@
-import { HasPermission, Routes, ServiceRequest, ServiceResponse, Validate } from 'koa-rest-services'
-import LeaderboardsAPIPolicy from '../../policies/api/leaderboards-api.policy'
-import LeaderboardsService from '../leaderboards.service'
+import { HasPermission, Routes, Request, Response, Validate } from 'koa-clay'
+import LeaderboardAPIPolicy from '../../policies/api/leaderboards-api.policy'
+import LeaderboardService from '../leaderboards.service'
 import APIService from './api-service'
 import { EntityManager } from '@mikro-orm/mysql'
 import LeaderboardEntry from '../../entities/leaderboard-entry'
@@ -16,19 +16,19 @@ import Leaderboard, { LeaderboardSortMode } from '../../entities/leaderboard'
     path: '/:internalName/entries'
   }
 ])
-export default class LeaderboardAPIService extends APIService<LeaderboardsService> {
+export default class LeaderboardAPIService extends APIService<LeaderboardService> {
   constructor() {
     super('leaderboards')
   }
 
-  @HasPermission(LeaderboardsAPIPolicy, 'get')
-  async get(req: ServiceRequest): Promise<ServiceResponse> {
+  @HasPermission(LeaderboardAPIPolicy, 'get')
+  async get(req: Request): Promise<Response> {
     const key = await this.getAPIKey(req.ctx)
     req.query.gameId = key.game.id.toString()
     return this.forwardRequest('entries', req)
   }
 
-  async createEntry(req: ServiceRequest): Promise<LeaderboardEntry> {
+  async createEntry(req: Request): Promise<LeaderboardEntry> {
     const em: EntityManager = req.ctx.em
 
     const entry = new LeaderboardEntry(req.ctx.state.leaderboard)
@@ -43,8 +43,8 @@ export default class LeaderboardAPIService extends APIService<LeaderboardsServic
   @Validate({
     body: ['aliasId', 'score']
   })
-  @HasPermission(LeaderboardsAPIPolicy, 'post')
-  async post(req: ServiceRequest): Promise<ServiceResponse> {
+  @HasPermission(LeaderboardAPIPolicy, 'post')
+  async post(req: Request): Promise<Response> {
     const { score } = req.body
     const em: EntityManager = req.ctx.em
 

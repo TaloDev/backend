@@ -1,10 +1,10 @@
 import Policy from '../policy'
-import { ServicePolicyDenial, ServicePolicyResponse, ServiceRequest } from 'koa-rest-services'
+import { PolicyDenial, PolicyResponse, Request } from 'koa-clay'
 import Leaderboard from '../../entities/leaderboard'
 import PlayerAlias from '../../entities/player-alias'
 
-export default class LeaderboardsAPIPolicy extends Policy {
-  async getLeaderboard(req: ServiceRequest): Promise<Leaderboard | null> {
+export default class LeaderboardAPIPolicy extends Policy {
+  async getLeaderboard(req: Request): Promise<Leaderboard | null> {
     const { internalName } = req.params
 
     const key = await this.getAPIKey()
@@ -18,16 +18,16 @@ export default class LeaderboardsAPIPolicy extends Policy {
     return leaderboard
   }
 
-  async get(): Promise<ServicePolicyResponse> {
+  async get(): Promise<PolicyResponse> {
     return await this.hasScope('read:leaderboards')
   }
 
-  async post(req: ServiceRequest): Promise<ServicePolicyResponse> {
+  async post(req: Request): Promise<PolicyResponse> {
     const scopeCheck = await this.hasScope('write:leaderboards')
     if (scopeCheck !== true) return scopeCheck
 
     const leaderboard = await this.getLeaderboard(req)
-    if (!leaderboard) return new ServicePolicyDenial({ message: 'Leaderboard not found' }, 404)
+    if (!leaderboard) return new PolicyDenial({ message: 'Leaderboard not found' }, 404)
 
     const { aliasId } = req.body
 
@@ -38,7 +38,7 @@ export default class LeaderboardsAPIPolicy extends Policy {
       }
     })
 
-    if (!playerAlias) return new ServicePolicyDenial({ message: 'Player not found' }, 404)
+    if (!playerAlias) return new PolicyDenial({ message: 'Player not found' }, 404)
 
     this.ctx.state.playerAlias = playerAlias
 

@@ -1,10 +1,10 @@
 import { EntityManager } from '@mikro-orm/core'
 import { endOfDay, isSameDay } from 'date-fns'
-import { Service, ServiceRequest, ServiceResponse, Validate, HasPermission, Routes } from 'koa-rest-services'
+import { Service, Request, Response, Validate, HasPermission, Routes } from 'koa-clay'
 import { groupBy } from 'lodash'
 import Event from '../entities/event'
 import Player from '../entities/player'
-import HeadlinesPolicy from '../policies/headlines.policy'
+import HeadlinePolicy from '../policies/headlines.policy'
 import dateValidationSchema from '../lib/dates/dateValidationSchema'
 
 @Routes([
@@ -29,15 +29,15 @@ import dateValidationSchema from '../lib/dates/dateValidationSchema'
     handler: 'uniqueEventSubmitters'
   }
 ])
-export default class HeadlinesService implements Service {
+export default class HeadlineService implements Service {
   @Validate({
     query: {
       gameId: true,
       ...dateValidationSchema
     }
   })
-  @HasPermission(HeadlinesPolicy, 'index')
-  async newPlayers(req: ServiceRequest): Promise<ServiceResponse> {
+  @HasPermission(HeadlinePolicy, 'index')
+  async newPlayers(req: Request): Promise<Response> {
     const { gameId, startDate, endDate } = req.query
     const em: EntityManager = req.ctx.em
 
@@ -63,8 +63,8 @@ export default class HeadlinesService implements Service {
       ...dateValidationSchema
     }
   })
-  @HasPermission(HeadlinesPolicy, 'index')
-  async returningPlayers(req: ServiceRequest): Promise<ServiceResponse> {
+  @HasPermission(HeadlinePolicy, 'index')
+  async returningPlayers(req: Request): Promise<Response> {
     const { gameId, startDate, endDate } = req.query
     const em: EntityManager = req.ctx.em
 
@@ -95,8 +95,8 @@ export default class HeadlinesService implements Service {
       ...dateValidationSchema
     }
   })
-  @HasPermission(HeadlinesPolicy, 'index')
-  async events(req: ServiceRequest): Promise<ServiceResponse> {
+  @HasPermission(HeadlinePolicy, 'index')
+  async events(req: Request): Promise<Response> {
     const { gameId, startDate, endDate } = req.query
     const em: EntityManager = req.ctx.em
 
@@ -122,8 +122,8 @@ export default class HeadlinesService implements Service {
       ...dateValidationSchema
     }
   })
-  @HasPermission(HeadlinesPolicy, 'index')
-  async uniqueEventSubmitters(req: ServiceRequest): Promise<ServiceResponse> {
+  @HasPermission(HeadlinePolicy, 'index')
+  async uniqueEventSubmitters(req: Request): Promise<Response> {
     const { gameId, startDate, endDate } = req.query
     const em: EntityManager = req.ctx.em
 

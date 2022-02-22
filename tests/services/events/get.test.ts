@@ -133,22 +133,22 @@ describe('Events service - get', () => {
     const dayInMs = 86400000
 
     const eventFactory = new EventFactory([player])
-    const firstEvent: Event = await eventFactory.with((event) => ({
+    const firstEvent: Event = await eventFactory.with(() => ({
       name: 'Open inventory',
       createdAt: now
     })).one()
 
-    const moreEvents: Event[] = await eventFactory.with((event) => ({
+    const moreEvents: Event[] = await eventFactory.with(() => ({
       name: 'Open inventory',
       createdAt: new Date(now.getTime() + dayInMs)
     })).many(2)
 
-    const evenMoreEvents: Event[] = await eventFactory.with((event) => ({
+    const evenMoreEvents: Event[] = await eventFactory.with(() => ({
       name: 'Open inventory',
       createdAt: new Date(now.getTime() + dayInMs * 2)
     })).many(3)
 
-    const lastEvent: Event = await eventFactory.with((event) => ({
+    const lastEvent: Event = await eventFactory.with(() => ({
       name: 'Open inventory',
       createdAt: new Date(now.getTime() + dayInMs * 3)
     })).one()
@@ -180,7 +180,7 @@ describe('Events service - get', () => {
 
     const eventFactory = new EventFactory([player])
 
-    const event: Event = await eventFactory.with((event) => ({
+    const event: Event = await eventFactory.with(() => ({
       name: 'Join guild',
       createdAt: new Date(now.getTime() + dayInMs)
     })).one()

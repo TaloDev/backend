@@ -2,16 +2,16 @@
 to: src/services/<%= name %>s.service.ts
 ---
 import { EntityManager } from '@mikro-orm/core'
-import { HasPermission, Service, ServiceRequest, ServiceResponse, Validate } from 'koa-rest-services'
+import { HasPermission, Service, Request, Response, Validate } from 'koa-clay'
 import <%= h.changeCase.pascal(name) %> from '../entities/<%= name %>'
-import <%= h.changeCase.pascal(name) %>sPolicy from '../policies/<%= name %>s.policy'
+import <%= h.changeCase.pascal(name) %>Policy from '../policies/<%= name %>s.policy'
 
-export default class <%= h.changeCase.pascal(name) %>sService implements Service {
+export default class <%= h.changeCase.pascal(name) %>Service implements Service {
   @Validate({
     query: ['<%= h.changeCase.camel(name) %>Id']
   })
-  @HasPermission(<%= h.changeCase.pascal(name) %>sPolicy, 'get')
-  async get(req: ServiceRequest): Promise<ServiceResponse> {
+  @HasPermission(<%= h.changeCase.pascal(name) %>Policy, 'get')
+  async get(req: Request): Promise<Response> {
     const { <%= h.changeCase.camel(name) %>Id } = req.query
     const em: EntityManager = req.ctx.em
     const <%= h.changeCase.camel(name) %> = await em.getRepository(<%= h.changeCase.pascal(name) %>).findOne(Number(<%= h.changeCase.camel(name) %>Id))
@@ -27,8 +27,8 @@ export default class <%= h.changeCase.pascal(name) %>sService implements Service
   @Validate({
     body: []
   })
-  @HasPermission(<%= h.changeCase.pascal(name) %>sPolicy, 'post')
-  async post(req: ServiceRequest): Promise<ServiceResponse> {
+  @HasPermission(<%= h.changeCase.pascal(name) %>Policy, 'post')
+  async post(req: Request): Promise<Response> {
     const {} = req.body
     const em: EntityManager = req.ctx.em
 

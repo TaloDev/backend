@@ -1,15 +1,15 @@
 import { EntityManager } from '@mikro-orm/core'
-import { HasPermission, Service, ServiceRequest, ServiceResponse, Validate } from 'koa-rest-services'
+import { HasPermission, Service, Request, Response, Validate } from 'koa-clay'
 import Game from '../entities/game'
 import getUserFromToken from '../lib/auth/getUserFromToken'
-import GamesPolicy from '../policies/games.policy'
+import GamePolicy from '../policies/games.policy'
 
-export default class GamesService implements Service {
+export default class GameService implements Service {
   @Validate({
     body: ['name']
   })
-  @HasPermission(GamesPolicy, 'post')
-  async post(req: ServiceRequest): Promise<ServiceResponse> {
+  @HasPermission(GamePolicy, 'post')
+  async post(req: Request): Promise<Response> {
     const { name } = req.body
     const em: EntityManager = req.ctx.em
     const user = await getUserFromToken(req.ctx)

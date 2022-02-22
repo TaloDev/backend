@@ -1,19 +1,19 @@
 ---
 to: "<%= (typeof api !== 'undefined') ? `src/services/api/${name}s-api.service.ts` : null %>"
 ---
-import { HasPermission, ServiceRequest, ServiceResponse } from 'koa-rest-services'
-import <%= h.changeCase.pascal(name) %>sAPIPolicy from '../../policies/api/<%= name %>s-api.policy'
-import <%= h.changeCase.pascal(name) %>sService from '../<%= name %>s.service'
+import { HasPermission, Request, Response } from 'koa-clay'
+import <%= h.changeCase.pascal(name) %>APIPolicy from '../../policies/api/<%= name %>s-api.policy'
+import <%= h.changeCase.pascal(name) %>Service from '../<%= name %>s.service'
 import APIService from './api-service'
 import APIKey from '../../entities/api-key'
 
-export default class <%= h.changeCase.pascal(name) %>APIService extends APIService<<%= h.changeCase.pascal(name) %>sService> {
+export default class <%= h.changeCase.pascal(name) %>APIService extends APIService<<%= h.changeCase.pascal(name) %>Service> {
   constructor() {
     super('<%= name %>s')
   }
 
-  @HasPermission(<%= h.changeCase.pascal(name) %>sAPIPolicy, 'post')
-  async post(req: ServiceRequest): Promise<ServiceResponse> {
+  @HasPermission(<%= h.changeCase.pascal(name) %>APIPolicy, 'post')
+  async post(req: Request): Promise<Response> {
     const key: APIKey = await this.getAPIKey(req.ctx)
     req.body = {
       ...req.body,

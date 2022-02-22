@@ -4546,6 +4546,15 @@ koa-bodyparser@^4.3.0:
     co-body "^6.0.0"
     copy-to "^2.0.1"
 
+koa-clay@^5.1.1:
+  version "5.1.1"
+  resolved "https://registry.yarnpkg.com/koa-clay/-/koa-clay-5.1.1.tgz#f3e8c4b99ef7eb2f392fc70ad4979dc7f4508785"
+  integrity sha512-Ee3Wk4/gvx/ZTlDAssdPuWxD6Ydj/VGlfGct/t5I04zje8FQ5HsSllC0FJDN7mch+idLFmigxGhvExwmww2nHw==
+  dependencies:
+    koa-bodyparser "^4.3.0"
+    lodash.set "^4.3.2"
+    path-to-regexp "^6.2.0"
+
 koa-compose@^3.0.0:
   version "3.2.1"
   resolved "https://registry.yarnpkg.com/koa-compose/-/koa-compose-3.2.1.tgz#a85ccb40b7d986d8e5a345b3a1ace8eabcf54de7"
@@ -4591,14 +4600,6 @@ koa-logger@^3.2.1:
     chalk "^2.4.2"
     humanize-number "0.0.2"
     passthrough-counter "^1.0.0"
-
-koa-rest-services@^4.0.3:
-  version "4.0.3"
-  resolved "https://registry.yarnpkg.com/koa-rest-services/-/koa-rest-services-4.0.3.tgz#13e4ee866445ac107d6c5b2390ed9c30772ed564"
-  integrity sha512-VuH55JS4P+fiMI+gpkKHxHlX7n+AiWNPmZNACtpqT9m8jU4wyyGHLoXb2rO3IDPWt09+nLAECAR8gQt2LCaGBg==
-  dependencies:
-    lodash.set "^4.3.2"
-    path-to-regexp "^6.2.0"
 
 koa-unless@^1.0.7:
   version "1.0.7"

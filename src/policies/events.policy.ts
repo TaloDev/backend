@@ -1,8 +1,8 @@
 import Policy from './policy'
-import { ServiceRequest } from 'koa-rest-services'
+import { Request } from 'koa-clay'
 
-export default class EventsPolicy extends Policy {
-  async index(req: ServiceRequest): Promise<boolean> {
+export default class EventPolicy extends Policy {
+  async index(req: Request): Promise<boolean> {
     const { gameId } = req.query
 
     if (this.isAPICall()) return true

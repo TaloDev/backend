@@ -1,12 +1,12 @@
-import { ServicePolicyResponse } from 'koa-rest-services'
+import { PolicyResponse } from 'koa-clay'
 import Policy from '../policy'
 
-export default class EventsAPIPolicy extends Policy {
-  async index(): Promise<ServicePolicyResponse> {
+export default class EventAPIPolicy extends Policy {
+  async index(): Promise<PolicyResponse> {
     return await this.hasScope('read:events')
   }
 
-  async post(): Promise<ServicePolicyResponse> {
+  async post(): Promise<PolicyResponse> {
     return await this.hasScope('write:events')
   }
 }

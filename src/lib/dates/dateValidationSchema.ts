@@ -1,8 +1,8 @@
 import { isAfter, isValid } from 'date-fns'
-import { ServiceRequest } from 'koa-rest-services'
+import { Request } from 'koa-clay'
 
 const schema = {
-  startDate: async (val: string, req: ServiceRequest): Promise<boolean> => {
+  startDate: async (val: string, req: Request): Promise<boolean> => {
     if (!val) return false
 
     const startDate = new Date(val)

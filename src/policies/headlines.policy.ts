@@ -1,8 +1,8 @@
 import Policy from './policy'
-import { ServiceRequest } from 'koa-rest-services'
+import { Request } from 'koa-clay'
 
-export default class HeadlinesPolicy extends Policy {
-  async index(req: ServiceRequest): Promise<boolean> {
+export default class HeadlinePolicy extends Policy {
+  async index(req: Request): Promise<boolean> {
     const { gameId } = req.query
     return await this.canAccessGame(Number(gameId))
   }

@@ -1,7 +1,7 @@
 import { EntityManager } from '@mikro-orm/core'
-import { HasPermission, Service, ServiceRequest, ServiceResponse, Validate } from 'koa-rest-services'
+import { HasPermission, Service, Request, Response, Validate } from 'koa-clay'
 import Event from '../entities/event'
-import EventsPolicy from '../policies/events.policy'
+import EventPolicy from '../policies/events.policy'
 import groupBy from 'lodash.groupby'
 import { isSameDay, endOfDay } from 'date-fns'
 import dateValidationSchema from '../lib/dates/dateValidationSchema'
@@ -13,15 +13,17 @@ interface EventData {
   change: number
 }
 
-export default class EventsService implements Service {
+export default class EventService implements Service {
   @Validate({
     query: {
-      gameId: true,
+      gameId: {
+        required: true
+      },
       ...dateValidationSchema
     }
   })
-  @HasPermission(EventsPolicy, 'index')
-  async index(req: ServiceRequest): Promise<ServiceResponse> {
+  @HasPermission(EventPolicy, 'index')
+  async index(req: Request): Promise<Response> {
     const { gameId, startDate, endDate } = req.query
     const em: EntityManager = req.ctx.em
 

@@ -1,7 +1,7 @@
 import { EntityManager, MikroORM } from '@mikro-orm/core'
-import { HasPermission, Routes, Service, ServiceRequest, ServiceResponse, Validate } from 'koa-rest-services'
+import { HasPermission, Routes, Service, Request, Response, Validate } from 'koa-clay'
 import DataExport, { DataExportAvailableEntities, DataExportStatus } from '../entities/data-export'
-import DataExportsPolicy from '../policies/data-exports.policy'
+import DataExportPolicy from '../policies/data-exports.policy'
 import Event from '../entities/event'
 import AdmZip from 'adm-zip'
 import get from 'lodash.get'
@@ -46,7 +46,7 @@ type ExportableEntityWithProps = ExportableEntity & EntityWithProps
     handler: 'entities'
   }
 ])
-export default class DataExportsService implements Service {
+export default class DataExportService implements Service {
   queue: Queue
   emailQueue: Queue
 
@@ -214,8 +214,8 @@ export default class DataExportsService implements Service {
   @Validate({
     query: ['gameId']
   })
-  @HasPermission(DataExportsPolicy, 'index')
-  async index(req: ServiceRequest): Promise<ServiceResponse> {
+  @HasPermission(DataExportPolicy, 'index')
+  async index(req: Request): Promise<Response> {
     const { gameId } = req.query
     const em: EntityManager = req.ctx.em
     const dataExports = await em.getRepository(DataExport).find({ game: Number(gameId) }, ['createdByUser'])
@@ -236,8 +236,8 @@ export default class DataExportsService implements Service {
       }
     }
   })
-  @HasPermission(DataExportsPolicy, 'post')
-  async post(req: ServiceRequest): Promise<ServiceResponse> {
+  @HasPermission(DataExportPolicy, 'post')
+  async post(req: Request): Promise<Response> {
     if (!this.emailQueue) this.emailQueue = req.ctx.emailQueue
 
     const { entities } = req.body
@@ -257,7 +257,7 @@ export default class DataExportsService implements Service {
     }
   }
 
-  async entities(): Promise<ServiceResponse> {
+  async entities(): Promise<Response> {
     const entities = Object.keys(DataExportAvailableEntities).map((key) => DataExportAvailableEntities[key])
 
     return {

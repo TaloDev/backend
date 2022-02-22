@@ -1,8 +1,8 @@
 import { EntityManager } from '@mikro-orm/core'
-import { HasPermission, Service, ServiceRequest, ServiceResponse, Routes, Validate } from 'koa-rest-services'
+import { HasPermission, Service, Request, Response, Routes, Validate } from 'koa-clay'
 import APIKey, { APIKeyScope } from '../entities/api-key'
 import jwt from 'jsonwebtoken'
-import APIKeysPolicy from '../policies/api-keys.policy'
+import APIKeyPolicy from '../policies/api-keys.policy'
 import groupBy from 'lodash.groupby'
 import { promisify } from 'util'
 import createGameActivity from '../lib/logging/createGameActivity'
@@ -35,12 +35,12 @@ export async function createToken(apiKey: APIKey, payloadParams?: ExtraTokenPayl
     method: 'DELETE'
   }
 ])
-export default class APIKeysService implements Service {
+export default class APIKeyService implements Service {
   @Validate({
     body: ['gameId', 'scopes']
   })
-  @HasPermission(APIKeysPolicy, 'post')
-  async post(req: ServiceRequest): Promise<ServiceResponse> {
+  @HasPermission(APIKeyPolicy, 'post')
+  async post(req: Request): Promise<Response> {
     const { scopes } = req.body
     const em: EntityManager = req.ctx.em
 
@@ -75,8 +75,8 @@ export default class APIKeysService implements Service {
   @Validate({
     query: ['gameId']
   })
-  @HasPermission(APIKeysPolicy, 'index')
-  async index(req: ServiceRequest): Promise<ServiceResponse> {
+  @HasPermission(APIKeyPolicy, 'index')
+  async index(req: Request): Promise<Response> {
     const { gameId } = req.query
     const em: EntityManager = req.ctx.em
     const apiKeys = await em.getRepository(APIKey).find({ game: Number(gameId), revokedAt: null })
@@ -89,8 +89,8 @@ export default class APIKeysService implements Service {
     }
   }
 
-  @HasPermission(APIKeysPolicy, 'delete')
-  async delete(req: ServiceRequest): Promise<ServiceResponse> {
+  @HasPermission(APIKeyPolicy, 'delete')
+  async delete(req: Request): Promise<Response> {
     const em: EntityManager = req.ctx.em
 
     const apiKey = req.ctx.state.apiKey as APIKey // set in the policy
@@ -115,7 +115,7 @@ export default class APIKeysService implements Service {
     }
   }
 
-  async scopes(): Promise<ServiceResponse> {
+  async scopes(): Promise<Response> {
     const scopes = Object.keys(APIKeyScope).map((key) => APIKeyScope[key])
 
     return {

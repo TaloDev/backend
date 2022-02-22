@@ -1,5 +1,5 @@
 import { EntityManager } from '@mikro-orm/core'
-import { Service, ServiceRequest, ServiceResponse, Routes, Validate, HookParams, Before } from 'koa-rest-services'
+import { Service, Request, Response, Routes, Validate, Before } from 'koa-clay'
 import UserSession from '../entities/user-session'
 import buildTokenPair from '../lib/auth/buildTokenPair'
 import bcrypt from 'bcrypt'
@@ -10,6 +10,25 @@ import UserTwoFactorAuth from '../entities/user-two-factor-auth'
 import qrcode from 'qrcode'
 import generateRecoveryCodes from '../lib/auth/generateRecoveryCodes'
 import User from '../entities/user'
+
+async function confirmPassword(req: Request): Promise<void> {
+  const { password } = req.body
+
+  const user = await getUserFromToken(req.ctx)
+
+  const passwordMatches = await bcrypt.compare(password, user.password)
+  if (!passwordMatches) req.ctx.throw(403, 'Incorrect password')
+}
+
+async function requires2fa(req: Request): Promise<void> {
+  const user = await getUserFromToken(req.ctx)
+
+  if (!user.twoFactorAuth?.enabled) {
+    req.ctx.throw(403, 'Two factor authentication needs to be enabled')
+  }
+
+  req.ctx.state.user = user
+}
 
 @Routes([
   {
@@ -58,8 +77,8 @@ import User from '../entities/user'
     handler: 'viewRecoveryCodes'
   }
 ])
-export default class UsersService implements Service {
-  async logout(req: ServiceRequest): Promise<ServiceResponse> {
+export default class UserService implements Service {
+  async logout(req: Request): Promise<Response> {
     const em: EntityManager = req.ctx.em
     const userId: number = req.ctx.state.user.sub
     const userAgent: string = req.headers['user-agent']
@@ -76,7 +95,7 @@ export default class UsersService implements Service {
   @Validate({
     body: ['currentPassword', 'newPassword']
   })
-  async changePassword(req: ServiceRequest): Promise<ServiceResponse> {
+  async changePassword(req: Request): Promise<Response> {
     const { currentPassword, newPassword } = req.body
 
     const em: EntityManager = req.ctx.em
@@ -103,7 +122,7 @@ export default class UsersService implements Service {
     }
   }
 
-  async me(req: ServiceRequest): Promise<ServiceResponse> {
+  async me(req: Request): Promise<Response> {
     const user = await getUserFromToken(req.ctx)
 
     return {
@@ -117,7 +136,7 @@ export default class UsersService implements Service {
   @Validate({
     body: ['code']
   })
-  async confirmEmail(req: ServiceRequest): Promise<ServiceResponse> {
+  async confirmEmail(req: Request): Promise<Response> {
     const { code } = req.body
     const em: EntityManager = req.ctx.em
 
@@ -147,7 +166,7 @@ export default class UsersService implements Service {
     }
   }
 
-  async enable2fa(req: ServiceRequest): Promise<ServiceResponse> {
+  async enable2fa(req: Request): Promise<Response> {
     const em: EntityManager = req.ctx.em
 
     const user = await getUserFromToken(req.ctx)
@@ -174,7 +193,7 @@ export default class UsersService implements Service {
   @Validate({
     body: ['code']
   })
-  async confirm2fa(req: ServiceRequest): Promise<ServiceResponse> {
+  async confirm2fa(req: Request): Promise<Response> {
     const { code } = req.body
     const em: EntityManager = req.ctx.em
 
@@ -201,28 +220,9 @@ export default class UsersService implements Service {
     }
   }
 
-  async confirmPassword(hook: HookParams): Promise<void> {
-    const { password } = hook.req.body
-
-    const user = await getUserFromToken(hook.req.ctx)
-
-    const passwordMatches = await bcrypt.compare(password, user.password)
-    if (!passwordMatches) hook.req.ctx.throw(403, 'Incorrect password')
-  }
-
-  async requires2fa(hook: HookParams): Promise<void> {
-    const user = await getUserFromToken(hook.req.ctx)
-
-    if (!user.twoFactorAuth?.enabled) {
-      hook.req.ctx.throw(403, 'Two factor authentication needs to be enabled')
-    }
-
-    hook.req.ctx.state.user = user
-  }
-
-  @Before('confirmPassword')
-  @Before('requires2fa')
-  async disable2fa(req: ServiceRequest): Promise<ServiceResponse> {
+  @Before(confirmPassword)
+  @Before(requires2fa)
+  async disable2fa(req: Request): Promise<Response> {
     const em: EntityManager = req.ctx.em
     const user: User = req.ctx.state.user
 
@@ -237,9 +237,9 @@ export default class UsersService implements Service {
     }
   }
 
-  @Before('confirmPassword')
-  @Before('requires2fa')
-  async createRecoveryCodes(req: ServiceRequest): Promise<ServiceResponse> {
+  @Before(confirmPassword)
+  @Before(requires2fa)
+  async createRecoveryCodes(req: Request): Promise<Response> {
     const em: EntityManager = req.ctx.em
 
     const user: User = req.ctx.state.user
@@ -256,9 +256,9 @@ export default class UsersService implements Service {
     }
   }
 
-  @Before('confirmPassword')
-  @Before('requires2fa')
-  async viewRecoveryCodes(req: ServiceRequest): Promise<ServiceResponse> {
+  @Before(confirmPassword)
+  @Before(requires2fa)
+  async viewRecoveryCodes(req: Request): Promise<Response> {
     const user: User = req.ctx.state.user
     const recoveryCodes = await user.recoveryCodes.loadItems()
 

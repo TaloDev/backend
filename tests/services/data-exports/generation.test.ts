@@ -2,23 +2,19 @@ import { EntityManager } from '@mikro-orm/core'
 import Koa from 'koa'
 import init from '../../../src/index'
 import User from '../../../src/entities/user'
-import { genAccessToken } from '../../../src/lib/auth/buildTokenPair'
 import UserFactory from '../../fixtures/UserFactory'
 import Game from '../../../src/entities/game'
 import GameFactory from '../../fixtures/GameFactory'
 import DataExport, { DataExportAvailableEntities, DataExportStatus } from '../../../src/entities/data-export'
-import DataExportsService from '../../../src/services/data-exports.service'
+import DataExportService from '../../../src/services/data-exports.service'
 import EventFactory from '../../fixtures/EventFactory'
 import PlayerFactory from '../../fixtures/PlayerFactory'
 import DataExportFactory from '../../fixtures/DataExportFactory'
-
-const baseUrl = '/data-exports'
 
 describe('Data exports service - post', () => {
   let app: Koa
   let user: User
   let game: Game
-  let token: string
 
   beforeAll(async () => {
     app = await init()
@@ -26,8 +22,6 @@ describe('Data exports service - post', () => {
     user = await new UserFactory().state('admin').state('email confirmed').one()
     game = await new GameFactory(user.organisation).one()
     await (<EntityManager>app.context.em).persistAndFlush([user, game])
-
-    token = await genAccessToken(user)
   })
 
   afterAll(async () => {
@@ -35,7 +29,7 @@ describe('Data exports service - post', () => {
   })
 
   it('should transform basic columns', async () => {
-    const service = new DataExportsService()
+    const service = new DataExportService()
     const proto = Object.getPrototypeOf(service)
 
     const player = await new PlayerFactory([game]).one()
@@ -55,7 +49,7 @@ describe('Data exports service - post', () => {
   })
 
   it('should transform prop columns', async () => {
-    const service = new DataExportsService()
+    const service = new DataExportService()
     const proto = Object.getPrototypeOf(service)
 
     const player = await new PlayerFactory([game]).with(() => ({
@@ -76,7 +70,7 @@ describe('Data exports service - post', () => {
   })
 
   it('should correctly build a CSV', async () => {
-    const service = new DataExportsService()
+    const service = new DataExportService()
     const proto = Object.getPrototypeOf(service)
 
     const player = await new PlayerFactory([game]).one()
@@ -93,7 +87,7 @@ describe('Data exports service - post', () => {
   })
 
   it('should correctly build a CSV with prop columns', async () => {
-    const service = new DataExportsService()
+    const service = new DataExportService()
     const proto = Object.getPrototypeOf(service)
 
     const player = await new PlayerFactory([game]).one()
@@ -112,7 +106,7 @@ describe('Data exports service - post', () => {
   })
 
   it('should correctly update data export statuses', async () => {
-    const service = new DataExportsService()
+    const service = new DataExportService()
     const proto = Object.getPrototypeOf(service)
 
     let dataExport = await new DataExportFactory(game).with(() => ({

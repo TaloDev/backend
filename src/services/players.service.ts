@@ -1,7 +1,7 @@
-import { Service, ServiceRequest, ServiceResponse, Validate, HasPermission, Routes } from 'koa-rest-services'
+import { Service, Request, Response, Validate, HasPermission, Routes } from 'koa-clay'
 import Game from '../entities/game'
 import Player from '../entities/player'
-import PlayersPolicy from '../policies/players.policy'
+import PlayerPolicy from '../policies/players.policy'
 import PlayerAlias from '../entities/player-alias'
 import sanitiseProps from '../lib/props/sanitiseProps'
 import Event from '../entities/event'
@@ -30,12 +30,12 @@ const itemsPerPage = 25
     handler: 'events'
   }
 ])
-export default class PlayersService implements Service {
+export default class PlayerService implements Service {
   @Validate({
     body: ['gameId']
   })
-  @HasPermission(PlayersPolicy, 'post')
-  async post(req: ServiceRequest): Promise<ServiceResponse> {
+  @HasPermission(PlayerPolicy, 'post')
+  async post(req: Request): Promise<Response> {
     const { aliases, gameId, props } = req.body
     const em: EntityManager = req.ctx.em
 
@@ -72,8 +72,8 @@ export default class PlayersService implements Service {
   @Validate({
     query: ['gameId']
   })
-  @HasPermission(PlayersPolicy, 'index')
-  async index(req: ServiceRequest): Promise<ServiceResponse> {
+  @HasPermission(PlayerPolicy, 'index')
+  async index(req: Request): Promise<Response> {
     const { gameId, search, page } = req.query
     const em: EntityManager = req.ctx.em
 
@@ -130,8 +130,8 @@ export default class PlayersService implements Service {
       }
     }
   })
-  @HasPermission(PlayersPolicy, 'patch')
-  async patch(req: ServiceRequest): Promise<ServiceResponse> {
+  @HasPermission(PlayerPolicy, 'patch')
+  async patch(req: Request): Promise<Response> {
     const { props } = req.body
     const player: Player = req.ctx.state.player // set in the policy
 
@@ -171,8 +171,8 @@ export default class PlayersService implements Service {
     }
   }
 
-  @HasPermission(PlayersPolicy, 'getEvents')
-  async events(req: ServiceRequest): Promise<ServiceResponse> {
+  @HasPermission(PlayerPolicy, 'getEvents')
+  async events(req: Request): Promise<Response> {
     const { search, page } = req.query
     const em: EntityManager = req.ctx.em
     const player: Player = req.ctx.state.player // set in the policy

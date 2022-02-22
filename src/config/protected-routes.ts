@@ -1,14 +1,14 @@
 import Koa, { Context, Next } from 'koa'
 import { service } from 'koa-clay'
-import GameActivitieService from '../services/game-activities.service'
-import LeaderboardService from '../services/leaderboards.service'
-import DataExportService from '../services/data-exports.service'
-import APIKeyService from '../services/api-keys.service'
-import EventService from '../services/events.service'
-import GameService from '../services/games.service'
-import HeadlineService from '../services/headlines.service'
-import PlayerService from '../services/players.service'
-import UserService from '../services/users.service'
+import GameActivityService from '../services/game-activity.service'
+import LeaderboardService from '../services/leaderboard.service'
+import DataExportService from '../services/data-export.service'
+import APIKeyService from '../services/api-key.service'
+import EventService from '../services/event.service'
+import GameService from '../services/game.service'
+import HeadlineService from '../services/headline.service'
+import PlayerService from '../services/player.service'
+import UserService from '../services/user.service'
 
 export default (app: Koa) => {
   app.use(async (ctx: Context, next: Next): Promise<void> => {
@@ -18,7 +18,7 @@ export default (app: Koa) => {
     await next()
   })
 
-  app.use(service('/game-activities', new GameActivitieService()))
+  app.use(service('/game-activities', new GameActivityService()))
   app.use(service('/leaderboards', new LeaderboardService()))
   app.use(service('/data-exports', new DataExportService()))
   app.use(service('/api-keys', new APIKeyService()))

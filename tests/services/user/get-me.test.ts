@@ -1,17 +1,15 @@
----
-to: tests/services/<%= name %>s/get.test.ts
----
 import { EntityManager } from '@mikro-orm/core'
 import Koa from 'koa'
 import init from '../../../src/index'
 import request from 'supertest'
 import User from '../../../src/entities/user'
 import { genAccessToken } from '../../../src/lib/auth/buildTokenPair'
+import Game from '../../../src/entities/game'
 import UserFactory from '../../fixtures/UserFactory'
 
-const baseUrl = '/<%= name %>s'
+const baseUrl = '/users'
 
-describe('<%= h.changeCase.sentenceCase(name) %> service - get', () => {
+describe('User service - get me', () => {
   let app: Koa
   let user: User
   let token: string
@@ -29,10 +27,18 @@ describe('<%= h.changeCase.sentenceCase(name) %> service - get', () => {
     await (<EntityManager>app.context.em).getConnection().close()
   })
 
-  it('should return a list of <%= h.changeCase.noCase(name) %>s', async () => {
-    await request(app.callback())
-      .get(`${baseUrl}`)
+  it('should return the user\'s data', async () => {
+    const game = new Game('Vigilante 2084', user.organisation)
+    await (<EntityManager>app.context.em).persistAndFlush(game)
+
+    const res = await request(app.callback())
+      .get(`${baseUrl}/me`)
       .auth(token, { type: 'bearer' })
       .expect(200)
+
+    expect(res.body.user).toBeTruthy()
+    expect(res.body.user.organisation).toBeTruthy()
+    expect(res.body.user.organisation.games).toHaveLength(1)
+    expect(res.body.user.organisation.games[0].name).toBe('Vigilante 2084')
   })
 })

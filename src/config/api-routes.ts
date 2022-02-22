@@ -1,9 +1,9 @@
 import Koa, { Context, Next } from 'koa'
 import { service } from 'koa-clay'
-import GameSaveAPIService from '../services/api/game-saves-api.service'
-import LeaderboardAPIService from '../services/api/leaderboards-api.service'
-import EventAPIService from '../services/api/events-api.service'
-import PlayerAPIService from '../services/api/players-api.service'
+import GameSaveAPIService from '../services/api/game-save-api.service'
+import LeaderboardAPIService from '../services/api/leaderboard-api.service'
+import EventAPIService from '../services/api/event-api.service'
+import PlayerAPIService from '../services/api/player-api.service'
 import limiterMiddleware from './limiter-middleware'
 
 export default (app: Koa) => {

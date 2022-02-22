@@ -1,6 +1,3 @@
----
-to: tests/services/<%= name %>s/get.test.ts
----
 import { EntityManager } from '@mikro-orm/core'
 import Koa from 'koa'
 import init from '../../../src/index'
@@ -8,10 +5,11 @@ import request from 'supertest'
 import User from '../../../src/entities/user'
 import { genAccessToken } from '../../../src/lib/auth/buildTokenPair'
 import UserFactory from '../../fixtures/UserFactory'
+import UserSession from '../../../src/entities/user-session'
 
-const baseUrl = '/<%= name %>s'
+const baseUrl = '/users'
 
-describe('<%= h.changeCase.sentenceCase(name) %> service - get', () => {
+describe('User service - logout', () => {
   let app: Koa
   let user: User
   let token: string
@@ -29,10 +27,18 @@ describe('<%= h.changeCase.sentenceCase(name) %> service - get', () => {
     await (<EntityManager>app.context.em).getConnection().close()
   })
 
-  it('should return a list of <%= h.changeCase.noCase(name) %>s', async () => {
+  it('should be able to log a user out and clear sessions', async () => {
+    const session = new UserSession(user)
+    session.userAgent = 'testybrowser'
+    await (<EntityManager>app.context.em).persistAndFlush(session)
+
     await request(app.callback())
-      .get(`${baseUrl}`)
+      .post(`${baseUrl}/logout`)
+      .set('user-agent', 'testybrowser')
       .auth(token, { type: 'bearer' })
-      .expect(200)
+      .expect(204)
+
+    const sessions = await (<EntityManager>app.context.em).getRepository(UserSession).find({ user })
+    expect(sessions).toHaveLength(0)
   })
 })

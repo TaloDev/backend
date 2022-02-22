@@ -14,7 +14,7 @@ import { sub } from 'date-fns'
 
 const baseUrl = '/events'
 
-describe('Events service - get', () => {
+describe('Event service - get', () => {
   let app: Koa
   let user: User
   let validGame: Game

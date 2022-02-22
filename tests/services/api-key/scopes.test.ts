@@ -1,17 +1,15 @@
----
-to: tests/services/<%= name %>s/get.test.ts
----
 import { EntityManager } from '@mikro-orm/core'
 import Koa from 'koa'
 import init from '../../../src/index'
 import request from 'supertest'
 import User from '../../../src/entities/user'
 import { genAccessToken } from '../../../src/lib/auth/buildTokenPair'
+import { APIKeyScope } from '../../../src/entities/api-key'
 import UserFactory from '../../fixtures/UserFactory'
 
-const baseUrl = '/<%= name %>s'
+const baseUrl = '/api-keys'
 
-describe('<%= h.changeCase.sentenceCase(name) %> service - get', () => {
+describe('API key service - get scopes', () => {
   let app: Koa
   let user: User
   let token: string
@@ -19,7 +17,7 @@ describe('<%= h.changeCase.sentenceCase(name) %> service - get', () => {
   beforeAll(async () => {
     app = await init()
 
-    user = await new UserFactory().one()
+    user = await new UserFactory().state('admin').one()
     await (<EntityManager>app.context.em).persistAndFlush(user)
 
     token = await genAccessToken(user)
@@ -29,10 +27,15 @@ describe('<%= h.changeCase.sentenceCase(name) %> service - get', () => {
     await (<EntityManager>app.context.em).getConnection().close()
   })
 
-  it('should return a list of <%= h.changeCase.noCase(name) %>s', async () => {
-    await request(app.callback())
-      .get(`${baseUrl}`)
+  it('should return a list of api key scopes', async () => {
+    const res = await request(app.callback())
+      .get(`${baseUrl}/scopes`)
       .auth(token, { type: 'bearer' })
       .expect(200)
+
+    const length = Object.keys(res.body.scopes).reduce((acc, curr) => {
+      return acc + res.body.scopes[curr].length
+    }, 0)
+    expect(length).toBe(Object.keys(APIKeyScope).length)
   })
 })

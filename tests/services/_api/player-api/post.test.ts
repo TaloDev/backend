@@ -1,18 +1,15 @@
----
-to: "<%= (typeof api !== 'undefined') ? `tests/services/_api/${name}s-api/post.test.ts` : null %>"
----
 import { EntityManager } from '@mikro-orm/core'
 import Koa from 'koa'
 import init from '../../../../src/index'
 import request from 'supertest'
+import Game from '../../../../src/entities/game'
 import APIKey, { APIKeyScope } from '../../../../src/entities/api-key'
-import { createToken } from '../../../../src/services/api-keys.service'
+import { createToken } from '../../../../src/services/api-key.service'
 import UserFactory from '../../../fixtures/UserFactory'
-import GameFactory from '../../../fixtures/GameFactory'
 
-const baseUrl = '/v1/<%= name %>s'
+const baseUrl = '/v1/players'
 
-describe('<%= h.changeCase.sentenceCase(name) %> API service - post', () => {
+describe('Player API service - post', () => {
   let app: Koa
   let apiKey: APIKey
   let token: string
@@ -21,8 +18,7 @@ describe('<%= h.changeCase.sentenceCase(name) %> API service - post', () => {
     app = await init()
 
     const user = await new UserFactory().one()
-    const game = await new GameFactory(user.organisation).one()
-    apiKey = new APIKey(game, user)
+    apiKey = new APIKey(new Game('Uplift', user.organisation), user)
     token = await createToken(apiKey)
 
     await (<EntityManager>app.context.em).persistAndFlush(apiKey)
@@ -32,8 +28,8 @@ describe('<%= h.changeCase.sentenceCase(name) %> API service - post', () => {
     await (<EntityManager>app.context.em).getConnection().close()
   })
 
-  it('should create a <%= h.changeCase.noCase(name) %> if the scope is valid', async () => {
-    apiKey.scopes = [APIKeyScope.WRITE_<%= h.changeCase.constantCase(name) %>S]
+  it('should create a player if the scope is valid', async () => {
+    apiKey.scopes = [APIKeyScope.WRITE_PLAYERS]
     await (<EntityManager>app.context.em).flush()
     token = await createToken(apiKey)
 
@@ -43,7 +39,7 @@ describe('<%= h.changeCase.sentenceCase(name) %> API service - post', () => {
       .expect(200)
   })
 
-  it('should not create a <%= h.changeCase.noCase(name) %> if the scope is not valid', async () => {
+  it('should not create a player if the scope is not valid', async () => {
     apiKey.scopes = []
     await (<EntityManager>app.context.em).flush()
     token = await createToken(apiKey)

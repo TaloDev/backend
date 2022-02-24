@@ -83,17 +83,26 @@ describe('Event service - get', () => {
       .auth(token, { type: 'bearer' })
       .expect(400)
 
-    expect(res.body).toStrictEqual({ message: 'Missing query key: startDate' })
+    expect(res.body).toStrictEqual({
+      errors: {
+        endDate: ['endDate is missing from the request query'],
+        startDate: ['startDate is missing from the request query']
+      }
+    })
   })
 
   it('should require a valid startDate query key to get events', async () => {
     const res = await request(app.callback())
       .get(`${baseUrl}`)
-      .query({ gameId: validGame.id, startDate: '2015-02-32' })
+      .query({ gameId: validGame.id, startDate: '2015-02-32', endDate: '2015-03-01' })
       .auth(token, { type: 'bearer' })
       .expect(400)
 
-    expect(res.body).toStrictEqual({ message: 'Invalid start date, please use YYYY-MM-DD or a timestamp' })
+    expect(res.body).toStrictEqual({
+      errors: {
+        startDate: ['Invalid start date, please use YYYY-MM-DD or a timestamp']
+      }
+    })
   })
 
   it('should require a startDate that comes before the endDate query key to get events', async () => {
@@ -103,7 +112,11 @@ describe('Event service - get', () => {
       .auth(token, { type: 'bearer' })
       .expect(400)
 
-    expect(res.body).toStrictEqual({ message: 'Invalid start date, it should be before the end date' })
+    expect(res.body).toStrictEqual({
+      errors: {
+        startDate: ['Invalid start date, it should be before the end date']
+      }
+    })
   })
 
   it('should require a endDate query key to get events', async () => {
@@ -113,7 +126,11 @@ describe('Event service - get', () => {
       .auth(token, { type: 'bearer' })
       .expect(400)
 
-    expect(res.body).toStrictEqual({ message: 'Missing query key: endDate' })
+    expect(res.body).toStrictEqual({
+      errors: {
+        endDate: ['endDate is missing from the request query']
+      }
+    })
   })
 
   it('should require a valid endDate query key to get events', async () => {
@@ -123,7 +140,11 @@ describe('Event service - get', () => {
       .auth(token, { type: 'bearer' })
       .expect(400)
 
-    expect(res.body).toStrictEqual({ message: 'Invalid end date, please use YYYY-MM-DD or a timestamp' })
+    expect(res.body).toStrictEqual({
+      errors: {
+        endDate: ['Invalid end date, please use YYYY-MM-DD or a timestamp']
+      }
+    })
   })
 
   it('should correctly calculate event changes', async () => {

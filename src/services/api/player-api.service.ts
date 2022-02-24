@@ -55,7 +55,7 @@ export default class PlayerAPIService extends APIService<PlayerService> {
 
     if (!alias) {
       if (req.ctx.state.key.scopes.includes(APIKeyScope.WRITE_PLAYERS)) {
-        const createReq = Object.assign(req, {
+        const res = await this.post(Object.assign(req, {
           body: {
             aliases: [
               {
@@ -64,9 +64,7 @@ export default class PlayerAPIService extends APIService<PlayerService> {
               }
             ]
           }
-        })
-
-        const res = await this.post(createReq)
+        }))
 
         return {
           status: res.status,
@@ -93,22 +91,21 @@ export default class PlayerAPIService extends APIService<PlayerService> {
   @HasPermission(PlayerAPIPolicy, 'index')
   async index(req: Request): Promise<Response> {
     const key: APIKey = await this.getAPIKey(req.ctx)
-    req.query = {
-      gameId: key.game.id.toString()
-    }
-
-    return await this.forwardRequest('index', req)
+    return await this.forwardRequest('index', req, {
+      query: {
+        gameId: key.game.id.toString()
+      }
+    })
   }
 
   @HasPermission(PlayerAPIPolicy, 'post')
   async post(req: Request): Promise<Response> {
     const key: APIKey = await this.getAPIKey(req.ctx)
-    req.body = {
-      ...req.body,
-      gameId: key.game.id
-    }
-
-    return await this.forwardRequest('post', req)
+    return await this.forwardRequest('post', req, {
+      body: {
+        gameId: key.game.id
+      }
+    })
   }
 
   @HasPermission(PlayerAPIPolicy, 'patch')

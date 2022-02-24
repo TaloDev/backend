@@ -42,7 +42,11 @@ describe('User public service - register', () => {
       .send({ email: casual.email, password: 'password' })
       .expect(400)
 
-    expect(res.body).toStrictEqual({ message: 'Missing body key: organisationName' })
+    expect(res.body).toStrictEqual({
+      errors: {
+        organisationName: ['organisationName is missing from the request body']
+      }
+    })
   })
 
   it('should not let a user register if the email already exists', async () => {

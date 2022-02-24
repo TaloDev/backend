@@ -24,8 +24,11 @@ export default class LeaderboardAPIService extends APIService<LeaderboardService
   @HasPermission(LeaderboardAPIPolicy, 'get')
   async get(req: Request): Promise<Response> {
     const key = await this.getAPIKey(req.ctx)
-    req.query.gameId = key.game.id.toString()
-    return this.forwardRequest('entries', req)
+    return this.forwardRequest('entries', req, {
+      query: {
+        gameId: key.game.id.toString()
+      }
+    })
   }
 
   async createEntry(req: Request): Promise<LeaderboardEntry> {

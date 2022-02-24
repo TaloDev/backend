@@ -15,11 +15,10 @@ export default class <%= h.changeCase.pascal(name) %>APIService extends APIServi
   @HasPermission(<%= h.changeCase.pascal(name) %>APIPolicy, 'post')
   async post(req: Request): Promise<Response> {
     const key: APIKey = await this.getAPIKey(req.ctx)
-    req.body = {
-      ...req.body,
-      gameId: key.game.id
-    }
-
-    return await this.forwardRequest('post', req)
+    return await this.forwardRequest('post', req, {
+      body: {
+        gameId: key.game.id
+      }
+    })
   }
 }

@@ -32,7 +32,9 @@ import dateValidationSchema from '../lib/dates/dateValidationSchema'
 export default class HeadlineService implements Service {
   @Validate({
     query: {
-      gameId: true,
+      gameId: {
+        required: true
+      },
       ...dateValidationSchema
     }
   })
@@ -59,7 +61,9 @@ export default class HeadlineService implements Service {
 
   @Validate({
     query: {
-      gameId: true,
+      gameId: {
+        required: true
+      },
       ...dateValidationSchema
     }
   })
@@ -91,7 +95,9 @@ export default class HeadlineService implements Service {
 
   @Validate({
     query: {
-      gameId: true,
+      gameId: {
+        required: true
+      },
       ...dateValidationSchema
     }
   })
@@ -118,7 +124,9 @@ export default class HeadlineService implements Service {
 
   @Validate({
     query: {
-      gameId: true,
+      gameId: {
+        required: true
+      },
       ...dateValidationSchema
     }
   })

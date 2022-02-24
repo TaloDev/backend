@@ -105,7 +105,11 @@ describe('Leaderboard service - post', () => {
       .auth(token, { type: 'bearer' })
       .expect(400)
 
-    expect(res.body).toStrictEqual({ message: 'Sort mode must be one of desc, asc' })
+    expect(res.body).toStrictEqual({
+      errors: {
+        sortMode: ['Sort mode must be one of desc, asc']
+      }
+    })
   })
 
   it('should not create a leaderboard with a duplicate internal name', async () => {
@@ -118,7 +122,11 @@ describe('Leaderboard service - post', () => {
       .auth(token, { type: 'bearer' })
       .expect(400)
 
-    expect(res.body).toStrictEqual({ message: 'A leaderboard with the internalName highscores already exists' })
+    expect(res.body).toStrictEqual({
+      errors: {
+        internalName: ['A leaderboard with the internalName highscores already exists']
+      }
+    })
   })
 
   it('should create a leaderboard with a duplicate internal name for another game', async () => {

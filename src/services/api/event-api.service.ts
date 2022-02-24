@@ -1,5 +1,5 @@
 import { EntityManager } from '@mikro-orm/core'
-import { HasPermission, Request, Response, Validate } from 'koa-clay'
+import { HasPermission, Request, Response, Validate, ValidationCondition } from 'koa-clay'
 import Event from '../../entities/event'
 import EventAPIPolicy from '../../policies/api/event-api.policy'
 import EventService from '../event.service'
@@ -16,9 +16,14 @@ export default class EventAPIService extends APIService<EventService> {
 
   @Validate({
     body: {
-      events: async (val: unknown): Promise<boolean> => {
-        if (!Array.isArray(val)) throw new Error('Events must be an array')
-        return true
+      events: {
+        required: true,
+        validation: async (val: unknown): Promise<ValidationCondition[]> => [
+          {
+            check: Array.isArray(val),
+            error: 'Events must be an array'
+          }
+        ]
       }
     }
   })
@@ -85,11 +90,10 @@ export default class EventAPIService extends APIService<EventService> {
   @HasPermission(EventAPIPolicy, 'index')
   async index(req: Request): Promise<Response> {
     const key: APIKey = await this.getAPIKey(req.ctx)
-    req.query = {
-      ...req.query,
-      gameId: key.game.id.toString()
-    }
-
-    return await this.forwardRequest('index', req)
+    return await this.forwardRequest('index', req, {
+      query: {
+        gameId: key.game.id.toString()
+      }
+    })
   }
 }

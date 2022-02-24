@@ -1,5 +1,5 @@
 import { EntityManager, MikroORM } from '@mikro-orm/core'
-import { HasPermission, Routes, Service, Request, Response, Validate } from 'koa-clay'
+import { HasPermission, Routes, Service, Request, Response, Validate, ValidationCondition } from 'koa-clay'
 import DataExport, { DataExportAvailableEntities, DataExportStatus } from '../entities/data-export'
 import DataExportPolicy from '../policies/data-export.policy'
 import Event from '../entities/event'
@@ -230,9 +230,21 @@ export default class DataExportService implements Service {
 
   @Validate({
     body: {
-      gameId: true,
-      entities: async (val: string[]): Promise<boolean> => {
-        return val?.length > 0
+      gameId: {
+        required: true
+      },
+      entities: {
+        required: true,
+        validation: async (val: unknown): Promise<ValidationCondition[]> => [
+          {
+            check: Array.isArray(val) && val.length > 0,
+            error: 'Entities must be an array'
+          },
+          {
+            check: (val as string[])?.every?.((entity) => typeof entity === 'string') ?? false,
+            error: 'Entities must be an array of strings'
+          }
+        ]
       }
     }
   })

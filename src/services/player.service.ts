@@ -1,4 +1,4 @@
-import { Service, Request, Response, Validate, HasPermission, Routes } from 'koa-clay'
+import { Service, Request, Response, Validate, HasPermission, Routes, ValidationCondition } from 'koa-clay'
 import Game from '../entities/game'
 import Player from '../entities/player'
 import PlayerPolicy from '../policies/player.policy'
@@ -121,12 +121,14 @@ export default class PlayerService implements Service {
 
   @Validate({
     body: {
-      props: async (val: unknown): Promise<boolean> => {
-        if (val && !Array.isArray(val)) {
-          throw new Error('Props must be an array')
-        }
-
-        return true
+      props: {
+        required: true,
+        validation: async (val: unknown): Promise<ValidationCondition[]> => [
+          {
+            check: Array.isArray(val),
+            error: 'Props must be an array'
+          }
+        ]
       }
     }
   })

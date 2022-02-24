@@ -1,5 +1,5 @@
 import { EntityManager } from '@mikro-orm/mysql'
-import { HasPermission, Routes, Service, Request, Response, Validate } from 'koa-clay'
+import { HasPermission, Routes, Service, Request, Response, Validate, ValidationCondition } from 'koa-clay'
 import GameActivity, { GameActivityType } from '../entities/game-activity'
 import Leaderboard, { LeaderboardSortMode } from '../entities/leaderboard'
 import LeaderboardEntry from '../entities/leaderboard-entry'
@@ -72,23 +72,42 @@ export default class LeaderboardService implements Service {
 
   @Validate({
     body: {
-      gameId: true,
-      internalName: async (val: string, req: Request): Promise<boolean> => {
-        const em: EntityManager = req.ctx.em
-        const duplicateInternalName = await em.getRepository(Leaderboard).findOne({ internalName: val, game: req.body.gameId })
-
-        if (duplicateInternalName) throw new Error(`A leaderboard with the internalName ${val} already exists`)
-
-        return true
+      gameId: {
+        required: true
       },
-      name: true,
-      sortMode: async (val: string): Promise<boolean> => {
-        const keys = Object.keys(LeaderboardSortMode).map((key) => LeaderboardSortMode[key])
-        if (!keys.includes(val)) throw new Error(`Sort mode must be one of ${keys.join(', ')}`)
+      internalName: {
+        required: true,
+        validation: async (val: unknown, req: Request): Promise<ValidationCondition[]> => {
+          const em: EntityManager = req.ctx.em
+          const duplicateInternalName = await em.getRepository(Leaderboard).findOne({ internalName: val, game: req.body.gameId })
 
-        return true
+          return [
+            {
+              check: !duplicateInternalName,
+              error: `A leaderboard with the internalName ${val} already exists`
+            }
+          ]
+        }
       },
-      unique: true
+      name: {
+        required: true
+      },
+      sortMode: {
+        required: true,
+        validation: async (val: unknown): Promise<ValidationCondition[]> => {
+          const keys = Object.keys(LeaderboardSortMode).map((key) => LeaderboardSortMode[key])
+
+          return [
+            {
+              check: keys.includes(val),
+              error: `Sort mode must be one of ${keys.join(', ')}`
+            }
+          ]
+        }
+      },
+      unique: {
+        required: true
+      }
     }
   })
   @HasPermission(LeaderboardPolicy, 'post')

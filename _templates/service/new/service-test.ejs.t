@@ -1,5 +1,5 @@
 ---
-to: tests/services/<%= name %>s/get.test.ts
+to: tests/services/<%= name %>/get.test.ts
 ---
 import { EntityManager } from '@mikro-orm/core'
 import Koa from 'koa'
@@ -11,7 +11,7 @@ import UserFactory from '../../fixtures/UserFactory'
 
 const baseUrl = '/<%= name %>s'
 
-describe('<%= h.changeCase.sentenceCase(name) %>s service - get', () => {
+describe('<%= h.changeCase.sentenceCase(name) %> service - get', () => {
   let app: Koa
   let user: User
   let token: string

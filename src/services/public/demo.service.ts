@@ -1,4 +1,4 @@
-import { After, Before, HookParams, Service, ServiceRequest, ServiceResponse } from 'koa-rest-services'
+import { After, Before, Service, Request, Response } from 'koa-clay'
 import User, { UserType } from '../../entities/user'
 import { EntityManager, MikroORM } from '@mikro-orm/core'
 import buildTokenPair from '../../lib/auth/buildTokenPair'
@@ -14,6 +14,41 @@ import bcrypt from 'bcrypt'
 
 interface DemoUserJob {
   userId: number
+}
+
+async function scheduleDeletion(req: Request, res: Response, caller: DemoService): Promise<void> {
+  /* istanbul ignore else */
+  if (res.status === 200) {
+    await caller.queue
+      .createJob<DemoUserJob>({ userId: res.body.user.id })
+      .delayUntil(add(Date.now(), { hours: 1 }))
+      .save()
+  }
+}
+
+async function updateEventDates(req: Request): Promise<void> {
+  const em: EntityManager = req.ctx.em
+
+  const events = await em.getRepository(Event).find({
+    playerAlias: {
+      player: {
+        game: {
+          organisation: {
+            name: process.env.DEMO_ORGANISATION_NAME
+          }
+        }
+      }
+    },
+    createdAt: {
+      $lt: sub(new Date(), { months: 3 })
+    }
+  })
+
+  for (const event of events) {
+    event.createdAt = randomDate(sub(new Date(), { months: 2 }), new Date())
+  }
+
+  await em.flush()
 }
 
 export default class DemoService implements Service {
@@ -35,9 +70,9 @@ export default class DemoService implements Service {
     })
   }
 
-  @Before('updateEventDates')
-  @After('scheduleDeletion')
-  async post(req: ServiceRequest): Promise<ServiceResponse> {
+  @Before(updateEventDates)
+  @After(scheduleDeletion)
+  async post(req: Request): Promise<Response> {
     const em: EntityManager = req.ctx.em
 
     const user = new User()
@@ -58,40 +93,5 @@ export default class DemoService implements Service {
         user
       }
     }
-  }
-
-  async scheduleDeletion(hook: HookParams): Promise<void> {
-    /* istanbul ignore else */
-    if (hook.result.status === 200) {
-      await (<DemoService>hook.caller).queue
-        .createJob<DemoUserJob>({ userId: hook.result.body.user.id })
-        .delayUntil(add(Date.now(), { hours: 1 }))
-        .save()
-    }
-  }
-
-  async updateEventDates(hook: HookParams): Promise<void> {
-    const em: EntityManager = hook.req.ctx.em
-
-    const events = await em.getRepository(Event).find({
-      playerAlias: {
-        player: {
-          game: {
-            organisation: {
-              name: process.env.DEMO_ORGANISATION_NAME
-            }
-          }
-        }
-      },
-      createdAt: {
-        $lt: sub(new Date(), { months: 3 })
-      }
-    })
-
-    for (const event of events) {
-      event.createdAt = randomDate(sub(new Date(), { months: 2 }), new Date())
-    }
-
-    await em.flush()
   }
 }

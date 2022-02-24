@@ -1,18 +1,18 @@
 ---
-to: src/policies/<%= name %>s.policy.ts
+to: src/policies/<%= name %>.policy.ts
 ---
 import Policy from './policy'
-import { ServicePolicyResponse, ServicePolicyDenial } from 'koa-rest-services'
+import { PolicyResponse, PolicyDenial } from 'koa-clay'
 import { UserType } from '../entities/user'
 
-export default class <%= h.changeCase.pascal(name) %>sPolicy extends Policy {
-  async get(): Promise<ServicePolicyResponse> {
+export default class <%= h.changeCase.pascal(name) %>Policy extends Policy {
+  async get(): Promise<PolicyResponse> {
     return true
   }
 
-  async post(): Promise<ServicePolicyResponse> {
+  async post(): Promise<PolicyResponse> {
     const user = await this.getUser()
-    if (user.type === UserType.DEMO) return new ServicePolicyDenial({ message: 'Demo accounts cannot create <%= h.changeCase.noCase(name) %>s' })
+    if (user.type === UserType.DEMO) return new PolicyDenial({ message: 'Demo accounts cannot create <%= h.changeCase.noCase(name) %>s' })
 
     return true
   }

@@ -118,4 +118,18 @@ describe('Data export service - post', () => {
       .auth(token, { type: 'bearer' })
       .expect(400)
   })
+
+  it('should not create a data export with non-string entities', async () => {
+    const res = await request(app.callback())
+      .post(`${baseUrl}`)
+      .send({ gameId: game.id, entities: [1, 2] })
+      .auth(token, { type: 'bearer' })
+      .expect(400)
+
+    expect(res.body).toStrictEqual({
+      errors: {
+        entities: ['Entities must be an array of strings']
+      }
+    })
+  })
 })

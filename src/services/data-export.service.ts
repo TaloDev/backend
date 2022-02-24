@@ -238,10 +238,11 @@ export default class DataExportService implements Service {
         validation: async (val: unknown): Promise<ValidationCondition[]> => [
           {
             check: Array.isArray(val) && val.length > 0,
-            error: 'Entities must be an array'
+            error: 'Entities must be an array',
+            break: true
           },
           {
-            check: (val as string[])?.every?.((entity) => typeof entity === 'string') ?? false,
+            check: (val as string[]).every((entity) => typeof entity === 'string'),
             error: 'Entities must be an array of strings'
           }
         ]

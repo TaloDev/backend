@@ -1,5 +1,5 @@
 ---
-to: src/policies/<%= name %>s.policy.ts
+to: src/policies/<%= name %>.policy.ts
 ---
 import Policy from './policy'
 import { PolicyResponse, PolicyDenial } from 'koa-clay'

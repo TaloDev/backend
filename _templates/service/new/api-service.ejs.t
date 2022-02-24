@@ -1,9 +1,9 @@
 ---
-to: "<%= (typeof api !== 'undefined') ? `src/services/api/${name}s-api.service.ts` : null %>"
+to: "<%= (typeof api !== 'undefined') ? `src/services/api/${name}-api.service.ts` : null %>"
 ---
 import { HasPermission, Request, Response } from 'koa-clay'
-import <%= h.changeCase.pascal(name) %>APIPolicy from '../../policies/api/<%= name %>s-api.policy'
-import <%= h.changeCase.pascal(name) %>Service from '../<%= name %>s.service'
+import <%= h.changeCase.pascal(name) %>APIPolicy from '../../policies/api/<%= name %>-api.policy'
+import <%= h.changeCase.pascal(name) %>Service from '../<%= name %>.service'
 import APIService from './api-service'
 import APIKey from '../../entities/api-key'
 

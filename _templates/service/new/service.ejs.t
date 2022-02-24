@@ -1,10 +1,10 @@
 ---
-to: src/services/<%= name %>s.service.ts
+to: src/services/<%= name %>.service.ts
 ---
 import { EntityManager } from '@mikro-orm/core'
 import { HasPermission, Service, Request, Response, Validate } from 'koa-clay'
 import <%= h.changeCase.pascal(name) %> from '../entities/<%= name %>'
-import <%= h.changeCase.pascal(name) %>Policy from '../policies/<%= name %>s.policy'
+import <%= h.changeCase.pascal(name) %>Policy from '../policies/<%= name %>.policy'
 
 export default class <%= h.changeCase.pascal(name) %>Service implements Service {
   @Validate({

@@ -1,5 +1,5 @@
 ---
-to: "<%= (typeof api !== 'undefined') ? `src/policies/api/${name}s-api.policy.ts` : null %>"
+to: "<%= (typeof api !== 'undefined') ? `src/policies/api/${name}-api.policy.ts` : null %>"
 ---
 import Policy from '../policy'
 import { PolicyResponse } from 'koa-clay'

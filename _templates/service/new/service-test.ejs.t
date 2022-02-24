@@ -1,5 +1,5 @@
 ---
-to: tests/services/<%= name %>s/get.test.ts
+to: tests/services/<%= name %>/get.test.ts
 ---
 import { EntityManager } from '@mikro-orm/core'
 import Koa from 'koa'

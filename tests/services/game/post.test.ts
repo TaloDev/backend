@@ -36,7 +36,7 @@ describe('Game service - post', () => {
 
     expect(res.body.game.name).toBe('Twodoors')
 
-    const game = await (<EntityManager>app.context.em).getRepository(Game).findOne(res.body.game.id, ['organisation'])
+    const game = await (<EntityManager>app.context.em).getRepository(Game).findOne(res.body.game.id, { populate: ['organisation'] })
     expect(game.organisation.id).toBe(user.organisation.id)
   })
 

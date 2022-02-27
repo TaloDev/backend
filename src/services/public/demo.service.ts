@@ -62,7 +62,7 @@ export default class DemoService implements Service {
 
       const orm = await MikroORM.init(ormConfig)
 
-      const sessions = await orm.em.getRepository(UserSession).findAll({ user: { id: userId } })
+      const sessions = await orm.em.getRepository(UserSession).find({ user: { id: userId } })
       const user = await orm.em.getRepository(User).findOne(userId)
 
       await orm.em.removeAndFlush([user, ...sessions])

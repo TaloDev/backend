@@ -108,7 +108,7 @@ export default class PlayerService implements Service {
       .offset(Number(page) * itemsPerPage)
       .getResultList()
 
-    await em.populate(players, 'aliases')
+    await em.populate(players, ['aliases'])
 
     return {
       status: 200,

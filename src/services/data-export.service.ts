@@ -57,7 +57,7 @@ export default class DataExportService implements Service {
       const { dataExportId } = job.data
 
       const orm = await MikroORM.init(ormConfig)
-      const dataExport = await orm.em.getRepository(DataExport).findOne(dataExportId, ['game', 'createdByUser'])
+      const dataExport = await orm.em.getRepository(DataExport).findOne(dataExportId, { populate: ['game', 'createdByUser'] })
 
       dataExport.status = DataExportStatus.QUEUED
       await orm.em.flush()
@@ -124,7 +124,7 @@ export default class DataExportService implements Service {
     const zip = new AdmZip()
 
     if (dataExport.entities.includes(DataExportAvailableEntities.EVENTS)) {
-      const events = await em.getRepository(Event).find({ game: dataExport.game }, ['playerAlias'])
+      const events = await em.getRepository(Event).find({ game: dataExport.game }, { populate: ['playerAlias'] })
       zip.addFile(`${DataExportAvailableEntities.EVENTS}.csv`, this.buildCSV(DataExportAvailableEntities.EVENTS, events))
     }
 
@@ -143,7 +143,9 @@ export default class DataExportService implements Service {
     if (dataExport.entities.includes(DataExportAvailableEntities.LEADERBOARD_ENTRIES)) {
       const entries = await em.getRepository(LeaderboardEntry).find({
         leaderboard: { game: dataExport.game }
-      }, ['leaderboard'])
+      }, {
+        populate: ['leaderboard']
+      })
       zip.addFile(`${DataExportAvailableEntities.LEADERBOARD_ENTRIES}.csv`, this.buildCSV(DataExportAvailableEntities.LEADERBOARD_ENTRIES, entries))
     }
 
@@ -218,7 +220,11 @@ export default class DataExportService implements Service {
   async index(req: Request): Promise<Response> {
     const { gameId } = req.query
     const em: EntityManager = req.ctx.em
-    const dataExports = await em.getRepository(DataExport).find({ game: Number(gameId) }, ['createdByUser'])
+    const dataExports = await em.getRepository(DataExport).find({
+      game: Number(gameId)
+    }, {
+      populate: ['createdByUser']
+    })
 
     return {
       status: 200,

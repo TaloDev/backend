@@ -6,12 +6,12 @@ const getUserFromToken = async (ctx: Context, relations?: string[]): Promise<Use
   // user with email = loaded entity, user with sub = jwt
   if (ctx.state.user.email) {
     const user: User = ctx.state.user
-    await (<EntityManager>ctx.em).getRepository(User).populate(user, relations)
+    await (<EntityManager>ctx.em).getRepository(User).populate(user, relations as never[])
     return user
   }
 
   const userId: number = ctx.state.user.sub
-  const user = await (<EntityManager>ctx.em).getRepository(User).findOne(userId, relations)
+  const user = await (<EntityManager>ctx.em).getRepository(User).findOne(userId, { populate: relations as never[] })
   return user
 }
 

@@ -141,7 +141,9 @@ export default class HeadlineService implements Service {
         $gte: new Date(startDate),
         $lte: endOfDay(new Date(endDate))
       }
-    }, ['playerAlias.player'])
+    }, {
+      populate: ['playerAlias.player']
+    })
 
     const count = Object.keys(groupBy(events, 'playerAlias.player.id')).length
 

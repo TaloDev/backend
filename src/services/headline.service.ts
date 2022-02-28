@@ -1,7 +1,7 @@
 import { EntityManager } from '@mikro-orm/core'
 import { endOfDay, isSameDay } from 'date-fns'
 import { Service, Request, Response, Validate, HasPermission, Routes } from 'koa-clay'
-import { groupBy } from 'lodash'
+import groupBy from 'lodash.groupby'
 import Event from '../entities/event'
 import Player from '../entities/player'
 import HeadlinePolicy from '../policies/headline.policy'

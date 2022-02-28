@@ -40,7 +40,7 @@ export default class PlayerPolicy extends Policy {
   async getEvents(req: Request): Promise<PolicyResponse> {
     const { id } = req.params
 
-    const player = await this.em.getRepository(Player).findOne(id, ['aliases'])
+    const player = await this.em.getRepository(Player).findOne(id, { populate: ['aliases'] })
 
     if (!player) return new PolicyDenial({ message: 'Player not found' }, 404)
     this.ctx.state.player = player

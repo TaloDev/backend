@@ -165,7 +165,8 @@ export default class UserPublicService implements Service {
     const userAgent = req.headers['user-agent']
     const em: EntityManager = req.ctx.em
 
-    const session = await em.getRepository(UserSession).findOne({ token, userAgent }, ['user'])
+    const session = await em.getRepository(UserSession).findOne({ token, userAgent }, { populate: ['user'] })
+
     if (!session) {
       req.ctx.throw(401, 'Session not found')
     }
@@ -299,7 +300,7 @@ export default class UserPublicService implements Service {
     const { code, userId } = req.body
     const em: EntityManager = req.ctx.em
 
-    const user = await em.getRepository(User).findOne(userId, ['recoveryCodes'])
+    const user = await em.getRepository(User).findOne(userId, { populate: ['recoveryCodes'] })
 
     const redis = new Redis(redisConfig)
     const hasSession = (await redis.get(`2fa:${user.id}`)) === 'true'
@@ -319,7 +320,7 @@ export default class UserPublicService implements Service {
     em.remove(recoveryCode)
 
     let newRecoveryCodes: UserRecoveryCode[]
-    if (user.recoveryCodes.count() === 1) { // hasn't been flushed yet so still 1, not 0
+    if (user.recoveryCodes.count() === 0) {
       newRecoveryCodes = generateRecoveryCodes(user)
       user.recoveryCodes.set(newRecoveryCodes)
     }

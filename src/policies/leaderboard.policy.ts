@@ -19,7 +19,9 @@ export default class LeaderboardPolicy extends Policy {
     const leaderboard = await this.em.getRepository(Leaderboard).findOne({
       internalName,
       game: Number(gameId)
-    }, relations)
+    }, {
+      populate: relations as never[]
+    })
 
     if (!leaderboard) return new PolicyDenial({ message: 'Leaderboard not found' }, 404)
 

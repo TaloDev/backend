@@ -13,7 +13,9 @@ export default class GameSaveAPIPolicy extends Policy {
       player: {
         game: key.game
       }
-    }, ['player'])
+    }, {
+      populate: ['player']
+    })
 
     return playerAlias?.player
   }
@@ -54,7 +56,9 @@ export default class GameSaveAPIPolicy extends Policy {
         },
         game: key.game
       }
-    }, ['player'])
+    }, {
+      populate: ['player']
+    })
 
     if (!save) return new PolicyDenial({ message: 'Save not found' }, 404)
 

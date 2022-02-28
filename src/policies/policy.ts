@@ -32,7 +32,7 @@ export default class Policy extends ServicePolicy {
   async getAPIKey(): Promise<APIKey> {
     if (this.ctx.state.key) return this.ctx.state.key
 
-    const key = await (<EntityManager> this.ctx.em).getRepository(APIKey).findOne(this.ctx.state.user.sub, ['game'])
+    const key = await (<EntityManager> this.ctx.em).getRepository(APIKey).findOne(this.ctx.state.user.sub, { populate: ['game'] })
     if (key.revokedAt) this.ctx.throw(401)
 
     this.ctx.state.key = key
@@ -40,7 +40,7 @@ export default class Policy extends ServicePolicy {
   }
 
   async canAccessGame(gameId: number): Promise<boolean> {
-    const game = await this.em.getRepository(Game).findOne(gameId, ['organisation'])
+    const game = await this.em.getRepository(Game).findOne(gameId, { populate: ['organisation'] })
     if (!game) this.ctx.throw(404, 'Game not found')
     this.ctx.state.game = game
 

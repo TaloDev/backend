@@ -113,9 +113,9 @@ export default class PlayerAPIService extends APIService<PlayerService> {
     return await this.forwardRequest('patch', req)
   }
 
-   @Validate({
-     body: ['alias1', 'alias2']
-   })
+  @Validate({
+    body: ['alias1', 'alias2']
+  })
   @HasPermission(PlayerAPIPolicy, 'merge')
   async merge(req: Request): Promise<Response> {
     const { alias1, alias2 } = req.body
@@ -128,18 +128,22 @@ export default class PlayerAPIService extends APIService<PlayerService> {
         id: alias1
       },
       game: key.game
-    }, ['aliases'])
+    })
 
     const player2 = await em.getRepository(Player).findOne({
       aliases: {
         id: alias2
       },
       game: key.game
-    }, ['aliases'])
+    })
 
-    player2.aliases
-      .getItems()
-      .map((alias) => alias.player = player1)
+    const player2Aliases = await em.getRepository(PlayerAlias).find({
+      player: {
+        id: player2.id
+      }
+    })
+
+    player2Aliases.forEach((alias) => alias.player = player1)
 
     const mergedProps = uniqWith([
       ...player2.props,
@@ -148,8 +152,7 @@ export default class PlayerAPIService extends APIService<PlayerService> {
 
     player1.props = Array.from(mergedProps)
 
-    await em.remove(player2)
-    await em.flush()
+    await em.removeAndFlush(player2)
 
     return {
       status: 200,

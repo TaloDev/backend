@@ -1,18 +1,18 @@
 ---
-to: "<%= (typeof api !== 'undefined') ? `tests/services/_api/${name}s-api/post.test.ts` : null %>"
+to: "<%= (typeof api !== 'undefined') ? `tests/services/_api/${name}-api/post.test.ts` : null %>"
 ---
 import { EntityManager } from '@mikro-orm/core'
 import Koa from 'koa'
 import init from '../../../../src/index'
 import request from 'supertest'
 import APIKey, { APIKeyScope } from '../../../../src/entities/api-key'
-import { createToken } from '../../../../src/services/api-keys.service'
+import { createToken } from '../../../../src/services/api-key.service'
 import UserFactory from '../../../fixtures/UserFactory'
 import GameFactory from '../../../fixtures/GameFactory'
 
 const baseUrl = '/v1/<%= name %>s'
 
-describe('<%= h.changeCase.sentenceCase(name) %>s API service - post', () => {
+describe('<%= h.changeCase.sentenceCase(name) %> API service - post', () => {
   let app: Koa
   let apiKey: APIKey
   let token: string

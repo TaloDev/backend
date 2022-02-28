@@ -1,25 +1,34 @@
-import { isAfter, isValid } from 'date-fns'
-import { ServiceRequest } from 'koa-rest-services'
+import { isBefore, isValid } from 'date-fns'
+import { Request, Validatable, ValidationCondition } from 'koa-clay'
 
-const schema = {
-  startDate: async (val: string, req: ServiceRequest): Promise<boolean> => {
-    if (!val) return false
+const schema: Validatable = {
+  startDate: {
+    required: true,
+    validation: async (val: unknown, req: Request): Promise<ValidationCondition[]> => {
+      const startDate = new Date(val as string)
+      const endDate = new Date(req.ctx.query.endDate as string)
 
-    const startDate = new Date(val)
-    if (!isValid(startDate)) throw new Error('Invalid start date, please use YYYY-MM-DD or a timestamp')
-
-    const endDate = new Date(req.ctx.query.endDate as string)
-    if (isValid(endDate) && isAfter(startDate, endDate)) throw new Error('Invalid start date, it should be before the end date')
-
-    return true
+      return [
+        {
+          check: isValid(startDate),
+          error: 'Invalid start date, please use YYYY-MM-DD or a timestamp',
+          break: true
+        },
+        {
+          check: isValid(endDate) ? isBefore(startDate, endDate) : true,
+          error: 'Invalid start date, it should be before the end date'
+        }
+      ]
+    }
   },
-  endDate: async (val: string): Promise<boolean> => {
-    if (!val) return false
-
-    const endDate = new Date(val)
-    if (!isValid(endDate)) throw new Error('Invalid end date, please use YYYY-MM-DD or a timestamp')
-
-    return true
+  endDate: {
+    required: true,
+    validation: async (val: unknown): Promise<ValidationCondition[]> => [
+      {
+        check: isValid(new Date(val as string)),
+        error: 'Invalid end date, please use YYYY-MM-DD or a timestamp'
+      }
+    ]
   }
 }
 

@@ -1,12 +1,12 @@
 import { EntityManager } from '@mikro-orm/core'
 import jwt from 'jsonwebtoken'
-import { HookParams } from 'koa-rest-services'
 import User from '../../entities/user'
 import { differenceInDays } from 'date-fns'
+import { Request, Response } from 'koa-clay'
 
-export default async (hook: HookParams): Promise<void> => {
-  const em: EntityManager = hook.req.ctx.em
-  const token: string = hook.result.body.accessToken
+export default async (req: Request, res: Response): Promise<void> => {
+  const em: EntityManager = req.ctx.em
+  const token: string = res.body.accessToken
 
   if (token) {
     const user = await em.getRepository(User).findOne(jwt.decode(token).sub)

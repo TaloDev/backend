@@ -39,7 +39,9 @@ import GameSaveFactory from './fixtures/GameSaveFactory'
 
   const gameSaves = await new GameSaveFactory(players).many(10)
 
-  await orm.em.persistAndFlush([
+  const em = orm.em.fork()
+
+  await em.persistAndFlush([
     devUser,
     adminUser,
     organisation,

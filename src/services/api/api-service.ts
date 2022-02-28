@@ -1,7 +1,8 @@
-import { Service, ServiceRequest, ServiceResponse } from 'koa-rest-services'
+import { Service, Request, Response } from 'koa-clay'
 import { Context } from 'koa'
 import APIKey from '../../entities/api-key'
 import { EntityManager } from '@mikro-orm/core'
+import merge from 'lodash.merge'
 
 export default class APIService<T> implements Service {
   serviceName: string
@@ -16,12 +17,15 @@ export default class APIService<T> implements Service {
   }
 
   getService(ctx: Context): T {
-    return ctx.services[this.serviceName]
+    return ctx.state.services[this.serviceName]
   }
 
-  forwardRequest(funcName: string, req: ServiceRequest): Promise<ServiceResponse> {
-    const service = this.getService(req.ctx)
+  forwardRequest(funcName: string, req: Request, extra?: Partial<Request>): Promise<Response> {
+    const newRequest: Request = Object.assign({}, req)
+    merge(newRequest, extra)
+
+    const service = this.getService(newRequest.ctx)
     const func = service[funcName]
-    return func.call(service, req)
+    return func.call(service, newRequest)
   }
 }

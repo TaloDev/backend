@@ -207,4 +207,34 @@ describe('Player service - patch', () => {
 
     expect(res.body).toStrictEqual({ message: 'Demo accounts cannot update player properties' })
   })
+
+  it('should filter out props with no keys', async () => {
+    const player = await new PlayerFactory([validGame]).with(() => ({ props: [] })).one()
+
+    await (<EntityManager>app.context.em).persistAndFlush(player)
+
+    const res = await request(app.callback())
+      .patch(`${baseUrl}/${player.id}`)
+      .send({
+        props: [
+          {
+            key: '',
+            value: ''
+          },
+          {
+            key: 'zonesExplored',
+            value: '3'
+          }
+        ]
+      })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    expect(res.body.player.props).toStrictEqual([
+      {
+        key: 'zonesExplored',
+        value: '3'
+      }
+    ])
+  })
 })

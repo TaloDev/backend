@@ -171,6 +171,8 @@ export default class LeaderboardService implements Service {
       .offset(Number(page) * itemsPerPage)
       .getResultList()
 
+    await em.populate(entries, ['playerAlias'])
+
     return {
       status: 200,
       body: {

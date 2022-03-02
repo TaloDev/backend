@@ -46,8 +46,8 @@ describe('Leaderboard service - update entry', () => {
     await (<EntityManager>app.context.em).persistAndFlush(entry)
 
     const res = await request(app.callback())
-      .patch(`${baseUrl}/${leaderboard.internalName}/entries/${entry.id}`)
-      .send({ gameId: validGame.id, hidden: true })
+      .patch(`${baseUrl}/${leaderboard.id}/entries/${entry.id}`)
+      .send({ hidden: true })
       .auth(token, { type: 'bearer' })
       .expect(200)
 
@@ -72,8 +72,8 @@ describe('Leaderboard service - update entry', () => {
     await (<EntityManager>app.context.em).persistAndFlush(entry)
 
     const res = await request(app.callback())
-      .patch(`${baseUrl}/${leaderboard.internalName}/entries/${entry.id}`)
-      .send({ gameId: validGame.id, hidden: false })
+      .patch(`${baseUrl}/${leaderboard.id}/entries/${entry.id}`)
+      .send({ hidden: false })
       .auth(token, { type: 'bearer' })
       .expect(200)
 
@@ -98,8 +98,8 @@ describe('Leaderboard service - update entry', () => {
     await (<EntityManager>app.context.em).persistAndFlush(entry)
 
     const res = await request(app.callback())
-      .patch(`${baseUrl}/${leaderboard.internalName}/entries/${entry.id}`)
-      .send({ gameId: validGame.id })
+      .patch(`${baseUrl}/${leaderboard.id}/entries/${entry.id}`)
+      .send({})
       .auth(token, { type: 'bearer' })
       .expect(200)
 
@@ -121,8 +121,8 @@ describe('Leaderboard service - update entry', () => {
 
   it('should not update a non-existent entry', async () => {
     const res = await request(app.callback())
-      .patch(`${baseUrl}/${leaderboard.internalName}/entries/12312321`)
-      .send({ gameId: validGame.id, hidden: true })
+      .patch(`${baseUrl}/${leaderboard.id}/entries/12312321`)
+      .send({ hidden: true })
       .auth(token, { type: 'bearer' })
       .expect(404)
 

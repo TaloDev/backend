@@ -9,17 +9,10 @@ export default class LeaderboardPolicy extends Policy {
     return await this.canAccessGame(Number(gameId))
   }
 
-  async get(req: Request): Promise<PolicyResponse> {
-    const { internalName } = req.params
-    const { gameId } = req.query
+  async canAccessLeaderboard(req: Request, relations: string[] = []): Promise<PolicyResponse> {
+    const { id } = req.params
 
-    // get and entries endpoints share this policy
-    const relations = req.path.endsWith('entries') ? ['entries'] : []
-
-    const leaderboard = await this.em.getRepository(Leaderboard).findOne({
-      internalName,
-      game: Number(gameId)
-    }, {
+    const leaderboard = await this.em.getRepository(Leaderboard).findOne(Number(id), {
       populate: relations as never[]
     })
 
@@ -28,7 +21,11 @@ export default class LeaderboardPolicy extends Policy {
     this.ctx.state.leaderboard = leaderboard
 
     if (this.isAPICall()) return true
-    return await this.canAccessGame(Number(gameId))
+    return await this.canAccessGame(leaderboard.game.id)
+  }
+
+  async get(req: Request): Promise<PolicyResponse> {
+    return await this.canAccessLeaderboard(req)
   }
 
   async post(req: Request): Promise<PolicyResponse> {
@@ -41,32 +38,17 @@ export default class LeaderboardPolicy extends Policy {
   }
 
   async updateEntry(req: Request): Promise<PolicyResponse> {
-    return await this.get({
-      ...req,
-      query: {
-        gameId: req.body.gameId
-      }
-    })
+    return await this.canAccessLeaderboard(req, ['entries'])
   }
 
   async updateLeaderboard(req: Request): Promise<PolicyResponse> {
-    return await this.get({
-      ...req,
-      query: {
-        gameId: req.body.gameId
-      }
-    })
+    return await this.canAccessLeaderboard(req)
   }
 
   async delete(req: Request): Promise<PolicyResponse> {
     const user = await this.getUser()
     if (user.type !== UserType.ADMIN) return new PolicyDenial({ message: 'You do not have permissions to delete leaderboards' })
 
-    return await this.get({
-      ...req,
-      query: {
-        gameId: req.body.gameId
-      }
-    })
+    return await this.canAccessLeaderboard(req)
   }
 }

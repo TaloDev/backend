@@ -38,8 +38,8 @@ describe('Leaderboard service - update leaderboard', () => {
 
   it('should update a leaderboard\'s name', async () => {
     const res = await request(app.callback())
-      .patch(`${baseUrl}/${leaderboard.internalName}`)
-      .send({ gameId: validGame.id, name: 'The new name' })
+      .patch(`${baseUrl}/${leaderboard.id}`)
+      .send({ name: 'The new name' })
       .auth(token, { type: 'bearer' })
       .expect(200)
 
@@ -60,8 +60,8 @@ describe('Leaderboard service - update leaderboard', () => {
     await (<EntityManager>app.context.em).flush()
 
     const res = await request(app.callback())
-      .patch(`${baseUrl}/${leaderboard.internalName}`)
-      .send({ gameId: validGame.id, sortMode: LeaderboardSortMode.ASC })
+      .patch(`${baseUrl}/${leaderboard.id}`)
+      .send({ sortMode: LeaderboardSortMode.ASC })
       .auth(token, { type: 'bearer' })
       .expect(200)
 
@@ -73,8 +73,8 @@ describe('Leaderboard service - update leaderboard', () => {
     await (<EntityManager>app.context.em).flush()
 
     const res = await request(app.callback())
-      .patch(`${baseUrl}/${leaderboard.internalName}`)
-      .send({ gameId: validGame.id })
+      .patch(`${baseUrl}/${leaderboard.id}`)
+      .send({})
       .auth(token, { type: 'bearer' })
       .expect(200)
 
@@ -86,8 +86,8 @@ describe('Leaderboard service - update leaderboard', () => {
     await (<EntityManager>app.context.em).flush()
 
     const res = await request(app.callback())
-      .patch(`${baseUrl}/${leaderboard.internalName}`)
-      .send({ gameId: validGame.id, unique: false })
+      .patch(`${baseUrl}/${leaderboard.id}`)
+      .send({ unique: false })
       .auth(token, { type: 'bearer' })
       .expect(200)
 
@@ -96,8 +96,8 @@ describe('Leaderboard service - update leaderboard', () => {
 
   it('should not update a non-existent leaderboard', async () => {
     const res = await request(app.callback())
-      .patch(`${baseUrl}/blah`)
-      .send({ gameId: validGame.id, name: 'The new name' })
+      .patch(`${baseUrl}/21312321`)
+      .send({ name: 'The new name' })
       .auth(token, { type: 'bearer' })
       .expect(404)
 

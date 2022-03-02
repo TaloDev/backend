@@ -37,8 +37,7 @@ describe('Leaderboard service - get', () => {
     await (<EntityManager>app.context.em).persistAndFlush(leaderboard)
 
     const res = await request(app.callback())
-      .get(`${baseUrl}/${leaderboard.internalName}`)
-      .query({ gameId: validGame.id })
+      .get(`${baseUrl}/${leaderboard.id}`)
       .auth(token, { type: 'bearer' })
       .expect(200)
 
@@ -47,8 +46,7 @@ describe('Leaderboard service - get', () => {
 
   it('should not return a non-existent leaderboard', async () => {
     const res = await request(app.callback())
-      .get(`${baseUrl}/blah`)
-      .query({ gameId: 99 })
+      .get(`${baseUrl}/321312`)
       .auth(token, { type: 'bearer' })
       .expect(404)
 
@@ -62,30 +60,7 @@ describe('Leaderboard service - get', () => {
     await (<EntityManager>app.context.em).persistAndFlush(leaderboard)
 
     await request(app.callback())
-      .get(`${baseUrl}/${leaderboard.internalName}`)
-      .query({ gameId: otherGame.id })
-      .auth(token, { type: 'bearer' })
-      .expect(403)
-  })
-
-  it('should not return a leaderboard with the same name as a valid leaderboard for a game the user has no access to', async () => {
-    const otherOrg = await new OrganisationFactory().one()
-    const otherGame = await new GameFactory(otherOrg).one()
-    const validLeaderboard = await new LeaderboardFactory([validGame]).with(() => ({ internalName: 'points' })).one()
-    const otherLeaderboard = await new LeaderboardFactory([otherGame]).with(() => ({ internalName: 'points' })).one()
-    await (<EntityManager>app.context.em).persistAndFlush([validLeaderboard, otherLeaderboard])
-
-    const res = await request(app.callback())
-      .get(`${baseUrl}/${validLeaderboard.internalName}`)
-      .query({ gameId: validGame.id })
-      .auth(token, { type: 'bearer' })
-      .expect(200)
-
-    expect(res.body.leaderboard.id).toBe(validLeaderboard.id)
-
-    await request(app.callback())
-      .get(`${baseUrl}/${validLeaderboard.internalName}`)
-      .query({ gameId: otherGame.id })
+      .get(`${baseUrl}/${leaderboard.id}`)
       .auth(token, { type: 'bearer' })
       .expect(403)
   })

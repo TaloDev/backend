@@ -38,8 +38,7 @@ describe('Leaderboard service - delete', () => {
     await (<EntityManager>app.context.em).persistAndFlush(leaderboard)
 
     await request(app.callback())
-      .delete(`${baseUrl}/${leaderboard.internalName}`)
-      .send({ gameId: validGame.id })
+      .delete(`${baseUrl}/${leaderboard.id}`)
       .auth(token, { type: 'bearer' })
       .expect(204)
 
@@ -61,8 +60,7 @@ describe('Leaderboard service - delete', () => {
     const invalidUserToken = await genAccessToken(invalidUser)
 
     const res = await request(app.callback())
-      .delete(`${baseUrl}/${leaderboard.internalName}`)
-      .send({ gameId: validGame.id })
+      .delete(`${baseUrl}/${leaderboard.id}`)
       .auth(invalidUserToken, { type: 'bearer' })
       .expect(403)
 
@@ -77,8 +75,7 @@ describe('Leaderboard service - delete', () => {
     const invalidUserToken = await genAccessToken(invalidUser)
 
     const res = await request(app.callback())
-      .delete(`${baseUrl}/${leaderboard.internalName}`)
-      .send({ gameId: validGame.id })
+      .delete(`${baseUrl}/${leaderboard.id}`)
       .auth(invalidUserToken, { type: 'bearer' })
       .expect(403)
 
@@ -92,16 +89,14 @@ describe('Leaderboard service - delete', () => {
     await (<EntityManager>app.context.em).persistAndFlush([otherOrg, otherGame, leaderboard])
 
     await request(app.callback())
-      .delete(`${baseUrl}/${leaderboard.internalName}`)
-      .send({ gameId: otherGame.id })
+      .delete(`${baseUrl}/${leaderboard.id}`)
       .auth(token, { type: 'bearer' })
       .expect(403)
   })
 
   it('should not delete a non-existent leaderboard', async () => {
     const res = await request(app.callback())
-      .delete(`${baseUrl}/blah`)
-      .send({ gameId: 99 })
+      .delete(`${baseUrl}/31223`)
       .auth(token, { type: 'bearer' })
       .expect(404)
 

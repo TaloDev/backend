@@ -39,8 +39,8 @@ describe('Leaderboard service - entries', () => {
     await (<EntityManager>app.context.em).persistAndFlush(leaderboard)
 
     const res = await request(app.callback())
-      .get(`${baseUrl}/${leaderboard.internalName}/entries`)
-      .query({ gameId: validGame.id, page: 0 })
+      .get(`${baseUrl}/${leaderboard.id}/entries`)
+      .query({ page: 0 })
       .auth(token, { type: 'bearer' })
       .expect(200)
 
@@ -49,8 +49,8 @@ describe('Leaderboard service - entries', () => {
 
   it('should not return entries for a non-existent leaderboard', async () => {
     const res = await request(app.callback())
-      .get(`${baseUrl}/blah/entries`)
-      .query({ gameId: 99, page: 0 })
+      .get(`${baseUrl}/21312312/entries`)
+      .query({ page: 0 })
       .auth(token, { type: 'bearer' })
       .expect(404)
 
@@ -64,8 +64,8 @@ describe('Leaderboard service - entries', () => {
     await (<EntityManager>app.context.em).persistAndFlush(leaderboard)
 
     await request(app.callback())
-      .get(`${baseUrl}/${leaderboard.internalName}/entries`)
-      .query({ gameId: otherGame.id, page: 0 })
+      .get(`${baseUrl}/${leaderboard.id}/entries`)
+      .query({ page: 0 })
       .auth(token, { type: 'bearer' })
       .expect(403)
   })

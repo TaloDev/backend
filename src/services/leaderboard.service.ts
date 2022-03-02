@@ -9,7 +9,7 @@ import LeaderboardPolicy from '../policies/leaderboard.policy'
 @Routes([
   {
     method: 'GET',
-    path: '/:internalName',
+    path: '/:id',
     handler: 'get'
   },
   {
@@ -21,22 +21,22 @@ import LeaderboardPolicy from '../policies/leaderboard.policy'
   },
   {
     method: 'GET',
-    path: '/:internalName/entries',
+    path: '/:id/entries',
     handler: 'entries'
   },
   {
     method: 'PATCH',
-    path: '/:internalName/entries/:id',
+    path: '/:id/entries/:entryId',
     handler: 'updateEntry'
   },
   {
     method: 'PATCH',
-    path: '/:internalName',
+    path: '/:id',
     handler: 'updateLeaderboard'
   },
   {
     method: 'DELETE',
-    path: '/:internalName'
+    path: '/:id'
   }
 ])
 export default class LeaderboardService implements Service {
@@ -57,9 +57,6 @@ export default class LeaderboardService implements Service {
     }
   }
 
-  @Validate({
-    query: ['gameId']
-  })
   @HasPermission(LeaderboardPolicy, 'get')
   async get(req: Request): Promise<Response> {
     return {
@@ -141,7 +138,7 @@ export default class LeaderboardService implements Service {
   }
 
   @Validate({
-    query: ['gameId', 'page']
+    query: ['page']
   })
   @HasPermission(LeaderboardPolicy, 'get')
   async entries(req: Request): Promise<Response> {
@@ -174,6 +171,8 @@ export default class LeaderboardService implements Service {
       .offset(Number(page) * itemsPerPage)
       .getResultList()
 
+    await em.populate(entries, ['playerAlias'])
+
     return {
       status: 200,
       body: {
@@ -183,15 +182,12 @@ export default class LeaderboardService implements Service {
     }
   }
 
-  @Validate({
-    body: ['gameId']
-  })
   @HasPermission(LeaderboardPolicy, 'updateEntry')
   async updateEntry(req: Request): Promise<Response> {
-    const { id } = req.params
+    const { entryId } = req.params
     const em: EntityManager = req.ctx.em
 
-    const entry = await em.getRepository(LeaderboardEntry).findOne(Number(id))
+    const entry = await em.getRepository(LeaderboardEntry).findOne(Number(entryId))
     if (!entry) {
       req.ctx.throw(404, 'Leaderboard entry not found')
     }
@@ -227,9 +223,6 @@ export default class LeaderboardService implements Service {
     }
   }
 
-  @Validate({
-    body: ['gameId']
-  })
   @HasPermission(LeaderboardPolicy, 'updateLeaderboard')
   async updateLeaderboard(req: Request): Promise<Response> {
     const em: EntityManager = req.ctx.em
@@ -263,9 +256,6 @@ export default class LeaderboardService implements Service {
     }
   }
 
-  @Validate({
-    body: ['gameId']
-  })
   @HasPermission(LeaderboardPolicy, 'delete')
   async delete(req: Request): Promise<Response> {
     const em: EntityManager = req.ctx.em

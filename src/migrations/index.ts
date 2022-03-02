@@ -8,6 +8,7 @@ import { AddLeaderboardEntryHiddenColumn } from './20211224154919AddLeaderboardE
 import { CreateGameSavesTable } from './20220109144435CreateGameSavesTable'
 import { CreateGameActivitiesTable } from './20220125220401CreateGameActivitiesTable'
 import { SetUserTwoFactorAuthEnabledDefaultFalse } from './20220203130919SetUserTwoFactorAuthEnabledDefaultFalse'
+import { CreateGameStatsTable } from './20220320171104CreateGameStatsTable'
 
 export default [
   {
@@ -49,5 +50,9 @@ export default [
   {
     name: 'SetUserTwoFactorAuthEnabledDefaultFalse',
     class: SetUserTwoFactorAuthEnabledDefaultFalse
+  },
+  {
+    name: 'CreateGameStatsTable',
+    class: CreateGameStatsTable
   }
 ]

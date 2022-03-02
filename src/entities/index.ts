@@ -1,3 +1,5 @@
+import PlayerGameStat from './player-game-stat'
+import GameStat from './game-stat'
 import GameActivity from './game-activity'
 import GameSave from './game-save'
 import Leaderboard from './leaderboard'
@@ -18,6 +20,8 @@ import UserTwoFactorAuth from './user-two-factor-auth'
 import UserRecoveryCode from './user-recovery-code'
 
 export default [
+  PlayerGameStat,
+  GameStat,
   GameActivity,
   GameSave,
   UserRecoveryCode,

@@ -15,6 +15,8 @@ import { EmailConfig } from '../lib/messaging/sendEmail'
 import { unlink } from 'fs/promises'
 import dataExportReady from '../emails/data-export-ready'
 import LeaderboardEntry from '../entities/leaderboard-entry'
+import PlayerGameStat from '../entities/player-game-stat'
+import GameStat from '../entities/game-stat'
 
 interface EntityWithProps {
   props: Prop[]
@@ -29,7 +31,7 @@ interface DataExportJob {
   dataExportId: number
 }
 
-type ExportableEntity = Event | Player | PlayerAlias | LeaderboardEntry
+type ExportableEntity = Event | Player | PlayerAlias | LeaderboardEntry | GameStat | PlayerGameStat
 type ExportableEntityWithProps = ExportableEntity & EntityWithProps
 
 @Routes([
@@ -149,6 +151,20 @@ export default class DataExportService implements Service {
       zip.addFile(`${DataExportAvailableEntities.LEADERBOARD_ENTRIES}.csv`, this.buildCSV(DataExportAvailableEntities.LEADERBOARD_ENTRIES, entries))
     }
 
+    if (dataExport.entities.includes(DataExportAvailableEntities.GAME_STATS)) {
+      const entries = await em.getRepository(GameStat).find({ game: dataExport.game })
+      zip.addFile(`${DataExportAvailableEntities.GAME_STATS}.csv`, this.buildCSV(DataExportAvailableEntities.GAME_STATS, entries))
+    }
+
+    if (dataExport.entities.includes(DataExportAvailableEntities.PLAYER_GAME_STATS)) {
+      const entries = await em.getRepository(PlayerGameStat).find({
+        stat: {
+          game: dataExport.game
+        }
+      })
+      zip.addFile(`${DataExportAvailableEntities.PLAYER_GAME_STATS}.csv`, this.buildCSV(DataExportAvailableEntities.PLAYER_GAME_STATS, entries))
+    }
+
     return zip
   }
 
@@ -162,6 +178,10 @@ export default class DataExportService implements Service {
         return ['id', 'service', 'identifier', 'player.id', 'createdAt', 'updatedAt']
       case DataExportAvailableEntities.LEADERBOARD_ENTRIES:
         return ['id', 'score', 'leaderboard.id', 'leaderboard.internalName', 'playerAlias.id', 'playerAlias.service', 'playerAlias.identifier', 'playerAlias.player.id', 'createdAt', 'updatedAt']
+      case DataExportAvailableEntities.GAME_STATS:
+        return ['id', 'internalName', 'name', 'defaultValue', 'minValue', 'maxValue', 'global', 'globalValue', 'createdAt', 'updatedAt']
+      case DataExportAvailableEntities.PLAYER_GAME_STATS:
+        return ['id', 'value', 'stat.id', 'stat.internalName', 'createdAt', 'updatedAt']
     }
   }
 

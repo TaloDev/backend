@@ -22,7 +22,7 @@ export default class LeaderboardFactory extends Factory<Leaderboard> {
   protected async base(): Promise<Partial<Leaderboard>> {
     return {
       game: casual.random_element(this.availableGames),
-      internalName: casual.word,
+      internalName: casual.array_of_words(3).join('-'),
       name: casual.title,
       sortMode: casual.random_element([LeaderboardSortMode.ASC, LeaderboardSortMode.DESC]),
       unique: casual.boolean

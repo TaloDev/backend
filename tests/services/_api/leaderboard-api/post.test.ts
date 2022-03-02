@@ -32,9 +32,8 @@ describe('Leaderboard API service - post', () => {
     leaderboard = await new LeaderboardFactory([game]).state('not unique').one()
 
     apiKey = new APIKey(game, user)
-    token = await createToken(apiKey)
-
     await (<EntityManager>app.context.em).persistAndFlush([apiKey, leaderboard])
+    token = await createToken(apiKey)
   })
 
   afterAll(async () => {
@@ -121,6 +120,11 @@ describe('Leaderboard API service - post', () => {
   })
 
   it('should update an existing entry\'s created at for unique leaderboards', async () => {
+    apiKey.scopes = [APIKeyScope.WRITE_LEADERBOARDS]
+
+    await (<EntityManager>app.context.em).flush()
+    token = await createToken(apiKey)
+
     leaderboard.unique = true
     leaderboard.sortMode = LeaderboardSortMode.DESC
 
@@ -129,7 +133,8 @@ describe('Leaderboard API service - post', () => {
     const player = await new PlayerFactory([game]).one()
     const entry = await new LeaderboardEntryFactory(leaderboard, [player]).with(() => ({
       score: 100,
-      createdAt: originalDate
+      createdAt: originalDate,
+      playerAlias: player.aliases[0]
     })).one()
     await (<EntityManager>app.context.em).persistAndFlush([player, entry])
 
@@ -139,7 +144,6 @@ describe('Leaderboard API service - post', () => {
       .auth(token, { type: 'bearer' })
       .expect(200)
 
-    expect(res.body.entry.id).toBe(entry.id)
     expect(res.body.entry.score).toBe(300)
     expect(res.body.updated).toBe(true)
 

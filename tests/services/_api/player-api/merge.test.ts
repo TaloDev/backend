@@ -49,7 +49,6 @@ describe('Player API service - merge', () => {
     expect(res.body).toStrictEqual({ message: 'Missing access key scope(s): read:players, write:players' })
   })
 
-
   it('should not merge without the write scope', async () => {
     apiKey.scopes = [APIKeyScope.READ_PLAYERS]
     await (<EntityManager>app.context.em).flush()
@@ -63,7 +62,6 @@ describe('Player API service - merge', () => {
 
     expect(res.body).toStrictEqual({ message: 'Missing access key scope(s): write:players' })
   })
-
 
   it('should not merge without the read scope', async () => {
     apiKey.scopes = [APIKeyScope.WRITE_PLAYERS]
@@ -182,5 +180,39 @@ describe('Player API service - merge', () => {
         value: '66'
       }
     ])
+  })
+
+  it('should not merge players if alias1 does not exist', async () => {
+    apiKey.scopes = [APIKeyScope.READ_PLAYERS, APIKeyScope.WRITE_PLAYERS]
+    token = await createToken(apiKey)
+
+    const player2 = await new PlayerFactory([apiKey.game]).one()
+
+    await (<EntityManager>app.context.em).persistAndFlush(player2)
+
+    const res = await request(app.callback())
+      .post(`${baseUrl}`)
+      .send({ alias1: 2321, alias2: player2.aliases[0].id })
+      .auth(token, { type: 'bearer' })
+      .expect(404)
+
+    expect(res.body).toStrictEqual({ message: 'Player with alias 2321 does not exist' })
+  })
+
+  it('should not merge players if alias2 does not exist', async () => {
+    apiKey.scopes = [APIKeyScope.READ_PLAYERS, APIKeyScope.WRITE_PLAYERS]
+    token = await createToken(apiKey)
+
+    const player1 = await new PlayerFactory([apiKey.game]).one()
+
+    await (<EntityManager>app.context.em).persistAndFlush(player1)
+
+    const res = await request(app.callback())
+      .post(`${baseUrl}`)
+      .send({ alias1: player1.aliases[0].id, alias2: 2456 })
+      .auth(token, { type: 'bearer' })
+      .expect(404)
+
+    expect(res.body).toStrictEqual({ message: 'Player with alias 2456 does not exist' })
   })
 })

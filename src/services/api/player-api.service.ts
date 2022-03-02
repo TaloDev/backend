@@ -130,12 +130,16 @@ export default class PlayerAPIService extends APIService<PlayerService> {
       game: key.game
     })
 
+    if (!player1) req.ctx.throw(404, `Player with alias ${alias1} does not exist`)
+
     const player2 = await em.getRepository(Player).findOne({
       aliases: {
         id: alias2
       },
       game: key.game
     })
+
+    if (!player2) req.ctx.throw(404, `Player with alias ${alias2} does not exist`)
 
     const player2Aliases = await em.getRepository(PlayerAlias).find({
       player: {

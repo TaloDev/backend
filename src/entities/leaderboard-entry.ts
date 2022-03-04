@@ -41,6 +41,7 @@ export default class LeaderboardEntry {
         identifier: this.playerAlias.identifier
       },
       hidden: this.hidden,
+      createdAt: this.createdAt,
       updatedAt: this.updatedAt
     }
   }

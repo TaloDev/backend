@@ -64,6 +64,7 @@ export default class LeaderboardAPIService extends APIService<LeaderboardService
 
         if ((leaderboard.sortMode === LeaderboardSortMode.ASC && score < entry.score) || (leaderboard.sortMode === LeaderboardSortMode.DESC && score > entry.score)) {
           entry.score = score
+          entry.createdAt = new Date()
           await em.flush()
 
           updated = true

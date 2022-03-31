@@ -272,7 +272,7 @@ export default class LeaderboardService implements Service {
     await em.getRepository(GameActivity).removeAndFlush(req.ctx.state.leaderboard)
 
     return {
-      status: 200
+      status: 204
     }
   }
 }

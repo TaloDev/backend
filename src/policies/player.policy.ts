@@ -4,6 +4,13 @@ import Player from '../entities/player'
 import { UserType } from '../entities/user'
 
 export default class PlayerPolicy extends Policy {
+  async getPlayer(id: string, relations?: string[]): Promise<Player> {
+    const player = await this.em.getRepository(Player).findOne(id, { populate: relations as never[] })
+    this.ctx.state.player = player
+
+    return player
+  }
+
   async index(req: Request): Promise<boolean> {
     const { gameId } = req.query
 
@@ -28,10 +35,8 @@ export default class PlayerPolicy extends Policy {
       }
     }
 
-    const player = await this.em.getRepository(Player).findOne(id)
+    const player = await this.getPlayer(id)
     if (!player) return new PolicyDenial({ message: 'Player not found' }, 404)
-
-    this.ctx.state.player = player
 
     if (this.isAPICall()) return true
     return await this.canAccessGame(player.game.id)
@@ -40,10 +45,17 @@ export default class PlayerPolicy extends Policy {
   async getEvents(req: Request): Promise<PolicyResponse> {
     const { id } = req.params
 
-    const player = await this.em.getRepository(Player).findOne(id, { populate: ['aliases'] })
-
+    const player = await this.getPlayer(id, ['aliases'])
     if (!player) return new PolicyDenial({ message: 'Player not found' }, 404)
-    this.ctx.state.player = player
+
+    return await this.canAccessGame(player.game.id)
+  }
+
+  async getStats(req: Request): Promise<PolicyResponse> {
+    const { id } = req.params
+
+    const player = await this.getPlayer(id)
+    if (!player) return new PolicyDenial({ message: 'Player not found' }, 404)
 
     return await this.canAccessGame(player.game.id)
   }

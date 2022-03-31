@@ -11,9 +11,36 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
 
-      - name: Create release
+      - uses: actions/setup-node@v1
+        with:
+          node-version: 14
+
+      - uses: actions/cache@v2
+        with:
+          path: '**/node_modules'
+          key: ${{ runner.os }}-modules-${{ hashFiles('**/yarn.lock') }}
+
+      - name: Install deps
+        run: yarn --prefer-offline
+
+      - name: Build
+        run: yarn build
+
+      - name: Create GitHub release
         uses: softprops/action-gh-release@v1
         if: "!contains(github.event.head_commit.message, '--no-release')"
         with:
           generate_release_notes: true
+
+      - name: Create Sentry release
+        uses: getsentry/action-release@v1
+        env:
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+          SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
+          SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
+        with:
+          environment: prod
+          sourcemaps: './dist'

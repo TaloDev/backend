@@ -10,6 +10,8 @@ import Leaderboard, { LeaderboardSortMode } from '../../../../src/entities/leade
 import LeaderboardFactory from '../../../fixtures/LeaderboardFactory'
 import PlayerFactory from '../../../fixtures/PlayerFactory'
 import Game from '../../../../src/entities/game'
+import LeaderboardEntryFactory from '../../../fixtures/LeaderboardEntryFactory'
+import { subHours } from 'date-fns'
 
 const baseUrl = '/v1/leaderboards'
 
@@ -30,9 +32,8 @@ describe('Leaderboard API service - post', () => {
     leaderboard = await new LeaderboardFactory([game]).state('not unique').one()
 
     apiKey = new APIKey(game, user)
-    token = await createToken(apiKey)
-
     await (<EntityManager>app.context.em).persistAndFlush([apiKey, leaderboard])
+    token = await createToken(apiKey)
   })
 
   afterAll(async () => {
@@ -116,6 +117,37 @@ describe('Leaderboard API service - post', () => {
     expect(res.body.entry.id).toBe(prevId)
     expect(res.body.entry.score).toBe(360)
     expect(res.body.updated).toBe(true)
+  })
+
+  it('should update an existing entry\'s created at for unique leaderboards', async () => {
+    apiKey.scopes = [APIKeyScope.WRITE_LEADERBOARDS]
+
+    await (<EntityManager>app.context.em).flush()
+    token = await createToken(apiKey)
+
+    leaderboard.unique = true
+    leaderboard.sortMode = LeaderboardSortMode.DESC
+
+    const originalDate = subHours(new Date(), 2)
+
+    const player = await new PlayerFactory([game]).one()
+    const entry = await new LeaderboardEntryFactory(leaderboard, [player]).with(() => ({
+      score: 100,
+      createdAt: originalDate,
+      playerAlias: player.aliases[0]
+    })).one()
+    await (<EntityManager>app.context.em).persistAndFlush([player, entry])
+
+    const res = await request(app.callback())
+      .post(`${baseUrl}/${leaderboard.internalName}/entries`)
+      .send({ aliasId: player.aliases[0].id, score: 300 })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    expect(res.body.entry.score).toBe(300)
+    expect(res.body.updated).toBe(true)
+
+    expect(new Date(res.body.entry.createdAt).getTime()).toBeGreaterThan(originalDate.getTime())
   })
 
   it('should add new entries for non-unique leaderboards', async () => {

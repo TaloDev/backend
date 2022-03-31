@@ -1,5 +1,6 @@
 import Koa, { Context, Next } from 'koa'
 import { service } from 'koa-clay'
+import GameStatService from '../services/game-stat.service'
 import GameActivityService from '../services/game-activity.service'
 import LeaderboardService from '../services/leaderboard.service'
 import DataExportService from '../services/data-export.service'
@@ -18,6 +19,7 @@ export default (app: Koa) => {
     await next()
   })
 
+  app.use(service('/game-stats', new GameStatService()))
   app.use(service('/game-activities', new GameActivityService()))
   app.use(service('/leaderboards', new LeaderboardService()))
   app.use(service('/data-exports', new DataExportService()))

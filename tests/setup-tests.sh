@@ -27,6 +27,8 @@ done
 
 echo "Database took $TIME_TAKEN seconds to get ready\n"
 
+sleep 1
+
 yarn mikro-orm migration:up
 
 echo "\n"

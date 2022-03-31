@@ -13,7 +13,9 @@ export enum DataExportAvailableEntities {
   EVENTS = 'events',
   PLAYERS = 'players',
   PLAYER_ALIASES = 'playerAliases',
-  LEADERBOARD_ENTRIES = 'leaderboardEntries'
+  LEADERBOARD_ENTRIES = 'leaderboardEntries',
+  GAME_STATS = 'gameStats',
+  PLAYER_GAME_STATS = 'playerGameStats'
 }
 
 @Entity()

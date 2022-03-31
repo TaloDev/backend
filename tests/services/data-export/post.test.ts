@@ -38,7 +38,6 @@ describe('Data export service - post', () => {
       .auth(token, { type: 'bearer' })
       .expect(200)
 
-    expect(res.body.dataExport).toBeTruthy()
     expect(res.body.dataExport.entities).toStrictEqual([DataExportAvailableEntities.PLAYER_ALIASES])
   })
 
@@ -49,7 +48,6 @@ describe('Data export service - post', () => {
       .auth(token, { type: 'bearer' })
       .expect(200)
 
-    expect(res.body.dataExport).toBeTruthy()
     expect(res.body.dataExport.entities).toStrictEqual([DataExportAvailableEntities.PLAYERS])
   })
 
@@ -60,19 +58,37 @@ describe('Data export service - post', () => {
       .auth(token, { type: 'bearer' })
       .expect(200)
 
-    expect(res.body.dataExport).toBeTruthy()
     expect(res.body.dataExport.entities).toStrictEqual([DataExportAvailableEntities.EVENTS])
   })
 
-  it('should create a data export for events', async () => {
+  it('should create a data export for leaderboard entries', async () => {
     const res = await request(app.callback())
       .post(`${baseUrl}`)
       .send({ gameId: game.id, entities: [DataExportAvailableEntities.LEADERBOARD_ENTRIES] })
       .auth(token, { type: 'bearer' })
       .expect(200)
 
-    expect(res.body.dataExport).toBeTruthy()
     expect(res.body.dataExport.entities).toStrictEqual([DataExportAvailableEntities.LEADERBOARD_ENTRIES])
+  })
+
+  it('should create a data export for game stats', async () => {
+    const res = await request(app.callback())
+      .post(`${baseUrl}`)
+      .send({ gameId: game.id, entities: [DataExportAvailableEntities.GAME_STATS] })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    expect(res.body.dataExport.entities).toStrictEqual([DataExportAvailableEntities.GAME_STATS])
+  })
+
+  it('should create a data export for player game stats', async () => {
+    const res = await request(app.callback())
+      .post(`${baseUrl}`)
+      .send({ gameId: game.id, entities: [DataExportAvailableEntities.PLAYER_GAME_STATS] })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    expect(res.body.dataExport.entities).toStrictEqual([DataExportAvailableEntities.PLAYER_GAME_STATS])
   })
 
   it('should not create a data export for dev users', async () => {

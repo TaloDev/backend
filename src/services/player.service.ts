@@ -10,6 +10,7 @@ import { QueryOrder } from '@mikro-orm/core'
 import uniqWith from 'lodash.uniqwith'
 import createGameActivity from '../lib/logging/createGameActivity'
 import { GameActivityType } from '../entities/game-activity'
+import PlayerGameStat from '../entities/player-game-stat'
 
 const itemsPerPage = 25
 
@@ -28,6 +29,11 @@ const itemsPerPage = 25
     method: 'GET',
     path: '/:id/events',
     handler: 'events'
+  },
+  {
+    method: 'GET',
+    path: '/:id/stats',
+    handler: 'stats'
   }
 ])
 export default class PlayerService implements Service {
@@ -213,6 +219,22 @@ export default class PlayerService implements Service {
       body: {
         events,
         count
+      }
+    }
+  }
+
+  @HasPermission(PlayerPolicy, 'getStats')
+  async stats(req: Request): Promise<Response> {
+    const em: EntityManager = req.ctx.em
+
+    const stats = await em.getRepository(PlayerGameStat).find({
+      player: req.ctx.state.player
+    })
+
+    return {
+      status: 200,
+      body: {
+        stats
       }
     }
   }

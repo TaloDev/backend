@@ -4,6 +4,8 @@ import User from './user'
 import jwt from 'jsonwebtoken'
 
 export enum APIKeyScope {
+  READ_GAME_STATS = 'read:gameStats',
+  WRITE_GAME_STATS = 'write:gameStats',
   READ_GAME_SAVES = 'read:gameSaves',
   WRITE_GAME_SAVES = 'write:gameSaves',
   READ_LEADERBOARDS = 'read:leaderboards',

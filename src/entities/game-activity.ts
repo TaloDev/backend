@@ -10,7 +10,10 @@ export enum GameActivityType {
   LEADERBOARD_ENTRY_HIDDEN,
   LEADERBOARD_ENTRY_RESTORED,
   API_KEY_CREATED,
-  API_KEY_REVOKED
+  API_KEY_REVOKED,
+  GAME_STAT_CREATED,
+  GAME_STAT_UPDATED,
+  GAME_STAT_DELETED
 }
 
 @Entity()
@@ -30,8 +33,8 @@ export default class GameActivity {
   @Property({ type: 'json' })
   extra: {
     [key: string]: unknown,
-    displayable?: {
-      [key: string]: string
+    display?: {
+      [key: string]: unknown
     }
   } = {}
 
@@ -62,6 +65,12 @@ export default class GameActivity {
         return `${this.user.email} created an access key`
       case GameActivityType.API_KEY_REVOKED:
         return `${this.user.email} remove an access key`
+      case GameActivityType.GAME_STAT_CREATED:
+        return `${this.user.email} created the stat ${this.extra.statInternalName}`
+      case GameActivityType.GAME_STAT_UPDATED:
+        return `${this.user.email} updated the stat ${this.extra.statInternalName}`
+      case GameActivityType.GAME_STAT_DELETED:
+        return `${this.user.email} deleted the stat ${this.extra.statInternalName}`
       default:
         return ''
     }

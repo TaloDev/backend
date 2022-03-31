@@ -1041,7 +1041,9 @@
             "events",
             "players",
             "playerAliases",
-            "leaderboardEntries"
+            "leaderboardEntries",
+            "gameStats",
+            "playerGameStats"
           ],
           "mappedType": "text"
         },
@@ -1162,6 +1164,8 @@
           "primary": false,
           "nullable": false,
           "enumItems": [
+            "read:gameStats",
+            "write:gameStats",
             "read:gameSaves",
             "write:gameSaves",
             "read:leaderboards",
@@ -1739,6 +1743,282 @@
           ],
           "referencedTableName": "user",
           "updateRule": "cascade"
+        }
+      }
+    },
+    {
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "int",
+          "unsigned": true,
+          "autoincrement": true,
+          "primary": true,
+          "nullable": false,
+          "mappedType": "integer"
+        },
+        "internal_name": {
+          "name": "internal_name",
+          "type": "varchar(255)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "mappedType": "string"
+        },
+        "name": {
+          "name": "name",
+          "type": "varchar(255)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "mappedType": "string"
+        },
+        "global": {
+          "name": "global",
+          "type": "tinyint(1)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "mappedType": "boolean"
+        },
+        "global_value": {
+          "name": "global_value",
+          "type": "double",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "mappedType": "double"
+        },
+        "max_change": {
+          "name": "max_change",
+          "type": "double",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "mappedType": "double"
+        },
+        "min_value": {
+          "name": "min_value",
+          "type": "double",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "mappedType": "double"
+        },
+        "max_value": {
+          "name": "max_value",
+          "type": "double",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "mappedType": "double"
+        },
+        "default_value": {
+          "name": "default_value",
+          "type": "double",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "mappedType": "double"
+        },
+        "min_time_between_updates": {
+          "name": "min_time_between_updates",
+          "type": "int",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "mappedType": "integer"
+        },
+        "game_id": {
+          "name": "game_id",
+          "type": "int",
+          "unsigned": true,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "mappedType": "integer"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "datetime",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "length": 0,
+          "mappedType": "datetime"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "datetime",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "length": 0,
+          "mappedType": "datetime"
+        }
+      },
+      "name": "game_stat",
+      "indexes": [
+        {
+          "columnNames": [
+            "game_id"
+          ],
+          "composite": false,
+          "keyName": "game_stat_game_id_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "keyName": "PRIMARY",
+          "columnNames": [
+            "id"
+          ],
+          "composite": false,
+          "primary": true,
+          "unique": true
+        }
+      ],
+      "checks": [],
+      "foreignKeys": {
+        "game_stat_game_id_foreign": {
+          "constraintName": "game_stat_game_id_foreign",
+          "columnNames": [
+            "game_id"
+          ],
+          "localTableName": "game_stat",
+          "referencedColumnNames": [
+            "id"
+          ],
+          "referencedTableName": "game",
+          "updateRule": "cascade"
+        }
+      }
+    },
+    {
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "int",
+          "unsigned": true,
+          "autoincrement": true,
+          "primary": true,
+          "nullable": false,
+          "mappedType": "integer"
+        },
+        "player_id": {
+          "name": "player_id",
+          "type": "varchar(255)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "mappedType": "string"
+        },
+        "stat_id": {
+          "name": "stat_id",
+          "type": "int",
+          "unsigned": true,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "mappedType": "integer"
+        },
+        "value": {
+          "name": "value",
+          "type": "double",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "mappedType": "double"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "datetime",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "length": 0,
+          "mappedType": "datetime"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "datetime",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "length": 0,
+          "mappedType": "datetime"
+        }
+      },
+      "name": "player_game_stat",
+      "indexes": [
+        {
+          "columnNames": [
+            "player_id"
+          ],
+          "composite": false,
+          "keyName": "player_game_stat_player_id_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "stat_id"
+          ],
+          "composite": false,
+          "keyName": "player_game_stat_stat_id_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "keyName": "PRIMARY",
+          "columnNames": [
+            "id"
+          ],
+          "composite": false,
+          "primary": true,
+          "unique": true
+        }
+      ],
+      "checks": [],
+      "foreignKeys": {
+        "player_game_stat_player_id_foreign": {
+          "constraintName": "player_game_stat_player_id_foreign",
+          "columnNames": [
+            "player_id"
+          ],
+          "localTableName": "player_game_stat",
+          "referencedColumnNames": [
+            "id"
+          ],
+          "referencedTableName": "player",
+          "deleteRule": "cascade"
+        },
+        "player_game_stat_stat_id_foreign": {
+          "constraintName": "player_game_stat_stat_id_foreign",
+          "columnNames": [
+            "stat_id"
+          ],
+          "localTableName": "player_game_stat",
+          "referencedColumnNames": [
+            "id"
+          ],
+          "referencedTableName": "game_stat",
+          "deleteRule": "cascade"
         }
       }
     }

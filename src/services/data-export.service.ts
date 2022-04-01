@@ -17,6 +17,7 @@ import dataExportReady from '../emails/data-export-ready'
 import LeaderboardEntry from '../entities/leaderboard-entry'
 import PlayerGameStat from '../entities/player-game-stat'
 import GameStat from '../entities/game-stat'
+import GameActivity, { GameActivityType } from '../entities/game-activity'
 
 interface EntityWithProps {
   props: Prop[]
@@ -31,7 +32,7 @@ interface DataExportJob {
   dataExportId: number
 }
 
-type ExportableEntity = Event | Player | PlayerAlias | LeaderboardEntry | GameStat | PlayerGameStat
+type ExportableEntity = Event | Player | PlayerAlias | LeaderboardEntry | GameStat | PlayerGameStat | GameActivity
 type ExportableEntityWithProps = ExportableEntity & EntityWithProps
 
 @Routes([
@@ -165,6 +166,15 @@ export default class DataExportService implements Service {
       zip.addFile(`${DataExportAvailableEntities.PLAYER_GAME_STATS}.csv`, this.buildCSV(DataExportAvailableEntities.PLAYER_GAME_STATS, entries))
     }
 
+    if (dataExport.entities.includes(DataExportAvailableEntities.GAME_ACTIVITIES)) {
+      const entries = await em.getRepository(GameActivity).find({
+        game: dataExport.game
+      }, {
+        populate: ['user']
+      })
+      zip.addFile(`${DataExportAvailableEntities.GAME_ACTIVITIES}.csv`, this.buildCSV(DataExportAvailableEntities.GAME_ACTIVITIES, entries))
+    }
+
     return zip
   }
 
@@ -182,21 +192,30 @@ export default class DataExportService implements Service {
         return ['id', 'internalName', 'name', 'defaultValue', 'minValue', 'maxValue', 'global', 'globalValue', 'createdAt', 'updatedAt']
       case DataExportAvailableEntities.PLAYER_GAME_STATS:
         return ['id', 'value', 'stat.id', 'stat.internalName', 'createdAt', 'updatedAt']
+      case DataExportAvailableEntities.GAME_ACTIVITIES:
+        return ['id', 'user.email', 'gameActivityType', 'gameActivityExtra', 'createdAt']
     }
   }
 
   private transformColumn(column: string, object: ExportableEntity): string {
     if (column.startsWith('props')) {
-      return (object as ExportableEntityWithProps).props.find((prop) => column.endsWith(prop.key))?.value ?? ''
+      const value = (object as ExportableEntityWithProps).props.find((prop) => column.endsWith(prop.key))?.value ?? ''
+      return value
     }
 
-    const value = get(object, column)
+    let value = get(object, column)
 
     switch (column) {
       case 'createdAt':
       case 'updatedAt':
       case 'lastSeenAt':
         return (value as Date).toISOString()
+      case 'gameActivityType':
+        value = get(object, 'type')
+        return GameActivityType[(value as number)]
+      case 'gameActivityExtra':
+        value = get(object, 'extra')
+        return `"${JSON.stringify(value).replace(/"/g, '\'')}"`
       default:
         return String(value)
     }

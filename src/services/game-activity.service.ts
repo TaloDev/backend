@@ -10,7 +10,7 @@ export default class GameActivityService implements Service {
   @HasPermission(GameActivityPolicy, 'index')
   async index(req: Request): Promise<Response> {
     const em: EntityManager = req.ctx.em
-    const activities = await em.getRepository(GameActivity).find({ game: req.ctx.state.game })
+    const activities = await em.getRepository(GameActivity).find({ game: req.ctx.state.game }, { populate: ['user'] })
 
     return {
       status: 200,

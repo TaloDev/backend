@@ -9,9 +9,7 @@ Talo's backend is a set of self-hostable services that helps you build games fas
 - Data exports
 - Leaderboards
 - Game saves
-
-### In progress
-- Global stats (track unique or aggregated stats e.g. total quests completed)
+- Game stats (global and per-player)
 
 ## Docs
 

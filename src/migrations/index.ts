@@ -9,6 +9,7 @@ import { CreateGameSavesTable } from './20220109144435CreateGameSavesTable'
 import { CreateGameActivitiesTable } from './20220125220401CreateGameActivitiesTable'
 import { SetUserTwoFactorAuthEnabledDefaultFalse } from './20220203130919SetUserTwoFactorAuthEnabledDefaultFalse'
 import { CreateGameStatsTable } from './20220320171104CreateGameStatsTable'
+import { AddUsernameColumn } from './20220402004932AddUsernameColumn'
 
 export default [
   {
@@ -54,5 +55,9 @@ export default [
   {
     name: 'CreateGameStatsTable',
     class: CreateGameStatsTable
+  },
+  {
+    name: 'AddUsernameColumn',
+    class: AddUsernameColumn
   }
 ]

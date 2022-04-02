@@ -76,7 +76,8 @@ export default class DemoService implements Service {
     const em: EntityManager = req.ctx.em
 
     const user = new User()
-    user.email = `demo+${Date.now()}@demo.io`
+    user.username = `demo+${Date.now()}`
+    user.email = `${user.username}@demo.io`
     user.type = UserType.DEMO
     user.organisation = await em.getRepository(Organisation).findOne({ name: process.env.DEMO_ORGANISATION_NAME })
     user.emailConfirmed = true

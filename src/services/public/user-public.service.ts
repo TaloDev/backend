@@ -82,11 +82,11 @@ async function sendEmailConfirm(req: Request, res: Response): Promise<void> {
 ])
 export default class UserPublicService implements Service {
   @Validate({
-    body: ['email', 'password', 'organisationName']
+    body: ['email', 'username', 'password', 'organisationName']
   })
   @After(sendEmailConfirm)
   async register(req: Request): Promise<Response> {
-    const { email, password, organisationName } = req.body
+    const { email, username, password, organisationName } = req.body
     const em: EntityManager = req.ctx.em
 
     const userWithEmail = await em.getRepository(User).findOne({ email })
@@ -99,6 +99,7 @@ export default class UserPublicService implements Service {
 
     const user = new User()
     user.email = email
+    user.username = username
     user.password = await bcrypt.hash(password, 10)
     user.organisation = organisation
     user.type = UserType.ADMIN

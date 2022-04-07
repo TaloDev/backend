@@ -27,26 +27,19 @@ describe('User public service - register', () => {
   })
 
   it('should register a user', async () => {
+    const email = casual.email
+    const username = casual.username
+
     const res = await request(app.callback())
       .post(`${baseUrl}/register`)
-      .send({ email: casual.email, password: 'password', organisationName: 'Talo' })
+      .send({ email, username, password: 'password', organisationName: 'Talo' })
       .expect(200)
 
     expect(res.body.accessToken).toBeTruthy()
-    expect(res.body.user).toBeTruthy()
-  })
-
-  it('should not register a user without an organisation name', async () => {
-    const res = await request(app.callback())
-      .post(`${baseUrl}/register`)
-      .send({ email: casual.email, password: 'password' })
-      .expect(400)
-
-    expect(res.body).toStrictEqual({
-      errors: {
-        organisationName: ['organisationName is missing from the request body']
-      }
-    })
+    expect(res.body.user.email).toBe(email)
+    expect(res.body.user.username).toBe(username)
+    expect(res.body.user.password).not.toBeDefined()
+    expect(res.body.user.organisation.name).toBe('Talo')
   })
 
   it('should not let a user register if the email already exists', async () => {
@@ -56,7 +49,7 @@ describe('User public service - register', () => {
 
     const res = await request(app.callback())
       .post(`${baseUrl}/register`)
-      .send({ email, password: 'password', organisationName: 'Talo' })
+      .send({ email, username: casual.username, password: 'password', organisationName: 'Talo' })
       .expect(400)
 
     expect(res.body).toStrictEqual({ message: 'That email address is already in use' })
@@ -67,7 +60,7 @@ describe('User public service - register', () => {
 
     await request(app.callback())
       .post(`${baseUrl}/register`)
-      .send({ email, password: 'password', organisationName: 'Talo' })
+      .send({ email, username: casual.username, password: 'password', organisationName: 'Talo' })
       .expect(200)
 
     const accessCode = await (<EntityManager>app.context.em).getRepository(UserAccessCode).findOne({

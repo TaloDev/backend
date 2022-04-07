@@ -193,7 +193,7 @@ export default class DataExportService implements Service {
       case DataExportAvailableEntities.PLAYER_GAME_STATS:
         return ['id', 'value', 'stat.id', 'stat.internalName', 'createdAt', 'updatedAt']
       case DataExportAvailableEntities.GAME_ACTIVITIES:
-        return ['id', 'user.email', 'gameActivityType', 'gameActivityExtra', 'createdAt']
+        return ['id', 'user.username', 'gameActivityType', 'gameActivityExtra', 'createdAt']
     }
   }
 

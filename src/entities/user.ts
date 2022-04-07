@@ -17,6 +17,9 @@ export default class User {
   @Property()
   email: string
 
+  @Property()
+  username: string
+
   @Property({ hidden: true })
   password: string
 
@@ -48,6 +51,7 @@ export default class User {
     return {
       id: this.id,
       email: this.email,
+      username: this.username,
       lastSeenAt: this.lastSeenAt,
       emailConfirmed: this.emailConfirmed,
       organisation: this.organisation,

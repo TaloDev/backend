@@ -54,7 +54,7 @@ export default class DataExport {
     return {
       id: this.id,
       entities: this.entities,
-      createdBy: this.createdByUser.email, // todo user name field
+      createdBy: this.createdByUser.username,
       status: this.status,
       createdAt: this.createdAt,
       failedAt: this.failedAt

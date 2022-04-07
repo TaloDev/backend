@@ -24,6 +24,7 @@ export default class UserFactory extends Factory<User> {
 
     return {
       email: casual.email,
+      username: casual.username,
       password: '',
       organisation
     }

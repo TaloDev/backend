@@ -15,7 +15,8 @@ export enum DataExportAvailableEntities {
   PLAYER_ALIASES = 'playerAliases',
   LEADERBOARD_ENTRIES = 'leaderboardEntries',
   GAME_STATS = 'gameStats',
-  PLAYER_GAME_STATS = 'playerGameStats'
+  PLAYER_GAME_STATS = 'playerGameStats',
+  GAME_ACTIVITIES = 'gameActivities'
 }
 
 @Entity()
@@ -53,7 +54,7 @@ export default class DataExport {
     return {
       id: this.id,
       entities: this.entities,
-      createdBy: this.createdByUser.email, // todo user name field
+      createdBy: this.createdByUser.username,
       status: this.status,
       createdAt: this.createdAt,
       failedAt: this.failedAt

@@ -10,8 +10,10 @@ import DataExportService from '../../../src/services/data-export.service'
 import EventFactory from '../../fixtures/EventFactory'
 import PlayerFactory from '../../fixtures/PlayerFactory'
 import DataExportFactory from '../../fixtures/DataExportFactory'
+import GameActivityFactory from '../../fixtures/GameActivityFactory'
+import { GameActivityType } from '../../../src/entities/game-activity'
 
-describe('Data export service - post', () => {
+describe('Data export service - generation', () => {
   let app: Koa
   let user: User
   let game: Game
@@ -67,6 +69,30 @@ describe('Data export service - post', () => {
 
     val = proto.transformColumn('props.nonExistentProp', player)
     expect(val).toBe('')
+  })
+
+  it('should transform gameActivityType columns', async () => {
+    const service = new DataExportService()
+    const proto = Object.getPrototypeOf(service)
+
+    const activity = await new GameActivityFactory([game], [user]).with(() => ({
+      type: GameActivityType.API_KEY_CREATED
+    })).one()
+
+    expect(proto.transformColumn('gameActivityType', activity)).toBe('API_KEY_CREATED')
+  })
+
+  it('should transform gameActivityExtra columns', async () => {
+    const service = new DataExportService()
+    const proto = Object.getPrototypeOf(service)
+
+    const activity = await new GameActivityFactory([game], [user]).with(() => ({
+      extra: {
+        statInternalName: 'hearts-collected'
+      }
+    })).one()
+
+    expect(proto.transformColumn('gameActivityExtra', activity)).toBe('"{\'statInternalName\':\'hearts-collected\'}"')
   })
 
   it('should correctly build a CSV', async () => {

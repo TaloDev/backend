@@ -55,7 +55,7 @@ export default class APIKey {
       token: token.substring(token.length - 5, token.length),
       scopes: this.scopes,
       gameId: this.game.id,
-      createdBy: this.createdByUser.email, // todo user name field
+      createdBy: this.createdByUser.username,
       createdAt: this.createdAt
     }
   }

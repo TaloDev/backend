@@ -50,27 +50,27 @@ export default class GameActivity {
   private getActivity(): string {
     switch (this.type) {
       case GameActivityType.PLAYER_PROPS_UPDATED:
-        return `${this.user.email} updated a player's props`
+        return `${this.user.username} updated a player's props`
       case GameActivityType.LEADERBOARD_CREATED:
-        return `${this.user.email} created the leaderboard ${this.extra.leaderboardInternalName}`
+        return `${this.user.username} created the leaderboard ${this.extra.leaderboardInternalName}`
       case GameActivityType.LEADERBOARD_UPDATED:
-        return `${this.user.email} updated the leaderboard ${this.extra.leaderboardInternalName}`
+        return `${this.user.username} updated the leaderboard ${this.extra.leaderboardInternalName}`
       case GameActivityType.LEADERBOARD_DELETED:
-        return `${this.user.email} deleted the leaderboard ${this.extra.leaderboardInternalName}`
+        return `${this.user.username} deleted the leaderboard ${this.extra.leaderboardInternalName}`
       case GameActivityType.LEADERBOARD_ENTRY_HIDDEN:
-        return `${this.user.email} hid a leaderboard entry in ${this.extra.leaderboardInternalName}`
+        return `${this.user.username} hid a leaderboard entry in ${this.extra.leaderboardInternalName}`
       case GameActivityType.LEADERBOARD_ENTRY_RESTORED:
-        return `${this.user.email} restored a leaderboard entry in ${this.extra.leaderboardInternalName}`
+        return `${this.user.username} restored a leaderboard entry in ${this.extra.leaderboardInternalName}`
       case GameActivityType.API_KEY_CREATED:
-        return `${this.user.email} created an access key`
+        return `${this.user.username} created an access key`
       case GameActivityType.API_KEY_REVOKED:
-        return `${this.user.email} remove an access key`
+        return `${this.user.username} remove an access key`
       case GameActivityType.GAME_STAT_CREATED:
-        return `${this.user.email} created the stat ${this.extra.statInternalName}`
+        return `${this.user.username} created the stat ${this.extra.statInternalName}`
       case GameActivityType.GAME_STAT_UPDATED:
-        return `${this.user.email} updated the stat ${this.extra.statInternalName}`
+        return `${this.user.username} updated the stat ${this.extra.statInternalName}`
       case GameActivityType.GAME_STAT_DELETED:
-        return `${this.user.email} deleted the stat ${this.extra.statInternalName}`
+        return `${this.user.username} deleted the stat ${this.extra.statInternalName}`
       default:
         return ''
     }

@@ -11,6 +11,7 @@ import UserSession from '../../entities/user-session'
 import Event from '../../entities/event'
 import randomDate from '../../lib/dates/randomDate'
 import bcrypt from 'bcrypt'
+import GameActivity from '../../entities/game-activity'
 
 interface DemoUserJob {
   userId: number
@@ -63,9 +64,10 @@ export default class DemoService implements Service {
       const orm = await MikroORM.init(ormConfig)
 
       const sessions = await orm.em.getRepository(UserSession).find({ user: { id: userId } })
+      const activities = await orm.em.getRepository(GameActivity).find({ user: { id: userId } })
       const user = await orm.em.getRepository(User).findOne(userId)
 
-      await orm.em.removeAndFlush([user, ...sessions])
+      await orm.em.removeAndFlush([user, ...sessions, ...activities])
       await orm.close()
     })
   }
@@ -76,7 +78,8 @@ export default class DemoService implements Service {
     const em: EntityManager = req.ctx.em
 
     const user = new User()
-    user.email = `demo+${Date.now()}@demo.io`
+    user.username = `demo+${Date.now()}`
+    user.email = `${user.username}@demo.io`
     user.type = UserType.DEMO
     user.organisation = await em.getRepository(Organisation).findOne({ name: process.env.DEMO_ORGANISATION_NAME })
     user.emailConfirmed = true

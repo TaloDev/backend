@@ -91,6 +91,16 @@ describe('Data export service - post', () => {
     expect(res.body.dataExport.entities).toStrictEqual([DataExportAvailableEntities.PLAYER_GAME_STATS])
   })
 
+  it('should create a data export for game activities', async () => {
+    const res = await request(app.callback())
+      .post(`${baseUrl}`)
+      .send({ gameId: game.id, entities: [DataExportAvailableEntities.GAME_ACTIVITIES] })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    expect(res.body.dataExport.entities).toStrictEqual([DataExportAvailableEntities.GAME_ACTIVITIES])
+  })
+
   it('should not create a data export for dev users', async () => {
     const invalidUser = await new UserFactory().with(() => ({ organisation: game.organisation })).one()
     await (<EntityManager>app.context.em).persistAndFlush(invalidUser)

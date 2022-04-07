@@ -856,6 +856,15 @@
           "nullable": false,
           "mappedType": "string"
         },
+        "username": {
+          "name": "username",
+          "type": "varchar(255)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "mappedType": "string"
+        },
         "password": {
           "name": "password",
           "type": "varchar(255)",
@@ -1043,7 +1052,8 @@
             "playerAliases",
             "leaderboardEntries",
             "gameStats",
-            "playerGameStats"
+            "playerGameStats",
+            "gameActivities"
           ],
           "mappedType": "text"
         },

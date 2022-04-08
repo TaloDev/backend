@@ -61,22 +61,36 @@ export default class GameStatService implements Service {
     }
   }
 
+  private updateStat(stat: GameStat, req: Request, property: string, type: string): boolean {
+    if (typeof req.body[property] === type) {
+      stat[property] = req.body[property]
+      return true
+    }
+
+    return false
+  }
+
   @Validate({
     body: [GameStat]
   })
   @HasPermission(GameStatPolicy, 'patch')
   async patch(req: Request): Promise<Response> {
-    const properties = ['name', 'maxChange', 'minValue', 'maxValue', 'defaultValue', 'minTimeBetweenUpdates']
+    const properties = ['name', 'global', 'maxChange', 'minValue', 'maxValue', 'defaultValue', 'minTimeBetweenUpdates']
     const em: EntityManager = req.ctx.em
 
     const changedProperties = []
 
     const stat = req.ctx.state.stat
     for (const property of properties) {
-      if ((property === 'name' && typeof req.body[property] === 'string') || (property !== 'name' && typeof req.body[property] === 'number')) {
-        stat[property] = req.body[property]
-
-        changedProperties.push(property)
+      switch (property) {
+        case 'name':
+          if (this.updateStat(stat, req, property, 'string')) changedProperties.push(property)
+          break
+        case 'global':
+          if (this.updateStat(stat, req, property, 'boolean')) changedProperties.push(property)
+          break
+        default:
+          if (this.updateStat(stat, req, property, 'number')) changedProperties.push(property)
       }
     }
 

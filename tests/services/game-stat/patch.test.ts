@@ -61,6 +61,30 @@ describe('Game stat service - patch', () => {
     })
   })
 
+  it('should update the global status', async () => {
+    const stat = await new GameStatFactory([game]).with(() => ({ global: false })).one()
+    await (<EntityManager>app.context.em).persistAndFlush(stat)
+
+    const res = await request(app.callback())
+      .patch(`${baseUrl}/${stat.id}`)
+      .send({ global: true })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    expect(res.body.stat.global).toBe(true)
+
+    const activity = await (<EntityManager>app.context.em).getRepository(GameActivity).findOne({
+      type: GameActivityType.GAME_STAT_UPDATED,
+      extra: {
+        statInternalName: res.body.stat.internalName
+      }
+    })
+
+    expect(activity.extra.display).toStrictEqual({
+      'Updated properties': 'global: true'
+    })
+  })
+
   it('should update the max change', async () => {
     const stat = await new GameStatFactory([game]).one()
     await (<EntityManager>app.context.em).persistAndFlush(stat)
@@ -216,6 +240,30 @@ describe('Game stat service - patch', () => {
       .expect(200)
 
     expect(res.body.stat.maxChange).toBe(stat.maxChange)
+
+    const activity = await (<EntityManager>app.context.em).getRepository(GameActivity).findOne({
+      type: GameActivityType.GAME_STAT_UPDATED,
+      extra: {
+        statInternalName: res.body.stat.internalName
+      }
+    })
+
+    expect(activity.extra.display).toStrictEqual({
+      'Updated properties': ''
+    })
+  })
+
+  it('should not update the global status if it is not a boolean', async () => {
+    const stat = await new GameStatFactory([game]).with(() => ({ global: false })).one()
+    await (<EntityManager>app.context.em).persistAndFlush(stat)
+
+    const res = await request(app.callback())
+      .patch(`${baseUrl}/${stat.id}`)
+      .send({ global: 'true' })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    expect(res.body.stat.global).toBe(false)
 
     const activity = await (<EntityManager>app.context.em).getRepository(GameActivity).findOne({
       type: GameActivityType.GAME_STAT_UPDATED,

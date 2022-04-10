@@ -177,7 +177,8 @@ export default class LeaderboardService implements Service {
       status: 200,
       body: {
         entries: entries.map((entry, idx) => ({ position: idx + (Number(page) * itemsPerPage), ...entry.toJSON() })),
-        count
+        count,
+        isLastPage: (Number(page) * itemsPerPage) + itemsPerPage >= count
       }
     }
   }

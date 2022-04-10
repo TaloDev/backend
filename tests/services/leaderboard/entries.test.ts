@@ -10,6 +10,7 @@ import GameFactory from '../../fixtures/GameFactory'
 import Game from '../../../src/entities/game'
 import OrganisationFactory from '../../fixtures/OrganisationFactory'
 import PlayerFactory from '../../fixtures/PlayerFactory'
+import LeaderboardEntryFactory from '../../fixtures/LeaderboardEntryFactory'
 
 const baseUrl = '/leaderboards'
 
@@ -68,5 +69,23 @@ describe('Leaderboard service - entries', () => {
       .query({ page: 0 })
       .auth(token, { type: 'bearer' })
       .expect(403)
+  })
+
+  it('should correctly mark the last page', async () => {
+    const leaderboard = await new LeaderboardFactory([validGame]).one()
+    const entries = await new LeaderboardEntryFactory(leaderboard, validGame.players.getItems()).many(106)
+    await (<EntityManager>app.context.em).persistAndFlush([leaderboard, ...entries])
+
+    for (let i = 0; i < 3; i++) {
+      const res = await request(app.callback())
+        .get(`${baseUrl}/${leaderboard.id}/entries`)
+        .query({ page: i })
+        .auth(token, { type: 'bearer' })
+        .expect(200)
+
+      expect(res.body.entries).toHaveLength(i === 2 ? 6 : 50)
+      expect(res.body.count).toBe(106)
+      expect(res.body.isLastPage).toBe(i === 2 ? true : false)
+    }
   })
 })

@@ -3,7 +3,7 @@ import cors from '@koa/cors'
 
 export default async (ctx: Context, next: Next): Promise<void> => {
   if (ctx.path.match(/^\/(v1)\//)) {
-    await next()
+    return cors()(ctx, next)
   } else {
     return cors({
       credentials: true,

@@ -33,7 +33,7 @@ export default class Policy extends ServicePolicy {
     if (this.ctx.state.key) return this.ctx.state.key
 
     const key = await (<EntityManager> this.ctx.em).getRepository(APIKey).findOne(this.ctx.state.user.sub, { populate: ['game'] })
-    if (key.revokedAt) this.ctx.throw(401)
+    if (!key || key.revokedAt) this.ctx.throw(401, 'Invalid or missing access key')
 
     this.ctx.state.key = key
     return key

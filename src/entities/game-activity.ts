@@ -64,7 +64,7 @@ export default class GameActivity {
       case GameActivityType.API_KEY_CREATED:
         return `${this.user.username} created an access key`
       case GameActivityType.API_KEY_REVOKED:
-        return `${this.user.username} remove an access key`
+        return `${this.user.username} revoked an access key`
       case GameActivityType.GAME_STAT_CREATED:
         return `${this.user.username} created the stat ${this.extra.statInternalName}`
       case GameActivityType.GAME_STAT_UPDATED:

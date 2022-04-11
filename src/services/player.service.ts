@@ -110,6 +110,7 @@ export default class PlayerService implements Service {
 
     const players = await baseQuery
       .select('p.*', true)
+      .orderBy({ lastSeenAt: QueryOrder.DESC })
       .limit(itemsPerPage)
       .offset(Number(page) * itemsPerPage)
       .getResultList()

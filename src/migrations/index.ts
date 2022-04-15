@@ -10,6 +10,7 @@ import { CreateGameActivitiesTable } from './20220125220401CreateGameActivitiesT
 import { SetUserTwoFactorAuthEnabledDefaultFalse } from './20220203130919SetUserTwoFactorAuthEnabledDefaultFalse'
 import { CreateGameStatsTable } from './20220320171104CreateGameStatsTable'
 import { AddUsernameColumn } from './20220402004932AddUsernameColumn'
+import { CreateInvitesTable } from './20220420141136CreateInvitesTable'
 
 export default [
   {
@@ -59,5 +60,9 @@ export default [
   {
     name: 'AddUsernameColumn',
     class: AddUsernameColumn
+  },
+  {
+    name: 'CreateInvitesTable',
+    class: CreateInvitesTable
   }
 ]

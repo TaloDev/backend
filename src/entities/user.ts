@@ -56,7 +56,8 @@ export default class User {
       emailConfirmed: this.emailConfirmed,
       organisation: this.organisation,
       type: this.type,
-      has2fa: this.twoFactorAuth?.enabled ?? false
+      has2fa: this.twoFactorAuth?.enabled ?? false,
+      createdAt: this.createdAt
     }
   }
 }

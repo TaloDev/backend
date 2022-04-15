@@ -1,5 +1,7 @@
 import Koa, { Context, Next } from 'koa'
 import { service } from 'koa-clay'
+import OrganisationService from '../services/organisation.service'
+import InviteService from '../services/invite.service'
 import GameStatService from '../services/game-stat.service'
 import GameActivityService from '../services/game-activity.service'
 import LeaderboardService from '../services/leaderboard.service'
@@ -19,6 +21,8 @@ export default (app: Koa) => {
     await next()
   })
 
+  app.use(service('/organisations', new OrganisationService()))
+  app.use(service('/invites', new InviteService()))
   app.use(service('/game-stats', new GameStatService()))
   app.use(service('/game-activities', new GameActivityService()))
   app.use(service('/leaderboards', new LeaderboardService()))

@@ -5,7 +5,7 @@ import GameSaveAPIService from '../services/api/game-save-api.service'
 import LeaderboardAPIService from '../services/api/leaderboard-api.service'
 import EventAPIService from '../services/api/event-api.service'
 import PlayerAPIService from '../services/api/player-api.service'
-import limiterMiddleware from './limiter-middleware'
+import limiterMiddleware from '../middlewares/limiter-middleware'
 
 export default (app: Koa) => {
   app.use(async (ctx: Context, next: Next): Promise<void> => {

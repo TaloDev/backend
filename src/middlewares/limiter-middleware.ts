@@ -1,6 +1,6 @@
 import { Context, Next } from 'koa'
 import Redis from 'ioredis'
-import redisConfig from './redis.config'
+import redisConfig from '../config/redis.config'
 
 let redis: Redis.Redis
 const MAX_REQUESTS = 50

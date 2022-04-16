@@ -1,4 +1,4 @@
-import { EntityManager } from '@mikro-orm/core'
+import { EntityManager, FilterQuery } from '@mikro-orm/core'
 import { endOfDay, isSameDay } from 'date-fns'
 import { Service, Request, Response, Validate, HasPermission, Routes } from 'koa-clay'
 import groupBy from 'lodash.groupby'
@@ -6,6 +6,7 @@ import Event from '../entities/event'
 import Player from '../entities/player'
 import HeadlinePolicy from '../policies/headline.policy'
 import dateValidationSchema from '../lib/dates/dateValidationSchema'
+import { devDataPlayerFilter } from '../middlewares/dev-data-middleware'
 
 @Routes([
   {
@@ -43,13 +44,22 @@ export default class HeadlineService implements Service {
     const { gameId, startDate, endDate } = req.query
     const em: EntityManager = req.ctx.em
 
-    const players = await em.getRepository(Player).find({
+    let where: FilterQuery<Player> = {
       game: Number(gameId),
       createdAt: {
         $gte: new Date(startDate),
         $lte: endOfDay(new Date(endDate))
       }
-    })
+    }
+
+    if (!req.ctx.state.includeDevData) {
+      where = {
+        ...where,
+        ...devDataPlayerFilter
+      }
+    }
+
+    const players = await em.getRepository(Player).find(where)
 
     return {
       status: 200,
@@ -72,7 +82,7 @@ export default class HeadlineService implements Service {
     const { gameId, startDate, endDate } = req.query
     const em: EntityManager = req.ctx.em
 
-    let players = await em.getRepository(Player).find({
+    let where: FilterQuery<Player> = {
       game: Number(gameId),
       lastSeenAt: {
         $gte: new Date(startDate),
@@ -81,8 +91,16 @@ export default class HeadlineService implements Service {
       createdAt: {
         $lt: new Date(startDate)
       }
-    })
+    }
 
+    if (!req.ctx.state.includeDevData) {
+      where = {
+        ...where,
+        ...devDataPlayerFilter
+      }
+    }
+
+    let players = await em.getRepository(Player).find(where)
     players = players.filter((player) => !isSameDay(new Date(player.createdAt), new Date(player.lastSeenAt)))
 
     return {
@@ -106,13 +124,21 @@ export default class HeadlineService implements Service {
     const { gameId, startDate, endDate } = req.query
     const em: EntityManager = req.ctx.em
 
-    const events = await em.getRepository(Event).find({
+    const where: FilterQuery<Event> = {
       game: Number(gameId),
       createdAt: {
         $gte: new Date(startDate),
         $lte: endOfDay(new Date(endDate))
       }
-    })
+    }
+
+    if (!req.ctx.state.includeDevData) {
+      where.playerAlias = {
+        player: devDataPlayerFilter
+      }
+    }
+
+    const events = await em.getRepository(Event).find(where)
 
     return {
       status: 200,
@@ -135,13 +161,21 @@ export default class HeadlineService implements Service {
     const { gameId, startDate, endDate } = req.query
     const em: EntityManager = req.ctx.em
 
-    const events = await em.getRepository(Event).find({
+    const where: FilterQuery<Event> = {
       game: Number(gameId),
       createdAt: {
         $gte: new Date(startDate),
         $lte: endOfDay(new Date(endDate))
       }
-    }, {
+    }
+
+    if (!req.ctx.state.includeDevData) {
+      where.playerAlias = {
+        player: devDataPlayerFilter
+      }
+    }
+
+    const events = await em.getRepository(Event).find(where, {
       populate: ['playerAlias.player']
     })
 

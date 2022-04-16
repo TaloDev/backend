@@ -22,16 +22,14 @@ export default class PlayerAlias {
   updatedAt: Date = new Date()
 
   toJSON() {
+    const player = { ...this.player.toJSON() }
+    delete player.aliases
+
     return {
       id: this.id,
       service: this.service,
       identifier: this.identifier,
-      player: {
-        id: this.player.id,
-        props: this.player.props,
-        createdAt: this.player.createdAt,
-        lastSeenAt: this.player.lastSeenAt
-      }
+      player
     }
   }
 }

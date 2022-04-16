@@ -8,6 +8,8 @@ module.exports = {
     '/tests/utils',
     '/src/index.ts',
     '/src/config',
+    '/src/middlewares/error-middleware.ts',
+    '/src/middlewares/limiter-middleware.ts',
     '/src/migrations'
   ],
   coverageReporters: ['lcov'],

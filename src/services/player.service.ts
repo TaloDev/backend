@@ -11,8 +11,17 @@ import uniqWith from 'lodash.uniqwith'
 import createGameActivity from '../lib/logging/createGameActivity'
 import { GameActivityType } from '../entities/game-activity'
 import PlayerGameStat from '../entities/player-game-stat'
+import { devDataPlayerFilter } from '../middlewares/dev-data-middleware'
+import Prop from '../entities/prop'
 
 const itemsPerPage = 25
+
+const propsValidation = async (val: unknown): Promise<ValidationCondition[]> => [
+  {
+    check: Array.isArray(val),
+    error: 'Props must be an array'
+  }
+]
 
 @Routes([
   {
@@ -38,7 +47,14 @@ const itemsPerPage = 25
 ])
 export default class PlayerService implements Service {
   @Validate({
-    body: ['gameId']
+    body: {
+      gameId: {
+        required: true
+      },
+      props: {
+        validation: propsValidation
+      }
+    }
   })
   @HasPermission(PlayerPolicy, 'post')
   async post(req: Request): Promise<Response> {
@@ -58,11 +74,11 @@ export default class PlayerService implements Service {
     }
 
     if (props) {
-      try {
-        player.props = sanitiseProps(props)
-      } catch (err) {
-        req.ctx.throw(400, err.message)
-      }
+      player.props = sanitiseProps(props)
+    }
+
+    if (req.headers['x-talo-dev-build'] === '1') {
+      player.props.push(new Prop('META_DEV_BUILD', '1'))
     }
 
     await em.persistAndFlush(player)
@@ -102,6 +118,10 @@ export default class PlayerService implements Service {
         })
     }
 
+    if (!req.ctx.state.includeDevData) {
+      baseQuery = baseQuery.andWhere(devDataPlayerFilter)
+    }
+
     baseQuery = baseQuery.andWhere({ game: Number(gameId) })
 
     const { count } = await baseQuery
@@ -129,13 +149,7 @@ export default class PlayerService implements Service {
   @Validate({
     body: {
       props: {
-        required: true,
-        validation: async (val: unknown): Promise<ValidationCondition[]> => [
-          {
-            check: Array.isArray(val),
-            error: 'Props must be an array'
-          }
-        ]
+        validation: propsValidation
       }
     }
   })
@@ -147,6 +161,10 @@ export default class PlayerService implements Service {
     const em: EntityManager = req.ctx.em
 
     if (props) {
+      if (props.some((prop) => prop.key.startsWith('META_'))) {
+        req.ctx.throw(400, 'Prop keys starting with \'META_\' are reserved for internal systems, please use another key name')
+      }
+
       const mergedProps = uniqWith([
         ...sanitiseProps(props),
         ...player.props

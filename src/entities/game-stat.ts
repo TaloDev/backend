@@ -1,6 +1,7 @@
-import { EntityManager, Entity, ManyToOne, PrimaryKey, Property } from '@mikro-orm/core'
+import { EntityManager, Entity, ManyToOne, PrimaryKey, Property, Collection, OneToMany } from '@mikro-orm/core'
 import { Request, Required, ValidationCondition } from 'koa-clay'
 import Game from './game'
+import PlayerGameStat from './player-game-stat'
 
 @Entity()
 export default class GameStat {
@@ -79,6 +80,9 @@ export default class GameStat {
   @ManyToOne(() => Game)
   game: Game
 
+  @OneToMany(() => PlayerGameStat, (playerStat) => playerStat.stat)
+  playerStats: Collection<PlayerGameStat> = new Collection<PlayerGameStat>(this)
+
   @Property()
   createdAt: Date = new Date()
 
@@ -87,6 +91,13 @@ export default class GameStat {
 
   constructor(game: Game) {
     this.game = game
+  }
+
+  async recalculateGlobalValue(includeDevData: boolean): Promise<void> {
+    if (includeDevData) return
+
+    const playerStats = await this.playerStats.loadItems()
+    this.globalValue -= playerStats.reduce((acc, curr) => acc += curr.value, 0)
   }
 
   toJSON() {

@@ -36,6 +36,7 @@ export default class Player {
       id: this.id,
       props: this.props,
       aliases: this.aliases,
+      devBuild: this.props.some((prop) => prop.key === 'META_DEV_BUILD'),
       createdAt: this.createdAt,
       lastSeenAt: this.lastSeenAt
     }

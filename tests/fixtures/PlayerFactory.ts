@@ -19,6 +19,7 @@ export default class PlayerFactory extends Factory<Player> {
     this.register('not seen this week', this.notSeenThisWeek)
     this.register('seen this week', this.seenThisWeek)
     this.register('created this week', this.createdThisWeek)
+    this.register('dev build', this.devBuild)
 
     this.availableGames = availableGames
   }
@@ -75,5 +76,10 @@ export default class PlayerFactory extends Factory<Player> {
       lastSeenAt: sub(new Date(), { days: casual.integer(0, 6) }),
       createdAt: sub(new Date(), { days: casual.integer(0, 6) })
     }
+  }
+
+  protected devBuild(player: Player): Partial<Player> {
+    player.props.push(new Prop('META_DEV_BUILD', '1'))
+    return player
   }
 }

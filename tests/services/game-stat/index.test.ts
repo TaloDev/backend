@@ -8,6 +8,8 @@ import UserFactory from '../../fixtures/UserFactory'
 import GameFactory from '../../fixtures/GameFactory'
 import GameStatFactory from '../../fixtures/GameStatFactory'
 import OrganisationFactory from '../../fixtures/OrganisationFactory'
+import PlayerFactory from '../../fixtures/PlayerFactory'
+import PlayerGameStatFactory from '../../fixtures/PlayerGameStatFactory'
 
 const baseUrl = '/game-stats'
 
@@ -54,5 +56,40 @@ describe('Game stat service - index', () => {
       .query({ gameId: game.id })
       .auth(token, { type: 'bearer' })
       .expect(403)
+  })
+
+  it('should recalculate global stat values without the dev data header', async () => {
+    const game = await new GameFactory(user.organisation).one()
+
+    const player = await new PlayerFactory([game]).state('dev build').one()
+    const stat = await new GameStatFactory([game]).state('global').with(() => ({ globalValue: 50 })).one()
+    const playerStat = await new PlayerGameStatFactory().construct(player, stat).with(() => ({ value: 10 })).one()
+    await (<EntityManager>app.context.em).persistAndFlush(playerStat)
+
+    const res = await request(app.callback())
+      .get(`${baseUrl}`)
+      .query({ gameId: game.id })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    expect(res.body.stats[0].globalValue).toBe(40)
+  })
+
+  it('should not recalculate global stat values with the dev data header', async () => {
+    const game = await new GameFactory(user.organisation).one()
+
+    const player = await new PlayerFactory([game]).state('dev build').one()
+    const stat = await new GameStatFactory([game]).state('global').with(() => ({ globalValue: 50 })).one()
+    const playerStat = await new PlayerGameStatFactory().construct(player, stat).with(() => ({ value: 10 })).one()
+    await (<EntityManager>app.context.em).persistAndFlush(playerStat)
+
+    const res = await request(app.callback())
+      .get(`${baseUrl}`)
+      .query({ gameId: game.id })
+      .auth(token, { type: 'bearer' })
+      .set('x-talo-include-dev-data', '1')
+      .expect(200)
+
+    expect(res.body.stats[0].globalValue).toBe(50)
   })
 })

@@ -112,6 +112,33 @@ describe('Player service - post', () => {
       .auth(token, { type: 'bearer' })
       .expect(400)
 
-    expect(res.body).toStrictEqual({ message: 'Props must be an array' })
+    expect(res.body).toStrictEqual({
+      errors: {
+        props: ['Props must be an array']
+      }
+    })
+  })
+
+  it('should create a player with a META_DEV_BUILD prop', async () => {
+    const res = await request(app.callback())
+      .post(`${baseUrl}`)
+      .send({
+        aliases: [{
+          service: 'steam',
+          identifier: '12345'
+        }],
+        gameId: validGame.id
+      })
+      .auth(token, { type: 'bearer' })
+      .set('x-talo-dev-build', '1')
+      .expect(200)
+
+    expect(res.body.player).toBeTruthy()
+    expect(res.body.player.aliases).toHaveLength(1)
+    expect(res.body.player.aliases[0].service).toBe('steam')
+    expect(res.body.player.aliases[0].identifier).toBe('12345')
+    expect(res.body.player.props).toStrictEqual([
+      { key: 'META_DEV_BUILD', value: '1' }
+    ])
   })
 })

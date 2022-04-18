@@ -1,10 +1,11 @@
-import { EntityManager } from '@mikro-orm/core'
+import { EntityManager, FilterQuery } from '@mikro-orm/core'
 import { HasPermission, Service, Request, Response, Validate } from 'koa-clay'
 import Event from '../entities/event'
 import EventPolicy from '../policies/event.policy'
 import groupBy from 'lodash.groupby'
 import { isSameDay, endOfDay } from 'date-fns'
 import dateValidationSchema from '../lib/dates/dateValidationSchema'
+import { devDataPlayerFilter } from '../middlewares/dev-data-middleware'
 
 interface EventData {
   name: string
@@ -27,13 +28,21 @@ export default class EventService implements Service {
     const { gameId, startDate, endDate } = req.query
     const em: EntityManager = req.ctx.em
 
-    const events = await em.getRepository(Event).find({
+    const where: FilterQuery<Event> = {
       game: Number(gameId),
       createdAt: {
         $gte: new Date(startDate),
         $lte: endOfDay(new Date(endDate))
       }
-    })
+    }
+
+    if (!req.ctx.state.includeDevData) {
+      where.playerAlias = {
+        player: devDataPlayerFilter
+      }
+    }
+
+    const events = await em.getRepository(Event).find(where)
 
     // events: {
     //   'Zone explored': [

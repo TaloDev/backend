@@ -8,10 +8,11 @@ import { RequestContext } from '@mikro-orm/core'
 import configureProtectedRoutes from './config/protected-routes'
 import configurePublicRoutes from './config/public-routes'
 import configureAPIRoutes from './config/api-routes'
-import corsMiddleware from './config/cors-middleware'
-import errorMiddleware from './config/error-middleware'
+import corsMiddleware from './middlewares/cors-middleware'
+import errorMiddleware from './middlewares/error-middleware'
 import initProviders from './config/providers'
 import createEmailQueue from './lib/queues/createEmailQueue'
+import devDataMiddleware from './middlewares/dev-data-middleware'
 
 const isTest = process.env.NODE_ENV === 'test'
 
@@ -29,6 +30,8 @@ export const init = async (): Promise<Koa> => {
   app.use(jwt({ secret: process.env.JWT_SECRET }).unless({ path: [/^\/public/] }))
 
   app.use((ctx: Context, next: Next) => RequestContext.createAsync(ctx.em, next))
+
+  app.use(devDataMiddleware)
 
   configureProtectedRoutes(app)
   configurePublicRoutes(app)

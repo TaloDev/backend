@@ -237,4 +237,30 @@ describe('Player service - patch', () => {
       }
     ])
   })
+
+  it('should reject keys starting with META_', async () => {
+    const player = await new PlayerFactory([validGame]).one()
+    await (<EntityManager>app.context.em).persistAndFlush(player)
+
+    const res = await request(app.callback())
+      .patch(`${baseUrl}/${player.id}`)
+      .send({
+        props: [
+          {
+            key: 'zonesExplored',
+            value: '3'
+          },
+          {
+            key: 'META_BREAK_THINGS',
+            value: 'true'
+          }
+        ]
+      })
+      .auth(token, { type: 'bearer' })
+      .expect(400)
+
+    expect(res.body).toStrictEqual({
+      message: 'Prop keys starting with \'META_\' are reserved for internal systems, please use another key name'
+    })
+  })
 })

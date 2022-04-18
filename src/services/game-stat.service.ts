@@ -14,6 +14,12 @@ export default class GameStatService implements Service {
     const em: EntityManager = req.ctx.em
     const stats = await em.getRepository(GameStat).find({ game: req.ctx.state.game })
 
+    for (const stat of stats) {
+      if (stat.global) {
+        await stat.recalculateGlobalValue(req.ctx.state.includeDevData)
+      }
+    }
+
     return {
       status: 200,
       body: {

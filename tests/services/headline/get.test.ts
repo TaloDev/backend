@@ -59,6 +59,35 @@ describe('Headline service - get', () => {
     expect(res.body.count).toBe(10)
   })
 
+  it('should not return new events for dev build players without the dev data header', async () => {
+    const player = await new PlayerFactory([validGame]).state('dev build').one()
+    const events: Event[] = await new EventFactory([player]).state('this week').many(10)
+    await (<EntityManager>app.context.em).persistAndFlush(events)
+
+    const res = await request(app.callback())
+      .get(`${baseUrl}/events`)
+      .query({ gameId: validGame.id, startDate, endDate })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    expect(res.body.count).toBe(0)
+  })
+
+  it('should return new events for dev build players with the dev data header', async () => {
+    const player = await new PlayerFactory([validGame]).state('dev build').one()
+    const events: Event[] = await new EventFactory([player]).state('this week').many(10)
+    await (<EntityManager>app.context.em).persistAndFlush(events)
+
+    const res = await request(app.callback())
+      .get(`${baseUrl}/events`)
+      .query({ gameId: validGame.id, startDate, endDate })
+      .auth(token, { type: 'bearer' })
+      .set('x-talo-include-dev-data', '1')
+      .expect(200)
+
+    expect(res.body.count).toBe(10)
+  })
+
   it('should return the correct number of new players this week', async () => {
     const newPlayers = await new PlayerFactory([validGame]).state('created this week').many(10)
     const oldPlayers = await new PlayerFactory([validGame]).state('not created this week').many(10)
@@ -69,6 +98,35 @@ describe('Headline service - get', () => {
       .get(`${baseUrl}/new_players`)
       .query({ gameId: validGame.id, startDate, endDate })
       .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    expect(res.body.count).toBe(10)
+  })
+
+  it('should not return new dev build players without the dev data header', async () => {
+    const newPlayers = await new PlayerFactory([validGame]).state('created this week').state('dev build').many(10)
+
+    await (<EntityManager>app.context.em).persistAndFlush(newPlayers)
+
+    const res = await request(app.callback())
+      .get(`${baseUrl}/new_players`)
+      .query({ gameId: validGame.id, startDate, endDate })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    expect(res.body.count).toBe(0)
+  })
+
+  it('should return new dev build players with the dev data header', async () => {
+    const newPlayers = await new PlayerFactory([validGame]).state('created this week').state('dev build').many(10)
+
+    await (<EntityManager>app.context.em).persistAndFlush(newPlayers)
+
+    const res = await request(app.callback())
+      .get(`${baseUrl}/new_players`)
+      .query({ gameId: validGame.id, startDate, endDate })
+      .auth(token, { type: 'bearer' })
+      .set('x-talo-include-dev-data', '1')
       .expect(200)
 
     expect(res.body.count).toBe(10)
@@ -95,6 +153,43 @@ describe('Headline service - get', () => {
     expect(res.body.count).toBe(4)
   })
 
+  it('should not return returning dev build players without the dev data header', async () => {
+    const returningPlayersSeenThisWeek = await new PlayerFactory([validGame])
+      .state('seen this week')
+      .state('not created this week')
+      .state('dev build')
+      .many(4)
+
+    await (<EntityManager>app.context.em).persistAndFlush(returningPlayersSeenThisWeek)
+
+    const res = await request(app.callback())
+      .get(`${baseUrl}/returning_players`)
+      .query({ gameId: validGame.id, startDate, endDate })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    expect(res.body.count).toBe(0)
+  })
+
+  it('should return returning dev build players with the dev data header', async () => {
+    const returningPlayersSeenThisWeek = await new PlayerFactory([validGame])
+      .state('seen this week')
+      .state('not created this week')
+      .state('dev build')
+      .many(4)
+
+    await (<EntityManager>app.context.em).persistAndFlush(returningPlayersSeenThisWeek)
+
+    const res = await request(app.callback())
+      .get(`${baseUrl}/returning_players`)
+      .query({ gameId: validGame.id, startDate, endDate })
+      .auth(token, { type: 'bearer' })
+      .set('x-talo-include-dev-data', '1')
+      .expect(200)
+
+    expect(res.body.count).toBe(4)
+  })
+
   it('should return the correct number of unique event submitters', async () => {
     const players = await new PlayerFactory([validGame]).many(4)
     const validEvents = await new EventFactory([players[0]]).many(3)
@@ -116,6 +211,37 @@ describe('Headline service - get', () => {
       .expect(200)
 
     expect(res.body.count).toBe(2)
+  })
+
+  it('should not return dev build unique event submitters without the dev data header', async () => {
+    const player = await new PlayerFactory([validGame]).state('dev build').one()
+    const validEvents = await new EventFactory([player]).many(3)
+
+    await (<EntityManager>app.context.em).persistAndFlush(validEvents)
+
+    const res = await request(app.callback())
+      .get(`${baseUrl}/unique_event_submitters`)
+      .query({ gameId: validGame.id, startDate, endDate })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    expect(res.body.count).toBe(0)
+  })
+
+  it('should return dev build unique event submitters with the dev data header', async () => {
+    const player = await new PlayerFactory([validGame]).state('dev build').one()
+    const validEvents = await new EventFactory([player]).many(3)
+
+    await (<EntityManager>app.context.em).persistAndFlush(validEvents)
+
+    const res = await request(app.callback())
+      .get(`${baseUrl}/unique_event_submitters`)
+      .query({ gameId: validGame.id, startDate, endDate })
+      .auth(token, { type: 'bearer' })
+      .set('x-talo-include-dev-data', '1')
+      .expect(200)
+
+    expect(res.body.count).toBe(1)
   })
 
   it('should not return headlines for a game the user cant access', async () => {

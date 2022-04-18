@@ -4,6 +4,7 @@ import GameActivity, { GameActivityType } from '../entities/game-activity'
 import Leaderboard, { LeaderboardSortMode } from '../entities/leaderboard'
 import LeaderboardEntry from '../entities/leaderboard-entry'
 import createGameActivity from '../lib/logging/createGameActivity'
+import { devDataPlayerFilter } from '../middlewares/dev-data-middleware'
 import LeaderboardPolicy from '../policies/leaderboard.policy'
 
 @Routes([
@@ -158,6 +159,14 @@ export default class LeaderboardService implements Service {
 
     if (req.ctx.state.user.api === true) {
       baseQuery = baseQuery.andWhere({ hidden: false })
+    }
+
+    if (!req.ctx.state.includeDevData) {
+      baseQuery = baseQuery.andWhere({
+        playerAlias: {
+          player: devDataPlayerFilter
+        }
+      })
     }
 
     const { count } = await baseQuery

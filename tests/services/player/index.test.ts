@@ -8,10 +8,11 @@ import Game from '../../../src/entities/game'
 import UserFactory from '../../fixtures/UserFactory'
 import OrganisationFactory from '../../fixtures/OrganisationFactory'
 import PlayerFactory from '../../fixtures/PlayerFactory'
+import Player from '../../../src/entities/player'
 
 const baseUrl = '/players'
 
-describe('Player service - get', () => {
+describe('Player service - index', () => {
   let app: Koa
   let user: User
   let validGame: Game
@@ -25,6 +26,12 @@ describe('Player service - get', () => {
     await (<EntityManager>app.context.em).persistAndFlush([user, validGame])
 
     token = await genAccessToken(user)
+  })
+
+  beforeEach(async () => {
+    const repo = (<EntityManager>app.context.em).getRepository(Player)
+    const players = await repo.findAll()
+    await repo.removeAndFlush(players)
   })
 
   afterAll(async () => {
@@ -119,12 +126,10 @@ describe('Player service - get', () => {
   })
 
   it('should paginate results when getting players', async () => {
-    const existingNum = await validGame.players.loadCount()
     const players = await new PlayerFactory([validGame]).many(36)
     await (<EntityManager>app.context.em).persistAndFlush(players)
 
-    const count = existingNum + players.length
-    const page = Math.floor(count / 25)
+    const page = Math.floor(players.length / 25)
 
     const res = await request(app.callback())
       .get(`${baseUrl}`)
@@ -132,7 +137,34 @@ describe('Player service - get', () => {
       .auth(token, { type: 'bearer' })
       .expect(200)
 
-    expect(res.body.players).toHaveLength(count % 25)
-    expect(res.body.count).toBe(count)
+    expect(res.body.players).toHaveLength(players.length % 25)
+    expect(res.body.count).toBe(players.length)
+  })
+
+  it('should not return dev build players without the dev data header', async () => {
+    const players = await new PlayerFactory([validGame]).state('dev build').many(5)
+    await (<EntityManager>app.context.em).persistAndFlush(players)
+
+    const res = await request(app.callback())
+      .get(`${baseUrl}`)
+      .query({ gameId: validGame.id })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    expect(res.body.count).toBe(0)
+  })
+
+  it('should return dev build players with the dev data header', async () => {
+    const players = await new PlayerFactory([validGame]).state('dev build').many(5)
+    await (<EntityManager>app.context.em).persistAndFlush(players)
+
+    const res = await request(app.callback())
+      .get(`${baseUrl}`)
+      .query({ gameId: validGame.id })
+      .auth(token, { type: 'bearer' })
+      .set('x-talo-include-dev-data', '1')
+      .expect(200)
+
+    expect(res.body.count).toBe(players.length)
   })
 })

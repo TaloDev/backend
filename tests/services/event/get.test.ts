@@ -251,6 +251,35 @@ describe('Event service - get', () => {
       .auth(token, { type: 'bearer' })
       .expect(200)
 
-    expect(res.body.events['Talk to NPC'][1].count).toBe(3)
+    expect(res.body.events['Talk to NPC'][1].count).toBe(events.length)
+  })
+
+  it('should not return events by dev build players if the dev data header is not set', async () => {
+    const player = await new PlayerFactory([validGame]).state('dev build').one()
+    const events = await new EventFactory([player]).with(() => ({ name: 'Talk to NPC', createdAt: new Date() })).many(3)
+    await (<EntityManager>app.context.em).persistAndFlush(events)
+
+    const res = await request(app.callback())
+      .get(`${baseUrl}`)
+      .query({ gameId: validGame.id, startDate: sub(new Date(), { days: 1 }), endDate: new Date() })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    expect(res.body.events).toStrictEqual({})
+  })
+
+  it('should return events by dev build players if the dev data header is set', async () => {
+    const player = await new PlayerFactory([validGame]).state('dev build').one()
+    const events = await new EventFactory([player]).with(() => ({ name: 'Talk to NPC', createdAt: new Date() })).many(3)
+    await (<EntityManager>app.context.em).persistAndFlush(events)
+
+    const res = await request(app.callback())
+      .get(`${baseUrl}`)
+      .query({ gameId: validGame.id, startDate: sub(new Date(), { days: 1 }), endDate: new Date() })
+      .auth(token, { type: 'bearer' })
+      .set('x-talo-include-dev-data', '1')
+      .expect(200)
+
+    expect(res.body.events['Talk to NPC'][1].count).toBe(events.length)
   })
 })

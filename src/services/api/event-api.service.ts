@@ -66,6 +66,10 @@ export default class EventAPIService extends APIService<EventService> {
 
         if (item.props) {
           try {
+            if (!Array.isArray(item.props)) {
+              throw new Error('Props must be an array')
+            }
+
             event.props = sanitiseProps(item.props, true)
           } catch (err) {
             errors[i].push(err.message)

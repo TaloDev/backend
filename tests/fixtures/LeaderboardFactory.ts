@@ -5,6 +5,7 @@ import Game from '../../src/entities/game'
 import LeaderboardEntryFactory from './LeaderboardEntryFactory'
 import { Collection } from '@mikro-orm/core'
 import LeaderboardEntry from '../../src/entities/leaderboard-entry'
+import Prop from '../../src/entities/prop'
 
 export default class LeaderboardFactory extends Factory<Leaderboard> {
   private availableGames: Game[]
@@ -15,6 +16,7 @@ export default class LeaderboardFactory extends Factory<Leaderboard> {
     this.register('with entries', this.withEntries)
     this.register('unique', this.unique)
     this.register('not unique', this.notUnique)
+    this.register('dev build players', this.devBuildPlayers)
 
     this.availableGames = availableGames
   }
@@ -50,5 +52,13 @@ export default class LeaderboardFactory extends Factory<Leaderboard> {
     return {
       entries: new Collection<LeaderboardEntry>(leaderboard, entries)
     }
+  }
+
+  protected async devBuildPlayers(leaderboard: Leaderboard): Promise<Partial<Leaderboard>> {
+    leaderboard.entries.getItems().forEach((entry) => {
+      entry.playerAlias.player.props.push(new Prop('META_DEV_BUILD', '1'))
+    })
+
+    return leaderboard
   }
 }

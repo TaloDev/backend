@@ -9,6 +9,7 @@ export default class GameStatFactory extends Factory<GameStat> {
   constructor(availableGames: Game[]) {
     super(GameStat, 'base')
     this.register('base', this.base)
+    this.register('global', this.global)
 
     this.availableGames = availableGames
   }
@@ -27,9 +28,15 @@ export default class GameStatFactory extends Factory<GameStat> {
       minValue,
       maxValue,
       defaultValue,
-      globalValue: defaultValue || 0,
+      globalValue: defaultValue,
       maxChange: casual.integer(1, 100),
       minTimeBetweenUpdates: casual.integer(0, 5)
+    }
+  }
+
+  protected global(): Partial<GameStat> {
+    return {
+      global: true
     }
   }
 }

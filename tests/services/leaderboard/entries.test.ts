@@ -88,4 +88,31 @@ describe('Leaderboard service - entries', () => {
       expect(res.body.isLastPage).toBe(i === 2 ? true : false)
     }
   })
+
+  it('should not return leaderboard entries for dev build players without the dev data header', async () => {
+    const leaderboard = await new LeaderboardFactory([validGame]).state('with entries').state('dev build players').one()
+    await (<EntityManager>app.context.em).persistAndFlush(leaderboard)
+
+    const res = await request(app.callback())
+      .get(`${baseUrl}/${leaderboard.id}/entries`)
+      .query({ page: 0 })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    expect(res.body.entries).toHaveLength(0)
+  })
+
+  it('should return leaderboard entries for dev build players with the dev data header', async () => {
+    const leaderboard = await new LeaderboardFactory([validGame]).state('with entries').state('dev build players').one()
+    await (<EntityManager>app.context.em).persistAndFlush(leaderboard)
+
+    const res = await request(app.callback())
+      .get(`${baseUrl}/${leaderboard.id}/entries`)
+      .query({ page: 0 })
+      .auth(token, { type: 'bearer' })
+      .set('x-talo-include-dev-data', '1')
+      .expect(200)
+
+    expect(res.body.entries).toHaveLength(leaderboard.entries.length)
+  })
 })

@@ -35,11 +35,7 @@ export default class LeaderboardEntry {
       score: this.score,
       leaderboardName: this.leaderboard.name,
       leaderboardInternalName: this.leaderboard.internalName,
-      playerAlias: {
-        id: this.playerAlias.id,
-        service: this.playerAlias.service,
-        identifier: this.playerAlias.identifier
-      },
+      playerAlias: this.playerAlias,
       hidden: this.hidden,
       createdAt: this.createdAt,
       updatedAt: this.updatedAt

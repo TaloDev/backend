@@ -1,4 +1,4 @@
-import { EntityManager, MikroORM } from '@mikro-orm/core'
+import { EntityManager, FilterQuery, MikroORM, ObjectQuery } from '@mikro-orm/core'
 import { HasPermission, Routes, Service, Request, Response, Validate, ValidationCondition } from 'koa-clay'
 import DataExport, { DataExportAvailableEntities, DataExportStatus } from '../entities/data-export'
 import DataExportPolicy from '../policies/data-export.policy'
@@ -18,6 +18,7 @@ import LeaderboardEntry from '../entities/leaderboard-entry'
 import PlayerGameStat from '../entities/player-game-stat'
 import GameStat from '../entities/game-stat'
 import GameActivity, { GameActivityType } from '../entities/game-activity'
+import { devDataPlayerFilter } from '../middlewares/dev-data-middleware'
 
 interface EntityWithProps {
   props: Prop[]
@@ -29,7 +30,8 @@ interface UpdatedDataExportStatus {
 }
 
 interface DataExportJob {
-  dataExportId: number
+  dataExportId: number,
+  includeDevData: boolean
 }
 
 type ExportableEntity = Event | Player | PlayerAlias | LeaderboardEntry | GameStat | PlayerGameStat | GameActivity
@@ -57,7 +59,7 @@ export default class DataExportService implements Service {
     this.queue = createQueue('data-export')
 
     this.queue.process(async (job: Queue.Job<DataExportJob>) => {
-      const { dataExportId } = job.data
+      const { dataExportId, includeDevData } = job.data
 
       const orm = await MikroORM.init(ormConfig)
       const dataExport = await orm.em.getRepository(DataExport).findOne(dataExportId, { populate: ['game', 'createdByUser'] })
@@ -68,7 +70,7 @@ export default class DataExportService implements Service {
       const filename = `export-${dataExport.game.id}-${dataExport.createdAt.getTime()}.zip`
       const filepath = './storage/' + filename
 
-      const zip: AdmZip = await this.createZip(dataExport, orm.em)
+      const zip: AdmZip = await this.createZip(dataExport, orm.em, includeDevData)
       zip.writeZip(filepath)
 
       dataExport.status = DataExportStatus.QUEUED
@@ -123,56 +125,130 @@ export default class DataExportService implements Service {
     await orm.close()
   }
 
-  private async createZip(dataExport: DataExport, em: EntityManager): Promise<AdmZip> {
+  private async getEvents(dataExport: DataExport, em: EntityManager, includeDevData: boolean): Promise<Event[]> {
+    const where: FilterQuery<Event> = { game: dataExport.game }
+
+    if (!includeDevData) {
+      where.playerAlias = {
+        player: devDataPlayerFilter
+      }
+    }
+
+    return await em.getRepository(Event).find(where, { populate: ['playerAlias'] })
+  }
+
+  private async getPlayers(dataExport: DataExport, em: EntityManager, includeDevData: boolean): Promise<Player[]> {
+    let where: FilterQuery<Player> = { game: dataExport.game }
+
+    if (!includeDevData) {
+      where = { ...where, ...devDataPlayerFilter }
+    }
+
+    return await em.getRepository(Player).find(where)
+  }
+
+  private async getPlayerAliases(dataExport: DataExport, em: EntityManager, includeDevData: boolean): Promise<PlayerAlias[]> {
+    const where: FilterQuery<PlayerAlias> = {
+      player: { game: dataExport.game }
+    }
+
+    if (!includeDevData) {
+      where.player = {
+        ...(where.player as ObjectQuery<Player>),
+        ...devDataPlayerFilter
+      }
+    }
+
+    return await em.getRepository(PlayerAlias).find(where)
+  }
+
+  private async getLeaderboardEntries(dataExport: DataExport, em: EntityManager, includeDevData: boolean): Promise<LeaderboardEntry[]> {
+    const where: FilterQuery<LeaderboardEntry> = {
+      leaderboard: { game: dataExport.game }
+    }
+
+    if (!includeDevData) {
+      where.playerAlias = {
+        player: devDataPlayerFilter
+      }
+    }
+
+    return await em.getRepository(LeaderboardEntry).find(where, {
+      populate: ['leaderboard']
+    })
+  }
+
+  private async getGameStats(dataExport: DataExport, em: EntityManager, includeDevData: boolean): Promise<GameStat[]> {
+    const stats = await em.getRepository(GameStat).find({ game: dataExport.game })
+
+    for (const stat of stats) {
+      /* istanbul ignore else */
+      if (stat.global) {
+        await stat.recalculateGlobalValue(includeDevData)
+      }
+    }
+
+    return stats
+  }
+
+  private async getPlayerGameStats(dataExport: DataExport, em: EntityManager, includeDevData: boolean): Promise<PlayerGameStat[]> {
+    const where: FilterQuery<PlayerGameStat> = {
+      stat: {
+        game: dataExport.game
+      }
+    }
+
+    if (!includeDevData) {
+      where.player = devDataPlayerFilter
+    }
+
+    return await em.getRepository(PlayerGameStat).find(where)
+  }
+
+  private async getGameActivities(dataExport: DataExport, em: EntityManager): Promise<GameActivity[]> {
+    return await em.getRepository(GameActivity).find({
+      game: dataExport.game
+    }, {
+      populate: ['user']
+    })
+  }
+
+  private async createZip(dataExport: DataExport, em: EntityManager, includeDevData: boolean): Promise<AdmZip> {
     const zip = new AdmZip()
 
     if (dataExport.entities.includes(DataExportAvailableEntities.EVENTS)) {
-      const events = await em.getRepository(Event).find({ game: dataExport.game }, { populate: ['playerAlias'] })
-      zip.addFile(`${DataExportAvailableEntities.EVENTS}.csv`, this.buildCSV(DataExportAvailableEntities.EVENTS, events))
+      const items = await this.getEvents(dataExport, em, includeDevData)
+      zip.addFile(`${DataExportAvailableEntities.EVENTS}.csv`, this.buildCSV(DataExportAvailableEntities.EVENTS, items))
     }
 
     if (dataExport.entities.includes(DataExportAvailableEntities.PLAYERS)) {
-      const players = await em.getRepository(Player).find({ game: dataExport.game })
-      zip.addFile(`${DataExportAvailableEntities.PLAYERS}.csv`, this.buildCSV(DataExportAvailableEntities.PLAYERS, players))
+      const items = await this.getPlayers(dataExport, em, includeDevData)
+      zip.addFile(`${DataExportAvailableEntities.PLAYERS}.csv`, this.buildCSV(DataExportAvailableEntities.PLAYERS, items))
     }
 
     if (dataExport.entities.includes(DataExportAvailableEntities.PLAYER_ALIASES)) {
-      const aliases = await em.getRepository(PlayerAlias).find({
-        player: { game: dataExport.game }
-      })
-      zip.addFile(`${DataExportAvailableEntities.PLAYER_ALIASES}.csv`, this.buildCSV(DataExportAvailableEntities.PLAYER_ALIASES, aliases))
+      const items = await this.getPlayerAliases(dataExport, em, includeDevData)
+      zip.addFile(`${DataExportAvailableEntities.PLAYER_ALIASES}.csv`, this.buildCSV(DataExportAvailableEntities.PLAYER_ALIASES, items))
     }
 
     if (dataExport.entities.includes(DataExportAvailableEntities.LEADERBOARD_ENTRIES)) {
-      const entries = await em.getRepository(LeaderboardEntry).find({
-        leaderboard: { game: dataExport.game }
-      }, {
-        populate: ['leaderboard']
-      })
-      zip.addFile(`${DataExportAvailableEntities.LEADERBOARD_ENTRIES}.csv`, this.buildCSV(DataExportAvailableEntities.LEADERBOARD_ENTRIES, entries))
+      const items = await this.getLeaderboardEntries(dataExport, em, includeDevData)
+      zip.addFile(`${DataExportAvailableEntities.LEADERBOARD_ENTRIES}.csv`, this.buildCSV(DataExportAvailableEntities.LEADERBOARD_ENTRIES, items))
     }
 
     if (dataExport.entities.includes(DataExportAvailableEntities.GAME_STATS)) {
-      const entries = await em.getRepository(GameStat).find({ game: dataExport.game })
-      zip.addFile(`${DataExportAvailableEntities.GAME_STATS}.csv`, this.buildCSV(DataExportAvailableEntities.GAME_STATS, entries))
+      const items = await this.getGameStats(dataExport, em, includeDevData)
+      zip.addFile(`${DataExportAvailableEntities.GAME_STATS}.csv`, this.buildCSV(DataExportAvailableEntities.GAME_STATS, items))
     }
 
     if (dataExport.entities.includes(DataExportAvailableEntities.PLAYER_GAME_STATS)) {
-      const entries = await em.getRepository(PlayerGameStat).find({
-        stat: {
-          game: dataExport.game
-        }
-      })
-      zip.addFile(`${DataExportAvailableEntities.PLAYER_GAME_STATS}.csv`, this.buildCSV(DataExportAvailableEntities.PLAYER_GAME_STATS, entries))
+      const items = await this.getPlayerGameStats(dataExport, em, includeDevData)
+      zip.addFile(`${DataExportAvailableEntities.PLAYER_GAME_STATS}.csv`, this.buildCSV(DataExportAvailableEntities.PLAYER_GAME_STATS, items))
     }
 
     if (dataExport.entities.includes(DataExportAvailableEntities.GAME_ACTIVITIES)) {
-      const entries = await em.getRepository(GameActivity).find({
-        game: dataExport.game
-      }, {
-        populate: ['user']
-      })
-      zip.addFile(`${DataExportAvailableEntities.GAME_ACTIVITIES}.csv`, this.buildCSV(DataExportAvailableEntities.GAME_ACTIVITIES, entries))
+      const items = await this.getGameActivities(dataExport, em)
+      zip.addFile(`${DataExportAvailableEntities.GAME_ACTIVITIES}.csv`, this.buildCSV(DataExportAvailableEntities.GAME_ACTIVITIES, items))
     }
 
     return zip
@@ -305,7 +381,10 @@ export default class DataExportService implements Service {
     dataExport.entities = entities
     await em.persistAndFlush(dataExport)
 
-    await this.queue.createJob({ dataExportId: dataExport.id }).save()
+    await this.queue.createJob<DataExportJob>({
+      dataExportId: dataExport.id,
+      includeDevData: req.ctx.state.includeDevData
+    }).save()
 
     return {
       status: 200,

@@ -19,6 +19,7 @@ import Redis from 'ioredis'
 import redisConfig from '../../config/redis.config'
 import UserRecoveryCode from '../../entities/user-recovery-code'
 import generateRecoveryCodes from '../../lib/auth/generateRecoveryCodes'
+import Invite from '../../entities/invite'
 
 async function sendEmailConfirm(req: Request, res: Response): Promise<void> {
   /* istanbul ignore else */
@@ -82,28 +83,55 @@ async function sendEmailConfirm(req: Request, res: Response): Promise<void> {
 ])
 export default class UserPublicService implements Service {
   @Validate({
-    body: ['email', 'username', 'password', 'organisationName']
+    body: {
+      email: {
+        required: true
+      },
+      username: {
+        required: true
+      },
+      password: {
+        required: true
+      },
+      organisationName: {
+        requiredIf: async (req: Request) => !req.body.inviteToken
+      },
+      inviteToken: {
+        requiredIf: async (req: Request) => !req.body.organisationName
+      }
+    }
   })
   @After(sendEmailConfirm)
   async register(req: Request): Promise<Response> {
-    const { email, username, password, organisationName } = req.body
+    const { email, username, password, organisationName, inviteToken } = req.body
     const em: EntityManager = req.ctx.em
 
     const userWithEmail = await em.getRepository(User).findOne({ email })
     const orgWithEmail = await em.getRepository(Organisation).findOne({ email })
     if (userWithEmail || orgWithEmail) req.ctx.throw(400, 'That email address is already in use')
 
-    const organisation = new Organisation()
-    organisation.email = email
-    organisation.name = organisationName
-
     const user = new User()
-    user.email = email
+    user.email = email.toLowerCase()
     user.username = username
     user.password = await bcrypt.hash(password, 10)
-    user.organisation = organisation
-    user.type = UserType.ADMIN
-    user.emailConfirmed = Boolean(process.env.AUTO_CONFIRM_EMAIL)
+    user.emailConfirmed = process.env.AUTO_CONFIRM_EMAIL === 'true'
+
+    if (inviteToken) {
+      const invite = await em.getRepository(Invite).findOne({ token: inviteToken })
+      if (!invite || invite.email !== email) req.ctx.throw(404, 'Invite not found')
+
+      user.organisation = invite.organisation
+      user.type = invite.type
+
+      await em.getRepository(Invite).remove(invite)
+    } else {
+      const organisation = new Organisation()
+      organisation.email = email
+      organisation.name = organisationName
+
+      user.organisation = organisation
+      user.type = UserType.ADMIN
+    }
 
     await em.getRepository(User).persistAndFlush(user)
 

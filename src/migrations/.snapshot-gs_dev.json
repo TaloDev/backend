@@ -2031,6 +2031,131 @@
           "deleteRule": "cascade"
         }
       }
+    },
+    {
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "int",
+          "unsigned": true,
+          "autoincrement": true,
+          "primary": true,
+          "nullable": false,
+          "mappedType": "integer"
+        },
+        "token": {
+          "name": "token",
+          "type": "varchar(255)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "mappedType": "string"
+        },
+        "email": {
+          "name": "email",
+          "type": "varchar(255)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "mappedType": "string"
+        },
+        "type": {
+          "name": "type",
+          "type": "tinyint",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "mappedType": "enum"
+        },
+        "organisation_id": {
+          "name": "organisation_id",
+          "type": "int",
+          "unsigned": true,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "mappedType": "integer"
+        },
+        "invited_by_user_id": {
+          "name": "invited_by_user_id",
+          "type": "int",
+          "unsigned": true,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "mappedType": "integer"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "datetime",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "length": 0,
+          "mappedType": "datetime"
+        }
+      },
+      "name": "invite",
+      "indexes": [
+        {
+          "columnNames": [
+            "organisation_id"
+          ],
+          "composite": false,
+          "keyName": "invite_organisation_id_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "invited_by_user_id"
+          ],
+          "composite": false,
+          "keyName": "invite_invited_by_user_id_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "keyName": "PRIMARY",
+          "columnNames": [
+            "id"
+          ],
+          "composite": false,
+          "primary": true,
+          "unique": true
+        }
+      ],
+      "checks": [],
+      "foreignKeys": {
+        "invite_organisation_id_foreign": {
+          "constraintName": "invite_organisation_id_foreign",
+          "columnNames": [
+            "organisation_id"
+          ],
+          "localTableName": "invite",
+          "referencedColumnNames": [
+            "id"
+          ],
+          "referencedTableName": "organisation",
+          "updateRule": "cascade"
+        },
+        "invite_invited_by_user_id_foreign": {
+          "constraintName": "invite_invited_by_user_id_foreign",
+          "columnNames": [
+            "invited_by_user_id"
+          ],
+          "localTableName": "invite",
+          "referencedColumnNames": [
+            "id"
+          ],
+          "referencedTableName": "user",
+          "updateRule": "cascade"
+        }
+      }
     }
   ]
 }

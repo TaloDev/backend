@@ -80,7 +80,7 @@ describe('User public service - login', () => {
 
   it('should initialise the 2fa flow if it is enabled', async () => {
     const redis = new Redis()
-    await (redis as Redis.Redis & RedisMock)._init()
+    await (redis as Redis & RedisMock)._init()
 
     const user = await new UserFactory().state('loginable').state('has2fa').one()
     await (<EntityManager>app.context.em).persistAndFlush(user)

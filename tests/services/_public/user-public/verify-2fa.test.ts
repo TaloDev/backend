@@ -27,7 +27,7 @@ describe('User public service - verify 2fa', () => {
   })
 
   beforeEach(async () => {
-    await (redis as Redis.Redis & RedisMock)._init()
+    await (redis as Redis & RedisMock)._init()
   })
 
   afterAll(async () => {

@@ -2,7 +2,7 @@ import { Context, Next } from 'koa'
 import Redis from 'ioredis'
 import redisConfig from '../config/redis.config'
 
-let redis: Redis.Redis
+let redis: Redis
 const MAX_REQUESTS = 50
 const EXPIRE_TIME = 1
 
@@ -17,7 +17,7 @@ export default async (ctx: Context, next: Next): Promise<void> => {
     if (Number(current) > MAX_REQUESTS) {
       ctx.throw(429)
     } else {
-      await redis.set(key, Number(current) + 1, 'ex', EXPIRE_TIME)
+      await redis.set(key, Number(current) + 1, 'EX', EXPIRE_TIME)
     }
   }
 

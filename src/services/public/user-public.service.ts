@@ -166,7 +166,7 @@ export default class UserPublicService implements Service {
 
     if (user.twoFactorAuth?.enabled) {
       const redis = new Redis(redisConfig)
-      await redis.set(`2fa:${user.id}`, 'true', 'ex', 300)
+      await redis.set(`2fa:${user.id}`, 'true', 'EX', 300)
 
       return {
         status: 200,

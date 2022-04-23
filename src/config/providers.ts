@@ -3,6 +3,7 @@ import SendGrid from '@sendgrid/mail'
 import * as Sentry from '@sentry/node'
 import ormConfig from './mikro-orm.config'
 import { MikroORM } from '@mikro-orm/core'
+import tracingMiddleware from '../middlewares/tracing-middleware'
 
 const initProviders = async (app: Koa) => {
   try {
@@ -20,8 +21,11 @@ const initProviders = async (app: Koa) => {
 
   Sentry.init({
     dsn: process.env.SENTRY_DSN,
-    environment: process.env.SENTRY_ENV
+    environment: process.env.SENTRY_ENV,
+    tracesSampleRate: 0.2
   })
+
+  app.use(tracingMiddleware)
 }
 
 export default initProviders

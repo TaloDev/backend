@@ -55,6 +55,7 @@
     "@mikro-orm/mysql": "^5.1.2",
     "@sendgrid/mail": "^7.6.2",
     "@sentry/node": "^6.19.6",
+    "@sentry/tracing": "^6.19.6",
     "adm-zip": "^0.5.6",
     "bcrypt": "^5.0.1",
     "bee-queue": "^1.4.0",

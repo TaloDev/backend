@@ -1,3 +1,4 @@
+import Invite from './invite'
 import PlayerGameStat from './player-game-stat'
 import GameStat from './game-stat'
 import GameActivity from './game-activity'
@@ -20,6 +21,7 @@ import UserTwoFactorAuth from './user-two-factor-auth'
 import UserRecoveryCode from './user-recovery-code'
 
 export default [
+  Invite,
   PlayerGameStat,
   GameStat,
   GameActivity,

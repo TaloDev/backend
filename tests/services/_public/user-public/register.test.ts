@@ -6,6 +6,8 @@ import UserSession from '../../../../src/entities/user-session'
 import UserAccessCode from '../../../../src/entities/user-access-code'
 import casual from 'casual'
 import UserFactory from '../../../fixtures/UserFactory'
+import OrganisationFactory from '../../../fixtures/OrganisationFactory'
+import InviteFactory from '../../../fixtures/InviteFactory'
 
 const baseUrl = '/public/users'
 
@@ -36,7 +38,7 @@ describe('User public service - register', () => {
       .expect(200)
 
     expect(res.body.accessToken).toBeTruthy()
-    expect(res.body.user.email).toBe(email)
+    expect(res.body.user.email).toBe(email.toLowerCase())
     expect(res.body.user.username).toBe(username)
     expect(res.body.user.password).not.toBeDefined()
     expect(res.body.user.organisation.name).toBe('Talo')
@@ -70,5 +72,53 @@ describe('User public service - register', () => {
     })
 
     expect(accessCode).toBeTruthy()
+  })
+
+  it('should let a user register with an invite', async () => {
+    const organisation = await new OrganisationFactory().one()
+    const invite = await new InviteFactory().construct(organisation).one()
+    await (<EntityManager>app.context.em).persistAndFlush(invite)
+
+    const email = invite.email
+    const username = casual.username
+
+    const res = await request(app.callback())
+      .post(`${baseUrl}/register`)
+      .send({ email, username, password: 'password', inviteToken: invite.token })
+      .expect(200)
+
+    expect(res.body.accessToken).toBeTruthy()
+    expect(res.body.user.email).toBe(email.toLowerCase())
+    expect(res.body.user.username).toBe(username)
+    expect(res.body.user.password).not.toBeDefined()
+    expect(res.body.user.organisation.id).toBe(organisation.id)
+  })
+
+  it('should not let a user register with an invite if the email doesn\'t match', async () => {
+    const organisation = await new OrganisationFactory().one()
+    const invite = await new InviteFactory().construct(organisation).one()
+    await (<EntityManager>app.context.em).persistAndFlush(invite)
+
+    const email = casual.email
+    const username = casual.username
+
+    await request(app.callback())
+      .post(`${baseUrl}/register`)
+      .send({ email, username, password: 'password', inviteToken: invite.token })
+      .expect(404)
+  })
+
+  it('should not let a user register with a missing invite', async () => {
+    const organisation = await new OrganisationFactory().one()
+    const invite = await new InviteFactory().construct(organisation).one()
+    await (<EntityManager>app.context.em).persistAndFlush(invite)
+
+    const email = casual.email
+    const username = casual.username
+
+    await request(app.callback())
+      .post(`${baseUrl}/register`)
+      .send({ email, username, password: 'password', inviteToken: 'abc123' })
+      .expect(404)
   })
 })

@@ -27,7 +27,7 @@ describe('User public service - use recovery code', () => {
   })
 
   beforeEach(async () => {
-    await (redis as Redis & RedisMock)._init()
+    await (redis as Redis.Redis & RedisMock)._init()
   })
 
   afterAll(async () => {

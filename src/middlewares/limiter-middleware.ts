@@ -2,7 +2,7 @@ import { Context, Next } from 'koa'
 import Redis from 'ioredis'
 import redisConfig from '../config/redis.config'
 
-let redis: Redis
+let redis: Redis.Redis
 const MAX_REQUESTS = 50
 const EXPIRE_TIME = 1
 

@@ -18,7 +18,10 @@ const initProviders = async (app: Koa) => {
 
   SendGrid.setApiKey(process.env.SENDGRID_KEY)
 
-  Sentry.init({ dsn: process.env.SENTRY_DSN })
+  Sentry.init({
+    dsn: process.env.SENTRY_DSN,
+    environment: process.env.SENTRY_ENV
+  })
 }
 
 export default initProviders

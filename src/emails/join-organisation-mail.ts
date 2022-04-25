@@ -8,7 +8,7 @@ export default class JoinOrganisation extends Mail {
     this.title = `Join ${invite.organisation.name} on Talo`
     this.mainText = `Hey there, you've been invited by ${invite.invitedByUser.username} to join them on Talo.`
 
-    this.ctaLink = `${process.env.ALLOWED_ORIGIN}/accept/${invite.token}`
+    this.ctaLink = `${process.env.DASHBOARD_URL}/accept/${invite.token}`
     this.ctaText = 'Accept invite'
 
     this.why = 'You are receiving this email because you were invited to create a Talo account'

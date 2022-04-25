@@ -7,7 +7,7 @@ export default async (ctx: Context, next: Next): Promise<void> => {
   } else {
     return cors({
       credentials: true,
-      origin: process.env.ALLOWED_ORIGIN
+      origin: process.env.DASHBOARD_URL
     })(ctx, next)
   }
 }

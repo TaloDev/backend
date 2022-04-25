@@ -10,7 +10,7 @@ export default class ConfirmEmail extends Mail {
 
     this.template = this.template.replace('{{mainText}}', this.mainText)
 
-    this.ctaLink = process.env.ALLOWED_ORIGIN
+    this.ctaLink = process.env.DASHBOARD_URL
     this.ctaText = 'Go to your dashboard'
   }
 }

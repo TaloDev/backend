@@ -13,12 +13,12 @@ import createQueue from '../lib/queues/createQueue'
 import ormConfig from '../config/mikro-orm.config'
 import { EmailConfig } from '../lib/messaging/sendEmail'
 import { unlink } from 'fs/promises'
-import dataExportReady from '../emails/data-export-ready'
 import LeaderboardEntry from '../entities/leaderboard-entry'
 import PlayerGameStat from '../entities/player-game-stat'
 import GameStat from '../entities/game-stat'
 import GameActivity, { GameActivityType } from '../entities/game-activity'
 import { devDataPlayerFilter } from '../middlewares/dev-data-middleware'
+import DataExportReady from '../emails/data-export-ready-mail'
 
 interface EntityWithProps {
   props: Prop[]
@@ -79,10 +79,7 @@ export default class DataExportService implements Service {
 
       const emailJob = await this.emailQueue
         .createJob<EmailConfig>({
-          to: dataExport.createdByUser.email,
-          subject: 'Your Talo data export',
-          template: dataExportReady,
-          attachments: [
+          mail: new DataExportReady(dataExport.createdByUser.email, [
             {
               content: zip.toBuffer().toString('base64'),
               filename,
@@ -90,7 +87,7 @@ export default class DataExportService implements Service {
               disposition: 'attachment',
               content_id: filename
             }
-          ]
+          ]).getConfig()
         })
         .save()
 

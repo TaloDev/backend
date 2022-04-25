@@ -17,7 +17,7 @@ export default async (ctx: Context, next: Next) => {
         })
 
         if (ctx.state.user) {
-          Sentry.setUser({ id: ctx.state.user.id })
+          Sentry.setUser({ id: ctx.state.user.id, username: ctx.state.user.username })
           Sentry.setTag('apiKey', ctx.state.user.api ?? false)
         }
 

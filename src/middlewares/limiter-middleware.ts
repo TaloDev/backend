@@ -17,7 +17,7 @@ export default async (ctx: Context, next: Next): Promise<void> => {
     if (Number(current) > MAX_REQUESTS) {
       ctx.throw(429)
     } else {
-      await redis.set(key, Number(current) + 1, 'ex', EXPIRE_TIME)
+      await redis.set(key, Number(current) + 1, 'EX', EXPIRE_TIME)
     }
   }
 

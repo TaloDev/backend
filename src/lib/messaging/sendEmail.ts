@@ -1,39 +1,13 @@
-import SendGrid from '@sendgrid/mail'
+import SendGrid, { MailDataRequired } from '@sendgrid/mail'
 import * as Sentry from '@sentry/node'
-import * as Handlebars from 'handlebars'
-
-interface TemplateData {
-  [key: string]: string | number | boolean
-}
-
-interface AttachmentData {
-  content: string;
-  filename: string;
-  type?: string;
-  disposition?: string;
-  content_id?: string;
-}
 
 export interface EmailConfig {
-  to: string
-  from?: string
-  subject: string
-  template: string
-  templateData?: TemplateData,
-  attachments?: AttachmentData[]
+  mail: MailDataRequired
 }
 
-export default async (emailConfig: EmailConfig): Promise<void> => {
+export default async (emailConfig: MailDataRequired): Promise<void> => {
   try {
-    const template = Handlebars.compile(emailConfig.template)
-
-    await SendGrid.send({
-      to: emailConfig.to,
-      from: emailConfig.from || process.env.FROM_EMAIL,
-      subject: emailConfig.subject,
-      html: template(emailConfig.templateData),
-      attachments: emailConfig.attachments || []
-    })
+    await SendGrid.send(emailConfig)
   } catch (err) {
     Sentry.captureException(err, {
       extra: {

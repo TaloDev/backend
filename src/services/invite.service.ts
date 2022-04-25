@@ -1,11 +1,11 @@
 import { EntityManager } from '@mikro-orm/core'
 import { HasPermission, Service, Request, Response, Validate } from 'koa-clay'
-import joinOrganisation from '../emails/join-organisation'
 import Queue from 'bee-queue'
 import Invite from '../entities/invite'
 import User from '../entities/user'
 import { EmailConfig } from '../lib/messaging/sendEmail'
 import InvitePolicy from '../policies/invite.policy'
+import JoinOrganisation from '../emails/join-organisation-mail'
 
 export default class InviteService implements Service {
   @HasPermission(InvitePolicy, 'index')
@@ -53,15 +53,7 @@ export default class InviteService implements Service {
     await em.persistAndFlush(invite)
 
     await (<Queue>req.ctx.emailQueue)
-      .createJob<EmailConfig>({
-        to: invite.email,
-        subject: `Join ${invite.organisation.name} on Talo`,
-        template: joinOrganisation,
-        templateData: {
-          organisationName: invite.organisation.name,
-          invitedBy: inviter.username
-        }
-      })
+      .createJob<EmailConfig>({ mail: new JoinOrganisation(invite).getConfig() })
       .save()
 
     return {

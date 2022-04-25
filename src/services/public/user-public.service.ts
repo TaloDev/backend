@@ -7,39 +7,31 @@ import UserSession from '../../entities/user-session'
 import bcrypt from 'bcrypt'
 import buildTokenPair from '../../lib/auth/buildTokenPair'
 import setUserLastSeenAt from '../../lib/users/setUserLastSeenAt'
-import getUserFromToken from '../../lib/auth/getUserFromToken'
 import UserAccessCode from '../../entities/user-access-code'
 import Organisation from '../../entities/organisation'
-import { EmailConfig } from '../../lib/messaging/sendEmail'
 import { add } from 'date-fns'
 import Queue from 'bee-queue'
-import confirmEmail from '../../emails/confirm-email'
 import { authenticator } from '@otplib/preset-default'
 import Redis from 'ioredis'
 import redisConfig from '../../config/redis.config'
 import UserRecoveryCode from '../../entities/user-recovery-code'
 import generateRecoveryCodes from '../../lib/auth/generateRecoveryCodes'
 import Invite from '../../entities/invite'
+import ConfirmEmail from '../../emails/confirm-email-mail'
+import { EmailConfig } from '../../lib/messaging/sendEmail'
 
 async function sendEmailConfirm(req: Request, res: Response): Promise<void> {
+  const user: User = req.ctx.state.user
+
   /* istanbul ignore else */
-  if (res.status === 200) {
-    req.ctx.state.user = jwt.decode(res.body.accessToken)
-    const user: User = await getUserFromToken(req.ctx)
+  if (res.status === 200 && !user.emailConfirmed) {
     const em: EntityManager = req.ctx.em
 
     const accessCode = new UserAccessCode(user, add(new Date(), { weeks: 1 }))
     await em.persistAndFlush(accessCode)
 
     await (<Queue>req.ctx.emailQueue)
-      .createJob<EmailConfig>({
-        to: user.email,
-        subject: 'Your Talo access code',
-        template: confirmEmail,
-        templateData: {
-          code: accessCode.code
-        }
-      })
+      .createJob<EmailConfig>({ mail: new ConfirmEmail(user, accessCode.code).getConfig() })
       .save()
   }
 }
@@ -122,6 +114,7 @@ export default class UserPublicService implements Service {
 
       user.organisation = invite.organisation
       user.type = invite.type
+      user.emailConfirmed = true
 
       await em.getRepository(Invite).remove(invite)
     } else {
@@ -133,7 +126,10 @@ export default class UserPublicService implements Service {
       user.type = UserType.ADMIN
     }
 
+    req.ctx.state.user = user
     await em.getRepository(User).persistAndFlush(user)
+
+    await em.populate(user, ['organisation'])
 
     const accessToken = await buildTokenPair(req.ctx, user)
 

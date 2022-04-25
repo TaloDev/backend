@@ -5,7 +5,7 @@ import sendEmail, { EmailConfig } from '../messaging/sendEmail'
 const createEmailQueue = () => {
   const queue = createQueue('email')
   queue.process(async (job: Queue.Job<EmailConfig>) => {
-    await sendEmail(job.data)
+    await sendEmail(job.data.mail)
   })
 
   return queue

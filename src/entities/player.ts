@@ -31,12 +31,16 @@ export default class Player {
     this.game = game
   }
 
+  isDevBuild() {
+    return this.props.some((prop) => prop.key === 'META_DEV_BUILD')
+  }
+
   toJSON() {
     return {
       id: this.id,
       props: this.props,
       aliases: this.aliases,
-      devBuild: this.props.some((prop) => prop.key === 'META_DEV_BUILD'),
+      devBuild: this.isDevBuild(),
       createdAt: this.createdAt,
       lastSeenAt: this.lastSeenAt
     }

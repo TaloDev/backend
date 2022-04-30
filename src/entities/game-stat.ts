@@ -96,9 +96,9 @@ export default class GameStat {
   }
 
   async recalculateGlobalValue(includeDevData: boolean): Promise<void> {
-    if (includeDevData) return
-
     this.hydratedGlobalValue = this.globalValue
+
+    if (includeDevData) return
 
     const playerStats = await this.playerStats.loadItems({ populate: ['player'] })
 

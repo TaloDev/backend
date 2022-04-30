@@ -67,6 +67,33 @@ describe('Game stat service - post', () => {
     expect(activity).not.toBeNull()
   })
 
+  it('should create a global stat', async () => {
+    const res = await request(app.callback())
+      .post(`${baseUrl}`)
+      .send({ gameId: validGame.id, internalName: 'buildings-built', name: 'Buildings built', defaultValue: 5, global: true, minTimeBetweenUpdates: 0, minValue: -10, maxValue: 10  })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    expect(res.body.stat.internalName).toBe('buildings-built')
+    expect(res.body.stat.name).toBe('Buildings built')
+    expect(res.body.stat.global).toBe(true)
+    expect(res.body.stat.globalValue).toBe(5)
+    expect(res.body.stat.defaultValue).toBe(5)
+    expect(res.body.stat.maxChange).toBe(undefined)
+    expect(res.body.stat.minValue).toBe(-10)
+    expect(res.body.stat.maxValue).toBe(10)
+    expect(res.body.stat.minTimeBetweenUpdates).toBe(0)
+
+    const activity = await (<EntityManager>app.context.em).getRepository(GameActivity).findOne({
+      type: GameActivityType.GAME_STAT_CREATED,
+      extra: {
+        statInternalName: res.body.stat.internalName
+      }
+    })
+
+    expect(activity).not.toBeNull()
+  })
+
   it('should not create a stat for demo users', async () => {
     const invalidUser = await new UserFactory().state('demo').with(() => ({ organisation: validGame.organisation })).one()
     await (<EntityManager>app.context.em).persistAndFlush(invalidUser)

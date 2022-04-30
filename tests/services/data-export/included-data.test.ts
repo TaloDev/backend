@@ -164,7 +164,7 @@ describe('Data export service - included data', () => {
     await (<EntityManager>app.context.em).persistAndFlush([playerStat, dataExport])
 
     const items = await proto.getGameStats(dataExport, app.context.em, false)
-    expect(items[0].globalValue).toBe(40)
+    expect(items[0].hydratedGlobalValue).toBe(40)
   })
 
   it('should not recalculate global stat values with the dev data header', async () => {

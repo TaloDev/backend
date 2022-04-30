@@ -12,7 +12,7 @@ module.exports = {
     'plugin:@typescript-eslint/recommended'
   ],
   rules: {
-    'indent': ['error', 2, { 'SwitchCase': 1 }],
+    'indent': ['error', 2, { 'SwitchCase': 1, 'ignoredNodes': ['PropertyDefinition'] }],
     'quotes': ['error', 'single'],
     'semi': ['error', 'never'],
     'comma-dangle': ['error', 'never'],

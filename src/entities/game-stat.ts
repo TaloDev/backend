@@ -36,6 +36,8 @@ export default class GameStat {
   @Property({ type: 'double' })
   globalValue: number
 
+  hydratedGlobalValue: number
+
   @Property({ nullable: true, type: 'double' })
   maxChange: number
 
@@ -96,8 +98,9 @@ export default class GameStat {
   async recalculateGlobalValue(includeDevData: boolean): Promise<void> {
     if (includeDevData) return
 
+    this.hydratedGlobalValue = this.globalValue
     const playerStats = await this.playerStats.loadItems()
-    this.globalValue -= playerStats.reduce((acc, curr) => acc += curr.value, 0)
+    this.hydratedGlobalValue -= playerStats.reduce((acc, curr) => acc += curr.value, 0)
   }
 
   toJSON() {
@@ -106,7 +109,7 @@ export default class GameStat {
       internalName: this.internalName,
       name: this.name,
       global: this.global,
-      globalValue: this.globalValue,
+      globalValue: this.hydratedGlobalValue ?? this.globalValue,
       defaultValue: this.defaultValue,
       maxChange: this.maxChange,
       minValue: this.minValue,

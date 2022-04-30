@@ -12,6 +12,7 @@ import PlayerFactory from '../../fixtures/PlayerFactory'
 import DataExportFactory from '../../fixtures/DataExportFactory'
 import GameActivityFactory from '../../fixtures/GameActivityFactory'
 import { GameActivityType } from '../../../src/entities/game-activity'
+import GameStatFactory from '../../fixtures/GameStatFactory'
 
 describe('Data export service - generation', () => {
   let app: Koa
@@ -93,6 +94,25 @@ describe('Data export service - generation', () => {
     })).one()
 
     expect(proto.transformColumn('gameActivityExtra', activity)).toBe('"{\'statInternalName\':\'hearts-collected\'}"')
+  })
+
+  it('should transform globalValue columns', async () => {
+    const service = new DataExportService()
+    const proto = Object.getPrototypeOf(service)
+
+    const stat = await new GameStatFactory([game]).state('global').with(() => ({ globalValue: 50 })).one()
+    await stat.recalculateGlobalValue(false)
+
+    expect(proto.transformColumn('globalValue', stat)).toBe(50)
+  })
+
+  it('should fill globalValue columns with N/A for non-global stats', async () => {
+    const service = new DataExportService()
+    const proto = Object.getPrototypeOf(service)
+
+    const stat = await new GameStatFactory([game]).one()
+
+    expect(proto.transformColumn('globalValue', stat)).toBe('N/A')
   })
 
   it('should correctly build a CSV', async () => {

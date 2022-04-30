@@ -289,6 +289,8 @@ export default class DataExportService implements Service {
       case 'gameActivityExtra':
         value = get(object, 'extra')
         return `"${JSON.stringify(value).replace(/"/g, '\'')}"`
+      case 'globalValue':
+        return get(object, 'hydratedGlobalValue') ?? 'N/A'
       default:
         return String(value)
     }

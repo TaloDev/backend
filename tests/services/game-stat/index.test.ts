@@ -61,10 +61,15 @@ describe('Game stat service - index', () => {
   it('should recalculate global stat values without the dev data header', async () => {
     const game = await new GameFactory(user.organisation).one()
 
-    const player = await new PlayerFactory([game]).state('dev build').one()
     const stat = await new GameStatFactory([game]).state('global').with(() => ({ globalValue: 50 })).one()
+
+    const player = await new PlayerFactory([game]).state('dev build').one()
     const playerStat = await new PlayerGameStatFactory().construct(player, stat).with(() => ({ value: 10 })).one()
-    await (<EntityManager>app.context.em).persistAndFlush(playerStat)
+
+    const otherPlayer = await new PlayerFactory([game]).one()
+    const otherPlayerStat = await new PlayerGameStatFactory().construct(otherPlayer, stat).with(() => ({ value: 40 })).one()
+
+    await (<EntityManager>app.context.em).persistAndFlush([playerStat, otherPlayerStat])
 
     const res = await request(app.callback())
       .get(`${baseUrl}`)

@@ -99,8 +99,12 @@ export default class GameStat {
     if (includeDevData) return
 
     this.hydratedGlobalValue = this.globalValue
-    const playerStats = await this.playerStats.loadItems()
-    this.hydratedGlobalValue -= playerStats.reduce((acc, curr) => acc += curr.value, 0)
+
+    const playerStats = await this.playerStats.loadItems({ populate: ['player'] })
+
+    this.hydratedGlobalValue -= playerStats
+      .filter((playerStat) => playerStat.player.isDevBuild())
+      .reduce((acc, curr) => acc += curr.value, 0)
   }
 
   toJSON() {

@@ -10,12 +10,12 @@ import OrganisationPolicy from '../policies/organisation.policy'
   {
     method: 'GET',
     path: '/current',
-    handler: 'currentOrganisation'
+    handler: 'current'
   }
 ])
-export default class InviteService implements Service {
+export default class OrganisationService implements Service {
   @HasPermission(OrganisationPolicy, 'current')
-  async currentOrganisation(req: Request): Promise<Response> {
+  async current(req: Request): Promise<Response> {
     const em: EntityManager = req.ctx.em
 
     const organisation: Organisation = req.ctx.state.user.organisation

@@ -1,13 +1,14 @@
 import { EntityManager } from '@mikro-orm/core'
 import { HasPermission, Service, Request, Response, Validate } from 'koa-clay'
-import Queue from 'bee-queue'
 import Invite from '../entities/invite'
 import User, { UserType } from '../entities/user'
-import { EmailConfig } from '../lib/messaging/sendEmail'
 import InvitePolicy from '../policies/invite.policy'
 import JoinOrganisation from '../emails/join-organisation-mail'
 import createGameActivity from '../lib/logging/createGameActivity'
 import { GameActivityType } from '../entities/game-activity'
+import { PricingPlanActionType } from '../entities/pricing-plan-action'
+import handlePricingPlanAction from '../lib/billing/handlePricingPlanAction'
+import queueEmail from '../lib/messaging/queueEmail'
 
 export default class InviteService implements Service {
   @HasPermission(InvitePolicy, 'index')
@@ -48,6 +49,8 @@ export default class InviteService implements Service {
       )
     }
 
+    await handlePricingPlanAction(req, em, PricingPlanActionType.USER_INVITE, { invitedUserEmail: email })
+
     const invite = new Invite(inviter.organisation)
     invite.email = email
     invite.type = type
@@ -66,9 +69,7 @@ export default class InviteService implements Service {
 
     await em.persistAndFlush(invite)
 
-    await (<Queue>req.ctx.emailQueue)
-      .createJob<EmailConfig>({ mail: new JoinOrganisation(invite).getConfig() })
-      .save()
+    await queueEmail(req.ctx.emailQueue, new JoinOrganisation(invite))
 
     return {
       status: 200,

@@ -11,6 +11,9 @@ import createUserAndToken from '../../utils/createUserAndToken'
 import createOrganisationAndGame from '../../utils/createOrganisationAndGame'
 import casual from 'casual'
 import GameActivity, { GameActivityType } from '../../../src/entities/game-activity'
+import PricingPlanFactory from '../../fixtures/PricingPlanFactory'
+import PricingPlanActionFactory from '../../fixtures/PricingPlanActionFactory'
+import { PricingPlanActionType } from '../../../src/entities/pricing-plan-action'
 
 const baseUrl = '/invites'
 
@@ -36,7 +39,7 @@ describe('Invite service - post', () => {
 
     const res = await request(app.callback())
       .post(`${baseUrl}`)
-      .send({ email: 'user@example.com', type: 1 })
+      .send({ email: 'user@example.com', type: UserType.ADMIN })
       .auth(token, { type: 'bearer' })
       .expect(statusCode)
 
@@ -66,7 +69,7 @@ describe('Invite service - post', () => {
 
     const res = await request(app.callback())
       .post(`${baseUrl}`)
-      .send({ email: invite.email, type: 1 })
+      .send({ email: invite.email, type: UserType.ADMIN })
       .auth(token, { type: 'bearer' })
       .expect(400)
 
@@ -109,7 +112,7 @@ describe('Invite service - post', () => {
 
     const res = await request(app.callback())
       .post(`${baseUrl}`)
-      .send({ email: invite.email, type: 1 })
+      .send({ email: invite.email, type: UserType.ADMIN })
       .auth(token, { type: 'bearer' })
       .expect(400)
 
@@ -124,10 +127,29 @@ describe('Invite service - post', () => {
 
     const res = await request(app.callback())
       .post(`${baseUrl}`)
-      .send({ email: user.email, type: 1 })
+      .send({ email: user.email, type: UserType.ADMIN })
       .auth(token, { type: 'bearer' })
       .expect(400)
 
     expect(res.body).toStrictEqual({ message: 'This email address is already in use' })
+  })
+
+  it('should not create an invite if a pricing plan limit has been hit', async () => {
+    const pricingPlan = await new PricingPlanFactory().one()
+    const pricingPlanAction = await new PricingPlanActionFactory(pricingPlan).with(() => ({
+      type: PricingPlanActionType.USER_INVITE
+    })).one()
+
+    const [organisation] = await createOrganisationAndGame(app.context.em, { pricingPlan })
+    const [token] = await createUserAndToken(app.context.em, { type: UserType.ADMIN }, organisation)
+
+    const otherInvites = await new InviteFactory().construct(organisation).many(pricingPlanAction.limit)
+    await (<EntityManager>app.context.em).persistAndFlush([pricingPlanAction, ...otherInvites])
+
+    await request(app.callback())
+      .post(`${baseUrl}`)
+      .send({ email: casual.email, type: UserType.DEV })
+      .auth(token, { type: 'bearer' })
+      .expect(402)
   })
 })

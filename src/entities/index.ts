@@ -19,8 +19,16 @@ import UserAccessCode from './user-access-code'
 import UserSession from './user-session'
 import UserTwoFactorAuth from './user-two-factor-auth'
 import UserRecoveryCode from './user-recovery-code'
+import PricingPlan from './pricing-plan'
+import PricingPlanAction from './pricing-plan-action'
+import OrganisationPricingPlan from './organisation-pricing-plan'
+import OrganisationPricingPlanAction from './organisation-pricing-plan-action'
 
 export default [
+  OrganisationPricingPlanAction,
+  OrganisationPricingPlan,
+  PricingPlanAction,
+  PricingPlan,
   Invite,
   PlayerGameStat,
   GameStat,

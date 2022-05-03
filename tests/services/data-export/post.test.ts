@@ -9,6 +9,11 @@ import createOrganisationAndGame from '../../utils/createOrganisationAndGame'
 import userPermissionProvider from '../../utils/userPermissionProvider'
 import clearEntities from '../../utils/clearEntities'
 import GameActivity, { GameActivityType } from '../../../src/entities/game-activity'
+import PricingPlanFactory from '../../fixtures/PricingPlanFactory'
+import PricingPlanActionFactory from '../../fixtures/PricingPlanActionFactory'
+import { PricingPlanActionType } from '../../../src/entities/pricing-plan-action'
+import DataExportFactory from '../../fixtures/DataExportFactory'
+import { subMonths } from 'date-fns'
 
 const baseUrl = '/data-exports'
 
@@ -199,5 +204,46 @@ describe('Data export service - post', () => {
         entities: ['Entities must be an array of strings']
       }
     })
+  })
+
+  it('should not create a data export if a pricing plan limit has been hit', async () => {
+    const pricingPlan = await new PricingPlanFactory().one()
+    const pricingPlanAction = await new PricingPlanActionFactory(pricingPlan).with(() => ({
+      type: PricingPlanActionType.DATA_EXPORT
+    })).one()
+
+    const [organisation, game] = await createOrganisationAndGame(app.context.em, { pricingPlan })
+    const [token] = await createUserAndToken(app.context.em, { type: UserType.ADMIN, emailConfirmed: true }, organisation)
+
+    const otherExports = await new DataExportFactory(game).many(pricingPlanAction.limit)
+    await (<EntityManager>app.context.em).persistAndFlush([pricingPlanAction, ...otherExports])
+
+    await request(app.callback())
+      .post(`${baseUrl}`)
+      .send({ gameId: game.id, entities: [DataExportAvailableEntities.GAME_STATS, DataExportAvailableEntities.GAME_ACTIVITIES] })
+      .auth(token, { type: 'bearer' })
+      .expect(402)
+  })
+
+  it('should create a data export if a pricing plan limit was hit but not in the same month', async () => {
+    const pricingPlan = await new PricingPlanFactory().one()
+    const pricingPlanAction = await new PricingPlanActionFactory(pricingPlan).with(() => ({
+      type: PricingPlanActionType.DATA_EXPORT
+    })).one()
+
+    const [organisation, game] = await createOrganisationAndGame(app.context.em, { pricingPlan })
+    const [token] = await createUserAndToken(app.context.em, { type: UserType.ADMIN, emailConfirmed: true }, organisation)
+
+    const otherExports = await new DataExportFactory(game)
+      .with(() => ({ createdAt: subMonths(new Date(), 1)  }))
+      .many(pricingPlanAction.limit)
+
+    await (<EntityManager>app.context.em).persistAndFlush([pricingPlanAction, ...otherExports])
+
+    await request(app.callback())
+      .post(`${baseUrl}`)
+      .send({ gameId: game.id, entities: [DataExportAvailableEntities.GAME_STATS, DataExportAvailableEntities.GAME_ACTIVITIES] })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
   })
 })

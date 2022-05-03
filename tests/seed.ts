@@ -10,6 +10,11 @@ import GameSaveFactory from './fixtures/GameSaveFactory'
 import GameStatFactory from './fixtures/GameStatFactory'
 import PlayerGameStatFactory from './fixtures/PlayerGameStatFactory'
 import casual from 'casual'
+import PricingPlanFactory from './fixtures/PricingPlanFactory'
+import PricingPlanActionFactory from './fixtures/PricingPlanActionFactory'
+import PricingPlanAction, { PricingPlanActionType } from '../src/entities/pricing-plan-action'
+import OrganisationPricingPlanFactory from './fixtures/OrganisationPricingPlanFactory'
+import PricingPlan from '../src/entities/pricing-plan'
 
 (async () => {
   const orm = await MikroORM.init()
@@ -17,14 +22,49 @@ import casual from 'casual'
   await orm.em.getConnection().execute('drop table if exists mikro_orm_migrations')
   await orm.getMigrator().up()
 
-  const organisation = await new OrganisationFactory().with(() => ({ name: process.env.DEMO_ORGANISATION_NAME })).one()
+  const plansMap: Partial<PricingPlan>[] = [
+    { stripeId: 'prod_LcO5U04wEGWgMP', default: true },
+    { stripeId: 'prod_LbW295xhmo2bk0' },
+    { stripeId: 'prod_LcNy4ow2VoJ8kc' }
+  ]
+
+  const pricingPlans = await new PricingPlanFactory().with((_, idx) => plansMap[idx]).many(3)
+
+  const pricingPlanActions: PricingPlanAction[] = []
+
+  let idx = 0
+  for (const plan of pricingPlans) {
+    const pricingPlanActionFactory = new PricingPlanActionFactory(plan)
+
+    for (const actionType of [PricingPlanActionType.USER_INVITE, PricingPlanActionType.DATA_EXPORT]) {
+      const pricingPlanAction = await pricingPlanActionFactory.with(() => ({
+        type: actionType,
+        limit: casual.integer(idx + 1, idx * 4 + 3)
+      })).one()
+
+      pricingPlanActions.push(pricingPlanAction)
+    }
+
+    idx++
+  }
+
+  const organisation = await new OrganisationFactory().with(async (organisation) => {
+    const orgPlan = await new OrganisationPricingPlanFactory()
+      .construct(organisation, pricingPlans[0])
+      .with(() => ({ stripeCustomerId: null }))
+      .one()
+
+    return {
+      name: process.env.DEMO_ORGANISATION_NAME,
+      pricingPlan: orgPlan
+    }
+  }).one()
 
   const userFactory = new UserFactory()
-  const users = await userFactory.with(() => ({ organisation })).many(4)
 
   const ownerUser = await userFactory.state('loginable').state('owner').with(() => ({
     organisation,
-    email: 'admin@trytalo.com'
+    email: 'owner@trytalo.com'
   })).one()
 
   const adminUser = await userFactory.state('loginable').state('admin').with(() => ({
@@ -61,11 +101,12 @@ import casual from 'casual'
   const em = orm.em.fork()
 
   await em.persistAndFlush([
+    ...pricingPlans,
+    ...pricingPlanActions,
     ownerUser,
     adminUser,
     devUser,
     organisation,
-    ...users,
     ...games,
     ...players,
     ...eventsThisMonth,

@@ -11,7 +11,6 @@ import PlayerAlias from '../entities/player-alias'
 import Queue from 'bee-queue'
 import createQueue from '../lib/queues/createQueue'
 import ormConfig from '../config/mikro-orm.config'
-import { EmailConfig } from '../lib/messaging/sendEmail'
 import { unlink } from 'fs/promises'
 import LeaderboardEntry from '../entities/leaderboard-entry'
 import PlayerGameStat from '../entities/player-game-stat'
@@ -20,6 +19,9 @@ import GameActivity, { GameActivityType } from '../entities/game-activity'
 import { devDataPlayerFilter } from '../middlewares/dev-data-middleware'
 import DataExportReady from '../emails/data-export-ready-mail'
 import createGameActivity from '../lib/logging/createGameActivity'
+import handlePricingPlanAction from '../lib/billing/handlePricingPlanAction'
+import { PricingPlanActionType } from '../entities/pricing-plan-action'
+import queueEmail from '../lib/messaging/queueEmail'
 
 interface EntityWithProps {
   props: Prop[]
@@ -78,19 +80,15 @@ export default class DataExportService implements Service {
       await orm.em.flush()
       await orm.close()
 
-      const emailJob = await this.emailQueue
-        .createJob<EmailConfig>({
-          mail: new DataExportReady(dataExport.createdByUser.email, [
-            {
-              content: zip.toBuffer().toString('base64'),
-              filename,
-              type: 'application/zip',
-              disposition: 'attachment',
-              content_id: filename
-            }
-          ]).getConfig()
-        })
-        .save()
+      const emailJob = await queueEmail(this.emailQueue, new DataExportReady(dataExport.createdByUser.email, [
+        {
+          content: zip.toBuffer().toString('base64'),
+          filename,
+          type: 'application/zip',
+          disposition: 'attachment',
+          content_id: filename
+        }
+      ]))
 
       await unlink(filepath)
 
@@ -376,6 +374,8 @@ export default class DataExportService implements Service {
 
     const { entities } = req.body
     const em: EntityManager = req.ctx.em
+
+    await handlePricingPlanAction(req, em, PricingPlanActionType.DATA_EXPORT)
 
     const dataExport = new DataExport(req.ctx.state.user, req.ctx.state.game)
     dataExport.entities = entities

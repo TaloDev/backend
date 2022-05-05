@@ -10,6 +10,7 @@ import userPermissionProvider from '../../utils/userPermissionProvider'
 import createUserAndToken from '../../utils/createUserAndToken'
 import createOrganisationAndGame from '../../utils/createOrganisationAndGame'
 import casual from 'casual'
+import GameActivity, { GameActivityType } from '../../../src/entities/game-activity'
 
 const baseUrl = '/invites'
 
@@ -21,7 +22,7 @@ describe('Invite service - post', () => {
   })
 
   beforeEach(async () => {
-    await clearEntities(app.context.em, ['Invite'])
+    await clearEntities(app.context.em, ['Invite', 'GameActivity'])
   })
 
   afterAll(async () => {
@@ -39,11 +40,19 @@ describe('Invite service - post', () => {
       .auth(token, { type: 'bearer' })
       .expect(statusCode)
 
+    const activity = await (<EntityManager>app.context.em).getRepository(GameActivity).findOne({
+      type: GameActivityType.INVITE_CREATED
+    })
+
     if (statusCode === 200) {
       expect(res.body.invite.email).toBe('user@example.com')
       expect(res.body.invite.organisation.id).toBe(user.organisation.id)
+
+      expect(activity.extra.inviteEmail).toBe('user@example.com')
     } else {
       expect(res.body).toStrictEqual({ message: 'You do not have permissions to create invites' })
+
+      expect(activity).toBe(null)
     }
   })
 
@@ -82,7 +91,7 @@ describe('Invite service - post', () => {
       expect(res.body).toStrictEqual({
         errors: {
           type: [
-            'You can only invite an admin or dev user'
+            'You can only invite an admin or developer user'
           ]
         }
       })

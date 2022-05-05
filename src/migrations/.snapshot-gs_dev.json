@@ -958,15 +958,6 @@
             "two_factor_auth_id"
           ],
           "composite": false,
-          "keyName": "user_two_factor_auth_id_index",
-          "primary": false,
-          "unique": false
-        },
-        {
-          "columnNames": [
-            "two_factor_auth_id"
-          ],
-          "composite": false,
           "keyName": "user_two_factor_auth_id_unique",
           "primary": false,
           "unique": true
@@ -1657,7 +1648,7 @@
           "unsigned": true,
           "autoincrement": false,
           "primary": false,
-          "nullable": false,
+          "nullable": true,
           "mappedType": "integer"
         },
         "user_id": {
@@ -1740,6 +1731,7 @@
             "id"
           ],
           "referencedTableName": "game",
+          "deleteRule": "set null",
           "updateRule": "cascade"
         },
         "game_activity_user_id_foreign": {

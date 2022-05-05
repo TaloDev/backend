@@ -19,6 +19,8 @@ import generateRecoveryCodes from '../../lib/auth/generateRecoveryCodes'
 import Invite from '../../entities/invite'
 import ConfirmEmail from '../../emails/confirm-email-mail'
 import { EmailConfig } from '../../lib/messaging/sendEmail'
+import { GameActivityType } from '../../entities/game-activity'
+import createGameActivity from '../../lib/logging/createGameActivity'
 
 async function sendEmailConfirm(req: Request, res: Response): Promise<void> {
   const user: User = req.ctx.state.user
@@ -115,6 +117,8 @@ export default class UserPublicService implements Service {
       user.organisation = invite.organisation
       user.type = invite.type
       user.emailConfirmed = true
+
+      await createGameActivity(em, { user, type: GameActivityType.INVITE_ACCEPTED })
 
       await em.getRepository(Invite).remove(invite)
     } else {

@@ -18,7 +18,7 @@ export default class Invite {
   @Required({
     validation: async (value: number): Promise<ValidationCondition[]> => [{
       check: [UserType.ADMIN, UserType.DEV].includes(value as UserType),
-      error: 'You can only invite an admin or dev user'
+      error: 'You can only invite an admin or developer user'
     }]
   })
   @Enum(() => UserType)

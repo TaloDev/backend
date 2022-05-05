@@ -27,7 +27,7 @@ describe('Game activitie service - index', () => {
     UserType.DEMO
   ]))('should return a %i for a %s user', async (statusCode, _, type) => {
     const [organisation, game] = await createOrganisationAndGame(app.context.em)
-    const [token, user] = await createUserAndToken(app.context.em, { type, emailConfirmed: true }, organisation)
+    const [token, user] = await createUserAndToken(app.context.em, { type }, organisation)
 
     const activities = await new GameActivityFactory([game], [user]).many(5)
     await (<EntityManager>app.context.em).persistAndFlush([user, game, ...activities])
@@ -43,6 +43,27 @@ describe('Game activitie service - index', () => {
     } else {
       expect(res.body).toStrictEqual({ message: 'You do not have permissions to view game activities' })
     }
+  })
+
+  it('should return game activities with no games but from the same organisation', async () => {
+    const [organisation, game] = await createOrganisationAndGame(app.context.em)
+    const [otherOrg] = await createOrganisationAndGame(app.context.em)
+
+    const [token, user] = await createUserAndToken(app.context.em, { type: UserType.ADMIN }, organisation)
+    const otherUser = await new UserFactory().with(() => ({ organisation: otherOrg })).one()
+
+    const activities = await new GameActivityFactory([], [user]).many(5)
+    const otherActivities = await new GameActivityFactory([], [otherUser]).many(5)
+
+    await (<EntityManager>app.context.em).persistAndFlush([...activities, ...otherActivities])
+
+    const res = await request(app.callback())
+      .get(`${baseUrl}`)
+      .query({ gameId: game.id })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    expect(res.body.activities).toHaveLength(activities.length)
   })
 
   it('should not return a list of game activities for a game the user has no access to', async () => {

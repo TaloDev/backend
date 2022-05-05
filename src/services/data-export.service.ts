@@ -19,6 +19,7 @@ import GameStat from '../entities/game-stat'
 import GameActivity, { GameActivityType } from '../entities/game-activity'
 import { devDataPlayerFilter } from '../middlewares/dev-data-middleware'
 import DataExportReady from '../emails/data-export-ready-mail'
+import createGameActivity from '../lib/logging/createGameActivity'
 
 interface EntityWithProps {
   props: Prop[]
@@ -379,6 +380,20 @@ export default class DataExportService implements Service {
     const dataExport = new DataExport(req.ctx.state.user, req.ctx.state.game)
     dataExport.entities = entities
     await em.persistAndFlush(dataExport)
+
+    await createGameActivity(em, {
+      user: req.ctx.state.user,
+      game: req.ctx.state.game,
+      type: GameActivityType.DATA_EXPORT_REQUESTED,
+      extra: {
+        dataExportId: dataExport.id,
+        display: {
+          'Entities': entities.join(', ')
+        }
+      }
+    })
+
+    await em.flush()
 
     await this.queue.createJob<DataExportJob>({
       dataExportId: dataExport.id,

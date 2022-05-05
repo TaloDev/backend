@@ -28,7 +28,7 @@ export default class GameActivityFactory extends Factory<GameActivity> {
     }
 
     return {
-      game: casual.random_element(this.availableGames),
+      game: this.availableGames.length > 0 ? casual.random_element(this.availableGames) : null,
       user: casual.random_element(this.availableUsers),
       type,
       extra

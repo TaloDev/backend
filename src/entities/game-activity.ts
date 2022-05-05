@@ -13,7 +13,9 @@ export enum GameActivityType {
   API_KEY_REVOKED,
   GAME_STAT_CREATED,
   GAME_STAT_UPDATED,
-  GAME_STAT_DELETED
+  GAME_STAT_DELETED,
+  INVITE_CREATED,
+  INVITE_ACCEPTED
 }
 
 @Entity()
@@ -21,7 +23,7 @@ export default class GameActivity {
   @PrimaryKey()
   id: number
 
-  @ManyToOne(() => Game)
+  @ManyToOne(() => Game, { nullable: true })
   game: Game
 
   @ManyToOne(() => User)
@@ -71,6 +73,10 @@ export default class GameActivity {
         return `${this.user.username} updated the stat ${this.extra.statInternalName}`
       case GameActivityType.GAME_STAT_DELETED:
         return `${this.user.username} deleted the stat ${this.extra.statInternalName}`
+      case GameActivityType.INVITE_CREATED:
+        return `${this.user.username} created an invite for ${this.extra.inviteEmail}`
+      case GameActivityType.INVITE_ACCEPTED:
+        return `${this.user.username} joined the organisation`
       default:
         return ''
     }

@@ -11,6 +11,7 @@ import { SetUserTwoFactorAuthEnabledDefaultFalse } from './20220203130919SetUser
 import { CreateGameStatsTable } from './20220320171104CreateGameStatsTable'
 import { AddUsernameColumn } from './20220402004932AddUsernameColumn'
 import { CreateInvitesTable } from './20220420141136CreateInvitesTable'
+import { MakeGameActivityUserNullable } from './20220505190243MakeGameActivityUserNullable'
 
 export default [
   {
@@ -64,5 +65,9 @@ export default [
   {
     name: 'CreateInvitesTable',
     class: CreateInvitesTable
+  },
+  {
+    name: 'MakeGameActivityUserNullable',
+    class: MakeGameActivityUserNullable
   }
 ]

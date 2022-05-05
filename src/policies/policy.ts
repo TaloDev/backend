@@ -1,5 +1,5 @@
 import { EntityManager } from '@mikro-orm/core'
-import { Policy as ServicePolicy, PolicyDenial, PolicyResponse } from 'koa-clay'
+import { Policy as ServicePolicy, PolicyDenial, PolicyResponse, Request } from 'koa-clay'
 import { Context } from 'koa'
 import APIKey, { APIKeyScope } from '../entities/api-key'
 import Game from '../entities/game'
@@ -18,14 +18,16 @@ export default class Policy extends ServicePolicy {
     return this.ctx.state.user.api === true
   }
 
-  async getUser(): Promise<User> {
+  async getUser(req?: Request): Promise<User> {
+    const ctx = req ? req.ctx : this.ctx
+
     // check its been initialised
-    if (this.ctx.state.user.email) return this.ctx.state.user
+    if (ctx.state.user.email) return ctx.state.user
 
-    const user = await getUserFromToken(this.ctx)
-    if (!user) this.ctx.throw(401)
+    const user = await getUserFromToken(ctx)
+    if (!user) ctx.throw(401)
 
-    this.ctx.state.user = user
+    ctx.state.user = user
     return user
   }
 

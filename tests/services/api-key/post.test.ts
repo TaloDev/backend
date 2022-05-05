@@ -2,57 +2,46 @@ import { EntityManager } from '@mikro-orm/core'
 import Koa from 'koa'
 import init from '../../../src/index'
 import request from 'supertest'
-import User from '../../../src/entities/user'
-import { genAccessToken } from '../../../src/lib/auth/buildTokenPair'
-import Game from '../../../src/entities/game'
-import UserFactory from '../../fixtures/UserFactory'
-import OrganisationFactory from '../../fixtures/OrganisationFactory'
+import { UserType } from '../../../src/entities/user'
 import GameActivity, { GameActivityType } from '../../../src/entities/game-activity'
+import clearEntities from '../../utils/clearEntities'
+import createUserAndToken from '../../utils/createUserAndToken'
+import userPermissionProvider from '../../utils/userPermissionProvider'
+import createOrganisationAndGame from '../../utils/createOrganisationAndGame'
 
 const baseUrl = '/api-keys'
 
 describe('API key service - post', () => {
   let app: Koa
-  let user: User
-  let validGame: Game
-  let token: string
 
   beforeAll(async () => {
     app = await init()
+  })
 
-    user = await new UserFactory().state('admin').one()
-    validGame = new Game('Uplift', user.organisation)
-    await (<EntityManager>app.context.em).persistAndFlush([user, validGame])
-
-    token = await genAccessToken(user)
+  beforeEach(async () => {
+    await clearEntities(app.context.em, ['GameActivity'])
   })
 
   afterAll(async () => {
     await (<EntityManager>app.context.em).getConnection().close()
   })
 
-  it('should not create an api key if the user\'s email is not confirmed', async () => {
-    const res = await request(app.callback())
-      .post(`${baseUrl}`)
-      .send({ gameId: validGame.id, scopes: ['read:players', 'write:events'] })
-      .auth(token, { type: 'bearer' })
-      .expect(403)
-
-    expect(res.body).toStrictEqual({ message: 'You need to confirm your email address to do this' })
-  })
-
-  it('should create an api key if the user\'s email is confirmed', async () => {
-    user.emailConfirmed = true
-    await (<EntityManager>app.context.em).flush()
+  it.each(userPermissionProvider([
+    UserType.ADMIN
+  ]))('should return a %i for a %s user', async (statusCode, _, type) => {
+    const [organisation, game] = await createOrganisationAndGame(app.context.em)
+    const [token] = await createUserAndToken(app.context.em, { type, emailConfirmed: true }, organisation)
 
     const res = await request(app.callback())
       .post(`${baseUrl}`)
-      .send({ gameId: validGame.id, scopes: ['read:players', 'write:events'] })
+      .send({ gameId: game.id, scopes: ['read:players', 'write:events'] })
       .auth(token, { type: 'bearer' })
-      .expect(200)
+      .expect(statusCode)
 
-    expect(res.body.apiKey.gameId).toBe(validGame.id)
-    expect(res.body.apiKey.scopes).toStrictEqual(['read:players', 'write:events'])
+    if (statusCode === 200) {
+      expect(res.body.apiKey.gameId).toBe(game.id)
+      expect(res.body.apiKey.scopes).toStrictEqual(['read:players', 'write:events'])
+    }
 
     const activity = await (<EntityManager>app.context.em).getRepository(GameActivity).findOne({
       type: GameActivityType.API_KEY_CREATED,
@@ -63,13 +52,32 @@ describe('API key service - post', () => {
       }
     })
 
-    expect(activity).not.toBeNull()
+    if (statusCode === 200) {
+      expect(activity).not.toBeNull()
+    } else {
+      expect(activity).toBeNull()
+    }
+  })
+
+  it('should not create an api key if the user\'s email is not confirmed', async () => {
+    const [organisation, game] = await createOrganisationAndGame(app.context.em)
+    const [token] = await createUserAndToken(app.context.em, { type: UserType.ADMIN }, organisation)
+
+    const res = await request(app.callback())
+      .post(`${baseUrl}`)
+      .send({ gameId: game.id, scopes: ['read:players', 'write:events'] })
+      .auth(token, { type: 'bearer' })
+      .expect(403)
+
+    expect(res.body).toStrictEqual({ message: 'You need to confirm your email address to do this' })
   })
 
   it('should not create an api key for a non-existent game', async () => {
+    const [token] = await createUserAndToken(app.context.em, { emailConfirmed: true, type: UserType.ADMIN })
+
     const res = await request(app.callback())
       .post(`${baseUrl}`)
-      .send({ gameId: 99, scopes: [] })
+      .send({ gameId: 99999, scopes: [] })
       .auth(token, { type: 'bearer' })
       .expect(404)
 
@@ -77,29 +85,15 @@ describe('API key service - post', () => {
   })
 
   it('should not create an api key for a game the user has no access to', async () => {
-    const otherOrg = await new OrganisationFactory().one()
-    const otherGame = new Game('Crawle', otherOrg)
-    await (<EntityManager>app.context.em).persistAndFlush(otherGame)
+    const [, otherGame] = await createOrganisationAndGame(app.context.em)
+    const [token] = await createUserAndToken(app.context.em, { emailConfirmed: true, type: UserType.ADMIN })
 
-    await request(app.callback())
+    const res = await request(app.callback())
       .post(`${baseUrl}`)
       .send({ gameId: otherGame.id, scopes: [] })
       .auth(token, { type: 'bearer' })
       .expect(403)
-  })
 
-  it('should not create an api key if the user is not an admin', async () => {
-    const invalidUser = await new UserFactory().one()
-    await (<EntityManager>app.context.em).persistAndFlush(invalidUser)
-
-    const invalidUserToken = await genAccessToken(invalidUser)
-
-    const res = await request(app.callback())
-      .post(`${baseUrl}`)
-      .send({ gameId: validGame.id, scopes: ['read:players', 'write:events'] })
-      .auth(invalidUserToken, { type: 'bearer' })
-      .expect(403)
-
-    expect(res.body).toStrictEqual({ message: 'You do not have permissions to manage API keys' })
+    expect(res.body).toStrictEqual({ message: 'Forbidden' })
   })
 })

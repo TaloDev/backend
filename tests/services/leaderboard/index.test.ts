@@ -50,7 +50,7 @@ describe('Leaderboard service - index', () => {
   it('should not return leaderboards for a non-existent game', async () => {
     const res = await request(app.callback())
       .get(`${baseUrl}`)
-      .query({ gameId: 99 })
+      .query({ gameId: 99999 })
       .auth(token, { type: 'bearer' })
       .expect(404)
 

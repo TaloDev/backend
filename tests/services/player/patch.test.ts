@@ -2,38 +2,34 @@ import { EntityManager } from '@mikro-orm/core'
 import Koa from 'koa'
 import init from '../../../src/index'
 import request from 'supertest'
-import User from '../../../src/entities/user'
-import { genAccessToken } from '../../../src/lib/auth/buildTokenPair'
-import Game from '../../../src/entities/game'
-import UserFactory from '../../fixtures/UserFactory'
-import OrganisationFactory from '../../fixtures/OrganisationFactory'
+import { UserType } from '../../../src/entities/user'
 import PlayerFactory from '../../fixtures/PlayerFactory'
 import GameActivity, { GameActivityType } from '../../../src/entities/game-activity'
+import userPermissionProvider from '../../utils/userPermissionProvider'
+import createOrganisationAndGame from '../../utils/createOrganisationAndGame'
+import createUserAndToken from '../../utils/createUserAndToken'
 
 const baseUrl = '/players'
 
 describe('Player service - patch', () => {
   let app: Koa
-  let user: User
-  let validGame: Game
-  let token: string
 
   beforeAll(async () => {
     app = await init()
-
-    user = await new UserFactory().one()
-    validGame = new Game('Uplift', user.organisation)
-    await (<EntityManager>app.context.em).persistAndFlush([user, validGame])
-
-    token = await genAccessToken(user)
   })
 
   afterAll(async () => {
     await (<EntityManager>app.context.em).getConnection().close()
   })
 
-  it('should update a player\'s properties', async () => {
-    const player = await new PlayerFactory([validGame]).with(() => ({
+  it.each(userPermissionProvider([
+    UserType.ADMIN,
+    UserType.DEV
+  ]))('should return a %i for a %s user', async (statusCode, _, type) => {
+    const [organisation, game] = await createOrganisationAndGame(app.context.em)
+    const [token] = await createUserAndToken(app.context.em, { type }, organisation)
+
+    const player = await new PlayerFactory([game]).with(() => ({
       props: [
         {
           key: 'collectibles',
@@ -59,20 +55,7 @@ describe('Player service - patch', () => {
         ]
       })
       .auth(token, { type: 'bearer' })
-      .expect(200)
-
-    expect(res.body.player.props).toEqual(expect.arrayContaining(
-      [
-        {
-          key: 'collectibles',
-          value: '1'
-        },
-        {
-          key: 'zonesExplored',
-          value: '1'
-        }
-      ]
-    ))
+      .expect(statusCode)
 
     const activity = await (<EntityManager>app.context.em).getRepository(GameActivity).findOne({
       type: GameActivityType.PLAYER_PROPS_UPDATED,
@@ -81,11 +64,31 @@ describe('Player service - patch', () => {
       }
     })
 
-    expect(activity).not.toBeNull()
+    if (statusCode === 200) {
+      expect(res.body.player.props).toEqual(expect.arrayContaining(
+        [
+          {
+            key: 'collectibles',
+            value: '1'
+          },
+          {
+            key: 'zonesExplored',
+            value: '1'
+          }
+        ]
+      ))
+
+      expect(activity).not.toBeNull()
+    } else {
+      expect(activity).toBeNull()
+    }
   })
 
   it('should delete null player properties', async () => {
-    const player = await new PlayerFactory([validGame]).with(() => ({
+    const [organisation, game] = await createOrganisationAndGame(app.context.em)
+    const [token] = await createUserAndToken(app.context.em, {}, organisation)
+
+    const player = await new PlayerFactory([game]).with(() => ({
       props: [
         {
           key: 'collectibles',
@@ -126,7 +129,10 @@ describe('Player service - patch', () => {
   })
 
   it('should throw an error if props are present but aren\'t an array', async () => {
-    const player = await new PlayerFactory([validGame]).one()
+    const [organisation, game] = await createOrganisationAndGame(app.context.em)
+    const [token] = await createUserAndToken(app.context.em, {}, organisation)
+
+    const player = await new PlayerFactory([game]).one()
     await (<EntityManager>app.context.em).persistAndFlush(player)
 
     const res = await request(app.callback())
@@ -147,6 +153,8 @@ describe('Player service - patch', () => {
   })
 
   it('should not update a non-existent player\'s properties', async () => {
+    const [token] = await createUserAndToken(app.context.em)
+
     const res = await request(app.callback())
       .patch(`${baseUrl}/2313`)
       .send({
@@ -164,33 +172,11 @@ describe('Player service - patch', () => {
   })
 
   it('should not update a player\'s properties for a game the user has no access to', async () => {
-    const otherOrg = await new OrganisationFactory().one()
-    const otherGame = new Game('Trigeon', otherOrg)
+    const [, otherGame] = await createOrganisationAndGame(app.context.em)
+    const [token] = await createUserAndToken(app.context.em, {})
+
     const player = await new PlayerFactory([otherGame]).one()
-
     await (<EntityManager>app.context.em).persistAndFlush(player)
-
-    await request(app.callback())
-      .patch(`${baseUrl}/${player.id}`)
-      .send({
-        props: [
-          {
-            key: 'collectibles',
-            value: '2'
-          }
-        ]
-      })
-      .auth(token, { type: 'bearer' })
-      .expect(403)
-  })
-
-  it('should not update a player\'s properties if using a demo account', async () => {
-    const demoUser = await new UserFactory().state('demo').one()
-    const player = await new PlayerFactory([validGame]).one()
-
-    await (<EntityManager>app.context.em).persistAndFlush([demoUser, player])
-
-    const demoToken = await genAccessToken(demoUser)
 
     const res = await request(app.callback())
       .patch(`${baseUrl}/${player.id}`)
@@ -202,15 +188,17 @@ describe('Player service - patch', () => {
           }
         ]
       })
-      .auth(demoToken, { type: 'bearer' })
+      .auth(token, { type: 'bearer' })
       .expect(403)
 
-    expect(res.body).toStrictEqual({ message: 'Demo accounts cannot update player properties' })
+    expect(res.body).toStrictEqual({ message: 'Forbidden' })
   })
 
   it('should filter out props with no keys', async () => {
-    const player = await new PlayerFactory([validGame]).with(() => ({ props: [] })).one()
+    const [organisation, game] = await createOrganisationAndGame(app.context.em)
+    const [token] = await createUserAndToken(app.context.em, {}, organisation)
 
+    const player = await new PlayerFactory([game]).with(() => ({ props: [] })).one()
     await (<EntityManager>app.context.em).persistAndFlush(player)
 
     const res = await request(app.callback())
@@ -239,7 +227,10 @@ describe('Player service - patch', () => {
   })
 
   it('should reject keys starting with META_', async () => {
-    const player = await new PlayerFactory([validGame]).one()
+    const [organisation, game] = await createOrganisationAndGame(app.context.em)
+    const [token] = await createUserAndToken(app.context.em, {}, organisation)
+
+    const player = await new PlayerFactory([game]).one()
     await (<EntityManager>app.context.em).persistAndFlush(player)
 
     const res = await request(app.callback())

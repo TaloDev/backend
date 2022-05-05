@@ -2,51 +2,53 @@ import { EntityManager } from '@mikro-orm/core'
 import Koa from 'koa'
 import init from '../../../src/index'
 import request from 'supertest'
-import User, { UserType } from '../../../src/entities/user'
-import { genAccessToken } from '../../../src/lib/auth/buildTokenPair'
+import { UserType } from '../../../src/entities/user'
 import UserFactory from '../../fixtures/UserFactory'
 import InviteFactory from '../../fixtures/InviteFactory'
-import Invite from '../../../src/entities/invite'
-import OrganisationFactory from '../../fixtures/OrganisationFactory'
+import clearEntities from '../../utils/clearEntities'
+import userPermissionProvider from '../../utils/userPermissionProvider'
+import createUserAndToken from '../../utils/createUserAndToken'
+import createOrganisationAndGame from '../../utils/createOrganisationAndGame'
 
 const baseUrl = '/invites'
 
 describe('Invite service - post', () => {
   let app: Koa
-  let user: User
-  let token: string
 
   beforeAll(async () => {
     app = await init()
-
-    user = await new UserFactory().state('admin').one()
-    await (<EntityManager>app.context.em).persistAndFlush(user)
-
-    token = await genAccessToken(user)
   })
 
   beforeEach(async () => {
-    const repo = (<EntityManager>app.context.em).getRepository(Invite)
-    const invites = await repo.findAll()
-    await repo.removeAndFlush(invites)
+    await clearEntities(app.context.em, ['Invite'])
   })
 
   afterAll(async () => {
     await (<EntityManager>app.context.em).getConnection().close()
   })
 
-  it('should create an invite', async () => {
+  it.each(userPermissionProvider([
+    UserType.ADMIN
+  ]))('should return a %i for a %s user', async (statusCode, _, type) => {
+    const [token, user] = await createUserAndToken(app.context.em, { type })
+
     const res = await request(app.callback())
       .post(`${baseUrl}`)
       .send({ email: 'user@example.com', type: 1 })
       .auth(token, { type: 'bearer' })
-      .expect(200)
+      .expect(statusCode)
 
-    expect(res.body.invite.email).toBe('user@example.com')
-    expect(res.body.invite.organisation.id).toBe(user.organisation.id)
+    if (statusCode === 200) {
+      expect(res.body.invite.email).toBe('user@example.com')
+      expect(res.body.invite.organisation.id).toBe(user.organisation.id)
+    } else {
+      expect(res.body).toStrictEqual({ message: 'You do not have permissions to create invites' })
+    }
   })
 
   it('should not create an invite when an invite exists for the same email', async () => {
+    const [token, user] = await createUserAndToken(app.context.em, { type: UserType.ADMIN })
+
     const invite = await new InviteFactory().construct(user.organisation).with(() => ({
       email: 'user@example.com'
     })).one()
@@ -62,7 +64,9 @@ describe('Invite service - post', () => {
   })
 
   it('should not create an invite when an invite exists for the same email on another organisation', async () => {
-    const otherOrg = await new OrganisationFactory().one()
+    const [otherOrg] = await createOrganisationAndGame(app.context.em)
+    const [token] = await createUserAndToken(app.context.em, { type: UserType.ADMIN })
+
     const invite = await new InviteFactory().construct(otherOrg).with(() => ({
       email: 'user@example.com'
     })).one()
@@ -78,6 +82,8 @@ describe('Invite service - post', () => {
   })
 
   it('should not create an invite when a user exists for the same email', async () => {
+    const [token] = await createUserAndToken(app.context.em, { type: UserType.ADMIN })
+
     const user = await new UserFactory().with(() => ({ email: 'user@example.com' })).one()
     await (<EntityManager>app.context.em).persistAndFlush(user)
 
@@ -88,27 +94,5 @@ describe('Invite service - post', () => {
       .expect(400)
 
     expect(res.body).toStrictEqual({ message: 'This email address is already in use' })
-  })
-
-  it('should not create invites for dev users', async () => {
-    user.type = UserType.DEV
-    await (<EntityManager>app.context.em).flush()
-
-    await request(app.callback())
-      .post(`${baseUrl}`)
-      .send({ email: 'user@example.com', type: 1 })
-      .auth(token, { type: 'bearer' })
-      .expect(403)
-  })
-
-  it('should not create invites for demo users', async () => {
-    user.type = UserType.DEMO
-    await (<EntityManager>app.context.em).flush()
-
-    await request(app.callback())
-      .post(`${baseUrl}`)
-      .send({ email: 'user@example.com', type: 1 })
-      .auth(token, { type: 'bearer' })
-      .expect(403)
   })
 })

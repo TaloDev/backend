@@ -2,49 +2,48 @@ import { EntityManager } from '@mikro-orm/core'
 import Koa from 'koa'
 import init from '../../../src/index'
 import request from 'supertest'
-import User from '../../../src/entities/user'
-import { genAccessToken } from '../../../src/lib/auth/buildTokenPair'
-import Game from '../../../src/entities/game'
+import { UserType } from '../../../src/entities/user'
 import APIKey from '../../../src/entities/api-key'
 import UserFactory from '../../fixtures/UserFactory'
-import OrganisationFactory from '../../fixtures/OrganisationFactory'
 import GameActivity, { GameActivityType } from '../../../src/entities/game-activity'
+import userPermissionProvider from '../../utils/userPermissionProvider'
+import createUserAndToken from '../../utils/createUserAndToken'
+import createOrganisationAndGame from '../../utils/createOrganisationAndGame'
+import clearEntities from '../../utils/clearEntities'
 
 const baseUrl = '/api-keys'
 
 describe('API key service - delete', () => {
   let app: Koa
-  let user: User
-  let validGame: Game
-  let token: string
 
   beforeAll(async () => {
     app = await init()
+  })
 
-    user = await new UserFactory().state('admin').one()
-    validGame = new Game('Uplift', user.organisation)
-    await (<EntityManager>app.context.em).persistAndFlush([user, validGame])
-
-    token = await genAccessToken(user)
+  beforeEach(async () => {
+    await clearEntities(app.context.em, ['GameActivity'])
   })
 
   afterAll(async () => {
     await (<EntityManager>app.context.em).getConnection().close()
   })
 
-  it('should delete an api key', async () => {
-    const key = new APIKey(validGame, user)
+  it.each(userPermissionProvider([
+    UserType.ADMIN
+  ], 204))('should return a %i for a %s user', async (statusCode, _, type) => {
+    const [organisation, game] = await createOrganisationAndGame(app.context.em)
+    const [token, user] = await createUserAndToken(app.context.em, { type, emailConfirmed: true }, organisation)
+
+    const key = new APIKey(game, user)
     await (<EntityManager>app.context.em).persistAndFlush(key)
 
-    await request(app.callback())
+    const res = await request(app.callback())
       .delete(`${baseUrl}/${key.id}`)
       .auth(token, { type: 'bearer' })
-      .expect(204)
+      .expect(statusCode)
 
     await (<EntityManager>app.context.em).clear()
     const updatedKey = await (<EntityManager>app.context.em).getRepository(APIKey).findOne(key.id)
-
-    expect(updatedKey.revokedAt).toBeTruthy()
 
     const activity = await (<EntityManager>app.context.em).getRepository(GameActivity).findOne({
       type: GameActivityType.API_KEY_REVOKED,
@@ -53,10 +52,20 @@ describe('API key service - delete', () => {
       }
     })
 
-    expect(activity).not.toBeNull()
+    if (statusCode === 204) {
+      expect(updatedKey.revokedAt).toBeTruthy()
+      expect(activity).not.toBeNull()
+    } else {
+      expect(res.body).toStrictEqual({ message: 'You do not have permissions to revoke API keys' })
+
+      expect(updatedKey.revokedAt).toBeNull()
+      expect(activity).toBeNull()
+    }
   })
 
   it('should not delete an api key that doesn\'t exist', async () => {
+    const [token] = await createUserAndToken(app.context.em, { type: UserType.ADMIN, emailConfirmed: true })
+
     const res = await request(app.callback())
       .delete(`${baseUrl}/99`)
       .auth(token, { type: 'bearer' })
@@ -66,14 +75,18 @@ describe('API key service - delete', () => {
   })
 
   it('should not delete an api key for a game the user has no access to', async () => {
-    const otherOrg = await new OrganisationFactory().one()
-    const invalidUser = await new UserFactory().one()
-    const key = new APIKey(new Game('Crawle', otherOrg), invalidUser)
+    const [otherOrg, otherGame] = await createOrganisationAndGame(app.context.em)
+    const [token] = await createUserAndToken(app.context.em, { type: UserType.ADMIN })
+
+    const user = await new UserFactory().with(() => ({ organisation: otherOrg })).one()
+    const key = new APIKey(otherGame, user)
     await (<EntityManager>app.context.em).persistAndFlush(key)
 
-    await request(app.callback())
+    const res = await request(app.callback())
       .delete(`${baseUrl}/${key.id}`)
       .auth(token, { type: 'bearer' })
       .expect(403)
+
+    expect(res.body).toStrictEqual({ message: 'Forbidden' })
   })
 })

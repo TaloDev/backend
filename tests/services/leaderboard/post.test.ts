@@ -2,96 +2,81 @@ import { EntityManager } from '@mikro-orm/core'
 import Koa from 'koa'
 import init from '../../../src/index'
 import request from 'supertest'
-import User from '../../../src/entities/user'
-import { genAccessToken } from '../../../src/lib/auth/buildTokenPair'
-import UserFactory from '../../fixtures/UserFactory'
+import { UserType } from '../../../src/entities/user'
 import GameFactory from '../../fixtures/GameFactory'
-import Game from '../../../src/entities/game'
-import OrganisationFactory from '../../fixtures/OrganisationFactory'
 import LeaderboardFactory from '../../fixtures/LeaderboardFactory'
-import Leaderboard from '../../../src/entities/leaderboard'
 import GameActivity, { GameActivityType } from '../../../src/entities/game-activity'
+import clearEntities from '../../utils/clearEntities'
+import userPermissionProvider from '../../utils/userPermissionProvider'
+import createOrganisationAndGame from '../../utils/createOrganisationAndGame'
+import createUserAndToken from '../../utils/createUserAndToken'
 
 const baseUrl = '/leaderboards'
 
 describe('Leaderboard service - post', () => {
   let app: Koa
-  let user: User
-  let validGame: Game
-  let token: string
 
   beforeAll(async () => {
     app = await init()
-
-    user = await new UserFactory().one()
-    validGame = await new GameFactory(user.organisation).one()
-    await (<EntityManager>app.context.em).persistAndFlush([user, validGame])
-
-    token = await genAccessToken(user)
   })
 
   beforeEach(async () => {
-    const repo = (<EntityManager>app.context.em).getRepository(Leaderboard)
-    const leaderboards = await repo.findAll()
-    await repo.removeAndFlush(leaderboards)
+    await clearEntities(app.context.em, ['Leaderboard', 'GameActivity'])
   })
 
   afterAll(async () => {
     await (<EntityManager>app.context.em).getConnection().close()
   })
 
-  it('should create a leaderboard', async () => {
+  it.each(userPermissionProvider([
+    UserType.ADMIN,
+    UserType.DEV
+  ]))('should return a %i for a %s user', async (statusCode, _, type) => {
+    const [organisation, game] = await createOrganisationAndGame(app.context.em)
+    const [token] = await createUserAndToken(app.context.em, { type }, organisation)
+
     const res = await request(app.callback())
       .post(`${baseUrl}`)
-      .send({ gameId: validGame.id, internalName: 'highscores', name: 'Highscores', sortMode: 'desc', unique: true })
+      .send({ gameId: game.id, internalName: 'highscores', name: 'Highscores', sortMode: 'desc', unique: true })
       .auth(token, { type: 'bearer' })
-      .expect(200)
-
-    expect(res.body.leaderboard.internalName).toBe('highscores')
-    expect(res.body.leaderboard.name).toBe('Highscores')
-    expect(res.body.leaderboard.sortMode).toBe('desc')
+      .expect(statusCode)
 
     const activity = await (<EntityManager>app.context.em).getRepository(GameActivity).findOne({
-      type: GameActivityType.LEADERBOARD_CREATED,
-      extra: {
-        leaderboardInternalName: res.body.leaderboard.internalName
-      }
+      type: GameActivityType.LEADERBOARD_CREATED
     })
 
-    expect(activity).not.toBeNull()
-  })
+    if (statusCode === 200) {
+      expect(res.body.leaderboard.internalName).toBe('highscores')
+      expect(res.body.leaderboard.name).toBe('Highscores')
+      expect(res.body.leaderboard.sortMode).toBe('desc')
 
-  it('should not create a leaderboard for demo users', async () => {
-    const invalidUser = await new UserFactory().state('demo').with(() => ({ organisation: validGame.organisation })).one()
-    await (<EntityManager>app.context.em).persistAndFlush(invalidUser)
+      expect(activity.extra.leaderboardInternalName).toBe(res.body.leaderboard.internalName)
+    } else {
+      expect(res.body).toStrictEqual({ message: 'You do not have permissions to create leaderboards' })
 
-    const invalidUserToken = await genAccessToken(invalidUser)
-
-    const res = await request(app.callback())
-      .post(`${baseUrl}`)
-      .send({ gameId: validGame.id, internalName: 'highscores', name: 'Highscores', sortMode: 'desc', unique: true })
-      .auth(invalidUserToken, { type: 'bearer' })
-      .expect(403)
-
-    expect(res.body).toStrictEqual({ message: 'Demo accounts cannot create leaderboards' })
+      expect(activity).toBeNull()
+    }
   })
 
   it('should not create a leaderboard for a game the user has no access to', async () => {
-    const otherOrg = await new OrganisationFactory().one()
-    const otherGame = await new GameFactory(otherOrg).one()
-    await (<EntityManager>app.context.em).persistAndFlush([otherOrg, otherGame])
+    const [, otherGame] = await createOrganisationAndGame(app.context.em)
+    const [token] = await createUserAndToken(app.context.em)
 
-    await request(app.callback())
+    const res = await request(app.callback())
       .post(`${baseUrl}`)
       .send({ gameId: otherGame.id, internalName: 'highscores', name: 'Highscores', sortMode: 'desc', unique: true })
       .auth(token, { type: 'bearer' })
       .expect(403)
+
+    expect(res.body).toStrictEqual({ message: 'Forbidden' })
   })
 
   it('should not create a leaderboard for a non-existent game', async () => {
+    const [token] = await createUserAndToken(app.context.em)
+
     const res = await request(app.callback())
       .post(`${baseUrl}`)
-      .send({ gameId: 99, internalName: 'highscores', name: 'Highscores', sortMode: 'desc', unique: true })
+      .send({ gameId: 99999, internalName: 'highscores', name: 'Highscores', sortMode: 'desc', unique: true })
       .auth(token, { type: 'bearer' })
       .expect(404)
 
@@ -99,9 +84,12 @@ describe('Leaderboard service - post', () => {
   })
 
   it('should not create a leaderboard with an invalid sort mode', async () => {
+    const [organisation, game] = await createOrganisationAndGame(app.context.em)
+    const [token] = await createUserAndToken(app.context.em, {}, organisation)
+
     const res = await request(app.callback())
       .post(`${baseUrl}`)
-      .send({ gameId: validGame.id, internalName: 'highscores', name: 'Highscores', sortMode: 'blah', unique: true })
+      .send({ gameId: game.id, internalName: 'highscores', name: 'Highscores', sortMode: 'blah', unique: true })
       .auth(token, { type: 'bearer' })
       .expect(400)
 
@@ -113,12 +101,15 @@ describe('Leaderboard service - post', () => {
   })
 
   it('should not create a leaderboard with a duplicate internal name', async () => {
-    const leaderboard = await new LeaderboardFactory([validGame]).with(() => ({ internalName: 'highscores' })).one()
+    const [organisation, game] = await createOrganisationAndGame(app.context.em)
+    const [token] = await createUserAndToken(app.context.em, {}, organisation)
+
+    const leaderboard = await new LeaderboardFactory([game]).with(() => ({ internalName: 'highscores' })).one()
     await (<EntityManager>app.context.em).persistAndFlush(leaderboard)
 
     const res = await request(app.callback())
       .post(`${baseUrl}`)
-      .send({ gameId: validGame.id, internalName: 'highscores', name: 'Highscores', sortMode: 'asc', unique: true })
+      .send({ gameId: game.id, internalName: 'highscores', name: 'Highscores', sortMode: 'asc', unique: true })
       .auth(token, { type: 'bearer' })
       .expect(400)
 
@@ -130,13 +121,16 @@ describe('Leaderboard service - post', () => {
   })
 
   it('should create a leaderboard with a duplicate internal name for another game', async () => {
-    const otherGame = await new GameFactory(user.organisation).one()
+    const [organisation, game] = await createOrganisationAndGame(app.context.em)
+    const [token] = await createUserAndToken(app.context.em, {}, organisation)
+
+    const otherGame = await new GameFactory(organisation).one()
     const otherLeaderboard = await new LeaderboardFactory([otherGame]).with(() => ({ internalName: 'time-survived' })).one()
     await (<EntityManager>app.context.em).persistAndFlush(otherLeaderboard)
 
     await request(app.callback())
       .post(`${baseUrl}`)
-      .send({ gameId: validGame.id, internalName: 'time-survived', name: 'Time survived', sortMode: 'asc', unique: true })
+      .send({ gameId: game.id, internalName: 'time-survived', name: 'Time survived', sortMode: 'asc', unique: true })
       .auth(token, { type: 'bearer' })
       .expect(200)
   })

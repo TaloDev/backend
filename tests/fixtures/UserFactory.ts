@@ -14,6 +14,7 @@ export default class UserFactory extends Factory<User> {
     this.register('base', this.base)
     this.register('email confirmed', this.emailConfirmed)
     this.register('loginable', this.loginable)
+    this.register('owner', this.owner)
     this.register('admin', this.admin)
     this.register('demo', this.demo)
     this.register('has2fa', this.has2fa)
@@ -40,6 +41,12 @@ export default class UserFactory extends Factory<User> {
     return {
       email: casual.email,
       password: await bcrypt.hash('password', 10)
+    }
+  }
+
+  protected owner(): Partial<User> {
+    return {
+      type: UserType.OWNER
     }
   }
 

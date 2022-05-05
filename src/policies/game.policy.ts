@@ -1,12 +1,11 @@
 import Policy from './policy'
-import { PolicyDenial, PolicyResponse } from 'koa-clay'
+import { PolicyResponse } from 'koa-clay'
 import { UserType } from '../entities/user'
+import UserTypeGate from './user-type-gate'
 
 export default class GamePolicy extends Policy {
+  @UserTypeGate([UserType.ADMIN, UserType.DEV], 'create games')
   async post(): Promise<PolicyResponse> {
-    const user = await this.getUser()
-    if (user.type === UserType.DEMO) return new PolicyDenial({ message: 'Demo accounts cannot create games' })
-
     return true
   }
 }

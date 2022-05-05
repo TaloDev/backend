@@ -81,7 +81,7 @@ describe('Player service - post', () => {
   it('should not create a player for a non-existent game', async () => {
     const res = await request(app.callback())
       .post(`${baseUrl}`)
-      .send({ gameId: 99 })
+      .send({ gameId: 99999 })
       .auth(token, { type: 'bearer' })
       .expect(404)
 

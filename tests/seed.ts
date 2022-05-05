@@ -22,14 +22,19 @@ import casual from 'casual'
   const userFactory = new UserFactory()
   const users = await userFactory.with(() => ({ organisation })).many(4)
 
-  const devUser = await userFactory.state('loginable').with(() => ({
+  const ownerUser = await userFactory.state('loginable').state('owner').with(() => ({
     organisation,
-    email: 'dev@trytalo.com'
+    email: 'admin@trytalo.com'
   })).one()
 
   const adminUser = await userFactory.state('loginable').state('admin').with(() => ({
     organisation,
     email: 'admin@trytalo.com'
+  })).one()
+
+  const devUser = await userFactory.state('loginable').with(() => ({
+    organisation,
+    email: 'dev@trytalo.com'
   })).one()
 
   const games = await new GameFactory(organisation).many(2)
@@ -56,8 +61,9 @@ import casual from 'casual'
   const em = orm.em.fork()
 
   await em.persistAndFlush([
-    devUser,
+    ownerUser,
     adminUser,
+    devUser,
     organisation,
     ...users,
     ...games,

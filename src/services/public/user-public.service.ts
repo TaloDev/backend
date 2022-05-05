@@ -123,7 +123,7 @@ export default class UserPublicService implements Service {
       organisation.name = organisationName
 
       user.organisation = organisation
-      user.type = UserType.ADMIN
+      user.type = UserType.OWNER
     }
 
     req.ctx.state.user = user

@@ -13,6 +13,7 @@ import LeaderboardFactory from '../../fixtures/LeaderboardFactory'
 import LeaderboardEntryFactory from '../../fixtures/LeaderboardEntryFactory'
 import GameStatFactory from '../../fixtures/GameStatFactory'
 import PlayerGameStatFactory from '../../fixtures/PlayerGameStatFactory'
+import clearEntities from '../../utils/clearEntities'
 
 describe('Data export service - included data', () => {
   let app: Koa
@@ -27,14 +28,8 @@ describe('Data export service - included data', () => {
     await (<EntityManager>app.context.em).persistAndFlush([user, game])
   })
 
-  const clearEntities = async (entityName: string) => {
-    const repo = (<EntityManager>app.context.em).getRepository(entityName)
-    const items = await repo.findAll()
-    await repo.removeAndFlush(items)
-  }
-
   beforeEach(async () => {
-    await clearEntities('Player')
+    await clearEntities(app.context.em, ['Player'])
   })
 
   afterAll(async () => {
@@ -42,7 +37,7 @@ describe('Data export service - included data', () => {
   })
 
   it('should not include events from dev build players without the dev data header', async () => {
-    await clearEntities('Event')
+    await clearEntities(app.context.em, ['Event'])
 
     const service = new DataExportService()
     const proto = Object.getPrototypeOf(service)
@@ -57,7 +52,7 @@ describe('Data export service - included data', () => {
   })
 
   it('should include events from dev build players with the dev data header', async () => {
-    await clearEntities('Event')
+    await clearEntities(app.context.em, ['Event'])
 
     const service = new DataExportService()
     const proto = Object.getPrototypeOf(service)
@@ -120,7 +115,7 @@ describe('Data export service - included data', () => {
   })
 
   it('should not include dev build player leaderboard entries without the dev data header', async () => {
-    await clearEntities('LeaderboardEntry')
+    await clearEntities(app.context.em, ['LeaderboardEntry'])
 
     const service = new DataExportService()
     const proto = Object.getPrototypeOf(service)
@@ -136,7 +131,7 @@ describe('Data export service - included data', () => {
   })
 
   it('should include dev build player leaderboard entries with the dev data header', async () => {
-    await clearEntities('LeaderboardEntry')
+    await clearEntities(app.context.em, ['LeaderboardEntry'])
 
     const service = new DataExportService()
     const proto = Object.getPrototypeOf(service)
@@ -152,7 +147,7 @@ describe('Data export service - included data', () => {
   })
 
   it('should recalculate global stat values without the dev data header', async () => {
-    await clearEntities('GameStat')
+    await clearEntities(app.context.em, ['GameStat'])
 
     const service = new DataExportService()
     const proto = Object.getPrototypeOf(service)
@@ -168,7 +163,7 @@ describe('Data export service - included data', () => {
   })
 
   it('should not recalculate global stat values with the dev data header', async () => {
-    await clearEntities('GameStat')
+    await clearEntities(app.context.em, ['GameStat'])
 
     const service = new DataExportService()
     const proto = Object.getPrototypeOf(service)
@@ -184,7 +179,7 @@ describe('Data export service - included data', () => {
   })
 
   it('should not include player stats from dev build players without the dev data header', async () => {
-    await clearEntities('GameStat')
+    await clearEntities(app.context.em, ['GameStat'])
 
     const service = new DataExportService()
     const proto = Object.getPrototypeOf(service)
@@ -200,7 +195,7 @@ describe('Data export service - included data', () => {
   })
 
   it('should include player stats from dev build players with the dev data header', async () => {
-    await clearEntities('GameStat')
+    await clearEntities(app.context.em, ['GameStat'])
 
     const service = new DataExportService()
     const proto = Object.getPrototypeOf(service)

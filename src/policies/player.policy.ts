@@ -2,6 +2,7 @@ import Policy from './policy'
 import { PolicyDenial, Request, PolicyResponse } from 'koa-clay'
 import Player from '../entities/player'
 import { UserType } from '../entities/user'
+import UserTypeGate from './user-type-gate'
 
 export default class PlayerPolicy extends Policy {
   async getPlayer(id: string, relations?: string[]): Promise<Player> {
@@ -25,15 +26,9 @@ export default class PlayerPolicy extends Policy {
     return await this.canAccessGame(Number(gameId))
   }
 
+  @UserTypeGate([UserType.ADMIN, UserType.DEV], 'update player properties')
   async patch(req: Request): Promise<PolicyResponse> {
     const { id } = req.params
-
-    if (!this.isAPICall()) {
-      const user = await this.getUser()
-      if (user.type === UserType.DEMO) {
-        return new PolicyDenial({ message: 'Demo accounts cannot update player properties' })
-      }
-    }
 
     const player = await this.getPlayer(id)
     if (!player) return new PolicyDenial({ message: 'Player not found' }, 404)

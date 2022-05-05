@@ -4,8 +4,9 @@ import UserRecoveryCode from './user-recovery-code'
 import UserTwoFactorAuth from './user-two-factor-auth'
 
 export enum UserType {
-  DEV,
+  OWNER,
   ADMIN,
+  DEV,
   DEMO
 }
 

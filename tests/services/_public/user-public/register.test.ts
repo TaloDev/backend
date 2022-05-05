@@ -2,12 +2,13 @@ import { EntityManager } from '@mikro-orm/core'
 import Koa from 'koa'
 import init from '../../../../src/index'
 import request from 'supertest'
-import UserSession from '../../../../src/entities/user-session'
 import UserAccessCode from '../../../../src/entities/user-access-code'
 import casual from 'casual'
 import UserFactory from '../../../fixtures/UserFactory'
 import OrganisationFactory from '../../../fixtures/OrganisationFactory'
 import InviteFactory from '../../../fixtures/InviteFactory'
+import GameActivity, { GameActivityType } from '../../../../src/entities/game-activity'
+import clearEntities from '../../../utils/clearEntities'
 
 const baseUrl = '/public/users'
 
@@ -19,9 +20,7 @@ describe('User public service - register', () => {
   })
 
   beforeEach(async () => {
-    const repo = (<EntityManager>app.context.em).getRepository(UserSession)
-    const sessions = await repo.findAll()
-    await repo.removeAndFlush(sessions)
+    await clearEntities(app.context.em, ['UserSession'])
   })
 
   afterAll(async () => {
@@ -92,6 +91,12 @@ describe('User public service - register', () => {
     expect(res.body.user.username).toBe(username)
     expect(res.body.user.password).not.toBeDefined()
     expect(res.body.user.organisation.id).toBe(organisation.id)
+
+    const activity = await (<EntityManager>app.context.em).getRepository(GameActivity).findOne({
+      type: GameActivityType.INVITE_ACCEPTED
+    })
+
+    expect(activity.user.id).toBe(res.body.user.id)
   })
 
   it('should not let a user register with an invite if the email doesn\'t match', async () => {

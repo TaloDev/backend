@@ -1,19 +1,16 @@
 import Policy from './policy'
-import { PolicyResponse, PolicyDenial } from 'koa-clay'
+import { PolicyResponse } from 'koa-clay'
 import { UserType } from '../entities/user'
+import UserTypeGate from './user-type-gate'
 
 export default class InvitePolicy extends Policy {
+  @UserTypeGate([UserType.ADMIN], 'view invites')
   async index(): Promise<PolicyResponse> {
-    const user = await this.getUser()
-    if (user.type !== UserType.ADMIN) return new PolicyDenial({ message: 'You do not have permissions to view invites' })
-
     return true
   }
 
+  @UserTypeGate([UserType.ADMIN], 'create invites')
   async post(): Promise<PolicyResponse> {
-    const user = await this.getUser()
-    if (user.type !== UserType.ADMIN) return new PolicyDenial({ message: 'You do not have permissions to create invites' })
-
     return true
   }
 }

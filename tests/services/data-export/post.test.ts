@@ -2,36 +2,71 @@ import { EntityManager } from '@mikro-orm/core'
 import Koa from 'koa'
 import init from '../../../src/index'
 import request from 'supertest'
-import User from '../../../src/entities/user'
-import { genAccessToken } from '../../../src/lib/auth/buildTokenPair'
-import UserFactory from '../../fixtures/UserFactory'
-import Game from '../../../src/entities/game'
-import GameFactory from '../../fixtures/GameFactory'
+import { UserType } from '../../../src/entities/user'
 import { DataExportAvailableEntities } from '../../../src/entities/data-export'
+import createUserAndToken from '../../utils/createUserAndToken'
+import createOrganisationAndGame from '../../utils/createOrganisationAndGame'
+import userPermissionProvider from '../../utils/userPermissionProvider'
+import clearEntities from '../../utils/clearEntities'
+import GameActivity, { GameActivityType } from '../../../src/entities/game-activity'
 
 const baseUrl = '/data-exports'
 
 describe('Data export service - post', () => {
   let app: Koa
-  let user: User
-  let game: Game
-  let token: string
 
   beforeAll(async () => {
     app = await init()
+  })
 
-    user = await new UserFactory().state('admin').state('email confirmed').one()
-    game = await new GameFactory(user.organisation).one()
-    await (<EntityManager>app.context.em).persistAndFlush([user, game])
-
-    token = await genAccessToken(user)
+  beforeEach(async () => {
+    await clearEntities(app.context.em, ['GameActivity'])
   })
 
   afterAll(async () => {
     await (<EntityManager>app.context.em).getConnection().close()
   })
 
+  it.each(userPermissionProvider([
+    UserType.ADMIN
+  ], 200))('should return a %i for a %s user', async (statusCode, _, type) => {
+    const [organisation, game] = await createOrganisationAndGame(app.context.em)
+    const [token] = await createUserAndToken(app.context.em, { type, emailConfirmed: true }, organisation)
+
+    const res = await request(app.callback())
+      .post(`${baseUrl}`)
+      .send({ gameId: game.id, entities: [DataExportAvailableEntities.GAME_STATS, DataExportAvailableEntities.GAME_ACTIVITIES] })
+      .auth(token, { type: 'bearer' })
+      .expect(statusCode)
+
+    const activity = await (<EntityManager>app.context.em).getRepository(GameActivity).findOne({
+      type: GameActivityType.DATA_EXPORT_REQUESTED
+    })
+
+    if (statusCode === 200) {
+      expect(activity.extra.dataExportId).toBe(res.body.dataExport.id)
+    } else {
+      expect(activity).toBeNull()
+    }
+  })
+
+  it('should not create a data export for a game the user has no access to', async () => {
+    const [, otherGame] = await createOrganisationAndGame(app.context.em)
+    const [token] = await createUserAndToken(app.context.em, { type: UserType.ADMIN, emailConfirmed: true })
+
+    const res = await request(app.callback())
+      .post(`${baseUrl}`)
+      .send({ gameId: otherGame.id, entities: [DataExportAvailableEntities.GAME_STATS, DataExportAvailableEntities.GAME_ACTIVITIES] })
+      .auth(token, { type: 'bearer' })
+      .expect(403)
+
+    expect(res.body).toStrictEqual({ message: 'Forbidden' })
+  })
+
   it('should create a data export for player aliases', async () => {
+    const [organisation, game] = await createOrganisationAndGame(app.context.em)
+    const [token] = await createUserAndToken(app.context.em, { type: UserType.ADMIN, emailConfirmed: true }, organisation)
+
     const res = await request(app.callback())
       .post(`${baseUrl}`)
       .send({ gameId: game.id, entities: [DataExportAvailableEntities.PLAYER_ALIASES] })
@@ -42,6 +77,9 @@ describe('Data export service - post', () => {
   })
 
   it('should create a data export for players', async () => {
+    const [organisation, game] = await createOrganisationAndGame(app.context.em)
+    const [token] = await createUserAndToken(app.context.em, { type: UserType.ADMIN, emailConfirmed: true }, organisation)
+
     const res = await request(app.callback())
       .post(`${baseUrl}`)
       .send({ gameId: game.id, entities: [DataExportAvailableEntities.PLAYERS] })
@@ -52,6 +90,9 @@ describe('Data export service - post', () => {
   })
 
   it('should create a data export for events', async () => {
+    const [organisation, game] = await createOrganisationAndGame(app.context.em)
+    const [token] = await createUserAndToken(app.context.em, { type: UserType.ADMIN, emailConfirmed: true }, organisation)
+
     const res = await request(app.callback())
       .post(`${baseUrl}`)
       .send({ gameId: game.id, entities: [DataExportAvailableEntities.EVENTS] })
@@ -62,6 +103,9 @@ describe('Data export service - post', () => {
   })
 
   it('should create a data export for leaderboard entries', async () => {
+    const [organisation, game] = await createOrganisationAndGame(app.context.em)
+    const [token] = await createUserAndToken(app.context.em, { type: UserType.ADMIN, emailConfirmed: true }, organisation)
+
     const res = await request(app.callback())
       .post(`${baseUrl}`)
       .send({ gameId: game.id, entities: [DataExportAvailableEntities.LEADERBOARD_ENTRIES] })
@@ -72,6 +116,9 @@ describe('Data export service - post', () => {
   })
 
   it('should create a data export for game stats', async () => {
+    const [organisation, game] = await createOrganisationAndGame(app.context.em)
+    const [token] = await createUserAndToken(app.context.em, { type: UserType.ADMIN, emailConfirmed: true }, organisation)
+
     const res = await request(app.callback())
       .post(`${baseUrl}`)
       .send({ gameId: game.id, entities: [DataExportAvailableEntities.GAME_STATS] })
@@ -82,6 +129,9 @@ describe('Data export service - post', () => {
   })
 
   it('should create a data export for player game stats', async () => {
+    const [organisation, game] = await createOrganisationAndGame(app.context.em)
+    const [token] = await createUserAndToken(app.context.em, { type: UserType.ADMIN, emailConfirmed: true }, organisation)
+
     const res = await request(app.callback())
       .post(`${baseUrl}`)
       .send({ gameId: game.id, entities: [DataExportAvailableEntities.PLAYER_GAME_STATS] })
@@ -92,6 +142,9 @@ describe('Data export service - post', () => {
   })
 
   it('should create a data export for game activities', async () => {
+    const [organisation, game] = await createOrganisationAndGame(app.context.em)
+    const [token] = await createUserAndToken(app.context.em, { type: UserType.ADMIN, emailConfirmed: true }, organisation)
+
     const res = await request(app.callback())
       .post(`${baseUrl}`)
       .send({ gameId: game.id, entities: [DataExportAvailableEntities.GAME_ACTIVITIES] })
@@ -101,37 +154,23 @@ describe('Data export service - post', () => {
     expect(res.body.dataExport.entities).toStrictEqual([DataExportAvailableEntities.GAME_ACTIVITIES])
   })
 
-  it('should not create a data export for dev users', async () => {
-    const invalidUser = await new UserFactory().with(() => ({ organisation: game.organisation })).one()
-    await (<EntityManager>app.context.em).persistAndFlush(invalidUser)
-
-    const invalidUserToken = await genAccessToken(invalidUser)
-
-    const res = await request(app.callback())
-      .post(`${baseUrl}`)
-      .send({ gameId: game.id, entities: [DataExportAvailableEntities.PLAYERS] })
-      .auth(invalidUserToken, { type: 'bearer' })
-      .expect(403)
-
-    expect(res.body).toStrictEqual({ message: 'You do not have permissions to create data exports' })
-  })
-
   it('should not create a data export for users with unconfirmed emails', async () => {
-    const invalidUser = await new UserFactory().state('admin').with(() => ({ organisation: game.organisation })).one()
-    await (<EntityManager>app.context.em).persistAndFlush(invalidUser)
-
-    const invalidUserToken = await genAccessToken(invalidUser)
+    const [organisation, game] = await createOrganisationAndGame(app.context.em)
+    const [token] = await createUserAndToken(app.context.em, { type: UserType.ADMIN }, organisation)
 
     const res = await request(app.callback())
       .post(`${baseUrl}`)
       .send({ gameId: game.id, entities: [DataExportAvailableEntities.PLAYER_ALIASES] })
-      .auth(invalidUserToken, { type: 'bearer' })
+      .auth(token, { type: 'bearer' })
       .expect(403)
 
     expect(res.body).toStrictEqual({ message: 'You need to confirm your email address to create data exports' })
   })
 
   it('should not create a data export for empty entities', async () => {
+    const [organisation, game] = await createOrganisationAndGame(app.context.em)
+    const [token] = await createUserAndToken(app.context.em, { type: UserType.ADMIN, emailConfirmed: true }, organisation)
+
     await request(app.callback())
       .post(`${baseUrl}`)
       .send({ gameId: game.id, entities: [] })
@@ -146,6 +185,9 @@ describe('Data export service - post', () => {
   })
 
   it('should not create a data export with non-string entities', async () => {
+    const [organisation, game] = await createOrganisationAndGame(app.context.em)
+    const [token] = await createUserAndToken(app.context.em, { type: UserType.ADMIN, emailConfirmed: true }, organisation)
+
     const res = await request(app.callback())
       .post(`${baseUrl}`)
       .send({ gameId: game.id, entities: [1, 2] })

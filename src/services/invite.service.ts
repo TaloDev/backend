@@ -2,10 +2,12 @@ import { EntityManager } from '@mikro-orm/core'
 import { HasPermission, Service, Request, Response, Validate } from 'koa-clay'
 import Queue from 'bee-queue'
 import Invite from '../entities/invite'
-import User from '../entities/user'
+import User, { UserType } from '../entities/user'
 import { EmailConfig } from '../lib/messaging/sendEmail'
 import InvitePolicy from '../policies/invite.policy'
 import JoinOrganisation from '../emails/join-organisation-mail'
+import createGameActivity from '../lib/logging/createGameActivity'
+import { GameActivityType } from '../entities/game-activity'
 
 export default class InviteService implements Service {
   @HasPermission(InvitePolicy, 'index')
@@ -50,6 +52,18 @@ export default class InviteService implements Service {
     invite.email = email
     invite.type = type
     invite.invitedByUser = inviter
+
+    await createGameActivity(em, {
+      user: req.ctx.state.user,
+      type: GameActivityType.INVITE_CREATED,
+      extra: {
+        inviteEmail: invite.email,
+        display: {
+          'User type': type === UserType.ADMIN ? 'Admin' : 'Developer'
+        }
+      }
+    })
+
     await em.persistAndFlush(invite)
 
     await (<Queue>req.ctx.emailQueue)

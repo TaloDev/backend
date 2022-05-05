@@ -14,7 +14,7 @@ import OrganisationPolicy from '../policies/organisation.policy'
   }
 ])
 export default class InviteService implements Service {
-  @HasPermission(OrganisationPolicy, 'get')
+  @HasPermission(OrganisationPolicy, 'current')
   async currentOrganisation(req: Request): Promise<Response> {
     const em: EntityManager = req.ctx.em
 

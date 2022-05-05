@@ -2,14 +2,14 @@ import Policy from './policy'
 import { PolicyDenial, Request, PolicyResponse } from 'koa-clay'
 import APIKey from '../entities/api-key'
 import { UserType } from '../entities/user'
+import UserTypeGate from './user-type-gate'
 
 export default class APIKeyPolicy extends Policy {
+  @UserTypeGate([UserType.ADMIN], 'create API keys')
   async post(req: Request): Promise<PolicyResponse> {
     const { gameId } = req.body
 
     const user = await this.getUser()
-
-    if (user.type !== UserType.ADMIN) return new PolicyDenial({ message: 'You do not have permissions to manage API keys' })
     if (!user.emailConfirmed) return new PolicyDenial({ message: 'You need to confirm your email address to do this' })
 
     const canAccessGame = await this.canAccessGame(gameId)
@@ -21,6 +21,7 @@ export default class APIKeyPolicy extends Policy {
     return await this.canAccessGame(Number(gameId))
   }
 
+  @UserTypeGate([UserType.ADMIN], 'revoke API keys')
   async delete(req: Request): Promise<PolicyResponse> {
     const { id } = req.params
     const apiKey = await this.em.getRepository(APIKey).findOne(Number(id))

@@ -15,7 +15,8 @@ export enum GameActivityType {
   GAME_STAT_UPDATED,
   GAME_STAT_DELETED,
   INVITE_CREATED,
-  INVITE_ACCEPTED
+  INVITE_ACCEPTED,
+  DATA_EXPORT_REQUESTED
 }
 
 @Entity()
@@ -77,6 +78,8 @@ export default class GameActivity {
         return `${this.user.username} created an invite for ${this.extra.inviteEmail}`
       case GameActivityType.INVITE_ACCEPTED:
         return `${this.user.username} joined the organisation`
+      case GameActivityType.DATA_EXPORT_REQUESTED:
+        return `${this.user.username} requested a data export`
       default:
         return ''
     }

@@ -7,6 +7,8 @@ import { DataExportAvailableEntities } from '../../../src/entities/data-export'
 import createUserAndToken from '../../utils/createUserAndToken'
 import createOrganisationAndGame from '../../utils/createOrganisationAndGame'
 import userPermissionProvider from '../../utils/userPermissionProvider'
+import clearEntities from '../../utils/clearEntities'
+import GameActivity, { GameActivityType } from '../../../src/entities/game-activity'
 
 const baseUrl = '/data-exports'
 
@@ -15,6 +17,10 @@ describe('Data export service - post', () => {
 
   beforeAll(async () => {
     app = await init()
+  })
+
+  beforeEach(async () => {
+    await clearEntities(app.context.em, ['GameActivity'])
   })
 
   afterAll(async () => {
@@ -27,11 +33,21 @@ describe('Data export service - post', () => {
     const [organisation, game] = await createOrganisationAndGame(app.context.em)
     const [token] = await createUserAndToken(app.context.em, { type, emailConfirmed: true }, organisation)
 
-    await request(app.callback())
+    const res = await request(app.callback())
       .post(`${baseUrl}`)
       .send({ gameId: game.id, entities: [DataExportAvailableEntities.GAME_STATS, DataExportAvailableEntities.GAME_ACTIVITIES] })
       .auth(token, { type: 'bearer' })
       .expect(statusCode)
+
+    const activity = await (<EntityManager>app.context.em).getRepository(GameActivity).findOne({
+      type: GameActivityType.DATA_EXPORT_REQUESTED
+    })
+
+    if (statusCode === 200) {
+      expect(activity.extra.dataExportId).toBe(res.body.dataExport.id)
+    } else {
+      expect(activity).toBeNull()
+    }
   })
 
   it('should not create a data export for a game the user has no access to', async () => {

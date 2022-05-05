@@ -9,6 +9,7 @@ import clearEntities from '../../utils/clearEntities'
 import userPermissionProvider from '../../utils/userPermissionProvider'
 import createUserAndToken from '../../utils/createUserAndToken'
 import createOrganisationAndGame from '../../utils/createOrganisationAndGame'
+import casual from 'casual'
 
 const baseUrl = '/invites'
 
@@ -61,6 +62,31 @@ describe('Invite service - post', () => {
       .expect(400)
 
     expect(res.body).toStrictEqual({ message: 'An invite for this email address already exists' })
+  })
+
+  it.each([
+    [400, 'owner', UserType.OWNER],
+    [200, 'admin', UserType.ADMIN],
+    [200, 'dev', UserType.DEV],
+    [400, 'demo', UserType.DEMO]
+  ])('should return a %i for a %s user type invite', async (statusCode, _, type) => {
+    const [token] = await createUserAndToken(app.context.em, { type: UserType.ADMIN })
+
+    const res = await request(app.callback())
+      .post(`${baseUrl}`)
+      .send({ email: casual.email, type })
+      .auth(token, { type: 'bearer' })
+      .expect(statusCode)
+
+    if (statusCode !== 200) {
+      expect(res.body).toStrictEqual({
+        errors: {
+          type: [
+            'You can only invite an admin or dev user'
+          ]
+        }
+      })
+    }
   })
 
   it('should not create an invite when an invite exists for the same email on another organisation', async () => {

@@ -16,8 +16,8 @@ export default class PricingPlanActionFactory extends Factory<PricingPlanAction>
   protected async base(): Promise<Partial<PricingPlanAction>> {
     return {
       type: casual.random_element([
-        PricingPlanActionType.DATA_EXPORT,
-        PricingPlanActionType.USER_INVITE
+        PricingPlanActionType.USER_INVITE,
+        PricingPlanActionType.DATA_EXPORT
       ]),
       limit: casual.integer(1, 10),
       pricingPlan: this.pricingPlan

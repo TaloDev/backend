@@ -51,7 +51,7 @@ import PricingPlan from '../src/entities/pricing-plan'
   const organisation = await new OrganisationFactory().with(async (organisation) => {
     const orgPlan = await new OrganisationPricingPlanFactory()
       .construct(organisation, pricingPlans[0])
-      .with(() => ({ stripeCustomerId: null }))
+      .with(() => ({ stripeCustomerId: null, stripePriceId: null }))
       .one()
 
     return {

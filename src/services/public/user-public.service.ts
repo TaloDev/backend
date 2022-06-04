@@ -128,14 +128,15 @@ export default class UserPublicService implements Service {
       organisation.pricingPlan = await createDefaultPricingPlan(em, organisation)
 
       user.organisation = organisation
-      user.type = UserType.OWNER    }
+      user.type = UserType.OWNER
+    }
 
     req.ctx.state.user = user
     await em.getRepository(User).persistAndFlush(user)
     await em.populate(user, ['organisation'])
 
     if (!inviteToken) {
-      await handlePricingPlanAction(req, em, PricingPlanActionType.USER_INVITE, { initialUser: true })
+      await handlePricingPlanAction(req, PricingPlanActionType.USER_INVITE, { initialUser: true, invitedUserEmail: user.email })
     }
 
     const accessToken = await buildTokenPair(req.ctx, user)

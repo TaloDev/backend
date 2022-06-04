@@ -7,14 +7,14 @@ import PricingPlanAction, { PricingPlanActionType } from '../../entities/pricing
 
 export default async function handlePricingPlanAction(
   req: Request,
-  em: EntityManager,
   actionType: PricingPlanActionType,
   newActionExtra: OrganisationPricingPlanActionExtra = {}
-): Promise<void> {
+): Promise<OrganisationPricingPlanAction> {
+  const em: EntityManager = req.ctx.em
   const organisation: Organisation = req.ctx.state.user.organisation
 
   if (organisation.pricingPlan.status !== 'active') {
-    req.ctx.throw(402, 'Please update your billing details')
+    req.ctx.throw(402, 'Your subscription is in an incomplete state. Please update your billing details')
   }
 
   const pricingPlanAction = await em.getRepository(PricingPlanAction).findOne({
@@ -42,5 +42,7 @@ export default async function handlePricingPlanAction(
     orgPlanAction.extra = newActionExtra
 
     await em.persistAndFlush(orgPlanAction)
+
+    return orgPlanAction
   }
 }

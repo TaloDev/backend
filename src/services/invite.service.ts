@@ -49,7 +49,7 @@ export default class InviteService implements Service {
       )
     }
 
-    await handlePricingPlanAction(req, em, PricingPlanActionType.USER_INVITE, { invitedUserEmail: email })
+    await handlePricingPlanAction(req, PricingPlanActionType.USER_INVITE, { invitedUserEmail: email })
 
     const invite = new Invite(inviter.organisation)
     invite.email = email

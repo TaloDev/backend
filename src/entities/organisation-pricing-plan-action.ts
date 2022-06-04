@@ -3,8 +3,9 @@ import OrganisationPricingPlan from './organisation-pricing-plan'
 import { PricingPlanActionType } from './pricing-plan-action'
 
 export type OrganisationPricingPlanActionExtra = {
-  invitedUserEmail?: number
-  initialUser?: boolean
+  invitedUserEmail?: string
+  initialUser?: boolean,
+  dataExportId?: number
 }
 
 @Entity()

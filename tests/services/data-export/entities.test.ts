@@ -6,7 +6,7 @@ import User from '../../../src/entities/user'
 import { genAccessToken } from '../../../src/lib/auth/buildTokenPair'
 import UserFactory from '../../fixtures/UserFactory'
 
-const baseUrl = '/data-exports'
+const baseUrl = '/data-exports/entities'
 
 describe('Data export service - available entities', () => {
   let app: Koa
@@ -28,7 +28,7 @@ describe('Data export service - available entities', () => {
 
   it('should return a list of available data export entities', async () => {
     const res = await request(app.callback())
-      .get(`${baseUrl}/entities`)
+      .get(baseUrl)
       .auth(token, { type: 'bearer' })
       .expect(200)
 

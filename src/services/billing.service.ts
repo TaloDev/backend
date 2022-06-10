@@ -3,12 +3,9 @@ import { EntityManager } from '@mikro-orm/core'
 import { HasPermission, Service, Request, Response, Routes, Validate } from 'koa-clay'
 import PricingPlan from '../entities/pricing-plan'
 import BillingPolicy from '../policies/billing.policy'
-import User from '../entities/user'
-import OrganisationPricingPlan from '../entities/organisation-pricing-plan'
-import PricingPlanAction, { PricingPlanActionType } from '../entities/pricing-plan-action'
+import { PricingPlanActionType } from '../entities/pricing-plan-action'
 import Organisation from '../entities/organisation'
-import Invite from '../entities/invite'
-import { isSameDay } from 'date-fns'
+import { isSameHour } from 'date-fns'
 import initStripe from '../lib/billing/initStripe'
 import getUserFromToken from '../lib/auth/getUserFromToken'
 import OrganisationPricingPlanAction from '../entities/organisation-pricing-plan-action'
@@ -68,7 +65,7 @@ type PricingPlanUsage = {
 export default class BillingService implements Service {
   async plans(req: Request): Promise<Response> {
     const em: EntityManager = req.ctx.em
-    const plans = await em.getRepository(PricingPlan).findAll({ populate: ['actions'] })
+    const plans = await em.getRepository(PricingPlan).find({ hidden: false }, { populate: ['actions'] })
 
     const pricingPlanProducts: PricingPlanProduct[] = []
     const user = await getUserFromToken(req.ctx)
@@ -98,21 +95,6 @@ export default class BillingService implements Service {
       body: {
         pricingPlans: pricingPlanProducts
       }
-    }
-  }
-
-  private async checkCanDowngrade(em: EntityManager, req: Request, newPlan: PricingPlan): Promise<void> {
-    await newPlan.actions.loadItems()
-    const planUserLimit = newPlan.actions.getItems().find((action) => action.type === PricingPlanActionType.USER_INVITE)?.limit ?? Infinity
-
-    const organisation: Organisation = req.ctx.state.user.organisation
-    const members = await em.getRepository(User).find({ organisation })
-    const pendingInvites = await em.getRepository(Invite).find({ organisation })
-
-    if (members.length > planUserLimit) {
-      req.ctx.throw(400, 'You cannot downgrade your plan while your organisation has more users than the new plan\'s user limit. Please contact support about removing users.')
-    } else if (members.length + pendingInvites.length > planUserLimit) {
-      req.ctx.throw(400, 'You cannot downgrade your plan while your organisation has pending invites that would take the organisation\'s user count above new plan\'s user limit. Please contact support about removing users.')
     }
   }
 
@@ -148,6 +130,21 @@ export default class BillingService implements Service {
     }
   }
 
+  private async checkCanDowngrade(em: EntityManager, req: Request, newPlan: PricingPlan): Promise<void> {
+    await newPlan.actions.loadItems()
+    const planUserLimit = newPlan.actions.getItems().find((action) => action.type === PricingPlanActionType.USER_INVITE)?.limit ?? Infinity
+
+    const organisation: Organisation = req.ctx.state.user.organisation
+    const orgPlanActions = await em.getRepository(OrganisationPricingPlanAction).find({
+      organisationPricingPlan: organisation.pricingPlan,
+      type: PricingPlanActionType.USER_INVITE
+    })
+
+    if (orgPlanActions.length >= planUserLimit) {
+      req.ctx.throw(400, 'You cannot downgrade your plan because your organisation has reached its member limit. This limit also includes pending organisation invites. Please contact support about removing users or invites.')
+    }
+  }
+
   async getPrice(req: Request): Promise<string> {
     const { pricingPlanId, pricingInterval } = req.body
     const em: EntityManager = req.ctx.em
@@ -175,11 +172,18 @@ export default class BillingService implements Service {
     const price = await this.getPrice(req)
 
     const organisation: Organisation = req.ctx.state.user.organisation
-    if (organisation.pricingPlan.stripeCustomerId) {
-      return await this.previewPlan(req, price)
-    }
 
-    const orgPlan = await em.getRepository(OrganisationPricingPlan).findOne({ organisation })
+    if (organisation.pricingPlan.stripeCustomerId) {
+      const subscriptions = await stripe.subscriptions.list({
+        customer: organisation.pricingPlan.stripeCustomerId,
+        status: 'active'
+      })
+
+      // this comparison isn't needed in the real world, but the stripe mock doesn't correctly filter by customer
+      if (subscriptions.data[0]?.customer === organisation.pricingPlan.stripeCustomerId) {
+        return await this.previewPlan(req, price)
+      }
+    }
 
     const session = await stripe.checkout.sessions.create({
       billing_address_collection: 'auto',
@@ -188,12 +192,12 @@ export default class BillingService implements Service {
         quantity: 1
       }],
       mode: 'subscription',
-      customer: orgPlan.stripeCustomerId ?? (await stripe.customers.create()).id,
+      customer: organisation.pricingPlan.stripeCustomerId ?? (await stripe.customers.create()).id,
       success_url: `${process.env.DASHBOARD_URL}/billing?new_plan=${pricingPlanId}`,
       cancel_url: `${process.env.DASHBOARD_URL}/billing`
     })
 
-    orgPlan.stripeCustomerId = session.customer as string
+    organisation.pricingPlan.stripeCustomerId = session.customer as string
     await em.flush()
 
     return {
@@ -208,12 +212,13 @@ export default class BillingService implements Service {
   @HasPermission(BillingPolicy, 'confirmPlan')
   async confirmPlan(req: Request): Promise<Response> {
     const { prorationDate } = req.body
+    if (!isSameHour(new Date(), new Date(prorationDate * 1000))) req.ctx.throw(400)
 
-    if (!isSameDay(new Date(), new Date(prorationDate * 1000))) req.ctx.throw(400)
+    const organisation: Organisation = req.ctx.state.user.organisation
+    if (!organisation.pricingPlan.stripeCustomerId) req.ctx.throw(400) // should already be on a plan before preview/confirming another
 
     const price = await this.getPrice(req)
 
-    const organisation: Organisation = req.ctx.state.user.organisation
     const subscriptions = await stripe.subscriptions.list({ customer: organisation.pricingPlan.stripeCustomerId  })
     const subscription = subscriptions.data[0]
 
@@ -236,7 +241,10 @@ export default class BillingService implements Service {
 
   @HasPermission(BillingPolicy, 'createPortalSession')
   async createPortalSession(req: Request): Promise<Response> {
-    const stripeCustomerId = (req.ctx.state.user as User).organisation.pricingPlan.stripeCustomerId
+    const organisation: Organisation = req.ctx.state.user.organisation
+    const stripeCustomerId = organisation.pricingPlan.stripeCustomerId
+
+    if (!stripeCustomerId) req.ctx.throw(400)
 
     const portalSession = await stripe.billingPortal.sessions.create({
       customer: stripeCustomerId,
@@ -264,7 +272,7 @@ export default class BillingService implements Service {
     for (const planAction of organisation.pricingPlan.pricingPlan.actions.getItems()) {
       const orgActionsForType = orgActions.filter((orgAction) => orgAction.type === planAction.type)
 
-      if (PricingPlanAction.isTypeTrackedMonthly(planAction.type)) {
+      if (planAction.isTrackedMonthly()) {
         usage[planAction.type] = {
           limit: planAction.limit,
           used: orgActionsForType.filter((orgAction) => isSameMonth(new Date(), orgAction.createdAt)).length

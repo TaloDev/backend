@@ -101,7 +101,7 @@ export default class WebhookService implements Service {
         req.headers['stripe-signature'],
         process.env.STRIPE_WEBHOOK_SECRET
       )
-    } catch (err) {
+    } catch (err) /* istanbul ignore next */ {
       Sentry.captureException(err)
 
       return {

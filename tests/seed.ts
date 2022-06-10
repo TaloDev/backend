@@ -34,12 +34,13 @@ import PricingPlan from '../src/entities/pricing-plan'
 
   let idx = 0
   for (const plan of pricingPlans) {
-    const pricingPlanActionFactory = new PricingPlanActionFactory(plan)
+    const pricingPlanActionFactory = new PricingPlanActionFactory()
 
     for (const actionType of [PricingPlanActionType.USER_INVITE, PricingPlanActionType.DATA_EXPORT]) {
       const pricingPlanAction = await pricingPlanActionFactory.with(() => ({
         type: actionType,
-        limit: casual.integer(idx + 1, idx * 4 + 3)
+        limit: casual.integer(idx + 1, idx * 4 + 3),
+        pricingPlan: plan
       })).one()
 
       pricingPlanActions.push(pricingPlanAction)

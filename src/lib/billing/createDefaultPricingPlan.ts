@@ -7,12 +7,17 @@ import initStripe from './initStripe'
 export default async function createDefaultPricingPlan(em: EntityManager, organisation: Organisation): Promise<OrganisationPricingPlan> {
   const stripe = initStripe()
 
-  const defaultPlan = await em.getRepository(PricingPlan).findOne({ default: true })
+  let defaultPlan = await em.getRepository(PricingPlan).findOne({ default: true })
 
   let price: string
-  if (process.env.STRIPE_KEY) {
+  if (process.env.STRIPE_KEY && defaultPlan) {
     const prices = await stripe.prices.list({ product: defaultPlan.stripeId, active: true })
     price = prices.data[0].id
+  } else {
+    // self-hosted logic
+    defaultPlan = new PricingPlan()
+    defaultPlan.stripeId = ''
+    defaultPlan.default = true
   }
 
   if (!organisation.pricingPlan) {

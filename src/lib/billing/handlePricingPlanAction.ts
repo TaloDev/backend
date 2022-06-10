@@ -9,12 +9,12 @@ export default async function handlePricingPlanAction(
   req: Request,
   actionType: PricingPlanActionType,
   newActionExtra: OrganisationPricingPlanActionExtra = {}
-): Promise<OrganisationPricingPlanAction> {
+): Promise<OrganisationPricingPlanAction | null> {
   const em: EntityManager = req.ctx.em
   const organisation: Organisation = req.ctx.state.user.organisation
 
   if (organisation.pricingPlan.status !== 'active') {
-    req.ctx.throw(402, 'Your subscription is in an incomplete state. Please update your billing details')
+    req.ctx.throw(402, 'Your subscription is in an incomplete state. Please update your billing details.')
   }
 
   const pricingPlanAction = await em.getRepository(PricingPlanAction).findOne({
@@ -22,13 +22,15 @@ export default async function handlePricingPlanAction(
     pricingPlan: organisation.pricingPlan.pricingPlan
   })
 
+  if (!pricingPlanAction) return null
+
   const organisationPricingPlanActions = await em.getRepository(OrganisationPricingPlanAction).find({
     organisationPricingPlan: organisation.pricingPlan,
     type: actionType
   })
 
   const filteredActions = organisationPricingPlanActions.filter((orgPlanAction) => {
-    return PricingPlanAction.isTypeTrackedMonthly(pricingPlanAction.type)
+    return pricingPlanAction.isTrackedMonthly()
       ? isSameMonth(orgPlanAction.createdAt, new Date())
       : true
   })

@@ -7,7 +7,7 @@ import { genAccessToken } from '../../../src/lib/auth/buildTokenPair'
 import { APIKeyScope } from '../../../src/entities/api-key'
 import UserFactory from '../../fixtures/UserFactory'
 
-const baseUrl = '/api-keys'
+const baseUrl = '/api-keys/scopes'
 
 describe('API key service - get scopes', () => {
   let app: Koa
@@ -29,7 +29,7 @@ describe('API key service - get scopes', () => {
 
   it('should return a list of api key scopes', async () => {
     const res = await request(app.callback())
-      .get(`${baseUrl}/scopes`)
+      .get(baseUrl)
       .auth(token, { type: 'bearer' })
       .expect(200)
 

@@ -11,7 +11,8 @@ export default class OrganisationPricingPlanFactory extends Factory<Organisation
   protected async base(): Promise<Partial<OrganisationPricingPlan>> {
     return {
       stripePriceId: `price_${casual.uuid.split('-')[0]}`,
-      stripeCustomerId: `cus_${casual.uuid.split('-')[0]}`
+      stripeCustomerId: `cus_${casual.uuid.split('-')[0]}`,
+      status: 'active'
     }
   }
 }

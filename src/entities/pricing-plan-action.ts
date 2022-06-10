@@ -26,15 +26,16 @@ export default class PricingPlanAction {
   @Property()
   updatedAt: Date = new Date()
 
-  static isTypeTrackedMonthly(type: PricingPlanActionType): boolean {
-    return [PricingPlanActionType.DATA_EXPORT].includes(type)
+  isTrackedMonthly(): boolean {
+    return [PricingPlanActionType.DATA_EXPORT].includes(this.type)
   }
 
   toJSON() {
     return {
       id: this.id,
       type: this.type,
-      limit: this.limit
+      limit: this.limit,
+      trackedMonthly: this.isTrackedMonthly()
     }
   }
 }

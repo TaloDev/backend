@@ -119,7 +119,7 @@ export default class DataExportService implements Service {
     if (newStatus.failedAt) {
       dataExport.failedAt = newStatus.failedAt
 
-      const orgPlanAction = await orm.em.getRepository(OrganisationPricingPlanAction).findOne({ extra: { dataExportId } })
+      const orgPlanAction = await orm.em.getRepository(OrganisationPricingPlanAction).findOne({ type: PricingPlanActionType.DATA_EXPORT, extra: { dataExportId } })
       if (orgPlanAction) {
         await orm.em.getRepository(OrganisationPricingPlanAction).removeAndFlush(orgPlanAction)
       }
@@ -389,7 +389,9 @@ export default class DataExportService implements Service {
     dataExport.entities = entities
     await em.persistAndFlush(dataExport)
 
-    orgPlanAction.extra.dataExportId = dataExport.id
+    if (orgPlanAction) {
+      orgPlanAction.extra.dataExportId = dataExport.id
+    }
 
     await createGameActivity(em, {
       user: req.ctx.state.user,

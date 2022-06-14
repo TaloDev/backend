@@ -7,6 +7,7 @@ import PricingPlanFactory from '../../fixtures/PricingPlanFactory'
 import createOrganisationAndGame from '../../utils/createOrganisationAndGame'
 import createUserAndToken from '../../utils/createUserAndToken'
 import userPermissionProvider from '../../utils/userPermissionProvider'
+import { UserType } from '../../../src/entities/user'
 
 const baseUrl = '/billing/organisation-plan'
 const stripe = initStripe()
@@ -43,8 +44,26 @@ describe('Billing service - organisation plan', () => {
 
     if (statusCode === 200) {
       expect(res.body.pricingPlan).toBeDefined()
+      expect(res.body.pricingPlan.canViewBillingPortal).toBe(true)
     } else {
       expect(res.body).toStrictEqual({ message: 'You do not have permissions to view the organisation pricing plan' })
     }
+  })
+
+  it('should not let them view the billing portal if there is no stripeCustomerId', async () => {
+    const plan = await new PricingPlanFactory().one()
+    const [organisation] = await createOrganisationAndGame(app.context.em, {}, {}, plan)
+    const [token] = await createUserAndToken(app.context.em, { type: UserType.OWNER }, organisation)
+
+    organisation.pricingPlan.stripeCustomerId = null
+    organisation.pricingPlan.stripePriceId = null
+    await (<EntityManager>app.context.em).flush()
+
+    const res = await request(app.callback())
+      .get(baseUrl)
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    expect(res.body.pricingPlan.canViewBillingPortal).toBe(false)
   })
 })

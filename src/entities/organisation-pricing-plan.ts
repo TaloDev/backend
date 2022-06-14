@@ -41,7 +41,8 @@ export default class OrganisationPricingPlan {
     return {
       pricingPlan: this.pricingPlan,
       status: this.status,
-      endDate: this.endDate
+      endDate: this.endDate,
+      canViewBillingPortal: Boolean(this.stripeCustomerId)
     }
   }
 }

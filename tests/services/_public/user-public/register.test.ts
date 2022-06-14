@@ -9,6 +9,7 @@ import OrganisationFactory from '../../../fixtures/OrganisationFactory'
 import InviteFactory from '../../../fixtures/InviteFactory'
 import GameActivity, { GameActivityType } from '../../../../src/entities/game-activity'
 import clearEntities from '../../../utils/clearEntities'
+import PricingPlanFactory from '../../../fixtures/PricingPlanFactory'
 
 const baseUrl = '/public/users'
 
@@ -17,6 +18,9 @@ describe('User public service - register', () => {
 
   beforeAll(async () => {
     app = await init()
+
+    const pricingPlan = await new PricingPlanFactory().one()
+    await (<EntityManager>app.context.em).persistAndFlush(pricingPlan)
   })
 
   beforeEach(async () => {

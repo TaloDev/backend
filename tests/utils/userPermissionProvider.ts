@@ -2,7 +2,7 @@ import { UserType } from '../../src/entities/user'
 
 type UserTypeStatusCodeProvider = [number, string, UserType][]
 
-export default function userPermissionProvider(allowedUserTypes: UserType[], successCode = 200): UserTypeStatusCodeProvider {
+export default function userPermissionProvider(allowedUserTypes: UserType[] = [], successCode = 200): UserTypeStatusCodeProvider {
   const userTypeMap = {
     [UserType.OWNER]: 'owner',
     [UserType.ADMIN]: 'admin',

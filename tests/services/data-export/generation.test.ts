@@ -13,6 +13,11 @@ import DataExportFactory from '../../fixtures/DataExportFactory'
 import GameActivityFactory from '../../fixtures/GameActivityFactory'
 import { GameActivityType } from '../../../src/entities/game-activity'
 import GameStatFactory from '../../fixtures/GameStatFactory'
+import OrganisationPricingPlanFactory from '../../fixtures/OrganisationPricingPlanFactory'
+import OrganisationPricingPlanActionFactory from '../../fixtures/OrganisationPricingPlanActionFactory'
+import { PricingPlanActionType } from '../../../src/entities/pricing-plan-action'
+import OrganisationPricingPlanAction from '../../../src/entities/organisation-pricing-plan-action'
+import PricingPlanFactory from '../../fixtures/PricingPlanFactory'
 
 describe('Data export service - generation', () => {
   let app: Koa
@@ -168,5 +173,28 @@ describe('Data export service - generation', () => {
     await proto.updateDataExportStatus(dataExport.id, { failedAt: new Date() })
     dataExport = await (<EntityManager>app.context.em).getRepository(DataExport).findOne(dataExport.id, { refresh: true })
     expect(dataExport.failedAt).toBeTruthy()
+  })
+
+  it('should refund data export actions if generation fails', async () => {
+    const service = new DataExportService()
+    const proto = Object.getPrototypeOf(service)
+
+    const dataExport = await new DataExportFactory(game).with(() => ({ status: DataExportStatus.QUEUED })).one()
+    await (<EntityManager>app.context.em).persistAndFlush(dataExport)
+
+    const orgPlan = await new OrganisationPricingPlanFactory().with(async () => ({ pricingPlan: await new PricingPlanFactory().one() })).one()
+    let orgPlanAction = await new OrganisationPricingPlanActionFactory(orgPlan).with(() => ({
+      type: PricingPlanActionType.DATA_EXPORT,
+      extra: {
+        dataExportId: dataExport.id
+      }
+    })).one()
+
+    await (<EntityManager>app.context.em).persistAndFlush(orgPlanAction)
+
+    await proto.updateDataExportStatus(dataExport.id, { failedAt: new Date() })
+
+    orgPlanAction = await (<EntityManager>app.context.em).getRepository(OrganisationPricingPlanAction).findOne(orgPlanAction.id, { refresh: true })
+    expect(orgPlanAction).toBeNull()
   })
 })

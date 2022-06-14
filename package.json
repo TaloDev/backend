@@ -1,6 +1,6 @@
 {
   "name": "game-services",
-  "version": "0.13.0",
+  "version": "0.14.0",
   "description": "",
   "main": "src/index.ts",
   "scripts": {
@@ -22,10 +22,10 @@
   "author": "Sleepy Studios",
   "license": "MIT",
   "devDependencies": {
-    "@mikro-orm/cli": "^5.1.2",
+    "@mikro-orm/cli": "^5.1.4",
     "@types/ioredis": "4.22.3",
     "@types/jest": "^27.4.1",
-    "@types/koa": "^2.11.6",
+    "@types/koa": "^2.13.4",
     "@types/koa-bodyparser": "^4.3.7",
     "@types/koa-logger": "^3.1.2",
     "@types/lodash": "^4.14.182",
@@ -49,10 +49,11 @@
     "wait-for-expect": "^3.0.2"
   },
   "dependencies": {
+    "@dinero.js/currencies": "^2.0.0-alpha.8",
     "@koa/cors": "^3.3.0",
-    "@mikro-orm/core": "^5.1.2",
-    "@mikro-orm/migrations": "^5.1.2",
-    "@mikro-orm/mysql": "^5.1.2",
+    "@mikro-orm/core": "^5.1.4",
+    "@mikro-orm/migrations": "^5.1.4",
+    "@mikro-orm/mysql": "^5.1.4",
     "@sendgrid/mail": "^7.6.2",
     "@sentry/node": "^6.19.6",
     "@sentry/tracing": "^6.19.6",
@@ -60,13 +61,14 @@
     "bcrypt": "^5.0.1",
     "bee-queue": "^1.4.0",
     "date-fns": "^2.28.0",
+    "dinero.js": "^2.0.0-alpha.8",
     "dotenv": "^16.0.0",
     "handlebars": "^4.7.7",
     "ioredis": "4.28.5",
     "jsonwebtoken": "^8.5.1",
-    "koa": "2.13.4",
+    "koa": "^2.13.4",
     "koa-bodyparser": "^4.3.0",
-    "koa-clay": "^5.2.1",
+    "koa-clay": "^5.3.0",
     "koa-helmet": "^6.1.0",
     "koa-jwt": "^4.0.3",
     "koa-logger": "^3.2.1",
@@ -76,6 +78,7 @@
     "lodash.uniqwith": "^4.5.0",
     "otplib": "^12.0.1",
     "qrcode": "^1.5.0",
+    "stripe": "^9.2.0",
     "uuid": "^8.3.2"
   },
   "mikro-orm": {

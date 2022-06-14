@@ -9,6 +9,11 @@ import createOrganisationAndGame from '../../utils/createOrganisationAndGame'
 import userPermissionProvider from '../../utils/userPermissionProvider'
 import clearEntities from '../../utils/clearEntities'
 import GameActivity, { GameActivityType } from '../../../src/entities/game-activity'
+import PricingPlanActionFactory from '../../fixtures/PricingPlanActionFactory'
+import { PricingPlanActionType } from '../../../src/entities/pricing-plan-action'
+import { subMonths } from 'date-fns'
+import OrganisationPricingPlanFactory from '../../fixtures/OrganisationPricingPlanFactory'
+import OrganisationPricingPlanActionFactory from '../../fixtures/OrganisationPricingPlanActionFactory'
 
 const baseUrl = '/data-exports'
 
@@ -199,5 +204,61 @@ describe('Data export service - post', () => {
         entities: ['Entities must be an array of strings']
       }
     })
+  })
+
+  it('should not create a data export if a pricing plan limit has been hit', async () => {
+    const planAction = await new PricingPlanActionFactory().with(() => ({ type: PricingPlanActionType.DATA_EXPORT })).one()
+    const orgPlan = await new OrganisationPricingPlanFactory().with(() => ({ pricingPlan: planAction.pricingPlan })).one()
+    const orgPlanActions = await new OrganisationPricingPlanActionFactory(orgPlan).with(() => ({ type: planAction.type })).many(planAction.limit)
+
+    const [organisation, game] = await createOrganisationAndGame(app.context.em, { pricingPlan: orgPlan })
+    const [token] = await createUserAndToken(app.context.em, { type: UserType.ADMIN, emailConfirmed: true }, organisation)
+
+    await (<EntityManager>app.context.em).persistAndFlush([planAction, ...orgPlanActions])
+
+    await request(app.callback())
+      .post(`${baseUrl}`)
+      .send({ gameId: game.id, entities: [DataExportAvailableEntities.GAME_STATS, DataExportAvailableEntities.GAME_ACTIVITIES] })
+      .auth(token, { type: 'bearer' })
+      .expect(402)
+  })
+
+  it('should create a data export if a pricing plan limit was hit but not in the same month', async () => {
+    const planAction = await new PricingPlanActionFactory().with(() => ({ type: PricingPlanActionType.DATA_EXPORT })).one()
+    const orgPlan = await new OrganisationPricingPlanFactory().with(() => ({ pricingPlan: planAction.pricingPlan })).one()
+    const orgPlanActions = await new OrganisationPricingPlanActionFactory(orgPlan).with(() => ({
+      type: planAction.type,
+      createdAt: subMonths(new Date(), 1)
+    })).many(planAction.limit)
+
+    const [organisation, game] = await createOrganisationAndGame(app.context.em, { pricingPlan: orgPlan })
+    const [token] = await createUserAndToken(app.context.em, { type: UserType.ADMIN, emailConfirmed: true }, organisation)
+
+    await (<EntityManager>app.context.em).persistAndFlush([planAction, ...orgPlanActions])
+
+    await request(app.callback())
+      .post(`${baseUrl}`)
+      .send({ gameId: game.id, entities: [DataExportAvailableEntities.GAME_STATS, DataExportAvailableEntities.GAME_ACTIVITIES] })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+  })
+
+  it('should reject creating a data export if the organisation plan is not in the active state', async () => {
+    const planAction = await new PricingPlanActionFactory().with(() => ({ type: PricingPlanActionType.DATA_EXPORT })).one()
+    const orgPlan = await new OrganisationPricingPlanFactory().with(() => ({ pricingPlan: planAction.pricingPlan, status: 'incomplete' })).one()
+    const orgPlanActions = await new OrganisationPricingPlanActionFactory(orgPlan).with(() => ({ type: planAction.type })).many(planAction.limit)
+
+    const [organisation, game] = await createOrganisationAndGame(app.context.em, { pricingPlan: orgPlan })
+    const [token] = await createUserAndToken(app.context.em, { type: UserType.ADMIN, emailConfirmed: true }, organisation)
+
+    await (<EntityManager>app.context.em).persistAndFlush([planAction, ...orgPlanActions])
+
+    const res = await request(app.callback())
+      .post(`${baseUrl}`)
+      .send({ gameId: game.id, entities: [DataExportAvailableEntities.GAME_STATS, DataExportAvailableEntities.GAME_ACTIVITIES] })
+      .auth(token, { type: 'bearer' })
+      .expect(402)
+
+    expect(res.body).toStrictEqual({ message: 'Your subscription is in an incomplete state. Please update your billing details.' })
   })
 })

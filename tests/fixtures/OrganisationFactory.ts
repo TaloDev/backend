@@ -1,6 +1,8 @@
 import { Factory } from 'hefty'
 import Organisation from '../../src/entities/organisation'
 import casual from 'casual'
+import PricingPlanFactory from './PricingPlanFactory'
+import OrganisationPricingPlanFactory from './OrganisationPricingPlanFactory'
 
 export default class OrganisationFactory extends Factory<Organisation> {
   constructor() {
@@ -10,10 +12,14 @@ export default class OrganisationFactory extends Factory<Organisation> {
     this.register('demo', this.demo)
   }
 
-  protected base(): Partial<Organisation> {
+  protected async base(organisation: Organisation): Promise<Partial<Organisation>> {
+    const plan = await new PricingPlanFactory().one()
+    const orgPlan = await new OrganisationPricingPlanFactory().construct(organisation, plan).one()
+
     return {
       email: casual.email,
-      name: casual.company_name
+      name: casual.company_name,
+      pricingPlan: orgPlan
     }
   }
 

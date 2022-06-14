@@ -10,7 +10,6 @@ import setUserLastSeenAt from '../../lib/users/setUserLastSeenAt'
 import UserAccessCode from '../../entities/user-access-code'
 import Organisation from '../../entities/organisation'
 import { add } from 'date-fns'
-import Queue from 'bee-queue'
 import { authenticator } from '@otplib/preset-default'
 import Redis from 'ioredis'
 import redisConfig from '../../config/redis.config'
@@ -18,9 +17,12 @@ import UserRecoveryCode from '../../entities/user-recovery-code'
 import generateRecoveryCodes from '../../lib/auth/generateRecoveryCodes'
 import Invite from '../../entities/invite'
 import ConfirmEmail from '../../emails/confirm-email-mail'
-import { EmailConfig } from '../../lib/messaging/sendEmail'
 import { GameActivityType } from '../../entities/game-activity'
 import createGameActivity from '../../lib/logging/createGameActivity'
+import createDefaultPricingPlan from '../../lib/billing/createDefaultPricingPlan'
+import handlePricingPlanAction from '../../lib/billing/handlePricingPlanAction'
+import { PricingPlanActionType } from '../../entities/pricing-plan-action'
+import queueEmail from '../../lib/messaging/queueEmail'
 
 async function sendEmailConfirm(req: Request, res: Response): Promise<void> {
   const user: User = req.ctx.state.user
@@ -32,9 +34,7 @@ async function sendEmailConfirm(req: Request, res: Response): Promise<void> {
     const accessCode = new UserAccessCode(user, add(new Date(), { weeks: 1 }))
     await em.persistAndFlush(accessCode)
 
-    await (<Queue>req.ctx.emailQueue)
-      .createJob<EmailConfig>({ mail: new ConfirmEmail(user, accessCode.code).getConfig() })
-      .save()
+    await queueEmail(req.ctx.emailQueue, new ConfirmEmail(user, accessCode.code))
   }
 }
 
@@ -125,6 +125,7 @@ export default class UserPublicService implements Service {
       const organisation = new Organisation()
       organisation.email = email
       organisation.name = organisationName
+      organisation.pricingPlan = await createDefaultPricingPlan(em, organisation)
 
       user.organisation = organisation
       user.type = UserType.OWNER
@@ -132,8 +133,11 @@ export default class UserPublicService implements Service {
 
     req.ctx.state.user = user
     await em.getRepository(User).persistAndFlush(user)
-
     await em.populate(user, ['organisation'])
+
+    if (!inviteToken) {
+      await handlePricingPlanAction(req, PricingPlanActionType.USER_INVITE, { initialUser: true, invitedUserEmail: user.email })
+    }
 
     const accessToken = await buildTokenPair(req.ctx, user)
 

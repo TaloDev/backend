@@ -1,5 +1,6 @@
-import { Collection, Entity, OneToMany, PrimaryKey, Property } from '@mikro-orm/core'
+import { Collection, Entity, OneToMany, OneToOne, PrimaryKey, Property } from '@mikro-orm/core'
 import Game from './game'
+import OrganisationPricingPlan from './organisation-pricing-plan'
 
 @Entity()
 export default class Organisation {
@@ -13,7 +14,10 @@ export default class Organisation {
   name: string
 
   @OneToMany(() => Game, (game) => game.organisation, { eager: true })
-  games: Collection<Game> = new Collection<Game>(this)
+  games = new Collection<Game>(this)
+
+  @OneToOne({ orphanRemoval: true, eager: true })
+  pricingPlan: OrganisationPricingPlan
 
   @Property()
   createdAt: Date = new Date()
@@ -25,7 +29,10 @@ export default class Organisation {
     return {
       id: this.id,
       name: this.name,
-      games: this.games
+      games: this.games,
+      pricingPlan: {
+        status: this.pricingPlan.status
+      }
     }
   }
 }

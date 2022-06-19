@@ -36,7 +36,7 @@ describe('Invite service - post', () => {
   it.each(userPermissionProvider([
     UserType.ADMIN
   ]))('should return a %i for a %s user', async (statusCode, _, type) => {
-    const [token, user] = await createUserAndToken(app.context.em, { type })
+    const [token, user] = await createUserAndToken(app.context.em, { type, emailConfirmed: true })
 
     const res = await request(app.callback())
       .post(`${baseUrl}`)
@@ -61,7 +61,7 @@ describe('Invite service - post', () => {
   })
 
   it('should not create an invite when an invite exists for the same email', async () => {
-    const [token, user] = await createUserAndToken(app.context.em, { type: UserType.ADMIN })
+    const [token, user] = await createUserAndToken(app.context.em, { type: UserType.ADMIN, emailConfirmed: true })
 
     const invite = await new InviteFactory().construct(user.organisation).with(() => ({
       email: 'user@example.com'
@@ -83,7 +83,7 @@ describe('Invite service - post', () => {
     [200, 'dev', UserType.DEV],
     [400, 'demo', UserType.DEMO]
   ])('should return a %i for a %s user type invite', async (statusCode, _, type) => {
-    const [token] = await createUserAndToken(app.context.em, { type: UserType.ADMIN })
+    const [token] = await createUserAndToken(app.context.em, { type: UserType.ADMIN, emailConfirmed: true })
 
     const res = await request(app.callback())
       .post(`${baseUrl}`)
@@ -104,7 +104,7 @@ describe('Invite service - post', () => {
 
   it('should not create an invite when an invite exists for the same email on another organisation', async () => {
     const [otherOrg] = await createOrganisationAndGame(app.context.em)
-    const [token] = await createUserAndToken(app.context.em, { type: UserType.ADMIN })
+    const [token] = await createUserAndToken(app.context.em, { type: UserType.ADMIN, emailConfirmed: true })
 
     const invite = await new InviteFactory().construct(otherOrg).with(() => ({
       email: 'user@example.com'
@@ -121,7 +121,7 @@ describe('Invite service - post', () => {
   })
 
   it('should not create an invite when a user exists for the same email', async () => {
-    const [token] = await createUserAndToken(app.context.em, { type: UserType.ADMIN })
+    const [token] = await createUserAndToken(app.context.em, { type: UserType.ADMIN, emailConfirmed: true })
 
     const user = await new UserFactory().with(() => ({ email: 'user@example.com' })).one()
     await (<EntityManager>app.context.em).persistAndFlush(user)
@@ -141,7 +141,7 @@ describe('Invite service - post', () => {
     const orgPlanActions = await new OrganisationPricingPlanActionFactory(orgPlan).with(() => ({ type: planAction.type })).many(planAction.limit)
 
     const [organisation] = await createOrganisationAndGame(app.context.em, { pricingPlan: orgPlan })
-    const [token] = await createUserAndToken(app.context.em, { type: UserType.ADMIN }, organisation)
+    const [token] = await createUserAndToken(app.context.em, { type: UserType.ADMIN, emailConfirmed: true }, organisation)
 
     await (<EntityManager>app.context.em).persistAndFlush([planAction, ...orgPlanActions])
 
@@ -158,7 +158,7 @@ describe('Invite service - post', () => {
     const orgPlanActions = await new OrganisationPricingPlanActionFactory(orgPlan).with(() => ({ type: planAction.type })).many(planAction.limit)
 
     const [organisation] = await createOrganisationAndGame(app.context.em, { pricingPlan: orgPlan })
-    const [token] = await createUserAndToken(app.context.em, { type: UserType.ADMIN }, organisation)
+    const [token] = await createUserAndToken(app.context.em, { type: UserType.ADMIN, emailConfirmed: true }, organisation)
 
     await (<EntityManager>app.context.em).persistAndFlush([planAction, ...orgPlanActions])
 
@@ -169,5 +169,17 @@ describe('Invite service - post', () => {
       .expect(402)
 
     expect(res.body).toStrictEqual({ message: 'Your subscription is in an incomplete state. Please update your billing details.' })
+  })
+
+  it('should not create an invite if the user\'s email is not confirmed', async () => {
+    const [token] = await createUserAndToken(app.context.em, { type: UserType.ADMIN })
+
+    const res = await request(app.callback())
+      .post(`${baseUrl}`)
+      .send({ email: 'dev@game.studio', type: UserType.DEV })
+      .auth(token, { type: 'bearer' })
+      .expect(403)
+
+    expect(res.body).toStrictEqual({ message: 'You need to confirm your email address to create invites' })
   })
 })

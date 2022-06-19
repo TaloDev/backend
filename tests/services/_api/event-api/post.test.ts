@@ -228,4 +228,42 @@ describe('Event API service - post', () => {
 
     expect(res.body.errors[0]).toStrictEqual(['Props must be an array'])
   })
+
+  it('should add valid meta props to the player\'s props', async () => {
+    apiKey.scopes = [APIKeyScope.WRITE_EVENTS]
+    await (<EntityManager>app.context.em).flush()
+    token = await createToken(apiKey)
+
+    await request(app.callback())
+      .post(`${baseUrl}`)
+      .send({
+        events: [
+          { name: 'Equip bow', aliasId: validPlayer.aliases[0].id, timestamp: Date.now(), props: [{ key: 'META_OS', value: 'macOS' }] }
+        ]
+      })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    const player = await (<EntityManager>app.context.em).getRepository(Player).findOne(validPlayer.id, { refresh: true })
+    expect(player.props).toContainEqual({ key: 'META_OS', value: 'macOS' })
+  })
+
+  it('should strip out event props that start with META_ but aren\'t in the meta props list', async () => {
+    apiKey.scopes = [APIKeyScope.WRITE_EVENTS]
+    await (<EntityManager>app.context.em).flush()
+    token = await createToken(apiKey)
+
+    const res = await request(app.callback())
+      .post(`${baseUrl}`)
+      .send({
+        events: [
+          { name: 'Equip bow', aliasId: validPlayer.aliases[0].id, timestamp: Date.now(), props: [{ key: 'META_NO_WAY', value: 'true' }, { key: 'META_OS', value: 'macOS' }] }
+        ]
+      })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    expect(res.body.events[0].props).toContainEqual({ key: 'META_OS', value: 'macOS' })
+    expect(res.body.events[0].props).not.toContainEqual({ key: 'META_NO_WAY', value: 'true' })
+  })
 })

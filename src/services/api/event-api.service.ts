@@ -7,7 +7,6 @@ import APIService from './api-service'
 import APIKey from '../../entities/api-key'
 import PlayerAlias from '../../entities/player-alias'
 import groupBy from 'lodash.groupby'
-import sanitiseProps from '../../lib/props/sanitiseProps'
 
 export default class EventAPIService extends APIService<EventService> {
   constructor() {
@@ -66,11 +65,8 @@ export default class EventAPIService extends APIService<EventService> {
 
         if (item.props) {
           try {
-            if (!Array.isArray(item.props)) {
-              throw new Error('Props must be an array')
-            }
-
-            event.props = sanitiseProps(item.props, true)
+            if (!Array.isArray(item.props)) throw new Error('Props must be an array')
+            event.setProps(item.props)
           } catch (err) {
             errors[i].push(err.message)
           }

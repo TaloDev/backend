@@ -69,7 +69,7 @@ describe('API key service - post', () => {
       .auth(token, { type: 'bearer' })
       .expect(403)
 
-    expect(res.body).toStrictEqual({ message: 'You need to confirm your email address to do this' })
+    expect(res.body).toStrictEqual({ message: 'You need to confirm your email address to create API keys' })
   })
 
   it('should not create an api key for a non-existent game', async () => {

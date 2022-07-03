@@ -35,7 +35,7 @@ export async function createToken(apiKey: APIKey, payloadParams?: ExtraTokenPayl
     method: 'DELETE'
   }
 ])
-export default class APIKeyService implements Service {
+export default class APIKeyService extends Service {
   @Validate({
     body: ['gameId', 'scopes']
   })

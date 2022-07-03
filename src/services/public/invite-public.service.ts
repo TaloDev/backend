@@ -2,7 +2,7 @@ import { EntityManager } from '@mikro-orm/core'
 import { Service, Request, Response } from 'koa-clay'
 import Invite from '../../entities/invite'
 
-export default class InvitePublicService implements Service {
+export default class InvitePublicService extends Service {
   async get(req: Request): Promise<Response> {
     const { id } = req.params
     const em: EntityManager = req.ctx.em

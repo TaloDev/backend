@@ -5,7 +5,7 @@ import GameStat from '../entities/game-stat'
 import createGameActivity from '../lib/logging/createGameActivity'
 import GameStatPolicy from '../policies/game-stat.policy'
 
-export default class GameStatService implements Service {
+export default class GameStatService extends Service {
   @Validate({
     query: ['gameId']
   })

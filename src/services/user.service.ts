@@ -77,7 +77,7 @@ async function requires2fa(req: Request): Promise<void> {
     handler: 'viewRecoveryCodes'
   }
 ])
-export default class UserService implements Service {
+export default class UserService extends Service {
   async logout(req: Request): Promise<Response> {
     const em: EntityManager = req.ctx.em
     const userId: number = req.ctx.state.user.sub

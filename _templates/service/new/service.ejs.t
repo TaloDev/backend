@@ -6,7 +6,7 @@ import { HasPermission, Service, Request, Response, Validate } from 'koa-clay'
 import <%= h.changeCase.pascal(name) %> from '../entities/<%= name %>'
 import <%= h.changeCase.pascal(name) %>Policy from '../policies/<%= name %>.policy'
 
-export default class <%= h.changeCase.pascal(name) %>Service implements Service {
+export default class <%= h.changeCase.pascal(name) %>Service extends Service {
   @Validate({
     query: ['<%= h.changeCase.camel(name) %>Id']
   })

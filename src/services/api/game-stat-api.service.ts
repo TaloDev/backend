@@ -4,7 +4,6 @@ import { HasPermission, Request, Response, Routes, Validate } from 'koa-clay'
 import GameStat from '../../entities/game-stat'
 import PlayerGameStat from '../../entities/player-game-stat'
 import GameStatAPIPolicy from '../../policies/api/game-stat-api.policy'
-import GameStatService from '../game-stat.service'
 import APIService from './api-service'
 
 @Routes([
@@ -13,11 +12,7 @@ import APIService from './api-service'
     path: '/:internalName'
   }
 ])
-export default class GameStatAPIService extends APIService<GameStatService> {
-  constructor() {
-    super('game-stats')
-  }
-
+export default class GameStatAPIService extends APIService {
   @Validate({
     body: ['aliasId', 'change']
   })

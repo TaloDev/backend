@@ -27,7 +27,7 @@ const stripe = initStripe()
     handler: 'subscriptions'
   }
 ])
-export default class WebhookService implements Service {
+export default class WebhookService extends Service {
   private async getOrganisationPricingPlan(req: Request, stripeCustomerId: string): Promise<OrganisationPricingPlan> {
     const em: EntityManager = req.ctx.em
 

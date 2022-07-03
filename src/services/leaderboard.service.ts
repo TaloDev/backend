@@ -40,7 +40,7 @@ import LeaderboardPolicy from '../policies/leaderboard.policy'
     path: '/:id'
   }
 ])
-export default class LeaderboardService implements Service {
+export default class LeaderboardService extends Service {
   @Validate({
     query: ['gameId']
   })

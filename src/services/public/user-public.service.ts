@@ -75,7 +75,7 @@ async function sendEmailConfirm(req: Request, res: Response): Promise<void> {
     handler: 'useRecoveryCode'
   }
 ])
-export default class UserPublicService implements Service {
+export default class UserPublicService extends Service {
   @Validate({
     body: {
       email: {

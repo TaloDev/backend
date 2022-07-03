@@ -52,10 +52,12 @@ async function updateEventDates(req: Request): Promise<void> {
   await em.flush()
 }
 
-export default class DemoService implements Service {
+export default class DemoService extends Service {
   queue: Queue
 
   constructor() {
+    super()
+
     this.queue = createQueue('demo')
 
     this.queue.process(async (job: Queue.Job<DemoUserJob>) => {

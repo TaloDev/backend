@@ -4,11 +4,7 @@ import APIService from './api-service'
 import GameSave from '../../entities/game-save'
 import { EntityManager } from '@mikro-orm/core'
 
-export default class GameSaveAPIService extends APIService<void> {
-  constructor() {
-    super('game-saves')
-  }
-
+export default class GameSaveAPIService extends APIService {
   @Validate({
     query: ['aliasId']
   })

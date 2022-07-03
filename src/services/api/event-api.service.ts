@@ -1,18 +1,13 @@
 import { EntityManager } from '@mikro-orm/core'
-import { HasPermission, Request, Response, Validate, ValidationCondition } from 'koa-clay'
+import { forwardRequest, ForwardTo, HasPermission, Request, Response, Validate, ValidationCondition } from 'koa-clay'
 import Event from '../../entities/event'
 import EventAPIPolicy from '../../policies/api/event-api.policy'
-import EventService from '../event.service'
 import APIService from './api-service'
 import APIKey from '../../entities/api-key'
 import PlayerAlias from '../../entities/player-alias'
 import groupBy from 'lodash.groupby'
 
-export default class EventAPIService extends APIService<EventService> {
-  constructor() {
-    super('events')
-  }
-
+export default class EventAPIService extends APIService {
   @Validate({
     body: {
       events: {
@@ -88,9 +83,10 @@ export default class EventAPIService extends APIService<EventService> {
   }
 
   @HasPermission(EventAPIPolicy, 'index')
+  @ForwardTo('events', 'index')
   async index(req: Request): Promise<Response> {
     const key: APIKey = await this.getAPIKey(req.ctx)
-    return await this.forwardRequest('index', req, {
+    return await forwardRequest(req, {
       query: {
         gameId: key.game.id.toString()
       }

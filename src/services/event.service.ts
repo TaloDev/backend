@@ -14,7 +14,7 @@ interface EventData {
   change: number
 }
 
-export default class EventService implements Service {
+export default class EventService extends Service {
   @Validate({
     query: {
       gameId: {

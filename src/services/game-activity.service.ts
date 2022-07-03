@@ -4,7 +4,7 @@ import GameActivity from '../entities/game-activity'
 import User from '../entities/user'
 import GameActivityPolicy from '../policies/game-activity.policy'
 
-export default class GameActivityService implements Service {
+export default class GameActivityService extends Service {
   @Validate({
     query: ['gameId']
   })

@@ -1,6 +1,5 @@
-import { HasPermission, Routes, Request, Response, Validate } from 'koa-clay'
+import { HasPermission, Routes, Request, Response, Validate, ForwardTo, forwardRequest } from 'koa-clay'
 import LeaderboardAPIPolicy from '../../policies/api/leaderboard-api.policy'
-import LeaderboardService from '../leaderboard.service'
 import APIService from './api-service'
 import { EntityManager } from '@mikro-orm/mysql'
 import LeaderboardEntry from '../../entities/leaderboard-entry'
@@ -16,14 +15,11 @@ import Leaderboard, { LeaderboardSortMode } from '../../entities/leaderboard'
     path: '/:internalName/entries'
   }
 ])
-export default class LeaderboardAPIService extends APIService<LeaderboardService> {
-  constructor() {
-    super('leaderboards')
-  }
-
+export default class LeaderboardAPIService extends APIService {
   @HasPermission(LeaderboardAPIPolicy, 'get')
+  @ForwardTo('leaderboards', 'entries')
   async get(req: Request): Promise<Response> {
-    return this.forwardRequest('entries', req, {
+    return forwardRequest(req, {
       params: {
         id: String(req.ctx.state.leaderboard.id)
       }

@@ -55,11 +55,13 @@ type ExportableEntityWithProps = ExportableEntity & EntityWithProps
     handler: 'entities'
   }
 ])
-export default class DataExportService implements Service {
+export default class DataExportService extends Service {
   queue: Queue
   emailQueue: Queue
 
   constructor() {
+    super()
+
     this.queue = createQueue('data-export')
 
     this.queue.process(async (job: Queue.Job<DataExportJob>) => {

@@ -62,7 +62,7 @@ type PricingPlanUsage = {
     handler: 'organisationPlan'
   }
 ])
-export default class BillingService implements Service {
+export default class BillingService extends Service {
   async plans(req: Request): Promise<Response> {
     const em: EntityManager = req.ctx.em
     const plans = await em.getRepository(PricingPlan).find({ hidden: false }, { populate: ['actions'] })

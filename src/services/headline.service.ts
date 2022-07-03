@@ -30,7 +30,7 @@ import { devDataPlayerFilter } from '../middlewares/dev-data-middleware'
     handler: 'uniqueEventSubmitters'
   }
 ])
-export default class HeadlineService implements Service {
+export default class HeadlineService extends Service {
   @Validate({
     query: {
       gameId: {

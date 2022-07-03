@@ -1,10 +1,9 @@
 import { EntityManager } from '@mikro-orm/core'
-import { Request, Response, Routes, Validate, HasPermission } from 'koa-clay'
+import { Request, Response, Routes, Validate, HasPermission, ForwardTo, forwardRequest } from 'koa-clay'
 import APIKey, { APIKeyScope } from '../../entities/api-key'
 import Player from '../../entities/player'
 import PlayerAlias from '../../entities/player-alias'
 import PlayerAPIPolicy from '../../policies/api/player-api.policy'
-import PlayerService from '../player.service'
 import APIService from './api-service'
 import uniqWith from 'lodash.uniqwith'
 
@@ -30,11 +29,7 @@ import uniqWith from 'lodash.uniqwith'
     handler: 'merge'
   }
 ])
-export default class PlayerAPIService extends APIService<PlayerService> {
-  constructor() {
-    super('players')
-  }
-
+export default class PlayerAPIService extends APIService {
   @Validate({
     query: ['service', 'identifier']
   })
@@ -89,9 +84,10 @@ export default class PlayerAPIService extends APIService<PlayerService> {
   }
 
   @HasPermission(PlayerAPIPolicy, 'index')
+  @ForwardTo('players', 'index')
   async index(req: Request): Promise<Response> {
     const key: APIKey = await this.getAPIKey(req.ctx)
-    return await this.forwardRequest('index', req, {
+    return await forwardRequest(req, {
       query: {
         gameId: key.game.id.toString()
       }
@@ -99,9 +95,10 @@ export default class PlayerAPIService extends APIService<PlayerService> {
   }
 
   @HasPermission(PlayerAPIPolicy, 'post')
+  @ForwardTo('players', 'post')
   async post(req: Request): Promise<Response> {
     const key: APIKey = await this.getAPIKey(req.ctx)
-    return await this.forwardRequest('post', req, {
+    return await forwardRequest(req, {
       body: {
         gameId: key.game.id
       }
@@ -109,8 +106,9 @@ export default class PlayerAPIService extends APIService<PlayerService> {
   }
 
   @HasPermission(PlayerAPIPolicy, 'patch')
+  @ForwardTo('players', 'patch')
   async patch(req: Request): Promise<Response> {
-    return await this.forwardRequest('patch', req)
+    return await forwardRequest(req)
   }
 
   @Validate({

@@ -4,7 +4,7 @@ import Game from '../entities/game'
 import getUserFromToken from '../lib/auth/getUserFromToken'
 import GamePolicy from '../policies/game.policy'
 
-export default class GameService implements Service {
+export default class GameService extends Service {
   @Validate({
     body: ['name']
   })

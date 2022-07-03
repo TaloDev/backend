@@ -1,5 +1,5 @@
 import Koa, { Context, Next } from 'koa'
-import { service } from 'koa-clay'
+import { service, ServiceOpts } from 'koa-clay'
 import OrganisationService from '../services/organisation.service'
 import InviteService from '../services/invite.service'
 import GameStatService from '../services/game-stat.service'
@@ -23,17 +23,23 @@ export default (app: Koa) => {
     await next()
   })
 
-  app.use(service('/billing', new BillingService()))
-  app.use(service('/organisations', new OrganisationService()))
-  app.use(service('/invites', new InviteService()))
-  app.use(service('/game-stats', new GameStatService()))
-  app.use(service('/game-activities', new GameActivityService()))
-  app.use(service('/leaderboards', new LeaderboardService()))
-  app.use(service('/data-exports', new DataExportService()))
-  app.use(service('/api-keys', new APIKeyService()))
-  app.use(service('/events', new EventService()))
-  app.use(service('/players', new PlayerService()))
-  app.use(service('/games', new GameService()))
-  app.use(service('/users', new UserService()))
-  app.use(service('/headlines', new HeadlineService()))
+  const serviceOpts: ServiceOpts = {
+    docs: {
+      hidden: true
+    }
+  }
+
+  app.use(service('/billing', new BillingService(), serviceOpts))
+  app.use(service('/organisations', new OrganisationService(), serviceOpts))
+  app.use(service('/invites', new InviteService(), serviceOpts))
+  app.use(service('/game-stats', new GameStatService(), serviceOpts))
+  app.use(service('/game-activities', new GameActivityService(), serviceOpts))
+  app.use(service('/leaderboards', new LeaderboardService(), serviceOpts))
+  app.use(service('/data-exports', new DataExportService(), serviceOpts))
+  app.use(service('/api-keys', new APIKeyService(), serviceOpts))
+  app.use(service('/events', new EventService(), serviceOpts))
+  app.use(service('/players', new PlayerService(), serviceOpts))
+  app.use(service('/games', new GameService(), serviceOpts))
+  app.use(service('/users', new UserService(), serviceOpts))
+  app.use(service('/headlines', new HeadlineService(), serviceOpts))
 }

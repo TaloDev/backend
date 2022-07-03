@@ -1,21 +1,17 @@
 ---
 to: "<%= (typeof api !== 'undefined') ? `src/services/api/${name}-api.service.ts` : null %>"
 ---
-import { HasPermission, Request, Response } from 'koa-clay'
+import { HasPermission, Request, Response, ForwardTo, forwardRequest } from 'koa-clay'
 import <%= h.changeCase.pascal(name) %>APIPolicy from '../../policies/api/<%= name %>-api.policy'
-import <%= h.changeCase.pascal(name) %>Service from '../<%= name %>.service'
 import APIService from './api-service'
 import APIKey from '../../entities/api-key'
 
-export default class <%= h.changeCase.pascal(name) %>APIService extends APIService<<%= h.changeCase.pascal(name) %>Service> {
-  constructor() {
-    super('<%= name %>s')
-  }
-
+export default class <%= h.changeCase.pascal(name) %>APIService extends APIService {
   @HasPermission(<%= h.changeCase.pascal(name) %>APIPolicy, 'post')
+  @ForwardTo(<%= h.changeCase.dot(name) %>, 'post')
   async post(req: Request): Promise<Response> {
     const key: APIKey = await this.getAPIKey(req.ctx)
-    return await this.forwardRequest('post', req, {
+    return await forwardRequest(req, {
       body: {
         gameId: key.game.id
       }

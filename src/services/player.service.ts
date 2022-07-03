@@ -45,7 +45,7 @@ const propsValidation = async (val: unknown): Promise<ValidationCondition[]> => 
     handler: 'stats'
   }
 ])
-export default class PlayerService implements Service {
+export default class PlayerService extends Service {
   @Validate({
     body: {
       gameId: {

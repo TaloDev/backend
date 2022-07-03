@@ -10,7 +10,7 @@ import { PricingPlanActionType } from '../entities/pricing-plan-action'
 import handlePricingPlanAction from '../lib/billing/handlePricingPlanAction'
 import queueEmail from '../lib/messaging/queueEmail'
 
-export default class InviteService implements Service {
+export default class InviteService extends Service {
   @HasPermission(InvitePolicy, 'index')
   async index(req: Request): Promise<Response> {
     const em: EntityManager = req.ctx.em

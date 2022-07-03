@@ -13,7 +13,7 @@ import OrganisationPolicy from '../policies/organisation.policy'
     handler: 'current'
   }
 ])
-export default class OrganisationService implements Service {
+export default class OrganisationService extends Service {
   @HasPermission(OrganisationPolicy, 'current')
   async current(req: Request): Promise<Response> {
     const em: EntityManager = req.ctx.em

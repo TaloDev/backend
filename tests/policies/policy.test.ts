@@ -29,8 +29,8 @@ describe('Policy base class', () => {
 
     const token = await createToken(apiKey)
     await request(app.callback())
-      .get('/v1/events')
-      .query({ startDate: '2021-01-01', endDate: '2021-01-02' })
+      .get('/v1/players/identify?service=username&identifier=')
+      .query({ service: 'username', identifier: 'ionproject' })
       .auth(token, { type: 'bearer' })
       .expect(401)
   })

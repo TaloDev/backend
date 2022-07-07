@@ -96,7 +96,7 @@ describe('Player API service - identify', () => {
       .auth(token, { type: 'bearer' })
       .expect(404)
 
-    expect(res.body).toStrictEqual({ message: 'Player not found' })
+    expect(res.body).toStrictEqual({ message: 'Player not found. Use an access key with the write:players scope to automatically create players' })
   })
 
   it('should identify a non-existent player by creating a new player with the write scope', async () => {

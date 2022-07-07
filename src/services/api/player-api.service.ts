@@ -6,27 +6,25 @@ import PlayerAlias from '../../entities/player-alias'
 import PlayerAPIPolicy from '../../policies/api/player-api.policy'
 import APIService from './api-service'
 import uniqWith from 'lodash.uniqwith'
+import PlayerAPIDocs from '../../docs/player-api.docs'
 
 @Routes([
   {
     method: 'GET',
-    handler: 'index'
-  },
-  {
-    method: 'GET',
     path: '/identify',
-    handler: 'identify'
+    handler: 'identify',
+    docs: PlayerAPIDocs.identify
   },
   {
-    method: 'POST'
-  },
-  {
-    method: 'PATCH'
+    method: 'PATCH',
+    path: '/:aliasId',
+    docs: PlayerAPIDocs.patch
   },
   {
     method: 'POST',
     path: '/merge',
-    handler: 'merge'
+    handler: 'merge',
+    docs: PlayerAPIDocs.merge
   }
 ])
 export default class PlayerAPIService extends APIService {
@@ -34,6 +32,7 @@ export default class PlayerAPIService extends APIService {
     query: ['service', 'identifier']
   })
   @HasPermission(PlayerAPIPolicy, 'identify')
+  @ForwardTo('players', 'post')
   async identify(req: Request): Promise<Response> {
     const { service, identifier } = req.query
     const em: EntityManager = req.ctx.em
@@ -50,8 +49,9 @@ export default class PlayerAPIService extends APIService {
 
     if (!alias) {
       if (req.ctx.state.key.scopes.includes(APIKeyScope.WRITE_PLAYERS)) {
-        const res = await this.post(Object.assign(req, {
+        const res = await forwardRequest(req, {
           body: {
+            gameId: key.game.id,
             aliases: [
               {
                 service,
@@ -59,7 +59,7 @@ export default class PlayerAPIService extends APIService {
               }
             ]
           }
-        }))
+        })
 
         return {
           status: res.status,
@@ -68,7 +68,7 @@ export default class PlayerAPIService extends APIService {
           }
         }
       } else {
-        req.ctx.throw(404, 'Player not found')
+        req.ctx.throw(404, 'Player not found. Use an access key with the write:players scope to automatically create players')
       }
     }
 
@@ -81,28 +81,6 @@ export default class PlayerAPIService extends APIService {
         alias
       }
     }
-  }
-
-  @HasPermission(PlayerAPIPolicy, 'index')
-  @ForwardTo('players', 'index')
-  async index(req: Request): Promise<Response> {
-    const key: APIKey = await this.getAPIKey(req.ctx)
-    return await forwardRequest(req, {
-      query: {
-        gameId: key.game.id.toString()
-      }
-    })
-  }
-
-  @HasPermission(PlayerAPIPolicy, 'post')
-  @ForwardTo('players', 'post')
-  async post(req: Request): Promise<Response> {
-    const key: APIKey = await this.getAPIKey(req.ctx)
-    return await forwardRequest(req, {
-      body: {
-        gameId: key.game.id
-      }
-    })
   }
 
   @HasPermission(PlayerAPIPolicy, 'patch')

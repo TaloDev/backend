@@ -8,6 +8,7 @@ import { createToken } from '../../../../src/services/api-key.service'
 import UserFactory from '../../../fixtures/UserFactory'
 import PlayerFactory from '../../../fixtures/PlayerFactory'
 import Prop from '../../../../src/entities/prop'
+import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
 
 const baseUrl = '/v1/players'
 
@@ -44,7 +45,7 @@ describe('Player API service - patch', () => {
     token = await createToken(apiKey)
 
     const res = await request(app.callback())
-      .patch(`${baseUrl}/${player.id}`)
+      .patch(`${baseUrl}/${player.aliases[0].id}`)
       .send({
         props: [
           {
@@ -87,8 +88,8 @@ describe('Player API service - patch', () => {
     await (<EntityManager>app.context.em).flush()
     token = await createToken(apiKey)
 
-    const res = await request(app.callback())
-      .patch(`${baseUrl}/${player.id}`)
+    await request(app.callback())
+      .patch(`${baseUrl}/${player.aliases[0].id}`)
       .send({
         props: [
           {
@@ -108,6 +109,31 @@ describe('Player API service - patch', () => {
 
     const res = await request(app.callback())
       .patch(`${baseUrl}/546`)
+      .send({
+        props: [
+          {
+            key: 'collectibles',
+            value: '1'
+          }
+        ]
+      })
+      .auth(token, { type: 'bearer' })
+      .expect(404)
+
+    expect(res.body).toStrictEqual({ message: 'Player not found' })
+  })
+
+  it('should not update a player from another game\'s properties', async () => {
+    apiKey.scopes = [APIKeyScope.WRITE_PLAYERS]
+    await (<EntityManager>app.context.em).flush()
+    token = await createToken(apiKey)
+
+    const [, otherGame] = await createOrganisationAndGame(app.context.em)
+    const otherPlayer = await new PlayerFactory([otherGame]).one()
+    await (<EntityManager>app.context.em).persistAndFlush(otherPlayer)
+
+    const res = await request(app.callback())
+      .patch(`${baseUrl}/${otherPlayer.aliases[0].id}`)
       .send({
         props: [
           {

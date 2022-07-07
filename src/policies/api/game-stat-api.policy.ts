@@ -20,7 +20,8 @@ export default class GameStatAPIPolicy extends Policy {
     const player = await this.em.getRepository(Player).findOne({
       aliases: {
         id: aliasId
-      }
+      },
+      game: key.game
     })
 
     req.ctx.state.player = player

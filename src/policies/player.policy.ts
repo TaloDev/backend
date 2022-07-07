@@ -14,26 +14,25 @@ export default class PlayerPolicy extends Policy {
 
   async index(req: Request): Promise<boolean> {
     const { gameId } = req.query
-
-    if (this.isAPICall()) return true
     return await this.canAccessGame(Number(gameId))
   }
 
   async post(req: Request): Promise<boolean> {
-    const { gameId } = req.body
-
     if (this.isAPICall()) return true
+
+    const { gameId } = req.body
     return await this.canAccessGame(Number(gameId))
   }
 
   @UserTypeGate([UserType.ADMIN, UserType.DEV], 'update player properties')
   async patch(req: Request): Promise<PolicyResponse> {
+    if (this.isAPICall()) return true
+
     const { id } = req.params
 
     const player = await this.getPlayer(id)
     if (!player) return new PolicyDenial({ message: 'Player not found' }, 404)
 
-    if (this.isAPICall()) return true
     return await this.canAccessGame(player.game.id)
   }
 

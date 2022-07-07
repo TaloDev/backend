@@ -1,9 +1,10 @@
-import { HasPermission, Routes, Request, Response, Validate, ForwardTo, forwardRequest } from 'koa-clay'
+import { HasPermission, Routes, Request, Response, Validate, ForwardTo, forwardRequest, Docs } from 'koa-clay'
 import LeaderboardAPIPolicy from '../../policies/api/leaderboard-api.policy'
 import APIService from './api-service'
 import { EntityManager } from '@mikro-orm/mysql'
 import LeaderboardEntry from '../../entities/leaderboard-entry'
 import Leaderboard, { LeaderboardSortMode } from '../../entities/leaderboard'
+import LeaderboardAPIDocs from '../../docs/leaderboard-api.docs'
 
 @Routes([
   {
@@ -16,8 +17,10 @@ import Leaderboard, { LeaderboardSortMode } from '../../entities/leaderboard'
   }
 ])
 export default class LeaderboardAPIService extends APIService {
+  @Validate({ query: ['page'] })
   @HasPermission(LeaderboardAPIPolicy, 'get')
   @ForwardTo('leaderboards', 'entries')
+  @Docs(LeaderboardAPIDocs.get)
   async get(req: Request): Promise<Response> {
     return forwardRequest(req, {
       params: {
@@ -38,10 +41,9 @@ export default class LeaderboardAPIService extends APIService {
     return entry
   }
 
-  @Validate({
-    body: ['aliasId', 'score']
-  })
+  @Validate({ body: ['aliasId', 'score'] })
   @HasPermission(LeaderboardAPIPolicy, 'post')
+  @Docs(LeaderboardAPIDocs.post)
   async post(req: Request): Promise<Response> {
     const { score } = req.body
     const em: EntityManager = req.ctx.em

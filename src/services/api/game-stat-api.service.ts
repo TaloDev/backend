@@ -1,6 +1,7 @@
 import { EntityManager } from '@mikro-orm/core'
 import { differenceInSeconds } from 'date-fns'
-import { HasPermission, Request, Response, Routes, Validate } from 'koa-clay'
+import { HasPermission, Request, Response, Routes, Validate, Docs } from 'koa-clay'
+import GameStatAPIDocs from '../../docs/game-stat-api.docs'
 import GameStat from '../../entities/game-stat'
 import PlayerGameStat from '../../entities/player-game-stat'
 import GameStatAPIPolicy from '../../policies/api/game-stat-api.policy'
@@ -17,6 +18,7 @@ export default class GameStatAPIService extends APIService {
     body: ['aliasId', 'change']
   })
   @HasPermission(GameStatAPIPolicy, 'put')
+  @Docs(GameStatAPIDocs.put)
   async put(req: Request): Promise<Response> {
     const { change } = req.body
     const em: EntityManager = req.ctx.em

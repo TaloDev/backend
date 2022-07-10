@@ -6,7 +6,7 @@ import UserTypeGate from './user-type-gate'
 
 export default class LeaderboardPolicy extends Policy {
   async index(req: Request): Promise<PolicyResponse> {
-    const { gameId } = req.query
+    const { gameId } = req.params
     return await this.canAccessGame(Number(gameId))
   }
 
@@ -23,13 +23,14 @@ export default class LeaderboardPolicy extends Policy {
   }
 
   async get(req: Request): Promise<PolicyResponse> {
+    if (this.isAPICall()) return true
     return await this.canAccessLeaderboard(req)
   }
 
   @UserTypeGate([UserType.ADMIN, UserType.DEV], 'create leaderboards')
   async post(req: Request): Promise<PolicyResponse> {
-    const { gameId } = req.body
-    return await this.canAccessGame(gameId)
+    const { gameId } = req.params
+    return await this.canAccessGame(Number(gameId))
   }
 
   async updateEntry(req: Request): Promise<PolicyResponse> {

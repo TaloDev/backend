@@ -11,8 +11,6 @@ import createUserAndToken from '../../utils/createUserAndToken'
 import createOrganisationAndGame from '../../utils/createOrganisationAndGame'
 import clearEntities from '../../utils/clearEntities'
 
-const baseUrl = '/api-keys'
-
 describe('API key service - delete', () => {
   let app: Koa
 
@@ -38,7 +36,7 @@ describe('API key service - delete', () => {
     await (<EntityManager>app.context.em).persistAndFlush(key)
 
     const res = await request(app.callback())
-      .delete(`${baseUrl}/${key.id}`)
+      .delete(`/games/${game.id}/api-keys/${key.id}`)
       .auth(token, { type: 'bearer' })
       .expect(statusCode)
 
@@ -64,10 +62,11 @@ describe('API key service - delete', () => {
   })
 
   it('should not delete an api key that doesn\'t exist', async () => {
-    const [token] = await createUserAndToken(app.context.em, { type: UserType.ADMIN, emailConfirmed: true })
+    const [organisation, game] = await createOrganisationAndGame(app.context.em)
+    const [token] = await createUserAndToken(app.context.em, { type: UserType.ADMIN, emailConfirmed: true }, organisation)
 
     const res = await request(app.callback())
-      .delete(`${baseUrl}/99`)
+      .delete(`/games/${game.id}/api-keys/99`)
       .auth(token, { type: 'bearer' })
       .expect(404)
 
@@ -83,7 +82,7 @@ describe('API key service - delete', () => {
     await (<EntityManager>app.context.em).persistAndFlush(key)
 
     const res = await request(app.callback())
-      .delete(`${baseUrl}/${key.id}`)
+      .delete(`/games/${otherGame.id}/api-keys/${key.id}`)
       .auth(token, { type: 'bearer' })
       .expect(403)
 

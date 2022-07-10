@@ -9,8 +9,6 @@ import APIKey from '../../../src/entities/api-key'
 import UserFactory from '../../fixtures/UserFactory'
 import OrganisationFactory from '../../fixtures/OrganisationFactory'
 
-const baseUrl = '/api-keys'
-
 describe('API key service - get', () => {
   let app: Koa
   let user: User
@@ -36,8 +34,7 @@ describe('API key service - get', () => {
     await (<EntityManager>app.context.em).persistAndFlush(keys)
 
     const res = await request(app.callback())
-      .get(`${baseUrl}`)
-      .query({ gameId: validGame.id })
+      .get(`/games/${validGame.id}/api-keys`)
       .auth(token, { type: 'bearer' })
       .expect(200)
 
@@ -46,8 +43,7 @@ describe('API key service - get', () => {
 
   it('should not return a list of api keys for a non-existent game', async () => {
     const res = await request(app.callback())
-      .get(`${baseUrl}`)
-      .query({ gameId: 99999 })
+      .get('/games/99999/api-keys')
       .auth(token, { type: 'bearer' })
       .expect(404)
 
@@ -60,8 +56,7 @@ describe('API key service - get', () => {
     await (<EntityManager>app.context.em).persistAndFlush(otherGame)
 
     await request(app.callback())
-      .get(`${baseUrl}`)
-      .query({ gameId: otherGame.id })
+      .get(`/games/${otherGame.id}/api-keys`)
       .auth(token, { type: 'bearer' })
       .expect(403)
   })

@@ -6,14 +6,14 @@ import UserTypeGate from './user-type-gate'
 
 export default class GameStatPolicy extends Policy {
   async index(req: Request): Promise<PolicyResponse> {
-    const { gameId } = req.query
+    const { gameId } = req.params
     return await this.canAccessGame(Number(gameId))
   }
 
   @UserTypeGate([UserType.ADMIN, UserType.DEV], 'create stats')
   async post(req: Request): Promise<PolicyResponse> {
-    const { gameId } = req.body
-    return await this.canAccessGame(gameId)
+    const { gameId } = req.params
+    return await this.canAccessGame(Number(gameId))
   }
 
   async getStat(id: number): Promise<GameStat> {

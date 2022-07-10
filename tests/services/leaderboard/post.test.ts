@@ -11,8 +11,6 @@ import userPermissionProvider from '../../utils/userPermissionProvider'
 import createOrganisationAndGame from '../../utils/createOrganisationAndGame'
 import createUserAndToken from '../../utils/createUserAndToken'
 
-const baseUrl = '/leaderboards'
-
 describe('Leaderboard service - post', () => {
   let app: Koa
 
@@ -36,8 +34,8 @@ describe('Leaderboard service - post', () => {
     const [token] = await createUserAndToken(app.context.em, { type }, organisation)
 
     const res = await request(app.callback())
-      .post(`${baseUrl}`)
-      .send({ gameId: game.id, internalName: 'highscores', name: 'Highscores', sortMode: 'desc', unique: true })
+      .post(`/games/${game.id}/leaderboards`)
+      .send({ internalName: 'highscores', name: 'Highscores', sortMode: 'desc', unique: true })
       .auth(token, { type: 'bearer' })
       .expect(statusCode)
 
@@ -63,8 +61,8 @@ describe('Leaderboard service - post', () => {
     const [token] = await createUserAndToken(app.context.em)
 
     const res = await request(app.callback())
-      .post(`${baseUrl}`)
-      .send({ gameId: otherGame.id, internalName: 'highscores', name: 'Highscores', sortMode: 'desc', unique: true })
+      .post(`/games/${otherGame.id}/leaderboards`)
+      .send({ internalName: 'highscores', name: 'Highscores', sortMode: 'desc', unique: true })
       .auth(token, { type: 'bearer' })
       .expect(403)
 
@@ -75,8 +73,8 @@ describe('Leaderboard service - post', () => {
     const [token] = await createUserAndToken(app.context.em)
 
     const res = await request(app.callback())
-      .post(`${baseUrl}`)
-      .send({ gameId: 99999, internalName: 'highscores', name: 'Highscores', sortMode: 'desc', unique: true })
+      .post('/games/99999/leaderboards')
+      .send({ internalName: 'highscores', name: 'Highscores', sortMode: 'desc', unique: true })
       .auth(token, { type: 'bearer' })
       .expect(404)
 
@@ -88,8 +86,8 @@ describe('Leaderboard service - post', () => {
     const [token] = await createUserAndToken(app.context.em, {}, organisation)
 
     const res = await request(app.callback())
-      .post(`${baseUrl}`)
-      .send({ gameId: game.id, internalName: 'highscores', name: 'Highscores', sortMode: 'blah', unique: true })
+      .post(`/games/${game.id}/leaderboards`)
+      .send({ internalName: 'highscores', name: 'Highscores', sortMode: 'blah', unique: true })
       .auth(token, { type: 'bearer' })
       .expect(400)
 
@@ -108,8 +106,8 @@ describe('Leaderboard service - post', () => {
     await (<EntityManager>app.context.em).persistAndFlush(leaderboard)
 
     const res = await request(app.callback())
-      .post(`${baseUrl}`)
-      .send({ gameId: game.id, internalName: 'highscores', name: 'Highscores', sortMode: 'asc', unique: true })
+      .post(`/games/${game.id}/leaderboards`)
+      .send({ internalName: 'highscores', name: 'Highscores', sortMode: 'asc', unique: true })
       .auth(token, { type: 'bearer' })
       .expect(400)
 
@@ -129,8 +127,8 @@ describe('Leaderboard service - post', () => {
     await (<EntityManager>app.context.em).persistAndFlush(otherLeaderboard)
 
     await request(app.callback())
-      .post(`${baseUrl}`)
-      .send({ gameId: game.id, internalName: 'time-survived', name: 'Time survived', sortMode: 'asc', unique: true })
+      .post(`/games/${game.id}/leaderboards`)
+      .send({ internalName: 'time-survived', name: 'Time survived', sortMode: 'asc', unique: true })
       .auth(token, { type: 'bearer' })
       .expect(200)
   })

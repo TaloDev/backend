@@ -336,15 +336,11 @@ export default class DataExportService extends Service {
     return Buffer.from(content, 'utf8')
   }
 
-  @Validate({
-    query: ['gameId']
-  })
   @HasPermission(DataExportPolicy, 'index')
   async index(req: Request): Promise<Response> {
-    const { gameId } = req.query
     const em: EntityManager = req.ctx.em
     const dataExports = await em.getRepository(DataExport).find({
-      game: Number(gameId)
+      game: req.ctx.state.game
     }, {
       populate: ['createdByUser']
     })
@@ -359,9 +355,6 @@ export default class DataExportService extends Service {
 
   @Validate({
     body: {
-      gameId: {
-        required: true
-      },
       entities: {
         required: true,
         validation: async (val: unknown): Promise<ValidationCondition[]> => [

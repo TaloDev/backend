@@ -32,7 +32,7 @@ export default class PlayerAPIService extends APIService {
     query: ['service', 'identifier']
   })
   @HasPermission(PlayerAPIPolicy, 'identify')
-  @ForwardTo('players', 'post')
+  @ForwardTo('games.players', 'post')
   async identify(req: Request): Promise<Response> {
     const { service, identifier } = req.query
     const em: EntityManager = req.ctx.em
@@ -49,9 +49,10 @@ export default class PlayerAPIService extends APIService {
 
     if (!alias) {
       if (req.ctx.state.key.scopes.includes(APIKeyScope.WRITE_PLAYERS)) {
+        req.ctx.state.game = key.game
+
         const res = await forwardRequest(req, {
           body: {
-            gameId: key.game.id,
             aliases: [
               {
                 service,
@@ -84,7 +85,7 @@ export default class PlayerAPIService extends APIService {
   }
 
   @HasPermission(PlayerAPIPolicy, 'patch')
-  @ForwardTo('players', 'patch')
+  @ForwardTo('games.players', 'patch')
   async patch(req: Request): Promise<Response> {
     return await forwardRequest(req)
   }

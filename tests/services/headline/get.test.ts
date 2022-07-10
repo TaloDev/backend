@@ -14,8 +14,6 @@ import GameFactory from '../../fixtures/GameFactory'
 import { sub, format } from 'date-fns'
 import OrganisationFactory from '../../fixtures/OrganisationFactory'
 
-const baseUrl = '/headlines'
-
 describe('Headline service - get', () => {
   let app: Koa
   let user: User
@@ -51,8 +49,8 @@ describe('Headline service - get', () => {
     await (<EntityManager>app.context.em).persistAndFlush(events)
 
     const res = await request(app.callback())
-      .get(`${baseUrl}/events`)
-      .query({ gameId: validGame.id, startDate, endDate })
+      .get(`/games/${validGame.id}/headlines/events`)
+      .query({ startDate, endDate })
       .auth(token, { type: 'bearer' })
       .expect(200)
 
@@ -65,8 +63,8 @@ describe('Headline service - get', () => {
     await (<EntityManager>app.context.em).persistAndFlush(events)
 
     const res = await request(app.callback())
-      .get(`${baseUrl}/events`)
-      .query({ gameId: validGame.id, startDate, endDate })
+      .get(`/games/${validGame.id}/headlines/events`)
+      .query({ startDate, endDate })
       .auth(token, { type: 'bearer' })
       .expect(200)
 
@@ -79,8 +77,8 @@ describe('Headline service - get', () => {
     await (<EntityManager>app.context.em).persistAndFlush(events)
 
     const res = await request(app.callback())
-      .get(`${baseUrl}/events`)
-      .query({ gameId: validGame.id, startDate, endDate })
+      .get(`/games/${validGame.id}/headlines/events`)
+      .query({ startDate, endDate })
       .auth(token, { type: 'bearer' })
       .set('x-talo-include-dev-data', '1')
       .expect(200)
@@ -95,8 +93,8 @@ describe('Headline service - get', () => {
     await (<EntityManager>app.context.em).persistAndFlush([...newPlayers, ...oldPlayers])
 
     const res = await request(app.callback())
-      .get(`${baseUrl}/new_players`)
-      .query({ gameId: validGame.id, startDate, endDate })
+      .get(`/games/${validGame.id}/headlines/new_players`)
+      .query({ startDate, endDate })
       .auth(token, { type: 'bearer' })
       .expect(200)
 
@@ -109,8 +107,8 @@ describe('Headline service - get', () => {
     await (<EntityManager>app.context.em).persistAndFlush(newPlayers)
 
     const res = await request(app.callback())
-      .get(`${baseUrl}/new_players`)
-      .query({ gameId: validGame.id, startDate, endDate })
+      .get(`/games/${validGame.id}/headlines/new_players`)
+      .query({ startDate, endDate })
       .auth(token, { type: 'bearer' })
       .expect(200)
 
@@ -123,8 +121,8 @@ describe('Headline service - get', () => {
     await (<EntityManager>app.context.em).persistAndFlush(newPlayers)
 
     const res = await request(app.callback())
-      .get(`${baseUrl}/new_players`)
-      .query({ gameId: validGame.id, startDate, endDate })
+      .get(`/games/${validGame.id}/headlines/new_players`)
+      .query({ startDate, endDate })
       .auth(token, { type: 'bearer' })
       .set('x-talo-include-dev-data', '1')
       .expect(200)
@@ -145,8 +143,8 @@ describe('Headline service - get', () => {
     await (<EntityManager>app.context.em).persistAndFlush([...playersNotSeenThisWeek, ...returningPlayersSeenThisWeek, ...playersSignedupThisWeek])
 
     const res = await request(app.callback())
-      .get(`${baseUrl}/returning_players`)
-      .query({ gameId: validGame.id, startDate, endDate })
+      .get(`/games/${validGame.id}/headlines/returning_players`)
+      .query({ startDate, endDate })
       .auth(token, { type: 'bearer' })
       .expect(200)
 
@@ -163,8 +161,8 @@ describe('Headline service - get', () => {
     await (<EntityManager>app.context.em).persistAndFlush(returningPlayersSeenThisWeek)
 
     const res = await request(app.callback())
-      .get(`${baseUrl}/returning_players`)
-      .query({ gameId: validGame.id, startDate, endDate })
+      .get(`/games/${validGame.id}/headlines/returning_players`)
+      .query({ startDate, endDate })
       .auth(token, { type: 'bearer' })
       .expect(200)
 
@@ -181,8 +179,8 @@ describe('Headline service - get', () => {
     await (<EntityManager>app.context.em).persistAndFlush(returningPlayersSeenThisWeek)
 
     const res = await request(app.callback())
-      .get(`${baseUrl}/returning_players`)
-      .query({ gameId: validGame.id, startDate, endDate })
+      .get(`/games/${validGame.id}/headlines/returning_players`)
+      .query({ startDate, endDate })
       .auth(token, { type: 'bearer' })
       .set('x-talo-include-dev-data', '1')
       .expect(200)
@@ -205,8 +203,8 @@ describe('Headline service - get', () => {
     ])
 
     const res = await request(app.callback())
-      .get(`${baseUrl}/unique_event_submitters`)
-      .query({ gameId: validGame.id, startDate, endDate })
+      .get(`/games/${validGame.id}/headlines/unique_event_submitters`)
+      .query({ startDate, endDate })
       .auth(token, { type: 'bearer' })
       .expect(200)
 
@@ -220,8 +218,8 @@ describe('Headline service - get', () => {
     await (<EntityManager>app.context.em).persistAndFlush(validEvents)
 
     const res = await request(app.callback())
-      .get(`${baseUrl}/unique_event_submitters`)
-      .query({ gameId: validGame.id, startDate, endDate })
+      .get(`/games/${validGame.id}/headlines/unique_event_submitters`)
+      .query({ startDate, endDate })
       .auth(token, { type: 'bearer' })
       .expect(200)
 
@@ -235,8 +233,8 @@ describe('Headline service - get', () => {
     await (<EntityManager>app.context.em).persistAndFlush(validEvents)
 
     const res = await request(app.callback())
-      .get(`${baseUrl}/unique_event_submitters`)
-      .query({ gameId: validGame.id, startDate, endDate })
+      .get(`/games/${validGame.id}/headlines/unique_event_submitters`)
+      .query({ startDate, endDate })
       .auth(token, { type: 'bearer' })
       .set('x-talo-include-dev-data', '1')
       .expect(200)
@@ -250,8 +248,8 @@ describe('Headline service - get', () => {
     await (<EntityManager>app.context.em).persistAndFlush(otherGame)
 
     await request(app.callback())
-      .get(`${baseUrl}/new_players`)
-      .query({ gameId: otherGame.id, startDate, endDate })
+      .get(`/games/${otherGame.id}/headlines/new_players`)
+      .query({ startDate, endDate })
       .auth(token, { type: 'bearer' })
       .expect(403)
   })

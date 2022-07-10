@@ -11,8 +11,6 @@ import OrganisationFactory from '../../fixtures/OrganisationFactory'
 import PlayerFactory from '../../fixtures/PlayerFactory'
 import PlayerGameStatFactory from '../../fixtures/PlayerGameStatFactory'
 
-const baseUrl = '/game-stats'
-
 describe('Game stat service - index', () => {
   let app: Koa
   let user: User
@@ -37,8 +35,7 @@ describe('Game stat service - index', () => {
     await (<EntityManager>app.context.em).persistAndFlush([game, ...stats])
 
     const res = await request(app.callback())
-      .get(`${baseUrl}`)
-      .query({ gameId: game.id })
+      .get(`/games/${game.id}/game-stats`)
       .auth(token, { type: 'bearer' })
       .expect(200)
 
@@ -52,8 +49,7 @@ describe('Game stat service - index', () => {
     await (<EntityManager>app.context.em).persistAndFlush([game, ...stats])
 
     await request(app.callback())
-      .get(`${baseUrl}`)
-      .query({ gameId: game.id })
+      .get(`/games/${game.id}/game-stats`)
       .auth(token, { type: 'bearer' })
       .expect(403)
   })
@@ -72,8 +68,7 @@ describe('Game stat service - index', () => {
     await (<EntityManager>app.context.em).persistAndFlush([playerStat, otherPlayerStat])
 
     const res = await request(app.callback())
-      .get(`${baseUrl}`)
-      .query({ gameId: game.id })
+      .get(`/games/${game.id}/game-stats`)
       .auth(token, { type: 'bearer' })
       .expect(200)
 
@@ -89,8 +84,7 @@ describe('Game stat service - index', () => {
     await (<EntityManager>app.context.em).persistAndFlush(playerStat)
 
     const res = await request(app.callback())
-      .get(`${baseUrl}`)
-      .query({ gameId: game.id })
+      .get(`/games/${game.id}/game-stats`)
       .auth(token, { type: 'bearer' })
       .set('x-talo-include-dev-data', '1')
       .expect(200)

@@ -41,14 +41,10 @@ import LeaderboardPolicy from '../policies/leaderboard.policy'
   }
 ])
 export default class LeaderboardService extends Service {
-  @Validate({
-    query: ['gameId']
-  })
   @HasPermission(LeaderboardPolicy, 'index')
   async index(req: Request): Promise<Response> {
-    const { gameId } = req.query
     const em: EntityManager = req.ctx.em
-    const leaderboards = await em.getRepository(Leaderboard).find({ game: Number(gameId) })
+    const leaderboards = await em.getRepository(Leaderboard).find({ game: req.ctx.state.game })
 
     return {
       status: 200,
@@ -70,14 +66,12 @@ export default class LeaderboardService extends Service {
 
   @Validate({
     body: {
-      gameId: {
-        required: true
-      },
       internalName: {
         required: true,
         validation: async (val: unknown, req: Request): Promise<ValidationCondition[]> => {
+          const { gameId } = req.params
           const em: EntityManager = req.ctx.em
-          const duplicateInternalName = await em.getRepository(Leaderboard).findOne({ internalName: val, game: req.body.gameId })
+          const duplicateInternalName = await em.getRepository(Leaderboard).findOne({ internalName: val, game: Number(gameId) })
 
           return [
             {

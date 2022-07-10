@@ -11,8 +11,13 @@ export default class GameStat {
   @Required({
     methods: ['POST'],
     validation: async (val: unknown, req: Request): Promise<ValidationCondition[]> => {
+      const { gameId, id } = req.params
       const em: EntityManager = req.ctx.em
-      const duplicateInternalName = await em.getRepository(GameStat).findOne({ internalName: val, game: req.body.gameId })
+      const duplicateInternalName = await em.getRepository(GameStat).findOne({
+        id: { $ne: Number(id ?? null) },
+        internalName: val,
+        game: Number(gameId)
+      })
 
       return [
         {
@@ -75,10 +80,6 @@ export default class GameStat {
   @Property()
   minTimeBetweenUpdates: number
 
-  @Required({
-    methods: ['POST'],
-    as: 'gameId'
-  })
   @ManyToOne(() => Game)
   game: Game
 

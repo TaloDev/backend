@@ -6,9 +6,6 @@ import createGameActivity from '../lib/logging/createGameActivity'
 import GameStatPolicy from '../policies/game-stat.policy'
 
 export default class GameStatService extends Service {
-  @Validate({
-    query: ['gameId']
-  })
   @HasPermission(GameStatPolicy, 'index')
   async index(req: Request): Promise<Response> {
     const em: EntityManager = req.ctx.em

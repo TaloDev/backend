@@ -12,8 +12,6 @@ import OrganisationFactory from '../../fixtures/OrganisationFactory'
 import PlayerFactory from '../../fixtures/PlayerFactory'
 import LeaderboardEntryFactory from '../../fixtures/LeaderboardEntryFactory'
 
-const baseUrl = '/leaderboards'
-
 describe('Leaderboard service - entries', () => {
   let app: Koa
   let user: User
@@ -40,7 +38,7 @@ describe('Leaderboard service - entries', () => {
     await (<EntityManager>app.context.em).persistAndFlush(leaderboard)
 
     const res = await request(app.callback())
-      .get(`${baseUrl}/${leaderboard.id}/entries`)
+      .get(`/games/${validGame.id}/leaderboards/${leaderboard.id}/entries`)
       .query({ page: 0 })
       .auth(token, { type: 'bearer' })
       .expect(200)
@@ -50,7 +48,7 @@ describe('Leaderboard service - entries', () => {
 
   it('should not return entries for a non-existent leaderboard', async () => {
     const res = await request(app.callback())
-      .get(`${baseUrl}/21312312/entries`)
+      .get(`/games/${validGame.id}/leaderboards/21312312/entries`)
       .query({ page: 0 })
       .auth(token, { type: 'bearer' })
       .expect(404)
@@ -65,7 +63,7 @@ describe('Leaderboard service - entries', () => {
     await (<EntityManager>app.context.em).persistAndFlush(leaderboard)
 
     await request(app.callback())
-      .get(`${baseUrl}/${leaderboard.id}/entries`)
+      .get(`/games/${otherGame.id}/leaderboards/${leaderboard.id}/entries`)
       .query({ page: 0 })
       .auth(token, { type: 'bearer' })
       .expect(403)
@@ -78,7 +76,7 @@ describe('Leaderboard service - entries', () => {
 
     for (let i = 0; i < 3; i++) {
       const res = await request(app.callback())
-        .get(`${baseUrl}/${leaderboard.id}/entries`)
+        .get(`/games/${validGame.id}/leaderboards/${leaderboard.id}/entries`)
         .query({ page: i })
         .auth(token, { type: 'bearer' })
         .expect(200)
@@ -94,7 +92,7 @@ describe('Leaderboard service - entries', () => {
     await (<EntityManager>app.context.em).persistAndFlush(leaderboard)
 
     const res = await request(app.callback())
-      .get(`${baseUrl}/${leaderboard.id}/entries`)
+      .get(`/games/${validGame.id}/leaderboards/${leaderboard.id}/entries`)
       .query({ page: 0 })
       .auth(token, { type: 'bearer' })
       .expect(200)
@@ -107,7 +105,7 @@ describe('Leaderboard service - entries', () => {
     await (<EntityManager>app.context.em).persistAndFlush(leaderboard)
 
     const res = await request(app.callback())
-      .get(`${baseUrl}/${leaderboard.id}/entries`)
+      .get(`/games/${validGame.id}/leaderboards/${leaderboard.id}/entries`)
       .query({ page: 0 })
       .auth(token, { type: 'bearer' })
       .set('x-talo-include-dev-data', '1')

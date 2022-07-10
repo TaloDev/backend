@@ -13,14 +13,14 @@ export default class PlayerPolicy extends Policy {
   }
 
   async index(req: Request): Promise<boolean> {
-    const { gameId } = req.query
+    const { gameId } = req.params
     return await this.canAccessGame(Number(gameId))
   }
 
   async post(req: Request): Promise<boolean> {
     if (this.isAPICall()) return true
 
-    const { gameId } = req.body
+    const { gameId } = req.params
     return await this.canAccessGame(Number(gameId))
   }
 

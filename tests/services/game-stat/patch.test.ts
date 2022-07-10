@@ -10,8 +10,6 @@ import GameStatFactory from '../../fixtures/GameStatFactory'
 import GameFactory from '../../fixtures/GameFactory'
 import GameActivity, { GameActivityType } from '../../../src/entities/game-activity'
 
-const baseUrl = '/game-stats'
-
 describe('Game stat service - patch', () => {
   let app: Koa
   let user: User
@@ -42,7 +40,7 @@ describe('Game stat service - patch', () => {
     await (<EntityManager>app.context.em).persistAndFlush(stat)
 
     const res = await request(app.callback())
-      .patch(`${baseUrl}/${stat.id}`)
+      .patch(`/games/${game.id}/game-stats/${stat.id}`)
       .send({ name: 'New name' })
       .auth(token, { type: 'bearer' })
       .expect(200)
@@ -66,7 +64,7 @@ describe('Game stat service - patch', () => {
     await (<EntityManager>app.context.em).persistAndFlush(stat)
 
     const res = await request(app.callback())
-      .patch(`${baseUrl}/${stat.id}`)
+      .patch(`/games/${game.id}/game-stats/${stat.id}`)
       .send({ global: true })
       .auth(token, { type: 'bearer' })
       .expect(200)
@@ -90,7 +88,7 @@ describe('Game stat service - patch', () => {
     await (<EntityManager>app.context.em).persistAndFlush(stat)
 
     const res = await request(app.callback())
-      .patch(`${baseUrl}/${stat.id}`)
+      .patch(`/games/${game.id}/game-stats/${stat.id}`)
       .send({ maxChange: 90 })
       .auth(token, { type: 'bearer' })
       .expect(200)
@@ -114,7 +112,7 @@ describe('Game stat service - patch', () => {
     await (<EntityManager>app.context.em).persistAndFlush(stat)
 
     const res = await request(app.callback())
-      .patch(`${baseUrl}/${stat.id}`)
+      .patch(`/games/${game.id}/game-stats/${stat.id}`)
       .send({ minValue: 60 })
       .auth(token, { type: 'bearer' })
       .expect(200)
@@ -138,7 +136,7 @@ describe('Game stat service - patch', () => {
     await (<EntityManager>app.context.em).persistAndFlush(stat)
 
     const res = await request(app.callback())
-      .patch(`${baseUrl}/${stat.id}`)
+      .patch(`/games/${game.id}/game-stats/${stat.id}`)
       .send({ maxValue: 80 })
       .auth(token, { type: 'bearer' })
       .expect(200)
@@ -162,7 +160,7 @@ describe('Game stat service - patch', () => {
     await (<EntityManager>app.context.em).persistAndFlush(stat)
 
     const res = await request(app.callback())
-      .patch(`${baseUrl}/${stat.id}`)
+      .patch(`/games/${game.id}/game-stats/${stat.id}`)
       .send({ defaultValue: 3 })
       .auth(token, { type: 'bearer' })
       .expect(200)
@@ -186,7 +184,7 @@ describe('Game stat service - patch', () => {
     await (<EntityManager>app.context.em).persistAndFlush(stat)
 
     const res = await request(app.callback())
-      .patch(`${baseUrl}/${stat.id}`)
+      .patch(`/games/${game.id}/game-stats/${stat.id}`)
       .send({ minTimeBetweenUpdates: 5 })
       .auth(token, { type: 'bearer' })
       .expect(200)
@@ -210,7 +208,7 @@ describe('Game stat service - patch', () => {
     await (<EntityManager>app.context.em).persistAndFlush(stat)
 
     const res = await request(app.callback())
-      .patch(`${baseUrl}/${stat.id}`)
+      .patch(`/games/${game.id}/game-stats/${stat.id}`)
       .send({ name: 999 })
       .auth(token, { type: 'bearer' })
       .expect(200)
@@ -234,7 +232,7 @@ describe('Game stat service - patch', () => {
     await (<EntityManager>app.context.em).persistAndFlush(stat)
 
     const res = await request(app.callback())
-      .patch(`${baseUrl}/${stat.id}`)
+      .patch(`/games/${game.id}/game-stats/${stat.id}`)
       .send({ maxChange: '54' })
       .auth(token, { type: 'bearer' })
       .expect(200)
@@ -258,7 +256,7 @@ describe('Game stat service - patch', () => {
     await (<EntityManager>app.context.em).persistAndFlush(stat)
 
     const res = await request(app.callback())
-      .patch(`${baseUrl}/${stat.id}`)
+      .patch(`/games/${game.id}/game-stats/${stat.id}`)
       .send({ global: 'true' })
       .auth(token, { type: 'bearer' })
       .expect(200)
@@ -279,7 +277,7 @@ describe('Game stat service - patch', () => {
 
   it('should not update a non-existent stat', async () => {
     const res = await request(app.callback())
-      .patch(`${baseUrl}/31223`)
+      .patch(`/games/${game.id}/game-stats/31223`)
       .send({ maxChange: '54' })
       .auth(token, { type: 'bearer' })
       .expect(404)

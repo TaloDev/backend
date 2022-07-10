@@ -10,8 +10,6 @@ import OrganisationFactory from '../../fixtures/OrganisationFactory'
 import PlayerFactory from '../../fixtures/PlayerFactory'
 import EventFactory from '../../fixtures/EventFactory'
 
-const baseUrl = '/players'
-
 describe('Player service - get events', () => {
   let app: Koa
   let user: User
@@ -39,7 +37,7 @@ describe('Player service - get events', () => {
     await (<EntityManager>app.context.em).persistAndFlush([player, ...events])
 
     const res = await request(app.callback())
-      .get(`${baseUrl}/${player.id}/events`)
+      .get(`/games/${validGame.id}/players/${player.id}/events`)
       .auth(token, { type: 'bearer' })
       .expect(200)
 
@@ -54,7 +52,7 @@ describe('Player service - get events', () => {
     await (<EntityManager>app.context.em).persistAndFlush(player)
 
     await request(app.callback())
-      .get(`${baseUrl}/${player.id}/events`)
+      .get(`/games/${otherGame.id}/players/${player.id}/events`)
       .auth(token, { type: 'bearer' })
       .expect(403)
   })
@@ -66,7 +64,7 @@ describe('Player service - get events', () => {
     await (<EntityManager>app.context.em).persistAndFlush([...events, ...otherEvents])
 
     const res = await request(app.callback())
-      .get(`${baseUrl}/${player.id}/events`)
+      .get(`/games/${validGame.id}/players/${player.id}/events`)
       .query({ search: 'Find secret' })
       .auth(token, { type: 'bearer' })
       .expect(200)
@@ -84,7 +82,7 @@ describe('Player service - get events', () => {
     const page = Math.floor(count / 25)
 
     const res = await request(app.callback())
-      .get(`${baseUrl}/${player.id}/events`)
+      .get(`/games/${validGame.id}/players/${player.id}/events`)
       .query({ page })
       .auth(token, { type: 'bearer' })
       .expect(200)
@@ -95,7 +93,7 @@ describe('Player service - get events', () => {
 
   it('should not get a player\'s events if they do not exist', async () => {
     const res = await request(app.callback())
-      .get(`${baseUrl}/21312321321/events`)
+      .get(`/games/${validGame.id}/players/21312321321/events`)
       .auth(token, { type: 'bearer' })
       .expect(404)
 

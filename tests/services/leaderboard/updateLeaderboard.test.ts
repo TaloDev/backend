@@ -11,8 +11,6 @@ import Game from '../../../src/entities/game'
 import Leaderboard, { LeaderboardSortMode } from '../../../src/entities/leaderboard'
 import GameActivity, { GameActivityType } from '../../../src/entities/game-activity'
 
-const baseUrl = '/leaderboards'
-
 describe('Leaderboard service - update leaderboard', () => {
   let app: Koa
   let user: User
@@ -38,7 +36,7 @@ describe('Leaderboard service - update leaderboard', () => {
 
   it('should update a leaderboard\'s name', async () => {
     const res = await request(app.callback())
-      .patch(`${baseUrl}/${leaderboard.id}`)
+      .patch(`/games/${validGame.id}/leaderboards/${leaderboard.id}`)
       .send({ name: 'The new name' })
       .auth(token, { type: 'bearer' })
       .expect(200)
@@ -60,7 +58,7 @@ describe('Leaderboard service - update leaderboard', () => {
     await (<EntityManager>app.context.em).flush()
 
     const res = await request(app.callback())
-      .patch(`${baseUrl}/${leaderboard.id}`)
+      .patch(`/games/${validGame.id}/leaderboards/${leaderboard.id}`)
       .send({ sortMode: LeaderboardSortMode.ASC })
       .auth(token, { type: 'bearer' })
       .expect(200)
@@ -73,7 +71,7 @@ describe('Leaderboard service - update leaderboard', () => {
     await (<EntityManager>app.context.em).flush()
 
     const res = await request(app.callback())
-      .patch(`${baseUrl}/${leaderboard.id}`)
+      .patch(`/games/${validGame.id}/leaderboards/${leaderboard.id}`)
       .send({})
       .auth(token, { type: 'bearer' })
       .expect(200)
@@ -86,7 +84,7 @@ describe('Leaderboard service - update leaderboard', () => {
     await (<EntityManager>app.context.em).flush()
 
     const res = await request(app.callback())
-      .patch(`${baseUrl}/${leaderboard.id}`)
+      .patch(`/games/${validGame.id}/leaderboards/${leaderboard.id}`)
       .send({ unique: false })
       .auth(token, { type: 'bearer' })
       .expect(200)
@@ -96,7 +94,7 @@ describe('Leaderboard service - update leaderboard', () => {
 
   it('should not update a non-existent leaderboard', async () => {
     const res = await request(app.callback())
-      .patch(`${baseUrl}/21312321`)
+      .patch(`/games/${validGame.id}/leaderboards/21312321`)
       .send({ name: 'The new name' })
       .auth(token, { type: 'bearer' })
       .expect(404)

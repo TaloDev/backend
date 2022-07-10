@@ -31,21 +31,14 @@ import { devDataPlayerFilter } from '../middlewares/dev-data-middleware'
   }
 ])
 export default class HeadlineService extends Service {
-  @Validate({
-    query: {
-      gameId: {
-        required: true
-      },
-      ...dateValidationSchema
-    }
-  })
+  @Validate({ query: dateValidationSchema })
   @HasPermission(HeadlinePolicy, 'index')
   async newPlayers(req: Request): Promise<Response> {
-    const { gameId, startDate, endDate } = req.query
+    const { startDate, endDate } = req.query
     const em: EntityManager = req.ctx.em
 
     let where: FilterQuery<Player> = {
-      game: Number(gameId),
+      game: req.ctx.state.game,
       createdAt: {
         $gte: new Date(startDate),
         $lte: endOfDay(new Date(endDate))
@@ -69,21 +62,14 @@ export default class HeadlineService extends Service {
     }
   }
 
-  @Validate({
-    query: {
-      gameId: {
-        required: true
-      },
-      ...dateValidationSchema
-    }
-  })
+  @Validate({ query: dateValidationSchema })
   @HasPermission(HeadlinePolicy, 'index')
   async returningPlayers(req: Request): Promise<Response> {
-    const { gameId, startDate, endDate } = req.query
+    const { startDate, endDate } = req.query
     const em: EntityManager = req.ctx.em
 
     let where: FilterQuery<Player> = {
-      game: Number(gameId),
+      game: req.ctx.state.game,
       lastSeenAt: {
         $gte: new Date(startDate),
         $lte: endOfDay(new Date(endDate))
@@ -111,21 +97,14 @@ export default class HeadlineService extends Service {
     }
   }
 
-  @Validate({
-    query: {
-      gameId: {
-        required: true
-      },
-      ...dateValidationSchema
-    }
-  })
+  @Validate({ query: dateValidationSchema })
   @HasPermission(HeadlinePolicy, 'index')
   async events(req: Request): Promise<Response> {
-    const { gameId, startDate, endDate } = req.query
+    const { startDate, endDate } = req.query
     const em: EntityManager = req.ctx.em
 
     const where: FilterQuery<Event> = {
-      game: Number(gameId),
+      game: req.ctx.state.game,
       createdAt: {
         $gte: new Date(startDate),
         $lte: endOfDay(new Date(endDate))
@@ -148,21 +127,14 @@ export default class HeadlineService extends Service {
     }
   }
 
-  @Validate({
-    query: {
-      gameId: {
-        required: true
-      },
-      ...dateValidationSchema
-    }
-  })
+  @Validate({ query: dateValidationSchema })
   @HasPermission(HeadlinePolicy, 'index')
   async uniqueEventSubmitters(req: Request): Promise<Response> {
-    const { gameId, startDate, endDate } = req.query
+    const { startDate, endDate } = req.query
     const em: EntityManager = req.ctx.em
 
     const where: FilterQuery<Event> = {
-      game: Number(gameId),
+      game: req.ctx.state.game,
       createdAt: {
         $gte: new Date(startDate),
         $lte: endOfDay(new Date(endDate))

@@ -10,8 +10,6 @@ import createOrganisationAndGame from '../../utils/createOrganisationAndGame'
 import createUserAndToken from '../../utils/createUserAndToken'
 import userPermissionProvider from '../../utils/userPermissionProvider'
 
-const baseUrl = '/game-stats'
-
 describe('Game stat service - post', () => {
   let app: Koa
 
@@ -35,8 +33,8 @@ describe('Game stat service - post', () => {
     const [token] = await createUserAndToken(app.context.em, { type }, organisation)
 
     const res = await request(app.callback())
-      .post(`${baseUrl}`)
-      .send({ gameId: game.id, internalName: 'levels-completed', name: 'Levels completed', defaultValue: 0, global: false, minTimeBetweenUpdates: 0, minValue: -10, maxValue: 10  })
+      .post(`/games/${game.id}/game-stats`)
+      .send({ internalName: 'levels-completed', name: 'Levels completed', defaultValue: 0, global: false, minTimeBetweenUpdates: 0, minValue: -10, maxValue: 10  })
       .auth(token, { type: 'bearer' })
       .expect(statusCode)
 
@@ -68,8 +66,8 @@ describe('Game stat service - post', () => {
     const [token] = await createUserAndToken(app.context.em, {}, organisation)
 
     const res = await request(app.callback())
-      .post(`${baseUrl}`)
-      .send({ gameId: game.id, internalName: 'buildings-built', name: 'Buildings built', defaultValue: 5, global: true, minTimeBetweenUpdates: 0, minValue: -10, maxValue: 10  })
+      .post(`/games/${game.id}/game-stats`)
+      .send({ internalName: 'buildings-built', name: 'Buildings built', defaultValue: 5, global: true, minTimeBetweenUpdates: 0, minValue: -10, maxValue: 10  })
       .auth(token, { type: 'bearer' })
       .expect(200)
 
@@ -98,8 +96,8 @@ describe('Game stat service - post', () => {
     const [token] = await createUserAndToken(app.context.em)
 
     await request(app.callback())
-      .post(`${baseUrl}`)
-      .send({ gameId: otherGame.id, internalName: 'levels-completed', name: 'Levels completed', defaultValue: 0, global: false, minTimeBetweenUpdates: 0 })
+      .post(`/games/${otherGame.id}/game-stats`)
+      .send({ internalName: 'levels-completed', name: 'Levels completed', defaultValue: 0, global: false, minTimeBetweenUpdates: 0 })
       .auth(token, { type: 'bearer' })
       .expect(403)
   })
@@ -108,8 +106,8 @@ describe('Game stat service - post', () => {
     const [token] = await createUserAndToken(app.context.em)
 
     const res = await request(app.callback())
-      .post(`${baseUrl}`)
-      .send({ gameId: 99999, internalName: 'levels-completed', name: 'Levels completed', defaultValue: 0, global: false, minTimeBetweenUpdates: 0 })
+      .post('/games/99999/game-stats')
+      .send({ internalName: 'levels-completed', name: 'Levels completed', defaultValue: 0, global: false, minTimeBetweenUpdates: 0 })
       .auth(token, { type: 'bearer' })
       .expect(404)
 
@@ -124,8 +122,8 @@ describe('Game stat service - post', () => {
     await (<EntityManager>app.context.em).persistAndFlush(stat)
 
     const res = await request(app.callback())
-      .post(`${baseUrl}`)
-      .send({ gameId: game.id, internalName: 'levels-completed', name: 'Levels completed', defaultValue: 0, global: false, minTimeBetweenUpdates: 0 })
+      .post(`/games/${game.id}/game-stats`)
+      .send({ internalName: 'levels-completed', name: 'Levels completed', defaultValue: 0, global: false, minTimeBetweenUpdates: 0 })
       .auth(token, { type: 'bearer' })
       .expect(400)
 
@@ -145,8 +143,8 @@ describe('Game stat service - post', () => {
     await (<EntityManager>app.context.em).persistAndFlush(stat)
 
     await request(app.callback())
-      .post(`${baseUrl}`)
-      .send({ gameId: game.id, internalName: 'levels-completed', name: 'Levels completed', defaultValue: 0, global: false, minTimeBetweenUpdates: 0 })
+      .post(`/games/${game.id}/game-stats`)
+      .send({ internalName: 'levels-completed', name: 'Levels completed', defaultValue: 0, global: false, minTimeBetweenUpdates: 0 })
       .auth(token, { type: 'bearer' })
       .expect(200)
   })

@@ -14,8 +14,6 @@ import GameActivity, { GameActivityType } from '../../../src/entities/game-activ
 import LeaderboardEntryFactory from '../../fixtures/LeaderboardEntryFactory'
 import Player from '../../../src/entities/player'
 
-const baseUrl = '/leaderboards'
-
 describe('Leaderboard service - update entry', () => {
   let app: Koa
   let user: User
@@ -46,7 +44,7 @@ describe('Leaderboard service - update entry', () => {
     await (<EntityManager>app.context.em).persistAndFlush(entry)
 
     const res = await request(app.callback())
-      .patch(`${baseUrl}/${leaderboard.id}/entries/${entry.id}`)
+      .patch(`/games/${validGame.id}/leaderboards/${leaderboard.id}/entries/${entry.id}`)
       .send({ hidden: true })
       .auth(token, { type: 'bearer' })
       .expect(200)
@@ -72,7 +70,7 @@ describe('Leaderboard service - update entry', () => {
     await (<EntityManager>app.context.em).persistAndFlush(entry)
 
     const res = await request(app.callback())
-      .patch(`${baseUrl}/${leaderboard.id}/entries/${entry.id}`)
+      .patch(`/games/${validGame.id}/leaderboards/${leaderboard.id}/entries/${entry.id}`)
       .send({ hidden: false })
       .auth(token, { type: 'bearer' })
       .expect(200)
@@ -98,7 +96,7 @@ describe('Leaderboard service - update entry', () => {
     await (<EntityManager>app.context.em).persistAndFlush(entry)
 
     const res = await request(app.callback())
-      .patch(`${baseUrl}/${leaderboard.id}/entries/${entry.id}`)
+      .patch(`/games/${validGame.id}/leaderboards/${leaderboard.id}/entries/${entry.id}`)
       .send({})
       .auth(token, { type: 'bearer' })
       .expect(200)
@@ -121,7 +119,7 @@ describe('Leaderboard service - update entry', () => {
 
   it('should not update a non-existent entry', async () => {
     const res = await request(app.callback())
-      .patch(`${baseUrl}/${leaderboard.id}/entries/12312321`)
+      .patch(`/games/${validGame.id}/leaderboards/${leaderboard.id}/entries/12312321`)
       .send({ hidden: true })
       .auth(token, { type: 'bearer' })
       .expect(404)

@@ -10,8 +10,6 @@ import OrganisationFactory from '../../fixtures/OrganisationFactory'
 import PlayerFactory from '../../fixtures/PlayerFactory'
 import Player from '../../../src/entities/player'
 
-const baseUrl = '/players'
-
 describe('Player service - index', () => {
   let app: Koa
   let user: User
@@ -42,8 +40,7 @@ describe('Player service - index', () => {
     const num = await validGame.players.loadCount()
 
     const res = await request(app.callback())
-      .get(`${baseUrl}`)
-      .query({ gameId: validGame.id })
+      .get(`/games/${validGame.id}/players`)
       .auth(token, { type: 'bearer' })
       .expect(200)
 
@@ -52,8 +49,7 @@ describe('Player service - index', () => {
 
   it('should not return a list of players for a non-existent game', async () => {
     const res = await request(app.callback())
-      .get(`${baseUrl}`)
-      .query({ gameId: 99999 })
+      .get('/games/99999/players')
       .auth(token, { type: 'bearer' })
       .expect(404)
 
@@ -66,8 +62,7 @@ describe('Player service - index', () => {
     await (<EntityManager>app.context.em).persistAndFlush(otherGame)
 
     await request(app.callback())
-      .get(`${baseUrl}`)
-      .query({ gameId: otherGame.id })
+      .get(`/games/${otherGame.id}/players`)
       .auth(token, { type: 'bearer' })
       .expect(403)
   })
@@ -87,8 +82,8 @@ describe('Player service - index', () => {
     await (<EntityManager>app.context.em).persistAndFlush([...players, ...otherPlayers])
 
     const res = await request(app.callback())
-      .get(`${baseUrl}`)
-      .query({ gameId: validGame.id, search: 'The Best Guild' })
+      .get(`/games/${validGame.id}/players`)
+      .query({ search: 'The Best Guild' })
       .auth(token, { type: 'bearer' })
       .expect(200)
 
@@ -102,8 +97,8 @@ describe('Player service - index', () => {
     await (<EntityManager>app.context.em).persistAndFlush([player, ...otherPlayers])
 
     const res = await request(app.callback())
-      .get(`${baseUrl}`)
-      .query({ gameId: validGame.id, search: player.aliases[0].identifier })
+      .get(`/games/${validGame.id}/players`)
+      .query({ search: player.aliases[0].identifier })
       .auth(token, { type: 'bearer' })
       .expect(200)
 
@@ -117,8 +112,8 @@ describe('Player service - index', () => {
     await (<EntityManager>app.context.em).persistAndFlush([player, ...otherPlayers])
 
     const res = await request(app.callback())
-      .get(`${baseUrl}`)
-      .query({ gameId: validGame.id, search: 'abc12345678' })
+      .get(`/games/${validGame.id}/players`)
+      .query({ search: 'abc12345678' })
       .auth(token, { type: 'bearer' })
       .expect(200)
 
@@ -132,8 +127,8 @@ describe('Player service - index', () => {
     const page = Math.floor(players.length / 25)
 
     const res = await request(app.callback())
-      .get(`${baseUrl}`)
-      .query({ gameId: validGame.id, page })
+      .get(`/games/${validGame.id}/players`)
+      .query({ page })
       .auth(token, { type: 'bearer' })
       .expect(200)
 
@@ -146,8 +141,7 @@ describe('Player service - index', () => {
     await (<EntityManager>app.context.em).persistAndFlush(players)
 
     const res = await request(app.callback())
-      .get(`${baseUrl}`)
-      .query({ gameId: validGame.id })
+      .get(`/games/${validGame.id}/players`)
       .auth(token, { type: 'bearer' })
       .expect(200)
 
@@ -159,8 +153,7 @@ describe('Player service - index', () => {
     await (<EntityManager>app.context.em).persistAndFlush(players)
 
     const res = await request(app.callback())
-      .get(`${baseUrl}`)
-      .query({ gameId: validGame.id })
+      .get(`/games/${validGame.id}/players`)
       .auth(token, { type: 'bearer' })
       .set('x-talo-include-dev-data', '1')
       .expect(200)

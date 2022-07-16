@@ -4351,10 +4351,10 @@ koa-bodyparser@^4.3.0:
     co-body "^6.0.0"
     copy-to "^2.0.1"
 
-koa-clay@^6.3.0:
-  version "6.3.0"
-  resolved "https://registry.yarnpkg.com/koa-clay/-/koa-clay-6.3.0.tgz#5f75a33dfadb20c3682cad002d5773b3536fec6a"
-  integrity sha512-mvs8BkP7CjftSv6Ni1SQetKNEWbeEUTw8rjmVPJpvUBxrqGIp14C5keHMhNH42zhB4MPtEG10NS1mj7KHYE/GA==
+koa-clay@^6.4.0:
+  version "6.4.0"
+  resolved "https://registry.yarnpkg.com/koa-clay/-/koa-clay-6.4.0.tgz#38777249385cfd7c272edd141671327c48105b44"
+  integrity sha512-Oz6ZEMDSqOZ6buZ/PYh3LEdOX/+tCUBy+Rp0xUCLKWHAOBmieSa/YdHhrE85JaFQnU47qaDmsP+aGwX+9YupVQ==
   dependencies:
     koa-bodyparser "^4.3.0"
     lodash.get "^4.4.2"

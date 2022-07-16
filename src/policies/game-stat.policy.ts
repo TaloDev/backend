@@ -22,7 +22,7 @@ export default class GameStatPolicy extends Policy {
     return stat
   }
 
-  async patch(req: Request): Promise<PolicyResponse> {
+  async put(req: Request): Promise<PolicyResponse> {
     const { id } = req.params
 
     const stat = await this.getStat(Number(id))

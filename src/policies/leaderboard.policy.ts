@@ -18,7 +18,6 @@ export default class LeaderboardPolicy extends Policy {
 
     this.ctx.state.leaderboard = leaderboard
 
-    if (this.isAPICall()) return true
     return await this.canAccessGame(leaderboard.game.id)
   }
 

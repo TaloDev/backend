@@ -97,7 +97,7 @@ describe('Game stat service - post', () => {
 
     await request(app.callback())
       .post(`/games/${otherGame.id}/game-stats`)
-      .send({ internalName: 'levels-completed', name: 'Levels completed', defaultValue: 0, global: false, minTimeBetweenUpdates: 0 })
+      .send({ internalName: 'levels-completed', name: 'Levels completed', defaultValue: 0, global: false, minTimeBetweenUpdates: 0, minValue: -10, maxValue: 10 })
       .auth(token, { type: 'bearer' })
       .expect(403)
   })
@@ -107,7 +107,7 @@ describe('Game stat service - post', () => {
 
     const res = await request(app.callback())
       .post('/games/99999/game-stats')
-      .send({ internalName: 'levels-completed', name: 'Levels completed', defaultValue: 0, global: false, minTimeBetweenUpdates: 0 })
+      .send({ internalName: 'levels-completed', name: 'Levels completed', defaultValue: 0, global: false, minTimeBetweenUpdates: 0, minValue: -10, maxValue: 10 })
       .auth(token, { type: 'bearer' })
       .expect(404)
 
@@ -123,7 +123,7 @@ describe('Game stat service - post', () => {
 
     const res = await request(app.callback())
       .post(`/games/${game.id}/game-stats`)
-      .send({ internalName: 'levels-completed', name: 'Levels completed', defaultValue: 0, global: false, minTimeBetweenUpdates: 0 })
+      .send({ internalName: 'levels-completed', name: 'Levels completed', defaultValue: 0, global: false, minTimeBetweenUpdates: 0, minValue: -10, maxValue: 10 })
       .auth(token, { type: 'bearer' })
       .expect(400)
 
@@ -144,7 +144,7 @@ describe('Game stat service - post', () => {
 
     await request(app.callback())
       .post(`/games/${game.id}/game-stats`)
-      .send({ internalName: 'levels-completed', name: 'Levels completed', defaultValue: 0, global: false, minTimeBetweenUpdates: 0 })
+      .send({ internalName: 'levels-completed', name: 'Levels completed', defaultValue: 0, global: false, minTimeBetweenUpdates: 0, minValue: -10, maxValue: 10 })
       .auth(token, { type: 'bearer' })
       .expect(200)
   })

@@ -10,7 +10,7 @@ import GameStatFactory from '../../fixtures/GameStatFactory'
 import GameFactory from '../../fixtures/GameFactory'
 import GameActivity, { GameActivityType } from '../../../src/entities/game-activity'
 
-describe('Game stat service - patch', () => {
+describe('Game stat service - put', () => {
   let app: Koa
   let user: User
   let token: string
@@ -40,8 +40,8 @@ describe('Game stat service - patch', () => {
     await (<EntityManager>app.context.em).persistAndFlush(stat)
 
     const res = await request(app.callback())
-      .patch(`/games/${game.id}/game-stats/${stat.id}`)
-      .send({ name: 'New name' })
+      .put(`/games/${game.id}/game-stats/${stat.id}`)
+      .send({ internalName: stat.internalName, name: 'New name', global: stat.global, maxChange: stat.maxChange, minValue: stat.minValue, maxValue: stat.maxValue, defaultValue: stat.defaultValue, minTimeBetweenUpdates: stat.minTimeBetweenUpdates  })
       .auth(token, { type: 'bearer' })
       .expect(200)
 
@@ -64,8 +64,8 @@ describe('Game stat service - patch', () => {
     await (<EntityManager>app.context.em).persistAndFlush(stat)
 
     const res = await request(app.callback())
-      .patch(`/games/${game.id}/game-stats/${stat.id}`)
-      .send({ global: true })
+      .put(`/games/${game.id}/game-stats/${stat.id}`)
+      .send({ global: true, internalName: stat.internalName, name: stat.name, maxChange: stat.maxChange, minValue: stat.minValue, maxValue: stat.maxValue, defaultValue: stat.defaultValue, minTimeBetweenUpdates: stat.minTimeBetweenUpdates })
       .auth(token, { type: 'bearer' })
       .expect(200)
 
@@ -88,8 +88,8 @@ describe('Game stat service - patch', () => {
     await (<EntityManager>app.context.em).persistAndFlush(stat)
 
     const res = await request(app.callback())
-      .patch(`/games/${game.id}/game-stats/${stat.id}`)
-      .send({ maxChange: 90 })
+      .put(`/games/${game.id}/game-stats/${stat.id}`)
+      .send({ maxChange: 90, internalName: stat.internalName, name: stat.name, global: stat.global, minValue: stat.minValue, maxValue: stat.maxValue, defaultValue: stat.defaultValue, minTimeBetweenUpdates: stat.minTimeBetweenUpdates })
       .auth(token, { type: 'bearer' })
       .expect(200)
 
@@ -112,12 +112,12 @@ describe('Game stat service - patch', () => {
     await (<EntityManager>app.context.em).persistAndFlush(stat)
 
     const res = await request(app.callback())
-      .patch(`/games/${game.id}/game-stats/${stat.id}`)
-      .send({ minValue: 60 })
+      .put(`/games/${game.id}/game-stats/${stat.id}`)
+      .send({ minValue: -300, internalName: stat.internalName, name: stat.name, global: stat.global, maxChange: stat.maxChange, maxValue: stat.maxValue, defaultValue: stat.defaultValue, minTimeBetweenUpdates: stat.minTimeBetweenUpdates })
       .auth(token, { type: 'bearer' })
       .expect(200)
 
-    expect(res.body.stat.minValue).toBe(60)
+    expect(res.body.stat.minValue).toBe(-300)
 
     const activity = await (<EntityManager>app.context.em).getRepository(GameActivity).findOne({
       type: GameActivityType.GAME_STAT_UPDATED,
@@ -127,7 +127,7 @@ describe('Game stat service - patch', () => {
     })
 
     expect(activity.extra.display).toStrictEqual({
-      'Updated properties': 'minValue: 60'
+      'Updated properties': 'minValue: -300'
     })
   })
 
@@ -136,8 +136,8 @@ describe('Game stat service - patch', () => {
     await (<EntityManager>app.context.em).persistAndFlush(stat)
 
     const res = await request(app.callback())
-      .patch(`/games/${game.id}/game-stats/${stat.id}`)
-      .send({ maxValue: 80 })
+      .put(`/games/${game.id}/game-stats/${stat.id}`)
+      .send({ maxValue: 80, internalName: stat.internalName, name: stat.name, global: stat.global, maxChange: stat.maxChange, minValue: stat.minValue, defaultValue: stat.defaultValue, minTimeBetweenUpdates: stat.minTimeBetweenUpdates })
       .auth(token, { type: 'bearer' })
       .expect(200)
 
@@ -160,8 +160,8 @@ describe('Game stat service - patch', () => {
     await (<EntityManager>app.context.em).persistAndFlush(stat)
 
     const res = await request(app.callback())
-      .patch(`/games/${game.id}/game-stats/${stat.id}`)
-      .send({ defaultValue: 3 })
+      .put(`/games/${game.id}/game-stats/${stat.id}`)
+      .send({ defaultValue: 3, internalName: stat.internalName, name: stat.name, global: stat.global, maxChange: stat.maxChange, minValue: stat.minValue, maxValue: stat.maxValue, minTimeBetweenUpdates: stat.minTimeBetweenUpdates })
       .auth(token, { type: 'bearer' })
       .expect(200)
 
@@ -184,12 +184,12 @@ describe('Game stat service - patch', () => {
     await (<EntityManager>app.context.em).persistAndFlush(stat)
 
     const res = await request(app.callback())
-      .patch(`/games/${game.id}/game-stats/${stat.id}`)
-      .send({ minTimeBetweenUpdates: 5 })
+      .put(`/games/${game.id}/game-stats/${stat.id}`)
+      .send({ minTimeBetweenUpdates: 10242, internalName: stat.internalName, name: stat.name, global: stat.global, maxChange: stat.maxChange, minValue: stat.minValue, maxValue: stat.maxValue, defaultValue: stat.defaultValue })
       .auth(token, { type: 'bearer' })
       .expect(200)
 
-    expect(res.body.stat.minTimeBetweenUpdates).toBe(5)
+    expect(res.body.stat.minTimeBetweenUpdates).toBe(10242)
 
     const activity = await (<EntityManager>app.context.em).getRepository(GameActivity).findOne({
       type: GameActivityType.GAME_STAT_UPDATED,
@@ -199,86 +199,16 @@ describe('Game stat service - patch', () => {
     })
 
     expect(activity.extra.display).toStrictEqual({
-      'Updated properties': 'minTimeBetweenUpdates: 5'
-    })
-  })
-
-  it('should not update the name if it is numeric', async () => {
-    const stat = await new GameStatFactory([game]).one()
-    await (<EntityManager>app.context.em).persistAndFlush(stat)
-
-    const res = await request(app.callback())
-      .patch(`/games/${game.id}/game-stats/${stat.id}`)
-      .send({ name: 999 })
-      .auth(token, { type: 'bearer' })
-      .expect(200)
-
-    expect(res.body.stat.name).toBe(stat.name)
-
-    const activity = await (<EntityManager>app.context.em).getRepository(GameActivity).findOne({
-      type: GameActivityType.GAME_STAT_UPDATED,
-      extra: {
-        statInternalName: res.body.stat.internalName
-      }
-    })
-
-    expect(activity.extra.display).toStrictEqual({
-      'Updated properties': ''
-    })
-  })
-
-  it('should not update a numeric property if it is a string', async () => {
-    const stat = await new GameStatFactory([game]).one()
-    await (<EntityManager>app.context.em).persistAndFlush(stat)
-
-    const res = await request(app.callback())
-      .patch(`/games/${game.id}/game-stats/${stat.id}`)
-      .send({ maxChange: '54' })
-      .auth(token, { type: 'bearer' })
-      .expect(200)
-
-    expect(res.body.stat.maxChange).toBe(stat.maxChange)
-
-    const activity = await (<EntityManager>app.context.em).getRepository(GameActivity).findOne({
-      type: GameActivityType.GAME_STAT_UPDATED,
-      extra: {
-        statInternalName: res.body.stat.internalName
-      }
-    })
-
-    expect(activity.extra.display).toStrictEqual({
-      'Updated properties': ''
-    })
-  })
-
-  it('should not update the global status if it is not a boolean', async () => {
-    const stat = await new GameStatFactory([game]).with(() => ({ global: false })).one()
-    await (<EntityManager>app.context.em).persistAndFlush(stat)
-
-    const res = await request(app.callback())
-      .patch(`/games/${game.id}/game-stats/${stat.id}`)
-      .send({ global: 'true' })
-      .auth(token, { type: 'bearer' })
-      .expect(200)
-
-    expect(res.body.stat.global).toBe(false)
-
-    const activity = await (<EntityManager>app.context.em).getRepository(GameActivity).findOne({
-      type: GameActivityType.GAME_STAT_UPDATED,
-      extra: {
-        statInternalName: res.body.stat.internalName
-      }
-    })
-
-    expect(activity.extra.display).toStrictEqual({
-      'Updated properties': ''
+      'Updated properties': 'minTimeBetweenUpdates: 10242'
     })
   })
 
   it('should not update a non-existent stat', async () => {
+    const stat = await new GameStatFactory([game]).one()
+
     const res = await request(app.callback())
-      .patch(`/games/${game.id}/game-stats/31223`)
-      .send({ maxChange: '54' })
+      .put(`/games/${game.id}/game-stats/31223`)
+      .send({ internalName: stat.internalName, name: stat.name, global: stat.global, maxChange: stat.maxChange, minValue: stat.minValue, maxValue: stat.maxValue, defaultValue: stat.defaultValue, minTimeBetweenUpdates: stat.minTimeBetweenUpdates })
       .auth(token, { type: 'bearer' })
       .expect(404)
 

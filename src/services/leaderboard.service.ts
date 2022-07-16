@@ -1,7 +1,7 @@
 import { EntityManager } from '@mikro-orm/mysql'
-import { HasPermission, Routes, Service, Request, Response, Validate, ValidationCondition } from 'koa-clay'
+import { HasPermission, Routes, Service, Request, Response, Validate } from 'koa-clay'
 import GameActivity, { GameActivityType } from '../entities/game-activity'
-import Leaderboard, { LeaderboardSortMode } from '../entities/leaderboard'
+import Leaderboard from '../entities/leaderboard'
 import LeaderboardEntry from '../entities/leaderboard-entry'
 import createGameActivity from '../lib/logging/createGameActivity'
 import { devDataPlayerFilter } from '../middlewares/dev-data-middleware'
@@ -31,7 +31,7 @@ import LeaderboardPolicy from '../policies/leaderboard.policy'
     handler: 'updateEntry'
   },
   {
-    method: 'PATCH',
+    method: 'PUT',
     path: '/:id',
     handler: 'updateLeaderboard'
   },
@@ -41,14 +41,10 @@ import LeaderboardPolicy from '../policies/leaderboard.policy'
   }
 ])
 export default class LeaderboardService extends Service {
-  @Validate({
-    query: ['gameId']
-  })
   @HasPermission(LeaderboardPolicy, 'index')
   async index(req: Request): Promise<Response> {
-    const { gameId } = req.query
     const em: EntityManager = req.ctx.em
-    const leaderboards = await em.getRepository(Leaderboard).find({ game: Number(gameId) })
+    const leaderboards = await em.getRepository(Leaderboard).find({ game: req.ctx.state.game })
 
     return {
       status: 200,
@@ -68,46 +64,7 @@ export default class LeaderboardService extends Service {
     }
   }
 
-  @Validate({
-    body: {
-      gameId: {
-        required: true
-      },
-      internalName: {
-        required: true,
-        validation: async (val: unknown, req: Request): Promise<ValidationCondition[]> => {
-          const em: EntityManager = req.ctx.em
-          const duplicateInternalName = await em.getRepository(Leaderboard).findOne({ internalName: val, game: req.body.gameId })
-
-          return [
-            {
-              check: !duplicateInternalName,
-              error: `A leaderboard with the internalName ${val} already exists`
-            }
-          ]
-        }
-      },
-      name: {
-        required: true
-      },
-      sortMode: {
-        required: true,
-        validation: async (val: unknown): Promise<ValidationCondition[]> => {
-          const keys = Object.keys(LeaderboardSortMode).map((key) => LeaderboardSortMode[key])
-
-          return [
-            {
-              check: keys.includes(val),
-              error: `Sort mode must be one of ${keys.join(', ')}`
-            }
-          ]
-        }
-      },
-      unique: {
-        required: true
-      }
-    }
-  })
+  @Validate({ body: [Leaderboard] })
   @HasPermission(LeaderboardPolicy, 'post')
   async post(req: Request): Promise<Response> {
     const { internalName, name, sortMode, unique } = req.body
@@ -233,16 +190,23 @@ export default class LeaderboardService extends Service {
     }
   }
 
+  @Validate({ body: [Leaderboard] })
   @HasPermission(LeaderboardPolicy, 'updateLeaderboard')
   async updateLeaderboard(req: Request): Promise<Response> {
     const em: EntityManager = req.ctx.em
 
-    const { name, sortMode, unique } = req.body
     const leaderboard = req.ctx.state.leaderboard
 
-    if (name) leaderboard.name = name
-    if (sortMode) leaderboard.sortMode = sortMode
-    if (typeof unique === 'boolean') leaderboard.unique = unique
+    const updateableKeys: (keyof Leaderboard)[] = ['name', 'sortMode', 'unique']
+    const changedProperties = []
+
+    for (const key in req.body) {
+      if (updateableKeys.includes(key as keyof Leaderboard)) {
+        const original = leaderboard[key]
+        leaderboard[key] = req.body[key]
+        if (original !== leaderboard[key]) changedProperties.push(key)
+      }
+    }
 
     await createGameActivity(em, {
       user: req.ctx.state.user,
@@ -251,7 +215,7 @@ export default class LeaderboardService extends Service {
       extra: {
         leaderboardInternalName: leaderboard.internalName,
         display: {
-          'Updated properties': Object.keys(req.body).filter((key) => key !== 'gameId').map((key) => `${key}: ${req.body[key]}`).join(', ')
+          'Updated properties': changedProperties.map((prop) => `${prop}: ${req.body[prop]}`).join(', ')
         }
       }
     })

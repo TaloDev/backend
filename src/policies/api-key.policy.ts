@@ -9,14 +9,12 @@ export default class APIKeyPolicy extends Policy {
   @UserTypeGate([UserType.ADMIN], 'create API keys')
   @EmailConfirmedGate('create API keys')
   async post(req: Request): Promise<PolicyResponse> {
-    const { gameId } = req.body
-
-    const canAccessGame = await this.canAccessGame(gameId)
-    return canAccessGame
+    const { gameId } = req.params
+    return await this.canAccessGame(Number(gameId))
   }
 
   async index(req: Request): Promise<boolean> {
-    const { gameId } = req.query
+    const { gameId } = req.params
     return await this.canAccessGame(Number(gameId))
   }
 

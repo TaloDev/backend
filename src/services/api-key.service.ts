@@ -36,9 +36,7 @@ export async function createToken(apiKey: APIKey, payloadParams?: ExtraTokenPayl
   }
 ])
 export default class APIKeyService extends Service {
-  @Validate({
-    body: ['gameId', 'scopes']
-  })
+  @Validate({ body: ['scopes'] })
   @HasPermission(APIKeyPolicy, 'post')
   async post(req: Request): Promise<Response> {
     const { scopes } = req.body
@@ -72,14 +70,10 @@ export default class APIKeyService extends Service {
     }
   }
 
-  @Validate({
-    query: ['gameId']
-  })
   @HasPermission(APIKeyPolicy, 'index')
   async index(req: Request): Promise<Response> {
-    const { gameId } = req.query
     const em: EntityManager = req.ctx.em
-    const apiKeys = await em.getRepository(APIKey).find({ game: Number(gameId), revokedAt: null })
+    const apiKeys = await em.getRepository(APIKey).find({ game: req.ctx.state.game, revokedAt: null })
 
     return {
       status: 200,

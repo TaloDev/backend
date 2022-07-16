@@ -9,8 +9,6 @@ import createUserAndToken from '../../utils/createUserAndToken'
 import userPermissionProvider from '../../utils/userPermissionProvider'
 import createOrganisationAndGame from '../../utils/createOrganisationAndGame'
 
-const baseUrl = '/api-keys'
-
 describe('API key service - post', () => {
   let app: Koa
 
@@ -33,8 +31,8 @@ describe('API key service - post', () => {
     const [token] = await createUserAndToken(app.context.em, { type, emailConfirmed: true }, organisation)
 
     const res = await request(app.callback())
-      .post(`${baseUrl}`)
-      .send({ gameId: game.id, scopes: ['read:players', 'write:events'] })
+      .post(`/games/${game.id}/api-keys`)
+      .send({ scopes: ['read:players', 'write:events'] })
       .auth(token, { type: 'bearer' })
       .expect(statusCode)
 
@@ -64,8 +62,8 @@ describe('API key service - post', () => {
     const [token] = await createUserAndToken(app.context.em, { type: UserType.ADMIN }, organisation)
 
     const res = await request(app.callback())
-      .post(`${baseUrl}`)
-      .send({ gameId: game.id, scopes: ['read:players', 'write:events'] })
+      .post(`/games/${game.id}/api-keys`)
+      .send({ scopes: ['read:players', 'write:events'] })
       .auth(token, { type: 'bearer' })
       .expect(403)
 
@@ -76,8 +74,8 @@ describe('API key service - post', () => {
     const [token] = await createUserAndToken(app.context.em, { emailConfirmed: true, type: UserType.ADMIN })
 
     const res = await request(app.callback())
-      .post(`${baseUrl}`)
-      .send({ gameId: 99999, scopes: [] })
+      .post('/games/99999/api-keys')
+      .send({ scopes: [] })
       .auth(token, { type: 'bearer' })
       .expect(404)
 
@@ -89,8 +87,8 @@ describe('API key service - post', () => {
     const [token] = await createUserAndToken(app.context.em, { emailConfirmed: true, type: UserType.ADMIN })
 
     const res = await request(app.callback())
-      .post(`${baseUrl}`)
-      .send({ gameId: otherGame.id, scopes: [] })
+      .post(`/games/${otherGame.id}/api-keys`)
+      .send({ scopes: [] })
       .auth(token, { type: 'bearer' })
       .expect(403)
 

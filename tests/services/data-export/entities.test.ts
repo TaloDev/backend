@@ -5,8 +5,7 @@ import request from 'supertest'
 import User from '../../../src/entities/user'
 import { genAccessToken } from '../../../src/lib/auth/buildTokenPair'
 import UserFactory from '../../fixtures/UserFactory'
-
-const baseUrl = '/data-exports/entities'
+import createOrganisationAndGame from '../../utils/createOrganisationAndGame'
 
 describe('Data export service - available entities', () => {
   let app: Koa
@@ -27,8 +26,10 @@ describe('Data export service - available entities', () => {
   })
 
   it('should return a list of available data export entities', async () => {
+    const [, game] = await createOrganisationAndGame(app.context.em)
+
     const res = await request(app.callback())
-      .get(baseUrl)
+      .get(`/games/${game.id}/data-exports/entities`)
       .auth(token, { type: 'bearer' })
       .expect(200)
 

@@ -16,9 +16,9 @@ export default class GameStatFactory extends Factory<GameStat> {
 
   protected base(): Partial<GameStat> {
     const global = casual.boolean
-    const minValue = casual.integer(-100, 0)
-    const maxValue = casual.integer(minValue, 100)
-    const defaultValue = casual.boolean ? 0 : casual.integer(minValue, maxValue)
+    const minValue = casual.boolean ? casual.integer(-100, 0) : null
+    const maxValue = casual.boolean ? casual.integer(minValue, 100) : null
+    const defaultValue = casual.integer(minValue ?? 0, maxValue ?? 100)
 
     return {
       game: casual.random_element(this.availableGames),

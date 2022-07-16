@@ -11,8 +11,6 @@ import Game from '../../../src/entities/game'
 import Leaderboard, { LeaderboardSortMode } from '../../../src/entities/leaderboard'
 import GameActivity, { GameActivityType } from '../../../src/entities/game-activity'
 
-const baseUrl = '/leaderboards'
-
 describe('Leaderboard service - update leaderboard', () => {
   let app: Koa
   let user: User
@@ -38,8 +36,8 @@ describe('Leaderboard service - update leaderboard', () => {
 
   it('should update a leaderboard\'s name', async () => {
     const res = await request(app.callback())
-      .patch(`${baseUrl}/${leaderboard.id}`)
-      .send({ name: 'The new name' })
+      .put(`/games/${validGame.id}/leaderboards/${leaderboard.id}`)
+      .send({ name: 'The new name', internalName: leaderboard.internalName, sortMode: leaderboard.sortMode, unique: leaderboard.unique })
       .auth(token, { type: 'bearer' })
       .expect(200)
 
@@ -60,25 +58,12 @@ describe('Leaderboard service - update leaderboard', () => {
     await (<EntityManager>app.context.em).flush()
 
     const res = await request(app.callback())
-      .patch(`${baseUrl}/${leaderboard.id}`)
-      .send({ sortMode: LeaderboardSortMode.ASC })
+      .put(`/games/${validGame.id}/leaderboards/${leaderboard.id}`)
+      .send({ sortMode: LeaderboardSortMode.ASC, internalName: leaderboard.internalName, name: leaderboard.name, unique: leaderboard.unique })
       .auth(token, { type: 'bearer' })
       .expect(200)
 
     expect(res.body.leaderboard.sortMode).toBe('asc')
-  })
-
-  it('should not update a leaderboard\'s entry uniqueness mode if the key is not sent', async () => {
-    leaderboard.unique = true
-    await (<EntityManager>app.context.em).flush()
-
-    const res = await request(app.callback())
-      .patch(`${baseUrl}/${leaderboard.id}`)
-      .send({})
-      .auth(token, { type: 'bearer' })
-      .expect(200)
-
-    expect(res.body.leaderboard.unique).toBe(true)
   })
 
   it('should update a leaderboard\'s entry uniqueness mode', async () => {
@@ -86,8 +71,8 @@ describe('Leaderboard service - update leaderboard', () => {
     await (<EntityManager>app.context.em).flush()
 
     const res = await request(app.callback())
-      .patch(`${baseUrl}/${leaderboard.id}`)
-      .send({ unique: false })
+      .put(`/games/${validGame.id}/leaderboards/${leaderboard.id}`)
+      .send({ unique: false, internalName: leaderboard.internalName, name: leaderboard.name, sortMode: leaderboard.sortMode })
       .auth(token, { type: 'bearer' })
       .expect(200)
 
@@ -96,8 +81,8 @@ describe('Leaderboard service - update leaderboard', () => {
 
   it('should not update a non-existent leaderboard', async () => {
     const res = await request(app.callback())
-      .patch(`${baseUrl}/21312321`)
-      .send({ name: 'The new name' })
+      .put(`/games/${validGame.id}/leaderboards/21312321`)
+      .send({ internalName: 'this-does-not-exist', name: leaderboard.name, sortMode: leaderboard.sortMode, unique: leaderboard.unique })
       .auth(token, { type: 'bearer' })
       .expect(404)
 

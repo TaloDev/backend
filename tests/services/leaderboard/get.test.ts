@@ -10,8 +10,6 @@ import GameFactory from '../../fixtures/GameFactory'
 import Game from '../../../src/entities/game'
 import OrganisationFactory from '../../fixtures/OrganisationFactory'
 
-const baseUrl = '/leaderboards'
-
 describe('Leaderboard service - get', () => {
   let app: Koa
   let user: User
@@ -37,7 +35,7 @@ describe('Leaderboard service - get', () => {
     await (<EntityManager>app.context.em).persistAndFlush(leaderboard)
 
     const res = await request(app.callback())
-      .get(`${baseUrl}/${leaderboard.id}`)
+      .get(`/games/${validGame.id}/leaderboards/${leaderboard.id}`)
       .auth(token, { type: 'bearer' })
       .expect(200)
 
@@ -46,7 +44,7 @@ describe('Leaderboard service - get', () => {
 
   it('should not return a non-existent leaderboard', async () => {
     const res = await request(app.callback())
-      .get(`${baseUrl}/321312`)
+      .get(`/games/${validGame.id}/leaderboards/321312`)
       .auth(token, { type: 'bearer' })
       .expect(404)
 
@@ -60,7 +58,7 @@ describe('Leaderboard service - get', () => {
     await (<EntityManager>app.context.em).persistAndFlush(leaderboard)
 
     await request(app.callback())
-      .get(`${baseUrl}/${leaderboard.id}`)
+      .get(`/games/${validGame.id}/leaderboards/${leaderboard.id}`)
       .auth(token, { type: 'bearer' })
       .expect(403)
   })

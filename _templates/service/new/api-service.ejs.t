@@ -12,7 +12,7 @@ export default class <%= h.changeCase.pascal(name) %>APIService extends APIServi
   async post(req: Request): Promise<Response> {
     const key: APIKey = await this.getAPIKey(req.ctx)
     return await forwardRequest(req, {
-      body: {
+      params: {
         gameId: key.game.id
       }
     })

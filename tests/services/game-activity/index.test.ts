@@ -9,8 +9,6 @@ import createUserAndToken from '../../utils/createUserAndToken'
 import createOrganisationAndGame from '../../utils/createOrganisationAndGame'
 import userPermissionProvider from '../../utils/userPermissionProvider'
 
-const baseUrl = '/game-activities'
-
 describe('Game activitie service - index', () => {
   let app: Koa
 
@@ -33,8 +31,7 @@ describe('Game activitie service - index', () => {
     await (<EntityManager>app.context.em).persistAndFlush([user, game, ...activities])
 
     const res = await request(app.callback())
-      .get(`${baseUrl}`)
-      .query({ gameId: game.id })
+      .get(`/games/${game.id}/game-activities`)
       .auth(token, { type: 'bearer' })
       .expect(statusCode)
 
@@ -58,8 +55,7 @@ describe('Game activitie service - index', () => {
     await (<EntityManager>app.context.em).persistAndFlush([...activities, ...otherActivities])
 
     const res = await request(app.callback())
-      .get(`${baseUrl}`)
-      .query({ gameId: game.id })
+      .get(`/games/${game.id}/game-activities`)
       .auth(token, { type: 'bearer' })
       .expect(200)
 
@@ -75,8 +71,7 @@ describe('Game activitie service - index', () => {
     await (<EntityManager>app.context.em).persistAndFlush(activities)
 
     const res = await request(app.callback())
-      .get(`${baseUrl}`)
-      .query({ gameId: game.id })
+      .get(`/games/${game.id}/game-activities`)
       .auth(token, { type: 'bearer' })
       .expect(403)
 

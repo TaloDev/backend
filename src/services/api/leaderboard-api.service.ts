@@ -19,7 +19,7 @@ import LeaderboardAPIDocs from '../../docs/leaderboard-api.docs'
 export default class LeaderboardAPIService extends APIService {
   @Validate({ query: ['page'] })
   @HasPermission(LeaderboardAPIPolicy, 'get')
-  @ForwardTo('leaderboards', 'entries')
+  @ForwardTo('games.leaderboards', 'entries')
   @Docs(LeaderboardAPIDocs.get)
   async get(req: Request): Promise<Response> {
     return forwardRequest(req, {

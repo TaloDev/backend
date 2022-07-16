@@ -1,13 +1,10 @@
 import { EntityManager } from '@mikro-orm/core'
-import { HasPermission, Service, Request, Response, Validate } from 'koa-clay'
+import { HasPermission, Service, Request, Response } from 'koa-clay'
 import GameActivity from '../entities/game-activity'
 import User from '../entities/user'
 import GameActivityPolicy from '../policies/game-activity.policy'
 
 export default class GameActivityService extends Service {
-  @Validate({
-    query: ['gameId']
-  })
   @HasPermission(GameActivityPolicy, 'index')
   async index(req: Request): Promise<Response> {
     const em: EntityManager = req.ctx.em

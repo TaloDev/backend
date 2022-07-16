@@ -14,8 +14,6 @@ import GameStat from '../../../src/entities/game-stat'
 import PlayerGameStatFactory from '../../fixtures/PlayerGameStatFactory'
 import casual from 'casual'
 
-const baseUrl = '/players'
-
 describe('Player service - get stats', () => {
   let app: Koa
   let user: User
@@ -45,7 +43,7 @@ describe('Player service - get stats', () => {
     await (<EntityManager>app.context.em).persistAndFlush([player, ...playerStats])
 
     const res = await request(app.callback())
-      .get(`${baseUrl}/${player.id}/stats`)
+      .get(`/games/${validGame.id}/players/${player.id}/stats`)
       .auth(token, { type: 'bearer' })
       .expect(200)
 
@@ -60,14 +58,14 @@ describe('Player service - get stats', () => {
     await (<EntityManager>app.context.em).persistAndFlush(player)
 
     await request(app.callback())
-      .get(`${baseUrl}/${player.id}/stats`)
+      .get(`/games/${otherGame.id}/players/${player.id}/stats`)
       .auth(token, { type: 'bearer' })
       .expect(403)
   })
 
   it('should not get a player\'s stats if they do not exist', async () => {
     const res = await request(app.callback())
-      .get(`${baseUrl}/21312321321/stats`)
+      .get(`/games/${validGame.id}/players/21312321321/stats`)
       .auth(token, { type: 'bearer' })
       .expect(404)
 

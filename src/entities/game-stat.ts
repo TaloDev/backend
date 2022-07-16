@@ -9,10 +9,14 @@ export default class GameStat {
   id: number
 
   @Required({
-    methods: ['POST'],
     validation: async (val: unknown, req: Request): Promise<ValidationCondition[]> => {
+      const { gameId, id } = req.params
       const em: EntityManager = req.ctx.em
-      const duplicateInternalName = await em.getRepository(GameStat).findOne({ internalName: val, game: req.body.gameId })
+      const duplicateInternalName = await em.getRepository(GameStat).findOne({
+        id: { $ne: Number(id ?? null) },
+        internalName: val,
+        game: Number(gameId)
+      })
 
       return [
         {
@@ -25,11 +29,11 @@ export default class GameStat {
   @Property()
   internalName: string
 
-  @Required({ methods: ['POST'] })
+  @Required()
   @Property()
   name: string
 
-  @Required({ methods: ['POST'] })
+  @Required()
   @Property()
   global: boolean
 
@@ -42,7 +46,6 @@ export default class GameStat {
   maxChange: number
 
   @Required({
-    methods: [],
     validation: async (value: number, req: Request): Promise<ValidationCondition[]> => [{
       check: value < (req.body.maxValue ?? Infinity),
       error: 'minValue must be less than maxValue'
@@ -52,7 +55,6 @@ export default class GameStat {
   minValue: number
 
   @Required({
-    methods: [],
     validation: async (value: number, req: Request): Promise<ValidationCondition[]> => [{
       check: value > (req.body.minValue ?? -Infinity),
       error: 'maxValue must be greater than minValue'
@@ -62,7 +64,6 @@ export default class GameStat {
   maxValue: number
 
   @Required({
-    methods: ['POST'],
     validation: async (value: number, req: Request): Promise<ValidationCondition[]> => [{
       check: value >= (req.body.minValue ?? -Infinity) && value <= (req.body.maxValue ?? Infinity),
       error: 'defaultValue must be between minValue and maxValue'
@@ -71,14 +72,10 @@ export default class GameStat {
   @Property({ type: 'double' })
   defaultValue: number
 
-  @Required({ methods: ['POST'] })
+  @Required()
   @Property()
   minTimeBetweenUpdates: number
 
-  @Required({
-    methods: ['POST'],
-    as: 'gameId'
-  })
   @ManyToOne(() => Game)
   game: Game
 

@@ -10,8 +10,6 @@ import createUserAndToken from '../../utils/createUserAndToken'
 import createOrganisationAndGame from '../../utils/createOrganisationAndGame'
 import clearEntities from '../../utils/clearEntities'
 
-const baseUrl = '/leaderboards'
-
 describe('Leaderboard service - delete', () => {
   let app: Koa
 
@@ -37,7 +35,7 @@ describe('Leaderboard service - delete', () => {
     await (<EntityManager>app.context.em).persistAndFlush(leaderboard)
 
     const res = await request(app.callback())
-      .delete(`${baseUrl}/${leaderboard.id}`)
+      .delete(`/games/${game.id}/leaderboards/${leaderboard.id}`)
       .auth(token, { type: 'bearer' })
       .expect(statusCode)
 
@@ -62,7 +60,7 @@ describe('Leaderboard service - delete', () => {
     await (<EntityManager>app.context.em).persistAndFlush([leaderboard])
 
     const res = await request(app.callback())
-      .delete(`${baseUrl}/${leaderboard.id}`)
+      .delete(`/games/${otherGame.id}/leaderboards/${leaderboard.id}`)
       .auth(token, { type: 'bearer' })
       .expect(403)
 
@@ -70,10 +68,11 @@ describe('Leaderboard service - delete', () => {
   })
 
   it('should not delete a non-existent leaderboard', async () => {
-    const [token] = await createUserAndToken(app.context.em, { type: UserType.ADMIN })
+    const [organisation, game] = await createOrganisationAndGame(app.context.em)
+    const [token] = await createUserAndToken(app.context.em, { type: UserType.ADMIN }, organisation)
 
     const res = await request(app.callback())
-      .delete(`${baseUrl}/31223`)
+      .delete(`/games/${game.id}/leaderboards/31223`)
       .auth(token, { type: 'bearer' })
       .expect(404)
 

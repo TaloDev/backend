@@ -6,8 +6,7 @@ import User from '../../../src/entities/user'
 import { genAccessToken } from '../../../src/lib/auth/buildTokenPair'
 import { APIKeyScope } from '../../../src/entities/api-key'
 import UserFactory from '../../fixtures/UserFactory'
-
-const baseUrl = '/api-keys/scopes'
+import createOrganisationAndGame from '../../utils/createOrganisationAndGame'
 
 describe('API key service - get scopes', () => {
   let app: Koa
@@ -28,8 +27,10 @@ describe('API key service - get scopes', () => {
   })
 
   it('should return a list of api key scopes', async () => {
+    const [, game] = await createOrganisationAndGame(app.context.em)
+
     const res = await request(app.callback())
-      .get(baseUrl)
+      .get(`/games/${game.id}/api-keys/scopes`)
       .auth(token, { type: 'bearer' })
       .expect(200)
 

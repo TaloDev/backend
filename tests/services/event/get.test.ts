@@ -12,8 +12,6 @@ import OrganisationFactory from '../../fixtures/OrganisationFactory'
 import PlayerFactory from '../../fixtures/PlayerFactory'
 import { sub } from 'date-fns'
 
-const baseUrl = '/events'
-
 describe('Event service - get', () => {
   let app: Koa
   let user: User
@@ -54,8 +52,8 @@ describe('Event service - get', () => {
     await (<EntityManager>app.context.em).persistAndFlush(events)
 
     const res = await request(app.callback())
-      .get(`${baseUrl}`)
-      .query({ gameId: validGame.id, startDate: '2021-01-01', endDate: '2021-01-03' })
+      .get(`/games/${validGame.id}/events`)
+      .query({ startDate: '2021-01-01', endDate: '2021-01-03' })
       .auth(token, { type: 'bearer' })
       .expect(200)
 
@@ -78,8 +76,7 @@ describe('Event service - get', () => {
 
   it('should require a startDate query key to get events', async () => {
     const res = await request(app.callback())
-      .get(`${baseUrl}`)
-      .query({ gameId: validGame.id })
+      .get(`/games/${validGame.id}/events`)
       .auth(token, { type: 'bearer' })
       .expect(400)
 
@@ -93,8 +90,8 @@ describe('Event service - get', () => {
 
   it('should require a valid startDate query key to get events', async () => {
     const res = await request(app.callback())
-      .get(`${baseUrl}`)
-      .query({ gameId: validGame.id, startDate: '2015-02-32', endDate: '2015-03-01' })
+      .get(`/games/${validGame.id}/events`)
+      .query({ startDate: '2015-02-32', endDate: '2015-03-01' })
       .auth(token, { type: 'bearer' })
       .expect(400)
 
@@ -107,8 +104,8 @@ describe('Event service - get', () => {
 
   it('should require a startDate that comes before the endDate query key to get events', async () => {
     const res = await request(app.callback())
-      .get(`${baseUrl}`)
-      .query({ gameId: validGame.id, startDate: '2003-02-01', endDate: '2001-01-01' })
+      .get(`/games/${validGame.id}/events`)
+      .query({ startDate: '2003-02-01', endDate: '2001-01-01' })
       .auth(token, { type: 'bearer' })
       .expect(400)
 
@@ -121,8 +118,8 @@ describe('Event service - get', () => {
 
   it('should require a endDate query key to get events', async () => {
     const res = await request(app.callback())
-      .get(`${baseUrl}`)
-      .query({ gameId: validGame.id, startDate: '2021-01-01' })
+      .get(`/games/${validGame.id}/events`)
+      .query({ startDate: '2021-01-01' })
       .auth(token, { type: 'bearer' })
       .expect(400)
 
@@ -135,8 +132,8 @@ describe('Event service - get', () => {
 
   it('should require a valid endDate query key to get events', async () => {
     const res = await request(app.callback())
-      .get(`${baseUrl}`)
-      .query({ gameId: validGame.id, startDate: '2015-01-29', endDate: '2015-02-32' })
+      .get(`/games/${validGame.id}/events`)
+      .query({ startDate: '2015-01-29', endDate: '2015-02-32' })
       .auth(token, { type: 'bearer' })
       .expect(400)
 
@@ -182,8 +179,8 @@ describe('Event service - get', () => {
     ])
 
     const res = await request(app.callback())
-      .get(`${baseUrl}`)
-      .query({ gameId: validGame.id, startDate: '2021-01-01', endDate: '2021-01-05' })
+      .get(`/games/${validGame.id}/events`)
+      .query({ startDate: '2021-01-01', endDate: '2021-01-05' })
       .auth(token, { type: 'bearer' })
       .expect(200)
 
@@ -209,8 +206,8 @@ describe('Event service - get', () => {
     await (<EntityManager>app.context.em).persistAndFlush(event)
 
     const res = await request(app.callback())
-      .get(`${baseUrl}`)
-      .query({ gameId: validGame.id, startDate: '2021-01-01', endDate: '2021-01-05' })
+      .get(`/games/${validGame.id}/events`)
+      .query({ startDate: '2021-01-01', endDate: '2021-01-05' })
       .auth(token, { type: 'bearer' })
       .expect(200)
 
@@ -220,8 +217,8 @@ describe('Event service - get', () => {
 
   it('should not return a list of events for a non-existent game', async () => {
     const res = await request(app.callback())
-      .get(`${baseUrl}`)
-      .query({ gameId: 99999, startDate: '2021-01-01', endDate: '2021-01-05' })
+      .get('/games/99999/events')
+      .query({ startDate: '2021-01-01', endDate: '2021-01-05' })
       .auth(token, { type: 'bearer' })
       .expect(404)
 
@@ -234,8 +231,8 @@ describe('Event service - get', () => {
     await (<EntityManager>app.context.em).persistAndFlush(otherGame)
 
     await request(app.callback())
-      .get(`${baseUrl}`)
-      .query({ gameId: otherGame.id, startDate: '2021-01-01', endDate: '2021-01-05' })
+      .get(`/games/${otherGame.id}/events`)
+      .query({ startDate: '2021-01-01', endDate: '2021-01-05' })
       .auth(token, { type: 'bearer' })
       .expect(403)
   })
@@ -246,8 +243,8 @@ describe('Event service - get', () => {
     await (<EntityManager>app.context.em).persistAndFlush(events)
 
     const res = await request(app.callback())
-      .get(`${baseUrl}`)
-      .query({ gameId: validGame.id, startDate: sub(new Date(), { days: 1 }), endDate: new Date() })
+      .get(`/games/${validGame.id}/events`)
+      .query({ startDate: sub(new Date(), { days: 1 }), endDate: new Date() })
       .auth(token, { type: 'bearer' })
       .expect(200)
 
@@ -260,8 +257,8 @@ describe('Event service - get', () => {
     await (<EntityManager>app.context.em).persistAndFlush(events)
 
     const res = await request(app.callback())
-      .get(`${baseUrl}`)
-      .query({ gameId: validGame.id, startDate: sub(new Date(), { days: 1 }), endDate: new Date() })
+      .get(`/games/${validGame.id}/events`)
+      .query({ startDate: sub(new Date(), { days: 1 }), endDate: new Date() })
       .auth(token, { type: 'bearer' })
       .expect(200)
 
@@ -274,8 +271,8 @@ describe('Event service - get', () => {
     await (<EntityManager>app.context.em).persistAndFlush(events)
 
     const res = await request(app.callback())
-      .get(`${baseUrl}`)
-      .query({ gameId: validGame.id, startDate: sub(new Date(), { days: 1 }), endDate: new Date() })
+      .get(`/games/${validGame.id}/events`)
+      .query({ startDate: sub(new Date(), { days: 1 }), endDate: new Date() })
       .auth(token, { type: 'bearer' })
       .set('x-talo-include-dev-data', '1')
       .expect(200)

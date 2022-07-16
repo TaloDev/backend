@@ -9,8 +9,6 @@ import userPermissionProvider from '../../utils/userPermissionProvider'
 import createOrganisationAndGame from '../../utils/createOrganisationAndGame'
 import createUserAndToken from '../../utils/createUserAndToken'
 
-const baseUrl = '/players'
-
 describe('Player service - patch', () => {
   let app: Koa
 
@@ -45,7 +43,7 @@ describe('Player service - patch', () => {
     await (<EntityManager>app.context.em).persistAndFlush(player)
 
     const res = await request(app.callback())
-      .patch(`${baseUrl}/${player.id}`)
+      .patch(`/games/${game.id}/players/${player.id}`)
       .send({
         props: [
           {
@@ -104,7 +102,7 @@ describe('Player service - patch', () => {
     await (<EntityManager>app.context.em).persistAndFlush(player)
 
     const res = await request(app.callback())
-      .patch(`${baseUrl}/${player.id}`)
+      .patch(`/games/${game.id}/players/${player.id}`)
       .send({
         props: [
           {
@@ -136,7 +134,7 @@ describe('Player service - patch', () => {
     await (<EntityManager>app.context.em).persistAndFlush(player)
 
     const res = await request(app.callback())
-      .patch(`${baseUrl}/${player.id}`)
+      .patch(`/games/${game.id}/players/${player.id}`)
       .send({
         props: {
           collectibles: '3'
@@ -153,10 +151,11 @@ describe('Player service - patch', () => {
   })
 
   it('should not update a non-existent player\'s properties', async () => {
-    const [token] = await createUserAndToken(app.context.em)
+    const [organisation, game] = await createOrganisationAndGame(app.context.em)
+    const [token] = await createUserAndToken(app.context.em, {}, organisation)
 
     const res = await request(app.callback())
-      .patch(`${baseUrl}/2313`)
+      .patch(`/games/${game.id}/players/2313`)
       .send({
         props: [
           {
@@ -179,7 +178,7 @@ describe('Player service - patch', () => {
     await (<EntityManager>app.context.em).persistAndFlush(player)
 
     const res = await request(app.callback())
-      .patch(`${baseUrl}/${player.id}`)
+      .patch(`/games/${otherGame.id}/players/${player.id}`)
       .send({
         props: [
           {
@@ -202,7 +201,7 @@ describe('Player service - patch', () => {
     await (<EntityManager>app.context.em).persistAndFlush(player)
 
     const res = await request(app.callback())
-      .patch(`${baseUrl}/${player.id}`)
+      .patch(`/games/${game.id}/players/${player.id}`)
       .send({
         props: [
           {
@@ -234,7 +233,7 @@ describe('Player service - patch', () => {
     await (<EntityManager>app.context.em).persistAndFlush(player)
 
     const res = await request(app.callback())
-      .patch(`${baseUrl}/${player.id}`)
+      .patch(`/games/${game.id}/players/${player.id}`)
       .send({
         props: [
           {

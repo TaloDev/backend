@@ -8,8 +8,6 @@ import Game from '../../../src/entities/game'
 import UserFactory from '../../fixtures/UserFactory'
 import OrganisationFactory from '../../fixtures/OrganisationFactory'
 
-const baseUrl = '/players'
-
 describe('Player service - post', () => {
   let app: Koa
   let user: User
@@ -32,8 +30,7 @@ describe('Player service - post', () => {
 
   it('should create a player', async () => {
     const res = await request(app.callback())
-      .post(`${baseUrl}`)
-      .send({ gameId: validGame.id })
+      .post(`/games/${validGame.id}/players`)
       .auth(token, { type: 'bearer' })
       .expect(200)
 
@@ -42,13 +39,12 @@ describe('Player service - post', () => {
 
   it('should create a player with aliases', async () => {
     const res = await request(app.callback())
-      .post(`${baseUrl}`)
+      .post(`/games/${validGame.id}/players`)
       .send({
         aliases: [{
           service: 'steam',
           identifier: '12345'
-        }],
-        gameId: validGame.id
+        }]
       })
       .auth(token, { type: 'bearer' })
       .expect(200)
@@ -61,9 +57,8 @@ describe('Player service - post', () => {
 
   it('should create a player with props', async () => {
     const res = await request(app.callback())
-      .post(`${baseUrl}`)
+      .post(`/games/${validGame.id}/players`)
       .send({
-        gameId: validGame.id,
         props: [
           {
             key: 'characterName',
@@ -80,8 +75,7 @@ describe('Player service - post', () => {
 
   it('should not create a player for a non-existent game', async () => {
     const res = await request(app.callback())
-      .post(`${baseUrl}`)
-      .send({ gameId: 99999 })
+      .post('/games/99999/players')
       .auth(token, { type: 'bearer' })
       .expect(404)
 
@@ -94,17 +88,15 @@ describe('Player service - post', () => {
     await (<EntityManager>app.context.em).persistAndFlush(otherGame)
 
     await request(app.callback())
-      .post(`${baseUrl}`)
-      .send({ gameId: otherGame.id })
+      .post(`/games/${otherGame.id}/players`)
       .auth(token, { type: 'bearer' })
       .expect(403)
   })
 
   it('should not create a player if props are in the incorrect format', async () => {
     const res = await request(app.callback())
-      .post(`${baseUrl}`)
+      .post(`/games/${validGame.id}/players`)
       .send({
-        gameId: validGame.id,
         props: {
           characterName: 'Bob John'
         }
@@ -121,13 +113,12 @@ describe('Player service - post', () => {
 
   it('should create a player with a META_DEV_BUILD prop', async () => {
     const res = await request(app.callback())
-      .post(`${baseUrl}`)
+      .post(`/games/${validGame.id}/players`)
       .send({
         aliases: [{
           service: 'steam',
           identifier: '12345'
-        }],
-        gameId: validGame.id
+        }]
       })
       .auth(token, { type: 'bearer' })
       .set('x-talo-dev-build', '1')

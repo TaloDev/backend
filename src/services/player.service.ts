@@ -48,9 +48,6 @@ const propsValidation = async (val: unknown): Promise<ValidationCondition[]> => 
 export default class PlayerService extends Service {
   @Validate({
     body: {
-      gameId: {
-        required: true
-      },
       props: {
         validation: propsValidation
       }
@@ -58,10 +55,10 @@ export default class PlayerService extends Service {
   })
   @HasPermission(PlayerPolicy, 'post')
   async post(req: Request): Promise<Response> {
-    const { aliases, gameId, props } = req.body
+    const { aliases, props } = req.body
     const em: EntityManager = req.ctx.em
 
-    const game = await em.getRepository(Game).findOne(gameId)
+    const game = await em.getRepository(Game).findOne(req.ctx.state.game)
 
     const player = new Player(game)
     if (aliases) {
@@ -91,12 +88,9 @@ export default class PlayerService extends Service {
     }
   }
 
-  @Validate({
-    query: ['gameId']
-  })
   @HasPermission(PlayerPolicy, 'index')
   async index(req: Request): Promise<Response> {
-    const { gameId, search, page } = req.query
+    const { search, page } = req.query
     const em: EntityManager = req.ctx.em
 
     let baseQuery = em.createQueryBuilder(Player, 'p')
@@ -122,7 +116,7 @@ export default class PlayerService extends Service {
       baseQuery = baseQuery.andWhere(devDataPlayerFilter)
     }
 
-    baseQuery = baseQuery.andWhere({ game: Number(gameId) })
+    baseQuery = baseQuery.andWhere({ game: req.ctx.state.game })
 
     const { count } = await baseQuery
       .count('p.id', true)

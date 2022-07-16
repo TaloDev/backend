@@ -10,8 +10,6 @@ import userPermissionProvider from '../../utils/userPermissionProvider'
 import createOrganisationAndGame from '../../utils/createOrganisationAndGame'
 import createUserAndToken from '../../utils/createUserAndToken'
 
-const baseUrl = '/game-stats'
-
 describe('Game stat service - delete', () => {
   let app: Koa
 
@@ -37,7 +35,7 @@ describe('Game stat service - delete', () => {
     await (<EntityManager>app.context.em).persistAndFlush(stat)
 
     await request(app.callback())
-      .delete(`${baseUrl}/${stat.id}`)
+      .delete(`/games/${game.id}/game-stats/${stat.id}`)
       .auth(token, { type: 'bearer' })
       .expect(statusCode)
 
@@ -63,7 +61,7 @@ describe('Game stat service - delete', () => {
     await (<EntityManager>app.context.em).persistAndFlush(stat)
 
     const res = await request(app.callback())
-      .delete(`${baseUrl}/${stat.id}`)
+      .delete(`/games/${otherGame.id}/game-stats/${stat.id}`)
       .auth(token, { type: 'bearer' })
       .expect(403)
 
@@ -71,10 +69,11 @@ describe('Game stat service - delete', () => {
   })
 
   it('should not delete a non-existent stat', async () => {
-    const [token] = await createUserAndToken(app.context.em, { type: UserType.ADMIN })
+    const [organisation, game] = await createOrganisationAndGame(app.context.em)
+    const [token] = await createUserAndToken(app.context.em, { type: UserType.ADMIN }, organisation)
 
     const res = await request(app.callback())
-      .delete(`${baseUrl}/31223`)
+      .delete(`/games/${game.id}/game-stats/31223`)
       .auth(token, { type: 'bearer' })
       .expect(404)
 

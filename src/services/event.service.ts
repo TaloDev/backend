@@ -16,20 +16,15 @@ interface EventData {
 
 export default class EventService extends Service {
   @Validate({
-    query: {
-      gameId: {
-        required: true
-      },
-      ...dateValidationSchema
-    }
+    query: dateValidationSchema
   })
   @HasPermission(EventPolicy, 'index')
   async index(req: Request): Promise<Response> {
-    const { gameId, startDate, endDate } = req.query
+    const { startDate, endDate } = req.query
     const em: EntityManager = req.ctx.em
 
     const where: FilterQuery<Event> = {
-      game: Number(gameId),
+      game: req.ctx.state.game,
       createdAt: {
         $gte: new Date(startDate),
         $lte: endOfDay(new Date(endDate))

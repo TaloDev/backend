@@ -9,8 +9,6 @@ import Game from '../../../src/entities/game'
 import GameFactory from '../../fixtures/GameFactory'
 import DataExportFactory from '../../fixtures/DataExportFactory'
 
-const baseUrl = '/data-exports'
-
 describe('Data export service - index', () => {
   let app: Koa
   let user: User
@@ -36,8 +34,7 @@ describe('Data export service - index', () => {
     await (<EntityManager>app.context.em).persistAndFlush(exports)
 
     const res = await request(app.callback())
-      .get(`${baseUrl}`)
-      .query({ gameId: game.id })
+      .get(`/games/${game.id}/data-exports`)
       .auth(token, { type: 'bearer' })
       .expect(200)
 
@@ -51,8 +48,7 @@ describe('Data export service - index', () => {
     const invalidUserToken = await genAccessToken(invalidUser)
 
     const res = await request(app.callback())
-      .get(`${baseUrl}`)
-      .query({ gameId: game.id })
+      .get(`/games/${game.id}/data-exports`)
       .auth(invalidUserToken, { type: 'bearer' })
       .expect(403)
 

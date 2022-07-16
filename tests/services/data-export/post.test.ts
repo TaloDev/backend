@@ -15,8 +15,6 @@ import { subMonths } from 'date-fns'
 import OrganisationPricingPlanFactory from '../../fixtures/OrganisationPricingPlanFactory'
 import OrganisationPricingPlanActionFactory from '../../fixtures/OrganisationPricingPlanActionFactory'
 
-const baseUrl = '/data-exports'
-
 describe('Data export service - post', () => {
   let app: Koa
 
@@ -39,8 +37,8 @@ describe('Data export service - post', () => {
     const [token] = await createUserAndToken(app.context.em, { type, emailConfirmed: true }, organisation)
 
     const res = await request(app.callback())
-      .post(`${baseUrl}`)
-      .send({ gameId: game.id, entities: [DataExportAvailableEntities.GAME_STATS, DataExportAvailableEntities.GAME_ACTIVITIES] })
+      .post(`/games/${game.id}/data-exports`)
+      .send({ entities: [DataExportAvailableEntities.GAME_STATS, DataExportAvailableEntities.GAME_ACTIVITIES] })
       .auth(token, { type: 'bearer' })
       .expect(statusCode)
 
@@ -60,8 +58,8 @@ describe('Data export service - post', () => {
     const [token] = await createUserAndToken(app.context.em, { type: UserType.ADMIN, emailConfirmed: true })
 
     const res = await request(app.callback())
-      .post(`${baseUrl}`)
-      .send({ gameId: otherGame.id, entities: [DataExportAvailableEntities.GAME_STATS, DataExportAvailableEntities.GAME_ACTIVITIES] })
+      .post(`/games/${otherGame.id}/data-exports`)
+      .send({ entities: [DataExportAvailableEntities.GAME_STATS, DataExportAvailableEntities.GAME_ACTIVITIES] })
       .auth(token, { type: 'bearer' })
       .expect(403)
 
@@ -73,8 +71,8 @@ describe('Data export service - post', () => {
     const [token] = await createUserAndToken(app.context.em, { type: UserType.ADMIN, emailConfirmed: true }, organisation)
 
     const res = await request(app.callback())
-      .post(`${baseUrl}`)
-      .send({ gameId: game.id, entities: [DataExportAvailableEntities.PLAYER_ALIASES] })
+      .post(`/games/${game.id}/data-exports`)
+      .send({ entities: [DataExportAvailableEntities.PLAYER_ALIASES] })
       .auth(token, { type: 'bearer' })
       .expect(200)
 
@@ -86,8 +84,8 @@ describe('Data export service - post', () => {
     const [token] = await createUserAndToken(app.context.em, { type: UserType.ADMIN, emailConfirmed: true }, organisation)
 
     const res = await request(app.callback())
-      .post(`${baseUrl}`)
-      .send({ gameId: game.id, entities: [DataExportAvailableEntities.PLAYERS] })
+      .post(`/games/${game.id}/data-exports`)
+      .send({ entities: [DataExportAvailableEntities.PLAYERS] })
       .auth(token, { type: 'bearer' })
       .expect(200)
 
@@ -99,8 +97,8 @@ describe('Data export service - post', () => {
     const [token] = await createUserAndToken(app.context.em, { type: UserType.ADMIN, emailConfirmed: true }, organisation)
 
     const res = await request(app.callback())
-      .post(`${baseUrl}`)
-      .send({ gameId: game.id, entities: [DataExportAvailableEntities.EVENTS] })
+      .post(`/games/${game.id}/data-exports`)
+      .send({ entities: [DataExportAvailableEntities.EVENTS] })
       .auth(token, { type: 'bearer' })
       .expect(200)
 
@@ -112,8 +110,8 @@ describe('Data export service - post', () => {
     const [token] = await createUserAndToken(app.context.em, { type: UserType.ADMIN, emailConfirmed: true }, organisation)
 
     const res = await request(app.callback())
-      .post(`${baseUrl}`)
-      .send({ gameId: game.id, entities: [DataExportAvailableEntities.LEADERBOARD_ENTRIES] })
+      .post(`/games/${game.id}/data-exports`)
+      .send({ entities: [DataExportAvailableEntities.LEADERBOARD_ENTRIES] })
       .auth(token, { type: 'bearer' })
       .expect(200)
 
@@ -125,8 +123,8 @@ describe('Data export service - post', () => {
     const [token] = await createUserAndToken(app.context.em, { type: UserType.ADMIN, emailConfirmed: true }, organisation)
 
     const res = await request(app.callback())
-      .post(`${baseUrl}`)
-      .send({ gameId: game.id, entities: [DataExportAvailableEntities.GAME_STATS] })
+      .post(`/games/${game.id}/data-exports`)
+      .send({ entities: [DataExportAvailableEntities.GAME_STATS] })
       .auth(token, { type: 'bearer' })
       .expect(200)
 
@@ -138,8 +136,8 @@ describe('Data export service - post', () => {
     const [token] = await createUserAndToken(app.context.em, { type: UserType.ADMIN, emailConfirmed: true }, organisation)
 
     const res = await request(app.callback())
-      .post(`${baseUrl}`)
-      .send({ gameId: game.id, entities: [DataExportAvailableEntities.PLAYER_GAME_STATS] })
+      .post(`/games/${game.id}/data-exports`)
+      .send({ entities: [DataExportAvailableEntities.PLAYER_GAME_STATS] })
       .auth(token, { type: 'bearer' })
       .expect(200)
 
@@ -151,8 +149,8 @@ describe('Data export service - post', () => {
     const [token] = await createUserAndToken(app.context.em, { type: UserType.ADMIN, emailConfirmed: true }, organisation)
 
     const res = await request(app.callback())
-      .post(`${baseUrl}`)
-      .send({ gameId: game.id, entities: [DataExportAvailableEntities.GAME_ACTIVITIES] })
+      .post(`/games/${game.id}/data-exports`)
+      .send({ entities: [DataExportAvailableEntities.GAME_ACTIVITIES] })
       .auth(token, { type: 'bearer' })
       .expect(200)
 
@@ -164,8 +162,8 @@ describe('Data export service - post', () => {
     const [token] = await createUserAndToken(app.context.em, { type: UserType.ADMIN }, organisation)
 
     const res = await request(app.callback())
-      .post(`${baseUrl}`)
-      .send({ gameId: game.id, entities: [DataExportAvailableEntities.PLAYER_ALIASES] })
+      .post(`/games/${game.id}/data-exports`)
+      .send({ entities: [DataExportAvailableEntities.PLAYER_ALIASES] })
       .auth(token, { type: 'bearer' })
       .expect(403)
 
@@ -177,14 +175,13 @@ describe('Data export service - post', () => {
     const [token] = await createUserAndToken(app.context.em, { type: UserType.ADMIN, emailConfirmed: true }, organisation)
 
     await request(app.callback())
-      .post(`${baseUrl}`)
-      .send({ gameId: game.id, entities: [] })
+      .post(`/games/${game.id}/data-exports`)
+      .send({ entities: [] })
       .auth(token, { type: 'bearer' })
       .expect(400)
 
     await request(app.callback())
-      .post(`${baseUrl}`)
-      .send({ gameId: game.id })
+      .post(`/games/${game.id}/data-exports`)
       .auth(token, { type: 'bearer' })
       .expect(400)
   })
@@ -194,8 +191,8 @@ describe('Data export service - post', () => {
     const [token] = await createUserAndToken(app.context.em, { type: UserType.ADMIN, emailConfirmed: true }, organisation)
 
     const res = await request(app.callback())
-      .post(`${baseUrl}`)
-      .send({ gameId: game.id, entities: [1, 2] })
+      .post(`/games/${game.id}/data-exports`)
+      .send({ entities: [1, 2] })
       .auth(token, { type: 'bearer' })
       .expect(400)
 
@@ -217,8 +214,8 @@ describe('Data export service - post', () => {
     await (<EntityManager>app.context.em).persistAndFlush([planAction, ...orgPlanActions])
 
     await request(app.callback())
-      .post(`${baseUrl}`)
-      .send({ gameId: game.id, entities: [DataExportAvailableEntities.GAME_STATS, DataExportAvailableEntities.GAME_ACTIVITIES] })
+      .post(`/games/${game.id}/data-exports`)
+      .send({ entities: [DataExportAvailableEntities.GAME_STATS, DataExportAvailableEntities.GAME_ACTIVITIES] })
       .auth(token, { type: 'bearer' })
       .expect(402)
   })
@@ -237,8 +234,8 @@ describe('Data export service - post', () => {
     await (<EntityManager>app.context.em).persistAndFlush([planAction, ...orgPlanActions])
 
     await request(app.callback())
-      .post(`${baseUrl}`)
-      .send({ gameId: game.id, entities: [DataExportAvailableEntities.GAME_STATS, DataExportAvailableEntities.GAME_ACTIVITIES] })
+      .post(`/games/${game.id}/data-exports`)
+      .send({ entities: [DataExportAvailableEntities.GAME_STATS, DataExportAvailableEntities.GAME_ACTIVITIES] })
       .auth(token, { type: 'bearer' })
       .expect(200)
   })
@@ -254,8 +251,8 @@ describe('Data export service - post', () => {
     await (<EntityManager>app.context.em).persistAndFlush([planAction, ...orgPlanActions])
 
     const res = await request(app.callback())
-      .post(`${baseUrl}`)
-      .send({ gameId: game.id, entities: [DataExportAvailableEntities.GAME_STATS, DataExportAvailableEntities.GAME_ACTIVITIES] })
+      .post(`/games/${game.id}/data-exports`)
+      .send({ entities: [DataExportAvailableEntities.GAME_STATS, DataExportAvailableEntities.GAME_ACTIVITIES] })
       .auth(token, { type: 'bearer' })
       .expect(402)
 

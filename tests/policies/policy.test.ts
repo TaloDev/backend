@@ -44,8 +44,8 @@ describe('Policy base class', () => {
     await (<EntityManager>app.context.em).removeAndFlush(user)
 
     await request(app.callback())
-      .get('/events')
-      .query({ gameId: game.id,startDate: '2021-01-01', endDate: '2021-01-02' })
+      .get(`/games/${game.id}/events`)
+      .query({ startDate: '2021-01-01', endDate: '2021-01-02' })
       .auth(token, { type: 'bearer' })
       .expect(401)
   })

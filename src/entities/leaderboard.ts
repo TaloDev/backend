@@ -1,4 +1,5 @@
-import { Collection, Entity, Enum, ManyToOne, OneToMany, PrimaryKey, Property } from '@mikro-orm/core'
+import { Collection, Entity, EntityManager, Enum, ManyToOne, OneToMany, PrimaryKey, Property } from '@mikro-orm/core'
+import { Request, Required, ValidationCondition } from 'koa-clay'
 import Game from './game'
 import LeaderboardEntry from './leaderboard-entry'
 
@@ -12,15 +13,47 @@ export default class Leaderboard {
   @PrimaryKey()
   id: number
 
+  @Required({
+    validation: async (val: unknown, req: Request): Promise<ValidationCondition[]> => {
+      const { gameId, id } = req.params
+      const em: EntityManager = req.ctx.em
+      const duplicateInternalName = await em.getRepository(Leaderboard).findOne({
+        id: { $ne: Number(id ?? null) },
+        internalName: val,
+        game: Number(gameId)
+      })
+
+      return [
+        {
+          check: !duplicateInternalName,
+          error: `A leaderboard with the internalName ${val} already exists`
+        }
+      ]
+    }
+  })
   @Property()
   internalName: string
 
+  @Required()
   @Property()
   name: string
 
+  @Required({
+    validation: async (val: unknown): Promise<ValidationCondition[]> => {
+      const keys = Object.keys(LeaderboardSortMode).map((key) => LeaderboardSortMode[key])
+
+      return [
+        {
+          check: keys.includes(val),
+          error: `Sort mode must be one of ${keys.join(', ')}`
+        }
+      ]
+    }
+  })
   @Enum(() => LeaderboardSortMode)
   sortMode: LeaderboardSortMode = LeaderboardSortMode.DESC
 
+  @Required()
   @Property()
   unique: boolean
 

@@ -1,9 +1,9 @@
 import { EntityManager } from '@mikro-orm/core'
 import { differenceInMinutes } from 'date-fns'
 import Koa from 'koa'
-import init from '../../src'
-import FailedJob from '../../src/entities/failed-job'
-import createQueue from '../../src/lib/queues/createQueue'
+import init from '../../../src'
+import FailedJob from '../../../src/entities/failed-job'
+import createQueue from '../../../src/lib/queues/createQueue'
 import waitForExpect from 'wait-for-expect'
 
 describe('Create queue', () => {

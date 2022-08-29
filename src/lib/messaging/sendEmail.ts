@@ -11,10 +11,10 @@ export default async (emailConfig: MailDataRequired): Promise<void> => {
   } catch (err) {
     Sentry.captureException(err, {
       extra: {
-        errors: err.response?.body.errors ?? err.message,
+        errors: err.response.body?.errors ?? err.message,
         to: emailConfig.to,
         subject: emailConfig.subject,
-        attachments: emailConfig.attachments?.map((attachment) => attachment.filename)
+        attachments: emailConfig.attachments.map((attachment) => attachment.filename)
       }
     })
 

@@ -23,8 +23,14 @@ import PricingPlan from './pricing-plan'
 import PricingPlanAction from './pricing-plan-action'
 import OrganisationPricingPlan from './organisation-pricing-plan'
 import OrganisationPricingPlanAction from './organisation-pricing-plan-action'
+import Integration from './integration'
+import SteamworksIntegrationEvent from './steamworks-integration-event'
+import SteamworksLeaderboardMapping from './steamworks-leaderboard-mapping'
 
 export default [
+  SteamworksLeaderboardMapping,
+  SteamworksIntegrationEvent,
+  Integration,
   OrganisationPricingPlanAction,
   OrganisationPricingPlan,
   PricingPlanAction,

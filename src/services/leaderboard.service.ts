@@ -1,8 +1,9 @@
 import { EntityManager } from '@mikro-orm/mysql'
 import { HasPermission, Routes, Service, Request, Response, Validate } from 'koa-clay'
-import GameActivity, { GameActivityType } from '../entities/game-activity'
+import { GameActivityType } from '../entities/game-activity'
 import Leaderboard from '../entities/leaderboard'
 import LeaderboardEntry from '../entities/leaderboard-entry'
+import triggerIntegrations from '../lib/integrations/triggerIntegrations'
 import createGameActivity from '../lib/logging/createGameActivity'
 import { devDataPlayerFilter } from '../middlewares/dev-data-middleware'
 import LeaderboardPolicy from '../policies/leaderboard.policy'
@@ -86,6 +87,10 @@ export default class LeaderboardService extends Service {
     })
 
     await em.persistAndFlush(leaderboard)
+
+    await triggerIntegrations(em, leaderboard.game, (integration) => {
+      return integration.handleLeaderboardCreated(em, leaderboard)
+    })
 
     return {
       status: 200,
@@ -178,6 +183,10 @@ export default class LeaderboardService extends Service {
           }
         }
       })
+
+      await triggerIntegrations(em, entry.leaderboard.game, (integration) => {
+        return integration.handleLeaderboardEntryVisibilityToggled(em, entry)
+      })
     }
 
     await em.flush()
@@ -222,6 +231,10 @@ export default class LeaderboardService extends Service {
 
     await em.flush()
 
+    await triggerIntegrations(em, leaderboard.game, (integration) => {
+      return integration.handleLeaderboardUpdated(em, leaderboard)
+    })
+
     return {
       status: 200,
       body: {
@@ -234,16 +247,21 @@ export default class LeaderboardService extends Service {
   async delete(req: Request): Promise<Response> {
     const em: EntityManager = req.ctx.em
 
+    const leaderboardInternalName = req.ctx.state.leaderboard.internalName
     await createGameActivity(em, {
       user: req.ctx.state.user,
       game: req.ctx.state.leaderboard.game,
       type: GameActivityType.LEADERBOARD_DELETED,
       extra: {
-        leaderboardInternalName: req.ctx.state.leaderboard.internalName
+        leaderboardInternalName
       }
     })
 
-    await em.getRepository(GameActivity).removeAndFlush(req.ctx.state.leaderboard)
+    await em.removeAndFlush(req.ctx.state.leaderboard)
+
+    await triggerIntegrations(em, req.ctx.state.game, (integration) => {
+      return integration.handleLeaderboardDeleted(em, leaderboardInternalName)
+    })
 
     return {
       status: 204

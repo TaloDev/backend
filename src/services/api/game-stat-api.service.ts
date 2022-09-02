@@ -4,6 +4,7 @@ import { HasPermission, Request, Response, Routes, Validate, Docs } from 'koa-cl
 import GameStatAPIDocs from '../../docs/game-stat-api.docs'
 import GameStat from '../../entities/game-stat'
 import PlayerGameStat from '../../entities/player-game-stat'
+import triggerIntegrations from '../../lib/integrations/triggerIntegrations'
 import GameStatAPIPolicy from '../../policies/api/game-stat-api.policy'
 import APIService from './api-service'
 
@@ -50,11 +51,15 @@ export default class GameStatAPIService extends APIService {
 
     if (!playerStat) {
       playerStat = new PlayerGameStat(req.ctx.state.player, req.ctx.state.stat)
-      await em.persist(playerStat)
+      em.persist(playerStat)
     }
 
     playerStat.value += change
     if (stat.global) stat.globalValue += change
+
+    await triggerIntegrations(em, stat.game, (integration) => {
+      return integration.handleStatUpdated(em, playerStat)
+    })
 
     await em.flush()
 

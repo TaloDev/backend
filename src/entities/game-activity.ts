@@ -1,4 +1,5 @@
 import { Entity, Enum, ManyToOne, PrimaryKey, Property } from '@mikro-orm/core'
+import upperFirst from '../lib/lang/upperFirst'
 import Game from './game'
 import User from './user'
 
@@ -16,7 +17,12 @@ export enum GameActivityType {
   GAME_STAT_DELETED,
   INVITE_CREATED,
   INVITE_ACCEPTED,
-  DATA_EXPORT_REQUESTED
+  DATA_EXPORT_REQUESTED,
+  GAME_INTEGRATION_ADDED,
+  GAME_INTEGRATION_UPDATED,
+  GAME_INTEGRATION_DELETED,
+  GAME_INTEGRATION_STEAMWORKS_LEADERBOARDS_SYNCED,
+  GAME_INTEGRATION_STEAMWORKS_STATS_SYNCED,
 }
 
 @Entity()
@@ -80,6 +86,16 @@ export default class GameActivity {
         return `${this.user.username} joined the organisation`
       case GameActivityType.DATA_EXPORT_REQUESTED:
         return `${this.user.username} requested a data export`
+      case GameActivityType.GAME_INTEGRATION_ADDED:
+        return `${this.user.username} enabled the ${upperFirst(this.extra.integrationType as string)}} integration`
+      case GameActivityType.GAME_INTEGRATION_UPDATED:
+        return `${this.user.username} updated the ${upperFirst(this.extra.integrationType as string)} integration`
+      case GameActivityType.GAME_INTEGRATION_DELETED:
+        return `${this.user.username} disabled the ${upperFirst(this.extra.integrationType as string)} integration`
+      case GameActivityType.GAME_INTEGRATION_STEAMWORKS_LEADERBOARDS_SYNCED:
+        return `${this.user.username} initiated a manual sync for Steamworks leaderboards`
+      case GameActivityType.GAME_INTEGRATION_STEAMWORKS_STATS_SYNCED:
+        return `${this.user.username} initiated a manual sync for Steamworks stats`
       default:
         return ''
     }

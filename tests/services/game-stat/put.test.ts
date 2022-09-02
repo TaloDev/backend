@@ -9,6 +9,7 @@ import Game from '../../../src/entities/game'
 import GameStatFactory from '../../fixtures/GameStatFactory'
 import GameFactory from '../../fixtures/GameFactory'
 import GameActivity, { GameActivityType } from '../../../src/entities/game-activity'
+import casual from 'casual'
 
 describe('Game stat service - put', () => {
   let app: Koa
@@ -135,13 +136,15 @@ describe('Game stat service - put', () => {
     const stat = await new GameStatFactory([game]).one()
     await (<EntityManager>app.context.em).persistAndFlush(stat)
 
+    const newMax = stat.maxValue + 80
+
     const res = await request(app.callback())
       .put(`/games/${game.id}/game-stats/${stat.id}`)
-      .send({ maxValue: 300, internalName: stat.internalName, name: stat.name, global: stat.global, maxChange: stat.maxChange, minValue: stat.minValue, defaultValue: stat.defaultValue, minTimeBetweenUpdates: stat.minTimeBetweenUpdates })
+      .send({ maxValue: newMax, internalName: stat.internalName, name: stat.name, global: stat.global, maxChange: stat.maxChange, minValue: stat.minValue, defaultValue: stat.defaultValue, minTimeBetweenUpdates: stat.minTimeBetweenUpdates })
       .auth(token, { type: 'bearer' })
       .expect(200)
 
-    expect(res.body.stat.maxValue).toBe(300)
+    expect(res.body.stat.maxValue).toBe(newMax)
 
     const activity = await (<EntityManager>app.context.em).getRepository(GameActivity).findOne({
       type: GameActivityType.GAME_STAT_UPDATED,
@@ -151,7 +154,7 @@ describe('Game stat service - put', () => {
     })
 
     expect(activity.extra.display).toStrictEqual({
-      'Updated properties': 'maxValue: 300'
+      'Updated properties': `maxValue: ${newMax}`
     })
   })
 
@@ -159,13 +162,15 @@ describe('Game stat service - put', () => {
     const stat = await new GameStatFactory([game]).one()
     await (<EntityManager>app.context.em).persistAndFlush(stat)
 
+    const defaultValue = casual.integer(stat.minValue, stat.maxValue)
+
     const res = await request(app.callback())
       .put(`/games/${game.id}/game-stats/${stat.id}`)
-      .send({ defaultValue: 3, internalName: stat.internalName, name: stat.name, global: stat.global, maxChange: stat.maxChange, minValue: stat.minValue, maxValue: stat.maxValue, minTimeBetweenUpdates: stat.minTimeBetweenUpdates })
+      .send({ defaultValue, internalName: stat.internalName, name: stat.name, global: stat.global, maxChange: stat.maxChange, minValue: stat.minValue, maxValue: stat.maxValue, minTimeBetweenUpdates: stat.minTimeBetweenUpdates })
       .auth(token, { type: 'bearer' })
       .expect(200)
 
-    expect(res.body.stat.defaultValue).toBe(3)
+    expect(res.body.stat.defaultValue).toBe(defaultValue)
 
     const activity = await (<EntityManager>app.context.em).getRepository(GameActivity).findOne({
       type: GameActivityType.GAME_STAT_UPDATED,
@@ -175,7 +180,7 @@ describe('Game stat service - put', () => {
     })
 
     expect(activity.extra.display).toStrictEqual({
-      'Updated properties': 'defaultValue: 3'
+      'Updated properties': `defaultValue: ${defaultValue}`
     })
   })
 

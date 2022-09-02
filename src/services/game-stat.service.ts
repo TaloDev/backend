@@ -119,7 +119,7 @@ export default class GameStatService extends Service {
       }
     })
 
-    await em.getRepository(GameStat).removeAndFlush(req.ctx.state.stat)
+    await em.removeAndFlush(req.ctx.state.stat)
 
     return {
       status: 204

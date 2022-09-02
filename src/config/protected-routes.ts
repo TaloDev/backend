@@ -13,6 +13,7 @@ import HeadlineService from '../services/headline.service'
 import PlayerService from '../services/player.service'
 import UserService from '../services/user.service'
 import BillingService from '../services/billing.service'
+import IntegrationService from '../services/integration.service'
 
 export default (app: Koa) => {
   app.use(async (ctx: Context, next: Next): Promise<void> => {
@@ -40,6 +41,7 @@ export default (app: Koa) => {
   app.use(service('/games/:gameId/events', new EventService(), serviceOpts))
   app.use(service('/games/:gameId/players', new PlayerService(), serviceOpts))
   app.use(service('/games/:gameId/headlines', new HeadlineService(), serviceOpts))
+  app.use(service('/games/:gameId/integrations', new IntegrationService(), serviceOpts))
   app.use(service('/games', new GameService(), serviceOpts))
   app.use(service('/users', new UserService(), serviceOpts))
 }

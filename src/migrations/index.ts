@@ -13,6 +13,9 @@ import { AddUsernameColumn } from './20220402004932AddUsernameColumn'
 import { CreateInvitesTable } from './20220420141136CreateInvitesTable'
 import { MakeGameActivityUserNullable } from './20220505190243MakeGameActivityUserNullable'
 import { CreatePricingPlansTable } from './20220603123117CreatePricingPlansTable'
+import { CreateIntegrationsTable } from './20220717215205CreateIntegrationsTable'
+import { CreateSteamIntegrationTables } from './20220723122554CreateSteamIntegrationTables'
+import { PlayerAliasServiceUseEnum } from './20220730134520PlayerAliasServiceUseEnum'
 
 export default [
   {
@@ -74,5 +77,17 @@ export default [
   {
     name: 'CreatePricingPlansTable',
     class: CreatePricingPlansTable
+  },
+  {
+    name: 'CreateIntegrationsTable',
+    class: CreateIntegrationsTable
+  },
+  {
+    name: 'CreateSteamIntegrationTables',
+    class: CreateSteamIntegrationTables
+  },
+  {
+    name: 'PlayerAliasServiceUseEnum',
+    class: PlayerAliasServiceUseEnum
   }
 ]

@@ -5,6 +5,7 @@ import { EntityManager } from '@mikro-orm/mysql'
 import LeaderboardEntry from '../../entities/leaderboard-entry'
 import Leaderboard, { LeaderboardSortMode } from '../../entities/leaderboard'
 import LeaderboardAPIDocs from '../../docs/leaderboard-api.docs'
+import triggerIntegrations from '../../lib/integrations/triggerIntegrations'
 
 @Routes([
   {
@@ -73,6 +74,10 @@ export default class LeaderboardAPIService extends APIService {
     } catch (err) {
       entry = await this.createEntry(req)
     }
+
+    await triggerIntegrations(em, leaderboard.game, (integration) => {
+      return integration.handleLeaderboardEntryCreated(em, entry)
+    })
 
     const entries = await em.createQueryBuilder(LeaderboardEntry, 'le')
       .where({ leaderboard: entry.leaderboard })

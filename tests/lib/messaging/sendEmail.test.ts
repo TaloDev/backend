@@ -1,6 +1,6 @@
-import ConfirmEmail from '../../src/emails/confirm-email-mail'
-import sendEmail from '../../src/lib/messaging/sendEmail'
-import UserFactory from '../fixtures/UserFactory'
+import ConfirmEmail from '../../../src/emails/confirm-email-mail'
+import sendEmail from '../../../src/lib/messaging/sendEmail'
+import UserFactory from '../../fixtures/UserFactory'
 
 describe('Send email', () => {
   it('should gracefully handle errors', async () => {
@@ -9,7 +9,18 @@ describe('Send email', () => {
     email.subject = 'fail'
 
     try {
-      await sendEmail(email.getConfig())
+      await sendEmail({
+        ...email.getConfig(),
+        attachments: [
+          {
+            content: 'file',
+            filename: 'file.zip',
+            type: 'application/zip',
+            disposition: 'attachment',
+            contentId: 'file.zip'
+          }
+        ]
+      })
     } catch (err) {
       expect(err.status).toBe(403)
     }

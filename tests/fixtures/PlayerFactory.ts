@@ -20,6 +20,8 @@ export default class PlayerFactory extends Factory<Player> {
     this.register('seen this week', this.seenThisWeek)
     this.register('created this week', this.createdThisWeek)
     this.register('dev build', this.devBuild)
+    this.register('with steam alias', this.withSteamAlias)
+    this.register('with username alias', this.withSteamAlias)
 
     this.availableGames = availableGames
   }
@@ -81,5 +83,19 @@ export default class PlayerFactory extends Factory<Player> {
   protected devBuild(player: Player): Partial<Player> {
     player.props.push(new Prop('META_DEV_BUILD', '1'))
     return player
+  }
+
+  protected async withSteamAlias(player: Player): Promise<Partial<Player>> {
+    const alias = await new PlayerAliasFactory().state('steam').with(() => ({ player })).one()
+    return {
+      aliases: new Collection<PlayerAlias>(player, [alias])
+    }
+  }
+
+  protected async withUsernameAlias(player: Player): Promise<Partial<Player>> {
+    const alias = await new PlayerAliasFactory().state('username').with(() => ({ player })).one()
+    return {
+      aliases: new Collection<PlayerAlias>(player, [alias])
+    }
   }
 }

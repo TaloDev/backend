@@ -9,7 +9,7 @@ import createUserAndToken from '../../utils/createUserAndToken'
 import createOrganisationAndGame from '../../utils/createOrganisationAndGame'
 import userPermissionProvider from '../../utils/userPermissionProvider'
 
-describe('Game activitie service - index', () => {
+describe('Game activity service - index', () => {
   let app: Koa
 
   beforeAll(async () => {

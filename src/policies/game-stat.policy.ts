@@ -17,9 +17,8 @@ export default class GameStatPolicy extends Policy {
   }
 
   async getStat(id: number): Promise<GameStat> {
-    const stat = await this.em.getRepository(GameStat).findOne(Number(id), { populate: ['game'] })
-    this.ctx.state.stat = stat
-    return stat
+    this.ctx.state.stat = await this.em.getRepository(GameStat).findOne(Number(id), { populate: ['game'] })
+    return this.ctx.state.stat
   }
 
   async put(req: Request): Promise<PolicyResponse> {

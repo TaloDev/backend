@@ -1,4 +1,4 @@
-FROM node:lts-alpine AS base
+FROM node:lts AS base
 WORKDIR /usr/backend
 COPY tsconfig.json .
 COPY package.json .

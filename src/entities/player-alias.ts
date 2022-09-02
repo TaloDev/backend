@@ -1,13 +1,21 @@
-import { Cascade, Entity, ManyToOne, PrimaryKey, Property } from '@mikro-orm/core'
+import { Cascade, Entity, Enum, ManyToOne, PrimaryKey, Property } from '@mikro-orm/core'
 import Player from './player'
+
+export enum PlayerAliasService {
+  STEAM = 'steam',
+  EPIC = 'epic',
+  USERNAME = 'username',
+  EMAIL = 'email',
+  CUSTOM = 'custom'
+}
 
 @Entity()
 export default class PlayerAlias {
   @PrimaryKey()
   id: number
 
-  @Property()
-  service: string
+  @Enum(() => PlayerAliasService)
+  service: PlayerAliasService
 
   @Property()
   identifier: string

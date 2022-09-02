@@ -17,7 +17,7 @@ export default class GameStatFactory extends Factory<GameStat> {
   protected base(): Partial<GameStat> {
     const global = casual.boolean
     const minValue = casual.boolean ? casual.integer(-100, 0) : null
-    const maxValue = casual.boolean ? casual.integer(minValue, 100) : null
+    const maxValue = casual.boolean ? casual.integer(minValue + 1, 100) : null
     const defaultValue = casual.integer(minValue ?? 0, maxValue ?? 100)
 
     return {
@@ -29,7 +29,7 @@ export default class GameStatFactory extends Factory<GameStat> {
       maxValue,
       defaultValue,
       globalValue: defaultValue,
-      maxChange: casual.integer(1, 100),
+      maxChange: casual.integer(0, 999),
       minTimeBetweenUpdates: casual.integer(0, 5)
     }
   }

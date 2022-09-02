@@ -1,8 +1,6 @@
 import { Entity, ManyToOne, PrimaryKey, Property } from '@mikro-orm/core'
 import User from './user'
-import crypto from 'crypto'
-
-const IV_LENGTH = 16
+import { decrypt, encrypt } from '../lib/crypto/string-encryption'
 
 @Entity()
 export default class UserRecoveryCode {
@@ -30,24 +28,11 @@ export default class UserRecoveryCode {
       code += characters.charAt(Math.floor(Math.random() * characters.length))
     }
 
-    const iv = Buffer.from(crypto.randomBytes(IV_LENGTH)).toString('hex').slice(0, IV_LENGTH)
-    const cipher = crypto.createCipheriv('aes-256-cbc', Buffer.from(process.env.RECOVERY_CODES_SECRET), iv)
-    let encrypted = cipher.update(code)
-
-    encrypted = Buffer.concat([encrypted, cipher.final()])
-    return iv + ':' + encrypted.toString('hex')
+    return encrypt(code, process.env.RECOVERY_CODES_SECRET)
   }
 
   getPlainCode(): string {
-    const textParts: string[] = this.code.split(':')
-
-    const iv = Buffer.from(textParts.shift(), 'binary')
-    const encryptedText = Buffer.from(textParts.join(':'), 'hex')
-    const decipher = crypto.createDecipheriv('aes-256-cbc', Buffer.from(process.env.RECOVERY_CODES_SECRET), iv)
-    let decrypted = decipher.update(encryptedText)
-
-    decrypted = Buffer.concat([decrypted, decipher.final()])
-    return decrypted.toString()
+    return decrypt(this.code, process.env.RECOVERY_CODES_SECRET)
   }
 
   toJSON() {

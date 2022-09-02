@@ -20,13 +20,13 @@ export default async (ctx: Context, next: Next) => {
 
   ctx.__sentry_transaction = transaction
 
-  // We put the transaction on the scope so users can attach children to it
+  // we put the transaction on the scope so users can attach children to it
   Sentry.getCurrentHub().configureScope((scope) => {
     scope.setSpan(transaction)
   })
 
   ctx.res.on('finish', () => {
-    // Push `transaction.finish` to the next event loop so open spans have a chance to finish before the transaction closes
+    // push `transaction.finish` to the next event loop so open spans have a chance to finish before the transaction closes
     setImmediate(() => {
       if (ctx.state.matchedRoute) {
         transaction.setName(`${reqMethod} ${ctx.state.matchedRoute}`)

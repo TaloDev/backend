@@ -3,8 +3,8 @@ import { Context, Next } from 'koa'
 import { extractTraceparentData, stripUrlQueryAndFragment } from '@sentry/tracing'
 
 export default async (ctx: Context, next: Next) => {
-  const reqMethod = (ctx.method || '').toUpperCase()
-  const reqUrl = ctx.url && stripUrlQueryAndFragment(ctx.url)
+  const reqMethod = ctx.method.toUpperCase()
+  const reqUrl = stripUrlQueryAndFragment(ctx.url)
 
   // connect to trace of upstream app
   let traceparentData
@@ -28,10 +28,8 @@ export default async (ctx: Context, next: Next) => {
   ctx.res.on('finish', () => {
     // Push `transaction.finish` to the next event loop so open spans have a chance to finish before the transaction closes
     setImmediate(() => {
-      // if using koa router, a nicer way to capture transaction using the matched route
-      if (ctx._matchedRoute) {
-        const mountPath = ctx.mountPath || ''
-        transaction.setName(`${reqMethod} ${mountPath}${ctx._matchedRoute}`)
+      if (ctx.state.matchedRoute) {
+        transaction.setName(`${reqMethod} ${ctx.state.matchedRoute}`)
       }
       transaction.setHttpStatus(ctx.status)
       transaction.finish()

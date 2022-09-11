@@ -1,4 +1,4 @@
-import { EntityManager } from '@mikro-orm/core'
+import { Collection, EntityManager } from '@mikro-orm/core'
 import Koa from 'koa'
 import init from '../../../src/index'
 import request from 'supertest'
@@ -9,6 +9,7 @@ import UserFactory from '../../fixtures/UserFactory'
 import OrganisationFactory from '../../fixtures/OrganisationFactory'
 import PlayerFactory from '../../fixtures/PlayerFactory'
 import Player from '../../../src/entities/player'
+import PlayerProp from '../../../src/entities/player-prop'
 
 describe('Player service - index', () => {
   let app: Koa
@@ -68,13 +69,10 @@ describe('Player service - index', () => {
   })
 
   it('should filter players by props', async () => {
-    const players = await new PlayerFactory([validGame]).with(() => ({
-      props: [
-        {
-          key: 'guildName',
-          value: 'The Best Guild'
-        }
-      ]
+    const players = await new PlayerFactory([validGame]).with((player) => ({
+      props: new Collection<PlayerProp>(player, [
+        new PlayerProp(player, 'guildName', 'The Best Guild')
+      ])
     })).many(2)
 
     const otherPlayers = await new PlayerFactory([validGame]).many(3)

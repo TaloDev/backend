@@ -41,7 +41,7 @@ export default class Event {
 
     this.props.forEach((prop) => {
       if (eventMetaProps.includes(prop.key)) {
-        this.playerAlias.player.props.push(prop)
+        this.playerAlias.player.addProp(prop.key, prop.value)
       }
     })
   }

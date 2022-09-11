@@ -1,4 +1,4 @@
-import { EntityManager, FilterQuery } from '@mikro-orm/core'
+import { FilterQuery } from '@mikro-orm/core'
 import { endOfDay, isSameDay } from 'date-fns'
 import { Service, Request, Response, Validate, HasPermission, Routes } from 'koa-clay'
 import groupBy from 'lodash.groupby'
@@ -7,6 +7,7 @@ import Player from '../entities/player'
 import HeadlinePolicy from '../policies/headline.policy'
 import dateValidationSchema from '../lib/dates/dateValidationSchema'
 import { devDataPlayerFilter } from '../middlewares/dev-data-middleware'
+import { EntityManager } from '@mikro-orm/mysql'
 
 @Routes([
   {
@@ -46,10 +47,7 @@ export default class HeadlineService extends Service {
     }
 
     if (!req.ctx.state.includeDevData) {
-      where = {
-        ...where,
-        ...devDataPlayerFilter
-      }
+      where = Object.assign(where, devDataPlayerFilter(em))
     }
 
     const players = await em.getRepository(Player).find(where)
@@ -80,10 +78,7 @@ export default class HeadlineService extends Service {
     }
 
     if (!req.ctx.state.includeDevData) {
-      where = {
-        ...where,
-        ...devDataPlayerFilter
-      }
+      where = Object.assign(where, devDataPlayerFilter(em))
     }
 
     let players = await em.getRepository(Player).find(where)
@@ -113,7 +108,7 @@ export default class HeadlineService extends Service {
 
     if (!req.ctx.state.includeDevData) {
       where.playerAlias = {
-        player: devDataPlayerFilter
+        player: devDataPlayerFilter(em)
       }
     }
 
@@ -143,7 +138,7 @@ export default class HeadlineService extends Service {
 
     if (!req.ctx.state.includeDevData) {
       where.playerAlias = {
-        player: devDataPlayerFilter
+        player: devDataPlayerFilter(em)
       }
     }
 

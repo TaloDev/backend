@@ -7,6 +7,7 @@ import PlayerAPIPolicy from '../../policies/api/player-api.policy'
 import APIService from './api-service'
 import uniqWith from 'lodash.uniqwith'
 import PlayerAPIDocs from '../../docs/player-api.docs'
+import PlayerProp from '../../entities/player-prop'
 
 @Routes([
   {
@@ -126,12 +127,12 @@ export default class PlayerAPIService extends APIService {
 
     player2Aliases.forEach((alias) => alias.player = player1)
 
-    const mergedProps = uniqWith([
+    const mergedProps: PlayerProp[] = uniqWith([
       ...player2.props,
       ...player1.props
     ], (a, b) => a.key === b.key)
 
-    player1.props = Array.from(mergedProps)
+    player1.props.set(Array.from(mergedProps))
 
     await em.removeAndFlush(player2)
 

@@ -16,6 +16,7 @@ import { CreatePricingPlansTable } from './20220603123117CreatePricingPlansTable
 import { CreateIntegrationsTable } from './20220717215205CreateIntegrationsTable'
 import { CreateSteamIntegrationTables } from './20220723122554CreateSteamIntegrationTables'
 import { PlayerAliasServiceUseEnum } from './20220730134520PlayerAliasServiceUseEnum'
+import { CreatePlayerPropsTable } from './20220910200720CreatePlayerPropsTable'
 
 export default [
   {
@@ -89,5 +90,9 @@ export default [
   {
     name: 'PlayerAliasServiceUseEnum',
     class: PlayerAliasServiceUseEnum
+  },
+  {
+    name: 'CreatePlayerPropsTable',
+    class: CreatePlayerPropsTable
   }
 ]

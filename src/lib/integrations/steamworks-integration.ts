@@ -8,7 +8,6 @@ import LeaderboardEntry from '../../entities/leaderboard-entry'
 import SteamworksLeaderboardMapping from '../../entities/steamworks-leaderboard-mapping'
 import PlayerAlias, { PlayerAliasService } from '../../entities/player-alias'
 import Player from '../../entities/player'
-import Prop from '../../entities/prop'
 import { performance } from 'perf_hooks'
 import GameStat from '../../entities/game-stat'
 import PlayerGameStat from '../../entities/player-game-stat'
@@ -338,7 +337,7 @@ export async function syncSteamworksLeaderboards(em: EntityManager, integration:
         // if the alias doesnt exist then neither does the entry, so create both
       } else {
         const player = new Player(integration.game)
-        player.props.push(new Prop('importedFromSteam', new Date().toISOString()))
+        player.addProp('importedFromSteam', new Date().toISOString())
 
         const playerAlias = new PlayerAlias()
         playerAlias.player = player

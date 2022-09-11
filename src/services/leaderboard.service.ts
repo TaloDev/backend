@@ -126,7 +126,7 @@ export default class LeaderboardService extends Service {
     if (!req.ctx.state.includeDevData) {
       baseQuery = baseQuery.andWhere({
         playerAlias: {
-          player: devDataPlayerFilter
+          player: devDataPlayerFilter(em)
         }
       })
     }

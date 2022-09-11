@@ -1,4 +1,4 @@
-import { EntityManager } from '@mikro-orm/core'
+import { Collection, EntityManager } from '@mikro-orm/core'
 import Koa from 'koa'
 import init from '../../../src/index'
 import User from '../../../src/entities/user'
@@ -18,6 +18,7 @@ import OrganisationPricingPlanActionFactory from '../../fixtures/OrganisationPri
 import { PricingPlanActionType } from '../../../src/entities/pricing-plan-action'
 import OrganisationPricingPlanAction from '../../../src/entities/organisation-pricing-plan-action'
 import PricingPlanFactory from '../../fixtures/PricingPlanFactory'
+import PlayerProp from '../../../src/entities/player-prop'
 
 describe('Data export service - generation', () => {
   let app: Koa
@@ -60,11 +61,11 @@ describe('Data export service - generation', () => {
     const service = new DataExportService()
     const proto = Object.getPrototypeOf(service)
 
-    const player = await new PlayerFactory([game]).with(() => ({
-      props: [
-        { key: 'level', value: '70' },
-        { key: 'guildName', value: 'The Best Guild' }
-      ]
+    const player = await new PlayerFactory([game]).with((player) => ({
+      props: new Collection<PlayerProp>(player, [
+        new PlayerProp(player, 'level', '70'),
+        new PlayerProp(player, 'guildName', 'The Best Guild')
+      ])
     })).one()
 
     let val: string = proto.transformColumn('props.level', player)

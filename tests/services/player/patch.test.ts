@@ -1,4 +1,4 @@
-import { EntityManager } from '@mikro-orm/core'
+import { Collection, EntityManager } from '@mikro-orm/core'
 import Koa from 'koa'
 import init from '../../../src/index'
 import request from 'supertest'
@@ -8,6 +8,7 @@ import GameActivity, { GameActivityType } from '../../../src/entities/game-activ
 import userPermissionProvider from '../../utils/userPermissionProvider'
 import createOrganisationAndGame from '../../utils/createOrganisationAndGame'
 import createUserAndToken from '../../utils/createUserAndToken'
+import PlayerProp from '../../../src/entities/player-prop'
 
 describe('Player service - patch', () => {
   let app: Koa
@@ -27,17 +28,11 @@ describe('Player service - patch', () => {
     const [organisation, game] = await createOrganisationAndGame(app.context.em)
     const [token] = await createUserAndToken(app.context.em, { type }, organisation)
 
-    const player = await new PlayerFactory([game]).with(() => ({
-      props: [
-        {
-          key: 'collectibles',
-          value: '0'
-        },
-        {
-          key: 'zonesExplored',
-          value: '1'
-        }
-      ]
+    const player = await new PlayerFactory([game]).with((player) => ({
+      props: new Collection<PlayerProp>(player, [
+        new PlayerProp(player, 'collectibles', '0'),
+        new PlayerProp(player, 'zonesExplored', '1')
+      ])
     })).one()
 
     await (<EntityManager>app.context.em).persistAndFlush(player)
@@ -86,17 +81,11 @@ describe('Player service - patch', () => {
     const [organisation, game] = await createOrganisationAndGame(app.context.em)
     const [token] = await createUserAndToken(app.context.em, {}, organisation)
 
-    const player = await new PlayerFactory([game]).with(() => ({
-      props: [
-        {
-          key: 'collectibles',
-          value: '1'
-        },
-        {
-          key: 'zonesExplored',
-          value: '1'
-        }
-      ]
+    const player = await new PlayerFactory([game]).with((player) => ({
+      props: new Collection<PlayerProp>(player, [
+        new PlayerProp(player, 'collectibles', '1'),
+        new PlayerProp(player, 'zonesExplored', '1')
+      ])
     })).one()
 
     await (<EntityManager>app.context.em).persistAndFlush(player)
@@ -197,7 +186,9 @@ describe('Player service - patch', () => {
     const [organisation, game] = await createOrganisationAndGame(app.context.em)
     const [token] = await createUserAndToken(app.context.em, {}, organisation)
 
-    const player = await new PlayerFactory([game]).with(() => ({ props: [] })).one()
+    const player = await new PlayerFactory([game]).with((player) => ({
+      props: new Collection<PlayerProp>(player, [])
+    })).one()
     await (<EntityManager>app.context.em).persistAndFlush(player)
 
     const res = await request(app.callback())

@@ -12,7 +12,7 @@ import createGameActivity from '../lib/logging/createGameActivity'
 import { GameActivityType } from '../entities/game-activity'
 import PlayerGameStat from '../entities/player-game-stat'
 import { devDataPlayerFilter } from '../middlewares/dev-data-middleware'
-import Prop from '../entities/prop'
+import PlayerProp from '../entities/player-prop'
 
 const itemsPerPage = 25
 
@@ -71,11 +71,11 @@ export default class PlayerService extends Service {
     }
 
     if (props) {
-      player.props = sanitiseProps(props)
+      player.setProps(props)
     }
 
     if (req.headers['x-talo-dev-build'] === '1') {
-      player.props.push(new Prop('META_DEV_BUILD', '1'))
+      player.addProp('META_DEV_BUILD', '1')
     }
 
     await em.persistAndFlush(player)
@@ -93,11 +93,19 @@ export default class PlayerService extends Service {
     const { search, page } = req.query
     const em: EntityManager = req.ctx.em
 
-    let baseQuery = em.createQueryBuilder(Player, 'p')
+    let baseQuery = em.qb(Player, 'p')
 
     if (search) {
       baseQuery = baseQuery
-        .where('json_extract(props, \'$[*].value\') like ?', [`%${search}%`])
+        .where({
+          props: {
+            $in: em.qb(PlayerProp).select('id').where({
+              value: {
+                $like: `%${search}%`
+              }
+            }).getKnexQuery()
+          }
+        })
         .orWhere({
           aliases: {
             identifier: {
@@ -113,7 +121,7 @@ export default class PlayerService extends Service {
     }
 
     if (!req.ctx.state.includeDevData) {
-      baseQuery = baseQuery.andWhere(devDataPlayerFilter)
+      baseQuery = baseQuery.andWhere(devDataPlayerFilter(em))
     }
 
     baseQuery = baseQuery.andWhere({ game: req.ctx.state.game })
@@ -164,7 +172,7 @@ export default class PlayerService extends Service {
         ...player.props
       ], (a, b) => a.key === b.key)
 
-      player.props = sanitiseProps(mergedProps, true)
+      player.setProps(sanitiseProps(mergedProps, true))
     }
 
     if (req.ctx.state.user.api !== true) {

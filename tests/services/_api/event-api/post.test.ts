@@ -9,6 +9,7 @@ import { createToken } from '../../../../src/services/api-key.service'
 import UserFactory from '../../../fixtures/UserFactory'
 import PlayerFactory from '../../../fixtures/PlayerFactory'
 import GameFactory from '../../../fixtures/GameFactory'
+import PlayerProp from '../../../../src/entities/player-prop'
 
 const baseUrl = '/v1/events'
 
@@ -244,8 +245,12 @@ describe('Event API service - post', () => {
       .auth(token, { type: 'bearer' })
       .expect(200)
 
-    const player = await (<EntityManager>app.context.em).getRepository(Player).findOne(validPlayer.id, { refresh: true })
-    expect(player.props).toContainEqual({ key: 'META_OS', value: 'macOS' })
+    const prop = await (<EntityManager>app.context.em).getRepository(PlayerProp).findOne({
+      player: validPlayer.id,
+      key: 'META_OS',
+      value: 'macOS'
+    })
+    expect(prop).toBeTruthy()
   })
 
   it('should strip out event props that start with META_ but aren\'t in the meta props list', async () => {

@@ -878,15 +878,6 @@
           "nullable": false,
           "mappedType": "string"
         },
-        "props": {
-          "name": "props",
-          "type": "json",
-          "unsigned": false,
-          "autoincrement": false,
-          "primary": false,
-          "nullable": false,
-          "mappedType": "json"
-        },
         "game_id": {
           "name": "game_id",
           "type": "int",
@@ -2821,6 +2812,82 @@
           ],
           "referencedTableName": "leaderboard",
           "deleteRule": "cascade"
+        }
+      }
+    },
+    {
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "int",
+          "unsigned": true,
+          "autoincrement": true,
+          "primary": true,
+          "nullable": false,
+          "mappedType": "integer"
+        },
+        "player_id": {
+          "name": "player_id",
+          "type": "varchar(255)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "mappedType": "string"
+        },
+        "key": {
+          "name": "key",
+          "type": "varchar(255)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "mappedType": "string"
+        },
+        "value": {
+          "name": "value",
+          "type": "varchar(255)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "mappedType": "string"
+        }
+      },
+      "name": "player_prop",
+      "indexes": [
+        {
+          "columnNames": [
+            "player_id"
+          ],
+          "composite": false,
+          "keyName": "player_prop_player_id_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "keyName": "PRIMARY",
+          "columnNames": [
+            "id"
+          ],
+          "composite": false,
+          "primary": true,
+          "unique": true
+        }
+      ],
+      "checks": [],
+      "foreignKeys": {
+        "player_prop_player_id_foreign": {
+          "constraintName": "player_prop_player_id_foreign",
+          "columnNames": [
+            "player_id"
+          ],
+          "localTableName": "player_prop",
+          "referencedColumnNames": [
+            "id"
+          ],
+          "referencedTableName": "player",
+          "updateRule": "cascade"
         }
       }
     }

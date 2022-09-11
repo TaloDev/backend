@@ -6,7 +6,7 @@ import PlayerAliasFactory from './PlayerAliasFactory'
 import { Collection } from '@mikro-orm/core'
 import PlayerAlias from '../../src/entities/player-alias'
 import { sub } from 'date-fns'
-import Prop from '../../src/entities/prop'
+import PlayerProp from '../../src/entities/player-prop'
 
 export default class PlayerFactory extends Factory<Player> {
   private availableGames: Game[]
@@ -29,10 +29,10 @@ export default class PlayerFactory extends Factory<Player> {
   protected async base(player: Player): Promise<Partial<Player>> {
     const availableProps = ['zonesExplored', 'currentArea', 'position.x', 'position.y', 'deaths', 'position.z', 'currentLevel', 'inventorySpace', 'currentHealth', 'currentMana', 'currentEnergy', 'npcKills', 'playerKills']
     const propsCount = casual.integer(0, 5)
-    const props: Prop[] = []
+    const props: PlayerProp[] = []
 
     for (let i = 0; i < propsCount; i++) {
-      props.push(new Prop(casual.random_element(availableProps), String(casual.integer(0, 99))))
+      props.push(new PlayerProp(player, casual.random_element(availableProps), String(casual.integer(0, 99))))
     }
 
     const playerAliasFactory = new PlayerAliasFactory()
@@ -44,7 +44,7 @@ export default class PlayerFactory extends Factory<Player> {
     return {
       aliases,
       game: casual.random_element(this.availableGames),
-      props,
+      props: new Collection<PlayerProp>(player, props),
       lastSeenAt
     }
   }
@@ -81,7 +81,7 @@ export default class PlayerFactory extends Factory<Player> {
   }
 
   protected devBuild(player: Player): Partial<Player> {
-    player.props.push(new Prop('META_DEV_BUILD', '1'))
+    player.addProp('META_DEV_BUILD', '1')
     return player
   }
 

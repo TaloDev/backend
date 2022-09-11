@@ -26,8 +26,10 @@ import OrganisationPricingPlanAction from './organisation-pricing-plan-action'
 import Integration from './integration'
 import SteamworksIntegrationEvent from './steamworks-integration-event'
 import SteamworksLeaderboardMapping from './steamworks-leaderboard-mapping'
+import PlayerProp from './player-prop'
 
 export default [
+  PlayerProp,
   SteamworksLeaderboardMapping,
   SteamworksIntegrationEvent,
   Integration,

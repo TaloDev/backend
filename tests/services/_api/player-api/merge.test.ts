@@ -1,4 +1,4 @@
-import { EntityManager } from '@mikro-orm/core'
+import { Collection, EntityManager } from '@mikro-orm/core'
 import Koa from 'koa'
 import init from '../../../../src/index'
 import request from 'supertest'
@@ -10,6 +10,7 @@ import GameFactory from '../../../fixtures/GameFactory'
 import PlayerFactory from '../../../fixtures/PlayerFactory'
 import Player from '../../../../src/entities/player'
 import PlayerAlias from '../../../../src/entities/player-alias'
+import PlayerProp from '../../../../src/entities/player-prop'
 
 const baseUrl = '/v1/players/merge'
 
@@ -108,46 +109,22 @@ describe('Player API service - merge', () => {
     apiKey.scopes = [APIKeyScope.READ_PLAYERS, APIKeyScope.WRITE_PLAYERS]
     token = await createToken(apiKey)
 
-    const player1 = await new PlayerFactory([apiKey.game]).with(() => ({
-      props: [
-        {
-          key: 'currentLevel',
-          value: '60'
-        },
-        {
-          key: 'currentHealth',
-          value: '66'
-        },
-        {
-          key: 'pos.x',
-          value: '50'
-        },
-        {
-          key: 'pos.y',
-          value: '-30'
-        }
-      ]
+    const player1 = await new PlayerFactory([apiKey.game]).with((player) => ({
+      props: new Collection<PlayerProp>(player, [
+        new PlayerProp(player, 'currentLevel', '60'),
+        new PlayerProp(player, 'currentHealth', '66'),
+        new PlayerProp(player, 'pos.x', '50'),
+        new PlayerProp(player, 'pos.y', '-30')
+      ])
     })).one()
 
-    const player2 = await new PlayerFactory([apiKey.game]).with(() => ({
-      props: [
-        {
-          key: 'currentLevel',
-          value: '60'
-        },
-        {
-          key: 'pos.x',
-          value: '58'
-        },
-        {
-          key: 'pos.y',
-          value: '-24'
-        },
-        {
-          key: 'pos.z',
-          value: '4'
-        }
-      ]
+    const player2 = await new PlayerFactory([apiKey.game]).with((player) => ({
+      props: new Collection<PlayerProp>(player, [
+        new PlayerProp(player, 'currentLevel', '60'),
+        new PlayerProp(player, 'pos.x', '58'),
+        new PlayerProp(player, 'pos.y', '-24'),
+        new PlayerProp(player, 'pos.z', '4')
+      ])
     })).one()
 
     await (<EntityManager>app.context.em).persistAndFlush([player1, player2])

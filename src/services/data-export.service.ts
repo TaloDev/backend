@@ -1,4 +1,4 @@
-import { EntityManager, FilterQuery, MikroORM, ObjectQuery } from '@mikro-orm/core'
+import { Collection, FilterQuery, MikroORM } from '@mikro-orm/core'
 import { HasPermission, Routes, Service, Request, Response, Validate, ValidationCondition } from 'koa-clay'
 import DataExport, { DataExportAvailableEntities, DataExportStatus } from '../entities/data-export'
 import DataExportPolicy from '../policies/data-export.policy'
@@ -23,9 +23,14 @@ import handlePricingPlanAction from '../lib/billing/handlePricingPlanAction'
 import { PricingPlanActionType } from '../entities/pricing-plan-action'
 import queueEmail from '../lib/messaging/queueEmail'
 import OrganisationPricingPlanAction from '../entities/organisation-pricing-plan-action'
+import { EntityManager } from '@mikro-orm/mysql'
+import pick from 'lodash.pick'
+import PlayerProp from '../entities/player-prop'
+
+type PropCollection = Collection<PlayerProp, Player>
 
 interface EntityWithProps {
-  props: Prop[]
+  props: Prop[] | PropCollection
 }
 
 interface UpdatedDataExportStatus {
@@ -76,7 +81,7 @@ export default class DataExportService extends Service {
       const filename = `export-${dataExport.game.id}-${dataExport.createdAt.getTime()}.zip`
       const filepath = './storage/' + filename
 
-      const zip: AdmZip = await this.createZip(dataExport, orm.em, includeDevData)
+      const zip: AdmZip = await this.createZip(dataExport, orm.em as EntityManager, includeDevData)
       zip.writeZip(filepath)
 
       dataExport.status = DataExportStatus.QUEUED
@@ -136,7 +141,7 @@ export default class DataExportService extends Service {
 
     if (!includeDevData) {
       where.playerAlias = {
-        player: devDataPlayerFilter
+        player: devDataPlayerFilter(em)
       }
     }
 
@@ -147,7 +152,7 @@ export default class DataExportService extends Service {
     let where: FilterQuery<Player> = { game: dataExport.game }
 
     if (!includeDevData) {
-      where = { ...where, ...devDataPlayerFilter }
+      where = Object.assign(where, devDataPlayerFilter(em))
     }
 
     return await em.getRepository(Player).find(where)
@@ -159,10 +164,7 @@ export default class DataExportService extends Service {
     }
 
     if (!includeDevData) {
-      where.player = {
-        ...(where.player as ObjectQuery<Player>),
-        ...devDataPlayerFilter
-      }
+      where.player = Object.assign(where.player, devDataPlayerFilter(em))
     }
 
     return await em.getRepository(PlayerAlias).find(where)
@@ -175,7 +177,7 @@ export default class DataExportService extends Service {
 
     if (!includeDevData) {
       where.playerAlias = {
-        player: devDataPlayerFilter
+        player: devDataPlayerFilter(em)
       }
     }
 
@@ -205,7 +207,7 @@ export default class DataExportService extends Service {
     }
 
     if (!includeDevData) {
-      where.player = devDataPlayerFilter
+      where.player = devDataPlayerFilter(em)
     }
 
     return await em.getRepository(PlayerGameStat).find(where)
@@ -279,9 +281,15 @@ export default class DataExportService extends Service {
     }
   }
 
+  private getProps(object: ExportableEntityWithProps): { key: string, value: string }[] {
+    let props = object.props
+    if (props instanceof Collection) props = props.getItems()
+    return props.map((prop) => pick(prop, ['key', 'value']))
+  }
+
   private transformColumn(column: string, object: ExportableEntity): string {
     if (column.startsWith('props')) {
-      const value = (object as ExportableEntityWithProps).props.find((prop) => column.endsWith(prop.key))?.value ?? ''
+      const value = this.getProps(object as ExportableEntityWithProps).find((prop) => column.endsWith(prop.key))?.value ?? ''
       return value
     }
 
@@ -309,7 +317,7 @@ export default class DataExportService extends Service {
     columns = columns.filter((col) => col !== 'props')
 
     const allProps = objects.reduce((acc: string[], curr: EntityWithProps): string[] => {
-      return [...acc, ...curr.props.map((prop) => `props.${prop.key}`)]
+      return [...acc, ...this.getProps(curr as ExportableEntityWithProps).map((prop) => `props.${prop.key}`)]
     }, []).sort((a, b) => a.localeCompare(b))
 
     columns = [...new Set([...columns, ...allProps])]

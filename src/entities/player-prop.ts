@@ -1,0 +1,23 @@
+import { Entity, ManyToOne, PrimaryKey, Property } from '@mikro-orm/core'
+import Player from './player'
+
+@Entity()
+export default class PlayerProp {
+  @PrimaryKey()
+  id: number
+
+  @ManyToOne(() => Player)
+  player: Player
+
+  @Property()
+  key: string
+
+  @Property()
+  value: string
+
+  constructor(player: Player, key: string, value: string) {
+    this.player = player
+    this.key = key
+    this.value = value
+  }
+}

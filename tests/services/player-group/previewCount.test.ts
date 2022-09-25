@@ -1,0 +1,73 @@
+import { EntityManager } from '@mikro-orm/core'
+import Koa from 'koa'
+import init from '../../../src/index'
+import request from 'supertest'
+import createOrganisationAndGame from '../../utils/createOrganisationAndGame'
+import createUserAndToken from '../../utils/createUserAndToken'
+import PlayerGroupRule, { PlayerGroupRuleName, PlayerGroupRuleCastType } from '../../../src/entities/player-group-rule'
+import PlayerFactory from '../../fixtures/PlayerFactory'
+
+describe('Player group service - preview count', () => {
+  let app: Koa
+
+  beforeAll(async () => {
+    app = await init()
+  })
+
+  afterAll(async () => {
+    await (<EntityManager>app.context.em).getConnection().close()
+  })
+
+  it('should return a preview for the number of players in a group', async () => {
+    const [organisation, game] = await createOrganisationAndGame(app.context.em)
+    const [token] = await createUserAndToken(app.context.em, {}, organisation)
+
+    const player = await new PlayerFactory([game]).with(() => ({ lastSeenAt: new Date(2022, 4, 3) })).one()
+    await (<EntityManager>app.context.em).persistAndFlush(player)
+
+    const rules: Partial<PlayerGroupRule>[] = [
+      {
+        name: PlayerGroupRuleName.EQUALS,
+        field: 'lastSeenAt',
+        operands: ['2022-05-03'],
+        negate: false,
+        castType: PlayerGroupRuleCastType.DATETIME
+      }
+    ]
+
+    const res = await request(app.callback())
+      .get(`/games/${game.id}/player-groups/preview-count`)
+      .query({ ruleMode: '$and', rules: encodeURI(JSON.stringify(rules)) })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    expect(res.body.count).toEqual(1)
+  })
+
+  it('should not return a preview for a non-existent game', async () => {
+    const [token] = await createUserAndToken(app.context.em)
+
+    const rules: Partial<PlayerGroupRule>[] = []
+
+    const res = await request(app.callback())
+      .get('/games/99999/player-groups/preview-count')
+      .query({ ruleMode: '$and', rules: encodeURI(JSON.stringify(rules)) })
+      .auth(token, { type: 'bearer' })
+      .expect(404)
+
+    expect(res.body).toStrictEqual({ message: 'Game not found' })
+  })
+
+  it('should not return a preview for a game the user has no access to', async () => {
+    const [, game] = await createOrganisationAndGame(app.context.em)
+    const [token] = await createUserAndToken(app.context.em)
+
+    const rules: Partial<PlayerGroupRule>[] = []
+
+    await request(app.callback())
+      .get(`/games/${game.id}/player-groups/preview-count`)
+      .query({ ruleMode: '$and', rules: encodeURI(JSON.stringify(rules)) })
+      .auth(token, { type: 'bearer' })
+      .expect(403)
+  })
+})

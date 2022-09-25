@@ -2,18 +2,17 @@
 to: src/policies/<%= name %>.policy.ts
 ---
 import Policy from './policy'
-import { PolicyResponse, PolicyDenial } from 'koa-clay'
+import { PolicyResponse } from 'koa-clay'
 import { UserType } from '../entities/user'
+import UserTypeGate from './user-type-gate'
 
 export default class <%= h.changeCase.pascal(name) %>Policy extends Policy {
   async get(): Promise<PolicyResponse> {
     return true
   }
 
+  @UserTypeGate([UserType.ADMIN, UserType.DEV], 'create <%= h.inflection.humanize(name, true) %>')
   async post(): Promise<PolicyResponse> {
-    const user = await this.getUser()
-    if (user.type === UserType.DEMO) return new PolicyDenial({ message: 'Demo accounts cannot create <%= h.changeCase.noCase(name) %>s' })
-
     return true
   }
 }

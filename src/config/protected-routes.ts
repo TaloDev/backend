@@ -1,5 +1,6 @@
 import Koa, { Context, Next } from 'koa'
 import { service, ServiceOpts } from 'koa-clay'
+import PlayerGroupService from '../services/player-group.service'
 import OrganisationService from '../services/organisation.service'
 import InviteService from '../services/invite.service'
 import GameStatService from '../services/game-stat.service'
@@ -42,6 +43,7 @@ export default (app: Koa) => {
   app.use(service('/games/:gameId/players', new PlayerService(), serviceOpts))
   app.use(service('/games/:gameId/headlines', new HeadlineService(), serviceOpts))
   app.use(service('/games/:gameId/integrations', new IntegrationService(), serviceOpts))
+  app.use(service('/games/:gameId/player-groups', new PlayerGroupService(), serviceOpts))
   app.use(service('/games', new GameService(), serviceOpts))
   app.use(service('/users', new UserService(), serviceOpts))
 }

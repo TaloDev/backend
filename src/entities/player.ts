@@ -1,8 +1,9 @@
-import { Collection, Entity, ManyToOne, OneToMany, PrimaryKey, Property } from '@mikro-orm/core'
+import { Collection, Entity, ManyToMany, ManyToOne, OneToMany, PrimaryKey, Property } from '@mikro-orm/core'
 import Game from './game'
 import { v4 } from 'uuid'
 import PlayerAlias from './player-alias'
 import PlayerProp from './player-prop'
+import PlayerGroup from './player-group'
 
 @Entity()
 export default class Player {
@@ -14,6 +15,9 @@ export default class Player {
 
   @OneToMany(() => PlayerProp, (prop) => prop.player, { eager: true, orphanRemoval: true })
   props: Collection<PlayerProp> = new Collection<PlayerProp>(this)
+
+  @ManyToMany(() => PlayerGroup, (group) => group.members, { eager: true })
+  groups = new Collection<PlayerGroup>(this)
 
   @ManyToOne(() => Game)
   game: Game
@@ -50,7 +54,8 @@ export default class Player {
       aliases: this.aliases,
       devBuild: this.isDevBuild(),
       createdAt: this.createdAt,
-      lastSeenAt: this.lastSeenAt
+      lastSeenAt: this.lastSeenAt,
+      groups: this.groups.getItems().map((group) => ({ id: group.id, name: group.name }))
     }
   }
 }

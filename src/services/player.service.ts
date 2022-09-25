@@ -28,8 +28,7 @@ const propsValidation = async (val: unknown): Promise<ValidationCondition[]> => 
     method: 'POST'
   },
   {
-    method: 'GET',
-    handler: 'index'
+    method: 'GET'
   },
   {
     method: 'PATCH'

@@ -27,8 +27,10 @@ import Integration from './integration'
 import SteamworksIntegrationEvent from './steamworks-integration-event'
 import SteamworksLeaderboardMapping from './steamworks-leaderboard-mapping'
 import PlayerProp from './player-prop'
+import PlayerGroup from './player-group'
 
 export default [
+  PlayerGroup,
   PlayerProp,
   SteamworksLeaderboardMapping,
   SteamworksIntegrationEvent,

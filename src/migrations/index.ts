@@ -17,6 +17,7 @@ import { CreateIntegrationsTable } from './20220717215205CreateIntegrationsTable
 import { CreateSteamIntegrationTables } from './20220723122554CreateSteamIntegrationTables'
 import { PlayerAliasServiceUseEnum } from './20220730134520PlayerAliasServiceUseEnum'
 import { CreatePlayerPropsTable } from './20220910200720CreatePlayerPropsTable'
+import { CreatePlayerGroupsTables } from './20220914003848CreatePlayerGroupsTables'
 
 export default [
   {
@@ -94,5 +95,9 @@ export default [
   {
     name: 'CreatePlayerPropsTable',
     class: CreatePlayerPropsTable
+  },
+  {
+    name: 'CreatePlayerGroupsTables',
+    class: CreatePlayerGroupsTables
   }
 ]

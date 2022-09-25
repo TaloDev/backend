@@ -51,8 +51,7 @@ type ExportableEntityWithProps = ExportableEntity & EntityWithProps
     method: 'POST'
   },
   {
-    method: 'GET',
-    handler: 'index'
+    method: 'GET'
   },
   {
     method: 'GET',

@@ -16,20 +16,20 @@ export default class GameStatFactory extends Factory<GameStat> {
 
   protected base(): Partial<GameStat> {
     const global = casual.boolean
-    const minValue = casual.boolean ? casual.integer(-100, 0) : null
-    const maxValue = casual.boolean ? casual.integer(minValue + 1, 100) : null
-    const defaultValue = casual.integer(minValue ?? 0, maxValue ?? 100)
+    const minValue = casual.integer(-999, -1)
+    const maxValue = casual.integer(1, 999)
+    const defaultValue = casual.integer(minValue, maxValue)
 
     return {
       game: casual.random_element(this.availableGames),
       internalName: casual.array_of_words(3).join('-'),
       name: casual.title,
       global,
-      minValue,
-      maxValue,
+      minValue: casual.boolean ? minValue : null,
+      maxValue: casual.boolean ? maxValue : null,
       defaultValue,
       globalValue: defaultValue,
-      maxChange: casual.integer(0, 999),
+      maxChange: casual.integer(0, 1000),
       minTimeBetweenUpdates: casual.integer(0, 5)
     }
   }

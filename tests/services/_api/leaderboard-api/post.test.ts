@@ -224,4 +224,27 @@ describe('Leaderboard API service - post', () => {
     expect(res.body.entry.score).toBe(300)
     expect(res.body.updated).toBe(false)
   })
+
+  it('should return the correct position if there are dev entries but no dev data header sent', async () => {
+    apiKey.scopes = [APIKeyScope.WRITE_LEADERBOARDS]
+
+    const leaderboard = await new LeaderboardFactory([game]).state('not unique').one()
+    leaderboard.sortMode = LeaderboardSortMode.ASC
+
+    const player = await new PlayerFactory([game]).one()
+
+    const devPlayer = await new PlayerFactory([game]).state('dev build').one()
+    const devEntry = await new LeaderboardEntryFactory(leaderboard, [devPlayer]).with(() => ({ score: 100 })).one()
+
+    await (<EntityManager>app.context.em).persistAndFlush([leaderboard, player, devEntry])
+    token = await createToken(apiKey)
+
+    const res = await request(app.callback())
+      .post(`${baseUrl}/${leaderboard.internalName}/entries`)
+      .send({ aliasId: player.aliases[0].id, score: 300 })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    expect(res.body.entry.position).toBe(0)
+  })
 })

@@ -6,6 +6,7 @@ import LeaderboardEntry from '../../entities/leaderboard-entry'
 import Leaderboard, { LeaderboardSortMode } from '../../entities/leaderboard'
 import LeaderboardAPIDocs from '../../docs/leaderboard-api.docs'
 import triggerIntegrations from '../../lib/integrations/triggerIntegrations'
+import { devDataPlayerFilter } from '../../middlewares/dev-data-middleware'
 
 @Routes([
   {
@@ -79,8 +80,18 @@ export default class LeaderboardAPIService extends APIService {
       return integration.handleLeaderboardEntryCreated(em, entry)
     })
 
-    const entries = await em.createQueryBuilder(LeaderboardEntry, 'le')
+    let baseQuery = em.createQueryBuilder(LeaderboardEntry, 'le')
       .where({ leaderboard: entry.leaderboard })
+
+    if (!req.ctx.state.includeDevData) {
+      baseQuery = baseQuery.andWhere({
+        playerAlias: {
+          player: devDataPlayerFilter(em)
+        }
+      })
+    }
+
+    const entries = await baseQuery
       .select('le.*', true)
       .orderBy({ score: entry.leaderboard.sortMode })
       .getResultList()

@@ -92,48 +92,41 @@ export default class PlayerAPIService extends APIService {
   }
 
   @Validate({
-    body: ['alias1', 'alias2']
+    body: ['playerId1', 'playerId2']
   })
   @HasPermission(PlayerAPIPolicy, 'merge')
   async merge(req: Request): Promise<Response> {
-    const { alias1, alias2 } = req.body
+    const { playerId1, playerId2 } = req.body
     const em: EntityManager = req.ctx.em
 
     const key = await this.getAPIKey(req.ctx)
 
     const player1 = await em.getRepository(Player).findOne({
-      aliases: {
-        id: alias1
-      },
+      id: playerId1,
       game: key.game
     })
 
-    if (!player1) req.ctx.throw(404, `Player with alias ${alias1} does not exist`)
+    if (!player1) req.ctx.throw(404, `Player ${playerId1} does not exist`)
 
     const player2 = await em.getRepository(Player).findOne({
-      aliases: {
-        id: alias2
-      },
+      id: playerId2,
       game: key.game
+    }, {
+      populate: ['aliases']
     })
 
-    if (!player2) req.ctx.throw(404, `Player with alias ${alias2} does not exist`)
-
-    const player2Aliases = await em.getRepository(PlayerAlias).find({
-      player: {
-        id: player2.id
-      }
-    })
-
-    player2Aliases.forEach((alias) => alias.player = player1)
+    if (!player2) req.ctx.throw(404, `Player ${playerId2} does not exist`)
 
     const mergedProps: PlayerProp[] = uniqWith([
       ...player2.props.getItems(),
       ...player1.props.getItems()
     ], (a, b) => a.key === b.key)
 
-    player1.setProps(mergedProps)
+    for (const prop of mergedProps) {
+      prop.player = player1
+    }
 
+    player2.aliases.getItems().forEach((alias) => alias.player = player1)
     await em.removeAndFlush(player2)
 
     return {

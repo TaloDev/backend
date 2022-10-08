@@ -43,7 +43,7 @@ describe('Player API service - merge', () => {
 
     const res = await request(app.callback())
       .post(`${baseUrl}`)
-      .send({ alias1: 1, alias2: 2 })
+      .send({ playerId1: '6901af6c-7581-40ec-83c8-c8866e77dbea', playerId2: 'cbc774b1-1542-4bce-b33f-4f090f53de68' })
       .auth(token, { type: 'bearer' })
       .expect(403)
 
@@ -57,7 +57,7 @@ describe('Player API service - merge', () => {
 
     const res = await request(app.callback())
       .post(`${baseUrl}`)
-      .send({ alias1: 1, alias2: 2 })
+      .send({ playerId1: '6901af6c-7581-40ec-83c8-c8866e77dbea', playerId2: 'cbc774b1-1542-4bce-b33f-4f090f53de68' })
       .auth(token, { type: 'bearer' })
       .expect(403)
 
@@ -71,7 +71,7 @@ describe('Player API service - merge', () => {
 
     const res = await request(app.callback())
       .post(`${baseUrl}`)
-      .send({ alias1: 1, alias2: 2 })
+      .send({ playerId1: '6901af6c-7581-40ec-83c8-c8866e77dbea', playerId2: 'cbc774b1-1542-4bce-b33f-4f090f53de68' })
       .auth(token, { type: 'bearer' })
       .expect(403)
 
@@ -89,7 +89,7 @@ describe('Player API service - merge', () => {
 
     const res = await request(app.callback())
       .post(`${baseUrl}`)
-      .send({ alias1: player1.aliases[0].id, alias2: player2.aliases[0].id })
+      .send({ playerId1: player1.id, playerId2: player2.id })
       .auth(token, { type: 'bearer' })
       .expect(200)
 
@@ -131,7 +131,7 @@ describe('Player API service - merge', () => {
 
     const res = await request(app.callback())
       .post(`${baseUrl}`)
-      .send({ alias1: player1.aliases[0].id, alias2: player2.aliases[0].id })
+      .send({ playerId1: player1.id, playerId2: player2.id })
       .auth(token, { type: 'bearer' })
       .expect(200)
 
@@ -169,11 +169,11 @@ describe('Player API service - merge', () => {
 
     const res = await request(app.callback())
       .post(`${baseUrl}`)
-      .send({ alias1: 2321, alias2: player2.aliases[0].id })
+      .send({ playerId1: 'nah', playerId2: player2.id })
       .auth(token, { type: 'bearer' })
       .expect(404)
 
-    expect(res.body).toStrictEqual({ message: 'Player with alias 2321 does not exist' })
+    expect(res.body).toStrictEqual({ message: 'Player nah does not exist' })
   })
 
   it('should not merge players if alias2 does not exist', async () => {
@@ -186,10 +186,10 @@ describe('Player API service - merge', () => {
 
     const res = await request(app.callback())
       .post(`${baseUrl}`)
-      .send({ alias1: player1.aliases[0].id, alias2: 2456 })
+      .send({ playerId1: player1.id, playerId2: 'nah' })
       .auth(token, { type: 'bearer' })
       .expect(404)
 
-    expect(res.body).toStrictEqual({ message: 'Player with alias 2456 does not exist' })
+    expect(res.body).toStrictEqual({ message: 'Player nah does not exist' })
   })
 })

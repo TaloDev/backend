@@ -88,23 +88,23 @@ const PlayerAPIDocs: Record<string, RouteDocs> = {
     description: 'Merge two players',
     params: {
       body: {
-        alias1: 'The first alias ID - the second player will be merged into this player',
-        alias2: 'The second alias ID'
+        playerId1: 'The first player ID - the second player will be merged into this player',
+        playerId2: 'The second player ID'
       }
     },
     samples: [
       {
         title: 'Sample request',
         sample: {
-          alias1: 2,
-          alias2: 8
+          playerId1: '9dd68e65-a583-493e-9b5e-b11db5da8860',
+          playerId2: 'c71bbc7c-cda8-4d0f-a869-ad608c73d43b'
         }
       },
       {
         title: 'Sample response',
         sample: {
           player: {
-            id: '7a4e70ec-6ee6-418e-923d-b3a45051b7f9',
+            id: '9dd68e65-a583-493e-9b5e-b11db5da8860',
             props: [
               { key: 'currentLevel', value: '58' },
               { key: 'xPos', value: '13.29' },

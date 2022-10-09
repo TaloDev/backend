@@ -1,13 +1,12 @@
 import { EntityManager } from '@mikro-orm/core'
 import Koa from 'koa'
-import APIKey, { APIKeyScope } from '../../src/entities/api-key'
-import Game from '../../src/entities/game'
+import { APIKeyScope } from '../../src/entities/api-key'
 import init from '../../src/index'
-import { createToken } from '../../src/services/api-key.service'
 import UserFactory from '../fixtures/UserFactory'
 import request from 'supertest'
 import { genAccessToken } from '../../src/lib/auth/buildTokenPair'
 import GameFactory from '../fixtures/GameFactory'
+import createAPIKeyAndToken from '../utils/createAPIKeyAndToken'
 
 describe('Policy base class', () => {
   let app: Koa
@@ -21,13 +20,10 @@ describe('Policy base class', () => {
   })
 
   it('should reject a revoked api key', async () => {
-    const user = await new UserFactory().one()
-    const apiKey = new APIKey(new Game('Uplift', user.organisation), user)
-    apiKey.scopes = [APIKeyScope.READ_EVENTS]
+    const [apiKey, token] = await createAPIKeyAndToken(app.context.em, [APIKeyScope.READ_EVENTS])
     apiKey.revokedAt = new Date()
-    await (<EntityManager>app.context.em).persistAndFlush(apiKey)
+    await (<EntityManager>app.context.em).flush()
 
-    const token = await createToken(apiKey)
     await request(app.callback())
       .get('/v1/players/identify?service=username&identifier=')
       .query({ service: 'username', identifier: 'ionproject' })

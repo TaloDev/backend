@@ -9,6 +9,8 @@ import UserFactory from '../../../fixtures/UserFactory'
 import PlayerFactory from '../../../fixtures/PlayerFactory'
 import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
 import PlayerProp from '../../../../src/entities/player-prop'
+import PlayerGroupFactory from '../../../fixtures/PlayerGroupFactory'
+import PlayerGroupRule, { PlayerGroupRuleCastType, PlayerGroupRuleName } from '../../../../src/entities/player-group-rule'
 
 const baseUrl = '/v1/players'
 
@@ -140,5 +142,45 @@ describe('Player API service - patch', () => {
       .expect(404)
 
     expect(res.body).toStrictEqual({ message: 'Player not found' })
+  })
+
+  it('should update group memberships when props change', async () => {
+    const rule = new PlayerGroupRule(PlayerGroupRuleName.GTE, 'props.currentLevel')
+    rule.castType = PlayerGroupRuleCastType.DOUBLE
+    rule.operands = ['60']
+
+    const group = await new PlayerGroupFactory().construct(apiKey.game).with(() => ({ rules: [rule] })).one()
+
+    const player = await new PlayerFactory([apiKey.game]).with((player) => ({
+      props: new Collection<PlayerProp>(player, [
+        new PlayerProp(player, 'collectibles', '0'),
+        new PlayerProp(player, 'currentLevel', '59')
+      ])
+    })).one()
+    await (<EntityManager>app.context.em).persistAndFlush([group, player])
+
+    apiKey.scopes = [APIKeyScope.WRITE_PLAYERS]
+    await (<EntityManager>app.context.em).flush()
+    token = await createToken(apiKey)
+
+    const res = await request(app.callback())
+      .patch(`${baseUrl}/${player.aliases[0].id}`)
+      .send({
+        props: [
+          {
+            key: 'currentLevel',
+            value: '60'
+          }
+        ]
+      })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    expect(res.body.player.groups).toStrictEqual([
+      {
+        id: group.id,
+        name: group.name
+      }
+    ])
   })
 })

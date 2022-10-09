@@ -128,11 +128,11 @@ export default class PlayerAPIService extends APIService {
     player2Aliases.forEach((alias) => alias.player = player1)
 
     const mergedProps: PlayerProp[] = uniqWith([
-      ...player2.props,
-      ...player1.props
+      ...player2.props.getItems(),
+      ...player1.props.getItems()
     ], (a, b) => a.key === b.key)
 
-    player1.props.set(Array.from(mergedProps))
+    player1.setProps(mergedProps)
 
     await em.removeAndFlush(player2)
 

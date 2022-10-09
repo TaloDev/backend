@@ -23,6 +23,9 @@ export enum GameActivityType {
   GAME_INTEGRATION_DELETED,
   GAME_INTEGRATION_STEAMWORKS_LEADERBOARDS_SYNCED,
   GAME_INTEGRATION_STEAMWORKS_STATS_SYNCED,
+  PLAYER_GROUP_CREATED,
+  PLAYER_GROUP_UPDATED,
+  PLAYER_GROUP_DELETED
 }
 
 @Entity()
@@ -96,6 +99,12 @@ export default class GameActivity {
         return `${this.user.username} initiated a manual sync for Steamworks leaderboards`
       case GameActivityType.GAME_INTEGRATION_STEAMWORKS_STATS_SYNCED:
         return `${this.user.username} initiated a manual sync for Steamworks stats`
+      case GameActivityType.PLAYER_GROUP_CREATED:
+        return `${this.user.username} created the group ${this.extra.groupName}`
+      case GameActivityType.PLAYER_GROUP_UPDATED:
+        return `${this.user.username} updated the group ${this.extra.groupName}`
+      case GameActivityType.PLAYER_GROUP_DELETED:
+        return `${this.user.username} deleted the group ${this.extra.groupName}`
       default:
         return ''
     }

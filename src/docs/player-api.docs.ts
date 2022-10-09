@@ -30,7 +30,10 @@ const PlayerAPIDocs: Record<string, RouteDocs> = {
               ],
               devBuild: false,
               createdAt: '2022-01-15 13:20:32',
-              lastSeenAt: '2022-04-12 15:09:43'
+              lastSeenAt: '2022-04-12 15:09:43',
+              groups: [
+                { id: 1, name: 'Winners' }
+              ]
             }
           }
         }
@@ -72,7 +75,10 @@ const PlayerAPIDocs: Record<string, RouteDocs> = {
             ],
             devBuild: false,
             createdAt: '2022-01-15 13:20:32',
-            lastSeenAt: '2022-04-12 15:09:43'
+            lastSeenAt: '2022-04-12 15:09:43',
+            groups: [
+              { id: 1, name: 'Winners' }
+            ]
           }
         }
       }
@@ -112,7 +118,10 @@ const PlayerAPIDocs: Record<string, RouteDocs> = {
             ],
             devBuild: false,
             createdAt: '2022-01-15 13:20:32',
-            lastSeenAt: '2022-04-12 15:09:43'
+            lastSeenAt: '2022-04-12 15:09:43',
+            groups: [
+              { id: 1, name: 'Winners' }
+            ]
           }
         }
       }

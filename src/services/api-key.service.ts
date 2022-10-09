@@ -23,8 +23,7 @@ export async function createToken(apiKey: APIKey, payloadParams?: ExtraTokenPayl
     method: 'POST'
   },
   {
-    method: 'GET',
-    handler: 'index'
+    method: 'GET'
   },
   {
     method: 'GET',

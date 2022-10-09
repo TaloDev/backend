@@ -7,6 +7,8 @@ import { genAccessToken } from '../../../src/lib/auth/buildTokenPair'
 import Game from '../../../src/entities/game'
 import UserFactory from '../../fixtures/UserFactory'
 import OrganisationFactory from '../../fixtures/OrganisationFactory'
+import PlayerGroupFactory from '../../fixtures/PlayerGroupFactory'
+import PlayerGroupRule, { PlayerGroupRuleCastType, PlayerGroupRuleName } from '../../../src/entities/player-group-rule'
 
 describe('Player service - post', () => {
   let app: Koa
@@ -71,6 +73,35 @@ describe('Player service - post', () => {
 
     expect(res.body.player.props[0].key).toBe('characterName')
     expect(res.body.player.props[0].value).toBe('Bob John')
+  })
+
+  it('should put the newly created player in the correct groups', async () => {
+    const rule = new PlayerGroupRule(PlayerGroupRuleName.LT, 'props.currentLevel')
+    rule.castType = PlayerGroupRuleCastType.DOUBLE
+    rule.operands = ['60']
+
+    const group = await new PlayerGroupFactory().construct(validGame).with(() => ({ rules: [rule] })).one()
+    await (<EntityManager>app.context.em).persistAndFlush(group)
+
+    const res = await request(app.callback())
+      .post(`/games/${validGame.id}/players`)
+      .send({
+        props: [
+          {
+            key: 'currentLevel',
+            value: '1'
+          }
+        ]
+      })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    expect(res.body.player.groups).toStrictEqual([
+      {
+        id: group.id,
+        name: group.name
+      }
+    ])
   })
 
   it('should not create a player for a non-existent game', async () => {

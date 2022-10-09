@@ -2895,12 +2895,12 @@
       "columns": {
         "id": {
           "name": "id",
-          "type": "int",
-          "unsigned": true,
-          "autoincrement": true,
-          "primary": true,
+          "type": "varchar(255)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
           "nullable": false,
-          "mappedType": "integer"
+          "mappedType": "string"
         },
         "name": {
           "name": "name",
@@ -3013,12 +3013,12 @@
       "columns": {
         "player_group_id": {
           "name": "player_group_id",
-          "type": "int",
-          "unsigned": true,
+          "type": "varchar(255)",
+          "unsigned": false,
           "autoincrement": false,
           "primary": false,
           "nullable": false,
-          "mappedType": "integer"
+          "mappedType": "string"
         },
         "player_id": {
           "name": "player_id",

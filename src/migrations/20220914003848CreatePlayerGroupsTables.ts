@@ -3,10 +3,10 @@ import { Migration } from '@mikro-orm/migrations'
 export class CreatePlayerGroupsTables extends Migration {
 
   async up(): Promise<void> {
-    this.addSql('create table `player_group` (`id` int unsigned not null auto_increment primary key, `name` varchar(255) not null, `description` varchar(255) not null, `rules` json not null, `rule_mode` enum(\'$and\', \'$or\') not null, `game_id` int unsigned not null, `created_at` datetime not null, `updated_at` datetime not null) default character set utf8mb4 engine = InnoDB;')
+    this.addSql('create table `player_group` (`id` varchar(255) not null primary key, `name` varchar(255) not null, `description` varchar(255) not null, `rules` json not null, `rule_mode` enum(\'$and\', \'$or\') not null, `game_id` int unsigned not null, `created_at` datetime not null, `updated_at` datetime not null) default character set utf8mb4 engine = InnoDB;')
     this.addSql('alter table `player_group` add index `player_group_game_id_index`(`game_id`);')
 
-    this.addSql('create table `player_group_members` (`player_group_id` int unsigned not null, `player_id` varchar(255) not null, primary key (`player_group_id`, `player_id`)) default character set utf8mb4 engine = InnoDB;')
+    this.addSql('create table `player_group_members` (`player_group_id` varchar(255) not null, `player_id` varchar(255) not null, primary key (`player_group_id`, `player_id`)) default character set utf8mb4 engine = InnoDB;')
     this.addSql('alter table `player_group_members` add index `player_group_members_player_group_id_index`(`player_group_id`);')
     this.addSql('alter table `player_group_members` add index `player_group_members_player_id_index`(`player_id`);')
 

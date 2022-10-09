@@ -20,7 +20,7 @@ export default class PlayerGroupPolicy extends Policy {
   async put(req: Request): Promise<PolicyResponse> {
     const { gameId, id } = req.params
 
-    this.ctx.state.group = await this.em.getRepository(PlayerGroup).findOne(Number(id))
+    this.ctx.state.group = await this.em.getRepository(PlayerGroup).findOne(id)
     if (!this.ctx.state.group) return new PolicyDenial({ message: 'Group not found' }, 404)
 
     return await this.canAccessGame(Number(gameId))
@@ -30,7 +30,7 @@ export default class PlayerGroupPolicy extends Policy {
   async delete(req: Request): Promise<PolicyResponse> {
     const { gameId, id } = req.params
 
-    this.ctx.state.group = await this.em.getRepository(PlayerGroup).findOne(Number(id))
+    this.ctx.state.group = await this.em.getRepository(PlayerGroup).findOne(id)
     if (!this.ctx.state.group) return new PolicyDenial({ message: 'Group not found' }, 404)
 
     return await this.canAccessGame(Number(gameId))

@@ -1,6 +1,7 @@
 import { Collection, Embedded, Entity, Enum, ManyToMany, ManyToOne, PrimaryKey, Property } from '@mikro-orm/core'
+import { v4 } from 'uuid'
 import { EntityManager, QueryBuilder } from '@mikro-orm/mysql'
-import { Request, Required, ValidationCondition } from 'koa-clay'
+import { Required } from 'koa-clay'
 import Game from './game'
 import Player from './player'
 import PlayerGroupRule from './player-group-rule'
@@ -32,25 +33,9 @@ export const PlayerRuleFields: RuleFields[] = [
 @Entity()
 export default class PlayerGroup {
   @PrimaryKey()
-  id: number
+  id: string = v4()
 
-  @Required({
-    validation: async (val: unknown, req: Request): Promise<ValidationCondition[]> => {
-      const { gameId, id } = req.params
-      const duplicateName = await (<EntityManager>req.ctx.em).getRepository(PlayerGroup).findOne({
-        id: { $ne: Number(id ?? null) },
-        name: val,
-        game: Number(gameId)
-      })
-
-      return [
-        {
-          check: !duplicateName,
-          error: `A group with the name ${val} already exists`
-        }
-      ]
-    }
-  })
+  @Required()
   @Property()
   name: string
 

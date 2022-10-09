@@ -29,8 +29,11 @@ describe('Player group service - index', () => {
       .auth(token, { type: 'bearer' })
       .expect(200)
 
-    res.body.groups.forEach((group, idx) => {
-      expect(group.id).toBe(groups[idx].id)
+    const sortedRes = res.body.groups.sort((a, b) => a.id.localeCompare(b.id))
+    const sortedGroups = groups.sort((a, b) => a.id.localeCompare(b.id))
+
+    sortedRes.forEach((group, idx) => {
+      expect(group.id).toBe(sortedGroups[idx].id)
     })
   })
 

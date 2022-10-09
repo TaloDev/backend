@@ -67,6 +67,7 @@ export default class PlayerGroupService extends Service {
     group.description = description
     group.ruleMode = ruleMode
     group.rules = this.buildRulesFromData(rules)
+    await group.checkMembership(em)
 
     await createGameActivity(em, {
       user: req.ctx.state.user,
@@ -98,6 +99,7 @@ export default class PlayerGroupService extends Service {
     group.description = description
     group.ruleMode = ruleMode
     group.rules = this.buildRulesFromData(rules)
+    await group.checkMembership(em)
 
     await createGameActivity(em, {
       user: req.ctx.state.user,

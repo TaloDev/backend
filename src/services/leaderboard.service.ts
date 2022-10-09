@@ -10,13 +10,7 @@ import LeaderboardPolicy from '../policies/leaderboard.policy'
 
 @Routes([
   {
-    method: 'GET',
-    path: '/:id',
-    handler: 'get'
-  },
-  {
-    method: 'GET',
-    handler: 'index'
+    method: 'GET'
   },
   {
     method: 'POST'
@@ -33,12 +27,10 @@ import LeaderboardPolicy from '../policies/leaderboard.policy'
   },
   {
     method: 'PUT',
-    path: '/:id',
     handler: 'updateLeaderboard'
   },
   {
-    method: 'DELETE',
-    path: '/:id'
+    method: 'DELETE'
   }
 ])
 export default class LeaderboardService extends Service {
@@ -51,16 +43,6 @@ export default class LeaderboardService extends Service {
       status: 200,
       body: {
         leaderboards
-      }
-    }
-  }
-
-  @HasPermission(LeaderboardPolicy, 'get')
-  async get(req: Request): Promise<Response> {
-    return {
-      status: 200,
-      body: {
-        leaderboard: req.ctx.state.leaderboard
       }
     }
   }

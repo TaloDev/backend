@@ -8,12 +8,12 @@ import APIKey from '../../entities/api-key'
 
 export default class <%= h.changeCase.pascal(name) %>APIService extends APIService {
   @HasPermission(<%= h.changeCase.pascal(name) %>APIPolicy, 'post')
-  @ForwardTo(<%= h.changeCase.dot(name) %>, 'post')
+  @ForwardTo('<%= h.changeCase.dot(name) %>', 'post')
   async post(req: Request): Promise<Response> {
     const key: APIKey = await this.getAPIKey(req.ctx)
     return await forwardRequest(req, {
       params: {
-        gameId: key.game.id
+        gameId: key.game.id.toString()
       }
     })
   }

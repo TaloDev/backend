@@ -1,5 +1,6 @@
 import { Options } from '@mikro-orm/core'
 import entities from '../entities'
+import subscribers from '../entities/subscribers'
 import migrationsList from '../migrations'
 
 const ormConfig: Options = {
@@ -13,7 +14,8 @@ const ormConfig: Options = {
   migrations: {
     migrationsList,
     path: 'src/migrations' // for generating migrations via the cli
-  }
+  },
+  subscribers
 }
 
 export default ormConfig

@@ -2,12 +2,14 @@ import { EntityManager } from '@mikro-orm/core'
 import { Request, Response, Routes, Validate, HasPermission, ForwardTo, forwardRequest } from 'koa-clay'
 import APIKey, { APIKeyScope } from '../../entities/api-key'
 import Player from '../../entities/player'
+import GameSave from '../../entities/game-save'
 import PlayerAlias from '../../entities/player-alias'
 import PlayerAPIPolicy from '../../policies/api/player-api.policy'
 import APIService from './api-service'
 import uniqWith from 'lodash.uniqwith'
 import PlayerAPIDocs from '../../docs/player-api.docs'
 import PlayerProp from '../../entities/player-prop'
+import PlayerGameStat from '../../entities/player-game-stat'
 
 @Routes([
   {
@@ -122,11 +124,15 @@ export default class PlayerAPIService extends APIService {
       ...player1.props.getItems()
     ], (a, b) => a.key === b.key)
 
-    for (const prop of mergedProps) {
-      prop.player = player1
-    }
-
+    player1.setProps(mergedProps)
     player2.aliases.getItems().forEach((alias) => alias.player = player1)
+
+    const saves = await em.getRepository(GameSave).find({ player: player2 })
+    saves.forEach((save) => save.player = player1)
+
+    const stats = await em.getRepository(PlayerGameStat).find({ player: player2 })
+    stats.forEach((stat) => stat.player = player1)
+
     await em.removeAndFlush(player2)
 
     return {

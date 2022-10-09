@@ -11,6 +11,11 @@ import PlayerFactory from '../../../fixtures/PlayerFactory'
 import Player from '../../../../src/entities/player'
 import PlayerAlias from '../../../../src/entities/player-alias'
 import PlayerProp from '../../../../src/entities/player-prop'
+import GameSaveFactory from '../../../fixtures/GameSaveFactory'
+import GameSave from '../../../../src/entities/game-save'
+import PlayerGameStatFactory from '../../../fixtures/PlayerGameStatFactory'
+import GameStatFactory from '../../../fixtures/GameStatFactory'
+import PlayerGameStat from '../../../../src/entities/player-game-stat'
 
 const baseUrl = '/v1/players/merge'
 
@@ -191,5 +196,45 @@ describe('Player API service - merge', () => {
       .expect(404)
 
     expect(res.body).toStrictEqual({ message: 'Player nah does not exist' })
+  })
+
+  it('should transfer player2\'s saves to player1', async () => {
+    apiKey.scopes = [APIKeyScope.READ_PLAYERS, APIKeyScope.WRITE_PLAYERS]
+    token = await createToken(apiKey)
+
+    const player1 = await new PlayerFactory([apiKey.game]).one()
+    const player2 = await new PlayerFactory([apiKey.game]).one()
+    let save = await new GameSaveFactory([player2]).one()
+    await (<EntityManager>app.context.em).persistAndFlush([player1, player2, save])
+
+    await request(app.callback())
+      .post(`${baseUrl}`)
+      .send({ playerId1: player1.id, playerId2: player2.id })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    save = await (<EntityManager>app.context.em).getRepository(GameSave).findOne(save.id, { refresh: true })
+    expect(save.player.id).toBe(player1.id)
+  })
+
+  it('should transfer player2\'s stats to player1', async () => {
+    apiKey.scopes = [APIKeyScope.READ_PLAYERS, APIKeyScope.WRITE_PLAYERS]
+    token = await createToken(apiKey)
+
+    const player1 = await new PlayerFactory([apiKey.game]).one()
+    const player2 = await new PlayerFactory([apiKey.game]).one()
+
+    const stat = await new GameStatFactory([apiKey.game]).one()
+    let playerStat = await new PlayerGameStatFactory().construct(player2, stat).one()
+    await (<EntityManager>app.context.em).persistAndFlush([player1, player2, playerStat])
+
+    await request(app.callback())
+      .post(`${baseUrl}`)
+      .send({ playerId1: player1.id, playerId2: player2.id })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    playerStat = await (<EntityManager>app.context.em).getRepository(PlayerGameStat).findOne(playerStat.id, { refresh: true })
+    expect(playerStat.player.id).toBe(player1.id)
   })
 })

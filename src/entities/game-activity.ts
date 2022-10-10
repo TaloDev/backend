@@ -25,7 +25,8 @@ export enum GameActivityType {
   GAME_INTEGRATION_STEAMWORKS_STATS_SYNCED,
   PLAYER_GROUP_CREATED,
   PLAYER_GROUP_UPDATED,
-  PLAYER_GROUP_DELETED
+  PLAYER_GROUP_DELETED,
+  GAME_PROPS_UPDATED
 }
 
 @Entity()
@@ -105,6 +106,8 @@ export default class GameActivity {
         return `${this.user.username} updated the group ${this.extra.groupName}`
       case GameActivityType.PLAYER_GROUP_DELETED:
         return `${this.user.username} deleted the group ${this.extra.groupName}`
+      case GameActivityType.GAME_PROPS_UPDATED:
+        return `${this.user.username} updated the live config`
       default:
         return ''
     }

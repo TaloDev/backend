@@ -1,5 +1,6 @@
 import Koa, { Context, Next } from 'koa'
 import { service } from 'koa-clay'
+import GameConfigAPIService from '../services/api/game-config-api.service'
 import GameStatAPIService from '../services/api/game-stat-api.service'
 import GameSaveAPIService from '../services/api/game-save-api.service'
 import LeaderboardAPIService from '../services/api/leaderboard-api.service'
@@ -19,6 +20,7 @@ export default (app: Koa) => {
     app.use(limiterMiddleware)
   }
 
+  app.use(service('/v1/game-config', new GameConfigAPIService()))
   app.use(service('/v1/game-stats', new GameStatAPIService()))
   app.use(service('/v1/game-saves', new GameSaveAPIService()))
   app.use(service('/v1/leaderboards', new LeaderboardAPIService()))

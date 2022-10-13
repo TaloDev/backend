@@ -86,6 +86,11 @@ export default class PlayerGroup {
     })
   }
 
+  async checkMembership(em: EntityManager) {
+    const players = await this.getQuery(em).getResultList()
+    this.members.set(players)
+  }
+
   toJSON() {
     return {
       id: this.id,

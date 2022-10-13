@@ -148,4 +148,32 @@ describe('Game stat service - post', () => {
       .auth(token, { type: 'bearer' })
       .expect(200)
   })
+
+  it('should create a stat with no min value', async () => {
+    const [organisation, game] = await createOrganisationAndGame(app.context.em)
+    const [token] = await createUserAndToken(app.context.em, {}, organisation)
+
+    const res = await request(app.callback())
+      .post(`/games/${game.id}/game-stats`)
+      .send({ internalName: 'buildings-built', name: 'Buildings built', defaultValue: 5, global: false, minTimeBetweenUpdates: 0, minValue: null, maxValue: 10  })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    expect(res.body.stat.internalName).toBe('buildings-built')
+    expect(res.body.stat.minValue).toBe(null)
+  })
+
+  it('should create a stat with no max value', async () => {
+    const [organisation, game] = await createOrganisationAndGame(app.context.em)
+    const [token] = await createUserAndToken(app.context.em, {}, organisation)
+
+    const res = await request(app.callback())
+      .post(`/games/${game.id}/game-stats`)
+      .send({ internalName: 'buildings-built', name: 'Buildings built', defaultValue: 5, global: false, minTimeBetweenUpdates: 0, minValue: -10, maxValue: null  })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    expect(res.body.stat.internalName).toBe('buildings-built')
+    expect(res.body.stat.maxValue).toBe(null)
+  })
 })

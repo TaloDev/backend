@@ -172,6 +172,7 @@ export default class PlayerService extends Service {
       ], (a, b) => a.key === b.key)
 
       player.setProps(sanitiseProps(mergedProps, true))
+      player.updatedAt = new Date()
     }
 
     if (req.ctx.state.user.api !== true) {

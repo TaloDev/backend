@@ -123,6 +123,17 @@ const GameSaveAPIDocs: APIDocs<GameSaveAPIService> = {
         }
       }
     ]
+  },
+  delete: {
+    description: 'Delete a save',
+    params: {
+      headers: {
+        'X-Talo-Player': 'The ID of the player'
+      },
+      route: {
+        id: 'The ID of the save'
+      }
+    }
   }
 }
 

@@ -13,6 +13,13 @@ export default class GameSaveAPIPolicy extends Policy {
     })
   }
 
+  async getSave(id: number): Promise<GameSave> {
+    return await this.em.getRepository(GameSave).findOne({
+      id,
+      player: await this.getPlayer()
+    })
+  }
+
   async index(): Promise<PolicyResponse> {
     this.ctx.state.player = await this.getPlayer()
     if (!this.ctx.state.player) return new PolicyDenial({ message: 'Player not found' }, 404)
@@ -30,11 +37,16 @@ export default class GameSaveAPIPolicy extends Policy {
   async patch(req: Request): Promise<PolicyResponse> {
     const { id } = req.params
 
-    this.ctx.state.save = await this.em.getRepository(GameSave).findOne({
-      id: Number(id),
-      player: await this.getPlayer()
-    })
+    this.ctx.state.save = await this.getSave(Number(id))
+    if (!this.ctx.state.save) return new PolicyDenial({ message: 'Save not found' }, 404)
 
+    return await this.hasScope('write:gameSaves')
+  }
+
+  async delete(req: Request): Promise<PolicyResponse> {
+    const { id } = req.params
+
+    this.ctx.state.save = await this.getSave(Number(id))
     if (!this.ctx.state.save) return new PolicyDenial({ message: 'Save not found' }, 404)
 
     return await this.hasScope('write:gameSaves')

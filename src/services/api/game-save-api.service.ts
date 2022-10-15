@@ -74,4 +74,20 @@ export default class GameSaveAPIService extends APIService {
       }
     }
   }
+
+  @Validate({
+    headers: ['x-talo-player']
+  })
+  @HasPermission(GameSaveAPIPolicy, 'delete')
+  @Docs(GameSaveAPIDocs.delete)
+  async delete(req: Request): Promise<Response> {
+    const em: EntityManager = req.ctx.em
+
+    const save = req.ctx.state.save
+    await em.removeAndFlush(save)
+
+    return {
+      status: 204
+    }
+  }
 }

@@ -4,7 +4,7 @@ import { EntityManager, QueryBuilder } from '@mikro-orm/mysql'
 import { Required } from 'koa-clay'
 import Game from './game'
 import Player from './player'
-import PlayerGroupRule from './player-group-rule'
+import PlayerGroupRule, { PlayerGroupRuleCastType } from './player-group-rule'
 import { ruleModeValidation, rulesValidation } from '../lib/groups/rulesValidation'
 
 export enum RuleMode {
@@ -16,17 +16,21 @@ export type PlayerField = keyof Player | 'prop with key'
 
 type RuleFields = {
   field: PlayerField
+  defaultCastType?: PlayerGroupRuleCastType
 }
 
 export const PlayerRuleFields: RuleFields[] = [
   {
-    field: 'prop with key'
+    field: 'prop with key',
+    defaultCastType: PlayerGroupRuleCastType.CHAR
   },
   {
-    field: 'lastSeenAt'
+    field: 'lastSeenAt',
+    defaultCastType: PlayerGroupRuleCastType.DATETIME
   },
   {
-    field: 'createdAt'
+    field: 'createdAt',
+    defaultCastType: PlayerGroupRuleCastType.DATETIME
   }
 ]
 

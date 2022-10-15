@@ -47,8 +47,9 @@ describe('Game stats API service - put - steamworks integration', () => {
 
     await request(app.callback())
       .put(`${baseUrl}/${stat.internalName}`)
-      .send({ change: 10, aliasId: player.aliases[0].id })
+      .send({ change: 10 })
       .auth(token, { type: 'bearer' })
+      .set('x-talo-alias', String(player.aliases[0].id))
       .expect(200)
 
     expect(setMock).toHaveBeenCalledTimes(1)
@@ -80,8 +81,9 @@ describe('Game stats API service - put - steamworks integration', () => {
 
     await request(app.callback())
       .put(`${baseUrl}/${stat.internalName}`)
-      .send({ change: 10, aliasId: player.aliases[0].id })
+      .send({ change: 10 })
       .auth(token, { type: 'bearer' })
+      .set('x-talo-alias', String(player.aliases[0].id))
       .expect(200)
 
     expect(setMock).not.toHaveBeenCalled()

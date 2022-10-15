@@ -9,10 +9,10 @@ import Event from '../../../src/entities/event'
 import EventFactory from '../../fixtures/EventFactory'
 import UserFactory from '../../fixtures/UserFactory'
 import PlayerFactory from '../../fixtures/PlayerFactory'
-import Player from '../../../src/entities/player'
 import GameFactory from '../../fixtures/GameFactory'
 import { sub, format } from 'date-fns'
 import OrganisationFactory from '../../fixtures/OrganisationFactory'
+import clearEntities from '../../utils/clearEntities'
 
 describe('Headline service - get', () => {
   let app: Koa
@@ -34,9 +34,7 @@ describe('Headline service - get', () => {
   })
 
   beforeEach(async () => {
-    const events = await (<EntityManager>app.context.em).getRepository(Event).findAll()
-    const players = await (<EntityManager>app.context.em).getRepository(Player).findAll()
-    await (<EntityManager>app.context.em).removeAndFlush([...events, ...players])
+    await clearEntities(app.context.em, ['PlayerProp', 'Event', 'Player'])
   })
 
   afterAll(async () => {

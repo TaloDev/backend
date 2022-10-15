@@ -2,38 +2,21 @@ import { EntityManager } from '@mikro-orm/core'
 import Koa from 'koa'
 import init from '../../../../src/index'
 import request from 'supertest'
-import APIKey, { APIKeyScope } from '../../../../src/entities/api-key'
-import { createToken } from '../../../../src/services/api-key.service'
-import UserFactory from '../../../fixtures/UserFactory'
-import GameFactory from '../../../fixtures/GameFactory'
-import Leaderboard, { LeaderboardSortMode } from '../../../../src/entities/leaderboard'
+import { APIKeyScope } from '../../../../src/entities/api-key'
+import { LeaderboardSortMode } from '../../../../src/entities/leaderboard'
 import LeaderboardFactory from '../../../fixtures/LeaderboardFactory'
 import PlayerFactory from '../../../fixtures/PlayerFactory'
-import Game from '../../../../src/entities/game'
 import LeaderboardEntryFactory from '../../../fixtures/LeaderboardEntryFactory'
 import { subHours } from 'date-fns'
+import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
 
 const baseUrl = '/v1/leaderboards'
 
 describe('Leaderboard API service - post', () => {
   let app: Koa
 
-  let game: Game
-  let leaderboard: Leaderboard
-
-  let apiKey: APIKey
-  let token: string
-
   beforeAll(async () => {
     app = await init()
-
-    const user = await new UserFactory().one()
-    game = await new GameFactory(user.organisation).one()
-    leaderboard = await new LeaderboardFactory([game]).state('not unique').one()
-
-    apiKey = new APIKey(game, user)
-    await (<EntityManager>app.context.em).persistAndFlush([apiKey, leaderboard])
-    token = await createToken(apiKey)
   })
 
   afterAll(async () => {
@@ -41,16 +24,16 @@ describe('Leaderboard API service - post', () => {
   })
 
   it('should create a leaderboard entry if the scope is valid', async () => {
-    apiKey.scopes = [APIKeyScope.WRITE_LEADERBOARDS]
-    const player = await new PlayerFactory([game]).one()
-
-    await (<EntityManager>app.context.em).persistAndFlush([player])
-    token = await createToken(apiKey)
+    const [apiKey, token] = await createAPIKeyAndToken(app.context.em, [APIKeyScope.WRITE_LEADERBOARDS])
+    const player = await new PlayerFactory([apiKey.game]).one()
+    const leaderboard = await new LeaderboardFactory([apiKey.game]).one()
+    await (<EntityManager>app.context.em).persistAndFlush([player, leaderboard])
 
     const res = await request(app.callback())
       .post(`${baseUrl}/${leaderboard.internalName}/entries`)
-      .send({ aliasId: player.aliases[0].id, score: 300 })
+      .send({ score: 300 })
       .auth(token, { type: 'bearer' })
+      .set('x-talo-alias', String(player.aliases[0].id))
       .expect(200)
 
     expect(res.body.entry.score).toBe(300)
@@ -59,50 +42,55 @@ describe('Leaderboard API service - post', () => {
   })
 
   it('should not create a leaderboard entry if the scope is not valid', async () => {
-    apiKey.scopes = []
-
-    await (<EntityManager>app.context.em).flush()
-    token = await createToken(apiKey)
+    const [apiKey, token] = await createAPIKeyAndToken(app.context.em, [])
+    const player = await new PlayerFactory([apiKey.game]).one()
+    const leaderboard = await new LeaderboardFactory([apiKey.game]).one()
+    await (<EntityManager>app.context.em).persistAndFlush([player, leaderboard])
 
     await request(app.callback())
       .post(`${baseUrl}/${leaderboard.internalName}/entries`)
-      .send({ aliasId: 99, score: 300 })
+      .send({ score: 300 })
       .auth(token, { type: 'bearer' })
+      .set('x-talo-alias', String(player.aliases[0].id))
       .expect(403)
   })
 
   it('should not create a leaderboard entry if the alias doesn\'t exist', async () => {
-    apiKey.scopes = [APIKeyScope.WRITE_LEADERBOARDS]
-
-    await (<EntityManager>app.context.em).flush()
-    token = await createToken(apiKey)
+    const [apiKey, token] = await createAPIKeyAndToken(app.context.em, [APIKeyScope.WRITE_LEADERBOARDS])
+    const player = await new PlayerFactory([apiKey.game]).one()
+    const leaderboard = await new LeaderboardFactory([apiKey.game]).one()
+    await (<EntityManager>app.context.em).persistAndFlush([player, leaderboard])
 
     await request(app.callback())
       .post(`${baseUrl}/${leaderboard.internalName}/entries`)
-      .send({ aliasId: 99, score: 300 })
+      .send({ score: 300 })
       .auth(token, { type: 'bearer' })
+      .set('x-talo-alias', '99')
       .expect(404)
   })
 
   it('should not create a leaderboard entry if the leaderboard doesn\'t exist', async () => {
+    const [, token] = await createAPIKeyAndToken(app.context.em, [APIKeyScope.WRITE_LEADERBOARDS])
+
     await request(app.callback())
       .post(`${baseUrl}/blah/entries`)
-      .send({ aliasId: 99, score: 300 })
+      .send({ score: 300 })
       .auth(token, { type: 'bearer' })
+      .set('x-talo-alias', '99')
       .expect(404)
   })
 
   it('should update an existing entry for unique leaderboards', async () => {
-    leaderboard.unique = true
-    leaderboard.sortMode = LeaderboardSortMode.DESC
-
-    const player = await new PlayerFactory([game]).one()
-    await (<EntityManager>app.context.em).persistAndFlush([player])
+    const [apiKey, token] = await createAPIKeyAndToken(app.context.em, [APIKeyScope.WRITE_LEADERBOARDS])
+    const player = await new PlayerFactory([apiKey.game]).one()
+    const leaderboard = await new LeaderboardFactory([apiKey.game]).with(() => ({ unique: true, sortMode: LeaderboardSortMode.DESC })).one()
+    await (<EntityManager>app.context.em).persistAndFlush([player, leaderboard])
 
     let res = await request(app.callback())
       .post(`${baseUrl}/${leaderboard.internalName}/entries`)
-      .send({ aliasId: player.aliases[0].id, score: 300 })
+      .send({ score: 300 })
       .auth(token, { type: 'bearer' })
+      .set('x-talo-alias', String(player.aliases[0].id))
       .expect(200)
 
     const prevId = res.body.entry.id
@@ -110,8 +98,9 @@ describe('Leaderboard API service - post', () => {
 
     res = await request(app.callback())
       .post(`${baseUrl}/${leaderboard.internalName}/entries`)
-      .send({ aliasId: player.aliases[0].id, score: 360 })
+      .send({ score: 360 })
       .auth(token, { type: 'bearer' })
+      .set('x-talo-alias', String(player.aliases[0].id))
       .expect(200)
 
     expect(res.body.entry.id).toBe(prevId)
@@ -120,28 +109,25 @@ describe('Leaderboard API service - post', () => {
   })
 
   it('should update an existing entry\'s created at for unique leaderboards', async () => {
-    apiKey.scopes = [APIKeyScope.WRITE_LEADERBOARDS]
-
-    await (<EntityManager>app.context.em).flush()
-    token = await createToken(apiKey)
-
-    leaderboard.unique = true
-    leaderboard.sortMode = LeaderboardSortMode.DESC
+    const [apiKey, token] = await createAPIKeyAndToken(app.context.em, [APIKeyScope.WRITE_LEADERBOARDS])
+    const player = await new PlayerFactory([apiKey.game]).one()
+    const leaderboard = await new LeaderboardFactory([apiKey.game]).with(() => ({ unique: true, sortMode: LeaderboardSortMode.DESC })).one()
 
     const originalDate = subHours(new Date(), 2)
 
-    const player = await new PlayerFactory([game]).one()
     const entry = await new LeaderboardEntryFactory(leaderboard, [player]).with(() => ({
       score: 100,
       createdAt: originalDate,
       playerAlias: player.aliases[0]
     })).one()
-    await (<EntityManager>app.context.em).persistAndFlush([player, entry])
+
+    await (<EntityManager>app.context.em).persistAndFlush([player, leaderboard, entry])
 
     const res = await request(app.callback())
       .post(`${baseUrl}/${leaderboard.internalName}/entries`)
-      .send({ aliasId: player.aliases[0].id, score: 300 })
+      .send({ score: 300 })
       .auth(token, { type: 'bearer' })
+      .set('x-talo-alias', String(player.aliases[0].id))
       .expect(200)
 
     expect(res.body.entry.score).toBe(300)
@@ -151,15 +137,16 @@ describe('Leaderboard API service - post', () => {
   })
 
   it('should add new entries for non-unique leaderboards', async () => {
-    leaderboard.unique = false
-
-    const player = await new PlayerFactory([game]).one()
-    await (<EntityManager>app.context.em).persistAndFlush([player])
+    const [apiKey, token] = await createAPIKeyAndToken(app.context.em, [APIKeyScope.WRITE_LEADERBOARDS])
+    const player = await new PlayerFactory([apiKey.game]).one()
+    const leaderboard = await new LeaderboardFactory([apiKey.game]).with(() => ({ unique: false })).one()
+    await (<EntityManager>app.context.em).persistAndFlush([player, leaderboard])
 
     let res = await request(app.callback())
       .post(`${baseUrl}/${leaderboard.internalName}/entries`)
-      .send({ aliasId: player.aliases[0].id, score: 300 })
+      .send({ score: 300 })
       .auth(token, { type: 'bearer' })
+      .set('x-talo-alias', String(player.aliases[0].id))
       .expect(200)
 
     const prevId = res.body.entry.id
@@ -167,8 +154,9 @@ describe('Leaderboard API service - post', () => {
 
     res = await request(app.callback())
       .post(`${baseUrl}/${leaderboard.internalName}/entries`)
-      .send({ aliasId: player.aliases[0].id, score: 360 })
+      .send({ score: 360 })
       .auth(token, { type: 'bearer' })
+      .set('x-talo-alias', String(player.aliases[0].id))
       .expect(200)
 
     expect(res.body.entry.id).not.toBe(prevId)
@@ -176,24 +164,25 @@ describe('Leaderboard API service - post', () => {
   })
 
   it('should not update an existing entry if the score is less than the current score and the sortMode is DESC', async () => {
-    leaderboard.unique = true
-    leaderboard.sortMode = LeaderboardSortMode.DESC
-
-    const player = await new PlayerFactory([game]).one()
-    await (<EntityManager>app.context.em).persistAndFlush([player])
+    const [apiKey, token] = await createAPIKeyAndToken(app.context.em, [APIKeyScope.WRITE_LEADERBOARDS])
+    const player = await new PlayerFactory([apiKey.game]).one()
+    const leaderboard = await new LeaderboardFactory([apiKey.game]).with(() => ({ unique: true, sortMode: LeaderboardSortMode.DESC })).one()
+    await (<EntityManager>app.context.em).persistAndFlush([player, leaderboard])
 
     let res = await request(app.callback())
       .post(`${baseUrl}/${leaderboard.internalName}/entries`)
-      .send({ aliasId: player.aliases[0].id, score: 300 })
+      .send({ score: 300 })
       .auth(token, { type: 'bearer' })
+      .set('x-talo-alias', String(player.aliases[0].id))
       .expect(200)
 
     expect(res.body.entry.score).toBe(300)
 
     res = await request(app.callback())
       .post(`${baseUrl}/${leaderboard.internalName}/entries`)
-      .send({ aliasId: player.aliases[0].id, score: 290 })
+      .send({ score: 290 })
       .auth(token, { type: 'bearer' })
+      .set('x-talo-alias', String(player.aliases[0].id))
       .expect(200)
 
     expect(res.body.entry.score).toBe(300)
@@ -201,24 +190,25 @@ describe('Leaderboard API service - post', () => {
   })
 
   it('should not update an existing entry if the score is greater than the current score and the sortMode is ASC', async () => {
-    leaderboard.unique = true
-    leaderboard.sortMode = LeaderboardSortMode.ASC
-
-    const player = await new PlayerFactory([game]).one()
-    await (<EntityManager>app.context.em).persistAndFlush([player])
+    const [apiKey, token] = await createAPIKeyAndToken(app.context.em, [APIKeyScope.WRITE_LEADERBOARDS])
+    const player = await new PlayerFactory([apiKey.game]).one()
+    const leaderboard = await new LeaderboardFactory([apiKey.game]).with(() => ({ unique: true, sortMode: LeaderboardSortMode.ASC })).one()
+    await (<EntityManager>app.context.em).persistAndFlush([player, leaderboard])
 
     let res = await request(app.callback())
       .post(`${baseUrl}/${leaderboard.internalName}/entries`)
-      .send({ aliasId: player.aliases[0].id, score: 300 })
+      .send({ score: 300 })
       .auth(token, { type: 'bearer' })
+      .set('x-talo-alias', String(player.aliases[0].id))
       .expect(200)
 
     expect(res.body.entry.score).toBe(300)
 
     res = await request(app.callback())
       .post(`${baseUrl}/${leaderboard.internalName}/entries`)
-      .send({ aliasId: player.aliases[0].id, score: 310 })
+      .send({ score: 310 })
       .auth(token, { type: 'bearer' })
+      .set('x-talo-alias', String(player.aliases[0].id))
       .expect(200)
 
     expect(res.body.entry.score).toBe(300)
@@ -226,23 +216,20 @@ describe('Leaderboard API service - post', () => {
   })
 
   it('should return the correct position if there are dev entries but no dev data header sent', async () => {
-    apiKey.scopes = [APIKeyScope.WRITE_LEADERBOARDS]
+    const [apiKey, token] = await createAPIKeyAndToken(app.context.em, [APIKeyScope.WRITE_LEADERBOARDS])
+    const player = await new PlayerFactory([apiKey.game]).one()
+    const leaderboard = await new LeaderboardFactory([apiKey.game]).with(() => ({ unique: false, sortMode: LeaderboardSortMode.ASC })).one()
 
-    const leaderboard = await new LeaderboardFactory([game]).state('not unique').one()
-    leaderboard.sortMode = LeaderboardSortMode.ASC
-
-    const player = await new PlayerFactory([game]).one()
-
-    const devPlayer = await new PlayerFactory([game]).state('dev build').one()
+    const devPlayer = await new PlayerFactory([apiKey.game]).state('dev build').one()
     const devEntry = await new LeaderboardEntryFactory(leaderboard, [devPlayer]).with(() => ({ score: 100 })).one()
 
     await (<EntityManager>app.context.em).persistAndFlush([leaderboard, player, devEntry])
-    token = await createToken(apiKey)
 
     const res = await request(app.callback())
       .post(`${baseUrl}/${leaderboard.internalName}/entries`)
-      .send({ aliasId: player.aliases[0].id, score: 300 })
+      .send({ score: 300 })
       .auth(token, { type: 'bearer' })
+      .set('x-talo-alias', String(player.aliases[0].id))
       .expect(200)
 
     expect(res.body.entry.position).toBe(0)

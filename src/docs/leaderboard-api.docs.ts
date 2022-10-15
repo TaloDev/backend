@@ -9,7 +9,8 @@ const LeaderboardAPIDocs: APIDocs<LeaderboardAPIService> = {
         internalName: 'The internal name of the leaderboard'
       },
       query: {
-        page: 'The current pagination index (starting at 0)'
+        page: 'The current pagination index (starting at 0)',
+        aliasId: 'Only return entries for this alias ID'
       }
     },
     samples: [

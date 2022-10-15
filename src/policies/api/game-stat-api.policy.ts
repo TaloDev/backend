@@ -6,7 +6,6 @@ import Policy from '../policy'
 export default class GameStatAPIPolicy extends Policy {
   async put(req: Request): Promise<PolicyResponse> {
     const { internalName } = req.params
-    const { aliasId } = req.body
 
     const key = await this.getAPIKey()
     const stat = await this.em.getRepository(GameStat).findOne({
@@ -19,7 +18,7 @@ export default class GameStatAPIPolicy extends Policy {
 
     const player = await this.em.getRepository(Player).findOne({
       aliases: {
-        id: aliasId
+        id: this.ctx.state.currentAliasId
       },
       game: key.game
     })

@@ -30,7 +30,7 @@ describe('Demo service - post', () => {
 
   it('should create a demo user and then delete them', async () => {
     const res = await request(app.callback())
-      .post(`${baseUrl}`)
+      .post(baseUrl)
       .expect(200)
 
     expect(res.body.user).toBeTruthy()
@@ -53,7 +53,7 @@ describe('Demo service - post', () => {
     expect(oldEvents.length).toBeGreaterThan(0)
 
     await request(app.callback())
-      .post(`${baseUrl}`)
+      .post(baseUrl)
       .expect(200)
 
     await (<EntityManager>app.context.em).clear()

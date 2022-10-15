@@ -38,7 +38,7 @@ describe('<%= h.changeCase.sentenceCase(name) %> API service - post', () => {
     token = await createToken(apiKey)
 
     await request(app.callback())
-      .post(`${baseUrl}`)
+      .post(baseUrl)
       .auth(token, { type: 'bearer' })
       .expect(200)
   })
@@ -49,7 +49,7 @@ describe('<%= h.changeCase.sentenceCase(name) %> API service - post', () => {
     token = await createToken(apiKey)
 
     await request(app.callback())
-      .post(`${baseUrl}`)
+      .post(baseUrl)
       .auth(token, { type: 'bearer' })
       .expect(403)
   })

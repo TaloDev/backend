@@ -47,7 +47,7 @@ describe('Player API service - merge', () => {
     token = await createToken(apiKey)
 
     const res = await request(app.callback())
-      .post(`${baseUrl}`)
+      .post(baseUrl)
       .send({ playerId1: '6901af6c-7581-40ec-83c8-c8866e77dbea', playerId2: 'cbc774b1-1542-4bce-b33f-4f090f53de68' })
       .auth(token, { type: 'bearer' })
       .expect(403)
@@ -61,7 +61,7 @@ describe('Player API service - merge', () => {
     token = await createToken(apiKey)
 
     const res = await request(app.callback())
-      .post(`${baseUrl}`)
+      .post(baseUrl)
       .send({ playerId1: '6901af6c-7581-40ec-83c8-c8866e77dbea', playerId2: 'cbc774b1-1542-4bce-b33f-4f090f53de68' })
       .auth(token, { type: 'bearer' })
       .expect(403)
@@ -75,7 +75,7 @@ describe('Player API service - merge', () => {
     token = await createToken(apiKey)
 
     const res = await request(app.callback())
-      .post(`${baseUrl}`)
+      .post(baseUrl)
       .send({ playerId1: '6901af6c-7581-40ec-83c8-c8866e77dbea', playerId2: 'cbc774b1-1542-4bce-b33f-4f090f53de68' })
       .auth(token, { type: 'bearer' })
       .expect(403)
@@ -93,7 +93,7 @@ describe('Player API service - merge', () => {
     await (<EntityManager>app.context.em).persistAndFlush([player1, player2])
 
     const res = await request(app.callback())
-      .post(`${baseUrl}`)
+      .post(baseUrl)
       .send({ playerId1: player1.id, playerId2: player2.id })
       .auth(token, { type: 'bearer' })
       .expect(200)
@@ -135,7 +135,7 @@ describe('Player API service - merge', () => {
     await (<EntityManager>app.context.em).persistAndFlush([player1, player2])
 
     const res = await request(app.callback())
-      .post(`${baseUrl}`)
+      .post(baseUrl)
       .send({ playerId1: player1.id, playerId2: player2.id })
       .auth(token, { type: 'bearer' })
       .expect(200)
@@ -173,7 +173,7 @@ describe('Player API service - merge', () => {
     await (<EntityManager>app.context.em).persistAndFlush(player2)
 
     const res = await request(app.callback())
-      .post(`${baseUrl}`)
+      .post(baseUrl)
       .send({ playerId1: 'nah', playerId2: player2.id })
       .auth(token, { type: 'bearer' })
       .expect(404)
@@ -190,7 +190,7 @@ describe('Player API service - merge', () => {
     await (<EntityManager>app.context.em).persistAndFlush(player1)
 
     const res = await request(app.callback())
-      .post(`${baseUrl}`)
+      .post(baseUrl)
       .send({ playerId1: player1.id, playerId2: 'nah' })
       .auth(token, { type: 'bearer' })
       .expect(404)
@@ -208,7 +208,7 @@ describe('Player API service - merge', () => {
     await (<EntityManager>app.context.em).persistAndFlush([player1, player2, save])
 
     await request(app.callback())
-      .post(`${baseUrl}`)
+      .post(baseUrl)
       .send({ playerId1: player1.id, playerId2: player2.id })
       .auth(token, { type: 'bearer' })
       .expect(200)
@@ -229,7 +229,7 @@ describe('Player API service - merge', () => {
     await (<EntityManager>app.context.em).persistAndFlush([player1, player2, playerStat])
 
     await request(app.callback())
-      .post(`${baseUrl}`)
+      .post(baseUrl)
       .send({ playerId1: player1.id, playerId2: player2.id })
       .auth(token, { type: 'bearer' })
       .expect(200)

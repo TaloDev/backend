@@ -53,7 +53,7 @@ const GameSaveAPIDocs: APIDocs<GameSaveAPIService> = {
     description: 'Get a player\'s saves',
     params: {
       headers: {
-        'X-Talo-Player': 'The ID of the player'
+        'x-talo-player': 'The ID of the player'
       }
     },
     samples: [
@@ -69,7 +69,7 @@ const GameSaveAPIDocs: APIDocs<GameSaveAPIService> = {
     description: 'Create a save',
     params: {
       headers: {
-        'X-Talo-Player': 'The ID of the player'
+        'x-talo-player': 'The ID of the player'
       },
       body: {
         name: 'The name of the save',
@@ -97,7 +97,7 @@ const GameSaveAPIDocs: APIDocs<GameSaveAPIService> = {
     description: 'Update a save',
     params: {
       headers: {
-        'X-Talo-Player': 'The ID of the player'
+        'x-talo-player': 'The ID of the player'
       },
       body: {
         name: 'A new name for the save',
@@ -128,7 +128,7 @@ const GameSaveAPIDocs: APIDocs<GameSaveAPIService> = {
     description: 'Delete a save',
     params: {
       headers: {
-        'X-Talo-Player': 'The ID of the player'
+        'x-talo-player': 'The ID of the player'
       },
       route: {
         id: 'The ID of the save'

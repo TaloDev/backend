@@ -8,20 +8,16 @@ export default class PlayerAPIPolicy extends Policy {
   }
 
   async patch(req: Request): Promise<PolicyResponse> {
-    const { aliasId } = req.params
+    const { id } = req.params
 
     const key = await this.getAPIKey()
 
-    const player = await this.em.getRepository(Player).findOne({
-      aliases: {
-        id: Number(aliasId)
-      },
+    req.ctx.state.player = await this.em.getRepository(Player).findOne({
+      id: id,
       game: key.game
     })
 
-    if (!player) return new PolicyDenial({ message: 'Player not found' }, 404)
-
-    req.ctx.state.player = player
+    if (!req.ctx.state.player) return new PolicyDenial({ message: 'Player not found' }, 404)
 
     return await this.hasScope('write:players')
   }

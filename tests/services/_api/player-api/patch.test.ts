@@ -47,7 +47,7 @@ describe('Player API service - patch', () => {
     token = await createToken(apiKey)
 
     const res = await request(app.callback())
-      .patch(`${baseUrl}/${player.aliases[0].id}`)
+      .patch(`${baseUrl}/${player.id}`)
       .send({
         props: [
           {
@@ -85,7 +85,7 @@ describe('Player API service - patch', () => {
     token = await createToken(apiKey)
 
     await request(app.callback())
-      .patch(`${baseUrl}/${player.aliases[0].id}`)
+      .patch(`${baseUrl}/${player.id}`)
       .send({
         props: [
           {
@@ -129,7 +129,7 @@ describe('Player API service - patch', () => {
     await (<EntityManager>app.context.em).persistAndFlush(otherPlayer)
 
     const res = await request(app.callback())
-      .patch(`${baseUrl}/${otherPlayer.aliases[0].id}`)
+      .patch(`${baseUrl}/${otherPlayer.id}`)
       .send({
         props: [
           {
@@ -164,7 +164,7 @@ describe('Player API service - patch', () => {
     token = await createToken(apiKey)
 
     const res = await request(app.callback())
-      .patch(`${baseUrl}/${player.aliases[0].id}`)
+      .patch(`${baseUrl}/${player.id}`)
       .send({
         props: [
           {

@@ -2,36 +2,20 @@ import { EntityManager } from '@mikro-orm/core'
 import Koa from 'koa'
 import init from '../../../../src/index'
 import request from 'supertest'
-import APIKey, { APIKeyScope } from '../../../../src/entities/api-key'
-import { createToken } from '../../../../src/services/api-key.service'
-import UserFactory from '../../../fixtures/UserFactory'
-import GameFactory from '../../../fixtures/GameFactory'
+import { APIKeyScope } from '../../../../src/entities/api-key'
 import LeaderboardFactory from '../../../fixtures/LeaderboardFactory'
 import PlayerFactory from '../../../fixtures/PlayerFactory'
-import Game from '../../../../src/entities/game'
 import LeaderboardEntryFactory from '../../../fixtures/LeaderboardEntryFactory'
 import { LeaderboardSortMode } from '../../../../src/entities/leaderboard'
+import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
 
 const baseUrl = '/v1/leaderboards'
 
 describe('Leaderboard API service - get', () => {
   let app: Koa
 
-  let game: Game
-
-  let apiKey: APIKey
-  let token: string
-
   beforeAll(async () => {
     app = await init()
-
-    const user = await new UserFactory().one()
-    game = await new GameFactory(user.organisation).one()
-
-    apiKey = new APIKey(game, user)
-    token = await createToken(apiKey)
-
-    await (<EntityManager>app.context.em).persistAndFlush(apiKey)
   })
 
   afterAll(async () => {
@@ -39,15 +23,14 @@ describe('Leaderboard API service - get', () => {
   })
 
   it('should get leaderboard entries if the scope is valid', async () => {
-    const leaderboard = await new LeaderboardFactory([game]).one()
+    const [apiKey, token] = await createAPIKeyAndToken(app.context.em, [APIKeyScope.READ_LEADERBOARDS])
+    const leaderboard = await new LeaderboardFactory([apiKey.game]).one()
 
-    apiKey.scopes = [APIKeyScope.READ_LEADERBOARDS]
-    const players = await new PlayerFactory([game]).many(3)
+    const players = await new PlayerFactory([apiKey.game]).many(3)
     const entries = await new LeaderboardEntryFactory(leaderboard, players).many(3)
     const hiddenEntries = await new LeaderboardEntryFactory(leaderboard, players).state('hidden').many(3)
 
     await (<EntityManager>app.context.em).persistAndFlush([...players, ...entries, ...hiddenEntries])
-    token = await createToken(apiKey)
 
     const res = await request(app.callback())
       .get(`${baseUrl}/${leaderboard.internalName}/entries`)
@@ -67,16 +50,16 @@ describe('Leaderboard API service - get', () => {
   })
 
   it('should get leaderboard entries for a specific alias', async () => {
-    const leaderboard = await new LeaderboardFactory([game]).one()
+    const [apiKey, token] = await createAPIKeyAndToken(app.context.em, [APIKeyScope.READ_LEADERBOARDS])
+    const leaderboard = await new LeaderboardFactory([apiKey.game]).one()
 
-    const player = await new PlayerFactory([game]).one()
+    const player = await new PlayerFactory([apiKey.game]).one()
     const entries = await new LeaderboardEntryFactory(leaderboard, [player]).with(() => ({ playerAlias: player.aliases[0] })).many(2)
 
-    const otherPlayers = await new PlayerFactory([game]).many(3)
+    const otherPlayers = await new PlayerFactory([apiKey.game]).many(3)
     const otherEntries = await new LeaderboardEntryFactory(leaderboard, otherPlayers).many(5)
 
     await (<EntityManager>app.context.em).persistAndFlush([player, ...entries, ...otherPlayers, ...otherEntries])
-    token = await createToken(apiKey)
 
     const res = await request(app.callback())
       .get(`${baseUrl}/${leaderboard.internalName}/entries`)
@@ -96,12 +79,9 @@ describe('Leaderboard API service - get', () => {
   })
 
   it('should not get leaderboard entries if the scope is not valid', async () => {
-    const leaderboard = await new LeaderboardFactory([game]).one()
-
-    apiKey.scopes = []
-
-    await (<EntityManager>app.context.em).flush()
-    token = await createToken(apiKey)
+    const [apiKey, token] = await createAPIKeyAndToken(app.context.em, [])
+    const leaderboard = await new LeaderboardFactory([apiKey.game]).one()
+    await (<EntityManager>app.context.em).persistAndFlush(leaderboard)
 
     await request(app.callback())
       .get(`${baseUrl}/${leaderboard.internalName}/entries`)
@@ -111,10 +91,7 @@ describe('Leaderboard API service - get', () => {
   })
 
   it('should not get entries for a non-existent leaderboard', async () => {
-    apiKey.scopes = [APIKeyScope.READ_LEADERBOARDS]
-
-    await (<EntityManager>app.context.em).flush()
-    token = await createToken(apiKey)
+    const [, token] = await createAPIKeyAndToken(app.context.em, [APIKeyScope.READ_LEADERBOARDS])
 
     await request(app.callback())
       .get(`${baseUrl}/blah/entries`)

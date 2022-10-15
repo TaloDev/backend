@@ -50,8 +50,9 @@ describe('Leaderboard API service - post - steamworks integration', () => {
 
     await request(app.callback())
       .post(`${baseUrl}/${leaderboard.internalName}/entries`)
-      .send({ aliasId: player.aliases[0].id, score: 300 })
+      .send({ score: 300 })
       .auth(token, { type: 'bearer' })
+      .set('x-talo-alias', String(player.aliases[0].id))
       .expect(200)
 
     expect(createMock).toHaveBeenCalledTimes(1)
@@ -83,8 +84,9 @@ describe('Leaderboard API service - post - steamworks integration', () => {
 
     await request(app.callback())
       .post(`${baseUrl}/${leaderboard.internalName}/entries`)
-      .send({ aliasId: player.aliases[0].id, score: 300 })
+      .send({ score: 300 })
       .auth(token, { type: 'bearer' })
+      .set('x-talo-alias', String(player.aliases[0].id))
       .expect(200)
 
     expect(createMock).not.toHaveBeenCalled()
@@ -114,8 +116,9 @@ describe('Leaderboard API service - post - steamworks integration', () => {
 
     await request(app.callback())
       .post(`${baseUrl}/${leaderboard.internalName}/entries`)
-      .send({ aliasId: player.aliases[0].id, score: 300 })
+      .send({ score: 300 })
       .auth(token, { type: 'bearer' })
+      .set('x-talo-alias', String(player.aliases[0].id))
       .expect(200)
 
     expect(createMock).not.toHaveBeenCalled()

@@ -1,4 +1,5 @@
-import { RouteDocs } from 'koa-clay'
+import GameSaveAPIService from '../services/api/game-save-api.service'
+import APIDocs from './api-docs'
 
 const sampleSave = {
   id: 143,
@@ -47,7 +48,7 @@ const sampleSave = {
   updatedAt: '2022-06-07 14:58:13'
 }
 
-const GameSaveAPIDocs: Record<string, RouteDocs> = {
+const GameSaveAPIDocs: APIDocs<GameSaveAPIService> = {
   index: {
     description: 'Get a player\'s saves',
     params: {

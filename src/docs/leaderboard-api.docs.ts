@@ -1,6 +1,7 @@
-import { RouteDocs } from 'koa-clay'
+import LeaderboardAPIService from '../services/api/leaderboard-api.service'
+import APIDocs from './api-docs'
 
-const LeaderboardAPIDocs: Record<string, RouteDocs> = {
+const LeaderboardAPIDocs: APIDocs<LeaderboardAPIService> = {
   get: {
     description: 'Get a leaderboard\'s entries\n50 results are returned per page, in the sort order defined by the leaderboard',
     params: {

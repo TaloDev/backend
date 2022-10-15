@@ -1,6 +1,7 @@
-import { RouteDocs } from 'koa-clay'
+import GameStatAPIService from '../services/api/game-stat-api.service'
+import APIDocs from './api-docs'
 
-const GameStatAPIDocs: Record<string, RouteDocs> = {
+const GameStatAPIDocs: APIDocs<GameStatAPIService> = {
   put: {
     description: 'Update a stat value',
     params: {

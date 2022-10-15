@@ -2,37 +2,19 @@ import { EntityManager } from '@mikro-orm/core'
 import Koa from 'koa'
 import init from '../../../../src/index'
 import request from 'supertest'
-import APIKey, { APIKeyScope } from '../../../../src/entities/api-key'
-import { createToken } from '../../../../src/services/api-key.service'
-import UserFactory from '../../../fixtures/UserFactory'
-import GameFactory from '../../../fixtures/GameFactory'
+import { APIKeyScope } from '../../../../src/entities/api-key'
 import PlayerFactory from '../../../fixtures/PlayerFactory'
-import Player from '../../../../src/entities/player'
-import GameSave from '../../../../src/entities/game-save'
 import GameSaveFactory from '../../../fixtures/GameSaveFactory'
+import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
+import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
 
 const baseUrl = '/v1/game-saves'
 
 describe('Game save API service - index', () => {
   let app: Koa
-  let apiKey: APIKey
-  let token: string
-  let players: Player[]
-  let saves: GameSave[]
 
   beforeAll(async () => {
     app = await init()
-
-    const user = await new UserFactory().one()
-    const game = await new GameFactory(user.organisation).one()
-    apiKey = new APIKey(game, user)
-
-    players = await new PlayerFactory([game]).many(4)
-    saves = await new GameSaveFactory(players).many(5)
-
-    token = await createToken(apiKey)
-
-    await (<EntityManager>app.context.em).persistAndFlush([apiKey, ...saves])
   })
 
   afterAll(async () => {
@@ -40,13 +22,15 @@ describe('Game save API service - index', () => {
   })
 
   it('should return game saves if the scope is valid', async () => {
-    apiKey.scopes = [APIKeyScope.READ_GAME_SAVES]
-    await (<EntityManager>app.context.em).flush()
-    token = await createToken(apiKey)
+    const [apiKey, token] = await createAPIKeyAndToken(app.context.em, [APIKeyScope.READ_GAME_SAVES])
+    const players = await new PlayerFactory([apiKey.game]).many(4)
+    const saves = await new GameSaveFactory(players).many(5)
+    await (<EntityManager>app.context.em).persistAndFlush(saves)
 
     const res = await request(app.callback())
-      .get(`${baseUrl}?aliasId=${saves[0].player.aliases[0].id}`)
+      .get(baseUrl)
       .auth(token, { type: 'bearer' })
+      .set('x-talo-player', saves[0].player.id)
       .expect(200)
 
     const length = saves.filter((save) => save.player.id === saves[0].player.id).length
@@ -54,24 +38,42 @@ describe('Game save API service - index', () => {
   })
 
   it('should not return game saves if the scope is not valid', async () => {
-    apiKey.scopes = []
-    await (<EntityManager>app.context.em).flush()
-    token = await createToken(apiKey)
+    const [apiKey, token] = await createAPIKeyAndToken(app.context.em, [])
+    const players = await new PlayerFactory([apiKey.game]).many(4)
+    const saves = await new GameSaveFactory(players).many(5)
+    await (<EntityManager>app.context.em).persistAndFlush(saves)
 
     await request(app.callback())
-      .get(`${baseUrl}?aliasId=${saves[0].player.aliases[0].id}`)
+      .get(baseUrl)
       .auth(token, { type: 'bearer' })
+      .set('x-talo-player', saves[0].player.id)
       .expect(403)
   })
 
   it('should not return game saves for a missing player', async () => {
-    apiKey.scopes = [APIKeyScope.READ_GAME_SAVES]
-    await (<EntityManager>app.context.em).flush()
-    token = await createToken(apiKey)
+    const [, token] = await createAPIKeyAndToken(app.context.em, [])
 
     const res = await request(app.callback())
-      .get(`${baseUrl}?aliasId=123456`)
+      .get(baseUrl)
       .auth(token, { type: 'bearer' })
+      .set('x-talo-player', '123456')
+      .expect(404)
+
+    expect(res.body).toStrictEqual({ message: 'Player not found' })
+  })
+
+  it('should not return game saves for a player from another game', async () => {
+    const [, token] = await createAPIKeyAndToken(app.context.em, [])
+    const [, game] = await createOrganisationAndGame(app.context.em)
+    const otherPlayer = await new PlayerFactory([game]).one()
+
+    await (<EntityManager>app.context.em).persistAndFlush(otherPlayer)
+
+    const res = await request(app.callback())
+      .post(baseUrl)
+      .send({ name: 'save', content: {} })
+      .auth(token, { type: 'bearer' })
+      .set('x-talo-player', otherPlayer.id)
       .expect(404)
 
     expect(res.body).toStrictEqual({ message: 'Player not found' })

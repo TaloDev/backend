@@ -41,7 +41,7 @@ describe('Event API service - post', () => {
     token = await createToken(apiKey)
 
     const res = await request(app.callback())
-      .post(`${baseUrl}`)
+      .post(baseUrl)
       .send({ events: [{ name: 'Craft bow', aliasId: validPlayer.aliases[0].id, timestamp: Date.now() }] })
       .auth(token, { type: 'bearer' })
       .expect(200)
@@ -57,7 +57,7 @@ describe('Event API service - post', () => {
     token = await createToken(apiKey)
 
     const res = await request(app.callback())
-      .post(`${baseUrl}`)
+      .post(baseUrl)
       .send({
         events: [
           { name: 'Craft bow', aliasId: validPlayer.aliases[0].id, timestamp: Date.now() },
@@ -77,7 +77,7 @@ describe('Event API service - post', () => {
     token = await createToken(apiKey)
 
     await request(app.callback())
-      .post(`${baseUrl}`)
+      .post(baseUrl)
       .send({ events: [{ name: 'Craft bow', aliasId: validPlayer.aliases[0].id, timestamp: Date.now() }] })
       .auth(token, { type: 'bearer' })
       .expect(403)
@@ -89,7 +89,7 @@ describe('Event API service - post', () => {
     token = await createToken(apiKey)
 
     const res = await request(app.callback())
-      .post(`${baseUrl}`)
+      .post(baseUrl)
       .send({ events: [{ name: 'Craft bow', aliasId: 'blah', timestamp: Date.now() }] })
       .auth(token, { type: 'bearer' })
       .expect(200)
@@ -103,7 +103,7 @@ describe('Event API service - post', () => {
     token = await createToken(apiKey)
 
     const res = await request(app.callback())
-      .post(`${baseUrl}`)
+      .post(baseUrl)
       .send({ events: [{ name: 'Craft bow', aliasId: 574, timestamp: Date.now() }] })
       .auth(token, { type: 'bearer' })
       .expect(200)
@@ -121,7 +121,7 @@ describe('Event API service - post', () => {
     await (<EntityManager>app.context.em).persistAndFlush(invalidPlayer)
 
     const res = await request(app.callback())
-      .post(`${baseUrl}`)
+      .post(baseUrl)
       .send({ events: [{ name: 'Craft bow', aliasId: invalidPlayer.aliases[0].id, timestamp: Date.now() }] })
       .auth(token, { type: 'bearer' })
       .expect(200)
@@ -135,7 +135,7 @@ describe('Event API service - post', () => {
     token = await createToken(apiKey)
 
     const res = await request(app.callback())
-      .post(`${baseUrl}`)
+      .post(baseUrl)
       .send({ events: [{ aliasId: validPlayer.aliases[0].id, timestamp: Date.now() }] })
       .auth(token, { type: 'bearer' })
       .expect(200)
@@ -149,7 +149,7 @@ describe('Event API service - post', () => {
     token = await createToken(apiKey)
 
     const res = await request(app.callback())
-      .post(`${baseUrl}`)
+      .post(baseUrl)
       .send({ events: [{ name: 'Craft bow', aliasId: validPlayer.aliases[0].id }] })
       .auth(token, { type: 'bearer' })
       .expect(200)
@@ -163,7 +163,7 @@ describe('Event API service - post', () => {
     token = await createToken(apiKey)
 
     const res = await request(app.callback())
-      .post(`${baseUrl}`)
+      .post(baseUrl)
       .send({ name: 'Craft bow', aliasId: validPlayer.aliases[0].id })
       .auth(token, { type: 'bearer' })
       .expect(400)
@@ -181,7 +181,7 @@ describe('Event API service - post', () => {
     token = await createToken(apiKey)
 
     const res = await request(app.callback())
-      .post(`${baseUrl}`)
+      .post(baseUrl)
       .send({
         events: [
           { name: 'Equip bow', aliasId: validPlayer.aliases[0].id, timestamp: Date.now(), props: [{ key: 'itemId', value: 5 }] }
@@ -200,7 +200,7 @@ describe('Event API service - post', () => {
     token = await createToken(apiKey)
 
     const res = await request(app.callback())
-      .post(`${baseUrl}`)
+      .post(baseUrl)
       .send({
         events: [
           { name: 'Equip bow', aliasId: validPlayer.aliases[0].id, timestamp: Date.now(), props: [{ key: 'itemId', value: 5 }, { key: 'name', value: null }] }
@@ -218,7 +218,7 @@ describe('Event API service - post', () => {
     token = await createToken(apiKey)
 
     const res = await request(app.callback())
-      .post(`${baseUrl}`)
+      .post(baseUrl)
       .send({
         events: [
           { name: 'Equip bow', aliasId: validPlayer.aliases[0].id, timestamp: Date.now(), props: { itemId: 5 } }
@@ -236,7 +236,7 @@ describe('Event API service - post', () => {
     token = await createToken(apiKey)
 
     await request(app.callback())
-      .post(`${baseUrl}`)
+      .post(baseUrl)
       .send({
         events: [
           { name: 'Equip bow', aliasId: validPlayer.aliases[0].id, timestamp: Date.now(), props: [{ key: 'META_OS', value: 'macOS' }] }
@@ -259,7 +259,7 @@ describe('Event API service - post', () => {
     token = await createToken(apiKey)
 
     const res = await request(app.callback())
-      .post(`${baseUrl}`)
+      .post(baseUrl)
       .send({
         events: [
           { name: 'Equip bow', aliasId: validPlayer.aliases[0].id, timestamp: Date.now(), props: [{ key: 'META_NO_WAY', value: 'true' }, { key: 'META_OS', value: 'macOS' }] }

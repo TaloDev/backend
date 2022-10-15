@@ -31,7 +31,7 @@ describe('<%= h.changeCase.sentenceCase(name) %> service - index', () => {
 
   it('should return a list of <%= h.changeCase.noCase(name) %>s', async () => {
     await request(app.callback())
-      .get(`${baseUrl}`)
+      .get(baseUrl)
       .auth(token, { type: 'bearer' })
       .expect(200)
   })

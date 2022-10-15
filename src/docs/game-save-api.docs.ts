@@ -52,8 +52,8 @@ const GameSaveAPIDocs: APIDocs<GameSaveAPIService> = {
   index: {
     description: 'Get a player\'s saves',
     params: {
-      query: {
-        aliasId: 'The ID of the player\'s alias'
+      headers: {
+        'X-Talo-Player': 'The ID of the player'
       }
     },
     samples: [
@@ -68,10 +68,12 @@ const GameSaveAPIDocs: APIDocs<GameSaveAPIService> = {
   post: {
     description: 'Create a save',
     params: {
+      headers: {
+        'X-Talo-Player': 'The ID of the player'
+      },
       body: {
         name: 'The name of the save',
-        content: 'The @type(SaveContent:savecontent) of the save file',
-        aliasId: 'The ID of the player\'s alias'
+        content: 'The @type(SaveContent:savecontent) of the save file'
       }
     },
     samples: [
@@ -94,10 +96,12 @@ const GameSaveAPIDocs: APIDocs<GameSaveAPIService> = {
   patch: {
     description: 'Update a save',
     params: {
+      headers: {
+        'X-Talo-Player': 'The ID of the player'
+      },
       body: {
         name: 'A new name for the save',
-        content: 'The new @type(SaveContent:savecontent) for the save',
-        aliasId: 'The ID of the player\'s alias'
+        content: 'The new @type(SaveContent:savecontent) for the save'
       },
       route: {
         id: 'The ID of the save'

@@ -29,7 +29,7 @@ describe('Invite service - index', () => {
     await (<EntityManager>app.context.em).persistAndFlush(invites)
 
     const res = await request(app.callback())
-      .get(`${baseUrl}`)
+      .get(baseUrl)
       .auth(token, { type: 'bearer' })
       .expect(statusCode)
 

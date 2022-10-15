@@ -7,6 +7,7 @@ import LeaderboardAPIService from '../services/api/leaderboard-api.service'
 import EventAPIService from '../services/api/event-api.service'
 import PlayerAPIService from '../services/api/player-api.service'
 import limiterMiddleware from '../middlewares/limiter-middleware'
+import currentPlayerMiddleware from '../middlewares/current-player-middleware'
 
 export default (app: Koa) => {
   app.use(async (ctx: Context, next: Next): Promise<void> => {
@@ -19,6 +20,8 @@ export default (app: Koa) => {
   if (process.env.NODE_ENV !== 'test') {
     app.use(limiterMiddleware)
   }
+
+  app.use(currentPlayerMiddleware)
 
   app.use(service('/v1/game-config', new GameConfigAPIService()))
   app.use(service('/v1/game-stats', new GameStatAPIService()))

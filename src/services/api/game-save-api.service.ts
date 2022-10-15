@@ -7,7 +7,7 @@ import GameSaveAPIDocs from '../../docs/game-save-api.docs'
 
 export default class GameSaveAPIService extends APIService {
   @Validate({
-    query: ['aliasId']
+    headers: ['x-talo-player']
   })
   @HasPermission(GameSaveAPIPolicy, 'index')
   @Docs(GameSaveAPIDocs.index)
@@ -27,7 +27,8 @@ export default class GameSaveAPIService extends APIService {
   }
 
   @Validate({
-    body: ['name', 'content', 'aliasId']
+    headers: ['x-talo-player'],
+    body: ['name', 'content']
   })
   @HasPermission(GameSaveAPIPolicy, 'post')
   @Docs(GameSaveAPIDocs.post)
@@ -50,7 +51,8 @@ export default class GameSaveAPIService extends APIService {
   }
 
   @Validate({
-    body: ['content', 'aliasId']
+    headers: ['x-talo-player'],
+    body: ['content']
   })
   @HasPermission(GameSaveAPIPolicy, 'patch')
   @Docs(GameSaveAPIDocs.patch)

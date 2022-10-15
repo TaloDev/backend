@@ -33,7 +33,7 @@ describe('Organisation service - current', () => {
     await (<EntityManager>app.context.em).persistAndFlush([otherUser, ...invites])
 
     const res = await request(app.callback())
-      .get(`${baseUrl}`)
+      .get(baseUrl)
       .auth(token, { type: 'bearer' })
       .expect(statusCode)
 

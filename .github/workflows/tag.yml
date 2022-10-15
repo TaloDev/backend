@@ -29,5 +29,5 @@ jobs:
               owner: context.repo.owner,
               repo: context.repo.repo,
               workflow_id: 'create-release.yml',
-              ref: ${{ steps.check.outputs.version }},
+              ref: ${{ steps.check.outputs.version }}
             })

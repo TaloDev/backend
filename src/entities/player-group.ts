@@ -15,22 +15,26 @@ export enum RuleMode {
 export type PlayerField = keyof Player | 'prop with key'
 
 type RuleFields = {
-  field: PlayerField
+  field: string
   defaultCastType?: PlayerGroupRuleCastType
+  mapsTo: PlayerField
 }
 
 export const PlayerRuleFields: RuleFields[] = [
   {
     field: 'prop with key',
-    defaultCastType: PlayerGroupRuleCastType.CHAR
+    defaultCastType: PlayerGroupRuleCastType.CHAR,
+    mapsTo: 'props'
   },
   {
-    field: 'lastSeenAt',
-    defaultCastType: PlayerGroupRuleCastType.DATETIME
+    field: 'latest login',
+    defaultCastType: PlayerGroupRuleCastType.DATETIME,
+    mapsTo: 'lastSeenAt'
   },
   {
-    field: 'createdAt',
-    defaultCastType: PlayerGroupRuleCastType.DATETIME
+    field: 'first login',
+    defaultCastType: PlayerGroupRuleCastType.DATETIME,
+    mapsTo: 'createdAt'
   }
 ]
 

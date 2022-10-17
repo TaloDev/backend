@@ -31,6 +31,11 @@ import LeaderboardPolicy from '../policies/leaderboard.policy'
   },
   {
     method: 'DELETE'
+  },
+  {
+    method: 'GET',
+    path: '/search',
+    handler: 'search'
   }
 ])
 export default class LeaderboardService extends Service {
@@ -82,9 +87,7 @@ export default class LeaderboardService extends Service {
     }
   }
 
-  @Validate({
-    query: ['page']
-  })
+  @Validate({ query: ['page'] })
   @HasPermission(LeaderboardPolicy, 'get')
   async entries(req: Request): Promise<Response> {
     const itemsPerPage = 50
@@ -126,10 +129,15 @@ export default class LeaderboardService extends Service {
 
     await em.populate(entries, ['playerAlias'])
 
+    const mappedEntries = entries.map((entry, idx) => ({
+      position: idx + (Number(page) * itemsPerPage),
+      ...entry.toJSON()
+    }))
+
     return {
       status: 200,
       body: {
-        entries: entries.map((entry, idx) => ({ position: idx + (Number(page) * itemsPerPage), ...entry.toJSON() })),
+        entries: mappedEntries,
         count,
         isLastPage: (Number(page) * itemsPerPage) + itemsPerPage >= count
       }
@@ -247,6 +255,27 @@ export default class LeaderboardService extends Service {
 
     return {
       status: 204
+    }
+  }
+
+  @Validate({ query: ['internalName'] })
+  @HasPermission(LeaderboardPolicy, 'search')
+  async search(req: Request): Promise<Response> {
+    const { internalName } = req.query
+    const em: EntityManager = req.ctx.em
+
+    const leaderboard = await em.getRepository(Leaderboard).findOne({
+      internalName,
+      game: req.ctx.state.game
+    })
+
+    if (!leaderboard) req.ctx.throw(404, 'Leaderboard not found')
+
+    return {
+      status: 200,
+      body: {
+        leaderboard
+      }
     }
   }
 }

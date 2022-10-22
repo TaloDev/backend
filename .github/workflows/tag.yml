@@ -21,7 +21,19 @@ jobs:
         repo-token: ${{ secrets.GITHUB_TOKEN }}
         tag: ${{ steps.check.outputs.version }}
 
-    - name: Trigger workflow
+    - name: Trigger Docker workflow
+      if: steps.check.outputs.changed == 'true'
+      uses: actions/github-script@v6
+      with:
+        script: |
+          github.rest.actions.createWorkflowDispatch({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            workflow_id: 'docker.yml',
+            ref: '${{ steps.check.outputs.version }}'
+          })
+
+    - name: Trigger Release workflow
       if: steps.check.outputs.changed == 'true'
       uses: actions/github-script@v6
       with:

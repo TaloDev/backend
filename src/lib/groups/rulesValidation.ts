@@ -23,7 +23,7 @@ export const rulesValidation = async (val: unknown): Promise<ValidationCondition
   {
     check: (val as PlayerGroupRule[]).every?.((rule) => {
       const matchesRuleField = PlayerRuleFields
-        .map((f) => f.field)
+        .map((f) => f.mapsTo)
         .filter((_, idx) => idx > 0) // exclude the first field, checked by regex below
         .includes(rule.field as PlayerField)
 

@@ -27,7 +27,7 @@ describe('Game service - post', () => {
     const [token, user] = await createUserAndToken(app.context.em, { type })
 
     const res = await request(app.callback())
-      .post(`${baseUrl}`)
+      .post(baseUrl)
       .send({ name: 'Twodoors' })
       .auth(token, { type: 'bearer' })
       .expect(statusCode)

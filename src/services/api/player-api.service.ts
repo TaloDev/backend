@@ -20,7 +20,6 @@ import PlayerGameStat from '../../entities/player-game-stat'
   },
   {
     method: 'PATCH',
-    path: '/:aliasId',
     docs: PlayerAPIDocs.patch
   },
   {

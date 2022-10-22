@@ -1,4 +1,5 @@
-import { RouteDocs } from 'koa-clay'
+import GameSaveAPIService from '../services/api/game-save-api.service'
+import APIDocs from './api-docs'
 
 const sampleSave = {
   id: 143,
@@ -47,12 +48,12 @@ const sampleSave = {
   updatedAt: '2022-06-07 14:58:13'
 }
 
-const GameSaveAPIDocs: Record<string, RouteDocs> = {
+const GameSaveAPIDocs: APIDocs<GameSaveAPIService> = {
   index: {
     description: 'Get a player\'s saves',
     params: {
-      query: {
-        aliasId: 'The ID of the player\'s alias'
+      headers: {
+        'x-talo-player': 'The ID of the player'
       }
     },
     samples: [
@@ -67,10 +68,12 @@ const GameSaveAPIDocs: Record<string, RouteDocs> = {
   post: {
     description: 'Create a save',
     params: {
+      headers: {
+        'x-talo-player': 'The ID of the player'
+      },
       body: {
         name: 'The name of the save',
-        content: 'The @type(SaveContent:savecontent) of the save file',
-        aliasId: 'The ID of the player\'s alias'
+        content: 'The @type(SaveContent:savecontent) of the save file'
       }
     },
     samples: [
@@ -93,10 +96,12 @@ const GameSaveAPIDocs: Record<string, RouteDocs> = {
   patch: {
     description: 'Update a save',
     params: {
+      headers: {
+        'x-talo-player': 'The ID of the player'
+      },
       body: {
         name: 'A new name for the save',
-        content: 'The new @type(SaveContent:savecontent) for the save',
-        aliasId: 'The ID of the player\'s alias'
+        content: 'The new @type(SaveContent:savecontent) for the save'
       },
       route: {
         id: 'The ID of the save'
@@ -118,6 +123,17 @@ const GameSaveAPIDocs: Record<string, RouteDocs> = {
         }
       }
     ]
+  },
+  delete: {
+    description: 'Delete a save',
+    params: {
+      headers: {
+        'x-talo-player': 'The ID of the player'
+      },
+      route: {
+        id: 'The ID of the save'
+      }
+    }
   }
 }
 

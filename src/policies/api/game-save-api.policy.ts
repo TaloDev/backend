@@ -1,68 +1,53 @@
 import Policy from '../policy'
 import { PolicyDenial, PolicyResponse, Request } from 'koa-clay'
-import PlayerAlias from '../../entities/player-alias'
 import GameSave from '../../entities/game-save'
 import Player from '../../entities/player'
 
 export default class GameSaveAPIPolicy extends Policy {
-  async getPlayer(aliasId: number): Promise<Player> {
+  async getPlayer(): Promise<Player> {
     const key = await this.getAPIKey()
 
-    const playerAlias = await this.em.getRepository(PlayerAlias).findOne({
-      id: Number(aliasId),
-      player: {
-        game: key.game
-      }
-    }, {
-      populate: ['player']
+    return await this.em.getRepository(Player).findOne({
+      id: this.ctx.state.currentPlayerId,
+      game: key.game
     })
-
-    return playerAlias?.player
   }
 
-  async index(req: Request): Promise<PolicyResponse> {
-    const { aliasId } = req.query
+  async getSave(id: number): Promise<GameSave> {
+    return await this.em.getRepository(GameSave).findOne({
+      id,
+      player: await this.getPlayer()
+    })
+  }
 
-    const player = await this.getPlayer(Number(aliasId))
-    if (!player) return new PolicyDenial({ message: 'Player not found' }, 404)
-
-    this.ctx.state.player = player
+  async index(): Promise<PolicyResponse> {
+    this.ctx.state.player = await this.getPlayer()
+    if (!this.ctx.state.player) return new PolicyDenial({ message: 'Player not found' }, 404)
 
     return await this.hasScope('read:gameSaves')
   }
 
-  async post(req: Request): Promise<PolicyResponse> {
-    const { aliasId } = req.body
-
-    const player = await this.getPlayer(aliasId)
-    if (!player) return new PolicyDenial({ message: 'Player not found' }, 404)
-
-    this.ctx.state.player = player
+  async post(): Promise<PolicyResponse> {
+    this.ctx.state.player = await this.getPlayer()
+    if (!this.ctx.state.player) return new PolicyDenial({ message: 'Player not found' }, 404)
 
     return await this.hasScope('write:gameSaves')
   }
 
   async patch(req: Request): Promise<PolicyResponse> {
     const { id } = req.params
-    const { aliasId } = req.body
 
-    const key = await this.getAPIKey()
+    this.ctx.state.save = await this.getSave(Number(id))
+    if (!this.ctx.state.save) return new PolicyDenial({ message: 'Save not found' }, 404)
 
-    const save = await this.em.getRepository(GameSave).findOne({
-      id: Number(id),
-      player: {
-        aliases: {
-          id: aliasId
-        },
-        game: key.game
-      }
-    }, {
-      populate: ['player']
-    })
+    return await this.hasScope('write:gameSaves')
+  }
 
-    if (!save) return new PolicyDenial({ message: 'Save not found' }, 404)
+  async delete(req: Request): Promise<PolicyResponse> {
+    const { id } = req.params
 
-    this.ctx.state.save = save
+    this.ctx.state.save = await this.getSave(Number(id))
+    if (!this.ctx.state.save) return new PolicyDenial({ message: 'Save not found' }, 404)
 
     return await this.hasScope('write:gameSaves')
   }

@@ -8,44 +8,32 @@ export default class LeaderboardAPIPolicy extends Policy {
     const { internalName } = req.params
 
     const key = await this.getAPIKey()
-    this.ctx.state.leaderboard = await this.em.getRepository(Leaderboard).findOne({
+    return await this.em.getRepository(Leaderboard).findOne({
       internalName,
       game: key.game
     })
-
-    return this.ctx.state.leaderboard
   }
 
   async get(req: Request): Promise<PolicyResponse> {
-    const scopeCheck = await this.hasScope('read:leaderboards')
-    if (scopeCheck !== true) return scopeCheck
+    this.ctx.state.leaderboard = await this.getLeaderboard(req)
+    if (!this.ctx.state.leaderboard) return new PolicyDenial({ message: 'Leaderboard not found' }, 404)
 
-    const leaderboard = await this.getLeaderboard(req)
-    if (!leaderboard) return new PolicyDenial({ message: 'Leaderboard not found' }, 404)
-
-    return await true
+    return await this.hasScope('read:leaderboards')
   }
 
   async post(req: Request): Promise<PolicyResponse> {
-    const scopeCheck = await this.hasScope('write:leaderboards')
-    if (scopeCheck !== true) return scopeCheck
+    this.ctx.state.leaderboard = await this.getLeaderboard(req)
+    if (!this.ctx.state.leaderboard) return new PolicyDenial({ message: 'Leaderboard not found' }, 404)
 
-    const leaderboard = await this.getLeaderboard(req)
-    if (!leaderboard) return new PolicyDenial({ message: 'Leaderboard not found' }, 404)
-
-    const { aliasId } = req.body
-
-    const playerAlias = await this.em.getRepository(PlayerAlias).findOne({
-      id: aliasId,
+    this.ctx.state.playerAlias = await this.em.getRepository(PlayerAlias).findOne({
+      id: Number(this.ctx.state.currentAliasId),
       player: {
         game: this.ctx.state.key.game
       }
     })
 
-    if (!playerAlias) return new PolicyDenial({ message: 'Player not found' }, 404)
+    if (!this.ctx.state.playerAlias) return new PolicyDenial({ message: 'Player not found' }, 404)
 
-    this.ctx.state.playerAlias = playerAlias
-
-    return true
+    return await this.hasScope('write:leaderboards')
   }
 }

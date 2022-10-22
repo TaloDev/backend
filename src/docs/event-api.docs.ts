@@ -1,6 +1,7 @@
-import { RouteDocs } from 'koa-clay'
+import EventAPIService from '../services/api/event-api.service'
+import APIDocs from './api-docs'
 
-const EventAPIDocs: Record<string, RouteDocs> = {
+const EventAPIDocs: APIDocs<EventAPIService> = {
   post: {
     description: 'Track events',
     params: {

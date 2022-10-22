@@ -43,7 +43,10 @@ export default class LeaderboardAPIService extends APIService {
     return entry
   }
 
-  @Validate({ body: ['aliasId', 'score'] })
+  @Validate({
+    headers: ['x-talo-alias'],
+    body: ['score']
+  })
   @HasPermission(LeaderboardAPIPolicy, 'post')
   @Docs(LeaderboardAPIDocs.post)
   async post(req: Request): Promise<Response> {

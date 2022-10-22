@@ -10,7 +10,7 @@ import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
 
 const baseUrl = '/v1/game-saves'
 
-describe('Game save API service - patch', () => {
+describe('Game save API service - delete', () => {
   let app: Koa
 
   beforeAll(async () => {
@@ -21,55 +21,52 @@ describe('Game save API service - patch', () => {
     await (<EntityManager>app.context.em).getConnection().close()
   })
 
-  it('should update a game save if the scope is valid', async () => {
+  it('should delete a game save if the scope is valid', async () => {
     const [apiKey, token] = await createAPIKeyAndToken(app.context.em, [APIKeyScope.WRITE_GAME_SAVES])
     const player = await new PlayerFactory([apiKey.game]).one()
     const save = await new GameSaveFactory([player]).one()
     await (<EntityManager>app.context.em).persistAndFlush(save)
 
-    const res = await request(app.callback())
-      .patch(`${baseUrl}/${save.id}`)
-      .send({ content: { progress: 10 } })
+    await request(app.callback())
+      .delete(`${baseUrl}/${save.id}`)
       .auth(token, { type: 'bearer' })
       .set('x-talo-player', save.player.id)
-      .expect(200)
-
-    expect(res.body.save.content).toStrictEqual({
-      progress: 10
-    })
+      .expect(204)
   })
 
-  it('should update the game save name if the key exists', async () => {
-    const [apiKey, token] = await createAPIKeyAndToken(app.context.em, [APIKeyScope.WRITE_GAME_SAVES])
-    const player = await new PlayerFactory([apiKey.game]).one()
-    const save = await new GameSaveFactory([player]).one()
-    await (<EntityManager>app.context.em).persistAndFlush(save)
-
-    const res = await request(app.callback())
-      .patch(`${baseUrl}/${save.id}`)
-      .send({ content: { progress: 10 }, name: 'New save name' })
-      .auth(token, { type: 'bearer' })
-      .set('x-talo-player', save.player.id)
-      .expect(200)
-
-    expect(res.body.save.name).toBe('New save name')
-  })
-
-  it('should not update a game save if the scope is not valid', async () => {
+  it('should not delete a game save if the scope is not valid', async () => {
     const [apiKey, token] = await createAPIKeyAndToken(app.context.em, [])
     const player = await new PlayerFactory([apiKey.game]).one()
     const save = await new GameSaveFactory([player]).one()
     await (<EntityManager>app.context.em).persistAndFlush(save)
 
     await request(app.callback())
-      .patch(`${baseUrl}/${save.id}`)
-      .send({ content: { progress: 10 } })
+      .delete(`${baseUrl}/${save.id}`)
       .auth(token, { type: 'bearer' })
       .set('x-talo-player', save.player.id)
       .expect(403)
   })
 
-  it('should not update another player\'s save from another game', async () => {
+  it('should not delete another player\'s save', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken(app.context.em, [APIKeyScope.WRITE_GAME_SAVES])
+    const player = await new PlayerFactory([apiKey.game]).one()
+
+    const [, game] = await createOrganisationAndGame(app.context.em)
+    const otherPlayer = await new PlayerFactory([game]).one()
+    const otherSave = await new GameSaveFactory([otherPlayer]).one()
+
+    await (<EntityManager>app.context.em).persistAndFlush([player, otherSave])
+
+    const res = await request(app.callback())
+      .delete(`${baseUrl}/${otherSave.id}`)
+      .auth(token, { type: 'bearer' })
+      .set('x-talo-player', player.id)
+      .expect(404)
+
+    expect(res.body).toStrictEqual({ message: 'Save not found' })
+  })
+
+  it('should not delete a player\'s save from another game', async () => {
     const [apiKey, token] = await createAPIKeyAndToken(app.context.em, [APIKeyScope.WRITE_GAME_SAVES])
     const player = await new PlayerFactory([apiKey.game]).one()
     const save = await new GameSaveFactory([player]).one()
@@ -81,10 +78,9 @@ describe('Game save API service - patch', () => {
     await (<EntityManager>app.context.em).persistAndFlush([save, otherSave])
 
     const res = await request(app.callback())
-      .patch(`${baseUrl}/${otherSave.id}`)
-      .send({ content: { progress: 10 } })
+      .delete(`${baseUrl}/${otherSave.id}`)
       .auth(token, { type: 'bearer' })
-      .set('x-talo-player', save.player.id)
+      .set('x-talo-player', otherPlayer.id)
       .expect(404)
 
     expect(res.body).toStrictEqual({ message: 'Save not found' })

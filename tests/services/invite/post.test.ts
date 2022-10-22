@@ -39,7 +39,7 @@ describe('Invite service - post', () => {
     const [token, user] = await createUserAndToken(app.context.em, { type, emailConfirmed: true })
 
     const res = await request(app.callback())
-      .post(`${baseUrl}`)
+      .post(baseUrl)
       .send({ email: 'user@example.com', type: UserType.ADMIN })
       .auth(token, { type: 'bearer' })
       .expect(statusCode)
@@ -69,7 +69,7 @@ describe('Invite service - post', () => {
     await (<EntityManager>app.context.em).persistAndFlush(invite)
 
     const res = await request(app.callback())
-      .post(`${baseUrl}`)
+      .post(baseUrl)
       .send({ email: invite.email, type: UserType.ADMIN })
       .auth(token, { type: 'bearer' })
       .expect(400)
@@ -86,7 +86,7 @@ describe('Invite service - post', () => {
     const [token] = await createUserAndToken(app.context.em, { type: UserType.ADMIN, emailConfirmed: true })
 
     const res = await request(app.callback())
-      .post(`${baseUrl}`)
+      .post(baseUrl)
       .send({ email: casual.email, type })
       .auth(token, { type: 'bearer' })
       .expect(statusCode)
@@ -112,7 +112,7 @@ describe('Invite service - post', () => {
     await (<EntityManager>app.context.em).persistAndFlush(invite)
 
     const res = await request(app.callback())
-      .post(`${baseUrl}`)
+      .post(baseUrl)
       .send({ email: invite.email, type: UserType.ADMIN })
       .auth(token, { type: 'bearer' })
       .expect(400)
@@ -127,7 +127,7 @@ describe('Invite service - post', () => {
     await (<EntityManager>app.context.em).persistAndFlush(user)
 
     const res = await request(app.callback())
-      .post(`${baseUrl}`)
+      .post(baseUrl)
       .send({ email: user.email, type: UserType.ADMIN })
       .auth(token, { type: 'bearer' })
       .expect(400)
@@ -146,7 +146,7 @@ describe('Invite service - post', () => {
     await (<EntityManager>app.context.em).persistAndFlush([planAction, ...orgPlanActions])
 
     await request(app.callback())
-      .post(`${baseUrl}`)
+      .post(baseUrl)
       .send({ email: casual.email, type: UserType.DEV })
       .auth(token, { type: 'bearer' })
       .expect(402)
@@ -163,7 +163,7 @@ describe('Invite service - post', () => {
     await (<EntityManager>app.context.em).persistAndFlush([planAction, ...orgPlanActions])
 
     const res = await request(app.callback())
-      .post(`${baseUrl}`)
+      .post(baseUrl)
       .send({ email: casual.email, type: UserType.DEV })
       .auth(token, { type: 'bearer' })
       .expect(402)
@@ -175,7 +175,7 @@ describe('Invite service - post', () => {
     const [token] = await createUserAndToken(app.context.em, { type: UserType.ADMIN })
 
     const res = await request(app.callback())
-      .post(`${baseUrl}`)
+      .post(baseUrl)
       .send({ email: 'dev@game.studio', type: UserType.DEV })
       .auth(token, { type: 'bearer' })
       .expect(403)

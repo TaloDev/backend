@@ -1,6 +1,7 @@
-import { RouteDocs } from 'koa-clay'
+import PlayerAPIService from '../services/api/player-api.service'
+import APIDocs from './api-docs'
 
-const PlayerAPIDocs: Record<string, RouteDocs> = {
+const PlayerAPIDocs: APIDocs<PlayerAPIService> = {
   identify: {
     description: 'Identify a player',
     params: {

@@ -1,6 +1,7 @@
-import { RouteDocs } from 'koa-clay'
+import GameConfigAPIService from '../services/api/game-config-api.service'
+import APIDocs from './api-docs'
 
-const GameConfigAPIDocs: Record<string, RouteDocs> = {
+const GameConfigAPIDocs: APIDocs<GameConfigAPIService> = {
   index: {
     description: 'Get the live config for the game',
     samples: [

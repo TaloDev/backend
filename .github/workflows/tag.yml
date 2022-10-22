@@ -22,6 +22,7 @@ jobs:
         tag: ${{ steps.check.outputs.version }}
 
     - name: Trigger workflow
+      if: steps.check.outputs.changed == 'true'
       uses: actions/github-script@v6
       with:
         script: |

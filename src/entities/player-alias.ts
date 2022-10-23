@@ -37,7 +37,9 @@ export default class PlayerAlias {
       id: this.id,
       service: this.service,
       identifier: this.identifier,
-      player
+      player,
+      createdAt: this.createdAt,
+      updatedAt: this.updatedAt
     }
   }
 }

@@ -44,4 +44,9 @@ export default class LeaderboardPolicy extends Policy {
   async delete(req: Request): Promise<PolicyResponse> {
     return await this.canAccessLeaderboard(req)
   }
+
+  async search(req: Request): Promise<PolicyResponse> {
+    const { gameId } = req.params
+    return await this.canAccessGame(Number(gameId))
+  }
 }

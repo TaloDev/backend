@@ -127,15 +127,18 @@ describe('Player group service - rules', () => {
     expect(res.body.availableFields).toStrictEqual([
       {
         field: 'prop with key',
-        defaultCastType: 'CHAR'
+        defaultCastType: 'CHAR',
+        mapsTo: 'props'
       },
       {
-        field: 'lastSeenAt',
-        defaultCastType: 'DATETIME'
+        field: 'latest login',
+        defaultCastType: 'DATETIME',
+        mapsTo: 'lastSeenAt'
       },
       {
-        field: 'createdAt',
-        defaultCastType: 'DATETIME'
+        field: 'first login',
+        defaultCastType: 'DATETIME',
+        mapsTo: 'createdAt'
       }
     ])
   })

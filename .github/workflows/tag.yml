@@ -8,11 +8,11 @@ jobs:
   tag:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     
     - name: Check version change
       id: check
-      uses: EndBug/version-check@v1
+      uses: EndBug/version-check@v2
 
     - name: Create tag
       if: steps.check.outputs.changed == 'true'

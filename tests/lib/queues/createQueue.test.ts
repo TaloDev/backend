@@ -4,7 +4,6 @@ import Koa from 'koa'
 import init from '../../../src'
 import FailedJob from '../../../src/entities/failed-job'
 import createQueue from '../../../src/lib/queues/createQueue'
-import waitForExpect from 'wait-for-expect'
 
 describe('Create queue', () => {
   let app: Koa
@@ -28,13 +27,9 @@ describe('Create queue', () => {
 
     expect(processMock).toHaveBeenCalledTimes(1)
 
-    let failedJob: FailedJob
-
-    await waitForExpect(async () => {
-      const failedJobs = await (<EntityManager>app.context.em).getRepository(FailedJob).findAll()
-      expect(failedJobs).toHaveLength(1)
-      failedJob = failedJobs[0]
-    })
+    const failedJobs = await (<EntityManager>app.context.em).getRepository(FailedJob).findAll()
+    expect(failedJobs).toHaveLength(1)
+    const failedJob = failedJobs[0]
 
     expect(failedJob.queue).toBe('test')
     expect(failedJob.payload).toStrictEqual(payload)

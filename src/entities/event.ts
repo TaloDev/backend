@@ -41,7 +41,12 @@ export default class Event {
 
     this.props.forEach((prop) => {
       if (eventMetaProps.includes(prop.key)) {
-        this.playerAlias.player.addProp(prop.key, prop.value)
+        const existingProp = this.playerAlias.player.props.getItems().find((playerProp) => playerProp.key === prop.key)
+        if (existingProp) {
+          existingProp.value = prop.value
+        } else {
+          this.playerAlias.player.addProp(prop.key, prop.value)
+        }
       }
     })
   }

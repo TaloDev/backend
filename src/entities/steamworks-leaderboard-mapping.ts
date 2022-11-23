@@ -8,7 +8,7 @@ export default class SteamworksLeaderboardMapping {
   @PrimaryKey()
   steamworksLeaderboardId: number
 
-  @ManyToOne(() => Leaderboard, { primary: true, cascade: [Cascade.REMOVE] })
+  @ManyToOne(() => Leaderboard, { primary: true, cascade: [Cascade.REMOVE], nullable: false })
   leaderboard: Leaderboard
 
   @Property()

@@ -5,10 +5,10 @@ import { GameActivityType } from '../entities/game-activity'
 import Integration, { IntegrationConfig, IntegrationType } from '../entities/integration'
 import createGameActivity from '../lib/logging/createGameActivity'
 import IntegrationPolicy from '../policies/integration.policy'
-import Queue from 'bee-queue'
 import { MikroORM } from '@mikro-orm/core'
 import ormConfig from '../config/mikro-orm.config'
 import createQueue from '../lib/queues/createQueue'
+import { Job, Queue } from 'bullmq'
 
 type SyncJob = {
   integrationId: number
@@ -48,23 +48,22 @@ const configKeys: IntegrationUpdateableKeys = {
   }
 ])
 export default class IntegrationService extends Service {
-  queue: Queue
+  queue: Queue<SyncJob>
 
   constructor() {
     super()
 
-    this.queue = createQueue('integration-syncing')
-
-    this.queue.process(async (job: Queue.Job<SyncJob>) => {
+    this.queue = createQueue<SyncJob>('integration-syncing', async (job: Job<SyncJob>) => {
       const { integrationId, type } = job.data
 
       const orm = await MikroORM.init(ormConfig)
-      const integration = await orm.em.getRepository(Integration).findOne(integrationId)
+      const em = orm.em.fork()
+      const integration = await em.getRepository(Integration).findOne(integrationId)
 
       if (type === 'leaderboards') {
-        await integration.handleSyncLeaderboards(orm.em)
+        await integration.handleSyncLeaderboards(em)
       } else if (type === 'stats') {
-        await integration.handleSyncStats(orm.em)
+        await integration.handleSyncStats(em)
       }
 
       await orm.close()
@@ -173,9 +172,7 @@ export default class IntegrationService extends Service {
   async syncLeaderboards(req: Request): Promise<Response> {
     const em: EntityManager = req.ctx.em
 
-    await this.queue
-      .createJob<SyncJob>({ integrationId: Number(req.params.id), type: 'leaderboards' })
-      .save()
+    await this.queue.add('sync-leaderboards', { integrationId: Number(req.params.id), type: 'leaderboards' })
 
     await createGameActivity(em, {
       user: req.ctx.state.user,
@@ -194,9 +191,7 @@ export default class IntegrationService extends Service {
   async syncStats(req: Request): Promise<Response> {
     const em: EntityManager = req.ctx.em
 
-    await this.queue
-      .createJob<SyncJob>({ integrationId: Number(req.params.id), type: 'stats' })
-      .save()
+    await this.queue.add('sync-stats', { integrationId: Number(req.params.id), type: 'stats' })
 
     await createGameActivity(em, {
       user: req.ctx.state.user,

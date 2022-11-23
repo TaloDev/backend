@@ -5,9 +5,9 @@ import request from 'supertest'
 import User from '../../../../src/entities/user'
 import { genAccessToken } from '../../../../src/lib/auth/buildTokenPair'
 import UserFactory from '../../../fixtures/UserFactory'
-import Redis from 'ioredis'
-import { RedisMock } from '../../../../__mocks__/ioredis'
 import UserRecoveryCode from '../../../../src/entities/user-recovery-code'
+import redisConfig from '../../../../src/config/redis.config'
+import Redis from 'ioredis'
 
 const baseUrl = '/public/users'
 
@@ -15,7 +15,6 @@ describe('User public service - use recovery code', () => {
   let app: Koa
   let user: User
   let token: string
-  const redis = new Redis()
 
   beforeAll(async () => {
     app = await init()
@@ -26,16 +25,14 @@ describe('User public service - use recovery code', () => {
     token = await genAccessToken(user)
   })
 
-  beforeEach(async () => {
-    await (redis as Redis.Redis & RedisMock)._init()
-  })
-
   afterAll(async () => {
     await (<EntityManager>app.context.em).getConnection().close()
   })
 
   it('should let users login with a recovery code', async () => {
+    const redis = new Redis(redisConfig)
     await redis.set(`2fa:${user.id}`, 'true')
+    await redis.quit()
 
     const res = await request(app.callback())
       .post(`${baseUrl}/2fa/recover`)
@@ -52,7 +49,9 @@ describe('User public service - use recovery code', () => {
   })
 
   it('should generate a new set of recovery codes after using the last one', async () => {
+    const redis = new Redis(redisConfig)
     await redis.set(`2fa:${user.id}`, 'true')
+    await redis.quit()
 
     user.recoveryCodes.set([new UserRecoveryCode(user)])
     await (<EntityManager>app.context.em).flush()
@@ -82,7 +81,9 @@ describe('User public service - use recovery code', () => {
   })
 
   it('should not let users login with an invalid recovery code', async () => {
+    const redis = new Redis(redisConfig)
     await redis.set(`2fa:${user.id}`, 'true')
+    await redis.quit()
 
     const res = await request(app.callback())
       .post(`${baseUrl}/2fa/recover`)

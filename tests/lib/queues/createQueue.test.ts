@@ -1,5 +1,5 @@
 import { EntityManager } from '@mikro-orm/core'
-import { differenceInMinutes } from 'date-fns'
+import { differenceInDays } from 'date-fns'
 import Koa from 'koa'
 import init from '../../../src'
 import FailedJob from '../../../src/entities/failed-job'
@@ -17,13 +17,14 @@ describe('Create queue', () => {
   })
 
   it('should put failed jobs in the database', async () => {
-    const queue = createQueue('test')
     const payload = { message: 'knock knock' }
 
-    const processMock = jest.fn().mockImplementation(async () => Promise.reject(new Error('Something went wrong')))
+    const processMock = jest.fn().mockImplementation(async () => {
+      throw new Error('Something went wrong')
+    })
 
-    queue.process(processMock)
-    await queue.createJob(payload).save()
+    const queue = createQueue('test', processMock)
+    await queue.add('test-job', payload)
 
     expect(processMock).toHaveBeenCalledTimes(1)
 
@@ -34,6 +35,6 @@ describe('Create queue', () => {
     expect(failedJob.queue).toBe('test')
     expect(failedJob.payload).toStrictEqual(payload)
     expect(failedJob.reason).toBe('Something went wrong')
-    expect(differenceInMinutes(new Date(failedJob.failedAt), Date.now())).toBeLessThan(2)
+    expect(differenceInDays(new Date(failedJob.failedAt), Date.now())).toBeLessThan(1)
   })
 })

@@ -11,8 +11,7 @@ import UserAccessCode from '../../entities/user-access-code'
 import Organisation from '../../entities/organisation'
 import { add } from 'date-fns'
 import { authenticator } from '@otplib/preset-default'
-import Redis from 'ioredis'
-import redisConfig from '../../config/redis.config'
+import { createRedisConnection } from '../../config/redis.config'
 import UserRecoveryCode from '../../entities/user-recovery-code'
 import generateRecoveryCodes from '../../lib/auth/generateRecoveryCodes'
 import Invite from '../../entities/invite'
@@ -169,7 +168,7 @@ export default class UserPublicService extends Service {
     if (!passwordMatches) this.handleFailedLogin(req)
 
     if (user.twoFactorAuth?.enabled) {
-      const redis = new Redis(redisConfig)
+      const redis = createRedisConnection(req.ctx)
       await redis.set(`2fa:${user.id}`, 'true', 'EX', 300)
 
       return {
@@ -303,7 +302,7 @@ export default class UserPublicService extends Service {
 
     const user = await em.getRepository(User).findOne(userId)
 
-    const redis = new Redis(redisConfig)
+    const redis = createRedisConnection(req.ctx)
     const hasSession = (await redis.get(`2fa:${user.id}`)) === 'true'
 
     if (!hasSession) {
@@ -335,7 +334,7 @@ export default class UserPublicService extends Service {
 
     const user = await em.getRepository(User).findOne(userId, { populate: ['recoveryCodes'] })
 
-    const redis = new Redis(redisConfig)
+    const redis = createRedisConnection(req.ctx)
     const hasSession = (await redis.get(`2fa:${user.id}`)) === 'true'
 
     if (!hasSession) {

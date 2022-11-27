@@ -3,7 +3,7 @@ import Koa from 'koa'
 import init from '../../../src/index'
 import request from 'supertest'
 import { UserType } from '../../../src/entities/user'
-import { DataExportAvailableEntities } from '../../../src/entities/data-export'
+import DataExport, { DataExportAvailableEntities } from '../../../src/entities/data-export'
 import createUserAndToken from '../../utils/createUserAndToken'
 import createOrganisationAndGame from '../../utils/createOrganisationAndGame'
 import userPermissionProvider from '../../utils/userPermissionProvider'
@@ -14,6 +14,7 @@ import { PricingPlanActionType } from '../../../src/entities/pricing-plan-action
 import { subMonths } from 'date-fns'
 import OrganisationPricingPlanFactory from '../../fixtures/OrganisationPricingPlanFactory'
 import OrganisationPricingPlanActionFactory from '../../fixtures/OrganisationPricingPlanActionFactory'
+import SendGrid from '@sendgrid/mail'
 
 describe('Data export service - post', () => {
   let app: Koa
@@ -257,5 +258,21 @@ describe('Data export service - post', () => {
       .expect(402)
 
     expect(res.body).toStrictEqual({ message: 'Your subscription is in an incomplete state. Please update your billing details.' })
+  })
+
+  it('should correctly update the data export status if sending the email fails', async () => {
+    const [organisation, game] = await createOrganisationAndGame(app.context.em)
+    const [token] = await createUserAndToken(app.context.em, { type: UserType.ADMIN, emailConfirmed: true }, organisation)
+
+    jest.spyOn(SendGrid, 'send').mockRejectedValueOnce(new Error())
+
+    await request(app.callback())
+      .post(`/games/${game.id}/data-exports`)
+      .send({ entities: [DataExportAvailableEntities.EVENTS] })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    const dataExport = await (<EntityManager>app.context.em).getRepository(DataExport).findOne({ game })
+    expect(dataExport.failedAt).toBeTruthy()
   })
 })

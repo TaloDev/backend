@@ -1,12 +1,21 @@
 import ConfirmEmail from '../../../src/emails/confirm-email-mail'
 import sendEmail from '../../../src/lib/messaging/sendEmail'
 import UserFactory from '../../fixtures/UserFactory'
+import SendGrid from '@sendgrid/mail'
 
 describe('Send email', () => {
   it('should gracefully handle errors', async () => {
     const user = await new UserFactory().one()
     const email = new ConfirmEmail(user, 'abc123')
-    email.subject = 'fail'
+
+    jest.spyOn(SendGrid, 'send').mockRejectedValueOnce({
+      status: 403,
+      response: {
+        body: {
+          errors: ['403 Forbidden']
+        }
+      }
+    })
 
     try {
       await sendEmail({

@@ -6,7 +6,7 @@ import UserSession from '../../../../src/entities/user-session'
 import UserFactory from '../../../fixtures/UserFactory'
 import { differenceInMinutes, sub } from 'date-fns'
 import Redis from 'ioredis'
-import { RedisMock } from '../../../../__mocks__/ioredis'
+import redisConfig from '../../../../src/config/redis.config'
 
 const baseUrl = '/public/users'
 
@@ -79,8 +79,7 @@ describe('User public service - login', () => {
   })
 
   it('should initialise the 2fa flow if it is enabled', async () => {
-    const redis = new Redis()
-    await (redis as Redis.Redis & RedisMock)._init()
+    const redis = new Redis(redisConfig)
 
     const user = await new UserFactory().state('loginable').state('has2fa').one()
     await (<EntityManager>app.context.em).persistAndFlush(user)
@@ -97,5 +96,7 @@ describe('User public service - login', () => {
 
     const hasSession = await redis.get(`2fa:${user.id}`)
     expect(hasSession).toBe('true')
+
+    await redis.quit()
   })
 })

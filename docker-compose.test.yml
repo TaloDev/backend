@@ -1,0 +1,47 @@
+version: '3.9'
+
+services:
+  test-db:
+    image: mysql:8
+    command: --default-authentication-plugin=mysql_native_password --sql_mode=
+    environment:
+      - MYSQL_DATABASE=${DB_NAME}
+      - MYSQL_ROOT_PASSWORD=${DB_PASS}
+    restart: always
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1"]
+      interval: 2s
+      timeout: 2s
+      retries: 10
+    ports:
+      - ${DB_PORT}:3306
+    volumes:
+      - test-data:/var/lib/mysql
+    networks:
+      - test-network
+    
+  test-redis:
+    image: bitnami/redis:6.2
+    environment:
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+    ports:
+      - ${REDIS_PORT}:6379
+    depends_on:
+      test-db:
+        condition: service_healthy
+    networks:
+      - test-network
+
+  stripe-api:
+    image: stripe/stripe-mock:latest
+    ports:
+      - 12111:12111
+      - 12112:12112
+    networks:
+      - test-network
+
+volumes:
+  test-data:
+
+networks:
+  test-network:

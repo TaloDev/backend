@@ -5,9 +5,9 @@ import request from 'supertest'
 import User from '../../../../src/entities/user'
 import { genAccessToken } from '../../../../src/lib/auth/buildTokenPair'
 import UserFactory from '../../../fixtures/UserFactory'
-import Redis from 'ioredis'
-import { RedisMock } from '../../../../__mocks__/ioredis'
 import { authenticator } from '@otplib/preset-default'
+import Redis from 'ioredis'
+import redisConfig from '../../../../src/config/redis.config'
 
 const baseUrl = '/public/users'
 
@@ -15,7 +15,6 @@ describe('User public service - verify 2fa', () => {
   let app: Koa
   let user: User
   let token: string
-  const redis = new Redis()
 
   beforeAll(async () => {
     app = await init()
@@ -26,15 +25,12 @@ describe('User public service - verify 2fa', () => {
     token = await genAccessToken(user)
   })
 
-  beforeEach(async () => {
-    await (redis as Redis.Redis & RedisMock)._init()
-  })
-
   afterAll(async () => {
     await (<EntityManager>app.context.em).getConnection().close()
   })
 
   it('should let users verify their 2fa code and login', async () => {
+    const redis = new Redis(redisConfig)
     await redis.set(`2fa:${user.id}`, 'true')
 
     authenticator.check = jest.fn().mockReturnValueOnce(true)
@@ -49,7 +45,9 @@ describe('User public service - verify 2fa', () => {
     expect(res.body.accessToken).toBeTruthy()
 
     const hasSession = await redis.get(`2fa:${user.id}`)
-    expect(hasSession).toBeUndefined()
+    expect(hasSession).toBeNull()
+
+    await redis.quit()
   })
 
   it('should not let users verify their 2fa without a session', async () => {
@@ -63,6 +61,7 @@ describe('User public service - verify 2fa', () => {
   })
 
   it('should not let users verify their 2fa with an invalid code', async () => {
+    const redis = new Redis(redisConfig)
     await redis.set(`2fa:${user.id}`, 'true')
 
     authenticator.check = jest.fn().mockReturnValueOnce(false)
@@ -74,5 +73,7 @@ describe('User public service - verify 2fa', () => {
       .expect(403)
 
     expect(res.body).toStrictEqual({ message: 'Invalid code' })
+
+    await redis.quit()
   })
 })

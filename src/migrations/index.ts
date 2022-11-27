@@ -18,6 +18,8 @@ import { CreateSteamIntegrationTables } from './20220723122554CreateSteamIntegra
 import { PlayerAliasServiceUseEnum } from './20220730134520PlayerAliasServiceUseEnum'
 import { CreatePlayerPropsTable } from './20220910200720CreatePlayerPropsTable'
 import { CreatePlayerGroupsTables } from './20220914003848CreatePlayerGroupsTables'
+import { AddFailedJobStackColumn } from './20221113222058AddFailedJobStackColumn copy'
+import { DropSteamworksLeaderboardMappingUnique } from './20221113223142DropSteamworksLeaderboardMappingUnique'
 
 export default [
   {
@@ -99,5 +101,13 @@ export default [
   {
     name: 'CreatePlayerGroupsTables',
     class: CreatePlayerGroupsTables
+  },
+  {
+    name: 'AddFailedJobStackColumn',
+    class: AddFailedJobStackColumn
+  },
+  {
+    name: 'DropSteamworksLeaderboardMappingUnique',
+    class: DropSteamworksLeaderboardMappingUnique
   }
 ]

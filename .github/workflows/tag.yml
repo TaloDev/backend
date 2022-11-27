@@ -16,7 +16,7 @@ jobs:
 
     - name: Create tag
       if: steps.check.outputs.changed == 'true'
-      uses: tvdias/github-tagger@v0.0.1
+      uses: tvdias/github-tagger@v0.0.2
       with:
         repo-token: ${{ secrets.GITHUB_TOKEN }}
         tag: ${{ steps.check.outputs.version }}

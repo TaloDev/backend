@@ -9,6 +9,7 @@ import Game from '../../../src/entities/game'
 import GameStatFactory from '../../fixtures/GameStatFactory'
 import GameFactory from '../../fixtures/GameFactory'
 import GameActivity, { GameActivityType } from '../../../src/entities/game-activity'
+import clearEntities from '../../utils/clearEntities'
 
 describe('Game stat service - put', () => {
   let app: Koa
@@ -27,8 +28,7 @@ describe('Game stat service - put', () => {
   })
 
   beforeEach(async () => {
-    const activities = await (<EntityManager>app.context.em).getRepository(GameActivity).findAll()
-    await (<EntityManager>app.context.em).removeAndFlush(activities)
+    await clearEntities(app.context.em, ['GameActivity'])
   })
 
   afterAll(async () => {

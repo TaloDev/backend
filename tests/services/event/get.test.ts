@@ -11,6 +11,7 @@ import UserFactory from '../../fixtures/UserFactory'
 import OrganisationFactory from '../../fixtures/OrganisationFactory'
 import PlayerFactory from '../../fixtures/PlayerFactory'
 import { sub } from 'date-fns'
+import clearEntities from '../../utils/clearEntities'
 
 describe('Event service - get', () => {
   let app: Koa
@@ -29,9 +30,7 @@ describe('Event service - get', () => {
   })
 
   beforeEach(async () => {
-    const repo = (<EntityManager>app.context.em).getRepository(Event)
-    const events = await repo.findAll()
-    await repo.removeAndFlush(events)
+    await clearEntities(app.context.em, ['Event'])
   })
 
   afterAll(async () => {

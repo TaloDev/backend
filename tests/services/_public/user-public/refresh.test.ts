@@ -4,6 +4,7 @@ import init from '../../../../src/index'
 import request from 'supertest'
 import UserSession from '../../../../src/entities/user-session'
 import UserFactory from '../../../fixtures/UserFactory'
+import clearEntities from '../../../utils/clearEntities'
 
 const baseUrl = '/public/users'
 
@@ -15,9 +16,7 @@ describe('User public service - refresh', () => {
   })
 
   beforeEach(async () => {
-    const repo = (<EntityManager>app.context.em).getRepository(UserSession)
-    const sessions = await repo.findAll()
-    await repo.removeAndFlush(sessions)
+    await clearEntities(app.context.em, ['UserSession'])
   })
 
   afterAll(async () => {

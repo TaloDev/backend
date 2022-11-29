@@ -20,4 +20,4 @@ dc up -d
 yarn mikro-orm migration:up
 echo "\n"
 
-node --trace-warnings ./node_modules/.bin/jest "$@" --runInBand
+node --expose-gc --trace-warnings ./node_modules/.bin/jest "$@" --runInBand --logHeapUsage

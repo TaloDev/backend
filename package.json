@@ -79,7 +79,7 @@
     "qrcode": "^1.5.0",
     "qs": "^6.11.0",
     "stripe": "^9.2.0",
-    "uuid": "^8.3.2"
+    "uuid": "^9.0.0"
   },
   "mikro-orm": {
     "useTsNode": true,

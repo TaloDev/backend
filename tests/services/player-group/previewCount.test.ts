@@ -1,6 +1,4 @@
 import { EntityManager } from '@mikro-orm/core'
-import Koa from 'koa'
-import init from '../../../src/index'
 import request from 'supertest'
 import createOrganisationAndGame from '../../utils/createOrganisationAndGame'
 import createUserAndToken from '../../utils/createUserAndToken'
@@ -8,22 +6,12 @@ import PlayerGroupRule, { PlayerGroupRuleName, PlayerGroupRuleCastType } from '.
 import PlayerFactory from '../../fixtures/PlayerFactory'
 
 describe('Player group service - preview count', () => {
-  let app: Koa
-
-  beforeAll(async () => {
-    app = await init()
-  })
-
-  afterAll(async () => {
-    await (<EntityManager>app.context.em).getConnection().close()
-  })
-
   it('should return a preview for the number of players in a group', async () => {
-    const [organisation, game] = await createOrganisationAndGame(app.context.em)
-    const [token] = await createUserAndToken(app.context.em, {}, organisation)
+    const [organisation, game] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken({}, organisation)
 
     const player = await new PlayerFactory([game]).with(() => ({ lastSeenAt: new Date(2022, 4, 3) })).one()
-    await (<EntityManager>app.context.em).persistAndFlush(player)
+    await (<EntityManager>global.em).persistAndFlush(player)
 
     const rules: Partial<PlayerGroupRule>[] = [
       {
@@ -35,7 +23,7 @@ describe('Player group service - preview count', () => {
       }
     ]
 
-    const res = await request(app.callback())
+    const res = await request(global.app)
       .get(`/games/${game.id}/player-groups/preview-count`)
       .query({ ruleMode: '$and', rules: encodeURI(JSON.stringify(rules)) })
       .auth(token, { type: 'bearer' })
@@ -45,11 +33,11 @@ describe('Player group service - preview count', () => {
   })
 
   it('should not return a preview for a non-existent game', async () => {
-    const [token] = await createUserAndToken(app.context.em)
+    const [token] = await createUserAndToken()
 
     const rules: Partial<PlayerGroupRule>[] = []
 
-    const res = await request(app.callback())
+    const res = await request(global.app)
       .get('/games/99999/player-groups/preview-count')
       .query({ ruleMode: '$and', rules: encodeURI(JSON.stringify(rules)) })
       .auth(token, { type: 'bearer' })
@@ -59,12 +47,12 @@ describe('Player group service - preview count', () => {
   })
 
   it('should not return a preview for a game the user has no access to', async () => {
-    const [, game] = await createOrganisationAndGame(app.context.em)
-    const [token] = await createUserAndToken(app.context.em)
+    const [, game] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken()
 
     const rules: Partial<PlayerGroupRule>[] = []
 
-    await request(app.callback())
+    await request(global.app)
       .get(`/games/${game.id}/player-groups/preview-count`)
       .query({ ruleMode: '$and', rules: encodeURI(JSON.stringify(rules)) })
       .auth(token, { type: 'bearer' })

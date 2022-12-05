@@ -1,31 +1,15 @@
 import { EntityManager } from '@mikro-orm/core'
-import Koa from 'koa'
-import init from '../../../../src/index'
 import request from 'supertest'
 import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
 import initStripe from '../../../../src/lib/billing/initStripe'
 import PricingPlanFactory from '../../../fixtures/PricingPlanFactory'
 import { v4 } from 'uuid'
-import Organisation from '../../../../src/entities/organisation'
-import clearEntities from '../../../utils/clearEntities'
 
-const baseUrl = '/public/webhooks/subscriptions'
 const stripe = initStripe()
 
 describe('Webhook service - subscription deleted', () => {
-  let app: Koa
-
-  beforeAll(async () => {
-    app = await init()
-    await clearEntities(app.context.em)
-  })
-
-  afterAll(async () => {
-    await (<EntityManager>app.context.em).getConnection().close()
-  })
-
   it('should reset the organisation pricing plan to the default plan after the subscription is deleted', async () => {
-    let [organisation] = await createOrganisationAndGame(app.context.em, {}, {})
+    const [organisation] = await createOrganisationAndGame()
     const subscription = (await stripe.subscriptions.list()).data[0]
     const price = (await stripe.prices.list()).data[0]
 
@@ -33,7 +17,7 @@ describe('Webhook service - subscription deleted', () => {
     organisation.pricingPlan.stripePriceId = price.id
 
     const defaultPlan = await new PricingPlanFactory().with(() => ({ default: true })).one()
-    await (<EntityManager>app.context.em).persistAndFlush(defaultPlan)
+    await (<EntityManager>global.em).persistAndFlush(defaultPlan)
 
     jest.spyOn(stripe.webhooks, 'constructEvent').mockImplementationOnce(() => ({
       id: v4(),
@@ -49,12 +33,12 @@ describe('Webhook service - subscription deleted', () => {
       type: 'customer.subscription.deleted'
     }))
 
-    await request(app.callback())
-      .post(baseUrl)
+    await request(global.app)
+      .post('/public/webhooks/subscriptions')
       .set('stripe-signature', 'abc123')
       .expect(204)
 
-    organisation = await (<EntityManager>app.context.em).getRepository(Organisation).findOne(organisation.id, { refresh: true })
+    await (<EntityManager>global.em).refresh(organisation)
     expect(organisation.pricingPlan.pricingPlan.id).toBe(defaultPlan.id)
   })
 })

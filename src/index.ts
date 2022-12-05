@@ -19,6 +19,7 @@ const isTest = process.env.NODE_ENV === 'test'
 
 export const init = async (): Promise<Koa> => {
   const app = new Koa()
+  app.context.isTest = isTest
 
   await initProviders(app)
 

@@ -1,6 +1,4 @@
 import { EntityManager } from '@mikro-orm/core'
-import Koa from 'koa'
-import init from '../../../../src/index'
 import request from 'supertest'
 import Organisation from '../../../../src/entities/organisation'
 import OrganisationFactory from '../../../fixtures/OrganisationFactory'
@@ -9,28 +7,18 @@ import EventFactory from '../../../fixtures/EventFactory'
 import PlayerFactory from '../../../fixtures/PlayerFactory'
 import GameFactory from '../../../fixtures/GameFactory'
 import { sub } from 'date-fns'
-import Event from '../../../../src/entities/event'
-
-const baseUrl = '/public/demo'
 
 describe('Demo service - post', () => {
-  let app: Koa
   let demoOrg: Organisation
 
   beforeAll(async () => {
-    app = await init()
-
     demoOrg = await new OrganisationFactory().state('demo').one()
-    await (<EntityManager>app.context.em).getRepository(Organisation).persistAndFlush(demoOrg)
-  })
-
-  afterAll(async () => {
-    await (<EntityManager>app.context.em).getConnection().close()
+    await (<EntityManager>global.em).getRepository(Organisation).persistAndFlush(demoOrg)
   })
 
   it('should create a demo user and then delete them', async () => {
-    const res = await request(app.callback())
-      .post(baseUrl)
+    const res = await request(global.app)
+      .post('/public/demo')
       .expect(200)
 
     expect(res.body.user).toBeTruthy()
@@ -39,28 +27,28 @@ describe('Demo service - post', () => {
 
     expect(res.body.accessToken).toBeTruthy()
 
-    const user = await (<EntityManager>app.context.em).getRepository(User).findOne(res.body.user.id)
+    const user = await (<EntityManager>global.em).getRepository(User).findOne(res.body.user.id)
     expect(user).toBeNull()
   })
 
   it('should update the createdAt of events older than 3 months', async () => {
     const game = await new GameFactory(demoOrg).one()
     const players = await new PlayerFactory([game]).many(2)
-    const events = await new EventFactory(players).state('this year').many(20)
-    await (<EntityManager>app.context.em).persistAndFlush(events)
+    let events = await new EventFactory(players).state('this year').many(20)
+    await (<EntityManager>global.em).persistAndFlush(events)
 
-    let oldEvents = events.filter((event) => event.createdAt < sub(new Date(), { months: 3 }))
-    expect(oldEvents.length).toBeGreaterThan(0)
+    events = events.filter((event) => event.createdAt < sub(new Date(), { months: 3 }))
+    expect(events.length).toBeGreaterThan(0)
 
-    await request(app.callback())
-      .post(baseUrl)
+    await request(global.app)
+      .post('/public/demo')
       .expect(200)
 
-    await (<EntityManager>app.context.em).clear()
+    for (const event of events) {
+      await (<EntityManager>global.em).refresh(event)
+    }
+    events = events.filter((event) => event.createdAt < sub(new Date(), { months: 3 }))
 
-    const updatedEvents = await (<EntityManager>app.context.em).getRepository(Event).findAll()
-    oldEvents = updatedEvents.filter((event) => event.createdAt < sub(new Date(), { months: 3 }))
-
-    expect(oldEvents).toHaveLength(0)
+    expect(events).toHaveLength(0)
   })
 })

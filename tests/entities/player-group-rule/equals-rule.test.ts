@@ -1,37 +1,19 @@
 import { Collection, EntityManager } from '@mikro-orm/core'
-import Koa from 'koa'
-import init from '../../../src/index'
 import request from 'supertest'
 import PlayerGroupRule, { PlayerGroupRuleCastType, PlayerGroupRuleName } from '../../../src/entities/player-group-rule'
 import PlayerFactory from '../../fixtures/PlayerFactory'
 import createUserAndToken from '../../utils/createUserAndToken'
 import createOrganisationAndGame from '../../utils/createOrganisationAndGame'
 import PlayerProp from '../../../src/entities/player-prop'
-import clearEntities from '../../utils/clearEntities'
 
 describe('EQUALS rule', () => {
-  let app: Koa
-
-  beforeAll(async () => {
-    app = await init()
-    await clearEntities(app.context.em, ['PlayerGroup'])
-  })
-
-  beforeEach(async () => {
-    await clearEntities(app.context.em, ['Player'])
-  })
-
-  afterAll(async () => {
-    await (<EntityManager>app.context.em).getConnection().close()
-  })
-
   it('should correctly evaluate an EQUALS rule', async () => {
-    const [organisation, game] = await createOrganisationAndGame(app.context.em)
-    const [token] = await createUserAndToken(app.context.em, {}, organisation)
+    const [organisation, game] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken({}, organisation)
 
     const player1 = await new PlayerFactory([game]).with(() => ({ lastSeenAt: new Date(2022, 4, 3) })).one()
     const player2 = await new PlayerFactory([game]).one()
-    await (<EntityManager>app.context.em).persistAndFlush([player1, player2])
+    await (<EntityManager>global.em).persistAndFlush([player1, player2])
 
     const rules: Partial<PlayerGroupRule>[] = [
       {
@@ -43,7 +25,7 @@ describe('EQUALS rule', () => {
       }
     ]
 
-    const res = await request(app.callback())
+    const res = await request(global.app)
       .get(`/games/${game.id}/player-groups/preview-count`)
       .query({ ruleMode: '$and', rules: encodeURI(JSON.stringify(rules)) })
       .auth(token, { type: 'bearer' })
@@ -53,12 +35,12 @@ describe('EQUALS rule', () => {
   })
 
   it('should correctly evaluate a negated EQUALS rule', async () => {
-    const [organisation, game] = await createOrganisationAndGame(app.context.em)
-    const [token] = await createUserAndToken(app.context.em, {}, organisation)
+    const [organisation, game] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken({}, organisation)
 
     const player1 = await new PlayerFactory([game]).with(() => ({ lastSeenAt: new Date(2022, 4, 3) })).one()
     const player2 = await new PlayerFactory([game]).one()
-    await (<EntityManager>app.context.em).persistAndFlush([player1, player2])
+    await (<EntityManager>global.em).persistAndFlush([player1, player2])
 
     const rules: Partial<PlayerGroupRule>[] = [
       {
@@ -70,7 +52,7 @@ describe('EQUALS rule', () => {
       }
     ]
 
-    const res = await request(app.callback())
+    const res = await request(global.app)
       .get(`/games/${game.id}/player-groups/preview-count`)
       .query({ ruleMode: '$and', rules: encodeURI(JSON.stringify(rules)) })
       .auth(token, { type: 'bearer' })
@@ -80,8 +62,8 @@ describe('EQUALS rule', () => {
   })
 
   it('should correctly evaluate an EQUALS rule with props', async () => {
-    const [organisation, game] = await createOrganisationAndGame(app.context.em)
-    const [token] = await createUserAndToken(app.context.em, {}, organisation)
+    const [organisation, game] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken({}, organisation)
 
     const player1 = await new PlayerFactory([game]).with((player) => ({
       props: new Collection<PlayerProp>(player, [
@@ -89,7 +71,7 @@ describe('EQUALS rule', () => {
       ])
     })).one()
     const player2 = await new PlayerFactory([game]).one()
-    await (<EntityManager>app.context.em).persistAndFlush([player1, player2])
+    await (<EntityManager>global.em).persistAndFlush([player1, player2])
 
     const rules: Partial<PlayerGroupRule>[] = [
       {
@@ -101,7 +83,7 @@ describe('EQUALS rule', () => {
       }
     ]
 
-    const res = await request(app.callback())
+    const res = await request(global.app)
       .get(`/games/${game.id}/player-groups/preview-count`)
       .query({ ruleMode: '$and', rules: encodeURI(JSON.stringify(rules)) })
       .auth(token, { type: 'bearer' })
@@ -111,8 +93,8 @@ describe('EQUALS rule', () => {
   })
 
   it('should correctly evaluate a negated EQUALS rule with props', async () => {
-    const [organisation, game] = await createOrganisationAndGame(app.context.em)
-    const [token] = await createUserAndToken(app.context.em, {}, organisation)
+    const [organisation, game] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken({}, organisation)
 
     const player1 = await new PlayerFactory([game]).with((player) => ({
       props: new Collection<PlayerProp>(player, [
@@ -120,7 +102,7 @@ describe('EQUALS rule', () => {
       ])
     })).one()
     const player2 = await new PlayerFactory([game]).one()
-    await (<EntityManager>app.context.em).persistAndFlush([player1, player2])
+    await (<EntityManager>global.em).persistAndFlush([player1, player2])
 
     const rules: Partial<PlayerGroupRule>[] = [
       {
@@ -132,7 +114,7 @@ describe('EQUALS rule', () => {
       }
     ]
 
-    const res = await request(app.callback())
+    const res = await request(global.app)
       .get(`/games/${game.id}/player-groups/preview-count`)
       .query({ ruleMode: '$and', rules: encodeURI(JSON.stringify(rules)) })
       .auth(token, { type: 'bearer' })

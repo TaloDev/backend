@@ -1,38 +1,14 @@
-import { EntityManager } from '@mikro-orm/core'
-import Koa from 'koa'
-import init from '../../../src/index'
 import request from 'supertest'
-import User from '../../../src/entities/user'
-import { genAccessToken } from '../../../src/lib/auth/buildTokenPair'
-import Game from '../../../src/entities/game'
-import UserFactory from '../../fixtures/UserFactory'
-
-const baseUrl = '/users'
+import createOrganisationAndGame from '../../utils/createOrganisationAndGame'
+import createUserAndToken from '../../utils/createUserAndToken'
 
 describe('User service - get me', () => {
-  let app: Koa
-  let user: User
-  let token: string
-
-  beforeAll(async () => {
-    app = await init()
-
-    user = await new UserFactory().one()
-    await (<EntityManager>app.context.em).persistAndFlush(user)
-
-    token = await genAccessToken(user)
-  })
-
-  afterAll(async () => {
-    await (<EntityManager>app.context.em).getConnection().close()
-  })
-
   it('should return the user\'s data', async () => {
-    const game = new Game('Vigilante 2084', user.organisation)
-    await (<EntityManager>app.context.em).persistAndFlush(game)
+    const [organisation] = await createOrganisationAndGame({}, { name: 'Vigilante 2084' })
+    const [token] = await createUserAndToken({}, organisation)
 
-    const res = await request(app.callback())
-      .get(`${baseUrl}/me`)
+    const res = await request(global.app)
+      .get('/users/me')
       .auth(token, { type: 'bearer' })
       .expect(200)
 

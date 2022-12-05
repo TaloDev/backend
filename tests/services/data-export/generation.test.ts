@@ -1,11 +1,6 @@
 import { Collection, EntityManager } from '@mikro-orm/core'
-import Koa from 'koa'
-import init from '../../../src/index'
-import User from '../../../src/entities/user'
-import UserFactory from '../../fixtures/UserFactory'
-import Game from '../../../src/entities/game'
-import GameFactory from '../../fixtures/GameFactory'
-import DataExport, { DataExportAvailableEntities, DataExportStatus } from '../../../src/entities/data-export'
+import { UserType } from '../../../src/entities/user'
+import { DataExportAvailableEntities, DataExportStatus } from '../../../src/entities/data-export'
 import DataExportService from '../../../src/services/data-export.service'
 import EventFactory from '../../fixtures/EventFactory'
 import PlayerFactory from '../../fixtures/PlayerFactory'
@@ -19,25 +14,13 @@ import { PricingPlanActionType } from '../../../src/entities/pricing-plan-action
 import OrganisationPricingPlanAction from '../../../src/entities/organisation-pricing-plan-action'
 import PricingPlanFactory from '../../fixtures/PricingPlanFactory'
 import PlayerProp from '../../../src/entities/player-prop'
+import createOrganisationAndGame from '../../utils/createOrganisationAndGame'
+import createUserAndToken from '../../utils/createUserAndToken'
 
 describe('Data export service - generation', () => {
-  let app: Koa
-  let user: User
-  let game: Game
-
-  beforeAll(async () => {
-    app = await init()
-
-    user = await new UserFactory().state('admin').state('email confirmed').one()
-    game = await new GameFactory(user.organisation).one()
-    await (<EntityManager>app.context.em).persistAndFlush([user, game])
-  })
-
-  afterAll(async () => {
-    await (<EntityManager>app.context.em).getConnection().close()
-  })
-
   it('should transform basic columns', async () => {
+    const [, game] = await createOrganisationAndGame()
+
     const service = new DataExportService()
     const proto = Object.getPrototypeOf(service)
 
@@ -58,6 +41,8 @@ describe('Data export service - generation', () => {
   })
 
   it('should transform prop columns', async () => {
+    const [, game] = await createOrganisationAndGame()
+
     const service = new DataExportService()
     const proto = Object.getPrototypeOf(service)
 
@@ -79,6 +64,9 @@ describe('Data export service - generation', () => {
   })
 
   it('should transform gameActivityType columns', async () => {
+    const [organisation, game] = await createOrganisationAndGame()
+    const [, user] = await createUserAndToken({ type: UserType.ADMIN, emailConfirmed: true }, organisation)
+
     const service = new DataExportService()
     const proto = Object.getPrototypeOf(service)
 
@@ -90,6 +78,9 @@ describe('Data export service - generation', () => {
   })
 
   it('should transform gameActivityExtra columns', async () => {
+    const [organisation, game] = await createOrganisationAndGame()
+    const [, user] = await createUserAndToken({ type: UserType.ADMIN, emailConfirmed: true }, organisation)
+
     const service = new DataExportService()
     const proto = Object.getPrototypeOf(service)
 
@@ -103,6 +94,8 @@ describe('Data export service - generation', () => {
   })
 
   it('should transform globalValue columns', async () => {
+    const [, game] = await createOrganisationAndGame()
+
     const service = new DataExportService()
     const proto = Object.getPrototypeOf(service)
 
@@ -113,6 +106,8 @@ describe('Data export service - generation', () => {
   })
 
   it('should fill globalValue columns with N/A for non-global stats', async () => {
+    const [, game] = await createOrganisationAndGame()
+
     const service = new DataExportService()
     const proto = Object.getPrototypeOf(service)
 
@@ -122,6 +117,8 @@ describe('Data export service - generation', () => {
   })
 
   it('should correctly build a CSV', async () => {
+    const [, game] = await createOrganisationAndGame()
+
     const service = new DataExportService()
     const proto = Object.getPrototypeOf(service)
 
@@ -139,6 +136,8 @@ describe('Data export service - generation', () => {
   })
 
   it('should correctly build a CSV with prop columns', async () => {
+    const [, game] = await createOrganisationAndGame()
+
     const service = new DataExportService()
     const proto = Object.getPrototypeOf(service)
 
@@ -158,44 +157,48 @@ describe('Data export service - generation', () => {
   })
 
   it('should correctly update data export statuses', async () => {
+    const [, game] = await createOrganisationAndGame()
+
     const service = new DataExportService()
     const proto = Object.getPrototypeOf(service)
 
-    let dataExport = await new DataExportFactory(game).with(() => ({
+    const dataExport = await new DataExportFactory(game).with(() => ({
       status: DataExportStatus.QUEUED
     })).one()
 
-    await (<EntityManager>app.context.em).persistAndFlush(dataExport)
+    await (<EntityManager>global.em).persistAndFlush(dataExport)
 
     await proto.updateDataExportStatus(dataExport.id, { id: DataExportStatus.GENERATED })
-    dataExport = await (<EntityManager>app.context.em).getRepository(DataExport).findOne(dataExport.id, { refresh: true })
+    await (<EntityManager>global.em).refresh(dataExport)
     expect(dataExport.status).toBe(DataExportStatus.GENERATED)
 
     await proto.updateDataExportStatus(dataExport.id, { failedAt: new Date() })
-    dataExport = await (<EntityManager>app.context.em).getRepository(DataExport).findOne(dataExport.id, { refresh: true })
+    await (<EntityManager>global.em).refresh(dataExport)
     expect(dataExport.failedAt).toBeTruthy()
   })
 
   it('should refund data export actions if generation fails', async () => {
+    const [, game] = await createOrganisationAndGame()
+
     const service = new DataExportService()
     const proto = Object.getPrototypeOf(service)
 
     const dataExport = await new DataExportFactory(game).with(() => ({ status: DataExportStatus.QUEUED })).one()
-    await (<EntityManager>app.context.em).persistAndFlush(dataExport)
+    await (<EntityManager>global.em).persistAndFlush(dataExport)
 
     const orgPlan = await new OrganisationPricingPlanFactory().with(async () => ({ pricingPlan: await new PricingPlanFactory().one() })).one()
-    let orgPlanAction = await new OrganisationPricingPlanActionFactory(orgPlan).with(() => ({
+    const orgPlanAction = await new OrganisationPricingPlanActionFactory(orgPlan).with(() => ({
       type: PricingPlanActionType.DATA_EXPORT,
       extra: {
         dataExportId: dataExport.id
       }
     })).one()
 
-    await (<EntityManager>app.context.em).persistAndFlush(orgPlanAction)
+    await (<EntityManager>global.em).persistAndFlush(orgPlanAction)
 
     await proto.updateDataExportStatus(dataExport.id, { failedAt: new Date() })
 
-    orgPlanAction = await (<EntityManager>app.context.em).getRepository(OrganisationPricingPlanAction).findOne(orgPlanAction.id, { refresh: true })
-    expect(orgPlanAction).toBeNull()
+    const planActions = await (<EntityManager>global.em).getRepository(OrganisationPricingPlanAction).find({ organisationPricingPlan: orgPlan })
+    expect(planActions).toHaveLength(0)
   })
 })

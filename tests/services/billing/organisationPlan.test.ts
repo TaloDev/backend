@@ -1,6 +1,4 @@
 import { EntityManager } from '@mikro-orm/core'
-import Koa from 'koa'
-import init from '../../../src/index'
 import request from 'supertest'
 import initStripe from '../../../src/lib/billing/initStripe'
 import PricingPlanFactory from '../../fixtures/PricingPlanFactory'
@@ -9,20 +7,9 @@ import createUserAndToken from '../../utils/createUserAndToken'
 import userPermissionProvider from '../../utils/userPermissionProvider'
 import { UserType } from '../../../src/entities/user'
 
-const baseUrl = '/billing/organisation-plan'
 const stripe = initStripe()
 
 describe('Billing service - organisation plan', () => {
-  let app: Koa
-
-  beforeAll(async () => {
-    app = await init()
-  })
-
-  afterAll(async () => {
-    await (<EntityManager>app.context.em).getConnection().close()
-  })
-
   it.each(userPermissionProvider())('should return a %i for a %s user', async (statusCode, _, type) => {
     const product = (await stripe.products.list()).data[0]
     const price = (await stripe.prices.list({ product: product.id })).data[0]
@@ -30,15 +17,15 @@ describe('Billing service - organisation plan', () => {
 
     const subscription = (await stripe.subscriptions.list()).data[0]
 
-    const [organisation] = await createOrganisationAndGame(app.context.em, {}, {}, plan)
-    const [token] = await createUserAndToken(app.context.em, { type }, organisation)
+    const [organisation] = await createOrganisationAndGame({}, {}, plan)
+    const [token] = await createUserAndToken({ type }, organisation)
 
     organisation.pricingPlan.stripeCustomerId = subscription.customer as string
     organisation.pricingPlan.stripePriceId = price.id
-    await (<EntityManager>app.context.em).flush()
+    await (<EntityManager>global.em).flush()
 
-    const res = await request(app.callback())
-      .get(baseUrl)
+    const res = await request(global.app)
+      .get('/billing/organisation-plan')
       .auth(token, { type: 'bearer' })
       .expect(statusCode)
 
@@ -52,15 +39,15 @@ describe('Billing service - organisation plan', () => {
 
   it('should not let them view the billing portal if there is no stripeCustomerId', async () => {
     const plan = await new PricingPlanFactory().one()
-    const [organisation] = await createOrganisationAndGame(app.context.em, {}, {}, plan)
-    const [token] = await createUserAndToken(app.context.em, { type: UserType.OWNER }, organisation)
+    const [organisation] = await createOrganisationAndGame({}, {}, plan)
+    const [token] = await createUserAndToken({ type: UserType.OWNER }, organisation)
 
     organisation.pricingPlan.stripeCustomerId = null
     organisation.pricingPlan.stripePriceId = null
-    await (<EntityManager>app.context.em).flush()
+    await (<EntityManager>global.em).flush()
 
-    const res = await request(app.callback())
-      .get(baseUrl)
+    const res = await request(global.app)
+      .get('/billing/organisation-plan')
       .auth(token, { type: 'bearer' })
       .expect(200)
 

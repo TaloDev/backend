@@ -1,45 +1,29 @@
 import { EntityManager } from '@mikro-orm/core'
-import Koa from 'koa'
-import init from '../../../src/index'
 import request from 'supertest'
 import { UserType } from '../../../src/entities/user'
 import GameActivity, { GameActivityType } from '../../../src/entities/game-activity'
 import GameStatFactory from '../../fixtures/GameStatFactory'
-import clearEntities from '../../utils/clearEntities'
 import createOrganisationAndGame from '../../utils/createOrganisationAndGame'
 import createUserAndToken from '../../utils/createUserAndToken'
 import userPermissionProvider from '../../utils/userPermissionProvider'
 
 describe('Game stat service - post', () => {
-  let app: Koa
-
-  beforeAll(async () => {
-    app = await init()
-  })
-
-  beforeEach(async () => {
-    await clearEntities(app.context.em, ['GameStat', 'GameActivity'])
-  })
-
-  afterAll(async () => {
-    await (<EntityManager>app.context.em).getConnection().close()
-  })
-
   it.each(userPermissionProvider([
     UserType.ADMIN,
     UserType.DEV
   ]))('should return a %i for a %s user', async (statusCode, _, type) => {
-    const [organisation, game] = await createOrganisationAndGame(app.context.em)
-    const [token] = await createUserAndToken(app.context.em, { type }, organisation)
+    const [organisation, game] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken({ type }, organisation)
 
-    const res = await request(app.callback())
+    const res = await request(global.app)
       .post(`/games/${game.id}/game-stats`)
       .send({ internalName: 'levels-completed', name: 'Levels completed', defaultValue: 0, global: false, minTimeBetweenUpdates: 0, minValue: -10, maxValue: 10  })
       .auth(token, { type: 'bearer' })
       .expect(statusCode)
 
-    const activity = await (<EntityManager>app.context.em).getRepository(GameActivity).findOne({
-      type: GameActivityType.GAME_STAT_CREATED
+    const activity = await (<EntityManager>global.em).getRepository(GameActivity).findOne({
+      type: GameActivityType.GAME_STAT_CREATED,
+      game
     })
 
     if (statusCode === 200) {
@@ -62,10 +46,10 @@ describe('Game stat service - post', () => {
   })
 
   it('should create a global stat', async () => {
-    const [organisation, game] = await createOrganisationAndGame(app.context.em)
-    const [token] = await createUserAndToken(app.context.em, {}, organisation)
+    const [organisation, game] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken({}, organisation)
 
-    const res = await request(app.callback())
+    const res = await request(global.app)
       .post(`/games/${game.id}/game-stats`)
       .send({ internalName: 'buildings-built', name: 'Buildings built', defaultValue: 5, global: true, minTimeBetweenUpdates: 0, minValue: -10, maxValue: 10  })
       .auth(token, { type: 'bearer' })
@@ -81,8 +65,9 @@ describe('Game stat service - post', () => {
     expect(res.body.stat.maxValue).toBe(10)
     expect(res.body.stat.minTimeBetweenUpdates).toBe(0)
 
-    const activity = await (<EntityManager>app.context.em).getRepository(GameActivity).findOne({
+    const activity = await (<EntityManager>global.em).getRepository(GameActivity).findOne({
       type: GameActivityType.GAME_STAT_CREATED,
+      game,
       extra: {
         statInternalName: res.body.stat.internalName
       }
@@ -92,10 +77,10 @@ describe('Game stat service - post', () => {
   })
 
   it('should not create a stat for a game the user has no access to', async () => {
-    const [, otherGame] = await createOrganisationAndGame(app.context.em)
-    const [token] = await createUserAndToken(app.context.em)
+    const [, otherGame] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken()
 
-    await request(app.callback())
+    await request(global.app)
       .post(`/games/${otherGame.id}/game-stats`)
       .send({ internalName: 'levels-completed', name: 'Levels completed', defaultValue: 0, global: false, minTimeBetweenUpdates: 0, minValue: -10, maxValue: 10 })
       .auth(token, { type: 'bearer' })
@@ -103,9 +88,9 @@ describe('Game stat service - post', () => {
   })
 
   it('should not create a stat for a non-existent game', async () => {
-    const [token] = await createUserAndToken(app.context.em)
+    const [token] = await createUserAndToken()
 
-    const res = await request(app.callback())
+    const res = await request(global.app)
       .post('/games/99999/game-stats')
       .send({ internalName: 'levels-completed', name: 'Levels completed', defaultValue: 0, global: false, minTimeBetweenUpdates: 0, minValue: -10, maxValue: 10 })
       .auth(token, { type: 'bearer' })
@@ -115,13 +100,13 @@ describe('Game stat service - post', () => {
   })
 
   it('should not create a stat with a duplicate internal name', async () => {
-    const [organisation, game] = await createOrganisationAndGame(app.context.em)
-    const [token] = await createUserAndToken(app.context.em, {}, organisation)
+    const [organisation, game] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken({}, organisation)
 
     const stat = await new GameStatFactory([game]).with(() => ({ internalName: 'levels-completed' })).one()
-    await (<EntityManager>app.context.em).persistAndFlush(stat)
+    await (<EntityManager>global.em).persistAndFlush(stat)
 
-    const res = await request(app.callback())
+    const res = await request(global.app)
       .post(`/games/${game.id}/game-stats`)
       .send({ internalName: 'levels-completed', name: 'Levels completed', defaultValue: 0, global: false, minTimeBetweenUpdates: 0, minValue: -10, maxValue: 10 })
       .auth(token, { type: 'bearer' })
@@ -135,14 +120,14 @@ describe('Game stat service - post', () => {
   })
 
   it('should create a stat with a duplicate internal name for another game', async () => {
-    const [, otherGame] = await createOrganisationAndGame(app.context.em)
-    const [organisation, game] = await createOrganisationAndGame(app.context.em)
-    const [token] = await createUserAndToken(app.context.em, {}, organisation)
+    const [, otherGame] = await createOrganisationAndGame()
+    const [organisation, game] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken({}, organisation)
 
     const stat = await new GameStatFactory([otherGame]).with(() => ({ internalName: 'levels-completed' })).one()
-    await (<EntityManager>app.context.em).persistAndFlush(stat)
+    await (<EntityManager>global.em).persistAndFlush(stat)
 
-    await request(app.callback())
+    await request(global.app)
       .post(`/games/${game.id}/game-stats`)
       .send({ internalName: 'levels-completed', name: 'Levels completed', defaultValue: 0, global: false, minTimeBetweenUpdates: 0, minValue: -10, maxValue: 10 })
       .auth(token, { type: 'bearer' })
@@ -150,10 +135,10 @@ describe('Game stat service - post', () => {
   })
 
   it('should create a stat with no min value', async () => {
-    const [organisation, game] = await createOrganisationAndGame(app.context.em)
-    const [token] = await createUserAndToken(app.context.em, {}, organisation)
+    const [organisation, game] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken({}, organisation)
 
-    const res = await request(app.callback())
+    const res = await request(global.app)
       .post(`/games/${game.id}/game-stats`)
       .send({ internalName: 'buildings-built', name: 'Buildings built', defaultValue: 5, global: false, minTimeBetweenUpdates: 0, minValue: null, maxValue: 10  })
       .auth(token, { type: 'bearer' })
@@ -164,10 +149,10 @@ describe('Game stat service - post', () => {
   })
 
   it('should create a stat with no max value', async () => {
-    const [organisation, game] = await createOrganisationAndGame(app.context.em)
-    const [token] = await createUserAndToken(app.context.em, {}, organisation)
+    const [organisation, game] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken({}, organisation)
 
-    const res = await request(app.callback())
+    const res = await request(global.app)
       .post(`/games/${game.id}/game-stats`)
       .send({ internalName: 'buildings-built', name: 'Buildings built', defaultValue: 5, global: false, minTimeBetweenUpdates: 0, minValue: -10, maxValue: null  })
       .auth(token, { type: 'bearer' })

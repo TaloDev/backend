@@ -1,30 +1,18 @@
 import { EntityManager } from '@mikro-orm/core'
-import Koa from 'koa'
 import { APIKeyScope } from '../../src/entities/api-key'
-import init from '../../src/index'
 import UserFactory from '../fixtures/UserFactory'
 import request from 'supertest'
 import { genAccessToken } from '../../src/lib/auth/buildTokenPair'
-import GameFactory from '../fixtures/GameFactory'
 import createAPIKeyAndToken from '../utils/createAPIKeyAndToken'
+import createOrganisationAndGame from '../utils/createOrganisationAndGame'
 
 describe('Policy base class', () => {
-  let app: Koa
-
-  beforeAll(async () => {
-    app = await init()
-  })
-
-  afterAll(async () => {
-    await (<EntityManager>app.context.em).getConnection().close()
-  })
-
   it('should reject a revoked api key', async () => {
-    const [apiKey, token] = await createAPIKeyAndToken(app.context.em, [APIKeyScope.READ_EVENTS])
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_EVENTS])
     apiKey.revokedAt = new Date()
-    await (<EntityManager>app.context.em).flush()
+    await (<EntityManager>global.em).flush()
 
-    await request(app.callback())
+    await request(global.app)
       .get('/v1/players/identify?service=username&identifier=')
       .query({ service: 'username', identifier: 'ionproject' })
       .auth(token, { type: 'bearer' })
@@ -32,14 +20,15 @@ describe('Policy base class', () => {
   })
 
   it('should reject a non-existent user', async () => {
-    const user = await new UserFactory().one()
-    const game = await new GameFactory(user.organisation).one()
-    await (<EntityManager>app.context.em).persistAndFlush([user, game])
+    const [organisation, game] = await createOrganisationAndGame()
+
+    const user = await new UserFactory().with(() => ({ organisation })).one()
+    await (<EntityManager>global.em).persistAndFlush(user)
 
     const token = await genAccessToken(user)
-    await (<EntityManager>app.context.em).removeAndFlush(user)
+    await (<EntityManager>global.em).removeAndFlush(user)
 
-    await request(app.callback())
+    await request(global.app)
       .get(`/games/${game.id}/events`)
       .query({ startDate: '2021-01-01', endDate: '2021-01-02' })
       .auth(token, { type: 'bearer' })

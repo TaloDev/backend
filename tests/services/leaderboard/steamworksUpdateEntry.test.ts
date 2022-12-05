@@ -1,6 +1,4 @@
 import { EntityManager } from '@mikro-orm/core'
-import Koa from 'koa'
-import init from '../../../src/index'
 import request from 'supertest'
 import createOrganisationAndGame from '../../utils/createOrganisationAndGame'
 import createUserAndToken from '../../utils/createUserAndToken'
@@ -17,21 +15,15 @@ import SteamworksLeaderboardMapping from '../../../src/entities/steamworks-leade
 import casual from 'casual'
 
 describe('Leaderboard service - update entry - steamworks integration', () => {
-  let app: Koa
   const axiosMock = new AxiosMockAdapter(axios)
-
-  beforeAll(async () => {
-    app = await init()
-  })
 
   afterAll(async () => {
     axiosMock.reset()
-    await (<EntityManager>app.context.em).getConnection().close()
   })
 
   it('should delete entries when they are hidden', async () => {
-    const [organisation, game] = await createOrganisationAndGame(app.context.em)
-    const [token] = await createUserAndToken(app.context.em, {}, organisation)
+    const [organisation, game] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken({}, organisation)
 
     const updateMock = jest.fn(() => [200, {
       result: {
@@ -48,9 +40,9 @@ describe('Leaderboard service - update entry - steamworks integration', () => {
 
     const config = await new IntegrationConfigFactory().with(() => ({ syncLeaderboards: true })).one()
     const integration = await new IntegrationFactory().construct(IntegrationType.STEAMWORKS, game, config).one()
-    await (<EntityManager>app.context.em).persistAndFlush([integration, entry, mapping])
+    await (<EntityManager>global.em).persistAndFlush([integration, entry, mapping])
 
-    await request(app.callback())
+    await request(global.app)
       .patch(`/games/${game.id}/leaderboards/${leaderboard.id}/entries/${entry.id}`)
       .send({ hidden: true })
       .auth(token, { type: 'bearer' })
@@ -58,7 +50,7 @@ describe('Leaderboard service - update entry - steamworks integration', () => {
 
     expect(updateMock).toHaveBeenCalledTimes(1)
 
-    const event = await (<EntityManager>app.context.em).getRepository(SteamworksIntegrationEvent).findOne({ integration })
+    const event = await (<EntityManager>global.em).getRepository(SteamworksIntegrationEvent).findOne({ integration })
     expect(event.request).toStrictEqual({
       url: 'https://partner.steam-api.com/ISteamLeaderboards/DeleteLeaderboardScore/v1',
       body: `appid=${config.appId}&leaderboardid=${mapping.steamworksLeaderboardId}&steamid=${player.aliases[0].identifier}`,
@@ -67,8 +59,8 @@ describe('Leaderboard service - update entry - steamworks integration', () => {
   })
 
   it('should create entries when they are unhidden', async () => {
-    const [organisation, game] = await createOrganisationAndGame(app.context.em)
-    const [token] = await createUserAndToken(app.context.em, {}, organisation)
+    const [organisation, game] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken({}, organisation)
 
     const updateMock = jest.fn(() => [200, {
       result: {
@@ -89,9 +81,9 @@ describe('Leaderboard service - update entry - steamworks integration', () => {
 
     const config = await new IntegrationConfigFactory().with(() => ({ syncLeaderboards: true })).one()
     const integration = await new IntegrationFactory().construct(IntegrationType.STEAMWORKS, game, config).one()
-    await (<EntityManager>app.context.em).persistAndFlush([integration, entry, mapping])
+    await (<EntityManager>global.em).persistAndFlush([integration, entry, mapping])
 
-    await request(app.callback())
+    await request(global.app)
       .patch(`/games/${game.id}/leaderboards/${leaderboard.id}/entries/${entry.id}`)
       .send({ hidden: false })
       .auth(token, { type: 'bearer' })
@@ -99,7 +91,7 @@ describe('Leaderboard service - update entry - steamworks integration', () => {
 
     expect(updateMock).toHaveBeenCalledTimes(1)
 
-    const event = await (<EntityManager>app.context.em).getRepository(SteamworksIntegrationEvent).findOne({ integration })
+    const event = await (<EntityManager>global.em).getRepository(SteamworksIntegrationEvent).findOne({ integration })
     expect(event.request).toStrictEqual({
       url: 'https://partner.steam-api.com/ISteamLeaderboards/SetLeaderboardScore/v1',
       body: `appid=${config.appId}&leaderboardid=${mapping.steamworksLeaderboardId}&steamid=${player.aliases[0].identifier}&score=${entry.score}&scoremethod=KeepBest`,
@@ -108,8 +100,8 @@ describe('Leaderboard service - update entry - steamworks integration', () => {
   })
 
   it('should not sync entries when syncing is disabled', async () => {
-    const [organisation, game] = await createOrganisationAndGame(app.context.em)
-    const [token] = await createUserAndToken(app.context.em, {}, organisation)
+    const [organisation, game] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken({}, organisation)
 
     const updateMock = jest.fn(() => [200, {}])
     axiosMock.onPost('https://partner.steam-api.com/ISteamLeaderboards/SetLeaderboardScore/v1').replyOnce(updateMock)
@@ -122,9 +114,9 @@ describe('Leaderboard service - update entry - steamworks integration', () => {
 
     const config = await new IntegrationConfigFactory().with(() => ({ syncLeaderboards: false })).one()
     const integration = await new IntegrationFactory().construct(IntegrationType.STEAMWORKS, game, config).one()
-    await (<EntityManager>app.context.em).persistAndFlush([integration, entry, mapping])
+    await (<EntityManager>global.em).persistAndFlush([integration, entry, mapping])
 
-    await request(app.callback())
+    await request(global.app)
       .patch(`/games/${game.id}/leaderboards/${leaderboard.id}/entries/${entry.id}`)
       .send({ hidden: !entry.hidden })
       .auth(token, { type: 'bearer' })
@@ -134,8 +126,8 @@ describe('Leaderboard service - update entry - steamworks integration', () => {
   })
 
   it('should not sync entries when the entry is not a steam alias', async () => {
-    const [organisation, game] = await createOrganisationAndGame(app.context.em)
-    const [token] = await createUserAndToken(app.context.em, {}, organisation)
+    const [organisation, game] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken({}, organisation)
 
     const updateMock = jest.fn(() => [200, {}])
     axiosMock.onPost('https://partner.steam-api.com/ISteamLeaderboards/SetLeaderboardScore/v1').replyOnce(updateMock)
@@ -148,9 +140,9 @@ describe('Leaderboard service - update entry - steamworks integration', () => {
 
     const config = await new IntegrationConfigFactory().with(() => ({ syncLeaderboards: true })).one()
     const integration = await new IntegrationFactory().construct(IntegrationType.STEAMWORKS, game, config).one()
-    await (<EntityManager>app.context.em).persistAndFlush([integration, entry, mapping])
+    await (<EntityManager>global.em).persistAndFlush([integration, entry, mapping])
 
-    await request(app.callback())
+    await request(global.app)
       .patch(`/games/${game.id}/leaderboards/${leaderboard.id}/entries/${entry.id}`)
       .send({ hidden: !entry.hidden })
       .auth(token, { type: 'bearer' })
@@ -160,8 +152,8 @@ describe('Leaderboard service - update entry - steamworks integration', () => {
   })
 
   it('should not sync entries when there is no leaderboard mapping', async () => {
-    const [organisation, game] = await createOrganisationAndGame(app.context.em)
-    const [token] = await createUserAndToken(app.context.em, {}, organisation)
+    const [organisation, game] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken({}, organisation)
 
     const updateMock = jest.fn(() => [200, {}])
     axiosMock.onPost('https://partner.steam-api.com/ISteamLeaderboards/SetLeaderboardScore/v1').replyOnce(updateMock)
@@ -173,9 +165,9 @@ describe('Leaderboard service - update entry - steamworks integration', () => {
 
     const config = await new IntegrationConfigFactory().with(() => ({ syncLeaderboards: true })).one()
     const integration = await new IntegrationFactory().construct(IntegrationType.STEAMWORKS, game, config).one()
-    await (<EntityManager>app.context.em).persistAndFlush([integration, entry])
+    await (<EntityManager>global.em).persistAndFlush([integration, entry])
 
-    await request(app.callback())
+    await request(global.app)
       .patch(`/games/${game.id}/leaderboards/${leaderboard.id}/entries/${entry.id}`)
       .send({ hidden: !entry.hidden })
       .auth(token, { type: 'bearer' })

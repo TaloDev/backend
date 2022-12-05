@@ -1,53 +1,27 @@
 import { Collection, EntityManager } from '@mikro-orm/core'
-import Koa from 'koa'
-import init from '../../../../src/index'
 import request from 'supertest'
-import Game from '../../../../src/entities/game'
-import APIKey, { APIKeyScope } from '../../../../src/entities/api-key'
-import { createToken } from '../../../../src/services/api-key.service'
-import UserFactory from '../../../fixtures/UserFactory'
+import { APIKeyScope } from '../../../../src/entities/api-key'
 import PlayerFactory from '../../../fixtures/PlayerFactory'
 import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
 import PlayerProp from '../../../../src/entities/player-prop'
 import PlayerGroupFactory from '../../../fixtures/PlayerGroupFactory'
 import PlayerGroupRule, { PlayerGroupRuleCastType, PlayerGroupRuleName } from '../../../../src/entities/player-group-rule'
-
-const baseUrl = '/v1/players'
+import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
 
 describe('Player API service - patch', () => {
-  let app: Koa
-  let apiKey: APIKey
-  let token: string
-
-  beforeAll(async () => {
-    app = await init()
-
-    const user = await new UserFactory().one()
-    apiKey = new APIKey(new Game('Uplift', user.organisation), user)
-    token = await createToken(apiKey)
-
-    await (<EntityManager>app.context.em).persistAndFlush(apiKey)
-  })
-
-  afterAll(async () => {
-    await (<EntityManager>app.context.em).getConnection().close()
-  })
-
   it('should update a player\'s properties', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_PLAYERS])
+
     const player = await new PlayerFactory([apiKey.game]).with((player) => ({
       props: new Collection<PlayerProp>(player, [
         new PlayerProp(player, 'collectibles', '0'),
         new PlayerProp(player, 'zonesExplored', '1')
       ])
     })).one()
-    await (<EntityManager>app.context.em).persistAndFlush(player)
+    await (<EntityManager>global.em).persistAndFlush(player)
 
-    apiKey.scopes = [APIKeyScope.WRITE_PLAYERS]
-    await (<EntityManager>app.context.em).flush()
-    token = await createToken(apiKey)
-
-    const res = await request(app.callback())
-      .patch(`${baseUrl}/${player.id}`)
+    const res = await request(global.app)
+      .patch(`/v1/players/${player.id}`)
       .send({
         props: [
           {
@@ -72,20 +46,18 @@ describe('Player API service - patch', () => {
   })
 
   it('should not update a player\'s properties if the scope is missing', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([])
+
     const player = await new PlayerFactory([apiKey.game]).with((player) => ({
       props: new Collection<PlayerProp>(player, [
         new PlayerProp(player, 'collectibles', '0'),
         new PlayerProp(player, 'zonesExplored', '1')
       ])
     })).one()
-    await (<EntityManager>app.context.em).persistAndFlush(player)
+    await (<EntityManager>global.em).persistAndFlush(player)
 
-    apiKey.scopes = []
-    await (<EntityManager>app.context.em).flush()
-    token = await createToken(apiKey)
-
-    await request(app.callback())
-      .patch(`${baseUrl}/${player.id}`)
+    await request(global.app)
+      .patch(`/v1/players/${player.id}`)
       .send({
         props: [
           {
@@ -99,12 +71,10 @@ describe('Player API service - patch', () => {
   })
 
   it('should not update a non-existent player\'s properties', async () => {
-    apiKey.scopes = [APIKeyScope.WRITE_PLAYERS]
-    await (<EntityManager>app.context.em).flush()
-    token = await createToken(apiKey)
+    const [, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_PLAYERS])
 
-    const res = await request(app.callback())
-      .patch(`${baseUrl}/546`)
+    const res = await request(global.app)
+      .patch('/v1/players/546')
       .send({
         props: [
           {
@@ -120,16 +90,14 @@ describe('Player API service - patch', () => {
   })
 
   it('should not update a player from another game\'s properties', async () => {
-    apiKey.scopes = [APIKeyScope.WRITE_PLAYERS]
-    await (<EntityManager>app.context.em).flush()
-    token = await createToken(apiKey)
+    const [, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_PLAYERS])
 
-    const [, otherGame] = await createOrganisationAndGame(app.context.em)
+    const [, otherGame] = await createOrganisationAndGame()
     const otherPlayer = await new PlayerFactory([otherGame]).one()
-    await (<EntityManager>app.context.em).persistAndFlush(otherPlayer)
+    await (<EntityManager>global.em).persistAndFlush(otherPlayer)
 
-    const res = await request(app.callback())
-      .patch(`${baseUrl}/${otherPlayer.id}`)
+    const res = await request(global.app)
+      .patch(`/v1/players/${otherPlayer.id}`)
       .send({
         props: [
           {
@@ -145,6 +113,8 @@ describe('Player API service - patch', () => {
   })
 
   it('should update group memberships when props change', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_PLAYERS])
+
     const rule = new PlayerGroupRule(PlayerGroupRuleName.GTE, 'props.currentLevel')
     rule.castType = PlayerGroupRuleCastType.DOUBLE
     rule.operands = ['60']
@@ -157,14 +127,10 @@ describe('Player API service - patch', () => {
         new PlayerProp(player, 'currentLevel', '59')
       ])
     })).one()
-    await (<EntityManager>app.context.em).persistAndFlush([group, player])
+    await (<EntityManager>global.em).persistAndFlush([group, player])
 
-    apiKey.scopes = [APIKeyScope.WRITE_PLAYERS]
-    await (<EntityManager>app.context.em).flush()
-    token = await createToken(apiKey)
-
-    const res = await request(app.callback())
-      .patch(`${baseUrl}/${player.id}`)
+    const res = await request(global.app)
+      .patch(`/v1/players/${player.id}`)
       .send({
         props: [
           {

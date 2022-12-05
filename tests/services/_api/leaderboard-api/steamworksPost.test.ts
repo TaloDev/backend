@@ -1,6 +1,4 @@
 import { EntityManager } from '@mikro-orm/core'
-import Koa from 'koa'
-import init from '../../../../src/index'
 import request from 'supertest'
 import { APIKeyScope } from '../../../../src/entities/api-key'
 import LeaderboardFactory from '../../../fixtures/LeaderboardFactory'
@@ -15,19 +13,11 @@ import IntegrationConfigFactory from '../../../fixtures/IntegrationConfigFactory
 import IntegrationFactory from '../../../fixtures/IntegrationFactory'
 import { IntegrationType } from '../../../../src/entities/integration'
 
-const baseUrl = '/v1/leaderboards'
-
 describe('Leaderboard API service - post - steamworks integration', () => {
-  let app: Koa
   const axiosMock = new AxiosMockAdapter(axios)
-
-  beforeAll(async () => {
-    app = await init()
-  })
 
   afterAll(async () => {
     axiosMock.reset()
-    await (<EntityManager>app.context.em).getConnection().close()
   })
 
   it('should create a leaderboard entry in steamworks', async () => {
@@ -38,7 +28,7 @@ describe('Leaderboard API service - post - steamworks integration', () => {
     }])
     axiosMock.onPost('https://partner.steam-api.com/ISteamLeaderboards/SetLeaderboardScore/v1').replyOnce(createMock)
 
-    const [apiKey, token] = await createAPIKeyAndToken(app.context.em, [APIKeyScope.WRITE_LEADERBOARDS])
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_LEADERBOARDS])
 
     const leaderboard = await new LeaderboardFactory([apiKey.game]).state('not unique').one()
     const mapping = new SteamworksLeaderboardMapping(casual.integer(100000, 999999), leaderboard)
@@ -46,10 +36,10 @@ describe('Leaderboard API service - post - steamworks integration', () => {
 
     const config = await new IntegrationConfigFactory().with(() => ({ syncLeaderboards: true })).one()
     const integration = await new IntegrationFactory().construct(IntegrationType.STEAMWORKS, apiKey.game, config).one()
-    await (<EntityManager>app.context.em).persistAndFlush([integration, leaderboard, player, mapping])
+    await (<EntityManager>global.em).persistAndFlush([integration, leaderboard, player, mapping])
 
-    await request(app.callback())
-      .post(`${baseUrl}/${leaderboard.internalName}/entries`)
+    await request(global.app)
+      .post(`/v1/leaderboards/${leaderboard.internalName}/entries`)
       .send({ score: 300 })
       .auth(token, { type: 'bearer' })
       .set('x-talo-alias', String(player.aliases[0].id))
@@ -57,7 +47,7 @@ describe('Leaderboard API service - post - steamworks integration', () => {
 
     expect(createMock).toHaveBeenCalledTimes(1)
 
-    const event = await (<EntityManager>app.context.em).getRepository(SteamworksIntegrationEvent).findOne({ integration })
+    const event = await (<EntityManager>global.em).getRepository(SteamworksIntegrationEvent).findOne({ integration })
     expect(event.request).toStrictEqual({
       url: 'https://partner.steam-api.com/ISteamLeaderboards/SetLeaderboardScore/v1',
       body: `appid=${config.appId}&leaderboardid=${mapping.steamworksLeaderboardId}&steamid=${player.aliases[0].identifier}&score=300&scoremethod=KeepBest`,
@@ -73,17 +63,17 @@ describe('Leaderboard API service - post - steamworks integration', () => {
     }])
     axiosMock.onPost('https://partner.steam-api.com/ISteamLeaderboards/SetLeaderboardScore/v1').replyOnce(createMock)
 
-    const [apiKey, token] = await createAPIKeyAndToken(app.context.em, [APIKeyScope.WRITE_LEADERBOARDS])
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_LEADERBOARDS])
 
     const leaderboard = await new LeaderboardFactory([apiKey.game]).state('not unique').one()
     const player = await new PlayerFactory([apiKey.game]).state('with steam alias').one()
 
     const config = await new IntegrationConfigFactory().with(() => ({ syncLeaderboards: true })).one()
     const integration = await new IntegrationFactory().construct(IntegrationType.STEAMWORKS, apiKey.game, config).one()
-    await (<EntityManager>app.context.em).persistAndFlush([integration, leaderboard, player])
+    await (<EntityManager>global.em).persistAndFlush([integration, leaderboard, player])
 
-    await request(app.callback())
-      .post(`${baseUrl}/${leaderboard.internalName}/entries`)
+    await request(global.app)
+      .post(`/v1/leaderboards/${leaderboard.internalName}/entries`)
       .send({ score: 300 })
       .auth(token, { type: 'bearer' })
       .set('x-talo-alias', String(player.aliases[0].id))
@@ -91,7 +81,7 @@ describe('Leaderboard API service - post - steamworks integration', () => {
 
     expect(createMock).not.toHaveBeenCalled()
 
-    const event = await (<EntityManager>app.context.em).getRepository(SteamworksIntegrationEvent).findOne({ integration })
+    const event = await (<EntityManager>global.em).getRepository(SteamworksIntegrationEvent).findOne({ integration })
     expect(event).toBeNull()
 
     axiosMock.reset()
@@ -105,17 +95,17 @@ describe('Leaderboard API service - post - steamworks integration', () => {
     }])
     axiosMock.onPost('https://partner.steam-api.com/ISteamLeaderboards/SetLeaderboardScore/v1').replyOnce(createMock)
 
-    const [apiKey, token] = await createAPIKeyAndToken(app.context.em, [APIKeyScope.WRITE_LEADERBOARDS])
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_LEADERBOARDS])
 
     const leaderboard = await new LeaderboardFactory([apiKey.game]).state('not unique').one()
     const player = await new PlayerFactory([apiKey.game]).state('with steam alias').one()
 
     const config = await new IntegrationConfigFactory().with(() => ({ syncLeaderboards: false })).one()
     const integration = await new IntegrationFactory().construct(IntegrationType.STEAMWORKS, apiKey.game, config).one()
-    await (<EntityManager>app.context.em).persistAndFlush([integration, leaderboard, player])
+    await (<EntityManager>global.em).persistAndFlush([integration, leaderboard, player])
 
-    await request(app.callback())
-      .post(`${baseUrl}/${leaderboard.internalName}/entries`)
+    await request(global.app)
+      .post(`/v1/leaderboards/${leaderboard.internalName}/entries`)
       .send({ score: 300 })
       .auth(token, { type: 'bearer' })
       .set('x-talo-alias', String(player.aliases[0].id))
@@ -123,7 +113,7 @@ describe('Leaderboard API service - post - steamworks integration', () => {
 
     expect(createMock).not.toHaveBeenCalled()
 
-    const event = await (<EntityManager>app.context.em).getRepository(SteamworksIntegrationEvent).findOne({ integration })
+    const event = await (<EntityManager>global.em).getRepository(SteamworksIntegrationEvent).findOne({ integration })
     expect(event).toBeNull()
 
     axiosMock.reset()

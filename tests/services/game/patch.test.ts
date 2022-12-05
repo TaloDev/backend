@@ -1,41 +1,24 @@
 import { EntityManager } from '@mikro-orm/core'
-import Koa from 'koa'
-import init from '../../../src/index'
 import request from 'supertest'
 import { UserType } from '../../../src/entities/user'
 import GameActivity, { GameActivityType } from '../../../src/entities/game-activity'
 import userPermissionProvider from '../../utils/userPermissionProvider'
 import createOrganisationAndGame from '../../utils/createOrganisationAndGame'
 import createUserAndToken from '../../utils/createUserAndToken'
-import clearEntities from '../../utils/clearEntities'
 
 describe('Game service - patch', () => {
-  let app: Koa
-
-  beforeAll(async () => {
-    app = await init()
-  })
-
-  beforeEach(async () => {
-    await clearEntities(app.context.em, ['GameActivity'])
-  })
-
-  afterAll(async () => {
-    await (<EntityManager>app.context.em).getConnection().close()
-  })
-
   it.each(userPermissionProvider([
     UserType.ADMIN
   ]))('should return a %i for a %s user', async (statusCode, _, type) => {
-    const [organisation, game] = await createOrganisationAndGame(app.context.em, {}, {
+    const [organisation, game] = await createOrganisationAndGame({}, {
       props: [
         { key: 'xpRate', value: '1' },
         { key: 'halloweenEventEnabled', value: '0' }
       ]
     })
-    const [token] = await createUserAndToken(app.context.em, { type }, organisation)
+    const [token] = await createUserAndToken({ type }, organisation)
 
-    const res = await request(app.callback())
+    const res = await request(global.app)
       .patch(`/games/${game.id}`)
       .send({
         props: [
@@ -48,8 +31,9 @@ describe('Game service - patch', () => {
       .auth(token, { type: 'bearer' })
       .expect(statusCode)
 
-    const activity = await (<EntityManager>app.context.em).getRepository(GameActivity).findOne({
-      type: GameActivityType.GAME_PROPS_UPDATED
+    const activity = await (<EntityManager>global.em).getRepository(GameActivity).findOne({
+      type: GameActivityType.GAME_PROPS_UPDATED,
+      game
     })
 
     if (statusCode === 200) {
@@ -73,15 +57,15 @@ describe('Game service - patch', () => {
   })
 
   it('should delete null player properties', async () => {
-    const [organisation, game] = await createOrganisationAndGame(app.context.em, {}, {
+    const [organisation, game] = await createOrganisationAndGame({}, {
       props: [
         { key: 'xpRate', value: '1' },
         { key: 'halloweenEventEnabled', value: '0' }
       ]
     })
-    const [token] = await createUserAndToken(app.context.em, { type: UserType.ADMIN }, organisation)
+    const [token] = await createUserAndToken({ type: UserType.ADMIN }, organisation)
 
-    const res = await request(app.callback())
+    const res = await request(global.app)
       .patch(`/games/${game.id}`)
       .send({
         props: [
@@ -107,10 +91,10 @@ describe('Game service - patch', () => {
   })
 
   it('should not update a non-existent game\'s properties', async () => {
-    const [organisation] = await createOrganisationAndGame(app.context.em)
-    const [token] = await createUserAndToken(app.context.em, { type: UserType.ADMIN }, organisation)
+    const [organisation] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken({ type: UserType.ADMIN }, organisation)
 
-    const res = await request(app.callback())
+    const res = await request(global.app)
       .patch('/games/2313')
       .send({
         props: [
@@ -127,10 +111,10 @@ describe('Game service - patch', () => {
   })
 
   it('should not update a player\'s properties for a game the user has no access to', async () => {
-    const [, otherGame] = await createOrganisationAndGame(app.context.em)
-    const [token] = await createUserAndToken(app.context.em, { type: UserType.ADMIN })
+    const [, otherGame] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken({ type: UserType.ADMIN })
 
-    const res = await request(app.callback())
+    const res = await request(global.app)
       .patch(`/games/${otherGame.id}`)
       .send({
         props: [
@@ -147,10 +131,10 @@ describe('Game service - patch', () => {
   })
 
   it('should reject keys starting with META_', async () => {
-    const [organisation, game] = await createOrganisationAndGame(app.context.em)
-    const [token] = await createUserAndToken(app.context.em, { type: UserType.ADMIN }, organisation)
+    const [organisation, game] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken({ type: UserType.ADMIN }, organisation)
 
-    const res = await request(app.callback())
+    const res = await request(global.app)
       .patch(`/games/${game.id}`)
       .send({
         props: [

@@ -1,46 +1,30 @@
 import { EntityManager } from '@mikro-orm/core'
-import Koa from 'koa'
-import init from '../../../src/index'
 import request from 'supertest'
 import { UserType } from '../../../src/entities/user'
 import GameFactory from '../../fixtures/GameFactory'
 import LeaderboardFactory from '../../fixtures/LeaderboardFactory'
 import GameActivity, { GameActivityType } from '../../../src/entities/game-activity'
-import clearEntities from '../../utils/clearEntities'
 import userPermissionProvider from '../../utils/userPermissionProvider'
 import createOrganisationAndGame from '../../utils/createOrganisationAndGame'
 import createUserAndToken from '../../utils/createUserAndToken'
 
 describe('Leaderboard service - post', () => {
-  let app: Koa
-
-  beforeAll(async () => {
-    app = await init()
-  })
-
-  beforeEach(async () => {
-    await clearEntities(app.context.em, ['Leaderboard', 'GameActivity'])
-  })
-
-  afterAll(async () => {
-    await (<EntityManager>app.context.em).getConnection().close()
-  })
-
   it.each(userPermissionProvider([
     UserType.ADMIN,
     UserType.DEV
   ]))('should return a %i for a %s user', async (statusCode, _, type) => {
-    const [organisation, game] = await createOrganisationAndGame(app.context.em)
-    const [token] = await createUserAndToken(app.context.em, { type }, organisation)
+    const [organisation, game] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken({ type }, organisation)
 
-    const res = await request(app.callback())
+    const res = await request(global.app)
       .post(`/games/${game.id}/leaderboards`)
       .send({ internalName: 'highscores', name: 'Highscores', sortMode: 'desc', unique: true })
       .auth(token, { type: 'bearer' })
       .expect(statusCode)
 
-    const activity = await (<EntityManager>app.context.em).getRepository(GameActivity).findOne({
-      type: GameActivityType.LEADERBOARD_CREATED
+    const activity = await (<EntityManager>global.em).getRepository(GameActivity).findOne({
+      type: GameActivityType.LEADERBOARD_CREATED,
+      game
     })
 
     if (statusCode === 200) {
@@ -57,10 +41,10 @@ describe('Leaderboard service - post', () => {
   })
 
   it('should not create a leaderboard for a game the user has no access to', async () => {
-    const [, otherGame] = await createOrganisationAndGame(app.context.em)
-    const [token] = await createUserAndToken(app.context.em)
+    const [, otherGame] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken()
 
-    const res = await request(app.callback())
+    const res = await request(global.app)
       .post(`/games/${otherGame.id}/leaderboards`)
       .send({ internalName: 'highscores', name: 'Highscores', sortMode: 'desc', unique: true })
       .auth(token, { type: 'bearer' })
@@ -70,9 +54,9 @@ describe('Leaderboard service - post', () => {
   })
 
   it('should not create a leaderboard for a non-existent game', async () => {
-    const [token] = await createUserAndToken(app.context.em)
+    const [token] = await createUserAndToken()
 
-    const res = await request(app.callback())
+    const res = await request(global.app)
       .post('/games/99999/leaderboards')
       .send({ internalName: 'highscores', name: 'Highscores', sortMode: 'desc', unique: true })
       .auth(token, { type: 'bearer' })
@@ -82,10 +66,10 @@ describe('Leaderboard service - post', () => {
   })
 
   it('should not create a leaderboard with an invalid sort mode', async () => {
-    const [organisation, game] = await createOrganisationAndGame(app.context.em)
-    const [token] = await createUserAndToken(app.context.em, {}, organisation)
+    const [organisation, game] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken({}, organisation)
 
-    const res = await request(app.callback())
+    const res = await request(global.app)
       .post(`/games/${game.id}/leaderboards`)
       .send({ internalName: 'highscores', name: 'Highscores', sortMode: 'blah', unique: true })
       .auth(token, { type: 'bearer' })
@@ -99,13 +83,13 @@ describe('Leaderboard service - post', () => {
   })
 
   it('should not create a leaderboard with a duplicate internal name', async () => {
-    const [organisation, game] = await createOrganisationAndGame(app.context.em)
-    const [token] = await createUserAndToken(app.context.em, {}, organisation)
+    const [organisation, game] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken({}, organisation)
 
     const leaderboard = await new LeaderboardFactory([game]).with(() => ({ internalName: 'highscores' })).one()
-    await (<EntityManager>app.context.em).persistAndFlush(leaderboard)
+    await (<EntityManager>global.em).persistAndFlush(leaderboard)
 
-    const res = await request(app.callback())
+    const res = await request(global.app)
       .post(`/games/${game.id}/leaderboards`)
       .send({ internalName: 'highscores', name: 'Highscores', sortMode: 'asc', unique: true })
       .auth(token, { type: 'bearer' })
@@ -119,14 +103,14 @@ describe('Leaderboard service - post', () => {
   })
 
   it('should create a leaderboard with a duplicate internal name for another game', async () => {
-    const [organisation, game] = await createOrganisationAndGame(app.context.em)
-    const [token] = await createUserAndToken(app.context.em, {}, organisation)
+    const [organisation, game] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken({}, organisation)
 
     const otherGame = await new GameFactory(organisation).one()
     const otherLeaderboard = await new LeaderboardFactory([otherGame]).with(() => ({ internalName: 'time-survived' })).one()
-    await (<EntityManager>app.context.em).persistAndFlush(otherLeaderboard)
+    await (<EntityManager>global.em).persistAndFlush(otherLeaderboard)
 
-    await request(app.callback())
+    await request(global.app)
       .post(`/games/${game.id}/leaderboards`)
       .send({ internalName: 'time-survived', name: 'Time survived', sortMode: 'asc', unique: true })
       .auth(token, { type: 'bearer' })

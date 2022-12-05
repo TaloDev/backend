@@ -1,6 +1,4 @@
 import { EntityManager } from '@mikro-orm/core'
-import Koa from 'koa'
-import init from '../../../src/index'
 import request from 'supertest'
 import createOrganisationAndGame from '../../utils/createOrganisationAndGame'
 import createUserAndToken from '../../utils/createUserAndToken'
@@ -12,22 +10,10 @@ import { sub } from 'date-fns'
 import randomDate from '../../../src/lib/dates/randomDate'
 import PricingPlanActionFactory from '../../fixtures/PricingPlanActionFactory'
 
-const baseUrl = '/billing/usage'
-
 describe('Billing service - usage', () => {
-  let app: Koa
-
-  beforeAll(async () => {
-    app = await init()
-  })
-
-  afterAll(async () => {
-    await (<EntityManager>app.context.em).getConnection().close()
-  })
-
   it.each(userPermissionProvider())('should return a %i for a %s user', async (statusCode, _, type) => {
-    const [organisation] = await createOrganisationAndGame(app.context.em, {}, {})
-    const [token] = await createUserAndToken(app.context.em, { type }, organisation)
+    const [organisation] = await createOrganisationAndGame({}, {})
+    const [token] = await createUserAndToken({ type }, organisation)
 
     const invitePlanAction = await new PricingPlanActionFactory()
       .with(() => ({ pricingPlan: organisation.pricingPlan.pricingPlan, type: PricingPlanActionType.USER_INVITE }))
@@ -58,10 +44,10 @@ describe('Billing service - usage', () => {
       }))
       .many(casual.integer(1, 10))
 
-    await (<EntityManager>app.context.em).persistAndFlush([invitePlanAction, exportPlanAction, ...inviteActions, ...exportActionsThisMonth, ...exportActionsLastMonth])
+    await (<EntityManager>global.em).persistAndFlush([invitePlanAction, exportPlanAction, ...inviteActions, ...exportActionsThisMonth, ...exportActionsLastMonth])
 
-    const res = await request(app.callback())
-      .get(baseUrl)
+    const res = await request(global.app)
+      .get('/billing/usage')
       .auth(token, { type: 'bearer' })
       .expect(statusCode)
 

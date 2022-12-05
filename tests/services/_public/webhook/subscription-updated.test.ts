@@ -1,57 +1,42 @@
 import { EntityManager } from '@mikro-orm/core'
-import Koa from 'koa'
-import init from '../../../../src/index'
 import request from 'supertest'
 import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
 import initStripe from '../../../../src/lib/billing/initStripe'
 import { v4 } from 'uuid'
-import Organisation from '../../../../src/entities/organisation'
 import PricingPlanFactory from '../../../fixtures/PricingPlanFactory'
 import SendGrid from '@sendgrid/mail'
 import PlanUpgraded from '../../../../src/emails/plan-upgraded-mail'
 import { addDays } from 'date-fns'
 import PlanRenewed from '../../../../src/emails/plan-renewed-mail'
-import clearEntities from '../../../utils/clearEntities'
 import PlanCancelled from '../../../../src/emails/plan-cancelled-mail'
 
-const baseUrl = '/public/webhooks/subscriptions'
 const stripe = initStripe()
 
 describe('Webhook service - subscription updated', () => {
-  let app: Koa
   const sendMock = jest.spyOn(SendGrid, 'send')
-
-  beforeAll(async () => {
-    app = await init()
-  })
-
-  beforeEach(async () => {
-    await clearEntities(app.context.em)
-  })
 
   afterEach(() => {
     sendMock.mockClear()
-  })
-
-  afterAll(async () => {
-    await (<EntityManager>app.context.em).getConnection().close()
   })
 
   it('should update the organisation pricing plan with the updated subscription\'s details', async () => {
     const product = (await stripe.products.list()).data[0]
     const plan = await new PricingPlanFactory().with(() => ({ stripeId: product.id })).one()
 
-    let [organisation] = await createOrganisationAndGame(app.context.em, {}, {}, plan)
+    const [organisation] = await createOrganisationAndGame({}, {}, plan)
     const subscription = (await stripe.subscriptions.list()).data[0]
 
-    organisation.pricingPlan.stripeCustomerId = subscription.customer as string
-    await (<EntityManager>app.context.em).flush()
+    organisation.pricingPlan.stripeCustomerId = (subscription.customer as string) + organisation.id
+    await (<EntityManager>global.em).flush()
 
     jest.spyOn(stripe.webhooks, 'constructEvent').mockImplementationOnce(() => ({
       id: v4(),
       object: 'event',
       data: {
-        object: subscription
+        object: {
+          ...subscription,
+          customer: organisation.pricingPlan.stripeCustomerId
+        }
       },
       api_version: '2020-08-27',
       created: Date.now(),
@@ -61,12 +46,12 @@ describe('Webhook service - subscription updated', () => {
       type: 'customer.subscription.updated'
     }))
 
-    await request(app.callback())
-      .post(baseUrl)
+    await request(global.app)
+      .post('/public/webhooks/subscriptions')
       .set('stripe-signature', 'abc123')
       .expect(204)
 
-    organisation = await (<EntityManager>app.context.em).getRepository(Organisation).findOne(organisation.id, { refresh: true })
+    await (<EntityManager>global.em).refresh(organisation)
     const price = subscription.items.data[0].price
     expect(organisation.pricingPlan.stripePriceId).toBe(price.id)
     expect(sendMock).toHaveBeenCalledWith(new PlanUpgraded(organisation, price, product).getConfig())
@@ -76,18 +61,21 @@ describe('Webhook service - subscription updated', () => {
     const product = (await stripe.products.list()).data[0]
     const plan = await new PricingPlanFactory().with(() => ({ stripeId: product.id })).one()
 
-    const [organisation] = await createOrganisationAndGame(app.context.em, {}, {}, plan)
+    const [organisation] = await createOrganisationAndGame({}, {}, plan)
     const subscription = (await stripe.subscriptions.list()).data[0]
 
-    organisation.pricingPlan.stripeCustomerId = subscription.customer as string
+    organisation.pricingPlan.stripeCustomerId = (subscription.customer as string) + organisation.id
     organisation.pricingPlan.stripePriceId = subscription.items.data[0].price.id
-    await (<EntityManager>app.context.em).flush()
+    await (<EntityManager>global.em).flush()
 
     jest.spyOn(stripe.webhooks, 'constructEvent').mockImplementationOnce(() => ({
       id: v4(),
       object: 'event',
       data: {
-        object: subscription
+        object: {
+          ...subscription,
+          customer: organisation.pricingPlan.stripeCustomerId
+        }
       },
       api_version: '2020-08-27',
       created: Date.now(),
@@ -97,8 +85,8 @@ describe('Webhook service - subscription updated', () => {
       type: 'customer.subscription.updated'
     }))
 
-    await request(app.callback())
-      .post(baseUrl)
+    await request(global.app)
+      .post('/public/webhooks/subscriptions')
       .set('stripe-signature', 'abc123')
       .expect(204)
 
@@ -109,19 +97,22 @@ describe('Webhook service - subscription updated', () => {
     const product = (await stripe.products.list()).data[0]
     const plan = await new PricingPlanFactory().with(() => ({ stripeId: product.id })).one()
 
-    let [organisation] = await createOrganisationAndGame(app.context.em, {}, {}, plan)
+    const [organisation] = await createOrganisationAndGame({}, {}, plan)
     const subscription = (await stripe.subscriptions.list()).data[0]
 
-    organisation.pricingPlan.stripeCustomerId = subscription.customer as string
+    organisation.pricingPlan.stripeCustomerId = (subscription.customer as string) + organisation.id
     organisation.pricingPlan.stripePriceId = subscription.items.data[0].price.id
     organisation.pricingPlan.endDate = addDays(new Date(), 1)
-    await (<EntityManager>app.context.em).flush()
+    await (<EntityManager>global.em).flush()
 
     jest.spyOn(stripe.webhooks, 'constructEvent').mockImplementationOnce(() => ({
       id: v4(),
       object: 'event',
       data: {
-        object: subscription
+        object: {
+          ...subscription,
+          customer: organisation.pricingPlan.stripeCustomerId
+        }
       },
       api_version: '2020-08-27',
       created: Date.now(),
@@ -131,12 +122,12 @@ describe('Webhook service - subscription updated', () => {
       type: 'customer.subscription.updated'
     }))
 
-    await request(app.callback())
-      .post(baseUrl)
+    await request(global.app)
+      .post('/public/webhooks/subscriptions')
       .set('stripe-signature', 'abc123')
       .expect(204)
 
-    organisation = await (<EntityManager>app.context.em).getRepository(Organisation).findOne(organisation.id, { refresh: true })
+    await (<EntityManager>global.em).refresh(organisation, { populate: ['pricingPlan'] })
     expect(organisation.pricingPlan.endDate).toBe(null)
     expect(sendMock).toHaveBeenCalledWith(new PlanRenewed(organisation).getConfig())
   })
@@ -145,20 +136,23 @@ describe('Webhook service - subscription updated', () => {
     const product = (await stripe.products.list()).data[0]
     const plan = await new PricingPlanFactory().with(() => ({ stripeId: product.id })).one()
 
-    let [organisation] = await createOrganisationAndGame(app.context.em, {}, {}, plan)
+    const [organisation] = await createOrganisationAndGame({}, {}, plan)
     const subscription = (await stripe.subscriptions.list()).data[0]
     subscription.cancel_at_period_end = true
 
-    organisation.pricingPlan.stripeCustomerId = subscription.customer as string
+    organisation.pricingPlan.stripeCustomerId = (subscription.customer as string) + organisation.id
     organisation.pricingPlan.stripePriceId = subscription.items.data[0].price.id
     organisation.pricingPlan.endDate = null
-    await (<EntityManager>app.context.em).flush()
+    await (<EntityManager>global.em).flush()
 
     jest.spyOn(stripe.webhooks, 'constructEvent').mockImplementationOnce(() => ({
       id: v4(),
       object: 'event',
       data: {
-        object: subscription
+        object: {
+          ...subscription,
+          customer: organisation.pricingPlan.stripeCustomerId
+        }
       },
       api_version: '2020-08-27',
       created: Date.now(),
@@ -168,12 +162,12 @@ describe('Webhook service - subscription updated', () => {
       type: 'customer.subscription.updated'
     }))
 
-    await request(app.callback())
-      .post(baseUrl)
+    await request(global.app)
+      .post('/public/webhooks/subscriptions')
       .set('stripe-signature', 'abc123')
       .expect(204)
 
-    organisation = await (<EntityManager>app.context.em).getRepository(Organisation).findOne(organisation.id, { refresh: true })
+    await (<EntityManager>global.em).refresh(organisation, { populate: ['pricingPlan'] })
     expect(organisation.pricingPlan.endDate.getMilliseconds()).toBe(new Date(subscription.current_period_end * 1000).getMilliseconds())
     expect(sendMock).toHaveBeenCalledWith(new PlanCancelled(organisation).getConfig())
   })
@@ -182,19 +176,22 @@ describe('Webhook service - subscription updated', () => {
     const product = (await stripe.products.list()).data[0]
     const plan = await new PricingPlanFactory().with(() => ({ stripeId: product.id })).one()
 
-    let [organisation] = await createOrganisationAndGame(app.context.em, {}, {}, plan)
+    const [organisation] = await createOrganisationAndGame({}, {}, plan)
     const subscription = (await stripe.subscriptions.list()).data[0]
 
-    organisation.pricingPlan.stripeCustomerId = subscription.customer as string
+    organisation.pricingPlan.stripeCustomerId = (subscription.customer as string) + organisation.id
     organisation.pricingPlan.stripePriceId = subscription.items.data[0].price.id
     organisation.pricingPlan.endDate = null
-    await (<EntityManager>app.context.em).flush()
+    await (<EntityManager>global.em).flush()
 
     jest.spyOn(stripe.webhooks, 'constructEvent').mockImplementationOnce(() => ({
       id: v4(),
       object: 'event',
       data: {
-        object: subscription
+        object: {
+          ...subscription,
+          customer: organisation.pricingPlan.stripeCustomerId
+        }
       },
       api_version: '2020-08-27',
       created: Date.now(),
@@ -204,12 +201,12 @@ describe('Webhook service - subscription updated', () => {
       type: 'customer.subscription.updated'
     }))
 
-    await request(app.callback())
-      .post(baseUrl)
+    await request(global.app)
+      .post('/public/webhooks/subscriptions')
       .set('stripe-signature', 'abc123')
       .expect(204)
 
-    organisation = await (<EntityManager>app.context.em).getRepository(Organisation).findOne(organisation.id, { refresh: true })
+    await (<EntityManager>global.em).refresh(organisation, { populate: ['pricingPlan'] })
     expect(organisation.pricingPlan.endDate).toBe(null)
     expect(sendMock).not.toHaveBeenCalled()
   })

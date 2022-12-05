@@ -25,10 +25,6 @@ describe('Steamworks integration - sync leaderboards', () => {
     em = orm.em
   })
 
-  // beforeEach(async () => {
-  //   await clearEntities(em, ['GameStat'])
-  // })
-
   afterAll(async () => {
     await em.getConnection().close()
   })

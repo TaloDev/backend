@@ -17,7 +17,10 @@ set -e
 
 dc up -d
 
-yarn mikro-orm migration:up
-echo "\n"
+if [ -z "$EXPOSE_GC" ]
+then
+  node --trace-warnings ./node_modules/.bin/jest "$@" --runInBand
+else
+  node --expose-gc --trace-warnings ./node_modules/.bin/jest "$@" --runInBand --logHeapUsage
+fi
 
-node --expose-gc --trace-warnings ./node_modules/.bin/jest "$@" --runInBand --logHeapUsage

@@ -1,44 +1,18 @@
 import { EntityManager } from '@mikro-orm/core'
-import Koa from 'koa'
-import init from '../../../src/index'
 import request from 'supertest'
-import User from '../../../src/entities/user'
-import { genAccessToken } from '../../../src/lib/auth/buildTokenPair'
-import Game from '../../../src/entities/game'
 import Event from '../../../src/entities/event'
 import EventFactory from '../../fixtures/EventFactory'
-import UserFactory from '../../fixtures/UserFactory'
-import OrganisationFactory from '../../fixtures/OrganisationFactory'
 import PlayerFactory from '../../fixtures/PlayerFactory'
 import { sub } from 'date-fns'
-import clearEntities from '../../utils/clearEntities'
+import createUserAndToken from '../../utils/createUserAndToken'
+import createOrganisationAndGame from '../../utils/createOrganisationAndGame'
 
 describe('Event service - get', () => {
-  let app: Koa
-  let user: User
-  let validGame: Game
-  let token: string
-
-  beforeAll(async () => {
-    app = await init()
-
-    user = await new UserFactory().one()
-    validGame = new Game('Uplift', user.organisation)
-    await (<EntityManager>app.context.em).persistAndFlush([user, validGame])
-
-    token = await genAccessToken(user)
-  })
-
-  beforeEach(async () => {
-    await clearEntities(app.context.em, ['Event'])
-  })
-
-  afterAll(async () => {
-    await (<EntityManager>app.context.em).getConnection().close()
-  })
-
   it('should return a list of events', async () => {
-    const player = await new PlayerFactory([validGame]).one()
+    const [organisation, game] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken({}, organisation)
+
+    const player = await new PlayerFactory([game]).one()
     const now = new Date('2021-01-01')
 
     const dayInMs = 86400000
@@ -48,10 +22,10 @@ describe('Event service - get', () => {
       createdAt: new Date(now.getTime() + (dayInMs * idx))
     })).many(2)
 
-    await (<EntityManager>app.context.em).persistAndFlush(events)
+    await (<EntityManager>global.em).persistAndFlush(events)
 
-    const res = await request(app.callback())
-      .get(`/games/${validGame.id}/events`)
+    const res = await request(global.app)
+      .get(`/games/${game.id}/events`)
       .query({ startDate: '2021-01-01', endDate: '2021-01-03' })
       .auth(token, { type: 'bearer' })
       .expect(200)
@@ -74,8 +48,11 @@ describe('Event service - get', () => {
   })
 
   it('should require a startDate query key to get events', async () => {
-    const res = await request(app.callback())
-      .get(`/games/${validGame.id}/events`)
+    const [organisation, game] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken({}, organisation)
+
+    const res = await request(global.app)
+      .get(`/games/${game.id}/events`)
       .auth(token, { type: 'bearer' })
       .expect(400)
 
@@ -88,8 +65,11 @@ describe('Event service - get', () => {
   })
 
   it('should require a valid startDate query key to get events', async () => {
-    const res = await request(app.callback())
-      .get(`/games/${validGame.id}/events`)
+    const [organisation, game] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken({}, organisation)
+
+    const res = await request(global.app)
+      .get(`/games/${game.id}/events`)
       .query({ startDate: '2015-02-32', endDate: '2015-03-01' })
       .auth(token, { type: 'bearer' })
       .expect(400)
@@ -102,8 +82,11 @@ describe('Event service - get', () => {
   })
 
   it('should require a startDate that comes before the endDate query key to get events', async () => {
-    const res = await request(app.callback())
-      .get(`/games/${validGame.id}/events`)
+    const [organisation, game] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken({}, organisation)
+
+    const res = await request(global.app)
+      .get(`/games/${game.id}/events`)
       .query({ startDate: '2003-02-01', endDate: '2001-01-01' })
       .auth(token, { type: 'bearer' })
       .expect(400)
@@ -116,8 +99,11 @@ describe('Event service - get', () => {
   })
 
   it('should require a endDate query key to get events', async () => {
-    const res = await request(app.callback())
-      .get(`/games/${validGame.id}/events`)
+    const [organisation, game] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken({}, organisation)
+
+    const res = await request(global.app)
+      .get(`/games/${game.id}/events`)
       .query({ startDate: '2021-01-01' })
       .auth(token, { type: 'bearer' })
       .expect(400)
@@ -130,8 +116,11 @@ describe('Event service - get', () => {
   })
 
   it('should require a valid endDate query key to get events', async () => {
-    const res = await request(app.callback())
-      .get(`/games/${validGame.id}/events`)
+    const [organisation, game] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken({}, organisation)
+
+    const res = await request(global.app)
+      .get(`/games/${game.id}/events`)
       .query({ startDate: '2015-01-29', endDate: '2015-02-32' })
       .auth(token, { type: 'bearer' })
       .expect(400)
@@ -144,7 +133,10 @@ describe('Event service - get', () => {
   })
 
   it('should correctly calculate event changes', async () => {
-    const player = await new PlayerFactory([validGame]).one()
+    const [organisation, game] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken({}, organisation)
+
+    const player = await new PlayerFactory([game]).one()
     const now = new Date('2021-01-01')
 
     const dayInMs = 86400000
@@ -170,15 +162,15 @@ describe('Event service - get', () => {
       createdAt: new Date(now.getTime() + dayInMs * 3)
     })).one()
 
-    await (<EntityManager>app.context.em).persistAndFlush([
+    await (<EntityManager>global.em).persistAndFlush([
       firstEvent,
       ...moreEvents,
       ...evenMoreEvents,
       lastEvent
     ])
 
-    const res = await request(app.callback())
-      .get(`/games/${validGame.id}/events`)
+    const res = await request(global.app)
+      .get(`/games/${game.id}/events`)
       .query({ startDate: '2021-01-01', endDate: '2021-01-05' })
       .auth(token, { type: 'bearer' })
       .expect(200)
@@ -190,7 +182,10 @@ describe('Event service - get', () => {
   })
 
   it('should mark the change between 0 events and 1 event as 100%', async () => {
-    const player = await new PlayerFactory([validGame]).one()
+    const [organisation, game] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken({}, organisation)
+
+    const player = await new PlayerFactory([game]).one()
     const now = new Date('2021-01-01')
 
     const dayInMs = 86400000
@@ -202,10 +197,10 @@ describe('Event service - get', () => {
       createdAt: new Date(now.getTime() + dayInMs)
     })).one()
 
-    await (<EntityManager>app.context.em).persistAndFlush(event)
+    await (<EntityManager>global.em).persistAndFlush(event)
 
-    const res = await request(app.callback())
-      .get(`/games/${validGame.id}/events`)
+    const res = await request(global.app)
+      .get(`/games/${game.id}/events`)
       .query({ startDate: '2021-01-01', endDate: '2021-01-05' })
       .auth(token, { type: 'bearer' })
       .expect(200)
@@ -215,7 +210,9 @@ describe('Event service - get', () => {
   })
 
   it('should not return a list of events for a non-existent game', async () => {
-    const res = await request(app.callback())
+    const [token] = await createUserAndToken()
+
+    const res = await request(global.app)
       .get('/games/99999/events')
       .query({ startDate: '2021-01-01', endDate: '2021-01-05' })
       .auth(token, { type: 'bearer' })
@@ -225,24 +222,26 @@ describe('Event service - get', () => {
   })
 
   it('should not return a list of events for a game the user has no access to', async () => {
-    const otherOrg = await new OrganisationFactory().one()
-    const otherGame = new Game('Crawle', otherOrg)
-    await (<EntityManager>app.context.em).persistAndFlush(otherGame)
+    const [, game] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken()
 
-    await request(app.callback())
-      .get(`/games/${otherGame.id}/events`)
+    await request(global.app)
+      .get(`/games/${game.id}/events`)
       .query({ startDate: '2021-01-01', endDate: '2021-01-05' })
       .auth(token, { type: 'bearer' })
       .expect(403)
   })
 
   it('should return events from today if the endDate is today', async () => {
-    const player = await new PlayerFactory([validGame]).one()
-    const events = await new EventFactory([player]).with(() => ({ name: 'Talk to NPC', createdAt: new Date() })).many(3)
-    await (<EntityManager>app.context.em).persistAndFlush(events)
+    const [organisation, game] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken({}, organisation)
 
-    const res = await request(app.callback())
-      .get(`/games/${validGame.id}/events`)
+    const player = await new PlayerFactory([game]).one()
+    const events = await new EventFactory([player]).with(() => ({ name: 'Talk to NPC', createdAt: new Date() })).many(3)
+    await (<EntityManager>global.em).persistAndFlush(events)
+
+    const res = await request(global.app)
+      .get(`/games/${game.id}/events`)
       .query({ startDate: sub(new Date(), { days: 1 }), endDate: new Date() })
       .auth(token, { type: 'bearer' })
       .expect(200)
@@ -251,12 +250,15 @@ describe('Event service - get', () => {
   })
 
   it('should not return events by dev build players if the dev data header is not set', async () => {
-    const player = await new PlayerFactory([validGame]).state('dev build').one()
-    const events = await new EventFactory([player]).with(() => ({ name: 'Talk to NPC', createdAt: new Date() })).many(3)
-    await (<EntityManager>app.context.em).persistAndFlush(events)
+    const [organisation, game] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken({}, organisation)
 
-    const res = await request(app.callback())
-      .get(`/games/${validGame.id}/events`)
+    const player = await new PlayerFactory([game]).state('dev build').one()
+    const events = await new EventFactory([player]).with(() => ({ name: 'Talk to NPC', createdAt: new Date() })).many(3)
+    await (<EntityManager>global.em).persistAndFlush(events)
+
+    const res = await request(global.app)
+      .get(`/games/${game.id}/events`)
       .query({ startDate: sub(new Date(), { days: 1 }), endDate: new Date() })
       .auth(token, { type: 'bearer' })
       .expect(200)
@@ -265,12 +267,15 @@ describe('Event service - get', () => {
   })
 
   it('should return events by dev build players if the dev data header is set', async () => {
-    const player = await new PlayerFactory([validGame]).state('dev build').one()
-    const events = await new EventFactory([player]).with(() => ({ name: 'Talk to NPC', createdAt: new Date() })).many(3)
-    await (<EntityManager>app.context.em).persistAndFlush(events)
+    const [organisation, game] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken({}, organisation)
 
-    const res = await request(app.callback())
-      .get(`/games/${validGame.id}/events`)
+    const player = await new PlayerFactory([game]).state('dev build').one()
+    const events = await new EventFactory([player]).with(() => ({ name: 'Talk to NPC', createdAt: new Date() })).many(3)
+    await (<EntityManager>global.em).persistAndFlush(events)
+
+    const res = await request(global.app)
+      .get(`/games/${game.id}/events`)
       .query({ startDate: sub(new Date(), { days: 1 }), endDate: new Date() })
       .auth(token, { type: 'bearer' })
       .set('x-talo-include-dev-data', '1')

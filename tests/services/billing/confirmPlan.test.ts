@@ -1,6 +1,4 @@
 import { EntityManager } from '@mikro-orm/core'
-import Koa from 'koa'
-import init from '../../../src/index'
 import request from 'supertest'
 import initStripe from '../../../src/lib/billing/initStripe'
 import PricingPlanFactory from '../../fixtures/PricingPlanFactory'
@@ -10,20 +8,9 @@ import userPermissionProvider from '../../utils/userPermissionProvider'
 import { UserType } from '../../../src/entities/user'
 import { addHours } from 'date-fns'
 
-const baseUrl = '/billing/confirm-plan'
 const stripe = initStripe()
 
 describe('Billing service - confirm plan', () => {
-  let app: Koa
-
-  beforeAll(async () => {
-    app = await init()
-  })
-
-  afterAll(async () => {
-    await (<EntityManager>app.context.em).getConnection().close()
-  })
-
   it.each(userPermissionProvider([], 204))('should return a %i for a %s user', async (statusCode, _, type) => {
     const product = (await stripe.products.list()).data[0]
     const price = (await stripe.prices.list({ product: product.id })).data[0]
@@ -31,15 +18,15 @@ describe('Billing service - confirm plan', () => {
 
     const subscription = (await stripe.subscriptions.list()).data[0]
 
-    const [organisation] = await createOrganisationAndGame(app.context.em, {}, {}, plan)
-    const [token] = await createUserAndToken(app.context.em, { type }, organisation)
+    const [organisation] = await createOrganisationAndGame({}, {}, plan)
+    const [token] = await createUserAndToken({ type }, organisation)
 
     organisation.pricingPlan.stripeCustomerId = subscription.customer as string
     organisation.pricingPlan.stripePriceId = price.id
-    await (<EntityManager>app.context.em).flush()
+    await (<EntityManager>global.em).flush()
 
-    const res = await request(app.callback())
-      .post(baseUrl)
+    const res = await request(global.app)
+      .post('/billing/confirm-plan')
       .send({
         pricingPlanId: plan.id,
         pricingInterval: price.recurring.interval,
@@ -58,15 +45,15 @@ describe('Billing service - confirm plan', () => {
     const price = (await stripe.prices.list({ product: product.id })).data[0]
     const plan = await new PricingPlanFactory().with(() => ({ stripeId: product.id })).one()
 
-    const [organisation] = await createOrganisationAndGame(app.context.em, {}, {}, plan)
-    const [token] = await createUserAndToken(app.context.em, { type: UserType.OWNER }, organisation)
+    const [organisation] = await createOrganisationAndGame({}, {}, plan)
+    const [token] = await createUserAndToken({ type: UserType.OWNER }, organisation)
 
     organisation.pricingPlan.stripeCustomerId = null
     organisation.pricingPlan.stripePriceId = price.id
-    await (<EntityManager>app.context.em).flush()
+    await (<EntityManager>global.em).flush()
 
-    await request(app.callback())
-      .post(baseUrl)
+    await request(global.app)
+      .post('/billing/confirm-plan')
       .send({
         pricingPlanId: plan.id,
         pricingInterval: price.recurring.interval,
@@ -83,15 +70,15 @@ describe('Billing service - confirm plan', () => {
 
     const subscription = (await stripe.subscriptions.list()).data[0]
 
-    const [organisation] = await createOrganisationAndGame(app.context.em, {}, {}, plan)
-    const [token] = await createUserAndToken(app.context.em, { type: UserType.OWNER }, organisation)
+    const [organisation] = await createOrganisationAndGame({}, {}, plan)
+    const [token] = await createUserAndToken({ type: UserType.OWNER }, organisation)
 
     organisation.pricingPlan.stripeCustomerId = subscription.customer as string
     organisation.pricingPlan.stripePriceId = price.id
-    await (<EntityManager>app.context.em).flush()
+    await (<EntityManager>global.em).flush()
 
-    await request(app.callback())
-      .post(baseUrl)
+    await request(global.app)
+      .post('/billing/confirm-plan')
       .send({
         pricingPlanId: plan.id,
         pricingInterval: price.recurring.interval,

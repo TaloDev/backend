@@ -1,13 +1,10 @@
 import { EntityManager } from '@mikro-orm/core'
-import Koa from 'koa'
-import init from '../../../src/index'
 import request from 'supertest'
 import { UserType } from '../../../src/entities/user'
 import DataExport, { DataExportAvailableEntities } from '../../../src/entities/data-export'
 import createUserAndToken from '../../utils/createUserAndToken'
 import createOrganisationAndGame from '../../utils/createOrganisationAndGame'
 import userPermissionProvider from '../../utils/userPermissionProvider'
-import clearEntities from '../../utils/clearEntities'
 import GameActivity, { GameActivityType } from '../../../src/entities/game-activity'
 import PricingPlanActionFactory from '../../fixtures/PricingPlanActionFactory'
 import { PricingPlanActionType } from '../../../src/entities/pricing-plan-action'
@@ -17,34 +14,21 @@ import OrganisationPricingPlanActionFactory from '../../fixtures/OrganisationPri
 import SendGrid from '@sendgrid/mail'
 
 describe('Data export service - post', () => {
-  let app: Koa
-
-  beforeAll(async () => {
-    app = await init()
-  })
-
-  beforeEach(async () => {
-    await clearEntities(app.context.em, ['GameActivity'])
-  })
-
-  afterAll(async () => {
-    await (<EntityManager>app.context.em).getConnection().close()
-  })
-
   it.each(userPermissionProvider([
     UserType.ADMIN
   ], 200))('should return a %i for a %s user', async (statusCode, _, type) => {
-    const [organisation, game] = await createOrganisationAndGame(app.context.em)
-    const [token] = await createUserAndToken(app.context.em, { type, emailConfirmed: true }, organisation)
+    const [organisation, game] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken({ type, emailConfirmed: true }, organisation)
 
-    const res = await request(app.callback())
+    const res = await request(global.app)
       .post(`/games/${game.id}/data-exports`)
       .send({ entities: [DataExportAvailableEntities.GAME_STATS, DataExportAvailableEntities.GAME_ACTIVITIES] })
       .auth(token, { type: 'bearer' })
       .expect(statusCode)
 
-    const activity = await (<EntityManager>app.context.em).getRepository(GameActivity).findOne({
-      type: GameActivityType.DATA_EXPORT_REQUESTED
+    const activity = await (<EntityManager>global.em).getRepository(GameActivity).findOne({
+      type: GameActivityType.DATA_EXPORT_REQUESTED,
+      game
     })
 
     if (statusCode === 200) {
@@ -55,10 +39,10 @@ describe('Data export service - post', () => {
   })
 
   it('should not create a data export for a game the user has no access to', async () => {
-    const [, otherGame] = await createOrganisationAndGame(app.context.em)
-    const [token] = await createUserAndToken(app.context.em, { type: UserType.ADMIN, emailConfirmed: true })
+    const [, otherGame] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken({ type: UserType.ADMIN, emailConfirmed: true })
 
-    const res = await request(app.callback())
+    const res = await request(global.app)
       .post(`/games/${otherGame.id}/data-exports`)
       .send({ entities: [DataExportAvailableEntities.GAME_STATS, DataExportAvailableEntities.GAME_ACTIVITIES] })
       .auth(token, { type: 'bearer' })
@@ -68,10 +52,10 @@ describe('Data export service - post', () => {
   })
 
   it('should create a data export for player aliases', async () => {
-    const [organisation, game] = await createOrganisationAndGame(app.context.em)
-    const [token] = await createUserAndToken(app.context.em, { type: UserType.ADMIN, emailConfirmed: true }, organisation)
+    const [organisation, game] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken({ type: UserType.ADMIN, emailConfirmed: true }, organisation)
 
-    const res = await request(app.callback())
+    const res = await request(global.app)
       .post(`/games/${game.id}/data-exports`)
       .send({ entities: [DataExportAvailableEntities.PLAYER_ALIASES] })
       .auth(token, { type: 'bearer' })
@@ -81,10 +65,10 @@ describe('Data export service - post', () => {
   })
 
   it('should create a data export for players', async () => {
-    const [organisation, game] = await createOrganisationAndGame(app.context.em)
-    const [token] = await createUserAndToken(app.context.em, { type: UserType.ADMIN, emailConfirmed: true }, organisation)
+    const [organisation, game] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken({ type: UserType.ADMIN, emailConfirmed: true }, organisation)
 
-    const res = await request(app.callback())
+    const res = await request(global.app)
       .post(`/games/${game.id}/data-exports`)
       .send({ entities: [DataExportAvailableEntities.PLAYERS] })
       .auth(token, { type: 'bearer' })
@@ -94,10 +78,10 @@ describe('Data export service - post', () => {
   })
 
   it('should create a data export for events', async () => {
-    const [organisation, game] = await createOrganisationAndGame(app.context.em)
-    const [token] = await createUserAndToken(app.context.em, { type: UserType.ADMIN, emailConfirmed: true }, organisation)
+    const [organisation, game] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken({ type: UserType.ADMIN, emailConfirmed: true }, organisation)
 
-    const res = await request(app.callback())
+    const res = await request(global.app)
       .post(`/games/${game.id}/data-exports`)
       .send({ entities: [DataExportAvailableEntities.EVENTS] })
       .auth(token, { type: 'bearer' })
@@ -107,10 +91,10 @@ describe('Data export service - post', () => {
   })
 
   it('should create a data export for leaderboard entries', async () => {
-    const [organisation, game] = await createOrganisationAndGame(app.context.em)
-    const [token] = await createUserAndToken(app.context.em, { type: UserType.ADMIN, emailConfirmed: true }, organisation)
+    const [organisation, game] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken({ type: UserType.ADMIN, emailConfirmed: true }, organisation)
 
-    const res = await request(app.callback())
+    const res = await request(global.app)
       .post(`/games/${game.id}/data-exports`)
       .send({ entities: [DataExportAvailableEntities.LEADERBOARD_ENTRIES] })
       .auth(token, { type: 'bearer' })
@@ -120,10 +104,10 @@ describe('Data export service - post', () => {
   })
 
   it('should create a data export for game stats', async () => {
-    const [organisation, game] = await createOrganisationAndGame(app.context.em)
-    const [token] = await createUserAndToken(app.context.em, { type: UserType.ADMIN, emailConfirmed: true }, organisation)
+    const [organisation, game] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken({ type: UserType.ADMIN, emailConfirmed: true }, organisation)
 
-    const res = await request(app.callback())
+    const res = await request(global.app)
       .post(`/games/${game.id}/data-exports`)
       .send({ entities: [DataExportAvailableEntities.GAME_STATS] })
       .auth(token, { type: 'bearer' })
@@ -133,10 +117,10 @@ describe('Data export service - post', () => {
   })
 
   it('should create a data export for player game stats', async () => {
-    const [organisation, game] = await createOrganisationAndGame(app.context.em)
-    const [token] = await createUserAndToken(app.context.em, { type: UserType.ADMIN, emailConfirmed: true }, organisation)
+    const [organisation, game] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken({ type: UserType.ADMIN, emailConfirmed: true }, organisation)
 
-    const res = await request(app.callback())
+    const res = await request(global.app)
       .post(`/games/${game.id}/data-exports`)
       .send({ entities: [DataExportAvailableEntities.PLAYER_GAME_STATS] })
       .auth(token, { type: 'bearer' })
@@ -146,10 +130,10 @@ describe('Data export service - post', () => {
   })
 
   it('should create a data export for game activities', async () => {
-    const [organisation, game] = await createOrganisationAndGame(app.context.em)
-    const [token] = await createUserAndToken(app.context.em, { type: UserType.ADMIN, emailConfirmed: true }, organisation)
+    const [organisation, game] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken({ type: UserType.ADMIN, emailConfirmed: true }, organisation)
 
-    const res = await request(app.callback())
+    const res = await request(global.app)
       .post(`/games/${game.id}/data-exports`)
       .send({ entities: [DataExportAvailableEntities.GAME_ACTIVITIES] })
       .auth(token, { type: 'bearer' })
@@ -159,10 +143,10 @@ describe('Data export service - post', () => {
   })
 
   it('should not create a data export for users with unconfirmed emails', async () => {
-    const [organisation, game] = await createOrganisationAndGame(app.context.em)
-    const [token] = await createUserAndToken(app.context.em, { type: UserType.ADMIN }, organisation)
+    const [organisation, game] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken({ type: UserType.ADMIN }, organisation)
 
-    const res = await request(app.callback())
+    const res = await request(global.app)
       .post(`/games/${game.id}/data-exports`)
       .send({ entities: [DataExportAvailableEntities.PLAYER_ALIASES] })
       .auth(token, { type: 'bearer' })
@@ -172,26 +156,26 @@ describe('Data export service - post', () => {
   })
 
   it('should not create a data export for empty entities', async () => {
-    const [organisation, game] = await createOrganisationAndGame(app.context.em)
-    const [token] = await createUserAndToken(app.context.em, { type: UserType.ADMIN, emailConfirmed: true }, organisation)
+    const [organisation, game] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken({ type: UserType.ADMIN, emailConfirmed: true }, organisation)
 
-    await request(app.callback())
+    await request(global.app)
       .post(`/games/${game.id}/data-exports`)
       .send({ entities: [] })
       .auth(token, { type: 'bearer' })
       .expect(400)
 
-    await request(app.callback())
+    await request(global.app)
       .post(`/games/${game.id}/data-exports`)
       .auth(token, { type: 'bearer' })
       .expect(400)
   })
 
   it('should not create a data export with non-string entities', async () => {
-    const [organisation, game] = await createOrganisationAndGame(app.context.em)
-    const [token] = await createUserAndToken(app.context.em, { type: UserType.ADMIN, emailConfirmed: true }, organisation)
+    const [organisation, game] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken({ type: UserType.ADMIN, emailConfirmed: true }, organisation)
 
-    const res = await request(app.callback())
+    const res = await request(global.app)
       .post(`/games/${game.id}/data-exports`)
       .send({ entities: [1, 2] })
       .auth(token, { type: 'bearer' })
@@ -209,12 +193,12 @@ describe('Data export service - post', () => {
     const orgPlan = await new OrganisationPricingPlanFactory().with(() => ({ pricingPlan: planAction.pricingPlan })).one()
     const orgPlanActions = await new OrganisationPricingPlanActionFactory(orgPlan).with(() => ({ type: planAction.type })).many(planAction.limit)
 
-    const [organisation, game] = await createOrganisationAndGame(app.context.em, { pricingPlan: orgPlan })
-    const [token] = await createUserAndToken(app.context.em, { type: UserType.ADMIN, emailConfirmed: true }, organisation)
+    const [organisation, game] = await createOrganisationAndGame({ pricingPlan: orgPlan })
+    const [token] = await createUserAndToken({ type: UserType.ADMIN, emailConfirmed: true }, organisation)
 
-    await (<EntityManager>app.context.em).persistAndFlush([planAction, ...orgPlanActions])
+    await (<EntityManager>global.em).persistAndFlush([planAction, ...orgPlanActions])
 
-    await request(app.callback())
+    await request(global.app)
       .post(`/games/${game.id}/data-exports`)
       .send({ entities: [DataExportAvailableEntities.GAME_STATS, DataExportAvailableEntities.GAME_ACTIVITIES] })
       .auth(token, { type: 'bearer' })
@@ -229,12 +213,12 @@ describe('Data export service - post', () => {
       createdAt: subMonths(new Date(), 1)
     })).many(planAction.limit)
 
-    const [organisation, game] = await createOrganisationAndGame(app.context.em, { pricingPlan: orgPlan })
-    const [token] = await createUserAndToken(app.context.em, { type: UserType.ADMIN, emailConfirmed: true }, organisation)
+    const [organisation, game] = await createOrganisationAndGame({ pricingPlan: orgPlan })
+    const [token] = await createUserAndToken({ type: UserType.ADMIN, emailConfirmed: true }, organisation)
 
-    await (<EntityManager>app.context.em).persistAndFlush([planAction, ...orgPlanActions])
+    await (<EntityManager>global.em).persistAndFlush([planAction, ...orgPlanActions])
 
-    await request(app.callback())
+    await request(global.app)
       .post(`/games/${game.id}/data-exports`)
       .send({ entities: [DataExportAvailableEntities.GAME_STATS, DataExportAvailableEntities.GAME_ACTIVITIES] })
       .auth(token, { type: 'bearer' })
@@ -246,12 +230,12 @@ describe('Data export service - post', () => {
     const orgPlan = await new OrganisationPricingPlanFactory().with(() => ({ pricingPlan: planAction.pricingPlan, status: 'incomplete' })).one()
     const orgPlanActions = await new OrganisationPricingPlanActionFactory(orgPlan).with(() => ({ type: planAction.type })).many(planAction.limit)
 
-    const [organisation, game] = await createOrganisationAndGame(app.context.em, { pricingPlan: orgPlan })
-    const [token] = await createUserAndToken(app.context.em, { type: UserType.ADMIN, emailConfirmed: true }, organisation)
+    const [organisation, game] = await createOrganisationAndGame({ pricingPlan: orgPlan })
+    const [token] = await createUserAndToken({ type: UserType.ADMIN, emailConfirmed: true }, organisation)
 
-    await (<EntityManager>app.context.em).persistAndFlush([planAction, ...orgPlanActions])
+    await (<EntityManager>global.em).persistAndFlush([planAction, ...orgPlanActions])
 
-    const res = await request(app.callback())
+    const res = await request(global.app)
       .post(`/games/${game.id}/data-exports`)
       .send({ entities: [DataExportAvailableEntities.GAME_STATS, DataExportAvailableEntities.GAME_ACTIVITIES] })
       .auth(token, { type: 'bearer' })
@@ -261,18 +245,18 @@ describe('Data export service - post', () => {
   })
 
   it('should correctly update the data export status if sending the email fails', async () => {
-    const [organisation, game] = await createOrganisationAndGame(app.context.em)
-    const [token] = await createUserAndToken(app.context.em, { type: UserType.ADMIN, emailConfirmed: true }, organisation)
+    const [organisation, game] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken({ type: UserType.ADMIN, emailConfirmed: true }, organisation)
 
     jest.spyOn(SendGrid, 'send').mockRejectedValueOnce(new Error())
 
-    await request(app.callback())
+    await request(global.app)
       .post(`/games/${game.id}/data-exports`)
       .send({ entities: [DataExportAvailableEntities.EVENTS] })
       .auth(token, { type: 'bearer' })
       .expect(200)
 
-    const dataExport = await (<EntityManager>app.context.em).getRepository(DataExport).findOne({ game })
+    const dataExport = await (<EntityManager>global.em).getRepository(DataExport).findOne({ game })
     expect(dataExport.failedAt).toBeTruthy()
   })
 })

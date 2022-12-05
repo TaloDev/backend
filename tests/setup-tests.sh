@@ -17,6 +17,9 @@ set -e
 
 dc up -d
 
+yarn mikro-orm migration:up
+echo "\n"
+
 if [ -z "$EXPOSE_GC" ]
 then
   node --trace-warnings ./node_modules/.bin/jest "$@" --runInBand

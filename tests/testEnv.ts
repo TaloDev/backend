@@ -4,9 +4,7 @@ import ormConfig from '../src/config/mikro-orm.config'
 
 beforeAll(async () => {
   const orm = await MikroORM.init(ormConfig)
-  const generator = orm.getSchemaGenerator()
-  await generator.refreshDatabase()
-  await generator.clearDatabase()
+  await orm.getSchemaGenerator().clearDatabase()
   await orm.close(true)
 
   const app = await init()
@@ -16,6 +14,4 @@ beforeAll(async () => {
 
 afterAll(async () => {
   await (global.em as EntityManager).getConnection().close(true)
-  delete global.em
-  delete global.app
 })

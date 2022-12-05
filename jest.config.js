@@ -16,5 +16,6 @@ module.exports = {
   },
   coverageReporters: ['lcov'],
   collectCoverage: true,
-  setupFilesAfterEnv: ['./tests/testEnv.ts']
+  setupFilesAfterEnv: ['./tests/testEnv.ts'],
+  testTimeout: 10000
 }

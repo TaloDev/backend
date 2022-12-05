@@ -14,4 +14,6 @@ beforeAll(async () => {
 
 afterAll(async () => {
   await (global.em as EntityManager).getConnection().close(true)
+  delete global.em
+  delete global.app
 })

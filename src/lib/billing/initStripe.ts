@@ -1,7 +1,7 @@
 import Stripe from 'stripe'
 
 export default function initStripe(): Stripe {
-  const opts: Stripe.StripeConfig = { apiVersion: '2020-08-27' }
+  const opts: Stripe.StripeConfig = { apiVersion: '2022-11-15' }
   if (process.env.NODE_ENV === 'test') {
     opts.protocol = 'http'
     opts.host = 'localhost'

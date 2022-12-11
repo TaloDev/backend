@@ -1,36 +1,19 @@
 import { EntityManager } from '@mikro-orm/core'
-import Koa from 'koa'
-import init from '../../../src/index'
 import request from 'supertest'
 import { UserType } from '../../../src/entities/user'
 import GameActivity, { GameActivityType } from '../../../src/entities/game-activity'
-import clearEntities from '../../utils/clearEntities'
 import createUserAndToken from '../../utils/createUserAndToken'
 import userPermissionProvider from '../../utils/userPermissionProvider'
 import createOrganisationAndGame from '../../utils/createOrganisationAndGame'
 
 describe('API key service - post', () => {
-  let app: Koa
-
-  beforeAll(async () => {
-    app = await init()
-  })
-
-  beforeEach(async () => {
-    await clearEntities(app.context.em, ['GameActivity'])
-  })
-
-  afterAll(async () => {
-    await (<EntityManager>app.context.em).getConnection().close()
-  })
-
   it.each(userPermissionProvider([
     UserType.ADMIN
   ]))('should return a %i for a %s user', async (statusCode, _, type) => {
-    const [organisation, game] = await createOrganisationAndGame(app.context.em)
-    const [token] = await createUserAndToken(app.context.em, { type, emailConfirmed: true }, organisation)
+    const [organisation, game] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken({ type, emailConfirmed: true }, organisation)
 
-    const res = await request(app.callback())
+    const res = await request(global.app)
       .post(`/games/${game.id}/api-keys`)
       .send({ scopes: ['read:players', 'write:events'] })
       .auth(token, { type: 'bearer' })
@@ -41,8 +24,9 @@ describe('API key service - post', () => {
       expect(res.body.apiKey.scopes).toStrictEqual(['read:players', 'write:events'])
     }
 
-    const activity = await (<EntityManager>app.context.em).getRepository(GameActivity).findOne({
+    const activity = await (<EntityManager>global.em).getRepository(GameActivity).findOne({
       type: GameActivityType.API_KEY_CREATED,
+      game,
       extra: {
         display: {
           'Scopes': 'read:players, write:events'
@@ -58,10 +42,10 @@ describe('API key service - post', () => {
   })
 
   it('should not create an api key if the user\'s email is not confirmed', async () => {
-    const [organisation, game] = await createOrganisationAndGame(app.context.em)
-    const [token] = await createUserAndToken(app.context.em, { type: UserType.ADMIN }, organisation)
+    const [organisation, game] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken({ type: UserType.ADMIN }, organisation)
 
-    const res = await request(app.callback())
+    const res = await request(global.app)
       .post(`/games/${game.id}/api-keys`)
       .send({ scopes: ['read:players', 'write:events'] })
       .auth(token, { type: 'bearer' })
@@ -71,9 +55,9 @@ describe('API key service - post', () => {
   })
 
   it('should not create an api key for a non-existent game', async () => {
-    const [token] = await createUserAndToken(app.context.em, { emailConfirmed: true, type: UserType.ADMIN })
+    const [token] = await createUserAndToken({ emailConfirmed: true, type: UserType.ADMIN })
 
-    const res = await request(app.callback())
+    const res = await request(global.app)
       .post('/games/99999/api-keys')
       .send({ scopes: [] })
       .auth(token, { type: 'bearer' })
@@ -83,10 +67,10 @@ describe('API key service - post', () => {
   })
 
   it('should not create an api key for a game the user has no access to', async () => {
-    const [, otherGame] = await createOrganisationAndGame(app.context.em)
-    const [token] = await createUserAndToken(app.context.em, { emailConfirmed: true, type: UserType.ADMIN })
+    const [, otherGame] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken({ emailConfirmed: true, type: UserType.ADMIN })
 
-    const res = await request(app.callback())
+    const res = await request(global.app)
       .post(`/games/${otherGame.id}/api-keys`)
       .send({ scopes: [] })
       .auth(token, { type: 'bearer' })

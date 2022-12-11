@@ -10,8 +10,10 @@ const initProviders = async (app: Koa) => {
     const orm = await MikroORM.init(ormConfig)
     app.context.em = orm.em
 
-    const migrator = orm.getMigrator()
-    await migrator.up()
+    if (!app.context.isTest) {
+      const migrator = orm.getMigrator()
+      await migrator.up()
+    }
   } catch (err) {
     console.error(err)
     process.exit(1)

@@ -1,8 +1,13 @@
 import SendGrid, { MailDataRequired } from '@sendgrid/mail'
 import * as Sentry from '@sentry/node'
 
+export type EmailConfigMetadata = {
+  [key: string]: string | number
+}
+
 export interface EmailConfig {
-  mail: MailDataRequired
+  mail: MailDataRequired,
+  metadata?: EmailConfigMetadata
 }
 
 export default async (emailConfig: MailDataRequired): Promise<void> => {

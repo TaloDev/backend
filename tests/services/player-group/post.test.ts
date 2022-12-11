@@ -1,12 +1,9 @@
 import { Collection, EntityManager } from '@mikro-orm/core'
-import Koa from 'koa'
-import init from '../../../src/index'
 import request from 'supertest'
 import createOrganisationAndGame from '../../utils/createOrganisationAndGame'
 import createUserAndToken from '../../utils/createUserAndToken'
 import userPermissionProvider from '../../utils/userPermissionProvider'
 import { UserType } from '../../../src/entities/user'
-import clearEntities from '../../utils/clearEntities'
 import GameActivity, { GameActivityType } from '../../../src/entities/game-activity'
 import PlayerGroupRule, { PlayerGroupRuleCastType, PlayerGroupRuleName } from '../../../src/entities/player-group-rule'
 import PlayerProp from '../../../src/entities/player-prop'
@@ -14,26 +11,12 @@ import PlayerFactory from '../../fixtures/PlayerFactory'
 import PlayerGroup from '../../../src/entities/player-group'
 
 describe('Player group service - post', () => {
-  let app: Koa
-
-  beforeAll(async () => {
-    app = await init()
-  })
-
-  beforeEach(async () => {
-    await clearEntities(app.context.em, ['GameActivity', 'Player'])
-  })
-
-  afterAll(async () => {
-    await (<EntityManager>app.context.em).getConnection().close()
-  })
-
   it.each(userPermissionProvider([
     UserType.DEV,
     UserType.ADMIN
   ], 200))('should return a %i for a %s user', async (statusCode, _, type) => {
-    const [organisation, game] = await createOrganisationAndGame(app.context.em)
-    const [token] = await createUserAndToken(app.context.em, { type }, organisation)
+    const [organisation, game] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken({ type }, organisation)
 
     const rules: Partial<PlayerGroupRule>[] = [
       {
@@ -45,7 +28,7 @@ describe('Player group service - post', () => {
       }
     ]
 
-    const res = await request(app.callback())
+    const res = await request(global.app)
       .post(`/games/${game.id}/player-groups`)
       .send({
         name: 'Winners',
@@ -56,8 +39,9 @@ describe('Player group service - post', () => {
       .auth(token, { type: 'bearer' })
       .expect(statusCode)
 
-    const activity = await (<EntityManager>app.context.em).getRepository(GameActivity).findOne({
-      type: GameActivityType.PLAYER_GROUP_CREATED
+    const activity = await (<EntityManager>global.em).getRepository(GameActivity).findOne({
+      type: GameActivityType.PLAYER_GROUP_CREATED,
+      game
     })
 
     if (statusCode === 200) {
@@ -74,8 +58,8 @@ describe('Player group service - post', () => {
   })
 
   it('should immediately add valid players to the created group', async () => {
-    const [organisation, game] = await createOrganisationAndGame(app.context.em)
-    const [token] = await createUserAndToken(app.context.em, {}, organisation)
+    const [organisation, game] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken({}, organisation)
 
     const player1 = await new PlayerFactory([game]).with((player) => ({
       props: new Collection<PlayerProp>(player, [
@@ -83,7 +67,7 @@ describe('Player group service - post', () => {
       ])
     })).one()
     const player2 = await new PlayerFactory([game]).one()
-    await (<EntityManager>app.context.em).persistAndFlush([player1, player2])
+    await (<EntityManager>global.em).persistAndFlush([player1, player2])
 
     const rules: Partial<PlayerGroupRule>[] = [
       {
@@ -95,7 +79,7 @@ describe('Player group service - post', () => {
       }
     ]
 
-    const res = await request(app.callback())
+    const res = await request(global.app)
       .post(`/games/${game.id}/player-groups`)
       .send({
         name: 'Winners',
@@ -107,16 +91,16 @@ describe('Player group service - post', () => {
       .expect(200)
 
     const newGroupId = res.body.group.id
-    const group = await (<EntityManager>app.context.em).getRepository(PlayerGroup).findOne(newGroupId)
+    const group = await (<EntityManager>global.em).getRepository(PlayerGroup).findOne(newGroupId)
     const count = await group.members.loadCount()
     expect(count).toBe(1)
   })
 
   it('should require a valid ruleMode', async () => {
-    const [organisation, game] = await createOrganisationAndGame(app.context.em)
-    const [token] = await createUserAndToken(app.context.em, {}, organisation)
+    const [organisation, game] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken({}, organisation)
 
-    const res = await request(app.callback())
+    const res = await request(global.app)
       .post(`/games/${game.id}/player-groups`)
       .send({
         name: 'Winners',
@@ -135,10 +119,10 @@ describe('Player group service - post', () => {
   })
 
   it('should require rules to be an array', async () => {
-    const [organisation, game] = await createOrganisationAndGame(app.context.em)
-    const [token] = await createUserAndToken(app.context.em, {}, organisation)
+    const [organisation, game] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken({}, organisation)
 
-    const res = await request(app.callback())
+    const res = await request(global.app)
       .post(`/games/${game.id}/player-groups`)
       .send({
         name: 'Winners',
@@ -157,10 +141,10 @@ describe('Player group service - post', () => {
   })
 
   it('should require all rules to have a valid name', async () => {
-    const [organisation, game] = await createOrganisationAndGame(app.context.em)
-    const [token] = await createUserAndToken(app.context.em, {}, organisation)
+    const [organisation, game] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken({}, organisation)
 
-    const res = await request(app.callback())
+    const res = await request(global.app)
       .post(`/games/${game.id}/player-groups`)
       .send({
         name: 'Winners',
@@ -187,10 +171,10 @@ describe('Player group service - post', () => {
   })
 
   it('should require all rules to have a valid castType', async () => {
-    const [organisation, game] = await createOrganisationAndGame(app.context.em)
-    const [token] = await createUserAndToken(app.context.em, {}, organisation)
+    const [organisation, game] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken({}, organisation)
 
-    const res = await request(app.callback())
+    const res = await request(global.app)
       .post(`/games/${game.id}/player-groups`)
       .send({
         name: 'Winners',
@@ -217,10 +201,10 @@ describe('Player group service - post', () => {
   })
 
   it('should require all rules to have a boolean value for negate', async () => {
-    const [organisation, game] = await createOrganisationAndGame(app.context.em)
-    const [token] = await createUserAndToken(app.context.em, {}, organisation)
+    const [organisation, game] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken({}, organisation)
 
-    const res = await request(app.callback())
+    const res = await request(global.app)
       .post(`/games/${game.id}/player-groups`)
       .send({
         name: 'Winners',
@@ -247,10 +231,10 @@ describe('Player group service - post', () => {
   })
 
   it('should require all rules to have a valid field', async () => {
-    const [organisation, game] = await createOrganisationAndGame(app.context.em)
-    const [token] = await createUserAndToken(app.context.em, {}, organisation)
+    const [organisation, game] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken({}, organisation)
 
-    const res = await request(app.callback())
+    const res = await request(global.app)
       .post(`/games/${game.id}/player-groups`)
       .send({
         name: 'Winners',
@@ -277,10 +261,10 @@ describe('Player group service - post', () => {
   })
 
   it('should not create a group for a game the user has no access to', async () => {
-    const [, otherGame] = await createOrganisationAndGame(app.context.em)
-    const [token] = await createUserAndToken(app.context.em)
+    const [, otherGame] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken()
 
-    const res = await request(app.callback())
+    const res = await request(global.app)
       .post(`/games/${otherGame.id}/player-groups`)
       .send({
         name: 'Winners',
@@ -295,9 +279,9 @@ describe('Player group service - post', () => {
   })
 
   it('should not create a group for a non-existent game', async () => {
-    const [token] = await createUserAndToken(app.context.em)
+    const [token] = await createUserAndToken()
 
-    const res = await request(app.callback())
+    const res = await request(global.app)
       .post('/games/345431/player-groups')
       .send({
         name: 'Winners',

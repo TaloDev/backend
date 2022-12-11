@@ -1,39 +1,18 @@
 import { EntityManager } from '@mikro-orm/core'
-import Koa from 'koa'
-import init from '../../../../src/index'
 import request from 'supertest'
-import UserSession from '../../../../src/entities/user-session'
 import UserFactory from '../../../fixtures/UserFactory'
 import { differenceInMinutes, sub } from 'date-fns'
 import Redis from 'ioredis'
-import { RedisMock } from '../../../../__mocks__/ioredis'
-
-const baseUrl = '/public/users'
+import redisConfig from '../../../../src/config/redis.config'
 
 describe('User public service - login', () => {
-  let app: Koa
-
-  beforeAll(async () => {
-    app = await init()
-  })
-
-  beforeEach(async () => {
-    const repo = (<EntityManager>app.context.em).getRepository(UserSession)
-    const sessions = await repo.findAll()
-    await repo.removeAndFlush(sessions)
-  })
-
-  afterAll(async () => {
-    await (<EntityManager>app.context.em).getConnection().close()
-  })
-
   it('should let a user login', async () => {
     const user = await new UserFactory().state('loginable').one()
     user.lastSeenAt = new Date(2020, 1, 1)
-    await (<EntityManager>app.context.em).persistAndFlush(user)
+    await (<EntityManager>global.em).persistAndFlush(user)
 
-    const res = await request(app.callback())
-      .post(`${baseUrl}/login`)
+    const res = await request(global.app)
+      .post('/public/users/login')
       .send({ email: user.email, password: 'password' })
       .expect(200)
 
@@ -45,10 +24,10 @@ describe('User public service - login', () => {
 
   it('should not let a user login with the wrong password', async () => {
     const user = await new UserFactory().one()
-    await (<EntityManager>app.context.em).persistAndFlush(user)
+    await (<EntityManager>global.em).persistAndFlush(user)
 
-    const res = await request(app.callback())
-      .post(`${baseUrl}/login`)
+    const res = await request(global.app)
+      .post('/public/users/login')
       .send({ email: user.email, password: 'asdasdadasd' })
       .expect(401)
 
@@ -56,8 +35,8 @@ describe('User public service - login', () => {
   })
 
   it('should not let a user login with the wrong email', async () => {
-    const res = await request(app.callback())
-      .post(`${baseUrl}/login`)
+    const res = await request(global.app)
+      .post('/public/users/login')
       .send({ email: 'dev@trytal0.com', password: 'password' })
       .expect(401)
 
@@ -68,10 +47,10 @@ describe('User public service - login', () => {
     const lastSeenAt = sub(new Date(), { hours: 1 })
 
     const user = await new UserFactory().state('loginable').with(() => ({ lastSeenAt })).one()
-    await (<EntityManager>app.context.em).persistAndFlush(user)
+    await (<EntityManager>global.em).persistAndFlush(user)
 
-    const res = await request(app.callback())
-      .post(`${baseUrl}/login`)
+    const res = await request(global.app)
+      .post('/public/users/login')
       .send({ email: user.email, password: 'password' })
       .expect(200)
 
@@ -79,14 +58,13 @@ describe('User public service - login', () => {
   })
 
   it('should initialise the 2fa flow if it is enabled', async () => {
-    const redis = new Redis()
-    await (redis as Redis.Redis & RedisMock)._init()
+    const redis = new Redis(redisConfig)
 
     const user = await new UserFactory().state('loginable').state('has2fa').one()
-    await (<EntityManager>app.context.em).persistAndFlush(user)
+    await (<EntityManager>global.em).persistAndFlush(user)
 
-    const res = await request(app.callback())
-      .post(`${baseUrl}/login`)
+    const res = await request(global.app)
+      .post('/public/users/login')
       .send({ email: user.email, password: 'password' })
       .expect(200)
 
@@ -97,5 +75,7 @@ describe('User public service - login', () => {
 
     const hasSession = await redis.get(`2fa:${user.id}`)
     expect(hasSession).toBe('true')
+
+    await redis.quit()
   })
 })

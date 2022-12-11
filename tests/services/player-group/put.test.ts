@@ -1,12 +1,9 @@
 import { Collection, EntityManager } from '@mikro-orm/core'
-import Koa from 'koa'
-import init from '../../../src/index'
 import request from 'supertest'
 import createOrganisationAndGame from '../../utils/createOrganisationAndGame'
 import createUserAndToken from '../../utils/createUserAndToken'
 import userPermissionProvider from '../../utils/userPermissionProvider'
 import { UserType } from '../../../src/entities/user'
-import clearEntities from '../../utils/clearEntities'
 import GameActivity, { GameActivityType } from '../../../src/entities/game-activity'
 import PlayerGroupRule, { PlayerGroupRuleCastType, PlayerGroupRuleName } from '../../../src/entities/player-group-rule'
 import PlayerProp from '../../../src/entities/player-prop'
@@ -14,29 +11,15 @@ import PlayerFactory from '../../fixtures/PlayerFactory'
 import PlayerGroupFactory from '../../fixtures/PlayerGroupFactory'
 
 describe('Player group service - put', () => {
-  let app: Koa
-
-  beforeAll(async () => {
-    app = await init()
-  })
-
-  beforeEach(async () => {
-    await clearEntities(app.context.em, ['GameActivity', 'PlayerGroup', 'PlayerProp', 'Player'])
-  })
-
-  afterAll(async () => {
-    await (<EntityManager>app.context.em).getConnection().close()
-  })
-
   it.each(userPermissionProvider([
     UserType.DEV,
     UserType.ADMIN
   ], 200))('should return a %i for a %s user', async (statusCode, _, type) => {
-    const [organisation, game] = await createOrganisationAndGame(app.context.em)
-    const [token] = await createUserAndToken(app.context.em, { type }, organisation)
+    const [organisation, game] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken({ type }, organisation)
 
     const group = await new PlayerGroupFactory().construct(game).one()
-    await (<EntityManager>app.context.em).persistAndFlush(group)
+    await (<EntityManager>global.em).persistAndFlush(group)
 
     const rules: Partial<PlayerGroupRule>[] = [
       {
@@ -48,7 +31,7 @@ describe('Player group service - put', () => {
       }
     ]
 
-    const res = await request(app.callback())
+    const res = await request(global.app)
       .put(`/games/${game.id}/player-groups/${group.id}`)
       .send({
         name: 'Winners',
@@ -59,8 +42,9 @@ describe('Player group service - put', () => {
       .auth(token, { type: 'bearer' })
       .expect(statusCode)
 
-    const activity = await (<EntityManager>app.context.em).getRepository(GameActivity).findOne({
-      type: GameActivityType.PLAYER_GROUP_UPDATED
+    const activity = await (<EntityManager>global.em).getRepository(GameActivity).findOne({
+      type: GameActivityType.PLAYER_GROUP_UPDATED,
+      game
     })
 
     if (statusCode === 200) {
@@ -77,11 +61,11 @@ describe('Player group service - put', () => {
   })
 
   it('should immediately add valid players to the updated group', async () => {
-    const [organisation, game] = await createOrganisationAndGame(app.context.em)
-    const [token] = await createUserAndToken(app.context.em, {}, organisation)
+    const [organisation, game] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken({}, organisation)
 
     const group = await new PlayerGroupFactory().construct(game).one()
-    await (<EntityManager>app.context.em).persistAndFlush(group)
+    await (<EntityManager>global.em).persistAndFlush(group)
 
     const player1 = await new PlayerFactory([game]).with((player) => ({
       props: new Collection<PlayerProp>(player, [
@@ -89,7 +73,7 @@ describe('Player group service - put', () => {
       ])
     })).one()
     const player2 = await new PlayerFactory([game]).one()
-    await (<EntityManager>app.context.em).persistAndFlush([player1, player2])
+    await (<EntityManager>global.em).persistAndFlush([player1, player2])
 
     const rules: Partial<PlayerGroupRule>[] = [
       {
@@ -101,7 +85,7 @@ describe('Player group service - put', () => {
       }
     ]
 
-    await request(app.callback())
+    await request(global.app)
       .put(`/games/${game.id}/player-groups/${group.id}`)
       .send({
         name: 'Winners',
@@ -117,13 +101,13 @@ describe('Player group service - put', () => {
   })
 
   it('should not update a group for a game the user has no access to', async () => {
-    const [, otherGame] = await createOrganisationAndGame(app.context.em)
-    const [token] = await createUserAndToken(app.context.em, { type: UserType.ADMIN })
+    const [, otherGame] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken({ type: UserType.ADMIN })
 
     const group = await new PlayerGroupFactory().construct(otherGame).one()
-    await (<EntityManager>app.context.em).persistAndFlush(group)
+    await (<EntityManager>global.em).persistAndFlush(group)
 
-    const res = await request(app.callback())
+    const res = await request(global.app)
       .put(`/games/${otherGame.id}/player-groups/${group.id}`)
       .send({
         name: 'Winners',
@@ -138,10 +122,10 @@ describe('Player group service - put', () => {
   })
 
   it('should not update a non-existent group', async () => {
-    const [organisation, game] = await createOrganisationAndGame(app.context.em)
-    const [token] = await createUserAndToken(app.context.em, {}, organisation)
+    const [organisation, game] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken({}, organisation)
 
-    const res = await request(app.callback())
+    const res = await request(global.app)
       .put(`/games/${game.id}/player-groups/4324234`)
       .send({
         name: 'Winners',

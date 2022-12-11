@@ -1,45 +1,39 @@
-import { EntityManager } from '@mikro-orm/core'
-import Koa from 'koa'
-import init from '../../../../src/index'
+import { Collection, EntityManager } from '@mikro-orm/core'
 import request from 'supertest'
-import User from '../../../../src/entities/user'
-import { genAccessToken } from '../../../../src/lib/auth/buildTokenPair'
-import UserFactory from '../../../fixtures/UserFactory'
-import Redis from 'ioredis'
-import { RedisMock } from '../../../../__mocks__/ioredis'
 import UserRecoveryCode from '../../../../src/entities/user-recovery-code'
+import redisConfig from '../../../../src/config/redis.config'
+import Redis from 'ioredis'
+import createUserAndToken from '../../../utils/createUserAndToken'
+import UserTwoFactorAuth from '../../../../src/entities/user-two-factor-auth'
+import User from '../../../../src/entities/user'
+import generateRecoveryCodes from '../../../../src/lib/auth/generateRecoveryCodes'
 
-const baseUrl = '/public/users'
+async function setTwoFactorAuthSession(user: User) {
+  const redis = new Redis(redisConfig)
+  await redis.set(`2fa:${user.id}`, 'true')
+  await redis.quit()
+}
+
+async function createUserWithTwoFactorAuth(em: EntityManager): Promise<[string, User]> {
+  const [token, user] = await createUserAndToken({
+    twoFactorAuth: new UserTwoFactorAuth('blah')
+  })
+
+  user.twoFactorAuth.enabled = true
+  user.recoveryCodes = new Collection<UserRecoveryCode>(user, generateRecoveryCodes(user))
+  await em.flush()
+
+  return [token, user]
+}
 
 describe('User public service - use recovery code', () => {
-  let app: Koa
-  let user: User
-  let token: string
-  const redis = new Redis()
-
-  beforeAll(async () => {
-    app = await init()
-
-    user = await new UserFactory().state('loginable').state('has2fa').one()
-    await (<EntityManager>app.context.em).persistAndFlush(user)
-
-    token = await genAccessToken(user)
-  })
-
-  beforeEach(async () => {
-    await (redis as Redis.Redis & RedisMock)._init()
-  })
-
-  afterAll(async () => {
-    await (<EntityManager>app.context.em).getConnection().close()
-  })
-
   it('should let users login with a recovery code', async () => {
-    await redis.set(`2fa:${user.id}`, 'true')
+    const [token, user] = await createUserWithTwoFactorAuth(global.em)
+    await setTwoFactorAuthSession(user)
 
-    const res = await request(app.callback())
-      .post(`${baseUrl}/2fa/recover`)
-      .send({ code: user.recoveryCodes[0], userId: user.id })
+    const res = await request(global.app)
+      .post('/public/users/2fa/recover')
+      .send({ code: user.recoveryCodes[0].getPlainCode(), userId: user.id })
       .auth(token, { type: 'bearer' })
       .expect(200)
 
@@ -47,19 +41,20 @@ describe('User public service - use recovery code', () => {
     expect(res.body.accessToken).toBeTruthy()
     expect(res.body.newRecoveryCodes).toBeUndefined()
 
-    const recoveryCodes = await (<EntityManager>app.context.em).getRepository(UserRecoveryCode).find({ user })
-    expect(recoveryCodes).toHaveLength(7)
+    await (<EntityManager>global.em).refresh(user, { populate: ['recoveryCodes'] })
+    expect(user.recoveryCodes).toHaveLength(7)
   })
 
   it('should generate a new set of recovery codes after using the last one', async () => {
-    await redis.set(`2fa:${user.id}`, 'true')
+    const [token, user] = await createUserWithTwoFactorAuth(global.em)
+    await setTwoFactorAuthSession(user)
 
     user.recoveryCodes.set([new UserRecoveryCode(user)])
-    await (<EntityManager>app.context.em).flush()
+    await (<EntityManager>global.em).flush()
 
-    const res = await request(app.callback())
-      .post(`${baseUrl}/2fa/recover`)
-      .send({ code: user.recoveryCodes[0], userId: user.id })
+    const res = await request(global.app)
+      .post('/public/users/2fa/recover')
+      .send({ code: user.recoveryCodes[0].getPlainCode(), userId: user.id })
       .auth(token, { type: 'bearer' })
       .expect(200)
 
@@ -67,13 +62,15 @@ describe('User public service - use recovery code', () => {
     expect(res.body.accessToken).toBeTruthy()
     expect(res.body.newRecoveryCodes).toHaveLength(8)
 
-    const recoveryCodes = await (<EntityManager>app.context.em).getRepository(UserRecoveryCode).find({ user }, { refresh: true })
-    expect(recoveryCodes).toHaveLength(8)
+    await (<EntityManager>global.em).refresh(user, { populate: ['recoveryCodes'] })
+    expect(user.recoveryCodes).toHaveLength(8)
   })
 
   it('should not let users login without a 2fa session', async () => {
-    const res = await request(app.callback())
-      .post(`${baseUrl}/2fa/recover`)
+    const [token, user] = await createUserWithTwoFactorAuth(global.em)
+
+    const res = await request(global.app)
+      .post('/public/users/2fa/recover')
       .send({ code: 'abc123', userId: user.id })
       .auth(token, { type: 'bearer' })
       .expect(403)
@@ -82,10 +79,11 @@ describe('User public service - use recovery code', () => {
   })
 
   it('should not let users login with an invalid recovery code', async () => {
-    await redis.set(`2fa:${user.id}`, 'true')
+    const [token, user] = await createUserWithTwoFactorAuth(global.em)
+    await setTwoFactorAuthSession(user)
 
-    const res = await request(app.callback())
-      .post(`${baseUrl}/2fa/recover`)
+    const res = await request(global.app)
+      .post('/public/users/2fa/recover')
       .send({ code: 'abc123', userId: user.id })
       .auth(token, { type: 'bearer' })
       .expect(403)

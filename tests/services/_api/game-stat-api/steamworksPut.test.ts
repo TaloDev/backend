@@ -1,6 +1,4 @@
 import { EntityManager } from '@mikro-orm/core'
-import Koa from 'koa'
-import init from '../../../../src/index'
 import request from 'supertest'
 import { APIKeyScope } from '../../../../src/entities/api-key'
 import PlayerFactory from '../../../fixtures/PlayerFactory'
@@ -13,19 +11,11 @@ import IntegrationFactory from '../../../fixtures/IntegrationFactory'
 import { IntegrationType } from '../../../../src/entities/integration'
 import GameStatFactory from '../../../fixtures/GameStatFactory'
 
-const baseUrl = '/v1/game-stats'
-
 describe('Game stats API service - put - steamworks integration', () => {
-  let app: Koa
   const axiosMock = new AxiosMockAdapter(axios)
-
-  beforeAll(async () => {
-    app = await init()
-  })
 
   afterAll(async () => {
     axiosMock.reset()
-    await (<EntityManager>app.context.em).getConnection().close()
   })
 
   it('should set a player stat in steamworks', async () => {
@@ -36,17 +26,17 @@ describe('Game stats API service - put - steamworks integration', () => {
     }])
     axiosMock.onPost('https://partner.steam-api.com/ISteamUserStats/SetUserStatsForGame/v1').replyOnce(setMock)
 
-    const [apiKey, token] = await createAPIKeyAndToken(app.context.em, [APIKeyScope.WRITE_GAME_STATS])
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_STATS])
 
     const stat = await new GameStatFactory([apiKey.game]).with(() => ({ maxChange: 99, maxValue: 3000 })).one()
     const player = await new PlayerFactory([apiKey.game]).state('with steam alias').one()
 
     const config = await new IntegrationConfigFactory().with(() => ({ syncStats: true })).one()
     const integration = await new IntegrationFactory().construct(IntegrationType.STEAMWORKS, apiKey.game, config).one()
-    await (<EntityManager>app.context.em).persistAndFlush([integration, stat, player])
+    await (<EntityManager>global.em).persistAndFlush([integration, stat, player])
 
-    await request(app.callback())
-      .put(`${baseUrl}/${stat.internalName}`)
+    await request(global.app)
+      .put(`/v1/game-stats/${stat.internalName}`)
       .send({ change: 10 })
       .auth(token, { type: 'bearer' })
       .set('x-talo-alias', String(player.aliases[0].id))
@@ -54,7 +44,7 @@ describe('Game stats API service - put - steamworks integration', () => {
 
     expect(setMock).toHaveBeenCalledTimes(1)
 
-    const event = await (<EntityManager>app.context.em).getRepository(SteamworksIntegrationEvent).findOne({ integration })
+    const event = await (<EntityManager>global.em).getRepository(SteamworksIntegrationEvent).findOne({ integration })
     expect(event.request).toStrictEqual({
       url: 'https://partner.steam-api.com/ISteamUserStats/SetUserStatsForGame/v1',
       body: `appid=${config.appId}&steamid=${player.aliases[0].identifier}&count=1&name%5B0%5D=${stat.internalName}&value%5B0%5D=${stat.defaultValue + 10}`,
@@ -70,17 +60,17 @@ describe('Game stats API service - put - steamworks integration', () => {
     }])
     axiosMock.onPost('https://partner.steam-api.com/ISteamUserStats/SetUserStatsForGame/v1').replyOnce(setMock)
 
-    const [apiKey, token] = await createAPIKeyAndToken(app.context.em, [APIKeyScope.WRITE_GAME_STATS])
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_STATS])
 
     const stat = await new GameStatFactory([apiKey.game]).with(() => ({ maxChange: 99, maxValue: 3000 })).one()
     const player = await new PlayerFactory([apiKey.game]).state('with steam alias').one()
 
     const config = await new IntegrationConfigFactory().with(() => ({ syncStats: false })).one()
     const integration = await new IntegrationFactory().construct(IntegrationType.STEAMWORKS, apiKey.game, config).one()
-    await (<EntityManager>app.context.em).persistAndFlush([integration, stat, player])
+    await (<EntityManager>global.em).persistAndFlush([integration, stat, player])
 
-    await request(app.callback())
-      .put(`${baseUrl}/${stat.internalName}`)
+    await request(global.app)
+      .put(`/v1/game-stats/${stat.internalName}`)
       .send({ change: 10 })
       .auth(token, { type: 'bearer' })
       .set('x-talo-alias', String(player.aliases[0].id))
@@ -88,7 +78,7 @@ describe('Game stats API service - put - steamworks integration', () => {
 
     expect(setMock).not.toHaveBeenCalled()
 
-    const event = await (<EntityManager>app.context.em).getRepository(SteamworksIntegrationEvent).findOne({ integration })
+    const event = await (<EntityManager>global.em).getRepository(SteamworksIntegrationEvent).findOne({ integration })
     expect(event).toBeNull()
 
     axiosMock.reset()

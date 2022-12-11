@@ -1,26 +1,24 @@
 import { MikroORM } from '@mikro-orm/core'
-import Queue from 'bee-queue'
 import ormConfig from '../../config/mikro-orm.config'
 import FailedJob from '../../entities/failed-job'
 import * as Sentry from '@sentry/node'
+import { Job } from 'bullmq'
 
-interface UnknownJob {
-  [key: string]: unknown
-}
-
-const handleJobFailure = async (job: Queue.Job<UnknownJob>, err: Error): Promise<void> => {
+async function handleJobFailure<T>(job: Job<T>, err: Error): Promise<void> {
   const orm = await MikroORM.init(ormConfig)
+  const em = orm.em.fork()
 
   const failedJob = new FailedJob()
-  failedJob.payload = job.data
-  failedJob.queue = job.queue.name
+  failedJob.payload = job.data as unknown as (typeof failedJob.payload)
+  failedJob.queue = job.queueName
   failedJob.reason = err.message
+  failedJob.stack = err.stack
 
-  await orm.em.getRepository(FailedJob).persistAndFlush(failedJob)
+  await em.getRepository(FailedJob).persistAndFlush(failedJob)
   await orm.close()
 
   Sentry.setContext('queue', {
-    'Name': job.queue.name,
+    'Name': job.queueName,
     'Failed Job ID': failedJob.id
   })
   Sentry.captureException(err)

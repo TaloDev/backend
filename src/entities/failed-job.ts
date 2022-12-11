@@ -14,6 +14,9 @@ export default class FailedJob {
   @Property()
   reason: string
 
+  @Property({ columnType: 'text' })
+  stack: string
+
   @Property()
   failedAt: Date = new Date()
 }

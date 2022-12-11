@@ -1,41 +1,19 @@
 import { EntityManager, wrap } from '@mikro-orm/core'
-import Koa from 'koa'
-import init from '../../../src/index'
 import request from 'supertest'
-import User from '../../../src/entities/user'
-import { genAccessToken } from '../../../src/lib/auth/buildTokenPair'
-import UserFactory from '../../fixtures/UserFactory'
 import UserTwoFactorAuth from '../../../src/entities/user-two-factor-auth'
 import { authenticator } from '@otplib/preset-default'
-
-const baseUrl = '/users'
+import createUserAndToken from '../../utils/createUserAndToken'
 
 describe('User service - confirm 2fa', () => {
-  let app: Koa
-  let user: User
-  let token: string
-
-  beforeAll(async () => {
-    app = await init()
-
-    user = await new UserFactory().one()
-    await (<EntityManager>app.context.em).persistAndFlush(user)
-
-    token = await genAccessToken(user)
-  })
-
-  afterAll(async () => {
-    await (<EntityManager>app.context.em).getConnection().close()
-  })
-
   it('should let users confirm enabling 2fa', async () => {
-    user.twoFactorAuth = new UserTwoFactorAuth('blah')
-    await (<EntityManager>app.context.em).flush()
+    const [token, user] = await createUserAndToken({
+      twoFactorAuth: new UserTwoFactorAuth('blah')
+    })
 
     authenticator.check = jest.fn().mockReturnValueOnce(true)
 
-    const res = await request(app.callback())
-      .post(`${baseUrl}/2fa/enable`)
+    const res = await request(global.app)
+      .post('/users/2fa/enable')
       .send({ code: '123456' })
       .auth(token, { type: 'bearer' })
       .expect(200)
@@ -48,12 +26,15 @@ describe('User service - confirm 2fa', () => {
   })
 
   it('should not let users confirm enabling 2fa if it is already enabled', async () => {
-    user.twoFactorAuth = new UserTwoFactorAuth('blah')
-    user.twoFactorAuth.enabled = true
-    await (<EntityManager>app.context.em).flush()
+    const [token, user] = await createUserAndToken({
+      twoFactorAuth: new UserTwoFactorAuth('blah')
+    })
 
-    const res = await request(app.callback())
-      .post(`${baseUrl}/2fa/enable`)
+    user.twoFactorAuth.enabled = true
+    await (<EntityManager>global.em).flush()
+
+    const res = await request(global.app)
+      .post('/users/2fa/enable')
       .send({ code: '123456' })
       .auth(token, { type: 'bearer' })
       .expect(403)
@@ -62,13 +43,14 @@ describe('User service - confirm 2fa', () => {
   })
 
   it('should not let users confirm enabling 2fa if the code is invalid', async () => {
-    user.twoFactorAuth = new UserTwoFactorAuth('blah')
-    await (<EntityManager>app.context.em).flush()
+    const [token] = await createUserAndToken({
+      twoFactorAuth: new UserTwoFactorAuth('blah')
+    })
 
     authenticator.check = jest.fn().mockReturnValueOnce(false)
 
-    const res = await request(app.callback())
-      .post(`${baseUrl}/2fa/enable`)
+    const res = await request(global.app)
+      .post('/users/2fa/enable')
       .send({ code: '123456' })
       .auth(token, { type: 'bearer' })
       .expect(403)
@@ -77,11 +59,10 @@ describe('User service - confirm 2fa', () => {
   })
 
   it('should not let users confirm enabling 2fa if it was not requested to be enabled', async () => {
-    user.twoFactorAuth = null
-    await (<EntityManager>app.context.em).flush()
+    const [token] = await createUserAndToken()
 
-    const res = await request(app.callback())
-      .post(`${baseUrl}/2fa/enable`)
+    const res = await request(global.app)
+      .post('/users/2fa/enable')
       .send({ code: '123456' })
       .auth(token, { type: 'bearer' })
       .expect(403)

@@ -1,38 +1,17 @@
 import { EntityManager } from '@mikro-orm/core'
-import Koa from 'koa'
-import init from '../../../src/index'
 import request from 'supertest'
-import User from '../../../src/entities/user'
-import { genAccessToken } from '../../../src/lib/auth/buildTokenPair'
-import Game from '../../../src/entities/game'
-import UserFactory from '../../fixtures/UserFactory'
-import OrganisationFactory from '../../fixtures/OrganisationFactory'
 import PlayerGroupFactory from '../../fixtures/PlayerGroupFactory'
 import PlayerGroupRule, { PlayerGroupRuleCastType, PlayerGroupRuleName } from '../../../src/entities/player-group-rule'
+import createOrganisationAndGame from '../../utils/createOrganisationAndGame'
+import createUserAndToken from '../../utils/createUserAndToken'
 
 describe('Player service - post', () => {
-  let app: Koa
-  let user: User
-  let validGame: Game
-  let token: string
-
-  beforeAll(async () => {
-    app = await init()
-
-    user = await new UserFactory().one()
-    validGame = new Game('Uplift', user.organisation)
-    await (<EntityManager>app.context.em).persistAndFlush([user, validGame])
-
-    token = await genAccessToken(user)
-  })
-
-  afterAll(async () => {
-    await (<EntityManager>app.context.em).getConnection().close()
-  })
-
   it('should create a player', async () => {
-    const res = await request(app.callback())
-      .post(`/games/${validGame.id}/players`)
+    const [organisation, game] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken({}, organisation)
+
+    const res = await request(global.app)
+      .post(`/games/${game.id}/players`)
       .auth(token, { type: 'bearer' })
       .expect(200)
 
@@ -40,8 +19,11 @@ describe('Player service - post', () => {
   })
 
   it('should create a player with aliases', async () => {
-    const res = await request(app.callback())
-      .post(`/games/${validGame.id}/players`)
+    const [organisation, game] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken({}, organisation)
+
+    const res = await request(global.app)
+      .post(`/games/${game.id}/players`)
       .send({
         aliases: [{
           service: 'steam',
@@ -58,8 +40,11 @@ describe('Player service - post', () => {
   })
 
   it('should create a player with props', async () => {
-    const res = await request(app.callback())
-      .post(`/games/${validGame.id}/players`)
+    const [organisation, game] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken({}, organisation)
+
+    const res = await request(global.app)
+      .post(`/games/${game.id}/players`)
       .send({
         props: [
           {
@@ -76,15 +61,18 @@ describe('Player service - post', () => {
   })
 
   it('should put the newly created player in the correct groups', async () => {
+    const [organisation, game] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken({}, organisation)
+
     const rule = new PlayerGroupRule(PlayerGroupRuleName.LT, 'props.currentLevel')
     rule.castType = PlayerGroupRuleCastType.DOUBLE
     rule.operands = ['60']
 
-    const group = await new PlayerGroupFactory().construct(validGame).with(() => ({ rules: [rule] })).one()
-    await (<EntityManager>app.context.em).persistAndFlush(group)
+    const group = await new PlayerGroupFactory().construct(game).with(() => ({ rules: [rule] })).one()
+    await (<EntityManager>global.em).persistAndFlush(group)
 
-    const res = await request(app.callback())
-      .post(`/games/${validGame.id}/players`)
+    const res = await request(global.app)
+      .post(`/games/${game.id}/players`)
       .send({
         props: [
           {
@@ -105,7 +93,9 @@ describe('Player service - post', () => {
   })
 
   it('should not create a player for a non-existent game', async () => {
-    const res = await request(app.callback())
+    const [token] = await createUserAndToken()
+
+    const res = await request(global.app)
       .post('/games/99999/players')
       .auth(token, { type: 'bearer' })
       .expect(404)
@@ -114,19 +104,21 @@ describe('Player service - post', () => {
   })
 
   it('should not create a player for a game the user has no access to', async () => {
-    const otherOrg = await new OrganisationFactory().one()
-    const otherGame = new Game('Crawle', otherOrg)
-    await (<EntityManager>app.context.em).persistAndFlush(otherGame)
+    const [, game] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken()
 
-    await request(app.callback())
-      .post(`/games/${otherGame.id}/players`)
+    await request(global.app)
+      .post(`/games/${game.id}/players`)
       .auth(token, { type: 'bearer' })
       .expect(403)
   })
 
   it('should not create a player if props are in the incorrect format', async () => {
-    const res = await request(app.callback())
-      .post(`/games/${validGame.id}/players`)
+    const [organisation, game] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken({}, organisation)
+
+    const res = await request(global.app)
+      .post(`/games/${game.id}/players`)
       .send({
         props: {
           characterName: 'Bob John'
@@ -143,8 +135,11 @@ describe('Player service - post', () => {
   })
 
   it('should create a player with a META_DEV_BUILD prop', async () => {
-    const res = await request(app.callback())
-      .post(`/games/${validGame.id}/players`)
+    const [organisation, game] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken({}, organisation)
+
+    const res = await request(global.app)
+      .post(`/games/${game.id}/players`)
       .send({
         aliases: [{
           service: 'steam',

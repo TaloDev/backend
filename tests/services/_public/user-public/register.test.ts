@@ -1,6 +1,4 @@
 import { EntityManager } from '@mikro-orm/core'
-import Koa from 'koa'
-import init from '../../../../src/index'
 import request from 'supertest'
 import UserAccessCode from '../../../../src/entities/user-access-code'
 import casual from 'casual'
@@ -8,35 +6,20 @@ import UserFactory from '../../../fixtures/UserFactory'
 import OrganisationFactory from '../../../fixtures/OrganisationFactory'
 import InviteFactory from '../../../fixtures/InviteFactory'
 import GameActivity, { GameActivityType } from '../../../../src/entities/game-activity'
-import clearEntities from '../../../utils/clearEntities'
 import PricingPlanFactory from '../../../fixtures/PricingPlanFactory'
 
-const baseUrl = '/public/users'
-
 describe('User public service - register', () => {
-  let app: Koa
-
   beforeAll(async () => {
-    app = await init()
-
     const pricingPlan = await new PricingPlanFactory().one()
-    await (<EntityManager>app.context.em).persistAndFlush(pricingPlan)
-  })
-
-  beforeEach(async () => {
-    await clearEntities(app.context.em, ['UserSession'])
-  })
-
-  afterAll(async () => {
-    await (<EntityManager>app.context.em).getConnection().close()
+    await (<EntityManager>global.em).persistAndFlush(pricingPlan)
   })
 
   it('should register a user', async () => {
     const email = casual.email
     const username = casual.username
 
-    const res = await request(app.callback())
-      .post(`${baseUrl}/register`)
+    const res = await request(global.app)
+      .post('/public/users/register')
       .send({ email, username, password: 'password', organisationName: 'Talo' })
       .expect(200)
 
@@ -50,10 +33,10 @@ describe('User public service - register', () => {
   it('should not let a user register if the email already exists', async () => {
     const email = casual.email
     const user = await new UserFactory().with(() => ({ email })).one()
-    await (<EntityManager>app.context.em).persistAndFlush(user)
+    await (<EntityManager>global.em).persistAndFlush(user)
 
-    const res = await request(app.callback())
-      .post(`${baseUrl}/register`)
+    const res = await request(global.app)
+      .post('/public/users/register')
       .send({ email, username: casual.username, password: 'password', organisationName: 'Talo' })
       .expect(400)
 
@@ -63,12 +46,12 @@ describe('User public service - register', () => {
   it('should create an access code for a new user', async () => {
     const email = casual.email
 
-    await request(app.callback())
-      .post(`${baseUrl}/register`)
+    await request(global.app)
+      .post('/public/users/register')
       .send({ email, username: casual.username, password: 'password', organisationName: 'Talo' })
       .expect(200)
 
-    const accessCode = await (<EntityManager>app.context.em).getRepository(UserAccessCode).findOne({
+    const accessCode = await (<EntityManager>global.em).getRepository(UserAccessCode).findOne({
       user: {
         email
       }
@@ -80,13 +63,13 @@ describe('User public service - register', () => {
   it('should let a user register with an invite', async () => {
     const organisation = await new OrganisationFactory().one()
     const invite = await new InviteFactory().construct(organisation).one()
-    await (<EntityManager>app.context.em).persistAndFlush(invite)
+    await (<EntityManager>global.em).persistAndFlush(invite)
 
     const email = invite.email
     const username = casual.username
 
-    const res = await request(app.callback())
-      .post(`${baseUrl}/register`)
+    const res = await request(global.app)
+      .post('/public/users/register')
       .send({ email, username, password: 'password', inviteToken: invite.token })
       .expect(200)
 
@@ -96,7 +79,7 @@ describe('User public service - register', () => {
     expect(res.body.user.password).not.toBeDefined()
     expect(res.body.user.organisation.id).toBe(organisation.id)
 
-    const activity = await (<EntityManager>app.context.em).getRepository(GameActivity).findOne({
+    const activity = await (<EntityManager>global.em).getRepository(GameActivity).findOne({
       type: GameActivityType.INVITE_ACCEPTED
     })
 
@@ -106,13 +89,13 @@ describe('User public service - register', () => {
   it('should not let a user register with an invite if the email doesn\'t match', async () => {
     const organisation = await new OrganisationFactory().one()
     const invite = await new InviteFactory().construct(organisation).one()
-    await (<EntityManager>app.context.em).persistAndFlush(invite)
+    await (<EntityManager>global.em).persistAndFlush(invite)
 
     const email = casual.email
     const username = casual.username
 
-    await request(app.callback())
-      .post(`${baseUrl}/register`)
+    await request(global.app)
+      .post('/public/users/register')
       .send({ email, username, password: 'password', inviteToken: invite.token })
       .expect(404)
   })
@@ -120,13 +103,13 @@ describe('User public service - register', () => {
   it('should not let a user register with a missing invite', async () => {
     const organisation = await new OrganisationFactory().one()
     const invite = await new InviteFactory().construct(organisation).one()
-    await (<EntityManager>app.context.em).persistAndFlush(invite)
+    await (<EntityManager>global.em).persistAndFlush(invite)
 
     const email = casual.email
     const username = casual.username
 
-    await request(app.callback())
-      .post(`${baseUrl}/register`)
+    await request(global.app)
+      .post('/public/users/register')
       .send({ email, username, password: 'password', inviteToken: 'abc123' })
       .expect(404)
   })

@@ -9,11 +9,11 @@ import AxiosMockAdapter from 'axios-mock-adapter'
 import axios from 'axios'
 import SteamworksIntegrationEvent from '../../../src/entities/steamworks-integration-event'
 import GameStat from '../../../src/entities/game-stat'
-import clearEntities from '../../utils/clearEntities'
 import GameStatFactory from '../../fixtures/GameStatFactory'
 import PlayerFactory from '../../fixtures/PlayerFactory'
 import PlayerGameStat from '../../../src/entities/player-game-stat'
 import PlayerGameStatFactory from '../../fixtures/PlayerGameStatFactory'
+import casual from 'casual'
 
 describe('Steamworks integration - sync stats', () => {
   let em: EntityManager
@@ -24,16 +24,14 @@ describe('Steamworks integration - sync stats', () => {
     em = orm.em
   })
 
-  beforeEach(async () => {
-    await clearEntities(em, ['GameStat'])
-  })
-
   afterAll(async () => {
     await em.getConnection().close()
   })
 
   it('should pull in stats from steamworks', async () => {
     const [, game] = await createOrganisationAndGame(em)
+
+    const statDisplayName = casual.word
 
     const config = await new IntegrationConfigFactory().one()
     const integration = await new IntegrationFactory().construct(IntegrationType.STEAMWORKS, game, config).one()
@@ -46,9 +44,9 @@ describe('Steamworks integration - sync stats', () => {
         availableGameStats: {
           stats: [
             {
-              name: 'stat_rank',
+              name: 'stat_' + casual.word,
               defaultvalue: 500,
-              displayName: 'Rank'
+              displayName: statDisplayName
             }
           ],
           achievements: []
@@ -70,7 +68,7 @@ describe('Steamworks integration - sync stats', () => {
 
     const createdStat = await em.getRepository(GameStat).findOne({
       game: integration.game,
-      name: 'Rank',
+      name: statDisplayName,
       globalValue: 500,
       defaultValue: 500,
       minTimeBetweenUpdates: 10,
@@ -83,7 +81,10 @@ describe('Steamworks integration - sync stats', () => {
   it('should update existing stats with the name and default value from steamworks', async () => {
     const [, game] = await createOrganisationAndGame(em)
 
-    const stat = await new GameStatFactory([game]).with(() => ({ internalName: 'stat_rank' })).one()
+    const statName = 'stat_' + casual.word
+    const statDisplayName = casual.word
+
+    const stat = await new GameStatFactory([game]).with(() => ({ internalName: statName })).one()
 
     const config = await new IntegrationConfigFactory().one()
     const integration = await new IntegrationFactory().construct(IntegrationType.STEAMWORKS, game, config).one()
@@ -97,9 +98,9 @@ describe('Steamworks integration - sync stats', () => {
         availableGameStats: {
           stats: [
             {
-              name: 'stat_rank',
+              name: statName,
               defaultvalue: 500,
-              displayName: 'Rank'
+              displayName: statDisplayName
             }
           ],
           achievements: []
@@ -112,13 +113,15 @@ describe('Steamworks integration - sync stats', () => {
 
     expect(getSchemaMock).toHaveBeenCalledTimes(1)
 
-    const updatedStat = await em.getRepository(GameStat).findOne(stat.id, { refresh: true })
-    expect(updatedStat.name).toBe('Rank')
-    expect(updatedStat.defaultValue).toBe(500)
+    await em.refresh(stat)
+    expect(stat.name).toBe(statDisplayName)
+    expect(stat.defaultValue).toBe(500)
   })
 
   it('should pull in player stats from steamworks', async () => {
     const [, game] = await createOrganisationAndGame(em)
+
+    const statName = 'stat_' + casual.word
 
     const player = await new PlayerFactory([game]).state('with steam alias').one()
 
@@ -134,9 +137,9 @@ describe('Steamworks integration - sync stats', () => {
         availableGameStats: {
           stats: [
             {
-              name: 'stat_rank',
+              name: statName,
               defaultvalue: 500,
-              displayName: 'Rank'
+              displayName: casual.word
             }
           ],
           achievements: []
@@ -150,7 +153,7 @@ describe('Steamworks integration - sync stats', () => {
         steamID: player.aliases[0].identifier,
         gameName: game.name,
         stats: [{
-          name: 'stat_rank',
+          name: statName,
           value: 301
         }],
         achievements: []
@@ -184,9 +187,9 @@ describe('Steamworks integration - sync stats', () => {
         availableGameStats: {
           stats: [
             {
-              name: 'stat_rank',
+              name: 'stat_' + casual.word,
               defaultvalue: 500,
-              displayName: 'Rank'
+              displayName: casual.word
             }
           ],
           achievements: []
@@ -210,9 +213,11 @@ describe('Steamworks integration - sync stats', () => {
   it('should update player stats with the ones from steamworks', async () => {
     const [, game] = await createOrganisationAndGame(em)
 
+    const statName = 'stat_' + casual.word
+
     const player = await new PlayerFactory([game]).state('with steam alias').one()
-    const stat = await new GameStatFactory([game]).with(() => ({ internalName: 'stat_rank' })).one()
-    let playerStat = await new PlayerGameStatFactory().construct(player, stat).with(() => ({ value: 288 })).one()
+    const stat = await new GameStatFactory([game]).with(() => ({ internalName: statName })).one()
+    const playerStat = await new PlayerGameStatFactory().construct(player, stat).with(() => ({ value: 288 })).one()
 
     const config = await new IntegrationConfigFactory().one()
     const integration = await new IntegrationFactory().construct(IntegrationType.STEAMWORKS, game, config).one()
@@ -226,9 +231,9 @@ describe('Steamworks integration - sync stats', () => {
         availableGameStats: {
           stats: [
             {
-              name: 'stat_rank',
+              name: statName,
               defaultvalue: 500,
-              displayName: 'Rank'
+              displayName: casual.word
             }
           ],
           achievements: []
@@ -242,7 +247,7 @@ describe('Steamworks integration - sync stats', () => {
         steamID: player.aliases[0].identifier,
         gameName: game.name,
         stats: [{
-          name: 'stat_rank',
+          name: statName,
           value: 301
         }],
         achievements: []
@@ -255,15 +260,17 @@ describe('Steamworks integration - sync stats', () => {
     expect(getSchemaMock).toHaveBeenCalledTimes(1)
     expect(getUserStatsMock).toHaveBeenCalledTimes(1)
 
-    playerStat = await em.getRepository(PlayerGameStat).findOne({ player }, { refresh: true })
+    await em.refresh(playerStat)
     expect(playerStat.value).toBe(301)
   })
 
   it('should push through player stats that only exist in talo', async () => {
     const [, game] = await createOrganisationAndGame(em)
 
+    const statName = 'stat_' + casual.word
+
     const player = await new PlayerFactory([game]).state('with steam alias').one()
-    const stat = await new GameStatFactory([game]).with(() => ({ internalName: 'stat_rank' })).one()
+    const stat = await new GameStatFactory([game]).with(() => ({ internalName: statName })).one()
     const playerStat = await new PlayerGameStatFactory().construct(player, stat).with(() => ({ value: 54 })).one()
 
     const config = await new IntegrationConfigFactory().one()
@@ -278,9 +285,9 @@ describe('Steamworks integration - sync stats', () => {
         availableGameStats: {
           stats: [
             {
-              name: 'stat_rank',
+              name: statName,
               defaultvalue: 500,
-              displayName: 'Rank'
+              displayName: casual.word
             }
           ],
           achievements: []

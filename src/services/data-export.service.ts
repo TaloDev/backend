@@ -8,7 +8,6 @@ import get from 'lodash.get'
 import Prop from '../entities/prop'
 import Player from '../entities/player'
 import PlayerAlias from '../entities/player-alias'
-import Queue from 'bee-queue'
 import createQueue from '../lib/queues/createQueue'
 import ormConfig from '../config/mikro-orm.config'
 import { unlink } from 'fs/promises'
@@ -26,6 +25,9 @@ import OrganisationPricingPlanAction from '../entities/organisation-pricing-plan
 import { EntityManager } from '@mikro-orm/mysql'
 import pick from 'lodash.pick'
 import PlayerProp from '../entities/player-prop'
+import { Job, Queue } from 'bullmq'
+import createEmailQueue from '../lib/queues/createEmailQueue'
+import { EmailConfig } from '../lib/messaging/sendEmail'
 
 type PropCollection = Collection<PlayerProp, Player>
 
@@ -66,28 +68,36 @@ export default class DataExportService extends Service {
   constructor() {
     super()
 
-    this.queue = createQueue('data-export')
+    this.emailQueue = createEmailQueue({
+      completed: async (job: Job<EmailConfig>) => {
+        await this.updateDataExportStatus(job.data.metadata.dataExportId as number, { id: DataExportStatus.SENT })
+      },
+      failed: async (job: Job<EmailConfig>) => {
+        await this.updateDataExportStatus(job.data.metadata.dataExportId as number, { failedAt: new Date() })
+      }
+    })
 
-    this.queue.process(async (job: Queue.Job<DataExportJob>) => {
+    this.queue = createQueue<DataExportJob>('data-export', async (job: Job<DataExportJob>) => {
       const { dataExportId, includeDevData } = job.data
 
       const orm = await MikroORM.init(ormConfig)
-      const dataExport = await orm.em.getRepository(DataExport).findOne(dataExportId, { populate: ['game', 'createdByUser'] })
+      const em = orm.em.fork()
+      const dataExport = await em.getRepository(DataExport).findOne(dataExportId, { populate: ['game', 'createdByUser'] })
 
       dataExport.status = DataExportStatus.QUEUED
-      await orm.em.flush()
+      await em.flush()
 
       const filename = `export-${dataExport.game.id}-${dataExport.createdAt.getTime()}.zip`
       const filepath = './storage/' + filename
 
-      const zip: AdmZip = await this.createZip(dataExport, orm.em as EntityManager, includeDevData)
+      const zip: AdmZip = await this.createZip(dataExport, em as EntityManager, includeDevData)
       zip.writeZip(filepath)
 
       dataExport.status = DataExportStatus.QUEUED
-      await orm.em.flush()
+      await em.flush()
       await orm.close()
 
-      const emailJob = await queueEmail(this.emailQueue, new DataExportReady(dataExport.createdByUser.email, [
+      await queueEmail(this.emailQueue, new DataExportReady(dataExport.createdByUser.email, [
         {
           content: zip.toBuffer().toString('base64'),
           filename,
@@ -95,43 +105,33 @@ export default class DataExportService extends Service {
           disposition: 'attachment',
           content_id: filename
         }
-      ]))
+      ]), { dataExportId })
 
       await unlink(filepath)
-
-      /* istanbul ignore next */
-      emailJob.on('succeeded', async () => {
-        await this.updateDataExportStatus(dataExportId, { id: DataExportStatus.SENT })
-      })
-
-      /* istanbul ignore next */
-      emailJob.on('failed', async () => {
-        await this.updateDataExportStatus(dataExportId, { failedAt: new Date() })
-      })
-    })
-
-    /* istanbul ignore next */
-    this.queue.on('failed', async (job: Queue.Job<DataExportJob>) => {
-      const { dataExportId } = job.data
-      await this.updateDataExportStatus(dataExportId, { failedAt: new Date() })
+    }, {
+      failed: /* istanbul ignore next */ async (job: Job<DataExportJob>) => {
+        /* istanbul ignore next */
+        await this.updateDataExportStatus(job.data.dataExportId, { failedAt: new Date() })
+      }
     })
   }
 
   private async updateDataExportStatus(dataExportId: number, newStatus: UpdatedDataExportStatus): Promise<void> {
     const orm = await MikroORM.init(ormConfig)
+    const em = orm.em.fork()
 
-    const dataExport = await orm.em.getRepository(DataExport).findOne(dataExportId)
+    const dataExport = await em.getRepository(DataExport).findOne(dataExportId)
     if (newStatus.id) dataExport.status = newStatus.id
     if (newStatus.failedAt) {
       dataExport.failedAt = newStatus.failedAt
 
-      const orgPlanAction = await orm.em.getRepository(OrganisationPricingPlanAction).findOne({ type: PricingPlanActionType.DATA_EXPORT, extra: { dataExportId } })
+      const orgPlanAction = await em.getRepository(OrganisationPricingPlanAction).findOne({ type: PricingPlanActionType.DATA_EXPORT, extra: { dataExportId } })
       if (orgPlanAction) {
-        await orm.em.getRepository(OrganisationPricingPlanAction).removeAndFlush(orgPlanAction)
+        await em.getRepository(OrganisationPricingPlanAction).removeAndFlush(orgPlanAction)
       }
     }
 
-    await orm.em.flush()
+    await em.flush()
     await orm.close()
   }
 
@@ -380,8 +380,6 @@ export default class DataExportService extends Service {
   })
   @HasPermission(DataExportPolicy, 'post')
   async post(req: Request): Promise<Response> {
-    if (!this.emailQueue) this.emailQueue = req.ctx.emailQueue
-
     const { entities } = req.body
     const em: EntityManager = req.ctx.em
 
@@ -409,10 +407,10 @@ export default class DataExportService extends Service {
 
     await em.flush()
 
-    await this.queue.createJob<DataExportJob>({
+    await this.queue.add('data-export', {
       dataExportId: dataExport.id,
       includeDevData: req.ctx.state.includeDevData
-    }).save()
+    })
 
     return {
       status: 200,

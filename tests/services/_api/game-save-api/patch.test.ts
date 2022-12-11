@@ -1,6 +1,4 @@
 import { EntityManager } from '@mikro-orm/core'
-import Koa from 'koa'
-import init from '../../../../src/index'
 import request from 'supertest'
 import { APIKeyScope } from '../../../../src/entities/api-key'
 import PlayerFactory from '../../../fixtures/PlayerFactory'
@@ -8,27 +6,15 @@ import GameSaveFactory from '../../../fixtures/GameSaveFactory'
 import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
 import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
 
-const baseUrl = '/v1/game-saves'
-
 describe('Game save API service - patch', () => {
-  let app: Koa
-
-  beforeAll(async () => {
-    app = await init()
-  })
-
-  afterAll(async () => {
-    await (<EntityManager>app.context.em).getConnection().close()
-  })
-
   it('should update a game save if the scope is valid', async () => {
-    const [apiKey, token] = await createAPIKeyAndToken(app.context.em, [APIKeyScope.WRITE_GAME_SAVES])
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_SAVES])
     const player = await new PlayerFactory([apiKey.game]).one()
     const save = await new GameSaveFactory([player]).one()
-    await (<EntityManager>app.context.em).persistAndFlush(save)
+    await (<EntityManager>global.em).persistAndFlush(save)
 
-    const res = await request(app.callback())
-      .patch(`${baseUrl}/${save.id}`)
+    const res = await request(global.app)
+      .patch(`/v1/game-saves/${save.id}`)
       .send({ content: { progress: 10 } })
       .auth(token, { type: 'bearer' })
       .set('x-talo-player', save.player.id)
@@ -40,13 +26,13 @@ describe('Game save API service - patch', () => {
   })
 
   it('should update the game save name if the key exists', async () => {
-    const [apiKey, token] = await createAPIKeyAndToken(app.context.em, [APIKeyScope.WRITE_GAME_SAVES])
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_SAVES])
     const player = await new PlayerFactory([apiKey.game]).one()
     const save = await new GameSaveFactory([player]).one()
-    await (<EntityManager>app.context.em).persistAndFlush(save)
+    await (<EntityManager>global.em).persistAndFlush(save)
 
-    const res = await request(app.callback())
-      .patch(`${baseUrl}/${save.id}`)
+    const res = await request(global.app)
+      .patch(`/v1/game-saves/${save.id}`)
       .send({ content: { progress: 10 }, name: 'New save name' })
       .auth(token, { type: 'bearer' })
       .set('x-talo-player', save.player.id)
@@ -56,13 +42,13 @@ describe('Game save API service - patch', () => {
   })
 
   it('should not update a game save if the scope is not valid', async () => {
-    const [apiKey, token] = await createAPIKeyAndToken(app.context.em, [])
+    const [apiKey, token] = await createAPIKeyAndToken([])
     const player = await new PlayerFactory([apiKey.game]).one()
     const save = await new GameSaveFactory([player]).one()
-    await (<EntityManager>app.context.em).persistAndFlush(save)
+    await (<EntityManager>global.em).persistAndFlush(save)
 
-    await request(app.callback())
-      .patch(`${baseUrl}/${save.id}`)
+    await request(global.app)
+      .patch(`/v1/game-saves/${save.id}`)
       .send({ content: { progress: 10 } })
       .auth(token, { type: 'bearer' })
       .set('x-talo-player', save.player.id)
@@ -70,18 +56,18 @@ describe('Game save API service - patch', () => {
   })
 
   it('should not update another player\'s save from another game', async () => {
-    const [apiKey, token] = await createAPIKeyAndToken(app.context.em, [APIKeyScope.WRITE_GAME_SAVES])
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_SAVES])
     const player = await new PlayerFactory([apiKey.game]).one()
     const save = await new GameSaveFactory([player]).one()
 
-    const [, game] = await createOrganisationAndGame(app.context.em)
+    const [, game] = await createOrganisationAndGame()
     const otherPlayer = await new PlayerFactory([game]).one()
     const otherSave = await new GameSaveFactory([otherPlayer]).one()
 
-    await (<EntityManager>app.context.em).persistAndFlush([save, otherSave])
+    await (<EntityManager>global.em).persistAndFlush([save, otherSave])
 
-    const res = await request(app.callback())
-      .patch(`${baseUrl}/${otherSave.id}`)
+    const res = await request(global.app)
+      .patch(`/v1/game-saves/${otherSave.id}`)
       .send({ content: { progress: 10 } })
       .auth(token, { type: 'bearer' })
       .set('x-talo-player', save.player.id)

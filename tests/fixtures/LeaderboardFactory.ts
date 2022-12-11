@@ -16,6 +16,8 @@ export default class LeaderboardFactory extends Factory<Leaderboard> {
     this.register('unique', this.unique)
     this.register('not unique', this.notUnique)
     this.register('dev build players', this.devBuildPlayers)
+    this.register('asc', this.asc)
+    this.register('desc', this.desc)
 
     this.availableGames = availableGames
   }
@@ -59,5 +61,17 @@ export default class LeaderboardFactory extends Factory<Leaderboard> {
     })
 
     return leaderboard
+  }
+
+  protected asc(): Partial<Leaderboard> {
+    return {
+      sortMode: LeaderboardSortMode.ASC
+    }
+  }
+
+  protected desc(): Partial<Leaderboard> {
+    return {
+      sortMode: LeaderboardSortMode.DESC
+    }
   }
 }

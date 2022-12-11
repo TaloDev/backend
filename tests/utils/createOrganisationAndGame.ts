@@ -6,7 +6,7 @@ import GameFactory from '../fixtures/GameFactory'
 import OrganisationFactory from '../fixtures/OrganisationFactory'
 import OrganisationPricingPlanFactory from '../fixtures/OrganisationPricingPlanFactory'
 
-export default async function createOrganisationAndGame(em: EntityManager, orgPartial?: Partial<Organisation>, gamePartial?: Partial<Game>, plan?: PricingPlan): Promise<[Organisation, Game]> {
+export default async function createOrganisationAndGame(orgPartial?: Partial<Organisation>, gamePartial?: Partial<Game>, plan?: PricingPlan): Promise<[Organisation, Game]> {
   const organisation = await new OrganisationFactory().with(() => orgPartial).one()
   if (plan) {
     const orgPlan = await new OrganisationPricingPlanFactory().construct(organisation, plan).one()
@@ -14,7 +14,7 @@ export default async function createOrganisationAndGame(em: EntityManager, orgPa
   }
 
   const game = await new GameFactory(organisation).with(() => gamePartial).one()
-  await em.persistAndFlush([organisation, game])
+  await (<EntityManager>global.em).persistAndFlush([organisation, game])
 
   return [organisation, game]
 }

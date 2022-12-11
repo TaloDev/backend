@@ -1,50 +1,34 @@
 import { EntityManager } from '@mikro-orm/core'
-import Koa from 'koa'
-import init from '../../../src/index'
 import request from 'supertest'
 import { UserType } from '../../../src/entities/user'
 import createUserAndToken from '../../utils/createUserAndToken'
 import createOrganisationAndGame from '../../utils/createOrganisationAndGame'
 import userPermissionProvider from '../../utils/userPermissionProvider'
-import Integration, { IntegrationType } from '../../../src/entities/integration'
+import { IntegrationType } from '../../../src/entities/integration'
 import IntegrationConfigFactory from '../../fixtures/IntegrationConfigFactory'
 import IntegrationFactory from '../../fixtures/IntegrationFactory'
 import GameActivity, { GameActivityType } from '../../../src/entities/game-activity'
-import clearEntities from '../../utils/clearEntities'
 
 describe('Integration service - patch', () => {
-  let app: Koa
-
-  beforeAll(async () => {
-    app = await init()
-  })
-
-  beforeEach(async () => {
-    await clearEntities(app.context.em, ['GameActivity'])
-  })
-
-  afterAll(async () => {
-    await (<EntityManager>app.context.em).getConnection().close()
-  })
-
   it.each(userPermissionProvider([
     UserType.ADMIN
   ]))('should return a %i for a %s user', async (statusCode, _, type) => {
-    const [organisation, game] = await createOrganisationAndGame(app.context.em)
-    const [token] = await createUserAndToken(app.context.em, { type }, organisation)
+    const [organisation, game] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken({ type }, organisation)
 
     const config = await new IntegrationConfigFactory().one()
     const integration = await new IntegrationFactory().construct(IntegrationType.STEAMWORKS, game, config).one()
-    await (<EntityManager>app.context.em).persistAndFlush(integration)
+    await (<EntityManager>global.em).persistAndFlush(integration)
 
-    const res = await request(app.callback())
+    const res = await request(global.app)
       .patch(`/games/${game.id}/integrations/${integration.id}`)
       .send({ config: { appId: 377999 } })
       .auth(token, { type: 'bearer' })
       .expect(statusCode)
 
-    const activity = await (<EntityManager>app.context.em).getRepository(GameActivity).findOne({
-      type: GameActivityType.GAME_INTEGRATION_UPDATED
+    const activity = await (<EntityManager>global.em).getRepository(GameActivity).findOne({
+      type: GameActivityType.GAME_INTEGRATION_UPDATED,
+      game
     })
 
     if (statusCode === 200) {
@@ -63,41 +47,42 @@ describe('Integration service - patch', () => {
   })
 
   it('should update the api key', async () => {
-    const [organisation, game] = await createOrganisationAndGame(app.context.em)
-    const [token] = await createUserAndToken(app.context.em, { type: UserType.ADMIN }, organisation)
+    const [organisation, game] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken({ type: UserType.ADMIN }, organisation)
 
     const config = await new IntegrationConfigFactory().one()
-    let integration = await new IntegrationFactory().construct(IntegrationType.STEAMWORKS, game, config).one()
-    await (<EntityManager>app.context.em).persistAndFlush(integration)
+    const integration = await new IntegrationFactory().construct(IntegrationType.STEAMWORKS, game, config).one()
+    await (<EntityManager>global.em).persistAndFlush(integration)
 
     const oldApiKey = integration.getSteamAPIKey()
 
-    await request(app.callback())
+    await request(global.app)
       .patch(`/games/${game.id}/integrations/${integration.id}`)
       .send({ config: { apiKey: '37d3858156974d7198af061f394a7fc8' } })
       .auth(token, { type: 'bearer' })
       .expect(200)
 
-    integration = await (<EntityManager>app.context.em).getRepository(Integration).findOne(integration.id, { refresh: true })
+    await (<EntityManager>global.em).refresh(integration)
     expect(integration.getSteamAPIKey()).not.toBe(oldApiKey)
   })
 
   it('should not update an integration for a game the user has no access to', async () => {
-    const [, game] = await createOrganisationAndGame(app.context.em)
-    const [token] = await createUserAndToken(app.context.em, { type: UserType.ADMIN })
+    const [, game] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken({ type: UserType.ADMIN })
 
     const config = await new IntegrationConfigFactory().one()
     const integration = await new IntegrationFactory().construct(IntegrationType.STEAMWORKS, game, config).one()
-    await (<EntityManager>app.context.em).persistAndFlush(integration)
+    await (<EntityManager>global.em).persistAndFlush(integration)
 
-    const res = await request(app.callback())
+    const res = await request(global.app)
       .patch(`/games/${game.id}/integrations/${integration.id}`)
       .send({ config: { appId: 377999 } })
       .auth(token, { type: 'bearer' })
       .expect(403)
 
-    const activity = await (<EntityManager>app.context.em).getRepository(GameActivity).findOne({
-      type: GameActivityType.GAME_INTEGRATION_UPDATED
+    const activity = await (<EntityManager>global.em).getRepository(GameActivity).findOne({
+      type: GameActivityType.GAME_INTEGRATION_UPDATED,
+      game
     })
 
     expect(res.body).toStrictEqual({ message: 'Forbidden' })
@@ -106,21 +91,22 @@ describe('Integration service - patch', () => {
   })
 
   it('should not update an integration that does not exist', async () => {
-    const [, game] = await createOrganisationAndGame(app.context.em)
-    const [token] = await createUserAndToken(app.context.em, { type: UserType.ADMIN })
+    const [, game] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken({ type: UserType.ADMIN })
 
     const config = await new IntegrationConfigFactory().one()
     const integration = await new IntegrationFactory().construct(IntegrationType.STEAMWORKS, game, config).one()
-    await (<EntityManager>app.context.em).persistAndFlush(integration)
+    await (<EntityManager>global.em).persistAndFlush(integration)
 
-    const res = await request(app.callback())
+    const res = await request(global.app)
       .patch(`/games/${game.id}/integrations/1243`)
       .send({ config: { appId: 377999 } })
       .auth(token, { type: 'bearer' })
       .expect(404)
 
-    const activity = await (<EntityManager>app.context.em).getRepository(GameActivity).findOne({
-      type: GameActivityType.GAME_INTEGRATION_UPDATED
+    const activity = await (<EntityManager>global.em).getRepository(GameActivity).findOne({
+      type: GameActivityType.GAME_INTEGRATION_UPDATED,
+      game
     })
 
     expect(res.body).toStrictEqual({ message: 'Integration not found' })

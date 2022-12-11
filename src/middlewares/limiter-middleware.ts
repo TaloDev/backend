@@ -1,8 +1,6 @@
 import { Context, Next } from 'koa'
-import Redis from 'ioredis'
-import redisConfig from '../config/redis.config'
+import { createRedisConnection } from '../config/redis.config'
 
-let redis: Redis.Redis
 const MAX_REQUESTS = 50
 const EXPIRE_TIME = 1
 
@@ -11,7 +9,7 @@ export default async (ctx: Context, next: Next): Promise<void> => {
     const key = `requests:${ctx.state.user.sub}`
 
     // do it in here so redis constructor only gets called if limiter gets called
-    if (!redis) redis = new Redis(redisConfig)
+    const redis = createRedisConnection(ctx)
     const current = await redis.get(key)
 
     if (Number(current) > MAX_REQUESTS) {

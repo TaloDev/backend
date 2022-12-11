@@ -13,11 +13,13 @@ import errorMiddleware from './middlewares/error-middleware'
 import initProviders from './config/providers'
 import createEmailQueue from './lib/queues/createEmailQueue'
 import devDataMiddleware from './middlewares/dev-data-middleware'
+import cleanupMiddleware from './middlewares/cleanup-middleware'
 
 const isTest = process.env.NODE_ENV === 'test'
 
 export const init = async (): Promise<Koa> => {
   const app = new Koa()
+  app.context.isTest = isTest
 
   await initProviders(app)
 
@@ -38,6 +40,8 @@ export const init = async (): Promise<Koa> => {
   configureAPIRoutes(app)
 
   app.context.emailQueue = createEmailQueue()
+
+  app.use(cleanupMiddleware)
 
   if (!isTest) app.listen(80, () => console.log('Listening on port 80'))
 

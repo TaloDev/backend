@@ -1,41 +1,19 @@
 import { EntityManager } from '@mikro-orm/core'
-import Koa from 'koa'
-import init from '../../../src/index'
 import request from 'supertest'
-import User from '../../../src/entities/user'
-import { genAccessToken } from '../../../src/lib/auth/buildTokenPair'
-import UserFactory from '../../fixtures/UserFactory'
 import LeaderboardFactory from '../../fixtures/LeaderboardFactory'
-import GameFactory from '../../fixtures/GameFactory'
-import Game from '../../../src/entities/game'
-import OrganisationFactory from '../../fixtures/OrganisationFactory'
+import createOrganisationAndGame from '../../utils/createOrganisationAndGame'
+import createUserAndToken from '../../utils/createUserAndToken'
 
 describe('Leaderboard service - index', () => {
-  let app: Koa
-  let user: User
-  let validGame: Game
-  let token: string
-
-  beforeAll(async () => {
-    app = await init()
-
-    user = await new UserFactory().one()
-    validGame = await new GameFactory(user.organisation).one()
-    await (<EntityManager>app.context.em).persistAndFlush([user, validGame])
-
-    token = await genAccessToken(user)
-  })
-
-  afterAll(async () => {
-    await (<EntityManager>app.context.em).getConnection().close()
-  })
-
   it('should return a list of leaderboards', async () => {
-    const leaderboards = await new LeaderboardFactory([validGame]).many(3)
-    await (<EntityManager>app.context.em).persistAndFlush(leaderboards)
+    const [organisation, game] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken({}, organisation)
 
-    const res = await request(app.callback())
-      .get(`/games/${validGame.id}/leaderboards`)
+    const leaderboards = await new LeaderboardFactory([game]).many(3)
+    await (<EntityManager>global.em).persistAndFlush(leaderboards)
+
+    const res = await request(global.app)
+      .get(`/games/${game.id}/leaderboards`)
       .auth(token, { type: 'bearer' })
       .expect(200)
 
@@ -45,7 +23,9 @@ describe('Leaderboard service - index', () => {
   })
 
   it('should not return leaderboards for a non-existent game', async () => {
-    const res = await request(app.callback())
+    const [token] = await createUserAndToken()
+
+    const res = await request(global.app)
       .get('/games/99999/leaderboards')
       .auth(token, { type: 'bearer' })
       .expect(404)
@@ -54,13 +34,14 @@ describe('Leaderboard service - index', () => {
   })
 
   it('should not return leaderboards for a game the user has no access to', async () => {
-    const otherOrg = await new OrganisationFactory().one()
-    const otherGame = await new GameFactory(otherOrg).one()
-    const leaderboards = await new LeaderboardFactory([otherGame]).many(3)
-    await (<EntityManager>app.context.em).persistAndFlush(leaderboards)
+    const [, game] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken()
 
-    await request(app.callback())
-      .get(`/games/${otherGame.id}/leaderboards`)
+    const leaderboards = await new LeaderboardFactory([game]).many(3)
+    await (<EntityManager>global.em).persistAndFlush(leaderboards)
+
+    await request(global.app)
+      .get(`/games/${game.id}/leaderboards`)
       .auth(token, { type: 'bearer' })
       .expect(403)
   })

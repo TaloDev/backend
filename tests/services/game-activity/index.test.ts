@@ -1,6 +1,4 @@
 import { EntityManager } from '@mikro-orm/core'
-import Koa from 'koa'
-import init from '../../../src/index'
 import request from 'supertest'
 import { UserType } from '../../../src/entities/user'
 import UserFactory from '../../fixtures/UserFactory'
@@ -10,27 +8,17 @@ import createOrganisationAndGame from '../../utils/createOrganisationAndGame'
 import userPermissionProvider from '../../utils/userPermissionProvider'
 
 describe('Game activity service - index', () => {
-  let app: Koa
-
-  beforeAll(async () => {
-    app = await init()
-  })
-
-  afterAll(async () => {
-    await (<EntityManager>app.context.em).getConnection().close()
-  })
-
   it.each(userPermissionProvider([
     UserType.ADMIN,
     UserType.DEMO
   ]))('should return a %i for a %s user', async (statusCode, _, type) => {
-    const [organisation, game] = await createOrganisationAndGame(app.context.em)
-    const [token, user] = await createUserAndToken(app.context.em, { type }, organisation)
+    const [organisation, game] = await createOrganisationAndGame()
+    const [token, user] = await createUserAndToken({ type }, organisation)
 
     const activities = await new GameActivityFactory([game], [user]).many(5)
-    await (<EntityManager>app.context.em).persistAndFlush([user, game, ...activities])
+    await (<EntityManager>global.em).persistAndFlush([user, game, ...activities])
 
-    const res = await request(app.callback())
+    const res = await request(global.app)
       .get(`/games/${game.id}/game-activities`)
       .auth(token, { type: 'bearer' })
       .expect(statusCode)
@@ -43,18 +31,18 @@ describe('Game activity service - index', () => {
   })
 
   it('should return game activities with no games but from the same organisation', async () => {
-    const [organisation, game] = await createOrganisationAndGame(app.context.em)
-    const [otherOrg] = await createOrganisationAndGame(app.context.em)
+    const [organisation, game] = await createOrganisationAndGame()
+    const [otherOrg] = await createOrganisationAndGame()
 
-    const [token, user] = await createUserAndToken(app.context.em, { type: UserType.ADMIN }, organisation)
+    const [token, user] = await createUserAndToken({ type: UserType.ADMIN }, organisation)
     const otherUser = await new UserFactory().with(() => ({ organisation: otherOrg })).one()
 
     const activities = await new GameActivityFactory([], [user]).many(5)
     const otherActivities = await new GameActivityFactory([], [otherUser]).many(5)
 
-    await (<EntityManager>app.context.em).persistAndFlush([...activities, ...otherActivities])
+    await (<EntityManager>global.em).persistAndFlush([...activities, ...otherActivities])
 
-    const res = await request(app.callback())
+    const res = await request(global.app)
       .get(`/games/${game.id}/game-activities`)
       .auth(token, { type: 'bearer' })
       .expect(200)
@@ -63,14 +51,14 @@ describe('Game activity service - index', () => {
   })
 
   it('should not return a list of game activities for a game the user has no access to', async () => {
-    const [organisation, game] = await createOrganisationAndGame(app.context.em)
-    const [token] = await createUserAndToken(app.context.em, { type: UserType.ADMIN })
+    const [organisation, game] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken({ type: UserType.ADMIN })
 
     const user = await new UserFactory().with(() => ({ organisation })).one()
     const activities = await new GameActivityFactory([game], [user]).many(10)
-    await (<EntityManager>app.context.em).persistAndFlush(activities)
+    await (<EntityManager>global.em).persistAndFlush(activities)
 
-    const res = await request(app.callback())
+    const res = await request(global.app)
       .get(`/games/${game.id}/game-activities`)
       .auth(token, { type: 'bearer' })
       .expect(403)

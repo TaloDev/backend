@@ -1,40 +1,19 @@
 import { EntityManager } from '@mikro-orm/core'
-import Koa from 'koa'
-import init from '../../../src/index'
 import request from 'supertest'
-import User from '../../../src/entities/user'
-import { genAccessToken } from '../../../src/lib/auth/buildTokenPair'
-import Game from '../../../src/entities/game'
 import APIKey from '../../../src/entities/api-key'
-import UserFactory from '../../fixtures/UserFactory'
-import OrganisationFactory from '../../fixtures/OrganisationFactory'
+import createOrganisationAndGame from '../../utils/createOrganisationAndGame'
+import createUserAndToken from '../../utils/createUserAndToken'
 
 describe('API key service - get', () => {
-  let app: Koa
-  let user: User
-  let validGame: Game
-  let token: string
-
-  beforeAll(async () => {
-    app = await init()
-
-    user = await new UserFactory().state('admin').one()
-    validGame = new Game('Uplift', user.organisation)
-    await (<EntityManager>app.context.em).persistAndFlush([user, validGame])
-
-    token = await genAccessToken(user)
-  })
-
-  afterAll(async () => {
-    await (<EntityManager>app.context.em).getConnection().close()
-  })
-
   it('should return a list of api keys', async () => {
-    const keys: APIKey[] = [...new Array(3)].map(() => new APIKey(validGame, user))
-    await (<EntityManager>app.context.em).persistAndFlush(keys)
+    const [organisation, game] = await createOrganisationAndGame()
+    const [token, user] = await createUserAndToken({}, organisation)
 
-    const res = await request(app.callback())
-      .get(`/games/${validGame.id}/api-keys`)
+    const keys: APIKey[] = [...new Array(3)].map(() => new APIKey(game, user))
+    await (<EntityManager>global.em).persistAndFlush(keys)
+
+    const res = await request(global.app)
+      .get(`/games/${game.id}/api-keys`)
       .auth(token, { type: 'bearer' })
       .expect(200)
 
@@ -42,7 +21,9 @@ describe('API key service - get', () => {
   })
 
   it('should not return a list of api keys for a non-existent game', async () => {
-    const res = await request(app.callback())
+    const [token] = await createUserAndToken({})
+
+    const res = await request(global.app)
       .get('/games/99999/api-keys')
       .auth(token, { type: 'bearer' })
       .expect(404)
@@ -51,12 +32,11 @@ describe('API key service - get', () => {
   })
 
   it('should not return a list of api keys for a game the user has no access to', async () => {
-    const otherOrg = await new OrganisationFactory().one()
-    const otherGame = new Game('Crawle', otherOrg)
-    await (<EntityManager>app.context.em).persistAndFlush(otherGame)
+    const [, game] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken({})
 
-    await request(app.callback())
-      .get(`/games/${otherGame.id}/api-keys`)
+    await request(global.app)
+      .get(`/games/${game.id}/api-keys`)
       .auth(token, { type: 'bearer' })
       .expect(403)
   })

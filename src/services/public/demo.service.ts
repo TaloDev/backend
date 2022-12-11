@@ -2,9 +2,8 @@ import { After, Before, Service, Request, Response } from 'koa-clay'
 import User, { UserType } from '../../entities/user'
 import { EntityManager, MikroORM } from '@mikro-orm/core'
 import buildTokenPair from '../../lib/auth/buildTokenPair'
-import Queue from 'bee-queue'
 import Organisation from '../../entities/organisation'
-import { add, sub } from 'date-fns'
+import { sub } from 'date-fns'
 import ormConfig from '../../config/mikro-orm.config'
 import createQueue from '../../lib/queues/createQueue'
 import UserSession from '../../entities/user-session'
@@ -12,6 +11,7 @@ import Event from '../../entities/event'
 import randomDate from '../../lib/dates/randomDate'
 import bcrypt from 'bcrypt'
 import GameActivity from '../../entities/game-activity'
+import { Job, Queue } from 'bullmq'
 
 interface DemoUserJob {
   userId: number
@@ -20,10 +20,7 @@ interface DemoUserJob {
 async function scheduleDeletion(req: Request, res: Response, caller: DemoService): Promise<void> {
   /* istanbul ignore else */
   if (res.status === 200) {
-    await caller.queue
-      .createJob<DemoUserJob>({ userId: res.body.user.id })
-      .delayUntil(add(Date.now(), { hours: 1 }))
-      .save()
+    await caller.queue.add('demo-user', { userId: res.body.user.id }, { delay: 3600000 })
   }
 }
 
@@ -53,23 +50,22 @@ async function updateEventDates(req: Request): Promise<void> {
 }
 
 export default class DemoService extends Service {
-  queue: Queue
+  queue: Queue<DemoUserJob>
 
   constructor() {
     super()
 
-    this.queue = createQueue('demo')
-
-    this.queue.process(async (job: Queue.Job<DemoUserJob>) => {
+    this.queue = createQueue<DemoUserJob>('demo', async (job: Job<DemoUserJob>) => {
       const { userId } = job.data
 
       const orm = await MikroORM.init(ormConfig)
+      const em = orm.em.fork()
 
-      const sessions = await orm.em.getRepository(UserSession).find({ user: { id: userId } })
-      const activities = await orm.em.getRepository(GameActivity).find({ user: { id: userId } })
-      const user = await orm.em.getRepository(User).findOne(userId)
+      const sessions = await em.getRepository(UserSession).find({ user: { id: userId } })
+      const activities = await em.getRepository(GameActivity).find({ user: { id: userId } })
+      const user = await em.getRepository(User).findOne(userId)
 
-      await orm.em.removeAndFlush([user, ...sessions, ...activities])
+      await em.removeAndFlush([user, ...sessions, ...activities])
       await orm.close()
     })
   }

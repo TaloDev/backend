@@ -1,7 +1,6 @@
 // eslint-disable-next-line no-undef
 module.exports = {
   preset: 'ts-jest',
-  testEnvironment: 'node',
   coveragePathIgnorePatterns: [
     '/node_modules',
     '/tests/fixtures',
@@ -12,6 +11,11 @@ module.exports = {
     '/src/middlewares/limiter-middleware.ts',
     '/src/migrations'
   ],
+  transform: {
+    '^.+\\.(ts|tsx)$': 'ts-jest'
+  },
   coverageReporters: ['lcov'],
-  collectCoverage: true
+  collectCoverage: true,
+  setupFilesAfterEnv: ['./tests/testEnv.ts'],
+  testTimeout: 10000
 }

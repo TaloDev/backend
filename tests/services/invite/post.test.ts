@@ -1,6 +1,4 @@
 import { EntityManager } from '@mikro-orm/core'
-import Koa from 'koa'
-import init from '../../../src/index'
 import request from 'supertest'
 import { UserType } from '../../../src/entities/user'
 import UserFactory from '../../fixtures/UserFactory'
@@ -16,43 +14,33 @@ import { PricingPlanActionType } from '../../../src/entities/pricing-plan-action
 import OrganisationPricingPlanFactory from '../../fixtures/OrganisationPricingPlanFactory'
 import OrganisationPricingPlanActionFactory from '../../fixtures/OrganisationPricingPlanActionFactory'
 
-const baseUrl = '/invites'
-
 describe('Invite service - post', () => {
-  let app: Koa
-
-  beforeAll(async () => {
-    app = await init()
-  })
-
   beforeEach(async () => {
-    await clearEntities(app.context.em, ['Invite', 'GameActivity'])
-  })
-
-  afterAll(async () => {
-    await (<EntityManager>app.context.em).getConnection().close()
+    await clearEntities(['GameActivity'])
   })
 
   it.each(userPermissionProvider([
     UserType.ADMIN
   ]))('should return a %i for a %s user', async (statusCode, _, type) => {
-    const [token, user] = await createUserAndToken(app.context.em, { type, emailConfirmed: true })
+    const [token, user] = await createUserAndToken({ type, emailConfirmed: true })
 
-    const res = await request(app.callback())
-      .post(baseUrl)
-      .send({ email: 'user@example.com', type: UserType.ADMIN })
+    const email = casual.email
+
+    const res = await request(global.app)
+      .post('/invites')
+      .send({ email, type: UserType.ADMIN })
       .auth(token, { type: 'bearer' })
       .expect(statusCode)
 
-    const activity = await (<EntityManager>app.context.em).getRepository(GameActivity).findOne({
+    const activity = await (<EntityManager>global.em).getRepository(GameActivity).findOne({
       type: GameActivityType.INVITE_CREATED
     })
 
     if (statusCode === 200) {
-      expect(res.body.invite.email).toBe('user@example.com')
+      expect(res.body.invite.email).toBe(email)
       expect(res.body.invite.organisation.id).toBe(user.organisation.id)
 
-      expect(activity.extra.inviteEmail).toBe('user@example.com')
+      expect(activity.extra.inviteEmail).toBe(email)
     } else {
       expect(res.body).toStrictEqual({ message: 'You do not have permissions to create invites' })
 
@@ -61,15 +49,15 @@ describe('Invite service - post', () => {
   })
 
   it('should not create an invite when an invite exists for the same email', async () => {
-    const [token, user] = await createUserAndToken(app.context.em, { type: UserType.ADMIN, emailConfirmed: true })
+    const [token, user] = await createUserAndToken({ type: UserType.ADMIN, emailConfirmed: true })
 
     const invite = await new InviteFactory().construct(user.organisation).with(() => ({
-      email: 'user@example.com'
+      email: casual.email
     })).one()
-    await (<EntityManager>app.context.em).persistAndFlush(invite)
+    await (<EntityManager>global.em).persistAndFlush(invite)
 
-    const res = await request(app.callback())
-      .post(baseUrl)
+    const res = await request(global.app)
+      .post('/invites')
       .send({ email: invite.email, type: UserType.ADMIN })
       .auth(token, { type: 'bearer' })
       .expect(400)
@@ -83,10 +71,10 @@ describe('Invite service - post', () => {
     [200, 'dev', UserType.DEV],
     [400, 'demo', UserType.DEMO]
   ])('should return a %i for a %s user type invite', async (statusCode, _, type) => {
-    const [token] = await createUserAndToken(app.context.em, { type: UserType.ADMIN, emailConfirmed: true })
+    const [token] = await createUserAndToken({ type: UserType.ADMIN, emailConfirmed: true })
 
-    const res = await request(app.callback())
-      .post(baseUrl)
+    const res = await request(global.app)
+      .post('/invites')
       .send({ email: casual.email, type })
       .auth(token, { type: 'bearer' })
       .expect(statusCode)
@@ -103,16 +91,16 @@ describe('Invite service - post', () => {
   })
 
   it('should not create an invite when an invite exists for the same email on another organisation', async () => {
-    const [otherOrg] = await createOrganisationAndGame(app.context.em)
-    const [token] = await createUserAndToken(app.context.em, { type: UserType.ADMIN, emailConfirmed: true })
+    const [otherOrg] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken({ type: UserType.ADMIN, emailConfirmed: true })
 
     const invite = await new InviteFactory().construct(otherOrg).with(() => ({
-      email: 'user@example.com'
+      email: casual.email
     })).one()
-    await (<EntityManager>app.context.em).persistAndFlush(invite)
+    await (<EntityManager>global.em).persistAndFlush(invite)
 
-    const res = await request(app.callback())
-      .post(baseUrl)
+    const res = await request(global.app)
+      .post('/invites')
       .send({ email: invite.email, type: UserType.ADMIN })
       .auth(token, { type: 'bearer' })
       .expect(400)
@@ -121,13 +109,13 @@ describe('Invite service - post', () => {
   })
 
   it('should not create an invite when a user exists for the same email', async () => {
-    const [token] = await createUserAndToken(app.context.em, { type: UserType.ADMIN, emailConfirmed: true })
+    const [token] = await createUserAndToken({ type: UserType.ADMIN, emailConfirmed: true })
 
-    const user = await new UserFactory().with(() => ({ email: 'user@example.com' })).one()
-    await (<EntityManager>app.context.em).persistAndFlush(user)
+    const user = await new UserFactory().with(() => ({ email: casual.email })).one()
+    await (<EntityManager>global.em).persistAndFlush(user)
 
-    const res = await request(app.callback())
-      .post(baseUrl)
+    const res = await request(global.app)
+      .post('/invites')
       .send({ email: user.email, type: UserType.ADMIN })
       .auth(token, { type: 'bearer' })
       .expect(400)
@@ -140,13 +128,13 @@ describe('Invite service - post', () => {
     const orgPlan = await new OrganisationPricingPlanFactory().with(() => ({ pricingPlan: planAction.pricingPlan })).one()
     const orgPlanActions = await new OrganisationPricingPlanActionFactory(orgPlan).with(() => ({ type: planAction.type })).many(planAction.limit)
 
-    const [organisation] = await createOrganisationAndGame(app.context.em, { pricingPlan: orgPlan })
-    const [token] = await createUserAndToken(app.context.em, { type: UserType.ADMIN, emailConfirmed: true }, organisation)
+    const [organisation] = await createOrganisationAndGame({ pricingPlan: orgPlan })
+    const [token] = await createUserAndToken({ type: UserType.ADMIN, emailConfirmed: true }, organisation)
 
-    await (<EntityManager>app.context.em).persistAndFlush([planAction, ...orgPlanActions])
+    await (<EntityManager>global.em).persistAndFlush([planAction, ...orgPlanActions])
 
-    await request(app.callback())
-      .post(baseUrl)
+    await request(global.app)
+      .post('/invites')
       .send({ email: casual.email, type: UserType.DEV })
       .auth(token, { type: 'bearer' })
       .expect(402)
@@ -157,13 +145,13 @@ describe('Invite service - post', () => {
     const orgPlan = await new OrganisationPricingPlanFactory().with(() => ({ pricingPlan: planAction.pricingPlan, status: 'incomplete' })).one()
     const orgPlanActions = await new OrganisationPricingPlanActionFactory(orgPlan).with(() => ({ type: planAction.type })).many(planAction.limit)
 
-    const [organisation] = await createOrganisationAndGame(app.context.em, { pricingPlan: orgPlan })
-    const [token] = await createUserAndToken(app.context.em, { type: UserType.ADMIN, emailConfirmed: true }, organisation)
+    const [organisation] = await createOrganisationAndGame({ pricingPlan: orgPlan })
+    const [token] = await createUserAndToken({ type: UserType.ADMIN, emailConfirmed: true }, organisation)
 
-    await (<EntityManager>app.context.em).persistAndFlush([planAction, ...orgPlanActions])
+    await (<EntityManager>global.em).persistAndFlush([planAction, ...orgPlanActions])
 
-    const res = await request(app.callback())
-      .post(baseUrl)
+    const res = await request(global.app)
+      .post('/invites')
       .send({ email: casual.email, type: UserType.DEV })
       .auth(token, { type: 'bearer' })
       .expect(402)
@@ -172,10 +160,10 @@ describe('Invite service - post', () => {
   })
 
   it('should not create an invite if the user\'s email is not confirmed', async () => {
-    const [token] = await createUserAndToken(app.context.em, { type: UserType.ADMIN })
+    const [token] = await createUserAndToken({ type: UserType.ADMIN })
 
-    const res = await request(app.callback())
-      .post(baseUrl)
+    const res = await request(global.app)
+      .post('/invites')
       .send({ email: 'dev@game.studio', type: UserType.DEV })
       .auth(token, { type: 'bearer' })
       .expect(403)

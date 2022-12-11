@@ -117,10 +117,12 @@ export default class LeaderboardService extends Service {
     }
 
     const { count } = await baseQuery
+      .clone()
       .count('le.id', true)
       .execute('get')
 
     const entries = await baseQuery
+      .clone()
       .select('le.*', true)
       .orderBy({ score: leaderboard.sortMode })
       .limit(itemsPerPage)

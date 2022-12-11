@@ -126,10 +126,12 @@ export default class PlayerService extends Service {
     baseQuery = baseQuery.andWhere({ game: req.ctx.state.game })
 
     const { count } = await baseQuery
+      .clone()
       .count('p.id', true)
       .execute('get')
 
     const players = await baseQuery
+      .clone()
       .select('p.*', true)
       .orderBy({ lastSeenAt: QueryOrder.DESC })
       .limit(itemsPerPage)
@@ -225,10 +227,12 @@ export default class PlayerService extends Service {
     })
 
     const { count } = await baseQuery
+      .clone()
       .count('e.id', true)
       .execute('get')
 
     const events = await baseQuery
+      .clone()
       .select('e.*', true)
       .orderBy({ createdAt: QueryOrder.DESC })
       .limit(itemsPerPage)

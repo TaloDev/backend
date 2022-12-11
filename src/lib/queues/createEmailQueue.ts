@@ -1,12 +1,10 @@
-import createQueue from './createQueue'
-import Queue from 'bee-queue'
+import createQueue, { WorkerEvents } from './createQueue'
 import sendEmail, { EmailConfig } from '../messaging/sendEmail'
 
-const createEmailQueue = () => {
-  const queue = createQueue('email')
-  queue.process(async (job: Queue.Job<EmailConfig>) => {
+const createEmailQueue = (events: WorkerEvents<EmailConfig> = {}) => {
+  const queue = createQueue<EmailConfig>('email', async (job) => {
     await sendEmail(job.data.mail)
-  })
+  }, events)
 
   return queue
 }

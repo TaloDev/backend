@@ -1,5 +1,6 @@
 import { Context, Next } from 'koa'
 import * as Sentry from '@sentry/node'
+import Redis from 'ioredis'
 
 export default async (ctx: Context, next: Next) => {
   try {
@@ -8,6 +9,10 @@ export default async (ctx: Context, next: Next) => {
     ctx.status = err.status || 500
     ctx.body = {
       ...err
+    }
+
+    if (ctx.state.redis instanceof Redis) {
+      await (ctx.state.redis as Redis).quit()
     }
 
     if (ctx.status === 500) {

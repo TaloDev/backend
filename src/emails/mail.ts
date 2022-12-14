@@ -40,8 +40,6 @@ export default class Mail {
     this.footer = 'Need help?'
     this.footerText = 'Our team and community can be found <a href="https://discord.gg/2RWwxXVY3v" target="_blank" style="color: #ffffff;">on Discord</a>.'
 
-    this.template = this.template.replace('{{footerText}}', this.footerText)
-
     this.why = 'You are receiving this email because you have a Talo account'
   }
 

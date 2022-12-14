@@ -8,8 +8,6 @@ export default class ConfirmEmail extends Mail {
     this.title = 'Welcome!'
     this.mainText = `Hi, ${user.username}! Thanks for signing up to Talo. To confirm your account, enter the following code into the dashboard: <strong>${code}</strong>`
 
-    this.template = this.template.replace('{{mainText}}', this.mainText)
-
     this.ctaLink = process.env.DASHBOARD_URL
     this.ctaText = 'Go to your dashboard'
   }

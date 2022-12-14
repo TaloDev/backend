@@ -11,7 +11,6 @@ export default class PlanInvoice extends Mail {
 
     this.title = 'Thanks for using Talo!'
     this.mainText = `Your ${format(new Date(), 'MMMM yyyy')} invoice is ready.<br/><br/>The balance due is: <strong>${this.getPrice(invoice.amount_due)}</strong>.<br/><br/>The balance will be automatically charged to your card so you don't need to do anything.`
-    this.template = this.template.replace('{{mainText}}', this.mainText)
 
     this.ctaLink = invoice.hosted_invoice_url
     this.ctaText = 'View invoice'

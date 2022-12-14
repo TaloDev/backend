@@ -22,6 +22,7 @@ import createDefaultPricingPlan from '../../lib/billing/createDefaultPricingPlan
 import handlePricingPlanAction from '../../lib/billing/handlePricingPlanAction'
 import { PricingPlanActionType } from '../../entities/pricing-plan-action'
 import queueEmail from '../../lib/messaging/queueEmail'
+import ResetPassword from '../../emails/reset-password'
 
 async function sendEmailConfirm(req: Request, res: Response): Promise<void> {
   const user: User = req.ctx.state.user
@@ -60,8 +61,8 @@ async function sendEmailConfirm(req: Request, res: Response): Promise<void> {
   },
   {
     method: 'POST',
-    path: '/change_password',
-    handler: 'changePassword'
+    path: '/reset_password',
+    handler: 'resetPassword'
   },
   {
     method: 'POST',
@@ -150,7 +151,7 @@ export default class UserPublicService extends Service {
   }
 
   handleFailedLogin(req: Request) {
-    req.ctx.throw(401, { message: 'Incorrect email address or password', showHint: true })
+    req.ctx.throw(401, 'Incorrect email address or password')
   }
 
   @Validate({
@@ -226,38 +227,25 @@ export default class UserPublicService extends Service {
     const { email } = req.body
     const em: EntityManager = req.ctx.em
 
-    let temp = null
-    let user: User
+    const user = await em.getRepository(User).findOne({ email })
 
-    try {
-      user = await em.getRepository(User).findOneOrFail({ email })
-
+    if (user) {
       const secret = user.password.substring(0, 10)
       const payload = { sub: user.id }
       const sign = promisify(jwt.sign)
       const accessToken = await sign(payload, secret, { expiresIn: '15m' })
-
-      // todo send accessToken in email
-      temp = accessToken
-    } catch (err) {
-      return {
-        status: 204
-      }
+      await queueEmail(req.ctx.emailQueue, new ResetPassword(user, accessToken))
     }
 
     return {
-      status: 200,
-      body: {
-        accessToken: temp,
-        user
-      }
+      status: 204
     }
   }
 
   @Validate({
     body: ['password', 'token']
   })
-  async changePassword(req: Request): Promise<Response> {
+  async resetPassword(req: Request): Promise<Response> {
     const { password, token } = req.body
     const decodedToken = jwt.decode(token)
 
@@ -268,7 +256,7 @@ export default class UserPublicService extends Service {
     try {
       await promisify(jwt.verify)(token, secret)
     } catch (err) {
-      req.ctx.throw(401, 'Request expired')
+      req.ctx.throw(401, { message: 'Request expired', expired: true })
     }
 
     const isSamePassword = await bcrypt.compare(password, user.password)
@@ -277,18 +265,13 @@ export default class UserPublicService extends Service {
     }
 
     user.password = await bcrypt.hash(password, 10)
-    const userSessionRepo = em.getRepository(UserSession)
-    const sessions = await userSessionRepo.find({ user })
-    await userSessionRepo.remove(sessions)
 
-    const accessToken = await buildTokenPair(req.ctx, user)
+    const sessions = await em.repo(UserSession).find({ user })
+    await em.repo(UserSession).remove(sessions)
+    await em.flush()
 
     return {
-      status: 200,
-      body: {
-        accessToken,
-        user
-      }
+      status: 204
     }
   }
 

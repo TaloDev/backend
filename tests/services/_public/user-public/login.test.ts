@@ -31,7 +31,7 @@ describe('User public service - login', () => {
       .send({ email: user.email, password: 'asdasdadasd' })
       .expect(401)
 
-    expect(res.body).toStrictEqual({ message: 'Incorrect email address or password', showHint: true })
+    expect(res.body).toStrictEqual({ message: 'Incorrect email address or password' })
   })
 
   it('should not let a user login with the wrong email', async () => {
@@ -40,7 +40,7 @@ describe('User public service - login', () => {
       .send({ email: 'dev@trytal0.com', password: 'password' })
       .expect(401)
 
-    expect(res.body).toStrictEqual({ message: 'Incorrect email address or password', showHint: true })
+    expect(res.body).toStrictEqual({ message: 'Incorrect email address or password' })
   })
 
   it('should not update the last seen at if the user was last seen today', async () => {

@@ -64,7 +64,7 @@
     "dotenv": "^16.0.0",
     "handlebars": "^4.7.7",
     "ioredis": "^5.2.4",
-    "jsonwebtoken": "^8.5.1",
+    "jsonwebtoken": "^9.0.0",
     "koa": "^2.13.4",
     "koa-bodyparser": "^4.3.0",
     "koa-clay": "^6.5.0",

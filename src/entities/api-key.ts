@@ -15,7 +15,8 @@ export enum APIKeyScope {
   READ_PLAYERS = 'read:players',
   WRITE_PLAYERS = 'write:players',
   READ_EVENTS = 'read:events',
-  WRITE_EVENTS = 'write:events'
+  WRITE_EVENTS = 'write:events',
+  FULL_ACCESS = '*'
 }
 
 @Entity()

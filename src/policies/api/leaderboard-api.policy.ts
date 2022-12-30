@@ -2,6 +2,7 @@ import Policy from '../policy'
 import { PolicyDenial, PolicyResponse, Request } from 'koa-clay'
 import Leaderboard from '../../entities/leaderboard'
 import PlayerAlias from '../../entities/player-alias'
+import { APIKeyScope } from '../../entities/api-key'
 
 export default class LeaderboardAPIPolicy extends Policy {
   async getLeaderboard(req: Request): Promise<Leaderboard | null> {
@@ -18,7 +19,7 @@ export default class LeaderboardAPIPolicy extends Policy {
     this.ctx.state.leaderboard = await this.getLeaderboard(req)
     if (!this.ctx.state.leaderboard) return new PolicyDenial({ message: 'Leaderboard not found' }, 404)
 
-    return await this.hasScope('read:leaderboards')
+    return await this.hasScope(APIKeyScope.READ_LEADERBOARDS)
   }
 
   async post(req: Request): Promise<PolicyResponse> {
@@ -34,6 +35,6 @@ export default class LeaderboardAPIPolicy extends Policy {
 
     if (!this.ctx.state.playerAlias) return new PolicyDenial({ message: 'Player not found' }, 404)
 
-    return await this.hasScope('write:leaderboards')
+    return await this.hasScope(APIKeyScope.WRITE_LEADERBOARDS)
   }
 }

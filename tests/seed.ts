@@ -15,6 +15,7 @@ import PricingPlanActionFactory from './fixtures/PricingPlanActionFactory'
 import PricingPlanAction, { PricingPlanActionType } from '../src/entities/pricing-plan-action'
 import OrganisationPricingPlanFactory from './fixtures/OrganisationPricingPlanFactory'
 import PricingPlan from '../src/entities/pricing-plan'
+import APIKey, { APIKeyScope } from '../src/entities/api-key'
 
 (async () => {
   const orm = await MikroORM.init()
@@ -80,6 +81,12 @@ import PricingPlan from '../src/entities/pricing-plan'
 
   const games = await new GameFactory(organisation).many(2)
 
+  const apiKeys = games.map((game) => {
+    const apiKey = new APIKey(game, ownerUser)
+    apiKey.scopes = [APIKeyScope.FULL_ACCESS]
+    return apiKey
+  })
+
   const players = await new PlayerFactory(games).many(50)
 
   const eventsThisMonth = await new EventFactory(players).state('this month').many(300)
@@ -109,6 +116,7 @@ import PricingPlan from '../src/entities/pricing-plan'
     devUser,
     organisation,
     ...games,
+    ...apiKeys,
     ...players,
     ...eventsThisMonth,
     ...leaderboards,

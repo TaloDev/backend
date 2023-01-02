@@ -10,6 +10,7 @@ import uniqWith from 'lodash.uniqwith'
 import PlayerAPIDocs from '../../docs/player-api.docs'
 import PlayerProp from '../../entities/player-prop'
 import PlayerGameStat from '../../entities/player-game-stat'
+import checkScope from '../../policies/checkScope'
 
 @Routes([
   {
@@ -50,7 +51,7 @@ export default class PlayerAPIService extends APIService {
     })
 
     if (!alias) {
-      if (req.ctx.state.key.scopes.includes(APIKeyScope.WRITE_PLAYERS)) {
+      if (checkScope(key, APIKeyScope.WRITE_PLAYERS)) {
         req.ctx.state.game = key.game
 
         const res = await forwardRequest(req, {

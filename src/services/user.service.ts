@@ -179,10 +179,7 @@ export default class UserService extends Service {
     const keyUri = authenticator.keyuri(user.email, 'Talo', secret)
     const qr = await qrcode.toDataURL(keyUri)
 
-    const twoFactorAuth = new UserTwoFactorAuth(secret)
-    await em.persistAndFlush(twoFactorAuth)
-
-    user.twoFactorAuth = twoFactorAuth
+    user.twoFactorAuth = new UserTwoFactorAuth(secret)
     await em.flush()
 
     return {

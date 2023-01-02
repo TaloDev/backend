@@ -5,6 +5,7 @@ import APIKey, { APIKeyScope } from '../entities/api-key'
 import Game from '../entities/game'
 import User from '../entities/user'
 import getUserFromToken from '../lib/auth/getUserFromToken'
+import checkScope from './checkScope'
 
 export default class Policy extends ServicePolicy {
   em: EntityManager
@@ -50,16 +51,16 @@ export default class Policy extends ServicePolicy {
     return game.organisation.id === user.organisation.id
   }
 
-  async hasScope(scope: string): Promise<PolicyResponse> {
+  async hasScope(scope: APIKeyScope): Promise<PolicyResponse> {
     const key = await this.getAPIKey()
-    const hasScope = key.scopes.includes(scope as APIKeyScope)
+    const hasScope = checkScope(key, scope)
 
     return hasScope || new PolicyDenial({ message: `Missing access key scope: ${scope}` })
   }
 
-  async hasScopes(scopes: string[]): Promise<PolicyResponse> {
+  async hasScopes(scopes: APIKeyScope[]): Promise<PolicyResponse> {
     const key = await this.getAPIKey()
-    const missing = scopes.filter((scope) => !key.scopes.includes(scope as APIKeyScope))
+    const missing = scopes.filter((scope) => !checkScope(key, scope))
 
     return missing.length === 0 || new PolicyDenial({ message: `Missing access key scope(s): ${missing.join(', ')}` })
   }

@@ -17,7 +17,7 @@ The seed command will create two users: `admin@trytalo.com` (an admin user) and 
 
 ## Testing
 
-Run `yarn test` (or `npm test`) to run the Jest unit tests.
+Run `yarn test` to run the unit tests.
 
 The tests run against your database container. They'll automatically backup and restore the current state of your database before executing the tests.
 

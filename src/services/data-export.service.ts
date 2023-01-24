@@ -108,12 +108,13 @@ export default class DataExportService extends Service {
       ]), { dataExportId })
 
       await unlink(filepath)
+    /* c8 ignore start */
     }, {
-      failed: /* istanbul ignore next */ async (job: Job<DataExportJob>) => {
-        /* istanbul ignore next */
+      failed: async (job: Job<DataExportJob>) => {
         await this.updateDataExportStatus(job.data.dataExportId, { failedAt: new Date() })
       }
     })
+    /* c8 ignore stop */
   }
 
   private async updateDataExportStatus(dataExportId: number, newStatus: UpdatedDataExportStatus): Promise<void> {
@@ -189,7 +190,7 @@ export default class DataExportService extends Service {
     const stats = await em.getRepository(GameStat).find({ game: dataExport.game })
 
     for (const stat of stats) {
-      /* istanbul ignore else */
+      /* c8 ignore next 3 */
       if (stat.global) {
         await stat.recalculateGlobalValue(includeDevData)
       }

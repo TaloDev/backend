@@ -37,7 +37,7 @@ describe('Steamworks integration - sync stats', () => {
     const integration = await new IntegrationFactory().construct(IntegrationType.STEAMWORKS, game, config).one()
     await em.persistAndFlush(integration)
 
-    const getSchemaMock = jest.fn((): [number, GetSchemaForGameResponse] => [200, {
+    const getSchemaMock = vi.fn((): [number, GetSchemaForGameResponse] => [200, {
       game: {
         gameName: game.name,
         gameVersion: '22',
@@ -91,7 +91,7 @@ describe('Steamworks integration - sync stats', () => {
 
     await em.persistAndFlush([stat, integration])
 
-    const getSchemaMock = jest.fn((): [number, GetSchemaForGameResponse] => [200, {
+    const getSchemaMock = vi.fn((): [number, GetSchemaForGameResponse] => [200, {
       game: {
         gameName: game.name,
         gameVersion: '22',
@@ -130,7 +130,7 @@ describe('Steamworks integration - sync stats', () => {
 
     await em.persistAndFlush([player, integration])
 
-    const getSchemaMock = jest.fn((): [number, GetSchemaForGameResponse] => [200, {
+    const getSchemaMock = vi.fn((): [number, GetSchemaForGameResponse] => [200, {
       game: {
         gameName: game.name,
         gameVersion: '22',
@@ -148,7 +148,7 @@ describe('Steamworks integration - sync stats', () => {
     }])
     axiosMock.onGet(`https://partner.steam-api.com/ISteamUserStats/GetSchemaForGame/v2?appid=${integration.getConfig().appId}`).replyOnce(getSchemaMock)
 
-    const getUserStatsMock = jest.fn((): [number, GetUserStatsForGameResponse] => [200, {
+    const getUserStatsMock = vi.fn((): [number, GetUserStatsForGameResponse] => [200, {
       playerstats: {
         steamID: player.aliases[0].identifier,
         gameName: game.name,
@@ -180,7 +180,7 @@ describe('Steamworks integration - sync stats', () => {
 
     await em.persistAndFlush([player, integration])
 
-    const getSchemaMock = jest.fn((): [number, GetSchemaForGameResponse] => [200, {
+    const getSchemaMock = vi.fn((): [number, GetSchemaForGameResponse] => [200, {
       game: {
         gameName: game.name,
         gameVersion: '22',
@@ -198,7 +198,7 @@ describe('Steamworks integration - sync stats', () => {
     }])
     axiosMock.onGet(`https://partner.steam-api.com/ISteamUserStats/GetSchemaForGame/v2?appid=${integration.getConfig().appId}`).replyOnce(getSchemaMock)
 
-    const getUserStatsMock = jest.fn((): [number] => [400])
+    const getUserStatsMock = vi.fn((): [number] => [400])
     axiosMock.onGet(`https://partner.steam-api.com/ISteamUserStats/GetUserStatsForGame/v2?appid=${integration.getConfig().appId}&steamid=${player.aliases[0].identifier}`).replyOnce(getUserStatsMock)
 
     await syncSteamworksStats(em, integration)
@@ -224,7 +224,7 @@ describe('Steamworks integration - sync stats', () => {
 
     await em.persistAndFlush([player, playerStat, integration])
 
-    const getSchemaMock = jest.fn((): [number, GetSchemaForGameResponse] => [200, {
+    const getSchemaMock = vi.fn((): [number, GetSchemaForGameResponse] => [200, {
       game: {
         gameName: game.name,
         gameVersion: '22',
@@ -242,7 +242,7 @@ describe('Steamworks integration - sync stats', () => {
     }])
     axiosMock.onGet(`https://partner.steam-api.com/ISteamUserStats/GetSchemaForGame/v2?appid=${integration.getConfig().appId}`).replyOnce(getSchemaMock)
 
-    const getUserStatsMock = jest.fn((): [number, GetUserStatsForGameResponse] => [200, {
+    const getUserStatsMock = vi.fn((): [number, GetUserStatsForGameResponse] => [200, {
       playerstats: {
         steamID: player.aliases[0].identifier,
         gameName: game.name,
@@ -278,7 +278,7 @@ describe('Steamworks integration - sync stats', () => {
 
     await em.persistAndFlush([player, playerStat, integration])
 
-    const getSchemaMock = jest.fn((): [number, GetSchemaForGameResponse] => [200, {
+    const getSchemaMock = vi.fn((): [number, GetSchemaForGameResponse] => [200, {
       game: {
         gameName: game.name,
         gameVersion: '22',
@@ -296,7 +296,7 @@ describe('Steamworks integration - sync stats', () => {
     }])
     axiosMock.onGet(`https://partner.steam-api.com/ISteamUserStats/GetSchemaForGame/v2?appid=${integration.getConfig().appId}`).replyOnce(getSchemaMock)
 
-    const getUserStatsMock = jest.fn((): [number, GetUserStatsForGameResponse] => [200, {
+    const getUserStatsMock = vi.fn((): [number, GetUserStatsForGameResponse] => [200, {
       playerstats: {
         steamID: player.aliases[0].identifier,
         gameName: game.name,
@@ -306,7 +306,7 @@ describe('Steamworks integration - sync stats', () => {
     }])
     axiosMock.onGet(`https://partner.steam-api.com/ISteamUserStats/GetUserStatsForGame/v2?appid=${integration.getConfig().appId}&steamid=${player.aliases[0].identifier}`).replyOnce(getUserStatsMock)
 
-    const setMock = jest.fn(() => [200, {
+    const setMock = vi.fn(() => [200, {
       result: {
         result: 1
       }

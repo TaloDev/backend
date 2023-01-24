@@ -4,7 +4,7 @@ import UserFactory from '../../../fixtures/UserFactory'
 import SendGrid from '@sendgrid/mail'
 
 describe('User public service - forgot password', () => {
-  const sendMock = jest.spyOn(SendGrid, 'send')
+  const sendMock = vi.spyOn(SendGrid, 'send')
 
   afterEach(() => {
     sendMock.mockClear()

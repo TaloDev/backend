@@ -22,7 +22,7 @@ describe('Leaderboard service - delete - steamworks integration', () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({ type: UserType.ADMIN }, organisation)
 
-    const deleteMock = jest.fn(() => [200, {}])
+    const deleteMock = vi.fn(() => [200, {}])
     axiosMock.onPost('https://partner.steam-api.com/ISteamLeaderboards/DeleteLeaderboard/v1').replyOnce(deleteMock)
 
     const leaderboard = await new LeaderboardFactory([game]).one()
@@ -50,7 +50,7 @@ describe('Leaderboard service - delete - steamworks integration', () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({ type: UserType.ADMIN }, organisation)
 
-    const deleteMock = jest.fn(() => [200, {}])
+    const deleteMock = vi.fn(() => [200, {}])
     axiosMock.onPost('https://partner.steam-api.com/ISteamLeaderboards/DeleteLeaderboard/v1').replyOnce(deleteMock)
 
     const leaderboard = await new LeaderboardFactory([game]).one()

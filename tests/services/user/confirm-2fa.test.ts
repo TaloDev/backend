@@ -10,7 +10,7 @@ describe('User service - confirm 2fa', () => {
       twoFactorAuth: new UserTwoFactorAuth('blah')
     })
 
-    authenticator.check = jest.fn().mockReturnValueOnce(true)
+    authenticator.check = vi.fn().mockReturnValueOnce(true)
 
     const res = await request(global.app)
       .post('/users/2fa/enable')
@@ -47,7 +47,7 @@ describe('User service - confirm 2fa', () => {
       twoFactorAuth: new UserTwoFactorAuth('blah')
     })
 
-    authenticator.check = jest.fn().mockReturnValueOnce(false)
+    authenticator.check = vi.fn().mockReturnValueOnce(false)
 
     const res = await request(global.app)
       .post('/users/2fa/enable')

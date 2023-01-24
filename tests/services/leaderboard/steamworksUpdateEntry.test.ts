@@ -25,7 +25,7 @@ describe('Leaderboard service - update entry - steamworks integration', () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({}, organisation)
 
-    const updateMock = jest.fn(() => [200, {
+    const updateMock = vi.fn(() => [200, {
       result: {
         result: 1
       }
@@ -62,7 +62,7 @@ describe('Leaderboard service - update entry - steamworks integration', () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({}, organisation)
 
-    const updateMock = jest.fn(() => [200, {
+    const updateMock = vi.fn(() => [200, {
       result: {
         result: 1,
         leaderboard_entry_count: 1,
@@ -103,7 +103,7 @@ describe('Leaderboard service - update entry - steamworks integration', () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({}, organisation)
 
-    const updateMock = jest.fn(() => [200, {}])
+    const updateMock = vi.fn(() => [200, {}])
     axiosMock.onPost('https://partner.steam-api.com/ISteamLeaderboards/SetLeaderboardScore/v1').replyOnce(updateMock)
 
     const leaderboard = await new LeaderboardFactory([game]).one()
@@ -129,7 +129,7 @@ describe('Leaderboard service - update entry - steamworks integration', () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({}, organisation)
 
-    const updateMock = jest.fn(() => [200, {}])
+    const updateMock = vi.fn(() => [200, {}])
     axiosMock.onPost('https://partner.steam-api.com/ISteamLeaderboards/SetLeaderboardScore/v1').replyOnce(updateMock)
 
     const leaderboard = await new LeaderboardFactory([game]).one()
@@ -155,7 +155,7 @@ describe('Leaderboard service - update entry - steamworks integration', () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({}, organisation)
 
-    const updateMock = jest.fn(() => [200, {}])
+    const updateMock = vi.fn(() => [200, {}])
     axiosMock.onPost('https://partner.steam-api.com/ISteamLeaderboards/SetLeaderboardScore/v1').replyOnce(updateMock)
 
     const leaderboard = await new LeaderboardFactory([game]).one()

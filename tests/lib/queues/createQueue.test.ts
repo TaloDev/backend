@@ -7,7 +7,7 @@ describe('Create queue', () => {
   it('should put failed jobs in the database', async () => {
     const payload = { message: 'knock knock' }
 
-    const processMock = jest.fn().mockImplementation(async () => {
+    const processMock = vi.fn().mockImplementation(async () => {
       throw new Error('Something went wrong')
     })
 

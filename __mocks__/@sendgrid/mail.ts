@@ -1,4 +1,4 @@
 export default {
-  setApiKey: jest.fn(),
-  send: jest.fn()
+  setApiKey: vi.fn(),
+  send: vi.fn()
 }

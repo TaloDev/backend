@@ -101,13 +101,15 @@ export default class WebhookService extends Service {
         req.headers['stripe-signature'],
         process.env.STRIPE_WEBHOOK_SECRET
       )
-    } catch (err) /* istanbul ignore next */ {
+    /* c8 ignore start */
+    } catch (err) {
       Sentry.captureException(err)
 
       return {
         status: 400
       }
     }
+    /* c8 ignore stop */
 
     switch (event.type) {
       case 'customer.subscription.deleted':

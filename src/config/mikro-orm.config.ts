@@ -2,6 +2,7 @@ import { Options } from '@mikro-orm/core'
 import entities from '../entities'
 import subscribers from '../entities/subscribers'
 import migrationsList from '../migrations'
+import { TsMorphMetadataProvider } from '@mikro-orm/reflection'
 
 const ormConfig: Options = {
   entities,
@@ -15,7 +16,8 @@ const ormConfig: Options = {
     migrationsList,
     path: 'src/migrations' // for generating migrations via the cli
   },
-  subscribers
+  subscribers,
+  metadataProvider: TsMorphMetadataProvider
 }
 
 export default ormConfig

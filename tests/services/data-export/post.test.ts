@@ -248,7 +248,7 @@ describe('Data export service - post', () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({ type: UserType.ADMIN, emailConfirmed: true }, organisation)
 
-    jest.spyOn(SendGrid, 'send').mockRejectedValueOnce(new Error())
+    vi.spyOn(SendGrid, 'send').mockRejectedValueOnce(new Error())
 
     await request(global.app)
       .post(`/games/${game.id}/data-exports`)

@@ -287,10 +287,10 @@
     "@mikro-orm/knex" "~5.6.3"
     mysql2 "2.3.3"
 
-"@mikro-orm/reflection@5.6.3":
-  version "5.6.3"
-  resolved "https://registry.yarnpkg.com/@mikro-orm/reflection/-/reflection-5.6.3.tgz#d68f20c7de36b383017b3041ef4186ede2a6ac7e"
-  integrity sha512-1s3G7JEkV9HJoF+GAG7MwfbbvPn1+87jlDhdr2Rwf2ofKmNWV3G3tZFnqWVTSNDOLEvqwU7eoTTQxnZ3v+EGRQ==
+"@mikro-orm/reflection@5.6.8":
+  version "5.6.8"
+  resolved "https://registry.yarnpkg.com/@mikro-orm/reflection/-/reflection-5.6.8.tgz#0c9dade844da3099d34996d41fa34b552fc1e5b5"
+  integrity sha512-xTT/o/PVR7cQntDwbM7utgF/CZY5GtZ6mr5lPQvUEXrdB5b1uyYyLaYNYclkyBupig0BGbgJQ2VO2NvTUNYliQ==
   dependencies:
     globby "11.1.0"
     ts-morph "17.0.1"

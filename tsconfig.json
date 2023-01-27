@@ -7,7 +7,9 @@
     "sourceMap": true,
     "outDir": "dist",
     "experimentalDecorators": true,
-    "emitDecoratorMetadata": true
+    "emitDecoratorMetadata": true,
+    "declaration": true,
+    "types": ["vitest/globals"]
   },
   "lib": ["esnext"]
 }

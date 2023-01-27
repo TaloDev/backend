@@ -11,7 +11,7 @@ import GameActivity, { GameActivityType } from '../../../src/entities/game-activ
 import * as steamworksIntegration from '../../../src/lib/integrations/steamworks-integration'
 
 describe('Integration service - sync leaderboards', () => {
-  const syncMock = jest.spyOn(steamworksIntegration, 'syncSteamworksLeaderboards').mockImplementation()
+  const syncMock = vi.spyOn(steamworksIntegration, 'syncSteamworksLeaderboards').mockImplementation()
 
   beforeEach(async () => {
     syncMock.mockReset()

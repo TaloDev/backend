@@ -18,7 +18,7 @@ interface DemoUserJob {
 }
 
 async function scheduleDeletion(req: Request, res: Response, caller: DemoService): Promise<void> {
-  /* istanbul ignore else */
+  /* c8 ignore next 3 */
   if (res.status === 200) {
     await caller.queue.add('demo-user', { userId: res.body.user.id }, { delay: 3600000 })
   }

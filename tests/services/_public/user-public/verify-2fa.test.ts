@@ -14,7 +14,7 @@ describe('User public service - verify 2fa', () => {
     const redis = new Redis(redisConfig)
     await redis.set(`2fa:${user.id}`, 'true')
 
-    authenticator.check = jest.fn().mockReturnValueOnce(true)
+    authenticator.check = vi.fn().mockReturnValueOnce(true)
 
     const res = await request(global.app)
       .post('/public/users/2fa')
@@ -53,7 +53,7 @@ describe('User public service - verify 2fa', () => {
     const redis = new Redis(redisConfig)
     await redis.set(`2fa:${user.id}`, 'true')
 
-    authenticator.check = jest.fn().mockReturnValueOnce(false)
+    authenticator.check = vi.fn().mockReturnValueOnce(false)
 
     const res = await request(global.app)
       .post('/public/users/2fa')

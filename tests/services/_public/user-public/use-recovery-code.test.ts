@@ -14,6 +14,12 @@ async function setTwoFactorAuthSession(user: User) {
   await redis.quit()
 }
 
+async function removeTwoFactorAuthSession(user: User) {
+  const redis = new Redis(redisConfig)
+  await redis.del(`2fa:${user.id}`)
+  await redis.quit()
+}
+
 async function createUserWithTwoFactorAuth(em: EntityManager): Promise<[string, User]> {
   const [token, user] = await createUserAndToken({
     twoFactorAuth: new UserTwoFactorAuth('blah')
@@ -68,6 +74,7 @@ describe('User public service - use recovery code', () => {
 
   it('should not let users login without a 2fa session', async () => {
     const [token, user] = await createUserWithTwoFactorAuth(global.em)
+    await removeTwoFactorAuthSession(user) // key may exist for id since user ids are reused
 
     const res = await request(global.app)
       .post('/public/users/2fa/recover')

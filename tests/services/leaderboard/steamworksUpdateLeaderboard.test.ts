@@ -22,7 +22,7 @@ describe('Leaderboard service - update leaderboard - steamworks integration', ()
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({}, organisation)
 
-    const createMock = jest.fn(() => [200, {
+    const createMock = vi.fn(() => [200, {
       result: {
         result: 1,
         leaderboard: {
@@ -64,7 +64,7 @@ describe('Leaderboard service - update leaderboard - steamworks integration', ()
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({}, organisation)
 
-    const createMock = jest.fn(() => [200, {}])
+    const createMock = vi.fn(() => [200, {}])
     axiosMock.onPost('https://partner.steam-api.com/ISteamLeaderboards/FindOrCreateLeaderboard/v2').replyOnce(createMock)
 
     const leaderboard = await new LeaderboardFactory([game]).one()

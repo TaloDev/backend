@@ -19,7 +19,7 @@ describe('Webhook service - subscription deleted', () => {
     const defaultPlan = await new PricingPlanFactory().with(() => ({ default: true })).one()
     await (<EntityManager>global.em).persistAndFlush(defaultPlan)
 
-    jest.spyOn(stripe.webhooks, 'constructEvent').mockImplementationOnce(() => ({
+    vi.spyOn(stripe.webhooks, 'constructEvent').mockImplementationOnce(() => ({
       id: v4(),
       object: 'event',
       data: {

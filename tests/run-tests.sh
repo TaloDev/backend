@@ -22,8 +22,8 @@ echo "\n"
 
 if [ -z "$EXPOSE_GC" ]
 then
-  node --trace-warnings ./node_modules/.bin/jest "$@" --runInBand
+  node --trace-warnings ./node_modules/.bin/vitest "$@"
 else
-  node --expose-gc --trace-warnings ./node_modules/.bin/jest "$@" --runInBand --logHeapUsage
+  node --expose-gc --trace-warnings ./node_modules/.bin/vitest "$@" --logHeapUsage
 fi
 

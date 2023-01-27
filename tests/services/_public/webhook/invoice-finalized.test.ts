@@ -10,7 +10,7 @@ import PlanInvoice from '../../../../src/emails/plan-invoice-mail'
 const stripe = initStripe()
 
 describe('Webhook service - invoice finalized', () => {
-  const sendMock = jest.spyOn(SendGrid, 'send')
+  const sendMock = vi.spyOn(SendGrid, 'send')
 
   afterEach(() => {
     sendMock.mockClear()
@@ -26,7 +26,7 @@ describe('Webhook service - invoice finalized', () => {
     organisation.pricingPlan.stripeCustomerId = invoice.customer as string
     await (<EntityManager>global.em).flush()
 
-    jest.spyOn(stripe.webhooks, 'constructEvent').mockImplementationOnce(() => ({
+    vi.spyOn(stripe.webhooks, 'constructEvent').mockImplementationOnce(() => ({
       id: v4(),
       object: 'event',
       data: {

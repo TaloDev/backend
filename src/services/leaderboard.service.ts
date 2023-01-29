@@ -1,8 +1,10 @@
+import { FilterQuery, ObjectQuery } from '@mikro-orm/core'
 import { EntityManager } from '@mikro-orm/mysql'
 import { HasPermission, Routes, Service, Request, Response, Validate } from 'koa-clay'
 import { GameActivityType } from '../entities/game-activity'
 import Leaderboard from '../entities/leaderboard'
 import LeaderboardEntry from '../entities/leaderboard-entry'
+import PlayerAlias from '../entities/player-alias'
 import triggerIntegrations from '../lib/integrations/triggerIntegrations'
 import createGameActivity from '../lib/logging/createGameActivity'
 import { devDataPlayerFilter } from '../middlewares/dev-data-middleware'
@@ -97,39 +99,35 @@ export default class LeaderboardService extends Service {
 
     const leaderboard: Leaderboard = req.ctx.state.leaderboard
 
-    let baseQuery = em.createQueryBuilder(LeaderboardEntry, 'le')
-      .where({ leaderboard })
+    const where: FilterQuery<LeaderboardEntry> = {
+      leaderboard
+    }
 
     if (aliasId) {
-      baseQuery = baseQuery.andWhere({ playerAlias: Number(aliasId) })
+      where.playerAlias = {
+        id: Number(aliasId)
+      }
     }
 
     if (req.ctx.state.user.api === true) {
-      baseQuery = baseQuery.andWhere({ hidden: false })
+      where.hidden = false
     }
 
     if (!req.ctx.state.includeDevData) {
-      baseQuery = baseQuery.andWhere({
-        playerAlias: {
-          player: devDataPlayerFilter(em)
-        }
-      })
+      where.playerAlias = {
+        ...((where.playerAlias as ObjectQuery<PlayerAlias>) ?? {}),
+        player: devDataPlayerFilter(em)
+      }
     }
 
-    const { count } = await baseQuery
-      .clone()
-      .count('le.id', true)
-      .execute('get')
-
-    const entries = await baseQuery
-      .clone()
-      .select('le.*', true)
-      .orderBy({ score: leaderboard.sortMode })
-      .limit(itemsPerPage)
-      .offset(Number(page) * itemsPerPage)
-      .getResultList()
-
-    await em.populate(entries, ['playerAlias'])
+    const [entries, count] = await em.repo(LeaderboardEntry).findAndCount(where, {
+      orderBy: {
+        score: leaderboard.sortMode
+      },
+      limit: itemsPerPage,
+      offset: Number(page) * itemsPerPage,
+      populate: ['playerAlias']
+    })
 
     const mappedEntries = entries.map((entry, idx) => ({
       position: idx + (Number(page) * itemsPerPage),

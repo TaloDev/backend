@@ -38,7 +38,7 @@ describe('Steamworks integration - sync leaderboards', () => {
     const integration = await new IntegrationFactory().construct(IntegrationType.STEAMWORKS, game, config).one()
     await em.persistAndFlush(integration)
 
-    const getLeaderboardsMock = jest.fn((): [number, GetLeaderboardsForGameResponse] => [200, {
+    const getLeaderboardsMock = vi.fn((): [number, GetLeaderboardsForGameResponse] => [200, {
       response: {
         result: 1,
         leaderboards: [
@@ -56,7 +56,7 @@ describe('Steamworks integration - sync leaderboards', () => {
     }])
     axiosMock.onGet(`https://partner.steam-api.com/ISteamLeaderboards/GetLeaderboardsForGame/v2?appid=${integration.getConfig().appId}`).replyOnce(getLeaderboardsMock)
 
-    const getEntriesMock = jest.fn((): [number, GetLeaderboardEntriesResponse] => [200, {
+    const getEntriesMock = vi.fn((): [number, GetLeaderboardEntriesResponse] => [200, {
       leaderboardEntryInformation: {
         appID: 375290,
         leaderboardID: steamworksLeaderboardId,
@@ -111,7 +111,7 @@ describe('Steamworks integration - sync leaderboards', () => {
     const integration = await new IntegrationFactory().construct(IntegrationType.STEAMWORKS, game, config).one()
     await em.persistAndFlush(integration)
 
-    const getLeaderboardsMock = jest.fn((): [number] => [404])
+    const getLeaderboardsMock = vi.fn((): [number] => [404])
     axiosMock.onGet(`https://partner.steam-api.com/ISteamLeaderboards/GetLeaderboardsForGame/v2?appid=${integration.getConfig().appId}`).replyOnce(getLeaderboardsMock)
 
     try {
@@ -133,7 +133,7 @@ describe('Steamworks integration - sync leaderboards', () => {
     const integration = await new IntegrationFactory().construct(IntegrationType.STEAMWORKS, game, config).one()
     await em.persistAndFlush([leaderboard, mapping, integration])
 
-    const getLeaderboardsMock = jest.fn((): [number, GetLeaderboardsForGameResponse] => [200, {
+    const getLeaderboardsMock = vi.fn((): [number, GetLeaderboardsForGameResponse] => [200, {
       response: {
         result: 1,
         leaderboards: [
@@ -151,7 +151,7 @@ describe('Steamworks integration - sync leaderboards', () => {
     }])
     axiosMock.onGet(`https://partner.steam-api.com/ISteamLeaderboards/GetLeaderboardsForGame/v2?appid=${integration.getConfig().appId}`).replyOnce(getLeaderboardsMock)
 
-    const getEntriesMock = jest.fn((): [number, GetLeaderboardEntriesResponse] => [200, {
+    const getEntriesMock = vi.fn((): [number, GetLeaderboardEntriesResponse] => [200, {
       leaderboardEntryInformation: {
         appID: 375290,
         leaderboardID: mapping.steamworksLeaderboardId,
@@ -187,7 +187,7 @@ describe('Steamworks integration - sync leaderboards', () => {
     const integration = await new IntegrationFactory().construct(IntegrationType.STEAMWORKS, game, config).one()
     await em.persistAndFlush([leaderboard, integration])
 
-    const getLeaderboardsMock = jest.fn((): [number, GetLeaderboardsForGameResponse] => [200, {
+    const getLeaderboardsMock = vi.fn((): [number, GetLeaderboardsForGameResponse] => [200, {
       response: {
         result: 1,
         leaderboards: [
@@ -205,7 +205,7 @@ describe('Steamworks integration - sync leaderboards', () => {
     }])
     axiosMock.onGet(`https://partner.steam-api.com/ISteamLeaderboards/GetLeaderboardsForGame/v2?appid=${integration.getConfig().appId}`).replyOnce(getLeaderboardsMock)
 
-    const getEntriesMock = jest.fn((): [number, GetLeaderboardEntriesResponse] => [200, {
+    const getEntriesMock = vi.fn((): [number, GetLeaderboardEntriesResponse] => [200, {
       leaderboardEntryInformation: {
         appID: 375290,
         leaderboardID: steamworksLeaderboardId,
@@ -237,7 +237,7 @@ describe('Steamworks integration - sync leaderboards', () => {
     const integration = await new IntegrationFactory().construct(IntegrationType.STEAMWORKS, game, config).one()
     await em.persistAndFlush([leaderboard, integration])
 
-    const getLeaderboardsMock = jest.fn((): [number, GetLeaderboardsForGameResponse] => [200, {
+    const getLeaderboardsMock = vi.fn((): [number, GetLeaderboardsForGameResponse] => [200, {
       response: {
         result: 1,
         leaderboards: []
@@ -245,7 +245,7 @@ describe('Steamworks integration - sync leaderboards', () => {
     }])
     axiosMock.onGet(`https://partner.steam-api.com/ISteamLeaderboards/GetLeaderboardsForGame/v2?appid=${integration.getConfig().appId}`).replyOnce(getLeaderboardsMock)
 
-    const createMock = jest.fn(() => [200, {
+    const createMock = vi.fn(() => [200, {
       result: {
         result: 1,
         leaderboard: {
@@ -284,7 +284,7 @@ describe('Steamworks integration - sync leaderboards', () => {
     const integration = await new IntegrationFactory().construct(IntegrationType.STEAMWORKS, game, config).one()
     await em.persistAndFlush([player, integration])
 
-    const getLeaderboardsMock = jest.fn((): [number, GetLeaderboardsForGameResponse] => [200, {
+    const getLeaderboardsMock = vi.fn((): [number, GetLeaderboardsForGameResponse] => [200, {
       response: {
         result: 1,
         leaderboards: [
@@ -302,7 +302,7 @@ describe('Steamworks integration - sync leaderboards', () => {
     }])
     axiosMock.onGet(`https://partner.steam-api.com/ISteamLeaderboards/GetLeaderboardsForGame/v2?appid=${integration.getConfig().appId}`).replyOnce(getLeaderboardsMock)
 
-    const getEntriesMock = jest.fn((): [number, GetLeaderboardEntriesResponse] => [200, {
+    const getEntriesMock = vi.fn((): [number, GetLeaderboardEntriesResponse] => [200, {
       leaderboardEntryInformation: {
         appID: 375290,
         leaderboardID: steamworksLeaderboardId,
@@ -339,7 +339,7 @@ describe('Steamworks integration - sync leaderboards', () => {
     const integration = await new IntegrationFactory().construct(IntegrationType.STEAMWORKS, game, config).one()
     await em.persistAndFlush([leaderboard, mapping, player, entry, integration])
 
-    const getLeaderboardsMock = jest.fn((): [number, GetLeaderboardsForGameResponse] => [200, {
+    const getLeaderboardsMock = vi.fn((): [number, GetLeaderboardsForGameResponse] => [200, {
       response: {
         result: 1,
         leaderboards: [
@@ -357,7 +357,7 @@ describe('Steamworks integration - sync leaderboards', () => {
     }])
     axiosMock.onGet(`https://partner.steam-api.com/ISteamLeaderboards/GetLeaderboardsForGame/v2?appid=${integration.getConfig().appId}`).replyOnce(getLeaderboardsMock)
 
-    const getEntriesMock = jest.fn((): [number, GetLeaderboardEntriesResponse] => [200, {
+    const getEntriesMock = vi.fn((): [number, GetLeaderboardEntriesResponse] => [200, {
       leaderboardEntryInformation: {
         appID: 375290,
         leaderboardID: mapping.steamworksLeaderboardId,
@@ -367,7 +367,7 @@ describe('Steamworks integration - sync leaderboards', () => {
     }])
     axiosMock.onGet(`https://partner.steam-api.com/ISteamLeaderboards/GetLeaderboardEntries/v1?appid=${integration.getConfig().appId}&leaderboardid=${mapping.steamworksLeaderboardId}&rangestart=0&rangeend=1.7976931348623157e%2B308&datarequest=RequestGlobal`).replyOnce(getEntriesMock)
 
-    const createMock = jest.fn(() => [200, {
+    const createMock = vi.fn(() => [200, {
       result: {
         result: 1
       }

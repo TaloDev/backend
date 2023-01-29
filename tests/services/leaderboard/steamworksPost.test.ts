@@ -26,7 +26,7 @@ describe('Leaderboard service - post - steamworks integration', () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({}, organisation)
 
-    const createMock = jest.fn(() => [200, {
+    const createMock = vi.fn(() => [200, {
       result: {
         result: 1,
         leaderboard: {
@@ -72,7 +72,7 @@ describe('Leaderboard service - post - steamworks integration', () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({}, organisation)
 
-    const createMock = jest.fn(() => [200, {}])
+    const createMock = vi.fn(() => [200, {}])
     axiosMock.onPost('https://partner.steam-api.com/ISteamLeaderboards/FindOrCreateLeaderboard/v2').replyOnce(createMock)
 
     const config = await new IntegrationConfigFactory().with(() => ({ syncLeaderboards: false })).one()
@@ -100,7 +100,7 @@ describe('Leaderboard service - post - steamworks integration', () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({}, organisation)
 
-    const createMock = jest.fn(() => [400, 'Required parameter \'appid\' is missing'])
+    const createMock = vi.fn(() => [400, 'Required parameter \'appid\' is missing'])
     axiosMock.onPost('https://partner.steam-api.com/ISteamLeaderboards/FindOrCreateLeaderboard/v2').replyOnce(createMock)
 
     const config = await new IntegrationConfigFactory().with(() => ({ syncLeaderboards: true })).one()

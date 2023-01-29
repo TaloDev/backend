@@ -21,7 +21,7 @@ describe('Leaderboard API service - post - steamworks integration', () => {
   })
 
   it('should create a leaderboard entry in steamworks', async () => {
-    const createMock = jest.fn(() => [200, {
+    const createMock = vi.fn(() => [200, {
       result: {
         result: 1
       }
@@ -56,7 +56,7 @@ describe('Leaderboard API service - post - steamworks integration', () => {
   })
 
   it('should not create a leaderboard entry in steamworks if there is no mapping', async () => {
-    const createMock = jest.fn(() => [200, {
+    const createMock = vi.fn(() => [200, {
       result: {
         result: 1
       }
@@ -88,7 +88,7 @@ describe('Leaderboard API service - post - steamworks integration', () => {
   })
 
   it('should not create a leaderboard entry in steamworks if syncLeaderboards is false', async () => {
-    const createMock = jest.fn(() => [200, {
+    const createMock = vi.fn(() => [200, {
       result: {
         result: 1
       }

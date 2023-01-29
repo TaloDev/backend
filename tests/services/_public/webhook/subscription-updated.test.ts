@@ -13,7 +13,7 @@ import PlanCancelled from '../../../../src/emails/plan-cancelled-mail'
 const stripe = initStripe()
 
 describe('Webhook service - subscription updated', () => {
-  const sendMock = jest.spyOn(SendGrid, 'send')
+  const sendMock = vi.spyOn(SendGrid, 'send')
 
   afterEach(() => {
     sendMock.mockClear()
@@ -29,7 +29,7 @@ describe('Webhook service - subscription updated', () => {
     organisation.pricingPlan.stripeCustomerId = (subscription.customer as string) + organisation.id
     await (<EntityManager>global.em).flush()
 
-    jest.spyOn(stripe.webhooks, 'constructEvent').mockImplementationOnce(() => ({
+    vi.spyOn(stripe.webhooks, 'constructEvent').mockImplementationOnce(() => ({
       id: v4(),
       object: 'event',
       data: {
@@ -68,7 +68,7 @@ describe('Webhook service - subscription updated', () => {
     organisation.pricingPlan.stripePriceId = subscription.items.data[0].price.id
     await (<EntityManager>global.em).flush()
 
-    jest.spyOn(stripe.webhooks, 'constructEvent').mockImplementationOnce(() => ({
+    vi.spyOn(stripe.webhooks, 'constructEvent').mockImplementationOnce(() => ({
       id: v4(),
       object: 'event',
       data: {
@@ -105,7 +105,7 @@ describe('Webhook service - subscription updated', () => {
     organisation.pricingPlan.endDate = addDays(new Date(), 1)
     await (<EntityManager>global.em).flush()
 
-    jest.spyOn(stripe.webhooks, 'constructEvent').mockImplementationOnce(() => ({
+    vi.spyOn(stripe.webhooks, 'constructEvent').mockImplementationOnce(() => ({
       id: v4(),
       object: 'event',
       data: {
@@ -145,7 +145,7 @@ describe('Webhook service - subscription updated', () => {
     organisation.pricingPlan.endDate = null
     await (<EntityManager>global.em).flush()
 
-    jest.spyOn(stripe.webhooks, 'constructEvent').mockImplementationOnce(() => ({
+    vi.spyOn(stripe.webhooks, 'constructEvent').mockImplementationOnce(() => ({
       id: v4(),
       object: 'event',
       data: {
@@ -184,7 +184,7 @@ describe('Webhook service - subscription updated', () => {
     organisation.pricingPlan.endDate = null
     await (<EntityManager>global.em).flush()
 
-    jest.spyOn(stripe.webhooks, 'constructEvent').mockImplementationOnce(() => ({
+    vi.spyOn(stripe.webhooks, 'constructEvent').mockImplementationOnce(() => ({
       id: v4(),
       object: 'event',
       data: {

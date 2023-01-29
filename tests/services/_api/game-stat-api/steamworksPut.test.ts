@@ -19,7 +19,7 @@ describe('Game stats API service - put - steamworks integration', () => {
   })
 
   it('should set a player stat in steamworks', async () => {
-    const setMock = jest.fn(() => [200, {
+    const setMock = vi.fn(() => [200, {
       result: {
         result: 1
       }
@@ -53,7 +53,7 @@ describe('Game stats API service - put - steamworks integration', () => {
   })
 
   it('should not set a player stat if syncStats is false', async () => {
-    const setMock = jest.fn(() => [200, {
+    const setMock = vi.fn(() => [200, {
       result: {
         result: 1
       }

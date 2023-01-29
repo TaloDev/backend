@@ -8,6 +8,7 @@ export default async (ctx: Context, next: Next) => {
 
   // connect to trace of upstream app
   let traceparentData
+  /* c8 ignore next 3 */
   if (ctx.request.get('sentry-trace')) {
     traceparentData = extractTraceparentData(ctx.request.get('sentry-trace'))
   }

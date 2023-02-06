@@ -1,4 +1,5 @@
-import { Collection, Embedded, Entity, ManyToOne, OneToMany, PrimaryKey, Property } from '@mikro-orm/core'
+import { Collection, Embedded, Entity, ManyToOne, OneToMany, OneToOne, PrimaryKey, Property } from '@mikro-orm/core'
+import GameSecret from './game-secret'
 import Organisation from './organisation'
 import Player from './player'
 import Prop from './prop'
@@ -19,6 +20,9 @@ export default class Game {
 
   @OneToMany(() => Player, (player) => player.game)
   players: Collection<Player> = new Collection<Player>(this)
+
+  @OneToOne({ orphanRemoval: true })
+  apiSecret: GameSecret
 
   @Property()
   createdAt: Date = new Date()

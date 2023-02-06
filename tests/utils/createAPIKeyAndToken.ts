@@ -12,6 +12,6 @@ export default async function createAPIKeyAndToken(scopes: APIKeyScope[]): Promi
   apiKey.scopes = scopes
   await (<EntityManager>global.em).persistAndFlush(apiKey)
 
-  const token = await createToken(apiKey)
+  const token = await createToken(<EntityManager>global.em, apiKey)
   return [apiKey, token]
 }

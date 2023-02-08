@@ -85,6 +85,42 @@
           "nullable": false,
           "mappedType": "integer"
         },
+        "secret": {
+          "name": "secret",
+          "type": "varchar(255)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "mappedType": "string"
+        }
+      },
+      "name": "game_secret",
+      "indexes": [
+        {
+          "keyName": "PRIMARY",
+          "columnNames": [
+            "id"
+          ],
+          "composite": false,
+          "primary": true,
+          "unique": true
+        }
+      ],
+      "checks": [],
+      "foreignKeys": {}
+    },
+    {
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "int",
+          "unsigned": true,
+          "autoincrement": true,
+          "primary": true,
+          "nullable": false,
+          "mappedType": "integer"
+        },
         "stripe_id": {
           "name": "stripe_id",
           "type": "varchar(255)",
@@ -177,6 +213,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
+          "default": "'active'",
           "mappedType": "string"
         },
         "stripe_price_id": {
@@ -485,6 +522,15 @@
           "nullable": false,
           "mappedType": "json"
         },
+        "api_secret_id": {
+          "name": "api_secret_id",
+          "type": "int",
+          "unsigned": true,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "mappedType": "integer"
+        },
         "created_at": {
           "name": "created_at",
           "type": "datetime",
@@ -518,6 +564,15 @@
           "unique": false
         },
         {
+          "columnNames": [
+            "api_secret_id"
+          ],
+          "composite": false,
+          "keyName": "game_api_secret_id_unique",
+          "primary": false,
+          "unique": true
+        },
+        {
           "keyName": "PRIMARY",
           "columnNames": [
             "id"
@@ -539,6 +594,18 @@
             "id"
           ],
           "referencedTableName": "organisation",
+          "updateRule": "cascade"
+        },
+        "game_api_secret_id_foreign": {
+          "constraintName": "game_api_secret_id_foreign",
+          "columnNames": [
+            "api_secret_id"
+          ],
+          "localTableName": "game",
+          "referencedColumnNames": [
+            "id"
+          ],
+          "referencedTableName": "game_secret",
           "updateRule": "cascade"
         }
       }
@@ -588,6 +655,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
+          "default": "'$and'",
           "enumItems": [
             "$and",
             "$or"
@@ -1045,7 +1113,7 @@
           "unsigned": false,
           "autoincrement": false,
           "primary": false,
-          "nullable": true,
+          "nullable": false,
           "mappedType": "string"
         },
         "created_at": {
@@ -1102,7 +1170,7 @@
             "id"
           ],
           "referencedTableName": "player",
-          "deleteRule": "cascade"
+          "updateRule": "cascade"
         }
       }
     },
@@ -1142,6 +1210,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
+          "default": "'desc'",
           "enumItems": [
             "desc",
             "asc"
@@ -2213,6 +2282,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
+          "default": "2",
           "mappedType": "enum"
         },
         "last_seen_at": {
@@ -2620,6 +2690,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
+          "default": "2",
           "mappedType": "enum"
         },
         "organisation_id": {
@@ -2880,6 +2951,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
+          "default": "0",
           "mappedType": "enum"
         },
         "failed_at": {
@@ -3001,7 +3073,8 @@
             "read:players",
             "write:players",
             "read:events",
-            "write:events"
+            "write:events",
+            "*"
           ],
           "mappedType": "text"
         },
@@ -3035,6 +3108,16 @@
         },
         "revoked_at": {
           "name": "revoked_at",
+          "type": "datetime",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "length": 0,
+          "mappedType": "datetime"
+        },
+        "last_used_at": {
+          "name": "last_used_at",
           "type": "datetime",
           "unsigned": false,
           "autoincrement": false,

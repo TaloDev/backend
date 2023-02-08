@@ -70,7 +70,7 @@
     "koa-bodyparser": "^4.3.0",
     "koa-clay": "^6.5.0",
     "koa-helmet": "^6.1.0",
-    "koa-jwt": "^4.0.3",
+    "koa-jwt": "^4.0.4",
     "koa-logger": "^3.2.1",
     "lodash.get": "^4.4.2",
     "lodash.groupby": "^4.6.0",

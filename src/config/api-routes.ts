@@ -8,18 +8,19 @@ import EventAPIService from '../services/api/event-api.service'
 import PlayerAPIService from '../services/api/player-api.service'
 import limiterMiddleware from '../middlewares/limiter-middleware'
 import currentPlayerMiddleware from '../middlewares/current-player-middleware'
+import { apiRouteAuthMiddleware, getRouteInfo } from '../middlewares/route-middleware'
+import apiKeyMiddleware from '../middlewares/api-key-middleware'
 
 export default (app: Koa) => {
+  app.use(apiKeyMiddleware)
+  app.use(apiRouteAuthMiddleware)
+  app.use(limiterMiddleware)
+
   app.use(async (ctx: Context, next: Next): Promise<void> => {
-    if (ctx.path.match(/^\/(v1)\//)) {
-      if (ctx.state.user?.api !== true) ctx.throw(401)
-    }
+    const route = getRouteInfo(ctx)
+    if (route.isAPIRoute && !route.isAPICall) ctx.throw(401)
     await next()
   })
-
-  if (process.env.NODE_ENV !== 'test') {
-    app.use(limiterMiddleware)
-  }
 
   app.use(currentPlayerMiddleware)
 

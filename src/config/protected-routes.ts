@@ -15,13 +15,14 @@ import PlayerService from '../services/player.service'
 import UserService from '../services/user.service'
 import BillingService from '../services/billing.service'
 import IntegrationService from '../services/integration.service'
+import { getRouteInfo, protectedRouteAuthMiddleware } from '../middlewares/route-middleware'
 
 export default (app: Koa) => {
+  app.use(protectedRouteAuthMiddleware)
+
   app.use(async (ctx: Context, next: Next): Promise<void> => {
-    // trying to access protected route via api key
-    if (!ctx.path.match(/^\/(public|v1)\//)) {
-      if (ctx.state.user?.api) ctx.throw(401)
-    }
+    const route = getRouteInfo(ctx)
+    if (route.isProtectedRoute && route.isAPICall) ctx.throw(401)
     await next()
   })
 

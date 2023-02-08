@@ -2,7 +2,6 @@ import 'dotenv/config'
 import Koa, { Context, Next } from 'koa'
 import logger from 'koa-logger'
 import bodyParser from 'koa-bodyparser'
-import jwt from 'koa-jwt'
 import helmet from 'koa-helmet'
 import { RequestContext } from '@mikro-orm/core'
 import configureProtectedRoutes from './config/protected-routes'
@@ -27,24 +26,18 @@ export const init = async (): Promise<Koa> => {
   app.use(errorMiddleware)
   app.use(bodyParser())
   app.use(helmet())
-
   app.use(corsMiddleware)
-  app.use(jwt({ secret: process.env.JWT_SECRET }).unless({ path: [/^\/public/] }))
-
   app.use((ctx: Context, next: Next) => RequestContext.createAsync(ctx.em, next))
-
   app.use(devDataMiddleware)
+  app.context.emailQueue = createEmailQueue()
 
   configureProtectedRoutes(app)
   configurePublicRoutes(app)
   configureAPIRoutes(app)
 
-  app.context.emailQueue = createEmailQueue()
-
   app.use(cleanupMiddleware)
 
   if (!isTest) app.listen(80, () => console.log('Listening on port 80'))
-
   return app
 }
 

@@ -3,6 +3,7 @@ import Game from '../../src/entities/game'
 import casual from 'casual'
 import Organisation from '../../src/entities/organisation'
 import Prop from '../../src/entities/prop'
+import GameSecret from '../../src/entities/game-secret'
 
 export default class GameFactory extends Factory<Game> {
   private organisation: Organisation
@@ -29,7 +30,8 @@ export default class GameFactory extends Factory<Game> {
     return {
       name: casual.random_element(['Crawle', 'ISMAK', 'Sorce', 'The Trial', 'You Only Got One Shot', 'Vigilante 2084', 'Trigeon', 'Twodoors', 'Keyboard Twister', 'Spacewatch', 'I Wanna Be The Ghostbuster', 'In Air', 'Superstatic', 'Heart Heist', 'Entropy', 'Shattered', 'Boatyio', 'Scrunk', 'No-thing Island', 'Night Keeper', 'Curse of the Loop', 'Shook']),
       organisation: this.organisation,
-      props
+      props,
+      apiSecret: new GameSecret()
     }
   }
 }

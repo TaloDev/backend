@@ -3,6 +3,7 @@ import { HasPermission, Service, Request, Response, Validate } from 'koa-clay'
 import uniqWith from 'lodash.uniqwith'
 import Game from '../entities/game'
 import { GameActivityType } from '../entities/game-activity'
+import GameSecret from '../entities/game-secret'
 import getUserFromToken from '../lib/auth/getUserFromToken'
 import createGameActivity from '../lib/logging/createGameActivity'
 import sanitiseProps from '../lib/props/sanitiseProps'
@@ -19,6 +20,7 @@ export default class GameService extends Service {
     const user = await getUserFromToken(req.ctx)
 
     const game = new Game(name, user.organisation)
+    game.apiSecret = new GameSecret()
     await em.persistAndFlush(game)
 
     return {

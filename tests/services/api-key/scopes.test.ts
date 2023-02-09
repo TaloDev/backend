@@ -17,6 +17,6 @@ describe('API key service - get scopes', () => {
     const length = Object.keys(res.body.scopes).reduce((acc, curr) => {
       return acc + res.body.scopes[curr].length
     }, 0)
-    expect(length).toBe(Object.keys(APIKeyScope).length)
+    expect(length).toBe(Object.keys(APIKeyScope).length - 1) // exclude full access
   })
 })

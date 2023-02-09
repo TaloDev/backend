@@ -7,9 +7,9 @@ export default async (ctx: Context, next: Next) => {
     await next()
   } catch (err) {
     ctx.status = err.status || 500
-    ctx.body = {
-      ...err
-    }
+    ctx.body = ctx.status === 401 && Boolean(err.originalError) /* dont expose jwt error */
+      ? { message: 'Please provide a valid token in the Authorization header' }
+      : { ...err }
 
     if (ctx.state.redis instanceof Redis) {
       await (ctx.state.redis as Redis).quit()

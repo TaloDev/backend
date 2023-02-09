@@ -8,13 +8,11 @@ import { promisify } from 'util'
 import createGameActivity from '../lib/logging/createGameActivity'
 import { GameActivityType } from '../entities/game-activity'
 
-interface ExtraTokenPayloadParams {
-  iat?: number
-}
+export async function createToken(em: EntityManager, apiKey: APIKey): Promise<string> {
+  await em.populate(apiKey, ['game.apiSecret'])
 
-export async function createToken(apiKey: APIKey, payloadParams?: ExtraTokenPayloadParams): Promise<string> {
-  const payload = { sub: apiKey.id, api: true, ...payloadParams }
-  const token = await promisify(jwt.sign)(payload, process.env.JWT_SECRET)
+  const payload = { sub: apiKey.id, api: true }
+  const token = await promisify(jwt.sign)(payload, apiKey.game.apiSecret.getPlainSecret())
   return token
 }
 
@@ -58,7 +56,7 @@ export default class APIKeyService extends Service {
 
     await em.getRepository(APIKey).persistAndFlush(apiKey)
 
-    const token = await createToken(apiKey)
+    const token = await createToken(em, apiKey)
 
     return {
       status: 200,
@@ -72,7 +70,7 @@ export default class APIKeyService extends Service {
   @HasPermission(APIKeyPolicy, 'index')
   async index(req: Request): Promise<Response> {
     const em: EntityManager = req.ctx.em
-    const apiKeys = await em.getRepository(APIKey).find({ game: req.ctx.state.game, revokedAt: null })
+    const apiKeys = await em.getRepository(APIKey).find({ game: req.ctx.state.game, revokedAt: null }, { populate: ['createdByUser'] })
 
     return {
       status: 200,
@@ -89,6 +87,8 @@ export default class APIKeyService extends Service {
     const apiKey = req.ctx.state.apiKey as APIKey // set in the policy
     apiKey.revokedAt = new Date()
 
+    const token = await createToken(em, apiKey)
+
     await createGameActivity(em, {
       user: req.ctx.state.user,
       game: req.ctx.state.game,
@@ -96,7 +96,7 @@ export default class APIKeyService extends Service {
       extra: {
         keyId: apiKey.id,
         display: {
-          'Key ending in': apiKey.toJSON().token
+          'Key ending in': token.substring(token.length - 5, token.length)
         }
       }
     })
@@ -109,7 +109,9 @@ export default class APIKeyService extends Service {
   }
 
   async scopes(): Promise<Response> {
-    const scopes = Object.keys(APIKeyScope).map((key) => APIKeyScope[key])
+    const scopes = Object.keys(APIKeyScope)
+      .filter((key) => APIKeyScope[key] !== APIKeyScope.FULL_ACCESS)
+      .map((key) => APIKeyScope[key])
 
     return {
       status: 200,

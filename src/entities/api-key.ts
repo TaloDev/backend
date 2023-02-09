@@ -1,7 +1,6 @@
 import { Entity, Enum, ManyToOne, PrimaryKey, Property } from '@mikro-orm/core'
 import Game from './game'
 import User from './user'
-import jwt from 'jsonwebtoken'
 
 export enum APIKeyScope {
   READ_GAME_CONFIG = 'read:gameConfig',
@@ -39,27 +38,22 @@ export default class APIKey {
   @Property({ nullable: true })
   revokedAt?: Date
 
+  @Property({ nullable: true })
+  lastUsedAt?: Date
+
   constructor(game: Game, createdByUser: User) {
     this.game = game
     this.createdByUser = createdByUser
   }
 
-  createTokenSync(apiKey: APIKey, iat: number) {
-    const payload = { sub: apiKey.id, api: true, iat }
-    return jwt.sign(payload, process.env.JWT_SECRET)
-  }
-
   toJSON() {
-    const iat = new Date(this.createdAt).getTime()
-    const token = this.createTokenSync(this, Math.floor(iat / 1000))
-
     return {
       id: this.id,
-      token: token.substring(token.length - 5, token.length),
       scopes: this.scopes,
       gameId: this.game.id,
       createdBy: this.createdByUser.username,
-      createdAt: this.createdAt
+      createdAt: this.createdAt,
+      lastUsedAt: this.lastUsedAt
     }
   }
 }

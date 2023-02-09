@@ -28,8 +28,10 @@ import SteamworksIntegrationEvent from './steamworks-integration-event'
 import SteamworksLeaderboardMapping from './steamworks-leaderboard-mapping'
 import PlayerProp from './player-prop'
 import PlayerGroup from './player-group'
+import GameSecret from './game-secret'
 
 export default [
+  GameSecret,
   PlayerGroup,
   PlayerProp,
   SteamworksLeaderboardMapping,

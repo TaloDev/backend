@@ -30,8 +30,6 @@ export const rulesValidation = async (val: unknown): Promise<ValidationCondition
         .filter((_, idx) => idx > 0) // exclude the props field, checked by regex below
         .includes(rule.field as PlayerField)
 
-      console.log(rule.field, matchesRuleField, rule.field.match(/props\.(.)*/))
-
       return matchesRuleField || rule.field.match(/props\.(.)*/)
     }),
     error: 'Invalid rule field(s) provided',

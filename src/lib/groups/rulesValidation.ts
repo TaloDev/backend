@@ -10,29 +10,34 @@ export const rulesValidation = async (val: unknown): Promise<ValidationCondition
   },
   {
     check: (val as PlayerGroupRule[]).every?.((rule) => Object.values(PlayerGroupRuleName).includes(rule.name)),
+    error: 'Invalid rule name(s) provided',
     break: true
   },
   {
     check: (val as PlayerGroupRule[]).every?.((rule) => Object.values(PlayerGroupRuleCastType).includes(rule.castType)),
+    error: 'Invalid rule type(s) provided',
     break: true
   },
   {
     check: (val as PlayerGroupRule[]).every?.((rule) => [true, false].includes(rule.negate)),
+    error: 'Missing rule type(s)',
     break: true
   },
   {
     check: (val as PlayerGroupRule[]).every?.((rule) => {
       const matchesRuleField = PlayerRuleFields
         .map((f) => f.mapsTo)
-        .filter((_, idx) => idx > 0) // exclude the first field, checked by regex below
+        .filter((_, idx) => idx > 0) // exclude the props field, checked by regex below
         .includes(rule.field as PlayerField)
 
       return matchesRuleField || rule.field.match(/props\.(.)*/)
     }),
+    error: 'Invalid rule field(s) provided',
     break: true
   },
   {
     check: (val as PlayerGroupRule[]).every?.((rule) => Array.isArray(rule.operands)),
+    error: 'Rule operand(s) must be an array',
     break: true
   }
 ]

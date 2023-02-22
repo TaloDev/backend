@@ -165,7 +165,7 @@ describe('Player group service - post', () => {
 
     expect(res.body).toStrictEqual({
       errors: {
-        rules: ['The provided rules value is invalid']
+        rules: ['Invalid rule name(s) provided']
       }
     })
   })
@@ -195,7 +195,7 @@ describe('Player group service - post', () => {
 
     expect(res.body).toStrictEqual({
       errors: {
-        rules: ['The provided rules value is invalid']
+        rules: ['Invalid rule type(s) provided']
       }
     })
   })
@@ -225,7 +225,7 @@ describe('Player group service - post', () => {
 
     expect(res.body).toStrictEqual({
       errors: {
-        rules: ['The provided rules value is invalid']
+        rules: ['Missing rule type(s)']
       }
     })
   })
@@ -255,7 +255,7 @@ describe('Player group service - post', () => {
 
     expect(res.body).toStrictEqual({
       errors: {
-        rules: ['The provided rules value is invalid']
+        rules: ['Invalid rule field(s) provided']
       }
     })
   })

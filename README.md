@@ -5,7 +5,7 @@ Talo's backend is a set of self-hostable services that helps you build games fas
 ## Features
 - ⚡️ [Event tracking](https://trytalo.com/events)
 - 👥 [Player management](https://trytalo.com/players) (including cross-session data, groups and identity management)
-- 🎮 [Unity SDK](https://github.com/TaloDev/unity)
+- 🎮 [Unity SDK](https://trytalo.com/unity)
 - 🗃️ Data exports
 - 🕹️ [Leaderboards](https://trytalo.com/leaderboards)
 - 💾 [Game saves](https://trytalo.com/saves)

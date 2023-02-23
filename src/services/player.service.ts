@@ -13,6 +13,7 @@ import { GameActivityType } from '../entities/game-activity'
 import PlayerGameStat from '../entities/player-game-stat'
 import { devDataPlayerFilter } from '../middlewares/dev-data-middleware'
 import PlayerProp from '../entities/player-prop'
+import PlayerGroup from '../entities/player-group'
 
 const itemsPerPage = 25
 
@@ -117,6 +118,24 @@ export default class PlayerService extends Service {
             $like: `%${search}%`
           }
         })
+
+      const groupFilters = search.split(' ')
+        .filter((part) => part.startsWith('group:'))
+
+      const groups = []
+      for (const filter of groupFilters) {
+        const group = await em.repo(PlayerGroup).findOne({ id: filter.split(':'), game: req.ctx.state.game })
+        if (group) groups.push(group)
+      }
+
+      if (groups.length > 0) {
+        baseQuery = baseQuery
+          .orWhere({
+            groups: {
+              $in: groups
+            }
+          })
+      }
     }
 
     if (!req.ctx.state.includeDevData) {

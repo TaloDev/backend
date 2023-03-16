@@ -14,24 +14,24 @@
   dependencies:
     "@jridgewell/trace-mapping" "0.3.9"
 
-"@dinero.js/calculator-number@2.0.0-alpha.10":
-  version "2.0.0-alpha.10"
-  resolved "https://registry.npmjs.org/@dinero.js/calculator-number/-/calculator-number-2.0.0-alpha.10.tgz"
-  integrity sha512-EdKG0yykukigfdq+TsxZ9r0Wrg5flYAncKWSfr2snWDXurFsg8JE0oazVraCBA3Vb5LN4vGuFEpTFTH+dIrRCg==
+"@dinero.js/calculator-number@2.0.0-alpha.14":
+  version "2.0.0-alpha.14"
+  resolved "https://registry.yarnpkg.com/@dinero.js/calculator-number/-/calculator-number-2.0.0-alpha.14.tgz#37d28db2e18422f2b3c4d404715e13b4e4692254"
+  integrity sha512-Vmlu6eXNtkFU2cqlrpqfq8KQP9onALf8Es2d34liVa3k3RHjuhizgFUU3V3/tsjOu5WekZq+gYPOr58XVTkB7A==
   dependencies:
-    "@dinero.js/core" "2.0.0-alpha.10"
+    "@dinero.js/core" "2.0.0-alpha.14"
 
-"@dinero.js/core@2.0.0-alpha.10":
-  version "2.0.0-alpha.10"
-  resolved "https://registry.npmjs.org/@dinero.js/core/-/core-2.0.0-alpha.10.tgz"
-  integrity sha512-vjeGXQbNvDXlXK54zaWDydEXyFAvLDj6LCfwO4CTZJIqn3+PaXakaEd5S0AXC6hluPatxnQa5J63x3WQ/Imrjw==
+"@dinero.js/core@2.0.0-alpha.14":
+  version "2.0.0-alpha.14"
+  resolved "https://registry.yarnpkg.com/@dinero.js/core/-/core-2.0.0-alpha.14.tgz#2f8ba4da9b3b1af3c4a1477eb190e36b0f94b24d"
+  integrity sha512-CtKELJ783joUbaU62fRM2xDXb4XYSy0MgOuIkPWgVOS3SYKKb6+2Ec9bNlvrW8lsPROz/RsvCuYVTphrZ79twg==
   dependencies:
-    "@dinero.js/currencies" "2.0.0-alpha.10"
+    "@dinero.js/currencies" "2.0.0-alpha.14"
 
-"@dinero.js/currencies@2.0.0-alpha.10", "@dinero.js/currencies@^2.0.0-alpha.8":
-  version "2.0.0-alpha.10"
-  resolved "https://registry.npmjs.org/@dinero.js/currencies/-/currencies-2.0.0-alpha.10.tgz"
-  integrity sha512-IDKaAh0YcJh700uLCrvWtIRCl5sItc3S2rk4IfVJBbms3j+NBDOlVFJnwru+UrMh7VpqU9GlZRsHcHf0NxYE9A==
+"@dinero.js/currencies@2.0.0-alpha.14", "@dinero.js/currencies@^2.0.0-alpha.14":
+  version "2.0.0-alpha.14"
+  resolved "https://registry.yarnpkg.com/@dinero.js/currencies/-/currencies-2.0.0-alpha.14.tgz#140cfa036520577a6d0b5b303136ffbdc05b2ca2"
+  integrity sha512-Ck5ZLjRI7Pl7Y4VkeOst4WEwiN5vZezv8GHcXWsVLUfTNsmkV37VeLYDRAuTUP4akEJyIry+1o1qHYNtLq3eNw==
 
 "@esbuild/android-arm64@0.16.17":
   version "0.16.17"
@@ -1602,14 +1602,14 @@ dijkstrajs@^1.0.1:
   resolved "https://registry.npmjs.org/dijkstrajs/-/dijkstrajs-1.0.2.tgz"
   integrity sha512-QV6PMaHTCNmKSeP6QoXhVTw9snc9VD8MulTT0Bd99Pacp4SS1cjcrYPgBPmibqKVtMJJfqC6XvOXgPMEEPH/fg==
 
-dinero.js@^2.0.0-alpha.8:
-  version "2.0.0-alpha.10"
-  resolved "https://registry.npmjs.org/dinero.js/-/dinero.js-2.0.0-alpha.10.tgz"
-  integrity sha512-EDiOZanmJBJnFfiz5cUL/I2UI7EXQ0jXf18srqgO7sQhChyBbN39b5sf6T4fq4Oj3f4/6x2L96YPUbMRcUmd/A==
+dinero.js@^2.0.0-alpha.14:
+  version "2.0.0-alpha.14"
+  resolved "https://registry.yarnpkg.com/dinero.js/-/dinero.js-2.0.0-alpha.14.tgz#ba1e4a8a4974d10c96dabff7e37c4e68a18b33c2"
+  integrity sha512-dkURHd9P+2TjuSTMUAnvrB7SsL4GbBYG/WPtIBV8M+L7Xf80x84sJcUUTxIS33S4AlkIbVANlaL86w2g5zdrmg==
   dependencies:
-    "@dinero.js/calculator-number" "2.0.0-alpha.10"
-    "@dinero.js/core" "2.0.0-alpha.10"
-    "@dinero.js/currencies" "2.0.0-alpha.10"
+    "@dinero.js/calculator-number" "2.0.0-alpha.14"
+    "@dinero.js/core" "2.0.0-alpha.14"
+    "@dinero.js/currencies" "2.0.0-alpha.14"
 
 dir-glob@^3.0.1:
   version "3.0.1"

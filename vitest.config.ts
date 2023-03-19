@@ -5,7 +5,7 @@ export default defineConfig({
     watch: false,
     globals: true,
     setupFiles: './tests/setupTest.ts',
-    threads: false,
+    singleThread: true,
     deps: {
       interopDefault: true
     },

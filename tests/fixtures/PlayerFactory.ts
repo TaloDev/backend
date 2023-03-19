@@ -21,7 +21,7 @@ export default class PlayerFactory extends Factory<Player> {
     this.register('created this week', this.createdThisWeek)
     this.register('dev build', this.devBuild)
     this.register('with steam alias', this.withSteamAlias)
-    this.register('with username alias', this.withSteamAlias)
+    this.register('with username alias', this.withUsernameAlias)
 
     this.availableGames = availableGames
   }

@@ -4,6 +4,9 @@ import PlayerFactory from '../../fixtures/PlayerFactory'
 import PlayerProp from '../../../src/entities/player-prop'
 import createOrganisationAndGame from '../../utils/createOrganisationAndGame'
 import createUserAndToken from '../../utils/createUserAndToken'
+import PlayerGroupFactory from '../../fixtures/PlayerGroupFactory'
+import PlayerGroupRule, { PlayerGroupRuleCastType, PlayerGroupRuleName } from '../../../src/entities/player-group-rule'
+import GameFactory from '../../fixtures/GameFactory'
 
 describe('Player service - index', () => {
   it('should return a list of players', async () => {
@@ -148,5 +151,59 @@ describe('Player service - index', () => {
       .expect(200)
 
     expect(res.body.count).toBe(players.length)
+  })
+
+  it('should filter players by groups', async () => {
+    const [organisation, game] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken({ organisation })
+
+    const player = await new PlayerFactory([game]).with(() => ({ lastSeenAt: new Date(2022, 1, 1) })).one()
+    const otherPlayers = await new PlayerFactory([game]).with(() => ({ lastSeenAt: new Date(2023, 1, 1) })).many(3)
+
+    const dateRule = new PlayerGroupRule(PlayerGroupRuleName.LT, 'lastSeenAt')
+    dateRule.castType = PlayerGroupRuleCastType.DATETIME
+    dateRule.operands = ['2023-01-01']
+
+    const group = await new PlayerGroupFactory().construct(game).with(() => ({ rules: [dateRule] })).one()
+    await (<EntityManager>global.em).persistAndFlush([player, ...otherPlayers, group])
+
+    const res = await request(global.app)
+      .get(`/games/${game.id}/players`)
+      .query({ search: `group:${group.id}` })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    expect(res.body.players).toHaveLength(1)
+  })
+
+  it('should not filter players by groups from other games', async () => {
+    const [organisation, game] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken({ organisation })
+
+    const otherGame = await new GameFactory(organisation).one()
+    const player = await new PlayerFactory([game]).with(() => ({ lastSeenAt: new Date(2022, 1, 1) })).one()
+
+    const dateRule = new PlayerGroupRule(PlayerGroupRuleName.LT, 'lastSeenAt')
+    dateRule.castType = PlayerGroupRuleCastType.DATETIME
+    dateRule.operands = ['2023-01-01']
+
+    const group = await new PlayerGroupFactory().construct(game).with(() => ({ rules: [dateRule] })).one()
+    await (<EntityManager>global.em).persistAndFlush([otherGame, player, group])
+
+    const invalidRes = await request(global.app)
+      .get(`/games/${otherGame.id}/players`)
+      .query({ search: `group:${group.id}` })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    expect(invalidRes.body.players).toHaveLength(0)
+
+    const validRes = await request(global.app)
+      .get(`/games/${game.id}/players`)
+      .query({ search: `group:${group.id}` })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    expect(validRes.body.players).toHaveLength(1)
   })
 })

@@ -3,7 +3,7 @@ import Stripe from 'stripe'
 import Organisation from '../entities/organisation'
 import Mail from './mail'
 import { USD } from '@dinero.js/currencies'
-import { dinero, toFormat } from 'dinero.js'
+import { dinero, toDecimal } from 'dinero.js'
 
 export default class PlanInvoice extends Mail {
   constructor(organisation: Organisation, invoice: Stripe.Invoice) {
@@ -20,7 +20,7 @@ export default class PlanInvoice extends Mail {
 
   private getPrice(amount: number): string {
     const d = dinero({ amount, currency: USD })
-    const transformer = ({ amount }) => `$${amount.toFixed(2)}`
-    return toFormat(d, transformer)
+    const transformer = ({ value }) => `$${value}`
+    return toDecimal(d, transformer)
   }
 }

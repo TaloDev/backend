@@ -1140,9 +1140,9 @@ buffer@^5.5.0:
     ieee754 "^1.1.13"
 
 bullmq@^3.2.0:
-  version "3.10.1"
-  resolved "https://registry.yarnpkg.com/bullmq/-/bullmq-3.10.1.tgz#798ce661cdb9dd3acb9a5748c4e7e351a2b46edd"
-  integrity sha512-NHysIgywLRB0C1OXY1YQPXsDRnozBWBREPTyeX72ARolkHMkj0IXY+nG36N1pxc2OToPkMHyhSQxaY4jmaM0VQ==
+  version "3.10.2"
+  resolved "https://registry.yarnpkg.com/bullmq/-/bullmq-3.10.2.tgz#6069e75d6c223b129222377e023b196e65764bd8"
+  integrity sha512-GyunDkMdGJRUIo3n+jjQH9Uxz0Z+DLLbuz/7uxcQ+tFss1zB/zmn33D3l+rHaO8I52vz8C7hhEa2lCJ0GIhGgA==
   dependencies:
     cron-parser "^4.6.0"
     glob "^8.0.3"

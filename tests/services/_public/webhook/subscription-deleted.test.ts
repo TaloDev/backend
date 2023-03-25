@@ -19,7 +19,7 @@ describe('Webhook service - subscription deleted', () => {
     const defaultPlan = await new PricingPlanFactory().with(() => ({ default: true })).one()
     await (<EntityManager>global.em).persistAndFlush(defaultPlan)
 
-    vi.spyOn(stripe.webhooks, 'constructEvent').mockImplementationOnce(() => ({
+    const payload = JSON.stringify({
       id: v4(),
       object: 'event',
       data: {
@@ -31,11 +31,17 @@ describe('Webhook service - subscription deleted', () => {
       pending_webhooks: 0,
       request: null,
       type: 'customer.subscription.deleted'
-    }))
+    }, null, 2)
+
+    const header = stripe.webhooks.generateTestHeaderString({
+      payload,
+      secret: process.env.STRIPE_WEBHOOK_SECRET
+    })
 
     await request(global.app)
       .post('/public/webhooks/subscriptions')
-      .set('stripe-signature', 'abc123')
+      .set('stripe-signature', header)
+      .send(payload)
       .expect(204)
 
     await (<EntityManager>global.em).refresh(organisation)

@@ -26,7 +26,7 @@ describe('Webhook service - invoice payment failed', () => {
     organisation.pricingPlan.stripeCustomerId = invoice.customer as string
     await (<EntityManager>global.em).flush()
 
-    vi.spyOn(stripe.webhooks, 'constructEvent').mockImplementationOnce(() => ({
+    const payload = JSON.stringify({
       id: v4(),
       object: 'event',
       data: {
@@ -38,11 +38,17 @@ describe('Webhook service - invoice payment failed', () => {
       pending_webhooks: 0,
       request: null,
       type: 'invoice.payment_failed'
-    }))
+    }, null, 2)
+
+    const header = stripe.webhooks.generateTestHeaderString({
+      payload,
+      secret: process.env.STRIPE_WEBHOOK_SECRET
+    })
 
     await request(global.app)
       .post('/public/webhooks/subscriptions')
-      .set('stripe-signature', 'abc123')
+      .set('stripe-signature', header)
+      .send(payload)
       .expect(204)
 
     expect(sendMock).toHaveBeenCalledWith(new PlanPaymentFailed(organisation, invoice).getConfig())

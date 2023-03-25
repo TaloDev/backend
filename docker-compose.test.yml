@@ -21,7 +21,7 @@ services:
       - test-network
     
   test-redis:
-    image: bitnami/redis:7.0
+    image: arm64v8/redis:7-alpine
     environment:
       - REDIS_PASSWORD=${REDIS_PASSWORD}
     ports:
@@ -33,7 +33,7 @@ services:
       - test-network
 
   stripe-api:
-    image: stripe/stripe-mock:latest
+    image: stripe/stripe-mock:latest-arm64
     ports:
       - 12111:12111
       - 12112:12112

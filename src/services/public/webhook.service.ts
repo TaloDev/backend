@@ -104,10 +104,7 @@ export default class WebhookService extends Service {
     /* c8 ignore start */
     } catch (err) {
       Sentry.captureException(err)
-
-      return {
-        status: 400
-      }
+      req.ctx.throw(401)
     }
     /* c8 ignore stop */
 

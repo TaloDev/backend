@@ -9,7 +9,7 @@ export default async (ctx: Context, next: Next) => {
     ctx.status = err.status || 500
     ctx.body = ctx.status === 401 && Boolean(err.originalError) /* dont expose jwt error */
       ? { message: 'Please provide a valid token in the Authorization header' }
-      : { ...err }
+      : { ...err, headers: undefined /* koa cors is inserting headers into the body for some reason */ }
 
     if (ctx.state.redis instanceof Redis) {
       await (ctx.state.redis as Redis).quit()
@@ -18,7 +18,7 @@ export default async (ctx: Context, next: Next) => {
     if (ctx.status === 500) {
       Sentry.withScope((scope) => {
         scope.addEventProcessor((event) => {
-          return Sentry.Handlers.parseRequest(event, ctx.request)
+          return Sentry.addRequestDataToEvent(event, ctx.request)
         })
 
         if (ctx.state.user) {

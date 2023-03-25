@@ -75,7 +75,7 @@ export default class DataExportService extends Service {
       failed: async (job: Job<EmailConfig>) => {
         await this.updateDataExportStatus(job.data.metadata.dataExportId as number, { failedAt: new Date() })
       }
-    })
+    }, 'data-export')
 
     this.queue = createQueue<DataExportJob>('data-export', async (job: Job<DataExportJob>) => {
       const { dataExportId, includeDevData } = job.data

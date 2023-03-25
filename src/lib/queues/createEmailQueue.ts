@@ -1,8 +1,8 @@
 import createQueue, { WorkerEvents } from './createQueue'
 import sendEmail, { EmailConfig } from '../messaging/sendEmail'
 
-const createEmailQueue = (events: WorkerEvents<EmailConfig> = {}) => {
-  const queue = createQueue<EmailConfig>('email', async (job) => {
+const createEmailQueue = (events: WorkerEvents<EmailConfig> = {}, prefix = '') => {
+  const queue = createQueue<EmailConfig>(prefix + 'email', async (job) => {
     await sendEmail(job.data.mail)
   }, events)
 

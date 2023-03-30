@@ -3973,9 +3973,9 @@ strip-literal@^1.0.0:
     acorn "^8.8.2"
 
 stripe@^11.16.0:
-  version "11.16.0"
-  resolved "https://registry.yarnpkg.com/stripe/-/stripe-11.16.0.tgz#07bad41fc568e2a71a820fc35a15d4d7c6347e4d"
-  integrity sha512-Ej1ZtbrMw+Z7L8Kxj80sDNF0E/lPypY2nwymU/wGcOjn7CppTa2HXxPTsQRQ8U0MSVRcwRWyGMrizQWuaUqVGw==
+  version "11.17.0"
+  resolved "https://registry.yarnpkg.com/stripe/-/stripe-11.17.0.tgz#0193396034fbaf600d69bd7941350883a2b59e47"
+  integrity sha512-nDH5afq2J5x8cp0b3Uf0h4U7mLLntDLXA91/4cg+LRhMOrDc2BI6xOGjYpI2uwRG80PU16pqhZh9oVupvCG/pQ==
   dependencies:
     "@types/node" ">=8.1.0"
     qs "^6.11.0"

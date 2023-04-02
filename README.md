@@ -11,6 +11,7 @@ Talo's backend is a set of self-hostable services that helps you build games fas
 - 💾 [Game saves](https://trytalo.com/saves)
 - 📊 [Game stats](https://trytalo.com/stats) (global and per-player)
 - ⚙️ [Live config](https://trytalo.com/live-config) (update your game config from the web, no releases required)
+- 🔧 [Steamworks integration](https://trytalo.com/steamworks-integration)
 
 ## Docs
 

@@ -2295,10 +2295,10 @@ hefty@^1.1.0:
   resolved "https://registry.npmjs.org/hefty/-/hefty-1.1.0.tgz"
   integrity sha512-d16k01Rzb9fbCOqS0lCFkBVghKd2YFnaT+6Tg+5l5r1O9eaKp0gKQMoJiEb+GpUcHUMrG1y1LvDGB3GPEriVwQ==
 
-helmet@^4.4.1:
-  version "4.6.0"
-  resolved "https://registry.npmjs.org/helmet/-/helmet-4.6.0.tgz"
-  integrity sha512-HVqALKZlR95ROkrnesdhbbZJFi/rIVSoNq6f3jA/9u6MIbTsPh3xZwihjeI5+DO/2sOV6HMHooXcEOuwskHpTg==
+helmet@^6.0.1:
+  version "6.0.1"
+  resolved "https://registry.yarnpkg.com/helmet/-/helmet-6.0.1.tgz#52ec353638b2e87f14fe079d142b368ac11e79a4"
+  integrity sha512-8wo+VdQhTMVBMCITYZaGTbE4lvlthelPYSvoyNvk4RECTmrVjMerp9RfUOQXZWLvCcAn1pKj7ZRxK4lI9Alrcw==
 
 hexoid@^1.0.0:
   version "1.0.0"
@@ -2749,12 +2749,12 @@ koa-convert@^2.0.0:
     co "^4.6.0"
     koa-compose "^4.1.0"
 
-koa-helmet@^6.1.0:
-  version "6.1.0"
-  resolved "https://registry.npmjs.org/koa-helmet/-/koa-helmet-6.1.0.tgz"
-  integrity sha512-WymEv4qo/7ghh15t+1qTjvZBmZkmVlTtfnpe5oxn8m8mO2Q2rKJ3eMvWuQGW/6yVxN9+hQ75evuWcg3XBbFLbg==
+koa-helmet@^7.0.0:
+  version "7.0.2"
+  resolved "https://registry.yarnpkg.com/koa-helmet/-/koa-helmet-7.0.2.tgz#2077e60cc69fa550802931ccdb85f948aa6bd054"
+  integrity sha512-AvzS6VuEfFgbAm0mTUnkk/BpMarMcs5A56g+f0sfrJ6m63wII48d2GDrnUQGp0Nj+RR950vNtgqXm9UJSe7GOg==
   dependencies:
-    helmet "^4.4.1"
+    helmet "^6.0.1"
 
 koa-jwt@^4.0.4:
   version "4.0.4"

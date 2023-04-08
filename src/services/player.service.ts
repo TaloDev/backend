@@ -14,6 +14,7 @@ import PlayerGameStat from '../entities/player-game-stat'
 import { devDataPlayerFilter } from '../middlewares/dev-data-middleware'
 import PlayerProp from '../entities/player-prop'
 import PlayerGroup from '../entities/player-group'
+import GameSave from '../entities/game-save'
 
 const itemsPerPage = 25
 
@@ -43,6 +44,11 @@ const propsValidation = async (val: unknown): Promise<ValidationCondition[]> => 
     method: 'GET',
     path: '/:id/stats',
     handler: 'stats'
+  },
+  {
+    method: 'GET',
+    path: '/:id/saves',
+    handler: 'saves'
   }
 ])
 export default class PlayerService extends Service {
@@ -279,6 +285,22 @@ export default class PlayerService extends Service {
       status: 200,
       body: {
         stats
+      }
+    }
+  }
+
+  @HasPermission(PlayerPolicy, 'getSaves')
+  async saves(req: Request): Promise<Response> {
+    const em: EntityManager = req.ctx.em
+
+    const saves = await em.getRepository(GameSave).find({
+      player: req.ctx.state.player
+    })
+
+    return {
+      status: 200,
+      body: {
+        saves
       }
     }
   }

@@ -31,6 +31,7 @@ export default class GameSave {
       id: this.id,
       name: this.name,
       content: this.content,
+      createdAt: this.createdAt,
       updatedAt: this.updatedAt
     }
   }

@@ -22,7 +22,7 @@
   "author": "Sleepy Studios",
   "license": "MIT",
   "devDependencies": {
-    "@mikro-orm/cli": "^5.6.11",
+    "@mikro-orm/cli": "^5.6.16",
     "@types/koa": "^2.13.5",
     "@types/koa-bodyparser": "^4.3.7",
     "@types/koa-logger": "^3.1.2",
@@ -49,10 +49,10 @@
   "dependencies": {
     "@dinero.js/currencies": "^2.0.0-alpha.14",
     "@koa/cors": "^4.0.0",
-    "@mikro-orm/core": "^5.6.11",
-    "@mikro-orm/migrations": "^5.6.11",
-    "@mikro-orm/mysql": "^5.6.11",
-    "@mikro-orm/reflection": "^5.6.11",
+    "@mikro-orm/core": "^5.6.16",
+    "@mikro-orm/migrations": "^5.6.16",
+    "@mikro-orm/mysql": "^5.6.16",
+    "@mikro-orm/reflection": "^5.6.16",
     "@sendgrid/mail": "^7.6.2",
     "@sentry/node": "^7.47.0",
     "@sentry/utils": "^7.47.0",

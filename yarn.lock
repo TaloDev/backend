@@ -1153,13 +1153,13 @@ buffer@^5.5.0:
     ieee754 "^1.1.13"
 
 bullmq@^3.2.0:
-  version "3.11.0"
-  resolved "https://registry.yarnpkg.com/bullmq/-/bullmq-3.11.0.tgz#937c2f73f34f7ea09d259d9197c8582aa787ca73"
-  integrity sha512-l9/Wy1rKGQGgnlkKM50q6jknzEf2v9lhIh4xva71TqopWORUuGBtFDrHAQn/X6m+fQnXWiG5FVL0fnHdHhcQeA==
+  version "3.12.0"
+  resolved "https://registry.yarnpkg.com/bullmq/-/bullmq-3.12.0.tgz#5a3e9ac40e4d623c27f7cdd214a69fd4122270da"
+  integrity sha512-h5SMgKXfHe6wKzEEdKTO4zUkOV1TkyQagw3WVOaz+6XWuaWv4EhCAOIkzPAajI7ZNF9c+YwSRY3bQjXmxI0f9Q==
   dependencies:
     cron-parser "^4.6.0"
     glob "^8.0.3"
-    ioredis "^5.3.0"
+    ioredis "^5.3.2"
     lodash "^4.17.21"
     msgpackr "^1.6.2"
     semver "^7.3.7"
@@ -2503,7 +2503,7 @@ interpret@^2.2.0:
   resolved "https://registry.yarnpkg.com/interpret/-/interpret-2.2.0.tgz#1a78a0b5965c40a5416d007ad6f50ad27c417df9"
   integrity sha512-Ju0Bz/cEia55xDwUWEa8+olFpCiQoypjnQySseKtmjNrnps3P+xfpUmGr90T7yjlVJmOtybRvPXhKMbHr+fWnw==
 
-ioredis@^5.2.4, ioredis@^5.3.0:
+ioredis@^5.2.4, ioredis@^5.3.2:
   version "5.3.2"
   resolved "https://registry.yarnpkg.com/ioredis/-/ioredis-5.3.2.tgz#9139f596f62fc9c72d873353ac5395bcf05709f7"
   integrity sha512-1DKMMzlIHM02eBBVOFQ1+AolGjs6+xEcM4PDL7NqOS6szq7H9jSaEkIUH6/a5Hl241LzW6JLSiAbNvTQjUupUA==

@@ -16,5 +16,5 @@
     }
   ],
   "platformAutomerge": true,
-  "schedule": ["every first day of the month"]
+  "schedule": ["before 3am on the first day of the month"]
 }

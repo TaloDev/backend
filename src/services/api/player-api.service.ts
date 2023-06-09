@@ -3,7 +3,7 @@ import { Request, Response, Routes, Validate, HasPermission, ForwardTo, forwardR
 import APIKey, { APIKeyScope } from '../../entities/api-key'
 import Player from '../../entities/player'
 import GameSave from '../../entities/game-save'
-import PlayerAlias from '../../entities/player-alias'
+import PlayerAlias, { PlayerAliasService } from '../../entities/player-alias'
 import PlayerAPIPolicy from '../../policies/api/player-api.policy'
 import APIService from './api-service'
 import uniqWith from 'lodash.uniqwith'
@@ -43,7 +43,7 @@ export default class PlayerAPIService extends APIService {
     const key: APIKey = await this.getAPIKey(req.ctx)
 
     const alias = await em.getRepository(PlayerAlias).findOne({
-      service,
+      service: service as PlayerAliasService,
       identifier,
       player: {
         game: key.game

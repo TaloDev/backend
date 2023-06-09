@@ -1,6 +1,6 @@
 import * as Sentry from '@sentry/node'
 import { Context, Next } from 'koa'
-import { extractTraceparentData, stripUrlQueryAndFragment } from '@sentry/tracing'
+import { stripUrlQueryAndFragment } from '@sentry/utils'
 
 export default async (ctx: Context, next: Next) => {
   const reqMethod = ctx.method.toUpperCase()
@@ -10,7 +10,7 @@ export default async (ctx: Context, next: Next) => {
   let traceparentData
   /* c8 ignore next 3 */
   if (ctx.request.get('sentry-trace')) {
-    traceparentData = extractTraceparentData(ctx.request.get('sentry-trace'))
+    traceparentData = Sentry.extractTraceparentData(ctx.request.get('sentry-trace'))
   }
 
   const transaction = Sentry.startTransaction({

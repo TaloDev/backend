@@ -278,7 +278,7 @@
     semver "^7.3.5"
     tar "^6.1.11"
 
-"@mikro-orm/cli@^5.7.11":
+"@mikro-orm/cli@^5.9":
   version "5.9.6"
   resolved "https://registry.yarnpkg.com/@mikro-orm/cli/-/cli-5.9.6.tgz#1fa8c963a7d5e10dcfd2ecfa29e27a2c1dbf8b96"
   integrity sha512-O7AITNNfA9hjls4a4iQIMM3qJ16pDhmuRy9MySVYysF5Auyo6Ix3HC7Gbjcu4rOquNK1BTGpKovsyWb/+byIYQ==
@@ -290,7 +290,7 @@
     tsconfig-paths "4.2.0"
     yargs "17.7.2"
 
-"@mikro-orm/core@5.9.6", "@mikro-orm/core@^5.7.11":
+"@mikro-orm/core@5.9.6", "@mikro-orm/core@^5.9":
   version "5.9.6"
   resolved "https://registry.yarnpkg.com/@mikro-orm/core/-/core-5.9.6.tgz#dffa496ae5b106c733b95e4cab118ed6a72c84ce"
   integrity sha512-lUEjkxfRHHX4RgScOBwuxYWl81zMW3nK+0ovmUUKxGecxl09Uxulwm3d0hmmKoot/jhX1I62/DVtRxq5p2apVA==
@@ -312,7 +312,7 @@
     knex "2.5.1"
     sqlstring "2.3.3"
 
-"@mikro-orm/migrations@^5.7.11":
+"@mikro-orm/migrations@^5.9":
   version "5.9.6"
   resolved "https://registry.yarnpkg.com/@mikro-orm/migrations/-/migrations-5.9.6.tgz#7013e0f656f3cb77fadfad4782f424dd1527dac2"
   integrity sha512-VlbUipjKg9mixilBQT1eO3Ec3JFrm6Gb8g/agP2mr2CXeWY6QaiDYQ/A7H/X/c8x6+HbDsAHnD2PnndY4VijNw==
@@ -322,7 +322,7 @@
     knex "2.5.1"
     umzug "3.3.1"
 
-"@mikro-orm/mysql@^5.7.11":
+"@mikro-orm/mysql@^5.9":
   version "5.9.6"
   resolved "https://registry.yarnpkg.com/@mikro-orm/mysql/-/mysql-5.9.6.tgz#94866b4c861b7f7dbf7f3a9e35254910756823b7"
   integrity sha512-gKUPWT8RZBm9nebeujAv73lDXy1me/x0AbwsG5FDy5ynAf7od8OP3WDv2lYeuG7b7pvbmyAricGjozIlv35exQ==
@@ -330,7 +330,7 @@
     "@mikro-orm/knex" "5.9.6"
     mysql2 "3.6.2"
 
-"@mikro-orm/reflection@^5.7.11":
+"@mikro-orm/reflection@^5.9":
   version "5.9.6"
   resolved "https://registry.yarnpkg.com/@mikro-orm/reflection/-/reflection-5.9.6.tgz#5f14e9f6df66508870c00bba1472bc87b7123fb2"
   integrity sha512-lLuHzNqi8v9EYOgEvJ81faAncS7xY+u9HNbDRhA4gCU72fIiZhDv7OLoujvdzW0nf3A5mmL7/oycQOjFTJNNew==
@@ -697,10 +697,12 @@
   dependencies:
     undici-types "~5.26.4"
 
-"@types/node@18":
-  version "18.16.16"
-  resolved "https://registry.yarnpkg.com/@types/node/-/node-18.16.16.tgz#3b64862856c7874ccf7439e6bab872d245c86d8e"
-  integrity sha512-NpaM49IGQQAUlBhHMF82QH80J08os4ZmyF9MkpCzWAGuOHqE4gTEbhzd7L3l5LmWuZ6E0OiC1FweQ4tsiW35+g==
+"@types/node@20":
+  version "20.10.5"
+  resolved "https://registry.yarnpkg.com/@types/node/-/node-20.10.5.tgz#47ad460b514096b7ed63a1dae26fad0914ed3ab2"
+  integrity sha512-nNPsNE65wjMxEKI93yOP+NPGGBJz/PoN3kZsVLee0XMiJolxSekEVD8wRwBUBqkwc7UWop0edW50yrCQW4CyRw==
+  dependencies:
+    undici-types "~5.26.4"
 
 "@types/node@>=8.1.0":
   version "20.2.5"

@@ -5,6 +5,9 @@ const LeaderboardAPIDocs: APIDocs<LeaderboardAPIService> = {
   get: {
     description: 'Get a leaderboard\'s entries\n50 results are returned per page, in the sort order defined by the leaderboard',
     params: {
+      headers: {
+        'x-talo-alias': 'The ID of the player\'s alias'
+      },
       route: {
         internalName: 'The internal name of the leaderboard'
       },

@@ -175,6 +175,26 @@ describe('Event API service - post', () => {
     expect(res.body.events[0].props).toHaveLength(1)
   })
 
+  it('should not delete event props with values that are empty strings', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_EVENTS])
+    const player = await new PlayerFactory([apiKey.game]).one()
+    await (<EntityManager>global.em).persistAndFlush(player)
+
+    const res = await request(global.app)
+      .post('/v1/events')
+      .send({
+        events: [
+          { name: 'Equip bow', timestamp: Date.now(), props: [{ key: 'itemId', value: '' }] }
+        ]
+      })
+      .auth(token, { type: 'bearer' })
+      .set('x-talo-alias', String(player.aliases[0].id))
+      .expect(200)
+
+    expect(res.body.events[0].props[0].key).toBe('itemId')
+    expect(res.body.events[0].props[0].value).toBe('')
+  })
+
   it('should capture an error if the event props are not an array', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_EVENTS])
     const player = await new PlayerFactory([apiKey.game]).one()

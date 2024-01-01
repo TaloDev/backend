@@ -655,9 +655,9 @@
     "@types/koa" "*"
 
 "@types/koa-logger@^3.1.2":
-  version "3.1.3"
-  resolved "https://registry.yarnpkg.com/@types/koa-logger/-/koa-logger-3.1.3.tgz#7bfef9d366604f285aaa48753bf6a10b5683a947"
-  integrity sha512-lBmFKlhrDMklV/cO4wmc4s9YXa3H7kpVG+FuhTsmdi9zViVmzJWthmKfstERcXfwWbSYaYKQBG6Cx9EF52cntQ==
+  version "3.1.5"
+  resolved "https://registry.yarnpkg.com/@types/koa-logger/-/koa-logger-3.1.5.tgz#fce9e1fb2e9ac9941200eccf3625f085c37b869b"
+  integrity sha512-N4f9GRdokJ/gLiCSvd3GGar/D74HJWzuvSJiruayCsz2e7gGkG6DQaque+kM3xo6LjyCRVUUt9HHJCSMjsXrIA==
   dependencies:
     "@types/koa" "*"
 
@@ -691,9 +691,9 @@
   integrity sha512-/pyBZWSLD2n0dcHE3hq8s8ZvcETHtEuF+3E7XVt0Ig2nvsVQXdghHVcEkIWjy9A0wKfTn97a/PSDYohKIlnP/w==
 
 "@types/node@*":
-  version "20.10.1"
-  resolved "https://registry.yarnpkg.com/@types/node/-/node-20.10.1.tgz#d2c96f356c3125fedc983d74c424910c3767141c"
-  integrity sha512-T2qwhjWwGH81vUEx4EXmBKsTJRXFXNZTL4v0gi01+zyBmCwzE6TyHszqX01m+QHTEq+EZNo13NeJIdEqf+Myrg==
+  version "20.10.6"
+  resolved "https://registry.yarnpkg.com/@types/node/-/node-20.10.6.tgz#a3ec84c22965802bf763da55b2394424f22bfbb5"
+  integrity sha512-Vac8H+NlRNNlAmDfGUP7b5h/KA+AtWIzuXy0E6OyP8f1tCLYAtPvKRRDJjAPqhpCb0t6U2j7/xqAuLEebW2kiw==
   dependencies:
     undici-types "~5.26.4"
 
@@ -715,9 +715,9 @@
   integrity sha512-w+tIMs3rq2afQdsPJlODhoUEKzFP1ayaoyl1CcnwtIlsVe7K7bA1NGm4s3PraqTLlXnbIN84zuBlxBWo1u9BLw==
 
 "@types/qs@*":
-  version "6.9.10"
-  resolved "https://registry.yarnpkg.com/@types/qs/-/qs-6.9.10.tgz#0af26845b5067e1c9a622658a51f60a3934d51e8"
-  integrity sha512-3Gnx08Ns1sEoCrWssEgTSJs/rsT2vhGP+Ja9cnnk9k4ALxinORlQneLXFeFKOTJMOeZUFD1s7w+w2AphTpvzZw==
+  version "6.9.11"
+  resolved "https://registry.yarnpkg.com/@types/qs/-/qs-6.9.11.tgz#208d8a30bc507bd82e03ada29e4732ea46a6bbda"
+  integrity sha512-oGk0gmhnEJK4Yyk+oI7EfXsLayXatCWPHary1MtcmbAifkobT9cM9yutG/hZKIseOU0MqbIwQ/u2nn/Gb+ltuQ==
 
 "@types/range-parser@*":
   version "1.2.7"

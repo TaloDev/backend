@@ -27,11 +27,11 @@ export default class GameSecret {
     return decrypt(this.secret, process.env.API_SECRET)
   }
 
-  /* c8 ignore start */
+  /* v8 ignore start */
   toJSON() {
     return {
       id: this.id
     }
   }
-  /* c8 ignore stop */
+  /* v8 ignore stop */
 }

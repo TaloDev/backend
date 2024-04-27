@@ -27,7 +27,7 @@ import ResetPassword from '../../emails/reset-password'
 async function sendEmailConfirm(req: Request, res: Response): Promise<void> {
   const user: User = req.ctx.state.user
 
-  /* c8 ignore start */
+  /* v8 ignore start */
   if (res.status === 200 && !user.emailConfirmed) {
     const em: EntityManager = req.ctx.em
 
@@ -36,7 +36,7 @@ async function sendEmailConfirm(req: Request, res: Response): Promise<void> {
 
     await queueEmail(req.ctx.emailQueue, new ConfirmEmail(user, accessCode.code))
   }
-  /* c8 ignore stop */
+  /* v8 ignore stop */
 }
 
 @Routes([

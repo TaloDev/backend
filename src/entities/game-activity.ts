@@ -59,7 +59,7 @@ export default class GameActivity {
     this.user = user
   }
 
-  /* c8 ignore start */
+  /* v8 ignore start */
   private getActivity(): string {
     switch (this.type) {
       case GameActivityType.PLAYER_PROPS_UPDATED:
@@ -112,7 +112,7 @@ export default class GameActivity {
         return ''
     }
   }
-  /* c8 ignore stop */
+  /* v8 ignore stop */
 
   toJSON() {
     return {

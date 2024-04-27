@@ -24,7 +24,7 @@ jobs:
         run: cp envs/.env.dev .env
 
       - name: Run tests
-        run: npm test --coverage
+        run: npm test -- --coverage
 
       - uses: codecov/codecov-action@v4
         with:

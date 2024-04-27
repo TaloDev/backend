@@ -21,8 +21,9 @@ services:
       - test-network
     
   test-redis:
-    image: arm64v8/redis:7-alpine
-    command: redis-server --requirepass ${REDIS_PASSWORD}
+    image: bitnami/redis:7.2
+    environment:
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
     ports:
       - ${REDIS_PORT}:6379
     depends_on:
@@ -32,7 +33,7 @@ services:
       - test-network
 
   stripe-api:
-    image: stripe/stripe-mock:latest-arm64
+    image: stripe/stripe-mock:latest
     ports:
       - 12111:12111
       - 12112:12112

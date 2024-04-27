@@ -5,6 +5,9 @@ const LeaderboardAPIDocs: APIDocs<LeaderboardAPIService> = {
   get: {
     description: 'Get a leaderboard\'s entries\n50 results are returned per page, in the sort order defined by the leaderboard',
     params: {
+      headers: {
+        'x-talo-alias': 'The ID of the player\'s alias'
+      },
       route: {
         internalName: 'The internal name of the leaderboard'
       },
@@ -86,7 +89,6 @@ const LeaderboardAPIDocs: APIDocs<LeaderboardAPIService> = {
     description: 'Create or update a leaderboard\'s entry\nIf an entry exists for the player and the leaderboard mode is set to unique, that entry will be updated with the new score (and the updated key will return true)',
     params: {
       body: {
-        aliasId: 'The ID of the player\'s alias',
         score: 'A numeric score for the entry'
       },
       route: {

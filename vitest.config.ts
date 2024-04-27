@@ -5,12 +5,16 @@ export default defineConfig({
     watch: false,
     globals: true,
     setupFiles: './tests/setupTest.ts',
-    singleThread: true,
+    poolOptions: {
+      threads: {
+        singleThread: true
+      }
+    },
     deps: {
       interopDefault: true
     },
     coverage: {
-      provider: 'c8',
+      provider: 'v8',
       reporter: 'lcov',
       exclude: [
         '__mocks__',

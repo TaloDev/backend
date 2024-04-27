@@ -1,4 +1,4 @@
-import { Collection, Entity, OneToMany, OneToOne, PrimaryKey, Property } from '@mikro-orm/core'
+import { Collection, Entity, OneToMany, OneToOne, PrimaryKey, Property } from '@mikro-orm/mysql'
 import Game from './game'
 import OrganisationPricingPlan from './organisation-pricing-plan'
 

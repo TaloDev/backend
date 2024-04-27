@@ -6,7 +6,7 @@ const sanitiseProps = (props: Prop[], deleteNull = false, extraFilter?: (prop: P
   return props
     .filter((prop) => Boolean(prop.key))
     .filter((prop) => extraFilter?.(prop) ?? true)
-    .map((prop) => new Prop(String(prop.key), prop.value ? String(prop.value) : null))
+    .map((prop) => new Prop(String(prop.key), prop.value !== null ? String(prop.value) : null))
 }
 
 export default sanitiseProps

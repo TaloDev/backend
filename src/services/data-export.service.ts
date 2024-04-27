@@ -1,4 +1,4 @@
-import { Collection, FilterQuery, MikroORM } from '@mikro-orm/core'
+import { Collection, FilterQuery, MikroORM, EntityManager } from '@mikro-orm/mysql'
 import { HasPermission, Routes, Service, Request, Response, Validate, ValidationCondition } from 'koa-clay'
 import DataExport, { DataExportAvailableEntities, DataExportStatus } from '../entities/data-export'
 import DataExportPolicy from '../policies/data-export.policy'
@@ -22,7 +22,6 @@ import handlePricingPlanAction from '../lib/billing/handlePricingPlanAction'
 import { PricingPlanActionType } from '../entities/pricing-plan-action'
 import queueEmail from '../lib/messaging/queueEmail'
 import OrganisationPricingPlanAction from '../entities/organisation-pricing-plan-action'
-import { EntityManager } from '@mikro-orm/mysql'
 import pick from 'lodash.pick'
 import PlayerProp from '../entities/player-prop'
 import { Job, Queue } from 'bullmq'
@@ -108,13 +107,13 @@ export default class DataExportService extends Service {
       ]), { dataExportId })
 
       await unlink(filepath)
-    /* c8 ignore start */
+    /* v8 ignore start */
     }, {
       failed: async (job: Job<DataExportJob>) => {
         await this.updateDataExportStatus(job.data.dataExportId, { failedAt: new Date() })
       }
     })
-    /* c8 ignore stop */
+    /* v8 ignore stop */
   }
 
   private async updateDataExportStatus(dataExportId: number, newStatus: UpdatedDataExportStatus): Promise<void> {
@@ -128,7 +127,7 @@ export default class DataExportService extends Service {
 
       const orgPlanAction = await em.getRepository(OrganisationPricingPlanAction).findOne({ type: PricingPlanActionType.DATA_EXPORT, extra: { dataExportId } })
       if (orgPlanAction) {
-        await em.getRepository(OrganisationPricingPlanAction).removeAndFlush(orgPlanAction)
+        await em.removeAndFlush(orgPlanAction)
       }
     }
 
@@ -190,7 +189,7 @@ export default class DataExportService extends Service {
     const stats = await em.getRepository(GameStat).find({ game: dataExport.game })
 
     for (const stat of stats) {
-      /* c8 ignore next 3 */
+      /* v8 ignore next 3 */
       if (stat.global) {
         await stat.recalculateGlobalValue(includeDevData)
       }

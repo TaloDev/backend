@@ -1,4 +1,4 @@
-import { EntityManager, MikroORM } from '@mikro-orm/core'
+import { EntityManager, MikroORM } from '@mikro-orm/mysql'
 import init from '../src'
 import ormConfig from '../src/config/mikro-orm.config'
 

@@ -1,4 +1,4 @@
-import { EntityManager } from '@mikro-orm/core'
+import { EntityManager } from '@mikro-orm/mysql'
 import { HasPermission, Service, Request, Response, Routes, Validate } from 'koa-clay'
 import APIKey, { APIKeyScope } from '../entities/api-key'
 import jwt from 'jsonwebtoken'
@@ -54,7 +54,7 @@ export default class APIKeyService extends Service {
       }
     })
 
-    await em.getRepository(APIKey).persistAndFlush(apiKey)
+    await em.persistAndFlush(apiKey)
 
     const token = await createToken(em, apiKey)
 

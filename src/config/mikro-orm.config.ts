@@ -1,12 +1,12 @@
-import { Options } from '@mikro-orm/core'
 import entities from '../entities'
 import subscribers from '../entities/subscribers'
 import migrationsList from '../migrations'
 import { TsMorphMetadataProvider } from '@mikro-orm/reflection'
+import { Migrator } from '@mikro-orm/migrations'
+import { defineConfig } from '@mikro-orm/mysql'
 
-const ormConfig: Options = {
+export default defineConfig({
   entities,
-  type: 'mysql',
   host: process.env.DB_HOST,
   port: Number(process.env.DB_PORT),
   dbName: process.env.DB_NAME,
@@ -17,7 +17,6 @@ const ormConfig: Options = {
     path: 'src/migrations' // for generating migrations via the cli
   },
   subscribers,
-  metadataProvider: TsMorphMetadataProvider
-}
-
-export default ormConfig
+  metadataProvider: TsMorphMetadataProvider,
+  extensions: [Migrator]
+})

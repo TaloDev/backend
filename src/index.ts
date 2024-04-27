@@ -3,7 +3,7 @@ import Koa, { Context, Next } from 'koa'
 import logger from 'koa-logger'
 import bodyParser from 'koa-bodyparser'
 import helmet from 'koa-helmet'
-import { RequestContext } from '@mikro-orm/core'
+import { RequestContext } from '@mikro-orm/mysql'
 import configureProtectedRoutes from './config/protected-routes'
 import configurePublicRoutes from './config/public-routes'
 import configureAPIRoutes from './config/api-routes'
@@ -27,7 +27,7 @@ export const init = async (): Promise<Koa> => {
   app.use(bodyParser())
   app.use(helmet())
   app.use(corsMiddleware)
-  app.use((ctx: Context, next: Next) => RequestContext.createAsync(ctx.em, next))
+  app.use((ctx: Context, next: Next) => RequestContext.create(ctx.em, next))
   app.use(devDataMiddleware)
   app.context.emailQueue = createEmailQueue()
 

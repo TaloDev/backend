@@ -1,4 +1,4 @@
-import { EntityManager } from '@mikro-orm/core'
+import { EntityManager } from '@mikro-orm/mysql'
 import { differenceInDays } from 'date-fns'
 import FailedJob from '../../../src/entities/failed-job'
 import createQueue from '../../../src/lib/queues/createQueue'

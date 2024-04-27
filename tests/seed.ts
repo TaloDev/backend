@@ -1,5 +1,5 @@
 import 'dotenv/config'
-import { MikroORM } from '@mikro-orm/core'
+import { MikroORM } from '@mikro-orm/mysql'
 import UserFactory from './fixtures/UserFactory'
 import GameFactory from './fixtures/GameFactory'
 import PlayerFactory from './fixtures/PlayerFactory'

@@ -1,4 +1,4 @@
-import { EntityManager } from '@mikro-orm/core'
+import { EntityManager } from '@mikro-orm/mysql'
 import request from 'supertest'
 import Organisation from '../../../../src/entities/organisation'
 import OrganisationFactory from '../../../fixtures/OrganisationFactory'
@@ -13,7 +13,7 @@ describe('Demo service - post', () => {
 
   beforeAll(async () => {
     demoOrg = await new OrganisationFactory().state('demo').one()
-    await (<EntityManager>global.em).getRepository(Organisation).persistAndFlush(demoOrg)
+    await (<EntityManager>global.em).persistAndFlush(demoOrg)
   })
 
   it('should create a demo user and then delete them', async () => {

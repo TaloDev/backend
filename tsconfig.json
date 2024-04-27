@@ -9,7 +9,8 @@
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
     "declaration": true,
-    "types": ["vitest/globals"]
-  },
-  "lib": ["esnext"]
+    "types": ["vitest/globals"],
+    "lib": ["esnext"],
+    "skipLibCheck": true /* https://github.com/rollup/rollup/issues/5199 and https://github.com/vitejs/vite/issues/14513 */
+  }
 }

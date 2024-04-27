@@ -1,4 +1,4 @@
-import { EntityManager } from '@mikro-orm/core'
+import { EntityManager } from '@mikro-orm/mysql'
 import { Policy as ServicePolicy, PolicyDenial, PolicyResponse, Request } from 'koa-clay'
 import { Context } from 'koa'
 import APIKey, { APIKeyScope } from '../entities/api-key'

@@ -1,4 +1,4 @@
-import { EntityManager } from '@mikro-orm/core'
+import { EntityManager } from '@mikro-orm/mysql'
 import GameActivity from '../../entities/game-activity'
 
 export default async function createGameActivity(em: EntityManager, data: Partial<GameActivity>): Promise<GameActivity> {

@@ -1,5 +1,5 @@
 import Stripe from 'stripe'
-import { EntityManager } from '@mikro-orm/core'
+import { EntityManager } from '@mikro-orm/mysql'
 import { HasPermission, Service, Request, Response, Routes, Validate } from 'koa-clay'
 import PricingPlan from '../entities/pricing-plan'
 import BillingPolicy from '../policies/billing.policy'
@@ -13,7 +13,7 @@ import { isSameMonth } from 'date-fns'
 
 const stripe = initStripe()
 
-type PricingPlanProduct = PricingPlan & {
+type PricingPlanProduct = Omit<PricingPlan & {
   name: string,
   prices: {
     currency: string
@@ -21,7 +21,7 @@ type PricingPlanProduct = PricingPlan & {
     interval: Stripe.Price.Recurring.Interval,
     current: boolean
   }[]
-}
+}, 'toJSON'>
 
 type PricingPlanUsage = {
   [key: string]: {

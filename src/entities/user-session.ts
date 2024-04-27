@@ -1,4 +1,4 @@
-import { Entity, ManyToOne, PrimaryKey, Property } from '@mikro-orm/core'
+import { Entity, ManyToOne, PrimaryKey, Property } from '@mikro-orm/mysql'
 import { v4 } from 'uuid'
 import User from './user'
 import { add } from 'date-fns'

@@ -1,4 +1,4 @@
-import { EntityManager } from '@mikro-orm/core'
+import { EntityManager } from '@mikro-orm/mysql'
 import { HasPermission, Service, Request, Response, Validate } from 'koa-clay'
 import uniqWith from 'lodash.uniqwith'
 import Game from '../entities/game'

@@ -1,6 +1,6 @@
 import { After, Before, Service, Request, Response } from 'koa-clay'
 import User, { UserType } from '../../entities/user'
-import { EntityManager, MikroORM } from '@mikro-orm/core'
+import { EntityManager, MikroORM } from '@mikro-orm/mysql'
 import buildTokenPair from '../../lib/auth/buildTokenPair'
 import Organisation from '../../entities/organisation'
 import { sub } from 'date-fns'
@@ -18,7 +18,7 @@ interface DemoUserJob {
 }
 
 async function scheduleDeletion(req: Request, res: Response, caller: DemoService): Promise<void> {
-  /* c8 ignore next 3 */
+  /* v8 ignore next 3 */
   if (res.status === 200) {
     await caller.queue.add('demo-user', { userId: res.body.user.id }, { delay: 3600000 })
   }
@@ -83,7 +83,7 @@ export default class DemoService extends Service {
     user.emailConfirmed = true
     user.password = await bcrypt.hash(user.email, 10)
 
-    await em.getRepository(User).persistAndFlush(user)
+    await em.persistAndFlush(user)
 
     const accessToken = await buildTokenPair(req.ctx, user)
 

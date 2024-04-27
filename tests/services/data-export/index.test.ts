@@ -1,4 +1,4 @@
-import { EntityManager } from '@mikro-orm/core'
+import { EntityManager } from '@mikro-orm/mysql'
 import request from 'supertest'
 import DataExportFactory from '../../fixtures/DataExportFactory'
 import { UserType } from '../../../src/entities/user'

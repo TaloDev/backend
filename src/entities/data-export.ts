@@ -1,4 +1,4 @@
-import { Entity, Enum, ManyToOne, PrimaryKey, Property } from '@mikro-orm/core'
+import { Entity, Enum, ManyToOne, PrimaryKey, Property } from '@mikro-orm/mysql'
 import User from './user'
 import Game from './game'
 

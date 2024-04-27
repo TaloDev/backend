@@ -1,4 +1,4 @@
-import { EntityManager } from '@mikro-orm/core'
+import { EntityManager } from '@mikro-orm/mysql'
 import request from 'supertest'
 import initStripe from '../../../src/lib/billing/initStripe'
 import PricingPlanFactory from '../../fixtures/PricingPlanFactory'

@@ -6,7 +6,7 @@ import OrganisationFactory from './OrganisationFactory'
 import UserTwoFactorAuth from '../../src/entities/user-two-factor-auth'
 import UserRecoveryCode from '../../src/entities/user-recovery-code'
 import generateRecoveryCodes from '../../src/lib/auth/generateRecoveryCodes'
-import { Collection } from '@mikro-orm/core'
+import { Collection } from '@mikro-orm/mysql'
 
 export default class UserFactory extends Factory<User> {
   constructor() {

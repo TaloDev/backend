@@ -1,4 +1,4 @@
-import { Entity, ManyToOne, OneToOne, PrimaryKey, Property } from '@mikro-orm/core'
+import { Entity, ManyToOne, OneToOne, PrimaryKey, Property } from '@mikro-orm/mysql'
 import Stripe from 'stripe'
 import Organisation from './organisation'
 import PricingPlan from './pricing-plan'

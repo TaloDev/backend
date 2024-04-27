@@ -1,4 +1,4 @@
-import { Collection, EntityManager } from '@mikro-orm/core'
+import { Collection, EntityManager } from '@mikro-orm/mysql'
 import { UserType } from '../../../src/entities/user'
 import { DataExportAvailableEntities, DataExportStatus } from '../../../src/entities/data-export'
 import DataExportService from '../../../src/services/data-export.service'

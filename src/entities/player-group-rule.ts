@@ -1,5 +1,4 @@
-import { Embeddable, Enum, expr, Property, QBFilterQuery } from '@mikro-orm/core'
-import { EntityManager, QueryBuilder } from '@mikro-orm/mysql'
+import { EntityManager, Embeddable, Enum, Property, QBFilterQuery, raw } from '@mikro-orm/mysql'
 import Player from './player'
 import PlayerProp from './player-prop'
 
@@ -46,27 +45,27 @@ export default class PlayerGroupRule {
     return this.name === PlayerGroupRuleName.SET && this.negate && this.field.startsWith('props.')
   }
 
-  getQuery(em: EntityManager, qb: QueryBuilder<Player>): QBFilterQuery<Player> {
+  getQuery(em: EntityManager): QBFilterQuery<Player> {
     let query: QBFilterQuery<Player>
 
     switch (this.name) {
       case PlayerGroupRuleName.EQUALS:
-        query = this.getEqualsQuery(em, qb)
+        query = this.getEqualsQuery(em)
         break
       case PlayerGroupRuleName.SET:
         query = this.getSetQuery(em)
         break
       case PlayerGroupRuleName.GT:
-        query = this.getGreaterThanQuery(em, qb)
+        query = this.getGreaterThanQuery(em)
         break
       case PlayerGroupRuleName.GTE:
-        query = this.getGreaterThanEqualQuery(em, qb)
+        query = this.getGreaterThanEqualQuery(em)
         break
       case PlayerGroupRuleName.LT:
-        query = this.getLessThanQuery(em, qb)
+        query = this.getLessThanQuery(em)
         break
       case PlayerGroupRuleName.LTE:
-        query = this.getLessThanEqualQuery(em, qb)
+        query = this.getLessThanEqualQuery(em)
         break
     }
 
@@ -80,11 +79,11 @@ export default class PlayerGroupRule {
   }
 
   private getCastedKey(key: string): string {
-    return expr((alias) => `cast(${alias}.${key} as ${this.castType})`)
+    return raw((alias) => `cast(${alias}.${key} as ${this.castType})`)
   }
 
-  private getOperand(qb: QueryBuilder<Player>, idx: number): string {
-    return qb.raw(`cast('${this.operands[idx]}' as ${this.castType})`)
+  private getOperand(idx: number): string {
+    return raw(`cast('${this.operands[idx]}' as ${this.castType})`)
   }
 
   private buildQuery(em: EntityManager, fieldQuery: QBFilterQuery<Player>): QBFilterQuery<Player> {
@@ -104,9 +103,9 @@ export default class PlayerGroupRule {
     }
   }
 
-  private getEqualsQuery(em: EntityManager, qb: QueryBuilder<Player>): QBFilterQuery<Player> {
+  private getEqualsQuery(em: EntityManager): QBFilterQuery<Player> {
     return this.buildQuery(em, {
-      $eq: this.getOperand(qb, 0)
+      $eq: this.getOperand(0)
     })
   }
 
@@ -126,27 +125,27 @@ export default class PlayerGroupRule {
     })
   }
 
-  private getGreaterThanQuery(em: EntityManager, qb: QueryBuilder<Player>): QBFilterQuery<Player> {
+  private getGreaterThanQuery(em: EntityManager): QBFilterQuery<Player> {
     return this.buildQuery(em, {
-      $gt: this.getOperand(qb, 0)
+      $gt: this.getOperand(0)
     })
   }
 
-  private getGreaterThanEqualQuery(em: EntityManager, qb: QueryBuilder<Player>): QBFilterQuery<Player> {
+  private getGreaterThanEqualQuery(em: EntityManager): QBFilterQuery<Player> {
     return this.buildQuery(em, {
-      $gte: this.getOperand(qb, 0)
+      $gte: this.getOperand(0)
     })
   }
 
-  private getLessThanQuery(em: EntityManager, qb: QueryBuilder<Player>): QBFilterQuery<Player> {
+  private getLessThanQuery(em: EntityManager): QBFilterQuery<Player> {
     return this.buildQuery(em, {
-      $lt: this.getOperand(qb, 0)
+      $lt: this.getOperand(0)
     })
   }
 
-  private getLessThanEqualQuery(em: EntityManager, qb: QueryBuilder<Player>): QBFilterQuery<Player> {
+  private getLessThanEqualQuery(em: EntityManager): QBFilterQuery<Player> {
     return this.buildQuery(em, {
-      $lte: this.getOperand(qb, 0)
+      $lte: this.getOperand(0)
     })
   }
 

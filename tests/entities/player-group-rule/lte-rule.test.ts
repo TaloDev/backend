@@ -1,4 +1,4 @@
-import { Collection, EntityManager } from '@mikro-orm/core'
+import { Collection, EntityManager } from '@mikro-orm/mysql'
 import request from 'supertest'
 import PlayerGroupRule, { PlayerGroupRuleCastType, PlayerGroupRuleName } from '../../../src/entities/player-group-rule'
 import PlayerFactory from '../../fixtures/PlayerFactory'

@@ -1,5 +1,4 @@
-import { FilterQuery, ObjectQuery } from '@mikro-orm/core'
-import { EntityManager } from '@mikro-orm/mysql'
+import { FilterQuery, ObjectQuery, EntityManager } from '@mikro-orm/mysql'
 import { HasPermission, Routes, Service, Request, Response, Validate } from 'koa-clay'
 import { GameActivityType } from '../entities/game-activity'
 import Leaderboard from '../entities/leaderboard'

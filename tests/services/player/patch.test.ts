@@ -1,4 +1,4 @@
-import { Collection, EntityManager } from '@mikro-orm/core'
+import { Collection, EntityManager } from '@mikro-orm/mysql'
 import request from 'supertest'
 import { UserType } from '../../../src/entities/user'
 import PlayerFactory from '../../fixtures/PlayerFactory'

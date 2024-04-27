@@ -1,4 +1,4 @@
-import { EntityManager } from '@mikro-orm/core'
+import { EntityManager } from '@mikro-orm/mysql'
 import jwt from 'jsonwebtoken'
 import User from '../../entities/user'
 import { differenceInDays } from 'date-fns'

@@ -1,4 +1,4 @@
-import { Entity, Embedded, ManyToOne, PrimaryKey, Property, Cascade } from '@mikro-orm/core'
+import { Entity, Embedded, ManyToOne, PrimaryKey, Property, Cascade } from '@mikro-orm/mysql'
 import sanitiseProps from '../lib/props/sanitiseProps'
 import Game from './game'
 import PlayerAlias from './player-alias'

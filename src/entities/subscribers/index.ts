@@ -1,4 +1,4 @@
-import { EventSubscriber } from '@mikro-orm/core'
+import { EventSubscriber } from '@mikro-orm/mysql'
 import PlayerSubscriber from './player.subscriber'
 
 export default [

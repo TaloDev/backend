@@ -1,6 +1,5 @@
-import { Collection, Embedded, Entity, Enum, ManyToMany, ManyToOne, PrimaryKey, Property } from '@mikro-orm/core'
+import { Collection, Embedded, Entity, Enum, ManyToMany, ManyToOne, PrimaryKey, Property, EntityManager, QueryBuilder } from '@mikro-orm/mysql'
 import { v4 } from 'uuid'
-import { EntityManager, QueryBuilder } from '@mikro-orm/mysql'
 import { Required } from 'koa-clay'
 import Game from './game'
 import Player from './player'
@@ -80,7 +79,7 @@ export default class PlayerGroup {
   }
 
   private buildCondition(em: EntityManager, query: QueryBuilder<Player>, rule: PlayerGroupRule): QueryBuilder<Player> {
-    return query.where(rule.getQuery(em, query), this.ruleMode)
+    return query.where(rule.getQuery(em), this.ruleMode)
   }
 
   getQuery(em: EntityManager) {

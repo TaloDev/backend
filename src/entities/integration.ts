@@ -1,4 +1,4 @@
-import { Entity, EntityManager, Enum, Filter, ManyToOne, PrimaryKey, Property } from '@mikro-orm/core'
+import { Entity, EntityManager, Enum, Filter, ManyToOne, PrimaryKey, Property } from '@mikro-orm/mysql'
 import { Request, Required, ValidationCondition } from 'koa-clay'
 import { decrypt, encrypt } from '../lib/crypto/string-encryption'
 import Game from './game'

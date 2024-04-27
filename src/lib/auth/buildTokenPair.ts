@@ -1,4 +1,4 @@
-import { EntityManager } from '@mikro-orm/core'
+import { EntityManager } from '@mikro-orm/mysql'
 import jwt from 'jsonwebtoken'
 import { promisify } from 'util'
 import { Context } from 'koa'

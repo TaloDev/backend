@@ -1,4 +1,4 @@
-import { EntityManager } from '@mikro-orm/core'
+import { EntityManager } from '@mikro-orm/mysql'
 import { Request, Response, Routes, Validate, HasPermission, ForwardTo, forwardRequest } from 'koa-clay'
 import APIKey, { APIKeyScope } from '../../entities/api-key'
 import Player from '../../entities/player'

@@ -1,4 +1,4 @@
-import { EntityManager } from '@mikro-orm/core'
+import { EntityManager } from '@mikro-orm/mysql'
 import request from 'supertest'
 import PlayerGroupFactory from '../../fixtures/PlayerGroupFactory'
 import createOrganisationAndGame from '../../utils/createOrganisationAndGame'

@@ -1,4 +1,4 @@
-import { EntityManager } from '@mikro-orm/core'
+import { EntityManager } from '@mikro-orm/mysql'
 import { isSameMonth } from 'date-fns'
 import { Request } from 'koa-clay'
 import Organisation from '../../entities/organisation'

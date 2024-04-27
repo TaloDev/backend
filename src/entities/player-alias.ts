@@ -1,4 +1,4 @@
-import { Cascade, Entity, Enum, ManyToOne, PrimaryKey, Property } from '@mikro-orm/core'
+import { Cascade, Entity, Enum, ManyToOne, PrimaryKey, Property } from '@mikro-orm/mysql'
 import Player from './player'
 
 export enum PlayerAliasService {

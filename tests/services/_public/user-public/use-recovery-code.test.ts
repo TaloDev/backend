@@ -1,4 +1,4 @@
-import { Collection, EntityManager } from '@mikro-orm/core'
+import { Collection, EntityManager } from '@mikro-orm/mysql'
 import request from 'supertest'
 import UserRecoveryCode from '../../../../src/entities/user-recovery-code'
 import redisConfig from '../../../../src/config/redis.config'

@@ -1,4 +1,4 @@
-import { MikroORM } from '@mikro-orm/core'
+import { MikroORM } from '@mikro-orm/mysql'
 import ormConfig from '../../config/mikro-orm.config'
 import FailedJob from '../../entities/failed-job'
 import * as Sentry from '@sentry/node'
@@ -14,7 +14,7 @@ async function handleJobFailure<T>(job: Job<T>, err: Error): Promise<void> {
   failedJob.reason = err.message
   failedJob.stack = err.stack
 
-  await em.getRepository(FailedJob).persistAndFlush(failedJob)
+  await em.persistAndFlush(failedJob)
   await orm.close()
 
   Sentry.setContext('queue', {

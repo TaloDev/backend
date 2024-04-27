@@ -1,4 +1,4 @@
-import { Collection, Entity, OneToMany, PrimaryKey, Property } from '@mikro-orm/core'
+import { Collection, Entity, OneToMany, PrimaryKey, Property } from '@mikro-orm/mysql'
 import PricingPlanAction from './pricing-plan-action'
 
 @Entity()
@@ -27,6 +27,7 @@ export default class PricingPlan {
   toJSON() {
     return {
       id: this.id,
+      stripeId: this.stripeId,
       hidden: this.hidden,
       default: this.default,
       actions: this.actions

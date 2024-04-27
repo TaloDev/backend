@@ -1,9 +1,9 @@
 {
   "compilerOptions": {
-    "module": "ES2022",
+    "module": "commonjs",
     "esModuleInterop": true,
     "target": "es6",
-    "moduleResolution": "Bundler",
+    "moduleResolution": "node",
     "sourceMap": true,
     "outDir": "dist",
     "experimentalDecorators": true,

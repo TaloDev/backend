@@ -1,5 +1,5 @@
 import Stripe from 'stripe'
-import { EntityManager } from '@mikro-orm/core'
+import { EntityManager } from '@mikro-orm/mysql'
 import { Request, Response, Routes, Service } from 'koa-clay'
 import OrganisationPricingPlan from '../../entities/organisation-pricing-plan'
 import createDefaultPricingPlan from '../../lib/billing/createDefaultPricingPlan'

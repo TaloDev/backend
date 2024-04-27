@@ -2,7 +2,7 @@ import { After, Service, Request, Response, Routes, Validate } from 'koa-clay'
 import User, { UserType } from '../../entities/user'
 import jwt from 'jsonwebtoken'
 import { promisify } from 'util'
-import { EntityManager } from '@mikro-orm/core'
+import { EntityManager } from '@mikro-orm/mysql'
 import UserSession from '../../entities/user-session'
 import bcrypt from 'bcrypt'
 import buildTokenPair from '../../lib/auth/buildTokenPair'
@@ -121,7 +121,7 @@ export default class UserPublicService extends Service {
 
       await createGameActivity(em, { user, type: GameActivityType.INVITE_ACCEPTED })
 
-      await em.getRepository(Invite).remove(invite)
+      await em.remove(invite)
     } else {
       const organisation = new Organisation()
       organisation.email = email
@@ -133,7 +133,7 @@ export default class UserPublicService extends Service {
     }
 
     req.ctx.state.user = user
-    await em.getRepository(User).persistAndFlush(user)
+    await em.persistAndFlush(user)
     await em.populate(user, ['organisation'])
 
     if (!inviteToken) {
@@ -206,7 +206,7 @@ export default class UserPublicService extends Service {
     }
 
     if (new Date() > session.validUntil) {
-      await em.getRepository(UserSession).removeAndFlush(session)
+      await em.removeAndFlush(session)
       req.ctx.throw(401, 'Refresh token expired')
     }
 
@@ -268,7 +268,7 @@ export default class UserPublicService extends Service {
     user.password = await bcrypt.hash(password, 10)
 
     const sessions = await em.repo(UserSession).find({ user })
-    await em.repo(UserSession).remove(sessions)
+    await em.remove(sessions)
     await em.flush()
 
     return {

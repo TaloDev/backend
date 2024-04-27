@@ -1,4 +1,4 @@
-import { Embeddable, Property } from '@mikro-orm/core'
+import { Embeddable, Property } from '@mikro-orm/mysql'
 
 @Embeddable()
 export default class Prop {

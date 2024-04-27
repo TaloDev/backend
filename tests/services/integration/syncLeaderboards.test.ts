@@ -1,4 +1,4 @@
-import { EntityManager } from '@mikro-orm/core'
+import { EntityManager } from '@mikro-orm/mysql'
 import request from 'supertest'
 import { UserType } from '../../../src/entities/user'
 import createUserAndToken from '../../utils/createUserAndToken'
@@ -11,7 +11,7 @@ import GameActivity, { GameActivityType } from '../../../src/entities/game-activ
 import * as steamworksIntegration from '../../../src/lib/integrations/steamworks-integration'
 
 describe('Integration service - sync leaderboards', () => {
-  const syncMock = vi.spyOn(steamworksIntegration, 'syncSteamworksLeaderboards').mockImplementation()
+  const syncMock = vi.spyOn(steamworksIntegration, 'syncSteamworksLeaderboards').mockImplementation(Promise.resolve)
 
   beforeEach(async () => {
     syncMock.mockReset()

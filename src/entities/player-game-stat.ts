@@ -1,4 +1,4 @@
-import { Cascade, Entity, ManyToOne, PrimaryKey, Property } from '@mikro-orm/core'
+import { Cascade, Entity, ManyToOne, PrimaryKey, Property } from '@mikro-orm/mysql'
 import GameStat from './game-stat'
 import Player from './player'
 

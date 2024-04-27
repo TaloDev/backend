@@ -1,4 +1,4 @@
-import { EntityManager } from '@mikro-orm/core'
+import { EntityManager } from '@mikro-orm/mysql'
 import { Service, Request, Response, Routes, Validate, Before } from 'koa-clay'
 import UserSession from '../entities/user-session'
 import buildTokenPair from '../lib/auth/buildTokenPair'
@@ -110,7 +110,7 @@ export default class UserService extends Service {
     user.password = await bcrypt.hash(newPassword, 10)
     const userSessionRepo = em.getRepository(UserSession)
     const sessions = await userSessionRepo.find({ user })
-    await userSessionRepo.remove(sessions)
+    await em.remove(sessions)
 
     const accessToken = await buildTokenPair(req.ctx, user)
 
@@ -156,7 +156,7 @@ export default class UserService extends Service {
     }
 
     user.emailConfirmed = true
-    await em.getRepository(UserAccessCode).removeAndFlush(accessCode)
+    await em.removeAndFlush(accessCode)
 
     return {
       status: 200,

@@ -1,4 +1,4 @@
-import { EntityManager } from '@mikro-orm/core'
+import { EntityManager } from '@mikro-orm/mysql'
 import { HasPermission, Request, Response, Validate, ValidationCondition, Docs } from 'koa-clay'
 import Event from '../../entities/event'
 import EventAPIPolicy from '../../policies/api/event-api.policy'

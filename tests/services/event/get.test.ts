@@ -1,4 +1,4 @@
-import { EntityManager } from '@mikro-orm/core'
+import { EntityManager } from '@mikro-orm/mysql'
 import request from 'supertest'
 import Event from '../../../src/entities/event'
 import EventFactory from '../../fixtures/EventFactory'

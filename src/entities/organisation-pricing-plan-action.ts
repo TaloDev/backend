@@ -1,4 +1,4 @@
-import { Entity, Enum, ManyToOne, PrimaryKey, Property } from '@mikro-orm/core'
+import { Entity, Enum, ManyToOne, PrimaryKey, Property } from '@mikro-orm/mysql'
 import OrganisationPricingPlan from './organisation-pricing-plan'
 import { PricingPlanActionType } from './pricing-plan-action'
 

@@ -1,4 +1,4 @@
-import { EntityManager } from '@mikro-orm/core'
+import { EntityManager } from '@mikro-orm/mysql'
 import { differenceInSeconds } from 'date-fns'
 import { HasPermission, Request, Response, Routes, Validate, Docs } from 'koa-clay'
 import GameStatAPIDocs from '../../docs/game-stat-api.docs'

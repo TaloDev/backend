@@ -17,7 +17,7 @@ set -e
 
 dc up -d
 
-yarn mikro-orm migration:up
+npx mikro-orm migration:up
 echo "\n"
 
 if [ -z "$EXPOSE_GC" ]
@@ -26,4 +26,3 @@ then
 else
   node --expose-gc --trace-warnings ./node_modules/.bin/vitest "$@" --logHeapUsage
 fi
-

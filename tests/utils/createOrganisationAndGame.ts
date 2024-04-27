@@ -1,4 +1,4 @@
-import { EntityManager } from '@mikro-orm/core'
+import { EntityManager } from '@mikro-orm/mysql'
 import Game from '../../src/entities/game'
 import Organisation from '../../src/entities/organisation'
 import PricingPlan from '../../src/entities/pricing-plan'

@@ -1,4 +1,4 @@
-import { EntityManager } from '@mikro-orm/core'
+import { EntityManager } from '@mikro-orm/mysql'
 import { APIKeyScope } from '../../src/entities/api-key'
 import UserFactory from '../fixtures/UserFactory'
 import request from 'supertest'

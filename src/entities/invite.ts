@@ -1,4 +1,4 @@
-import { Entity, Enum, ManyToOne, PrimaryKey, Property } from '@mikro-orm/core'
+import { Entity, Enum, ManyToOne, PrimaryKey, Property } from '@mikro-orm/mysql'
 import { Required, ValidationCondition } from 'koa-clay'
 import Organisation from './organisation'
 import User, { UserType } from './user'

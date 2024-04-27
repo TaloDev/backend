@@ -1,4 +1,4 @@
-import { Entity, OneToOne, PrimaryKey, Property } from '@mikro-orm/core'
+import { Entity, OneToOne, PrimaryKey, Property } from '@mikro-orm/mysql'
 import { decrypt, encrypt } from '../lib/crypto/string-encryption'
 import Game from './game'
 import crypto from 'crypto'

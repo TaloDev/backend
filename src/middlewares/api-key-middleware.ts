@@ -1,7 +1,7 @@
 import { Context, Next } from 'koa'
 import jwt from 'jsonwebtoken'
 import { isAPIRoute } from './route-middleware'
-import { EntityManager } from '@mikro-orm/core'
+import { EntityManager } from '@mikro-orm/mysql'
 import APIKey from '../entities/api-key'
 
 export default async function apiKeyMiddleware(ctx: Context, next: Next): Promise<void> {

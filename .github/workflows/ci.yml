@@ -15,16 +15,16 @@ jobs:
       - uses: actions/cache@v3
         with:
           path: '**/node_modules'
-          key: ${{ runner.os }}-modules-${{ hashFiles('**/yarn.lock') }}
+          key: ${{ runner.os }}-modules-${{ hashFiles('**/package-lock.json') }}
 
       - name: Install deps
-        run: yarn --prefer-offline
+        run: npm ci --prefer-offline
 
       - name: Setup environment
         run: cp envs/.env.dev .env
 
       - name: Run tests
-        run: yarn test --coverage
+        run: npm test --coverage
 
       - uses: codecov/codecov-action@v3
         with:
@@ -42,13 +42,13 @@ jobs:
       - uses: actions/cache@v3
         with:
           path: '**/node_modules'
-          key: ${{ runner.os }}-modules-${{ hashFiles('**/yarn.lock') }}
+          key: ${{ runner.os }}-modules-${{ hashFiles('**/package-lock.json') }}
 
       - name: Install deps
-        run: yarn --prefer-offline
+        run: npm ci --prefer-offline
 
       - name: Build
-        run: yarn build
+        run: npm run build
 
   lint:
     runs-on: ubuntu-latest
@@ -62,10 +62,10 @@ jobs:
       - uses: actions/cache@v3
         with:
           path: '**/node_modules'
-          key: ${{ runner.os }}-modules-${{ hashFiles('**/yarn.lock') }}
+          key: ${{ runner.os }}-modules-${{ hashFiles('**/package-lock.json') }}
 
       - name: Install deps
-        run: yarn --prefer-offline
+        run: npm ci --prefer-offline
 
       - name: Lint
-        run: yarn eslint
+        run: npm run eslint

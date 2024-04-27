@@ -3,7 +3,7 @@ import casual from 'casual'
 import Leaderboard, { LeaderboardSortMode } from '../../src/entities/leaderboard'
 import Game from '../../src/entities/game'
 import LeaderboardEntryFactory from './LeaderboardEntryFactory'
-import { Collection } from '@mikro-orm/core'
+import { Collection } from '@mikro-orm/mysql'
 import LeaderboardEntry from '../../src/entities/leaderboard-entry'
 
 export default class LeaderboardFactory extends Factory<Leaderboard> {

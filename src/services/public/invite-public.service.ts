@@ -1,4 +1,4 @@
-import { EntityManager } from '@mikro-orm/core'
+import { EntityManager } from '@mikro-orm/mysql'
 import { Service, Request, Response } from 'koa-clay'
 import Invite from '../../entities/invite'
 

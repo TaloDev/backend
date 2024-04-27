@@ -1,5 +1,4 @@
-import { QBFilterQuery } from '@mikro-orm/core'
-import { EntityManager } from '@mikro-orm/mysql'
+import { QBFilterQuery, EntityManager } from '@mikro-orm/mysql'
 import { Context, Next } from 'koa'
 import Player from '../entities/player'
 import PlayerProp from '../entities/player-prop'

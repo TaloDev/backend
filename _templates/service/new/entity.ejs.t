@@ -1,7 +1,7 @@
 ---
 to: src/entities/<%= name %>.ts
 ---
-import { Entity, PrimaryKey, Property } from '@mikro-orm/core'
+import { Entity, PrimaryKey, Property } from '@mikro-orm/mysql'
 
 @Entity()
 export default class <%= h.changeCase.pascal(name) %> {

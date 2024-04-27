@@ -1,4 +1,4 @@
-import { Collection, FilterQuery, MikroORM } from '@mikro-orm/core'
+import { Collection, FilterQuery, MikroORM, EntityManager } from '@mikro-orm/mysql'
 import { HasPermission, Routes, Service, Request, Response, Validate, ValidationCondition } from 'koa-clay'
 import DataExport, { DataExportAvailableEntities, DataExportStatus } from '../entities/data-export'
 import DataExportPolicy from '../policies/data-export.policy'
@@ -22,7 +22,6 @@ import handlePricingPlanAction from '../lib/billing/handlePricingPlanAction'
 import { PricingPlanActionType } from '../entities/pricing-plan-action'
 import queueEmail from '../lib/messaging/queueEmail'
 import OrganisationPricingPlanAction from '../entities/organisation-pricing-plan-action'
-import { EntityManager } from '@mikro-orm/mysql'
 import pick from 'lodash.pick'
 import PlayerProp from '../entities/player-prop'
 import { Job, Queue } from 'bullmq'
@@ -128,7 +127,7 @@ export default class DataExportService extends Service {
 
       const orgPlanAction = await em.getRepository(OrganisationPricingPlanAction).findOne({ type: PricingPlanActionType.DATA_EXPORT, extra: { dataExportId } })
       if (orgPlanAction) {
-        await em.getRepository(OrganisationPricingPlanAction).removeAndFlush(orgPlanAction)
+        await em.removeAndFlush(orgPlanAction)
       }
     }
 

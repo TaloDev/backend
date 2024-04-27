@@ -1,7 +1,7 @@
 ---
 to: src/services/<%= name %>.service.ts
 ---
-import { EntityManager } from '@mikro-orm/core'
+import { EntityManager } from '@mikro-orm/mysql'
 import { HasPermission, Service, Request, Response, Validate } from 'koa-clay'
 import <%= h.changeCase.pascal(name) %> from '../entities/<%= name %>'
 import <%= h.changeCase.pascal(name) %>Policy from '../policies/<%= name %>.policy'

@@ -1,4 +1,4 @@
-import { EntityManager } from '@mikro-orm/core'
+import { EntityManager } from '@mikro-orm/mysql'
 import request from 'supertest'
 import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
 import initStripe from '../../../../src/lib/billing/initStripe'
@@ -145,7 +145,7 @@ describe('Webhook service - subscription updated', () => {
       .send(payload)
       .expect(204)
 
-    await (<EntityManager>global.em).refresh(organisation, { populate: ['pricingPlan'] })
+    await (<EntityManager>global.em).refresh(organisation.pricingPlan)
     expect(organisation.pricingPlan.endDate).toBe(null)
     expect(sendMock).toHaveBeenCalledWith(new PlanRenewed(organisation).getConfig())
   })

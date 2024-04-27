@@ -1,4 +1,4 @@
-import { EntityManager, MikroORM } from '@mikro-orm/core'
+import { EntityManager, MikroORM } from '@mikro-orm/mysql'
 import ormConfig from '../../../src/config/mikro-orm.config'
 import { IntegrationType } from '../../../src/entities/integration'
 import { GetSchemaForGameResponse, GetUserStatsForGameResponse, syncSteamworksStats } from '../../../src/lib/integrations/steamworks-integration'

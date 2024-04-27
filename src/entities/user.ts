@@ -1,4 +1,4 @@
-import { Collection, Entity, Enum, ManyToOne, OneToMany, OneToOne, PrimaryKey, Property } from '@mikro-orm/core'
+import { Collection, Entity, Enum, ManyToOne, OneToMany, OneToOne, PrimaryKey, Property } from '@mikro-orm/mysql'
 import Organisation from './organisation'
 import UserRecoveryCode from './user-recovery-code'
 import UserTwoFactorAuth from './user-two-factor-auth'

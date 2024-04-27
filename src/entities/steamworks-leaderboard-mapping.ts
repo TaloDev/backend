@@ -1,9 +1,9 @@
-import { Cascade, Entity, ManyToOne, PrimaryKey, PrimaryKeyType, Property } from '@mikro-orm/core'
+import { Cascade, Entity, ManyToOne, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/mysql'
 import Leaderboard from './leaderboard'
 
 @Entity()
 export default class SteamworksLeaderboardMapping {
-  [PrimaryKeyType]?: [number, number]
+  [PrimaryKeyProp]?: ['steamworksLeaderboardId', 'leaderboard']
 
   @PrimaryKey()
   steamworksLeaderboardId: number

@@ -1,4 +1,4 @@
-import { EntityManager } from '@mikro-orm/core'
+import { EntityManager } from '@mikro-orm/mysql'
 import request from 'supertest'
 import UserAccessCode from '../../../../src/entities/user-access-code'
 import casual from 'casual'

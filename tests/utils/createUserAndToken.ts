@@ -1,4 +1,4 @@
-import { EntityManager } from '@mikro-orm/core'
+import { EntityManager } from '@mikro-orm/mysql'
 import Organisation from '../../src/entities/organisation'
 import User from '../../src/entities/user'
 import { genAccessToken } from '../../src/lib/auth/buildTokenPair'

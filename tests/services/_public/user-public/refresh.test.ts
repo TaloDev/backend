@@ -1,4 +1,4 @@
-import { EntityManager } from '@mikro-orm/core'
+import { EntityManager } from '@mikro-orm/mysql'
 import request from 'supertest'
 import UserSession from '../../../../src/entities/user-session'
 import UserFactory from '../../../fixtures/UserFactory'

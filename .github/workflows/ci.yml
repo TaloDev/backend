@@ -68,4 +68,4 @@ jobs:
         run: npm ci --prefer-offline
 
       - name: Lint
-        run: npm run eslint
+        run: npx eslint

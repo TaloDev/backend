@@ -21,8 +21,9 @@ services:
       - test-network
     
   test-redis:
-    image: arm64v8/redis:7-alpine
-    command: redis-server --requirepass ${REDIS_PASSWORD}
+    image: bitnami/redis:7.2
+    environment:
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
     ports:
       - ${REDIS_PORT}:6379
     depends_on:

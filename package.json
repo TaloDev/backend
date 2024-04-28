@@ -1,6 +1,6 @@
 {
   "name": "game-services",
-  "version": "0.31.0",
+  "version": "0.31.1",
   "description": "",
   "main": "src/index.ts",
   "scripts": {
@@ -16,7 +16,7 @@
     "migration:create": "DB_HOST=127.0.0.1 mikro-orm migration:create",
     "migration:up": "DB_HOST=127.0.0.1 mikro-orm migration:up",
     "service:create": "hygen service new",
-    "prepare": "husky install",
+    "prepare": "husky || true",
     "lint": "eslint src/**/*.ts tests/**/*.ts"
   },
   "author": "Sleepy Studios",
@@ -36,7 +36,7 @@
     "casual": "^1.6.2",
     "eslint": "^8.26.0",
     "hefty": "^1.1.0",
-    "husky": ">=6",
+    "husky": "^9.0.11",
     "hygen": "^6.2.11",
     "lint-staged": ">=10",
     "supertest": "^6.3.1",

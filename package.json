@@ -16,7 +16,7 @@
     "migration:create": "DB_HOST=127.0.0.1 mikro-orm migration:create",
     "migration:up": "DB_HOST=127.0.0.1 mikro-orm migration:up",
     "service:create": "hygen service new",
-    "prepare": "husky || true",
+    "prepare": "node .husky/install.mjs",
     "lint": "eslint src/**/*.ts tests/**/*.ts"
   },
   "author": "Sleepy Studios",

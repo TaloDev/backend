@@ -6,6 +6,7 @@ COPY package-lock.json .
 EXPOSE 80
 
 FROM base AS dev
+COPY .husky .husky
 RUN npm ci
 CMD [ "npm", "run", "watch" ]
 

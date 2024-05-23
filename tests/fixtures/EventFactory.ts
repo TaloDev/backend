@@ -3,8 +3,8 @@ import casual from 'casual'
 import Event from '../../src/entities/event'
 import Player from '../../src/entities/player'
 import { sub } from 'date-fns'
-import Prop from '../../src/entities/prop'
 import randomDate from '../../src/lib/dates/randomDate'
+import { generateEventData } from '../../src/lib/demo-data/generateDemoEvents'
 
 export default class EventFactory extends Factory<Event> {
   private availablePlayers: Player[]
@@ -24,19 +24,10 @@ export default class EventFactory extends Factory<Event> {
   protected async base(): Promise<Partial<Event>> {
     const player: Player = casual.random_element(this.availablePlayers)
 
-    const availableProps = ['itemId', 'zoneId', 'treasureId', 'currentLevel', 'timeTaken', 'positionX', 'positionY', 'objectId', 'actionId', 'positionZ', 'currentHealth', 'currentMana', 'currentEnergy', 'npcId']
-    const propsCount = casual.integer(0, 4)
-    const props: Prop[] = []
-
-    for (let i = 0; i < propsCount; i++) {
-      props.push(new Prop(casual.random_element(availableProps), String(casual.integer(0, 999))))
-    }
-
     return {
-      name: casual.random_element(this.eventTitles),
+      ...generateEventData(new Date()),
       game: player.game,
-      playerAlias: casual.random_element(player.aliases.getItems()),
-      props
+      playerAlias: casual.random_element(player.aliases.getItems())
     }
   }
 

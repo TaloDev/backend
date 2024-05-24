@@ -79,7 +79,6 @@ export function generateEventData(date: Date): Partial<Event> {
 export async function generateDemoEvents(req: Request): Promise<void> {
   const em: EntityManager = req.ctx.em
 
-
   const games = await em.getRepository(Game).find({
     organisation: {
       name: process.env.DEMO_ORGANISATION_NAME

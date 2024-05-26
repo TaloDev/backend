@@ -3,7 +3,7 @@ version: '3.9'
 services:
   test-db:
     image: mysql:8
-    command: --default-authentication-plugin=mysql_native_password --sql_mode=
+    command: --mysql-native-password=ON
     environment:
       - MYSQL_DATABASE=${DB_NAME}
       - MYSQL_ROOT_PASSWORD=${DB_PASS}

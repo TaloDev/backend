@@ -1,5 +1,6 @@
 import { EntityManager } from '@mikro-orm/mysql'
 import request from 'supertest'
+import Event from '../../../../src/entities/event'
 import Organisation from '../../../../src/entities/organisation'
 import OrganisationFactory from '../../../fixtures/OrganisationFactory'
 import User, { UserType } from '../../../../src/entities/user'
@@ -7,6 +8,7 @@ import EventFactory from '../../../fixtures/EventFactory'
 import PlayerFactory from '../../../fixtures/PlayerFactory'
 import GameFactory from '../../../fixtures/GameFactory'
 import { sub } from 'date-fns'
+import randomDate from '../../../../src/lib/dates/randomDate'
 
 describe('Demo service - post', () => {
   let demoOrg: Organisation
@@ -31,24 +33,33 @@ describe('Demo service - post', () => {
     expect(user).toBeNull()
   })
 
-  it('should update the createdAt of events older than 3 months', async () => {
+  it('should insert events if there arent any for the last month', async () => {
     const game = await new GameFactory(demoOrg).one()
     const players = await new PlayerFactory([game]).many(2)
-    let events = await new EventFactory(players).state('this year').many(20)
-    await (<EntityManager>global.em).persistAndFlush(events)
 
-    events = events.filter((event) => event.createdAt < sub(new Date(), { months: 3 }))
-    expect(events.length).toBeGreaterThan(0)
+    let eventsThisMonth = await (<EntityManager>global.em).getRepository(Event).find({
+      createdAt: {
+        $gte: sub(new Date(), { months: 1 })
+      }
+    })
+
+    expect(eventsThisMonth).toHaveLength(0)
+
+    const randomEvents = await new EventFactory(players).with(() => ({
+      createdAt: randomDate(sub(new Date(), { years: 1 }), sub(new Date(), { months: 2 }))
+    })).many(20)
+    await (<EntityManager>global.em).persistAndFlush(randomEvents)
 
     await request(global.app)
       .post('/public/demo')
       .expect(200)
 
-    for (const event of events) {
-      await (<EntityManager>global.em).refresh(event)
-    }
-    events = events.filter((event) => event.createdAt < sub(new Date(), { months: 3 }))
+    eventsThisMonth = await (<EntityManager>global.em).getRepository(Event).find({
+      createdAt: {
+        $gte: sub(new Date(), { months: 1 })
+      }
+    })
 
-    expect(events).toHaveLength(0)
+    expect(eventsThisMonth.length).toBeGreaterThan(0)
   })
 })

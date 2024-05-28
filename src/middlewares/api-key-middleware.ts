@@ -12,14 +12,17 @@ export default async function apiKeyMiddleware(ctx: Context, next: Next): Promis
       const decodedToken = jwt.decode(parts[1])
 
       if (decodedToken) {
-        const apiKey = await em.getRepository(APIKey).findOne(decodedToken.sub)
-        await em.populate(apiKey, ['game.apiSecret'])
+        const apiKey = await em.getRepository(APIKey).findOne(decodedToken.sub, {
+          populate: ['game.apiSecret']
+        })
 
-        ctx.state.key = apiKey
-        ctx.state.secret = apiKey.game.apiSecret.getPlainSecret()
+        if (apiKey) {
+          ctx.state.key = apiKey
+          ctx.state.secret = apiKey.game.apiSecret.getPlainSecret()
 
-        if (!apiKey.revokedAt) apiKey.lastUsedAt = new Date()
-        await em.flush()
+          if (!apiKey.revokedAt) apiKey.lastUsedAt = new Date()
+          await em.flush()
+        }
       }
     }
   }

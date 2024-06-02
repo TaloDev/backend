@@ -81,8 +81,7 @@ const GameSaveAPIDocs: APIDocs<GameSaveAPIService> = {
         title: 'Sample request',
         sample: {
           name: sampleSave.name,
-          content: sampleSave.content,
-          aliasId: 15
+          content: sampleSave.content
         }
       },
       {
@@ -112,8 +111,7 @@ const GameSaveAPIDocs: APIDocs<GameSaveAPIService> = {
         title: 'Sample request',
         sample: {
           name: sampleSave.name,
-          content: sampleSave.content,
-          aliasId: 15
+          content: sampleSave.content
         }
       },
       {

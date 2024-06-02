@@ -1,3 +1,4 @@
+import 'dotenv/config'
 import entities from '../entities'
 import subscribers from '../entities/subscribers'
 import migrationsList from '../migrations'

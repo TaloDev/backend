@@ -67,12 +67,14 @@
             "id"
           ],
           "composite": false,
+          "constraint": true,
           "primary": true,
           "unique": true
         }
       ],
       "checks": [],
-      "foreignKeys": {}
+      "foreignKeys": {},
+      "nativeEnums": {}
     },
     {
       "columns": {
@@ -103,12 +105,14 @@
             "id"
           ],
           "composite": false,
+          "constraint": true,
           "primary": true,
           "unique": true
         }
       ],
       "checks": [],
-      "foreignKeys": {}
+      "foreignKeys": {},
+      "nativeEnums": {}
     },
     {
       "columns": {
@@ -179,12 +183,14 @@
             "id"
           ],
           "composite": false,
+          "constraint": true,
           "primary": true,
           "unique": true
         }
       ],
       "checks": [],
-      "foreignKeys": {}
+      "foreignKeys": {},
+      "nativeEnums": {}
     },
     {
       "columns": {
@@ -273,6 +279,7 @@
           ],
           "composite": false,
           "keyName": "organisation_pricing_plan_pricing_plan_id_index",
+          "constraint": false,
           "primary": false,
           "unique": false
         },
@@ -282,6 +289,7 @@
             "id"
           ],
           "composite": false,
+          "constraint": true,
           "primary": true,
           "unique": true
         }
@@ -300,7 +308,8 @@
           "referencedTableName": "pricing_plan",
           "updateRule": "cascade"
         }
-      }
+      },
+      "nativeEnums": {}
     },
     {
       "columns": {
@@ -359,6 +368,7 @@
           ],
           "composite": false,
           "keyName": "organisation_pricing_plan_action_organisation_prici_03129_index",
+          "constraint": false,
           "primary": false,
           "unique": false
         },
@@ -368,6 +378,7 @@
             "id"
           ],
           "composite": false,
+          "constraint": true,
           "primary": true,
           "unique": true
         }
@@ -386,7 +397,8 @@
           "referencedTableName": "organisation_pricing_plan",
           "updateRule": "cascade"
         }
-      }
+      },
+      "nativeEnums": {}
     },
     {
       "columns": {
@@ -455,6 +467,7 @@
           ],
           "composite": false,
           "keyName": "organisation_pricing_plan_id_unique",
+          "constraint": true,
           "primary": false,
           "unique": true
         },
@@ -464,6 +477,7 @@
             "id"
           ],
           "composite": false,
+          "constraint": true,
           "primary": true,
           "unique": true
         }
@@ -482,7 +496,8 @@
           "referencedTableName": "organisation_pricing_plan",
           "updateRule": "cascade"
         }
-      }
+      },
+      "nativeEnums": {}
     },
     {
       "columns": {
@@ -560,6 +575,7 @@
           ],
           "composite": false,
           "keyName": "game_organisation_id_index",
+          "constraint": false,
           "primary": false,
           "unique": false
         },
@@ -569,6 +585,7 @@
           ],
           "composite": false,
           "keyName": "game_api_secret_id_unique",
+          "constraint": true,
           "primary": false,
           "unique": true
         },
@@ -578,6 +595,7 @@
             "id"
           ],
           "composite": false,
+          "constraint": true,
           "primary": true,
           "unique": true
         }
@@ -608,7 +626,8 @@
           "referencedTableName": "game_secret",
           "updateRule": "cascade"
         }
-      }
+      },
+      "nativeEnums": {}
     },
     {
       "columns": {
@@ -650,7 +669,7 @@
         },
         "rule_mode": {
           "name": "rule_mode",
-          "type": "enum('$and', '$or')",
+          "type": "enum('$and','$or')",
           "unsigned": false,
           "autoincrement": false,
           "primary": false,
@@ -700,6 +719,7 @@
           ],
           "composite": false,
           "keyName": "player_group_game_id_index",
+          "constraint": false,
           "primary": false,
           "unique": false
         },
@@ -709,6 +729,7 @@
             "id"
           ],
           "composite": false,
+          "constraint": true,
           "primary": true,
           "unique": true
         }
@@ -727,7 +748,8 @@
           "referencedTableName": "game",
           "updateRule": "cascade"
         }
-      }
+      },
+      "nativeEnums": {}
     },
     {
       "columns": {
@@ -788,6 +810,7 @@
           ],
           "composite": false,
           "keyName": "player_game_id_index",
+          "constraint": false,
           "primary": false,
           "unique": false
         },
@@ -797,6 +820,7 @@
             "id"
           ],
           "composite": false,
+          "constraint": true,
           "primary": true,
           "unique": true
         }
@@ -815,7 +839,8 @@
           "referencedTableName": "game",
           "updateRule": "cascade"
         }
-      }
+      },
+      "nativeEnums": {}
     },
     {
       "columns": {
@@ -864,6 +889,7 @@
           ],
           "composite": false,
           "keyName": "player_prop_player_id_index",
+          "constraint": false,
           "primary": false,
           "unique": false
         },
@@ -873,6 +899,7 @@
             "id"
           ],
           "composite": false,
+          "constraint": true,
           "primary": true,
           "unique": true
         }
@@ -891,7 +918,8 @@
           "referencedTableName": "player",
           "updateRule": "cascade"
         }
-      }
+      },
+      "nativeEnums": {}
     },
     {
       "columns": {
@@ -906,7 +934,7 @@
         },
         "service": {
           "name": "service",
-          "type": "enum('steam', 'epic', 'username', 'email', 'custom')",
+          "type": "enum('steam','epic','username','email','custom')",
           "unsigned": false,
           "autoincrement": false,
           "primary": false,
@@ -967,6 +995,7 @@
           ],
           "composite": false,
           "keyName": "player_alias_player_id_index",
+          "constraint": false,
           "primary": false,
           "unique": false
         },
@@ -976,6 +1005,7 @@
             "id"
           ],
           "composite": false,
+          "constraint": true,
           "primary": true,
           "unique": true
         }
@@ -994,7 +1024,8 @@
           "referencedTableName": "player",
           "deleteRule": "cascade"
         }
-      }
+      },
+      "nativeEnums": {}
     },
     {
       "columns": {
@@ -1025,6 +1056,7 @@
           ],
           "composite": false,
           "keyName": "player_group_members_player_group_id_index",
+          "constraint": false,
           "primary": false,
           "unique": false
         },
@@ -1034,6 +1066,7 @@
           ],
           "composite": false,
           "keyName": "player_group_members_player_id_index",
+          "constraint": false,
           "primary": false,
           "unique": false
         },
@@ -1044,6 +1077,7 @@
             "player_id"
           ],
           "composite": true,
+          "constraint": true,
           "primary": true,
           "unique": true
         }
@@ -1076,7 +1110,8 @@
           "deleteRule": "cascade",
           "updateRule": "cascade"
         }
-      }
+      },
+      "nativeEnums": {}
     },
     {
       "columns": {
@@ -1145,6 +1180,7 @@
           ],
           "composite": false,
           "keyName": "game_save_player_id_index",
+          "constraint": false,
           "primary": false,
           "unique": false
         },
@@ -1154,6 +1190,7 @@
             "id"
           ],
           "composite": false,
+          "constraint": true,
           "primary": true,
           "unique": true
         }
@@ -1172,7 +1209,8 @@
           "referencedTableName": "player",
           "updateRule": "cascade"
         }
-      }
+      },
+      "nativeEnums": {}
     },
     {
       "columns": {
@@ -1205,7 +1243,7 @@
         },
         "sort_mode": {
           "name": "sort_mode",
-          "type": "enum('desc', 'asc')",
+          "type": "enum('desc','asc')",
           "unsigned": false,
           "autoincrement": false,
           "primary": false,
@@ -1264,6 +1302,7 @@
           ],
           "composite": false,
           "keyName": "leaderboard_game_id_index",
+          "constraint": false,
           "primary": false,
           "unique": false
         },
@@ -1273,6 +1312,7 @@
             "id"
           ],
           "composite": false,
+          "constraint": true,
           "primary": true,
           "unique": true
         }
@@ -1291,7 +1331,8 @@
           "referencedTableName": "game",
           "updateRule": "cascade"
         }
-      }
+      },
+      "nativeEnums": {}
     },
     {
       "columns": {
@@ -1370,6 +1411,7 @@
           ],
           "composite": false,
           "keyName": "leaderboard_entry_leaderboard_id_index",
+          "constraint": false,
           "primary": false,
           "unique": false
         },
@@ -1379,6 +1421,7 @@
           ],
           "composite": false,
           "keyName": "leaderboard_entry_player_alias_id_index",
+          "constraint": false,
           "primary": false,
           "unique": false
         },
@@ -1388,6 +1431,7 @@
             "id"
           ],
           "composite": false,
+          "constraint": true,
           "primary": true,
           "unique": true
         }
@@ -1418,7 +1462,8 @@
           "referencedTableName": "player_alias",
           "deleteRule": "cascade"
         }
-      }
+      },
+      "nativeEnums": {}
     },
     {
       "columns": {
@@ -1500,6 +1545,7 @@
           ],
           "composite": false,
           "keyName": "integration_game_id_index",
+          "constraint": false,
           "primary": false,
           "unique": false
         },
@@ -1509,6 +1555,7 @@
             "id"
           ],
           "composite": false,
+          "constraint": true,
           "primary": true,
           "unique": true
         }
@@ -1527,7 +1574,8 @@
           "referencedTableName": "game",
           "updateRule": "cascade"
         }
-      }
+      },
+      "nativeEnums": {}
     },
     {
       "columns": {
@@ -1659,6 +1707,7 @@
           ],
           "composite": false,
           "keyName": "game_stat_game_id_index",
+          "constraint": false,
           "primary": false,
           "unique": false
         },
@@ -1668,6 +1717,7 @@
             "id"
           ],
           "composite": false,
+          "constraint": true,
           "primary": true,
           "unique": true
         }
@@ -1686,7 +1736,8 @@
           "referencedTableName": "game",
           "updateRule": "cascade"
         }
-      }
+      },
+      "nativeEnums": {}
     },
     {
       "columns": {
@@ -1755,6 +1806,7 @@
           ],
           "composite": false,
           "keyName": "player_game_stat_player_id_index",
+          "constraint": false,
           "primary": false,
           "unique": false
         },
@@ -1764,6 +1816,7 @@
           ],
           "composite": false,
           "keyName": "player_game_stat_stat_id_index",
+          "constraint": false,
           "primary": false,
           "unique": false
         },
@@ -1773,6 +1826,7 @@
             "id"
           ],
           "composite": false,
+          "constraint": true,
           "primary": true,
           "unique": true
         }
@@ -1803,7 +1857,8 @@
           "referencedTableName": "game_stat",
           "deleteRule": "cascade"
         }
-      }
+      },
+      "nativeEnums": {}
     },
     {
       "columns": {
@@ -1881,6 +1936,7 @@
           ],
           "composite": false,
           "keyName": "event_game_id_index",
+          "constraint": false,
           "primary": false,
           "unique": false
         },
@@ -1890,6 +1946,7 @@
           ],
           "composite": false,
           "keyName": "event_player_alias_id_index",
+          "constraint": false,
           "primary": false,
           "unique": false
         },
@@ -1899,6 +1956,7 @@
             "id"
           ],
           "composite": false,
+          "constraint": true,
           "primary": true,
           "unique": true
         }
@@ -1929,7 +1987,8 @@
           "referencedTableName": "player_alias",
           "deleteRule": "cascade"
         }
-      }
+      },
+      "nativeEnums": {}
     },
     {
       "columns": {
@@ -1998,6 +2057,7 @@
           ],
           "composite": false,
           "keyName": "pricing_plan_action_pricing_plan_id_index",
+          "constraint": false,
           "primary": false,
           "unique": false
         },
@@ -2007,6 +2067,7 @@
             "id"
           ],
           "composite": false,
+          "constraint": true,
           "primary": true,
           "unique": true
         }
@@ -2025,7 +2086,8 @@
           "referencedTableName": "pricing_plan",
           "updateRule": "cascade"
         }
-      }
+      },
+      "nativeEnums": {}
     },
     {
       "columns": {
@@ -2084,6 +2146,7 @@
           ],
           "composite": false,
           "keyName": "steamworks_integration_event_integration_id_index",
+          "constraint": false,
           "primary": false,
           "unique": false
         },
@@ -2093,6 +2156,7 @@
             "id"
           ],
           "composite": false,
+          "constraint": true,
           "primary": true,
           "unique": true
         }
@@ -2111,7 +2175,8 @@
           "referencedTableName": "integration",
           "updateRule": "cascade"
         }
-      }
+      },
+      "nativeEnums": {}
     },
     {
       "columns": {
@@ -2152,6 +2217,7 @@
           ],
           "composite": false,
           "keyName": "steamworks_leaderboard_mapping_leaderboard_id_index",
+          "constraint": false,
           "primary": false,
           "unique": false
         },
@@ -2162,6 +2228,7 @@
             "leaderboard_id"
           ],
           "composite": true,
+          "constraint": true,
           "primary": true,
           "unique": true
         }
@@ -2180,7 +2247,8 @@
           "referencedTableName": "leaderboard",
           "deleteRule": "cascade"
         }
-      }
+      },
+      "nativeEnums": {}
     },
     {
       "columns": {
@@ -2221,12 +2289,14 @@
             "id"
           ],
           "composite": false,
+          "constraint": true,
           "primary": true,
           "unique": true
         }
       ],
       "checks": [],
-      "foreignKeys": {}
+      "foreignKeys": {},
+      "nativeEnums": {}
     },
     {
       "columns": {
@@ -2343,6 +2413,7 @@
           ],
           "composite": false,
           "keyName": "user_organisation_id_index",
+          "constraint": false,
           "primary": false,
           "unique": false
         },
@@ -2352,6 +2423,7 @@
           ],
           "composite": false,
           "keyName": "user_two_factor_auth_id_unique",
+          "constraint": true,
           "primary": false,
           "unique": true
         },
@@ -2361,6 +2433,7 @@
             "id"
           ],
           "composite": false,
+          "constraint": true,
           "primary": true,
           "unique": true
         }
@@ -2392,7 +2465,8 @@
           "deleteRule": "set null",
           "updateRule": "cascade"
         }
-      }
+      },
+      "nativeEnums": {}
     },
     {
       "columns": {
@@ -2461,6 +2535,7 @@
           ],
           "composite": false,
           "keyName": "user_session_user_id_index",
+          "constraint": false,
           "primary": false,
           "unique": false
         },
@@ -2470,6 +2545,7 @@
             "id"
           ],
           "composite": false,
+          "constraint": true,
           "primary": true,
           "unique": true
         }
@@ -2488,7 +2564,8 @@
           "referencedTableName": "user",
           "updateRule": "cascade"
         }
-      }
+      },
+      "nativeEnums": {}
     },
     {
       "columns": {
@@ -2538,6 +2615,7 @@
           ],
           "composite": false,
           "keyName": "user_recovery_code_user_id_index",
+          "constraint": false,
           "primary": false,
           "unique": false
         },
@@ -2547,6 +2625,7 @@
             "id"
           ],
           "composite": false,
+          "constraint": true,
           "primary": true,
           "unique": true
         }
@@ -2565,7 +2644,8 @@
           "referencedTableName": "user",
           "updateRule": "cascade"
         }
-      }
+      },
+      "nativeEnums": {}
     },
     {
       "columns": {
@@ -2625,6 +2705,7 @@
           ],
           "composite": false,
           "keyName": "user_access_code_user_id_index",
+          "constraint": false,
           "primary": false,
           "unique": false
         },
@@ -2634,6 +2715,7 @@
             "id"
           ],
           "composite": false,
+          "constraint": true,
           "primary": true,
           "unique": true
         }
@@ -2652,7 +2734,8 @@
           "referencedTableName": "user",
           "updateRule": "cascade"
         }
-      }
+      },
+      "nativeEnums": {}
     },
     {
       "columns": {
@@ -2730,6 +2813,7 @@
           ],
           "composite": false,
           "keyName": "invite_organisation_id_index",
+          "constraint": false,
           "primary": false,
           "unique": false
         },
@@ -2739,6 +2823,7 @@
           ],
           "composite": false,
           "keyName": "invite_invited_by_user_id_index",
+          "constraint": false,
           "primary": false,
           "unique": false
         },
@@ -2748,6 +2833,7 @@
             "id"
           ],
           "composite": false,
+          "constraint": true,
           "primary": true,
           "unique": true
         }
@@ -2778,7 +2864,8 @@
           "referencedTableName": "user",
           "updateRule": "cascade"
         }
-      }
+      },
+      "nativeEnums": {}
     },
     {
       "columns": {
@@ -2846,6 +2933,7 @@
           ],
           "composite": false,
           "keyName": "game_activity_game_id_index",
+          "constraint": false,
           "primary": false,
           "unique": false
         },
@@ -2855,6 +2943,7 @@
           ],
           "composite": false,
           "keyName": "game_activity_user_id_index",
+          "constraint": false,
           "primary": false,
           "unique": false
         },
@@ -2864,6 +2953,7 @@
             "id"
           ],
           "composite": false,
+          "constraint": true,
           "primary": true,
           "unique": true
         }
@@ -2895,7 +2985,8 @@
           "referencedTableName": "user",
           "updateRule": "cascade"
         }
-      }
+      },
+      "nativeEnums": {}
     },
     {
       "columns": {
@@ -2993,6 +3084,7 @@
           ],
           "composite": false,
           "keyName": "data_export_created_by_user_id_index",
+          "constraint": false,
           "primary": false,
           "unique": false
         },
@@ -3002,6 +3094,7 @@
           ],
           "composite": false,
           "keyName": "data_export_game_id_index",
+          "constraint": false,
           "primary": false,
           "unique": false
         },
@@ -3011,6 +3104,7 @@
             "id"
           ],
           "composite": false,
+          "constraint": true,
           "primary": true,
           "unique": true
         }
@@ -3041,7 +3135,8 @@
           "referencedTableName": "game",
           "updateRule": "cascade"
         }
-      }
+      },
+      "nativeEnums": {}
     },
     {
       "columns": {
@@ -3135,6 +3230,7 @@
           ],
           "composite": false,
           "keyName": "apikey_game_id_index",
+          "constraint": false,
           "primary": false,
           "unique": false
         },
@@ -3144,6 +3240,7 @@
           ],
           "composite": false,
           "keyName": "apikey_created_by_user_id_index",
+          "constraint": false,
           "primary": false,
           "unique": false
         },
@@ -3153,6 +3250,7 @@
             "id"
           ],
           "composite": false,
+          "constraint": true,
           "primary": true,
           "unique": true
         }
@@ -3183,7 +3281,9 @@
           "referencedTableName": "user",
           "updateRule": "cascade"
         }
-      }
+      },
+      "nativeEnums": {}
     }
-  ]
+  ],
+  "nativeEnums": {}
 }

@@ -15,9 +15,11 @@
       "enabled": false
     },
     {
-      "matchPackagePatterns": ["^@mikro-orm/"],
-      "groupName": "mikro-orm dependencies",
-      "groupSlug": "mikro-orm-dependencies",
+      "matchSourceUrls": [
+        "https://github.com/mikro-orm/mikro-orm"
+      ],
+      "groupName": "mikro-orm",
+      "groupSlug": "mikro-orm",
       "group": {
         "minor": true,
         "patch": true

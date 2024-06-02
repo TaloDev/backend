@@ -17,7 +17,11 @@
     {
       "matchPackagePatterns": ["^@mikro-orm/"],
       "groupName": "mikro-orm dependencies",
-      "groupSlug": "mikro-orm-dependencies"
+      "groupSlug": "mikro-orm-dependencies",
+      "group": {
+        "minor": true,
+        "patch": true
+      }
     }
   ],
   "platformAutomerge": true,

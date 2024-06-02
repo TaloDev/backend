@@ -13,6 +13,11 @@
       "matchDepTypes": ["dependencies"],
       "matchUpdateTypes": ["patch"],
       "enabled": false
+    },
+    {
+      "matchPackagePatterns": ["^@mikro-orm/"],
+      "groupName": "mikro-orm dependencies",
+      "groupSlug": "mikro-orm-dependencies"
     }
   ],
   "platformAutomerge": true,

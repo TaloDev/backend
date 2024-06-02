@@ -38,7 +38,7 @@
     "husky": "^9.0.11",
     "hygen": "^6.2.11",
     "lint-staged": ">=10",
-    "supertest": "^6.3.1",
+    "supertest": "^7.0.0",
     "ts-node": "^10.7.0",
     "ts-node-dev": "^2.0.0",
     "typescript": "^5.4.5",

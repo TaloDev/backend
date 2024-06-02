@@ -1,4 +1,4 @@
-import emailTemplate from './email-template'
+import emailTemplate from './email-template.js'
 import * as Handlebars from 'handlebars'
 import { MailDataRequired } from '@sendgrid/mail'
 

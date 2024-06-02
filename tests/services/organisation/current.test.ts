@@ -1,11 +1,11 @@
 import { EntityManager } from '@mikro-orm/mysql'
 import request from 'supertest'
-import { UserType } from '../../../src/entities/user'
-import UserFactory from '../../fixtures/UserFactory'
-import InviteFactory from '../../fixtures/InviteFactory'
-import userPermissionProvider from '../../utils/userPermissionProvider'
-import createOrganisationAndGame from '../../utils/createOrganisationAndGame'
-import createUserAndToken from '../../utils/createUserAndToken'
+import { UserType } from '../../../src/entities/user.js'
+import UserFactory from '../../fixtures/UserFactory.js'
+import InviteFactory from '../../fixtures/InviteFactory.js'
+import userPermissionProvider from '../../utils/userPermissionProvider.js'
+import createOrganisationAndGame from '../../utils/createOrganisationAndGame.js'
+import createUserAndToken from '../../utils/createUserAndToken.js'
 
 describe('Organisation service - current', () => {
   it.each(userPermissionProvider([

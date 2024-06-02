@@ -1,11 +1,11 @@
 import { EntityManager } from '@mikro-orm/mysql'
 import request from 'supertest'
-import initStripe from '../../../src/lib/billing/initStripe'
-import PricingPlanFactory from '../../fixtures/PricingPlanFactory'
-import createOrganisationAndGame from '../../utils/createOrganisationAndGame'
-import createUserAndToken from '../../utils/createUserAndToken'
-import userPermissionProvider from '../../utils/userPermissionProvider'
-import { UserType } from '../../../src/entities/user'
+import initStripe from '../../../src/lib/billing/initStripe.js'
+import PricingPlanFactory from '../../fixtures/PricingPlanFactory.js'
+import createOrganisationAndGame from '../../utils/createOrganisationAndGame.js'
+import createUserAndToken from '../../utils/createUserAndToken.js'
+import userPermissionProvider from '../../utils/userPermissionProvider.js'
+import { UserType } from '../../../src/entities/user.js'
 import { addHours } from 'date-fns'
 
 const stripe = initStripe()

@@ -1,8 +1,8 @@
-import Policy from '../policy'
+import Policy from '../policy.js'
 import { PolicyDenial, PolicyResponse, Request } from 'koa-clay'
-import Leaderboard from '../../entities/leaderboard'
-import PlayerAlias from '../../entities/player-alias'
-import { APIKeyScope } from '../../entities/api-key'
+import Leaderboard from '../../entities/leaderboard.js'
+import PlayerAlias from '../../entities/player-alias.js'
+import { APIKeyScope } from '../../entities/api-key.js'
 
 export default class LeaderboardAPIPolicy extends Policy {
   async getLeaderboard(req: Request): Promise<Leaderboard | null> {

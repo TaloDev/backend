@@ -1,8 +1,8 @@
 import { Entity, Embedded, ManyToOne, PrimaryKey, Property, Cascade } from '@mikro-orm/mysql'
-import sanitiseProps from '../lib/props/sanitiseProps'
-import Game from './game'
-import PlayerAlias from './player-alias'
-import Prop from './prop'
+import sanitiseProps from '../lib/props/sanitiseProps.js'
+import Game from './game.js'
+import PlayerAlias from './player-alias.js'
+import Prop from './prop.js'
 
 const eventMetaProps = ['META_OS', 'META_GAME_VERSION', 'META_WINDOW_MODE', 'META_SCREEN_WIDTH', 'META_SCREEN_HEIGHT']
 

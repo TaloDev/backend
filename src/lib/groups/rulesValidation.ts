@@ -1,6 +1,6 @@
 import { ValidationCondition } from 'koa-clay'
-import { PlayerField, PlayerRuleFields, RuleMode } from '../../entities/player-group'
-import PlayerGroupRule, { PlayerGroupRuleName, PlayerGroupRuleCastType } from '../../entities/player-group-rule'
+import { PlayerField, PlayerRuleFields, RuleMode } from '../../entities/player-group.js'
+import PlayerGroupRule, { PlayerGroupRuleName, PlayerGroupRuleCastType } from '../../entities/player-group-rule.js'
 
 export const rulesValidation = async (val: unknown): Promise<ValidationCondition[]> => [
   {

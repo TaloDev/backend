@@ -1,5 +1,5 @@
-import { Entity, OneToOne, PrimaryKey, Property } from '@mikro-orm/mysql'
-import User from './user'
+import { Entity, OneToOne, PrimaryKey, Property, Rel } from '@mikro-orm/mysql'
+import User from './user.js'
 
 @Entity()
 export default class UserTwoFactorAuth {
@@ -7,7 +7,7 @@ export default class UserTwoFactorAuth {
   id: number
 
   @OneToOne(() => User, (user) => user.twoFactorAuth)
-  user: User
+  user: Rel<User>
 
   @Property({ hidden: true })
   secret: string

@@ -1,7 +1,7 @@
 import { EntityManager } from '@mikro-orm/mysql'
 import request from 'supertest'
-import UserSession from '../../../../src/entities/user-session'
-import UserFactory from '../../../fixtures/UserFactory'
+import UserSession from '../../../../src/entities/user-session.js'
+import UserFactory from '../../../fixtures/UserFactory.js'
 
 describe('User public service - refresh', () => {
   it('should let a user refresh their session if they have one', async () => {

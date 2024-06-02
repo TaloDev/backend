@@ -1,9 +1,9 @@
 import { EntityManager } from '@mikro-orm/mysql'
 import request from 'supertest'
-import createOrganisationAndGame from '../../utils/createOrganisationAndGame'
-import createUserAndToken from '../../utils/createUserAndToken'
-import PlayerGroupRule, { PlayerGroupRuleName, PlayerGroupRuleCastType } from '../../../src/entities/player-group-rule'
-import PlayerFactory from '../../fixtures/PlayerFactory'
+import createOrganisationAndGame from '../../utils/createOrganisationAndGame.js'
+import createUserAndToken from '../../utils/createUserAndToken.js'
+import PlayerGroupRule, { PlayerGroupRuleName, PlayerGroupRuleCastType } from '../../../src/entities/player-group-rule.js'
+import PlayerFactory from '../../fixtures/PlayerFactory.js'
 
 describe('Player group service - preview count', () => {
   it('should return a preview for the number of players in a group', async () => {

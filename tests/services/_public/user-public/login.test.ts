@@ -1,9 +1,9 @@
 import { EntityManager } from '@mikro-orm/mysql'
 import request from 'supertest'
-import UserFactory from '../../../fixtures/UserFactory'
+import UserFactory from '../../../fixtures/UserFactory.js'
 import { differenceInMinutes, sub } from 'date-fns'
-import Redis from 'ioredis'
-import redisConfig from '../../../../src/config/redis.config'
+import { Redis } from 'ioredis'
+import redisConfig from '../../../../src/config/redis.config.js'
 
 describe('User public service - login', () => {
   it('should let a user login', async () => {

@@ -1,7 +1,7 @@
 import { EntityManager } from '@mikro-orm/mysql'
 import request from 'supertest'
-import { APIKeyScope } from '../../../../src/entities/api-key'
-import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
+import { APIKeyScope } from '../../../../src/entities/api-key.js'
+import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken.js'
 
 describe('Game config API service - index', () => {
   it('should return the game config if the scope is valid', async () => {

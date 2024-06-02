@@ -1,8 +1,8 @@
 import { EntityManager } from '@mikro-orm/mysql'
 import request from 'supertest'
-import PlayerGroupFactory from '../../fixtures/PlayerGroupFactory'
-import createOrganisationAndGame from '../../utils/createOrganisationAndGame'
-import createUserAndToken from '../../utils/createUserAndToken'
+import PlayerGroupFactory from '../../fixtures/PlayerGroupFactory.js'
+import createOrganisationAndGame from '../../utils/createOrganisationAndGame.js'
+import createUserAndToken from '../../utils/createUserAndToken.js'
 
 describe('Player group service - index', () => {
   it('should return a list of groups', async () => {

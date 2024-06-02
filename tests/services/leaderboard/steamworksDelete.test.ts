@@ -1,15 +1,15 @@
 import { EntityManager } from '@mikro-orm/mysql'
 import request from 'supertest'
-import createOrganisationAndGame from '../../utils/createOrganisationAndGame'
-import createUserAndToken from '../../utils/createUserAndToken'
-import IntegrationConfigFactory from '../../fixtures/IntegrationConfigFactory'
-import IntegrationFactory from '../../fixtures/IntegrationFactory'
-import { IntegrationType } from '../../../src/entities/integration'
+import createOrganisationAndGame from '../../utils/createOrganisationAndGame.js'
+import createUserAndToken from '../../utils/createUserAndToken.js'
+import IntegrationConfigFactory from '../../fixtures/IntegrationConfigFactory.js'
+import IntegrationFactory from '../../fixtures/IntegrationFactory.js'
+import { IntegrationType } from '../../../src/entities/integration.js'
 import AxiosMockAdapter from 'axios-mock-adapter'
 import axios from 'axios'
-import SteamworksIntegrationEvent from '../../../src/entities/steamworks-integration-event'
-import LeaderboardFactory from '../../fixtures/LeaderboardFactory'
-import { UserType } from '../../../src/entities/user'
+import SteamworksIntegrationEvent from '../../../src/entities/steamworks-integration-event.js'
+import LeaderboardFactory from '../../fixtures/LeaderboardFactory.js'
+import { UserType } from '../../../src/entities/user.js'
 
 describe('Leaderboard service - delete - steamworks integration', () => {
   const axiosMock = new AxiosMockAdapter(axios)

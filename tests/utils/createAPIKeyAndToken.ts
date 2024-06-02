@@ -1,8 +1,8 @@
 import { EntityManager } from '@mikro-orm/mysql'
-import APIKey, { APIKeyScope } from '../../src/entities/api-key'
-import { createToken } from '../../src/services/api-key.service'
-import GameFactory from '../fixtures/GameFactory'
-import UserFactory from '../fixtures/UserFactory'
+import APIKey, { APIKeyScope } from '../../src/entities/api-key.js'
+import { createToken } from '../../src/services/api-key.service.js'
+import GameFactory from '../fixtures/GameFactory.js'
+import UserFactory from '../fixtures/UserFactory.js'
 
 export default async function createAPIKeyAndToken(scopes: APIKeyScope[]): Promise<[APIKey, string]> {
   const user = await new UserFactory().one()

@@ -1,15 +1,15 @@
 import { EntityManager } from '@mikro-orm/mysql'
 import request from 'supertest'
-import createOrganisationAndGame from '../../utils/createOrganisationAndGame'
-import createUserAndToken from '../../utils/createUserAndToken'
-import IntegrationConfigFactory from '../../fixtures/IntegrationConfigFactory'
-import IntegrationFactory from '../../fixtures/IntegrationFactory'
-import { IntegrationType } from '../../../src/entities/integration'
+import createOrganisationAndGame from '../../utils/createOrganisationAndGame.js'
+import createUserAndToken from '../../utils/createUserAndToken.js'
+import IntegrationConfigFactory from '../../fixtures/IntegrationConfigFactory.js'
+import IntegrationFactory from '../../fixtures/IntegrationFactory.js'
+import { IntegrationType } from '../../../src/entities/integration.js'
 import AxiosMockAdapter from 'axios-mock-adapter'
 import axios from 'axios'
-import SteamworksIntegrationEvent from '../../../src/entities/steamworks-integration-event'
-import SteamworksLeaderboardMapping from '../../../src/entities/steamworks-leaderboard-mapping'
-import clearEntities from '../../utils/clearEntities'
+import SteamworksIntegrationEvent from '../../../src/entities/steamworks-integration-event.js'
+import SteamworksLeaderboardMapping from '../../../src/entities/steamworks-leaderboard-mapping.js'
+import clearEntities from '../../utils/clearEntities.js'
 
 describe('Leaderboard service - post - steamworks integration', () => {
   const axiosMock = new AxiosMockAdapter(axios)

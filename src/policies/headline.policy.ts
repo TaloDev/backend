@@ -1,4 +1,4 @@
-import Policy from './policy'
+import Policy from './policy.js'
 import { Request } from 'koa-clay'
 
 export default class HeadlinePolicy extends Policy {

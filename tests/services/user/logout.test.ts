@@ -1,7 +1,7 @@
 import { EntityManager } from '@mikro-orm/mysql'
 import request from 'supertest'
-import UserSession from '../../../src/entities/user-session'
-import createUserAndToken from '../../utils/createUserAndToken'
+import UserSession from '../../../src/entities/user-session.js'
+import createUserAndToken from '../../utils/createUserAndToken.js'
 
 describe('User service - logout', () => {
   it('should be able to log a user out and clear sessions', async () => {

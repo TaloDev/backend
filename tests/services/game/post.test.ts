@@ -1,9 +1,9 @@
 import { EntityManager } from '@mikro-orm/mysql'
 import request from 'supertest'
-import { UserType } from '../../../src/entities/user'
-import Game from '../../../src/entities/game'
-import userPermissionProvider from '../../utils/userPermissionProvider'
-import createUserAndToken from '../../utils/createUserAndToken'
+import { UserType } from '../../../src/entities/user.js'
+import Game from '../../../src/entities/game.js'
+import userPermissionProvider from '../../utils/userPermissionProvider.js'
+import createUserAndToken from '../../utils/createUserAndToken.js'
 
 describe('Game service - post', () => {
   it.each(userPermissionProvider([

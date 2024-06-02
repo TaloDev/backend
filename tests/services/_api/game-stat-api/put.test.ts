@@ -1,12 +1,12 @@
 import { EntityManager } from '@mikro-orm/mysql'
 import request from 'supertest'
-import { APIKeyScope } from '../../../../src/entities/api-key'
-import PlayerFactory from '../../../fixtures/PlayerFactory'
-import GameStatFactory from '../../../fixtures/GameStatFactory'
-import GameStat from '../../../../src/entities/game-stat'
-import PlayerGameStatFactory from '../../../fixtures/PlayerGameStatFactory'
-import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
-import Game from '../../../../src/entities/game'
+import { APIKeyScope } from '../../../../src/entities/api-key.js'
+import PlayerFactory from '../../../fixtures/PlayerFactory.js'
+import GameStatFactory from '../../../fixtures/GameStatFactory.js'
+import GameStat from '../../../../src/entities/game-stat.js'
+import PlayerGameStatFactory from '../../../fixtures/PlayerGameStatFactory.js'
+import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken.js'
+import Game from '../../../../src/entities/game.js'
 
 describe('Game stats API service - put', () => {
   const createStat = async (game: Game, props: Partial<GameStat>) => {

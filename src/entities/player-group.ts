@@ -1,10 +1,10 @@
-import { Collection, Embedded, Entity, Enum, ManyToMany, ManyToOne, PrimaryKey, Property, EntityManager, QueryBuilder } from '@mikro-orm/mysql'
+import { Collection, Embedded, Entity, Enum, ManyToMany, ManyToOne, PrimaryKey, Property, EntityManager, QueryBuilder, Rel } from '@mikro-orm/mysql'
 import { v4 } from 'uuid'
 import { Required } from 'koa-clay'
-import Game from './game'
-import Player from './player'
-import PlayerGroupRule, { PlayerGroupRuleCastType } from './player-group-rule'
-import { ruleModeValidation, rulesValidation } from '../lib/groups/rulesValidation'
+import Game from './game.js'
+import Player from './player.js'
+import PlayerGroupRule, { PlayerGroupRuleCastType } from './player-group-rule.js'
+import { ruleModeValidation, rulesValidation } from '../lib/groups/rulesValidation.js'
 
 export enum RuleMode {
   AND = '$and',
@@ -63,7 +63,7 @@ export default class PlayerGroup {
   ruleMode: RuleMode = RuleMode.AND
 
   @ManyToOne(() => Game)
-  game: Game
+  game: Rel<Game>
 
   @ManyToMany(() => Player, (player) => player.groups, { owner: true })
   members = new Collection<Player>(this)
@@ -74,7 +74,7 @@ export default class PlayerGroup {
   @Property({ onUpdate: () => new Date() })
   updatedAt: Date = new Date()
 
-  constructor(game: Game) {
+  constructor(game: Rel<Game>) {
     this.game = game
   }
 

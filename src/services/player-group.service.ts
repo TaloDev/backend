@@ -1,11 +1,11 @@
 import { EntityManager } from '@mikro-orm/mysql'
 import { HasPermission, Service, Request, Response, Validate, Routes } from 'koa-clay'
-import { GameActivityType } from '../entities/game-activity'
-import PlayerGroup, { PlayerRuleFields, RuleMode } from '../entities/player-group'
-import PlayerGroupRule, { PlayerGroupRuleCastType, PlayerGroupRuleName } from '../entities/player-group-rule'
-import { ruleModeValidation, rulesValidation } from '../lib/groups/rulesValidation'
-import createGameActivity from '../lib/logging/createGameActivity'
-import PlayerGroupPolicy from '../policies/player-group.policy'
+import { GameActivityType } from '../entities/game-activity.js'
+import PlayerGroup, { PlayerRuleFields, RuleMode } from '../entities/player-group.js'
+import PlayerGroupRule, { PlayerGroupRuleCastType, PlayerGroupRuleName } from '../entities/player-group-rule.js'
+import { ruleModeValidation, rulesValidation } from '../lib/groups/rulesValidation.js'
+import createGameActivity from '../lib/logging/createGameActivity.js'
+import PlayerGroupPolicy from '../policies/player-group.policy.js'
 
 @Routes([
   {

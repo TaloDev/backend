@@ -1,14 +1,14 @@
 import { EntityManager } from '@mikro-orm/mysql'
 import request from 'supertest'
-import Event from '../../../../src/entities/event'
-import Organisation from '../../../../src/entities/organisation'
-import OrganisationFactory from '../../../fixtures/OrganisationFactory'
-import User, { UserType } from '../../../../src/entities/user'
-import EventFactory from '../../../fixtures/EventFactory'
-import PlayerFactory from '../../../fixtures/PlayerFactory'
-import GameFactory from '../../../fixtures/GameFactory'
+import Event from '../../../../src/entities/event.js'
+import Organisation from '../../../../src/entities/organisation.js'
+import OrganisationFactory from '../../../fixtures/OrganisationFactory.js'
+import User, { UserType } from '../../../../src/entities/user.js'
+import EventFactory from '../../../fixtures/EventFactory.js'
+import PlayerFactory from '../../../fixtures/PlayerFactory.js'
+import GameFactory from '../../../fixtures/GameFactory.js'
 import { sub } from 'date-fns'
-import randomDate from '../../../../src/lib/dates/randomDate'
+import randomDate from '../../../../src/lib/dates/randomDate.js'
 
 describe('Demo service - post', () => {
   let demoOrg: Organisation

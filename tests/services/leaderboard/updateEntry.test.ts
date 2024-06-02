@@ -1,11 +1,11 @@
 import { EntityManager } from '@mikro-orm/mysql'
 import request from 'supertest'
-import LeaderboardFactory from '../../fixtures/LeaderboardFactory'
-import PlayerFactory from '../../fixtures/PlayerFactory'
-import GameActivity, { GameActivityType } from '../../../src/entities/game-activity'
-import LeaderboardEntryFactory from '../../fixtures/LeaderboardEntryFactory'
-import createOrganisationAndGame from '../../utils/createOrganisationAndGame'
-import createUserAndToken from '../../utils/createUserAndToken'
+import LeaderboardFactory from '../../fixtures/LeaderboardFactory.js'
+import PlayerFactory from '../../fixtures/PlayerFactory.js'
+import GameActivity, { GameActivityType } from '../../../src/entities/game-activity.js'
+import LeaderboardEntryFactory from '../../fixtures/LeaderboardEntryFactory.js'
+import createOrganisationAndGame from '../../utils/createOrganisationAndGame.js'
+import createUserAndToken from '../../utils/createUserAndToken.js'
 
 describe('Leaderboard service - update entry', () => {
   it('should mark a leaderboard entry as hidden', async () => {

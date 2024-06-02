@@ -1,11 +1,11 @@
 import { FilterQuery, EntityManager } from '@mikro-orm/mysql'
 import { HasPermission, Service, Request, Response, Validate } from 'koa-clay'
-import Event from '../entities/event'
-import EventPolicy from '../policies/event.policy'
+import Event from '../entities/event.js'
+import EventPolicy from '../policies/event.policy.js'
 import groupBy from 'lodash.groupby'
 import { isSameDay, endOfDay } from 'date-fns'
-import dateValidationSchema from '../lib/dates/dateValidationSchema'
-import { devDataPlayerFilter } from '../middlewares/dev-data-middleware'
+import dateValidationSchema from '../lib/dates/dateValidationSchema.js'
+import { devDataPlayerFilter } from '../middlewares/dev-data-middleware.js'
 
 interface EventData {
   name: string

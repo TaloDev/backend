@@ -1,7 +1,7 @@
 import { Entity, Enum, ManyToOne, PrimaryKey, Property } from '@mikro-orm/mysql'
-import upperFirst from '../lib/lang/upperFirst'
-import Game from './game'
-import User from './user'
+import upperFirst from '../lib/lang/upperFirst.js'
+import Game from './game.js'
+import User from './user.js'
 
 export enum GameActivityType {
   PLAYER_PROPS_UPDATED,

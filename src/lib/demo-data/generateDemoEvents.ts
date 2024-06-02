@@ -1,12 +1,12 @@
 import { EntityManager } from '@mikro-orm/mysql'
 import { Request } from 'koa-clay'
-import Event from '../../entities/event'
+import Event from '../../entities/event.js'
 import { addDays, differenceInDays, endOfDay, startOfDay, subMonths } from 'date-fns'
 import casual from 'casual'
-import Prop from '../../entities/prop'
-import Game from '../../entities/game'
-import randomDate from '../dates/randomDate'
-import PlayerAlias from '../../entities/player-alias'
+import Prop from '../../entities/prop.js'
+import Game from '../../entities/game.js'
+import randomDate from '../dates/randomDate.js'
+import PlayerAlias from '../../entities/player-alias.js'
 
 type DemoEvent = {
   name: string

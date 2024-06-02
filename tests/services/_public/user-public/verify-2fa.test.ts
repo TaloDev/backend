@@ -1,9 +1,9 @@
 import request from 'supertest'
 import { authenticator } from '@otplib/preset-default'
-import Redis from 'ioredis'
-import redisConfig from '../../../../src/config/redis.config'
-import UserTwoFactorAuth from '../../../../src/entities/user-two-factor-auth'
-import createUserAndToken from '../../../utils/createUserAndToken'
+import { Redis } from 'ioredis'
+import redisConfig from '../../../../src/config/redis.config.js'
+import UserTwoFactorAuth from '../../../../src/entities/user-two-factor-auth.js'
+import createUserAndToken from '../../../utils/createUserAndToken.js'
 
 describe('User public service - verify 2fa', () => {
   it('should let users verify their 2fa code and login', async () => {

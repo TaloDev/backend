@@ -1,12 +1,12 @@
 import { Collection, EntityManager } from '@mikro-orm/mysql'
 import request from 'supertest'
-import { APIKeyScope } from '../../../../src/entities/api-key'
-import PlayerFactory from '../../../fixtures/PlayerFactory'
-import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
-import PlayerProp from '../../../../src/entities/player-prop'
-import PlayerGroupFactory from '../../../fixtures/PlayerGroupFactory'
-import PlayerGroupRule, { PlayerGroupRuleCastType, PlayerGroupRuleName } from '../../../../src/entities/player-group-rule'
-import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
+import { APIKeyScope } from '../../../../src/entities/api-key.js'
+import PlayerFactory from '../../../fixtures/PlayerFactory.js'
+import createOrganisationAndGame from '../../../utils/createOrganisationAndGame.js'
+import PlayerProp from '../../../../src/entities/player-prop.js'
+import PlayerGroupFactory from '../../../fixtures/PlayerGroupFactory.js'
+import PlayerGroupRule, { PlayerGroupRuleCastType, PlayerGroupRuleName } from '../../../../src/entities/player-group-rule.js'
+import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken.js'
 
 describe('Player API service - patch', () => {
   it('should update a player\'s properties', async () => {

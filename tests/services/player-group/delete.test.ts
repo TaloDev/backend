@@ -1,11 +1,11 @@
 import { EntityManager } from '@mikro-orm/mysql'
 import request from 'supertest'
-import PlayerGroupFactory from '../../fixtures/PlayerGroupFactory'
-import createOrganisationAndGame from '../../utils/createOrganisationAndGame'
-import createUserAndToken from '../../utils/createUserAndToken'
-import userPermissionProvider from '../../utils/userPermissionProvider'
-import { UserType } from '../../../src/entities/user'
-import GameActivity, { GameActivityType } from '../../../src/entities/game-activity'
+import PlayerGroupFactory from '../../fixtures/PlayerGroupFactory.js'
+import createOrganisationAndGame from '../../utils/createOrganisationAndGame.js'
+import createUserAndToken from '../../utils/createUserAndToken.js'
+import userPermissionProvider from '../../utils/userPermissionProvider.js'
+import { UserType } from '../../../src/entities/user.js'
+import GameActivity, { GameActivityType } from '../../../src/entities/game-activity.js'
 
 describe('Player group service - delete', () => {
   it.each(userPermissionProvider([

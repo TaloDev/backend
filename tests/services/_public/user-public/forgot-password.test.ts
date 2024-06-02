@@ -1,6 +1,6 @@
 import { EntityManager } from '@mikro-orm/mysql'
 import request from 'supertest'
-import UserFactory from '../../../fixtures/UserFactory'
+import UserFactory from '../../../fixtures/UserFactory.js'
 import SendGrid from '@sendgrid/mail'
 
 describe('User public service - forgot password', () => {

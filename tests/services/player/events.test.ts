@@ -1,9 +1,9 @@
 import { EntityManager } from '@mikro-orm/mysql'
 import request from 'supertest'
-import PlayerFactory from '../../fixtures/PlayerFactory'
-import EventFactory from '../../fixtures/EventFactory'
-import createOrganisationAndGame from '../../utils/createOrganisationAndGame'
-import createUserAndToken from '../../utils/createUserAndToken'
+import PlayerFactory from '../../fixtures/PlayerFactory.js'
+import EventFactory from '../../fixtures/EventFactory.js'
+import createOrganisationAndGame from '../../utils/createOrganisationAndGame.js'
+import createUserAndToken from '../../utils/createUserAndToken.js'
 
 describe('Player service - get events', () => {
   it('should get a player\'s events', async () => {

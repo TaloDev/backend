@@ -1,8 +1,8 @@
 import request from 'supertest'
-import { UserType } from '../../../src/entities/user'
-import { APIKeyScope } from '../../../src/entities/api-key'
-import createOrganisationAndGame from '../../utils/createOrganisationAndGame'
-import createUserAndToken from '../../utils/createUserAndToken'
+import { UserType } from '../../../src/entities/user.js'
+import { APIKeyScope } from '../../../src/entities/api-key.js'
+import createOrganisationAndGame from '../../utils/createOrganisationAndGame.js'
+import createUserAndToken from '../../utils/createUserAndToken.js'
 
 describe('API key service - get scopes', () => {
   it('should return a list of api key scopes', async () => {

@@ -1,6 +1,6 @@
 import { EntityManager, MikroORM } from '@mikro-orm/mysql'
-import init from '../src'
-import ormConfig from '../src/config/mikro-orm.config'
+import init from '../src/index.js'
+import ormConfig from '../src/config/mikro-orm.config.js'
 
 beforeAll(async () => {
   vi.mock('@sendgrid/mail')

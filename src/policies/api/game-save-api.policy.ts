@@ -1,8 +1,8 @@
-import Policy from '../policy'
+import Policy from '../policy.js'
 import { PolicyDenial, PolicyResponse, Request } from 'koa-clay'
-import GameSave from '../../entities/game-save'
-import Player from '../../entities/player'
-import { APIKeyScope } from '../../entities/api-key'
+import GameSave from '../../entities/game-save.js'
+import Player from '../../entities/player.js'
+import { APIKeyScope } from '../../entities/api-key.js'
 
 export default class GameSaveAPIPolicy extends Policy {
   async getPlayer(): Promise<Player> {

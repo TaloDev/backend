@@ -1,12 +1,12 @@
 import { EntityManager } from '@mikro-orm/mysql'
 import request from 'supertest'
-import UserAccessCode from '../../../../src/entities/user-access-code'
+import UserAccessCode from '../../../../src/entities/user-access-code.js'
 import casual from 'casual'
-import UserFactory from '../../../fixtures/UserFactory'
-import OrganisationFactory from '../../../fixtures/OrganisationFactory'
-import InviteFactory from '../../../fixtures/InviteFactory'
-import GameActivity, { GameActivityType } from '../../../../src/entities/game-activity'
-import PricingPlanFactory from '../../../fixtures/PricingPlanFactory'
+import UserFactory from '../../../fixtures/UserFactory.js'
+import OrganisationFactory from '../../../fixtures/OrganisationFactory.js'
+import InviteFactory from '../../../fixtures/InviteFactory.js'
+import GameActivity, { GameActivityType } from '../../../../src/entities/game-activity.js'
+import PricingPlanFactory from '../../../fixtures/PricingPlanFactory.js'
 
 describe('User public service - register', () => {
   beforeAll(async () => {

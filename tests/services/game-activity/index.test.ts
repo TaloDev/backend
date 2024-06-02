@@ -1,11 +1,11 @@
 import { EntityManager } from '@mikro-orm/mysql'
 import request from 'supertest'
-import { UserType } from '../../../src/entities/user'
-import UserFactory from '../../fixtures/UserFactory'
-import GameActivityFactory from '../../fixtures/GameActivityFactory'
-import createUserAndToken from '../../utils/createUserAndToken'
-import createOrganisationAndGame from '../../utils/createOrganisationAndGame'
-import userPermissionProvider from '../../utils/userPermissionProvider'
+import { UserType } from '../../../src/entities/user.js'
+import UserFactory from '../../fixtures/UserFactory.js'
+import GameActivityFactory from '../../fixtures/GameActivityFactory.js'
+import createUserAndToken from '../../utils/createUserAndToken.js'
+import createOrganisationAndGame from '../../utils/createOrganisationAndGame.js'
+import userPermissionProvider from '../../utils/userPermissionProvider.js'
 
 describe('Game activity service - index', () => {
   it.each(userPermissionProvider([

@@ -1,8 +1,8 @@
 import { EntityManager } from '@mikro-orm/mysql'
 import request from 'supertest'
-import UserTwoFactorAuth from '../../../src/entities/user-two-factor-auth'
-import UserRecoveryCode from '../../../src/entities/user-recovery-code'
-import createUserAndToken from '../../utils/createUserAndToken'
+import UserTwoFactorAuth from '../../../src/entities/user-two-factor-auth.js'
+import UserRecoveryCode from '../../../src/entities/user-recovery-code.js'
+import createUserAndToken from '../../utils/createUserAndToken.js'
 
 describe('User service - disable 2fa', () => {
   it('should let users disable 2fa', async () => {

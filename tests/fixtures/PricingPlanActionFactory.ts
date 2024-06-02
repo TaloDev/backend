@@ -1,7 +1,7 @@
 import { Factory } from 'hefty'
 import casual from 'casual'
-import PricingPlanAction, { PricingPlanActionType } from '../../src/entities/pricing-plan-action'
-import PricingPlanFactory from './PricingPlanFactory'
+import PricingPlanAction, { PricingPlanActionType } from '../../src/entities/pricing-plan-action.js'
+import PricingPlanFactory from './PricingPlanFactory.js'
 
 export default class PricingPlanActionFactory extends Factory<PricingPlanAction> {
   constructor() {

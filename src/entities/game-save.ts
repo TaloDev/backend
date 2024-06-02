@@ -1,5 +1,5 @@
 import { Entity, ManyToOne, PrimaryKey, Property } from '@mikro-orm/mysql'
-import Player from './player'
+import Player from './player.js'
 
 @Entity()
 export default class GameSave {

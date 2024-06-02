@@ -1,8 +1,8 @@
 import { EntityManager, wrap } from '@mikro-orm/mysql'
 import request from 'supertest'
-import UserTwoFactorAuth from '../../../src/entities/user-two-factor-auth'
+import UserTwoFactorAuth from '../../../src/entities/user-two-factor-auth.js'
 import { authenticator } from '@otplib/preset-default'
-import createUserAndToken from '../../utils/createUserAndToken'
+import createUserAndToken from '../../utils/createUserAndToken.js'
 
 describe('User service - confirm 2fa', () => {
   it('should let users confirm enabling 2fa', async () => {

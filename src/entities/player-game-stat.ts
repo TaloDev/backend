@@ -1,6 +1,6 @@
-import { Cascade, Entity, ManyToOne, PrimaryKey, Property } from '@mikro-orm/mysql'
-import GameStat from './game-stat'
-import Player from './player'
+import { Cascade, Entity, ManyToOne, PrimaryKey, Property, Rel } from '@mikro-orm/mysql'
+import GameStat from './game-stat.js'
+import Player from './player.js'
 
 @Entity()
 export default class PlayerGameStat {
@@ -11,7 +11,7 @@ export default class PlayerGameStat {
   player: Player
 
   @ManyToOne(() => GameStat, { cascade: [Cascade.REMOVE], eager: true })
-  stat: GameStat
+  stat: Rel<GameStat>
 
   @Property({ type: 'double' })
   value: number
@@ -22,7 +22,7 @@ export default class PlayerGameStat {
   @Property({ onUpdate: () => new Date() })
   updatedAt: Date = new Date()
 
-  constructor(player: Player, stat: GameStat) {
+  constructor(player: Player, stat: Rel<GameStat>) {
     this.player = player
     this.stat = stat
 

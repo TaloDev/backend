@@ -1,13 +1,13 @@
 import { FilterQuery, ObjectQuery, EntityManager } from '@mikro-orm/mysql'
 import { HasPermission, Routes, Service, Request, Response, Validate } from 'koa-clay'
-import { GameActivityType } from '../entities/game-activity'
-import Leaderboard from '../entities/leaderboard'
-import LeaderboardEntry from '../entities/leaderboard-entry'
-import PlayerAlias from '../entities/player-alias'
-import triggerIntegrations from '../lib/integrations/triggerIntegrations'
-import createGameActivity from '../lib/logging/createGameActivity'
-import { devDataPlayerFilter } from '../middlewares/dev-data-middleware'
-import LeaderboardPolicy from '../policies/leaderboard.policy'
+import { GameActivityType } from '../entities/game-activity.js'
+import Leaderboard from '../entities/leaderboard.js'
+import LeaderboardEntry from '../entities/leaderboard-entry.js'
+import PlayerAlias from '../entities/player-alias.js'
+import triggerIntegrations from '../lib/integrations/triggerIntegrations.js'
+import createGameActivity from '../lib/logging/createGameActivity.js'
+import { devDataPlayerFilter } from '../middlewares/dev-data-middleware.js'
+import LeaderboardPolicy from '../policies/leaderboard.policy.js'
 
 @Routes([
   {

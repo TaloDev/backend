@@ -1,7 +1,7 @@
 import { Collection, Entity, EntityManager, Enum, ManyToOne, OneToMany, PrimaryKey, Property } from '@mikro-orm/mysql'
 import { Request, Required, ValidationCondition } from 'koa-clay'
-import Game from './game'
-import LeaderboardEntry from './leaderboard-entry'
+import Game from './game.js'
+import LeaderboardEntry from './leaderboard-entry.js'
 
 export enum LeaderboardSortMode {
   DESC = 'desc',

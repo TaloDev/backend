@@ -1,9 +1,9 @@
 import { EntityManager } from '@mikro-orm/mysql'
 import request from 'supertest'
-import PlayerGroupFactory from '../../fixtures/PlayerGroupFactory'
-import PlayerGroupRule, { PlayerGroupRuleCastType, PlayerGroupRuleName } from '../../../src/entities/player-group-rule'
-import createOrganisationAndGame from '../../utils/createOrganisationAndGame'
-import createUserAndToken from '../../utils/createUserAndToken'
+import PlayerGroupFactory from '../../fixtures/PlayerGroupFactory.js'
+import PlayerGroupRule, { PlayerGroupRuleCastType, PlayerGroupRuleName } from '../../../src/entities/player-group-rule.js'
+import createOrganisationAndGame from '../../utils/createOrganisationAndGame.js'
+import createUserAndToken from '../../utils/createUserAndToken.js'
 
 describe('Player service - post', () => {
   it('should create a player', async () => {

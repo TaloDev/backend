@@ -1,8 +1,8 @@
-import Policy from './policy'
+import Policy from './policy.js'
 import { PolicyDenial, Request, PolicyResponse } from 'koa-clay'
-import { UserType } from '../entities/user'
-import Leaderboard from '../entities/leaderboard'
-import UserTypeGate from './user-type-gate'
+import { UserType } from '../entities/user.js'
+import Leaderboard from '../entities/leaderboard.js'
+import UserTypeGate from './user-type-gate.js'
 
 export default class LeaderboardPolicy extends Policy {
   async index(req: Request): Promise<PolicyResponse> {

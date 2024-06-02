@@ -1,5 +1,5 @@
-import LeaderboardAPIService from '../services/api/leaderboard-api.service'
-import APIDocs from './api-docs'
+import LeaderboardAPIService from '../services/api/leaderboard-api.service.js'
+import APIDocs from './api-docs.js'
 
 const LeaderboardAPIDocs: APIDocs<LeaderboardAPIService> = {
   get: {

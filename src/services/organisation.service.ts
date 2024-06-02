@@ -1,10 +1,10 @@
 import { EntityManager } from '@mikro-orm/mysql'
 import { HasPermission, Service, Request, Response, Routes } from 'koa-clay'
-import Game from '../entities/game'
-import Invite from '../entities/invite'
-import Organisation from '../entities/organisation'
-import User from '../entities/user'
-import OrganisationPolicy from '../policies/organisation.policy'
+import Game from '../entities/game.js'
+import Invite from '../entities/invite.js'
+import Organisation from '../entities/organisation.js'
+import User from '../entities/user.js'
+import OrganisationPolicy from '../policies/organisation.policy.js'
 
 @Routes([
   {

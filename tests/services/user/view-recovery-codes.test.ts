@@ -1,8 +1,8 @@
 import { EntityManager } from '@mikro-orm/mysql'
 import request from 'supertest'
-import UserTwoFactorAuth from '../../../src/entities/user-two-factor-auth'
-import generateRecoveryCodes from '../../../src/lib/auth/generateRecoveryCodes'
-import createUserAndToken from '../../utils/createUserAndToken'
+import UserTwoFactorAuth from '../../../src/entities/user-two-factor-auth.js'
+import generateRecoveryCodes from '../../../src/lib/auth/generateRecoveryCodes.js'
+import createUserAndToken from '../../utils/createUserAndToken.js'
 
 describe('User service - view recovery codes', () => {
   it('should let users view their recovery codes', async () => {

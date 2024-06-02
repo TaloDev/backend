@@ -1,7 +1,7 @@
 import { Collection, Entity, Enum, ManyToOne, OneToMany, OneToOne, PrimaryKey, Property } from '@mikro-orm/mysql'
-import Organisation from './organisation'
-import UserRecoveryCode from './user-recovery-code'
-import UserTwoFactorAuth from './user-two-factor-auth'
+import Organisation from './organisation.js'
+import UserRecoveryCode from './user-recovery-code.js'
+import UserTwoFactorAuth from './user-two-factor-auth.js'
 
 export enum UserType {
   OWNER,

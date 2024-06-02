@@ -1,10 +1,10 @@
 import { Collection, EntityManager } from '@mikro-orm/mysql'
 import request from 'supertest'
-import PlayerGroupRule, { PlayerGroupRuleCastType, PlayerGroupRuleName } from '../../../src/entities/player-group-rule'
-import PlayerFactory from '../../fixtures/PlayerFactory'
-import createUserAndToken from '../../utils/createUserAndToken'
-import createOrganisationAndGame from '../../utils/createOrganisationAndGame'
-import PlayerProp from '../../../src/entities/player-prop'
+import PlayerGroupRule, { PlayerGroupRuleCastType, PlayerGroupRuleName } from '../../../src/entities/player-group-rule.js'
+import PlayerFactory from '../../fixtures/PlayerFactory.js'
+import createUserAndToken from '../../utils/createUserAndToken.js'
+import createOrganisationAndGame from '../../utils/createOrganisationAndGame.js'
+import PlayerProp from '../../../src/entities/player-prop.js'
 
 describe('PlayerGroupRule casting', () => {
   it('should correctly evaluate an EQUALS rule with fields casted to CHAR', async () => {

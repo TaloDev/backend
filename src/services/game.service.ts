@@ -1,13 +1,13 @@
 import { EntityManager } from '@mikro-orm/mysql'
 import { HasPermission, Service, Request, Response, Validate } from 'koa-clay'
 import uniqWith from 'lodash.uniqwith'
-import Game from '../entities/game'
-import { GameActivityType } from '../entities/game-activity'
-import GameSecret from '../entities/game-secret'
-import getUserFromToken from '../lib/auth/getUserFromToken'
-import createGameActivity from '../lib/logging/createGameActivity'
-import sanitiseProps from '../lib/props/sanitiseProps'
-import GamePolicy from '../policies/game.policy'
+import Game from '../entities/game.js'
+import { GameActivityType } from '../entities/game-activity.js'
+import GameSecret from '../entities/game-secret.js'
+import getUserFromToken from '../lib/auth/getUserFromToken.js'
+import createGameActivity from '../lib/logging/createGameActivity.js'
+import sanitiseProps from '../lib/props/sanitiseProps.js'
+import GamePolicy from '../policies/game.policy.js'
 
 export default class GameService extends Service {
   @Validate({

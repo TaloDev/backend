@@ -1,12 +1,12 @@
 import { EntityManager } from '@mikro-orm/mysql'
 import { HasPermission, Service, Request, Response, Routes, Validate } from 'koa-clay'
-import APIKey, { APIKeyScope } from '../entities/api-key'
+import APIKey, { APIKeyScope } from '../entities/api-key.js'
 import jwt from 'jsonwebtoken'
-import APIKeyPolicy from '../policies/api-key.policy'
+import APIKeyPolicy from '../policies/api-key.policy.js'
 import groupBy from 'lodash.groupby'
 import { promisify } from 'util'
-import createGameActivity from '../lib/logging/createGameActivity'
-import { GameActivityType } from '../entities/game-activity'
+import createGameActivity from '../lib/logging/createGameActivity.js'
+import { GameActivityType } from '../entities/game-activity.js'
 
 export async function createToken(em: EntityManager, apiKey: APIKey): Promise<string> {
   await em.populate(apiKey, ['game.apiSecret'])

@@ -1,9 +1,9 @@
 import { EntityManager } from '@mikro-orm/mysql'
 import request from 'supertest'
-import GameStatFactory from '../../fixtures/GameStatFactory'
-import GameActivity, { GameActivityType } from '../../../src/entities/game-activity'
-import createOrganisationAndGame from '../../utils/createOrganisationAndGame'
-import createUserAndToken from '../../utils/createUserAndToken'
+import GameStatFactory from '../../fixtures/GameStatFactory.js'
+import GameActivity, { GameActivityType } from '../../../src/entities/game-activity.js'
+import createOrganisationAndGame from '../../utils/createOrganisationAndGame.js'
+import createUserAndToken from '../../utils/createUserAndToken.js'
 
 describe('Game stat service - put', () => {
   it('should update the name', async () => {

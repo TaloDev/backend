@@ -1,9 +1,9 @@
 import Koa from 'koa'
 import SendGrid from '@sendgrid/mail'
 import * as Sentry from '@sentry/node'
-import ormConfig from './mikro-orm.config'
+import ormConfig from './mikro-orm.config.js'
 import { MikroORM } from '@mikro-orm/mysql'
-import tracingMiddleware from '../middlewares/tracing-middleware'
+import tracingMiddleware from '../middlewares/tracing-middleware.js'
 
 const initProviders = async (app: Koa) => {
   try {

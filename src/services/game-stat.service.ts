@@ -1,9 +1,9 @@
 import { EntityManager } from '@mikro-orm/mysql'
 import { HasPermission, Service, Request, Response, Validate } from 'koa-clay'
-import { GameActivityType } from '../entities/game-activity'
-import GameStat from '../entities/game-stat'
-import createGameActivity from '../lib/logging/createGameActivity'
-import GameStatPolicy from '../policies/game-stat.policy'
+import { GameActivityType } from '../entities/game-activity.js'
+import GameStat from '../entities/game-stat.js'
+import createGameActivity from '../lib/logging/createGameActivity.js'
+import GameStatPolicy from '../policies/game-stat.policy.js'
 
 export default class GameStatService extends Service {
   @HasPermission(GameStatPolicy, 'index')

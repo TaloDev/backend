@@ -1,8 +1,8 @@
 import { Factory } from 'hefty'
 import casual from 'casual'
-import Invite from '../../src/entities/invite'
-import { UserType } from '../../src/entities/user'
-import UserFactory from './UserFactory'
+import Invite from '../../src/entities/invite.js'
+import { UserType } from '../../src/entities/user.js'
+import UserFactory from './UserFactory.js'
 
 export default class InviteFactory extends Factory<Invite> {
   constructor() {

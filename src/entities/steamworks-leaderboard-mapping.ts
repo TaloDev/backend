@@ -1,5 +1,5 @@
 import { Cascade, Entity, ManyToOne, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/mysql'
-import Leaderboard from './leaderboard'
+import Leaderboard from './leaderboard.js'
 
 @Entity()
 export default class SteamworksLeaderboardMapping {

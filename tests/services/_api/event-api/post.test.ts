@@ -1,10 +1,10 @@
 import { Collection, EntityManager } from '@mikro-orm/mysql'
 import request from 'supertest'
-import { APIKeyScope } from '../../../../src/entities/api-key'
-import PlayerFactory from '../../../fixtures/PlayerFactory'
-import GameFactory from '../../../fixtures/GameFactory'
-import PlayerProp from '../../../../src/entities/player-prop'
-import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
+import { APIKeyScope } from '../../../../src/entities/api-key.js'
+import PlayerFactory from '../../../fixtures/PlayerFactory.js'
+import GameFactory from '../../../fixtures/GameFactory.js'
+import PlayerProp from '../../../../src/entities/player-prop.js'
+import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken.js'
 
 describe('Event API service - post', () => {
   it('should create an event if the scope is valid', async () => {

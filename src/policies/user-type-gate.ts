@@ -1,6 +1,6 @@
 import { Request } from 'koa-clay'
-import { UserType } from '../entities/user'
-import Policy from './policy'
+import { UserType } from '../entities/user.js'
+import Policy from './policy.js'
 
 const UserTypeGate = (types: UserType[], action: string) => (tar: Policy, _: string, descriptor: PropertyDescriptor) => {
   const base = descriptor.value

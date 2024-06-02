@@ -1,6 +1,6 @@
 import { Context, Next } from 'koa'
 import * as Sentry from '@sentry/node'
-import Redis from 'ioredis'
+import { Redis } from 'ioredis'
 
 export default async (ctx: Context, next: Next) => {
   try {

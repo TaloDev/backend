@@ -1,6 +1,6 @@
-import { Entity, OneToOne, PrimaryKey, Property } from '@mikro-orm/mysql'
-import { decrypt, encrypt } from '../lib/crypto/string-encryption'
-import Game from './game'
+import { Entity, OneToOne, PrimaryKey, Property, Rel } from '@mikro-orm/mysql'
+import { decrypt, encrypt } from '../lib/crypto/string-encryption.js'
+import Game from './game.js'
 import crypto from 'crypto'
 
 @Entity()
@@ -9,7 +9,7 @@ export default class GameSecret {
   id: number
 
   @OneToOne(() => Game, (game) => game.apiSecret)
-  game: Game
+  game: Rel<Game>
 
   @Property({ hidden: true })
   secret: string

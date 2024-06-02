@@ -1,11 +1,11 @@
 import { EntityManager } from '@mikro-orm/mysql'
 import request from 'supertest'
-import { UserType } from '../../../src/entities/user'
-import LeaderboardFactory from '../../fixtures/LeaderboardFactory'
-import GameActivity, { GameActivityType } from '../../../src/entities/game-activity'
-import userPermissionProvider from '../../utils/userPermissionProvider'
-import createUserAndToken from '../../utils/createUserAndToken'
-import createOrganisationAndGame from '../../utils/createOrganisationAndGame'
+import { UserType } from '../../../src/entities/user.js'
+import LeaderboardFactory from '../../fixtures/LeaderboardFactory.js'
+import GameActivity, { GameActivityType } from '../../../src/entities/game-activity.js'
+import userPermissionProvider from '../../utils/userPermissionProvider.js'
+import createUserAndToken from '../../utils/createUserAndToken.js'
+import createOrganisationAndGame from '../../utils/createOrganisationAndGame.js'
 
 describe('Leaderboard service - delete', () => {
   it.each(userPermissionProvider([

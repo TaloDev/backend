@@ -1,8 +1,8 @@
 import { PolicyDenial, PolicyResponse, Request } from 'koa-clay'
-import { APIKeyScope } from '../../entities/api-key'
-import GameStat from '../../entities/game-stat'
-import Player from '../../entities/player'
-import Policy from '../policy'
+import { APIKeyScope } from '../../entities/api-key.js'
+import GameStat from '../../entities/game-stat.js'
+import Player from '../../entities/player.js'
+import Policy from '../policy.js'
 
 export default class GameStatAPIPolicy extends Policy {
   async put(req: Request): Promise<PolicyResponse> {

@@ -1,9 +1,9 @@
-import Policy from './policy'
+import Policy from './policy.js'
 import { PolicyDenial, Request, PolicyResponse } from 'koa-clay'
-import APIKey from '../entities/api-key'
-import { UserType } from '../entities/user'
-import UserTypeGate from './user-type-gate'
-import EmailConfirmedGate from './email-confirmed-gate'
+import APIKey from '../entities/api-key.js'
+import { UserType } from '../entities/user.js'
+import UserTypeGate from './user-type-gate.js'
+import EmailConfirmedGate from './email-confirmed-gate.js'
 
 export default class APIKeyPolicy extends Policy {
   @UserTypeGate([UserType.ADMIN], 'create API keys')

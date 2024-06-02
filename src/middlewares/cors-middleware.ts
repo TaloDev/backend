@@ -1,6 +1,6 @@
 import { Context, Next } from 'koa'
 import cors from '@koa/cors'
-import { isAPIRoute } from './route-middleware'
+import { isAPIRoute } from './route-middleware.js'
 
 export default async (ctx: Context, next: Next): Promise<void> => {
   if (isAPIRoute(ctx)) {

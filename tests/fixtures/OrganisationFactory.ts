@@ -1,8 +1,8 @@
 import { Factory } from 'hefty'
-import Organisation from '../../src/entities/organisation'
+import Organisation from '../../src/entities/organisation.js'
 import casual from 'casual'
-import PricingPlanFactory from './PricingPlanFactory'
-import OrganisationPricingPlanFactory from './OrganisationPricingPlanFactory'
+import PricingPlanFactory from './PricingPlanFactory.js'
+import OrganisationPricingPlanFactory from './OrganisationPricingPlanFactory.js'
 
 export default class OrganisationFactory extends Factory<Organisation> {
   constructor() {

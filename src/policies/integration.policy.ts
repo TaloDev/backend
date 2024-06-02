@@ -1,8 +1,8 @@
-import Policy from './policy'
+import Policy from './policy.js'
 import { PolicyDenial, PolicyResponse, Request } from 'koa-clay'
-import { UserType } from '../entities/user'
-import UserTypeGate from './user-type-gate'
-import Integration from '../entities/integration'
+import { UserType } from '../entities/user.js'
+import UserTypeGate from './user-type-gate.js'
+import Integration from '../entities/integration.js'
 
 export default class IntegrationPolicy extends Policy {
   @UserTypeGate([UserType.ADMIN], 'view integrations')

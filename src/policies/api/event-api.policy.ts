@@ -1,7 +1,7 @@
 import { PolicyDenial, PolicyResponse, Request } from 'koa-clay'
-import { APIKeyScope } from '../../entities/api-key'
-import Player from '../../entities/player'
-import Policy from '../policy'
+import { APIKeyScope } from '../../entities/api-key.js'
+import Player from '../../entities/player.js'
+import Policy from '../policy.js'
 
 export default class EventAPIPolicy extends Policy {
   async post(req: Request): Promise<PolicyResponse> {

@@ -1,5 +1,5 @@
-import { Entity, ManyToOne, PrimaryKey, Property } from '@mikro-orm/mysql'
-import Integration from './integration'
+import { Entity, ManyToOne, PrimaryKey, Property, Rel } from '@mikro-orm/mysql'
+import Integration from './integration.js'
 
 export type SteamworksRequestMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE'
 export type SteamworksResponseStatusCode = 200 | 400 | 401 | 403 | 404 | 405 | 429 | 500 | 503
@@ -24,7 +24,7 @@ export default class SteamworksIntegrationEvent {
   id: number
 
   @ManyToOne(() => Integration)
-  integration: Integration
+  integration: Rel<Integration>
 
   @Property({ type: 'json' })
   request: SteamworksRequest
@@ -35,7 +35,7 @@ export default class SteamworksIntegrationEvent {
   @Property()
   createdAt: Date = new Date()
 
-  constructor(integration: Integration) {
+  constructor(integration: Rel<Integration>) {
     this.integration = integration
   }
 }

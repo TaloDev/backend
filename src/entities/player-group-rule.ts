@@ -1,6 +1,6 @@
 import { EntityManager, Embeddable, Enum, Property, QBFilterQuery, raw } from '@mikro-orm/mysql'
-import Player from './player'
-import PlayerProp from './player-prop'
+import Player from './player.js'
+import PlayerProp from './player-prop.js'
 
 export enum PlayerGroupRuleName {
   EQUALS = 'EQUALS',

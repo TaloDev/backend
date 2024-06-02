@@ -1,7 +1,7 @@
 import { EntityManager } from '@mikro-orm/mysql'
 import request from 'supertest'
-import InviteFactory from '../../../fixtures/InviteFactory'
-import OrganisationFactory from '../../../fixtures/OrganisationFactory'
+import InviteFactory from '../../../fixtures/InviteFactory.js'
+import OrganisationFactory from '../../../fixtures/OrganisationFactory.js'
 
 describe('Invite public service - get', () => {
   it('should return an existing invite', async () => {

@@ -1,12 +1,12 @@
 import { HasPermission, Routes, Request, Response, Validate, ForwardTo, forwardRequest, Docs } from 'koa-clay'
-import LeaderboardAPIPolicy from '../../policies/api/leaderboard-api.policy'
-import APIService from './api-service'
+import LeaderboardAPIPolicy from '../../policies/api/leaderboard-api.policy.js'
+import APIService from './api-service.js'
 import { EntityManager } from '@mikro-orm/mysql'
-import LeaderboardEntry from '../../entities/leaderboard-entry'
-import Leaderboard, { LeaderboardSortMode } from '../../entities/leaderboard'
-import LeaderboardAPIDocs from '../../docs/leaderboard-api.docs'
-import triggerIntegrations from '../../lib/integrations/triggerIntegrations'
-import { devDataPlayerFilter } from '../../middlewares/dev-data-middleware'
+import LeaderboardEntry from '../../entities/leaderboard-entry.js'
+import Leaderboard, { LeaderboardSortMode } from '../../entities/leaderboard.js'
+import LeaderboardAPIDocs from '../../docs/leaderboard-api.docs.js'
+import triggerIntegrations from '../../lib/integrations/triggerIntegrations.js'
+import { devDataPlayerFilter } from '../../middlewares/dev-data-middleware.js'
 
 @Routes([
   {

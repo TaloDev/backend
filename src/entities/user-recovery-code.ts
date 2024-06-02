@@ -1,6 +1,6 @@
-import { Entity, ManyToOne, PrimaryKey, Property } from '@mikro-orm/mysql'
-import User from './user'
-import { decrypt, encrypt } from '../lib/crypto/string-encryption'
+import { Entity, ManyToOne, PrimaryKey, Property, Rel } from '@mikro-orm/mysql'
+import User from './user.js'
+import { decrypt, encrypt } from '../lib/crypto/string-encryption.js'
 
 @Entity()
 export default class UserRecoveryCode {
@@ -8,7 +8,7 @@ export default class UserRecoveryCode {
   id: number
 
   @ManyToOne(() => User)
-  user: User
+  user: Rel<User>
 
   @Property()
   code: string = this.generateCode()
@@ -16,7 +16,7 @@ export default class UserRecoveryCode {
   @Property()
   createdAt: Date = new Date()
 
-  constructor(user: User) {
+  constructor(user: Rel<User>) {
     this.user = user
   }
 

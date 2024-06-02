@@ -1,7 +1,7 @@
 import { Entity, Enum, ManyToOne, PrimaryKey, Property } from '@mikro-orm/mysql'
 import { Required, ValidationCondition } from 'koa-clay'
-import Organisation from './organisation'
-import User, { UserType } from './user'
+import Organisation from './organisation.js'
+import User, { UserType } from './user.js'
 
 @Entity()
 export default class Invite {

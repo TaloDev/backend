@@ -1,7 +1,7 @@
 import { EntityManager } from '@mikro-orm/mysql'
 import request from 'supertest'
-import { APIKeyScope } from '../../src/entities/api-key'
-import createAPIKeyAndToken from '../utils/createAPIKeyAndToken'
+import { APIKeyScope } from '../../src/entities/api-key.js'
+import createAPIKeyAndToken from '../utils/createAPIKeyAndToken.js'
 
 describe('API auth', () => {
   it('should accept a valid api request', async () => {

@@ -1,8 +1,8 @@
-import Policy from './policy'
+import Policy from './policy.js'
 import { PolicyResponse, PolicyDenial, Request } from 'koa-clay'
-import { UserType } from '../entities/user'
-import GameStat from '../entities/game-stat'
-import UserTypeGate from './user-type-gate'
+import { UserType } from '../entities/user.js'
+import GameStat from '../entities/game-stat.js'
+import UserTypeGate from './user-type-gate.js'
 
 export default class GameStatPolicy extends Policy {
   async index(req: Request): Promise<PolicyResponse> {

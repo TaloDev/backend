@@ -1,5 +1,5 @@
 import { Factory } from 'hefty'
-import Integration from '../../src/entities/integration'
+import Integration from '../../src/entities/integration.js'
 
 export default class IntegrationFactory extends Factory<Integration> {
   constructor() {

@@ -1,8 +1,8 @@
-import { Collection, Embedded, Entity, ManyToOne, OneToMany, OneToOne, PrimaryKey, Property } from '@mikro-orm/mysql'
-import GameSecret from './game-secret'
-import Organisation from './organisation'
-import Player from './player'
-import Prop from './prop'
+import { Collection, Embedded, Entity, ManyToOne, OneToMany, OneToOne, PrimaryKey, Property, Rel } from '@mikro-orm/mysql'
+import GameSecret from './game-secret.js'
+import Organisation from './organisation.js'
+import Player from './player.js'
+import Prop from './prop.js'
 
 @Entity()
 export default class Game {
@@ -13,7 +13,7 @@ export default class Game {
   name: string
 
   @ManyToOne(() => Organisation)
-  organisation: Organisation
+  organisation: Rel<Organisation>
 
   @Embedded(() => Prop, { array: true })
   props: Prop[] = []
@@ -22,7 +22,7 @@ export default class Game {
   players: Collection<Player> = new Collection<Player>(this)
 
   @OneToOne({ orphanRemoval: true })
-  apiSecret: GameSecret
+  apiSecret: Rel<GameSecret>
 
   @Property()
   createdAt: Date = new Date()
@@ -30,7 +30,7 @@ export default class Game {
   @Property({ onUpdate: () => new Date() })
   updatedAt: Date = new Date()
 
-  constructor(name: string, organisation: Organisation) {
+  constructor(name: string, organisation: Rel<Organisation>) {
     this.name = name
     this.organisation = organisation
   }

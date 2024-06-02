@@ -1,12 +1,12 @@
 import { EntityManager } from '@mikro-orm/mysql'
 import { differenceInSeconds } from 'date-fns'
 import { HasPermission, Request, Response, Routes, Validate, Docs } from 'koa-clay'
-import GameStatAPIDocs from '../../docs/game-stat-api.docs'
-import GameStat from '../../entities/game-stat'
-import PlayerGameStat from '../../entities/player-game-stat'
-import triggerIntegrations from '../../lib/integrations/triggerIntegrations'
-import GameStatAPIPolicy from '../../policies/api/game-stat-api.policy'
-import APIService from './api-service'
+import GameStatAPIDocs from '../../docs/game-stat-api.docs.js'
+import GameStat from '../../entities/game-stat.js'
+import PlayerGameStat from '../../entities/player-game-stat.js'
+import triggerIntegrations from '../../lib/integrations/triggerIntegrations.js'
+import GameStatAPIPolicy from '../../policies/api/game-stat-api.policy.js'
+import APIService from './api-service.js'
 
 @Routes([
   {

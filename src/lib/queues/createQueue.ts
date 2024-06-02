@@ -1,6 +1,6 @@
 import { ConnectionOptions, Job, Processor, Queue, RedisOptions, Worker } from 'bullmq'
-import redisConfig from '../../config/redis.config'
-import handleJobFailure from './handleJobFailure'
+import redisConfig from '../../config/redis.config.js'
+import handleJobFailure from './handleJobFailure.js'
 
 export type WorkerEvents<T> = {
   failed?: (job: Job<T>, err: Error) => void | Promise<void>,

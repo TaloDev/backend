@@ -1,12 +1,12 @@
 import { EntityManager } from '@mikro-orm/mysql'
 import request from 'supertest'
-import { APIKeyScope } from '../../../../src/entities/api-key'
-import { LeaderboardSortMode } from '../../../../src/entities/leaderboard'
-import LeaderboardFactory from '../../../fixtures/LeaderboardFactory'
-import PlayerFactory from '../../../fixtures/PlayerFactory'
-import LeaderboardEntryFactory from '../../../fixtures/LeaderboardEntryFactory'
+import { APIKeyScope } from '../../../../src/entities/api-key.js'
+import { LeaderboardSortMode } from '../../../../src/entities/leaderboard.js'
+import LeaderboardFactory from '../../../fixtures/LeaderboardFactory.js'
+import PlayerFactory from '../../../fixtures/PlayerFactory.js'
+import LeaderboardEntryFactory from '../../../fixtures/LeaderboardEntryFactory.js'
 import { subHours } from 'date-fns'
-import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
+import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken.js'
 
 describe('Leaderboard API service - post', () => {
   it('should create a leaderboard entry if the scope is valid', async () => {

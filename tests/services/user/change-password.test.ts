@@ -1,7 +1,7 @@
 import { EntityManager } from '@mikro-orm/mysql'
 import request from 'supertest'
 import bcrypt from 'bcrypt'
-import createUserAndToken from '../../utils/createUserAndToken'
+import createUserAndToken from '../../utils/createUserAndToken.js'
 
 describe('User service - change password', () => {
   it('should let users change their password', async () => {

@@ -1,5 +1,5 @@
 import { Collection, Entity, OneToMany, PrimaryKey, Property } from '@mikro-orm/mysql'
-import PricingPlanAction from './pricing-plan-action'
+import PricingPlanAction from './pricing-plan-action.js'
 
 @Entity()
 export default class PricingPlan {

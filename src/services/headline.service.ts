@@ -2,11 +2,11 @@ import { FilterQuery, EntityManager } from '@mikro-orm/mysql'
 import { endOfDay, isSameDay } from 'date-fns'
 import { Service, Request, Response, Validate, HasPermission, Routes } from 'koa-clay'
 import groupBy from 'lodash.groupby'
-import Event from '../entities/event'
-import Player from '../entities/player'
-import HeadlinePolicy from '../policies/headline.policy'
-import dateValidationSchema from '../lib/dates/dateValidationSchema'
-import { devDataPlayerFilter } from '../middlewares/dev-data-middleware'
+import Event from '../entities/event.js'
+import Player from '../entities/player.js'
+import HeadlinePolicy from '../policies/headline.policy.js'
+import dateValidationSchema from '../lib/dates/dateValidationSchema.js'
+import { devDataPlayerFilter } from '../middlewares/dev-data-middleware.js'
 
 @Routes([
   {

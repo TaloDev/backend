@@ -1,9 +1,9 @@
 import { EntityManager } from '@mikro-orm/mysql'
 import request from 'supertest'
-import initStripe from '../../../src/lib/billing/initStripe'
-import PricingPlanFactory from '../../fixtures/PricingPlanFactory'
-import createOrganisationAndGame from '../../utils/createOrganisationAndGame'
-import createUserAndToken from '../../utils/createUserAndToken'
+import initStripe from '../../../src/lib/billing/initStripe.js'
+import PricingPlanFactory from '../../fixtures/PricingPlanFactory.js'
+import createOrganisationAndGame from '../../utils/createOrganisationAndGame.js'
+import createUserAndToken from '../../utils/createUserAndToken.js'
 
 const stripe = initStripe()
 

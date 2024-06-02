@@ -1,5 +1,5 @@
 import { Request } from 'koa-clay'
-import Policy from './policy'
+import Policy from './policy.js'
 
 const EmailConfirmedGate = (action: string) => (tar: Policy, _: string, descriptor: PropertyDescriptor) => {
   const base = descriptor.value

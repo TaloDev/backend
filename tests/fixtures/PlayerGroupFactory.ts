@@ -1,6 +1,6 @@
 import { Factory } from 'hefty'
 import casual from 'casual'
-import PlayerGroup, { RuleMode } from '../../src/entities/player-group'
+import PlayerGroup, { RuleMode } from '../../src/entities/player-group.js'
 
 export default class PlayerGroupFactory extends Factory<PlayerGroup> {
   constructor() {

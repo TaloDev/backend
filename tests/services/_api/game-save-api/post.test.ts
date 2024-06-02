@@ -1,9 +1,9 @@
 import { EntityManager } from '@mikro-orm/mysql'
 import request from 'supertest'
-import { APIKeyScope } from '../../../../src/entities/api-key'
-import PlayerFactory from '../../../fixtures/PlayerFactory'
-import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
-import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
+import { APIKeyScope } from '../../../../src/entities/api-key.js'
+import PlayerFactory from '../../../fixtures/PlayerFactory.js'
+import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken.js'
+import createOrganisationAndGame from '../../../utils/createOrganisationAndGame.js'
 
 describe('Game save API service - post', () => {
   it('should create a game save if the scope is valid', async () => {

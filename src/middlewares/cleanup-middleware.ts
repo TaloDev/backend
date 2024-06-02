@@ -1,4 +1,4 @@
-import Redis from 'ioredis'
+import { Redis } from 'ioredis'
 import { Context, Next } from 'koa'
 
 export default async (ctx: Context, next: Next): Promise<void> => {

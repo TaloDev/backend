@@ -1,12 +1,12 @@
 import { EntityManager, MikroORM } from '@mikro-orm/mysql'
 import { HasPermission, Request, Response, Routes, Service, Validate } from 'koa-clay'
 import pick from 'lodash.pick'
-import { GameActivityType } from '../entities/game-activity'
-import Integration, { IntegrationConfig, IntegrationType } from '../entities/integration'
-import createGameActivity from '../lib/logging/createGameActivity'
-import IntegrationPolicy from '../policies/integration.policy'
-import ormConfig from '../config/mikro-orm.config'
-import createQueue from '../lib/queues/createQueue'
+import { GameActivityType } from '../entities/game-activity.js'
+import Integration, { IntegrationConfig, IntegrationType } from '../entities/integration.js'
+import createGameActivity from '../lib/logging/createGameActivity.js'
+import IntegrationPolicy from '../policies/integration.policy.js'
+import ormConfig from '../config/mikro-orm.config.js'
+import createQueue from '../lib/queues/createQueue.js'
 import { Job, Queue } from 'bullmq'
 
 type SyncJob = {

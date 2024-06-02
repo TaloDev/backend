@@ -1,6 +1,6 @@
 import { Entity, Enum, ManyToOne, PrimaryKey, Property } from '@mikro-orm/mysql'
-import OrganisationPricingPlan from './organisation-pricing-plan'
-import { PricingPlanActionType } from './pricing-plan-action'
+import OrganisationPricingPlan from './organisation-pricing-plan.js'
+import { PricingPlanActionType } from './pricing-plan-action.js'
 
 export type OrganisationPricingPlanActionExtra = {
   invitedUserEmail?: string

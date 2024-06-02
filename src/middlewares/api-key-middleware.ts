@@ -1,8 +1,8 @@
 import { Context, Next } from 'koa'
 import jwt from 'jsonwebtoken'
-import { isAPIRoute } from './route-middleware'
+import { isAPIRoute } from './route-middleware.js'
 import { EntityManager } from '@mikro-orm/mysql'
-import APIKey from '../entities/api-key'
+import APIKey from '../entities/api-key.js'
 
 export default async function apiKeyMiddleware(ctx: Context, next: Next): Promise<void> {
   if (isAPIRoute(ctx)) {

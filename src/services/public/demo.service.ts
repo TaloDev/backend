@@ -1,15 +1,15 @@
 import { After, Before, Service, Request, Response } from 'koa-clay'
-import User, { UserType } from '../../entities/user'
+import User, { UserType } from '../../entities/user.js'
 import { EntityManager, MikroORM } from '@mikro-orm/mysql'
-import buildTokenPair from '../../lib/auth/buildTokenPair'
-import Organisation from '../../entities/organisation'
-import ormConfig from '../../config/mikro-orm.config'
-import createQueue from '../../lib/queues/createQueue'
-import UserSession from '../../entities/user-session'
+import buildTokenPair from '../../lib/auth/buildTokenPair.js'
+import Organisation from '../../entities/organisation.js'
+import ormConfig from '../../config/mikro-orm.config.js'
+import createQueue from '../../lib/queues/createQueue.js'
+import UserSession from '../../entities/user-session.js'
 import bcrypt from 'bcrypt'
-import GameActivity from '../../entities/game-activity'
+import GameActivity from '../../entities/game-activity.js'
 import { Job, Queue } from 'bullmq'
-import { generateDemoEvents } from '../../lib/demo-data/generateDemoEvents'
+import { generateDemoEvents } from '../../lib/demo-data/generateDemoEvents.js'
 
 interface DemoUserJob {
   userId: number

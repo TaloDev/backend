@@ -1,7 +1,7 @@
 import { EntityManager, Entity, ManyToOne, PrimaryKey, Property, Collection, OneToMany } from '@mikro-orm/mysql'
 import { Request, Required, ValidationCondition } from 'koa-clay'
-import Game from './game'
-import PlayerGameStat from './player-game-stat'
+import Game from './game.js'
+import PlayerGameStat from './player-game-stat.js'
 
 @Entity()
 export default class GameStat {

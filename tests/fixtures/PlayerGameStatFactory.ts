@@ -1,6 +1,6 @@
 import { Factory } from 'hefty'
 import casual from 'casual'
-import PlayerGameStat from '../../src/entities/player-game-stat'
+import PlayerGameStat from '../../src/entities/player-game-stat.js'
 
 export default class PlayerGameStatFactory extends Factory<PlayerGameStat> {
   constructor() {

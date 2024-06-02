@@ -1,4 +1,4 @@
-import Prop from '../../entities/prop'
+import Prop from '../../entities/prop.js'
 
 const sanitiseProps = (props: Prop[], deleteNull = false, extraFilter?: (prop: Prop) => boolean): Prop[] => {
   if (deleteNull) props = props.filter((prop) => prop.value !== null)

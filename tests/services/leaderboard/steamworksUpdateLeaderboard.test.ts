@@ -1,15 +1,15 @@
 import { EntityManager } from '@mikro-orm/mysql'
 import request from 'supertest'
-import createOrganisationAndGame from '../../utils/createOrganisationAndGame'
-import createUserAndToken from '../../utils/createUserAndToken'
-import IntegrationConfigFactory from '../../fixtures/IntegrationConfigFactory'
-import IntegrationFactory from '../../fixtures/IntegrationFactory'
-import { IntegrationType } from '../../../src/entities/integration'
+import createOrganisationAndGame from '../../utils/createOrganisationAndGame.js'
+import createUserAndToken from '../../utils/createUserAndToken.js'
+import IntegrationConfigFactory from '../../fixtures/IntegrationConfigFactory.js'
+import IntegrationFactory from '../../fixtures/IntegrationFactory.js'
+import { IntegrationType } from '../../../src/entities/integration.js'
 import AxiosMockAdapter from 'axios-mock-adapter'
 import axios from 'axios'
-import SteamworksIntegrationEvent from '../../../src/entities/steamworks-integration-event'
-import LeaderboardFactory from '../../fixtures/LeaderboardFactory'
-import { LeaderboardSortMode } from '../../../src/entities/leaderboard'
+import SteamworksIntegrationEvent from '../../../src/entities/steamworks-integration-event.js'
+import LeaderboardFactory from '../../fixtures/LeaderboardFactory.js'
+import { LeaderboardSortMode } from '../../../src/entities/leaderboard.js'
 
 describe('Leaderboard service - update leaderboard - steamworks integration', () => {
   const axiosMock = new AxiosMockAdapter(axios)

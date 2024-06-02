@@ -1,6 +1,6 @@
 import { EntityManager } from '@mikro-orm/mysql'
 import { Service, Request, Response } from 'koa-clay'
-import Invite from '../../entities/invite'
+import Invite from '../../entities/invite.js'
 
 export default class InvitePublicService extends Service {
   async get(req: Request): Promise<Response> {

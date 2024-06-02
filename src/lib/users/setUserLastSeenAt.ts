@@ -1,6 +1,6 @@
 import { EntityManager } from '@mikro-orm/mysql'
 import jwt from 'jsonwebtoken'
-import User from '../../entities/user'
+import User from '../../entities/user.js'
 import { differenceInDays } from 'date-fns'
 import { Request, Response } from 'koa-clay'
 

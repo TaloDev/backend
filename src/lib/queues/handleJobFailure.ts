@@ -1,6 +1,6 @@
 import { MikroORM } from '@mikro-orm/mysql'
-import ormConfig from '../../config/mikro-orm.config'
-import FailedJob from '../../entities/failed-job'
+import ormConfig from '../../config/mikro-orm.config.js'
+import FailedJob from '../../entities/failed-job.js'
 import * as Sentry from '@sentry/node'
 import { Job } from 'bullmq'
 

@@ -1,10 +1,10 @@
 import { EntityManager } from '@mikro-orm/mysql'
 import request from 'supertest'
-import { APIKeyScope } from '../../../../src/entities/api-key'
-import PlayerFactory from '../../../fixtures/PlayerFactory'
-import GameSaveFactory from '../../../fixtures/GameSaveFactory'
-import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
-import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
+import { APIKeyScope } from '../../../../src/entities/api-key.js'
+import PlayerFactory from '../../../fixtures/PlayerFactory.js'
+import GameSaveFactory from '../../../fixtures/GameSaveFactory.js'
+import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken.js'
+import createOrganisationAndGame from '../../../utils/createOrganisationAndGame.js'
 
 describe('Game save API service - delete', () => {
   it('should delete a game save if the scope is valid', async () => {

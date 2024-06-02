@@ -1,8 +1,8 @@
 import { EntityManager } from '@mikro-orm/mysql'
 import request from 'supertest'
-import LeaderboardFactory from '../../fixtures/LeaderboardFactory'
-import createOrganisationAndGame from '../../utils/createOrganisationAndGame'
-import createUserAndToken from '../../utils/createUserAndToken'
+import LeaderboardFactory from '../../fixtures/LeaderboardFactory.js'
+import createOrganisationAndGame from '../../utils/createOrganisationAndGame.js'
+import createUserAndToken from '../../utils/createUserAndToken.js'
 
 describe('Leaderboard service - search', () => {
   it('should return a leaderboard with the same internalName', async () => {

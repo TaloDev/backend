@@ -1,6 +1,6 @@
 import { Service } from 'koa-clay'
 import { Context } from 'koa'
-import APIKey from '../../entities/api-key'
+import APIKey from '../../entities/api-key.js'
 import { EntityManager } from '@mikro-orm/mysql'
 
 export default class APIService extends Service {

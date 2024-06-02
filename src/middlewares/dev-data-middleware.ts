@@ -1,7 +1,7 @@
 import { QBFilterQuery, EntityManager } from '@mikro-orm/mysql'
 import { Context, Next } from 'koa'
-import Player from '../entities/player'
-import PlayerProp from '../entities/player-prop'
+import Player from '../entities/player.js'
+import PlayerProp from '../entities/player-prop.js'
 
 export default async (ctx: Context, next: Next): Promise<void> => {
   if (Number(ctx.headers['x-talo-include-dev-data'])) {

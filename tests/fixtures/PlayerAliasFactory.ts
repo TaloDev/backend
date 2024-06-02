@@ -1,6 +1,6 @@
 import { Factory } from 'hefty'
 import casual from 'casual'
-import PlayerAlias, { PlayerAliasService } from '../../src/entities/player-alias'
+import PlayerAlias, { PlayerAliasService } from '../../src/entities/player-alias.js'
 
 export default class PlayerAliasFactory extends Factory<PlayerAlias> {
   constructor() {

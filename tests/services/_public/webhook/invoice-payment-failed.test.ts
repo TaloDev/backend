@@ -1,11 +1,11 @@
 import { EntityManager } from '@mikro-orm/mysql'
 import request from 'supertest'
-import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
-import initStripe from '../../../../src/lib/billing/initStripe'
+import createOrganisationAndGame from '../../../utils/createOrganisationAndGame.js'
+import initStripe from '../../../../src/lib/billing/initStripe.js'
 import { v4 } from 'uuid'
-import PricingPlanFactory from '../../../fixtures/PricingPlanFactory'
+import PricingPlanFactory from '../../../fixtures/PricingPlanFactory.js'
 import SendGrid from '@sendgrid/mail'
-import PlanPaymentFailed from '../../../../src/emails/plan-payment-failed'
+import PlanPaymentFailed from '../../../../src/emails/plan-payment-failed.js'
 
 const stripe = initStripe()
 

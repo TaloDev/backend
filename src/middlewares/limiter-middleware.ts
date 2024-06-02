@@ -1,6 +1,6 @@
 import { Context, Next } from 'koa'
-import { createRedisConnection } from '../config/redis.config'
-import { isAPIRoute } from './route-middleware'
+import { createRedisConnection } from '../config/redis.config.js'
+import { isAPIRoute } from './route-middleware.js'
 
 const MAX_REQUESTS = 50
 const EXPIRE_TIME = 1

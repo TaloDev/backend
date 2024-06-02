@@ -1,7 +1,7 @@
 import { EntityManager } from '@mikro-orm/mysql'
 import request from 'supertest'
-import UserAccessCode from '../../../src/entities/user-access-code'
-import createUserAndToken from '../../utils/createUserAndToken'
+import UserAccessCode from '../../../src/entities/user-access-code.js'
+import createUserAndToken from '../../utils/createUserAndToken.js'
 
 describe('User service - confirm email', () => {
   it('should let a user confirm their email', async () => {

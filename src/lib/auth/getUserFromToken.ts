@@ -1,6 +1,6 @@
 import { EntityManager } from '@mikro-orm/mysql'
 import { Context } from 'koa'
-import User from '../../entities/user'
+import User from '../../entities/user.js'
 
 const getUserFromToken = async (ctx: Context, relations?: string[]): Promise<User> => {
   // user with email = loaded entity, user with sub = jwt

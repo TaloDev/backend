@@ -1,7 +1,7 @@
 import { Factory } from 'hefty'
 import casual from 'casual'
-import GameStat from '../../src/entities/game-stat'
-import Game from '../../src/entities/game'
+import GameStat from '../../src/entities/game-stat.js'
+import Game from '../../src/entities/game.js'
 
 export default class GameStatFactory extends Factory<GameStat> {
   private availableGames: Game[]

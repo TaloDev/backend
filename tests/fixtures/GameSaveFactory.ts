@@ -1,8 +1,8 @@
 import { Factory } from 'hefty'
 import casual from 'casual'
-import GameSave from '../../src/entities/game-save'
-import Player from '../../src/entities/player'
-import randomDate from '../../src/lib/dates/randomDate'
+import GameSave from '../../src/entities/game-save.js'
+import Player from '../../src/entities/player.js'
+import randomDate from '../../src/lib/dates/randomDate.js'
 import { sub } from 'date-fns'
 
 export default class GameSaveFactory extends Factory<GameSave> {

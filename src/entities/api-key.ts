@@ -1,6 +1,6 @@
 import { Entity, Enum, ManyToOne, PrimaryKey, Property } from '@mikro-orm/mysql'
-import Game from './game'
-import User from './user'
+import Game from './game.js'
+import User from './user.js'
 
 export enum APIKeyScope {
   READ_GAME_CONFIG = 'read:gameConfig',

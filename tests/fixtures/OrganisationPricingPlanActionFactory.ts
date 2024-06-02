@@ -1,8 +1,8 @@
 import { Factory } from 'hefty'
 import casual from 'casual'
-import OrganisationPricingPlanAction from '../../src/entities/organisation-pricing-plan-action'
-import { PricingPlanActionType } from '../../src/entities/pricing-plan-action'
-import OrganisationPricingPlan from '../../src/entities/organisation-pricing-plan'
+import OrganisationPricingPlanAction from '../../src/entities/organisation-pricing-plan-action.js'
+import { PricingPlanActionType } from '../../src/entities/pricing-plan-action.js'
+import OrganisationPricingPlan from '../../src/entities/organisation-pricing-plan.js'
 
 export default class OrganisationPricingPlanActionFactory extends Factory<OrganisationPricingPlanAction> {
   private orgPlan: OrganisationPricingPlan

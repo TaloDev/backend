@@ -1,10 +1,10 @@
 import { Factory } from 'hefty'
 import casual from 'casual'
-import Leaderboard, { LeaderboardSortMode } from '../../src/entities/leaderboard'
-import Game from '../../src/entities/game'
-import LeaderboardEntryFactory from './LeaderboardEntryFactory'
+import Leaderboard, { LeaderboardSortMode } from '../../src/entities/leaderboard.js'
+import Game from '../../src/entities/game.js'
+import LeaderboardEntryFactory from './LeaderboardEntryFactory.js'
 import { Collection } from '@mikro-orm/mysql'
-import LeaderboardEntry from '../../src/entities/leaderboard-entry'
+import LeaderboardEntry from '../../src/entities/leaderboard-entry.js'
 
 export default class LeaderboardFactory extends Factory<Leaderboard> {
   private availableGames: Game[]

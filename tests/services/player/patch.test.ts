@@ -1,12 +1,12 @@
 import { Collection, EntityManager } from '@mikro-orm/mysql'
 import request from 'supertest'
-import { UserType } from '../../../src/entities/user'
-import PlayerFactory from '../../fixtures/PlayerFactory'
-import GameActivity, { GameActivityType } from '../../../src/entities/game-activity'
-import userPermissionProvider from '../../utils/userPermissionProvider'
-import createOrganisationAndGame from '../../utils/createOrganisationAndGame'
-import createUserAndToken from '../../utils/createUserAndToken'
-import PlayerProp from '../../../src/entities/player-prop'
+import { UserType } from '../../../src/entities/user.js'
+import PlayerFactory from '../../fixtures/PlayerFactory.js'
+import GameActivity, { GameActivityType } from '../../../src/entities/game-activity.js'
+import userPermissionProvider from '../../utils/userPermissionProvider.js'
+import createOrganisationAndGame from '../../utils/createOrganisationAndGame.js'
+import createUserAndToken from '../../utils/createUserAndToken.js'
+import PlayerProp from '../../../src/entities/player-prop.js'
 
 describe('Player service - patch', () => {
   it.each(userPermissionProvider([

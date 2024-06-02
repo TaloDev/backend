@@ -1,6 +1,6 @@
 import { Entity, ManyToOne, PrimaryKey, Property } from '@mikro-orm/mysql'
 import { v4 } from 'uuid'
-import User from './user'
+import User from './user.js'
 import { add } from 'date-fns'
 
 @Entity()

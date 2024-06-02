@@ -1,12 +1,12 @@
 import { EntityManager } from '@mikro-orm/mysql'
 import request from 'supertest'
-import { UserType } from '../../../src/entities/user'
-import GameFactory from '../../fixtures/GameFactory'
-import LeaderboardFactory from '../../fixtures/LeaderboardFactory'
-import GameActivity, { GameActivityType } from '../../../src/entities/game-activity'
-import userPermissionProvider from '../../utils/userPermissionProvider'
-import createOrganisationAndGame from '../../utils/createOrganisationAndGame'
-import createUserAndToken from '../../utils/createUserAndToken'
+import { UserType } from '../../../src/entities/user.js'
+import GameFactory from '../../fixtures/GameFactory.js'
+import LeaderboardFactory from '../../fixtures/LeaderboardFactory.js'
+import GameActivity, { GameActivityType } from '../../../src/entities/game-activity.js'
+import userPermissionProvider from '../../utils/userPermissionProvider.js'
+import createOrganisationAndGame from '../../utils/createOrganisationAndGame.js'
+import createUserAndToken from '../../utils/createUserAndToken.js'
 
 describe('Leaderboard service - post', () => {
   it.each(userPermissionProvider([

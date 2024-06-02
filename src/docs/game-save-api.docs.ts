@@ -1,5 +1,5 @@
-import GameSaveAPIService from '../services/api/game-save-api.service'
-import APIDocs from './api-docs'
+import GameSaveAPIService from '../services/api/game-save-api.service.js'
+import APIDocs from './api-docs.js'
 
 const sampleSave = {
   id: 143,

@@ -1,5 +1,5 @@
-import { Entity, Enum, ManyToOne, PrimaryKey, Property } from '@mikro-orm/mysql'
-import PricingPlan from './pricing-plan'
+import { Entity, Enum, ManyToOne, PrimaryKey, Property, Rel } from '@mikro-orm/mysql'
+import PricingPlan from './pricing-plan.js'
 
 export enum PricingPlanActionType {
   USER_INVITE,
@@ -12,7 +12,7 @@ export default class PricingPlanAction {
   id: number
 
   @ManyToOne(() => PricingPlan)
-  pricingPlan: PricingPlan
+  pricingPlan: Rel<PricingPlan>
 
   @Enum(() => PricingPlanActionType)
   type: PricingPlanActionType

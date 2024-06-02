@@ -1,5 +1,5 @@
-import Invite from '../entities/invite'
-import Mail from './mail'
+import Invite from '../entities/invite.js'
+import Mail from './mail.js'
 
 export default class JoinOrganisation extends Mail {
   constructor(invite: Invite) {

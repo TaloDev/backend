@@ -1,13 +1,13 @@
 import { EntityManager } from '@mikro-orm/mysql'
-import DataExportService from '../../../src/services/data-export.service'
-import EventFactory from '../../fixtures/EventFactory'
-import PlayerFactory from '../../fixtures/PlayerFactory'
-import DataExportFactory from '../../fixtures/DataExportFactory'
-import LeaderboardFactory from '../../fixtures/LeaderboardFactory'
-import LeaderboardEntryFactory from '../../fixtures/LeaderboardEntryFactory'
-import GameStatFactory from '../../fixtures/GameStatFactory'
-import PlayerGameStatFactory from '../../fixtures/PlayerGameStatFactory'
-import createOrganisationAndGame from '../../utils/createOrganisationAndGame'
+import DataExportService from '../../../src/services/data-export.service.js'
+import EventFactory from '../../fixtures/EventFactory.js'
+import PlayerFactory from '../../fixtures/PlayerFactory.js'
+import DataExportFactory from '../../fixtures/DataExportFactory.js'
+import LeaderboardFactory from '../../fixtures/LeaderboardFactory.js'
+import LeaderboardEntryFactory from '../../fixtures/LeaderboardEntryFactory.js'
+import GameStatFactory from '../../fixtures/GameStatFactory.js'
+import PlayerGameStatFactory from '../../fixtures/PlayerGameStatFactory.js'
+import createOrganisationAndGame from '../../utils/createOrganisationAndGame.js'
 
 describe('Data export service - included data', () => {
   it('should not include events from dev build players without the dev data header', async () => {

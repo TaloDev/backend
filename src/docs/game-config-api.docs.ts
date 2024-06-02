@@ -1,5 +1,5 @@
-import GameConfigAPIService from '../services/api/game-config-api.service'
-import APIDocs from './api-docs'
+import GameConfigAPIService from '../services/api/game-config-api.service.js'
+import APIDocs from './api-docs.js'
 
 const GameConfigAPIDocs: APIDocs<GameConfigAPIService> = {
   index: {

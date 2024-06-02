@@ -1,11 +1,11 @@
 import { EntityManager } from '@mikro-orm/mysql'
 import { Policy as ServicePolicy, PolicyDenial, PolicyResponse, Request } from 'koa-clay'
 import { Context } from 'koa'
-import APIKey, { APIKeyScope } from '../entities/api-key'
-import Game from '../entities/game'
-import User from '../entities/user'
-import getUserFromToken from '../lib/auth/getUserFromToken'
-import checkScope from './checkScope'
+import APIKey, { APIKeyScope } from '../entities/api-key.js'
+import Game from '../entities/game.js'
+import User from '../entities/user.js'
+import getUserFromToken from '../lib/auth/getUserFromToken.js'
+import checkScope from './checkScope.js'
 
 export default class Policy extends ServicePolicy {
   em: EntityManager

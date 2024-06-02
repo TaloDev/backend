@@ -1,11 +1,11 @@
 import { Factory } from 'hefty'
-import User, { UserType } from '../../src/entities/user'
+import User, { UserType } from '../../src/entities/user.js'
 import casual from 'casual'
 import bcrypt from 'bcrypt'
-import OrganisationFactory from './OrganisationFactory'
-import UserTwoFactorAuth from '../../src/entities/user-two-factor-auth'
-import UserRecoveryCode from '../../src/entities/user-recovery-code'
-import generateRecoveryCodes from '../../src/lib/auth/generateRecoveryCodes'
+import OrganisationFactory from './OrganisationFactory.js'
+import UserTwoFactorAuth from '../../src/entities/user-two-factor-auth.js'
+import UserRecoveryCode from '../../src/entities/user-recovery-code.js'
+import generateRecoveryCodes from '../../src/lib/auth/generateRecoveryCodes.js'
 import { Collection } from '@mikro-orm/mysql'
 
 export default class UserFactory extends Factory<User> {

@@ -1,6 +1,6 @@
-import { Cascade, Entity, ManyToOne, PrimaryKey, Property } from '@mikro-orm/mysql'
-import Leaderboard from './leaderboard'
-import PlayerAlias from './player-alias'
+import { Cascade, Entity, ManyToOne, PrimaryKey, Property, Rel } from '@mikro-orm/mysql'
+import Leaderboard from './leaderboard.js'
+import PlayerAlias from './player-alias.js'
 
 @Entity()
 export default class LeaderboardEntry {
@@ -11,7 +11,7 @@ export default class LeaderboardEntry {
   score: number
 
   @ManyToOne(() => Leaderboard, { cascade: [Cascade.REMOVE] })
-  leaderboard: Leaderboard
+  leaderboard: Rel<Leaderboard>
 
   @ManyToOne(() => PlayerAlias, { cascade: [Cascade.REMOVE], eager: true })
   playerAlias: PlayerAlias
@@ -25,7 +25,7 @@ export default class LeaderboardEntry {
   @Property({ onUpdate: () => new Date() })
   updatedAt: Date = new Date()
 
-  constructor(leaderboard: Leaderboard) {
+  constructor(leaderboard: Rel<Leaderboard>) {
     this.leaderboard = leaderboard
   }
 

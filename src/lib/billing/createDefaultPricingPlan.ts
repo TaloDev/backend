@@ -1,8 +1,8 @@
 import { EntityManager } from '@mikro-orm/mysql'
-import Organisation from '../../entities/organisation'
-import OrganisationPricingPlan from '../../entities/organisation-pricing-plan'
-import PricingPlan from '../../entities/pricing-plan'
-import initStripe from './initStripe'
+import Organisation from '../../entities/organisation.js'
+import OrganisationPricingPlan from '../../entities/organisation-pricing-plan.js'
+import PricingPlan from '../../entities/pricing-plan.js'
+import initStripe from './initStripe.js'
 
 export default async function createDefaultPricingPlan(em: EntityManager, organisation: Organisation): Promise<OrganisationPricingPlan> {
   const stripe = initStripe()

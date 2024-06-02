@@ -1,12 +1,12 @@
 import { EntityManager } from '@mikro-orm/mysql'
 import request from 'supertest'
-import { UserType } from '../../../src/entities/user'
-import APIKey from '../../../src/entities/api-key'
-import UserFactory from '../../fixtures/UserFactory'
-import GameActivity, { GameActivityType } from '../../../src/entities/game-activity'
-import userPermissionProvider from '../../utils/userPermissionProvider'
-import createUserAndToken from '../../utils/createUserAndToken'
-import createOrganisationAndGame from '../../utils/createOrganisationAndGame'
+import { UserType } from '../../../src/entities/user.js'
+import APIKey from '../../../src/entities/api-key.js'
+import UserFactory from '../../fixtures/UserFactory.js'
+import GameActivity, { GameActivityType } from '../../../src/entities/game-activity.js'
+import userPermissionProvider from '../../utils/userPermissionProvider.js'
+import createUserAndToken from '../../utils/createUserAndToken.js'
+import createOrganisationAndGame from '../../utils/createOrganisationAndGame.js'
 
 describe('API key service - delete', () => {
   it.each(userPermissionProvider([

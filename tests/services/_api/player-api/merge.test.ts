@@ -1,14 +1,14 @@
 import { Collection, EntityManager } from '@mikro-orm/mysql'
 import request from 'supertest'
-import { APIKeyScope } from '../../../../src/entities/api-key'
-import PlayerFactory from '../../../fixtures/PlayerFactory'
-import PlayerAlias from '../../../../src/entities/player-alias'
-import PlayerProp from '../../../../src/entities/player-prop'
-import GameSaveFactory from '../../../fixtures/GameSaveFactory'
-import PlayerGameStatFactory from '../../../fixtures/PlayerGameStatFactory'
-import GameStatFactory from '../../../fixtures/GameStatFactory'
-import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
-import Player from '../../../../src/entities/player'
+import { APIKeyScope } from '../../../../src/entities/api-key.js'
+import PlayerFactory from '../../../fixtures/PlayerFactory.js'
+import PlayerAlias from '../../../../src/entities/player-alias.js'
+import PlayerProp from '../../../../src/entities/player-prop.js'
+import GameSaveFactory from '../../../fixtures/GameSaveFactory.js'
+import PlayerGameStatFactory from '../../../fixtures/PlayerGameStatFactory.js'
+import GameStatFactory from '../../../fixtures/GameStatFactory.js'
+import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken.js'
+import Player from '../../../../src/entities/player.js'
 
 describe('Player API service - merge', () => {
   it('should not merge with no scopes', async () => {

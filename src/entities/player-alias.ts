@@ -1,5 +1,5 @@
-import { Cascade, Entity, Enum, ManyToOne, PrimaryKey, Property } from '@mikro-orm/mysql'
-import Player from './player'
+import { Cascade, Entity, Enum, ManyToOne, PrimaryKey, Property, Rel } from '@mikro-orm/mysql'
+import Player from './player.js'
 
 export enum PlayerAliasService {
   STEAM = 'steam',
@@ -21,7 +21,7 @@ export default class PlayerAlias {
   identifier: string
 
   @ManyToOne(() => Player, { cascade: [Cascade.REMOVE], eager: true })
-  player: Player
+  player: Rel<Player>
 
   @Property()
   createdAt: Date = new Date()

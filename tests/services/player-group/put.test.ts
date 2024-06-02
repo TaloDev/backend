@@ -1,14 +1,14 @@
 import { Collection, EntityManager } from '@mikro-orm/mysql'
 import request from 'supertest'
-import createOrganisationAndGame from '../../utils/createOrganisationAndGame'
-import createUserAndToken from '../../utils/createUserAndToken'
-import userPermissionProvider from '../../utils/userPermissionProvider'
-import { UserType } from '../../../src/entities/user'
-import GameActivity, { GameActivityType } from '../../../src/entities/game-activity'
-import PlayerGroupRule, { PlayerGroupRuleCastType, PlayerGroupRuleName } from '../../../src/entities/player-group-rule'
-import PlayerProp from '../../../src/entities/player-prop'
-import PlayerFactory from '../../fixtures/PlayerFactory'
-import PlayerGroupFactory from '../../fixtures/PlayerGroupFactory'
+import createOrganisationAndGame from '../../utils/createOrganisationAndGame.js'
+import createUserAndToken from '../../utils/createUserAndToken.js'
+import userPermissionProvider from '../../utils/userPermissionProvider.js'
+import { UserType } from '../../../src/entities/user.js'
+import GameActivity, { GameActivityType } from '../../../src/entities/game-activity.js'
+import PlayerGroupRule, { PlayerGroupRuleCastType, PlayerGroupRuleName } from '../../../src/entities/player-group-rule.js'
+import PlayerProp from '../../../src/entities/player-prop.js'
+import PlayerFactory from '../../fixtures/PlayerFactory.js'
+import PlayerGroupFactory from '../../fixtures/PlayerGroupFactory.js'
 
 describe('Player group service - put', () => {
   it.each(userPermissionProvider([

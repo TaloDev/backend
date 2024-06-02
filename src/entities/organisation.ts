@@ -1,6 +1,6 @@
 import { Collection, Entity, OneToMany, OneToOne, PrimaryKey, Property } from '@mikro-orm/mysql'
-import Game from './game'
-import OrganisationPricingPlan from './organisation-pricing-plan'
+import Game from './game.js'
+import OrganisationPricingPlan from './organisation-pricing-plan.js'
 
 @Entity()
 export default class Organisation {

@@ -1,12 +1,12 @@
 import { Factory } from 'hefty'
-import Game from '../../src/entities/game'
+import Game from '../../src/entities/game.js'
 import casual from 'casual'
-import Player from '../../src/entities/player'
-import PlayerAliasFactory from './PlayerAliasFactory'
+import Player from '../../src/entities/player.js'
+import PlayerAliasFactory from './PlayerAliasFactory.js'
 import { Collection } from '@mikro-orm/mysql'
-import PlayerAlias from '../../src/entities/player-alias'
+import PlayerAlias from '../../src/entities/player-alias.js'
 import { sub } from 'date-fns'
-import PlayerProp from '../../src/entities/player-prop'
+import PlayerProp from '../../src/entities/player-prop.js'
 
 export default class PlayerFactory extends Factory<Player> {
   private availableGames: Game[]

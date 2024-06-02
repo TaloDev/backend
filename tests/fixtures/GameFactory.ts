@@ -1,9 +1,9 @@
 import { Factory } from 'hefty'
-import Game from '../../src/entities/game'
+import Game from '../../src/entities/game.js'
 import casual from 'casual'
-import Organisation from '../../src/entities/organisation'
-import Prop from '../../src/entities/prop'
-import GameSecret from '../../src/entities/game-secret'
+import Organisation from '../../src/entities/organisation.js'
+import Prop from '../../src/entities/prop.js'
+import GameSecret from '../../src/entities/game-secret.js'
 
 export default class GameFactory extends Factory<Game> {
   private organisation: Organisation

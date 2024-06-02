@@ -1,5 +1,5 @@
-import GameStatAPIService from '../services/api/game-stat-api.service'
-import APIDocs from './api-docs'
+import GameStatAPIService from '../services/api/game-stat-api.service.js'
+import APIDocs from './api-docs.js'
 
 const GameStatAPIDocs: APIDocs<GameStatAPIService> = {
   put: {

@@ -1,6 +1,6 @@
-import Policy from '../policy'
+import Policy from '../policy.js'
 import { PolicyResponse } from 'koa-clay'
-import { APIKeyScope } from '../../entities/api-key'
+import { APIKeyScope } from '../../entities/api-key.js'
 
 export default class GameConfigAPIPolicy extends Policy {
   async index(): Promise<PolicyResponse> {

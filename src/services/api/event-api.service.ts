@@ -1,10 +1,10 @@
 import { EntityManager } from '@mikro-orm/mysql'
 import { HasPermission, Request, Response, Validate, ValidationCondition, Docs } from 'koa-clay'
-import Event from '../../entities/event'
-import EventAPIPolicy from '../../policies/api/event-api.policy'
-import APIService from './api-service'
-import EventAPIDocs from '../../docs/event-api.docs'
-import Player from '../../entities/player'
+import Event from '../../entities/event.js'
+import EventAPIPolicy from '../../policies/api/event-api.policy.js'
+import APIService from './api-service.js'
+import EventAPIDocs from '../../docs/event-api.docs.js'
+import Player from '../../entities/player.js'
 
 export default class EventAPIService extends APIService {
   @Validate({

@@ -1,14 +1,14 @@
 import { EntityManager } from '@mikro-orm/mysql'
 import { HasPermission, Service, Request, Response, Validate } from 'koa-clay'
-import Invite from '../entities/invite'
-import User, { UserType } from '../entities/user'
-import InvitePolicy from '../policies/invite.policy'
-import JoinOrganisation from '../emails/join-organisation-mail'
-import createGameActivity from '../lib/logging/createGameActivity'
-import { GameActivityType } from '../entities/game-activity'
-import { PricingPlanActionType } from '../entities/pricing-plan-action'
-import handlePricingPlanAction from '../lib/billing/handlePricingPlanAction'
-import queueEmail from '../lib/messaging/queueEmail'
+import Invite from '../entities/invite.js'
+import User, { UserType } from '../entities/user.js'
+import InvitePolicy from '../policies/invite.policy.js'
+import JoinOrganisation from '../emails/join-organisation-mail.js'
+import createGameActivity from '../lib/logging/createGameActivity.js'
+import { GameActivityType } from '../entities/game-activity.js'
+import { PricingPlanActionType } from '../entities/pricing-plan-action.js'
+import handlePricingPlanAction from '../lib/billing/handlePricingPlanAction.js'
+import queueEmail from '../lib/messaging/queueEmail.js'
 
 export default class InviteService extends Service {
   @HasPermission(InvitePolicy, 'index')

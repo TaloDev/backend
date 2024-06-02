@@ -1,9 +1,9 @@
 import { HasPermission, Request, Response, Validate, Docs } from 'koa-clay'
-import GameSaveAPIPolicy from '../../policies/api/game-save-api.policy'
-import APIService from './api-service'
-import GameSave from '../../entities/game-save'
+import GameSaveAPIPolicy from '../../policies/api/game-save-api.policy.js'
+import APIService from './api-service.js'
+import GameSave from '../../entities/game-save.js'
 import { EntityManager } from '@mikro-orm/mysql'
-import GameSaveAPIDocs from '../../docs/game-save-api.docs'
+import GameSaveAPIDocs from '../../docs/game-save-api.docs.js'
 
 export default class GameSaveAPIService extends APIService {
   @Validate({

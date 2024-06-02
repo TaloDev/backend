@@ -1,6 +1,6 @@
-import Policy from './policy'
+import Policy from './policy.js'
 import { PolicyResponse } from 'koa-clay'
-import UserTypeGate from './user-type-gate'
+import UserTypeGate from './user-type-gate.js'
 
 export default class OrganisationPolicy extends Policy {
   @UserTypeGate([], 'update the organisation pricing plan')

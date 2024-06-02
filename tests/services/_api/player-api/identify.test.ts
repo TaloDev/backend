@@ -1,13 +1,13 @@
 import { Collection, EntityManager } from '@mikro-orm/mysql'
 import request from 'supertest'
-import { APIKeyScope } from '../../../../src/entities/api-key'
-import PlayerFactory from '../../../fixtures/PlayerFactory'
+import { APIKeyScope } from '../../../../src/entities/api-key.js'
+import PlayerFactory from '../../../fixtures/PlayerFactory.js'
 import { isToday } from 'date-fns'
-import PlayerGroupFactory from '../../../fixtures/PlayerGroupFactory'
-import PlayerGroupRule, { PlayerGroupRuleName, PlayerGroupRuleCastType } from '../../../../src/entities/player-group-rule'
-import PlayerProp from '../../../../src/entities/player-prop'
-import { RuleMode } from '../../../../src/entities/player-group'
-import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
+import PlayerGroupFactory from '../../../fixtures/PlayerGroupFactory.js'
+import PlayerGroupRule, { PlayerGroupRuleName, PlayerGroupRuleCastType } from '../../../../src/entities/player-group-rule.js'
+import PlayerProp from '../../../../src/entities/player-prop.js'
+import { RuleMode } from '../../../../src/entities/player-group.js'
+import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken.js'
 
 describe('Player API service - identify', () => {
   it('should identify a player', async () => {

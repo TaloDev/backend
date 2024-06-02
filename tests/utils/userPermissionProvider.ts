@@ -1,4 +1,4 @@
-import { UserType } from '../../src/entities/user'
+import { UserType } from '../../src/entities/user.js'
 
 type UserTypeStatusCodeProvider = [number, string, UserType][]
 

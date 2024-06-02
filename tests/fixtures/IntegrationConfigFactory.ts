@@ -1,6 +1,6 @@
 import { Factory } from 'hefty'
 import casual from 'casual'
-import { IntegrationConfig } from '../../src/entities/integration'
+import { IntegrationConfig } from '../../src/entities/integration.js'
 
 class IntegrationConfigProvider implements IntegrationConfig {
   apiKey: string

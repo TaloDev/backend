@@ -1,5 +1,5 @@
-import PlayerAPIService from '../services/api/player-api.service'
-import APIDocs from './api-docs'
+import PlayerAPIService from '../services/api/player-api.service.js'
+import APIDocs from './api-docs.js'
 
 const PlayerAPIDocs: APIDocs<PlayerAPIService> = {
   identify: {

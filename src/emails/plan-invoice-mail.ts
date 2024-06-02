@@ -1,7 +1,7 @@
 import { format } from 'date-fns'
 import Stripe from 'stripe'
-import Organisation from '../entities/organisation'
-import Mail from './mail'
+import Organisation from '../entities/organisation.js'
+import Mail from './mail.js'
 import { USD } from '@dinero.js/currencies'
 import { dinero, toDecimal } from 'dinero.js'
 

@@ -1,10 +1,10 @@
 import { EntityManager } from '@mikro-orm/mysql'
 import request from 'supertest'
-import { UserType } from '../../../src/entities/user'
-import GameActivity, { GameActivityType } from '../../../src/entities/game-activity'
-import createUserAndToken from '../../utils/createUserAndToken'
-import userPermissionProvider from '../../utils/userPermissionProvider'
-import createOrganisationAndGame from '../../utils/createOrganisationAndGame'
+import { UserType } from '../../../src/entities/user.js'
+import GameActivity, { GameActivityType } from '../../../src/entities/game-activity.js'
+import createUserAndToken from '../../utils/createUserAndToken.js'
+import userPermissionProvider from '../../utils/userPermissionProvider.js'
+import createOrganisationAndGame from '../../utils/createOrganisationAndGame.js'
 
 describe('API key service - post', () => {
   it.each(userPermissionProvider([

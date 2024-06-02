@@ -1,9 +1,9 @@
 import { EntityManager } from '@mikro-orm/mysql'
 import request from 'supertest'
-import DataExportFactory from '../../fixtures/DataExportFactory'
-import { UserType } from '../../../src/entities/user'
-import createOrganisationAndGame from '../../utils/createOrganisationAndGame'
-import createUserAndToken from '../../utils/createUserAndToken'
+import DataExportFactory from '../../fixtures/DataExportFactory.js'
+import { UserType } from '../../../src/entities/user.js'
+import createOrganisationAndGame from '../../utils/createOrganisationAndGame.js'
+import createUserAndToken from '../../utils/createUserAndToken.js'
 
 describe('Data export service - index', () => {
   it('should return a list of data exports', async () => {

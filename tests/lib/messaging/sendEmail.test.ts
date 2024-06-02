@@ -1,6 +1,6 @@
-import ConfirmEmail from '../../../src/emails/confirm-email-mail'
-import sendEmail from '../../../src/lib/messaging/sendEmail'
-import UserFactory from '../../fixtures/UserFactory'
+import ConfirmEmail from '../../../src/emails/confirm-email-mail.js'
+import sendEmail from '../../../src/lib/messaging/sendEmail.js'
+import UserFactory from '../../fixtures/UserFactory.js'
 import SendGrid from '@sendgrid/mail'
 
 describe('Send email', () => {

@@ -2,8 +2,8 @@ import { EntityManager } from '@mikro-orm/mysql'
 import jwt from 'jsonwebtoken'
 import { promisify } from 'util'
 import { Context } from 'koa'
-import User from '../../entities/user'
-import UserSession from '../../entities/user-session'
+import User from '../../entities/user.js'
+import UserSession from '../../entities/user-session.js'
 import * as Sentry from '@sentry/node'
 
 export async function genAccessToken(user: User): Promise<string> {

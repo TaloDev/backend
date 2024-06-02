@@ -1,5 +1,5 @@
-import User from '../entities/user'
-import Mail from './mail'
+import User from '../entities/user.js'
+import Mail from './mail.js'
 
 export default class ResetPassword extends Mail {
   constructor(user: User, accessToken: string) {

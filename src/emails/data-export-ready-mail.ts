@@ -1,4 +1,4 @@
-import Mail, { AttachmentData } from './mail'
+import Mail, { AttachmentData } from './mail.js'
 
 export default class DataExportReady extends Mail {
   constructor(to: string, attachments: AttachmentData[]) {

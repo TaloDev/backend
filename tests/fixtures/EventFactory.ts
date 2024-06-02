@@ -1,10 +1,10 @@
 import { Factory } from 'hefty'
 import casual from 'casual'
-import Event from '../../src/entities/event'
-import Player from '../../src/entities/player'
+import Event from '../../src/entities/event.js'
+import Player from '../../src/entities/player.js'
 import { sub } from 'date-fns'
-import randomDate from '../../src/lib/dates/randomDate'
-import { generateEventData } from '../../src/lib/demo-data/generateDemoEvents'
+import randomDate from '../../src/lib/dates/randomDate.js'
+import { generateEventData } from '../../src/lib/demo-data/generateDemoEvents.js'
 
 export default class EventFactory extends Factory<Event> {
   private availablePlayers: Player[]

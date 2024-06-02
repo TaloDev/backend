@@ -1,9 +1,9 @@
-import { Collection, Entity, ManyToMany, ManyToOne, OneToMany, PrimaryKey, Property } from '@mikro-orm/mysql'
-import Game from './game'
+import { Collection, Entity, ManyToMany, ManyToOne, OneToMany, PrimaryKey, Property, Rel } from '@mikro-orm/mysql'
+import Game from './game.js'
 import { v4 } from 'uuid'
-import PlayerAlias from './player-alias'
-import PlayerProp from './player-prop'
-import PlayerGroup from './player-group'
+import PlayerAlias from './player-alias.js'
+import PlayerProp from './player-prop.js'
+import PlayerGroup from './player-group.js'
 
 @Entity()
 export default class Player {
@@ -20,7 +20,7 @@ export default class Player {
   groups = new Collection<PlayerGroup>(this)
 
   @ManyToOne(() => Game)
-  game: Game
+  game: Rel<Game>
 
   @Property()
   lastSeenAt: Date = new Date()
@@ -31,7 +31,7 @@ export default class Player {
   @Property({ onUpdate: () => new Date() })
   updatedAt: Date = new Date()
 
-  constructor(game: Game) {
+  constructor(game: Rel<Game>) {
     this.game = game
   }
 

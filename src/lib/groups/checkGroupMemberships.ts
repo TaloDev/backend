@@ -1,6 +1,6 @@
 import { EntityManager } from '@mikro-orm/mysql'
-import Player from '../../entities/player'
-import PlayerGroup from '../../entities/player-group'
+import Player from '../../entities/player.js'
+import PlayerGroup from '../../entities/player-group.js'
 
 export default async function checkGroupMemberships(em: EntityManager, player: Player) {
   const groups = await em.getRepository(PlayerGroup).find({ game: player.game })

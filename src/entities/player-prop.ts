@@ -1,5 +1,5 @@
-import { Entity, ManyToOne, PrimaryKey, Property } from '@mikro-orm/mysql'
-import Player from './player'
+import { Entity, ManyToOne, PrimaryKey, Property, Rel } from '@mikro-orm/mysql'
+import Player from './player.js'
 
 @Entity()
 export default class PlayerProp {
@@ -7,7 +7,7 @@ export default class PlayerProp {
   id: number
 
   @ManyToOne(() => Player)
-  player: Player
+  player: Rel<Player>
 
   @Property()
   key: string
@@ -15,7 +15,7 @@ export default class PlayerProp {
   @Property()
   value: string
 
-  constructor(player: Player, key: string, value: string) {
+  constructor(player: Rel<Player>, key: string, value: string) {
     this.player = player
     this.key = key
     this.value = value

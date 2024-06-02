@@ -1,11 +1,11 @@
 import { EntityManager } from '@mikro-orm/mysql'
-import { APIKeyScope } from '../../src/entities/api-key'
-import UserFactory from '../fixtures/UserFactory'
+import { APIKeyScope } from '../../src/entities/api-key.js'
+import UserFactory from '../fixtures/UserFactory.js'
 import request from 'supertest'
-import { genAccessToken } from '../../src/lib/auth/buildTokenPair'
-import createAPIKeyAndToken from '../utils/createAPIKeyAndToken'
-import createOrganisationAndGame from '../utils/createOrganisationAndGame'
-import PlayerFactory from '../fixtures/PlayerFactory'
+import { genAccessToken } from '../../src/lib/auth/buildTokenPair.js'
+import createAPIKeyAndToken from '../utils/createAPIKeyAndToken.js'
+import createOrganisationAndGame from '../utils/createOrganisationAndGame.js'
+import PlayerFactory from '../fixtures/PlayerFactory.js'
 
 describe('Policy base class', () => {
   it('should reject a revoked api key', async () => {

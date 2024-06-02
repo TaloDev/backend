@@ -1,9 +1,9 @@
 import { EntityManager } from '@mikro-orm/mysql'
 import request from 'supertest'
-import PlayerFactory from '../../fixtures/PlayerFactory'
-import createUserAndToken from '../../utils/createUserAndToken'
-import createOrganisationAndGame from '../../utils/createOrganisationAndGame'
-import GameSaveFactory from '../../fixtures/GameSaveFactory'
+import PlayerFactory from '../../fixtures/PlayerFactory.js'
+import createUserAndToken from '../../utils/createUserAndToken.js'
+import createOrganisationAndGame from '../../utils/createOrganisationAndGame.js'
+import GameSaveFactory from '../../fixtures/GameSaveFactory.js'
 
 describe('Player service - get saves', () => {
 

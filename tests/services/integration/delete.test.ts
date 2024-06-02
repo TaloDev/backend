@@ -1,13 +1,13 @@
 import { EntityManager } from '@mikro-orm/mysql'
 import request from 'supertest'
-import { UserType } from '../../../src/entities/user'
-import createUserAndToken from '../../utils/createUserAndToken'
-import createOrganisationAndGame from '../../utils/createOrganisationAndGame'
-import userPermissionProvider from '../../utils/userPermissionProvider'
-import { IntegrationType } from '../../../src/entities/integration'
-import IntegrationConfigFactory from '../../fixtures/IntegrationConfigFactory'
-import IntegrationFactory from '../../fixtures/IntegrationFactory'
-import GameActivity, { GameActivityType } from '../../../src/entities/game-activity'
+import { UserType } from '../../../src/entities/user.js'
+import createUserAndToken from '../../utils/createUserAndToken.js'
+import createOrganisationAndGame from '../../utils/createOrganisationAndGame.js'
+import userPermissionProvider from '../../utils/userPermissionProvider.js'
+import { IntegrationType } from '../../../src/entities/integration.js'
+import IntegrationConfigFactory from '../../fixtures/IntegrationConfigFactory.js'
+import IntegrationFactory from '../../fixtures/IntegrationFactory.js'
+import GameActivity, { GameActivityType } from '../../../src/entities/game-activity.js'
 
 describe('Integration service - delete', () => {
   it.each(userPermissionProvider([

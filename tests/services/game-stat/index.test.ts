@@ -1,10 +1,10 @@
 import { EntityManager } from '@mikro-orm/mysql'
 import request from 'supertest'
-import GameStatFactory from '../../fixtures/GameStatFactory'
-import PlayerFactory from '../../fixtures/PlayerFactory'
-import PlayerGameStatFactory from '../../fixtures/PlayerGameStatFactory'
-import createUserAndToken from '../../utils/createUserAndToken'
-import createOrganisationAndGame from '../../utils/createOrganisationAndGame'
+import GameStatFactory from '../../fixtures/GameStatFactory.js'
+import PlayerFactory from '../../fixtures/PlayerFactory.js'
+import PlayerGameStatFactory from '../../fixtures/PlayerGameStatFactory.js'
+import createUserAndToken from '../../utils/createUserAndToken.js'
+import createOrganisationAndGame from '../../utils/createOrganisationAndGame.js'
 
 describe('Game stat service - index', () => {
   it('should return a list of game stats', async () => {

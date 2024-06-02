@@ -1,9 +1,9 @@
 import { EntityManager } from '@mikro-orm/mysql'
 import { isSameMonth } from 'date-fns'
 import { Request } from 'koa-clay'
-import Organisation from '../../entities/organisation'
-import OrganisationPricingPlanAction, { OrganisationPricingPlanActionExtra } from '../../entities/organisation-pricing-plan-action'
-import PricingPlanAction, { PricingPlanActionType } from '../../entities/pricing-plan-action'
+import Organisation from '../../entities/organisation.js'
+import OrganisationPricingPlanAction, { OrganisationPricingPlanActionExtra } from '../../entities/organisation-pricing-plan-action.js'
+import PricingPlanAction, { PricingPlanActionType } from '../../entities/pricing-plan-action.js'
 
 export default async function handlePricingPlanAction(
   req: Request,

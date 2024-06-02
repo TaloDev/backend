@@ -1,5 +1,5 @@
-import EventAPIService from '../services/api/event-api.service'
-import APIDocs from './api-docs'
+import EventAPIService from '../services/api/event-api.service.js'
+import APIDocs from './api-docs.js'
 
 const EventAPIDocs: APIDocs<EventAPIService> = {
   post: {

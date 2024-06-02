@@ -1,14 +1,14 @@
 import { EntityManager } from '@mikro-orm/mysql'
 import request from 'supertest'
-import createOrganisationAndGame from '../../utils/createOrganisationAndGame'
-import createUserAndToken from '../../utils/createUserAndToken'
-import userPermissionProvider from '../../utils/userPermissionProvider'
-import OrganisationPricingPlanActionFactory from '../../fixtures/OrganisationPricingPlanActionFactory'
-import { PricingPlanActionType } from '../../../src/entities/pricing-plan-action'
+import createOrganisationAndGame from '../../utils/createOrganisationAndGame.js'
+import createUserAndToken from '../../utils/createUserAndToken.js'
+import userPermissionProvider from '../../utils/userPermissionProvider.js'
+import OrganisationPricingPlanActionFactory from '../../fixtures/OrganisationPricingPlanActionFactory.js'
+import { PricingPlanActionType } from '../../../src/entities/pricing-plan-action.js'
 import casual from 'casual'
 import { sub } from 'date-fns'
-import randomDate from '../../../src/lib/dates/randomDate'
-import PricingPlanActionFactory from '../../fixtures/PricingPlanActionFactory'
+import randomDate from '../../../src/lib/dates/randomDate.js'
+import PricingPlanActionFactory from '../../fixtures/PricingPlanActionFactory.js'
 
 describe('Billing service - usage', () => {
   it.each(userPermissionProvider())('should return a %i for a %s user', async (statusCode, _, type) => {

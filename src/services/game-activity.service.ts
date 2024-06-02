@@ -1,8 +1,8 @@
 import { EntityManager } from '@mikro-orm/mysql'
 import { HasPermission, Service, Request, Response } from 'koa-clay'
-import GameActivity from '../entities/game-activity'
-import User from '../entities/user'
-import GameActivityPolicy from '../policies/game-activity.policy'
+import GameActivity from '../entities/game-activity.js'
+import User from '../entities/user.js'
+import GameActivityPolicy from '../policies/game-activity.policy.js'
 
 export default class GameActivityService extends Service {
   @HasPermission(GameActivityPolicy, 'index')

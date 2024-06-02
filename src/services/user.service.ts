@@ -1,15 +1,15 @@
 import { EntityManager } from '@mikro-orm/mysql'
 import { Service, Request, Response, Routes, Validate, Before } from 'koa-clay'
-import UserSession from '../entities/user-session'
-import buildTokenPair from '../lib/auth/buildTokenPair'
+import UserSession from '../entities/user-session.js'
+import buildTokenPair from '../lib/auth/buildTokenPair.js'
 import bcrypt from 'bcrypt'
-import getUserFromToken from '../lib/auth/getUserFromToken'
-import UserAccessCode from '../entities/user-access-code'
+import getUserFromToken from '../lib/auth/getUserFromToken.js'
+import UserAccessCode from '../entities/user-access-code.js'
 import { authenticator } from '@otplib/preset-default'
-import UserTwoFactorAuth from '../entities/user-two-factor-auth'
+import UserTwoFactorAuth from '../entities/user-two-factor-auth.js'
 import qrcode from 'qrcode'
-import generateRecoveryCodes from '../lib/auth/generateRecoveryCodes'
-import User from '../entities/user'
+import generateRecoveryCodes from '../lib/auth/generateRecoveryCodes.js'
+import User from '../entities/user.js'
 
 async function confirmPassword(req: Request): Promise<void> {
   const { password } = req.body

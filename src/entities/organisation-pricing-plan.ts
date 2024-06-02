@@ -1,7 +1,7 @@
-import { Entity, ManyToOne, OneToOne, PrimaryKey, Property } from '@mikro-orm/mysql'
+import { Entity, ManyToOne, OneToOne, PrimaryKey, Property, Rel } from '@mikro-orm/mysql'
 import Stripe from 'stripe'
-import Organisation from './organisation'
-import PricingPlan from './pricing-plan'
+import Organisation from './organisation.js'
+import PricingPlan from './pricing-plan.js'
 
 @Entity()
 export default class OrganisationPricingPlan {
@@ -9,7 +9,7 @@ export default class OrganisationPricingPlan {
   id: number
 
   @OneToOne(() => Organisation, (organisation) => organisation.pricingPlan)
-  organisation: Organisation
+  organisation: Rel<Organisation>
 
   @ManyToOne(() => PricingPlan, { eager: true })
   pricingPlan: PricingPlan
@@ -32,7 +32,7 @@ export default class OrganisationPricingPlan {
   @Property({ onUpdate: () => new Date() })
   updatedAt: Date = new Date()
 
-  constructor(organisation: Organisation, pricingPlan: PricingPlan) {
+  constructor(organisation: Rel<Organisation>, pricingPlan: PricingPlan) {
     this.organisation = organisation
     this.pricingPlan = pricingPlan
   }

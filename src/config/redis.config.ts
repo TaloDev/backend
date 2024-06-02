@@ -1,4 +1,4 @@
-import Redis from 'ioredis'
+import { Redis } from 'ioredis'
 import { Context } from 'koa'
 
 const redisConfig = {

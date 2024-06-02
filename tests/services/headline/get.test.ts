@@ -1,11 +1,11 @@
 import { EntityManager } from '@mikro-orm/mysql'
 import request from 'supertest'
-import Event from '../../../src/entities/event'
-import EventFactory from '../../fixtures/EventFactory'
-import PlayerFactory from '../../fixtures/PlayerFactory'
+import Event from '../../../src/entities/event.js'
+import EventFactory from '../../fixtures/EventFactory.js'
+import PlayerFactory from '../../fixtures/PlayerFactory.js'
 import { sub, format } from 'date-fns'
-import createOrganisationAndGame from '../../utils/createOrganisationAndGame'
-import createUserAndToken from '../../utils/createUserAndToken'
+import createOrganisationAndGame from '../../utils/createOrganisationAndGame.js'
+import createUserAndToken from '../../utils/createUserAndToken.js'
 
 describe('Headline service - get', () => {
   const startDate = format(sub(new Date(), { days: 7 }), 'yyyy-MM-dd')

@@ -1,14 +1,14 @@
 import { EntityManager } from '@mikro-orm/mysql'
 import request from 'supertest'
-import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
-import initStripe from '../../../../src/lib/billing/initStripe'
+import createOrganisationAndGame from '../../../utils/createOrganisationAndGame.js'
+import initStripe from '../../../../src/lib/billing/initStripe.js'
 import { v4 } from 'uuid'
-import PricingPlanFactory from '../../../fixtures/PricingPlanFactory'
+import PricingPlanFactory from '../../../fixtures/PricingPlanFactory.js'
 import SendGrid from '@sendgrid/mail'
-import PlanUpgraded from '../../../../src/emails/plan-upgraded-mail'
+import PlanUpgraded from '../../../../src/emails/plan-upgraded-mail.js'
 import { addDays } from 'date-fns'
-import PlanRenewed from '../../../../src/emails/plan-renewed-mail'
-import PlanCancelled from '../../../../src/emails/plan-cancelled-mail'
+import PlanRenewed from '../../../../src/emails/plan-renewed-mail.js'
+import PlanCancelled from '../../../../src/emails/plan-cancelled-mail.js'
 
 const stripe = initStripe()
 

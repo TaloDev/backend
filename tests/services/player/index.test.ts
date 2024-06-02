@@ -1,12 +1,12 @@
 import { Collection, EntityManager } from '@mikro-orm/mysql'
 import request from 'supertest'
-import PlayerFactory from '../../fixtures/PlayerFactory'
-import PlayerProp from '../../../src/entities/player-prop'
-import createOrganisationAndGame from '../../utils/createOrganisationAndGame'
-import createUserAndToken from '../../utils/createUserAndToken'
-import PlayerGroupFactory from '../../fixtures/PlayerGroupFactory'
-import PlayerGroupRule, { PlayerGroupRuleCastType, PlayerGroupRuleName } from '../../../src/entities/player-group-rule'
-import GameFactory from '../../fixtures/GameFactory'
+import PlayerFactory from '../../fixtures/PlayerFactory.js'
+import PlayerProp from '../../../src/entities/player-prop.js'
+import createOrganisationAndGame from '../../utils/createOrganisationAndGame.js'
+import createUserAndToken from '../../utils/createUserAndToken.js'
+import PlayerGroupFactory from '../../fixtures/PlayerGroupFactory.js'
+import PlayerGroupRule, { PlayerGroupRuleCastType, PlayerGroupRuleName } from '../../../src/entities/player-group-rule.js'
+import GameFactory from '../../fixtures/GameFactory.js'
 
 describe('Player service - index', () => {
   it('should return a list of players', async () => {

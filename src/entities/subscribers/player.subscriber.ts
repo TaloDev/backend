@@ -1,6 +1,6 @@
 import { EntityManager, ChangeSetType, EventSubscriber, FlushEventArgs } from '@mikro-orm/mysql'
-import checkGroupMemberships from '../../lib/groups/checkGroupMemberships'
-import Player from '../player'
+import checkGroupMemberships from '../../lib/groups/checkGroupMemberships.js'
+import Player from '../player.js'
 
 export default class PlayerSubscriber implements EventSubscriber {
   async afterFlush(args: FlushEventArgs): Promise<void> {

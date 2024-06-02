@@ -1,21 +1,21 @@
 import 'dotenv/config'
 import { MikroORM } from '@mikro-orm/mysql'
-import UserFactory from './fixtures/UserFactory'
-import GameFactory from './fixtures/GameFactory'
-import PlayerFactory from './fixtures/PlayerFactory'
-import EventFactory from './fixtures/EventFactory'
-import OrganisationFactory from './fixtures/OrganisationFactory'
-import LeaderboardFactory from './fixtures/LeaderboardFactory'
-import GameSaveFactory from './fixtures/GameSaveFactory'
-import GameStatFactory from './fixtures/GameStatFactory'
-import PlayerGameStatFactory from './fixtures/PlayerGameStatFactory'
+import UserFactory from './fixtures/UserFactory.js'
+import GameFactory from './fixtures/GameFactory.js'
+import PlayerFactory from './fixtures/PlayerFactory.js'
+import EventFactory from './fixtures/EventFactory.js'
+import OrganisationFactory from './fixtures/OrganisationFactory.js'
+import LeaderboardFactory from './fixtures/LeaderboardFactory.js'
+import GameSaveFactory from './fixtures/GameSaveFactory.js'
+import GameStatFactory from './fixtures/GameStatFactory.js'
+import PlayerGameStatFactory from './fixtures/PlayerGameStatFactory.js'
 import casual from 'casual'
-import PricingPlanFactory from './fixtures/PricingPlanFactory'
-import PricingPlanActionFactory from './fixtures/PricingPlanActionFactory'
-import PricingPlanAction, { PricingPlanActionType } from '../src/entities/pricing-plan-action'
-import OrganisationPricingPlanFactory from './fixtures/OrganisationPricingPlanFactory'
-import PricingPlan from '../src/entities/pricing-plan'
-import APIKey, { APIKeyScope } from '../src/entities/api-key'
+import PricingPlanFactory from './fixtures/PricingPlanFactory.js'
+import PricingPlanActionFactory from './fixtures/PricingPlanActionFactory.js'
+import PricingPlanAction, { PricingPlanActionType } from '../src/entities/pricing-plan-action.js'
+import OrganisationPricingPlanFactory from './fixtures/OrganisationPricingPlanFactory.js'
+import PricingPlan from '../src/entities/pricing-plan.js'
+import APIKey, { APIKeyScope } from '../src/entities/api-key.js'
 
 (async () => {
   const orm = await MikroORM.init()
@@ -24,12 +24,15 @@ import APIKey, { APIKeyScope } from '../src/entities/api-key'
   await orm.getMigrator().up()
 
   const plansMap: Partial<PricingPlan>[] = [
-    { stripeId: 'prod_LcO5U04wEGWgMP', default: true },
+    { stripeId: 'prod_LcO5U04wEGWgMP' },
     { stripeId: 'prod_LbW295xhmo2bk0' },
     { stripeId: 'prod_LcNy4ow2VoJ8kc' }
   ]
 
-  const pricingPlans = await new PricingPlanFactory().with((_, idx) => plansMap[idx]).many(3)
+  const pricingPlans = await new PricingPlanFactory().with((_, idx) => ({
+    ...plansMap[idx],
+    default: idx === 0
+  })).many(3)
 
   const pricingPlanActions: PricingPlanAction[] = []
 

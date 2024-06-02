@@ -1,8 +1,8 @@
 import { HasPermission, Request, Response, Docs } from 'koa-clay'
-import GameConfigAPIPolicy from '../../policies/api/game-config-api.policy'
-import APIService from './api-service'
+import GameConfigAPIPolicy from '../../policies/api/game-config-api.policy.js'
+import APIService from './api-service.js'
 import { EntityManager } from '@mikro-orm/mysql'
-import GameConfigAPIDocs from '../../docs/game-config-api.docs'
+import GameConfigAPIDocs from '../../docs/game-config-api.docs.js'
 
 export default class GameConfigAPIService extends APIService {
   @HasPermission(GameConfigAPIPolicy, 'index')

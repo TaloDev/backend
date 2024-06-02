@@ -21,7 +21,7 @@ set -e
 
 dc up -d
 
-npx mikro-orm migration:up
+npx mikro-orm-esm migration:up
 echo "\n"
 
 if [ -z "$EXPOSE_GC" ]

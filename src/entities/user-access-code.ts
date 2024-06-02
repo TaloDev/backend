@@ -1,5 +1,5 @@
 import { Entity, ManyToOne, PrimaryKey, Property } from '@mikro-orm/mysql'
-import User from './user'
+import User from './user.js'
 
 @Entity()
 export default class UserAccessCode {

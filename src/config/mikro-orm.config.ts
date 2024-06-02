@@ -1,3 +1,4 @@
+import 'dotenv/config'
 import entities from '../entities/index.js'
 import subscribers from '../entities/subscribers/index.js'
 import migrationsList from '../migrations/index.js'

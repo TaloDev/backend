@@ -12,7 +12,15 @@
     {
       "matchDepTypes": ["dependencies"],
       "matchUpdateTypes": ["patch"],
+      "excludePackagePrefixes": ["@mikro-orm/"],
       "enabled": false
+    },
+    {
+      "matchSourceUrls": [
+        "https://github.com/mikro-orm/mikro-orm"
+      ],
+      "matchUpdateTypes": ["minor", "patch"],
+      "groupName": "mikro-orm"
     }
   ],
   "platformAutomerge": true,

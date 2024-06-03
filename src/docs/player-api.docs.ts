@@ -48,7 +48,7 @@ const PlayerAPIDocs: APIDocs<PlayerAPIService> = {
         props: 'An array of @type(Props:prop). Props that the player doesn\'t have will be added. Props with updated values will overwrite existing props. Props with a null value will be deleted from the player'
       },
       route: {
-        aliasId: 'The ID of the player\'s alias'
+        id: 'The ID of the player'
       }
     },
     samples: [

@@ -19,7 +19,6 @@ const GameStatAPIDocs: APIDocs<GameStatAPIService> = {
       {
         title: 'Sample request',
         sample: {
-          aliasId: 1,
           change: 47
         }
       },

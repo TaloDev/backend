@@ -1871,6 +1871,253 @@
           "nullable": false,
           "mappedType": "integer"
         },
+        "internal_name": {
+          "name": "internal_name",
+          "type": "varchar(255)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "mappedType": "string"
+        },
+        "name": {
+          "name": "name",
+          "type": "varchar(255)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "mappedType": "string"
+        },
+        "description": {
+          "name": "description",
+          "type": "varchar(255)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "mappedType": "string"
+        },
+        "anonymised": {
+          "name": "anonymised",
+          "type": "tinyint(1)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "mappedType": "boolean"
+        },
+        "game_id": {
+          "name": "game_id",
+          "type": "int",
+          "unsigned": true,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "mappedType": "integer"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "datetime",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "length": 0,
+          "mappedType": "datetime"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "datetime",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "length": 0,
+          "mappedType": "datetime"
+        }
+      },
+      "name": "game_feedback_category",
+      "indexes": [
+        {
+          "columnNames": [
+            "game_id"
+          ],
+          "composite": false,
+          "keyName": "game_feedback_category_game_id_index",
+          "constraint": false,
+          "primary": false,
+          "unique": false
+        },
+        {
+          "keyName": "PRIMARY",
+          "columnNames": [
+            "id"
+          ],
+          "composite": false,
+          "constraint": true,
+          "primary": true,
+          "unique": true
+        }
+      ],
+      "checks": [],
+      "foreignKeys": {
+        "game_feedback_category_game_id_foreign": {
+          "constraintName": "game_feedback_category_game_id_foreign",
+          "columnNames": [
+            "game_id"
+          ],
+          "localTableName": "game_feedback_category",
+          "referencedColumnNames": [
+            "id"
+          ],
+          "referencedTableName": "game",
+          "updateRule": "cascade"
+        }
+      },
+      "nativeEnums": {}
+    },
+    {
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "int",
+          "unsigned": true,
+          "autoincrement": true,
+          "primary": true,
+          "nullable": false,
+          "mappedType": "integer"
+        },
+        "category_id": {
+          "name": "category_id",
+          "type": "int",
+          "unsigned": true,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "mappedType": "integer"
+        },
+        "player_alias_id": {
+          "name": "player_alias_id",
+          "type": "int",
+          "unsigned": true,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "mappedType": "integer"
+        },
+        "comment": {
+          "name": "comment",
+          "type": "text",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "mappedType": "text"
+        },
+        "anonymised": {
+          "name": "anonymised",
+          "type": "tinyint(1)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "mappedType": "boolean"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "datetime",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "length": 0,
+          "mappedType": "datetime"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "datetime",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "length": 0,
+          "mappedType": "datetime"
+        }
+      },
+      "name": "game_feedback",
+      "indexes": [
+        {
+          "columnNames": [
+            "category_id"
+          ],
+          "composite": false,
+          "keyName": "game_feedback_category_id_index",
+          "constraint": false,
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "player_alias_id"
+          ],
+          "composite": false,
+          "keyName": "game_feedback_player_alias_id_index",
+          "constraint": false,
+          "primary": false,
+          "unique": false
+        },
+        {
+          "keyName": "PRIMARY",
+          "columnNames": [
+            "id"
+          ],
+          "composite": false,
+          "constraint": true,
+          "primary": true,
+          "unique": true
+        }
+      ],
+      "checks": [],
+      "foreignKeys": {
+        "game_feedback_category_id_foreign": {
+          "constraintName": "game_feedback_category_id_foreign",
+          "columnNames": [
+            "category_id"
+          ],
+          "localTableName": "game_feedback",
+          "referencedColumnNames": [
+            "id"
+          ],
+          "referencedTableName": "game_feedback_category",
+          "deleteRule": "cascade"
+        },
+        "game_feedback_player_alias_id_foreign": {
+          "constraintName": "game_feedback_player_alias_id_foreign",
+          "columnNames": [
+            "player_alias_id"
+          ],
+          "localTableName": "game_feedback",
+          "referencedColumnNames": [
+            "id"
+          ],
+          "referencedTableName": "player_alias",
+          "deleteRule": "cascade"
+        }
+      },
+      "nativeEnums": {}
+    },
+    {
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "int",
+          "unsigned": true,
+          "autoincrement": true,
+          "primary": true,
+          "nullable": false,
+          "mappedType": "integer"
+        },
         "name": {
           "name": "name",
           "type": "varchar(255)",
@@ -3157,6 +3404,8 @@
           "primary": false,
           "nullable": false,
           "enumItems": [
+            "read:gameFeedback",
+            "write:gameFeedback",
             "read:gameConfig",
             "write:gameConfig",
             "read:gameStats",

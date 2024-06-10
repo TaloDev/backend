@@ -15,7 +15,7 @@ describe('Game stat service - put', () => {
 
     const res = await request(global.app)
       .put(`/games/${game.id}/game-stats/${stat.id}`)
-      .send({ internalName: stat.internalName, name: 'New name', global: stat.global, maxChange: stat.maxChange, minValue: stat.minValue, maxValue: stat.maxValue, defaultValue: stat.defaultValue, minTimeBetweenUpdates: stat.minTimeBetweenUpdates  })
+      .send({ internalName: stat.internalName, name: 'New name', global: stat.global, maxChange: stat.maxChange, minValue: stat.minValue, maxValue: stat.maxValue, defaultValue: stat.defaultValue, minTimeBetweenUpdates: stat.minTimeBetweenUpdates })
       .auth(token, { type: 'bearer' })
       .expect(200)
 
@@ -211,6 +211,50 @@ describe('Game stat service - put', () => {
     expect(activity.extra.display).toStrictEqual({
       'Updated properties': 'minTimeBetweenUpdates: 10242'
     })
+  })
+
+  it('should not update the internal name', async () => {
+    const [organisation, game] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken({}, organisation)
+
+    const stat = await new GameStatFactory([game]).one()
+    await (<EntityManager>global.em).persistAndFlush(stat)
+
+    const res = await request(global.app)
+      .put(`/games/${game.id}/game-stats/${stat.id}`)
+      .send({ internalName: 'new-internal-name', name: stat.name, global: stat.global, maxChange: stat.maxChange, minValue: stat.minValue, maxValue: stat.maxValue, defaultValue: stat.defaultValue, minTimeBetweenUpdates: stat.minTimeBetweenUpdates })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    expect(res.body.stat.internalName).toBe(stat.internalName)
+
+    const activity = await (<EntityManager>global.em).getRepository(GameActivity).findOne({
+      type: GameActivityType.GAME_STAT_UPDATED,
+      game,
+      extra: {
+        statInternalName: res.body.stat.internalName
+      }
+    })
+
+    expect(activity.extra.display).toStrictEqual({
+      'Updated properties': ''
+    })
+  })
+
+  it('should not update a stat for a game the user does not have access to', async () => {
+    const [, otherGame] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken()
+
+    const stat = await new GameStatFactory([otherGame]).one()
+    await (<EntityManager>global.em).persistAndFlush(stat)
+
+    const res = await request(global.app)
+      .put(`/games/${otherGame.id}/game-stats/${stat.id}`)
+      .send({ internalName: stat.internalName, name: 'New name', global: stat.global, maxChange: stat.maxChange, minValue: stat.minValue, maxValue: stat.maxValue, defaultValue: stat.defaultValue, minTimeBetweenUpdates: stat.minTimeBetweenUpdates })
+      .auth(token, { type: 'bearer' })
+      .expect(403)
+
+    expect(res.body).toStrictEqual({ message: 'Forbidden' })
   })
 
   it('should not update a non-existent stat', async () => {

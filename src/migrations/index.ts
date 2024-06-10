@@ -23,6 +23,7 @@ import { DropSteamworksLeaderboardMappingUnique } from './20221113223142DropStea
 import { UpdateTableDefaultValues } from './20230205220923UpdateTableDefaultValues'
 import { CreateGameSecretsTable } from './20230205220924CreateGameSecretsTable'
 import { AddAPIKeyLastUsedAtColumn } from './20230205220925AddAPIKeyLastUsedAtColumn'
+import { CreateGameFeedbackAndCategoryTables } from './20240606165637CreateGameFeedbackAndCategoryTables'
 
 export default [
   {
@@ -124,5 +125,9 @@ export default [
   {
     name: 'AddAPIKeyLastUsedAtColumn',
     class: AddAPIKeyLastUsedAtColumn
+  },
+  {
+    name: 'CreateGameFeedbackAndCategoryTables',
+    class: CreateGameFeedbackAndCategoryTables
   }
 ]

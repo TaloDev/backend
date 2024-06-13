@@ -111,6 +111,12 @@ export default class GameActivity {
         return `${this.user.username} deleted the group ${this.extra.groupName}`
       case GameActivityType.GAME_PROPS_UPDATED:
         return `${this.user.username} updated the live config`
+      case GameActivityType.GAME_FEEDBACK_CATEGORY_CREATED:
+        return `${this.user.username} created the feedback category ${this.extra.feedbackCategoryInternalName}`
+      case GameActivityType.GAME_FEEDBACK_CATEGORY_UPDATED:
+        return `${this.user.username} updated the feedback category ${this.extra.feedbackCategoryInternalName}`
+      case GameActivityType.GAME_FEEDBACK_CATEGORY_DELETED:
+        return `${this.user.username} deleted the feedback category ${this.extra.feedbackCategoryInternalName}`
       default:
         return ''
     }

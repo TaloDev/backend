@@ -93,4 +93,17 @@ describe('API key service - put', () => {
 
     expect(res.body).toStrictEqual({ message: 'Forbidden' })
   })
+
+  it('should not update an api key that does not exist', async () => {
+    const [organisation, game] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken({ emailConfirmed: true, type: UserType.ADMIN }, organisation)
+
+    const res = await request(global.app)
+      .put(`/games/${game.id}/api-keys/99999`)
+      .send({ scopes: ['read:players', 'write:events'] })
+      .auth(token, { type: 'bearer' })
+      .expect(404)
+
+    expect(res.body).toStrictEqual({ message: 'API key not found' })
+  })
 })

@@ -69,6 +69,6 @@ describe('API key service - delete', () => {
       .auth(token, { type: 'bearer' })
       .expect(403)
 
-    expect(res.body).toStrictEqual({ message: 'Forbidden' })
+    expect(res.body).toStrictEqual({ message: 'You need to confirm your email address to revoke API keys' })
   })
 })

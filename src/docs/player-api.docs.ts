@@ -33,7 +33,7 @@ const PlayerAPIDocs: APIDocs<PlayerAPIService> = {
               createdAt: '2022-01-15 13:20:32',
               lastSeenAt: '2022-04-12 15:09:43',
               groups: [
-                { id: 1, name: 'Winners' }
+                { id: '5826ca71-1964-4a1b-abcb-a61ffbe003be', name: 'Winners' }
               ]
             }
           }
@@ -78,7 +78,7 @@ const PlayerAPIDocs: APIDocs<PlayerAPIService> = {
             createdAt: '2022-01-15 13:20:32',
             lastSeenAt: '2022-04-12 15:09:43',
             groups: [
-              { id: 1, name: 'Winners' }
+              { id: '5826ca71-1964-4a1b-abcb-a61ffbe003be', name: 'Winners' }
             ]
           }
         }
@@ -121,7 +121,7 @@ const PlayerAPIDocs: APIDocs<PlayerAPIService> = {
             createdAt: '2022-01-15 13:20:32',
             lastSeenAt: '2022-04-12 15:09:43',
             groups: [
-              { id: 1, name: 'Winners' }
+              { id: '5826ca71-1964-4a1b-abcb-a61ffbe003be', name: 'Winners' }
             ]
           }
         }

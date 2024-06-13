@@ -13,12 +13,12 @@ export default class PlayerAPIPolicy extends Policy {
 
     const key = await this.getAPIKey()
 
-    req.ctx.state.player = await this.em.getRepository(Player).findOne({
+    this.ctx.state.player = await this.em.getRepository(Player).findOne({
       id: id,
       game: key.game
     })
 
-    if (!req.ctx.state.player) return new PolicyDenial({ message: 'Player not found' }, 404)
+    if (!this.ctx.state.player) return new PolicyDenial({ message: 'Player not found' }, 404)
 
     return await this.hasScope(APIKeyScope.WRITE_PLAYERS)
   }

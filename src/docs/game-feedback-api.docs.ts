@@ -1,0 +1,105 @@
+import GameFeedbackAPIService from '../services/api/game-feedback-api.service'
+import APIDocs from './api-docs'
+
+const GameFeedbackAPIDocs: APIDocs<GameFeedbackAPIService> = {
+  indexCategories: {
+    description: 'Get available feedback categories',
+    samples: [
+      {
+        title: 'Sample response',
+        sample: {
+          feedbackCategories: [
+            {
+              id: 1,
+              internalName: 'bugs',
+              name: 'Bugs',
+              description: 'Issues that hinder the player experience',
+              createdAt: '2024-06-01 21:36:02'
+            }
+          ]
+        }
+      }
+    ]
+  },
+  post: {
+    description: 'Create a player feedback entry',
+    params: {
+      headers: {
+        'x-talo-alias': 'The ID of the player\'s alias'
+      },
+      body: {
+        comment: 'The comment made by the player'
+      },
+      route: {
+        internalName: 'The internal name of the feedback category'
+      }
+    },
+    samples: [
+      {
+        title: 'Sample request',
+        sample: {
+          comment: 'The new quest in the new zone cannot be completed!'
+        }
+      },
+      {
+        title: 'Sample anonymised feedback response',
+        sample: {
+          feedback: {
+            id: 36,
+            category: {
+              id: 1,
+              internalName: 'bugs',
+              name: 'Bugs',
+              description: 'Issues that hinder the player experience',
+              anonymised: false,
+              createdAt: '2024-06-01 21:36:02'
+            },
+            comment: 'The new quest in the new zone cannot be completed!',
+            anonymised: true,
+            playerAlias: null,
+            createdAt: '2024-06-03 18:04:44'
+          }
+        }
+      },
+      {
+        title: 'Sample identifiable feedback response',
+        sample: {
+          feedback: {
+            id: 36,
+            category: {
+              id: 1,
+              internalName: 'bugs',
+              name: 'Bugs',
+              description: 'Issues that hinder the player experience',
+              anonymised: false,
+              createdAt: '2024-06-01 21:36:02'
+            },
+            comment: 'The new quest in the new zone cannot be completed!',
+            anonymised: false,
+            playerAlias: {
+              id: 1,
+              service: 'steam',
+              identifier: '11133645',
+              player: {
+                id: '7a4e70ec-6ee6-418e-923d-b3a45051b7f9',
+                props: [
+                  { key: 'xPos', value: '13.29' },
+                  { key: 'yPos', value: '26.44' }
+                ],
+                aliases: [
+                  '/* [Circular] */'
+                ],
+                devBuild: false,
+                createdAt: '2022-01-15 13:20:32',
+                lastSeenAt: '2022-04-12 15:09:43'
+              }
+            },
+            createdAt: '2024-06-03 18:04:44'
+          }
+        }
+      }
+    ]
+  }
+}
+
+export default GameFeedbackAPIDocs

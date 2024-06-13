@@ -7,7 +7,7 @@ services:
       - redis
 
   db:
-    image: mysql:8
+    image: mysql:8.4
     command: --mysql-native-password=ON
     environment:
       - MYSQL_DATABASE=${DB_NAME}

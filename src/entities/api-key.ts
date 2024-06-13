@@ -3,6 +3,8 @@ import Game from './game'
 import User from './user'
 
 export enum APIKeyScope {
+  READ_GAME_FEEDBACK = 'read:gameFeedback',
+  WRITE_GAME_FEEDBACK = 'write:gameFeedback',
   READ_GAME_CONFIG = 'read:gameConfig',
   WRITE_GAME_CONFIG = 'write:gameConfig',
   READ_GAME_STATS = 'read:gameStats',

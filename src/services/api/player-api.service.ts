@@ -52,8 +52,6 @@ export default class PlayerAPIService extends APIService {
 
     if (!alias) {
       if (checkScope(key, APIKeyScope.WRITE_PLAYERS)) {
-        req.ctx.state.game = key.game
-
         const res = await forwardRequest(req, {
           body: {
             aliases: [

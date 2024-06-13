@@ -80,11 +80,13 @@ describe('Game stat service - post', () => {
     const [, otherGame] = await createOrganisationAndGame()
     const [token] = await createUserAndToken()
 
-    await request(global.app)
+    const res = await request(global.app)
       .post(`/games/${otherGame.id}/game-stats`)
       .send({ internalName: 'levels-completed', name: 'Levels completed', defaultValue: 0, global: false, minTimeBetweenUpdates: 0, minValue: -10, maxValue: 10 })
       .auth(token, { type: 'bearer' })
       .expect(403)
+
+    expect(res.body).toStrictEqual({ message: 'Forbidden' })
   })
 
   it('should not create a stat for a non-existent game', async () => {

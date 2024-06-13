@@ -13,12 +13,13 @@ export default async function apiKeyMiddleware(ctx: Context, next: Next): Promis
 
       if (decodedToken) {
         const apiKey = await em.getRepository(APIKey).findOne(decodedToken.sub, {
-          populate: ['game.apiSecret']
+          populate: ['game', 'game.apiSecret']
         })
 
         if (apiKey) {
           ctx.state.key = apiKey
           ctx.state.secret = apiKey.game.apiSecret.getPlainSecret()
+          ctx.state.game = apiKey.game
 
           if (!apiKey.revokedAt) apiKey.lastUsedAt = new Date()
           await em.flush()

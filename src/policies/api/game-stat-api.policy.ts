@@ -14,7 +14,7 @@ export default class GameStatAPIPolicy extends Policy {
       game: key.game
     })
 
-    req.ctx.state.stat = stat
+    this.ctx.state.stat = stat
     if (!stat) return new PolicyDenial({ message: 'Stat not found' }, 404)
 
     const player = await this.em.getRepository(Player).findOne({
@@ -24,7 +24,7 @@ export default class GameStatAPIPolicy extends Policy {
       game: key.game
     })
 
-    req.ctx.state.player = player
+    this.ctx.state.player = player
     if (!player) return new PolicyDenial({ message: 'Player not found' }, 404)
 
     return await this.hasScope(APIKeyScope.WRITE_GAME_STATS)

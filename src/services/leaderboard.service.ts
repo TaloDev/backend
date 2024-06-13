@@ -193,7 +193,7 @@ export default class LeaderboardService extends Service {
   async updateLeaderboard(req: Request): Promise<Response> {
     const em: EntityManager = req.ctx.em
 
-    const leaderboard = req.ctx.state.leaderboard
+    const leaderboard: Leaderboard = req.ctx.state.leaderboard
 
     const updateableKeys: (keyof Leaderboard)[] = ['name', 'sortMode', 'unique']
     const changedProperties = []

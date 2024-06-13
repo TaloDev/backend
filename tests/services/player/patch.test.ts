@@ -204,19 +204,21 @@ describe('Player service - patch', () => {
     ])
   })
 
-  it('should reject keys starting with META_', async () => {
+  it('should filter keys starting with META_', async () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({}, organisation)
 
     const player = await new PlayerFactory([game]).one()
     await (<EntityManager>global.em).persistAndFlush(player)
 
+    const propsLength = player.props.length
+
     const res = await request(global.app)
       .patch(`/games/${game.id}/players/${player.id}`)
       .send({
         props: [
           {
-            key: 'zonesExplored',
+            key: 'aBrandNewProp',
             value: '3'
           },
           {
@@ -226,10 +228,8 @@ describe('Player service - patch', () => {
         ]
       })
       .auth(token, { type: 'bearer' })
-      .expect(400)
+      .expect(200)
 
-    expect(res.body).toStrictEqual({
-      message: 'Prop keys starting with \'META_\' are reserved for internal systems, please use another key name'
-    })
+    expect(res.body.player.props).toHaveLength(propsLength + 1)
   })
 })

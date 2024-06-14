@@ -11,7 +11,12 @@ import { GameActivityType } from '../entities/game-activity'
 export async function createToken(em: EntityManager, apiKey: APIKey): Promise<string> {
   await em.populate(apiKey, ['game.apiSecret'])
 
-  const payload = { sub: apiKey.id, api: true }
+  const payload = {
+    sub: apiKey.id,
+    api: true,
+    iat: Math.floor(new Date(apiKey.createdAt).getTime() / 1000)
+  }
+
   const token = await promisify(jwt.sign)(payload, apiKey.game.apiSecret.getPlainSecret())
   return token
 }

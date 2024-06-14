@@ -24,6 +24,7 @@ import { UpdateTableDefaultValues } from './20230205220923UpdateTableDefaultValu
 import { CreateGameSecretsTable } from './20230205220924CreateGameSecretsTable'
 import { AddAPIKeyLastUsedAtColumn } from './20230205220925AddAPIKeyLastUsedAtColumn'
 import { CreateGameFeedbackAndCategoryTables } from './20240606165637CreateGameFeedbackAndCategoryTables'
+import { AddAPIKeyUpdatedAtColumn } from './20240614122547AddAPIKeyUpdatedAtColumn'
 
 export default [
   {
@@ -129,5 +130,9 @@ export default [
   {
     name: 'CreateGameFeedbackAndCategoryTables',
     class: CreateGameFeedbackAndCategoryTables
+  },
+  {
+    name: 'AddAPIKeyUpdatedAtColumn',
+    class: AddAPIKeyUpdatedAtColumn
   }
 ]

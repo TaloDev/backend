@@ -19,11 +19,22 @@ export default class APIKeyPolicy extends Policy {
   }
 
   @UserTypeGate([UserType.ADMIN], 'revoke API keys')
+  @EmailConfirmedGate('revoke API keys')
   async delete(req: Request): Promise<PolicyResponse> {
     const { id } = req.params
     this.ctx.state.apiKey = await this.em.getRepository(APIKey).findOne(Number(id))
     if (!this.ctx.state.apiKey) return new PolicyDenial({ message: 'API key not found' }, 404)
 
     return await this.canAccessGame((this.ctx.state.apiKey as APIKey).game.id)
+  }
+
+  @UserTypeGate([UserType.ADMIN], 'update API keys')
+  @EmailConfirmedGate('update API keys')
+  async put(req: Request): Promise<PolicyResponse> {
+    const { id, gameId } = req.params
+    this.ctx.state.apiKey = await this.em.getRepository(APIKey).findOne(Number(id))
+    if (!this.ctx.state.apiKey) return new PolicyDenial({ message: 'API key not found' }, 404)
+
+    return await this.canAccessGame(Number(gameId))
   }
 }

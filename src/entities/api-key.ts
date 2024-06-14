@@ -37,6 +37,9 @@ export default class APIKey {
   @Property()
   createdAt: Date = new Date()
 
+  @Property({ onUpdate: () => new Date() })
+  updatedAt?: Date = new Date()
+
   @Property({ nullable: true })
   revokedAt?: Date
 

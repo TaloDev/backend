@@ -3450,6 +3450,16 @@
           "length": 0,
           "mappedType": "datetime"
         },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "datetime",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "length": 0,
+          "mappedType": "datetime"
+        },
         "revoked_at": {
           "name": "revoked_at",
           "type": "datetime",

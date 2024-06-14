@@ -11,7 +11,12 @@ import { GameActivityType } from '../entities/game-activity'
 export async function createToken(em: EntityManager, apiKey: APIKey): Promise<string> {
   await em.populate(apiKey, ['game.apiSecret'])
 
-  const payload = { sub: apiKey.id, api: true }
+  const payload = {
+    sub: apiKey.id,
+    api: true,
+    iat: Math.floor(new Date(apiKey.createdAt).getTime() / 1000)
+  }
+
   const token = await promisify(jwt.sign)(payload, apiKey.game.apiSecret.getPlainSecret())
   return token
 }
@@ -30,6 +35,9 @@ export async function createToken(em: EntityManager, apiKey: APIKey): Promise<st
   },
   {
     method: 'DELETE'
+  },
+  {
+    method: 'PUT'
   }
 ])
 export default class APIKeyService extends Service {
@@ -84,7 +92,7 @@ export default class APIKeyService extends Service {
   async delete(req: Request): Promise<Response> {
     const em: EntityManager = req.ctx.em
 
-    const apiKey = req.ctx.state.apiKey as APIKey // set in the policy
+    const apiKey = req.ctx.state.apiKey as APIKey
     apiKey.revokedAt = new Date()
 
     const token = await createToken(em, apiKey)
@@ -117,6 +125,39 @@ export default class APIKeyService extends Service {
       status: 200,
       body: {
         scopes: groupBy(scopes, (scope) => scope.split(':')[1])
+      }
+    }
+  }
+
+  @Validate({ body: ['scopes'] })
+  @HasPermission(APIKeyPolicy, 'put')
+  async put(req: Request): Promise<Response> {
+    const em: EntityManager = req.ctx.em
+
+    const apiKey = req.ctx.state.apiKey as APIKey
+    apiKey.scopes = req.body.scopes
+
+    const token = await createToken(em, apiKey)
+
+    await createGameActivity(em, {
+      user: req.ctx.state.user,
+      game: req.ctx.state.game,
+      type: GameActivityType.API_KEY_UPDATED,
+      extra: {
+        keyId: apiKey.id,
+        display: {
+          'Key ending in': token.substring(token.length - 5, token.length),
+          'Scopes': apiKey.scopes.join(', ')
+        }
+      }
+    })
+
+    await em.flush()
+
+    return {
+      status: 200,
+      body: {
+        apiKey
       }
     }
   }

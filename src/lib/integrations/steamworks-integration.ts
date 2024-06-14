@@ -423,6 +423,7 @@ export async function syncSteamworksStats(em: EntityManager, integration: Integr
   for (const steamAlias of steamAliases) {
     const res = await getSteamworksStatsForPlayer(em, integration, steamAlias.identifier)
     const steamworksPlayerStats = res?.playerstats?.stats ?? []
+
     for (const steamworksPlayerStat of steamworksPlayerStats) {
       const stat = await em.getRepository(GameStat).findOne({ internalName: steamworksPlayerStat.name })
       const existingPlayerStat = await em.getRepository(PlayerGameStat).findOne({

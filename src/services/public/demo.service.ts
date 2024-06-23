@@ -11,7 +11,7 @@ import GameActivity from '../../entities/game-activity'
 import { Job, Queue } from 'bullmq'
 import { generateDemoEvents } from '../../lib/demo-data/generateDemoEvents'
 
-interface DemoUserJob {
+type DemoUserJob = {
   userId: number
 }
 

@@ -49,7 +49,7 @@ export default class GameActivity {
 
   @Property({ type: 'json' })
   extra: {
-    [key: string]: unknown,
+    [key: string]: unknown
     display?: {
       [key: string]: unknown
     }

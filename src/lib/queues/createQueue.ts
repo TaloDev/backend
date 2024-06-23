@@ -3,7 +3,7 @@ import redisConfig from '../../config/redis.config'
 import handleJobFailure from './handleJobFailure'
 
 export type WorkerEvents<T> = {
-  failed?: (job: Job<T>, err: Error) => void | Promise<void>,
+  failed?: (job: Job<T>, err: Error) => void | Promise<void>
   completed?: (job: Job<T>) => void | Promise<void>
 }
 

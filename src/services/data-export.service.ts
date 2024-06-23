@@ -30,17 +30,17 @@ import { EmailConfig } from '../lib/messaging/sendEmail'
 
 type PropCollection = Collection<PlayerProp, Player>
 
-interface EntityWithProps {
+type EntityWithProps = {
   props: Prop[] | PropCollection
 }
 
-interface UpdatedDataExportStatus {
+type UpdatedDataExportStatus = {
   id?: DataExportStatus
   failedAt?: Date
 }
 
-interface DataExportJob {
-  dataExportId: number,
+type DataExportJob = {
+  dataExportId: number
   includeDevData: boolean
 }
 

@@ -79,7 +79,7 @@ export type GetSchemaForGameResponse = {
     availableGameStats: {
       stats: [
         {
-          name: string,
+          name: string
           defaultvalue: number
           displayName: string
         }
@@ -96,7 +96,7 @@ export type GetUserStatsForGameResponse = {
     stats: {
       name: string
       value: number
-    }[],
+    }[]
     achievements: unknown[]
   }
 }

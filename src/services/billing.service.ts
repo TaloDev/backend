@@ -14,11 +14,11 @@ import { isSameMonth } from 'date-fns'
 const stripe = initStripe()
 
 type PricingPlanProduct = Omit<PricingPlan & {
-  name: string,
+  name: string
   prices: {
     currency: string
-    amount: number,
-    interval: Stripe.Price.Recurring.Interval,
+    amount: number
+    interval: Stripe.Price.Recurring.Interval
     current: boolean
   }[]
 }, 'toJSON'>

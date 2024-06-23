@@ -2,7 +2,7 @@ import emailTemplate from './email-template'
 import * as Handlebars from 'handlebars'
 import { MailDataRequired } from '@sendgrid/mail'
 
-export interface AttachmentData {
+export type AttachmentData = {
   content: string
   filename: string
   type?: string

@@ -53,6 +53,7 @@ export default class Invite {
       id: this.id,
       email: this.email,
       organisation: this.organisation,
+      type: this.type,
       invitedBy: this.invitedByUser.username,
       createdAt: this.createdAt
     }

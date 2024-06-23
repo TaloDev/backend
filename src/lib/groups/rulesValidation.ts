@@ -1,5 +1,5 @@
 import { ValidationCondition } from 'koa-clay'
-import { PlayerField, PlayerRuleFields, RuleMode } from '../../entities/player-group'
+import { PlayerRuleFields, RuleMode } from '../../entities/player-group'
 import PlayerGroupRule, { PlayerGroupRuleName, PlayerGroupRuleCastType } from '../../entities/player-group-rule'
 
 export const rulesValidation = async (val: unknown): Promise<ValidationCondition[]> => [
@@ -28,7 +28,8 @@ export const rulesValidation = async (val: unknown): Promise<ValidationCondition
       const matchesRuleField = PlayerRuleFields
         .map((f) => f.mapsTo)
         .filter((_, idx) => idx > 0) // exclude the props field, checked by regex below
-        .includes(rule.field as PlayerField)
+        // @ts-expect-error typescript still checks for the props field
+        .includes(rule.field)
 
       return matchesRuleField || rule.field.match(/props\.(.)*/)
     }),

@@ -189,6 +189,10 @@ export default class PlayerService extends Service {
     const em: EntityManager = req.ctx.em
 
     if (props) {
+      if (req.ctx.state.user.api !== true && props.some((prop) => prop.key.startsWith('META_'))) {
+        req.ctx.throw(400, 'Prop keys starting with \'META_\' are reserved for internal systems, please use another key name')
+      }
+
       const mergedProps = uniqWith([
         ...sanitiseProps(props, false, (prop) => !prop.key.startsWith('META_')),
         ...player.props

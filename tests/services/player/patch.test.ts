@@ -204,7 +204,7 @@ describe('Player service - patch', () => {
     ])
   })
 
-  it('should filter keys starting with META_', async () => {
+  it('should reject keys starting with META_', async () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({}, organisation)
 
@@ -228,8 +228,13 @@ describe('Player service - patch', () => {
         ]
       })
       .auth(token, { type: 'bearer' })
-      .expect(200)
+      .expect(400)
 
-    expect(res.body.player.props).toHaveLength(propsLength + 1)
+    expect(res.body).toStrictEqual({
+      message: 'Prop keys starting with \'META_\' are reserved for internal systems, please use another key name'
+    })
+
+    await (<EntityManager>global.em).refresh(player)
+    expect(player.props.length).toBe(propsLength)
   })
 })

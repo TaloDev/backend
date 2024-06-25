@@ -16,8 +16,6 @@ import PlayerProp from '../entities/player-prop'
 import PlayerGroup from '../entities/player-group'
 import GameSave from '../entities/game-save'
 
-const itemsPerPage = 25
-
 const propsValidation = async (val: unknown): Promise<ValidationCondition[]> => [
   {
     check: Array.isArray(val),
@@ -94,15 +92,22 @@ export default class PlayerService extends Service {
     }
   }
 
+  @Validate({ query: ['page'] })
   @HasPermission(PlayerPolicy, 'index')
   async index(req: Request): Promise<Response> {
+    const itemsPerPage = 25
+
     const { search, page } = req.query
     const em: EntityManager = req.ctx.em
 
-    let baseQuery = em.qb(Player, 'p')
+    let query = em.qb(Player, 'p')
+      .select('p.*')
+      .orderBy({ lastSeenAt: QueryOrder.DESC })
+      .limit(itemsPerPage)
+      .offset(Number(page) * itemsPerPage)
 
     if (search) {
-      baseQuery = baseQuery
+      query = query
         .where({
           props: {
             $in: em.qb(PlayerProp).select('id').where({
@@ -135,7 +140,7 @@ export default class PlayerService extends Service {
       }
 
       if (groups.length > 0) {
-        baseQuery = baseQuery
+        query = query
           .orWhere({
             groups: {
               $in: groups
@@ -145,23 +150,12 @@ export default class PlayerService extends Service {
     }
 
     if (!req.ctx.state.includeDevData) {
-      baseQuery = baseQuery.andWhere(devDataPlayerFilter(em))
+      query = query.andWhere(devDataPlayerFilter(em))
     }
 
-    baseQuery = baseQuery.andWhere({ game: req.ctx.state.game })
-
-    const { count } = await baseQuery
-      .clone()
-      .count('p.id', true)
-      .execute('get')
-
-    const players = await baseQuery
-      .clone()
-      .select('p.*', true)
-      .orderBy({ lastSeenAt: QueryOrder.DESC })
-      .limit(itemsPerPage)
-      .offset(Number(page) * itemsPerPage)
-      .getResultList()
+    const [players, count] = await query
+      .andWhere({ game: req.ctx.state.game })
+      .getResultAndCount()
 
     await em.populate(players, ['aliases'])
 
@@ -169,7 +163,8 @@ export default class PlayerService extends Service {
       status: 200,
       body: {
         players,
-        count
+        count,
+        itemsPerPage
       }
     }
   }
@@ -225,14 +220,20 @@ export default class PlayerService extends Service {
 
   @HasPermission(PlayerPolicy, 'getEvents')
   async events(req: Request): Promise<Response> {
+    const itemsPerPage = 50
+
     const { search, page } = req.query
     const em: EntityManager = req.ctx.em
     const player: Player = req.ctx.state.player // set in the policy
 
-    let baseQuery = em.createQueryBuilder(Event, 'e')
+    let query = em.createQueryBuilder(Event, 'e')
+      .select('e.*')
+      .orderBy({ createdAt: QueryOrder.DESC })
+      .limit(itemsPerPage)
+      .offset(Number(page) * itemsPerPage)
 
     if (search) {
-      baseQuery = baseQuery
+      query = query
         .where('json_extract(props, \'$[*].value\') like ?', [`%${search}%`])
         .orWhere({
           name: {
@@ -241,30 +242,20 @@ export default class PlayerService extends Service {
         })
     }
 
-    baseQuery = baseQuery.andWhere({
-      playerAlias: {
-        player
-      }
-    })
-
-    const { count } = await baseQuery
-      .clone()
-      .count('e.id', true)
-      .execute('get')
-
-    const events = await baseQuery
-      .clone()
-      .select('e.*', true)
-      .orderBy({ createdAt: QueryOrder.DESC })
-      .limit(itemsPerPage)
-      .offset(Number(page) * itemsPerPage)
-      .getResultList()
+    const [events, count] = await query
+      .andWhere({
+        playerAlias: {
+          player
+        }
+      })
+      .getResultAndCount()
 
     return {
       status: 200,
       body: {
         events,
-        count
+        count,
+        itemsPerPage
       }
     }
   }

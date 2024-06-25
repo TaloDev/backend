@@ -59,13 +59,13 @@ describe('Player service - get events', () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({}, organisation)
 
-    const count = 42
+    const count = 82
 
     const player = await new PlayerFactory([game]).one()
     const events = await new EventFactory([player]).many(count)
     await (<EntityManager>global.em).persistAndFlush(events)
 
-    const page = Math.floor(count / 25)
+    const page = Math.floor(count / 50)
 
     const res = await request(global.app)
       .get(`/games/${game.id}/players/${player.id}/events`)
@@ -73,8 +73,9 @@ describe('Player service - get events', () => {
       .auth(token, { type: 'bearer' })
       .expect(200)
 
-    expect(res.body.events).toHaveLength(count % 25)
+    expect(res.body.events).toHaveLength(count % 50)
     expect(res.body.count).toBe(count)
+    expect(res.body.itemsPerPage).toBe(50)
   })
 
   it('should not get a player\'s events if they do not exist', async () => {

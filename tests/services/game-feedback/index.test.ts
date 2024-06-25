@@ -4,6 +4,8 @@ import createOrganisationAndGame from '../../utils/createOrganisationAndGame'
 import GameFeedbackFactory from '../../fixtures/GameFeedbackFactory'
 import GameFeedbackCategoryFactory from '../../fixtures/GameFeedbackCategoryFactory'
 import { EntityManager } from '@mikro-orm/mysql'
+import PlayerAliasFactory from '../../fixtures/PlayerAliasFactory'
+import PlayerFactory from '../../fixtures/PlayerFactory'
 
 describe('Game feedback service - index', () => {
   it('should return a list of game feedback', async () => {
@@ -15,6 +17,7 @@ describe('Game feedback service - index', () => {
 
     const res = await request(global.app)
       .get(`/games/${game.id}/game-feedback`)
+      .query({ page: 0 })
       .auth(token, { type: 'bearer' })
       .expect(200)
 
@@ -34,7 +37,8 @@ describe('Game feedback service - index', () => {
     await (<EntityManager>global.em).persistAndFlush([...feedbackWithRelevantCategory, ...feedbackWithoutRelevantCategory])
 
     const res = await request(global.app)
-      .get(`/games/${game.id}/game-feedback?feedbackCategoryInternalName=${category.internalName}`)
+      .get(`/games/${game.id}/game-feedback`)
+      .query({ feedbackCategoryInternalName: category.internalName, page: 0 })
       .auth(token, { type: 'bearer' })
       .expect(200)
 
@@ -46,6 +50,7 @@ describe('Game feedback service - index', () => {
 
     const res = await request(global.app)
       .get('/games/99999/game-feedback')
+      .query({ page: 0 })
       .auth(token, { type: 'bearer' })
       .expect(404)
 
@@ -60,7 +65,156 @@ describe('Game feedback service - index', () => {
 
     await request(global.app)
       .get(`/games/${game.id}/game-feedback`)
+      .query({ page: 0 })
       .auth(token, { type: 'bearer' })
       .expect(403)
+  })
+
+  it('should paginate results when getting feedback', async () => {
+    const [organisation, game] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken({ organisation })
+
+    const count = 82
+    const feedback = await new GameFeedbackFactory(game).many(count)
+    await (<EntityManager>global.em).persistAndFlush(feedback)
+
+    const page = Math.floor(count / 50)
+
+    const res = await request(global.app)
+      .get(`/games/${game.id}/game-feedback`)
+      .query({ page })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    expect(res.body.feedback).toHaveLength(feedback.length % 50)
+    expect(res.body.count).toBe(feedback.length)
+    expect(res.body.itemsPerPage).toBe(50)
+  })
+
+  it('should return a list of game feedback for a specific comment', async () => {
+    const [organisation, game] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken({}, organisation)
+
+    const category = await new GameFeedbackCategoryFactory(game).one()
+
+    const feedbackWithRelevantComment = await new GameFeedbackFactory(game).with(() => ({ category, comment: 'blah' })).many(3)
+    const feedbackWithoutRelevantComment = await new GameFeedbackFactory(game).with(() => ({ comment: 'bleh' })).many(5)
+    await (<EntityManager>global.em).persistAndFlush([...feedbackWithRelevantComment, ...feedbackWithoutRelevantComment])
+
+    const res = await request(global.app)
+      .get(`/games/${game.id}/game-feedback`)
+      .query({ search: 'blah', page: 0 })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    expect(res.body.feedback).toHaveLength(feedbackWithRelevantComment.length)
+  })
+
+  it('should return a list of game feedback for a specific category and a specific comment', async () => {
+    const [organisation, game] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken({}, organisation)
+
+    const category = await new GameFeedbackCategoryFactory(game).one()
+
+    const feedbackWithRelevantCategory = await new GameFeedbackFactory(game).with(() => ({ category })).many(10)
+    const feedbackWithRelevantCategoryAndComment = await new GameFeedbackFactory(game).with(() => ({ category, comment: 'blah' })).many(3)
+    const feedbackWithoutRelevantCategory = await new GameFeedbackFactory(game).with(() => ({ comment: 'blah' })).many(5)
+    await (<EntityManager>global.em).persistAndFlush([...feedbackWithRelevantCategory, ...feedbackWithRelevantCategoryAndComment, ...feedbackWithoutRelevantCategory])
+
+    const res = await request(global.app)
+      .get(`/games/${game.id}/game-feedback`)
+      .query({ feedbackCategoryInternalName: category.internalName, search: 'blah', page: 0 })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    expect(res.body.feedback).toHaveLength(feedbackWithRelevantCategoryAndComment.length)
+  })
+
+  it('should return a list of game feedback for a specific player alias', async () => {
+    const [organisation, game] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken({}, organisation)
+
+    const category = await new GameFeedbackCategoryFactory(game).one()
+
+    const player = await new PlayerFactory([game]).one()
+    const playerAlias = await new PlayerAliasFactory().with(async () => ({ player, identifier: 'big_complainer_01' })).one()
+
+    const feedbackWithRelevantAlias = await new GameFeedbackFactory(game).with(() => ({
+      category,
+      playerAlias,
+      anonymised: false
+    })).many(3)
+
+    const feedbackWithoutRelevantAlias = await new GameFeedbackFactory(game).many(5)
+
+    await (<EntityManager>global.em).persistAndFlush([...feedbackWithRelevantAlias, ...feedbackWithoutRelevantAlias])
+
+    const res = await request(global.app)
+      .get(`/games/${game.id}/game-feedback`)
+      .query({ search: 'big_complainer_01', page: 0 })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    expect(res.body.feedback).toHaveLength(feedbackWithRelevantAlias.length)
+  })
+
+  it('should not return game feedback for a specific player alias if their feedback is anonymised', async () => {
+    const [organisation, game] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken({}, organisation)
+
+    const category = await new GameFeedbackCategoryFactory(game).one()
+
+    const player = await new PlayerFactory([game]).one()
+    const playerAlias = await new PlayerAliasFactory().with(async () => ({ player, identifier: 'big_complainer_01' })).one()
+
+    const feedbackWithRelevantAlias = await new GameFeedbackFactory(game).with(() => ({
+      category,
+      playerAlias,
+      anonymised: true
+    })).many(3)
+
+    await (<EntityManager>global.em).persistAndFlush(feedbackWithRelevantAlias)
+
+    const res = await request(global.app)
+      .get(`/games/${game.id}/game-feedback`)
+      .query({ search: 'big_complainer_01', page: 0 })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    expect(res.body.feedback).toHaveLength(0)
+  })
+
+  it('should return a list of game feedback for a specific category and a specific player alias', async () => {
+    const [organisation, game] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken({}, organisation)
+
+    const category = await new GameFeedbackCategoryFactory(game).one()
+
+    const player = await new PlayerFactory([game]).one()
+    const playerAlias = await new PlayerAliasFactory().with(async () => ({ player, identifier: 'big_complainer_01' })).one()
+
+    const feedbackWithRelevantCategory = await new GameFeedbackFactory(game).with(() => ({ category })).many(10)
+
+    const feedbackWithRelevantCategoryAndAlias = await new GameFeedbackFactory(game).with(() => ({
+      category,
+      comment: 'blah',
+      playerAlias,
+      anonymised: false
+    })).many(3)
+
+    const feedbackWithoutRelevantCategory = await new GameFeedbackFactory(game).with(() => ({
+      playerAlias,
+      anonymised: false
+    })).many(5)
+
+    await (<EntityManager>global.em).persistAndFlush([...feedbackWithRelevantCategory, ...feedbackWithRelevantCategoryAndAlias, ...feedbackWithoutRelevantCategory])
+
+    const res = await request(global.app)
+      .get(`/games/${game.id}/game-feedback`)
+      .query({ feedbackCategoryInternalName: category.internalName, search: 'big_complainer_01', page: 0 })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    expect(res.body.feedback).toHaveLength(feedbackWithRelevantCategoryAndAlias.length)
   })
 })

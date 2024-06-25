@@ -39,6 +39,7 @@ export default class GameFeedback {
       comment: this.comment,
       anonymised: this.anonymised,
       playerAlias: this.anonymised ? null : this.playerAlias,
+      devBuild: this.playerAlias.player.isDevBuild(),
       createdAt: this.createdAt
     }
   }

@@ -4,7 +4,7 @@ import { PricingPlanActionType } from './pricing-plan-action'
 
 export type OrganisationPricingPlanActionExtra = {
   invitedUserEmail?: string
-  initialUser?: boolean,
+  initialUser?: boolean
   dataExportId?: number
 }
 

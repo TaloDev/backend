@@ -17,6 +17,7 @@ describe('Player service - index', () => {
 
     const res = await request(global.app)
       .get(`/games/${game.id}/players`)
+      .query({ page: 0 })
       .auth(token, { type: 'bearer' })
       .expect(200)
 
@@ -28,6 +29,7 @@ describe('Player service - index', () => {
 
     const res = await request(global.app)
       .get('/games/99999/players')
+      .query({ page: 0 })
       .auth(token, { type: 'bearer' })
       .expect(404)
 
@@ -40,6 +42,7 @@ describe('Player service - index', () => {
 
     await request(global.app)
       .get(`/games/${game.id}/players`)
+      .query({ page: 0 })
       .auth(token, { type: 'bearer' })
       .expect(403)
   })
@@ -60,7 +63,7 @@ describe('Player service - index', () => {
 
     const res = await request(global.app)
       .get(`/games/${game.id}/players`)
-      .query({ search: 'The Best Guild' })
+      .query({ search: 'The Best Guild', page: 0 })
       .auth(token, { type: 'bearer' })
       .expect(200)
 
@@ -78,7 +81,7 @@ describe('Player service - index', () => {
 
     const res = await request(global.app)
       .get(`/games/${game.id}/players`)
-      .query({ search: player.aliases[0].identifier })
+      .query({ search: player.aliases[0].identifier, page: 0 })
       .auth(token, { type: 'bearer' })
       .expect(200)
 
@@ -96,7 +99,7 @@ describe('Player service - index', () => {
 
     const res = await request(global.app)
       .get(`/games/${game.id}/players`)
-      .query({ search: 'abc12345678' })
+      .query({ search: 'abc12345678', page: 0 })
       .auth(token, { type: 'bearer' })
       .expect(200)
 
@@ -120,6 +123,7 @@ describe('Player service - index', () => {
 
     expect(res.body.players).toHaveLength(players.length % 25)
     expect(res.body.count).toBe(players.length)
+    expect(res.body.itemsPerPage).toBe(25)
   })
 
   it('should not return dev build players without the dev data header', async () => {
@@ -131,6 +135,7 @@ describe('Player service - index', () => {
 
     const res = await request(global.app)
       .get(`/games/${game.id}/players`)
+      .query({ page: 0 })
       .auth(token, { type: 'bearer' })
       .expect(200)
 
@@ -146,6 +151,7 @@ describe('Player service - index', () => {
 
     const res = await request(global.app)
       .get(`/games/${game.id}/players`)
+      .query({ page: 0 })
       .auth(token, { type: 'bearer' })
       .set('x-talo-include-dev-data', '1')
       .expect(200)
@@ -169,7 +175,7 @@ describe('Player service - index', () => {
 
     const res = await request(global.app)
       .get(`/games/${game.id}/players`)
-      .query({ search: `group:${group.id}` })
+      .query({ search: `group:${group.id}`, page: 0 })
       .auth(token, { type: 'bearer' })
       .expect(200)
 
@@ -192,7 +198,7 @@ describe('Player service - index', () => {
 
     const invalidRes = await request(global.app)
       .get(`/games/${otherGame.id}/players`)
-      .query({ search: `group:${group.id}` })
+      .query({ search: `group:${group.id}`, page: 0 })
       .auth(token, { type: 'bearer' })
       .expect(200)
 
@@ -200,7 +206,7 @@ describe('Player service - index', () => {
 
     const validRes = await request(global.app)
       .get(`/games/${game.id}/players`)
-      .query({ search: `group:${group.id}` })
+      .query({ search: `group:${group.id}`, page: 0 })
       .auth(token, { type: 'bearer' })
       .expect(200)
 

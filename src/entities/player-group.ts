@@ -11,12 +11,10 @@ export enum RuleMode {
   OR = '$or'
 }
 
-export type PlayerField = keyof Player | 'prop with key'
-
 type RuleFields = {
   field: string
-  defaultCastType?: PlayerGroupRuleCastType
-  mapsTo: PlayerField
+  defaultCastType: PlayerGroupRuleCastType
+  mapsTo: keyof Player
 }
 
 export const PlayerRuleFields: RuleFields[] = [

@@ -3,22 +3,37 @@
     "es2021": true
   },
   "parser": "@typescript-eslint/parser",
+  "parserOptions": {
+    "project": true
+  },
   "plugins": [
-    "@typescript-eslint"
+    "@typescript-eslint",
+    "@stylistic"
   ],
   "extends": [
     "eslint:recommended",
     "plugin:@typescript-eslint/recommended"
   ],
   "rules": {
-    "indent": ["error", 2, { "SwitchCase": 1, "ignoredNodes": ["PropertyDefinition"] }],
-    "quotes": ["error", "single"],
-    "semi": ["error", "never"],
-    "comma-dangle": ["error", "never"],
-    "no-trailing-spaces": ["warn"],
-    "object-curly-spacing": [2, "always"],
-    "arrow-parens": ["error", "always"],
-    "keyword-spacing": ["error", { "before": true, "after": true }],
-    "eol-last": ["warn", "always"]
+    "@stylistic/indent": ["error", 2, { "SwitchCase": 1, "ignoredNodes": ["PropertyDefinition"] }],
+    "@stylistic/no-trailing-spaces": ["warn"],
+    "@stylistic/object-curly-spacing": [2, "always"],
+    "@stylistic/arrow-parens": ["error", "always"],
+    "@stylistic/keyword-spacing": ["error", { "before": true, "after": true }],
+    "@stylistic/eol-last": ["warn", "always"],
+    "@stylistic/comma-dangle": ["error", "never"],
+    "@stylistic/semi": ["error", "never"],
+    "@stylistic/quotes": ["error", "single"],
+    "@stylistic/member-delimiter-style": ["error", {
+      "multiline": {
+        "delimiter": "none",
+        "requireLast": false
+      },
+      "singleline": {
+        "delimiter": "comma",
+        "requireLast": false
+      }
+    }],
+    "@typescript-eslint/consistent-type-definitions": ["error", "type"]
   }
 }

@@ -149,4 +149,32 @@ describe('Player API service - patch', () => {
       }
     ])
   })
+
+  it('should filter keys starting with META_', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_PLAYERS])
+
+    const player = await new PlayerFactory([apiKey.game]).one()
+    await (<EntityManager>global.em).persistAndFlush(player)
+
+    const propsLength = player.props.length
+
+    const res = await request(global.app)
+      .patch(`/v1/players/${player.id}`)
+      .send({
+        props: [
+          {
+            key: 'aBrandNewProp',
+            value: '3'
+          },
+          {
+            key: 'META_BREAK_THINGS',
+            value: 'true'
+          }
+        ]
+      })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    expect(res.body.player.props).toHaveLength(propsLength + 1)
+  })
 })

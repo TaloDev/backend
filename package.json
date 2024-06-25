@@ -1,6 +1,6 @@
 {
   "name": "game-services",
-  "version": "0.34.0",
+  "version": "0.35.0",
   "description": "",
   "main": "src/index.ts",
   "scripts": {
@@ -23,14 +23,15 @@
   "license": "MIT",
   "devDependencies": {
     "@mikro-orm/cli": "^6.2.9",
+    "@stylistic/eslint-plugin": "^2.2.2",
     "@types/koa": "^2.13.5",
     "@types/koa-bodyparser": "^4.3.7",
     "@types/koa-logger": "^3.1.2",
     "@types/lodash": "^4.14.182",
     "@types/node": "20",
     "@types/supertest": "^6.0.2",
-    "@typescript-eslint/eslint-plugin": "^5.40.1",
-    "@typescript-eslint/parser": "^5.40.1",
+    "@typescript-eslint/eslint-plugin": "^7.13.1",
+    "@typescript-eslint/parser": "^7.13.1",
     "@vitest/coverage-v8": "^1.5.2",
     "axios-mock-adapter": "^1.22.0",
     "eslint": "^8.26.0",

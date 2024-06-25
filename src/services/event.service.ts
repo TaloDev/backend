@@ -7,7 +7,7 @@ import { isSameDay, endOfDay } from 'date-fns'
 import dateValidationSchema from '../lib/dates/dateValidationSchema'
 import { devDataPlayerFilter } from '../middlewares/dev-data-middleware'
 
-interface EventData {
+type EventData = {
   name: string
   date: number
   count: number

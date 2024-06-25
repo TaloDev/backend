@@ -5,8 +5,8 @@ export type EmailConfigMetadata = {
   [key: string]: string | number
 }
 
-export interface EmailConfig {
-  mail: MailDataRequired,
+export type EmailConfig = {
+  mail: MailDataRequired
   metadata?: EmailConfigMetadata
 }
 

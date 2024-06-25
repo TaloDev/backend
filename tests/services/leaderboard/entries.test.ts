@@ -73,6 +73,7 @@ describe('Leaderboard service - entries', () => {
 
       expect(res.body.entries).toHaveLength(i === 2 ? 6 : 50)
       expect(res.body.count).toBe(106)
+      expect(res.body.itemsPerPage).toBe(50)
       expect(res.body.isLastPage).toBe(i === 2 ? true : false)
     }
   })

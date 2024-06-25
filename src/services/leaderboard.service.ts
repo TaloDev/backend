@@ -138,6 +138,7 @@ export default class LeaderboardService extends Service {
       body: {
         entries: mappedEntries,
         count,
+        itemsPerPage,
         isLastPage: (Number(page) * itemsPerPage) + itemsPerPage >= count
       }
     }

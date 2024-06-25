@@ -1,10 +1,12 @@
-import { EntityManager, FilterQuery } from '@mikro-orm/mysql'
+import { EntityManager, QueryOrder } from '@mikro-orm/mysql'
 import { HasPermission, Service, Request, Response, Validate, Routes } from 'koa-clay'
 import GameFeedback from '../entities/game-feedback'
 import GameFeedbackPolicy from '../policies/game-feedback.policy'
 import GameFeedbackCategory from '../entities/game-feedback-category'
 import createGameActivity from '../lib/logging/createGameActivity'
 import { GameActivityType } from '../entities/game-activity'
+
+const itemsPerPage = 50
 
 @Routes([
   {
@@ -32,31 +34,57 @@ import { GameActivityType } from '../entities/game-activity'
   }
 ])
 export default class GameFeedbackService extends Service {
+  @Validate({ query: ['page'] })
   @HasPermission(GameFeedbackPolicy, 'get')
   async index(req: Request): Promise<Response> {
-    const { feedbackCategoryInternalName } = req.query
+    const { feedbackCategoryInternalName, search, page } = req.query
     const em: EntityManager = req.ctx.em
 
-    const where: FilterQuery<GameFeedback> = {
-      category: {
-        game: req.ctx.state.game
-      }
-    }
+    let query = em.qb(GameFeedback, 'gf')
+      .select('gf.*')
+      .orderBy({ createdAt: QueryOrder.DESC })
+      .limit(itemsPerPage)
+      .offset(Number(page) * itemsPerPage)
 
     if (feedbackCategoryInternalName) {
-      Object.assign(where.category, {
-        internalName: feedbackCategoryInternalName
+      query = query
+        .andWhere({
+          category: {
+            internalName: feedbackCategoryInternalName
+          }
+        })
+    }
+
+    if (search) {
+      query = query.andWhere({
+        $or: [
+          { comment: { $like: `%${search}%` } },
+          {
+            $and: [
+              { playerAlias: { identifier: { $like: `%${search}%` } } },
+              { anonymised: false }
+            ]
+          }
+        ]
       })
     }
 
-    const feedback = await em.getRepository(GameFeedback).find(where, {
-      populate: ['playerAlias.player']
-    })
+    const [feedback, count] = await query
+      .andWhere({
+        category: {
+          game: req.ctx.state.game
+        }
+      })
+      .getResultAndCount()
+
+    await em.populate(feedback, ['playerAlias'])
 
     return {
       status: 200,
       body: {
-        feedback
+        feedback,
+        count,
+        itemsPerPage
       }
     }
   }

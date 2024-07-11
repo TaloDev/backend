@@ -125,6 +125,102 @@
           "nullable": false,
           "mappedType": "integer"
         },
+        "password": {
+          "name": "password",
+          "type": "varchar(255)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "mappedType": "string"
+        },
+        "email": {
+          "name": "email",
+          "type": "varchar(255)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "mappedType": "string"
+        },
+        "verification_enabled": {
+          "name": "verification_enabled",
+          "type": "tinyint(1)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "default": "false",
+          "mappedType": "boolean"
+        },
+        "session_key": {
+          "name": "session_key",
+          "type": "varchar(255)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "mappedType": "string"
+        },
+        "session_created_at": {
+          "name": "session_created_at",
+          "type": "datetime",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "length": 0,
+          "mappedType": "datetime"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "datetime",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "length": 0,
+          "mappedType": "datetime"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "datetime",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "length": 0,
+          "mappedType": "datetime"
+        }
+      },
+      "name": "player_auth",
+      "indexes": [
+        {
+          "keyName": "PRIMARY",
+          "columnNames": [
+            "id"
+          ],
+          "composite": false,
+          "constraint": true,
+          "primary": true,
+          "unique": true
+        }
+      ],
+      "checks": [],
+      "foreignKeys": {},
+      "nativeEnums": {}
+    },
+    {
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "int",
+          "unsigned": true,
+          "autoincrement": true,
+          "primary": true,
+          "nullable": false,
+          "mappedType": "integer"
+        },
         "stripe_id": {
           "name": "stripe_id",
           "type": "varchar(255)",
@@ -771,6 +867,15 @@
           "nullable": false,
           "mappedType": "integer"
         },
+        "auth_id": {
+          "name": "auth_id",
+          "type": "int",
+          "unsigned": true,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "mappedType": "integer"
+        },
         "last_seen_at": {
           "name": "last_seen_at",
           "type": "datetime",
@@ -815,6 +920,16 @@
           "unique": false
         },
         {
+          "columnNames": [
+            "auth_id"
+          ],
+          "composite": false,
+          "keyName": "player_auth_id_unique",
+          "constraint": true,
+          "primary": false,
+          "unique": true
+        },
+        {
           "keyName": "PRIMARY",
           "columnNames": [
             "id"
@@ -837,6 +952,19 @@
             "id"
           ],
           "referencedTableName": "game",
+          "updateRule": "cascade"
+        },
+        "player_auth_id_foreign": {
+          "constraintName": "player_auth_id_foreign",
+          "columnNames": [
+            "auth_id"
+          ],
+          "localTableName": "player",
+          "referencedColumnNames": [
+            "id"
+          ],
+          "referencedTableName": "player_auth",
+          "deleteRule": "set null",
           "updateRule": "cascade"
         }
       },
@@ -934,7 +1062,7 @@
         },
         "service": {
           "name": "service",
-          "type": "enum('steam','epic','username','email','custom')",
+          "type": "enum('steam','epic','username','email','custom','talo')",
           "unsigned": false,
           "autoincrement": false,
           "primary": false,
@@ -944,7 +1072,8 @@
             "epic",
             "username",
             "email",
-            "custom"
+            "custom",
+            "talo"
           ],
           "mappedType": "enum"
         },

@@ -1,3 +1,4 @@
+import PlayerAuth from './player-auth'
 import GameFeedback from './game-feedback'
 import Invite from './invite'
 import PlayerGameStat from './player-game-stat'
@@ -32,6 +33,7 @@ import PlayerGroup from './player-group'
 import GameSecret from './game-secret'
 
 export default [
+  PlayerAuth,
   GameFeedback,
   GameSecret,
   PlayerGroup,

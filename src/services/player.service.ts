@@ -2,7 +2,7 @@ import { Service, Request, Response, Validate, HasPermission, Routes, Validation
 import Game from '../entities/game'
 import Player from '../entities/player'
 import PlayerPolicy from '../policies/player.policy'
-import PlayerAlias from '../entities/player-alias'
+import PlayerAlias, { PlayerAliasService } from '../entities/player-alias'
 import sanitiseProps from '../lib/props/sanitiseProps'
 import Event from '../entities/event'
 import { EntityManager } from '@mikro-orm/mysql'
@@ -15,6 +15,7 @@ import { devDataPlayerFilter } from '../middlewares/dev-data-middleware'
 import PlayerProp from '../entities/player-prop'
 import PlayerGroup from '../entities/player-group'
 import GameSave from '../entities/game-save'
+import { PlayerAuthErrorCode } from '../entities/player-auth'
 
 const propsValidation = async (val: unknown): Promise<ValidationCondition[]> => [
   {
@@ -22,6 +23,17 @@ const propsValidation = async (val: unknown): Promise<ValidationCondition[]> => 
     error: 'Props must be an array'
   }
 ]
+
+type PlayerPostBody = {
+  aliases?: {
+    service: PlayerAliasService
+    identifier: string
+  }[]
+  props?: {
+    key: string
+    value: string
+  }[]
+}
 
 @Routes([
   {
@@ -59,19 +71,28 @@ export default class PlayerService extends Service {
   })
   @HasPermission(PlayerPolicy, 'post')
   async post(req: Request): Promise<Response> {
-    const { aliases, props } = req.body
+    const { aliases, props } = req.body as PlayerPostBody
     const em: EntityManager = req.ctx.em
 
     const game = await em.getRepository(Game).findOne(req.ctx.state.game)
 
     const player = new Player(game)
     if (aliases) {
-      player.aliases = aliases.map((item) => {
+      for await (const alias of aliases) {
+        if (await em.getRepository(PlayerAlias).count({ service: alias.service, identifier: alias.identifier }) > 0) {
+          req.ctx.throw(400, {
+            message: `Player with identifier ${alias.identifier} already exists`,
+            errorCode: PlayerAuthErrorCode.IDENTIFIER_TAKEN
+          })
+        }
+      }
+
+      player.aliases.set(aliases.map((item) => {
         const alias = new PlayerAlias()
         alias.service = item.service
         alias.identifier = item.identifier
         return alias
-      })
+      }))
     }
 
     if (props) {

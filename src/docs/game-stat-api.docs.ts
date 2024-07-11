@@ -6,7 +6,7 @@ const GameStatAPIDocs: APIDocs<GameStatAPIService> = {
     description: 'Update a stat value',
     params: {
       headers: {
-        'x-talo-alias': 'The ID of the player\'s alias'
+        'x-talo-player': 'The ID of the player'
       },
       body: {
         change: 'The amount to add to the current value of the stat (can be negative)'

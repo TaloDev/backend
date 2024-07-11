@@ -29,7 +29,7 @@ describe('User service - change password', () => {
       .post('/users/change_password')
       .send({ currentPassword: 'passw0rd', newPassword: 'password2' })
       .auth(token, { type: 'bearer' })
-      .expect(401)
+      .expect(403)
 
     expect(res.body).toStrictEqual({ message: 'Current password is incorrect' })
   })

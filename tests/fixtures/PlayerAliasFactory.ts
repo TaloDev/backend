@@ -8,13 +8,20 @@ export default class PlayerAliasFactory extends Factory<PlayerAlias> {
     this.register('base', this.base)
     this.register('steam', this.steam)
     this.register('username', this.username)
+    this.register('talo', this.talo)
   }
 
   protected base(): Partial<PlayerAlias> {
     const identifiers = [casual.uuid, casual.username, casual.card_number()]
 
     return {
-      service: casual.random_element(Object.values(PlayerAliasService)),
+      service: casual.random_element([
+        PlayerAliasService.STEAM,
+        PlayerAliasService.EPIC,
+        PlayerAliasService.USERNAME,
+        PlayerAliasService.EMAIL,
+        PlayerAliasService.CUSTOM
+      ]),
       identifier: casual.random_element(identifiers)
     }
   }
@@ -30,6 +37,13 @@ export default class PlayerAliasFactory extends Factory<PlayerAlias> {
     return {
       service: PlayerAliasService.USERNAME,
       identifier: casual.username
+    }
+  }
+
+  protected talo(): Partial<PlayerAlias> {
+    return {
+      service: PlayerAliasService.TALO,
+      identifier: casual.uuid
     }
   }
 }

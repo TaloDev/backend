@@ -4,6 +4,8 @@ import PlayerGroupFactory from '../../fixtures/PlayerGroupFactory'
 import PlayerGroupRule, { PlayerGroupRuleCastType, PlayerGroupRuleName } from '../../../src/entities/player-group-rule'
 import createOrganisationAndGame from '../../utils/createOrganisationAndGame'
 import createUserAndToken from '../../utils/createUserAndToken'
+import PlayerFactory from '../../fixtures/PlayerFactory'
+import casual from 'casual'
 
 describe('Player service - post', () => {
   it('should create a player', async () => {
@@ -138,12 +140,14 @@ describe('Player service - post', () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({}, organisation)
 
+    const username = casual.username
+
     const res = await request(global.app)
       .post(`/games/${game.id}/players`)
       .send({
         aliases: [{
           service: 'steam',
-          identifier: '12345'
+          identifier: username
         }]
       })
       .auth(token, { type: 'bearer' })
@@ -153,9 +157,33 @@ describe('Player service - post', () => {
     expect(res.body.player).toBeTruthy()
     expect(res.body.player.aliases).toHaveLength(1)
     expect(res.body.player.aliases[0].service).toBe('steam')
-    expect(res.body.player.aliases[0].identifier).toBe('12345')
+    expect(res.body.player.aliases[0].identifier).toBe(username)
     expect(res.body.player.props).toStrictEqual([
       { key: 'META_DEV_BUILD', value: '1' }
     ])
+  })
+
+  it('should not create duplicate player aliases', async () => {
+    const [organisation, game] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken({}, organisation)
+
+    const player = await new PlayerFactory([game]).one()
+    await (<EntityManager>global.em).persistAndFlush(player)
+
+    const res = await request(global.app)
+      .post(`/games/${game.id}/players`)
+      .send({
+        aliases: [{
+          service: player.aliases[0].service,
+          identifier: player.aliases[0].identifier
+        }]
+      })
+      .auth(token, { type: 'bearer' })
+      .expect(400)
+
+    expect(res.body).toStrictEqual({
+      message: `Player with identifier ${player.aliases[0].identifier} already exists`,
+      errorCode: 'IDENTIFIER_TAKEN'
+    })
   })
 })

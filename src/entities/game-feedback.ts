@@ -8,10 +8,10 @@ export default class GameFeedback {
   @PrimaryKey()
   id: number
 
-  @ManyToOne(() => GameFeedbackCategory, { cascade: [Cascade.REMOVE], eager: true })
+  @ManyToOne(() => GameFeedbackCategory, { nullable: false, cascade: [Cascade.REMOVE], eager: true })
   category: GameFeedbackCategory
 
-  @ManyToOne(() => PlayerAlias, { cascade: [Cascade.REMOVE] })
+  @ManyToOne(() => PlayerAlias, { nullable: false, cascade: [Cascade.REMOVE] })
   playerAlias: PlayerAlias
 
   @Required()

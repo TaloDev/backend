@@ -12,6 +12,42 @@ import PlayerProp from '../../entities/player-prop'
 import PlayerGameStat from '../../entities/player-game-stat'
 import checkScope from '../../policies/checkScope'
 
+export function findAliasFromIdentifyRequest(
+  em: EntityManager,
+  key: APIKey,
+  service: PlayerAliasService,
+  identifier: string
+): Promise<PlayerAlias | null> {
+  return em.getRepository(PlayerAlias).findOne({
+    service,
+    identifier,
+    player: {
+      game: key.game
+    }
+  }, {
+    populate: ['player.auth']
+  })
+}
+
+export async function createPlayerFromIdentifyRequest(
+  req: Request,
+  key: APIKey,
+  service: PlayerAliasService,
+  identifier: string
+): Promise<Player> {
+  if (checkScope(key, APIKeyScope.WRITE_PLAYERS)) {
+    const res = await forwardRequest(req, {
+      body: {
+        aliases: [{ service, identifier }]
+      }
+    })
+
+    return res.body.player
+  } else {
+    req.ctx.throw(404, 'Player not found. Use an access key with the write:players scope to automatically create players')
+  }
+}
+
 @Routes([
   {
     method: 'GET',
@@ -40,37 +76,15 @@ export default class PlayerAPIService extends APIService {
     const { service, identifier } = req.query
     const em: EntityManager = req.ctx.em
 
-    const key: APIKey = await this.getAPIKey(req.ctx)
+    const key = await this.getAPIKey(req.ctx)
 
-    const alias = await em.getRepository(PlayerAlias).findOne({
-      service: service as PlayerAliasService,
-      identifier,
-      player: {
-        game: key.game
-      }
-    })
-
+    let alias = await findAliasFromIdentifyRequest(em, key, service as PlayerAliasService, identifier)
     if (!alias) {
-      if (checkScope(key, APIKeyScope.WRITE_PLAYERS)) {
-        const res = await forwardRequest(req, {
-          body: {
-            aliases: [
-              {
-                service,
-                identifier
-              }
-            ]
-          }
-        })
-
-        return {
-          status: res.status,
-          body: {
-            alias: res.body.player?.aliases[0]
-          }
-        }
+      if (service === PlayerAliasService.TALO) {
+        req.ctx.throw(404, 'Player not found: Talo aliases must be created using the /v1/players/auth API')
       } else {
-        req.ctx.throw(404, 'Player not found. Use an access key with the write:players scope to automatically create players')
+        const player = await createPlayerFromIdentifyRequest(req, key, service as PlayerAliasService, identifier)
+        alias = player?.aliases[0]
       }
     }
 
@@ -104,18 +118,22 @@ export default class PlayerAPIService extends APIService {
     const player1 = await em.getRepository(Player).findOne({
       id: playerId1,
       game: key.game
+    }, {
+      populate: ['auth']
     })
 
     if (!player1) req.ctx.throw(404, `Player ${playerId1} does not exist`)
+    if (player1.auth) req.ctx.throw(400, `Player ${playerId1} has authentication enabled and cannot be merged`)
 
     const player2 = await em.getRepository(Player).findOne({
       id: playerId2,
       game: key.game
     }, {
-      populate: ['aliases']
+      populate: ['aliases', 'auth']
     })
 
     if (!player2) req.ctx.throw(404, `Player ${playerId2} does not exist`)
+    if (player2.auth) req.ctx.throw(400, `Player ${playerId2} has authentication enabled and cannot be merged`)
 
     const mergedProps: PlayerProp[] = uniqWith([
       ...player2.props.getItems(),

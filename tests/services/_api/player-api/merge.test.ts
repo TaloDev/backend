@@ -194,4 +194,42 @@ describe('Player API service - merge', () => {
     await (<EntityManager>global.em).refresh(playerStat, { populate: ['player'] })
     expect(playerStat.player.id).toBe(player1.id)
   })
+
+  it('should not merge if player1 has auth', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_PLAYERS, APIKeyScope.WRITE_PLAYERS])
+
+    const player1 = await new PlayerFactory([apiKey.game]).state('with talo alias').one()
+    const player2 = await new PlayerFactory([apiKey.game]).one()
+
+    await (<EntityManager>global.em).persistAndFlush([player1, player2])
+
+    const res = await request(global.app)
+      .post('/v1/players/merge')
+      .send({ playerId1: player1.id, playerId2: player2.id })
+      .auth(token, { type: 'bearer' })
+      .expect(400)
+
+    expect(res.body).toStrictEqual({
+      message: `Player ${player1.id} has authentication enabled and cannot be merged`
+    })
+  })
+
+  it('should not merge if player2 has auth', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_PLAYERS, APIKeyScope.WRITE_PLAYERS])
+
+    const player1 = await new PlayerFactory([apiKey.game]).one()
+    const player2 = await new PlayerFactory([apiKey.game]).state('with talo alias').one()
+
+    await (<EntityManager>global.em).persistAndFlush([player1, player2])
+
+    const res = await request(global.app)
+      .post('/v1/players/merge')
+      .send({ playerId1: player1.id, playerId2: player2.id })
+      .auth(token, { type: 'bearer' })
+      .expect(400)
+
+    expect(res.body).toStrictEqual({
+      message: `Player ${player2.id} has authentication enabled and cannot be merged`
+    })
+  })
 })

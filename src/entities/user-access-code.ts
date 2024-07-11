@@ -1,5 +1,6 @@
 import { Entity, ManyToOne, PrimaryKey, Property } from '@mikro-orm/mysql'
 import User from './user'
+import generateSixDigitCode from '../lib/auth/generateSixDigitCode'
 
 @Entity()
 export default class UserAccessCode {
@@ -7,7 +8,7 @@ export default class UserAccessCode {
   id: number
 
   @Property()
-  code: string = this.generateCode()
+  code: string = generateSixDigitCode()
 
   @ManyToOne(() => User)
   user: User
@@ -21,9 +22,5 @@ export default class UserAccessCode {
   constructor(user: User, validUntil?: Date) {
     this.user = user
     this.validUntil = validUntil
-  }
-
-  generateCode() {
-    return Math.random().toString().substring(2, 8)
   }
 }

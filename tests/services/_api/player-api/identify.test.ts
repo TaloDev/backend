@@ -112,4 +112,16 @@ describe('Player API service - identify', () => {
       name: group.name
     }])
   })
+
+  it('should not create a talo alias', async () => {
+    const [, token] = await createAPIKeyAndToken([APIKeyScope.READ_PLAYERS, APIKeyScope.WRITE_PLAYERS])
+
+    const res = await request(global.app)
+      .get('/v1/players/identify')
+      .query({ service: 'talo', identifier: 'whatever' })
+      .auth(token, { type: 'bearer' })
+      .expect(404)
+
+    expect(res.body).toStrictEqual({ message: 'Player not found: Talo aliases must be created using the /v1/players/auth API' })
+  })
 })

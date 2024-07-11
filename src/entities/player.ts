@@ -1,9 +1,10 @@
-import { Collection, Entity, ManyToMany, ManyToOne, OneToMany, PrimaryKey, Property } from '@mikro-orm/mysql'
+import { Collection, Entity, ManyToMany, ManyToOne, OneToMany, OneToOne, PrimaryKey, Property } from '@mikro-orm/mysql'
 import Game from './game'
 import { v4 } from 'uuid'
 import PlayerAlias from './player-alias'
 import PlayerProp from './player-prop'
 import PlayerGroup from './player-group'
+import PlayerAuth from './player-auth'
 
 @Entity()
 export default class Player {
@@ -21,6 +22,9 @@ export default class Player {
 
   @ManyToOne(() => Game)
   game: Game
+
+  @OneToOne({ nullable: true, orphanRemoval: true })
+  auth: PlayerAuth
 
   @Property()
   lastSeenAt: Date = new Date()
@@ -55,7 +59,8 @@ export default class Player {
       devBuild: this.isDevBuild(),
       createdAt: this.createdAt,
       lastSeenAt: this.lastSeenAt,
-      groups: this.groups.getItems().map((group) => ({ id: group.id, name: group.name }))
+      groups: this.groups.getItems().map((group) => ({ id: group.id, name: group.name })),
+      auth: this.auth ?? undefined
     }
   }
 }

@@ -11,6 +11,8 @@ import limiterMiddleware from '../middlewares/limiter-middleware'
 import currentPlayerMiddleware from '../middlewares/current-player-middleware'
 import { apiRouteAuthMiddleware, getRouteInfo } from '../middlewares/route-middleware'
 import apiKeyMiddleware from '../middlewares/api-key-middleware'
+import playerAuthMiddleware from '../middlewares/player-auth-middleware'
+import PlayerAuthAPIService from '../services/api/player-auth-api.service'
 
 export default (app: Koa) => {
   app.use(apiKeyMiddleware)
@@ -24,6 +26,7 @@ export default (app: Koa) => {
   })
 
   app.use(currentPlayerMiddleware)
+  app.use(playerAuthMiddleware)
 
   app.use(service('/v1/game-feedback', new GameFeedbackAPIService()))
   app.use(service('/v1/game-config', new GameConfigAPIService()))
@@ -32,4 +35,5 @@ export default (app: Koa) => {
   app.use(service('/v1/leaderboards', new LeaderboardAPIService()))
   app.use(service('/v1/events', new EventAPIService()))
   app.use(service('/v1/players', new PlayerAPIService()))
+  app.use(service('/v1/players/auth', new PlayerAuthAPIService()))
 }

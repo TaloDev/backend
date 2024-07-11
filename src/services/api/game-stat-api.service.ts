@@ -16,7 +16,7 @@ import APIService from './api-service'
 ])
 export default class GameStatAPIService extends APIService {
   @Validate({
-    headers: ['x-talo-alias'],
+    headers: ['x-talo-player'],
     body: ['change']
   })
   @HasPermission(GameStatAPIPolicy, 'put')

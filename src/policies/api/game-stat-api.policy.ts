@@ -18,9 +18,7 @@ export default class GameStatAPIPolicy extends Policy {
     if (!stat) return new PolicyDenial({ message: 'Stat not found' }, 404)
 
     const player = await this.em.getRepository(Player).findOne({
-      aliases: {
-        id: this.ctx.state.currentAliasId
-      },
+      id: this.ctx.state.currentPlayerId,
       game: key.game
     })
 

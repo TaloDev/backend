@@ -151,7 +151,7 @@ export default class UserPublicService extends Service {
     }
   }
 
-  handleFailedLogin(req: Request) {
+  private handleFailedLogin(req: Request) {
     req.ctx.throw(401, 'Incorrect email address or password')
   }
 
@@ -268,8 +268,7 @@ export default class UserPublicService extends Service {
     user.password = await bcrypt.hash(password, 10)
 
     const sessions = await em.repo(UserSession).find({ user })
-    await em.remove(sessions)
-    await em.flush()
+    await em.removeAndFlush(sessions)
 
     return {
       status: 204
@@ -310,7 +309,7 @@ export default class UserPublicService extends Service {
   }
 
   @Validate({
-    body: ['code', 'userId']
+    body: ['userId', 'code']
   })
   async useRecoveryCode(req: Request): Promise<Response> {
     const { code, userId } = req.body

@@ -7,6 +7,7 @@ import { Collection } from '@mikro-orm/mysql'
 import PlayerAlias from '../../src/entities/player-alias'
 import { sub } from 'date-fns'
 import PlayerProp from '../../src/entities/player-prop'
+import PlayerAuthFactory from './PlayerAuthFactory'
 
 export default class PlayerFactory extends Factory<Player> {
   private availableGames: Game[]
@@ -22,6 +23,7 @@ export default class PlayerFactory extends Factory<Player> {
     this.register('dev build', this.devBuild)
     this.register('with steam alias', this.withSteamAlias)
     this.register('with username alias', this.withUsernameAlias)
+    this.register('with talo alias', this.withTaloAlias)
 
     this.availableGames = availableGames
   }
@@ -96,6 +98,14 @@ export default class PlayerFactory extends Factory<Player> {
     const alias = await new PlayerAliasFactory().state('username').with(() => ({ player })).one()
     return {
       aliases: new Collection<PlayerAlias>(player, [alias])
+    }
+  }
+
+  protected async withTaloAlias(player: Player): Promise<Partial<Player>> {
+    const alias = await new PlayerAliasFactory().state('talo').with(() => ({ player })).one()
+    return {
+      aliases: new Collection<PlayerAlias>(player, [alias]),
+      auth: await new PlayerAuthFactory().one()
     }
   }
 }

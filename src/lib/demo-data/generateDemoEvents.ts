@@ -126,7 +126,7 @@ export async function generateDemoEvents(req: Request): Promise<void> {
             event.setProps(getDemoEventProps(demoEvent))
             event.playerAlias = casual.random_element(playerAliases)
             event.createdAt = randomDate(startOfDay(day), endOfDay(day))
-            await em.persist(event)
+            em.persist(event)
           }
         }
       }

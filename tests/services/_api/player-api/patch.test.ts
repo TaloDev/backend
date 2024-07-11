@@ -7,6 +7,7 @@ import PlayerProp from '../../../../src/entities/player-prop'
 import PlayerGroupFactory from '../../../fixtures/PlayerGroupFactory'
 import PlayerGroupRule, { PlayerGroupRuleCastType, PlayerGroupRuleName } from '../../../../src/entities/player-group-rule'
 import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
+import casual from 'casual'
 
 describe('Player API service - patch', () => {
   it('should update a player\'s properties', async () => {
@@ -163,8 +164,8 @@ describe('Player API service - patch', () => {
       .send({
         props: [
           {
-            key: 'aBrandNewProp',
-            value: '3'
+            key: casual.word,
+            value: casual.word
           },
           {
             key: 'META_BREAK_THINGS',

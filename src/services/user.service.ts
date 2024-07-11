@@ -102,7 +102,7 @@ export default class UserService extends Service {
     const user = await getUserFromToken(req.ctx)
 
     const passwordMatches = await bcrypt.compare(currentPassword, user.password)
-    if (!passwordMatches) req.ctx.throw(401, 'Current password is incorrect')
+    if (!passwordMatches) req.ctx.throw(403, 'Current password is incorrect')
 
     const isSamePassword = await bcrypt.compare(newPassword, user.password)
     if (isSamePassword) req.ctx.throw(400, 'Please choose a different password')

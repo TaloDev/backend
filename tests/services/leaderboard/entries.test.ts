@@ -8,14 +8,16 @@ import createUserAndToken from '../../utils/createUserAndToken'
 
 describe('Leaderboard service - entries', () => {
   it('should return a leaderboard\'s entries', async () => {
+    const em: EntityManager = global.em
+
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({}, organisation)
 
     const players = await new PlayerFactory([game]).many(10)
-    await (<EntityManager>global.em).persist(players)
+    em.persist(players)
 
     const leaderboard = await new LeaderboardFactory([game]).state('with entries').one()
-    await (<EntityManager>global.em).persistAndFlush(leaderboard)
+    await em.persistAndFlush(leaderboard)
 
     const res = await request(global.app)
       .get(`/games/${game.id}/leaderboards/${leaderboard.id}/entries`)
@@ -54,15 +56,17 @@ describe('Leaderboard service - entries', () => {
   })
 
   it('should correctly mark the last page', async () => {
+    const em: EntityManager = global.em
+
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({}, organisation)
 
     const players = await new PlayerFactory([game]).many(10)
-    await (<EntityManager>global.em).persist(players)
+    em.persist(players)
 
     const leaderboard = await new LeaderboardFactory([game]).one()
     const entries = await new LeaderboardEntryFactory(leaderboard, game.players.getItems()).many(106)
-    await (<EntityManager>global.em).persistAndFlush([leaderboard, ...entries])
+    await em.persistAndFlush([leaderboard, ...entries])
 
     for (let i = 0; i < 3; i++) {
       const res = await request(global.app)

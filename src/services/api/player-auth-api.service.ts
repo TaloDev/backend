@@ -254,7 +254,7 @@ export default class PlayerAuthAPIService extends APIService {
     if (isSamePassword) {
       req.ctx.throw(400, {
         message: 'Please choose a different password',
-        errorCode: PlayerAuthErrorCode.NEW_PASSWORD_MATCHES_OLD_PASSWORD
+        errorCode: PlayerAuthErrorCode.NEW_PASSWORD_MATCHES_CURRENT_PASSWORD
       })
     }
 
@@ -291,7 +291,7 @@ export default class PlayerAuthAPIService extends APIService {
     if (isSameEmail) {
       req.ctx.throw(400, {
         message: 'Please choose a different email address',
-        errorCode: PlayerAuthErrorCode.NEW_EMAIL_MATCHES_OLD_EMAIL
+        errorCode: PlayerAuthErrorCode.NEW_EMAIL_MATCHES_CURRENT_EMAIL
       })
     }
 

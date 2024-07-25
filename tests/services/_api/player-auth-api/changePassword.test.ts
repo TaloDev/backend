@@ -120,7 +120,7 @@ describe('Player auth API service - change password', () => {
 
     expect(res.body).toStrictEqual({
       message: 'Please choose a different password',
-      errorCode: 'NEW_PASSWORD_MATCHES_OLD_PASSWORD'
+      errorCode: 'NEW_PASSWORD_MATCHES_CURRENT_PASSWORD'
     })
   })
 })

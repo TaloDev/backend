@@ -120,7 +120,7 @@ describe('Player auth API service - change email', () => {
 
     expect(res.body).toStrictEqual({
       message: 'Please choose a different email address',
-      errorCode: 'NEW_EMAIL_MATCHES_OLD_EMAIL'
+      errorCode: 'NEW_EMAIL_MATCHES_CURRENT_EMAIL'
     })
   })
 })

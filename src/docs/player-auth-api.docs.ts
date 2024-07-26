@@ -249,7 +249,7 @@ const PlayerAuthAPIDocs: APIDocs<PlayerAuthAPIService> = {
       body: {
         currentPassword: 'The current password of the player',
         verificationEnabled: 'The new verification status for the player account',
-        email: 'Required when enabling verification. This is also used for password resets: players without an email cannot reset their password'
+        email: 'Required when attempting to enable verification if the player does not currently have an email address set'
       }
     },
     samples: [
@@ -261,10 +261,17 @@ const PlayerAuthAPIDocs: APIDocs<PlayerAuthAPIService> = {
         }
       },
       {
-        title: 'Sample request (enabling verification)',
+        title: 'Sample request (enabling verification, player does not have an email address)',
         sample: {
           currentPassword: 'password',
           email: 'boz@mail.com',
+          verificationEnabled: true
+        }
+      },
+      {
+        title: 'Sample request (enabling verification, player has an email address)',
+        sample: {
+          currentPassword: 'password',
           verificationEnabled: true
         }
       }

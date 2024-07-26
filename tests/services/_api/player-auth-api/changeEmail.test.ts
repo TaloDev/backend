@@ -106,7 +106,7 @@ describe('Player auth API service - change email', () => {
       type: PlayerAuthActivityType.CHANGE_EMAIL_FAILED,
       player: player.id,
       extra: {
-        errrorCode: 'INVALID_CREDENTIALS'
+        errorCode: 'INVALID_CREDENTIALS'
       }
     })
     expect(activity).not.toBeNull()
@@ -146,7 +146,7 @@ describe('Player auth API service - change email', () => {
       type: PlayerAuthActivityType.CHANGE_EMAIL_FAILED,
       player: player.id,
       extra: {
-        errrorCode: 'NEW_EMAIL_MATCHES_CURRENT_EMAIL'
+        errorCode: 'NEW_EMAIL_MATCHES_CURRENT_EMAIL'
       }
     })
     expect(activity).not.toBeNull()

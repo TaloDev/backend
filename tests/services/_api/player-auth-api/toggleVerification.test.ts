@@ -118,7 +118,8 @@ describe('Player auth API service - toggle verification', () => {
       type: PlayerAuthActivityType.TOGGLE_VERIFICATION_FAILED,
       player: player.id,
       extra: {
-        errrorCode: 'VERIFICATION_EMAIL_REQUIRED'
+        errorCode: 'VERIFICATION_EMAIL_REQUIRED',
+        verificationEnabled: true
       }
     })
     expect(activity).not.toBeNull()
@@ -158,7 +159,8 @@ describe('Player auth API service - toggle verification', () => {
       type: PlayerAuthActivityType.TOGGLE_VERIFICATION_FAILED,
       player: player.id,
       extra: {
-        errrorCode: 'INVALID_CREDENTIALS'
+        errorCode: 'INVALID_CREDENTIALS',
+        verificationEnabled: true
       }
     })
     expect(activity).not.toBeNull()

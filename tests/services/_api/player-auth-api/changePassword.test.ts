@@ -103,7 +103,7 @@ describe('Player auth API service - change password', () => {
       type: PlayerAuthActivityType.CHANGE_PASSWORD_FAILED,
       player: player.id,
       extra: {
-        errrorCode: 'INVALID_CREDENTIALS'
+        errorCode: 'INVALID_CREDENTIALS'
       }
     })
     expect(activity).not.toBeNull()
@@ -143,7 +143,7 @@ describe('Player auth API service - change password', () => {
       type: PlayerAuthActivityType.CHANGE_PASSWORD_FAILED,
       player: player.id,
       extra: {
-        errrorCode: 'NEW_PASSWORD_MATCHES_CURRENT_PASSWORD'
+        errorCode: 'NEW_PASSWORD_MATCHES_CURRENT_PASSWORD'
       }
     })
     expect(activity).not.toBeNull()

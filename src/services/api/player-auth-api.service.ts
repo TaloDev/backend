@@ -289,7 +289,7 @@ export default class PlayerAuthAPIService extends APIService {
       createPlayerAuthActivity(req, alias.player, {
         type: PlayerAuthActivityType.CHANGE_PASSWORD_FAILED,
         extra: {
-          errrorCode: PlayerAuthErrorCode.INVALID_CREDENTIALS
+          errorCode: PlayerAuthErrorCode.INVALID_CREDENTIALS
         }
       })
       await em.flush()
@@ -305,7 +305,7 @@ export default class PlayerAuthAPIService extends APIService {
       createPlayerAuthActivity(req, alias.player, {
         type: PlayerAuthActivityType.CHANGE_PASSWORD_FAILED,
         extra: {
-          errrorCode: PlayerAuthErrorCode.NEW_PASSWORD_MATCHES_CURRENT_PASSWORD
+          errorCode: PlayerAuthErrorCode.NEW_PASSWORD_MATCHES_CURRENT_PASSWORD
         }
       })
       await em.flush()
@@ -347,7 +347,7 @@ export default class PlayerAuthAPIService extends APIService {
       createPlayerAuthActivity(req, alias.player, {
         type: PlayerAuthActivityType.CHANGE_EMAIL_FAILED,
         extra: {
-          errrorCode: PlayerAuthErrorCode.INVALID_CREDENTIALS
+          errorCode: PlayerAuthErrorCode.INVALID_CREDENTIALS
         }
       })
       await em.flush()
@@ -363,7 +363,7 @@ export default class PlayerAuthAPIService extends APIService {
       createPlayerAuthActivity(req, alias.player, {
         type: PlayerAuthActivityType.CHANGE_EMAIL_FAILED,
         extra: {
-          errrorCode: PlayerAuthErrorCode.NEW_EMAIL_MATCHES_CURRENT_EMAIL
+          errorCode: PlayerAuthErrorCode.NEW_EMAIL_MATCHES_CURRENT_EMAIL
         }
       })
       await em.flush()
@@ -492,7 +492,8 @@ export default class PlayerAuthAPIService extends APIService {
       createPlayerAuthActivity(req, alias.player, {
         type: PlayerAuthActivityType.TOGGLE_VERIFICATION_FAILED,
         extra: {
-          errrorCode: PlayerAuthErrorCode.VERIFICATION_EMAIL_REQUIRED
+          errorCode: PlayerAuthErrorCode.VERIFICATION_EMAIL_REQUIRED,
+          verificationEnabled: Boolean(verificationEnabled)
         }
       })
       await em.flush()
@@ -508,7 +509,8 @@ export default class PlayerAuthAPIService extends APIService {
       createPlayerAuthActivity(req, alias.player, {
         type: PlayerAuthActivityType.TOGGLE_VERIFICATION_FAILED,
         extra: {
-          errrorCode: PlayerAuthErrorCode.INVALID_CREDENTIALS
+          errorCode: PlayerAuthErrorCode.INVALID_CREDENTIALS,
+          verificationEnabled: Boolean(verificationEnabled)
         }
       })
       await em.flush()

@@ -101,6 +101,15 @@ describe('Player auth API service - change email', () => {
       message: 'Current password is incorrect',
       errorCode: 'INVALID_CREDENTIALS'
     })
+
+    const activity = await (<EntityManager>global.em).getRepository(PlayerAuthActivity).findOne({
+      type: PlayerAuthActivityType.CHANGE_EMAIL_FAILED,
+      player: player.id,
+      extra: {
+        errorCode: 'INVALID_CREDENTIALS'
+      }
+    })
+    expect(activity).not.toBeNull()
   })
 
   it('should not change a player\'s email if the current email is the same as the new email', async () => {
@@ -132,5 +141,14 @@ describe('Player auth API service - change email', () => {
       message: 'Please choose a different email address',
       errorCode: 'NEW_EMAIL_MATCHES_CURRENT_EMAIL'
     })
+
+    const activity = await (<EntityManager>global.em).getRepository(PlayerAuthActivity).findOne({
+      type: PlayerAuthActivityType.CHANGE_EMAIL_FAILED,
+      player: player.id,
+      extra: {
+        errorCode: 'NEW_EMAIL_MATCHES_CURRENT_EMAIL'
+      }
+    })
+    expect(activity).not.toBeNull()
   })
 })

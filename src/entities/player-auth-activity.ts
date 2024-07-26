@@ -11,7 +11,11 @@ export enum PlayerAuthActivityType {
   CHANGED_PASSWORD,
   CHANGED_EMAIL,
   PASSWORD_RESET_REQUESTED,
-  PASSWORD_RESET_COMPLETED
+  PASSWORD_RESET_COMPLETED,
+  VERFICIATION_TOGGLED,
+  CHANGE_PASSWORD_FAILED,
+  CHANGE_EMAIL_FAILED,
+  TOGGLE_VERIFICATION_FAILED
 }
 
 @Entity()
@@ -64,6 +68,14 @@ export default class PlayerAuthActivity {
         return `A password reset request was made for ${authAlias.identifier}'s account`
       case PlayerAuthActivityType.PASSWORD_RESET_COMPLETED:
         return `A password reset was completed for ${authAlias.identifier}'s account`
+      case PlayerAuthActivityType.VERFICIATION_TOGGLED:
+        return `${authAlias.identifier} toggled verification`
+      case PlayerAuthActivityType.CHANGE_PASSWORD_FAILED:
+        return `${authAlias.identifier} failed to change their password`
+      case PlayerAuthActivityType.CHANGE_EMAIL_FAILED:
+        return `${authAlias.identifier} failed to change their email`
+      case PlayerAuthActivityType.TOGGLE_VERIFICATION_FAILED:
+        return `${authAlias.identifier} failed to toggle verification`
       default:
         return ''
     }

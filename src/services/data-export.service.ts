@@ -393,7 +393,7 @@ export default class DataExportService extends Service {
       orgPlanAction.extra.dataExportId = dataExport.id
     }
 
-    await createGameActivity(em, {
+    createGameActivity(em, {
       user: req.ctx.state.user,
       game: req.ctx.state.game,
       type: GameActivityType.DATA_EXPORT_REQUESTED,

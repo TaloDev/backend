@@ -50,7 +50,7 @@ export default class GameService extends Service {
 
       game.props = sanitiseProps(mergedProps, true)
 
-      await createGameActivity(em, {
+      createGameActivity(em, {
         user: req.ctx.state.user,
         game,
         type: GameActivityType.GAME_PROPS_UPDATED,

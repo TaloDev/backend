@@ -2,6 +2,8 @@ import request from 'supertest'
 import { APIKeyScope } from '../../../../src/entities/api-key'
 import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
 import casual from 'casual'
+import { EntityManager } from '@mikro-orm/mysql'
+import PlayerAuthActivity, { PlayerAuthActivityType } from '../../../../src/entities/player-auth-activity'
 
 describe('Player auth API service - register', () => {
   it('should register a player if the api key has the correct scopes', async () => {
@@ -26,6 +28,14 @@ describe('Player auth API service - register', () => {
     })
 
     expect(res.body.sessionToken).toBeTruthy()
+
+    const activity = await (<EntityManager>global.em).getRepository(PlayerAuthActivity).findOne({
+      type: PlayerAuthActivityType.REGISTERED,
+      extra: {
+        verificationEnabled: false
+      }
+    })
+    expect(activity).not.toBeNull()
   })
 
   it('should not register a player if the api key does not have the correct scopes', async () => {
@@ -84,6 +94,14 @@ describe('Player auth API service - register', () => {
     })
 
     expect(res.body.sessionToken).toBeTruthy()
+
+    const activity = await (<EntityManager>global.em).getRepository(PlayerAuthActivity).findOne({
+      type: PlayerAuthActivityType.REGISTERED,
+      extra: {
+        verificationEnabled: true
+      }
+    })
+    expect(activity).not.toBeNull()
   })
 
   it('should register not register a player if verification is enabled but no email is provided', async () => {

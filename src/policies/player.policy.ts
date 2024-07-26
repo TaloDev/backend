@@ -62,4 +62,14 @@ export default class PlayerPolicy extends Policy {
 
     return await this.canAccessGame(player.game.id)
   }
+
+  @UserTypeGate([UserType.ADMIN], 'view player auth activities')
+  async getAuthActivities(req: Request): Promise<PolicyResponse> {
+    const { id } = req.params
+
+    const player = await this.getPlayer(id)
+    if (!player) return new PolicyDenial({ message: 'Player not found' }, 404)
+
+    return await this.canAccessGame(player.game.id)
+  }
 }

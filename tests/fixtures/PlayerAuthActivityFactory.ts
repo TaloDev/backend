@@ -19,13 +19,8 @@ export default class PlayerAuthActivityFactory extends Factory<PlayerAuthActivit
       type: casual.random_element([
         PlayerAuthActivityType.REGISTERED,
         PlayerAuthActivityType.VERIFICATION_STARTED,
-        PlayerAuthActivityType.VERIFICATION_FAILED,
         PlayerAuthActivityType.LOGGED_IN,
-        PlayerAuthActivityType.LOGGED_OUT,
-        PlayerAuthActivityType.CHANGED_PASSWORD,
-        PlayerAuthActivityType.CHANGED_EMAIL,
-        PlayerAuthActivityType.PASSWORD_RESET_REQUESTED,
-        PlayerAuthActivityType.PASSWORD_RESET_COMPLETED
+        PlayerAuthActivityType.LOGGED_OUT
       ]),
       player: await new PlayerFactory([this.game]).state('with talo alias').one()
     }

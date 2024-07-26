@@ -7,8 +7,8 @@ import bcrypt from 'bcrypt'
 import PlayerAuthFactory from '../../../fixtures/PlayerAuthFactory'
 import PlayerAuthActivity, { PlayerAuthActivityType } from '../../../../src/entities/player-auth-activity'
 
-describe('Player auth API service - change password', () => {
-  it('should change a player\'s password if the current password is correct and the api key has the correct scopes', async () => {
+describe('Player auth API service - toggle verification', () => {
+  it('should enable verification if the current password is correct and an email is provided', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_PLAYERS, APIKeyScope.WRITE_PLAYERS])
 
     const player = await new PlayerFactory([apiKey.game]).state('with talo alias').with(async () => ({
@@ -25,8 +25,8 @@ describe('Player auth API service - change password', () => {
     await (<EntityManager>global.em).flush()
 
     await request(global.app)
-      .post('/v1/players/auth/change_password')
-      .send({ currentPassword: 'password', newPassword: 'password1' })
+      .patch('/v1/players/auth/toggle_verification')
+      .send({ currentPassword: 'password', verificationEnabled: true })
       .auth(token, { type: 'bearer' })
       .set('x-talo-player', player.id)
       .set('x-talo-alias', String(alias.id))
@@ -34,16 +34,137 @@ describe('Player auth API service - change password', () => {
       .expect(204)
 
     await (<EntityManager>global.em).refresh(player.auth)
-    expect(await bcrypt.compare('password1', player.auth.password)).toBe(true)
+    expect(player.auth.verificationEnabled).toBe(true)
 
     const activity = await (<EntityManager>global.em).getRepository(PlayerAuthActivity).findOne({
-      type: PlayerAuthActivityType.CHANGED_PASSWORD,
-      player: player.id
+      type: PlayerAuthActivityType.VERFICIATION_TOGGLED,
+      player: player.id,
+      extra: {
+        verificationEnabled: true
+      }
     })
     expect(activity).not.toBeNull()
   })
 
-  it('should not change a player\'s password if the api key does not have the correct scopes', async () => {
+  it('should disable verification if the current password is correct', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_PLAYERS, APIKeyScope.WRITE_PLAYERS])
+
+    const player = await new PlayerFactory([apiKey.game]).state('with talo alias').with(async () => ({
+      auth: await new PlayerAuthFactory().with(async () => ({
+        password: await bcrypt.hash('password', 10),
+        email: 'boz@mail.com',
+        verificationEnabled: true
+      })).one()
+    })).one()
+    const alias = player.aliases[0]
+    await (<EntityManager>global.em).persistAndFlush(player)
+
+    const sessionToken = await player.auth.createSession(alias)
+    await (<EntityManager>global.em).flush()
+
+    await request(global.app)
+      .patch('/v1/players/auth/toggle_verification')
+      .send({ currentPassword: 'password', verificationEnabled: false })
+      .auth(token, { type: 'bearer' })
+      .set('x-talo-player', player.id)
+      .set('x-talo-alias', String(alias.id))
+      .set('x-talo-session', sessionToken)
+      .expect(204)
+
+    await (<EntityManager>global.em).refresh(player.auth)
+    expect(player.auth.verificationEnabled).toBe(false)
+
+    const activity = await (<EntityManager>global.em).getRepository(PlayerAuthActivity).findOne({
+      type: PlayerAuthActivityType.VERFICIATION_TOGGLED,
+      player: player.id,
+      extra: {
+        verificationEnabled: false
+      }
+    })
+    expect(activity).not.toBeNull()
+  })
+
+  it('should not enable verification if an email is not provided', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_PLAYERS, APIKeyScope.WRITE_PLAYERS])
+
+    const player = await new PlayerFactory([apiKey.game]).state('with talo alias').with(async () => ({
+      auth: await new PlayerAuthFactory().with(async () => ({
+        password: await bcrypt.hash('password', 10),
+        email: null,
+        verificationEnabled: false
+      })).one()
+    })).one()
+    const alias = player.aliases[0]
+    await (<EntityManager>global.em).persistAndFlush(player)
+
+    const sessionToken = await player.auth.createSession(alias)
+    await (<EntityManager>global.em).flush()
+
+    const res = await request(global.app)
+      .patch('/v1/players/auth/toggle_verification')
+      .send({ currentPassword: 'password', verificationEnabled: true })
+      .auth(token, { type: 'bearer' })
+      .set('x-talo-player', player.id)
+      .set('x-talo-alias', String(alias.id))
+      .set('x-talo-session', sessionToken)
+      .expect(400)
+
+    expect(res.body).toStrictEqual({
+      message: 'An email address is required to enable verification',
+      errorCode: 'VERIFICATION_EMAIL_REQUIRED'
+    })
+
+    const activity = await (<EntityManager>global.em).getRepository(PlayerAuthActivity).findOne({
+      type: PlayerAuthActivityType.TOGGLE_VERIFICATION_FAILED,
+      player: player.id,
+      extra: {
+        errrorCode: 'VERIFICATION_EMAIL_REQUIRED'
+      }
+    })
+    expect(activity).not.toBeNull()
+  })
+
+  it('should not toggle verification if the current password is incorrect', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_PLAYERS, APIKeyScope.WRITE_PLAYERS])
+
+    const player = await new PlayerFactory([apiKey.game]).state('with talo alias').with(async () => ({
+      auth: await new PlayerAuthFactory().with(async () => ({
+        password: await bcrypt.hash('password', 10),
+        email: 'boz@mail.com',
+        verificationEnabled: false
+      })).one()
+    })).one()
+    const alias = player.aliases[0]
+    await (<EntityManager>global.em).persistAndFlush(player)
+
+    const sessionToken = await player.auth.createSession(alias)
+    await (<EntityManager>global.em).flush()
+
+    const res = await request(global.app)
+      .patch('/v1/players/auth/toggle_verification')
+      .send({ currentPassword: 'wrongpassword', verificationEnabled: true })
+      .auth(token, { type: 'bearer' })
+      .set('x-talo-player', player.id)
+      .set('x-talo-alias', String(alias.id))
+      .set('x-talo-session', sessionToken)
+      .expect(403)
+
+    expect(res.body).toStrictEqual({
+      message: 'Current password is incorrect',
+      errorCode: 'INVALID_CREDENTIALS'
+    })
+
+    const activity = await (<EntityManager>global.em).getRepository(PlayerAuthActivity).findOne({
+      type: PlayerAuthActivityType.TOGGLE_VERIFICATION_FAILED,
+      player: player.id,
+      extra: {
+        errrorCode: 'INVALID_CREDENTIALS'
+      }
+    })
+    expect(activity).not.toBeNull()
+  })
+
+  it('should not toggle verification if the api key does not have the correct scopes', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([])
 
     const player = await new PlayerFactory([apiKey.game]).state('with talo alias').with(async () => ({
@@ -60,92 +181,12 @@ describe('Player auth API service - change password', () => {
     await (<EntityManager>global.em).flush()
 
     await request(global.app)
-      .post('/v1/players/auth/change_password')
-      .send({ currentPassword: 'password', newPassword: 'password1' })
+      .patch('/v1/players/auth/toggle_verification')
+      .send({ currentPassword: 'password', verificationEnabled: true })
       .auth(token, { type: 'bearer' })
       .set('x-talo-player', player.id)
       .set('x-talo-alias', String(alias.id))
       .set('x-talo-session', sessionToken)
       .expect(403)
-  })
-
-  it('should not change a player\'s password if the current password is incorrect', async () => {
-    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_PLAYERS, APIKeyScope.WRITE_PLAYERS])
-
-    const player = await new PlayerFactory([apiKey.game]).state('with talo alias').with(async () => ({
-      auth: await new PlayerAuthFactory().with(async () => ({
-        password: await bcrypt.hash('password', 10),
-        email: 'boz@mail.com',
-        verificationEnabled: false
-      })).one()
-    })).one()
-    const alias = player.aliases[0]
-    await (<EntityManager>global.em).persistAndFlush(player)
-
-    const sessionToken = await player.auth.createSession(alias)
-    await (<EntityManager>global.em).flush()
-
-    const res = await request(global.app)
-      .post('/v1/players/auth/change_password')
-      .send({ currentPassword: 'password1', newPassword: 'password2' })
-      .auth(token, { type: 'bearer' })
-      .set('x-talo-player', player.id)
-      .set('x-talo-alias', String(alias.id))
-      .set('x-talo-session', sessionToken)
-      .expect(403)
-
-    expect(res.body).toStrictEqual({
-      message: 'Current password is incorrect',
-      errorCode: 'INVALID_CREDENTIALS'
-    })
-
-    const activity = await (<EntityManager>global.em).getRepository(PlayerAuthActivity).findOne({
-      type: PlayerAuthActivityType.CHANGE_PASSWORD_FAILED,
-      player: player.id,
-      extra: {
-        errrorCode: 'INVALID_CREDENTIALS'
-      }
-    })
-    expect(activity).not.toBeNull()
-  })
-
-  it('should not change a player\'s password if the current password is the same as the new password', async () => {
-    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_PLAYERS, APIKeyScope.WRITE_PLAYERS])
-
-    const player = await new PlayerFactory([apiKey.game]).state('with talo alias').with(async () => ({
-      auth: await new PlayerAuthFactory().with(async () => ({
-        password: await bcrypt.hash('password', 10),
-        email: 'boz@mail.com',
-        verificationEnabled: false
-      })).one()
-    })).one()
-    const alias = player.aliases[0]
-    await (<EntityManager>global.em).persistAndFlush(player)
-
-    const sessionToken = await player.auth.createSession(alias)
-    await (<EntityManager>global.em).flush()
-
-    const res = await request(global.app)
-      .post('/v1/players/auth/change_password')
-      .send({ currentPassword: 'password', newPassword: 'password' })
-      .auth(token, { type: 'bearer' })
-      .set('x-talo-player', player.id)
-      .set('x-talo-alias', String(alias.id))
-      .set('x-talo-session', sessionToken)
-      .expect(400)
-
-    expect(res.body).toStrictEqual({
-      message: 'Please choose a different password',
-      errorCode: 'NEW_PASSWORD_MATCHES_CURRENT_PASSWORD'
-    })
-
-    const activity = await (<EntityManager>global.em).getRepository(PlayerAuthActivity).findOne({
-      type: PlayerAuthActivityType.CHANGE_PASSWORD_FAILED,
-      player: player.id,
-      extra: {
-        errrorCode: 'NEW_PASSWORD_MATCHES_CURRENT_PASSWORD'
-      }
-    })
-    expect(activity).not.toBeNull()
   })
 })

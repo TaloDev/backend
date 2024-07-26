@@ -155,9 +155,13 @@ describe('Player API service - patch', () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_PLAYERS])
 
     const player = await new PlayerFactory([apiKey.game]).one()
+    player.setProps([
+      {
+        key: casual.word,
+        value: casual.word
+      }
+    ])
     await (<EntityManager>global.em).persistAndFlush(player)
-
-    const propsLength = player.props.length
 
     const res = await request(global.app)
       .patch(`/v1/players/${player.id}`)
@@ -176,6 +180,6 @@ describe('Player API service - patch', () => {
       .auth(token, { type: 'bearer' })
       .expect(200)
 
-    expect(res.body.player.props).toHaveLength(propsLength + 1)
+    expect(res.body.player.props).toHaveLength(2)
   })
 })

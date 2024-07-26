@@ -45,7 +45,7 @@ export default class GameStatService extends Service {
     stat.maxValue = maxValue
     stat.minTimeBetweenUpdates = minTimeBetweenUpdates
 
-    await createGameActivity(em, {
+    createGameActivity(em, {
       user: req.ctx.state.user,
       game: stat.game,
       type: GameActivityType.GAME_STAT_CREATED,
@@ -84,7 +84,7 @@ export default class GameStatService extends Service {
       }
     }
 
-    await createGameActivity(em, {
+    createGameActivity(em, {
       user: req.ctx.state.user,
       game: stat.game,
       type: GameActivityType.GAME_STAT_UPDATED,
@@ -110,7 +110,7 @@ export default class GameStatService extends Service {
   async delete(req: Request): Promise<Response> {
     const em: EntityManager = req.ctx.em
 
-    await createGameActivity(em, {
+    createGameActivity(em, {
       user: req.ctx.state.user,
       game: req.ctx.state.stat.game,
       type: GameActivityType.GAME_STAT_DELETED,

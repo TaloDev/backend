@@ -7,6 +7,7 @@ import PlayerAuthFactory from '../../../fixtures/PlayerAuthFactory'
 import bcrypt from 'bcrypt'
 import Redis from 'ioredis'
 import redisConfig from '../../../../src/config/redis.config'
+import PlayerAuthActivity, { PlayerAuthActivityType } from '../../../../src/entities/player-auth-activity'
 
 describe('Player auth API service - verify', () => {
   it('should login a player if the verification code is correct and if the api key has the correct scopes', async () => {
@@ -99,6 +100,12 @@ describe('Player auth API service - verify', () => {
     })
 
     expect(await redis.get(`player-auth:${apiKey.game.id}:verification:${alias.id}`)).toBe('123456')
+
+    const activity = await (<EntityManager>global.em).getRepository(PlayerAuthActivity).findOne({
+      type: PlayerAuthActivityType.VERIFICATION_FAILED,
+      player: player.id
+    })
+    expect(activity).not.toBeNull()
 
     await redis.quit()
   })

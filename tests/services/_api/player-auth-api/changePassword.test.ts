@@ -5,6 +5,7 @@ import PlayerFactory from '../../../fixtures/PlayerFactory'
 import { EntityManager } from '@mikro-orm/mysql'
 import bcrypt from 'bcrypt'
 import PlayerAuthFactory from '../../../fixtures/PlayerAuthFactory'
+import PlayerAuthActivity, { PlayerAuthActivityType } from '../../../../src/entities/player-auth-activity'
 
 describe('Player auth API service - change password', () => {
   it('should change a player\'s password if the current password is correct and the api key has the correct scopes', async () => {
@@ -34,6 +35,12 @@ describe('Player auth API service - change password', () => {
 
     await (<EntityManager>global.em).refresh(player.auth)
     expect(await bcrypt.compare('password1', player.auth.password)).toBe(true)
+
+    const activity = await (<EntityManager>global.em).getRepository(PlayerAuthActivity).findOne({
+      type: PlayerAuthActivityType.CHANGED_PASSWORD,
+      player: player.id
+    })
+    expect(activity).not.toBeNull()
   })
 
   it('should not change a player\'s password if the api key does not have the correct scopes', async () => {

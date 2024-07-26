@@ -119,7 +119,7 @@ export default class GameFeedbackService extends Service {
     feedbackCategory.description = description
     feedbackCategory.anonymised = anonymised
 
-    await createGameActivity(em, {
+    createGameActivity(em, {
       user: req.ctx.state.user,
       game: feedbackCategory.game,
       type: GameActivityType.GAME_FEEDBACK_CATEGORY_CREATED,
@@ -158,7 +158,7 @@ export default class GameFeedbackService extends Service {
       }
     }
 
-    await createGameActivity(em, {
+    createGameActivity(em, {
       user: req.ctx.state.user,
       game: feedbackCategory.game,
       type: GameActivityType.GAME_FEEDBACK_CATEGORY_UPDATED,
@@ -184,7 +184,7 @@ export default class GameFeedbackService extends Service {
   async deleteCategory(req: Request): Promise<Response> {
     const em: EntityManager = req.ctx.em
 
-    await createGameActivity(em, {
+    createGameActivity(em, {
       user: req.ctx.state.user,
       game: req.ctx.state.feedbackCategory.game,
       type: GameActivityType.GAME_FEEDBACK_CATEGORY_DELETED,

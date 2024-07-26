@@ -56,7 +56,7 @@ export default class InviteService extends Service {
     invite.type = type
     invite.invitedByUser = inviter
 
-    await createGameActivity(em, {
+    createGameActivity(em, {
       user: req.ctx.state.user,
       type: GameActivityType.INVITE_CREATED,
       extra: {

@@ -13,6 +13,8 @@ import generateSixDigitCode from '../../lib/auth/generateSixDigitCode'
 import queueEmail from '../../lib/messaging/queueEmail'
 import PlayerAuthCode from '../../emails/player-auth-code-mail'
 import PlayerAuthResetPassword from '../../emails/player-auth-reset-password-mail'
+import createPlayerAuthActivity from '../../lib/logging/createPlayerAuthActivity'
+import { PlayerAuthActivityType } from '../../entities/player-auth-activity'
 
 @Routes([
   {
@@ -92,10 +94,18 @@ export default class PlayerAuthAPIService extends APIService {
     alias.player.auth = new PlayerAuth()
     alias.player.auth.password = await bcrypt.hash(password, 10)
     alias.player.auth.email = email || null
-    alias.player.auth.verificationEnabled = verificationEnabled
+    alias.player.auth.verificationEnabled = Boolean(verificationEnabled)
     em.persist(alias.player.auth)
 
     const sessionToken = await alias.player.auth.createSession(alias)
+
+    createPlayerAuthActivity(req, alias.player, {
+      type: PlayerAuthActivityType.REGISTERED,
+      extra: {
+        verificationEnabled: alias.player.auth.verificationEnabled
+      }
+    })
+
     await em.flush()
 
     return {
@@ -144,6 +154,12 @@ export default class PlayerAuthAPIService extends APIService {
       await redis.set(this.getRedisAuthKey(key, alias), code, 'EX', 300)
       await queueEmail(req.ctx.emailQueue, new PlayerAuthCode(alias, code))
 
+      createPlayerAuthActivity(req, alias.player, {
+        type: PlayerAuthActivityType.VERIFICATION_STARTED
+      })
+
+      await em.flush()
+
       return {
         status: 200,
         body: {
@@ -153,6 +169,11 @@ export default class PlayerAuthAPIService extends APIService {
       }
     } else {
       const sessionToken = await alias.player.auth.createSession(alias)
+
+      createPlayerAuthActivity(req, alias.player, {
+        type: PlayerAuthActivityType.LOGGED_IN
+      })
+
       await em.flush()
 
       return {
@@ -190,6 +211,12 @@ export default class PlayerAuthAPIService extends APIService {
     const redisCode = await redis.get(this.getRedisAuthKey(key, alias))
 
     if (!redisCode || code !== redisCode) {
+      createPlayerAuthActivity(req, alias.player, {
+        type: PlayerAuthActivityType.VERIFICATION_FAILED
+      })
+
+      await em.flush()
+
       req.ctx.throw(403, {
         message: 'Invalid code',
         errorCode: PlayerAuthErrorCode.VERIFICATION_CODE_INVALID
@@ -199,6 +226,11 @@ export default class PlayerAuthAPIService extends APIService {
     await redis.del(this.getRedisAuthKey(key, alias))
 
     const sessionToken = await alias.player.auth.createSession(alias)
+
+    createPlayerAuthActivity(req, alias.player, {
+      type: PlayerAuthActivityType.LOGGED_IN
+    })
+
     await em.flush()
 
     return {
@@ -222,6 +254,11 @@ export default class PlayerAuthAPIService extends APIService {
 
     alias.player.auth.sessionKey = null
     alias.player.auth.sessionCreatedAt = null
+
+    createPlayerAuthActivity(req, alias.player, {
+      type: PlayerAuthActivityType.LOGGED_OUT
+    })
+
     await em.flush()
 
     return {
@@ -259,6 +296,11 @@ export default class PlayerAuthAPIService extends APIService {
     }
 
     alias.player.auth.password = await bcrypt.hash(newPassword, 10)
+
+    createPlayerAuthActivity(req, alias.player, {
+      type: PlayerAuthActivityType.CHANGED_PASSWORD
+    })
+
     await em.flush()
 
     return {
@@ -295,7 +337,16 @@ export default class PlayerAuthAPIService extends APIService {
       })
     }
 
+    const oldEmail = alias.player.auth.email
     alias.player.auth.email = newEmail
+
+    createPlayerAuthActivity(req, alias.player, {
+      type: PlayerAuthActivityType.CHANGED_EMAIL,
+      extra: {
+        oldEmail
+      }
+    })
+
     await em.flush()
 
     return {
@@ -330,6 +381,12 @@ export default class PlayerAuthAPIService extends APIService {
       const code = generateSixDigitCode()
       await redis.set(this.getRedisPasswordResetKey(key, code), alias.id, 'EX', 900)
       await queueEmail(req.ctx.emailQueue, new PlayerAuthResetPassword(alias, code))
+
+      createPlayerAuthActivity(req, playerAuth.player, {
+        type: PlayerAuthActivityType.PASSWORD_RESET_REQUESTED
+      })
+
+      await em.flush()
     }
 
     return {
@@ -370,6 +427,11 @@ export default class PlayerAuthAPIService extends APIService {
     alias.player.auth.password = await bcrypt.hash(password, 10)
     alias.player.auth.sessionKey = null
     alias.player.auth.sessionCreatedAt = null
+
+    createPlayerAuthActivity(req, alias.player, {
+      type: PlayerAuthActivityType.PASSWORD_RESET_COMPLETED
+    })
+
     await em.flush()
 
     return {

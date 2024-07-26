@@ -65,7 +65,7 @@ export default class LeaderboardService extends Service {
     leaderboard.sortMode = sortMode
     leaderboard.unique = unique
 
-    await createGameActivity(em, {
+    createGameActivity(em, {
       user: req.ctx.state.user,
       game: leaderboard.game,
       type: GameActivityType.LEADERBOARD_CREATED,
@@ -160,7 +160,7 @@ export default class LeaderboardService extends Service {
     if (toggleVisibility) {
       entry.hidden = hidden
 
-      await createGameActivity(em, {
+      createGameActivity(em, {
         user: req.ctx.state.user,
         game: entry.leaderboard.game,
         type: hidden ? GameActivityType.LEADERBOARD_ENTRY_HIDDEN : GameActivityType.LEADERBOARD_ENTRY_RESTORED,
@@ -207,7 +207,7 @@ export default class LeaderboardService extends Service {
       }
     }
 
-    await createGameActivity(em, {
+    createGameActivity(em, {
       user: req.ctx.state.user,
       game: leaderboard.game,
       type: GameActivityType.LEADERBOARD_UPDATED,
@@ -238,7 +238,7 @@ export default class LeaderboardService extends Service {
     const em: EntityManager = req.ctx.em
 
     const leaderboardInternalName = req.ctx.state.leaderboard.internalName
-    await createGameActivity(em, {
+    createGameActivity(em, {
       user: req.ctx.state.user,
       game: req.ctx.state.leaderboard.game,
       type: GameActivityType.LEADERBOARD_DELETED,

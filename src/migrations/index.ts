@@ -26,6 +26,7 @@ import { AddAPIKeyLastUsedAtColumn } from './20230205220925AddAPIKeyLastUsedAtCo
 import { CreateGameFeedbackAndCategoryTables } from './20240606165637CreateGameFeedbackAndCategoryTables'
 import { AddAPIKeyUpdatedAtColumn } from './20240614122547AddAPIKeyUpdatedAtColumn'
 import { CreatePlayerAuthTable } from './20240628155142CreatePlayerAuthTable'
+import { CreatePlayerAuthActivityTable } from './20240725183402CreatePlayerAuthActivityTable'
 
 export default [
   {
@@ -139,5 +140,9 @@ export default [
   {
     name: 'CreatePlayerAuthTable',
     class: CreatePlayerAuthTable
+  },
+  {
+    name: 'CreatePlayerAuthActivityTable',
+    class: CreatePlayerAuthActivityTable
   }
 ]

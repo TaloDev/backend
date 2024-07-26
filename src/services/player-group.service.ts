@@ -69,7 +69,7 @@ export default class PlayerGroupService extends Service {
     group.rules = this.buildRulesFromData(rules)
     await group.checkMembership(em)
 
-    await createGameActivity(em, {
+    createGameActivity(em, {
       user: req.ctx.state.user,
       game: req.ctx.state.game,
       type: GameActivityType.PLAYER_GROUP_CREATED,
@@ -101,7 +101,7 @@ export default class PlayerGroupService extends Service {
     group.rules = this.buildRulesFromData(rules)
     await group.checkMembership(em)
 
-    await createGameActivity(em, {
+    createGameActivity(em, {
       user: req.ctx.state.user,
       game: req.ctx.state.game,
       type: GameActivityType.PLAYER_GROUP_UPDATED,
@@ -178,7 +178,7 @@ export default class PlayerGroupService extends Service {
   async delete(req: Request): Promise<Response> {
     const em: EntityManager = req.ctx.em
 
-    await createGameActivity(em, {
+    createGameActivity(em, {
       user: req.ctx.state.user,
       game: req.ctx.state.game,
       type: GameActivityType.PLAYER_GROUP_DELETED,

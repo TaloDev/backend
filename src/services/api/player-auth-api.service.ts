@@ -522,6 +522,9 @@ export default class PlayerAuthAPIService extends APIService {
     }
 
     alias.player.auth.verificationEnabled = Boolean(verificationEnabled)
+    if (email?.trim()) {
+      alias.player.auth.email = email
+    }
 
     createPlayerAuthActivity(req, alias.player, {
       type: PlayerAuthActivityType.VERFICIATION_TOGGLED,

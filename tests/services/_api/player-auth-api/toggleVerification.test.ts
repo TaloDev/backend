@@ -125,6 +125,45 @@ describe('Player auth API service - toggle verification', () => {
     expect(activity).not.toBeNull()
   })
 
+  it('should update the email of the player if one is sent', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_PLAYERS, APIKeyScope.WRITE_PLAYERS])
+
+    const player = await new PlayerFactory([apiKey.game]).state('with talo alias').with(async () => ({
+      auth: await new PlayerAuthFactory().with(async () => ({
+        password: await bcrypt.hash('password', 10),
+        email: null,
+        verificationEnabled: false
+      })).one()
+    })).one()
+    const alias = player.aliases[0]
+    await (<EntityManager>global.em).persistAndFlush(player)
+
+    const sessionToken = await player.auth.createSession(alias)
+    await (<EntityManager>global.em).flush()
+
+    await request(global.app)
+      .patch('/v1/players/auth/toggle_verification')
+      .send({ currentPassword: 'password', verificationEnabled: true, email: 'bozzz@mail.com' })
+      .auth(token, { type: 'bearer' })
+      .set('x-talo-player', player.id)
+      .set('x-talo-alias', String(alias.id))
+      .set('x-talo-session', sessionToken)
+      .expect(204)
+
+    await (<EntityManager>global.em).refresh(player.auth)
+    expect(player.auth.verificationEnabled).toBe(true)
+    expect(player.auth.email).toBe('bozzz@mail.com')
+
+    const activity = await (<EntityManager>global.em).getRepository(PlayerAuthActivity).findOne({
+      type: PlayerAuthActivityType.VERFICIATION_TOGGLED,
+      player: player.id,
+      extra: {
+        verificationEnabled: true
+      }
+    })
+    expect(activity).not.toBeNull()
+  })
+
   it('should not toggle verification if the current password is incorrect', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_PLAYERS, APIKeyScope.WRITE_PLAYERS])
 

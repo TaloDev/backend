@@ -20,14 +20,17 @@ export default class EventService extends Service {
   })
   @HasPermission(EventPolicy, 'index')
   async index(req: Request): Promise<Response> {
-    const { startDate, endDate } = req.query
+    const { startDate: startDateQuery, endDate: endDateQuery } = req.query
     const em: EntityManager = req.ctx.em
+
+    const startDate = new Date(startDateQuery)
+    const endDate = new Date(endDateQuery)
 
     const where: FilterQuery<Event> = {
       game: req.ctx.state.game,
       createdAt: {
-        $gte: new Date(startDate),
-        $lte: endOfDay(new Date(endDate))
+        $gte: startDate,
+        $lte: endOfDay(endDate)
       }
     }
 
@@ -51,16 +54,19 @@ export default class EventService extends Service {
     // }
 
     const data = groupBy(events, 'name')
+
     for (const name in data) {
       const processed: EventData[] = []
 
-      for (let date = new Date(startDate).getTime(); date <= new Date(endDate).getTime(); date += 86400000 /* 24 hours in ms */) {
-        const count = data[name].filter((event: Event) => isSameDay(new Date(date), new Date(event.createdAt))).length
+      for (let time = startDate.getTime(); time <= endDate.getTime(); time += 86400000 /* 24 hours in ms */) {
+        const dateFromTime = new Date(time)
+
+        const count = data[name].filter((event: Event) => isSameDay(dateFromTime, event.createdAt)).length
         const change = processed.length > 0 ? this.calculateChange(count, processed[processed.length - 1]) : 0
 
         processed.push({
           name,
-          date,
+          date: time,
           count,
           change
         })

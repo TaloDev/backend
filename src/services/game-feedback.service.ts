@@ -40,14 +40,14 @@ export default class GameFeedbackService extends Service {
     const { feedbackCategoryInternalName, search, page } = req.query
     const em: EntityManager = req.ctx.em
 
-    let query = em.qb(GameFeedback, 'gf')
+    const query = em.qb(GameFeedback, 'gf')
       .select('gf.*')
       .orderBy({ createdAt: QueryOrder.DESC })
       .limit(itemsPerPage)
       .offset(Number(page) * itemsPerPage)
 
     if (feedbackCategoryInternalName) {
-      query = query
+      query
         .andWhere({
           category: {
             internalName: feedbackCategoryInternalName
@@ -56,7 +56,7 @@ export default class GameFeedbackService extends Service {
     }
 
     if (search) {
-      query = query.andWhere({
+      query.andWhere({
         $or: [
           { comment: { $like: `%${search}%` } },
           {

@@ -217,4 +217,21 @@ describe('Game feedback service - index', () => {
 
     expect(res.body.feedback).toHaveLength(feedbackWithRelevantCategoryAndAlias.length)
   })
+
+  it('should not return feedback from dev build players if the dev data header is not set', async () => {
+    const [organisation, game] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken({}, organisation)
+
+    const player = await new PlayerFactory([game]).state('dev build').one()
+    const feedback = await new GameFeedbackFactory(game).with(() => ({ playerAlias: player.aliases[0] })).many(10)
+    await (<EntityManager>global.em).persistAndFlush(feedback)
+
+    const res = await request(global.app)
+      .get(`/games/${game.id}/game-feedback`)
+      .query({ page: 0 })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    expect(res.body.feedback).toHaveLength(0)
+  })
 })

@@ -5,6 +5,7 @@ import GameFeedbackPolicy from '../policies/game-feedback.policy'
 import GameFeedbackCategory from '../entities/game-feedback-category'
 import createGameActivity from '../lib/logging/createGameActivity'
 import { GameActivityType } from '../entities/game-activity'
+import { devDataPlayerFilter } from '../middlewares/dev-data-middleware'
 
 const itemsPerPage = 50
 
@@ -40,14 +41,14 @@ export default class GameFeedbackService extends Service {
     const { feedbackCategoryInternalName, search, page } = req.query
     const em: EntityManager = req.ctx.em
 
-    let query = em.qb(GameFeedback, 'gf')
+    const query = em.qb(GameFeedback, 'gf')
       .select('gf.*')
       .orderBy({ createdAt: QueryOrder.DESC })
       .limit(itemsPerPage)
       .offset(Number(page) * itemsPerPage)
 
     if (feedbackCategoryInternalName) {
-      query = query
+      query
         .andWhere({
           category: {
             internalName: feedbackCategoryInternalName
@@ -56,7 +57,7 @@ export default class GameFeedbackService extends Service {
     }
 
     if (search) {
-      query = query.andWhere({
+      query.andWhere({
         $or: [
           { comment: { $like: `%${search}%` } },
           {
@@ -66,6 +67,14 @@ export default class GameFeedbackService extends Service {
             ]
           }
         ]
+      })
+    }
+
+    if (!req.ctx.state.includeDevData) {
+      query.andWhere({
+        playerAlias: {
+          player: devDataPlayerFilter(em)
+        }
       })
     }
 

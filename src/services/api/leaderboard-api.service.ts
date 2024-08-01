@@ -83,13 +83,13 @@ export default class LeaderboardAPIService extends APIService {
       return integration.handleLeaderboardEntryCreated(em, entry)
     })
 
-    let query = em.createQueryBuilder(LeaderboardEntry, 'le')
+    const query = em.createQueryBuilder(LeaderboardEntry, 'le')
       .select('le.*', true)
       .where({ leaderboard: entry.leaderboard })
       .orderBy({ score: entry.leaderboard.sortMode })
 
     if (!req.ctx.state.includeDevData) {
-      query = query.andWhere({
+      query.andWhere({
         playerAlias: {
           player: devDataPlayerFilter(em)
         }

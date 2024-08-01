@@ -127,14 +127,14 @@ export default class PlayerService extends Service {
     const { search, page } = req.query
     const em: EntityManager = req.ctx.em
 
-    let query = em.qb(Player, 'p')
+    const query = em.qb(Player, 'p')
       .select('p.*')
       .orderBy({ lastSeenAt: QueryOrder.DESC })
       .limit(itemsPerPage)
       .offset(Number(page) * itemsPerPage)
 
     if (search) {
-      query = query
+      query
         .where({
           props: {
             $in: em.qb(PlayerProp).select('id').where({
@@ -167,7 +167,7 @@ export default class PlayerService extends Service {
       }
 
       if (groups.length > 0) {
-        query = query
+        query
           .orWhere({
             groups: {
               $in: groups
@@ -177,7 +177,7 @@ export default class PlayerService extends Service {
     }
 
     if (!req.ctx.state.includeDevData) {
-      query = query.andWhere(devDataPlayerFilter(em))
+      query.andWhere(devDataPlayerFilter(em))
     }
 
     const [players, count] = await query
@@ -257,14 +257,14 @@ export default class PlayerService extends Service {
     const em: EntityManager = req.ctx.em
     const player: Player = req.ctx.state.player // set in the policy
 
-    let query = em.createQueryBuilder(Event, 'e')
+    const query = em.createQueryBuilder(Event, 'e')
       .select('e.*')
       .orderBy({ createdAt: QueryOrder.DESC })
       .limit(itemsPerPage)
       .offset(Number(page) * itemsPerPage)
 
     if (search) {
-      query = query
+      query
         .where('json_extract(props, \'$[*].value\') like ?', [`%${search}%`])
         .orWhere({
           name: {

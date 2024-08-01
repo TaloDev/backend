@@ -1,7 +1,6 @@
 import { FilterQuery, EntityManager } from '@mikro-orm/mysql'
 import { endOfDay, isSameDay } from 'date-fns'
 import { Service, Request, Response, Validate, HasPermission, Routes } from 'koa-clay'
-import groupBy from 'lodash.groupby'
 import Event from '../entities/event'
 import Player from '../entities/player'
 import HeadlinePolicy from '../policies/headline.policy'
@@ -127,30 +126,28 @@ export default class HeadlineService extends Service {
     const { startDate, endDate } = req.query
     const em: EntityManager = req.ctx.em
 
-    const where: FilterQuery<Event> = {
-      game: req.ctx.state.game,
-      createdAt: {
-        $gte: new Date(startDate),
-        $lte: endOfDay(new Date(endDate))
-      }
-    }
+    const query = em.qb(Event, 'e')
+      .join('e.playerAlias', 'pa')
+      .count('pa.player_id', true)
+      .where({
+        game: req.ctx.state.game.id,
+        createdAt: { $gte: new Date(startDate), $lte: endOfDay(new Date(endDate)) }
+      })
 
     if (!req.ctx.state.includeDevData) {
-      where.playerAlias = {
-        player: devDataPlayerFilter(em)
-      }
+      query.andWhere({
+        playerAlias: {
+          player: devDataPlayerFilter(em)
+        }
+      })
     }
 
-    const events = await em.getRepository(Event).find(where, {
-      populate: ['playerAlias.player']
-    })
-
-    const count = Object.keys(groupBy(events, 'playerAlias.player.id')).length
+    const result = await query.execute('get')
 
     return {
       status: 200,
       body: {
-        count
+        count: result.count
       }
     }
   }

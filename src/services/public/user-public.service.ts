@@ -119,7 +119,7 @@ export default class UserPublicService extends Service {
       user.type = invite.type
       user.emailConfirmed = true
 
-      await createGameActivity(em, { user, type: GameActivityType.INVITE_ACCEPTED })
+      createGameActivity(em, { user, type: GameActivityType.INVITE_ACCEPTED })
 
       await em.remove(invite)
     } else {

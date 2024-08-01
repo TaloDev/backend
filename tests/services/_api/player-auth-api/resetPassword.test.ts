@@ -6,6 +6,7 @@ import { EntityManager } from '@mikro-orm/mysql'
 import Redis from 'ioredis'
 import redisConfig from '../../../../src/config/redis.config'
 import bcrypt from 'bcrypt'
+import PlayerAuthActivity, { PlayerAuthActivityType } from '../../../../src/entities/player-auth-activity'
 
 describe('Player auth API service - reset password', () => {
   it('should reset a player\'s password if the reset code is correct and if the api key has the correct scopes', async () => {
@@ -31,6 +32,12 @@ describe('Player auth API service - reset password', () => {
     expect(await bcrypt.compare('password', player.auth.password)).toBe(true)
     expect(player.auth.sessionKey).toBeNull()
     expect(player.auth.sessionCreatedAt).toBeNull()
+
+    const activity = await (<EntityManager>global.em).getRepository(PlayerAuthActivity).findOne({
+      type: PlayerAuthActivityType.PASSWORD_RESET_COMPLETED,
+      player: player.id
+    })
+    expect(activity).not.toBeNull()
 
     await redis.quit()
   })

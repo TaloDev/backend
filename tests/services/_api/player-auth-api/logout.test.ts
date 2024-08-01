@@ -3,6 +3,7 @@ import { APIKeyScope } from '../../../../src/entities/api-key'
 import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
 import PlayerFactory from '../../../fixtures/PlayerFactory'
 import { EntityManager } from '@mikro-orm/mysql'
+import PlayerAuthActivity, { PlayerAuthActivityType } from '../../../../src/entities/player-auth-activity'
 
 describe('Player auth API service - logout', () => {
   it('should logout a player if the api key has the correct scopes', async () => {
@@ -26,6 +27,12 @@ describe('Player auth API service - logout', () => {
     await (<EntityManager>global.em).refresh(player.auth)
     expect(player.auth.sessionKey).toBeNull()
     expect(player.auth.sessionCreatedAt).toBeNull()
+
+    const activity = await (<EntityManager>global.em).getRepository(PlayerAuthActivity).findOne({
+      type: PlayerAuthActivityType.LOGGED_OUT,
+      player: player.id
+    })
+    expect(activity).not.toBeNull()
   })
 
   it('should not logout a player if the api key does not have the correct scopes', async () => {

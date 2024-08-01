@@ -13,6 +13,8 @@ import generateSixDigitCode from '../../lib/auth/generateSixDigitCode'
 import queueEmail from '../../lib/messaging/queueEmail'
 import PlayerAuthCode from '../../emails/player-auth-code-mail'
 import PlayerAuthResetPassword from '../../emails/player-auth-reset-password-mail'
+import createPlayerAuthActivity from '../../lib/logging/createPlayerAuthActivity'
+import { PlayerAuthActivityType } from '../../entities/player-auth-activity'
 
 @Routes([
   {
@@ -62,6 +64,12 @@ import PlayerAuthResetPassword from '../../emails/player-auth-reset-password-mai
     path: '/reset_password',
     handler: 'resetPassword',
     docs: PlayerAuthAPIDocs.resetPassword
+  },
+  {
+    method: 'PATCH',
+    path: '/toggle_verification',
+    handler: 'toggleVerification',
+    docs: PlayerAuthAPIDocs.toggleVerification
   }
 ])
 export default class PlayerAuthAPIService extends APIService {
@@ -92,10 +100,18 @@ export default class PlayerAuthAPIService extends APIService {
     alias.player.auth = new PlayerAuth()
     alias.player.auth.password = await bcrypt.hash(password, 10)
     alias.player.auth.email = email || null
-    alias.player.auth.verificationEnabled = verificationEnabled
+    alias.player.auth.verificationEnabled = Boolean(verificationEnabled)
     em.persist(alias.player.auth)
 
     const sessionToken = await alias.player.auth.createSession(alias)
+
+    createPlayerAuthActivity(req, alias.player, {
+      type: PlayerAuthActivityType.REGISTERED,
+      extra: {
+        verificationEnabled: alias.player.auth.verificationEnabled
+      }
+    })
+
     await em.flush()
 
     return {
@@ -144,6 +160,12 @@ export default class PlayerAuthAPIService extends APIService {
       await redis.set(this.getRedisAuthKey(key, alias), code, 'EX', 300)
       await queueEmail(req.ctx.emailQueue, new PlayerAuthCode(alias, code))
 
+      createPlayerAuthActivity(req, alias.player, {
+        type: PlayerAuthActivityType.VERIFICATION_STARTED
+      })
+
+      await em.flush()
+
       return {
         status: 200,
         body: {
@@ -153,6 +175,11 @@ export default class PlayerAuthAPIService extends APIService {
       }
     } else {
       const sessionToken = await alias.player.auth.createSession(alias)
+
+      createPlayerAuthActivity(req, alias.player, {
+        type: PlayerAuthActivityType.LOGGED_IN
+      })
+
       await em.flush()
 
       return {
@@ -190,6 +217,11 @@ export default class PlayerAuthAPIService extends APIService {
     const redisCode = await redis.get(this.getRedisAuthKey(key, alias))
 
     if (!redisCode || code !== redisCode) {
+      createPlayerAuthActivity(req, alias.player, {
+        type: PlayerAuthActivityType.VERIFICATION_FAILED
+      })
+      await em.flush()
+
       req.ctx.throw(403, {
         message: 'Invalid code',
         errorCode: PlayerAuthErrorCode.VERIFICATION_CODE_INVALID
@@ -199,6 +231,11 @@ export default class PlayerAuthAPIService extends APIService {
     await redis.del(this.getRedisAuthKey(key, alias))
 
     const sessionToken = await alias.player.auth.createSession(alias)
+
+    createPlayerAuthActivity(req, alias.player, {
+      type: PlayerAuthActivityType.LOGGED_IN
+    })
+
     await em.flush()
 
     return {
@@ -222,6 +259,11 @@ export default class PlayerAuthAPIService extends APIService {
 
     alias.player.auth.sessionKey = null
     alias.player.auth.sessionCreatedAt = null
+
+    createPlayerAuthActivity(req, alias.player, {
+      type: PlayerAuthActivityType.LOGGED_OUT
+    })
+
     await em.flush()
 
     return {
@@ -244,6 +286,14 @@ export default class PlayerAuthAPIService extends APIService {
 
     const passwordMatches = await bcrypt.compare(currentPassword, alias.player.auth.password)
     if (!passwordMatches) {
+      createPlayerAuthActivity(req, alias.player, {
+        type: PlayerAuthActivityType.CHANGE_PASSWORD_FAILED,
+        extra: {
+          errorCode: PlayerAuthErrorCode.INVALID_CREDENTIALS
+        }
+      })
+      await em.flush()
+
       req.ctx.throw(403, {
         message: 'Current password is incorrect',
         errorCode: PlayerAuthErrorCode.INVALID_CREDENTIALS
@@ -252,6 +302,14 @@ export default class PlayerAuthAPIService extends APIService {
 
     const isSamePassword = await bcrypt.compare(newPassword, alias.player.auth.password)
     if (isSamePassword) {
+      createPlayerAuthActivity(req, alias.player, {
+        type: PlayerAuthActivityType.CHANGE_PASSWORD_FAILED,
+        extra: {
+          errorCode: PlayerAuthErrorCode.NEW_PASSWORD_MATCHES_CURRENT_PASSWORD
+        }
+      })
+      await em.flush()
+
       req.ctx.throw(400, {
         message: 'Please choose a different password',
         errorCode: PlayerAuthErrorCode.NEW_PASSWORD_MATCHES_CURRENT_PASSWORD
@@ -259,6 +317,11 @@ export default class PlayerAuthAPIService extends APIService {
     }
 
     alias.player.auth.password = await bcrypt.hash(newPassword, 10)
+
+    createPlayerAuthActivity(req, alias.player, {
+      type: PlayerAuthActivityType.CHANGED_PASSWORD
+    })
+
     await em.flush()
 
     return {
@@ -281,6 +344,14 @@ export default class PlayerAuthAPIService extends APIService {
 
     const passwordMatches = await bcrypt.compare(currentPassword, alias.player.auth.password)
     if (!passwordMatches) {
+      createPlayerAuthActivity(req, alias.player, {
+        type: PlayerAuthActivityType.CHANGE_EMAIL_FAILED,
+        extra: {
+          errorCode: PlayerAuthErrorCode.INVALID_CREDENTIALS
+        }
+      })
+      await em.flush()
+
       req.ctx.throw(403, {
         message: 'Current password is incorrect',
         errorCode: PlayerAuthErrorCode.INVALID_CREDENTIALS
@@ -289,13 +360,30 @@ export default class PlayerAuthAPIService extends APIService {
 
     const isSameEmail = newEmail === alias.player.auth.email
     if (isSameEmail) {
+      createPlayerAuthActivity(req, alias.player, {
+        type: PlayerAuthActivityType.CHANGE_EMAIL_FAILED,
+        extra: {
+          errorCode: PlayerAuthErrorCode.NEW_EMAIL_MATCHES_CURRENT_EMAIL
+        }
+      })
+      await em.flush()
+
       req.ctx.throw(400, {
         message: 'Please choose a different email address',
         errorCode: PlayerAuthErrorCode.NEW_EMAIL_MATCHES_CURRENT_EMAIL
       })
     }
 
+    const oldEmail = alias.player.auth.email
     alias.player.auth.email = newEmail
+
+    createPlayerAuthActivity(req, alias.player, {
+      type: PlayerAuthActivityType.CHANGED_EMAIL,
+      extra: {
+        oldEmail
+      }
+    })
+
     await em.flush()
 
     return {
@@ -330,6 +418,12 @@ export default class PlayerAuthAPIService extends APIService {
       const code = generateSixDigitCode()
       await redis.set(this.getRedisPasswordResetKey(key, code), alias.id, 'EX', 900)
       await queueEmail(req.ctx.emailQueue, new PlayerAuthResetPassword(alias, code))
+
+      createPlayerAuthActivity(req, playerAuth.player, {
+        type: PlayerAuthActivityType.PASSWORD_RESET_REQUESTED
+      })
+
+      await em.flush()
     }
 
     return {
@@ -370,6 +464,75 @@ export default class PlayerAuthAPIService extends APIService {
     alias.player.auth.password = await bcrypt.hash(password, 10)
     alias.player.auth.sessionKey = null
     alias.player.auth.sessionCreatedAt = null
+
+    createPlayerAuthActivity(req, alias.player, {
+      type: PlayerAuthActivityType.PASSWORD_RESET_COMPLETED
+    })
+
+    await em.flush()
+
+    return {
+      status: 204
+    }
+  }
+
+  @Validate({
+    body: ['currentPassword', 'verificationEnabled']
+  })
+  @HasPermission(PlayerAuthAPIPolicy, 'toggleVerification')
+  async toggleVerification(req: Request): Promise<Response> {
+    const { currentPassword, verificationEnabled, email } = req.body
+    const em: EntityManager = req.ctx.em
+
+    const alias = await em.getRepository(PlayerAlias).findOne(req.ctx.state.currentAliasId, {
+      populate: ['player.auth']
+    })
+
+    if (verificationEnabled && !alias.player.auth.email && !email) {
+      createPlayerAuthActivity(req, alias.player, {
+        type: PlayerAuthActivityType.TOGGLE_VERIFICATION_FAILED,
+        extra: {
+          errorCode: PlayerAuthErrorCode.VERIFICATION_EMAIL_REQUIRED,
+          verificationEnabled: Boolean(verificationEnabled)
+        }
+      })
+      await em.flush()
+
+      req.ctx.throw(400, {
+        message: 'An email address is required to enable verification',
+        errorCode: PlayerAuthErrorCode.VERIFICATION_EMAIL_REQUIRED
+      })
+    }
+
+    const passwordMatches = await bcrypt.compare(currentPassword, alias.player.auth.password)
+    if (!passwordMatches) {
+      createPlayerAuthActivity(req, alias.player, {
+        type: PlayerAuthActivityType.TOGGLE_VERIFICATION_FAILED,
+        extra: {
+          errorCode: PlayerAuthErrorCode.INVALID_CREDENTIALS,
+          verificationEnabled: Boolean(verificationEnabled)
+        }
+      })
+      await em.flush()
+
+      req.ctx.throw(403, {
+        message: 'Current password is incorrect',
+        errorCode: PlayerAuthErrorCode.INVALID_CREDENTIALS
+      })
+    }
+
+    alias.player.auth.verificationEnabled = Boolean(verificationEnabled)
+    if (email?.trim()) {
+      alias.player.auth.email = email
+    }
+
+    createPlayerAuthActivity(req, alias.player, {
+      type: PlayerAuthActivityType.VERFICIATION_TOGGLED,
+      extra: {
+        verificationEnabled: alias.player.auth.verificationEnabled
+      }
+    })
+
     await em.flush()
 
     return {

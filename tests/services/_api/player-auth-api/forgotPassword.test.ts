@@ -7,6 +7,7 @@ import Redis from 'ioredis'
 import redisConfig from '../../../../src/config/redis.config'
 import SendGrid from '@sendgrid/mail'
 import casual from 'casual'
+import PlayerAuthActivity, { PlayerAuthActivityType } from '../../../../src/entities/player-auth-activity'
 
 describe('Player auth API service - forgot password', () => {
   const sendMock = vi.spyOn(SendGrid, 'send')
@@ -34,6 +35,12 @@ describe('Player auth API service - forgot password', () => {
 
     expect(await redis.keys(`player-auth:${apiKey.game.id}:password-reset:*`)).toHaveLength(1)
     expect(sendMock).toHaveBeenCalledOnce()
+
+    const activity = await (<EntityManager>global.em).getRepository(PlayerAuthActivity).findOne({
+      type: PlayerAuthActivityType.PASSWORD_RESET_REQUESTED,
+      player: player.id
+    })
+    expect(activity).not.toBeNull()
 
     await redis.quit()
   })

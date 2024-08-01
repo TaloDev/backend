@@ -5,6 +5,7 @@ import PlayerFactory from '../../../fixtures/PlayerFactory'
 import { EntityManager } from '@mikro-orm/mysql'
 import bcrypt from 'bcrypt'
 import PlayerAuthFactory from '../../../fixtures/PlayerAuthFactory'
+import PlayerAuthActivity, { PlayerAuthActivityType } from '../../../../src/entities/player-auth-activity'
 
 describe('Player auth API service - change email', () => {
   it('should change a player\'s email if the current password is correct and the api key has the correct scopes', async () => {
@@ -34,6 +35,15 @@ describe('Player auth API service - change email', () => {
 
     await (<EntityManager>global.em).refresh(player.auth)
     expect(player.auth.email).toBe('bozza@mail.com')
+
+    const activity = await (<EntityManager>global.em).getRepository(PlayerAuthActivity).findOne({
+      type: PlayerAuthActivityType.CHANGED_EMAIL,
+      player: player.id,
+      extra: {
+        oldEmail: 'boz@mail.com'
+      }
+    })
+    expect(activity).not.toBeNull()
   })
 
   it('should not change a player\'s email if the api key does not have the correct scopes', async () => {
@@ -91,6 +101,15 @@ describe('Player auth API service - change email', () => {
       message: 'Current password is incorrect',
       errorCode: 'INVALID_CREDENTIALS'
     })
+
+    const activity = await (<EntityManager>global.em).getRepository(PlayerAuthActivity).findOne({
+      type: PlayerAuthActivityType.CHANGE_EMAIL_FAILED,
+      player: player.id,
+      extra: {
+        errorCode: 'INVALID_CREDENTIALS'
+      }
+    })
+    expect(activity).not.toBeNull()
   })
 
   it('should not change a player\'s email if the current email is the same as the new email', async () => {
@@ -122,5 +141,14 @@ describe('Player auth API service - change email', () => {
       message: 'Please choose a different email address',
       errorCode: 'NEW_EMAIL_MATCHES_CURRENT_EMAIL'
     })
+
+    const activity = await (<EntityManager>global.em).getRepository(PlayerAuthActivity).findOne({
+      type: PlayerAuthActivityType.CHANGE_EMAIL_FAILED,
+      player: player.id,
+      extra: {
+        errorCode: 'NEW_EMAIL_MATCHES_CURRENT_EMAIL'
+      }
+    })
+    expect(activity).not.toBeNull()
   })
 })

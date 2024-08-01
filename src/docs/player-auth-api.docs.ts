@@ -237,6 +237,45 @@ const PlayerAuthAPIDocs: APIDocs<PlayerAuthAPIService> = {
         }
       }
     ]
+  },
+  toggleVerification: {
+    description: 'Toggle if verification is required for a player account',
+    params: {
+      headers: {
+        'x-talo-player': 'The ID of the player',
+        'x-talo-alias': 'The ID of the player\'s alias',
+        'x-talo-session': 'The session token'
+      },
+      body: {
+        currentPassword: 'The current password of the player',
+        verificationEnabled: 'The new verification status for the player account',
+        email: 'Required when attempting to enable verification if the player does not currently have an email address set'
+      }
+    },
+    samples: [
+      {
+        title: 'Sample request (disabling verification)',
+        sample: {
+          currentPassword: 'password',
+          verificationEnabled: false
+        }
+      },
+      {
+        title: 'Sample request (enabling verification, player does not have an email address)',
+        sample: {
+          currentPassword: 'password',
+          email: 'boz@mail.com',
+          verificationEnabled: true
+        }
+      },
+      {
+        title: 'Sample request (enabling verification, player has an email address)',
+        sample: {
+          currentPassword: 'password',
+          verificationEnabled: true
+        }
+      }
+    ]
   }
 }
 

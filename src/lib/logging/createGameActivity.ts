@@ -1,7 +1,7 @@
 import { EntityManager } from '@mikro-orm/mysql'
 import GameActivity from '../../entities/game-activity'
 
-export default async function createGameActivity(em: EntityManager, data: Partial<GameActivity>): Promise<GameActivity> {
+export default function createGameActivity(em: EntityManager, data: Partial<GameActivity>): GameActivity {
   const activity = new GameActivity(data.game, data.user)
   activity.type = data.type
   activity.extra = data.extra ?? {}

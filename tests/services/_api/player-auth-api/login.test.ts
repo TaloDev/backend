@@ -8,6 +8,7 @@ import bcrypt from 'bcrypt'
 import SendGrid from '@sendgrid/mail'
 import Redis from 'ioredis'
 import redisConfig from '../../../../src/config/redis.config'
+import PlayerAuthActivity, { PlayerAuthActivityType } from '../../../../src/entities/player-auth-activity'
 
 describe('Player auth API service - login', () => {
   const sendMock = vi.spyOn(SendGrid, 'send')
@@ -44,6 +45,12 @@ describe('Player auth API service - login', () => {
     })
 
     expect(res.body.sessionToken).toBeTruthy()
+
+    const activity = await (<EntityManager>global.em).getRepository(PlayerAuthActivity).findOne({
+      type: PlayerAuthActivityType.LOGGED_IN,
+      player: player.id
+    })
+    expect(activity).not.toBeNull()
   })
 
   it('should not login a player if the api key does not have the correct scopes', async () => {
@@ -145,6 +152,12 @@ describe('Player auth API service - login', () => {
 
     expect(await redis.get(`player-auth:${apiKey.game.id}:verification:${alias.id}`)).toHaveLength(6)
     expect(sendMock).toHaveBeenCalledOnce()
+
+    const activity = await (<EntityManager>global.em).getRepository(PlayerAuthActivity).findOne({
+      type: PlayerAuthActivityType.VERIFICATION_STARTED,
+      player: player.id
+    })
+    expect(activity).not.toBeNull()
 
     await redis.quit()
   })

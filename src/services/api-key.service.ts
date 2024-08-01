@@ -50,7 +50,7 @@ export default class APIKeyService extends Service {
     const apiKey = new APIKey(req.ctx.state.game, req.ctx.state.user)
     apiKey.scopes = scopes
 
-    await createGameActivity(em, {
+    createGameActivity(em, {
       user: req.ctx.state.user,
       game: req.ctx.state.game,
       type: GameActivityType.API_KEY_CREATED,
@@ -97,7 +97,7 @@ export default class APIKeyService extends Service {
 
     const token = await createToken(em, apiKey)
 
-    await createGameActivity(em, {
+    createGameActivity(em, {
       user: req.ctx.state.user,
       game: req.ctx.state.game,
       type: GameActivityType.API_KEY_REVOKED,
@@ -139,7 +139,7 @@ export default class APIKeyService extends Service {
 
     const token = await createToken(em, apiKey)
 
-    await createGameActivity(em, {
+    createGameActivity(em, {
       user: req.ctx.state.user,
       game: req.ctx.state.game,
       type: GameActivityType.API_KEY_UPDATED,

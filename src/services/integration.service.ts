@@ -93,7 +93,7 @@ export default class IntegrationService extends Service {
 
     const integration = new Integration(type, req.ctx.state.game, pick(config, configKeys[type]))
 
-    await createGameActivity(em, {
+    createGameActivity(em, {
       user: req.ctx.state.user,
       game: req.ctx.state.game,
       type: GameActivityType.GAME_INTEGRATION_ADDED,
@@ -122,7 +122,7 @@ export default class IntegrationService extends Service {
     const newConfig = pick(config, configKeys[integration.type])
     integration.updateConfig(newConfig)
 
-    await createGameActivity(em, {
+    createGameActivity(em, {
       user: req.ctx.state.user,
       game: req.ctx.state.game,
       type: GameActivityType.GAME_INTEGRATION_UPDATED,
@@ -151,7 +151,7 @@ export default class IntegrationService extends Service {
     const integration: Integration = req.ctx.state.integration
     integration.deletedAt = new Date()
 
-    await createGameActivity(em, {
+    createGameActivity(em, {
       user: req.ctx.state.user,
       game: req.ctx.state.game,
       type: GameActivityType.GAME_INTEGRATION_DELETED,
@@ -173,7 +173,7 @@ export default class IntegrationService extends Service {
 
     await this.queue.add('sync-leaderboards', { integrationId: Number(req.params.id), type: 'leaderboards' })
 
-    await createGameActivity(em, {
+    createGameActivity(em, {
       user: req.ctx.state.user,
       game: req.ctx.state.game,
       type: GameActivityType.GAME_INTEGRATION_STEAMWORKS_LEADERBOARDS_SYNCED
@@ -192,7 +192,7 @@ export default class IntegrationService extends Service {
 
     await this.queue.add('sync-stats', { integrationId: Number(req.params.id), type: 'stats' })
 
-    await createGameActivity(em, {
+    createGameActivity(em, {
       user: req.ctx.state.user,
       game: req.ctx.state.game,
       type: GameActivityType.GAME_INTEGRATION_STEAMWORKS_STATS_SYNCED

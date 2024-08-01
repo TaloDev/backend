@@ -16,6 +16,7 @@ import PlayerProp from '../entities/player-prop'
 import PlayerGroup from '../entities/player-group'
 import GameSave from '../entities/game-save'
 import { PlayerAuthErrorCode } from '../entities/player-auth'
+import PlayerAuthActivity from '../entities/player-auth-activity'
 
 const propsValidation = async (val: unknown): Promise<ValidationCondition[]> => [
   {
@@ -59,6 +60,11 @@ type PlayerPostBody = {
     method: 'GET',
     path: '/:id/saves',
     handler: 'saves'
+  },
+  {
+    method: 'GET',
+    path: '/:id/auth-activities',
+    handler: 'authActivities'
   }
 ])
 export default class PlayerService extends Service {
@@ -219,7 +225,7 @@ export default class PlayerService extends Service {
     }
 
     if (req.ctx.state.user.api !== true) {
-      await createGameActivity(em, {
+      createGameActivity(em, {
         user: req.ctx.state.user,
         game: player.game,
         type: GameActivityType.PLAYER_PROPS_UPDATED,
@@ -313,6 +319,23 @@ export default class PlayerService extends Service {
       status: 200,
       body: {
         saves
+      }
+    }
+  }
+
+  @HasPermission(PlayerPolicy, 'getAuthActivities')
+  async authActivities(req: Request): Promise<Response> {
+    const em: EntityManager = req.ctx.em
+    const activities = await em.getRepository(PlayerAuthActivity).find({
+      player: req.ctx.state.player
+    }, {
+      populate: ['player.aliases']
+    })
+
+    return {
+      status: 200,
+      body: {
+        activities
       }
     }
   }

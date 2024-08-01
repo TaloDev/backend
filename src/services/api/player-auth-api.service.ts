@@ -477,6 +477,7 @@ export default class PlayerAuthAPIService extends APIService {
   }
 
   @Validate({
+    headers: ['x-talo-player', 'x-talo-alias', 'x-talo-session'],
     body: ['currentPassword', 'verificationEnabled']
   })
   @HasPermission(PlayerAuthAPIPolicy, 'toggleVerification')

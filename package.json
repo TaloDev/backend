@@ -6,7 +6,7 @@
   "scripts": {
     "watch": "tsx watch src/index.ts",
     "build": "npx tsc -p tsconfig.build.json",
-    "dc": "docker-compose -f docker-compose.yml -f docker-compose.dev.yml",
+    "dc": "docker compose -f docker-compose.yml -f docker-compose.dev.yml",
     "seed": "DB_HOST=127.0.0.1 tsx tests/seed.ts",
     "test": "./tests/run-tests.sh",
     "up": "npm run dc -- up --build -d",

@@ -18,7 +18,7 @@ describe('Player group service - put', () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({ type }, organisation)
 
-    const group = await new PlayerGroupFactory().state(() => ({ game })).one()
+    const group = await new PlayerGroupFactory().construct(game).one()
     await (<EntityManager>global.em).persistAndFlush(group)
 
     const rules: Partial<PlayerGroupRule>[] = [
@@ -64,7 +64,7 @@ describe('Player group service - put', () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({}, organisation)
 
-    const group = await new PlayerGroupFactory().state(() => ({ game })).one()
+    const group = await new PlayerGroupFactory().construct(game).one()
     await (<EntityManager>global.em).persistAndFlush(group)
 
     const player1 = await new PlayerFactory([game]).state((player) => ({
@@ -104,7 +104,7 @@ describe('Player group service - put', () => {
     const [, otherGame] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({ type: UserType.ADMIN })
 
-    const group = await new PlayerGroupFactory().state(() => ({ game: otherGame })).one()
+    const group = await new PlayerGroupFactory().construct(otherGame).one()
     await (<EntityManager>global.em).persistAndFlush(group)
 
     const res = await request(global.app)

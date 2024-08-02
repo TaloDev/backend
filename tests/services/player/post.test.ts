@@ -70,7 +70,7 @@ describe('Player service - post', () => {
     rule.castType = PlayerGroupRuleCastType.DOUBLE
     rule.operands = ['60']
 
-    const group = await new PlayerGroupFactory().state(() => ({ game })).state(() => ({ rules: [rule] })).one()
+    const group = await new PlayerGroupFactory().construct(game).state(() => ({ rules: [rule] })).one()
     await (<EntityManager>global.em).persistAndFlush(group)
 
     const res = await request(global.app)

@@ -15,7 +15,7 @@ describe('Organisation service - current', () => {
     const [token, user] = await createUserAndToken({ type }, organisation)
 
     const otherUser = await new UserFactory().state(() => ({ organisation })).one()
-    const invites = await new InviteFactory().state(() => ({ organisation, invitedByUser: user })).many(3)
+    const invites = await new InviteFactory().construct(organisation).state(() => ({ invitedByUser: user })).many(3)
     await (<EntityManager>global.em).persistAndFlush([otherUser, ...invites])
 
     const res = await request(global.app)

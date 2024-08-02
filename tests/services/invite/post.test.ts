@@ -51,10 +51,7 @@ describe('Invite service - post', () => {
   it('should not create an invite when an invite exists for the same email', async () => {
     const [token, user] = await createUserAndToken({ type: UserType.ADMIN, emailConfirmed: true })
 
-    const invite = await new InviteFactory().state(() => ({
-      organisation: user.organisation,
-      email: casual.email
-    })).one()
+    const invite = await new InviteFactory().construct(user.organisation).state(() => ({ email: casual.email })).one()
     await (<EntityManager>global.em).persistAndFlush(invite)
 
     const res = await request(global.app)
@@ -95,10 +92,7 @@ describe('Invite service - post', () => {
     const [otherOrg] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({ type: UserType.ADMIN, emailConfirmed: true })
 
-    const invite = await new InviteFactory().state(() => ({
-      organisation: otherOrg,
-      email: casual.email
-    })).one()
+    const invite = await new InviteFactory().construct(otherOrg).state(() => ({ email: casual.email })).one()
     await (<EntityManager>global.em).persistAndFlush(invite)
 
     const res = await request(global.app)

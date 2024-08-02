@@ -9,7 +9,7 @@ describe('Player group service - index', () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({}, organisation)
 
-    const groups = await new PlayerGroupFactory().state(() => ({ game })).many(3)
+    const groups = await new PlayerGroupFactory().construct(game).many(3)
     await (<EntityManager>global.em).persistAndFlush(groups)
 
     const res = await request(global.app)

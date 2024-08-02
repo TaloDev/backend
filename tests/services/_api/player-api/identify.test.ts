@@ -86,8 +86,7 @@ describe('Player API service - identify', () => {
     propRule.castType = PlayerGroupRuleCastType.CHAR
     propRule.operands = ['yes']
 
-    const group = await new PlayerGroupFactory().state(() => ({
-      game: apiKey.game,
+    const group = await new PlayerGroupFactory().construct(apiKey.game).state(() => ({
       rules: [dateRule, propRule],
       ruleMode: RuleMode.AND
     })).one()

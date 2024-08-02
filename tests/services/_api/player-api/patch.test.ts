@@ -120,7 +120,7 @@ describe('Player API service - patch', () => {
     rule.castType = PlayerGroupRuleCastType.DOUBLE
     rule.operands = ['60']
 
-    const group = await new PlayerGroupFactory().state(() => ({ game: apiKey.game, rules: [rule] })).one()
+    const group = await new PlayerGroupFactory().construct(apiKey.game).state(() => ({ rules: [rule] })).one()
 
     const player = await new PlayerFactory([apiKey.game]).state((player) => ({
       props: new Collection<PlayerProp>(player, [

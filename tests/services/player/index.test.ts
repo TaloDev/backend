@@ -170,7 +170,7 @@ describe('Player service - index', () => {
     dateRule.castType = PlayerGroupRuleCastType.DATETIME
     dateRule.operands = ['2023-01-01']
 
-    const group = await new PlayerGroupFactory().state(() => ({ game, rules: [dateRule] })).one()
+    const group = await new PlayerGroupFactory().construct(game).state(() => ({ rules: [dateRule] })).one()
     await (<EntityManager>global.em).persistAndFlush([player, ...otherPlayers, group])
 
     const res = await request(global.app)
@@ -193,7 +193,7 @@ describe('Player service - index', () => {
     dateRule.castType = PlayerGroupRuleCastType.DATETIME
     dateRule.operands = ['2023-01-01']
 
-    const group = await new PlayerGroupFactory().state(() => ({ game, rules: [dateRule] })).one()
+    const group = await new PlayerGroupFactory().construct(game).state(() => ({ rules: [dateRule] })).one()
     await (<EntityManager>global.em).persistAndFlush([otherGame, player, group])
 
     const invalidRes = await request(global.app)

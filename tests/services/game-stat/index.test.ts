@@ -39,13 +39,13 @@ describe('Game stat service - index', () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({}, organisation)
 
-    const stat = await new GameStatFactory([game]).state('global').with(() => ({ globalValue: 50 })).one()
+    const stat = await new GameStatFactory([game]).global().state(() => ({ globalValue: 50 })).one()
 
-    const player = await new PlayerFactory([game]).state('dev build').one()
-    const playerStat = await new PlayerGameStatFactory().construct(player, stat).with(() => ({ value: 10 })).one()
+    const player = await new PlayerFactory([game]).devBuild().one()
+    const playerStat = await new PlayerGameStatFactory().construct(player, stat).state(() => ({ value: 10 })).one()
 
     const otherPlayer = await new PlayerFactory([game]).one()
-    const otherPlayerStat = await new PlayerGameStatFactory().construct(otherPlayer, stat).with(() => ({ value: 40 })).one()
+    const otherPlayerStat = await new PlayerGameStatFactory().construct(otherPlayer, stat).state(() => ({ value: 40 })).one()
 
     await (<EntityManager>global.em).persistAndFlush([playerStat, otherPlayerStat])
 
@@ -61,9 +61,9 @@ describe('Game stat service - index', () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({}, organisation)
 
-    const player = await new PlayerFactory([game]).state('dev build').one()
-    const stat = await new GameStatFactory([game]).state('global').with(() => ({ globalValue: 50 })).one()
-    const playerStat = await new PlayerGameStatFactory().construct(player, stat).with(() => ({ value: 10 })).one()
+    const player = await new PlayerFactory([game]).devBuild().one()
+    const stat = await new GameStatFactory([game]).global().state(() => ({ globalValue: 50 })).one()
+    const playerStat = await new PlayerGameStatFactory().construct(player, stat).state(() => ({ value: 10 })).one()
     await (<EntityManager>global.em).persistAndFlush(playerStat)
 
     const res = await request(global.app)

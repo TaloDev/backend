@@ -42,8 +42,8 @@ describe('Player service - get events', () => {
     const [token] = await createUserAndToken({}, organisation)
 
     const player = await new PlayerFactory([game]).one()
-    const events = await new EventFactory([player]).with(() => ({ name: 'Find secret' })).many(3)
-    const otherEvents = await new EventFactory([player]).with(() => ({ name: 'Kill boss' })).many(3)
+    const events = await new EventFactory([player]).state(() => ({ name: 'Find secret' })).many(3)
+    const otherEvents = await new EventFactory([player]).state(() => ({ name: 'Kill boss' })).many(3)
     await (<EntityManager>global.em).persistAndFlush([...events, ...otherEvents])
 
     const res = await request(global.app)

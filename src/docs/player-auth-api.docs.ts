@@ -239,7 +239,7 @@ const PlayerAuthAPIDocs: APIDocs<PlayerAuthAPIService> = {
     ]
   },
   toggleVerification: {
-    description: 'Toggle if verification is required for a player account',
+    description: 'Toggle verification for a player account',
     params: {
       headers: {
         'x-talo-player': 'The ID of the player',

@@ -8,16 +8,15 @@ export default class OrganisationPricingPlanActionFactory extends Factory<Organi
   private orgPlan: OrganisationPricingPlan
 
   constructor(orgPlan: OrganisationPricingPlan) {
-    super(OrganisationPricingPlanAction, 'base')
-    this.register('base', this.base)
+    super(OrganisationPricingPlanAction)
 
     this.orgPlan = orgPlan
   }
 
-  protected async base(): Promise<Partial<OrganisationPricingPlanAction>> {
-    return {
+  protected definition(): void {
+    this.state(() => ({
       type: casual.random_element([PricingPlanActionType.USER_INVITE, PricingPlanActionType.DATA_EXPORT]),
       organisationPricingPlan: this.orgPlan
-    }
+    }))
   }
 }

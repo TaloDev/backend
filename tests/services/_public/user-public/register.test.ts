@@ -32,7 +32,7 @@ describe('User public service - register', () => {
 
   it('should not let a user register if the email already exists', async () => {
     const email = casual.email
-    const user = await new UserFactory().with(() => ({ email })).one()
+    const user = await new UserFactory().state(() => ({ email })).one()
     await (<EntityManager>global.em).persistAndFlush(user)
 
     const res = await request(global.app)

@@ -11,41 +11,36 @@ export default class EventFactory extends Factory<Event> {
   private eventTitles: string[]
 
   constructor(availablePlayers: Player[]) {
-    super(Event, 'base')
-    this.register('base', this.base)
-    this.register('this week', this.thisWeek)
-    this.register('this month', this.thisMonth)
-    this.register('this year', this.thisYear)
-
+    super(Event)
     this.availablePlayers = availablePlayers
     this.eventTitles = ['Zone Explored', 'Item Looted', 'Treasure Discovered', 'Levelled up', 'Potion Used', 'Item Crafted', 'Secret Discovered', 'Item Bought', 'Talked to NPC']
   }
 
-  protected async base(): Promise<Partial<Event>> {
+  protected definition(): void {
     const player: Player = casual.random_element(this.availablePlayers)
 
-    return {
+    this.state(() => ({
       ...generateEventData(new Date()),
       game: player.game,
       playerAlias: casual.random_element(player.aliases.getItems())
-    }
+    }))
   }
 
-  protected thisWeek(): Partial<Event> {
-    return {
+  thisWeek(): this {
+    return this.state(() => ({
       createdAt: randomDate(sub(new Date(), { weeks: 1 }), new Date())
-    }
+    }))
   }
 
-  protected thisMonth(): Partial<Event> {
-    return {
+  thisMonth(): this {
+    return this.state(() => ({
       createdAt: randomDate(sub(new Date(), { months: 1 }), new Date())
-    }
+    }))
   }
 
-  protected thisYear(): Partial<Event> {
-    return {
+  thisYear(): this {
+    return this.state(() => ({
       createdAt: randomDate(sub(new Date(), { years: 1 }), new Date())
-    }
+    }))
   }
 }

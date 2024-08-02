@@ -14,7 +14,7 @@ describe('Demo service - post', () => {
   let demoOrg: Organisation
 
   beforeAll(async () => {
-    demoOrg = await new OrganisationFactory().state('demo').one()
+    demoOrg = await new OrganisationFactory().demo().one()
     await (<EntityManager>global.em).persistAndFlush(demoOrg)
   })
 
@@ -45,7 +45,7 @@ describe('Demo service - post', () => {
 
     expect(eventsThisMonth).toHaveLength(0)
 
-    const randomEvents = await new EventFactory(players).with(() => ({
+    const randomEvents = await new EventFactory(players).state(() => ({
       createdAt: randomDate(sub(new Date(), { years: 1 }), sub(new Date(), { months: 2 }))
     })).many(20)
     await (<EntityManager>global.em).persistAndFlush(randomEvents)

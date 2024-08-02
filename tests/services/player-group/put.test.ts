@@ -67,7 +67,7 @@ describe('Player group service - put', () => {
     const group = await new PlayerGroupFactory().construct(game).one()
     await (<EntityManager>global.em).persistAndFlush(group)
 
-    const player1 = await new PlayerFactory([game]).with((player) => ({
+    const player1 = await new PlayerFactory([game]).state((player) => ({
       props: new Collection<PlayerProp>(player, [
         new PlayerProp(player, 'hasWon', '1')
       ])

@@ -1,20 +1,20 @@
 import { Factory } from 'hefty'
 import casual from 'casual'
 import PlayerAlias, { PlayerAliasService } from '../../src/entities/player-alias'
+import Player from '../../src/entities/player'
 
 export default class PlayerAliasFactory extends Factory<PlayerAlias> {
-  constructor() {
-    super(PlayerAlias, 'base')
-    this.register('base', this.base)
-    this.register('steam', this.steam)
-    this.register('username', this.username)
-    this.register('talo', this.talo)
+  private player: Player
+
+  constructor(player: Player) {
+    super(PlayerAlias)
+
+    this.player = player
   }
 
-  protected base(): Partial<PlayerAlias> {
+  protected definition(): void {
     const identifiers = [casual.uuid, casual.username, casual.card_number()]
-
-    return {
+    this.state(() => ({
       service: casual.random_element([
         PlayerAliasService.STEAM,
         PlayerAliasService.EPIC,
@@ -22,28 +22,29 @@ export default class PlayerAliasFactory extends Factory<PlayerAlias> {
         PlayerAliasService.EMAIL,
         PlayerAliasService.CUSTOM
       ]),
-      identifier: casual.random_element(identifiers)
-    }
+      identifier: casual.random_element(identifiers),
+      player: this.player
+    }))
   }
 
-  protected steam(): Partial<PlayerAlias> {
-    return {
+  steam(): this {
+    return this.state(() => ({
       service: PlayerAliasService.STEAM,
       identifier: casual.integer(100000, 1000000).toString()
-    }
+    }))
   }
 
-  protected username(): Partial<PlayerAlias> {
-    return {
+  username(): this {
+    return this.state(() => ({
       service: PlayerAliasService.USERNAME,
       identifier: casual.username
-    }
+    }))
   }
 
-  protected talo(): Partial<PlayerAlias> {
-    return {
+  talo(): this {
+    return this.state(() => ({
       service: PlayerAliasService.TALO,
       identifier: casual.uuid
-    }
+    }))
   }
 }

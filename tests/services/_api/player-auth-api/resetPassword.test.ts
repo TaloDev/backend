@@ -13,7 +13,7 @@ describe('Player auth API service - reset password', () => {
     const redis = new Redis(redisConfig)
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_PLAYERS, APIKeyScope.WRITE_PLAYERS])
 
-    const player = await new PlayerFactory([apiKey.game]).state('with talo alias').one()
+    const player = await new PlayerFactory([apiKey.game]).withTaloAlias().one()
     const alias = player.aliases[0]
 
     await (<EntityManager>global.em).persistAndFlush(player)
@@ -46,7 +46,7 @@ describe('Player auth API service - reset password', () => {
     const redis = new Redis(redisConfig)
     const [apiKey, token] = await createAPIKeyAndToken([])
 
-    const player = await new PlayerFactory([apiKey.game]).state('with talo alias').one()
+    const player = await new PlayerFactory([apiKey.game]).withTaloAlias().one()
     const alias = player.aliases[0]
 
     await (<EntityManager>global.em).persistAndFlush(player)
@@ -68,7 +68,7 @@ describe('Player auth API service - reset password', () => {
     const redis = new Redis(redisConfig)
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_PLAYERS, APIKeyScope.WRITE_PLAYERS])
 
-    const player = await new PlayerFactory([apiKey.game]).state('with talo alias').one()
+    const player = await new PlayerFactory([apiKey.game]).withTaloAlias().one()
     const alias = player.aliases[0]
 
     await (<EntityManager>global.em).persistAndFlush(player)

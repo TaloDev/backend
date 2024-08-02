@@ -11,7 +11,7 @@ describe('Billing service - plans', () => {
   it('should return a list of pricing plans', async () => {
     const product = (await stripe.products.list()).data[0]
     const price = (await stripe.prices.list({ product: product.id })).data[0]
-    const plan = await new PricingPlanFactory().with(() => ({ stripeId: product.id })).one()
+    const plan = await new PricingPlanFactory().state(() => ({ stripeId: product.id })).one()
 
     const [organisation] = await createOrganisationAndGame({}, {}, plan)
     const [token] = await createUserAndToken({}, organisation)
@@ -38,8 +38,8 @@ describe('Billing service - plans', () => {
     const product = (await stripe.products.list()).data[0]
     const price = (await stripe.prices.list({ product: product.id })).data[0]
 
-    const plan = await new PricingPlanFactory().with(() => ({ stripeId: product.id })).one()
-    const hiddenPlan = await new PricingPlanFactory().with(() => ({ hidden: true })).one()
+    const plan = await new PricingPlanFactory().state(() => ({ stripeId: product.id })).one()
+    const hiddenPlan = await new PricingPlanFactory().state(() => ({ hidden: true })).one()
 
     const [organisation] = await createOrganisationAndGame({}, {}, plan)
     const [token] = await createUserAndToken({}, organisation)

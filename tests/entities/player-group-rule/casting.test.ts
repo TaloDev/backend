@@ -11,7 +11,7 @@ describe('PlayerGroupRule casting', () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({}, organisation)
 
-    const player1 = await new PlayerFactory([game]).with((player) => ({
+    const player1 = await new PlayerFactory([game]).state((player) => ({
       props: new Collection<PlayerProp>(player, [
         new PlayerProp(player, 'currentLevel', '80')
       ])
@@ -42,7 +42,7 @@ describe('PlayerGroupRule casting', () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({}, organisation)
 
-    const player1 = await new PlayerFactory([game]).with((player) => ({
+    const player1 = await new PlayerFactory([game]).state((player) => ({
       props: new Collection<PlayerProp>(player, [
         new PlayerProp(player, 'currentLevel', '80')
       ])
@@ -73,7 +73,7 @@ describe('PlayerGroupRule casting', () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({}, organisation)
 
-    const player1 = await new PlayerFactory([game]).with((player) => ({
+    const player1 = await new PlayerFactory([game]).state((player) => ({
       props: new Collection<PlayerProp>(player, [
         new PlayerProp(player, 'firstLoginAt', '2022-05-03 00:00:00')
       ])
@@ -104,7 +104,7 @@ describe('PlayerGroupRule casting', () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({}, organisation)
 
-    const player1 = await new PlayerFactory([game]).with((player) => ({
+    const player1 = await new PlayerFactory([game]).state((player) => ({
       props: new Collection<PlayerProp>(player, [
         new PlayerProp(player, 'firstLoginAt', '2022-05-03 08:59:36')
       ])

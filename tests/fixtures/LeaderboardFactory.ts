@@ -10,68 +10,67 @@ export default class LeaderboardFactory extends Factory<Leaderboard> {
   private availableGames: Game[]
 
   constructor(availableGames: Game[]) {
-    super(Leaderboard, 'base')
-    this.register('base', this.base)
-    this.register('with entries', this.withEntries)
-    this.register('unique', this.unique)
-    this.register('not unique', this.notUnique)
-    this.register('dev build players', this.devBuildPlayers)
-    this.register('asc', this.asc)
-    this.register('desc', this.desc)
+    super(Leaderboard)
 
     this.availableGames = availableGames
   }
 
-  protected async base(): Promise<Partial<Leaderboard>> {
-    return {
+  protected definition(): void {
+    this.state(() => ({
       game: casual.random_element(this.availableGames),
       internalName: casual.array_of_words(3).join('-'),
       name: casual.title,
       sortMode: casual.random_element([LeaderboardSortMode.ASC, LeaderboardSortMode.DESC]),
       unique: casual.boolean
-    }
+    }))
   }
 
-  protected unique(): Partial<Leaderboard> {
-    return {
+  unique(): this {
+    return this.state(() => ({
       unique: true
-    }
+    }))
   }
 
-  protected notUnique(): Partial<Leaderboard> {
-    return {
+  notUnique(): this {
+    return this.state(() => ({
       unique: false
-    }
+    }))
   }
 
-  protected async withEntries(leaderboard: Leaderboard): Promise<Partial<Leaderboard>> {
-    const entryFactory = new LeaderboardEntryFactory(leaderboard, leaderboard.game.players.getItems())
-    const entries = leaderboard.game.players.length > 0 ?
-      await entryFactory.many(casual.integer(0, 20))
-      : []
+  withEntries(): this {
+    return this.state(async (leaderboard: Leaderboard) => {
+      const entryFactory = new LeaderboardEntryFactory(leaderboard, leaderboard.game.players.getItems())
+      const entries = leaderboard.game.players.length > 0 ?
+        await entryFactory.many(casual.integer(0, 20))
+        : []
 
-    return {
-      entries: new Collection<LeaderboardEntry>(leaderboard, entries)
-    }
-  }
-
-  protected async devBuildPlayers(leaderboard: Leaderboard): Promise<Partial<Leaderboard>> {
-    leaderboard.entries.getItems().forEach((entry) => {
-      entry.playerAlias.player.addProp('META_DEV_BUILD', '1')
+      return {
+        entries: new Collection<LeaderboardEntry>(leaderboard, entries)
+      }
     })
-
-    return leaderboard
   }
 
-  protected asc(): Partial<Leaderboard> {
-    return {
+  devBuildPlayers(): this {
+    return this.state((leaderboard: Leaderboard) => {
+      leaderboard.entries.getItems().forEach((entry) => {
+        entry.playerAlias.player.addProp('META_DEV_BUILD', '1')
+      })
+
+      return {
+        entries: leaderboard.entries
+      }
+    })
+  }
+
+  asc(): this {
+    return this.state(() => ({
       sortMode: LeaderboardSortMode.ASC
-    }
+    }))
   }
 
-  protected desc(): Partial<Leaderboard> {
-    return {
+  desc(): this {
+    return this.state(() => ({
       sortMode: LeaderboardSortMode.DESC
-    }
+    }))
   }
 }

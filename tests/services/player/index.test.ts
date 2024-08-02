@@ -51,7 +51,7 @@ describe('Player service - index', () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({ organisation })
 
-    const players = await new PlayerFactory([game]).with((player) => ({
+    const players = await new PlayerFactory([game]).state((player) => ({
       props: new Collection<PlayerProp>(player, [
         new PlayerProp(player, 'guildName', 'The Best Guild')
       ])
@@ -92,7 +92,7 @@ describe('Player service - index', () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({ organisation })
 
-    const player = await new PlayerFactory([game]).with(() => ({ id: 'abc12345678' })).one()
+    const player = await new PlayerFactory([game]).state(() => ({ id: 'abc12345678' })).one()
     const otherPlayers = await new PlayerFactory([game]).many(3)
 
     await (<EntityManager>global.em).persistAndFlush([player, ...otherPlayers])
@@ -130,7 +130,7 @@ describe('Player service - index', () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({ organisation })
 
-    const players = await new PlayerFactory([game]).state('dev build').many(5)
+    const players = await new PlayerFactory([game]).devBuild().many(5)
     await (<EntityManager>global.em).persistAndFlush(players)
 
     const res = await request(global.app)
@@ -146,7 +146,7 @@ describe('Player service - index', () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({ organisation })
 
-    const players = await new PlayerFactory([game]).state('dev build').many(5)
+    const players = await new PlayerFactory([game]).devBuild().many(5)
     await (<EntityManager>global.em).persistAndFlush(players)
 
     const res = await request(global.app)
@@ -163,14 +163,14 @@ describe('Player service - index', () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({ organisation })
 
-    const player = await new PlayerFactory([game]).with(() => ({ lastSeenAt: new Date(2022, 1, 1) })).one()
-    const otherPlayers = await new PlayerFactory([game]).with(() => ({ lastSeenAt: new Date(2023, 1, 1) })).many(3)
+    const player = await new PlayerFactory([game]).state(() => ({ lastSeenAt: new Date(2022, 1, 1) })).one()
+    const otherPlayers = await new PlayerFactory([game]).state(() => ({ lastSeenAt: new Date(2023, 1, 1) })).many(3)
 
     const dateRule = new PlayerGroupRule(PlayerGroupRuleName.LT, 'lastSeenAt')
     dateRule.castType = PlayerGroupRuleCastType.DATETIME
     dateRule.operands = ['2023-01-01']
 
-    const group = await new PlayerGroupFactory().construct(game).with(() => ({ rules: [dateRule] })).one()
+    const group = await new PlayerGroupFactory().construct(game).state(() => ({ rules: [dateRule] })).one()
     await (<EntityManager>global.em).persistAndFlush([player, ...otherPlayers, group])
 
     const res = await request(global.app)
@@ -187,13 +187,13 @@ describe('Player service - index', () => {
     const [token] = await createUserAndToken({ organisation })
 
     const otherGame = await new GameFactory(organisation).one()
-    const player = await new PlayerFactory([game]).with(() => ({ lastSeenAt: new Date(2022, 1, 1) })).one()
+    const player = await new PlayerFactory([game]).state(() => ({ lastSeenAt: new Date(2022, 1, 1) })).one()
 
     const dateRule = new PlayerGroupRule(PlayerGroupRuleName.LT, 'lastSeenAt')
     dateRule.castType = PlayerGroupRuleCastType.DATETIME
     dateRule.operands = ['2023-01-01']
 
-    const group = await new PlayerGroupFactory().construct(game).with(() => ({ rules: [dateRule] })).one()
+    const group = await new PlayerGroupFactory().construct(game).state(() => ({ rules: [dateRule] })).one()
     await (<EntityManager>global.em).persistAndFlush([otherGame, player, group])
 
     const invalidRes = await request(global.app)

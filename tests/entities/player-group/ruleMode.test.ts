@@ -11,7 +11,7 @@ describe('PlayerGroupRule mode', () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({}, organisation)
 
-    const player1 = await new PlayerFactory([game]).with((player) => ({
+    const player1 = await new PlayerFactory([game]).state((player) => ({
       props: new Collection<PlayerProp>(player, [
         new PlayerProp(player, 'currentLevel', '80'),
         new PlayerProp(player, 'timePlayed', '23423')
@@ -50,13 +50,13 @@ describe('PlayerGroupRule mode', () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({}, organisation)
 
-    const player1 = await new PlayerFactory([game]).with((player) => ({
+    const player1 = await new PlayerFactory([game]).state((player) => ({
       props: new Collection<PlayerProp>(player, [
         new PlayerProp(player, 'currentLevel', '80'),
         new PlayerProp(player, 'timePlayed', '546565')
       ])
     })).one()
-    const player2 = await new PlayerFactory([game]).with((player) => ({
+    const player2 = await new PlayerFactory([game]).state((player) => ({
       props: new Collection<PlayerProp>(player, [
         new PlayerProp(player, 'currentLevel', '29'),
         new PlayerProp(player, 'timePlayed', '23423')

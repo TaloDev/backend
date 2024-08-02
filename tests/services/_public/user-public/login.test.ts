@@ -7,7 +7,7 @@ import redisConfig from '../../../../src/config/redis.config'
 
 describe('User public service - login', () => {
   it('should let a user login', async () => {
-    const user = await new UserFactory().state('loginable').one()
+    const user = await new UserFactory().loginable().one()
     user.lastSeenAt = new Date(2020, 1, 1)
     await (<EntityManager>global.em).persistAndFlush(user)
 
@@ -46,7 +46,7 @@ describe('User public service - login', () => {
   it('should not update the last seen at if the user was last seen today', async () => {
     const lastSeenAt = sub(new Date(), { hours: 1 })
 
-    const user = await new UserFactory().state('loginable').with(() => ({ lastSeenAt })).one()
+    const user = await new UserFactory().loginable().state(() => ({ lastSeenAt })).one()
     await (<EntityManager>global.em).persistAndFlush(user)
 
     const res = await request(global.app)
@@ -60,7 +60,7 @@ describe('User public service - login', () => {
   it('should initialise the 2fa flow if it is enabled', async () => {
     const redis = new Redis(redisConfig)
 
-    const user = await new UserFactory().state('loginable').state('has2fa').one()
+    const user = await new UserFactory().loginable().has2fa().one()
     await (<EntityManager>global.em).persistAndFlush(user)
 
     const res = await request(global.app)

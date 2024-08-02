@@ -10,70 +10,63 @@ import { Collection } from '@mikro-orm/mysql'
 
 export default class UserFactory extends Factory<User> {
   constructor() {
-    super(User, 'base')
-    this.register('base', this.base)
-    this.register('email confirmed', this.emailConfirmed)
-    this.register('loginable', this.loginable)
-    this.register('owner', this.owner)
-    this.register('admin', this.admin)
-    this.register('demo', this.demo)
-    this.register('has2fa', this.has2fa)
+    super(User)
   }
 
-  protected async base(): Promise<Partial<User>> {
-    const organisation = await new OrganisationFactory().one()
-
-    return {
+  protected definition(): void {
+    this.state(async () => ({
       email: casual.email,
       username: casual.username,
       password: '',
-      organisation,
+      organisation: await new OrganisationFactory().one(),
       type: UserType.DEV
-    }
+    }))
   }
 
-  protected emailConfirmed(): Partial<User> {
-    return {
+  emailConfirmed(): this {
+    return this.state(() => ({
       emailConfirmed: true
-    }
+    }))
   }
 
-  protected async loginable(): Promise<Partial<User>> {
-    return {
+  loginable(): this {
+    return this.state(async () => ({
       email: casual.email,
       password: await bcrypt.hash('password', 10)
-    }
+    }))
   }
 
-  protected owner(): Partial<User> {
-    return {
+  owner(): this {
+    return this.state(() => ({
       type: UserType.OWNER
-    }
+    }))
   }
 
-  protected admin(): Partial<User> {
-    return {
+  admin(): this {
+    return this.state(() => ({
       type: UserType.ADMIN
-    }
+    }))
   }
 
-  protected demo(): Partial<User> {
-    return {
+  demo(): this {
+    return this.state(() => ({
       type: UserType.DEMO,
       email: `demo+${Date.now()}@demo.io`,
       emailConfirmed: true
-    }
+    }))
   }
 
-  protected has2fa(user: User): Partial<User> {
-    const twoFactorAuth = new UserTwoFactorAuth(casual.word)
-    twoFactorAuth.enabled = true
+  has2fa() {
+    return this.state(async (user) => {
+      const twoFactorAuth = new UserTwoFactorAuth(casual.word)
+      twoFactorAuth.enabled = true
 
-    const recoveryCodes = new Collection<UserRecoveryCode>(user, generateRecoveryCodes(user))
+      const recoveryCodes = new Collection<UserRecoveryCode>(user, generateRecoveryCodes(user))
 
-    return {
-      twoFactorAuth,
-      recoveryCodes
-    }
+      return {
+        twoFactorAuth,
+        recoveryCodes
+      }
+    })
   }
 }

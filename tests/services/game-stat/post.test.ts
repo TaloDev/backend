@@ -105,7 +105,7 @@ describe('Game stat service - post', () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({}, organisation)
 
-    const stat = await new GameStatFactory([game]).with(() => ({ internalName: 'levels-completed' })).one()
+    const stat = await new GameStatFactory([game]).state(() => ({ internalName: 'levels-completed' })).one()
     await (<EntityManager>global.em).persistAndFlush(stat)
 
     const res = await request(global.app)
@@ -126,7 +126,7 @@ describe('Game stat service - post', () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({}, organisation)
 
-    const stat = await new GameStatFactory([otherGame]).with(() => ({ internalName: 'levels-completed' })).one()
+    const stat = await new GameStatFactory([otherGame]).state(() => ({ internalName: 'levels-completed' })).one()
     await (<EntityManager>global.em).persistAndFlush(stat)
 
     await request(global.app)

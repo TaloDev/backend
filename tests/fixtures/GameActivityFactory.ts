@@ -9,15 +9,13 @@ export default class GameActivityFactory extends Factory<GameActivity> {
   private availableUsers: User[]
 
   constructor(availableGames: Game[], availableUsers: User[]) {
-    super(GameActivity, 'base')
-
-    this.register('base', this.base)
+    super(GameActivity)
 
     this.availableGames = availableGames
     this.availableUsers = availableUsers
   }
 
-  protected base(): Partial<GameActivity> {
+  protected definition(): void {
     const type: GameActivityType = casual.random_element([GameActivityType.LEADERBOARD_DELETED])
     const extra: { [key: string]: unknown } = {}
 
@@ -27,11 +25,11 @@ export default class GameActivityFactory extends Factory<GameActivity> {
         break
     }
 
-    return {
+    this.state(() => ({
       game: this.availableGames.length > 0 ? casual.random_element(this.availableGames) : null,
       user: casual.random_element(this.availableUsers),
       type,
       extra
-    }
+    }))
   }
 }

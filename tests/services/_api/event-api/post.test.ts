@@ -260,7 +260,7 @@ describe('Event API service - post', () => {
 
   it('should update meta props instead of creating new ones', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_EVENTS])
-    const player = await new PlayerFactory([apiKey.game]).with((player) => ({
+    const player = await new PlayerFactory([apiKey.game]).state((player) => ({
       props: new Collection<PlayerProp>(player, [
         new PlayerProp(player, 'META_OS', 'Windows')
       ])

@@ -7,13 +7,12 @@ import <%= h.changeCase.pascal(name) %> from '../../src/entities/<%= name %>'
 
 export default class <%= h.changeCase.pascal(name) %>Factory extends Factory<<%= h.changeCase.pascal(name) %>> {
   constructor() {
-    super(<%= h.changeCase.pascal(name) %>, 'base')
-    this.register('base', this.base)
+    super(<%= h.changeCase.pascal(name) %>)
   }
 
-  protected base(): Partial<<%= h.changeCase.pascal(name) %>> {
-    return {
-
-    }
+  protected definition(): void {
+    this.state(() => ({
+      // TODO
+    }))
   }
 }

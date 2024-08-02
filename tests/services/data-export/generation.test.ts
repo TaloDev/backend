@@ -46,7 +46,7 @@ describe('Data export service - generation', () => {
     const service = new DataExportService()
     const proto = Object.getPrototypeOf(service)
 
-    const player = await new PlayerFactory([game]).with((player) => ({
+    const player = await new PlayerFactory([game]).state((player) => ({
       props: new Collection<PlayerProp>(player, [
         new PlayerProp(player, 'level', '70'),
         new PlayerProp(player, 'guildName', 'The Best Guild')
@@ -70,7 +70,7 @@ describe('Data export service - generation', () => {
     const service = new DataExportService()
     const proto = Object.getPrototypeOf(service)
 
-    const activity = await new GameActivityFactory([game], [user]).with(() => ({
+    const activity = await new GameActivityFactory([game], [user]).state(() => ({
       type: GameActivityType.API_KEY_CREATED
     })).one()
 
@@ -84,7 +84,7 @@ describe('Data export service - generation', () => {
     const service = new DataExportService()
     const proto = Object.getPrototypeOf(service)
 
-    const activity = await new GameActivityFactory([game], [user]).with(() => ({
+    const activity = await new GameActivityFactory([game], [user]).state(() => ({
       extra: {
         statInternalName: 'hearts-collected'
       }
@@ -99,7 +99,7 @@ describe('Data export service - generation', () => {
     const service = new DataExportService()
     const proto = Object.getPrototypeOf(service)
 
-    const stat = await new GameStatFactory([game]).state('global').with(() => ({ globalValue: 50 })).one()
+    const stat = await new GameStatFactory([game]).global().state(() => ({ globalValue: 50 })).one()
     await stat.recalculateGlobalValue(false)
 
     expect(proto.transformColumn('globalValue', stat)).toBe(50)
@@ -142,7 +142,7 @@ describe('Data export service - generation', () => {
     const proto = Object.getPrototypeOf(service)
 
     const player = await new PlayerFactory([game]).one()
-    const event = await new EventFactory([player]).with(() => ({
+    const event = await new EventFactory([player]).state(() => ({
       props: [
         { key: 'timeTaken', value: '99' },
         { key: 'prevTime', value: '98' }
@@ -162,7 +162,7 @@ describe('Data export service - generation', () => {
     const service = new DataExportService()
     const proto = Object.getPrototypeOf(service)
 
-    const dataExport = await new DataExportFactory(game).with(() => ({
+    const dataExport = await new DataExportFactory(game).state(() => ({
       status: DataExportStatus.QUEUED
     })).one()
 
@@ -183,11 +183,11 @@ describe('Data export service - generation', () => {
     const service = new DataExportService()
     const proto = Object.getPrototypeOf(service)
 
-    const dataExport = await new DataExportFactory(game).with(() => ({ status: DataExportStatus.QUEUED })).one()
+    const dataExport = await new DataExportFactory(game).state(() => ({ status: DataExportStatus.QUEUED })).one()
     await (<EntityManager>global.em).persistAndFlush(dataExport)
 
-    const orgPlan = await new OrganisationPricingPlanFactory().with(async () => ({ pricingPlan: await new PricingPlanFactory().one() })).one()
-    const orgPlanAction = await new OrganisationPricingPlanActionFactory(orgPlan).with(() => ({
+    const orgPlan = await new OrganisationPricingPlanFactory().state(async () => ({ pricingPlan: await new PricingPlanFactory().one() })).one()
+    const orgPlanAction = await new OrganisationPricingPlanActionFactory(orgPlan).state(() => ({
       type: PricingPlanActionType.DATA_EXPORT,
       extra: {
         dataExportId: dataExport.id

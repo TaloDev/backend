@@ -13,7 +13,7 @@ describe('Player API service - patch', () => {
   it('should update a player\'s properties', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_PLAYERS])
 
-    const player = await new PlayerFactory([apiKey.game]).with((player) => ({
+    const player = await new PlayerFactory([apiKey.game]).state((player) => ({
       props: new Collection<PlayerProp>(player, [
         new PlayerProp(player, 'collectibles', '0'),
         new PlayerProp(player, 'zonesExplored', '1')
@@ -49,7 +49,7 @@ describe('Player API service - patch', () => {
   it('should not update a player\'s properties if the scope is missing', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([])
 
-    const player = await new PlayerFactory([apiKey.game]).with((player) => ({
+    const player = await new PlayerFactory([apiKey.game]).state((player) => ({
       props: new Collection<PlayerProp>(player, [
         new PlayerProp(player, 'collectibles', '0'),
         new PlayerProp(player, 'zonesExplored', '1')
@@ -120,9 +120,9 @@ describe('Player API service - patch', () => {
     rule.castType = PlayerGroupRuleCastType.DOUBLE
     rule.operands = ['60']
 
-    const group = await new PlayerGroupFactory().construct(apiKey.game).with(() => ({ rules: [rule] })).one()
+    const group = await new PlayerGroupFactory().construct(apiKey.game).state(() => ({ rules: [rule] })).one()
 
-    const player = await new PlayerFactory([apiKey.game]).with((player) => ({
+    const player = await new PlayerFactory([apiKey.game]).state((player) => ({
       props: new Collection<PlayerProp>(player, [
         new PlayerProp(player, 'collectibles', '0'),
         new PlayerProp(player, 'currentLevel', '59')

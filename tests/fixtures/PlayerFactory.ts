@@ -13,99 +13,98 @@ export default class PlayerFactory extends Factory<Player> {
   private availableGames: Game[]
 
   constructor(availableGames: Game[]) {
-    super(Player, 'base')
-    this.register('base', this.base)
-    this.register('not seen today', this.notSeenToday)
-    this.register('not created this week', this.notCreatedThisWeek)
-    this.register('not seen this week', this.notSeenThisWeek)
-    this.register('seen this week', this.seenThisWeek)
-    this.register('created this week', this.createdThisWeek)
-    this.register('dev build', this.devBuild)
-    this.register('with steam alias', this.withSteamAlias)
-    this.register('with username alias', this.withUsernameAlias)
-    this.register('with talo alias', this.withTaloAlias)
+    super(Player)
 
     this.availableGames = availableGames
   }
 
-  protected async base(player: Player): Promise<Partial<Player>> {
+  protected definition(): void {
     const availableProps = ['zonesExplored', 'currentArea', 'position.x', 'position.y', 'deaths', 'position.z', 'currentLevel', 'inventorySpace', 'currentHealth', 'currentMana', 'currentEnergy', 'npcKills', 'playerKills']
-    const propsCount = casual.integer(0, 5)
-    const props: PlayerProp[] = []
 
-    for (let i = 0; i < propsCount; i++) {
-      props.push(new PlayerProp(player, casual.random_element(availableProps), String(casual.integer(0, 99))))
-    }
+    this.state(async (player) => {
+      const propsCount = casual.integer(0, 5)
+      const props: PlayerProp[] = Array.from({ length: propsCount }, () => {
+        return new PlayerProp(player, casual.random_element(availableProps), String(casual.integer(0, 99)))
+      })
 
-    const playerAliasFactory = new PlayerAliasFactory()
-    const items = await playerAliasFactory.with(() => ({ player })).many(casual.integer(1, 2))
-    const aliases = new Collection<PlayerAlias>(player, items)
+      const aliases = await new PlayerAliasFactory(player).many(casual.integer(1, 2))
 
-    const lastSeenAt = sub(new Date(), { days: casual.integer(0, 10) })
-
-    return {
-      aliases,
-      game: casual.random_element(this.availableGames),
-      props: new Collection<PlayerProp>(player, props),
-      lastSeenAt
-    }
+      return {
+        aliases: new Collection<PlayerAlias>(player, aliases),
+        game: casual.random_element(this.availableGames),
+        props: new Collection<PlayerProp>(player, props),
+        lastSeenAt: sub(new Date(), { days: casual.integer(0, 10) })
+      }
+    })
   }
 
-  protected notSeenToday(): Partial<Player> {
-    return {
+  notSeenToday(): this {
+    return this.state(() => ({
       lastSeenAt: sub(new Date(), { days: casual.integer(1, 99) })
-    }
+    }))
   }
 
-  protected notCreatedThisWeek(): Partial<Player> {
-    return {
+  notCreatedThisWeek(): this {
+    return this.state(() => ({
       createdAt: sub(new Date(), { days: 8 })
-    }
+    }))
   }
 
-  protected notSeenThisWeek(): Partial<Player> {
-    return {
+  notSeenThisWeek(): this {
+    return this.state(() => ({
       lastSeenAt: sub(new Date(), { days: 8 })
-    }
+    }))
   }
 
-  protected seenThisWeek(): Partial<Player> {
-    return {
+  seenThisWeek(): this {
+    return this.state(() => ({
       lastSeenAt: sub(new Date(), { days: casual.integer(0, 6) })
-    }
+    }))
   }
 
-  protected createdThisWeek(): Partial<Player> {
-    return {
+  createdThisWeek(): this {
+    return this.state(() => ({
       lastSeenAt: sub(new Date(), { days: casual.integer(0, 6) }),
       createdAt: sub(new Date(), { days: casual.integer(0, 6) })
-    }
+    }))
   }
 
-  protected devBuild(player: Player): Partial<Player> {
-    player.addProp('META_DEV_BUILD', '1')
-    return player
+  devBuild(): this {
+    return this.state((player: Player) => {
+      player.addProp('META_DEV_BUILD', '1')
+      return player
+    })
   }
 
-  protected async withSteamAlias(player: Player): Promise<Partial<Player>> {
-    const alias = await new PlayerAliasFactory().state('steam').with(() => ({ player })).one()
-    return {
-      aliases: new Collection<PlayerAlias>(player, [alias])
-    }
+  withSteamAlias(): this {
+    return this.state(async (player: Player) => {
+      const alias = await new PlayerAliasFactory(player).steam().one()
+
+      return {
+        aliases: new Collection<PlayerAlias>(player, [alias])
+      }
+    })
   }
 
-  protected async withUsernameAlias(player: Player): Promise<Partial<Player>> {
-    const alias = await new PlayerAliasFactory().state('username').with(() => ({ player })).one()
-    return {
-      aliases: new Collection<PlayerAlias>(player, [alias])
-    }
+  withUsernameAlias(): this {
+    return this.state(async (player: Player) => {
+      const alias = await new PlayerAliasFactory(player).username().one()
+
+      return {
+        aliases: new Collection<PlayerAlias>(player, [alias])
+      }
+    })
   }
 
-  protected async withTaloAlias(player: Player): Promise<Partial<Player>> {
-    const alias = await new PlayerAliasFactory().state('talo').with(() => ({ player })).one()
-    return {
-      aliases: new Collection<PlayerAlias>(player, [alias]),
-      auth: await new PlayerAuthFactory().one()
-    }
+  withTaloAlias(): this {
+    return this.state(async (player: Player) => {
+      const alias = await new PlayerAliasFactory(player).talo().one()
+      const auth = await new PlayerAuthFactory().one()
+
+      return {
+        aliases: new Collection<PlayerAlias>(player, [alias]),
+        auth
+      }
+    })
   }
 }

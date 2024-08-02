@@ -17,7 +17,7 @@ describe('Billing service - create checkout session', () => {
   it.each(userPermissionProvider())('should return a %i for a %s user', async (statusCode, _, type) => {
     const product = (await stripe.products.list()).data[0]
     const price = (await stripe.prices.list({ product: product.id })).data[0]
-    const plan = await new PricingPlanFactory().with(() => ({ stripeId: product.id })).one()
+    const plan = await new PricingPlanFactory().state(() => ({ stripeId: product.id })).one()
 
     const [organisation] = await createOrganisationAndGame({}, {}, plan)
     const [token] = await createUserAndToken({ type }, organisation)
@@ -63,7 +63,7 @@ describe('Billing service - create checkout session', () => {
   it('should create an invoice preview if the organisation already has a subscription', async () => {
     const product = (await stripe.products.list()).data[0]
     const price = (await stripe.prices.list({ product: product.id })).data[0]
-    const plan = await new PricingPlanFactory().with(() => ({ stripeId: product.id })).one()
+    const plan = await new PricingPlanFactory().state(() => ({ stripeId: product.id })).one()
 
     const subscription = (await stripe.subscriptions.list()).data[0]
 
@@ -88,7 +88,7 @@ describe('Billing service - create checkout session', () => {
   it('should not create an invoice preview if the organisation has a stripeCustomerId but no subscriptions', async () => {
     const product = (await stripe.products.list()).data[0]
     const price = (await stripe.prices.list({ product: product.id })).data[0]
-    const plan = await new PricingPlanFactory().with(() => ({ stripeId: product.id })).one()
+    const plan = await new PricingPlanFactory().state(() => ({ stripeId: product.id })).one()
 
     const [organisation] = await createOrganisationAndGame({}, {}, plan)
     const [token] = await createUserAndToken({ type: UserType.OWNER }, organisation)
@@ -106,9 +106,9 @@ describe('Billing service - create checkout session', () => {
   })
 
   it('should not preview a plan if there are more org plan actions for user invites than the pricing plan user limit', async () => {
-    const planAction = await new PricingPlanActionFactory().with(() => ({ type: PricingPlanActionType.USER_INVITE })).one()
-    const orgPlan = await new OrganisationPricingPlanFactory().with(() => ({ pricingPlan: planAction.pricingPlan })).one()
-    const orgPlanActions = await new OrganisationPricingPlanActionFactory(orgPlan).with(() => ({ type: planAction.type })).many(planAction.limit)
+    const planAction = await new PricingPlanActionFactory().state(() => ({ type: PricingPlanActionType.USER_INVITE })).one()
+    const orgPlan = await new OrganisationPricingPlanFactory().state(() => ({ pricingPlan: planAction.pricingPlan })).one()
+    const orgPlanActions = await new OrganisationPricingPlanActionFactory(orgPlan).state(() => ({ type: planAction.type })).many(planAction.limit)
 
     const [organisation] = await createOrganisationAndGame({ pricingPlan: orgPlan })
     const [token] = await createUserAndToken({ type: UserType.OWNER }, organisation)

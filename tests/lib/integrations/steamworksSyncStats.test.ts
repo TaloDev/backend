@@ -84,7 +84,7 @@ describe('Steamworks integration - sync stats', () => {
     const statName = 'stat_' + casual.word
     const statDisplayName = casual.word
 
-    const stat = await new GameStatFactory([game]).with(() => ({ internalName: statName })).one()
+    const stat = await new GameStatFactory([game]).state(() => ({ internalName: statName })).one()
 
     const config = await new IntegrationConfigFactory().one()
     const integration = await new IntegrationFactory().construct(IntegrationType.STEAMWORKS, game, config).one()
@@ -123,7 +123,7 @@ describe('Steamworks integration - sync stats', () => {
 
     const statName = 'stat_' + casual.word
 
-    const player = await new PlayerFactory([game]).state('with steam alias').one()
+    const player = await new PlayerFactory([game]).withSteamAlias().one()
 
     const config = await new IntegrationConfigFactory().one()
     const integration = await new IntegrationFactory().construct(IntegrationType.STEAMWORKS, game, config).one()
@@ -173,7 +173,7 @@ describe('Steamworks integration - sync stats', () => {
   it('should not pull in player stats for players that do not exist in steamworks', async () => {
     const [, game] = await createOrganisationAndGame(em)
 
-    const player = await new PlayerFactory([game]).state('with steam alias').one()
+    const player = await new PlayerFactory([game]).withSteamAlias().one()
 
     const config = await new IntegrationConfigFactory().one()
     const integration = await new IntegrationFactory().construct(IntegrationType.STEAMWORKS, game, config).one()
@@ -215,9 +215,9 @@ describe('Steamworks integration - sync stats', () => {
 
     const statName = 'stat_' + casual.word
 
-    const player = await new PlayerFactory([game]).state('with steam alias').one()
-    const stat = await new GameStatFactory([game]).with(() => ({ internalName: statName })).one()
-    const playerStat = await new PlayerGameStatFactory().construct(player, stat).with(() => ({ value: 288 })).one()
+    const player = await new PlayerFactory([game]).withSteamAlias().one()
+    const stat = await new GameStatFactory([game]).state(() => ({ internalName: statName })).one()
+    const playerStat = await new PlayerGameStatFactory().construct(player, stat).state(() => ({ value: 288 })).one()
 
     const config = await new IntegrationConfigFactory().one()
     const integration = await new IntegrationFactory().construct(IntegrationType.STEAMWORKS, game, config).one()
@@ -269,9 +269,9 @@ describe('Steamworks integration - sync stats', () => {
 
     const statName = 'stat_' + casual.word
 
-    const player = await new PlayerFactory([game]).state('with steam alias').one()
-    const stat = await new GameStatFactory([game]).with(() => ({ internalName: statName })).one()
-    const playerStat = await new PlayerGameStatFactory().construct(player, stat).with(() => ({ value: 54 })).one()
+    const player = await new PlayerFactory([game]).withSteamAlias().one()
+    const stat = await new GameStatFactory([game]).state(() => ({ internalName: statName })).one()
+    const playerStat = await new PlayerGameStatFactory().construct(player, stat).state(() => ({ value: 54 })).one()
 
     const config = await new IntegrationConfigFactory().one()
     const integration = await new IntegrationFactory().construct(IntegrationType.STEAMWORKS, game, config).one()

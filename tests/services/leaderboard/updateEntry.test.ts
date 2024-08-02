@@ -46,7 +46,7 @@ describe('Leaderboard service - update entry', () => {
 
     const leaderboard = await new LeaderboardFactory([game]).one()
     const players = await new PlayerFactory([game]).many(10)
-    const entry = await new LeaderboardEntryFactory(leaderboard, players).state('hidden').one()
+    const entry = await new LeaderboardEntryFactory(leaderboard, players).hidden().one()
     await (<EntityManager>global.em).persistAndFlush(entry)
 
     const res = await request(global.app)
@@ -78,7 +78,7 @@ describe('Leaderboard service - update entry', () => {
 
     const leaderboard = await new LeaderboardFactory([game]).one()
     const players = await new PlayerFactory([game]).many(10)
-    const entry = await new LeaderboardEntryFactory(leaderboard, players).state('hidden').one()
+    const entry = await new LeaderboardEntryFactory(leaderboard, players).hidden().one()
     await (<EntityManager>global.em).persistAndFlush(entry)
 
     const res = await request(global.app)

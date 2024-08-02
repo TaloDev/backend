@@ -16,7 +16,7 @@ describe('Headline service - get', () => {
     const [token] = await createUserAndToken({}, organisation)
 
     const player = await new PlayerFactory([game]).one()
-    const events: Event[] = await new EventFactory([player]).state('this week').many(10)
+    const events: Event[] = await new EventFactory([player]).thisWeek().many(10)
     await (<EntityManager>global.em).persistAndFlush(events)
 
     const res = await request(global.app)
@@ -32,8 +32,8 @@ describe('Headline service - get', () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({}, organisation)
 
-    const player = await new PlayerFactory([game]).state('dev build').one()
-    const events: Event[] = await new EventFactory([player]).state('this week').many(10)
+    const player = await new PlayerFactory([game]).devBuild().one()
+    const events: Event[] = await new EventFactory([player]).thisWeek().many(10)
     await (<EntityManager>global.em).persistAndFlush(events)
 
     const res = await request(global.app)
@@ -49,8 +49,8 @@ describe('Headline service - get', () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({}, organisation)
 
-    const player = await new PlayerFactory([game]).state('dev build').one()
-    const events: Event[] = await new EventFactory([player]).state('this week').many(10)
+    const player = await new PlayerFactory([game]).devBuild().one()
+    const events: Event[] = await new EventFactory([player]).thisWeek().many(10)
     await (<EntityManager>global.em).persistAndFlush(events)
 
     const res = await request(global.app)
@@ -67,8 +67,8 @@ describe('Headline service - get', () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({}, organisation)
 
-    const newPlayers = await new PlayerFactory([game]).state('created this week').many(10)
-    const oldPlayers = await new PlayerFactory([game]).state('not created this week').many(10)
+    const newPlayers = await new PlayerFactory([game]).createdThisWeek().many(10)
+    const oldPlayers = await new PlayerFactory([game]).notCreatedThisWeek().many(10)
 
     await (<EntityManager>global.em).persistAndFlush([...newPlayers, ...oldPlayers])
 
@@ -85,7 +85,7 @@ describe('Headline service - get', () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({}, organisation)
 
-    const newPlayers = await new PlayerFactory([game]).state('created this week').state('dev build').many(10)
+    const newPlayers = await new PlayerFactory([game]).createdThisWeek().devBuild().many(10)
 
     await (<EntityManager>global.em).persistAndFlush(newPlayers)
 
@@ -102,7 +102,7 @@ describe('Headline service - get', () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({}, organisation)
 
-    const newPlayers = await new PlayerFactory([game]).state('created this week').state('dev build').many(10)
+    const newPlayers = await new PlayerFactory([game]).createdThisWeek().devBuild().many(10)
 
     await (<EntityManager>global.em).persistAndFlush(newPlayers)
 
@@ -120,14 +120,14 @@ describe('Headline service - get', () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({}, organisation)
 
-    const playersNotSeenThisWeek = await new PlayerFactory([game]).state('not seen this week').many(6)
+    const playersNotSeenThisWeek = await new PlayerFactory([game]).notSeenThisWeek().many(6)
 
     const returningPlayersSeenThisWeek = await new PlayerFactory([game])
-      .state('seen this week')
-      .state('not created this week')
+      .seenThisWeek()
+      .notCreatedThisWeek()
       .many(4)
 
-    const playersSignedupThisWeek = await new PlayerFactory([game]).state('created this week').many(5)
+    const playersSignedupThisWeek = await new PlayerFactory([game]).notSeenThisWeek().many(5)
 
     await (<EntityManager>global.em).persistAndFlush([...playersNotSeenThisWeek, ...returningPlayersSeenThisWeek, ...playersSignedupThisWeek])
 
@@ -145,9 +145,9 @@ describe('Headline service - get', () => {
     const [token] = await createUserAndToken({}, organisation)
 
     const returningPlayersSeenThisWeek = await new PlayerFactory([game])
-      .state('seen this week')
-      .state('not created this week')
-      .state('dev build')
+      .seenThisWeek()
+      .notCreatedThisWeek()
+      .devBuild()
       .many(4)
 
     await (<EntityManager>global.em).persistAndFlush(returningPlayersSeenThisWeek)
@@ -166,9 +166,9 @@ describe('Headline service - get', () => {
     const [token] = await createUserAndToken({}, organisation)
 
     const returningPlayersSeenThisWeek = await new PlayerFactory([game])
-      .state('seen this week')
-      .state('not created this week')
-      .state('dev build')
+      .seenThisWeek()
+      .notCreatedThisWeek()
+      .devBuild()
       .many(4)
 
     await (<EntityManager>global.em).persistAndFlush(returningPlayersSeenThisWeek)
@@ -189,7 +189,7 @@ describe('Headline service - get', () => {
 
     const players = await new PlayerFactory([game]).many(4)
     const validEvents = await new EventFactory([players[0]]).many(3)
-    const validEventsButNotThisWeek = await new EventFactory([players[1]]).with(() => ({
+    const validEventsButNotThisWeek = await new EventFactory([players[1]]).state(() => ({
       createdAt: sub(new Date(), { weeks: 2 })
     })).many(3)
     const moreValidEvents = await new EventFactory([players[2]]).many(3)
@@ -213,7 +213,7 @@ describe('Headline service - get', () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({}, organisation)
 
-    const player = await new PlayerFactory([game]).state('dev build').one()
+    const player = await new PlayerFactory([game]).devBuild().one()
     const validEvents = await new EventFactory([player]).many(3)
 
     await (<EntityManager>global.em).persistAndFlush(validEvents)
@@ -231,7 +231,7 @@ describe('Headline service - get', () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({}, organisation)
 
-    const player = await new PlayerFactory([game]).state('dev build').one()
+    const player = await new PlayerFactory([game]).devBuild().one()
     const validEvents = await new EventFactory([player]).many(3)
 
     await (<EntityManager>global.em).persistAndFlush(validEvents)

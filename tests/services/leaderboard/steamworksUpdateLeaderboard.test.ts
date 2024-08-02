@@ -40,7 +40,7 @@ describe('Leaderboard service - update leaderboard - steamworks integration', ()
 
     const leaderboard = await new LeaderboardFactory([game]).one()
 
-    const config = await new IntegrationConfigFactory().with(() => ({ syncLeaderboards: true })).one()
+    const config = await new IntegrationConfigFactory().state(() => ({ syncLeaderboards: true })).one()
     const integration = await new IntegrationFactory().construct(IntegrationType.STEAMWORKS, game, config).one()
     await (<EntityManager>global.em).persistAndFlush([integration, leaderboard])
 
@@ -69,7 +69,7 @@ describe('Leaderboard service - update leaderboard - steamworks integration', ()
 
     const leaderboard = await new LeaderboardFactory([game]).one()
 
-    const config = await new IntegrationConfigFactory().with(() => ({ syncLeaderboards: false })).one()
+    const config = await new IntegrationConfigFactory().state(() => ({ syncLeaderboards: false })).one()
     const integration = await new IntegrationFactory().construct(IntegrationType.STEAMWORKS, game, config).one()
     await (<EntityManager>global.em).persistAndFlush([integration, leaderboard])
 

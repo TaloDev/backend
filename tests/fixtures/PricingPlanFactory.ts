@@ -4,13 +4,12 @@ import PricingPlan from '../../src/entities/pricing-plan'
 
 export default class PricingPlanFactory extends Factory<PricingPlan> {
   constructor() {
-    super(PricingPlan, 'base')
-    this.register('base', this.base)
+    super(PricingPlan)
   }
 
-  protected async base(): Promise<Partial<PricingPlan>> {
-    return {
+  protected definition(): void {
+    this.state(() => ({
       stripeId: `prod_${casual.uuid.split('-')[0]}`
-    }
+    }))
   }
 }

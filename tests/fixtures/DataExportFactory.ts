@@ -7,19 +7,20 @@ export default class DataExportFactory extends Factory<DataExport> {
   private game: Game
 
   constructor(game: Game) {
-    super(DataExport, 'base')
-    this.register('base', this.base)
+    super(DataExport)
 
     this.game = game
   }
 
-  protected async base(): Promise<Partial<DataExport>> {
-    const createdByUser = await new UserFactory().one()
+  protected definition(): void {
+    this.state(async () => {
+      const createdByUser = await new UserFactory().one()
 
-    return {
-      status: DataExportStatus.SENT,
-      createdByUser,
-      game: this.game
-    }
+      return {
+        status: DataExportStatus.REQUESTED,
+        createdByUser,
+        game: this.game
+      }
+    })
   }
 }

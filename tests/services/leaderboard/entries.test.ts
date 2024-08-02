@@ -16,7 +16,7 @@ describe('Leaderboard service - entries', () => {
     const players = await new PlayerFactory([game]).many(10)
     em.persist(players)
 
-    const leaderboard = await new LeaderboardFactory([game]).state('with entries').one()
+    const leaderboard = await new LeaderboardFactory([game]).withEntries().one()
     await em.persistAndFlush(leaderboard)
 
     const res = await request(global.app)
@@ -45,7 +45,7 @@ describe('Leaderboard service - entries', () => {
     const [, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken()
 
-    const leaderboard = await new LeaderboardFactory([game]).state('with entries').one()
+    const leaderboard = await new LeaderboardFactory([game]).withEntries().one()
     await (<EntityManager>global.em).persistAndFlush(leaderboard)
 
     await request(global.app)
@@ -86,7 +86,7 @@ describe('Leaderboard service - entries', () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({}, organisation)
 
-    const leaderboard = await new LeaderboardFactory([game]).state('with entries').state('dev build players').one()
+    const leaderboard = await new LeaderboardFactory([game]).withEntries().devBuildPlayers().one()
     await (<EntityManager>global.em).persistAndFlush(leaderboard)
 
     const res = await request(global.app)
@@ -102,7 +102,7 @@ describe('Leaderboard service - entries', () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({}, organisation)
 
-    const leaderboard = await new LeaderboardFactory([game]).state('with entries').state('dev build players').one()
+    const leaderboard = await new LeaderboardFactory([game]).withEntries().devBuildPlayers().one()
     await (<EntityManager>global.em).persistAndFlush(leaderboard)
 
     const res = await request(global.app)

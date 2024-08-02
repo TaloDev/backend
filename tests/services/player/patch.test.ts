@@ -17,7 +17,7 @@ describe('Player service - patch', () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({ type }, organisation)
 
-    const player = await new PlayerFactory([game]).with((player) => ({
+    const player = await new PlayerFactory([game]).state((player) => ({
       props: new Collection<PlayerProp>(player, [
         new PlayerProp(player, 'collectibles', '0'),
         new PlayerProp(player, 'zonesExplored', '1')
@@ -70,7 +70,7 @@ describe('Player service - patch', () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({}, organisation)
 
-    const player = await new PlayerFactory([game]).with((player) => ({
+    const player = await new PlayerFactory([game]).state((player) => ({
       props: new Collection<PlayerProp>(player, [
         new PlayerProp(player, 'collectibles', '1'),
         new PlayerProp(player, 'zonesExplored', '1')
@@ -175,7 +175,7 @@ describe('Player service - patch', () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({}, organisation)
 
-    const player = await new PlayerFactory([game]).with((player) => ({
+    const player = await new PlayerFactory([game]).state((player) => ({
       props: new Collection<PlayerProp>(player, [])
     })).one()
     await (<EntityManager>global.em).persistAndFlush(player)

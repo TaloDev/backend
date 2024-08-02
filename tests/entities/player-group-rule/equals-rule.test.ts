@@ -11,7 +11,7 @@ describe('EQUALS rule', () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({}, organisation)
 
-    const player1 = await new PlayerFactory([game]).with(() => ({ lastSeenAt: new Date(2022, 4, 3) })).one()
+    const player1 = await new PlayerFactory([game]).state(() => ({ lastSeenAt: new Date(2022, 4, 3) })).one()
     const player2 = await new PlayerFactory([game]).one()
     await (<EntityManager>global.em).persistAndFlush([player1, player2])
 
@@ -38,7 +38,7 @@ describe('EQUALS rule', () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({}, organisation)
 
-    const player1 = await new PlayerFactory([game]).with(() => ({ lastSeenAt: new Date(2022, 4, 3) })).one()
+    const player1 = await new PlayerFactory([game]).state(() => ({ lastSeenAt: new Date(2022, 4, 3) })).one()
     const player2 = await new PlayerFactory([game]).one()
     await (<EntityManager>global.em).persistAndFlush([player1, player2])
 
@@ -65,7 +65,7 @@ describe('EQUALS rule', () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({}, organisation)
 
-    const player1 = await new PlayerFactory([game]).with((player) => ({
+    const player1 = await new PlayerFactory([game]).state((player) => ({
       props: new Collection<PlayerProp>(player, [
         new PlayerProp(player, 'currentLevel', '80')
       ])
@@ -96,7 +96,7 @@ describe('EQUALS rule', () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({}, organisation)
 
-    const player1 = await new PlayerFactory([game]).with((player) => ({
+    const player1 = await new PlayerFactory([game]).state((player) => ({
       props: new Collection<PlayerProp>(player, [
         new PlayerProp(player, 'currentLevel', '80')
       ])

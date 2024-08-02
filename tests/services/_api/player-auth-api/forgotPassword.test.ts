@@ -24,7 +24,7 @@ describe('Player auth API service - forgot password', () => {
     const redis = new Redis(redisConfig)
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_PLAYERS, APIKeyScope.WRITE_PLAYERS])
 
-    const player = await new PlayerFactory([apiKey.game]).state('with talo alias').one()
+    const player = await new PlayerFactory([apiKey.game]).withTaloAlias().one()
     await (<EntityManager>global.em).persistAndFlush(player)
 
     await request(global.app)
@@ -49,7 +49,7 @@ describe('Player auth API service - forgot password', () => {
     const redis = new Redis(redisConfig)
     const [apiKey, token] = await createAPIKeyAndToken([])
 
-    const player = await new PlayerFactory([apiKey.game]).state('with talo alias').one()
+    const player = await new PlayerFactory([apiKey.game]).withTaloAlias().one()
     await (<EntityManager>global.em).persistAndFlush(player)
 
     await request(global.app)
@@ -68,7 +68,7 @@ describe('Player auth API service - forgot password', () => {
     const redis = new Redis(redisConfig)
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_PLAYERS, APIKeyScope.WRITE_PLAYERS])
 
-    const player = await new PlayerFactory([apiKey.game]).state('with talo alias').one()
+    const player = await new PlayerFactory([apiKey.game]).withTaloAlias().one()
     await (<EntityManager>global.em).persistAndFlush(player)
 
     await request(global.app)
@@ -88,8 +88,8 @@ describe('Player auth API service - forgot password', () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_PLAYERS, APIKeyScope.WRITE_PLAYERS])
     const [otherKey] = await createAPIKeyAndToken([APIKeyScope.READ_PLAYERS, APIKeyScope.WRITE_PLAYERS])
 
-    const player = await new PlayerFactory([apiKey.game]).state('with talo alias').one()
-    const otherPlayer = await new PlayerFactory([otherKey.game]).state('with talo alias').one()
+    const player = await new PlayerFactory([apiKey.game]).withTaloAlias().one()
+    const otherPlayer = await new PlayerFactory([otherKey.game]).withTaloAlias().one()
     await (<EntityManager>global.em).persistAndFlush([player, otherPlayer])
 
     await request(global.app)

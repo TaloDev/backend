@@ -75,7 +75,7 @@ describe('Player API service - merge', () => {
   it('should correctly replace properties in player1 with player2\'s', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_PLAYERS, APIKeyScope.WRITE_PLAYERS])
 
-    const player1 = await new PlayerFactory([apiKey.game]).with((player) => ({
+    const player1 = await new PlayerFactory([apiKey.game]).state((player) => ({
       props: new Collection<PlayerProp>(player, [
         new PlayerProp(player, 'currentLevel', '60'),
         new PlayerProp(player, 'currentHealth', '66'),
@@ -84,7 +84,7 @@ describe('Player API service - merge', () => {
       ])
     })).one()
 
-    const player2 = await new PlayerFactory([apiKey.game]).with((player) => ({
+    const player2 = await new PlayerFactory([apiKey.game]).state((player) => ({
       props: new Collection<PlayerProp>(player, [
         new PlayerProp(player, 'currentLevel', '60'),
         new PlayerProp(player, 'pos.x', '58'),
@@ -198,7 +198,7 @@ describe('Player API service - merge', () => {
   it('should not merge if player1 has auth', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_PLAYERS, APIKeyScope.WRITE_PLAYERS])
 
-    const player1 = await new PlayerFactory([apiKey.game]).state('with talo alias').one()
+    const player1 = await new PlayerFactory([apiKey.game]).withTaloAlias().one()
     const player2 = await new PlayerFactory([apiKey.game]).one()
 
     await (<EntityManager>global.em).persistAndFlush([player1, player2])
@@ -218,7 +218,7 @@ describe('Player API service - merge', () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_PLAYERS, APIKeyScope.WRITE_PLAYERS])
 
     const player1 = await new PlayerFactory([apiKey.game]).one()
-    const player2 = await new PlayerFactory([apiKey.game]).state('with talo alias').one()
+    const player2 = await new PlayerFactory([apiKey.game]).withTaloAlias().one()
 
     await (<EntityManager>global.em).persistAndFlush([player1, player2])
 

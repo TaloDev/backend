@@ -14,7 +14,7 @@ describe('Leaderboard API service - get', () => {
 
     const players = await new PlayerFactory([apiKey.game]).many(3)
     const entries = await new LeaderboardEntryFactory(leaderboard, players).many(3)
-    const hiddenEntries = await new LeaderboardEntryFactory(leaderboard, players).state('hidden').many(3)
+    const hiddenEntries = await new LeaderboardEntryFactory(leaderboard, players).hidden().many(3)
 
     await (<EntityManager>global.em).persistAndFlush([...players, ...entries, ...hiddenEntries])
 
@@ -40,7 +40,7 @@ describe('Leaderboard API service - get', () => {
     const leaderboard = await new LeaderboardFactory([apiKey.game]).one()
 
     const player = await new PlayerFactory([apiKey.game]).one()
-    const entries = await new LeaderboardEntryFactory(leaderboard, [player]).with(() => ({ playerAlias: player.aliases[0] })).many(2)
+    const entries = await new LeaderboardEntryFactory(leaderboard, [player]).state(() => ({ playerAlias: player.aliases[0] })).many(2)
 
     const otherPlayers = await new PlayerFactory([apiKey.game]).many(3)
     const otherEntries = await new LeaderboardEntryFactory(leaderboard, otherPlayers).many(5)

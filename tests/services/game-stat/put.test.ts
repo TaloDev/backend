@@ -38,7 +38,7 @@ describe('Game stat service - put', () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({}, organisation)
 
-    const stat = await new GameStatFactory([game]).with(() => ({ global: false })).one()
+    const stat = await new GameStatFactory([game]).state(() => ({ global: false })).one()
     await (<EntityManager>global.em).persistAndFlush(stat)
 
     const res = await request(global.app)
@@ -94,7 +94,7 @@ describe('Game stat service - put', () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({}, organisation)
 
-    const stat = await new GameStatFactory([game]).with(() => ({
+    const stat = await new GameStatFactory([game]).state(() => ({
       minValue: -600,
       defaultValue: 0,
       maxValue: 600
@@ -126,7 +126,7 @@ describe('Game stat service - put', () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({}, organisation)
 
-    const stat = await new GameStatFactory([game]).with(() => ({
+    const stat = await new GameStatFactory([game]).state(() => ({
       minValue: -100,
       defaultValue: 0,
       maxValue: 100
@@ -158,7 +158,7 @@ describe('Game stat service - put', () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({}, organisation)
 
-    const stat = await new GameStatFactory([game]).with(() => ({
+    const stat = await new GameStatFactory([game]).state(() => ({
       minValue: -100,
       maxValue: 300
     })).one()

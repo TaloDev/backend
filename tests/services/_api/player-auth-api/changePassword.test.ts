@@ -11,8 +11,8 @@ describe('Player auth API service - change password', () => {
   it('should change a player\'s password if the current password is correct and the api key has the correct scopes', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_PLAYERS, APIKeyScope.WRITE_PLAYERS])
 
-    const player = await new PlayerFactory([apiKey.game]).state('with talo alias').with(async () => ({
-      auth: await new PlayerAuthFactory().with(async () => ({
+    const player = await new PlayerFactory([apiKey.game]).withTaloAlias().state(async () => ({
+      auth: await new PlayerAuthFactory().state(async () => ({
         password: await bcrypt.hash('password', 10),
         email: 'boz@mail.com',
         verificationEnabled: false
@@ -46,8 +46,8 @@ describe('Player auth API service - change password', () => {
   it('should not change a player\'s password if the api key does not have the correct scopes', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([])
 
-    const player = await new PlayerFactory([apiKey.game]).state('with talo alias').with(async () => ({
-      auth: await new PlayerAuthFactory().with(async () => ({
+    const player = await new PlayerFactory([apiKey.game]).withTaloAlias().state(async () => ({
+      auth: await new PlayerAuthFactory().state(async () => ({
         password: await bcrypt.hash('password', 10),
         email: 'boz@mail.com',
         verificationEnabled: false
@@ -72,8 +72,8 @@ describe('Player auth API service - change password', () => {
   it('should not change a player\'s password if the current password is incorrect', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_PLAYERS, APIKeyScope.WRITE_PLAYERS])
 
-    const player = await new PlayerFactory([apiKey.game]).state('with talo alias').with(async () => ({
-      auth: await new PlayerAuthFactory().with(async () => ({
+    const player = await new PlayerFactory([apiKey.game]).withTaloAlias().state(async () => ({
+      auth: await new PlayerAuthFactory().state(async () => ({
         password: await bcrypt.hash('password', 10),
         email: 'boz@mail.com',
         verificationEnabled: false
@@ -112,8 +112,8 @@ describe('Player auth API service - change password', () => {
   it('should not change a player\'s password if the current password is the same as the new password', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_PLAYERS, APIKeyScope.WRITE_PLAYERS])
 
-    const player = await new PlayerFactory([apiKey.game]).state('with talo alias').with(async () => ({
-      auth: await new PlayerAuthFactory().with(async () => ({
+    const player = await new PlayerFactory([apiKey.game]).withTaloAlias().state(async () => ({
+      auth: await new PlayerAuthFactory().state(async () => ({
         password: await bcrypt.hash('password', 10),
         email: 'boz@mail.com',
         verificationEnabled: false

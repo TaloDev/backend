@@ -69,7 +69,7 @@ describe('Game feedback service - post category', () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({ type: UserType.ADMIN }, organisation)
 
-    const category = await new GameFeedbackCategoryFactory(game).with(() => ({ internalName: 'bugs' })).one()
+    const category = await new GameFeedbackCategoryFactory(game).state(() => ({ internalName: 'bugs' })).one()
     await (<EntityManager>global.em).persistAndFlush(category)
 
     const res = await request(global.app)
@@ -90,7 +90,7 @@ describe('Game feedback service - post category', () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({}, organisation)
 
-    await new GameFeedbackCategoryFactory(otherGame).with(() => ({ internalName: 'bugs' })).one()
+    await new GameFeedbackCategoryFactory(otherGame).state(() => ({ internalName: 'bugs' })).one()
 
     const res = await request(global.app)
       .post(`/games/${game.id}/game-feedback/categories`)

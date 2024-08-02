@@ -10,7 +10,7 @@ describe('Player group service - preview count', () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({}, organisation)
 
-    const player = await new PlayerFactory([game]).with(() => ({ lastSeenAt: new Date(2022, 4, 3) })).one()
+    const player = await new PlayerFactory([game]).state(() => ({ lastSeenAt: new Date(2022, 4, 3) })).one()
     await (<EntityManager>global.em).persistAndFlush(player)
 
     const rules: Partial<PlayerGroupRule>[] = [

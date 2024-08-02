@@ -35,10 +35,10 @@ describe('Leaderboard service - update entry - steamworks integration', () => {
     const leaderboard = await new LeaderboardFactory([game]).one()
     const mapping = new SteamworksLeaderboardMapping(casual.integer(100000, 999999), leaderboard)
 
-    const player = await new PlayerFactory([game]).state('with steam alias').one()
+    const player = await new PlayerFactory([game]).withSteamAlias().one()
     const entry = await new LeaderboardEntryFactory(leaderboard, [player]).one()
 
-    const config = await new IntegrationConfigFactory().with(() => ({ syncLeaderboards: true })).one()
+    const config = await new IntegrationConfigFactory().state(() => ({ syncLeaderboards: true })).one()
     const integration = await new IntegrationFactory().construct(IntegrationType.STEAMWORKS, game, config).one()
     await (<EntityManager>global.em).persistAndFlush([integration, entry, mapping])
 
@@ -76,10 +76,10 @@ describe('Leaderboard service - update entry - steamworks integration', () => {
     const leaderboard = await new LeaderboardFactory([game]).one()
     const mapping = new SteamworksLeaderboardMapping(casual.integer(100000, 999999), leaderboard)
 
-    const player = await new PlayerFactory([game]).state('with steam alias').one()
-    const entry = await new LeaderboardEntryFactory(leaderboard, [player]).with(() => ({ hidden: true })).one()
+    const player = await new PlayerFactory([game]).withSteamAlias().one()
+    const entry = await new LeaderboardEntryFactory(leaderboard, [player]).state(() => ({ hidden: true })).one()
 
-    const config = await new IntegrationConfigFactory().with(() => ({ syncLeaderboards: true })).one()
+    const config = await new IntegrationConfigFactory().state(() => ({ syncLeaderboards: true })).one()
     const integration = await new IntegrationFactory().construct(IntegrationType.STEAMWORKS, game, config).one()
     await (<EntityManager>global.em).persistAndFlush([integration, entry, mapping])
 
@@ -109,10 +109,10 @@ describe('Leaderboard service - update entry - steamworks integration', () => {
     const leaderboard = await new LeaderboardFactory([game]).one()
     const mapping = new SteamworksLeaderboardMapping(casual.integer(100000, 999999), leaderboard)
 
-    const player = await new PlayerFactory([game]).state('with steam alias').one()
-    const entry = await new LeaderboardEntryFactory(leaderboard, [player]).with(() => ({ hidden: casual.boolean })).one()
+    const player = await new PlayerFactory([game]).withSteamAlias().one()
+    const entry = await new LeaderboardEntryFactory(leaderboard, [player]).state(() => ({ hidden: casual.boolean })).one()
 
-    const config = await new IntegrationConfigFactory().with(() => ({ syncLeaderboards: false })).one()
+    const config = await new IntegrationConfigFactory().state(() => ({ syncLeaderboards: false })).one()
     const integration = await new IntegrationFactory().construct(IntegrationType.STEAMWORKS, game, config).one()
     await (<EntityManager>global.em).persistAndFlush([integration, entry, mapping])
 
@@ -135,10 +135,10 @@ describe('Leaderboard service - update entry - steamworks integration', () => {
     const leaderboard = await new LeaderboardFactory([game]).one()
     const mapping = new SteamworksLeaderboardMapping(casual.integer(100000, 999999), leaderboard)
 
-    const player = await new PlayerFactory([game]).state('with username alias').one()
-    const entry = await new LeaderboardEntryFactory(leaderboard, [player]).with(() => ({ hidden: casual.boolean })).one()
+    const player = await new PlayerFactory([game]).withUsernameAlias().one()
+    const entry = await new LeaderboardEntryFactory(leaderboard, [player]).state(() => ({ hidden: casual.boolean })).one()
 
-    const config = await new IntegrationConfigFactory().with(() => ({ syncLeaderboards: true })).one()
+    const config = await new IntegrationConfigFactory().state(() => ({ syncLeaderboards: true })).one()
     const integration = await new IntegrationFactory().construct(IntegrationType.STEAMWORKS, game, config).one()
     await (<EntityManager>global.em).persistAndFlush([integration, entry, mapping])
 
@@ -160,10 +160,10 @@ describe('Leaderboard service - update entry - steamworks integration', () => {
 
     const leaderboard = await new LeaderboardFactory([game]).one()
 
-    const player = await new PlayerFactory([game]).state('with steam alias').one()
-    const entry = await new LeaderboardEntryFactory(leaderboard, [player]).with(() => ({ hidden: casual.boolean })).one()
+    const player = await new PlayerFactory([game]).withSteamAlias().one()
+    const entry = await new LeaderboardEntryFactory(leaderboard, [player]).state(() => ({ hidden: casual.boolean })).one()
 
-    const config = await new IntegrationConfigFactory().with(() => ({ syncLeaderboards: true })).one()
+    const config = await new IntegrationConfigFactory().state(() => ({ syncLeaderboards: true })).one()
     const integration = await new IntegrationFactory().construct(IntegrationType.STEAMWORKS, game, config).one()
     await (<EntityManager>global.em).persistAndFlush([integration, entry])
 

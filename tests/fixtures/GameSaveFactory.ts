@@ -9,13 +9,12 @@ export default class GameSaveFactory extends Factory<GameSave> {
   private availablePlayers: Player[]
 
   constructor(availablePlayers: Player[]) {
-    super(GameSave, 'base')
-    this.register('base', this.base)
+    super(GameSave)
 
     this.availablePlayers = availablePlayers
   }
 
-  protected async base(): Promise<Partial<GameSave>> {
+  protected definition(): void {
     const objects = [...new Array(casual.integer(2, 5))].map(() => ({
       id: casual.uuid,
       name: casual.name,
@@ -40,13 +39,13 @@ export default class GameSaveFactory extends Factory<GameSave> {
 
     const player = casual.random_element(this.availablePlayers)
 
-    return {
+    this.state(() => ({
       name: `save-level${casual.integer(1, 20)}-${Date.now()}`,
       content: {
         objects
       },
       player,
       updatedAt: randomDate(sub(new Date(), { weeks: 2 }), new Date())
-    }
+    }))
   }
 }

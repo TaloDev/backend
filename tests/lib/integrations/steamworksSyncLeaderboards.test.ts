@@ -126,7 +126,7 @@ describe('Steamworks integration - sync leaderboards', () => {
   it('should update leaderboards with properties from steamworks', async () => {
     const [, game] = await createOrganisationAndGame(em)
 
-    const leaderboard = await new LeaderboardFactory([game]).with(() => ({ sortMode: LeaderboardSortMode.ASC })).one()
+    const leaderboard = await new LeaderboardFactory([game]).state(() => ({ sortMode: LeaderboardSortMode.ASC })).one()
     const mapping = new SteamworksLeaderboardMapping(casual.integer(100000, 999999), leaderboard)
 
     const config = await new IntegrationConfigFactory().one()
@@ -231,7 +231,7 @@ describe('Steamworks integration - sync leaderboards', () => {
   it('should create leaderboards in steamworks', async () => {
     const [, game] = await createOrganisationAndGame(em)
 
-    const leaderboard = await new LeaderboardFactory([game]).with(() => ({ sortMode: LeaderboardSortMode.DESC })).one()
+    const leaderboard = await new LeaderboardFactory([game]).state(() => ({ sortMode: LeaderboardSortMode.DESC })).one()
 
     const config = await new IntegrationConfigFactory().one()
     const integration = await new IntegrationFactory().construct(IntegrationType.STEAMWORKS, game, config).one()
@@ -278,7 +278,7 @@ describe('Steamworks integration - sync leaderboards', () => {
 
     const steamworksLeaderboardId = casual.integer(100000, 999999)
 
-    const player = await new PlayerFactory([game]).state('with steam alias').one()
+    const player = await new PlayerFactory([game]).withSteamAlias().one()
 
     const config = await new IntegrationConfigFactory().one()
     const integration = await new IntegrationFactory().construct(IntegrationType.STEAMWORKS, game, config).one()
@@ -332,7 +332,7 @@ describe('Steamworks integration - sync leaderboards', () => {
     const leaderboard = await new LeaderboardFactory([game]).one()
     const mapping = new SteamworksLeaderboardMapping(casual.integer(100000, 999999), leaderboard)
 
-    const player = await new PlayerFactory([game]).state('with steam alias').one()
+    const player = await new PlayerFactory([game]).withSteamAlias().one()
     const entry = await new LeaderboardEntryFactory(leaderboard, [player]).one()
 
     const config = await new IntegrationConfigFactory().one()

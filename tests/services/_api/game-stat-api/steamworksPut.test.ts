@@ -28,10 +28,10 @@ describe('Game stats API service - put - steamworks integration', () => {
 
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_STATS])
 
-    const stat = await new GameStatFactory([apiKey.game]).with(() => ({ maxChange: 99, maxValue: 3000 })).one()
-    const player = await new PlayerFactory([apiKey.game]).state('with steam alias').one()
+    const stat = await new GameStatFactory([apiKey.game]).state(() => ({ maxChange: 99, maxValue: 3000 })).one()
+    const player = await new PlayerFactory([apiKey.game]).withSteamAlias().one()
 
-    const config = await new IntegrationConfigFactory().with(() => ({ syncStats: true })).one()
+    const config = await new IntegrationConfigFactory().state(() => ({ syncStats: true })).one()
     const integration = await new IntegrationFactory().construct(IntegrationType.STEAMWORKS, apiKey.game, config).one()
     await (<EntityManager>global.em).persistAndFlush([integration, stat, player])
 
@@ -62,10 +62,10 @@ describe('Game stats API service - put - steamworks integration', () => {
 
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_STATS])
 
-    const stat = await new GameStatFactory([apiKey.game]).with(() => ({ maxChange: 99, maxValue: 3000 })).one()
-    const player = await new PlayerFactory([apiKey.game]).state('with steam alias').one()
+    const stat = await new GameStatFactory([apiKey.game]).state(() => ({ maxChange: 99, maxValue: 3000 })).one()
+    const player = await new PlayerFactory([apiKey.game]).withSteamAlias().one()
 
-    const config = await new IntegrationConfigFactory().with(() => ({ syncStats: false })).one()
+    const config = await new IntegrationConfigFactory().state(() => ({ syncStats: false })).one()
     const integration = await new IntegrationFactory().construct(IntegrationType.STEAMWORKS, apiKey.game, config).one()
     await (<EntityManager>global.em).persistAndFlush([integration, stat, player])
 

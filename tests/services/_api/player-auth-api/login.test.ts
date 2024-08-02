@@ -20,8 +20,8 @@ describe('Player auth API service - login', () => {
   it('should login a player if the api key has the correct scopes', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_PLAYERS, APIKeyScope.WRITE_PLAYERS])
 
-    const player = await new PlayerFactory([apiKey.game]).state('with talo alias').with(async () => ({
-      auth: await new PlayerAuthFactory().with(async () => ({
+    const player = await new PlayerFactory([apiKey.game]).withTaloAlias().state(async () => ({
+      auth: await new PlayerAuthFactory().state(async () => ({
         password: await bcrypt.hash('password', 10),
         email: 'boz@mail.com',
         verificationEnabled: false
@@ -56,8 +56,8 @@ describe('Player auth API service - login', () => {
   it('should not login a player if the api key does not have the correct scopes', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([])
 
-    const player = await new PlayerFactory([apiKey.game]).state('with talo alias').with(async () => ({
-      auth: await new PlayerAuthFactory().with(async () => ({
+    const player = await new PlayerFactory([apiKey.game]).withTaloAlias().state(async () => ({
+      auth: await new PlayerAuthFactory().state(async () => ({
         password: await bcrypt.hash('password', 10)
       })).one()
     })).one()
@@ -75,8 +75,8 @@ describe('Player auth API service - login', () => {
   it('should not login a player if the password is incorrect', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_PLAYERS, APIKeyScope.WRITE_PLAYERS])
 
-    const player = await new PlayerFactory([apiKey.game]).state('with talo alias').with(async () => ({
-      auth: await new PlayerAuthFactory().with(async () => ({
+    const player = await new PlayerFactory([apiKey.game]).withTaloAlias().state(async () => ({
+      auth: await new PlayerAuthFactory().state(async () => ({
         password: await bcrypt.hash('password', 10),
         email: 'boz@mail.com',
         verificationEnabled: false
@@ -101,8 +101,8 @@ describe('Player auth API service - login', () => {
   it('should not login a player if the identifier does not exist', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_PLAYERS, APIKeyScope.WRITE_PLAYERS])
 
-    const player = await new PlayerFactory([apiKey.game]).state('with talo alias').with(async () => ({
-      auth: await new PlayerAuthFactory().with(async () => ({
+    const player = await new PlayerFactory([apiKey.game]).withTaloAlias().state(async () => ({
+      auth: await new PlayerAuthFactory().state(async () => ({
         password: await bcrypt.hash('password', 10),
         email: 'boz@mail.com',
         verificationEnabled: false
@@ -128,8 +128,8 @@ describe('Player auth API service - login', () => {
 
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_PLAYERS, APIKeyScope.WRITE_PLAYERS])
 
-    const player = await new PlayerFactory([apiKey.game]).state('with talo alias').with(async () => ({
-      auth: await new PlayerAuthFactory().with(async () => ({
+    const player = await new PlayerFactory([apiKey.game]).withTaloAlias().state(async () => ({
+      auth: await new PlayerAuthFactory().state(async () => ({
         password: await bcrypt.hash('password', 10),
         email: 'boz@mail.com',
         verificationEnabled: true

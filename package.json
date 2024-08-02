@@ -22,7 +22,7 @@
   "author": "Sleepy Studios",
   "license": "MIT",
   "devDependencies": {
-    "@mikro-orm/cli": "^6.2.9",
+    "@mikro-orm/cli": "^6.3.2",
     "@stylistic/eslint-plugin": "^2.2.2",
     "@types/koa": "^2.13.5",
     "@types/koa-bodyparser": "^4.3.7",
@@ -49,10 +49,10 @@
   "dependencies": {
     "@dinero.js/currencies": "^2.0.0-alpha.14",
     "@koa/cors": "^5.0.0",
-    "@mikro-orm/core": "^6.2.9",
-    "@mikro-orm/migrations": "^6.2.9",
-    "@mikro-orm/mysql": "^6.2.9",
-    "@mikro-orm/reflection": "^6.2.9",
+    "@mikro-orm/core": "^6.3.2",
+    "@mikro-orm/migrations": "^6.3.2",
+    "@mikro-orm/mysql": "^6.3.2",
+    "@mikro-orm/reflection": "^6.3.2",
     "@sendgrid/mail": "^7.6.2",
     "@sentry/node": "^7.47.0",
     "@sentry/utils": "^7.47.0",
@@ -84,7 +84,6 @@
     "uuid": "^9.0.0"
   },
   "mikro-orm": {
-    "useTsNode": true,
     "configPaths": [
       "./src/config/mikro-orm.config.ts",
       "./config/mikro-orm.config.js"

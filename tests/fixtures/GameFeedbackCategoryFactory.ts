@@ -7,20 +7,18 @@ export default class GameFeedbackCategoryFactory extends Factory<GameFeedbackCat
   private game: Game
 
   constructor(game: Game) {
-    super(GameFeedbackCategory, 'base')
-
-    this.register('base', this.base)
+    super(GameFeedbackCategory)
 
     this.game = game
   }
 
-  protected base(): Partial<GameFeedbackCategory> {
-    return {
+  protected definition(): void {
+    this.state(() => ({
       internalName: casual.array_of_words(3).join('-'),
       name: casual.title,
       description: casual.short_description,
       game: this.game,
       anonymised: casual.boolean
-    }
+    }))
   }
 }

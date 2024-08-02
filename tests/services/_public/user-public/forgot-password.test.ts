@@ -11,7 +11,7 @@ describe('User public service - forgot password', () => {
   })
 
   it('should let a user request a forgot password email for an existing user', async () => {
-    const user = await new UserFactory().with(() => ({ password: 'p4ssw0rd' })).one()
+    const user = await new UserFactory().state(() => ({ password: 'p4ssw0rd' })).one()
     await (<EntityManager>global.em).persistAndFlush(user)
 
     await request(global.app)

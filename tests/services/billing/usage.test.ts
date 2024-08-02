@@ -16,29 +16,29 @@ describe('Billing service - usage', () => {
     const [token] = await createUserAndToken({ type }, organisation)
 
     const invitePlanAction = await new PricingPlanActionFactory()
-      .with(() => ({ pricingPlan: organisation.pricingPlan.pricingPlan, type: PricingPlanActionType.USER_INVITE }))
+      .state(() => ({ pricingPlan: organisation.pricingPlan.pricingPlan, type: PricingPlanActionType.USER_INVITE }))
       .one()
 
     const exportPlanAction = await new PricingPlanActionFactory()
-      .with(() => ({ pricingPlan: organisation.pricingPlan.pricingPlan, type: PricingPlanActionType.DATA_EXPORT }))
+      .state(() => ({ pricingPlan: organisation.pricingPlan.pricingPlan, type: PricingPlanActionType.DATA_EXPORT }))
       .one()
 
     const inviteActions = await new OrganisationPricingPlanActionFactory(organisation.pricingPlan)
-      .with(() => ({
+      .state(() => ({
         type: PricingPlanActionType.USER_INVITE,
         createdAt: randomDate(sub(new Date(), { months: 2 }), new Date())
       }))
       .many(casual.integer(1, 10))
 
     const exportActionsThisMonth = await new OrganisationPricingPlanActionFactory(organisation.pricingPlan)
-      .with(() => ({
+      .state(() => ({
         type: PricingPlanActionType.DATA_EXPORT,
         createdAt: new Date()
       }))
       .many(casual.integer(1, 10))
 
     const exportActionsLastMonth = await new OrganisationPricingPlanActionFactory(organisation.pricingPlan)
-      .with(() => ({
+      .state(() => ({
         type: PricingPlanActionType.DATA_EXPORT,
         createdAt: sub(new Date(), { months: 1 })
       }))

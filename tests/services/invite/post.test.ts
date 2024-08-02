@@ -51,7 +51,8 @@ describe('Invite service - post', () => {
   it('should not create an invite when an invite exists for the same email', async () => {
     const [token, user] = await createUserAndToken({ type: UserType.ADMIN, emailConfirmed: true })
 
-    const invite = await new InviteFactory().construct(user.organisation).with(() => ({
+    const invite = await new InviteFactory().state(() => ({
+      organisation: user.organisation,
       email: casual.email
     })).one()
     await (<EntityManager>global.em).persistAndFlush(invite)
@@ -94,7 +95,8 @@ describe('Invite service - post', () => {
     const [otherOrg] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({ type: UserType.ADMIN, emailConfirmed: true })
 
-    const invite = await new InviteFactory().construct(otherOrg).with(() => ({
+    const invite = await new InviteFactory().state(() => ({
+      organisation: otherOrg,
       email: casual.email
     })).one()
     await (<EntityManager>global.em).persistAndFlush(invite)
@@ -111,7 +113,7 @@ describe('Invite service - post', () => {
   it('should not create an invite when a user exists for the same email', async () => {
     const [token] = await createUserAndToken({ type: UserType.ADMIN, emailConfirmed: true })
 
-    const user = await new UserFactory().with(() => ({ email: casual.email })).one()
+    const user = await new UserFactory().state(() => ({ email: casual.email })).one()
     await (<EntityManager>global.em).persistAndFlush(user)
 
     const res = await request(global.app)
@@ -124,9 +126,9 @@ describe('Invite service - post', () => {
   })
 
   it('should not create an invite if a pricing plan limit has been hit', async () => {
-    const planAction = await new PricingPlanActionFactory().with(() => ({ type: PricingPlanActionType.USER_INVITE })).one()
-    const orgPlan = await new OrganisationPricingPlanFactory().with(() => ({ pricingPlan: planAction.pricingPlan })).one()
-    const orgPlanActions = await new OrganisationPricingPlanActionFactory(orgPlan).with(() => ({ type: planAction.type })).many(planAction.limit)
+    const planAction = await new PricingPlanActionFactory().state(() => ({ type: PricingPlanActionType.USER_INVITE })).one()
+    const orgPlan = await new OrganisationPricingPlanFactory().state(() => ({ pricingPlan: planAction.pricingPlan })).one()
+    const orgPlanActions = await new OrganisationPricingPlanActionFactory(orgPlan).state(() => ({ type: planAction.type })).many(planAction.limit)
 
     const [organisation] = await createOrganisationAndGame({ pricingPlan: orgPlan })
     const [token] = await createUserAndToken({ type: UserType.ADMIN, emailConfirmed: true }, organisation)
@@ -141,9 +143,9 @@ describe('Invite service - post', () => {
   })
 
   it('should reject creating an invite if the organisation plan is not in the active state', async () => {
-    const planAction = await new PricingPlanActionFactory().with(() => ({ type: PricingPlanActionType.USER_INVITE })).one()
-    const orgPlan = await new OrganisationPricingPlanFactory().with(() => ({ pricingPlan: planAction.pricingPlan, status: 'incomplete' })).one()
-    const orgPlanActions = await new OrganisationPricingPlanActionFactory(orgPlan).with(() => ({ type: planAction.type })).many(planAction.limit)
+    const planAction = await new PricingPlanActionFactory().state(() => ({ type: PricingPlanActionType.USER_INVITE })).one()
+    const orgPlan = await new OrganisationPricingPlanFactory().state(() => ({ pricingPlan: planAction.pricingPlan, status: 'incomplete' })).one()
+    const orgPlanActions = await new OrganisationPricingPlanActionFactory(orgPlan).state(() => ({ type: planAction.type })).many(planAction.limit)
 
     const [organisation] = await createOrganisationAndGame({ pricingPlan: orgPlan })
     const [token] = await createUserAndToken({ type: UserType.ADMIN, emailConfirmed: true }, organisation)

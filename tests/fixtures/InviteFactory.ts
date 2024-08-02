@@ -3,20 +3,24 @@ import casual from 'casual'
 import Invite from '../../src/entities/invite'
 import { UserType } from '../../src/entities/user'
 import UserFactory from './UserFactory'
+import OrganisationFactory from './OrganisationFactory'
 
 export default class InviteFactory extends Factory<Invite> {
   constructor() {
-    super(Invite, 'base')
-    this.register('base', this.base)
+    super(Invite)
   }
 
-  protected async base(invite: Partial<Invite>): Promise<Partial<Invite>> {
-    const invitedByUser = await new UserFactory().with(() => ({ organisation: invite.organisation })).one()
+  protected definition(): void {
+    this.state(async () => {
+      const organisation = await new OrganisationFactory().one()
+      const invitedByUser = await new UserFactory().state(() => ({ organisation })).one()
 
-    return {
-      email: casual.email,
-      type: casual.random_element([UserType.DEV, UserType.ADMIN]),
-      invitedByUser
-    }
+      return {
+        email: casual.email,
+        organisation,
+        type: casual.random_element([UserType.DEV, UserType.ADMIN]),
+        invitedByUser
+      }
+    })
   }
 }

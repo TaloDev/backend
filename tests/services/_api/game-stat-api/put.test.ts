@@ -12,7 +12,7 @@ describe('Game stats API service - put', () => {
   const createStat = async (game: Game, props: Partial<GameStat>) => {
     const em: EntityManager  = global.em
 
-    const stat = await new GameStatFactory([game]).with(() => ({ ...props })).one()
+    const stat = await new GameStatFactory([game]).state(() => ({ ...props })).one()
     em.persist(stat)
 
     return stat
@@ -179,7 +179,10 @@ describe('Game stats API service - put', () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_STATS])
     const stat = await createStat(apiKey.game, { maxValue: 999, maxChange: 99, defaultValue: 0, global: false })
     const player = await new PlayerFactory([apiKey.game]).one()
-    const playerStat = await new PlayerGameStatFactory().construct(player, stat).with(() => ({ value: 10, createdAt: new Date(2021, 1, 1) })).one()
+    const playerStat = await new PlayerGameStatFactory()
+      .construct(player, stat)
+      .state(() => ({ value: 10, createdAt: new Date(2021, 1, 1) }))
+      .one()
     await (<EntityManager>global.em).persistAndFlush(playerStat)
 
     const res = await request(global.app)

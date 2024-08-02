@@ -21,7 +21,7 @@ describe('Webhook service - subscription updated', () => {
 
   it('should update the organisation pricing plan with the updated subscription\'s details', async () => {
     const product = (await stripe.products.list()).data[0]
-    const plan = await new PricingPlanFactory().with(() => ({ stripeId: product.id })).one()
+    const plan = await new PricingPlanFactory().state(() => ({ stripeId: product.id })).one()
 
     const [organisation] = await createOrganisationAndGame({}, {}, plan)
     const subscription = (await stripe.subscriptions.list()).data[0]
@@ -65,7 +65,7 @@ describe('Webhook service - subscription updated', () => {
 
   it('should not send a plan upgrade email if the plan has not changed', async () => {
     const product = (await stripe.products.list()).data[0]
-    const plan = await new PricingPlanFactory().with(() => ({ stripeId: product.id })).one()
+    const plan = await new PricingPlanFactory().state(() => ({ stripeId: product.id })).one()
 
     const [organisation] = await createOrganisationAndGame({}, {}, plan)
     const subscription = (await stripe.subscriptions.list()).data[0]
@@ -107,7 +107,7 @@ describe('Webhook service - subscription updated', () => {
 
   it('should update the organisation pricing plan end date if the plan was renewed', async () => {
     const product = (await stripe.products.list()).data[0]
-    const plan = await new PricingPlanFactory().with(() => ({ stripeId: product.id })).one()
+    const plan = await new PricingPlanFactory().state(() => ({ stripeId: product.id })).one()
 
     const [organisation] = await createOrganisationAndGame({}, {}, plan)
     const subscription = (await stripe.subscriptions.list()).data[0]
@@ -152,7 +152,7 @@ describe('Webhook service - subscription updated', () => {
 
   it('should update the organisation pricing plan end date if the plan was cancelled', async () => {
     const product = (await stripe.products.list()).data[0]
-    const plan = await new PricingPlanFactory().with(() => ({ stripeId: product.id })).one()
+    const plan = await new PricingPlanFactory().state(() => ({ stripeId: product.id })).one()
 
     const [organisation] = await createOrganisationAndGame({}, {}, plan)
     const subscription = (await stripe.subscriptions.list()).data[0]
@@ -198,7 +198,7 @@ describe('Webhook service - subscription updated', () => {
 
   it('should not send any plan cancellation/renewal emails if the subscription is not ending', async () => {
     const product = (await stripe.products.list()).data[0]
-    const plan = await new PricingPlanFactory().with(() => ({ stripeId: product.id })).one()
+    const plan = await new PricingPlanFactory().state(() => ({ stripeId: product.id })).one()
 
     const [organisation] = await createOrganisationAndGame({}, {}, plan)
     const subscription = (await stripe.subscriptions.list()).data[0]

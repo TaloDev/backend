@@ -60,7 +60,7 @@ describe('API key service - delete', () => {
     const [otherOrg, otherGame] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({ type: UserType.ADMIN })
 
-    const user = await new UserFactory().with(() => ({ organisation: otherOrg })).one()
+    const user = await new UserFactory().state(() => ({ organisation: otherOrg })).one()
     const key = new APIKey(otherGame, user)
     await (<EntityManager>global.em).persistAndFlush(key)
 

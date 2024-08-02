@@ -27,7 +27,7 @@ describe('Player API service - identify', () => {
 
   it('should update the lastSeenAt when a player identifies', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_PLAYERS])
-    const player = await new PlayerFactory([apiKey.game]).state('not seen today').one()
+    const player = await new PlayerFactory([apiKey.game]).notSeenToday().one()
     await (<EntityManager>global.em).persistAndFlush(player)
 
     await request(global.app)
@@ -86,11 +86,12 @@ describe('Player API service - identify', () => {
     propRule.castType = PlayerGroupRuleCastType.CHAR
     propRule.operands = ['yes']
 
-    const group = await new PlayerGroupFactory().construct(apiKey.game).with(() => ({
+    const group = await new PlayerGroupFactory().state(() => ({
+      game: apiKey.game,
       rules: [dateRule, propRule],
       ruleMode: RuleMode.AND
     })).one()
-    const player = await new PlayerFactory([apiKey.game]).with((player) => ({
+    const player = await new PlayerFactory([apiKey.game]).state((player) => ({
       lastSeenAt: new Date(2022, 0, 0),
       props: new Collection<PlayerProp>(player, [
         new PlayerProp(player, 'lastSeenAtTesting', 'yes')

@@ -16,7 +16,7 @@ describe('Data export service - included data', () => {
     const service = new DataExportService()
     const proto = Object.getPrototypeOf(service)
 
-    const player = await new PlayerFactory([game]).state('dev build').one()
+    const player = await new PlayerFactory([game]).devBuild().one()
     const event = await new EventFactory([player]).one()
     const dataExport = await new DataExportFactory(game).one()
     await (<EntityManager>global.em).persistAndFlush([event, dataExport])
@@ -31,7 +31,7 @@ describe('Data export service - included data', () => {
     const service = new DataExportService()
     const proto = Object.getPrototypeOf(service)
 
-    const player = await new PlayerFactory([game]).state('dev build').one()
+    const player = await new PlayerFactory([game]).devBuild().one()
     const event = await new EventFactory([player]).one()
     const dataExport = await new DataExportFactory(game).one()
     await (<EntityManager>global.em).persistAndFlush([event, dataExport])
@@ -46,7 +46,7 @@ describe('Data export service - included data', () => {
     const service = new DataExportService()
     const proto = Object.getPrototypeOf(service)
 
-    const player = await new PlayerFactory([game]).state('dev build').one()
+    const player = await new PlayerFactory([game]).devBuild().one()
     const dataExport = await new DataExportFactory(game).one()
     await (<EntityManager>global.em).persistAndFlush([player, dataExport])
 
@@ -60,7 +60,7 @@ describe('Data export service - included data', () => {
     const service = new DataExportService()
     const proto = Object.getPrototypeOf(service)
 
-    const player = await new PlayerFactory([game]).state('dev build').one()
+    const player = await new PlayerFactory([game]).devBuild().one()
     const dataExport = await new DataExportFactory(game).one()
     await (<EntityManager>global.em).persistAndFlush([player, dataExport])
 
@@ -74,7 +74,7 @@ describe('Data export service - included data', () => {
     const service = new DataExportService()
     const proto = Object.getPrototypeOf(service)
 
-    const player = await new PlayerFactory([game]).state('dev build').one()
+    const player = await new PlayerFactory([game]).devBuild().one()
     const dataExport = await new DataExportFactory(game).one()
     await (<EntityManager>global.em).persistAndFlush([player, dataExport])
 
@@ -88,7 +88,7 @@ describe('Data export service - included data', () => {
     const service = new DataExportService()
     const proto = Object.getPrototypeOf(service)
 
-    const player = await new PlayerFactory([game]).state('dev build').one()
+    const player = await new PlayerFactory([game]).devBuild().one()
     const dataExport = await new DataExportFactory(game).one()
     await (<EntityManager>global.em).persistAndFlush([player, dataExport])
 
@@ -102,7 +102,7 @@ describe('Data export service - included data', () => {
     const service = new DataExportService()
     const proto = Object.getPrototypeOf(service)
 
-    const player = await new PlayerFactory([game]).state('dev build').one()
+    const player = await new PlayerFactory([game]).devBuild().one()
     const leaderboard = await new LeaderboardFactory([game]).one()
     const entry = await new LeaderboardEntryFactory(leaderboard, [player]).one()
     const dataExport = await new DataExportFactory(game).one()
@@ -118,7 +118,7 @@ describe('Data export service - included data', () => {
     const service = new DataExportService()
     const proto = Object.getPrototypeOf(service)
 
-    const player = await new PlayerFactory([game]).state('dev build').one()
+    const player = await new PlayerFactory([game]).devBuild().one()
     const leaderboard = await new LeaderboardFactory([game]).one()
     const entry = await new LeaderboardEntryFactory(leaderboard, [player]).one()
     const dataExport = await new DataExportFactory(game).one()
@@ -134,9 +134,9 @@ describe('Data export service - included data', () => {
     const service = new DataExportService()
     const proto = Object.getPrototypeOf(service)
 
-    const player = await new PlayerFactory([game]).state('dev build').one()
-    const stat = await new GameStatFactory([game]).state('global').with(() => ({ globalValue: 50 })).one()
-    const playerStat = await new PlayerGameStatFactory().construct(player, stat).with(() => ({ value: 10 })).one()
+    const player = await new PlayerFactory([game]).devBuild().one()
+    const stat = await new GameStatFactory([game]).global().state(() => ({ globalValue: 50 })).one()
+    const playerStat = await new PlayerGameStatFactory().construct(player, stat).state(() => ({ value: 10 })).one()
     const dataExport = await new DataExportFactory(game).one()
     await (<EntityManager>global.em).persistAndFlush([playerStat, dataExport])
 
@@ -150,9 +150,9 @@ describe('Data export service - included data', () => {
     const service = new DataExportService()
     const proto = Object.getPrototypeOf(service)
 
-    const player = await new PlayerFactory([game]).state('dev build').one()
-    const stat = await new GameStatFactory([game]).state('global').with(() => ({ globalValue: 50 })).one()
-    const playerStat = await new PlayerGameStatFactory().construct(player, stat).with(() => ({ value: 10 })).one()
+    const player = await new PlayerFactory([game]).devBuild().one()
+    const stat = await new GameStatFactory([game]).global().state(() => ({ globalValue: 50 })).one()
+    const playerStat = await new PlayerGameStatFactory().construct(player, stat).state(() => ({ value: 10 })).one()
     const dataExport = await new DataExportFactory(game).one()
     await (<EntityManager>global.em).persistAndFlush([playerStat, dataExport])
 
@@ -166,9 +166,9 @@ describe('Data export service - included data', () => {
     const service = new DataExportService()
     const proto = Object.getPrototypeOf(service)
 
-    const player = await new PlayerFactory([game]).state('dev build').one()
-    const stat = await new GameStatFactory([game]).state('global').with(() => ({ globalValue: 50 })).one()
-    const playerStat = await new PlayerGameStatFactory().construct(player, stat).with(() => ({ value: 10 })).one()
+    const player = await new PlayerFactory([game]).devBuild().one()
+    const stat = await new GameStatFactory([game]).global().state(() => ({ globalValue: 50 })).one()
+    const playerStat = await new PlayerGameStatFactory().construct(player, stat).state(() => ({ value: 10 })).one()
     const dataExport = await new DataExportFactory(game).one()
     await (<EntityManager>global.em).persistAndFlush([playerStat, dataExport])
 
@@ -182,9 +182,9 @@ describe('Data export service - included data', () => {
     const service = new DataExportService()
     const proto = Object.getPrototypeOf(service)
 
-    const player = await new PlayerFactory([game]).state('dev build').one()
-    const stat = await new GameStatFactory([game]).state('global').with(() => ({ globalValue: 50 })).one()
-    const playerStat = await new PlayerGameStatFactory().construct(player, stat).with(() => ({ value: 10 })).one()
+    const player = await new PlayerFactory([game]).devBuild().one()
+    const stat = await new GameStatFactory([game]).global().state(() => ({ globalValue: 50 })).one()
+    const playerStat = await new PlayerGameStatFactory().construct(player, stat).state(() => ({ value: 10 })).one()
     const dataExport = await new DataExportFactory(game).one()
     await (<EntityManager>global.em).persistAndFlush([playerStat, dataExport])
 

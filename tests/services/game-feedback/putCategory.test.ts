@@ -10,7 +10,7 @@ describe('Game feedback service - put category', () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({}, organisation)
 
-    const feedbackCategory = await new GameFeedbackCategoryFactory(game).with(() => ({ anonymised: false })).one()
+    const feedbackCategory = await new GameFeedbackCategoryFactory(game).state(() => ({ anonymised: false })).one()
     await (<EntityManager>global.em).persistAndFlush(feedbackCategory)
 
     const res = await request(global.app)
@@ -39,7 +39,7 @@ describe('Game feedback service - put category', () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({}, organisation)
 
-    const feedbackCategory = await new GameFeedbackCategoryFactory(game).with(() => ({
+    const feedbackCategory = await new GameFeedbackCategoryFactory(game).state(() => ({
       name: 'Bugs',
       description: 'Bug reports',
       anonymised: true
@@ -72,7 +72,7 @@ describe('Game feedback service - put category', () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({}, organisation)
 
-    const feedbackCategory = await new GameFeedbackCategoryFactory(game).with(() => ({ anonymised: false })).one()
+    const feedbackCategory = await new GameFeedbackCategoryFactory(game).state(() => ({ anonymised: false })).one()
     await (<EntityManager>global.em).persistAndFlush(feedbackCategory)
 
     const res = await request(global.app)

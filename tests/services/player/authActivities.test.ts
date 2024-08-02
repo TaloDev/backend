@@ -12,8 +12,8 @@ describe('Player service - get auth activities', () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({ type }, organisation)
 
-    const player = await new PlayerFactory([game]).state('with talo alias').one()
-    const activities = await new PlayerAuthActivityFactory(game).with(() => ({ player })).many(10)
+    const player = await new PlayerFactory([game]).withTaloAlias().one()
+    const activities = await new PlayerAuthActivityFactory(game).state(() => ({ player })).many(10)
 
     await (<EntityManager>global.em).persistAndFlush(activities)
 

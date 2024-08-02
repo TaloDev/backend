@@ -69,7 +69,7 @@ describe('Leaderboard API service - post', () => {
   it('should update an existing entry for unique leaderboards', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_LEADERBOARDS])
     const player = await new PlayerFactory([apiKey.game]).one()
-    const leaderboard = await new LeaderboardFactory([apiKey.game]).with(() => ({ unique: true, sortMode: LeaderboardSortMode.DESC })).one()
+    const leaderboard = await new LeaderboardFactory([apiKey.game]).state(() => ({ unique: true, sortMode: LeaderboardSortMode.DESC })).one()
     await (<EntityManager>global.em).persistAndFlush([player, leaderboard])
 
     let res = await request(global.app)
@@ -97,11 +97,11 @@ describe('Leaderboard API service - post', () => {
   it('should update an existing entry\'s created at for unique leaderboards', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_LEADERBOARDS])
     const player = await new PlayerFactory([apiKey.game]).one()
-    const leaderboard = await new LeaderboardFactory([apiKey.game]).with(() => ({ unique: true, sortMode: LeaderboardSortMode.DESC })).one()
+    const leaderboard = await new LeaderboardFactory([apiKey.game]).state(() => ({ unique: true, sortMode: LeaderboardSortMode.DESC })).one()
 
     const originalDate = subHours(new Date(), 2)
 
-    const entry = await new LeaderboardEntryFactory(leaderboard, [player]).with(() => ({
+    const entry = await new LeaderboardEntryFactory(leaderboard, [player]).state(() => ({
       score: 100,
       createdAt: originalDate,
       playerAlias: player.aliases[0]
@@ -125,7 +125,7 @@ describe('Leaderboard API service - post', () => {
   it('should add new entries for non-unique leaderboards', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_LEADERBOARDS])
     const player = await new PlayerFactory([apiKey.game]).one()
-    const leaderboard = await new LeaderboardFactory([apiKey.game]).with(() => ({ unique: false })).one()
+    const leaderboard = await new LeaderboardFactory([apiKey.game]).state(() => ({ unique: false })).one()
     await (<EntityManager>global.em).persistAndFlush([player, leaderboard])
 
     let res = await request(global.app)
@@ -152,7 +152,7 @@ describe('Leaderboard API service - post', () => {
   it('should not update an existing entry if the score is less than the current score and the sortMode is DESC', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_LEADERBOARDS])
     const player = await new PlayerFactory([apiKey.game]).one()
-    const leaderboard = await new LeaderboardFactory([apiKey.game]).with(() => ({ unique: true, sortMode: LeaderboardSortMode.DESC })).one()
+    const leaderboard = await new LeaderboardFactory([apiKey.game]).state(() => ({ unique: true, sortMode: LeaderboardSortMode.DESC })).one()
     await (<EntityManager>global.em).persistAndFlush([player, leaderboard])
 
     let res = await request(global.app)
@@ -178,7 +178,7 @@ describe('Leaderboard API service - post', () => {
   it('should not update an existing entry if the score is greater than the current score and the sortMode is ASC', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_LEADERBOARDS])
     const player = await new PlayerFactory([apiKey.game]).one()
-    const leaderboard = await new LeaderboardFactory([apiKey.game]).with(() => ({ unique: true, sortMode: LeaderboardSortMode.ASC })).one()
+    const leaderboard = await new LeaderboardFactory([apiKey.game]).state(() => ({ unique: true, sortMode: LeaderboardSortMode.ASC })).one()
     await (<EntityManager>global.em).persistAndFlush([player, leaderboard])
 
     let res = await request(global.app)
@@ -204,10 +204,10 @@ describe('Leaderboard API service - post', () => {
   it('should return the correct position if there are dev entries but no dev data header sent', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_LEADERBOARDS])
     const player = await new PlayerFactory([apiKey.game]).one()
-    const leaderboard = await new LeaderboardFactory([apiKey.game]).with(() => ({ unique: false, sortMode: LeaderboardSortMode.ASC })).one()
+    const leaderboard = await new LeaderboardFactory([apiKey.game]).state(() => ({ unique: false, sortMode: LeaderboardSortMode.ASC })).one()
 
-    const devPlayer = await new PlayerFactory([apiKey.game]).state('dev build').one()
-    const devEntry = await new LeaderboardEntryFactory(leaderboard, [devPlayer]).with(() => ({ score: 100 })).one()
+    const devPlayer = await new PlayerFactory([apiKey.game]).devBuild().one()
+    const devEntry = await new LeaderboardEntryFactory(leaderboard, [devPlayer]).state(() => ({ score: 100 })).one()
 
     await (<EntityManager>global.em).persistAndFlush([leaderboard, player, devEntry])
 

@@ -23,7 +23,7 @@ describe('Policy base class', () => {
   it('should reject a non-existent user', async () => {
     const [organisation, game] = await createOrganisationAndGame()
 
-    const user = await new UserFactory().with(() => ({ organisation })).one()
+    const user = await new UserFactory().state(() => ({ organisation })).one()
     await (<EntityManager>global.em).persistAndFlush(user)
 
     const token = await genAccessToken(user)

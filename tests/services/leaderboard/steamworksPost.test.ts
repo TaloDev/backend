@@ -42,7 +42,7 @@ describe('Leaderboard service - post - steamworks integration', () => {
     }])
     axiosMock.onPost('https://partner.steam-api.com/ISteamLeaderboards/FindOrCreateLeaderboard/v2').replyOnce(createMock)
 
-    const config = await new IntegrationConfigFactory().with(() => ({ syncLeaderboards: true })).one()
+    const config = await new IntegrationConfigFactory().state(() => ({ syncLeaderboards: true })).one()
     const integration = await new IntegrationFactory().construct(IntegrationType.STEAMWORKS, game, config).one()
     await (<EntityManager>global.em).persistAndFlush(integration)
 
@@ -75,7 +75,7 @@ describe('Leaderboard service - post - steamworks integration', () => {
     const createMock = vi.fn(() => [200, {}])
     axiosMock.onPost('https://partner.steam-api.com/ISteamLeaderboards/FindOrCreateLeaderboard/v2').replyOnce(createMock)
 
-    const config = await new IntegrationConfigFactory().with(() => ({ syncLeaderboards: false })).one()
+    const config = await new IntegrationConfigFactory().state(() => ({ syncLeaderboards: false })).one()
     const integration = await new IntegrationFactory().construct(IntegrationType.STEAMWORKS, game, config).one()
     await (<EntityManager>global.em).persistAndFlush(integration)
 
@@ -103,7 +103,7 @@ describe('Leaderboard service - post - steamworks integration', () => {
     const createMock = vi.fn(() => [400, 'Required parameter \'appid\' is missing'])
     axiosMock.onPost('https://partner.steam-api.com/ISteamLeaderboards/FindOrCreateLeaderboard/v2').replyOnce(createMock)
 
-    const config = await new IntegrationConfigFactory().with(() => ({ syncLeaderboards: true })).one()
+    const config = await new IntegrationConfigFactory().state(() => ({ syncLeaderboards: true })).one()
     const integration = await new IntegrationFactory().construct(IntegrationType.STEAMWORKS, game, config).one()
     await (<EntityManager>global.em).persistAndFlush(integration)
 

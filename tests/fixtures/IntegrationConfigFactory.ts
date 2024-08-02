@@ -11,17 +11,17 @@ class IntegrationConfigProvider implements IntegrationConfig {
 
 export default class IntegrationConfigFactory extends Factory<IntegrationConfigProvider> {
   constructor() {
-    super(IntegrationConfigProvider, 'base')
-
-    this.register('base', this.base)
+    super(IntegrationConfigProvider)
   }
 
-  protected base(): Partial<IntegrationConfigProvider> {
-    return {
-      apiKey: casual.uuid.replace(/-/g, ''),
-      appId: casual.integer(100000, 999999),
-      syncLeaderboards: casual.boolean,
-      syncStats: casual.boolean
-    }
+  protected definition(): void {
+    this.state(() => {
+      return {
+        apiKey: casual.uuid.replace(/-/g, ''),
+        appId: casual.integer(100000, 999999),
+        syncLeaderboards: casual.boolean,
+        syncStats: casual.boolean
+      }
+    })
   }
 }

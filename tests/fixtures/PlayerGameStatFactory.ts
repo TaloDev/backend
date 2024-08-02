@@ -4,13 +4,14 @@ import PlayerGameStat from '../../src/entities/player-game-stat'
 
 export default class PlayerGameStatFactory extends Factory<PlayerGameStat> {
   constructor() {
-    super(PlayerGameStat, 'base')
-    this.register('base', this.base)
+    super(PlayerGameStat)
   }
 
-  protected base(playerStat: PlayerGameStat): Partial<PlayerGameStat> {
-    return {
-      value: casual.boolean ? playerStat.stat.defaultValue : casual.integer(playerStat.stat.minValue, playerStat.stat.maxValue)
-    }
+  protected definition(): void {
+    this.state(async ({ stat }) => {
+      return {
+        value: casual.boolean ? stat.defaultValue : casual.integer(stat.minValue, stat.maxValue)
+      }
+    })
   }
 }

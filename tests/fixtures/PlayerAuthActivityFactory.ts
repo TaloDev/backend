@@ -8,21 +8,20 @@ export default class PlayerAuthActivityFactory extends Factory<PlayerAuthActivit
   game: Game
 
   constructor(game: Game) {
-    super(PlayerAuthActivity, 'base')
-    this.register('base', this.base)
+    super(PlayerAuthActivity)
 
     this.game = game
   }
 
-  protected async base(): Promise<Partial<PlayerAuthActivity>> {
-    return {
+  protected definition(): void {
+    this.state(async () => ({
       type: casual.random_element([
         PlayerAuthActivityType.REGISTERED,
         PlayerAuthActivityType.VERIFICATION_STARTED,
         PlayerAuthActivityType.LOGGED_IN,
         PlayerAuthActivityType.LOGGED_OUT
       ]),
-      player: await new PlayerFactory([this.game]).state('with talo alias').one()
-    }
+      player: await new PlayerFactory([this.game]).withTaloAlias().one()
+    }))
   }
 }

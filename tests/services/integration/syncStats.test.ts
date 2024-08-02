@@ -23,7 +23,7 @@ describe('Integration service - sync stats', () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({ type }, organisation)
 
-    const config = await new IntegrationConfigFactory().with(() => ({ syncStats: true })).one()
+    const config = await new IntegrationConfigFactory().state(() => ({ syncStats: true })).one()
     const integration = await new IntegrationFactory().construct(IntegrationType.STEAMWORKS, game, config).one()
     await (<EntityManager>global.em).persistAndFlush(integration)
 
@@ -54,7 +54,7 @@ describe('Integration service - sync stats', () => {
     const [, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({ type: UserType.ADMIN })
 
-    const config = await new IntegrationConfigFactory().with(() => ({ syncStats: true })).one()
+    const config = await new IntegrationConfigFactory().state(() => ({ syncStats: true })).one()
     const integration = await new IntegrationFactory().construct(IntegrationType.STEAMWORKS, game, config).one()
     await (<EntityManager>global.em).persistAndFlush(integration)
 
@@ -77,7 +77,7 @@ describe('Integration service - sync stats', () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({ type: UserType.ADMIN }, organisation)
 
-    const config = await new IntegrationConfigFactory().with(() => ({ syncStats: false })).one()
+    const config = await new IntegrationConfigFactory().state(() => ({ syncStats: false })).one()
     const integration = await new IntegrationFactory().construct(IntegrationType.STEAMWORKS, game, config).one()
     await (<EntityManager>global.em).persistAndFlush(integration)
 
@@ -100,7 +100,7 @@ describe('Integration service - sync stats', () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({ type: UserType.ADMIN }, organisation)
 
-    const config = await new IntegrationConfigFactory().with(() => ({ syncStats: false })).one()
+    const config = await new IntegrationConfigFactory().state(() => ({ syncStats: false })).one()
     const integration = await new IntegrationFactory().construct(IntegrationType.STEAMWORKS, game, config).one()
     await (<EntityManager>global.em).persistAndFlush(integration)
 

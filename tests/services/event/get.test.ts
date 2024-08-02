@@ -17,7 +17,7 @@ describe('Event service - get', () => {
 
     const dayInMs = 86400000
 
-    const events: Event[] = await new EventFactory([player]).with((event, idx) => ({
+    const events: Event[] = await new EventFactory([player]).state((event, idx) => ({
       name: 'Open inventory',
       createdAt: new Date(now.getTime() + (dayInMs * idx))
     })).many(2)
@@ -142,22 +142,22 @@ describe('Event service - get', () => {
     const dayInMs = 86400000
 
     const eventFactory = new EventFactory([player])
-    const firstEvent: Event = await eventFactory.with(() => ({
+    const firstEvent: Event = await eventFactory.state(() => ({
       name: 'Open inventory',
       createdAt: now
     })).one()
 
-    const moreEvents: Event[] = await eventFactory.with(() => ({
+    const moreEvents: Event[] = await eventFactory.state(() => ({
       name: 'Open inventory',
       createdAt: new Date(now.getTime() + dayInMs)
     })).many(2)
 
-    const evenMoreEvents: Event[] = await eventFactory.with(() => ({
+    const evenMoreEvents: Event[] = await eventFactory.state(() => ({
       name: 'Open inventory',
       createdAt: new Date(now.getTime() + dayInMs * 2)
     })).many(3)
 
-    const lastEvent: Event = await eventFactory.with(() => ({
+    const lastEvent: Event = await eventFactory.state(() => ({
       name: 'Open inventory',
       createdAt: new Date(now.getTime() + dayInMs * 3)
     })).one()
@@ -192,7 +192,7 @@ describe('Event service - get', () => {
 
     const eventFactory = new EventFactory([player])
 
-    const event: Event = await eventFactory.with(() => ({
+    const event: Event = await eventFactory.state(() => ({
       name: 'Join guild',
       createdAt: new Date(now.getTime() + dayInMs)
     })).one()
@@ -237,7 +237,7 @@ describe('Event service - get', () => {
     const [token] = await createUserAndToken({}, organisation)
 
     const player = await new PlayerFactory([game]).one()
-    const events = await new EventFactory([player]).with(() => ({ name: 'Talk to NPC', createdAt: new Date() })).many(3)
+    const events = await new EventFactory([player]).state(() => ({ name: 'Talk to NPC', createdAt: new Date() })).many(3)
     await (<EntityManager>global.em).persistAndFlush(events)
 
     const res = await request(global.app)
@@ -253,8 +253,8 @@ describe('Event service - get', () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({}, organisation)
 
-    const player = await new PlayerFactory([game]).state('dev build').one()
-    const events = await new EventFactory([player]).with(() => ({ name: 'Talk to NPC', createdAt: new Date() })).many(3)
+    const player = await new PlayerFactory([game]).devBuild().one()
+    const events = await new EventFactory([player]).state(() => ({ name: 'Talk to NPC', createdAt: new Date() })).many(3)
     await (<EntityManager>global.em).persistAndFlush(events)
 
     const res = await request(global.app)
@@ -270,8 +270,8 @@ describe('Event service - get', () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({}, organisation)
 
-    const player = await new PlayerFactory([game]).state('dev build').one()
-    const events = await new EventFactory([player]).with(() => ({ name: 'Talk to NPC', createdAt: new Date() })).many(3)
+    const player = await new PlayerFactory([game]).devBuild().one()
+    const events = await new EventFactory([player]).state(() => ({ name: 'Talk to NPC', createdAt: new Date() })).many(3)
     await (<EntityManager>global.em).persistAndFlush(events)
 
     const res = await request(global.app)

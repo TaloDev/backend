@@ -4,15 +4,14 @@ import OrganisationPricingPlan from '../../src/entities/organisation-pricing-pla
 
 export default class OrganisationPricingPlanFactory extends Factory<OrganisationPricingPlan> {
   constructor() {
-    super(OrganisationPricingPlan, 'base')
-    this.register('base', this.base)
+    super(OrganisationPricingPlan)
   }
 
-  protected async base(): Promise<Partial<OrganisationPricingPlan>> {
-    return {
+  protected definition(): void {
+    this.state(() => ({
       stripePriceId: `price_${casual.uuid.split('-')[0]}`,
       stripeCustomerId: `cus_${casual.uuid.split('-')[0]}`,
       status: 'active'
-    }
+    }))
   }
 }

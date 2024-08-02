@@ -30,11 +30,11 @@ describe('Leaderboard API service - post - steamworks integration', () => {
 
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_LEADERBOARDS])
 
-    const leaderboard = await new LeaderboardFactory([apiKey.game]).state('not unique').one()
+    const leaderboard = await new LeaderboardFactory([apiKey.game]).notUnique().one()
     const mapping = new SteamworksLeaderboardMapping(casual.integer(100000, 999999), leaderboard)
-    const player = await new PlayerFactory([apiKey.game]).state('with steam alias').one()
+    const player = await new PlayerFactory([apiKey.game]).withSteamAlias().one()
 
-    const config = await new IntegrationConfigFactory().with(() => ({ syncLeaderboards: true })).one()
+    const config = await new IntegrationConfigFactory().state(() => ({ syncLeaderboards: true })).one()
     const integration = await new IntegrationFactory().construct(IntegrationType.STEAMWORKS, apiKey.game, config).one()
     await (<EntityManager>global.em).persistAndFlush([integration, leaderboard, player, mapping])
 
@@ -65,10 +65,10 @@ describe('Leaderboard API service - post - steamworks integration', () => {
 
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_LEADERBOARDS])
 
-    const leaderboard = await new LeaderboardFactory([apiKey.game]).state('not unique').one()
-    const player = await new PlayerFactory([apiKey.game]).state('with steam alias').one()
+    const leaderboard = await new LeaderboardFactory([apiKey.game]).notUnique().one()
+    const player = await new PlayerFactory([apiKey.game]).withSteamAlias().one()
 
-    const config = await new IntegrationConfigFactory().with(() => ({ syncLeaderboards: true })).one()
+    const config = await new IntegrationConfigFactory().state(() => ({ syncLeaderboards: true })).one()
     const integration = await new IntegrationFactory().construct(IntegrationType.STEAMWORKS, apiKey.game, config).one()
     await (<EntityManager>global.em).persistAndFlush([integration, leaderboard, player])
 
@@ -97,10 +97,10 @@ describe('Leaderboard API service - post - steamworks integration', () => {
 
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_LEADERBOARDS])
 
-    const leaderboard = await new LeaderboardFactory([apiKey.game]).state('not unique').one()
-    const player = await new PlayerFactory([apiKey.game]).state('with steam alias').one()
+    const leaderboard = await new LeaderboardFactory([apiKey.game]).notUnique().one()
+    const player = await new PlayerFactory([apiKey.game]).withSteamAlias().one()
 
-    const config = await new IntegrationConfigFactory().with(() => ({ syncLeaderboards: false })).one()
+    const config = await new IntegrationConfigFactory().state(() => ({ syncLeaderboards: false })).one()
     const integration = await new IntegrationFactory().construct(IntegrationType.STEAMWORKS, apiKey.game, config).one()
     await (<EntityManager>global.em).persistAndFlush([integration, leaderboard, player])
 

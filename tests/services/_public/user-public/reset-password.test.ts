@@ -8,7 +8,7 @@ import { promisify } from 'util'
 describe('User public service - reset password', () => {
   it('should let a user reset their password', async () => {
     const password = await bcrypt.hash('p4ssw0rd112233', 10)
-    const user = await new UserFactory().with(() => ({ password })).one()
+    const user = await new UserFactory().state(() => ({ password })).one()
     await (<EntityManager>global.em).persistAndFlush(user)
 
     const sign = promisify(jwt.sign)
@@ -25,7 +25,7 @@ describe('User public service - reset password', () => {
 
   it('should not let a user reset their password if they supply the same one', async () => {
     const password = await bcrypt.hash('p4ssw0rd112233', 10)
-    const user = await new UserFactory().with(() => ({ password })).one()
+    const user = await new UserFactory().state(() => ({ password })).one()
     await (<EntityManager>global.em).persistAndFlush(user)
 
     const sign = promisify(jwt.sign)

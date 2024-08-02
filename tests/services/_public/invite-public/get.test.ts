@@ -6,7 +6,7 @@ import OrganisationFactory from '../../../fixtures/OrganisationFactory'
 describe('Invite public service - get', () => {
   it('should return an existing invite', async () => {
     const organisation = await new OrganisationFactory().one()
-    const invite = await new InviteFactory().construct(organisation).one()
+    const invite = await new InviteFactory().state(() => ({ organisation })).one()
     await (<EntityManager>global.em).persistAndFlush(invite)
 
     const res = await request(global.app)

@@ -189,9 +189,9 @@ describe('Data export service - post', () => {
   })
 
   it('should not create a data export if a pricing plan limit has been hit', async () => {
-    const planAction = await new PricingPlanActionFactory().with(() => ({ type: PricingPlanActionType.DATA_EXPORT })).one()
-    const orgPlan = await new OrganisationPricingPlanFactory().with(() => ({ pricingPlan: planAction.pricingPlan })).one()
-    const orgPlanActions = await new OrganisationPricingPlanActionFactory(orgPlan).with(() => ({ type: planAction.type })).many(planAction.limit)
+    const planAction = await new PricingPlanActionFactory().state(() => ({ type: PricingPlanActionType.DATA_EXPORT })).one()
+    const orgPlan = await new OrganisationPricingPlanFactory().state(() => ({ pricingPlan: planAction.pricingPlan })).one()
+    const orgPlanActions = await new OrganisationPricingPlanActionFactory(orgPlan).state(() => ({ type: planAction.type })).many(planAction.limit)
 
     const [organisation, game] = await createOrganisationAndGame({ pricingPlan: orgPlan })
     const [token] = await createUserAndToken({ type: UserType.ADMIN, emailConfirmed: true }, organisation)
@@ -206,9 +206,9 @@ describe('Data export service - post', () => {
   })
 
   it('should create a data export if a pricing plan limit was hit but not in the same month', async () => {
-    const planAction = await new PricingPlanActionFactory().with(() => ({ type: PricingPlanActionType.DATA_EXPORT })).one()
-    const orgPlan = await new OrganisationPricingPlanFactory().with(() => ({ pricingPlan: planAction.pricingPlan })).one()
-    const orgPlanActions = await new OrganisationPricingPlanActionFactory(orgPlan).with(() => ({
+    const planAction = await new PricingPlanActionFactory().state(() => ({ type: PricingPlanActionType.DATA_EXPORT })).one()
+    const orgPlan = await new OrganisationPricingPlanFactory().state(() => ({ pricingPlan: planAction.pricingPlan })).one()
+    const orgPlanActions = await new OrganisationPricingPlanActionFactory(orgPlan).state(() => ({
       type: planAction.type,
       createdAt: subMonths(new Date(), 1)
     })).many(planAction.limit)
@@ -226,9 +226,9 @@ describe('Data export service - post', () => {
   })
 
   it('should reject creating a data export if the organisation plan is not in the active state', async () => {
-    const planAction = await new PricingPlanActionFactory().with(() => ({ type: PricingPlanActionType.DATA_EXPORT })).one()
-    const orgPlan = await new OrganisationPricingPlanFactory().with(() => ({ pricingPlan: planAction.pricingPlan, status: 'incomplete' })).one()
-    const orgPlanActions = await new OrganisationPricingPlanActionFactory(orgPlan).with(() => ({ type: planAction.type })).many(planAction.limit)
+    const planAction = await new PricingPlanActionFactory().state(() => ({ type: PricingPlanActionType.DATA_EXPORT })).one()
+    const orgPlan = await new OrganisationPricingPlanFactory().state(() => ({ pricingPlan: planAction.pricingPlan, status: 'incomplete' })).one()
+    const orgPlanActions = await new OrganisationPricingPlanActionFactory(orgPlan).state(() => ({ type: planAction.type })).many(planAction.limit)
 
     const [organisation, game] = await createOrganisationAndGame({ pricingPlan: orgPlan })
     const [token] = await createUserAndToken({ type: UserType.ADMIN, emailConfirmed: true }, organisation)

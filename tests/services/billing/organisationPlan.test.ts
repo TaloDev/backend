@@ -13,7 +13,7 @@ describe('Billing service - organisation plan', () => {
   it.each(userPermissionProvider())('should return a %i for a %s user', async (statusCode, _, type) => {
     const product = (await stripe.products.list()).data[0]
     const price = (await stripe.prices.list({ product: product.id })).data[0]
-    const plan = await new PricingPlanFactory().with(() => ({ stripeId: product.id })).one()
+    const plan = await new PricingPlanFactory().state(() => ({ stripeId: product.id })).one()
 
     const subscription = (await stripe.subscriptions.list()).data[0]
 

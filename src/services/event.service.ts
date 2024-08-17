@@ -1,11 +1,9 @@
-import { FilterQuery, EntityManager } from '@mikro-orm/mysql'
 import { HasPermission, Service, Request, Response, Validate } from 'koa-clay'
-import Event from '../entities/event'
 import EventPolicy from '../policies/event.policy'
-import groupBy from 'lodash.groupby'
-import { isSameDay, endOfDay } from 'date-fns'
+import { endOfDay } from 'date-fns'
 import dateValidationSchema from '../lib/dates/dateValidationSchema'
-import { devDataPlayerFilter } from '../middlewares/dev-data-middleware'
+import { formatDateForClickHouse } from '../lib/clickhouse/formatDateTime'
+import createClickhouseClient from '../lib/clickhouse/createClient'
 
 type EventData = {
   name: string
@@ -14,6 +12,22 @@ type EventData = {
   change: number
 }
 
+type AggregatedClickhouseEvent = {
+  name: string
+  date: string
+  count: string
+}
+
+// events: {
+//   'Zone explored': [
+//     { name: 'Zone explored', date: 1577836800000, count: 3 },
+//     { name: 'Zone explored', date: 1577923200000, count: 1 }
+//   ],
+//   'Loot item': [
+//     { name: 'Loot item', date: '1577923200000, count: 2 }
+//   ]
+// }
+
 export default class EventService extends Service {
   @Validate({
     query: dateValidationSchema
@@ -21,59 +35,54 @@ export default class EventService extends Service {
   @HasPermission(EventPolicy, 'index')
   async index(req: Request): Promise<Response> {
     const { startDate: startDateQuery, endDate: endDateQuery } = req.query
-    const em: EntityManager = req.ctx.em
 
-    const startDate = new Date(startDateQuery)
-    const endDate = new Date(endDateQuery)
+    const clickhouse = createClickhouseClient()
 
-    const where: FilterQuery<Event> = {
-      game: req.ctx.state.game,
-      createdAt: {
-        $gte: startDate,
-        $lte: endOfDay(endDate)
-      }
-    }
+    const startDate = formatDateForClickHouse(new Date(startDateQuery))
+    const endDate = formatDateForClickHouse(endOfDay(new Date(endDateQuery)))
+
+    let query = `
+      SELECT
+        name,
+        toUnixTimestamp(toStartOfDay(created_at)) * 1000 AS date,
+        count() AS count
+      FROM events
+      WHERE created_at BETWEEN '${startDate}' AND '${endDate}'
+        AND game_id = ${req.ctx.state.game.id}
+    `
 
     if (!req.ctx.state.includeDevData) {
-      where.playerAlias = {
-        player: devDataPlayerFilter(em)
-      }
+      query += 'AND dev_build = false'
     }
 
-    const events = await em.getRepository(Event).find(where)
+    query += `
+      GROUP BY name, date
+      ORDER BY name, date
+    `
 
-    // events: {
-    //   'Zone explored': [
-    //     { name: 'Zone explored', date: 1577836800000, count: 3 },
-    //     { name: 'Zone explored', date: 1577923200000, count: 1 }
-    //   ],
-    //   'Loot item': [
-    //     { name: 'Loot item', date: '1577836800000, count: 0 }
-    //     { name: 'Loot item', date: '1577923200000, count: 2 }
-    //   ]
-    // }
+    const events = await clickhouse.query({
+      query,
+      format: 'JSONEachRow'
+    }).then((res) => res.json<AggregatedClickhouseEvent>())
 
-    const data = groupBy(events, 'name')
-
-    for (const name in data) {
-      const processed: EventData[] = []
-
-      for (let time = startDate.getTime(); time <= endDate.getTime(); time += 86400000 /* 24 hours in ms */) {
-        const dateFromTime = new Date(time)
-
-        const count = data[name].filter((event: Event) => isSameDay(dateFromTime, event.createdAt)).length
-        const change = processed.length > 0 ? this.calculateChange(count, processed[processed.length - 1]) : 0
-
-        processed.push({
-          name,
-          date: time,
-          count,
-          change
-        })
+    const data: Record<string, EventData[]> = {}
+    for (const event of events) {
+      if (!data[event.name]) {
+        data[event.name] = []
       }
 
-      data[name] = processed
+      const lastEvent = data[event.name].at(-1)
+      const change = this.calculateChange(Number(event.count), lastEvent)
+
+      data[event.name].push({
+        name: event.name,
+        date: Number(event.date),
+        count: Number(event.count),
+        change
+      })
     }
+
+    clickhouse.close()
 
     return {
       status: 200,
@@ -84,8 +93,9 @@ export default class EventService extends Service {
     }
   }
 
-  calculateChange(count: number, lastEvent: EventData): number {
-    if (lastEvent.count === 0) return 1
+  private calculateChange(count: number, lastEvent: EventData | undefined): number {
+    if ((lastEvent?.count ?? 0) === 0) return count || 1
+
     return (count - lastEvent.count) / lastEvent.count
   }
 }

@@ -1,11 +1,13 @@
-import { EntityManager } from '@mikro-orm/mysql'
+import { Collection, EntityManager } from '@mikro-orm/mysql'
 import request from 'supertest'
-import Event from '../../../src/entities/event'
 import EventFactory from '../../fixtures/EventFactory'
 import PlayerFactory from '../../fixtures/PlayerFactory'
 import { sub, format } from 'date-fns'
 import createOrganisationAndGame from '../../utils/createOrganisationAndGame'
 import createUserAndToken from '../../utils/createUserAndToken'
+import { NodeClickHouseClient } from '@clickhouse/client/dist/client'
+import PlayerAlias from '../../../src/entities/player-alias'
+import PlayerAliasFactory from '../../fixtures/PlayerAliasFactory'
 
 describe('Headline service - get', () => {
   const startDate = format(sub(new Date(), { days: 7 }), 'yyyy-MM-dd')
@@ -16,8 +18,14 @@ describe('Headline service - get', () => {
     const [token] = await createUserAndToken({}, organisation)
 
     const player = await new PlayerFactory([game]).one()
-    const events: Event[] = await new EventFactory([player]).thisWeek().many(10)
-    await (<EntityManager>global.em).persistAndFlush(events)
+    await (<EntityManager>global.em).persistAndFlush(player)
+
+    const events = await new EventFactory([player]).thisWeek().many(10)
+    await (<NodeClickHouseClient>global.clickhouse).insert({
+      table: 'events',
+      values: events.map((event) => event.getInsertableData()),
+      format: 'JSONEachRow'
+    })
 
     const res = await request(global.app)
       .get(`/games/${game.id}/headlines/events`)
@@ -33,8 +41,14 @@ describe('Headline service - get', () => {
     const [token] = await createUserAndToken({}, organisation)
 
     const player = await new PlayerFactory([game]).devBuild().one()
-    const events: Event[] = await new EventFactory([player]).thisWeek().many(10)
-    await (<EntityManager>global.em).persistAndFlush(events)
+    await (<EntityManager>global.em).persistAndFlush(player)
+
+    const events = await new EventFactory([player]).thisWeek().many(10)
+    await (<NodeClickHouseClient>global.clickhouse).insert({
+      table: 'events',
+      values: events.map((event) => event.getInsertableData()),
+      format: 'JSONEachRow'
+    })
 
     const res = await request(global.app)
       .get(`/games/${game.id}/headlines/events`)
@@ -50,8 +64,14 @@ describe('Headline service - get', () => {
     const [token] = await createUserAndToken({}, organisation)
 
     const player = await new PlayerFactory([game]).devBuild().one()
-    const events: Event[] = await new EventFactory([player]).thisWeek().many(10)
-    await (<EntityManager>global.em).persistAndFlush(events)
+    await (<EntityManager>global.em).persistAndFlush(player)
+
+    const events = await new EventFactory([player]).thisWeek().many(10)
+    await (<NodeClickHouseClient>global.clickhouse).insert({
+      table: 'events',
+      values: events.map((event) => event.getInsertableData()),
+      format: 'JSONEachRow'
+    })
 
     const res = await request(global.app)
       .get(`/games/${game.id}/headlines/events`)
@@ -69,7 +89,6 @@ describe('Headline service - get', () => {
 
     const newPlayers = await new PlayerFactory([game]).createdThisWeek().many(10)
     const oldPlayers = await new PlayerFactory([game]).notCreatedThisWeek().many(10)
-
     await (<EntityManager>global.em).persistAndFlush([...newPlayers, ...oldPlayers])
 
     const res = await request(global.app)
@@ -86,7 +105,6 @@ describe('Headline service - get', () => {
     const [token] = await createUserAndToken({}, organisation)
 
     const newPlayers = await new PlayerFactory([game]).createdThisWeek().devBuild().many(10)
-
     await (<EntityManager>global.em).persistAndFlush(newPlayers)
 
     const res = await request(global.app)
@@ -103,7 +121,6 @@ describe('Headline service - get', () => {
     const [token] = await createUserAndToken({}, organisation)
 
     const newPlayers = await new PlayerFactory([game]).createdThisWeek().devBuild().many(10)
-
     await (<EntityManager>global.em).persistAndFlush(newPlayers)
 
     const res = await request(global.app)
@@ -128,7 +145,6 @@ describe('Headline service - get', () => {
       .many(4)
 
     const playersSignedupThisWeek = await new PlayerFactory([game]).notSeenThisWeek().many(5)
-
     await (<EntityManager>global.em).persistAndFlush([...playersNotSeenThisWeek, ...returningPlayersSeenThisWeek, ...playersSignedupThisWeek])
 
     const res = await request(global.app)
@@ -187,18 +203,29 @@ describe('Headline service - get', () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({}, organisation)
 
-    const players = await new PlayerFactory([game]).many(4)
+    const players = await new PlayerFactory([game]).state(async (player) => {
+      const alias = await new PlayerAliasFactory(player).one()
+      return {
+        aliases: new Collection<PlayerAlias>(player, [alias])
+      }
+    }).many(4)
+
     const validEvents = await new EventFactory([players[0]]).many(3)
     const validEventsButNotThisWeek = await new EventFactory([players[1]]).state(() => ({
       createdAt: sub(new Date(), { weeks: 2 })
     })).many(3)
     const moreValidEvents = await new EventFactory([players[2]]).many(3)
 
-    await (<EntityManager>global.em).persistAndFlush([
-      ...validEvents,
-      ...validEventsButNotThisWeek,
-      ...moreValidEvents
-    ])
+    await (<EntityManager>global.em).persistAndFlush(players)
+    await (<NodeClickHouseClient>global.clickhouse).insert({
+      table: 'events',
+      values: [
+        ...validEvents,
+        ...validEventsButNotThisWeek,
+        ...moreValidEvents
+      ].map((event) => event.getInsertableData()),
+      format: 'JSONEachRow'
+    })
 
     const res = await request(global.app)
       .get(`/games/${game.id}/headlines/unique_event_submitters`)
@@ -214,9 +241,14 @@ describe('Headline service - get', () => {
     const [token] = await createUserAndToken({}, organisation)
 
     const player = await new PlayerFactory([game]).devBuild().one()
-    const validEvents = await new EventFactory([player]).many(3)
+    await (<EntityManager>global.em).persistAndFlush(player)
 
-    await (<EntityManager>global.em).persistAndFlush(validEvents)
+    const validEvents = await new EventFactory([player]).many(3)
+    await (<NodeClickHouseClient>global.clickhouse).insert({
+      table: 'events',
+      values: validEvents.map((event) => event.getInsertableData()),
+      format: 'JSONEachRow'
+    })
 
     const res = await request(global.app)
       .get(`/games/${game.id}/headlines/unique_event_submitters`)
@@ -231,10 +263,20 @@ describe('Headline service - get', () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({}, organisation)
 
-    const player = await new PlayerFactory([game]).devBuild().one()
-    const validEvents = await new EventFactory([player]).many(3)
+    const player = await new PlayerFactory([game]).devBuild().state(async (player) => {
+      const alias = await new PlayerAliasFactory(player).one()
+      return {
+        aliases: new Collection<PlayerAlias>(player, [alias])
+      }
+    }).one()
+    await (<EntityManager>global.em).persistAndFlush(player)
 
-    await (<EntityManager>global.em).persistAndFlush(validEvents)
+    const validEvents = await new EventFactory([player]).many(3)
+    await (<NodeClickHouseClient>global.clickhouse).insert({
+      table: 'events',
+      values: validEvents.map((event) => event.getInsertableData()),
+      format: 'JSONEachRow'
+    })
 
     const res = await request(global.app)
       .get(`/games/${game.id}/headlines/unique_event_submitters`)

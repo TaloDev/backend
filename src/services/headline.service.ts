@@ -1,11 +1,12 @@
 import { FilterQuery, EntityManager } from '@mikro-orm/mysql'
-import { endOfDay, isSameDay } from 'date-fns'
+import { endOfDay, isSameDay, startOfDay } from 'date-fns'
 import { Service, Request, Response, Validate, HasPermission, Routes } from 'koa-clay'
-import Event from '../entities/event'
 import Player from '../entities/player'
 import HeadlinePolicy from '../policies/headline.policy'
 import dateValidationSchema from '../lib/dates/dateValidationSchema'
 import { devDataPlayerFilter } from '../middlewares/dev-data-middleware'
+import createClickhouseClient from '../lib/clickhouse/createClient'
+import { formatDateForClickHouse } from '../lib/clickhouse/formatDateTime'
 
 @Routes([
   {
@@ -39,7 +40,7 @@ export default class HeadlineService extends Service {
     let where: FilterQuery<Player> = {
       game: req.ctx.state.game,
       createdAt: {
-        $gte: new Date(startDate),
+        $gte: startOfDay(new Date(startDate)),
         $lte: endOfDay(new Date(endDate))
       }
     }
@@ -67,11 +68,11 @@ export default class HeadlineService extends Service {
     let where: FilterQuery<Player> = {
       game: req.ctx.state.game,
       lastSeenAt: {
-        $gte: new Date(startDate),
+        $gte: startOfDay(new Date(startDate)),
         $lte: endOfDay(new Date(endDate))
       },
       createdAt: {
-        $lt: new Date(startDate)
+        $lt: startOfDay(new Date(startDate))
       }
     }
 
@@ -93,29 +94,35 @@ export default class HeadlineService extends Service {
   @Validate({ query: dateValidationSchema })
   @HasPermission(HeadlinePolicy, 'index')
   async events(req: Request): Promise<Response> {
-    const { startDate, endDate } = req.query
-    const em: EntityManager = req.ctx.em
+    const { startDate: startDateQuery, endDate: endDateQuery } = req.query
 
-    const where: FilterQuery<Event> = {
-      game: req.ctx.state.game,
-      createdAt: {
-        $gte: new Date(startDate),
-        $lte: endOfDay(new Date(endDate))
-      }
-    }
+    const clickhouse = createClickhouseClient()
+
+    const startDate = formatDateForClickHouse(startOfDay(new Date(startDateQuery)))
+    const endDate = formatDateForClickHouse(endOfDay(new Date(endDateQuery)))
+
+    let query = `
+      SELECT count() AS count
+      FROM events
+      WHERE created_at BETWEEN '${startDate}' AND '${endDate}'
+        AND game_id = ${req.ctx.state.game.id}
+    `
 
     if (!req.ctx.state.includeDevData) {
-      where.playerAlias = {
-        player: devDataPlayerFilter(em)
-      }
+      query += 'AND dev_build = false'
     }
 
-    const events = await em.getRepository(Event).find(where)
+    const result = await clickhouse.query({
+      query,
+      format: 'JSONEachRow'
+    }).then((res) => res.json<{ count: string }>())
+
+    clickhouse.close()
 
     return {
       status: 200,
       body: {
-        count: events.length
+        count: Number(result[0].count)
       }
     }
   }
@@ -123,31 +130,35 @@ export default class HeadlineService extends Service {
   @Validate({ query: dateValidationSchema })
   @HasPermission(HeadlinePolicy, 'index')
   async uniqueEventSubmitters(req: Request): Promise<Response> {
-    const { startDate, endDate } = req.query
-    const em: EntityManager = req.ctx.em
+    const { startDate: startDateQuery, endDate: endDateQuery } = req.query
 
-    const query = em.qb(Event, 'e')
-      .join('e.playerAlias', 'pa')
-      .count('pa.player_id', true)
-      .where({
-        game: req.ctx.state.game.id,
-        createdAt: { $gte: new Date(startDate), $lte: endOfDay(new Date(endDate)) }
-      })
+    const clickhouse = createClickhouseClient()
+
+    const startDate = formatDateForClickHouse(startOfDay(new Date(startDateQuery)))
+    const endDate = formatDateForClickHouse(endOfDay(new Date(endDateQuery)))
+
+    let query = `
+      SELECT COUNT(DISTINCT player_alias_id) AS uniqueSubmitters
+      FROM events
+      WHERE created_at BETWEEN '${startDate}' AND '${endDate}'
+        AND game_id = ${req.ctx.state.game.id}
+    `
 
     if (!req.ctx.state.includeDevData) {
-      query.andWhere({
-        playerAlias: {
-          player: devDataPlayerFilter(em)
-        }
-      })
+      query += 'AND dev_build = false'
     }
 
-    const result = await query.execute('get')
+    const result = await clickhouse.query({
+      query,
+      format: 'JSONEachRow'
+    }).then((res) => res.json<{ uniqueSubmitters: string }>())
+
+    clickhouse.close()
 
     return {
       status: 200,
       body: {
-        count: result.count
+        count: Number(result[0].uniqueSubmitters)
       }
     }
   }

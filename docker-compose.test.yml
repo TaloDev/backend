@@ -29,6 +29,20 @@ services:
     networks:
       - test-network
 
+  test-clickhouse:
+    build:
+      context: .
+      dockerfile: ./clickhouse/Dockerfile
+    environment:
+      CLICKHOUSE_USER: ${CLICKHOUSE_USER}
+      CLICKHOUSE_PASSWORD: ${CLICKHOUSE_PASSWORD}
+      CLICKHOUSE_DB: ${CLICKHOUSE_DB}
+    restart: unless-stopped
+    ports:
+      - ${CLICKHOUSE_PORT}:8123
+    networks:
+      - test-network
+
   stripe-api:
     image: stripe/stripe-mock:latest-arm64
     ports:

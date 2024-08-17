@@ -7,6 +7,9 @@ import Prop from '../../entities/prop'
 import Game from '../../entities/game'
 import randomDate from '../dates/randomDate'
 import PlayerAlias from '../../entities/player-alias'
+import createClickhouseClient from '../clickhouse/createClient'
+import { NodeClickHouseClient } from '@clickhouse/client/dist/client'
+import { formatDateForClickHouse } from '../clickhouse/formatDateTime'
 
 type DemoEvent = {
   name: string
@@ -76,8 +79,34 @@ export function generateEventData(date: Date): Partial<Event> {
   }
 }
 
+async function getEventCount(clickhouse: NodeClickHouseClient, game: Game, startDate: Date): Promise<number> {
+  const startDateFormatted = formatDateForClickHouse(startDate)
+
+  const query = `
+    SELECT count() as count
+    FROM events
+    WHERE game_id = ${game.id}
+      AND created_at >= '${startDateFormatted}'
+  `
+
+  try {
+    const result = await clickhouse.query({
+      query,
+      format: 'JSONEachRow'
+    }).then((res) => res.json<{ count: string }>())
+
+    return Number(result[0].count)
+  /* v8 ignore next 4 */
+  } catch (err) {
+    console.error('Error fetching event count from ClickHouse:', err)
+    return 0
+  }
+
+}
+
 export async function generateDemoEvents(req: Request): Promise<void> {
   const em: EntityManager = req.ctx.em
+  const clickhouse = createClickhouseClient()
 
   const games = await em.getRepository(Game).find({
     organisation: {
@@ -88,18 +117,11 @@ export async function generateDemoEvents(req: Request): Promise<void> {
   const startDate = subMonths(new Date(), 1)
 
   for (const game of games) {
-    const events = await em.getRepository(Event).find({
-      playerAlias: {
-        player: {
-          game
-        }
-      },
-      createdAt: {
-        $gte: startDate
-      }
-    })
+    const eventCount = await getEventCount(clickhouse, game, startDate)
 
-    if (events.length === 0) {
+    if (eventCount === 0) {
+      const eventsToInsert: Event[] = []
+
       const prev: { [key: string]: number } = {}
 
       const playerAliases = await em.getRepository(PlayerAlias).find({
@@ -122,16 +144,25 @@ export async function generateDemoEvents(req: Request): Promise<void> {
           prev[demoEvent.name] = numToGenerate
 
           for (let i = 0; i < numToGenerate; i++) {
-            const event = new Event(demoEvent.name, game)
-            event.setProps(getDemoEventProps(demoEvent))
-            event.playerAlias = casual.random_element(playerAliases)
-            event.createdAt = randomDate(startOfDay(day), endOfDay(day))
-            em.persist(event)
+            eventsToInsert.push(new Event(demoEvent.name, game))
+            eventsToInsert.at(-1).setProps(getDemoEventProps(demoEvent))
+            eventsToInsert.at(-1).playerAlias = casual.random_element(playerAliases)
+            eventsToInsert.at(-1).createdAt = randomDate(startOfDay(day), endOfDay(day))
           }
         }
       }
+
+      await clickhouse.insert({
+        table: 'events',
+        values: eventsToInsert.map((event) => event.getInsertableData()),
+        format: 'JSONEachRow'
+      })
+      await clickhouse.insert({
+        table: 'event_props',
+        values: eventsToInsert.flatMap((event) => event.getInsertableProps()),
+        format: 'JSONEachRow'
+      })
+      clickhouse.close()
     }
   }
-
-  await em.flush()
 }

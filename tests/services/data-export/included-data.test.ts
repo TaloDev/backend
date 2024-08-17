@@ -8,6 +8,7 @@ import LeaderboardEntryFactory from '../../fixtures/LeaderboardEntryFactory'
 import GameStatFactory from '../../fixtures/GameStatFactory'
 import PlayerGameStatFactory from '../../fixtures/PlayerGameStatFactory'
 import createOrganisationAndGame from '../../utils/createOrganisationAndGame'
+import { NodeClickHouseClient } from '@clickhouse/client/dist/client'
 
 describe('Data export service - included data', () => {
   it('should not include events from dev build players without the dev data header', async () => {
@@ -19,7 +20,12 @@ describe('Data export service - included data', () => {
     const player = await new PlayerFactory([game]).devBuild().one()
     const event = await new EventFactory([player]).one()
     const dataExport = await new DataExportFactory(game).one()
-    await (<EntityManager>global.em).persistAndFlush([event, dataExport])
+    await (<EntityManager>global.em).persistAndFlush(dataExport)
+    await (<NodeClickHouseClient>global.clickhouse).insert({
+      table: 'events',
+      values: [event.getInsertableData()],
+      format: 'JSONEachRow'
+    })
 
     const items = await proto.getEvents(dataExport, global.em, false)
     expect(items).toHaveLength(0)
@@ -34,7 +40,12 @@ describe('Data export service - included data', () => {
     const player = await new PlayerFactory([game]).devBuild().one()
     const event = await new EventFactory([player]).one()
     const dataExport = await new DataExportFactory(game).one()
-    await (<EntityManager>global.em).persistAndFlush([event, dataExport])
+    await (<EntityManager>global.em).persistAndFlush(dataExport)
+    await (<NodeClickHouseClient>global.clickhouse).insert({
+      table: 'events',
+      values: [event.getInsertableData()],
+      format: 'JSONEachRow'
+    })
 
     const items = await proto.getEvents(dataExport, global.em, true)
     expect(items).toHaveLength(1)

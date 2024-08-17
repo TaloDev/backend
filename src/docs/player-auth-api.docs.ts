@@ -36,13 +36,13 @@ const PlayerAuthAPIDocs: APIDocs<PlayerAuthAPIService> = {
                 '/* [Circular] */'
               ],
               devBuild: false,
-              createdAt: '2024-06-28 12:37:43',
-              lastSeenAt: '2024-06-28 12:37:43',
+              createdAt: '2024-06-28T12:37:43.514Z',
+              lastSeenAt: '2024-06-28T12:37:43.514Z',
               groups: [],
               auth: {
                 email: 'boz@mail.com',
                 verificationEnabled: true,
-                sessionCreatedAt: '2024-06-28 12:37:43'
+                sessionCreatedAt: '2024-06-28T12:37:43.514Z'
               }
             }
           },
@@ -81,13 +81,13 @@ const PlayerAuthAPIDocs: APIDocs<PlayerAuthAPIService> = {
                 '/* [Circular] */'
               ],
               devBuild: false,
-              createdAt: '2024-06-28 12:37:43',
-              lastSeenAt: '2024-06-28 12:37:43',
+              createdAt: '2024-06-28T12:37:43.514Z',
+              lastSeenAt: '2024-06-28T12:37:43.514Z',
               groups: [],
               auth: {
                 email: 'boz@mail.com',
                 verificationEnabled: true,
-                sessionCreatedAt: '2024-06-28 12:37:43'
+                sessionCreatedAt: '2024-06-28T12:37:43.514Z'
               }
             }
           },
@@ -133,13 +133,13 @@ const PlayerAuthAPIDocs: APIDocs<PlayerAuthAPIService> = {
                 '/* [Circular] */'
               ],
               devBuild: false,
-              createdAt: '2024-06-28 12:37:43',
-              lastSeenAt: '2024-06-28 12:37:43',
+              createdAt: '2024-06-28T12:37:43.514Z',
+              lastSeenAt: '2024-06-28T12:37:43.514Z',
               groups: [],
               auth: {
                 email: 'boz@mail.com',
                 verificationEnabled: true,
-                sessionCreatedAt: '2024-06-28 12:37:43'
+                sessionCreatedAt: '2024-06-28T12:37:43.514Z'
               }
             }
           },

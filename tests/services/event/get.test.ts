@@ -1,11 +1,11 @@
 import { EntityManager } from '@mikro-orm/mysql'
 import request from 'supertest'
-import Event from '../../../src/entities/event'
 import EventFactory from '../../fixtures/EventFactory'
 import PlayerFactory from '../../fixtures/PlayerFactory'
-import { sub } from 'date-fns'
+import { addDays, sub } from 'date-fns'
 import createUserAndToken from '../../utils/createUserAndToken'
 import createOrganisationAndGame from '../../utils/createOrganisationAndGame'
+import { NodeClickHouseClient } from '@clickhouse/client/dist/client'
 
 describe('Event service - get', () => {
   it('should return a list of events', async () => {
@@ -15,14 +15,17 @@ describe('Event service - get', () => {
     const player = await new PlayerFactory([game]).one()
     const now = new Date('2021-01-01')
 
-    const dayInMs = 86400000
-
-    const events: Event[] = await new EventFactory([player]).state((event, idx) => ({
+    const events = await new EventFactory([player]).state((event, idx) => ({
       name: 'Open inventory',
-      createdAt: new Date(now.getTime() + (dayInMs * idx))
+      createdAt: addDays(now, idx)
     })).many(2)
 
-    await (<EntityManager>global.em).persistAndFlush(events)
+    await (<EntityManager>global.em).persistAndFlush(player)
+    await (<NodeClickHouseClient>global.clickhouse).insert({
+      table: 'events',
+      values: events.map((event) => event.getInsertableData()),
+      format: 'JSONEachRow'
+    })
 
     const res = await request(global.app)
       .get(`/games/${game.id}/events`)
@@ -30,18 +33,18 @@ describe('Event service - get', () => {
       .auth(token, { type: 'bearer' })
       .expect(200)
 
-    expect(res.body.events['Open inventory']).toHaveLength(3)
+    expect(res.body.events['Open inventory']).toHaveLength(2)
 
     expect(res.body.events['Open inventory'][0]).toEqual({
       name: 'Open inventory',
-      date: new Date(now.getTime()).getTime(),
+      date: now.getTime(),
       count: 1,
-      change: 0
+      change: 1
     })
 
     expect(res.body.events['Open inventory'][1]).toEqual({
       name: 'Open inventory',
-      date: new Date(now.getTime() + dayInMs).getTime(),
+      date: addDays(now, 1).getTime(),
       count: 1,
       change: 0
     })
@@ -139,35 +142,38 @@ describe('Event service - get', () => {
     const player = await new PlayerFactory([game]).one()
     const now = new Date('2021-01-01')
 
-    const dayInMs = 86400000
-
     const eventFactory = new EventFactory([player])
-    const firstEvent: Event = await eventFactory.state(() => ({
+    const firstEvent = await eventFactory.state(() => ({
       name: 'Open inventory',
       createdAt: now
     })).one()
 
-    const moreEvents: Event[] = await eventFactory.state(() => ({
+    const moreEvents = await eventFactory.state(() => ({
       name: 'Open inventory',
-      createdAt: new Date(now.getTime() + dayInMs)
+      createdAt: addDays(now, 1)
     })).many(2)
 
-    const evenMoreEvents: Event[] = await eventFactory.state(() => ({
+    const evenMoreEvents = await eventFactory.state(() => ({
       name: 'Open inventory',
-      createdAt: new Date(now.getTime() + dayInMs * 2)
+      createdAt: addDays(now, 2)
     })).many(3)
 
-    const lastEvent: Event = await eventFactory.state(() => ({
+    const lastEvent = await eventFactory.state(() => ({
       name: 'Open inventory',
-      createdAt: new Date(now.getTime() + dayInMs * 3)
+      createdAt: addDays(now, 3)
     })).one()
 
-    await (<EntityManager>global.em).persistAndFlush([
-      firstEvent,
-      ...moreEvents,
-      ...evenMoreEvents,
-      lastEvent
-    ])
+    await (<EntityManager>global.em).persistAndFlush(player)
+    await (<NodeClickHouseClient>global.clickhouse).insert({
+      table: 'events',
+      values: [
+        firstEvent,
+        ...moreEvents,
+        ...evenMoreEvents,
+        lastEvent
+      ].map((event) => event.getInsertableData()),
+      format: 'JSONEachRow'
+    })
 
     const res = await request(global.app)
       .get(`/games/${game.id}/events`)
@@ -175,7 +181,7 @@ describe('Event service - get', () => {
       .auth(token, { type: 'bearer' })
       .expect(200)
 
-    expect(res.body.events['Open inventory'][0].change).toBe(0)
+    expect(res.body.events['Open inventory'][0].change).toBe(1)
     expect(res.body.events['Open inventory'][1].change).toBe(1)
     expect(res.body.events['Open inventory'][2].change).toBe(0.5)
     expect(res.body.events['Open inventory'][3].change.toFixed(2)).toBe('-0.67')
@@ -188,16 +194,19 @@ describe('Event service - get', () => {
     const player = await new PlayerFactory([game]).one()
     const now = new Date('2021-01-01')
 
-    const dayInMs = 86400000
-
     const eventFactory = new EventFactory([player])
 
-    const event: Event = await eventFactory.state(() => ({
+    const event = await eventFactory.state((_, idx) => ({
       name: 'Join guild',
-      createdAt: new Date(now.getTime() + dayInMs)
+      createdAt: addDays(now, idx)
     })).one()
 
-    await (<EntityManager>global.em).persistAndFlush(event)
+    await (<EntityManager>global.em).persistAndFlush(player)
+    await (<NodeClickHouseClient>global.clickhouse).insert({
+      table: 'events',
+      values: [event.getInsertableData()],
+      format: 'JSONEachRow'
+    })
 
     const res = await request(global.app)
       .get(`/games/${game.id}/events`)
@@ -205,8 +214,7 @@ describe('Event service - get', () => {
       .auth(token, { type: 'bearer' })
       .expect(200)
 
-    expect(res.body.events['Join guild'][0].change).toBe(0)
-    expect(res.body.events['Join guild'][1].change).toBe(1)
+    expect(res.body.events['Join guild'][0].change).toBe(1)
   })
 
   it('should not return a list of events for a non-existent game', async () => {
@@ -238,7 +246,12 @@ describe('Event service - get', () => {
 
     const player = await new PlayerFactory([game]).one()
     const events = await new EventFactory([player]).state(() => ({ name: 'Talk to NPC', createdAt: new Date() })).many(3)
-    await (<EntityManager>global.em).persistAndFlush(events)
+    await (<EntityManager>global.em).persistAndFlush(player)
+    await (<NodeClickHouseClient>global.clickhouse).insert({
+      table: 'events',
+      values: events.map((event) => event.getInsertableData()),
+      format: 'JSONEachRow'
+    })
 
     const res = await request(global.app)
       .get(`/games/${game.id}/events`)
@@ -246,7 +259,7 @@ describe('Event service - get', () => {
       .auth(token, { type: 'bearer' })
       .expect(200)
 
-    expect(res.body.events['Talk to NPC'][1].count).toBe(events.length)
+    expect(res.body.events['Talk to NPC'][0].count).toBe(events.length)
   })
 
   it('should not return events by dev build players if the dev data header is not set', async () => {
@@ -255,7 +268,12 @@ describe('Event service - get', () => {
 
     const player = await new PlayerFactory([game]).devBuild().one()
     const events = await new EventFactory([player]).state(() => ({ name: 'Talk to NPC', createdAt: new Date() })).many(3)
-    await (<EntityManager>global.em).persistAndFlush(events)
+    await (<EntityManager>global.em).persistAndFlush(player)
+    await (<NodeClickHouseClient>global.clickhouse).insert({
+      table: 'events',
+      values: events.map((event) => event.getInsertableData()),
+      format: 'JSONEachRow'
+    })
 
     const res = await request(global.app)
       .get(`/games/${game.id}/events`)
@@ -272,7 +290,12 @@ describe('Event service - get', () => {
 
     const player = await new PlayerFactory([game]).devBuild().one()
     const events = await new EventFactory([player]).state(() => ({ name: 'Talk to NPC', createdAt: new Date() })).many(3)
-    await (<EntityManager>global.em).persistAndFlush(events)
+    await (<EntityManager>global.em).persistAndFlush(player)
+    await (<NodeClickHouseClient>global.clickhouse).insert({
+      table: 'events',
+      values: events.map((event) => event.getInsertableData()),
+      format: 'JSONEachRow'
+    })
 
     const res = await request(global.app)
       .get(`/games/${game.id}/events`)
@@ -281,6 +304,6 @@ describe('Event service - get', () => {
       .set('x-talo-include-dev-data', '1')
       .expect(200)
 
-    expect(res.body.events['Talk to NPC'][1].count).toBe(events.length)
+    expect(res.body.events['Talk to NPC'][0].count).toBe(events.length)
   })
 })

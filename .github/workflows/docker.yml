@@ -30,6 +30,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           push: true
+          file: ${{ matrix.image == 'backend' && 'Dockerfile' || 'clickhouse/Dockerfile' }}
           tags: |
             ghcr.io/talodev/${{ matrix.image }}:latest
             ghcr.io/talodev/${{ matrix.image }}:${{ env.TAG }}

@@ -4,7 +4,7 @@ import Player from '../entities/player'
 import PlayerPolicy from '../policies/player.policy'
 import PlayerAlias, { PlayerAliasService } from '../entities/player-alias'
 import sanitiseProps from '../lib/props/sanitiseProps'
-import Event from '../entities/event'
+import { ClickhouseEvent, createEventFromClickhouse } from '../entities/event'
 import { EntityManager } from '@mikro-orm/mysql'
 import { QueryOrder } from '@mikro-orm/mysql'
 import uniqWith from 'lodash.uniqwith'
@@ -17,6 +17,7 @@ import PlayerGroup from '../entities/player-group'
 import GameSave from '../entities/game-save'
 import { PlayerAuthErrorCode } from '../entities/player-auth'
 import PlayerAuthActivity from '../entities/player-auth-activity'
+import createClickhouseClient from '../lib/clickhouse/createClient'
 
 const propsValidation = async (val: unknown): Promise<ValidationCondition[]> => [
   {
@@ -249,43 +250,51 @@ export default class PlayerService extends Service {
     }
   }
 
+  @Validate({ query: ['page'] })
   @HasPermission(PlayerPolicy, 'getEvents')
   async events(req: Request): Promise<Response> {
     const itemsPerPage = 50
-
     const { search, page } = req.query
-    const em: EntityManager = req.ctx.em
     const player: Player = req.ctx.state.player // set in the policy
 
-    const query = em.createQueryBuilder(Event, 'e')
-      .select('e.*')
-      .orderBy({ createdAt: QueryOrder.DESC })
-      .limit(itemsPerPage)
-      .offset(Number(page) * itemsPerPage)
+    const em: EntityManager = req.ctx.em
+    const clickhouse = createClickhouseClient()
 
-    if (search) {
-      query
-        .where('json_extract(props, \'$[*].value\') like ?', [`%${search}%`])
-        .orWhere({
-          name: {
-            $like: `%${search}%`
-          }
-        })
-    }
+    const aliases = player.aliases.getItems().map((alias) => alias.id).join(',')
 
-    const [events, count] = await query
-      .andWhere({
-        playerAlias: {
-          player
-        }
-      })
-      .getResultAndCount()
+    const searchQuery = search ? `AND (name ILIKE '%${search}%' OR prop_value ILIKE '%${search}%')` : ''
+    const baseQuery = `FROM events
+      LEFT JOIN event_props ON events.id = event_props.event_id
+      WHERE player_alias_id IN (${aliases})
+        ${searchQuery}`
+
+    const query = `
+      SELECT DISTINCT events.*
+      ${baseQuery}
+      ORDER BY created_at DESC
+      LIMIT ${itemsPerPage}
+      OFFSET ${Number(page) * itemsPerPage}
+    `
+
+    const items = await clickhouse.query({ query, format: 'JSONEachRow' }).then((res) => res.json<ClickhouseEvent>())
+    const events = await Promise.all(items.map((item) => createEventFromClickhouse(em, item, true)))
+
+    const countQuery = `
+      SELECT count(DISTINCT events.id) AS count
+      ${baseQuery}`
+
+    const count = await clickhouse.query({
+      query: countQuery,
+      format: 'JSONEachRow'
+    }).then((res) => res.json<{ count: string }>())
+
+    clickhouse.close()
 
     return {
       status: 200,
       body: {
         events,
-        count,
+        count: Number(count[0].count),
         itemsPerPage
       }
     }

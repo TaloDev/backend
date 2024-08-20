@@ -38,12 +38,12 @@ const GameStatAPIDocs: APIDocs<GameStatAPIService> = {
               minValue: 0,
               maxValue: Infinity,
               minTimeBetweenUpdates: 5,
-              createdAt: '2021-12-24 12:45:39',
-              updatedAt: '2021-12-24 12:49:14'
+              createdAt: '2021-12-24T12:45:39.409Z',
+              updatedAt: '2021-12-24T12:49:14.315Z'
             },
             value: 52,
-            createdAt: '2022-01-01 06:18:11',
-            updatedAt: '2022-01-03 08:32:46'
+            createdAt: '2022-01-01T06:18:11.881Z',
+            updatedAt: '2022-01-03T08:32:46.123Z'
           }
         }
       }

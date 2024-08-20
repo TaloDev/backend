@@ -14,7 +14,7 @@ const GameFeedbackAPIDocs: APIDocs<GameFeedbackAPIService> = {
               internalName: 'bugs',
               name: 'Bugs',
               description: 'Issues that hinder the player experience',
-              createdAt: '2024-06-01 21:36:02'
+              createdAt: '2024-06-01T21:36:02.008Z'
             }
           ]
         }
@@ -52,12 +52,12 @@ const GameFeedbackAPIDocs: APIDocs<GameFeedbackAPIService> = {
               name: 'Bugs',
               description: 'Issues that hinder the player experience',
               anonymised: false,
-              createdAt: '2024-06-01 21:36:02'
+              createdAt: '2024-06-01T21:36:02.008Z'
             },
             comment: 'The new quest in the new zone cannot be completed!',
             anonymised: true,
             playerAlias: null,
-            createdAt: '2024-06-03 18:04:44'
+            createdAt: '2024-06-03T18:04:44.336Z'
           }
         }
       },
@@ -72,7 +72,7 @@ const GameFeedbackAPIDocs: APIDocs<GameFeedbackAPIService> = {
               name: 'Bugs',
               description: 'Issues that hinder the player experience',
               anonymised: false,
-              createdAt: '2024-06-01 21:36:02'
+              createdAt: '2024-06-01T21:36:02.008Z'
             },
             comment: 'The new quest in the new zone cannot be completed!',
             anonymised: false,
@@ -90,11 +90,11 @@ const GameFeedbackAPIDocs: APIDocs<GameFeedbackAPIService> = {
                   '/* [Circular] */'
                 ],
                 devBuild: false,
-                createdAt: '2022-01-15 13:20:32',
-                lastSeenAt: '2022-04-12 15:09:43'
+                createdAt: '2022-01-15T13:20:32.133Z',
+                lastSeenAt: '2022-04-12T15:09:43.066Z'
               }
             },
-            createdAt: '2024-06-03 18:04:44'
+            createdAt: '2024-06-03T18:04:44.336Z'
           }
         }
       }

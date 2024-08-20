@@ -5,6 +5,7 @@ services:
     depends_on:
       - db
       - redis
+      - clickhouse
 
   db:
     image: mysql:8.4
@@ -12,7 +13,7 @@ services:
     environment:
       - MYSQL_DATABASE=${DB_NAME}
       - MYSQL_ROOT_PASSWORD=${DB_PASS}
-    restart: always
+    restart: unless-stopped
     ports:
       - 3306:3306
     volumes:
@@ -24,5 +25,20 @@ services:
     ports:
       - 6379:6379
 
+  clickhouse:
+    build:
+      context: .
+      dockerfile: ./clickhouse/Dockerfile
+    environment:
+      CLICKHOUSE_USER: ${CLICKHOUSE_USER}
+      CLICKHOUSE_PASSWORD: ${CLICKHOUSE_PASSWORD}
+      CLICKHOUSE_DB: ${CLICKHOUSE_DB}
+    restart: unless-stopped
+    ports:
+      - ${CLICKHOUSE_PORT}:8123
+    volumes:
+      - clickhouse-data:/var/lib/clickhouse
+
 volumes:
   data:
+  clickhouse-data:

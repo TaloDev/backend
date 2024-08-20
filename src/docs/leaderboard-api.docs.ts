@@ -41,13 +41,13 @@ const LeaderboardAPIDocs: APIDocs<LeaderboardAPIService> = {
                     '/* [Circular] */'
                   ],
                   devBuild: false,
-                  createdAt: '2022-01-15 13:20:32',
-                  lastSeenAt: '2022-04-12 15:09:43'
+                  createdAt: '2022-01-15T13:20:32.133Z',
+                  lastSeenAt: '2022-04-12T15:09:43.066Z'
                 }
               },
               hidden: false,
-              createdAt: '2022-01-15 14:01:18',
-              updatedAt: '2022-01-15 14:01:18'
+              createdAt: '2022-01-15T14:01:18.727Z',
+              updatedAt: '2022-01-15T14:01:18.727Z'
             },
             {
               id: 29,
@@ -69,13 +69,13 @@ const LeaderboardAPIDocs: APIDocs<LeaderboardAPIService> = {
                     '/* [Circular] */'
                   ],
                   devBuild: false,
-                  createdAt: '2022-06-15 14:13:16',
-                  lastSeenAt: '2022-06-15 15:01:55'
+                  createdAt: '2022-06-15T14:13:16.133Z',
+                  lastSeenAt: '2022-06-15T15:01:55.066Z'
                 }
               },
               hidden: false,
-              createdAt: '2022-06-15 14:48:11',
-              updatedAt: '2022-06-15 14:48:11'
+              createdAt: '2022-06-15T14:48:11.727Z',
+              updatedAt: '2022-06-15T14:48:11.727Z'
             },
             '/* ...48 more entries */'
           ],
@@ -119,13 +119,13 @@ const LeaderboardAPIDocs: APIDocs<LeaderboardAPIService> = {
                   '/* [Circular] */'
                 ],
                 devBuild: false,
-                createdAt: '2022-01-15 13:20:32',
-                lastSeenAt: '2022-04-12 15:09:43'
+                createdAt: '2022-01-15T13:20:32.133Z',
+                lastSeenAt: '2022-04-12T15:09:43.066Z'
               }
             },
             hidden: false,
-            createdAt: '2022-01-15 14:01:18',
-            updatedAt: '2022-02-16 16:03:53'
+            createdAt: '2022-01-15T14:01:18.727Z',
+            updatedAt: '2022-02-16T16:03:53.123Z'
           },
           updated: true
         }

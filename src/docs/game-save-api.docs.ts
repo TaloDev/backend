@@ -45,7 +45,7 @@ const sampleSave = {
       }
     ]
   },
-  updatedAt: '2022-06-07 14:58:13'
+  updatedAt: '2022-06-07T14:58:13.771Z'
 }
 
 const GameSaveAPIDocs: APIDocs<GameSaveAPIService> = {

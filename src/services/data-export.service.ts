@@ -2,7 +2,7 @@ import { Collection, FilterQuery, MikroORM, EntityManager } from '@mikro-orm/mys
 import { HasPermission, Routes, Service, Request, Response, Validate, ValidationCondition } from 'koa-clay'
 import DataExport, { DataExportAvailableEntities, DataExportStatus } from '../entities/data-export'
 import DataExportPolicy from '../policies/data-export.policy'
-import Event from '../entities/event'
+import Event, { ClickhouseEvent, createEventFromClickhouse } from '../entities/event'
 import AdmZip from 'adm-zip'
 import get from 'lodash.get'
 import Prop from '../entities/prop'
@@ -27,6 +27,7 @@ import PlayerProp from '../entities/player-prop'
 import { Job, Queue } from 'bullmq'
 import createEmailQueue from '../lib/queues/createEmailQueue'
 import { EmailConfig } from '../lib/messaging/sendEmail'
+import createClickhouseClient from '../lib/clickhouse/createClient'
 
 type PropCollection = Collection<PlayerProp, Player>
 
@@ -136,15 +137,26 @@ export default class DataExportService extends Service {
   }
 
   private async getEvents(dataExport: DataExport, em: EntityManager, includeDevData: boolean): Promise<Event[]> {
-    const where: FilterQuery<Event> = { game: dataExport.game }
+    const clickhouse = createClickhouseClient()
+
+    let query = `
+      SELECT *
+      FROM events
+      WHERE game_id = ${dataExport.game.id}
+    `
 
     if (!includeDevData) {
-      where.playerAlias = {
-        player: devDataPlayerFilter(em)
-      }
+      query += 'AND dev_build = false'
     }
 
-    return await em.getRepository(Event).find(where, { populate: ['playerAlias'] })
+    const events = await clickhouse.query({
+      query,
+      format: 'JSONEachRow'
+    }).then((res) => res.json<ClickhouseEvent>())
+
+    clickhouse.close()
+
+    return await Promise.all(events.map((data) => createEventFromClickhouse(em, data)))
   }
 
   private async getPlayers(dataExport: DataExport, em: EntityManager, includeDevData: boolean): Promise<Player[]> {

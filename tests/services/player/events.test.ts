@@ -4,6 +4,7 @@ import PlayerFactory from '../../fixtures/PlayerFactory'
 import EventFactory from '../../fixtures/EventFactory'
 import createOrganisationAndGame from '../../utils/createOrganisationAndGame'
 import createUserAndToken from '../../utils/createUserAndToken'
+import { NodeClickHouseClient } from '@clickhouse/client/dist/client'
 
 describe('Player service - get events', () => {
   it('should get a player\'s events', async () => {
@@ -11,12 +12,18 @@ describe('Player service - get events', () => {
     const [token] = await createUserAndToken({}, organisation)
 
     const player = await new PlayerFactory([game]).one()
-    const events = await new EventFactory([player]).many(3)
+    await (<EntityManager>global.em).persistAndFlush(player)
 
-    await (<EntityManager>global.em).persistAndFlush([player, ...events])
+    const events = await new EventFactory([player]).many(3)
+    await (<NodeClickHouseClient>global.clickhouse).insert({
+      table: 'events',
+      values: events.map((event) => event.getInsertableData()),
+      format: 'JSONEachRow'
+    })
 
     const res = await request(global.app)
       .get(`/games/${game.id}/players/${player.id}/events`)
+      .query({ page: 0 })
       .auth(token, { type: 'bearer' })
       .expect(200)
 
@@ -28,11 +35,11 @@ describe('Player service - get events', () => {
     const [token] = await createUserAndToken()
 
     const player = await new PlayerFactory([game]).one()
-
     await (<EntityManager>global.em).persistAndFlush(player)
 
     await request(global.app)
       .get(`/games/${game.id}/players/${player.id}/events`)
+      .query({ page: 0 })
       .auth(token, { type: 'bearer' })
       .expect(403)
   })
@@ -42,13 +49,19 @@ describe('Player service - get events', () => {
     const [token] = await createUserAndToken({}, organisation)
 
     const player = await new PlayerFactory([game]).one()
+    await (<EntityManager>global.em).persistAndFlush(player)
+
     const events = await new EventFactory([player]).state(() => ({ name: 'Find secret' })).many(3)
     const otherEvents = await new EventFactory([player]).state(() => ({ name: 'Kill boss' })).many(3)
-    await (<EntityManager>global.em).persistAndFlush([...events, ...otherEvents])
+    await (<NodeClickHouseClient>global.clickhouse).insert({
+      table: 'events',
+      values: [...events, ...otherEvents].map((event) => event.getInsertableData()),
+      format: 'JSONEachRow'
+    })
 
     const res = await request(global.app)
       .get(`/games/${game.id}/players/${player.id}/events`)
-      .query({ search: 'Find secret' })
+      .query({ search: 'Find secret', page: 0 })
       .auth(token, { type: 'bearer' })
       .expect(200)
 
@@ -62,14 +75,18 @@ describe('Player service - get events', () => {
     const count = 82
 
     const player = await new PlayerFactory([game]).one()
-    const events = await new EventFactory([player]).many(count)
-    await (<EntityManager>global.em).persistAndFlush(events)
+    await (<EntityManager>global.em).persistAndFlush(player)
 
-    const page = Math.floor(count / 50)
+    const events = await new EventFactory([player]).many(count)
+    await (<NodeClickHouseClient>global.clickhouse).insert({
+      table: 'events',
+      values: events.map((event) => event.getInsertableData()),
+      format: 'JSONEachRow'
+    })
 
     const res = await request(global.app)
       .get(`/games/${game.id}/players/${player.id}/events`)
-      .query({ page })
+      .query({ page: 1 })
       .auth(token, { type: 'bearer' })
       .expect(200)
 
@@ -84,6 +101,7 @@ describe('Player service - get events', () => {
 
     const res = await request(global.app)
       .get(`/games/${game.id}/players/21312321321/events`)
+      .query({ page: 0 })
       .auth(token, { type: 'bearer' })
       .expect(404)
 

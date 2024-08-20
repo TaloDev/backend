@@ -10,7 +10,6 @@ import Leaderboard from './leaderboard'
 import LeaderboardEntry from './leaderboard-entry'
 import APIKey from './api-key'
 import DataExport from './data-export'
-import Event from './event'
 import FailedJob from './failed-job'
 import Game from './game'
 import Organisation from './organisation'
@@ -58,7 +57,6 @@ export default [
   LeaderboardEntry,
   DataExport,
   APIKey,
-  Event,
   Game,
   FailedJob,
   Organisation,

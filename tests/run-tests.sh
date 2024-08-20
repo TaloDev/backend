@@ -5,7 +5,7 @@ export $(cat envs/.env.test | xargs)
 if [ -z "$CI" ]; then
   alias dc="docker compose -f docker-compose.test.yml"
 else
-  alias dc="docker compose -f docker-compose.ci.yml"
+  alias dc="docker compose -f docker-compose.test.yml -f docker-compose.ci.yml"
 fi
 
 trap "cleanup" EXIT

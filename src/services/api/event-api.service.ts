@@ -1,10 +1,12 @@
 import { EntityManager } from '@mikro-orm/mysql'
 import { HasPermission, Request, Response, Validate, ValidationCondition, Docs } from 'koa-clay'
-import Event from '../../entities/event'
 import EventAPIPolicy from '../../policies/api/event-api.policy'
 import APIService from './api-service'
 import EventAPIDocs from '../../docs/event-api.docs'
+import createClickhouseClient from '../../lib/clickhouse/createClient'
 import Player from '../../entities/player'
+import Event from '../../entities/event'
+import Prop from '../../entities/prop'
 
 export default class EventAPIService extends APIService {
   @Validate({
@@ -24,43 +26,74 @@ export default class EventAPIService extends APIService {
   @HasPermission(EventAPIPolicy, 'post')
   @Docs(EventAPIDocs.post)
   async post(req: Request): Promise<Response> {
-    const { events } = req.body
+    const { events: items } = req.body
     const em: EntityManager = req.ctx.em
 
-    const errors = [...new Array(events.length)].map(() => [])
-    const items: Event[] = []
+    const clickhouse = createClickhouseClient()
 
-    for (let i = 0; i < events.length; i++) {
-      const item = events[i]
+    const events: Event[] = []
+    const errors = Array.from({ length: items.length }).map(() => [])
+
+    const player: Player = req.ctx.state.player
+    const playerAlias = player.aliases.getItems().find((alias) => alias.id === req.ctx.state.currentAliasId)
+
+    for (let i = 0; i < items.length; i++) {
+      const item = items[i]
 
       for (const key of ['name', 'timestamp']) {
-        if (!item[key]) errors[i].push(`Event is missing the key: ${key}`)
+        if (!item[key]) {
+          errors[i].push(`Event is missing the key: ${key}`)
+        }
       }
 
       if (errors[i].length === 0) {
-        const event = new Event(item.name, req.ctx.state.key.game)
-        event.playerAlias = (req.ctx.state.player as Player).aliases.getItems().find((alias) => alias.id === req.ctx.state.currentAliasId)
+        const event = new Event(item.name, player.game)
+        event.playerAlias = playerAlias
         event.createdAt = new Date(item.timestamp)
 
-        if (item.props) {
-          try {
-            if (!Array.isArray(item.props)) throw new Error('Props must be an array')
-            event.setProps(item.props)
-          } catch (err) {
-            errors[i].push(err.message)
-          }
+        try {
+          await clickhouse.insert({
+            table: 'events',
+            values: [event.getInsertableData()],
+            format: 'JSONEachRow'
+          })
+        /* v8 ignore next 4 */
+        } catch (err) {
+          errors[i].push(`Failed to insert event: ${err.message}`)
+          continue
         }
 
-        if (errors[i].length === 0) items.push(event)
+        if (Array.isArray(item.props)) {
+          event.setProps(item.props.map((prop) => new Prop(prop.key, prop.value)))
+
+          try {
+            await clickhouse.insert({
+              table: 'event_props',
+              values: event.getInsertableProps(),
+              format: 'JSONEachRow'
+            })
+          /* v8 ignore next 3 */
+          } catch (err) {
+            errors[i].push(`Failed to insert props': ${err.message}`)
+          }
+        } else if (item.props) {
+          errors[i].push('Props must be an array')
+        }
+
+        if (errors[i].length === 0) {
+          events.push(event)
+        }
       }
     }
 
-    await em.persistAndFlush(items)
+    clickhouse.close()
+
+    await em.flush()
 
     return {
       status: 200,
       body: {
-        events: items,
+        events,
         errors
       }
     }

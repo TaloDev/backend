@@ -30,8 +30,8 @@ const PlayerAPIDocs: APIDocs<PlayerAPIService> = {
                 '/* [Circular] */'
               ],
               devBuild: false,
-              createdAt: '2022-01-15 13:20:32',
-              lastSeenAt: '2022-04-12 15:09:43',
+              createdAt: '2022-01-15T13:20:32.133Z',
+              lastSeenAt: '2022-04-12T15:09:43.066Z',
               groups: [
                 { id: '5826ca71-1964-4a1b-abcb-a61ffbe003be', name: 'Winners' }
               ]
@@ -75,8 +75,8 @@ const PlayerAPIDocs: APIDocs<PlayerAPIService> = {
               '/* [Circular] */'
             ],
             devBuild: false,
-            createdAt: '2022-01-15 13:20:32',
-            lastSeenAt: '2022-04-12 15:09:43',
+            createdAt: '2022-01-15T13:20:32.133Z',
+            lastSeenAt: '2022-04-12T15:09:43.066Z',
             groups: [
               { id: '5826ca71-1964-4a1b-abcb-a61ffbe003be', name: 'Winners' }
             ]
@@ -118,8 +118,8 @@ const PlayerAPIDocs: APIDocs<PlayerAPIService> = {
               { id: 8, service: 'epic', identifier: '55534821', player: '/* [Circular] */' }
             ],
             devBuild: false,
-            createdAt: '2022-01-15 13:20:32',
-            lastSeenAt: '2022-04-12 15:09:43',
+            createdAt: '2022-01-15T13:20:32.133Z',
+            lastSeenAt: '2022-04-12T15:09:43.066Z',
             groups: [
               { id: '5826ca71-1964-4a1b-abcb-a61ffbe003be', name: 'Winners' }
             ]

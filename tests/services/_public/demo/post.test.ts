@@ -1,6 +1,5 @@
 import { EntityManager } from '@mikro-orm/mysql'
 import request from 'supertest'
-import Event from '../../../../src/entities/event'
 import Organisation from '../../../../src/entities/organisation'
 import OrganisationFactory from '../../../fixtures/OrganisationFactory'
 import User, { UserType } from '../../../../src/entities/user'
@@ -9,6 +8,8 @@ import PlayerFactory from '../../../fixtures/PlayerFactory'
 import GameFactory from '../../../fixtures/GameFactory'
 import { sub } from 'date-fns'
 import randomDate from '../../../../src/lib/dates/randomDate'
+import { formatDateForClickHouse } from '../../../../src/lib/clickhouse/formatDateTime'
+import { NodeClickHouseClient } from '@clickhouse/client/dist/client'
 
 describe('Demo service - post', () => {
   let demoOrg: Organisation
@@ -36,30 +37,37 @@ describe('Demo service - post', () => {
   it('should insert events if there arent any for the last month', async () => {
     const game = await new GameFactory(demoOrg).one()
     const players = await new PlayerFactory([game]).many(2)
+    await (<EntityManager>global.em).persistAndFlush(players)
 
-    let eventsThisMonth = await (<EntityManager>global.em).getRepository(Event).find({
-      createdAt: {
-        $gte: sub(new Date(), { months: 1 })
-      }
-    })
+    const date = formatDateForClickHouse(sub(new Date(), { months: 1 }))
 
-    expect(eventsThisMonth).toHaveLength(0)
+    let eventsThisMonth = await (<NodeClickHouseClient>global.clickhouse).query({
+      query: `SELECT count() as count FROM events WHERE game_id = ${game.id} AND created_at >= '${date}'`,
+      format: 'JSONEachRow'
+    }).then((res) => res.json<{ count: string }>())
+      .then((res) => Number(res[0].count))
+
+    expect(eventsThisMonth).toEqual(0)
 
     const randomEvents = await new EventFactory(players).state(() => ({
       createdAt: randomDate(sub(new Date(), { years: 1 }), sub(new Date(), { months: 2 }))
     })).many(20)
-    await (<EntityManager>global.em).persistAndFlush(randomEvents)
+    await (<NodeClickHouseClient>global.clickhouse).insert({
+      table: 'events',
+      values: randomEvents.map((event) => event.getInsertableData()),
+      format: 'JSONEachRow'
+    })
 
     await request(global.app)
       .post('/public/demo')
       .expect(200)
 
-    eventsThisMonth = await (<EntityManager>global.em).getRepository(Event).find({
-      createdAt: {
-        $gte: sub(new Date(), { months: 1 })
-      }
-    })
+    eventsThisMonth = await (<NodeClickHouseClient>global.clickhouse).query({
+      query: `SELECT count() as count FROM events WHERE game_id = ${game.id} AND created_at >= '${date}'`,
+      format: 'JSONEachRow'
+    }).then((res) => res.json<{ count: string }>())
+      .then((res) => Number(res[0].count))
 
-    expect(eventsThisMonth.length).toBeGreaterThan(0)
+    expect(eventsThisMonth).toBeGreaterThan(0)
   })
 })

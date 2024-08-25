@@ -220,4 +220,50 @@ describe('Leaderboard API service - post', () => {
 
     expect(res.body.entry.position).toBe(0)
   })
+
+  it('should set the createdAt for the entry to the continuity date', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_LEADERBOARDS])
+    const player = await new PlayerFactory([apiKey.game]).one()
+    const leaderboard = await new LeaderboardFactory([apiKey.game]).one()
+    await (<EntityManager>global.em).persistAndFlush([player, leaderboard])
+
+    const continuityDate = subHours(new Date(), 1)
+
+    const res = await request(global.app)
+      .post(`/v1/leaderboards/${leaderboard.internalName}/entries`)
+      .send({ score: 300 })
+      .auth(token, { type: 'bearer' })
+      .set('x-talo-alias', String(player.aliases[0].id))
+      .set('x-talo-continuity-timestamp', String(continuityDate.getTime()))
+      .expect(200)
+
+    expect(new Date(res.body.entry.createdAt).getHours()).toBe(continuityDate.getHours())
+  })
+
+  it('should update an existing entry\'s created at to the continuity date for unique leaderboards', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_LEADERBOARDS])
+    const player = await new PlayerFactory([apiKey.game]).one()
+    const leaderboard = await new LeaderboardFactory([apiKey.game]).state(() => ({ unique: true, sortMode: LeaderboardSortMode.DESC })).one()
+
+    const originalDate = subHours(new Date(), 2)
+    const continuityDate = subHours(new Date(), 1)
+
+    const entry = await new LeaderboardEntryFactory(leaderboard, [player]).state(() => ({
+      score: 100,
+      createdAt: originalDate,
+      playerAlias: player.aliases[0]
+    })).one()
+
+    await (<EntityManager>global.em).persistAndFlush([player, leaderboard, entry])
+
+    const res = await request(global.app)
+      .post(`/v1/leaderboards/${leaderboard.internalName}/entries`)
+      .send({ score: 300 })
+      .auth(token, { type: 'bearer' })
+      .set('x-talo-alias', String(player.aliases[0].id))
+      .set('x-talo-continuity-timestamp', String(continuityDate.getTime()))
+      .expect(200)
+
+    expect(new Date(res.body.entry.createdAt).getHours()).toBe(continuityDate.getHours())
+  })
 })

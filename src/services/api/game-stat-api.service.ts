@@ -52,6 +52,10 @@ export default class GameStatAPIService extends APIService {
 
     if (!playerStat) {
       playerStat = new PlayerGameStat(req.ctx.state.player, req.ctx.state.stat)
+      if (req.ctx.state.continuityDate) {
+        playerStat.createdAt = req.ctx.state.continuityDate
+      }
+
       em.persist(playerStat)
     }
 

@@ -7,6 +7,7 @@ import GameStat from '../../../../src/entities/game-stat'
 import PlayerGameStatFactory from '../../../fixtures/PlayerGameStatFactory'
 import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
 import Game from '../../../../src/entities/game'
+import { subHours } from 'date-fns'
 
 describe('Game stats API service - put', () => {
   const createStat = async (game: Game, props: Partial<GameStat>) => {
@@ -227,5 +228,24 @@ describe('Game stats API service - put', () => {
       .expect(404)
 
     expect(res.body).toStrictEqual({ message: 'Stat not found' })
+  })
+
+  it('should set the createdAt of the player stat to the continuity date', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_STATS])
+    const stat = await createStat(apiKey.game, { maxValue: 999, maxChange: 99 })
+    const player = await new PlayerFactory([apiKey.game]).one()
+    await (<EntityManager>global.em).persistAndFlush(player)
+
+    const continuityDate = subHours(new Date(), 1)
+
+    const res = await request(global.app)
+      .put(`/v1/game-stats/${stat.internalName}`)
+      .send({ change: 10 })
+      .auth(token, { type: 'bearer' })
+      .set('x-talo-player', player.id)
+      .set('x-talo-continuity-timestamp', String(continuityDate.getTime()))
+      .expect(200)
+
+    expect(res.body.playerStat.createdAt).toBe(continuityDate.toISOString())
   })
 })

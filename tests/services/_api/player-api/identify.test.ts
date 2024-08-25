@@ -2,7 +2,7 @@ import { Collection, EntityManager } from '@mikro-orm/mysql'
 import request from 'supertest'
 import { APIKeyScope } from '../../../../src/entities/api-key'
 import PlayerFactory from '../../../fixtures/PlayerFactory'
-import { isToday } from 'date-fns'
+import { isToday, subHours } from 'date-fns'
 import PlayerGroupFactory from '../../../fixtures/PlayerGroupFactory'
 import PlayerGroupRule, { PlayerGroupRuleName, PlayerGroupRuleCastType } from '../../../../src/entities/player-group-rule'
 import PlayerProp from '../../../../src/entities/player-prop'
@@ -123,5 +123,21 @@ describe('Player API service - identify', () => {
       .expect(404)
 
     expect(res.body).toStrictEqual({ message: 'Player not found: Talo aliases must be created using the /v1/players/auth API' })
+  })
+
+  it('should set the createdAt for the player and aliases to the continuity date', async () => {
+    const [, token] = await createAPIKeyAndToken([APIKeyScope.READ_PLAYERS, APIKeyScope.WRITE_PLAYERS])
+
+    const continuityDate = subHours(new Date(), 1)
+
+    const res = await request(global.app)
+      .get('/v1/players/identify')
+      .query({ service: 'steam', identifier: 'bizboz' })
+      .auth(token, { type: 'bearer' })
+      .set('x-talo-continuity-timestamp', String(continuityDate.getTime()))
+      .expect(200)
+
+    expect(res.body.alias.createdAt).toBe(continuityDate.toISOString())
+    expect(res.body.alias.player.createdAt).toBe(continuityDate.toISOString())
   })
 })

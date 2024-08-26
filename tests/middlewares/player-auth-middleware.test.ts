@@ -125,7 +125,7 @@ describe('Player auth middleware', () => {
     const stat = await new GameStatFactory([apiKey.game]).one()
     const player = await new PlayerFactory([apiKey.game]).withTaloAlias().one()
 
-    player.aliases.add(await new PlayerAliasFactory().one())
+    player.aliases.add(await new PlayerAliasFactory(player).one())
 
     await em.persistAndFlush([stat, player])
     const sessionToken = await player.auth.createSession(player.aliases[0])

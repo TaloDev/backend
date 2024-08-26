@@ -79,7 +79,7 @@ describe('Game feedback API service - post', () => {
   })
 
   it('should set the createdAt for the feedback to the continuity date', async () => {
-    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_FEEDBACK])
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_FEEDBACK, APIKeyScope.WRITE_CONTINUITY_REQUESTS])
 
     const feedbackCategory = await new GameFeedbackCategoryFactory(apiKey.game).one()
     const player = await new PlayerFactory([apiKey.game]).one()

@@ -84,10 +84,6 @@ export default class PlayerService extends Service {
     const game = await em.getRepository(Game).findOne(req.ctx.state.game)
 
     const player = new Player(game)
-    if (req.ctx.state.continuityDate) {
-      player.createdAt = req.ctx.state.continuityDate
-    }
-
     if (aliases) {
       for await (const alias of aliases) {
         if (await em.getRepository(PlayerAlias).count({ service: alias.service, identifier: alias.identifier }) > 0) {
@@ -102,10 +98,6 @@ export default class PlayerService extends Service {
         const alias = new PlayerAlias()
         alias.service = item.service
         alias.identifier = item.identifier
-        if (req.ctx.state.continuityDate) {
-          alias.createdAt = req.ctx.state.continuityDate
-        }
-
         return alias
       }))
     }

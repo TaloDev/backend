@@ -1,4 +1,4 @@
-import { Response, Request, Routes } from 'koa-clay'
+import { Response, Routes } from 'koa-clay'
 import APIService from './api-service'
 
 @Routes([
@@ -7,11 +7,9 @@ import APIService from './api-service'
   }
 ])
 export default class HealthCheckAPIService extends APIService {
-  async index(req: Request): Promise<Response> {
-    console.log(req.ctx.state.continuityDate)
-
+  async index(): Promise<Response> {
     return {
-      status: 200
+      status: 204
     }
   }
 }

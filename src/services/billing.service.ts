@@ -235,7 +235,7 @@ export default class BillingService extends Service {
     )
 
     return {
-      status: 200
+      status: 204
     }
   }
 

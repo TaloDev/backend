@@ -222,7 +222,7 @@ describe('Leaderboard API service - post', () => {
   })
 
   it('should set the createdAt for the entry to the continuity date', async () => {
-    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_LEADERBOARDS])
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_LEADERBOARDS, APIKeyScope.WRITE_CONTINUITY_REQUESTS])
     const player = await new PlayerFactory([apiKey.game]).one()
     const leaderboard = await new LeaderboardFactory([apiKey.game]).one()
     await (<EntityManager>global.em).persistAndFlush([player, leaderboard])
@@ -241,7 +241,7 @@ describe('Leaderboard API service - post', () => {
   })
 
   it('should update an existing entry\'s created at to the continuity date for unique leaderboards', async () => {
-    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_LEADERBOARDS])
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_LEADERBOARDS, APIKeyScope.WRITE_CONTINUITY_REQUESTS])
     const player = await new PlayerFactory([apiKey.game]).one()
     const leaderboard = await new LeaderboardFactory([apiKey.game]).state(() => ({ unique: true, sortMode: LeaderboardSortMode.DESC })).one()
 

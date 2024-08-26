@@ -231,7 +231,7 @@ describe('Game stats API service - put', () => {
   })
 
   it('should set the createdAt of the player stat to the continuity date', async () => {
-    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_STATS])
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_STATS, APIKeyScope.WRITE_CONTINUITY_REQUESTS])
     const stat = await createStat(apiKey.game, { maxValue: 999, maxChange: 99 })
     const player = await new PlayerFactory([apiKey.game]).one()
     await (<EntityManager>global.em).persistAndFlush(player)

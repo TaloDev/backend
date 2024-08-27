@@ -37,6 +37,9 @@ export default class LeaderboardAPIService extends APIService {
     const entry = new LeaderboardEntry(req.ctx.state.leaderboard)
     entry.playerAlias = req.ctx.state.playerAlias
     entry.score = req.body.score
+    if (req.ctx.state.continuityDate) {
+      entry.createdAt = req.ctx.state.continuityDate
+    }
 
     await em.persistAndFlush(entry)
 
@@ -67,7 +70,7 @@ export default class LeaderboardAPIService extends APIService {
 
         if ((leaderboard.sortMode === LeaderboardSortMode.ASC && score < entry.score) || (leaderboard.sortMode === LeaderboardSortMode.DESC && score > entry.score)) {
           entry.score = score
-          entry.createdAt = new Date()
+          entry.createdAt = req.ctx.state.continuityDate ?? new Date()
           await em.flush()
 
           updated = true

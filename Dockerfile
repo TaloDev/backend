@@ -16,7 +16,7 @@ COPY src ./src
 RUN npm run build
 
 FROM base AS prod
-ENV NODE_ENV production
+ENV NODE_ENV=production
 RUN npm ci
 COPY --from=build /usr/backend/dist .
 CMD [ "node", "index.js" ]

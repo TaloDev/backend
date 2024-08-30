@@ -26,10 +26,6 @@ export class InitialMigration extends Migration {
     this.addSql('create table `player_alias` (`id` int unsigned not null auto_increment primary key, `service` varchar(255) not null, `identifier` varchar(255) not null, `player_id` varchar(255) null, `created_at` datetime not null, `updated_at` datetime not null) default character set utf8mb4 engine = InnoDB')
     this.addSql('alter table `player_alias` add index `player_alias_player_id_index`(`player_id`)')
 
-    this.addSql('create table `event` (`id` int unsigned not null auto_increment primary key, `name` varchar(255) not null, `props` json not null, `game_id` int(11) unsigned not null, `player_alias_id` int(11) unsigned not null, `created_at` datetime not null, `updated_at` datetime not null) default character set utf8mb4 engine = InnoDB')
-    this.addSql('alter table `event` add index `event_game_id_index`(`game_id`)')
-    this.addSql('alter table `event` add index `event_player_alias_id_index`(`player_alias_id`)')
-
     this.addSql('create table `apikey` (`id` int unsigned not null auto_increment primary key, `scopes` text not null, `game_id` int(11) unsigned not null, `created_by_user_id` int(11) unsigned not null, `created_at` datetime not null, `revoked_at` datetime null) default character set utf8mb4 engine = InnoDB')
     this.addSql('alter table `apikey` add index `apikey_game_id_index`(`game_id`)')
     this.addSql('alter table `apikey` add index `apikey_created_by_user_id_index`(`created_by_user_id`)')
@@ -45,9 +41,6 @@ export class InitialMigration extends Migration {
     this.addSql('alter table `player` add constraint `player_game_id_foreign` foreign key (`game_id`) references `game` (`id`) on update cascade')
 
     this.addSql('alter table `player_alias` add constraint `player_alias_player_id_foreign` foreign key (`player_id`) references `player` (`id`) on delete cascade')
-
-    this.addSql('alter table `event` add constraint `event_game_id_foreign` foreign key (`game_id`) references `game` (`id`) on update cascade')
-    this.addSql('alter table `event` add constraint `event_player_alias_id_foreign` foreign key (`player_alias_id`) references `player_alias` (`id`) on update cascade')
 
     this.addSql('alter table `apikey` add constraint `apikey_game_id_foreign` foreign key (`game_id`) references `game` (`id`) on update cascade')
     this.addSql('alter table `apikey` add constraint `apikey_created_by_user_id_foreign` foreign key (`created_by_user_id`) references `user` (`id`) on update cascade')

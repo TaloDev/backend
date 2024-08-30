@@ -7,7 +7,12 @@ export default class InvitePublicService extends Service {
     const { id } = req.params
     const em: EntityManager = req.ctx.em
 
-    const invite = await em.getRepository(Invite).findOne({ token: id }, { populate: ['organisation'] })
+    const invite = await em.getRepository(Invite).findOne({
+      token: id
+    }, {
+      populate: ['organisation', 'invitedByUser']
+    })
+
     if (!invite) req.ctx.throw(404, 'Invite not found')
 
     return {

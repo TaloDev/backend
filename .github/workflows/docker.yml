@@ -6,6 +6,9 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        image: [backend, clickhouse]
     steps:
       - run: echo "TAG=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
 
@@ -22,18 +25,19 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build and push
-        id: docker_build
+      - name: Build and push (${{ matrix.image }})
+        id: build-image
         uses: docker/build-push-action@v5
         with:
           push: true
+          file: ${{ matrix.image == 'backend' && 'Dockerfile' || 'clickhouse/Dockerfile' }}
           tags: |
-            ghcr.io/talodev/backend:latest
-            ghcr.io/talodev/backend:${{ env.TAG }}
-          target: prod
+            ghcr.io/talodev/${{ matrix.image }}:latest
+            ghcr.io/talodev/${{ matrix.image }}:${{ env.TAG }}
+          target: ${{ matrix.image == 'backend' && 'prod' || '' }}
 
-      - name: Image digest
-        run: echo ${{ steps.docker_build.outputs.digest }}
+      - name: Image digest (${{ matrix.image }})
+        run: echo ${{ steps.build-image.outputs.digest }}
 
   deploy:
     runs-on: ubuntu-latest

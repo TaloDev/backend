@@ -40,6 +40,9 @@ export default class GameFeedbackAPIService extends APIService {
     const feedback = new GameFeedback(category, req.ctx.state.playerAlias)
     feedback.comment = comment
     feedback.anonymised = category.anonymised
+    if (req.ctx.state.continuityDate) {
+      feedback.createdAt = req.ctx.state.continuityDate
+    }
 
     await em.persistAndFlush(feedback)
 

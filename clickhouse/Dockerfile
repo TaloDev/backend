@@ -1,4 +1,4 @@
-FROM clickhouse/clickhouse-server:24.6-alpine
+FROM clickhouse/clickhouse-server:24.8-alpine
 
 RUN apk add --no-cache gettext
 

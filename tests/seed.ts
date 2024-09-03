@@ -16,6 +16,9 @@ import PricingPlanAction, { PricingPlanActionType } from '../src/entities/pricin
 import OrganisationPricingPlanFactory from './fixtures/OrganisationPricingPlanFactory'
 import PricingPlan from '../src/entities/pricing-plan'
 import APIKey, { APIKeyScope } from '../src/entities/api-key'
+import GameFeedbackCategoryFactory from './fixtures/GameFeedbackCategoryFactory'
+import GameFeedbackFactory from './fixtures/GameFeedbackFactory'
+import createClickhouseClient from '../src/lib/clickhouse/createClient'
 
 (async () => {
   console.info('Running migrations...')
@@ -25,7 +28,7 @@ import APIKey, { APIKeyScope } from '../src/entities/api-key'
   await orm.em.getConnection().execute('drop table if exists mikro_orm_migrations')
   await orm.getMigrator().up()
 
-  console.info('Seeding database...')
+  console.info('Seeding DB...')
 
   const plansMap: Partial<PricingPlan>[] = [
     { stripeId: 'prod_LcO5U04wEGWgMP', default: true },
@@ -97,8 +100,6 @@ import APIKey, { APIKeyScope } from '../src/entities/api-key'
 
   const players = await new PlayerFactory(games).many(50)
 
-  const eventsThisMonth = await new EventFactory(players).thisMonth().many(300)
-
   const leaderboards = await new LeaderboardFactory(games).withEntries().many(6)
 
   const gameSaves = await new GameSaveFactory(players).many(10)
@@ -114,6 +115,23 @@ import APIKey, { APIKeyScope } from '../src/entities/api-key'
     }
   }
 
+  const feedback = []
+  for (const game of games) {
+    const categories = [
+      await new GameFeedbackCategoryFactory(game).state(() => ({ internalName: 'bugs', name: 'Bugs', anonymised: false })).one(),
+      await new GameFeedbackCategoryFactory(game).state(() => ({ internalName: 'feedback', name: 'Feedback', anonymised: true })).one()
+    ]
+
+    for (const category of categories) {
+      const items = await new GameFeedbackFactory(game).state(() => ({
+        category,
+        playerAlias: casual.random_element(players.filter((player) => player.game === game)).aliases[0],
+        anonymised: category.anonymised
+      })).many(5)
+      feedback.push(...items)
+    }
+  }
+
   const em = orm.em.fork()
 
   await em.persistAndFlush([
@@ -126,14 +144,26 @@ import APIKey, { APIKeyScope } from '../src/entities/api-key'
     ...games,
     ...apiKeys,
     ...players,
-    ...eventsThisMonth,
     ...leaderboards,
     ...gameSaves,
     ...gameStats,
-    ...playerGameStats
+    ...playerGameStats,
+    ...feedback
   ])
 
   await orm.close(true)
+
+  const eventsThisMonth = await new EventFactory(players).thisMonth().many(300)
+
+  console.info('Seeding Clickhouse...')
+
+  const clickhouse = createClickhouseClient()
+  await clickhouse.insert({
+    table: 'events',
+    values: eventsThisMonth.map((event) => event.getInsertableData()),
+    format: 'JSONEachRow'
+  })
+  clickhouse.close()
 
   console.info('Done!')
 })()

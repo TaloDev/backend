@@ -28,6 +28,7 @@ import { Job, Queue } from 'bullmq'
 import createEmailQueue from '../lib/queues/createEmailQueue'
 import { EmailConfig } from '../lib/messaging/sendEmail'
 import createClickhouseClient from '../lib/clickhouse/createClient'
+import GameFeedback from '../entities/game-feedback'
 
 type PropCollection = Collection<PlayerProp, Player>
 
@@ -45,7 +46,7 @@ type DataExportJob = {
   includeDevData: boolean
 }
 
-type ExportableEntity = Event | Player | PlayerAlias | LeaderboardEntry | GameStat | PlayerGameStat | GameActivity
+type ExportableEntity = Event | Player | PlayerAlias | LeaderboardEntry | GameStat | PlayerGameStat | GameActivity | GameFeedback
 type ExportableEntityWithProps = ExportableEntity & EntityWithProps
 
 @Routes([
@@ -221,7 +222,7 @@ export default class DataExportService extends Service {
       where.player = devDataPlayerFilter(em)
     }
 
-    return await em.getRepository(PlayerGameStat).find(where)
+    return await em.getRepository(PlayerGameStat).find(where, { populate: ['player'] })
   }
 
   private async getGameActivities(dataExport: DataExport, em: EntityManager): Promise<GameActivity[]> {
@@ -229,6 +230,26 @@ export default class DataExportService extends Service {
       game: dataExport.game
     }, {
       populate: ['user']
+    })
+  }
+
+  private async getGameFeedback(dataExport: DataExport, em: EntityManager, includeDevData: boolean): Promise<GameFeedback[]> {
+    const where: FilterQuery<GameFeedback> = {
+      playerAlias: {
+        player: {
+          game: dataExport.game
+        }
+      }
+    }
+
+    if (!includeDevData) {
+      where.playerAlias = Object.assign(where.playerAlias, {
+        player: devDataPlayerFilter(em)
+      })
+    }
+
+    return await em.getRepository(GameFeedback).find(where, {
+      populate: ['playerAlias.player']
     })
   }
 
@@ -270,6 +291,11 @@ export default class DataExportService extends Service {
       zip.addFile(`${DataExportAvailableEntities.GAME_ACTIVITIES}.csv`, this.buildCSV(DataExportAvailableEntities.GAME_ACTIVITIES, items))
     }
 
+    if (dataExport.entities.includes(DataExportAvailableEntities.GAME_FEEDBACK)) {
+      const items = await this.getGameFeedback(dataExport, em, includeDevData)
+      zip.addFile(`${DataExportAvailableEntities.GAME_FEEDBACK}.csv`, this.buildCSV(DataExportAvailableEntities.GAME_FEEDBACK, items))
+    }
+
     return zip
   }
 
@@ -286,9 +312,11 @@ export default class DataExportService extends Service {
       case DataExportAvailableEntities.GAME_STATS:
         return ['id', 'internalName', 'name', 'defaultValue', 'minValue', 'maxValue', 'global', 'globalValue', 'createdAt', 'updatedAt']
       case DataExportAvailableEntities.PLAYER_GAME_STATS:
-        return ['id', 'value', 'stat.id', 'stat.internalName', 'createdAt', 'updatedAt']
+        return ['id', 'player.id', 'value', 'stat.id', 'stat.internalName', 'createdAt', 'updatedAt']
       case DataExportAvailableEntities.GAME_ACTIVITIES:
         return ['id', 'user.username', 'gameActivityType', 'gameActivityExtra', 'createdAt']
+      case DataExportAvailableEntities.GAME_FEEDBACK:
+        return ['id', 'category.internalName', 'comment', 'playerAlias.id', 'playerAlias.service', 'playerAlias.identifier', 'playerAlias.player.id', 'createdAt']
     }
   }
 
@@ -319,6 +347,15 @@ export default class DataExportService extends Service {
         return `"${JSON.stringify(value).replace(/"/g, '\'')}"`
       case 'globalValue':
         return get(object, 'hydratedGlobalValue') ?? 'N/A'
+      case 'playerAlias.id':
+      case 'playerAlias.service':
+      case 'playerAlias.identifier':
+      case 'playerAlias.player.id':
+        if (object instanceof GameFeedback && object.anonymised) {
+          return 'Anonymous'
+        } else {
+          return String(value)
+        }
       default:
         return String(value)
     }

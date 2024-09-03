@@ -142,6 +142,19 @@ describe('Data export service - post', () => {
     expect(res.body.dataExport.entities).toStrictEqual([DataExportAvailableEntities.GAME_ACTIVITIES])
   })
 
+  it('should create a data export for game feedback', async () => {
+    const [organisation, game] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken({ type: UserType.ADMIN, emailConfirmed: true }, organisation)
+
+    const res = await request(global.app)
+      .post(`/games/${game.id}/data-exports`)
+      .send({ entities: [DataExportAvailableEntities.GAME_FEEDBACK] })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    expect(res.body.dataExport.entities).toStrictEqual([DataExportAvailableEntities.GAME_FEEDBACK])
+  })
+
   it('should not create a data export for users with unconfirmed emails', async () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({ type: UserType.ADMIN }, organisation)

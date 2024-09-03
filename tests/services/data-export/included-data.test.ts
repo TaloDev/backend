@@ -9,6 +9,7 @@ import GameStatFactory from '../../fixtures/GameStatFactory'
 import PlayerGameStatFactory from '../../fixtures/PlayerGameStatFactory'
 import createOrganisationAndGame from '../../utils/createOrganisationAndGame'
 import { NodeClickHouseClient } from '@clickhouse/client/dist/client'
+import GameFeedbackFactory from '../../fixtures/GameFeedbackFactory'
 
 describe('Data export service - included data', () => {
   it('should not include events from dev build players without the dev data header', async () => {
@@ -200,6 +201,40 @@ describe('Data export service - included data', () => {
     await (<EntityManager>global.em).persistAndFlush([playerStat, dataExport])
 
     const items = await proto.getPlayerGameStats(dataExport, global.em, true)
+    expect(items).toHaveLength(1)
+  })
+
+  it('should not include feedback from dev build players without the dev data header', async () => {
+    const [, game] = await createOrganisationAndGame()
+
+    const service = new DataExportService()
+    const proto = Object.getPrototypeOf(service)
+
+    const player = await new PlayerFactory([game]).devBuild().one()
+    const feedback = await new GameFeedbackFactory(game).state(() => ({
+      playerAlias: player.aliases[0]
+    })).one()
+    const dataExport = await new DataExportFactory(game).one()
+    await (<EntityManager>global.em).persistAndFlush([feedback, dataExport])
+
+    const items = await proto.getGameFeedback(dataExport, global.em, false)
+    expect(items).toHaveLength(0)
+  })
+
+  it('should include player stats from dev build players with the dev data header', async () => {
+    const [, game] = await createOrganisationAndGame()
+
+    const service = new DataExportService()
+    const proto = Object.getPrototypeOf(service)
+
+    const player = await new PlayerFactory([game]).devBuild().one()
+    const feedback = await new GameFeedbackFactory(game).state(() => ({
+      playerAlias: player.aliases[0]
+    })).one()
+    const dataExport = await new DataExportFactory(game).one()
+    await (<EntityManager>global.em).persistAndFlush([feedback, dataExport])
+
+    const items = await proto.getGameFeedback(dataExport, global.em, true)
     expect(items).toHaveLength(1)
   })
 })

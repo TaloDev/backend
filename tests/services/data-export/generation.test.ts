@@ -16,6 +16,7 @@ import PricingPlanFactory from '../../fixtures/PricingPlanFactory'
 import PlayerProp from '../../../src/entities/player-prop'
 import createOrganisationAndGame from '../../utils/createOrganisationAndGame'
 import createUserAndToken from '../../utils/createUserAndToken'
+import GameFeedbackFactory from '../../fixtures/GameFeedbackFactory'
 
 describe('Data export service - generation', () => {
   it('should transform basic columns', async () => {
@@ -200,5 +201,31 @@ describe('Data export service - generation', () => {
 
     const planActions = await (<EntityManager>global.em).getRepository(OrganisationPricingPlanAction).find({ organisationPricingPlan: orgPlan })
     expect(planActions).toHaveLength(0)
+  })
+
+  it('should transform anonymised feedback columns', async () => {
+    const [, game] = await createOrganisationAndGame()
+
+    const service = new DataExportService()
+    const proto = Object.getPrototypeOf(service)
+
+    const feedback = await new GameFeedbackFactory(game).state(() => ({ anonymised: true })).one()
+
+    for (const key of ['playerAlias.id', 'playerAlias.service', 'playerAlias.identifier', 'playerAlias.player.id']) {
+      expect(proto.transformColumn(key, feedback)).toBe('Anonymous')
+    }
+  })
+
+  it('should not transform non-anonymised feedback columns', async () => {
+    const [, game] = await createOrganisationAndGame()
+
+    const service = new DataExportService()
+    const proto = Object.getPrototypeOf(service)
+
+    const feedback = await new GameFeedbackFactory(game).state(() => ({ anonymised: false })).one()
+
+    for (const key of ['playerAlias.id', 'playerAlias.service', 'playerAlias.identifier', 'playerAlias.player.id']) {
+      expect(proto.transformColumn(key, feedback)).not.toBe('Anonymous')
+    }
   })
 })

@@ -31,7 +31,7 @@ describe('Steamworks integration - sync stats', () => {
   it('should pull in stats from steamworks', async () => {
     const [, game] = await createOrganisationAndGame(em)
 
-    const statDisplayName = casual.word
+    const statDisplayName = casual.words(3)
 
     const config = await new IntegrationConfigFactory().one()
     const integration = await new IntegrationFactory().construct(IntegrationType.STEAMWORKS, game, config).one()
@@ -44,7 +44,7 @@ describe('Steamworks integration - sync stats', () => {
         availableGameStats: {
           stats: [
             {
-              name: 'stat_' + casual.word,
+              name: 'stat_' + casual.array_of_words(3).join('-'),
               defaultvalue: 500,
               displayName: statDisplayName
             }
@@ -81,8 +81,8 @@ describe('Steamworks integration - sync stats', () => {
   it('should update existing stats with the name and default value from steamworks', async () => {
     const [, game] = await createOrganisationAndGame(em)
 
-    const statName = 'stat_' + casual.word
-    const statDisplayName = casual.word
+    const statName = 'stat_' + casual.array_of_words(3).join('-')
+    const statDisplayName = casual.words(3)
 
     const stat = await new GameStatFactory([game]).state(() => ({ internalName: statName })).one()
 
@@ -121,7 +121,7 @@ describe('Steamworks integration - sync stats', () => {
   it('should pull in player stats from steamworks', async () => {
     const [, game] = await createOrganisationAndGame(em)
 
-    const statName = 'stat_' + casual.word
+    const statName = 'stat_' + casual.array_of_words(3).join('-')
 
     const player = await new PlayerFactory([game]).withSteamAlias().one()
 
@@ -139,7 +139,7 @@ describe('Steamworks integration - sync stats', () => {
             {
               name: statName,
               defaultvalue: 500,
-              displayName: casual.word
+              displayName: casual.words(3)
             }
           ],
           achievements: []
@@ -187,9 +187,9 @@ describe('Steamworks integration - sync stats', () => {
         availableGameStats: {
           stats: [
             {
-              name: 'stat_' + casual.word,
+              name: 'stat_' + casual.array_of_words(3).join('-'),
               defaultvalue: 500,
-              displayName: casual.word
+              displayName: casual.words(3)
             }
           ],
           achievements: []
@@ -213,7 +213,7 @@ describe('Steamworks integration - sync stats', () => {
   it('should update player stats with the ones from steamworks', async () => {
     const [, game] = await createOrganisationAndGame(em)
 
-    const statName = 'stat_' + casual.word
+    const statName = 'stat_' + casual.array_of_words(3).join('-')
 
     const player = await new PlayerFactory([game]).withSteamAlias().one()
     const stat = await new GameStatFactory([game]).state(() => ({ internalName: statName })).one()
@@ -233,7 +233,7 @@ describe('Steamworks integration - sync stats', () => {
             {
               name: statName,
               defaultvalue: 500,
-              displayName: casual.word
+              displayName: casual.words(3)
             }
           ],
           achievements: []
@@ -260,14 +260,13 @@ describe('Steamworks integration - sync stats', () => {
     expect(getSchemaMock).toHaveBeenCalledTimes(1)
     expect(getUserStatsMock).toHaveBeenCalledTimes(1)
 
-    await em.refresh(playerStat)
     expect(playerStat.value).toBe(301)
   })
 
   it('should push through player stats that only exist in talo', async () => {
     const [, game] = await createOrganisationAndGame(em)
 
-    const statName = 'stat_' + casual.word
+    const statName = 'stat_' + casual.array_of_words(3).join('-')
 
     const player = await new PlayerFactory([game]).withSteamAlias().one()
     const stat = await new GameStatFactory([game]).state(() => ({ internalName: statName })).one()
@@ -287,7 +286,7 @@ describe('Steamworks integration - sync stats', () => {
             {
               name: statName,
               defaultvalue: 500,
-              displayName: casual.word
+              displayName: casual.words(3)
             }
           ],
           achievements: []

@@ -46,7 +46,7 @@ export default class GameStat {
 
   @Required({
     validation: async (value: number, req: Request): Promise<ValidationCondition[]> => [{
-      check: value < (req.body.maxValue ?? Infinity),
+      check: req.body.maxValue ? value < req.body.maxValue : true,
       error: 'minValue must be less than maxValue'
     }]
   })
@@ -55,7 +55,7 @@ export default class GameStat {
 
   @Required({
     validation: async (value: number, req: Request): Promise<ValidationCondition[]> => [{
-      check: value > (req.body.minValue ?? -Infinity),
+      check: req.body.minValue ? value > req.body.minValue : true,
       error: 'maxValue must be greater than minValue'
     }]
   })

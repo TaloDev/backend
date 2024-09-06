@@ -86,7 +86,13 @@ export default class PlayerService extends Service {
     const player = new Player(game)
     if (aliases) {
       for await (const alias of aliases) {
-        if (await em.getRepository(PlayerAlias).count({ service: alias.service, identifier: alias.identifier }) > 0) {
+        const count = await em.getRepository(PlayerAlias).count({
+          service: alias.service,
+          identifier: alias.identifier,
+          player: { game }
+        })
+
+        if (count > 0) {
           req.ctx.throw(400, {
             message: `Player with identifier ${alias.identifier} already exists`,
             errorCode: PlayerAuthErrorCode.IDENTIFIER_TAKEN

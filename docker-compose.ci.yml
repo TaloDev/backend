@@ -1,6 +1,6 @@
 services:
   test-redis:
-    image: bitnami/redis:7.2
+    image: bitnami/redis:7.4
     command:
     environment:
       - REDIS_PASSWORD=${REDIS_PASSWORD}

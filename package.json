@@ -1,13 +1,13 @@
 {
   "name": "game-services",
-  "version": "0.40.0",
+  "version": "0.41.0",
   "description": "",
   "main": "src/index.ts",
   "scripts": {
     "watch": "tsx watch src/index.ts",
     "build": "npx tsc -p tsconfig.build.json",
     "dc": "docker compose -f docker-compose.yml -f docker-compose.dev.yml",
-    "seed": "DB_HOST=127.0.0.1 tsx tests/seed.ts",
+    "seed": "DB_HOST=127.0.0.1 CLICKHOUSE_HOST=127.0.0.1 tsx tests/seed.ts",
     "test": "./tests/run-tests.sh",
     "up": "npm run dc -- up --build -d",
     "down": "npm run dc -- down",

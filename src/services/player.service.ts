@@ -86,7 +86,13 @@ export default class PlayerService extends Service {
     const player = new Player(game)
     if (aliases) {
       for await (const alias of aliases) {
-        if (await em.getRepository(PlayerAlias).count({ service: alias.service, identifier: alias.identifier }) > 0) {
+        const count = await em.getRepository(PlayerAlias).count({
+          service: alias.service,
+          identifier: alias.identifier,
+          player: { game }
+        })
+
+        if (count > 0) {
           req.ctx.throw(400, {
             message: `Player with identifier ${alias.identifier} already exists`,
             errorCode: PlayerAuthErrorCode.IDENTIFIER_TAKEN
@@ -120,7 +126,6 @@ export default class PlayerService extends Service {
     }
   }
 
-  @Validate({ query: ['page'] })
   @HasPermission(PlayerPolicy, 'index')
   async index(req: Request): Promise<Response> {
     const itemsPerPage = 25
@@ -132,7 +137,7 @@ export default class PlayerService extends Service {
       .select('p.*')
       .orderBy({ lastSeenAt: QueryOrder.DESC })
       .limit(itemsPerPage)
-      .offset(Number(page) * itemsPerPage)
+      .offset(Number(page ?? 0) * itemsPerPage)
 
     if (search) {
       query

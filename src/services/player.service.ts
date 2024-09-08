@@ -126,7 +126,6 @@ export default class PlayerService extends Service {
     }
   }
 
-  @Validate({ query: ['page'] })
   @HasPermission(PlayerPolicy, 'index')
   async index(req: Request): Promise<Response> {
     const itemsPerPage = 25
@@ -138,7 +137,7 @@ export default class PlayerService extends Service {
       .select('p.*')
       .orderBy({ lastSeenAt: QueryOrder.DESC })
       .limit(itemsPerPage)
-      .offset(Number(page) * itemsPerPage)
+      .offset(Number(page ?? 0) * itemsPerPage)
 
     if (search) {
       query

@@ -4,7 +4,7 @@ import DataExport, { DataExportAvailableEntities, DataExportStatus } from '../en
 import DataExportPolicy from '../policies/data-export.policy'
 import Event, { ClickhouseEvent, createEventFromClickhouse } from '../entities/event'
 import AdmZip from 'adm-zip'
-import get from 'lodash.get'
+import { get } from 'lodash'
 import Prop from '../entities/prop'
 import Player from '../entities/player'
 import PlayerAlias from '../entities/player-alias'
@@ -22,7 +22,7 @@ import handlePricingPlanAction from '../lib/billing/handlePricingPlanAction'
 import { PricingPlanActionType } from '../entities/pricing-plan-action'
 import queueEmail from '../lib/messaging/queueEmail'
 import OrganisationPricingPlanAction from '../entities/organisation-pricing-plan-action'
-import pick from 'lodash.pick'
+import { pick } from 'lodash'
 import PlayerProp from '../entities/player-prop'
 import { Job, Queue } from 'bullmq'
 import createEmailQueue from '../lib/queues/createEmailQueue'
@@ -346,7 +346,8 @@ export default class DataExportService extends Service {
         value = get(object, 'extra')
         return `"${JSON.stringify(value).replace(/"/g, '\'')}"`
       case 'globalValue':
-        return get(object, 'hydratedGlobalValue') ?? 'N/A'
+        value = get(object, 'hydratedGlobalValue')
+        return value ? String(value) : 'N/A'
       case 'playerAlias.id':
       case 'playerAlias.service':
       case 'playerAlias.identifier':

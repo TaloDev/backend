@@ -3,7 +3,7 @@ import { HasPermission, Service, Request, Response, Routes, Validate } from 'koa
 import APIKey, { APIKeyScope } from '../entities/api-key'
 import jwt from 'jsonwebtoken'
 import APIKeyPolicy from '../policies/api-key.policy'
-import groupBy from 'lodash.groupby'
+import { groupBy } from 'lodash'
 import { promisify } from 'util'
 import createGameActivity from '../lib/logging/createGameActivity'
 import { GameActivityType } from '../entities/game-activity'

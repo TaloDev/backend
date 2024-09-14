@@ -1,6 +1,6 @@
 import { EntityManager, MikroORM } from '@mikro-orm/mysql'
 import { HasPermission, Request, Response, Routes, Service, Validate } from 'koa-clay'
-import pick from 'lodash.pick'
+import { pick } from 'lodash'
 import { GameActivityType } from '../entities/game-activity'
 import Integration, { IntegrationConfig, IntegrationType } from '../entities/integration'
 import createGameActivity from '../lib/logging/createGameActivity'
@@ -91,7 +91,7 @@ export default class IntegrationService extends Service {
 
     // todo, prevent if has one of type already
 
-    const integration = new Integration(type, req.ctx.state.game, pick(config, configKeys[type]))
+    const integration = new Integration(type, req.ctx.state.game, pick(config, configKeys[type]) as IntegrationConfig)
 
     createGameActivity(em, {
       user: req.ctx.state.user,

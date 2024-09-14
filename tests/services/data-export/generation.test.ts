@@ -103,7 +103,7 @@ describe('Data export service - generation', () => {
     const stat = await new GameStatFactory([game]).global().state(() => ({ globalValue: 50 })).one()
     await stat.recalculateGlobalValue(false)
 
-    expect(proto.transformColumn('globalValue', stat)).toBe(50)
+    expect(proto.transformColumn('globalValue', stat)).toBe('50')
   })
 
   it('should fill globalValue columns with N/A for non-global stats', async () => {

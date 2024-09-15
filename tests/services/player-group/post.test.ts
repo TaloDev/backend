@@ -8,7 +8,6 @@ import GameActivity, { GameActivityType } from '../../../src/entities/game-activ
 import PlayerGroupRule, { PlayerGroupRuleCastType, PlayerGroupRuleName } from '../../../src/entities/player-group-rule'
 import PlayerProp from '../../../src/entities/player-prop'
 import PlayerFactory from '../../fixtures/PlayerFactory'
-import PlayerGroup from '../../../src/entities/player-group'
 
 describe('Player group service - post', () => {
   it.each(userPermissionProvider([
@@ -48,6 +47,7 @@ describe('Player group service - post', () => {
       expect(res.body.group.name).toBe('Winners')
       expect(res.body.group.description).toBe('People who have completed the game')
       expect(res.body.group.rules).toStrictEqual(rules)
+      expect(res.body.group.count).toBe(0)
 
       expect(activity.extra.groupName).toBe(res.body.group.name)
     } else {
@@ -90,10 +90,7 @@ describe('Player group service - post', () => {
       .auth(token, { type: 'bearer' })
       .expect(200)
 
-    const newGroupId = res.body.group.id
-    const group = await (<EntityManager>global.em).getRepository(PlayerGroup).findOne(newGroupId)
-    const count = await group.members.loadCount()
-    expect(count).toBe(1)
+    expect(res.body.group.count).toBe(1)
   })
 
   it('should require a valid ruleMode', async () => {

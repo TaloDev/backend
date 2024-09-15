@@ -83,7 +83,7 @@ export default class PlayerGroupService extends Service {
     return {
       status: 200,
       body: {
-        group
+        group: { ...group.toJSON(), count: await group.members.loadCount() }
       }
     }
   }

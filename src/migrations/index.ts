@@ -17,7 +17,7 @@ import { CreateSteamIntegrationTables } from './20220723122554CreateSteamIntegra
 import { PlayerAliasServiceUseEnum } from './20220730134520PlayerAliasServiceUseEnum'
 import { CreatePlayerPropsTable } from './20220910200720CreatePlayerPropsTable'
 import { CreatePlayerGroupsTables } from './20220914003848CreatePlayerGroupsTables'
-import { AddFailedJobStackColumn } from './20221113222058AddFailedJobStackColumn copy'
+import { AddFailedJobStackColumn } from './20221113222058AddFailedJobStackColumn'
 import { DropSteamworksLeaderboardMappingUnique } from './20221113223142DropSteamworksLeaderboardMappingUnique'
 import { UpdateTableDefaultValues } from './20230205220923UpdateTableDefaultValues'
 import { CreateGameSecretsTable } from './20230205220924CreateGameSecretsTable'
@@ -26,6 +26,7 @@ import { CreateGameFeedbackAndCategoryTables } from './20240606165637CreateGameF
 import { AddAPIKeyUpdatedAtColumn } from './20240614122547AddAPIKeyUpdatedAtColumn'
 import { CreatePlayerAuthTable } from './20240628155142CreatePlayerAuthTable'
 import { CreatePlayerAuthActivityTable } from './20240725183402CreatePlayerAuthActivityTable'
+import { UpdatePlayerAliasServiceColumn } from './20240916213402UpdatePlayerAliasServiceColumn'
 
 export default [
   {
@@ -139,5 +140,9 @@ export default [
   {
     name: 'CreatePlayerAuthActivityTable',
     class: CreatePlayerAuthActivityTable
+  },
+  {
+    name: 'UpdatePlayerAliasServiceColumn',
+    class: UpdatePlayerAliasServiceColumn
   }
 ]

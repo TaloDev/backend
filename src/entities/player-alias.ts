@@ -1,4 +1,4 @@
-import { Cascade, Entity, Enum, ManyToOne, PrimaryKey, Property } from '@mikro-orm/mysql'
+import { Cascade, Entity, ManyToOne, PrimaryKey, Property } from '@mikro-orm/mysql'
 import Player from './player'
 
 export enum PlayerAliasService {
@@ -15,8 +15,8 @@ export default class PlayerAlias {
   @PrimaryKey()
   id: number
 
-  @Enum(() => PlayerAliasService)
-  service: PlayerAliasService
+  @Property()
+  service: string
 
   @Property()
   identifier: string

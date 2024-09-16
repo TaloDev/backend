@@ -11,7 +11,11 @@ describe('Player auth middleware', () => {
     const em: EntityManager = global.em
 
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_STATS])
-    const stat = await new GameStatFactory([apiKey.game]).one()
+    const stat = await new GameStatFactory([apiKey.game]).state(() => ({
+      defaultValue: 0,
+      maxChange: 1,
+      maxValue: 1000
+    })).one()
     const player = await new PlayerFactory([apiKey.game]).withTaloAlias().one()
 
     await em.persistAndFlush([stat, player])

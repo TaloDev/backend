@@ -10,6 +10,7 @@
           "autoincrement": true,
           "primary": true,
           "nullable": false,
+          "length": null,
           "mappedType": "integer"
         },
         "queue": {
@@ -19,6 +20,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
+          "length": 255,
           "mappedType": "string"
         },
         "payload": {
@@ -28,6 +30,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": true,
+          "length": null,
           "mappedType": "json"
         },
         "reason": {
@@ -37,6 +40,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
+          "length": 255,
           "mappedType": "string"
         },
         "stack": {
@@ -46,6 +50,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
+          "length": null,
           "mappedType": "text"
         },
         "failed_at": {
@@ -55,7 +60,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
-          "length": 0,
+          "length": null,
           "mappedType": "datetime"
         }
       },
@@ -85,6 +90,7 @@
           "autoincrement": true,
           "primary": true,
           "nullable": false,
+          "length": null,
           "mappedType": "integer"
         },
         "secret": {
@@ -94,6 +100,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
+          "length": 255,
           "mappedType": "string"
         }
       },
@@ -123,6 +130,7 @@
           "autoincrement": true,
           "primary": true,
           "nullable": false,
+          "length": null,
           "mappedType": "integer"
         },
         "password": {
@@ -132,6 +140,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
+          "length": 255,
           "mappedType": "string"
         },
         "email": {
@@ -141,6 +150,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": true,
+          "length": 255,
           "mappedType": "string"
         },
         "verification_enabled": {
@@ -150,6 +160,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
+          "length": 1,
           "default": "false",
           "mappedType": "boolean"
         },
@@ -160,6 +171,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": true,
+          "length": 255,
           "mappedType": "string"
         },
         "session_created_at": {
@@ -169,7 +181,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": true,
-          "length": 0,
+          "length": null,
           "mappedType": "datetime"
         },
         "created_at": {
@@ -179,7 +191,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
-          "length": 0,
+          "length": null,
           "mappedType": "datetime"
         },
         "updated_at": {
@@ -189,7 +201,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
-          "length": 0,
+          "length": null,
           "mappedType": "datetime"
         }
       },
@@ -219,6 +231,7 @@
           "autoincrement": true,
           "primary": true,
           "nullable": false,
+          "length": null,
           "mappedType": "integer"
         },
         "stripe_id": {
@@ -228,6 +241,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
+          "length": 255,
           "mappedType": "string"
         },
         "hidden": {
@@ -237,6 +251,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
+          "length": 1,
           "default": "false",
           "mappedType": "boolean"
         },
@@ -247,6 +262,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
+          "length": 1,
           "default": "false",
           "mappedType": "boolean"
         },
@@ -257,7 +273,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
-          "length": 0,
+          "length": null,
           "mappedType": "datetime"
         },
         "updated_at": {
@@ -267,7 +283,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
-          "length": 0,
+          "length": null,
           "mappedType": "datetime"
         }
       },
@@ -297,6 +313,7 @@
           "autoincrement": true,
           "primary": true,
           "nullable": false,
+          "length": null,
           "mappedType": "integer"
         },
         "pricing_plan_id": {
@@ -306,6 +323,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
+          "length": null,
           "mappedType": "integer"
         },
         "status": {
@@ -315,6 +333,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
+          "length": 255,
           "default": "'active'",
           "mappedType": "string"
         },
@@ -325,6 +344,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": true,
+          "length": 255,
           "mappedType": "string"
         },
         "stripe_customer_id": {
@@ -334,6 +354,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": true,
+          "length": 255,
           "mappedType": "string"
         },
         "end_date": {
@@ -343,7 +364,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": true,
-          "length": 0,
+          "length": null,
           "mappedType": "datetime"
         },
         "created_at": {
@@ -353,7 +374,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
-          "length": 0,
+          "length": null,
           "mappedType": "datetime"
         },
         "updated_at": {
@@ -363,7 +384,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
-          "length": 0,
+          "length": null,
           "mappedType": "datetime"
         }
       },
@@ -416,6 +437,7 @@
           "autoincrement": true,
           "primary": true,
           "nullable": false,
+          "length": null,
           "mappedType": "integer"
         },
         "organisation_pricing_plan_id": {
@@ -425,6 +447,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
+          "length": null,
           "mappedType": "integer"
         },
         "type": {
@@ -434,6 +457,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
+          "length": null,
           "mappedType": "enum"
         },
         "extra": {
@@ -443,6 +467,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
+          "length": null,
           "mappedType": "json"
         },
         "created_at": {
@@ -452,7 +477,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
-          "length": 0,
+          "length": null,
           "mappedType": "datetime"
         }
       },
@@ -505,6 +530,7 @@
           "autoincrement": true,
           "primary": true,
           "nullable": false,
+          "length": null,
           "mappedType": "integer"
         },
         "email": {
@@ -514,6 +540,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
+          "length": 255,
           "mappedType": "string"
         },
         "name": {
@@ -523,6 +550,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
+          "length": 255,
           "mappedType": "string"
         },
         "pricing_plan_id": {
@@ -532,6 +560,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
+          "length": null,
           "mappedType": "integer"
         },
         "created_at": {
@@ -541,7 +570,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
-          "length": 0,
+          "length": null,
           "mappedType": "datetime"
         },
         "updated_at": {
@@ -551,7 +580,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
-          "length": 0,
+          "length": null,
           "mappedType": "datetime"
         }
       },
@@ -604,6 +633,7 @@
           "autoincrement": true,
           "primary": true,
           "nullable": false,
+          "length": null,
           "mappedType": "integer"
         },
         "name": {
@@ -613,6 +643,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
+          "length": 255,
           "mappedType": "string"
         },
         "organisation_id": {
@@ -622,6 +653,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
+          "length": null,
           "mappedType": "integer"
         },
         "props": {
@@ -631,6 +663,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
+          "length": null,
           "mappedType": "json"
         },
         "api_secret_id": {
@@ -640,6 +673,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
+          "length": null,
           "mappedType": "integer"
         },
         "created_at": {
@@ -649,7 +683,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
-          "length": 0,
+          "length": null,
           "mappedType": "datetime"
         },
         "updated_at": {
@@ -659,7 +693,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
-          "length": 0,
+          "length": null,
           "mappedType": "datetime"
         }
       },
@@ -734,6 +768,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
+          "length": 255,
           "mappedType": "string"
         },
         "name": {
@@ -743,6 +778,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
+          "length": 255,
           "mappedType": "string"
         },
         "description": {
@@ -752,6 +788,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
+          "length": 255,
           "mappedType": "string"
         },
         "rules": {
@@ -761,6 +798,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
+          "length": null,
           "mappedType": "json"
         },
         "rule_mode": {
@@ -784,6 +822,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
+          "length": null,
           "mappedType": "integer"
         },
         "created_at": {
@@ -793,7 +832,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
-          "length": 0,
+          "length": null,
           "mappedType": "datetime"
         },
         "updated_at": {
@@ -803,7 +842,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
-          "length": 0,
+          "length": null,
           "mappedType": "datetime"
         }
       },
@@ -856,6 +895,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
+          "length": 255,
           "mappedType": "string"
         },
         "game_id": {
@@ -865,6 +905,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
+          "length": null,
           "mappedType": "integer"
         },
         "auth_id": {
@@ -874,6 +915,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": true,
+          "length": null,
           "mappedType": "integer"
         },
         "last_seen_at": {
@@ -883,7 +925,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
-          "length": 0,
+          "length": null,
           "mappedType": "datetime"
         },
         "created_at": {
@@ -893,7 +935,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
-          "length": 0,
+          "length": null,
           "mappedType": "datetime"
         },
         "updated_at": {
@@ -903,7 +945,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
-          "length": 0,
+          "length": null,
           "mappedType": "datetime"
         }
       },
@@ -979,6 +1021,7 @@
           "autoincrement": true,
           "primary": true,
           "nullable": false,
+          "length": null,
           "mappedType": "integer"
         },
         "player_id": {
@@ -988,6 +1031,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
+          "length": 255,
           "mappedType": "string"
         },
         "key": {
@@ -997,6 +1041,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
+          "length": 255,
           "mappedType": "string"
         },
         "value": {
@@ -1006,6 +1051,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
+          "length": 255,
           "mappedType": "string"
         }
       },
@@ -1058,6 +1104,7 @@
           "autoincrement": true,
           "primary": true,
           "nullable": false,
+          "length": null,
           "mappedType": "integer"
         },
         "player_id": {
@@ -1067,6 +1114,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
+          "length": 255,
           "mappedType": "string"
         },
         "type": {
@@ -1076,6 +1124,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
+          "length": null,
           "mappedType": "enum"
         },
         "extra": {
@@ -1085,6 +1134,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
+          "length": null,
           "mappedType": "json"
         },
         "created_at": {
@@ -1094,7 +1144,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
-          "length": 0,
+          "length": null,
           "mappedType": "datetime"
         }
       },
@@ -1147,24 +1197,18 @@
           "autoincrement": true,
           "primary": true,
           "nullable": false,
+          "length": null,
           "mappedType": "integer"
         },
         "service": {
           "name": "service",
-          "type": "enum('steam','epic','username','email','custom','talo')",
+          "type": "varchar(255)",
           "unsigned": false,
           "autoincrement": false,
           "primary": false,
           "nullable": false,
-          "enumItems": [
-            "steam",
-            "epic",
-            "username",
-            "email",
-            "custom",
-            "talo"
-          ],
-          "mappedType": "enum"
+          "length": 255,
+          "mappedType": "string"
         },
         "identifier": {
           "name": "identifier",
@@ -1173,6 +1217,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
+          "length": 255,
           "mappedType": "string"
         },
         "player_id": {
@@ -1182,6 +1227,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": true,
+          "length": 255,
           "mappedType": "string"
         },
         "created_at": {
@@ -1191,7 +1237,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
-          "length": 0,
+          "length": null,
           "mappedType": "datetime"
         },
         "updated_at": {
@@ -1201,7 +1247,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
-          "length": 0,
+          "length": null,
           "mappedType": "datetime"
         }
       },
@@ -1254,6 +1300,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
+          "length": 255,
           "mappedType": "string"
         },
         "player_id": {
@@ -1263,6 +1310,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
+          "length": 255,
           "mappedType": "string"
         }
       },
@@ -1340,6 +1388,7 @@
           "autoincrement": true,
           "primary": true,
           "nullable": false,
+          "length": null,
           "mappedType": "integer"
         },
         "name": {
@@ -1349,6 +1398,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
+          "length": 255,
           "mappedType": "string"
         },
         "content": {
@@ -1358,6 +1408,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
+          "length": null,
           "mappedType": "json"
         },
         "player_id": {
@@ -1367,6 +1418,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
+          "length": 255,
           "mappedType": "string"
         },
         "created_at": {
@@ -1376,7 +1428,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
-          "length": 0,
+          "length": null,
           "mappedType": "datetime"
         },
         "updated_at": {
@@ -1386,7 +1438,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
-          "length": 0,
+          "length": null,
           "mappedType": "datetime"
         }
       },
@@ -1439,6 +1491,7 @@
           "autoincrement": true,
           "primary": true,
           "nullable": false,
+          "length": null,
           "mappedType": "integer"
         },
         "internal_name": {
@@ -1448,6 +1501,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
+          "length": 255,
           "mappedType": "string"
         },
         "name": {
@@ -1457,6 +1511,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
+          "length": 255,
           "mappedType": "string"
         },
         "sort_mode": {
@@ -1480,6 +1535,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
+          "length": 1,
           "mappedType": "boolean"
         },
         "game_id": {
@@ -1489,6 +1545,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
+          "length": null,
           "mappedType": "integer"
         },
         "created_at": {
@@ -1498,7 +1555,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
-          "length": 0,
+          "length": null,
           "mappedType": "datetime"
         },
         "updated_at": {
@@ -1508,7 +1565,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
-          "length": 0,
+          "length": null,
           "mappedType": "datetime"
         }
       },
@@ -1561,6 +1618,7 @@
           "autoincrement": true,
           "primary": true,
           "nullable": false,
+          "length": null,
           "mappedType": "integer"
         },
         "score": {
@@ -1570,6 +1628,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
+          "length": null,
           "mappedType": "double"
         },
         "leaderboard_id": {
@@ -1579,6 +1638,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": true,
+          "length": null,
           "mappedType": "integer"
         },
         "player_alias_id": {
@@ -1588,6 +1648,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": true,
+          "length": null,
           "mappedType": "integer"
         },
         "hidden": {
@@ -1597,6 +1658,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
+          "length": 1,
           "default": "false",
           "mappedType": "boolean"
         },
@@ -1607,7 +1669,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
-          "length": 0,
+          "length": null,
           "mappedType": "datetime"
         },
         "updated_at": {
@@ -1617,7 +1679,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
-          "length": 0,
+          "length": null,
           "mappedType": "datetime"
         }
       },
@@ -1692,6 +1754,7 @@
           "autoincrement": true,
           "primary": true,
           "nullable": false,
+          "length": null,
           "mappedType": "integer"
         },
         "type": {
@@ -1713,6 +1776,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
+          "length": null,
           "mappedType": "integer"
         },
         "config": {
@@ -1722,6 +1786,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
+          "length": null,
           "mappedType": "json"
         },
         "deleted_at": {
@@ -1731,7 +1796,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": true,
-          "length": 0,
+          "length": null,
           "mappedType": "datetime"
         },
         "created_at": {
@@ -1741,7 +1806,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
-          "length": 0,
+          "length": null,
           "mappedType": "datetime"
         },
         "updated_at": {
@@ -1751,7 +1816,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
-          "length": 0,
+          "length": null,
           "mappedType": "datetime"
         }
       },
@@ -1804,6 +1869,7 @@
           "autoincrement": true,
           "primary": true,
           "nullable": false,
+          "length": null,
           "mappedType": "integer"
         },
         "internal_name": {
@@ -1813,6 +1879,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
+          "length": 255,
           "mappedType": "string"
         },
         "name": {
@@ -1822,6 +1889,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
+          "length": 255,
           "mappedType": "string"
         },
         "global": {
@@ -1831,6 +1899,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
+          "length": 1,
           "mappedType": "boolean"
         },
         "global_value": {
@@ -1840,6 +1909,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
+          "length": null,
           "mappedType": "double"
         },
         "max_change": {
@@ -1849,6 +1919,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": true,
+          "length": null,
           "mappedType": "double"
         },
         "min_value": {
@@ -1858,6 +1929,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": true,
+          "length": null,
           "mappedType": "double"
         },
         "max_value": {
@@ -1867,6 +1939,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": true,
+          "length": null,
           "mappedType": "double"
         },
         "default_value": {
@@ -1876,6 +1949,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
+          "length": null,
           "mappedType": "double"
         },
         "min_time_between_updates": {
@@ -1885,6 +1959,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
+          "length": null,
           "mappedType": "integer"
         },
         "game_id": {
@@ -1894,6 +1969,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
+          "length": null,
           "mappedType": "integer"
         },
         "created_at": {
@@ -1903,7 +1979,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
-          "length": 0,
+          "length": null,
           "mappedType": "datetime"
         },
         "updated_at": {
@@ -1913,7 +1989,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
-          "length": 0,
+          "length": null,
           "mappedType": "datetime"
         }
       },
@@ -1966,6 +2042,7 @@
           "autoincrement": true,
           "primary": true,
           "nullable": false,
+          "length": null,
           "mappedType": "integer"
         },
         "player_id": {
@@ -1975,6 +2052,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": true,
+          "length": 255,
           "mappedType": "string"
         },
         "stat_id": {
@@ -1984,6 +2062,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": true,
+          "length": null,
           "mappedType": "integer"
         },
         "value": {
@@ -1993,6 +2072,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
+          "length": null,
           "mappedType": "double"
         },
         "created_at": {
@@ -2002,7 +2082,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
-          "length": 0,
+          "length": null,
           "mappedType": "datetime"
         },
         "updated_at": {
@@ -2012,7 +2092,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
-          "length": 0,
+          "length": null,
           "mappedType": "datetime"
         }
       },
@@ -2087,6 +2167,7 @@
           "autoincrement": true,
           "primary": true,
           "nullable": false,
+          "length": null,
           "mappedType": "integer"
         },
         "internal_name": {
@@ -2096,6 +2177,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
+          "length": 255,
           "mappedType": "string"
         },
         "name": {
@@ -2105,6 +2187,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
+          "length": 255,
           "mappedType": "string"
         },
         "description": {
@@ -2114,6 +2197,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
+          "length": 255,
           "mappedType": "string"
         },
         "anonymised": {
@@ -2123,6 +2207,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
+          "length": 1,
           "mappedType": "boolean"
         },
         "game_id": {
@@ -2132,6 +2217,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
+          "length": null,
           "mappedType": "integer"
         },
         "created_at": {
@@ -2141,7 +2227,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
-          "length": 0,
+          "length": null,
           "mappedType": "datetime"
         },
         "updated_at": {
@@ -2151,7 +2237,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
-          "length": 0,
+          "length": null,
           "mappedType": "datetime"
         }
       },
@@ -2204,6 +2290,7 @@
           "autoincrement": true,
           "primary": true,
           "nullable": false,
+          "length": null,
           "mappedType": "integer"
         },
         "category_id": {
@@ -2213,6 +2300,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
+          "length": null,
           "mappedType": "integer"
         },
         "player_alias_id": {
@@ -2222,6 +2310,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
+          "length": null,
           "mappedType": "integer"
         },
         "comment": {
@@ -2231,6 +2320,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
+          "length": null,
           "mappedType": "text"
         },
         "anonymised": {
@@ -2240,6 +2330,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
+          "length": 1,
           "mappedType": "boolean"
         },
         "created_at": {
@@ -2249,7 +2340,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
-          "length": 0,
+          "length": null,
           "mappedType": "datetime"
         },
         "updated_at": {
@@ -2259,7 +2350,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
-          "length": 0,
+          "length": null,
           "mappedType": "datetime"
         }
       },
@@ -2334,136 +2425,7 @@
           "autoincrement": true,
           "primary": true,
           "nullable": false,
-          "mappedType": "integer"
-        },
-        "name": {
-          "name": "name",
-          "type": "varchar(255)",
-          "unsigned": false,
-          "autoincrement": false,
-          "primary": false,
-          "nullable": false,
-          "mappedType": "string"
-        },
-        "props": {
-          "name": "props",
-          "type": "json",
-          "unsigned": false,
-          "autoincrement": false,
-          "primary": false,
-          "nullable": false,
-          "mappedType": "json"
-        },
-        "game_id": {
-          "name": "game_id",
-          "type": "int",
-          "unsigned": true,
-          "autoincrement": false,
-          "primary": false,
-          "nullable": false,
-          "mappedType": "integer"
-        },
-        "player_alias_id": {
-          "name": "player_alias_id",
-          "type": "int",
-          "unsigned": true,
-          "autoincrement": false,
-          "primary": false,
-          "nullable": true,
-          "mappedType": "integer"
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "datetime",
-          "unsigned": false,
-          "autoincrement": false,
-          "primary": false,
-          "nullable": false,
-          "length": 0,
-          "mappedType": "datetime"
-        },
-        "updated_at": {
-          "name": "updated_at",
-          "type": "datetime",
-          "unsigned": false,
-          "autoincrement": false,
-          "primary": false,
-          "nullable": false,
-          "length": 0,
-          "mappedType": "datetime"
-        }
-      },
-      "name": "event",
-      "indexes": [
-        {
-          "columnNames": [
-            "game_id"
-          ],
-          "composite": false,
-          "keyName": "event_game_id_index",
-          "constraint": false,
-          "primary": false,
-          "unique": false
-        },
-        {
-          "columnNames": [
-            "player_alias_id"
-          ],
-          "composite": false,
-          "keyName": "event_player_alias_id_index",
-          "constraint": false,
-          "primary": false,
-          "unique": false
-        },
-        {
-          "keyName": "PRIMARY",
-          "columnNames": [
-            "id"
-          ],
-          "composite": false,
-          "constraint": true,
-          "primary": true,
-          "unique": true
-        }
-      ],
-      "checks": [],
-      "foreignKeys": {
-        "event_game_id_foreign": {
-          "constraintName": "event_game_id_foreign",
-          "columnNames": [
-            "game_id"
-          ],
-          "localTableName": "event",
-          "referencedColumnNames": [
-            "id"
-          ],
-          "referencedTableName": "game",
-          "updateRule": "cascade"
-        },
-        "event_player_alias_id_foreign": {
-          "constraintName": "event_player_alias_id_foreign",
-          "columnNames": [
-            "player_alias_id"
-          ],
-          "localTableName": "event",
-          "referencedColumnNames": [
-            "id"
-          ],
-          "referencedTableName": "player_alias",
-          "deleteRule": "cascade"
-        }
-      },
-      "nativeEnums": {}
-    },
-    {
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "int",
-          "unsigned": true,
-          "autoincrement": true,
-          "primary": true,
-          "nullable": false,
+          "length": null,
           "mappedType": "integer"
         },
         "pricing_plan_id": {
@@ -2473,6 +2435,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
+          "length": null,
           "mappedType": "integer"
         },
         "type": {
@@ -2482,6 +2445,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
+          "length": null,
           "mappedType": "enum"
         },
         "limit": {
@@ -2491,6 +2455,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
+          "length": null,
           "mappedType": "integer"
         },
         "created_at": {
@@ -2500,7 +2465,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
-          "length": 0,
+          "length": null,
           "mappedType": "datetime"
         },
         "updated_at": {
@@ -2510,7 +2475,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
-          "length": 0,
+          "length": null,
           "mappedType": "datetime"
         }
       },
@@ -2563,6 +2528,7 @@
           "autoincrement": true,
           "primary": true,
           "nullable": false,
+          "length": null,
           "mappedType": "integer"
         },
         "integration_id": {
@@ -2572,6 +2538,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
+          "length": null,
           "mappedType": "integer"
         },
         "request": {
@@ -2581,6 +2548,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
+          "length": null,
           "mappedType": "json"
         },
         "response": {
@@ -2590,6 +2558,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
+          "length": null,
           "mappedType": "json"
         },
         "created_at": {
@@ -2599,7 +2568,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
-          "length": 0,
+          "length": null,
           "mappedType": "datetime"
         }
       },
@@ -2652,6 +2621,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
+          "length": null,
           "mappedType": "integer"
         },
         "leaderboard_id": {
@@ -2661,6 +2631,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
+          "length": null,
           "mappedType": "integer"
         },
         "created_at": {
@@ -2670,7 +2641,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
-          "length": 0,
+          "length": null,
           "mappedType": "datetime"
         }
       },
@@ -2724,6 +2695,7 @@
           "autoincrement": true,
           "primary": true,
           "nullable": false,
+          "length": null,
           "mappedType": "integer"
         },
         "secret": {
@@ -2733,6 +2705,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
+          "length": 255,
           "mappedType": "string"
         },
         "enabled": {
@@ -2742,6 +2715,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
+          "length": 1,
           "default": "false",
           "mappedType": "boolean"
         }
@@ -2772,6 +2746,7 @@
           "autoincrement": true,
           "primary": true,
           "nullable": false,
+          "length": null,
           "mappedType": "integer"
         },
         "email": {
@@ -2781,6 +2756,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
+          "length": 255,
           "mappedType": "string"
         },
         "username": {
@@ -2790,6 +2766,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
+          "length": 255,
           "mappedType": "string"
         },
         "password": {
@@ -2799,6 +2776,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
+          "length": 255,
           "mappedType": "string"
         },
         "organisation_id": {
@@ -2808,6 +2786,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
+          "length": null,
           "mappedType": "integer"
         },
         "type": {
@@ -2817,6 +2796,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
+          "length": null,
           "default": "2",
           "mappedType": "enum"
         },
@@ -2827,7 +2807,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
-          "length": 0,
+          "length": null,
           "mappedType": "datetime"
         },
         "email_confirmed": {
@@ -2837,6 +2817,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
+          "length": 1,
           "default": "false",
           "mappedType": "boolean"
         },
@@ -2847,6 +2828,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": true,
+          "length": null,
           "mappedType": "integer"
         },
         "created_at": {
@@ -2856,7 +2838,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
-          "length": 0,
+          "length": null,
           "mappedType": "datetime"
         },
         "updated_at": {
@@ -2866,7 +2848,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
-          "length": 0,
+          "length": null,
           "mappedType": "datetime"
         }
       },
@@ -2942,6 +2924,7 @@
           "autoincrement": true,
           "primary": true,
           "nullable": false,
+          "length": null,
           "mappedType": "integer"
         },
         "token": {
@@ -2951,6 +2934,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
+          "length": 255,
           "mappedType": "string"
         },
         "user_agent": {
@@ -2960,6 +2944,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": true,
+          "length": 255,
           "mappedType": "string"
         },
         "user_id": {
@@ -2969,6 +2954,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
+          "length": null,
           "mappedType": "integer"
         },
         "created_at": {
@@ -2978,7 +2964,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
-          "length": 0,
+          "length": null,
           "mappedType": "datetime"
         },
         "valid_until": {
@@ -2988,7 +2974,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
-          "length": 0,
+          "length": null,
           "mappedType": "datetime"
         }
       },
@@ -3041,6 +3027,7 @@
           "autoincrement": true,
           "primary": true,
           "nullable": false,
+          "length": null,
           "mappedType": "integer"
         },
         "user_id": {
@@ -3050,6 +3037,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
+          "length": null,
           "mappedType": "integer"
         },
         "code": {
@@ -3059,6 +3047,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
+          "length": 255,
           "mappedType": "string"
         },
         "created_at": {
@@ -3068,7 +3057,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
-          "length": 0,
+          "length": null,
           "mappedType": "datetime"
         }
       },
@@ -3121,6 +3110,7 @@
           "autoincrement": true,
           "primary": true,
           "nullable": false,
+          "length": null,
           "mappedType": "integer"
         },
         "code": {
@@ -3130,6 +3120,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
+          "length": 255,
           "mappedType": "string"
         },
         "user_id": {
@@ -3139,6 +3130,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
+          "length": null,
           "mappedType": "integer"
         },
         "created_at": {
@@ -3148,7 +3140,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
-          "length": 0,
+          "length": null,
           "mappedType": "datetime"
         },
         "valid_until": {
@@ -3158,7 +3150,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": true,
-          "length": 0,
+          "length": null,
           "mappedType": "datetime"
         }
       },
@@ -3211,6 +3203,7 @@
           "autoincrement": true,
           "primary": true,
           "nullable": false,
+          "length": null,
           "mappedType": "integer"
         },
         "token": {
@@ -3220,6 +3213,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
+          "length": 255,
           "mappedType": "string"
         },
         "email": {
@@ -3229,6 +3223,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
+          "length": 255,
           "mappedType": "string"
         },
         "type": {
@@ -3238,6 +3233,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
+          "length": null,
           "default": "2",
           "mappedType": "enum"
         },
@@ -3248,6 +3244,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
+          "length": null,
           "mappedType": "integer"
         },
         "invited_by_user_id": {
@@ -3257,6 +3254,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
+          "length": null,
           "mappedType": "integer"
         },
         "created_at": {
@@ -3266,7 +3264,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
-          "length": 0,
+          "length": null,
           "mappedType": "datetime"
         }
       },
@@ -3341,6 +3339,7 @@
           "autoincrement": true,
           "primary": true,
           "nullable": false,
+          "length": null,
           "mappedType": "integer"
         },
         "game_id": {
@@ -3350,6 +3349,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": true,
+          "length": null,
           "mappedType": "integer"
         },
         "user_id": {
@@ -3359,6 +3359,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
+          "length": null,
           "mappedType": "integer"
         },
         "type": {
@@ -3368,6 +3369,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
+          "length": null,
           "mappedType": "enum"
         },
         "extra": {
@@ -3377,6 +3379,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
+          "length": null,
           "mappedType": "json"
         },
         "created_at": {
@@ -3386,7 +3389,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
-          "length": 0,
+          "length": null,
           "mappedType": "datetime"
         }
       },
@@ -3462,6 +3465,7 @@
           "autoincrement": true,
           "primary": true,
           "nullable": false,
+          "length": null,
           "mappedType": "integer"
         },
         "created_by_user_id": {
@@ -3471,6 +3475,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
+          "length": null,
           "mappedType": "integer"
         },
         "game_id": {
@@ -3480,6 +3485,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
+          "length": null,
           "mappedType": "integer"
         },
         "entities": {
@@ -3489,6 +3495,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
+          "length": null,
           "enumItems": [
             "events",
             "players",
@@ -3496,7 +3503,8 @@
             "leaderboardEntries",
             "gameStats",
             "playerGameStats",
-            "gameActivities"
+            "gameActivities",
+            "gameFeedback"
           ],
           "mappedType": "text"
         },
@@ -3507,6 +3515,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
+          "length": null,
           "default": "0",
           "mappedType": "enum"
         },
@@ -3517,7 +3526,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": true,
-          "length": 0,
+          "length": null,
           "mappedType": "datetime"
         },
         "created_at": {
@@ -3527,7 +3536,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
-          "length": 0,
+          "length": null,
           "mappedType": "datetime"
         },
         "updated_at": {
@@ -3537,7 +3546,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
-          "length": 0,
+          "length": null,
           "mappedType": "datetime"
         }
       },
@@ -3612,6 +3621,7 @@
           "autoincrement": true,
           "primary": true,
           "nullable": false,
+          "length": null,
           "mappedType": "integer"
         },
         "scopes": {
@@ -3621,7 +3631,9 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
+          "length": null,
           "enumItems": [
+            "write:continuityRequests",
             "read:gameFeedback",
             "write:gameFeedback",
             "read:gameConfig",
@@ -3647,6 +3659,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
+          "length": null,
           "mappedType": "integer"
         },
         "created_by_user_id": {
@@ -3656,6 +3669,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
+          "length": null,
           "mappedType": "integer"
         },
         "created_at": {
@@ -3665,7 +3679,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
-          "length": 0,
+          "length": null,
           "mappedType": "datetime"
         },
         "updated_at": {
@@ -3675,7 +3689,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": true,
-          "length": 0,
+          "length": null,
           "mappedType": "datetime"
         },
         "revoked_at": {
@@ -3685,7 +3699,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": true,
-          "length": 0,
+          "length": null,
           "mappedType": "datetime"
         },
         "last_used_at": {
@@ -3695,7 +3709,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": true,
-          "length": 0,
+          "length": null,
           "mappedType": "datetime"
         }
       },

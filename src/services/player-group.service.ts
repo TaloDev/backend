@@ -7,6 +7,8 @@ import { ruleModeValidation, rulesValidation } from '../lib/groups/rulesValidati
 import createGameActivity from '../lib/logging/createGameActivity'
 import PlayerGroupPolicy from '../policies/player-group.policy'
 
+type PlayerGroupWithCount = Pick<PlayerGroup, 'id' | 'name' | 'description' | 'rules' | 'ruleMode' | 'updatedAt'> & { count: number }
+
 @Routes([
   {
     method: 'GET'
@@ -32,16 +34,22 @@ import PlayerGroupPolicy from '../policies/player-group.policy'
   }
 ])
 export default class PlayerGroupService extends Service {
+  private async groupWithCount(group: PlayerGroup): Promise<PlayerGroupWithCount> {
+    return {
+      ...group.toJSON(),
+      count: await group.members.loadCount()
+    }
+  }
+
   @HasPermission(PlayerGroupPolicy, 'index')
   async index(req: Request): Promise<Response> {
     const em: EntityManager = req.ctx.em
     const groups = await em.getRepository(PlayerGroup).find({ game: req.ctx.state.game })
-    const counts = await Promise.all(groups.map(async (group) => await group.members.loadCount()))
 
     return {
       status: 200,
       body: {
-        groups: groups.map((group, idx) => ({ ...group.toJSON(), count: counts[idx] }))
+        groups: await Promise.all(groups.map(this.groupWithCount))
       }
     }
   }
@@ -83,7 +91,7 @@ export default class PlayerGroupService extends Service {
     return {
       status: 200,
       body: {
-        group
+        group: await this.groupWithCount(group)
       }
     }
   }

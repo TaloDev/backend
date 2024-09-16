@@ -4,7 +4,7 @@ import { decrypt, encrypt } from '../lib/crypto/string-encryption'
 import Game from './game'
 import { createSteamworksLeaderboard, createSteamworksLeaderboardEntry, deleteSteamworksLeaderboard, deleteSteamworksLeaderboardEntry, setSteamworksStat, syncSteamworksLeaderboards, syncSteamworksStats } from '../lib/integrations/steamworks-integration'
 import Leaderboard from './leaderboard'
-import pick from 'lodash.pick'
+import { pick } from 'lodash'
 import LeaderboardEntry from './leaderboard-entry'
 import { PlayerAliasService } from './player-alias'
 import PlayerGameStat from './player-game-stat'
@@ -90,7 +90,7 @@ export default class Integration {
     }
   }
 
-  getConfig(): IntegrationConfig {
+  getConfig(): Omit<IntegrationConfig, 'apiKey'> {
     switch (this.type) {
       case IntegrationType.STEAMWORKS:
         return pick(this.config, ['appId', 'syncLeaderboards', 'syncStats'])

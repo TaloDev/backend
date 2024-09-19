@@ -15,7 +15,7 @@ import checkScope from '../../policies/checkScope'
 export function findAliasFromIdentifyRequest(
   em: EntityManager,
   key: APIKey,
-  service: PlayerAliasService,
+  service: string,
   identifier: string
 ): Promise<PlayerAlias | null> {
   return em.getRepository(PlayerAlias).findOne({
@@ -32,7 +32,7 @@ export function findAliasFromIdentifyRequest(
 export async function createPlayerFromIdentifyRequest(
   req: Request,
   key: APIKey,
-  service: PlayerAliasService,
+  service: string,
   identifier: string
 ): Promise<Player> {
   if (checkScope(key, APIKeyScope.WRITE_PLAYERS)) {
@@ -78,12 +78,12 @@ export default class PlayerAPIService extends APIService {
 
     const key = await this.getAPIKey(req.ctx)
 
-    let alias = await findAliasFromIdentifyRequest(em, key, service as PlayerAliasService, identifier)
+    let alias = await findAliasFromIdentifyRequest(em, key, service, identifier)
     if (!alias) {
       if (service === PlayerAliasService.TALO) {
         req.ctx.throw(404, 'Player not found: Talo aliases must be created using the /v1/players/auth API')
       } else {
-        const player = await createPlayerFromIdentifyRequest(req, key, service as PlayerAliasService, identifier)
+        const player = await createPlayerFromIdentifyRequest(req, key, service, identifier)
         alias = player?.aliases[0]
       }
     }

@@ -2,7 +2,7 @@ import { Service, Request, Response, Validate, HasPermission, Routes, Validation
 import Game from '../entities/game'
 import Player from '../entities/player'
 import PlayerPolicy from '../policies/player.policy'
-import PlayerAlias, { PlayerAliasService } from '../entities/player-alias'
+import PlayerAlias from '../entities/player-alias'
 import sanitiseProps from '../lib/props/sanitiseProps'
 import { ClickhouseEvent, createEventFromClickhouse } from '../entities/event'
 import { EntityManager } from '@mikro-orm/mysql'
@@ -28,7 +28,7 @@ const propsValidation = async (val: unknown): Promise<ValidationCondition[]> => 
 
 type PlayerPostBody = {
   aliases?: {
-    service: PlayerAliasService
+    service: string
     identifier: string
   }[]
   props?: {

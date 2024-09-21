@@ -15,7 +15,9 @@ export enum PlayerAuthActivityType {
   VERFICIATION_TOGGLED,
   CHANGE_PASSWORD_FAILED,
   CHANGE_EMAIL_FAILED,
-  TOGGLE_VERIFICATION_FAILED
+  TOGGLE_VERIFICATION_FAILED,
+  DELETED_AUTH,
+  DELETE_AUTH_FAILED
 }
 
 @Entity()
@@ -76,6 +78,10 @@ export default class PlayerAuthActivity {
         return `${authAlias.identifier} failed to change their email`
       case PlayerAuthActivityType.TOGGLE_VERIFICATION_FAILED:
         return `${authAlias.identifier} failed to toggle verification`
+      case PlayerAuthActivityType.DELETED_AUTH:
+        return `${authAlias.identifier} deleted their account`
+      case PlayerAuthActivityType.DELETE_AUTH_FAILED:
+        return `${authAlias.identifier} failed to delete their account`
       default:
         return ''
     }

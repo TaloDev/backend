@@ -70,6 +70,12 @@ import { PlayerAuthActivityType } from '../../entities/player-auth-activity'
     path: '/toggle_verification',
     handler: 'toggleVerification',
     docs: PlayerAuthAPIDocs.toggleVerification
+  },
+  {
+    method: 'DELETE',
+    path: '/',
+    handler: 'delete',
+    docs: PlayerAuthAPIDocs.delete
   }
 ])
 export default class PlayerAuthAPIService extends APIService {
@@ -531,6 +537,55 @@ export default class PlayerAuthAPIService extends APIService {
       type: PlayerAuthActivityType.VERFICIATION_TOGGLED,
       extra: {
         verificationEnabled: alias.player.auth.verificationEnabled
+      }
+    })
+
+    await em.flush()
+
+    return {
+      status: 204
+    }
+  }
+
+  @Validate({
+    headers: ['x-talo-player', 'x-talo-alias', 'x-talo-session'],
+    body: ['currentPassword']
+  })
+  @HasPermission(PlayerAuthAPIPolicy, 'delete')
+  async delete(req: Request): Promise<Response> {
+    const { currentPassword } = req.body
+    const em: EntityManager = req.ctx.em
+
+    const alias = await em.getRepository(PlayerAlias).findOne(req.ctx.state.currentAliasId, {
+      populate: ['player.auth']
+    })
+
+    const passwordMatches = await bcrypt.compare(currentPassword, alias.player.auth.password)
+    if (!passwordMatches) {
+      createPlayerAuthActivity(req, alias.player, {
+        type: PlayerAuthActivityType.DELETE_AUTH_FAILED,
+        extra: {
+          errorCode: PlayerAuthErrorCode.INVALID_CREDENTIALS
+        }
+      })
+      await em.flush()
+
+      req.ctx.throw(403, {
+        message: 'Current password is incorrect',
+        errorCode: PlayerAuthErrorCode.INVALID_CREDENTIALS
+      })
+    }
+
+    em.remove(alias.player.auth)
+
+    const prevIdentifier = alias.identifier
+    alias.identifier = `anonymised+${Date.now()}`
+    alias.anonymised = true
+
+    createPlayerAuthActivity(req, alias.player, {
+      type: PlayerAuthActivityType.DELETED_AUTH,
+      extra: {
+        identifier: prevIdentifier
       }
     })
 

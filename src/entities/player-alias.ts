@@ -1,4 +1,4 @@
-import { Cascade, Entity, ManyToOne, PrimaryKey, Property } from '@mikro-orm/mysql'
+import { Cascade, Entity, Filter, ManyToOne, PrimaryKey, Property } from '@mikro-orm/mysql'
 import Player from './player'
 
 export enum PlayerAliasService {
@@ -11,6 +11,7 @@ export enum PlayerAliasService {
 }
 
 @Entity()
+@Filter({ name: 'notAnonymised', cond: { anonymised: false }, default: true })
 export default class PlayerAlias {
   @PrimaryKey()
   id: number
@@ -23,6 +24,9 @@ export default class PlayerAlias {
 
   @ManyToOne(() => Player, { cascade: [Cascade.REMOVE], eager: true })
   player: Player
+
+  @Property({ default: false })
+  anonymised: boolean
 
   @Property()
   createdAt: Date = new Date()

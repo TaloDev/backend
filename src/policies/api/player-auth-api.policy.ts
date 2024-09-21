@@ -38,4 +38,8 @@ export default class PlayerAuthAPIPolicy extends Policy {
   async toggleVerification(): Promise<PolicyResponse> {
     return await this.hasScopes([APIKeyScope.READ_PLAYERS, APIKeyScope.WRITE_PLAYERS])
   }
+
+  async delete(): Promise<PolicyResponse> {
+    return await this.hasScopes([APIKeyScope.READ_PLAYERS, APIKeyScope.WRITE_PLAYERS])
+  }
 }

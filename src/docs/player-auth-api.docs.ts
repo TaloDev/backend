@@ -276,6 +276,27 @@ const PlayerAuthAPIDocs: APIDocs<PlayerAuthAPIService> = {
         }
       }
     ]
+  },
+  delete: {
+    description: 'Delete a player account',
+    params: {
+      headers: {
+        'x-talo-player': 'The ID of the player',
+        'x-talo-alias': 'The ID of the player\'s alias',
+        'x-talo-session': 'The session token'
+      },
+      body: {
+        currentPassword: 'The current password of the player'
+      }
+    },
+    samples: [
+      {
+        title: 'Sample request',
+        sample: {
+          currentPassword: 'password'
+        }
+      }
+    ]
   }
 }
 

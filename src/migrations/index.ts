@@ -27,6 +27,7 @@ import { AddAPIKeyUpdatedAtColumn } from './20240614122547AddAPIKeyUpdatedAtColu
 import { CreatePlayerAuthTable } from './20240628155142CreatePlayerAuthTable'
 import { CreatePlayerAuthActivityTable } from './20240725183402CreatePlayerAuthActivityTable'
 import { UpdatePlayerAliasServiceColumn } from './20240916213402UpdatePlayerAliasServiceColumn'
+import { AddPlayerAliasAnonymisedColumn } from './20240920121232AddPlayerAliasAnonymisedColumn'
 
 export default [
   {
@@ -144,5 +145,9 @@ export default [
   {
     name: 'UpdatePlayerAliasServiceColumn',
     class: UpdatePlayerAliasServiceColumn
+  },
+  {
+    name: 'AddPlayerAliasAnonymisedColumn',
+    class: AddPlayerAliasAnonymisedColumn
   }
 ]

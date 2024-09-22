@@ -11,16 +11,37 @@ import PlayerAPIDocs from '../../docs/player-api.docs'
 import PlayerProp from '../../entities/player-prop'
 import PlayerGameStat from '../../entities/player-game-stat'
 import checkScope from '../../policies/checkScope'
+import Integration, { IntegrationType } from '../../entities/integration'
 
-export function findAliasFromIdentifyRequest(
-  em: EntityManager,
+async function getRealIdentifier(
+  req: Request,
+  key: APIKey,
+  service: string,
+  identifier: string
+): Promise<string> {
+  if (service === PlayerAliasService.STEAM) {
+    const integration = await (req.ctx.em as EntityManager).getRepository(Integration).findOne({
+      game: key.game,
+      type: IntegrationType.STEAMWORKS
+    })
+
+    if (integration) {
+      return integration.getPlayerIdentifier(req, identifier)
+    }
+  }
+
+  return identifier
+}
+
+export async function findAliasFromIdentifyRequest(
+  req: Request,
   key: APIKey,
   service: string,
   identifier: string
 ): Promise<PlayerAlias | null> {
-  return em.getRepository(PlayerAlias).findOne({
+  return (req.ctx.em as EntityManager).getRepository(PlayerAlias).findOne({
     service,
-    identifier,
+    identifier: await getRealIdentifier(req, key, service, identifier),
     player: {
       game: key.game
     }
@@ -38,7 +59,8 @@ export async function createPlayerFromIdentifyRequest(
   if (checkScope(key, APIKeyScope.WRITE_PLAYERS)) {
     const res = await forwardRequest(req, {
       body: {
-        aliases: [{ service, identifier }]
+        aliases: [{ service, identifier: await getRealIdentifier(req, key, service, identifier) }],
+        props: req.ctx.state.initialPlayerProps
       }
     })
 
@@ -77,14 +99,23 @@ export default class PlayerAPIService extends APIService {
     const em: EntityManager = req.ctx.em
 
     const key = await this.getAPIKey(req.ctx)
+    let alias: PlayerAlias = null
 
-    let alias = await findAliasFromIdentifyRequest(em, key, service, identifier)
-    if (!alias) {
-      if (service === PlayerAliasService.TALO) {
-        req.ctx.throw(404, 'Player not found: Talo aliases must be created using the /v1/players/auth API')
+    try {
+      alias = await findAliasFromIdentifyRequest(req, key, service, identifier)
+      if (!alias) {
+        if (service === PlayerAliasService.TALO) {
+          req.ctx.throw(404, 'Player not found: Talo aliases must be created using the /v1/players/auth API')
+        } else {
+          const player = await createPlayerFromIdentifyRequest(req, key, service, identifier)
+          alias = player?.aliases[0]
+        }
+      }
+    } catch (err) {
+      if (err instanceof Error && err.cause === 400) {
+        req.ctx.throw(400, err.message)
       } else {
-        const player = await createPlayerFromIdentifyRequest(req, key, service, identifier)
-        alias = player?.aliases[0]
+        throw err
       }
     }
 

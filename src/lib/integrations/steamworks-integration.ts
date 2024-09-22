@@ -11,6 +11,7 @@ import Player from '../../entities/player'
 import { performance } from 'perf_hooks'
 import GameStat from '../../entities/game-stat'
 import PlayerGameStat from '../../entities/player-game-stat'
+import { Request } from 'koa-clay'
 
 type SteamworksRequestConfig = {
   method: SteamworksRequestMethod
@@ -98,6 +99,35 @@ export type GetUserStatsForGameResponse = {
       value: number
     }[]
     achievements: unknown[]
+  }
+}
+
+export type AuthenticateUserTicketResponse = {
+  response: {
+    params?: {
+      result: 'OK'
+      steamid: string
+      ownersteamid: string
+      vacbanned: boolean
+      publisherbanned: boolean
+    }
+    error?: {
+      errorcode: number
+      errordesc: string
+    }
+  }
+}
+
+export type CheckAppOwnershipResponse = {
+  appownership: {
+    ownsapp: boolean
+    permanent: boolean
+    timestamp: string
+    ownersteamid: string
+    sitelicense: boolean
+    timedtrial: boolean
+    usercanceled: boolean
+    result: 'OK'
   }
 }
 
@@ -464,4 +494,69 @@ export async function syncSteamworksStats(em: EntityManager, integration: Integr
     const steamAlias = unsyncedPlayerStat.player.aliases.getItems().find((alias) => alias.service === PlayerAliasService.STEAM)
     await setSteamworksStat(em, integration, unsyncedPlayerStat, steamAlias)
   }
+}
+
+export async function authenticateTicket(req: Request, integration: Integration, identifier: string): Promise<string> {
+  const em: EntityManager = req.ctx.em
+
+  const parts = identifier.split(':')
+  const identity = parts.length > 1 ? parts[0] : undefined
+  const ticket = parts.at(-1)
+
+  const config = createSteamworksRequestConfig(integration, 'GET', `/ISteamUserAuth/AuthenticateUserTicket/v1?appid=${integration.getConfig().appId}&ticket=${ticket}${identity ? `&identity=${identity}` : ''}`)
+  const event = createSteamworksIntegrationEvent(integration, config)
+  const res = await makeRequest<AuthenticateUserTicketResponse>(config, event)
+  await em.persistAndFlush(event)
+
+  if (res.data.response.error) {
+    const message = `Failed to authenticate Steamworks ticket: ${res.data.response.error.errordesc} (${res.data.response.error.errorcode})`
+    throw new Error(message, { cause: 400 })
+  }
+
+  const steamId = res.data.response.params.steamid
+  const alias = await em.getRepository(PlayerAlias).findOne({
+    service: PlayerAliasService.STEAM,
+    identifier: steamId,
+    player: {
+      game: integration.game
+    }
+  })
+
+  const {
+    appownership: {
+      ownsapp,
+      permanent,
+      timestamp
+    }
+  } = await verifyOwnership(em, integration, steamId)
+
+  const { vacbanned, publisherbanned } = res.data.response.params
+
+  if (alias) {
+    alias.player.upsertProp('META_STEAMWORKS_VAC_BANNED', String(vacbanned))
+    alias.player.upsertProp('META_STEAMWORKS_PUBLISHER_BANNED', String(publisherbanned))
+    alias.player.upsertProp('META_STEAMWORKS_OWNS_APP', String(ownsapp))
+    alias.player.upsertProp('META_STEAMWORKS_OWNS_APP_PERMANENTLY', String(permanent))
+    alias.player.upsertProp('META_STEAMWORKS_OWNS_APP_FROM_DATE', timestamp)
+    await em.flush()
+  } else {
+    req.ctx.state.initialPlayerProps = [
+      { key: 'META_STEAMWORKS_VAC_BANNED', value: String(vacbanned) },
+      { key: 'META_STEAMWORKS_PUBLISHER_BANNED', value: String(publisherbanned) },
+      { key: 'META_STEAMWORKS_OWNS_APP', value: String(ownsapp) },
+      { key: 'META_STEAMWORKS_OWNS_APP_PERMANENTLY', value: String(permanent) },
+      { key: 'META_STEAMWORKS_OWNS_APP_FROM_DATE', value: timestamp }
+    ]
+  }
+
+  return steamId
+}
+
+export async function verifyOwnership(em: EntityManager, integration: Integration, steamId: string): Promise<CheckAppOwnershipResponse> {
+  const config = createSteamworksRequestConfig(integration, 'GET', `/ISteamUser/CheckAppOwnership/v3?appid=${integration.getConfig().appId}&steamid=${steamId}`)
+  const event = createSteamworksIntegrationEvent(integration, config)
+  const res = await makeRequest<CheckAppOwnershipResponse>(config, event)
+  await em.persistAndFlush(event)
+
+  return res.data
 }

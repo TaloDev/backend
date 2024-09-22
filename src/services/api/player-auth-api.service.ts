@@ -151,7 +151,7 @@ export default class PlayerAuthAPIService extends APIService {
 
     const key = await this.getAPIKey(req.ctx)
 
-    const alias = await findAliasFromIdentifyRequest(em, key, PlayerAliasService.TALO, identifier)
+    const alias = await findAliasFromIdentifyRequest(req, key, PlayerAliasService.TALO, identifier)
     if (!alias) this.handleFailedLogin(req)
 
     const passwordMatches = await bcrypt.compare(password, alias.player.auth.password)

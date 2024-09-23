@@ -76,9 +76,11 @@ export default class PlayerFactory extends Factory<Player> {
     })
   }
 
-  withSteamAlias(): this {
+  withSteamAlias(steamId?: string): this {
     return this.state(async (player: Player) => {
-      const alias = await new PlayerAliasFactory(player).steam().one()
+      const alias = await new PlayerAliasFactory(player).steam().state(() => ({
+        identifier: steamId ?? casual.integer(100000, 1000000).toString()
+      })).one()
 
       return {
         aliases: new Collection<PlayerAlias>(player, [alias])

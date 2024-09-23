@@ -80,7 +80,5 @@ describe('Game stats API service - put - steamworks integration', () => {
 
     const event = await (<EntityManager>global.em).getRepository(SteamworksIntegrationEvent).findOne({ integration })
     expect(event).toBeNull()
-
-    axiosMock.reset()
   })
 })

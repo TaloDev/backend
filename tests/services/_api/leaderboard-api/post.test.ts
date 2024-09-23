@@ -330,4 +330,30 @@ describe('Leaderboard API service - post', () => {
       { key: 'key1', value: 'value1' }
     ])
   })
+
+  it('should return a 400 if props are not an array', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_LEADERBOARDS])
+    const player = await new PlayerFactory([apiKey.game]).one()
+    const leaderboard = await new LeaderboardFactory([apiKey.game]).state(() => ({ unique: false })).one()
+    await (<EntityManager>global.em).persistAndFlush([player, leaderboard])
+
+    const res = await request(global.app)
+      .post(`/v1/leaderboards/${leaderboard.internalName}/entries`)
+      .send({
+        score: 300,
+        props: {
+          key1: 'value1',
+          key2: 'value2'
+        }
+      })
+      .auth(token, { type: 'bearer' })
+      .set('x-talo-alias', String(player.aliases[0].id))
+      .expect(400)
+
+    expect(res.body).toStrictEqual({
+      errors: {
+        props: ['Props must be an array']
+      }
+    })
+  })
 })

@@ -1,4 +1,4 @@
-import { HasPermission, Routes, Request, Response, Validate, ForwardTo, forwardRequest, Docs } from 'koa-clay'
+import { HasPermission, Routes, Request, Response, Validate, ForwardTo, forwardRequest, Docs, ValidationCondition } from 'koa-clay'
 import LeaderboardAPIPolicy from '../../policies/api/leaderboard-api.policy'
 import APIService from './api-service'
 import { EntityManager } from '@mikro-orm/mysql'
@@ -53,17 +53,25 @@ export default class LeaderboardAPIService extends APIService {
 
   @Validate({
     headers: ['x-talo-alias'],
-    body: ['score']
+    body: {
+      score: {
+        required: true
+      },
+      props: {
+        validation: async (val: unknown): Promise<ValidationCondition[]> => [
+          {
+            check: val ? Array.isArray(val) : true,
+            error: 'Props must be an array'
+          }
+        ]
+      }
+    }
   })
   @HasPermission(LeaderboardAPIPolicy, 'post')
   @Docs(LeaderboardAPIDocs.post)
   async post(req: Request): Promise<Response> {
     const { score, props } = req.body
     const em: EntityManager = req.ctx.em
-
-    if (props && !Array.isArray(props)) {
-      req.ctx.throw(400, 'Props must be an array')
-    }
 
     const leaderboard: Leaderboard = req.ctx.state.leaderboard
 

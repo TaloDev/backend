@@ -7,6 +7,8 @@ import Leaderboard, { LeaderboardSortMode } from '../../entities/leaderboard'
 import LeaderboardAPIDocs from '../../docs/leaderboard-api.docs'
 import triggerIntegrations from '../../lib/integrations/triggerIntegrations'
 import { devDataPlayerFilter } from '../../middlewares/dev-data-middleware'
+import sanitiseProps from '../../lib/props/sanitiseProps'
+import { uniqWith } from 'lodash'
 
 @Routes([
   {
@@ -31,7 +33,7 @@ export default class LeaderboardAPIService extends APIService {
     })
   }
 
-  async createEntry(req: Request): Promise<LeaderboardEntry> {
+  async createEntry(req: Request, props?: { key: string, value: string }[]): Promise<LeaderboardEntry> {
     const em: EntityManager = req.ctx.em
 
     const entry = new LeaderboardEntry(req.ctx.state.leaderboard)
@@ -39,6 +41,9 @@ export default class LeaderboardAPIService extends APIService {
     entry.score = req.body.score
     if (req.ctx.state.continuityDate) {
       entry.createdAt = req.ctx.state.continuityDate
+    }
+    if (props) {
+      entry.props = sanitiseProps(props)
     }
 
     await em.persistAndFlush(entry)
@@ -53,8 +58,12 @@ export default class LeaderboardAPIService extends APIService {
   @HasPermission(LeaderboardAPIPolicy, 'post')
   @Docs(LeaderboardAPIDocs.post)
   async post(req: Request): Promise<Response> {
-    const { score } = req.body
+    const { score, props } = req.body
     const em: EntityManager = req.ctx.em
+
+    if (props && !Array.isArray(props)) {
+      req.ctx.throw(400, 'Props must be an array')
+    }
 
     const leaderboard: Leaderboard = req.ctx.state.leaderboard
 
@@ -71,15 +80,23 @@ export default class LeaderboardAPIService extends APIService {
         if ((leaderboard.sortMode === LeaderboardSortMode.ASC && score < entry.score) || (leaderboard.sortMode === LeaderboardSortMode.DESC && score > entry.score)) {
           entry.score = score
           entry.createdAt = req.ctx.state.continuityDate ?? new Date()
+          if (props) {
+            const mergedProps = uniqWith([
+              ...sanitiseProps(props),
+              ...entry.props
+            ], (a, b) => a.key === b.key)
+
+            entry.props = sanitiseProps(mergedProps, true)
+          }
           await em.flush()
 
           updated = true
         }
       } else {
-        entry = await this.createEntry(req)
+        entry = await this.createEntry(req, props)
       }
     } catch (err) {
-      entry = await this.createEntry(req)
+      entry = await this.createEntry(req, props)
     }
 
     await triggerIntegrations(em, leaderboard.game, (integration) => {

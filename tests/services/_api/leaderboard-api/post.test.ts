@@ -266,4 +266,94 @@ describe('Leaderboard API service - post', () => {
 
     expect(new Date(res.body.entry.createdAt).getHours()).toBe(continuityDate.getHours())
   })
+
+  it('should create entries with props', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_LEADERBOARDS])
+    const player = await new PlayerFactory([apiKey.game]).one()
+    const leaderboard = await new LeaderboardFactory([apiKey.game]).state(() => ({ unique: false })).one()
+    await (<EntityManager>global.em).persistAndFlush([player, leaderboard])
+
+    const res = await request(global.app)
+      .post(`/v1/leaderboards/${leaderboard.internalName}/entries`)
+      .send({
+        score: 300,
+        props: [
+          { key: 'key1', value: 'value1' },
+          { key: 'key2', value: 'value2' }
+        ]
+      })
+      .auth(token, { type: 'bearer' })
+      .set('x-talo-alias', String(player.aliases[0].id))
+      .expect(200)
+
+    expect(res.body.entry.score).toBe(300)
+    expect(res.body.entry.props).toStrictEqual([
+      { key: 'key1', value: 'value1' },
+      { key: 'key2', value: 'value2' }
+    ])
+  })
+
+  it('should update an existing entry\'s props', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_LEADERBOARDS])
+    const player = await new PlayerFactory([apiKey.game]).one()
+    const leaderboard = await new LeaderboardFactory([apiKey.game]).state(() => ({ unique: true, sortMode: LeaderboardSortMode.DESC })).one()
+
+    const entry = await new LeaderboardEntryFactory(leaderboard, [player]).state(() => ({
+      score: 100,
+      playerAlias: player.aliases[0],
+      props: [
+        { key: 'key1', value: 'value1' },
+        { key: 'delete-me', value: 'delete-me' }
+      ]
+    })).one()
+
+    await (<EntityManager>global.em).persistAndFlush([player, leaderboard, entry])
+
+    const res = await request(global.app)
+      .post(`/v1/leaderboards/${leaderboard.internalName}/entries`)
+      .send({
+        score: 300,
+        props: [
+          { key: 'key2', value: 'value2' },
+          { key: 'delete-me', value: null }
+        ]
+      })
+      .auth(token, { type: 'bearer' })
+      .set('x-talo-alias', String(player.aliases[0].id))
+      .expect(200)
+
+    expect(res.body.entry.score).toBe(300)
+    expect(res.body.updated).toBe(true)
+
+    expect(res.body.entry.props).toStrictEqual([
+      { key: 'key2', value: 'value2' },
+      { key: 'key1', value: 'value1' }
+    ])
+  })
+
+  it('should return a 400 if props are not an array', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_LEADERBOARDS])
+    const player = await new PlayerFactory([apiKey.game]).one()
+    const leaderboard = await new LeaderboardFactory([apiKey.game]).state(() => ({ unique: false })).one()
+    await (<EntityManager>global.em).persistAndFlush([player, leaderboard])
+
+    const res = await request(global.app)
+      .post(`/v1/leaderboards/${leaderboard.internalName}/entries`)
+      .send({
+        score: 300,
+        props: {
+          key1: 'value1',
+          key2: 'value2'
+        }
+      })
+      .auth(token, { type: 'bearer' })
+      .set('x-talo-alias', String(player.aliases[0].id))
+      .expect(400)
+
+    expect(res.body).toStrictEqual({
+      errors: {
+        props: ['Props must be an array']
+      }
+    })
+  })
 })

@@ -28,6 +28,7 @@ import { CreatePlayerAuthTable } from './20240628155142CreatePlayerAuthTable'
 import { CreatePlayerAuthActivityTable } from './20240725183402CreatePlayerAuthActivityTable'
 import { UpdatePlayerAliasServiceColumn } from './20240916213402UpdatePlayerAliasServiceColumn'
 import { AddPlayerAliasAnonymisedColumn } from './20240920121232AddPlayerAliasAnonymisedColumn'
+import { AddLeaderboardEntryPropsColumn } from './20240922222426AddLeaderboardEntryPropsColumn'
 
 export default [
   {
@@ -149,5 +150,9 @@ export default [
   {
     name: 'AddPlayerAliasAnonymisedColumn',
     class: AddPlayerAliasAnonymisedColumn
+  },
+  {
+    name: 'AddLeaderboardEntryPropsColumn',
+    class: AddLeaderboardEntryPropsColumn
   }
 ]

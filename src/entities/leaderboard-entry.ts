@@ -1,6 +1,7 @@
-import { Cascade, Entity, ManyToOne, PrimaryKey, Property } from '@mikro-orm/mysql'
+import { Cascade, Embedded, Entity, ManyToOne, PrimaryKey, Property } from '@mikro-orm/mysql'
 import Leaderboard from './leaderboard'
 import PlayerAlias from './player-alias'
+import Prop from './prop'
 
 @Entity()
 export default class LeaderboardEntry {
@@ -15,6 +16,9 @@ export default class LeaderboardEntry {
 
   @ManyToOne(() => PlayerAlias, { cascade: [Cascade.REMOVE], eager: true })
   playerAlias: PlayerAlias
+
+  @Embedded(() => Prop, { array: true })
+  props: Prop[] = []
 
   @Property({ default: false })
   hidden: boolean
@@ -37,6 +41,7 @@ export default class LeaderboardEntry {
       leaderboardInternalName: this.leaderboard.internalName,
       playerAlias: this.playerAlias,
       hidden: this.hidden,
+      props: this.props,
       createdAt: this.createdAt,
       updatedAt: this.updatedAt
     }

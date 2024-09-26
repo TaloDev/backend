@@ -47,6 +47,16 @@ export default class Player {
     this.props.add(new PlayerProp(this, key, value))
   }
 
+  upsertProp(key: string, value: string) {
+    const prop = this.props.getItems().find((prop) => prop.key === key)
+
+    if (prop) {
+      prop.value = value
+    } else {
+      this.addProp(key, value)
+    }
+  }
+
   setProps(props: { key: string, value: string }[]) {
     this.props.set(props.map(({ key, value }) => new PlayerProp(this, key, value)))
   }

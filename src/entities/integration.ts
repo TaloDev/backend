@@ -2,7 +2,7 @@ import { Entity, EntityManager, Enum, Filter, ManyToOne, PrimaryKey, Property } 
 import { Request, Required, ValidationCondition } from 'koa-clay'
 import { decrypt, encrypt } from '../lib/crypto/string-encryption'
 import Game from './game'
-import { createSteamworksLeaderboard, createSteamworksLeaderboardEntry, deleteSteamworksLeaderboard, deleteSteamworksLeaderboardEntry, setSteamworksStat, syncSteamworksLeaderboards, syncSteamworksStats } from '../lib/integrations/steamworks-integration'
+import { authenticateTicket, createSteamworksLeaderboard, createSteamworksLeaderboardEntry, deleteSteamworksLeaderboard, deleteSteamworksLeaderboardEntry, setSteamworksStat, syncSteamworksLeaderboards, syncSteamworksStats } from '../lib/integrations/steamworks-integration'
 import Leaderboard from './leaderboard'
 import { pick } from 'lodash'
 import LeaderboardEntry from './leaderboard-entry'
@@ -173,6 +173,13 @@ export default class Integration {
     switch (this.type) {
       case IntegrationType.STEAMWORKS:
         await syncSteamworksStats(em, this)
+    }
+  }
+
+  async getPlayerIdentifier(req: Request, identifier: string): Promise<string> {
+    switch (this.type) {
+      case IntegrationType.STEAMWORKS:
+        return authenticateTicket(req, this, identifier)
     }
   }
 

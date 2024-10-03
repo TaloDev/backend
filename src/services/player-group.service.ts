@@ -251,7 +251,15 @@ export default class PlayerGroupService extends Service {
     const em: EntityManager = req.ctx.em
     const user = await getUserFromToken(req.ctx)
 
-    const pinnedGroups = await em.getRepository(UserPinnedGroup).find({ user }, { orderBy: { createdAt: 'desc' } })
+    const pinnedGroups = await em.getRepository(UserPinnedGroup).find({
+      user,
+      group: {
+        game: req.ctx.state.game
+      }
+    }, {
+      orderBy: { createdAt: 'desc' }
+    })
+
     const groups = await Promise.all(pinnedGroups.map(({ group }) => this.groupWithCount(group)))
 
     return {

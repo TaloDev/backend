@@ -121,7 +121,7 @@ export default class UserPublicService extends Service {
 
       createGameActivity(em, { user, type: GameActivityType.INVITE_ACCEPTED })
 
-      await em.remove(invite)
+      em.remove(invite)
     } else {
       const organisation = new Organisation()
       organisation.email = email

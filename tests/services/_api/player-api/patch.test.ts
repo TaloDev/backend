@@ -151,6 +151,42 @@ describe('Player API service - patch', () => {
     ])
   })
 
+  it('should remove players from a group when they are no longer eligible', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_PLAYERS])
+
+    const rule = new PlayerGroupRule(PlayerGroupRuleName.LTE, 'props.currentLevel')
+    rule.castType = PlayerGroupRuleCastType.DOUBLE
+    rule.operands = ['59']
+
+    const group = await new PlayerGroupFactory().construct(apiKey.game).state(() => ({ rules: [rule] })).one()
+
+    const player = await new PlayerFactory([apiKey.game]).state((player) => ({
+      props: new Collection<PlayerProp>(player, [
+        new PlayerProp(player, 'collectibles', '0'),
+        new PlayerProp(player, 'currentLevel', '59')
+      ])
+    })).one()
+    await (<EntityManager>global.em).persistAndFlush([group, player])
+
+    await (<EntityManager>global.em).refresh(group, { populate: ['members'] })
+    expect(group.members).toHaveLength(1)
+
+    const res = await request(global.app)
+      .patch(`/v1/players/${player.id}`)
+      .send({
+        props: [
+          {
+            key: 'currentLevel',
+            value: '60'
+          }
+        ]
+      })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    expect(res.body.player.groups).toHaveLength(0)
+  })
+
   it('should filter keys starting with META_', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_PLAYERS])
 

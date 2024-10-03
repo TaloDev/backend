@@ -247,6 +247,9 @@ export default class PlayerService extends Service {
 
     await em.flush()
 
+    // refresh groups
+    await em.refresh(player)
+
     return {
       status: 200,
       body: {

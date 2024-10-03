@@ -110,7 +110,7 @@ export default class UserService extends Service {
     user.password = await bcrypt.hash(newPassword, 10)
     const userSessionRepo = em.getRepository(UserSession)
     const sessions = await userSessionRepo.find({ user })
-    await em.remove(sessions)
+    em.remove(sessions)
 
     const accessToken = await buildTokenPair(req.ctx, user)
 

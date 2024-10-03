@@ -29,6 +29,7 @@ import { CreatePlayerAuthActivityTable } from './20240725183402CreatePlayerAuthA
 import { UpdatePlayerAliasServiceColumn } from './20240916213402UpdatePlayerAliasServiceColumn'
 import { AddPlayerAliasAnonymisedColumn } from './20240920121232AddPlayerAliasAnonymisedColumn'
 import { AddLeaderboardEntryPropsColumn } from './20240922222426AddLeaderboardEntryPropsColumn'
+import { CreateUserPinnedGroupsTable } from './20241001194252CreateUserPinnedGroupsTable'
 
 export default [
   {
@@ -154,5 +155,9 @@ export default [
   {
     name: 'AddLeaderboardEntryPropsColumn',
     class: AddLeaderboardEntryPropsColumn
+  },
+  {
+    name: 'CreateUserPinnedGroupsTable',
+    class: CreateUserPinnedGroupsTable
   }
 ]

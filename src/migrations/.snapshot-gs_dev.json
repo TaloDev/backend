@@ -3134,6 +3134,122 @@
           "length": null,
           "mappedType": "integer"
         },
+        "user_id": {
+          "name": "user_id",
+          "type": "int",
+          "unsigned": true,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "length": null,
+          "mappedType": "integer"
+        },
+        "group_id": {
+          "name": "group_id",
+          "type": "varchar(255)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "length": 255,
+          "mappedType": "string"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "datetime",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "length": null,
+          "mappedType": "datetime"
+        }
+      },
+      "name": "user_pinned_group",
+      "indexes": [
+        {
+          "columnNames": [
+            "user_id"
+          ],
+          "composite": false,
+          "keyName": "user_pinned_group_user_id_index",
+          "constraint": false,
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "group_id"
+          ],
+          "composite": false,
+          "keyName": "user_pinned_group_group_id_index",
+          "constraint": false,
+          "primary": false,
+          "unique": false
+        },
+        {
+          "keyName": "user_pinned_group_user_id_group_id_unique",
+          "columnNames": [
+            "user_id",
+            "group_id"
+          ],
+          "composite": true,
+          "constraint": true,
+          "primary": false,
+          "unique": true
+        },
+        {
+          "keyName": "PRIMARY",
+          "columnNames": [
+            "id"
+          ],
+          "composite": false,
+          "constraint": true,
+          "primary": true,
+          "unique": true
+        }
+      ],
+      "checks": [],
+      "foreignKeys": {
+        "user_pinned_group_user_id_foreign": {
+          "constraintName": "user_pinned_group_user_id_foreign",
+          "columnNames": [
+            "user_id"
+          ],
+          "localTableName": "user_pinned_group",
+          "referencedColumnNames": [
+            "id"
+          ],
+          "referencedTableName": "user",
+          "updateRule": "cascade"
+        },
+        "user_pinned_group_group_id_foreign": {
+          "constraintName": "user_pinned_group_group_id_foreign",
+          "columnNames": [
+            "group_id"
+          ],
+          "localTableName": "user_pinned_group",
+          "referencedColumnNames": [
+            "id"
+          ],
+          "referencedTableName": "player_group",
+          "updateRule": "cascade"
+        }
+      },
+      "nativeEnums": {}
+    },
+    {
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "int",
+          "unsigned": true,
+          "autoincrement": true,
+          "primary": true,
+          "nullable": false,
+          "length": null,
+          "mappedType": "integer"
+        },
         "code": {
           "name": "code",
           "type": "varchar(255)",

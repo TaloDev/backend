@@ -1,4 +1,4 @@
-import { isBefore, isValid } from 'date-fns'
+import { isBefore, isSameDay, isValid } from 'date-fns'
 import { Request, Validatable, ValidationCondition } from 'koa-clay'
 
 const schema: Validatable = {
@@ -15,7 +15,7 @@ const schema: Validatable = {
           break: true
         },
         {
-          check: isValid(endDate) ? isBefore(startDate, endDate) : true,
+          check: isValid(endDate) ? (isBefore(startDate, endDate) || isSameDay(startDate, endDate)) : true,
           error: 'Invalid start date, it should be before the end date'
         }
       ]

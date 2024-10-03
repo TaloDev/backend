@@ -35,4 +35,18 @@ export default class PlayerGroupPolicy extends Policy {
 
     return await this.canAccessGame(Number(gameId))
   }
+
+  async indexPinned(req: Request): Promise<PolicyResponse> {
+    const { gameId } = req.params
+    return await this.canAccessGame(Number(gameId))
+  }
+
+  async togglePinned(req: Request): Promise<PolicyResponse> {
+    const { gameId, id } = req.params
+
+    this.ctx.state.group = await this.em.getRepository(PlayerGroup).findOne(id)
+    if (!this.ctx.state.group) return new PolicyDenial({ message: 'Group not found' }, 404)
+
+    return await this.canAccessGame(Number(gameId))
+  }
 }

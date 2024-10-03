@@ -7,7 +7,9 @@ export default class PlayerSubscriber implements EventSubscriber {
     const em = (args.em as EntityManager).fork()
 
     const changeSets = args.uow.getChangeSets()
-    const cs = changeSets.find((cs) => [ChangeSetType.CREATE, ChangeSetType.UPDATE].includes(cs.type) && cs.entity instanceof Player)
+    const cs = changeSets.find((cs) => {
+      return [ChangeSetType.CREATE, ChangeSetType.UPDATE].includes(cs.type) && cs.entity instanceof Player
+    })
 
     if (cs) {
       await checkGroupMemberships(em, cs.entity as Player)

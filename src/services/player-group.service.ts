@@ -6,6 +6,8 @@ import PlayerGroupRule, { PlayerGroupRuleCastType, PlayerGroupRuleName } from '.
 import { ruleModeValidation, rulesValidation } from '../lib/groups/rulesValidation'
 import createGameActivity from '../lib/logging/createGameActivity'
 import PlayerGroupPolicy from '../policies/player-group.policy'
+import getUserFromToken from '../lib/auth/getUserFromToken'
+import UserPinnedGroup from '../entities/user-pinned-group'
 
 type PlayerGroupWithCount = Pick<PlayerGroup, 'id' | 'name' | 'description' | 'rules' | 'ruleMode' | 'updatedAt'> & { count: number }
 
@@ -31,6 +33,16 @@ type PlayerGroupWithCount = Pick<PlayerGroup, 'id' | 'name' | 'description' | 'r
     method: 'GET',
     path: '/preview-count',
     handler: 'previewCount'
+  },
+  {
+    method: 'GET',
+    path: '/pinned',
+    handler: 'indexPinned'
+  },
+  {
+    method: 'PUT',
+    path: '/:id/toggle-pinned',
+    handler: 'togglePinned'
   }
 ])
 export default class PlayerGroupService extends Service {
@@ -195,6 +207,7 @@ export default class PlayerGroupService extends Service {
       }
     })
 
+    await em.getRepository(UserPinnedGroup).nativeDelete({ group: req.ctx.state.group })
     await em.removeAndFlush(req.ctx.state.group)
 
     return {
@@ -230,6 +243,52 @@ export default class PlayerGroupService extends Service {
       body: {
         count
       }
+    }
+  }
+
+  @HasPermission(PlayerGroupPolicy, 'indexPinned')
+  async indexPinned(req: Request): Promise<Response> {
+    const em: EntityManager = req.ctx.em
+    const user = await getUserFromToken(req.ctx)
+
+    const pinnedGroups = await em.getRepository(UserPinnedGroup).find({
+      user,
+      group: {
+        game: req.ctx.state.game
+      }
+    }, {
+      orderBy: { createdAt: 'desc' }
+    })
+
+    const groups = await Promise.all(pinnedGroups.map(({ group }) => this.groupWithCount(group)))
+
+    return {
+      status: 200,
+      body: {
+        groups
+      }
+    }
+  }
+
+  @HasPermission(PlayerGroupPolicy, 'togglePinned')
+  async togglePinned(req: Request): Promise<Response> {
+    const { pinned } = req.body
+    const em: EntityManager = req.ctx.em
+
+    const group: PlayerGroup = req.ctx.state.group
+    const user = await getUserFromToken(req.ctx)
+
+    const pinnedGroup = await em.getRepository(UserPinnedGroup).findOne({ user, group })
+    if (pinned && !pinnedGroup) {
+      em.persist(new UserPinnedGroup(user, group))
+    } else if (!pinned && pinnedGroup) {
+      em.remove(pinnedGroup)
+    }
+
+    await em.flush()
+
+    return {
+      status: 204
     }
   }
 }

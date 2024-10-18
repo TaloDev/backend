@@ -33,7 +33,8 @@ describe('Player group service - post', () => {
         name: 'Winners',
         description: 'People who have completed the game',
         ruleMode: '$and',
-        rules
+        rules,
+        membersVisible: false
       })
       .auth(token, { type: 'bearer' })
       .expect(statusCode)
@@ -85,7 +86,8 @@ describe('Player group service - post', () => {
         name: 'Winners',
         description: 'People who have completed the game',
         ruleMode: '$and',
-        rules
+        rules,
+        membersVisible: false
       })
       .auth(token, { type: 'bearer' })
       .expect(200)
@@ -103,7 +105,8 @@ describe('Player group service - post', () => {
         name: 'Winners',
         description: 'People who have completed the game',
         ruleMode: '$not',
-        rules: []
+        rules: [],
+        membersVisible: false
       })
       .auth(token, { type: 'bearer' })
       .expect(400)
@@ -125,7 +128,8 @@ describe('Player group service - post', () => {
         name: 'Winners',
         description: 'People who have completed the game',
         ruleMode: '$and',
-        rules: {}
+        rules: {},
+        membersVisible: false
       })
       .auth(token, { type: 'bearer' })
       .expect(400)
@@ -155,7 +159,8 @@ describe('Player group service - post', () => {
             negate: false,
             castType: PlayerGroupRuleCastType.CHAR
           }
-        ]
+        ],
+        membersVisible: false
       })
       .auth(token, { type: 'bearer' })
       .expect(400)
@@ -185,7 +190,8 @@ describe('Player group service - post', () => {
             negate: false,
             castType: 'VARCHAR'
           }
-        ]
+        ],
+        membersVisible: false
       })
       .auth(token, { type: 'bearer' })
       .expect(400)
@@ -215,7 +221,8 @@ describe('Player group service - post', () => {
             negate: 'no',
             castType: PlayerGroupRuleCastType.CHAR
           }
-        ]
+        ],
+        membersVisible: false
       })
       .auth(token, { type: 'bearer' })
       .expect(400)
@@ -245,7 +252,8 @@ describe('Player group service - post', () => {
             negate: false,
             castType: PlayerGroupRuleCastType.CHAR
           }
-        ]
+        ],
+        membersVisible: false
       })
       .auth(token, { type: 'bearer' })
       .expect(400)
@@ -267,7 +275,8 @@ describe('Player group service - post', () => {
         name: 'Winners',
         description: 'People who have completed the game',
         ruleMode: '$and',
-        rules: []
+        rules: [],
+        membersVisible: false
       })
       .auth(token, { type: 'bearer' })
       .expect(403)
@@ -284,7 +293,8 @@ describe('Player group service - post', () => {
         name: 'Winners',
         description: 'People who have completed the game',
         ruleMode: '$and',
-        rules: []
+        rules: [],
+        membersVisible: false
       })
       .auth(token, { type: 'bearer' })
       .expect(404)

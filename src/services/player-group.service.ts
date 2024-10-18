@@ -9,8 +9,6 @@ import PlayerGroupPolicy from '../policies/player-group.policy'
 import getUserFromToken from '../lib/auth/getUserFromToken'
 import UserPinnedGroup from '../entities/user-pinned-group'
 
-type PlayerGroupWithCount = Pick<PlayerGroup, 'id' | 'name' | 'description' | 'rules' | 'ruleMode' | 'updatedAt'> & { count: number }
-
 @Routes([
   {
     method: 'GET'
@@ -46,13 +44,6 @@ type PlayerGroupWithCount = Pick<PlayerGroup, 'id' | 'name' | 'description' | 'r
   }
 ])
 export default class PlayerGroupService extends Service {
-  private async groupWithCount(group: PlayerGroup): Promise<PlayerGroupWithCount> {
-    return {
-      ...group.toJSON(),
-      count: await group.members.loadCount()
-    }
-  }
-
   @HasPermission(PlayerGroupPolicy, 'index')
   async index(req: Request): Promise<Response> {
     const em: EntityManager = req.ctx.em
@@ -61,7 +52,7 @@ export default class PlayerGroupService extends Service {
     return {
       status: 200,
       body: {
-        groups: await Promise.all(groups.map(this.groupWithCount))
+        groups: await Promise.all(groups.map((group) => group.toJSONWithCount()))
       }
     }
   }
@@ -79,7 +70,7 @@ export default class PlayerGroupService extends Service {
   @Validate({ body: [PlayerGroup] })
   @HasPermission(PlayerGroupPolicy, 'post')
   async post(req: Request): Promise<Response> {
-    const { name, description, ruleMode, rules } = req.body
+    const { name, description, ruleMode, rules, membersVisible } = req.body
     const em: EntityManager = req.ctx.em
 
     const group = new PlayerGroup(req.ctx.state.game)
@@ -87,6 +78,7 @@ export default class PlayerGroupService extends Service {
     group.description = description
     group.ruleMode = ruleMode
     group.rules = this.buildRulesFromData(rules)
+    group.membersVisible = membersVisible
     await group.checkMembership(em)
 
     createGameActivity(em, {
@@ -103,7 +95,7 @@ export default class PlayerGroupService extends Service {
     return {
       status: 200,
       body: {
-        group: await this.groupWithCount(group)
+        group: await group.toJSONWithCount()
       }
     }
   }
@@ -111,7 +103,7 @@ export default class PlayerGroupService extends Service {
   @Validate({ body: [PlayerGroup] })
   @HasPermission(PlayerGroupPolicy, 'put')
   async put(req: Request): Promise<Response> {
-    const { name, description, ruleMode, rules } = req.body
+    const { name, description, ruleMode, rules, membersVisible } = req.body
     const em: EntityManager = req.ctx.em
 
     const group: PlayerGroup = req.ctx.state.group
@@ -119,6 +111,7 @@ export default class PlayerGroupService extends Service {
     group.description = description
     group.ruleMode = ruleMode
     group.rules = this.buildRulesFromData(rules)
+    group.membersVisible = membersVisible
     await group.checkMembership(em)
 
     createGameActivity(em, {
@@ -260,7 +253,7 @@ export default class PlayerGroupService extends Service {
       orderBy: { createdAt: 'desc' }
     })
 
-    const groups = await Promise.all(pinnedGroups.map(({ group }) => this.groupWithCount(group)))
+    const groups = await Promise.all(pinnedGroups.map(({ group }) => group.toJSONWithCount()))
 
     return {
       status: 200,

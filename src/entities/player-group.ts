@@ -48,6 +48,10 @@ export default class PlayerGroup {
   @Property()
   description: string
 
+  @Required()
+  @Property({ default: false })
+  membersVisible: boolean
+
   @Required({
     validation: rulesValidation
   })
@@ -104,6 +108,13 @@ export default class PlayerGroup {
       rules: this.rules,
       ruleMode: this.ruleMode,
       updatedAt: this.updatedAt
+    }
+  }
+
+  async toJSONWithCount() {
+    return {
+      ...this.toJSON(),
+      count: await this.members.loadCount()
     }
   }
 }

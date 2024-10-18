@@ -791,6 +791,17 @@
           "length": 255,
           "mappedType": "string"
         },
+        "members_visible": {
+          "name": "public",
+          "type": "tinyint(1)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "length": 1,
+          "default": "false",
+          "mappedType": "boolean"
+        },
         "rules": {
           "name": "rules",
           "type": "json",

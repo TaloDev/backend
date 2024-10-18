@@ -30,6 +30,7 @@ import { UpdatePlayerAliasServiceColumn } from './20240916213402UpdatePlayerAlia
 import { AddPlayerAliasAnonymisedColumn } from './20240920121232AddPlayerAliasAnonymisedColumn'
 import { AddLeaderboardEntryPropsColumn } from './20240922222426AddLeaderboardEntryPropsColumn'
 import { CreateUserPinnedGroupsTable } from './20241001194252CreateUserPinnedGroupsTable'
+import { AddPlayerGroupMembersVisibleColumn } from './20241014202844AddPlayerGroupMembersVisibleColumn'
 
 export default [
   {
@@ -159,5 +160,9 @@ export default [
   {
     name: 'CreateUserPinnedGroupsTable',
     class: CreateUserPinnedGroupsTable
+  },
+  {
+    name: 'AddPlayerGroupMembersVisibleColumn',
+    class: AddPlayerGroupMembersVisibleColumn
   }
 ]

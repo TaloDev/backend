@@ -15,6 +15,7 @@ import apiKeyMiddleware from '../middlewares/api-key-middleware'
 import playerAuthMiddleware from '../middlewares/player-auth-middleware'
 import PlayerAuthAPIService from '../services/api/player-auth-api.service'
 import continunityMiddleware from '../middlewares/continunity-middleware'
+import PlayerGroupAPIService from '../services/api/player-group-api.service'
 
 export default (app: Koa) => {
   app.use(apiKeyMiddleware)
@@ -31,6 +32,7 @@ export default (app: Koa) => {
   app.use(playerAuthMiddleware)
   app.use(continunityMiddleware)
 
+  app.use(service('/v1/player-groups', new PlayerGroupAPIService()))
   app.use(service('/v1/health-check', new HealthCheckAPIService()))
   app.use(service('/v1/game-feedback', new GameFeedbackAPIService()))
   app.use(service('/v1/game-config', new GameConfigAPIService()))

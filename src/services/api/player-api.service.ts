@@ -73,7 +73,7 @@ export async function createPlayerFromIdentifyRequest(
 function validateIdentifyQueryParam(param: 'service' | 'identifier') {
   return async (val?: string): Promise<ValidationCondition[]> => [
     {
-      check: (val ?? '').trim().length > 0,
+      check: val.trim().length > 0,
       error: `Invalid ${param}, must be a non-empty string`
     }
   ]

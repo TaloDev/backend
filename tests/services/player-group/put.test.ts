@@ -37,7 +37,8 @@ describe('Player group service - put', () => {
         name: 'Winners',
         description: 'People who have completed the game',
         ruleMode: '$and',
-        rules
+        rules,
+        membersVisible: false
       })
       .auth(token, { type: 'bearer' })
       .expect(statusCode)
@@ -91,7 +92,8 @@ describe('Player group service - put', () => {
         name: 'Winners',
         description: 'People who have completed the game',
         ruleMode: '$and',
-        rules
+        rules,
+        membersVisible: false
       })
       .auth(token, { type: 'bearer' })
       .expect(200)
@@ -113,7 +115,8 @@ describe('Player group service - put', () => {
         name: 'Winners',
         description: 'People who have completed the game',
         ruleMode: '$and',
-        rules: []
+        rules: [],
+        membersVisible: false
       })
       .auth(token, { type: 'bearer' })
       .expect(403)
@@ -131,7 +134,8 @@ describe('Player group service - put', () => {
         name: 'Winners',
         description: 'People who have completed the game',
         ruleMode: '$and',
-        rules: []
+        rules: [],
+        membersVisible: false
       })
       .auth(token, { type: 'bearer' })
       .expect(404)

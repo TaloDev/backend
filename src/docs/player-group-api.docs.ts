@@ -4,6 +4,11 @@ import APIDocs from './api-docs'
 const PlayerGroupAPIDocs: APIDocs<PlayerGroupAPIService> = {
   get: {
     description: 'Get a group and its members',
+    params: {
+      route: {
+        id: 'The ID of the group'
+      }
+    },
     samples: [
       {
         title: 'Sample response (members visible)',
@@ -24,6 +29,7 @@ const PlayerGroupAPIDocs: APIDocs<PlayerGroupAPIService> = {
               }
             ],
             ruleMode: '$and',
+            membersVisible: true,
             updatedAt: '2024-10-01T23:09:18.000Z',
             count: 1,
             members: [
@@ -69,6 +75,7 @@ const PlayerGroupAPIDocs: APIDocs<PlayerGroupAPIService> = {
               }
             ],
             ruleMode: '$and',
+            membersVisible: false,
             updatedAt: '2024-10-01T23:09:18.000Z',
             count: 1
           }

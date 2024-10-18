@@ -107,6 +107,7 @@ export default class PlayerGroup {
       description: this.description,
       rules: this.rules,
       ruleMode: this.ruleMode,
+      membersVisible: this.membersVisible,
       updatedAt: this.updatedAt
     }
   }

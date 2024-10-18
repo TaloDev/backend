@@ -128,7 +128,7 @@ export default class PlayerGroupService extends Service {
     return {
       status: 200,
       body: {
-        group
+        group: await group.toJSONWithCount()
       }
     }
   }

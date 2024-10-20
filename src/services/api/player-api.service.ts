@@ -1,5 +1,5 @@
 import { EntityManager } from '@mikro-orm/mysql'
-import { Request, Response, Routes, Validate, HasPermission, ForwardTo, forwardRequest } from 'koa-clay'
+import { Request, Response, Routes, Validate, HasPermission, ForwardTo, forwardRequest, ValidationCondition } from 'koa-clay'
 import APIKey, { APIKeyScope } from '../../entities/api-key'
 import Player from '../../entities/player'
 import GameSave from '../../entities/game-save'
@@ -70,6 +70,15 @@ export async function createPlayerFromIdentifyRequest(
   }
 }
 
+function validateIdentifyQueryParam(param: 'service' | 'identifier') {
+  return async (val?: string): Promise<ValidationCondition[]> => [
+    {
+      check: val.trim().length > 0,
+      error: `Invalid ${param}, must be a non-empty string`
+    }
+  ]
+}
+
 @Routes([
   {
     method: 'GET',
@@ -90,7 +99,16 @@ export async function createPlayerFromIdentifyRequest(
 ])
 export default class PlayerAPIService extends APIService {
   @Validate({
-    query: ['service', 'identifier']
+    query: {
+      service: {
+        required: true,
+        validation: validateIdentifyQueryParam('service')
+      },
+      identifier: {
+        required: true,
+        validation: validateIdentifyQueryParam('identifier')
+      }
+    }
   })
   @HasPermission(PlayerAPIPolicy, 'identify')
   @ForwardTo('games.players', 'post')

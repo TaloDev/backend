@@ -124,4 +124,76 @@ describe('Player API service - identify', () => {
 
     expect(res.body).toStrictEqual({ message: 'Player not found: Talo aliases must be created using the /v1/players/auth API' })
   })
+
+  it('should require the service to be set', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_PLAYERS])
+    const player = await new PlayerFactory([apiKey.game]).one()
+    await (<EntityManager>global.em).persistAndFlush(player)
+
+    const res = await request(global.app)
+      .get('/v1/players/identify')
+      .query({ identifier: player.aliases[0].identifier })
+      .auth(token, { type: 'bearer' })
+      .expect(400)
+
+    expect(res.body).toStrictEqual({
+      errors: {
+        service: ['service is missing from the request query']
+      }
+    })
+  })
+
+  it('should require the service to be a non-empty string', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_PLAYERS])
+    const player = await new PlayerFactory([apiKey.game]).one()
+    await (<EntityManager>global.em).persistAndFlush(player)
+
+    const res = await request(global.app)
+      .get('/v1/players/identify')
+      .query({ service: '', identifier: player.aliases[0].identifier })
+      .auth(token, { type: 'bearer' })
+      .expect(400)
+
+    expect(res.body).toStrictEqual({
+      errors: {
+        service: ['Invalid service, must be a non-empty string']
+      }
+    })
+  })
+
+  it('should require the identifier to be set', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_PLAYERS])
+    const player = await new PlayerFactory([apiKey.game]).one()
+    await (<EntityManager>global.em).persistAndFlush(player)
+
+    const res = await request(global.app)
+      .get('/v1/players/identify')
+      .query({ service: player.aliases[0].service })
+      .auth(token, { type: 'bearer' })
+      .expect(400)
+
+    expect(res.body).toStrictEqual({
+      errors: {
+        identifier: ['identifier is missing from the request query']
+      }
+    })
+  })
+
+  it('should require the identifier to be a non-empty string', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_PLAYERS])
+    const player = await new PlayerFactory([apiKey.game]).one()
+    await (<EntityManager>global.em).persistAndFlush(player)
+
+    const res = await request(global.app)
+      .get('/v1/players/identify')
+      .query({ service: player.aliases[0].service, identifier: '' })
+      .auth(token, { type: 'bearer' })
+      .expect(400)
+
+    expect(res.body).toStrictEqual({
+      errors: {
+        identifier: ['Invalid identifier, must be a non-empty string']
+      }
+    })
+  })
 })

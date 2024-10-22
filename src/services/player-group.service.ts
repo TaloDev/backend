@@ -52,7 +52,7 @@ export default class PlayerGroupService extends Service {
     return {
       status: 200,
       body: {
-        groups: await Promise.all(groups.map((group) => group.toJSONWithCount()))
+        groups: await Promise.all(groups.map((group) => group.toJSONWithCount(em, req.ctx.state.includeDevData)))
       }
     }
   }
@@ -95,7 +95,7 @@ export default class PlayerGroupService extends Service {
     return {
       status: 200,
       body: {
-        group: await group.toJSONWithCount()
+        group: await group.toJSONWithCount(em, req.ctx.state.includeDevData)
       }
     }
   }
@@ -128,7 +128,7 @@ export default class PlayerGroupService extends Service {
     return {
       status: 200,
       body: {
-        group: await group.toJSONWithCount()
+        group: await group.toJSONWithCount(em, req.ctx.state.includeDevData)
       }
     }
   }
@@ -253,7 +253,7 @@ export default class PlayerGroupService extends Service {
       orderBy: { createdAt: 'desc' }
     })
 
-    const groups = await Promise.all(pinnedGroups.map(({ group }) => group.toJSONWithCount()))
+    const groups = await Promise.all(pinnedGroups.map(({ group }) => group.toJSONWithCount(em, req.ctx.state.includeDevData)))
 
     return {
       status: 200,

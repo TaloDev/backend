@@ -190,7 +190,8 @@ export default class PlayerAPIService extends APIService {
     ], (a, b) => a.key === b.key)
 
     player1.setProps(mergedProps)
-    player2.aliases.getItems().forEach((alias) => alias.player = player1)
+    player1.aliases.add(player2.aliases)
+    player2.setProps([])
 
     const saves = await em.getRepository(GameSave).find({ player: player2 })
     saves.forEach((save) => save.player = player1)
@@ -198,7 +199,8 @@ export default class PlayerAPIService extends APIService {
     const stats = await em.getRepository(PlayerGameStat).find({ player: player2 })
     stats.forEach((stat) => stat.player = player1)
 
-    await em.removeAndFlush(player2)
+    await em.flush()
+    await em.getRepository(Player).nativeDelete(player2)
 
     return {
       status: 200,

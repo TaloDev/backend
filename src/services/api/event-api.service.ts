@@ -88,6 +88,7 @@ export default class EventAPIService extends APIService {
 
     clickhouse.close()
 
+    // flush player meta props set by event.setProps()
     await em.flush()
 
     return {

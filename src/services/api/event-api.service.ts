@@ -1,4 +1,3 @@
-import { EntityManager } from '@mikro-orm/mysql'
 import { HasPermission, Request, Response, Validate, ValidationCondition, Docs } from 'koa-clay'
 import EventAPIPolicy from '../../policies/api/event-api.policy'
 import APIService from './api-service'
@@ -27,7 +26,6 @@ export default class EventAPIService extends APIService {
   @Docs(EventAPIDocs.post)
   async post(req: Request): Promise<Response> {
     const { events: items } = req.body
-    const em: EntityManager = req.ctx.em
 
     const clickhouse = createClickhouseClient()
 
@@ -87,8 +85,6 @@ export default class EventAPIService extends APIService {
     }
 
     clickhouse.close()
-
-    await em.flush()
 
     return {
       status: 200,

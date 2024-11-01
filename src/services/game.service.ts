@@ -33,10 +33,26 @@ export default class GameService extends Service {
 
   @HasPermission(GamePolicy, 'patch')
   async patch(req: Request): Promise<Response> {
-    const { props } = req.body
+    const { name, props } = req.body
     const em: EntityManager = req.ctx.em
 
     const game: Game = req.ctx.state.game
+
+    if (name) {
+      const prevName = game.name
+      game.name = name
+
+      createGameActivity(em, {
+        user: req.ctx.state.user,
+        game,
+        type: GameActivityType.GAME_NAME_UPDATED,
+        extra: {
+          display: {
+            'Previous name': prevName
+          }
+        }
+      })
+    }
 
     if (props) {
       if (props.some((prop) => prop.key.startsWith('META_'))) {

@@ -151,4 +151,30 @@ describe('Game service - patch', () => {
       message: 'Prop keys starting with \'META_\' are reserved for internal systems, please use another key name'
     })
   })
+
+  it('should update game names', async () => {
+    const [organisation, game] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken({ type: UserType.ADMIN }, organisation)
+
+    const res = await request(global.app)
+      .patch(`/games/${game.id}`)
+      .send({
+        name: 'New game name'
+      })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    expect(res.body.game.name).toBe('New game name')
+
+    const activity = await (<EntityManager>global.em).getRepository(GameActivity).findOne({
+      type: GameActivityType.GAME_NAME_UPDATED,
+      game,
+      extra: {
+        display: {
+          'Previous name': game.name
+        }
+      }
+    })
+    expect(activity).not.toBeNull()
+  })
 })

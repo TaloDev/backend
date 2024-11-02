@@ -792,7 +792,7 @@
           "mappedType": "string"
         },
         "members_visible": {
-          "name": "public",
+          "name": "members_visible",
           "type": "tinyint(1)",
           "unsigned": false,
           "autoincrement": false,
@@ -1064,6 +1064,16 @@
           "nullable": false,
           "length": 255,
           "mappedType": "string"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "datetime",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "length": null,
+          "mappedType": "datetime"
         }
       },
       "name": "player_prop",
@@ -1251,6 +1261,16 @@
           "length": 1,
           "default": "false",
           "mappedType": "boolean"
+        },
+        "last_seen_at": {
+          "name": "last_seen_at",
+          "type": "datetime",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "length": null,
+          "mappedType": "datetime"
         },
         "created_at": {
           "name": "created_at",
@@ -3781,6 +3801,7 @@
           "nullable": false,
           "length": null,
           "enumItems": [
+            "read:playerGroups",
             "write:continuityRequests",
             "read:gameFeedback",
             "write:gameFeedback",

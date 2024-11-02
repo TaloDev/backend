@@ -29,6 +29,9 @@ export default class PlayerAlias {
   anonymised: boolean
 
   @Property()
+  lastSeenAt: Date = new Date()
+
+  @Property()
   createdAt: Date = new Date()
 
   @Property({ onUpdate: () => new Date() })
@@ -43,6 +46,7 @@ export default class PlayerAlias {
       service: this.service,
       identifier: this.identifier,
       player,
+      lastSeenAt: this.lastSeenAt,
       createdAt: this.createdAt,
       updatedAt: this.updatedAt
     }

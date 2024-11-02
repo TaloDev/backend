@@ -2,12 +2,15 @@ import { Collection, EntityManager } from '@mikro-orm/mysql'
 import request from 'supertest'
 import { APIKeyScope } from '../../../../src/entities/api-key'
 import PlayerFactory from '../../../fixtures/PlayerFactory'
-import { isToday } from 'date-fns'
+import { isToday, subDays } from 'date-fns'
 import PlayerGroupFactory from '../../../fixtures/PlayerGroupFactory'
 import PlayerGroupRule, { PlayerGroupRuleName, PlayerGroupRuleCastType } from '../../../../src/entities/player-group-rule'
 import PlayerProp from '../../../../src/entities/player-prop'
 import { RuleMode } from '../../../../src/entities/player-group'
 import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
+import PlayerAlias from '../../../../src/entities/player-alias'
+import PlayerAliasFactory from '../../../fixtures/PlayerAliasFactory'
+import casual from 'casual'
 
 describe('Player API service - identify', () => {
   it('should identify a player', async () => {
@@ -27,7 +30,15 @@ describe('Player API service - identify', () => {
 
   it('should update the lastSeenAt when a player identifies', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_PLAYERS])
-    const player = await new PlayerFactory([apiKey.game]).notSeenToday().one()
+    const player = await new PlayerFactory([apiKey.game]).notSeenToday().state(async (player) => {
+      const alias = await new PlayerAliasFactory(player).state(() => ({
+        lastSeenAt: subDays(new Date(), casual.integer(1, 99))
+      })).one()
+
+      return {
+        aliases: new Collection<PlayerAlias>(player, [alias])
+      }
+    }).one()
     await (<EntityManager>global.em).persistAndFlush(player)
 
     await request(global.app)
@@ -36,8 +47,9 @@ describe('Player API service - identify', () => {
       .auth(token, { type: 'bearer' })
       .expect(200)
 
-    await (<EntityManager>global.em).refresh(player)
+    await (<EntityManager>global.em).refresh(player, { populate: ['aliases'] })
     expect(isToday(new Date(player.lastSeenAt))).toBe(true)
+    expect(isToday(new Date(player.aliases[0].lastSeenAt))).toBe(true)
   })
 
   it('should not identify a player if the scope is missing', async () => {

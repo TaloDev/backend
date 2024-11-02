@@ -15,6 +15,9 @@ export default class PlayerProp {
   @Property()
   value: string
 
+  @Property()
+  createdAt: Date = new Date()
+
   constructor(player: Player, key: string, value: string) {
     this.player = player
     this.key = key

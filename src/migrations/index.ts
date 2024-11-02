@@ -31,6 +31,8 @@ import { AddPlayerAliasAnonymisedColumn } from './20240920121232AddPlayerAliasAn
 import { AddLeaderboardEntryPropsColumn } from './20240922222426AddLeaderboardEntryPropsColumn'
 import { CreateUserPinnedGroupsTable } from './20241001194252CreateUserPinnedGroupsTable'
 import { AddPlayerGroupMembersVisibleColumn } from './20241014202844AddPlayerGroupMembersVisibleColumn'
+import { AddPlayerPropCreatedAtColumn } from './20241101233908AddPlayerPropCreatedAtColumn'
+import { AddPlayerAliasLastSeenAtColumn } from './20241102004938AddPlayerAliasLastSeenAtColumn'
 
 export default [
   {
@@ -164,5 +166,13 @@ export default [
   {
     name: 'AddPlayerGroupMembersVisibleColumn',
     class: AddPlayerGroupMembersVisibleColumn
+  },
+  {
+    name: 'AddPlayerPropCreatedAtColumn',
+    class: AddPlayerPropCreatedAtColumn
+  },
+  {
+    name: 'AddPlayerAliasLastSeenAtColumn',
+    class: AddPlayerAliasLastSeenAtColumn
   }
 ]

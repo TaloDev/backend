@@ -30,7 +30,8 @@ export enum GameActivityType {
   GAME_FEEDBACK_CATEGORY_CREATED,
   GAME_FEEDBACK_CATEGORY_UPDATED,
   GAME_FEEDBACK_CATEGORY_DELETED,
-  API_KEY_UPDATED
+  API_KEY_UPDATED,
+  GAME_NAME_UPDATED
 }
 
 @Entity()
@@ -120,6 +121,8 @@ export default class GameActivity {
         return `${this.user.username} deleted the feedback category ${this.extra.feedbackCategoryInternalName}`
       case GameActivityType.API_KEY_UPDATED:
         return `${this.user.username} updated an access key`
+      case GameActivityType.GAME_NAME_UPDATED:
+        return `${this.user.username} updated the game name`
       default:
         return ''
     }

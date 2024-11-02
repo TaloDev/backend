@@ -137,7 +137,7 @@ export default class PlayerAPIService extends APIService {
       }
     }
 
-    alias.player.lastSeenAt = new Date()
+    alias.lastSeenAt = alias.player.lastSeenAt = new Date()
     await em.flush()
 
     return {
@@ -189,9 +189,10 @@ export default class PlayerAPIService extends APIService {
       ...player1.props.getItems()
     ], (a, b) => a.key === b.key)
 
-    player1.setProps(mergedProps)
-    player1.aliases.add(player2.aliases)
+    player1.setProps(mergedProps.map((prop) => ({ key: prop.key, value: prop.value })))
+    player2.aliases.getItems().forEach((alias) => alias.player = player1)
     player2.setProps([])
+    await em.flush()
 
     const saves = await em.getRepository(GameSave).find({ player: player2 })
     saves.forEach((save) => save.player = player1)

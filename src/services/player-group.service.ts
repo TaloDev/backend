@@ -8,6 +8,7 @@ import createGameActivity from '../lib/logging/createGameActivity'
 import PlayerGroupPolicy from '../policies/player-group.policy'
 import getUserFromToken from '../lib/auth/getUserFromToken'
 import UserPinnedGroup from '../entities/user-pinned-group'
+import { devDataPlayerFilter } from '../middlewares/dev-data-middleware'
 
 @Routes([
   {
@@ -229,7 +230,11 @@ export default class PlayerGroupService extends Service {
     group.rules = this.buildRulesFromData(JSON.parse(decodeURI(rules)))
     group.ruleMode = ruleMode as RuleMode
 
-    const count = await group.getQuery(em).getCount()
+    const query = group.getQuery(em)
+    if (!req.ctx.state.includeDevData) {
+      query.andWhere(devDataPlayerFilter(em))
+    }
+    const count = await query.getCount()
 
     return {
       status: 200,

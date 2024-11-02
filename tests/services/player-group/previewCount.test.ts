@@ -32,6 +32,59 @@ describe('Player group service - preview count', () => {
     expect(res.body.count).toEqual(1)
   })
 
+  it('should not return dev build players in the group members without the dev data header', async () => {
+    const [organisation, game] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken({}, organisation)
+
+    const player = await new PlayerFactory([game]).devBuild().state(() => ({ lastSeenAt: new Date(2022, 4, 3) })).one()
+    await (<EntityManager>global.em).persistAndFlush(player)
+
+    const rules: Partial<PlayerGroupRule>[] = [
+      {
+        name: PlayerGroupRuleName.EQUALS,
+        field: 'lastSeenAt',
+        operands: ['2022-05-03'],
+        negate: false,
+        castType: PlayerGroupRuleCastType.DATETIME
+      }
+    ]
+
+    const res = await request(global.app)
+      .get(`/games/${game.id}/player-groups/preview-count`)
+      .query({ ruleMode: '$and', rules: encodeURI(JSON.stringify(rules)) })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    expect(res.body.count).toEqual(0)
+  })
+
+  it('should return dev build players in the group members with the dev data header', async () => {
+    const [organisation, game] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken({}, organisation)
+
+    const player = await new PlayerFactory([game]).devBuild().state(() => ({ lastSeenAt: new Date(2022, 4, 3) })).one()
+    await (<EntityManager>global.em).persistAndFlush(player)
+
+    const rules: Partial<PlayerGroupRule>[] = [
+      {
+        name: PlayerGroupRuleName.EQUALS,
+        field: 'lastSeenAt',
+        operands: ['2022-05-03'],
+        negate: false,
+        castType: PlayerGroupRuleCastType.DATETIME
+      }
+    ]
+
+    const res = await request(global.app)
+      .get(`/games/${game.id}/player-groups/preview-count`)
+      .query({ ruleMode: '$and', rules: encodeURI(JSON.stringify(rules)) })
+      .auth(token, { type: 'bearer' })
+      .set('x-talo-include-dev-data', '1')
+      .expect(200)
+
+    expect(res.body.count).toEqual(1)
+  })
+
   it('should not return a preview for a non-existent game', async () => {
     const [token] = await createUserAndToken()
 

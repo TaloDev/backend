@@ -26,7 +26,7 @@ Check out the [full Talo docs](https://docs.trytalo.com) for setup instructions,
 
 ## Self-hosting your own Talo instance
 
-Talo is designed to be easily self-hosted. Take a look at our [self-hosting guide](https://docs.trytalo.com/docs/selfhosting/overview) and the [our GitHub repo](https://github.com/TaloDev/hosting) for examples on how to get started.
+Talo is designed to be easily self-hosted. Take a look at our [self-hosting guide](https://docs.trytalo.com/docs/selfhosting/overview) and the [GitHub repo](https://github.com/TaloDev/hosting) for examples on how to get started.
 
 ## Contributing to Talo
 

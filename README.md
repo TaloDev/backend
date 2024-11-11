@@ -1,6 +1,6 @@
 # Talo backend: self-hostable game dev tools
 
-Talo is a set of tools and APIs designed to make game development easier and help you make better data-driven decisions.
+Talo is a collection of tools and APIs designed to make game development easier and to help you make better data-driven decisions.
 
 From essentials like player management, stats and leaderboards to advanced APIs for game saves, event tracking and player authentication.
 

@@ -6,6 +6,7 @@ import { EntityManager } from '@mikro-orm/mysql'
 import bcrypt from 'bcrypt'
 import PlayerAuthFactory from '../../../fixtures/PlayerAuthFactory'
 import PlayerAuthActivity, { PlayerAuthActivityType } from '../../../../src/entities/player-auth-activity'
+import casual from 'casual'
 
 describe('Player auth API service - change email', () => {
   it('should change a player\'s email if the current password is correct and the api key has the correct scopes', async () => {
@@ -147,6 +148,46 @@ describe('Player auth API service - change email', () => {
       player: player.id,
       extra: {
         errorCode: 'NEW_EMAIL_MATCHES_CURRENT_EMAIL'
+      }
+    })
+    expect(activity).not.toBeNull()
+  })
+
+  it('should not change a player\'s email if the new email is invalid', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_PLAYERS, APIKeyScope.WRITE_PLAYERS])
+
+    const player = await new PlayerFactory([apiKey.game]).withTaloAlias().state(async () => ({
+      auth: await new PlayerAuthFactory().state(async () => ({
+        password: await bcrypt.hash('password', 10),
+        email: casual.email,
+        verificationEnabled: casual.boolean
+      })).one()
+    })).one()
+    const alias = player.aliases[0]
+    await (<EntityManager>global.em).persistAndFlush(player)
+
+    const sessionToken = await player.auth.createSession(alias)
+    await (<EntityManager>global.em).flush()
+
+    const res = await request(global.app)
+      .post('/v1/players/auth/change_email')
+      .send({ currentPassword: 'password', newEmail: 'blah' })
+      .auth(token, { type: 'bearer' })
+      .set('x-talo-player', player.id)
+      .set('x-talo-alias', String(alias.id))
+      .set('x-talo-session', sessionToken)
+      .expect(400)
+
+    expect(res.body).toStrictEqual({
+      message: 'Invalid email address',
+      errorCode: 'INVALID_EMAIL'
+    })
+
+    const activity = await (<EntityManager>global.em).getRepository(PlayerAuthActivity).findOne({
+      type: PlayerAuthActivityType.CHANGE_EMAIL_FAILED,
+      player: player.id,
+      extra: {
+        errorCode: 'INVALID_EMAIL'
       }
     })
     expect(activity).not.toBeNull()

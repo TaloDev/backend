@@ -40,7 +40,7 @@ describe('User public service - register', () => {
       .send({ email, username: casual.username, password: 'password', organisationName: 'Talo' })
       .expect(400)
 
-    expect(res.body).toStrictEqual({ message: 'That email address is already in use' })
+    expect(res.body).toStrictEqual({ message: 'Email address is already in use' })
   })
 
   it('should create an access code for a new user', async () => {
@@ -112,5 +112,18 @@ describe('User public service - register', () => {
       .post('/public/users/register')
       .send({ email, username, password: 'password', inviteToken: 'abc123' })
       .expect(404)
+  })
+
+  it('should not let a user register if their email is invalid', async () => {
+    const res = await request(global.app)
+      .post('/public/users/register')
+      .send({ email: 'bleh', username: casual.username, password: 'password', organisationName: 'Talo' })
+      .expect(400)
+
+    expect(res.body).toStrictEqual({
+      errors: {
+        email: ['Email address is invalid']
+      }
+    })
   })
 })

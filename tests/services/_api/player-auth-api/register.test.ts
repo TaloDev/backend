@@ -104,7 +104,7 @@ describe('Player auth API service - register', () => {
     expect(activity).not.toBeNull()
   })
 
-  it('should register not register a player if verification is enabled but no email is provided', async () => {
+  it('should not register a player if verification is enabled but no email is provided', async () => {
     const [, token] = await createAPIKeyAndToken([APIKeyScope.READ_PLAYERS, APIKeyScope.WRITE_PLAYERS])
 
     const res = await request(global.app)
@@ -117,6 +117,21 @@ describe('Player auth API service - register', () => {
       errors: {
         email: ['email is missing from the request body']
       }
+    })
+  })
+
+  it('should not register a player if verification is enabled but the email is invalid', async () => {
+    const [, token] = await createAPIKeyAndToken([APIKeyScope.READ_PLAYERS, APIKeyScope.WRITE_PLAYERS])
+
+    const res = await request(global.app)
+      .post('/v1/players/auth/register')
+      .send({ identifier: casual.username, email: 'blah', password: 'password', verificationEnabled: true })
+      .auth(token, { type: 'bearer' })
+      .expect(400)
+
+    expect(res.body).toStrictEqual({
+      message: 'Invalid email address',
+      errorCode: 'INVALID_EMAIL'
     })
   })
 })

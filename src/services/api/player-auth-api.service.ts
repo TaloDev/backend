@@ -15,6 +15,7 @@ import PlayerAuthCode from '../../emails/player-auth-code-mail'
 import PlayerAuthResetPassword from '../../emails/player-auth-reset-password-mail'
 import createPlayerAuthActivity from '../../lib/logging/createPlayerAuthActivity'
 import { PlayerAuthActivityType } from '../../entities/player-auth-activity'
+import emailRegex from '../../lib/lang/emailRegex'
 
 @Routes([
   {
@@ -105,7 +106,21 @@ export default class PlayerAuthAPIService extends APIService {
 
     alias.player.auth = new PlayerAuth()
     alias.player.auth.password = await bcrypt.hash(password, 10)
-    alias.player.auth.email = email || null
+
+    if (email?.trim()) {
+      const sanitisedEmail = email.trim().toLowerCase()
+      if (emailRegex.test(sanitisedEmail)) {
+        alias.player.auth.email = sanitisedEmail
+      } else {
+        req.ctx.throw(400, {
+          message: 'Invalid email address',
+          errorCode: PlayerAuthErrorCode.INVALID_EMAIL
+        })
+      }
+    } else {
+      alias.player.auth.email = null
+    }
+
     alias.player.auth.verificationEnabled = Boolean(verificationEnabled)
     em.persist(alias.player.auth)
 
@@ -381,7 +396,23 @@ export default class PlayerAuthAPIService extends APIService {
     }
 
     const oldEmail = alias.player.auth.email
-    alias.player.auth.email = newEmail
+    const sanitisedEmail = (newEmail as string).trim().toLowerCase()
+    if (emailRegex.test(sanitisedEmail)) {
+      alias.player.auth.email = sanitisedEmail
+    } else {
+      createPlayerAuthActivity(req, alias.player, {
+        type: PlayerAuthActivityType.CHANGE_EMAIL_FAILED,
+        extra: {
+          errorCode: PlayerAuthErrorCode.INVALID_EMAIL
+        }
+      })
+      await em.flush()
+
+      req.ctx.throw(400, {
+        message: 'Invalid email address',
+        errorCode: PlayerAuthErrorCode.INVALID_EMAIL
+      })
+    }
 
     createPlayerAuthActivity(req, alias.player, {
       type: PlayerAuthActivityType.CHANGED_EMAIL,
@@ -530,7 +561,24 @@ export default class PlayerAuthAPIService extends APIService {
 
     alias.player.auth.verificationEnabled = Boolean(verificationEnabled)
     if (email?.trim()) {
-      alias.player.auth.email = email
+      const sanitisedEmail = (email as string).trim().toLowerCase()
+      if (emailRegex.test(sanitisedEmail)) {
+        alias.player.auth.email = sanitisedEmail
+      } else {
+        createPlayerAuthActivity(req, alias.player, {
+          type: PlayerAuthActivityType.TOGGLE_VERIFICATION_FAILED,
+          extra: {
+            errorCode: PlayerAuthErrorCode.INVALID_EMAIL,
+            verificationEnabled: Boolean(verificationEnabled)
+          }
+        })
+        await em.flush()
+
+        req.ctx.throw(400, {
+          message: 'Invalid email address',
+          errorCode: PlayerAuthErrorCode.INVALID_EMAIL
+        })
+      }
     }
 
     createPlayerAuthActivity(req, alias.player, {

@@ -38,7 +38,7 @@ export default class Mail {
     this.preheader = preheader
 
     this.footer = 'Need help?'
-    this.footerText = 'Our team and community can be found <a href="https://discord.gg/2RWwxXVY3v" target="_blank" style="color: #ffffff;">on Discord</a>.'
+    this.footerText = 'Our team and community can be found <a href="https://trytalo.com/discord" target="_blank" style="color: #ffffff;">on Discord</a>.'
 
     this.why = 'You are receiving this email because you have a Talo account'
   }

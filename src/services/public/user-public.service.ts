@@ -1,4 +1,4 @@
-import { After, Service, Request, Response, Routes, Validate } from 'koa-clay'
+import { After, Service, Request, Response, Routes, Validate, ValidationCondition } from 'koa-clay'
 import User, { UserType } from '../../entities/user'
 import jwt from 'jsonwebtoken'
 import { promisify } from 'util'
@@ -23,6 +23,7 @@ import handlePricingPlanAction from '../../lib/billing/handlePricingPlanAction'
 import { PricingPlanActionType } from '../../entities/pricing-plan-action'
 import queueEmail from '../../lib/messaging/queueEmail'
 import ResetPassword from '../../emails/reset-password'
+import emailRegex from '../../lib/lang/emailRegex'
 
 async function sendEmailConfirm(req: Request, res: Response): Promise<void> {
   const user: User = req.ctx.state.user
@@ -80,7 +81,13 @@ export default class UserPublicService extends Service {
   @Validate({
     body: {
       email: {
-        required: true
+        required: true,
+        validation: async (val: string): Promise<ValidationCondition[]> => [
+          {
+            check: emailRegex.test(val),
+            error: 'Email address is invalid'
+          }
+        ]
       },
       username: {
         required: true
@@ -103,10 +110,10 @@ export default class UserPublicService extends Service {
 
     const userWithEmail = await em.getRepository(User).findOne({ email })
     const orgWithEmail = await em.getRepository(Organisation).findOne({ email })
-    if (userWithEmail || orgWithEmail) req.ctx.throw(400, 'That email address is already in use')
+    if (userWithEmail || orgWithEmail) req.ctx.throw(400, 'Email address is already in use')
 
     const user = new User()
-    user.email = email.toLowerCase()
+    user.email = email.trim().toLowerCase()
     user.username = username
     user.password = await bcrypt.hash(password, 10)
     user.emailConfirmed = process.env.AUTO_CONFIRM_EMAIL === 'true'

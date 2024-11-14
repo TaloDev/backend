@@ -230,4 +230,45 @@ describe('Player auth API service - toggle verification', () => {
       .set('x-talo-session', sessionToken)
       .expect(403)
   })
+
+  it('should not enable verification if the provided email is invalid', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_PLAYERS, APIKeyScope.WRITE_PLAYERS])
+
+    const player = await new PlayerFactory([apiKey.game]).withTaloAlias().state(async () => ({
+      auth: await new PlayerAuthFactory().state(async () => ({
+        password: await bcrypt.hash('password', 10),
+        email: null,
+        verificationEnabled: false
+      })).one()
+    })).one()
+    const alias = player.aliases[0]
+    await (<EntityManager>global.em).persistAndFlush(player)
+
+    const sessionToken = await player.auth.createSession(alias)
+    await (<EntityManager>global.em).flush()
+
+    const res = await request(global.app)
+      .patch('/v1/players/auth/toggle_verification')
+      .send({ currentPassword: 'password', verificationEnabled: true, email: 'blah' })
+      .auth(token, { type: 'bearer' })
+      .set('x-talo-player', player.id)
+      .set('x-talo-alias', String(alias.id))
+      .set('x-talo-session', sessionToken)
+      .expect(400)
+
+    expect(res.body).toStrictEqual({
+      message: 'Invalid email address',
+      errorCode: 'INVALID_EMAIL'
+    })
+
+    const activity = await (<EntityManager>global.em).getRepository(PlayerAuthActivity).findOne({
+      type: PlayerAuthActivityType.TOGGLE_VERIFICATION_FAILED,
+      player: player.id,
+      extra: {
+        errorCode: 'INVALID_EMAIL',
+        verificationEnabled: true
+      }
+    })
+    expect(activity).not.toBeNull()
+  })
 })

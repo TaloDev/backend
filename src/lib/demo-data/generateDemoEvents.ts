@@ -2,7 +2,6 @@ import { EntityManager } from '@mikro-orm/mysql'
 import { Request } from 'koa-clay'
 import Event from '../../entities/event'
 import { addDays, differenceInDays, endOfDay, startOfDay, subMonths } from 'date-fns'
-import casual from 'casual'
 import Prop from '../../entities/prop'
 import Game from '../../entities/game'
 import randomDate from '../dates/randomDate'
@@ -10,6 +9,7 @@ import PlayerAlias from '../../entities/player-alias'
 import createClickhouseClient from '../clickhouse/createClient'
 import { NodeClickHouseClient } from '@clickhouse/client/dist/client'
 import { formatDateForClickHouse } from '../clickhouse/formatDateTime'
+import { rand, randNumber } from '@ngneat/falso'
 
 type DemoEvent = {
   name: string
@@ -22,35 +22,35 @@ const demoEvents: DemoEvent[] = [
   {
     name: 'Treasure Discovered',
     props: {
-      zoneId: () => casual.integer(1, 30).toString(),
-      treasureId: () => casual.integer(1, 255).toString()
+      zoneId: () => randNumber({ min: 1, max: 30 }).toString(),
+      treasureId: () => randNumber({ min: 1, max: 255 }).toString()
     }
   },
   {
     name: 'Levelled up',
     props: {
-      newLevel: () => casual.integer(2, 60).toString(),
-      timeTaken: () => casual.integer(10, 1000).toString()
+      newLevel: () => randNumber({ min: 2, max: 60 }).toString(),
+      timeTaken: () => randNumber({ min: 10, max: 1000 }).toString()
     }
   },
   {
     name: 'Potion Used',
     props: {
-      itemId: () => casual.integer(1, 255).toString(),
-      type: () => casual.random_element(['HP', 'MP'])
+      itemId: () => randNumber({ min: 1, max: 255 }).toString(),
+      type: () => rand(['HP', 'MP'])
     }
   },
   {
     name: 'Item Crafted',
     props: {
-      itemId: () => casual.integer(1, 255).toString(),
-      quantity: () => casual.integer(1, 5).toString()
+      itemId: () => randNumber({ min: 1, max: 255 }).toString(),
+      quantity: () => randNumber({ min: 1, max: 5 }).toString()
     }
   },
   {
     name: 'Quest Completed',
     props: {
-      questId: () => casual.integer(1, 255).toString()
+      questId: () => randNumber({ min: 1, max: 255 }).toString()
     }
   }
 ]
@@ -68,7 +68,7 @@ function getDemoEventProps(demoEvent: DemoEvent) {
 }
 
 export function generateEventData(date: Date): Partial<Event> {
-  const randomEvent: DemoEvent = casual.random_element(demoEvents)
+  const randomEvent: DemoEvent = rand(demoEvents)
   const eventProps: Prop[] = getDemoEventProps(randomEvent)
   const createdAt = randomDate(startOfDay(date), endOfDay(date))
 
@@ -134,11 +134,11 @@ export async function generateDemoEvents(req: Request): Promise<void> {
         const day = addDays(startDate, dayStep)
 
         for (const demoEvent of demoEvents) {
-          let numToGenerate = casual.integer(1, 3)
+          let numToGenerate = randNumber({ min: 1, max: 3 })
 
           if (prev[demoEvent.name]) {
-            const increaseAmount = Math.max(casual.integer(0, 3) === 0 ? 0 : 1, Math.ceil(prev[demoEvent.name] * (casual.integer(0, 30) / 100)))
-            numToGenerate = prev[demoEvent.name] + (increaseAmount * (casual.integer(0, 2) === 0 ? -1 : 1))
+            const increaseAmount = Math.max(randNumber({ max: 3 }) === 0 ? 0 : 1, Math.ceil(prev[demoEvent.name] * (randNumber({ max: 30 }) / 100)))
+            numToGenerate = prev[demoEvent.name] + (increaseAmount * (randNumber({ max: 2 }) === 0 ? -1 : 1))
           }
 
           prev[demoEvent.name] = numToGenerate
@@ -146,7 +146,7 @@ export async function generateDemoEvents(req: Request): Promise<void> {
           for (let i = 0; i < numToGenerate; i++) {
             eventsToInsert.push(new Event(demoEvent.name, game))
             eventsToInsert.at(-1).setProps(getDemoEventProps(demoEvent))
-            eventsToInsert.at(-1).playerAlias = casual.random_element(playerAliases)
+            eventsToInsert.at(-1).playerAlias = rand(playerAliases)
             eventsToInsert.at(-1).createdAt = randomDate(startOfDay(day), endOfDay(day))
           }
         }

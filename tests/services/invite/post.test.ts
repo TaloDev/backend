@@ -7,12 +7,12 @@ import clearEntities from '../../utils/clearEntities'
 import userPermissionProvider from '../../utils/userPermissionProvider'
 import createUserAndToken from '../../utils/createUserAndToken'
 import createOrganisationAndGame from '../../utils/createOrganisationAndGame'
-import casual from 'casual'
 import GameActivity, { GameActivityType } from '../../../src/entities/game-activity'
 import PricingPlanActionFactory from '../../fixtures/PricingPlanActionFactory'
 import { PricingPlanActionType } from '../../../src/entities/pricing-plan-action'
 import OrganisationPricingPlanFactory from '../../fixtures/OrganisationPricingPlanFactory'
 import OrganisationPricingPlanActionFactory from '../../fixtures/OrganisationPricingPlanActionFactory'
+import { randEmail } from '@ngneat/falso'
 
 describe('Invite service - post', () => {
   beforeEach(async () => {
@@ -24,7 +24,7 @@ describe('Invite service - post', () => {
   ]))('should return a %i for a %s user', async (statusCode, _, type) => {
     const [token, user] = await createUserAndToken({ type, emailConfirmed: true })
 
-    const email = casual.email
+    const email = randEmail()
 
     const res = await request(global.app)
       .post('/invites')
@@ -51,7 +51,7 @@ describe('Invite service - post', () => {
   it('should not create an invite when an invite exists for the same email', async () => {
     const [token, user] = await createUserAndToken({ type: UserType.ADMIN, emailConfirmed: true })
 
-    const invite = await new InviteFactory().construct(user.organisation).state(() => ({ email: casual.email })).one()
+    const invite = await new InviteFactory().construct(user.organisation).state(() => ({ email: randEmail() })).one()
     await (<EntityManager>global.em).persistAndFlush(invite)
 
     const res = await request(global.app)
@@ -73,7 +73,7 @@ describe('Invite service - post', () => {
 
     const res = await request(global.app)
       .post('/invites')
-      .send({ email: casual.email, type })
+      .send({ email: randEmail(), type })
       .auth(token, { type: 'bearer' })
       .expect(statusCode)
 
@@ -92,7 +92,7 @@ describe('Invite service - post', () => {
     const [otherOrg] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({ type: UserType.ADMIN, emailConfirmed: true })
 
-    const invite = await new InviteFactory().construct(otherOrg).state(() => ({ email: casual.email })).one()
+    const invite = await new InviteFactory().construct(otherOrg).state(() => ({ email: randEmail() })).one()
     await (<EntityManager>global.em).persistAndFlush(invite)
 
     const res = await request(global.app)
@@ -107,7 +107,7 @@ describe('Invite service - post', () => {
   it('should not create an invite when a user exists for the same email', async () => {
     const [token] = await createUserAndToken({ type: UserType.ADMIN, emailConfirmed: true })
 
-    const user = await new UserFactory().state(() => ({ email: casual.email })).one()
+    const user = await new UserFactory().state(() => ({ email: randEmail() })).one()
     await (<EntityManager>global.em).persistAndFlush(user)
 
     const res = await request(global.app)
@@ -131,7 +131,7 @@ describe('Invite service - post', () => {
 
     await request(global.app)
       .post('/invites')
-      .send({ email: casual.email, type: UserType.DEV })
+      .send({ email: randEmail(), type: UserType.DEV })
       .auth(token, { type: 'bearer' })
       .expect(402)
   })
@@ -148,7 +148,7 @@ describe('Invite service - post', () => {
 
     const res = await request(global.app)
       .post('/invites')
-      .send({ email: casual.email, type: UserType.DEV })
+      .send({ email: randEmail(), type: UserType.DEV })
       .auth(token, { type: 'bearer' })
       .expect(402)
 

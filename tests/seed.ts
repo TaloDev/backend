@@ -9,7 +9,6 @@ import LeaderboardFactory from './fixtures/LeaderboardFactory'
 import GameSaveFactory from './fixtures/GameSaveFactory'
 import GameStatFactory from './fixtures/GameStatFactory'
 import PlayerGameStatFactory from './fixtures/PlayerGameStatFactory'
-import casual from 'casual'
 import PricingPlanFactory from './fixtures/PricingPlanFactory'
 import PricingPlanActionFactory from './fixtures/PricingPlanActionFactory'
 import PricingPlanAction, { PricingPlanActionType } from '../src/entities/pricing-plan-action'
@@ -19,6 +18,7 @@ import APIKey, { APIKeyScope } from '../src/entities/api-key'
 import GameFeedbackCategoryFactory from './fixtures/GameFeedbackCategoryFactory'
 import GameFeedbackFactory from './fixtures/GameFeedbackFactory'
 import createClickhouseClient from '../src/lib/clickhouse/createClient'
+import { rand, randNumber } from '@ngneat/falso'
 
 (async () => {
   console.info('Running migrations...')
@@ -47,7 +47,7 @@ import createClickhouseClient from '../src/lib/clickhouse/createClient'
     for (const actionType of [PricingPlanActionType.USER_INVITE, PricingPlanActionType.DATA_EXPORT]) {
       const pricingPlanAction = await pricingPlanActionFactory.state(() => ({
         type: actionType,
-        limit: casual.integer(idx + 1, idx * 4 + 3),
+        limit: randNumber({ min: idx + 1, max: idx * 4 + 3 }),
         pricingPlan: plan
       })).one()
 
@@ -109,7 +109,7 @@ import createClickhouseClient from '../src/lib/clickhouse/createClient'
   const playerGameStats = []
   for (const gameStat of gameStats) {
     if (!gameStat.global) {
-      const player = casual.random_element(players.filter((player) => player.game === gameStat.game))
+      const player = rand(players.filter((player) => player.game === gameStat.game))
       const playerGameStat = await new PlayerGameStatFactory().construct(player, gameStat).one()
       playerGameStats.push(playerGameStat)
     }
@@ -125,7 +125,7 @@ import createClickhouseClient from '../src/lib/clickhouse/createClient'
     for (const category of categories) {
       const items = await new GameFeedbackFactory(game).state(() => ({
         category,
-        playerAlias: casual.random_element(players.filter((player) => player.game === game)).aliases[0],
+        playerAlias: rand(players.filter((player) => player.game === game)).aliases[0],
         anonymised: category.anonymised
       })).many(5)
       feedback.push(...items)

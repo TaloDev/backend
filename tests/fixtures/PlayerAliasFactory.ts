@@ -1,7 +1,7 @@
 import { Factory } from 'hefty'
-import casual from 'casual'
 import PlayerAlias, { PlayerAliasService } from '../../src/entities/player-alias'
 import Player from '../../src/entities/player'
+import { rand, randCreditCardNumber, randNumber, randUserName, randUuid } from '@ngneat/falso'
 
 export default class PlayerAliasFactory extends Factory<PlayerAlias> {
   private player: Player
@@ -13,16 +13,16 @@ export default class PlayerAliasFactory extends Factory<PlayerAlias> {
   }
 
   protected definition(): void {
-    const identifiers = [casual.uuid, casual.username, casual.card_number()]
+    const identifiers = [randUuid(), randUserName(), randCreditCardNumber()]
     this.state(() => ({
-      service: casual.random_element([
+      service: rand([
         PlayerAliasService.STEAM,
         PlayerAliasService.EPIC,
         PlayerAliasService.USERNAME,
         PlayerAliasService.EMAIL,
         PlayerAliasService.CUSTOM
       ]),
-      identifier: casual.random_element(identifiers),
+      identifier: rand(identifiers),
       player: this.player
     }))
   }
@@ -30,21 +30,21 @@ export default class PlayerAliasFactory extends Factory<PlayerAlias> {
   steam(): this {
     return this.state(() => ({
       service: PlayerAliasService.STEAM,
-      identifier: casual.integer(100000, 1000000).toString()
+      identifier: randNumber({ min: 100_000, max: 1_000_000 }).toString()
     }))
   }
 
   username(): this {
     return this.state(() => ({
       service: PlayerAliasService.USERNAME,
-      identifier: casual.username
+      identifier: randUserName()
     }))
   }
 
   talo(): this {
     return this.state(() => ({
       service: PlayerAliasService.TALO,
-      identifier: casual.uuid
+      identifier: randUuid()
     }))
   }
 }

@@ -6,8 +6,8 @@ import { EntityManager } from '@mikro-orm/mysql'
 import Redis from 'ioredis'
 import redisConfig from '../../../../src/config/redis.config'
 import SendGrid from '@sendgrid/mail'
-import casual from 'casual'
 import PlayerAuthActivity, { PlayerAuthActivityType } from '../../../../src/entities/player-auth-activity'
+import { randEmail } from '@ngneat/falso'
 
 describe('Player auth API service - forgot password', () => {
   const sendMock = vi.spyOn(SendGrid, 'send')
@@ -73,7 +73,7 @@ describe('Player auth API service - forgot password', () => {
 
     await request(global.app)
       .post('/v1/players/auth/forgot_password')
-      .send({ email: casual.email })
+      .send({ email: randEmail() })
       .auth(token, { type: 'bearer' })
       .expect(204)
 

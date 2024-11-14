@@ -1,12 +1,12 @@
 import { EntityManager } from '@mikro-orm/mysql'
 import request from 'supertest'
 import UserAccessCode from '../../../../src/entities/user-access-code'
-import casual from 'casual'
 import UserFactory from '../../../fixtures/UserFactory'
 import OrganisationFactory from '../../../fixtures/OrganisationFactory'
 import InviteFactory from '../../../fixtures/InviteFactory'
 import GameActivity, { GameActivityType } from '../../../../src/entities/game-activity'
 import PricingPlanFactory from '../../../fixtures/PricingPlanFactory'
+import { randEmail, randUserName } from '@ngneat/falso'
 
 describe('User public service - register', () => {
   beforeAll(async () => {
@@ -15,8 +15,8 @@ describe('User public service - register', () => {
   })
 
   it('should register a user', async () => {
-    const email = casual.email
-    const username = casual.username
+    const email = randEmail()
+    const username = randUserName()
 
     const res = await request(global.app)
       .post('/public/users/register')
@@ -31,24 +31,24 @@ describe('User public service - register', () => {
   })
 
   it('should not let a user register if the email already exists', async () => {
-    const email = casual.email
+    const email = randEmail()
     const user = await new UserFactory().state(() => ({ email })).one()
     await (<EntityManager>global.em).persistAndFlush(user)
 
     const res = await request(global.app)
       .post('/public/users/register')
-      .send({ email, username: casual.username, password: 'password', organisationName: 'Talo' })
+      .send({ email, username: randUserName(), password: 'password', organisationName: 'Talo' })
       .expect(400)
 
     expect(res.body).toStrictEqual({ message: 'Email address is already in use' })
   })
 
   it('should create an access code for a new user', async () => {
-    const email = casual.email
+    const email = randEmail()
 
     await request(global.app)
       .post('/public/users/register')
-      .send({ email, username: casual.username, password: 'password', organisationName: 'Talo' })
+      .send({ email, username: randUserName(), password: 'password', organisationName: 'Talo' })
       .expect(200)
 
     const accessCode = await (<EntityManager>global.em).getRepository(UserAccessCode).findOne({
@@ -66,7 +66,7 @@ describe('User public service - register', () => {
     await (<EntityManager>global.em).persistAndFlush(invite)
 
     const email = invite.email
-    const username = casual.username
+    const username = randUserName()
 
     const res = await request(global.app)
       .post('/public/users/register')
@@ -91,8 +91,8 @@ describe('User public service - register', () => {
     const invite = await new InviteFactory().construct(organisation).one()
     await (<EntityManager>global.em).persistAndFlush(invite)
 
-    const email = casual.email
-    const username = casual.username
+    const email = randEmail()
+    const username = randUserName()
 
     await request(global.app)
       .post('/public/users/register')
@@ -105,8 +105,8 @@ describe('User public service - register', () => {
     const invite = await new InviteFactory().construct(organisation).one()
     await (<EntityManager>global.em).persistAndFlush(invite)
 
-    const email = casual.email
-    const username = casual.username
+    const email = randEmail()
+    const username = randUserName()
 
     await request(global.app)
       .post('/public/users/register')
@@ -117,7 +117,7 @@ describe('User public service - register', () => {
   it('should not let a user register if their email is invalid', async () => {
     const res = await request(global.app)
       .post('/public/users/register')
-      .send({ email: 'bleh', username: casual.username, password: 'password', organisationName: 'Talo' })
+      .send({ email: 'bleh', username: randUserName(), password: 'password', organisationName: 'Talo' })
       .expect(400)
 
     expect(res.body).toStrictEqual({

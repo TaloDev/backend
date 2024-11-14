@@ -10,7 +10,7 @@ import { RuleMode } from '../../../../src/entities/player-group'
 import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
 import PlayerAlias from '../../../../src/entities/player-alias'
 import PlayerAliasFactory from '../../../fixtures/PlayerAliasFactory'
-import casual from 'casual'
+import { randNumber } from '@ngneat/falso'
 
 describe('Player API service - identify', () => {
   it('should identify a player', async () => {
@@ -32,7 +32,7 @@ describe('Player API service - identify', () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_PLAYERS])
     const player = await new PlayerFactory([apiKey.game]).notSeenToday().state(async (player) => {
       const alias = await new PlayerAliasFactory(player).state(() => ({
-        lastSeenAt: subDays(new Date(), casual.integer(1, 99))
+        lastSeenAt: subDays(new Date(), randNumber({ min: 1, max: 99 }))
       })).one()
 
       return {

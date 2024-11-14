@@ -1,10 +1,10 @@
 import { Factory } from 'hefty'
-import casual from 'casual'
 import Event from '../../src/entities/event'
 import Player from '../../src/entities/player'
 import { sub } from 'date-fns'
 import randomDate from '../../src/lib/dates/randomDate'
 import { generateEventData } from '../../src/lib/demo-data/generateDemoEvents'
+import { rand } from '@ngneat/falso'
 
 export default class EventFactory extends Factory<Event> {
   private availablePlayers: Player[]
@@ -15,12 +15,12 @@ export default class EventFactory extends Factory<Event> {
   }
 
   protected definition(): void {
-    const player: Player = casual.random_element(this.availablePlayers)
+    const player: Player = rand(this.availablePlayers)
 
     this.state(() => ({
       ...generateEventData(new Date()),
       game: player.game,
-      playerAlias: casual.random_element(player.aliases.getItems())
+      playerAlias: rand(player.aliases.getItems())
     }))
   }
 

@@ -5,10 +5,10 @@ import createUserAndToken from '../../utils/createUserAndToken'
 import userPermissionProvider from '../../utils/userPermissionProvider'
 import OrganisationPricingPlanActionFactory from '../../fixtures/OrganisationPricingPlanActionFactory'
 import { PricingPlanActionType } from '../../../src/entities/pricing-plan-action'
-import casual from 'casual'
 import { sub } from 'date-fns'
 import randomDate from '../../../src/lib/dates/randomDate'
 import PricingPlanActionFactory from '../../fixtures/PricingPlanActionFactory'
+import { randNumber } from '@ngneat/falso'
 
 describe('Billing service - usage', () => {
   it.each(userPermissionProvider())('should return a %i for a %s user', async (statusCode, _, type) => {
@@ -28,21 +28,21 @@ describe('Billing service - usage', () => {
         type: PricingPlanActionType.USER_INVITE,
         createdAt: randomDate(sub(new Date(), { months: 2 }), new Date())
       }))
-      .many(casual.integer(1, 10))
+      .many(randNumber({ min: 1, max: 10 }))
 
     const exportActionsThisMonth = await new OrganisationPricingPlanActionFactory(organisation.pricingPlan)
       .state(() => ({
         type: PricingPlanActionType.DATA_EXPORT,
         createdAt: new Date()
       }))
-      .many(casual.integer(1, 10))
+      .many(randNumber({ min: 1, max: 10 }))
 
     const exportActionsLastMonth = await new OrganisationPricingPlanActionFactory(organisation.pricingPlan)
       .state(() => ({
         type: PricingPlanActionType.DATA_EXPORT,
         createdAt: sub(new Date(), { months: 1 })
       }))
-      .many(casual.integer(1, 10))
+      .many(randNumber({ min: 1, max: 10 }))
 
     await (<EntityManager>global.em).persistAndFlush([invitePlanAction, exportPlanAction, ...inviteActions, ...exportActionsThisMonth, ...exportActionsLastMonth])
 

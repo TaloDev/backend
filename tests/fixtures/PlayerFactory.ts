@@ -1,6 +1,5 @@
 import { Factory } from 'hefty'
 import Game from '../../src/entities/game'
-import casual from 'casual'
 import Player from '../../src/entities/player'
 import PlayerAliasFactory from './PlayerAliasFactory'
 import { Collection } from '@mikro-orm/mysql'
@@ -8,6 +7,7 @@ import PlayerAlias from '../../src/entities/player-alias'
 import { sub } from 'date-fns'
 import PlayerProp from '../../src/entities/player-prop'
 import PlayerAuthFactory from './PlayerAuthFactory'
+import { rand, randNumber } from '@ngneat/falso'
 
 export default class PlayerFactory extends Factory<Player> {
   private availableGames: Game[]
@@ -22,25 +22,25 @@ export default class PlayerFactory extends Factory<Player> {
     const availableProps = ['zonesExplored', 'currentArea', 'position.x', 'position.y', 'deaths', 'position.z', 'currentLevel', 'inventorySpace', 'currentHealth', 'currentMana', 'currentEnergy', 'npcKills', 'playerKills']
 
     this.state(async (player) => {
-      const propsCount = casual.integer(0, 5)
+      const propsCount = randNumber({ max: 5 })
       const props: PlayerProp[] = Array.from({ length: propsCount }, () => {
-        return new PlayerProp(player, casual.random_element(availableProps), String(casual.integer(0, 99)))
+        return new PlayerProp(player, rand(availableProps), String(randNumber({ max: 99 })))
       })
 
-      const aliases = await new PlayerAliasFactory(player).many(casual.integer(1, 2))
+      const aliases = await new PlayerAliasFactory(player).many(randNumber({ min: 1, max: 2 }))
 
       return {
         aliases: new Collection<PlayerAlias>(player, aliases),
-        game: casual.random_element(this.availableGames),
+        game: rand(this.availableGames),
         props: new Collection<PlayerProp>(player, props),
-        lastSeenAt: sub(new Date(), { days: casual.integer(0, 10) })
+        lastSeenAt: sub(new Date(), { days: randNumber({ min: 0, max: 10 }) })
       }
     })
   }
 
   notSeenToday(): this {
     return this.state(() => ({
-      lastSeenAt: sub(new Date(), { days: casual.integer(1, 99) })
+      lastSeenAt: sub(new Date(), { days: randNumber({ min: 1, max: 99 }) })
     }))
   }
 
@@ -58,14 +58,14 @@ export default class PlayerFactory extends Factory<Player> {
 
   seenThisWeek(): this {
     return this.state(() => ({
-      lastSeenAt: sub(new Date(), { days: casual.integer(0, 6) })
+      lastSeenAt: sub(new Date(), { days: randNumber({ max: 6 }) })
     }))
   }
 
   createdThisWeek(): this {
     return this.state(() => ({
-      lastSeenAt: sub(new Date(), { days: casual.integer(0, 6) }),
-      createdAt: sub(new Date(), { days: casual.integer(0, 6) })
+      lastSeenAt: sub(new Date(), { days: randNumber({ max: 6 }) }),
+      createdAt: sub(new Date(), { days: randNumber({ max: 6 }) })
     }))
   }
 
@@ -79,7 +79,7 @@ export default class PlayerFactory extends Factory<Player> {
   withSteamAlias(steamId?: string): this {
     return this.state(async (player: Player) => {
       const alias = await new PlayerAliasFactory(player).steam().state(() => ({
-        identifier: steamId ?? casual.integer(100000, 1000000).toString()
+        identifier: steamId ?? randNumber({ min: 100_000, max: 1_000_000 }).toString()
       })).one()
 
       return {

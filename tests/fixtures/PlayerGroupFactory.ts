@@ -1,6 +1,6 @@
 import { Factory } from 'hefty'
-import casual from 'casual'
 import PlayerGroup, { RuleMode } from '../../src/entities/player-group'
+import { rand, randText } from '@ngneat/falso'
 
 export default class PlayerGroupFactory extends Factory<PlayerGroup> {
   constructor() {
@@ -9,9 +9,9 @@ export default class PlayerGroupFactory extends Factory<PlayerGroup> {
 
   protected definition(): void {
     this.state(() => ({
-      name: casual.title,
-      description: casual.short_description,
-      ruleMode: casual.random_element([RuleMode.AND, RuleMode.OR])
+      name: randText(),
+      description: randText(),
+      ruleMode: rand([RuleMode.AND, RuleMode.OR])
     }))
   }
 }

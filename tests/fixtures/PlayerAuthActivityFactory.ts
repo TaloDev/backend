@@ -1,8 +1,8 @@
 import { Factory } from 'hefty'
-import casual from 'casual'
 import PlayerAuthActivity, { PlayerAuthActivityType } from '../../src/entities/player-auth-activity'
 import PlayerFactory from './PlayerFactory'
 import Game from '../../src/entities/game'
+import { rand } from '@ngneat/falso'
 
 export default class PlayerAuthActivityFactory extends Factory<PlayerAuthActivity> {
   game: Game
@@ -15,7 +15,7 @@ export default class PlayerAuthActivityFactory extends Factory<PlayerAuthActivit
 
   protected definition(): void {
     this.state(async () => ({
-      type: casual.random_element([
+      type: rand([
         PlayerAuthActivityType.REGISTERED,
         PlayerAuthActivityType.VERIFICATION_STARTED,
         PlayerAuthActivityType.LOGGED_IN,

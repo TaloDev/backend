@@ -1,7 +1,7 @@
 import { Factory } from 'hefty'
-import casual from 'casual'
 import GameStat from '../../src/entities/game-stat'
 import Game from '../../src/entities/game'
+import { rand, randBoolean, randNumber, randSlug, randText } from '@ngneat/falso'
 
 export default class GameStatFactory extends Factory<GameStat> {
   private availableGames: Game[]
@@ -14,22 +14,22 @@ export default class GameStatFactory extends Factory<GameStat> {
 
   protected definition(): void {
     this.state(() => {
-      const global = casual.boolean
-      const minValue = casual.integer(-999, -1)
-      const maxValue = casual.integer(1, 999)
-      const defaultValue = casual.integer(minValue, maxValue)
+      const global = randBoolean()
+      const minValue = randNumber({ min: -999, max: -1 })
+      const maxValue = randNumber({ min: 1, max: 999 })
+      const defaultValue = randNumber({ min: minValue, max: maxValue })
 
       return {
-        game: casual.random_element(this.availableGames),
-        internalName: casual.array_of_words(3).join('-'),
-        name: casual.title,
+        game: rand(this.availableGames),
+        internalName: randSlug(),
+        name: randText(),
         global,
-        minValue: casual.boolean ? minValue : null,
-        maxValue: casual.boolean ? maxValue : null,
+        minValue: randBoolean() ? minValue : null,
+        maxValue: randBoolean() ? maxValue : null,
         defaultValue,
         globalValue: defaultValue,
-        maxChange: casual.integer(0, 1000),
-        minTimeBetweenUpdates: casual.integer(0, 5)
+        maxChange: randNumber({ max: 1000 }),
+        minTimeBetweenUpdates: randNumber({ max: 5 })
       }
     })
   }

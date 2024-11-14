@@ -6,7 +6,7 @@ import { EntityManager } from '@mikro-orm/mysql'
 import bcrypt from 'bcrypt'
 import PlayerAuthFactory from '../../../fixtures/PlayerAuthFactory'
 import PlayerAuthActivity, { PlayerAuthActivityType } from '../../../../src/entities/player-auth-activity'
-import casual from 'casual'
+import { randBoolean, randEmail } from '@ngneat/falso'
 
 describe('Player auth API service - change email', () => {
   it('should change a player\'s email if the current password is correct and the api key has the correct scopes', async () => {
@@ -159,8 +159,8 @@ describe('Player auth API service - change email', () => {
     const player = await new PlayerFactory([apiKey.game]).withTaloAlias().state(async () => ({
       auth: await new PlayerAuthFactory().state(async () => ({
         password: await bcrypt.hash('password', 10),
-        email: casual.email,
-        verificationEnabled: casual.boolean
+        email: randEmail(),
+        verificationEnabled: randBoolean()
       })).one()
     })).one()
     const alias = player.aliases[0]

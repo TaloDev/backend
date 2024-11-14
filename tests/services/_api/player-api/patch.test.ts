@@ -7,7 +7,7 @@ import PlayerProp from '../../../../src/entities/player-prop'
 import PlayerGroupFactory from '../../../fixtures/PlayerGroupFactory'
 import PlayerGroupRule, { PlayerGroupRuleCastType, PlayerGroupRuleName } from '../../../../src/entities/player-group-rule'
 import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
-import casual from 'casual'
+import { randWord } from '@ngneat/falso'
 
 describe('Player API service - patch', () => {
   it('should update a player\'s properties', async () => {
@@ -193,8 +193,8 @@ describe('Player API service - patch', () => {
     const player = await new PlayerFactory([apiKey.game]).one()
     player.setProps([
       {
-        key: casual.word,
-        value: casual.word
+        key: randWord(),
+        value: randWord()
       }
     ])
     await (<EntityManager>global.em).persistAndFlush(player)
@@ -204,8 +204,8 @@ describe('Player API service - patch', () => {
       .send({
         props: [
           {
-            key: casual.word,
-            value: casual.word
+            key: randWord(),
+            value: randWord()
           },
           {
             key: 'META_BREAK_THINGS',

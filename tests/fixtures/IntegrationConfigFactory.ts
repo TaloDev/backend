@@ -1,6 +1,6 @@
 import { Factory } from 'hefty'
-import casual from 'casual'
 import { IntegrationConfig } from '../../src/entities/integration'
+import { randBoolean, randNumber, randUuid } from '@ngneat/falso'
 
 class IntegrationConfigProvider implements IntegrationConfig {
   apiKey: string
@@ -17,10 +17,10 @@ export default class IntegrationConfigFactory extends Factory<IntegrationConfigP
   protected definition(): void {
     this.state(() => {
       return {
-        apiKey: casual.uuid.replace(/-/g, ''),
-        appId: casual.integer(100000, 999999),
-        syncLeaderboards: casual.boolean,
-        syncStats: casual.boolean
+        apiKey: randUuid().replace(/-/g, ''),
+        appId: randNumber({ min: 100000, max: 999999 }),
+        syncLeaderboards: randBoolean(),
+        syncStats: randBoolean()
       }
     })
   }

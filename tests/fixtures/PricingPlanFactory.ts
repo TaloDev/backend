@@ -1,6 +1,6 @@
 import { Factory } from 'hefty'
-import casual from 'casual'
 import PricingPlan from '../../src/entities/pricing-plan'
+import { randUuid } from '@ngneat/falso'
 
 export default class PricingPlanFactory extends Factory<PricingPlan> {
   constructor() {
@@ -9,7 +9,7 @@ export default class PricingPlanFactory extends Factory<PricingPlan> {
 
   protected definition(): void {
     this.state(() => ({
-      stripeId: `prod_${casual.uuid.split('-')[0]}`
+      stripeId: `prod_${randUuid().split('-')[0]}`
     }))
   }
 }

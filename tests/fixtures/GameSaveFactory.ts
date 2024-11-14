@@ -1,9 +1,9 @@
 import { Factory } from 'hefty'
-import casual from 'casual'
 import GameSave from '../../src/entities/game-save'
 import Player from '../../src/entities/player'
 import randomDate from '../../src/lib/dates/randomDate'
 import { sub } from 'date-fns'
+import { rand, randFloat, randNumber, randText, randUuid } from '@ngneat/falso'
 
 export default class GameSaveFactory extends Factory<GameSave> {
   private availablePlayers: Player[]
@@ -15,32 +15,32 @@ export default class GameSaveFactory extends Factory<GameSave> {
   }
 
   protected definition(): void {
-    const objects = [...new Array(casual.integer(2, 5))].map(() => ({
-      id: casual.uuid,
-      name: casual.name,
+    const objects = [...new Array(randNumber({ min: 2, max: 5 }))].map(() => ({
+      id: randUuid(),
+      name: randText(),
       data: [
         {
           key: 'x',
-          value: String(casual.double(-99, 99)),
+          value: String(randFloat({ min: -99, max: 99 })),
           dataType: 'System.Single'
         },
         {
           key: 'y',
-          value: String(casual.double(-99, 99)),
+          value: String(randFloat({ min: -99, max: 99 })),
           dataType: 'System.Single'
         },
         {
           key: 'z',
-          value: String(casual.double(-99, 99)),
+          value: String(randFloat({ min: -99, max: 99 })),
           dataType: 'System.Single'
         }
       ]
     }))
 
-    const player = casual.random_element(this.availablePlayers)
+    const player = rand(this.availablePlayers)
 
     this.state(() => ({
-      name: `save-level${casual.integer(1, 20)}-${Date.now()}`,
+      name: `save-level${randNumber({ min: 1, max: 20 })}-${Date.now()}`,
       content: {
         objects
       },

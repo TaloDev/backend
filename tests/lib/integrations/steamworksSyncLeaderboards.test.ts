@@ -12,9 +12,9 @@ import Leaderboard, { LeaderboardSortMode } from '../../../src/entities/leaderbo
 import SteamworksLeaderboardMapping from '../../../src/entities/steamworks-leaderboard-mapping'
 import LeaderboardEntry from '../../../src/entities/leaderboard-entry'
 import LeaderboardFactory from '../../fixtures/LeaderboardFactory'
-import casual from 'casual'
 import PlayerFactory from '../../fixtures/PlayerFactory'
 import LeaderboardEntryFactory from '../../fixtures/LeaderboardEntryFactory'
+import { randNumber } from '@ngneat/falso'
 
 describe('Steamworks integration - sync leaderboards', () => {
   let em: EntityManager
@@ -32,7 +32,7 @@ describe('Steamworks integration - sync leaderboards', () => {
   it('should pull in leaderboards and entries from steamworks', async () => {
     const [, game] = await createOrganisationAndGame(em)
 
-    const steamworksLeaderboardId = casual.integer(100000, 999999)
+    const steamworksLeaderboardId = randNumber({ min: 100_000, max: 999_999 })
 
     const config = await new IntegrationConfigFactory().one()
     const integration = await new IntegrationFactory().construct(IntegrationType.STEAMWORKS, game, config).one()
@@ -127,7 +127,7 @@ describe('Steamworks integration - sync leaderboards', () => {
     const [, game] = await createOrganisationAndGame(em)
 
     const leaderboard = await new LeaderboardFactory([game]).state(() => ({ sortMode: LeaderboardSortMode.ASC })).one()
-    const mapping = new SteamworksLeaderboardMapping(casual.integer(100000, 999999), leaderboard)
+    const mapping = new SteamworksLeaderboardMapping(randNumber({ min: 100_000, max: 999_999 }), leaderboard)
 
     const config = await new IntegrationConfigFactory().one()
     const integration = await new IntegrationFactory().construct(IntegrationType.STEAMWORKS, game, config).one()
@@ -181,7 +181,7 @@ describe('Steamworks integration - sync leaderboards', () => {
     const [, game] = await createOrganisationAndGame(em)
 
     const leaderboard = await new LeaderboardFactory([game]).one()
-    const steamworksLeaderboardId = casual.integer(100000, 999999)
+    const steamworksLeaderboardId = randNumber({ min: 100_000, max: 999_999 })
 
     const config = await new IntegrationConfigFactory().one()
     const integration = await new IntegrationFactory().construct(IntegrationType.STEAMWORKS, game, config).one()
@@ -276,7 +276,7 @@ describe('Steamworks integration - sync leaderboards', () => {
   it('should push through entries from steamworks for existing steam player aliases', async () => {
     const [, game] = await createOrganisationAndGame(em)
 
-    const steamworksLeaderboardId = casual.integer(100000, 999999)
+    const steamworksLeaderboardId = randNumber({ min: 100_000, max: 999_999 })
 
     const player = await new PlayerFactory([game]).withSteamAlias().one()
 
@@ -330,7 +330,7 @@ describe('Steamworks integration - sync leaderboards', () => {
     const [, game] = await createOrganisationAndGame(em)
 
     const leaderboard = await new LeaderboardFactory([game]).one()
-    const mapping = new SteamworksLeaderboardMapping(casual.integer(100000, 999999), leaderboard)
+    const mapping = new SteamworksLeaderboardMapping(randNumber({ min: 100_000, max: 999_999 }), leaderboard)
 
     const player = await new PlayerFactory([game]).withSteamAlias().one()
     const entry = await new LeaderboardEntryFactory(leaderboard, [player]).one()

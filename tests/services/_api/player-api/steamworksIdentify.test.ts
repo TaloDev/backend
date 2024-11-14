@@ -9,8 +9,8 @@ import { IntegrationType } from '../../../../src/entities/integration'
 import IntegrationFactory from '../../../fixtures/IntegrationFactory'
 import IntegrationConfigFactory from '../../../fixtures/IntegrationConfigFactory'
 import { PlayerAliasService } from '../../../../src/entities/player-alias'
-import casual from 'casual'
 import PlayerProp from '../../../../src/entities/player-prop'
+import { randNumber } from '@ngneat/falso'
 
 describe('Player API service - identify - steamworks auth', () => {
   const axiosMock = new AxiosMockAdapter(axios)
@@ -20,8 +20,8 @@ describe('Player API service - identify - steamworks auth', () => {
   })
 
   it('should identify a steamworks player', async () => {
-    const appId = casual.integer(1000, 1000000)
-    const steamId = casual.integer(100000, 1000000).toString()
+    const appId = randNumber({ min: 1000, max: 1_000_000 })
+    const steamId = randNumber({ min: 100_000, max: 1_000_000 }).toString()
     const ticket = '000validticket'
     const identity = 'talo'
 
@@ -96,8 +96,8 @@ describe('Player API service - identify - steamworks auth', () => {
   })
 
   it('should identify a non-existent steamworks player by creating a new player with the write scope', async () => {
-    const appId = casual.integer(1000, 1000000)
-    const steamId = casual.integer(100000, 1000000).toString()
+    const appId = randNumber({ min: 1000, max: 1_000_000 })
+    const steamId = randNumber({ min: 100_000, max: 1_000_000 }).toString()
     const ticket = '000validticket'
     const identity = 'talo'
 
@@ -166,8 +166,8 @@ describe('Player API service - identify - steamworks auth', () => {
   })
 
   it('should identify without a ticket identity', async () => {
-    const appId = casual.integer(1000, 1000000)
-    const steamId = casual.integer(100000, 1000000).toString()
+    const appId = randNumber({ min: 1000, max: 1_000_000 })
+    const steamId = randNumber({ min: 100_000, max: 1_000_000 }).toString()
     const ticket = '000validticket'
 
     const authenticateTicketMock = vi.fn(() => [200, {
@@ -210,8 +210,8 @@ describe('Player API service - identify - steamworks auth', () => {
   })
 
   it('should catch ticket validation errors', async () => {
-    const appId = casual.integer(1000, 1000000)
-    const steamId = casual.integer(100000, 1000000).toString()
+    const appId = randNumber({ min: 1000, max: 1_000_000 })
+    const steamId = randNumber({ min: 100_000, max: 1_000_000 }).toString()
     const ticket = '000validticket'
 
     const authenticateTicketMock = vi.fn(() => [200, {

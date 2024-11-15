@@ -12,7 +12,7 @@ import LeaderboardEntryFactory from '../../fixtures/LeaderboardEntryFactory'
 import LeaderboardFactory from '../../fixtures/LeaderboardFactory'
 import PlayerFactory from '../../fixtures/PlayerFactory'
 import SteamworksLeaderboardMapping from '../../../src/entities/steamworks-leaderboard-mapping'
-import casual from 'casual'
+import { randBoolean, randNumber } from '@ngneat/falso'
 
 describe('Leaderboard service - update entry - steamworks integration', () => {
   const axiosMock = new AxiosMockAdapter(axios)
@@ -33,7 +33,7 @@ describe('Leaderboard service - update entry - steamworks integration', () => {
     axiosMock.onPost('https://partner.steam-api.com/ISteamLeaderboards/DeleteLeaderboardScore/v1').replyOnce(updateMock)
 
     const leaderboard = await new LeaderboardFactory([game]).one()
-    const mapping = new SteamworksLeaderboardMapping(casual.integer(100000, 999999), leaderboard)
+    const mapping = new SteamworksLeaderboardMapping(randNumber({ min: 100_000, max: 999_999 }), leaderboard)
 
     const player = await new PlayerFactory([game]).withSteamAlias().one()
     const entry = await new LeaderboardEntryFactory(leaderboard, [player]).one()
@@ -74,7 +74,7 @@ describe('Leaderboard service - update entry - steamworks integration', () => {
     axiosMock.onPost('https://partner.steam-api.com/ISteamLeaderboards/SetLeaderboardScore/v1').replyOnce(updateMock)
 
     const leaderboard = await new LeaderboardFactory([game]).one()
-    const mapping = new SteamworksLeaderboardMapping(casual.integer(100000, 999999), leaderboard)
+    const mapping = new SteamworksLeaderboardMapping(randNumber({ min: 100_000, max: 999_999 }), leaderboard)
 
     const player = await new PlayerFactory([game]).withSteamAlias().one()
     const entry = await new LeaderboardEntryFactory(leaderboard, [player]).state(() => ({ hidden: true })).one()
@@ -107,10 +107,10 @@ describe('Leaderboard service - update entry - steamworks integration', () => {
     axiosMock.onPost('https://partner.steam-api.com/ISteamLeaderboards/SetLeaderboardScore/v1').replyOnce(updateMock)
 
     const leaderboard = await new LeaderboardFactory([game]).one()
-    const mapping = new SteamworksLeaderboardMapping(casual.integer(100000, 999999), leaderboard)
+    const mapping = new SteamworksLeaderboardMapping(randNumber({ min: 100_000, max: 999_999 }), leaderboard)
 
     const player = await new PlayerFactory([game]).withSteamAlias().one()
-    const entry = await new LeaderboardEntryFactory(leaderboard, [player]).state(() => ({ hidden: casual.boolean })).one()
+    const entry = await new LeaderboardEntryFactory(leaderboard, [player]).state(() => ({ hidden: randBoolean() })).one()
 
     const config = await new IntegrationConfigFactory().state(() => ({ syncLeaderboards: false })).one()
     const integration = await new IntegrationFactory().construct(IntegrationType.STEAMWORKS, game, config).one()
@@ -133,10 +133,10 @@ describe('Leaderboard service - update entry - steamworks integration', () => {
     axiosMock.onPost('https://partner.steam-api.com/ISteamLeaderboards/SetLeaderboardScore/v1').replyOnce(updateMock)
 
     const leaderboard = await new LeaderboardFactory([game]).one()
-    const mapping = new SteamworksLeaderboardMapping(casual.integer(100000, 999999), leaderboard)
+    const mapping = new SteamworksLeaderboardMapping(randNumber({ min: 100_000, max: 999_999 }), leaderboard)
 
     const player = await new PlayerFactory([game]).withUsernameAlias().one()
-    const entry = await new LeaderboardEntryFactory(leaderboard, [player]).state(() => ({ hidden: casual.boolean })).one()
+    const entry = await new LeaderboardEntryFactory(leaderboard, [player]).state(() => ({ hidden: randBoolean() })).one()
 
     const config = await new IntegrationConfigFactory().state(() => ({ syncLeaderboards: true })).one()
     const integration = await new IntegrationFactory().construct(IntegrationType.STEAMWORKS, game, config).one()
@@ -161,7 +161,7 @@ describe('Leaderboard service - update entry - steamworks integration', () => {
     const leaderboard = await new LeaderboardFactory([game]).one()
 
     const player = await new PlayerFactory([game]).withSteamAlias().one()
-    const entry = await new LeaderboardEntryFactory(leaderboard, [player]).state(() => ({ hidden: casual.boolean })).one()
+    const entry = await new LeaderboardEntryFactory(leaderboard, [player]).state(() => ({ hidden: randBoolean() })).one()
 
     const config = await new IntegrationConfigFactory().state(() => ({ syncLeaderboards: true })).one()
     const integration = await new IntegrationFactory().construct(IntegrationType.STEAMWORKS, game, config).one()

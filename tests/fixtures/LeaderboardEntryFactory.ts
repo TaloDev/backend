@@ -1,8 +1,8 @@
 import { Factory } from 'hefty'
-import casual from 'casual'
 import LeaderboardEntry from '../../src/entities/leaderboard-entry'
 import Leaderboard from '../../src/entities/leaderboard'
 import Player from '../../src/entities/player'
+import { rand, randFloat } from '@ngneat/falso'
 
 export default class LeaderboardEntryFactory extends Factory<LeaderboardEntry> {
   private leaderboard: Leaderboard
@@ -17,13 +17,13 @@ export default class LeaderboardEntryFactory extends Factory<LeaderboardEntry> {
 
   protected definition(): void {
     this.state(async () => {
-      const player: Player = casual.random_element(this.availablePlayers)
+      const player: Player = rand(this.availablePlayers)
       await player.aliases.loadItems()
 
       return {
         leaderboard: this.leaderboard,
-        playerAlias: casual.random_element(player.aliases.getItems()),
-        score: Number(casual.double(10, 100000).toFixed(2)),
+        playerAlias: rand(player.aliases.getItems()),
+        score: Number(randFloat({ min: 10, max: 100000 })),
         hidden: false
       }
     })

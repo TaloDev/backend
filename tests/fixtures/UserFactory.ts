@@ -1,12 +1,12 @@
 import { Factory } from 'hefty'
 import User, { UserType } from '../../src/entities/user'
-import casual from 'casual'
 import bcrypt from 'bcrypt'
 import OrganisationFactory from './OrganisationFactory'
 import UserTwoFactorAuth from '../../src/entities/user-two-factor-auth'
 import UserRecoveryCode from '../../src/entities/user-recovery-code'
 import generateRecoveryCodes from '../../src/lib/auth/generateRecoveryCodes'
 import { Collection } from '@mikro-orm/mysql'
+import { randEmail, randUserName, randWord } from '@ngneat/falso'
 
 export default class UserFactory extends Factory<User> {
   constructor() {
@@ -15,8 +15,8 @@ export default class UserFactory extends Factory<User> {
 
   protected definition(): void {
     this.state(async () => ({
-      email: casual.email,
-      username: casual.username,
+      email: randEmail(),
+      username: randUserName(),
       password: '',
       organisation: await new OrganisationFactory().one(),
       type: UserType.DEV
@@ -31,7 +31,7 @@ export default class UserFactory extends Factory<User> {
 
   loginable(): this {
     return this.state(async () => ({
-      email: casual.email,
+      email: randEmail(),
       password: await bcrypt.hash('password', 10)
     }))
   }
@@ -58,7 +58,7 @@ export default class UserFactory extends Factory<User> {
 
   has2fa() {
     return this.state(async (user) => {
-      const twoFactorAuth = new UserTwoFactorAuth(casual.word)
+      const twoFactorAuth = new UserTwoFactorAuth(randWord())
       twoFactorAuth.enabled = true
 
       const recoveryCodes = new Collection<UserRecoveryCode>(user, generateRecoveryCodes(user))

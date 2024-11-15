@@ -5,7 +5,7 @@ import PlayerGroupRule, { PlayerGroupRuleCastType, PlayerGroupRuleName } from '.
 import createOrganisationAndGame from '../../utils/createOrganisationAndGame'
 import createUserAndToken from '../../utils/createUserAndToken'
 import PlayerFactory from '../../fixtures/PlayerFactory'
-import casual from 'casual'
+import { randUserName } from '@ngneat/falso'
 
 describe('Player service - post', () => {
   it('should create a player', async () => {
@@ -140,7 +140,7 @@ describe('Player service - post', () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({}, organisation)
 
-    const username = casual.username
+    const username = randUserName()
 
     const res = await request(global.app)
       .post(`/games/${game.id}/players`)

@@ -7,7 +7,7 @@ import userPermissionProvider from '../../utils/userPermissionProvider'
 import createOrganisationAndGame from '../../utils/createOrganisationAndGame'
 import createUserAndToken from '../../utils/createUserAndToken'
 import PlayerProp from '../../../src/entities/player-prop'
-import casual from 'casual'
+import { randWord } from '@ngneat/falso'
 
 describe('Player service - patch', () => {
   it.each(userPermissionProvider([
@@ -219,8 +219,8 @@ describe('Player service - patch', () => {
       .send({
         props: [
           {
-            key: casual.word,
-            value: casual.word
+            key: randWord(),
+            value: randWord()
           },
           {
             key: 'META_BREAK_THINGS',

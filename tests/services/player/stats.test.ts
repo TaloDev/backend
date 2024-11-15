@@ -3,9 +3,9 @@ import request from 'supertest'
 import PlayerFactory from '../../fixtures/PlayerFactory'
 import GameStatFactory from '../../fixtures/GameStatFactory'
 import PlayerGameStatFactory from '../../fixtures/PlayerGameStatFactory'
-import casual from 'casual'
 import createUserAndToken from '../../utils/createUserAndToken'
 import createOrganisationAndGame from '../../utils/createOrganisationAndGame'
+import { rand } from '@ngneat/falso'
 
 describe('Player service - get stats', () => {
 
@@ -16,7 +16,7 @@ describe('Player service - get stats', () => {
     const stats = await new GameStatFactory([game]).many(3)
 
     const player = await new PlayerFactory([game]).one()
-    const playerStats = await new PlayerGameStatFactory().construct(player, casual.random_element(stats)).many(3)
+    const playerStats = await new PlayerGameStatFactory().construct(player, rand(stats)).many(3)
 
     await (<EntityManager>global.em).persistAndFlush([player, ...playerStats])
 

@@ -1,6 +1,6 @@
 import { Factory } from 'hefty'
-import casual from 'casual'
 import PlayerGameStat from '../../src/entities/player-game-stat'
+import { randBoolean, randNumber } from '@ngneat/falso'
 
 export default class PlayerGameStatFactory extends Factory<PlayerGameStat> {
   constructor() {
@@ -10,7 +10,7 @@ export default class PlayerGameStatFactory extends Factory<PlayerGameStat> {
   protected definition(): void {
     this.state(async ({ stat }) => {
       return {
-        value: casual.boolean ? stat.defaultValue : casual.integer(stat.minValue, stat.maxValue)
+        value: randBoolean() ? stat.defaultValue : randNumber({ min: stat.minValue, max: stat.maxValue })
       }
     })
   }

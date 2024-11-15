@@ -1,15 +1,15 @@
 import request from 'supertest'
 import { APIKeyScope } from '../../../../src/entities/api-key'
 import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
-import casual from 'casual'
 import { EntityManager } from '@mikro-orm/mysql'
 import PlayerAuthActivity, { PlayerAuthActivityType } from '../../../../src/entities/player-auth-activity'
+import { randUserName } from '@ngneat/falso'
 
 describe('Player auth API service - register', () => {
   it('should register a player if the api key has the correct scopes', async () => {
     const [, token] = await createAPIKeyAndToken([APIKeyScope.READ_PLAYERS, APIKeyScope.WRITE_PLAYERS])
 
-    const identifier = casual.username
+    const identifier = randUserName()
 
     const res = await request(global.app)
       .post('/v1/players/auth/register')
@@ -43,7 +43,7 @@ describe('Player auth API service - register', () => {
 
     await request(global.app)
       .post('/v1/players/auth/register')
-      .send({ identifier: casual.username, password: 'password' })
+      .send({ identifier: randUserName(), password: 'password' })
       .auth(token, { type: 'bearer' })
       .expect(403)
   })
@@ -51,7 +51,7 @@ describe('Player auth API service - register', () => {
   it('should register a player with an email', async () => {
     const [, token] = await createAPIKeyAndToken([APIKeyScope.READ_PLAYERS, APIKeyScope.WRITE_PLAYERS])
 
-    const identifier = casual.username
+    const identifier = randUserName()
 
     const res = await request(global.app)
       .post('/v1/players/auth/register')
@@ -75,7 +75,7 @@ describe('Player auth API service - register', () => {
   it('should register a player with email verification enabled', async () => {
     const [, token] = await createAPIKeyAndToken([APIKeyScope.READ_PLAYERS, APIKeyScope.WRITE_PLAYERS])
 
-    const identifier = casual.username
+    const identifier = randUserName()
 
     const res = await request(global.app)
       .post('/v1/players/auth/register')
@@ -109,7 +109,7 @@ describe('Player auth API service - register', () => {
 
     const res = await request(global.app)
       .post('/v1/players/auth/register')
-      .send({ identifier: casual.username, password: 'password', verificationEnabled: true })
+      .send({ identifier: randUserName(), password: 'password', verificationEnabled: true })
       .auth(token, { type: 'bearer' })
       .expect(400)
 
@@ -125,7 +125,7 @@ describe('Player auth API service - register', () => {
 
     const res = await request(global.app)
       .post('/v1/players/auth/register')
-      .send({ identifier: casual.username, email: 'blah', password: 'password', verificationEnabled: true })
+      .send({ identifier: randUserName(), email: 'blah', password: 'password', verificationEnabled: true })
       .auth(token, { type: 'bearer' })
       .expect(400)
 

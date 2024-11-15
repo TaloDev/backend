@@ -1,10 +1,10 @@
 import { Factory } from 'hefty'
-import casual from 'casual'
 import Leaderboard, { LeaderboardSortMode } from '../../src/entities/leaderboard'
 import Game from '../../src/entities/game'
 import LeaderboardEntryFactory from './LeaderboardEntryFactory'
 import { Collection } from '@mikro-orm/mysql'
 import LeaderboardEntry from '../../src/entities/leaderboard-entry'
+import { rand, randBoolean, randNumber, randSlug, randText } from '@ngneat/falso'
 
 export default class LeaderboardFactory extends Factory<Leaderboard> {
   private availableGames: Game[]
@@ -17,11 +17,11 @@ export default class LeaderboardFactory extends Factory<Leaderboard> {
 
   protected definition(): void {
     this.state(() => ({
-      game: casual.random_element(this.availableGames),
-      internalName: casual.array_of_words(3).join('-'),
-      name: casual.title,
-      sortMode: casual.random_element([LeaderboardSortMode.ASC, LeaderboardSortMode.DESC]),
-      unique: casual.boolean
+      game: rand(this.availableGames),
+      internalName: randSlug(),
+      name: randText(),
+      sortMode: rand([LeaderboardSortMode.ASC, LeaderboardSortMode.DESC]),
+      unique: randBoolean()
     }))
   }
 
@@ -41,7 +41,7 @@ export default class LeaderboardFactory extends Factory<Leaderboard> {
     return this.state(async (leaderboard: Leaderboard) => {
       const entryFactory = new LeaderboardEntryFactory(leaderboard, leaderboard.game.players.getItems())
       const entries = leaderboard.game.players.length > 0 ?
-        await entryFactory.many(casual.integer(0, 20))
+        await entryFactory.many(randNumber({ max: 20 }))
         : []
 
       return {

@@ -1,9 +1,9 @@
 import { Factory } from 'hefty'
-import casual from 'casual'
 import GameFeedback from '../../src/entities/game-feedback'
 import GameFeedbackCategoryFactory from './GameFeedbackCategoryFactory'
 import Game from '../../src/entities/game'
 import PlayerFactory from './PlayerFactory'
+import { rand, randText } from '@ngneat/falso'
 
 export default class GameFeedbackFactory extends Factory<GameFeedback> {
   private game: Game
@@ -21,9 +21,9 @@ export default class GameFeedbackFactory extends Factory<GameFeedback> {
 
       return {
         category,
-        comment: casual.sentence,
+        comment: randText(),
         anonymised: category.anonymised,
-        playerAlias: casual.random_element(player.aliases.getItems())
+        playerAlias: rand(player.aliases.getItems())
       }
     })
   }

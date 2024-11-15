@@ -5,13 +5,13 @@ import LeaderboardFactory from '../../../fixtures/LeaderboardFactory'
 import PlayerFactory from '../../../fixtures/PlayerFactory'
 import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
 import SteamworksLeaderboardMapping from '../../../../src/entities/steamworks-leaderboard-mapping'
-import casual from 'casual'
 import AxiosMockAdapter from 'axios-mock-adapter'
 import axios from 'axios'
 import SteamworksIntegrationEvent from '../../../../src/entities/steamworks-integration-event'
 import IntegrationConfigFactory from '../../../fixtures/IntegrationConfigFactory'
 import IntegrationFactory from '../../../fixtures/IntegrationFactory'
 import { IntegrationType } from '../../../../src/entities/integration'
+import { randNumber } from '@ngneat/falso'
 
 describe('Leaderboard API service - post - steamworks integration', () => {
   const axiosMock = new AxiosMockAdapter(axios)
@@ -31,7 +31,7 @@ describe('Leaderboard API service - post - steamworks integration', () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_LEADERBOARDS])
 
     const leaderboard = await new LeaderboardFactory([apiKey.game]).notUnique().one()
-    const mapping = new SteamworksLeaderboardMapping(casual.integer(100000, 999999), leaderboard)
+    const mapping = new SteamworksLeaderboardMapping(randNumber({ min: 100_000, max: 999_999 }), leaderboard)
     const player = await new PlayerFactory([apiKey.game]).withSteamAlias().one()
 
     const config = await new IntegrationConfigFactory().state(() => ({ syncLeaderboards: true })).one()

@@ -1,7 +1,7 @@
 import { Factory } from 'hefty'
-import casual from 'casual'
 import PricingPlanAction, { PricingPlanActionType } from '../../src/entities/pricing-plan-action'
 import PricingPlanFactory from './PricingPlanFactory'
+import { rand, randNumber } from '@ngneat/falso'
 
 export default class PricingPlanActionFactory extends Factory<PricingPlanAction> {
   constructor() {
@@ -10,11 +10,11 @@ export default class PricingPlanActionFactory extends Factory<PricingPlanAction>
 
   protected definition(): void {
     this.state(async () => ({
-      type: casual.random_element([
+      type: rand([
         PricingPlanActionType.USER_INVITE,
         PricingPlanActionType.DATA_EXPORT
       ]),
-      limit: casual.integer(1, 10),
+      limit: randNumber({ min: 1, max: 10 }),
       pricingPlan: await new PricingPlanFactory().one()
     }))
   }

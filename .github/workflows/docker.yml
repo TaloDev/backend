@@ -10,8 +10,6 @@ jobs:
       matrix:
         image: [backend, clickhouse]
     steps:
-      - run: echo "TAG=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
-
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
 
@@ -33,7 +31,7 @@ jobs:
           file: ${{ matrix.image == 'backend' && 'Dockerfile' || 'clickhouse/Dockerfile' }}
           tags: |
             ghcr.io/talodev/${{ matrix.image }}:latest
-            ghcr.io/talodev/${{ matrix.image }}:${{ env.TAG }}
+            ghcr.io/talodev/${{ matrix.image }}:${{ github.ref_name }}
           target: ${{ matrix.image == 'backend' && 'prod' || '' }}
 
       - name: Image digest (${{ matrix.image }})

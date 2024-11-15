@@ -12,7 +12,7 @@ Talo is available to use via our [Godot plugin](https://github.com/TaloDev/godot
 - ⚡️ [Event tracking](https://trytalo.com/events): Track in-game player actions individually and globally.
 - 🎮 [Godot plugin](https://trytalo.com/godot): Easily integrate Talo into your Godot game.
 - 🎮 [Unity package](https://trytalo.com/unity): Easily integrate Talo into your Unity game.
-- 🗃️ **Data Exports**: Create CSVs of your Talo data like players, events and feedback.
+- 🗃️ **Data exports**: Create CSVs of your Talo data like players, events and feedback.
 - 🕹️ [Leaderboards](https://trytalo.com/leaderboards): Highly customisable leaderboards that can sync with Steamworks.
 - 💾 [Game saves](https://trytalo.com/saves): A simple and flexible way to load/save game state; also works offline.
 - 📊 [Game stats](https://trytalo.com/stats): Track global or per-player stats across your game; also syncs with Steamworks.

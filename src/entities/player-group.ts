@@ -12,27 +12,47 @@ export enum RuleMode {
   OR = '$or'
 }
 
+export const propWithKeyNamespace = 'props'
+export const statValueNamespace = 'statValue'
+export const leaderboardEntryScoreNamespace = 'leaderboardEntryScore'
+
 type RuleFields = {
-  field: string
+  fieldDisplayName: string
   defaultCastType: PlayerGroupRuleCastType
-  mapsTo: keyof Player
+  mapsTo: keyof Player | typeof statValueNamespace | typeof leaderboardEntryScoreNamespace
+  namespaced: boolean
 }
 
 export const PlayerRuleFields: RuleFields[] = [
   {
-    field: 'prop with key',
+    fieldDisplayName: 'prop with key',
     defaultCastType: PlayerGroupRuleCastType.CHAR,
-    mapsTo: 'props'
+    mapsTo: 'props',
+    namespaced: true
   },
   {
-    field: 'latest login',
+    fieldDisplayName: 'latest login',
     defaultCastType: PlayerGroupRuleCastType.DATETIME,
-    mapsTo: 'lastSeenAt'
+    mapsTo: 'lastSeenAt',
+    namespaced: false
   },
   {
-    field: 'first login',
+    fieldDisplayName: 'first login',
     defaultCastType: PlayerGroupRuleCastType.DATETIME,
-    mapsTo: 'createdAt'
+    mapsTo: 'createdAt',
+    namespaced: false
+  },
+  {
+    fieldDisplayName: 'value for stat',
+    defaultCastType: PlayerGroupRuleCastType.DOUBLE,
+    mapsTo: 'statValue',
+    namespaced: true
+  },
+  {
+    fieldDisplayName: 'score in leaderboard',
+    defaultCastType: PlayerGroupRuleCastType.DOUBLE,
+    mapsTo: 'leaderboardEntryScore',
+    namespaced: true
   }
 ]
 

@@ -21,13 +21,14 @@ describe('Player group service - put', () => {
     const group = await new PlayerGroupFactory().construct(game).one()
     await (<EntityManager>global.em).persistAndFlush(group)
 
-    const rules: Partial<PlayerGroupRule>[] = [
+    const rules: Partial<PlayerGroupRule & { namespaced: boolean }>[] = [
       {
         name: PlayerGroupRuleName.SET,
         field: 'props.hasWon',
         operands: [],
         negate: false,
-        castType: PlayerGroupRuleCastType.CHAR
+        castType: PlayerGroupRuleCastType.CHAR,
+        namespaced: true
       }
     ]
 

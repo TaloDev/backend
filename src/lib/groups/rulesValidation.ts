@@ -25,13 +25,14 @@ export const rulesValidation = async (val: unknown): Promise<ValidationCondition
   },
   {
     check: (val as PlayerGroupRule[]).every?.((rule) => {
-      const matchesRuleField = PlayerRuleFields
-        .map((f) => f.mapsTo)
-        .filter((_, idx) => idx > 0) // exclude the props field, checked by regex below
-        // @ts-expect-error typescript still checks for the props field
-        .includes(rule.field)
-
-      return matchesRuleField || rule.field.match(/props\.(.)*/)
+      return PlayerRuleFields
+        .some(({ mapsTo, namespaced }) => {
+          if (namespaced) {
+            return new RegExp('^' + mapsTo + '\\.(.)*$').test(rule.field)
+          } else {
+            return mapsTo === rule.field
+          }
+        })
     }),
     error: 'Invalid rule field(s) provided',
     break: true

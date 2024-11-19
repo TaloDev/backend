@@ -1,6 +1,9 @@
-import { EntityManager, Embeddable, Enum, Property, QBFilterQuery, raw } from '@mikro-orm/mysql'
+import { EntityManager, Embeddable, Enum, Property, QBFilterQuery, raw, QueryBuilder } from '@mikro-orm/mysql'
 import Player from './player'
 import PlayerProp from './player-prop'
+import PlayerGameStat from './player-game-stat'
+import LeaderboardEntry from './leaderboard-entry'
+import { leaderboardEntryScoreNamespace, propWithKeyNamespace, statValueNamespace } from './player-group'
 
 export enum PlayerGroupRuleName {
   EQUALS = 'EQUALS',
@@ -17,7 +20,12 @@ export enum PlayerGroupRuleCastType {
   DATETIME = 'DATETIME'
 }
 
-export type PlayerGroupRuleField = keyof Player | `props.${string}`
+type RuleNamespace = typeof propWithKeyNamespace | typeof statValueNamespace | typeof leaderboardEntryScoreNamespace
+
+export type PlayerGroupRuleField = keyof Player
+  | `${typeof propWithKeyNamespace}.${string}`
+  | `${typeof statValueNamespace}.${string}`
+  | `${typeof leaderboardEntryScoreNamespace}.${string}`
 
 @Embeddable()
 export default class PlayerGroupRule {
@@ -41,8 +49,16 @@ export default class PlayerGroupRule {
     this.field = field
   }
 
+  private fieldMatchesNamespace(namespace: RuleNamespace): boolean {
+    return this.field.startsWith(`${namespace}.`)
+  }
+
+  private getNamespacedValue(namespace: RuleNamespace): string {
+    return this.field.split(`${namespace}.`)[1]
+  }
+
   private isPropsNotSetQuery() {
-    return this.name === PlayerGroupRuleName.SET && this.negate && this.field.startsWith('props.')
+    return this.name === PlayerGroupRuleName.SET && this.negate && this.fieldMatchesNamespace('props')
   }
 
   getQuery(em: EntityManager): QBFilterQuery<Player> {
@@ -87,13 +103,22 @@ export default class PlayerGroupRule {
   }
 
   private buildQuery(em: EntityManager, fieldQuery: QBFilterQuery<Player>): QBFilterQuery<Player> {
-    if (this.field.startsWith('props.')) {
+    if (this.fieldMatchesNamespace('props')) {
       return {
         id: {
-          $in: em.qb(PlayerProp).select('player_id', true).where({
-            key: this.field.split('props.')[1],
-            [this.getCastedKey('value')]: fieldQuery
-          }).getKnexQuery()
+          $in: this.getPropsQuery(em, fieldQuery).getKnexQuery()
+        }
+      }
+    } else if (this.fieldMatchesNamespace('statValue')) {
+      return {
+        id: {
+          $in: this.getStatsQuery(em, fieldQuery).getKnexQuery()
+        }
+      }
+    } else if (this.fieldMatchesNamespace('leaderboardEntryScore')) {
+      return {
+        id: {
+          $in: this.getLeaderboardEntriesQuery(em, fieldQuery).getKnexQuery()
         }
       }
     } else {
@@ -101,6 +126,34 @@ export default class PlayerGroupRule {
         [this.field]: fieldQuery
       }
     }
+  }
+
+  private getPropsQuery(em: EntityManager, fieldQuery: QBFilterQuery<Player>): QueryBuilder<PlayerProp> {
+    return em.qb(PlayerProp).select('player_id').where({
+      key: this.getNamespacedValue('props'),
+      [this.getCastedKey('value')]: fieldQuery
+    })
+  }
+
+  private getStatsQuery(em: EntityManager, fieldQuery: QBFilterQuery<Player>): QueryBuilder<PlayerGameStat> {
+    return em.qb(PlayerGameStat).select('player_id').where({
+      stat: {
+        internalName: this.getNamespacedValue('statValue')
+      },
+      [this.getCastedKey('value')]: fieldQuery
+    })
+  }
+
+  private getLeaderboardEntriesQuery(em: EntityManager, fieldQuery: QBFilterQuery<Player>): QueryBuilder<LeaderboardEntry> {
+    return em.qb(LeaderboardEntry)
+      .join('playerAlias', 'pa')
+      .select('pa.player_id')
+      .where({
+        leaderboard: {
+          internalName: this.getNamespacedValue('leaderboardEntryScore')
+        },
+        [this.getCastedKey('score')]: fieldQuery
+      })
   }
 
   private getEqualsQuery(em: EntityManager): QBFilterQuery<Player> {
@@ -114,7 +167,7 @@ export default class PlayerGroupRule {
       return {
         id: {
           $nin: em.qb(PlayerProp).select('player_id', true).where({
-            key: this.field.split('props.')[1]
+            key: this.getNamespacedValue('props')
           }).getKnexQuery()
         }
       }
@@ -155,7 +208,8 @@ export default class PlayerGroupRule {
       negate: this.negate,
       field: this.field,
       castType: this.castType,
-      operands: this.operands
+      operands: this.operands,
+      namespaced: this.field.includes('.')
     }
   }
 }

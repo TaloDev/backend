@@ -114,19 +114,34 @@ describe('Player group service - rules', () => {
 
     expect(res.body.availableFields).toStrictEqual([
       {
-        field: 'prop with key',
+        fieldDisplayName: 'prop with key',
         defaultCastType: 'CHAR',
-        mapsTo: 'props'
+        mapsTo: 'props',
+        namespaced: true
       },
       {
-        field: 'latest login',
+        fieldDisplayName: 'latest login',
         defaultCastType: 'DATETIME',
-        mapsTo: 'lastSeenAt'
+        mapsTo: 'lastSeenAt',
+        namespaced: false
       },
       {
-        field: 'first login',
+        fieldDisplayName: 'first login',
         defaultCastType: 'DATETIME',
-        mapsTo: 'createdAt'
+        mapsTo: 'createdAt',
+        namespaced: false
+      },
+      {
+        fieldDisplayName: 'value for stat',
+        defaultCastType: 'DOUBLE',
+        mapsTo: 'statValue',
+        namespaced: true
+      },
+      {
+        fieldDisplayName: 'score in leaderboard',
+        defaultCastType: 'DOUBLE',
+        mapsTo: 'leaderboardEntryScore',
+        namespaced: true
       }
     ])
   })

@@ -17,13 +17,14 @@ describe('Player group service - post', () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({ type }, organisation)
 
-    const rules: Partial<PlayerGroupRule>[] = [
+    const rules: Partial<PlayerGroupRule & { namespaced: boolean }>[] = [
       {
         name: PlayerGroupRuleName.SET,
         field: 'props.hasWon',
         operands: [],
         negate: false,
-        castType: PlayerGroupRuleCastType.CHAR
+        castType: PlayerGroupRuleCastType.CHAR,
+        namespaced: true
       }
     ]
 

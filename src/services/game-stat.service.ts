@@ -4,6 +4,7 @@ import { GameActivityType } from '../entities/game-activity'
 import GameStat from '../entities/game-stat'
 import createGameActivity from '../lib/logging/createGameActivity'
 import GameStatPolicy from '../policies/game-stat.policy'
+import handleSQLError from '../lib/errors/handleSQLError'
 
 export default class GameStatService extends Service {
   @HasPermission(GameStatPolicy, 'index')
@@ -45,6 +46,12 @@ export default class GameStatService extends Service {
     stat.maxValue = maxValue
     stat.minTimeBetweenUpdates = minTimeBetweenUpdates
 
+    try {
+      await em.persistAndFlush(stat)
+    } catch (err) {
+      return handleSQLError(err)
+    }
+
     createGameActivity(em, {
       user: req.ctx.state.user,
       game: stat.game,
@@ -53,8 +60,7 @@ export default class GameStatService extends Service {
         statInternalName: stat.internalName
       }
     })
-
-    await em.persistAndFlush(stat)
+    await em.flush()
 
     return {
       status: 200,
@@ -96,7 +102,11 @@ export default class GameStatService extends Service {
       }
     })
 
-    await em.flush()
+    try {
+      await em.flush()
+    } catch (err) {
+      return handleSQLError(err)
+    }
 
     return {
       status: 200,

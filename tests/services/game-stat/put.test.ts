@@ -271,4 +271,28 @@ describe('Game stat service - put', () => {
 
     expect(res.body).toStrictEqual({ message: 'Stat not found' })
   })
+
+  it('should gracefully handle mysql out of range errors', async () => {
+    const [organisation, game] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken({}, organisation)
+
+    const stat = await new GameStatFactory([game]).state(() => ({
+      minValue: -600,
+      defaultValue: 0,
+      maxValue: 600
+    })).one()
+    await (<EntityManager>global.em).persistAndFlush(stat)
+
+    const res = await request(global.app)
+      .put(`/games/${game.id}/game-stats/${stat.id}`)
+      .send({ minValue: stat.minValue, internalName: stat.internalName, name: stat.name, global: stat.global, maxChange: stat.maxChange, maxValue: stat.maxValue, defaultValue: stat.defaultValue, minTimeBetweenUpdates: 999_999_999_999_999 })
+      .auth(token, { type: 'bearer' })
+      .expect(400)
+
+    expect(res.body).toStrictEqual({
+      errors: {
+        minTimeBetweenUpdates: ['Value is out of range']
+      }
+    })
+  })
 })

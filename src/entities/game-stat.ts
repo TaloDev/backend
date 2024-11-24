@@ -41,6 +41,12 @@ export default class GameStat {
 
   hydratedGlobalValue: number
 
+  @Required({
+    validation: async (value: number): Promise<ValidationCondition[]> => [{
+      check: value !== null ? value > 0 : true,
+      error: 'maxChange must be greater than 0'
+    }]
+  })
   @Property({ nullable: true, type: 'double' })
   maxChange: number
 

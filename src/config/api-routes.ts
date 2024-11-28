@@ -17,7 +17,7 @@ import PlayerAuthAPIService from '../services/api/player-auth-api.service'
 import continunityMiddleware from '../middlewares/continunity-middleware'
 import PlayerGroupAPIService from '../services/api/player-group-api.service'
 
-export default (app: Koa) => {
+export default function configureAPIRoutes(app: Koa) {
   app.use(apiKeyMiddleware)
   app.use(apiRouteAuthMiddleware)
   app.use(limiterMiddleware)

@@ -2,7 +2,7 @@ import * as Sentry from '@sentry/node'
 import { Context, Next } from 'koa'
 import { stripUrlQueryAndFragment } from '@sentry/utils'
 
-export default async (ctx: Context, next: Next) => {
+export default async function tracingMiddleware(ctx: Context, next: Next) {
   const reqMethod = ctx.method.toUpperCase()
   const reqUrl = stripUrlQueryAndFragment(ctx.url)
 

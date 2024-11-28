@@ -5,7 +5,7 @@ import { isAPIRoute } from './route-middleware'
 const MAX_REQUESTS = 50
 const EXPIRE_TIME = 1
 
-export default async (ctx: Context, next: Next): Promise<void> => {
+export default async function limiterMiddleware(ctx: Context, next: Next): Promise<void> {
   if (isAPIRoute(ctx) && process.env.NODE_ENV !== 'test') {
     const key = `requests:${ctx.state.user.sub}`
 

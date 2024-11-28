@@ -2,7 +2,7 @@ import { Context, Next } from 'koa'
 import * as Sentry from '@sentry/node'
 import Redis from 'ioredis'
 
-export default async (ctx: Context, next: Next) => {
+export default async function errorMiddleware(ctx: Context, next: Next) {
   try {
     await next()
   } catch (err) {

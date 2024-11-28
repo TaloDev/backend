@@ -6,13 +6,12 @@
   "scripts": {
     "watch": "tsx watch src/index.ts",
     "build": "npx tsc -p tsconfig.build.json",
-    "dc": "docker compose -f docker-compose.yml -f docker-compose.dev.yml",
     "seed": "DB_HOST=127.0.0.1 CLICKHOUSE_HOST=127.0.0.1 tsx tests/seed.ts",
     "test": "./tests/run-tests.sh",
-    "up": "npm run dc -- up --build -d",
-    "down": "npm run dc -- down",
-    "restart": "npm run dc -- restart backend && npm run logs",
-    "logs": "npm run dc -- logs backend --follow",
+    "up": "docker compose up --build -d",
+    "down": "docker compose down",
+    "restart": "docker compose restart backend && npm run logs",
+    "logs": "docker compose logs backend --follow",
     "migration:create": "DB_HOST=127.0.0.1 mikro-orm migration:create",
     "migration:up": "DB_HOST=127.0.0.1 mikro-orm migration:up",
     "service:create": "hygen service new",
@@ -30,6 +29,7 @@
     "@types/lodash": "^4.14.182",
     "@types/node": "20",
     "@types/supertest": "^6.0.2",
+    "@types/ws": "^8.5.13",
     "@typescript-eslint/eslint-plugin": "^7.13.1",
     "@typescript-eslint/parser": "^7.13.1",
     "@vitest/coverage-v8": "^1.5.2",
@@ -79,7 +79,8 @@
     "qrcode": "^1.5.0",
     "qs": "^6.11.0",
     "stripe": "^12.0.0",
-    "uuid": "^9.0.0"
+    "uuid": "^9.0.0",
+    "ws": "^8.18.0"
   },
   "mikro-orm": {
     "configPaths": [

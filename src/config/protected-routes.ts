@@ -18,7 +18,7 @@ import BillingService from '../services/billing.service'
 import IntegrationService from '../services/integration.service'
 import { getRouteInfo, protectedRouteAuthMiddleware } from '../middlewares/route-middleware'
 
-export default (app: Koa) => {
+export default function protectedRoutes(app: Koa) {
   app.use(protectedRouteAuthMiddleware)
 
   app.use(async (ctx: Context, next: Next): Promise<void> => {

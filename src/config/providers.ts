@@ -5,12 +5,12 @@ import ormConfig from './mikro-orm.config'
 import { MikroORM } from '@mikro-orm/mysql'
 import tracingMiddleware from '../middlewares/tracing-middleware'
 
-const initProviders = async (app: Koa) => {
+export default async function initProviders(app: Koa, isTest: boolean) {
   try {
     const orm = await MikroORM.init(ormConfig)
     app.context.em = orm.em
 
-    if (!app.context.isTest) {
+    if (!isTest) {
       const migrator = orm.getMigrator()
       await migrator.up()
     }
@@ -32,5 +32,3 @@ const initProviders = async (app: Koa) => {
 
   app.use(tracingMiddleware)
 }
-
-export default initProviders

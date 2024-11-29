@@ -1,5 +1,4 @@
-import { EntityManager, MikroORM } from '@mikro-orm/mysql'
-import ormConfig from '../../../src/config/mikro-orm.config'
+import { EntityManager } from '@mikro-orm/mysql'
 import { IntegrationType } from '../../../src/entities/integration'
 import { GetLeaderboardEntriesResponse, GetLeaderboardsForGameResponse, syncSteamworksLeaderboards } from '../../../src/lib/integrations/steamworks-integration'
 import IntegrationConfigFactory from '../../fixtures/IntegrationConfigFactory'
@@ -17,26 +16,16 @@ import LeaderboardEntryFactory from '../../fixtures/LeaderboardEntryFactory'
 import { randNumber } from '@ngneat/falso'
 
 describe('Steamworks integration - sync leaderboards', () => {
-  let em: EntityManager
   const axiosMock = new AxiosMockAdapter(axios)
 
-  beforeAll(async () => {
-    const orm = await MikroORM.init(ormConfig)
-    em = orm.em
-  })
-
-  afterAll(async () => {
-    await em.getConnection().close()
-  })
-
   it('should pull in leaderboards and entries from steamworks', async () => {
-    const [, game] = await createOrganisationAndGame(em)
+    const [, game] = await createOrganisationAndGame()
 
     const steamworksLeaderboardId = randNumber({ min: 100_000, max: 999_999 })
 
     const config = await new IntegrationConfigFactory().one()
     const integration = await new IntegrationFactory().construct(IntegrationType.STEAMWORKS, game, config).one()
-    await em.persistAndFlush(integration)
+    await (<EntityManager>global.em).persistAndFlush(integration)
 
     const getLeaderboardsMock = vi.fn((): [number, GetLeaderboardsForGameResponse] => [200, {
       response: {
@@ -71,19 +60,19 @@ describe('Steamworks integration - sync leaderboards', () => {
     }])
     axiosMock.onGet(`https://partner.steam-api.com/ISteamLeaderboards/GetLeaderboardEntries/v1?appid=${integration.getConfig().appId}&leaderboardid=${steamworksLeaderboardId}&rangestart=0&rangeend=1.7976931348623157e%2B308&datarequest=RequestGlobal`).replyOnce(getEntriesMock)
 
-    await syncSteamworksLeaderboards(em, integration)
+    await syncSteamworksLeaderboards((<EntityManager>global.em), integration)
 
     expect(getLeaderboardsMock).toHaveBeenCalledTimes(1)
     expect(getEntriesMock).toHaveBeenCalledTimes(1)
 
-    const event = await em.getRepository(SteamworksIntegrationEvent).findOne({ integration })
+    const event = await (<EntityManager>global.em).getRepository(SteamworksIntegrationEvent).findOne({ integration })
     expect(event.request).toStrictEqual({
       url: `https://partner.steam-api.com/ISteamLeaderboards/GetLeaderboardsForGame/v2?appid=${integration.getConfig().appId}`,
       body: '',
       method: 'GET'
     })
 
-    const createdLeaderboard = await em.getRepository(Leaderboard).findOne({
+    const createdLeaderboard = await (<EntityManager>global.em).getRepository(Leaderboard).findOne({
       game: integration.game,
       internalName: 'Quickest Win',
       name: 'Quickest Win',
@@ -93,29 +82,29 @@ describe('Steamworks integration - sync leaderboards', () => {
 
     expect(createdLeaderboard).toBeTruthy()
 
-    const mapping = await em.getRepository(SteamworksLeaderboardMapping).findOne({
+    const mapping = await (<EntityManager>global.em).getRepository(SteamworksLeaderboardMapping).findOne({
       leaderboard: createdLeaderboard,
       steamworksLeaderboardId
     })
 
     expect(mapping).toBeTruthy()
 
-    const entry = await em.getRepository(LeaderboardEntry).findOne({ score: 1030 })
+    const entry = await (<EntityManager>global.em).getRepository(LeaderboardEntry).findOne({ score: 1030 })
     expect(entry).toBeTruthy()
   })
 
   it('should throw if the response leaderboards are not an array', async () => {
-    const [, game] = await createOrganisationAndGame(em)
+    const [, game] = await createOrganisationAndGame()
 
     const config = await new IntegrationConfigFactory().one()
     const integration = await new IntegrationFactory().construct(IntegrationType.STEAMWORKS, game, config).one()
-    await em.persistAndFlush(integration)
+    await (<EntityManager>global.em).persistAndFlush(integration)
 
     const getLeaderboardsMock = vi.fn((): [number] => [404])
     axiosMock.onGet(`https://partner.steam-api.com/ISteamLeaderboards/GetLeaderboardsForGame/v2?appid=${integration.getConfig().appId}`).replyOnce(getLeaderboardsMock)
 
     try {
-      await syncSteamworksLeaderboards(em, integration)
+      await syncSteamworksLeaderboards((<EntityManager>global.em), integration)
     } catch (err) {
       expect(err.message).toBe('Failed to retrieve leaderboards - is your App ID correct?')
     }
@@ -124,14 +113,14 @@ describe('Steamworks integration - sync leaderboards', () => {
   })
 
   it('should update leaderboards with properties from steamworks', async () => {
-    const [, game] = await createOrganisationAndGame(em)
+    const [, game] = await createOrganisationAndGame()
 
     const leaderboard = await new LeaderboardFactory([game]).state(() => ({ sortMode: LeaderboardSortMode.ASC })).one()
     const mapping = new SteamworksLeaderboardMapping(randNumber({ min: 100_000, max: 999_999 }), leaderboard)
 
     const config = await new IntegrationConfigFactory().one()
     const integration = await new IntegrationFactory().construct(IntegrationType.STEAMWORKS, game, config).one()
-    await em.persistAndFlush([leaderboard, mapping, integration])
+    await (<EntityManager>global.em).persistAndFlush([leaderboard, mapping, integration])
 
     const getLeaderboardsMock = vi.fn((): [number, GetLeaderboardsForGameResponse] => [200, {
       response: {
@@ -161,12 +150,12 @@ describe('Steamworks integration - sync leaderboards', () => {
     }])
     axiosMock.onGet(`https://partner.steam-api.com/ISteamLeaderboards/GetLeaderboardEntries/v1?appid=${integration.getConfig().appId}&leaderboardid=${mapping.steamworksLeaderboardId}&rangestart=0&rangeend=1.7976931348623157e%2B308&datarequest=RequestGlobal`).replyOnce(getEntriesMock)
 
-    await syncSteamworksLeaderboards(em, integration)
+    await syncSteamworksLeaderboards((<EntityManager>global.em), integration)
 
     expect(getLeaderboardsMock).toHaveBeenCalledTimes(1)
     expect(getEntriesMock).toHaveBeenCalledTimes(1)
 
-    const updatedLeaderboard = await em.getRepository(Leaderboard).findOne({
+    const updatedLeaderboard = await (<EntityManager>global.em).getRepository(Leaderboard).findOne({
       game: integration.game,
       internalName: 'Biggest Combo',
       name: 'Biggest Combo',
@@ -178,14 +167,14 @@ describe('Steamworks integration - sync leaderboards', () => {
   })
 
   it('should create a leaderboard mapping if a leaderboard with the same internal name exists', async () => {
-    const [, game] = await createOrganisationAndGame(em)
+    const [, game] = await createOrganisationAndGame()
 
     const leaderboard = await new LeaderboardFactory([game]).one()
     const steamworksLeaderboardId = randNumber({ min: 100_000, max: 999_999 })
 
     const config = await new IntegrationConfigFactory().one()
     const integration = await new IntegrationFactory().construct(IntegrationType.STEAMWORKS, game, config).one()
-    await em.persistAndFlush([leaderboard, integration])
+    await (<EntityManager>global.em).persistAndFlush([leaderboard, integration])
 
     const getLeaderboardsMock = vi.fn((): [number, GetLeaderboardsForGameResponse] => [200, {
       response: {
@@ -215,12 +204,12 @@ describe('Steamworks integration - sync leaderboards', () => {
     }])
     axiosMock.onGet(`https://partner.steam-api.com/ISteamLeaderboards/GetLeaderboardEntries/v1?appid=${integration.getConfig().appId}&leaderboardid=${steamworksLeaderboardId}&rangestart=0&rangeend=1.7976931348623157e%2B308&datarequest=RequestGlobal`).replyOnce(getEntriesMock)
 
-    await syncSteamworksLeaderboards(em, integration)
+    await syncSteamworksLeaderboards((<EntityManager>global.em), integration)
 
     expect(getLeaderboardsMock).toHaveBeenCalledTimes(1)
     expect(getEntriesMock).toHaveBeenCalledTimes(1)
 
-    const mapping = await em.getRepository(SteamworksLeaderboardMapping).findOne({
+    const mapping = await (<EntityManager>global.em).getRepository(SteamworksLeaderboardMapping).findOne({
       leaderboard,
       steamworksLeaderboardId
     })
@@ -229,13 +218,13 @@ describe('Steamworks integration - sync leaderboards', () => {
   })
 
   it('should create leaderboards in steamworks', async () => {
-    const [, game] = await createOrganisationAndGame(em)
+    const [, game] = await createOrganisationAndGame()
 
     const leaderboard = await new LeaderboardFactory([game]).state(() => ({ sortMode: LeaderboardSortMode.DESC })).one()
 
     const config = await new IntegrationConfigFactory().one()
     const integration = await new IntegrationFactory().construct(IntegrationType.STEAMWORKS, game, config).one()
-    await em.persistAndFlush([leaderboard, integration])
+    await (<EntityManager>global.em).persistAndFlush([leaderboard, integration])
 
     const getLeaderboardsMock = vi.fn((): [number, GetLeaderboardsForGameResponse] => [200, {
       response: {
@@ -261,11 +250,11 @@ describe('Steamworks integration - sync leaderboards', () => {
     }])
     axiosMock.onPost('https://partner.steam-api.com/ISteamLeaderboards/FindOrCreateLeaderboard/v2').replyOnce(createMock)
 
-    await syncSteamworksLeaderboards(em, integration)
+    await syncSteamworksLeaderboards((<EntityManager>global.em), integration)
 
     expect(getLeaderboardsMock).toHaveBeenCalledTimes(1)
 
-    const event = await em.getRepository(SteamworksIntegrationEvent).findOne({ integration }, { orderBy: { id: 'DESC' } })
+    const event = await (<EntityManager>global.em).getRepository(SteamworksIntegrationEvent).findOne({ integration }, { orderBy: { id: 'DESC' } })
     expect(event.request).toStrictEqual({
       url: 'https://partner.steam-api.com/ISteamLeaderboards/FindOrCreateLeaderboard/v2',
       body: `appid=${config.appId}&name=${leaderboard.internalName}&sortmethod=Descending&displaytype=Numeric&createifnotfound=true&onlytrustedwrites=true&onlyfriendsreads=false`,
@@ -274,7 +263,7 @@ describe('Steamworks integration - sync leaderboards', () => {
   })
 
   it('should push through entries from steamworks for existing steam player aliases', async () => {
-    const [, game] = await createOrganisationAndGame(em)
+    const [, game] = await createOrganisationAndGame()
 
     const steamworksLeaderboardId = randNumber({ min: 100_000, max: 999_999 })
 
@@ -282,7 +271,7 @@ describe('Steamworks integration - sync leaderboards', () => {
 
     const config = await new IntegrationConfigFactory().one()
     const integration = await new IntegrationFactory().construct(IntegrationType.STEAMWORKS, game, config).one()
-    await em.persistAndFlush([player, integration])
+    await (<EntityManager>global.em).persistAndFlush([player, integration])
 
     const getLeaderboardsMock = vi.fn((): [number, GetLeaderboardsForGameResponse] => [200, {
       response: {
@@ -317,17 +306,17 @@ describe('Steamworks integration - sync leaderboards', () => {
     }])
     axiosMock.onGet(`https://partner.steam-api.com/ISteamLeaderboards/GetLeaderboardEntries/v1?appid=${integration.getConfig().appId}&leaderboardid=${steamworksLeaderboardId}&rangestart=0&rangeend=1.7976931348623157e%2B308&datarequest=RequestGlobal`).replyOnce(getEntriesMock)
 
-    await syncSteamworksLeaderboards(em, integration)
+    await syncSteamworksLeaderboards((<EntityManager>global.em), integration)
 
     expect(getLeaderboardsMock).toHaveBeenCalledTimes(1)
     expect(getEntriesMock).toHaveBeenCalledTimes(1)
 
-    const entry = await em.getRepository(LeaderboardEntry).findOne({ playerAlias: player.aliases[0] })
+    const entry = await (<EntityManager>global.em).getRepository(LeaderboardEntry).findOne({ playerAlias: player.aliases[0] })
     expect(entry).toBeTruthy()
   })
 
   it('should push through entries from talo into steamworks', async () => {
-    const [, game] = await createOrganisationAndGame(em)
+    const [, game] = await createOrganisationAndGame()
 
     const leaderboard = await new LeaderboardFactory([game]).one()
     const mapping = new SteamworksLeaderboardMapping(randNumber({ min: 100_000, max: 999_999 }), leaderboard)
@@ -337,7 +326,7 @@ describe('Steamworks integration - sync leaderboards', () => {
 
     const config = await new IntegrationConfigFactory().one()
     const integration = await new IntegrationFactory().construct(IntegrationType.STEAMWORKS, game, config).one()
-    await em.persistAndFlush([leaderboard, mapping, player, entry, integration])
+    await (<EntityManager>global.em).persistAndFlush([leaderboard, mapping, player, entry, integration])
 
     const getLeaderboardsMock = vi.fn((): [number, GetLeaderboardsForGameResponse] => [200, {
       response: {
@@ -374,13 +363,13 @@ describe('Steamworks integration - sync leaderboards', () => {
     }])
     axiosMock.onPost('https://partner.steam-api.com/ISteamLeaderboards/SetLeaderboardScore/v1').replyOnce(createMock)
 
-    await syncSteamworksLeaderboards(em, integration)
+    await syncSteamworksLeaderboards((<EntityManager>global.em), integration)
 
     expect(getLeaderboardsMock).toHaveBeenCalledTimes(1)
     expect(getEntriesMock).toHaveBeenCalledTimes(1)
     expect(createMock).toHaveBeenCalledTimes(1)
 
-    const event = await em.getRepository(SteamworksIntegrationEvent).findOne({ integration }, { orderBy: { id: 'DESC' } })
+    const event = await (<EntityManager>global.em).getRepository(SteamworksIntegrationEvent).findOne({ integration }, { orderBy: { id: 'DESC' } })
     expect(event.request).toStrictEqual({
       url: 'https://partner.steam-api.com/ISteamLeaderboards/SetLeaderboardScore/v1',
       body: `appid=${config.appId}&leaderboardid=${mapping.steamworksLeaderboardId}&steamid=${player.aliases[0].identifier}&score=${entry.score}&scoremethod=KeepBest`,

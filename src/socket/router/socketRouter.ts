@@ -1,11 +1,12 @@
 import { z, ZodError, ZodType } from 'zod'
 import Socket from '..'
-import { SocketMessageRequest, requests, sendError } from '../socketMessage'
+import { SocketMessageRequest, requests } from '../messages/socketMessage'
 import SocketConnection from '../socketConnection'
 import { RawData } from 'ws'
 import { addBreadcrumb } from '@sentry/node'
 import routes, { SocketMessageListener, SocketMessageListenerHandler } from './socketRoutes'
 import { pick } from 'lodash'
+import SocketError, { sendError } from '../messages/socketError'
 
 export function createListener<T extends ZodType>(
   req: SocketMessageRequest,
@@ -45,13 +46,13 @@ export default class SocketRouter {
 
       const handled = await this.routeMessage(conn, message)
       if (!handled) {
-        sendError(conn, message.req, new Error('Unhandled request'))
+        sendError(conn, message.req, new SocketError('UNHANDLED_REQUEST', 'Request not handled'))
       }
     } catch (err) {
       if (err instanceof ZodError) {
-        sendError(conn, 'unknown', new Error('Invalid message', { cause: this.sanitiseZodError(err) }))
+        sendError(conn, 'unknown', new SocketError('INVALID_MESSAGE', 'Invalid message request'))
       } else {
-        sendError(conn, message.req, new Error('Routing error', { cause: err }))
+        sendError(conn, message.req, new SocketError('ROUTING_ERROR', 'An error occurred while routing the message'))
       }
     }
   }
@@ -70,18 +71,18 @@ export default class SocketRouter {
             handled = true
 
             if (listener.requirePlayer && !conn.playerAlias) {
-              sendError(conn, message.req, new Error('No player found'))
+              sendError(conn, message.req, new SocketError('NO_PLAYER_FOUND', 'No player found'))
             } else {
               const data = await listener.validator.parseAsync(message.data)
-              listener.handler(conn, data, this.socket)
+              listener.handler({ conn, req: listener.req, data, socket: this.socket })
             }
 
             break
           } catch (err) {
             if (err instanceof ZodError) {
-              sendError(conn, message.req, new Error('Invalid message data', { cause: this.sanitiseZodError(err) }))
+              sendError(conn, message.req, new SocketError('INVALID_MESSAGE', 'Invalid message data for request'))
             } else {
-              sendError(conn, message.req, new Error('Listener error', { cause: err }))
+              sendError(conn, message.req, new SocketError('LISTENER_ERROR', 'An error occurred while processing the message'))
             }
           }
         }

@@ -125,6 +125,7 @@ export default class PlayerAuthAPIService extends APIService {
     em.persist(alias.player.auth)
 
     const sessionToken = await alias.player.auth.createSession(alias)
+    const socketToken = await alias.createSocketToken(createRedisConnection(req.ctx))
 
     createPlayerAuthActivity(req, alias.player, {
       type: PlayerAuthActivityType.REGISTERED,
@@ -139,7 +140,8 @@ export default class PlayerAuthAPIService extends APIService {
       status: 200,
       body: {
         alias,
-        sessionToken
+        sessionToken,
+        socketToken
       }
     }
   }
@@ -172,9 +174,9 @@ export default class PlayerAuthAPIService extends APIService {
     const passwordMatches = await bcrypt.compare(password, alias.player.auth.password)
     if (!passwordMatches) this.handleFailedLogin(req)
 
-    if (alias.player.auth.verificationEnabled) {
-      const redis = createRedisConnection(req.ctx)
+    const redis = createRedisConnection(req.ctx)
 
+    if (alias.player.auth.verificationEnabled) {
       await em.populate(alias.player, ['game'])
 
       const code = generateSixDigitCode()
@@ -196,6 +198,7 @@ export default class PlayerAuthAPIService extends APIService {
       }
     } else {
       const sessionToken = await alias.player.auth.createSession(alias)
+      const socketToken = await alias.createSocketToken(redis)
 
       createPlayerAuthActivity(req, alias.player, {
         type: PlayerAuthActivityType.LOGGED_IN
@@ -207,7 +210,8 @@ export default class PlayerAuthAPIService extends APIService {
         status: 200,
         body: {
           alias,
-          sessionToken
+          sessionToken,
+          socketToken
         }
       }
     }
@@ -252,6 +256,7 @@ export default class PlayerAuthAPIService extends APIService {
     await redis.del(this.getRedisAuthKey(key, alias))
 
     const sessionToken = await alias.player.auth.createSession(alias)
+    const socketToken = await alias.createSocketToken(redis)
 
     createPlayerAuthActivity(req, alias.player, {
       type: PlayerAuthActivityType.LOGGED_IN
@@ -263,7 +268,8 @@ export default class PlayerAuthAPIService extends APIService {
       status: 200,
       body: {
         alias,
-        sessionToken
+        sessionToken,
+        socketToken
       }
     }
   }

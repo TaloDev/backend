@@ -4,6 +4,7 @@ import * as Sentry from '@sentry/node'
 import ormConfig from './mikro-orm.config'
 import { MikroORM } from '@mikro-orm/mysql'
 import tracingMiddleware from '../middlewares/tracing-middleware'
+import createEmailQueue from '../lib/queues/createEmailQueue'
 
 export default async function initProviders(app: Koa, isTest: boolean) {
   try {
@@ -20,6 +21,7 @@ export default async function initProviders(app: Koa, isTest: boolean) {
   }
 
   SendGrid.setApiKey(process.env.SENDGRID_KEY)
+  app.context.emailQueue = createEmailQueue()
 
   Sentry.init({
     dsn: process.env.SENTRY_DSN,

@@ -5,7 +5,7 @@ import { EntityManager, RequestContext } from '@mikro-orm/mysql'
 import authenticateSocket from './authenticateSocket'
 import SocketConnection from './socketConnection'
 import SocketRouter from './router/socketRouter'
-import { sendMessage } from './socketMessage'
+import { sendMessage } from './messages/socketMessage'
 
 export default class Socket {
   private readonly wss: WebSocketServer

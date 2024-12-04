@@ -1,10 +1,17 @@
 import { z, ZodType } from 'zod'
-import { SocketMessageRequest } from '../socketMessage'
+import { SocketMessageRequest } from '../messages/socketMessage'
 import SocketConnection from '../socketConnection'
 import Socket from '..'
 import playerListeners from '../listeners/playerListeners'
 
-export type SocketMessageListenerHandler<T> = (conn: SocketConnection, data: T, socket: Socket) => void | Promise<void>
+type SocketMessageListenerHandlerParams<T> = {
+  conn: SocketConnection
+  req: SocketMessageRequest
+  data: T
+  socket: Socket
+}
+
+export type SocketMessageListenerHandler<T> = (params: SocketMessageListenerHandlerParams<T>) => void | Promise<void>
 
 export type SocketMessageListener<T extends ZodType> = {
   req: SocketMessageRequest

@@ -1,11 +1,12 @@
 import { z, ZodType } from 'zod'
 import { createListener } from '../router/socketRouter'
-import { sendMessage } from '../socketMessage'
+import { sendMessage } from '../messages/socketMessage'
 import Redis from 'ioredis'
 import redisConfig from '../../config/redis.config'
 import { RequestContext } from '@mikro-orm/core'
 import PlayerAlias from '../../entities/player-alias'
 import { SocketMessageListener } from '../router/socketRoutes'
+import SocketError, { sendError } from '../messages/socketError'
 
 const playerListeners: SocketMessageListener<ZodType>[] = [
   createListener(
@@ -14,7 +15,7 @@ const playerListeners: SocketMessageListener<ZodType>[] = [
       playerAliasId: z.number(),
       token: z.string()
     }),
-    async (conn, data) => {
+    async ({ conn, req, data }) => {
       const redis = new Redis(redisConfig)
       const token = await redis.get(`socketTokens.${data.playerAliasId}`)
 
@@ -30,9 +31,7 @@ const playerListeners: SocketMessageListener<ZodType>[] = [
 
         sendMessage(conn, 'v1.players.identify.success', conn.playerAlias)
       } else {
-        sendMessage(conn, 'v1.players.identify.error', {
-          reason: 'Invalid token'
-        })
+        sendError(conn, req, new SocketError('INVALID_SOCKET_TOKEN', 'Invalid socket token'))
       }
 
       await redis.quit()

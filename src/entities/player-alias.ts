@@ -1,5 +1,7 @@
 import { Cascade, Entity, Filter, ManyToOne, PrimaryKey, Property } from '@mikro-orm/mysql'
 import Player from './player'
+import Redis from 'ioredis'
+import { v4 } from 'uuid'
 
 export enum PlayerAliasService {
   STEAM = 'steam',
@@ -36,6 +38,12 @@ export default class PlayerAlias {
 
   @Property({ onUpdate: () => new Date() })
   updatedAt: Date = new Date()
+
+  async createSocketToken(redis: Redis): Promise<string> {
+    const token = v4()
+    await redis.set(`socketTokens.${this.id}`, token)
+    return token
+  }
 
   toJSON() {
     const player = { ...this.player.toJSON() }

@@ -9,12 +9,11 @@ import configureAPIRoutes from './config/api-routes'
 import corsMiddleware from './middlewares/cors-middleware'
 import errorMiddleware from './middlewares/error-middleware'
 import initProviders from './config/providers'
-import createEmailQueue from './lib/queues/createEmailQueue'
 import devDataMiddleware from './middlewares/dev-data-middleware'
 import cleanupMiddleware from './middlewares/cleanup-middleware'
 import requestContextMiddleware from './middlewares/request-context-middleware'
 import { createServer } from 'http'
-import configureSocketRoutes from './config/socket-routes'
+import Socket from './socket'
 
 const isTest = process.env.NODE_ENV === 'test'
 
@@ -30,7 +29,6 @@ export default async function init(): Promise<Koa> {
   app.use(corsMiddleware)
   app.use(requestContextMiddleware)
   app.use(devDataMiddleware)
-  app.context.emailQueue = createEmailQueue()
 
   configureProtectedRoutes(app)
   configurePublicRoutes(app)
@@ -39,7 +37,7 @@ export default async function init(): Promise<Koa> {
   app.use(cleanupMiddleware)
 
   const server = createServer(app.callback())
-  configureSocketRoutes(server)
+  app.context.wss = new Socket(server, app.context.em)
 
   if (!isTest) {
     server.listen(80, () => console.info('Listening on port 80'))

@@ -36,7 +36,7 @@ const itemsPerPage = 50
 ])
 export default class GameFeedbackService extends Service {
   @Validate({ query: ['page'] })
-  @HasPermission(GameFeedbackPolicy, 'get')
+  @HasPermission(GameFeedbackPolicy, 'index')
   async index(req: Request): Promise<Response> {
     const { feedbackCategoryInternalName, search, page } = req.query
     const em: EntityManager = req.ctx.em

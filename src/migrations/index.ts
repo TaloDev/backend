@@ -33,6 +33,7 @@ import { CreateUserPinnedGroupsTable } from './20241001194252CreateUserPinnedGro
 import { AddPlayerGroupMembersVisibleColumn } from './20241014202844AddPlayerGroupMembersVisibleColumn'
 import { AddPlayerPropCreatedAtColumn } from './20241101233908AddPlayerPropCreatedAtColumn'
 import { AddPlayerAliasLastSeenAtColumn } from './20241102004938AddPlayerAliasLastSeenAtColumn'
+import { CreateGameChannelTables } from './20241206233511CreateGameChannelTables'
 
 export default [
   {
@@ -174,5 +175,9 @@ export default [
   {
     name: 'AddPlayerAliasLastSeenAtColumn',
     class: AddPlayerAliasLastSeenAtColumn
+  },
+  {
+    name: 'CreateGameChannelTables',
+    class: CreateGameChannelTables
   }
 ]

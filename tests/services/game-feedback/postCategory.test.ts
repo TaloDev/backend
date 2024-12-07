@@ -80,7 +80,7 @@ describe('Game feedback service - post category', () => {
 
     expect(res.body).toStrictEqual({
       errors: {
-        internalName: ['A feedback category with the internalName bugs already exists']
+        internalName: ['A feedback category with the internalName \'bugs\' already exists']
       }
     })
   })

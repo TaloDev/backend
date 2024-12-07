@@ -182,7 +182,7 @@ describe('Player service - post', () => {
       .expect(400)
 
     expect(res.body).toStrictEqual({
-      message: `Player with identifier ${player.aliases[0].identifier} already exists`,
+      message: `Player with identifier '${player.aliases[0].identifier}' already exists`,
       errorCode: 'IDENTIFIER_TAKEN'
     })
   })

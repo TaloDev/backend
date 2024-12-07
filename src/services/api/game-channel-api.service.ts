@@ -25,16 +25,16 @@ async function sendMessageToChannelMembers<T>(req: Request, channel: GameChannel
 }
 
 export default class GameChannelAPIService extends APIService {
-  @ForwardTo('games.game-channel', 'index')
+  @ForwardTo('games.game-channels', 'index')
   async index(req: Request): Promise<Response> {
     return forwardRequest(req)
   }
 
-  @HasPermission(GameChannelAPIPolicy, 'post')
   @Validate({
     headers: ['x-talo-alias'],
     body: [GameChannel]
   })
+  @HasPermission(GameChannelAPIPolicy, 'post')
   async post(req: Request): Promise<Response> {
     const { name, props } = req.body
     const em: EntityManager = req.ctx.em
@@ -74,11 +74,11 @@ export default class GameChannelAPIService extends APIService {
     }
   }
 
-  @HasPermission(GameChannelAPIPolicy, 'join')
   @Validate({
     headers: ['x-talo-alias'],
     body: ['name']
   })
+  @HasPermission(GameChannelAPIPolicy, 'join')
   async join(req: Request): Promise<Response> {
     const { name } = req.body
     const em: EntityManager = req.ctx.em
@@ -117,11 +117,11 @@ export default class GameChannelAPIService extends APIService {
     }
   }
 
-  @HasPermission(GameChannelAPIPolicy, 'leave')
   @Validate({
     headers: ['x-talo-alias'],
     body: ['name']
   })
+  @HasPermission(GameChannelAPIPolicy, 'leave')
   async leave(req: Request): Promise<Response> {
     const { name } = req.body
     const em: EntityManager = req.ctx.em

@@ -9,7 +9,8 @@ const codes = [
   'UNHANDLED_REQUEST',
   'ROUTING_ERROR',
   'LISTENER_ERROR',
-  'INVALID_SOCKET_TOKEN'
+  'INVALID_SOCKET_TOKEN',
+  'MISSING_ACCESS_KEY_SCOPE'
 ] as const
 
 export type SocketErrorCode = typeof codes[number]
@@ -18,12 +19,18 @@ export default class SocketError {
   constructor(public code: SocketErrorCode, public message: string) {}
 }
 
-export function sendError(conn: SocketConnection, req: SocketMessageRequest | 'unknown', error: SocketError) {
+type SocketErrorReq = SocketMessageRequest | 'unknown'
+
+export function sendError(conn: SocketConnection, req: SocketErrorReq, error: SocketError) {
   setTag('request', req)
   setTag('errorCode', error.code)
   captureException(error)
 
-  sendMessage(conn, 'v1.error', {
+  sendMessage<{
+    req: SocketErrorReq
+    message: string
+    errorCode: SocketErrorCode
+  }>(conn, 'v1.error', {
     req,
     message: error.message,
     errorCode: error.code

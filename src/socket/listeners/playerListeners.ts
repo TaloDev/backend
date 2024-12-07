@@ -20,14 +20,14 @@ const playerListeners: SocketMessageListener<ZodType>[] = [
       const token = await redis.get(`socketTokens.${data.playerAliasId}`)
 
       if (token === data.token) {
-        conn.playerAlias = await (RequestContext.getEntityManager())
+        conn.playerAlias = await (RequestContext.getEntityManager()
           .getRepository(PlayerAlias)
           .findOne({
             id: data.playerAliasId,
             player: {
               game: conn.game
             }
-          })
+          }))
 
         sendMessage(conn, 'v1.players.identify.success', conn.playerAlias)
       } else {
@@ -36,7 +36,9 @@ const playerListeners: SocketMessageListener<ZodType>[] = [
 
       await redis.quit()
     },
-    false
+    {
+      requirePlayer: false
+    }
   )
 ]
 

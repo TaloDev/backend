@@ -3,6 +3,7 @@ import { SocketMessageRequest } from '../messages/socketMessage'
 import SocketConnection from '../socketConnection'
 import Socket from '..'
 import playerListeners from '../listeners/playerListeners'
+import gameChannelListeners from '../listeners/gameChannelListeners'
 
 type SocketMessageListenerHandlerParams<T> = {
   conn: SocketConnection
@@ -12,16 +13,21 @@ type SocketMessageListenerHandlerParams<T> = {
 }
 
 export type SocketMessageListenerHandler<T> = (params: SocketMessageListenerHandlerParams<T>) => void | Promise<void>
+export type SocketMessageListenerOptions = {
+  requirePlayer?: boolean
+  apiKeyScopes?: string[]
+}
 
 export type SocketMessageListener<T extends ZodType> = {
   req: SocketMessageRequest
   validator: T
   handler: SocketMessageListenerHandler<z.infer<T>>
-  requirePlayer: boolean
+  options: SocketMessageListenerOptions
 }
 
 const routes: SocketMessageListener<ZodType>[][] = [
-  playerListeners
+  playerListeners,
+  gameChannelListeners
 ]
 
 export default routes

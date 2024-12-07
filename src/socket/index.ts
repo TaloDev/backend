@@ -49,19 +49,19 @@ export default class Socket {
   async handleConnection(ws: WebSocket, req: IncomingMessage): Promise<void> {
     await RequestContext.create(this.em, async () => {
       const key = await authenticateSocket(req.headers?.authorization ?? '', ws)
-      this.connections.push(new SocketConnection(ws, key.game))
+      this.connections.push(new SocketConnection(ws, key))
       sendMessage(this.connections.at(-1), 'v1.connected', {})
     })
   }
 
   async handleMessage(ws: WebSocket, data: RawData): Promise<void> {
     await RequestContext.create(this.em, async () => {
-      await this.router.handleMessage(this.findConnection(ws), data)
+      await this.router.handleMessage(this.findConnectionBySocket(ws), data)
     })
   }
 
   handlePong(ws: WebSocket): void {
-    const connection = this.findConnection(ws)
+    const connection = this.findConnectionBySocket(ws)
     if (!connection) return
 
     connection.alive = true
@@ -71,7 +71,7 @@ export default class Socket {
     this.connections = this.connections.filter((conn) => conn.ws !== ws)
   }
 
-  findConnection(ws: WebSocket): SocketConnection | undefined {
+  findConnectionBySocket(ws: WebSocket): SocketConnection | undefined {
     const connection = this.connections.find((conn) => conn.ws === ws)
     if (!connection) {
       ws.close(3000)
@@ -79,5 +79,9 @@ export default class Socket {
     }
 
     return connection
+  }
+
+  findConnections(filter: (conn: SocketConnection) => boolean): SocketConnection[] {
+    return this.connections.filter(filter)
   }
 }

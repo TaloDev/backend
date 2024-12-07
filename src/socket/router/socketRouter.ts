@@ -4,21 +4,21 @@ import { SocketMessageRequest, requests } from '../messages/socketMessage'
 import SocketConnection from '../socketConnection'
 import { RawData } from 'ws'
 import { addBreadcrumb } from '@sentry/node'
-import routes, { SocketMessageListener, SocketMessageListenerHandler } from './socketRoutes'
-import { pick } from 'lodash'
+import routes, { SocketMessageListener, SocketMessageListenerHandler, SocketMessageListenerOptions } from './socketRoutes'
 import SocketError, { sendError } from '../messages/socketError'
+import { APIKeyScope } from '../../entities/api-key'
 
 export function createListener<T extends ZodType>(
   req: SocketMessageRequest,
   validator: T,
   handler: SocketMessageListenerHandler<z.infer<T>>,
-  requirePlayer = true
+  options?: SocketMessageListenerOptions
 ): SocketMessageListener<T> {
   return {
     req,
     validator,
     handler,
-    requirePlayer
+    options
   }
 }
 
@@ -70,8 +70,11 @@ export default class SocketRouter {
           try {
             handled = true
 
-            if (listener.requirePlayer && !conn.playerAlias) {
+            if ((listener.options.requirePlayer ?? true) && !conn.playerAlias) {
               sendError(conn, message.req, new SocketError('NO_PLAYER_FOUND', 'No player found'))
+            } else if ((listener.options.apiKeyScopes ?? []).some((scope) => !conn.scopes.includes(scope as APIKeyScope))) {
+              const missing = listener.options.apiKeyScopes.filter((scope) => !conn.scopes.includes(scope as APIKeyScope))
+              sendError(conn, message.req, new SocketError('MISSING_ACCESS_KEY_SCOPE', `Missing access key scope(s): ${missing.join(', ')}`))
             } else {
               const data = await listener.validator.parseAsync(message.data)
               listener.handler({ conn, req: listener.req, data, socket: this.socket })
@@ -90,13 +93,5 @@ export default class SocketRouter {
     }
 
     return handled
-  }
-
-  sanitiseZodError(err: ZodError) {
-    return {
-      issues: err.issues.map((issue) => {
-        return pick(issue, ['received', 'code', 'options', 'path'])
-      })
-    }
   }
 }

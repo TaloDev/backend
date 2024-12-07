@@ -20,7 +20,7 @@ export default class GameStat {
       return [
         {
           check: !duplicateInternalName,
-          error: `A stat with the internalName ${val} already exists`
+          error: `A stat with the internalName '${val}' already exists`
         }
       ]
     }

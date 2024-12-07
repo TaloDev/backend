@@ -94,7 +94,7 @@ export default class PlayerService extends Service {
 
         if (count > 0) {
           req.ctx.throw(400, {
-            message: `Player with identifier ${alias.identifier} already exists`,
+            message: `Player with identifier '${alias.identifier}' already exists`,
             errorCode: PlayerAuthErrorCode.IDENTIFIER_TAKEN
           })
         }

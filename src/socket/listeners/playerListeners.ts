@@ -1,11 +1,11 @@
 import { z, ZodType } from 'zod'
-import { createListener } from '../router/socketRouter'
+import createListener from '../router/createListener'
 import { sendMessage } from '../messages/socketMessage'
 import Redis from 'ioredis'
 import redisConfig from '../../config/redis.config'
 import { RequestContext } from '@mikro-orm/core'
 import PlayerAlias from '../../entities/player-alias'
-import { SocketMessageListener } from '../router/socketRoutes'
+import { SocketMessageListener } from '../router/createListener'
 import SocketError, { sendError } from '../messages/socketError'
 
 const playerListeners: SocketMessageListener<ZodType>[] = [

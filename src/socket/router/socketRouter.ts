@@ -1,26 +1,14 @@
 import { z, ZodError, ZodType } from 'zod'
 import Socket from '..'
-import { SocketMessageRequest, requests } from '../messages/socketMessage'
+import { requests } from '../messages/socketMessage'
 import SocketConnection from '../socketConnection'
 import { RawData } from 'ws'
 import { addBreadcrumb } from '@sentry/node'
-import routes, { SocketMessageListener, SocketMessageListenerHandler, SocketMessageListenerOptions } from './socketRoutes'
+import { SocketMessageListener } from './createListener'
 import SocketError, { sendError } from '../messages/socketError'
 import { APIKeyScope } from '../../entities/api-key'
-
-export function createListener<T extends ZodType>(
-  req: SocketMessageRequest,
-  validator: T,
-  handler: SocketMessageListenerHandler<z.infer<T>>,
-  options?: SocketMessageListenerOptions
-): SocketMessageListener<T> {
-  return {
-    req,
-    validator,
-    handler,
-    options
-  }
-}
+import playerListeners from '../listeners/playerListeners'
+import gameChannelListeners from '../listeners/gameChannelListeners'
 
 const socketMessageValidator = z.object({
   req: z.enum(requests),
@@ -28,6 +16,11 @@ const socketMessageValidator = z.object({
 })
 
 type SocketMessage = z.infer<typeof socketMessageValidator>
+
+const routes: SocketMessageListener<ZodType>[][] = [
+  playerListeners,
+  gameChannelListeners
+]
 
 export default class SocketRouter {
   constructor(readonly socket: Socket) {}

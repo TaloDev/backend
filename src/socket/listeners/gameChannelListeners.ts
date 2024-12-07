@@ -1,6 +1,6 @@
 import { z, ZodType } from 'zod'
-import { SocketMessageListener } from '../router/socketRoutes'
-import { createListener } from '../router/socketRouter'
+import { SocketMessageListener } from '../router/createListener'
+import createListener from '../router/createListener'
 import { RequestContext } from '@mikro-orm/core'
 import GameChannel from '../../entities/game-channel'
 import { sendMessages } from '../messages/socketMessage'

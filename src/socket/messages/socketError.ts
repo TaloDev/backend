@@ -2,7 +2,7 @@ import { captureException, setTag } from '@sentry/node'
 import { sendMessage, SocketMessageRequest } from './socketMessage'
 import SocketConnection from '../socketConnection'
 
-const codes = [
+const errorCodes = [
   'INVALID_MESSAGE',
   'INVALID_MESSAGE_DATA',
   'NO_PLAYER_FOUND',
@@ -14,7 +14,7 @@ const codes = [
   'MISSING_ACCESS_KEY_SCOPES'
 ] as const
 
-export type SocketErrorCode = typeof codes[number]
+export type SocketErrorCode = typeof errorCodes[number]
 
 export default class SocketError {
   constructor(public code: SocketErrorCode, public message: string, public cause?: string) {}

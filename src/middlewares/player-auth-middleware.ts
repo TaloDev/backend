@@ -4,7 +4,6 @@ import { isAPIRoute } from './route-middleware'
 import { EntityManager } from '@mikro-orm/mysql'
 import PlayerAlias, { PlayerAliasService } from '../entities/player-alias'
 import { promisify } from 'util'
-import { PlayerAuthErrorCode } from '../entities/player-auth'
 
 export default async function playerAuthMiddleware(ctx: Context, next: Next): Promise<void> {
   if (isAPIRoute(ctx) && (ctx.state.currentPlayerId || ctx.state.currentAliasId)) {
@@ -38,7 +37,7 @@ export async function validateAuthSessionToken(ctx: Context, alias: PlayerAlias)
   if (!sessionToken) {
     ctx.throw(401, {
       message: 'The x-talo-session header is required for this player',
-      errorCode: PlayerAuthErrorCode.MISSING_SESSION
+      errorCode: 'MISSING_SESSION'
     })
   }
 
@@ -49,7 +48,7 @@ export async function validateAuthSessionToken(ctx: Context, alias: PlayerAlias)
   } catch (err) {
     ctx.throw(401, {
       message: 'The x-talo-session header is invalid',
-      errorCode: PlayerAuthErrorCode.INVALID_SESSION
+      errorCode: 'INVALID_SESSION'
     })
   }
 }

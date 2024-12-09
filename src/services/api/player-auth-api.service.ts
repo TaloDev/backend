@@ -4,7 +4,7 @@ import APIKey from '../../entities/api-key'
 import PlayerAlias, { PlayerAliasService } from '../../entities/player-alias'
 import APIService from './api-service'
 import { createPlayerFromIdentifyRequest, findAliasFromIdentifyRequest } from './player-api.service'
-import PlayerAuth, { PlayerAuthErrorCode } from '../../entities/player-auth'
+import PlayerAuth from '../../entities/player-auth'
 import bcrypt from 'bcrypt'
 import PlayerAuthAPIPolicy from '../../policies/api/player-auth-api.policy'
 import PlayerAuthAPIDocs from '../../docs/player-auth-api.docs'
@@ -114,7 +114,7 @@ export default class PlayerAuthAPIService extends APIService {
       } else {
         req.ctx.throw(400, {
           message: 'Invalid email address',
-          errorCode: PlayerAuthErrorCode.INVALID_EMAIL
+          errorCode: 'INVALID_EMAIL'
         })
       }
     } else {
@@ -147,7 +147,7 @@ export default class PlayerAuthAPIService extends APIService {
   }
 
   private handleFailedLogin(req: Request) {
-    req.ctx.throw(401, { message: 'Incorrect identifier or password', errorCode: PlayerAuthErrorCode.INVALID_CREDENTIALS })
+    req.ctx.throw(401, { message: 'Incorrect identifier or password', errorCode: 'INVALID_CREDENTIALS' })
   }
 
   private getRedisAuthKey(key: APIKey, alias: PlayerAlias): string {
@@ -234,7 +234,7 @@ export default class PlayerAuthAPIService extends APIService {
     if (!alias) {
       req.ctx.throw(403, {
         message: 'Player alias not found',
-        errorCode: PlayerAuthErrorCode.VERIFICATION_ALIAS_NOT_FOUND
+        errorCode: 'VERIFICATION_ALIAS_NOT_FOUND'
       })
     }
 
@@ -249,7 +249,7 @@ export default class PlayerAuthAPIService extends APIService {
 
       req.ctx.throw(403, {
         message: 'Invalid code',
-        errorCode: PlayerAuthErrorCode.VERIFICATION_CODE_INVALID
+        errorCode: 'VERIFICATION_CODE_INVALID'
       })
     }
 
@@ -316,14 +316,14 @@ export default class PlayerAuthAPIService extends APIService {
       createPlayerAuthActivity(req, alias.player, {
         type: PlayerAuthActivityType.CHANGE_PASSWORD_FAILED,
         extra: {
-          errorCode: PlayerAuthErrorCode.INVALID_CREDENTIALS
+          errorCode: 'INVALID_CREDENTIALS'
         }
       })
       await em.flush()
 
       req.ctx.throw(403, {
         message: 'Current password is incorrect',
-        errorCode: PlayerAuthErrorCode.INVALID_CREDENTIALS
+        errorCode: 'INVALID_CREDENTIALS'
       })
     }
 
@@ -332,14 +332,14 @@ export default class PlayerAuthAPIService extends APIService {
       createPlayerAuthActivity(req, alias.player, {
         type: PlayerAuthActivityType.CHANGE_PASSWORD_FAILED,
         extra: {
-          errorCode: PlayerAuthErrorCode.NEW_PASSWORD_MATCHES_CURRENT_PASSWORD
+          errorCode: 'NEW_PASSWORD_MATCHES_CURRENT_PASSWORD'
         }
       })
       await em.flush()
 
       req.ctx.throw(400, {
         message: 'Please choose a different password',
-        errorCode: PlayerAuthErrorCode.NEW_PASSWORD_MATCHES_CURRENT_PASSWORD
+        errorCode: 'NEW_PASSWORD_MATCHES_CURRENT_PASSWORD'
       })
     }
 
@@ -374,14 +374,14 @@ export default class PlayerAuthAPIService extends APIService {
       createPlayerAuthActivity(req, alias.player, {
         type: PlayerAuthActivityType.CHANGE_EMAIL_FAILED,
         extra: {
-          errorCode: PlayerAuthErrorCode.INVALID_CREDENTIALS
+          errorCode: 'INVALID_CREDENTIALS'
         }
       })
       await em.flush()
 
       req.ctx.throw(403, {
         message: 'Current password is incorrect',
-        errorCode: PlayerAuthErrorCode.INVALID_CREDENTIALS
+        errorCode: 'INVALID_CREDENTIALS'
       })
     }
 
@@ -390,14 +390,14 @@ export default class PlayerAuthAPIService extends APIService {
       createPlayerAuthActivity(req, alias.player, {
         type: PlayerAuthActivityType.CHANGE_EMAIL_FAILED,
         extra: {
-          errorCode: PlayerAuthErrorCode.NEW_EMAIL_MATCHES_CURRENT_EMAIL
+          errorCode: 'NEW_EMAIL_MATCHES_CURRENT_EMAIL'
         }
       })
       await em.flush()
 
       req.ctx.throw(400, {
         message: 'Please choose a different email address',
-        errorCode: PlayerAuthErrorCode.NEW_EMAIL_MATCHES_CURRENT_EMAIL
+        errorCode: 'NEW_EMAIL_MATCHES_CURRENT_EMAIL'
       })
     }
 
@@ -409,14 +409,14 @@ export default class PlayerAuthAPIService extends APIService {
       createPlayerAuthActivity(req, alias.player, {
         type: PlayerAuthActivityType.CHANGE_EMAIL_FAILED,
         extra: {
-          errorCode: PlayerAuthErrorCode.INVALID_EMAIL
+          errorCode: 'INVALID_EMAIL'
         }
       })
       await em.flush()
 
       req.ctx.throw(400, {
         message: 'Invalid email address',
-        errorCode: PlayerAuthErrorCode.INVALID_EMAIL
+        errorCode: 'INVALID_EMAIL'
       })
     }
 
@@ -498,7 +498,7 @@ export default class PlayerAuthAPIService extends APIService {
     if (!aliasId || !alias) {
       req.ctx.throw(401, {
         message: 'This code is either invalid or has expired',
-        errorCode: PlayerAuthErrorCode.PASSWORD_RESET_CODE_INVALID
+        errorCode: 'PASSWORD_RESET_CODE_INVALID'
       })
     }
 
@@ -536,7 +536,7 @@ export default class PlayerAuthAPIService extends APIService {
       createPlayerAuthActivity(req, alias.player, {
         type: PlayerAuthActivityType.TOGGLE_VERIFICATION_FAILED,
         extra: {
-          errorCode: PlayerAuthErrorCode.VERIFICATION_EMAIL_REQUIRED,
+          errorCode: 'VERIFICATION_EMAIL_REQUIRED',
           verificationEnabled: Boolean(verificationEnabled)
         }
       })
@@ -544,7 +544,7 @@ export default class PlayerAuthAPIService extends APIService {
 
       req.ctx.throw(400, {
         message: 'An email address is required to enable verification',
-        errorCode: PlayerAuthErrorCode.VERIFICATION_EMAIL_REQUIRED
+        errorCode: 'VERIFICATION_EMAIL_REQUIRED'
       })
     }
 
@@ -553,7 +553,7 @@ export default class PlayerAuthAPIService extends APIService {
       createPlayerAuthActivity(req, alias.player, {
         type: PlayerAuthActivityType.TOGGLE_VERIFICATION_FAILED,
         extra: {
-          errorCode: PlayerAuthErrorCode.INVALID_CREDENTIALS,
+          errorCode: 'INVALID_CREDENTIALS',
           verificationEnabled: Boolean(verificationEnabled)
         }
       })
@@ -561,7 +561,7 @@ export default class PlayerAuthAPIService extends APIService {
 
       req.ctx.throw(403, {
         message: 'Current password is incorrect',
-        errorCode: PlayerAuthErrorCode.INVALID_CREDENTIALS
+        errorCode: 'INVALID_CREDENTIALS'
       })
     }
 
@@ -574,7 +574,7 @@ export default class PlayerAuthAPIService extends APIService {
         createPlayerAuthActivity(req, alias.player, {
           type: PlayerAuthActivityType.TOGGLE_VERIFICATION_FAILED,
           extra: {
-            errorCode: PlayerAuthErrorCode.INVALID_EMAIL,
+            errorCode: 'INVALID_EMAIL',
             verificationEnabled: Boolean(verificationEnabled)
           }
         })
@@ -582,7 +582,7 @@ export default class PlayerAuthAPIService extends APIService {
 
         req.ctx.throw(400, {
           message: 'Invalid email address',
-          errorCode: PlayerAuthErrorCode.INVALID_EMAIL
+          errorCode: 'INVALID_EMAIL'
         })
       }
     }
@@ -619,14 +619,14 @@ export default class PlayerAuthAPIService extends APIService {
       createPlayerAuthActivity(req, alias.player, {
         type: PlayerAuthActivityType.DELETE_AUTH_FAILED,
         extra: {
-          errorCode: PlayerAuthErrorCode.INVALID_CREDENTIALS
+          errorCode: 'INVALID_CREDENTIALS'
         }
       })
       await em.flush()
 
       req.ctx.throw(403, {
         message: 'Current password is incorrect',
-        errorCode: PlayerAuthErrorCode.INVALID_CREDENTIALS
+        errorCode: 'INVALID_CREDENTIALS'
       })
     }
 

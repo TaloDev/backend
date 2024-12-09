@@ -30,12 +30,18 @@ const gameChannelListeners: SocketMessageListener<ZodType>[] = [
         throw new Error('Player not in channel')
       }
 
-      const conns = socket.findConnections((conn) => channel.members.getIdentifiers().includes(conn.playerAlias.id))
+      const conns = socket.findConnections((conn) => {
+        return conn.scopes.includes(APIKeyScope.READ_GAME_CHANNELS) &&
+          channel.members.getIdentifiers().includes(conn.playerAlias.id)
+      })
       sendMessages(conns, 'v1.channels.message', {
         channelName: channel.name,
         message: data.message,
         fromPlayerAlias: conn.playerAlias
       })
+
+      channel.totalMessages++
+      await RequestContext.getEntityManager().flush()
     },
     {
       apiKeyScopes: [APIKeyScope.WRITE_GAME_CHANNELS]

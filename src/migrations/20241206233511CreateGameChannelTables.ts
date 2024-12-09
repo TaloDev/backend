@@ -3,7 +3,7 @@ import { Migration } from '@mikro-orm/migrations'
 export class CreateGameChannelTables extends Migration {
 
   override async up(): Promise<void> {
-    this.addSql('create table `game_channel` (`id` int unsigned not null auto_increment primary key, `name` varchar(255) not null, `owner_id` int unsigned not null, `game_id` int unsigned not null, `props` json not null, `created_at` datetime not null, `updated_at` datetime not null) default character set utf8mb4 engine = InnoDB;')
+    this.addSql('create table `game_channel` (`id` int unsigned not null auto_increment primary key, `name` varchar(255) not null, `owner_id` int unsigned null, `game_id` int unsigned not null, `total_messages` int not null default 0, `auto_cleanup` tinyint(1) not null default false, `props` json not null, `created_at` datetime not null, `updated_at` datetime not null) default character set utf8mb4 engine = InnoDB;')
     this.addSql('alter table `game_channel` add index `game_channel_owner_id_index`(`owner_id`);')
     this.addSql('alter table `game_channel` add index `game_channel_game_id_index`(`game_id`);')
 

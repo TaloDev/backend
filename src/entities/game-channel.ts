@@ -29,11 +29,18 @@ export default class GameChannel {
   @Property()
   name: string
 
-  @ManyToOne(() => PlayerAlias, { nullable: false, cascade: [Cascade.REMOVE] })
+  @ManyToOne(() => PlayerAlias, { cascade: [Cascade.REMOVE] })
   owner: PlayerAlias
 
   @ManyToMany(() => PlayerAlias, (alias) => alias.channels, { owner: true })
   members = new Collection<PlayerAlias>(this)
+
+  @Property()
+  totalMessages: number = 0
+
+  @Required()
+  @Property()
+  autoCleanup: boolean = false
 
   @ManyToOne(() => Game)
   game: Game
@@ -56,6 +63,7 @@ export default class GameChannel {
       id: this.id,
       name: this.name,
       owner: this.owner,
+      totalMessages: this.totalMessages,
       props: this.props,
       createdAt: this.createdAt,
       updatedAt: this.updatedAt

@@ -208,4 +208,61 @@ describe('Player API service - identify', () => {
       }
     })
   })
+
+  it('should identify a Talo player alias with a valid session token', async () => {
+    const em: EntityManager = global.em
+
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_PLAYERS, APIKeyScope.WRITE_PLAYERS])
+    const player = await new PlayerFactory([apiKey.game]).withTaloAlias().one()
+
+    await em.persistAndFlush(player)
+    const sessionToken = await player.auth.createSession(player.aliases[0])
+    await em.flush()
+
+    await request(global.app)
+      .get('/v1/players/identify')
+      .query({ service: player.aliases[0].service, identifier: player.aliases[0].identifier })
+      .auth(token, { type: 'bearer' })
+      .set('x-talo-session', sessionToken)
+      .expect(200)
+  })
+
+  it('should not identify a Talo player alias with a missing session token', async () => {
+    const em: EntityManager = global.em
+
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_PLAYERS, APIKeyScope.WRITE_PLAYERS])
+    const player = await new PlayerFactory([apiKey.game]).withTaloAlias().one()
+    await em.persistAndFlush(player)
+
+    const res = await request(global.app)
+      .get('/v1/players/identify')
+      .query({ service: player.aliases[0].service, identifier: player.aliases[0].identifier })
+      .auth(token, { type: 'bearer' })
+      .expect(401)
+
+    expect(res.body).toStrictEqual({
+      message: 'The x-talo-session header is required for this player',
+      errorCode: 'MISSING_SESSION'
+    })
+  })
+
+  it('should not identify a Talo player alias with an invalid session token', async () => {
+    const em: EntityManager = global.em
+
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_PLAYERS, APIKeyScope.WRITE_PLAYERS])
+    const player = await new PlayerFactory([apiKey.game]).withTaloAlias().one()
+    await em.persistAndFlush(player)
+
+    const res = await request(global.app)
+      .get('/v1/players/identify')
+      .query({ service: player.aliases[0].service, identifier: player.aliases[0].identifier })
+      .auth(token, { type: 'bearer' })
+      .set('x-talo-session', 'blah')
+      .expect(401)
+
+    expect(res.body).toStrictEqual({
+      message: 'The x-talo-session header is invalid',
+      errorCode: 'INVALID_SESSION'
+    })
+  })
 })

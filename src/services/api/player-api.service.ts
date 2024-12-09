@@ -12,6 +12,8 @@ import PlayerProp from '../../entities/player-prop'
 import PlayerGameStat from '../../entities/player-game-stat'
 import checkScope from '../../policies/checkScope'
 import Integration, { IntegrationType } from '../../entities/integration'
+import { validateAuthSessionToken } from '../../middlewares/player-auth-middleware'
+import { setCurrentPlayerState } from '../../middlewares/current-player-middleware'
 
 async function getRealIdentifier(
   req: Request,
@@ -128,6 +130,9 @@ export default class PlayerAPIService extends APIService {
           const player = await createPlayerFromIdentifyRequest(req, key, service, identifier)
           alias = player?.aliases[0]
         }
+      } else if (alias.service === PlayerAliasService.TALO) {
+        setCurrentPlayerState(req.ctx, alias.player.id, alias.id)
+        await validateAuthSessionToken(req.ctx, alias)
       }
     } catch (err) {
       if (err instanceof Error && err.cause === 400) {

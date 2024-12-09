@@ -1,35 +1,34 @@
 import 'dotenv/config'
-import Koa, { Context, Next } from 'koa'
+import Koa from 'koa'
 import logger from 'koa-logger'
 import bodyParser from 'koa-bodyparser'
 import helmet from 'koa-helmet'
-import { RequestContext } from '@mikro-orm/mysql'
 import configureProtectedRoutes from './config/protected-routes'
 import configurePublicRoutes from './config/public-routes'
 import configureAPIRoutes from './config/api-routes'
 import corsMiddleware from './middlewares/cors-middleware'
 import errorMiddleware from './middlewares/error-middleware'
 import initProviders from './config/providers'
-import createEmailQueue from './lib/queues/createEmailQueue'
 import devDataMiddleware from './middlewares/dev-data-middleware'
 import cleanupMiddleware from './middlewares/cleanup-middleware'
+import requestContextMiddleware from './middlewares/request-context-middleware'
+import { createServer } from 'http'
+import Socket from './socket'
 
 const isTest = process.env.NODE_ENV === 'test'
 
-export const init = async (): Promise<Koa> => {
+export default async function init(): Promise<Koa> {
   const app = new Koa()
-  app.context.isTest = isTest
 
-  await initProviders(app)
+  await initProviders(app, isTest)
 
   if (!isTest) app.use(logger())
   app.use(errorMiddleware)
   app.use(bodyParser())
   app.use(helmet())
   app.use(corsMiddleware)
-  app.use((ctx: Context, next: Next) => RequestContext.create(ctx.em, next))
   app.use(devDataMiddleware)
-  app.context.emailQueue = createEmailQueue()
+  app.use(requestContextMiddleware)
 
   configureProtectedRoutes(app)
   configurePublicRoutes(app)
@@ -37,10 +36,15 @@ export const init = async (): Promise<Koa> => {
 
   app.use(cleanupMiddleware)
 
-  if (!isTest) app.listen(80, () => console.log('Listening on port 80'))
+  const server = createServer(app.callback())
+  app.context.wss = new Socket(server, app.context.em)
+  if (!isTest) {
+    server.listen(80, () => console.info('Listening on port 80'))
+  }
+
   return app
 }
 
-if (!isTest) init()
-
-export default init
+if (!isTest) {
+  init()
+}

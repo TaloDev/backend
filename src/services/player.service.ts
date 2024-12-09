@@ -15,7 +15,6 @@ import { devDataPlayerFilter } from '../middlewares/dev-data-middleware'
 import PlayerProp from '../entities/player-prop'
 import PlayerGroup from '../entities/player-group'
 import GameSave from '../entities/game-save'
-import { PlayerAuthErrorCode } from '../entities/player-auth'
 import PlayerAuthActivity from '../entities/player-auth-activity'
 import createClickhouseClient from '../lib/clickhouse/createClient'
 
@@ -94,8 +93,8 @@ export default class PlayerService extends Service {
 
         if (count > 0) {
           req.ctx.throw(400, {
-            message: `Player with identifier ${alias.identifier} already exists`,
-            errorCode: PlayerAuthErrorCode.IDENTIFIER_TAKEN
+            message: `Player with identifier '${alias.identifier}' already exists`,
+            errorCode: 'IDENTIFIER_TAKEN'
           })
         }
       }

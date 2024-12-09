@@ -7,12 +7,9 @@ import <%= h.changeCase.pascal(name) %> from '../entities/<%= name %>'
 import <%= h.changeCase.pascal(name) %>Policy from '../policies/<%= name %>.policy'
 
 export default class <%= h.changeCase.pascal(name) %>Service extends Service {
-  @Validate({
-    query: ['<%= h.changeCase.camel(name) %>Id']
-  })
   @HasPermission(<%= h.changeCase.pascal(name) %>Policy, 'get')
   async get(req: Request): Promise<Response> {
-    const { <%= h.changeCase.camel(name) %>Id } = req.query
+    const { <%= h.changeCase.camel(name) %>Id } = req.params
     const em: EntityManager = req.ctx.em
     const <%= h.changeCase.camel(name) %> = await em.getRepository(<%= h.changeCase.pascal(name) %>).findOne(Number(<%= h.changeCase.camel(name) %>Id))
 

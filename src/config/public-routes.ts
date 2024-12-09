@@ -6,7 +6,7 @@ import InvitePublicService from '../services/public/invite-public.service'
 import UserPublicService from '../services/public/user-public.service'
 import WebhookService from '../services/public/webhook.service'
 
-export default (app: Koa) => {
+export default function configurePublicRoutes(app: Koa) {
   const serviceOpts: ServiceOpts = {
     docs: {
       hidden: true

@@ -1,7 +1,15 @@
 services:
   backend:
+    build:
+      context: .
+      target: dev
+    image: backend
+    ports:
+      - 3000:80
     volumes:
       - .env:/usr/backend/.env
+      - ./src:/usr/backend/src
+      - ./tests:/usr/backend/tests
     depends_on:
       - db
       - redis
@@ -29,6 +37,7 @@ services:
     build:
       context: .
       dockerfile: ./clickhouse/Dockerfile
+    image: clickhouse
     environment:
       CLICKHOUSE_USER: ${CLICKHOUSE_USER}
       CLICKHOUSE_PASSWORD: ${CLICKHOUSE_PASSWORD}

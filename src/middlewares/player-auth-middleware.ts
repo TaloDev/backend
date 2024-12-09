@@ -43,8 +43,7 @@ export async function validateAuthSessionToken(ctx: Context, alias: PlayerAlias)
   }
 
   try {
-    const payload = await promisify(jwt.verify)(sessionToken, alias.player.auth.sessionKey)
-    if (payload.playerId !== ctx.state.currentPlayerId || payload.aliasId !== ctx.state.currentAliasId) {
+    if (!await validateSessionTokenJWT(sessionToken as string, alias)) {
       throw new Error()
     }
   } catch (err) {
@@ -53,4 +52,9 @@ export async function validateAuthSessionToken(ctx: Context, alias: PlayerAlias)
       errorCode: PlayerAuthErrorCode.INVALID_SESSION
     })
   }
+}
+
+export async function validateSessionTokenJWT(sessionToken: string, alias: PlayerAlias): Promise<boolean> {
+  const payload = await promisify(jwt.verify)(sessionToken, alias.player.auth.sessionKey)
+  return payload.playerId === alias.player.id && payload.aliasId === alias.id
 }

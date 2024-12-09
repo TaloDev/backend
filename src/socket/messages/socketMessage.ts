@@ -19,12 +19,18 @@ export const responses = [
 export type SocketMessageResponse = typeof responses[number]
 
 export function sendMessage<T>(conn: SocketConnection, res: SocketMessageResponse, data: T) {
-  conn.ws.send(JSON.stringify({
-    res,
-    data
-  }))
+  if (conn.ws.readyState === conn.ws.OPEN) {
+    conn.ws.send(JSON.stringify({
+      res,
+      data
+    }))
+  }
 }
 
 export function sendMessages<T>(conns: SocketConnection[], type: SocketMessageResponse, data: T) {
-  conns.forEach((ws) => sendMessage<T>(ws, type, data))
+  conns.forEach((ws) => {
+    if (ws.ws.readyState === ws.ws.OPEN) {
+      sendMessage<T>(ws, type, data)
+    }
+  })
 }

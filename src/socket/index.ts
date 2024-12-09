@@ -19,13 +19,17 @@ export default class Socket {
 
       ws.on('message', (data) => this.handleMessage(ws, data))
       ws.on('pong', () => this.handlePong(ws))
-      ws.on('close', () => this.handleClose(ws))
+      ws.on('close', () => this.handleCloseConnection(ws))
       ws.on('error', captureException)
     })
 
     this.router = new SocketRouter(this)
 
     this.heartbeat()
+  }
+
+  getServer(): WebSocketServer {
+    return this.wss
   }
 
   heartbeat(): void {
@@ -49,8 +53,10 @@ export default class Socket {
   async handleConnection(ws: WebSocket, req: IncomingMessage): Promise<void> {
     await RequestContext.create(this.em, async () => {
       const key = await authenticateSocket(req.headers?.authorization ?? '', ws)
-      this.connections.push(new SocketConnection(ws, key))
-      sendMessage(this.connections.at(-1), 'v1.connected', {})
+      if (key) {
+        this.connections.push(new SocketConnection(ws, key))
+        sendMessage(this.connections.at(-1), 'v1.connected', {})
+      }
     })
   }
 
@@ -67,7 +73,7 @@ export default class Socket {
     connection.alive = true
   }
 
-  handleClose(ws: WebSocket): void {
+  handleCloseConnection(ws: WebSocket): void {
     this.connections = this.connections.filter((conn) => conn.ws !== ws)
   }
 

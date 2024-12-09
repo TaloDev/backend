@@ -36,9 +36,9 @@ export default async function init(): Promise<Koa> {
 
   app.use(cleanupMiddleware)
 
+  const server = createServer(app.callback())
+  app.context.wss = new Socket(server, app.context.em)
   if (!isTest) {
-    const server = createServer(app.callback())
-    app.context.wss = new Socket(server, app.context.em)
     server.listen(80, () => console.info('Listening on port 80'))
   }
 

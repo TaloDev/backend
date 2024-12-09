@@ -10,13 +10,14 @@ const codes = [
   'ROUTING_ERROR',
   'LISTENER_ERROR',
   'INVALID_SOCKET_TOKEN',
-  'MISSING_ACCESS_KEY_SCOPE'
+  'INVALID_SESSION',
+  'MISSING_ACCESS_KEY_SCOPES'
 ] as const
 
 export type SocketErrorCode = typeof codes[number]
 
 export default class SocketError {
-  constructor(public code: SocketErrorCode, public message: string) {}
+  constructor(public code: SocketErrorCode, public message: string, public cause?: string) {}
 }
 
 type SocketErrorReq = SocketMessageRequest | 'unknown'
@@ -30,9 +31,11 @@ export function sendError(conn: SocketConnection, req: SocketErrorReq, error: So
     req: SocketErrorReq
     message: string
     errorCode: SocketErrorCode
+    cause?: string
   }>(conn, 'v1.error', {
     req,
     message: error.message,
-    errorCode: error.code
+    errorCode: error.code,
+    cause: error.cause
   })
 }

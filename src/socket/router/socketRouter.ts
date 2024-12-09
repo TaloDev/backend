@@ -35,7 +35,7 @@ export default class SocketRouter {
     let message: SocketMessage = null
 
     try {
-      message = await this.getParsedMessage(rawData)
+      message = await socketMessageValidator.parseAsync(JSON.parse(rawData.toString()))
 
       const handled = await this.routeMessage(conn, message)
       if (!handled) {
@@ -50,10 +50,6 @@ export default class SocketRouter {
     }
   }
 
-  async getParsedMessage(rawData: RawData): Promise<SocketMessage> {
-    return await socketMessageValidator.parseAsync(JSON.parse(rawData.toString()))
-  }
-
   async routeMessage(conn: SocketConnection, message: SocketMessage): Promise<boolean> {
     let handled = false
 
@@ -63,14 +59,14 @@ export default class SocketRouter {
           try {
             handled = true
 
-            if ((listener.options.requirePlayer ?? true) && !conn.playerAlias) {
-              sendError(conn, message.req, new SocketError('NO_PLAYER_FOUND', 'No player found'))
-            } else if ((listener.options.apiKeyScopes ?? []).some((scope) => !conn.scopes.includes(scope as APIKeyScope))) {
-              const missing = listener.options.apiKeyScopes.filter((scope) => !conn.scopes.includes(scope as APIKeyScope))
-              sendError(conn, message.req, new SocketError('MISSING_ACCESS_KEY_SCOPE', `Missing access key scope(s): ${missing.join(', ')}`))
+            if (!this.meetsPlayerRequirement(conn, listener)) {
+              sendError(conn, message.req, new SocketError('NO_PLAYER_FOUND', 'You must identify a player before sending this request'))
+            } else if (!this.meetsScopeRequirements(conn, listener)) {
+              const missing = this.getMissingScopes(conn, listener)
+              sendError(conn, message.req, new SocketError('MISSING_ACCESS_KEY_SCOPES', `Missing access key scope(s): ${missing.join(', ')}`))
             } else {
               const data = await listener.validator.parseAsync(message.data)
-              listener.handler({ conn, req: listener.req, data, socket: this.socket })
+              await listener.handler({ conn, req: listener.req, data, socket: this.socket })
             }
 
             break
@@ -78,7 +74,7 @@ export default class SocketRouter {
             if (err instanceof ZodError) {
               sendError(conn, message.req, new SocketError('INVALID_MESSAGE', 'Invalid message data for request'))
             } else {
-              sendError(conn, message.req, new SocketError('LISTENER_ERROR', 'An error occurred while processing the message'))
+              sendError(conn, message.req, new SocketError('LISTENER_ERROR', 'An error occurred while processing the message', err.message))
             }
           }
         }
@@ -86,5 +82,19 @@ export default class SocketRouter {
     }
 
     return handled
+  }
+
+  meetsPlayerRequirement(conn: SocketConnection, listener: SocketMessageListener<ZodType>): boolean {
+    const requirePlayer = listener.options.requirePlayer ?? true
+    return Boolean(conn.playerAlias) || !requirePlayer
+  }
+
+  meetsScopeRequirements(conn: SocketConnection, listener: SocketMessageListener<ZodType>): boolean {
+    const requiredScopes = listener.options.apiKeyScopes ?? []
+    return requiredScopes.every((scope) => conn.scopes.includes(scope as APIKeyScope))
+  }
+
+  getMissingScopes(conn: SocketConnection, listener: SocketMessageListener<ZodType>): APIKeyScope[] {
+    return (listener.options.apiKeyScopes ?? []).filter((scope) => !conn.scopes.includes(scope))
   }
 }

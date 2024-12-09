@@ -2,6 +2,7 @@ import { z, ZodType } from 'zod'
 import { SocketMessageRequest } from '../messages/socketMessage'
 import SocketConnection from '../socketConnection'
 import Socket from '..'
+import { APIKeyScope } from '../../entities/api-key'
 
 type SocketMessageListenerHandlerParams<T> = {
   conn: SocketConnection
@@ -13,7 +14,7 @@ type SocketMessageListenerHandlerParams<T> = {
 type SocketMessageListenerHandler<T> = (params: SocketMessageListenerHandlerParams<T>) => void | Promise<void>
 type SocketMessageListenerOptions = {
   requirePlayer?: boolean
-  apiKeyScopes?: string[]
+  apiKeyScopes?: APIKeyScope[]
 }
 
 export type SocketMessageListener<T extends ZodType> = {

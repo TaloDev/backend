@@ -42,7 +42,7 @@ describe('Player API service - identify - steamworks auth', () => {
         appid: appId,
         ownsapp: true,
         permanent: true,
-        timestamp: '2021-08-01T00:00:00Z',
+        timestamp: '2021-08-01T00:00:00.000Z',
         ownersteamid: steamId,
         usercanceled: false
       }
@@ -90,7 +90,7 @@ describe('Player API service - identify - steamworks auth', () => {
       },
       {
         key: 'META_STEAMWORKS_OWNS_APP_FROM_DATE',
-        value: '2021-08-01T00:00:00Z'
+        value: '2021-08-01T00:00:00.000Z'
       }
     ])
   })
@@ -118,7 +118,7 @@ describe('Player API service - identify - steamworks auth', () => {
         appid: appId,
         ownsapp: true,
         permanent: true,
-        timestamp: '2021-08-01T00:00:00Z',
+        timestamp: '2021-08-01T00:00:00.000Z',
         ownersteamid: steamId,
         usercanceled: false
       }
@@ -160,7 +160,7 @@ describe('Player API service - identify - steamworks auth', () => {
       },
       {
         key: 'META_STEAMWORKS_OWNS_APP_FROM_DATE',
-        value: '2021-08-01T00:00:00Z'
+        value: '2021-08-01T00:00:00.000Z'
       }
     ])
   })
@@ -187,7 +187,7 @@ describe('Player API service - identify - steamworks auth', () => {
         appid: appId,
         ownsapp: true,
         permanent: true,
-        timestamp: '2021-08-01T00:00:00Z',
+        timestamp: '2021-08-01T00:00:00.000Z',
         ownersteamid: steamId,
         usercanceled: false
       }
@@ -229,7 +229,7 @@ describe('Player API service - identify - steamworks auth', () => {
         appid: appId,
         ownsapp: true,
         permanent: true,
-        timestamp: '2021-08-01T00:00:00Z',
+        timestamp: '2021-08-01T00:00:00.000Z',
         ownersteamid: steamId,
         usercanceled: false
       }

@@ -97,7 +97,7 @@ describe('Leaderboard service - post', () => {
 
     expect(res.body).toStrictEqual({
       errors: {
-        internalName: ['A leaderboard with the internalName highscores already exists']
+        internalName: ['A leaderboard with the internalName \'highscores\' already exists']
       }
     })
   })

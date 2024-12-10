@@ -4,7 +4,6 @@ import { isAPIRoute } from './route-middleware'
 import { EntityManager } from '@mikro-orm/mysql'
 import PlayerAlias, { PlayerAliasService } from '../entities/player-alias'
 import { promisify } from 'util'
-import { PlayerAuthErrorCode } from '../entities/player-auth'
 
 export default async function playerAuthMiddleware(ctx: Context, next: Next): Promise<void> {
   if (isAPIRoute(ctx) && (ctx.state.currentPlayerId || ctx.state.currentAliasId)) {
@@ -38,19 +37,34 @@ export async function validateAuthSessionToken(ctx: Context, alias: PlayerAlias)
   if (!sessionToken) {
     ctx.throw(401, {
       message: 'The x-talo-session header is required for this player',
-      errorCode: PlayerAuthErrorCode.MISSING_SESSION
+      errorCode: 'MISSING_SESSION'
     })
   }
 
   try {
-    const payload = await promisify(jwt.verify)(sessionToken, alias.player.auth.sessionKey)
-    if (payload.playerId !== ctx.state.currentPlayerId || payload.aliasId !== ctx.state.currentAliasId) {
+    const valid = await validateSessionTokenJWT(
+      sessionToken as string,
+      alias,
+      ctx.state.currentPlayerId,
+      ctx.state.currentAliasId
+    )
+    if (!valid) {
       throw new Error()
     }
   } catch (err) {
     ctx.throw(401, {
       message: 'The x-talo-session header is invalid',
-      errorCode: PlayerAuthErrorCode.INVALID_SESSION
+      errorCode: 'INVALID_SESSION'
     })
   }
+}
+
+export async function validateSessionTokenJWT(
+  sessionToken: string,
+  alias: PlayerAlias,
+  expectedPlayerId: string,
+  expectedAliasId: number
+): Promise<boolean> {
+  const payload = await promisify(jwt.verify)(sessionToken, alias.player.auth.sessionKey)
+  return payload.playerId === expectedPlayerId && payload.aliasId === expectedAliasId
 }

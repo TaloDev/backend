@@ -19,7 +19,7 @@ export default class GameFeedbackCategory {
       return [
         {
           check: !duplicateInternalName,
-          error: `A feedback category with the internalName ${val} already exists`
+          error: `A feedback category with the internalName '${val}' already exists`
         }
       ]
     }

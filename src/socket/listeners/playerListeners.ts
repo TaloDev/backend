@@ -58,7 +58,7 @@ const playerListeners: SocketMessageListener<ZodType>[] = [
         return
       }
 
-      conn.playerAlias = alias
+      conn.playerAliasId = alias.id
       sendMessage(conn, 'v1.players.identify.success', alias)
     },
     {

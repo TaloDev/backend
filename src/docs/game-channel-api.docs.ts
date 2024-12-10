@@ -4,6 +4,11 @@ import APIDocs from './api-docs'
 const GameChannelAPIDocs: APIDocs<GameChannelAPIService> = {
   index: {
     description: 'List game channels',
+    params: {
+      query: {
+        page: 'The current pagination index (starting at 0)'
+      }
+    },
     samples: [
       {
         title: 'Sample response',
@@ -12,27 +17,44 @@ const GameChannelAPIDocs: APIDocs<GameChannelAPIService> = {
             {
               id: 1,
               name: 'general-chat',
-              ownerAliasId: null,
+              owner: null,
               totalMessages: 308,
               memberCount: 42,
               props: [
                 { key: 'channelType', value: 'public' }
               ],
-              createdAt: '2024-12-09T12:00:00Z',
-              updatedAt: '2024-12-09T12:00:00Z'
+              createdAt: '2024-12-09T12:00:00.000Z',
+              updatedAt: '2024-12-09T12:00:00.000Z'
             },
             {
               id: 2,
               name: 'guild-chat',
-              ownerAliasId: 1,
+              owner: {
+                id: 105,
+                service: 'username',
+                identifier: 'johnny_the_admin',
+                player: {
+                  id: '85d67584-1346-4fad-a17f-fd7bd6c85364',
+                  props: [],
+                  devBuild: false,
+                  createdAt: '2024-10-25T18:18:28.000Z',
+                  lastSeenAt: '2024-12-04T07:15:13.000Z',
+                  groups: []
+                },
+                lastSeenAt: '2024-12-04T07:15:13.000Z',
+                createdAt: '2024-10-25T18:18:28.000Z',
+                updatedAt: '2024-12-04T07:15:13.000Z'
+              },
               props: [
                 { key: 'channelType', value: 'guild' },
                 { key: 'guildId', value: '5912' }
               ],
-              createdAt: '2024-12-09T12:00:00Z',
-              updatedAt: '2024-12-09T12:00:00Z'
+              createdAt: '2024-12-09T12:00:00.000Z',
+              updatedAt: '2024-12-09T12:00:00.000Z'
             }
-          ]
+          ],
+          count: 2,
+          itemsPerPage: 50
         }
       }
     ]
@@ -52,9 +74,10 @@ const GameChannelAPIDocs: APIDocs<GameChannelAPIService> = {
       {
         title: 'Sample request',
         sample: {
-          name: 'general-chat',
+          name: 'guild-chat',
           props: [
-            { key: 'channelType', value: 'public' }
+            { key: 'channelType', value: 'guild' },
+            { key: 'guildId', value: '5912' }
           ]
         }
       },
@@ -63,15 +86,31 @@ const GameChannelAPIDocs: APIDocs<GameChannelAPIService> = {
         sample: {
           channel: {
             id: 1,
-            name: 'general-chat',
-            ownerAliasId: 1,
+            name: 'guild-chat',
+            owner: {
+              id: 105,
+              service: 'username',
+              identifier: 'johnny_the_admin',
+              player: {
+                id: '85d67584-1346-4fad-a17f-fd7bd6c85364',
+                props: [],
+                devBuild: false,
+                createdAt: '2024-10-25T18:18:28.000Z',
+                lastSeenAt: '2024-12-04T07:15:13.000Z',
+                groups: []
+              },
+              lastSeenAt: '2024-12-04T07:15:13.000Z',
+              createdAt: '2024-10-25T18:18:28.000Z',
+              updatedAt: '2024-12-04T07:15:13.000Z'
+            },
             totalMessages: 0,
             memberCount: 1,
             props: [
-              { key: 'channelType', value: 'public' }
+              { key: 'channelType', value: 'guild' },
+              { key: 'guildId', value: '5912' }
             ],
-            createdAt: '2024-12-09T12:00:00Z',
-            updatedAt: '2024-12-09T12:00:00Z'
+            createdAt: '2024-12-09T12:00:00.000Z',
+            updatedAt: '2024-12-09T12:00:00.000Z'
           }
         }
       }
@@ -106,8 +145,8 @@ const GameChannelAPIDocs: APIDocs<GameChannelAPIService> = {
             props: [
               { key: 'channelType', value: 'public' }
             ],
-            createdAt: '2024-12-09T12:00:00Z',
-            updatedAt: '2024-12-09T12:00:00Z'
+            createdAt: '2024-12-09T12:00:00.000Z',
+            updatedAt: '2024-12-09T12:00:00.000Z'
           }
         }
       }
@@ -157,15 +196,30 @@ const GameChannelAPIDocs: APIDocs<GameChannelAPIService> = {
           channel: {
             id: 1,
             name: 'new-general-chat',
-            ownerAliasId: 2,
+            owner: {
+              id: 2,
+              service: 'username',
+              identifier: 'general_chat_admin',
+              player: {
+                id: '85d67584-1346-4fad-a17f-fd7bd6c85364',
+                props: [],
+                devBuild: false,
+                createdAt: '2024-10-25T18:18:28.000Z',
+                lastSeenAt: '2024-12-04T07:15:13.000Z',
+                groups: []
+              },
+              lastSeenAt: '2024-12-04T07:15:13.000Z',
+              createdAt: '2024-10-25T18:18:28.000Z',
+              updatedAt: '2024-12-04T07:15:13.000Z'
+            },
             totalMessages: 308,
             memberCount: 42,
             props: [
               { key: 'channelType', value: 'public' },
               { key: 'recentlyUpdated', value: 'true' }
             ],
-            createdAt: '2024-12-09T12:00:00Z',
-            updatedAt: '2024-12-09T12:01:00Z'
+            createdAt: '2024-12-09T12:00:00.000Z',
+            updatedAt: '2024-12-09T12:01:00.000Z'
           }
         }
       }

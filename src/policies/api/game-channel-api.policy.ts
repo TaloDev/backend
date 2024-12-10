@@ -1,17 +1,26 @@
 import Policy from '../policy'
-import { PolicyDenial, PolicyResponse } from 'koa-clay'
+import { PolicyDenial, PolicyResponse, Request } from 'koa-clay'
 import { APIKeyScope } from '../../entities/api-key'
 import PlayerAlias from '../../entities/player-alias'
 import { EntityManager } from '@mikro-orm/mysql'
+import GameChannel from '../../entities/game-channel'
 
 export default class GameChannelAPIPolicy extends Policy {
   async getAlias(): Promise<PlayerAlias | null> {
     const em: EntityManager = this.ctx.em
-    return await em.getRepository(PlayerAlias).findOne({
+    return em.getRepository(PlayerAlias).findOne({
       id: this.ctx.state.currentAliasId,
       player: {
         game: this.ctx.state.game
       }
+    })
+  }
+
+  async getChannel(req: Request): Promise<GameChannel | null> {
+    const em: EntityManager = this.ctx.em
+    return em.getRepository(GameChannel).findOne({
+      id: Number(req.params.id),
+      game: this.ctx.state.alias.player.game
     })
   }
 
@@ -33,30 +42,42 @@ export default class GameChannelAPIPolicy extends Policy {
     return await this.hasScope(APIKeyScope.WRITE_GAME_CHANNELS)
   }
 
-  async join(): Promise<PolicyResponse> {
+  async join(req: Request): Promise<PolicyResponse> {
     this.ctx.state.alias = await this.getAlias()
     if (!this.ctx.state.alias) return new PolicyDenial({ message: 'Player not found' }, 404)
+
+    this.ctx.state.channel = await this.getChannel(req)
+    if (!this.ctx.state.channel) return new PolicyDenial({ message: 'Channel not found' }, 404)
 
     return await this.hasScope(APIKeyScope.WRITE_GAME_CHANNELS)
   }
 
-  async leave(): Promise<PolicyResponse> {
+  async leave(req: Request): Promise<PolicyResponse> {
     this.ctx.state.alias = await this.getAlias()
     if (!this.ctx.state.alias) return new PolicyDenial({ message: 'Player not found' }, 404)
+
+    this.ctx.state.channel = await this.getChannel(req)
+    if (!this.ctx.state.channel) return new PolicyDenial({ message: 'Channel not found' }, 404)
 
     return await this.hasScope(APIKeyScope.WRITE_GAME_CHANNELS)
   }
 
-  async put(): Promise<PolicyResponse> {
+  async put(req: Request): Promise<PolicyResponse> {
     this.ctx.state.alias = await this.getAlias()
     if (!this.ctx.state.alias) return new PolicyDenial({ message: 'Player not found' }, 404)
+
+    this.ctx.state.channel = await this.getChannel(req)
+    if (!this.ctx.state.channel) return new PolicyDenial({ message: 'Channel not found' }, 404)
 
     return await this.hasScope(APIKeyScope.WRITE_GAME_CHANNELS)
   }
 
-  async delete(): Promise<PolicyResponse> {
+  async delete(req: Request): Promise<PolicyResponse> {
     this.ctx.state.alias = await this.getAlias()
     if (!this.ctx.state.alias) return new PolicyDenial({ message: 'Player not found' }, 404)
+
+    this.ctx.state.channel = await this.getChannel(req)
+    if (!this.ctx.state.channel) return new PolicyDenial({ message: 'Channel not found' }, 404)
 
     return await this.hasScope(APIKeyScope.WRITE_GAME_CHANNELS)
   }

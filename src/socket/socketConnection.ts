@@ -3,13 +3,14 @@ import PlayerAlias from '../entities/player-alias'
 import Game from '../entities/game'
 import APIKey, { APIKeyScope } from '../entities/api-key'
 import { IncomingHttpHeaders, IncomingMessage } from 'http'
+import { RequestContext } from '@mikro-orm/core'
 
 export default class SocketConnection {
   alive: boolean = true
-  playerAlias: PlayerAlias | null = null
+  playerAliasId: number | null = null
   game: Game | null = null
   scopes: APIKeyScope[] = []
-  headers: IncomingHttpHeaders = {}
+  private headers: IncomingHttpHeaders = {}
 
   constructor(readonly ws: WebSocket, apiKey: APIKey, req: IncomingMessage) {
     this.game = apiKey.game
@@ -23,5 +24,22 @@ export default class SocketConnection {
 
   getAliasFromHeader(): number | null {
     return this.headers['x-talo-alias'] ? Number(this.headers['x-talo-alias']) : null
+  }
+
+  async getPlayerAlias(): Promise<PlayerAlias | null> {
+    return RequestContext.getEntityManager()
+      .getRepository(PlayerAlias)
+      .findOne(this.playerAliasId, { refresh: true })
+  }
+
+  hasScope(scope: APIKeyScope): boolean {
+    return this.scopes.includes(APIKeyScope.FULL_ACCESS) || this.scopes.includes(scope)
+  }
+
+  hasScopes(scopes: APIKeyScope[]): boolean {
+    if (this.hasScope(APIKeyScope.FULL_ACCESS)) {
+      return true
+    }
+    return scopes.every((scope) => this.hasScope(scope))
   }
 }

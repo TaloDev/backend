@@ -11,7 +11,7 @@ export class CreateGameChannelTables extends Migration {
     this.addSql('alter table `game_channel_members` add index `game_channel_members_game_channel_id_index`(`game_channel_id`);')
     this.addSql('alter table `game_channel_members` add index `game_channel_members_player_alias_id_index`(`player_alias_id`);')
 
-    this.addSql('alter table `game_channel` add constraint `game_channel_owner_id_foreign` foreign key (`owner_id`) references `player_alias` (`id`) on delete cascade;')
+    this.addSql('alter table `game_channel` add constraint `game_channel_owner_id_foreign` foreign key (`owner_id`) references `player_alias` (`id`) on update cascade on delete set null;')
     this.addSql('alter table `game_channel` add constraint `game_channel_game_id_foreign` foreign key (`game_id`) references `game` (`id`) on update cascade;')
 
     this.addSql('alter table `game_channel_members` add constraint `game_channel_members_game_channel_id_foreign` foreign key (`game_channel_id`) references `game_channel` (`id`) on update cascade on delete cascade;')

@@ -1,4 +1,4 @@
-import { Cascade, Collection, Embedded, Entity, EntityManager, ManyToMany, ManyToOne, PrimaryKey, Property } from '@mikro-orm/mysql'
+import { Collection, Embedded, Entity, EntityManager, ManyToMany, ManyToOne, PrimaryKey, Property } from '@mikro-orm/mysql'
 import PlayerAlias from './player-alias'
 import Game from './game'
 import Prop from './prop'
@@ -29,7 +29,7 @@ export default class GameChannel {
   @Property()
   name: string
 
-  @ManyToOne(() => PlayerAlias, { cascade: [Cascade.REMOVE] })
+  @ManyToOne(() => PlayerAlias, { nullable: true, eager: true })
   owner: PlayerAlias
 
   @ManyToMany(() => PlayerAlias, (alias) => alias.channels, { owner: true })
@@ -62,7 +62,7 @@ export default class GameChannel {
     return {
       id: this.id,
       name: this.name,
-      ownerAliasId: this.owner.id,
+      owner: this.owner,
       totalMessages: this.totalMessages,
       props: this.props,
       createdAt: this.createdAt,

@@ -45,7 +45,7 @@ describe('Game channel listeners - message', () => {
         expect(actual.res).toBe('v1.channels.message')
         expect(actual.data.channel.id).toBe(channel.id)
         expect(actual.data.message).toBe('Hello world')
-        expect(actual.data.fromPlayerAlias.id).toBe(player.aliases[0].id)
+        expect(actual.data.playerAlias.id).toBe(player.aliases[0].id)
       })
   })
 

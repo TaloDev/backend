@@ -28,18 +28,18 @@ const gameChannelListeners: SocketMessageListener<ZodType>[] = [
       if (!channel) {
         throw new Error('Channel not found')
       }
-      if (!channel.members.getIdentifiers().includes(conn.playerAlias.id)) {
+      if (!channel.members.getIdentifiers().includes(conn.playerAliasId)) {
         throw new Error('Player not in channel')
       }
 
       const conns = socket.findConnections((conn) => {
-        return conn.scopes.includes(APIKeyScope.READ_GAME_CHANNELS) &&
-          channel.members.getIdentifiers().includes(conn.playerAlias.id)
+        return conn.hasScope(APIKeyScope.READ_GAME_CHANNELS) &&
+          channel.members.getIdentifiers().includes(conn.playerAliasId)
       })
       sendMessages(conns, 'v1.channels.message', {
         channel,
         message: data.message,
-        fromPlayerAlias: conn.playerAlias
+        playerAlias: await conn.getPlayerAlias()
       })
 
       channel.totalMessages++

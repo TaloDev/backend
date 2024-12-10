@@ -11,7 +11,7 @@ import PlayerAlias from '../../entities/player-alias'
 
 function sendMessageToChannelMembers<T>(req: Request, channel: GameChannel, res: SocketMessageResponse, data: T) {
   const socket: Socket = req.ctx.wss
-  const conns = socket.findConnections((conn) => channel.members.getIdentifiers().includes(conn.playerAlias.id))
+  const conns = socket.findConnections((conn) => channel.members.getIdentifiers().includes(conn.playerAliasId))
   sendMessages(conns, res, data)
 }
 
@@ -27,6 +27,7 @@ function canModifyChannel(channel: GameChannel, alias: PlayerAlias): boolean {
   },
   {
     method: 'GET',
+    path: '/subscriptions',
     handler: 'subscriptions',
     docs: GameChannelAPIDocs.subscriptions
   },
@@ -61,6 +62,8 @@ function canModifyChannel(channel: GameChannel, alias: PlayerAlias): boolean {
   }
 ])
 export default class GameChannelAPIService extends APIService {
+  @Validate({ query: ['page'] })
+  @HasPermission(GameChannelAPIPolicy, 'index')
   @ForwardTo('games.game-channels', 'index')
   async index(req: Request): Promise<Response> {
     return forwardRequest(req)
@@ -102,7 +105,7 @@ export default class GameChannelAPIService extends APIService {
     await em.persistAndFlush(channel)
 
     const socket: Socket = req.ctx.wss
-    const conn = socket.findConnections((conn) => conn.playerAlias.id === req.ctx.state.alias.id)[0]
+    const conn = socket.findConnections((conn) => conn.playerAliasId === req.ctx.state.alias.id)[0]
     if (conn) {
       sendMessage(conn, 'v1.channels.player-joined', { channel })
     }
@@ -116,23 +119,12 @@ export default class GameChannelAPIService extends APIService {
   }
 
   @Validate({
-    headers: ['x-talo-alias'],
-    body: ['name']
+    headers: ['x-talo-alias']
   })
   @HasPermission(GameChannelAPIPolicy, 'join')
   async join(req: Request): Promise<Response> {
-    const { name } = req.body
     const em: EntityManager = req.ctx.em
-
-    const channel = await em.getRepository(GameChannel).findOne({ game: req.ctx.state.game, name })
-    if (!channel) {
-      return {
-        status: 404,
-        body: {
-          error: 'Channel not found'
-        }
-      }
-    }
+    const channel: GameChannel = req.ctx.state.channel
 
     if (!(await channel.members.load()).getIdentifiers().includes(req.ctx.state.alias.id)) {
       channel.members.add(req.ctx.state.alias)
@@ -150,26 +142,14 @@ export default class GameChannelAPIService extends APIService {
   }
 
   @Validate({
-    headers: ['x-talo-alias'],
-    body: ['name']
+    headers: ['x-talo-alias']
   })
   @HasPermission(GameChannelAPIPolicy, 'leave')
   async leave(req: Request): Promise<Response> {
-    const { id } = req.params
     const em: EntityManager = req.ctx.em
-
-    const channel = await em.getRepository(GameChannel).findOne(Number(id))
-    if (!channel) {
-      return {
-        status: 404,
-        body: {
-          error: 'Channel not found'
-        }
-      }
-    }
+    const channel: GameChannel = req.ctx.state.channel
 
     if (channel.autoCleanup && channel.owner.id === req.ctx.state.alias.id) {
-      await channel.members.removeAll()
       await em.removeAndFlush(channel)
 
       return {
@@ -193,19 +173,9 @@ export default class GameChannelAPIService extends APIService {
   })
   @HasPermission(GameChannelAPIPolicy, 'put')
   async put(req: Request): Promise<Response> {
-    const { id } = req.params
     const { name, props, ownerAliasId } = req.body
     const em: EntityManager = req.ctx.em
-
-    const channel = await em.getRepository(GameChannel).findOne(Number(id))
-    if (!channel) {
-      return {
-        status: 404,
-        body: {
-          error: 'Channel not found'
-        }
-      }
-    }
+    const channel: GameChannel = req.ctx.state.channel
 
     if (canModifyChannel(channel, req.ctx.state.alias)) {
       return {
@@ -259,18 +229,8 @@ export default class GameChannelAPIService extends APIService {
   })
   @HasPermission(GameChannelAPIPolicy, 'delete')
   async delete(req: Request): Promise<Response> {
-    const { id } = req.params
     const em: EntityManager = req.ctx.em
-
-    const channel = await em.getRepository(GameChannel).findOne(Number(id))
-    if (!channel) {
-      return {
-        status: 404,
-        body: {
-          error: 'Channel not found'
-        }
-      }
-    }
+    const channel: GameChannel = req.ctx.state.channel
 
     if (canModifyChannel(channel, req.ctx.state.alias)) {
       return {

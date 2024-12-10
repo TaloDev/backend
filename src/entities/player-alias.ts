@@ -45,7 +45,7 @@ export default class PlayerAlias {
 
   async createSocketToken(redis: Redis): Promise<string> {
     const token = v4()
-    await redis.set(`socketTokens.${this.id}`, token)
+    await redis.set(`socketTokens.${this.id}`, token, 'EX', 3600)
     return token
   }
 

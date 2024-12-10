@@ -2608,7 +2608,8 @@
             "id"
           ],
           "referencedTableName": "player_alias",
-          "deleteRule": "cascade"
+          "deleteRule": "set null",
+          "updateRule": "cascade"
         },
         "game_channel_game_id_foreign": {
           "constraintName": "game_channel_game_id_foreign",

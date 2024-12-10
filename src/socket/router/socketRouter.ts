@@ -45,20 +45,16 @@ export default class SocketRouter {
       if (err instanceof ZodError) {
         sendError(conn, 'unknown', new SocketError('INVALID_MESSAGE', 'Invalid message request'))
       } else {
-        sendError(conn, message.req, new SocketError('ROUTING_ERROR', 'An error occurred while routing the message'))
+        sendError(conn, message?.req ?? 'unknown', new SocketError('ROUTING_ERROR', 'An error occurred while routing the message'))
       }
     }
   }
 
   async routeMessage(conn: SocketConnection, message: SocketMessage): Promise<boolean> {
-    let handled = false
-
     for (const route of routes) {
       for await (const listener of route) {
         if (listener.req === message.req) {
           try {
-            handled = true
-
             if (!this.meetsPlayerRequirement(conn, listener)) {
               sendError(conn, message.req, new SocketError('NO_PLAYER_FOUND', 'You must identify a player before sending this request'))
             } else if (!this.meetsScopeRequirements(conn, listener)) {
@@ -69,29 +65,29 @@ export default class SocketRouter {
               await listener.handler({ conn, req: listener.req, data, socket: this.socket })
             }
 
-            break
+            return true
           } catch (err) {
             if (err instanceof ZodError) {
               sendError(conn, message.req, new SocketError('INVALID_MESSAGE', 'Invalid message data for request'))
             } else {
-              sendError(conn, message.req, new SocketError('LISTENER_ERROR', 'An error occurred while processing the message', err.message))
+              sendError(conn, message?.req, new SocketError('LISTENER_ERROR', 'An error occurred while processing the message', err.message))
             }
           }
         }
       }
     }
 
-    return handled
+    return false
   }
 
   meetsPlayerRequirement(conn: SocketConnection, listener: SocketMessageListener<ZodType>): boolean {
     const requirePlayer = listener.options.requirePlayer ?? true
-    return Boolean(conn.playerAlias) || !requirePlayer
+    return Boolean(conn.playerAliasId) || !requirePlayer
   }
 
   meetsScopeRequirements(conn: SocketConnection, listener: SocketMessageListener<ZodType>): boolean {
     const requiredScopes = listener.options.apiKeyScopes ?? []
-    return requiredScopes.every((scope) => conn.scopes.includes(scope as APIKeyScope))
+    return conn.hasScopes(requiredScopes)
   }
 
   getMissingScopes(conn: SocketConnection, listener: SocketMessageListener<ZodType>): APIKeyScope[] {

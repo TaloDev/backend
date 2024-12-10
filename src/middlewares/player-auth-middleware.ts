@@ -42,7 +42,13 @@ export async function validateAuthSessionToken(ctx: Context, alias: PlayerAlias)
   }
 
   try {
-    if (!await validateSessionTokenJWT(sessionToken as string, alias)) {
+    const valid = await validateSessionTokenJWT(
+      sessionToken as string,
+      alias,
+      ctx.state.currentPlayerId,
+      ctx.state.currentAliasId
+    )
+    if (!valid) {
       throw new Error()
     }
   } catch (err) {
@@ -53,7 +59,12 @@ export async function validateAuthSessionToken(ctx: Context, alias: PlayerAlias)
   }
 }
 
-export async function validateSessionTokenJWT(sessionToken: string, alias: PlayerAlias): Promise<boolean> {
+export async function validateSessionTokenJWT(
+  sessionToken: string,
+  alias: PlayerAlias,
+  expectedPlayerId: string,
+  expectedAliasId: number
+): Promise<boolean> {
   const payload = await promisify(jwt.verify)(sessionToken, alias.player.auth.sessionKey)
-  return payload.playerId === alias.player.id && payload.aliasId === alias.id
+  return payload.playerId === expectedPlayerId && payload.aliasId === expectedAliasId
 }

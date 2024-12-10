@@ -21,9 +21,12 @@ const playerListeners: SocketMessageListener<ZodType>[] = [
     async ({ conn, req, data }) => {
       const redis = new Redis(redisConfig)
       const token = await redis.get(`socketTokens.${data.playerAliasId}`)
+      await redis.quit()
+
+      let alias: PlayerAlias
 
       if (token === data.socketToken) {
-        conn.playerAlias = await (RequestContext.getEntityManager()
+        alias = await (RequestContext.getEntityManager()
           .getRepository(PlayerAlias)
           .findOne({
             id: data.playerAliasId,
@@ -34,23 +37,29 @@ const playerListeners: SocketMessageListener<ZodType>[] = [
             populate: ['player.auth']
           }))
 
-        if (conn.playerAlias.service === PlayerAliasService.TALO) {
+        if (alias.service === PlayerAliasService.TALO) {
           try {
-            if (!await validateSessionTokenJWT(data.sessionToken, conn.playerAlias)) {
+            const valid = await validateSessionTokenJWT(
+              data.sessionToken,
+              alias,
+              conn.getPlayerFromHeader(),
+              conn.getAliasFromHeader()
+            )
+            if (!valid) {
               throw new Error()
             }
-            sendMessage(conn, 'v1.players.identify.success', conn.playerAlias)
           } catch (err) {
             sendError(conn, req, new SocketError('INVALID_SESSION', 'Session token is invalid'))
+            return
           }
-        } else {
-          sendMessage(conn, 'v1.players.identify.success', conn.playerAlias)
         }
       } else {
         sendError(conn, req, new SocketError('INVALID_SOCKET_TOKEN', 'Invalid socket token'))
+        return
       }
 
-      await redis.quit()
+      conn.playerAlias = alias
+      sendMessage(conn, 'v1.players.identify.success', alias)
     },
     {
       requirePlayer: false,

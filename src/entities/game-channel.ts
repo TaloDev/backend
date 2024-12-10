@@ -62,7 +62,7 @@ export default class GameChannel {
     return {
       id: this.id,
       name: this.name,
-      owner: this.owner,
+      ownerAliasId: this.owner.id,
       totalMessages: this.totalMessages,
       props: this.props,
       createdAt: this.createdAt,
@@ -73,7 +73,7 @@ export default class GameChannel {
   async toJSONWithCount(em: EntityManager, includeDevData: boolean) {
     return {
       ...this.toJSON(),
-      count: await this.members.loadCount({
+      memberCount: await this.members.loadCount({
         where: {
           player: includeDevData ? {} : devDataPlayerFilter(em)
         }

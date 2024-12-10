@@ -76,7 +76,7 @@ export default class GameChannelAPIService extends APIService {
     return {
       status: 200,
       body: {
-        channels
+        channels: await Promise.all(channels.map((channel) => channel.toJSONWithCount(req.ctx.em, req.ctx.state.includeDevData)))
       }
     }
   }
@@ -110,7 +110,7 @@ export default class GameChannelAPIService extends APIService {
     return {
       status: 200,
       body: {
-        channel
+        channel: await channel.toJSONWithCount(em, req.ctx.state.includeDevData)
       }
     }
   }
@@ -144,7 +144,7 @@ export default class GameChannelAPIService extends APIService {
     return {
       status: 200,
       body: {
-        channel
+        channel: await channel.toJSONWithCount(em, req.ctx.state.includeDevData)
       }
     }
   }
@@ -249,7 +249,7 @@ export default class GameChannelAPIService extends APIService {
     return {
       status: 200,
       body: {
-        channel
+        channel: await channel.toJSONWithCount(em, req.ctx.state.includeDevData)
       }
     }
   }

@@ -77,7 +77,9 @@ describe('Socket router', () => {
       .sendJson({
         req: 'v1.channels.message',
         data: {
-          channelName: 'general',
+          channel: {
+            id: 1
+          },
           message: 'Hello, world!'
         }
       })
@@ -107,7 +109,9 @@ describe('Socket router', () => {
       .sendJson({
         req: 'v1.channels.message',
         data: {
-          channelName: 'general',
+          channel: {
+            id: 1
+          },
           message: 'Hello, world!'
         }
       })
@@ -137,7 +141,9 @@ describe('Socket router', () => {
       .sendJson({
         req: 'v1.channels.message',
         data: {
-          channelName: 'general',
+          channel: {
+            id: 1
+          },
           myMessageToTheChannelIsGoingToBeThis: 'Hello, world!'
         }
       })

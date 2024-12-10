@@ -10,14 +10,16 @@ const gameChannelListeners: SocketMessageListener<ZodType>[] = [
   createListener(
     'v1.channels.message',
     z.object({
-      channelName: z.string(),
+      channel: z.object({
+        id: z.number()
+      }),
       message: z.string()
     }),
     async ({ conn, data, socket }) => {
       const channel = await (RequestContext.getEntityManager()
         .getRepository(GameChannel)
         .findOne({
-          name: data.channelName,
+          id: data.channel.id,
           game: conn.game
         }, {
           populate: ['members']
@@ -35,7 +37,7 @@ const gameChannelListeners: SocketMessageListener<ZodType>[] = [
           channel.members.getIdentifiers().includes(conn.playerAlias.id)
       })
       sendMessages(conns, 'v1.channels.message', {
-        channelName: channel.name,
+        channel,
         message: data.message,
         fromPlayerAlias: conn.playerAlias
       })

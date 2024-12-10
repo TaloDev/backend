@@ -17,7 +17,11 @@ describe('Game channel listeners - message', () => {
   })
 
   it('should successfully send a message', async () => {
-    const [identifyMessage, token, player] = await createSocketIdentifyMessage([APIKeyScope.READ_PLAYERS, APIKeyScope.WRITE_GAME_CHANNELS])
+    const [identifyMessage, token, player] = await createSocketIdentifyMessage([
+      APIKeyScope.READ_PLAYERS,
+      APIKeyScope.READ_GAME_CHANNELS,
+      APIKeyScope.WRITE_GAME_CHANNELS
+    ])
     const channel = await new GameChannelFactory(player.game).one()
     channel.members.add(player.aliases[0])
     await (<EntityManager>global.em).persistAndFlush(channel)
@@ -31,20 +35,26 @@ describe('Game channel listeners - message', () => {
       .sendJson({
         req: 'v1.channels.message',
         data: {
-          channelName: channel.name,
+          channel: {
+            id: channel.id
+          },
           message: 'Hello world'
         }
       })
       .expectJson((actual) => {
         expect(actual.res).toBe('v1.channels.message')
-        expect(actual.data.channelName).toBe(channel.name)
+        expect(actual.data.channel.id).toBe(channel.id)
         expect(actual.data.message).toBe('Hello world')
         expect(actual.data.fromPlayerAlias.id).toBe(player.aliases[0].id)
       })
   })
 
   it('should receive an error if the player is not in the channel', async () => {
-    const [identifyMessage, token, player] = await createSocketIdentifyMessage([APIKeyScope.READ_PLAYERS, APIKeyScope.WRITE_GAME_CHANNELS])
+    const [identifyMessage, token, player] = await createSocketIdentifyMessage([
+      APIKeyScope.READ_PLAYERS,
+      APIKeyScope.READ_GAME_CHANNELS,
+      APIKeyScope.WRITE_GAME_CHANNELS
+    ])
     const channel = await new GameChannelFactory(player.game).one()
     await (<EntityManager>global.em).persistAndFlush(channel)
 
@@ -57,7 +67,9 @@ describe('Game channel listeners - message', () => {
       .sendJson({
         req: 'v1.channels.message',
         data: {
-          channelName: channel.name,
+          channel: {
+            id: channel.id
+          },
           message: 'Hello world'
         }
       })
@@ -74,7 +86,11 @@ describe('Game channel listeners - message', () => {
   })
 
   it('should receive an error if the channel does not exist', async () => {
-    const [identifyMessage, token] = await createSocketIdentifyMessage([APIKeyScope.READ_PLAYERS, APIKeyScope.WRITE_GAME_CHANNELS])
+    const [identifyMessage, token] = await createSocketIdentifyMessage([
+      APIKeyScope.READ_PLAYERS,
+      APIKeyScope.READ_GAME_CHANNELS,
+      APIKeyScope.WRITE_GAME_CHANNELS
+    ])
 
     await request(global.server)
       .ws('/')
@@ -85,7 +101,9 @@ describe('Game channel listeners - message', () => {
       .sendJson({
         req: 'v1.channels.message',
         data: {
-          channelName: 'Guild chat',
+          channel: {
+            id: 999
+          },
           message: 'Hello world'
         }
       })

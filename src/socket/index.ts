@@ -54,7 +54,7 @@ export default class Socket {
     await RequestContext.create(this.em, async () => {
       const key = await authenticateSocket(req.headers?.authorization ?? '', ws)
       if (key) {
-        this.connections.push(new SocketConnection(ws, key))
+        this.connections.push(new SocketConnection(ws, key, req))
         sendMessage(this.connections.at(-1), 'v1.connected', {})
       }
     })

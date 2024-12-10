@@ -12,7 +12,9 @@ const GameChannelAPIDocs: APIDocs<GameChannelAPIService> = {
             {
               id: 1,
               name: 'general-chat',
-              owner: null,
+              ownerAliasId: null,
+              totalMessages: 308,
+              memberCount: 42,
               props: [
                 { key: 'channelType', value: 'public' }
               ],
@@ -22,29 +24,7 @@ const GameChannelAPIDocs: APIDocs<GameChannelAPIService> = {
             {
               id: 2,
               name: 'guild-chat',
-              owner: {
-                id: 1,
-                service: 'username',
-                identifier: 'guild_admin_bob',
-                player: {
-                  id: '7a4e70ec-6ee6-418e-923d-b3a45051b7f9',
-                  props: [
-                    { key: 'currentLevel', value: '58' },
-                    { key: 'xPos', value: '13.29' },
-                    { key: 'yPos', value: '26.44' },
-                    { key: 'zoneId', value: '3' }
-                  ],
-                  aliases: [
-                    '/* [Circular] */'
-                  ],
-                  devBuild: false,
-                  createdAt: '2022-01-15T13:20:32.133Z',
-                  lastSeenAt: '2022-04-12T15:09:43.066Z',
-                  groups: [
-                    { id: '5826ca71-1964-4a1b-abcb-a61ffbe003be', name: 'Winners' }
-                  ]
-                }
-              },
+              ownerAliasId: 1,
               props: [
                 { key: 'channelType', value: 'guild' },
                 { key: 'guildId', value: '5912' }
@@ -84,29 +64,9 @@ const GameChannelAPIDocs: APIDocs<GameChannelAPIService> = {
           channel: {
             id: 1,
             name: 'general-chat',
-            owner: {
-              id: 1,
-              service: 'username',
-              identifier: 'guild_admin_bob',
-              player: {
-                id: '7a4e70ec-6ee6-418e-923d-b3a45051b7f9',
-                props: [
-                  { key: 'currentLevel', value: '58' },
-                  { key: 'xPos', value: '13.29' },
-                  { key: 'yPos', value: '26.44' },
-                  { key: 'zoneId', value: '3' }
-                ],
-                aliases: [
-                  '/* [Circular] */'
-                ],
-                devBuild: false,
-                createdAt: '2022-01-15T13:20:32.133Z',
-                lastSeenAt: '2022-04-12T15:09:43.066Z',
-                groups: [
-                  { id: '5826ca71-1964-4a1b-abcb-a61ffbe003be', name: 'Winners' }
-                ]
-              }
-            },
+            ownerAliasId: 1,
+            totalMessages: 0,
+            memberCount: 1,
             props: [
               { key: 'channelType', value: 'public' }
             ],
@@ -141,6 +101,8 @@ const GameChannelAPIDocs: APIDocs<GameChannelAPIService> = {
             id: 1,
             name: 'general-chat',
             owner: null,
+            totalMessages: 308,
+            memberCount: 42,
             props: [
               { key: 'channelType', value: 'public' }
             ],
@@ -195,24 +157,9 @@ const GameChannelAPIDocs: APIDocs<GameChannelAPIService> = {
           channel: {
             id: 1,
             name: 'new-general-chat',
-            owner: {
-              id: 2,
-              service: 'username',
-              identifier: 'new_admin_john',
-              player: {
-                id: '7a4e70ec-6ee6-418e-923d-b3a45051b7f9',
-                props: [],
-                aliases: [
-                  '/* [Circular] */'
-                ],
-                devBuild: false,
-                createdAt: '2022-01-15T13:20:32.133Z',
-                lastSeenAt: '2022-04-12T15:09:43.066Z',
-                groups: [
-                  { id: '5826ca71-1964-4a1b-abcb-a61ffbe003be', name: 'Winners' }
-                ]
-              }
-            },
+            ownerAliasId: 2,
+            totalMessages: 308,
+            memberCount: 42,
             props: [
               { key: 'channelType', value: 'public' },
               { key: 'recentlyUpdated', value: 'true' }

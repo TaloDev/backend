@@ -35,6 +35,7 @@ export default class Socket {
   heartbeat(): void {
     const interval = setInterval(() => {
       this.connections.forEach((conn) => {
+        /* v8 ignore start */
         if (!conn.alive) {
           conn.ws.terminate()
           return
@@ -42,6 +43,7 @@ export default class Socket {
 
         conn.alive = false
         conn.ws.ping()
+        /* v8 ignore end */
       })
     }, 30_000)
 
@@ -66,12 +68,14 @@ export default class Socket {
     })
   }
 
+  /* v8 ignore start */
   handlePong(ws: WebSocket): void {
     const connection = this.findConnectionBySocket(ws)
     if (!connection) return
 
     connection.alive = true
   }
+  /* v8 ignore end */
 
   handleCloseConnection(ws: WebSocket): void {
     this.connections = this.connections.filter((conn) => conn.ws !== ws)
@@ -79,10 +83,12 @@ export default class Socket {
 
   findConnectionBySocket(ws: WebSocket): SocketConnection | undefined {
     const connection = this.connections.find((conn) => conn.ws === ws)
+    /* v8 ignore start */
     if (!connection) {
       ws.close(3000)
       return
     }
+    /* v8 ignore end */
 
     return connection
   }

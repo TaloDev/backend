@@ -43,7 +43,7 @@ export default class SocketRouter {
       }
     } catch (err) {
       if (err instanceof ZodError) {
-        sendError(conn, 'unknown', new SocketError('INVALID_MESSAGE', 'Invalid message request'))
+        sendError(conn, 'unknown', new SocketError('INVALID_MESSAGE', 'Invalid message request', rawData.toString()))
       } else {
         sendError(conn, message?.req ?? 'unknown', new SocketError('ROUTING_ERROR', 'An error occurred while routing the message'))
       }
@@ -68,9 +68,9 @@ export default class SocketRouter {
             return true
           } catch (err) {
             if (err instanceof ZodError) {
-              sendError(conn, message.req, new SocketError('INVALID_MESSAGE', 'Invalid message data for request'))
+              sendError(conn, message.req, new SocketError('INVALID_MESSAGE_DATA', 'Invalid message data for request', JSON.stringify(message.data)))
             } else {
-              sendError(conn, message?.req, new SocketError('LISTENER_ERROR', 'An error occurred while processing the message', err.message))
+              sendError(conn, message?.req ?? 'unknown', new SocketError('LISTENER_ERROR', 'An error occurred while processing the message', err.message))
             }
           }
         }

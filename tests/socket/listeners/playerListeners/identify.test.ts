@@ -82,8 +82,6 @@ describe('Player listeners - identify', () => {
     await request(global.server)
       .ws('/')
       .set('authorization', `Bearer ${token}`)
-      .set('x-talo-player', player.id)
-      .set('x-talo-alias', player.aliases[0].id.toString())
       .expectJson({
         res: 'v1.connected',
         data: {}
@@ -117,8 +115,6 @@ describe('Player listeners - identify', () => {
     await request(global.server)
       .ws('/')
       .set('authorization', `Bearer ${token}`)
-      .set('x-talo-player', player.id)
-      .set('x-talo-alias', player.aliases[0].id.toString())
       .expectJson({
         res: 'v1.connected',
         data: {}
@@ -135,8 +131,8 @@ describe('Player listeners - identify', () => {
         res: 'v1.error',
         data: {
           req: 'v1.players.identify',
-          message: 'Session token is invalid',
-          errorCode: 'INVALID_SESSION'
+          message: 'Invalid session token',
+          errorCode: 'INVALID_SESSION_TOKEN'
         }
       })
       .close()

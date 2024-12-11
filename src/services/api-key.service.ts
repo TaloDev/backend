@@ -7,6 +7,7 @@ import { groupBy } from 'lodash'
 import { promisify } from 'util'
 import createGameActivity from '../lib/logging/createGameActivity'
 import { GameActivityType } from '../entities/game-activity'
+import Socket from '../socket'
 
 export async function createToken(em: EntityManager, apiKey: APIKey): Promise<string> {
   await em.populate(apiKey, ['game.apiSecret'])
@@ -108,6 +109,12 @@ export default class APIKeyService extends Service {
         }
       }
     })
+
+    const socket: Socket = req.ctx.wss
+    const conns = socket.findConnections((conn) => conn.getAPIKeyId() === apiKey.id)
+    for (const conn of conns) {
+      conn.ws.close(3000)
+    }
 
     await em.flush()
 

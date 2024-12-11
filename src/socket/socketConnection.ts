@@ -4,6 +4,7 @@ import Game from '../entities/game'
 import APIKey, { APIKeyScope } from '../entities/api-key'
 import { IncomingHttpHeaders, IncomingMessage } from 'http'
 import { RequestContext } from '@mikro-orm/core'
+import jwt from 'jsonwebtoken'
 
 export default class SocketConnection {
   alive: boolean = true
@@ -18,18 +19,16 @@ export default class SocketConnection {
     this.headers = req.headers
   }
 
-  getPlayerFromHeader(): string | null {
-    return this.headers['x-talo-player'] as string ?? null
-  }
-
-  getAliasFromHeader(): number | null {
-    return this.headers['x-talo-alias'] ? Number(this.headers['x-talo-alias']) : null
-  }
-
   async getPlayerAlias(): Promise<PlayerAlias | null> {
     return RequestContext.getEntityManager()
       .getRepository(PlayerAlias)
       .findOne(this.playerAliasId, { refresh: true })
+  }
+
+  getAPIKeyId(): number {
+    const token = this.headers.authorization.split('Bearer ')[1]
+    const decodedToken = jwt.decode(token)
+    return decodedToken.sub
   }
 
   hasScope(scope: APIKeyScope): boolean {

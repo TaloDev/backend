@@ -59,6 +59,47 @@ const GameChannelAPIDocs: APIDocs<GameChannelAPIService> = {
       }
     ]
   },
+  subscriptions: {
+    description: 'List game channels that the player is subscribed to',
+    params: {
+      headers: {
+        'x-talo-alias': 'The ID of the player\'s alias'
+      }
+    },
+    samples: [
+      {
+        title: 'Sample response',
+        sample: {
+          channels: [
+            {
+              id: 1,
+              name: 'general-chat',
+              owner: null,
+              totalMessages: 308,
+              memberCount: 42,
+              props: [
+                { key: 'channelType', value: 'public' }
+              ],
+              createdAt: '2024-12-09T12:00:00.000Z',
+              updatedAt: '2024-12-09T12:00:00.000Z'
+            },
+            {
+              id: 2,
+              name: 'trade-chat',
+              owner: null,
+              totalMessages: 23439,
+              memberCount: 124,
+              props: [
+                { key: 'channelType', value: 'public' }
+              ],
+              createdAt: '2024-12-09T12:00:00.000Z',
+              updatedAt: '2024-12-09T12:00:00.000Z'
+            }
+          ]
+        }
+      }
+    ]
+  },
   post: {
     description: 'Create a game channel',
     params: {
@@ -67,7 +108,8 @@ const GameChannelAPIDocs: APIDocs<GameChannelAPIService> = {
       },
       body: {
         name: 'The name of the channel',
-        props: 'An array of @type(Props:prop)'
+        props: 'An array of @type(Props:prop)',
+        autoCleanup: 'Whether the channel should be automatically deleted when the owner leaves or the channel is empty (default is false)'
       }
     },
     samples: [
@@ -78,7 +120,8 @@ const GameChannelAPIDocs: APIDocs<GameChannelAPIService> = {
           props: [
             { key: 'channelType', value: 'guild' },
             { key: 'guildId', value: '5912' }
-          ]
+          ],
+          autoCleanup: true
         }
       },
       {

@@ -3,6 +3,8 @@ import Socket from '../../src/socket'
 import createAPIKeyAndToken from '../utils/createAPIKeyAndToken'
 import { APIKeyScope } from '../../src/entities/api-key'
 import createSocketIdentifyMessage from '../utils/requestAuthedSocket'
+import { EntityManager } from '@mikro-orm/mysql'
+import GameChannelFactory from '../fixtures/GameChannelFactory'
 
 describe('Socket router', () => {
   let socket: Socket
@@ -33,7 +35,8 @@ describe('Socket router', () => {
         data: {
           req: 'unknown',
           message: 'Invalid message request',
-          errorCode: 'INVALID_MESSAGE'
+          errorCode: 'INVALID_MESSAGE',
+          cause: '{"blah":"blah"}'
         }
       })
       .close()
@@ -58,7 +61,8 @@ describe('Socket router', () => {
         data: {
           req: 'unknown',
           message: 'Invalid message request',
-          errorCode: 'INVALID_MESSAGE'
+          errorCode: 'INVALID_MESSAGE',
+          cause: '{"req":"v1.magic","data":{}}'
         }
       })
       .close()
@@ -80,7 +84,7 @@ describe('Socket router', () => {
           channel: {
             id: 1
           },
-          message: 'Hello, world!'
+          message: 'Hello world'
         }
       })
       .expectJson({
@@ -112,7 +116,7 @@ describe('Socket router', () => {
           channel: {
             id: 1
           },
-          message: 'Hello, world!'
+          message: 'Hello world'
         }
       })
       .expectJson({
@@ -122,6 +126,39 @@ describe('Socket router', () => {
           message: 'Missing access key scope(s): write:gameChannels',
           errorCode: 'MISSING_ACCESS_KEY_SCOPES'
         }
+      })
+      .close()
+  })
+
+  it('should be able to accept requests where a scope is required and the key has the full access scope', async () => {
+    const [identifyMessage, token, player] = await createSocketIdentifyMessage([APIKeyScope.FULL_ACCESS])
+    const channel = await new GameChannelFactory(player.game).one()
+    channel.members.add(player.aliases[0])
+    await (<EntityManager>global.em).persistAndFlush(channel)
+
+    await request(global.server)
+      .ws('/')
+      .set('authorization', `Bearer ${token}`)
+      .expectJson({
+        res: 'v1.connected',
+        data: {}
+      })
+      .sendJson(identifyMessage)
+      .expectJson()
+      .sendJson({
+        req: 'v1.channels.message',
+        data: {
+          channel: {
+            id: 1
+          },
+          message: 'Hello world'
+        }
+      })
+      .expectJson((actual) => {
+        expect(actual.res).toBe('v1.channels.message')
+        expect(actual.data.channel.id).toBe(channel.id)
+        expect(actual.data.message).toBe('Hello world')
+        expect(actual.data.playerAlias.id).toBe(player.aliases[0].id)
       })
       .close()
   })
@@ -144,7 +181,7 @@ describe('Socket router', () => {
           channel: {
             id: 1
           },
-          myMessageToTheChannelIsGoingToBeThis: 'Hello, world!'
+          myMessageToTheChannelIsGoingToBeThis: 'Hello world'
         }
       })
       .expectJson({
@@ -152,7 +189,8 @@ describe('Socket router', () => {
         data: {
           req: 'v1.channels.message',
           message: 'Invalid message data for request',
-          errorCode: 'INVALID_MESSAGE'
+          errorCode: 'INVALID_MESSAGE_DATA',
+          cause: '{"channel":{"id":1},"myMessageToTheChannelIsGoingToBeThis":"Hello world"}'
         }
       })
       .close()

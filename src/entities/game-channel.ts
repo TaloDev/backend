@@ -12,6 +12,7 @@ export default class GameChannel {
   id: number
 
   @Required({
+    methods: ['POST'],
     validation: async (val: unknown, req: Request): Promise<ValidationCondition[]> => {
       const duplicateName = await (<EntityManager>req.ctx.em).getRepository(GameChannel).findOne({
         name: val,
@@ -38,13 +39,21 @@ export default class GameChannel {
   @Property()
   totalMessages: number = 0
 
-  @Required()
   @Property()
   autoCleanup: boolean = false
 
   @ManyToOne(() => Game)
   game: Game
 
+  @Required({
+    methods: [],
+    validation: async (val: unknown): Promise<ValidationCondition[]> => [
+      {
+        check: Array.isArray(val),
+        error: 'Props must be an array'
+      }
+    ]
+  })
   @Embedded(() => Prop, { array: true })
   props: Prop[] = []
 

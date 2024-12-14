@@ -28,9 +28,9 @@ export function sendMessage<T>(conn: SocketConnection, res: SocketMessageRespons
 }
 
 export function sendMessages<T>(conns: SocketConnection[], type: SocketMessageResponse, data: T) {
-  conns.forEach((ws) => {
-    if (ws.ws.readyState === ws.ws.OPEN) {
-      sendMessage<T>(ws, type, data)
+  conns.forEach((conn) => {
+    if (conn.ws.readyState === conn.ws.OPEN) {
+      sendMessage<T>(conn, type, data)
     }
   })
 }

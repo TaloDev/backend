@@ -7,6 +7,13 @@ import SocketConnection from './socketConnection'
 import SocketRouter from './router/socketRouter'
 import { sendMessage } from './messages/socketMessage'
 
+type CloseConnectionOptions = {
+  code?: number
+  reason?: string
+  terminate?: boolean
+  preclosed?: boolean
+}
+
 export default class Socket {
   private readonly wss: WebSocketServer
   private connections: SocketConnection[] = []
@@ -19,7 +26,7 @@ export default class Socket {
 
       ws.on('message', (data) => this.handleMessage(ws, data))
       ws.on('pong', () => this.handlePong(ws))
-      ws.on('close', () => this.handleCloseConnection(ws))
+      ws.on('close', () => this.closeConnection(ws, { preclosed: true }))
       ws.on('error', captureException)
     })
 
@@ -37,7 +44,7 @@ export default class Socket {
       this.connections.forEach((conn) => {
         /* v8 ignore start */
         if (!conn.alive) {
-          conn.ws.terminate()
+          this.closeConnection(conn.ws, { terminate: true })
           return
         }
 
@@ -54,10 +61,12 @@ export default class Socket {
 
   async handleConnection(ws: WebSocket, req: IncomingMessage): Promise<void> {
     await RequestContext.create(this.em, async () => {
-      const key = await authenticateSocket(req.headers?.authorization ?? '', ws)
+      const key = await authenticateSocket(req.headers?.authorization ?? '')
       if (key) {
         this.connections.push(new SocketConnection(ws, key, req))
         sendMessage(this.connections.at(-1), 'v1.connected', {})
+      } else {
+        this.closeConnection(ws)
       }
     })
   }
@@ -80,7 +89,16 @@ export default class Socket {
   }
   /* v8 ignore end */
 
-  handleCloseConnection(ws: WebSocket): void {
+  closeConnection(ws: WebSocket, options: CloseConnectionOptions = {}): void {
+    const terminate = options.terminate ?? false
+    const preclosed = options.preclosed ?? false
+
+    if (terminate) {
+      ws.terminate()
+    } else if (!preclosed) {
+      ws.close(options.code ?? 3000, options.reason)
+    }
+
     this.connections = this.connections.filter((conn) => conn.ws !== ws)
   }
 
@@ -88,7 +106,7 @@ export default class Socket {
     const connection = this.connections.find((conn) => conn.ws === ws)
     /* v8 ignore start */
     if (!connection) {
-      ws.close(3000)
+      this.closeConnection(ws)
       return
     }
     /* v8 ignore end */

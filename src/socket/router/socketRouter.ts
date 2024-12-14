@@ -34,6 +34,11 @@ export default class SocketRouter {
 
     const rateLimitExceeded = await conn.checkRateLimitExceeded()
     if (rateLimitExceeded) {
+      if (conn.rateLimitWarnings > 3) {
+        this.socket.closeConnection(conn.ws, { code: 1008, reason: 'RATE_LIMIT_EXCEEDED' })
+      } else {
+        sendError(conn, 'unknown', new SocketError('RATE_LIMIT_EXCEEDED', 'Rate limit exceeded'))
+      }
       return
     }
 

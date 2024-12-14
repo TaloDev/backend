@@ -8,7 +8,6 @@ import jwt from 'jsonwebtoken'
 import { v4 } from 'uuid'
 import Redis from 'ioredis'
 import redisConfig from '../config/redis.config'
-import SocketError, { sendError } from './messages/socketError'
 import checkRateLimitExceeded from '../lib/errors/checkRateLimitExceeded'
 
 export default class SocketConnection {
@@ -64,12 +63,8 @@ export default class SocketConnection {
 
     if (rateLimitExceeded) {
       this.rateLimitWarnings++
-      if (this.rateLimitWarnings > 3) {
-        this.ws.close(1008, 'RATE_LIMIT_EXCEEDED')
-      } else {
-        sendError(this, 'unknown', new SocketError('RATE_LIMIT_EXCEEDED', 'Rate limit exceeded'))
-      }
-      return
     }
+
+    return rateLimitExceeded
   }
 }

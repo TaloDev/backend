@@ -45,6 +45,8 @@ const GameChannelAPIDocs: APIDocs<GameChannelAPIService> = {
                 createdAt: '2024-10-25T18:18:28.000Z',
                 updatedAt: '2024-12-04T07:15:13.000Z'
               },
+              totalMessages: 36,
+              memberCount: 8,
               props: [
                 { key: 'channelType', value: 'guild' },
                 { key: 'guildId', value: '5912' }

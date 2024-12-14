@@ -116,7 +116,7 @@ describe('Game stat service - post', () => {
 
     expect(res.body).toStrictEqual({
       errors: {
-        internalName: ['A stat with the internalName levels-completed already exists']
+        internalName: ['A stat with the internalName \'levels-completed\' already exists']
       }
     })
   })

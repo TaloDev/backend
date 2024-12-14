@@ -1,5 +1,6 @@
 import Koa, { Context, Next } from 'koa'
 import { service } from 'koa-clay'
+import GameChannelAPIService from '../services/api/game-channel-api.service'
 import HealthCheckAPIService from '../services/api/health-check-api.service'
 import GameFeedbackAPIService from '../services/api/game-feedback-api.service'
 import GameConfigAPIService from '../services/api/game-config-api.service'
@@ -17,7 +18,7 @@ import PlayerAuthAPIService from '../services/api/player-auth-api.service'
 import continunityMiddleware from '../middlewares/continunity-middleware'
 import PlayerGroupAPIService from '../services/api/player-group-api.service'
 
-export default (app: Koa) => {
+export default function configureAPIRoutes(app: Koa) {
   app.use(apiKeyMiddleware)
   app.use(apiRouteAuthMiddleware)
   app.use(limiterMiddleware)
@@ -32,6 +33,7 @@ export default (app: Koa) => {
   app.use(playerAuthMiddleware)
   app.use(continunityMiddleware)
 
+  app.use(service('/v1/game-channels', new GameChannelAPIService()))
   app.use(service('/v1/player-groups', new PlayerGroupAPIService()))
   app.use(service('/v1/health-check', new HealthCheckAPIService()))
   app.use(service('/v1/game-feedback', new GameFeedbackAPIService()))

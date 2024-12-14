@@ -25,7 +25,7 @@ export default class Leaderboard {
       return [
         {
           check: !duplicateInternalName,
-          error: `A leaderboard with the internalName ${val} already exists`
+          error: `A leaderboard with the internalName '${val}' already exists`
         }
       ]
     }

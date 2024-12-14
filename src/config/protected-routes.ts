@@ -1,5 +1,6 @@
 import Koa, { Context, Next } from 'koa'
 import { service, ServiceOpts } from 'koa-clay'
+import GameChannelService from '../services/game-channel.service'
 import GameFeedbackService from '../services/game-feedback.service'
 import PlayerGroupService from '../services/player-group.service'
 import OrganisationService from '../services/organisation.service'
@@ -18,7 +19,7 @@ import BillingService from '../services/billing.service'
 import IntegrationService from '../services/integration.service'
 import { getRouteInfo, protectedRouteAuthMiddleware } from '../middlewares/route-middleware'
 
-export default (app: Koa) => {
+export default function protectedRoutes(app: Koa) {
   app.use(protectedRouteAuthMiddleware)
 
   app.use(async (ctx: Context, next: Next): Promise<void> => {
@@ -47,6 +48,7 @@ export default (app: Koa) => {
   app.use(service('/games/:gameId/integrations', new IntegrationService(), serviceOpts))
   app.use(service('/games/:gameId/player-groups', new PlayerGroupService(), serviceOpts))
   app.use(service('/games/:gameId/game-feedback', new GameFeedbackService(), serviceOpts))
+  app.use(service('/games/:gameId/game-channels', new GameChannelService(), serviceOpts))
   app.use(service('/games', new GameService(), serviceOpts))
   app.use(service('/users', new UserService(), serviceOpts))
 }

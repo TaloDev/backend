@@ -152,4 +152,23 @@ describe('Game channel service - index', () => {
 
     expect(res.body.channels[0].memberCount).toBe(1)
   })
+
+  it('should mark the last page of channels', async () => {
+    const [organisation, game] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken({}, organisation)
+
+    const channels = await new GameChannelFactory(game).many(208)
+    await (<EntityManager>global.em).persistAndFlush(channels)
+
+    const res = await request(global.app)
+      .get(`/games/${game.id}/game-channels`)
+      .query({ page: 4 })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    expect(res.body.channels).toHaveLength(8)
+    expect(res.body.count).toBe(208)
+    expect(res.body.itemsPerPage).toBe(50)
+    expect(res.body.isLastPage).toBe(true)
+  })
 })

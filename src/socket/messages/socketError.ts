@@ -11,7 +11,8 @@ const errorCodes = [
   'LISTENER_ERROR',
   'INVALID_SOCKET_TOKEN',
   'INVALID_SESSION_TOKEN',
-  'MISSING_ACCESS_KEY_SCOPES'
+  'MISSING_ACCESS_KEY_SCOPES',
+  'RATE_LIMIT_EXCEEDED'
 ] as const
 
 export type SocketErrorCode = typeof errorCodes[number]

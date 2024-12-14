@@ -32,6 +32,11 @@ export default class SocketRouter {
       level: 'info'
     })
 
+    const rateLimitExceeded = await conn.checkRateLimitExceeded()
+    if (rateLimitExceeded) {
+      return
+    }
+
     let message: SocketMessage = null
 
     try {

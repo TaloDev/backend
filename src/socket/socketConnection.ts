@@ -5,6 +5,11 @@ import APIKey, { APIKeyScope } from '../entities/api-key'
 import { IncomingHttpHeaders, IncomingMessage } from 'http'
 import { RequestContext } from '@mikro-orm/core'
 import jwt from 'jsonwebtoken'
+import { v4 } from 'uuid'
+import Redis from 'ioredis'
+import redisConfig from '../config/redis.config'
+import SocketError, { sendError } from './messages/socketError'
+import checkRateLimitExceeded from '../lib/errors/checkRateLimitExceeded'
 
 export default class SocketConnection {
   alive: boolean = true
@@ -12,6 +17,9 @@ export default class SocketConnection {
   game: Game | null = null
   scopes: APIKeyScope[] = []
   private headers: IncomingHttpHeaders = {}
+
+  rateLimitKey: string = v4()
+  rateLimitWarnings: number = 0
 
   constructor(readonly ws: WebSocket, apiKey: APIKey, req: IncomingMessage) {
     this.game = apiKey.game
@@ -40,5 +48,28 @@ export default class SocketConnection {
       return true
     }
     return scopes.every((scope) => this.hasScope(scope))
+  }
+
+  getRateLimitMaxRequests(): number {
+    if (this.playerAliasId) {
+      return 100
+    }
+    return 10
+  }
+
+  async checkRateLimitExceeded(): Promise<boolean> {
+    const redis = new Redis(redisConfig)
+    const rateLimitExceeded = await checkRateLimitExceeded(redis, this.rateLimitKey, this.getRateLimitMaxRequests())
+    await redis.quit()
+
+    if (rateLimitExceeded) {
+      this.rateLimitWarnings++
+      if (this.rateLimitWarnings > 3) {
+        this.ws.close(1008, 'RATE_LIMIT_EXCEEDED')
+      } else {
+        sendError(this, 'unknown', new SocketError('RATE_LIMIT_EXCEEDED', 'Rate limit exceeded'))
+      }
+      return
+    }
   }
 }

@@ -42,7 +42,8 @@ export default class GameChannelService extends Service {
       body: {
         channels: await Promise.all(channels.map((channel) => channel.toJSONWithCount(em, req.ctx.state.includeDevData))),
         count,
-        itemsPerPage
+        itemsPerPage,
+        isLastPage: (Number(page) * itemsPerPage) + itemsPerPage >= count
       }
     }
   }

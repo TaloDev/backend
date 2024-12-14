@@ -54,7 +54,8 @@ const GameChannelAPIDocs: APIDocs<GameChannelAPIService> = {
             }
           ],
           count: 2,
-          itemsPerPage: 50
+          itemsPerPage: 50,
+          isLastPage: true
         }
       }
     ]

@@ -39,15 +39,12 @@ const playerListeners: SocketMessageListener<ZodType>[] = [
 
         if (alias.service === PlayerAliasService.TALO) {
           try {
-            const valid = await validateSessionTokenJWT(
+            await validateSessionTokenJWT(
               data.sessionToken,
               alias,
               alias.player.id,
               alias.id
             )
-            if (!valid) {
-              throw new Error()
-            }
           } catch (err) {
             sendError(conn, req, new SocketError('INVALID_SESSION_TOKEN', 'Invalid session token'))
             return

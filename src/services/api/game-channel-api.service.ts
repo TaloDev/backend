@@ -132,12 +132,12 @@ export default class GameChannelAPIService extends APIService {
     const channel: GameChannel = req.ctx.state.channel
 
     if (!(await channel.members.load()).getIdentifiers().includes(req.ctx.state.alias.id)) {
+      channel.members.add(req.ctx.state.alias)
       sendMessageToChannelMembers(req, channel, 'v1.channels.player-joined', {
         channel,
         playerAlias: req.ctx.state.alias
       })
 
-      channel.members.add(req.ctx.state.alias)
       await em.flush()
     }
 
@@ -170,11 +170,11 @@ export default class GameChannelAPIService extends APIService {
         channel.owner = null
       }
 
-      channel.members.remove(req.ctx.state.alias)
       sendMessageToChannelMembers(req, channel, 'v1.channels.player-left', {
         channel,
         playerAlias: req.ctx.state.alias
       })
+      channel.members.remove(req.ctx.state.alias)
 
       await em.flush()
     }

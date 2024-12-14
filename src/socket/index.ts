@@ -74,7 +74,9 @@ export default class Socket {
     if (!connection) return
 
     connection.alive = true
-    connection.rateLimitWarnings--
+    if (connection.rateLimitWarnings > 0) {
+      connection.rateLimitWarnings--
+    }
   }
   /* v8 ignore end */
 

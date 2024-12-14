@@ -15,6 +15,7 @@ beforeAll(async () => {
 
   const app = await init()
   global.app = app.callback()
+  global.ctx = app.context
   global.em = app.context.em
 
   global.server = createServer()
@@ -35,6 +36,7 @@ afterAll(async () => {
   clickhouse.close()
 
   delete global.em
+  delete global.ctx
   delete global.app
   delete global.server
   delete global.clickhouse

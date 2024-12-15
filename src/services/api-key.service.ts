@@ -142,6 +142,8 @@ export default class APIKeyService extends Service {
     const em: EntityManager = req.ctx.em
 
     const apiKey = req.ctx.state.apiKey as APIKey
+    await em.populate(apiKey, ['createdByUser'])
+
     apiKey.scopes = req.body.scopes
 
     const token = await createToken(em, apiKey)

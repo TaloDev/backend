@@ -48,12 +48,13 @@ describe('Player API service - merge', () => {
   })
 
   it('should merge player2 into player1', async () => {
+    const em: EntityManager = global.em
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_PLAYERS, APIKeyScope.WRITE_PLAYERS])
 
     const player1 = await new PlayerFactory([apiKey.game]).one()
     const player2 = await new PlayerFactory([apiKey.game]).one()
 
-    await (<EntityManager>global.em).persistAndFlush([player1, player2])
+    await em.persistAndFlush([player1, player2])
 
     const res = await request(global.app)
       .post('/v1/players/merge')
@@ -64,11 +65,11 @@ describe('Player API service - merge', () => {
     expect(res.body.player.id).toBe(player1.id)
 
     const prevId = player2.id
-    const aliases = await (<EntityManager>global.em).getRepository(PlayerAlias).find({ player: prevId })
+    const aliases = await em.getRepository(PlayerAlias).find({ player: prevId })
     expect(aliases).toHaveLength(0)
 
-    global.em.clear()
-    const mergedPlayer = await (<EntityManager>global.em).getRepository(Player).findOne(prevId)
+    em.clear()
+    const mergedPlayer = await em.getRepository(Player).findOne(prevId)
     expect(mergedPlayer).toBeNull()
   })
 

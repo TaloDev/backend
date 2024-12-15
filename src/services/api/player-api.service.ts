@@ -14,6 +14,7 @@ import checkScope from '../../policies/checkScope'
 import Integration, { IntegrationType } from '../../entities/integration'
 import { validateAuthSessionToken } from '../../middlewares/player-auth-middleware'
 import { setCurrentPlayerState } from '../../middlewares/current-player-middleware'
+import { createRedisConnection } from '../../config/redis.config'
 
 async function getRealIdentifier(
   req: Request,
@@ -145,10 +146,13 @@ export default class PlayerAPIService extends APIService {
     alias.lastSeenAt = alias.player.lastSeenAt = new Date()
     await em.flush()
 
+    const socketToken = await alias.createSocketToken(createRedisConnection(req.ctx))
+
     return {
       status: 200,
       body: {
-        alias
+        alias,
+        socketToken
       }
     }
   }

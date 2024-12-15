@@ -3,6 +3,8 @@ import Game from './game'
 import User from './user'
 
 export enum APIKeyScope {
+  READ_GAME_CHANNELS = 'read:gameChannels',
+  WRITE_GAME_CHANNELS = 'write:gameChannels',
   READ_PLAYER_GROUPS = 'read:playerGroups',
   WRITE_CONTINUITY_REQUESTS = 'write:continuityRequests',
   READ_GAME_FEEDBACK = 'read:gameFeedback',

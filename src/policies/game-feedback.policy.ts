@@ -5,7 +5,7 @@ import UserTypeGate from './user-type-gate'
 import GameFeedbackCategory from '../entities/game-feedback-category'
 
 export default class GameFeedbackPolicy extends Policy {
-  async get(req: Request): Promise<PolicyResponse> {
+  async index(req: Request): Promise<PolicyResponse> {
     const { gameId } = req.params
     return await this.canAccessGame(Number(gameId))
   }

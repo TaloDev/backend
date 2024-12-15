@@ -1,5 +1,4 @@
-import { EntityManager, MikroORM } from '@mikro-orm/mysql'
-import ormConfig from '../../../src/config/mikro-orm.config'
+import { EntityManager } from '@mikro-orm/mysql'
 import { IntegrationType } from '../../../src/entities/integration'
 import { GetSchemaForGameResponse, GetUserStatsForGameResponse, syncSteamworksStats } from '../../../src/lib/integrations/steamworks-integration'
 import IntegrationConfigFactory from '../../fixtures/IntegrationConfigFactory'
@@ -16,26 +15,16 @@ import PlayerGameStatFactory from '../../fixtures/PlayerGameStatFactory'
 import { randSlug, randText } from '@ngneat/falso'
 
 describe('Steamworks integration - sync stats', () => {
-  let em: EntityManager
   const axiosMock = new AxiosMockAdapter(axios)
 
-  beforeAll(async () => {
-    const orm = await MikroORM.init(ormConfig)
-    em = orm.em
-  })
-
-  afterAll(async () => {
-    await em.getConnection().close()
-  })
-
   it('should pull in stats from steamworks', async () => {
-    const [, game] = await createOrganisationAndGame(em)
+    const [, game] = await createOrganisationAndGame()
 
     const statDisplayName = randText()
 
     const config = await new IntegrationConfigFactory().one()
     const integration = await new IntegrationFactory().construct(IntegrationType.STEAMWORKS, game, config).one()
-    await em.persistAndFlush(integration)
+    await (<EntityManager>global.em).persistAndFlush(integration)
 
     const getSchemaMock = vi.fn((): [number, GetSchemaForGameResponse] => [200, {
       game: {
@@ -55,18 +44,18 @@ describe('Steamworks integration - sync stats', () => {
     }])
     axiosMock.onGet(`https://partner.steam-api.com/ISteamUserStats/GetSchemaForGame/v2?appid=${integration.getConfig().appId}`).replyOnce(getSchemaMock)
 
-    await syncSteamworksStats(em, integration)
+    await syncSteamworksStats((<EntityManager>global.em), integration)
 
     expect(getSchemaMock).toHaveBeenCalledTimes(1)
 
-    const event = await em.getRepository(SteamworksIntegrationEvent).findOne({ integration })
+    const event = await (<EntityManager>global.em).getRepository(SteamworksIntegrationEvent).findOne({ integration })
     expect(event.request).toStrictEqual({
       url: `https://partner.steam-api.com/ISteamUserStats/GetSchemaForGame/v2?appid=${integration.getConfig().appId}`,
       body: '',
       method: 'GET'
     })
 
-    const createdStat = await em.getRepository(GameStat).findOne({
+    const createdStat = await (<EntityManager>global.em).getRepository(GameStat).findOne({
       game: integration.game,
       name: statDisplayName,
       globalValue: 500,
@@ -79,7 +68,7 @@ describe('Steamworks integration - sync stats', () => {
   })
 
   it('should update existing stats with the name and default value from steamworks', async () => {
-    const [, game] = await createOrganisationAndGame(em)
+    const [, game] = await createOrganisationAndGame()
 
     const statName = 'stat_' + randSlug()
     const statDisplayName = randText()
@@ -89,7 +78,7 @@ describe('Steamworks integration - sync stats', () => {
     const config = await new IntegrationConfigFactory().one()
     const integration = await new IntegrationFactory().construct(IntegrationType.STEAMWORKS, game, config).one()
 
-    await em.persistAndFlush([stat, integration])
+    await (<EntityManager>global.em).persistAndFlush([stat, integration])
 
     const getSchemaMock = vi.fn((): [number, GetSchemaForGameResponse] => [200, {
       game: {
@@ -109,17 +98,17 @@ describe('Steamworks integration - sync stats', () => {
     }])
     axiosMock.onGet(`https://partner.steam-api.com/ISteamUserStats/GetSchemaForGame/v2?appid=${integration.getConfig().appId}`).replyOnce(getSchemaMock)
 
-    await syncSteamworksStats(em, integration)
+    await syncSteamworksStats((<EntityManager>global.em), integration)
 
     expect(getSchemaMock).toHaveBeenCalledTimes(1)
 
-    await em.refresh(stat)
+    await (<EntityManager>global.em).refresh(stat)
     expect(stat.name).toBe(statDisplayName)
     expect(stat.defaultValue).toBe(500)
   })
 
   it('should pull in player stats from steamworks', async () => {
-    const [, game] = await createOrganisationAndGame(em)
+    const [, game] = await createOrganisationAndGame()
 
     const statName = 'stat_' + randSlug()
 
@@ -128,7 +117,7 @@ describe('Steamworks integration - sync stats', () => {
     const config = await new IntegrationConfigFactory().one()
     const integration = await new IntegrationFactory().construct(IntegrationType.STEAMWORKS, game, config).one()
 
-    await em.persistAndFlush([player, integration])
+    await (<EntityManager>global.em).persistAndFlush([player, integration])
 
     const getSchemaMock = vi.fn((): [number, GetSchemaForGameResponse] => [200, {
       game: {
@@ -161,24 +150,24 @@ describe('Steamworks integration - sync stats', () => {
     }])
     axiosMock.onGet(`https://partner.steam-api.com/ISteamUserStats/GetUserStatsForGame/v2?appid=${integration.getConfig().appId}&steamid=${player.aliases[0].identifier}`).replyOnce(getUserStatsMock)
 
-    await syncSteamworksStats(em, integration)
+    await syncSteamworksStats((<EntityManager>global.em), integration)
 
     expect(getSchemaMock).toHaveBeenCalledTimes(1)
     expect(getUserStatsMock).toHaveBeenCalledTimes(1)
 
-    const playerStat = await em.getRepository(PlayerGameStat).findOne({ value: 301 })
+    const playerStat = await (<EntityManager>global.em).getRepository(PlayerGameStat).findOne({ value: 301 })
     expect(playerStat).toBeTruthy()
   })
 
   it('should not pull in player stats for players that do not exist in steamworks', async () => {
-    const [, game] = await createOrganisationAndGame(em)
+    const [, game] = await createOrganisationAndGame()
 
     const player = await new PlayerFactory([game]).withSteamAlias().one()
 
     const config = await new IntegrationConfigFactory().one()
     const integration = await new IntegrationFactory().construct(IntegrationType.STEAMWORKS, game, config).one()
 
-    await em.persistAndFlush([player, integration])
+    await (<EntityManager>global.em).persistAndFlush([player, integration])
 
     const getSchemaMock = vi.fn((): [number, GetSchemaForGameResponse] => [200, {
       game: {
@@ -201,17 +190,17 @@ describe('Steamworks integration - sync stats', () => {
     const getUserStatsMock = vi.fn((): [number] => [400])
     axiosMock.onGet(`https://partner.steam-api.com/ISteamUserStats/GetUserStatsForGame/v2?appid=${integration.getConfig().appId}&steamid=${player.aliases[0].identifier}`).replyOnce(getUserStatsMock)
 
-    await syncSteamworksStats(em, integration)
+    await syncSteamworksStats((<EntityManager>global.em), integration)
 
     expect(getSchemaMock).toHaveBeenCalledTimes(1)
     expect(getUserStatsMock).toHaveBeenCalledTimes(1)
 
-    const playerStat = await em.getRepository(PlayerGameStat).findOne({ player })
+    const playerStat = await (<EntityManager>global.em).getRepository(PlayerGameStat).findOne({ player })
     expect(playerStat).toBeNull()
   })
 
   it('should update player stats with the ones from steamworks', async () => {
-    const [, game] = await createOrganisationAndGame(em)
+    const [, game] = await createOrganisationAndGame()
 
     const statName = 'stat_' + randSlug()
 
@@ -222,7 +211,7 @@ describe('Steamworks integration - sync stats', () => {
     const config = await new IntegrationConfigFactory().one()
     const integration = await new IntegrationFactory().construct(IntegrationType.STEAMWORKS, game, config).one()
 
-    await em.persistAndFlush([player, playerStat, integration])
+    await (<EntityManager>global.em).persistAndFlush([player, playerStat, integration])
 
     const getSchemaMock = vi.fn((): [number, GetSchemaForGameResponse] => [200, {
       game: {
@@ -255,7 +244,7 @@ describe('Steamworks integration - sync stats', () => {
     }])
     axiosMock.onGet(`https://partner.steam-api.com/ISteamUserStats/GetUserStatsForGame/v2?appid=${integration.getConfig().appId}&steamid=${player.aliases[0].identifier}`).replyOnce(getUserStatsMock)
 
-    await syncSteamworksStats(em, integration)
+    await syncSteamworksStats((<EntityManager>global.em), integration)
 
     expect(getSchemaMock).toHaveBeenCalledTimes(1)
     expect(getUserStatsMock).toHaveBeenCalledTimes(1)
@@ -264,7 +253,7 @@ describe('Steamworks integration - sync stats', () => {
   })
 
   it('should push through player stats that only exist in talo', async () => {
-    const [, game] = await createOrganisationAndGame(em)
+    const [, game] = await createOrganisationAndGame()
 
     const statName = 'stat_' + randSlug()
 
@@ -275,7 +264,7 @@ describe('Steamworks integration - sync stats', () => {
     const config = await new IntegrationConfigFactory().one()
     const integration = await new IntegrationFactory().construct(IntegrationType.STEAMWORKS, game, config).one()
 
-    await em.persistAndFlush([player, playerStat, integration])
+    await (<EntityManager>global.em).persistAndFlush([player, playerStat, integration])
 
     const getSchemaMock = vi.fn((): [number, GetSchemaForGameResponse] => [200, {
       game: {
@@ -312,13 +301,13 @@ describe('Steamworks integration - sync stats', () => {
     }])
     axiosMock.onPost('https://partner.steam-api.com/ISteamUserStats/SetUserStatsForGame/v1').replyOnce(setMock)
 
-    await syncSteamworksStats(em, integration)
+    await syncSteamworksStats((<EntityManager>global.em), integration)
 
     expect(getSchemaMock).toHaveBeenCalledTimes(1)
     expect(getUserStatsMock).toHaveBeenCalledTimes(1)
     expect(setMock).toHaveBeenCalledTimes(1)
 
-    const event = await em.getRepository(SteamworksIntegrationEvent).findOne({ integration }, { orderBy: { id: 'DESC' } })
+    const event = await (<EntityManager>global.em).getRepository(SteamworksIntegrationEvent).findOne({ integration }, { orderBy: { id: 'DESC' } })
     expect(event.request).toStrictEqual({
       url: 'https://partner.steam-api.com/ISteamUserStats/SetUserStatsForGame/v1',
       body: `appid=${config.appId}&steamid=${player.aliases[0].identifier}&count=1&name%5B0%5D=${stat.internalName}&value%5B0%5D=${playerStat.value}`,

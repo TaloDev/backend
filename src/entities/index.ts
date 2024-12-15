@@ -1,3 +1,4 @@
+import GameChannel from './game-channel'
 import UserPinnedGroup from './user-pinned-group'
 import PlayerAuthActivity from './player-auth-activity'
 import PlayerAuth from './player-auth'
@@ -34,6 +35,7 @@ import PlayerGroup from './player-group'
 import GameSecret from './game-secret'
 
 export default [
+  GameChannel,
   UserPinnedGroup,
   PlayerAuthActivity,
   PlayerAuth,

@@ -5,6 +5,9 @@ const PlayerAPIDocs: APIDocs<PlayerAPIService> = {
   identify: {
     description: 'Identify a player',
     params: {
+      headers: {
+        'x-talo-session': 'The session token (required if using Talo player authentication)'
+      },
       query: {
         service: 'The name of the service where the identity of the player comes from (e.g. "steam", "epic" or "username")',
         identifier: 'The unique identifier of the player. This can be their username, an email or a numeric ID'

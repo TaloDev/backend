@@ -2480,6 +2480,252 @@
           "length": null,
           "mappedType": "integer"
         },
+        "name": {
+          "name": "name",
+          "type": "varchar(255)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "length": 255,
+          "mappedType": "string"
+        },
+        "owner_id": {
+          "name": "owner_id",
+          "type": "int",
+          "unsigned": true,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "length": null,
+          "mappedType": "integer"
+        },
+        "total_messages": {
+          "name": "total_messages",
+          "type": "int",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "length": null,
+          "default": "0",
+          "mappedType": "integer"
+        },
+        "auto_cleanup": {
+          "name": "auto_cleanup",
+          "type": "tinyint(1)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "length": 1,
+          "default": "false",
+          "mappedType": "boolean"
+        },
+        "game_id": {
+          "name": "game_id",
+          "type": "int",
+          "unsigned": true,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "length": null,
+          "mappedType": "integer"
+        },
+        "props": {
+          "name": "props",
+          "type": "json",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "length": null,
+          "mappedType": "json"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "datetime",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "length": null,
+          "mappedType": "datetime"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "datetime",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "length": null,
+          "mappedType": "datetime"
+        }
+      },
+      "name": "game_channel",
+      "indexes": [
+        {
+          "columnNames": [
+            "owner_id"
+          ],
+          "composite": false,
+          "keyName": "game_channel_owner_id_index",
+          "constraint": false,
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "game_id"
+          ],
+          "composite": false,
+          "keyName": "game_channel_game_id_index",
+          "constraint": false,
+          "primary": false,
+          "unique": false
+        },
+        {
+          "keyName": "PRIMARY",
+          "columnNames": [
+            "id"
+          ],
+          "composite": false,
+          "constraint": true,
+          "primary": true,
+          "unique": true
+        }
+      ],
+      "checks": [],
+      "foreignKeys": {
+        "game_channel_owner_id_foreign": {
+          "constraintName": "game_channel_owner_id_foreign",
+          "columnNames": [
+            "owner_id"
+          ],
+          "localTableName": "game_channel",
+          "referencedColumnNames": [
+            "id"
+          ],
+          "referencedTableName": "player_alias",
+          "deleteRule": "set null",
+          "updateRule": "cascade"
+        },
+        "game_channel_game_id_foreign": {
+          "constraintName": "game_channel_game_id_foreign",
+          "columnNames": [
+            "game_id"
+          ],
+          "localTableName": "game_channel",
+          "referencedColumnNames": [
+            "id"
+          ],
+          "referencedTableName": "game",
+          "updateRule": "cascade"
+        }
+      },
+      "nativeEnums": {}
+    },
+    {
+      "columns": {
+        "game_channel_id": {
+          "name": "game_channel_id",
+          "type": "int",
+          "unsigned": true,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "length": null,
+          "mappedType": "integer"
+        },
+        "player_alias_id": {
+          "name": "player_alias_id",
+          "type": "int",
+          "unsigned": true,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "length": null,
+          "mappedType": "integer"
+        }
+      },
+      "name": "game_channel_members",
+      "indexes": [
+        {
+          "columnNames": [
+            "game_channel_id"
+          ],
+          "composite": false,
+          "keyName": "game_channel_members_game_channel_id_index",
+          "constraint": false,
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "player_alias_id"
+          ],
+          "composite": false,
+          "keyName": "game_channel_members_player_alias_id_index",
+          "constraint": false,
+          "primary": false,
+          "unique": false
+        },
+        {
+          "keyName": "PRIMARY",
+          "columnNames": [
+            "game_channel_id",
+            "player_alias_id"
+          ],
+          "composite": true,
+          "constraint": true,
+          "primary": true,
+          "unique": true
+        }
+      ],
+      "checks": [],
+      "foreignKeys": {
+        "game_channel_members_game_channel_id_foreign": {
+          "constraintName": "game_channel_members_game_channel_id_foreign",
+          "columnNames": [
+            "game_channel_id"
+          ],
+          "localTableName": "game_channel_members",
+          "referencedColumnNames": [
+            "id"
+          ],
+          "referencedTableName": "game_channel",
+          "deleteRule": "cascade",
+          "updateRule": "cascade"
+        },
+        "game_channel_members_player_alias_id_foreign": {
+          "constraintName": "game_channel_members_player_alias_id_foreign",
+          "columnNames": [
+            "player_alias_id"
+          ],
+          "localTableName": "game_channel_members",
+          "referencedColumnNames": [
+            "id"
+          ],
+          "referencedTableName": "player_alias",
+          "deleteRule": "cascade",
+          "updateRule": "cascade"
+        }
+      },
+      "nativeEnums": {}
+    },
+    {
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "int",
+          "unsigned": true,
+          "autoincrement": true,
+          "primary": true,
+          "nullable": false,
+          "length": null,
+          "mappedType": "integer"
+        },
         "pricing_plan_id": {
           "name": "pricing_plan_id",
           "type": "int",
@@ -3801,6 +4047,8 @@
           "nullable": false,
           "length": null,
           "enumItems": [
+            "read:gameChannels",
+            "write:gameChannels",
             "read:playerGroups",
             "write:continuityRequests",
             "read:gameFeedback",

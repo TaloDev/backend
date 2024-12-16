@@ -6,6 +6,7 @@ import authenticateSocket from './authenticateSocket'
 import SocketConnection from './socketConnection'
 import SocketRouter from './router/socketRouter'
 import { sendMessage } from './messages/socketMessage'
+import { logConnection, logConnectionClosed } from './messages/socketLogger'
 
 type CloseConnectionOptions = {
   code?: number
@@ -16,7 +17,7 @@ type CloseConnectionOptions = {
 
 export default class Socket {
   private readonly wss: WebSocketServer
-  private connections: SocketConnection[] = []
+  private connections: Map<WebSocket, SocketConnection> = new Map()
   private router: SocketRouter
 
   constructor(server: Server, private readonly em: EntityManager) {
@@ -39,32 +40,35 @@ export default class Socket {
     return this.wss
   }
 
+  /* v8 ignore start */
   heartbeat(): void {
     const interval = setInterval(() => {
-      this.connections.forEach((conn) => {
-        /* v8 ignore start */
+      for (const [ws, conn] of this.connections.entries()) {
         if (!conn.alive) {
-          this.closeConnection(conn.ws, { terminate: true })
-          return
+          this.closeConnection(ws, { terminate: true })
+          continue
         }
 
         conn.alive = false
-        conn.ws.ping()
-        /* v8 ignore end */
-      })
+        ws.ping()
+      }
     }, 30_000)
 
     this.wss.on('close', () => {
       clearInterval(interval)
     })
   }
+  /* v8 ignore stop */
 
   async handleConnection(ws: WebSocket, req: IncomingMessage): Promise<void> {
+    logConnection(req)
+
     await RequestContext.create(this.em, async () => {
       const key = await authenticateSocket(req.headers?.authorization ?? '')
       if (key) {
-        this.connections.push(new SocketConnection(ws, key, req))
-        sendMessage(this.connections.at(-1), 'v1.connected', {})
+        const connection = new SocketConnection(ws, key, req)
+        this.connections.set(ws, connection)
+        sendMessage(connection, 'v1.connected', {})
       } else {
         this.closeConnection(ws)
       }
@@ -73,13 +77,19 @@ export default class Socket {
 
   async handleMessage(ws: WebSocket, data: RawData): Promise<void> {
     await RequestContext.create(this.em, async () => {
-      await this.router.handleMessage(this.findConnectionBySocket(ws), data)
+      const connection = this.connections.get(ws)
+      if (connection) {
+        await this.router.handleMessage(connection, data)
+      /* v8 ignore next 3 */
+      } else {
+        this.closeConnection(ws)
+      }
     })
   }
 
   /* v8 ignore start */
   handlePong(ws: WebSocket): void {
-    const connection = this.findConnectionBySocket(ws)
+    const connection = this.findConnection(ws)
     if (!connection) return
 
     connection.alive = true
@@ -87,34 +97,34 @@ export default class Socket {
       connection.rateLimitWarnings--
     }
   }
-  /* v8 ignore end */
+  /* v8 ignore stop */
 
   closeConnection(ws: WebSocket, options: CloseConnectionOptions = {}): void {
     const terminate = options.terminate ?? false
     const preclosed = options.preclosed ?? false
+    const code = options.code ?? 3000
 
+    /* v8 ignore next 2 */
     if (terminate) {
       ws.terminate()
     } else if (!preclosed) {
-      ws.close(options.code ?? 3000, options.reason)
+      ws.close(code, options.reason)
     }
 
-    this.connections = this.connections.filter((conn) => conn.ws !== ws)
+    const connection = this.findConnection(ws)
+    /* v8 ignore next */
+    if (!connection) return
+
+    logConnectionClosed(connection, preclosed, code, options.reason)
+
+    this.connections.delete(ws)
   }
 
-  findConnectionBySocket(ws: WebSocket): SocketConnection | undefined {
-    const connection = this.connections.find((conn) => conn.ws === ws)
-    /* v8 ignore start */
-    if (!connection) {
-      this.closeConnection(ws)
-      return
-    }
-    /* v8 ignore end */
-
-    return connection
+  findConnection(ws: WebSocket): SocketConnection | undefined {
+    return this.connections.get(ws)
   }
 
   findConnections(filter: (conn: SocketConnection) => boolean): SocketConnection[] {
-    return this.connections.filter(filter)
+    return Array.from(this.connections.values()).filter(filter)
   }
 }

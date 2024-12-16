@@ -16,6 +16,7 @@ export default class SocketConnection {
   game: Game | null = null
   scopes: APIKeyScope[] = []
   private headers: IncomingHttpHeaders = {}
+  ip: string = ''
 
   rateLimitKey: string = v4()
   rateLimitWarnings: number = 0
@@ -24,6 +25,7 @@ export default class SocketConnection {
     this.game = apiKey.game
     this.scopes = apiKey.scopes
     this.headers = req.headers
+    this.ip = req.socket.remoteAddress
   }
 
   async getPlayerAlias(): Promise<PlayerAlias | null> {

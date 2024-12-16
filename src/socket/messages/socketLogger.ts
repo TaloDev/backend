@@ -1,0 +1,37 @@
+import { RawData } from 'ws'
+import SocketConnection from '../socketConnection'
+import { SocketMessageResponse } from './socketMessage'
+import { IncomingMessage } from 'http'
+
+function getSocketUrl(conn: SocketConnection | undefined): string {
+  if (!conn) {
+    return 'WSS /'
+  }
+  return `WSS /games/${conn.game.id}/${conn.playerAliasId ? `aliases/${conn.playerAliasId}/` : ''}`
+}
+
+function getSize(message: string): string {
+  return `${Buffer.byteLength(message)}b`
+}
+
+export function logRequest(conn: SocketConnection, rawData: RawData) {
+  const message = rawData.toString()
+  const req = JSON.parse(message)?.req
+  console.log(`  <-- ${getSocketUrl(conn)}{${req}} ${conn.ip} ${getSize(message)}`)
+}
+
+export function logResponse(conn: SocketConnection, res: SocketMessageResponse, message: string) {
+  console.log(`  --> ${getSocketUrl(conn)}{${res}} ${conn.ip} ${getSize(message)}`)
+}
+
+export function logConnection(req: IncomingMessage) {
+  console.log(`  <-- WSS /open ${req.socket.remoteAddress}`)
+}
+
+export function logConnectionClosed(conn: SocketConnection | undefined, preclosed: boolean, code: number, reason?: string) {
+  const direction = preclosed ? '<--' : '-->'
+  const ip = conn?.ip ?? 'unknown'
+  const displayCode = preclosed ? '' : code
+  const displayReason = reason ?? ''
+  console.log(`  ${direction} ${getSocketUrl(conn)}close ${ip} ${displayCode} ${displayReason}`)
+}

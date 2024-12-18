@@ -9,6 +9,7 @@ import SocketError, { sendError } from '../messages/socketError'
 import { APIKeyScope } from '../../entities/api-key'
 import playerListeners from '../listeners/playerListeners'
 import gameChannelListeners from '../listeners/gameChannelListeners'
+import { logRequest } from '../messages/socketLogger'
 
 const socketMessageValidator = z.object({
   req: z.enum(requests),
@@ -26,6 +27,8 @@ export default class SocketRouter {
   constructor(readonly socket: Socket) {}
 
   async handleMessage(conn: SocketConnection, rawData: RawData): Promise<void> {
+    logRequest(conn, rawData.toString())
+
     addBreadcrumb({
       category: 'message',
       message: rawData.toString(),

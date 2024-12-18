@@ -1,4 +1,5 @@
 import SocketConnection from '../socketConnection'
+import { logResponse } from './socketLogger'
 
 export const requests = [
   'v1.players.identify',
@@ -20,10 +21,14 @@ export type SocketMessageResponse = typeof responses[number]
 
 export function sendMessage<T>(conn: SocketConnection, res: SocketMessageResponse, data: T) {
   if (conn.ws.readyState === conn.ws.OPEN) {
-    conn.ws.send(JSON.stringify({
+    const message = JSON.stringify({
       res,
       data
-    }))
+    })
+
+    logResponse(conn, res, message)
+
+    conn.ws.send(message)
   }
 }
 

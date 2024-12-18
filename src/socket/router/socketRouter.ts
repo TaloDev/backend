@@ -27,7 +27,7 @@ export default class SocketRouter {
   constructor(readonly socket: Socket) {}
 
   async handleMessage(conn: SocketConnection, rawData: RawData): Promise<void> {
-    logRequest(conn, rawData)
+    logRequest(conn, rawData.toString())
 
     addBreadcrumb({
       category: 'message',

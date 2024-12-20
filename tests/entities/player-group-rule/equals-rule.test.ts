@@ -246,4 +246,34 @@ describe('EQUALS rule', () => {
 
     expect(res.body.count).toEqual(1)
   })
+
+  it('should not add a player to a group if their leaderboard entry is hidden', async () => {
+    const [organisation, game] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken({}, organisation)
+
+    const player1 = await new PlayerFactory([game]).one()
+    const player2 = await new PlayerFactory([game]).one()
+
+    const leaderboard = await new LeaderboardFactory([game]).one()
+    const leaderboardEntry = await new LeaderboardEntryFactory(leaderboard, [player1]).state(() => ({ score: 60, hidden: true })).one()
+    await (<EntityManager>global.em).persistAndFlush([player1, player2, leaderboardEntry])
+
+    const rules: Partial<PlayerGroupRule>[] = [
+      {
+        name: PlayerGroupRuleName.EQUALS,
+        field: `leaderboardEntryScore.${leaderboard.internalName}`,
+        operands: ['60'],
+        negate: false,
+        castType: PlayerGroupRuleCastType.DOUBLE
+      }
+    ]
+
+    const res = await request(global.app)
+      .get(`/games/${game.id}/player-groups/preview-count`)
+      .query({ ruleMode: '$and', rules: encodeURI(JSON.stringify(rules)) })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    expect(res.body.count).toEqual(0)
+  })
 })

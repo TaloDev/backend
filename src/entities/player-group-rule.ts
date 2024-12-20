@@ -152,6 +152,7 @@ export default class PlayerGroupRule {
         leaderboard: {
           internalName: this.getNamespacedValue('leaderboardEntryScore')
         },
+        hidden: false,
         [this.getCastedKey('score')]: fieldQuery
       })
   }

@@ -14,7 +14,9 @@ export const responses = [
   'v1.players.identify.success',
   'v1.channels.player-joined',
   'v1.channels.player-left',
-  'v1.channels.message'
+  'v1.channels.message',
+  'v1.channels.deleted',
+  'v1.channels.ownership-transferred'
 ] as const
 
 export type SocketMessageResponse = typeof responses[number]

@@ -1,11 +1,25 @@
 import request from 'supertest'
+import requestWs from 'superwstest'
 import { EntityManager } from '@mikro-orm/mysql'
 import GameChannelFactory from '../../../fixtures/GameChannelFactory'
 import { APIKeyScope } from '../../../../src/entities/api-key'
 import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
 import PlayerFactory from '../../../fixtures/PlayerFactory'
+import createSocketIdentifyMessage from '../../../utils/requestAuthedSocket'
+import Socket from '../../../../src/socket'
 
 describe('Game channel API service - put', () => {
+  let socket: Socket
+
+  beforeAll(() => {
+    socket = new Socket(global.server, global.em)
+    global.ctx.wss = socket
+  })
+
+  afterAll(() => {
+    socket.getServer().close()
+  })
+
   it('should update a channel if the scope is valid', async () => {
     const em: EntityManager = global.em
 
@@ -177,6 +191,30 @@ describe('Game channel API service - put', () => {
     expect(res.body.channel.owner.id).toBe(newOwner.aliases[0].id)
   })
 
+  it('should not update the channel owner if they are now in the channel', async () => {
+    const em: EntityManager = global.em
+
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_CHANNELS])
+
+    const channel = await new GameChannelFactory(apiKey.game).one()
+    const player = await new PlayerFactory([apiKey.game]).one()
+    const newOwner = await new PlayerFactory([apiKey.game]).one()
+
+    channel.owner = player.aliases[0]
+    channel.members.add(player.aliases[0])
+
+    await em.persistAndFlush([channel, newOwner])
+
+    const res = await request(global.app)
+      .put(`/v1/game-channels/${channel.id}`)
+      .send({ ownerAliasId: newOwner.aliases[0].id })
+      .auth(token, { type: 'bearer' })
+      .set('x-talo-alias', String(player.aliases[0].id))
+      .expect(400)
+
+    expect(res.body).toStrictEqual({ message: 'New owner is not a member of the channel' })
+  })
+
   it('should not update the channel owner if the provided alias does not exist', async () => {
     const em: EntityManager = global.em
 
@@ -238,5 +276,43 @@ describe('Game channel API service - put', () => {
     expect(res.body).toStrictEqual({
       message: 'Channel not found'
     })
+  })
+
+  it('should notify players in the channel when ownership is transferred', async () => {
+    const [identifyMessage, token, player] = await createSocketIdentifyMessage([
+      APIKeyScope.READ_PLAYERS,
+      APIKeyScope.READ_GAME_CHANNELS,
+      APIKeyScope.WRITE_GAME_CHANNELS
+    ])
+
+    const em: EntityManager = global.em
+
+    const channel = await new GameChannelFactory(player.game).one()
+    const newOwner = await new PlayerFactory([player.game]).one()
+
+    channel.owner = player.aliases[0]
+    channel.members.add(player.aliases[0], newOwner.aliases[0])
+
+    await em.persistAndFlush(channel)
+
+    await requestWs(global.server)
+      .ws('/')
+      .set('authorization', `Bearer ${token}`)
+      .expectJson()
+      .sendJson(identifyMessage)
+      .expectJson()
+      .exec(async () => {
+        await request(global.app)
+          .put(`/v1/game-channels/${channel.id}`)
+          .send({ ownerAliasId: newOwner.aliases[0].id })
+          .auth(token, { type: 'bearer' })
+          .set('x-talo-alias', String(player.aliases[0].id))
+          .expect(200)
+      })
+      .expectJson((actual) => {
+        expect(actual.res).toBe('v1.channels.ownership-transferred')
+        expect(actual.data.channel.id).toBe(channel.id)
+        expect(actual.data.newOwner.id).toBe(newOwner.aliases[0].id)
+      })
   })
 })

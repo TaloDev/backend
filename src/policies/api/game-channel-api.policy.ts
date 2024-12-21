@@ -21,6 +21,8 @@ export default class GameChannelAPIPolicy extends Policy {
     return em.getRepository(GameChannel).findOne({
       id: Number(req.params.id),
       game: this.ctx.state.alias.player.game
+    }, {
+      populate: ['members']
     })
   }
 

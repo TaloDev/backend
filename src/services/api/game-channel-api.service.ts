@@ -131,7 +131,7 @@ export default class GameChannelAPIService extends APIService {
     const em: EntityManager = req.ctx.em
     const channel: GameChannel = req.ctx.state.channel
 
-    if (!(await channel.members.load()).getIdentifiers().includes(req.ctx.state.alias.id)) {
+    if (!channel.members.getIdentifiers().includes(req.ctx.state.alias.id)) {
       channel.members.add(req.ctx.state.alias)
       sendMessageToChannelMembers(req, channel, 'v1.channels.player-joined', {
         channel,
@@ -157,7 +157,7 @@ export default class GameChannelAPIService extends APIService {
     const em: EntityManager = req.ctx.em
     const channel: GameChannel = req.ctx.state.channel
 
-    if (channel.autoCleanup && (channel.owner.id === req.ctx.state.alias.id || await channel.members.loadCount() === 1)) {
+    if (channel.autoCleanup && (channel.owner.id === req.ctx.state.alias.id || channel.members.count() === 1)) {
       await em.removeAndFlush(channel)
 
       return {
@@ -165,7 +165,7 @@ export default class GameChannelAPIService extends APIService {
       }
     }
 
-    if ((await channel.members.load()).getIdentifiers().includes(req.ctx.state.alias.id)) {
+    if (channel.members.getIdentifiers().includes(req.ctx.state.alias.id)) {
       if (channel.owner.id === req.ctx.state.alias.id) {
         channel.owner = null
       }
@@ -223,7 +223,16 @@ export default class GameChannelAPIService extends APIService {
         req.ctx.throw(404, 'New owner not found')
       }
 
+      if (!channel.members.getIdentifiers().includes(newOwner.id)) {
+        req.ctx.throw(400, 'New owner is not a member of the channel')
+      }
+
       channel.owner = newOwner
+
+      sendMessageToChannelMembers(req, channel, 'v1.channels.ownership-transferred', {
+        channel,
+        newOwner
+      })
     }
 
     await em.flush()
@@ -247,6 +256,10 @@ export default class GameChannelAPIService extends APIService {
     if (!canModifyChannel(channel, req.ctx.state.alias)) {
       req.ctx.throw(403, 'This player is not the owner of the channel')
     }
+
+    sendMessageToChannelMembers(req, channel, 'v1.channels.deleted', {
+      channel
+    })
 
     await channel.members.removeAll()
     await em.removeAndFlush(channel)

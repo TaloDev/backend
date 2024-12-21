@@ -1,12 +1,26 @@
 import request from 'supertest'
+import requestWs from 'superwstest'
 import { EntityManager } from '@mikro-orm/mysql'
 import GameChannelFactory from '../../../fixtures/GameChannelFactory'
 import { APIKeyScope } from '../../../../src/entities/api-key'
 import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
 import PlayerFactory from '../../../fixtures/PlayerFactory'
 import GameChannel from '../../../../src/entities/game-channel'
+import createSocketIdentifyMessage from '../../../utils/requestAuthedSocket'
+import Socket from '../../../../src/socket'
 
 describe('Game channel API service - delete', () => {
+  let socket: Socket
+
+  beforeAll(() => {
+    socket = new Socket(global.server, global.em)
+    global.ctx.wss = socket
+  })
+
+  afterAll(() => {
+    socket.getServer().close()
+  })
+
   it('should delete a channel if the scope is valid', async () => {
     const em: EntityManager = global.em
 
@@ -121,5 +135,40 @@ describe('Game channel API service - delete', () => {
     expect(res.body).toStrictEqual({
       message: 'Channel not found'
     })
+  })
+
+  it('should notify players in the channel when the channel is deleted', async () => {
+    const [identifyMessage, token, player] = await createSocketIdentifyMessage([
+      APIKeyScope.READ_PLAYERS,
+      APIKeyScope.READ_GAME_CHANNELS,
+      APIKeyScope.WRITE_GAME_CHANNELS
+    ])
+
+    const em: EntityManager = global.em
+
+    const channel = await new GameChannelFactory(player.game).one()
+
+    channel.owner = player.aliases[0]
+    channel.members.add(player.aliases[0])
+
+    await em.persistAndFlush(channel)
+
+    await requestWs(global.server)
+      .ws('/')
+      .set('authorization', `Bearer ${token}`)
+      .expectJson()
+      .sendJson(identifyMessage)
+      .expectJson()
+      .exec(async () => {
+        await request(global.app)
+          .delete(`/v1/game-channels/${channel.id}`)
+          .auth(token, { type: 'bearer' })
+          .set('x-talo-alias', String(player.aliases[0].id))
+          .expect(204)
+      })
+      .expectJson((actual) => {
+        expect(actual.res).toBe('v1.channels.deleted')
+        expect(actual.data.channel.id).toBe(channel.id)
+      })
   })
 })

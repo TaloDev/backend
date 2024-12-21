@@ -10,11 +10,19 @@ import { EntityManager } from '@mikro-orm/mysql'
 describe('Socket logger', () => {
   const consoleMock = vi.spyOn(console, 'log').mockImplementation(() => undefined)
 
+  beforeAll(() => {
+    vi.stubEnv('NODE_ENV', 'production')
+  })
+
   afterEach(() => {
     consoleMock.mockReset()
   })
 
-  async function createSocketConnection(): Promise<[TaloSocket, SocketConnection, () => void]>{
+  afterAll(() => {
+    vi.unstubAllEnvs()
+  })
+
+  async function createSocketConnection(): Promise<[TaloSocket, SocketConnection, () => void]> {
     const [apiKey] = await createAPIKeyAndToken([])
     await (<EntityManager>global.em).persistAndFlush(apiKey)
 

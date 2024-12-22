@@ -1,9 +1,8 @@
 import { EntityManager, MikroORM } from '@mikro-orm/mysql'
 import init from '../src'
 import ormConfig from '../src/config/mikro-orm.config'
-import createClickhouseClient from '../src/lib/clickhouse/createClient'
 import { NodeClickHouseClient } from '@clickhouse/client/dist/client'
-import { createServer } from 'http'
+import { createServer, Server } from 'http'
 
 beforeAll(async () => {
   vi.mock('@sendgrid/mail')
@@ -21,23 +20,25 @@ beforeAll(async () => {
   global.server = createServer()
   global.server.listen(0)
 
-  global.clickhouse = createClickhouseClient()
+  global.clickhouse = app.context.clickhouse
   await (global.clickhouse as NodeClickHouseClient).command({
     query: `TRUNCATE ALL TABLES from ${process.env.CLICKHOUSE_DB}`
   })
 })
 
 afterAll(async () => {
-  await (global.em as EntityManager).getConnection().close(true)
+  const em: EntityManager = global.em
+  await em.getConnection().close(true)
 
-  global.server.close()
+  const server: Server = global.server
+  server.close()
 
-  const clickhouse = global.clickhouse as NodeClickHouseClient
-  clickhouse.close()
+  const clickhouse: NodeClickHouseClient = global.clickhouse
+  await clickhouse.close()
 
-  delete global.em
-  delete global.ctx
   delete global.app
+  delete global.ctx
+  delete global.em
   delete global.server
   delete global.clickhouse
 })

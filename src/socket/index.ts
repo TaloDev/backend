@@ -7,6 +7,10 @@ import SocketConnection from './socketConnection'
 import SocketRouter from './router/socketRouter'
 import { sendMessage } from './messages/socketMessage'
 import { logConnection, logConnectionClosed } from './messages/socketLogger'
+import { Queue } from 'bullmq'
+import { createSocketEventQueue, SocketEventData } from './socketEvent'
+import { NodeClickHouseClient } from '@clickhouse/client/dist/client'
+import createClickhouseClient from '../lib/clickhouse/createClient'
 
 type CloseConnectionOptions = {
   code?: number
@@ -19,6 +23,8 @@ export default class Socket {
   private readonly wss: WebSocketServer
   private connections: Map<WebSocket, SocketConnection> = new Map()
   private router: SocketRouter
+  private clickhouse: NodeClickHouseClient
+  eventQueue: Queue<SocketEventData>
 
   constructor(server: Server, private readonly em: EntityManager) {
     this.wss = new WebSocketServer({ server })
@@ -33,7 +39,15 @@ export default class Socket {
 
     this.router = new SocketRouter(this)
 
-    this.heartbeat()
+    this.clickhouse = createClickhouseClient()
+    this.eventQueue = createSocketEventQueue(this.clickhouse)
+
+    const interval = this.heartbeat()
+
+    this.wss.on('close', async () => {
+      clearInterval(interval)
+      await this.clickhouse.close()
+    })
   }
 
   getServer(): WebSocketServer {
@@ -41,11 +55,11 @@ export default class Socket {
   }
 
   /* v8 ignore start */
-  heartbeat(): void {
-    const interval = setInterval(() => {
+  heartbeat(): NodeJS.Timeout {
+    return setInterval(async () => {
       for (const [ws, conn] of this.connections.entries()) {
         if (!conn.alive) {
-          this.closeConnection(ws, { terminate: true })
+          await this.closeConnection(ws, { terminate: true })
           continue
         }
 
@@ -53,10 +67,6 @@ export default class Socket {
         ws.ping()
       }
     }, 30_000)
-
-    this.wss.on('close', () => {
-      clearInterval(interval)
-    })
   }
   /* v8 ignore stop */
 
@@ -66,11 +76,21 @@ export default class Socket {
     await RequestContext.create(this.em, async () => {
       const key = await authenticateSocket(req.headers?.authorization ?? '')
       if (key) {
-        const connection = new SocketConnection(ws, key, req)
+        const connection = new SocketConnection(this, ws, key, req)
         this.connections.set(ws, connection)
-        sendMessage(connection, 'v1.connected', {})
+
+        await this.eventQueue.add('open', {
+          eventType: 'open',
+          reqOrRes: 'req',
+          code: null,
+          gameId: connection.game.id,
+          playerAliasId: null,
+          devBuild: req.headers['x-talo-dev-build'] === '1'
+        })
+
+        await sendMessage(connection, 'v1.connected', {})
       } else {
-        this.closeConnection(ws)
+        await this.closeConnection(ws)
       }
     })
   }
@@ -80,9 +100,9 @@ export default class Socket {
       const connection = this.connections.get(ws)
       if (connection) {
         await this.router.handleMessage(connection, data)
-      /* v8 ignore next 3 */
+        /* v8 ignore next 3 */
       } else {
-        this.closeConnection(ws)
+        await this.closeConnection(ws)
       }
     })
   }
@@ -99,7 +119,7 @@ export default class Socket {
   }
   /* v8 ignore stop */
 
-  closeConnection(ws: WebSocket, options: CloseConnectionOptions = {}): void {
+  async closeConnection(ws: WebSocket, options: CloseConnectionOptions = {}): Promise<void> {
     const terminate = options.terminate ?? false
     const preclosed = options.preclosed ?? false
     const code = options.code ?? 3000
@@ -116,6 +136,15 @@ export default class Socket {
     if (!connection) return
 
     logConnectionClosed(connection, preclosed, code, options.reason)
+
+    await this.eventQueue.add('close', {
+      eventType: 'close',
+      reqOrRes: preclosed ? 'req' : 'res',
+      code: preclosed ? null : code.toString(),
+      gameId: connection.game.id,
+      playerAliasId: connection.playerAliasId,
+      devBuild: connection.isDevBuild()
+    })
 
     this.connections.delete(ws)
   }

@@ -46,17 +46,17 @@ const playerListeners: SocketMessageListener<ZodType>[] = [
               alias.id
             )
           } catch (err) {
-            sendError(conn, req, new SocketError('INVALID_SESSION_TOKEN', 'Invalid session token'))
+            await sendError(conn, req, new SocketError('INVALID_SESSION_TOKEN', 'Invalid session token'))
             return
           }
         }
       } else {
-        sendError(conn, req, new SocketError('INVALID_SOCKET_TOKEN', 'Invalid socket token'))
+        await sendError(conn, req, new SocketError('INVALID_SOCKET_TOKEN', 'Invalid socket token'))
         return
       }
 
       conn.playerAliasId = alias.id
-      sendMessage(conn, 'v1.players.identify.success', alias)
+      await sendMessage(conn, 'v1.players.identify.success', alias)
     },
     {
       requirePlayer: false,

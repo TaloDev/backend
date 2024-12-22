@@ -24,7 +24,7 @@ const routes: SocketMessageListener<ZodType>[][] = [
 ]
 
 export default class SocketRouter {
-  constructor(readonly socket: Socket) {}
+  constructor(readonly socket: Socket) { }
 
   async handleMessage(conn: SocketConnection, rawData: RawData): Promise<void> {
     logRequest(conn, rawData.toString())
@@ -38,9 +38,9 @@ export default class SocketRouter {
     const rateLimitExceeded = await conn.checkRateLimitExceeded()
     if (rateLimitExceeded) {
       if (conn.rateLimitWarnings > 3) {
-        this.socket.closeConnection(conn.ws, { code: 1008, reason: 'RATE_LIMIT_EXCEEDED' })
+        await this.socket.closeConnection(conn.getSocket(), { code: 1008, reason: 'RATE_LIMIT_EXCEEDED' })
       } else {
-        sendError(conn, 'unknown', new SocketError('RATE_LIMIT_EXCEEDED', 'Rate limit exceeded'))
+        await sendError(conn, 'unknown', new SocketError('RATE_LIMIT_EXCEEDED', 'Rate limit exceeded'))
       }
       return
     }
@@ -52,27 +52,36 @@ export default class SocketRouter {
 
       const handled = await this.routeMessage(conn, message)
       if (!handled) {
-        sendError(conn, message.req, new SocketError('UNHANDLED_REQUEST', 'Request not handled'))
+        await sendError(conn, message.req, new SocketError('UNHANDLED_REQUEST', 'Request not handled'))
       }
     } catch (err) {
       if (err instanceof ZodError) {
-        sendError(conn, 'unknown', new SocketError('INVALID_MESSAGE', 'Invalid message request', rawData.toString()))
+        await sendError(conn, 'unknown', new SocketError('INVALID_MESSAGE', 'Invalid message request', rawData.toString()))
       } else {
-        sendError(conn, message?.req ?? 'unknown', new SocketError('ROUTING_ERROR', 'An error occurred while routing the message'))
+        await sendError(conn, message?.req ?? 'unknown', new SocketError('ROUTING_ERROR', 'An error occurred while routing the message'))
       }
     }
   }
 
   async routeMessage(conn: SocketConnection, message: SocketMessage): Promise<boolean> {
+    await this.socket.eventQueue.add('message', {
+      eventType: message.req,
+      reqOrRes: 'req',
+      code: null,
+      gameId: conn.game.id,
+      playerAliasId: conn.playerAliasId,
+      devBuild: conn.isDevBuild()
+    })
+
     for (const route of routes) {
       for await (const listener of route) {
         if (listener.req === message.req) {
           try {
             if (!this.meetsPlayerRequirement(conn, listener)) {
-              sendError(conn, message.req, new SocketError('NO_PLAYER_FOUND', 'You must identify a player before sending this request'))
+              await sendError(conn, message.req, new SocketError('NO_PLAYER_FOUND', 'You must identify a player before sending this request'))
             } else if (!this.meetsScopeRequirements(conn, listener)) {
               const missing = this.getMissingScopes(conn, listener)
-              sendError(conn, message.req, new SocketError('MISSING_ACCESS_KEY_SCOPES', `Missing access key scope(s): ${missing.join(', ')}`))
+              await sendError(conn, message.req, new SocketError('MISSING_ACCESS_KEY_SCOPES', `Missing access key scope(s): ${missing.join(', ')}`))
             } else {
               const data = await listener.validator.parseAsync(message.data)
               await listener.handler({ conn, req: listener.req, data, socket: this.socket })
@@ -81,9 +90,9 @@ export default class SocketRouter {
             return true
           } catch (err) {
             if (err instanceof ZodError) {
-              sendError(conn, message.req, new SocketError('INVALID_MESSAGE_DATA', 'Invalid message data for request', JSON.stringify(message.data)))
+              await sendError(conn, message.req, new SocketError('INVALID_MESSAGE_DATA', 'Invalid message data for request', JSON.stringify(message.data)))
             } else {
-              sendError(conn, message?.req ?? 'unknown', new SocketError('LISTENER_ERROR', 'An error occurred while processing the message', err.message))
+              await sendError(conn, message?.req ?? 'unknown', new SocketError('LISTENER_ERROR', 'An error occurred while processing the message', err.message))
             }
           }
         }
@@ -104,6 +113,6 @@ export default class SocketRouter {
   }
 
   getMissingScopes(conn: SocketConnection, listener: SocketMessageListener<ZodType>): APIKeyScope[] {
-    return (listener.options.apiKeyScopes ?? []).filter((scope) => !conn.scopes.includes(scope))
+    return (listener.options.apiKeyScopes ?? []).filter((scope) => !conn.hasScope(scope))
   }
 }

@@ -16,7 +16,7 @@ import PlayerProp from '../entities/player-prop'
 import PlayerGroup from '../entities/player-group'
 import GameSave from '../entities/game-save'
 import PlayerAuthActivity from '../entities/player-auth-activity'
-import createClickhouseClient from '../lib/clickhouse/createClient'
+import { NodeClickHouseClient } from '@clickhouse/client/dist/client'
 
 const propsValidation = async (val: unknown): Promise<ValidationCondition[]> => [
   {
@@ -265,7 +265,7 @@ export default class PlayerService extends Service {
     const player: Player = req.ctx.state.player // set in the policy
 
     const em: EntityManager = req.ctx.em
-    const clickhouse = createClickhouseClient()
+    const clickhouse: NodeClickHouseClient = req.ctx.clickhouse
 
     const aliases = player.aliases.getItems().map((alias) => alias.id).join(',')
 
@@ -284,7 +284,7 @@ export default class PlayerService extends Service {
     `
 
     const items = await clickhouse.query({ query, format: 'JSONEachRow' }).then((res) => res.json<ClickhouseEvent>())
-    const events = await Promise.all(items.map((item) => createEventFromClickhouse(em, item, true)))
+    const events = await Promise.all(items.map((item) => createEventFromClickhouse(clickhouse, em, item, true)))
 
     const countQuery = `
       SELECT count(DISTINCT events.id) AS count
@@ -294,8 +294,6 @@ export default class PlayerService extends Service {
       query: countQuery,
       format: 'JSONEachRow'
     }).then((res) => res.json<{ count: string }>())
-
-    clickhouse.close()
 
     return {
       status: 200,

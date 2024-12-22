@@ -3,10 +3,10 @@ import { HasPermission, Request, Response, Validate, ValidationCondition, Docs }
 import EventAPIPolicy from '../../policies/api/event-api.policy'
 import APIService from './api-service'
 import EventAPIDocs from '../../docs/event-api.docs'
-import createClickhouseClient from '../../lib/clickhouse/createClient'
 import Player from '../../entities/player'
 import Event from '../../entities/event'
 import Prop from '../../entities/prop'
+import { NodeClickHouseClient } from '@clickhouse/client/dist/client'
 
 export default class EventAPIService extends APIService {
   @Validate({
@@ -28,8 +28,7 @@ export default class EventAPIService extends APIService {
   async post(req: Request): Promise<Response> {
     const { events: items } = req.body
     const em: EntityManager = req.ctx.em
-
-    const clickhouse = createClickhouseClient()
+    const clickhouse: NodeClickHouseClient = req.ctx.clickhouse
 
     const events: Event[] = []
     const errors = Array.from({ length: items.length }).map(() => [])
@@ -85,8 +84,6 @@ export default class EventAPIService extends APIService {
         }
       }
     }
-
-    clickhouse.close()
 
     // flush player meta props set by event.setProps()
     await em.flush()

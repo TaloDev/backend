@@ -30,9 +30,7 @@ services:
       - test-network
 
   test-clickhouse:
-    build:
-      context: .
-      dockerfile: ./clickhouse/Dockerfile
+    image: clickhouse/clickhouse-server:24.12-alpine
     environment:
       CLICKHOUSE_USER: ${CLICKHOUSE_USER}
       CLICKHOUSE_PASSWORD: ${CLICKHOUSE_PASSWORD}

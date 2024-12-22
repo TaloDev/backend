@@ -17,6 +17,7 @@ beforeAll(async () => {
   global.ctx = app.context
   global.em = app.context.em
 
+  vi.stubEnv('DISABLE_SOCKET_EVENTS', '1')
   global.server = createServer()
   global.server.listen(0)
 

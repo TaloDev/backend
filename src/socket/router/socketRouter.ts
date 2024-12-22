@@ -24,7 +24,7 @@ const routes: SocketMessageListener<ZodType>[][] = [
 ]
 
 export default class SocketRouter {
-  constructor(readonly socket: Socket) { }
+  constructor(readonly wss: Socket) { }
 
   async handleMessage(conn: SocketConnection, rawData: RawData): Promise<void> {
     logRequest(conn, rawData.toString())
@@ -38,7 +38,7 @@ export default class SocketRouter {
     const rateLimitExceeded = await conn.checkRateLimitExceeded()
     if (rateLimitExceeded) {
       if (conn.rateLimitWarnings > 3) {
-        await this.socket.closeConnection(conn.getSocket(), { code: 1008, reason: 'RATE_LIMIT_EXCEEDED' })
+        await this.wss.closeConnection(conn.getSocket(), { code: 1008, reason: 'RATE_LIMIT_EXCEEDED' })
       } else {
         await sendError(conn, 'unknown', new SocketError('RATE_LIMIT_EXCEEDED', 'Rate limit exceeded'))
       }
@@ -64,7 +64,7 @@ export default class SocketRouter {
   }
 
   async routeMessage(conn: SocketConnection, message: SocketMessage): Promise<boolean> {
-    await this.socket.eventQueue.add('message', {
+    await this.wss.trackEvent('message', {
       eventType: message.req,
       reqOrRes: 'req',
       code: null,
@@ -84,7 +84,7 @@ export default class SocketRouter {
               await sendError(conn, message.req, new SocketError('MISSING_ACCESS_KEY_SCOPES', `Missing access key scope(s): ${missing.join(', ')}`))
             } else {
               const data = await listener.validator.parseAsync(message.data)
-              await listener.handler({ conn, req: listener.req, data, socket: this.socket })
+              await listener.handler({ conn, req: listener.req, data, socket: this.wss })
             }
 
             return true

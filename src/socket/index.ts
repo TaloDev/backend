@@ -24,7 +24,7 @@ export default class Socket {
   private connections: Map<WebSocket, SocketConnection> = new Map()
   private router: SocketRouter
   private clickhouse: ClickHouseClient
-  eventQueue: Queue<SocketEventData>
+  private eventQueue: Queue<SocketEventData>
 
   constructor(server: Server, private readonly em: EntityManager) {
     this.wss = new WebSocketServer({ server })
@@ -79,7 +79,7 @@ export default class Socket {
         const connection = new SocketConnection(this, ws, key, req)
         this.connections.set(ws, connection)
 
-        await this.eventQueue.add('open', {
+        await this.trackEvent('open', {
           eventType: 'open',
           reqOrRes: 'req',
           code: null,
@@ -100,7 +100,7 @@ export default class Socket {
       const connection = this.connections.get(ws)
       if (connection) {
         await this.router.handleMessage(connection, data)
-        /* v8 ignore next 3 */
+      /* v8 ignore next 3 */
       } else {
         await this.closeConnection(ws)
       }
@@ -137,7 +137,7 @@ export default class Socket {
 
     logConnectionClosed(connection, preclosed, code, options.reason)
 
-    await this.eventQueue.add('close', {
+    await this.trackEvent('close', {
       eventType: 'close',
       reqOrRes: preclosed ? 'req' : 'res',
       code: preclosed ? null : code.toString(),
@@ -155,5 +155,13 @@ export default class Socket {
 
   findConnections(filter: (conn: SocketConnection) => boolean): SocketConnection[] {
     return Array.from(this.connections.values()).filter(filter)
+  }
+
+  async trackEvent(name: 'open' | 'close' | 'message', data: SocketEventData): Promise<void> {
+    if (process.env.DISABLE_SOCKET_EVENTS === '1') {
+      return
+    }
+
+    await this.eventQueue.add(name, data)
   }
 }

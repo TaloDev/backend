@@ -40,18 +40,18 @@ export async function runClickhouseMigrations(clickhouse: ClickHouseClient) {
   })
 
   for (const migration of pendingMigrations) {
-    console.info(`Applied '${migration.name}'`)
+    console.info(`Processing '${migration.name}'`)
     await clickhouse.query({ query: migration.sql })
+    await clickhouse.insert({
+      table: 'migrations',
+      values: [{
+        name: migration.name,
+        executed_at: formatDateForClickHouse(new Date())
+      }],
+      format: 'JSONEachRow'
+    })
+    console.info(`Applied '${migration.name}'`)
   }
-
-  await clickhouse.insert({
-    table: 'migrations',
-    values: pendingMigrations.map((migration) => ({
-      name: migration.name,
-      executed_at: formatDateForClickHouse(new Date())
-    })),
-    format: 'JSONEachRow'
-  })
 
   console.info('ClickHouse up to date!')
 }

@@ -1233,12 +1233,12 @@
         },
         "identifier": {
           "name": "identifier",
-          "type": "varchar(255)",
+          "type": "varchar(1024)",
           "unsigned": false,
           "autoincrement": false,
           "primary": false,
           "nullable": false,
-          "length": 255,
+          "length": 1024,
           "mappedType": "string"
         },
         "player_id": {

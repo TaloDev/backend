@@ -34,6 +34,7 @@ import { AddPlayerGroupMembersVisibleColumn } from './20241014202844AddPlayerGro
 import { AddPlayerPropCreatedAtColumn } from './20241101233908AddPlayerPropCreatedAtColumn'
 import { AddPlayerAliasLastSeenAtColumn } from './20241102004938AddPlayerAliasLastSeenAtColumn'
 import { CreateGameChannelTables } from './20241206233511CreateGameChannelTables'
+import { IncreasePlayerAliasIdentifierLength } from './20241221210019IncreasePlayerAliasIdentifierLength'
 
 export default [
   {
@@ -179,5 +180,9 @@ export default [
   {
     name: 'CreateGameChannelTables',
     class: CreateGameChannelTables
+  },
+  {
+    name: 'IncreasePlayerAliasIdentifierLength',
+    class: IncreasePlayerAliasIdentifierLength
   }
 ]

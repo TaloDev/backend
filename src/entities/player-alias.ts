@@ -22,7 +22,7 @@ export default class PlayerAlias {
   @Property()
   service: string
 
-  @Property()
+  @Property({ length: 1024 })
   identifier: string
 
   @ManyToOne(() => Player, { cascade: [Cascade.REMOVE], eager: true })

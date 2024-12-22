@@ -1,4 +1,4 @@
-import { NodeClickHouseClient } from '@clickhouse/client/dist/client'
+import { ClickHouseClient } from '@clickhouse/client'
 import { CreateEventsTable } from './001CreateEventsTable'
 import { CreateEventPropsTable } from './002CreateEventPropsTable'
 import { CreateSocketEventsTable } from './003CreateSocketEventsTable'
@@ -25,7 +25,7 @@ const migrations: ClickhouseMigration[] = [
   }
 ]
 
-export async function runClickhouseMigrations(clickhouse: NodeClickHouseClient) {
+export async function runClickhouseMigrations(clickhouse: ClickHouseClient) {
   console.info('Running ClickHouse migrations...')
 
   await clickhouse.query({ query: CreateMigrationsTable })

@@ -6,7 +6,7 @@ import EventAPIDocs from '../../docs/event-api.docs'
 import Player from '../../entities/player'
 import Event from '../../entities/event'
 import Prop from '../../entities/prop'
-import { NodeClickHouseClient } from '@clickhouse/client/dist/client'
+import { ClickHouseClient } from '@clickhouse/client'
 
 export default class EventAPIService extends APIService {
   @Validate({
@@ -28,7 +28,7 @@ export default class EventAPIService extends APIService {
   async post(req: Request): Promise<Response> {
     const { events: items } = req.body
     const em: EntityManager = req.ctx.em
-    const clickhouse: NodeClickHouseClient = req.ctx.clickhouse
+    const clickhouse: ClickHouseClient = req.ctx.clickhouse
 
     const events: Event[] = []
     const errors = Array.from({ length: items.length }).map(() => [])

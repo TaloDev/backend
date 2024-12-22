@@ -5,7 +5,7 @@ import PlayerAlias from './player-alias'
 import Prop from './prop'
 import { formatDateForClickHouse } from '../lib/clickhouse/formatDateTime'
 import { EntityManager } from '@mikro-orm/mysql'
-import { NodeClickHouseClient } from '@clickhouse/client/dist/client'
+import { ClickHouseClient } from '@clickhouse/client'
 
 const eventMetaProps = ['META_OS', 'META_GAME_VERSION', 'META_WINDOW_MODE', 'META_SCREEN_WIDTH', 'META_SCREEN_HEIGHT']
 
@@ -90,7 +90,7 @@ export default class Event {
 }
 
 export async function createEventFromClickhouse(
-  clickhouse: NodeClickHouseClient,
+  clickhouse: ClickHouseClient,
   em: EntityManager,
   data: ClickhouseEvent,
   loadProps = false

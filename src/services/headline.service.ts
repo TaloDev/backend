@@ -6,7 +6,7 @@ import HeadlinePolicy from '../policies/headline.policy'
 import dateValidationSchema from '../lib/dates/dateValidationSchema'
 import { devDataPlayerFilter } from '../middlewares/dev-data-middleware'
 import { formatDateForClickHouse } from '../lib/clickhouse/formatDateTime'
-import { NodeClickHouseClient } from '@clickhouse/client/dist/client'
+import { ClickHouseClient } from '@clickhouse/client'
 
 @Routes([
   {
@@ -96,7 +96,7 @@ export default class HeadlineService extends Service {
   async events(req: Request): Promise<Response> {
     const { startDate: startDateQuery, endDate: endDateQuery } = req.query
 
-    const clickhouse: NodeClickHouseClient = req.ctx.clickhouse
+    const clickhouse: ClickHouseClient = req.ctx.clickhouse
 
     const startDate = formatDateForClickHouse(startOfDay(new Date(startDateQuery)))
     const endDate = formatDateForClickHouse(endOfDay(new Date(endDateQuery)))
@@ -130,7 +130,7 @@ export default class HeadlineService extends Service {
   async uniqueEventSubmitters(req: Request): Promise<Response> {
     const { startDate: startDateQuery, endDate: endDateQuery } = req.query
 
-    const clickhouse: NodeClickHouseClient = req.ctx.clickhouse
+    const clickhouse: ClickHouseClient = req.ctx.clickhouse
 
     const startDate = formatDateForClickHouse(startOfDay(new Date(startDateQuery)))
     const endDate = formatDateForClickHouse(endOfDay(new Date(endDateQuery)))

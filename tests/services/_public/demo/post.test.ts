@@ -9,7 +9,7 @@ import GameFactory from '../../../fixtures/GameFactory'
 import { sub } from 'date-fns'
 import randomDate from '../../../../src/lib/dates/randomDate'
 import { formatDateForClickHouse } from '../../../../src/lib/clickhouse/formatDateTime'
-import { NodeClickHouseClient } from '@clickhouse/client/dist/client'
+import { ClickHouseClient } from '@clickhouse/client'
 
 describe('Demo service - post', () => {
   let demoOrg: Organisation
@@ -41,7 +41,7 @@ describe('Demo service - post', () => {
 
     const date = formatDateForClickHouse(sub(new Date(), { months: 1 }))
 
-    let eventsThisMonth = await (<NodeClickHouseClient>global.clickhouse).query({
+    let eventsThisMonth = await (<ClickHouseClient>global.clickhouse).query({
       query: `SELECT count() as count FROM events WHERE game_id = ${game.id} AND created_at >= '${date}'`,
       format: 'JSONEachRow'
     }).then((res) => res.json<{ count: string }>())
@@ -52,7 +52,7 @@ describe('Demo service - post', () => {
     const randomEvents = await new EventFactory(players).state(() => ({
       createdAt: randomDate(sub(new Date(), { years: 1 }), sub(new Date(), { months: 2 }))
     })).many(20)
-    await (<NodeClickHouseClient>global.clickhouse).insert({
+    await (<ClickHouseClient>global.clickhouse).insert({
       table: 'events',
       values: randomEvents.map((event) => event.getInsertableData()),
       format: 'JSONEachRow'
@@ -62,7 +62,7 @@ describe('Demo service - post', () => {
       .post('/public/demo')
       .expect(200)
 
-    eventsThisMonth = await (<NodeClickHouseClient>global.clickhouse).query({
+    eventsThisMonth = await (<ClickHouseClient>global.clickhouse).query({
       query: `SELECT count() as count FROM events WHERE game_id = ${game.id} AND created_at >= '${date}'`,
       format: 'JSONEachRow'
     }).then((res) => res.json<{ count: string }>())

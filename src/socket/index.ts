@@ -9,7 +9,7 @@ import { sendMessage } from './messages/socketMessage'
 import { logConnection, logConnectionClosed } from './messages/socketLogger'
 import { Queue } from 'bullmq'
 import { createSocketEventQueue, SocketEventData } from './socketEvent'
-import { NodeClickHouseClient } from '@clickhouse/client/dist/client'
+import { ClickHouseClient } from '@clickhouse/client'
 import createClickhouseClient from '../lib/clickhouse/createClient'
 
 type CloseConnectionOptions = {
@@ -23,7 +23,7 @@ export default class Socket {
   private readonly wss: WebSocketServer
   private connections: Map<WebSocket, SocketConnection> = new Map()
   private router: SocketRouter
-  private clickhouse: NodeClickHouseClient
+  private clickhouse: ClickHouseClient
   eventQueue: Queue<SocketEventData>
 
   constructor(server: Server, private readonly em: EntityManager) {

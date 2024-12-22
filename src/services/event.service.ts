@@ -3,7 +3,7 @@ import EventPolicy from '../policies/event.policy'
 import { endOfDay } from 'date-fns'
 import dateValidationSchema from '../lib/dates/dateValidationSchema'
 import { formatDateForClickHouse } from '../lib/clickhouse/formatDateTime'
-import { NodeClickHouseClient } from '@clickhouse/client/dist/client'
+import { ClickHouseClient } from '@clickhouse/client'
 
 type EventData = {
   name: string
@@ -36,7 +36,7 @@ export default class EventService extends Service {
   async index(req: Request): Promise<Response> {
     const { startDate: startDateQuery, endDate: endDateQuery } = req.query
 
-    const clickhouse: NodeClickHouseClient = req.ctx.clickhouse
+    const clickhouse: ClickHouseClient = req.ctx.clickhouse
 
     const startDate = formatDateForClickHouse(new Date(startDateQuery))
     const endDate = formatDateForClickHouse(endOfDay(new Date(endDateQuery)))

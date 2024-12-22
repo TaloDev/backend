@@ -1,7 +1,7 @@
 import { EntityManager, MikroORM } from '@mikro-orm/mysql'
 import init from '../src'
 import ormConfig from '../src/config/mikro-orm.config'
-import { NodeClickHouseClient } from '@clickhouse/client/dist/client'
+import { ClickHouseClient } from '@clickhouse/client'
 import { createServer, Server } from 'http'
 
 beforeAll(async () => {
@@ -21,7 +21,7 @@ beforeAll(async () => {
   global.server.listen(0)
 
   global.clickhouse = app.context.clickhouse
-  await (global.clickhouse as NodeClickHouseClient).command({
+  await (global.clickhouse as ClickHouseClient).command({
     query: `TRUNCATE ALL TABLES from ${process.env.CLICKHOUSE_DB}`
   })
 })
@@ -33,7 +33,7 @@ afterAll(async () => {
   const server: Server = global.server
   server.close()
 
-  const clickhouse: NodeClickHouseClient = global.clickhouse
+  const clickhouse: ClickHouseClient = global.clickhouse
   await clickhouse.close()
 
   delete global.app

@@ -2,7 +2,7 @@ import { Queue } from 'bullmq'
 import createQueue from '../lib/queues/createQueue'
 import { formatDateForClickHouse } from '../lib/clickhouse/formatDateTime'
 import { SocketMessageRequest, SocketMessageResponse } from './messages/socketMessage'
-import { NodeClickHouseClient } from '@clickhouse/client/dist/client'
+import { ClickHouseClient } from '@clickhouse/client'
 
 export type ClickhouseSocketEvent = {
   event_type: string
@@ -39,7 +39,7 @@ function getInsertableData(event: SocketEventData): ClickhouseSocketEvent {
   }
 }
 
-export function createSocketEventQueue(clickhouse: NodeClickHouseClient): Queue<SocketEventData> {
+export function createSocketEventQueue(clickhouse: ClickHouseClient): Queue<SocketEventData> {
   return createQueue<SocketEventData>('socketEvents', async (job) => {
     await clickhouse.insert({
       table: 'socket_events',

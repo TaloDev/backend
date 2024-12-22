@@ -3,7 +3,7 @@ import { runClickhouseMigrations } from '../src/migrations/clickhouse'
 
 async function run() {
   const clickhouse = await createClickhouseClient()
-  runClickhouseMigrations(clickhouse)
+  await runClickhouseMigrations(clickhouse)
   await clickhouse.close()
 }
 

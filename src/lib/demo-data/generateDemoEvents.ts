@@ -6,9 +6,9 @@ import Prop from '../../entities/prop'
 import Game from '../../entities/game'
 import randomDate from '../dates/randomDate'
 import PlayerAlias from '../../entities/player-alias'
-import { NodeClickHouseClient } from '@clickhouse/client/dist/client'
 import { formatDateForClickHouse } from '../clickhouse/formatDateTime'
 import { rand, randNumber } from '@ngneat/falso'
+import { ClickHouseClient } from '@clickhouse/client'
 
 type DemoEvent = {
   name: string
@@ -78,7 +78,7 @@ export function generateEventData(date: Date): Partial<Event> {
   }
 }
 
-async function getEventCount(clickhouse: NodeClickHouseClient, game: Game, startDate: Date): Promise<number> {
+async function getEventCount(clickhouse: ClickHouseClient, game: Game, startDate: Date): Promise<number> {
   const startDateFormatted = formatDateForClickHouse(startDate)
 
   const query = `
@@ -105,7 +105,7 @@ async function getEventCount(clickhouse: NodeClickHouseClient, game: Game, start
 
 export async function generateDemoEvents(req: Request): Promise<void> {
   const em: EntityManager = req.ctx.em
-  const clickhouse: NodeClickHouseClient = req.ctx.clickhouse
+  const clickhouse: ClickHouseClient = req.ctx.clickhouse
 
   const games = await em.getRepository(Game).find({
     organisation: {

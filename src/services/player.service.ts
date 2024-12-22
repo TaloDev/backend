@@ -16,7 +16,7 @@ import PlayerProp from '../entities/player-prop'
 import PlayerGroup from '../entities/player-group'
 import GameSave from '../entities/game-save'
 import PlayerAuthActivity from '../entities/player-auth-activity'
-import { NodeClickHouseClient } from '@clickhouse/client/dist/client'
+import { ClickHouseClient } from '@clickhouse/client'
 
 const propsValidation = async (val: unknown): Promise<ValidationCondition[]> => [
   {
@@ -265,7 +265,7 @@ export default class PlayerService extends Service {
     const player: Player = req.ctx.state.player // set in the policy
 
     const em: EntityManager = req.ctx.em
-    const clickhouse: NodeClickHouseClient = req.ctx.clickhouse
+    const clickhouse: ClickHouseClient = req.ctx.clickhouse
 
     const aliases = player.aliases.getItems().map((alias) => alias.id).join(',')
 

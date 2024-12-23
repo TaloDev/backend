@@ -1,9 +1,8 @@
 import { EntityManager, MikroORM } from '@mikro-orm/mysql'
 import init from '../src'
 import ormConfig from '../src/config/mikro-orm.config'
-import createClickhouseClient from '../src/lib/clickhouse/createClient'
-import { NodeClickHouseClient } from '@clickhouse/client/dist/client'
-import { createServer } from 'http'
+import { ClickHouseClient } from '@clickhouse/client'
+import { createServer, Server } from 'http'
 
 beforeAll(async () => {
   vi.mock('@sendgrid/mail')
@@ -18,26 +17,29 @@ beforeAll(async () => {
   global.ctx = app.context
   global.em = app.context.em
 
+  vi.stubEnv('DISABLE_SOCKET_EVENTS', '1')
   global.server = createServer()
   global.server.listen(0)
 
-  global.clickhouse = createClickhouseClient()
-  await (global.clickhouse as NodeClickHouseClient).command({
+  global.clickhouse = app.context.clickhouse
+  await (global.clickhouse as ClickHouseClient).command({
     query: `TRUNCATE ALL TABLES from ${process.env.CLICKHOUSE_DB}`
   })
 })
 
 afterAll(async () => {
-  await (global.em as EntityManager).getConnection().close(true)
+  const em: EntityManager = global.em
+  await em.getConnection().close(true)
 
-  global.server.close()
+  const server: Server = global.server
+  server.close()
 
-  const clickhouse = global.clickhouse as NodeClickHouseClient
-  clickhouse.close()
+  const clickhouse: ClickHouseClient = global.clickhouse
+  await clickhouse.close()
 
-  delete global.em
-  delete global.ctx
   delete global.app
+  delete global.ctx
+  delete global.em
   delete global.server
   delete global.clickhouse
 })

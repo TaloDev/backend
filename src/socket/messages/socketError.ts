@@ -18,17 +18,17 @@ const errorCodes = [
 export type SocketErrorCode = typeof errorCodes[number]
 
 export default class SocketError {
-  constructor(public code: SocketErrorCode, public message: string, public cause?: string) {}
+  constructor(public code: SocketErrorCode, public message: string, public cause?: string) { }
 }
 
 type SocketErrorReq = SocketMessageRequest | 'unknown'
 
-export function sendError(conn: SocketConnection, req: SocketErrorReq, error: SocketError) {
+export async function sendError(conn: SocketConnection, req: SocketErrorReq, error: SocketError) {
   setTag('request', req)
   setTag('errorCode', error.code)
-  captureException(error)
+  captureException(new Error(error.message, { cause: error }))
 
-  sendMessage<{
+  await sendMessage<{
     req: SocketErrorReq
     message: string
     errorCode: SocketErrorCode

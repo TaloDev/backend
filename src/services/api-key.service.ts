@@ -112,9 +112,7 @@ export default class APIKeyService extends Service {
 
     const socket: Socket = req.ctx.wss
     const conns = socket.findConnections((conn) => conn.getAPIKeyId() === apiKey.id)
-    for (const conn of conns) {
-      socket.closeConnection(conn.ws)
-    }
+    await Promise.all(conns.map((conn) => socket.closeConnection(conn.getSocket())))
 
     await em.flush()
 

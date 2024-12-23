@@ -2,6 +2,10 @@ import SocketConnection from '../socketConnection'
 import { SocketMessageResponse } from './socketMessage'
 import { IncomingMessage } from 'http'
 
+function canLog(): boolean {
+  return process.env.NODE_ENV !== 'test'
+}
+
 function getSocketUrl(conn: SocketConnection | undefined): string {
   if (!conn) {
     return 'WSS /'
@@ -14,19 +18,41 @@ function getSize(message: string): string {
 }
 
 export function logRequest(conn: SocketConnection, message: string) {
-  const req = JSON.parse(message)?.req
-  console.log(`  <-- ${getSocketUrl(conn)}{${req}} ${conn.getRemoteAddress()} ${getSize(message)}`)
+  if (!canLog()) {
+    return
+  }
+
+  let req = ''
+  try {
+    req = JSON.parse(message).req ?? 'unknown'
+  } catch {
+    req = 'unknown'
+  } finally {
+    console.log(`  <-- ${getSocketUrl(conn)}{${req}} ${conn.getRemoteAddress()} ${getSize(message)}`)
+  }
 }
 
 export function logResponse(conn: SocketConnection, res: SocketMessageResponse, message: string) {
+  if (!canLog()) {
+    return
+  }
+
   console.log(`  --> ${getSocketUrl(conn)}{${res}} ${conn.getRemoteAddress()} ${getSize(message)}`)
 }
 
 export function logConnection(req: IncomingMessage) {
+  if (!canLog()) {
+    return
+  }
+
   console.log(`  <-- WSS /open ${req.socket.remoteAddress}`)
 }
 
 export function logConnectionClosed(conn: SocketConnection | undefined, preclosed: boolean, code: number, reason?: string) {
+  if (!canLog()) {
+    return
+  }
+
   const direction = preclosed ? '<--' : '-->'
   const ip = conn?.getRemoteAddress() ?? 'unknown'
   const displayCode = preclosed ? '' : code

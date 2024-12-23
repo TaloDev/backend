@@ -9,19 +9,28 @@ import { v4 } from 'uuid'
 import Redis from 'ioredis'
 import redisConfig from '../config/redis.config'
 import checkRateLimitExceeded from '../lib/errors/checkRateLimitExceeded'
+import Socket from '.'
+import { SocketMessageResponse } from './messages/socketMessage'
+import { logResponse } from './messages/socketLogger'
+import { SocketErrorCode } from './messages/socketError'
 
 export default class SocketConnection {
   alive: boolean = true
   playerAliasId: number | null = null
   game: Game | null = null
-  scopes: APIKeyScope[] = []
+  private scopes: APIKeyScope[] = []
   private headers: IncomingHttpHeaders = {}
   private remoteAddress: string = 'unknown'
 
   rateLimitKey: string = v4()
   rateLimitWarnings: number = 0
 
-  constructor(readonly ws: WebSocket, apiKey: APIKey, req: IncomingMessage) {
+  constructor(
+    private readonly wss: Socket,
+    private readonly ws: WebSocket,
+    apiKey: APIKey,
+    req: IncomingMessage
+  ) {
     this.game = apiKey.game
     this.scopes = apiKey.scopes
     this.headers = req.headers
@@ -72,5 +81,35 @@ export default class SocketConnection {
 
   getRemoteAddress(): string {
     return this.remoteAddress
+  }
+
+  getSocket(): WebSocket {
+    return this.ws
+  }
+
+  isDevBuild(): boolean {
+    return this.headers['x-talo-dev-build'] === '1'
+  }
+
+  async sendMessage<T extends object>(res: SocketMessageResponse, data: T): Promise<void> {
+    if (this.ws.readyState === this.ws.OPEN) {
+      const message = JSON.stringify({
+        res,
+        data
+      })
+
+      logResponse(this, res, message)
+
+      await this.wss.trackEvent('message', {
+        eventType: res,
+        reqOrRes: 'res',
+        code: 'errorCode' in data ? (data.errorCode as SocketErrorCode) : null,
+        gameId: this.game.id,
+        playerAliasId: this.playerAliasId,
+        devBuild: this.isDevBuild()
+      })
+
+      this.ws.send(message)
+    }
   }
 }

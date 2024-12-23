@@ -4,7 +4,7 @@ import PlayerFactory from '../../fixtures/PlayerFactory'
 import EventFactory from '../../fixtures/EventFactory'
 import createOrganisationAndGame from '../../utils/createOrganisationAndGame'
 import createUserAndToken from '../../utils/createUserAndToken'
-import { NodeClickHouseClient } from '@clickhouse/client/dist/client'
+import { ClickHouseClient } from '@clickhouse/client'
 
 describe('Player service - get events', () => {
   it('should get a player\'s events', async () => {
@@ -15,7 +15,7 @@ describe('Player service - get events', () => {
     await (<EntityManager>global.em).persistAndFlush(player)
 
     const events = await new EventFactory([player]).many(3)
-    await (<NodeClickHouseClient>global.clickhouse).insert({
+    await (<ClickHouseClient>global.clickhouse).insert({
       table: 'events',
       values: events.map((event) => event.getInsertableData()),
       format: 'JSONEachRow'
@@ -53,7 +53,7 @@ describe('Player service - get events', () => {
 
     const events = await new EventFactory([player]).state(() => ({ name: 'Find secret' })).many(3)
     const otherEvents = await new EventFactory([player]).state(() => ({ name: 'Kill boss' })).many(3)
-    await (<NodeClickHouseClient>global.clickhouse).insert({
+    await (<ClickHouseClient>global.clickhouse).insert({
       table: 'events',
       values: [...events, ...otherEvents].map((event) => event.getInsertableData()),
       format: 'JSONEachRow'
@@ -78,7 +78,7 @@ describe('Player service - get events', () => {
     await (<EntityManager>global.em).persistAndFlush(player)
 
     const events = await new EventFactory([player]).many(count)
-    await (<NodeClickHouseClient>global.clickhouse).insert({
+    await (<ClickHouseClient>global.clickhouse).insert({
       table: 'events',
       values: events.map((event) => event.getInsertableData()),
       format: 'JSONEachRow'

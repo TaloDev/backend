@@ -155,7 +155,7 @@ import { rand, randNumber } from '@ngneat/falso'
 
   const eventsThisMonth = await new EventFactory(players).thisMonth().many(300)
 
-  console.info('Seeding Clickhouse...')
+  console.info('Seeding ClickHouse...')
 
   const clickhouse = createClickhouseClient()
   await clickhouse.insert({
@@ -163,7 +163,7 @@ import { rand, randNumber } from '@ngneat/falso'
     values: eventsThisMonth.map((event) => event.getInsertableData()),
     format: 'JSONEachRow'
   })
-  clickhouse.close()
+  await clickhouse.close()
 
   console.info('Done!')
 })()

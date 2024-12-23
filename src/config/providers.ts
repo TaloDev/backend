@@ -5,6 +5,8 @@ import ormConfig from './mikro-orm.config'
 import { MikroORM } from '@mikro-orm/mysql'
 import tracingMiddleware from '../middlewares/tracing-middleware'
 import createEmailQueue from '../lib/queues/createEmailQueue'
+import createClickhouseClient from '../lib/clickhouse/createClient'
+import { runClickhouseMigrations } from '../migrations/clickhouse'
 
 export default async function initProviders(app: Koa, isTest: boolean) {
   try {
@@ -31,6 +33,11 @@ export default async function initProviders(app: Koa, isTest: boolean) {
       ...Sentry.autoDiscoverNodePerformanceMonitoringIntegrations()
     ]
   })
+
+  app.context.clickhouse = createClickhouseClient()
+  if (!isTest) {
+    await runClickhouseMigrations(app.context.clickhouse)
+  }
 
   app.use(tracingMiddleware)
 }

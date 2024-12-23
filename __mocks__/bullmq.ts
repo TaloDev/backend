@@ -31,14 +31,9 @@ export class Worker<T> extends EventEmitter {
   async process(job: Job<T>): Promise<void> {
     try {
       await this.processor(job)
-
-      await Promise.all(this.listeners('completed').map(async (handler) => {
-        await handler(job)
-      }))
+      await Promise.all(this.listeners('completed').map((handler) => handler(job)))
     } catch (err) {
-      await Promise.all(this.listeners('failed').map(async (handler) => {
-        await handler(job, err)
-      }))
+      await Promise.all(this.listeners('failed').map((handler) => handler(job, err)))
     }
   }
 }
@@ -59,6 +54,6 @@ export class Queue<T> {
 
   async add(jobName: string, data: T) {
     const job = new Job<T>(this.name, jobName, data)
-    await Promise.all(this.workers.map(async (worker) => await worker.process(job)))
+    await Promise.all(this.workers.map((worker) => worker.process(job)))
   }
 }

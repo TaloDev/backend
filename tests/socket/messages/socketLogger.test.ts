@@ -10,16 +10,30 @@ import { EntityManager } from '@mikro-orm/mysql'
 describe('Socket logger', () => {
   const consoleMock = vi.spyOn(console, 'log').mockImplementation(() => undefined)
 
+  beforeAll(() => {
+    vi.stubEnv('NODE_ENV', 'production')
+  })
+
   afterEach(() => {
     consoleMock.mockReset()
   })
 
-  async function createSocketConnection(): Promise<[TaloSocket, SocketConnection, () => void]>{
+  afterAll(() => {
+    vi.unstubAllEnvs()
+  })
+
+  async function createSocketConnection(): Promise<[TaloSocket, SocketConnection, () => void]> {
     const [apiKey] = await createAPIKeyAndToken([])
     await (<EntityManager>global.em).persistAndFlush(apiKey)
 
     const socket = new TaloSocket(global.server, global.em)
-    const conn = new SocketConnection(new WebSocket(null, [], {}), apiKey, new IncomingMessage(new Socket()))
+    const conn = new SocketConnection(
+      socket,
+      new WebSocket(null, [], {}),
+      apiKey,
+      new IncomingMessage(new Socket())
+    )
+
     vi.spyOn(conn, 'getRemoteAddress').mockReturnValue('0.0.0.0')
 
     return [
@@ -50,6 +64,28 @@ describe('Socket logger', () => {
 
     expect(consoleMock).toHaveBeenCalledOnce()
     expect(consoleMock).toHaveBeenLastCalledWith(`  <-- WSS /games/${conn.game.id}/aliases/2/{v1.fake} 0.0.0.0 27b`)
+
+    cleanup()
+  })
+
+  it('should log requests without valid json', async () => {
+    const [, conn, cleanup] = await createSocketConnection()
+
+    logRequest(conn, 'v1.fake')
+
+    expect(consoleMock).toHaveBeenCalledOnce()
+    expect(consoleMock).toHaveBeenLastCalledWith(`  <-- WSS /games/${conn.game.id}/{unknown} 0.0.0.0 7b`)
+
+    cleanup()
+  })
+
+  it('should log requests without a req', async () => {
+    const [, conn, cleanup] = await createSocketConnection()
+
+    logRequest(conn, JSON.stringify({ wrong: 'v1.fake' }))
+
+    expect(consoleMock).toHaveBeenCalledOnce()
+    expect(consoleMock).toHaveBeenLastCalledWith(`  <-- WSS /games/${conn.game.id}/{unknown} 0.0.0.0 19b`)
 
     cleanup()
   })

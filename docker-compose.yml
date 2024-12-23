@@ -34,10 +34,7 @@ services:
       - 6379:6379
 
   clickhouse:
-    build:
-      context: .
-      dockerfile: ./clickhouse/Dockerfile
-    image: clickhouse
+    image: clickhouse/clickhouse-server:24.12-alpine
     environment:
       CLICKHOUSE_USER: ${CLICKHOUSE_USER}
       CLICKHOUSE_PASSWORD: ${CLICKHOUSE_PASSWORD}

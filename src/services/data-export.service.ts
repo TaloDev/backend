@@ -150,14 +150,15 @@ export default class DataExportService extends Service {
       query += 'AND dev_build = false'
     }
 
-    const events = await clickhouse.query({
+    const clickhouseEvents = await clickhouse.query({
       query,
       format: 'JSONEachRow'
     }).then((res) => res.json<ClickhouseEvent>())
 
-    clickhouse.close()
+    const events = await Promise.all(clickhouseEvents.map((data) => createEventFromClickhouse(clickhouse, em, data)))
+    await clickhouse.close()
 
-    return await Promise.all(events.map((data) => createEventFromClickhouse(em, data)))
+    return events
   }
 
   private async getPlayers(dataExport: DataExport, em: EntityManager, includeDevData: boolean): Promise<Player[]> {

@@ -22,8 +22,14 @@ export function logRequest(conn: SocketConnection, message: string) {
     return
   }
 
-  const req = JSON.parse(message)?.req
-  console.log(`  <-- ${getSocketUrl(conn)}{${req}} ${conn.getRemoteAddress()} ${getSize(message)}`)
+  let req = ''
+  try {
+    req = JSON.parse(message).req ?? 'unknown'
+  } catch {
+    req = 'unknown'
+  } finally {
+    console.log(`  <-- ${getSocketUrl(conn)}{${req}} ${conn.getRemoteAddress()} ${getSize(message)}`)
+  }
 }
 
 export function logResponse(conn: SocketConnection, res: SocketMessageResponse, message: string) {

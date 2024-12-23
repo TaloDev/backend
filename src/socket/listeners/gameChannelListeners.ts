@@ -36,7 +36,7 @@ const gameChannelListeners: SocketMessageListener<ZodType>[] = [
         return conn.hasScope(APIKeyScope.READ_GAME_CHANNELS) &&
           channel.members.getIdentifiers().includes(conn.playerAliasId)
       })
-      sendMessages(conns, 'v1.channels.message', {
+      await sendMessages(conns, 'v1.channels.message', {
         channel,
         message: data.message,
         playerAlias: await conn.getPlayerAlias()

@@ -5,7 +5,7 @@ import PlayerFactory from '../../fixtures/PlayerFactory'
 import { sub, format } from 'date-fns'
 import createOrganisationAndGame from '../../utils/createOrganisationAndGame'
 import createUserAndToken from '../../utils/createUserAndToken'
-import { NodeClickHouseClient } from '@clickhouse/client/dist/client'
+import { ClickHouseClient } from '@clickhouse/client'
 import PlayerAlias from '../../../src/entities/player-alias'
 import PlayerAliasFactory from '../../fixtures/PlayerAliasFactory'
 
@@ -21,7 +21,7 @@ describe('Headline service - get', () => {
     await (<EntityManager>global.em).persistAndFlush(player)
 
     const events = await new EventFactory([player]).thisWeek().many(10)
-    await (<NodeClickHouseClient>global.clickhouse).insert({
+    await (<ClickHouseClient>global.clickhouse).insert({
       table: 'events',
       values: events.map((event) => event.getInsertableData()),
       format: 'JSONEachRow'
@@ -44,7 +44,7 @@ describe('Headline service - get', () => {
     await (<EntityManager>global.em).persistAndFlush(player)
 
     const events = await new EventFactory([player]).thisWeek().many(10)
-    await (<NodeClickHouseClient>global.clickhouse).insert({
+    await (<ClickHouseClient>global.clickhouse).insert({
       table: 'events',
       values: events.map((event) => event.getInsertableData()),
       format: 'JSONEachRow'
@@ -67,7 +67,7 @@ describe('Headline service - get', () => {
     await (<EntityManager>global.em).persistAndFlush(player)
 
     const events = await new EventFactory([player]).thisWeek().many(10)
-    await (<NodeClickHouseClient>global.clickhouse).insert({
+    await (<ClickHouseClient>global.clickhouse).insert({
       table: 'events',
       values: events.map((event) => event.getInsertableData()),
       format: 'JSONEachRow'
@@ -217,7 +217,7 @@ describe('Headline service - get', () => {
     const moreValidEvents = await new EventFactory([players[2]]).many(3)
 
     await (<EntityManager>global.em).persistAndFlush(players)
-    await (<NodeClickHouseClient>global.clickhouse).insert({
+    await (<ClickHouseClient>global.clickhouse).insert({
       table: 'events',
       values: [
         ...validEvents,
@@ -244,7 +244,7 @@ describe('Headline service - get', () => {
     await (<EntityManager>global.em).persistAndFlush(player)
 
     const validEvents = await new EventFactory([player]).many(3)
-    await (<NodeClickHouseClient>global.clickhouse).insert({
+    await (<ClickHouseClient>global.clickhouse).insert({
       table: 'events',
       values: validEvents.map((event) => event.getInsertableData()),
       format: 'JSONEachRow'
@@ -272,7 +272,7 @@ describe('Headline service - get', () => {
     await (<EntityManager>global.em).persistAndFlush(player)
 
     const validEvents = await new EventFactory([player]).many(3)
-    await (<NodeClickHouseClient>global.clickhouse).insert({
+    await (<ClickHouseClient>global.clickhouse).insert({
       table: 'events',
       values: validEvents.map((event) => event.getInsertableData()),
       format: 'JSONEachRow'

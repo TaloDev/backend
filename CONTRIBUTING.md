@@ -42,3 +42,7 @@ Modify the default name of the file from `Migration[Timestamp].ts` to `[Timestam
 You should also rename the exported class to be `[PascalCaseDescriptionOfTheMigration]`.
 
 You will then need to import and add that migration class to the end of the list of migrations inside `index.ts` in the same folder.
+
+### ClickHouse migrations
+
+ClickHouse migrations are created in the `src/migrations/clickhouse` folder. These are manually created and should be added to the `src/migrations/clickhouse/index.ts` file. The migration script will automatically run the migration if it hasn't already been applied.

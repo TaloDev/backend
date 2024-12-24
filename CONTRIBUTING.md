@@ -29,7 +29,7 @@ Please make sure to include tests with all pull requests.
 
 You can create a new service using the `npm run service:create` command. You need to pass in the name of the entity you want the service to interact with.
 
-For example, if you are adding a "Global Stats" service, you would run: `npm run service:create global-stat` (note that the entity name is singular and not a plural).
+For example, if you are adding a "Global Stats" service, you would run: `npm run service:create -- global-stat` (note that the entity name is singular and not a plural).
 
 This will create a policy, entity and REST API for your new entity. If you want to expose API endpoints (so that it can be used by the Unity SDK), add `--api` to the end of the command.
 

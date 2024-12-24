@@ -1,7 +1,6 @@
 ---
 to: "<%= (typeof api !== 'undefined') ? `tests/services/_api/${name}-api/post.test.ts` : null %>"
 ---
-import { EntityManager } from '@mikro-orm/mysql'
 import request from 'supertest'
 import { APIKeyScope } from '../../../../src/entities/api-key'
 import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'

@@ -2,11 +2,11 @@ import { EntityManager, MikroORM } from '@mikro-orm/mysql'
 import init from '../src'
 import ormConfig from '../src/config/mikro-orm.config'
 import { ClickHouseClient } from '@clickhouse/client'
-import { createServer, Server } from 'http'
 
 beforeAll(async () => {
   vi.mock('@sendgrid/mail')
   vi.mock('bullmq')
+  vi.stubEnv('DISABLE_SOCKET_EVENTS', '1')
 
   const orm = await MikroORM.init(ormConfig)
   await orm.getSchemaGenerator().clearDatabase()
@@ -16,10 +16,6 @@ beforeAll(async () => {
   global.app = app.callback()
   global.ctx = app.context
   global.em = app.context.em
-
-  vi.stubEnv('DISABLE_SOCKET_EVENTS', '1')
-  global.server = createServer()
-  global.server.listen(0)
 
   global.clickhouse = app.context.clickhouse
   await (global.clickhouse as ClickHouseClient).command({
@@ -31,15 +27,11 @@ afterAll(async () => {
   const em: EntityManager = global.em
   await em.getConnection().close(true)
 
-  const server: Server = global.server
-  server.close()
-
   const clickhouse: ClickHouseClient = global.clickhouse
   await clickhouse.close()
 
   delete global.app
   delete global.ctx
   delete global.em
-  delete global.server
   delete global.clickhouse
 })

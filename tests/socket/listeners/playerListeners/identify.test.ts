@@ -1,60 +1,38 @@
-import request from 'superwstest'
-import Socket from '../../../../src/socket'
 import { APIKeyScope } from '../../../../src/entities/api-key'
-import createSocketIdentifyMessage from '../../../utils/requestAuthedSocket'
+import createSocketIdentifyMessage from '../../../utils/createSocketIdentifyMessage'
 import { EntityManager } from '@mikro-orm/mysql'
 import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
 import PlayerFactory from '../../../fixtures/PlayerFactory'
 import Redis from 'ioredis'
 import redisConfig from '../../../../src/config/redis.config'
+import { createSocketTicket } from '../../../../src/services/api/socket-ticket-api.service'
+import createTestSocket from '../../../utils/createTestSocket'
 
 describe('Player listeners - identify', () => {
-  let socket: Socket
-
-  beforeAll(() => {
-    socket = new Socket(global.server, global.em)
-  })
-
-  afterAll(() => {
-    socket.getServer().close()
-  })
-
   it('should successfully identify a player', async () => {
-    const [identifyMessage, token, player] = await createSocketIdentifyMessage([APIKeyScope.READ_PLAYERS])
+    const { identifyMessage, ticket, player } = await createSocketIdentifyMessage([APIKeyScope.READ_PLAYERS])
 
-    await request(global.server)
-      .ws('/')
-      .set('authorization', `Bearer ${token}`)
-      .expectJson({
-        res: 'v1.connected',
-        data: {}
-      })
-      .sendJson(identifyMessage)
-      .expectJson((actual) => {
+    await createTestSocket(`/?ticket=${ticket}`, async (client) => {
+      client.sendJson(identifyMessage)
+      await client.expectJson((actual) => {
         expect(actual.res).toBe('v1.players.identify.success')
         expect(actual.data.id).toBe(player.aliases[0].id)
       })
-      .close()
+    })
   })
 
   it('should require the socket token to be valid', async () => {
-    const [identifyMessage, token] = await createSocketIdentifyMessage([APIKeyScope.READ_PLAYERS])
+    const { identifyMessage, ticket } = await createSocketIdentifyMessage([APIKeyScope.READ_PLAYERS])
 
-    await request(global.server)
-      .ws('/')
-      .set('authorization', `Bearer ${token}`)
-      .expectJson({
-        res: 'v1.connected',
-        data: {}
-      })
-      .sendJson({
+    await createTestSocket(`/?ticket=${ticket}`, async (client) => {
+      client.sendJson({
         ...identifyMessage,
         data: {
           ...identifyMessage.data,
           socketToken: 'invalid'
         }
       })
-      .expectJson({
+      await client.expectJsonToStrictEqual({
         res: 'v1.error',
         data: {
           req: 'v1.players.identify',
@@ -62,31 +40,26 @@ describe('Player listeners - identify', () => {
           errorCode: 'INVALID_SOCKET_TOKEN'
         }
       })
-      .close()
+    })
   })
 
   it('should require a valid session token to identify Talo aliases', async () => {
     const em: EntityManager = global.em
 
-    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_PLAYERS])
+    const [apiKey] = await createAPIKeyAndToken([APIKeyScope.READ_PLAYERS])
     const player = await new PlayerFactory([apiKey.game]).withTaloAlias().one()
     await em.persistAndFlush(player)
 
     const redis = new Redis(redisConfig)
+    const ticket = await createSocketTicket(redis, apiKey, false)
     const socketToken = await player.aliases[0].createSocketToken(redis)
     await redis.quit()
 
     const sessionToken = await player.auth.createSession(player.aliases[0])
     await em.flush()
 
-    await request(global.server)
-      .ws('/')
-      .set('authorization', `Bearer ${token}`)
-      .expectJson({
-        res: 'v1.connected',
-        data: {}
-      })
-      .sendJson({
+    await createTestSocket(`/?ticket=${ticket}`, async (client) => {
+      client.sendJson({
         req: 'v1.players.identify',
         data: {
           playerAliasId: player.aliases[0].id,
@@ -94,32 +67,27 @@ describe('Player listeners - identify', () => {
           sessionToken: sessionToken
         }
       })
-      .expectJson((actual) => {
+      await client.expectJson((actual) => {
         expect(actual.res).toBe('v1.players.identify.success')
         expect(actual.data.id).toBe(player.aliases[0].id)
       })
-      .close()
+    })
   })
 
   it('should reject identify for Talo aliases without a valid session token', async () => {
     const em: EntityManager = global.em
 
-    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_PLAYERS])
+    const [apiKey] = await createAPIKeyAndToken([APIKeyScope.READ_PLAYERS])
     const player = await new PlayerFactory([apiKey.game]).withTaloAlias().one()
     await em.persistAndFlush(player)
 
     const redis = new Redis(redisConfig)
+    const ticket = await createSocketTicket(redis, apiKey, false)
     const socketToken = await player.aliases[0].createSocketToken(redis)
     await redis.quit()
 
-    await request(global.server)
-      .ws('/')
-      .set('authorization', `Bearer ${token}`)
-      .expectJson({
-        res: 'v1.connected',
-        data: {}
-      })
-      .sendJson({
+    await createTestSocket(`/?ticket=${ticket}`, async (client) => {
+      client.sendJson({
         req: 'v1.players.identify',
         data: {
           playerAliasId: player.aliases[0].id,
@@ -127,7 +95,7 @@ describe('Player listeners - identify', () => {
           sessionToken: 'blah'
         }
       })
-      .expectJson({
+      await client.expectJsonToStrictEqual({
         res: 'v1.error',
         data: {
           req: 'v1.players.identify',
@@ -135,6 +103,6 @@ describe('Player listeners - identify', () => {
           errorCode: 'INVALID_SESSION_TOKEN'
         }
       })
-      .close()
+    })
   })
 })

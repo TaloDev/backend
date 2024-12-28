@@ -2,10 +2,11 @@ import { WebSocket } from 'ws'
 import TaloSocket from '../../../src/socket'
 import SocketConnection from '../../../src/socket/socketConnection'
 import createAPIKeyAndToken from '../../utils/createAPIKeyAndToken'
-import { IncomingMessage } from 'http'
+import { createServer, IncomingMessage } from 'http'
 import { Socket } from 'net'
 import { logConnection, logConnectionClosed, logRequest, logResponse } from '../../../src/socket/messages/socketLogger'
 import { EntityManager } from '@mikro-orm/mysql'
+import SocketTicket from '../../../src/socket/socketTicket'
 
 describe('Socket logger', () => {
   const consoleMock = vi.spyOn(console, 'log').mockImplementation(() => undefined)
@@ -26,21 +27,23 @@ describe('Socket logger', () => {
     const [apiKey] = await createAPIKeyAndToken([])
     await (<EntityManager>global.em).persistAndFlush(apiKey)
 
-    const socket = new TaloSocket(global.server, global.em)
-    const conn = new SocketConnection(
-      socket,
-      new WebSocket(null, [], {}),
-      apiKey,
-      new IncomingMessage(new Socket())
-    )
+    const ticket = new SocketTicket('')
+    ticket.apiKey = apiKey
+    ticket.devBuild = false
 
-    vi.spyOn(conn, 'getRemoteAddress').mockReturnValue('0.0.0.0')
+    const server = createServer()
+    server.listen(0)
+
+    const wss = new TaloSocket(server, global.em)
+    const ws = new WebSocket(null, [], {})
+
+    const conn = new SocketConnection(wss, ws, ticket, '0.0.0.0')
 
     return [
-      socket,
+      wss,
       conn,
       () => {
-        socket.getServer().close()
+        wss.getServer().close()
       }
     ]
   }

@@ -1,25 +1,13 @@
 import request from 'supertest'
-import requestWs from 'superwstest'
 import { EntityManager } from '@mikro-orm/mysql'
 import GameChannelFactory from '../../../fixtures/GameChannelFactory'
 import { APIKeyScope } from '../../../../src/entities/api-key'
 import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
 import PlayerFactory from '../../../fixtures/PlayerFactory'
-import createSocketIdentifyMessage from '../../../utils/requestAuthedSocket'
-import Socket from '../../../../src/socket'
+import createSocketIdentifyMessage from '../../../utils/createSocketIdentifyMessage'
+import createTestSocket from '../../../utils/createTestSocket'
 
 describe('Game channel API service - put', () => {
-  let socket: Socket
-
-  beforeAll(() => {
-    socket = new Socket(global.server, global.em)
-    global.ctx.wss = socket
-  })
-
-  afterAll(() => {
-    socket.getServer().close()
-  })
-
   it('should update a channel if the scope is valid', async () => {
     const em: EntityManager = global.em
 
@@ -279,7 +267,7 @@ describe('Game channel API service - put', () => {
   })
 
   it('should notify players in the channel when ownership is transferred', async () => {
-    const [identifyMessage, token, player] = await createSocketIdentifyMessage([
+    const { identifyMessage, ticket, player, token } = await createSocketIdentifyMessage([
       APIKeyScope.READ_PLAYERS,
       APIKeyScope.READ_GAME_CHANNELS,
       APIKeyScope.WRITE_GAME_CHANNELS
@@ -295,24 +283,19 @@ describe('Game channel API service - put', () => {
 
     await em.persistAndFlush(channel)
 
-    await requestWs(global.server)
-      .ws('/')
-      .set('authorization', `Bearer ${token}`)
-      .expectJson()
-      .sendJson(identifyMessage)
-      .expectJson()
-      .exec(async () => {
-        await request(global.app)
-          .put(`/v1/game-channels/${channel.id}`)
-          .send({ ownerAliasId: newOwner.aliases[0].id })
-          .auth(token, { type: 'bearer' })
-          .set('x-talo-alias', String(player.aliases[0].id))
-          .expect(200)
-      })
-      .expectJson((actual) => {
+    await createTestSocket(`/?ticket=${ticket}`, async (client) => {
+      await client.identify(identifyMessage)
+      await request(global.app)
+        .put(`/v1/game-channels/${channel.id}`)
+        .send({ ownerAliasId: newOwner.aliases[0].id })
+        .auth(token, { type: 'bearer' })
+        .set('x-talo-alias', String(player.aliases[0].id))
+        .expect(200)
+      await client.expectJson((actual) => {
         expect(actual.res).toBe('v1.channels.ownership-transferred')
         expect(actual.data.channel.id).toBe(channel.id)
         expect(actual.data.newOwner.id).toBe(newOwner.aliases[0].id)
       })
+    })
   })
 })

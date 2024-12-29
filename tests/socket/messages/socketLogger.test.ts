@@ -2,10 +2,11 @@ import { WebSocket } from 'ws'
 import TaloSocket from '../../../src/socket'
 import SocketConnection from '../../../src/socket/socketConnection'
 import createAPIKeyAndToken from '../../utils/createAPIKeyAndToken'
-import { IncomingMessage } from 'http'
+import { createServer, IncomingMessage } from 'http'
 import { Socket } from 'net'
 import { logConnection, logConnectionClosed, logRequest, logResponse } from '../../../src/socket/messages/socketLogger'
 import { EntityManager } from '@mikro-orm/mysql'
+import SocketTicket from '../../../src/socket/socketTicket'
 
 describe('Socket logger', () => {
   const consoleMock = vi.spyOn(console, 'log').mockImplementation(() => undefined)
@@ -22,31 +23,29 @@ describe('Socket logger', () => {
     vi.unstubAllEnvs()
   })
 
-  async function createSocketConnection(): Promise<[TaloSocket, SocketConnection, () => void]> {
+  async function createSocketConnection(): Promise<[SocketConnection, () => void]> {
     const [apiKey] = await createAPIKeyAndToken([])
     await (<EntityManager>global.em).persistAndFlush(apiKey)
 
-    const socket = new TaloSocket(global.server, global.em)
-    const conn = new SocketConnection(
-      socket,
-      new WebSocket(null, [], {}),
-      apiKey,
-      new IncomingMessage(new Socket())
-    )
+    const ticket = new SocketTicket('')
+    ticket.apiKey = apiKey
+    ticket.devBuild = false
 
-    vi.spyOn(conn, 'getRemoteAddress').mockReturnValue('0.0.0.0')
+    const server = createServer()
+    server.listen(0)
+
+    const wss = new TaloSocket(server, global.em)
+    const ws = new WebSocket(null, [], {})
+    const conn = new SocketConnection(wss, ws, ticket, '0.0.0.0')
 
     return [
-      socket,
       conn,
-      () => {
-        socket.getServer().close()
-      }
+      () => server.close()
     ]
   }
 
   it('should log requests', async () => {
-    const [, conn, cleanup] = await createSocketConnection()
+    const [conn, cleanup] = await createSocketConnection()
 
     logRequest(conn, JSON.stringify({ req: 'v1.fake', data: {} }))
 
@@ -57,7 +56,7 @@ describe('Socket logger', () => {
   })
 
   it('should log requests with aliases', async () => {
-    const [, conn, cleanup] = await createSocketConnection()
+    const [conn, cleanup] = await createSocketConnection()
     conn.playerAliasId = 2
 
     logRequest(conn, JSON.stringify({ req: 'v1.fake', data: {} }))
@@ -69,7 +68,7 @@ describe('Socket logger', () => {
   })
 
   it('should log requests without valid json', async () => {
-    const [, conn, cleanup] = await createSocketConnection()
+    const [conn, cleanup] = await createSocketConnection()
 
     logRequest(conn, 'v1.fake')
 
@@ -80,7 +79,7 @@ describe('Socket logger', () => {
   })
 
   it('should log requests without a req', async () => {
-    const [, conn, cleanup] = await createSocketConnection()
+    const [conn, cleanup] = await createSocketConnection()
 
     logRequest(conn, JSON.stringify({ wrong: 'v1.fake' }))
 
@@ -91,7 +90,7 @@ describe('Socket logger', () => {
   })
 
   it('should log responses', async () => {
-    const [, conn, cleanup] = await createSocketConnection()
+    const [conn, cleanup] = await createSocketConnection()
 
     logResponse(conn, 'v1.players.identify.success', JSON.stringify({ res: 'v1.players.identify.success', data: {} }))
 
@@ -109,7 +108,7 @@ describe('Socket logger', () => {
   })
 
   it('should log pre-closed connections', async () => {
-    const [, conn, cleanup] = await createSocketConnection()
+    const [conn, cleanup] = await createSocketConnection()
 
     logConnectionClosed(conn, true, 3000)
 
@@ -120,7 +119,7 @@ describe('Socket logger', () => {
   })
 
   it('should log manually-closed connections', async () => {
-    const [, conn, cleanup] = await createSocketConnection()
+    const [conn, cleanup] = await createSocketConnection()
 
     logConnectionClosed(conn, false, 3000, 'Unauthorised')
 
@@ -131,7 +130,7 @@ describe('Socket logger', () => {
   })
 
   it('should log manually-closed connections without a reason', async () => {
-    const [, conn, cleanup] = await createSocketConnection()
+    const [conn, cleanup] = await createSocketConnection()
 
     logConnectionClosed(conn, false, 3000)
 
@@ -149,7 +148,7 @@ describe('Socket logger', () => {
   })
 
   it('should log pre-closed connection with aliases', async () => {
-    const [, conn, cleanup] = await createSocketConnection()
+    const [conn, cleanup] = await createSocketConnection()
     conn.playerAliasId = 2
 
     logConnectionClosed(conn, true, 3000)

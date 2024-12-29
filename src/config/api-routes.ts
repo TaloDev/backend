@@ -17,6 +17,7 @@ import playerAuthMiddleware from '../middlewares/player-auth-middleware'
 import PlayerAuthAPIService from '../services/api/player-auth-api.service'
 import continunityMiddleware from '../middlewares/continunity-middleware'
 import PlayerGroupAPIService from '../services/api/player-group-api.service'
+import SocketTicketAPIService from '../services/api/socket-ticket-api.service'
 
 export default function configureAPIRoutes(app: Koa) {
   app.use(apiKeyMiddleware)
@@ -33,6 +34,7 @@ export default function configureAPIRoutes(app: Koa) {
   app.use(playerAuthMiddleware)
   app.use(continunityMiddleware)
 
+  app.use(service('/v1/socket-tickets', new SocketTicketAPIService()))
   app.use(service('/v1/game-channels', new GameChannelAPIService()))
   app.use(service('/v1/player-groups', new PlayerGroupAPIService()))
   app.use(service('/v1/health-check', new HealthCheckAPIService()))

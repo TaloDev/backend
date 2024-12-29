@@ -1,6 +1,5 @@
 import { EntityManager } from '@mikro-orm/mysql'
 import request from 'supertest'
-import requestWs from 'superwstest'
 import { UserType } from '../../../src/entities/user'
 import APIKey from '../../../src/entities/api-key'
 import UserFactory from '../../fixtures/UserFactory'
@@ -8,21 +7,12 @@ import GameActivity, { GameActivityType } from '../../../src/entities/game-activ
 import userPermissionProvider from '../../utils/userPermissionProvider'
 import createUserAndToken from '../../utils/createUserAndToken'
 import createOrganisationAndGame from '../../utils/createOrganisationAndGame'
-import Socket from '../../../src/socket'
-import { createToken } from '../../../src/services/api-key.service'
+import { createSocketTicket } from '../../../src/services/api/socket-ticket-api.service'
+import redisConfig from '../../../src/config/redis.config'
+import { Redis } from 'ioredis'
+import createTestSocket from '../../utils/createTestSocket'
 
 describe('API key service - delete', () => {
-  let socket: Socket
-
-  beforeAll(() => {
-    socket = new Socket(global.server, global.em)
-    global.ctx.wss = socket
-  })
-
-  afterAll(() => {
-    socket.getServer().close()
-  })
-
   it.each(userPermissionProvider([
     UserType.ADMIN
   ], 204))('should return a %i for a %s user', async (statusCode, _, type) => {
@@ -92,21 +82,18 @@ describe('API key service - delete', () => {
 
     const key = new APIKey(game, user)
     await (<EntityManager>global.em).persistAndFlush(key)
-    const apiToken = await createToken(<EntityManager>global.em, key)
 
-    await requestWs(global.server)
-      .ws('/')
-      .set('authorization', `Bearer ${apiToken}`)
-      .expectJson({
-        res: 'v1.connected',
-        data: {}
-      })
-      .exec(async () => {
-        await request(global.app)
-          .delete(`/games/${game.id}/api-keys/${key.id}`)
-          .auth(token, { type: 'bearer' })
-          .expect(204)
-      })
-      .expectClosed(3000)
+    const redis = new Redis(redisConfig)
+    const ticket = await createSocketTicket(redis, key, false)
+    await redis.quit()
+
+    await createTestSocket(`/?ticket=${ticket}`, async (client) => {
+      await request(global.app)
+        .delete(`/games/${game.id}/api-keys/${key.id}`)
+        .auth(token, { type: 'bearer' })
+        .expect(204)
+
+      await client.expectClosed(3000)
+    })
   })
 })

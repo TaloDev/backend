@@ -40,7 +40,6 @@
     "hygen": "^6.2.11",
     "lint-staged": ">=10",
     "supertest": "^7.0.0",
-    "superwstest": "^2.0.4",
     "ts-node": "^10.7.0",
     "tsx": "^4.11.0",
     "typescript": "^5.4.5",

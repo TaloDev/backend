@@ -88,8 +88,6 @@ describe('API key service - delete', () => {
     await redis.quit()
 
     await createTestSocket(`/?ticket=${ticket}`, async (client) => {
-      await client.expectReady()
-
       await request(global.app)
         .delete(`/games/${game.id}/api-keys/${key.id}`)
         .auth(token, { type: 'bearer' })

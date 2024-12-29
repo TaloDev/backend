@@ -4,7 +4,7 @@ import { createRedisConnection } from '../../config/redis.config'
 import { v4 } from 'uuid'
 import Redis from 'ioredis'
 import APIKey from '../../entities/api-key'
-import SocketTicketsAPIDocs from '../../docs/socket-tickets-api.docs'
+import SocketTicketAPIDocs from '../../docs/socket-tickets-api.docs'
 
 export async function createSocketTicket(redis: Redis, key: APIKey, devBuild: boolean): Promise<string> {
   const ticket = v4()
@@ -15,7 +15,7 @@ export async function createSocketTicket(redis: Redis, key: APIKey, devBuild: bo
 }
 
 export default class SocketTicketAPIService extends APIService {
-  @Docs(SocketTicketsAPIDocs.post)
+  @Docs(SocketTicketAPIDocs.post)
   async post(req: Request): Promise<Response> {
     const redis = createRedisConnection(req.ctx)
 

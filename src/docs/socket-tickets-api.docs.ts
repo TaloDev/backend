@@ -1,7 +1,7 @@
 import SocketTicketAPIService from '../services/api/socket-ticket-api.service'
 import APIDocs from './api-docs'
 
-const SocketTicketsAPIDocs: APIDocs<SocketTicketAPIService> = {
+const SocketTicketAPIDocs: APIDocs<SocketTicketAPIService> = {
   post: {
     description: 'Create a socket ticket (expires after 5 minutes)',
     samples: [
@@ -15,4 +15,4 @@ const SocketTicketsAPIDocs: APIDocs<SocketTicketAPIService> = {
   }
 }
 
-export default SocketTicketsAPIDocs
+export default SocketTicketAPIDocs

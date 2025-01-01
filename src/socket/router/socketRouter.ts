@@ -86,7 +86,6 @@ export default class SocketRouter {
               const data = await listener.validator.parseAsync(message.data)
               await listener.handler({ conn, req: listener.req, data, socket: this.wss })
             }
-
             return true
           } catch (err) {
             if (err instanceof ZodError) {
@@ -94,6 +93,7 @@ export default class SocketRouter {
             } else {
               await sendError(conn, message?.req ?? 'unknown', new SocketError('LISTENER_ERROR', 'An error occurred while processing the message', err.message))
             }
+            return true
           }
         }
       }

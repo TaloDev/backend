@@ -1,26 +1,14 @@
-import request from 'superwstest'
-import Socket from '../../src/socket'
 import { APIKeyScope } from '../../src/entities/api-key'
-import createSocketIdentifyMessage from '../utils/requestAuthedSocket'
+import createSocketIdentifyMessage from '../utils/createSocketIdentifyMessage'
 import GameChannelFactory from '../fixtures/GameChannelFactory'
 import { EntityManager } from '@mikro-orm/mysql'
 import Redis from 'ioredis'
 import redisConfig from '../../src/config/redis.config'
+import createTestSocket from '../utils/createTestSocket'
 
 describe('Socket rate limiting', () => {
-  let socket: Socket
-
-  beforeAll(() => {
-    socket = new Socket(global.server, global.em)
-    global.ctx.wss = socket
-  })
-
-  afterAll(() => {
-    socket.getServer().close()
-  })
-
   it('should return a rate limiting error', async () => {
-    const [identifyMessage, token, player] = await createSocketIdentifyMessage([
+    const { identifyMessage, ticket, player } = await createSocketIdentifyMessage([
       APIKeyScope.READ_PLAYERS,
       APIKeyScope.READ_GAME_CHANNELS,
       APIKeyScope.WRITE_GAME_CHANNELS
@@ -29,20 +17,15 @@ describe('Socket rate limiting', () => {
     channel.members.add(player.aliases[0])
     await (<EntityManager>global.em).persistAndFlush(channel)
 
-    await request(global.server)
-      .ws('/')
-      .set('authorization', `Bearer ${token}`)
-      .expectJson()
-      .sendJson(identifyMessage)
-      .expectJson()
-      .exec(async () => {
-        const conn = socket.findConnections((conn) => conn.playerAliasId === player.aliases[0].id)[0]
+    await createTestSocket(`/?ticket=${ticket}`, async (client, socket) => {
+      await client.identify(identifyMessage)
 
-        const redis = new Redis(redisConfig)
-        await redis.set(`requests.${conn.rateLimitKey}`, 999)
-        await redis.quit()
-      })
-      .sendJson({
+      const conn = socket.findConnections((conn) => conn.playerAliasId === player.aliases[0].id)[0]
+      const redis = new Redis(redisConfig)
+      await redis.set(`requests.${conn.rateLimitKey}`, 999)
+      await redis.quit()
+
+      client.sendJson({
         req: 'v1.channels.message',
         data: {
           channel: {
@@ -51,7 +34,7 @@ describe('Socket rate limiting', () => {
           message: 'Hello world'
         }
       })
-      .expectJson({
+      await client.expectJsonToStrictEqual({
         res: 'v1.error',
         data: {
           req: 'unknown',
@@ -59,11 +42,11 @@ describe('Socket rate limiting', () => {
           errorCode: 'RATE_LIMIT_EXCEEDED'
         }
       })
-      .close()
+    })
   })
 
   it('should disconnect connections after 3 warnings', async () => {
-    const [identifyMessage, token, player] = await createSocketIdentifyMessage([
+    const { identifyMessage, ticket, player } = await createSocketIdentifyMessage([
       APIKeyScope.READ_PLAYERS,
       APIKeyScope.READ_GAME_CHANNELS,
       APIKeyScope.WRITE_GAME_CHANNELS
@@ -72,21 +55,17 @@ describe('Socket rate limiting', () => {
     channel.members.add(player.aliases[0])
     await (<EntityManager>global.em).persistAndFlush(channel)
 
-    await request(global.server)
-      .ws('/')
-      .set('authorization', `Bearer ${token}`)
-      .expectJson()
-      .sendJson(identifyMessage)
-      .expectJson()
-      .exec(async () => {
-        const conn = socket.findConnections((conn) => conn.playerAliasId === player.aliases[0].id)[0]
-        conn.rateLimitWarnings = 3
+    await createTestSocket(`/?ticket=${ticket}`, async (client, socket) => {
+      await client.identify(identifyMessage)
 
-        const redis = new Redis(redisConfig)
-        await redis.set(`requests.${conn.rateLimitKey}`, 999)
-        await redis.quit()
-      })
-      .sendJson({
+      const conn = socket.findConnections((conn) => conn.playerAliasId === player.aliases[0].id)[0]
+      conn.rateLimitWarnings = 3
+
+      const redis = new Redis(redisConfig)
+      await redis.set(`requests.${conn.rateLimitKey}`, 999)
+      await redis.quit()
+
+      client.sendJson({
         req: 'v1.channels.message',
         data: {
           channel: {
@@ -95,6 +74,7 @@ describe('Socket rate limiting', () => {
           message: 'Hello world'
         }
       })
-      .expectClosed(1008, 'RATE_LIMIT_EXCEEDED')
+      await client.expectClosed(1008, 'RATE_LIMIT_EXCEEDED')
+    })
   })
 })

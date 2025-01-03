@@ -29,7 +29,7 @@ Please make sure to include tests with all pull requests.
 
 You can create a new service using the `npm run service:create` command. You need to pass in the name of the entity you want the service to interact with.
 
-For example, if you are adding a "Global Stats" service, you would run: `npm run service:create global-stat` (note that the entity name is singular and not a plural).
+For example, if you are adding a "Global Stats" service, you would run: `npm run service:create -- global-stat` (note that the entity name is singular and not a plural).
 
 This will create a policy, entity and REST API for your new entity. If you want to expose API endpoints (so that it can be used by the Unity SDK), add `--api` to the end of the command.
 
@@ -42,3 +42,7 @@ Modify the default name of the file from `Migration[Timestamp].ts` to `[Timestam
 You should also rename the exported class to be `[PascalCaseDescriptionOfTheMigration]`.
 
 You will then need to import and add that migration class to the end of the list of migrations inside `index.ts` in the same folder.
+
+### ClickHouse migrations
+
+ClickHouse migrations are created in the `src/migrations/clickhouse` folder. These are manually created and should be added to the `src/migrations/clickhouse/index.ts` file. The migration script will automatically run the migration if it hasn't already been applied.

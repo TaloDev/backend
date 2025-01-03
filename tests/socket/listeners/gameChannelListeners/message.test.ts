@@ -1,23 +1,12 @@
-import request from 'superwstest'
-import Socket from '../../../../src/socket'
 import { APIKeyScope } from '../../../../src/entities/api-key'
-import createSocketIdentifyMessage from '../../../utils/requestAuthedSocket'
+import createSocketIdentifyMessage from '../../../utils/createSocketIdentifyMessage'
 import GameChannelFactory from '../../../fixtures/GameChannelFactory'
 import { EntityManager } from '@mikro-orm/mysql'
+import createTestSocket from '../../../utils/createTestSocket'
 
 describe('Game channel listeners - message', () => {
-  let socket: Socket
-
-  beforeAll(() => {
-    socket = new Socket(global.server, global.em)
-  })
-
-  afterAll(() => {
-    socket.getServer().close()
-  })
-
   it('should successfully send a message', async () => {
-    const [identifyMessage, token, player] = await createSocketIdentifyMessage([
+    const { identifyMessage, ticket, player } = await createSocketIdentifyMessage([
       APIKeyScope.READ_PLAYERS,
       APIKeyScope.READ_GAME_CHANNELS,
       APIKeyScope.WRITE_GAME_CHANNELS
@@ -26,13 +15,9 @@ describe('Game channel listeners - message', () => {
     channel.members.add(player.aliases[0])
     await (<EntityManager>global.em).persistAndFlush(channel)
 
-    await request(global.server)
-      .ws('/')
-      .set('authorization', `Bearer ${token}`)
-      .expectJson()
-      .sendJson(identifyMessage)
-      .expectJson()
-      .sendJson({
+    await createTestSocket(`/?ticket=${ticket}`, async (client) => {
+      await client.identify(identifyMessage)
+      client.sendJson({
         req: 'v1.channels.message',
         data: {
           channel: {
@@ -41,16 +26,17 @@ describe('Game channel listeners - message', () => {
           message: 'Hello world'
         }
       })
-      .expectJson((actual) => {
+      await client.expectJson((actual) => {
         expect(actual.res).toBe('v1.channels.message')
         expect(actual.data.channel.id).toBe(channel.id)
         expect(actual.data.message).toBe('Hello world')
         expect(actual.data.playerAlias.id).toBe(player.aliases[0].id)
       })
+    })
   })
 
   it('should receive an error if the player is not in the channel', async () => {
-    const [identifyMessage, token, player] = await createSocketIdentifyMessage([
+    const { identifyMessage, ticket, player } = await createSocketIdentifyMessage([
       APIKeyScope.READ_PLAYERS,
       APIKeyScope.READ_GAME_CHANNELS,
       APIKeyScope.WRITE_GAME_CHANNELS
@@ -58,13 +44,9 @@ describe('Game channel listeners - message', () => {
     const channel = await new GameChannelFactory(player.game).one()
     await (<EntityManager>global.em).persistAndFlush(channel)
 
-    await request(global.server)
-      .ws('/')
-      .set('authorization', `Bearer ${token}`)
-      .expectJson()
-      .sendJson(identifyMessage)
-      .expectJson()
-      .sendJson({
+    await createTestSocket(`/?ticket=${ticket}`, async (client) => {
+      await client.identify(identifyMessage)
+      client.sendJson({
         req: 'v1.channels.message',
         data: {
           channel: {
@@ -73,7 +55,7 @@ describe('Game channel listeners - message', () => {
           message: 'Hello world'
         }
       })
-      .expectJson({
+      await client.expectJsonToStrictEqual({
         res: 'v1.error',
         data: {
           req: 'v1.channels.message',
@@ -82,23 +64,19 @@ describe('Game channel listeners - message', () => {
           cause: 'Player not in channel'
         }
       })
-      .close()
+    })
   })
 
   it('should receive an error if the channel does not exist', async () => {
-    const [identifyMessage, token] = await createSocketIdentifyMessage([
+    const { identifyMessage, ticket } = await createSocketIdentifyMessage([
       APIKeyScope.READ_PLAYERS,
       APIKeyScope.READ_GAME_CHANNELS,
       APIKeyScope.WRITE_GAME_CHANNELS
     ])
 
-    await request(global.server)
-      .ws('/')
-      .set('authorization', `Bearer ${token}`)
-      .expectJson()
-      .sendJson(identifyMessage)
-      .expectJson()
-      .sendJson({
+    await createTestSocket(`/?ticket=${ticket}`, async (client) => {
+      await client.identify(identifyMessage)
+      client.sendJson({
         req: 'v1.channels.message',
         data: {
           channel: {
@@ -107,7 +85,7 @@ describe('Game channel listeners - message', () => {
           message: 'Hello world'
         }
       })
-      .expectJson({
+      await client.expectJsonToStrictEqual({
         res: 'v1.error',
         data: {
           req: 'v1.channels.message',
@@ -116,6 +94,6 @@ describe('Game channel listeners - message', () => {
           cause: 'Channel not found'
         }
       })
-      .close()
+    })
   })
 })

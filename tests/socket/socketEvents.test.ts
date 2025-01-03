@@ -1,38 +1,25 @@
-import request from 'superwstest'
-import Socket from '../../src/socket'
 import createAPIKeyAndToken from '../utils/createAPIKeyAndToken'
-import { subDays } from 'date-fns'
-import { EntityManager } from '@mikro-orm/mysql'
 import { ClickHouseClient } from '@clickhouse/client'
 import { ClickhouseSocketEvent } from '../../src/socket/socketEvent'
-import createSocketIdentifyMessage from '../utils/requestAuthedSocket'
+import createSocketIdentifyMessage from '../utils/createSocketIdentifyMessage'
 import { APIKeyScope } from '../../src/entities/api-key'
+import redisConfig from '../../src/config/redis.config'
+import { createSocketTicket } from '../../src/services/api/socket-ticket-api.service'
+import Redis from 'ioredis'
+import createTestSocket from '../utils/createTestSocket'
 
 describe('Socket events', () => {
-  let socket: Socket
-
   beforeAll(() => {
     vi.stubEnv('DISABLE_SOCKET_EVENTS', '0')
-    socket = new Socket(global.server, global.em)
-  })
-
-  afterAll(() => {
-    socket.getServer().close()
   })
 
   it('should track open, connected and close events', async () => {
-    const [apiKey, token] = await createAPIKeyAndToken([])
-    apiKey.lastUsedAt = subDays(new Date(), 1)
-    await (<EntityManager>global.em).flush()
+    const [apiKey] = await createAPIKeyAndToken([])
+    const redis = new Redis(redisConfig)
+    const ticket = await createSocketTicket(redis, apiKey, false)
+    await redis.quit()
 
-    await request(global.server)
-      .ws('/')
-      .set('authorization', `Bearer ${token}`)
-      .expectJson({
-        res: 'v1.connected',
-        data: {}
-      })
-      .close()
+    await createTestSocket(`/?ticket=${ticket}`, async () => {})
 
     let events: ClickhouseSocketEvent[] = []
     await vi.waitUntil(async () => {
@@ -66,18 +53,11 @@ describe('Socket events', () => {
   })
 
   it('should track requests and responses', async () => {
-    const [identifyMessage, token, player] = await createSocketIdentifyMessage([APIKeyScope.READ_PLAYERS])
+    const { identifyMessage, ticket, player } = await createSocketIdentifyMessage([APIKeyScope.READ_PLAYERS])
 
-    await request(global.server)
-      .ws('/')
-      .set('authorization', `Bearer ${token}`)
-      .expectJson({
-        res: 'v1.connected',
-        data: {}
-      })
-      .sendJson(identifyMessage)
-      .expectJson()
-      .close()
+    await createTestSocket(`/?ticket=${ticket}`, async (client) => {
+      await client.identify(identifyMessage)
+    })
 
     let events: ClickhouseSocketEvent[] = []
     await vi.waitUntil(async () => {
@@ -125,23 +105,17 @@ describe('Socket events', () => {
   })
 
   it('should track errors', async () => {
-    const [identifyMessage, token, player] = await createSocketIdentifyMessage([APIKeyScope.READ_PLAYERS])
+    const { identifyMessage, ticket, player } = await createSocketIdentifyMessage([APIKeyScope.READ_PLAYERS])
 
-    await request(global.server)
-      .ws('/')
-      .set('authorization', `Bearer ${token}`)
-      .expectJson({
-        res: 'v1.connected',
-        data: {}
-      })
-      .sendJson({
+    await createTestSocket(`/?ticket=${ticket}`, async (client) => {
+      client.sendJson({
         ...identifyMessage,
         data: {
           ...identifyMessage.data,
           socketToken: 'invalid'
         }
       })
-      .expectJson({
+      await client.expectJsonToStrictEqual({
         res: 'v1.error',
         data: {
           req: 'v1.players.identify',
@@ -149,7 +123,7 @@ describe('Socket events', () => {
           errorCode: 'INVALID_SOCKET_TOKEN'
         }
       })
-      .close()
+    })
 
     let events: ClickhouseSocketEvent[] = []
     await vi.waitUntil(async () => {
@@ -197,19 +171,12 @@ describe('Socket events', () => {
   })
 
   it('should track dev build events', async () => {
-    const [apiKey, token] = await createAPIKeyAndToken([])
-    apiKey.lastUsedAt = subDays(new Date(), 1)
-    await (<EntityManager>global.em).flush()
+    const [apiKey] = await createAPIKeyAndToken([])
+    const redis = new Redis(redisConfig)
+    const ticket = await createSocketTicket(redis, apiKey, true)
+    await redis.quit()
 
-    await request(global.server)
-      .ws('/')
-      .set('authorization', `Bearer ${token}`)
-      .set('x-talo-dev-build', '1')
-      .expectJson({
-        res: 'v1.connected',
-        data: {}
-      })
-      .close()
+    await createTestSocket(`/?ticket=${ticket}`, async () => {})
 
     let events: ClickhouseSocketEvent[] = []
     await vi.waitUntil(async () => {

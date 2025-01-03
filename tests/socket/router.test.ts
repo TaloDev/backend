@@ -1,36 +1,25 @@
-import request from 'superwstest'
-import Socket from '../../src/socket'
 import createAPIKeyAndToken from '../utils/createAPIKeyAndToken'
 import { APIKeyScope } from '../../src/entities/api-key'
-import createSocketIdentifyMessage from '../utils/requestAuthedSocket'
+import createSocketIdentifyMessage from '../utils/createSocketIdentifyMessage'
 import { EntityManager } from '@mikro-orm/mysql'
 import GameChannelFactory from '../fixtures/GameChannelFactory'
+import { createSocketTicket } from '../../src/services/api/socket-ticket-api.service'
+import redisConfig from '../../src/config/redis.config'
+import Redis from 'ioredis'
+import createTestSocket from '../utils/createTestSocket'
 
 describe('Socket router', () => {
-  let socket: Socket
-
-  beforeAll(() => {
-    socket = new Socket(global.server, global.em)
-  })
-
-  afterAll(() => {
-    socket.getServer().close()
-  })
-
   it('should reject invalid messages', async () => {
-    const [, token] = await createAPIKeyAndToken([])
+    const [apiKey] = await createAPIKeyAndToken([])
+    const redis = new Redis(redisConfig)
+    const ticket = await createSocketTicket(redis, apiKey, false)
+    await redis.quit()
 
-    await request(global.server)
-      .ws('/')
-      .set('authorization', `Bearer ${token}`)
-      .expectJson({
-        res: 'v1.connected',
-        data: {}
-      })
-      .sendJson({
+    await createTestSocket(`/?ticket=${ticket}`, async (client) => {
+      client.sendJson({
         blah: 'blah'
       })
-      .expectJson({
+      await client.expectJsonToStrictEqual({
         res: 'v1.error',
         data: {
           req: 'unknown',
@@ -39,24 +28,21 @@ describe('Socket router', () => {
           cause: '{"blah":"blah"}'
         }
       })
-      .close()
+    })
   })
 
   it('should reject unknown requests', async () => {
-    const [, token] = await createAPIKeyAndToken([])
+    const [apiKey] = await createAPIKeyAndToken([])
+    const redis = new Redis(redisConfig)
+    const ticket = await createSocketTicket(redis, apiKey, false)
+    await redis.quit()
 
-    await request(global.server)
-      .ws('/')
-      .set('authorization', `Bearer ${token}`)
-      .expectJson({
-        res: 'v1.connected',
-        data: {}
-      })
-      .sendJson({
+    await createTestSocket(`/?ticket=${ticket}`, async (client) => {
+      client.sendJson({
         req: 'v1.magic',
         data: {}
       })
-      .expectJson({
+      await client.expectJsonToStrictEqual({
         res: 'v1.error',
         data: {
           req: 'unknown',
@@ -65,20 +51,17 @@ describe('Socket router', () => {
           cause: '{"req":"v1.magic","data":{}}'
         }
       })
-      .close()
+    })
   })
 
   it('should reject requests where a player is required but one hasn\'t been identified yet', async () => {
-    const [, token] = await createAPIKeyAndToken([])
+    const [apiKey] = await createAPIKeyAndToken([])
+    const redis = new Redis(redisConfig)
+    const ticket = await createSocketTicket(redis, apiKey, false)
+    await redis.quit()
 
-    await request(global.server)
-      .ws('/')
-      .set('authorization', `Bearer ${token}`)
-      .expectJson({
-        res: 'v1.connected',
-        data: {}
-      })
-      .sendJson({
+    await createTestSocket(`/?ticket=${ticket}`, async (client) => {
+      client.sendJson({
         req: 'v1.channels.message',
         data: {
           channel: {
@@ -87,7 +70,7 @@ describe('Socket router', () => {
           message: 'Hello world'
         }
       })
-      .expectJson({
+      await client.expectJsonToStrictEqual({
         res: 'v1.error',
         data: {
           req: 'v1.channels.message',
@@ -95,22 +78,16 @@ describe('Socket router', () => {
           errorCode: 'NO_PLAYER_FOUND'
         }
       })
-      .close()
+    })
   })
 
   it('should reject requests where a scope is required but is not present', async () => {
-    const [identifyMessage, token] = await createSocketIdentifyMessage([APIKeyScope.READ_PLAYERS])
+    const { identifyMessage, ticket } = await createSocketIdentifyMessage([APIKeyScope.READ_PLAYERS])
 
-    await request(global.server)
-      .ws('/')
-      .set('authorization', `Bearer ${token}`)
-      .expectJson({
-        res: 'v1.connected',
-        data: {}
-      })
-      .sendJson(identifyMessage)
-      .expectJson()
-      .sendJson({
+    await createTestSocket(`/?ticket=${ticket}`, async (client) => {
+      await client.identify(identifyMessage)
+
+      client.sendJson({
         req: 'v1.channels.message',
         data: {
           channel: {
@@ -119,7 +96,7 @@ describe('Socket router', () => {
           message: 'Hello world'
         }
       })
-      .expectJson({
+      await client.expectJsonToStrictEqual({
         res: 'v1.error',
         data: {
           req: 'v1.channels.message',
@@ -127,25 +104,19 @@ describe('Socket router', () => {
           errorCode: 'MISSING_ACCESS_KEY_SCOPES'
         }
       })
-      .close()
+    })
   })
 
   it('should be able to accept requests where a scope is required and the key has the full access scope', async () => {
-    const [identifyMessage, token, player] = await createSocketIdentifyMessage([APIKeyScope.FULL_ACCESS])
+    const { identifyMessage, ticket, player } = await createSocketIdentifyMessage([APIKeyScope.FULL_ACCESS])
     const channel = await new GameChannelFactory(player.game).one()
     channel.members.add(player.aliases[0])
     await (<EntityManager>global.em).persistAndFlush(channel)
 
-    await request(global.server)
-      .ws('/')
-      .set('authorization', `Bearer ${token}`)
-      .expectJson({
-        res: 'v1.connected',
-        data: {}
-      })
-      .sendJson(identifyMessage)
-      .expectJson()
-      .sendJson({
+    await createTestSocket(`/?ticket=${ticket}`, async (client) => {
+      await client.identify(identifyMessage)
+
+      client.sendJson({
         req: 'v1.channels.message',
         data: {
           channel: {
@@ -154,28 +125,25 @@ describe('Socket router', () => {
           message: 'Hello world'
         }
       })
-      .expectJson((actual) => {
+      await client.expectJson((actual) => {
         expect(actual.res).toBe('v1.channels.message')
         expect(actual.data.channel.id).toBe(channel.id)
         expect(actual.data.message).toBe('Hello world')
         expect(actual.data.playerAlias.id).toBe(player.aliases[0].id)
       })
-      .close()
+    })
   })
 
   it('should reject requests where the payload fails the listener\'s validation', async () => {
-    const [identifyMessage, token] = await createSocketIdentifyMessage([APIKeyScope.READ_PLAYERS, APIKeyScope.WRITE_GAME_CHANNELS])
+    const { identifyMessage, ticket } = await createSocketIdentifyMessage([
+      APIKeyScope.READ_PLAYERS,
+      APIKeyScope.WRITE_GAME_CHANNELS
+    ])
 
-    await request(global.server)
-      .ws('/')
-      .set('authorization', `Bearer ${token}`)
-      .expectJson({
-        res: 'v1.connected',
-        data: {}
-      })
-      .sendJson(identifyMessage)
-      .expectJson()
-      .sendJson({
+    await createTestSocket(`/?ticket=${ticket}`, async (client) => {
+      await client.identify(identifyMessage)
+
+      client.sendJson({
         req: 'v1.channels.message',
         data: {
           channel: {
@@ -184,7 +152,7 @@ describe('Socket router', () => {
           myMessageToTheChannelIsGoingToBeThis: 'Hello world'
         }
       })
-      .expectJson({
+      await client.expectJsonToStrictEqual({
         res: 'v1.error',
         data: {
           req: 'v1.channels.message',
@@ -193,6 +161,6 @@ describe('Socket router', () => {
           cause: '{"channel":{"id":1},"myMessageToTheChannelIsGoingToBeThis":"Hello world"}'
         }
       })
-      .close()
+    })
   })
 })

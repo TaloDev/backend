@@ -2,7 +2,6 @@ import { IncomingMessage, Server } from 'http'
 import { RawData, WebSocket, WebSocketServer } from 'ws'
 import { captureException } from '@sentry/node'
 import { EntityManager, RequestContext } from '@mikro-orm/mysql'
-import authenticateSocket from './authenticateSocket'
 import SocketConnection from './socketConnection'
 import SocketRouter from './router/socketRouter'
 import { sendMessage } from './messages/socketMessage'
@@ -11,6 +10,9 @@ import { Queue } from 'bullmq'
 import { createSocketEventQueue, SocketEventData } from './socketEvent'
 import { ClickHouseClient } from '@clickhouse/client'
 import createClickhouseClient from '../lib/clickhouse/createClient'
+import Redis from 'ioredis'
+import redisConfig from '../config/redis.config'
+import SocketTicket from './socketTicket'
 
 type CloseConnectionOptions = {
   code?: number
@@ -73,10 +75,14 @@ export default class Socket {
   async handleConnection(ws: WebSocket, req: IncomingMessage): Promise<void> {
     logConnection(req)
 
+    const redis = new Redis(redisConfig)
+
     await RequestContext.create(this.em, async () => {
-      const key = await authenticateSocket(req.headers?.authorization ?? '')
-      if (key) {
-        const connection = new SocketConnection(this, ws, key, req)
+      const url = new URL(req.url, 'http://localhost')
+      const ticket = new SocketTicket(url.searchParams.get('ticket') ?? '')
+
+      if (await ticket.validate(redis)) {
+        const connection = new SocketConnection(this, ws, ticket, req.socket.remoteAddress)
         this.connections.set(ws, connection)
 
         await this.trackEvent('open', {
@@ -85,7 +91,7 @@ export default class Socket {
           code: null,
           gameId: connection.game.id,
           playerAliasId: null,
-          devBuild: req.headers['x-talo-dev-build'] === '1'
+          devBuild: ticket.devBuild
         })
 
         await sendMessage(connection, 'v1.connected', {})
@@ -93,6 +99,8 @@ export default class Socket {
         await this.closeConnection(ws)
       }
     })
+
+    await redis.quit()
   }
 
   async handleMessage(ws: WebSocket, data: RawData): Promise<void> {

@@ -1,5 +1,5 @@
 import { EntityManager } from '@mikro-orm/mysql'
-import { APIKeyScope } from '../../src/entities/api-key'
+import APIKey, { APIKeyScope } from '../../src/entities/api-key'
 import PlayerFactory from '../fixtures/PlayerFactory'
 import createAPIKeyAndToken from './createAPIKeyAndToken'
 import Redis from 'ioredis'
@@ -19,10 +19,11 @@ type SocketIdentifyData = {
   identifyMessage: IdentifyMessage
   ticket: string
   player: Player
+  apiKey: APIKey
   token: string
 }
 
-export default async function createSocketIdentifyMessage(scopes: APIKeyScope[]): Promise<SocketIdentifyData> {
+export default async function createSocketIdentifyMessage(scopes: APIKeyScope[] = []): Promise<SocketIdentifyData> {
   const [apiKey, token] = await createAPIKeyAndToken(scopes)
   const player = await new PlayerFactory([apiKey.game]).one()
   await (<EntityManager>global.em).persistAndFlush(player)
@@ -42,6 +43,7 @@ export default async function createSocketIdentifyMessage(scopes: APIKeyScope[])
     },
     ticket,
     player,
+    apiKey,
     token
   }
 }

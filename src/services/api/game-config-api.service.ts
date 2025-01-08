@@ -13,12 +13,10 @@ export default class GameConfigAPIService extends APIService {
     const key = await this.getAPIKey(req.ctx)
     await em.populate(key, ['game'])
 
-    const config = key.game.props.filter((prop) => !prop.key.startsWith('META_'))
-
     return {
       status: 200,
       body: {
-        config
+        config: key.game.getLiveConfig()
       }
     }
   }

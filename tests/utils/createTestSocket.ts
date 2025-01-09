@@ -71,6 +71,19 @@ class TestClient extends WebSocket {
     }
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  async dontExpectJson(cb: (json: any) => void) {
+    try {
+      await this.expectJson(cb)
+      throw new Error('Unexpected message found')
+    } catch (err) {
+      if (err.message === 'Message not found') {
+        return
+      }
+      throw err
+    }
+  }
+
   async expectJsonToStrictEqual(json: object) {
     try {
       await this.expectJson((actual) => {

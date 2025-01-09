@@ -8,6 +8,19 @@ import getUserFromToken from '../lib/auth/getUserFromToken'
 import createGameActivity from '../lib/logging/createGameActivity'
 import sanitiseProps from '../lib/props/sanitiseProps'
 import GamePolicy from '../policies/game.policy'
+import Socket from '../socket'
+import { sendMessages } from '../socket/messages/socketMessage'
+import { APIKeyScope } from '../entities/api-key'
+
+async function sendLiveConfigUpdatedMessage(req: Request, game: Game) {
+  const socket: Socket = req.ctx.wss
+  const conns = socket.findConnections((conn) => {
+    return conn.game.id === game.id && conn.hasScope(APIKeyScope.READ_GAME_CONFIG)
+  })
+  await sendMessages(conns, 'v1.live-config.updated', {
+    config: game.getLiveConfig()
+  })
+}
 
 export default class GameService extends Service {
   @Validate({
@@ -65,6 +78,7 @@ export default class GameService extends Service {
       ], (a, b) => a.key === b.key)
 
       game.props = sanitiseProps(mergedProps, true)
+      await sendLiveConfigUpdatedMessage(req, game)
 
       createGameActivity(em, {
         user: req.ctx.state.user,

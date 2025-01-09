@@ -41,6 +41,10 @@ function getInsertableData(event: SocketEventData): ClickhouseSocketEvent {
 
 export function createSocketEventQueue(clickhouse: ClickHouseClient): Queue<SocketEventData> {
   return createQueue<SocketEventData>('socketEvents', async (job) => {
+    if (job.data.devBuild) {
+      return
+    }
+
     await clickhouse.insert({
       table: 'socket_events',
       values: [getInsertableData(job.data)],

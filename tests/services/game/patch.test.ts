@@ -5,6 +5,11 @@ import GameActivity, { GameActivityType } from '../../../src/entities/game-activ
 import userPermissionProvider from '../../utils/userPermissionProvider'
 import createOrganisationAndGame from '../../utils/createOrganisationAndGame'
 import createUserAndToken from '../../utils/createUserAndToken'
+import createTestSocket from '../../utils/createTestSocket'
+import createSocketIdentifyMessage from '../../utils/createSocketIdentifyMessage'
+import { genAccessToken } from '../../../src/lib/auth/buildTokenPair'
+import { APIKeyScope } from '../../../src/entities/api-key'
+import Prop from '../../../src/entities/prop'
 
 describe('Game service - patch', () => {
   it.each(userPermissionProvider([
@@ -176,5 +181,74 @@ describe('Game service - patch', () => {
       }
     })
     expect(activity).not.toBeNull()
+  })
+
+  it('should notify players when the live config has been updated', async () => {
+    const { identifyMessage, ticket, apiKey } = await createSocketIdentifyMessage([
+      APIKeyScope.READ_PLAYERS,
+      APIKeyScope.READ_GAME_CONFIG
+    ])
+
+    apiKey.game.props = [new Prop('xpRate', '1')]
+    apiKey.createdByUser.type = UserType.ADMIN
+    await (<EntityManager>global.em).flush()
+
+    const token = await genAccessToken(apiKey.createdByUser)
+
+    await createTestSocket(`/?ticket=${ticket}`, async (client) => {
+      await client.identify(identifyMessage)
+      await request(global.app)
+        .patch(`/games/${apiKey.game.id}`)
+        .send({
+          props: [
+            {
+              key: 'xpRate',
+              value: '2'
+            }
+          ]
+        })
+        .auth(token, { type: 'bearer' })
+        .expect(200)
+      await client.expectJson((actual) => {
+        expect(actual.res).toBe('v1.live-config.updated')
+        expect(actual.data.config).toStrictEqual([
+          {
+            key: 'xpRate',
+            value: '2'
+          }
+        ])
+      })
+    })
+  })
+
+  it('should not notify players without the correct scope when the live config has been updated', async () => {
+    const { identifyMessage, ticket, apiKey } = await createSocketIdentifyMessage([
+      APIKeyScope.READ_PLAYERS
+    ])
+
+    apiKey.game.props = [new Prop('xpRate', '1')]
+    apiKey.createdByUser.type = UserType.ADMIN
+    await (<EntityManager>global.em).flush()
+
+    const token = await genAccessToken(apiKey.createdByUser)
+
+    await createTestSocket(`/?ticket=${ticket}`, async (client) => {
+      await client.identify(identifyMessage)
+      await request(global.app)
+        .patch(`/games/${apiKey.game.id}`)
+        .send({
+          props: [
+            {
+              key: 'xpRate',
+              value: '2'
+            }
+          ]
+        })
+        .auth(token, { type: 'bearer' })
+        .expect(200)
+      await client.dontExpectJson((actual) => {
+        expect(actual.res).toBe('v1.live-config.updated')
+      })
+    })
   })
 })

@@ -35,6 +35,10 @@ export default class Game {
     this.organisation = organisation
   }
 
+  getLiveConfig(): Prop[] {
+    return this.props.filter((prop) => !prop.key.startsWith('META_'))
+  }
+
   toJSON() {
     return {
       id: this.id,

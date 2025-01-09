@@ -170,7 +170,7 @@ describe('Socket events', () => {
     expect(events[4].dev_build).toBe(false)
   })
 
-  it('should track dev build events', async () => {
+  it('should not track dev build events', async () => {
     const [apiKey] = await createAPIKeyAndToken([])
     const redis = new Redis(redisConfig)
     const ticket = await createSocketTicket(redis, apiKey, true)
@@ -178,34 +178,11 @@ describe('Socket events', () => {
 
     await createTestSocket(`/?ticket=${ticket}`, async () => {})
 
-    let events: ClickhouseSocketEvent[] = []
-    await vi.waitUntil(async () => {
-      events = await (<ClickHouseClient>global.clickhouse).query({
-        query: `SELECT * FROM socket_events WHERE game_id = ${apiKey.game.id} ORDER BY created_at`,
-        format: 'JSONEachRow'
-      }).then((res) => res.json<ClickhouseSocketEvent>())
-      return events.length === 3
-    })
+    const events = await (<ClickHouseClient>global.clickhouse).query({
+      query: `SELECT * FROM socket_events WHERE game_id = ${apiKey.game.id} ORDER BY created_at`,
+      format: 'JSONEachRow'
+    }).then((res) => res.json<ClickhouseSocketEvent>())
 
-    expect(events[0].event_type).toBe('open')
-    expect(events[0].req_or_res).toBe('req')
-    expect(events[0].code).toBeNull()
-    expect(events[0].game_id).toBe(apiKey.game.id)
-    expect(events[0].player_alias_id).toBeNull()
-    expect(events[0].dev_build).toBe(true)
-
-    expect(events[1].event_type).toBe('v1.connected')
-    expect(events[1].req_or_res).toBe('res')
-    expect(events[1].code).toBeNull()
-    expect(events[1].game_id).toBe(apiKey.game.id)
-    expect(events[1].player_alias_id).toBeNull()
-    expect(events[1].dev_build).toBe(true)
-
-    expect(events[2].event_type).toBe('close')
-    expect(events[2].req_or_res).toBe('req')
-    expect(events[2].code).toBeNull()
-    expect(events[2].game_id).toBe(apiKey.game.id)
-    expect(events[2].player_alias_id).toBeNull()
-    expect(events[2].dev_build).toBe(true)
+    expect(events.length).toBe(0)
   })
 })

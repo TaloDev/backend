@@ -17,6 +17,13 @@ const errorCodes = [
 
 export type SocketErrorCode = typeof errorCodes[number]
 
+const validSentryErrorCodes: SocketErrorCode[] = [
+  'UNHANDLED_REQUEST',
+  'ROUTING_ERROR',
+  'LISTENER_ERROR',
+  'RATE_LIMIT_EXCEEDED'
+]
+
 export default class SocketError {
   constructor(public code: SocketErrorCode, public message: string, public cause?: string) { }
 }
@@ -24,9 +31,11 @@ export default class SocketError {
 type SocketErrorReq = SocketMessageRequest | 'unknown'
 
 export async function sendError(conn: SocketConnection, req: SocketErrorReq, error: SocketError) {
-  setTag('request', req)
-  setTag('errorCode', error.code)
-  captureException(new Error(error.message, { cause: error }))
+  if (validSentryErrorCodes.includes(error.code)) {
+    setTag('request', req)
+    setTag('errorCode', error.code)
+    captureException(new Error(error.message, { cause: error }))
+  }
 
   await sendMessage<{
     req: SocketErrorReq

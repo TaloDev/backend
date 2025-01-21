@@ -5,6 +5,10 @@ import GameSave from '../../entities/game-save'
 import { EntityManager } from '@mikro-orm/mysql'
 import GameSaveAPIDocs from '../../docs/game-save-api.docs'
 
+function decodeContent(content: unknown) {
+  return typeof content === 'string' ? JSON.parse(content) : content
+}
+
 export default class GameSaveAPIService extends APIService {
   @Validate({
     headers: ['x-talo-player']
@@ -38,7 +42,7 @@ export default class GameSaveAPIService extends APIService {
     const em: EntityManager = req.ctx.em
 
     const save = new GameSave(name, req.ctx.state.player)
-    save.content = content
+    save.content = decodeContent(content)
 
     await em.persistAndFlush(save)
 
@@ -63,7 +67,7 @@ export default class GameSaveAPIService extends APIService {
 
     const save = req.ctx.state.save
     if (name) save.name = name
-    save.content = content
+    save.content = decodeContent(content)
 
     await em.flush()
 

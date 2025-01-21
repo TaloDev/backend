@@ -17,7 +17,6 @@ import PlayerGroup from '../entities/player-group'
 import GameSave from '../entities/game-save'
 import PlayerAuthActivity from '../entities/player-auth-activity'
 import { ClickHouseClient } from '@clickhouse/client'
-import triggerIntegrations from '../lib/integrations/triggerIntegrations'
 
 const propsValidation = async (val: unknown): Promise<ValidationCondition[]> => [
   {
@@ -66,11 +65,6 @@ type PlayerPostBody = {
     method: 'GET',
     path: '/:id/auth-activities',
     handler: 'authActivities'
-  },
-  {
-    method: 'PATCH',
-    path: '/:id/stats/:statId',
-    handler: 'updateStat'
   }
 ])
 export default class PlayerService extends Service {
@@ -356,59 +350,6 @@ export default class PlayerService extends Service {
       status: 200,
       body: {
         activities
-      }
-    }
-  }
-
-  @HasPermission(PlayerPolicy, 'updateStat')
-  @Validate({
-    body: ['newValue']
-  })
-  async updateStat(req: Request): Promise<Response> {
-    const { newValue } = req.body
-    const em: EntityManager = req.ctx.em
-
-    const playerStat: PlayerGameStat = req.ctx.state.playerStat
-    const oldValue = playerStat.value
-
-    if (newValue < (playerStat.stat.minValue ?? -Infinity)) {
-      req.ctx.throw(400, `Stat would go below the minValue of ${playerStat.stat.minValue}`)
-    }
-
-    if (newValue > (playerStat.stat.maxValue ?? Infinity)) {
-      req.ctx.throw(400, `Stat would go above the maxValue of ${playerStat.stat.maxValue}`)
-    }
-
-    playerStat.value = newValue
-    if (playerStat.stat.global) {
-      playerStat.stat.globalValue += newValue - oldValue
-    }
-
-    await triggerIntegrations(em, playerStat.player.game, (integration) => {
-      return integration.handleStatUpdated(em, playerStat)
-    })
-
-    createGameActivity(em, {
-      user: req.ctx.state.user,
-      game: playerStat.player.game,
-      type: GameActivityType.PLAYER_STAT_UPDATED,
-      extra: {
-        statInternalName: playerStat.stat.internalName,
-        display: {
-          'Player': playerStat.player.id,
-          'Stat': playerStat.stat.internalName,
-          'Old value': oldValue,
-          'New value': newValue
-        }
-      }
-    })
-
-    await em.flush()
-
-    return {
-      status: 200,
-      body: {
-        playerStat
       }
     }
   }

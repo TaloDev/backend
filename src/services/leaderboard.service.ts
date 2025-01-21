@@ -154,10 +154,9 @@ export default class LeaderboardService extends Service {
       req.ctx.throw(404, 'Leaderboard entry not found')
     }
 
-    const { hidden } = req.body
+    const { hidden, newScore } = req.body
 
-    const toggleVisibility = typeof hidden === 'boolean'
-    if (toggleVisibility) {
+    if (typeof hidden === 'boolean') {
       entry.hidden = hidden
 
       createGameActivity(em, {
@@ -176,6 +175,31 @@ export default class LeaderboardService extends Service {
 
       await triggerIntegrations(em, entry.leaderboard.game, (integration) => {
         return integration.handleLeaderboardEntryVisibilityToggled(em, entry)
+      })
+    }
+
+    if (typeof newScore === 'number') {
+      const oldScore = entry.score
+      entry.score = newScore
+
+      createGameActivity(em, {
+        user: req.ctx.state.user,
+        game: entry.leaderboard.game,
+        type: GameActivityType.LEADERBOARD_ENTRY_UPDATED,
+        extra: {
+          leaderboardInternalName: entry.leaderboard.internalName,
+          entryId: entry.id,
+          display: {
+            'Player': entry.playerAlias.player.id,
+            'Leaderboard': entry.leaderboard.internalName,
+            'Old score': oldScore,
+            'New score': newScore
+          }
+        }
+      })
+
+      await triggerIntegrations(em, entry.leaderboard.game, (integration) => {
+        return integration.handleLeaderboardEntryCreated(em, entry)
       })
     }
 

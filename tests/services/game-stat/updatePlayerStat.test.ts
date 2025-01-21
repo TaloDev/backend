@@ -15,7 +15,7 @@ import axios from 'axios'
 import { IntegrationType } from '../../../src/entities/integration'
 import SteamworksIntegrationEvent from '../../../src/entities/steamworks-integration-event'
 
-describe('Player service - updateStat', () => {
+describe('Game stat service - updatePlayerStat', () => {
   const axiosMock = new AxiosMockAdapter(axios)
 
   afterAll(async () => {
@@ -36,7 +36,7 @@ describe('Player service - updateStat', () => {
     await (<EntityManager>global.em).persistAndFlush([stat, player, playerStat])
 
     const res = await request(global.app)
-      .patch(`/games/${game.id}/players/${player.id}/stats/${playerStat.id}`)
+      .patch(`/games/${game.id}/game-stats/${stat.id}/player-stats/${playerStat.id}`)
       .send({ newValue: 20 })
       .auth(token, { type: 'bearer' })
       .expect(statusCode)
@@ -44,6 +44,7 @@ describe('Player service - updateStat', () => {
     const activity = await (<EntityManager>global.em).getRepository(GameActivity).findOne({
       type: GameActivityType.PLAYER_STAT_UPDATED,
       extra: {
+        statInternalName: stat.internalName,
         display: {
           'Player': player.id,
           'Stat': stat.internalName,
@@ -75,7 +76,7 @@ describe('Player service - updateStat', () => {
     await (<EntityManager>global.em).persistAndFlush([stat, player, playerStat])
 
     await request(global.app)
-      .patch(`/games/${game.id}/players/${player.id}/stats/${playerStat.id}`)
+      .patch(`/games/${game.id}/game-stats/${stat.id}/player-stats/${playerStat.id}`)
       .send({ newValue: 20 })
       .auth(token, { type: 'bearer' })
       .expect(200)
@@ -97,7 +98,7 @@ describe('Player service - updateStat', () => {
     await (<EntityManager>global.em).persistAndFlush([stat, player, playerStat])
 
     const res = await request(global.app)
-      .patch(`/games/${game.id}/players/${player.id}/stats/${playerStat.id}`)
+      .patch(`/games/${game.id}/game-stats/${stat.id}/player-stats/${playerStat.id}`)
       .send({ newValue: -5 })
       .auth(token, { type: 'bearer' })
       .expect(400)
@@ -120,7 +121,7 @@ describe('Player service - updateStat', () => {
     await (<EntityManager>global.em).persistAndFlush([stat, player, playerStat])
 
     const res = await request(global.app)
-      .patch(`/games/${game.id}/players/${player.id}/stats/${playerStat.id}`)
+      .patch(`/games/${game.id}/game-stats/${stat.id}/player-stats/${playerStat.id}`)
       .send({ newValue: 150 })
       .auth(token, { type: 'bearer' })
       .expect(400)
@@ -144,7 +145,7 @@ describe('Player service - updateStat', () => {
     await (<EntityManager>global.em).persistAndFlush([stat, player, playerStat])
 
     await request(global.app)
-      .patch(`/games/${game.id}/players/${player.id}/stats/${playerStat.id}`)
+      .patch(`/games/${game.id}/game-stats/${stat.id}/player-stats/${playerStat.id}`)
       .send({ newValue: 75 })
       .auth(token, { type: 'bearer' })
       .expect(200)
@@ -173,7 +174,7 @@ describe('Player service - updateStat', () => {
     await (<EntityManager>global.em).persistAndFlush([integration, stat, player])
 
     await request(global.app)
-      .patch(`/games/${game.id}/players/${player.id}/stats/${playerStat.id}`)
+      .patch(`/games/${game.id}/game-stats/${stat.id}/player-stats/${playerStat.id}`)
       .send({ newValue: 20 })
       .auth(token, { type: 'bearer' })
       .expect(200)
@@ -199,7 +200,7 @@ describe('Player service - updateStat', () => {
     await (<EntityManager>global.em).persistAndFlush([stat, player, playerStat])
 
     await request(global.app)
-      .patch(`/games/${otherGame.id}/players/${player.id}/stats/${playerStat.id}`)
+      .patch(`/games/${otherGame.id}/game-stats/${stat.id}/player-stats/${playerStat.id}`)
       .send({ newValue: 20 })
       .auth(token, { type: 'bearer' })
       .expect(403)
@@ -215,7 +216,7 @@ describe('Player service - updateStat', () => {
     await (<EntityManager>global.em).persistAndFlush([stat, player])
 
     const res = await request(global.app)
-      .patch(`/games/${game.id}/players/${player.id}/stats/999999`)
+      .patch(`/games/${game.id}/game-stats/${stat.id}/player-stats/999999`)
       .send({ newValue: 20 })
       .auth(token, { type: 'bearer' })
       .expect(404)
@@ -225,24 +226,23 @@ describe('Player service - updateStat', () => {
     })
   })
 
-  it('should not update a player stat if the player does not exist', async () => {
+  it('should not update a player stat if the stat does not exist', async () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({ type: UserType.ADMIN }, organisation)
 
     const stat = await new GameStatFactory([game]).one()
     const player = await new PlayerFactory([game]).one()
-    const playerStat = await new PlayerGameStatFactory().construct(player, stat).state(() => ({ value: 10 })).one()
 
-    await (<EntityManager>global.em).persistAndFlush([stat, player, playerStat])
+    await (<EntityManager>global.em).persistAndFlush([stat, player])
 
     const res = await request(global.app)
-      .patch(`/games/${game.id}/players/999999/stats/${playerStat.id}`)
+      .patch(`/games/${game.id}/game-stats/999/player-stats/999999`)
       .send({ newValue: 20 })
       .auth(token, { type: 'bearer' })
       .expect(404)
 
     expect(res.body).toStrictEqual({
-      message: 'Player not found'
+      message: 'Stat not found'
     })
   })
 })

@@ -32,6 +32,7 @@ export default class LeaderboardPolicy extends Policy {
     return await this.canAccessGame(Number(gameId))
   }
 
+  @UserTypeGate([UserType.ADMIN], 'update leaderboard entries')
   async updateEntry(req: Request): Promise<PolicyResponse> {
     return await this.canAccessLeaderboard(req, ['entries'])
   }

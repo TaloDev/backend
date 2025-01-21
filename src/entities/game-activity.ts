@@ -32,7 +32,8 @@ export enum GameActivityType {
   GAME_FEEDBACK_CATEGORY_DELETED,
   API_KEY_UPDATED,
   GAME_NAME_UPDATED,
-  PLAYER_STAT_UPDATED
+  PLAYER_STAT_UPDATED,
+  LEADERBOARD_ENTRY_UPDATED
 }
 
 @Entity()
@@ -126,6 +127,8 @@ export default class GameActivity {
         return `${this.user.username} updated the game name`
       case GameActivityType.PLAYER_STAT_UPDATED:
         return `${this.user.username} updated a player stat value`
+      case GameActivityType.LEADERBOARD_ENTRY_UPDATED:
+        return `${this.user.username} updated a leaderboard entry`
       default:
         return ''
     }

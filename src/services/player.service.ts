@@ -393,6 +393,7 @@ export default class PlayerService extends Service {
       game: playerStat.player.game,
       type: GameActivityType.PLAYER_STAT_UPDATED,
       extra: {
+        statInternalName: playerStat.stat.internalName,
         display: {
           'Player': playerStat.player.id,
           'Stat': playerStat.stat.internalName,

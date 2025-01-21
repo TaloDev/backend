@@ -17,7 +17,7 @@ import { randBoolean, randNumber } from '@ngneat/falso'
 describe('Leaderboard service - update entry - steamworks integration', () => {
   const axiosMock = new AxiosMockAdapter(axios)
 
-  afterAll(async () => {
+  afterEach(async () => {
     axiosMock.reset()
   })
 
@@ -174,5 +174,46 @@ describe('Leaderboard service - update entry - steamworks integration', () => {
       .expect(200)
 
     expect(updateMock).not.toHaveBeenCalled()
+  })
+
+  it('should update entries when their score is changed', async () => {
+    const [organisation, game] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken({}, organisation)
+
+    const updateMock = vi.fn(() => [200, {
+      result: {
+        result: 1,
+        leaderboard_entry_count: 1,
+        score_changed: true,
+        global_rank_previous: 1,
+        global_rank_new: 2
+      }
+    }])
+    axiosMock.onPost('https://partner.steam-api.com/ISteamLeaderboards/SetLeaderboardScore/v1').replyOnce(updateMock)
+
+    const leaderboard = await new LeaderboardFactory([game]).one()
+    const mapping = new SteamworksLeaderboardMapping(randNumber({ min: 100_000, max: 999_999 }), leaderboard)
+
+    const player = await new PlayerFactory([game]).withSteamAlias().one()
+    const entry = await new LeaderboardEntryFactory(leaderboard, [player]).state(() => ({ score: 100 })).one()
+
+    const config = await new IntegrationConfigFactory().state(() => ({ syncLeaderboards: true })).one()
+    const integration = await new IntegrationFactory().construct(IntegrationType.STEAMWORKS, game, config).one()
+    await (<EntityManager>global.em).persistAndFlush([integration, entry, mapping])
+
+    await request(global.app)
+      .patch(`/games/${game.id}/leaderboards/${leaderboard.id}/entries/${entry.id}`)
+      .send({ newScore: 200 })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    expect(updateMock).toHaveBeenCalledTimes(1)
+
+    const event = await (<EntityManager>global.em).getRepository(SteamworksIntegrationEvent).findOne({ integration })
+    expect(event.request).toStrictEqual({
+      url: 'https://partner.steam-api.com/ISteamLeaderboards/SetLeaderboardScore/v1',
+      body: `appid=${config.appId}&leaderboardid=${mapping.steamworksLeaderboardId}&steamid=${player.aliases[0].identifier}&score=200&scoremethod=KeepBest`,
+      method: 'POST'
+    })
   })
 })

@@ -99,6 +99,10 @@ type TestSocketOptions = {
   waitForReady?: boolean
 }
 
+function getRandPort() {
+  return randNumber({ min: 1024, max: 65535 })
+}
+
 export default async function createTestSocket(
   url: string,
   cb: (client: TestClient, wss: Socket) => Promise<void>,
@@ -107,8 +111,27 @@ export default async function createTestSocket(
   }
 ) {
   const server = createServer()
-  const port = randNumber({ min: 1024, max: 65535 })
-  await new Promise<void>((resolve) => server.listen(port, resolve))
+  let port = getRandPort()
+  let bound = false
+
+  while (!bound) {
+    try {
+      await new Promise<void>((resolve, reject) => {
+        server.once('error', reject)
+        server.listen(port, () => {
+          server.removeAllListeners('error')
+          bound = true
+          resolve()
+        })
+      })
+    } catch (err) {
+      if (err.code === 'EADDRINUSE') {
+        port = getRandPort()
+        continue
+      }
+      throw err
+    }
+  }
 
   const wss = new Socket(server, global.em)
   global.ctx.wss = wss

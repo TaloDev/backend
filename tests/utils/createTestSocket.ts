@@ -107,7 +107,7 @@ export default async function createTestSocket(
   }
 ) {
   const server = createServer()
-  const port = randNumber({ min: 999, max: 65535 })
+  const port = randNumber({ min: 1024, max: 65535 })
   await new Promise<void>((resolve) => server.listen(port, resolve))
 
   const wss = new Socket(server, global.em)

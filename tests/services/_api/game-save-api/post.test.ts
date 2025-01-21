@@ -61,4 +61,19 @@ describe('Game save API service - post', () => {
 
     expect(res.body).toStrictEqual({ message: 'Player not found' })
   })
+
+  it('should convert content to JSON if it is a string', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_SAVES])
+    const player = await new PlayerFactory([apiKey.game]).one()
+    await (<EntityManager>global.em).persistAndFlush(player)
+
+    const res = await request(global.app)
+      .post('/v1/game-saves')
+      .send({ name: 'save', content: '{"progress": 10}' })
+      .auth(token, { type: 'bearer' })
+      .set('x-talo-player', player.id)
+      .expect(200)
+
+    expect(res.body.save.content).toStrictEqual({ progress: 10 })
+  })
 })

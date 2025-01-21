@@ -13,6 +13,7 @@ import LeaderboardFactory from '../../fixtures/LeaderboardFactory'
 import PlayerFactory from '../../fixtures/PlayerFactory'
 import SteamworksLeaderboardMapping from '../../../src/entities/steamworks-leaderboard-mapping'
 import { randBoolean, randNumber } from '@ngneat/falso'
+import { UserType } from '../../../src/entities/user'
 
 describe('Leaderboard service - update entry - steamworks integration', () => {
   const axiosMock = new AxiosMockAdapter(axios)
@@ -23,7 +24,7 @@ describe('Leaderboard service - update entry - steamworks integration', () => {
 
   it('should delete entries when they are hidden', async () => {
     const [organisation, game] = await createOrganisationAndGame()
-    const [token] = await createUserAndToken({}, organisation)
+    const [token] = await createUserAndToken({ type: UserType.ADMIN }, organisation)
 
     const updateMock = vi.fn(() => [200, {
       result: {
@@ -60,7 +61,7 @@ describe('Leaderboard service - update entry - steamworks integration', () => {
 
   it('should create entries when they are unhidden', async () => {
     const [organisation, game] = await createOrganisationAndGame()
-    const [token] = await createUserAndToken({}, organisation)
+    const [token] = await createUserAndToken({ type: UserType.ADMIN }, organisation)
 
     const updateMock = vi.fn(() => [200, {
       result: {
@@ -101,7 +102,7 @@ describe('Leaderboard service - update entry - steamworks integration', () => {
 
   it('should not sync entries when syncing is disabled', async () => {
     const [organisation, game] = await createOrganisationAndGame()
-    const [token] = await createUserAndToken({}, organisation)
+    const [token] = await createUserAndToken({ type: UserType.ADMIN }, organisation)
 
     const updateMock = vi.fn(() => [200, {}])
     axiosMock.onPost('https://partner.steam-api.com/ISteamLeaderboards/SetLeaderboardScore/v1').replyOnce(updateMock)
@@ -127,7 +128,7 @@ describe('Leaderboard service - update entry - steamworks integration', () => {
 
   it('should not sync entries when the entry is not a steam alias', async () => {
     const [organisation, game] = await createOrganisationAndGame()
-    const [token] = await createUserAndToken({}, organisation)
+    const [token] = await createUserAndToken({ type: UserType.ADMIN }, organisation)
 
     const updateMock = vi.fn(() => [200, {}])
     axiosMock.onPost('https://partner.steam-api.com/ISteamLeaderboards/SetLeaderboardScore/v1').replyOnce(updateMock)
@@ -153,7 +154,7 @@ describe('Leaderboard service - update entry - steamworks integration', () => {
 
   it('should not sync entries when there is no leaderboard mapping', async () => {
     const [organisation, game] = await createOrganisationAndGame()
-    const [token] = await createUserAndToken({}, organisation)
+    const [token] = await createUserAndToken({ type: UserType.ADMIN }, organisation)
 
     const updateMock = vi.fn(() => [200, {}])
     axiosMock.onPost('https://partner.steam-api.com/ISteamLeaderboards/SetLeaderboardScore/v1').replyOnce(updateMock)
@@ -178,7 +179,7 @@ describe('Leaderboard service - update entry - steamworks integration', () => {
 
   it('should update entries when their score is changed', async () => {
     const [organisation, game] = await createOrganisationAndGame()
-    const [token] = await createUserAndToken({}, organisation)
+    const [token] = await createUserAndToken({ type: UserType.ADMIN }, organisation)
 
     const updateMock = vi.fn(() => [200, {
       result: {

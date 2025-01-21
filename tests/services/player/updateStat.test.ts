@@ -44,6 +44,7 @@ describe('Player service - updateStat', () => {
     const activity = await (<EntityManager>global.em).getRepository(GameActivity).findOne({
       type: GameActivityType.PLAYER_STAT_UPDATED,
       extra: {
+        statInternalName: stat.internalName,
         display: {
           'Player': player.id,
           'Stat': stat.internalName,

@@ -119,4 +119,39 @@ describe('Leaderboard service - update entry', () => {
 
     expect(res.body).toStrictEqual({ message: 'Leaderboard entry not found' })
   })
+
+  it('should update a leaderboard entry\'s score', async () => {
+    const [organisation, game] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken({}, organisation)
+
+    const leaderboard = await new LeaderboardFactory([game]).one()
+    const players = await new PlayerFactory([game]).many(10)
+    const entry = await new LeaderboardEntryFactory(leaderboard, players).state(() => ({ score: 100 })).one()
+    await (<EntityManager>global.em).persistAndFlush(entry)
+
+    const res = await request(global.app)
+      .patch(`/games/${game.id}/leaderboards/${leaderboard.id}/entries/${entry.id}`)
+      .send({ newScore: 200 })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    expect(res.body.entry.score).toBe(200)
+
+    const activity = await (<EntityManager>global.em).getRepository(GameActivity).findOne({
+      type: GameActivityType.LEADERBOARD_ENTRY_UPDATED,
+      game,
+      extra: {
+        leaderboardInternalName: entry.leaderboard.internalName,
+        entryId: entry.id,
+        display: {
+          'Player': entry.playerAlias.player.id,
+          'Leaderboard': entry.leaderboard.internalName,
+          'Old score': 100,
+          'New score': 200
+        }
+      }
+    })
+
+    expect(activity).not.toBeNull()
+  })
 })

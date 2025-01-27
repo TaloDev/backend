@@ -10,15 +10,13 @@ import GameSaveFactory from './fixtures/GameSaveFactory'
 import GameStatFactory from './fixtures/GameStatFactory'
 import PlayerGameStatFactory from './fixtures/PlayerGameStatFactory'
 import PricingPlanFactory from './fixtures/PricingPlanFactory'
-import PricingPlanActionFactory from './fixtures/PricingPlanActionFactory'
-import PricingPlanAction, { PricingPlanActionType } from '../src/entities/pricing-plan-action'
 import OrganisationPricingPlanFactory from './fixtures/OrganisationPricingPlanFactory'
 import PricingPlan from '../src/entities/pricing-plan'
 import APIKey, { APIKeyScope } from '../src/entities/api-key'
 import GameFeedbackCategoryFactory from './fixtures/GameFeedbackCategoryFactory'
 import GameFeedbackFactory from './fixtures/GameFeedbackFactory'
 import createClickhouseClient from '../src/lib/clickhouse/createClient'
-import { rand, randNumber } from '@ngneat/falso'
+import { rand } from '@ngneat/falso'
 
 (async () => {
   console.info('Running migrations...')
@@ -31,31 +29,11 @@ import { rand, randNumber } from '@ngneat/falso'
   console.info('Seeding DB...')
 
   const plansMap: Partial<PricingPlan>[] = [
-    { stripeId: 'prod_LcO5U04wEGWgMP', default: true },
-    { stripeId: 'prod_LbW295xhmo2bk0', default: false },
-    { stripeId: 'prod_LcNy4ow2VoJ8kc', default: false }
+    { stripeId: 'prod_LcO5U04wEGWgMP', playerLimit: 10000, default: true },
+    { stripeId: 'prod_LbW295xhmo2bk0', playerLimit: 100000, default: false },
+    { stripeId: 'prod_LcNy4ow2VoJ8kc', playerLimit: 1000000, default: false }
   ]
-
   const pricingPlans = await new PricingPlanFactory().state((_, idx) => plansMap[idx]).many(3)
-
-  const pricingPlanActions: PricingPlanAction[] = []
-
-  let idx = 0
-  for (const plan of pricingPlans) {
-    const pricingPlanActionFactory = new PricingPlanActionFactory()
-
-    for (const actionType of [PricingPlanActionType.USER_INVITE, PricingPlanActionType.DATA_EXPORT]) {
-      const pricingPlanAction = await pricingPlanActionFactory.state(() => ({
-        type: actionType,
-        limit: randNumber({ min: idx + 1, max: idx * 4 + 3 }),
-        pricingPlan: plan
-      })).one()
-
-      pricingPlanActions.push(pricingPlanAction)
-    }
-
-    idx++
-  }
 
   const organisation = await new OrganisationFactory().state(async (organisation) => {
     const orgPlan = await new OrganisationPricingPlanFactory()
@@ -136,7 +114,6 @@ import { rand, randNumber } from '@ngneat/falso'
 
   await em.persistAndFlush([
     ...pricingPlans,
-    ...pricingPlanActions,
     ownerUser,
     adminUser,
     devUser,

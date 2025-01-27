@@ -1,5 +1,4 @@
-import { Collection, Entity, OneToMany, PrimaryKey, Property } from '@mikro-orm/mysql'
-import PricingPlanAction from './pricing-plan-action'
+import {  Entity, PrimaryKey, Property } from '@mikro-orm/mysql'
 
 @Entity()
 export default class PricingPlan {
@@ -15,8 +14,8 @@ export default class PricingPlan {
   @Property({ default: false })
   default: boolean
 
-  @OneToMany(() => PricingPlanAction, (action) => action.pricingPlan)
-  actions: Collection<PricingPlanAction> = new Collection<PricingPlanAction>(this)
+  @Property({ nullable: true })
+  playerLimit: number
 
   @Property()
   createdAt: Date = new Date()
@@ -30,7 +29,7 @@ export default class PricingPlan {
       stripeId: this.stripeId,
       hidden: this.hidden,
       default: this.default,
-      actions: this.actions
+      playerLimit: this.playerLimit
     }
   }
 }

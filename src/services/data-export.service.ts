@@ -18,10 +18,7 @@ import GameActivity, { GameActivityType } from '../entities/game-activity'
 import { devDataPlayerFilter } from '../middlewares/dev-data-middleware'
 import DataExportReady from '../emails/data-export-ready-mail'
 import createGameActivity from '../lib/logging/createGameActivity'
-import handlePricingPlanAction from '../lib/billing/handlePricingPlanAction'
-import { PricingPlanActionType } from '../entities/pricing-plan-action'
 import queueEmail from '../lib/messaging/queueEmail'
-import OrganisationPricingPlanAction from '../entities/organisation-pricing-plan-action'
 import { pick } from 'lodash'
 import PlayerProp from '../entities/player-prop'
 import { Job, Queue } from 'bullmq'
@@ -123,14 +120,11 @@ export default class DataExportService extends Service {
     const em = orm.em.fork()
 
     const dataExport = await em.getRepository(DataExport).findOne(dataExportId)
-    if (newStatus.id) dataExport.status = newStatus.id
+    if (newStatus.id) {
+      dataExport.status = newStatus.id
+    }
     if (newStatus.failedAt) {
       dataExport.failedAt = newStatus.failedAt
-
-      const orgPlanAction = await em.getRepository(OrganisationPricingPlanAction).findOne({ type: PricingPlanActionType.DATA_EXPORT, extra: { dataExportId } })
-      if (orgPlanAction) {
-        await em.removeAndFlush(orgPlanAction)
-      }
     }
 
     await em.flush()
@@ -434,15 +428,9 @@ export default class DataExportService extends Service {
     const { entities } = req.body
     const em: EntityManager = req.ctx.em
 
-    const orgPlanAction = await handlePricingPlanAction(req, PricingPlanActionType.DATA_EXPORT)
-
     const dataExport = new DataExport(req.ctx.state.user, req.ctx.state.game)
     dataExport.entities = entities
     await em.persistAndFlush(dataExport)
-
-    if (orgPlanAction) {
-      orgPlanAction.extra.dataExportId = dataExport.id
-    }
 
     createGameActivity(em, {
       user: req.ctx.state.user,

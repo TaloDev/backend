@@ -19,8 +19,6 @@ import ConfirmEmail from '../../emails/confirm-email-mail'
 import { GameActivityType } from '../../entities/game-activity'
 import createGameActivity from '../../lib/logging/createGameActivity'
 import createDefaultPricingPlan from '../../lib/billing/createDefaultPricingPlan'
-import handlePricingPlanAction from '../../lib/billing/handlePricingPlanAction'
-import { PricingPlanActionType } from '../../entities/pricing-plan-action'
 import queueEmail from '../../lib/messaging/queueEmail'
 import ResetPassword from '../../emails/reset-password'
 import emailRegex from '../../lib/lang/emailRegex'
@@ -142,10 +140,6 @@ export default class UserPublicService extends Service {
     req.ctx.state.user = user
     await em.persistAndFlush(user)
     await em.populate(user, ['organisation'])
-
-    if (!inviteToken) {
-      await handlePricingPlanAction(req, PricingPlanActionType.USER_INVITE, { initialUser: true, invitedUserEmail: user.email })
-    }
 
     const accessToken = await buildTokenPair(req.ctx, user)
 

@@ -3,48 +3,19 @@ import request from 'supertest'
 import createOrganisationAndGame from '../../utils/createOrganisationAndGame'
 import createUserAndToken from '../../utils/createUserAndToken'
 import userPermissionProvider from '../../utils/userPermissionProvider'
-import OrganisationPricingPlanActionFactory from '../../fixtures/OrganisationPricingPlanActionFactory'
-import { PricingPlanActionType } from '../../../src/entities/pricing-plan-action'
-import { sub } from 'date-fns'
-import randomDate from '../../../src/lib/dates/randomDate'
-import PricingPlanActionFactory from '../../fixtures/PricingPlanActionFactory'
-import { randNumber } from '@ngneat/falso'
+import PlayerFactory from '../../fixtures/PlayerFactory'
 
 describe('Billing service - usage', () => {
   it.each(userPermissionProvider())('should return a %i for a %s user', async (statusCode, _, type) => {
     const [organisation] = await createOrganisationAndGame({}, {})
     const [token] = await createUserAndToken({ type }, organisation)
 
-    const invitePlanAction = await new PricingPlanActionFactory()
-      .state(() => ({ pricingPlan: organisation.pricingPlan.pricingPlan, type: PricingPlanActionType.USER_INVITE }))
-      .one()
+    const limit = 10000
+    const used = 999
 
-    const exportPlanAction = await new PricingPlanActionFactory()
-      .state(() => ({ pricingPlan: organisation.pricingPlan.pricingPlan, type: PricingPlanActionType.DATA_EXPORT }))
-      .one()
-
-    const inviteActions = await new OrganisationPricingPlanActionFactory(organisation.pricingPlan)
-      .state(() => ({
-        type: PricingPlanActionType.USER_INVITE,
-        createdAt: randomDate(sub(new Date(), { months: 2 }), new Date())
-      }))
-      .many(randNumber({ min: 1, max: 10 }))
-
-    const exportActionsThisMonth = await new OrganisationPricingPlanActionFactory(organisation.pricingPlan)
-      .state(() => ({
-        type: PricingPlanActionType.DATA_EXPORT,
-        createdAt: new Date()
-      }))
-      .many(randNumber({ min: 1, max: 10 }))
-
-    const exportActionsLastMonth = await new OrganisationPricingPlanActionFactory(organisation.pricingPlan)
-      .state(() => ({
-        type: PricingPlanActionType.DATA_EXPORT,
-        createdAt: sub(new Date(), { months: 1 })
-      }))
-      .many(randNumber({ min: 1, max: 10 }))
-
-    await (<EntityManager>global.em).persistAndFlush([invitePlanAction, exportPlanAction, ...inviteActions, ...exportActionsThisMonth, ...exportActionsLastMonth])
+    organisation.pricingPlan.pricingPlan.playerLimit = limit
+    const players = await new PlayerFactory(organisation.games.getItems()).many(used)
+    await (<EntityManager>global.em).persistAndFlush(players)
 
     const res = await request(global.app)
       .get('/billing/usage')
@@ -53,14 +24,8 @@ describe('Billing service - usage', () => {
 
     if (statusCode === 200) {
       expect(res.body.usage).toStrictEqual({
-        [PricingPlanActionType.USER_INVITE]: {
-          limit: invitePlanAction.limit,
-          used: inviteActions.length
-        },
-        [PricingPlanActionType.DATA_EXPORT]: {
-          limit: exportPlanAction.limit,
-          used: exportActionsThisMonth.length
-        }
+        limit,
+        used
       })
     } else {
       expect(res.body).toStrictEqual({ message: 'You do not have permissions to view the organisation pricing plan usage' })

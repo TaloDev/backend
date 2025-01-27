@@ -35,6 +35,7 @@ import { AddPlayerPropCreatedAtColumn } from './20241101233908AddPlayerPropCreat
 import { AddPlayerAliasLastSeenAtColumn } from './20241102004938AddPlayerAliasLastSeenAtColumn'
 import { CreateGameChannelTables } from './20241206233511CreateGameChannelTables'
 import { IncreasePlayerAliasIdentifierLength } from './20241221210019IncreasePlayerAliasIdentifierLength'
+import { DropPlanActionTablesAddPlayerLimit } from './20250126082032DropPlanActionTablesAddPlayerLimit'
 
 export default [
   {
@@ -184,5 +185,9 @@ export default [
   {
     name: 'IncreasePlayerAliasIdentifierLength',
     class: IncreasePlayerAliasIdentifierLength
+  },
+  {
+    name: 'DropPlanActionTablesAddPlayerLimit',
+    class: DropPlanActionTablesAddPlayerLimit
   }
 ]

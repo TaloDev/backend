@@ -6,10 +6,8 @@ import createOrganisationAndGame from '../../utils/createOrganisationAndGame'
 import createUserAndToken from '../../utils/createUserAndToken'
 import userPermissionProvider from '../../utils/userPermissionProvider'
 import { UserType } from '../../../src/entities/user'
-import { PricingPlanActionType } from '../../../src/entities/pricing-plan-action'
-import OrganisationPricingPlanActionFactory from '../../fixtures/OrganisationPricingPlanActionFactory'
 import OrganisationPricingPlanFactory from '../../fixtures/OrganisationPricingPlanFactory'
-import PricingPlanActionFactory from '../../fixtures/PricingPlanActionFactory'
+import PlayerFactory from '../../fixtures/PlayerFactory'
 
 const stripe = initStripe()
 
@@ -105,15 +103,17 @@ describe('Billing service - create checkout session', () => {
     expect(res.body.redirect).toBeDefined()
   })
 
-  it('should not preview a plan if there are more org plan actions for user invites than the pricing plan user limit', async () => {
-    const planAction = await new PricingPlanActionFactory().state(() => ({ type: PricingPlanActionType.USER_INVITE })).one()
-    const orgPlan = await new OrganisationPricingPlanFactory().state(() => ({ pricingPlan: planAction.pricingPlan })).one()
-    const orgPlanActions = await new OrganisationPricingPlanActionFactory(orgPlan).state(() => ({ type: planAction.type })).many(planAction.limit)
+  it('should not preview a plan if they are over their current plan player limit', async () => {
+    const plan = await new PricingPlanFactory().state(() => ({ playerLimit: 10 })).one()
+    const orgPlan = await new OrganisationPricingPlanFactory().state(() => ({ pricingPlan: plan })).one()
 
     const [organisation] = await createOrganisationAndGame({ pricingPlan: orgPlan })
     const [token] = await createUserAndToken({ type: UserType.OWNER }, organisation)
 
-    await (<EntityManager>global.em).persistAndFlush([planAction, ...orgPlanActions])
+    const games = await orgPlan.organisation.games.loadItems()
+    const players = await new PlayerFactory(games).many(10)
+
+    await (<EntityManager>global.em).persistAndFlush([organisation, ...players])
 
     const res = await request(global.app)
       .post('/billing/checkout-session')
@@ -124,6 +124,31 @@ describe('Billing service - create checkout session', () => {
       .auth(token, { type: 'bearer' })
       .expect(400)
 
-    expect(res.body).toStrictEqual({ message: 'You cannot downgrade your plan because your organisation has reached its member limit. This limit also includes pending organisation invites. Please contact support about removing users or invites.' })
+    expect(res.body).toStrictEqual({ message: 'You cannot downgrade your plan because your organisation has reached its player limit.' })
+  })
+
+  it('should preview a plan if the current plan has a null player limit', async () => {
+    const product = (await stripe.products.list()).data[0]
+    const price = (await stripe.prices.list({ product: product.id })).data[0]
+    const plan = await new PricingPlanFactory().state(() => ({ stripeId: product.id, playerLimit: null })).one()
+
+    const subscription = (await stripe.subscriptions.list()).data[0]
+
+    const [organisation] = await createOrganisationAndGame({}, {}, plan)
+    organisation.pricingPlan.stripeCustomerId = subscription.customer as string
+    await (<EntityManager>global.em).flush()
+
+    const [token] = await createUserAndToken({ type: UserType.OWNER }, organisation)
+
+    const res = await request(global.app)
+      .post('/billing/checkout-session')
+      .send({
+        pricingPlanId: plan.id,
+        pricingInterval: price.recurring.interval
+      })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    expect(res.body.invoice).toBeDefined()
   })
 })

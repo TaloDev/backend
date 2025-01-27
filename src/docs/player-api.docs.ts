@@ -30,7 +30,9 @@ const PlayerAPIDocs: APIDocs<PlayerAPIService> = {
                 { key: 'zoneId', value: '3' }
               ],
               aliases: [
-                '/* [Circular] */'
+                { id: 1, service: 'username', identifier: 'tud0r', player: '/* [Circular] */' },
+                { id: 2, service: 'steam', identifier: '11133645', player: '/* [Circular] */' },
+                { id: 8, service: 'epic', identifier: '55534821', player: '/* [Circular] */' }
               ],
               devBuild: false,
               createdAt: '2022-01-15T13:20:32.133Z',
@@ -54,6 +56,41 @@ const PlayerAPIDocs: APIDocs<PlayerAPIService> = {
         sample: {
           service: 'steam',
           identifier: '14000000bc9f006804c54b4032b27d0502002002cbfdcf771800000002000000060000004f0957cde6f88aecb090245624000000d8000000480000000500000033b19c0602002002fab015006438f58d8001b9d0000000008c57ef77fce61b780200551002000200f1cf060000000000d4dff043aed3c37739e65db7bc83d0196ecabeed867436df9cafa957ba08e29fe20739e47a3142ef1181e1fae857105545049f2bb6a6e86594fbf675246b5618b297d6535b605160f51650e61f516f05ed62163f5a0616c56c4fcbed3c049d7eedd65e69f23b843d8f92939b6987f9fc6980107079710'
+        }
+      }
+    ]
+  },
+  get: {
+    description: 'Get a player by their ID',
+    params: {
+      route: {
+        id: 'The ID of the player'
+      }
+    },
+    samples: [
+      {
+        title: 'Sample response',
+        sample: {
+          player: {
+            id: '9dd68e65-a583-493e-9b5e-b11db5da8860',
+            props: [
+              { key: 'currentLevel', value: '58' },
+              { key: 'xPos', value: '13.29' },
+              { key: 'yPos', value: '26.44' },
+              { key: 'zoneId', value: '3' }
+            ],
+            aliases: [
+              { id: 1, service: 'username', identifier: 'tud0r', player: '/* [Circular] */' },
+              { id: 2, service: 'steam', identifier: '11133645', player: '/* [Circular] */' },
+              { id: 8, service: 'epic', identifier: '55534821', player: '/* [Circular] */' }
+            ],
+            devBuild: false,
+            createdAt: '2022-01-15T13:20:32.133Z',
+            lastSeenAt: '2022-04-12T15:09:43.066Z',
+            groups: [
+              { id: '5826ca71-1964-4a1b-abcb-a61ffbe003be', name: 'Winners' }
+            ]
+          }
         }
       }
     ]
@@ -89,7 +126,9 @@ const PlayerAPIDocs: APIDocs<PlayerAPIService> = {
               { key: 'zoneId', value: '4' }
             ],
             aliases: [
-              '/* [Circular] */'
+              { id: 1, service: 'username', identifier: 'tud0r', player: '/* [Circular] */' },
+              { id: 2, service: 'steam', identifier: '11133645', player: '/* [Circular] */' },
+              { id: 8, service: 'epic', identifier: '55534821', player: '/* [Circular] */' }
             ],
             devBuild: false,
             createdAt: '2022-01-15T13:20:32.133Z',

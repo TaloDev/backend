@@ -90,6 +90,12 @@ function validateIdentifyQueryParam(param: 'service' | 'identifier') {
     docs: PlayerAPIDocs.identify
   },
   {
+    method: 'GET',
+    path: '/:id',
+    handler: 'get',
+    docs: PlayerAPIDocs.get
+  },
+  {
     method: 'PATCH',
     docs: PlayerAPIDocs.patch
   },
@@ -153,6 +159,31 @@ export default class PlayerAPIService extends APIService {
       body: {
         alias,
         socketToken
+      }
+    }
+  }
+
+  @HasPermission(PlayerAPIPolicy, 'get')
+  async get(req: Request): Promise<Response> {
+    const { id } = req.params
+    const em: EntityManager = req.ctx.em
+    const key = await this.getAPIKey(req.ctx)
+
+    const player = await em.getRepository(Player).findOne({
+      id,
+      game: key.game
+    }, {
+      populate: ['aliases']
+    })
+
+    if (!player) {
+      req.ctx.throw(404, 'Player not found')
+    }
+
+    return {
+      status: 200,
+      body: {
+        player
       }
     }
   }

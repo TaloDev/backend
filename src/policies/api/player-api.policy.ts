@@ -5,7 +5,11 @@ import Policy from '../policy'
 
 export default class PlayerAPIPolicy extends Policy {
   async identify(): Promise<PolicyResponse> {
-    return await this.hasScope(APIKeyScope.READ_PLAYERS)
+    return this.hasScope(APIKeyScope.READ_PLAYERS)
+  }
+
+  async get(): Promise<PolicyResponse> {
+    return this.hasScope(APIKeyScope.READ_PLAYERS)
   }
 
   async patch(req: Request): Promise<PolicyResponse> {

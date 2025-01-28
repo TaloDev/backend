@@ -266,6 +266,16 @@
           "default": "false",
           "mappedType": "boolean"
         },
+        "player_limit": {
+          "name": "player_limit",
+          "type": "int",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "length": null,
+          "mappedType": "integer"
+        },
         "created_at": {
           "name": "created_at",
           "type": "datetime",
@@ -423,99 +433,6 @@
             "id"
           ],
           "referencedTableName": "pricing_plan",
-          "updateRule": "cascade"
-        }
-      },
-      "nativeEnums": {}
-    },
-    {
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "int",
-          "unsigned": true,
-          "autoincrement": true,
-          "primary": true,
-          "nullable": false,
-          "length": null,
-          "mappedType": "integer"
-        },
-        "organisation_pricing_plan_id": {
-          "name": "organisation_pricing_plan_id",
-          "type": "int",
-          "unsigned": true,
-          "autoincrement": false,
-          "primary": false,
-          "nullable": false,
-          "length": null,
-          "mappedType": "integer"
-        },
-        "type": {
-          "name": "type",
-          "type": "tinyint",
-          "unsigned": false,
-          "autoincrement": false,
-          "primary": false,
-          "nullable": false,
-          "length": null,
-          "mappedType": "enum"
-        },
-        "extra": {
-          "name": "extra",
-          "type": "json",
-          "unsigned": false,
-          "autoincrement": false,
-          "primary": false,
-          "nullable": false,
-          "length": null,
-          "mappedType": "json"
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "datetime",
-          "unsigned": false,
-          "autoincrement": false,
-          "primary": false,
-          "nullable": false,
-          "length": null,
-          "mappedType": "datetime"
-        }
-      },
-      "name": "organisation_pricing_plan_action",
-      "indexes": [
-        {
-          "columnNames": [
-            "organisation_pricing_plan_id"
-          ],
-          "composite": false,
-          "keyName": "organisation_pricing_plan_action_organisation_prici_03129_index",
-          "constraint": false,
-          "primary": false,
-          "unique": false
-        },
-        {
-          "keyName": "PRIMARY",
-          "columnNames": [
-            "id"
-          ],
-          "composite": false,
-          "constraint": true,
-          "primary": true,
-          "unique": true
-        }
-      ],
-      "checks": [],
-      "foreignKeys": {
-        "organisation_pricing_plan_action_organisation_pri_a08fe_foreign": {
-          "constraintName": "organisation_pricing_plan_action_organisation_pri_a08fe_foreign",
-          "columnNames": [
-            "organisation_pricing_plan_id"
-          ],
-          "localTableName": "organisation_pricing_plan_action",
-          "referencedColumnNames": [
-            "id"
-          ],
-          "referencedTableName": "organisation_pricing_plan",
           "updateRule": "cascade"
         }
       },
@@ -2709,109 +2626,6 @@
           ],
           "referencedTableName": "player_alias",
           "deleteRule": "cascade",
-          "updateRule": "cascade"
-        }
-      },
-      "nativeEnums": {}
-    },
-    {
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "int",
-          "unsigned": true,
-          "autoincrement": true,
-          "primary": true,
-          "nullable": false,
-          "length": null,
-          "mappedType": "integer"
-        },
-        "pricing_plan_id": {
-          "name": "pricing_plan_id",
-          "type": "int",
-          "unsigned": true,
-          "autoincrement": false,
-          "primary": false,
-          "nullable": false,
-          "length": null,
-          "mappedType": "integer"
-        },
-        "type": {
-          "name": "type",
-          "type": "tinyint",
-          "unsigned": false,
-          "autoincrement": false,
-          "primary": false,
-          "nullable": false,
-          "length": null,
-          "mappedType": "enum"
-        },
-        "limit": {
-          "name": "limit",
-          "type": "int",
-          "unsigned": false,
-          "autoincrement": false,
-          "primary": false,
-          "nullable": false,
-          "length": null,
-          "mappedType": "integer"
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "datetime",
-          "unsigned": false,
-          "autoincrement": false,
-          "primary": false,
-          "nullable": false,
-          "length": null,
-          "mappedType": "datetime"
-        },
-        "updated_at": {
-          "name": "updated_at",
-          "type": "datetime",
-          "unsigned": false,
-          "autoincrement": false,
-          "primary": false,
-          "nullable": false,
-          "length": null,
-          "mappedType": "datetime"
-        }
-      },
-      "name": "pricing_plan_action",
-      "indexes": [
-        {
-          "columnNames": [
-            "pricing_plan_id"
-          ],
-          "composite": false,
-          "keyName": "pricing_plan_action_pricing_plan_id_index",
-          "constraint": false,
-          "primary": false,
-          "unique": false
-        },
-        {
-          "keyName": "PRIMARY",
-          "columnNames": [
-            "id"
-          ],
-          "composite": false,
-          "constraint": true,
-          "primary": true,
-          "unique": true
-        }
-      ],
-      "checks": [],
-      "foreignKeys": {
-        "pricing_plan_action_pricing_plan_id_foreign": {
-          "constraintName": "pricing_plan_action_pricing_plan_id_foreign",
-          "columnNames": [
-            "pricing_plan_id"
-          ],
-          "localTableName": "pricing_plan_action",
-          "referencedColumnNames": [
-            "id"
-          ],
-          "referencedTableName": "pricing_plan",
           "updateRule": "cascade"
         }
       },

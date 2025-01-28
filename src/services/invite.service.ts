@@ -6,8 +6,6 @@ import InvitePolicy from '../policies/invite.policy'
 import JoinOrganisation from '../emails/join-organisation-mail'
 import createGameActivity from '../lib/logging/createGameActivity'
 import { GameActivityType } from '../entities/game-activity'
-import { PricingPlanActionType } from '../entities/pricing-plan-action'
-import handlePricingPlanAction from '../lib/billing/handlePricingPlanAction'
 import queueEmail from '../lib/messaging/queueEmail'
 
 export default class InviteService extends Service {
@@ -48,8 +46,6 @@ export default class InviteService extends Service {
         : 'This email address is already in use'
       )
     }
-
-    await handlePricingPlanAction(req, PricingPlanActionType.USER_INVITE, { invitedUserEmail: email })
 
     const invite = new Invite(inviter.organisation)
     invite.email = email

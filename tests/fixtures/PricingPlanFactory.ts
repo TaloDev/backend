@@ -9,7 +9,8 @@ export default class PricingPlanFactory extends Factory<PricingPlan> {
 
   protected definition(): void {
     this.state(() => ({
-      stripeId: `prod_${randUuid().split('-')[0]}`
+      stripeId: `prod_${randUuid().split('-')[0]}`,
+      playerLimit: 10000
     }))
   }
 }

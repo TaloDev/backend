@@ -186,4 +186,55 @@ describe('Player service - post', () => {
       errorCode: 'IDENTIFIER_TAKEN'
     })
   })
+
+  it('should create a player when hitting 100% of pricing plan limit', async () => {
+    const [organisation, game] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken({}, organisation)
+
+    organisation.pricingPlan.pricingPlan.playerLimit = 20
+    const players = await new PlayerFactory([game]).many(20)
+    await (<EntityManager>global.em).persistAndFlush(players)
+
+    const res = await request(global.app)
+      .post(`/games/${game.id}/players`)
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    expect(res.body.player).toBeTruthy()
+  })
+
+  it('should not create a player when going over 105% of pricing plan limit', async () => {
+    const [organisation, game] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken({}, organisation)
+
+    organisation.pricingPlan.pricingPlan.playerLimit = 20
+    const players = await new PlayerFactory([game]).many(21)
+    await (<EntityManager>global.em).persistAndFlush(players)
+
+    const res = await request(global.app)
+      .post(`/games/${game.id}/players`)
+      .auth(token, { type: 'bearer' })
+      .expect(402)
+
+    expect(res.body).toStrictEqual({
+      message: 'Payment Required',
+      limit: 20
+    })
+  })
+
+  it('should create a player when under pricing plan limit', async () => {
+    const [organisation, game] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken({}, organisation)
+
+    organisation.pricingPlan.pricingPlan.playerLimit = 2
+    const player = await new PlayerFactory([game]).one()
+    await (<EntityManager>global.em).persistAndFlush(player)
+
+    const res = await request(global.app)
+      .post(`/games/${game.id}/players`)
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    expect(res.body.player).toBeTruthy()
+  })
 })

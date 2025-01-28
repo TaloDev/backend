@@ -3,13 +3,11 @@ import { EntityManager } from '@mikro-orm/mysql'
 import { HasPermission, Service, Request, Response, Routes, Validate } from 'koa-clay'
 import PricingPlan from '../entities/pricing-plan'
 import BillingPolicy from '../policies/billing.policy'
-import { PricingPlanActionType } from '../entities/pricing-plan-action'
 import Organisation from '../entities/organisation'
 import { isSameHour } from 'date-fns'
 import initStripe from '../lib/billing/initStripe'
 import getUserFromToken from '../lib/auth/getUserFromToken'
-import OrganisationPricingPlanAction from '../entities/organisation-pricing-plan-action'
-import { isSameMonth } from 'date-fns'
+import Player from '../entities/player'
 
 const stripe = initStripe()
 
@@ -22,13 +20,6 @@ type PricingPlanProduct = Omit<PricingPlan & {
     current: boolean
   }[]
 }, 'toJSON'>
-
-type PricingPlanUsage = {
-  [key: string]: {
-    limit: number
-    used: number
-  }
-}
 
 @Routes([
   {
@@ -65,7 +56,7 @@ type PricingPlanUsage = {
 export default class BillingService extends Service {
   async plans(req: Request): Promise<Response> {
     const em: EntityManager = req.ctx.em
-    const plans = await em.getRepository(PricingPlan).find({ hidden: false }, { populate: ['actions'] })
+    const plans = await em.getRepository(PricingPlan).find({ hidden: false })
 
     const pricingPlanProducts: PricingPlanProduct[] = []
     const user = await getUserFromToken(req.ctx)
@@ -131,17 +122,15 @@ export default class BillingService extends Service {
   }
 
   private async checkCanDowngrade(em: EntityManager, req: Request, newPlan: PricingPlan): Promise<void> {
-    await newPlan.actions.loadItems()
-    const planUserLimit = newPlan.actions.getItems().find((action) => action.type === PricingPlanActionType.USER_INVITE)?.limit ?? Infinity
+    const planPlayerLimit = newPlan.playerLimit ?? Infinity
 
     const organisation: Organisation = req.ctx.state.user.organisation
-    const orgPlanActions = await em.getRepository(OrganisationPricingPlanAction).find({
-      organisationPricingPlan: organisation.pricingPlan,
-      type: PricingPlanActionType.USER_INVITE
+    const playerCount = await em.getRepository(Player).count({
+      game: { organisation }
     })
 
-    if (orgPlanActions.length >= planUserLimit) {
-      req.ctx.throw(400, 'You cannot downgrade your plan because your organisation has reached its member limit. This limit also includes pending organisation invites. Please contact support about removing users or invites.')
+    if (playerCount >= planPlayerLimit) {
+      req.ctx.throw(400, 'You cannot downgrade your plan because your organisation has reached its player limit.')
     }
   }
 
@@ -181,7 +170,7 @@ export default class BillingService extends Service {
 
       // this comparison isn't needed in the real world, but the stripe mock doesn't correctly filter by customer
       if (subscriptions.data[0]?.customer === organisation.pricingPlan.stripeCustomerId) {
-        return await this.previewPlan(req, price)
+        return this.previewPlan(req, price)
       }
     }
 
@@ -264,31 +253,16 @@ export default class BillingService extends Service {
     const em: EntityManager = req.ctx.em
 
     const organisation: Organisation = req.ctx.state.user.organisation
-    await organisation.pricingPlan.pricingPlan.actions.loadItems()
-
-    const usage: PricingPlanUsage = {}
-    const orgActions = await em.getRepository(OrganisationPricingPlanAction).find({ organisationPricingPlan: organisation.pricingPlan })
-
-    for (const planAction of organisation.pricingPlan.pricingPlan.actions.getItems()) {
-      const orgActionsForType = orgActions.filter((orgAction) => orgAction.type === planAction.type)
-
-      if (planAction.isTrackedMonthly()) {
-        usage[planAction.type] = {
-          limit: planAction.limit,
-          used: orgActionsForType.filter((orgAction) => isSameMonth(new Date(), orgAction.createdAt)).length
-        }
-      } else {
-        usage[planAction.type] = {
-          limit: planAction.limit,
-          used: orgActionsForType.length
-        }
-      }
-    }
+    const playerLimit = organisation.pricingPlan.pricingPlan.playerLimit
+    const playerCount = await em.getRepository(Player).count({ game: { organisation } })
 
     return {
       status: 200,
       body: {
-        usage
+        usage: {
+          limit: playerLimit,
+          used: playerCount
+        }
       }
     }
   }

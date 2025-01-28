@@ -6,11 +6,6 @@ import createUserAndToken from '../../utils/createUserAndToken'
 import createOrganisationAndGame from '../../utils/createOrganisationAndGame'
 import userPermissionProvider from '../../utils/userPermissionProvider'
 import GameActivity, { GameActivityType } from '../../../src/entities/game-activity'
-import PricingPlanActionFactory from '../../fixtures/PricingPlanActionFactory'
-import { PricingPlanActionType } from '../../../src/entities/pricing-plan-action'
-import { subMonths } from 'date-fns'
-import OrganisationPricingPlanFactory from '../../fixtures/OrganisationPricingPlanFactory'
-import OrganisationPricingPlanActionFactory from '../../fixtures/OrganisationPricingPlanActionFactory'
 import SendGrid from '@sendgrid/mail'
 
 describe('Data export service - post', () => {
@@ -199,62 +194,6 @@ describe('Data export service - post', () => {
         entities: ['Entities must be an array of strings']
       }
     })
-  })
-
-  it('should not create a data export if a pricing plan limit has been hit', async () => {
-    const planAction = await new PricingPlanActionFactory().state(() => ({ type: PricingPlanActionType.DATA_EXPORT })).one()
-    const orgPlan = await new OrganisationPricingPlanFactory().state(() => ({ pricingPlan: planAction.pricingPlan })).one()
-    const orgPlanActions = await new OrganisationPricingPlanActionFactory(orgPlan).state(() => ({ type: planAction.type })).many(planAction.limit)
-
-    const [organisation, game] = await createOrganisationAndGame({ pricingPlan: orgPlan })
-    const [token] = await createUserAndToken({ type: UserType.ADMIN, emailConfirmed: true }, organisation)
-
-    await (<EntityManager>global.em).persistAndFlush([planAction, ...orgPlanActions])
-
-    await request(global.app)
-      .post(`/games/${game.id}/data-exports`)
-      .send({ entities: [DataExportAvailableEntities.GAME_STATS, DataExportAvailableEntities.GAME_ACTIVITIES] })
-      .auth(token, { type: 'bearer' })
-      .expect(402)
-  })
-
-  it('should create a data export if a pricing plan limit was hit but not in the same month', async () => {
-    const planAction = await new PricingPlanActionFactory().state(() => ({ type: PricingPlanActionType.DATA_EXPORT })).one()
-    const orgPlan = await new OrganisationPricingPlanFactory().state(() => ({ pricingPlan: planAction.pricingPlan })).one()
-    const orgPlanActions = await new OrganisationPricingPlanActionFactory(orgPlan).state(() => ({
-      type: planAction.type,
-      createdAt: subMonths(new Date(), 1)
-    })).many(planAction.limit)
-
-    const [organisation, game] = await createOrganisationAndGame({ pricingPlan: orgPlan })
-    const [token] = await createUserAndToken({ type: UserType.ADMIN, emailConfirmed: true }, organisation)
-
-    await (<EntityManager>global.em).persistAndFlush([planAction, ...orgPlanActions])
-
-    await request(global.app)
-      .post(`/games/${game.id}/data-exports`)
-      .send({ entities: [DataExportAvailableEntities.GAME_STATS, DataExportAvailableEntities.GAME_ACTIVITIES] })
-      .auth(token, { type: 'bearer' })
-      .expect(200)
-  })
-
-  it('should reject creating a data export if the organisation plan is not in the active state', async () => {
-    const planAction = await new PricingPlanActionFactory().state(() => ({ type: PricingPlanActionType.DATA_EXPORT })).one()
-    const orgPlan = await new OrganisationPricingPlanFactory().state(() => ({ pricingPlan: planAction.pricingPlan, status: 'incomplete' })).one()
-    const orgPlanActions = await new OrganisationPricingPlanActionFactory(orgPlan).state(() => ({ type: planAction.type })).many(planAction.limit)
-
-    const [organisation, game] = await createOrganisationAndGame({ pricingPlan: orgPlan })
-    const [token] = await createUserAndToken({ type: UserType.ADMIN, emailConfirmed: true }, organisation)
-
-    await (<EntityManager>global.em).persistAndFlush([planAction, ...orgPlanActions])
-
-    const res = await request(global.app)
-      .post(`/games/${game.id}/data-exports`)
-      .send({ entities: [DataExportAvailableEntities.GAME_STATS, DataExportAvailableEntities.GAME_ACTIVITIES] })
-      .auth(token, { type: 'bearer' })
-      .expect(402)
-
-    expect(res.body).toStrictEqual({ message: 'Your subscription is in an incomplete state. Please update your billing details.' })
   })
 
   it('should correctly update the data export status if sending the email fails', async () => {

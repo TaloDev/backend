@@ -17,6 +17,7 @@ import PlayerGroup from '../entities/player-group'
 import GameSave from '../entities/game-save'
 import PlayerAuthActivity from '../entities/player-auth-activity'
 import { ClickHouseClient } from '@clickhouse/client'
+import checkPricingPlanPlayerLimit from '../lib/billing/checkPricingPlanPlayerLimit'
 
 const propsValidation = async (val: unknown): Promise<ValidationCondition[]> => [
   {
@@ -80,7 +81,8 @@ export default class PlayerService extends Service {
     const { aliases, props } = req.body as PlayerPostBody
     const em: EntityManager = req.ctx.em
 
-    const game = await em.getRepository(Game).findOne(req.ctx.state.game)
+    const game = await em.getRepository(Game).findOne(req.ctx.state.game, { populate: ['organisation'] })
+    await checkPricingPlanPlayerLimit(req, game.organisation)
 
     const player = new Player(game)
     if (aliases) {

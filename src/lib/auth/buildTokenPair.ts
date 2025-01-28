@@ -30,7 +30,8 @@ const setRefreshToken = (ctx: Context, session: UserSession): void => {
   const refreshToken = session.token
   ctx.cookies.set('refreshToken', refreshToken, {
     secure: ctx.request.secure,
-    expires: session.validUntil
+    expires: session.validUntil,
+    sameSite: 'strict'
   })
 }
 

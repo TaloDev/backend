@@ -8,11 +8,6 @@ import DataExportFactory from '../../fixtures/DataExportFactory'
 import GameActivityFactory from '../../fixtures/GameActivityFactory'
 import { GameActivityType } from '../../../src/entities/game-activity'
 import GameStatFactory from '../../fixtures/GameStatFactory'
-import OrganisationPricingPlanFactory from '../../fixtures/OrganisationPricingPlanFactory'
-import OrganisationPricingPlanActionFactory from '../../fixtures/OrganisationPricingPlanActionFactory'
-import { PricingPlanActionType } from '../../../src/entities/pricing-plan-action'
-import OrganisationPricingPlanAction from '../../../src/entities/organisation-pricing-plan-action'
-import PricingPlanFactory from '../../fixtures/PricingPlanFactory'
 import PlayerProp from '../../../src/entities/player-prop'
 import createOrganisationAndGame from '../../utils/createOrganisationAndGame'
 import createUserAndToken from '../../utils/createUserAndToken'
@@ -176,31 +171,6 @@ describe('Data export service - generation', () => {
     await proto.updateDataExportStatus(dataExport.id, { failedAt: new Date() })
     await (<EntityManager>global.em).refresh(dataExport)
     expect(dataExport.failedAt).toBeTruthy()
-  })
-
-  it('should refund data export actions if generation fails', async () => {
-    const [, game] = await createOrganisationAndGame()
-
-    const service = new DataExportService()
-    const proto = Object.getPrototypeOf(service)
-
-    const dataExport = await new DataExportFactory(game).state(() => ({ status: DataExportStatus.QUEUED })).one()
-    await (<EntityManager>global.em).persistAndFlush(dataExport)
-
-    const orgPlan = await new OrganisationPricingPlanFactory().state(async () => ({ pricingPlan: await new PricingPlanFactory().one() })).one()
-    const orgPlanAction = await new OrganisationPricingPlanActionFactory(orgPlan).state(() => ({
-      type: PricingPlanActionType.DATA_EXPORT,
-      extra: {
-        dataExportId: dataExport.id
-      }
-    })).one()
-
-    await (<EntityManager>global.em).persistAndFlush(orgPlanAction)
-
-    await proto.updateDataExportStatus(dataExport.id, { failedAt: new Date() })
-
-    const planActions = await (<EntityManager>global.em).getRepository(OrganisationPricingPlanAction).find({ organisationPricingPlan: orgPlan })
-    expect(planActions).toHaveLength(0)
   })
 
   it('should transform anonymised feedback columns', async () => {

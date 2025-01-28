@@ -8,10 +8,6 @@ import userPermissionProvider from '../../utils/userPermissionProvider'
 import createUserAndToken from '../../utils/createUserAndToken'
 import createOrganisationAndGame from '../../utils/createOrganisationAndGame'
 import GameActivity, { GameActivityType } from '../../../src/entities/game-activity'
-import PricingPlanActionFactory from '../../fixtures/PricingPlanActionFactory'
-import { PricingPlanActionType } from '../../../src/entities/pricing-plan-action'
-import OrganisationPricingPlanFactory from '../../fixtures/OrganisationPricingPlanFactory'
-import OrganisationPricingPlanActionFactory from '../../fixtures/OrganisationPricingPlanActionFactory'
 import { randEmail } from '@ngneat/falso'
 
 describe('Invite service - post', () => {
@@ -117,42 +113,6 @@ describe('Invite service - post', () => {
       .expect(400)
 
     expect(res.body).toStrictEqual({ message: 'This email address is already in use' })
-  })
-
-  it('should not create an invite if a pricing plan limit has been hit', async () => {
-    const planAction = await new PricingPlanActionFactory().state(() => ({ type: PricingPlanActionType.USER_INVITE })).one()
-    const orgPlan = await new OrganisationPricingPlanFactory().state(() => ({ pricingPlan: planAction.pricingPlan })).one()
-    const orgPlanActions = await new OrganisationPricingPlanActionFactory(orgPlan).state(() => ({ type: planAction.type })).many(planAction.limit)
-
-    const [organisation] = await createOrganisationAndGame({ pricingPlan: orgPlan })
-    const [token] = await createUserAndToken({ type: UserType.ADMIN, emailConfirmed: true }, organisation)
-
-    await (<EntityManager>global.em).persistAndFlush([planAction, ...orgPlanActions])
-
-    await request(global.app)
-      .post('/invites')
-      .send({ email: randEmail(), type: UserType.DEV })
-      .auth(token, { type: 'bearer' })
-      .expect(402)
-  })
-
-  it('should reject creating an invite if the organisation plan is not in the active state', async () => {
-    const planAction = await new PricingPlanActionFactory().state(() => ({ type: PricingPlanActionType.USER_INVITE })).one()
-    const orgPlan = await new OrganisationPricingPlanFactory().state(() => ({ pricingPlan: planAction.pricingPlan, status: 'incomplete' })).one()
-    const orgPlanActions = await new OrganisationPricingPlanActionFactory(orgPlan).state(() => ({ type: planAction.type })).many(planAction.limit)
-
-    const [organisation] = await createOrganisationAndGame({ pricingPlan: orgPlan })
-    const [token] = await createUserAndToken({ type: UserType.ADMIN, emailConfirmed: true }, organisation)
-
-    await (<EntityManager>global.em).persistAndFlush([planAction, ...orgPlanActions])
-
-    const res = await request(global.app)
-      .post('/invites')
-      .send({ email: randEmail(), type: UserType.DEV })
-      .auth(token, { type: 'bearer' })
-      .expect(402)
-
-    expect(res.body).toStrictEqual({ message: 'Your subscription is in an incomplete state. Please update your billing details.' })
   })
 
   it('should not create an invite if the user\'s email is not confirmed', async () => {

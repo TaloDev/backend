@@ -8,6 +8,7 @@ import { isSameHour } from 'date-fns'
 import initStripe from '../lib/billing/initStripe'
 import getUserFromToken from '../lib/auth/getUserFromToken'
 import Player from '../entities/player'
+import getBillablePlayerCount from '../lib/billing/getBillablePlayerCount'
 
 const stripe = initStripe()
 
@@ -254,7 +255,7 @@ export default class BillingService extends Service {
 
     const organisation: Organisation = req.ctx.state.user.organisation
     const playerLimit = organisation.pricingPlan.pricingPlan.playerLimit
-    const playerCount = await em.getRepository(Player).count({ game: { organisation } })
+    const playerCount = await getBillablePlayerCount(em, organisation)
 
     return {
       status: 200,

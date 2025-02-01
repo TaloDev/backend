@@ -111,7 +111,7 @@ export default class LeaderboardAPIService extends APIService {
       return integration.handleLeaderboardEntryCreated(em, entry)
     })
 
-    const query = em.createQueryBuilder(LeaderboardEntry, 'le')
+    const query = em.qb(LeaderboardEntry, 'le')
       .select('le.*', true)
       .where({ leaderboard: entry.leaderboard })
       .orderBy({ score: entry.leaderboard.sortMode })

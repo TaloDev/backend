@@ -1,9 +1,9 @@
 import { EntityManager } from '@mikro-orm/mysql'
 import { Request } from 'koa-clay'
 import Organisation from '../../entities/organisation'
-import Player from '../../entities/player'
 import PlanUsageWarning from '../../emails/plan-usage-warning-mail'
 import queueEmail from '../messaging/queueEmail'
+import getBillablePlayerCount from './getBillablePlayerCount'
 
 const OVERAGE_PERCENTAGE = 1.05
 
@@ -19,9 +19,7 @@ export default async function checkPricingPlanPlayerLimit(
   }
 
   const planPlayerLimit = organisationPricingPlan.pricingPlan.playerLimit ?? Infinity
-  const playerCount = await em.getRepository(Player).count({
-    game: { organisation }
-  }) + 1
+  const playerCount = await getBillablePlayerCount(em, organisation) + 1
 
   if (playerCount > (planPlayerLimit * OVERAGE_PERCENTAGE)) {
     req.ctx.throw(402, { limit: planPlayerLimit })

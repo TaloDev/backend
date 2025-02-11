@@ -61,7 +61,7 @@ const PlayerAPIDocs: APIDocs<PlayerAPIService> = {
     ]
   },
   get: {
-    description: 'Get a player by their ID',
+    description: 'Find a player',
     params: {
       route: {
         id: 'The ID of the player'

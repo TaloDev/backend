@@ -5,8 +5,19 @@ import { LeaderboardSortMode } from '../../../src/entities/leaderboard'
 import GameActivity, { GameActivityType } from '../../../src/entities/game-activity'
 import createOrganisationAndGame from '../../utils/createOrganisationAndGame'
 import createUserAndToken from '../../utils/createUserAndToken'
+import PlayerFactory from '../../fixtures/PlayerFactory'
+import LeaderboardEntryFactory from '../../fixtures/LeaderboardEntryFactory'
+import { sub } from 'date-fns'
 
 describe('Leaderboard service - update leaderboard', () => {
+  beforeEach(() => {
+    vi.useFakeTimers()
+  })
+
+  afterEach(() => {
+    vi.useRealTimers()
+  })
+
   it('should update a leaderboard\'s name', async () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({}, organisation)
@@ -16,7 +27,7 @@ describe('Leaderboard service - update leaderboard', () => {
 
     const res = await request(global.app)
       .put(`/games/${game.id}/leaderboards/${leaderboard.id}`)
-      .send({ name: 'The new name', internalName: leaderboard.internalName, sortMode: leaderboard.sortMode, unique: leaderboard.unique })
+      .send({ name: 'The new name', internalName: leaderboard.internalName, sortMode: leaderboard.sortMode, unique: leaderboard.unique, refreshInterval: 'never' })
       .auth(token, { type: 'bearer' })
       .expect(200)
 
@@ -42,7 +53,7 @@ describe('Leaderboard service - update leaderboard', () => {
 
     const res = await request(global.app)
       .put(`/games/${game.id}/leaderboards/${leaderboard.id}`)
-      .send({ sortMode: LeaderboardSortMode.ASC, internalName: leaderboard.internalName, name: leaderboard.name, unique: leaderboard.unique })
+      .send({ sortMode: LeaderboardSortMode.ASC, internalName: leaderboard.internalName, name: leaderboard.name, unique: leaderboard.unique, refreshInterval: 'never' })
       .auth(token, { type: 'bearer' })
       .expect(200)
 
@@ -58,7 +69,7 @@ describe('Leaderboard service - update leaderboard', () => {
 
     const res = await request(global.app)
       .put(`/games/${game.id}/leaderboards/${leaderboard.id}`)
-      .send({ unique: false, internalName: leaderboard.internalName, name: leaderboard.name, sortMode: leaderboard.sortMode })
+      .send({ unique: false, internalName: leaderboard.internalName, name: leaderboard.name, sortMode: leaderboard.sortMode, refreshInterval: 'never' })
       .auth(token, { type: 'bearer' })
       .expect(200)
 
@@ -71,10 +82,41 @@ describe('Leaderboard service - update leaderboard', () => {
 
     const res = await request(global.app)
       .put(`/games/${game.id}/leaderboards/21312321`)
-      .send({ internalName: 'this-does-not-exist', name: 'blah', sortMode: LeaderboardSortMode.ASC, unique: true })
+      .send({ internalName: 'this-does-not-exist', name: 'blah', sortMode: LeaderboardSortMode.ASC, unique: true, refreshInterval: 'never' })
       .auth(token, { type: 'bearer' })
       .expect(404)
 
     expect(res.body).toStrictEqual({ message: 'Leaderboard not found' })
+  })
+
+  it('should archive entries when changing refresh interval from never', async () => {
+    const [organisation, game] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken({}, organisation)
+
+    const leaderboard = await new LeaderboardFactory([game]).one()
+    const player = await new PlayerFactory([game]).one()
+    const entry = await new LeaderboardEntryFactory(leaderboard, [player])
+      .state(() => ({ createdAt: sub(new Date(), { days: 2 }) }))
+      .one()
+
+    await (<EntityManager>global.em).persistAndFlush([leaderboard, entry])
+
+    const res = await request(global.app)
+      .put(`/games/${game.id}/leaderboards/${leaderboard.id}`)
+      .send({
+        refreshInterval: 'daily',
+        internalName: leaderboard.internalName,
+        name: leaderboard.name,
+        sortMode: leaderboard.sortMode,
+        unique: leaderboard.unique
+      })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    expect(res.body.leaderboard.refreshInterval).toBe('daily')
+    await vi.runAllTimersAsync()
+
+    await (<EntityManager>global.em).refresh(entry)
+    expect(entry.deletedAt).toBeDefined()
   })
 })

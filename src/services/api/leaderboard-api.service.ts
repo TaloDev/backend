@@ -82,7 +82,8 @@ export default class LeaderboardAPIService extends APIService {
       if (leaderboard.unique) {
         entry = await em.getRepository(LeaderboardEntry).findOneOrFail({
           leaderboard,
-          playerAlias: req.ctx.state.playerAlias
+          playerAlias: req.ctx.state.playerAlias,
+          deletedAt: null
         })
 
         if ((leaderboard.sortMode === LeaderboardSortMode.ASC && score < entry.score) || (leaderboard.sortMode === LeaderboardSortMode.DESC && score > entry.score)) {

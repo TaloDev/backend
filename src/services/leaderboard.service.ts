@@ -8,6 +8,7 @@ import triggerIntegrations from '../lib/integrations/triggerIntegrations'
 import createGameActivity from '../lib/logging/createGameActivity'
 import { devDataPlayerFilter } from '../middlewares/dev-data-middleware'
 import LeaderboardPolicy from '../policies/leaderboard.policy'
+import { archiveEntriesForLeaderboard } from '../tasks/archiveLeaderboardEntries'
 
 @Routes([
   {
@@ -56,7 +57,7 @@ export default class LeaderboardService extends Service {
   @Validate({ body: [Leaderboard] })
   @HasPermission(LeaderboardPolicy, 'post')
   async post(req: Request): Promise<Response> {
-    const { internalName, name, sortMode, unique } = req.body
+    const { internalName, name, sortMode, unique, refreshInterval } = req.body
     const em: EntityManager = req.ctx.em
 
     const leaderboard = new Leaderboard(req.ctx.state.game)
@@ -64,6 +65,7 @@ export default class LeaderboardService extends Service {
     leaderboard.name = name
     leaderboard.sortMode = sortMode
     leaderboard.unique = unique
+    leaderboard.refreshInterval = refreshInterval
 
     createGameActivity(em, {
       user: req.ctx.state.user,
@@ -93,13 +95,18 @@ export default class LeaderboardService extends Service {
   async entries(req: Request): Promise<Response> {
     const itemsPerPage = 50
 
-    const { page, aliasId } = req.query
+    const { page, aliasId, withDeleted } = req.query
     const em: EntityManager = req.ctx.em
 
     const leaderboard: Leaderboard = req.ctx.state.leaderboard
+    const includeDeleted = withDeleted === '1'
 
     const where: FilterQuery<LeaderboardEntry> = {
       leaderboard
+    }
+
+    if (!includeDeleted) {
+      where.deletedAt = null
     }
 
     if (aliasId) {
@@ -220,7 +227,7 @@ export default class LeaderboardService extends Service {
 
     const leaderboard: Leaderboard = req.ctx.state.leaderboard
 
-    const updateableKeys: (keyof Leaderboard)[] = ['name', 'sortMode', 'unique']
+    const updateableKeys: (keyof Leaderboard)[] = ['name', 'sortMode', 'unique', 'refreshInterval']
     const changedProperties = []
 
     for (const key in req.body) {
@@ -229,6 +236,10 @@ export default class LeaderboardService extends Service {
         leaderboard[key] = req.body[key]
         if (original !== leaderboard[key]) changedProperties.push(key)
       }
+    }
+
+    if (changedProperties.includes('refreshInterval')) {
+      await archiveEntriesForLeaderboard(em, leaderboard)
     }
 
     createGameActivity(em, {

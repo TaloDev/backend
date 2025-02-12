@@ -29,6 +29,9 @@ export default class LeaderboardEntry {
   @Property({ onUpdate: () => new Date() })
   updatedAt: Date = new Date()
 
+  @Property({ nullable: true })
+  deletedAt: Date
+
   constructor(leaderboard: Leaderboard) {
     this.leaderboard = leaderboard
   }
@@ -43,7 +46,8 @@ export default class LeaderboardEntry {
       hidden: this.hidden,
       props: this.props,
       createdAt: this.createdAt,
-      updatedAt: this.updatedAt
+      updatedAt: this.updatedAt,
+      deletedAt: this.deletedAt
     }
   }
 }

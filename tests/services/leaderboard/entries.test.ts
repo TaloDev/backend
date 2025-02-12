@@ -26,6 +26,7 @@ describe('Leaderboard service - entries', () => {
       .expect(200)
 
     expect(res.body.entries).toHaveLength(leaderboard.entries.length)
+    expect(res.body.entries.every((entry) => entry.deletedAt === null)).toBe(true)
   })
 
   it('should not return entries for a non-existent leaderboard', async () => {
@@ -113,5 +114,29 @@ describe('Leaderboard service - entries', () => {
       .expect(200)
 
     expect(res.body.entries).toHaveLength(leaderboard.entries.length)
+  })
+
+  it('should return archived entries', async () => {
+    const em: EntityManager = global.em
+
+    const [organisation, game] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken({}, organisation)
+
+    const players = await new PlayerFactory([game]).many(10)
+    const leaderboard = await new LeaderboardFactory([game]).one()
+    const entries = await new LeaderboardEntryFactory(leaderboard, players).many(5)
+
+    entries[0].deletedAt = new Date()
+    entries[1].deletedAt = new Date()
+    await em.persistAndFlush(entries)
+
+    const resWithDeleted = await request(global.app)
+      .get(`/games/${game.id}/leaderboards/${leaderboard.id}/entries`)
+      .query({ page: 0, withDeleted: '1' })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    expect(resWithDeleted.body.entries).toHaveLength(5)
+    expect(resWithDeleted.body.entries.filter((entry) => entry.deletedAt !== null)).toHaveLength(2)
   })
 })

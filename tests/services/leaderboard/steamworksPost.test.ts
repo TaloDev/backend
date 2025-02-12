@@ -48,7 +48,7 @@ describe('Leaderboard service - post - steamworks integration', () => {
 
     await request(global.app)
       .post(`/games/${game.id}/leaderboards`)
-      .send({ internalName: 'highscores', name: 'Highscores', sortMode: 'desc', unique: true })
+      .send({ internalName: 'highscores', name: 'Highscores', sortMode: 'desc', unique: true, refreshInterval: 'never' })
       .auth(token, { type: 'bearer' })
       .expect(200)
 
@@ -81,7 +81,7 @@ describe('Leaderboard service - post - steamworks integration', () => {
 
     await request(global.app)
       .post(`/games/${game.id}/leaderboards`)
-      .send({ internalName: 'highscores', name: 'Highscores', sortMode: 'desc', unique: true })
+      .send({ internalName: 'highscores', name: 'Highscores', sortMode: 'desc', unique: true, refreshInterval: 'never' })
       .auth(token, { type: 'bearer' })
       .expect(200)
 
@@ -109,7 +109,7 @@ describe('Leaderboard service - post - steamworks integration', () => {
 
     await request(global.app)
       .post(`/games/${game.id}/leaderboards`)
-      .send({ internalName: 'highscores', name: 'Highscores', sortMode: 'desc', unique: true })
+      .send({ internalName: 'highscores', name: 'Highscores', sortMode: 'desc', unique: true, refreshInterval: 'never' })
       .auth(token, { type: 'bearer' })
       .expect(200)
 

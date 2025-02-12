@@ -37,6 +37,12 @@ function canModifyChannel(channel: GameChannel, alias: PlayerAlias): boolean {
     docs: GameChannelAPIDocs.subscriptions
   },
   {
+    method: 'GET',
+    path: '/:id',
+    handler: 'get',
+    docs: GameChannelAPIDocs.get
+  },
+  {
     method: 'POST',
     handler: 'post',
     docs: GameChannelAPIDocs.post
@@ -85,6 +91,19 @@ export default class GameChannelAPIService extends APIService {
       status: 200,
       body: {
         channels: await Promise.all(channels.map((channel) => channel.toJSONWithCount(req.ctx.em, req.ctx.state.includeDevData)))
+      }
+    }
+  }
+
+  @HasPermission(GameChannelAPIPolicy, 'get')
+  async get(req: Request): Promise<Response> {
+    const em: EntityManager = req.ctx.em
+    const channel: GameChannel = req.ctx.state.channel
+
+    return {
+      status: 200,
+      body: {
+        channel: await channel.toJSONWithCount(em, req.ctx.state.includeDevData)
       }
     }
   }

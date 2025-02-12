@@ -20,13 +20,20 @@ export default class GameChannelAPIPolicy extends Policy {
     const em: EntityManager = this.ctx.em
     return em.getRepository(GameChannel).findOne({
       id: Number(req.params.id),
-      game: this.ctx.state.alias.player.game
+      game: this.getAPIKey().game
     }, {
       populate: ['members']
     })
   }
 
   async index(): Promise<PolicyResponse> {
+    return await this.hasScope(APIKeyScope.READ_GAME_CHANNELS)
+  }
+
+  async get(req: Request): Promise<PolicyResponse> {
+    this.ctx.state.channel = await this.getChannel(req)
+    if (!this.ctx.state.channel) return new PolicyDenial({ message: 'Channel not found' }, 404)
+
     return await this.hasScope(APIKeyScope.READ_GAME_CHANNELS)
   }
 

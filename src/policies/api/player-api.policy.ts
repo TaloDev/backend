@@ -15,7 +15,7 @@ export default class PlayerAPIPolicy extends Policy {
   async patch(req: Request): Promise<PolicyResponse> {
     const { id } = req.params
 
-    const key = await this.getAPIKey()
+    const key = this.getAPIKey()
 
     this.ctx.state.player = await this.em.getRepository(Player).findOne({
       id: id,

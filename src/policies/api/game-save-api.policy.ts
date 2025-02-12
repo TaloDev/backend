@@ -6,7 +6,7 @@ import { APIKeyScope } from '../../entities/api-key'
 
 export default class GameSaveAPIPolicy extends Policy {
   async getPlayer(): Promise<Player> {
-    const key = await this.getAPIKey()
+    const key = this.getAPIKey()
 
     return await this.em.getRepository(Player).findOne({
       id: this.ctx.state.currentPlayerId,

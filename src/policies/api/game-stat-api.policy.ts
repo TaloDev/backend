@@ -8,7 +8,7 @@ export default class GameStatAPIPolicy extends Policy {
   async put(req: Request): Promise<PolicyResponse> {
     const { internalName } = req.params
 
-    const key = await this.getAPIKey()
+    const key = this.getAPIKey()
     const stat = await this.em.getRepository(GameStat).findOne({
       internalName,
       game: key.game

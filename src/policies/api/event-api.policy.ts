@@ -5,7 +5,7 @@ import Policy from '../policy'
 
 export default class EventAPIPolicy extends Policy {
   async post(): Promise<PolicyResponse> {
-    const key = await this.getAPIKey()
+    const key = this.getAPIKey()
     this.ctx.state.player = await this.em.getRepository(Player).findOne({
       aliases: {
         id: this.ctx.state.currentAliasId

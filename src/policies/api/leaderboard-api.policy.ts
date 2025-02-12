@@ -8,7 +8,7 @@ export default class LeaderboardAPIPolicy extends Policy {
   async getLeaderboard(req: Request): Promise<Leaderboard | null> {
     const { internalName } = req.params
 
-    const key = await this.getAPIKey()
+    const key = this.getAPIKey()
     return await this.em.getRepository(Leaderboard).findOne({
       internalName,
       game: key.game

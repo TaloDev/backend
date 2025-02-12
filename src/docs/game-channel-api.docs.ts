@@ -62,6 +62,33 @@ const GameChannelAPIDocs: APIDocs<GameChannelAPIService> = {
       }
     ]
   },
+  get: {
+    description: 'Find a game channel',
+    params: {
+      route: {
+        id: 'The ID of the channel'
+      }
+    },
+    samples: [
+      {
+        title: 'Sample response',
+        sample: {
+          channel: {
+            id: 1,
+            name: 'general-chat',
+            owner: null,
+            totalMessages: 308,
+            memberCount: 42,
+            props: [
+              { key: 'channelType', value: 'public' }
+            ],
+            createdAt: '2024-12-09T12:00:00.000Z',
+            updatedAt: '2024-12-09T12:00:00.000Z'
+          }
+        }
+      }
+    ]
+  },
   subscriptions: {
     description: 'List game channels that the player is subscribed to',
     params: {

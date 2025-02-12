@@ -18,7 +18,7 @@ describe('Leaderboard service - post', () => {
 
     const res = await request(global.app)
       .post(`/games/${game.id}/leaderboards`)
-      .send({ internalName: 'highscores', name: 'Highscores', sortMode: 'desc', unique: true })
+      .send({ internalName: 'highscores', name: 'Highscores', sortMode: 'desc', unique: true, refreshInterval: 'never' })
       .auth(token, { type: 'bearer' })
       .expect(statusCode)
 
@@ -46,7 +46,7 @@ describe('Leaderboard service - post', () => {
 
     const res = await request(global.app)
       .post(`/games/${otherGame.id}/leaderboards`)
-      .send({ internalName: 'highscores', name: 'Highscores', sortMode: 'desc', unique: true })
+      .send({ internalName: 'highscores', name: 'Highscores', sortMode: 'desc', unique: true, refreshInterval: 'never' })
       .auth(token, { type: 'bearer' })
       .expect(403)
 
@@ -58,7 +58,7 @@ describe('Leaderboard service - post', () => {
 
     const res = await request(global.app)
       .post('/games/99999/leaderboards')
-      .send({ internalName: 'highscores', name: 'Highscores', sortMode: 'desc', unique: true })
+      .send({ internalName: 'highscores', name: 'Highscores', sortMode: 'desc', unique: true, refreshInterval: 'never' })
       .auth(token, { type: 'bearer' })
       .expect(404)
 
@@ -71,7 +71,7 @@ describe('Leaderboard service - post', () => {
 
     const res = await request(global.app)
       .post(`/games/${game.id}/leaderboards`)
-      .send({ internalName: 'highscores', name: 'Highscores', sortMode: 'blah', unique: true })
+      .send({ internalName: 'highscores', name: 'Highscores', sortMode: 'blah', unique: true, refreshInterval: 'never' })
       .auth(token, { type: 'bearer' })
       .expect(400)
 
@@ -91,7 +91,7 @@ describe('Leaderboard service - post', () => {
 
     const res = await request(global.app)
       .post(`/games/${game.id}/leaderboards`)
-      .send({ internalName: 'highscores', name: 'Highscores', sortMode: 'asc', unique: true })
+      .send({ internalName: 'highscores', name: 'Highscores', sortMode: 'asc', unique: true, refreshInterval: 'never' })
       .auth(token, { type: 'bearer' })
       .expect(400)
 
@@ -112,7 +112,7 @@ describe('Leaderboard service - post', () => {
 
     await request(global.app)
       .post(`/games/${game.id}/leaderboards`)
-      .send({ internalName: 'time-survived', name: 'Time survived', sortMode: 'asc', unique: true })
+      .send({ internalName: 'time-survived', name: 'Time survived', sortMode: 'asc', unique: true, refreshInterval: 'never' })
       .auth(token, { type: 'bearer' })
       .expect(200)
   })

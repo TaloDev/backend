@@ -141,11 +141,20 @@ export default class Integration {
     switch (this.type) {
       case IntegrationType.STEAMWORKS:
         if (entry.playerAlias.service === PlayerAliasService.STEAM && this.config.syncLeaderboards) {
-          if (entry.hidden) {
+          if (entry.hidden || entry.deletedAt) {
             await deleteSteamworksLeaderboardEntry(em, this, entry)
           } else {
             await createSteamworksLeaderboardEntry(em, this, entry)
           }
+        }
+    }
+  }
+
+  async handleLeaderboardEntryArchived(em: EntityManager, entry: LeaderboardEntry) {
+    switch (this.type) {
+      case IntegrationType.STEAMWORKS:
+        if (entry.playerAlias.service === PlayerAliasService.STEAM && this.config.syncLeaderboards) {
+          await deleteSteamworksLeaderboardEntry(em, this, entry)
         }
     }
   }

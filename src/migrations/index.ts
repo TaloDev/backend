@@ -36,6 +36,7 @@ import { AddPlayerAliasLastSeenAtColumn } from './20241102004938AddPlayerAliasLa
 import { CreateGameChannelTables } from './20241206233511CreateGameChannelTables'
 import { IncreasePlayerAliasIdentifierLength } from './20241221210019IncreasePlayerAliasIdentifierLength'
 import { DropPlanActionTablesAddPlayerLimit } from './20250126082032DropPlanActionTablesAddPlayerLimit'
+import { AddLeaderboardRefreshIntervalAndEntryDeletedAt } from './20250212031914AddLeaderboardRefreshIntervalAndEntryDeletedAt'
 
 export default [
   {
@@ -189,5 +190,9 @@ export default [
   {
     name: 'DropPlanActionTablesAddPlayerLimit',
     class: DropPlanActionTablesAddPlayerLimit
+  },
+  {
+    name: 'AddLeaderboardRefreshIntervalAndEntryDeletedAt',
+    class: AddLeaderboardRefreshIntervalAndEntryDeletedAt
   }
 ]

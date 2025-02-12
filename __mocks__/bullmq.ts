@@ -56,4 +56,8 @@ export class Queue<T> {
     const job = new Job<T>(this.name, jobName, data)
     await Promise.all(this.workers.map((worker) => worker.process(job)))
   }
+
+  async upsertJobScheduler(jobName: string, options: { pattern: string }, jobOptions: { name: string }) {
+    bullEmitter.emit('job-scheduler-upserted', jobName, options, jobOptions)
+  }
 }

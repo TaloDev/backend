@@ -7,6 +7,7 @@ import tracingMiddleware from '../middlewares/tracing-middleware'
 import createEmailQueue from '../lib/queues/createEmailQueue'
 import createClickhouseClient from '../lib/clickhouse/createClient'
 import { runClickhouseMigrations } from '../migrations/clickhouse'
+import initScheduledTasks from './scheduled-tasks'
 
 export default async function initProviders(app: Koa, isTest: boolean) {
   try {
@@ -24,6 +25,10 @@ export default async function initProviders(app: Koa, isTest: boolean) {
 
   SendGrid.setApiKey(process.env.SENDGRID_KEY)
   app.context.emailQueue = createEmailQueue()
+
+  if (!isTest) {
+    await initScheduledTasks()
+  }
 
   Sentry.init({
     dsn: process.env.SENTRY_DSN,

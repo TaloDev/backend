@@ -32,7 +32,7 @@ export default class Policy extends ServicePolicy {
     return user
   }
 
-  async getAPIKey(): Promise<APIKey> {
+  getAPIKey(): APIKey {
     return this.ctx.state.key
   }
 
@@ -46,14 +46,14 @@ export default class Policy extends ServicePolicy {
   }
 
   async hasScope(scope: APIKeyScope): Promise<PolicyResponse> {
-    const key = await this.getAPIKey()
+    const key = this.getAPIKey()
     const hasScope = checkScope(key, scope)
 
     return hasScope || new PolicyDenial({ message: `Missing access key scope: ${scope}` })
   }
 
   async hasScopes(scopes: APIKeyScope[]): Promise<PolicyResponse> {
-    const key = await this.getAPIKey()
+    const key = this.getAPIKey()
     const missing = scopes.filter((scope) => !checkScope(key, scope))
 
     return missing.length === 0 || new PolicyDenial({ message: `Missing access key scope(s): ${missing.join(', ')}` })

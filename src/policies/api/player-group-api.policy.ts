@@ -7,7 +7,7 @@ export default class PlayerGroupAPIPolicy extends Policy {
   async get(req: Request): Promise<PolicyResponse> {
     const { id } = req.params
 
-    const key = await this.getAPIKey()
+    const key = this.getAPIKey()
     const group = await this.em.getRepository(PlayerGroup).findOne({
       id,
       game: key.game

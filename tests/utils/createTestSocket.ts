@@ -142,6 +142,7 @@ export default async function createTestSocket(
   }
   await cb(client, wss)
   client.close()
+  await vi.waitUntil(() => wss.findConnections(() => true).length === 0)
 
   await new Promise<void>((resolve) => server.close(() => resolve()))
 }

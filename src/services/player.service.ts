@@ -191,7 +191,7 @@ export default class PlayerService extends Service {
       .andWhere({ game: req.ctx.state.game })
       .getResultAndCount()
 
-    await em.populate(players, ['aliases'])
+    await em.populate(players, ['aliases', 'presence'])
 
     return {
       status: 200,

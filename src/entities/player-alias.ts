@@ -50,8 +50,7 @@ export default class PlayerAlias {
   }
 
   toJSON() {
-    const player = { ...this.player.toJSON() }
-    delete player.aliases
+    const player = { ...this.player.toJSON(), aliases: undefined, presence: undefined }
 
     return {
       id: this.id,

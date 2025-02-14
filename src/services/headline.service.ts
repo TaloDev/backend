@@ -28,6 +28,16 @@ import { ClickHouseClient } from '@clickhouse/client'
     method: 'GET',
     path: '/unique_event_submitters',
     handler: 'uniqueEventSubmitters'
+  },
+  {
+    method: 'GET',
+    path: '/total_players',
+    handler: 'totalPlayers'
+  },
+  {
+    method: 'GET',
+    path: '/online_players',
+    handler: 'onlinePlayers'
   }
 ])
 export default class HeadlineService extends Service {
@@ -155,6 +165,53 @@ export default class HeadlineService extends Service {
       status: 200,
       body: {
         count: Number(result[0].uniqueSubmitters)
+      }
+    }
+  }
+
+  @HasPermission(HeadlinePolicy, 'index')
+  async totalPlayers(req: Request): Promise<Response> {
+    const em: EntityManager = req.ctx.em
+
+    let where: FilterQuery<Player> = {
+      game: req.ctx.state.game
+    }
+
+    if (!req.ctx.state.includeDevData) {
+      where = Object.assign(where, devDataPlayerFilter(em))
+    }
+
+    const count = await em.getRepository(Player).count(where)
+
+    return {
+      status: 200,
+      body: {
+        count
+      }
+    }
+  }
+
+  @HasPermission(HeadlinePolicy, 'index')
+  async onlinePlayers(req: Request): Promise<Response> {
+    const em: EntityManager = req.ctx.em
+
+    let where: FilterQuery<Player> = {
+      game: req.ctx.state.game,
+      presence: {
+        online: true
+      }
+    }
+
+    if (!req.ctx.state.includeDevData) {
+      where = Object.assign(where, devDataPlayerFilter(em))
+    }
+
+    const count = await em.getRepository(Player).count(where)
+
+    return {
+      status: 200,
+      body: {
+        count
       }
     }
   }

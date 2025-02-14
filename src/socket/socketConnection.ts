@@ -2,7 +2,7 @@ import { WebSocket } from 'ws'
 import PlayerAlias from '../entities/player-alias'
 import Game from '../entities/game'
 import APIKey, { APIKeyScope } from '../entities/api-key'
-import { RequestContext } from '@mikro-orm/core'
+import { RequestContext, EntityManager } from '@mikro-orm/mysql'
 import { v4 } from 'uuid'
 import Redis from 'ioredis'
 import redisConfig from '../config/redis.config'
@@ -97,6 +97,16 @@ export default class SocketConnection {
       })
 
       this.ws.send(message)
+    }
+  }
+
+  async handleClosed(): Promise<void> {
+    const playerAlias = await this.getPlayerAlias()
+    const em = RequestContext.getEntityManager() as EntityManager
+
+    if (playerAlias) {
+      await em.populate(playerAlias, ['player.presence'])
+      await playerAlias.player.setPresence(em, this.wss, playerAlias, false)
     }
   }
 }

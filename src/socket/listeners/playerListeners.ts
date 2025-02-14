@@ -3,7 +3,7 @@ import createListener from '../router/createListener'
 import { sendMessage } from '../messages/socketMessage'
 import Redis from 'ioredis'
 import redisConfig from '../../config/redis.config'
-import { RequestContext } from '@mikro-orm/core'
+import { EntityManager, RequestContext } from '@mikro-orm/mysql'
 import PlayerAlias, { PlayerAliasService } from '../../entities/player-alias'
 import { SocketMessageListener } from '../router/createListener'
 import SocketError, { sendError } from '../messages/socketError'
@@ -18,7 +18,7 @@ const playerListeners: SocketMessageListener<ZodType>[] = [
       socketToken: z.string(),
       sessionToken: z.string().optional()
     }),
-    async ({ conn, req, data }) => {
+    async ({ conn, req, data, socket }) => {
       const redis = new Redis(redisConfig)
       const token = await redis.get(`socketTokens.${data.playerAliasId}`)
       await redis.quit()
@@ -26,7 +26,7 @@ const playerListeners: SocketMessageListener<ZodType>[] = [
       let alias: PlayerAlias
 
       if (token === data.socketToken) {
-        alias = await (RequestContext.getEntityManager()
+        alias = await RequestContext.getEntityManager()
           .getRepository(PlayerAlias)
           .findOne({
             id: data.playerAliasId,
@@ -34,8 +34,8 @@ const playerListeners: SocketMessageListener<ZodType>[] = [
               game: conn.game
             }
           }, {
-            populate: ['player.auth']
-          }))
+            populate: ['player.auth', 'player.presence']
+          })
 
         if (alias.service === PlayerAliasService.TALO) {
           try {
@@ -57,6 +57,8 @@ const playerListeners: SocketMessageListener<ZodType>[] = [
 
       conn.playerAliasId = alias.id
       await sendMessage(conn, 'v1.players.identify.success', alias)
+
+      await alias.player.setPresence(RequestContext.getEntityManager() as EntityManager, socket, alias, true)
     },
     {
       requirePlayer: false,

@@ -25,11 +25,10 @@ export async function archiveEntriesForLeaderboard(em: EntityManager, leaderboar
       entry.deletedAt = new Date()
 
       // try to avoid rate limits
-      setTimeout(async () => {
-        await triggerIntegrations(em, entry.leaderboard.game, (integration) => {
-          return integration.handleLeaderboardEntryArchived(em, entry)
-        })
-      }, 100)
+      await new Promise((resolve) => setTimeout(resolve, 100))
+      await triggerIntegrations(em, entry.leaderboard.game, (integration) => {
+        return integration.handleLeaderboardEntryArchived(em, entry)
+      })
     }
   }
 

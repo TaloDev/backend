@@ -143,6 +143,10 @@ export default class Socket {
     /* v8 ignore next */
     if (!connection) return
 
+    await RequestContext.create(this.em, async () => {
+      await connection.handleClosed()
+    })
+
     logConnectionClosed(connection, preclosed, code, options.reason)
 
     await this.trackEvent('close', {
@@ -163,6 +167,17 @@ export default class Socket {
 
   findConnections(filter: (conn: SocketConnection) => boolean): SocketConnection[] {
     return Array.from(this.connections.values()).filter(filter)
+  }
+
+  async findConnectionsAsync(filter: (conn: SocketConnection) => Promise<boolean>): Promise<SocketConnection[]> {
+    const connections = Array.from(this.connections.values())
+    const results = await Promise.all(
+      connections.map(async (conn) => ({
+        conn,
+        matches: await filter(conn)
+      }))
+    )
+    return results.filter((r) => r.matches).map((r) => r.conn)
   }
 
   async trackEvent(name: 'open' | 'close' | 'message', data: SocketEventData): Promise<void> {

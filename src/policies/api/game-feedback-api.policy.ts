@@ -12,7 +12,7 @@ export default class GameFeedbackAPIPolicy extends Policy {
   async post(req: Request): Promise<PolicyResponse> {
     const { internalName } = req.params
 
-    const key = await this.getAPIKey()
+    const key = this.getAPIKey()
     const category = await this.em.getRepository(GameFeedbackCategory).findOne({
       internalName,
       game: key.game

@@ -8,6 +8,14 @@ export enum LeaderboardSortMode {
   ASC = 'asc'
 }
 
+export enum LeaderboardRefreshInterval {
+  NEVER = 'never',
+  DAILY = 'daily',
+  WEEKLY = 'weekly',
+  MONTHLY = 'monthly',
+  YEARLY = 'yearly'
+}
+
 @Entity()
 export default class Leaderboard {
   @PrimaryKey()
@@ -62,6 +70,21 @@ export default class Leaderboard {
   @ManyToOne(() => Game)
   game: Game
 
+  @Required({
+    validation: async (val: unknown): Promise<ValidationCondition[]> => {
+      const keys = Object.keys(LeaderboardRefreshInterval).map((key) => LeaderboardRefreshInterval[key])
+
+      return [
+        {
+          check: keys.includes(val),
+          error: `Refresh interval must be one of ${keys.join(', ')}`
+        }
+      ]
+    }
+  })
+  @Enum(() => LeaderboardRefreshInterval)
+  refreshInterval: LeaderboardRefreshInterval = LeaderboardRefreshInterval.NEVER
+
   @Property()
   createdAt: Date = new Date()
 
@@ -79,6 +102,7 @@ export default class Leaderboard {
       name: this.name,
       sortMode: this.sortMode,
       unique: this.unique,
+      refreshInterval: this.refreshInterval,
       createdAt: this.createdAt,
       updatedAt: this.updatedAt
     }

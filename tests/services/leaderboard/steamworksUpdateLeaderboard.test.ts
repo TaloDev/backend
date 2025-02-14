@@ -46,7 +46,7 @@ describe('Leaderboard service - update leaderboard - steamworks integration', ()
 
     await request(global.app)
       .put(`/games/${game.id}/leaderboards/${leaderboard.id}`)
-      .send({ sortMode: LeaderboardSortMode.ASC, internalName: leaderboard.internalName, name: leaderboard.name, unique: leaderboard.unique })
+      .send({ sortMode: LeaderboardSortMode.ASC, internalName: leaderboard.internalName, name: leaderboard.name, unique: leaderboard.unique, refreshInterval: 'never' })
       .auth(token, { type: 'bearer' })
       .expect(200)
 
@@ -75,7 +75,7 @@ describe('Leaderboard service - update leaderboard - steamworks integration', ()
 
     await request(global.app)
       .put(`/games/${game.id}/leaderboards/${leaderboard.id}`)
-      .send({ sortMode: LeaderboardSortMode.ASC, internalName: leaderboard.internalName, name: leaderboard.name, unique: leaderboard.unique })
+      .send({ sortMode: LeaderboardSortMode.ASC, internalName: leaderboard.internalName, name: leaderboard.name, unique: leaderboard.unique, refreshInterval: 'never' })
       .auth(token, { type: 'bearer' })
       .expect(200)
 

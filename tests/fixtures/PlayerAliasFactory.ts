@@ -23,8 +23,7 @@ export default class PlayerAliasFactory extends Factory<PlayerAlias> {
         PlayerAliasService.CUSTOM
       ]),
       identifier: rand(identifiers),
-      player: this.player,
-      anonymised: false
+      player: this.player
     }))
   }
 

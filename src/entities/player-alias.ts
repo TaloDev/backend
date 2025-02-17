@@ -1,4 +1,4 @@
-import { Cascade, Collection, Entity, Filter, ManyToMany, ManyToOne, PrimaryKey, Property } from '@mikro-orm/mysql'
+import { Collection, Entity, ManyToMany, ManyToOne, PrimaryKey, Property } from '@mikro-orm/mysql'
 import Player from './player'
 import Redis from 'ioredis'
 import { v4 } from 'uuid'
@@ -14,7 +14,6 @@ export enum PlayerAliasService {
 }
 
 @Entity()
-@Filter({ name: 'notAnonymised', cond: { anonymised: false }, default: true })
 export default class PlayerAlias {
   @PrimaryKey()
   id: number
@@ -25,11 +24,8 @@ export default class PlayerAlias {
   @Property({ length: 1024 })
   identifier: string
 
-  @ManyToOne(() => Player, { cascade: [Cascade.REMOVE], eager: true })
+  @ManyToOne(() => Player, { eager: true })
   player: Player
-
-  @Property({ default: false })
-  anonymised: boolean
 
   @Property()
   lastSeenAt: Date = new Date()

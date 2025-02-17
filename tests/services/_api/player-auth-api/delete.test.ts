@@ -7,10 +7,14 @@ import bcrypt from 'bcrypt'
 import PlayerAuthFactory from '../../../fixtures/PlayerAuthFactory'
 import PlayerAuthActivity, { PlayerAuthActivityType } from '../../../../src/entities/player-auth-activity'
 import PlayerAlias from '../../../../src/entities/player-alias'
+import EventFactory from '../../../fixtures/EventFactory'
+import { ClickHouseClient } from '@clickhouse/client'
 
 describe('Player auth API service - delete', () => {
   it('should delete the account if the current password is correct', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_PLAYERS, APIKeyScope.WRITE_PLAYERS])
+
+    const em: EntityManager = global.em
 
     const player = await new PlayerFactory([apiKey.game]).withTaloAlias().state(async () => ({
       auth: await new PlayerAuthFactory().state(async () => ({
@@ -18,10 +22,10 @@ describe('Player auth API service - delete', () => {
       })).one()
     })).one()
     const alias = player.aliases[0]
-    await (<EntityManager>global.em).persistAndFlush(player)
+    await em.persistAndFlush(player)
 
     const sessionToken = await player.auth.createSession(alias)
-    await (<EntityManager>global.em).flush()
+    await em.flush()
 
     const prevIdentifier = alias.identifier
 
@@ -34,20 +38,13 @@ describe('Player auth API service - delete', () => {
       .set('x-talo-session', sessionToken)
       .expect(204)
 
+    em.clear()
 
-    expect(await (<EntityManager>global.em).refresh(player.auth)).toBeNull()
+    const updatedPlayer = await em.refresh(player, { populate: ['aliases', 'auth'] })
+    expect(updatedPlayer.aliases).toHaveLength(0)
+    expect(updatedPlayer.auth).toBeNull()
 
-    await (<EntityManager>global.em).refresh(player, { populate: ['aliases'] })
-    expect(player.aliases).toHaveLength(0) // anonymous filter
-
-    const anonymisedAlias = await (<EntityManager>global.em).getRepository(PlayerAlias).findOne(alias.id, {
-      filters: {
-        notAnonymised: false
-      },
-      refresh: true
-    })
-    expect(anonymisedAlias.identifier.startsWith('anonymised+')).toBe(true)
-    expect(anonymisedAlias.anonymised).toBe(true)
+    expect(await em.getRepository(PlayerAlias).findOne(alias.id)).toBeNull()
 
     const activity = await (<EntityManager>global.em).getRepository(PlayerAuthActivity).findOne({
       type: PlayerAuthActivityType.DELETED_AUTH,
@@ -57,6 +54,55 @@ describe('Player auth API service - delete', () => {
       }
     })
     expect(activity).not.toBeNull()
+  })
+
+  it('should delete events associated with the player alias', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_PLAYERS, APIKeyScope.WRITE_PLAYERS])
+
+    const em: EntityManager = global.em
+
+    const player = await new PlayerFactory([apiKey.game]).withTaloAlias().state(async () => ({
+      auth: await new PlayerAuthFactory().state(async () => ({
+        password: await bcrypt.hash('password', 10)
+      })).one()
+    })).one()
+    const alias = player.aliases[0]
+    await em.persistAndFlush(player)
+
+    const sessionToken = await player.auth.createSession(alias)
+    await em.flush()
+
+    const events = await new EventFactory([player]).many(3)
+    await (<ClickHouseClient>global.clickhouse).insert({
+      table: 'events',
+      values: events.map((event) => event.getInsertableData()),
+      format: 'JSONEachRow'
+    })
+
+    await request(global.app)
+      .delete('/v1/players/auth/')
+      .send({ currentPassword: 'password' })
+      .auth(token, { type: 'bearer' })
+      .set('x-talo-player', player.id)
+      .set('x-talo-alias', String(alias.id))
+      .set('x-talo-session', sessionToken)
+      .expect(204)
+
+    const updatedEventCount = await (<ClickHouseClient>global.clickhouse).query({
+      query: `SELECT count() as count FROM events WHERE player_alias_id = ${alias.id}`,
+      format: 'JSONEachRow'
+    }).then((res) => res.json<{ count: string }>())
+      .then((res) => Number(res[0].count))
+
+    expect(updatedEventCount).toBe(0)
+
+    const updatedEventPropsCount = await (<ClickHouseClient>global.clickhouse).query({
+      query: 'SELECT count() as count FROM event_props',
+      format: 'JSONEachRow'
+    }).then((res) => res.json<{ count: string }>())
+      .then((res) => Number(res[0].count))
+
+    expect(updatedEventPropsCount).toBe(0)
   })
 
   it('should not delete the account if the current password is incorrect', async () => {

@@ -37,6 +37,7 @@ import { CreateGameChannelTables } from './20241206233511CreateGameChannelTables
 import { IncreasePlayerAliasIdentifierLength } from './20241221210019IncreasePlayerAliasIdentifierLength'
 import { DropPlanActionTablesAddPlayerLimit } from './20250126082032DropPlanActionTablesAddPlayerLimit'
 import { AddLeaderboardRefreshIntervalAndEntryDeletedAt } from './20250212031914AddLeaderboardRefreshIntervalAndEntryDeletedAt'
+import { DeletePlayerAliasAnonymisedColumn } from './20250217004535DeletePlayerAliasAnonymisedColumn'
 
 export default [
   {
@@ -194,5 +195,9 @@ export default [
   {
     name: 'AddLeaderboardRefreshIntervalAndEntryDeletedAt',
     class: AddLeaderboardRefreshIntervalAndEntryDeletedAt
+  },
+  {
+    name: 'DeletePlayerAliasAnonymisedColumn',
+    class: DeletePlayerAliasAnonymisedColumn
   }
 ]

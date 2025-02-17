@@ -1164,20 +1164,9 @@
           "unsigned": false,
           "autoincrement": false,
           "primary": false,
-          "nullable": true,
+          "nullable": false,
           "length": 255,
           "mappedType": "string"
-        },
-        "anonymised": {
-          "name": "anonymised",
-          "type": "tinyint(1)",
-          "unsigned": false,
-          "autoincrement": false,
-          "primary": false,
-          "nullable": false,
-          "length": 1,
-          "default": "false",
-          "mappedType": "boolean"
         },
         "last_seen_at": {
           "name": "last_seen_at",
@@ -1245,7 +1234,7 @@
             "id"
           ],
           "referencedTableName": "player",
-          "deleteRule": "cascade"
+          "updateRule": "cascade"
         }
       },
       "nativeEnums": {}

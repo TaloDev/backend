@@ -109,23 +109,4 @@ export default class PlayerFactory extends Factory<Player> {
       }
     })
   }
-
-  withAnonymisedTaloAlias(): this {
-    return this.state(async (player: Player) => {
-      const alias = await new PlayerAliasFactory(player).talo().state(() => ({
-        anonymised: true
-      })).one()
-
-      return { aliases: new Collection<PlayerAlias>(player, [alias]) }
-    })
-  }
-
-  withUsernameAliasAndAnonymisedTaloAlias(): this {
-    return this.state(async (player: Player) => {
-      const alias = await new PlayerAliasFactory(player).username().one()
-      const anonymisedAlias = await new PlayerAliasFactory(player).talo().state(() => ({ anonymised: true })).one()
-
-      return { aliases: new Collection<PlayerAlias>(player, [alias, anonymisedAlias]) }
-    })
-  }
 }

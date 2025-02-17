@@ -16,6 +16,7 @@ import PlayerAuthResetPassword from '../../emails/player-auth-reset-password-mai
 import createPlayerAuthActivity from '../../lib/logging/createPlayerAuthActivity'
 import { PlayerAuthActivityType } from '../../entities/player-auth-activity'
 import emailRegex from '../../lib/lang/emailRegex'
+import { ClickHouseClient } from '@clickhouse/client'
 
 @Routes([
   {
@@ -609,9 +610,10 @@ export default class PlayerAuthAPIService extends APIService {
   async delete(req: Request): Promise<Response> {
     const { currentPassword } = req.body
     const em: EntityManager = req.ctx.em
+    const clickhouse: ClickHouseClient = req.ctx.clickhouse
 
     const alias = await em.getRepository(PlayerAlias).findOne(req.ctx.state.currentAliasId, {
-      populate: ['player.auth']
+      populate: ['player', 'player.auth']
     })
 
     const passwordMatches = await bcrypt.compare(currentPassword, alias.player.auth.password)
@@ -630,20 +632,23 @@ export default class PlayerAuthAPIService extends APIService {
       })
     }
 
-    em.remove(alias.player.auth)
-
-    const prevIdentifier = alias.identifier
-    alias.identifier = `anonymised+${Date.now()}`
-    alias.anonymised = true
-
     createPlayerAuthActivity(req, alias.player, {
       type: PlayerAuthActivityType.DELETED_AUTH,
       extra: {
-        identifier: prevIdentifier
+        identifier: alias.identifier
       }
     })
 
-    await em.flush()
+    await Promise.all(
+      [
+        `events DELETE WHERE player_alias_id = ${alias.id}`,
+        'event_props DELETE WHERE event_id NOT IN (SELECT id FROM events)'
+      ].map((query) => {
+        clickhouse.query({ query: 'ALTER TABLE ' + query })
+      })
+    )
+
+    await em.removeAndFlush([alias.player.auth, alias])
 
     return {
       status: 204

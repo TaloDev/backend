@@ -65,7 +65,7 @@ describe('Socket events', () => {
         query: `SELECT * FROM socket_events WHERE game_id = ${player.game.id} ORDER BY created_at`,
         format: 'JSONEachRow'
       }).then((res) => res.json<ClickhouseSocketEvent>())
-      return events.length === 5
+      return events.length === 6
     })
 
     expect(events[0].event_type).toBe('open')
@@ -96,11 +96,18 @@ describe('Socket events', () => {
     expect(events[3].player_alias_id).toBe(player.aliases[0].id)
     expect(events[3].dev_build).toBe(false)
 
-    expect(events[4].event_type).toBe('close')
-    expect(events[4].req_or_res).toBe('req')
+    expect(events[4].event_type).toBe('v1.players.presence.updated')
+    expect(events[4].req_or_res).toBe('res')
     expect(events[4].code).toBeNull()
     expect(events[4].game_id).toBe(player.game.id)
     expect(events[4].player_alias_id).toBe(player.aliases[0].id)
+    expect(events[4].dev_build).toBe(false)
+
+    expect(events[5].event_type).toBe('close')
+    expect(events[5].req_or_res).toBe('req')
+    expect(events[5].code).toBeNull()
+    expect(events[5].game_id).toBe(player.game.id)
+    expect(events[5].player_alias_id).toBe(player.aliases[0].id)
     expect(events[4].dev_build).toBe(false)
   })
 

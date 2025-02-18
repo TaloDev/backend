@@ -38,6 +38,7 @@ import { IncreasePlayerAliasIdentifierLength } from './20241221210019IncreasePla
 import { DropPlanActionTablesAddPlayerLimit } from './20250126082032DropPlanActionTablesAddPlayerLimit'
 import { AddLeaderboardRefreshIntervalAndEntryDeletedAt } from './20250212031914AddLeaderboardRefreshIntervalAndEntryDeletedAt'
 import { DeletePlayerAliasAnonymisedColumn } from './20250217004535DeletePlayerAliasAnonymisedColumn'
+import { CreatePlayerPresenceTable } from './20250213081652CreatePlayerPresenceTable'
 
 export default [
   {
@@ -199,5 +200,9 @@ export default [
   {
     name: 'DeletePlayerAliasAnonymisedColumn',
     class: DeletePlayerAliasAnonymisedColumn
+  },
+  {
+    name: 'CreatePlayerPresenceTable',
+    class: CreatePlayerPresenceTable
   }
 ]

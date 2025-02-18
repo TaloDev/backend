@@ -31,8 +31,10 @@ import SteamworksLeaderboardMapping from './steamworks-leaderboard-mapping'
 import PlayerProp from './player-prop'
 import PlayerGroup from './player-group'
 import GameSecret from './game-secret'
+import PlayerPresence from './player-presence'
 
 export default [
+  PlayerPresence,
   GameChannel,
   UserPinnedGroup,
   PlayerAuthActivity,

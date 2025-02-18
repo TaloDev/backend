@@ -46,7 +46,7 @@ export default class PlayerAlias {
   }
 
   toJSON() {
-    const player = { ...this.player.toJSON(), aliases: undefined, presence: undefined }
+    const player = { ...this.player.toJSON(), aliases: undefined }
 
     return {
       id: this.id,

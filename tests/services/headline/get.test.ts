@@ -8,6 +8,7 @@ import createUserAndToken from '../../utils/createUserAndToken'
 import { ClickHouseClient } from '@clickhouse/client'
 import PlayerAlias from '../../../src/entities/player-alias'
 import PlayerAliasFactory from '../../fixtures/PlayerAliasFactory'
+import PlayerPresenceFactory from '../../fixtures/PlayerPresenceFactory'
 
 describe('Headline service - get', () => {
   const startDate = format(sub(new Date(), { days: 7 }), 'yyyy-MM-dd')
@@ -286,6 +287,112 @@ describe('Headline service - get', () => {
       .expect(200)
 
     expect(res.body.count).toBe(1)
+  })
+
+  it('should return the total number of players', async () => {
+    const [organisation, game] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken({}, organisation)
+
+    const players = await new PlayerFactory([game]).many(10)
+    await (<EntityManager>global.em).persistAndFlush(players)
+
+    const res = await request(global.app)
+      .get(`/games/${game.id}/headlines/total_players`)
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    expect(res.body.count).toBe(10)
+  })
+
+  it('should not return dev build players in total count without the dev data header', async () => {
+    const [organisation, game] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken({}, organisation)
+
+    const players = await new PlayerFactory([game]).devBuild().many(10)
+    await (<EntityManager>global.em).persistAndFlush(players)
+
+    const res = await request(global.app)
+      .get(`/games/${game.id}/headlines/total_players`)
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    expect(res.body.count).toBe(0)
+  })
+
+  it('should return dev build players in total count with the dev data header', async () => {
+    const [organisation, game] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken({}, organisation)
+
+    const players = await new PlayerFactory([game]).devBuild().many(10)
+    await (<EntityManager>global.em).persistAndFlush(players)
+
+    const res = await request(global.app)
+      .get(`/games/${game.id}/headlines/total_players`)
+      .auth(token, { type: 'bearer' })
+      .set('x-talo-include-dev-data', '1')
+      .expect(200)
+
+    expect(res.body.count).toBe(10)
+  })
+
+  it('should return the number of online players', async () => {
+    const [organisation, game] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken({}, organisation)
+
+    const onlinePlayers = await new PlayerFactory([game])
+      .state(async (player) => ({ presence: await new PlayerPresenceFactory(player.game).online().one() }))
+      .many(5)
+    const offlinePlayers = await new PlayerFactory([game])
+      .state(async (player) => ({ presence: await new PlayerPresenceFactory(player.game).offline().one() }))
+      .many(5)
+
+    await (<EntityManager>global.em).persistAndFlush([...onlinePlayers, ...offlinePlayers])
+
+    const res = await request(global.app)
+      .get(`/games/${game.id}/headlines/online_players`)
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    expect(res.body.count).toBe(5)
+  })
+
+  it('should not return dev build online players without the dev data header', async () => {
+    const [organisation, game] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken({}, organisation)
+
+    const onlinePlayers = await new PlayerFactory([game])
+      .devBuild()
+      .state(async (player) => ({ presence: await new PlayerPresenceFactory(player.game).online().one() }))
+      .many(5)
+
+    await (<EntityManager>global.em).persistAndFlush(onlinePlayers)
+
+    const res = await request(global.app)
+      .get(`/games/${game.id}/headlines/online_players`)
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    expect(res.body.count).toBe(0)
+  })
+
+  it('should return dev build online players with the dev data header', async () => {
+    const [organisation, game] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken({}, organisation)
+
+    const onlinePlayers = await new PlayerFactory([game])
+      .devBuild()
+      .state(async (player) => ({ presence: await new PlayerPresenceFactory(player.game).online().one() }))
+      .many(5)
+
+    await (<EntityManager>global.em).persistAndFlush(onlinePlayers)
+
+    const res = await request(global.app)
+      .get(`/games/${game.id}/headlines/online_players`)
+      .auth(token, { type: 'bearer' })
+      .set('x-talo-include-dev-data', '1')
+      .expect(200)
+
+    expect(res.body.count).toBe(5)
   })
 
   it('should not return headlines for a game the user cant access', async () => {

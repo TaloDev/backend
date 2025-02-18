@@ -101,12 +101,14 @@ export default class SocketConnection {
   }
 
   async handleClosed(): Promise<void> {
-    const playerAlias = await this.getPlayerAlias()
-    const em = RequestContext.getEntityManager() as EntityManager
+    if (this.playerAliasId) {
+      const playerAlias = await this.getPlayerAlias()
 
-    if (playerAlias) {
-      await em.populate(playerAlias, ['player.presence'])
-      await playerAlias.player.setPresence(em, this.wss, playerAlias, false)
+      if (playerAlias) {
+        const em = RequestContext.getEntityManager() as EntityManager
+        await em.populate(playerAlias, ['player.presence'])
+        await playerAlias.player.setPresence(em, this.wss, playerAlias, false)
+      }
     }
   }
 }

@@ -9,6 +9,7 @@ import PlayerAuthActivity, { PlayerAuthActivityType } from '../../../../src/enti
 import PlayerAlias from '../../../../src/entities/player-alias'
 import EventFactory from '../../../fixtures/EventFactory'
 import { ClickHouseClient } from '@clickhouse/client'
+import PlayerPresenceFactory from '../../../fixtures/PlayerPresenceFactory'
 
 describe('Player auth API service - delete', () => {
   it('should delete the account if the current password is correct', async () => {
@@ -165,5 +166,36 @@ describe('Player auth API service - delete', () => {
       .set('x-talo-alias', String(alias.id))
       .set('x-talo-session', sessionToken)
       .expect(403)
+  })
+
+  it('should delete the account when the player has presence attached to the current alias', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_PLAYERS, APIKeyScope.WRITE_PLAYERS])
+
+    const player = await new PlayerFactory([apiKey.game]).withTaloAlias().state(async () => ({
+      auth: await new PlayerAuthFactory().state(async () => ({
+        password: await bcrypt.hash('password', 10)
+      })).one()
+    })).one()
+
+    const alias = player.aliases[0]
+
+    const presence = await new PlayerPresenceFactory(apiKey.game).state(async () => ({
+      playerAlias: alias
+    })).one()
+
+    player.presence = presence
+    await (<EntityManager>global.em).persistAndFlush(player)
+
+    const sessionToken = await player.auth.createSession(alias)
+    await (<EntityManager>global.em).flush()
+
+    await request(global.app)
+      .delete('/v1/players/auth/')
+      .send({ currentPassword: 'password' })
+      .auth(token, { type: 'bearer' })
+      .set('x-talo-player', player.id)
+      .set('x-talo-alias', String(alias.id))
+      .set('x-talo-session', sessionToken)
+      .expect(204)
   })
 })

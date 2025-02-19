@@ -1290,7 +1290,7 @@
           "unsigned": true,
           "autoincrement": false,
           "primary": false,
-          "nullable": false,
+          "nullable": true,
           "length": null,
           "mappedType": "integer"
         },
@@ -1372,7 +1372,7 @@
             "id"
           ],
           "referencedTableName": "player_alias",
-          "updateRule": "cascade"
+          "deleteRule": "cascade"
         }
       },
       "nativeEnums": {}

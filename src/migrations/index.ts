@@ -39,6 +39,7 @@ import { DropPlanActionTablesAddPlayerLimit } from './20250126082032DropPlanActi
 import { AddLeaderboardRefreshIntervalAndEntryDeletedAt } from './20250212031914AddLeaderboardRefreshIntervalAndEntryDeletedAt'
 import { DeletePlayerAliasAnonymisedColumn } from './20250217004535DeletePlayerAliasAnonymisedColumn'
 import { CreatePlayerPresenceTable } from './20250213081652CreatePlayerPresenceTable'
+import { CascadePlayerPresenceAlias } from './20250219233504CascadePlayerPresenceAlias'
 
 export default [
   {
@@ -204,5 +205,9 @@ export default [
   {
     name: 'CreatePlayerPresenceTable',
     class: CreatePlayerPresenceTable
+  },
+  {
+    name: 'CascadePlayerPresenceAlias',
+    class: CascadePlayerPresenceAlias
   }
 ]

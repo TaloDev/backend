@@ -156,8 +156,6 @@ describe('archiveLeaderboardEntries', () => {
     await (<EntityManager>global.em).persistAndFlush([integration, oldEntry, mapping])
     await archiveLeaderboardEntries()
 
-    await vi.waitFor(() => {
-      expect(deleteMock).toHaveBeenCalledTimes(1)
-    })
+    expect(deleteMock).toHaveBeenCalledTimes(1)
   })
 })

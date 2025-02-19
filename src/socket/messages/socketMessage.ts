@@ -16,7 +16,8 @@ export const responses = [
   'v1.channels.message',
   'v1.channels.deleted',
   'v1.channels.ownership-transferred',
-  'v1.live-config.updated'
+  'v1.live-config.updated',
+  'v1.players.presence.updated'
 ] as const
 
 export type SocketMessageResponse = typeof responses[number]

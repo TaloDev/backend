@@ -18,6 +18,7 @@ import PlayerAuthAPIService from '../services/api/player-auth-api.service'
 import continunityMiddleware from '../middlewares/continunity-middleware'
 import PlayerGroupAPIService from '../services/api/player-group-api.service'
 import SocketTicketAPIService from '../services/api/socket-ticket-api.service'
+import PlayerPresenceAPIService from '../services/api/player-presence-api.service'
 
 export default function configureAPIRoutes(app: Koa) {
   app.use(apiKeyMiddleware)
@@ -46,4 +47,5 @@ export default function configureAPIRoutes(app: Koa) {
   app.use(service('/v1/events', new EventAPIService()))
   app.use(service('/v1/players', new PlayerAPIService()))
   app.use(service('/v1/players/auth', new PlayerAuthAPIService()))
+  app.use(service('/v1/players/presence', new PlayerPresenceAPIService()))
 }

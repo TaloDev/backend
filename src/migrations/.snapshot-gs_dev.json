@@ -846,6 +846,16 @@
           "length": null,
           "mappedType": "integer"
         },
+        "presence_id": {
+          "name": "presence_id",
+          "type": "int",
+          "unsigned": true,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "length": null,
+          "mappedType": "integer"
+        },
         "last_seen_at": {
           "name": "last_seen_at",
           "type": "datetime",
@@ -900,6 +910,16 @@
           "unique": true
         },
         {
+          "columnNames": [
+            "presence_id"
+          ],
+          "composite": false,
+          "keyName": "player_presence_id_unique",
+          "constraint": true,
+          "primary": false,
+          "unique": true
+        },
+        {
           "keyName": "PRIMARY",
           "columnNames": [
             "id"
@@ -934,6 +954,19 @@
             "id"
           ],
           "referencedTableName": "player_auth",
+          "deleteRule": "set null",
+          "updateRule": "cascade"
+        },
+        "player_presence_id_foreign": {
+          "constraintName": "player_presence_id_foreign",
+          "columnNames": [
+            "presence_id"
+          ],
+          "localTableName": "player",
+          "referencedColumnNames": [
+            "id"
+          ],
+          "referencedTableName": "player_presence",
           "deleteRule": "set null",
           "updateRule": "cascade"
         }
@@ -1234,6 +1267,111 @@
             "id"
           ],
           "referencedTableName": "player",
+          "updateRule": "cascade"
+        }
+      },
+      "nativeEnums": {}
+    },
+    {
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "int",
+          "unsigned": true,
+          "autoincrement": true,
+          "primary": true,
+          "nullable": false,
+          "length": null,
+          "mappedType": "integer"
+        },
+        "player_alias_id": {
+          "name": "player_alias_id",
+          "type": "int",
+          "unsigned": true,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "length": null,
+          "mappedType": "integer"
+        },
+        "online": {
+          "name": "online",
+          "type": "tinyint(1)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "length": 1,
+          "default": "false",
+          "mappedType": "boolean"
+        },
+        "custom_status": {
+          "name": "custom_status",
+          "type": "varchar(255)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "length": 255,
+          "default": "''",
+          "mappedType": "string"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "datetime",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "length": null,
+          "mappedType": "datetime"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "datetime",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "length": null,
+          "mappedType": "datetime"
+        }
+      },
+      "name": "player_presence",
+      "indexes": [
+        {
+          "columnNames": [
+            "player_alias_id"
+          ],
+          "composite": false,
+          "keyName": "player_presence_player_alias_id_index",
+          "constraint": false,
+          "primary": false,
+          "unique": false
+        },
+        {
+          "keyName": "PRIMARY",
+          "columnNames": [
+            "id"
+          ],
+          "composite": false,
+          "constraint": true,
+          "primary": true,
+          "unique": true
+        }
+      ],
+      "checks": [],
+      "foreignKeys": {
+        "player_presence_player_alias_id_foreign": {
+          "constraintName": "player_presence_player_alias_id_foreign",
+          "columnNames": [
+            "player_alias_id"
+          ],
+          "localTableName": "player_presence",
+          "referencedColumnNames": [
+            "id"
+          ],
+          "referencedTableName": "player_alias",
           "updateRule": "cascade"
         }
       },

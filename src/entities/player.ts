@@ -30,7 +30,7 @@ export default class Player {
   @OneToOne({ nullable: true, orphanRemoval: true })
   auth: PlayerAuth
 
-  @OneToOne({ nullable: true, orphanRemoval: true })
+  @OneToOne({ nullable: true, orphanRemoval: true, eager: true })
   presence: PlayerPresence
 
   @Property()

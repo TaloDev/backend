@@ -34,7 +34,7 @@ const playerListeners: SocketMessageListener<ZodType>[] = [
               game: conn.game
             }
           }, {
-            populate: ['player.auth', 'player.presence']
+            populate: ['player.auth']
           })
 
         if (alias.service === PlayerAliasService.TALO) {

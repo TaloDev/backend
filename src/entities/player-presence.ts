@@ -15,7 +15,7 @@ export default class PlayerPresence {
   @OneToOne(() => Player, (player) => player.presence)
   player: Player
 
-  @ManyToOne(() => PlayerAlias, { cascade: [Cascade.REMOVE] })
+  @ManyToOne(() => PlayerAlias, { cascade: [Cascade.REMOVE], eager: true })
   playerAlias: PlayerAlias
 
   @Property()

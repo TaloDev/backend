@@ -34,6 +34,7 @@ export default async function initProviders(app: Koa, isTest: boolean) {
     dsn: process.env.SENTRY_DSN,
     environment: process.env.SENTRY_ENV,
     tracesSampleRate: 0.2,
+    maxValueLength: 4096,
     integrations: [
       ...Sentry.autoDiscoverNodePerformanceMonitoringIntegrations()
     ]

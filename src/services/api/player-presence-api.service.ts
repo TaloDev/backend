@@ -27,8 +27,6 @@ export default class PlayerPresenceAPIService extends APIService {
     const player = await em.getRepository(Player).findOne({
       id,
       game: req.ctx.state.game
-    }, {
-      populate: ['presence', 'presence.playerAlias']
     })
 
     if (!player) {
@@ -59,8 +57,6 @@ export default class PlayerPresenceAPIService extends APIService {
       player: {
         game: req.ctx.state.game
       }
-    }, {
-      populate: ['player.presence']
     })
 
     if (!playerAlias) {

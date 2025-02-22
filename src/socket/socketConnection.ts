@@ -35,7 +35,7 @@ export default class SocketConnection {
   async getPlayerAlias(): Promise<PlayerAlias | null> {
     return RequestContext.getEntityManager()
       .getRepository(PlayerAlias)
-      .findOne(this.playerAliasId, { refresh: true })
+      .findOne(this.playerAliasId)
   }
 
   getAPIKeyId(): number {
@@ -103,10 +103,8 @@ export default class SocketConnection {
   async handleClosed(): Promise<void> {
     if (this.playerAliasId) {
       const playerAlias = await this.getPlayerAlias()
-
       if (playerAlias) {
         const em = RequestContext.getEntityManager() as EntityManager
-        await em.populate(playerAlias, ['player.presence'])
         await playerAlias.player.setPresence(em, this.wss, playerAlias, false)
       }
     }

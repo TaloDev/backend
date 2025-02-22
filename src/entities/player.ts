@@ -30,7 +30,7 @@ export default class Player {
   @OneToOne({ nullable: true, orphanRemoval: true })
   auth: PlayerAuth
 
-  @OneToOne({ nullable: true, orphanRemoval: true })
+  @OneToOne({ nullable: true, orphanRemoval: true, eager: true })
   presence: PlayerPresence
 
   @Property()
@@ -97,7 +97,7 @@ export default class Player {
     const conns = await socket.findConnectionsAsync(async (conn) => {
       return conn.hasScope(APIKeyScope.READ_PLAYERS) &&
         conn.playerAliasId &&
-        playerAlias.player.game.id === (await conn.getPlayerAlias()).player.game.id
+        this.game.id === (await conn.getPlayerAlias())?.player.game.id
     })
     await sendMessages(conns, 'v1.players.presence.updated', {
       presence: this.presence,

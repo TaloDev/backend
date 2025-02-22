@@ -15,7 +15,7 @@ describe('Socket presence', () => {
       })
 
       // Refresh the player entity to get the latest presence
-      await em.refresh(player, { populate: ['presence'] })
+      await em.refresh(player)
       expect(player.presence.online).toBe(true)
       expect(player.presence.playerAlias.id).toBe(player.aliases[0].id)
     })
@@ -31,11 +31,11 @@ describe('Socket presence', () => {
         expect(actual.res).toBe('v1.players.identify.success')
       })
 
-      await em.refresh(player, { populate: ['presence'] })
+      await em.refresh(player)
       expect(player.presence.online).toBe(true)
     })
 
-    await em.refresh(player, { populate: ['presence'] })
+    await em.refresh(player)
     expect(player.presence.online).toBe(false)
     expect(player.presence.playerAlias.id).toBe(player.aliases[0].id)
   })

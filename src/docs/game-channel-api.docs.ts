@@ -23,6 +23,7 @@ const GameChannelAPIDocs: APIDocs<GameChannelAPIService> = {
               props: [
                 { key: 'channelType', value: 'public' }
               ],
+              autoCleanup: false,
               createdAt: '2024-12-09T12:00:00.000Z',
               updatedAt: '2024-12-09T12:00:00.000Z'
             },
@@ -51,6 +52,7 @@ const GameChannelAPIDocs: APIDocs<GameChannelAPIService> = {
                 { key: 'channelType', value: 'guild' },
                 { key: 'guildId', value: '5912' }
               ],
+              autoCleanup: true,
               createdAt: '2024-12-09T12:00:00.000Z',
               updatedAt: '2024-12-09T12:00:00.000Z'
             }
@@ -82,6 +84,7 @@ const GameChannelAPIDocs: APIDocs<GameChannelAPIService> = {
             props: [
               { key: 'channelType', value: 'public' }
             ],
+            autoCleanup: false,
             createdAt: '2024-12-09T12:00:00.000Z',
             updatedAt: '2024-12-09T12:00:00.000Z'
           }
@@ -110,6 +113,7 @@ const GameChannelAPIDocs: APIDocs<GameChannelAPIService> = {
               props: [
                 { key: 'channelType', value: 'public' }
               ],
+              autoCleanup: false,
               createdAt: '2024-12-09T12:00:00.000Z',
               updatedAt: '2024-12-09T12:00:00.000Z'
             },
@@ -122,6 +126,7 @@ const GameChannelAPIDocs: APIDocs<GameChannelAPIService> = {
               props: [
                 { key: 'channelType', value: 'public' }
               ],
+              autoCleanup: false,
               createdAt: '2024-12-09T12:00:00.000Z',
               updatedAt: '2024-12-09T12:00:00.000Z'
             }
@@ -182,6 +187,7 @@ const GameChannelAPIDocs: APIDocs<GameChannelAPIService> = {
               { key: 'channelType', value: 'guild' },
               { key: 'guildId', value: '5912' }
             ],
+            autoCleanup: true,
             createdAt: '2024-12-09T12:00:00.000Z',
             updatedAt: '2024-12-09T12:00:00.000Z'
           }
@@ -218,6 +224,7 @@ const GameChannelAPIDocs: APIDocs<GameChannelAPIService> = {
             props: [
               { key: 'channelType', value: 'public' }
             ],
+            autoCleanup: false,
             createdAt: '2024-12-09T12:00:00.000Z',
             updatedAt: '2024-12-09T12:00:00.000Z'
           }
@@ -291,6 +298,7 @@ const GameChannelAPIDocs: APIDocs<GameChannelAPIService> = {
               { key: 'channelType', value: 'public' },
               { key: 'recentlyUpdated', value: 'true' }
             ],
+            autoCleanup: false,
             createdAt: '2024-12-09T12:00:00.000Z',
             updatedAt: '2024-12-09T12:01:00.000Z'
           }

@@ -1,7 +1,7 @@
 import { FilterQuery, ObjectQuery, EntityManager } from '@mikro-orm/mysql'
 import { HasPermission, Routes, Service, Request, Response, Validate } from 'koa-clay'
 import { GameActivityType } from '../entities/game-activity'
-import Leaderboard from '../entities/leaderboard'
+import Leaderboard, { LeaderboardRefreshInterval } from '../entities/leaderboard'
 import LeaderboardEntry from '../entities/leaderboard-entry'
 import PlayerAlias from '../entities/player-alias'
 import triggerIntegrations from '../lib/integrations/triggerIntegrations'
@@ -238,7 +238,7 @@ export default class LeaderboardService extends Service {
       }
     }
 
-    if (changedProperties.includes('refreshInterval')) {
+    if (changedProperties.includes('refreshInterval') && leaderboard.refreshInterval !== LeaderboardRefreshInterval.NEVER) {
       await archiveEntriesForLeaderboard(em, leaderboard)
     }
 

@@ -18,6 +18,7 @@ import GameSave from '../entities/game-save'
 import PlayerAuthActivity from '../entities/player-auth-activity'
 import { ClickHouseClient } from '@clickhouse/client'
 import checkPricingPlanPlayerLimit from '../lib/billing/checkPricingPlanPlayerLimit'
+import GameChannel from '../entities/game-channel'
 
 const propsValidation = async (val: unknown): Promise<ValidationCondition[]> => [
   {
@@ -169,7 +170,8 @@ export default class PlayerService extends Service {
 
       const groups = []
       for (const filter of groupFilters) {
-        const group = await em.repo(PlayerGroup).findOne({ id: filter.split(':'), game: req.ctx.state.game })
+        const id = filter.split(':')[1]
+        const group = await em.repo(PlayerGroup).findOne({ id, game: req.ctx.state.game })
         if (group) groups.push(group)
       }
 
@@ -178,6 +180,29 @@ export default class PlayerService extends Service {
           .orWhere({
             groups: {
               $in: groups
+            }
+          })
+      }
+
+      const channelFilters = search.split(' ')
+        .filter((part) => part.startsWith('channel:'))
+
+      const channels = []
+      for (const filter of channelFilters) {
+        const id = filter.split(':')[1]
+        const channel = await em.repo(GameChannel).findOne({ id: Number(id), game: req.ctx.state.game })
+        if (channel) channels.push(channel)
+      }
+
+      if (channels.length > 0) {
+        query
+          .orWhere({
+            aliases: {
+              $in: await em.repo(PlayerAlias).find({
+                channels: {
+                  $in: channels
+                }
+              })
             }
           })
       }

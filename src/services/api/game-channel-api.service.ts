@@ -176,7 +176,7 @@ export default class GameChannelAPIService extends APIService {
     const em: EntityManager = req.ctx.em
     const channel: GameChannel = req.ctx.state.channel
 
-    if (channel.autoCleanup && (channel.owner.id === req.ctx.state.alias.id || channel.members.count() === 1)) {
+    if (channel.autoCleanup && (channel.owner?.id === req.ctx.state.alias.id || channel.members.count() === 1)) {
       await em.removeAndFlush(channel)
 
       return {
@@ -185,7 +185,7 @@ export default class GameChannelAPIService extends APIService {
     }
 
     if (channel.members.getIdentifiers().includes(req.ctx.state.alias.id)) {
-      if (channel.owner.id === req.ctx.state.alias.id) {
+      if (channel.owner?.id === req.ctx.state.alias.id) {
         channel.owner = null
       }
 

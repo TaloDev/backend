@@ -190,4 +190,23 @@ describe('Game channel API service - leave', () => {
       })
     })
   })
+
+  it('should allow leaving a channel with a null owner', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_CHANNELS])
+
+    const channel = await new GameChannelFactory(apiKey.game).one()
+    const player = await new PlayerFactory([apiKey.game]).one()
+    channel.owner = null
+    channel.members.add(player.aliases[0])
+    await (<EntityManager>global.em).persistAndFlush(channel)
+
+    await request(global.app)
+      .post(`/v1/game-channels/${channel.id}/leave`)
+      .auth(token, { type: 'bearer' })
+      .set('x-talo-alias', String(player.aliases[0].id))
+      .expect(204)
+
+    const updatedChannel = await (<EntityManager>global.em).refresh(channel, { populate: ['members'] })
+    expect(updatedChannel.members.count()).toBe(0)
+  })
 })

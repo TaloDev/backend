@@ -3,22 +3,8 @@ import GameChannelAPIPolicy from '../../policies/api/game-channel-api.policy'
 import APIService from './api-service'
 import GameChannel from '../../entities/game-channel'
 import { EntityManager } from '@mikro-orm/mysql'
-import sanitiseProps from '../../lib/props/sanitiseProps'
-import Socket from '../../socket'
-import { sendMessages, SocketMessageResponse } from '../../socket/messages/socketMessage'
 import GameChannelAPIDocs from '../../docs/game-channel-api.docs'
 import PlayerAlias from '../../entities/player-alias'
-import { uniqWith } from 'lodash'
-import { APIKeyScope } from '../../entities/api-key'
-
-async function sendMessageToChannelMembers<T extends object>(req: Request, channel: GameChannel, res: SocketMessageResponse, data: T) {
-  const socket: Socket = req.ctx.wss
-  const conns = socket.findConnections((conn) => {
-    return conn.hasScope(APIKeyScope.READ_GAME_CHANNELS) &&
-      channel.members.getIdentifiers().includes(conn.playerAliasId)
-  })
-  await sendMessages(conns, res, data)
-}
 
 function canModifyChannel(channel: GameChannel, alias: PlayerAlias): boolean {
   return channel.owner ? channel.owner.id === alias.id : false
@@ -113,33 +99,9 @@ export default class GameChannelAPIService extends APIService {
     body: [GameChannel]
   })
   @HasPermission(GameChannelAPIPolicy, 'post')
+  @ForwardTo('games.game-channels', 'post')
   async post(req: Request): Promise<Response> {
-    const { name, props, autoCleanup } = req.body
-    const em: EntityManager = req.ctx.em
-
-    const channel = new GameChannel(req.ctx.state.game)
-    channel.name = name
-    channel.owner = req.ctx.state.alias
-    channel.members.add(req.ctx.state.alias)
-    channel.autoCleanup = autoCleanup ?? false
-
-    if (props) {
-      channel.props = sanitiseProps(props)
-    }
-
-    await em.persistAndFlush(channel)
-
-    await sendMessageToChannelMembers(req, channel, 'v1.channels.player-joined', {
-      channel,
-      playerAlias: req.ctx.state.alias
-    })
-
-    return {
-      status: 200,
-      body: {
-        channel: await channel.toJSONWithCount(em, req.ctx.state.includeDevData)
-      }
-    }
+    return forwardRequest(req)
   }
 
   @Validate({
@@ -152,7 +114,7 @@ export default class GameChannelAPIService extends APIService {
 
     if (!channel.members.getIdentifiers().includes(req.ctx.state.alias.id)) {
       channel.members.add(req.ctx.state.alias)
-      await sendMessageToChannelMembers(req, channel, 'v1.channels.player-joined', {
+      await channel.sendMessageToMembers(req, 'v1.channels.player-joined', {
         channel,
         playerAlias: req.ctx.state.alias
       })
@@ -189,7 +151,7 @@ export default class GameChannelAPIService extends APIService {
         channel.owner = null
       }
 
-      await sendMessageToChannelMembers(req, channel, 'v1.channels.player-left', {
+      await channel.sendMessageToMembers(req, 'v1.channels.player-left', {
         channel,
         playerAlias: req.ctx.state.alias
       })
@@ -208,83 +170,29 @@ export default class GameChannelAPIService extends APIService {
     body: [GameChannel]
   })
   @HasPermission(GameChannelAPIPolicy, 'put')
+  @ForwardTo('games.game-channels', 'put')
   async put(req: Request): Promise<Response> {
-    const { name, props, ownerAliasId } = req.body
-    const em: EntityManager = req.ctx.em
     const channel: GameChannel = req.ctx.state.channel
 
     if (!canModifyChannel(channel, req.ctx.state.alias)) {
       req.ctx.throw(403, 'This player is not the owner of the channel')
     }
 
-    if (name) {
-      channel.name = name
-    }
-
-    if (props) {
-      const mergedProps = uniqWith([
-        ...sanitiseProps(props),
-        ...channel.props
-      ], (a, b) => a.key === b.key)
-
-      channel.props = sanitiseProps(mergedProps, true)
-    }
-
-    if (ownerAliasId) {
-      const newOwner = await em.getRepository(PlayerAlias).findOne({
-        id: ownerAliasId,
-        player: {
-          game: req.ctx.state.game
-        }
-      })
-
-      if (!newOwner) {
-        req.ctx.throw(404, 'New owner not found')
-      }
-
-      if (!channel.members.getIdentifiers().includes(newOwner.id)) {
-        req.ctx.throw(400, 'New owner is not a member of the channel')
-      }
-
-      channel.owner = newOwner
-
-      await sendMessageToChannelMembers(req, channel, 'v1.channels.ownership-transferred', {
-        channel,
-        newOwner
-      })
-    }
-
-    await em.flush()
-
-    return {
-      status: 200,
-      body: {
-        channel: await channel.toJSONWithCount(em, req.ctx.state.includeDevData)
-      }
-    }
+    return forwardRequest(req)
   }
 
   @Validate({
     headers: ['x-talo-alias']
   })
   @HasPermission(GameChannelAPIPolicy, 'delete')
+  @ForwardTo('games.game-channels', 'delete')
   async delete(req: Request): Promise<Response> {
-    const em: EntityManager = req.ctx.em
     const channel: GameChannel = req.ctx.state.channel
 
     if (!canModifyChannel(channel, req.ctx.state.alias)) {
       req.ctx.throw(403, 'This player is not the owner of the channel')
     }
 
-    await sendMessageToChannelMembers(req, channel, 'v1.channels.deleted', {
-      channel
-    })
-
-    await channel.members.removeAll()
-    await em.removeAndFlush(channel)
-
-    return {
-      status: 204
-    }
+    return forwardRequest(req)
   }
 }

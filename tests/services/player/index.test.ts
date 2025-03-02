@@ -6,7 +6,7 @@ import createOrganisationAndGame from '../../utils/createOrganisationAndGame'
 import createUserAndToken from '../../utils/createUserAndToken'
 import PlayerGroupFactory from '../../fixtures/PlayerGroupFactory'
 import PlayerGroupRule, { PlayerGroupRuleCastType, PlayerGroupRuleName } from '../../../src/entities/player-group-rule'
-import GameFactory from '../../fixtures/GameFactory'
+import GameChannelFactory from '../../fixtures/GameChannelFactory'
 
 describe('Player service - index', () => {
   it('should return a list of players', async () => {
@@ -182,34 +182,24 @@ describe('Player service - index', () => {
     expect(res.body.players).toHaveLength(1)
   })
 
-  it('should not filter players by groups from other games', async () => {
+  it('should filter players by channels', async () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({ organisation })
 
-    const otherGame = await new GameFactory(organisation).one()
-    const player = await new PlayerFactory([game]).state(() => ({ lastSeenAt: new Date(2022, 1, 1) })).one()
+    const player = await new PlayerFactory([game]).one()
+    const otherPlayers = await new PlayerFactory([game]).many(3)
 
-    const dateRule = new PlayerGroupRule(PlayerGroupRuleName.LT, 'lastSeenAt')
-    dateRule.castType = PlayerGroupRuleCastType.DATETIME
-    dateRule.operands = ['2023-01-01']
+    const channel = await new GameChannelFactory(game).one()
+    channel.members.add(player.aliases[0])
 
-    const group = await new PlayerGroupFactory().construct(game).state(() => ({ rules: [dateRule] })).one()
-    await (<EntityManager>global.em).persistAndFlush([otherGame, player, group])
+    await (<EntityManager>global.em).persistAndFlush([player, ...otherPlayers, channel])
 
-    const invalidRes = await request(global.app)
-      .get(`/games/${otherGame.id}/players`)
-      .query({ search: `group:${group.id}`, page: 0 })
-      .auth(token, { type: 'bearer' })
-      .expect(200)
-
-    expect(invalidRes.body.players).toHaveLength(0)
-
-    const validRes = await request(global.app)
+    const res = await request(global.app)
       .get(`/games/${game.id}/players`)
-      .query({ search: `group:${group.id}`, page: 0 })
+      .query({ search: `channel:${channel.id}`, page: 0 })
       .auth(token, { type: 'bearer' })
       .expect(200)
 
-    expect(validRes.body.players).toHaveLength(1)
+    expect(res.body.players).toHaveLength(1)
   })
 })

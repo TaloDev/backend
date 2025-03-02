@@ -33,7 +33,10 @@ export enum GameActivityType {
   API_KEY_UPDATED,
   GAME_NAME_UPDATED,
   PLAYER_STAT_UPDATED,
-  LEADERBOARD_ENTRY_UPDATED
+  LEADERBOARD_ENTRY_UPDATED,
+  GAME_CHANNEL_CREATED,
+  GAME_CHANNEL_UPDATED,
+  GAME_CHANNEL_DELETED
 }
 
 @Entity()
@@ -129,6 +132,12 @@ export default class GameActivity {
         return `${this.user.username} updated a player stat value`
       case GameActivityType.LEADERBOARD_ENTRY_UPDATED:
         return `${this.user.username} updated a leaderboard entry`
+      case GameActivityType.GAME_CHANNEL_CREATED:
+        return `${this.user.username} created a channel`
+      case GameActivityType.GAME_CHANNEL_UPDATED:
+        return `${this.user.username} updated a channel`
+      case GameActivityType.GAME_CHANNEL_DELETED:
+        return `${this.user.username} deleted a channel`
       default:
         return ''
     }

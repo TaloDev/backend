@@ -179,28 +179,25 @@ describe('Game channel API service - put', () => {
     expect(res.body.channel.owner.id).toBe(newOwner.aliases[0].id)
   })
 
-  it('should not update the channel owner if they are now in the channel', async () => {
+  it('should set the channel owner to null if ownerAliasId is null', async () => {
     const em: EntityManager = global.em
 
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_CHANNELS])
 
     const channel = await new GameChannelFactory(apiKey.game).one()
     const player = await new PlayerFactory([apiKey.game]).one()
-    const newOwner = await new PlayerFactory([apiKey.game]).one()
-
     channel.owner = player.aliases[0]
     channel.members.add(player.aliases[0])
-
-    await em.persistAndFlush([channel, newOwner])
+    await em.persistAndFlush(channel)
 
     const res = await request(global.app)
       .put(`/v1/game-channels/${channel.id}`)
-      .send({ ownerAliasId: newOwner.aliases[0].id })
+      .send({ ownerAliasId: null })
       .auth(token, { type: 'bearer' })
       .set('x-talo-alias', String(player.aliases[0].id))
-      .expect(400)
+      .expect(200)
 
-    expect(res.body).toStrictEqual({ message: 'New owner is not a member of the channel' })
+    expect(res.body.channel.owner).toBeNull()
   })
 
   it('should not update the channel owner if the provided alias does not exist', async () => {

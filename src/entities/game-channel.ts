@@ -2,9 +2,11 @@ import { Collection, Embedded, Entity, EntityManager, ManyToMany, ManyToOne, Pri
 import PlayerAlias from './player-alias'
 import Game from './game'
 import Prop from './prop'
-import { Required, ValidationCondition } from 'koa-clay'
+import { Request, Required, ValidationCondition } from 'koa-clay'
 import { devDataPlayerFilter } from '../middlewares/dev-data-middleware'
-import { Request } from 'koa-clay'
+import { sendMessages, SocketMessageResponse } from '../socket/messages/socketMessage'
+import Socket from '../socket'
+import { APIKeyScope } from './api-key'
 
 @Entity()
 export default class GameChannel {
@@ -12,20 +14,7 @@ export default class GameChannel {
   id: number
 
   @Required({
-    methods: ['POST'],
-    validation: async (val: unknown, req: Request): Promise<ValidationCondition[]> => {
-      const duplicateName = await (<EntityManager>req.ctx.em).getRepository(GameChannel).findOne({
-        name: val,
-        game: req.ctx.state.game
-      })
-
-      return [
-        {
-          check: !duplicateName,
-          error: `A channel with the name '${val}' already exists`
-        }
-      ]
-    }
+    methods: ['POST']
   })
   @Property()
   name: string
@@ -67,6 +56,15 @@ export default class GameChannel {
     this.game = game
   }
 
+  async sendMessageToMembers<T extends object>(req: Request, res: SocketMessageResponse, data: T) {
+    const socket: Socket = req.ctx.wss
+    const conns = socket.findConnections((conn) => {
+      return conn.hasScope(APIKeyScope.READ_GAME_CHANNELS) &&
+        this.members.getIdentifiers().includes(conn.playerAliasId)
+    })
+    await sendMessages(conns, res, data)
+  }
+
   toJSON() {
     return {
       id: this.id,
@@ -74,6 +72,7 @@ export default class GameChannel {
       owner: this.owner,
       totalMessages: this.totalMessages,
       props: this.props,
+      autoCleanup: this.autoCleanup,
       createdAt: this.createdAt,
       updatedAt: this.updatedAt
     }

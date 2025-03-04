@@ -51,7 +51,7 @@ export default class SocketConnection {
   }
 
   getRateLimitMaxRequests(): number {
-    return this.playerAliasId ? 100 : 10
+    return this.playerAliasId ? 250 : 25
   }
 
   async checkRateLimitExceeded(): Promise<boolean> {

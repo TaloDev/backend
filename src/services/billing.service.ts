@@ -63,6 +63,15 @@ export default class BillingService extends Service {
     const user = await getUserFromToken(req.ctx)
     const organisation: Organisation = user.organisation
 
+    if (!stripe) {
+      return {
+        status: 200,
+        body: {
+          pricingPlans: []
+        }
+      }
+    }
+
     for (const plan of plans) {
       const prices = await stripe.prices.list({
         product: plan.stripeId,

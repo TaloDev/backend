@@ -4,6 +4,7 @@ services:
     command:
     environment:
       - REDIS_PASSWORD=${REDIS_PASSWORD}
+    restart: unless-stopped
 
   stripe-api:
     image: stripe/stripe-mock:latest

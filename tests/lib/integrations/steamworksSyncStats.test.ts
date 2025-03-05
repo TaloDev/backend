@@ -314,4 +314,23 @@ describe('Steamworks integration - sync stats', () => {
       method: 'POST'
     })
   })
+
+  it('should throw if the response stats are not an array', async () => {
+    const [, game] = await createOrganisationAndGame()
+
+    const config = await new IntegrationConfigFactory().one()
+    const integration = await new IntegrationFactory().construct(IntegrationType.STEAMWORKS, game, config).one()
+    await (<EntityManager>global.em).persistAndFlush(integration)
+
+    const getSchemaMock = vi.fn((): [number] => [404])
+    axiosMock.onGet(`https://partner.steam-api.com/ISteamUserStats/GetSchemaForGame/v2?appid=${integration.getConfig().appId}`).replyOnce(getSchemaMock)
+
+    try {
+      await syncSteamworksStats((<EntityManager>global.em), integration)
+    } catch (err) {
+      expect(err.message).toBe('Failed to retrieve stats - is your App ID correct?')
+    }
+
+    expect(getSchemaMock).toHaveBeenCalledTimes(1)
+  })
 })

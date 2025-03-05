@@ -89,13 +89,15 @@ describe('Player auth API service - delete', () => {
       .set('x-talo-session', sessionToken)
       .expect(204)
 
-    const updatedEventCount = await (<ClickHouseClient>global.clickhouse).query({
-      query: `SELECT count() as count FROM events WHERE player_alias_id = ${alias.id}`,
-      format: 'JSONEachRow'
-    }).then((res) => res.json<{ count: string }>())
-      .then((res) => Number(res[0].count))
+    await vi.waitUntil(async () => {
+      const count = await (<ClickHouseClient>global.clickhouse).query({
+        query: `SELECT count() as count FROM events WHERE player_alias_id = ${alias.id}`,
+        format: 'JSONEachRow'
+      }).then((res) => res.json<{ count: string }>())
+        .then((res) => Number(res[0].count))
 
-    expect(updatedEventCount).toBe(0)
+      return count === 0
+    })
 
     const updatedEventPropsCount = await (<ClickHouseClient>global.clickhouse).query({
       query: 'SELECT count() as count FROM event_props',

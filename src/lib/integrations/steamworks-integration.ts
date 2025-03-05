@@ -422,7 +422,11 @@ export async function syncSteamworksStats(em: EntityManager, integration: Integr
   const res = await makeRequest<GetSchemaForGameResponse>(config, event)
   await em.persistAndFlush(event)
 
-  const steamworksStats = res.data.game.availableGameStats.stats
+  const steamworksStats = res.data?.game?.availableGameStats?.stats
+  if (!Array.isArray(steamworksStats)) {
+    throw new Error('Failed to retrieve stats - is your App ID correct?')
+  }
+
   for (const steamworksStat of steamworksStats) {
     const existingStat = await em.getRepository(GameStat).findOne({ internalName: steamworksStat.name, game: integration.game })
     if (!existingStat) {

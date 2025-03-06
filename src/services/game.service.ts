@@ -33,7 +33,11 @@ export default class GameService extends Service {
     const user = await getUserFromToken(req.ctx)
 
     const game = new Game(name, user.organisation)
-    game.apiSecret = new GameSecret()
+    try {
+      game.apiSecret = new GameSecret()
+    } catch (err) {
+      req.ctx.throw(500, err.message)
+    }
     await em.persistAndFlush(game)
 
     return {

@@ -19,7 +19,11 @@ export default class GameSecret {
   }
 
   generateSecret(): string {
-    const secret = Buffer.from(crypto.randomBytes(48)).toString('hex')
+    if ((process.env.API_SECRET ?? '').length !== 32) {
+      throw new Error('API_SECRET must be 32 characters long')
+    }
+
+    const secret = crypto.randomBytes(48).toString('hex')
     return encrypt(secret, process.env.API_SECRET)
   }
 

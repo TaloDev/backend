@@ -126,4 +126,30 @@ describe('User public service - register', () => {
       }
     })
   })
+
+  it('should not let a user register if registration is disabled', async () => {
+    process.env.REGISTRATION_MODE = 'disabled'
+
+    const res = await request(global.app)
+      .post('/public/users/register')
+      .send({ email: randEmail(), username: randUserName(), password: 'password', organisationName: 'Talo' })
+      .expect(400)
+
+    expect(res.body).toStrictEqual({ message: 'Registration is disabled' })
+
+    delete process.env.REGISTRATION_MODE
+  })
+
+  it('should not let a user register if registration is exclusive', async () => {
+    process.env.REGISTRATION_MODE = 'exclusive'
+
+    const res = await request(global.app)
+      .post('/public/users/register')
+      .send({ email: randEmail(), username: randUserName(), password: 'password', organisationName: 'Talo' })
+      .expect(400)
+
+    expect(res.body).toStrictEqual({ message: 'Registration requires an invitation' })
+
+    delete process.env.REGISTRATION_MODE
+  })
 })

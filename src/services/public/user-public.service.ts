@@ -106,6 +106,14 @@ export default class UserPublicService extends Service {
     const { email, username, password, organisationName, inviteToken } = req.body
     const em: EntityManager = req.ctx.em
 
+    const registrationMode = process.env.REGISTRATION_MODE || 'open'
+    if (registrationMode === 'disabled') {
+      req.ctx.throw(400, 'Registration is disabled')
+    }
+    if (registrationMode === 'exclusive' && !inviteToken) {
+      req.ctx.throw(400, 'Registration requires an invitation')
+    }
+
     const userWithEmail = await em.getRepository(User).findOne({ email })
     const orgWithEmail = await em.getRepository(Organisation).findOne({ email })
     if (userWithEmail || orgWithEmail) req.ctx.throw(400, 'Email address is already in use')

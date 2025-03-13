@@ -6,7 +6,7 @@ import GameChannel from '../../entities/game-channel'
 import { sendMessages } from '../messages/socketMessage'
 import { APIKeyScope } from '../../entities/api-key'
 
-const gameChannelListeners: SocketMessageListener<ZodType>[] = [
+const gameChannelListeners = [
   createListener(
     'v1.channels.message',
     z.object({
@@ -16,14 +16,15 @@ const gameChannelListeners: SocketMessageListener<ZodType>[] = [
       message: z.string()
     }),
     async ({ conn, data, socket }) => {
-      const channel = await (RequestContext.getEntityManager()
+      const em = RequestContext.getEntityManager()!
+      const channel = await em
         .getRepository(GameChannel)
         .findOne({
           id: data.channel.id,
           game: conn.game
         }, {
           populate: ['members']
-        }))
+        })
 
       if (!channel) {
         throw new Error('Channel not found')
@@ -43,12 +44,12 @@ const gameChannelListeners: SocketMessageListener<ZodType>[] = [
       })
 
       channel.totalMessages++
-      await RequestContext.getEntityManager().flush()
+      await em.flush()
     },
     {
       apiKeyScopes: [APIKeyScope.WRITE_GAME_CHANNELS]
     }
   )
-]
+] as unknown as SocketMessageListener<ZodType>[]
 
 export default gameChannelListeners

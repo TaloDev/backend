@@ -5,7 +5,7 @@ import initStripe from '../../../../src/lib/billing/initStripe'
 import PricingPlanFactory from '../../../fixtures/PricingPlanFactory'
 import { v4 } from 'uuid'
 
-const stripe = initStripe()
+const stripe = initStripe()!
 
 describe('Webhook service - subscription deleted', () => {
   it('should reset the organisation pricing plan to the default plan after the subscription is deleted', async () => {
@@ -35,7 +35,7 @@ describe('Webhook service - subscription deleted', () => {
 
     const header = stripe.webhooks.generateTestHeaderString({
       payload,
-      secret: process.env.STRIPE_WEBHOOK_SECRET
+      secret: process.env.STRIPE_WEBHOOK_SECRET!
     })
 
     await request(global.app)

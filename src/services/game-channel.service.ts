@@ -1,16 +1,18 @@
 import { EntityManager, QueryOrder } from '@mikro-orm/mysql'
-import { HasPermission, Service, Request, Response, Validate } from 'koa-clay'
+import { HasPermission, Service, Request, Response, Route, Validate } from 'koa-clay'
 import GameChannel from '../entities/game-channel'
 import GameChannelPolicy from '../policies/game-channel.policy'
 import { GameActivityType } from '../entities/game-activity'
 import createGameActivity from '../lib/logging/createGameActivity'
-import sanitiseProps from '../lib/props/sanitiseProps'
-import { uniqWith } from 'lodash'
+import { hardSanitiseProps, mergeAndSanitiseProps } from '../lib/props/sanitiseProps'
 import PlayerAlias from '../entities/player-alias'
 
 const itemsPerPage = 50
 
 export default class GameChannelService extends Service {
+  @Route({
+    method: 'GET'
+  })
   @Validate({ query: ['page'] })
   @HasPermission(GameChannelPolicy, 'index')
   async index(req: Request): Promise<Response> {
@@ -53,6 +55,9 @@ export default class GameChannelService extends Service {
     }
   }
 
+  @Route({
+    method: 'POST'
+  })
   @Validate({ body: [GameChannel] })
   @HasPermission(GameChannelPolicy, 'post')
   async post(req: Request): Promise<Response> {
@@ -83,7 +88,7 @@ export default class GameChannelService extends Service {
     }
 
     if (props) {
-      channel.props = sanitiseProps(props)
+      channel.props = hardSanitiseProps(props)
     }
 
     if (!req.ctx.state.user.api) {
@@ -112,6 +117,10 @@ export default class GameChannelService extends Service {
     }
   }
 
+  @Route({
+    method: 'PUT',
+    path: '/:id'
+  })
   @Validate({ body: [GameChannel] })
   @HasPermission(GameChannelPolicy, 'put')
   async put(req: Request): Promise<Response> {
@@ -127,13 +136,7 @@ export default class GameChannelService extends Service {
     }
 
     if (props) {
-      const mergedProps = uniqWith([
-        ...sanitiseProps(props),
-        ...channel.props
-      ], (a, b) => a.key === b.key)
-
-      channel.props = sanitiseProps(mergedProps, true)
-
+      channel.props = mergeAndSanitiseProps(channel.props, props)
       changedProperties.push('props')
     }
 
@@ -194,6 +197,10 @@ export default class GameChannelService extends Service {
     }
   }
 
+  @Route({
+    method: 'DELETE',
+    path: '/:id'
+  })
   @HasPermission(GameChannelPolicy, 'delete')
   async delete(req: Request): Promise<Response> {
     const em: EntityManager = req.ctx.em

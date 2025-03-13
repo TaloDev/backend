@@ -8,8 +8,8 @@ import { IdentifyMessage } from './createSocketIdentifyMessage'
 class TestClient extends WebSocket {
   private messages: string[] = []
   private closed = false
-  private closeCode: number
-  private closeReason: string
+  private closeCode?: number
+  private closeReason?: string
 
   constructor(url: string) {
     super(url)
@@ -77,7 +77,7 @@ class TestClient extends WebSocket {
       await this.expectJson(cb)
       throw new Error('Unexpected message found')
     } catch (err) {
-      if (err.message === 'Message not found') {
+      if (err instanceof Error && err.message === 'Message not found') {
         return
       }
       throw err
@@ -125,7 +125,7 @@ export default async function createTestSocket(
         })
       })
     } catch (err) {
-      if (err.code === 'EADDRINUSE') {
+      if (err instanceof Error && 'code' in err && err.code === 'EADDRINUSE') {
         port = getRandPort()
         continue
       }

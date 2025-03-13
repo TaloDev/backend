@@ -54,7 +54,7 @@ describe('Player group service - put', () => {
       expect(res.body.group.description).toBe('People who have completed the game')
       expect(res.body.group.rules).toStrictEqual(rules)
 
-      expect(activity.extra.groupName).toBe(res.body.group.name)
+      expect(activity!.extra.groupName).toBe(res.body.group.name)
     } else {
       expect(res.body).toStrictEqual({ message: 'You do not have permissions to update groups' })
 

@@ -5,7 +5,7 @@ import PricingPlanFactory from '../../fixtures/PricingPlanFactory'
 import createOrganisationAndGame from '../../utils/createOrganisationAndGame'
 import createUserAndToken from '../../utils/createUserAndToken'
 
-const stripe = initStripe()
+const stripe = initStripe()!
 
 describe('Billing service - plans', () => {
   it('should return a list of pricing plans', async () => {
@@ -29,7 +29,7 @@ describe('Billing service - plans', () => {
     expect(res.body.pricingPlans[0].prices[0]).toStrictEqual({
       amount: price.unit_amount,
       currency: price.currency,
-      interval: price.recurring.interval,
+      interval: price.recurring!.interval,
       current: true
     })
   })

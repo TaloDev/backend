@@ -1,6 +1,6 @@
 import Stripe from 'stripe'
 import { EntityManager } from '@mikro-orm/mysql'
-import { Request, Response, Routes, Service } from 'koa-clay'
+import { Request, Response, Route, Service } from 'koa-clay'
 import OrganisationPricingPlan from '../../entities/organisation-pricing-plan'
 import createDefaultPricingPlan from '../../lib/billing/createDefaultPricingPlan'
 import PricingPlan from '../../entities/pricing-plan'
@@ -20,86 +20,19 @@ type RawRequest = KoaRequest & {
 
 const stripe = initStripe()
 
-@Routes([
-  {
-    method: 'POST',
-    path: '/subscriptions',
-    handler: 'subscriptions'
-  }
-])
 export default class WebhookService extends Service {
-  private async getOrganisationPricingPlan(req: Request, stripeCustomerId: string): Promise<OrganisationPricingPlan> {
-    const em: EntityManager = req.ctx.em
-
-    const orgPlan = await em.getRepository(OrganisationPricingPlan).findOne({
-      stripeCustomerId
-    }, {
-      populate: ['organisation']
-    })
-
-    return orgPlan
-  }
-
-  private async handleSubscriptionDeleted(req: Request, subscription: Stripe.Subscription) {
-    const em: EntityManager = req.ctx.em
-
-    const orgPlan = await this.getOrganisationPricingPlan(req, subscription.customer as string)
-    orgPlan.organisation.pricingPlan = await createDefaultPricingPlan(em, orgPlan.organisation)
-
-    await em.flush()
-  }
-
-  private async handleSubscriptionUpdated(req: Request, subscription: Stripe.Subscription) {
-    const em: EntityManager = req.ctx.em
-
-    const orgPlan = await this.getOrganisationPricingPlan(req, subscription.customer as string)
-
-    const price = subscription.items.data[0].price
-    const plan = await em.getRepository(PricingPlan).findOne({ stripeId: price.product as string })
-
-    const prevEndDate = orgPlan.endDate
-    const prevStripePriceId = orgPlan.stripePriceId
-
-    orgPlan.pricingPlan = plan
-    orgPlan.status = subscription.status
-    orgPlan.stripePriceId = price.id
-    orgPlan.endDate = subscription.cancel_at_period_end
-      ? new Date(subscription.current_period_end * 1000)
-      : null
-
-    await em.flush()
-
-    if (prevStripePriceId !== orgPlan.stripePriceId) {
-      const price = subscription.items.data[0].price
-      const product = await stripe.products.retrieve(price.product as string)
-      await queueEmail(req.ctx.emailQueue, new PlanUpgraded(orgPlan.organisation, price, product))
-    }
-
-    if (prevEndDate && !orgPlan.endDate && prevStripePriceId === orgPlan.stripePriceId) {
-      await queueEmail(req.ctx.emailQueue, new PlanRenewed(orgPlan.organisation))
-    } else if (!prevEndDate && orgPlan.endDate) {
-      await queueEmail(req.ctx.emailQueue, new PlanCancelled(orgPlan.organisation))
-    }
-  }
-
-  private async handleNewInvoice(req: Request, invoice: Stripe.Invoice): Promise<void> {
-    const orgPlan = await this.getOrganisationPricingPlan(req, invoice.customer as string)
-    await queueEmail(req.ctx.emailQueue, new PlanInvoice(orgPlan.organisation, invoice))
-  }
-
-  private async handlePaymentFailed(req: Request, invoice: Stripe.Invoice): Promise<void> {
-    const orgPlan = await this.getOrganisationPricingPlan(req, invoice.customer as string)
-    await queueEmail(req.ctx.emailQueue, new PlanPaymentFailed(orgPlan.organisation, invoice))
-  }
-
+  @Route({
+    method: 'POST',
+    path: '/subscriptions'
+  })
   async subscriptions(req: Request): Promise<Response> {
     let event: Stripe.Event
 
     try {
-      event = stripe.webhooks.constructEvent(
+      event = stripe!.webhooks.constructEvent(
         (req.ctx.request as RawRequest).rawBody,
         req.headers['stripe-signature'],
-        process.env.STRIPE_WEBHOOK_SECRET
+        process.env.STRIPE_WEBHOOK_SECRET!
       )
     /* v8 ignore start */
     } catch (err) {
@@ -126,5 +59,69 @@ export default class WebhookService extends Service {
     return {
       status: 200
     }
+  }
+
+  private async getOrganisationPricingPlan(req: Request, stripeCustomerId: string): Promise<OrganisationPricingPlan> {
+    const em: EntityManager = req.ctx.em
+
+    const orgPlan = await em.getRepository(OrganisationPricingPlan).findOneOrFail({
+      stripeCustomerId
+    }, {
+      populate: ['organisation']
+    })
+
+    return orgPlan
+  }
+
+  private async handleSubscriptionDeleted(req: Request, subscription: Stripe.Subscription) {
+    const em: EntityManager = req.ctx.em
+
+    const orgPlan = await this.getOrganisationPricingPlan(req, subscription.customer as string)
+    orgPlan.organisation.pricingPlan = await createDefaultPricingPlan(em, orgPlan.organisation)
+
+    await em.flush()
+  }
+
+  private async handleSubscriptionUpdated(req: Request, subscription: Stripe.Subscription) {
+    const em: EntityManager = req.ctx.em
+
+    const orgPlan = await this.getOrganisationPricingPlan(req, subscription.customer as string)
+
+    const price = subscription.items.data[0].price
+    const plan = await em.getRepository(PricingPlan).findOneOrFail({ stripeId: price.product as string })
+
+    const prevEndDate = orgPlan.endDate
+    const prevStripePriceId = orgPlan.stripePriceId
+
+    orgPlan.pricingPlan = plan
+    orgPlan.status = subscription.status
+    orgPlan.stripePriceId = price.id
+    orgPlan.endDate = subscription.cancel_at_period_end
+      ? new Date(subscription.current_period_end * 1000)
+      : null
+
+    await em.flush()
+
+    if (prevStripePriceId !== orgPlan.stripePriceId) {
+      const price = subscription.items.data[0].price
+      const product = await stripe!.products.retrieve(price.product as string)
+      await queueEmail(req.ctx.emailQueue, new PlanUpgraded(orgPlan.organisation, price, product))
+    }
+
+    if (prevEndDate && !orgPlan.endDate && prevStripePriceId === orgPlan.stripePriceId) {
+      await queueEmail(req.ctx.emailQueue, new PlanRenewed(orgPlan.organisation))
+    } else if (!prevEndDate && orgPlan.endDate) {
+      await queueEmail(req.ctx.emailQueue, new PlanCancelled(orgPlan.organisation))
+    }
+  }
+
+  private async handleNewInvoice(req: Request, invoice: Stripe.Invoice): Promise<void> {
+    const orgPlan = await this.getOrganisationPricingPlan(req, invoice.customer as string)
+    await queueEmail(req.ctx.emailQueue, new PlanInvoice(orgPlan.organisation, invoice))
+  }
+
+  private async handlePaymentFailed(req: Request, invoice: Stripe.Invoice): Promise<void> {
+    const orgPlan = await this.getOrganisationPricingPlan(req, invoice.customer as string)
+    await queueEmail(req.ctx.emailQueue, new PlanPaymentFailed(orgPlan.organisation, invoice))
   }
 }

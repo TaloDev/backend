@@ -5,7 +5,7 @@ import { decrypt, encrypt } from '../lib/crypto/string-encryption'
 @Entity()
 export default class UserRecoveryCode {
   @PrimaryKey()
-  id: number
+  id!: number
 
   @ManyToOne(() => User)
   user: User
@@ -28,11 +28,11 @@ export default class UserRecoveryCode {
       code += characters.charAt(Math.floor(Math.random() * characters.length))
     }
 
-    return encrypt(code, process.env.RECOVERY_CODES_SECRET)
+    return encrypt(code, process.env.RECOVERY_CODES_SECRET!)
   }
 
   getPlainCode(): string {
-    return decrypt(this.code, process.env.RECOVERY_CODES_SECRET)
+    return decrypt(this.code, process.env.RECOVERY_CODES_SECRET!)
   }
 
   toJSON() {

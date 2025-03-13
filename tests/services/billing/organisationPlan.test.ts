@@ -7,7 +7,7 @@ import createUserAndToken from '../../utils/createUserAndToken'
 import userPermissionProvider from '../../utils/userPermissionProvider'
 import { UserType } from '../../../src/entities/user'
 
-const stripe = initStripe()
+const stripe = initStripe()!
 
 describe('Billing service - organisation plan', () => {
   it.each(userPermissionProvider())('should return a %i for a %s user', async (statusCode, _, type) => {

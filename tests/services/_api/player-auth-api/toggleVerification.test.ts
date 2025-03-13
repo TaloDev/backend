@@ -21,7 +21,7 @@ describe('Player auth API service - toggle verification', () => {
     const alias = player.aliases[0]
     await (<EntityManager>global.em).persistAndFlush(player)
 
-    const sessionToken = await player.auth.createSession(alias)
+    const sessionToken = await player.auth!.createSession(alias)
     await (<EntityManager>global.em).flush()
 
     await request(global.app)
@@ -33,8 +33,8 @@ describe('Player auth API service - toggle verification', () => {
       .set('x-talo-session', sessionToken)
       .expect(204)
 
-    await (<EntityManager>global.em).refresh(player.auth)
-    expect(player.auth.verificationEnabled).toBe(true)
+    await (<EntityManager>global.em).refresh(player.auth!)
+    expect(player.auth!.verificationEnabled).toBe(true)
 
     const activity = await (<EntityManager>global.em).getRepository(PlayerAuthActivity).findOne({
       type: PlayerAuthActivityType.VERFICIATION_TOGGLED,
@@ -59,7 +59,7 @@ describe('Player auth API service - toggle verification', () => {
     const alias = player.aliases[0]
     await (<EntityManager>global.em).persistAndFlush(player)
 
-    const sessionToken = await player.auth.createSession(alias)
+    const sessionToken = await player.auth!.createSession(alias)
     await (<EntityManager>global.em).flush()
 
     await request(global.app)
@@ -71,8 +71,8 @@ describe('Player auth API service - toggle verification', () => {
       .set('x-talo-session', sessionToken)
       .expect(204)
 
-    await (<EntityManager>global.em).refresh(player.auth)
-    expect(player.auth.verificationEnabled).toBe(false)
+    await (<EntityManager>global.em).refresh(player.auth!)
+    expect(player.auth!.verificationEnabled).toBe(false)
 
     const activity = await (<EntityManager>global.em).getRepository(PlayerAuthActivity).findOne({
       type: PlayerAuthActivityType.VERFICIATION_TOGGLED,
@@ -97,7 +97,7 @@ describe('Player auth API service - toggle verification', () => {
     const alias = player.aliases[0]
     await (<EntityManager>global.em).persistAndFlush(player)
 
-    const sessionToken = await player.auth.createSession(alias)
+    const sessionToken = await player.auth!.createSession(alias)
     await (<EntityManager>global.em).flush()
 
     const res = await request(global.app)
@@ -138,7 +138,7 @@ describe('Player auth API service - toggle verification', () => {
     const alias = player.aliases[0]
     await (<EntityManager>global.em).persistAndFlush(player)
 
-    const sessionToken = await player.auth.createSession(alias)
+    const sessionToken = await player.auth!.createSession(alias)
     await (<EntityManager>global.em).flush()
 
     await request(global.app)
@@ -150,9 +150,9 @@ describe('Player auth API service - toggle verification', () => {
       .set('x-talo-session', sessionToken)
       .expect(204)
 
-    await (<EntityManager>global.em).refresh(player.auth)
-    expect(player.auth.verificationEnabled).toBe(true)
-    expect(player.auth.email).toBe('bozzz@mail.com')
+    await (<EntityManager>global.em).refresh(player.auth!)
+    expect(player.auth!.verificationEnabled).toBe(true)
+    expect(player.auth!.email).toBe('bozzz@mail.com')
 
     const activity = await (<EntityManager>global.em).getRepository(PlayerAuthActivity).findOne({
       type: PlayerAuthActivityType.VERFICIATION_TOGGLED,
@@ -177,7 +177,7 @@ describe('Player auth API service - toggle verification', () => {
     const alias = player.aliases[0]
     await (<EntityManager>global.em).persistAndFlush(player)
 
-    const sessionToken = await player.auth.createSession(alias)
+    const sessionToken = await player.auth!.createSession(alias)
     await (<EntityManager>global.em).flush()
 
     const res = await request(global.app)
@@ -218,7 +218,7 @@ describe('Player auth API service - toggle verification', () => {
     const alias = player.aliases[0]
     await (<EntityManager>global.em).persistAndFlush(player)
 
-    const sessionToken = await player.auth.createSession(alias)
+    const sessionToken = await player.auth!.createSession(alias)
     await (<EntityManager>global.em).flush()
 
     await request(global.app)
@@ -244,7 +244,7 @@ describe('Player auth API service - toggle verification', () => {
     const alias = player.aliases[0]
     await (<EntityManager>global.em).persistAndFlush(player)
 
-    const sessionToken = await player.auth.createSession(alias)
+    const sessionToken = await player.auth!.createSession(alias)
     await (<EntityManager>global.em).flush()
 
     const res = await request(global.app)

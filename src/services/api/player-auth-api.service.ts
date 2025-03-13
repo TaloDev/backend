@@ -1,5 +1,5 @@
 import { EntityManager } from '@mikro-orm/mysql'
-import { Request, Response, Routes, Validate, HasPermission, ForwardTo } from 'koa-clay'
+import { Request, Response, Route, Validate, HasPermission, ForwardTo } from 'koa-clay'
 import APIKey from '../../entities/api-key'
 import PlayerAlias, { PlayerAliasService } from '../../entities/player-alias'
 import APIService from './api-service'
@@ -18,69 +18,12 @@ import { PlayerAuthActivityType } from '../../entities/player-auth-activity'
 import emailRegex from '../../lib/lang/emailRegex'
 import { ClickHouseClient } from '@clickhouse/client'
 
-@Routes([
-  {
+export default class PlayerAuthAPIService extends APIService {
+  @Route({
     method: 'POST',
     path: '/register',
-    handler: 'register',
     docs: PlayerAuthAPIDocs.register
-  },
-  {
-    method: 'POST',
-    path: '/login',
-    handler: 'login',
-    docs: PlayerAuthAPIDocs.login
-  },
-  {
-    method: 'POST',
-    path: '/verify',
-    handler: 'verify',
-    docs: PlayerAuthAPIDocs.verify
-  },
-  {
-    method: 'POST',
-    path: '/logout',
-    handler: 'logout',
-    docs: PlayerAuthAPIDocs.logout
-  },
-  {
-    method: 'POST',
-    path: '/change_password',
-    handler: 'changePassword',
-    docs: PlayerAuthAPIDocs.changePassword
-  },
-  {
-    method: 'POST',
-    path: '/change_email',
-    handler: 'changeEmail',
-    docs: PlayerAuthAPIDocs.changeEmail
-  },
-  {
-    method: 'POST',
-    path: '/forgot_password',
-    handler: 'forgotPassword',
-    docs: PlayerAuthAPIDocs.forgotPassword
-  },
-  {
-    method: 'POST',
-    path: '/reset_password',
-    handler: 'resetPassword',
-    docs: PlayerAuthAPIDocs.resetPassword
-  },
-  {
-    method: 'PATCH',
-    path: '/toggle_verification',
-    handler: 'toggleVerification',
-    docs: PlayerAuthAPIDocs.toggleVerification
-  },
-  {
-    method: 'DELETE',
-    path: '/',
-    handler: 'delete',
-    docs: PlayerAuthAPIDocs.delete
-  }
-])
-export default class PlayerAuthAPIService extends APIService {
+  })
   @Validate({
     body: {
       identifier: {
@@ -148,7 +91,7 @@ export default class PlayerAuthAPIService extends APIService {
   }
 
   private handleFailedLogin(req: Request) {
-    req.ctx.throw(401, { message: 'Incorrect identifier or password', errorCode: 'INVALID_CREDENTIALS' })
+    return req.ctx.throw(401, { message: 'Incorrect identifier or password', errorCode: 'INVALID_CREDENTIALS' })
   }
 
   private getRedisAuthKey(key: APIKey, alias: PlayerAlias): string {
@@ -159,6 +102,11 @@ export default class PlayerAuthAPIService extends APIService {
     return `player-auth:${key.game.id}:password-reset:${code}`
   }
 
+  @Route({
+    method: 'POST',
+    path: '/login',
+    docs: PlayerAuthAPIDocs.login
+  })
   @Validate({
     body: ['identifier', 'password']
   })
@@ -170,14 +118,14 @@ export default class PlayerAuthAPIService extends APIService {
     const key = await this.getAPIKey(req.ctx)
 
     const alias = await findAliasFromIdentifyRequest(req, key, PlayerAliasService.TALO, identifier)
-    if (!alias) this.handleFailedLogin(req)
+    if (!alias) return this.handleFailedLogin(req)
 
-    const passwordMatches = await bcrypt.compare(password, alias.player.auth.password)
+    const passwordMatches = await bcrypt.compare(password, alias.player.auth!.password)
     if (!passwordMatches) this.handleFailedLogin(req)
 
     const redis = createRedisConnection(req.ctx)
 
-    if (alias.player.auth.verificationEnabled) {
+    if (alias.player.auth!.verificationEnabled) {
       await em.populate(alias.player, ['game'])
 
       const code = generateSixDigitCode()
@@ -198,7 +146,7 @@ export default class PlayerAuthAPIService extends APIService {
         }
       }
     } else {
-      const sessionToken = await alias.player.auth.createSession(alias)
+      const sessionToken = await alias.player.auth!.createSession(alias)
       const socketToken = await alias.createSocketToken(redis)
 
       createPlayerAuthActivity(req, alias.player, {
@@ -218,6 +166,11 @@ export default class PlayerAuthAPIService extends APIService {
     }
   }
 
+  @Route({
+    method: 'POST',
+    path: '/verify',
+    docs: PlayerAuthAPIDocs.verify
+  })
   @Validate({
     body: ['aliasId', 'code']
   })
@@ -256,7 +209,7 @@ export default class PlayerAuthAPIService extends APIService {
 
     await redis.del(this.getRedisAuthKey(key, alias))
 
-    const sessionToken = await alias.player.auth.createSession(alias)
+    const sessionToken = await alias.player.auth!.createSession(alias)
     const socketToken = await alias.createSocketToken(redis)
 
     createPlayerAuthActivity(req, alias.player, {
@@ -274,6 +227,12 @@ export default class PlayerAuthAPIService extends APIService {
       }
     }
   }
+
+  @Route({
+    method: 'POST',
+    path: '/logout',
+    docs: PlayerAuthAPIDocs.logout
+  })
   @Validate({
     headers: ['x-talo-player', 'x-talo-alias', 'x-talo-session']
   })
@@ -281,12 +240,12 @@ export default class PlayerAuthAPIService extends APIService {
   async logout(req: Request): Promise<Response> {
     const em: EntityManager = req.ctx.em
 
-    const alias = await em.getRepository(PlayerAlias).findOne(req.ctx.state.currentAliasId, {
+    const alias = await em.getRepository(PlayerAlias).findOneOrFail(req.ctx.state.currentAliasId, {
       populate: ['player.auth']
     })
 
-    alias.player.auth.sessionKey = null
-    alias.player.auth.sessionCreatedAt = null
+    alias.player.auth!.sessionKey = null
+    alias.player.auth!.sessionCreatedAt = null
 
     createPlayerAuthActivity(req, alias.player, {
       type: PlayerAuthActivityType.LOGGED_OUT
@@ -299,6 +258,11 @@ export default class PlayerAuthAPIService extends APIService {
     }
   }
 
+  @Route({
+    method: 'POST',
+    path: '/change_password',
+    docs: PlayerAuthAPIDocs.changePassword
+  })
   @Validate({
     headers: ['x-talo-player', 'x-talo-alias', 'x-talo-session'],
     body: ['currentPassword', 'newPassword']
@@ -308,11 +272,11 @@ export default class PlayerAuthAPIService extends APIService {
     const { currentPassword, newPassword } = req.body
     const em: EntityManager = req.ctx.em
 
-    const alias = await em.getRepository(PlayerAlias).findOne(req.ctx.state.currentAliasId, {
+    const alias = await em.getRepository(PlayerAlias).findOneOrFail(req.ctx.state.currentAliasId, {
       populate: ['player.auth']
     })
 
-    const passwordMatches = await bcrypt.compare(currentPassword, alias.player.auth.password)
+    const passwordMatches = await bcrypt.compare(currentPassword, alias.player.auth!.password)
     if (!passwordMatches) {
       createPlayerAuthActivity(req, alias.player, {
         type: PlayerAuthActivityType.CHANGE_PASSWORD_FAILED,
@@ -328,7 +292,7 @@ export default class PlayerAuthAPIService extends APIService {
       })
     }
 
-    const isSamePassword = await bcrypt.compare(newPassword, alias.player.auth.password)
+    const isSamePassword = await bcrypt.compare(newPassword, alias.player.auth!.password)
     if (isSamePassword) {
       createPlayerAuthActivity(req, alias.player, {
         type: PlayerAuthActivityType.CHANGE_PASSWORD_FAILED,
@@ -344,7 +308,7 @@ export default class PlayerAuthAPIService extends APIService {
       })
     }
 
-    alias.player.auth.password = await bcrypt.hash(newPassword, 10)
+    alias.player.auth!.password = await bcrypt.hash(newPassword, 10)
 
     createPlayerAuthActivity(req, alias.player, {
       type: PlayerAuthActivityType.CHANGED_PASSWORD
@@ -357,6 +321,11 @@ export default class PlayerAuthAPIService extends APIService {
     }
   }
 
+  @Route({
+    method: 'POST',
+    path: '/change_email',
+    docs: PlayerAuthAPIDocs.changeEmail
+  })
   @Validate({
     headers: ['x-talo-player', 'x-talo-alias', 'x-talo-session'],
     body: ['currentPassword', 'newEmail']
@@ -366,11 +335,11 @@ export default class PlayerAuthAPIService extends APIService {
     const { currentPassword, newEmail } = req.body
     const em: EntityManager = req.ctx.em
 
-    const alias = await em.getRepository(PlayerAlias).findOne(req.ctx.state.currentAliasId, {
+    const alias = await em.getRepository(PlayerAlias).findOneOrFail(req.ctx.state.currentAliasId, {
       populate: ['player.auth']
     })
 
-    const passwordMatches = await bcrypt.compare(currentPassword, alias.player.auth.password)
+    const passwordMatches = await bcrypt.compare(currentPassword, alias.player.auth!.password)
     if (!passwordMatches) {
       createPlayerAuthActivity(req, alias.player, {
         type: PlayerAuthActivityType.CHANGE_EMAIL_FAILED,
@@ -386,7 +355,7 @@ export default class PlayerAuthAPIService extends APIService {
       })
     }
 
-    const isSameEmail = newEmail === alias.player.auth.email
+    const isSameEmail = newEmail === alias.player.auth!.email
     if (isSameEmail) {
       createPlayerAuthActivity(req, alias.player, {
         type: PlayerAuthActivityType.CHANGE_EMAIL_FAILED,
@@ -402,10 +371,10 @@ export default class PlayerAuthAPIService extends APIService {
       })
     }
 
-    const oldEmail = alias.player.auth.email
+    const oldEmail = alias.player.auth!.email
     const sanitisedEmail = (newEmail as string).trim().toLowerCase()
     if (emailRegex.test(sanitisedEmail)) {
-      alias.player.auth.email = sanitisedEmail
+      alias.player.auth!.email = sanitisedEmail
     } else {
       createPlayerAuthActivity(req, alias.player, {
         type: PlayerAuthActivityType.CHANGE_EMAIL_FAILED,
@@ -435,6 +404,11 @@ export default class PlayerAuthAPIService extends APIService {
     }
   }
 
+  @Route({
+    method: 'POST',
+    path: '/forgot_password',
+    docs: PlayerAuthAPIDocs.forgotPassword
+  })
   @Validate({
     body: ['email']
   })
@@ -457,17 +431,20 @@ export default class PlayerAuthAPIService extends APIService {
     if (playerAuth) {
       const redis = createRedisConnection(req.ctx)
       const alias = playerAuth.player.aliases.find((alias) => alias.service === PlayerAliasService.TALO)
-      const key = await this.getAPIKey(req.ctx)
 
-      const code = generateSixDigitCode()
-      await redis.set(this.getRedisPasswordResetKey(key, code), alias.id, 'EX', 900)
-      await queueEmail(req.ctx.emailQueue, new PlayerAuthResetPassword(alias, code))
+      if (alias) {
+        const key = await this.getAPIKey(req.ctx)
 
-      createPlayerAuthActivity(req, playerAuth.player, {
-        type: PlayerAuthActivityType.PASSWORD_RESET_REQUESTED
-      })
+        const code = generateSixDigitCode()
+        await redis.set(this.getRedisPasswordResetKey(key, code), alias.id, 'EX', 900)
+        await queueEmail(req.ctx.emailQueue, new PlayerAuthResetPassword(alias, code))
 
-      await em.flush()
+        createPlayerAuthActivity(req, playerAuth.player, {
+          type: PlayerAuthActivityType.PASSWORD_RESET_REQUESTED
+        })
+
+        await em.flush()
+      }
     }
 
     return {
@@ -475,6 +452,11 @@ export default class PlayerAuthAPIService extends APIService {
     }
   }
 
+  @Route({
+    method: 'POST',
+    path: '/reset_password',
+    docs: PlayerAuthAPIDocs.resetPassword
+  })
   @Validate({
     body: ['password', 'code']
   })
@@ -505,9 +487,9 @@ export default class PlayerAuthAPIService extends APIService {
 
     await redis.del(this.getRedisPasswordResetKey(key, code))
 
-    alias.player.auth.password = await bcrypt.hash(password, 10)
-    alias.player.auth.sessionKey = null
-    alias.player.auth.sessionCreatedAt = null
+    alias.player.auth!.password = await bcrypt.hash(password, 10)
+    alias.player.auth!.sessionKey = null
+    alias.player.auth!.sessionCreatedAt = null
 
     createPlayerAuthActivity(req, alias.player, {
       type: PlayerAuthActivityType.PASSWORD_RESET_COMPLETED
@@ -520,6 +502,11 @@ export default class PlayerAuthAPIService extends APIService {
     }
   }
 
+  @Route({
+    method: 'PATCH',
+    path: '/toggle_verification',
+    docs: PlayerAuthAPIDocs.toggleVerification
+  })
   @Validate({
     headers: ['x-talo-player', 'x-talo-alias', 'x-talo-session'],
     body: ['currentPassword', 'verificationEnabled']
@@ -529,11 +516,11 @@ export default class PlayerAuthAPIService extends APIService {
     const { currentPassword, verificationEnabled, email } = req.body
     const em: EntityManager = req.ctx.em
 
-    const alias = await em.getRepository(PlayerAlias).findOne(req.ctx.state.currentAliasId, {
+    const alias = await em.getRepository(PlayerAlias).findOneOrFail(req.ctx.state.currentAliasId, {
       populate: ['player.auth']
     })
 
-    if (verificationEnabled && !alias.player.auth.email && !email) {
+    if (verificationEnabled && !alias.player.auth!.email && !email) {
       createPlayerAuthActivity(req, alias.player, {
         type: PlayerAuthActivityType.TOGGLE_VERIFICATION_FAILED,
         extra: {
@@ -549,7 +536,7 @@ export default class PlayerAuthAPIService extends APIService {
       })
     }
 
-    const passwordMatches = await bcrypt.compare(currentPassword, alias.player.auth.password)
+    const passwordMatches = await bcrypt.compare(currentPassword, alias.player.auth!.password)
     if (!passwordMatches) {
       createPlayerAuthActivity(req, alias.player, {
         type: PlayerAuthActivityType.TOGGLE_VERIFICATION_FAILED,
@@ -566,11 +553,11 @@ export default class PlayerAuthAPIService extends APIService {
       })
     }
 
-    alias.player.auth.verificationEnabled = Boolean(verificationEnabled)
+    alias.player.auth!.verificationEnabled = Boolean(verificationEnabled)
     if (email?.trim()) {
       const sanitisedEmail = (email as string).trim().toLowerCase()
       if (emailRegex.test(sanitisedEmail)) {
-        alias.player.auth.email = sanitisedEmail
+        alias.player.auth!.email = sanitisedEmail
       } else {
         createPlayerAuthActivity(req, alias.player, {
           type: PlayerAuthActivityType.TOGGLE_VERIFICATION_FAILED,
@@ -591,7 +578,7 @@ export default class PlayerAuthAPIService extends APIService {
     createPlayerAuthActivity(req, alias.player, {
       type: PlayerAuthActivityType.VERFICIATION_TOGGLED,
       extra: {
-        verificationEnabled: alias.player.auth.verificationEnabled
+        verificationEnabled: alias.player.auth!.verificationEnabled
       }
     })
 
@@ -602,6 +589,10 @@ export default class PlayerAuthAPIService extends APIService {
     }
   }
 
+  @Route({
+    method: 'DELETE',
+    docs: PlayerAuthAPIDocs.delete
+  })
   @Validate({
     headers: ['x-talo-player', 'x-talo-alias', 'x-talo-session'],
     body: ['currentPassword']
@@ -612,11 +603,11 @@ export default class PlayerAuthAPIService extends APIService {
     const em: EntityManager = req.ctx.em
     const clickhouse: ClickHouseClient = req.ctx.clickhouse
 
-    const alias = await em.getRepository(PlayerAlias).findOne(req.ctx.state.currentAliasId, {
+    const alias = await em.getRepository(PlayerAlias).findOneOrFail(req.ctx.state.currentAliasId, {
       populate: ['player', 'player.auth']
     })
 
-    const passwordMatches = await bcrypt.compare(currentPassword, alias.player.auth.password)
+    const passwordMatches = await bcrypt.compare(currentPassword, alias.player.auth!.password)
     if (!passwordMatches) {
       createPlayerAuthActivity(req, alias.player, {
         type: PlayerAuthActivityType.DELETE_AUTH_FAILED,

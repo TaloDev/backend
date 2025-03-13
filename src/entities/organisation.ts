@@ -5,19 +5,19 @@ import OrganisationPricingPlan from './organisation-pricing-plan'
 @Entity()
 export default class Organisation {
   @PrimaryKey()
-  id: number
+  id!: number
 
   @Property()
-  email: string
+  email!: string
 
   @Property()
-  name: string
+  name!: string
 
   @OneToMany(() => Game, (game) => game.organisation, { eager: true })
   games = new Collection<Game>(this)
 
   @OneToOne({ orphanRemoval: true, eager: true })
-  pricingPlan: OrganisationPricingPlan
+  pricingPlan!: OrganisationPricingPlan
 
   @Property()
   createdAt: Date = new Date()

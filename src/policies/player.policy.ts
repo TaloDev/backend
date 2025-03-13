@@ -5,7 +5,7 @@ import { UserType } from '../entities/user'
 import UserTypeGate from './user-type-gate'
 
 export default class PlayerPolicy extends Policy {
-  async getPlayer(id: string, relations?: string[]): Promise<Player> {
+  async getPlayer(id: string, relations?: string[]): Promise<Player | null> {
     const player = await this.em.getRepository(Player).findOne(id, { populate: relations as never[] })
     this.ctx.state.player = player
 

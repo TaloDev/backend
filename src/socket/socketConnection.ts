@@ -15,7 +15,7 @@ import SocketTicket from './socketTicket'
 
 export default class SocketConnection {
   alive: boolean = true
-  playerAliasId: number
+  playerAliasId!: number
   game: Game
   private apiKey: APIKey
 
@@ -33,7 +33,7 @@ export default class SocketConnection {
   }
 
   async getPlayerAlias(): Promise<PlayerAlias | null> {
-    return RequestContext.getEntityManager()
+    return RequestContext.getEntityManager()!
       .getRepository(PlayerAlias)
       .findOne(this.playerAliasId)
   }

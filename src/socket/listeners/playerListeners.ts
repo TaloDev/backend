@@ -10,7 +10,7 @@ import SocketError, { sendError } from '../messages/socketError'
 import { APIKeyScope } from '../../entities/api-key'
 import { validateSessionTokenJWT } from '../../middlewares/player-auth-middleware'
 
-const playerListeners: SocketMessageListener<ZodType>[] = [
+const playerListeners = [
   createListener(
     'v1.players.identify',
     z.object({
@@ -26,9 +26,9 @@ const playerListeners: SocketMessageListener<ZodType>[] = [
       let alias: PlayerAlias
 
       if (token === data.socketToken) {
-        alias = await RequestContext.getEntityManager()
+        alias = await RequestContext.getEntityManager()!
           .getRepository(PlayerAlias)
-          .findOne({
+          .findOneOrFail({
             id: data.playerAliasId,
             player: {
               game: conn.game
@@ -40,7 +40,8 @@ const playerListeners: SocketMessageListener<ZodType>[] = [
         if (alias.service === PlayerAliasService.TALO) {
           try {
             await validateSessionTokenJWT(
-              data.sessionToken,
+              /* v8 ignore next */
+              data.sessionToken ?? '',
               alias,
               alias.player.id,
               alias.id
@@ -65,6 +66,6 @@ const playerListeners: SocketMessageListener<ZodType>[] = [
       apiKeyScopes: [APIKeyScope.READ_PLAYERS]
     }
   )
-]
+] as unknown as SocketMessageListener<ZodType>[]
 
 export default playerListeners

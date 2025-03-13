@@ -1,13 +1,12 @@
 import { EntityManager } from '@mikro-orm/mysql'
-import { HasPermission, Service, Request, Response, Routes, Validate } from 'koa-clay'
+import { HasPermission, Service, Request, Response, Route, Validate } from 'koa-clay'
 import APIKey, { APIKeyScope } from '../entities/api-key'
-import jwt from 'jsonwebtoken'
 import APIKeyPolicy from '../policies/api-key.policy'
 import { groupBy } from 'lodash'
-import { promisify } from 'util'
 import createGameActivity from '../lib/logging/createGameActivity'
 import { GameActivityType } from '../entities/game-activity'
 import Socket from '../socket'
+import { sign } from '../lib/auth/jwt'
 
 export async function createToken(em: EntityManager, apiKey: APIKey): Promise<string> {
   await em.populate(apiKey, ['game.apiSecret'])
@@ -18,30 +17,14 @@ export async function createToken(em: EntityManager, apiKey: APIKey): Promise<st
     iat: Math.floor(new Date(apiKey.createdAt).getTime() / 1000)
   }
 
-  const token = await promisify(jwt.sign)(payload, apiKey.game.apiSecret.getPlainSecret())
+  const token = await sign(payload, apiKey.game.apiSecret.getPlainSecret()!, { expiresIn: '5m' })
   return token
 }
 
-@Routes([
-  {
-    method: 'POST'
-  },
-  {
-    method: 'GET'
-  },
-  {
-    method: 'GET',
-    path: '/scopes',
-    handler: 'scopes'
-  },
-  {
-    method: 'DELETE'
-  },
-  {
-    method: 'PUT'
-  }
-])
 export default class APIKeyService extends Service {
+  @Route({
+    method: 'POST'
+  })
   @Validate({ body: ['scopes'] })
   @HasPermission(APIKeyPolicy, 'post')
   async post(req: Request): Promise<Response> {
@@ -76,6 +59,9 @@ export default class APIKeyService extends Service {
     }
   }
 
+  @Route({
+    method: 'GET'
+  })
   @HasPermission(APIKeyPolicy, 'index')
   async index(req: Request): Promise<Response> {
     const em: EntityManager = req.ctx.em
@@ -89,6 +75,27 @@ export default class APIKeyService extends Service {
     }
   }
 
+  @Route({
+    method: 'GET',
+    path: '/scopes'
+  })
+  async scopes(): Promise<Response> {
+    const scopes = Object.keys(APIKeyScope)
+      .filter((key) => APIKeyScope[key as keyof typeof APIKeyScope] !== APIKeyScope.FULL_ACCESS)
+      .map((key) => APIKeyScope[key as keyof typeof APIKeyScope])
+
+    return {
+      status: 200,
+      body: {
+        scopes: groupBy(scopes, (scope) => scope.split(':')[1])
+      }
+    }
+  }
+
+  @Route({
+    method: 'DELETE',
+    path: '/:id'
+  })
   @HasPermission(APIKeyPolicy, 'delete')
   async delete(req: Request): Promise<Response> {
     const em: EntityManager = req.ctx.em
@@ -121,19 +128,10 @@ export default class APIKeyService extends Service {
     }
   }
 
-  async scopes(): Promise<Response> {
-    const scopes = Object.keys(APIKeyScope)
-      .filter((key) => APIKeyScope[key] !== APIKeyScope.FULL_ACCESS)
-      .map((key) => APIKeyScope[key])
-
-    return {
-      status: 200,
-      body: {
-        scopes: groupBy(scopes, (scope) => scope.split(':')[1])
-      }
-    }
-  }
-
+  @Route({
+    method: 'PUT',
+    path: '/:id'
+  })
   @Validate({ body: ['scopes'] })
   @HasPermission(APIKeyPolicy, 'put')
   async put(req: Request): Promise<Response> {

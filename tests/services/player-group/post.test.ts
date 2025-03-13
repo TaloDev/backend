@@ -51,7 +51,7 @@ describe('Player group service - post', () => {
       expect(res.body.group.rules).toStrictEqual(rules)
       expect(res.body.group.count).toBe(0)
 
-      expect(activity.extra.groupName).toBe(res.body.group.name)
+      expect(activity!.extra.groupName).toBe(res.body.group.name)
     } else {
       expect(res.body).toStrictEqual({ message: 'You do not have permissions to create groups' })
 

@@ -1,4 +1,4 @@
-import { Docs, Request, Response } from 'koa-clay'
+import { Request, Response, Route } from 'koa-clay'
 import APIService from './api-service'
 import { createRedisConnection } from '../../config/redis.config'
 import { v4 } from 'uuid'
@@ -15,7 +15,10 @@ export async function createSocketTicket(redis: Redis, key: APIKey, devBuild: bo
 }
 
 export default class SocketTicketAPIService extends APIService {
-  @Docs(SocketTicketAPIDocs.post)
+  @Route({
+    method: 'POST',
+    docs: SocketTicketAPIDocs.post
+  })
   async post(req: Request): Promise<Response> {
     const redis = createRedisConnection(req.ctx)
 

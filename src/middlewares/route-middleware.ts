@@ -35,7 +35,7 @@ export function getRouteInfo(ctx: Context): RouteInfo {
 
 export async function protectedRouteAuthMiddleware(ctx: Context, next: Next): Promise<void> {
   if (isProtectedRoute(ctx)) {
-    return jwt({ secret: process.env.JWT_SECRET })(ctx, next)
+    return jwt({ secret: process.env.JWT_SECRET! })(ctx, next)
   } else {
     await next()
   }

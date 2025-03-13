@@ -6,10 +6,10 @@ import crypto from 'crypto'
 @Entity()
 export default class GameSecret {
   @PrimaryKey()
-  id: number
+  id!: number
 
   @OneToOne(() => Game, (game) => game.apiSecret)
-  game: Game
+  game!: Game
 
   @Property({ hidden: true })
   secret: string
@@ -24,11 +24,11 @@ export default class GameSecret {
     }
 
     const secret = crypto.randomBytes(48).toString('hex')
-    return encrypt(secret, process.env.API_SECRET)
+    return encrypt(secret, process.env.API_SECRET!)
   }
 
   getPlainSecret(): string {
-    return decrypt(this.secret, process.env.API_SECRET)
+    return decrypt(this.secret, process.env.API_SECRET!)
   }
 
   /* v8 ignore start */

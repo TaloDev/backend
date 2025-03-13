@@ -26,7 +26,7 @@ export default class GameActivityFactory extends Factory<GameActivity> {
     }
 
     this.state(() => ({
-      game: this.availableGames.length > 0 ? rand(this.availableGames) : null,
+      game: this.availableGames.length > 0 ? rand(this.availableGames) : undefined,
       user: rand(this.availableUsers),
       type,
       extra

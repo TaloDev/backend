@@ -21,7 +21,7 @@ describe('Player auth API service - change password', () => {
     const alias = player.aliases[0]
     await (<EntityManager>global.em).persistAndFlush(player)
 
-    const sessionToken = await player.auth.createSession(alias)
+    const sessionToken = await player.auth!.createSession(alias)
     await (<EntityManager>global.em).flush()
 
     await request(global.app)
@@ -33,8 +33,8 @@ describe('Player auth API service - change password', () => {
       .set('x-talo-session', sessionToken)
       .expect(204)
 
-    await (<EntityManager>global.em).refresh(player.auth)
-    expect(await bcrypt.compare('password1', player.auth.password)).toBe(true)
+    await (<EntityManager>global.em).refresh(player.auth!)
+    expect(await bcrypt.compare('password1', player.auth!.password)).toBe(true)
 
     const activity = await (<EntityManager>global.em).getRepository(PlayerAuthActivity).findOne({
       type: PlayerAuthActivityType.CHANGED_PASSWORD,
@@ -56,7 +56,7 @@ describe('Player auth API service - change password', () => {
     const alias = player.aliases[0]
     await (<EntityManager>global.em).persistAndFlush(player)
 
-    const sessionToken = await player.auth.createSession(alias)
+    const sessionToken = await player.auth!.createSession(alias)
     await (<EntityManager>global.em).flush()
 
     await request(global.app)
@@ -82,7 +82,7 @@ describe('Player auth API service - change password', () => {
     const alias = player.aliases[0]
     await (<EntityManager>global.em).persistAndFlush(player)
 
-    const sessionToken = await player.auth.createSession(alias)
+    const sessionToken = await player.auth!.createSession(alias)
     await (<EntityManager>global.em).flush()
 
     const res = await request(global.app)
@@ -122,7 +122,7 @@ describe('Player auth API service - change password', () => {
     const alias = player.aliases[0]
     await (<EntityManager>global.em).persistAndFlush(player)
 
-    const sessionToken = await player.auth.createSession(alias)
+    const sessionToken = await player.auth!.createSession(alias)
     await (<EntityManager>global.em).flush()
 
     const res = await request(global.app)

@@ -31,7 +31,7 @@ describe('Send email', () => {
         ]
       })
     } catch (err) {
-      expect(err.status).toBe(403)
+      expect((err as { status: number }).status).toBe(403)
     }
   })
 
@@ -55,7 +55,7 @@ describe('Send email', () => {
         ]
       })
     } catch (err) {
-      expect(err.message).toBe('Something went wrong')
+      expect((err as Error).message).toBe('Something went wrong')
     }
   })
 

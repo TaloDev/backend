@@ -25,7 +25,7 @@ describe('Player auth API service - delete', () => {
     const alias = player.aliases[0]
     await em.persistAndFlush(player)
 
-    const sessionToken = await player.auth.createSession(alias)
+    const sessionToken = await player.auth!.createSession(alias)
     await em.flush()
 
     const prevIdentifier = alias.identifier
@@ -41,7 +41,7 @@ describe('Player auth API service - delete', () => {
 
     em.clear()
 
-    const updatedPlayer = await em.refresh(player, { populate: ['aliases', 'auth'] })
+    const updatedPlayer = await em.refreshOrFail(player, { populate: ['aliases', 'auth'] })
     expect(updatedPlayer.aliases).toHaveLength(0)
     expect(updatedPlayer.auth).toBeNull()
 
@@ -70,7 +70,7 @@ describe('Player auth API service - delete', () => {
     const alias = player.aliases[0]
     await em.persistAndFlush(player)
 
-    const sessionToken = await player.auth.createSession(alias)
+    const sessionToken = await player.auth!.createSession(alias)
     await em.flush()
 
     const events = await new EventFactory([player]).many(3)
@@ -119,7 +119,7 @@ describe('Player auth API service - delete', () => {
     const alias = player.aliases[0]
     await (<EntityManager>global.em).persistAndFlush(player)
 
-    const sessionToken = await player.auth.createSession(alias)
+    const sessionToken = await player.auth!.createSession(alias)
     await (<EntityManager>global.em).flush()
 
     const res = await request(global.app)
@@ -136,7 +136,7 @@ describe('Player auth API service - delete', () => {
       errorCode: 'INVALID_CREDENTIALS'
     })
 
-    await (<EntityManager>global.em).refresh(player.auth)
+    await (<EntityManager>global.em).refresh(player.auth!)
     expect(player.auth).not.toBeUndefined()
 
     const activity = await (<EntityManager>global.em).getRepository(PlayerAuthActivity).findOne({
@@ -157,7 +157,7 @@ describe('Player auth API service - delete', () => {
     const alias = player.aliases[0]
     await (<EntityManager>global.em).persistAndFlush(player)
 
-    const sessionToken = await player.auth.createSession(alias)
+    const sessionToken = await player.auth!.createSession(alias)
     await (<EntityManager>global.em).flush()
 
     await request(global.app)
@@ -188,7 +188,7 @@ describe('Player auth API service - delete', () => {
     player.presence = presence
     await (<EntityManager>global.em).persistAndFlush(player)
 
-    const sessionToken = await player.auth.createSession(alias)
+    const sessionToken = await player.auth!.createSession(alias)
     await (<EntityManager>global.em).flush()
 
     await request(global.app)

@@ -1,5 +1,5 @@
 import { FilterQuery, ObjectQuery, EntityManager } from '@mikro-orm/mysql'
-import { HasPermission, Routes, Service, Request, Response, Validate } from 'koa-clay'
+import { HasPermission, Service, Request, Response, Validate, Route } from 'koa-clay'
 import { GameActivityType } from '../entities/game-activity'
 import Leaderboard, { LeaderboardRefreshInterval } from '../entities/leaderboard'
 import LeaderboardEntry from '../entities/leaderboard-entry'
@@ -9,38 +9,12 @@ import createGameActivity from '../lib/logging/createGameActivity'
 import { devDataPlayerFilter } from '../middlewares/dev-data-middleware'
 import LeaderboardPolicy from '../policies/leaderboard.policy'
 import { archiveEntriesForLeaderboard } from '../tasks/archiveLeaderboardEntries'
+import updateAllowedKeys from '../lib/entities/updateAllowedKeys'
 
-@Routes([
-  {
-    method: 'GET'
-  },
-  {
-    method: 'POST'
-  },
-  {
-    method: 'GET',
-    path: '/:id/entries',
-    handler: 'entries'
-  },
-  {
-    method: 'PATCH',
-    path: '/:id/entries/:entryId',
-    handler: 'updateEntry'
-  },
-  {
-    method: 'PUT',
-    handler: 'updateLeaderboard'
-  },
-  {
-    method: 'DELETE'
-  },
-  {
-    method: 'GET',
-    path: '/search',
-    handler: 'search'
-  }
-])
 export default class LeaderboardService extends Service {
+  @Route({
+    method: 'GET'
+  })
   @HasPermission(LeaderboardPolicy, 'index')
   async index(req: Request): Promise<Response> {
     const em: EntityManager = req.ctx.em
@@ -54,6 +28,9 @@ export default class LeaderboardService extends Service {
     }
   }
 
+  @Route({
+    method: 'POST'
+  })
   @Validate({ body: [Leaderboard] })
   @HasPermission(LeaderboardPolicy, 'post')
   async post(req: Request): Promise<Response> {
@@ -90,6 +67,10 @@ export default class LeaderboardService extends Service {
     }
   }
 
+  @Route({
+    method: 'GET',
+    path: '/:id/entries'
+  })
   @Validate({ query: ['page'] })
   @HasPermission(LeaderboardPolicy, 'get')
   async entries(req: Request): Promise<Response> {
@@ -151,6 +132,10 @@ export default class LeaderboardService extends Service {
     }
   }
 
+  @Route({
+    method: 'PATCH',
+    path: '/:id/entries/:entryId'
+  })
   @HasPermission(LeaderboardPolicy, 'updateEntry')
   async updateEntry(req: Request): Promise<Response> {
     const { entryId } = req.params
@@ -220,23 +205,20 @@ export default class LeaderboardService extends Service {
     }
   }
 
+  @Route({
+    method: 'PUT',
+    path: '/:id'
+  })
   @Validate({ body: [Leaderboard] })
   @HasPermission(LeaderboardPolicy, 'updateLeaderboard')
   async updateLeaderboard(req: Request): Promise<Response> {
     const em: EntityManager = req.ctx.em
 
-    const leaderboard: Leaderboard = req.ctx.state.leaderboard
-
-    const updateableKeys: (keyof Leaderboard)[] = ['name', 'sortMode', 'unique', 'refreshInterval']
-    const changedProperties = []
-
-    for (const key in req.body) {
-      if (updateableKeys.includes(key as keyof Leaderboard)) {
-        const original = leaderboard[key]
-        leaderboard[key] = req.body[key]
-        if (original !== leaderboard[key]) changedProperties.push(key)
-      }
-    }
+    const [leaderboard, changedProperties] = updateAllowedKeys(
+      req.ctx.state.leaderboard as Leaderboard,
+      req.body,
+      ['name', 'sortMode', 'unique', 'refreshInterval']
+    )
 
     if (changedProperties.includes('refreshInterval') && leaderboard.refreshInterval !== LeaderboardRefreshInterval.NEVER) {
       await archiveEntriesForLeaderboard(em, leaderboard)
@@ -268,6 +250,10 @@ export default class LeaderboardService extends Service {
     }
   }
 
+  @Route({
+    method: 'DELETE',
+    path: '/:id'
+  })
   @HasPermission(LeaderboardPolicy, 'delete')
   async delete(req: Request): Promise<Response> {
     const em: EntityManager = req.ctx.em
@@ -293,6 +279,10 @@ export default class LeaderboardService extends Service {
     }
   }
 
+  @Route({
+    method: 'GET',
+    path: '/search'
+  })
   @Validate({ query: ['internalName'] })
   @HasPermission(LeaderboardPolicy, 'search')
   async search(req: Request): Promise<Response> {

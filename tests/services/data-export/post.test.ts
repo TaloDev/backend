@@ -27,7 +27,7 @@ describe('Data export service - post', () => {
     })
 
     if (statusCode === 200) {
-      expect(activity.extra.dataExportId).toBe(res.body.dataExport.id)
+      expect(activity!.extra.dataExportId).toBe(res.body.dataExport.id)
     } else {
       expect(activity).toBeNull()
     }
@@ -208,7 +208,7 @@ describe('Data export service - post', () => {
       .auth(token, { type: 'bearer' })
       .expect(200)
 
-    const dataExport = await (<EntityManager>global.em).getRepository(DataExport).findOne({ game })
+    const dataExport = await (<EntityManager>global.em).getRepository(DataExport).findOneOrFail({ game })
     expect(dataExport.failedAt).toBeTruthy()
   })
 })

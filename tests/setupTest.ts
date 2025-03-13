@@ -30,8 +30,8 @@ afterAll(async () => {
   const clickhouse: ClickHouseClient = global.clickhouse
   await clickhouse.close()
 
-  delete global.app
-  delete global.ctx
-  delete global.em
-  delete global.clickhouse
+  // delete global.app
+  // delete global.ctx
+  // delete global.em
+  // delete global.clickhouse
 })

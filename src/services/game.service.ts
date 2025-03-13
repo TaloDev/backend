@@ -1,16 +1,16 @@
 import { EntityManager } from '@mikro-orm/mysql'
-import { HasPermission, Service, Request, Response, Validate } from 'koa-clay'
-import { uniqWith } from 'lodash'
+import { HasPermission, Service, Request, Response, Validate, Route } from 'koa-clay'
 import Game from '../entities/game'
 import { GameActivityType } from '../entities/game-activity'
 import GameSecret from '../entities/game-secret'
 import getUserFromToken from '../lib/auth/getUserFromToken'
 import createGameActivity from '../lib/logging/createGameActivity'
-import sanitiseProps from '../lib/props/sanitiseProps'
+import { mergeAndSanitiseProps, sanitiseProps } from '../lib/props/sanitiseProps'
 import GamePolicy from '../policies/game.policy'
 import Socket from '../socket'
 import { sendMessages } from '../socket/messages/socketMessage'
 import { APIKeyScope } from '../entities/api-key'
+import Prop from '../entities/prop'
 
 async function sendLiveConfigUpdatedMessage(req: Request, game: Game) {
   const socket: Socket = req.ctx.wss
@@ -23,6 +23,9 @@ async function sendLiveConfigUpdatedMessage(req: Request, game: Game) {
 }
 
 export default class GameService extends Service {
+  @Route({
+    method: 'POST'
+  })
   @Validate({
     body: ['name']
   })
@@ -36,7 +39,7 @@ export default class GameService extends Service {
     try {
       game.apiSecret = new GameSecret()
     } catch (err) {
-      req.ctx.throw(500, err.message)
+      req.ctx.throw(500, (err as Error).message)
     }
     await em.persistAndFlush(game)
 
@@ -48,8 +51,12 @@ export default class GameService extends Service {
     }
   }
 
+  @Route({
+    method: 'PATCH',
+    path: '/:id'
+  })
   @HasPermission(GamePolicy, 'patch')
-  async patch(req: Request): Promise<Response> {
+  async patch(req: Request<{ name: string, props: Prop[] }>): Promise<Response> {
     const { name, props } = req.body
     const em: EntityManager = req.ctx.em
 
@@ -76,12 +83,7 @@ export default class GameService extends Service {
         req.ctx.throw(400, 'Prop keys starting with \'META_\' are reserved for internal systems, please use another key name')
       }
 
-      const mergedProps = uniqWith([
-        ...sanitiseProps(props),
-        ...game.props
-      ], (a, b) => a.key === b.key)
-
-      game.props = sanitiseProps(mergedProps, true)
+      game.props = mergeAndSanitiseProps(game.props, props)
       await sendLiveConfigUpdatedMessage(req, game)
 
       createGameActivity(em, {

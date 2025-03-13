@@ -23,7 +23,10 @@ export default async function initProviders(app: Koa, isTest: boolean) {
     process.exit(1)
   }
 
-  SendGrid.setApiKey(process.env.SENDGRID_KEY)
+  if (process.env.SENDGRID_KEY) {
+    SendGrid.setApiKey(process.env.SENDGRID_KEY)
+  }
+
   app.context.emailQueue = createEmailQueue()
 
   if (!isTest) {

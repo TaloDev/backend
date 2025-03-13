@@ -29,7 +29,7 @@ describe('Game stat service - put', () => {
       }
     })
 
-    expect(activity.extra.display).toStrictEqual({
+    expect(activity!.extra.display).toStrictEqual({
       'Updated properties': 'name: New name'
     })
   })
@@ -57,7 +57,7 @@ describe('Game stat service - put', () => {
       }
     })
 
-    expect(activity.extra.display).toStrictEqual({
+    expect(activity!.extra.display).toStrictEqual({
       'Updated properties': 'global: true'
     })
   })
@@ -85,7 +85,7 @@ describe('Game stat service - put', () => {
       }
     })
 
-    expect(activity.extra.display).toStrictEqual({
+    expect(activity!.extra.display).toStrictEqual({
       'Updated properties': 'maxChange: 90'
     })
   })
@@ -117,7 +117,7 @@ describe('Game stat service - put', () => {
       }
     })
 
-    expect(activity.extra.display).toStrictEqual({
+    expect(activity!.extra.display).toStrictEqual({
       'Updated properties': 'minValue: -300'
     })
   })
@@ -149,7 +149,7 @@ describe('Game stat service - put', () => {
       }
     })
 
-    expect(activity.extra.display).toStrictEqual({
+    expect(activity!.extra.display).toStrictEqual({
       'Updated properties': 'maxValue: 200'
     })
   })
@@ -180,7 +180,7 @@ describe('Game stat service - put', () => {
       }
     })
 
-    expect(activity.extra.display).toStrictEqual({
+    expect(activity!.extra.display).toStrictEqual({
       'Updated properties': 'defaultValue: 100'
     })
   })
@@ -208,7 +208,7 @@ describe('Game stat service - put', () => {
       }
     })
 
-    expect(activity.extra.display).toStrictEqual({
+    expect(activity!.extra.display).toStrictEqual({
       'Updated properties': 'minTimeBetweenUpdates: 10242'
     })
   })
@@ -236,7 +236,7 @@ describe('Game stat service - put', () => {
       }
     })
 
-    expect(activity.extra.display).toStrictEqual({
+    expect(activity!.extra.display).toStrictEqual({
       'Updated properties': ''
     })
   })

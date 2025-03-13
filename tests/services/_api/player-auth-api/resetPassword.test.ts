@@ -28,10 +28,10 @@ describe('Player auth API service - reset password', () => {
 
     expect(await redis.get(`player-auth:${apiKey.game.id}:password-reset:123456`)).toBeNull()
 
-    await (<EntityManager>global.em).refresh(player.auth)
-    expect(await bcrypt.compare('password', player.auth.password)).toBe(true)
-    expect(player.auth.sessionKey).toBeNull()
-    expect(player.auth.sessionCreatedAt).toBeNull()
+    await (<EntityManager>global.em).refresh(player.auth!)
+    expect(await bcrypt.compare('password', player.auth!.password)).toBe(true)
+    expect(player.auth!.sessionKey).toBeNull()
+    expect(player.auth!.sessionCreatedAt).toBeNull()
 
     const activity = await (<EntityManager>global.em).getRepository(PlayerAuthActivity).findOne({
       type: PlayerAuthActivityType.PASSWORD_RESET_COMPLETED,

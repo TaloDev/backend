@@ -52,7 +52,7 @@ describe('Leaderboard service - update leaderboard - steamworks integration', ()
 
     expect(createMock).toHaveBeenCalledTimes(1)
 
-    const event = await (<EntityManager>global.em).getRepository(SteamworksIntegrationEvent).findOne({ integration })
+    const event = await (<EntityManager>global.em).getRepository(SteamworksIntegrationEvent).findOneOrFail({ integration })
     expect(event.request).toStrictEqual({
       url: 'https://partner.steam-api.com/ISteamLeaderboards/FindOrCreateLeaderboard/v2',
       body: `appid=${config.appId}&name=${leaderboard.internalName}&sortmethod=Ascending&displaytype=Numeric&createifnotfound=true&onlytrustedwrites=true&onlyfriendsreads=false`,

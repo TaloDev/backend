@@ -51,19 +51,17 @@ import ormConfig from '../src/config/mikro-orm.config'
     }
   }).one()
 
-  const userFactory = new UserFactory()
-
-  const ownerUser = await userFactory.loginable().owner().state(() => ({
+  const ownerUser = await new UserFactory().loginable().owner().emailConfirmed().state(() => ({
     organisation,
     email: 'owner@trytalo.com'
   })).one()
 
-  const adminUser = await userFactory.loginable().admin().state(() => ({
+  const adminUser = await new UserFactory().loginable().admin().emailConfirmed().state(() => ({
     organisation,
     email: 'admin@trytalo.com'
   })).one()
 
-  const devUser = await userFactory.loginable().state(() => ({
+  const devUser = await new UserFactory().loginable().emailConfirmed().state(() => ({
     organisation,
     email: 'dev@trytalo.com'
   })).one()

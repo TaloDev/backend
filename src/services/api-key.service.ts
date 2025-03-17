@@ -17,7 +17,7 @@ export async function createToken(em: EntityManager, apiKey: APIKey): Promise<st
     iat: Math.floor(new Date(apiKey.createdAt).getTime() / 1000)
   }
 
-  const token = await sign(payload, apiKey.game.apiSecret.getPlainSecret()!, { expiresIn: '5m' })
+  const token = await sign(payload, apiKey.game.apiSecret.getPlainSecret()!)
   return token
 }
 

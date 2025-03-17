@@ -23,13 +23,13 @@ export enum PlayerAuthActivityType {
 @Entity()
 export default class PlayerAuthActivity {
   @PrimaryKey()
-  id: number
+  id!: number
 
   @ManyToOne(() => Player, { eager: true })
   player: Player
 
   @Enum(() => PlayerAuthActivityType)
-  type: PlayerAuthActivityType
+  type!: PlayerAuthActivityType
 
   @Property({ type: 'json' })
   extra: {
@@ -44,7 +44,15 @@ export default class PlayerAuthActivity {
   }
 
   private getAuthAlias(): PlayerAlias {
-    return this.player.aliases.find((alias) => alias.service === PlayerAliasService.TALO)
+    const alias = this.player.aliases.find((alias) => alias.service === PlayerAliasService.TALO)
+    /* v8 ignore start */
+    if (!alias) {
+      // technically this should never happen,
+      // if an alias is deleted, so are the auth activities
+      throw new Error('No Talo alias found for player')
+    }
+    /* v8 ignore stop */
+    return alias
   }
 
   /* v8 ignore start */

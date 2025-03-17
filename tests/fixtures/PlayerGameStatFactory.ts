@@ -10,7 +10,9 @@ export default class PlayerGameStatFactory extends Factory<PlayerGameStat> {
   protected definition(): void {
     this.state(async ({ stat }) => {
       return {
-        value: randBoolean() ? stat.defaultValue : randNumber({ min: stat.minValue, max: stat.maxValue })
+        value: randBoolean()
+          ? stat.defaultValue
+          : randNumber({ min: stat.minValue ?? undefined, max: stat.maxValue ?? undefined })
       }
     })
   }

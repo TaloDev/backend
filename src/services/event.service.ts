@@ -1,4 +1,4 @@
-import { HasPermission, Service, Request, Response, Validate } from 'koa-clay'
+import { HasPermission, Service, Request, Response, Route, Validate } from 'koa-clay'
 import EventPolicy from '../policies/event.policy'
 import { endOfDay } from 'date-fns'
 import dateValidationSchema from '../lib/dates/dateValidationSchema'
@@ -29,6 +29,9 @@ type AggregatedClickhouseEvent = {
 // }
 
 export default class EventService extends Service {
+  @Route({
+    method: 'GET'
+  })
   @Validate({
     query: dateValidationSchema
   })
@@ -94,6 +97,6 @@ export default class EventService extends Service {
   private calculateChange(count: number, lastEvent: EventData | undefined): number {
     if ((lastEvent?.count ?? 0) === 0) return count || 1
 
-    return (count - lastEvent.count) / lastEvent.count
+    return (count - lastEvent!.count) / lastEvent!.count
   }
 }

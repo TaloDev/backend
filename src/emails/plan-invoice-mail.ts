@@ -12,7 +12,7 @@ export default class PlanInvoice extends Mail {
     this.title = 'Thanks for using Talo!'
     this.mainText = `Your ${format(new Date(), 'MMMM yyyy')} invoice is ready.<br/><br/>The balance due is: <strong>${this.getPrice(invoice.amount_due)}</strong>.<br/><br/>The balance will be automatically charged to your card so you don't need to do anything.`
 
-    this.ctaLink = invoice.hosted_invoice_url
+    this.ctaLink = invoice.hosted_invoice_url!
     this.ctaText = 'View invoice'
 
     this.why = 'You are receiving this email because your Talo subscription was updated'
@@ -20,7 +20,7 @@ export default class PlanInvoice extends Mail {
 
   private getPrice(amount: number): string {
     const d = dinero({ amount, currency: USD })
-    const transformer = ({ value }) => `$${value}`
+    const transformer = ({ value }: { value: unknown }) => `$${value}`
     return toDecimal(d, transformer)
   }
 }

@@ -1,40 +1,19 @@
 import { EntityManager, QueryOrder } from '@mikro-orm/mysql'
-import { HasPermission, Service, Request, Response, Validate, Routes } from 'koa-clay'
+import { HasPermission, Service, Request, Response, Validate, Route } from 'koa-clay'
 import GameFeedback from '../entities/game-feedback'
 import GameFeedbackPolicy from '../policies/game-feedback.policy'
 import GameFeedbackCategory from '../entities/game-feedback-category'
 import createGameActivity from '../lib/logging/createGameActivity'
 import { GameActivityType } from '../entities/game-activity'
 import { devDataPlayerFilter } from '../middlewares/dev-data-middleware'
+import updateAllowedKeys from '../lib/entities/updateAllowedKeys'
 
 const itemsPerPage = 50
 
-@Routes([
-  {
-    method: 'GET'
-  },
-  {
-    method: 'GET',
-    path: '/categories',
-    handler: 'indexCategories'
-  },
-  {
-    method: 'POST',
-    path: '/categories',
-    handler: 'postCategory'
-  },
-  {
-    method: 'PUT',
-    path: '/categories/:id',
-    handler: 'putCategory'
-  },
-  {
-    method: 'DELETE',
-    path: '/categories/:id',
-    handler: 'deleteCategory'
-  }
-])
 export default class GameFeedbackService extends Service {
+  @Route({
+    method: 'GET'
+  })
   @Validate({ query: ['page'] })
   @HasPermission(GameFeedbackPolicy, 'index')
   async index(req: Request): Promise<Response> {
@@ -98,6 +77,10 @@ export default class GameFeedbackService extends Service {
     }
   }
 
+  @Route({
+    method: 'GET',
+    path: '/categories'
+  })
   @HasPermission(GameFeedbackPolicy, 'indexCategories')
   async indexCategories(req: Request): Promise<Response> {
     const em: EntityManager = req.ctx.em
@@ -114,6 +97,10 @@ export default class GameFeedbackService extends Service {
     }
   }
 
+  @Route({
+    method: 'POST',
+    path: '/categories'
+  })
   @Validate({
     body: [GameFeedbackCategory]
   })
@@ -147,6 +134,10 @@ export default class GameFeedbackService extends Service {
     }
   }
 
+  @Route({
+    method: 'PUT',
+    path: '/categories/:id'
+  })
   @Validate({
     body: [GameFeedbackCategory]
   })
@@ -154,18 +145,11 @@ export default class GameFeedbackService extends Service {
   async putCategory(req: Request): Promise<Response> {
     const em: EntityManager = req.ctx.em
 
-    const feedbackCategory: GameFeedbackCategory = req.ctx.state.feedbackCategory
-
-    const updateableKeys: (keyof GameFeedbackCategory)[] = ['name', 'description', 'anonymised']
-    const changedProperties = []
-
-    for (const key in req.body) {
-      if (updateableKeys.includes(key as keyof GameFeedbackCategory)) {
-        const original = feedbackCategory[key]
-        feedbackCategory[key] = req.body[key]
-        if (original !== feedbackCategory[key]) changedProperties.push(key)
-      }
-    }
+    const [feedbackCategory, changedProperties] = updateAllowedKeys(
+      req.ctx.state.feedbackCategory as GameFeedbackCategory,
+      req.body,
+      ['name', 'description', 'anonymised']
+    )
 
     createGameActivity(em, {
       user: req.ctx.state.user,
@@ -189,6 +173,10 @@ export default class GameFeedbackService extends Service {
     }
   }
 
+  @Route({
+    method: 'DELETE',
+    path: '/categories/:id'
+  })
   @HasPermission(GameFeedbackPolicy, 'deleteCategory')
   async deleteCategory(req: Request): Promise<Response> {
     const em: EntityManager = req.ctx.em

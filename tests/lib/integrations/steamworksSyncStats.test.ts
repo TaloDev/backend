@@ -48,7 +48,7 @@ describe('Steamworks integration - sync stats', () => {
 
     expect(getSchemaMock).toHaveBeenCalledTimes(1)
 
-    const event = await (<EntityManager>global.em).getRepository(SteamworksIntegrationEvent).findOne({ integration })
+    const event = await (<EntityManager>global.em).getRepository(SteamworksIntegrationEvent).findOneOrFail({ integration })
     expect(event.request).toStrictEqual({
       url: `https://partner.steam-api.com/ISteamUserStats/GetSchemaForGame/v2?appid=${integration.getConfig().appId}`,
       body: '',
@@ -307,7 +307,7 @@ describe('Steamworks integration - sync stats', () => {
     expect(getUserStatsMock).toHaveBeenCalledTimes(1)
     expect(setMock).toHaveBeenCalledTimes(1)
 
-    const event = await (<EntityManager>global.em).getRepository(SteamworksIntegrationEvent).findOne({ integration }, { orderBy: { id: 'DESC' } })
+    const event = await (<EntityManager>global.em).getRepository(SteamworksIntegrationEvent).findOneOrFail({ integration }, { orderBy: { id: 'DESC' } })
     expect(event.request).toStrictEqual({
       url: 'https://partner.steam-api.com/ISteamUserStats/SetUserStatsForGame/v1',
       body: `appid=${config.appId}&steamid=${player.aliases[0].identifier}&count=1&name%5B0%5D=${stat.internalName}&value%5B0%5D=${playerStat.value}`,
@@ -328,7 +328,7 @@ describe('Steamworks integration - sync stats', () => {
     try {
       await syncSteamworksStats((<EntityManager>global.em), integration)
     } catch (err) {
-      expect(err.message).toBe('Failed to retrieve stats - is your App ID correct?')
+      expect((err as Error).message).toBe('Failed to retrieve stats - is your App ID correct?')
     }
 
     expect(getSchemaMock).toHaveBeenCalledTimes(1)

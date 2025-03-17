@@ -7,7 +7,7 @@ import Prop from './prop'
 @Entity()
 export default class Game {
   @PrimaryKey()
-  id: number
+  id!: number
 
   @Property()
   name: string
@@ -22,7 +22,7 @@ export default class Game {
   players: Collection<Player> = new Collection<Player>(this)
 
   @OneToOne({ orphanRemoval: true })
-  apiSecret: GameSecret
+  apiSecret!: GameSecret
 
   @Property()
   createdAt: Date = new Date()

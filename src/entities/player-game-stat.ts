@@ -5,7 +5,7 @@ import Player from './player'
 @Entity()
 export default class PlayerGameStat {
   @PrimaryKey()
-  id: number
+  id!: number
 
   @ManyToOne(() => Player, { cascade: [Cascade.REMOVE] })
   player: Player

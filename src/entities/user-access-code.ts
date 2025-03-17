@@ -5,7 +5,7 @@ import generateSixDigitCode from '../lib/auth/generateSixDigitCode'
 @Entity()
 export default class UserAccessCode {
   @PrimaryKey()
-  id: number
+  id!: number
 
   @Property()
   code: string = generateSixDigitCode()
@@ -17,9 +17,9 @@ export default class UserAccessCode {
   createdAt: Date = new Date()
 
   @Property({ nullable: true })
-  validUntil: Date
+  validUntil: Date | null = null
 
-  constructor(user: User, validUntil?: Date) {
+  constructor(user: User, validUntil: Date | null) {
     this.user = user
     this.validUntil = validUntil
   }

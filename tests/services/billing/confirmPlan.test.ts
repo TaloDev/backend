@@ -8,7 +8,7 @@ import userPermissionProvider from '../../utils/userPermissionProvider'
 import { UserType } from '../../../src/entities/user'
 import { addHours } from 'date-fns'
 
-const stripe = initStripe()
+const stripe = initStripe()!
 
 describe('Billing service - confirm plan', () => {
   it.each(userPermissionProvider([], 204))('should return a %i for a %s user', async (statusCode, _, type) => {
@@ -29,7 +29,7 @@ describe('Billing service - confirm plan', () => {
       .post('/billing/confirm-plan')
       .send({
         pricingPlanId: plan.id,
-        pricingInterval: price.recurring.interval,
+        pricingInterval: price.recurring!.interval,
         prorationDate: Math.floor(Date.now() / 1000)
       })
       .auth(token, { type: 'bearer' })
@@ -56,7 +56,7 @@ describe('Billing service - confirm plan', () => {
       .post('/billing/confirm-plan')
       .send({
         pricingPlanId: plan.id,
-        pricingInterval: price.recurring.interval,
+        pricingInterval: price.recurring!.interval,
         prorationDate: Math.floor(Date.now() / 1000)
       })
       .auth(token, { type: 'bearer' })
@@ -81,7 +81,7 @@ describe('Billing service - confirm plan', () => {
       .post('/billing/confirm-plan')
       .send({
         pricingPlanId: plan.id,
-        pricingInterval: price.recurring.interval,
+        pricingInterval: price.recurring!.interval,
         prorationDate: Math.floor(addHours(new Date(), 1).getMilliseconds() / 1000)
       })
       .auth(token, { type: 'bearer' })

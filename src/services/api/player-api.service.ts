@@ -1,5 +1,5 @@
 import { EntityManager } from '@mikro-orm/mysql'
-import { Request, Response, Routes, Validate, HasPermission, ForwardTo, forwardRequest, ValidationCondition } from 'koa-clay'
+import { Request, Response, Route, Validate, HasPermission, ForwardTo, forwardRequest, ValidationCondition } from 'koa-clay'
 import APIKey, { APIKeyScope } from '../../entities/api-key'
 import Player from '../../entities/player'
 import GameSave from '../../entities/game-save'
@@ -60,53 +60,34 @@ export async function createPlayerFromIdentifyRequest(
   identifier: string
 ): Promise<Player> {
   if (checkScope(key, APIKeyScope.WRITE_PLAYERS)) {
-    const res = await forwardRequest(req, {
+    const res = await forwardRequest<{ player: Player }>(req, {
       body: {
         aliases: [{ service, identifier: await getRealIdentifier(req, key, service, identifier) }],
         props: req.ctx.state.initialPlayerProps
       }
     })
 
-    return res.body.player
+    return res.body!.player
   } else {
     req.ctx.throw(404, 'Player not found. Use an access key with the write:players scope to automatically create players')
   }
 }
 
 function validateIdentifyQueryParam(param: 'service' | 'identifier') {
-  return async (val?: string): Promise<ValidationCondition[]> => [
+  return async (val?: unknown): Promise<ValidationCondition[]> => [
     {
-      check: val.trim().length > 0,
+      check: typeof val === 'string' && val.trim().length > 0,
       error: `Invalid ${param}, must be a non-empty string`
     }
   ]
 }
 
-@Routes([
-  {
+export default class PlayerAPIService extends APIService {
+  @Route({
     method: 'GET',
     path: '/identify',
-    handler: 'identify',
     docs: PlayerAPIDocs.identify
-  },
-  {
-    method: 'GET',
-    path: '/:id',
-    handler: 'get',
-    docs: PlayerAPIDocs.get
-  },
-  {
-    method: 'PATCH',
-    docs: PlayerAPIDocs.patch
-  },
-  {
-    method: 'POST',
-    path: '/merge',
-    handler: 'merge',
-    docs: PlayerAPIDocs.merge
-  }
-])
-export default class PlayerAPIService extends APIService {
+  })
   @Validate({
     query: {
       service: {
@@ -126,7 +107,7 @@ export default class PlayerAPIService extends APIService {
     const em: EntityManager = req.ctx.em
 
     const key = await this.getAPIKey(req.ctx)
-    let alias: PlayerAlias = null
+    let alias: PlayerAlias | null = null
 
     try {
       alias = await findAliasFromIdentifyRequest(req, key, service, identifier)
@@ -163,6 +144,11 @@ export default class PlayerAPIService extends APIService {
     }
   }
 
+  @Route({
+    method: 'GET',
+    path: '/:id',
+    docs: PlayerAPIDocs.get
+  })
   @HasPermission(PlayerAPIPolicy, 'get')
   async get(req: Request): Promise<Response> {
     const { id } = req.params
@@ -188,12 +174,22 @@ export default class PlayerAPIService extends APIService {
     }
   }
 
+  @Route({
+    method: 'PATCH',
+    path: '/:id',
+    docs: PlayerAPIDocs.patch
+  })
   @HasPermission(PlayerAPIPolicy, 'patch')
   @ForwardTo('games.players', 'patch')
   async patch(req: Request): Promise<Response> {
     return await forwardRequest(req)
   }
 
+  @Route({
+    method: 'POST',
+    path: '/merge',
+    docs: PlayerAPIDocs.merge
+  })
   @Validate({
     body: ['playerId1', 'playerId2']
   })

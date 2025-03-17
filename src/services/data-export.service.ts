@@ -1,5 +1,5 @@
 import { Collection, FilterQuery, MikroORM, EntityManager } from '@mikro-orm/mysql'
-import { HasPermission, Routes, Service, Request, Response, Validate, ValidationCondition } from 'koa-clay'
+import { HasPermission, Service, Request, Response, Route, Validate, ValidationCondition } from 'koa-clay'
 import DataExport, { DataExportAvailableEntities, DataExportStatus } from '../entities/data-export'
 import DataExportPolicy from '../policies/data-export.policy'
 import Event, { ClickhouseEvent, createEventFromClickhouse } from '../entities/event'
@@ -46,19 +46,6 @@ type DataExportJob = {
 type ExportableEntity = Event | Player | PlayerAlias | LeaderboardEntry | GameStat | PlayerGameStat | GameActivity | GameFeedback
 type ExportableEntityWithProps = ExportableEntity & EntityWithProps
 
-@Routes([
-  {
-    method: 'POST'
-  },
-  {
-    method: 'GET'
-  },
-  {
-    method: 'GET',
-    path: '/entities',
-    handler: 'entities'
-  }
-])
 export default class DataExportService extends Service {
   queue: Queue
   emailQueue: Queue
@@ -68,10 +55,10 @@ export default class DataExportService extends Service {
 
     this.emailQueue = createEmailQueue({
       completed: async (job: Job<EmailConfig>) => {
-        await this.updateDataExportStatus(job.data.metadata.dataExportId as number, { id: DataExportStatus.SENT })
+        await this.updateDataExportStatus(job.data.metadata!.dataExportId as number, { id: DataExportStatus.SENT })
       },
       failed: async (job: Job<EmailConfig>) => {
-        await this.updateDataExportStatus(job.data.metadata.dataExportId as number, { failedAt: new Date() })
+        await this.updateDataExportStatus(job.data.metadata!.dataExportId as number, { failedAt: new Date() })
       }
     }, 'data-export')
 
@@ -80,7 +67,7 @@ export default class DataExportService extends Service {
 
       const orm = await MikroORM.init(ormConfig)
       const em = orm.em.fork()
-      const dataExport = await em.getRepository(DataExport).findOne(dataExportId, { populate: ['game', 'createdByUser'] })
+      const dataExport = await em.getRepository(DataExport).findOneOrFail(dataExportId, { populate: ['game', 'createdByUser'] })
 
       dataExport.status = DataExportStatus.QUEUED
       await em.flush()
@@ -119,7 +106,7 @@ export default class DataExportService extends Service {
     const orm = await MikroORM.init(ormConfig)
     const em = orm.em.fork()
 
-    const dataExport = await em.getRepository(DataExport).findOne(dataExportId)
+    const dataExport = await em.getRepository(DataExport).findOneOrFail(dataExportId)
     if (newStatus.id) {
       dataExport.status = newStatus.id
     }
@@ -156,25 +143,27 @@ export default class DataExportService extends Service {
   }
 
   private async getPlayers(dataExport: DataExport, em: EntityManager, includeDevData: boolean): Promise<Player[]> {
-    let where: FilterQuery<Player> = { game: dataExport.game }
+    const query = em.getRepository(Player).createQueryBuilder()
+      .where({ game: dataExport.game })
 
     if (!includeDevData) {
-      where = Object.assign(where, devDataPlayerFilter(em))
+      query.andWhere(devDataPlayerFilter(em))
     }
 
-    return await em.getRepository(Player).find(where)
+    return await query.getResult()
   }
 
   private async getPlayerAliases(dataExport: DataExport, em: EntityManager, includeDevData: boolean): Promise<PlayerAlias[]> {
-    const where: FilterQuery<PlayerAlias> = {
-      player: { game: dataExport.game }
-    }
+    const query = em.getRepository(PlayerAlias).createQueryBuilder()
+      .where({ player: { game: dataExport.game } })
 
     if (!includeDevData) {
-      where.player = Object.assign(where.player, devDataPlayerFilter(em))
+      query.andWhere({
+        player: devDataPlayerFilter(em)
+      })
     }
 
-    return await em.getRepository(PlayerAlias).find(where)
+    return await query.getResult()
   }
 
   private async getLeaderboardEntries(dataExport: DataExport, em: EntityManager, includeDevData: boolean): Promise<LeaderboardEntry[]> {
@@ -184,8 +173,11 @@ export default class DataExportService extends Service {
 
     if (!includeDevData) {
       where.playerAlias = {
-        player: devDataPlayerFilter(em)
-      }
+        player: {
+          game: dataExport.game,
+          ...devDataPlayerFilter(em)
+        }
+      } as FilterQuery<PlayerAlias>
     }
 
     return await em.getRepository(LeaderboardEntry).find(where, {
@@ -214,7 +206,7 @@ export default class DataExportService extends Service {
     }
 
     if (!includeDevData) {
-      where.player = devDataPlayerFilter(em)
+      where.player = devDataPlayerFilter(em) as FilterQuery<Player>
     }
 
     return await em.getRepository(PlayerGameStat).find(where, { populate: ['player'] })
@@ -229,23 +221,26 @@ export default class DataExportService extends Service {
   }
 
   private async getGameFeedback(dataExport: DataExport, em: EntityManager, includeDevData: boolean): Promise<GameFeedback[]> {
-    const where: FilterQuery<GameFeedback> = {
-      playerAlias: {
-        player: {
-          game: dataExport.game
+    const query = em.getRepository(GameFeedback).createQueryBuilder()
+      .where({
+        playerAlias: {
+          player: {
+            game: dataExport.game
+          }
         }
-      }
-    }
+      })
 
     if (!includeDevData) {
-      where.playerAlias = Object.assign(where.playerAlias, {
-        player: devDataPlayerFilter(em)
+      query.andWhere({
+        playerAlias: {
+          player: devDataPlayerFilter(em)
+        }
       })
     }
 
-    return await em.getRepository(GameFeedback).find(where, {
-      populate: ['playerAlias.player']
-    })
+    const results = await query.getResult()
+    await em.populate(results, ['playerAlias.player'])
+    return results
   }
 
   private async createZip(dataExport: DataExport, em: EntityManager, includeDevData: boolean): Promise<AdmZip> {
@@ -388,6 +383,9 @@ export default class DataExportService extends Service {
     return Buffer.from(content, 'utf8')
   }
 
+  @Route({
+    method: 'GET'
+  })
   @HasPermission(DataExportPolicy, 'index')
   async index(req: Request): Promise<Response> {
     const em: EntityManager = req.ctx.em
@@ -405,6 +403,9 @@ export default class DataExportService extends Service {
     }
   }
 
+  @Route({
+    method: 'POST'
+  })
   @Validate({
     body: {
       entities: {
@@ -459,8 +460,12 @@ export default class DataExportService extends Service {
     }
   }
 
+  @Route({
+    method: 'GET',
+    path: '/entities'
+  })
   async entities(): Promise<Response> {
-    const entities = Object.keys(DataExportAvailableEntities).map((key) => DataExportAvailableEntities[key])
+    const entities = Object.keys(DataExportAvailableEntities).map((key) => DataExportAvailableEntities[key as keyof typeof DataExportAvailableEntities])
 
     return {
       status: 200,

@@ -34,9 +34,9 @@ describe('Integration service - patch', () => {
     if (statusCode === 200) {
       expect(res.body.integration.config.appId).toBe(377999)
 
-      expect(activity.extra.integrationType).toBe(IntegrationType.STEAMWORKS)
+      expect(activity!.extra.integrationType).toBe(IntegrationType.STEAMWORKS)
 
-      expect(activity.extra.display).toStrictEqual({
+      expect(activity!.extra.display).toStrictEqual({
         'Updated properties': 'appId'
       })
     } else {

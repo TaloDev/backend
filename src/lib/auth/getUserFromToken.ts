@@ -11,7 +11,7 @@ const getUserFromToken = async (ctx: Context, relations?: string[]): Promise<Use
   }
 
   const userId: number = ctx.state.user.sub
-  const user = await (<EntityManager>ctx.em).getRepository(User).findOne(userId, { populate: relations as never[] })
+  const user = await (<EntityManager>ctx.em).getRepository(User).findOneOrFail(userId, { populate: relations as never[] })
   return user
 }
 

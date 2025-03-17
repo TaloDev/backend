@@ -32,7 +32,7 @@ describe('Integration service - post', () => {
       expect(res.body.integration.config.appId).toBeDefined()
       expect(res.body.integration.config.apiKey).not.toBeDefined()
 
-      expect(activity.extra.integrationType).toBe(IntegrationType.STEAMWORKS)
+      expect(activity!.extra.integrationType).toBe(IntegrationType.STEAMWORKS)
     } else {
       expect(res.body).toStrictEqual({ message: 'You do not have permissions to add integrations' })
 

@@ -6,7 +6,7 @@ import PlayerAlias from './player-alias'
 @Entity()
 export default class GameFeedback {
   @PrimaryKey()
-  id: number
+  id!: number
 
   @ManyToOne(() => GameFeedbackCategory, { nullable: false, cascade: [Cascade.REMOVE], eager: true })
   category: GameFeedbackCategory
@@ -16,10 +16,10 @@ export default class GameFeedback {
 
   @Required()
   @Property({ type: 'text' })
-  comment: string
+  comment!: string
 
   @Property()
-  anonymised: boolean
+  anonymised!: boolean
 
   @Property()
   createdAt: Date = new Date()

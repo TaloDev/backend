@@ -37,7 +37,7 @@ describe('Game stat service - post', () => {
       expect(res.body.stat.maxValue).toBe(10)
       expect(res.body.stat.minTimeBetweenUpdates).toBe(0)
 
-      expect(activity.extra.statInternalName).toBe(res.body.stat.internalName)
+      expect(activity!.extra.statInternalName).toBe(res.body.stat.internalName)
     } else {
       expect(res.body).toStrictEqual({ message: 'You do not have permissions to create stats' })
 

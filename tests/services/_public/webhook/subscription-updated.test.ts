@@ -10,7 +10,7 @@ import { addDays } from 'date-fns'
 import PlanRenewed from '../../../../src/emails/plan-renewed-mail'
 import PlanCancelled from '../../../../src/emails/plan-cancelled-mail'
 
-const stripe = initStripe()
+const stripe = initStripe()!
 
 describe('Webhook service - subscription updated', () => {
   const sendMock = vi.spyOn(SendGrid, 'send')
@@ -48,7 +48,7 @@ describe('Webhook service - subscription updated', () => {
 
     const header = stripe.webhooks.generateTestHeaderString({
       payload,
-      secret: process.env.STRIPE_WEBHOOK_SECRET
+      secret: process.env.STRIPE_WEBHOOK_SECRET!
     })
 
     await request(global.app)
@@ -93,7 +93,7 @@ describe('Webhook service - subscription updated', () => {
 
     const header = stripe.webhooks.generateTestHeaderString({
       payload,
-      secret: process.env.STRIPE_WEBHOOK_SECRET
+      secret: process.env.STRIPE_WEBHOOK_SECRET!
     })
 
     await request(global.app)
@@ -136,7 +136,7 @@ describe('Webhook service - subscription updated', () => {
 
     const header = stripe.webhooks.generateTestHeaderString({
       payload,
-      secret: process.env.STRIPE_WEBHOOK_SECRET
+      secret: process.env.STRIPE_WEBHOOK_SECRET!
     })
 
     await request(global.app)
@@ -182,7 +182,7 @@ describe('Webhook service - subscription updated', () => {
 
     const header = stripe.webhooks.generateTestHeaderString({
       payload,
-      secret: process.env.STRIPE_WEBHOOK_SECRET
+      secret: process.env.STRIPE_WEBHOOK_SECRET!
     })
 
     await request(global.app)
@@ -192,7 +192,7 @@ describe('Webhook service - subscription updated', () => {
       .expect(204)
 
     await (<EntityManager>global.em).refresh(organisation, { populate: ['pricingPlan'] })
-    expect(organisation.pricingPlan.endDate.getMilliseconds()).toBe(new Date(subscription.current_period_end * 1000).getMilliseconds())
+    expect(organisation.pricingPlan.endDate!.getMilliseconds()).toBe(new Date(subscription.current_period_end * 1000).getMilliseconds())
     expect(sendMock).toHaveBeenCalledWith(new PlanCancelled(organisation).getConfig())
   })
 
@@ -227,7 +227,7 @@ describe('Webhook service - subscription updated', () => {
 
     const header = stripe.webhooks.generateTestHeaderString({
       payload,
-      secret: process.env.STRIPE_WEBHOOK_SECRET
+      secret: process.env.STRIPE_WEBHOOK_SECRET!
     })
 
     await request(global.app)

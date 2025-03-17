@@ -21,16 +21,16 @@ export type SteamworksResponse = {
 @Entity()
 export default class SteamworksIntegrationEvent {
   @PrimaryKey()
-  id: number
+  id!: number
 
   @ManyToOne(() => Integration)
   integration: Integration
 
   @Property({ type: 'json' })
-  request: SteamworksRequest
+  request!: SteamworksRequest
 
   @Property({ type: 'json' })
-  response: SteamworksResponse
+  response!: SteamworksResponse
 
   @Property()
   createdAt: Date = new Date()

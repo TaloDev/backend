@@ -6,22 +6,22 @@ import Prop from './prop'
 @Entity()
 export default class LeaderboardEntry {
   @PrimaryKey()
-  id: number
+  id!: number
 
   @Property({ type: 'double' })
-  score: number
+  score!: number
 
   @ManyToOne(() => Leaderboard, { cascade: [Cascade.REMOVE] })
   leaderboard: Leaderboard
 
   @ManyToOne(() => PlayerAlias, { cascade: [Cascade.REMOVE], eager: true })
-  playerAlias: PlayerAlias
+  playerAlias!: PlayerAlias
 
   @Embedded(() => Prop, { array: true })
   props: Prop[] = []
 
   @Property({ default: false })
-  hidden: boolean
+  hidden!: boolean
 
   @Property()
   createdAt: Date = new Date()
@@ -30,7 +30,7 @@ export default class LeaderboardEntry {
   updatedAt: Date = new Date()
 
   @Property({ nullable: true })
-  deletedAt: Date
+  deletedAt: Date | null = null
 
   constructor(leaderboard: Leaderboard) {
     this.leaderboard = leaderboard

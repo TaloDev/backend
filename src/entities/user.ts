@@ -13,19 +13,19 @@ export enum UserType {
 @Entity()
 export default class User {
   @PrimaryKey()
-  id: number
+  id!: number
 
   @Property()
-  email: string
+  email!: string
 
   @Property()
-  username: string
+  username!: string
 
   @Property({ hidden: true })
-  password: string
+  password!: string
 
   @ManyToOne(() => Organisation, { eager: true })
-  organisation: Organisation
+  organisation!: Organisation
 
   @Enum(() => UserType)
   type: UserType = UserType.DEV
@@ -34,10 +34,10 @@ export default class User {
   lastSeenAt: Date = new Date()
 
   @Property({ default: false })
-  emailConfirmed: boolean
+  emailConfirmed!: boolean
 
   @OneToOne({ nullable: true, orphanRemoval: true, eager: true })
-  twoFactorAuth: UserTwoFactorAuth
+  twoFactorAuth: UserTwoFactorAuth | null = null
 
   @OneToMany(() => UserRecoveryCode, (recoveryCode) => recoveryCode.user, { orphanRemoval: true })
   recoveryCodes: Collection<UserRecoveryCode> = new Collection<UserRecoveryCode>(this)

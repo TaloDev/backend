@@ -29,7 +29,7 @@ describe('Player auth API service - forgot password', () => {
 
     await request(global.app)
       .post('/v1/players/auth/forgot_password')
-      .send({ email: player.auth.email })
+      .send({ email: player.auth!.email })
       .auth(token, { type: 'bearer' })
       .expect(204)
 
@@ -54,7 +54,7 @@ describe('Player auth API service - forgot password', () => {
 
     await request(global.app)
       .post('/v1/players/auth/forgot_password')
-      .send({ email: player.auth.email })
+      .send({ email: player.auth!.email })
       .auth(token, { type: 'bearer' })
       .expect(403)
 
@@ -94,7 +94,7 @@ describe('Player auth API service - forgot password', () => {
 
     await request(global.app)
       .post('/v1/players/auth/forgot_password')
-      .send({ email: otherPlayer.auth.email })
+      .send({ email: otherPlayer.auth!.email })
       .auth(token, { type: 'bearer' })
       .expect(204)
 

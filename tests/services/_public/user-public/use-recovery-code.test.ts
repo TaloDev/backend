@@ -25,7 +25,7 @@ async function createUserWithTwoFactorAuth(em: EntityManager): Promise<[string, 
     twoFactorAuth: new UserTwoFactorAuth('blah')
   })
 
-  user.twoFactorAuth.enabled = true
+  user.twoFactorAuth!.enabled = true
   user.recoveryCodes = new Collection<UserRecoveryCode>(user, generateRecoveryCodes(user))
   await em.flush()
 

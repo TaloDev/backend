@@ -1,5 +1,5 @@
 import { EntityManager } from '@mikro-orm/mysql'
-import { HasPermission, Service, Request, Response, Validate, Routes } from 'koa-clay'
+import { HasPermission, Service, Request, Response, Validate, Route } from 'koa-clay'
 import { GameActivityType } from '../entities/game-activity'
 import PlayerGroup, { PlayerRuleFields, RuleMode } from '../entities/player-group'
 import PlayerGroupRule, { PlayerGroupRuleCastType, PlayerGroupRuleName } from '../entities/player-group-rule'
@@ -10,41 +10,10 @@ import getUserFromToken from '../lib/auth/getUserFromToken'
 import UserPinnedGroup from '../entities/user-pinned-group'
 import { devDataPlayerFilter } from '../middlewares/dev-data-middleware'
 
-@Routes([
-  {
-    method: 'GET'
-  },
-  {
-    method: 'POST'
-  },
-  {
-    method: 'PUT'
-  },
-  {
-    method: 'DELETE'
-  },
-  {
-    method: 'GET',
-    path: '/rules',
-    handler: 'rules'
-  },
-  {
-    method: 'GET',
-    path: '/preview-count',
-    handler: 'previewCount'
-  },
-  {
-    method: 'GET',
-    path: '/pinned',
-    handler: 'indexPinned'
-  },
-  {
-    method: 'PUT',
-    path: '/:id/toggle-pinned',
-    handler: 'togglePinned'
-  }
-])
 export default class PlayerGroupService extends Service {
+  @Route({
+    method: 'GET'
+  })
   @HasPermission(PlayerGroupPolicy, 'index')
   async index(req: Request): Promise<Response> {
     const em: EntityManager = req.ctx.em
@@ -68,6 +37,9 @@ export default class PlayerGroupService extends Service {
     })
   }
 
+  @Route({
+    method: 'POST'
+  })
   @Validate({ body: [PlayerGroup] })
   @HasPermission(PlayerGroupPolicy, 'post')
   async post(req: Request): Promise<Response> {
@@ -101,6 +73,10 @@ export default class PlayerGroupService extends Service {
     }
   }
 
+  @Route({
+    method: 'PUT',
+    path: '/:id'
+  })
   @Validate({ body: [PlayerGroup] })
   @HasPermission(PlayerGroupPolicy, 'put')
   async put(req: Request): Promise<Response> {
@@ -134,6 +110,10 @@ export default class PlayerGroupService extends Service {
     }
   }
 
+  @Route({
+    method: 'GET',
+    path: '/rules'
+  })
   async rules(): Promise<Response> {
     let rules = [
       {
@@ -188,6 +168,10 @@ export default class PlayerGroupService extends Service {
     }
   }
 
+  @Route({
+    method: 'DELETE',
+    path: '/:id'
+  })
   @HasPermission(PlayerGroupPolicy, 'delete')
   async delete(req: Request): Promise<Response> {
     const em: EntityManager = req.ctx.em
@@ -209,6 +193,10 @@ export default class PlayerGroupService extends Service {
     }
   }
 
+  @Route({
+    method: 'GET',
+    path: '/preview-count'
+  })
   @Validate({
     query: {
       rules: {
@@ -244,6 +232,10 @@ export default class PlayerGroupService extends Service {
     }
   }
 
+  @Route({
+    method: 'GET',
+    path: '/pinned'
+  })
   @HasPermission(PlayerGroupPolicy, 'indexPinned')
   async indexPinned(req: Request): Promise<Response> {
     const em: EntityManager = req.ctx.em
@@ -268,6 +260,10 @@ export default class PlayerGroupService extends Service {
     }
   }
 
+  @Route({
+    method: 'PUT',
+    path: '/:id/toggle-pinned'
+  })
   @HasPermission(PlayerGroupPolicy, 'togglePinned')
   async togglePinned(req: Request): Promise<Response> {
     const { pinned } = req.body

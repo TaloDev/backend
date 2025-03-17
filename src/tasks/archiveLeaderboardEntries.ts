@@ -7,10 +7,19 @@ import { isToday, isThisWeek, isThisMonth, isThisYear } from 'date-fns'
 import triggerIntegrations from '../lib/integrations/triggerIntegrations'
 
 export async function archiveEntriesForLeaderboard(em: EntityManager, leaderboard: Leaderboard) {
-  console.info(`Archiving entries for leaderboard ${leaderboard.id}...`)
-  const entries = await em.getRepository(LeaderboardEntry).find({
-    leaderboard
-  })
+  /* v8 ignore start */
+  if (leaderboard.refreshInterval === LeaderboardRefreshInterval.NEVER) {
+    // this should never happen, but it enforces correct typing for refreshCheckers
+    console.warn(`Leaderboard ${leaderboard.id} has a NEVER refresh interval, skipping...`)
+    return
+  }
+
+  if (process.env.NODE_ENV !== 'test') {
+    console.info(`Archiving entries for leaderboard ${leaderboard.id}...`)
+  }
+  /* v8 ignore stop */
+
+  const entries = await em.getRepository(LeaderboardEntry).find({ leaderboard })
 
   const refreshCheckers = {
     [LeaderboardRefreshInterval.DAILY]: (date: Date) => isToday(date),

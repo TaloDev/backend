@@ -1,7 +1,6 @@
-import { After, Service, Request, Response, Routes, Validate, ValidationCondition } from 'koa-clay'
+import { After, Service, Request, Response, Validate, ValidationCondition, Route } from 'koa-clay'
 import User, { UserType } from '../../entities/user'
 import jwt from 'jsonwebtoken'
-import { promisify } from 'util'
 import { EntityManager } from '@mikro-orm/mysql'
 import UserSession from '../../entities/user-session'
 import bcrypt from 'bcrypt'
@@ -22,6 +21,7 @@ import createDefaultPricingPlan from '../../lib/billing/createDefaultPricingPlan
 import queueEmail from '../../lib/messaging/queueEmail'
 import ResetPassword from '../../emails/reset-password'
 import emailRegex from '../../lib/lang/emailRegex'
+import { sign, verify } from '../../lib/auth/jwt'
 
 async function sendEmailConfirm(req: Request, res: Response): Promise<void> {
   const user: User = req.ctx.state.user
@@ -38,51 +38,18 @@ async function sendEmailConfirm(req: Request, res: Response): Promise<void> {
   /* v8 ignore stop */
 }
 
-@Routes([
-  {
-    method: 'POST',
-    path: '/register',
-    handler: 'register'
-  },
-  {
-    method: 'POST',
-    path: '/login',
-    handler: 'login'
-  },
-  {
-    method: 'GET',
-    path: '/refresh',
-    handler: 'refresh'
-  },
-  {
-    method: 'POST',
-    path: '/forgot_password',
-    handler: 'forgotPassword'
-  },
-  {
-    method: 'POST',
-    path: '/reset_password',
-    handler: 'resetPassword'
-  },
-  {
-    method: 'POST',
-    path: '/2fa',
-    handler: 'verify2fa'
-  },
-  {
-    method: 'POST',
-    path: '/2fa/recover',
-    handler: 'useRecoveryCode'
-  }
-])
 export default class UserPublicService extends Service {
+  @Route({
+    method: 'POST',
+    path: '/register'
+  })
   @Validate({
     body: {
       email: {
         required: true,
-        validation: async (val: string): Promise<ValidationCondition[]> => [
+        validation: async (val: unknown): Promise<ValidationCondition[]> => [
           {
-            check: emailRegex.test(val),
+            check: emailRegex.test(String(val)),
             error: 'Email address is invalid'
           }
         ]
@@ -164,6 +131,10 @@ export default class UserPublicService extends Service {
     req.ctx.throw(401, 'Incorrect email address or password')
   }
 
+  @Route({
+    method: 'POST',
+    path: '/login'
+  })
   @Validate({
     body: ['email', 'password']
   })
@@ -175,23 +146,23 @@ export default class UserPublicService extends Service {
     const user = await em.getRepository(User).findOne({ email })
     if (!user) this.handleFailedLogin(req)
 
-    const passwordMatches = await bcrypt.compare(password, user.password)
+    const passwordMatches = await bcrypt.compare(password, user!.password)
     if (!passwordMatches) this.handleFailedLogin(req)
 
-    if (user.twoFactorAuth?.enabled) {
+    if (user!.twoFactorAuth?.enabled) {
       const redis = createRedisConnection(req.ctx)
-      await redis.set(`2fa:${user.id}`, 'true', 'EX', 300)
+      await redis.set(`2fa:${user!.id}`, 'true', 'EX', 300)
 
       return {
         status: 200,
         body: {
           twoFactorAuthRequired: true,
-          userId: user.id
+          userId: user!.id
         }
       }
     }
 
-    const accessToken = await buildTokenPair(req.ctx, user)
+    const accessToken = await buildTokenPair(req.ctx, user!)
 
     return {
       status: 200,
@@ -202,6 +173,10 @@ export default class UserPublicService extends Service {
     }
   }
 
+  @Route({
+    method: 'GET',
+    path: '/refresh'
+  })
   @After(setUserLastSeenAt)
   async refresh(req: Request): Promise<Response> {
     const token = req.ctx.cookies.get('refreshToken')
@@ -230,6 +205,10 @@ export default class UserPublicService extends Service {
     }
   }
 
+  @Route({
+    method: 'POST',
+    path: '/forgot_password'
+  })
   @Validate({
     body: ['email']
   })
@@ -242,7 +221,6 @@ export default class UserPublicService extends Service {
     if (user) {
       const secret = user.password.substring(0, 10)
       const payload = { sub: user.id }
-      const sign = promisify(jwt.sign)
       const accessToken = await sign(payload, secret, { expiresIn: '15m' })
       await queueEmail(req.ctx.emailQueue, new ResetPassword(user, accessToken))
     }
@@ -252,6 +230,10 @@ export default class UserPublicService extends Service {
     }
   }
 
+  @Route({
+    method: 'POST',
+    path: '/reset_password'
+  })
   @Validate({
     body: ['password', 'token']
   })
@@ -260,21 +242,21 @@ export default class UserPublicService extends Service {
     const decodedToken = jwt.decode(token)
 
     const em: EntityManager = req.ctx.em
-    const user = await em.getRepository(User).findOne(decodedToken.sub)
+    const user = await em.getRepository(User).findOne(Number(decodedToken?.sub))
     const secret = user?.password.substring(0, 10)
 
     try {
-      await promisify(jwt.verify)(token, secret)
+      await verify(token, secret!)
     } catch (err) {
       req.ctx.throw(401, { message: 'Request expired', expired: true })
     }
 
-    const isSamePassword = await bcrypt.compare(password, user.password)
+    const isSamePassword = await bcrypt.compare(password, user!.password)
     if (isSamePassword) {
       req.ctx.throw(400, 'Please choose a different password')
     }
 
-    user.password = await bcrypt.hash(password, 10)
+    user!.password = await bcrypt.hash(password, 10)
 
     const sessions = await em.repo(UserSession).find({ user })
     await em.removeAndFlush(sessions)
@@ -284,6 +266,10 @@ export default class UserPublicService extends Service {
     }
   }
 
+  @Route({
+    method: 'POST',
+    path: '/2fa'
+  })
   @Validate({
     body: ['code', 'userId']
   })
@@ -292,7 +278,7 @@ export default class UserPublicService extends Service {
     const { code, userId } = req.body
     const em: EntityManager = req.ctx.em
 
-    const user = await em.getRepository(User).findOne(userId)
+    const user = await em.getRepository(User).findOneOrFail(userId)
 
     const redis = createRedisConnection(req.ctx)
     const hasSession = (await redis.get(`2fa:${user.id}`)) === 'true'
@@ -301,7 +287,7 @@ export default class UserPublicService extends Service {
       req.ctx.throw(403, { message: 'Session expired', sessionExpired: true })
     }
 
-    if (!authenticator.check(code, user.twoFactorAuth.secret)) {
+    if (!authenticator.check(code, user.twoFactorAuth!.secret)) {
       req.ctx.throw(403, 'Invalid code')
     }
 
@@ -317,6 +303,10 @@ export default class UserPublicService extends Service {
     }
   }
 
+  @Route({
+    method: 'POST',
+    path: '/2fa/recover'
+  })
   @Validate({
     body: ['userId', 'code']
   })
@@ -324,7 +314,7 @@ export default class UserPublicService extends Service {
     const { code, userId } = req.body
     const em: EntityManager = req.ctx.em
 
-    const user = await em.getRepository(User).findOne(userId, { populate: ['recoveryCodes'] })
+    const user = await em.getRepository(User).findOneOrFail(userId, { populate: ['recoveryCodes'] })
 
     const redis = createRedisConnection(req.ctx)
     const hasSession = (await redis.get(`2fa:${user.id}`)) === 'true'
@@ -343,7 +333,7 @@ export default class UserPublicService extends Service {
 
     em.remove(recoveryCode)
 
-    let newRecoveryCodes: UserRecoveryCode[]
+    let newRecoveryCodes: UserRecoveryCode[] = []
     if (user.recoveryCodes.count() === 0) {
       newRecoveryCodes = generateRecoveryCodes(user)
       user.recoveryCodes.set(newRecoveryCodes)
@@ -359,7 +349,7 @@ export default class UserPublicService extends Service {
       body: {
         user,
         accessToken,
-        newRecoveryCodes
+        newRecoveryCodes: newRecoveryCodes.length === 0 ? undefined : newRecoveryCodes
       }
     }
   }

@@ -22,7 +22,7 @@ describe('Game channel service - post', () => {
     })
 
     expect(res.body.channel.name).toBe('Test channel')
-    expect(activity.extra.channelName).toBe('Test channel')
+    expect(activity!.extra.channelName).toBe('Test channel')
   })
 
   it('should not create a game channel for a game the user has no access to', async () => {

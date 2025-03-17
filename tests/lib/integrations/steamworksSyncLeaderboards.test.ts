@@ -65,7 +65,7 @@ describe('Steamworks integration - sync leaderboards', () => {
     expect(getLeaderboardsMock).toHaveBeenCalledTimes(1)
     expect(getEntriesMock).toHaveBeenCalledTimes(1)
 
-    const event = await (<EntityManager>global.em).getRepository(SteamworksIntegrationEvent).findOne({ integration })
+    const event = await (<EntityManager>global.em).getRepository(SteamworksIntegrationEvent).findOneOrFail({ integration })
     expect(event.request).toStrictEqual({
       url: `https://partner.steam-api.com/ISteamLeaderboards/GetLeaderboardsForGame/v2?appid=${integration.getConfig().appId}`,
       body: '',
@@ -106,7 +106,7 @@ describe('Steamworks integration - sync leaderboards', () => {
     try {
       await syncSteamworksLeaderboards((<EntityManager>global.em), integration)
     } catch (err) {
-      expect(err.message).toBe('Failed to retrieve leaderboards - is your App ID correct?')
+      expect((err as Error).message).toBe('Failed to retrieve leaderboards - is your App ID correct?')
     }
 
     expect(getLeaderboardsMock).toHaveBeenCalledTimes(1)
@@ -254,7 +254,7 @@ describe('Steamworks integration - sync leaderboards', () => {
 
     expect(getLeaderboardsMock).toHaveBeenCalledTimes(1)
 
-    const event = await (<EntityManager>global.em).getRepository(SteamworksIntegrationEvent).findOne({ integration }, { orderBy: { id: 'DESC' } })
+    const event = await (<EntityManager>global.em).getRepository(SteamworksIntegrationEvent).findOneOrFail({ integration }, { orderBy: { id: 'DESC' } })
     expect(event.request).toStrictEqual({
       url: 'https://partner.steam-api.com/ISteamLeaderboards/FindOrCreateLeaderboard/v2',
       body: `appid=${config.appId}&name=${leaderboard.internalName}&sortmethod=Descending&displaytype=Numeric&createifnotfound=true&onlytrustedwrites=true&onlyfriendsreads=false`,
@@ -369,7 +369,7 @@ describe('Steamworks integration - sync leaderboards', () => {
     expect(getEntriesMock).toHaveBeenCalledTimes(1)
     expect(createMock).toHaveBeenCalledTimes(1)
 
-    const event = await (<EntityManager>global.em).getRepository(SteamworksIntegrationEvent).findOne({ integration }, { orderBy: { id: 'DESC' } })
+    const event = await (<EntityManager>global.em).getRepository(SteamworksIntegrationEvent).findOneOrFail({ integration }, { orderBy: { id: 'DESC' } })
     expect(event.request).toStrictEqual({
       url: 'https://partner.steam-api.com/ISteamLeaderboards/SetLeaderboardScore/v1',
       body: `appid=${config.appId}&leaderboardid=${mapping.steamworksLeaderboardId}&steamid=${player.aliases[0].identifier}&score=${entry.score}&scoremethod=KeepBest`,

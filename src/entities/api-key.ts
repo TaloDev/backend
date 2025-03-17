@@ -27,7 +27,7 @@ export enum APIKeyScope {
 @Entity()
 export default class APIKey {
   @PrimaryKey()
-  id: number
+  id!: number
 
   @Enum({ items: () => APIKeyScope, array: true })
   scopes: APIKeyScope[] = []

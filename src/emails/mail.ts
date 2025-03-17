@@ -14,16 +14,16 @@ export default class Mail {
   template: string
 
   to: string
-  attachments: AttachmentData[]
+  attachments: AttachmentData[] = []
 
   subject: string
   preheader: string
 
-  title: string
-  mainText: string
+  title!: string
+  mainText!: string
 
-  ctaLink: string
-  ctaText: string
+  ctaLink!: string
+  ctaText!: string
 
   footer: string
   footerText: string
@@ -59,12 +59,12 @@ export default class Mail {
     return {
       to: this.to,
       from: {
-        email: process.env.FROM_EMAIL,
+        email: process.env.FROM_EMAIL!,
         name: 'Talo Team'
       },
       subject: this.subject,
       html,
-      attachments: this.attachments || []
+      attachments: this.attachments
     }
   }
 }

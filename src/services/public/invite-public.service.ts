@@ -1,8 +1,12 @@
 import { EntityManager } from '@mikro-orm/mysql'
-import { Service, Request, Response } from 'koa-clay'
+import { Service, Request, Response, Route } from 'koa-clay'
 import Invite from '../../entities/invite'
 
 export default class InvitePublicService extends Service {
+  @Route({
+    method: 'GET',
+    path: '/:id'
+  })
   async get(req: Request): Promise<Response> {
     const { id } = req.params
     const em: EntityManager = req.ctx.em

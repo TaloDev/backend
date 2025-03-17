@@ -6,17 +6,17 @@ import User, { UserType } from './user'
 @Entity()
 export default class Invite {
   @PrimaryKey()
-  id: number
+  id!: number
 
   @Property()
   token: string = this.generateToken()
 
   @Required()
   @Property()
-  email: string
+  email!: string
 
   @Required({
-    validation: async (value: number): Promise<ValidationCondition[]> => [{
+    validation: async (value: unknown): Promise<ValidationCondition[]> => [{
       check: [UserType.ADMIN, UserType.DEV].includes(value as UserType),
       error: 'You can only invite an admin or developer user'
     }]
@@ -28,7 +28,7 @@ export default class Invite {
   organisation: Organisation
 
   @ManyToOne(() => User)
-  invitedByUser: User
+  invitedByUser!: User
 
   @Property()
   createdAt: Date = new Date()

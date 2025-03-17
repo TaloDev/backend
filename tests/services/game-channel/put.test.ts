@@ -27,9 +27,9 @@ describe('Game channel service - put', () => {
     })
 
     expect(res.body.channel.name).toBe('Updated channel')
-    expect(activity.extra.channelName).toBe('Updated channel')
+    expect(activity!.extra.channelName).toBe('Updated channel')
 
-    expect(activity.extra.display).toStrictEqual({
+    expect(activity!.extra.display).toStrictEqual({
       'Updated properties': 'name: Updated channel, props: [{"key":"test","value":"value"}]'
     })
   })
@@ -109,7 +109,7 @@ describe('Game channel service - put', () => {
       .auth(token, { type: 'bearer' })
       .expect(200)
 
-    const updatedChannel = await (<EntityManager>global.em).getRepository(GameChannel).findOne(
+    const updatedChannel = await (<EntityManager>global.em).getRepository(GameChannel).findOneOrFail(
       channel.id,
       { populate: ['members'] }
     )

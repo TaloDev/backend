@@ -6,6 +6,7 @@ import GameFeedbackCategoryFactory from '../../fixtures/GameFeedbackCategoryFact
 import { EntityManager } from '@mikro-orm/mysql'
 import PlayerAliasFactory from '../../fixtures/PlayerAliasFactory'
 import PlayerFactory from '../../fixtures/PlayerFactory'
+import GameFeedback from '../../../src/entities/game-feedback'
 
 describe('Game feedback service - index', () => {
   it('should return a list of game feedback', async () => {
@@ -21,7 +22,7 @@ describe('Game feedback service - index', () => {
       .auth(token, { type: 'bearer' })
       .expect(200)
 
-    res.body.feedback.forEach((item, idx) => {
+    res.body.feedback.forEach((item: GameFeedback, idx: number) => {
       expect(item.id).toBe(feedback[idx].id)
     })
   })

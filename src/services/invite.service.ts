@@ -1,5 +1,5 @@
 import { EntityManager } from '@mikro-orm/mysql'
-import { HasPermission, Service, Request, Response, Validate } from 'koa-clay'
+import { HasPermission, Service, Request, Response, Validate, Route } from 'koa-clay'
 import Invite from '../entities/invite'
 import User, { UserType } from '../entities/user'
 import InvitePolicy from '../policies/invite.policy'
@@ -9,6 +9,9 @@ import { GameActivityType } from '../entities/game-activity'
 import queueEmail from '../lib/messaging/queueEmail'
 
 export default class InviteService extends Service {
+  @Route({
+    method: 'GET'
+  })
   @HasPermission(InvitePolicy, 'index')
   async index(req: Request): Promise<Response> {
     const em: EntityManager = req.ctx.em
@@ -24,6 +27,9 @@ export default class InviteService extends Service {
     }
   }
 
+  @Route({
+    method: 'POST'
+  })
   @Validate({
     body: [Invite]
   })

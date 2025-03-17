@@ -9,7 +9,7 @@ import { UserType } from '../../../src/entities/user'
 import OrganisationPricingPlanFactory from '../../fixtures/OrganisationPricingPlanFactory'
 import PlayerFactory from '../../fixtures/PlayerFactory'
 
-const stripe = initStripe()
+const stripe = initStripe()!
 
 describe('Billing service - create checkout session', () => {
   it.each(userPermissionProvider())('should return a %i for a %s user', async (statusCode, _, type) => {
@@ -28,7 +28,7 @@ describe('Billing service - create checkout session', () => {
       .post('/billing/checkout-session')
       .send({
         pricingPlanId: plan.id,
-        pricingInterval: price.recurring.interval
+        pricingInterval: price.recurring!.interval
       })
       .auth(token, { type: 'bearer' })
       .expect(statusCode)
@@ -75,7 +75,7 @@ describe('Billing service - create checkout session', () => {
       .post('/billing/checkout-session')
       .send({
         pricingPlanId: plan.id,
-        pricingInterval: price.recurring.interval
+        pricingInterval: price.recurring!.interval
       })
       .auth(token, { type: 'bearer' })
       .expect(200)
@@ -95,7 +95,7 @@ describe('Billing service - create checkout session', () => {
       .post('/billing/checkout-session')
       .send({
         pricingPlanId: plan.id,
-        pricingInterval: price.recurring.interval
+        pricingInterval: price.recurring!.interval
       })
       .auth(token, { type: 'bearer' })
       .expect(200)
@@ -144,7 +144,7 @@ describe('Billing service - create checkout session', () => {
       .post('/billing/checkout-session')
       .send({
         pricingPlanId: plan.id,
-        pricingInterval: price.recurring.interval
+        pricingInterval: price.recurring!.interval
       })
       .auth(token, { type: 'bearer' })
       .expect(200)

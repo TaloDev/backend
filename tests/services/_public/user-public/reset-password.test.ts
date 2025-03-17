@@ -2,8 +2,7 @@ import { EntityManager } from '@mikro-orm/mysql'
 import request from 'supertest'
 import UserFactory from '../../../fixtures/UserFactory'
 import bcrypt from 'bcrypt'
-import jwt from 'jsonwebtoken'
-import { promisify } from 'util'
+import { sign } from '../../../../src/lib/auth/jwt'
 
 describe('User public service - reset password', () => {
   it('should let a user reset their password', async () => {
@@ -11,7 +10,6 @@ describe('User public service - reset password', () => {
     const user = await new UserFactory().state(() => ({ password })).one()
     await (<EntityManager>global.em).persistAndFlush(user)
 
-    const sign = promisify(jwt.sign)
     const token = await sign({ sub: user.id }, user.password.substring(0, 10), { expiresIn: '15m' })
 
     await request(global.app)
@@ -28,7 +26,6 @@ describe('User public service - reset password', () => {
     const user = await new UserFactory().state(() => ({ password })).one()
     await (<EntityManager>global.em).persistAndFlush(user)
 
-    const sign = promisify(jwt.sign)
     const token = await sign({ sub: user.id }, user.password.substring(0, 10), { expiresIn: '15m' })
 
     const res = await request(global.app)
@@ -40,7 +37,6 @@ describe('User public service - reset password', () => {
   })
 
   it('should not let a user reset their password if the token is invalid', async () => {
-    const sign = promisify(jwt.sign)
     const token = await sign({ sub: 1 }, 'wrong secret', { expiresIn: '15m' })
 
     const res = await request(global.app)
@@ -52,7 +48,6 @@ describe('User public service - reset password', () => {
   })
 
   it('should not let a non-existent', async () => {
-    const sign = promisify(jwt.sign)
     const token = await sign({ sub: 21313123 }, 'whatever', { expiresIn: '15m' })
 
     const res = await request(global.app)

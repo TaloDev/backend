@@ -1,6 +1,6 @@
 import Stripe from 'stripe'
 import { EntityManager } from '@mikro-orm/mysql'
-import { HasPermission, Service, Request, Response, Routes, Validate } from 'koa-clay'
+import { HasPermission, Service, Request, Response, Route, Validate } from 'koa-clay'
 import PricingPlan from '../entities/pricing-plan'
 import BillingPolicy from '../policies/billing.policy'
 import Organisation from '../entities/organisation'
@@ -22,39 +22,11 @@ type PricingPlanProduct = Omit<PricingPlan & {
   }[]
 }, 'toJSON'>
 
-@Routes([
-  {
-    method: 'GET',
-    path: '/plans',
-    handler: 'plans'
-  },
-  {
-    method: 'POST',
-    path: '/checkout-session',
-    handler: 'createCheckoutSession'
-  },
-  {
-    method: 'POST',
-    path: '/confirm-plan',
-    handler: 'confirmPlan'
-  },
-  {
-    method: 'POST',
-    path: '/portal-session',
-    handler: 'createPortalSession'
-  },
-  {
-    method: 'GET',
-    path: '/usage',
-    handler: 'usage'
-  },
-  {
-    method: 'GET',
-    path: '/organisation-plan',
-    handler: 'organisationPlan'
-  }
-])
 export default class BillingService extends Service {
+  @Route({
+    method: 'GET',
+    path: '/plans'
+  })
   async plans(req: Request): Promise<Response> {
     const em: EntityManager = req.ctx.em
     const plans = await em.getRepository(PricingPlan).find({ hidden: false })
@@ -83,9 +55,10 @@ export default class BillingService extends Service {
         ...plan,
         name: (prices.data[0].product as Stripe.Product).name,
         prices: prices.data.map((price) => ({
-          amount: price.unit_amount,
+          /* v8 ignore next */
+          amount: price.unit_amount ?? 0, // handle null case by defaulting to 0
           currency: price.currency,
-          interval: price.recurring.interval,
+          interval: price.recurring!.interval,
           current: price.id === organisation.pricingPlan.stripePriceId
         }))
       })
@@ -100,10 +73,13 @@ export default class BillingService extends Service {
   }
 
   async previewPlan(req: Request, price: string): Promise<Response> {
+    /* v8 ignore next */
+    if (!stripe) req.ctx.throw(405)
+
     const prorationDate = Math.floor(Date.now() / 1000)
 
     const organisation: Organisation = req.ctx.state.user.organisation
-    const subscriptions = await stripe.subscriptions.list({ customer: organisation.pricingPlan.stripeCustomerId  })
+    const subscriptions = await stripe.subscriptions.list({ customer: organisation.pricingPlan.stripeCustomerId!  })
     const subscription = subscriptions.data[0]
 
     const items = [{
@@ -112,7 +88,7 @@ export default class BillingService extends Service {
     }]
 
     const invoice = await stripe.invoices.retrieveUpcoming({
-      customer: organisation.pricingPlan.stripeCustomerId,
+      customer: organisation.pricingPlan.stripeCustomerId!,
       subscription: subscription.id,
       subscription_items: items,
       subscription_proration_date: prorationDate
@@ -153,18 +129,25 @@ export default class BillingService extends Service {
 
     await this.checkCanDowngrade(em, req, plan)
 
-    const prices = await stripe.prices.list({
+    const prices = await stripe!.prices.list({
       product: plan.stripeId,
       active: true,
       expand: ['data.product']
     })
 
-    return prices.data.find((p) => p.recurring.interval === pricingInterval).id
+    return prices.data.find((p) => p.recurring!.interval === pricingInterval)!.id
   }
 
+  @Route({
+    method: 'POST',
+    path: '/checkout-session'
+  })
   @Validate({ body: ['pricingPlanId', 'pricingInterval'] })
   @HasPermission(BillingPolicy, 'createCheckoutSession')
   async createCheckoutSession(req: Request): Promise<Response> {
+    /* v8 ignore next */
+    if (!stripe) req.ctx.throw(405)
+
     const { pricingPlanId } = req.body
     const em: EntityManager = req.ctx.em
 
@@ -207,9 +190,16 @@ export default class BillingService extends Service {
     }
   }
 
+  @Route({
+    method: 'POST',
+    path: '/confirm-plan'
+  })
   @Validate({ body: ['prorationDate', 'pricingPlanId', 'pricingInterval'] })
   @HasPermission(BillingPolicy, 'confirmPlan')
   async confirmPlan(req: Request): Promise<Response> {
+    /* v8 ignore next */
+    if (!stripe) req.ctx.throw(405)
+
     const { prorationDate } = req.body
     if (!isSameHour(new Date(), new Date(prorationDate * 1000))) req.ctx.throw(400)
 
@@ -238,8 +228,15 @@ export default class BillingService extends Service {
     }
   }
 
+  @Route({
+    method: 'POST',
+    path: '/portal-session'
+  })
   @HasPermission(BillingPolicy, 'createPortalSession')
   async createPortalSession(req: Request): Promise<Response> {
+    /* v8 ignore next */
+    if (!stripe) req.ctx.throw(405)
+
     const organisation: Organisation = req.ctx.state.user.organisation
     const stripeCustomerId = organisation.pricingPlan.stripeCustomerId
 
@@ -258,6 +255,10 @@ export default class BillingService extends Service {
     }
   }
 
+  @Route({
+    method: 'GET',
+    path: '/usage'
+  })
   @HasPermission(BillingPolicy, 'usage')
   async usage(req: Request): Promise<Response> {
     const em: EntityManager = req.ctx.em
@@ -277,6 +278,10 @@ export default class BillingService extends Service {
     }
   }
 
+  @Route({
+    method: 'GET',
+    path: '/organisation-plan'
+  })
   @HasPermission(BillingPolicy, 'organisationPlan')
   async organisationPlan(req: Request): Promise<Response> {
     const organisation: Organisation = req.ctx.state.user.organisation

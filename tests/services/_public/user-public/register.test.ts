@@ -83,7 +83,7 @@ describe('User public service - register', () => {
       type: GameActivityType.INVITE_ACCEPTED
     })
 
-    expect(activity.user.id).toBe(res.body.user.id)
+    expect(activity!.user.id).toBe(res.body.user.id)
   })
 
   it('should not let a user register with an invite if the email doesn\'t match', async () => {

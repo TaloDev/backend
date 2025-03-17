@@ -1,6 +1,6 @@
 import { EntityManager } from '@mikro-orm/mysql'
 import { differenceInSeconds } from 'date-fns'
-import { HasPermission, Request, Response, Routes, Validate, Docs } from 'koa-clay'
+import { HasPermission, Request, Response, Route, Validate } from 'koa-clay'
 import GameStatAPIDocs from '../../docs/game-stat-api.docs'
 import GameStat from '../../entities/game-stat'
 import PlayerGameStat from '../../entities/player-game-stat'
@@ -8,19 +8,17 @@ import triggerIntegrations from '../../lib/integrations/triggerIntegrations'
 import GameStatAPIPolicy from '../../policies/api/game-stat-api.policy'
 import APIService from './api-service'
 
-@Routes([
-  {
-    method: 'PUT',
-    path: '/:internalName'
-  }
-])
 export default class GameStatAPIService extends APIService {
+  @Route({
+    method: 'PUT',
+    path: '/:internalName',
+    docs: GameStatAPIDocs.put
+  })
   @Validate({
     headers: ['x-talo-player'],
     body: ['change']
   })
   @HasPermission(GameStatAPIPolicy, 'put')
-  @Docs(GameStatAPIDocs.put)
   async put(req: Request): Promise<Response> {
     const { change } = req.body
     const em: EntityManager = req.ctx.em

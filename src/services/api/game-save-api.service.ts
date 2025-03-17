@@ -1,4 +1,4 @@
-import { HasPermission, Request, Response, Validate, Docs } from 'koa-clay'
+import { HasPermission, Request, Response, Route, Validate } from 'koa-clay'
 import GameSaveAPIPolicy from '../../policies/api/game-save-api.policy'
 import APIService from './api-service'
 import GameSave from '../../entities/game-save'
@@ -10,11 +10,14 @@ function decodeContent(content: unknown) {
 }
 
 export default class GameSaveAPIService extends APIService {
+  @Route({
+    method: 'GET',
+    docs: GameSaveAPIDocs.index
+  })
   @Validate({
     headers: ['x-talo-player']
   })
   @HasPermission(GameSaveAPIPolicy, 'index')
-  @Docs(GameSaveAPIDocs.index)
   async index(req: Request): Promise<Response> {
     const em: EntityManager = req.ctx.em
 
@@ -30,15 +33,17 @@ export default class GameSaveAPIService extends APIService {
     }
   }
 
+  @Route({
+    method: 'POST',
+    docs: GameSaveAPIDocs.post
+  })
   @Validate({
     headers: ['x-talo-player'],
     body: ['name', 'content']
   })
   @HasPermission(GameSaveAPIPolicy, 'post')
-  @Docs(GameSaveAPIDocs.post)
   async post(req: Request): Promise<Response> {
     const { name, content } = req.body
-
     const em: EntityManager = req.ctx.em
 
     const save = new GameSave(name, req.ctx.state.player)
@@ -54,15 +59,18 @@ export default class GameSaveAPIService extends APIService {
     }
   }
 
+  @Route({
+    method: 'PATCH',
+    path: '/:id',
+    docs: GameSaveAPIDocs.patch
+  })
   @Validate({
     headers: ['x-talo-player'],
     body: ['content']
   })
   @HasPermission(GameSaveAPIPolicy, 'patch')
-  @Docs(GameSaveAPIDocs.patch)
   async patch(req: Request): Promise<Response> {
     const { name, content } = req.body
-
     const em: EntityManager = req.ctx.em
 
     const save = req.ctx.state.save
@@ -79,11 +87,15 @@ export default class GameSaveAPIService extends APIService {
     }
   }
 
+  @Route({
+    method: 'DELETE',
+    path: '/:id',
+    docs: GameSaveAPIDocs.delete
+  })
   @Validate({
     headers: ['x-talo-player']
   })
   @HasPermission(GameSaveAPIPolicy, 'delete')
-  @Docs(GameSaveAPIDocs.delete)
   async delete(req: Request): Promise<Response> {
     const em: EntityManager = req.ctx.em
 

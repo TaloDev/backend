@@ -1,5 +1,5 @@
 import { EntityManager } from '@mikro-orm/mysql'
-import { Service, Request, Response, Routes, Validate, Before } from 'koa-clay'
+import { Service, Request, Response, Route, Validate, Before } from 'koa-clay'
 import UserSession from '../entities/user-session'
 import buildTokenPair from '../lib/auth/buildTokenPair'
 import bcrypt from 'bcrypt'
@@ -10,6 +10,7 @@ import UserTwoFactorAuth from '../entities/user-two-factor-auth'
 import qrcode from 'qrcode'
 import generateRecoveryCodes from '../lib/auth/generateRecoveryCodes'
 import User from '../entities/user'
+import { randomBytes } from 'crypto'
 
 async function confirmPassword(req: Request): Promise<void> {
   const { password } = req.body
@@ -30,54 +31,11 @@ async function requires2fa(req: Request): Promise<void> {
   req.ctx.state.user = user
 }
 
-@Routes([
-  {
-    method: 'POST',
-    path: '/logout',
-    handler: 'logout'
-  },
-  {
-    method: 'POST',
-    path: '/change_password',
-    handler: 'changePassword'
-  },
-  {
-    method: 'GET',
-    path: '/me',
-    handler: 'me'
-  },
-  {
-    method: 'POST',
-    path: '/confirm_email',
-    handler: 'confirmEmail'
-  },
-  {
-    method: 'GET',
-    path: '/2fa/enable',
-    handler: 'enable2fa'
-  },
-  {
-    method: 'POST',
-    path: '/2fa/enable',
-    handler: 'confirm2fa'
-  },
-  {
-    method: 'POST',
-    path: '/2fa/disable',
-    handler: 'disable2fa'
-  },
-  {
-    method: 'POST',
-    path: '/2fa/recovery_codes/create',
-    handler: 'createRecoveryCodes'
-  },
-  {
-    method: 'POST',
-    path: '/2fa/recovery_codes/view',
-    handler: 'viewRecoveryCodes'
-  }
-])
 export default class UserService extends Service {
+  @Route({
+    method: 'POST',
+    path: '/logout'
+  })
   async logout(req: Request): Promise<Response> {
     const em: EntityManager = req.ctx.em
     const userId: number = req.ctx.state.user.sub
@@ -92,6 +50,10 @@ export default class UserService extends Service {
     }
   }
 
+  @Route({
+    method: 'POST',
+    path: '/change_password'
+  })
   @Validate({
     body: ['currentPassword', 'newPassword']
   })
@@ -122,6 +84,10 @@ export default class UserService extends Service {
     }
   }
 
+  @Route({
+    method: 'GET',
+    path: '/me'
+  })
   async me(req: Request): Promise<Response> {
     const user = await getUserFromToken(req.ctx)
 
@@ -133,6 +99,10 @@ export default class UserService extends Service {
     }
   }
 
+  @Route({
+    method: 'POST',
+    path: '/confirm_email'
+  })
   @Validate({
     body: ['code']
   })
@@ -166,6 +136,10 @@ export default class UserService extends Service {
     }
   }
 
+  @Route({
+    method: 'GET',
+    path: '/2fa/enable'
+  })
   async enable2fa(req: Request): Promise<Response> {
     const em: EntityManager = req.ctx.em
 
@@ -190,6 +164,10 @@ export default class UserService extends Service {
     }
   }
 
+  @Route({
+    method: 'POST',
+    path: '/2fa/enable'
+  })
   @Validate({
     body: ['code']
   })
@@ -198,17 +176,19 @@ export default class UserService extends Service {
     const em: EntityManager = req.ctx.em
 
     const user = await getUserFromToken(req.ctx)
+    const twoFactorAuth = user.twoFactorAuth
 
-    if (user.twoFactorAuth?.enabled) {
+    if (twoFactorAuth?.enabled) {
       req.ctx.throw(403, 'Two factor authentication is already enabled')
     }
 
-    if (!authenticator.check(code, user.twoFactorAuth?.secret)) {
+    const secret = twoFactorAuth?.secret ?? randomBytes(16).toString('hex') // random secret so it always fails
+    if (!authenticator.check(code, secret)) {
       req.ctx.throw(403, 'Invalid code')
     }
 
     user.recoveryCodes.set(generateRecoveryCodes(user))
-    user.twoFactorAuth.enabled = true
+    twoFactorAuth!.enabled = true
     await em.flush()
 
     return {
@@ -220,6 +200,10 @@ export default class UserService extends Service {
     }
   }
 
+  @Route({
+    method: 'POST',
+    path: '/2fa/disable'
+  })
   @Before(confirmPassword)
   @Before(requires2fa)
   async disable2fa(req: Request): Promise<Response> {
@@ -237,6 +221,10 @@ export default class UserService extends Service {
     }
   }
 
+  @Route({
+    method: 'POST',
+    path: '/2fa/recovery_codes/create'
+  })
   @Before(confirmPassword)
   @Before(requires2fa)
   async createRecoveryCodes(req: Request): Promise<Response> {
@@ -256,6 +244,10 @@ export default class UserService extends Service {
     }
   }
 
+  @Route({
+    method: 'POST',
+    path: '/2fa/recovery_codes/view'
+  })
   @Before(confirmPassword)
   @Before(requires2fa)
   async viewRecoveryCodes(req: Request): Promise<Response> {

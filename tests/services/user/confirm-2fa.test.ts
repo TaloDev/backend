@@ -21,8 +21,8 @@ describe('User service - confirm 2fa', () => {
     expect(res.body.user).toBeTruthy()
     expect(res.body.recoveryCodes).toHaveLength(8)
 
-    await wrap(user.twoFactorAuth).init()
-    expect(user.twoFactorAuth.enabled).toBe(true)
+    await wrap(user.twoFactorAuth!).init()
+    expect(user.twoFactorAuth!.enabled).toBe(true)
   })
 
   it('should not let users confirm enabling 2fa if it is already enabled', async () => {
@@ -30,7 +30,7 @@ describe('User service - confirm 2fa', () => {
       twoFactorAuth: new UserTwoFactorAuth('blah')
     })
 
-    user.twoFactorAuth.enabled = true
+    user.twoFactorAuth!.enabled = true
     await (<EntityManager>global.em).flush()
 
     const res = await request(global.app)

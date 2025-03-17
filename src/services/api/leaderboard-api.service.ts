@@ -1,4 +1,4 @@
-import { HasPermission, Routes, Request, Response, Validate, ForwardTo, forwardRequest, Docs, ValidationCondition } from 'koa-clay'
+import { HasPermission, Request, Response, Route, Validate, ForwardTo, forwardRequest, ValidationCondition } from 'koa-clay'
 import LeaderboardAPIPolicy from '../../policies/api/leaderboard-api.policy'
 import APIService from './api-service'
 import { EntityManager } from '@mikro-orm/mysql'
@@ -7,24 +7,17 @@ import Leaderboard, { LeaderboardSortMode } from '../../entities/leaderboard'
 import LeaderboardAPIDocs from '../../docs/leaderboard-api.docs'
 import triggerIntegrations from '../../lib/integrations/triggerIntegrations'
 import { devDataPlayerFilter } from '../../middlewares/dev-data-middleware'
-import sanitiseProps from '../../lib/props/sanitiseProps'
-import { uniqWith } from 'lodash'
+import { hardSanitiseProps, mergeAndSanitiseProps } from '../../lib/props/sanitiseProps'
 
-@Routes([
-  {
-    method: 'GET',
-    path: '/:internalName/entries'
-  },
-  {
-    method: 'POST',
-    path: '/:internalName/entries'
-  }
-])
 export default class LeaderboardAPIService extends APIService {
+  @Route({
+    method: 'GET',
+    path: '/:internalName/entries',
+    docs: LeaderboardAPIDocs.get
+  })
   @Validate({ query: ['page'] })
   @HasPermission(LeaderboardAPIPolicy, 'get')
   @ForwardTo('games.leaderboards', 'entries')
-  @Docs(LeaderboardAPIDocs.get)
   async get(req: Request): Promise<Response> {
     return forwardRequest(req, {
       params: {
@@ -43,7 +36,7 @@ export default class LeaderboardAPIService extends APIService {
       entry.createdAt = req.ctx.state.continuityDate
     }
     if (props) {
-      entry.props = sanitiseProps(props)
+      entry.props = hardSanitiseProps(props)
     }
 
     await em.persistAndFlush(entry)
@@ -51,6 +44,11 @@ export default class LeaderboardAPIService extends APIService {
     return entry
   }
 
+  @Route({
+    method: 'POST',
+    path: '/:internalName/entries',
+    docs: LeaderboardAPIDocs.post
+  })
   @Validate({
     headers: ['x-talo-alias'],
     body: {
@@ -68,14 +66,13 @@ export default class LeaderboardAPIService extends APIService {
     }
   })
   @HasPermission(LeaderboardAPIPolicy, 'post')
-  @Docs(LeaderboardAPIDocs.post)
   async post(req: Request): Promise<Response> {
     const { score, props } = req.body
     const em: EntityManager = req.ctx.em
 
     const leaderboard: Leaderboard = req.ctx.state.leaderboard
 
-    let entry: LeaderboardEntry = null
+    let entry: LeaderboardEntry | null = null
     let updated = false
 
     try {
@@ -90,12 +87,7 @@ export default class LeaderboardAPIService extends APIService {
           entry.score = score
           entry.createdAt = req.ctx.state.continuityDate ?? new Date()
           if (props) {
-            const mergedProps = uniqWith([
-              ...sanitiseProps(props),
-              ...entry.props
-            ], (a, b) => a.key === b.key)
-
-            entry.props = sanitiseProps(mergedProps, true)
+            entry.props = mergeAndSanitiseProps(entry.props, props)
           }
           await em.flush()
 

@@ -1,4 +1,4 @@
-import { forwardRequest, ForwardTo, HasPermission, Request, Response, Routes, Validate } from 'koa-clay'
+import { forwardRequest, ForwardTo, HasPermission, Request, Response, Route, Validate } from 'koa-clay'
 import GameChannelAPIPolicy from '../../policies/api/game-channel-api.policy'
 import APIService from './api-service'
 import GameChannel from '../../entities/game-channel'
@@ -10,55 +10,11 @@ function canModifyChannel(channel: GameChannel, alias: PlayerAlias): boolean {
   return channel.owner ? channel.owner.id === alias.id : false
 }
 
-@Routes([
-  {
-    method: 'GET',
-    handler: 'index',
-    docs: GameChannelAPIDocs.index
-  },
-  {
-    method: 'GET',
-    path: '/subscriptions',
-    handler: 'subscriptions',
-    docs: GameChannelAPIDocs.subscriptions
-  },
-  {
-    method: 'GET',
-    path: '/:id',
-    handler: 'get',
-    docs: GameChannelAPIDocs.get
-  },
-  {
-    method: 'POST',
-    handler: 'post',
-    docs: GameChannelAPIDocs.post
-  },
-  {
-    method: 'POST',
-    path: '/:id/join',
-    handler: 'join',
-    docs: GameChannelAPIDocs.join
-  },
-  {
-    method: 'POST',
-    path: '/:id/leave',
-    handler: 'leave',
-    docs: GameChannelAPIDocs.leave
-  },
-  {
-    method: 'PUT',
-    path: '/:id',
-    handler: 'put',
-    docs: GameChannelAPIDocs.put
-  },
-  {
-    method: 'DELETE',
-    path: '/:id',
-    handler: 'delete',
-    docs: GameChannelAPIDocs.delete
-  }
-])
 export default class GameChannelAPIService extends APIService {
+  @Route({
+    method: 'GET',
+    docs: GameChannelAPIDocs.index
+  })
   @Validate({ query: ['page'] })
   @HasPermission(GameChannelAPIPolicy, 'index')
   @ForwardTo('games.game-channels', 'index')
@@ -66,12 +22,17 @@ export default class GameChannelAPIService extends APIService {
     return forwardRequest(req)
   }
 
+  @Route({
+    method: 'GET',
+    path: '/subscriptions',
+    docs: GameChannelAPIDocs.subscriptions
+  })
   @Validate({
     headers: ['x-talo-alias']
   })
   @HasPermission(GameChannelAPIPolicy, 'subscriptions')
   async subscriptions(req: Request): Promise<Response> {
-    const channels = await req.ctx.state.alias.channels.loadItems()
+    const channels = await (req.ctx.state.alias as PlayerAlias).channels.loadItems()
 
     return {
       status: 200,
@@ -81,6 +42,11 @@ export default class GameChannelAPIService extends APIService {
     }
   }
 
+  @Route({
+    method: 'GET',
+    path: '/:id',
+    docs: GameChannelAPIDocs.get
+  })
   @HasPermission(GameChannelAPIPolicy, 'get')
   async get(req: Request): Promise<Response> {
     const em: EntityManager = req.ctx.em
@@ -94,6 +60,10 @@ export default class GameChannelAPIService extends APIService {
     }
   }
 
+  @Route({
+    method: 'POST',
+    docs: GameChannelAPIDocs.post
+  })
   @Validate({
     headers: ['x-talo-alias'],
     body: [GameChannel]
@@ -104,6 +74,11 @@ export default class GameChannelAPIService extends APIService {
     return forwardRequest(req)
   }
 
+  @Route({
+    method: 'POST',
+    path: '/:id/join',
+    docs: GameChannelAPIDocs.join
+  })
   @Validate({
     headers: ['x-talo-alias']
   })
@@ -130,6 +105,11 @@ export default class GameChannelAPIService extends APIService {
     }
   }
 
+  @Route({
+    method: 'POST',
+    path: '/:id/leave',
+    docs: GameChannelAPIDocs.leave
+  })
   @Validate({
     headers: ['x-talo-alias']
   })
@@ -165,6 +145,11 @@ export default class GameChannelAPIService extends APIService {
     }
   }
 
+  @Route({
+    method: 'PUT',
+    path: '/:id',
+    docs: GameChannelAPIDocs.put
+  })
   @Validate({
     headers: ['x-talo-alias'],
     body: [GameChannel]
@@ -181,6 +166,11 @@ export default class GameChannelAPIService extends APIService {
     return forwardRequest(req)
   }
 
+  @Route({
+    method: 'DELETE',
+    path: '/:id',
+    docs: GameChannelAPIDocs.delete
+  })
   @Validate({
     headers: ['x-talo-alias']
   })

@@ -10,7 +10,7 @@ export default class PlanPaymentFailed extends Mail {
     this.title = 'Payment failed'
     this.mainText = `We attempted to charge your card for your ${format(new Date(), 'MMMM yyyy')} invoice, however we were unable to do so.<br/><br/>Please use the link below to update your payment details:`
 
-    this.ctaLink = invoice.hosted_invoice_url
+    this.ctaLink = invoice.hosted_invoice_url!
     this.ctaText = 'View invoice'
 
     this.why = 'You are receiving this email because your Talo subscription was updated'

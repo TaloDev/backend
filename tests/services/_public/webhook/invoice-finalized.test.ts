@@ -7,7 +7,7 @@ import PricingPlanFactory from '../../../fixtures/PricingPlanFactory'
 import SendGrid from '@sendgrid/mail'
 import PlanInvoice from '../../../../src/emails/plan-invoice-mail'
 
-const stripe = initStripe()
+const stripe = initStripe()!
 
 describe('Webhook service - invoice finalized', () => {
   const sendMock = vi.spyOn(SendGrid, 'send')
@@ -42,7 +42,7 @@ describe('Webhook service - invoice finalized', () => {
 
     const header = stripe.webhooks.generateTestHeaderString({
       payload,
-      secret: process.env.STRIPE_WEBHOOK_SECRET
+      secret: process.env.STRIPE_WEBHOOK_SECRET!
     })
 
     await request(global.app)

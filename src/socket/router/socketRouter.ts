@@ -45,7 +45,7 @@ export default class SocketRouter {
       return
     }
 
-    let message: SocketMessage = null
+    let message: SocketMessage | null = null
 
     try {
       message = await socketMessageValidator.parseAsync(JSON.parse(rawData.toString()))
@@ -91,7 +91,7 @@ export default class SocketRouter {
             if (err instanceof ZodError) {
               await sendError(conn, message.req, new SocketError('INVALID_MESSAGE_DATA', 'Invalid message data for request', JSON.stringify(message.data)))
             } else {
-              await sendError(conn, message?.req ?? 'unknown', new SocketError('LISTENER_ERROR', 'An error occurred while processing the message', err.message))
+              await sendError(conn, message?.req ?? 'unknown', new SocketError('LISTENER_ERROR', 'An error occurred while processing the message', (err as Error).message))
             }
             return true
           }
@@ -103,16 +103,16 @@ export default class SocketRouter {
   }
 
   meetsPlayerRequirement(conn: SocketConnection, listener: SocketMessageListener<ZodType>): boolean {
-    const requirePlayer = listener.options.requirePlayer ?? true
+    const requirePlayer = listener.options?.requirePlayer ?? true
     return Boolean(conn.playerAliasId) || !requirePlayer
   }
 
   meetsScopeRequirements(conn: SocketConnection, listener: SocketMessageListener<ZodType>): boolean {
-    const requiredScopes = listener.options.apiKeyScopes ?? []
+    const requiredScopes = listener.options?.apiKeyScopes ?? []
     return conn.hasScopes(requiredScopes)
   }
 
   getMissingScopes(conn: SocketConnection, listener: SocketMessageListener<ZodType>): APIKeyScope[] {
-    return (listener.options.apiKeyScopes ?? []).filter((scope) => !conn.hasScope(scope))
+    return (listener.options?.apiKeyScopes ?? []).filter((scope) => !conn.hasScope(scope))
   }
 }

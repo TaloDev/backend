@@ -54,14 +54,14 @@ describe('Leaderboard service - post - steamworks integration', () => {
 
     expect(createMock).toHaveBeenCalledTimes(1)
 
-    const event = await (<EntityManager>global.em).getRepository(SteamworksIntegrationEvent).findOne({ integration })
+    const event = await (<EntityManager>global.em).getRepository(SteamworksIntegrationEvent).findOneOrFail({ integration })
     expect(event.request).toStrictEqual({
       url: 'https://partner.steam-api.com/ISteamLeaderboards/FindOrCreateLeaderboard/v2',
       body: `appid=${config.appId}&name=highscores&sortmethod=Descending&displaytype=Numeric&createifnotfound=true&onlytrustedwrites=true&onlyfriendsreads=false`,
       method: 'POST'
     })
 
-    const mapping = await (<EntityManager>global.em).getRepository(SteamworksLeaderboardMapping).findOne({
+    const mapping = await (<EntityManager>global.em).getRepository(SteamworksLeaderboardMapping).findOneOrFail({
       steamworksLeaderboardId: 12233213
     }, { populate: ['leaderboard'] })
 
@@ -115,7 +115,7 @@ describe('Leaderboard service - post - steamworks integration', () => {
 
     expect(createMock).toHaveBeenCalledTimes(1)
 
-    const event = await (<EntityManager>global.em).getRepository(SteamworksIntegrationEvent).findOne({ integration })
+    const event = await (<EntityManager>global.em).getRepository(SteamworksIntegrationEvent).findOneOrFail({ integration })
     expect(event.request).toStrictEqual({
       url: 'https://partner.steam-api.com/ISteamLeaderboards/FindOrCreateLeaderboard/v2',
       body: `appid=${config.appId}&name=highscores&sortmethod=Descending&displaytype=Numeric&createifnotfound=true&onlytrustedwrites=true&onlyfriendsreads=false`,

@@ -6,10 +6,10 @@ import PricingPlan from './pricing-plan'
 @Entity()
 export default class OrganisationPricingPlan {
   @PrimaryKey()
-  id: number
+  id!: number
 
   @OneToOne(() => Organisation, (organisation) => organisation.pricingPlan)
-  organisation: Organisation
+  organisation!: Organisation
 
   @ManyToOne(() => PricingPlan, { eager: true })
   pricingPlan: PricingPlan
@@ -18,13 +18,13 @@ export default class OrganisationPricingPlan {
   status: Stripe.Subscription.Status = 'active'
 
   @Property({ nullable: true })
-  stripePriceId: string
+  stripePriceId: string | null = null
 
   @Property({ nullable: true })
-  stripeCustomerId: string
+  stripeCustomerId: string | null = null
 
   @Property({ nullable: true })
-  endDate: Date
+  endDate: Date | null = null
 
   @Property()
   createdAt: Date = new Date()

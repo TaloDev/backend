@@ -10,13 +10,13 @@ export enum PlayerPresenceStatus {
 @Entity()
 export default class PlayerPresence {
   @PrimaryKey()
-  id: number
+  id!: number
 
   @OneToOne(() => Player, (player) => player.presence)
-  player: Player
+  player!: Player
 
   @ManyToOne(() => PlayerAlias, { cascade: [Cascade.REMOVE], eager: true })
-  playerAlias: PlayerAlias
+  playerAlias!: PlayerAlias
 
   @Property()
   online: boolean = false

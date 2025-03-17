@@ -4,13 +4,13 @@ import Player from './player'
 @Entity()
 export default class GameSave {
   @PrimaryKey()
-  id: number
+  id!: number
 
   @Property()
   name: string
 
   @Property({ type: 'json' })
-  content: { [key: string]: unknown }
+  content!: { [key: string]: unknown }
 
   @ManyToOne(() => Player)
   player: Player

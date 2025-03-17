@@ -1,6 +1,6 @@
 import { EntityManager } from '@mikro-orm/mysql'
 import Leaderboard, { LeaderboardSortMode } from '../../entities/leaderboard'
-import axios, { AxiosResponse } from 'axios'
+import axios, { AxiosError, AxiosResponse } from 'axios'
 import querystring from 'qs'
 import Integration from '../../entities/integration'
 import SteamworksIntegrationEvent, { SteamworksRequestMethod, SteamworksResponseStatusCode } from '../../entities/steamworks-integration-event'
@@ -71,7 +71,7 @@ export type GetLeaderboardEntriesResponse = {
   }
 }
 
-type CombinedLeaderboards = [Leaderboard, GetLeaderboardsForGameResponseLeaderboard, SteamworksLeaderboardMapping?]
+type CombinedLeaderboards = [Leaderboard, GetLeaderboardsForGameResponseLeaderboard | null, SteamworksLeaderboardMapping | null]
 
 export type GetSchemaForGameResponse = {
   game: {
@@ -170,12 +170,12 @@ async function makeRequest<T>(config: SteamworksRequestConfig, event: Steamworks
     const endTime = performance.now()
 
     event.response = {
-      status: err.response.status,
-      body: err.response.data,
+      status: (err as AxiosError).response!.status as SteamworksResponseStatusCode,
+      body: (err as AxiosError).response!.data as { [key: string]: unknown },
       timeTaken: endTime - startTime
     }
 
-    return err.response
+    return (err as AxiosError).response as AxiosResponse
   }
 }
 
@@ -308,7 +308,7 @@ export async function syncSteamworksLeaderboards(em: EntityManager, integration:
     const mappingMatch = steamworksLeaderboards.find((steamworksLeaderboard) => steamworksLeaderboard.id === leaderboardMapping?.steamworksLeaderboardId)
     const nameMatch = steamworksLeaderboards.find((steamworksLeaderboard) => steamworksLeaderboard.name === leaderboard.internalName)
 
-    return [leaderboard, mappingMatch ?? nameMatch, leaderboardMapping]
+    return [leaderboard, mappingMatch ?? nameMatch ?? null, leaderboardMapping]
   }))
 
   for (const [leaderboard, steamworksLeaderboard, leaderboardMapping] of combinedLeaderboards) {
@@ -361,7 +361,7 @@ export async function syncSteamworksLeaderboards(em: EntityManager, integration:
       if (existingPlayerAlias) {
         const existingEntry = await em.getRepository(LeaderboardEntry).findOne({ leaderboard, playerAlias: existingPlayerAlias })
         if (!existingEntry) {
-          const newEntry = await createLeaderboardEntry(em, leaderboard, existingPlayerAlias, steamEntry.score)
+          const newEntry = await createLeaderboardEntry(em, leaderboard!, existingPlayerAlias, steamEntry.score)
           syncedEntryIds.push(newEntry.id)
         }
         // if the alias doesnt exist then neither does the entry, so create both
@@ -375,7 +375,7 @@ export async function syncSteamworksLeaderboards(em: EntityManager, integration:
         playerAlias.identifier = steamEntry.steamID
         player.aliases.add(playerAlias)
 
-        const newEntry = await createLeaderboardEntry(em, leaderboard, playerAlias, steamEntry.score)
+        const newEntry = await createLeaderboardEntry(em, leaderboard!, playerAlias, steamEntry.score)
         syncedEntryIds.push(newEntry.id)
       }
     }
@@ -422,7 +422,11 @@ export async function syncSteamworksStats(em: EntityManager, integration: Integr
   const res = await makeRequest<GetSchemaForGameResponse>(config, event)
   await em.persistAndFlush(event)
 
-  const steamworksStats = res.data.game.availableGameStats.stats
+  const steamworksStats = res.data?.game?.availableGameStats?.stats
+  if (!Array.isArray(steamworksStats)) {
+    throw new Error('Failed to retrieve stats - is your App ID correct?')
+  }
+
   for (const steamworksStat of steamworksStats) {
     const existingStat = await em.getRepository(GameStat).findOne({ internalName: steamworksStat.name, game: integration.game })
     if (!existingStat) {
@@ -455,7 +459,7 @@ export async function syncSteamworksStats(em: EntityManager, integration: Integr
     const steamworksPlayerStats = res?.playerstats?.stats ?? []
 
     for (const steamworksPlayerStat of steamworksPlayerStats) {
-      const stat = await em.getRepository(GameStat).findOne({ internalName: steamworksPlayerStat.name })
+      const stat = await em.getRepository(GameStat).findOneOrFail({ internalName: steamworksPlayerStat.name })
       const existingPlayerStat = await em.getRepository(PlayerGameStat).findOne({
         player: steamAlias.player,
         stat
@@ -492,7 +496,7 @@ export async function syncSteamworksStats(em: EntityManager, integration: Integr
   // push through player stats that aren't in steamworks
   for (const unsyncedPlayerStat of filteredUnsyncedStats) {
     const steamAlias = unsyncedPlayerStat.player.aliases.getItems().find((alias) => alias.service === PlayerAliasService.STEAM)
-    await setSteamworksStat(em, integration, unsyncedPlayerStat, steamAlias)
+    await setSteamworksStat(em, integration, unsyncedPlayerStat, steamAlias!)
   }
 }
 
@@ -513,7 +517,7 @@ export async function authenticateTicket(req: Request, integration: Integration,
     throw new Error(message, { cause: 400 })
   }
 
-  const steamId = res.data.response.params.steamid
+  const steamId = res.data.response.params!.steamid
   const alias = await em.getRepository(PlayerAlias).findOne({
     service: PlayerAliasService.STEAM,
     identifier: steamId,
@@ -530,7 +534,7 @@ export async function authenticateTicket(req: Request, integration: Integration,
     }
   } = await verifyOwnership(em, integration, steamId)
 
-  const { vacbanned, publisherbanned } = res.data.response.params
+  const { vacbanned, publisherbanned } = res.data.response.params!
 
   if (alias) {
     alias.player.upsertProp('META_STEAMWORKS_VAC_BANNED', String(vacbanned))

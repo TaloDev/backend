@@ -21,10 +21,44 @@ describe('Game service - post', () => {
     if (statusCode === 200) {
       expect(res.body.game.name).toBe('Twodoors')
 
-      const game = await (<EntityManager>global.em).getRepository(Game).findOne(res.body.game.id, { populate: ['organisation'] })
+      const game = await (<EntityManager>global.em).getRepository(Game).findOneOrFail(res.body.game.id, { populate: ['organisation'] })
       expect(game.organisation.id).toBe(user.organisation.id)
     } else {
       expect(res.body).toStrictEqual({ message: 'You do not have permissions to create games' })
     }
+  })
+
+  it('should return a 500 when API_SECRET is not 32 characters long', async () => {
+    const originalSecret = process.env.API_SECRET
+    process.env.API_SECRET = 'too-short'
+
+    const [token] = await createUserAndToken({ type: UserType.ADMIN })
+
+    const res = await request(global.app)
+      .post('/games')
+      .send({ name: 'Twodoors' })
+      .auth(token, { type: 'bearer' })
+      .expect(500)
+
+    expect(res.body).toStrictEqual({ message: 'API_SECRET must be 32 characters long' })
+
+    process.env.API_SECRET = originalSecret
+  })
+
+  it('should return 500 when API_SECRET is not set', async () => {
+    const originalSecret = process.env.API_SECRET
+    delete process.env.API_SECRET
+
+    const [token] = await createUserAndToken({ type: UserType.ADMIN })
+
+    const res = await request(global.app)
+      .post('/games')
+      .send({ name: 'Twodoors' })
+      .auth(token, { type: 'bearer' })
+      .expect(500)
+
+    expect(res.body).toStrictEqual({ message: 'API_SECRET must be 32 characters long' })
+
+    process.env.API_SECRET = originalSecret
   })
 })

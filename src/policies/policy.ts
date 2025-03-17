@@ -25,11 +25,13 @@ export default class Policy extends ServicePolicy {
     // check its been initialised
     if (ctx.state.user.email) return ctx.state.user
 
-    const user = await getUserFromToken(ctx)
-    if (!user) ctx.throw(401)
-
-    ctx.state.user = user
-    return user
+    try {
+      const user = await getUserFromToken(ctx)
+      ctx.state.user = user
+      return user
+    } catch (err) {
+      return ctx.throw(401)
+    }
   }
 
   getAPIKey(): APIKey {

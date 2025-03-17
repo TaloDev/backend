@@ -30,7 +30,7 @@ describe('Game feedback service - put category', () => {
       }
     })
 
-    expect(activity.extra.display).toStrictEqual({
+    expect(activity!.extra.display).toStrictEqual({
       'Updated properties': 'name: Bugs, description: Bug reports'
     })
   })
@@ -63,7 +63,7 @@ describe('Game feedback service - put category', () => {
       }
     })
 
-    expect(activity.extra.display).toStrictEqual({
+    expect(activity!.extra.display).toStrictEqual({
       'Updated properties': 'anonymised: false'
     })
   })
@@ -91,7 +91,7 @@ describe('Game feedback service - put category', () => {
       }
     })
 
-    expect(activity.extra.display).toStrictEqual({
+    expect(activity!.extra.display).toStrictEqual({
       'Updated properties': 'name: Bugs, description: Bug reports'
     })
   })

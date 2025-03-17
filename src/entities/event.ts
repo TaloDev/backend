@@ -1,5 +1,5 @@
 import { v4 } from 'uuid'
-import sanitiseProps from '../lib/props/sanitiseProps'
+import { hardSanitiseProps } from '../lib/props/sanitiseProps'
 import Game from './game'
 import PlayerAlias from './player-alias'
 import Prop from './prop'
@@ -30,8 +30,8 @@ export default class Event {
   name: string
   props: Prop[] = []
   game: Game
-  playerAlias: PlayerAlias
-  createdAt: Date
+  playerAlias!: PlayerAlias
+  createdAt!: Date
   updatedAt: Date = new Date()
 
   constructor(name: string, game: Game) {
@@ -41,7 +41,7 @@ export default class Event {
   }
 
   setProps(props: Prop[]) {
-    this.props = sanitiseProps(props, true, (prop) => {
+    this.props = hardSanitiseProps(props, (prop) => {
       return !prop.key.startsWith('META_') || eventMetaProps.includes(prop.key)
     })
 
@@ -95,8 +95,8 @@ export async function createEventFromClickhouse(
   data: ClickhouseEvent,
   loadProps = false
 ): Promise<Event> {
-  const game = await em.getRepository(Game).findOne(data.game_id)
-  const playerAlias = await em.getRepository(PlayerAlias).findOne(data.player_alias_id, { populate: ['player'] })
+  const game = await em.getRepository(Game).findOneOrFail(data.game_id)
+  const playerAlias = await em.getRepository(PlayerAlias).findOneOrFail(data.player_alias_id, { populate: ['player'] })
 
   const event = new Event(data.name, game)
   event.id = data.id

@@ -6,14 +6,14 @@ import PlayerGameStat from './player-game-stat'
 @Entity()
 export default class GameStat {
   @PrimaryKey()
-  id: number
+  id!: number
 
   @Required({
     validation: async (val: unknown, req: Request): Promise<ValidationCondition[]> => {
       const { gameId, id } = req.params
       const duplicateInternalName = await (<EntityManager>req.ctx.em).getRepository(GameStat).findOne({
         id: { $ne: Number(id ?? null) },
-        internalName: val,
+        internalName: val as string,
         game: Number(gameId)
       })
 
@@ -26,60 +26,60 @@ export default class GameStat {
     }
   })
   @Property()
-  internalName: string
+  internalName!: string
 
   @Required()
   @Property()
-  name: string
+  name!: string
 
   @Required()
   @Property()
-  global: boolean
+  global!: boolean
 
   @Property({ type: 'double' })
-  globalValue: number
+  globalValue!: number
 
-  hydratedGlobalValue: number
+  hydratedGlobalValue!: number
 
   @Required({
-    validation: async (value: number): Promise<ValidationCondition[]> => [{
-      check: value !== null ? value > 0 : true,
+    validation: async (value: unknown): Promise<ValidationCondition[]> => [{
+      check: value !== null ? (value as number) > 0 : true,
       error: 'maxChange must be greater than 0'
     }]
   })
   @Property({ nullable: true, type: 'double' })
-  maxChange: number
+  maxChange: number | null = null
 
   @Required({
-    validation: async (value: number, req: Request): Promise<ValidationCondition[]> => [{
-      check: req.body.maxValue ? value < req.body.maxValue : true,
+    validation: async (value: unknown, req: Request): Promise<ValidationCondition[]> => [{
+      check: req.body.maxValue ? (value as number) < (req.body.maxValue as number) : true,
       error: 'minValue must be less than maxValue'
     }]
   })
   @Property({ nullable: true, type: 'double' })
-  minValue: number
+  minValue: number | null = null
 
   @Required({
-    validation: async (value: number, req: Request): Promise<ValidationCondition[]> => [{
-      check: req.body.minValue ? value > req.body.minValue : true,
+    validation: async (value: unknown, req: Request): Promise<ValidationCondition[]> => [{
+      check: req.body.minValue ? (value as number) > (req.body.minValue as number) : true,
       error: 'maxValue must be greater than minValue'
     }]
   })
   @Property({ nullable: true, type: 'double' })
-  maxValue: number
+  maxValue: number | null = null
 
   @Required({
-    validation: async (value: number, req: Request): Promise<ValidationCondition[]> => [{
-      check: value >= (req.body.minValue ?? -Infinity) && value <= (req.body.maxValue ?? Infinity),
+    validation: async (value: unknown, req: Request): Promise<ValidationCondition[]> => [{
+      check: value !== null && (value as number) >= (req.body.minValue ?? -Infinity) && (value as number) <= (req.body.maxValue ?? Infinity),
       error: 'defaultValue must be between minValue and maxValue'
     }]
   })
   @Property({ type: 'double' })
-  defaultValue: number
+  defaultValue!: number
 
   @Required()
   @Property()
-  minTimeBetweenUpdates: number
+  minTimeBetweenUpdates!: number
 
   @ManyToOne(() => Game)
   game: Game

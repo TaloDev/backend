@@ -26,23 +26,23 @@ export type IntegrationConfig = SteamIntegrationConfig
 @Filter({ name: 'active', cond: { deletedAt: null }, default: true })
 export default class Integration {
   @PrimaryKey()
-  id: number
+  id!: number
 
   @Required({
     methods: ['POST'],
     validation: async (val: unknown, req: Request): Promise<ValidationCondition[]> => {
-      const keys = Object.keys(IntegrationType).map((key) => IntegrationType[key])
+      const keys = Object.keys(IntegrationType).map((key) => IntegrationType[key as keyof typeof IntegrationType])
 
       const { gameId, id } = req.params
       const duplicateIntegrationType = await (<EntityManager>req.ctx.em).getRepository(Integration).findOne({
         id: { $ne: Number(id ?? null) },
-        type: val,
+        type: val as IntegrationType,
         game: Number(gameId)
       })
 
       return [
         {
-          check: keys.includes(val),
+          check: keys.includes(val as IntegrationType),
           error: `Integration type must be one of ${keys.join(', ')}`
         },
         {
@@ -63,7 +63,7 @@ export default class Integration {
   private config: IntegrationConfig
 
   @Property({ nullable: true })
-  deletedAt: Date
+  deletedAt: Date | null = null
 
   @Property()
   createdAt: Date = new Date()
@@ -77,12 +77,12 @@ export default class Integration {
 
     this.config = {
       ...config,
-      apiKey: encrypt(config.apiKey, process.env.STEAM_INTEGRATION_SECRET)
+      apiKey: encrypt(config.apiKey, process.env.STEAM_INTEGRATION_SECRET!)
     }
   }
 
   updateConfig(config: Partial<IntegrationConfig>) {
-    if (config.apiKey) config.apiKey = encrypt(config.apiKey, process.env.STEAM_INTEGRATION_SECRET)
+    if (config.apiKey) config.apiKey = encrypt(config.apiKey, process.env.STEAM_INTEGRATION_SECRET!)
 
     this.config = {
       ...this.config,
@@ -98,7 +98,7 @@ export default class Integration {
   }
 
   getSteamAPIKey(): string {
-    return decrypt(this.config.apiKey, process.env.STEAM_INTEGRATION_SECRET)
+    return decrypt(this.config.apiKey, process.env.STEAM_INTEGRATION_SECRET!)
   }
 
   async handleLeaderboardCreated(em: EntityManager, leaderboard: Leaderboard) {

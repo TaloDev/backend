@@ -144,9 +144,9 @@ export async function generateDemoEvents(req: Request): Promise<void> {
 
           for (let i = 0; i < numToGenerate; i++) {
             eventsToInsert.push(new Event(demoEvent.name, game))
-            eventsToInsert.at(-1).setProps(getDemoEventProps(demoEvent))
-            eventsToInsert.at(-1).playerAlias = rand(playerAliases)
-            eventsToInsert.at(-1).createdAt = randomDate(startOfDay(day), endOfDay(day))
+            eventsToInsert.at(-1)!.setProps(getDemoEventProps(demoEvent))
+            eventsToInsert.at(-1)!.playerAlias = rand(playerAliases)
+            eventsToInsert.at(-1)!.createdAt = randomDate(startOfDay(day), endOfDay(day))
           }
         }
       }

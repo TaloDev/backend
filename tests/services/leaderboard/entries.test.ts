@@ -5,6 +5,7 @@ import PlayerFactory from '../../fixtures/PlayerFactory'
 import LeaderboardEntryFactory from '../../fixtures/LeaderboardEntryFactory'
 import createOrganisationAndGame from '../../utils/createOrganisationAndGame'
 import createUserAndToken from '../../utils/createUserAndToken'
+import LeaderboardEntry from '../../../src/entities/leaderboard-entry'
 
 describe('Leaderboard service - entries', () => {
   it('should return a leaderboard\'s entries', async () => {
@@ -26,7 +27,7 @@ describe('Leaderboard service - entries', () => {
       .expect(200)
 
     expect(res.body.entries).toHaveLength(leaderboard.entries.length)
-    expect(res.body.entries.every((entry) => entry.deletedAt === null)).toBe(true)
+    expect(res.body.entries.every((entry: LeaderboardEntry) => entry.deletedAt === null)).toBe(true)
   })
 
   it('should not return entries for a non-existent leaderboard', async () => {
@@ -137,6 +138,6 @@ describe('Leaderboard service - entries', () => {
       .expect(200)
 
     expect(resWithDeleted.body.entries).toHaveLength(5)
-    expect(resWithDeleted.body.entries.filter((entry) => entry.deletedAt !== null)).toHaveLength(2)
+    expect(resWithDeleted.body.entries.filter((entry: LeaderboardEntry) => entry.deletedAt !== null)).toHaveLength(2)
   })
 })

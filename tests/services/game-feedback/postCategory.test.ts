@@ -32,7 +32,7 @@ describe('Game feedback service - post category', () => {
       expect(res.body.feedbackCategory.description).toBe('Bug reports')
       expect(res.body.feedbackCategory.anonymised).toBe(false)
 
-      expect(activity.extra.feedbackCategoryInternalName).toBe(res.body.feedbackCategory.internalName)
+      expect(activity!.extra.feedbackCategoryInternalName).toBe(res.body.feedbackCategory.internalName)
     } else {
       expect(res.body).toStrictEqual({ message: 'You do not have permissions to create feedback categories' })
 

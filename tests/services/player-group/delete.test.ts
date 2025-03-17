@@ -29,7 +29,7 @@ describe('Player group service - delete', () => {
     })
 
     if (statusCode === 204) {
-      expect(activity.extra.groupName).toBe(group.name)
+      expect(activity!.extra.groupName).toBe(group.name)
     } else {
       expect(res.body).toStrictEqual({ message: 'You do not have permissions to delete groups' })
 

@@ -3,19 +3,19 @@ import { Entity, PrimaryKey, Property } from '@mikro-orm/mysql'
 @Entity()
 export default class FailedJob {
   @PrimaryKey()
-  id: number
+  id!: number
 
   @Property()
-  queue: string
+  queue!: string
 
   @Property({ type: 'json', nullable: true })
-  payload: { [key: string]: unknown }
+  payload!: { [key: string]: unknown }
 
   @Property()
-  reason: string
+  reason!: string
 
   @Property({ columnType: 'text' })
-  stack: string
+  stack!: string
 
   @Property()
   failedAt: Date = new Date()

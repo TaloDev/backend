@@ -216,7 +216,7 @@ describe('Player API service - identify', () => {
     const player = await new PlayerFactory([apiKey.game]).withTaloAlias().one()
 
     await em.persistAndFlush(player)
-    const sessionToken = await player.auth.createSession(player.aliases[0])
+    const sessionToken = await player.auth!.createSession(player.aliases[0])
     await em.flush()
 
     await request(global.app)

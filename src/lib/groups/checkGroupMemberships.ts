@@ -15,7 +15,10 @@ export default async function checkGroupMemberships(em: EntityManager, player: P
     if (playerIsEligible && !playerCurrentlyInGroup) {
       group.members.add(player)
     } else if (!playerIsEligible && playerCurrentlyInGroup) {
-      group.members.remove(group.members.getItems().find((member) => member.id === player.id))
+      const member = group.members.getItems().find((member) => member.id === player.id)
+      if (member) {
+        group.members.remove(member)
+      }
     }
   }
 

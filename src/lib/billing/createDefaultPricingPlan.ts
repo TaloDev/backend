@@ -11,7 +11,7 @@ export default async function createDefaultPricingPlan(em: EntityManager, organi
 
   let price: string
   if (process.env.STRIPE_KEY && defaultPlan) {
-    const prices = await stripe.prices.list({ product: defaultPlan.stripeId, active: true })
+    const prices = await stripe!.prices.list({ product: defaultPlan.stripeId, active: true })
     price = prices.data[0].id
   } else {
     // self-hosted logic
@@ -22,12 +22,12 @@ export default async function createDefaultPricingPlan(em: EntityManager, organi
 
   if (!organisation.pricingPlan) {
     const organisationPricingPlan = new OrganisationPricingPlan(organisation, defaultPlan)
-    organisationPricingPlan.stripePriceId = price
+    organisationPricingPlan.stripePriceId = price!
     return organisationPricingPlan
   } else {
     organisation.pricingPlan.pricingPlan = defaultPlan
     organisation.pricingPlan.status = 'active'
-    organisation.pricingPlan.stripePriceId = price
+    organisation.pricingPlan.stripePriceId = price!
     organisation.pricingPlan.endDate = null
     return organisation.pricingPlan
   }

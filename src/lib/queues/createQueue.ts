@@ -13,8 +13,10 @@ function createQueue<T>(name: string, processor: Processor<T, unknown, string>, 
   const worker = new Worker<T>(queue.name, processor, { connection })
 
   worker.on('failed', async (job, err) => {
-    await events.failed?.(job, err)
-    await handleJobFailure<T>(job, err)
+    if (job) {
+      await events.failed?.(job, err)
+      await handleJobFailure<T>(job, err)
+    }
   })
 
   worker.on('completed', async (job: Job<T>) => {

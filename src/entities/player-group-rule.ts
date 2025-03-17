@@ -33,13 +33,13 @@ export default class PlayerGroupRule {
   name: PlayerGroupRuleName
 
   @Property()
-  negate: boolean
+  negate!: boolean
 
   @Property()
   field: PlayerGroupRuleField
 
   @Enum(() => PlayerGroupRuleCastType)
-  castType: PlayerGroupRuleCastType
+  castType!: PlayerGroupRuleCastType
 
   @Property()
   operands: string[] = []

@@ -1,6 +1,6 @@
 import { Context, Next } from 'koa'
 
-export function setCurrentPlayerState(ctx: Context, playerId: string, aliasId: number) {
+export function setCurrentPlayerState(ctx: Context, playerId: string, aliasId: number | undefined) {
   ctx.state.currentPlayerId = playerId
   ctx.state.currentAliasId = aliasId
 }

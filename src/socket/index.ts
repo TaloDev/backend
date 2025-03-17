@@ -78,11 +78,11 @@ export default class Socket {
     const redis = new Redis(redisConfig)
 
     await RequestContext.create(this.em, async () => {
-      const url = new URL(req.url, 'http://localhost')
+      const url = new URL(req.url!, 'http://localhost')
       const ticket = new SocketTicket(url.searchParams.get('ticket') ?? '')
 
       if (await ticket.validate(redis)) {
-        const connection = new SocketConnection(this, ws, ticket, req.socket.remoteAddress)
+        const connection = new SocketConnection(this, ws, ticket, req.socket.remoteAddress!)
         this.connections.set(ws, connection)
 
         await this.trackEvent('open', {

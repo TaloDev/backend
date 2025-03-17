@@ -21,7 +21,7 @@ export type SocketMessageListener<T extends ZodType> = {
   req: SocketMessageRequest
   validator: T
   handler: SocketMessageListenerHandler<z.infer<T>>
-  options: SocketMessageListenerOptions
+  options?: SocketMessageListenerOptions
 }
 
 export default function createListener<T extends ZodType>(

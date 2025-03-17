@@ -121,7 +121,7 @@ describe('Game channel API service - leave', () => {
       .expect(204)
 
     em.clear()
-    const refreshedChannel = await em.getRepository(GameChannel).findOne(channel.id)
+    const refreshedChannel = await em.getRepository(GameChannel).findOneOrFail(channel.id)
     expect(refreshedChannel.id).toBe(channel.id)
     expect(refreshedChannel.owner).toBe(null)
   })
@@ -206,7 +206,7 @@ describe('Game channel API service - leave', () => {
       .set('x-talo-alias', String(player.aliases[0].id))
       .expect(204)
 
-    const updatedChannel = await (<EntityManager>global.em).refresh(channel, { populate: ['members'] })
+    const updatedChannel = await (<EntityManager>global.em).refreshOrFail(channel, { populate: ['members'] })
     expect(updatedChannel.members.count()).toBe(0)
   })
 })

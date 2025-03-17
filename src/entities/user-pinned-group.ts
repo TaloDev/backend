@@ -6,7 +6,7 @@ import PlayerGroup from './player-group'
 @Unique({ properties: ['user', 'group'] })
 export default class UserPinnedGroup {
   @PrimaryKey()
-  id: number
+  id!: number
 
   @ManyToOne(() => User, { eager: true })
   user: User

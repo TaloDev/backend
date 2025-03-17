@@ -5,11 +5,11 @@ import jwt from 'jsonwebtoken'
 export default async function getAPIKeyFromToken(authHeader: string): Promise<APIKey | null> {
   const parts = authHeader.split('Bearer ')
   if (parts.length === 2) {
-    const em = RequestContext.getEntityManager()
+    const em = RequestContext.getEntityManager()!
     const decodedToken = jwt.decode(parts[1])
 
     if (decodedToken) {
-      const apiKey = await em.getRepository(APIKey).findOne(decodedToken.sub, {
+      const apiKey = await em.getRepository(APIKey).findOne(Number(decodedToken.sub), {
         populate: ['game', 'game.apiSecret']
       })
 

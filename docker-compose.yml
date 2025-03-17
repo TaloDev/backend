@@ -21,7 +21,7 @@ services:
     environment:
       - MYSQL_DATABASE=${DB_NAME}
       - MYSQL_ROOT_PASSWORD=${DB_PASS}
-    restart: unless-stopped
+    restart: always
     ports:
       - 3306:3306
     volumes:
@@ -30,6 +30,7 @@ services:
   redis:
     image: arm64v8/redis:7-alpine
     command: redis-server --requirepass ${REDIS_PASSWORD}
+    restart: unless-stopped
     ports:
       - 6379:6379
 
@@ -39,7 +40,7 @@ services:
       CLICKHOUSE_USER: ${CLICKHOUSE_USER}
       CLICKHOUSE_PASSWORD: ${CLICKHOUSE_PASSWORD}
       CLICKHOUSE_DB: ${CLICKHOUSE_DB}
-    restart: unless-stopped
+    restart: always
     ports:
       - ${CLICKHOUSE_PORT}:8123
     volumes:

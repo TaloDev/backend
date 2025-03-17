@@ -12,7 +12,8 @@ async function handleJobFailure<T>(job: Job<T>, err: Error): Promise<void> {
   failedJob.payload = job.data as unknown as (typeof failedJob.payload)
   failedJob.queue = job.queueName
   failedJob.reason = err.message
-  failedJob.stack = err.stack
+  /* v8 ignore next */
+  failedJob.stack = err.stack ?? ''
 
   await em.persistAndFlush(failedJob)
   await orm.close()

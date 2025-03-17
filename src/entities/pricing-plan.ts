@@ -3,19 +3,19 @@ import {  Entity, PrimaryKey, Property } from '@mikro-orm/mysql'
 @Entity()
 export default class PricingPlan {
   @PrimaryKey()
-  id: number
+  id!: number
 
   @Property()
-  stripeId: string
+  stripeId!: string
 
   @Property({ default: false })
-  hidden: boolean
+  hidden!: boolean
 
   @Property({ default: false })
-  default: boolean
+  default!: boolean
 
   @Property({ nullable: true })
-  playerLimit: number
+  playerLimit: number | null = null
 
   @Property()
   createdAt: Date = new Date()

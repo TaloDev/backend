@@ -42,16 +42,16 @@ export enum GameActivityType {
 @Entity()
 export default class GameActivity {
   @PrimaryKey()
-  id: number
+  id!: number
 
   @ManyToOne(() => Game, { nullable: true })
-  game: Game
+  game: Game | null = null
 
   @ManyToOne(() => User)
   user: User
 
   @Enum(() => GameActivityType)
-  type: GameActivityType
+  type!: GameActivityType
 
   @Property({ type: 'json' })
   extra: {
@@ -64,7 +64,7 @@ export default class GameActivity {
   @Property()
   createdAt: Date = new Date()
 
-  constructor(game: Game, user: User) {
+  constructor(game: Game | null, user: User) {
     this.game = game
     this.user = user
   }

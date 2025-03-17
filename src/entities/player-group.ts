@@ -63,15 +63,15 @@ export default class PlayerGroup {
 
   @Required()
   @Property()
-  name: string
+  name!: string
 
   @Required()
   @Property()
-  description: string
+  description!: string
 
   @Required()
   @Property({ default: false })
-  membersVisible: boolean
+  membersVisible!: boolean
 
   @Required({
     validation: rulesValidation

@@ -23,7 +23,8 @@ export default defineConfig({
         'src/config',
         'src/middlewares/error-middleware.ts',
         'src/middlewares/limiter-middleware.ts',
-        'src/migrations'
+        'src/migrations',
+        'src/global.d.ts'
       ]
     }
   }

@@ -3,6 +3,7 @@ import request from 'supertest'
 import LeaderboardFactory from '../../fixtures/LeaderboardFactory'
 import createOrganisationAndGame from '../../utils/createOrganisationAndGame'
 import createUserAndToken from '../../utils/createUserAndToken'
+import Leaderboard from '../../../src/entities/leaderboard'
 
 describe('Leaderboard service - index', () => {
   it('should return a list of leaderboards', async () => {
@@ -17,7 +18,7 @@ describe('Leaderboard service - index', () => {
       .auth(token, { type: 'bearer' })
       .expect(200)
 
-    res.body.leaderboards.forEach((leaderboard, idx) => {
+    res.body.leaderboards.forEach((leaderboard: Leaderboard, idx: number) => {
       expect(leaderboard.id).toBe(leaderboards[idx].id)
     })
   })

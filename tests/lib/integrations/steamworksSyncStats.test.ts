@@ -48,7 +48,7 @@ describe('Steamworks integration - sync stats', () => {
 
     expect(getSchemaMock).toHaveBeenCalledTimes(1)
 
-    const event = await (<EntityManager>global.em).getRepository(SteamworksIntegrationEvent).findOne({ integration })
+    const event = await (<EntityManager>global.em).getRepository(SteamworksIntegrationEvent).findOneOrFail({ integration })
     expect(event.request).toStrictEqual({
       url: `https://partner.steam-api.com/ISteamUserStats/GetSchemaForGame/v2?appid=${integration.getConfig().appId}`,
       body: '',
@@ -307,11 +307,30 @@ describe('Steamworks integration - sync stats', () => {
     expect(getUserStatsMock).toHaveBeenCalledTimes(1)
     expect(setMock).toHaveBeenCalledTimes(1)
 
-    const event = await (<EntityManager>global.em).getRepository(SteamworksIntegrationEvent).findOne({ integration }, { orderBy: { id: 'DESC' } })
+    const event = await (<EntityManager>global.em).getRepository(SteamworksIntegrationEvent).findOneOrFail({ integration }, { orderBy: { id: 'DESC' } })
     expect(event.request).toStrictEqual({
       url: 'https://partner.steam-api.com/ISteamUserStats/SetUserStatsForGame/v1',
       body: `appid=${config.appId}&steamid=${player.aliases[0].identifier}&count=1&name%5B0%5D=${stat.internalName}&value%5B0%5D=${playerStat.value}`,
       method: 'POST'
     })
+  })
+
+  it('should throw if the response stats are not an array', async () => {
+    const [, game] = await createOrganisationAndGame()
+
+    const config = await new IntegrationConfigFactory().one()
+    const integration = await new IntegrationFactory().construct(IntegrationType.STEAMWORKS, game, config).one()
+    await (<EntityManager>global.em).persistAndFlush(integration)
+
+    const getSchemaMock = vi.fn((): [number] => [404])
+    axiosMock.onGet(`https://partner.steam-api.com/ISteamUserStats/GetSchemaForGame/v2?appid=${integration.getConfig().appId}`).replyOnce(getSchemaMock)
+
+    try {
+      await syncSteamworksStats((<EntityManager>global.em), integration)
+    } catch (err) {
+      expect((err as Error).message).toBe('Failed to retrieve stats - is your App ID correct?')
+    }
+
+    expect(getSchemaMock).toHaveBeenCalledTimes(1)
   })
 })

@@ -193,7 +193,7 @@ describe('Player API service - patch', () => {
     const player = await new PlayerFactory([apiKey.game]).one()
     player.setProps([
       {
-        key: randWord(),
+        key: `${randWord()}${randWord()}${randWord()}`,
         value: randWord()
       }
     ])
@@ -204,7 +204,7 @@ describe('Player API service - patch', () => {
       .send({
         props: [
           {
-            key: randWord(),
+            key: `${randWord()}${randWord()}${randWord()}`,
             value: randWord()
           },
           {

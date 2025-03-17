@@ -83,7 +83,7 @@ describe('User public service - register', () => {
       type: GameActivityType.INVITE_ACCEPTED
     })
 
-    expect(activity.user.id).toBe(res.body.user.id)
+    expect(activity!.user.id).toBe(res.body.user.id)
   })
 
   it('should not let a user register with an invite if the email doesn\'t match', async () => {
@@ -125,5 +125,31 @@ describe('User public service - register', () => {
         email: ['Email address is invalid']
       }
     })
+  })
+
+  it('should not let a user register if registration is disabled', async () => {
+    process.env.REGISTRATION_MODE = 'disabled'
+
+    const res = await request(global.app)
+      .post('/public/users/register')
+      .send({ email: randEmail(), username: randUserName(), password: 'password', organisationName: 'Talo' })
+      .expect(400)
+
+    expect(res.body).toStrictEqual({ message: 'Registration is disabled' })
+
+    delete process.env.REGISTRATION_MODE
+  })
+
+  it('should not let a user register if registration is exclusive', async () => {
+    process.env.REGISTRATION_MODE = 'exclusive'
+
+    const res = await request(global.app)
+      .post('/public/users/register')
+      .send({ email: randEmail(), username: randUserName(), password: 'password', organisationName: 'Talo' })
+      .expect(400)
+
+    expect(res.body).toStrictEqual({ message: 'Registration requires an invitation' })
+
+    delete process.env.REGISTRATION_MODE
   })
 })

@@ -1,4 +1,4 @@
-import { After, Before, Service, Request, Response } from 'koa-clay'
+import { After, Before, Service, Request, Response, Route } from 'koa-clay'
 import User, { UserType } from '../../entities/user'
 import { EntityManager, MikroORM } from '@mikro-orm/mysql'
 import buildTokenPair from '../../lib/auth/buildTokenPair'
@@ -15,10 +15,10 @@ type DemoUserJob = {
   userId: number
 }
 
-async function scheduleDeletion(req: Request, res: Response, caller: DemoService): Promise<void> {
+async function scheduleDeletion(req: Request, res: Response<{ user: User }>, caller: DemoService): Promise<void> {
   /* v8 ignore next 3 */
   if (res.status === 200) {
-    await caller.queue.add('demo-user', { userId: res.body.user.id }, { delay: 3600000 })
+    await caller.queue.add('demo-user', { userId: res.body!.user.id }, { delay: 3_600_000 })
   }
 }
 
@@ -43,6 +43,9 @@ export default class DemoService extends Service {
     })
   }
 
+  @Route({
+    method: 'POST'
+  })
   @Before(generateDemoEvents)
   @After(scheduleDeletion)
   async post(req: Request): Promise<Response> {
@@ -52,7 +55,7 @@ export default class DemoService extends Service {
     user.username = `demo+${Date.now()}`
     user.email = `${user.username}@demo.io`
     user.type = UserType.DEMO
-    user.organisation = await em.getRepository(Organisation).findOne({ name: process.env.DEMO_ORGANISATION_NAME })
+    user.organisation = await em.getRepository(Organisation).findOneOrFail({ name: process.env.DEMO_ORGANISATION_NAME })
     user.emailConfirmed = true
     user.password = await bcrypt.hash(user.email, 10)
 

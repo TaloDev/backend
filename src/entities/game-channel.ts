@@ -11,16 +11,16 @@ import { APIKeyScope } from './api-key'
 @Entity()
 export default class GameChannel {
   @PrimaryKey()
-  id: number
+  id!: number
 
   @Required({
     methods: ['POST']
   })
   @Property()
-  name: string
+  name!: string
 
   @ManyToOne(() => PlayerAlias, { nullable: true, eager: true })
-  owner: PlayerAlias
+  owner: PlayerAlias | null = null
 
   @ManyToMany(() => PlayerAlias, (alias) => alias.channels, { owner: true })
   members = new Collection<PlayerAlias>(this)

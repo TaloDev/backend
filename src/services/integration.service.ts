@@ -1,5 +1,5 @@
 import { EntityManager, MikroORM } from '@mikro-orm/mysql'
-import { HasPermission, Request, Response, Routes, Service, Validate } from 'koa-clay'
+import { HasPermission, Request, Response, Route, Service, Validate } from 'koa-clay'
 import { pick } from 'lodash'
 import { GameActivityType } from '../entities/game-activity'
 import Integration, { IntegrationConfig, IntegrationType } from '../entities/integration'
@@ -22,30 +22,6 @@ const configKeys: IntegrationUpdateableKeys = {
   [IntegrationType.STEAMWORKS]: ['apiKey', 'appId', 'syncLeaderboards', 'syncStats']
 }
 
-@Routes([
-  {
-    method: 'GET'
-  },
-  {
-    method: 'POST'
-  },
-  {
-    method: 'PATCH'
-  },
-  {
-    method: 'DELETE'
-  },
-  {
-    method: 'POST',
-    path: '/:id/sync-leaderboards',
-    handler: 'syncLeaderboards'
-  },
-  {
-    method: 'POST',
-    path: '/:id/sync-stats',
-    handler: 'syncStats'
-  }
-])
 export default class IntegrationService extends Service {
   queue: Queue<SyncJob>
 
@@ -57,7 +33,7 @@ export default class IntegrationService extends Service {
 
       const orm = await MikroORM.init(ormConfig)
       const em = orm.em.fork()
-      const integration = await em.getRepository(Integration).findOne(integrationId)
+      const integration = await em.getRepository(Integration).findOneOrFail(integrationId)
 
       if (type === 'leaderboards') {
         await integration.handleSyncLeaderboards(em)
@@ -69,6 +45,9 @@ export default class IntegrationService extends Service {
     })
   }
 
+  @Route({
+    method: 'GET'
+  })
   @HasPermission(IntegrationPolicy, 'index')
   async index(req: Request): Promise<Response> {
     const em: EntityManager = req.ctx.em
@@ -83,6 +62,9 @@ export default class IntegrationService extends Service {
     }
   }
 
+  @Route({
+    method: 'POST'
+  })
   @Validate({ body: [Integration] })
   @HasPermission(IntegrationPolicy, 'post')
   async post(req: Request): Promise<Response> {
@@ -91,7 +73,7 @@ export default class IntegrationService extends Service {
 
     // todo, prevent if has one of type already
 
-    const integration = new Integration(type, req.ctx.state.game, pick(config, configKeys[type]) as IntegrationConfig)
+    const integration = new Integration(type, req.ctx.state.game, pick(config, configKeys[type as IntegrationType]) as IntegrationConfig)
 
     createGameActivity(em, {
       user: req.ctx.state.user,
@@ -112,6 +94,10 @@ export default class IntegrationService extends Service {
     }
   }
 
+  @Route({
+    method: 'PATCH',
+    path: '/:id'
+  })
   @Validate({ body: [Integration] })
   @HasPermission(IntegrationPolicy, 'patch')
   async patch(req: Request): Promise<Response> {
@@ -144,6 +130,10 @@ export default class IntegrationService extends Service {
     }
   }
 
+  @Route({
+    method: 'DELETE',
+    path: '/:id'
+  })
   @HasPermission(IntegrationPolicy, 'delete')
   async delete(req: Request): Promise<Response> {
     const em: EntityManager = req.ctx.em
@@ -167,6 +157,10 @@ export default class IntegrationService extends Service {
     }
   }
 
+  @Route({
+    method: 'POST',
+    path: '/:id/sync-leaderboards'
+  })
   @HasPermission(IntegrationPolicy, 'syncLeaderboards')
   async syncLeaderboards(req: Request): Promise<Response> {
     const em: EntityManager = req.ctx.em
@@ -186,6 +180,10 @@ export default class IntegrationService extends Service {
     }
   }
 
+  @Route({
+    method: 'POST',
+    path: '/:id/sync-stats'
+  })
   @HasPermission(IntegrationPolicy, 'syncStats')
   async syncStats(req: Request): Promise<Response> {
     const em: EntityManager = req.ctx.em

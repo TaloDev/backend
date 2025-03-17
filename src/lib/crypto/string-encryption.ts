@@ -14,7 +14,7 @@ export function encrypt(text: string, key: string): string {
 export function decrypt(text: string, key: string): string {
   const textParts: string[] = text.split(':')
 
-  const iv = Buffer.from(textParts.shift(), 'binary')
+  const iv = Buffer.from(textParts.shift()!, 'binary')
   const encryptedText = Buffer.from(textParts.join(':'), 'hex')
   const decipher = crypto.createDecipheriv('aes-256-cbc', Buffer.from(key), iv)
   let decrypted = decipher.update(encryptedText)

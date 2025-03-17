@@ -1,5 +1,5 @@
 import { EntityManager } from '@mikro-orm/mysql'
-import { HasPermission, Service, Request, Response, Validate, Routes } from 'koa-clay'
+import { HasPermission, Service, Request, Response, Validate, Route } from 'koa-clay'
 import { GameActivityType } from '../entities/game-activity'
 import GameStat from '../entities/game-stat'
 import createGameActivity from '../lib/logging/createGameActivity'
@@ -7,15 +7,12 @@ import GameStatPolicy from '../policies/game-stat.policy'
 import handleSQLError from '../lib/errors/handleSQLError'
 import PlayerGameStat from '../entities/player-game-stat'
 import triggerIntegrations from '../lib/integrations/triggerIntegrations'
+import updateAllowedKeys from '../lib/entities/updateAllowedKeys'
 
-@Routes([
-  {
-    method: 'PATCH',
-    path: '/:id/player-stats/:playerStatId',
-    handler: 'updatePlayerStat'
-  }
-])
 export default class GameStatService extends Service {
+  @Route({
+    method: 'GET'
+  })
   @HasPermission(GameStatPolicy, 'index')
   async index(req: Request): Promise<Response> {
     const em: EntityManager = req.ctx.em
@@ -35,6 +32,9 @@ export default class GameStatService extends Service {
     }
   }
 
+  @Route({
+    method: 'POST'
+  })
   @Validate({
     body: [GameStat]
   })
@@ -58,7 +58,7 @@ export default class GameStatService extends Service {
     try {
       await em.persistAndFlush(stat)
     } catch (err) {
-      return handleSQLError(err)
+      return handleSQLError(err as Error)
     }
 
     createGameActivity(em, {
@@ -79,6 +79,10 @@ export default class GameStatService extends Service {
     }
   }
 
+  @Route({
+    method: 'PUT',
+    path: '/:id'
+  })
   @Validate({
     body: [GameStat]
   })
@@ -86,18 +90,11 @@ export default class GameStatService extends Service {
   async put(req: Request): Promise<Response> {
     const em: EntityManager = req.ctx.em
 
-    const stat: GameStat = req.ctx.state.stat
-
-    const updateableKeys: (keyof GameStat)[] = ['name', 'global', 'maxChange', 'minValue', 'maxValue', 'defaultValue', 'minTimeBetweenUpdates']
-    const changedProperties = []
-
-    for (const key in req.body) {
-      if (updateableKeys.includes(key as keyof GameStat)) {
-        const original = stat[key]
-        stat[key] = req.body[key]
-        if (original !== stat[key]) changedProperties.push(key)
-      }
-    }
+    const [stat, changedProperties] = updateAllowedKeys(
+      req.ctx.state.stat as GameStat,
+      req.body,
+      ['name', 'global', 'maxChange', 'minValue', 'maxValue', 'defaultValue', 'minTimeBetweenUpdates']
+    )
 
     createGameActivity(em, {
       user: req.ctx.state.user,
@@ -114,7 +111,7 @@ export default class GameStatService extends Service {
     try {
       await em.flush()
     } catch (err) {
-      return handleSQLError(err)
+      return handleSQLError(err as Error)
     }
 
     return {
@@ -125,6 +122,10 @@ export default class GameStatService extends Service {
     }
   }
 
+  @Route({
+    method: 'DELETE',
+    path: '/:id'
+  })
   @HasPermission(GameStatPolicy, 'delete')
   async delete(req: Request): Promise<Response> {
     const em: EntityManager = req.ctx.em
@@ -145,6 +146,10 @@ export default class GameStatService extends Service {
     }
   }
 
+  @Route({
+    method: 'PATCH',
+    path: '/:id/player-stats/:playerStatId'
+  })
   @HasPermission(GameStatPolicy, 'updatePlayerStat')
   @Validate({
     body: ['newValue']

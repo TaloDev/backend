@@ -5,17 +5,17 @@ import Player from '../../entities/player'
 import { APIKeyScope } from '../../entities/api-key'
 
 export default class GameSaveAPIPolicy extends Policy {
-  async getPlayer(): Promise<Player> {
+  async getPlayer(): Promise<Player | null> {
     const key = this.getAPIKey()
 
-    return await this.em.getRepository(Player).findOne({
+    return this.em.getRepository(Player).findOne({
       id: this.ctx.state.currentPlayerId,
       game: key.game
     })
   }
 
-  async getSave(id: number): Promise<GameSave> {
-    return await this.em.getRepository(GameSave).findOne({
+  async getSave(id: number): Promise<GameSave | null> {
+    return this.em.getRepository(GameSave).findOne({
       id,
       player: await this.getPlayer()
     })

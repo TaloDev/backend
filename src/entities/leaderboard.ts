@@ -19,14 +19,14 @@ export enum LeaderboardRefreshInterval {
 @Entity()
 export default class Leaderboard {
   @PrimaryKey()
-  id: number
+  id!: number
 
   @Required({
     validation: async (val: unknown, req: Request): Promise<ValidationCondition[]> => {
       const { gameId, id } = req.params
       const duplicateInternalName = await (<EntityManager>req.ctx.em).getRepository(Leaderboard).findOne({
         id: { $ne: Number(id ?? null) },
-        internalName: val,
+        internalName: val as string,
         game: Number(gameId)
       })
 
@@ -39,19 +39,19 @@ export default class Leaderboard {
     }
   })
   @Property()
-  internalName: string
+  internalName!: string
 
   @Required()
   @Property()
-  name: string
+  name!: string
 
   @Required({
     validation: async (val: unknown): Promise<ValidationCondition[]> => {
-      const keys = Object.keys(LeaderboardSortMode).map((key) => LeaderboardSortMode[key])
+      const keys = Object.keys(LeaderboardSortMode).map((key) => LeaderboardSortMode[key as keyof typeof LeaderboardSortMode])
 
       return [
         {
-          check: keys.includes(val),
+          check: keys.includes(val as LeaderboardSortMode),
           error: `Sort mode must be one of ${keys.join(', ')}`
         }
       ]
@@ -62,7 +62,7 @@ export default class Leaderboard {
 
   @Required()
   @Property()
-  unique: boolean
+  unique!: boolean
 
   @OneToMany(() => LeaderboardEntry, (entry) => entry.leaderboard)
   entries: Collection<LeaderboardEntry> = new Collection<LeaderboardEntry>(this)
@@ -72,11 +72,11 @@ export default class Leaderboard {
 
   @Required({
     validation: async (val: unknown): Promise<ValidationCondition[]> => {
-      const keys = Object.keys(LeaderboardRefreshInterval).map((key) => LeaderboardRefreshInterval[key])
+      const keys = Object.keys(LeaderboardRefreshInterval).map((key) => LeaderboardRefreshInterval[key as keyof typeof LeaderboardRefreshInterval])
 
       return [
         {
-          check: keys.includes(val),
+          check: keys.includes(val as LeaderboardRefreshInterval),
           error: `Refresh interval must be one of ${keys.join(', ')}`
         }
       ]

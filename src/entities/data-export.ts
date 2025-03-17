@@ -23,7 +23,7 @@ export enum DataExportAvailableEntities {
 @Entity()
 export default class DataExport {
   @PrimaryKey()
-  id: number
+  id!: number
 
   @ManyToOne(() => User)
   createdByUser: User
@@ -38,7 +38,7 @@ export default class DataExport {
   status: DataExportStatus = DataExportStatus.REQUESTED
 
   @Property({ nullable: true })
-  failedAt: Date
+  failedAt: Date | null = null
 
   @Property()
   createdAt: Date = new Date()

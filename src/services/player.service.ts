@@ -1,13 +1,12 @@
-import { Service, Request, Response, Validate, HasPermission, Routes, ValidationCondition } from 'koa-clay'
+import { Service, Request, Response, Validate, HasPermission, Route, ValidationCondition } from 'koa-clay'
 import Game from '../entities/game'
 import Player from '../entities/player'
 import PlayerPolicy from '../policies/player.policy'
 import PlayerAlias from '../entities/player-alias'
-import sanitiseProps from '../lib/props/sanitiseProps'
+import { sanitiseProps, mergeAndSanitiseProps } from '../lib/props/sanitiseProps'
 import { ClickhouseEvent, createEventFromClickhouse } from '../entities/event'
 import { EntityManager } from '@mikro-orm/mysql'
 import { QueryOrder } from '@mikro-orm/mysql'
-import { uniqWith } from 'lodash'
 import createGameActivity from '../lib/logging/createGameActivity'
 import { GameActivityType } from '../entities/game-activity'
 import PlayerGameStat from '../entities/player-game-stat'
@@ -19,6 +18,7 @@ import PlayerAuthActivity from '../entities/player-auth-activity'
 import { ClickHouseClient } from '@clickhouse/client'
 import checkPricingPlanPlayerLimit from '../lib/billing/checkPricingPlanPlayerLimit'
 import GameChannel from '../entities/game-channel'
+import Prop from '../entities/prop'
 
 const propsValidation = async (val: unknown): Promise<ValidationCondition[]> => [
   {
@@ -38,38 +38,10 @@ type PlayerPostBody = {
   }[]
 }
 
-@Routes([
-  {
-    method: 'POST'
-  },
-  {
-    method: 'GET'
-  },
-  {
-    method: 'PATCH'
-  },
-  {
-    method: 'GET',
-    path: '/:id/events',
-    handler: 'events'
-  },
-  {
-    method: 'GET',
-    path: '/:id/stats',
-    handler: 'stats'
-  },
-  {
-    method: 'GET',
-    path: '/:id/saves',
-    handler: 'saves'
-  },
-  {
-    method: 'GET',
-    path: '/:id/auth-activities',
-    handler: 'authActivities'
-  }
-])
 export default class PlayerService extends Service {
+  @Route({
+    method: 'POST'
+  })
   @Validate({
     body: {
       props: {
@@ -82,7 +54,7 @@ export default class PlayerService extends Service {
     const { aliases, props } = req.body as PlayerPostBody
     const em: EntityManager = req.ctx.em
 
-    const game = await em.getRepository(Game).findOne(req.ctx.state.game, { populate: ['organisation'] })
+    const game = await em.getRepository(Game).findOneOrFail(req.ctx.state.game, { populate: ['organisation'] })
     await checkPricingPlanPlayerLimit(req, game.organisation)
 
     const player = new Player(game)
@@ -128,6 +100,9 @@ export default class PlayerService extends Service {
     }
   }
 
+  @Route({
+    method: 'GET'
+  })
   @HasPermission(PlayerPolicy, 'index')
   async index(req: Request): Promise<Response> {
     const itemsPerPage = 25
@@ -228,6 +203,10 @@ export default class PlayerService extends Service {
     }
   }
 
+  @Route({
+    method: 'PATCH',
+    path: '/:id'
+  })
   @Validate({
     body: {
       props: {
@@ -236,7 +215,7 @@ export default class PlayerService extends Service {
     }
   })
   @HasPermission(PlayerPolicy, 'patch')
-  async patch(req: Request): Promise<Response> {
+  async patch(req: Request<{ props: Prop[] }>): Promise<Response> {
     const { props } = req.body
     const player: Player = req.ctx.state.player // set in the policy
 
@@ -247,12 +226,7 @@ export default class PlayerService extends Service {
         req.ctx.throw(400, 'Prop keys starting with \'META_\' are reserved for internal systems, please use another key name')
       }
 
-      const mergedProps = uniqWith([
-        ...sanitiseProps(props, false, (prop) => !prop.key.startsWith('META_')),
-        ...player.props
-      ], (a, b) => a.key === b.key)
-
-      player.setProps(sanitiseProps(mergedProps, true))
+      player.setProps(mergeAndSanitiseProps(player.props.getItems(), props, (prop) => !prop.key.startsWith('META_')))
       player.updatedAt = new Date()
     }
 
@@ -284,6 +258,10 @@ export default class PlayerService extends Service {
     }
   }
 
+  @Route({
+    method: 'GET',
+    path: '/:id/events'
+  })
   @Validate({ query: ['page'] })
   @HasPermission(PlayerPolicy, 'getEvents')
   async events(req: Request): Promise<Response> {
@@ -332,6 +310,10 @@ export default class PlayerService extends Service {
     }
   }
 
+  @Route({
+    method: 'GET',
+    path: '/:id/stats'
+  })
   @HasPermission(PlayerPolicy, 'getStats')
   async stats(req: Request): Promise<Response> {
     const em: EntityManager = req.ctx.em
@@ -348,6 +330,10 @@ export default class PlayerService extends Service {
     }
   }
 
+  @Route({
+    method: 'GET',
+    path: '/:id/saves'
+  })
   @HasPermission(PlayerPolicy, 'getSaves')
   async saves(req: Request): Promise<Response> {
     const em: EntityManager = req.ctx.em
@@ -364,6 +350,10 @@ export default class PlayerService extends Service {
     }
   }
 
+  @Route({
+    method: 'GET',
+    path: '/:id/auth-activities'
+  })
   @HasPermission(PlayerPolicy, 'getAuthActivities')
   async authActivities(req: Request): Promise<Response> {
     const em: EntityManager = req.ctx.em

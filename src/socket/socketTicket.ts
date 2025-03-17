@@ -3,8 +3,8 @@ import APIKey from '../entities/api-key'
 import { RequestContext } from '@mikro-orm/mysql'
 
 export default class SocketTicket {
-  apiKey: APIKey
-  devBuild: boolean
+  apiKey!: APIKey
+  devBuild!: boolean
 
   constructor(private readonly ticket: string) { }
 
@@ -17,7 +17,7 @@ export default class SocketTicket {
       try {
         this.devBuild = devBuild === '1'
 
-        const em = RequestContext.getEntityManager()
+        const em = RequestContext.getEntityManager()!
         this.apiKey = await em.getRepository(APIKey).findOneOrFail({
           id: Number(keyId),
           revokedAt: null

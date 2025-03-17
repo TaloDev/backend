@@ -4,7 +4,7 @@ import Mail from './mail'
 
 export default class PlanCancelled extends Mail {
   constructor(organisation: Organisation) {
-    const formattedDate = format(new Date(organisation.pricingPlan.endDate), 'do MMM yyyy')
+    const formattedDate = format(new Date(organisation.pricingPlan.endDate!), 'do MMM yyyy')
 
     super(organisation.email, 'Subscription cancelled', `Your subscription has been successfully cancelled and will end on ${formattedDate}. In the mean time, you can renew your plan through the billing portal if you change your mind.`)
 

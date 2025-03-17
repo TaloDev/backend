@@ -4,7 +4,7 @@ import Player from './player'
 @Entity()
 export default class PlayerProp {
   @PrimaryKey()
-  id: number
+  id!: number
 
   @ManyToOne(() => Player)
   player: Player

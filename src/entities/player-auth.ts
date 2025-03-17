@@ -1,9 +1,8 @@
 import { Entity, OneToOne, PrimaryKey, Property } from '@mikro-orm/mysql'
 import Player from './player'
 import { v4 } from 'uuid'
-import { promisify } from 'util'
-import jwt from 'jsonwebtoken'
 import PlayerAlias from './player-alias'
+import { sign } from '../lib/auth/jwt'
 
 const errorCodes = [
   'INVALID_CREDENTIALS',
@@ -24,25 +23,25 @@ export type PlayerAuthErrorCode = typeof errorCodes[number]
 @Entity()
 export default class PlayerAuth {
   @PrimaryKey()
-  id: number
+  id!: number
 
   @OneToOne(() => Player, (player) => player.auth)
-  player: Player
+  player!: Player
 
   @Property({ hidden: true })
-  password: string
+  password!: string
 
   @Property({ nullable: true })
-  email: string
+  email: string | null = null
 
   @Property({ default: false })
-  verificationEnabled: boolean
-
-  @Property({ hidden: false, nullable: true })
-  sessionKey: string
+  verificationEnabled!: boolean
 
   @Property({ nullable: true })
-  sessionCreatedAt: Date
+  sessionKey: string | null = null
+
+  @Property({ nullable: true })
+  sessionCreatedAt: Date | null = null
 
   @Property()
   createdAt: Date = new Date()
@@ -57,7 +56,7 @@ export default class PlayerAuth {
     this.sessionCreatedAt = new Date()
 
     const payload = { playerId: this.player.id, aliasId: alias.id }
-    return await promisify(jwt.sign)(payload, this.sessionKey)
+    return sign(payload, this.sessionKey)
   }
 
   toJSON() {

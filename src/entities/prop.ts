@@ -6,9 +6,9 @@ export default class Prop {
   key: string
 
   @Property()
-  value: string | null
+  value: string
 
-  constructor(key: string, value?: string) {
+  constructor(key: string, value: string) {
     this.key = key
     this.value = value
   }

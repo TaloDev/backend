@@ -1,4 +1,4 @@
-import PlayerAuthActivity from '../../entities/player-auth-activity'
+import PlayerAuthActivity, { PlayerAuthActivityType } from '../../entities/player-auth-activity'
 import Player from '../../entities/player'
 import { Request } from 'koa-clay'
 import { EntityManager } from '@mikro-orm/mysql'
@@ -6,7 +6,7 @@ import { EntityManager } from '@mikro-orm/mysql'
 export default function createPlayerAuthActivity(
   req: Request,
   player: Player,
-  data: Pick<Partial<PlayerAuthActivity>, 'type' | 'extra'>
+  data: { type: PlayerAuthActivityType, extra?: Record<string, unknown> }
 ): PlayerAuthActivity {
   const em: EntityManager = req.ctx.em
 

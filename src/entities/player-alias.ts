@@ -16,16 +16,16 @@ export enum PlayerAliasService {
 @Entity()
 export default class PlayerAlias {
   @PrimaryKey()
-  id: number
+  id!: number
 
   @Property()
-  service: string
+  service!: string
 
   @Property({ length: 1024 })
-  identifier: string
+  identifier!: string
 
   @ManyToOne(() => Player, { eager: true })
-  player: Player
+  player!: Player
 
   @Property()
   lastSeenAt: Date = new Date()

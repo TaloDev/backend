@@ -1,9 +1,8 @@
 import { Context, Next } from 'koa'
-import jwt from 'jsonwebtoken'
 import { isAPIRoute } from './route-middleware'
 import { EntityManager } from '@mikro-orm/mysql'
 import PlayerAlias, { PlayerAliasService } from '../entities/player-alias'
-import { promisify } from 'util'
+import { verify } from '../lib/auth/jwt'
 
 export default async function playerAuthMiddleware(ctx: Context, next: Next): Promise<void> {
   if (isAPIRoute(ctx) && (ctx.state.currentPlayerId || ctx.state.currentAliasId)) {
@@ -65,6 +64,6 @@ export async function validateSessionTokenJWT(
   expectedPlayerId: string,
   expectedAliasId: number
 ): Promise<boolean> {
-  const payload = await promisify(jwt.verify)(sessionToken, alias.player.auth.sessionKey)
+  const payload = await verify<{ playerId: string, aliasId: number }>(sessionToken, alias.player.auth!.sessionKey!)
   return payload.playerId === expectedPlayerId && payload.aliasId === expectedAliasId
 }

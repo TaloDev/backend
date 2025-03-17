@@ -1,6 +1,6 @@
 import { FilterQuery, EntityManager } from '@mikro-orm/mysql'
 import { endOfDay, isSameDay, startOfDay } from 'date-fns'
-import { Service, Request, Response, Validate, HasPermission, Routes } from 'koa-clay'
+import { Service, Request, Response, Validate, HasPermission, Route } from 'koa-clay'
 import Player from '../entities/player'
 import HeadlinePolicy from '../policies/headline.policy'
 import dateValidationSchema from '../lib/dates/dateValidationSchema'
@@ -8,39 +8,11 @@ import { devDataPlayerFilter } from '../middlewares/dev-data-middleware'
 import { formatDateForClickHouse } from '../lib/clickhouse/formatDateTime'
 import { ClickHouseClient } from '@clickhouse/client'
 
-@Routes([
-  {
-    method: 'GET',
-    path: '/new_players',
-    handler: 'newPlayers'
-  },
-  {
-    method: 'GET',
-    path: '/returning_players',
-    handler: 'returningPlayers'
-  },
-  {
-    method: 'GET',
-    path: '/events',
-    handler: 'events'
-  },
-  {
-    method: 'GET',
-    path: '/unique_event_submitters',
-    handler: 'uniqueEventSubmitters'
-  },
-  {
-    method: 'GET',
-    path: '/total_players',
-    handler: 'totalPlayers'
-  },
-  {
-    method: 'GET',
-    path: '/online_players',
-    handler: 'onlinePlayers'
-  }
-])
 export default class HeadlineService extends Service {
+  @Route({
+    method: 'GET',
+    path: '/new_players'
+  })
   @Validate({ query: dateValidationSchema })
   @HasPermission(HeadlinePolicy, 'index')
   async newPlayers(req: Request): Promise<Response> {
@@ -69,6 +41,10 @@ export default class HeadlineService extends Service {
     }
   }
 
+  @Route({
+    method: 'GET',
+    path: '/returning_players'
+  })
   @Validate({ query: dateValidationSchema })
   @HasPermission(HeadlinePolicy, 'index')
   async returningPlayers(req: Request): Promise<Response> {
@@ -101,6 +77,10 @@ export default class HeadlineService extends Service {
     }
   }
 
+  @Route({
+    method: 'GET',
+    path: '/events'
+  })
   @Validate({ query: dateValidationSchema })
   @HasPermission(HeadlinePolicy, 'index')
   async events(req: Request): Promise<Response> {
@@ -135,6 +115,10 @@ export default class HeadlineService extends Service {
     }
   }
 
+  @Route({
+    method: 'GET',
+    path: '/unique_event_submitters'
+  })
   @Validate({ query: dateValidationSchema })
   @HasPermission(HeadlinePolicy, 'index')
   async uniqueEventSubmitters(req: Request): Promise<Response> {
@@ -169,6 +153,10 @@ export default class HeadlineService extends Service {
     }
   }
 
+  @Route({
+    method: 'GET',
+    path: '/total_players'
+  })
   @HasPermission(HeadlinePolicy, 'index')
   async totalPlayers(req: Request): Promise<Response> {
     const em: EntityManager = req.ctx.em
@@ -191,6 +179,10 @@ export default class HeadlineService extends Service {
     }
   }
 
+  @Route({
+    method: 'GET',
+    path: '/online_players'
+  })
   @HasPermission(HeadlinePolicy, 'index')
   async onlinePlayers(req: Request): Promise<Response> {
     const em: EntityManager = req.ctx.em

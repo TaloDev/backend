@@ -5,14 +5,14 @@ import Game from './game'
 @Entity()
 export default class GameFeedbackCategory {
   @PrimaryKey()
-  id: number
+  id!: number
 
   @Required({
     validation: async (val: unknown, req: Request): Promise<ValidationCondition[]> => {
       const { gameId, id } = req.params
       const duplicateInternalName = await (<EntityManager>req.ctx.em).getRepository(GameFeedbackCategory).findOne({
         id: { $ne: Number(id ?? null) },
-        internalName: val,
+        internalName: val as string,
         game: Number(gameId)
       })
 
@@ -25,19 +25,19 @@ export default class GameFeedbackCategory {
     }
   })
   @Property()
-  internalName: string
+  internalName!: string
 
   @Required()
   @Property()
-  name: string
+  name!: string
 
   @Required()
   @Property()
-  description: string
+  description!: string
 
   @Required()
   @Property()
-  anonymised: boolean
+  anonymised!: boolean
 
   @ManyToOne(() => Game)
   game: Game

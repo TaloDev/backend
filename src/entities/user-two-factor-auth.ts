@@ -4,16 +4,16 @@ import User from './user'
 @Entity()
 export default class UserTwoFactorAuth {
   @PrimaryKey()
-  id: number
+  id!: number
 
   @OneToOne(() => User, (user) => user.twoFactorAuth)
-  user: User
+  user!: User
 
   @Property({ hidden: true })
   secret: string
 
   @Property({ default: false })
-  enabled: boolean
+  enabled!: boolean
 
   constructor(secret: string) {
     this.secret = secret

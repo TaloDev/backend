@@ -5,6 +5,7 @@ import { EntityManager } from '@mikro-orm/mysql'
 import PlayerAliasFactory from '../../fixtures/PlayerAliasFactory'
 import PlayerFactory from '../../fixtures/PlayerFactory'
 import GameChannelFactory from '../../fixtures/GameChannelFactory'
+import GameChannel from '../../../src/entities/game-channel'
 
 describe('Game channel service - index', () => {
   it('should return a list of game channels', async () => {
@@ -20,7 +21,7 @@ describe('Game channel service - index', () => {
       .auth(token, { type: 'bearer' })
       .expect(200)
 
-    res.body.channels.forEach((item, idx) => {
+    res.body.channels.forEach((item: GameChannel, idx: number) => {
       expect(item.id).toBe(channels[idx].id)
     })
   })

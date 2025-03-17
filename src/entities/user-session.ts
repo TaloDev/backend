@@ -6,7 +6,7 @@ import { add } from 'date-fns'
 @Entity()
 export default class UserSession {
   @PrimaryKey()
-  id: number
+  id!: number
 
   @Property()
   token: string = v4()

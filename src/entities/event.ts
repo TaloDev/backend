@@ -9,7 +9,7 @@ import { ClickHouseClient } from '@clickhouse/client'
 
 const eventMetaProps = ['META_OS', 'META_GAME_VERSION', 'META_WINDOW_MODE', 'META_SCREEN_WIDTH', 'META_SCREEN_HEIGHT']
 
-export type ClickhouseEvent = {
+export type ClickHouseEvent = {
   id: string
   name: string
   game_id: number
@@ -19,7 +19,7 @@ export type ClickhouseEvent = {
   updated_at: string
 }
 
-export type ClickhouseEventProp = {
+export type ClickHouseEventProp = {
   event_id: string
   prop_key: string
   prop_value: string
@@ -57,7 +57,7 @@ export default class Event {
     })
   }
 
-  getInsertableData(): ClickhouseEvent {
+  getInsertableData(): ClickHouseEvent {
     return {
       id: this.id,
       name: this.name,
@@ -69,7 +69,7 @@ export default class Event {
     }
   }
 
-  getInsertableProps(): ClickhouseEventProp[] {
+  getInsertableProps(): ClickHouseEventProp[] {
     return this.props.map((prop) => ({
       event_id: this.id,
       prop_key: prop.key,
@@ -89,10 +89,10 @@ export default class Event {
   }
 }
 
-export async function createEventFromClickhouse(
+export async function createEventFromClickHouse(
   clickhouse: ClickHouseClient,
   em: EntityManager,
-  data: ClickhouseEvent,
+  data: ClickHouseEvent,
   loadProps = false
 ): Promise<Event> {
   const game = await em.getRepository(Game).findOneOrFail(data.game_id)
@@ -108,7 +108,7 @@ export async function createEventFromClickhouse(
     const props = await clickhouse.query({
       query: `SELECT * FROM event_props WHERE event_id = '${data.id}'`,
       format: 'JSONEachRow'
-    }).then((res) => res.json<ClickhouseEventProp>())
+    }).then((res) => res.json<ClickHouseEventProp>())
 
     event.props = props.map((prop) => new Prop(prop.prop_key, prop.prop_value))
   }

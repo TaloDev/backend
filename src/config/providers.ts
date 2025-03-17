@@ -5,8 +5,8 @@ import ormConfig from './mikro-orm.config'
 import { MikroORM } from '@mikro-orm/mysql'
 import tracingMiddleware from '../middlewares/tracing-middleware'
 import createEmailQueue from '../lib/queues/createEmailQueue'
-import createClickhouseClient from '../lib/clickhouse/createClient'
-import { runClickhouseMigrations } from '../migrations/clickhouse'
+import createClickHouseClient from '../lib/clickhouse/createClient'
+import { runClickHouseMigrations } from '../migrations/clickhouse'
 import initScheduledTasks from './scheduled-tasks'
 
 export default async function initProviders(app: Koa, isTest: boolean) {
@@ -43,9 +43,9 @@ export default async function initProviders(app: Koa, isTest: boolean) {
     ]
   })
 
-  app.context.clickhouse = createClickhouseClient()
+  app.context.clickhouse = createClickHouseClient()
   if (!isTest) {
-    await runClickhouseMigrations(app.context.clickhouse)
+    await runClickHouseMigrations(app.context.clickhouse)
   }
 
   app.use(tracingMiddleware)

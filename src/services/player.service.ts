@@ -4,7 +4,7 @@ import Player from '../entities/player'
 import PlayerPolicy from '../policies/player.policy'
 import PlayerAlias from '../entities/player-alias'
 import { sanitiseProps, mergeAndSanitiseProps } from '../lib/props/sanitiseProps'
-import { ClickhouseEvent, createEventFromClickhouse } from '../entities/event'
+import { ClickHouseEvent, createEventFromClickHouse } from '../entities/event'
 import { EntityManager } from '@mikro-orm/mysql'
 import { QueryOrder } from '@mikro-orm/mysql'
 import createGameActivity from '../lib/logging/createGameActivity'
@@ -288,8 +288,8 @@ export default class PlayerService extends Service {
       OFFSET ${Number(page) * itemsPerPage}
     `
 
-    const items = await clickhouse.query({ query, format: 'JSONEachRow' }).then((res) => res.json<ClickhouseEvent>())
-    const events = await Promise.all(items.map((item) => createEventFromClickhouse(clickhouse, em, item, true)))
+    const items = await clickhouse.query({ query, format: 'JSONEachRow' }).then((res) => res.json<ClickHouseEvent>())
+    const events = await Promise.all(items.map((item) => createEventFromClickHouse(clickhouse, em, item, true)))
 
     const countQuery = `
       SELECT count(DISTINCT events.id) AS count

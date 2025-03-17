@@ -5,12 +5,12 @@ import { CreateSocketEventsTable } from './003CreateSocketEventsTable'
 import { CreateMigrationsTable } from './000CreateMigrationsTable'
 import { formatDateForClickHouse } from '../../lib/clickhouse/formatDateTime'
 
-type ClickhouseMigration = {
+type ClickHouseMigration = {
   name: string
   sql: string
 }
 
-const migrations: ClickhouseMigration[] = [
+const migrations: ClickHouseMigration[] = [
   {
     name: 'CreateEventsTable',
     sql: CreateEventsTable
@@ -25,7 +25,7 @@ const migrations: ClickhouseMigration[] = [
   }
 ]
 
-export async function runClickhouseMigrations(clickhouse: ClickHouseClient) {
+export async function runClickHouseMigrations(clickhouse: ClickHouseClient) {
   console.info('Running ClickHouse migrations...')
 
   await clickhouse.query({ query: CreateMigrationsTable })

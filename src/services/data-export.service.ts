@@ -150,7 +150,10 @@ export default class DataExportService extends Service {
       query.andWhere(devDataPlayerFilter(em))
     }
 
-    return await query.getResult()
+    const res = await query.getResult()
+    await em.populate(res, ['props'])
+
+    return res
   }
 
   private async getPlayerAliases(dataExport: DataExport, em: EntityManager, includeDevData: boolean): Promise<PlayerAlias[]> {

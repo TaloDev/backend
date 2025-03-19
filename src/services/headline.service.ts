@@ -88,8 +88,8 @@ export default class HeadlineService extends Service {
 
     const clickhouse: ClickHouseClient = req.ctx.clickhouse
 
-    const startDate = formatDateForClickHouse(startOfDay(new Date(startDateQuery)))
-    const endDate = formatDateForClickHouse(endOfDay(new Date(endDateQuery)))
+    const startDate = formatDateForClickHouse(startOfDay(new Date(startDateQuery)), false)
+    const endDate = formatDateForClickHouse(endOfDay(new Date(endDateQuery)), false)
 
     let query = `
       SELECT count() AS count
@@ -126,8 +126,8 @@ export default class HeadlineService extends Service {
 
     const clickhouse: ClickHouseClient = req.ctx.clickhouse
 
-    const startDate = formatDateForClickHouse(startOfDay(new Date(startDateQuery)))
-    const endDate = formatDateForClickHouse(endOfDay(new Date(endDateQuery)))
+    const startDate = formatDateForClickHouse(startOfDay(new Date(startDateQuery)), false)
+    const endDate = formatDateForClickHouse(endOfDay(new Date(endDateQuery)), false)
 
     let query = `
       SELECT COUNT(DISTINCT player_alias_id) AS uniqueSubmitters

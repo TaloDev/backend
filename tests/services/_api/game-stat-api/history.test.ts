@@ -3,7 +3,6 @@ import request from 'supertest'
 import { APIKeyScope } from '../../../../src/entities/api-key'
 import PlayerFactory from '../../../fixtures/PlayerFactory'
 import GameStatFactory from '../../../fixtures/GameStatFactory'
-import GameStat from '../../../../src/entities/game-stat'
 import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
 import Game from '../../../../src/entities/game'
 import PlayerGameStatSnapshot from '../../../../src/entities/player-game-stat-snapshot'
@@ -12,10 +11,10 @@ import { addMinutes, isSameDay } from 'date-fns'
 import { randNumber } from '@ngneat/falso'
 
 describe('Game stats API service - history', () => {
-  const createStat = async (game: Game, props: Partial<GameStat>) => {
+  const createStat = async (game: Game) => {
     const em: EntityManager  = global.em
 
-    const stat = await new GameStatFactory([game]).state(() => ({ ...props })).one()
+    const stat = await new GameStatFactory([game]).state(() => ({ maxValue: 999, maxChange: 99 })).one()
     em.persist(stat)
 
     return stat
@@ -23,7 +22,7 @@ describe('Game stats API service - history', () => {
 
   it('should return player stat snapshots if the scope is valid', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_GAME_STATS])
-    const stat = await createStat(apiKey.game, { maxValue: 999, maxChange: 99 })
+    const stat = await createStat(apiKey.game)
     const player = await new PlayerFactory([apiKey.game]).one()
     await global.em.persistAndFlush(player)
 
@@ -70,7 +69,7 @@ describe('Game stats API service - history', () => {
 
   it('should not return player stat snapshots if the scope is not valid', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([])
-    const stat = await createStat(apiKey.game, { maxValue: 999, maxChange: 99 })
+    const stat = await createStat(apiKey.game)
     const player = await new PlayerFactory([apiKey.game]).one()
     await global.em.persistAndFlush(player)
 
@@ -84,7 +83,7 @@ describe('Game stats API service - history', () => {
 
   it('should not return player stat snapshots for a missing player', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_STATS])
-    const stat = await createStat(apiKey.game, { maxValue: 999, maxChange: 99 })
+    const stat = await createStat(apiKey.game)
     const player = await new PlayerFactory([apiKey.game]).one()
     await global.em.persistAndFlush(player)
 
@@ -115,7 +114,7 @@ describe('Game stats API service - history', () => {
 
   it('should return player stat snapshots filtered by startDate', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_GAME_STATS])
-    const stat = await createStat(apiKey.game, { maxValue: 999, maxChange: 99 })
+    const stat = await createStat(apiKey.game)
     const player = await new PlayerFactory([apiKey.game]).one()
     const playerStat = await new PlayerGameStatFactory().construct(player, stat).one()
     await global.em.persistAndFlush(playerStat)
@@ -153,7 +152,7 @@ describe('Game stats API service - history', () => {
 
   it('should return player stat snapshots filtered by endDate', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_GAME_STATS])
-    const stat = await createStat(apiKey.game, { maxValue: 999, maxChange: 99 })
+    const stat = await createStat(apiKey.game)
     const player = await new PlayerFactory([apiKey.game]).one()
     const playerStat = await new PlayerGameStatFactory().construct(player, stat).one()
     await global.em.persistAndFlush(playerStat)
@@ -191,7 +190,7 @@ describe('Game stats API service - history', () => {
 
   it('should return player stat snapshots filtered by both startDate and endDate', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_GAME_STATS])
-    const stat = await createStat(apiKey.game, { maxValue: 999, maxChange: 99 })
+    const stat = await createStat(apiKey.game)
     const player = await new PlayerFactory([apiKey.game]).one()
     const playerStat = await new PlayerGameStatFactory().construct(player, stat).one()
     await global.em.persistAndFlush(playerStat)
@@ -225,5 +224,23 @@ describe('Game stats API service - history', () => {
     expect(res.body.history.every((snapshot: PlayerGameStatSnapshot) => {
       return isSameDay(new Date(snapshot.createdAt), dates[1])
     })).toBe(true)
+  })
+
+  it('should return an empty array and count 0 if there are no snapshots', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_GAME_STATS])
+    const stat = await createStat(apiKey.game)
+    const player = await new PlayerFactory([apiKey.game]).one()
+    await global.em.persistAndFlush([stat, player])
+
+    const res = await request(global.app)
+      .get(`/v1/game-stats/${stat.internalName}/history`)
+      .query({ page: 0 })
+      .auth(token, { type: 'bearer' })
+      .set('x-talo-player', player.id)
+      .expect(200)
+
+    expect(res.body.history).toHaveLength(0)
+    expect(res.body.count).toBe(0)
+    expect(res.body.isLastPage).toBe(true)
   })
 })

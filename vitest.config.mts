@@ -24,7 +24,8 @@ export default defineConfig({
         'src/middlewares/error-middleware.ts',
         'src/middlewares/limiter-middleware.ts',
         'src/migrations',
-        'src/global.d.ts'
+        'src/global.d.ts',
+        'src/lib/clickhouse/clickhouse-entity.ts'
       ]
     }
   }

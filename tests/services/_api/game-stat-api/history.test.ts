@@ -226,6 +226,49 @@ describe('Game stats API service - history', () => {
     })).toBe(true)
   })
 
+  it('should return paginated player stat snapshots', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_GAME_STATS])
+    const stat = await createStat(apiKey.game)
+    const player = await new PlayerFactory([apiKey.game]).one()
+    const playerStat = await new PlayerGameStatFactory().construct(player, stat).one()
+    await global.em.persistAndFlush(playerStat)
+
+    const changes = Array.from({ length: 60 }, () => randNumber({ min: 1, max: 999 }))
+
+    await global.clickhouse.insert({
+      table: 'player_game_stat_snapshots',
+      values: await Promise.all(changes.map(async (change, idx) => {
+        const currentValue = changes
+          .slice(0, idx)
+          .reduce((sum, val) => sum + val, stat.defaultValue)
+
+        const playerStat = await new PlayerGameStatFactory().construct(player, stat).state(() => ({ value: currentValue })).one()
+        await global.em.persistAndFlush(playerStat)
+
+        stat.globalValue += change
+        const snapshot = new PlayerGameStatSnapshot()
+        snapshot.construct(playerStat)
+        snapshot.change = change
+        snapshot.createdAt = addMinutes(snapshot.createdAt, idx)
+
+        return snapshot.toInsertable()
+      })),
+      format: 'JSONEachRow'
+    })
+
+    const res = await request(global.app)
+      .get(`/v1/game-stats/${stat.internalName}/history`)
+      .query({ page: 1 })
+      .auth(token, { type: 'bearer' })
+      .set('x-talo-player', player.id)
+      .expect(200)
+
+    expect(res.body.history).toHaveLength(10)
+    expect(res.body.count).toBe(60)
+    expect(res.body.itemsPerPage).toBe(50)
+    expect(res.body.isLastPage).toBe(true)
+  })
+
   it('should return an empty array and count 0 if there are no snapshots', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_GAME_STATS])
     const stat = await createStat(apiKey.game)

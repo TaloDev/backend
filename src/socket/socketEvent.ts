@@ -35,7 +35,7 @@ function getInsertableData(event: SocketEventData): ClickHouseSocketEvent {
     game_id: event.gameId,
     player_alias_id: event.playerAliasId,
     dev_build: event.devBuild,
-    created_at: formatDateForClickHouse(new Date(), true)
+    created_at: formatDateForClickHouse(new Date())
   }
 }
 

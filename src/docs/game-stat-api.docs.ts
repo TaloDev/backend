@@ -48,6 +48,75 @@ const GameStatAPIDocs: APIDocs<GameStatAPIService> = {
         }
       }
     ]
+  },
+  history: {
+    description: 'Get a history of changes to a player stat',
+    params: {
+      headers: {
+        'x-talo-player': 'The ID of the player'
+      },
+      route: {
+        internalName: 'The internal name of the stat'
+      },
+      query: {
+        page: 'The current pagination index (starting at 0)',
+        startDate: 'A UTC Date (YYYY-MM-DD), DateTime (ISO 8601) or millisecond timestamp',
+        endDate: 'A UTC Date (YYYY-MM-DD), DateTime (ISO 8601) or millisecond timestamp'
+      }
+    },
+    samples: [
+      {
+        title: 'Sample response',
+        sample: {
+          history: [
+            {
+              change: 2,
+              value: 1064,
+              globalValue: 1064,
+              createdAt: '2025-03-19T00:56:40.019Z'
+            },
+            {
+              change: 1,
+              value: 1062,
+              globalValue: 1062,
+              createdAt: '2025-03-19T00:56:36.774Z'
+            },
+            {
+              change: 18,
+              value: 1061,
+              globalValue: 1061,
+              createdAt: '2025-03-19T00:55:27.003Z'
+            },
+            {
+              change: 15,
+              value: 1043,
+              globalValue: 1043,
+              createdAt: '2025-03-19T00:55:21.252Z'
+            },
+            {
+              change: 15,
+              value: 1028,
+              globalValue: 1028,
+              createdAt: '2025-03-18T21:17:08.516Z'
+            }
+          ],
+          count: 5,
+          itemsPerPage: 50,
+          isLastPage: true
+        }
+      },
+      {
+        title: 'Sample request with filtering',
+        sample: {
+          url: '/v1/game-stats/gold-collected/history?page=0&startDate=2025-03-19&endDate=2025-03-19T00%3A56%3A00.000Z',
+          query: {
+            page: '0',
+            startDate: '2025-03-19',
+            endDate: '2025-03-19T00:56:00.000Z'
+          }
+        }
+      }
+    ]
   }
 }
 

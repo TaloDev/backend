@@ -46,7 +46,10 @@ export async function runClickHouseMigrations(clickhouse: ClickHouseClient) {
 
   for (const migration of pendingMigrations) {
     console.info(`Processing '${migration.name}'`)
-    await clickhouse.query({ query: migration.sql })
+    const queries = migration.sql.split(';').filter((query) => query.trim() !== '')
+    for (const query of queries) {
+      await clickhouse.query({ query })
+    }
     await clickhouse.insert({
       table: 'migrations',
       values: [{

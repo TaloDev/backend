@@ -40,11 +40,12 @@ describe('Game stats API service - history', () => {
         await global.em.persistAndFlush(playerStat)
 
         stat.globalValue += change
-        const snapshot = new PlayerGameStatSnapshot(playerStat)
+        const snapshot = new PlayerGameStatSnapshot()
+        snapshot.construct(playerStat)
         snapshot.change = change
         snapshot.createdAt = addMinutes(snapshot.createdAt, idx)
 
-        return snapshot.getInsertableData()
+        return snapshot.toInsertable()
       })),
       format: 'JSONEachRow'
     })
@@ -128,10 +129,11 @@ describe('Game stats API service - history', () => {
     await global.clickhouse.insert({
       table: 'player_game_stat_snapshots',
       values: dates.map((date) => {
-        const snapshot = new PlayerGameStatSnapshot(playerStat)
+        const snapshot = new PlayerGameStatSnapshot()
+        snapshot.construct(playerStat)
         snapshot.change = randNumber({ min: 1, max: 999 })
         snapshot.createdAt = date
-        return snapshot.getInsertableData()
+        return snapshot.toInsertable()
       }),
       format: 'JSONEachRow'
     })
@@ -165,10 +167,11 @@ describe('Game stats API service - history', () => {
     await global.clickhouse.insert({
       table: 'player_game_stat_snapshots',
       values: dates.map((date) => {
-        const snapshot = new PlayerGameStatSnapshot(playerStat)
+        const snapshot = new PlayerGameStatSnapshot()
+        snapshot.construct(playerStat)
         snapshot.change = randNumber({ min: 1, max: 999 })
         snapshot.createdAt = date
-        return snapshot.getInsertableData()
+        return snapshot.toInsertable()
       }),
       format: 'JSONEachRow'
     })
@@ -202,10 +205,11 @@ describe('Game stats API service - history', () => {
     await global.clickhouse.insert({
       table: 'player_game_stat_snapshots',
       values: dates.map((date) => {
-        const snapshot = new PlayerGameStatSnapshot(playerStat)
+        const snapshot = new PlayerGameStatSnapshot()
+        snapshot.construct(playerStat)
         snapshot.change = randNumber({ min: 1, max: 999 })
         snapshot.createdAt = date
-        return snapshot.getInsertableData()
+        return snapshot.toInsertable()
       }),
       format: 'JSONEachRow'
     })

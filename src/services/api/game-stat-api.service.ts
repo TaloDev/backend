@@ -8,7 +8,7 @@ import triggerIntegrations from '../../lib/integrations/triggerIntegrations'
 import GameStatAPIPolicy from '../../policies/api/game-stat-api.policy'
 import APIService from './api-service'
 import { ClickHouseClient } from '@clickhouse/client'
-import PlayerGameStatSnapshot, { ClickHousePlayerGameStatSnapshot, createPlayerGameStatSnapshotFromClickHouse } from '../../entities/player-game-stat-snapshot'
+import PlayerGameStatSnapshot, { ClickHousePlayerGameStatSnapshot } from '../../entities/player-game-stat-snapshot'
 import Player from '../../entities/player'
 import { buildDateValidationSchema } from '../../lib/dates/dateValidationSchema'
 import { formatDateForClickHouse } from '../../lib/clickhouse/formatDateTime'
@@ -64,12 +64,13 @@ export default class GameStatAPIService extends APIService {
     playerStat.value += change
     if (stat.global) stat.globalValue += change
 
-    const snapshot = new PlayerGameStatSnapshot(playerStat)
+    const snapshot = new PlayerGameStatSnapshot()
+    snapshot.construct(playerStat)
     snapshot.change = change
 
     await clickhouse.insert({
       table: 'player_game_stat_snapshots',
-      values: [snapshot.getInsertableData()],
+      values: [snapshot.toInsertable()],
       format: 'JSONEachRow'
     })
 
@@ -137,7 +138,7 @@ export default class GameStatAPIService extends APIService {
     }).then((res) => res.json<ClickHousePlayerGameStatSnapshot & { count: string }>())
 
     const count = Number(snapshots[0]?.count ?? 0)
-    const history = await Promise.all(snapshots.map((snapshot) => createPlayerGameStatSnapshotFromClickHouse(em, snapshot)))
+    const history = await Promise.all(snapshots.map((snapshot) => new PlayerGameStatSnapshot().hydrate(em, snapshot)))
 
     return {
       status: 200,

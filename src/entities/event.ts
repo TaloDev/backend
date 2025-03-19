@@ -6,6 +6,7 @@ import Prop from './prop'
 import { formatDateForClickHouse } from '../lib/clickhouse/formatDateTime'
 import { EntityManager } from '@mikro-orm/mysql'
 import { ClickHouseClient } from '@clickhouse/client'
+import ClickHouseEntity from '../lib/clickhouse/clickhouse-entity'
 
 const eventMetaProps = ['META_OS', 'META_GAME_VERSION', 'META_WINDOW_MODE', 'META_SCREEN_WIDTH', 'META_SCREEN_HEIGHT']
 
@@ -25,19 +26,20 @@ export type ClickHouseEventProp = {
   prop_value: string
 }
 
-export default class Event {
-  id: string
-  name: string
+export default class Event extends ClickHouseEntity<ClickHouseEvent, [ClickHouseClient, boolean], [string, Game]> {
+  id: string = v4()
+  name!: string
   props: Prop[] = []
-  game: Game
+  game!: Game
   playerAlias!: PlayerAlias
   createdAt!: Date
   updatedAt: Date = new Date()
 
-  constructor(name: string, game: Game) {
-    this.id = v4()
+  construct(name: string, game: Game): this {
     this.name = name
     this.game = game
+
+    return this
   }
 
   setProps(props: Prop[]) {
@@ -57,7 +59,7 @@ export default class Event {
     })
   }
 
-  getInsertableData(): ClickHouseEvent {
+  toInsertable(): ClickHouseEvent {
     return {
       id: this.id,
       name: this.name,
@@ -77,6 +79,28 @@ export default class Event {
     }))
   }
 
+  async hydrate(em: EntityManager, data: ClickHouseEvent, clickhouse: ClickHouseClient, loadProps: boolean = false): Promise<this> {
+    const game = await em.getRepository(Game).findOneOrFail(data.game_id)
+    const playerAlias = await em.getRepository(PlayerAlias).findOneOrFail(data.player_alias_id, { populate: ['player'] })
+
+    this.construct(data.name, game)
+    this.id = data.id
+    this.playerAlias = playerAlias
+    this.createdAt = new Date(data.created_at)
+    this.updatedAt = new Date(data.updated_at)
+
+    if (loadProps) {
+      const props = await clickhouse.query({
+        query: `SELECT * FROM event_props WHERE event_id = '${data.id}'`,
+        format: 'JSONEachRow'
+      }).then((res) => res.json<ClickHouseEventProp>())
+
+      this.props = props.map((prop) => new Prop(prop.prop_key, prop.prop_value))
+    }
+
+    return this
+  }
+
   toJSON() {
     return {
       id: this.id,
@@ -87,31 +111,4 @@ export default class Event {
       createdAt: this.createdAt
     }
   }
-}
-
-export async function createEventFromClickHouse(
-  clickhouse: ClickHouseClient,
-  em: EntityManager,
-  data: ClickHouseEvent,
-  loadProps = false
-): Promise<Event> {
-  const game = await em.getRepository(Game).findOneOrFail(data.game_id)
-  const playerAlias = await em.getRepository(PlayerAlias).findOneOrFail(data.player_alias_id, { populate: ['player'] })
-
-  const event = new Event(data.name, game)
-  event.id = data.id
-  event.playerAlias = playerAlias
-  event.createdAt = new Date(data.created_at)
-  event.updatedAt = new Date(data.updated_at)
-
-  if (loadProps) {
-    const props = await clickhouse.query({
-      query: `SELECT * FROM event_props WHERE event_id = '${data.id}'`,
-      format: 'JSONEachRow'
-    }).then((res) => res.json<ClickHouseEventProp>())
-
-    event.props = props.map((prop) => new Prop(prop.prop_key, prop.prop_value))
-  }
-
-  return event
 }

@@ -9,7 +9,6 @@ import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
 import Game from '../../../../src/entities/game'
 import { subHours } from 'date-fns'
 import { ClickHousePlayerGameStatSnapshot } from '../../../../src/entities/player-game-stat-snapshot'
-import { ClickHouseClient } from '@clickhouse/client'
 
 describe('Game stats API service - put', () => {
   const createStat = async (game: Game, props: Partial<GameStat>) => {
@@ -266,7 +265,7 @@ describe('Game stats API service - put', () => {
 
     let snapshots: ClickHousePlayerGameStatSnapshot[] = []
     await vi.waitUntil(async () => {
-      snapshots = await (<ClickHouseClient>global.clickhouse).query({
+      snapshots = await global.clickhouse.query({
         query: `SELECT * FROM player_game_stat_snapshots WHERE game_stat_id = ${stat.id} AND player_id = '${player.id}'`,
         format: 'JSONEachRow'
       }).then((res) => res.json<ClickHousePlayerGameStatSnapshot>())

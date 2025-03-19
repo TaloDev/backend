@@ -8,7 +8,6 @@ import LeaderboardEntryFactory from '../../fixtures/LeaderboardEntryFactory'
 import GameStatFactory from '../../fixtures/GameStatFactory'
 import PlayerGameStatFactory from '../../fixtures/PlayerGameStatFactory'
 import createOrganisationAndGame from '../../utils/createOrganisationAndGame'
-import { ClickHouseClient } from '@clickhouse/client'
 import GameFeedbackFactory from '../../fixtures/GameFeedbackFactory'
 
 describe('Data export service - included data', () => {
@@ -22,9 +21,9 @@ describe('Data export service - included data', () => {
     const event = await new EventFactory([player]).one()
     const dataExport = await new DataExportFactory(game).one()
     await (<EntityManager>global.em).persistAndFlush(dataExport)
-    await (<ClickHouseClient>global.clickhouse).insert({
+    await global.clickhouse.insert({
       table: 'events',
-      values: [event.getInsertableData()],
+      values: [event.toInsertable()],
       format: 'JSONEachRow'
     })
 
@@ -42,9 +41,9 @@ describe('Data export service - included data', () => {
     const event = await new EventFactory([player]).one()
     const dataExport = await new DataExportFactory(game).one()
     await (<EntityManager>global.em).persistAndFlush(dataExport)
-    await (<ClickHouseClient>global.clickhouse).insert({
+    await global.clickhouse.insert({
       table: 'events',
-      values: [event.getInsertableData()],
+      values: [event.toInsertable()],
       format: 'JSONEachRow'
     })
 

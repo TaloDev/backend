@@ -135,7 +135,7 @@ import ormConfig from '../src/config/mikro-orm.config'
   const clickhouse = createClickHouseClient()
   await clickhouse.insert({
     table: 'events',
-    values: eventsThisMonth.map((event) => event.getInsertableData()),
+    values: eventsThisMonth.map((event) => event.toInsertable()),
     format: 'JSONEachRow'
   })
   await clickhouse.close()

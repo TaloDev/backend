@@ -4,6 +4,7 @@ import GameStat from './game-stat'
 import Player from './player'
 import PlayerGameStat from './player-game-stat'
 import { EntityManager } from '@mikro-orm/mysql'
+import ClickHouseEntity from '../lib/clickhouse/clickhouse-entity'
 
 export type ClickHousePlayerGameStatSnapshot = {
   id: string
@@ -15,24 +16,26 @@ export type ClickHousePlayerGameStatSnapshot = {
   created_at: string
 }
 
-export default class PlayerGameStatSnapshot {
+export default class PlayerGameStatSnapshot extends ClickHouseEntity<ClickHousePlayerGameStatSnapshot, [], [PlayerGameStat]> {
   id: string = v4()
-  player: Player
-  stat: GameStat
+  player!: Player
+  stat!: GameStat
   change: number = 0
-  value: number
-  globalValue: number
+  value!: number
+  globalValue!: number
   createdAt: Date = new Date()
 
-  constructor(playerStat: PlayerGameStat) {
+  construct(playerStat: PlayerGameStat): this {
     this.player = playerStat.player
     this.stat = playerStat.stat
 
     this.value = playerStat.value
     this.globalValue = this.stat.globalValue
+
+    return this
   }
 
-  getInsertableData(): ClickHousePlayerGameStatSnapshot {
+  toInsertable(): ClickHousePlayerGameStatSnapshot {
     return {
       id: this.id,
       player_id: this.player.id,
@@ -44,6 +47,19 @@ export default class PlayerGameStatSnapshot {
     }
   }
 
+  async hydrate(em: EntityManager, data: ClickHousePlayerGameStatSnapshot): Promise<this> {
+    const playerStat = await em.findOneOrFail(PlayerGameStat, { player: data.player_id, stat: data.game_stat_id })
+
+    this.construct(playerStat)
+    this.id = data.id
+    this.change = data.change
+    this.value = data.value
+    this.globalValue = data.global_value
+    this.createdAt = new Date(data.created_at)
+
+    return this
+  }
+
   toJSON() {
     return {
       change: this.change,
@@ -52,20 +68,4 @@ export default class PlayerGameStatSnapshot {
       createdAt: this.createdAt
     }
   }
-}
-
-export async function createPlayerGameStatSnapshotFromClickHouse(
-  em: EntityManager,
-  data: ClickHousePlayerGameStatSnapshot
-): Promise<PlayerGameStatSnapshot> {
-  const playerStat = await em.findOneOrFail(PlayerGameStat, { player: data.player_id, stat: data.game_stat_id })
-
-  const snapshot = new PlayerGameStatSnapshot(playerStat)
-  snapshot.id = data.id
-  snapshot.change = data.change
-  snapshot.value = data.value
-  snapshot.globalValue = data.global_value
-  snapshot.createdAt = new Date(data.created_at)
-
-  return snapshot
 }

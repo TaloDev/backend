@@ -35,5 +35,19 @@
       }
     }],
     "@typescript-eslint/consistent-type-definitions": ["error", "type"]
-  }
+  },
+  "overrides": [
+    {
+      "files": ["src/**/*.ts"],
+      "rules": {
+        "no-restricted-globals": [
+          "error",
+          "app",
+          "ctx",
+          "em",
+          "clickhouse"
+        ]
+      }
+    }
+  ]
 }

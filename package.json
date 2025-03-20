@@ -53,7 +53,7 @@
     "vitest": "^1.5.2"
   },
   "dependencies": {
-    "@clickhouse/client": "^1.4.1",
+    "@clickhouse/client": "^1.11.0",
     "@dinero.js/currencies": "^2.0.0-alpha.14",
     "@koa/cors": "^5.0.0",
     "@mikro-orm/core": "^6.4.10",

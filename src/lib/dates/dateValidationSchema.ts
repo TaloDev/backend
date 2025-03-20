@@ -1,35 +1,38 @@
 import { isBefore, isSameDay, isValid } from 'date-fns'
 import { Request, Validatable, ValidationCondition } from 'koa-clay'
 
-const schema: Validatable = {
-  startDate: {
-    required: true,
-    validation: async (val: unknown, req: Request): Promise<ValidationCondition[]> => {
-      const startDate = new Date(val as string)
-      const endDate = new Date(req.ctx.query.endDate as string)
+export function buildDateValidationSchema(startDateRequired: boolean, endDateRequired: boolean) {
+  const schema: Validatable = {
+    startDate: {
+      required: startDateRequired,
+      validation: async (val: unknown, req: Request): Promise<ValidationCondition[]> => {
+        const startDate = new Date(val as string | number)
+        const endDate = new Date(req.ctx.query.endDate as string | number)
 
-      return [
+        return [
+          {
+            check: startDateRequired ? isValid(startDate) : true,
+            error: 'Invalid start date, please use YYYY-MM-DD or a timestamp',
+            break: true
+          },
+          {
+            check: isValid(endDate) ? (isBefore(startDate, endDate) || isSameDay(startDate, endDate)) : true,
+            error: 'Invalid start date, it should be before the end date'
+          }
+        ]
+      }
+    },
+    endDate: {
+      required: endDateRequired,
+      validation: async (val: unknown): Promise<ValidationCondition[]> => [
         {
-          check: isValid(startDate),
-          error: 'Invalid start date, please use YYYY-MM-DD or a timestamp',
-          break: true
-        },
-        {
-          check: isValid(endDate) ? (isBefore(startDate, endDate) || isSameDay(startDate, endDate)) : true,
-          error: 'Invalid start date, it should be before the end date'
+          check: endDateRequired ? isValid(new Date(val as string | number)) : true,
+          error: 'Invalid end date, please use YYYY-MM-DD or a timestamp'
         }
       ]
     }
-  },
-  endDate: {
-    required: true,
-    validation: async (val: unknown): Promise<ValidationCondition[]> => [
-      {
-        check: isValid(new Date(val as string)),
-        error: 'Invalid end date, please use YYYY-MM-DD or a timestamp'
-      }
-    ]
   }
+  return schema
 }
 
-export default schema
+export default buildDateValidationSchema(true, true)

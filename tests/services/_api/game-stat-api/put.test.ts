@@ -8,6 +8,7 @@ import PlayerGameStatFactory from '../../../fixtures/PlayerGameStatFactory'
 import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
 import Game from '../../../../src/entities/game'
 import { subHours } from 'date-fns'
+import { ClickHousePlayerGameStatSnapshot } from '../../../../src/entities/player-game-stat-snapshot'
 
 describe('Game stats API service - put', () => {
   const createStat = async (game: Game, props: Partial<GameStat>) => {
@@ -247,5 +248,32 @@ describe('Game stats API service - put', () => {
       .expect(200)
 
     expect(res.body.playerStat.createdAt).toBe(continuityDate.toISOString())
+  })
+
+  it('should create a player game stat snapshot', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_STATS])
+    const stat = await createStat(apiKey.game, { maxValue: 999, maxChange: 99, defaultValue: 0, global: true, globalValue: 0 })
+    const player = await new PlayerFactory([apiKey.game]).one()
+    await (<EntityManager>global.em).persistAndFlush(player)
+
+    await request(global.app)
+      .put(`/v1/game-stats/${stat.internalName}`)
+      .send({ change: 50 })
+      .auth(token, { type: 'bearer' })
+      .set('x-talo-player', player.id)
+      .expect(200)
+
+    let snapshots: ClickHousePlayerGameStatSnapshot[] = []
+    await vi.waitUntil(async () => {
+      snapshots = await global.clickhouse.query({
+        query: `SELECT * FROM player_game_stat_snapshots WHERE game_stat_id = ${stat.id} AND player_id = '${player.id}'`,
+        format: 'JSONEachRow'
+      }).then((res) => res.json<ClickHousePlayerGameStatSnapshot>())
+      return snapshots.length === 1
+    })
+
+    expect(snapshots[0].change).toBe(50)
+    expect(snapshots[0].value).toBe(50)
+    expect(snapshots[0].global_value).toBe(50)
   })
 })

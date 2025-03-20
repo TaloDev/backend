@@ -9,7 +9,6 @@ import GameFactory from '../../../fixtures/GameFactory'
 import { sub } from 'date-fns'
 import randomDate from '../../../../src/lib/dates/randomDate'
 import { formatDateForClickHouse } from '../../../../src/lib/clickhouse/formatDateTime'
-import { ClickHouseClient } from '@clickhouse/client'
 
 describe('Demo service - post', () => {
   let demoOrg: Organisation
@@ -39,9 +38,9 @@ describe('Demo service - post', () => {
     const players = await new PlayerFactory([game]).many(2)
     await (<EntityManager>global.em).persistAndFlush(players)
 
-    const date = formatDateForClickHouse(sub(new Date(), { months: 1 }))
+    const date = formatDateForClickHouse(sub(new Date(), { months: 1 }), false)
 
-    let eventsThisMonth = await (<ClickHouseClient>global.clickhouse).query({
+    let eventsThisMonth = await global.clickhouse.query({
       query: `SELECT count() as count FROM events WHERE game_id = ${game.id} AND created_at >= '${date}'`,
       format: 'JSONEachRow'
     }).then((res) => res.json<{ count: string }>())
@@ -52,9 +51,9 @@ describe('Demo service - post', () => {
     const randomEvents = await new EventFactory(players).state(() => ({
       createdAt: randomDate(sub(new Date(), { years: 1 }), sub(new Date(), { months: 2 }))
     })).many(20)
-    await (<ClickHouseClient>global.clickhouse).insert({
+    await global.clickhouse.insert({
       table: 'events',
-      values: randomEvents.map((event) => event.getInsertableData()),
+      values: randomEvents.map((event) => event.toInsertable()),
       format: 'JSONEachRow'
     })
 
@@ -62,7 +61,7 @@ describe('Demo service - post', () => {
       .post('/public/demo')
       .expect(200)
 
-    eventsThisMonth = await (<ClickHouseClient>global.clickhouse).query({
+    eventsThisMonth = await global.clickhouse.query({
       query: `SELECT count() as count FROM events WHERE game_id = ${game.id} AND created_at >= '${date}'`,
       format: 'JSONEachRow'
     }).then((res) => res.json<{ count: string }>())

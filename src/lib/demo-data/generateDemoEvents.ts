@@ -79,7 +79,7 @@ export function generateEventData(date: Date): Partial<Event> {
 }
 
 async function getEventCount(clickhouse: ClickHouseClient, game: Game, startDate: Date): Promise<number> {
-  const startDateFormatted = formatDateForClickHouse(startDate)
+  const startDateFormatted = formatDateForClickHouse(startDate, false)
 
   const query = `
     SELECT count() as count
@@ -143,7 +143,7 @@ export async function generateDemoEvents(req: Request): Promise<void> {
           prev[demoEvent.name] = numToGenerate
 
           for (let i = 0; i < numToGenerate; i++) {
-            eventsToInsert.push(new Event(demoEvent.name, game))
+            eventsToInsert.push(new Event().construct(demoEvent.name, game))
             eventsToInsert.at(-1)!.setProps(getDemoEventProps(demoEvent))
             eventsToInsert.at(-1)!.playerAlias = rand(playerAliases)
             eventsToInsert.at(-1)!.createdAt = randomDate(startOfDay(day), endOfDay(day))
@@ -153,7 +153,7 @@ export async function generateDemoEvents(req: Request): Promise<void> {
 
       await clickhouse.insert({
         table: 'events',
-        values: eventsToInsert.map((event) => event.getInsertableData()),
+        values: eventsToInsert.map((event) => event.toInsertable()),
         format: 'JSONEachRow'
       })
       await clickhouse.insert({

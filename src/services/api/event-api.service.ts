@@ -49,14 +49,15 @@ export default class EventAPIService extends APIService {
       }
 
       if (errors[i].length === 0) {
-        const event = new Event(item.name, player.game)
+        const event = new Event()
+        event.construct(item.name, player.game)
         event.playerAlias = playerAlias
         event.createdAt = new Date(item.timestamp)
 
         try {
           await clickhouse.insert({
             table: 'events',
-            values: [event.getInsertableData()],
+            values: [event.toInsertable()],
             format: 'JSONEachRow'
           })
         /* v8 ignore next 4 */

@@ -5,7 +5,6 @@ import PlayerFactory from '../../fixtures/PlayerFactory'
 import { addDays, sub } from 'date-fns'
 import createUserAndToken from '../../utils/createUserAndToken'
 import createOrganisationAndGame from '../../utils/createOrganisationAndGame'
-import { ClickHouseClient } from '@clickhouse/client'
 
 describe('Event service - get', () => {
   it('should return a list of events', async () => {
@@ -21,9 +20,9 @@ describe('Event service - get', () => {
     })).many(2)
 
     await (<EntityManager>global.em).persistAndFlush(player)
-    await (<ClickHouseClient>global.clickhouse).insert({
+    await global.clickhouse.insert({
       table: 'events',
-      values: events.map((event) => event.getInsertableData()),
+      values: events.map((event) => event.toInsertable()),
       format: 'JSONEachRow'
     })
 
@@ -164,14 +163,14 @@ describe('Event service - get', () => {
     })).one()
 
     await (<EntityManager>global.em).persistAndFlush(player)
-    await (<ClickHouseClient>global.clickhouse).insert({
+    await global.clickhouse.insert({
       table: 'events',
       values: [
         firstEvent,
         ...moreEvents,
         ...evenMoreEvents,
         lastEvent
-      ].map((event) => event.getInsertableData()),
+      ].map((event) => event.toInsertable()),
       format: 'JSONEachRow'
     })
 
@@ -202,9 +201,9 @@ describe('Event service - get', () => {
     })).one()
 
     await (<EntityManager>global.em).persistAndFlush(player)
-    await (<ClickHouseClient>global.clickhouse).insert({
+    await global.clickhouse.insert({
       table: 'events',
-      values: [event.getInsertableData()],
+      values: [event.toInsertable()],
       format: 'JSONEachRow'
     })
 
@@ -247,9 +246,9 @@ describe('Event service - get', () => {
     const player = await new PlayerFactory([game]).one()
     const events = await new EventFactory([player]).state(() => ({ name: 'Talk to NPC', createdAt: new Date() })).many(3)
     await (<EntityManager>global.em).persistAndFlush(player)
-    await (<ClickHouseClient>global.clickhouse).insert({
+    await global.clickhouse.insert({
       table: 'events',
-      values: events.map((event) => event.getInsertableData()),
+      values: events.map((event) => event.toInsertable()),
       format: 'JSONEachRow'
     })
 
@@ -269,9 +268,9 @@ describe('Event service - get', () => {
     const player = await new PlayerFactory([game]).devBuild().one()
     const events = await new EventFactory([player]).state(() => ({ name: 'Talk to NPC', createdAt: new Date() })).many(3)
     await (<EntityManager>global.em).persistAndFlush(player)
-    await (<ClickHouseClient>global.clickhouse).insert({
+    await global.clickhouse.insert({
       table: 'events',
-      values: events.map((event) => event.getInsertableData()),
+      values: events.map((event) => event.toInsertable()),
       format: 'JSONEachRow'
     })
 
@@ -291,9 +290,9 @@ describe('Event service - get', () => {
     const player = await new PlayerFactory([game]).devBuild().one()
     const events = await new EventFactory([player]).state(() => ({ name: 'Talk to NPC', createdAt: new Date() })).many(3)
     await (<EntityManager>global.em).persistAndFlush(player)
-    await (<ClickHouseClient>global.clickhouse).insert({
+    await global.clickhouse.insert({
       table: 'events',
-      values: events.map((event) => event.getInsertableData()),
+      values: events.map((event) => event.toInsertable()),
       format: 'JSONEachRow'
     })
 

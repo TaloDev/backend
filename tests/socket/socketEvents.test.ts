@@ -1,5 +1,4 @@
 import createAPIKeyAndToken from '../utils/createAPIKeyAndToken'
-import { ClickHouseClient } from '@clickhouse/client'
 import { ClickHouseSocketEvent } from '../../src/socket/socketEvent'
 import createSocketIdentifyMessage from '../utils/createSocketIdentifyMessage'
 import { APIKeyScope } from '../../src/entities/api-key'
@@ -23,7 +22,7 @@ describe('Socket events', () => {
 
     let events: ClickHouseSocketEvent[] = []
     await vi.waitUntil(async () => {
-      events = await (<ClickHouseClient>global.clickhouse).query({
+      events = await global.clickhouse.query({
         query: `SELECT * FROM socket_events WHERE game_id = ${apiKey.game.id} ORDER BY created_at`,
         format: 'JSONEachRow'
       }).then((res) => res.json<ClickHouseSocketEvent>())
@@ -61,7 +60,7 @@ describe('Socket events', () => {
 
     let events: ClickHouseSocketEvent[] = []
     await vi.waitUntil(async () => {
-      events = await (<ClickHouseClient>global.clickhouse).query({
+      events = await global.clickhouse.query({
         query: `SELECT * FROM socket_events WHERE game_id = ${player.game.id} ORDER BY created_at`,
         format: 'JSONEachRow'
       }).then((res) => res.json<ClickHouseSocketEvent>())
@@ -134,7 +133,7 @@ describe('Socket events', () => {
 
     let events: ClickHouseSocketEvent[] = []
     await vi.waitUntil(async () => {
-      events = await (<ClickHouseClient>global.clickhouse).query({
+      events = await global.clickhouse.query({
         query: `SELECT * FROM socket_events WHERE game_id = ${player.game.id} ORDER BY created_at`,
         format: 'JSONEachRow'
       }).then((res) => res.json<ClickHouseSocketEvent>())
@@ -185,7 +184,7 @@ describe('Socket events', () => {
 
     await createTestSocket(`/?ticket=${ticket}`, async () => {})
 
-    const events = await (<ClickHouseClient>global.clickhouse).query({
+    const events = await global.clickhouse.query({
       query: `SELECT * FROM socket_events WHERE game_id = ${apiKey.game.id} ORDER BY created_at`,
       format: 'JSONEachRow'
     }).then((res) => res.json<ClickHouseSocketEvent>())

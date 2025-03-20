@@ -5,7 +5,7 @@ import Player from '../../entities/player'
 import Policy from '../policy'
 
 export default class GameStatAPIPolicy extends Policy {
-  async put(req: Request): Promise<PolicyResponse> {
+  async getStat(req: Request): Promise<GameStat | null> {
     const { internalName } = req.params
 
     const key = this.getAPIKey()
@@ -15,7 +15,11 @@ export default class GameStatAPIPolicy extends Policy {
     })
 
     this.ctx.state.stat = stat
-    if (!stat) return new PolicyDenial({ message: 'Stat not found' }, 404)
+    return stat
+  }
+
+  async getPlayer(): Promise<Player | null> {
+    const key = this.getAPIKey()
 
     const player = await this.em.getRepository(Player).findOne({
       id: this.ctx.state.currentPlayerId,
@@ -23,8 +27,22 @@ export default class GameStatAPIPolicy extends Policy {
     })
 
     this.ctx.state.player = player
+    return player
+  }
+
+  async put(req: Request): Promise<PolicyResponse> {
+    const [stat, player] = await Promise.all([this.getStat(req), this.getPlayer()])
+    if (!stat) return new PolicyDenial({ message: 'Stat not found' }, 404)
     if (!player) return new PolicyDenial({ message: 'Player not found' }, 404)
 
-    return await this.hasScope(APIKeyScope.WRITE_GAME_STATS)
+    return this.hasScope(APIKeyScope.WRITE_GAME_STATS)
+  }
+
+  async history(req: Request): Promise<PolicyResponse> {
+    const [stat, player] = await Promise.all([this.getStat(req), this.getPlayer()])
+    if (!stat) return new PolicyDenial({ message: 'Stat not found' }, 404)
+    if (!player) return new PolicyDenial({ message: 'Player not found' }, 404)
+
+    return this.hasScope(APIKeyScope.READ_GAME_STATS)
   }
 }

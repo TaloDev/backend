@@ -8,7 +8,6 @@ import PlayerAuthFactory from '../../../fixtures/PlayerAuthFactory'
 import PlayerAuthActivity, { PlayerAuthActivityType } from '../../../../src/entities/player-auth-activity'
 import PlayerAlias from '../../../../src/entities/player-alias'
 import EventFactory from '../../../fixtures/EventFactory'
-import { ClickHouseClient } from '@clickhouse/client'
 import PlayerPresenceFactory from '../../../fixtures/PlayerPresenceFactory'
 
 describe('Player auth API service - delete', () => {
@@ -74,9 +73,9 @@ describe('Player auth API service - delete', () => {
     await em.flush()
 
     const events = await new EventFactory([player]).many(3)
-    await (<ClickHouseClient>global.clickhouse).insert({
+    await global.clickhouse.insert({
       table: 'events',
-      values: events.map((event) => event.getInsertableData()),
+      values: events.map((event) => event.toInsertable()),
       format: 'JSONEachRow'
     })
 
@@ -90,7 +89,7 @@ describe('Player auth API service - delete', () => {
       .expect(204)
 
     await vi.waitUntil(async () => {
-      const count = await (<ClickHouseClient>global.clickhouse).query({
+      const count = await global.clickhouse.query({
         query: `SELECT count() as count FROM events WHERE player_alias_id = ${alias.id}`,
         format: 'JSONEachRow'
       }).then((res) => res.json<{ count: string }>())
@@ -99,7 +98,7 @@ describe('Player auth API service - delete', () => {
       return count === 0
     })
 
-    const updatedEventPropsCount = await (<ClickHouseClient>global.clickhouse).query({
+    const updatedEventPropsCount = await global.clickhouse.query({
       query: 'SELECT count() as count FROM event_props',
       format: 'JSONEachRow'
     }).then((res) => res.json<{ count: string }>())

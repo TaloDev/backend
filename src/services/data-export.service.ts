@@ -2,7 +2,7 @@ import { Collection, FilterQuery, MikroORM, EntityManager } from '@mikro-orm/mys
 import { HasPermission, Service, Request, Response, Route, Validate, ValidationCondition } from 'koa-clay'
 import DataExport, { DataExportAvailableEntities, DataExportStatus } from '../entities/data-export'
 import DataExportPolicy from '../policies/data-export.policy'
-import Event, { ClickHouseEvent, createEventFromClickHouse } from '../entities/event'
+import Event, { ClickHouseEvent } from '../entities/event'
 import AdmZip from 'adm-zip'
 import { get } from 'lodash'
 import Prop from '../entities/prop'
@@ -136,7 +136,7 @@ export default class DataExportService extends Service {
       format: 'JSONEachRow'
     }).then((res) => res.json<ClickHouseEvent>())
 
-    const events = await Promise.all(clickhouseEvents.map((data) => createEventFromClickHouse(clickhouse, em, data)))
+    const events = await Promise.all(clickhouseEvents.map((data) => new Event().hydrate(em, data, clickhouse)))
     await clickhouse.close()
 
     return events

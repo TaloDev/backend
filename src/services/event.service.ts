@@ -41,8 +41,8 @@ export default class EventService extends Service {
 
     const clickhouse: ClickHouseClient = req.ctx.clickhouse
 
-    const startDate = formatDateForClickHouse(new Date(startDateQuery), false)
-    const endDate = formatDateForClickHouse(endOfDay(new Date(endDateQuery)), false)
+    const startDate = formatDateForClickHouse(new Date(startDateQuery))
+    const endDate = formatDateForClickHouse(endOfDay(new Date(endDateQuery)))
 
     let query = `
       SELECT

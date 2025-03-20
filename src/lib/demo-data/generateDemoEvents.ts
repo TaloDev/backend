@@ -79,7 +79,7 @@ export function generateEventData(date: Date): Partial<Event> {
 }
 
 async function getEventCount(clickhouse: ClickHouseClient, game: Game, startDate: Date): Promise<number> {
-  const startDateFormatted = formatDateForClickHouse(startDate, false)
+  const startDateFormatted = formatDateForClickHouse(startDate)
 
   const query = `
     SELECT count() as count

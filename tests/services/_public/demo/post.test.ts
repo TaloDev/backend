@@ -38,7 +38,7 @@ describe('Demo service - post', () => {
     const players = await new PlayerFactory([game]).many(2)
     await (<EntityManager>global.em).persistAndFlush(players)
 
-    const date = formatDateForClickHouse(sub(new Date(), { months: 1 }), false)
+    const date = formatDateForClickHouse(sub(new Date(), { months: 1 }))
 
     let eventsThisMonth = await global.clickhouse.query({
       query: `SELECT count() as count FROM events WHERE game_id = ${game.id} AND created_at >= '${date}'`,

@@ -5,6 +5,7 @@ import { CreateSocketEventsTable } from './003CreateSocketEventsTable'
 import { CreateMigrationsTable } from './000CreateMigrationsTable'
 import { formatDateForClickHouse } from '../../lib/clickhouse/formatDateTime'
 import { CreatePlayerGameStatSnapshotsTable } from './004CreatePlayerGameStatSnapshotsTable'
+import { MigrateEventsTimestampsToDate64 } from './005MigrateEventsTimestampsToDate64'
 
 type ClickHouseMigration = {
   name: string
@@ -27,6 +28,10 @@ const migrations: ClickHouseMigration[] = [
   {
     name: 'CreatePlayerGameStatSnapshotsTable',
     sql: CreatePlayerGameStatSnapshotsTable
+  },
+  {
+    name: 'MigrateEventsTimestampsToDate64',
+    sql: MigrateEventsTimestampsToDate64
   }
 ]
 

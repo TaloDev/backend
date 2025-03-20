@@ -1,4 +1,3 @@
-import { EntityManager } from '@mikro-orm/mysql'
 import request from 'supertest'
 import InviteFactory from '../../../fixtures/InviteFactory'
 import OrganisationFactory from '../../../fixtures/OrganisationFactory'
@@ -7,7 +6,7 @@ describe('Invite public service - get', () => {
   it('should return an existing invite', async () => {
     const organisation = await new OrganisationFactory().one()
     const invite = await new InviteFactory().construct(organisation).one()
-    await (<EntityManager>global.em).persistAndFlush(invite)
+    await global.em.persistAndFlush(invite)
 
     const res = await request(global.app)
       .get(`/public/invites/${invite.token}`)

@@ -1,4 +1,3 @@
-import { EntityManager } from '@mikro-orm/mysql'
 import request from 'supertest'
 import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
 import initStripe from '../../../../src/lib/billing/initStripe'
@@ -27,7 +26,7 @@ describe('Webhook service - subscription updated', () => {
     const subscription = (await stripe.subscriptions.list()).data[0]
 
     organisation.pricingPlan.stripeCustomerId = (subscription.customer as string) + organisation.id
-    await (<EntityManager>global.em).flush()
+    await global.em.flush()
 
     const payload = JSON.stringify({
       id: v4(),
@@ -57,7 +56,7 @@ describe('Webhook service - subscription updated', () => {
       .send(payload)
       .expect(204)
 
-    await (<EntityManager>global.em).refresh(organisation)
+    await global.em.refresh(organisation)
     const price = subscription.items.data[0].price
     expect(organisation.pricingPlan.stripePriceId).toBe(price.id)
     expect(sendMock).toHaveBeenCalledWith(new PlanUpgraded(organisation, price, product).getConfig())
@@ -72,7 +71,7 @@ describe('Webhook service - subscription updated', () => {
 
     organisation.pricingPlan.stripeCustomerId = (subscription.customer as string) + organisation.id
     organisation.pricingPlan.stripePriceId = subscription.items.data[0].price.id
-    await (<EntityManager>global.em).flush()
+    await global.em.flush()
 
     const payload = JSON.stringify({
       id: v4(),
@@ -115,7 +114,7 @@ describe('Webhook service - subscription updated', () => {
     organisation.pricingPlan.stripeCustomerId = (subscription.customer as string) + organisation.id
     organisation.pricingPlan.stripePriceId = subscription.items.data[0].price.id
     organisation.pricingPlan.endDate = addDays(new Date(), 1)
-    await (<EntityManager>global.em).flush()
+    await global.em.flush()
 
     const payload = JSON.stringify({
       id: v4(),
@@ -145,7 +144,7 @@ describe('Webhook service - subscription updated', () => {
       .send(payload)
       .expect(204)
 
-    await (<EntityManager>global.em).refresh(organisation.pricingPlan)
+    await global.em.refresh(organisation.pricingPlan)
     expect(organisation.pricingPlan.endDate).toBe(null)
     expect(sendMock).toHaveBeenCalledWith(new PlanRenewed(organisation).getConfig())
   })
@@ -161,7 +160,7 @@ describe('Webhook service - subscription updated', () => {
     organisation.pricingPlan.stripeCustomerId = (subscription.customer as string) + organisation.id
     organisation.pricingPlan.stripePriceId = subscription.items.data[0].price.id
     organisation.pricingPlan.endDate = null
-    await (<EntityManager>global.em).flush()
+    await global.em.flush()
 
     const payload = JSON.stringify({
       id: v4(),
@@ -191,7 +190,7 @@ describe('Webhook service - subscription updated', () => {
       .send(payload)
       .expect(204)
 
-    await (<EntityManager>global.em).refresh(organisation, { populate: ['pricingPlan'] })
+    await global.em.refresh(organisation, { populate: ['pricingPlan'] })
     expect(organisation.pricingPlan.endDate!.getMilliseconds()).toBe(new Date(subscription.current_period_end * 1000).getMilliseconds())
     expect(sendMock).toHaveBeenCalledWith(new PlanCancelled(organisation).getConfig())
   })
@@ -206,7 +205,7 @@ describe('Webhook service - subscription updated', () => {
     organisation.pricingPlan.stripeCustomerId = (subscription.customer as string) + organisation.id
     organisation.pricingPlan.stripePriceId = subscription.items.data[0].price.id
     organisation.pricingPlan.endDate = null
-    await (<EntityManager>global.em).flush()
+    await global.em.flush()
 
     const payload = JSON.stringify({
       id: v4(),
@@ -236,7 +235,7 @@ describe('Webhook service - subscription updated', () => {
       .send(payload)
       .expect(204)
 
-    await (<EntityManager>global.em).refresh(organisation, { populate: ['pricingPlan'] })
+    await global.em.refresh(organisation, { populate: ['pricingPlan'] })
     expect(organisation.pricingPlan.endDate).toBe(null)
     expect(sendMock).not.toHaveBeenCalled()
   })

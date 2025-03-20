@@ -1,4 +1,4 @@
-import { Collection, EntityManager } from '@mikro-orm/mysql'
+import { Collection } from '@mikro-orm/mysql'
 import request from 'supertest'
 import { APIKeyScope } from '../../../../src/entities/api-key'
 import PlayerFactory from '../../../fixtures/PlayerFactory'
@@ -19,7 +19,7 @@ describe('Player API service - patch', () => {
         new PlayerProp(player, 'zonesExplored', '1')
       ])
     })).one()
-    await (<EntityManager>global.em).persistAndFlush(player)
+    await global.em.persistAndFlush(player)
 
     const res = await request(global.app)
       .patch(`/v1/players/${player.id}`)
@@ -55,7 +55,7 @@ describe('Player API service - patch', () => {
         new PlayerProp(player, 'zonesExplored', '1')
       ])
     })).one()
-    await (<EntityManager>global.em).persistAndFlush(player)
+    await global.em.persistAndFlush(player)
 
     await request(global.app)
       .patch(`/v1/players/${player.id}`)
@@ -95,7 +95,7 @@ describe('Player API service - patch', () => {
 
     const [, otherGame] = await createOrganisationAndGame()
     const otherPlayer = await new PlayerFactory([otherGame]).one()
-    await (<EntityManager>global.em).persistAndFlush(otherPlayer)
+    await global.em.persistAndFlush(otherPlayer)
 
     const res = await request(global.app)
       .patch(`/v1/players/${otherPlayer.id}`)
@@ -128,7 +128,7 @@ describe('Player API service - patch', () => {
         new PlayerProp(player, 'currentLevel', '59')
       ])
     })).one()
-    await (<EntityManager>global.em).persistAndFlush([group, player])
+    await global.em.persistAndFlush([group, player])
 
     const res = await request(global.app)
       .patch(`/v1/players/${player.id}`)
@@ -166,9 +166,9 @@ describe('Player API service - patch', () => {
         new PlayerProp(player, 'currentLevel', '59')
       ])
     })).one()
-    await (<EntityManager>global.em).persistAndFlush([group, player])
+    await global.em.persistAndFlush([group, player])
 
-    await (<EntityManager>global.em).refresh(group, { populate: ['members'] })
+    await global.em.refresh(group, { populate: ['members'] })
     expect(group.members).toHaveLength(1)
 
     const res = await request(global.app)
@@ -197,7 +197,7 @@ describe('Player API service - patch', () => {
         value: randWord()
       }
     ])
-    await (<EntityManager>global.em).persistAndFlush(player)
+    await global.em.persistAndFlush(player)
 
     const res = await request(global.app)
       .patch(`/v1/players/${player.id}`)

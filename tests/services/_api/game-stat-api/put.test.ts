@@ -24,7 +24,7 @@ describe('Game stats API service - put', () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_STATS])
     const stat = await createStat(apiKey.game, { maxValue: 999, maxChange: 99 })
     const player = await new PlayerFactory([apiKey.game]).one()
-    await (<EntityManager>global.em).persistAndFlush(player)
+    await global.em.persistAndFlush(player)
 
     await request(global.app)
       .put(`/v1/game-stats/${stat.internalName}`)
@@ -38,7 +38,7 @@ describe('Game stats API service - put', () => {
     const [apiKey, token] = await createAPIKeyAndToken([])
     const stat = await createStat(apiKey.game, { maxValue: 999, maxChange: 99 })
     const player = await new PlayerFactory([apiKey.game]).one()
-    await (<EntityManager>global.em).persistAndFlush(player)
+    await global.em.persistAndFlush(player)
 
     await request(global.app)
       .put(`/v1/game-stats/${stat.internalName}`)
@@ -52,7 +52,7 @@ describe('Game stats API service - put', () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_STATS])
     const stat = await createStat(apiKey.game, { maxValue: 999, maxChange: 99 })
     const player = await new PlayerFactory([apiKey.game]).one()
-    await (<EntityManager>global.em).persistAndFlush(player)
+    await global.em.persistAndFlush(player)
 
     const res = await request(global.app)
       .put(`/v1/game-stats/${stat.internalName}`)
@@ -68,7 +68,7 @@ describe('Game stats API service - put', () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_STATS])
     const stat = await createStat(apiKey.game, { maxValue: 999, maxChange: 99, minTimeBetweenUpdates: 30 })
     const player = await new PlayerFactory([apiKey.game]).one()
-    await (<EntityManager>global.em).persistAndFlush(player)
+    await global.em.persistAndFlush(player)
 
     await request(global.app)
       .put(`/v1/game-stats/${stat.internalName}`)
@@ -91,7 +91,7 @@ describe('Game stats API service - put', () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_STATS])
     const stat = await createStat(apiKey.game, { maxValue: 999, maxChange: 99 })
     const player = await new PlayerFactory([apiKey.game]).one()
-    await (<EntityManager>global.em).persistAndFlush(player)
+    await global.em.persistAndFlush(player)
 
     const res = await request(global.app)
       .put(`/v1/game-stats/${stat.internalName}`)
@@ -107,7 +107,7 @@ describe('Game stats API service - put', () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_STATS])
     const stat = await createStat(apiKey.game, { maxValue: 999, defaultValue: 1, maxChange: null })
     const player = await new PlayerFactory([apiKey.game]).one()
-    await (<EntityManager>global.em).persistAndFlush(player)
+    await global.em.persistAndFlush(player)
 
     await request(global.app)
       .put(`/v1/game-stats/${stat.internalName}`)
@@ -121,7 +121,7 @@ describe('Game stats API service - put', () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_STATS])
     const stat = await createStat(apiKey.game, { maxValue: 999, maxChange: 99, minValue: -1, defaultValue: 0 })
     const player = await new PlayerFactory([apiKey.game]).one()
-    await (<EntityManager>global.em).persistAndFlush(player)
+    await global.em.persistAndFlush(player)
 
     const res = await request(global.app)
       .put(`/v1/game-stats/${stat.internalName}`)
@@ -137,7 +137,7 @@ describe('Game stats API service - put', () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_STATS])
     const stat = await createStat(apiKey.game, { maxValue: 999, maxChange: 99, minValue: null, defaultValue: 0 })
     const player = await new PlayerFactory([apiKey.game]).one()
-    await (<EntityManager>global.em).persistAndFlush(player)
+    await global.em.persistAndFlush(player)
 
     await request(global.app)
       .put(`/v1/game-stats/${stat.internalName}`)
@@ -151,7 +151,7 @@ describe('Game stats API service - put', () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_STATS])
     const stat = await createStat(apiKey.game, { maxChange: 99, maxValue: 3, defaultValue: 0 })
     const player = await new PlayerFactory([apiKey.game]).one()
-    await (<EntityManager>global.em).persistAndFlush(player)
+    await global.em.persistAndFlush(player)
 
     const res = await request(global.app)
       .put(`/v1/game-stats/${stat.internalName}`)
@@ -167,7 +167,7 @@ describe('Game stats API service - put', () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_STATS])
     const stat = await createStat(apiKey.game, { maxValue: null, maxChange: 99, defaultValue: 0 })
     const player = await new PlayerFactory([apiKey.game]).one()
-    await (<EntityManager>global.em).persistAndFlush(player)
+    await global.em.persistAndFlush(player)
 
     await request(global.app)
       .put(`/v1/game-stats/${stat.internalName}`)
@@ -185,7 +185,7 @@ describe('Game stats API service - put', () => {
       .construct(player, stat)
       .state(() => ({ value: 10, createdAt: new Date(2021, 1, 1) }))
       .one()
-    await (<EntityManager>global.em).persistAndFlush(playerStat)
+    await global.em.persistAndFlush(playerStat)
 
     const res = await request(global.app)
       .put(`/v1/game-stats/${stat.internalName}`)
@@ -201,7 +201,7 @@ describe('Game stats API service - put', () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_STATS])
     const stat = await createStat(apiKey.game, { maxValue: 999, maxChange: 99, defaultValue: 0, global: true, globalValue: 0 })
     const player = await new PlayerFactory([apiKey.game]).one()
-    await (<EntityManager>global.em).persistAndFlush(player)
+    await global.em.persistAndFlush(player)
 
     const res = await request(global.app)
       .put(`/v1/game-stats/${stat.internalName}`)
@@ -212,14 +212,14 @@ describe('Game stats API service - put', () => {
 
     expect(res.body.playerStat.value).toBe(50)
 
-    await (<EntityManager>global.em).refresh(stat)
+    await global.em.refresh(stat)
     expect(stat.globalValue).toBe(50)
   })
 
   it('should not update a non-existent stat', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_STATS])
     const player = await new PlayerFactory([apiKey.game]).one()
-    await (<EntityManager>global.em).persistAndFlush(player)
+    await global.em.persistAndFlush(player)
 
     const res = await request(global.app)
       .put('/v1/game-stats/blah')
@@ -235,7 +235,7 @@ describe('Game stats API service - put', () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_STATS, APIKeyScope.WRITE_CONTINUITY_REQUESTS])
     const stat = await createStat(apiKey.game, { maxValue: 999, maxChange: 99 })
     const player = await new PlayerFactory([apiKey.game]).one()
-    await (<EntityManager>global.em).persistAndFlush(player)
+    await global.em.persistAndFlush(player)
 
     const continuityDate = subHours(new Date(), 1)
 
@@ -254,7 +254,7 @@ describe('Game stats API service - put', () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_STATS])
     const stat = await createStat(apiKey.game, { maxValue: 999, maxChange: 99, defaultValue: 0, global: true, globalValue: 0 })
     const player = await new PlayerFactory([apiKey.game]).one()
-    await (<EntityManager>global.em).persistAndFlush(player)
+    await global.em.persistAndFlush(player)
 
     await request(global.app)
       .put(`/v1/game-stats/${stat.internalName}`)

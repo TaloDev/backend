@@ -1,4 +1,4 @@
-import { Collection, EntityManager } from '@mikro-orm/mysql'
+import { Collection } from '@mikro-orm/mysql'
 import request from 'supertest'
 import PlayerFactory from '../../fixtures/PlayerFactory'
 import PlayerProp from '../../../src/entities/player-prop'
@@ -59,7 +59,7 @@ describe('Player service - index', () => {
 
     const otherPlayers = await new PlayerFactory([game]).many(3)
 
-    await (<EntityManager>global.em).persistAndFlush([...players, ...otherPlayers])
+    await global.em.persistAndFlush([...players, ...otherPlayers])
 
     const res = await request(global.app)
       .get(`/games/${game.id}/players`)
@@ -77,7 +77,7 @@ describe('Player service - index', () => {
     const player = await new PlayerFactory([game]).one()
     const otherPlayers = await new PlayerFactory([game]).many(3)
 
-    await (<EntityManager>global.em).persistAndFlush([player, ...otherPlayers])
+    await global.em.persistAndFlush([player, ...otherPlayers])
 
     const res = await request(global.app)
       .get(`/games/${game.id}/players`)
@@ -95,7 +95,7 @@ describe('Player service - index', () => {
     const player = await new PlayerFactory([game]).state(() => ({ id: 'abc12345678' })).one()
     const otherPlayers = await new PlayerFactory([game]).many(3)
 
-    await (<EntityManager>global.em).persistAndFlush([player, ...otherPlayers])
+    await global.em.persistAndFlush([player, ...otherPlayers])
 
     const res = await request(global.app)
       .get(`/games/${game.id}/players`)
@@ -111,7 +111,7 @@ describe('Player service - index', () => {
     const [token] = await createUserAndToken({ organisation })
 
     const players = await new PlayerFactory([game]).many(36)
-    await (<EntityManager>global.em).persistAndFlush(players)
+    await global.em.persistAndFlush(players)
 
     const page = Math.floor(players.length / 25)
 
@@ -131,7 +131,7 @@ describe('Player service - index', () => {
     const [token] = await createUserAndToken({ organisation })
 
     const players = await new PlayerFactory([game]).devBuild().many(5)
-    await (<EntityManager>global.em).persistAndFlush(players)
+    await global.em.persistAndFlush(players)
 
     const res = await request(global.app)
       .get(`/games/${game.id}/players`)
@@ -147,7 +147,7 @@ describe('Player service - index', () => {
     const [token] = await createUserAndToken({ organisation })
 
     const players = await new PlayerFactory([game]).devBuild().many(5)
-    await (<EntityManager>global.em).persistAndFlush(players)
+    await global.em.persistAndFlush(players)
 
     const res = await request(global.app)
       .get(`/games/${game.id}/players`)
@@ -171,7 +171,7 @@ describe('Player service - index', () => {
     dateRule.operands = ['2023-01-01']
 
     const group = await new PlayerGroupFactory().construct(game).state(() => ({ rules: [dateRule] })).one()
-    await (<EntityManager>global.em).persistAndFlush([player, ...otherPlayers, group])
+    await global.em.persistAndFlush([player, ...otherPlayers, group])
 
     const res = await request(global.app)
       .get(`/games/${game.id}/players`)
@@ -192,7 +192,7 @@ describe('Player service - index', () => {
     const channel = await new GameChannelFactory(game).one()
     channel.members.add(player.aliases[0])
 
-    await (<EntityManager>global.em).persistAndFlush([player, ...otherPlayers, channel])
+    await global.em.persistAndFlush([player, ...otherPlayers, channel])
 
     const res = await request(global.app)
       .get(`/games/${game.id}/players`)

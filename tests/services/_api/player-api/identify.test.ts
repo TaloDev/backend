@@ -16,7 +16,7 @@ describe('Player API service - identify', () => {
   it('should identify a player', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_PLAYERS])
     const player = await new PlayerFactory([apiKey.game]).one()
-    await (<EntityManager>global.em).persistAndFlush(player)
+    await global.em.persistAndFlush(player)
 
     const res = await request(global.app)
       .get('/v1/players/identify')
@@ -39,7 +39,7 @@ describe('Player API service - identify', () => {
         aliases: new Collection<PlayerAlias>(player, [alias])
       }
     }).one()
-    await (<EntityManager>global.em).persistAndFlush(player)
+    await global.em.persistAndFlush(player)
 
     await request(global.app)
       .get('/v1/players/identify')
@@ -47,7 +47,7 @@ describe('Player API service - identify', () => {
       .auth(token, { type: 'bearer' })
       .expect(200)
 
-    await (<EntityManager>global.em).refresh(player, { populate: ['aliases'] })
+    await global.em.refresh(player, { populate: ['aliases'] })
     expect(isToday(new Date(player.lastSeenAt))).toBe(true)
     expect(isToday(new Date(player.aliases[0].lastSeenAt))).toBe(true)
   })
@@ -108,7 +108,7 @@ describe('Player API service - identify', () => {
         new PlayerProp(player, 'lastSeenAtTesting', 'yes')
       ])
     })).one()
-    await (<EntityManager>global.em).persistAndFlush([group, player])
+    await global.em.persistAndFlush([group, player])
 
     const playerCount = await group.members.loadCount()
     expect(playerCount).toEqual(0)
@@ -140,7 +140,7 @@ describe('Player API service - identify', () => {
   it('should require the service to be set', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_PLAYERS])
     const player = await new PlayerFactory([apiKey.game]).one()
-    await (<EntityManager>global.em).persistAndFlush(player)
+    await global.em.persistAndFlush(player)
 
     const res = await request(global.app)
       .get('/v1/players/identify')
@@ -158,7 +158,7 @@ describe('Player API service - identify', () => {
   it('should require the service to be a non-empty string', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_PLAYERS])
     const player = await new PlayerFactory([apiKey.game]).one()
-    await (<EntityManager>global.em).persistAndFlush(player)
+    await global.em.persistAndFlush(player)
 
     const res = await request(global.app)
       .get('/v1/players/identify')
@@ -176,7 +176,7 @@ describe('Player API service - identify', () => {
   it('should require the identifier to be set', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_PLAYERS])
     const player = await new PlayerFactory([apiKey.game]).one()
-    await (<EntityManager>global.em).persistAndFlush(player)
+    await global.em.persistAndFlush(player)
 
     const res = await request(global.app)
       .get('/v1/players/identify')
@@ -194,7 +194,7 @@ describe('Player API service - identify', () => {
   it('should require the identifier to be a non-empty string', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_PLAYERS])
     const player = await new PlayerFactory([apiKey.game]).one()
-    await (<EntityManager>global.em).persistAndFlush(player)
+    await global.em.persistAndFlush(player)
 
     const res = await request(global.app)
       .get('/v1/players/identify')

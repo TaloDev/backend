@@ -2,7 +2,6 @@ import request from 'supertest'
 import { APIKeyScope } from '../../../../src/entities/api-key'
 import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
 import PlayerFactory from '../../../fixtures/PlayerFactory'
-import { EntityManager } from '@mikro-orm/mysql'
 import Redis from 'ioredis'
 import redisConfig from '../../../../src/config/redis.config'
 import SendGrid from '@sendgrid/mail'
@@ -25,7 +24,7 @@ describe('Player auth API service - forgot password', () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_PLAYERS, APIKeyScope.WRITE_PLAYERS])
 
     const player = await new PlayerFactory([apiKey.game]).withTaloAlias().one()
-    await (<EntityManager>global.em).persistAndFlush(player)
+    await global.em.persistAndFlush(player)
 
     await request(global.app)
       .post('/v1/players/auth/forgot_password')
@@ -36,7 +35,7 @@ describe('Player auth API service - forgot password', () => {
     expect(await redis.keys(`player-auth:${apiKey.game.id}:password-reset:*`)).toHaveLength(1)
     expect(sendMock).toHaveBeenCalledOnce()
 
-    const activity = await (<EntityManager>global.em).getRepository(PlayerAuthActivity).findOne({
+    const activity = await global.em.getRepository(PlayerAuthActivity).findOne({
       type: PlayerAuthActivityType.PASSWORD_RESET_REQUESTED,
       player: player.id
     })
@@ -50,7 +49,7 @@ describe('Player auth API service - forgot password', () => {
     const [apiKey, token] = await createAPIKeyAndToken([])
 
     const player = await new PlayerFactory([apiKey.game]).withTaloAlias().one()
-    await (<EntityManager>global.em).persistAndFlush(player)
+    await global.em.persistAndFlush(player)
 
     await request(global.app)
       .post('/v1/players/auth/forgot_password')
@@ -69,7 +68,7 @@ describe('Player auth API service - forgot password', () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_PLAYERS, APIKeyScope.WRITE_PLAYERS])
 
     const player = await new PlayerFactory([apiKey.game]).withTaloAlias().one()
-    await (<EntityManager>global.em).persistAndFlush(player)
+    await global.em.persistAndFlush(player)
 
     await request(global.app)
       .post('/v1/players/auth/forgot_password')
@@ -90,7 +89,7 @@ describe('Player auth API service - forgot password', () => {
 
     const player = await new PlayerFactory([apiKey.game]).withTaloAlias().one()
     const otherPlayer = await new PlayerFactory([otherKey.game]).withTaloAlias().one()
-    await (<EntityManager>global.em).persistAndFlush([player, otherPlayer])
+    await global.em.persistAndFlush([player, otherPlayer])
 
     await request(global.app)
       .post('/v1/players/auth/forgot_password')

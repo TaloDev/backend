@@ -1,4 +1,3 @@
-import { EntityManager } from '@mikro-orm/mysql'
 import request from 'supertest'
 import { UserType } from '../../../src/entities/user'
 import DataExport, { DataExportAvailableEntities } from '../../../src/entities/data-export'
@@ -21,7 +20,7 @@ describe('Data export service - post', () => {
       .auth(token, { type: 'bearer' })
       .expect(statusCode)
 
-    const activity = await (<EntityManager>global.em).getRepository(GameActivity).findOne({
+    const activity = await global.em.getRepository(GameActivity).findOne({
       type: GameActivityType.DATA_EXPORT_REQUESTED,
       game
     })
@@ -208,7 +207,7 @@ describe('Data export service - post', () => {
       .auth(token, { type: 'bearer' })
       .expect(200)
 
-    const dataExport = await (<EntityManager>global.em).getRepository(DataExport).findOneOrFail({ game })
+    const dataExport = await global.em.getRepository(DataExport).findOneOrFail({ game })
     expect(dataExport.failedAt).toBeTruthy()
   })
 })

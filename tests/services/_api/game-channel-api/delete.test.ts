@@ -37,7 +37,7 @@ describe('Game channel API service - delete', () => {
     const player = await new PlayerFactory([apiKey.game]).one()
     channel.owner = player.aliases[0]
     channel.members.add(player.aliases[0])
-    await (<EntityManager>global.em).persistAndFlush(channel)
+    await global.em.persistAndFlush(channel)
 
     await request(global.app)
       .delete(`/v1/game-channels/${channel.id}`)
@@ -92,7 +92,7 @@ describe('Game channel API service - delete', () => {
     const player = await new PlayerFactory([apiKey.game]).one()
     channel.owner = player.aliases[0]
     channel.members.add(player.aliases[0])
-    await (<EntityManager>global.em).persistAndFlush(channel)
+    await global.em.persistAndFlush(channel)
 
     const res = await request(global.app)
       .delete(`/v1/game-channels/${channel.id}`)
@@ -112,7 +112,7 @@ describe('Game channel API service - delete', () => {
     const player = await new PlayerFactory([apiKey.game]).one()
     channel.owner = player.aliases[0]
     channel.members.add(player.aliases[0])
-    await (<EntityManager>global.em).persistAndFlush(channel)
+    await global.em.persistAndFlush(channel)
 
     const res = await request(global.app)
       .delete('/v1/game-channels/54252')

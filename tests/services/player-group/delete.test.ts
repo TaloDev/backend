@@ -1,4 +1,3 @@
-import { EntityManager } from '@mikro-orm/mysql'
 import request from 'supertest'
 import PlayerGroupFactory from '../../fixtures/PlayerGroupFactory'
 import createOrganisationAndGame from '../../utils/createOrganisationAndGame'
@@ -16,14 +15,14 @@ describe('Player group service - delete', () => {
     const [token] = await createUserAndToken({ type }, organisation)
 
     const group = await new PlayerGroupFactory().construct(game).one()
-    await (<EntityManager>global.em).persistAndFlush(group)
+    await global.em.persistAndFlush(group)
 
     const res = await request(global.app)
       .delete(`/games/${game.id}/player-groups/${group.id}`)
       .auth(token, { type: 'bearer' })
       .expect(statusCode)
 
-    const activity = await (<EntityManager>global.em).getRepository(GameActivity).findOne({
+    const activity = await global.em.getRepository(GameActivity).findOne({
       type: GameActivityType.PLAYER_GROUP_DELETED,
       game
     })
@@ -42,7 +41,7 @@ describe('Player group service - delete', () => {
     const [token] = await createUserAndToken({ type: UserType.ADMIN })
 
     const group = await new PlayerGroupFactory().construct(otherGame).one()
-    await (<EntityManager>global.em).persistAndFlush([group])
+    await global.em.persistAndFlush([group])
 
     const res = await request(global.app)
       .delete(`/games/${otherGame.id}/player-groups/${group.id}`)

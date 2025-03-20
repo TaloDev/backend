@@ -1,5 +1,4 @@
 import request from 'supertest'
-import { EntityManager } from '@mikro-orm/mysql'
 import GameChannelFactory from '../../../fixtures/GameChannelFactory'
 import { APIKeyScope } from '../../../../src/entities/api-key'
 import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
@@ -10,7 +9,7 @@ describe('Game channel API service - index', () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_GAME_CHANNELS])
 
     const channels = await new GameChannelFactory(apiKey.game).many(10)
-    await (<EntityManager>global.em).persistAndFlush(channels)
+    await global.em.persistAndFlush(channels)
 
     const res = await request(global.app)
       .get('/v1/game-channels')
@@ -27,7 +26,7 @@ describe('Game channel API service - index', () => {
     const [apiKey, token] = await createAPIKeyAndToken([])
 
     const channels = await new GameChannelFactory(apiKey.game).many(10)
-    await (<EntityManager>global.em).persistAndFlush(channels)
+    await global.em.persistAndFlush(channels)
 
     await request(global.app)
       .get('/v1/game-channels')

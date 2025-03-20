@@ -1,4 +1,3 @@
-import { EntityManager } from '@mikro-orm/mysql'
 import request from 'supertest'
 import UserFactory from '../../../fixtures/UserFactory'
 import { differenceInMinutes, sub } from 'date-fns'
@@ -9,7 +8,7 @@ describe('User public service - login', () => {
   it('should let a user login', async () => {
     const user = await new UserFactory().loginable().one()
     user.lastSeenAt = new Date(2020, 1, 1)
-    await (<EntityManager>global.em).persistAndFlush(user)
+    await global.em.persistAndFlush(user)
 
     const res = await request(global.app)
       .post('/public/users/login')
@@ -24,7 +23,7 @@ describe('User public service - login', () => {
 
   it('should not let a user login with the wrong password', async () => {
     const user = await new UserFactory().one()
-    await (<EntityManager>global.em).persistAndFlush(user)
+    await global.em.persistAndFlush(user)
 
     const res = await request(global.app)
       .post('/public/users/login')
@@ -47,7 +46,7 @@ describe('User public service - login', () => {
     const lastSeenAt = sub(new Date(), { hours: 1 })
 
     const user = await new UserFactory().loginable().state(() => ({ lastSeenAt })).one()
-    await (<EntityManager>global.em).persistAndFlush(user)
+    await global.em.persistAndFlush(user)
 
     const res = await request(global.app)
       .post('/public/users/login')
@@ -61,7 +60,7 @@ describe('User public service - login', () => {
     const redis = new Redis(redisConfig)
 
     const user = await new UserFactory().loginable().has2fa().one()
-    await (<EntityManager>global.em).persistAndFlush(user)
+    await global.em.persistAndFlush(user)
 
     const res = await request(global.app)
       .post('/public/users/login')

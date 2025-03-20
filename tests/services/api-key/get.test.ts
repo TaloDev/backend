@@ -1,4 +1,3 @@
-import { EntityManager } from '@mikro-orm/mysql'
 import request from 'supertest'
 import APIKey from '../../../src/entities/api-key'
 import createOrganisationAndGame from '../../utils/createOrganisationAndGame'
@@ -10,7 +9,7 @@ describe('API key service - get', () => {
     const [token, user] = await createUserAndToken({}, organisation)
 
     const keys: APIKey[] = [...new Array(3)].map(() => new APIKey(game, user))
-    await (<EntityManager>global.em).persistAndFlush(keys)
+    await global.em.persistAndFlush(keys)
 
     const res = await request(global.app)
       .get(`/games/${game.id}/api-keys`)

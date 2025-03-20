@@ -1,7 +1,6 @@
 import createAPIKeyAndToken from '../utils/createAPIKeyAndToken'
 import { APIKeyScope } from '../../src/entities/api-key'
 import createSocketIdentifyMessage from '../utils/createSocketIdentifyMessage'
-import { EntityManager } from '@mikro-orm/mysql'
 import GameChannelFactory from '../fixtures/GameChannelFactory'
 import { createSocketTicket } from '../../src/services/api/socket-ticket-api.service'
 import redisConfig from '../../src/config/redis.config'
@@ -111,7 +110,7 @@ describe('Socket router', () => {
     const { identifyMessage, ticket, player } = await createSocketIdentifyMessage([APIKeyScope.FULL_ACCESS])
     const channel = await new GameChannelFactory(player.game).one()
     channel.members.add(player.aliases[0])
-    await (<EntityManager>global.em).persistAndFlush(channel)
+    await global.em.persistAndFlush(channel)
 
     await createTestSocket(`/?ticket=${ticket}`, async (client) => {
       await client.identify(identifyMessage)

@@ -1,4 +1,3 @@
-import { EntityManager } from '@mikro-orm/mysql'
 import request from 'supertest'
 import { UserType } from '../../../src/entities/user'
 import GameFactory from '../../fixtures/GameFactory'
@@ -22,7 +21,7 @@ describe('Leaderboard service - post', () => {
       .auth(token, { type: 'bearer' })
       .expect(statusCode)
 
-    const activity = await (<EntityManager>global.em).getRepository(GameActivity).findOne({
+    const activity = await global.em.getRepository(GameActivity).findOne({
       type: GameActivityType.LEADERBOARD_CREATED,
       game
     })
@@ -87,7 +86,7 @@ describe('Leaderboard service - post', () => {
     const [token] = await createUserAndToken({}, organisation)
 
     const leaderboard = await new LeaderboardFactory([game]).state(() => ({ internalName: 'highscores' })).one()
-    await (<EntityManager>global.em).persistAndFlush(leaderboard)
+    await global.em.persistAndFlush(leaderboard)
 
     const res = await request(global.app)
       .post(`/games/${game.id}/leaderboards`)
@@ -108,7 +107,7 @@ describe('Leaderboard service - post', () => {
 
     const otherGame = await new GameFactory(organisation).one()
     const otherLeaderboard = await new LeaderboardFactory([otherGame]).state(() => ({ internalName: 'time-survived' })).one()
-    await (<EntityManager>global.em).persistAndFlush(otherLeaderboard)
+    await global.em.persistAndFlush(otherLeaderboard)
 
     await request(global.app)
       .post(`/games/${game.id}/leaderboards`)

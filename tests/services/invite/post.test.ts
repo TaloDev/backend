@@ -1,4 +1,3 @@
-import { EntityManager } from '@mikro-orm/mysql'
 import request from 'supertest'
 import { UserType } from '../../../src/entities/user'
 import UserFactory from '../../fixtures/UserFactory'
@@ -28,7 +27,7 @@ describe('Invite service - post', () => {
       .auth(token, { type: 'bearer' })
       .expect(statusCode)
 
-    const activity = await (<EntityManager>global.em).getRepository(GameActivity).findOne({
+    const activity = await global.em.getRepository(GameActivity).findOne({
       type: GameActivityType.INVITE_CREATED
     })
 
@@ -48,7 +47,7 @@ describe('Invite service - post', () => {
     const [token, user] = await createUserAndToken({ type: UserType.ADMIN, emailConfirmed: true })
 
     const invite = await new InviteFactory().construct(user.organisation).state(() => ({ email: randEmail() })).one()
-    await (<EntityManager>global.em).persistAndFlush(invite)
+    await global.em.persistAndFlush(invite)
 
     const res = await request(global.app)
       .post('/invites')
@@ -89,7 +88,7 @@ describe('Invite service - post', () => {
     const [token] = await createUserAndToken({ type: UserType.ADMIN, emailConfirmed: true })
 
     const invite = await new InviteFactory().construct(otherOrg).state(() => ({ email: randEmail() })).one()
-    await (<EntityManager>global.em).persistAndFlush(invite)
+    await global.em.persistAndFlush(invite)
 
     const res = await request(global.app)
       .post('/invites')
@@ -104,7 +103,7 @@ describe('Invite service - post', () => {
     const [token] = await createUserAndToken({ type: UserType.ADMIN, emailConfirmed: true })
 
     const user = await new UserFactory().state(() => ({ email: randEmail() })).one()
-    await (<EntityManager>global.em).persistAndFlush(user)
+    await global.em.persistAndFlush(user)
 
     const res = await request(global.app)
       .post('/invites')

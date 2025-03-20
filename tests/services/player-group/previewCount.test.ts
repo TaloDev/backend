@@ -1,4 +1,3 @@
-import { EntityManager } from '@mikro-orm/mysql'
 import request from 'supertest'
 import createOrganisationAndGame from '../../utils/createOrganisationAndGame'
 import createUserAndToken from '../../utils/createUserAndToken'
@@ -11,7 +10,7 @@ describe('Player group service - preview count', () => {
     const [token] = await createUserAndToken({}, organisation)
 
     const player = await new PlayerFactory([game]).state(() => ({ lastSeenAt: new Date(2022, 4, 3) })).one()
-    await (<EntityManager>global.em).persistAndFlush(player)
+    await global.em.persistAndFlush(player)
 
     const rules: Partial<PlayerGroupRule>[] = [
       {
@@ -37,7 +36,7 @@ describe('Player group service - preview count', () => {
     const [token] = await createUserAndToken({}, organisation)
 
     const player = await new PlayerFactory([game]).devBuild().state(() => ({ lastSeenAt: new Date(2022, 4, 3) })).one()
-    await (<EntityManager>global.em).persistAndFlush(player)
+    await global.em.persistAndFlush(player)
 
     const rules: Partial<PlayerGroupRule>[] = [
       {
@@ -63,7 +62,7 @@ describe('Player group service - preview count', () => {
     const [token] = await createUserAndToken({}, organisation)
 
     const player = await new PlayerFactory([game]).devBuild().state(() => ({ lastSeenAt: new Date(2022, 4, 3) })).one()
-    await (<EntityManager>global.em).persistAndFlush(player)
+    await global.em.persistAndFlush(player)
 
     const rules: Partial<PlayerGroupRule>[] = [
       {

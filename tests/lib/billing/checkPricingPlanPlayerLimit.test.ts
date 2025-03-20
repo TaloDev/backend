@@ -1,4 +1,3 @@
-import { EntityManager } from '@mikro-orm/mysql'
 import PlayerFactory from '../../fixtures/PlayerFactory'
 import createOrganisationAndGame from '../../utils/createOrganisationAndGame'
 import PlanUsageWarning from '../../../src/emails/plan-usage-warning-mail'
@@ -20,7 +19,7 @@ describe('checkPricingPlanPlayerLimit', () => {
     organisation.pricingPlan.status = 'active'
 
     const players = await new PlayerFactory([game]).many(10)
-    await (<EntityManager>global.em).persistAndFlush(players)
+    await global.em.persistAndFlush(players)
 
     const res = await request(global.app)
       .post(`/games/${game.id}/players`)
@@ -35,7 +34,7 @@ describe('checkPricingPlanPlayerLimit', () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({}, organisation)
     organisation.pricingPlan.status = 'incomplete'
-    await (<EntityManager>global.em).flush()
+    await global.em.flush()
 
     const res = await request(global.app)
       .post(`/games/${game.id}/players`)
@@ -54,7 +53,7 @@ describe('checkPricingPlanPlayerLimit', () => {
     organisation.pricingPlan.status = 'active'
 
     const players = await new PlayerFactory([game]).many(74)
-    await (<EntityManager>global.em).persistAndFlush(players)
+    await global.em.persistAndFlush(players)
 
     const res = await request(global.app)
       .post(`/games/${game.id}/players`)
@@ -72,7 +71,7 @@ describe('checkPricingPlanPlayerLimit', () => {
     organisation.pricingPlan.status = 'active'
 
     const players = await new PlayerFactory([game]).many(89)
-    await (<EntityManager>global.em).persistAndFlush(players)
+    await global.em.persistAndFlush(players)
 
     const res = await request(global.app)
       .post(`/games/${game.id}/players`)
@@ -90,7 +89,7 @@ describe('checkPricingPlanPlayerLimit', () => {
     organisation.pricingPlan.status = 'active'
 
     const players = await new PlayerFactory([game]).many(99)
-    await (<EntityManager>global.em).persistAndFlush(players)
+    await global.em.persistAndFlush(players)
 
     const res = await request(global.app)
       .post(`/games/${game.id}/players`)
@@ -109,7 +108,7 @@ describe('checkPricingPlanPlayerLimit', () => {
 
     const randomPlayerCount = Math.floor(Math.random() * 74) + 1
     const players = await new PlayerFactory([game]).many(randomPlayerCount - 1)
-    await (<EntityManager>global.em).persistAndFlush(players)
+    await global.em.persistAndFlush(players)
 
     const res = await request(global.app)
       .post(`/games/${game.id}/players`)
@@ -127,7 +126,7 @@ describe('checkPricingPlanPlayerLimit', () => {
     organisation.pricingPlan.status = 'active'
 
     const players = await new PlayerFactory([game]).many(100)
-    await (<EntityManager>global.em).persistAndFlush(players)
+    await global.em.persistAndFlush(players)
 
     const res = await request(global.app)
       .post(`/games/${game.id}/players`)

@@ -1,4 +1,3 @@
-import { EntityManager } from '@mikro-orm/mysql'
 import request from 'supertest'
 import { UserType } from '../../../src/entities/user'
 import UserFactory from '../../fixtures/UserFactory'
@@ -16,7 +15,7 @@ describe('Game activity service - index', () => {
     const [token, user] = await createUserAndToken({ type }, organisation)
 
     const activities = await new GameActivityFactory([game], [user]).many(5)
-    await (<EntityManager>global.em).persistAndFlush([user, game, ...activities])
+    await global.em.persistAndFlush([user, game, ...activities])
 
     const res = await request(global.app)
       .get(`/games/${game.id}/game-activities`)
@@ -40,7 +39,7 @@ describe('Game activity service - index', () => {
     const activities = await new GameActivityFactory([], [user]).many(5)
     const otherActivities = await new GameActivityFactory([], [otherUser]).many(5)
 
-    await (<EntityManager>global.em).persistAndFlush([...activities, ...otherActivities])
+    await global.em.persistAndFlush([...activities, ...otherActivities])
 
     const res = await request(global.app)
       .get(`/games/${game.id}/game-activities`)
@@ -56,7 +55,7 @@ describe('Game activity service - index', () => {
 
     const user = await new UserFactory().state(() => ({ organisation })).one()
     const activities = await new GameActivityFactory([game], [user]).many(10)
-    await (<EntityManager>global.em).persistAndFlush(activities)
+    await global.em.persistAndFlush(activities)
 
     const res = await request(global.app)
       .get(`/games/${game.id}/game-activities`)

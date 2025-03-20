@@ -1,4 +1,3 @@
-import { EntityManager } from '@mikro-orm/mysql'
 import { differenceInDays } from 'date-fns'
 import FailedJob from '../../../src/entities/failed-job'
 import createQueue from '../../../src/lib/queues/createQueue'
@@ -16,7 +15,7 @@ describe('Create queue', () => {
 
     expect(processMock).toHaveBeenCalledTimes(1)
 
-    const failedJobs = await (<EntityManager>global.em).getRepository(FailedJob).findAll()
+    const failedJobs = await global.em.getRepository(FailedJob).findAll()
     expect(failedJobs).toHaveLength(1)
     const failedJob = failedJobs[0]
 

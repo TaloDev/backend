@@ -1,4 +1,3 @@
-import { EntityManager } from '@mikro-orm/mysql'
 import request from 'supertest'
 import GameStatFactory from '../../fixtures/GameStatFactory'
 import PlayerFactory from '../../fixtures/PlayerFactory'
@@ -12,7 +11,7 @@ describe('Game stat service - index', () => {
     const [token] = await createUserAndToken({}, organisation)
 
     const stats = await new GameStatFactory([game]).many(3)
-    await (<EntityManager>global.em).persistAndFlush([game, ...stats])
+    await global.em.persistAndFlush([game, ...stats])
 
     const res = await request(global.app)
       .get(`/games/${game.id}/game-stats`)
@@ -27,7 +26,7 @@ describe('Game stat service - index', () => {
     const [token] = await createUserAndToken()
 
     const stats = await new GameStatFactory([game]).many(3)
-    await (<EntityManager>global.em).persistAndFlush([game, ...stats])
+    await global.em.persistAndFlush([game, ...stats])
 
     await request(global.app)
       .get(`/games/${game.id}/game-stats`)
@@ -47,7 +46,7 @@ describe('Game stat service - index', () => {
     const otherPlayer = await new PlayerFactory([game]).one()
     const otherPlayerStat = await new PlayerGameStatFactory().construct(otherPlayer, stat).state(() => ({ value: 40 })).one()
 
-    await (<EntityManager>global.em).persistAndFlush([playerStat, otherPlayerStat])
+    await global.em.persistAndFlush([playerStat, otherPlayerStat])
 
     const res = await request(global.app)
       .get(`/games/${game.id}/game-stats`)
@@ -64,7 +63,7 @@ describe('Game stat service - index', () => {
     const player = await new PlayerFactory([game]).devBuild().one()
     const stat = await new GameStatFactory([game]).global().state(() => ({ globalValue: 50 })).one()
     const playerStat = await new PlayerGameStatFactory().construct(player, stat).state(() => ({ value: 10 })).one()
-    await (<EntityManager>global.em).persistAndFlush(playerStat)
+    await global.em.persistAndFlush(playerStat)
 
     const res = await request(global.app)
       .get(`/games/${game.id}/game-stats`)

@@ -1,4 +1,3 @@
-import { EntityManager } from '@mikro-orm/mysql'
 import request from 'supertest'
 import PlayerFactory from '../../fixtures/PlayerFactory'
 import createUserAndToken from '../../utils/createUserAndToken'
@@ -15,7 +14,7 @@ describe('Player service - get auth activities', () => {
     const player = await new PlayerFactory([game]).withTaloAlias().one()
     const activities = await new PlayerAuthActivityFactory(game).state(() => ({ player })).many(10)
 
-    await (<EntityManager>global.em).persistAndFlush(activities)
+    await global.em.persistAndFlush(activities)
 
     const res = await request(global.app)
       .get(`/games/${game.id}/players/${player.id}/auth-activities`)
@@ -35,7 +34,7 @@ describe('Player service - get auth activities', () => {
 
     const player = await new PlayerFactory([game]).one()
 
-    await (<EntityManager>global.em).persistAndFlush(player)
+    await global.em.persistAndFlush(player)
 
     await request(global.app)
       .get(`/games/${game.id}/players/${player.id}/auth-activities`)

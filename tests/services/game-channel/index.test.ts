@@ -1,7 +1,6 @@
 import request from 'supertest'
 import createUserAndToken from '../../utils/createUserAndToken'
 import createOrganisationAndGame from '../../utils/createOrganisationAndGame'
-import { EntityManager } from '@mikro-orm/mysql'
 import PlayerAliasFactory from '../../fixtures/PlayerAliasFactory'
 import PlayerFactory from '../../fixtures/PlayerFactory'
 import GameChannelFactory from '../../fixtures/GameChannelFactory'
@@ -13,7 +12,7 @@ describe('Game channel service - index', () => {
     const [token] = await createUserAndToken({}, organisation)
 
     const channels = await new GameChannelFactory(game).many(10)
-    await (<EntityManager>global.em).persistAndFlush(channels)
+    await global.em.persistAndFlush(channels)
 
     const res = await request(global.app)
       .get(`/games/${game.id}/game-channels`)
@@ -57,7 +56,7 @@ describe('Game channel service - index', () => {
 
     const count = 82
     const channels = await new GameChannelFactory(game).many(count)
-    await (<EntityManager>global.em).persistAndFlush(channels)
+    await global.em.persistAndFlush(channels)
 
     const page = Math.floor(count / 50)
 
@@ -78,7 +77,7 @@ describe('Game channel service - index', () => {
 
     const channelsWithName = await new GameChannelFactory(game).state(() => ({ name: 'General chat' })).many(3)
     const channelsWithoutName = await new GameChannelFactory(game).state(() => ({ name: 'Guild chat' })).many(3)
-    await (<EntityManager>global.em).persistAndFlush([...channelsWithName, ...channelsWithoutName])
+    await global.em.persistAndFlush([...channelsWithName, ...channelsWithoutName])
 
     const res = await request(global.app)
       .get(`/games/${game.id}/game-channels`)
@@ -102,7 +101,7 @@ describe('Game channel service - index', () => {
 
     const channelsWithoutOwner = await new GameChannelFactory(game).many(5)
 
-    await (<EntityManager>global.em).persistAndFlush([...channelsWithOwner, ...channelsWithoutOwner])
+    await global.em.persistAndFlush([...channelsWithOwner, ...channelsWithoutOwner])
 
     const res = await request(global.app)
       .get(`/games/${game.id}/game-channels`)
@@ -122,7 +121,7 @@ describe('Game channel service - index', () => {
       (await new PlayerFactory([game]).devBuild().one()).aliases[0],
       (await new PlayerFactory([game]).one()).aliases[0]
     )
-    await (<EntityManager>global.em).persistAndFlush(channel)
+    await global.em.persistAndFlush(channel)
 
     const res = await request(global.app)
       .get(`/games/${game.id}/game-channels`)
@@ -143,7 +142,7 @@ describe('Game channel service - index', () => {
       (await new PlayerFactory([game]).devBuild().one()).aliases[0],
       (await new PlayerFactory([game]).one()).aliases[0]
     )
-    await (<EntityManager>global.em).persistAndFlush(channel)
+    await global.em.persistAndFlush(channel)
 
     const res = await request(global.app)
       .get(`/games/${game.id}/game-channels`)
@@ -159,7 +158,7 @@ describe('Game channel service - index', () => {
     const [token] = await createUserAndToken({}, organisation)
 
     const channels = await new GameChannelFactory(game).many(208)
-    await (<EntityManager>global.em).persistAndFlush(channels)
+    await global.em.persistAndFlush(channels)
 
     const res = await request(global.app)
       .get(`/games/${game.id}/game-channels`)

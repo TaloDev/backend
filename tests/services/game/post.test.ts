@@ -1,4 +1,3 @@
-import { EntityManager } from '@mikro-orm/mysql'
 import request from 'supertest'
 import { UserType } from '../../../src/entities/user'
 import Game from '../../../src/entities/game'
@@ -21,7 +20,7 @@ describe('Game service - post', () => {
     if (statusCode === 200) {
       expect(res.body.game.name).toBe('Twodoors')
 
-      const game = await (<EntityManager>global.em).getRepository(Game).findOneOrFail(res.body.game.id, { populate: ['organisation'] })
+      const game = await global.em.getRepository(Game).findOneOrFail(res.body.game.id, { populate: ['organisation'] })
       expect(game.organisation.id).toBe(user.organisation.id)
     } else {
       expect(res.body).toStrictEqual({ message: 'You do not have permissions to create games' })

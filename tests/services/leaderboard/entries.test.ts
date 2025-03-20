@@ -48,7 +48,7 @@ describe('Leaderboard service - entries', () => {
     const [token] = await createUserAndToken()
 
     const leaderboard = await new LeaderboardFactory([game]).withEntries().one()
-    await (<EntityManager>global.em).persistAndFlush(leaderboard)
+    await global.em.persistAndFlush(leaderboard)
 
     await request(global.app)
       .get(`/games/${game.id}/leaderboards/${leaderboard.id}/entries`)
@@ -89,7 +89,7 @@ describe('Leaderboard service - entries', () => {
     const [token] = await createUserAndToken({}, organisation)
 
     const leaderboard = await new LeaderboardFactory([game]).withEntries().devBuildPlayers().one()
-    await (<EntityManager>global.em).persistAndFlush(leaderboard)
+    await global.em.persistAndFlush(leaderboard)
 
     const res = await request(global.app)
       .get(`/games/${game.id}/leaderboards/${leaderboard.id}/entries`)
@@ -105,7 +105,7 @@ describe('Leaderboard service - entries', () => {
     const [token] = await createUserAndToken({}, organisation)
 
     const leaderboard = await new LeaderboardFactory([game]).withEntries().devBuildPlayers().one()
-    await (<EntityManager>global.em).persistAndFlush(leaderboard)
+    await global.em.persistAndFlush(leaderboard)
 
     const res = await request(global.app)
       .get(`/games/${game.id}/leaderboards/${leaderboard.id}/entries`)

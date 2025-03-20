@@ -1,4 +1,4 @@
-import { EntityManager, wrap } from '@mikro-orm/mysql'
+import { wrap } from '@mikro-orm/mysql'
 import request from 'supertest'
 import UserTwoFactorAuth from '../../../src/entities/user-two-factor-auth'
 import { authenticator } from '@otplib/preset-default'
@@ -31,7 +31,7 @@ describe('User service - confirm 2fa', () => {
     })
 
     user.twoFactorAuth!.enabled = true
-    await (<EntityManager>global.em).flush()
+    await global.em.flush()
 
     const res = await request(global.app)
       .post('/users/2fa/enable')

@@ -1,4 +1,3 @@
-import { EntityManager } from '@mikro-orm/mysql'
 import request from 'supertest'
 import createOrganisationAndGame from '../../utils/createOrganisationAndGame'
 import createUserAndToken from '../../utils/createUserAndToken'
@@ -42,7 +41,7 @@ describe('Leaderboard service - update leaderboard - steamworks integration', ()
 
     const config = await new IntegrationConfigFactory().state(() => ({ syncLeaderboards: true })).one()
     const integration = await new IntegrationFactory().construct(IntegrationType.STEAMWORKS, game, config).one()
-    await (<EntityManager>global.em).persistAndFlush([integration, leaderboard])
+    await global.em.persistAndFlush([integration, leaderboard])
 
     await request(global.app)
       .put(`/games/${game.id}/leaderboards/${leaderboard.id}`)
@@ -52,7 +51,7 @@ describe('Leaderboard service - update leaderboard - steamworks integration', ()
 
     expect(createMock).toHaveBeenCalledTimes(1)
 
-    const event = await (<EntityManager>global.em).getRepository(SteamworksIntegrationEvent).findOneOrFail({ integration })
+    const event = await global.em.getRepository(SteamworksIntegrationEvent).findOneOrFail({ integration })
     expect(event.request).toStrictEqual({
       url: 'https://partner.steam-api.com/ISteamLeaderboards/FindOrCreateLeaderboard/v2',
       body: `appid=${config.appId}&name=${leaderboard.internalName}&sortmethod=Ascending&displaytype=Numeric&createifnotfound=true&onlytrustedwrites=true&onlyfriendsreads=false`,
@@ -71,7 +70,7 @@ describe('Leaderboard service - update leaderboard - steamworks integration', ()
 
     const config = await new IntegrationConfigFactory().state(() => ({ syncLeaderboards: false })).one()
     const integration = await new IntegrationFactory().construct(IntegrationType.STEAMWORKS, game, config).one()
-    await (<EntityManager>global.em).persistAndFlush([integration, leaderboard])
+    await global.em.persistAndFlush([integration, leaderboard])
 
     await request(global.app)
       .put(`/games/${game.id}/leaderboards/${leaderboard.id}`)
@@ -81,7 +80,7 @@ describe('Leaderboard service - update leaderboard - steamworks integration', ()
 
     expect(createMock).not.toHaveBeenCalled()
 
-    const event = await (<EntityManager>global.em).getRepository(SteamworksIntegrationEvent).findOne({ integration })
+    const event = await global.em.getRepository(SteamworksIntegrationEvent).findOne({ integration })
     expect(event).toBeNull()
 
     axiosMock.reset()

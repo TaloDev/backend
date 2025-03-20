@@ -15,7 +15,7 @@ describe('Game channel API service - leave', () => {
     const channel = await new GameChannelFactory(apiKey.game).one()
     const player = await new PlayerFactory([apiKey.game]).one()
     channel.members.add(player.aliases[0])
-    await (<EntityManager>global.em).persistAndFlush(channel)
+    await global.em.persistAndFlush(channel)
 
     await request(global.app)
       .post(`/v1/game-channels/${channel.id}/leave`)
@@ -30,7 +30,7 @@ describe('Game channel API service - leave', () => {
     const channel = await new GameChannelFactory(apiKey.game).one()
     const player = await new PlayerFactory([apiKey.game]).one()
     channel.members.add(player.aliases[0])
-    await (<EntityManager>global.em).persistAndFlush(channel)
+    await global.em.persistAndFlush(channel)
 
     await request(global.app)
       .post(`/v1/game-channels/${channel.id}/leave`)
@@ -45,7 +45,7 @@ describe('Game channel API service - leave', () => {
     const channel = await new GameChannelFactory(apiKey.game).one()
     const player = await new PlayerFactory([apiKey.game]).one()
     channel.members.add(player.aliases[0])
-    await (<EntityManager>global.em).persistAndFlush(channel)
+    await global.em.persistAndFlush(channel)
 
     await request(global.app)
       .post(`/v1/game-channels/${channel.id}/leave`)
@@ -132,7 +132,7 @@ describe('Game channel API service - leave', () => {
     const channel = await new GameChannelFactory(apiKey.game).one()
     const player = await new PlayerFactory([apiKey.game]).one()
     channel.members.add(player.aliases[0])
-    await (<EntityManager>global.em).persistAndFlush(channel)
+    await global.em.persistAndFlush(channel)
 
     const res = await request(global.app)
       .post(`/v1/game-channels/${channel.id}/leave`)
@@ -152,7 +152,7 @@ describe('Game channel API service - leave', () => {
     const player = await new PlayerFactory([apiKey.game]).one()
     channel.owner = player.aliases[0]
     channel.members.add(player.aliases[0])
-    await (<EntityManager>global.em).persistAndFlush(channel)
+    await global.em.persistAndFlush(channel)
 
     const res = await request(global.app)
       .post('/v1/game-channels/54252/leave')
@@ -174,7 +174,7 @@ describe('Game channel API service - leave', () => {
 
     const channel = await new GameChannelFactory(player.game).one()
     channel.members.add(player.aliases[0])
-    await (<EntityManager>global.em).persistAndFlush(channel)
+    await global.em.persistAndFlush(channel)
 
     await createTestSocket(`/?ticket=${ticket}`, async (client) => {
       await client.identify(identifyMessage)
@@ -198,7 +198,7 @@ describe('Game channel API service - leave', () => {
     const player = await new PlayerFactory([apiKey.game]).one()
     channel.owner = null
     channel.members.add(player.aliases[0])
-    await (<EntityManager>global.em).persistAndFlush(channel)
+    await global.em.persistAndFlush(channel)
 
     await request(global.app)
       .post(`/v1/game-channels/${channel.id}/leave`)
@@ -206,7 +206,7 @@ describe('Game channel API service - leave', () => {
       .set('x-talo-alias', String(player.aliases[0].id))
       .expect(204)
 
-    const updatedChannel = await (<EntityManager>global.em).refreshOrFail(channel, { populate: ['members'] })
+    const updatedChannel = await global.em.refreshOrFail(channel, { populate: ['members'] })
     expect(updatedChannel.members.count()).toBe(0)
   })
 })

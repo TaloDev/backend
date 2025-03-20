@@ -3,7 +3,6 @@ import createUserAndToken from '../../utils/createUserAndToken'
 import createOrganisationAndGame from '../../utils/createOrganisationAndGame'
 import GameFeedbackFactory from '../../fixtures/GameFeedbackFactory'
 import GameFeedbackCategoryFactory from '../../fixtures/GameFeedbackCategoryFactory'
-import { EntityManager } from '@mikro-orm/mysql'
 import GameFeedbackCategory from '../../../src/entities/game-feedback-category'
 
 describe('Game feedback service - index categories', () => {
@@ -12,7 +11,7 @@ describe('Game feedback service - index categories', () => {
     const [token] = await createUserAndToken({}, organisation)
 
     const categories = await new GameFeedbackCategoryFactory(game).many(10)
-    await (<EntityManager>global.em).persistAndFlush(categories)
+    await global.em.persistAndFlush(categories)
 
     const res = await request(global.app)
       .get(`/games/${game.id}/game-feedback/categories`)

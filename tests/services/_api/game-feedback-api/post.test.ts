@@ -1,4 +1,3 @@
-import { EntityManager } from '@mikro-orm/mysql'
 import request from 'supertest'
 import { APIKeyScope } from '../../../../src/entities/api-key'
 import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
@@ -13,7 +12,7 @@ describe('Game feedback API service - post', () => {
     const feedbackCategory = await new GameFeedbackCategoryFactory(apiKey.game).one()
     const player = await new PlayerFactory([apiKey.game]).one()
 
-    await (<EntityManager>global.em).persistAndFlush([feedbackCategory, player])
+    await global.em.persistAndFlush([feedbackCategory, player])
 
     const res = await request(global.app)
       .post(`/v1/game-feedback/categories/${feedbackCategory.internalName}`)
@@ -34,7 +33,7 @@ describe('Game feedback API service - post', () => {
     const feedbackCategory = await new GameFeedbackCategoryFactory(apiKey.game).one()
     const player = await new PlayerFactory([apiKey.game]).one()
 
-    await (<EntityManager>global.em).persistAndFlush([feedbackCategory, player])
+    await global.em.persistAndFlush([feedbackCategory, player])
 
     const res = await request(global.app)
       .post(`/v1/game-feedback/categories/${feedbackCategory.internalName}`)
@@ -50,7 +49,7 @@ describe('Game feedback API service - post', () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_FEEDBACK])
 
     const feedbackCategory = await new GameFeedbackCategoryFactory(apiKey.game).one()
-    await (<EntityManager>global.em).persistAndFlush(feedbackCategory)
+    await global.em.persistAndFlush(feedbackCategory)
 
     const res = await request(global.app)
       .post(`/v1/game-feedback/categories/${feedbackCategory.internalName}`)
@@ -66,7 +65,7 @@ describe('Game feedback API service - post', () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_FEEDBACK])
 
     const player = await new PlayerFactory([apiKey.game]).one()
-    await (<EntityManager>global.em).persistAndFlush(player)
+    await global.em.persistAndFlush(player)
 
     const res = await request(global.app)
       .post('/v1/game-feedback/categories/non-existent')
@@ -84,7 +83,7 @@ describe('Game feedback API service - post', () => {
     const feedbackCategory = await new GameFeedbackCategoryFactory(apiKey.game).one()
     const player = await new PlayerFactory([apiKey.game]).one()
 
-    await (<EntityManager>global.em).persistAndFlush([feedbackCategory, player])
+    await global.em.persistAndFlush([feedbackCategory, player])
 
     const continuityDate = subHours(new Date(), 1)
 

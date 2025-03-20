@@ -1,4 +1,3 @@
-import { EntityManager } from '@mikro-orm/mysql'
 import request from 'supertest'
 import LeaderboardFactory from '../../fixtures/LeaderboardFactory'
 import createOrganisationAndGame from '../../utils/createOrganisationAndGame'
@@ -8,7 +7,7 @@ describe('Leaderboard service - search', () => {
   it('should return a leaderboard with the same internalName', async () => {
     const [organisation, game] = await createOrganisationAndGame()
     const leaderboard = await new LeaderboardFactory([game]).one()
-    await (<EntityManager>global.em).persistAndFlush(leaderboard)
+    await global.em.persistAndFlush(leaderboard)
 
     const [token] = await createUserAndToken({}, organisation)
 
@@ -35,7 +34,7 @@ describe('Leaderboard service - search', () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [, otherGame] = await createOrganisationAndGame()
     const leaderboard = await new LeaderboardFactory([otherGame]).one()
-    await (<EntityManager>global.em).persistAndFlush(leaderboard)
+    await global.em.persistAndFlush(leaderboard)
 
     const [token] = await createUserAndToken({}, organisation)
 

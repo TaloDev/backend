@@ -1,4 +1,3 @@
-import { EntityManager } from '@mikro-orm/mysql'
 import request from 'supertest'
 import UserTwoFactorAuth from '../../../src/entities/user-two-factor-auth'
 import generateRecoveryCodes from '../../../src/lib/auth/generateRecoveryCodes'
@@ -11,7 +10,7 @@ describe('User service - create recovery codes', () => {
     const [token, user] = await createUserAndToken({ twoFactorAuth })
 
     user.recoveryCodes.set(generateRecoveryCodes(user))
-    await (<EntityManager>global.em).flush()
+    await global.em.flush()
 
     const res = await request(global.app)
       .post('/users/2fa/recovery_codes/create')
@@ -21,7 +20,7 @@ describe('User service - create recovery codes', () => {
 
     expect(res.body.recoveryCodes).toHaveLength(8)
 
-    await (<EntityManager>global.em).refresh(user, { populate: ['recoveryCodes'] })
+    await global.em.refresh(user, { populate: ['recoveryCodes'] })
     expect(user.recoveryCodes).toHaveLength(8)
   })
 

@@ -1,4 +1,3 @@
-import { EntityManager } from '@mikro-orm/mysql'
 import request from 'supertest'
 import createOrganisationAndGame from '../../utils/createOrganisationAndGame'
 import createUserAndToken from '../../utils/createUserAndToken'
@@ -15,7 +14,7 @@ describe('Player group service - index pinned', () => {
       .state(async () => ({ group: await new PlayerGroupFactory().construct(game).one() }))
       .many(3)
 
-    await (<EntityManager>global.em).persistAndFlush(pinned)
+    await global.em.persistAndFlush(pinned)
 
     const res = await request(global.app)
       .get(`/games/${game.id}/player-groups/pinned`)

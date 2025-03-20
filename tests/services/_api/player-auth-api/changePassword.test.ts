@@ -2,7 +2,6 @@ import request from 'supertest'
 import { APIKeyScope } from '../../../../src/entities/api-key'
 import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
 import PlayerFactory from '../../../fixtures/PlayerFactory'
-import { EntityManager } from '@mikro-orm/mysql'
 import bcrypt from 'bcrypt'
 import PlayerAuthFactory from '../../../fixtures/PlayerAuthFactory'
 import PlayerAuthActivity, { PlayerAuthActivityType } from '../../../../src/entities/player-auth-activity'
@@ -19,10 +18,10 @@ describe('Player auth API service - change password', () => {
       })).one()
     })).one()
     const alias = player.aliases[0]
-    await (<EntityManager>global.em).persistAndFlush(player)
+    await global.em.persistAndFlush(player)
 
     const sessionToken = await player.auth!.createSession(alias)
-    await (<EntityManager>global.em).flush()
+    await global.em.flush()
 
     await request(global.app)
       .post('/v1/players/auth/change_password')
@@ -33,10 +32,10 @@ describe('Player auth API service - change password', () => {
       .set('x-talo-session', sessionToken)
       .expect(204)
 
-    await (<EntityManager>global.em).refresh(player.auth!)
+    await global.em.refresh(player.auth!)
     expect(await bcrypt.compare('password1', player.auth!.password)).toBe(true)
 
-    const activity = await (<EntityManager>global.em).getRepository(PlayerAuthActivity).findOne({
+    const activity = await global.em.getRepository(PlayerAuthActivity).findOne({
       type: PlayerAuthActivityType.CHANGED_PASSWORD,
       player: player.id
     })
@@ -54,10 +53,10 @@ describe('Player auth API service - change password', () => {
       })).one()
     })).one()
     const alias = player.aliases[0]
-    await (<EntityManager>global.em).persistAndFlush(player)
+    await global.em.persistAndFlush(player)
 
     const sessionToken = await player.auth!.createSession(alias)
-    await (<EntityManager>global.em).flush()
+    await global.em.flush()
 
     await request(global.app)
       .post('/v1/players/auth/change_password')
@@ -80,10 +79,10 @@ describe('Player auth API service - change password', () => {
       })).one()
     })).one()
     const alias = player.aliases[0]
-    await (<EntityManager>global.em).persistAndFlush(player)
+    await global.em.persistAndFlush(player)
 
     const sessionToken = await player.auth!.createSession(alias)
-    await (<EntityManager>global.em).flush()
+    await global.em.flush()
 
     const res = await request(global.app)
       .post('/v1/players/auth/change_password')
@@ -99,7 +98,7 @@ describe('Player auth API service - change password', () => {
       errorCode: 'INVALID_CREDENTIALS'
     })
 
-    const activity = await (<EntityManager>global.em).getRepository(PlayerAuthActivity).findOne({
+    const activity = await global.em.getRepository(PlayerAuthActivity).findOne({
       type: PlayerAuthActivityType.CHANGE_PASSWORD_FAILED,
       player: player.id,
       extra: {
@@ -120,10 +119,10 @@ describe('Player auth API service - change password', () => {
       })).one()
     })).one()
     const alias = player.aliases[0]
-    await (<EntityManager>global.em).persistAndFlush(player)
+    await global.em.persistAndFlush(player)
 
     const sessionToken = await player.auth!.createSession(alias)
-    await (<EntityManager>global.em).flush()
+    await global.em.flush()
 
     const res = await request(global.app)
       .post('/v1/players/auth/change_password')
@@ -139,7 +138,7 @@ describe('Player auth API service - change password', () => {
       errorCode: 'NEW_PASSWORD_MATCHES_CURRENT_PASSWORD'
     })
 
-    const activity = await (<EntityManager>global.em).getRepository(PlayerAuthActivity).findOne({
+    const activity = await global.em.getRepository(PlayerAuthActivity).findOne({
       type: PlayerAuthActivityType.CHANGE_PASSWORD_FAILED,
       player: player.id,
       extra: {

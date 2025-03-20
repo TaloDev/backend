@@ -1,4 +1,4 @@
-import { Collection, EntityManager } from '@mikro-orm/mysql'
+import { Collection } from '@mikro-orm/mysql'
 import request from 'supertest'
 import EventFactory from '../../fixtures/EventFactory'
 import PlayerFactory from '../../fixtures/PlayerFactory'
@@ -18,7 +18,7 @@ describe('Headline service - get', () => {
     const [token] = await createUserAndToken({}, organisation)
 
     const player = await new PlayerFactory([game]).one()
-    await (<EntityManager>global.em).persistAndFlush(player)
+    await global.em.persistAndFlush(player)
 
     const events = await new EventFactory([player]).thisWeek().many(10)
     await global.clickhouse.insert({
@@ -41,7 +41,7 @@ describe('Headline service - get', () => {
     const [token] = await createUserAndToken({}, organisation)
 
     const player = await new PlayerFactory([game]).devBuild().one()
-    await (<EntityManager>global.em).persistAndFlush(player)
+    await global.em.persistAndFlush(player)
 
     const events = await new EventFactory([player]).thisWeek().many(10)
     await global.clickhouse.insert({
@@ -64,7 +64,7 @@ describe('Headline service - get', () => {
     const [token] = await createUserAndToken({}, organisation)
 
     const player = await new PlayerFactory([game]).devBuild().one()
-    await (<EntityManager>global.em).persistAndFlush(player)
+    await global.em.persistAndFlush(player)
 
     const events = await new EventFactory([player]).thisWeek().many(10)
     await global.clickhouse.insert({
@@ -89,7 +89,7 @@ describe('Headline service - get', () => {
 
     const newPlayers = await new PlayerFactory([game]).createdThisWeek().many(10)
     const oldPlayers = await new PlayerFactory([game]).notCreatedThisWeek().many(10)
-    await (<EntityManager>global.em).persistAndFlush([...newPlayers, ...oldPlayers])
+    await global.em.persistAndFlush([...newPlayers, ...oldPlayers])
 
     const res = await request(global.app)
       .get(`/games/${game.id}/headlines/new_players`)
@@ -105,7 +105,7 @@ describe('Headline service - get', () => {
     const [token] = await createUserAndToken({}, organisation)
 
     const newPlayers = await new PlayerFactory([game]).createdThisWeek().devBuild().many(10)
-    await (<EntityManager>global.em).persistAndFlush(newPlayers)
+    await global.em.persistAndFlush(newPlayers)
 
     const res = await request(global.app)
       .get(`/games/${game.id}/headlines/new_players`)
@@ -121,7 +121,7 @@ describe('Headline service - get', () => {
     const [token] = await createUserAndToken({}, organisation)
 
     const newPlayers = await new PlayerFactory([game]).createdThisWeek().devBuild().many(10)
-    await (<EntityManager>global.em).persistAndFlush(newPlayers)
+    await global.em.persistAndFlush(newPlayers)
 
     const res = await request(global.app)
       .get(`/games/${game.id}/headlines/new_players`)
@@ -145,7 +145,7 @@ describe('Headline service - get', () => {
       .many(4)
 
     const playersSignedupThisWeek = await new PlayerFactory([game]).notSeenThisWeek().many(5)
-    await (<EntityManager>global.em).persistAndFlush([...playersNotSeenThisWeek, ...returningPlayersSeenThisWeek, ...playersSignedupThisWeek])
+    await global.em.persistAndFlush([...playersNotSeenThisWeek, ...returningPlayersSeenThisWeek, ...playersSignedupThisWeek])
 
     const res = await request(global.app)
       .get(`/games/${game.id}/headlines/returning_players`)
@@ -166,7 +166,7 @@ describe('Headline service - get', () => {
       .devBuild()
       .many(4)
 
-    await (<EntityManager>global.em).persistAndFlush(returningPlayersSeenThisWeek)
+    await global.em.persistAndFlush(returningPlayersSeenThisWeek)
 
     const res = await request(global.app)
       .get(`/games/${game.id}/headlines/returning_players`)
@@ -187,7 +187,7 @@ describe('Headline service - get', () => {
       .devBuild()
       .many(4)
 
-    await (<EntityManager>global.em).persistAndFlush(returningPlayersSeenThisWeek)
+    await global.em.persistAndFlush(returningPlayersSeenThisWeek)
 
     const res = await request(global.app)
       .get(`/games/${game.id}/headlines/returning_players`)
@@ -216,7 +216,7 @@ describe('Headline service - get', () => {
     })).many(3)
     const moreValidEvents = await new EventFactory([players[2]]).many(3)
 
-    await (<EntityManager>global.em).persistAndFlush(players)
+    await global.em.persistAndFlush(players)
     await global.clickhouse.insert({
       table: 'events',
       values: [
@@ -241,7 +241,7 @@ describe('Headline service - get', () => {
     const [token] = await createUserAndToken({}, organisation)
 
     const player = await new PlayerFactory([game]).devBuild().one()
-    await (<EntityManager>global.em).persistAndFlush(player)
+    await global.em.persistAndFlush(player)
 
     const validEvents = await new EventFactory([player]).many(3)
     await global.clickhouse.insert({
@@ -269,7 +269,7 @@ describe('Headline service - get', () => {
         aliases: new Collection<PlayerAlias>(player, [alias])
       }
     }).one()
-    await (<EntityManager>global.em).persistAndFlush(player)
+    await global.em.persistAndFlush(player)
 
     const validEvents = await new EventFactory([player]).many(3)
     await global.clickhouse.insert({
@@ -293,7 +293,7 @@ describe('Headline service - get', () => {
     const [token] = await createUserAndToken({}, organisation)
 
     const players = await new PlayerFactory([game]).many(10)
-    await (<EntityManager>global.em).persistAndFlush(players)
+    await global.em.persistAndFlush(players)
 
     const res = await request(global.app)
       .get(`/games/${game.id}/headlines/total_players`)
@@ -308,7 +308,7 @@ describe('Headline service - get', () => {
     const [token] = await createUserAndToken({}, organisation)
 
     const players = await new PlayerFactory([game]).devBuild().many(10)
-    await (<EntityManager>global.em).persistAndFlush(players)
+    await global.em.persistAndFlush(players)
 
     const res = await request(global.app)
       .get(`/games/${game.id}/headlines/total_players`)
@@ -323,7 +323,7 @@ describe('Headline service - get', () => {
     const [token] = await createUserAndToken({}, organisation)
 
     const players = await new PlayerFactory([game]).devBuild().many(10)
-    await (<EntityManager>global.em).persistAndFlush(players)
+    await global.em.persistAndFlush(players)
 
     const res = await request(global.app)
       .get(`/games/${game.id}/headlines/total_players`)
@@ -345,7 +345,7 @@ describe('Headline service - get', () => {
       .state(async (player) => ({ presence: await new PlayerPresenceFactory(player.game).offline().one() }))
       .many(5)
 
-    await (<EntityManager>global.em).persistAndFlush([...onlinePlayers, ...offlinePlayers])
+    await global.em.persistAndFlush([...onlinePlayers, ...offlinePlayers])
 
     const res = await request(global.app)
       .get(`/games/${game.id}/headlines/online_players`)
@@ -364,7 +364,7 @@ describe('Headline service - get', () => {
       .state(async (player) => ({ presence: await new PlayerPresenceFactory(player.game).online().one() }))
       .many(5)
 
-    await (<EntityManager>global.em).persistAndFlush(onlinePlayers)
+    await global.em.persistAndFlush(onlinePlayers)
 
     const res = await request(global.app)
       .get(`/games/${game.id}/headlines/online_players`)
@@ -383,7 +383,7 @@ describe('Headline service - get', () => {
       .state(async (player) => ({ presence: await new PlayerPresenceFactory(player.game).online().one() }))
       .many(5)
 
-    await (<EntityManager>global.em).persistAndFlush(onlinePlayers)
+    await global.em.persistAndFlush(onlinePlayers)
 
     const res = await request(global.app)
       .get(`/games/${game.id}/headlines/online_players`)

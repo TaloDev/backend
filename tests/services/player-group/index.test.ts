@@ -1,4 +1,3 @@
-import { EntityManager } from '@mikro-orm/mysql'
 import request from 'supertest'
 import PlayerGroupFactory from '../../fixtures/PlayerGroupFactory'
 import createOrganisationAndGame from '../../utils/createOrganisationAndGame'
@@ -11,7 +10,7 @@ describe('Player group service - index', () => {
     const [token] = await createUserAndToken({}, organisation)
 
     const groups = await new PlayerGroupFactory().construct(game).many(3)
-    await (<EntityManager>global.em).persistAndFlush(groups)
+    await global.em.persistAndFlush(groups)
 
     const res = await request(global.app)
       .get(`/games/${game.id}/player-groups`)

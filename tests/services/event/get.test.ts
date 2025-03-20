@@ -1,4 +1,3 @@
-import { EntityManager } from '@mikro-orm/mysql'
 import request from 'supertest'
 import EventFactory from '../../fixtures/EventFactory'
 import PlayerFactory from '../../fixtures/PlayerFactory'
@@ -19,7 +18,7 @@ describe('Event service - get', () => {
       createdAt: addDays(now, idx)
     })).many(2)
 
-    await (<EntityManager>global.em).persistAndFlush(player)
+    await global.em.persistAndFlush(player)
     await global.clickhouse.insert({
       table: 'events',
       values: events.map((event) => event.toInsertable()),
@@ -162,7 +161,7 @@ describe('Event service - get', () => {
       createdAt: addDays(now, 3)
     })).one()
 
-    await (<EntityManager>global.em).persistAndFlush(player)
+    await global.em.persistAndFlush(player)
     await global.clickhouse.insert({
       table: 'events',
       values: [
@@ -200,7 +199,7 @@ describe('Event service - get', () => {
       createdAt: addDays(now, idx)
     })).one()
 
-    await (<EntityManager>global.em).persistAndFlush(player)
+    await global.em.persistAndFlush(player)
     await global.clickhouse.insert({
       table: 'events',
       values: [event.toInsertable()],
@@ -245,7 +244,7 @@ describe('Event service - get', () => {
 
     const player = await new PlayerFactory([game]).one()
     const events = await new EventFactory([player]).state(() => ({ name: 'Talk to NPC', createdAt: new Date() })).many(3)
-    await (<EntityManager>global.em).persistAndFlush(player)
+    await global.em.persistAndFlush(player)
     await global.clickhouse.insert({
       table: 'events',
       values: events.map((event) => event.toInsertable()),
@@ -267,7 +266,7 @@ describe('Event service - get', () => {
 
     const player = await new PlayerFactory([game]).devBuild().one()
     const events = await new EventFactory([player]).state(() => ({ name: 'Talk to NPC', createdAt: new Date() })).many(3)
-    await (<EntityManager>global.em).persistAndFlush(player)
+    await global.em.persistAndFlush(player)
     await global.clickhouse.insert({
       table: 'events',
       values: events.map((event) => event.toInsertable()),
@@ -289,7 +288,7 @@ describe('Event service - get', () => {
 
     const player = await new PlayerFactory([game]).devBuild().one()
     const events = await new EventFactory([player]).state(() => ({ name: 'Talk to NPC', createdAt: new Date() })).many(3)
-    await (<EntityManager>global.em).persistAndFlush(player)
+    await global.em.persistAndFlush(player)
     await global.clickhouse.insert({
       table: 'events',
       values: events.map((event) => event.toInsertable()),

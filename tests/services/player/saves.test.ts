@@ -1,4 +1,3 @@
-import { EntityManager } from '@mikro-orm/mysql'
 import request from 'supertest'
 import PlayerFactory from '../../fixtures/PlayerFactory'
 import createUserAndToken from '../../utils/createUserAndToken'
@@ -13,7 +12,7 @@ describe('Player service - get saves', () => {
     const player = await new PlayerFactory([game]).one()
     const saves = await new GameSaveFactory([player]).many(3)
 
-    await (<EntityManager>global.em).persistAndFlush([player, ...saves])
+    await global.em.persistAndFlush([player, ...saves])
 
     const res = await request(global.app)
       .get(`/games/${game.id}/players/${player.id}/saves`)
@@ -29,7 +28,7 @@ describe('Player service - get saves', () => {
 
     const player = await new PlayerFactory([game]).one()
 
-    await (<EntityManager>global.em).persistAndFlush(player)
+    await global.em.persistAndFlush(player)
 
     await request(global.app)
       .get(`/games/${game.id}/players/${player.id}/saves`)

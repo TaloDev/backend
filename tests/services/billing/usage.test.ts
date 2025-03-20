@@ -1,4 +1,3 @@
-import { EntityManager } from '@mikro-orm/mysql'
 import request from 'supertest'
 import createOrganisationAndGame from '../../utils/createOrganisationAndGame'
 import createUserAndToken from '../../utils/createUserAndToken'
@@ -15,7 +14,7 @@ describe('Billing service - usage', () => {
 
     organisation.pricingPlan.pricingPlan.playerLimit = limit
     const players = await new PlayerFactory(organisation.games.getItems()).many(used)
-    await (<EntityManager>global.em).persistAndFlush(players)
+    await global.em.persistAndFlush(players)
 
     const res = await request(global.app)
       .get('/billing/usage')

@@ -1,4 +1,3 @@
-import { EntityManager } from '@mikro-orm/mysql'
 import request from 'supertest'
 import { UserType } from '../../../src/entities/user'
 import createUserAndToken from '../../utils/createUserAndToken'
@@ -17,7 +16,7 @@ describe('Integration service - index', () => {
 
     const config = await new IntegrationConfigFactory().one()
     const integrations = await new IntegrationFactory().construct(IntegrationType.STEAMWORKS, game, config).many(3)
-    await (<EntityManager>global.em).persistAndFlush(integrations)
+    await global.em.persistAndFlush(integrations)
 
     const res = await request(global.app)
       .get(`/games/${game.id}/integrations`)
@@ -41,7 +40,7 @@ describe('Integration service - index', () => {
 
     const config = await new IntegrationConfigFactory().one()
     const integrations = await new IntegrationFactory().construct(IntegrationType.STEAMWORKS, game, config).many(3)
-    await (<EntityManager>global.em).persistAndFlush(integrations)
+    await global.em.persistAndFlush(integrations)
 
     const res = await request(global.app)
       .get(`/games/${game.id}/integrations`)

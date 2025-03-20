@@ -1,4 +1,3 @@
-import { EntityManager } from '@mikro-orm/mysql'
 import request from 'supertest'
 import { UserType } from '../../../src/entities/user'
 import GameActivity, { GameActivityType } from '../../../src/entities/game-activity'
@@ -36,7 +35,7 @@ describe('Game service - patch', () => {
       .auth(token, { type: 'bearer' })
       .expect(statusCode)
 
-    const activity = await (<EntityManager>global.em).getRepository(GameActivity).findOne({
+    const activity = await global.em.getRepository(GameActivity).findOne({
       type: GameActivityType.GAME_PROPS_UPDATED,
       game
     })
@@ -171,7 +170,7 @@ describe('Game service - patch', () => {
 
     expect(res.body.game.name).toBe('New game name')
 
-    const activity = await (<EntityManager>global.em).getRepository(GameActivity).findOne({
+    const activity = await global.em.getRepository(GameActivity).findOne({
       type: GameActivityType.GAME_NAME_UPDATED,
       game,
       extra: {
@@ -191,7 +190,7 @@ describe('Game service - patch', () => {
 
     apiKey.game.props = [new Prop('xpRate', '1')]
     apiKey.createdByUser.type = UserType.ADMIN
-    await (<EntityManager>global.em).flush()
+    await global.em.flush()
 
     const token = await genAccessToken(apiKey.createdByUser)
 
@@ -228,7 +227,7 @@ describe('Game service - patch', () => {
 
     apiKey.game.props = [new Prop('xpRate', '1')]
     apiKey.createdByUser.type = UserType.ADMIN
-    await (<EntityManager>global.em).flush()
+    await global.em.flush()
 
     const token = await genAccessToken(apiKey.createdByUser)
 

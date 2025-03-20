@@ -3,7 +3,6 @@ import createUserAndToken from '../../utils/createUserAndToken'
 import createOrganisationAndGame from '../../utils/createOrganisationAndGame'
 import GameFeedbackFactory from '../../fixtures/GameFeedbackFactory'
 import GameFeedbackCategoryFactory from '../../fixtures/GameFeedbackCategoryFactory'
-import { EntityManager } from '@mikro-orm/mysql'
 import PlayerAliasFactory from '../../fixtures/PlayerAliasFactory'
 import PlayerFactory from '../../fixtures/PlayerFactory'
 import GameFeedback from '../../../src/entities/game-feedback'
@@ -14,7 +13,7 @@ describe('Game feedback service - index', () => {
     const [token] = await createUserAndToken({}, organisation)
 
     const feedback = await new GameFeedbackFactory(game).many(10)
-    await (<EntityManager>global.em).persistAndFlush(feedback)
+    await global.em.persistAndFlush(feedback)
 
     const res = await request(global.app)
       .get(`/games/${game.id}/game-feedback`)
@@ -35,7 +34,7 @@ describe('Game feedback service - index', () => {
 
     const feedbackWithRelevantCategory = await new GameFeedbackFactory(game).state(() => ({ category })).many(5)
     const feedbackWithoutRelevantCategory = await new GameFeedbackFactory(game).many(5)
-    await (<EntityManager>global.em).persistAndFlush([...feedbackWithRelevantCategory, ...feedbackWithoutRelevantCategory])
+    await global.em.persistAndFlush([...feedbackWithRelevantCategory, ...feedbackWithoutRelevantCategory])
 
     const res = await request(global.app)
       .get(`/games/${game.id}/game-feedback`)
@@ -77,7 +76,7 @@ describe('Game feedback service - index', () => {
 
     const count = 82
     const feedback = await new GameFeedbackFactory(game).many(count)
-    await (<EntityManager>global.em).persistAndFlush(feedback)
+    await global.em.persistAndFlush(feedback)
 
     const page = Math.floor(count / 50)
 
@@ -100,7 +99,7 @@ describe('Game feedback service - index', () => {
 
     const feedbackWithRelevantComment = await new GameFeedbackFactory(game).state(() => ({ category, comment: 'blah' })).many(3)
     const feedbackWithoutRelevantComment = await new GameFeedbackFactory(game).state(() => ({ comment: 'bleh' })).many(5)
-    await (<EntityManager>global.em).persistAndFlush([...feedbackWithRelevantComment, ...feedbackWithoutRelevantComment])
+    await global.em.persistAndFlush([...feedbackWithRelevantComment, ...feedbackWithoutRelevantComment])
 
     const res = await request(global.app)
       .get(`/games/${game.id}/game-feedback`)
@@ -120,7 +119,7 @@ describe('Game feedback service - index', () => {
     const feedbackWithRelevantCategory = await new GameFeedbackFactory(game).state(() => ({ category })).many(10)
     const feedbackWithRelevantCategoryAndComment = await new GameFeedbackFactory(game).state(() => ({ category, comment: 'blah' })).many(3)
     const feedbackWithoutRelevantCategory = await new GameFeedbackFactory(game).state(() => ({ comment: 'blah' })).many(5)
-    await (<EntityManager>global.em).persistAndFlush([...feedbackWithRelevantCategory, ...feedbackWithRelevantCategoryAndComment, ...feedbackWithoutRelevantCategory])
+    await global.em.persistAndFlush([...feedbackWithRelevantCategory, ...feedbackWithRelevantCategoryAndComment, ...feedbackWithoutRelevantCategory])
 
     const res = await request(global.app)
       .get(`/games/${game.id}/game-feedback`)
@@ -148,7 +147,7 @@ describe('Game feedback service - index', () => {
 
     const feedbackWithoutRelevantAlias = await new GameFeedbackFactory(game).many(5)
 
-    await (<EntityManager>global.em).persistAndFlush([...feedbackWithRelevantAlias, ...feedbackWithoutRelevantAlias])
+    await global.em.persistAndFlush([...feedbackWithRelevantAlias, ...feedbackWithoutRelevantAlias])
 
     const res = await request(global.app)
       .get(`/games/${game.id}/game-feedback`)
@@ -174,7 +173,7 @@ describe('Game feedback service - index', () => {
       anonymised: true
     })).many(3)
 
-    await (<EntityManager>global.em).persistAndFlush(feedbackWithRelevantAlias)
+    await global.em.persistAndFlush(feedbackWithRelevantAlias)
 
     const res = await request(global.app)
       .get(`/games/${game.id}/game-feedback`)
@@ -208,7 +207,7 @@ describe('Game feedback service - index', () => {
       anonymised: false
     })).many(5)
 
-    await (<EntityManager>global.em).persistAndFlush([...feedbackWithRelevantCategory, ...feedbackWithRelevantCategoryAndAlias, ...feedbackWithoutRelevantCategory])
+    await global.em.persistAndFlush([...feedbackWithRelevantCategory, ...feedbackWithRelevantCategoryAndAlias, ...feedbackWithoutRelevantCategory])
 
     const res = await request(global.app)
       .get(`/games/${game.id}/game-feedback`)
@@ -225,7 +224,7 @@ describe('Game feedback service - index', () => {
 
     const player = await new PlayerFactory([game]).devBuild().one()
     const feedback = await new GameFeedbackFactory(game).state(() => ({ playerAlias: player.aliases[0] })).many(10)
-    await (<EntityManager>global.em).persistAndFlush(feedback)
+    await global.em.persistAndFlush(feedback)
 
     const res = await request(global.app)
       .get(`/games/${game.id}/game-feedback`)

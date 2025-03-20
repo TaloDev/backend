@@ -1,4 +1,3 @@
-import { EntityManager } from '@mikro-orm/mysql'
 import request from 'supertest'
 import PlayerGroupFactory from '../../fixtures/PlayerGroupFactory'
 import PlayerGroupRule, { PlayerGroupRuleCastType, PlayerGroupRuleName } from '../../../src/entities/player-group-rule'
@@ -71,7 +70,7 @@ describe('Player service - post', () => {
     rule.operands = ['60']
 
     const group = await new PlayerGroupFactory().construct(game).state(() => ({ rules: [rule] })).one()
-    await (<EntityManager>global.em).persistAndFlush(group)
+    await global.em.persistAndFlush(group)
 
     const res = await request(global.app)
       .post(`/games/${game.id}/players`)
@@ -168,7 +167,7 @@ describe('Player service - post', () => {
     const [token] = await createUserAndToken({}, organisation)
 
     const player = await new PlayerFactory([game]).one()
-    await (<EntityManager>global.em).persistAndFlush(player)
+    await global.em.persistAndFlush(player)
 
     const res = await request(global.app)
       .post(`/games/${game.id}/players`)
@@ -193,7 +192,7 @@ describe('Player service - post', () => {
 
     organisation.pricingPlan.pricingPlan.playerLimit = 20
     const players = await new PlayerFactory([game]).many(20)
-    await (<EntityManager>global.em).persistAndFlush(players)
+    await global.em.persistAndFlush(players)
 
     const res = await request(global.app)
       .post(`/games/${game.id}/players`)
@@ -209,7 +208,7 @@ describe('Player service - post', () => {
 
     organisation.pricingPlan.pricingPlan.playerLimit = 20
     const players = await new PlayerFactory([game]).many(21)
-    await (<EntityManager>global.em).persistAndFlush(players)
+    await global.em.persistAndFlush(players)
 
     const res = await request(global.app)
       .post(`/games/${game.id}/players`)
@@ -228,7 +227,7 @@ describe('Player service - post', () => {
 
     organisation.pricingPlan.pricingPlan.playerLimit = 2
     const player = await new PlayerFactory([game]).one()
-    await (<EntityManager>global.em).persistAndFlush(player)
+    await global.em.persistAndFlush(player)
 
     const res = await request(global.app)
       .post(`/games/${game.id}/players`)

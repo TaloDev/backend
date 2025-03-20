@@ -1,4 +1,3 @@
-import { EntityManager } from '@mikro-orm/mysql'
 import request from 'supertest'
 import { UserType } from '../../../src/entities/user'
 import GameActivity, { GameActivityType } from '../../../src/entities/game-activity'
@@ -21,7 +20,7 @@ describe('Game stat service - post', () => {
       .auth(token, { type: 'bearer' })
       .expect(statusCode)
 
-    const activity = await (<EntityManager>global.em).getRepository(GameActivity).findOne({
+    const activity = await global.em.getRepository(GameActivity).findOne({
       type: GameActivityType.GAME_STAT_CREATED,
       game
     })
@@ -65,7 +64,7 @@ describe('Game stat service - post', () => {
     expect(res.body.stat.maxValue).toBe(10)
     expect(res.body.stat.minTimeBetweenUpdates).toBe(0)
 
-    const activity = await (<EntityManager>global.em).getRepository(GameActivity).findOne({
+    const activity = await global.em.getRepository(GameActivity).findOne({
       type: GameActivityType.GAME_STAT_CREATED,
       game,
       extra: {
@@ -106,7 +105,7 @@ describe('Game stat service - post', () => {
     const [token] = await createUserAndToken({}, organisation)
 
     const stat = await new GameStatFactory([game]).state(() => ({ internalName: 'levels-completed' })).one()
-    await (<EntityManager>global.em).persistAndFlush(stat)
+    await global.em.persistAndFlush(stat)
 
     const res = await request(global.app)
       .post(`/games/${game.id}/game-stats`)
@@ -127,7 +126,7 @@ describe('Game stat service - post', () => {
     const [token] = await createUserAndToken({}, organisation)
 
     const stat = await new GameStatFactory([otherGame]).state(() => ({ internalName: 'levels-completed' })).one()
-    await (<EntityManager>global.em).persistAndFlush(stat)
+    await global.em.persistAndFlush(stat)
 
     await request(global.app)
       .post(`/games/${game.id}/game-stats`)

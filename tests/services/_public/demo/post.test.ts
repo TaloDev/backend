@@ -1,4 +1,3 @@
-import { EntityManager } from '@mikro-orm/mysql'
 import request from 'supertest'
 import Organisation from '../../../../src/entities/organisation'
 import OrganisationFactory from '../../../fixtures/OrganisationFactory'
@@ -15,7 +14,7 @@ describe('Demo service - post', () => {
 
   beforeAll(async () => {
     demoOrg = await new OrganisationFactory().demo().one()
-    await (<EntityManager>global.em).persistAndFlush(demoOrg)
+    await global.em.persistAndFlush(demoOrg)
   })
 
   it('should create a demo user and then delete them', async () => {
@@ -29,14 +28,14 @@ describe('Demo service - post', () => {
 
     expect(res.body.accessToken).toBeTruthy()
 
-    const user = await (<EntityManager>global.em).getRepository(User).findOne(res.body.user.id)
+    const user = await global.em.getRepository(User).findOne(res.body.user.id)
     expect(user).toBeNull()
   })
 
   it('should insert events if there arent any for the last month', async () => {
     const game = await new GameFactory(demoOrg).one()
     const players = await new PlayerFactory([game]).many(2)
-    await (<EntityManager>global.em).persistAndFlush(players)
+    await global.em.persistAndFlush(players)
 
     const date = formatDateForClickHouse(sub(new Date(), { months: 1 }), false)
 

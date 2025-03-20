@@ -1,4 +1,3 @@
-import { EntityManager } from '@mikro-orm/mysql'
 import request from 'supertest'
 import { UserType } from '../../../src/entities/user'
 import GameActivity, { GameActivityType } from '../../../src/entities/game-activity'
@@ -15,14 +14,14 @@ describe('Game feedback service - delete category', () => {
     const [token] = await createUserAndToken({ type, emailConfirmed: true }, organisation)
 
     const feedbackCategory = await new GameFeedbackCategoryFactory(game).one()
-    await (<EntityManager>global.em).persistAndFlush(feedbackCategory)
+    await global.em.persistAndFlush(feedbackCategory)
 
     await request(global.app)
       .delete(`/games/${game.id}/game-feedback/categories/${feedbackCategory.id}`)
       .auth(token, { type: 'bearer' })
       .expect(statusCode)
 
-    const activity = await (<EntityManager>global.em).getRepository(GameActivity).findOne({
+    const activity = await global.em.getRepository(GameActivity).findOne({
       type: GameActivityType.GAME_FEEDBACK_CATEGORY_DELETED,
       game,
       extra: {
@@ -42,7 +41,7 @@ describe('Game feedback service - delete category', () => {
     const [token] = await createUserAndToken({ type: UserType.ADMIN })
 
     const feedbackCategory = await new GameFeedbackCategoryFactory(otherGame).one()
-    await (<EntityManager>global.em).persistAndFlush(feedbackCategory)
+    await global.em.persistAndFlush(feedbackCategory)
 
     const res = await request(global.app)
       .delete(`/games/${otherGame.id}/game-feedback/categories/${feedbackCategory.id}`)

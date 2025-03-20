@@ -1,4 +1,3 @@
-import { EntityManager } from '@mikro-orm/mysql'
 import request from 'supertest'
 import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
 import initStripe from '../../../../src/lib/billing/initStripe'
@@ -24,7 +23,7 @@ describe('Webhook service - invoice finalized', () => {
     const invoice = (await stripe.invoices.list()).data[0]
 
     organisation.pricingPlan.stripeCustomerId = invoice.customer as string
-    await (<EntityManager>global.em).flush()
+    await global.em.flush()
 
     const payload = JSON.stringify({
       id: v4(),

@@ -1,4 +1,3 @@
-import { EntityManager } from '@mikro-orm/mysql'
 import request from 'supertest'
 import initStripe from '../../../src/lib/billing/initStripe'
 import PricingPlanFactory from '../../fixtures/PricingPlanFactory'
@@ -23,7 +22,7 @@ describe('Billing service - confirm plan', () => {
 
     organisation.pricingPlan.stripeCustomerId = subscription.customer as string
     organisation.pricingPlan.stripePriceId = price.id
-    await (<EntityManager>global.em).flush()
+    await global.em.flush()
 
     const res = await request(global.app)
       .post('/billing/confirm-plan')
@@ -50,7 +49,7 @@ describe('Billing service - confirm plan', () => {
 
     organisation.pricingPlan.stripeCustomerId = null
     organisation.pricingPlan.stripePriceId = price.id
-    await (<EntityManager>global.em).flush()
+    await global.em.flush()
 
     await request(global.app)
       .post('/billing/confirm-plan')
@@ -75,7 +74,7 @@ describe('Billing service - confirm plan', () => {
 
     organisation.pricingPlan.stripeCustomerId = subscription.customer as string
     organisation.pricingPlan.stripePriceId = price.id
-    await (<EntityManager>global.em).flush()
+    await global.em.flush()
 
     await request(global.app)
       .post('/billing/confirm-plan')

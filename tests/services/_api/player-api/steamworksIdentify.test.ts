@@ -1,4 +1,4 @@
-import { Collection, EntityManager } from '@mikro-orm/mysql'
+import { Collection } from '@mikro-orm/mysql'
 import request from 'supertest'
 import { APIKeyScope } from '../../../../src/entities/api-key'
 import PlayerFactory from '../../../fixtures/PlayerFactory'
@@ -58,7 +58,7 @@ describe('Player API service - identify - steamworks auth', () => {
 
     const config = await new IntegrationConfigFactory().state(() => ({ appId })).one()
     const integration = await new IntegrationFactory().construct(IntegrationType.STEAMWORKS, apiKey.game, config).one()
-    await (<EntityManager>global.em).persistAndFlush([integration, player])
+    await global.em.persistAndFlush([integration, player])
 
     const res = await request(global.app)
       .get('/v1/players/identify')
@@ -129,7 +129,7 @@ describe('Player API service - identify - steamworks auth', () => {
 
     const config = await new IntegrationConfigFactory().state(() => ({ appId })).one()
     const integration = await new IntegrationFactory().construct(IntegrationType.STEAMWORKS, apiKey.game, config).one()
-    await (<EntityManager>global.em).persistAndFlush(integration)
+    await global.em.persistAndFlush(integration)
 
     const res = await request(global.app)
       .get('/v1/players/identify')
@@ -198,7 +198,7 @@ describe('Player API service - identify - steamworks auth', () => {
 
     const config = await new IntegrationConfigFactory().state(() => ({ appId })).one()
     const integration = await new IntegrationFactory().construct(IntegrationType.STEAMWORKS, apiKey.game, config).one()
-    await (<EntityManager>global.em).persistAndFlush(integration)
+    await global.em.persistAndFlush(integration)
 
     const res = await request(global.app)
       .get('/v1/players/identify')
@@ -240,7 +240,7 @@ describe('Player API service - identify - steamworks auth', () => {
 
     const config = await new IntegrationConfigFactory().state(() => ({ appId })).one()
     const integration = await new IntegrationFactory().construct(IntegrationType.STEAMWORKS, apiKey.game, config).one()
-    await (<EntityManager>global.em).persistAndFlush(integration)
+    await global.em.persistAndFlush(integration)
 
     const res = await request(global.app)
       .get('/v1/players/identify')

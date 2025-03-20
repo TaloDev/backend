@@ -1,4 +1,4 @@
-import { Collection, EntityManager } from '@mikro-orm/mysql'
+import { Collection } from '@mikro-orm/mysql'
 import request from 'supertest'
 import createOrganisationAndGame from '../../utils/createOrganisationAndGame'
 import createUserAndToken from '../../utils/createUserAndToken'
@@ -40,7 +40,7 @@ describe('Player group service - post', () => {
       .auth(token, { type: 'bearer' })
       .expect(statusCode)
 
-    const activity = await (<EntityManager>global.em).getRepository(GameActivity).findOne({
+    const activity = await global.em.getRepository(GameActivity).findOne({
       type: GameActivityType.PLAYER_GROUP_CREATED,
       game
     })
@@ -69,7 +69,7 @@ describe('Player group service - post', () => {
       ])
     })).one()
     const player2 = await new PlayerFactory([game]).one()
-    await (<EntityManager>global.em).persistAndFlush([player1, player2])
+    await global.em.persistAndFlush([player1, player2])
 
     const rules: Partial<PlayerGroupRule>[] = [
       {

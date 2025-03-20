@@ -1,4 +1,3 @@
-import { EntityManager } from '@mikro-orm/mysql'
 import request from 'supertest'
 import UserAccessCode from '../../../../src/entities/user-access-code'
 import UserFactory from '../../../fixtures/UserFactory'
@@ -11,7 +10,7 @@ import { randEmail, randUserName } from '@ngneat/falso'
 describe('User public service - register', () => {
   beforeAll(async () => {
     const pricingPlan = await new PricingPlanFactory().one()
-    await (<EntityManager>global.em).persistAndFlush(pricingPlan)
+    await global.em.persistAndFlush(pricingPlan)
   })
 
   it('should register a user', async () => {
@@ -33,7 +32,7 @@ describe('User public service - register', () => {
   it('should not let a user register if the email already exists', async () => {
     const email = randEmail()
     const user = await new UserFactory().state(() => ({ email })).one()
-    await (<EntityManager>global.em).persistAndFlush(user)
+    await global.em.persistAndFlush(user)
 
     const res = await request(global.app)
       .post('/public/users/register')
@@ -51,7 +50,7 @@ describe('User public service - register', () => {
       .send({ email, username: randUserName(), password: 'password', organisationName: 'Talo' })
       .expect(200)
 
-    const accessCode = await (<EntityManager>global.em).getRepository(UserAccessCode).findOne({
+    const accessCode = await global.em.getRepository(UserAccessCode).findOne({
       user: {
         email
       }
@@ -63,7 +62,7 @@ describe('User public service - register', () => {
   it('should let a user register with an invite', async () => {
     const organisation = await new OrganisationFactory().one()
     const invite = await new InviteFactory().construct(organisation).one()
-    await (<EntityManager>global.em).persistAndFlush(invite)
+    await global.em.persistAndFlush(invite)
 
     const email = invite.email
     const username = randUserName()
@@ -79,7 +78,7 @@ describe('User public service - register', () => {
     expect(res.body.user.password).not.toBeDefined()
     expect(res.body.user.organisation.id).toBe(organisation.id)
 
-    const activity = await (<EntityManager>global.em).getRepository(GameActivity).findOne({
+    const activity = await global.em.getRepository(GameActivity).findOne({
       type: GameActivityType.INVITE_ACCEPTED
     })
 
@@ -89,7 +88,7 @@ describe('User public service - register', () => {
   it('should not let a user register with an invite if the email doesn\'t match', async () => {
     const organisation = await new OrganisationFactory().one()
     const invite = await new InviteFactory().construct(organisation).one()
-    await (<EntityManager>global.em).persistAndFlush(invite)
+    await global.em.persistAndFlush(invite)
 
     const email = randEmail()
     const username = randUserName()
@@ -103,7 +102,7 @@ describe('User public service - register', () => {
   it('should not let a user register with a missing invite', async () => {
     const organisation = await new OrganisationFactory().one()
     const invite = await new InviteFactory().construct(organisation).one()
-    await (<EntityManager>global.em).persistAndFlush(invite)
+    await global.em.persistAndFlush(invite)
 
     const email = randEmail()
     const username = randUserName()

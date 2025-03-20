@@ -1,4 +1,3 @@
-import { EntityManager } from '@mikro-orm/mysql'
 import request from 'supertest'
 import PlayerFactory from '../../fixtures/PlayerFactory'
 import GameStatFactory from '../../fixtures/GameStatFactory'
@@ -18,7 +17,7 @@ describe('Player service - get stats', () => {
     const player = await new PlayerFactory([game]).one()
     const playerStats = await new PlayerGameStatFactory().construct(player, rand(stats)).many(3)
 
-    await (<EntityManager>global.em).persistAndFlush([player, ...playerStats])
+    await global.em.persistAndFlush([player, ...playerStats])
 
     const res = await request(global.app)
       .get(`/games/${game.id}/players/${player.id}/stats`)
@@ -34,7 +33,7 @@ describe('Player service - get stats', () => {
 
     const player = await new PlayerFactory([game]).one()
 
-    await (<EntityManager>global.em).persistAndFlush(player)
+    await global.em.persistAndFlush(player)
 
     await request(global.app)
       .get(`/games/${game.id}/players/${player.id}/stats`)

@@ -1,4 +1,3 @@
-import { EntityManager } from '@mikro-orm/mysql'
 import request from 'supertest'
 import { APIKeyScope } from '../../../../src/entities/api-key'
 import PlayerFactory from '../../../fixtures/PlayerFactory'
@@ -11,7 +10,7 @@ describe('Game save API service - patch', () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_SAVES])
     const player = await new PlayerFactory([apiKey.game]).one()
     const save = await new GameSaveFactory([player]).one()
-    await (<EntityManager>global.em).persistAndFlush(save)
+    await global.em.persistAndFlush(save)
 
     const res = await request(global.app)
       .patch(`/v1/game-saves/${save.id}`)
@@ -29,7 +28,7 @@ describe('Game save API service - patch', () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_SAVES])
     const player = await new PlayerFactory([apiKey.game]).one()
     const save = await new GameSaveFactory([player]).one()
-    await (<EntityManager>global.em).persistAndFlush(save)
+    await global.em.persistAndFlush(save)
 
     const res = await request(global.app)
       .patch(`/v1/game-saves/${save.id}`)
@@ -45,7 +44,7 @@ describe('Game save API service - patch', () => {
     const [apiKey, token] = await createAPIKeyAndToken([])
     const player = await new PlayerFactory([apiKey.game]).one()
     const save = await new GameSaveFactory([player]).one()
-    await (<EntityManager>global.em).persistAndFlush(save)
+    await global.em.persistAndFlush(save)
 
     await request(global.app)
       .patch(`/v1/game-saves/${save.id}`)
@@ -64,7 +63,7 @@ describe('Game save API service - patch', () => {
     const otherPlayer = await new PlayerFactory([game]).one()
     const otherSave = await new GameSaveFactory([otherPlayer]).one()
 
-    await (<EntityManager>global.em).persistAndFlush([save, otherSave])
+    await global.em.persistAndFlush([save, otherSave])
 
     const res = await request(global.app)
       .patch(`/v1/game-saves/${otherSave.id}`)

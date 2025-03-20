@@ -1,4 +1,4 @@
-import { Collection, EntityManager } from '@mikro-orm/mysql'
+import { Collection } from '@mikro-orm/mysql'
 import request from 'supertest'
 import createOrganisationAndGame from '../../utils/createOrganisationAndGame'
 import createUserAndToken from '../../utils/createUserAndToken'
@@ -19,7 +19,7 @@ describe('Player group service - put', () => {
     const [token] = await createUserAndToken({ type }, organisation)
 
     const group = await new PlayerGroupFactory().construct(game).one()
-    await (<EntityManager>global.em).persistAndFlush(group)
+    await global.em.persistAndFlush(group)
 
     const rules: Partial<PlayerGroupRule & { namespaced: boolean }>[] = [
       {
@@ -44,7 +44,7 @@ describe('Player group service - put', () => {
       .auth(token, { type: 'bearer' })
       .expect(statusCode)
 
-    const activity = await (<EntityManager>global.em).getRepository(GameActivity).findOne({
+    const activity = await global.em.getRepository(GameActivity).findOne({
       type: GameActivityType.PLAYER_GROUP_UPDATED,
       game
     })
@@ -67,7 +67,7 @@ describe('Player group service - put', () => {
     const [token] = await createUserAndToken({}, organisation)
 
     const group = await new PlayerGroupFactory().construct(game).one()
-    await (<EntityManager>global.em).persistAndFlush(group)
+    await global.em.persistAndFlush(group)
 
     const player1 = await new PlayerFactory([game]).state((player) => ({
       props: new Collection<PlayerProp>(player, [
@@ -75,7 +75,7 @@ describe('Player group service - put', () => {
       ])
     })).one()
     const player2 = await new PlayerFactory([game]).one()
-    await (<EntityManager>global.em).persistAndFlush([player1, player2])
+    await global.em.persistAndFlush([player1, player2])
 
     const rules: Partial<PlayerGroupRule>[] = [
       {
@@ -108,7 +108,7 @@ describe('Player group service - put', () => {
     const [token] = await createUserAndToken({ type: UserType.ADMIN })
 
     const group = await new PlayerGroupFactory().construct(otherGame).one()
-    await (<EntityManager>global.em).persistAndFlush(group)
+    await global.em.persistAndFlush(group)
 
     const res = await request(global.app)
       .put(`/games/${otherGame.id}/player-groups/${group.id}`)

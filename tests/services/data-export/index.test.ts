@@ -1,4 +1,3 @@
-import { EntityManager } from '@mikro-orm/mysql'
 import request from 'supertest'
 import DataExportFactory from '../../fixtures/DataExportFactory'
 import { UserType } from '../../../src/entities/user'
@@ -11,7 +10,7 @@ describe('Data export service - index', () => {
     const [token] = await createUserAndToken({ type: UserType.ADMIN, emailConfirmed: true }, organisation)
 
     const exports = await new DataExportFactory(game).many(5)
-    await (<EntityManager>global.em).persistAndFlush(exports)
+    await global.em.persistAndFlush(exports)
 
     const res = await request(global.app)
       .get(`/games/${game.id}/data-exports`)

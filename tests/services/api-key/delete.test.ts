@@ -1,4 +1,3 @@
-import { EntityManager } from '@mikro-orm/mysql'
 import request from 'supertest'
 import { UserType } from '../../../src/entities/user'
 import APIKey from '../../../src/entities/api-key'
@@ -20,16 +19,16 @@ describe('API key service - delete', () => {
     const [token, user] = await createUserAndToken({ type, emailConfirmed: true }, organisation)
 
     const key = new APIKey(game, user)
-    await (<EntityManager>global.em).persistAndFlush(key)
+    await global.em.persistAndFlush(key)
 
     const res = await request(global.app)
       .delete(`/games/${game.id}/api-keys/${key.id}`)
       .auth(token, { type: 'bearer' })
       .expect(statusCode)
 
-    await (<EntityManager>global.em).refresh(key)
+    await global.em.refresh(key)
 
-    const activity = await (<EntityManager>global.em).getRepository(GameActivity).findOne({
+    const activity = await global.em.getRepository(GameActivity).findOne({
       type: GameActivityType.API_KEY_REVOKED,
       game,
       extra: {
@@ -66,7 +65,7 @@ describe('API key service - delete', () => {
 
     const user = await new UserFactory().state(() => ({ organisation: otherOrg })).one()
     const key = new APIKey(otherGame, user)
-    await (<EntityManager>global.em).persistAndFlush(key)
+    await global.em.persistAndFlush(key)
 
     const res = await request(global.app)
       .delete(`/games/${otherGame.id}/api-keys/${key.id}`)
@@ -81,7 +80,7 @@ describe('API key service - delete', () => {
     const [token, user] = await createUserAndToken({ type: UserType.ADMIN, emailConfirmed: true }, organisation)
 
     const key = new APIKey(game, user)
-    await (<EntityManager>global.em).persistAndFlush(key)
+    await global.em.persistAndFlush(key)
 
     const redis = new Redis(redisConfig)
     const ticket = await createSocketTicket(redis, key, false)

@@ -1,4 +1,3 @@
-import { EntityManager } from '@mikro-orm/mysql'
 import request from 'supertest'
 import UserTwoFactorAuth from '../../../src/entities/user-two-factor-auth'
 import UserRecoveryCode from '../../../src/entities/user-recovery-code'
@@ -18,10 +17,10 @@ describe('User service - disable 2fa', () => {
 
     expect(res.body.user.has2fa).toBe(false)
 
-    const recoveryCodes = await (<EntityManager>global.em).getRepository(UserRecoveryCode).find({ user })
+    const recoveryCodes = await global.em.getRepository(UserRecoveryCode).find({ user })
     expect(recoveryCodes).toHaveLength(0)
 
-    const user2fa = await (<EntityManager>global.em).getRepository(UserTwoFactorAuth).findOne({ user })
+    const user2fa = await global.em.getRepository(UserTwoFactorAuth).findOne({ user })
     expect(user2fa).toBeNull()
   })
 

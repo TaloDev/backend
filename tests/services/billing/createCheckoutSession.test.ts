@@ -1,4 +1,3 @@
-import { EntityManager } from '@mikro-orm/mysql'
 import request from 'supertest'
 import initStripe from '../../../src/lib/billing/initStripe'
 import PricingPlanFactory from '../../fixtures/PricingPlanFactory'
@@ -22,7 +21,7 @@ describe('Billing service - create checkout session', () => {
 
     organisation.pricingPlan.stripeCustomerId = null
     organisation.pricingPlan.stripePriceId = null
-    await (<EntityManager>global.em).flush()
+    await global.em.flush()
 
     const res = await request(global.app)
       .post('/billing/checkout-session')
@@ -34,7 +33,7 @@ describe('Billing service - create checkout session', () => {
       .expect(statusCode)
 
     if (statusCode === 200) {
-      await (<EntityManager>global.em).refresh(organisation)
+      await global.em.refresh(organisation)
       expect(typeof organisation.pricingPlan.stripeCustomerId).toBe('string')
 
       expect(res.body.redirect).toBeDefined()
@@ -67,7 +66,7 @@ describe('Billing service - create checkout session', () => {
 
     const [organisation] = await createOrganisationAndGame({}, {}, plan)
     organisation.pricingPlan.stripeCustomerId = subscription.customer as string
-    await (<EntityManager>global.em).flush()
+    await global.em.flush()
 
     const [token] = await createUserAndToken({ type: UserType.OWNER }, organisation)
 
@@ -113,7 +112,7 @@ describe('Billing service - create checkout session', () => {
     const games = await orgPlan.organisation.games.loadItems()
     const players = await new PlayerFactory(games).many(10)
 
-    await (<EntityManager>global.em).persistAndFlush([organisation, ...players])
+    await global.em.persistAndFlush([organisation, ...players])
 
     const res = await request(global.app)
       .post('/billing/checkout-session')
@@ -136,7 +135,7 @@ describe('Billing service - create checkout session', () => {
 
     const [organisation] = await createOrganisationAndGame({}, {}, plan)
     organisation.pricingPlan.stripeCustomerId = subscription.customer as string
-    await (<EntityManager>global.em).flush()
+    await global.em.flush()
 
     const [token] = await createUserAndToken({ type: UserType.OWNER }, organisation)
 

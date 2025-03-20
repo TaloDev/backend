@@ -1,4 +1,3 @@
-import { EntityManager } from '@mikro-orm/mysql'
 import request from 'supertest'
 import { APIKeyScope } from '../../../../src/entities/api-key'
 import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
@@ -6,7 +5,7 @@ import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
 describe('Game config API service - index', () => {
   it('should return the game config if the scope is valid', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_GAME_CONFIG])
-    await (<EntityManager>global.em).populate(apiKey, ['game'])
+    await global.em.populate(apiKey, ['game'])
 
     const res = await request(global.app)
       .get('/v1/game-config')
@@ -27,9 +26,9 @@ describe('Game config API service - index', () => {
 
   it('should filter out meta props from the game config', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_GAME_CONFIG])
-    await (<EntityManager>global.em).populate(apiKey, ['game'])
+    await global.em.populate(apiKey, ['game'])
     apiKey.game.props.push({ key: 'META_PREV_NAME', value: 'LD51' })
-    await (<EntityManager>global.em).flush()
+    await global.em.flush()
 
     const res = await request(global.app)
       .get('/v1/game-config')

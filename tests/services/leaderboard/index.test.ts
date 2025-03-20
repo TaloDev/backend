@@ -1,4 +1,3 @@
-import { EntityManager } from '@mikro-orm/mysql'
 import request from 'supertest'
 import LeaderboardFactory from '../../fixtures/LeaderboardFactory'
 import createOrganisationAndGame from '../../utils/createOrganisationAndGame'
@@ -11,7 +10,7 @@ describe('Leaderboard service - index', () => {
     const [token] = await createUserAndToken({}, organisation)
 
     const leaderboards = await new LeaderboardFactory([game]).many(3)
-    await (<EntityManager>global.em).persistAndFlush(leaderboards)
+    await global.em.persistAndFlush(leaderboards)
 
     const res = await request(global.app)
       .get(`/games/${game.id}/leaderboards`)
@@ -39,7 +38,7 @@ describe('Leaderboard service - index', () => {
     const [token] = await createUserAndToken()
 
     const leaderboards = await new LeaderboardFactory([game]).many(3)
-    await (<EntityManager>global.em).persistAndFlush(leaderboards)
+    await global.em.persistAndFlush(leaderboards)
 
     await request(global.app)
       .get(`/games/${game.id}/leaderboards`)

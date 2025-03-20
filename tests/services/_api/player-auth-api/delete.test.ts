@@ -46,7 +46,7 @@ describe('Player auth API service - delete', () => {
 
     expect(await em.getRepository(PlayerAlias).findOne(alias.id)).toBeNull()
 
-    const activity = await (<EntityManager>global.em).getRepository(PlayerAuthActivity).findOne({
+    const activity = await global.em.getRepository(PlayerAuthActivity).findOne({
       type: PlayerAuthActivityType.DELETED_AUTH,
       player: player.id,
       extra: {
@@ -116,10 +116,10 @@ describe('Player auth API service - delete', () => {
       })).one()
     })).one()
     const alias = player.aliases[0]
-    await (<EntityManager>global.em).persistAndFlush(player)
+    await global.em.persistAndFlush(player)
 
     const sessionToken = await player.auth!.createSession(alias)
-    await (<EntityManager>global.em).flush()
+    await global.em.flush()
 
     const res = await request(global.app)
       .delete('/v1/players/auth/')
@@ -135,10 +135,10 @@ describe('Player auth API service - delete', () => {
       errorCode: 'INVALID_CREDENTIALS'
     })
 
-    await (<EntityManager>global.em).refresh(player.auth!)
+    await global.em.refresh(player.auth!)
     expect(player.auth).not.toBeUndefined()
 
-    const activity = await (<EntityManager>global.em).getRepository(PlayerAuthActivity).findOne({
+    const activity = await global.em.getRepository(PlayerAuthActivity).findOne({
       type: PlayerAuthActivityType.DELETE_AUTH_FAILED,
       player: player.id
     })
@@ -154,10 +154,10 @@ describe('Player auth API service - delete', () => {
       })).one()
     })).one()
     const alias = player.aliases[0]
-    await (<EntityManager>global.em).persistAndFlush(player)
+    await global.em.persistAndFlush(player)
 
     const sessionToken = await player.auth!.createSession(alias)
-    await (<EntityManager>global.em).flush()
+    await global.em.flush()
 
     await request(global.app)
       .delete('/v1/players/auth/')
@@ -185,10 +185,10 @@ describe('Player auth API service - delete', () => {
     })).one()
 
     player.presence = presence
-    await (<EntityManager>global.em).persistAndFlush(player)
+    await global.em.persistAndFlush(player)
 
     const sessionToken = await player.auth!.createSession(alias)
-    await (<EntityManager>global.em).flush()
+    await global.em.flush()
 
     await request(global.app)
       .delete('/v1/players/auth/')

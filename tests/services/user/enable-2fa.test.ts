@@ -1,4 +1,3 @@
-import { EntityManager } from '@mikro-orm/mysql'
 import request from 'supertest'
 import UserTwoFactorAuth from '../../../src/entities/user-two-factor-auth'
 import createUserAndToken from '../../utils/createUserAndToken'
@@ -14,7 +13,7 @@ describe('User service - enable 2fa', () => {
 
     expect(res.body.qr).toBeTruthy()
 
-    await (<EntityManager>global.em).refresh(user)
+    await global.em.refresh(user)
     expect(user.twoFactorAuth).toBeTruthy()
     expect(user.twoFactorAuth!.enabled).toBe(false)
   })
@@ -25,7 +24,7 @@ describe('User service - enable 2fa', () => {
     })
 
     user.twoFactorAuth!.enabled = true
-    await (<EntityManager>global.em).flush()
+    await global.em.flush()
 
     const res = await request(global.app)
       .get('/users/2fa/enable')

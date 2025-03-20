@@ -1,4 +1,3 @@
-import { EntityManager } from '@mikro-orm/mysql'
 import request from 'supertest'
 import createOrganisationAndGame from '../../utils/createOrganisationAndGame'
 import createUserAndToken from '../../utils/createUserAndToken'
@@ -13,7 +12,7 @@ describe('Game channel service - put', () => {
     const [token] = await createUserAndToken({}, organisation)
 
     const channel = await new GameChannelFactory(game).one()
-    await (<EntityManager>global.em).persistAndFlush(channel)
+    await global.em.persistAndFlush(channel)
 
     const res = await request(global.app)
       .put(`/games/${game.id}/game-channels/${channel.id}`)
@@ -21,7 +20,7 @@ describe('Game channel service - put', () => {
       .auth(token, { type: 'bearer' })
       .expect(200)
 
-    const activity = await (<EntityManager>global.em).getRepository(GameActivity).findOne({
+    const activity = await global.em.getRepository(GameActivity).findOne({
       type: GameActivityType.GAME_CHANNEL_UPDATED,
       game
     })
@@ -39,7 +38,7 @@ describe('Game channel service - put', () => {
     const [token] = await createUserAndToken()
 
     const channel = await new GameChannelFactory(game).one()
-    await (<EntityManager>global.em).persistAndFlush(channel)
+    await global.em.persistAndFlush(channel)
 
     const res = await request(global.app)
       .put(`/games/${game.id}/game-channels/${channel.id}`)
@@ -55,7 +54,7 @@ describe('Game channel service - put', () => {
     const [token] = await createUserAndToken()
 
     const channel = await new GameChannelFactory(game).one()
-    await (<EntityManager>global.em).persistAndFlush(channel)
+    await global.em.persistAndFlush(channel)
 
     const res = await request(global.app)
       .put(`/games/99999/game-channels/${channel.id}`)
@@ -84,7 +83,7 @@ describe('Game channel service - put', () => {
     const [token] = await createUserAndToken({}, organisation)
 
     const channel = await new GameChannelFactory(game).one()
-    await (<EntityManager>global.em).persistAndFlush(channel)
+    await global.em.persistAndFlush(channel)
 
     const res = await request(global.app)
       .put(`/games/${game.id}/game-channels/${channel.id}`)
@@ -101,7 +100,7 @@ describe('Game channel service - put', () => {
 
     const channel = await new GameChannelFactory(game).one()
     const player = await new PlayerFactory([game]).one()
-    await (<EntityManager>global.em).persistAndFlush([channel, player])
+    await global.em.persistAndFlush([channel, player])
 
     await request(global.app)
       .put(`/games/${game.id}/game-channels/${channel.id}`)
@@ -109,7 +108,7 @@ describe('Game channel service - put', () => {
       .auth(token, { type: 'bearer' })
       .expect(200)
 
-    const updatedChannel = await (<EntityManager>global.em).getRepository(GameChannel).findOneOrFail(
+    const updatedChannel = await global.em.getRepository(GameChannel).findOneOrFail(
       channel.id,
       { populate: ['members'] }
     )

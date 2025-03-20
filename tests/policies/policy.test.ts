@@ -1,4 +1,3 @@
-import { EntityManager } from '@mikro-orm/mysql'
 import { APIKeyScope } from '../../src/entities/api-key'
 import UserFactory from '../fixtures/UserFactory'
 import request from 'supertest'
@@ -11,7 +10,7 @@ describe('Policy base class', () => {
   it('should reject a revoked api key', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_EVENTS])
     apiKey.revokedAt = new Date()
-    await (<EntityManager>global.em).flush()
+    await global.em.flush()
 
     await request(global.app)
       .get('/v1/players/identify?service=username&identifier=')
@@ -24,10 +23,10 @@ describe('Policy base class', () => {
     const [organisation, game] = await createOrganisationAndGame()
 
     const user = await new UserFactory().state(() => ({ organisation })).one()
-    await (<EntityManager>global.em).persistAndFlush(user)
+    await global.em.persistAndFlush(user)
 
     const token = await genAccessToken(user)
-    await (<EntityManager>global.em).removeAndFlush(user)
+    await global.em.removeAndFlush(user)
 
     await request(global.app)
       .get(`/games/${game.id}/events`)
@@ -49,7 +48,7 @@ describe('Policy base class', () => {
 
     const player1 = await new PlayerFactory([apiKey.game]).one()
     const player2 = await new PlayerFactory([apiKey.game]).one()
-    await (<EntityManager>global.em).persistAndFlush([player1, player2])
+    await global.em.persistAndFlush([player1, player2])
 
     await request(global.app)
       .post('/v1/players/merge')
@@ -63,7 +62,7 @@ describe('Policy base class', () => {
 
     const player1 = await new PlayerFactory([apiKey.game]).one()
     const player2 = await new PlayerFactory([apiKey.game]).one()
-    await (<EntityManager>global.em).persistAndFlush([player1, player2])
+    await global.em.persistAndFlush([player1, player2])
 
     const res = await request(global.app)
       .post('/v1/players/merge')

@@ -1,4 +1,3 @@
-import { EntityManager } from '@mikro-orm/mysql'
 import request from 'supertest'
 import { UserType } from '../../../src/entities/user'
 import createUserAndToken from '../../utils/createUserAndToken'
@@ -23,7 +22,7 @@ describe('Integration service - post', () => {
       .auth(token, { type: 'bearer' })
       .expect(statusCode)
 
-    const activity = await (<EntityManager>global.em).getRepository(GameActivity).findOne({
+    const activity = await global.em.getRepository(GameActivity).findOne({
       type: GameActivityType.GAME_INTEGRATION_ADDED,
       game
     })
@@ -52,7 +51,7 @@ describe('Integration service - post', () => {
       .auth(token, { type: 'bearer' })
       .expect(200)
 
-    const integration = await (<EntityManager>global.em).getRepository(Integration).findOne(res.body.integration.id)
+    const integration = await global.em.getRepository(Integration).findOne(res.body.integration.id)
     // @ts-expect-error accessing private
     expect(integration.config.apiKey).not.toBe(config.apiKey)
     // @ts-expect-error accessing private
@@ -71,7 +70,7 @@ describe('Integration service - post', () => {
       .auth(token, { type: 'bearer' })
       .expect(200)
 
-    const integration = await (<EntityManager>global.em).getRepository(Integration).findOne(res.body.integration.id)
+    const integration = await global.em.getRepository(Integration).findOne(res.body.integration.id)
     // @ts-expect-error accessing private
     expect(integration.config.syncCrazyNewSteamworksFeature).not.toBeDefined()
   })
@@ -88,7 +87,7 @@ describe('Integration service - post', () => {
       .auth(token, { type: 'bearer' })
       .expect(403)
 
-    const activity = await (<EntityManager>global.em).getRepository(GameActivity).findOne({
+    const activity = await global.em.getRepository(GameActivity).findOne({
       type: GameActivityType.GAME_INTEGRATION_ADDED,
       game
     })

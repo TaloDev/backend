@@ -1,4 +1,3 @@
-import { EntityManager } from '@mikro-orm/mysql'
 import request from 'supertest'
 import { UserType } from '../../../src/entities/user'
 import GameActivity, { GameActivityType } from '../../../src/entities/game-activity'
@@ -24,7 +23,7 @@ describe('API key service - post', () => {
       expect(res.body.apiKey.scopes).toStrictEqual(['read:players', 'write:events'])
     }
 
-    const activity = await (<EntityManager>global.em).getRepository(GameActivity).findOne({
+    const activity = await global.em.getRepository(GameActivity).findOne({
       type: GameActivityType.API_KEY_CREATED,
       game,
       extra: {

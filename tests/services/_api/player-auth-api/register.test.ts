@@ -1,7 +1,6 @@
 import request from 'supertest'
 import { APIKeyScope } from '../../../../src/entities/api-key'
 import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
-import { EntityManager } from '@mikro-orm/mysql'
 import PlayerAuthActivity, { PlayerAuthActivityType } from '../../../../src/entities/player-auth-activity'
 import { randUserName } from '@ngneat/falso'
 
@@ -29,7 +28,7 @@ describe('Player auth API service - register', () => {
 
     expect(res.body.sessionToken).toBeTruthy()
 
-    const activity = await (<EntityManager>global.em).getRepository(PlayerAuthActivity).findOne({
+    const activity = await global.em.getRepository(PlayerAuthActivity).findOne({
       type: PlayerAuthActivityType.REGISTERED,
       extra: {
         verificationEnabled: false
@@ -95,7 +94,7 @@ describe('Player auth API service - register', () => {
 
     expect(res.body.sessionToken).toBeTruthy()
 
-    const activity = await (<EntityManager>global.em).getRepository(PlayerAuthActivity).findOne({
+    const activity = await global.em.getRepository(PlayerAuthActivity).findOne({
       type: PlayerAuthActivityType.REGISTERED,
       extra: {
         verificationEnabled: true

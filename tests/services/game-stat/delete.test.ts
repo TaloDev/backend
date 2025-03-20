@@ -1,4 +1,3 @@
-import { EntityManager } from '@mikro-orm/mysql'
 import request from 'supertest'
 import { UserType } from '../../../src/entities/user'
 import GameActivity, { GameActivityType } from '../../../src/entities/game-activity'
@@ -15,14 +14,14 @@ describe('Game stat service - delete', () => {
     const [token] = await createUserAndToken({ type, emailConfirmed: true }, organisation)
 
     const stat = await new GameStatFactory([game]).one()
-    await (<EntityManager>global.em).persistAndFlush(stat)
+    await global.em.persistAndFlush(stat)
 
     await request(global.app)
       .delete(`/games/${game.id}/game-stats/${stat.id}`)
       .auth(token, { type: 'bearer' })
       .expect(statusCode)
 
-    const activity = await (<EntityManager>global.em).getRepository(GameActivity).findOne({
+    const activity = await global.em.getRepository(GameActivity).findOne({
       type: GameActivityType.GAME_STAT_DELETED,
       game,
       extra: {
@@ -42,7 +41,7 @@ describe('Game stat service - delete', () => {
     const [token] = await createUserAndToken({ type: UserType.ADMIN })
 
     const stat = await new GameStatFactory([otherGame]).one()
-    await (<EntityManager>global.em).persistAndFlush(stat)
+    await global.em.persistAndFlush(stat)
 
     const res = await request(global.app)
       .delete(`/games/${otherGame.id}/game-stats/${stat.id}`)

@@ -1,4 +1,3 @@
-import { EntityManager } from '@mikro-orm/mysql'
 import request from 'supertest'
 import createOrganisationAndGame from '../../utils/createOrganisationAndGame'
 import createUserAndToken from '../../utils/createUserAndToken'
@@ -12,7 +11,7 @@ describe('Player group service - toggle pinned', () => {
     const [token] = await createUserAndToken({}, organisation)
 
     const group = await new PlayerGroupFactory().construct(game).one()
-    await (<EntityManager>global.em).persistAndFlush(group)
+    await global.em.persistAndFlush(group)
 
     await request(global.app)
       .put(`/games/${game.id}/player-groups/${group.id}/toggle-pinned`)
@@ -20,7 +19,7 @@ describe('Player group service - toggle pinned', () => {
       .auth(token, { type: 'bearer' })
       .expect(204)
 
-    expect(await (<EntityManager>global.em).find(UserPinnedGroup, { group })).toHaveLength(1)
+    expect(await global.em.find(UserPinnedGroup, { group })).toHaveLength(1)
   })
 
   it('should unpin a group', async () => {
@@ -29,7 +28,7 @@ describe('Player group service - toggle pinned', () => {
 
     const group = await new PlayerGroupFactory().construct(game).one()
     const pinnedGroup = await new UserPinnedGroupFactory().state(() => ({ user, group })).one()
-    await (<EntityManager>global.em).persistAndFlush([group, pinnedGroup])
+    await global.em.persistAndFlush([group, pinnedGroup])
 
     await request(global.app)
       .put(`/games/${game.id}/player-groups/${group.id}/toggle-pinned`)
@@ -37,7 +36,7 @@ describe('Player group service - toggle pinned', () => {
       .auth(token, { type: 'bearer' })
       .expect(204)
 
-    expect(await (<EntityManager>global.em).find(UserPinnedGroup, { group })).toHaveLength(0)
+    expect(await global.em.find(UserPinnedGroup, { group })).toHaveLength(0)
   })
 
   it('should not re-pin a group', async () => {
@@ -46,7 +45,7 @@ describe('Player group service - toggle pinned', () => {
 
     const group = await new PlayerGroupFactory().construct(game).one()
     const pinnedGroup = await new UserPinnedGroupFactory().state(() => ({ user, group })).one()
-    await (<EntityManager>global.em).persistAndFlush([group, pinnedGroup])
+    await global.em.persistAndFlush([group, pinnedGroup])
 
     await request(global.app)
       .put(`/games/${game.id}/player-groups/${group.id}/toggle-pinned`)
@@ -54,7 +53,7 @@ describe('Player group service - toggle pinned', () => {
       .auth(token, { type: 'bearer' })
       .expect(204)
 
-    expect(await (<EntityManager>global.em).find(UserPinnedGroup, { group })).toHaveLength(1)
+    expect(await global.em.find(UserPinnedGroup, { group })).toHaveLength(1)
   })
 
   it('should handle unpinning a group that isn\'t pinned', async () => {
@@ -62,7 +61,7 @@ describe('Player group service - toggle pinned', () => {
     const [token] = await createUserAndToken({}, organisation)
 
     const group = await new PlayerGroupFactory().construct(game).one()
-    await (<EntityManager>global.em).persistAndFlush(group)
+    await global.em.persistAndFlush(group)
 
     await request(global.app)
       .put(`/games/${game.id}/player-groups/${group.id}/toggle-pinned`)
@@ -70,7 +69,7 @@ describe('Player group service - toggle pinned', () => {
       .auth(token, { type: 'bearer' })
       .expect(204)
 
-    expect(await (<EntityManager>global.em).find(UserPinnedGroup, { group })).toHaveLength(0)
+    expect(await global.em.find(UserPinnedGroup, { group })).toHaveLength(0)
   })
 
   it('should not update a group for a game the user has no access to', async () => {
@@ -78,7 +77,7 @@ describe('Player group service - toggle pinned', () => {
     const [token] = await createUserAndToken({})
 
     const group = await new PlayerGroupFactory().construct(otherGame).one()
-    await (<EntityManager>global.em).persistAndFlush(group)
+    await global.em.persistAndFlush(group)
 
     const res = await request(global.app)
       .put(`/games/${otherGame.id}/player-groups/${group.id}/toggle-pinned`)

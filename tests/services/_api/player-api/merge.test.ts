@@ -94,7 +94,7 @@ describe('Player API service - merge', () => {
       ])
     })).one()
 
-    await (<EntityManager>global.em).persistAndFlush([player1, player2])
+    await global.em.persistAndFlush([player1, player2])
 
     const res = await request(global.app)
       .post('/v1/players/merge')
@@ -131,7 +131,7 @@ describe('Player API service - merge', () => {
 
     const player2 = await new PlayerFactory([apiKey.game]).one()
 
-    await (<EntityManager>global.em).persistAndFlush(player2)
+    await global.em.persistAndFlush(player2)
 
     const res = await request(global.app)
       .post('/v1/players/merge')
@@ -147,7 +147,7 @@ describe('Player API service - merge', () => {
 
     const player1 = await new PlayerFactory([apiKey.game]).one()
 
-    await (<EntityManager>global.em).persistAndFlush(player1)
+    await global.em.persistAndFlush(player1)
 
     const res = await request(global.app)
       .post('/v1/players/merge')
@@ -164,7 +164,7 @@ describe('Player API service - merge', () => {
     const player1 = await new PlayerFactory([apiKey.game]).one()
     const player2 = await new PlayerFactory([apiKey.game]).one()
     const save = await new GameSaveFactory([player2]).one()
-    await (<EntityManager>global.em).persistAndFlush([player1, player2, save])
+    await global.em.persistAndFlush([player1, player2, save])
 
     await request(global.app)
       .post('/v1/players/merge')
@@ -172,7 +172,7 @@ describe('Player API service - merge', () => {
       .auth(token, { type: 'bearer' })
       .expect(200)
 
-    await (<EntityManager>global.em).refresh(save)
+    await global.em.refresh(save)
     expect(save.player.id).toBe(player1.id)
   })
 
@@ -184,7 +184,7 @@ describe('Player API service - merge', () => {
 
     const stat = await new GameStatFactory([apiKey.game]).one()
     const playerStat = await new PlayerGameStatFactory().construct(player2, stat).one()
-    await (<EntityManager>global.em).persistAndFlush([player1, player2, playerStat])
+    await global.em.persistAndFlush([player1, player2, playerStat])
 
     await request(global.app)
       .post('/v1/players/merge')
@@ -192,7 +192,7 @@ describe('Player API service - merge', () => {
       .auth(token, { type: 'bearer' })
       .expect(200)
 
-    await (<EntityManager>global.em).refresh(playerStat, { populate: ['player'] })
+    await global.em.refresh(playerStat, { populate: ['player'] })
     expect(playerStat.player.id).toBe(player1.id)
   })
 
@@ -202,7 +202,7 @@ describe('Player API service - merge', () => {
     const player1 = await new PlayerFactory([apiKey.game]).withTaloAlias().one()
     const player2 = await new PlayerFactory([apiKey.game]).one()
 
-    await (<EntityManager>global.em).persistAndFlush([player1, player2])
+    await global.em.persistAndFlush([player1, player2])
 
     const res = await request(global.app)
       .post('/v1/players/merge')
@@ -221,7 +221,7 @@ describe('Player API service - merge', () => {
     const player1 = await new PlayerFactory([apiKey.game]).one()
     const player2 = await new PlayerFactory([apiKey.game]).withTaloAlias().one()
 
-    await (<EntityManager>global.em).persistAndFlush([player1, player2])
+    await global.em.persistAndFlush([player1, player2])
 
     const res = await request(global.app)
       .post('/v1/players/merge')

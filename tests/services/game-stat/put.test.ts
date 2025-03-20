@@ -1,4 +1,3 @@
-import { EntityManager } from '@mikro-orm/mysql'
 import request from 'supertest'
 import GameStatFactory from '../../fixtures/GameStatFactory'
 import GameActivity, { GameActivityType } from '../../../src/entities/game-activity'
@@ -11,7 +10,7 @@ describe('Game stat service - put', () => {
     const [token] = await createUserAndToken({}, organisation)
 
     const stat = await new GameStatFactory([game]).one()
-    await (<EntityManager>global.em).persistAndFlush(stat)
+    await global.em.persistAndFlush(stat)
 
     const res = await request(global.app)
       .put(`/games/${game.id}/game-stats/${stat.id}`)
@@ -21,7 +20,7 @@ describe('Game stat service - put', () => {
 
     expect(res.body.stat.name).toBe('New name')
 
-    const activity = await (<EntityManager>global.em).getRepository(GameActivity).findOne({
+    const activity = await global.em.getRepository(GameActivity).findOne({
       type: GameActivityType.GAME_STAT_UPDATED,
       game,
       extra: {
@@ -39,7 +38,7 @@ describe('Game stat service - put', () => {
     const [token] = await createUserAndToken({}, organisation)
 
     const stat = await new GameStatFactory([game]).state(() => ({ global: false })).one()
-    await (<EntityManager>global.em).persistAndFlush(stat)
+    await global.em.persistAndFlush(stat)
 
     const res = await request(global.app)
       .put(`/games/${game.id}/game-stats/${stat.id}`)
@@ -49,7 +48,7 @@ describe('Game stat service - put', () => {
 
     expect(res.body.stat.global).toBe(true)
 
-    const activity = await (<EntityManager>global.em).getRepository(GameActivity).findOne({
+    const activity = await global.em.getRepository(GameActivity).findOne({
       type: GameActivityType.GAME_STAT_UPDATED,
       game,
       extra: {
@@ -67,7 +66,7 @@ describe('Game stat service - put', () => {
     const [token] = await createUserAndToken({}, organisation)
 
     const stat = await new GameStatFactory([game]).one()
-    await (<EntityManager>global.em).persistAndFlush(stat)
+    await global.em.persistAndFlush(stat)
 
     const res = await request(global.app)
       .put(`/games/${game.id}/game-stats/${stat.id}`)
@@ -77,7 +76,7 @@ describe('Game stat service - put', () => {
 
     expect(res.body.stat.maxChange).toBe(90)
 
-    const activity = await (<EntityManager>global.em).getRepository(GameActivity).findOne({
+    const activity = await global.em.getRepository(GameActivity).findOne({
       type: GameActivityType.GAME_STAT_UPDATED,
       game,
       extra: {
@@ -99,7 +98,7 @@ describe('Game stat service - put', () => {
       defaultValue: 0,
       maxValue: 600
     })).one()
-    await (<EntityManager>global.em).persistAndFlush(stat)
+    await global.em.persistAndFlush(stat)
 
     const res = await request(global.app)
       .put(`/games/${game.id}/game-stats/${stat.id}`)
@@ -109,7 +108,7 @@ describe('Game stat service - put', () => {
 
     expect(res.body.stat.minValue).toBe(-300)
 
-    const activity = await (<EntityManager>global.em).getRepository(GameActivity).findOne({
+    const activity = await global.em.getRepository(GameActivity).findOne({
       type: GameActivityType.GAME_STAT_UPDATED,
       game,
       extra: {
@@ -131,7 +130,7 @@ describe('Game stat service - put', () => {
       defaultValue: 0,
       maxValue: 100
     })).one()
-    await (<EntityManager>global.em).persistAndFlush(stat)
+    await global.em.persistAndFlush(stat)
 
     const res = await request(global.app)
       .put(`/games/${game.id}/game-stats/${stat.id}`)
@@ -141,7 +140,7 @@ describe('Game stat service - put', () => {
 
     expect(res.body.stat.maxValue).toBe(200)
 
-    const activity = await (<EntityManager>global.em).getRepository(GameActivity).findOne({
+    const activity = await global.em.getRepository(GameActivity).findOne({
       type: GameActivityType.GAME_STAT_UPDATED,
       game,
       extra: {
@@ -162,7 +161,7 @@ describe('Game stat service - put', () => {
       minValue: -100,
       maxValue: 300
     })).one()
-    await (<EntityManager>global.em).persistAndFlush(stat)
+    await global.em.persistAndFlush(stat)
 
     const res = await request(global.app)
       .put(`/games/${game.id}/game-stats/${stat.id}`)
@@ -172,7 +171,7 @@ describe('Game stat service - put', () => {
 
     expect(res.body.stat.defaultValue).toBe(100)
 
-    const activity = await (<EntityManager>global.em).getRepository(GameActivity).findOne({
+    const activity = await global.em.getRepository(GameActivity).findOne({
       type: GameActivityType.GAME_STAT_UPDATED,
       game,
       extra: {
@@ -190,7 +189,7 @@ describe('Game stat service - put', () => {
     const [token] = await createUserAndToken({}, organisation)
 
     const stat = await new GameStatFactory([game]).one()
-    await (<EntityManager>global.em).persistAndFlush(stat)
+    await global.em.persistAndFlush(stat)
 
     const res = await request(global.app)
       .put(`/games/${game.id}/game-stats/${stat.id}`)
@@ -200,7 +199,7 @@ describe('Game stat service - put', () => {
 
     expect(res.body.stat.minTimeBetweenUpdates).toBe(10242)
 
-    const activity = await (<EntityManager>global.em).getRepository(GameActivity).findOne({
+    const activity = await global.em.getRepository(GameActivity).findOne({
       type: GameActivityType.GAME_STAT_UPDATED,
       game,
       extra: {
@@ -218,7 +217,7 @@ describe('Game stat service - put', () => {
     const [token] = await createUserAndToken({}, organisation)
 
     const stat = await new GameStatFactory([game]).one()
-    await (<EntityManager>global.em).persistAndFlush(stat)
+    await global.em.persistAndFlush(stat)
 
     const res = await request(global.app)
       .put(`/games/${game.id}/game-stats/${stat.id}`)
@@ -228,7 +227,7 @@ describe('Game stat service - put', () => {
 
     expect(res.body.stat.internalName).toBe(stat.internalName)
 
-    const activity = await (<EntityManager>global.em).getRepository(GameActivity).findOne({
+    const activity = await global.em.getRepository(GameActivity).findOne({
       type: GameActivityType.GAME_STAT_UPDATED,
       game,
       extra: {
@@ -246,7 +245,7 @@ describe('Game stat service - put', () => {
     const [token] = await createUserAndToken()
 
     const stat = await new GameStatFactory([otherGame]).one()
-    await (<EntityManager>global.em).persistAndFlush(stat)
+    await global.em.persistAndFlush(stat)
 
     const res = await request(global.app)
       .put(`/games/${otherGame.id}/game-stats/${stat.id}`)
@@ -281,7 +280,7 @@ describe('Game stat service - put', () => {
       defaultValue: 0,
       maxValue: 600
     })).one()
-    await (<EntityManager>global.em).persistAndFlush(stat)
+    await global.em.persistAndFlush(stat)
 
     const res = await request(global.app)
       .put(`/games/${game.id}/game-stats/${stat.id}`)

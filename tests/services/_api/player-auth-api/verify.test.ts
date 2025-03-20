@@ -2,7 +2,6 @@ import request from 'supertest'
 import { APIKeyScope } from '../../../../src/entities/api-key'
 import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
 import PlayerFactory from '../../../fixtures/PlayerFactory'
-import { EntityManager } from '@mikro-orm/mysql'
 import PlayerAuthFactory from '../../../fixtures/PlayerAuthFactory'
 import bcrypt from 'bcrypt'
 import Redis from 'ioredis'
@@ -23,7 +22,7 @@ describe('Player auth API service - verify', () => {
     })).one()
     const alias = player.aliases[0]
 
-    await (<EntityManager>global.em).persistAndFlush(player)
+    await global.em.persistAndFlush(player)
 
     await redis.set(`player-auth:${apiKey.game.id}:verification:${alias.id}`, '123456')
 
@@ -53,7 +52,7 @@ describe('Player auth API service - verify', () => {
     const player = await new PlayerFactory([apiKey.game]).withTaloAlias().one()
     const alias = player.aliases[0]
 
-    await (<EntityManager>global.em).persistAndFlush(player)
+    await global.em.persistAndFlush(player)
 
     await request(global.app)
       .post('/v1/players/auth/verify')
@@ -84,7 +83,7 @@ describe('Player auth API service - verify', () => {
     const player = await new PlayerFactory([apiKey.game]).withTaloAlias().one()
     const alias = player.aliases[0]
 
-    await (<EntityManager>global.em).persistAndFlush(player)
+    await global.em.persistAndFlush(player)
 
     await redis.set(`player-auth:${apiKey.game.id}:verification:${alias.id}`, '123456')
 
@@ -101,7 +100,7 @@ describe('Player auth API service - verify', () => {
 
     expect(await redis.get(`player-auth:${apiKey.game.id}:verification:${alias.id}`)).toBe('123456')
 
-    const activity = await (<EntityManager>global.em).getRepository(PlayerAuthActivity).findOne({
+    const activity = await global.em.getRepository(PlayerAuthActivity).findOne({
       type: PlayerAuthActivityType.VERIFICATION_FAILED,
       player: player.id
     })

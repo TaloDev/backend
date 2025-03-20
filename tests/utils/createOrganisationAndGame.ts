@@ -1,4 +1,3 @@
-import { EntityManager } from '@mikro-orm/mysql'
 import Game from '../../src/entities/game'
 import Organisation from '../../src/entities/organisation'
 import PricingPlan from '../../src/entities/pricing-plan'
@@ -17,7 +16,7 @@ export default async function createOrganisationAndGame(orgPartial?: Partial<Org
   }
 
   const game = await new GameFactory(organisation).state(() => gamePartial ?? {}).one()
-  await (<EntityManager>global.em).persistAndFlush([organisation, game])
+  await global.em.persistAndFlush([organisation, game])
 
   return [organisation, game]
 }

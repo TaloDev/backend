@@ -1,4 +1,3 @@
-import { EntityManager } from '@mikro-orm/mysql'
 import request from 'supertest'
 import UserFactory from '../../../fixtures/UserFactory'
 import bcrypt from 'bcrypt'
@@ -8,7 +7,7 @@ describe('User public service - reset password', () => {
   it('should let a user reset their password', async () => {
     const password = await bcrypt.hash('p4ssw0rd112233', 10)
     const user = await new UserFactory().state(() => ({ password })).one()
-    await (<EntityManager>global.em).persistAndFlush(user)
+    await global.em.persistAndFlush(user)
 
     const token = await sign({ sub: user.id }, user.password.substring(0, 10), { expiresIn: '15m' })
 
@@ -17,14 +16,14 @@ describe('User public service - reset password', () => {
       .send({ token, password: 'my-new-passw0rd1!' })
       .expect(204)
 
-    await (<EntityManager>global.em).refresh(user)
+    await global.em.refresh(user)
     expect(await bcrypt.compare('my-new-passw0rd1!', user.password)).toBe(true)
   })
 
   it('should not let a user reset their password if they supply the same one', async () => {
     const password = await bcrypt.hash('p4ssw0rd112233', 10)
     const user = await new UserFactory().state(() => ({ password })).one()
-    await (<EntityManager>global.em).persistAndFlush(user)
+    await global.em.persistAndFlush(user)
 
     const token = await sign({ sub: user.id }, user.password.substring(0, 10), { expiresIn: '15m' })
 

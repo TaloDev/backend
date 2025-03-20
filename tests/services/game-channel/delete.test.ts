@@ -1,4 +1,3 @@
-import { EntityManager } from '@mikro-orm/mysql'
 import request from 'supertest'
 import { UserType } from '../../../src/entities/user'
 import createOrganisationAndGame from '../../utils/createOrganisationAndGame'
@@ -15,14 +14,14 @@ describe('Game channel service - delete', () => {
     const [token] = await createUserAndToken({ type }, organisation)
 
     const channel = await new GameChannelFactory(game).one()
-    await (<EntityManager>global.em).persistAndFlush(channel)
+    await global.em.persistAndFlush(channel)
 
     const res = await request(global.app)
       .delete(`/games/${game.id}/game-channels/${channel.id}`)
       .auth(token, { type: 'bearer' })
       .expect(statusCode)
 
-    const activity = await (<EntityManager>global.em).getRepository(GameActivity).findOne({
+    const activity = await global.em.getRepository(GameActivity).findOne({
       type: GameActivityType.GAME_CHANNEL_DELETED,
       game
     })
@@ -40,7 +39,7 @@ describe('Game channel service - delete', () => {
     const [token] = await createUserAndToken({ type: UserType.ADMIN })
 
     const channel = await new GameChannelFactory(game).one()
-    await (<EntityManager>global.em).persistAndFlush(channel)
+    await global.em.persistAndFlush(channel)
 
     const res = await request(global.app)
       .delete(`/games/${game.id}/game-channels/${channel.id}`)
@@ -55,7 +54,7 @@ describe('Game channel service - delete', () => {
     const [token] = await createUserAndToken({ type: UserType.ADMIN })
 
     const channel = await new GameChannelFactory(game).one()
-    await (<EntityManager>global.em).persistAndFlush(channel)
+    await global.em.persistAndFlush(channel)
 
     const res = await request(global.app)
       .delete(`/games/99999/game-channels/${channel.id}`)

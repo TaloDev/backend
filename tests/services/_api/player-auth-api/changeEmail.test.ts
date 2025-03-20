@@ -2,7 +2,6 @@ import request from 'supertest'
 import { APIKeyScope } from '../../../../src/entities/api-key'
 import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
 import PlayerFactory from '../../../fixtures/PlayerFactory'
-import { EntityManager } from '@mikro-orm/mysql'
 import bcrypt from 'bcrypt'
 import PlayerAuthFactory from '../../../fixtures/PlayerAuthFactory'
 import PlayerAuthActivity, { PlayerAuthActivityType } from '../../../../src/entities/player-auth-activity'
@@ -20,10 +19,10 @@ describe('Player auth API service - change email', () => {
       })).one()
     })).one()
     const alias = player.aliases[0]
-    await (<EntityManager>global.em).persistAndFlush(player)
+    await global.em.persistAndFlush(player)
 
     const sessionToken = await player.auth!.createSession(alias)
-    await (<EntityManager>global.em).flush()
+    await global.em.flush()
 
     await request(global.app)
       .post('/v1/players/auth/change_email')
@@ -34,10 +33,10 @@ describe('Player auth API service - change email', () => {
       .set('x-talo-session', sessionToken)
       .expect(204)
 
-    await (<EntityManager>global.em).refresh(player.auth!)
+    await global.em.refresh(player.auth!)
     expect(player.auth!.email).toBe('bozza@mail.com')
 
-    const activity = await (<EntityManager>global.em).getRepository(PlayerAuthActivity).findOne({
+    const activity = await global.em.getRepository(PlayerAuthActivity).findOne({
       type: PlayerAuthActivityType.CHANGED_EMAIL,
       player: player.id,
       extra: {
@@ -58,10 +57,10 @@ describe('Player auth API service - change email', () => {
       })).one()
     })).one()
     const alias = player.aliases[0]
-    await (<EntityManager>global.em).persistAndFlush(player)
+    await global.em.persistAndFlush(player)
 
     const sessionToken = await player.auth!.createSession(alias)
-    await (<EntityManager>global.em).flush()
+    await global.em.flush()
 
     await request(global.app)
       .post('/v1/players/auth/change_email')
@@ -84,10 +83,10 @@ describe('Player auth API service - change email', () => {
       })).one()
     })).one()
     const alias = player.aliases[0]
-    await (<EntityManager>global.em).persistAndFlush(player)
+    await global.em.persistAndFlush(player)
 
     const sessionToken = await player.auth!.createSession(alias)
-    await (<EntityManager>global.em).flush()
+    await global.em.flush()
 
     const res = await request(global.app)
       .post('/v1/players/auth/change_email')
@@ -103,7 +102,7 @@ describe('Player auth API service - change email', () => {
       errorCode: 'INVALID_CREDENTIALS'
     })
 
-    const activity = await (<EntityManager>global.em).getRepository(PlayerAuthActivity).findOne({
+    const activity = await global.em.getRepository(PlayerAuthActivity).findOne({
       type: PlayerAuthActivityType.CHANGE_EMAIL_FAILED,
       player: player.id,
       extra: {
@@ -124,10 +123,10 @@ describe('Player auth API service - change email', () => {
       })).one()
     })).one()
     const alias = player.aliases[0]
-    await (<EntityManager>global.em).persistAndFlush(player)
+    await global.em.persistAndFlush(player)
 
     const sessionToken = await player.auth!.createSession(alias)
-    await (<EntityManager>global.em).flush()
+    await global.em.flush()
 
     const res = await request(global.app)
       .post('/v1/players/auth/change_email')
@@ -143,7 +142,7 @@ describe('Player auth API service - change email', () => {
       errorCode: 'NEW_EMAIL_MATCHES_CURRENT_EMAIL'
     })
 
-    const activity = await (<EntityManager>global.em).getRepository(PlayerAuthActivity).findOne({
+    const activity = await global.em.getRepository(PlayerAuthActivity).findOne({
       type: PlayerAuthActivityType.CHANGE_EMAIL_FAILED,
       player: player.id,
       extra: {
@@ -164,10 +163,10 @@ describe('Player auth API service - change email', () => {
       })).one()
     })).one()
     const alias = player.aliases[0]
-    await (<EntityManager>global.em).persistAndFlush(player)
+    await global.em.persistAndFlush(player)
 
     const sessionToken = await player.auth!.createSession(alias)
-    await (<EntityManager>global.em).flush()
+    await global.em.flush()
 
     const res = await request(global.app)
       .post('/v1/players/auth/change_email')
@@ -183,7 +182,7 @@ describe('Player auth API service - change email', () => {
       errorCode: 'INVALID_EMAIL'
     })
 
-    const activity = await (<EntityManager>global.em).getRepository(PlayerAuthActivity).findOne({
+    const activity = await global.em.getRepository(PlayerAuthActivity).findOne({
       type: PlayerAuthActivityType.CHANGE_EMAIL_FAILED,
       player: player.id,
       extra: {

@@ -1,4 +1,3 @@
-import { EntityManager } from '@mikro-orm/mysql'
 import request from 'supertest'
 import { APIKeyScope } from '../../../../src/entities/api-key'
 import PlayerFactory from '../../../fixtures/PlayerFactory'
@@ -15,7 +14,7 @@ describe('Player Presence API service - get', () => {
       .one()
     player.presence = presence
 
-    await (<EntityManager>global.em).persistAndFlush(player)
+    await global.em.persistAndFlush(player)
 
     const res = await request(global.app)
       .get(`/v1/players/presence/${player.id}`)
@@ -30,7 +29,7 @@ describe('Player Presence API service - get', () => {
   it('should return the default presence when the player has no presence', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_PLAYERS])
     const player = await new PlayerFactory([apiKey.game]).one()
-    await (<EntityManager>global.em).persistAndFlush(player)
+    await global.em.persistAndFlush(player)
 
     const res = await request(global.app)
       .get(`/v1/players/presence/${player.id}`)

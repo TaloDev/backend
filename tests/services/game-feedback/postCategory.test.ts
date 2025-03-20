@@ -2,7 +2,6 @@ import request from 'supertest'
 import createUserAndToken from '../../utils/createUserAndToken'
 import createOrganisationAndGame from '../../utils/createOrganisationAndGame'
 import GameFeedbackCategoryFactory from '../../fixtures/GameFeedbackCategoryFactory'
-import { EntityManager } from '@mikro-orm/mysql'
 import userPermissionProvider from '../../utils/userPermissionProvider'
 import { UserType } from '../../../src/entities/user'
 import GameActivity, { GameActivityType } from '../../../src/entities/game-activity'
@@ -21,7 +20,7 @@ describe('Game feedback service - post category', () => {
       .auth(token, { type: 'bearer' })
       .expect(statusCode)
 
-    const activity = await (<EntityManager>global.em).getRepository(GameActivity).findOne({
+    const activity = await global.em.getRepository(GameActivity).findOne({
       type: GameActivityType.GAME_FEEDBACK_CATEGORY_CREATED,
       game
     })
@@ -70,7 +69,7 @@ describe('Game feedback service - post category', () => {
     const [token] = await createUserAndToken({ type: UserType.ADMIN }, organisation)
 
     const category = await new GameFeedbackCategoryFactory(game).state(() => ({ internalName: 'bugs' })).one()
-    await (<EntityManager>global.em).persistAndFlush(category)
+    await global.em.persistAndFlush(category)
 
     const res = await request(global.app)
       .post(`/games/${game.id}/game-feedback/categories`)

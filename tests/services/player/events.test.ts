@@ -1,4 +1,3 @@
-import { EntityManager } from '@mikro-orm/mysql'
 import request from 'supertest'
 import PlayerFactory from '../../fixtures/PlayerFactory'
 import EventFactory from '../../fixtures/EventFactory'
@@ -11,7 +10,7 @@ describe('Player service - get events', () => {
     const [token] = await createUserAndToken({}, organisation)
 
     const player = await new PlayerFactory([game]).one()
-    await (<EntityManager>global.em).persistAndFlush(player)
+    await global.em.persistAndFlush(player)
 
     const events = await new EventFactory([player]).many(3)
     await global.clickhouse.insert({
@@ -34,7 +33,7 @@ describe('Player service - get events', () => {
     const [token] = await createUserAndToken()
 
     const player = await new PlayerFactory([game]).one()
-    await (<EntityManager>global.em).persistAndFlush(player)
+    await global.em.persistAndFlush(player)
 
     await request(global.app)
       .get(`/games/${game.id}/players/${player.id}/events`)
@@ -48,7 +47,7 @@ describe('Player service - get events', () => {
     const [token] = await createUserAndToken({}, organisation)
 
     const player = await new PlayerFactory([game]).one()
-    await (<EntityManager>global.em).persistAndFlush(player)
+    await global.em.persistAndFlush(player)
 
     const events = await new EventFactory([player]).state(() => ({ name: 'Find secret' })).many(3)
     const otherEvents = await new EventFactory([player]).state(() => ({ name: 'Kill boss' })).many(3)
@@ -74,7 +73,7 @@ describe('Player service - get events', () => {
     const count = 82
 
     const player = await new PlayerFactory([game]).one()
-    await (<EntityManager>global.em).persistAndFlush(player)
+    await global.em.persistAndFlush(player)
 
     const events = await new EventFactory([player]).many(count)
     await global.clickhouse.insert({

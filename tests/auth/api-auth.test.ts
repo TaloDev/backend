@@ -1,4 +1,3 @@
-import { EntityManager } from '@mikro-orm/mysql'
 import request from 'supertest'
 import { APIKeyScope } from '../../src/entities/api-key'
 import createAPIKeyAndToken from '../utils/createAPIKeyAndToken'
@@ -12,7 +11,7 @@ describe('API auth', () => {
       .auth(token, { type: 'bearer' })
       .expect(200)
 
-    await (<EntityManager>global.em).refresh(apiKey)
+    await global.em.refresh(apiKey)
     expect(apiKey.lastUsedAt).not.toBeNull()
   })
 
@@ -47,7 +46,7 @@ describe('API auth', () => {
   it('should not accept an api request with a revoked api key', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_GAME_CONFIG])
     apiKey.revokedAt = new Date()
-    await (<EntityManager>global.em).flush()
+    await global.em.flush()
 
     const res = await request(global.app)
       .get('/v1/game-config')

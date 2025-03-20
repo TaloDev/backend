@@ -1,4 +1,3 @@
-import { EntityManager } from '@mikro-orm/mysql'
 import request from 'supertest'
 import UserAccessCode from '../../../src/entities/user-access-code'
 import createUserAndToken from '../../utils/createUserAndToken'
@@ -10,7 +9,7 @@ describe('User service - confirm email', () => {
     const date = new Date()
     date.setDate(date.getDate() + 1)
     const accessCode = new UserAccessCode(user, date)
-    await (<EntityManager>global.em).persistAndFlush(accessCode)
+    await global.em.persistAndFlush(accessCode)
 
     const res = await request(global.app)
       .post('/users/confirm_email')
@@ -20,7 +19,7 @@ describe('User service - confirm email', () => {
 
     expect(res.body.user.emailConfirmed).toBe(true)
 
-    const updatedAccessCode = await (<EntityManager>global.em).getRepository(UserAccessCode).findOne({ code: accessCode.code })
+    const updatedAccessCode = await global.em.getRepository(UserAccessCode).findOne({ code: accessCode.code })
     expect(updatedAccessCode).toBeNull()
   })
 
@@ -30,7 +29,7 @@ describe('User service - confirm email', () => {
     const date = new Date()
     date.setDate(date.getDate() - 1)
     const accessCode = new UserAccessCode(user, date)
-    await (<EntityManager>global.em).persistAndFlush(accessCode)
+    await global.em.persistAndFlush(accessCode)
 
     const res = await request(global.app)
       .post('/users/confirm_email')

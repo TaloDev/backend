@@ -1,4 +1,3 @@
-import { EntityManager } from '@mikro-orm/mysql'
 import DataExportService from '../../../src/services/data-export.service'
 import EventFactory from '../../fixtures/EventFactory'
 import PlayerFactory from '../../fixtures/PlayerFactory'
@@ -20,7 +19,7 @@ describe('Data export service - included data', () => {
     const player = await new PlayerFactory([game]).devBuild().one()
     const event = await new EventFactory([player]).one()
     const dataExport = await new DataExportFactory(game).one()
-    await (<EntityManager>global.em).persistAndFlush(dataExport)
+    await global.em.persistAndFlush(dataExport)
     await global.clickhouse.insert({
       table: 'events',
       values: [event.toInsertable()],
@@ -40,7 +39,7 @@ describe('Data export service - included data', () => {
     const player = await new PlayerFactory([game]).devBuild().one()
     const event = await new EventFactory([player]).one()
     const dataExport = await new DataExportFactory(game).one()
-    await (<EntityManager>global.em).persistAndFlush(dataExport)
+    await global.em.persistAndFlush(dataExport)
     await global.clickhouse.insert({
       table: 'events',
       values: [event.toInsertable()],
@@ -59,7 +58,7 @@ describe('Data export service - included data', () => {
 
     const player = await new PlayerFactory([game]).devBuild().one()
     const dataExport = await new DataExportFactory(game).one()
-    await (<EntityManager>global.em).persistAndFlush([player, dataExport])
+    await global.em.persistAndFlush([player, dataExport])
 
     const items = await proto.getPlayers(dataExport, global.em, false)
     expect(items).toHaveLength(0)
@@ -73,7 +72,7 @@ describe('Data export service - included data', () => {
 
     const player = await new PlayerFactory([game]).devBuild().one()
     const dataExport = await new DataExportFactory(game).one()
-    await (<EntityManager>global.em).persistAndFlush([player, dataExport])
+    await global.em.persistAndFlush([player, dataExport])
 
     const items = await proto.getPlayers(dataExport, global.em, true)
     expect(items).toHaveLength(1)
@@ -87,7 +86,7 @@ describe('Data export service - included data', () => {
 
     const player = await new PlayerFactory([game]).devBuild().one()
     const dataExport = await new DataExportFactory(game).one()
-    await (<EntityManager>global.em).persistAndFlush([player, dataExport])
+    await global.em.persistAndFlush([player, dataExport])
 
     const items = await proto.getPlayerAliases(dataExport, global.em, false)
     expect(items).toHaveLength(0)
@@ -101,7 +100,7 @@ describe('Data export service - included data', () => {
 
     const player = await new PlayerFactory([game]).devBuild().one()
     const dataExport = await new DataExportFactory(game).one()
-    await (<EntityManager>global.em).persistAndFlush([player, dataExport])
+    await global.em.persistAndFlush([player, dataExport])
 
     const items = await proto.getPlayerAliases(dataExport, global.em, true)
     expect(items).toHaveLength(player.aliases.length)
@@ -117,7 +116,7 @@ describe('Data export service - included data', () => {
     const leaderboard = await new LeaderboardFactory([game]).one()
     const entry = await new LeaderboardEntryFactory(leaderboard, [player]).one()
     const dataExport = await new DataExportFactory(game).one()
-    await (<EntityManager>global.em).persistAndFlush([entry, dataExport])
+    await global.em.persistAndFlush([entry, dataExport])
 
     const items = await proto.getLeaderboardEntries(dataExport, global.em, false)
     expect(items).toHaveLength(0)
@@ -133,7 +132,7 @@ describe('Data export service - included data', () => {
     const leaderboard = await new LeaderboardFactory([game]).one()
     const entry = await new LeaderboardEntryFactory(leaderboard, [player]).one()
     const dataExport = await new DataExportFactory(game).one()
-    await (<EntityManager>global.em).persistAndFlush([entry, dataExport])
+    await global.em.persistAndFlush([entry, dataExport])
 
     const items = await proto.getLeaderboardEntries(dataExport, global.em, true)
     expect(items).toHaveLength(1)
@@ -149,7 +148,7 @@ describe('Data export service - included data', () => {
     const stat = await new GameStatFactory([game]).global().state(() => ({ globalValue: 50 })).one()
     const playerStat = await new PlayerGameStatFactory().construct(player, stat).state(() => ({ value: 10 })).one()
     const dataExport = await new DataExportFactory(game).one()
-    await (<EntityManager>global.em).persistAndFlush([playerStat, dataExport])
+    await global.em.persistAndFlush([playerStat, dataExport])
 
     const items = await proto.getGameStats(dataExport, global.em, false)
     expect(items[0].hydratedGlobalValue).toBe(40)
@@ -165,7 +164,7 @@ describe('Data export service - included data', () => {
     const stat = await new GameStatFactory([game]).global().state(() => ({ globalValue: 50 })).one()
     const playerStat = await new PlayerGameStatFactory().construct(player, stat).state(() => ({ value: 10 })).one()
     const dataExport = await new DataExportFactory(game).one()
-    await (<EntityManager>global.em).persistAndFlush([playerStat, dataExport])
+    await global.em.persistAndFlush([playerStat, dataExport])
 
     const items = await proto.getGameStats(dataExport, global.em, true)
     expect(items[0].globalValue).toBe(50)
@@ -181,7 +180,7 @@ describe('Data export service - included data', () => {
     const stat = await new GameStatFactory([game]).global().state(() => ({ globalValue: 50 })).one()
     const playerStat = await new PlayerGameStatFactory().construct(player, stat).state(() => ({ value: 10 })).one()
     const dataExport = await new DataExportFactory(game).one()
-    await (<EntityManager>global.em).persistAndFlush([playerStat, dataExport])
+    await global.em.persistAndFlush([playerStat, dataExport])
 
     const items = await proto.getPlayerGameStats(dataExport, global.em, false)
     expect(items).toHaveLength(0)
@@ -197,7 +196,7 @@ describe('Data export service - included data', () => {
     const stat = await new GameStatFactory([game]).global().state(() => ({ globalValue: 50 })).one()
     const playerStat = await new PlayerGameStatFactory().construct(player, stat).state(() => ({ value: 10 })).one()
     const dataExport = await new DataExportFactory(game).one()
-    await (<EntityManager>global.em).persistAndFlush([playerStat, dataExport])
+    await global.em.persistAndFlush([playerStat, dataExport])
 
     const items = await proto.getPlayerGameStats(dataExport, global.em, true)
     expect(items).toHaveLength(1)
@@ -214,7 +213,7 @@ describe('Data export service - included data', () => {
       playerAlias: player.aliases[0]
     })).one()
     const dataExport = await new DataExportFactory(game).one()
-    await (<EntityManager>global.em).persistAndFlush([feedback, dataExport])
+    await global.em.persistAndFlush([feedback, dataExport])
 
     const items = await proto.getGameFeedback(dataExport, global.em, false)
     expect(items).toHaveLength(0)
@@ -231,7 +230,7 @@ describe('Data export service - included data', () => {
       playerAlias: player.aliases[0]
     })).one()
     const dataExport = await new DataExportFactory(game).one()
-    await (<EntityManager>global.em).persistAndFlush([feedback, dataExport])
+    await global.em.persistAndFlush([feedback, dataExport])
 
     const items = await proto.getGameFeedback(dataExport, global.em, true)
     expect(items).toHaveLength(1)

@@ -1,4 +1,3 @@
-import { EntityManager } from '@mikro-orm/mysql'
 import request from 'supertest'
 import { APIKeyScope } from '../../../../src/entities/api-key'
 import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
@@ -9,7 +8,7 @@ import PlayerGroupFactory from '../../../fixtures/PlayerGroupFactory'
 describe('Player group API service - get', () => {
   it('should return a group if the scope is valid', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_PLAYER_GROUPS])
-    await (<EntityManager>global.em).populate(apiKey, ['game'])
+    await global.em.populate(apiKey, ['game'])
 
     const player = await new PlayerFactory([apiKey.game]).state(() => ({ lastSeenAt: new Date(2024, 1, 2) })).one()
     const dateRule = new PlayerGroupRule(PlayerGroupRuleName.GTE, 'lastSeenAt')
@@ -17,7 +16,7 @@ describe('Player group API service - get', () => {
     dateRule.operands = ['2024-01-01']
 
     const group = await new PlayerGroupFactory().construct(apiKey.game).state(() => ({ rules: [dateRule], membersVisible: true })).one()
-    await (<EntityManager>global.em).persistAndFlush([player, group])
+    await global.em.persistAndFlush([player, group])
 
     const res = await request(global.app)
       .get(`/v1/player-groups/${group.id}`)
@@ -33,7 +32,7 @@ describe('Player group API service - get', () => {
     const [apiKey, token] = await createAPIKeyAndToken([])
 
     const group = await new PlayerGroupFactory().construct(apiKey.game).state(() => ({ rules: [] })).one()
-    await (<EntityManager>global.em).persistAndFlush(group)
+    await global.em.persistAndFlush(group)
 
     await request(global.app)
       .get(`/v1/player-groups/${group.id}`)
@@ -52,7 +51,7 @@ describe('Player group API service - get', () => {
 
   it('should not return group members if membersVisible is set to false', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_PLAYER_GROUPS])
-    await (<EntityManager>global.em).populate(apiKey, ['game'])
+    await global.em.populate(apiKey, ['game'])
 
     const player = await new PlayerFactory([apiKey.game]).state(() => ({ lastSeenAt: new Date(2024, 1, 2) })).one()
     const dateRule = new PlayerGroupRule(PlayerGroupRuleName.GTE, 'lastSeenAt')
@@ -60,7 +59,7 @@ describe('Player group API service - get', () => {
     dateRule.operands = ['2024-01-01']
 
     const group = await new PlayerGroupFactory().construct(apiKey.game).state(() => ({ rules: [dateRule], membersVisible: false })).one()
-    await (<EntityManager>global.em).persistAndFlush([player, group])
+    await global.em.persistAndFlush([player, group])
 
     const res = await request(global.app)
       .get(`/v1/player-groups/${group.id}`)
@@ -74,7 +73,7 @@ describe('Player group API service - get', () => {
 
   it('should not return dev build players in the group members without the dev data header', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_PLAYER_GROUPS])
-    await (<EntityManager>global.em).populate(apiKey, ['game'])
+    await global.em.populate(apiKey, ['game'])
 
     const player = await new PlayerFactory([apiKey.game]).state(() => ({ lastSeenAt: new Date(2024, 1, 2) })).devBuild().one()
     const dateRule = new PlayerGroupRule(PlayerGroupRuleName.GTE, 'lastSeenAt')
@@ -82,7 +81,7 @@ describe('Player group API service - get', () => {
     dateRule.operands = ['2024-01-01']
 
     const group = await new PlayerGroupFactory().construct(apiKey.game).state(() => ({ rules: [dateRule], membersVisible: true })).one()
-    await (<EntityManager>global.em).persistAndFlush([player, group])
+    await global.em.persistAndFlush([player, group])
 
     const res = await request(global.app)
       .get(`/v1/player-groups/${group.id}`)
@@ -96,7 +95,7 @@ describe('Player group API service - get', () => {
 
   it('should return dev build players in the group members with the dev data header', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_PLAYER_GROUPS])
-    await (<EntityManager>global.em).populate(apiKey, ['game'])
+    await global.em.populate(apiKey, ['game'])
 
     const player = await new PlayerFactory([apiKey.game]).state(() => ({ lastSeenAt: new Date(2024, 1, 2) })).devBuild().one()
     const dateRule = new PlayerGroupRule(PlayerGroupRuleName.GTE, 'lastSeenAt')
@@ -104,7 +103,7 @@ describe('Player group API service - get', () => {
     dateRule.operands = ['2024-01-01']
 
     const group = await new PlayerGroupFactory().construct(apiKey.game).state(() => ({ rules: [dateRule], membersVisible: true })).one()
-    await (<EntityManager>global.em).persistAndFlush([player, group])
+    await global.em.persistAndFlush([player, group])
 
     const res = await request(global.app)
       .get(`/v1/player-groups/${group.id}`)

@@ -1,5 +1,4 @@
 import request from 'supertest'
-import { EntityManager } from '@mikro-orm/mysql'
 import GameChannelFactory from '../../../fixtures/GameChannelFactory'
 import { APIKeyScope } from '../../../../src/entities/api-key'
 import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
@@ -14,7 +13,7 @@ describe('Game channel API service - subscriptions', () => {
     subscribedChannel.members.add(player.aliases[0])
 
     const notSubscribedChannels = await new GameChannelFactory(apiKey.game).many(5)
-    await (<EntityManager>global.em).persistAndFlush([subscribedChannel, ...notSubscribedChannels, player])
+    await global.em.persistAndFlush([subscribedChannel, ...notSubscribedChannels, player])
 
     const res = await request(global.app)
       .get('/v1/game-channels/subscriptions')
@@ -32,7 +31,7 @@ describe('Game channel API service - subscriptions', () => {
     const channels = await new GameChannelFactory(apiKey.game).many(10)
     const player = await new PlayerFactory([apiKey.game]).one()
     channels[0].members.add(player.aliases[0])
-    await (<EntityManager>global.em).persistAndFlush([...channels, player])
+    await global.em.persistAndFlush([...channels, player])
 
     await request(global.app)
       .get('/v1/game-channels/subscriptions')
@@ -47,7 +46,7 @@ describe('Game channel API service - subscriptions', () => {
     const channel = await new GameChannelFactory(apiKey.game).one()
     const player = await new PlayerFactory([apiKey.game]).one()
     channel.members.add(player.aliases[0])
-    await (<EntityManager>global.em).persistAndFlush(channel)
+    await global.em.persistAndFlush(channel)
 
     const res = await request(global.app)
       .get('/v1/game-channels/subscriptions')

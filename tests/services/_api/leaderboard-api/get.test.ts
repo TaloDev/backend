@@ -1,4 +1,3 @@
-import { EntityManager } from '@mikro-orm/mysql'
 import request from 'supertest'
 import { APIKeyScope } from '../../../../src/entities/api-key'
 import LeaderboardFactory from '../../../fixtures/LeaderboardFactory'
@@ -16,7 +15,7 @@ describe('Leaderboard API service - get', () => {
     const entries = await new LeaderboardEntryFactory(leaderboard, players).many(3)
     const hiddenEntries = await new LeaderboardEntryFactory(leaderboard, players).hidden().many(3)
 
-    await (<EntityManager>global.em).persistAndFlush([...players, ...entries, ...hiddenEntries])
+    await global.em.persistAndFlush([...players, ...entries, ...hiddenEntries])
 
     const res = await request(global.app)
       .get(`/v1/leaderboards/${leaderboard.internalName}/entries`)
@@ -45,7 +44,7 @@ describe('Leaderboard API service - get', () => {
     const otherPlayers = await new PlayerFactory([apiKey.game]).many(3)
     const otherEntries = await new LeaderboardEntryFactory(leaderboard, otherPlayers).many(5)
 
-    await (<EntityManager>global.em).persistAndFlush([player, ...entries, ...otherPlayers, ...otherEntries])
+    await global.em.persistAndFlush([player, ...entries, ...otherPlayers, ...otherEntries])
 
     const res = await request(global.app)
       .get(`/v1/leaderboards/${leaderboard.internalName}/entries`)
@@ -67,7 +66,7 @@ describe('Leaderboard API service - get', () => {
   it('should not get leaderboard entries if the scope is not valid', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([])
     const leaderboard = await new LeaderboardFactory([apiKey.game]).one()
-    await (<EntityManager>global.em).persistAndFlush(leaderboard)
+    await global.em.persistAndFlush(leaderboard)
 
     await request(global.app)
       .get(`/v1/leaderboards/${leaderboard.internalName}/entries`)

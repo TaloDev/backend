@@ -47,7 +47,7 @@ describe('User public service - use recovery code', () => {
     expect(res.body.accessToken).toBeTruthy()
     expect(res.body.newRecoveryCodes).toBeUndefined()
 
-    await (<EntityManager>global.em).refresh(user, { populate: ['recoveryCodes'] })
+    await global.em.refresh(user, { populate: ['recoveryCodes'] })
     expect(user.recoveryCodes).toHaveLength(7)
   })
 
@@ -56,7 +56,7 @@ describe('User public service - use recovery code', () => {
     await setTwoFactorAuthSession(user)
 
     user.recoveryCodes.set([new UserRecoveryCode(user)])
-    await (<EntityManager>global.em).flush()
+    await global.em.flush()
 
     const res = await request(global.app)
       .post('/public/users/2fa/recover')
@@ -68,7 +68,7 @@ describe('User public service - use recovery code', () => {
     expect(res.body.accessToken).toBeTruthy()
     expect(res.body.newRecoveryCodes).toHaveLength(8)
 
-    await (<EntityManager>global.em).refresh(user, { populate: ['recoveryCodes'] })
+    await global.em.refresh(user, { populate: ['recoveryCodes'] })
     expect(user.recoveryCodes).toHaveLength(8)
   })
 

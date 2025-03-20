@@ -1,4 +1,3 @@
-import { EntityManager } from '@mikro-orm/mysql'
 import request from 'supertest'
 import { APIKeyScope } from '../../../../src/entities/api-key'
 import { LeaderboardSortMode } from '../../../../src/entities/leaderboard'
@@ -13,7 +12,7 @@ describe('Leaderboard API service - post', () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_LEADERBOARDS])
     const player = await new PlayerFactory([apiKey.game]).one()
     const leaderboard = await new LeaderboardFactory([apiKey.game]).one()
-    await (<EntityManager>global.em).persistAndFlush([player, leaderboard])
+    await global.em.persistAndFlush([player, leaderboard])
 
     const res = await request(global.app)
       .post(`/v1/leaderboards/${leaderboard.internalName}/entries`)
@@ -31,7 +30,7 @@ describe('Leaderboard API service - post', () => {
     const [apiKey, token] = await createAPIKeyAndToken([])
     const player = await new PlayerFactory([apiKey.game]).one()
     const leaderboard = await new LeaderboardFactory([apiKey.game]).one()
-    await (<EntityManager>global.em).persistAndFlush([player, leaderboard])
+    await global.em.persistAndFlush([player, leaderboard])
 
     await request(global.app)
       .post(`/v1/leaderboards/${leaderboard.internalName}/entries`)
@@ -45,7 +44,7 @@ describe('Leaderboard API service - post', () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_LEADERBOARDS])
     const player = await new PlayerFactory([apiKey.game]).one()
     const leaderboard = await new LeaderboardFactory([apiKey.game]).one()
-    await (<EntityManager>global.em).persistAndFlush([player, leaderboard])
+    await global.em.persistAndFlush([player, leaderboard])
 
     await request(global.app)
       .post(`/v1/leaderboards/${leaderboard.internalName}/entries`)
@@ -70,7 +69,7 @@ describe('Leaderboard API service - post', () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_LEADERBOARDS])
     const player = await new PlayerFactory([apiKey.game]).one()
     const leaderboard = await new LeaderboardFactory([apiKey.game]).state(() => ({ unique: true, sortMode: LeaderboardSortMode.DESC })).one()
-    await (<EntityManager>global.em).persistAndFlush([player, leaderboard])
+    await global.em.persistAndFlush([player, leaderboard])
 
     let res = await request(global.app)
       .post(`/v1/leaderboards/${leaderboard.internalName}/entries`)
@@ -107,7 +106,7 @@ describe('Leaderboard API service - post', () => {
       playerAlias: player.aliases[0]
     })).one()
 
-    await (<EntityManager>global.em).persistAndFlush([player, leaderboard, entry])
+    await global.em.persistAndFlush([player, leaderboard, entry])
 
     const res = await request(global.app)
       .post(`/v1/leaderboards/${leaderboard.internalName}/entries`)
@@ -126,7 +125,7 @@ describe('Leaderboard API service - post', () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_LEADERBOARDS])
     const player = await new PlayerFactory([apiKey.game]).one()
     const leaderboard = await new LeaderboardFactory([apiKey.game]).state(() => ({ unique: false })).one()
-    await (<EntityManager>global.em).persistAndFlush([player, leaderboard])
+    await global.em.persistAndFlush([player, leaderboard])
 
     let res = await request(global.app)
       .post(`/v1/leaderboards/${leaderboard.internalName}/entries`)
@@ -153,7 +152,7 @@ describe('Leaderboard API service - post', () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_LEADERBOARDS])
     const player = await new PlayerFactory([apiKey.game]).one()
     const leaderboard = await new LeaderboardFactory([apiKey.game]).state(() => ({ unique: true, sortMode: LeaderboardSortMode.DESC })).one()
-    await (<EntityManager>global.em).persistAndFlush([player, leaderboard])
+    await global.em.persistAndFlush([player, leaderboard])
 
     let res = await request(global.app)
       .post(`/v1/leaderboards/${leaderboard.internalName}/entries`)
@@ -179,7 +178,7 @@ describe('Leaderboard API service - post', () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_LEADERBOARDS])
     const player = await new PlayerFactory([apiKey.game]).one()
     const leaderboard = await new LeaderboardFactory([apiKey.game]).state(() => ({ unique: true, sortMode: LeaderboardSortMode.ASC })).one()
-    await (<EntityManager>global.em).persistAndFlush([player, leaderboard])
+    await global.em.persistAndFlush([player, leaderboard])
 
     let res = await request(global.app)
       .post(`/v1/leaderboards/${leaderboard.internalName}/entries`)
@@ -209,7 +208,7 @@ describe('Leaderboard API service - post', () => {
     const devPlayer = await new PlayerFactory([apiKey.game]).devBuild().one()
     const devEntry = await new LeaderboardEntryFactory(leaderboard, [devPlayer]).state(() => ({ score: 100 })).one()
 
-    await (<EntityManager>global.em).persistAndFlush([leaderboard, player, devEntry])
+    await global.em.persistAndFlush([leaderboard, player, devEntry])
 
     const res = await request(global.app)
       .post(`/v1/leaderboards/${leaderboard.internalName}/entries`)
@@ -225,7 +224,7 @@ describe('Leaderboard API service - post', () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_LEADERBOARDS, APIKeyScope.WRITE_CONTINUITY_REQUESTS])
     const player = await new PlayerFactory([apiKey.game]).one()
     const leaderboard = await new LeaderboardFactory([apiKey.game]).one()
-    await (<EntityManager>global.em).persistAndFlush([player, leaderboard])
+    await global.em.persistAndFlush([player, leaderboard])
 
     const continuityDate = subHours(new Date(), 1)
 
@@ -254,7 +253,7 @@ describe('Leaderboard API service - post', () => {
       playerAlias: player.aliases[0]
     })).one()
 
-    await (<EntityManager>global.em).persistAndFlush([player, leaderboard, entry])
+    await global.em.persistAndFlush([player, leaderboard, entry])
 
     const res = await request(global.app)
       .post(`/v1/leaderboards/${leaderboard.internalName}/entries`)
@@ -271,7 +270,7 @@ describe('Leaderboard API service - post', () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_LEADERBOARDS])
     const player = await new PlayerFactory([apiKey.game]).one()
     const leaderboard = await new LeaderboardFactory([apiKey.game]).state(() => ({ unique: false })).one()
-    await (<EntityManager>global.em).persistAndFlush([player, leaderboard])
+    await global.em.persistAndFlush([player, leaderboard])
 
     const res = await request(global.app)
       .post(`/v1/leaderboards/${leaderboard.internalName}/entries`)
@@ -307,7 +306,7 @@ describe('Leaderboard API service - post', () => {
       ]
     })).one()
 
-    await (<EntityManager>global.em).persistAndFlush([player, leaderboard, entry])
+    await global.em.persistAndFlush([player, leaderboard, entry])
 
     const res = await request(global.app)
       .post(`/v1/leaderboards/${leaderboard.internalName}/entries`)
@@ -335,7 +334,7 @@ describe('Leaderboard API service - post', () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_LEADERBOARDS])
     const player = await new PlayerFactory([apiKey.game]).one()
     const leaderboard = await new LeaderboardFactory([apiKey.game]).state(() => ({ unique: false })).one()
-    await (<EntityManager>global.em).persistAndFlush([player, leaderboard])
+    await global.em.persistAndFlush([player, leaderboard])
 
     const res = await request(global.app)
       .post(`/v1/leaderboards/${leaderboard.internalName}/entries`)

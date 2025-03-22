@@ -14,6 +14,38 @@ import { buildDateValidationSchema } from '../../lib/dates/dateValidationSchema'
 import { formatDateForClickHouse } from '../../lib/clickhouse/formatDateTime'
 
 export default class GameStatAPIService extends APIService {
+
+  @Route({
+    method: 'GET',
+    docs: GameStatAPIDocs.index
+  })
+  @HasPermission(GameStatAPIPolicy, 'index')
+  async index(req: Request) : Promise<Response> {
+    return {
+      status: 200,
+      body: {
+        gameStats: req.ctx.state.gameStats
+      }
+    }
+
+  }
+
+  @Route({
+    method: 'GET',
+    path: '/:internalName',
+    docs: GameStatAPIDocs.get
+  })
+  @HasPermission(GameStatAPIPolicy, 'get')
+  async get(req: Request) : Promise<Response> {
+    return {
+      status: 200,
+      body: {
+        gameStat: req.ctx.state.stat
+      }
+    }
+
+  }
+
   @Route({
     method: 'PUT',
     path: '/:internalName',

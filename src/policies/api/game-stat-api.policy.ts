@@ -17,18 +17,7 @@ export default class GameStatAPIPolicy extends Policy {
     return stat
   }
 
-  async getAllStats(): Promise<Array<GameStat> | null> {
-    const key = this.getAPIKey()
-    const stats = await this.em.getRepository(GameStat).find({
-      game: key.game
-    })
-    return stats
-  }
-
   async index(): Promise<PolicyResponse> {
-    this.ctx.state.gameStats = await this.getAllStats()
-    if (!this.ctx.state.gameStats) return new PolicyDenial({ message: 'Stats not found ' }, 404)
-
     return this.hasScope(APIKeyScope.READ_GAME_STATS)
   }
 

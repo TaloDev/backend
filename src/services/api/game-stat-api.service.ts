@@ -21,10 +21,16 @@ export default class GameStatAPIService extends APIService {
   })
   @HasPermission(GameStatAPIPolicy, 'index')
   async index(req: Request) : Promise<Response> {
+    const key = await this.getAPIKey(req.ctx)
+    console.log(key.game)
+    const stats = await req.ctx.em.getRepository(GameStat).find({
+      game: key.game
+    })
+    console.log(stats)
     return {
       status: 200,
       body: {
-        gameStats: req.ctx.state.gameStats
+        stats
       }
     }
 
@@ -40,7 +46,7 @@ export default class GameStatAPIService extends APIService {
     return {
       status: 200,
       body: {
-        gameStat: req.ctx.state.stat
+        stat: req.ctx.state.stat
       }
     }
 

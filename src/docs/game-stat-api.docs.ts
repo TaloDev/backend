@@ -2,6 +2,79 @@ import GameStatAPIService from '../services/api/game-stat-api.service'
 import APIDocs from './api-docs'
 
 const GameStatAPIDocs: APIDocs<GameStatAPIService> = {
+  index: {
+    description: 'Get all game stat values',
+    samples: [{
+      title: 'Sample response',
+      sample: {
+        stat: [{
+          id: 4,
+          internalName: 'gold-collected',
+          name: 'Gold collected',
+          global: true,
+          globalValue: 5839,
+          defaultValue: 0,
+          maxChange: Infinity,
+          minValue: 0,
+          maxValue: Infinity,
+          minTimeBetweenUpdates: 5,
+          createdAt: '2021-12-24T12:45:39.409Z',
+          updatedAt: '2021-12-24T12:49:14.315Z'
+        },
+        {
+          id: 7,
+          internalName: 'silver-collected',
+          name: 'Silver collected',
+          global: true,
+          globalValue: 15874,
+          defaultValue: 0,
+          maxChange: Infinity,
+          minValue: 0,
+          maxValue: Infinity,
+          minTimeBetweenUpdates: 5,
+          createdAt: '2021-12-24T12:45:39.409Z',
+          updatedAt: '2021-12-24T12:49:14.315Z'
+        }
+        ] }
+
+    }
+    ]
+  },
+  get: {
+    description: 'Get a stat value',
+    params: {
+      route: {
+        internalName: 'the internal name of the stat'
+      }
+    },
+    samples: [
+      {
+        title: 'Sample response',
+        sample: {
+          playerStat: {
+            stat: {
+              id: 4,
+              internalName: 'gold-collected',
+              name: 'Gold collected',
+              global: true,
+              globalValue: 5839,
+              defaultValue: 0,
+              maxChange: Infinity,
+              minValue: 0,
+              maxValue: Infinity,
+              minTimeBetweenUpdates: 5,
+              createdAt: '2021-12-24T12:45:39.409Z',
+              updatedAt: '2021-12-24T12:49:14.315Z'
+            },
+            value: 52,
+            createdAt: '2022-01-01T06:18:11.881Z',
+            updatedAt: '2022-01-03T08:32:46.123Z'
+          }
+        }
+      }
+    ]
+  },
+
   put: {
     description: 'Update a stat value',
     params: {

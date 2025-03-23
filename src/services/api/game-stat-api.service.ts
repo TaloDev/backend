@@ -23,6 +23,44 @@ type GlobalValueMetrics = {
 }
 
 export default class GameStatAPIService extends APIService {
+
+  @Route({
+    method: 'GET',
+    docs: GameStatAPIDocs.index
+  })
+  @HasPermission(GameStatAPIPolicy, 'index')
+  async index(req: Request) : Promise<Response> {
+    const key = await this.getAPIKey(req.ctx)
+    console.log(key.game)
+    const stats = await req.ctx.em.getRepository(GameStat).find({
+      game: key.game
+    })
+    console.log(stats)
+    return {
+      status: 200,
+      body: {
+        stats
+      }
+    }
+
+  }
+
+  @Route({
+    method: 'GET',
+    path: '/:internalName',
+    docs: GameStatAPIDocs.get
+  })
+  @HasPermission(GameStatAPIPolicy, 'get')
+  async get(req: Request) : Promise<Response> {
+    return {
+      status: 200,
+      body: {
+        stat: req.ctx.state.stat
+      }
+    }
+
+  }
+
   @Route({
     method: 'PUT',
     path: '/:internalName',

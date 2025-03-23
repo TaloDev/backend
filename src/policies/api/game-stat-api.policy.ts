@@ -8,7 +8,6 @@ import PlayerAlias from '../../entities/player-alias'
 export default class GameStatAPIPolicy extends Policy {
   async getStat(req: Request): Promise<GameStat | null> {
     const { internalName } = req.params
-
     const key = this.getAPIKey()
     const stat = await this.em.repo(GameStat).findOne({
       internalName,
@@ -53,6 +52,17 @@ export default class GameStatAPIPolicy extends Policy {
     if (!alias) return new PolicyDenial({ message: 'Player not found' }, 404)
 
     return this.hasScope(APIKeyScope.WRITE_GAME_STATS)
+  }
+
+  async index(): Promise<PolicyResponse> {
+    return this.hasScope(APIKeyScope.READ_GAME_STATS)
+  }
+
+  async get(req: Request): Promise<PolicyResponse> {
+    const stat = await this.getStat(req)
+    if (!stat) return new PolicyDenial({ message: 'Stat not found' }, 404)
+
+    return this.hasScope(APIKeyScope.READ_GAME_STATS)
   }
 
   async history(req: Request): Promise<PolicyResponse> {

@@ -30,19 +30,17 @@ export default class GameStatAPIService extends APIService {
   })
   @HasPermission(GameStatAPIPolicy, 'index')
   async index(req: Request) : Promise<Response> {
+    const em: EntityManager = req.ctx.em
+
     const key = await this.getAPIKey(req.ctx)
-    console.log(key.game)
-    const stats = await req.ctx.em.getRepository(GameStat).find({
-      game: key.game
-    })
-    console.log(stats)
+    const stats = await em.repo(GameStat).find({ game: key.game })
+
     return {
       status: 200,
       body: {
         stats
       }
     }
-
   }
 
   @Route({

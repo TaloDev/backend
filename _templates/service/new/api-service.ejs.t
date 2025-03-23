@@ -7,7 +7,9 @@ import APIService from './api-service'
 import APIKey from '../../entities/api-key'
 
 export default class <%= h.changeCase.pascal(name) %>APIService extends APIService {
-  @Route({ method: 'POST' })
+  @Route({
+    method: 'POST'
+  })
   @HasPermission(<%= h.changeCase.pascal(name) %>APIPolicy, 'post')
   @ForwardTo('<%= h.changeCase.dot(name) %>', 'post')
   async post(req: Request): Promise<Response> {

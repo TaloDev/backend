@@ -38,9 +38,8 @@ describe('Game stats API service - history', () => {
         const playerStat = await new PlayerGameStatFactory().construct(player, stat).state(() => ({ value: currentValue })).one()
         await global.em.persistAndFlush(playerStat)
 
-        stat.globalValue += change
         const snapshot = new PlayerGameStatSnapshot()
-        snapshot.construct(playerStat)
+        snapshot.construct(player.aliases[0], playerStat)
         snapshot.change = change
         snapshot.createdAt = addMinutes(snapshot.createdAt, idx)
 
@@ -81,8 +80,8 @@ describe('Game stats API service - history', () => {
       .expect(403)
   })
 
-  it('should not return player stat snapshots for a missing player', async () => {
-    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_STATS])
+  it('should not return player stat snapshots for a non-existent player', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_GAME_STATS])
     const stat = await createStat(apiKey.game)
     const player = await new PlayerFactory([apiKey.game]).one()
     await global.em.persistAndFlush(player)
@@ -98,7 +97,7 @@ describe('Game stats API service - history', () => {
   })
 
   it('should not return player stat snapshots for a non-existent stat', async () => {
-    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_STATS])
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_GAME_STATS])
     const player = await new PlayerFactory([apiKey.game]).one()
     await global.em.persistAndFlush(player)
 
@@ -129,7 +128,7 @@ describe('Game stats API service - history', () => {
       table: 'player_game_stat_snapshots',
       values: dates.map((date) => {
         const snapshot = new PlayerGameStatSnapshot()
-        snapshot.construct(playerStat)
+        snapshot.construct(player.aliases[0], playerStat)
         snapshot.change = randNumber({ min: 1, max: 999 })
         snapshot.createdAt = date
         return snapshot.toInsertable()
@@ -167,7 +166,7 @@ describe('Game stats API service - history', () => {
       table: 'player_game_stat_snapshots',
       values: dates.map((date) => {
         const snapshot = new PlayerGameStatSnapshot()
-        snapshot.construct(playerStat)
+        snapshot.construct(player.aliases[0], playerStat)
         snapshot.change = randNumber({ min: 1, max: 999 })
         snapshot.createdAt = date
         return snapshot.toInsertable()
@@ -205,7 +204,7 @@ describe('Game stats API service - history', () => {
       table: 'player_game_stat_snapshots',
       values: dates.map((date) => {
         const snapshot = new PlayerGameStatSnapshot()
-        snapshot.construct(playerStat)
+        snapshot.construct(player.aliases[0], playerStat)
         snapshot.change = randNumber({ min: 1, max: 999 })
         snapshot.createdAt = date
         return snapshot.toInsertable()
@@ -233,7 +232,7 @@ describe('Game stats API service - history', () => {
     const playerStat = await new PlayerGameStatFactory().construct(player, stat).one()
     await global.em.persistAndFlush(playerStat)
 
-    const changes = Array.from({ length: 60 }, () => randNumber({ min: 1, max: 999 }))
+    const changes = randNumber({ min: 1, max: 999, length: 60 })
 
     await global.clickhouse.insert({
       table: 'player_game_stat_snapshots',
@@ -245,9 +244,8 @@ describe('Game stats API service - history', () => {
         const playerStat = await new PlayerGameStatFactory().construct(player, stat).state(() => ({ value: currentValue })).one()
         await global.em.persistAndFlush(playerStat)
 
-        stat.globalValue += change
         const snapshot = new PlayerGameStatSnapshot()
-        snapshot.construct(playerStat)
+        snapshot.construct(player.aliases[0], playerStat)
         snapshot.change = change
         snapshot.createdAt = addMinutes(snapshot.createdAt, idx)
 

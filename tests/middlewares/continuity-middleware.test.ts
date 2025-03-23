@@ -18,7 +18,7 @@ describe('Continuity middleware', () => {
       .put(`/v1/game-stats/${stat.internalName}`)
       .send({ change: 10 })
       .auth(token, { type: 'bearer' })
-      .set('x-talo-player', player.id)
+      .set('x-talo-alias', String(player.aliases[0].id))
       .set('x-talo-continuity-timestamp', String(continuityDate.getTime()))
       .expect(200)
 
@@ -37,7 +37,7 @@ describe('Continuity middleware', () => {
       .put(`/v1/game-stats/${stat.internalName}`)
       .send({ change: 10 })
       .auth(token, { type: 'bearer' })
-      .set('x-talo-player', player.id)
+      .set('x-talo-alias', String(player.aliases[0].id))
       .set('x-talo-continuity-timestamp', String(Math.ceil(continuityDate.getTime() / 1000)))
       .expect(200)
 

@@ -30,7 +30,7 @@ export default class LeaderboardAPIService extends APIService {
     const em: EntityManager = req.ctx.em
 
     const entry = new LeaderboardEntry(req.ctx.state.leaderboard)
-    entry.playerAlias = req.ctx.state.playerAlias
+    entry.playerAlias = req.ctx.state.alias
     entry.score = req.body.score
     if (req.ctx.state.continuityDate) {
       entry.createdAt = req.ctx.state.continuityDate
@@ -79,7 +79,7 @@ export default class LeaderboardAPIService extends APIService {
       if (leaderboard.unique) {
         entry = await em.getRepository(LeaderboardEntry).findOneOrFail({
           leaderboard,
-          playerAlias: req.ctx.state.playerAlias,
+          playerAlias: req.ctx.state.alias,
           deletedAt: null
         })
 

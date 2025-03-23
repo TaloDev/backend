@@ -34,7 +34,7 @@ export default class GameFeedbackAPIService extends APIService {
 
     const category: GameFeedbackCategory = req.ctx.state.category
 
-    const feedback = new GameFeedback(category, req.ctx.state.playerAlias)
+    const feedback = new GameFeedback(category, req.ctx.state.alias)
     feedback.comment = comment
     feedback.anonymised = category.anonymised
     if (req.ctx.state.continuityDate) {

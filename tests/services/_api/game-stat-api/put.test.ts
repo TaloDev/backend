@@ -30,7 +30,7 @@ describe('Game stats API service - put', () => {
       .put(`/v1/game-stats/${stat.internalName}`)
       .send({ change: 10 })
       .auth(token, { type: 'bearer' })
-      .set('x-talo-player', player.id)
+      .set('x-talo-alias', String(player.aliases[0].id))
       .expect(200)
   })
 
@@ -44,7 +44,7 @@ describe('Game stats API service - put', () => {
       .put(`/v1/game-stats/${stat.internalName}`)
       .send({ change: 10 })
       .auth(token, { type: 'bearer' })
-      .set('x-talo-player', player.id)
+      .set('x-talo-alias', String(player.aliases[0].id))
       .expect(403)
   })
 
@@ -58,7 +58,7 @@ describe('Game stats API service - put', () => {
       .put(`/v1/game-stats/${stat.internalName}`)
       .send({ change: 10 })
       .auth(token, { type: 'bearer' })
-      .set('x-talo-player', '12345')
+      .set('x-talo-alias', '12345')
       .expect(404)
 
     expect(res.body).toStrictEqual({ message: 'Player not found' })
@@ -74,14 +74,14 @@ describe('Game stats API service - put', () => {
       .put(`/v1/game-stats/${stat.internalName}`)
       .send({ change: 1 })
       .auth(token, { type: 'bearer' })
-      .set('x-talo-player', player.id)
+      .set('x-talo-alias', String(player.aliases[0].id))
       .expect(200)
 
     const res = await request(global.app)
       .put(`/v1/game-stats/${stat.internalName}`)
       .send({ change: 1 })
       .auth(token, { type: 'bearer' })
-      .set('x-talo-player', player.id)
+      .set('x-talo-alias', String(player.aliases[0].id))
       .expect(400)
 
     expect(res.body).toStrictEqual({ message: 'Stat cannot be updated more often than every 30 seconds' })
@@ -97,7 +97,7 @@ describe('Game stats API service - put', () => {
       .put(`/v1/game-stats/${stat.internalName}`)
       .send({ change: 100 })
       .auth(token, { type: 'bearer' })
-      .set('x-talo-player', player.id)
+      .set('x-talo-alias', String(player.aliases[0].id))
       .expect(400)
 
     expect(res.body).toStrictEqual({ message: 'Stat change cannot be more than 99' })
@@ -113,7 +113,7 @@ describe('Game stats API service - put', () => {
       .put(`/v1/game-stats/${stat.internalName}`)
       .send({ change: 998 })
       .auth(token, { type: 'bearer' })
-      .set('x-talo-player', player.id)
+      .set('x-talo-alias', String(player.aliases[0].id))
       .expect(200)
   })
 
@@ -127,7 +127,7 @@ describe('Game stats API service - put', () => {
       .put(`/v1/game-stats/${stat.internalName}`)
       .send({ change: -2 })
       .auth(token, { type: 'bearer' })
-      .set('x-talo-player', player.id)
+      .set('x-talo-alias', String(player.aliases[0].id))
       .expect(400)
 
     expect(res.body).toStrictEqual({ message: 'Stat would go below the minValue of -1' })
@@ -143,7 +143,7 @@ describe('Game stats API service - put', () => {
       .put(`/v1/game-stats/${stat.internalName}`)
       .send({ change: -99 })
       .auth(token, { type: 'bearer' })
-      .set('x-talo-player', player.id)
+      .set('x-talo-alias', String(player.aliases[0].id))
       .expect(200)
   })
 
@@ -157,7 +157,7 @@ describe('Game stats API service - put', () => {
       .put(`/v1/game-stats/${stat.internalName}`)
       .send({ change: 4 })
       .auth(token, { type: 'bearer' })
-      .set('x-talo-player', player.id)
+      .set('x-talo-alias', String(player.aliases[0].id))
       .expect(400)
 
     expect(res.body).toStrictEqual({ message: 'Stat would go above the maxValue of 3' })
@@ -173,7 +173,7 @@ describe('Game stats API service - put', () => {
       .put(`/v1/game-stats/${stat.internalName}`)
       .send({ change: 99 })
       .auth(token, { type: 'bearer' })
-      .set('x-talo-player', player.id)
+      .set('x-talo-alias', String(player.aliases[0].id))
       .expect(200)
   })
 
@@ -191,7 +191,7 @@ describe('Game stats API service - put', () => {
       .put(`/v1/game-stats/${stat.internalName}`)
       .send({ change: 50 })
       .auth(token, { type: 'bearer' })
-      .set('x-talo-player', player.id)
+      .set('x-talo-alias', String(player.aliases[0].id))
       .expect(200)
 
     expect(res.body.playerStat.value).toBe(60)
@@ -207,7 +207,7 @@ describe('Game stats API service - put', () => {
       .put(`/v1/game-stats/${stat.internalName}`)
       .send({ change: 50 })
       .auth(token, { type: 'bearer' })
-      .set('x-talo-player', player.id)
+      .set('x-talo-alias', String(player.aliases[0].id))
       .expect(200)
 
     expect(res.body.playerStat.value).toBe(50)
@@ -225,7 +225,7 @@ describe('Game stats API service - put', () => {
       .put('/v1/game-stats/blah')
       .send({ change: 50 })
       .auth(token, { type: 'bearer' })
-      .set('x-talo-player', player.id)
+      .set('x-talo-alias', String(player.aliases[0].id))
       .expect(404)
 
     expect(res.body).toStrictEqual({ message: 'Stat not found' })
@@ -243,7 +243,7 @@ describe('Game stats API service - put', () => {
       .put(`/v1/game-stats/${stat.internalName}`)
       .send({ change: 10 })
       .auth(token, { type: 'bearer' })
-      .set('x-talo-player', player.id)
+      .set('x-talo-alias', String(player.aliases[0].id))
       .set('x-talo-continuity-timestamp', String(continuityDate.getTime()))
       .expect(200)
 
@@ -260,13 +260,13 @@ describe('Game stats API service - put', () => {
       .put(`/v1/game-stats/${stat.internalName}`)
       .send({ change: 50 })
       .auth(token, { type: 'bearer' })
-      .set('x-talo-player', player.id)
+      .set('x-talo-alias', String(player.aliases[0].id))
       .expect(200)
 
     let snapshots: ClickHousePlayerGameStatSnapshot[] = []
     await vi.waitUntil(async () => {
       snapshots = await global.clickhouse.query({
-        query: `SELECT * FROM player_game_stat_snapshots WHERE game_stat_id = ${stat.id} AND player_id = '${player.id}'`,
+        query: `SELECT * FROM player_game_stat_snapshots WHERE game_stat_id = ${stat.id} AND player_alias_id = ${player.aliases[0].id}`,
         format: 'JSONEachRow'
       }).then((res) => res.json<ClickHousePlayerGameStatSnapshot>())
       return snapshots.length === 1

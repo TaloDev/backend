@@ -28,7 +28,7 @@ export default class GameFeedbackAPIPolicy extends Policy {
       }
     })
 
-    this.ctx.state.playerAlias = playerAlias
+    this.ctx.state.alias = playerAlias
     if (!playerAlias) return new PolicyDenial({ message: 'Player not found' }, 404)
 
     return await this.hasScope(APIKeyScope.WRITE_GAME_FEEDBACK)

@@ -26,14 +26,14 @@ export default class LeaderboardAPIPolicy extends Policy {
     this.ctx.state.leaderboard = await this.getLeaderboard(req)
     if (!this.ctx.state.leaderboard) return new PolicyDenial({ message: 'Leaderboard not found' }, 404)
 
-    this.ctx.state.playerAlias = await this.em.getRepository(PlayerAlias).findOne({
+    this.ctx.state.alias = await this.em.getRepository(PlayerAlias).findOne({
       id: Number(this.ctx.state.currentAliasId),
       player: {
         game: this.ctx.state.key.game
       }
     })
 
-    if (!this.ctx.state.playerAlias) return new PolicyDenial({ message: 'Player not found' }, 404)
+    if (!this.ctx.state.alias) return new PolicyDenial({ message: 'Player not found' }, 404)
 
     return await this.hasScope(APIKeyScope.WRITE_LEADERBOARDS)
   }

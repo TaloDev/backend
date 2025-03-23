@@ -25,7 +25,9 @@ export default class <%= h.changeCase.pascal(name) %>Service extends Service {
     }
   }
 
-  @Route({ method: 'POST' })
+  @Route({
+    method: 'POST'
+  })
   @Validate({
     body: []
   })

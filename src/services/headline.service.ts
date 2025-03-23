@@ -130,7 +130,7 @@ export default class HeadlineService extends Service {
     const endDate = formatDateForClickHouse(endOfDay(new Date(endDateQuery)))
 
     let query = `
-      SELECT COUNT(DISTINCT player_alias_id) AS uniqueSubmitters
+      SELECT count(DISTINCT player_alias_id) AS uniqueSubmitters
       FROM events
       WHERE created_at BETWEEN '${startDate}' AND '${endDate}'
         AND game_id = ${req.ctx.state.game.id}

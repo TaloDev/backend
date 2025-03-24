@@ -12,7 +12,7 @@ describe('Game channel listeners - message', () => {
     ])
     const channel = await new GameChannelFactory(player.game).one()
     channel.members.add(player.aliases[0])
-    await em.persistAndFlush(channel)
+    await global.em.persistAndFlush(channel)
 
     await createTestSocket(`/?ticket=${ticket}`, async (client) => {
       await client.identify(identifyMessage)
@@ -41,7 +41,7 @@ describe('Game channel listeners - message', () => {
       APIKeyScope.WRITE_GAME_CHANNELS
     ])
     const channel = await new GameChannelFactory(player.game).one()
-    await em.persistAndFlush(channel)
+    await global.em.persistAndFlush(channel)
 
     await createTestSocket(`/?ticket=${ticket}`, async (client) => {
       await client.identify(identifyMessage)

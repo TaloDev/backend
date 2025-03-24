@@ -10,7 +10,7 @@ describe('Player group service - rules', () => {
     const [token] = await createUserAndToken({}, organisation)
 
     const player = await new PlayerFactory([game]).state(() => ({ lastSeenAt: new Date(2022, 4, 3) })).one()
-    await em.persistAndFlush(player)
+    await global.em.persistAndFlush(player)
 
     const rules: Partial<PlayerGroupRule>[] = [
       {
@@ -22,7 +22,7 @@ describe('Player group service - rules', () => {
       }
     ]
 
-    const res = await request(app)
+    const res = await request(global.app)
       .get(`/games/${game.id}/player-groups/rules`)
       .query({ ruleMode: '$and', rules: encodeURI(JSON.stringify(rules)) })
       .auth(token, { type: 'bearer' })

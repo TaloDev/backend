@@ -2,7 +2,7 @@ import request from 'supertest'
 
 describe('Documentation service - index', () => {
   it('should return api documentation', async () => {
-    const res = await request(app)
+    const res = await request(global.app)
       .get('/public/docs')
       .expect(200)
 

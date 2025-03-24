@@ -22,7 +22,7 @@ describe('Game service - patch', () => {
     })
     const [token] = await createUserAndToken({ type }, organisation)
 
-    const res = await request(app)
+    const res = await request(global.app)
       .patch(`/games/${game.id}`)
       .send({
         props: [
@@ -35,7 +35,7 @@ describe('Game service - patch', () => {
       .auth(token, { type: 'bearer' })
       .expect(statusCode)
 
-    const activity = await em.getRepository(GameActivity).findOne({
+    const activity = await global.em.getRepository(GameActivity).findOne({
       type: GameActivityType.GAME_PROPS_UPDATED,
       game
     })
@@ -69,7 +69,7 @@ describe('Game service - patch', () => {
     })
     const [token] = await createUserAndToken({ type: UserType.ADMIN }, organisation)
 
-    const res = await request(app)
+    const res = await request(global.app)
       .patch(`/games/${game.id}`)
       .send({
         props: [
@@ -98,7 +98,7 @@ describe('Game service - patch', () => {
     const [organisation] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({ type: UserType.ADMIN }, organisation)
 
-    const res = await request(app)
+    const res = await request(global.app)
       .patch('/games/2313')
       .send({
         props: [
@@ -118,7 +118,7 @@ describe('Game service - patch', () => {
     const [, otherGame] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({ type: UserType.ADMIN })
 
-    const res = await request(app)
+    const res = await request(global.app)
       .patch(`/games/${otherGame.id}`)
       .send({
         props: [
@@ -138,7 +138,7 @@ describe('Game service - patch', () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({ type: UserType.ADMIN }, organisation)
 
-    const res = await request(app)
+    const res = await request(global.app)
       .patch(`/games/${game.id}`)
       .send({
         props: [
@@ -160,7 +160,7 @@ describe('Game service - patch', () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({ type: UserType.ADMIN }, organisation)
 
-    const res = await request(app)
+    const res = await request(global.app)
       .patch(`/games/${game.id}`)
       .send({
         name: 'New game name'
@@ -170,7 +170,7 @@ describe('Game service - patch', () => {
 
     expect(res.body.game.name).toBe('New game name')
 
-    const activity = await em.getRepository(GameActivity).findOne({
+    const activity = await global.em.getRepository(GameActivity).findOne({
       type: GameActivityType.GAME_NAME_UPDATED,
       game,
       extra: {
@@ -190,13 +190,13 @@ describe('Game service - patch', () => {
 
     apiKey.game.props = [new Prop('xpRate', '1')]
     apiKey.createdByUser.type = UserType.ADMIN
-    await em.flush()
+    await global.em.flush()
 
     const token = await genAccessToken(apiKey.createdByUser)
 
     await createTestSocket(`/?ticket=${ticket}`, async (client) => {
       await client.identify(identifyMessage)
-      await request(app)
+      await request(global.app)
         .patch(`/games/${apiKey.game.id}`)
         .send({
           props: [
@@ -227,13 +227,13 @@ describe('Game service - patch', () => {
 
     apiKey.game.props = [new Prop('xpRate', '1')]
     apiKey.createdByUser.type = UserType.ADMIN
-    await em.flush()
+    await global.em.flush()
 
     const token = await genAccessToken(apiKey.createdByUser)
 
     await createTestSocket(`/?ticket=${ticket}`, async (client) => {
       await client.identify(identifyMessage)
-      await request(app)
+      await request(global.app)
         .patch(`/games/${apiKey.game.id}`)
         .send({
           props: [

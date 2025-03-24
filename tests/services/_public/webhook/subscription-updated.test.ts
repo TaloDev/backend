@@ -26,7 +26,7 @@ describe('Webhook service - subscription updated', () => {
     const subscription = (await stripe.subscriptions.list()).data[0]
 
     organisation.pricingPlan.stripeCustomerId = (subscription.customer as string) + organisation.id
-    await em.flush()
+    await global.em.flush()
 
     const payload = JSON.stringify({
       id: v4(),
@@ -50,13 +50,13 @@ describe('Webhook service - subscription updated', () => {
       secret: process.env.STRIPE_WEBHOOK_SECRET!
     })
 
-    await request(app)
+    await request(global.app)
       .post('/public/webhooks/subscriptions')
       .set('stripe-signature', header)
       .send(payload)
       .expect(204)
 
-    await em.refresh(organisation)
+    await global.em.refresh(organisation)
     const price = subscription.items.data[0].price
     expect(organisation.pricingPlan.stripePriceId).toBe(price.id)
     expect(sendMock).toHaveBeenCalledWith(new PlanUpgraded(organisation, price, product).getConfig())
@@ -71,7 +71,7 @@ describe('Webhook service - subscription updated', () => {
 
     organisation.pricingPlan.stripeCustomerId = (subscription.customer as string) + organisation.id
     organisation.pricingPlan.stripePriceId = subscription.items.data[0].price.id
-    await em.flush()
+    await global.em.flush()
 
     const payload = JSON.stringify({
       id: v4(),
@@ -95,7 +95,7 @@ describe('Webhook service - subscription updated', () => {
       secret: process.env.STRIPE_WEBHOOK_SECRET!
     })
 
-    await request(app)
+    await request(global.app)
       .post('/public/webhooks/subscriptions')
       .set('stripe-signature', header)
       .send(payload)
@@ -114,7 +114,7 @@ describe('Webhook service - subscription updated', () => {
     organisation.pricingPlan.stripeCustomerId = (subscription.customer as string) + organisation.id
     organisation.pricingPlan.stripePriceId = subscription.items.data[0].price.id
     organisation.pricingPlan.endDate = addDays(new Date(), 1)
-    await em.flush()
+    await global.em.flush()
 
     const payload = JSON.stringify({
       id: v4(),
@@ -138,13 +138,13 @@ describe('Webhook service - subscription updated', () => {
       secret: process.env.STRIPE_WEBHOOK_SECRET!
     })
 
-    await request(app)
+    await request(global.app)
       .post('/public/webhooks/subscriptions')
       .set('stripe-signature', header)
       .send(payload)
       .expect(204)
 
-    await em.refresh(organisation.pricingPlan)
+    await global.em.refresh(organisation.pricingPlan)
     expect(organisation.pricingPlan.endDate).toBe(null)
     expect(sendMock).toHaveBeenCalledWith(new PlanRenewed(organisation).getConfig())
   })
@@ -160,7 +160,7 @@ describe('Webhook service - subscription updated', () => {
     organisation.pricingPlan.stripeCustomerId = (subscription.customer as string) + organisation.id
     organisation.pricingPlan.stripePriceId = subscription.items.data[0].price.id
     organisation.pricingPlan.endDate = null
-    await em.flush()
+    await global.em.flush()
 
     const payload = JSON.stringify({
       id: v4(),
@@ -184,13 +184,13 @@ describe('Webhook service - subscription updated', () => {
       secret: process.env.STRIPE_WEBHOOK_SECRET!
     })
 
-    await request(app)
+    await request(global.app)
       .post('/public/webhooks/subscriptions')
       .set('stripe-signature', header)
       .send(payload)
       .expect(204)
 
-    await em.refresh(organisation, { populate: ['pricingPlan'] })
+    await global.em.refresh(organisation, { populate: ['pricingPlan'] })
     expect(organisation.pricingPlan.endDate!.getMilliseconds()).toBe(new Date(subscription.current_period_end * 1000).getMilliseconds())
     expect(sendMock).toHaveBeenCalledWith(new PlanCancelled(organisation).getConfig())
   })
@@ -205,7 +205,7 @@ describe('Webhook service - subscription updated', () => {
     organisation.pricingPlan.stripeCustomerId = (subscription.customer as string) + organisation.id
     organisation.pricingPlan.stripePriceId = subscription.items.data[0].price.id
     organisation.pricingPlan.endDate = null
-    await em.flush()
+    await global.em.flush()
 
     const payload = JSON.stringify({
       id: v4(),
@@ -229,13 +229,13 @@ describe('Webhook service - subscription updated', () => {
       secret: process.env.STRIPE_WEBHOOK_SECRET!
     })
 
-    await request(app)
+    await request(global.app)
       .post('/public/webhooks/subscriptions')
       .set('stripe-signature', header)
       .send(payload)
       .expect(204)
 
-    await em.refresh(organisation, { populate: ['pricingPlan'] })
+    await global.em.refresh(organisation, { populate: ['pricingPlan'] })
     expect(organisation.pricingPlan.endDate).toBe(null)
     expect(sendMock).not.toHaveBeenCalled()
   })

@@ -15,14 +15,14 @@ describe('Player group service - delete', () => {
     const [token] = await createUserAndToken({ type }, organisation)
 
     const group = await new PlayerGroupFactory().construct(game).one()
-    await em.persistAndFlush(group)
+    await global.em.persistAndFlush(group)
 
-    const res = await request(app)
+    const res = await request(global.app)
       .delete(`/games/${game.id}/player-groups/${group.id}`)
       .auth(token, { type: 'bearer' })
       .expect(statusCode)
 
-    const activity = await em.getRepository(GameActivity).findOne({
+    const activity = await global.em.getRepository(GameActivity).findOne({
       type: GameActivityType.PLAYER_GROUP_DELETED,
       game
     })
@@ -41,9 +41,9 @@ describe('Player group service - delete', () => {
     const [token] = await createUserAndToken({ type: UserType.ADMIN })
 
     const group = await new PlayerGroupFactory().construct(otherGame).one()
-    await em.persistAndFlush([group])
+    await global.em.persistAndFlush([group])
 
-    const res = await request(app)
+    const res = await request(global.app)
       .delete(`/games/${otherGame.id}/player-groups/${group.id}`)
       .auth(token, { type: 'bearer' })
       .expect(403)
@@ -55,7 +55,7 @@ describe('Player group service - delete', () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({ type: UserType.ADMIN }, organisation)
 
-    const res = await request(app)
+    const res = await request(global.app)
       .delete(`/games/${game.id}/player-groups/31223`)
       .auth(token, { type: 'bearer' })
       .expect(404)

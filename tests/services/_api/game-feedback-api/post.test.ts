@@ -12,9 +12,9 @@ describe('Game feedback API service - post', () => {
     const feedbackCategory = await new GameFeedbackCategoryFactory(apiKey.game).one()
     const player = await new PlayerFactory([apiKey.game]).one()
 
-    await em.persistAndFlush([feedbackCategory, player])
+    await global.em.persistAndFlush([feedbackCategory, player])
 
-    const res = await request(app)
+    const res = await request(global.app)
       .post(`/v1/game-feedback/categories/${feedbackCategory.internalName}`)
       .send({ comment: 'This is my comment' })
       .auth(token, { type: 'bearer' })
@@ -33,9 +33,9 @@ describe('Game feedback API service - post', () => {
     const feedbackCategory = await new GameFeedbackCategoryFactory(apiKey.game).one()
     const player = await new PlayerFactory([apiKey.game]).one()
 
-    await em.persistAndFlush([feedbackCategory, player])
+    await global.em.persistAndFlush([feedbackCategory, player])
 
-    const res = await request(app)
+    const res = await request(global.app)
       .post(`/v1/game-feedback/categories/${feedbackCategory.internalName}`)
       .send({ comment: 'This is my comment' })
       .auth(token, { type: 'bearer' })
@@ -49,9 +49,9 @@ describe('Game feedback API service - post', () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_FEEDBACK])
 
     const feedbackCategory = await new GameFeedbackCategoryFactory(apiKey.game).one()
-    await em.persistAndFlush(feedbackCategory)
+    await global.em.persistAndFlush(feedbackCategory)
 
-    const res = await request(app)
+    const res = await request(global.app)
       .post(`/v1/game-feedback/categories/${feedbackCategory.internalName}`)
       .send({ comment: 'This is my comment' })
       .auth(token, { type: 'bearer' })
@@ -65,9 +65,9 @@ describe('Game feedback API service - post', () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_FEEDBACK])
 
     const player = await new PlayerFactory([apiKey.game]).one()
-    await em.persistAndFlush(player)
+    await global.em.persistAndFlush(player)
 
-    const res = await request(app)
+    const res = await request(global.app)
       .post('/v1/game-feedback/categories/non-existent')
       .send({ comment: 'This is my comment' })
       .auth(token, { type: 'bearer' })
@@ -83,11 +83,11 @@ describe('Game feedback API service - post', () => {
     const feedbackCategory = await new GameFeedbackCategoryFactory(apiKey.game).one()
     const player = await new PlayerFactory([apiKey.game]).one()
 
-    await em.persistAndFlush([feedbackCategory, player])
+    await global.em.persistAndFlush([feedbackCategory, player])
 
     const continuityDate = subHours(new Date(), 1)
 
-    const res = await request(app)
+    const res = await request(global.app)
       .post(`/v1/game-feedback/categories/${feedbackCategory.internalName}`)
       .send({ comment: 'This is my comment' })
       .auth(token, { type: 'bearer' })

@@ -14,14 +14,14 @@ describe('Game channel service - delete', () => {
     const [token] = await createUserAndToken({ type }, organisation)
 
     const channel = await new GameChannelFactory(game).one()
-    await em.persistAndFlush(channel)
+    await global.em.persistAndFlush(channel)
 
-    const res = await request(app)
+    const res = await request(global.app)
       .delete(`/games/${game.id}/game-channels/${channel.id}`)
       .auth(token, { type: 'bearer' })
       .expect(statusCode)
 
-    const activity = await em.getRepository(GameActivity).findOne({
+    const activity = await global.em.getRepository(GameActivity).findOne({
       type: GameActivityType.GAME_CHANNEL_DELETED,
       game
     })
@@ -39,9 +39,9 @@ describe('Game channel service - delete', () => {
     const [token] = await createUserAndToken({ type: UserType.ADMIN })
 
     const channel = await new GameChannelFactory(game).one()
-    await em.persistAndFlush(channel)
+    await global.em.persistAndFlush(channel)
 
-    const res = await request(app)
+    const res = await request(global.app)
       .delete(`/games/${game.id}/game-channels/${channel.id}`)
       .auth(token, { type: 'bearer' })
       .expect(403)
@@ -54,9 +54,9 @@ describe('Game channel service - delete', () => {
     const [token] = await createUserAndToken({ type: UserType.ADMIN })
 
     const channel = await new GameChannelFactory(game).one()
-    await em.persistAndFlush(channel)
+    await global.em.persistAndFlush(channel)
 
-    const res = await request(app)
+    const res = await request(global.app)
       .delete(`/games/99999/game-channels/${channel.id}`)
       .auth(token, { type: 'bearer' })
       .expect(404)
@@ -68,7 +68,7 @@ describe('Game channel service - delete', () => {
     const [, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({ type: UserType.ADMIN })
 
-    const res = await request(app)
+    const res = await request(global.app)
       .delete(`/games/${game.id}/game-channels/99999`)
       .auth(token, { type: 'bearer' })
       .expect(404)

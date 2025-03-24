@@ -1,5 +1,6 @@
 import { APIKeyScope } from '../../../../src/entities/api-key'
 import createSocketIdentifyMessage from '../../../utils/createSocketIdentifyMessage'
+import { EntityManager } from '@mikro-orm/mysql'
 import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
 import PlayerFactory from '../../../fixtures/PlayerFactory'
 import Redis from 'ioredis'
@@ -43,6 +44,8 @@ describe('Player listeners - identify', () => {
   })
 
   it('should require a valid session token to identify Talo aliases', async () => {
+    const em: EntityManager = global.em
+
     const [apiKey] = await createAPIKeyAndToken([APIKeyScope.READ_PLAYERS])
     const player = await new PlayerFactory([apiKey.game]).withTaloAlias().one()
     await em.persistAndFlush(player)
@@ -72,6 +75,8 @@ describe('Player listeners - identify', () => {
   })
 
   it('should reject identify for Talo aliases without a valid session token', async () => {
+    const em: EntityManager = global.em
+
     const [apiKey] = await createAPIKeyAndToken([APIKeyScope.READ_PLAYERS])
     const player = await new PlayerFactory([apiKey.game]).withTaloAlias().one()
     await em.persistAndFlush(player)

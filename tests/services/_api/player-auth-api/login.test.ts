@@ -28,9 +28,9 @@ describe('Player auth API service - login', () => {
     })).one()
     const alias = player.aliases[0]
 
-    await em.persistAndFlush(player)
+    await global.em.persistAndFlush(player)
 
-    const res = await request(app)
+    const res = await request(global.app)
       .post('/v1/players/auth/login')
       .send({ identifier: alias.identifier, password: 'password' })
       .auth(token, { type: 'bearer' })
@@ -45,7 +45,7 @@ describe('Player auth API service - login', () => {
 
     expect(res.body.sessionToken).toBeTruthy()
 
-    const activity = await em.getRepository(PlayerAuthActivity).findOne({
+    const activity = await global.em.getRepository(PlayerAuthActivity).findOne({
       type: PlayerAuthActivityType.LOGGED_IN,
       player: player.id
     })
@@ -62,9 +62,9 @@ describe('Player auth API service - login', () => {
     })).one()
     const alias = player.aliases[0]
 
-    await em.persistAndFlush(player)
+    await global.em.persistAndFlush(player)
 
-    await request(app)
+    await request(global.app)
       .post('/v1/players/auth/login')
       .send({ identifier: alias.identifier, password: 'password' })
       .auth(token, { type: 'bearer' })
@@ -83,9 +83,9 @@ describe('Player auth API service - login', () => {
     })).one()
     const alias = player.aliases[0]
 
-    await em.persistAndFlush(player)
+    await global.em.persistAndFlush(player)
 
-    const res = await request(app)
+    const res = await request(global.app)
       .post('/v1/players/auth/login')
       .send({ identifier: alias.identifier, password: 'passw0rd' })
       .auth(token, { type: 'bearer' })
@@ -108,9 +108,9 @@ describe('Player auth API service - login', () => {
       })).one()
     })).one()
 
-    await em.persistAndFlush(player)
+    await global.em.persistAndFlush(player)
 
-    const res = await request(app)
+    const res = await request(global.app)
       .post('/v1/players/auth/login')
       .send({ identifier: 'blah', password: 'password' })
       .auth(token, { type: 'bearer' })
@@ -136,9 +136,9 @@ describe('Player auth API service - login', () => {
     })).one()
     const alias = player.aliases[0]
 
-    await em.persistAndFlush(player)
+    await global.em.persistAndFlush(player)
 
-    const res = await request(app)
+    const res = await request(global.app)
       .post('/v1/players/auth/login')
       .send({ identifier: alias.identifier, password: 'password' })
       .auth(token, { type: 'bearer' })
@@ -152,7 +152,7 @@ describe('Player auth API service - login', () => {
     expect(await redis.get(`player-auth:${apiKey.game.id}:verification:${alias.id}`)).toHaveLength(6)
     expect(sendMock).toHaveBeenCalledOnce()
 
-    const activity = await em.getRepository(PlayerAuthActivity).findOne({
+    const activity = await global.em.getRepository(PlayerAuthActivity).findOne({
       type: PlayerAuthActivityType.VERIFICATION_STARTED,
       player: player.id
     })

@@ -18,7 +18,7 @@ describe('PlayerGroupRule mode', () => {
       ])
     })).one()
     const player2 = await new PlayerFactory([game]).one()
-    await em.persistAndFlush([player1, player2])
+    await global.em.persistAndFlush([player1, player2])
 
     const rules: Partial<PlayerGroupRule>[] = [
       {
@@ -37,7 +37,7 @@ describe('PlayerGroupRule mode', () => {
       }
     ]
 
-    const res = await request(app)
+    const res = await request(global.app)
       .get(`/games/${game.id}/player-groups/preview-count`)
       .query({ ruleMode: '$and', rules: encodeURI(JSON.stringify(rules)) })
       .auth(token, { type: 'bearer' })
@@ -62,7 +62,7 @@ describe('PlayerGroupRule mode', () => {
         new PlayerProp(player, 'timePlayed', '23423')
       ])
     })).one()
-    await em.persistAndFlush([player1, player2])
+    await global.em.persistAndFlush([player1, player2])
 
     const rules: Partial<PlayerGroupRule>[] = [
       {
@@ -81,7 +81,7 @@ describe('PlayerGroupRule mode', () => {
       }
     ]
 
-    const res = await request(app)
+    const res = await request(global.app)
       .get(`/games/${game.id}/player-groups/preview-count`)
       .query({ ruleMode: '$or', rules: encodeURI(JSON.stringify(rules)) })
       .auth(token, { type: 'bearer' })

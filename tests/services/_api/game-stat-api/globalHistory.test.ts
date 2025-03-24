@@ -1,3 +1,4 @@
+import { EntityManager } from '@mikro-orm/mysql'
 import request from 'supertest'
 import { APIKeyScope } from '../../../../src/entities/api-key'
 import PlayerFactory from '../../../fixtures/PlayerFactory'
@@ -13,6 +14,8 @@ import GameStat from '../../../../src/entities/game-stat'
 
 describe('Game stats API service - global history', () => {
   const createStat = async (game: Game) => {
+    const em: EntityManager  = global.em
+
     const stat = await new GameStatFactory([game]).state(() => ({ maxValue: 999, maxChange: 99, global: true })).one()
     em.persist(stat)
 
@@ -33,11 +36,11 @@ describe('Game stats API service - global history', () => {
 
     const changes = randNumber({ length: 10 })
 
-    await clickhouse.insert({
+    await global.clickhouse.insert({
       table: 'player_game_stat_snapshots',
       values: await Promise.all(changes.map(async (change, idx) => {
         const playerStat = await createPlayerStat(stat, { value: change })
-        await em.flush()
+        await global.em.flush()
 
         const snapshot = new PlayerGameStatSnapshot()
         snapshot.construct(playerStat.player.aliases[0], playerStat)
@@ -49,7 +52,7 @@ describe('Game stats API service - global history', () => {
       format: 'JSONEachRow'
     })
 
-    const res = await request(app)
+    const res = await request(global.app)
       .get(`/v1/game-stats/${stat.internalName}/global-history`)
       .query({ page: 0 })
       .auth(token, { type: 'bearer' })
@@ -71,7 +74,7 @@ describe('Game stats API service - global history', () => {
     const stat = await createStat(apiKey.game)
     await em.flush()
 
-    await request(app)
+    await request(global.app)
       .get(`/v1/game-stats/${stat.internalName}/global-history`)
       .query({ page: 0 })
       .auth(token, { type: 'bearer' })
@@ -84,7 +87,7 @@ describe('Game stats API service - global history', () => {
     stat.global = false
     await em.flush()
 
-    const res = await request(app)
+    const res = await request(global.app)
       .get(`/v1/game-stats/${stat.internalName}/global-history`)
       .query({ page: 0 })
       .auth(token, { type: 'bearer' })
@@ -96,7 +99,7 @@ describe('Game stats API service - global history', () => {
   it('should not return global stat snapshots for a non-existent stat', async () => {
     const [, token] = await createAPIKeyAndToken([APIKeyScope.READ_GAME_STATS])
 
-    const res = await request(app)
+    const res = await request(global.app)
       .get('/v1/game-stats/blah/global-history')
       .query({ page: 0 })
       .auth(token, { type: 'bearer' })
@@ -115,7 +118,7 @@ describe('Game stats API service - global history', () => {
       new Date('2025-03-21T09:00:00.000Z')
     ]
 
-    await clickhouse.insert({
+    await global.clickhouse.insert({
       table: 'player_game_stat_snapshots',
       values: await Promise.all(dates.map(async (date) => {
         const snapshot = new PlayerGameStatSnapshot()
@@ -130,7 +133,7 @@ describe('Game stats API service - global history', () => {
       format: 'JSONEachRow'
     })
 
-    const res = await request(app)
+    const res = await request(global.app)
       .get(`/v1/game-stats/${stat.internalName}/global-history`)
       .query({ page: 0, startDate: dates[1] })
       .auth(token, { type: 'bearer' })
@@ -152,7 +155,7 @@ describe('Game stats API service - global history', () => {
       new Date('2025-03-21T09:00:00.000Z')
     ]
 
-    await clickhouse.insert({
+    await global.clickhouse.insert({
       table: 'player_game_stat_snapshots',
       values: await Promise.all(dates.map(async (date) => {
         const snapshot = new PlayerGameStatSnapshot()
@@ -167,7 +170,7 @@ describe('Game stats API service - global history', () => {
       format: 'JSONEachRow'
     })
 
-    const res = await request(app)
+    const res = await request(global.app)
       .get(`/v1/game-stats/${stat.internalName}/global-history`)
       .query({ page: 0, endDate: dates[1] })
       .auth(token, { type: 'bearer' })
@@ -189,7 +192,7 @@ describe('Game stats API service - global history', () => {
       new Date('2025-03-21T09:00:00.000Z')
     ]
 
-    await clickhouse.insert({
+    await global.clickhouse.insert({
       table: 'player_game_stat_snapshots',
       values: await Promise.all(dates.map(async (date) => {
         const snapshot = new PlayerGameStatSnapshot()
@@ -204,7 +207,7 @@ describe('Game stats API service - global history', () => {
       format: 'JSONEachRow'
     })
 
-    const res = await request(app)
+    const res = await request(global.app)
       .get(`/v1/game-stats/${stat.internalName}/global-history`)
       .query({ page: 0, startDate: '2025-03-20', endDate: '2025-03-20' })
       .auth(token, { type: 'bearer' })
@@ -226,12 +229,12 @@ describe('Game stats API service - global history', () => {
     const changesPlayer1 = randNumber({ length: 2 })
     const changesPlayer2 = randNumber({ length: 8 })
 
-    await clickhouse.insert({
+    await global.clickhouse.insert({
       table: 'player_game_stat_snapshots',
       values: await Promise.all([...changesPlayer1, ...changesPlayer2].map(async (change, idx) => {
         const playerStat = await createPlayerStat(stat, { value: change })
         playerStat.player = idx < changesPlayer1.length ? player1 : player2
-        await em.flush()
+        await global.em.flush()
 
         const snapshot = new PlayerGameStatSnapshot()
         snapshot.construct(playerStat.player.aliases[0], playerStat)
@@ -243,7 +246,7 @@ describe('Game stats API service - global history', () => {
       format: 'JSONEachRow'
     })
 
-    const res = await request(app)
+    const res = await request(global.app)
       .get(`/v1/game-stats/${stat.internalName}/global-history`)
       .query({ page: 0, playerId: player1.id })
       .auth(token, { type: 'bearer' })
@@ -261,11 +264,11 @@ describe('Game stats API service - global history', () => {
 
     const changes = randNumber({ length: 10 })
 
-    await clickhouse.insert({
+    await global.clickhouse.insert({
       table: 'player_game_stat_snapshots',
       values: await Promise.all(changes.map(async (change, idx) => {
         const playerStat = await createPlayerStat(stat, { value: change })
-        await em.flush()
+        await global.em.flush()
 
         const snapshot = new PlayerGameStatSnapshot()
         snapshot.construct(playerStat.player.aliases[0], playerStat)
@@ -277,7 +280,7 @@ describe('Game stats API service - global history', () => {
       format: 'JSONEachRow'
     })
 
-    const res = await request(app)
+    const res = await request(global.app)
       .get(`/v1/game-stats/${stat.internalName}/global-history`)
       .query({ page: 0, playerId: 'blah' })
       .auth(token, { type: 'bearer' })
@@ -292,11 +295,11 @@ describe('Game stats API service - global history', () => {
 
     const changes = randNumber({ min: 1, max: 999, length: 60 })
 
-    await clickhouse.insert({
+    await global.clickhouse.insert({
       table: 'player_game_stat_snapshots',
       values: await Promise.all(changes.map(async (change, idx) => {
         const playerStat = await createPlayerStat(stat, { value: change })
-        await em.flush()
+        await global.em.flush()
 
         const snapshot = new PlayerGameStatSnapshot()
         snapshot.construct(playerStat.player.aliases[0], playerStat)
@@ -308,7 +311,7 @@ describe('Game stats API service - global history', () => {
       format: 'JSONEachRow'
     })
 
-    const res = await request(app)
+    const res = await request(global.app)
       .get(`/v1/game-stats/${stat.internalName}/global-history`)
       .query({ page: 1 })
       .auth(token, { type: 'bearer' })
@@ -328,7 +331,7 @@ describe('Game stats API service - global history', () => {
     const changes = randNumber({ min: 1, max: 999, length: 10 })
     const globalValues: number[] = []
 
-    await clickhouse.insert({
+    await global.clickhouse.insert({
       table: 'player_game_stat_snapshots',
       values: await Promise.all(changes.map(async (change, idx) => {
         const playerStat = await createPlayerStat(stat, { value: change })
@@ -347,7 +350,7 @@ describe('Game stats API service - global history', () => {
       format: 'JSONEachRow'
     })
 
-    const res = await request(app)
+    const res = await request(global.app)
       .get(`/v1/game-stats/${stat.internalName}/global-history`)
       .query({ page: 0 })
       .auth(token, { type: 'bearer' })
@@ -373,7 +376,7 @@ describe('Game stats API service - global history', () => {
     const stat = await createStat(apiKey.game)
     await em.flush()
 
-    const res = await request(app)
+    const res = await request(global.app)
       .get(`/v1/game-stats/${stat.internalName}/global-history`)
       .query({ page: 0 })
       .auth(token, { type: 'bearer' })

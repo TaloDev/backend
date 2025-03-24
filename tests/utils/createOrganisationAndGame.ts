@@ -16,7 +16,7 @@ export default async function createOrganisationAndGame(orgPartial?: Partial<Org
   }
 
   const game = await new GameFactory(organisation).state(() => gamePartial ?? {}).one()
-  await em.persistAndFlush([organisation, game])
+  await global.em.persistAndFlush([organisation, game])
 
   return [organisation, game]
 }

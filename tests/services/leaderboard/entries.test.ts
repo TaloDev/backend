@@ -1,3 +1,4 @@
+import { EntityManager } from '@mikro-orm/mysql'
 import request from 'supertest'
 import LeaderboardFactory from '../../fixtures/LeaderboardFactory'
 import PlayerFactory from '../../fixtures/PlayerFactory'
@@ -8,6 +9,8 @@ import LeaderboardEntry from '../../../src/entities/leaderboard-entry'
 
 describe('Leaderboard service - entries', () => {
   it('should return a leaderboard\'s entries', async () => {
+    const em: EntityManager = global.em
+
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({}, organisation)
 
@@ -17,7 +20,7 @@ describe('Leaderboard service - entries', () => {
     const leaderboard = await new LeaderboardFactory([game]).withEntries().one()
     await em.persistAndFlush(leaderboard)
 
-    const res = await request(app)
+    const res = await request(global.app)
       .get(`/games/${game.id}/leaderboards/${leaderboard.id}/entries`)
       .query({ page: 0 })
       .auth(token, { type: 'bearer' })
@@ -31,7 +34,7 @@ describe('Leaderboard service - entries', () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({}, organisation)
 
-    const res = await request(app)
+    const res = await request(global.app)
       .get(`/games/${game.id}/leaderboards/21312312/entries`)
       .query({ page: 0 })
       .auth(token, { type: 'bearer' })
@@ -45,9 +48,9 @@ describe('Leaderboard service - entries', () => {
     const [token] = await createUserAndToken()
 
     const leaderboard = await new LeaderboardFactory([game]).withEntries().one()
-    await em.persistAndFlush(leaderboard)
+    await global.em.persistAndFlush(leaderboard)
 
-    await request(app)
+    await request(global.app)
       .get(`/games/${game.id}/leaderboards/${leaderboard.id}/entries`)
       .query({ page: 0 })
       .auth(token, { type: 'bearer' })
@@ -55,6 +58,8 @@ describe('Leaderboard service - entries', () => {
   })
 
   it('should correctly mark the last page', async () => {
+    const em: EntityManager = global.em
+
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({}, organisation)
 
@@ -66,7 +71,7 @@ describe('Leaderboard service - entries', () => {
     await em.persistAndFlush([leaderboard, ...entries])
 
     for (let i = 0; i < 3; i++) {
-      const res = await request(app)
+      const res = await request(global.app)
         .get(`/games/${game.id}/leaderboards/${leaderboard.id}/entries`)
         .query({ page: i })
         .auth(token, { type: 'bearer' })
@@ -84,9 +89,9 @@ describe('Leaderboard service - entries', () => {
     const [token] = await createUserAndToken({}, organisation)
 
     const leaderboard = await new LeaderboardFactory([game]).withEntries().devBuildPlayers().one()
-    await em.persistAndFlush(leaderboard)
+    await global.em.persistAndFlush(leaderboard)
 
-    const res = await request(app)
+    const res = await request(global.app)
       .get(`/games/${game.id}/leaderboards/${leaderboard.id}/entries`)
       .query({ page: 0 })
       .auth(token, { type: 'bearer' })
@@ -100,9 +105,9 @@ describe('Leaderboard service - entries', () => {
     const [token] = await createUserAndToken({}, organisation)
 
     const leaderboard = await new LeaderboardFactory([game]).withEntries().devBuildPlayers().one()
-    await em.persistAndFlush(leaderboard)
+    await global.em.persistAndFlush(leaderboard)
 
-    const res = await request(app)
+    const res = await request(global.app)
       .get(`/games/${game.id}/leaderboards/${leaderboard.id}/entries`)
       .query({ page: 0 })
       .auth(token, { type: 'bearer' })
@@ -113,6 +118,8 @@ describe('Leaderboard service - entries', () => {
   })
 
   it('should return archived entries', async () => {
+    const em: EntityManager = global.em
+
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({}, organisation)
 
@@ -124,7 +131,7 @@ describe('Leaderboard service - entries', () => {
     entries[1].deletedAt = new Date()
     await em.persistAndFlush(entries)
 
-    const resWithDeleted = await request(app)
+    const resWithDeleted = await request(global.app)
       .get(`/games/${game.id}/leaderboards/${leaderboard.id}/entries`)
       .query({ page: 0, withDeleted: '1' })
       .auth(token, { type: 'bearer' })

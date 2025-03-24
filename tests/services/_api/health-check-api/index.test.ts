@@ -5,7 +5,7 @@ describe('Health check API service - index', () => {
   it('should return a 204', async () => {
     const [, token] = await createAPIKeyAndToken([])
 
-    await request(app)
+    await request(global.app)
       .get('/v1/health-check')
       .auth(token, { type: 'bearer' })
       .expect(204)

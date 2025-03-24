@@ -24,14 +24,14 @@ describe('Integration service - sync leaderboards', () => {
 
     const config = await new IntegrationConfigFactory().state(() => ({ syncLeaderboards: true })).one()
     const integration = await new IntegrationFactory().construct(IntegrationType.STEAMWORKS, game, config).one()
-    await em.persistAndFlush(integration)
+    await global.em.persistAndFlush(integration)
 
-    const res = await request(app)
+    const res = await request(global.app)
       .post(`/games/${game.id}/integrations/${integration.id}/sync-leaderboards`)
       .auth(token, { type: 'bearer' })
       .expect(statusCode)
 
-    const activity = await em.getRepository(GameActivity).findOne({
+    const activity = await global.em.getRepository(GameActivity).findOne({
       type: GameActivityType.GAME_INTEGRATION_STEAMWORKS_LEADERBOARDS_SYNCED,
       game
     })
@@ -55,14 +55,14 @@ describe('Integration service - sync leaderboards', () => {
 
     const config = await new IntegrationConfigFactory().state(() => ({ syncLeaderboards: true })).one()
     const integration = await new IntegrationFactory().construct(IntegrationType.STEAMWORKS, game, config).one()
-    await em.persistAndFlush(integration)
+    await global.em.persistAndFlush(integration)
 
-    const res = await request(app)
+    const res = await request(global.app)
       .post(`/games/${game.id}/integrations/${integration.id}/sync-leaderboards`)
       .auth(token, { type: 'bearer' })
       .expect(403)
 
-    const activity = await em.getRepository(GameActivity).findOne({
+    const activity = await global.em.getRepository(GameActivity).findOne({
       type: GameActivityType.GAME_INTEGRATION_STEAMWORKS_LEADERBOARDS_SYNCED,
       game
     })
@@ -78,14 +78,14 @@ describe('Integration service - sync leaderboards', () => {
 
     const config = await new IntegrationConfigFactory().state(() => ({ syncLeaderboards: false })).one()
     const integration = await new IntegrationFactory().construct(IntegrationType.STEAMWORKS, game, config).one()
-    await em.persistAndFlush(integration)
+    await global.em.persistAndFlush(integration)
 
-    const res = await request(app)
+    const res = await request(global.app)
       .post(`/games/${game.id}/integrations/${integration.id}/sync-leaderboards`)
       .auth(token, { type: 'bearer' })
       .expect(403)
 
-    const activity = await em.getRepository(GameActivity).findOne({
+    const activity = await global.em.getRepository(GameActivity).findOne({
       type: GameActivityType.GAME_INTEGRATION_STEAMWORKS_LEADERBOARDS_SYNCED,
       game
     })
@@ -101,14 +101,14 @@ describe('Integration service - sync leaderboards', () => {
 
     const config = await new IntegrationConfigFactory().state(() => ({ syncLeaderboards: false })).one()
     const integration = await new IntegrationFactory().construct(IntegrationType.STEAMWORKS, game, config).one()
-    await em.persistAndFlush(integration)
+    await global.em.persistAndFlush(integration)
 
-    const res = await request(app)
+    const res = await request(global.app)
       .post(`/games/${game.id}/integrations/54/sync-leaderboards`)
       .auth(token, { type: 'bearer' })
       .expect(404)
 
-    const activity = await em.getRepository(GameActivity).findOne({
+    const activity = await global.em.getRepository(GameActivity).findOne({
       type: GameActivityType.GAME_INTEGRATION_STEAMWORKS_LEADERBOARDS_SYNCED,
       game
     })

@@ -15,9 +15,9 @@ describe('Game activity service - index', () => {
     const [token, user] = await createUserAndToken({ type }, organisation)
 
     const activities = await new GameActivityFactory([game], [user]).many(5)
-    await em.persistAndFlush([user, game, ...activities])
+    await global.em.persistAndFlush([user, game, ...activities])
 
-    const res = await request(app)
+    const res = await request(global.app)
       .get(`/games/${game.id}/game-activities`)
       .auth(token, { type: 'bearer' })
       .expect(statusCode)
@@ -39,9 +39,9 @@ describe('Game activity service - index', () => {
     const activities = await new GameActivityFactory([], [user]).many(5)
     const otherActivities = await new GameActivityFactory([], [otherUser]).many(5)
 
-    await em.persistAndFlush([...activities, ...otherActivities])
+    await global.em.persistAndFlush([...activities, ...otherActivities])
 
-    const res = await request(app)
+    const res = await request(global.app)
       .get(`/games/${game.id}/game-activities`)
       .auth(token, { type: 'bearer' })
       .expect(200)
@@ -55,9 +55,9 @@ describe('Game activity service - index', () => {
 
     const user = await new UserFactory().state(() => ({ organisation })).one()
     const activities = await new GameActivityFactory([game], [user]).many(10)
-    await em.persistAndFlush(activities)
+    await global.em.persistAndFlush(activities)
 
-    const res = await request(app)
+    const res = await request(global.app)
       .get(`/games/${game.id}/game-activities`)
       .auth(token, { type: 'bearer' })
       .expect(403)

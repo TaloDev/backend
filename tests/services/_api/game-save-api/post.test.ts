@@ -8,9 +8,9 @@ describe('Game save API service - post', () => {
   it('should create a game save if the scope is valid', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_SAVES])
     const player = await new PlayerFactory([apiKey.game]).one()
-    await em.persistAndFlush(player)
+    await global.em.persistAndFlush(player)
 
-    await request(app)
+    await request(global.app)
       .post('/v1/game-saves')
       .send({ name: 'save', content: {} })
       .auth(token, { type: 'bearer' })
@@ -21,9 +21,9 @@ describe('Game save API service - post', () => {
   it('should not create a game save if the scope is not valid', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([])
     const player = await new PlayerFactory([apiKey.game]).one()
-    await em.persistAndFlush(player)
+    await global.em.persistAndFlush(player)
 
-    await request(app)
+    await request(global.app)
       .post('/v1/game-saves')
       .send({ name: 'save', content: {} })
       .auth(token, { type: 'bearer' })
@@ -34,7 +34,7 @@ describe('Game save API service - post', () => {
   it('should not create a game save for a missing player', async () => {
     const [, token] = await createAPIKeyAndToken([])
 
-    const res = await request(app)
+    const res = await request(global.app)
       .post('/v1/game-saves')
       .send({ name: 'save', content: {} })
       .auth(token, { type: 'bearer' })
@@ -49,9 +49,9 @@ describe('Game save API service - post', () => {
     const [, game] = await createOrganisationAndGame()
     const otherPlayer = await new PlayerFactory([game]).one()
 
-    await em.persistAndFlush(otherPlayer)
+    await global.em.persistAndFlush(otherPlayer)
 
-    const res = await request(app)
+    const res = await request(global.app)
       .post('/v1/game-saves')
       .send({ name: 'save', content: {} })
       .auth(token, { type: 'bearer' })
@@ -64,9 +64,9 @@ describe('Game save API service - post', () => {
   it('should convert content to JSON if it is a string', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_SAVES])
     const player = await new PlayerFactory([apiKey.game]).one()
-    await em.persistAndFlush(player)
+    await global.em.persistAndFlush(player)
 
-    const res = await request(app)
+    const res = await request(global.app)
       .post('/v1/game-saves')
       .send({ name: 'save', content: '{"progress": 10}' })
       .auth(token, { type: 'bearer' })

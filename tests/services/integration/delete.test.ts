@@ -17,14 +17,14 @@ describe('Integration service - delete', () => {
 
     const config = await new IntegrationConfigFactory().one()
     const integration = await new IntegrationFactory().construct(IntegrationType.STEAMWORKS, game, config).one()
-    await em.persistAndFlush(integration)
+    await global.em.persistAndFlush(integration)
 
-    const res = await request(app)
+    const res = await request(global.app)
       .delete(`/games/${game.id}/integrations/${integration.id}`)
       .auth(token, { type: 'bearer' })
       .expect(statusCode)
 
-    const activity = await em.getRepository(GameActivity).findOne({
+    const activity = await global.em.getRepository(GameActivity).findOne({
       type: GameActivityType.GAME_INTEGRATION_DELETED,
       game
     })
@@ -44,14 +44,14 @@ describe('Integration service - delete', () => {
 
     const config = await new IntegrationConfigFactory().one()
     const integration = await new IntegrationFactory().construct(IntegrationType.STEAMWORKS, game, config).one()
-    await em.persistAndFlush(integration)
+    await global.em.persistAndFlush(integration)
 
-    const res = await request(app)
+    const res = await request(global.app)
       .delete(`/games/${game.id}/integrations/${integration.id}`)
       .auth(token, { type: 'bearer' })
       .expect(403)
 
-    const activity = await em.getRepository(GameActivity).findOne({
+    const activity = await global.em.getRepository(GameActivity).findOne({
       type: GameActivityType.GAME_INTEGRATION_DELETED,
       game
     })
@@ -67,14 +67,14 @@ describe('Integration service - delete', () => {
 
     const config = await new IntegrationConfigFactory().one()
     const integration = await new IntegrationFactory().construct(IntegrationType.STEAMWORKS, game, config).one()
-    await em.persistAndFlush(integration)
+    await global.em.persistAndFlush(integration)
 
-    const res = await request(app)
+    const res = await request(global.app)
       .delete(`/games/${game.id}/integrations/433`)
       .auth(token, { type: 'bearer' })
       .expect(404)
 
-    const activity = await em.getRepository(GameActivity).findOne({
+    const activity = await global.em.getRepository(GameActivity).findOne({
       type: GameActivityType.GAME_INTEGRATION_DELETED,
       game
     })

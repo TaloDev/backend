@@ -24,7 +24,7 @@ describe('Socket logger', () => {
 
   async function createSocketConnection(): Promise<[SocketConnection, () => void]> {
     const [apiKey] = await createAPIKeyAndToken([])
-    await em.persistAndFlush(apiKey)
+    await global.em.persistAndFlush(apiKey)
 
     const ticket = new SocketTicket('')
     ticket.apiKey = apiKey
@@ -33,7 +33,7 @@ describe('Socket logger', () => {
     const server = createServer()
     server.listen(0)
 
-    const wss = new TaloSocket(server, em)
+    const wss = new TaloSocket(server, global.em)
     // @ts-expect-error null also works
     const ws = new WebSocket(null, [], {})
     const conn = new SocketConnection(wss, ws, ticket, '0.0.0.0')

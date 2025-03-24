@@ -22,9 +22,9 @@ describe('Billing service - confirm plan', () => {
 
     organisation.pricingPlan.stripeCustomerId = subscription.customer as string
     organisation.pricingPlan.stripePriceId = price.id
-    await em.flush()
+    await global.em.flush()
 
-    const res = await request(app)
+    const res = await request(global.app)
       .post('/billing/confirm-plan')
       .send({
         pricingPlanId: plan.id,
@@ -49,9 +49,9 @@ describe('Billing service - confirm plan', () => {
 
     organisation.pricingPlan.stripeCustomerId = null
     organisation.pricingPlan.stripePriceId = price.id
-    await em.flush()
+    await global.em.flush()
 
-    await request(app)
+    await request(global.app)
       .post('/billing/confirm-plan')
       .send({
         pricingPlanId: plan.id,
@@ -74,9 +74,9 @@ describe('Billing service - confirm plan', () => {
 
     organisation.pricingPlan.stripeCustomerId = subscription.customer as string
     organisation.pricingPlan.stripePriceId = price.id
-    await em.flush()
+    await global.em.flush()
 
-    await request(app)
+    await request(global.app)
       .post('/billing/confirm-plan')
       .send({
         pricingPlanId: plan.id,

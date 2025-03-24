@@ -9,8 +9,8 @@ export default async function createAPIKeyAndToken(scopes: APIKeyScope[]): Promi
   const game = await new GameFactory(user.organisation).one()
   const apiKey = new APIKey(game, user)
   apiKey.scopes = scopes
-  await em.persistAndFlush(apiKey)
+  await global.em.persistAndFlush(apiKey)
 
-  const token = await createToken(em, apiKey)
+  const token = await createToken(global.em, apiKey)
   return [apiKey, token]
 }

@@ -41,7 +41,7 @@ describe('Socket server', () => {
   it('should close connections where the socket ticket has a revoked api key', async () => {
     const [apiKey] = await createAPIKeyAndToken([])
     apiKey.revokedAt = new Date()
-    await em.flush()
+    await global.em.flush()
 
     const redis = new Redis(redisConfig)
     const ticket = await createSocketTicket(redis, apiKey, false)

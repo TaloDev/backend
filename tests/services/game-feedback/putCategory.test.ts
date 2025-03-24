@@ -10,9 +10,9 @@ describe('Game feedback service - put category', () => {
     const [token] = await createUserAndToken({}, organisation)
 
     const feedbackCategory = await new GameFeedbackCategoryFactory(game).state(() => ({ anonymised: false })).one()
-    await em.persistAndFlush(feedbackCategory)
+    await global.em.persistAndFlush(feedbackCategory)
 
-    const res = await request(app)
+    const res = await request(global.app)
       .put(`/games/${game.id}/game-feedback/categories/${feedbackCategory.id}`)
       .send({ internalName: feedbackCategory.internalName, name: 'Bugs', description: 'Bug reports', anonymised: false })
       .auth(token, { type: 'bearer' })
@@ -21,7 +21,7 @@ describe('Game feedback service - put category', () => {
     expect(res.body.feedbackCategory.name).toBe('Bugs')
     expect(res.body.feedbackCategory.description).toBe('Bug reports')
 
-    const activity = await em.getRepository(GameActivity).findOne({
+    const activity = await global.em.getRepository(GameActivity).findOne({
       type: GameActivityType.GAME_FEEDBACK_CATEGORY_UPDATED,
       game,
       extra: {
@@ -44,9 +44,9 @@ describe('Game feedback service - put category', () => {
       anonymised: true
     })).one()
 
-    await em.persistAndFlush(feedbackCategory)
+    await global.em.persistAndFlush(feedbackCategory)
 
-    const res = await request(app)
+    const res = await request(global.app)
       .put(`/games/${game.id}/game-feedback/categories/${feedbackCategory.id}`)
       .send({ internalName: feedbackCategory.internalName, name: 'Bugs', description: 'Bug reports', anonymised: false })
       .auth(token, { type: 'bearer' })
@@ -54,7 +54,7 @@ describe('Game feedback service - put category', () => {
 
     expect(res.body.feedbackCategory.anonymised).toBe(false)
 
-    const activity = await em.getRepository(GameActivity).findOne({
+    const activity = await global.em.getRepository(GameActivity).findOne({
       type: GameActivityType.GAME_FEEDBACK_CATEGORY_UPDATED,
       game,
       extra: {
@@ -72,9 +72,9 @@ describe('Game feedback service - put category', () => {
     const [token] = await createUserAndToken({}, organisation)
 
     const feedbackCategory = await new GameFeedbackCategoryFactory(game).state(() => ({ anonymised: false })).one()
-    await em.persistAndFlush(feedbackCategory)
+    await global.em.persistAndFlush(feedbackCategory)
 
-    const res = await request(app)
+    const res = await request(global.app)
       .put(`/games/${game.id}/game-feedback/categories/${feedbackCategory.id}`)
       .send({ internalName: 'bugs', name: 'Bugs', description: 'Bug reports', anonymised: false })
       .auth(token, { type: 'bearer' })
@@ -82,7 +82,7 @@ describe('Game feedback service - put category', () => {
 
     expect(res.body.feedbackCategory.internalName).toBe(feedbackCategory.internalName)
 
-    const activity = await em.getRepository(GameActivity).findOne({
+    const activity = await global.em.getRepository(GameActivity).findOne({
       type: GameActivityType.GAME_FEEDBACK_CATEGORY_UPDATED,
       game,
       extra: {
@@ -99,7 +99,7 @@ describe('Game feedback service - put category', () => {
     const [, otherGame] = await createOrganisationAndGame()
     const [token] = await createUserAndToken()
 
-    const res = await request(app)
+    const res = await request(global.app)
       .put(`/games/${otherGame.id}/game-feedback/categories/1`)
       .send({ internalName: 'bugs', name: 'Bugs', description: 'Bug reports', anonymised: false })
       .auth(token, { type: 'bearer' })
@@ -112,7 +112,7 @@ describe('Game feedback service - put category', () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({}, organisation)
 
-    const res = await request(app)
+    const res = await request(global.app)
       .put(`/games/${game.id}/game-feedback/categories/999999`)
       .send({ internalName: 'bugs', name: 'Bugs', description: 'Bug reports', anonymised: false })
       .auth(token, { type: 'bearer' })

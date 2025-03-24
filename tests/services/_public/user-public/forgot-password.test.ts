@@ -11,9 +11,9 @@ describe('User public service - forgot password', () => {
 
   it('should let a user request a forgot password email for an existing user', async () => {
     const user = await new UserFactory().state(() => ({ password: 'p4ssw0rd' })).one()
-    await em.persistAndFlush(user)
+    await global.em.persistAndFlush(user)
 
-    await request(app)
+    await request(global.app)
       .post('/public/users/forgot_password')
       .send({ email: user.email })
       .expect(204)
@@ -22,7 +22,7 @@ describe('User public service - forgot password', () => {
   })
 
   it('should let a user request a forgot password email for a non-existent user', async () => {
-    await request(app)
+    await request(global.app)
       .post('/public/users/forgot_password')
       .send({ email: 'blah' })
       .expect(204)

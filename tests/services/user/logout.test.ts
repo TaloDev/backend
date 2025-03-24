@@ -8,15 +8,15 @@ describe('User service - logout', () => {
 
     const session = new UserSession(user)
     session.userAgent = 'testybrowser'
-    await em.persistAndFlush(session)
+    await global.em.persistAndFlush(session)
 
-    await request(app)
+    await request(global.app)
       .post('/users/logout')
       .set('user-agent', 'testybrowser')
       .auth(token, { type: 'bearer' })
       .expect(204)
 
-    const sessions = await em.getRepository(UserSession).find({ user })
+    const sessions = await global.em.getRepository(UserSession).find({ user })
     expect(sessions).toHaveLength(0)
   })
 })

@@ -18,14 +18,14 @@ describe('Event service - get', () => {
       createdAt: addDays(now, idx)
     })).many(2)
 
-    await em.persistAndFlush(player)
-    await clickhouse.insert({
+    await global.em.persistAndFlush(player)
+    await global.clickhouse.insert({
       table: 'events',
       values: events.map((event) => event.toInsertable()),
       format: 'JSONEachRow'
     })
 
-    const res = await request(app)
+    const res = await request(global.app)
       .get(`/games/${game.id}/events`)
       .query({ startDate: '2021-01-01', endDate: '2021-01-03' })
       .auth(token, { type: 'bearer' })
@@ -52,7 +52,7 @@ describe('Event service - get', () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({}, organisation)
 
-    const res = await request(app)
+    const res = await request(global.app)
       .get(`/games/${game.id}/events`)
       .auth(token, { type: 'bearer' })
       .expect(400)
@@ -69,7 +69,7 @@ describe('Event service - get', () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({}, organisation)
 
-    const res = await request(app)
+    const res = await request(global.app)
       .get(`/games/${game.id}/events`)
       .query({ startDate: '2015-02-32', endDate: '2015-03-01' })
       .auth(token, { type: 'bearer' })
@@ -86,7 +86,7 @@ describe('Event service - get', () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({}, organisation)
 
-    const res = await request(app)
+    const res = await request(global.app)
       .get(`/games/${game.id}/events`)
       .query({ startDate: '2003-02-01', endDate: '2001-01-01' })
       .auth(token, { type: 'bearer' })
@@ -103,7 +103,7 @@ describe('Event service - get', () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({}, organisation)
 
-    const res = await request(app)
+    const res = await request(global.app)
       .get(`/games/${game.id}/events`)
       .query({ startDate: '2021-01-01' })
       .auth(token, { type: 'bearer' })
@@ -120,7 +120,7 @@ describe('Event service - get', () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({}, organisation)
 
-    const res = await request(app)
+    const res = await request(global.app)
       .get(`/games/${game.id}/events`)
       .query({ startDate: '2015-01-29', endDate: '2015-02-32' })
       .auth(token, { type: 'bearer' })
@@ -161,8 +161,8 @@ describe('Event service - get', () => {
       createdAt: addDays(now, 3)
     })).one()
 
-    await em.persistAndFlush(player)
-    await clickhouse.insert({
+    await global.em.persistAndFlush(player)
+    await global.clickhouse.insert({
       table: 'events',
       values: [
         firstEvent,
@@ -173,7 +173,7 @@ describe('Event service - get', () => {
       format: 'JSONEachRow'
     })
 
-    const res = await request(app)
+    const res = await request(global.app)
       .get(`/games/${game.id}/events`)
       .query({ startDate: '2021-01-01', endDate: '2021-01-05' })
       .auth(token, { type: 'bearer' })
@@ -199,14 +199,14 @@ describe('Event service - get', () => {
       createdAt: addDays(now, idx)
     })).one()
 
-    await em.persistAndFlush(player)
-    await clickhouse.insert({
+    await global.em.persistAndFlush(player)
+    await global.clickhouse.insert({
       table: 'events',
       values: [event.toInsertable()],
       format: 'JSONEachRow'
     })
 
-    const res = await request(app)
+    const res = await request(global.app)
       .get(`/games/${game.id}/events`)
       .query({ startDate: '2021-01-01', endDate: '2021-01-05' })
       .auth(token, { type: 'bearer' })
@@ -218,7 +218,7 @@ describe('Event service - get', () => {
   it('should not return a list of events for a non-existent game', async () => {
     const [token] = await createUserAndToken()
 
-    const res = await request(app)
+    const res = await request(global.app)
       .get('/games/99999/events')
       .query({ startDate: '2021-01-01', endDate: '2021-01-05' })
       .auth(token, { type: 'bearer' })
@@ -231,7 +231,7 @@ describe('Event service - get', () => {
     const [, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken()
 
-    await request(app)
+    await request(global.app)
       .get(`/games/${game.id}/events`)
       .query({ startDate: '2021-01-01', endDate: '2021-01-05' })
       .auth(token, { type: 'bearer' })
@@ -244,14 +244,14 @@ describe('Event service - get', () => {
 
     const player = await new PlayerFactory([game]).one()
     const events = await new EventFactory([player]).state(() => ({ name: 'Talk to NPC', createdAt: new Date() })).many(3)
-    await em.persistAndFlush(player)
-    await clickhouse.insert({
+    await global.em.persistAndFlush(player)
+    await global.clickhouse.insert({
       table: 'events',
       values: events.map((event) => event.toInsertable()),
       format: 'JSONEachRow'
     })
 
-    const res = await request(app)
+    const res = await request(global.app)
       .get(`/games/${game.id}/events`)
       .query({ startDate: sub(new Date(), { days: 1 }), endDate: new Date() })
       .auth(token, { type: 'bearer' })
@@ -266,14 +266,14 @@ describe('Event service - get', () => {
 
     const player = await new PlayerFactory([game]).devBuild().one()
     const events = await new EventFactory([player]).state(() => ({ name: 'Talk to NPC', createdAt: new Date() })).many(3)
-    await em.persistAndFlush(player)
-    await clickhouse.insert({
+    await global.em.persistAndFlush(player)
+    await global.clickhouse.insert({
       table: 'events',
       values: events.map((event) => event.toInsertable()),
       format: 'JSONEachRow'
     })
 
-    const res = await request(app)
+    const res = await request(global.app)
       .get(`/games/${game.id}/events`)
       .query({ startDate: sub(new Date(), { days: 1 }), endDate: new Date() })
       .auth(token, { type: 'bearer' })
@@ -288,14 +288,14 @@ describe('Event service - get', () => {
 
     const player = await new PlayerFactory([game]).devBuild().one()
     const events = await new EventFactory([player]).state(() => ({ name: 'Talk to NPC', createdAt: new Date() })).many(3)
-    await em.persistAndFlush(player)
-    await clickhouse.insert({
+    await global.em.persistAndFlush(player)
+    await global.clickhouse.insert({
       table: 'events',
       values: events.map((event) => event.toInsertable()),
       format: 'JSONEachRow'
     })
 
-    const res = await request(app)
+    const res = await request(global.app)
       .get(`/games/${game.id}/events`)
       .query({ startDate: sub(new Date(), { days: 1 }), endDate: new Date() })
       .auth(token, { type: 'bearer' })

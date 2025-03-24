@@ -17,9 +17,9 @@ describe('Player service - get stats', () => {
     const player = await new PlayerFactory([game]).one()
     const playerStats = await new PlayerGameStatFactory().construct(player, rand(stats)).many(3)
 
-    await em.persistAndFlush([player, ...playerStats])
+    await global.em.persistAndFlush([player, ...playerStats])
 
-    const res = await request(app)
+    const res = await request(global.app)
       .get(`/games/${game.id}/players/${player.id}/stats`)
       .auth(token, { type: 'bearer' })
       .expect(200)
@@ -33,9 +33,9 @@ describe('Player service - get stats', () => {
 
     const player = await new PlayerFactory([game]).one()
 
-    await em.persistAndFlush(player)
+    await global.em.persistAndFlush(player)
 
-    await request(app)
+    await request(global.app)
       .get(`/games/${game.id}/players/${player.id}/stats`)
       .auth(token, { type: 'bearer' })
       .expect(403)
@@ -45,7 +45,7 @@ describe('Player service - get stats', () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({}, organisation)
 
-    const res = await request(app)
+    const res = await request(global.app)
       .get(`/games/${game.id}/players/21312321321/stats`)
       .auth(token, { type: 'bearer' })
       .expect(404)

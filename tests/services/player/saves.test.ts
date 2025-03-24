@@ -12,9 +12,9 @@ describe('Player service - get saves', () => {
     const player = await new PlayerFactory([game]).one()
     const saves = await new GameSaveFactory([player]).many(3)
 
-    await em.persistAndFlush([player, ...saves])
+    await global.em.persistAndFlush([player, ...saves])
 
-    const res = await request(app)
+    const res = await request(global.app)
       .get(`/games/${game.id}/players/${player.id}/saves`)
       .auth(token, { type: 'bearer' })
       .expect(200)
@@ -28,9 +28,9 @@ describe('Player service - get saves', () => {
 
     const player = await new PlayerFactory([game]).one()
 
-    await em.persistAndFlush(player)
+    await global.em.persistAndFlush(player)
 
-    await request(app)
+    await request(global.app)
       .get(`/games/${game.id}/players/${player.id}/saves`)
       .auth(token, { type: 'bearer' })
       .expect(403)
@@ -40,7 +40,7 @@ describe('Player service - get saves', () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({}, organisation)
 
-    const res = await request(app)
+    const res = await request(global.app)
       .get(`/games/${game.id}/players/21312321321/saves`)
       .auth(token, { type: 'bearer' })
       .expect(404)

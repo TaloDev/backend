@@ -14,11 +14,11 @@ describe('Demo service - post', () => {
 
   beforeAll(async () => {
     demoOrg = await new OrganisationFactory().demo().one()
-    await em.persistAndFlush(demoOrg)
+    await global.em.persistAndFlush(demoOrg)
   })
 
   it('should create a demo user and then delete them', async () => {
-    const res = await request(app)
+    const res = await request(global.app)
       .post('/public/demo')
       .expect(200)
 
@@ -28,18 +28,18 @@ describe('Demo service - post', () => {
 
     expect(res.body.accessToken).toBeTruthy()
 
-    const user = await em.getRepository(User).findOne(res.body.user.id)
+    const user = await global.em.getRepository(User).findOne(res.body.user.id)
     expect(user).toBeNull()
   })
 
   it('should insert events if there arent any for the last month', async () => {
     const game = await new GameFactory(demoOrg).one()
     const players = await new PlayerFactory([game]).many(2)
-    await em.persistAndFlush(players)
+    await global.em.persistAndFlush(players)
 
     const date = formatDateForClickHouse(sub(new Date(), { months: 1 }))
 
-    let eventsThisMonth = await clickhouse.query({
+    let eventsThisMonth = await global.clickhouse.query({
       query: `SELECT count() as count FROM events WHERE game_id = ${game.id} AND created_at >= '${date}'`,
       format: 'JSONEachRow'
     }).then((res) => res.json<{ count: string }>())
@@ -50,17 +50,17 @@ describe('Demo service - post', () => {
     const randomEvents = await new EventFactory(players).state(() => ({
       createdAt: randomDate(sub(new Date(), { years: 1 }), sub(new Date(), { months: 2 }))
     })).many(20)
-    await clickhouse.insert({
+    await global.clickhouse.insert({
       table: 'events',
       values: randomEvents.map((event) => event.toInsertable()),
       format: 'JSONEachRow'
     })
 
-    await request(app)
+    await request(global.app)
       .post('/public/demo')
       .expect(200)
 
-    eventsThisMonth = await clickhouse.query({
+    eventsThisMonth = await global.clickhouse.query({
       query: `SELECT count() as count FROM events WHERE game_id = ${game.id} AND created_at >= '${date}'`,
       format: 'JSONEachRow'
     }).then((res) => res.json<{ count: string }>())

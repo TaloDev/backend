@@ -24,9 +24,9 @@ describe('Player auth API service - forgot password', () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_PLAYERS, APIKeyScope.WRITE_PLAYERS])
 
     const player = await new PlayerFactory([apiKey.game]).withTaloAlias().one()
-    await em.persistAndFlush(player)
+    await global.em.persistAndFlush(player)
 
-    await request(app)
+    await request(global.app)
       .post('/v1/players/auth/forgot_password')
       .send({ email: player.auth!.email })
       .auth(token, { type: 'bearer' })
@@ -35,7 +35,7 @@ describe('Player auth API service - forgot password', () => {
     expect(await redis.keys(`player-auth:${apiKey.game.id}:password-reset:*`)).toHaveLength(1)
     expect(sendMock).toHaveBeenCalledOnce()
 
-    const activity = await em.getRepository(PlayerAuthActivity).findOne({
+    const activity = await global.em.getRepository(PlayerAuthActivity).findOne({
       type: PlayerAuthActivityType.PASSWORD_RESET_REQUESTED,
       player: player.id
     })
@@ -49,9 +49,9 @@ describe('Player auth API service - forgot password', () => {
     const [apiKey, token] = await createAPIKeyAndToken([])
 
     const player = await new PlayerFactory([apiKey.game]).withTaloAlias().one()
-    await em.persistAndFlush(player)
+    await global.em.persistAndFlush(player)
 
-    await request(app)
+    await request(global.app)
       .post('/v1/players/auth/forgot_password')
       .send({ email: player.auth!.email })
       .auth(token, { type: 'bearer' })
@@ -68,9 +68,9 @@ describe('Player auth API service - forgot password', () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_PLAYERS, APIKeyScope.WRITE_PLAYERS])
 
     const player = await new PlayerFactory([apiKey.game]).withTaloAlias().one()
-    await em.persistAndFlush(player)
+    await global.em.persistAndFlush(player)
 
-    await request(app)
+    await request(global.app)
       .post('/v1/players/auth/forgot_password')
       .send({ email: randEmail() })
       .auth(token, { type: 'bearer' })
@@ -89,9 +89,9 @@ describe('Player auth API service - forgot password', () => {
 
     const player = await new PlayerFactory([apiKey.game]).withTaloAlias().one()
     const otherPlayer = await new PlayerFactory([otherKey.game]).withTaloAlias().one()
-    await em.persistAndFlush([player, otherPlayer])
+    await global.em.persistAndFlush([player, otherPlayer])
 
-    await request(app)
+    await request(global.app)
       .post('/v1/players/auth/forgot_password')
       .send({ email: otherPlayer.auth!.email })
       .auth(token, { type: 'bearer' })

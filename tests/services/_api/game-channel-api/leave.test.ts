@@ -1,4 +1,5 @@
 import request from 'supertest'
+import { EntityManager } from '@mikro-orm/mysql'
 import GameChannelFactory from '../../../fixtures/GameChannelFactory'
 import { APIKeyScope } from '../../../../src/entities/api-key'
 import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
@@ -14,9 +15,9 @@ describe('Game channel API service - leave', () => {
     const channel = await new GameChannelFactory(apiKey.game).one()
     const player = await new PlayerFactory([apiKey.game]).one()
     channel.members.add(player.aliases[0])
-    await em.persistAndFlush(channel)
+    await global.em.persistAndFlush(channel)
 
-    await request(app)
+    await request(global.app)
       .post(`/v1/game-channels/${channel.id}/leave`)
       .auth(token, { type: 'bearer' })
       .set('x-talo-alias', String(player.aliases[0].id))
@@ -29,9 +30,9 @@ describe('Game channel API service - leave', () => {
     const channel = await new GameChannelFactory(apiKey.game).one()
     const player = await new PlayerFactory([apiKey.game]).one()
     channel.members.add(player.aliases[0])
-    await em.persistAndFlush(channel)
+    await global.em.persistAndFlush(channel)
 
-    await request(app)
+    await request(global.app)
       .post(`/v1/game-channels/${channel.id}/leave`)
       .auth(token, { type: 'bearer' })
       .set('x-talo-alias', String(player.aliases[0].id))
@@ -44,9 +45,9 @@ describe('Game channel API service - leave', () => {
     const channel = await new GameChannelFactory(apiKey.game).one()
     const player = await new PlayerFactory([apiKey.game]).one()
     channel.members.add(player.aliases[0])
-    await em.persistAndFlush(channel)
+    await global.em.persistAndFlush(channel)
 
-    await request(app)
+    await request(global.app)
       .post(`/v1/game-channels/${channel.id}/leave`)
       .auth(token, { type: 'bearer' })
       .set('x-talo-alias', String(player.aliases[0].id))
@@ -54,6 +55,8 @@ describe('Game channel API service - leave', () => {
   })
 
   it('should delete a channel if auto cleanup is enabled the owner leaves', async () => {
+    const em: EntityManager = global.em
+
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_CHANNELS])
 
     const channel = await new GameChannelFactory(apiKey.game).state(() => ({ autoCleanup: true })).one()
@@ -66,7 +69,7 @@ describe('Game channel API service - leave', () => {
     ])
     await em.persistAndFlush(channel)
 
-    await request(app)
+    await request(global.app)
       .post(`/v1/game-channels/${channel.id}/leave`)
       .auth(token, { type: 'bearer' })
       .set('x-talo-alias', String(player.aliases[0].id))
@@ -77,6 +80,8 @@ describe('Game channel API service - leave', () => {
   })
 
   it('should delete a channel if auto cleanup is enabled the last player leaves', async () => {
+    const em: EntityManager = global.em
+
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_CHANNELS])
 
     const channel = await new GameChannelFactory(apiKey.game).state(() => ({ autoCleanup: true })).one()
@@ -84,7 +89,7 @@ describe('Game channel API service - leave', () => {
     channel.members.add(player.aliases[0])
     await em.persistAndFlush(channel)
 
-    await request(app)
+    await request(global.app)
       .post(`/v1/game-channels/${channel.id}/leave`)
       .auth(token, { type: 'bearer' })
       .set('x-talo-alias', String(player.aliases[0].id))
@@ -95,6 +100,8 @@ describe('Game channel API service - leave', () => {
   })
 
   it('should not delete a channel if auto cleanup is not enabled and the owner leaves', async () => {
+    const em: EntityManager = global.em
+
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_CHANNELS])
 
     const channel = await new GameChannelFactory(apiKey.game).state(() => ({ autoCleanup: false })).one()
@@ -107,7 +114,7 @@ describe('Game channel API service - leave', () => {
     ])
     await em.persistAndFlush(channel)
 
-    await request(app)
+    await request(global.app)
       .post(`/v1/game-channels/${channel.id}/leave`)
       .auth(token, { type: 'bearer' })
       .set('x-talo-alias', String(player.aliases[0].id))
@@ -125,9 +132,9 @@ describe('Game channel API service - leave', () => {
     const channel = await new GameChannelFactory(apiKey.game).one()
     const player = await new PlayerFactory([apiKey.game]).one()
     channel.members.add(player.aliases[0])
-    await em.persistAndFlush(channel)
+    await global.em.persistAndFlush(channel)
 
-    const res = await request(app)
+    const res = await request(global.app)
       .post(`/v1/game-channels/${channel.id}/leave`)
       .auth(token, { type: 'bearer' })
       .set('x-talo-alias', '32144')
@@ -145,9 +152,9 @@ describe('Game channel API service - leave', () => {
     const player = await new PlayerFactory([apiKey.game]).one()
     channel.owner = player.aliases[0]
     channel.members.add(player.aliases[0])
-    await em.persistAndFlush(channel)
+    await global.em.persistAndFlush(channel)
 
-    const res = await request(app)
+    const res = await request(global.app)
       .post('/v1/game-channels/54252/leave')
       .auth(token, { type: 'bearer' })
       .set('x-talo-alias', String(player.aliases[0].id))
@@ -167,11 +174,11 @@ describe('Game channel API service - leave', () => {
 
     const channel = await new GameChannelFactory(player.game).one()
     channel.members.add(player.aliases[0])
-    await em.persistAndFlush(channel)
+    await global.em.persistAndFlush(channel)
 
     await createTestSocket(`/?ticket=${ticket}`, async (client) => {
       await client.identify(identifyMessage)
-      await request(app)
+      await request(global.app)
         .post(`/v1/game-channels/${channel.id}/leave`)
         .auth(token, { type: 'bearer' })
         .set('x-talo-alias', String(player.aliases[0].id))
@@ -191,15 +198,15 @@ describe('Game channel API service - leave', () => {
     const player = await new PlayerFactory([apiKey.game]).one()
     channel.owner = null
     channel.members.add(player.aliases[0])
-    await em.persistAndFlush(channel)
+    await global.em.persistAndFlush(channel)
 
-    await request(app)
+    await request(global.app)
       .post(`/v1/game-channels/${channel.id}/leave`)
       .auth(token, { type: 'bearer' })
       .set('x-talo-alias', String(player.aliases[0].id))
       .expect(204)
 
-    const updatedChannel = await em.refreshOrFail(channel, { populate: ['members'] })
+    const updatedChannel = await global.em.refreshOrFail(channel, { populate: ['members'] })
     expect(updatedChannel.members.count()).toBe(0)
   })
 })

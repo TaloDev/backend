@@ -2,6 +2,7 @@ import request from 'supertest'
 import { APIKeyScope } from '../../../../src/entities/api-key'
 import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
 import PlayerFactory from '../../../fixtures/PlayerFactory'
+import { EntityManager } from '@mikro-orm/mysql'
 import bcrypt from 'bcrypt'
 import PlayerAuthFactory from '../../../fixtures/PlayerAuthFactory'
 import PlayerAuthActivity, { PlayerAuthActivityType } from '../../../../src/entities/player-auth-activity'
@@ -12,6 +13,8 @@ import PlayerPresenceFactory from '../../../fixtures/PlayerPresenceFactory'
 describe('Player auth API service - delete', () => {
   it('should delete the account if the current password is correct', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_PLAYERS, APIKeyScope.WRITE_PLAYERS])
+
+    const em: EntityManager = global.em
 
     const player = await new PlayerFactory([apiKey.game]).withTaloAlias().state(async () => ({
       auth: await new PlayerAuthFactory().state(async () => ({
@@ -26,7 +29,7 @@ describe('Player auth API service - delete', () => {
 
     const prevIdentifier = alias.identifier
 
-    await request(app)
+    await request(global.app)
       .delete('/v1/players/auth/')
       .send({ currentPassword: 'password' })
       .auth(token, { type: 'bearer' })
@@ -43,7 +46,7 @@ describe('Player auth API service - delete', () => {
 
     expect(await em.getRepository(PlayerAlias).findOne(alias.id)).toBeNull()
 
-    const activity = await em.getRepository(PlayerAuthActivity).findOne({
+    const activity = await global.em.getRepository(PlayerAuthActivity).findOne({
       type: PlayerAuthActivityType.DELETED_AUTH,
       player: player.id,
       extra: {
@@ -55,6 +58,8 @@ describe('Player auth API service - delete', () => {
 
   it('should delete events associated with the player alias', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_PLAYERS, APIKeyScope.WRITE_PLAYERS])
+
+    const em: EntityManager = global.em
 
     const player = await new PlayerFactory([apiKey.game]).withTaloAlias().state(async () => ({
       auth: await new PlayerAuthFactory().state(async () => ({
@@ -68,13 +73,13 @@ describe('Player auth API service - delete', () => {
     await em.flush()
 
     const events = await new EventFactory([player]).many(3)
-    await clickhouse.insert({
+    await global.clickhouse.insert({
       table: 'events',
       values: events.map((event) => event.toInsertable()),
       format: 'JSONEachRow'
     })
 
-    await request(app)
+    await request(global.app)
       .delete('/v1/players/auth/')
       .send({ currentPassword: 'password' })
       .auth(token, { type: 'bearer' })
@@ -84,7 +89,7 @@ describe('Player auth API service - delete', () => {
       .expect(204)
 
     await vi.waitUntil(async () => {
-      const count = await clickhouse.query({
+      const count = await global.clickhouse.query({
         query: `SELECT count() as count FROM events WHERE player_alias_id = ${alias.id}`,
         format: 'JSONEachRow'
       }).then((res) => res.json<{ count: string }>())
@@ -93,7 +98,7 @@ describe('Player auth API service - delete', () => {
       return count === 0
     })
 
-    const updatedEventPropsCount = await clickhouse.query({
+    const updatedEventPropsCount = await global.clickhouse.query({
       query: 'SELECT count() as count FROM event_props',
       format: 'JSONEachRow'
     }).then((res) => res.json<{ count: string }>())
@@ -111,12 +116,12 @@ describe('Player auth API service - delete', () => {
       })).one()
     })).one()
     const alias = player.aliases[0]
-    await em.persistAndFlush(player)
+    await global.em.persistAndFlush(player)
 
     const sessionToken = await player.auth!.createSession(alias)
-    await em.flush()
+    await global.em.flush()
 
-    const res = await request(app)
+    const res = await request(global.app)
       .delete('/v1/players/auth/')
       .send({ currentPassword: 'wrongpassword' })
       .auth(token, { type: 'bearer' })
@@ -130,10 +135,10 @@ describe('Player auth API service - delete', () => {
       errorCode: 'INVALID_CREDENTIALS'
     })
 
-    await em.refresh(player.auth!)
+    await global.em.refresh(player.auth!)
     expect(player.auth).not.toBeUndefined()
 
-    const activity = await em.getRepository(PlayerAuthActivity).findOne({
+    const activity = await global.em.getRepository(PlayerAuthActivity).findOne({
       type: PlayerAuthActivityType.DELETE_AUTH_FAILED,
       player: player.id
     })
@@ -149,12 +154,12 @@ describe('Player auth API service - delete', () => {
       })).one()
     })).one()
     const alias = player.aliases[0]
-    await em.persistAndFlush(player)
+    await global.em.persistAndFlush(player)
 
     const sessionToken = await player.auth!.createSession(alias)
-    await em.flush()
+    await global.em.flush()
 
-    await request(app)
+    await request(global.app)
       .delete('/v1/players/auth/')
       .send({ currentPassword: 'password' })
       .auth(token, { type: 'bearer' })
@@ -180,12 +185,12 @@ describe('Player auth API service - delete', () => {
     })).one()
 
     player.presence = presence
-    await em.persistAndFlush(player)
+    await global.em.persistAndFlush(player)
 
     const sessionToken = await player.auth!.createSession(alias)
-    await em.flush()
+    await global.em.flush()
 
-    await request(app)
+    await request(global.app)
       .delete('/v1/players/auth/')
       .send({ currentPassword: 'password' })
       .auth(token, { type: 'bearer' })

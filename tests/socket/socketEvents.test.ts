@@ -22,7 +22,7 @@ describe('Socket events', () => {
 
     let events: ClickHouseSocketEvent[] = []
     await vi.waitUntil(async () => {
-      events = await clickhouse.query({
+      events = await global.clickhouse.query({
         query: `SELECT * FROM socket_events WHERE game_id = ${apiKey.game.id} ORDER BY created_at`,
         format: 'JSONEachRow'
       }).then((res) => res.json<ClickHouseSocketEvent>())
@@ -60,7 +60,7 @@ describe('Socket events', () => {
 
     let events: ClickHouseSocketEvent[] = []
     await vi.waitUntil(async () => {
-      events = await clickhouse.query({
+      events = await global.clickhouse.query({
         query: `SELECT * FROM socket_events WHERE game_id = ${player.game.id} ORDER BY created_at`,
         format: 'JSONEachRow'
       }).then((res) => res.json<ClickHouseSocketEvent>())
@@ -133,7 +133,7 @@ describe('Socket events', () => {
 
     let events: ClickHouseSocketEvent[] = []
     await vi.waitUntil(async () => {
-      events = await clickhouse.query({
+      events = await global.clickhouse.query({
         query: `SELECT * FROM socket_events WHERE game_id = ${player.game.id} ORDER BY created_at`,
         format: 'JSONEachRow'
       }).then((res) => res.json<ClickHouseSocketEvent>())
@@ -184,7 +184,7 @@ describe('Socket events', () => {
 
     await createTestSocket(`/?ticket=${ticket}`, async () => {})
 
-    const events = await clickhouse.query({
+    const events = await global.clickhouse.query({
       query: `SELECT * FROM socket_events WHERE game_id = ${apiKey.game.id} ORDER BY created_at`,
       format: 'JSONEachRow'
     }).then((res) => res.json<ClickHouseSocketEvent>())

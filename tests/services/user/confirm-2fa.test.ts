@@ -12,7 +12,7 @@ describe('User service - confirm 2fa', () => {
 
     authenticator.check = vi.fn().mockReturnValueOnce(true)
 
-    const res = await request(app)
+    const res = await request(global.app)
       .post('/users/2fa/enable')
       .send({ code: '123456' })
       .auth(token, { type: 'bearer' })
@@ -31,9 +31,9 @@ describe('User service - confirm 2fa', () => {
     })
 
     user.twoFactorAuth!.enabled = true
-    await em.flush()
+    await global.em.flush()
 
-    const res = await request(app)
+    const res = await request(global.app)
       .post('/users/2fa/enable')
       .send({ code: '123456' })
       .auth(token, { type: 'bearer' })
@@ -49,7 +49,7 @@ describe('User service - confirm 2fa', () => {
 
     authenticator.check = vi.fn().mockReturnValueOnce(false)
 
-    const res = await request(app)
+    const res = await request(global.app)
       .post('/users/2fa/enable')
       .send({ code: '123456' })
       .auth(token, { type: 'bearer' })
@@ -61,7 +61,7 @@ describe('User service - confirm 2fa', () => {
   it('should not let users confirm enabling 2fa if it was not requested to be enabled', async () => {
     const [token] = await createUserAndToken()
 
-    const res = await request(app)
+    const res = await request(global.app)
       .post('/users/2fa/enable')
       .send({ code: '123456' })
       .auth(token, { type: 'bearer' })

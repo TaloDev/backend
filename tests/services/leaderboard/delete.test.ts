@@ -14,14 +14,14 @@ describe('Leaderboard service - delete', () => {
     const [token] = await createUserAndToken({ type }, organisation)
 
     const leaderboard = await new LeaderboardFactory([game]).one()
-    await em.persistAndFlush(leaderboard)
+    await global.em.persistAndFlush(leaderboard)
 
-    const res = await request(app)
+    const res = await request(global.app)
       .delete(`/games/${game.id}/leaderboards/${leaderboard.id}`)
       .auth(token, { type: 'bearer' })
       .expect(statusCode)
 
-    const activity = await em.getRepository(GameActivity).findOne({
+    const activity = await global.em.getRepository(GameActivity).findOne({
       type: GameActivityType.LEADERBOARD_DELETED,
       game
     })
@@ -40,9 +40,9 @@ describe('Leaderboard service - delete', () => {
     const [token] = await createUserAndToken({ type: UserType.ADMIN })
 
     const leaderboard = await new LeaderboardFactory([otherGame]).one()
-    await em.persistAndFlush([leaderboard])
+    await global.em.persistAndFlush([leaderboard])
 
-    const res = await request(app)
+    const res = await request(global.app)
       .delete(`/games/${otherGame.id}/leaderboards/${leaderboard.id}`)
       .auth(token, { type: 'bearer' })
       .expect(403)
@@ -54,7 +54,7 @@ describe('Leaderboard service - delete', () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({ type: UserType.ADMIN }, organisation)
 
-    const res = await request(app)
+    const res = await request(global.app)
       .delete(`/games/${game.id}/leaderboards/31223`)
       .auth(token, { type: 'bearer' })
       .expect(404)

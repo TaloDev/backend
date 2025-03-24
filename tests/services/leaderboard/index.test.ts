@@ -10,9 +10,9 @@ describe('Leaderboard service - index', () => {
     const [token] = await createUserAndToken({}, organisation)
 
     const leaderboards = await new LeaderboardFactory([game]).many(3)
-    await em.persistAndFlush(leaderboards)
+    await global.em.persistAndFlush(leaderboards)
 
-    const res = await request(app)
+    const res = await request(global.app)
       .get(`/games/${game.id}/leaderboards`)
       .auth(token, { type: 'bearer' })
       .expect(200)
@@ -25,7 +25,7 @@ describe('Leaderboard service - index', () => {
   it('should not return leaderboards for a non-existent game', async () => {
     const [token] = await createUserAndToken()
 
-    const res = await request(app)
+    const res = await request(global.app)
       .get('/games/99999/leaderboards')
       .auth(token, { type: 'bearer' })
       .expect(404)
@@ -38,9 +38,9 @@ describe('Leaderboard service - index', () => {
     const [token] = await createUserAndToken()
 
     const leaderboards = await new LeaderboardFactory([game]).many(3)
-    await em.persistAndFlush(leaderboards)
+    await global.em.persistAndFlush(leaderboards)
 
-    await request(app)
+    await request(global.app)
       .get(`/games/${game.id}/leaderboards`)
       .auth(token, { type: 'bearer' })
       .expect(403)

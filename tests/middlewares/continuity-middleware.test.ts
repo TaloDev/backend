@@ -10,11 +10,11 @@ describe('Continuity middleware', () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_STATS])
     const stat = await new GameStatFactory([apiKey.game]).state(() => ({ maxValue: 999, maxChange: 99 })).one()
     const player = await new PlayerFactory([apiKey.game]).one()
-    await em.persistAndFlush([stat, player])
+    await global.em.persistAndFlush([stat, player])
 
     const continuityDate = subHours(new Date(), 1)
 
-    const res = await request(app)
+    const res = await request(global.app)
       .put(`/v1/game-stats/${stat.internalName}`)
       .send({ change: 10 })
       .auth(token, { type: 'bearer' })
@@ -29,11 +29,11 @@ describe('Continuity middleware', () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_STATS, APIKeyScope.WRITE_CONTINUITY_REQUESTS])
     const stat = await new GameStatFactory([apiKey.game]).state(() => ({ maxValue: 999, maxChange: 99 })).one()
     const player = await new PlayerFactory([apiKey.game]).one()
-    await em.persistAndFlush([stat, player])
+    await global.em.persistAndFlush([stat, player])
 
     const continuityDate = subHours(new Date(), 1)
 
-    const res = await request(app)
+    const res = await request(global.app)
       .put(`/v1/game-stats/${stat.internalName}`)
       .send({ change: 10 })
       .auth(token, { type: 'bearer' })

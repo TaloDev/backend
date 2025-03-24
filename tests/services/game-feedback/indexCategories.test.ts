@@ -11,9 +11,9 @@ describe('Game feedback service - index categories', () => {
     const [token] = await createUserAndToken({}, organisation)
 
     const categories = await new GameFeedbackCategoryFactory(game).many(10)
-    await em.persistAndFlush(categories)
+    await global.em.persistAndFlush(categories)
 
-    const res = await request(app)
+    const res = await request(global.app)
       .get(`/games/${game.id}/game-feedback/categories`)
       .auth(token, { type: 'bearer' })
       .expect(200)
@@ -26,7 +26,7 @@ describe('Game feedback service - index categories', () => {
   it('should not return categories for a non-existent game', async () => {
     const [token] = await createUserAndToken()
 
-    const res = await request(app)
+    const res = await request(global.app)
       .get('/games/99999/game-feedback/categories')
       .auth(token, { type: 'bearer' })
       .expect(404)
@@ -40,7 +40,7 @@ describe('Game feedback service - index categories', () => {
 
     await new GameFeedbackFactory(game).many(10)
 
-    await request(app)
+    await request(global.app)
       .get(`/games/${game.id}/game-feedback/categories`)
       .auth(token, { type: 'bearer' })
       .expect(403)

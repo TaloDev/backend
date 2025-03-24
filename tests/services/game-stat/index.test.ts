@@ -11,9 +11,9 @@ describe('Game stat service - index', () => {
     const [token] = await createUserAndToken({}, organisation)
 
     const stats = await new GameStatFactory([game]).many(3)
-    await em.persistAndFlush([game, ...stats])
+    await global.em.persistAndFlush([game, ...stats])
 
-    const res = await request(app)
+    const res = await request(global.app)
       .get(`/games/${game.id}/game-stats`)
       .auth(token, { type: 'bearer' })
       .expect(200)
@@ -26,9 +26,9 @@ describe('Game stat service - index', () => {
     const [token] = await createUserAndToken()
 
     const stats = await new GameStatFactory([game]).many(3)
-    await em.persistAndFlush([game, ...stats])
+    await global.em.persistAndFlush([game, ...stats])
 
-    await request(app)
+    await request(global.app)
       .get(`/games/${game.id}/game-stats`)
       .auth(token, { type: 'bearer' })
       .expect(403)
@@ -46,9 +46,9 @@ describe('Game stat service - index', () => {
     const otherPlayer = await new PlayerFactory([game]).one()
     const otherPlayerStat = await new PlayerGameStatFactory().construct(otherPlayer, stat).state(() => ({ value: 40 })).one()
 
-    await em.persistAndFlush([playerStat, otherPlayerStat])
+    await global.em.persistAndFlush([playerStat, otherPlayerStat])
 
-    const res = await request(app)
+    const res = await request(global.app)
       .get(`/games/${game.id}/game-stats`)
       .auth(token, { type: 'bearer' })
       .expect(200)
@@ -63,9 +63,9 @@ describe('Game stat service - index', () => {
     const player = await new PlayerFactory([game]).devBuild().one()
     const stat = await new GameStatFactory([game]).global().state(() => ({ globalValue: 50 })).one()
     const playerStat = await new PlayerGameStatFactory().construct(player, stat).state(() => ({ value: 10 })).one()
-    await em.persistAndFlush(playerStat)
+    await global.em.persistAndFlush(playerStat)
 
-    const res = await request(app)
+    const res = await request(global.app)
       .get(`/games/${game.id}/game-stats`)
       .auth(token, { type: 'bearer' })
       .set('x-talo-include-dev-data', '1')

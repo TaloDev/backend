@@ -9,13 +9,13 @@ describe('Game channel service - post', () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({}, organisation)
 
-    const res = await request(app)
+    const res = await request(global.app)
       .post(`/games/${game.id}/game-channels`)
       .send({ name: 'Test channel', props: [], autoCleanup: false })
       .auth(token, { type: 'bearer' })
       .expect(200)
 
-    const activity = await em.getRepository(GameActivity).findOne({
+    const activity = await global.em.getRepository(GameActivity).findOne({
       type: GameActivityType.GAME_CHANNEL_CREATED,
       game
     })
@@ -28,7 +28,7 @@ describe('Game channel service - post', () => {
     const [, otherGame] = await createOrganisationAndGame()
     const [token] = await createUserAndToken()
 
-    const res = await request(app)
+    const res = await request(global.app)
       .post(`/games/${otherGame.id}/game-channels`)
       .send({ name: 'Test channel', props: [], autoCleanup: false })
       .auth(token, { type: 'bearer' })
@@ -40,7 +40,7 @@ describe('Game channel service - post', () => {
   it('should not create a game channel for a non-existent game', async () => {
     const [token] = await createUserAndToken()
 
-    const res = await request(app)
+    const res = await request(global.app)
       .post('/games/99999/game-channels')
       .send({ name: 'Test channel', props: [], autoCleanup: false })
       .auth(token, { type: 'bearer' })
@@ -53,9 +53,9 @@ describe('Game channel service - post', () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({}, organisation)
     const player = await new PlayerFactory([game]).one()
-    await em.persistAndFlush(player)
+    await global.em.persistAndFlush(player)
 
-    const res = await request(app)
+    const res = await request(global.app)
       .post(`/games/${game.id}/game-channels`)
       .send({ name: 'Test channel', ownerAliasId: player.aliases[0].id })
       .auth(token, { type: 'bearer' })
@@ -68,7 +68,7 @@ describe('Game channel service - post', () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({}, organisation)
 
-    const res = await request(app)
+    const res = await request(global.app)
       .post(`/games/${game.id}/game-channels`)
       .send({ name: 'Test channel', ownerAliasId: 99999 })
       .auth(token, { type: 'bearer' })

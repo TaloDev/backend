@@ -10,9 +10,9 @@ describe('Policy base class', () => {
   it('should reject a revoked api key', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_EVENTS])
     apiKey.revokedAt = new Date()
-    await em.flush()
+    await global.em.flush()
 
-    await request(app)
+    await request(global.app)
       .get('/v1/players/identify?service=username&identifier=')
       .query({ service: 'username', identifier: 'ionproject' })
       .auth(token, { type: 'bearer' })
@@ -23,12 +23,12 @@ describe('Policy base class', () => {
     const [organisation, game] = await createOrganisationAndGame()
 
     const user = await new UserFactory().state(() => ({ organisation })).one()
-    await em.persistAndFlush(user)
+    await global.em.persistAndFlush(user)
 
     const token = await genAccessToken(user)
-    await em.removeAndFlush(user)
+    await global.em.removeAndFlush(user)
 
-    await request(app)
+    await request(global.app)
       .get(`/games/${game.id}/events`)
       .query({ startDate: '2021-01-01', endDate: '2021-01-02' })
       .auth(token, { type: 'bearer' })
@@ -37,7 +37,7 @@ describe('Policy base class', () => {
 
   it('should correctly verify having a scope when the key has full access', async () => {
     const [, token] = await createAPIKeyAndToken([APIKeyScope.FULL_ACCESS])
-    await request(app)
+    await request(global.app)
       .get('/v1/game-config')
       .auth(token, { type: 'bearer' })
       .expect(200)
@@ -48,9 +48,9 @@ describe('Policy base class', () => {
 
     const player1 = await new PlayerFactory([apiKey.game]).one()
     const player2 = await new PlayerFactory([apiKey.game]).one()
-    await em.persistAndFlush([player1, player2])
+    await global.em.persistAndFlush([player1, player2])
 
-    await request(app)
+    await request(global.app)
       .post('/v1/players/merge')
       .send({ playerId1: player1.id, playerId2: player2.id })
       .auth(token, { type: 'bearer' })
@@ -62,9 +62,9 @@ describe('Policy base class', () => {
 
     const player1 = await new PlayerFactory([apiKey.game]).one()
     const player2 = await new PlayerFactory([apiKey.game]).one()
-    await em.persistAndFlush([player1, player2])
+    await global.em.persistAndFlush([player1, player2])
 
-    const res = await request(app)
+    const res = await request(global.app)
       .post('/v1/players/merge')
       .send({ playerId1: player1.id, playerId2: player2.id })
       .auth(token, { type: 'bearer' })

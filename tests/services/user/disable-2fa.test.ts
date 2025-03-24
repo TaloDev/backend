@@ -9,7 +9,7 @@ describe('User service - disable 2fa', () => {
     twoFactorAuth.enabled = true
     const [token, user] = await createUserAndToken({ twoFactorAuth })
 
-    const res = await request(app)
+    const res = await request(global.app)
       .post('/users/2fa/disable')
       .send({ password: 'password' })
       .auth(token, { type: 'bearer' })
@@ -17,17 +17,17 @@ describe('User service - disable 2fa', () => {
 
     expect(res.body.user.has2fa).toBe(false)
 
-    const recoveryCodes = await em.getRepository(UserRecoveryCode).find({ user })
+    const recoveryCodes = await global.em.getRepository(UserRecoveryCode).find({ user })
     expect(recoveryCodes).toHaveLength(0)
 
-    const user2fa = await em.getRepository(UserTwoFactorAuth).findOne({ user })
+    const user2fa = await global.em.getRepository(UserTwoFactorAuth).findOne({ user })
     expect(user2fa).toBeNull()
   })
 
   it('should not try to disable 2fa if it isn\'t enabled', async () => {
     const [token] = await createUserAndToken()
 
-    const res = await request(app)
+    const res = await request(global.app)
       .post('/users/2fa/disable')
       .send({ password: 'password' })
       .auth(token, { type: 'bearer' })
@@ -41,7 +41,7 @@ describe('User service - disable 2fa', () => {
     twoFactorAuth.enabled = true
     const [token] = await createUserAndToken({ twoFactorAuth })
 
-    const res = await request(app)
+    const res = await request(global.app)
       .post('/users/2fa/disable')
       .send({ password: 'p@ssw0rd' })
       .auth(token, { type: 'bearer' })

@@ -21,9 +21,9 @@ describe('Billing service - create checkout session', () => {
 
     organisation.pricingPlan.stripeCustomerId = null
     organisation.pricingPlan.stripePriceId = null
-    await em.flush()
+    await global.em.flush()
 
-    const res = await request(app)
+    const res = await request(global.app)
       .post('/billing/checkout-session')
       .send({
         pricingPlanId: plan.id,
@@ -33,7 +33,7 @@ describe('Billing service - create checkout session', () => {
       .expect(statusCode)
 
     if (statusCode === 200) {
-      await em.refresh(organisation)
+      await global.em.refresh(organisation)
       expect(typeof organisation.pricingPlan.stripeCustomerId).toBe('string')
 
       expect(res.body.redirect).toBeDefined()
@@ -45,7 +45,7 @@ describe('Billing service - create checkout session', () => {
   it('should return a 404 for a plan that doesn\'t exist', async () => {
     const [token] = await createUserAndToken({ type: UserType.OWNER })
 
-    const res = await request(app)
+    const res = await request(global.app)
       .post('/billing/checkout-session')
       .send({
         pricingPlanId: 'abc123',
@@ -66,11 +66,11 @@ describe('Billing service - create checkout session', () => {
 
     const [organisation] = await createOrganisationAndGame({}, {}, plan)
     organisation.pricingPlan.stripeCustomerId = subscription.customer as string
-    await em.flush()
+    await global.em.flush()
 
     const [token] = await createUserAndToken({ type: UserType.OWNER }, organisation)
 
-    const res = await request(app)
+    const res = await request(global.app)
       .post('/billing/checkout-session')
       .send({
         pricingPlanId: plan.id,
@@ -90,7 +90,7 @@ describe('Billing service - create checkout session', () => {
     const [organisation] = await createOrganisationAndGame({}, {}, plan)
     const [token] = await createUserAndToken({ type: UserType.OWNER }, organisation)
 
-    const res = await request(app)
+    const res = await request(global.app)
       .post('/billing/checkout-session')
       .send({
         pricingPlanId: plan.id,
@@ -112,9 +112,9 @@ describe('Billing service - create checkout session', () => {
     const games = await orgPlan.organisation.games.loadItems()
     const players = await new PlayerFactory(games).many(10)
 
-    await em.persistAndFlush([organisation, ...players])
+    await global.em.persistAndFlush([organisation, ...players])
 
-    const res = await request(app)
+    const res = await request(global.app)
       .post('/billing/checkout-session')
       .send({
         pricingPlanId: orgPlan.pricingPlan.id,
@@ -135,11 +135,11 @@ describe('Billing service - create checkout session', () => {
 
     const [organisation] = await createOrganisationAndGame({}, {}, plan)
     organisation.pricingPlan.stripeCustomerId = subscription.customer as string
-    await em.flush()
+    await global.em.flush()
 
     const [token] = await createUserAndToken({ type: UserType.OWNER }, organisation)
 
-    const res = await request(app)
+    const res = await request(global.app)
       .post('/billing/checkout-session')
       .send({
         pricingPlanId: plan.id,

@@ -133,8 +133,8 @@ export default async function createTestSocket(
     }
   }
 
-  const wss = new Socket(server, em)
-  ctx.wss = wss
+  const wss = new Socket(server, global.em)
+  global.ctx.wss = wss
 
   const client = new TestClient(`ws://localhost:${port}${url}`)
   if (opts.waitForReady) {

@@ -21,9 +21,9 @@ describe('Billing service - organisation plan', () => {
 
     organisation.pricingPlan.stripeCustomerId = subscription.customer as string
     organisation.pricingPlan.stripePriceId = price.id
-    await em.flush()
+    await global.em.flush()
 
-    const res = await request(app)
+    const res = await request(global.app)
       .get('/billing/organisation-plan')
       .auth(token, { type: 'bearer' })
       .expect(statusCode)
@@ -43,9 +43,9 @@ describe('Billing service - organisation plan', () => {
 
     organisation.pricingPlan.stripeCustomerId = null
     organisation.pricingPlan.stripePriceId = null
-    await em.flush()
+    await global.em.flush()
 
-    const res = await request(app)
+    const res = await request(global.app)
       .get('/billing/organisation-plan')
       .auth(token, { type: 'bearer' })
       .expect(200)

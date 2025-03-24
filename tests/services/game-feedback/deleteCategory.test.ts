@@ -14,14 +14,14 @@ describe('Game feedback service - delete category', () => {
     const [token] = await createUserAndToken({ type, emailConfirmed: true }, organisation)
 
     const feedbackCategory = await new GameFeedbackCategoryFactory(game).one()
-    await em.persistAndFlush(feedbackCategory)
+    await global.em.persistAndFlush(feedbackCategory)
 
-    await request(app)
+    await request(global.app)
       .delete(`/games/${game.id}/game-feedback/categories/${feedbackCategory.id}`)
       .auth(token, { type: 'bearer' })
       .expect(statusCode)
 
-    const activity = await em.getRepository(GameActivity).findOne({
+    const activity = await global.em.getRepository(GameActivity).findOne({
       type: GameActivityType.GAME_FEEDBACK_CATEGORY_DELETED,
       game,
       extra: {
@@ -41,9 +41,9 @@ describe('Game feedback service - delete category', () => {
     const [token] = await createUserAndToken({ type: UserType.ADMIN })
 
     const feedbackCategory = await new GameFeedbackCategoryFactory(otherGame).one()
-    await em.persistAndFlush(feedbackCategory)
+    await global.em.persistAndFlush(feedbackCategory)
 
-    const res = await request(app)
+    const res = await request(global.app)
       .delete(`/games/${otherGame.id}/game-feedback/categories/${feedbackCategory.id}`)
       .auth(token, { type: 'bearer' })
       .expect(403)
@@ -55,7 +55,7 @@ describe('Game feedback service - delete category', () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({ type: UserType.ADMIN }, organisation)
 
-    const res = await request(app)
+    const res = await request(global.app)
       .delete(`/games/${game.id}/game-feedback/categories/99999`)
       .auth(token, { type: 'bearer' })
       .expect(404)

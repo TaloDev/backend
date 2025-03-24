@@ -14,9 +14,9 @@ describe('Billing service - usage', () => {
 
     organisation.pricingPlan.pricingPlan.playerLimit = limit
     const players = await new PlayerFactory(organisation.games.getItems()).many(used)
-    await em.persistAndFlush(players)
+    await global.em.persistAndFlush(players)
 
-    const res = await request(app)
+    const res = await request(global.app)
       .get('/billing/usage')
       .auth(token, { type: 'bearer' })
       .expect(statusCode)

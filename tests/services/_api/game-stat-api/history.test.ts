@@ -1,3 +1,4 @@
+import { EntityManager } from '@mikro-orm/mysql'
 import request from 'supertest'
 import { APIKeyScope } from '../../../../src/entities/api-key'
 import PlayerFactory from '../../../fixtures/PlayerFactory'
@@ -11,6 +12,8 @@ import { randNumber } from '@ngneat/falso'
 
 describe('Game stats API service - history', () => {
   const createStat = async (game: Game) => {
+    const em: EntityManager  = global.em
+
     const stat = await new GameStatFactory([game]).state(() => ({ maxValue: 999, maxChange: 99 })).one()
     em.persist(stat)
 
@@ -21,11 +24,11 @@ describe('Game stats API service - history', () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_GAME_STATS])
     const stat = await createStat(apiKey.game)
     const player = await new PlayerFactory([apiKey.game]).one()
-    await em.persistAndFlush(player)
+    await global.em.persistAndFlush(player)
 
     const changes = [5, 10, 15]
 
-    await clickhouse.insert({
+    await global.clickhouse.insert({
       table: 'player_game_stat_snapshots',
       values: await Promise.all(changes.map(async (change, idx, arr) => {
         const currentValue = arr
@@ -33,7 +36,7 @@ describe('Game stats API service - history', () => {
           .reduce((sum, val) => sum + val, stat.defaultValue)
 
         const playerStat = await new PlayerGameStatFactory().construct(player, stat).state(() => ({ value: currentValue })).one()
-        await em.persistAndFlush(playerStat)
+        await global.em.persistAndFlush(playerStat)
 
         const snapshot = new PlayerGameStatSnapshot()
         snapshot.construct(player.aliases[0], playerStat)
@@ -45,7 +48,7 @@ describe('Game stats API service - history', () => {
       format: 'JSONEachRow'
     })
 
-    const res = await request(app)
+    const res = await request(global.app)
       .get(`/v1/game-stats/${stat.internalName}/history`)
       .query({ page: 0 })
       .auth(token, { type: 'bearer' })
@@ -67,9 +70,9 @@ describe('Game stats API service - history', () => {
     const [apiKey, token] = await createAPIKeyAndToken([])
     const stat = await createStat(apiKey.game)
     const player = await new PlayerFactory([apiKey.game]).one()
-    await em.persistAndFlush(player)
+    await global.em.persistAndFlush(player)
 
-    await request(app)
+    await request(global.app)
       .get(`/v1/game-stats/${stat.internalName}/history`)
       .query({ page: 0 })
       .auth(token, { type: 'bearer' })
@@ -81,9 +84,9 @@ describe('Game stats API service - history', () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_GAME_STATS])
     const stat = await createStat(apiKey.game)
     const player = await new PlayerFactory([apiKey.game]).one()
-    await em.persistAndFlush(player)
+    await global.em.persistAndFlush(player)
 
-    const res = await request(app)
+    const res = await request(global.app)
       .get(`/v1/game-stats/${stat.internalName}/history`)
       .query({ page: 0 })
       .auth(token, { type: 'bearer' })
@@ -96,9 +99,9 @@ describe('Game stats API service - history', () => {
   it('should not return player stat snapshots for a non-existent stat', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_GAME_STATS])
     const player = await new PlayerFactory([apiKey.game]).one()
-    await em.persistAndFlush(player)
+    await global.em.persistAndFlush(player)
 
-    const res = await request(app)
+    const res = await request(global.app)
       .get('/v1/game-stats/blah/history')
       .query({ page: 0 })
       .auth(token, { type: 'bearer' })
@@ -113,7 +116,7 @@ describe('Game stats API service - history', () => {
     const stat = await createStat(apiKey.game)
     const player = await new PlayerFactory([apiKey.game]).one()
     const playerStat = await new PlayerGameStatFactory().construct(player, stat).one()
-    await em.persistAndFlush(playerStat)
+    await global.em.persistAndFlush(playerStat)
 
     const dates = [
       new Date('2025-03-19T09:00:00.000Z'),
@@ -121,7 +124,7 @@ describe('Game stats API service - history', () => {
       new Date('2025-03-21T09:00:00.000Z')
     ]
 
-    await clickhouse.insert({
+    await global.clickhouse.insert({
       table: 'player_game_stat_snapshots',
       values: dates.map((date) => {
         const snapshot = new PlayerGameStatSnapshot()
@@ -133,7 +136,7 @@ describe('Game stats API service - history', () => {
       format: 'JSONEachRow'
     })
 
-    const res = await request(app)
+    const res = await request(global.app)
       .get(`/v1/game-stats/${stat.internalName}/history`)
       .query({ page: 0, startDate: dates[1] })
       .auth(token, { type: 'bearer' })
@@ -151,7 +154,7 @@ describe('Game stats API service - history', () => {
     const stat = await createStat(apiKey.game)
     const player = await new PlayerFactory([apiKey.game]).one()
     const playerStat = await new PlayerGameStatFactory().construct(player, stat).one()
-    await em.persistAndFlush(playerStat)
+    await global.em.persistAndFlush(playerStat)
 
     const dates = [
       new Date('2025-03-19T09:00:00.000Z'),
@@ -159,7 +162,7 @@ describe('Game stats API service - history', () => {
       new Date('2025-03-21T09:00:00.000Z')
     ]
 
-    await clickhouse.insert({
+    await global.clickhouse.insert({
       table: 'player_game_stat_snapshots',
       values: dates.map((date) => {
         const snapshot = new PlayerGameStatSnapshot()
@@ -171,7 +174,7 @@ describe('Game stats API service - history', () => {
       format: 'JSONEachRow'
     })
 
-    const res = await request(app)
+    const res = await request(global.app)
       .get(`/v1/game-stats/${stat.internalName}/history`)
       .query({ page: 0, endDate: dates[1] })
       .auth(token, { type: 'bearer' })
@@ -189,7 +192,7 @@ describe('Game stats API service - history', () => {
     const stat = await createStat(apiKey.game)
     const player = await new PlayerFactory([apiKey.game]).one()
     const playerStat = await new PlayerGameStatFactory().construct(player, stat).one()
-    await em.persistAndFlush(playerStat)
+    await global.em.persistAndFlush(playerStat)
 
     const dates = [
       new Date('2025-03-19T09:00:00.000Z'),
@@ -197,7 +200,7 @@ describe('Game stats API service - history', () => {
       new Date('2025-03-21T09:00:00.000Z')
     ]
 
-    await clickhouse.insert({
+    await global.clickhouse.insert({
       table: 'player_game_stat_snapshots',
       values: dates.map((date) => {
         const snapshot = new PlayerGameStatSnapshot()
@@ -209,7 +212,7 @@ describe('Game stats API service - history', () => {
       format: 'JSONEachRow'
     })
 
-    const res = await request(app)
+    const res = await request(global.app)
       .get(`/v1/game-stats/${stat.internalName}/history`)
       .query({ page: 0, startDate: '2025-03-20', endDate: '2025-03-20' })
       .auth(token, { type: 'bearer' })
@@ -227,11 +230,11 @@ describe('Game stats API service - history', () => {
     const stat = await createStat(apiKey.game)
     const player = await new PlayerFactory([apiKey.game]).one()
     const playerStat = await new PlayerGameStatFactory().construct(player, stat).one()
-    await em.persistAndFlush(playerStat)
+    await global.em.persistAndFlush(playerStat)
 
     const changes = randNumber({ min: 1, max: 999, length: 60 })
 
-    await clickhouse.insert({
+    await global.clickhouse.insert({
       table: 'player_game_stat_snapshots',
       values: await Promise.all(changes.map(async (change, idx) => {
         const currentValue = changes
@@ -239,7 +242,7 @@ describe('Game stats API service - history', () => {
           .reduce((sum, val) => sum + val, stat.defaultValue)
 
         const playerStat = await new PlayerGameStatFactory().construct(player, stat).state(() => ({ value: currentValue })).one()
-        await em.persistAndFlush(playerStat)
+        await global.em.persistAndFlush(playerStat)
 
         const snapshot = new PlayerGameStatSnapshot()
         snapshot.construct(player.aliases[0], playerStat)
@@ -251,7 +254,7 @@ describe('Game stats API service - history', () => {
       format: 'JSONEachRow'
     })
 
-    const res = await request(app)
+    const res = await request(global.app)
       .get(`/v1/game-stats/${stat.internalName}/history`)
       .query({ page: 1 })
       .auth(token, { type: 'bearer' })
@@ -268,9 +271,9 @@ describe('Game stats API service - history', () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_GAME_STATS])
     const stat = await createStat(apiKey.game)
     const player = await new PlayerFactory([apiKey.game]).one()
-    await em.persistAndFlush([stat, player])
+    await global.em.persistAndFlush([stat, player])
 
-    const res = await request(app)
+    const res = await request(global.app)
       .get(`/v1/game-stats/${stat.internalName}/history`)
       .query({ page: 0 })
       .auth(token, { type: 'bearer' })

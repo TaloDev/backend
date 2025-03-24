@@ -25,7 +25,7 @@ type SocketIdentifyData = {
 export default async function createSocketIdentifyMessage(scopes: APIKeyScope[] = []): Promise<SocketIdentifyData> {
   const [apiKey, token] = await createAPIKeyAndToken(scopes)
   const player = await new PlayerFactory([apiKey.game]).one()
-  await em.persistAndFlush(player)
+  await global.em.persistAndFlush(player)
 
   const redis = new Redis(redisConfig)
   const ticket = await createSocketTicket(redis, apiKey, false)

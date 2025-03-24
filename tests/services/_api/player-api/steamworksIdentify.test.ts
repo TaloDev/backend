@@ -58,9 +58,9 @@ describe('Player API service - identify - steamworks auth', () => {
 
     const config = await new IntegrationConfigFactory().state(() => ({ appId })).one()
     const integration = await new IntegrationFactory().construct(IntegrationType.STEAMWORKS, apiKey.game, config).one()
-    await em.persistAndFlush([integration, player])
+    await global.em.persistAndFlush([integration, player])
 
-    const res = await request(app)
+    const res = await request(global.app)
       .get('/v1/players/identify')
       .query({ service: PlayerAliasService.STEAM, identifier: `${identity}:${ticket}` })
       .auth(token, { type: 'bearer' })
@@ -129,9 +129,9 @@ describe('Player API service - identify - steamworks auth', () => {
 
     const config = await new IntegrationConfigFactory().state(() => ({ appId })).one()
     const integration = await new IntegrationFactory().construct(IntegrationType.STEAMWORKS, apiKey.game, config).one()
-    await em.persistAndFlush(integration)
+    await global.em.persistAndFlush(integration)
 
-    const res = await request(app)
+    const res = await request(global.app)
       .get('/v1/players/identify')
       .query({ service: PlayerAliasService.STEAM, identifier: `${identity}:${ticket}` })
       .auth(token, { type: 'bearer' })
@@ -198,9 +198,9 @@ describe('Player API service - identify - steamworks auth', () => {
 
     const config = await new IntegrationConfigFactory().state(() => ({ appId })).one()
     const integration = await new IntegrationFactory().construct(IntegrationType.STEAMWORKS, apiKey.game, config).one()
-    await em.persistAndFlush(integration)
+    await global.em.persistAndFlush(integration)
 
-    const res = await request(app)
+    const res = await request(global.app)
       .get('/v1/players/identify')
       .query({ service: PlayerAliasService.STEAM, identifier: ticket })
       .auth(token, { type: 'bearer' })
@@ -240,9 +240,9 @@ describe('Player API service - identify - steamworks auth', () => {
 
     const config = await new IntegrationConfigFactory().state(() => ({ appId })).one()
     const integration = await new IntegrationFactory().construct(IntegrationType.STEAMWORKS, apiKey.game, config).one()
-    await em.persistAndFlush(integration)
+    await global.em.persistAndFlush(integration)
 
-    const res = await request(app)
+    const res = await request(global.app)
       .get('/v1/players/identify')
       .query({ service: PlayerAliasService.STEAM, identifier: ticket })
       .auth(token, { type: 'bearer' })

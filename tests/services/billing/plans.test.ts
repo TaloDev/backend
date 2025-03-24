@@ -15,9 +15,9 @@ describe('Billing service - plans', () => {
     const [organisation] = await createOrganisationAndGame({}, {}, plan)
     const [token] = await createUserAndToken({}, organisation)
     organisation.pricingPlan.stripePriceId = price.id
-    await em.flush()
+    await global.em.flush()
 
-    const res = await request(app)
+    const res = await request(global.app)
       .get('/billing/plans')
       .auth(token, { type: 'bearer' })
       .expect(200)
@@ -43,9 +43,9 @@ describe('Billing service - plans', () => {
     const [organisation] = await createOrganisationAndGame({}, {}, plan)
     const [token] = await createUserAndToken({}, organisation)
     organisation.pricingPlan.stripePriceId = price.id
-    await em.persistAndFlush(hiddenPlan)
+    await global.em.persistAndFlush(hiddenPlan)
 
-    const res = await request(app)
+    const res = await request(global.app)
       .get('/billing/plans')
       .auth(token, { type: 'bearer' })
       .expect(200)

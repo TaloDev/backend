@@ -9,7 +9,7 @@ describe('API key service - get scopes', () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({ type: UserType.ADMIN }, organisation)
 
-    const res = await request(app)
+    const res = await request(global.app)
       .get(`/games/${game.id}/api-keys/scopes`)
       .auth(token, { type: 'bearer' })
       .expect(200)

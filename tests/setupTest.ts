@@ -1,7 +1,6 @@
 import { MikroORM } from '@mikro-orm/mysql'
 import init from '../src'
 import ormConfig from '../src/config/mikro-orm.config'
-import { ClickHouseClient } from '@clickhouse/client'
 
 beforeAll(async () => {
   vi.mock('@sendgrid/mail')
@@ -12,18 +11,18 @@ beforeAll(async () => {
   await orm.getSchemaGenerator().clearDatabase()
   await orm.close(true)
 
-  const koa = await init()
-  app = koa.callback()
-  ctx = koa.context
-  em = koa.context.em
+  const app = await init()
+  global.app = app.callback()
+  global.ctx = app.context
+  global.em = app.context.em
 
-  clickhouse = koa.context.clickhouse
-  await (clickhouse as ClickHouseClient).command({
+  global.clickhouse = app.context.clickhouse
+  await (global.clickhouse).command({
     query: `TRUNCATE ALL TABLES from ${process.env.CLICKHOUSE_DB}`
   })
 })
 
 afterAll(async () => {
-  await em.getConnection().close(true)
-  await clickhouse.close()
+  await global.em.getConnection().close(true)
+  await global.clickhouse.close()
 })

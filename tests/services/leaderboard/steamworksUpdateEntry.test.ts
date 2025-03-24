@@ -40,9 +40,9 @@ describe('Leaderboard service - update entry - steamworks integration', () => {
 
     const config = await new IntegrationConfigFactory().state(() => ({ syncLeaderboards: true })).one()
     const integration = await new IntegrationFactory().construct(IntegrationType.STEAMWORKS, game, config).one()
-    await global.em.persistAndFlush([integration, entry, mapping])
+    await em.persistAndFlush([integration, entry, mapping])
 
-    await request(global.app)
+    await request(app)
       .patch(`/games/${game.id}/leaderboards/${leaderboard.id}/entries/${entry.id}`)
       .send({ hidden: true })
       .auth(token, { type: 'bearer' })
@@ -50,7 +50,7 @@ describe('Leaderboard service - update entry - steamworks integration', () => {
 
     expect(updateMock).toHaveBeenCalledTimes(1)
 
-    const event = await global.em.getRepository(SteamworksIntegrationEvent).findOneOrFail({ integration })
+    const event = await em.getRepository(SteamworksIntegrationEvent).findOneOrFail({ integration })
     expect(event.request).toStrictEqual({
       url: 'https://partner.steam-api.com/ISteamLeaderboards/DeleteLeaderboardScore/v1',
       body: `appid=${config.appId}&leaderboardid=${mapping.steamworksLeaderboardId}&steamid=${player.aliases[0].identifier}`,
@@ -81,9 +81,9 @@ describe('Leaderboard service - update entry - steamworks integration', () => {
 
     const config = await new IntegrationConfigFactory().state(() => ({ syncLeaderboards: true })).one()
     const integration = await new IntegrationFactory().construct(IntegrationType.STEAMWORKS, game, config).one()
-    await global.em.persistAndFlush([integration, entry, mapping])
+    await em.persistAndFlush([integration, entry, mapping])
 
-    await request(global.app)
+    await request(app)
       .patch(`/games/${game.id}/leaderboards/${leaderboard.id}/entries/${entry.id}`)
       .send({ hidden: false })
       .auth(token, { type: 'bearer' })
@@ -91,7 +91,7 @@ describe('Leaderboard service - update entry - steamworks integration', () => {
 
     expect(updateMock).toHaveBeenCalledTimes(1)
 
-    const event = await global.em.getRepository(SteamworksIntegrationEvent).findOneOrFail({ integration })
+    const event = await em.getRepository(SteamworksIntegrationEvent).findOneOrFail({ integration })
     expect(event.request).toStrictEqual({
       url: 'https://partner.steam-api.com/ISteamLeaderboards/SetLeaderboardScore/v1',
       body: `appid=${config.appId}&leaderboardid=${mapping.steamworksLeaderboardId}&steamid=${player.aliases[0].identifier}&score=${entry.score}&scoremethod=KeepBest`,
@@ -114,9 +114,9 @@ describe('Leaderboard service - update entry - steamworks integration', () => {
 
     const config = await new IntegrationConfigFactory().state(() => ({ syncLeaderboards: false })).one()
     const integration = await new IntegrationFactory().construct(IntegrationType.STEAMWORKS, game, config).one()
-    await global.em.persistAndFlush([integration, entry, mapping])
+    await em.persistAndFlush([integration, entry, mapping])
 
-    await request(global.app)
+    await request(app)
       .patch(`/games/${game.id}/leaderboards/${leaderboard.id}/entries/${entry.id}`)
       .send({ hidden: !entry.hidden })
       .auth(token, { type: 'bearer' })
@@ -140,9 +140,9 @@ describe('Leaderboard service - update entry - steamworks integration', () => {
 
     const config = await new IntegrationConfigFactory().state(() => ({ syncLeaderboards: true })).one()
     const integration = await new IntegrationFactory().construct(IntegrationType.STEAMWORKS, game, config).one()
-    await global.em.persistAndFlush([integration, entry, mapping])
+    await em.persistAndFlush([integration, entry, mapping])
 
-    await request(global.app)
+    await request(app)
       .patch(`/games/${game.id}/leaderboards/${leaderboard.id}/entries/${entry.id}`)
       .send({ hidden: !entry.hidden })
       .auth(token, { type: 'bearer' })
@@ -165,9 +165,9 @@ describe('Leaderboard service - update entry - steamworks integration', () => {
 
     const config = await new IntegrationConfigFactory().state(() => ({ syncLeaderboards: true })).one()
     const integration = await new IntegrationFactory().construct(IntegrationType.STEAMWORKS, game, config).one()
-    await global.em.persistAndFlush([integration, entry])
+    await em.persistAndFlush([integration, entry])
 
-    await request(global.app)
+    await request(app)
       .patch(`/games/${game.id}/leaderboards/${leaderboard.id}/entries/${entry.id}`)
       .send({ hidden: !entry.hidden })
       .auth(token, { type: 'bearer' })
@@ -199,9 +199,9 @@ describe('Leaderboard service - update entry - steamworks integration', () => {
 
     const config = await new IntegrationConfigFactory().state(() => ({ syncLeaderboards: true })).one()
     const integration = await new IntegrationFactory().construct(IntegrationType.STEAMWORKS, game, config).one()
-    await global.em.persistAndFlush([integration, entry, mapping])
+    await em.persistAndFlush([integration, entry, mapping])
 
-    await request(global.app)
+    await request(app)
       .patch(`/games/${game.id}/leaderboards/${leaderboard.id}/entries/${entry.id}`)
       .send({ newScore: 200 })
       .auth(token, { type: 'bearer' })
@@ -209,7 +209,7 @@ describe('Leaderboard service - update entry - steamworks integration', () => {
 
     expect(updateMock).toHaveBeenCalledTimes(1)
 
-    const event = await global.em.getRepository(SteamworksIntegrationEvent).findOneOrFail({ integration })
+    const event = await em.getRepository(SteamworksIntegrationEvent).findOneOrFail({ integration })
     expect(event.request).toStrictEqual({
       url: 'https://partner.steam-api.com/ISteamLeaderboards/SetLeaderboardScore/v1',
       body: `appid=${config.appId}&leaderboardid=${mapping.steamworksLeaderboardId}&steamid=${player.aliases[0].identifier}&score=200&scoremethod=KeepBest`,

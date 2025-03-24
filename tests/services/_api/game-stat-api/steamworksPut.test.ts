@@ -32,9 +32,9 @@ describe('Game stats API service - put - steamworks integration', () => {
 
     const config = await new IntegrationConfigFactory().state(() => ({ syncStats: true })).one()
     const integration = await new IntegrationFactory().construct(IntegrationType.STEAMWORKS, apiKey.game, config).one()
-    await global.em.persistAndFlush([integration, stat, player])
+    await em.persistAndFlush([integration, stat, player])
 
-    await request(global.app)
+    await request(app)
       .put(`/v1/game-stats/${stat.internalName}`)
       .send({ change: 10 })
       .auth(token, { type: 'bearer' })
@@ -43,7 +43,7 @@ describe('Game stats API service - put - steamworks integration', () => {
 
     expect(setMock).toHaveBeenCalledTimes(1)
 
-    const event = await global.em.getRepository(SteamworksIntegrationEvent).findOneOrFail({ integration })
+    const event = await em.getRepository(SteamworksIntegrationEvent).findOneOrFail({ integration })
     expect(event.request).toStrictEqual({
       url: 'https://partner.steam-api.com/ISteamUserStats/SetUserStatsForGame/v1',
       body: `appid=${config.appId}&steamid=${player.aliases[0].identifier}&count=1&name%5B0%5D=${stat.internalName}&value%5B0%5D=${stat.defaultValue + 10}`,
@@ -66,9 +66,9 @@ describe('Game stats API service - put - steamworks integration', () => {
 
     const config = await new IntegrationConfigFactory().state(() => ({ syncStats: false })).one()
     const integration = await new IntegrationFactory().construct(IntegrationType.STEAMWORKS, apiKey.game, config).one()
-    await global.em.persistAndFlush([integration, stat, player])
+    await em.persistAndFlush([integration, stat, player])
 
-    await request(global.app)
+    await request(app)
       .put(`/v1/game-stats/${stat.internalName}`)
       .send({ change: 10 })
       .auth(token, { type: 'bearer' })
@@ -77,7 +77,7 @@ describe('Game stats API service - put - steamworks integration', () => {
 
     expect(setMock).not.toHaveBeenCalled()
 
-    const event = await global.em.getRepository(SteamworksIntegrationEvent).findOne({ integration })
+    const event = await em.getRepository(SteamworksIntegrationEvent).findOne({ integration })
     expect(event).toBeNull()
   })
 })

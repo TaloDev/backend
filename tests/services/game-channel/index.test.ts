@@ -12,9 +12,9 @@ describe('Game channel service - index', () => {
     const [token] = await createUserAndToken({}, organisation)
 
     const channels = await new GameChannelFactory(game).many(10)
-    await global.em.persistAndFlush(channels)
+    await em.persistAndFlush(channels)
 
-    const res = await request(global.app)
+    const res = await request(app)
       .get(`/games/${game.id}/game-channels`)
       .query({ page: 0 })
       .auth(token, { type: 'bearer' })
@@ -28,7 +28,7 @@ describe('Game channel service - index', () => {
   it('should not return game channels for a non-existent game', async () => {
     const [token] = await createUserAndToken()
 
-    const res = await request(global.app)
+    const res = await request(app)
       .get('/games/99999/game-channels')
       .query({ page: 0 })
       .auth(token, { type: 'bearer' })
@@ -43,7 +43,7 @@ describe('Game channel service - index', () => {
 
     await new GameChannelFactory(game).many(10)
 
-    await request(global.app)
+    await request(app)
       .get(`/games/${game.id}/game-channels`)
       .query({ page: 0 })
       .auth(token, { type: 'bearer' })
@@ -56,11 +56,11 @@ describe('Game channel service - index', () => {
 
     const count = 82
     const channels = await new GameChannelFactory(game).many(count)
-    await global.em.persistAndFlush(channels)
+    await em.persistAndFlush(channels)
 
     const page = Math.floor(count / 50)
 
-    const res = await request(global.app)
+    const res = await request(app)
       .get(`/games/${game.id}/game-channels`)
       .query({ page })
       .auth(token, { type: 'bearer' })
@@ -77,9 +77,9 @@ describe('Game channel service - index', () => {
 
     const channelsWithName = await new GameChannelFactory(game).state(() => ({ name: 'General chat' })).many(3)
     const channelsWithoutName = await new GameChannelFactory(game).state(() => ({ name: 'Guild chat' })).many(3)
-    await global.em.persistAndFlush([...channelsWithName, ...channelsWithoutName])
+    await em.persistAndFlush([...channelsWithName, ...channelsWithoutName])
 
-    const res = await request(global.app)
+    const res = await request(app)
       .get(`/games/${game.id}/game-channels`)
       .query({ search: 'General', page: 0 })
       .auth(token, { type: 'bearer' })
@@ -101,9 +101,9 @@ describe('Game channel service - index', () => {
 
     const channelsWithoutOwner = await new GameChannelFactory(game).many(5)
 
-    await global.em.persistAndFlush([...channelsWithOwner, ...channelsWithoutOwner])
+    await em.persistAndFlush([...channelsWithOwner, ...channelsWithoutOwner])
 
-    const res = await request(global.app)
+    const res = await request(app)
       .get(`/games/${game.id}/game-channels`)
       .query({ search: 'johnny_the_admin', page: 0 })
       .auth(token, { type: 'bearer' })
@@ -121,9 +121,9 @@ describe('Game channel service - index', () => {
       (await new PlayerFactory([game]).devBuild().one()).aliases[0],
       (await new PlayerFactory([game]).one()).aliases[0]
     )
-    await global.em.persistAndFlush(channel)
+    await em.persistAndFlush(channel)
 
-    const res = await request(global.app)
+    const res = await request(app)
       .get(`/games/${game.id}/game-channels`)
       .query({ page: 0 })
       .auth(token, { type: 'bearer' })
@@ -142,9 +142,9 @@ describe('Game channel service - index', () => {
       (await new PlayerFactory([game]).devBuild().one()).aliases[0],
       (await new PlayerFactory([game]).one()).aliases[0]
     )
-    await global.em.persistAndFlush(channel)
+    await em.persistAndFlush(channel)
 
-    const res = await request(global.app)
+    const res = await request(app)
       .get(`/games/${game.id}/game-channels`)
       .query({ page: 0 })
       .auth(token, { type: 'bearer' })
@@ -158,9 +158,9 @@ describe('Game channel service - index', () => {
     const [token] = await createUserAndToken({}, organisation)
 
     const channels = await new GameChannelFactory(game).many(208)
-    await global.em.persistAndFlush(channels)
+    await em.persistAndFlush(channels)
 
-    const res = await request(global.app)
+    const res = await request(app)
       .get(`/games/${game.id}/game-channels`)
       .query({ page: 4 })
       .auth(token, { type: 'bearer' })

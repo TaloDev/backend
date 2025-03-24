@@ -19,9 +19,9 @@ describe('Player API service - patch', () => {
         new PlayerProp(player, 'zonesExplored', '1')
       ])
     })).one()
-    await global.em.persistAndFlush(player)
+    await em.persistAndFlush(player)
 
-    const res = await request(global.app)
+    const res = await request(app)
       .patch(`/v1/players/${player.id}`)
       .send({
         props: [
@@ -55,9 +55,9 @@ describe('Player API service - patch', () => {
         new PlayerProp(player, 'zonesExplored', '1')
       ])
     })).one()
-    await global.em.persistAndFlush(player)
+    await em.persistAndFlush(player)
 
-    await request(global.app)
+    await request(app)
       .patch(`/v1/players/${player.id}`)
       .send({
         props: [
@@ -74,7 +74,7 @@ describe('Player API service - patch', () => {
   it('should not update a non-existent player\'s properties', async () => {
     const [, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_PLAYERS])
 
-    const res = await request(global.app)
+    const res = await request(app)
       .patch('/v1/players/546')
       .send({
         props: [
@@ -95,9 +95,9 @@ describe('Player API service - patch', () => {
 
     const [, otherGame] = await createOrganisationAndGame()
     const otherPlayer = await new PlayerFactory([otherGame]).one()
-    await global.em.persistAndFlush(otherPlayer)
+    await em.persistAndFlush(otherPlayer)
 
-    const res = await request(global.app)
+    const res = await request(app)
       .patch(`/v1/players/${otherPlayer.id}`)
       .send({
         props: [
@@ -128,9 +128,9 @@ describe('Player API service - patch', () => {
         new PlayerProp(player, 'currentLevel', '59')
       ])
     })).one()
-    await global.em.persistAndFlush([group, player])
+    await em.persistAndFlush([group, player])
 
-    const res = await request(global.app)
+    const res = await request(app)
       .patch(`/v1/players/${player.id}`)
       .send({
         props: [
@@ -166,12 +166,12 @@ describe('Player API service - patch', () => {
         new PlayerProp(player, 'currentLevel', '59')
       ])
     })).one()
-    await global.em.persistAndFlush([group, player])
+    await em.persistAndFlush([group, player])
 
-    await global.em.refresh(group, { populate: ['members'] })
+    await em.refresh(group, { populate: ['members'] })
     expect(group.members).toHaveLength(1)
 
-    const res = await request(global.app)
+    const res = await request(app)
       .patch(`/v1/players/${player.id}`)
       .send({
         props: [
@@ -197,9 +197,9 @@ describe('Player API service - patch', () => {
         value: randWord()
       }
     ])
-    await global.em.persistAndFlush(player)
+    await em.persistAndFlush(player)
 
-    const res = await request(global.app)
+    const res = await request(app)
       .patch(`/v1/players/${player.id}`)
       .send({
         props: [

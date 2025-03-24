@@ -14,13 +14,13 @@ describe('Game feedback service - post category', () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({ type }, organisation)
 
-    const res = await request(global.app)
+    const res = await request(app)
       .post(`/games/${game.id}/game-feedback/categories`)
       .send({ internalName: 'bugs', name: 'Bugs', description: 'Bug reports', anonymised: false })
       .auth(token, { type: 'bearer' })
       .expect(statusCode)
 
-    const activity = await global.em.getRepository(GameActivity).findOne({
+    const activity = await em.getRepository(GameActivity).findOne({
       type: GameActivityType.GAME_FEEDBACK_CATEGORY_CREATED,
       game
     })
@@ -43,7 +43,7 @@ describe('Game feedback service - post category', () => {
     const [, otherGame] = await createOrganisationAndGame()
     const [token] = await createUserAndToken()
 
-    const res = await request(global.app)
+    const res = await request(app)
       .post(`/games/${otherGame.id}/game-feedback/categories`)
       .send({ internalName: 'bugs', name: 'Bugs', description: 'Bug reports', anonymised: false })
       .auth(token, { type: 'bearer' })
@@ -55,7 +55,7 @@ describe('Game feedback service - post category', () => {
   it('should not create a feedback category for a non-existent game', async () => {
     const [token] = await createUserAndToken()
 
-    const res = await request(global.app)
+    const res = await request(app)
       .post('/games/999999999/game-feedback/categories')
       .send({ internalName: 'bugs', name: 'Bugs', description: 'Bug reports', anonymised: false })
       .auth(token, { type: 'bearer' })
@@ -69,9 +69,9 @@ describe('Game feedback service - post category', () => {
     const [token] = await createUserAndToken({ type: UserType.ADMIN }, organisation)
 
     const category = await new GameFeedbackCategoryFactory(game).state(() => ({ internalName: 'bugs' })).one()
-    await global.em.persistAndFlush(category)
+    await em.persistAndFlush(category)
 
-    const res = await request(global.app)
+    const res = await request(app)
       .post(`/games/${game.id}/game-feedback/categories`)
       .send({ internalName: 'bugs', name: 'Bugs', description: 'Bug reports', anonymised: false })
       .auth(token, { type: 'bearer' })
@@ -91,7 +91,7 @@ describe('Game feedback service - post category', () => {
 
     await new GameFeedbackCategoryFactory(otherGame).state(() => ({ internalName: 'bugs' })).one()
 
-    const res = await request(global.app)
+    const res = await request(app)
       .post(`/games/${game.id}/game-feedback/categories`)
       .send({ internalName: 'bugs', name: 'Bugs', description: 'Bug reports', anonymised: false })
       .auth(token, { type: 'bearer' })

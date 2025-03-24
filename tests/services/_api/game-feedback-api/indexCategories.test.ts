@@ -8,9 +8,9 @@ describe('Game feedback API service - index categories', () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_GAME_FEEDBACK])
 
     const feedbackCategory = await new GameFeedbackCategoryFactory(apiKey.game).one()
-    await global.em.persistAndFlush(feedbackCategory)
+    await em.persistAndFlush(feedbackCategory)
 
-    const res = await request(global.app)
+    const res = await request(app)
       .get('/v1/game-feedback/categories')
       .auth(token, { type: 'bearer' })
       .expect(200)
@@ -30,9 +30,9 @@ describe('Game feedback API service - index categories', () => {
     const [apiKey, token] = await createAPIKeyAndToken([])
 
     const feedbackCategory = await new GameFeedbackCategoryFactory(apiKey.game).one()
-    await global.em.persistAndFlush(feedbackCategory)
+    await em.persistAndFlush(feedbackCategory)
 
-    const res = await request(global.app)
+    const res = await request(app)
       .get('/v1/game-feedback/categories')
       .auth(token, { type: 'bearer' })
       .expect(403)

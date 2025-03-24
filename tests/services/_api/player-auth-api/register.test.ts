@@ -10,7 +10,7 @@ describe('Player auth API service - register', () => {
 
     const identifier = randUserName()
 
-    const res = await request(global.app)
+    const res = await request(app)
       .post('/v1/players/auth/register')
       .send({ identifier, password: 'password' })
       .auth(token, { type: 'bearer' })
@@ -28,7 +28,7 @@ describe('Player auth API service - register', () => {
 
     expect(res.body.sessionToken).toBeTruthy()
 
-    const activity = await global.em.getRepository(PlayerAuthActivity).findOne({
+    const activity = await em.getRepository(PlayerAuthActivity).findOne({
       type: PlayerAuthActivityType.REGISTERED,
       extra: {
         verificationEnabled: false
@@ -40,7 +40,7 @@ describe('Player auth API service - register', () => {
   it('should not register a player if the api key does not have the correct scopes', async () => {
     const [, token] = await createAPIKeyAndToken([])
 
-    await request(global.app)
+    await request(app)
       .post('/v1/players/auth/register')
       .send({ identifier: randUserName(), password: 'password' })
       .auth(token, { type: 'bearer' })
@@ -52,7 +52,7 @@ describe('Player auth API service - register', () => {
 
     const identifier = randUserName()
 
-    const res = await request(global.app)
+    const res = await request(app)
       .post('/v1/players/auth/register')
       .send({ identifier, password: 'password', email: 'boz@mail.com' })
       .auth(token, { type: 'bearer' })
@@ -76,7 +76,7 @@ describe('Player auth API service - register', () => {
 
     const identifier = randUserName()
 
-    const res = await request(global.app)
+    const res = await request(app)
       .post('/v1/players/auth/register')
       .send({ identifier, password: 'password', email: 'boz@mail.com', verificationEnabled: true })
       .auth(token, { type: 'bearer' })
@@ -94,7 +94,7 @@ describe('Player auth API service - register', () => {
 
     expect(res.body.sessionToken).toBeTruthy()
 
-    const activity = await global.em.getRepository(PlayerAuthActivity).findOne({
+    const activity = await em.getRepository(PlayerAuthActivity).findOne({
       type: PlayerAuthActivityType.REGISTERED,
       extra: {
         verificationEnabled: true
@@ -106,7 +106,7 @@ describe('Player auth API service - register', () => {
   it('should not register a player if verification is enabled but no email is provided', async () => {
     const [, token] = await createAPIKeyAndToken([APIKeyScope.READ_PLAYERS, APIKeyScope.WRITE_PLAYERS])
 
-    const res = await request(global.app)
+    const res = await request(app)
       .post('/v1/players/auth/register')
       .send({ identifier: randUserName(), password: 'password', verificationEnabled: true })
       .auth(token, { type: 'bearer' })
@@ -122,7 +122,7 @@ describe('Player auth API service - register', () => {
   it('should not register a player if verification is enabled but the email is invalid', async () => {
     const [, token] = await createAPIKeyAndToken([APIKeyScope.READ_PLAYERS, APIKeyScope.WRITE_PLAYERS])
 
-    const res = await request(global.app)
+    const res = await request(app)
       .post('/v1/players/auth/register')
       .send({ identifier: randUserName(), email: 'blah', password: 'password', verificationEnabled: true })
       .auth(token, { type: 'bearer' })

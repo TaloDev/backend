@@ -14,14 +14,14 @@ describe('Game stat service - delete', () => {
     const [token] = await createUserAndToken({ type, emailConfirmed: true }, organisation)
 
     const stat = await new GameStatFactory([game]).one()
-    await global.em.persistAndFlush(stat)
+    await em.persistAndFlush(stat)
 
-    await request(global.app)
+    await request(app)
       .delete(`/games/${game.id}/game-stats/${stat.id}`)
       .auth(token, { type: 'bearer' })
       .expect(statusCode)
 
-    const activity = await global.em.getRepository(GameActivity).findOne({
+    const activity = await em.getRepository(GameActivity).findOne({
       type: GameActivityType.GAME_STAT_DELETED,
       game,
       extra: {
@@ -41,9 +41,9 @@ describe('Game stat service - delete', () => {
     const [token] = await createUserAndToken({ type: UserType.ADMIN })
 
     const stat = await new GameStatFactory([otherGame]).one()
-    await global.em.persistAndFlush(stat)
+    await em.persistAndFlush(stat)
 
-    const res = await request(global.app)
+    const res = await request(app)
       .delete(`/games/${otherGame.id}/game-stats/${stat.id}`)
       .auth(token, { type: 'bearer' })
       .expect(403)
@@ -55,7 +55,7 @@ describe('Game stat service - delete', () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({ type: UserType.ADMIN }, organisation)
 
-    const res = await request(global.app)
+    const res = await request(app)
       .delete(`/games/${game.id}/game-stats/31223`)
       .auth(token, { type: 'bearer' })
       .expect(404)

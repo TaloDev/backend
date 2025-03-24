@@ -14,13 +14,13 @@ describe('Game stat service - post', () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({ type }, organisation)
 
-    const res = await request(global.app)
+    const res = await request(app)
       .post(`/games/${game.id}/game-stats`)
       .send({ internalName: 'levels-completed', name: 'Levels completed', defaultValue: 0, global: false, minTimeBetweenUpdates: 0, minValue: -10, maxValue: 10, maxChange: 1 })
       .auth(token, { type: 'bearer' })
       .expect(statusCode)
 
-    const activity = await global.em.getRepository(GameActivity).findOne({
+    const activity = await em.getRepository(GameActivity).findOne({
       type: GameActivityType.GAME_STAT_CREATED,
       game
     })
@@ -48,7 +48,7 @@ describe('Game stat service - post', () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({}, organisation)
 
-    const res = await request(global.app)
+    const res = await request(app)
       .post(`/games/${game.id}/game-stats`)
       .send({ internalName: 'buildings-built', name: 'Buildings built', defaultValue: 5, global: true, minTimeBetweenUpdates: 0, minValue: -10, maxValue: 10, maxChange: null })
       .auth(token, { type: 'bearer' })
@@ -64,7 +64,7 @@ describe('Game stat service - post', () => {
     expect(res.body.stat.maxValue).toBe(10)
     expect(res.body.stat.minTimeBetweenUpdates).toBe(0)
 
-    const activity = await global.em.getRepository(GameActivity).findOne({
+    const activity = await em.getRepository(GameActivity).findOne({
       type: GameActivityType.GAME_STAT_CREATED,
       game,
       extra: {
@@ -79,7 +79,7 @@ describe('Game stat service - post', () => {
     const [, otherGame] = await createOrganisationAndGame()
     const [token] = await createUserAndToken()
 
-    const res = await request(global.app)
+    const res = await request(app)
       .post(`/games/${otherGame.id}/game-stats`)
       .send({ internalName: 'levels-completed', name: 'Levels completed', defaultValue: 0, global: false, minTimeBetweenUpdates: 0, minValue: -10, maxValue: 10, maxChange: null })
       .auth(token, { type: 'bearer' })
@@ -91,7 +91,7 @@ describe('Game stat service - post', () => {
   it('should not create a stat for a non-existent game', async () => {
     const [token] = await createUserAndToken()
 
-    const res = await request(global.app)
+    const res = await request(app)
       .post('/games/99999/game-stats')
       .send({ internalName: 'levels-completed', name: 'Levels completed', defaultValue: 0, global: false, minTimeBetweenUpdates: 0, minValue: -10, maxValue: 10, maxChange: null })
       .auth(token, { type: 'bearer' })
@@ -105,9 +105,9 @@ describe('Game stat service - post', () => {
     const [token] = await createUserAndToken({}, organisation)
 
     const stat = await new GameStatFactory([game]).state(() => ({ internalName: 'levels-completed' })).one()
-    await global.em.persistAndFlush(stat)
+    await em.persistAndFlush(stat)
 
-    const res = await request(global.app)
+    const res = await request(app)
       .post(`/games/${game.id}/game-stats`)
       .send({ internalName: 'levels-completed', name: 'Levels completed', defaultValue: 0, global: false, minTimeBetweenUpdates: 0, minValue: -10, maxValue: 10, maxChange: null })
       .auth(token, { type: 'bearer' })
@@ -126,9 +126,9 @@ describe('Game stat service - post', () => {
     const [token] = await createUserAndToken({}, organisation)
 
     const stat = await new GameStatFactory([otherGame]).state(() => ({ internalName: 'levels-completed' })).one()
-    await global.em.persistAndFlush(stat)
+    await em.persistAndFlush(stat)
 
-    await request(global.app)
+    await request(app)
       .post(`/games/${game.id}/game-stats`)
       .send({ internalName: 'levels-completed', name: 'Levels completed', defaultValue: 0, global: false, minTimeBetweenUpdates: 0, minValue: -10, maxValue: 10, maxChange: null })
       .auth(token, { type: 'bearer' })
@@ -139,7 +139,7 @@ describe('Game stat service - post', () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({}, organisation)
 
-    const res = await request(global.app)
+    const res = await request(app)
       .post(`/games/${game.id}/game-stats`)
       .send({ internalName: 'buildings-built', name: 'Buildings built', defaultValue: 5, global: false, minTimeBetweenUpdates: 0, minValue: null, maxValue: 10, maxChange: null })
       .auth(token, { type: 'bearer' })
@@ -153,7 +153,7 @@ describe('Game stat service - post', () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({}, organisation)
 
-    const res = await request(global.app)
+    const res = await request(app)
       .post(`/games/${game.id}/game-stats`)
       .send({ internalName: 'buildings-built', name: 'Buildings built', defaultValue: 5, global: false, minTimeBetweenUpdates: 0, minValue: -10, maxValue: null, maxChange: null })
       .auth(token, { type: 'bearer' })
@@ -167,7 +167,7 @@ describe('Game stat service - post', () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({}, organisation)
 
-    const res = await request(global.app)
+    const res = await request(app)
       .post(`/games/${game.id}/game-stats`)
       .send({ internalName: 'buildings-built', name: 'Buildings built', defaultValue: 5, global: false, minTimeBetweenUpdates: 0, minValue: -10, maxValue: 10, maxChange: null })
       .auth(token, { type: 'bearer' })
@@ -181,7 +181,7 @@ describe('Game stat service - post', () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({}, organisation)
 
-    const res = await request(global.app)
+    const res = await request(app)
       .post(`/games/${game.id}/game-stats`)
       .send({ internalName: 'buildings-built', name: 'Buildings built', defaultValue: 5, global: false, minTimeBetweenUpdates: 0, minValue: -10, maxValue: 10, maxChange: 0 })
       .auth(token, { type: 'bearer' })
@@ -198,7 +198,7 @@ describe('Game stat service - post', () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({}, organisation)
 
-    const res = await request(global.app)
+    const res = await request(app)
       .post(`/games/${game.id}/game-stats`)
       .send({ internalName: 'buildings-built', name: 'Buildings built', defaultValue: 5, global: false, minTimeBetweenUpdates: 0, minValue: -10, maxValue: 10, maxChange: -10 })
       .auth(token, { type: 'bearer' })
@@ -215,7 +215,7 @@ describe('Game stat service - post', () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({}, organisation)
 
-    const res = await request(global.app)
+    const res = await request(app)
       .post(`/games/${game.id}/game-stats`)
       .send({ internalName: 'buildings-built', name: 'Buildings built', defaultValue: 5, global: false, minTimeBetweenUpdates: 999_999_999_999_999, minValue: -10, maxValue: 10, maxChange: null })
       .auth(token, { type: 'bearer' })

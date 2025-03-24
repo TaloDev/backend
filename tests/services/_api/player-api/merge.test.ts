@@ -1,4 +1,4 @@
-import { Collection, EntityManager } from '@mikro-orm/mysql'
+import { Collection } from '@mikro-orm/mysql'
 import request from 'supertest'
 import { APIKeyScope } from '../../../../src/entities/api-key'
 import PlayerFactory from '../../../fixtures/PlayerFactory'
@@ -14,7 +14,7 @@ describe('Player API service - merge', () => {
   it('should not merge with no scopes', async () => {
     const [, token] = await createAPIKeyAndToken([])
 
-    const res = await request(global.app)
+    const res = await request(app)
       .post('/v1/players/merge')
       .send({ playerId1: '6901af6c-7581-40ec-83c8-c8866e77dbea', playerId2: 'cbc774b1-1542-4bce-b33f-4f090f53de68' })
       .auth(token, { type: 'bearer' })
@@ -26,7 +26,7 @@ describe('Player API service - merge', () => {
   it('should not merge without the write scope', async () => {
     const [, token] = await createAPIKeyAndToken([APIKeyScope.READ_PLAYERS])
 
-    const res = await request(global.app)
+    const res = await request(app)
       .post('/v1/players/merge')
       .send({ playerId1: '6901af6c-7581-40ec-83c8-c8866e77dbea', playerId2: 'cbc774b1-1542-4bce-b33f-4f090f53de68' })
       .auth(token, { type: 'bearer' })
@@ -38,7 +38,7 @@ describe('Player API service - merge', () => {
   it('should not merge without the read scope', async () => {
     const [, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_PLAYERS])
 
-    const res = await request(global.app)
+    const res = await request(app)
       .post('/v1/players/merge')
       .send({ playerId1: '6901af6c-7581-40ec-83c8-c8866e77dbea', playerId2: 'cbc774b1-1542-4bce-b33f-4f090f53de68' })
       .auth(token, { type: 'bearer' })
@@ -48,7 +48,6 @@ describe('Player API service - merge', () => {
   })
 
   it('should merge player2 into player1', async () => {
-    const em: EntityManager = global.em
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_PLAYERS, APIKeyScope.WRITE_PLAYERS])
 
     const player1 = await new PlayerFactory([apiKey.game]).one()
@@ -56,7 +55,7 @@ describe('Player API service - merge', () => {
 
     await em.persistAndFlush([player1, player2])
 
-    const res = await request(global.app)
+    const res = await request(app)
       .post('/v1/players/merge')
       .send({ playerId1: player1.id, playerId2: player2.id })
       .auth(token, { type: 'bearer' })
@@ -94,9 +93,9 @@ describe('Player API service - merge', () => {
       ])
     })).one()
 
-    await global.em.persistAndFlush([player1, player2])
+    await em.persistAndFlush([player1, player2])
 
-    const res = await request(global.app)
+    const res = await request(app)
       .post('/v1/players/merge')
       .send({ playerId1: player1.id, playerId2: player2.id })
       .auth(token, { type: 'bearer' })
@@ -131,9 +130,9 @@ describe('Player API service - merge', () => {
 
     const player2 = await new PlayerFactory([apiKey.game]).one()
 
-    await global.em.persistAndFlush(player2)
+    await em.persistAndFlush(player2)
 
-    const res = await request(global.app)
+    const res = await request(app)
       .post('/v1/players/merge')
       .send({ playerId1: 'nah', playerId2: player2.id })
       .auth(token, { type: 'bearer' })
@@ -147,9 +146,9 @@ describe('Player API service - merge', () => {
 
     const player1 = await new PlayerFactory([apiKey.game]).one()
 
-    await global.em.persistAndFlush(player1)
+    await em.persistAndFlush(player1)
 
-    const res = await request(global.app)
+    const res = await request(app)
       .post('/v1/players/merge')
       .send({ playerId1: player1.id, playerId2: 'nah' })
       .auth(token, { type: 'bearer' })
@@ -164,15 +163,15 @@ describe('Player API service - merge', () => {
     const player1 = await new PlayerFactory([apiKey.game]).one()
     const player2 = await new PlayerFactory([apiKey.game]).one()
     const save = await new GameSaveFactory([player2]).one()
-    await global.em.persistAndFlush([player1, player2, save])
+    await em.persistAndFlush([player1, player2, save])
 
-    await request(global.app)
+    await request(app)
       .post('/v1/players/merge')
       .send({ playerId1: player1.id, playerId2: player2.id })
       .auth(token, { type: 'bearer' })
       .expect(200)
 
-    await global.em.refresh(save)
+    await em.refresh(save)
     expect(save.player.id).toBe(player1.id)
   })
 
@@ -184,15 +183,15 @@ describe('Player API service - merge', () => {
 
     const stat = await new GameStatFactory([apiKey.game]).one()
     const playerStat = await new PlayerGameStatFactory().construct(player2, stat).one()
-    await global.em.persistAndFlush([player1, player2, playerStat])
+    await em.persistAndFlush([player1, player2, playerStat])
 
-    await request(global.app)
+    await request(app)
       .post('/v1/players/merge')
       .send({ playerId1: player1.id, playerId2: player2.id })
       .auth(token, { type: 'bearer' })
       .expect(200)
 
-    await global.em.refresh(playerStat, { populate: ['player'] })
+    await em.refresh(playerStat, { populate: ['player'] })
     expect(playerStat.player.id).toBe(player1.id)
   })
 
@@ -202,9 +201,9 @@ describe('Player API service - merge', () => {
     const player1 = await new PlayerFactory([apiKey.game]).withTaloAlias().one()
     const player2 = await new PlayerFactory([apiKey.game]).one()
 
-    await global.em.persistAndFlush([player1, player2])
+    await em.persistAndFlush([player1, player2])
 
-    const res = await request(global.app)
+    const res = await request(app)
       .post('/v1/players/merge')
       .send({ playerId1: player1.id, playerId2: player2.id })
       .auth(token, { type: 'bearer' })
@@ -221,9 +220,9 @@ describe('Player API service - merge', () => {
     const player1 = await new PlayerFactory([apiKey.game]).one()
     const player2 = await new PlayerFactory([apiKey.game]).withTaloAlias().one()
 
-    await global.em.persistAndFlush([player1, player2])
+    await em.persistAndFlush([player1, player2])
 
-    const res = await request(global.app)
+    const res = await request(app)
       .post('/v1/players/merge')
       .send({ playerId1: player1.id, playerId2: player2.id })
       .auth(token, { type: 'bearer' })

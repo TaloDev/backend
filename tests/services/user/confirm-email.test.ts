@@ -9,9 +9,9 @@ describe('User service - confirm email', () => {
     const date = new Date()
     date.setDate(date.getDate() + 1)
     const accessCode = new UserAccessCode(user, date)
-    await global.em.persistAndFlush(accessCode)
+    await em.persistAndFlush(accessCode)
 
-    const res = await request(global.app)
+    const res = await request(app)
       .post('/users/confirm_email')
       .send({ code: accessCode.code })
       .auth(token, { type: 'bearer' })
@@ -19,7 +19,7 @@ describe('User service - confirm email', () => {
 
     expect(res.body.user.emailConfirmed).toBe(true)
 
-    const updatedAccessCode = await global.em.getRepository(UserAccessCode).findOne({ code: accessCode.code })
+    const updatedAccessCode = await em.getRepository(UserAccessCode).findOne({ code: accessCode.code })
     expect(updatedAccessCode).toBeNull()
   })
 
@@ -29,9 +29,9 @@ describe('User service - confirm email', () => {
     const date = new Date()
     date.setDate(date.getDate() - 1)
     const accessCode = new UserAccessCode(user, date)
-    await global.em.persistAndFlush(accessCode)
+    await em.persistAndFlush(accessCode)
 
-    const res = await request(global.app)
+    const res = await request(app)
       .post('/users/confirm_email')
       .send({ code: accessCode.code })
       .auth(token, { type: 'bearer' })
@@ -43,7 +43,7 @@ describe('User service - confirm email', () => {
   it('should not let a user confirm their email with an invalid code', async () => {
     const [token] = await createUserAndToken()
 
-    const res = await request(global.app)
+    const res = await request(app)
       .post('/users/confirm_email')
       .send({ code: '312321' })
       .auth(token, { type: 'bearer' })

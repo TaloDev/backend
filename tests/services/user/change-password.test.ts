@@ -7,9 +7,9 @@ describe('User service - change password', () => {
     const [token, user] = await createUserAndToken()
 
     user.password = await bcrypt.hash('password', 10)
-    await global.em.flush()
+    await em.flush()
 
-    const res = await request(global.app)
+    const res = await request(app)
       .post('/users/change_password')
       .send({ currentPassword: 'password', newPassword: 'mynewpassword' })
       .auth(token, { type: 'bearer' })
@@ -22,9 +22,9 @@ describe('User service - change password', () => {
     const [token, user] = await createUserAndToken()
 
     user.password = await bcrypt.hash('password', 10)
-    await global.em.flush()
+    await em.flush()
 
-    const res = await request(global.app)
+    const res = await request(app)
       .post('/users/change_password')
       .send({ currentPassword: 'passw0rd', newPassword: 'password2' })
       .auth(token, { type: 'bearer' })
@@ -37,9 +37,9 @@ describe('User service - change password', () => {
     const [token, user] = await createUserAndToken()
 
     user.password = await bcrypt.hash('password', 10)
-    await global.em.flush()
+    await em.flush()
 
-    const res = await request(global.app)
+    const res = await request(app)
       .post('/users/change_password')
       .send({ currentPassword: 'password', newPassword: 'password' })
       .auth(token, { type: 'bearer' })

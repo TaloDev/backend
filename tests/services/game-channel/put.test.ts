@@ -12,15 +12,15 @@ describe('Game channel service - put', () => {
     const [token] = await createUserAndToken({}, organisation)
 
     const channel = await new GameChannelFactory(game).one()
-    await global.em.persistAndFlush(channel)
+    await em.persistAndFlush(channel)
 
-    const res = await request(global.app)
+    const res = await request(app)
       .put(`/games/${game.id}/game-channels/${channel.id}`)
       .send({ name: 'Updated channel', props: [{ key: 'test', value: 'value' }] })
       .auth(token, { type: 'bearer' })
       .expect(200)
 
-    const activity = await global.em.getRepository(GameActivity).findOne({
+    const activity = await em.getRepository(GameActivity).findOne({
       type: GameActivityType.GAME_CHANNEL_UPDATED,
       game
     })
@@ -38,9 +38,9 @@ describe('Game channel service - put', () => {
     const [token] = await createUserAndToken()
 
     const channel = await new GameChannelFactory(game).one()
-    await global.em.persistAndFlush(channel)
+    await em.persistAndFlush(channel)
 
-    const res = await request(global.app)
+    const res = await request(app)
       .put(`/games/${game.id}/game-channels/${channel.id}`)
       .send({ name: 'Updated channel' })
       .auth(token, { type: 'bearer' })
@@ -54,9 +54,9 @@ describe('Game channel service - put', () => {
     const [token] = await createUserAndToken()
 
     const channel = await new GameChannelFactory(game).one()
-    await global.em.persistAndFlush(channel)
+    await em.persistAndFlush(channel)
 
-    const res = await request(global.app)
+    const res = await request(app)
       .put(`/games/99999/game-channels/${channel.id}`)
       .send({ name: 'Updated channel' })
       .auth(token, { type: 'bearer' })
@@ -69,7 +69,7 @@ describe('Game channel service - put', () => {
     const [, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken()
 
-    const res = await request(global.app)
+    const res = await request(app)
       .put(`/games/${game.id}/game-channels/99999`)
       .send({ name: 'Updated channel' })
       .auth(token, { type: 'bearer' })
@@ -83,9 +83,9 @@ describe('Game channel service - put', () => {
     const [token] = await createUserAndToken({}, organisation)
 
     const channel = await new GameChannelFactory(game).one()
-    await global.em.persistAndFlush(channel)
+    await em.persistAndFlush(channel)
 
-    const res = await request(global.app)
+    const res = await request(app)
       .put(`/games/${game.id}/game-channels/${channel.id}`)
       .send({ ownerAliasId: 99999 })
       .auth(token, { type: 'bearer' })
@@ -100,15 +100,15 @@ describe('Game channel service - put', () => {
 
     const channel = await new GameChannelFactory(game).one()
     const player = await new PlayerFactory([game]).one()
-    await global.em.persistAndFlush([channel, player])
+    await em.persistAndFlush([channel, player])
 
-    await request(global.app)
+    await request(app)
       .put(`/games/${game.id}/game-channels/${channel.id}`)
       .send({ ownerAliasId: player.aliases[0].id })
       .auth(token, { type: 'bearer' })
       .expect(200)
 
-    const updatedChannel = await global.em.getRepository(GameChannel).findOneOrFail(
+    const updatedChannel = await em.getRepository(GameChannel).findOneOrFail(
       channel.id,
       { populate: ['members'] }
     )

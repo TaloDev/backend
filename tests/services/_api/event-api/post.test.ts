@@ -10,9 +10,9 @@ describe('Event API service - post', () => {
   it('should create an event if the scope is valid', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_EVENTS])
     const player = await new PlayerFactory([apiKey.game]).one()
-    await global.em.persistAndFlush(player)
+    await em.persistAndFlush(player)
 
-    const res = await request(global.app)
+    const res = await request(app)
       .post('/v1/events')
       .send({ events: [{ name: 'Craft bow', timestamp: Date.now() }] })
       .auth(token, { type: 'bearer' })
@@ -27,9 +27,9 @@ describe('Event API service - post', () => {
   it('should create multiple events if the scope is valid', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_EVENTS])
     const player = await new PlayerFactory([apiKey.game]).one()
-    await global.em.persistAndFlush(player)
+    await em.persistAndFlush(player)
 
-    const res = await request(global.app)
+    const res = await request(app)
       .post('/v1/events')
       .send({
         events: [
@@ -48,9 +48,9 @@ describe('Event API service - post', () => {
   it('should not create an event if the scope is invalid', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([])
     const player = await new PlayerFactory([apiKey.game]).one()
-    await global.em.persistAndFlush(player)
+    await em.persistAndFlush(player)
 
-    await request(global.app)
+    await request(app)
       .post('/v1/events')
       .send({ events: [{ name: 'Craft bow', timestamp: Date.now() }] })
       .auth(token, { type: 'bearer' })
@@ -61,7 +61,7 @@ describe('Event API service - post', () => {
   it('should not create an event if the alias doesn\'t exist', async () => {
     const [, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_EVENTS])
 
-    const res = await request(global.app)
+    const res = await request(app)
       .post('/v1/events')
       .send({ events: [{ name: 'Craft bow', timestamp: Date.now() }] })
       .auth(token, { type: 'bearer' })
@@ -75,9 +75,9 @@ describe('Event API service - post', () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_EVENTS])
     const otherGame = await new GameFactory(apiKey.game.organisation).one()
     const invalidPlayer = await new PlayerFactory([otherGame]).one()
-    await global.em.persistAndFlush([invalidPlayer])
+    await em.persistAndFlush([invalidPlayer])
 
-    const res = await request(global.app)
+    const res = await request(app)
       .post('/v1/events')
       .send({ events: [{ name: 'Craft bow', timestamp: Date.now() }] })
       .auth(token, { type: 'bearer' })
@@ -90,9 +90,9 @@ describe('Event API service - post', () => {
   it('should not create an event if the name is missing', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_EVENTS])
     const player = await new PlayerFactory([apiKey.game]).one()
-    await global.em.persistAndFlush(player)
+    await em.persistAndFlush(player)
 
-    const res = await request(global.app)
+    const res = await request(app)
       .post('/v1/events')
       .send({ events: [{ timestamp: Date.now() }] })
       .auth(token, { type: 'bearer' })
@@ -105,9 +105,9 @@ describe('Event API service - post', () => {
   it('should not create an event if the timestamp is missing', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_EVENTS])
     const player = await new PlayerFactory([apiKey.game]).one()
-    await global.em.persistAndFlush(player)
+    await em.persistAndFlush(player)
 
-    const res = await request(global.app)
+    const res = await request(app)
       .post('/v1/events')
       .send({ events: [{ name: 'Craft bow' }] })
       .auth(token, { type: 'bearer' })
@@ -120,9 +120,9 @@ describe('Event API service - post', () => {
   it('should not create any events if the events body key is not an array', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_EVENTS])
     const player = await new PlayerFactory([apiKey.game]).one()
-    await global.em.persistAndFlush(player)
+    await em.persistAndFlush(player)
 
-    const res = await request(global.app)
+    const res = await request(app)
       .post('/v1/events')
       .send({ name: 'Craft bow' })
       .auth(token, { type: 'bearer' })
@@ -139,9 +139,9 @@ describe('Event API service - post', () => {
   it('should sanitise event props into strings', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_EVENTS])
     const player = await new PlayerFactory([apiKey.game]).one()
-    await global.em.persistAndFlush(player)
+    await em.persistAndFlush(player)
 
-    const res = await request(global.app)
+    const res = await request(app)
       .post('/v1/events')
       .send({
         events: [
@@ -159,9 +159,9 @@ describe('Event API service - post', () => {
   it('should delete null event props', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_EVENTS])
     const player = await new PlayerFactory([apiKey.game]).one()
-    await global.em.persistAndFlush(player)
+    await em.persistAndFlush(player)
 
-    const res = await request(global.app)
+    const res = await request(app)
       .post('/v1/events')
       .send({
         events: [
@@ -178,9 +178,9 @@ describe('Event API service - post', () => {
   it('should not delete event props with values that are empty strings', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_EVENTS])
     const player = await new PlayerFactory([apiKey.game]).one()
-    await global.em.persistAndFlush(player)
+    await em.persistAndFlush(player)
 
-    const res = await request(global.app)
+    const res = await request(app)
       .post('/v1/events')
       .send({
         events: [
@@ -198,9 +198,9 @@ describe('Event API service - post', () => {
   it('should capture an error if the event props are not an array', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_EVENTS])
     const player = await new PlayerFactory([apiKey.game]).one()
-    await global.em.persistAndFlush(player)
+    await em.persistAndFlush(player)
 
-    const res = await request(global.app)
+    const res = await request(app)
       .post('/v1/events')
       .send({
         events: [
@@ -217,9 +217,9 @@ describe('Event API service - post', () => {
   it('should add valid meta props to the player\'s props', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_EVENTS])
     const player = await new PlayerFactory([apiKey.game]).one()
-    await global.em.persistAndFlush(player)
+    await em.persistAndFlush(player)
 
-    await request(global.app)
+    await request(app)
       .post('/v1/events')
       .send({
         events: [
@@ -230,7 +230,7 @@ describe('Event API service - post', () => {
       .set('x-talo-alias', String(player.aliases[0].id))
       .expect(200)
 
-    const prop = await global.em.getRepository(PlayerProp).findOne({
+    const prop = await em.getRepository(PlayerProp).findOne({
       player: player.id,
       key: 'META_OS',
       value: 'macOS'
@@ -241,9 +241,9 @@ describe('Event API service - post', () => {
   it('should strip out event props that start with META_ but aren\'t in the meta props list', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_EVENTS])
     const player = await new PlayerFactory([apiKey.game]).one()
-    await global.em.persistAndFlush(player)
+    await em.persistAndFlush(player)
 
-    const res = await request(global.app)
+    const res = await request(app)
       .post('/v1/events')
       .send({
         events: [
@@ -265,9 +265,9 @@ describe('Event API service - post', () => {
         new PlayerProp(player, 'META_OS', 'Windows')
       ])
     })).one()
-    await global.em.persistAndFlush(player)
+    await em.persistAndFlush(player)
 
-    await request(global.app)
+    await request(app)
       .post('/v1/events')
       .send({
         events: [
@@ -278,7 +278,7 @@ describe('Event API service - post', () => {
       .set('x-talo-alias', String(player.aliases[0].id))
       .expect(200)
 
-    const prop = await global.em.getRepository(PlayerProp).findOne({
+    const prop = await em.getRepository(PlayerProp).findOne({
       player: player.id,
       key: 'META_OS',
       value: 'macOS'

@@ -28,7 +28,7 @@ describe('Player group service - post', () => {
       }
     ]
 
-    const res = await request(global.app)
+    const res = await request(app)
       .post(`/games/${game.id}/player-groups`)
       .send({
         name: 'Winners',
@@ -40,7 +40,7 @@ describe('Player group service - post', () => {
       .auth(token, { type: 'bearer' })
       .expect(statusCode)
 
-    const activity = await global.em.getRepository(GameActivity).findOne({
+    const activity = await em.getRepository(GameActivity).findOne({
       type: GameActivityType.PLAYER_GROUP_CREATED,
       game
     })
@@ -69,7 +69,7 @@ describe('Player group service - post', () => {
       ])
     })).one()
     const player2 = await new PlayerFactory([game]).one()
-    await global.em.persistAndFlush([player1, player2])
+    await em.persistAndFlush([player1, player2])
 
     const rules: Partial<PlayerGroupRule>[] = [
       {
@@ -81,7 +81,7 @@ describe('Player group service - post', () => {
       }
     ]
 
-    const res = await request(global.app)
+    const res = await request(app)
       .post(`/games/${game.id}/player-groups`)
       .send({
         name: 'Winners',
@@ -100,7 +100,7 @@ describe('Player group service - post', () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({}, organisation)
 
-    const res = await request(global.app)
+    const res = await request(app)
       .post(`/games/${game.id}/player-groups`)
       .send({
         name: 'Winners',
@@ -123,7 +123,7 @@ describe('Player group service - post', () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({}, organisation)
 
-    const res = await request(global.app)
+    const res = await request(app)
       .post(`/games/${game.id}/player-groups`)
       .send({
         name: 'Winners',
@@ -146,7 +146,7 @@ describe('Player group service - post', () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({}, organisation)
 
-    const res = await request(global.app)
+    const res = await request(app)
       .post(`/games/${game.id}/player-groups`)
       .send({
         name: 'Winners',
@@ -177,7 +177,7 @@ describe('Player group service - post', () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({}, organisation)
 
-    const res = await request(global.app)
+    const res = await request(app)
       .post(`/games/${game.id}/player-groups`)
       .send({
         name: 'Winners',
@@ -208,7 +208,7 @@ describe('Player group service - post', () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({}, organisation)
 
-    const res = await request(global.app)
+    const res = await request(app)
       .post(`/games/${game.id}/player-groups`)
       .send({
         name: 'Winners',
@@ -239,7 +239,7 @@ describe('Player group service - post', () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({}, organisation)
 
-    const res = await request(global.app)
+    const res = await request(app)
       .post(`/games/${game.id}/player-groups`)
       .send({
         name: 'Winners',
@@ -270,7 +270,7 @@ describe('Player group service - post', () => {
     const [, otherGame] = await createOrganisationAndGame()
     const [token] = await createUserAndToken()
 
-    const res = await request(global.app)
+    const res = await request(app)
       .post(`/games/${otherGame.id}/player-groups`)
       .send({
         name: 'Winners',
@@ -288,7 +288,7 @@ describe('Player group service - post', () => {
   it('should not create a group for a non-existent game', async () => {
     const [token] = await createUserAndToken()
 
-    const res = await request(global.app)
+    const res = await request(app)
       .post('/games/345431/player-groups')
       .send({
         name: 'Winners',

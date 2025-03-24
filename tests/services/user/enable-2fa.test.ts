@@ -6,14 +6,14 @@ describe('User service - enable 2fa', () => {
   it('should let users enable 2fa', async () => {
     const [token, user] = await createUserAndToken()
 
-    const res = await request(global.app)
+    const res = await request(app)
       .get('/users/2fa/enable')
       .auth(token, { type: 'bearer' })
       .expect(200)
 
     expect(res.body.qr).toBeTruthy()
 
-    await global.em.refresh(user)
+    await em.refresh(user)
     expect(user.twoFactorAuth).toBeTruthy()
     expect(user.twoFactorAuth!.enabled).toBe(false)
   })
@@ -24,9 +24,9 @@ describe('User service - enable 2fa', () => {
     })
 
     user.twoFactorAuth!.enabled = true
-    await global.em.flush()
+    await em.flush()
 
-    const res = await request(global.app)
+    const res = await request(app)
       .get('/users/2fa/enable')
       .auth(token, { type: 'bearer' })
       .expect(403)

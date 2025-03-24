@@ -10,9 +10,9 @@ describe('Game save API service - delete', () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_SAVES])
     const player = await new PlayerFactory([apiKey.game]).one()
     const save = await new GameSaveFactory([player]).one()
-    await global.em.persistAndFlush(save)
+    await em.persistAndFlush(save)
 
-    await request(global.app)
+    await request(app)
       .delete(`/v1/game-saves/${save.id}`)
       .auth(token, { type: 'bearer' })
       .set('x-talo-player', save.player.id)
@@ -23,9 +23,9 @@ describe('Game save API service - delete', () => {
     const [apiKey, token] = await createAPIKeyAndToken([])
     const player = await new PlayerFactory([apiKey.game]).one()
     const save = await new GameSaveFactory([player]).one()
-    await global.em.persistAndFlush(save)
+    await em.persistAndFlush(save)
 
-    await request(global.app)
+    await request(app)
       .delete(`/v1/game-saves/${save.id}`)
       .auth(token, { type: 'bearer' })
       .set('x-talo-player', save.player.id)
@@ -40,9 +40,9 @@ describe('Game save API service - delete', () => {
     const otherPlayer = await new PlayerFactory([game]).one()
     const otherSave = await new GameSaveFactory([otherPlayer]).one()
 
-    await global.em.persistAndFlush([player, otherSave])
+    await em.persistAndFlush([player, otherSave])
 
-    const res = await request(global.app)
+    const res = await request(app)
       .delete(`/v1/game-saves/${otherSave.id}`)
       .auth(token, { type: 'bearer' })
       .set('x-talo-player', player.id)
@@ -60,9 +60,9 @@ describe('Game save API service - delete', () => {
     const otherPlayer = await new PlayerFactory([game]).one()
     const otherSave = await new GameSaveFactory([otherPlayer]).one()
 
-    await global.em.persistAndFlush([save, otherSave])
+    await em.persistAndFlush([save, otherSave])
 
-    const res = await request(global.app)
+    const res = await request(app)
       .delete(`/v1/game-saves/${otherSave.id}`)
       .auth(token, { type: 'bearer' })
       .set('x-talo-player', otherPlayer.id)

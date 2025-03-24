@@ -9,9 +9,9 @@ describe('Game channel API service - index', () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_GAME_CHANNELS])
 
     const channels = await new GameChannelFactory(apiKey.game).many(10)
-    await global.em.persistAndFlush(channels)
+    await em.persistAndFlush(channels)
 
-    const res = await request(global.app)
+    const res = await request(app)
       .get('/v1/game-channels')
       .query({ page: 0 })
       .auth(token, { type: 'bearer' })
@@ -26,9 +26,9 @@ describe('Game channel API service - index', () => {
     const [apiKey, token] = await createAPIKeyAndToken([])
 
     const channels = await new GameChannelFactory(apiKey.game).many(10)
-    await global.em.persistAndFlush(channels)
+    await em.persistAndFlush(channels)
 
-    await request(global.app)
+    await request(app)
       .get('/v1/game-channels')
       .query({ page: 0 })
       .auth(token, { type: 'bearer' })

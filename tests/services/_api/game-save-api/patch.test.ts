@@ -10,9 +10,9 @@ describe('Game save API service - patch', () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_SAVES])
     const player = await new PlayerFactory([apiKey.game]).one()
     const save = await new GameSaveFactory([player]).one()
-    await global.em.persistAndFlush(save)
+    await em.persistAndFlush(save)
 
-    const res = await request(global.app)
+    const res = await request(app)
       .patch(`/v1/game-saves/${save.id}`)
       .send({ content: { progress: 10 } })
       .auth(token, { type: 'bearer' })
@@ -28,9 +28,9 @@ describe('Game save API service - patch', () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_SAVES])
     const player = await new PlayerFactory([apiKey.game]).one()
     const save = await new GameSaveFactory([player]).one()
-    await global.em.persistAndFlush(save)
+    await em.persistAndFlush(save)
 
-    const res = await request(global.app)
+    const res = await request(app)
       .patch(`/v1/game-saves/${save.id}`)
       .send({ content: { progress: 10 }, name: 'New save name' })
       .auth(token, { type: 'bearer' })
@@ -44,9 +44,9 @@ describe('Game save API service - patch', () => {
     const [apiKey, token] = await createAPIKeyAndToken([])
     const player = await new PlayerFactory([apiKey.game]).one()
     const save = await new GameSaveFactory([player]).one()
-    await global.em.persistAndFlush(save)
+    await em.persistAndFlush(save)
 
-    await request(global.app)
+    await request(app)
       .patch(`/v1/game-saves/${save.id}`)
       .send({ content: { progress: 10 } })
       .auth(token, { type: 'bearer' })
@@ -63,9 +63,9 @@ describe('Game save API service - patch', () => {
     const otherPlayer = await new PlayerFactory([game]).one()
     const otherSave = await new GameSaveFactory([otherPlayer]).one()
 
-    await global.em.persistAndFlush([save, otherSave])
+    await em.persistAndFlush([save, otherSave])
 
-    const res = await request(global.app)
+    const res = await request(app)
       .patch(`/v1/game-saves/${otherSave.id}`)
       .send({ content: { progress: 10 } })
       .auth(token, { type: 'bearer' })

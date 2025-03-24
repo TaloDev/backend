@@ -15,9 +15,9 @@ describe('Organisation service - current', () => {
 
     const otherUser = await new UserFactory().state(() => ({ organisation })).one()
     const invites = await new InviteFactory().construct(organisation).state(() => ({ invitedByUser: user })).many(3)
-    await global.em.persistAndFlush([otherUser, ...invites])
+    await em.persistAndFlush([otherUser, ...invites])
 
-    const res = await request(global.app)
+    const res = await request(app)
       .get('/organisations/current')
       .auth(token, { type: 'bearer' })
       .expect(statusCode)

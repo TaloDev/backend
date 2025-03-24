@@ -23,7 +23,7 @@ describe('Steamworks integration - sync stats', () => {
 
     const config = await new IntegrationConfigFactory().one()
     const integration = await new IntegrationFactory().construct(IntegrationType.STEAMWORKS, game, config).one()
-    await global.em.persistAndFlush(integration)
+    await em.persistAndFlush(integration)
 
     const getSchemaMock = vi.fn((): [number, GetSchemaForGameResponse] => [200, {
       game: {
@@ -43,18 +43,18 @@ describe('Steamworks integration - sync stats', () => {
     }])
     axiosMock.onGet(`https://partner.steam-api.com/ISteamUserStats/GetSchemaForGame/v2?appid=${integration.getConfig().appId}`).replyOnce(getSchemaMock)
 
-    await syncSteamworksStats(global.em, integration)
+    await syncSteamworksStats(em, integration)
 
     expect(getSchemaMock).toHaveBeenCalledTimes(1)
 
-    const event = await global.em.getRepository(SteamworksIntegrationEvent).findOneOrFail({ integration })
+    const event = await em.getRepository(SteamworksIntegrationEvent).findOneOrFail({ integration })
     expect(event.request).toStrictEqual({
       url: `https://partner.steam-api.com/ISteamUserStats/GetSchemaForGame/v2?appid=${integration.getConfig().appId}`,
       body: '',
       method: 'GET'
     })
 
-    const createdStat = await global.em.getRepository(GameStat).findOne({
+    const createdStat = await em.getRepository(GameStat).findOne({
       game: integration.game,
       name: statDisplayName,
       globalValue: 500,
@@ -77,7 +77,7 @@ describe('Steamworks integration - sync stats', () => {
     const config = await new IntegrationConfigFactory().one()
     const integration = await new IntegrationFactory().construct(IntegrationType.STEAMWORKS, game, config).one()
 
-    await global.em.persistAndFlush([stat, integration])
+    await em.persistAndFlush([stat, integration])
 
     const getSchemaMock = vi.fn((): [number, GetSchemaForGameResponse] => [200, {
       game: {
@@ -97,11 +97,11 @@ describe('Steamworks integration - sync stats', () => {
     }])
     axiosMock.onGet(`https://partner.steam-api.com/ISteamUserStats/GetSchemaForGame/v2?appid=${integration.getConfig().appId}`).replyOnce(getSchemaMock)
 
-    await syncSteamworksStats(global.em, integration)
+    await syncSteamworksStats(em, integration)
 
     expect(getSchemaMock).toHaveBeenCalledTimes(1)
 
-    await global.em.refresh(stat)
+    await em.refresh(stat)
     expect(stat.name).toBe(statDisplayName)
     expect(stat.defaultValue).toBe(500)
   })
@@ -116,7 +116,7 @@ describe('Steamworks integration - sync stats', () => {
     const config = await new IntegrationConfigFactory().one()
     const integration = await new IntegrationFactory().construct(IntegrationType.STEAMWORKS, game, config).one()
 
-    await global.em.persistAndFlush([player, integration])
+    await em.persistAndFlush([player, integration])
 
     const getSchemaMock = vi.fn((): [number, GetSchemaForGameResponse] => [200, {
       game: {
@@ -149,12 +149,12 @@ describe('Steamworks integration - sync stats', () => {
     }])
     axiosMock.onGet(`https://partner.steam-api.com/ISteamUserStats/GetUserStatsForGame/v2?appid=${integration.getConfig().appId}&steamid=${player.aliases[0].identifier}`).replyOnce(getUserStatsMock)
 
-    await syncSteamworksStats(global.em, integration)
+    await syncSteamworksStats(em, integration)
 
     expect(getSchemaMock).toHaveBeenCalledTimes(1)
     expect(getUserStatsMock).toHaveBeenCalledTimes(1)
 
-    const playerStat = await global.em.getRepository(PlayerGameStat).findOne({ value: 301 })
+    const playerStat = await em.getRepository(PlayerGameStat).findOne({ value: 301 })
     expect(playerStat).toBeTruthy()
   })
 
@@ -166,7 +166,7 @@ describe('Steamworks integration - sync stats', () => {
     const config = await new IntegrationConfigFactory().one()
     const integration = await new IntegrationFactory().construct(IntegrationType.STEAMWORKS, game, config).one()
 
-    await global.em.persistAndFlush([player, integration])
+    await em.persistAndFlush([player, integration])
 
     const getSchemaMock = vi.fn((): [number, GetSchemaForGameResponse] => [200, {
       game: {
@@ -189,12 +189,12 @@ describe('Steamworks integration - sync stats', () => {
     const getUserStatsMock = vi.fn((): [number] => [400])
     axiosMock.onGet(`https://partner.steam-api.com/ISteamUserStats/GetUserStatsForGame/v2?appid=${integration.getConfig().appId}&steamid=${player.aliases[0].identifier}`).replyOnce(getUserStatsMock)
 
-    await syncSteamworksStats(global.em, integration)
+    await syncSteamworksStats(em, integration)
 
     expect(getSchemaMock).toHaveBeenCalledTimes(1)
     expect(getUserStatsMock).toHaveBeenCalledTimes(1)
 
-    const playerStat = await global.em.getRepository(PlayerGameStat).findOne({ player })
+    const playerStat = await em.getRepository(PlayerGameStat).findOne({ player })
     expect(playerStat).toBeNull()
   })
 
@@ -210,7 +210,7 @@ describe('Steamworks integration - sync stats', () => {
     const config = await new IntegrationConfigFactory().one()
     const integration = await new IntegrationFactory().construct(IntegrationType.STEAMWORKS, game, config).one()
 
-    await global.em.persistAndFlush([player, playerStat, integration])
+    await em.persistAndFlush([player, playerStat, integration])
 
     const getSchemaMock = vi.fn((): [number, GetSchemaForGameResponse] => [200, {
       game: {
@@ -243,7 +243,7 @@ describe('Steamworks integration - sync stats', () => {
     }])
     axiosMock.onGet(`https://partner.steam-api.com/ISteamUserStats/GetUserStatsForGame/v2?appid=${integration.getConfig().appId}&steamid=${player.aliases[0].identifier}`).replyOnce(getUserStatsMock)
 
-    await syncSteamworksStats(global.em, integration)
+    await syncSteamworksStats(em, integration)
 
     expect(getSchemaMock).toHaveBeenCalledTimes(1)
     expect(getUserStatsMock).toHaveBeenCalledTimes(1)
@@ -263,7 +263,7 @@ describe('Steamworks integration - sync stats', () => {
     const config = await new IntegrationConfigFactory().one()
     const integration = await new IntegrationFactory().construct(IntegrationType.STEAMWORKS, game, config).one()
 
-    await global.em.persistAndFlush([player, playerStat, integration])
+    await em.persistAndFlush([player, playerStat, integration])
 
     const getSchemaMock = vi.fn((): [number, GetSchemaForGameResponse] => [200, {
       game: {
@@ -300,13 +300,13 @@ describe('Steamworks integration - sync stats', () => {
     }])
     axiosMock.onPost('https://partner.steam-api.com/ISteamUserStats/SetUserStatsForGame/v1').replyOnce(setMock)
 
-    await syncSteamworksStats(global.em, integration)
+    await syncSteamworksStats(em, integration)
 
     expect(getSchemaMock).toHaveBeenCalledTimes(1)
     expect(getUserStatsMock).toHaveBeenCalledTimes(1)
     expect(setMock).toHaveBeenCalledTimes(1)
 
-    const event = await global.em.getRepository(SteamworksIntegrationEvent).findOneOrFail({ integration }, { orderBy: { id: 'DESC' } })
+    const event = await em.getRepository(SteamworksIntegrationEvent).findOneOrFail({ integration }, { orderBy: { id: 'DESC' } })
     expect(event.request).toStrictEqual({
       url: 'https://partner.steam-api.com/ISteamUserStats/SetUserStatsForGame/v1',
       body: `appid=${config.appId}&steamid=${player.aliases[0].identifier}&count=1&name%5B0%5D=${stat.internalName}&value%5B0%5D=${playerStat.value}`,
@@ -319,13 +319,13 @@ describe('Steamworks integration - sync stats', () => {
 
     const config = await new IntegrationConfigFactory().one()
     const integration = await new IntegrationFactory().construct(IntegrationType.STEAMWORKS, game, config).one()
-    await global.em.persistAndFlush(integration)
+    await em.persistAndFlush(integration)
 
     const getSchemaMock = vi.fn((): [number] => [404])
     axiosMock.onGet(`https://partner.steam-api.com/ISteamUserStats/GetSchemaForGame/v2?appid=${integration.getConfig().appId}`).replyOnce(getSchemaMock)
 
     try {
-      await syncSteamworksStats(global.em, integration)
+      await syncSteamworksStats(em, integration)
     } catch (err) {
       expect((err as Error).message).toBe('Failed to retrieve stats - is your App ID correct?')
     }

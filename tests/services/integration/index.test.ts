@@ -16,9 +16,9 @@ describe('Integration service - index', () => {
 
     const config = await new IntegrationConfigFactory().one()
     const integrations = await new IntegrationFactory().construct(IntegrationType.STEAMWORKS, game, config).many(3)
-    await global.em.persistAndFlush(integrations)
+    await em.persistAndFlush(integrations)
 
-    const res = await request(global.app)
+    const res = await request(app)
       .get(`/games/${game.id}/integrations`)
       .auth(token, { type: 'bearer' })
       .expect(statusCode)
@@ -40,9 +40,9 @@ describe('Integration service - index', () => {
 
     const config = await new IntegrationConfigFactory().one()
     const integrations = await new IntegrationFactory().construct(IntegrationType.STEAMWORKS, game, config).many(3)
-    await global.em.persistAndFlush(integrations)
+    await em.persistAndFlush(integrations)
 
-    const res = await request(global.app)
+    const res = await request(app)
       .get(`/games/${game.id}/integrations`)
       .auth(token, { type: 'bearer' })
       .expect(403)

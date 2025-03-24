@@ -8,7 +8,7 @@ describe('Data export service - available entities', () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({ type: UserType.ADMIN }, organisation)
 
-    const res = await request(global.app)
+    const res = await request(app)
       .get(`/games/${game.id}/data-exports/entities`)
       .auth(token, { type: 'bearer' })
       .expect(200)

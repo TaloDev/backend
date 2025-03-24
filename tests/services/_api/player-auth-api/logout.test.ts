@@ -10,12 +10,12 @@ describe('Player auth API service - logout', () => {
 
     const player = await new PlayerFactory([apiKey.game]).withTaloAlias().one()
     const alias = player.aliases[0]
-    await global.em.persistAndFlush(player)
+    await em.persistAndFlush(player)
 
     const sessionToken = await player.auth!.createSession(alias)
-    await global.em.flush()
+    await em.flush()
 
-    await request(global.app)
+    await request(app)
       .post('/v1/players/auth/logout')
       .auth(token, { type: 'bearer' })
       .set('x-talo-player', player.id)
@@ -23,11 +23,11 @@ describe('Player auth API service - logout', () => {
       .set('x-talo-session', sessionToken)
       .expect(204)
 
-    await global.em.refresh(player.auth!)
+    await em.refresh(player.auth!)
     expect(player.auth!.sessionKey).toBeNull()
     expect(player.auth!.sessionCreatedAt).toBeNull()
 
-    const activity = await global.em.getRepository(PlayerAuthActivity).findOne({
+    const activity = await em.getRepository(PlayerAuthActivity).findOne({
       type: PlayerAuthActivityType.LOGGED_OUT,
       player: player.id
     })
@@ -39,12 +39,12 @@ describe('Player auth API service - logout', () => {
 
     const player = await new PlayerFactory([apiKey.game]).withTaloAlias().one()
     const alias = player.aliases[0]
-    await global.em.persistAndFlush(player)
+    await em.persistAndFlush(player)
 
     const sessionToken = await player.auth!.createSession(alias)
-    await global.em.flush()
+    await em.flush()
 
-    await request(global.app)
+    await request(app)
       .post('/v1/players/auth/logout')
       .auth(token, { type: 'bearer' })
       .set('x-talo-player', player.id)

@@ -15,11 +15,11 @@ describe('Player auth API service - reset password', () => {
     const player = await new PlayerFactory([apiKey.game]).withTaloAlias().one()
     const alias = player.aliases[0]
 
-    await global.em.persistAndFlush(player)
+    await em.persistAndFlush(player)
 
     await redis.set(`player-auth:${apiKey.game.id}:password-reset:123456`, alias.id)
 
-    await request(global.app)
+    await request(app)
       .post('/v1/players/auth/reset_password')
       .send({ code: '123456', password: 'password' })
       .auth(token, { type: 'bearer' })
@@ -27,12 +27,12 @@ describe('Player auth API service - reset password', () => {
 
     expect(await redis.get(`player-auth:${apiKey.game.id}:password-reset:123456`)).toBeNull()
 
-    await global.em.refresh(player.auth!)
+    await em.refresh(player.auth!)
     expect(await bcrypt.compare('password', player.auth!.password)).toBe(true)
     expect(player.auth!.sessionKey).toBeNull()
     expect(player.auth!.sessionCreatedAt).toBeNull()
 
-    const activity = await global.em.getRepository(PlayerAuthActivity).findOne({
+    const activity = await em.getRepository(PlayerAuthActivity).findOne({
       type: PlayerAuthActivityType.PASSWORD_RESET_COMPLETED,
       player: player.id
     })
@@ -48,11 +48,11 @@ describe('Player auth API service - reset password', () => {
     const player = await new PlayerFactory([apiKey.game]).withTaloAlias().one()
     const alias = player.aliases[0]
 
-    await global.em.persistAndFlush(player)
+    await em.persistAndFlush(player)
 
     await redis.set(`player-auth:${apiKey.game.id}:password-reset:123456`, alias.id)
 
-    await request(global.app)
+    await request(app)
       .post('/v1/players/auth/reset_password')
       .send({ code: '123456', password: 'password' })
       .auth(token, { type: 'bearer' })
@@ -70,11 +70,11 @@ describe('Player auth API service - reset password', () => {
     const player = await new PlayerFactory([apiKey.game]).withTaloAlias().one()
     const alias = player.aliases[0]
 
-    await global.em.persistAndFlush(player)
+    await em.persistAndFlush(player)
 
     await redis.set(`player-auth:${apiKey.game.id}:password-reset:123456`, alias.id)
 
-    const res = await request(global.app)
+    const res = await request(app)
       .post('/v1/players/auth/reset_password')
       .send({ code: '123455', password: 'password' })
       .auth(token, { type: 'bearer' })

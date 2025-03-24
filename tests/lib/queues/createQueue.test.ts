@@ -15,7 +15,7 @@ describe('Create queue', () => {
 
     expect(processMock).toHaveBeenCalledTimes(1)
 
-    const failedJobs = await global.em.getRepository(FailedJob).findAll()
+    const failedJobs = await em.getRepository(FailedJob).findAll()
     expect(failedJobs).toHaveLength(1)
     const failedJob = failedJobs[0]
 

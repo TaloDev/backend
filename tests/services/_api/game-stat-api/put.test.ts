@@ -1,4 +1,3 @@
-import { EntityManager } from '@mikro-orm/mysql'
 import request from 'supertest'
 import { APIKeyScope } from '../../../../src/entities/api-key'
 import PlayerFactory from '../../../fixtures/PlayerFactory'
@@ -12,8 +11,6 @@ import { ClickHousePlayerGameStatSnapshot } from '../../../../src/entities/playe
 
 describe('Game stats API service - put', () => {
   const createStat = async (game: Game, props: Partial<GameStat>) => {
-    const em: EntityManager  = global.em
-
     const stat = await new GameStatFactory([game]).state(() => ({ ...props })).one()
     em.persist(stat)
 
@@ -24,9 +21,9 @@ describe('Game stats API service - put', () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_STATS])
     const stat = await createStat(apiKey.game, { maxValue: 999, maxChange: 99 })
     const player = await new PlayerFactory([apiKey.game]).one()
-    await global.em.persistAndFlush(player)
+    await em.persistAndFlush(player)
 
-    await request(global.app)
+    await request(app)
       .put(`/v1/game-stats/${stat.internalName}`)
       .send({ change: 10 })
       .auth(token, { type: 'bearer' })
@@ -38,9 +35,9 @@ describe('Game stats API service - put', () => {
     const [apiKey, token] = await createAPIKeyAndToken([])
     const stat = await createStat(apiKey.game, { maxValue: 999, maxChange: 99 })
     const player = await new PlayerFactory([apiKey.game]).one()
-    await global.em.persistAndFlush(player)
+    await em.persistAndFlush(player)
 
-    await request(global.app)
+    await request(app)
       .put(`/v1/game-stats/${stat.internalName}`)
       .send({ change: 10 })
       .auth(token, { type: 'bearer' })
@@ -52,9 +49,9 @@ describe('Game stats API service - put', () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_STATS])
     const stat = await createStat(apiKey.game, { maxValue: 999, maxChange: 99 })
     const player = await new PlayerFactory([apiKey.game]).one()
-    await global.em.persistAndFlush(player)
+    await em.persistAndFlush(player)
 
-    const res = await request(global.app)
+    const res = await request(app)
       .put(`/v1/game-stats/${stat.internalName}`)
       .send({ change: 10 })
       .auth(token, { type: 'bearer' })
@@ -68,16 +65,16 @@ describe('Game stats API service - put', () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_STATS])
     const stat = await createStat(apiKey.game, { maxValue: 999, maxChange: 99, minTimeBetweenUpdates: 30 })
     const player = await new PlayerFactory([apiKey.game]).one()
-    await global.em.persistAndFlush(player)
+    await em.persistAndFlush(player)
 
-    await request(global.app)
+    await request(app)
       .put(`/v1/game-stats/${stat.internalName}`)
       .send({ change: 1 })
       .auth(token, { type: 'bearer' })
       .set('x-talo-alias', String(player.aliases[0].id))
       .expect(200)
 
-    const res = await request(global.app)
+    const res = await request(app)
       .put(`/v1/game-stats/${stat.internalName}`)
       .send({ change: 1 })
       .auth(token, { type: 'bearer' })
@@ -91,9 +88,9 @@ describe('Game stats API service - put', () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_STATS])
     const stat = await createStat(apiKey.game, { maxValue: 999, maxChange: 99 })
     const player = await new PlayerFactory([apiKey.game]).one()
-    await global.em.persistAndFlush(player)
+    await em.persistAndFlush(player)
 
-    const res = await request(global.app)
+    const res = await request(app)
       .put(`/v1/game-stats/${stat.internalName}`)
       .send({ change: 100 })
       .auth(token, { type: 'bearer' })
@@ -107,9 +104,9 @@ describe('Game stats API service - put', () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_STATS])
     const stat = await createStat(apiKey.game, { maxValue: 999, defaultValue: 1, maxChange: null })
     const player = await new PlayerFactory([apiKey.game]).one()
-    await global.em.persistAndFlush(player)
+    await em.persistAndFlush(player)
 
-    await request(global.app)
+    await request(app)
       .put(`/v1/game-stats/${stat.internalName}`)
       .send({ change: 998 })
       .auth(token, { type: 'bearer' })
@@ -121,9 +118,9 @@ describe('Game stats API service - put', () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_STATS])
     const stat = await createStat(apiKey.game, { maxValue: 999, maxChange: 99, minValue: -1, defaultValue: 0 })
     const player = await new PlayerFactory([apiKey.game]).one()
-    await global.em.persistAndFlush(player)
+    await em.persistAndFlush(player)
 
-    const res = await request(global.app)
+    const res = await request(app)
       .put(`/v1/game-stats/${stat.internalName}`)
       .send({ change: -2 })
       .auth(token, { type: 'bearer' })
@@ -137,9 +134,9 @@ describe('Game stats API service - put', () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_STATS])
     const stat = await createStat(apiKey.game, { maxValue: 999, maxChange: 99, minValue: null, defaultValue: 0 })
     const player = await new PlayerFactory([apiKey.game]).one()
-    await global.em.persistAndFlush(player)
+    await em.persistAndFlush(player)
 
-    await request(global.app)
+    await request(app)
       .put(`/v1/game-stats/${stat.internalName}`)
       .send({ change: -99 })
       .auth(token, { type: 'bearer' })
@@ -151,9 +148,9 @@ describe('Game stats API service - put', () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_STATS])
     const stat = await createStat(apiKey.game, { maxChange: 99, maxValue: 3, defaultValue: 0 })
     const player = await new PlayerFactory([apiKey.game]).one()
-    await global.em.persistAndFlush(player)
+    await em.persistAndFlush(player)
 
-    const res = await request(global.app)
+    const res = await request(app)
       .put(`/v1/game-stats/${stat.internalName}`)
       .send({ change: 4 })
       .auth(token, { type: 'bearer' })
@@ -167,9 +164,9 @@ describe('Game stats API service - put', () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_STATS])
     const stat = await createStat(apiKey.game, { maxValue: null, maxChange: 99, defaultValue: 0 })
     const player = await new PlayerFactory([apiKey.game]).one()
-    await global.em.persistAndFlush(player)
+    await em.persistAndFlush(player)
 
-    await request(global.app)
+    await request(app)
       .put(`/v1/game-stats/${stat.internalName}`)
       .send({ change: 99 })
       .auth(token, { type: 'bearer' })
@@ -185,9 +182,9 @@ describe('Game stats API service - put', () => {
       .construct(player, stat)
       .state(() => ({ value: 10, createdAt: new Date(2021, 1, 1) }))
       .one()
-    await global.em.persistAndFlush(playerStat)
+    await em.persistAndFlush(playerStat)
 
-    const res = await request(global.app)
+    const res = await request(app)
       .put(`/v1/game-stats/${stat.internalName}`)
       .send({ change: 50 })
       .auth(token, { type: 'bearer' })
@@ -201,9 +198,9 @@ describe('Game stats API service - put', () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_STATS])
     const stat = await createStat(apiKey.game, { maxValue: 999, maxChange: 99, defaultValue: 0, global: true, globalValue: 0 })
     const player = await new PlayerFactory([apiKey.game]).one()
-    await global.em.persistAndFlush(player)
+    await em.persistAndFlush(player)
 
-    const res = await request(global.app)
+    const res = await request(app)
       .put(`/v1/game-stats/${stat.internalName}`)
       .send({ change: 50 })
       .auth(token, { type: 'bearer' })
@@ -212,16 +209,16 @@ describe('Game stats API service - put', () => {
 
     expect(res.body.playerStat.value).toBe(50)
 
-    await global.em.refresh(stat)
+    await em.refresh(stat)
     expect(stat.globalValue).toBe(50)
   })
 
   it('should not update a non-existent stat', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_STATS])
     const player = await new PlayerFactory([apiKey.game]).one()
-    await global.em.persistAndFlush(player)
+    await em.persistAndFlush(player)
 
-    const res = await request(global.app)
+    const res = await request(app)
       .put('/v1/game-stats/blah')
       .send({ change: 50 })
       .auth(token, { type: 'bearer' })
@@ -235,11 +232,11 @@ describe('Game stats API service - put', () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_STATS, APIKeyScope.WRITE_CONTINUITY_REQUESTS])
     const stat = await createStat(apiKey.game, { maxValue: 999, maxChange: 99 })
     const player = await new PlayerFactory([apiKey.game]).one()
-    await global.em.persistAndFlush(player)
+    await em.persistAndFlush(player)
 
     const continuityDate = subHours(new Date(), 1)
 
-    const res = await request(global.app)
+    const res = await request(app)
       .put(`/v1/game-stats/${stat.internalName}`)
       .send({ change: 10 })
       .auth(token, { type: 'bearer' })
@@ -254,9 +251,9 @@ describe('Game stats API service - put', () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_STATS])
     const stat = await createStat(apiKey.game, { maxValue: 999, maxChange: 99, defaultValue: 0, global: true, globalValue: 0 })
     const player = await new PlayerFactory([apiKey.game]).one()
-    await global.em.persistAndFlush(player)
+    await em.persistAndFlush(player)
 
-    await request(global.app)
+    await request(app)
       .put(`/v1/game-stats/${stat.internalName}`)
       .send({ change: 50 })
       .auth(token, { type: 'bearer' })
@@ -265,7 +262,7 @@ describe('Game stats API service - put', () => {
 
     let snapshots: ClickHousePlayerGameStatSnapshot[] = []
     await vi.waitUntil(async () => {
-      snapshots = await global.clickhouse.query({
+      snapshots = await clickhouse.query({
         query: `SELECT * FROM player_game_stat_snapshots WHERE game_stat_id = ${stat.id} AND player_alias_id = ${player.aliases[0].id}`,
         format: 'JSONEachRow'
       }).then((res) => res.json<ClickHousePlayerGameStatSnapshot>())

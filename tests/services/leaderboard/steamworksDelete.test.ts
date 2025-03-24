@@ -28,16 +28,16 @@ describe('Leaderboard service - delete - steamworks integration', () => {
 
     const config = await new IntegrationConfigFactory().state(() => ({ syncLeaderboards: true })).one()
     const integration = await new IntegrationFactory().construct(IntegrationType.STEAMWORKS, game, config).one()
-    await global.em.persistAndFlush([integration, leaderboard])
+    await em.persistAndFlush([integration, leaderboard])
 
-    await request(global.app)
+    await request(app)
       .delete(`/games/${game.id}/leaderboards/${leaderboard.id}`)
       .auth(token, { type: 'bearer' })
       .expect(204)
 
     expect(deleteMock).toHaveBeenCalledTimes(1)
 
-    const event = await global.em.getRepository(SteamworksIntegrationEvent).findOneOrFail({ integration })
+    const event = await em.getRepository(SteamworksIntegrationEvent).findOneOrFail({ integration })
     expect(event.request).toStrictEqual({
       url: 'https://partner.steam-api.com/ISteamLeaderboards/DeleteLeaderboard/v1',
       body: `appid=${config.appId}&name=${leaderboard.internalName}`,
@@ -56,16 +56,16 @@ describe('Leaderboard service - delete - steamworks integration', () => {
 
     const config = await new IntegrationConfigFactory().state(() => ({ syncLeaderboards: false })).one()
     const integration = await new IntegrationFactory().construct(IntegrationType.STEAMWORKS, game, config).one()
-    await global.em.persistAndFlush([integration, leaderboard])
+    await em.persistAndFlush([integration, leaderboard])
 
-    await request(global.app)
+    await request(app)
       .delete(`/games/${game.id}/leaderboards/${leaderboard.id}`)
       .auth(token, { type: 'bearer' })
       .expect(204)
 
     expect(deleteMock).not.toHaveBeenCalled()
 
-    const event = await global.em.getRepository(SteamworksIntegrationEvent).findOne({ integration })
+    const event = await em.getRepository(SteamworksIntegrationEvent).findOne({ integration })
     expect(event).toBeNull()
 
     axiosMock.reset()

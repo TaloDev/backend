@@ -7,7 +7,7 @@ describe('User service - get me', () => {
     const [organisation] = await createOrganisationAndGame({}, { name: 'Vigilante 2084' })
     const [token] = await createUserAndToken({}, organisation)
 
-    const res = await request(global.app)
+    const res = await request(app)
       .get('/users/me')
       .auth(token, { type: 'bearer' })
       .expect(200)

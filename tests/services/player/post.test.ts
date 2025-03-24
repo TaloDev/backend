@@ -11,7 +11,7 @@ describe('Player service - post', () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({}, organisation)
 
-    const res = await request(global.app)
+    const res = await request(app)
       .post(`/games/${game.id}/players`)
       .auth(token, { type: 'bearer' })
       .expect(200)
@@ -23,7 +23,7 @@ describe('Player service - post', () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({}, organisation)
 
-    const res = await request(global.app)
+    const res = await request(app)
       .post(`/games/${game.id}/players`)
       .send({
         aliases: [{
@@ -44,7 +44,7 @@ describe('Player service - post', () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({}, organisation)
 
-    const res = await request(global.app)
+    const res = await request(app)
       .post(`/games/${game.id}/players`)
       .send({
         props: [
@@ -70,9 +70,9 @@ describe('Player service - post', () => {
     rule.operands = ['60']
 
     const group = await new PlayerGroupFactory().construct(game).state(() => ({ rules: [rule] })).one()
-    await global.em.persistAndFlush(group)
+    await em.persistAndFlush(group)
 
-    const res = await request(global.app)
+    const res = await request(app)
       .post(`/games/${game.id}/players`)
       .send({
         props: [
@@ -96,7 +96,7 @@ describe('Player service - post', () => {
   it('should not create a player for a non-existent game', async () => {
     const [token] = await createUserAndToken()
 
-    const res = await request(global.app)
+    const res = await request(app)
       .post('/games/99999/players')
       .auth(token, { type: 'bearer' })
       .expect(404)
@@ -108,7 +108,7 @@ describe('Player service - post', () => {
     const [, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken()
 
-    await request(global.app)
+    await request(app)
       .post(`/games/${game.id}/players`)
       .auth(token, { type: 'bearer' })
       .expect(403)
@@ -118,7 +118,7 @@ describe('Player service - post', () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({}, organisation)
 
-    const res = await request(global.app)
+    const res = await request(app)
       .post(`/games/${game.id}/players`)
       .send({
         props: {
@@ -141,7 +141,7 @@ describe('Player service - post', () => {
 
     const username = randUserName()
 
-    const res = await request(global.app)
+    const res = await request(app)
       .post(`/games/${game.id}/players`)
       .send({
         aliases: [{
@@ -167,9 +167,9 @@ describe('Player service - post', () => {
     const [token] = await createUserAndToken({}, organisation)
 
     const player = await new PlayerFactory([game]).one()
-    await global.em.persistAndFlush(player)
+    await em.persistAndFlush(player)
 
-    const res = await request(global.app)
+    const res = await request(app)
       .post(`/games/${game.id}/players`)
       .send({
         aliases: [{
@@ -192,9 +192,9 @@ describe('Player service - post', () => {
 
     organisation.pricingPlan.pricingPlan.playerLimit = 20
     const players = await new PlayerFactory([game]).many(20)
-    await global.em.persistAndFlush(players)
+    await em.persistAndFlush(players)
 
-    const res = await request(global.app)
+    const res = await request(app)
       .post(`/games/${game.id}/players`)
       .auth(token, { type: 'bearer' })
       .expect(200)
@@ -208,9 +208,9 @@ describe('Player service - post', () => {
 
     organisation.pricingPlan.pricingPlan.playerLimit = 20
     const players = await new PlayerFactory([game]).many(21)
-    await global.em.persistAndFlush(players)
+    await em.persistAndFlush(players)
 
-    const res = await request(global.app)
+    const res = await request(app)
       .post(`/games/${game.id}/players`)
       .auth(token, { type: 'bearer' })
       .expect(402)
@@ -227,9 +227,9 @@ describe('Player service - post', () => {
 
     organisation.pricingPlan.pricingPlan.playerLimit = 2
     const player = await new PlayerFactory([game]).one()
-    await global.em.persistAndFlush(player)
+    await em.persistAndFlush(player)
 
-    const res = await request(global.app)
+    const res = await request(app)
       .post(`/games/${game.id}/players`)
       .auth(token, { type: 'bearer' })
       .expect(200)

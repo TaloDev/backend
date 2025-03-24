@@ -23,7 +23,7 @@ describe('Webhook service - invoice finalized', () => {
     const invoice = (await stripe.invoices.list()).data[0]
 
     organisation.pricingPlan.stripeCustomerId = invoice.customer as string
-    await global.em.flush()
+    await em.flush()
 
     const payload = JSON.stringify({
       id: v4(),
@@ -44,7 +44,7 @@ describe('Webhook service - invoice finalized', () => {
       secret: process.env.STRIPE_WEBHOOK_SECRET!
     })
 
-    await request(global.app)
+    await request(app)
       .post('/public/webhooks/subscriptions')
       .set('stripe-signature', header)
       .send(payload)

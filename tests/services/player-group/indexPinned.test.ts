@@ -14,9 +14,9 @@ describe('Player group service - index pinned', () => {
       .state(async () => ({ group: await new PlayerGroupFactory().construct(game).one() }))
       .many(3)
 
-    await global.em.persistAndFlush(pinned)
+    await em.persistAndFlush(pinned)
 
-    const res = await request(global.app)
+    const res = await request(app)
       .get(`/games/${game.id}/player-groups/pinned`)
       .auth(token, { type: 'bearer' })
       .expect(200)
@@ -27,7 +27,7 @@ describe('Player group service - index pinned', () => {
   it('should not return groups for a non-existent game', async () => {
     const [token] = await createUserAndToken()
 
-    const res = await request(global.app)
+    const res = await request(app)
       .get('/games/99999/player-groups/pinned')
       .auth(token, { type: 'bearer' })
       .expect(404)
@@ -39,7 +39,7 @@ describe('Player group service - index pinned', () => {
     const [, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken()
 
-    await request(global.app)
+    await request(app)
       .get(`/games/${game.id}/player-groups/pinned`)
       .auth(token, { type: 'bearer' })
       .expect(403)

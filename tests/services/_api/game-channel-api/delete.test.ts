@@ -1,5 +1,4 @@
 import request from 'supertest'
-import { EntityManager } from '@mikro-orm/mysql'
 import GameChannelFactory from '../../../fixtures/GameChannelFactory'
 import { APIKeyScope } from '../../../../src/entities/api-key'
 import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
@@ -10,8 +9,6 @@ import createTestSocket from '../../../utils/createTestSocket'
 
 describe('Game channel API service - delete', () => {
   it('should delete a channel if the scope is valid', async () => {
-    const em: EntityManager = global.em
-
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_CHANNELS])
 
     const channel = await new GameChannelFactory(apiKey.game).one()
@@ -20,7 +17,7 @@ describe('Game channel API service - delete', () => {
     channel.members.add(player.aliases[0])
     await em.persistAndFlush(channel)
 
-    await request(global.app)
+    await request(app)
       .delete(`/v1/game-channels/${channel.id}`)
       .auth(token, { type: 'bearer' })
       .set('x-talo-alias', String(player.aliases[0].id))
@@ -37,9 +34,9 @@ describe('Game channel API service - delete', () => {
     const player = await new PlayerFactory([apiKey.game]).one()
     channel.owner = player.aliases[0]
     channel.members.add(player.aliases[0])
-    await global.em.persistAndFlush(channel)
+    await em.persistAndFlush(channel)
 
-    await request(global.app)
+    await request(app)
       .delete(`/v1/game-channels/${channel.id}`)
       .auth(token, { type: 'bearer' })
       .set('x-talo-alias', String(player.aliases[0].id))
@@ -47,8 +44,6 @@ describe('Game channel API service - delete', () => {
   })
 
   it('should not delete a channel if it does not have an owner', async () => {
-    const em: EntityManager = global.em
-
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_CHANNELS])
 
     const channel = await new GameChannelFactory(apiKey.game).state(() => ({ owner: null })).one()
@@ -56,7 +51,7 @@ describe('Game channel API service - delete', () => {
     channel.members.add(player.aliases[0])
     await em.persistAndFlush(channel)
 
-    const res = await request(global.app)
+    const res = await request(app)
       .delete(`/v1/game-channels/${channel.id}`)
       .auth(token, { type: 'bearer' })
       .set('x-talo-alias', String(player.aliases[0].id))
@@ -66,8 +61,6 @@ describe('Game channel API service - delete', () => {
   })
 
   it('should not delete a channel if the current alias is not the owner', async () => {
-    const em: EntityManager = global.em
-
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_CHANNELS])
 
     const channel = await new GameChannelFactory(apiKey.game).one()
@@ -76,7 +69,7 @@ describe('Game channel API service - delete', () => {
     channel.members.add(player.aliases[0])
     await em.persistAndFlush(channel)
 
-    const res = await request(global.app)
+    const res = await request(app)
       .delete(`/v1/game-channels/${channel.id}`)
       .auth(token, { type: 'bearer' })
       .set('x-talo-alias', String(player.aliases[0].id))
@@ -92,9 +85,9 @@ describe('Game channel API service - delete', () => {
     const player = await new PlayerFactory([apiKey.game]).one()
     channel.owner = player.aliases[0]
     channel.members.add(player.aliases[0])
-    await global.em.persistAndFlush(channel)
+    await em.persistAndFlush(channel)
 
-    const res = await request(global.app)
+    const res = await request(app)
       .delete(`/v1/game-channels/${channel.id}`)
       .auth(token, { type: 'bearer' })
       .set('x-talo-alias', '32144')
@@ -112,9 +105,9 @@ describe('Game channel API service - delete', () => {
     const player = await new PlayerFactory([apiKey.game]).one()
     channel.owner = player.aliases[0]
     channel.members.add(player.aliases[0])
-    await global.em.persistAndFlush(channel)
+    await em.persistAndFlush(channel)
 
-    const res = await request(global.app)
+    const res = await request(app)
       .delete('/v1/game-channels/54252')
       .auth(token, { type: 'bearer' })
       .set('x-talo-alias', String(player.aliases[0].id))
@@ -132,8 +125,6 @@ describe('Game channel API service - delete', () => {
       APIKeyScope.WRITE_GAME_CHANNELS
     ])
 
-    const em: EntityManager = global.em
-
     const channel = await new GameChannelFactory(player.game).one()
     channel.owner = player.aliases[0]
     channel.members.add(player.aliases[0])
@@ -141,7 +132,7 @@ describe('Game channel API service - delete', () => {
 
     await createTestSocket(`/?ticket=${ticket}`, async (client) => {
       await client.identify(identifyMessage)
-      await request(global.app)
+      await request(app)
         .delete(`/v1/game-channels/${channel.id}`)
         .auth(token, { type: 'bearer' })
         .set('x-talo-alias', String(player.aliases[0].id))

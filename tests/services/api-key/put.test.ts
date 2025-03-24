@@ -14,9 +14,9 @@ describe('API key service - put', () => {
     const [token, user] = await createUserAndToken({ type, emailConfirmed: true }, organisation)
 
     const key = new APIKey(game, user)
-    await global.em.persistAndFlush(key)
+    await em.persistAndFlush(key)
 
-    const res = await request(global.app)
+    const res = await request(app)
       .put(`/games/${game.id}/api-keys/${key.id}`)
       .send({ scopes: ['read:players', 'write:events'] })
       .auth(token, { type: 'bearer' })
@@ -27,7 +27,7 @@ describe('API key service - put', () => {
       expect(res.body.apiKey.scopes).toStrictEqual(['read:players', 'write:events'])
     }
 
-    const activity = await global.em.getRepository(GameActivity).findOne({
+    const activity = await em.getRepository(GameActivity).findOne({
       type: GameActivityType.API_KEY_UPDATED,
       game,
       extra: {
@@ -50,9 +50,9 @@ describe('API key service - put', () => {
     const [token, user] = await createUserAndToken({ type: UserType.ADMIN }, organisation)
 
     const key = new APIKey(game, user)
-    await global.em.persistAndFlush(key)
+    await em.persistAndFlush(key)
 
-    const res = await request(global.app)
+    const res = await request(app)
       .put(`/games/${game.id}/api-keys/${key.id}`)
       .send({ scopes: ['read:players', 'write:events'] })
       .auth(token, { type: 'bearer' })
@@ -66,9 +66,9 @@ describe('API key service - put', () => {
     const [token, user] = await createUserAndToken({ emailConfirmed: true, type: UserType.ADMIN })
 
     const key = new APIKey(game, user)
-    await global.em.persistAndFlush(key)
+    await em.persistAndFlush(key)
 
-    const res = await request(global.app)
+    const res = await request(app)
       .put(`/games/99999/api-keys/${key.id}`)
       .send({ scopes: [] })
       .auth(token, { type: 'bearer' })
@@ -82,9 +82,9 @@ describe('API key service - put', () => {
     const [token, user] = await createUserAndToken({ emailConfirmed: true, type: UserType.ADMIN })
 
     const key = new APIKey(otherGame, user)
-    await global.em.persistAndFlush(key)
+    await em.persistAndFlush(key)
 
-    const res = await request(global.app)
+    const res = await request(app)
       .put(`/games/${otherGame.id}/api-keys/${key.id}`)
       .send({ scopes: [] })
       .auth(token, { type: 'bearer' })
@@ -97,7 +97,7 @@ describe('API key service - put', () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({ emailConfirmed: true, type: UserType.ADMIN }, organisation)
 
-    const res = await request(global.app)
+    const res = await request(app)
       .put(`/games/${game.id}/api-keys/99999`)
       .send({ scopes: ['read:players', 'write:events'] })
       .auth(token, { type: 'bearer' })

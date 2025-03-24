@@ -18,12 +18,12 @@ describe('Player auth API service - change password', () => {
       })).one()
     })).one()
     const alias = player.aliases[0]
-    await global.em.persistAndFlush(player)
+    await em.persistAndFlush(player)
 
     const sessionToken = await player.auth!.createSession(alias)
-    await global.em.flush()
+    await em.flush()
 
-    await request(global.app)
+    await request(app)
       .post('/v1/players/auth/change_password')
       .send({ currentPassword: 'password', newPassword: 'password1' })
       .auth(token, { type: 'bearer' })
@@ -32,10 +32,10 @@ describe('Player auth API service - change password', () => {
       .set('x-talo-session', sessionToken)
       .expect(204)
 
-    await global.em.refresh(player.auth!)
+    await em.refresh(player.auth!)
     expect(await bcrypt.compare('password1', player.auth!.password)).toBe(true)
 
-    const activity = await global.em.getRepository(PlayerAuthActivity).findOne({
+    const activity = await em.getRepository(PlayerAuthActivity).findOne({
       type: PlayerAuthActivityType.CHANGED_PASSWORD,
       player: player.id
     })
@@ -53,12 +53,12 @@ describe('Player auth API service - change password', () => {
       })).one()
     })).one()
     const alias = player.aliases[0]
-    await global.em.persistAndFlush(player)
+    await em.persistAndFlush(player)
 
     const sessionToken = await player.auth!.createSession(alias)
-    await global.em.flush()
+    await em.flush()
 
-    await request(global.app)
+    await request(app)
       .post('/v1/players/auth/change_password')
       .send({ currentPassword: 'password', newPassword: 'password1' })
       .auth(token, { type: 'bearer' })
@@ -79,12 +79,12 @@ describe('Player auth API service - change password', () => {
       })).one()
     })).one()
     const alias = player.aliases[0]
-    await global.em.persistAndFlush(player)
+    await em.persistAndFlush(player)
 
     const sessionToken = await player.auth!.createSession(alias)
-    await global.em.flush()
+    await em.flush()
 
-    const res = await request(global.app)
+    const res = await request(app)
       .post('/v1/players/auth/change_password')
       .send({ currentPassword: 'password1', newPassword: 'password2' })
       .auth(token, { type: 'bearer' })
@@ -98,7 +98,7 @@ describe('Player auth API service - change password', () => {
       errorCode: 'INVALID_CREDENTIALS'
     })
 
-    const activity = await global.em.getRepository(PlayerAuthActivity).findOne({
+    const activity = await em.getRepository(PlayerAuthActivity).findOne({
       type: PlayerAuthActivityType.CHANGE_PASSWORD_FAILED,
       player: player.id,
       extra: {
@@ -119,12 +119,12 @@ describe('Player auth API service - change password', () => {
       })).one()
     })).one()
     const alias = player.aliases[0]
-    await global.em.persistAndFlush(player)
+    await em.persistAndFlush(player)
 
     const sessionToken = await player.auth!.createSession(alias)
-    await global.em.flush()
+    await em.flush()
 
-    const res = await request(global.app)
+    const res = await request(app)
       .post('/v1/players/auth/change_password')
       .send({ currentPassword: 'password', newPassword: 'password' })
       .auth(token, { type: 'bearer' })
@@ -138,7 +138,7 @@ describe('Player auth API service - change password', () => {
       errorCode: 'NEW_PASSWORD_MATCHES_CURRENT_PASSWORD'
     })
 
-    const activity = await global.em.getRepository(PlayerAuthActivity).findOne({
+    const activity = await em.getRepository(PlayerAuthActivity).findOne({
       type: PlayerAuthActivityType.CHANGE_PASSWORD_FAILED,
       player: player.id,
       extra: {

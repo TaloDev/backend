@@ -18,15 +18,15 @@ describe('Leaderboard service - update entry', () => {
     const leaderboard = await new LeaderboardFactory([game]).one()
     const players = await new PlayerFactory([game]).many(10)
     const entry = await new LeaderboardEntryFactory(leaderboard, players).one()
-    await global.em.persistAndFlush(entry)
+    await em.persistAndFlush(entry)
 
-    const res = await request(global.app)
+    const res = await request(app)
       .patch(`/games/${game.id}/leaderboards/${leaderboard.id}/entries/${entry.id}`)
       .send({ hidden: true })
       .auth(token, { type: 'bearer' })
       .expect(statusCode)
 
-    const activity = await global.em.getRepository(GameActivity).findOne({
+    const activity = await em.getRepository(GameActivity).findOne({
       type: GameActivityType.LEADERBOARD_ENTRY_HIDDEN,
       game,
       extra: {
@@ -53,9 +53,9 @@ describe('Leaderboard service - update entry', () => {
     const leaderboard = await new LeaderboardFactory([game]).one()
     const players = await new PlayerFactory([game]).many(10)
     const entry = await new LeaderboardEntryFactory(leaderboard, players).hidden().one()
-    await global.em.persistAndFlush(entry)
+    await em.persistAndFlush(entry)
 
-    const res = await request(global.app)
+    const res = await request(app)
       .patch(`/games/${game.id}/leaderboards/${leaderboard.id}/entries/${entry.id}`)
       .send({ hidden: false })
       .auth(token, { type: 'bearer' })
@@ -63,7 +63,7 @@ describe('Leaderboard service - update entry', () => {
 
     expect(res.body.entry.hidden).toBe(false)
 
-    const activity = await global.em.getRepository(GameActivity).findOne({
+    const activity = await em.getRepository(GameActivity).findOne({
       type: GameActivityType.LEADERBOARD_ENTRY_RESTORED,
       game,
       extra: {
@@ -85,9 +85,9 @@ describe('Leaderboard service - update entry', () => {
     const leaderboard = await new LeaderboardFactory([game]).one()
     const players = await new PlayerFactory([game]).many(10)
     const entry = await new LeaderboardEntryFactory(leaderboard, players).hidden().one()
-    await global.em.persistAndFlush(entry)
+    await em.persistAndFlush(entry)
 
-    const res = await request(global.app)
+    const res = await request(app)
       .patch(`/games/${game.id}/leaderboards/${leaderboard.id}/entries/${entry.id}`)
       .send({})
       .auth(token, { type: 'bearer' })
@@ -95,7 +95,7 @@ describe('Leaderboard service - update entry', () => {
 
     expect(res.body.entry.hidden).toBe(true)
 
-    const activity = await global.em.getRepository(GameActivity).findOne({
+    const activity = await em.getRepository(GameActivity).findOne({
       type: GameActivityType.LEADERBOARD_ENTRY_HIDDEN,
       game,
       extra: {
@@ -115,9 +115,9 @@ describe('Leaderboard service - update entry', () => {
     const [token] = await createUserAndToken({ type: UserType.ADMIN }, organisation)
 
     const leaderboard = await new LeaderboardFactory([game]).one()
-    await global.em.persistAndFlush(leaderboard)
+    await em.persistAndFlush(leaderboard)
 
-    const res = await request(global.app)
+    const res = await request(app)
       .patch(`/games/${game.id}/leaderboards/${leaderboard.id}/entries/12312321`)
       .send({ hidden: true })
       .auth(token, { type: 'bearer' })
@@ -133,9 +133,9 @@ describe('Leaderboard service - update entry', () => {
     const leaderboard = await new LeaderboardFactory([game]).one()
     const players = await new PlayerFactory([game]).many(10)
     const entry = await new LeaderboardEntryFactory(leaderboard, players).state(() => ({ score: 100 })).one()
-    await global.em.persistAndFlush(entry)
+    await em.persistAndFlush(entry)
 
-    const res = await request(global.app)
+    const res = await request(app)
       .patch(`/games/${game.id}/leaderboards/${leaderboard.id}/entries/${entry.id}`)
       .send({ newScore: 200 })
       .auth(token, { type: 'bearer' })
@@ -143,7 +143,7 @@ describe('Leaderboard service - update entry', () => {
 
     expect(res.body.entry.score).toBe(200)
 
-    const activity = await global.em.getRepository(GameActivity).findOne({
+    const activity = await em.getRepository(GameActivity).findOne({
       type: GameActivityType.LEADERBOARD_ENTRY_UPDATED,
       game,
       extra: {

@@ -17,15 +17,15 @@ describe('Integration service - patch', () => {
 
     const config = await new IntegrationConfigFactory().one()
     const integration = await new IntegrationFactory().construct(IntegrationType.STEAMWORKS, game, config).one()
-    await global.em.persistAndFlush(integration)
+    await em.persistAndFlush(integration)
 
-    const res = await request(global.app)
+    const res = await request(app)
       .patch(`/games/${game.id}/integrations/${integration.id}`)
       .send({ config: { appId: 377999 } })
       .auth(token, { type: 'bearer' })
       .expect(statusCode)
 
-    const activity = await global.em.getRepository(GameActivity).findOne({
+    const activity = await em.getRepository(GameActivity).findOne({
       type: GameActivityType.GAME_INTEGRATION_UPDATED,
       game
     })
@@ -51,17 +51,17 @@ describe('Integration service - patch', () => {
 
     const config = await new IntegrationConfigFactory().one()
     const integration = await new IntegrationFactory().construct(IntegrationType.STEAMWORKS, game, config).one()
-    await global.em.persistAndFlush(integration)
+    await em.persistAndFlush(integration)
 
     const oldApiKey = integration.getSteamAPIKey()
 
-    await request(global.app)
+    await request(app)
       .patch(`/games/${game.id}/integrations/${integration.id}`)
       .send({ config: { apiKey: '37d3858156974d7198af061f394a7fc8' } })
       .auth(token, { type: 'bearer' })
       .expect(200)
 
-    await global.em.refresh(integration)
+    await em.refresh(integration)
     expect(integration.getSteamAPIKey()).not.toBe(oldApiKey)
   })
 
@@ -71,15 +71,15 @@ describe('Integration service - patch', () => {
 
     const config = await new IntegrationConfigFactory().one()
     const integration = await new IntegrationFactory().construct(IntegrationType.STEAMWORKS, game, config).one()
-    await global.em.persistAndFlush(integration)
+    await em.persistAndFlush(integration)
 
-    const res = await request(global.app)
+    const res = await request(app)
       .patch(`/games/${game.id}/integrations/${integration.id}`)
       .send({ config: { appId: 377999 } })
       .auth(token, { type: 'bearer' })
       .expect(403)
 
-    const activity = await global.em.getRepository(GameActivity).findOne({
+    const activity = await em.getRepository(GameActivity).findOne({
       type: GameActivityType.GAME_INTEGRATION_UPDATED,
       game
     })
@@ -95,15 +95,15 @@ describe('Integration service - patch', () => {
 
     const config = await new IntegrationConfigFactory().one()
     const integration = await new IntegrationFactory().construct(IntegrationType.STEAMWORKS, game, config).one()
-    await global.em.persistAndFlush(integration)
+    await em.persistAndFlush(integration)
 
-    const res = await request(global.app)
+    const res = await request(app)
       .patch(`/games/${game.id}/integrations/1243`)
       .send({ config: { appId: 377999 } })
       .auth(token, { type: 'bearer' })
       .expect(404)
 
-    const activity = await global.em.getRepository(GameActivity).findOne({
+    const activity = await em.getRepository(GameActivity).findOne({
       type: GameActivityType.GAME_INTEGRATION_UPDATED,
       game
     })

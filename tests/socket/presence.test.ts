@@ -1,11 +1,9 @@
 import { APIKeyScope } from '../../src/entities/api-key'
 import createSocketIdentifyMessage from '../utils/createSocketIdentifyMessage'
-import { EntityManager } from '@mikro-orm/mysql'
 import createTestSocket from '../utils/createTestSocket'
 
 describe('Socket presence', () => {
   it('should set the player presence to online when identifying', async () => {
-    const em: EntityManager = global.em
     const { identifyMessage, ticket, player } = await createSocketIdentifyMessage([APIKeyScope.READ_PLAYERS])
 
     await createTestSocket(`/?ticket=${ticket}`, async (client) => {
@@ -22,7 +20,6 @@ describe('Socket presence', () => {
   })
 
   it('should set the player presence to offline when socket disconnects', async () => {
-    const em: EntityManager = global.em
     const { identifyMessage, ticket, player } = await createSocketIdentifyMessage([APIKeyScope.READ_PLAYERS])
 
     await createTestSocket(`/?ticket=${ticket}`, async (client) => {

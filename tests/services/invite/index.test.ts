@@ -11,9 +11,9 @@ describe('Invite service - index', () => {
     const [token, user] = await createUserAndToken({ type })
 
     const invites = await new InviteFactory().construct(user.organisation).many(3)
-    await global.em.persistAndFlush(invites)
+    await em.persistAndFlush(invites)
 
-    const res = await request(global.app)
+    const res = await request(app)
       .get('/invites')
       .auth(token, { type: 'bearer' })
       .expect(statusCode)

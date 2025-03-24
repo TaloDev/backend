@@ -35,9 +35,9 @@ describe('Leaderboard API service - post - steamworks integration', () => {
 
     const config = await new IntegrationConfigFactory().state(() => ({ syncLeaderboards: true })).one()
     const integration = await new IntegrationFactory().construct(IntegrationType.STEAMWORKS, apiKey.game, config).one()
-    await global.em.persistAndFlush([integration, leaderboard, player, mapping])
+    await em.persistAndFlush([integration, leaderboard, player, mapping])
 
-    await request(global.app)
+    await request(app)
       .post(`/v1/leaderboards/${leaderboard.internalName}/entries`)
       .send({ score: 300 })
       .auth(token, { type: 'bearer' })
@@ -46,7 +46,7 @@ describe('Leaderboard API service - post - steamworks integration', () => {
 
     expect(createMock).toHaveBeenCalledTimes(1)
 
-    const event = await global.em.getRepository(SteamworksIntegrationEvent).findOneOrFail({ integration })
+    const event = await em.getRepository(SteamworksIntegrationEvent).findOneOrFail({ integration })
     expect(event.request).toStrictEqual({
       url: 'https://partner.steam-api.com/ISteamLeaderboards/SetLeaderboardScore/v1',
       body: `appid=${config.appId}&leaderboardid=${mapping.steamworksLeaderboardId}&steamid=${player.aliases[0].identifier}&score=300&scoremethod=KeepBest`,
@@ -69,9 +69,9 @@ describe('Leaderboard API service - post - steamworks integration', () => {
 
     const config = await new IntegrationConfigFactory().state(() => ({ syncLeaderboards: true })).one()
     const integration = await new IntegrationFactory().construct(IntegrationType.STEAMWORKS, apiKey.game, config).one()
-    await global.em.persistAndFlush([integration, leaderboard, player])
+    await em.persistAndFlush([integration, leaderboard, player])
 
-    await request(global.app)
+    await request(app)
       .post(`/v1/leaderboards/${leaderboard.internalName}/entries`)
       .send({ score: 300 })
       .auth(token, { type: 'bearer' })
@@ -80,7 +80,7 @@ describe('Leaderboard API service - post - steamworks integration', () => {
 
     expect(createMock).not.toHaveBeenCalled()
 
-    const event = await global.em.getRepository(SteamworksIntegrationEvent).findOne({ integration })
+    const event = await em.getRepository(SteamworksIntegrationEvent).findOne({ integration })
     expect(event).toBeNull()
 
     axiosMock.reset()
@@ -101,9 +101,9 @@ describe('Leaderboard API service - post - steamworks integration', () => {
 
     const config = await new IntegrationConfigFactory().state(() => ({ syncLeaderboards: false })).one()
     const integration = await new IntegrationFactory().construct(IntegrationType.STEAMWORKS, apiKey.game, config).one()
-    await global.em.persistAndFlush([integration, leaderboard, player])
+    await em.persistAndFlush([integration, leaderboard, player])
 
-    await request(global.app)
+    await request(app)
       .post(`/v1/leaderboards/${leaderboard.internalName}/entries`)
       .send({ score: 300 })
       .auth(token, { type: 'bearer' })
@@ -112,7 +112,7 @@ describe('Leaderboard API service - post - steamworks integration', () => {
 
     expect(createMock).not.toHaveBeenCalled()
 
-    const event = await global.em.getRepository(SteamworksIntegrationEvent).findOne({ integration })
+    const event = await em.getRepository(SteamworksIntegrationEvent).findOne({ integration })
     expect(event).toBeNull()
 
     axiosMock.reset()

@@ -19,12 +19,12 @@ describe('Player auth API service - change email', () => {
       })).one()
     })).one()
     const alias = player.aliases[0]
-    await global.em.persistAndFlush(player)
+    await em.persistAndFlush(player)
 
     const sessionToken = await player.auth!.createSession(alias)
-    await global.em.flush()
+    await em.flush()
 
-    await request(global.app)
+    await request(app)
       .post('/v1/players/auth/change_email')
       .send({ currentPassword: 'password', newEmail: 'bozza@mail.com' })
       .auth(token, { type: 'bearer' })
@@ -33,10 +33,10 @@ describe('Player auth API service - change email', () => {
       .set('x-talo-session', sessionToken)
       .expect(204)
 
-    await global.em.refresh(player.auth!)
+    await em.refresh(player.auth!)
     expect(player.auth!.email).toBe('bozza@mail.com')
 
-    const activity = await global.em.getRepository(PlayerAuthActivity).findOne({
+    const activity = await em.getRepository(PlayerAuthActivity).findOne({
       type: PlayerAuthActivityType.CHANGED_EMAIL,
       player: player.id,
       extra: {
@@ -57,12 +57,12 @@ describe('Player auth API service - change email', () => {
       })).one()
     })).one()
     const alias = player.aliases[0]
-    await global.em.persistAndFlush(player)
+    await em.persistAndFlush(player)
 
     const sessionToken = await player.auth!.createSession(alias)
-    await global.em.flush()
+    await em.flush()
 
-    await request(global.app)
+    await request(app)
       .post('/v1/players/auth/change_email')
       .send({ currentPassword: 'password', newEmail: 'bozza@mail.com' })
       .auth(token, { type: 'bearer' })
@@ -83,12 +83,12 @@ describe('Player auth API service - change email', () => {
       })).one()
     })).one()
     const alias = player.aliases[0]
-    await global.em.persistAndFlush(player)
+    await em.persistAndFlush(player)
 
     const sessionToken = await player.auth!.createSession(alias)
-    await global.em.flush()
+    await em.flush()
 
-    const res = await request(global.app)
+    const res = await request(app)
       .post('/v1/players/auth/change_email')
       .send({ currentPassword: 'password1', newEmail: 'bozza@mail.com' })
       .auth(token, { type: 'bearer' })
@@ -102,7 +102,7 @@ describe('Player auth API service - change email', () => {
       errorCode: 'INVALID_CREDENTIALS'
     })
 
-    const activity = await global.em.getRepository(PlayerAuthActivity).findOne({
+    const activity = await em.getRepository(PlayerAuthActivity).findOne({
       type: PlayerAuthActivityType.CHANGE_EMAIL_FAILED,
       player: player.id,
       extra: {
@@ -123,12 +123,12 @@ describe('Player auth API service - change email', () => {
       })).one()
     })).one()
     const alias = player.aliases[0]
-    await global.em.persistAndFlush(player)
+    await em.persistAndFlush(player)
 
     const sessionToken = await player.auth!.createSession(alias)
-    await global.em.flush()
+    await em.flush()
 
-    const res = await request(global.app)
+    const res = await request(app)
       .post('/v1/players/auth/change_email')
       .send({ currentPassword: 'password', newEmail: 'boz@mail.com' })
       .auth(token, { type: 'bearer' })
@@ -142,7 +142,7 @@ describe('Player auth API service - change email', () => {
       errorCode: 'NEW_EMAIL_MATCHES_CURRENT_EMAIL'
     })
 
-    const activity = await global.em.getRepository(PlayerAuthActivity).findOne({
+    const activity = await em.getRepository(PlayerAuthActivity).findOne({
       type: PlayerAuthActivityType.CHANGE_EMAIL_FAILED,
       player: player.id,
       extra: {
@@ -163,12 +163,12 @@ describe('Player auth API service - change email', () => {
       })).one()
     })).one()
     const alias = player.aliases[0]
-    await global.em.persistAndFlush(player)
+    await em.persistAndFlush(player)
 
     const sessionToken = await player.auth!.createSession(alias)
-    await global.em.flush()
+    await em.flush()
 
-    const res = await request(global.app)
+    const res = await request(app)
       .post('/v1/players/auth/change_email')
       .send({ currentPassword: 'password', newEmail: 'blah' })
       .auth(token, { type: 'bearer' })
@@ -182,7 +182,7 @@ describe('Player auth API service - change email', () => {
       errorCode: 'INVALID_EMAIL'
     })
 
-    const activity = await global.em.getRepository(PlayerAuthActivity).findOne({
+    const activity = await em.getRepository(PlayerAuthActivity).findOne({
       type: PlayerAuthActivityType.CHANGE_EMAIL_FAILED,
       player: player.id,
       extra: {

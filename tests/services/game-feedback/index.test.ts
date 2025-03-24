@@ -13,9 +13,9 @@ describe('Game feedback service - index', () => {
     const [token] = await createUserAndToken({}, organisation)
 
     const feedback = await new GameFeedbackFactory(game).many(10)
-    await global.em.persistAndFlush(feedback)
+    await em.persistAndFlush(feedback)
 
-    const res = await request(global.app)
+    const res = await request(app)
       .get(`/games/${game.id}/game-feedback`)
       .query({ page: 0 })
       .auth(token, { type: 'bearer' })
@@ -34,9 +34,9 @@ describe('Game feedback service - index', () => {
 
     const feedbackWithRelevantCategory = await new GameFeedbackFactory(game).state(() => ({ category })).many(5)
     const feedbackWithoutRelevantCategory = await new GameFeedbackFactory(game).many(5)
-    await global.em.persistAndFlush([...feedbackWithRelevantCategory, ...feedbackWithoutRelevantCategory])
+    await em.persistAndFlush([...feedbackWithRelevantCategory, ...feedbackWithoutRelevantCategory])
 
-    const res = await request(global.app)
+    const res = await request(app)
       .get(`/games/${game.id}/game-feedback`)
       .query({ feedbackCategoryInternalName: category.internalName, page: 0 })
       .auth(token, { type: 'bearer' })
@@ -48,7 +48,7 @@ describe('Game feedback service - index', () => {
   it('should not return game feedback for a non-existent game', async () => {
     const [token] = await createUserAndToken()
 
-    const res = await request(global.app)
+    const res = await request(app)
       .get('/games/99999/game-feedback')
       .query({ page: 0 })
       .auth(token, { type: 'bearer' })
@@ -63,7 +63,7 @@ describe('Game feedback service - index', () => {
 
     await new GameFeedbackFactory(game).many(10)
 
-    await request(global.app)
+    await request(app)
       .get(`/games/${game.id}/game-feedback`)
       .query({ page: 0 })
       .auth(token, { type: 'bearer' })
@@ -76,11 +76,11 @@ describe('Game feedback service - index', () => {
 
     const count = 82
     const feedback = await new GameFeedbackFactory(game).many(count)
-    await global.em.persistAndFlush(feedback)
+    await em.persistAndFlush(feedback)
 
     const page = Math.floor(count / 50)
 
-    const res = await request(global.app)
+    const res = await request(app)
       .get(`/games/${game.id}/game-feedback`)
       .query({ page })
       .auth(token, { type: 'bearer' })
@@ -99,9 +99,9 @@ describe('Game feedback service - index', () => {
 
     const feedbackWithRelevantComment = await new GameFeedbackFactory(game).state(() => ({ category, comment: 'blah' })).many(3)
     const feedbackWithoutRelevantComment = await new GameFeedbackFactory(game).state(() => ({ comment: 'bleh' })).many(5)
-    await global.em.persistAndFlush([...feedbackWithRelevantComment, ...feedbackWithoutRelevantComment])
+    await em.persistAndFlush([...feedbackWithRelevantComment, ...feedbackWithoutRelevantComment])
 
-    const res = await request(global.app)
+    const res = await request(app)
       .get(`/games/${game.id}/game-feedback`)
       .query({ search: 'blah', page: 0 })
       .auth(token, { type: 'bearer' })
@@ -119,9 +119,9 @@ describe('Game feedback service - index', () => {
     const feedbackWithRelevantCategory = await new GameFeedbackFactory(game).state(() => ({ category })).many(10)
     const feedbackWithRelevantCategoryAndComment = await new GameFeedbackFactory(game).state(() => ({ category, comment: 'blah' })).many(3)
     const feedbackWithoutRelevantCategory = await new GameFeedbackFactory(game).state(() => ({ comment: 'blah' })).many(5)
-    await global.em.persistAndFlush([...feedbackWithRelevantCategory, ...feedbackWithRelevantCategoryAndComment, ...feedbackWithoutRelevantCategory])
+    await em.persistAndFlush([...feedbackWithRelevantCategory, ...feedbackWithRelevantCategoryAndComment, ...feedbackWithoutRelevantCategory])
 
-    const res = await request(global.app)
+    const res = await request(app)
       .get(`/games/${game.id}/game-feedback`)
       .query({ feedbackCategoryInternalName: category.internalName, search: 'blah', page: 0 })
       .auth(token, { type: 'bearer' })
@@ -147,9 +147,9 @@ describe('Game feedback service - index', () => {
 
     const feedbackWithoutRelevantAlias = await new GameFeedbackFactory(game).many(5)
 
-    await global.em.persistAndFlush([...feedbackWithRelevantAlias, ...feedbackWithoutRelevantAlias])
+    await em.persistAndFlush([...feedbackWithRelevantAlias, ...feedbackWithoutRelevantAlias])
 
-    const res = await request(global.app)
+    const res = await request(app)
       .get(`/games/${game.id}/game-feedback`)
       .query({ search: 'big_complainer_01', page: 0 })
       .auth(token, { type: 'bearer' })
@@ -173,9 +173,9 @@ describe('Game feedback service - index', () => {
       anonymised: true
     })).many(3)
 
-    await global.em.persistAndFlush(feedbackWithRelevantAlias)
+    await em.persistAndFlush(feedbackWithRelevantAlias)
 
-    const res = await request(global.app)
+    const res = await request(app)
       .get(`/games/${game.id}/game-feedback`)
       .query({ search: 'big_complainer_01', page: 0 })
       .auth(token, { type: 'bearer' })
@@ -207,9 +207,9 @@ describe('Game feedback service - index', () => {
       anonymised: false
     })).many(5)
 
-    await global.em.persistAndFlush([...feedbackWithRelevantCategory, ...feedbackWithRelevantCategoryAndAlias, ...feedbackWithoutRelevantCategory])
+    await em.persistAndFlush([...feedbackWithRelevantCategory, ...feedbackWithRelevantCategoryAndAlias, ...feedbackWithoutRelevantCategory])
 
-    const res = await request(global.app)
+    const res = await request(app)
       .get(`/games/${game.id}/game-feedback`)
       .query({ feedbackCategoryInternalName: category.internalName, search: 'big_complainer_01', page: 0 })
       .auth(token, { type: 'bearer' })
@@ -224,9 +224,9 @@ describe('Game feedback service - index', () => {
 
     const player = await new PlayerFactory([game]).devBuild().one()
     const feedback = await new GameFeedbackFactory(game).state(() => ({ playerAlias: player.aliases[0] })).many(10)
-    await global.em.persistAndFlush(feedback)
+    await em.persistAndFlush(feedback)
 
-    const res = await request(global.app)
+    const res = await request(app)
       .get(`/games/${game.id}/game-feedback`)
       .query({ page: 0 })
       .auth(token, { type: 'bearer' })

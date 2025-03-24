@@ -162,14 +162,14 @@ describe('Data export service - generation', () => {
       status: DataExportStatus.QUEUED
     })).one()
 
-    await global.em.persistAndFlush(dataExport)
+    await em.persistAndFlush(dataExport)
 
     await proto.updateDataExportStatus(dataExport.id, { id: DataExportStatus.GENERATED })
-    await global.em.refresh(dataExport)
+    await em.refresh(dataExport)
     expect(dataExport.status).toBe(DataExportStatus.GENERATED)
 
     await proto.updateDataExportStatus(dataExport.id, { failedAt: new Date() })
-    await global.em.refresh(dataExport)
+    await em.refresh(dataExport)
     expect(dataExport.failedAt).toBeTruthy()
   })
 

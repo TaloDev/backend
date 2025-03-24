@@ -14,9 +14,9 @@ describe('Player service - get auth activities', () => {
     const player = await new PlayerFactory([game]).withTaloAlias().one()
     const activities = await new PlayerAuthActivityFactory(game).state(() => ({ player })).many(10)
 
-    await global.em.persistAndFlush(activities)
+    await em.persistAndFlush(activities)
 
-    const res = await request(global.app)
+    const res = await request(app)
       .get(`/games/${game.id}/players/${player.id}/auth-activities`)
       .auth(token, { type: 'bearer' })
       .expect(statusCode)
@@ -34,9 +34,9 @@ describe('Player service - get auth activities', () => {
 
     const player = await new PlayerFactory([game]).one()
 
-    await global.em.persistAndFlush(player)
+    await em.persistAndFlush(player)
 
-    await request(global.app)
+    await request(app)
       .get(`/games/${game.id}/players/${player.id}/auth-activities`)
       .auth(token, { type: 'bearer' })
       .expect(403)
@@ -46,7 +46,7 @@ describe('Player service - get auth activities', () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({ type: UserType.ADMIN }, organisation)
 
-    const res = await request(global.app)
+    const res = await request(app)
       .get(`/games/${game.id}/players/21312321321/auth-activities`)
       .auth(token, { type: 'bearer' })
       .expect(404)

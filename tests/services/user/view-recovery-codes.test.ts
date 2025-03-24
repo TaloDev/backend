@@ -10,9 +10,9 @@ describe('User service - view recovery codes', () => {
     const [token, user] = await createUserAndToken({ twoFactorAuth })
 
     user.recoveryCodes.set(generateRecoveryCodes(user))
-    await global.em.flush()
+    await em.flush()
 
-    const res = await request(global.app)
+    const res = await request(app)
       .post('/users/2fa/recovery_codes/view')
       .send({ password: 'password' })
       .auth(token, { type: 'bearer' })
@@ -24,7 +24,7 @@ describe('User service - view recovery codes', () => {
   it('should not show recovery codes if 2fa isn\'t enabled', async () => {
     const [token] = await createUserAndToken()
 
-    const res = await request(global.app)
+    const res = await request(app)
       .post('/users/2fa/recovery_codes/view')
       .send({ password: 'password' })
       .auth(token, { type: 'bearer' })
@@ -38,7 +38,7 @@ describe('User service - view recovery codes', () => {
     twoFactorAuth.enabled = true
     const [token] = await createUserAndToken({ twoFactorAuth })
 
-    const res = await request(global.app)
+    const res = await request(app)
       .post('/users/2fa/recovery_codes/view')
       .send({ password: 'p@ssw0rd' })
       .auth(token, { type: 'bearer' })

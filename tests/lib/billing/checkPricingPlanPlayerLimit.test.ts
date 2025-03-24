@@ -19,9 +19,9 @@ describe('checkPricingPlanPlayerLimit', () => {
     organisation.pricingPlan.status = 'active'
 
     const players = await new PlayerFactory([game]).many(10)
-    await global.em.persistAndFlush(players)
+    await em.persistAndFlush(players)
 
-    const res = await request(global.app)
+    const res = await request(app)
       .post(`/games/${game.id}/players`)
       .auth(token, { type: 'bearer' })
       .expect(200)
@@ -34,9 +34,9 @@ describe('checkPricingPlanPlayerLimit', () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({}, organisation)
     organisation.pricingPlan.status = 'incomplete'
-    await global.em.flush()
+    await em.flush()
 
-    const res = await request(global.app)
+    const res = await request(app)
       .post(`/games/${game.id}/players`)
       .auth(token, { type: 'bearer' })
       .expect(402)
@@ -53,9 +53,9 @@ describe('checkPricingPlanPlayerLimit', () => {
     organisation.pricingPlan.status = 'active'
 
     const players = await new PlayerFactory([game]).many(74)
-    await global.em.persistAndFlush(players)
+    await em.persistAndFlush(players)
 
-    const res = await request(global.app)
+    const res = await request(app)
       .post(`/games/${game.id}/players`)
       .auth(token, { type: 'bearer' })
       .expect(200)
@@ -71,9 +71,9 @@ describe('checkPricingPlanPlayerLimit', () => {
     organisation.pricingPlan.status = 'active'
 
     const players = await new PlayerFactory([game]).many(89)
-    await global.em.persistAndFlush(players)
+    await em.persistAndFlush(players)
 
-    const res = await request(global.app)
+    const res = await request(app)
       .post(`/games/${game.id}/players`)
       .auth(token, { type: 'bearer' })
       .expect(200)
@@ -89,9 +89,9 @@ describe('checkPricingPlanPlayerLimit', () => {
     organisation.pricingPlan.status = 'active'
 
     const players = await new PlayerFactory([game]).many(99)
-    await global.em.persistAndFlush(players)
+    await em.persistAndFlush(players)
 
-    const res = await request(global.app)
+    const res = await request(app)
       .post(`/games/${game.id}/players`)
       .auth(token, { type: 'bearer' })
       .expect(200)
@@ -108,9 +108,9 @@ describe('checkPricingPlanPlayerLimit', () => {
 
     const randomPlayerCount = Math.floor(Math.random() * 74) + 1
     const players = await new PlayerFactory([game]).many(randomPlayerCount - 1)
-    await global.em.persistAndFlush(players)
+    await em.persistAndFlush(players)
 
-    const res = await request(global.app)
+    const res = await request(app)
       .post(`/games/${game.id}/players`)
       .auth(token, { type: 'bearer' })
       .expect(200)
@@ -126,9 +126,9 @@ describe('checkPricingPlanPlayerLimit', () => {
     organisation.pricingPlan.status = 'active'
 
     const players = await new PlayerFactory([game]).many(100)
-    await global.em.persistAndFlush(players)
+    await em.persistAndFlush(players)
 
-    const res = await request(global.app)
+    const res = await request(app)
       .post(`/games/${game.id}/players`)
       .auth(token, { type: 'bearer' })
       .expect(200)

@@ -32,15 +32,15 @@ describe('Game stat service - updatePlayerStat', () => {
     const player = await new PlayerFactory([game]).one()
     const playerStat = await new PlayerGameStatFactory().construct(player, stat).state(() => ({ value: 10 })).one()
 
-    await global.em.persistAndFlush([stat, player, playerStat])
+    await em.persistAndFlush([stat, player, playerStat])
 
-    const res = await request(global.app)
+    const res = await request(app)
       .patch(`/games/${game.id}/game-stats/${stat.id}/player-stats/${playerStat.id}`)
       .send({ newValue: 20 })
       .auth(token, { type: 'bearer' })
       .expect(statusCode)
 
-    const activity = await global.em.getRepository(GameActivity).findOne({
+    const activity = await em.getRepository(GameActivity).findOne({
       type: GameActivityType.PLAYER_STAT_UPDATED,
       extra: {
         statInternalName: stat.internalName,
@@ -72,15 +72,15 @@ describe('Game stat service - updatePlayerStat', () => {
     const player = await new PlayerFactory([game]).one()
     const playerStat = await new PlayerGameStatFactory().construct(player, stat).state(() => ({ value: 10 })).one()
 
-    await global.em.persistAndFlush([stat, player, playerStat])
+    await em.persistAndFlush([stat, player, playerStat])
 
-    await request(global.app)
+    await request(app)
       .patch(`/games/${game.id}/game-stats/${stat.id}/player-stats/${playerStat.id}`)
       .send({ newValue: 20 })
       .auth(token, { type: 'bearer' })
       .expect(200)
 
-    await global.em.refresh(stat)
+    await em.refresh(stat)
     expect(stat.globalValue).toBe(110) // 100 + (20 - 10)
   })
 
@@ -94,9 +94,9 @@ describe('Game stat service - updatePlayerStat', () => {
     const player = await new PlayerFactory([game]).one()
     const playerStat = await new PlayerGameStatFactory().construct(player, stat).state(() => ({ value: 10 })).one()
 
-    await global.em.persistAndFlush([stat, player, playerStat])
+    await em.persistAndFlush([stat, player, playerStat])
 
-    const res = await request(global.app)
+    const res = await request(app)
       .patch(`/games/${game.id}/game-stats/${stat.id}/player-stats/${playerStat.id}`)
       .send({ newValue: -5 })
       .auth(token, { type: 'bearer' })
@@ -117,9 +117,9 @@ describe('Game stat service - updatePlayerStat', () => {
     const player = await new PlayerFactory([game]).one()
     const playerStat = await new PlayerGameStatFactory().construct(player, stat).state(() => ({ value: 90 })).one()
 
-    await global.em.persistAndFlush([stat, player, playerStat])
+    await em.persistAndFlush([stat, player, playerStat])
 
-    const res = await request(global.app)
+    const res = await request(app)
       .patch(`/games/${game.id}/game-stats/${stat.id}/player-stats/${playerStat.id}`)
       .send({ newValue: 150 })
       .auth(token, { type: 'bearer' })
@@ -141,15 +141,15 @@ describe('Game stat service - updatePlayerStat', () => {
     const player = await new PlayerFactory([game]).one()
     const playerStat = await new PlayerGameStatFactory().construct(player, stat).state(() => ({ value: 50 })).one()
 
-    await global.em.persistAndFlush([stat, player, playerStat])
+    await em.persistAndFlush([stat, player, playerStat])
 
-    await request(global.app)
+    await request(app)
       .patch(`/games/${game.id}/game-stats/${stat.id}/player-stats/${playerStat.id}`)
       .send({ newValue: 75 })
       .auth(token, { type: 'bearer' })
       .expect(200)
 
-    await global.em.refresh(playerStat)
+    await em.refresh(playerStat)
     expect(playerStat.value).toBe(75)
   })
 
@@ -170,9 +170,9 @@ describe('Game stat service - updatePlayerStat', () => {
 
     const config = await new IntegrationConfigFactory().state(() => ({ syncStats: true })).one()
     const integration = await new IntegrationFactory().construct(IntegrationType.STEAMWORKS, game, config).one()
-    await global.em.persistAndFlush([integration, stat, player])
+    await em.persistAndFlush([integration, stat, player])
 
-    await request(global.app)
+    await request(app)
       .patch(`/games/${game.id}/game-stats/${stat.id}/player-stats/${playerStat.id}`)
       .send({ newValue: 20 })
       .auth(token, { type: 'bearer' })
@@ -180,7 +180,7 @@ describe('Game stat service - updatePlayerStat', () => {
 
     expect(setMock).toHaveBeenCalledTimes(1)
 
-    const event = await global.em.getRepository(SteamworksIntegrationEvent).findOneOrFail({ integration })
+    const event = await em.getRepository(SteamworksIntegrationEvent).findOneOrFail({ integration })
     expect(event.request).toStrictEqual({
       url: 'https://partner.steam-api.com/ISteamUserStats/SetUserStatsForGame/v1',
       body: `appid=${config.appId}&steamid=${player.aliases[0].identifier}&count=1&name%5B0%5D=${stat.internalName}&value%5B0%5D=20`,
@@ -196,9 +196,9 @@ describe('Game stat service - updatePlayerStat', () => {
     const player = await new PlayerFactory([otherGame]).one()
     const playerStat = await new PlayerGameStatFactory().construct(player, stat).state(() => ({ value: 10 })).one()
 
-    await global.em.persistAndFlush([stat, player, playerStat])
+    await em.persistAndFlush([stat, player, playerStat])
 
-    await request(global.app)
+    await request(app)
       .patch(`/games/${otherGame.id}/game-stats/${stat.id}/player-stats/${playerStat.id}`)
       .send({ newValue: 20 })
       .auth(token, { type: 'bearer' })
@@ -212,9 +212,9 @@ describe('Game stat service - updatePlayerStat', () => {
     const stat = await new GameStatFactory([game]).one()
     const player = await new PlayerFactory([game]).one()
 
-    await global.em.persistAndFlush([stat, player])
+    await em.persistAndFlush([stat, player])
 
-    const res = await request(global.app)
+    const res = await request(app)
       .patch(`/games/${game.id}/game-stats/${stat.id}/player-stats/999999`)
       .send({ newValue: 20 })
       .auth(token, { type: 'bearer' })
@@ -232,9 +232,9 @@ describe('Game stat service - updatePlayerStat', () => {
     const stat = await new GameStatFactory([game]).one()
     const player = await new PlayerFactory([game]).one()
 
-    await global.em.persistAndFlush([stat, player])
+    await em.persistAndFlush([stat, player])
 
-    const res = await request(global.app)
+    const res = await request(app)
       .patch(`/games/${game.id}/game-stats/999/player-stats/999999`)
       .send({ newValue: 20 })
       .auth(token, { type: 'bearer' })

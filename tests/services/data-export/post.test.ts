@@ -14,13 +14,13 @@ describe('Data export service - post', () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({ type, emailConfirmed: true }, organisation)
 
-    const res = await request(global.app)
+    const res = await request(app)
       .post(`/games/${game.id}/data-exports`)
       .send({ entities: [DataExportAvailableEntities.GAME_STATS, DataExportAvailableEntities.GAME_ACTIVITIES] })
       .auth(token, { type: 'bearer' })
       .expect(statusCode)
 
-    const activity = await global.em.getRepository(GameActivity).findOne({
+    const activity = await em.getRepository(GameActivity).findOne({
       type: GameActivityType.DATA_EXPORT_REQUESTED,
       game
     })
@@ -36,7 +36,7 @@ describe('Data export service - post', () => {
     const [, otherGame] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({ type: UserType.ADMIN, emailConfirmed: true })
 
-    const res = await request(global.app)
+    const res = await request(app)
       .post(`/games/${otherGame.id}/data-exports`)
       .send({ entities: [DataExportAvailableEntities.GAME_STATS, DataExportAvailableEntities.GAME_ACTIVITIES] })
       .auth(token, { type: 'bearer' })
@@ -49,7 +49,7 @@ describe('Data export service - post', () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({ type: UserType.ADMIN, emailConfirmed: true }, organisation)
 
-    const res = await request(global.app)
+    const res = await request(app)
       .post(`/games/${game.id}/data-exports`)
       .send({ entities: [DataExportAvailableEntities.PLAYER_ALIASES] })
       .auth(token, { type: 'bearer' })
@@ -62,7 +62,7 @@ describe('Data export service - post', () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({ type: UserType.ADMIN, emailConfirmed: true }, organisation)
 
-    const res = await request(global.app)
+    const res = await request(app)
       .post(`/games/${game.id}/data-exports`)
       .send({ entities: [DataExportAvailableEntities.PLAYERS] })
       .auth(token, { type: 'bearer' })
@@ -75,7 +75,7 @@ describe('Data export service - post', () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({ type: UserType.ADMIN, emailConfirmed: true }, organisation)
 
-    const res = await request(global.app)
+    const res = await request(app)
       .post(`/games/${game.id}/data-exports`)
       .send({ entities: [DataExportAvailableEntities.EVENTS] })
       .auth(token, { type: 'bearer' })
@@ -88,7 +88,7 @@ describe('Data export service - post', () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({ type: UserType.ADMIN, emailConfirmed: true }, organisation)
 
-    const res = await request(global.app)
+    const res = await request(app)
       .post(`/games/${game.id}/data-exports`)
       .send({ entities: [DataExportAvailableEntities.LEADERBOARD_ENTRIES] })
       .auth(token, { type: 'bearer' })
@@ -101,7 +101,7 @@ describe('Data export service - post', () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({ type: UserType.ADMIN, emailConfirmed: true }, organisation)
 
-    const res = await request(global.app)
+    const res = await request(app)
       .post(`/games/${game.id}/data-exports`)
       .send({ entities: [DataExportAvailableEntities.GAME_STATS] })
       .auth(token, { type: 'bearer' })
@@ -114,7 +114,7 @@ describe('Data export service - post', () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({ type: UserType.ADMIN, emailConfirmed: true }, organisation)
 
-    const res = await request(global.app)
+    const res = await request(app)
       .post(`/games/${game.id}/data-exports`)
       .send({ entities: [DataExportAvailableEntities.PLAYER_GAME_STATS] })
       .auth(token, { type: 'bearer' })
@@ -127,7 +127,7 @@ describe('Data export service - post', () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({ type: UserType.ADMIN, emailConfirmed: true }, organisation)
 
-    const res = await request(global.app)
+    const res = await request(app)
       .post(`/games/${game.id}/data-exports`)
       .send({ entities: [DataExportAvailableEntities.GAME_ACTIVITIES] })
       .auth(token, { type: 'bearer' })
@@ -140,7 +140,7 @@ describe('Data export service - post', () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({ type: UserType.ADMIN, emailConfirmed: true }, organisation)
 
-    const res = await request(global.app)
+    const res = await request(app)
       .post(`/games/${game.id}/data-exports`)
       .send({ entities: [DataExportAvailableEntities.GAME_FEEDBACK] })
       .auth(token, { type: 'bearer' })
@@ -153,7 +153,7 @@ describe('Data export service - post', () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({ type: UserType.ADMIN }, organisation)
 
-    const res = await request(global.app)
+    const res = await request(app)
       .post(`/games/${game.id}/data-exports`)
       .send({ entities: [DataExportAvailableEntities.PLAYER_ALIASES] })
       .auth(token, { type: 'bearer' })
@@ -166,13 +166,13 @@ describe('Data export service - post', () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({ type: UserType.ADMIN, emailConfirmed: true }, organisation)
 
-    await request(global.app)
+    await request(app)
       .post(`/games/${game.id}/data-exports`)
       .send({ entities: [] })
       .auth(token, { type: 'bearer' })
       .expect(400)
 
-    await request(global.app)
+    await request(app)
       .post(`/games/${game.id}/data-exports`)
       .auth(token, { type: 'bearer' })
       .expect(400)
@@ -182,7 +182,7 @@ describe('Data export service - post', () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({ type: UserType.ADMIN, emailConfirmed: true }, organisation)
 
-    const res = await request(global.app)
+    const res = await request(app)
       .post(`/games/${game.id}/data-exports`)
       .send({ entities: [1, 2] })
       .auth(token, { type: 'bearer' })
@@ -201,13 +201,13 @@ describe('Data export service - post', () => {
 
     vi.spyOn(SendGrid, 'send').mockRejectedValueOnce(new Error())
 
-    await request(global.app)
+    await request(app)
       .post(`/games/${game.id}/data-exports`)
       .send({ entities: [DataExportAvailableEntities.EVENTS] })
       .auth(token, { type: 'bearer' })
       .expect(200)
 
-    const dataExport = await global.em.getRepository(DataExport).findOneOrFail({ game })
+    const dataExport = await em.getRepository(DataExport).findOneOrFail({ game })
     expect(dataExport.failedAt).toBeTruthy()
   })
 })

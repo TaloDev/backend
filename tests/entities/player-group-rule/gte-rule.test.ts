@@ -17,7 +17,7 @@ describe('GTE rule', () => {
 
     const player1 = await new PlayerFactory([game]).state(() => ({ lastSeenAt: new Date(2022, 4, 3) })).one()
     const player2 = await new PlayerFactory([game]).state(() => ({ lastSeenAt: new Date(2022, 1, 3) })).one()
-    await global.em.persistAndFlush([player1, player2])
+    await em.persistAndFlush([player1, player2])
 
     const rules: Partial<PlayerGroupRule>[] = [
       {
@@ -29,7 +29,7 @@ describe('GTE rule', () => {
       }
     ]
 
-    const res = await request(global.app)
+    const res = await request(app)
       .get(`/games/${game.id}/player-groups/preview-count`)
       .query({ ruleMode: '$and', rules: encodeURI(JSON.stringify(rules)) })
       .auth(token, { type: 'bearer' })
@@ -44,7 +44,7 @@ describe('GTE rule', () => {
 
     const player1 = await new PlayerFactory([game]).state(() => ({ lastSeenAt: new Date(2022, 4, 3) })).one()
     const player2 = await new PlayerFactory([game]).state(() => ({ lastSeenAt: new Date(2022, 1, 3) })).one()
-    await global.em.persistAndFlush([player1, player2])
+    await em.persistAndFlush([player1, player2])
 
     const rules: Partial<PlayerGroupRule>[] = [
       {
@@ -56,7 +56,7 @@ describe('GTE rule', () => {
       }
     ]
 
-    const res = await request(global.app)
+    const res = await request(app)
       .get(`/games/${game.id}/player-groups/preview-count`)
       .query({ ruleMode: '$and', rules: encodeURI(JSON.stringify(rules)) })
       .auth(token, { type: 'bearer' })
@@ -79,7 +79,7 @@ describe('GTE rule', () => {
         new PlayerProp(player, 'currentLevel', '70')
       ])
     })).one()
-    await global.em.persistAndFlush([player1, player2])
+    await em.persistAndFlush([player1, player2])
 
     const rules: Partial<PlayerGroupRule>[] = [
       {
@@ -91,7 +91,7 @@ describe('GTE rule', () => {
       }
     ]
 
-    const res = await request(global.app)
+    const res = await request(app)
       .get(`/games/${game.id}/player-groups/preview-count`)
       .query({ ruleMode: '$and', rules: encodeURI(JSON.stringify(rules)) })
       .auth(token, { type: 'bearer' })
@@ -114,7 +114,7 @@ describe('GTE rule', () => {
         new PlayerProp(player, 'currentLevel', '69')
       ])
     })).one()
-    await global.em.persistAndFlush([player1, player2])
+    await em.persistAndFlush([player1, player2])
 
     const rules: Partial<PlayerGroupRule>[] = [
       {
@@ -126,7 +126,7 @@ describe('GTE rule', () => {
       }
     ]
 
-    const res = await request(global.app)
+    const res = await request(app)
       .get(`/games/${game.id}/player-groups/preview-count`)
       .query({ ruleMode: '$and', rules: encodeURI(JSON.stringify(rules)) })
       .auth(token, { type: 'bearer' })
@@ -144,7 +144,7 @@ describe('GTE rule', () => {
 
     const stat = await new GameStatFactory([game]).state(() => ({ minValue: 1, maxValue: 80 })).one()
     const playerStat = await new PlayerGameStatFactory().construct(player1, stat).state(() => ({ value: 60 })).one()
-    await global.em.persistAndFlush([player1, player2, playerStat])
+    await em.persistAndFlush([player1, player2, playerStat])
 
     const rules: Partial<PlayerGroupRule>[] = [
       {
@@ -156,7 +156,7 @@ describe('GTE rule', () => {
       }
     ]
 
-    const res = await request(global.app)
+    const res = await request(app)
       .get(`/games/${game.id}/player-groups/preview-count`)
       .query({ ruleMode: '$and', rules: encodeURI(JSON.stringify(rules)) })
       .auth(token, { type: 'bearer' })
@@ -174,7 +174,7 @@ describe('GTE rule', () => {
 
     const stat = await new GameStatFactory([game]).state(() => ({ minValue: 1, maxValue: 80 })).one()
     const playerStat = await new PlayerGameStatFactory().construct(player1, stat).state(() => ({ value: 60 })).one()
-    await global.em.persistAndFlush([player1, player2, playerStat])
+    await em.persistAndFlush([player1, player2, playerStat])
 
     const rules: Partial<PlayerGroupRule>[] = [
       {
@@ -186,7 +186,7 @@ describe('GTE rule', () => {
       }
     ]
 
-    const res = await request(global.app)
+    const res = await request(app)
       .get(`/games/${game.id}/player-groups/preview-count`)
       .query({ ruleMode: '$and', rules: encodeURI(JSON.stringify(rules)) })
       .auth(token, { type: 'bearer' })
@@ -204,7 +204,7 @@ describe('GTE rule', () => {
 
     const leaderboard = await new LeaderboardFactory([game]).one()
     const leaderboardEntry = await new LeaderboardEntryFactory(leaderboard, [player1]).state(() => ({ score: 60 })).one()
-    await global.em.persistAndFlush([player1, player2, leaderboardEntry])
+    await em.persistAndFlush([player1, player2, leaderboardEntry])
 
     const rules: Partial<PlayerGroupRule>[] = [
       {
@@ -216,7 +216,7 @@ describe('GTE rule', () => {
       }
     ]
 
-    const res = await request(global.app)
+    const res = await request(app)
       .get(`/games/${game.id}/player-groups/preview-count`)
       .query({ ruleMode: '$and', rules: encodeURI(JSON.stringify(rules)) })
       .auth(token, { type: 'bearer' })
@@ -234,7 +234,7 @@ describe('GTE rule', () => {
 
     const leaderboard = await new LeaderboardFactory([game]).one()
     const leaderboardEntry = await new LeaderboardEntryFactory(leaderboard, [player1]).state(() => ({ score: 60 })).one()
-    await global.em.persistAndFlush([player1, player2, leaderboardEntry])
+    await em.persistAndFlush([player1, player2, leaderboardEntry])
 
     const rules: Partial<PlayerGroupRule>[] = [
       {
@@ -246,7 +246,7 @@ describe('GTE rule', () => {
       }
     ]
 
-    const res = await request(global.app)
+    const res = await request(app)
       .get(`/games/${game.id}/player-groups/preview-count`)
       .query({ ruleMode: '$and', rules: encodeURI(JSON.stringify(rules)) })
       .auth(token, { type: 'bearer' })

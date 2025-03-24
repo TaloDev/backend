@@ -5,9 +5,9 @@ import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
 describe('Game config API service - index', () => {
   it('should return the game config if the scope is valid', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_GAME_CONFIG])
-    await global.em.populate(apiKey, ['game'])
+    await em.populate(apiKey, ['game'])
 
-    const res = await request(global.app)
+    const res = await request(app)
       .get('/v1/game-config')
       .auth(token, { type: 'bearer' })
       .expect(200)
@@ -18,7 +18,7 @@ describe('Game config API service - index', () => {
   it('should not return the game config if the scope is not valid', async () => {
     const [, token] = await createAPIKeyAndToken([])
 
-    await request(global.app)
+    await request(app)
       .get('/v1/game-config')
       .auth(token, { type: 'bearer' })
       .expect(403)
@@ -26,11 +26,11 @@ describe('Game config API service - index', () => {
 
   it('should filter out meta props from the game config', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_GAME_CONFIG])
-    await global.em.populate(apiKey, ['game'])
+    await em.populate(apiKey, ['game'])
     apiKey.game.props.push({ key: 'META_PREV_NAME', value: 'LD51' })
-    await global.em.flush()
+    await em.flush()
 
-    const res = await request(global.app)
+    const res = await request(app)
       .get('/v1/game-config')
       .auth(token, { type: 'bearer' })
       .expect(200)

@@ -16,7 +16,7 @@ describe('User public service - verify 2fa', () => {
 
     authenticator.check = vi.fn().mockReturnValueOnce(true)
 
-    const res = await request(global.app)
+    const res = await request(app)
       .post('/public/users/2fa')
       .send({ code: '123456', userId: user.id })
       .auth(token, { type: 'bearer' })
@@ -36,7 +36,7 @@ describe('User public service - verify 2fa', () => {
     twoFactorAuth.enabled = true
     const [token, user] = await createUserAndToken({ twoFactorAuth })
 
-    const res = await request(global.app)
+    const res = await request(app)
       .post('/public/users/2fa')
       .send({ code: '123456', userId: user.id })
       .auth(token, { type: 'bearer' })
@@ -55,7 +55,7 @@ describe('User public service - verify 2fa', () => {
 
     authenticator.check = vi.fn().mockReturnValueOnce(false)
 
-    const res = await request(global.app)
+    const res = await request(app)
       .post('/public/users/2fa')
       .send({ code: '123456', userId: user.id })
       .auth(token, { type: 'bearer' })

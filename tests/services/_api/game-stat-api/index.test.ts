@@ -8,9 +8,9 @@ describe('Game stats API service - index', () => {
   it('should get game stats if the scope is valid', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_GAME_STATS])
     const gameStats = await new GameStatFactory([apiKey.game]).many(3)
-    await global.em.persistAndFlush([...gameStats])
+    await em.persistAndFlush([...gameStats])
 
-    const res = await request(global.app)
+    const res = await request(app)
       .get('/v1/game-stats')
       .auth(token, { type: 'bearer' })
       .expect(200)
@@ -21,7 +21,7 @@ describe('Game stats API service - index', () => {
   it('should not return game stats if the scope is not valid', async () => {
     const [, token] = await createAPIKeyAndToken([])
 
-    await request(global.app)
+    await request(app)
       .get('/v1/game-stats')
       .auth(token, { type: 'bearer' })
       .expect(403)

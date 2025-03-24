@@ -370,4 +370,22 @@ describe('Game stats API service - global history', () => {
       changes.reduce((acc, val) => acc + val, 0) / changes.length
     )
   })
+
+  it('should return globalValue metrics equal to the stat default when there are no snapshots', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_GAME_STATS])
+    const stat = await createStat(apiKey.game)
+    await em.flush()
+
+    const res = await request(global.app)
+      .get(`/v1/game-stats/${stat.internalName}/global-history`)
+      .query({ page: 0 })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    expect(res.body.globalValue).toHaveProperty('minValue', stat.defaultValue)
+    expect(res.body.globalValue).toHaveProperty('maxValue', stat.defaultValue)
+    expect(res.body.globalValue).toHaveProperty('medianValue', stat.defaultValue)
+    expect(res.body.globalValue).toHaveProperty('averageValue', stat.defaultValue)
+    expect(res.body.globalValue).toHaveProperty('averageChange', 0)
+  })
 })

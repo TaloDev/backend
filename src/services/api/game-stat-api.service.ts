@@ -276,18 +276,24 @@ export default class GameStatAPIService extends APIService {
     const aggregates = await clickhouse.query({
       query: aggregatesQuery,
       format: 'JSONEachRow'
-    }).then((res) => res.json<GlobalValueMetrics & { rawCount: string, sum: number }>())
+    }).then((res) => res.json<{
+      rawCount: string
+      minValue: number
+      maxValue: number
+      medianValue: number | null
+      sum: number
+      averageChange: number | null
+    }>())
 
     const { rawCount, minValue, maxValue, medianValue, sum, averageChange } = aggregates[0]
     const count = Number(rawCount)
-    const averageValue = sum / count
 
     const globalValue: GlobalValueMetrics = {
-      minValue,
-      maxValue,
-      medianValue,
-      averageValue,
-      averageChange
+      minValue: minValue || stat.defaultValue,
+      maxValue: maxValue || stat.defaultValue,
+      medianValue: medianValue ?? stat.defaultValue,
+      averageValue: count > 0 ? sum / count : stat.defaultValue,
+      averageChange: averageChange ?? 0
     }
 
     return {

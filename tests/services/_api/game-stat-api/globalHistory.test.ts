@@ -358,12 +358,17 @@ describe('Game stats API service - global history', () => {
     expect(res.body.globalValue).toHaveProperty('medianValue')
     expect(res.body.globalValue).toHaveProperty('averageValue')
     expect(res.body.globalValue).toHaveProperty('averageChange')
+    expect(res.body.globalValue).toHaveProperty('averagePlayerValue')
 
     expect(res.body.globalValue.averageValue).toBe(
       globalValues.reduce((acc, val) => acc + val, 0) / changes.length
     )
 
     expect(res.body.globalValue.averageChange).toBe(
+      changes.reduce((acc, val) => acc + val, 0) / changes.length
+    )
+
+    expect(res.body.globalValue.averagePlayerValue).toBe(
       changes.reduce((acc, val) => acc + val, 0) / changes.length
     )
   })
@@ -384,5 +389,6 @@ describe('Game stats API service - global history', () => {
     expect(res.body.globalValue).toHaveProperty('medianValue', stat.defaultValue)
     expect(res.body.globalValue).toHaveProperty('averageValue', stat.defaultValue)
     expect(res.body.globalValue).toHaveProperty('averageChange', 0)
+    expect(res.body.globalValue).toHaveProperty('averagePlayerValue', stat.defaultValue)
   })
 })

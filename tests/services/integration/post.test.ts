@@ -1,4 +1,3 @@
-import { EntityManager } from '@mikro-orm/mysql'
 import request from 'supertest'
 import { UserType } from '../../../src/entities/user'
 import createUserAndToken from '../../utils/createUserAndToken'
@@ -17,13 +16,13 @@ describe('Integration service - post', () => {
 
     const config = await new IntegrationConfigFactory().one()
 
-    const res = await request(global.app)
+    const res = await request(app)
       .post(`/games/${game.id}/integrations`)
       .send({ type: IntegrationType.STEAMWORKS, config })
       .auth(token, { type: 'bearer' })
       .expect(statusCode)
 
-    const activity = await (<EntityManager>global.em).getRepository(GameActivity).findOne({
+    const activity = await em.getRepository(GameActivity).findOne({
       type: GameActivityType.GAME_INTEGRATION_ADDED,
       game
     })
@@ -46,13 +45,13 @@ describe('Integration service - post', () => {
 
     const config = await new IntegrationConfigFactory().one()
 
-    const res = await request(global.app)
+    const res = await request(app)
       .post(`/games/${game.id}/integrations`)
       .send({ type: IntegrationType.STEAMWORKS, config })
       .auth(token, { type: 'bearer' })
       .expect(200)
 
-    const integration = await (<EntityManager>global.em).getRepository(Integration).findOne(res.body.integration.id)
+    const integration = await em.getRepository(Integration).findOne(res.body.integration.id)
     // @ts-expect-error accessing private
     expect(integration.config.apiKey).not.toBe(config.apiKey)
     // @ts-expect-error accessing private
@@ -65,13 +64,13 @@ describe('Integration service - post', () => {
 
     const config = await new IntegrationConfigFactory().one()
 
-    const res = await request(global.app)
+    const res = await request(app)
       .post(`/games/${game.id}/integrations`)
       .send({ type: IntegrationType.STEAMWORKS, config: { ...config, syncCrazyNewSteamworksFeature: true } })
       .auth(token, { type: 'bearer' })
       .expect(200)
 
-    const integration = await (<EntityManager>global.em).getRepository(Integration).findOne(res.body.integration.id)
+    const integration = await em.getRepository(Integration).findOne(res.body.integration.id)
     // @ts-expect-error accessing private
     expect(integration.config.syncCrazyNewSteamworksFeature).not.toBeDefined()
   })
@@ -82,13 +81,13 @@ describe('Integration service - post', () => {
 
     const config = await new IntegrationConfigFactory().one()
 
-    await request(global.app)
+    await request(app)
       .post(`/games/${game.id}/integrations`)
       .send({ type: IntegrationType.STEAMWORKS, config })
       .auth(token, { type: 'bearer' })
       .expect(403)
 
-    const activity = await (<EntityManager>global.em).getRepository(GameActivity).findOne({
+    const activity = await em.getRepository(GameActivity).findOne({
       type: GameActivityType.GAME_INTEGRATION_ADDED,
       game
     })

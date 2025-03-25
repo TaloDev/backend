@@ -2,15 +2,14 @@ import request from 'supertest'
 import { APIKeyScope } from '../../../../src/entities/api-key'
 import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
 import PlayerFactory from '../../../fixtures/PlayerFactory'
-import { EntityManager } from '@mikro-orm/mysql'
 
 describe('Game channel API service - post', () => {
   it('should create a game channel if the scope is valid', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_CHANNELS])
     const player = await new PlayerFactory([apiKey.game]).one()
-    await (<EntityManager>global.em).persistAndFlush(player)
+    await em.persistAndFlush(player)
 
-    const res = await request(global.app)
+    const res = await request(app)
       .post('/v1/game-channels')
       .send({ name: 'Guild chat' })
       .auth(token, { type: 'bearer' })
@@ -27,9 +26,9 @@ describe('Game channel API service - post', () => {
   it('should not create a game channel if the scope is not valid', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([])
     const player = await new PlayerFactory([apiKey.game]).one()
-    await (<EntityManager>global.em).persistAndFlush(player)
+    await em.persistAndFlush(player)
 
-    await request(global.app)
+    await request(app)
       .post('/v1/game-channels')
       .send({ name: 'Guild chat' })
       .auth(token, { type: 'bearer' })
@@ -40,9 +39,9 @@ describe('Game channel API service - post', () => {
   it('should not create a game channel if the alias does not exist', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_CHANNELS])
     const player = await new PlayerFactory([apiKey.game]).one()
-    await (<EntityManager>global.em).persistAndFlush(player)
+    await em.persistAndFlush(player)
 
-    const res = await request(global.app)
+    const res = await request(app)
       .post('/v1/game-channels')
       .send({ name: 'Guild chat' })
       .auth(token, { type: 'bearer' })
@@ -55,9 +54,9 @@ describe('Game channel API service - post', () => {
   it('should create a game channel with props', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_CHANNELS])
     const player = await new PlayerFactory([apiKey.game]).one()
-    await (<EntityManager>global.em).persistAndFlush(player)
+    await em.persistAndFlush(player)
 
-    const res = await request(global.app)
+    const res = await request(app)
       .post('/v1/game-channels')
       .send({
         name: 'Guild chat',

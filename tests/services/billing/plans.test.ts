@@ -1,4 +1,3 @@
-import { EntityManager } from '@mikro-orm/mysql'
 import request from 'supertest'
 import initStripe from '../../../src/lib/billing/initStripe'
 import PricingPlanFactory from '../../fixtures/PricingPlanFactory'
@@ -16,9 +15,9 @@ describe('Billing service - plans', () => {
     const [organisation] = await createOrganisationAndGame({}, {}, plan)
     const [token] = await createUserAndToken({}, organisation)
     organisation.pricingPlan.stripePriceId = price.id
-    await (<EntityManager>global.em).flush()
+    await em.flush()
 
-    const res = await request(global.app)
+    const res = await request(app)
       .get('/billing/plans')
       .auth(token, { type: 'bearer' })
       .expect(200)
@@ -44,9 +43,9 @@ describe('Billing service - plans', () => {
     const [organisation] = await createOrganisationAndGame({}, {}, plan)
     const [token] = await createUserAndToken({}, organisation)
     organisation.pricingPlan.stripePriceId = price.id
-    await (<EntityManager>global.em).persistAndFlush(hiddenPlan)
+    await em.persistAndFlush(hiddenPlan)
 
-    const res = await request(global.app)
+    const res = await request(app)
       .get('/billing/plans')
       .auth(token, { type: 'bearer' })
       .expect(200)

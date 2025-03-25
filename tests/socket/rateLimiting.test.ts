@@ -1,7 +1,6 @@
 import { APIKeyScope } from '../../src/entities/api-key'
 import createSocketIdentifyMessage from '../utils/createSocketIdentifyMessage'
 import GameChannelFactory from '../fixtures/GameChannelFactory'
-import { EntityManager } from '@mikro-orm/mysql'
 import Redis from 'ioredis'
 import redisConfig from '../../src/config/redis.config'
 import createTestSocket from '../utils/createTestSocket'
@@ -15,7 +14,7 @@ describe('Socket rate limiting', () => {
     ])
     const channel = await new GameChannelFactory(player.game).one()
     channel.members.add(player.aliases[0])
-    await (<EntityManager>global.em).persistAndFlush(channel)
+    await em.persistAndFlush(channel)
 
     await createTestSocket(`/?ticket=${ticket}`, async (client, socket) => {
       await client.identify(identifyMessage)
@@ -53,7 +52,7 @@ describe('Socket rate limiting', () => {
     ])
     const channel = await new GameChannelFactory(player.game).one()
     channel.members.add(player.aliases[0])
-    await (<EntityManager>global.em).persistAndFlush(channel)
+    await em.persistAndFlush(channel)
 
     await createTestSocket(`/?ticket=${ticket}`, async (client, socket) => {
       await client.identify(identifyMessage)

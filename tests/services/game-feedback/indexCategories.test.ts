@@ -3,7 +3,6 @@ import createUserAndToken from '../../utils/createUserAndToken'
 import createOrganisationAndGame from '../../utils/createOrganisationAndGame'
 import GameFeedbackFactory from '../../fixtures/GameFeedbackFactory'
 import GameFeedbackCategoryFactory from '../../fixtures/GameFeedbackCategoryFactory'
-import { EntityManager } from '@mikro-orm/mysql'
 import GameFeedbackCategory from '../../../src/entities/game-feedback-category'
 
 describe('Game feedback service - index categories', () => {
@@ -12,9 +11,9 @@ describe('Game feedback service - index categories', () => {
     const [token] = await createUserAndToken({}, organisation)
 
     const categories = await new GameFeedbackCategoryFactory(game).many(10)
-    await (<EntityManager>global.em).persistAndFlush(categories)
+    await em.persistAndFlush(categories)
 
-    const res = await request(global.app)
+    const res = await request(app)
       .get(`/games/${game.id}/game-feedback/categories`)
       .auth(token, { type: 'bearer' })
       .expect(200)
@@ -27,7 +26,7 @@ describe('Game feedback service - index categories', () => {
   it('should not return categories for a non-existent game', async () => {
     const [token] = await createUserAndToken()
 
-    const res = await request(global.app)
+    const res = await request(app)
       .get('/games/99999/game-feedback/categories')
       .auth(token, { type: 'bearer' })
       .expect(404)
@@ -41,7 +40,7 @@ describe('Game feedback service - index categories', () => {
 
     await new GameFeedbackFactory(game).many(10)
 
-    await request(global.app)
+    await request(app)
       .get(`/games/${game.id}/game-feedback/categories`)
       .auth(token, { type: 'bearer' })
       .expect(403)

@@ -1,4 +1,3 @@
-import { EntityManager } from '@mikro-orm/mysql'
 import request from 'supertest'
 import UserTwoFactorAuth from '../../../src/entities/user-two-factor-auth'
 import UserRecoveryCode from '../../../src/entities/user-recovery-code'
@@ -10,7 +9,7 @@ describe('User service - disable 2fa', () => {
     twoFactorAuth.enabled = true
     const [token, user] = await createUserAndToken({ twoFactorAuth })
 
-    const res = await request(global.app)
+    const res = await request(app)
       .post('/users/2fa/disable')
       .send({ password: 'password' })
       .auth(token, { type: 'bearer' })
@@ -18,17 +17,17 @@ describe('User service - disable 2fa', () => {
 
     expect(res.body.user.has2fa).toBe(false)
 
-    const recoveryCodes = await (<EntityManager>global.em).getRepository(UserRecoveryCode).find({ user })
+    const recoveryCodes = await em.getRepository(UserRecoveryCode).find({ user })
     expect(recoveryCodes).toHaveLength(0)
 
-    const user2fa = await (<EntityManager>global.em).getRepository(UserTwoFactorAuth).findOne({ user })
+    const user2fa = await em.getRepository(UserTwoFactorAuth).findOne({ user })
     expect(user2fa).toBeNull()
   })
 
   it('should not try to disable 2fa if it isn\'t enabled', async () => {
     const [token] = await createUserAndToken()
 
-    const res = await request(global.app)
+    const res = await request(app)
       .post('/users/2fa/disable')
       .send({ password: 'password' })
       .auth(token, { type: 'bearer' })
@@ -42,7 +41,7 @@ describe('User service - disable 2fa', () => {
     twoFactorAuth.enabled = true
     const [token] = await createUserAndToken({ twoFactorAuth })
 
-    const res = await request(global.app)
+    const res = await request(app)
       .post('/users/2fa/disable')
       .send({ password: 'p@ssw0rd' })
       .auth(token, { type: 'bearer' })

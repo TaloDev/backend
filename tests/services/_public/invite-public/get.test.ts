@@ -1,4 +1,3 @@
-import { EntityManager } from '@mikro-orm/mysql'
 import request from 'supertest'
 import InviteFactory from '../../../fixtures/InviteFactory'
 import OrganisationFactory from '../../../fixtures/OrganisationFactory'
@@ -7,9 +6,9 @@ describe('Invite public service - get', () => {
   it('should return an existing invite', async () => {
     const organisation = await new OrganisationFactory().one()
     const invite = await new InviteFactory().construct(organisation).one()
-    await (<EntityManager>global.em).persistAndFlush(invite)
+    await em.persistAndFlush(invite)
 
-    const res = await request(global.app)
+    const res = await request(app)
       .get(`/public/invites/${invite.token}`)
       .expect(200)
 
@@ -17,7 +16,7 @@ describe('Invite public service - get', () => {
   })
 
   it('should not return a missing invite', async () => {
-    await request(global.app)
+    await request(app)
       .get('/public/invites/abc123')
       .expect(404)
   })

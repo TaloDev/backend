@@ -12,7 +12,7 @@ type EventData = {
   change: number
 }
 
-type AggregatedClickhouseEvent = {
+type AggregatedClickHouseEvent = {
   name: string
   date: string
   count: string
@@ -66,7 +66,7 @@ export default class EventService extends Service {
     const events = await clickhouse.query({
       query,
       format: 'JSONEachRow'
-    }).then((res) => res.json<AggregatedClickhouseEvent>())
+    }).then((res) => res.json<AggregatedClickHouseEvent>())
 
     const data: Record<string, EventData[]> = {}
     for (const event of events) {

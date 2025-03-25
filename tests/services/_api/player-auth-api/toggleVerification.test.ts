@@ -2,7 +2,6 @@ import request from 'supertest'
 import { APIKeyScope } from '../../../../src/entities/api-key'
 import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
 import PlayerFactory from '../../../fixtures/PlayerFactory'
-import { EntityManager } from '@mikro-orm/mysql'
 import bcrypt from 'bcrypt'
 import PlayerAuthFactory from '../../../fixtures/PlayerAuthFactory'
 import PlayerAuthActivity, { PlayerAuthActivityType } from '../../../../src/entities/player-auth-activity'
@@ -19,12 +18,12 @@ describe('Player auth API service - toggle verification', () => {
       })).one()
     })).one()
     const alias = player.aliases[0]
-    await (<EntityManager>global.em).persistAndFlush(player)
+    await em.persistAndFlush(player)
 
     const sessionToken = await player.auth!.createSession(alias)
-    await (<EntityManager>global.em).flush()
+    await em.flush()
 
-    await request(global.app)
+    await request(app)
       .patch('/v1/players/auth/toggle_verification')
       .send({ currentPassword: 'password', verificationEnabled: true })
       .auth(token, { type: 'bearer' })
@@ -33,10 +32,10 @@ describe('Player auth API service - toggle verification', () => {
       .set('x-talo-session', sessionToken)
       .expect(204)
 
-    await (<EntityManager>global.em).refresh(player.auth!)
+    await em.refresh(player.auth!)
     expect(player.auth!.verificationEnabled).toBe(true)
 
-    const activity = await (<EntityManager>global.em).getRepository(PlayerAuthActivity).findOne({
+    const activity = await em.getRepository(PlayerAuthActivity).findOne({
       type: PlayerAuthActivityType.VERFICIATION_TOGGLED,
       player: player.id,
       extra: {
@@ -57,12 +56,12 @@ describe('Player auth API service - toggle verification', () => {
       })).one()
     })).one()
     const alias = player.aliases[0]
-    await (<EntityManager>global.em).persistAndFlush(player)
+    await em.persistAndFlush(player)
 
     const sessionToken = await player.auth!.createSession(alias)
-    await (<EntityManager>global.em).flush()
+    await em.flush()
 
-    await request(global.app)
+    await request(app)
       .patch('/v1/players/auth/toggle_verification')
       .send({ currentPassword: 'password', verificationEnabled: false })
       .auth(token, { type: 'bearer' })
@@ -71,10 +70,10 @@ describe('Player auth API service - toggle verification', () => {
       .set('x-talo-session', sessionToken)
       .expect(204)
 
-    await (<EntityManager>global.em).refresh(player.auth!)
+    await em.refresh(player.auth!)
     expect(player.auth!.verificationEnabled).toBe(false)
 
-    const activity = await (<EntityManager>global.em).getRepository(PlayerAuthActivity).findOne({
+    const activity = await em.getRepository(PlayerAuthActivity).findOne({
       type: PlayerAuthActivityType.VERFICIATION_TOGGLED,
       player: player.id,
       extra: {
@@ -95,12 +94,12 @@ describe('Player auth API service - toggle verification', () => {
       })).one()
     })).one()
     const alias = player.aliases[0]
-    await (<EntityManager>global.em).persistAndFlush(player)
+    await em.persistAndFlush(player)
 
     const sessionToken = await player.auth!.createSession(alias)
-    await (<EntityManager>global.em).flush()
+    await em.flush()
 
-    const res = await request(global.app)
+    const res = await request(app)
       .patch('/v1/players/auth/toggle_verification')
       .send({ currentPassword: 'password', verificationEnabled: true })
       .auth(token, { type: 'bearer' })
@@ -114,7 +113,7 @@ describe('Player auth API service - toggle verification', () => {
       errorCode: 'VERIFICATION_EMAIL_REQUIRED'
     })
 
-    const activity = await (<EntityManager>global.em).getRepository(PlayerAuthActivity).findOne({
+    const activity = await em.getRepository(PlayerAuthActivity).findOne({
       type: PlayerAuthActivityType.TOGGLE_VERIFICATION_FAILED,
       player: player.id,
       extra: {
@@ -136,12 +135,12 @@ describe('Player auth API service - toggle verification', () => {
       })).one()
     })).one()
     const alias = player.aliases[0]
-    await (<EntityManager>global.em).persistAndFlush(player)
+    await em.persistAndFlush(player)
 
     const sessionToken = await player.auth!.createSession(alias)
-    await (<EntityManager>global.em).flush()
+    await em.flush()
 
-    await request(global.app)
+    await request(app)
       .patch('/v1/players/auth/toggle_verification')
       .send({ currentPassword: 'password', verificationEnabled: true, email: 'bozzz@mail.com' })
       .auth(token, { type: 'bearer' })
@@ -150,11 +149,11 @@ describe('Player auth API service - toggle verification', () => {
       .set('x-talo-session', sessionToken)
       .expect(204)
 
-    await (<EntityManager>global.em).refresh(player.auth!)
+    await em.refresh(player.auth!)
     expect(player.auth!.verificationEnabled).toBe(true)
     expect(player.auth!.email).toBe('bozzz@mail.com')
 
-    const activity = await (<EntityManager>global.em).getRepository(PlayerAuthActivity).findOne({
+    const activity = await em.getRepository(PlayerAuthActivity).findOne({
       type: PlayerAuthActivityType.VERFICIATION_TOGGLED,
       player: player.id,
       extra: {
@@ -175,12 +174,12 @@ describe('Player auth API service - toggle verification', () => {
       })).one()
     })).one()
     const alias = player.aliases[0]
-    await (<EntityManager>global.em).persistAndFlush(player)
+    await em.persistAndFlush(player)
 
     const sessionToken = await player.auth!.createSession(alias)
-    await (<EntityManager>global.em).flush()
+    await em.flush()
 
-    const res = await request(global.app)
+    const res = await request(app)
       .patch('/v1/players/auth/toggle_verification')
       .send({ currentPassword: 'wrongpassword', verificationEnabled: true })
       .auth(token, { type: 'bearer' })
@@ -194,7 +193,7 @@ describe('Player auth API service - toggle verification', () => {
       errorCode: 'INVALID_CREDENTIALS'
     })
 
-    const activity = await (<EntityManager>global.em).getRepository(PlayerAuthActivity).findOne({
+    const activity = await em.getRepository(PlayerAuthActivity).findOne({
       type: PlayerAuthActivityType.TOGGLE_VERIFICATION_FAILED,
       player: player.id,
       extra: {
@@ -216,12 +215,12 @@ describe('Player auth API service - toggle verification', () => {
       })).one()
     })).one()
     const alias = player.aliases[0]
-    await (<EntityManager>global.em).persistAndFlush(player)
+    await em.persistAndFlush(player)
 
     const sessionToken = await player.auth!.createSession(alias)
-    await (<EntityManager>global.em).flush()
+    await em.flush()
 
-    await request(global.app)
+    await request(app)
       .patch('/v1/players/auth/toggle_verification')
       .send({ currentPassword: 'password', verificationEnabled: true })
       .auth(token, { type: 'bearer' })
@@ -242,12 +241,12 @@ describe('Player auth API service - toggle verification', () => {
       })).one()
     })).one()
     const alias = player.aliases[0]
-    await (<EntityManager>global.em).persistAndFlush(player)
+    await em.persistAndFlush(player)
 
     const sessionToken = await player.auth!.createSession(alias)
-    await (<EntityManager>global.em).flush()
+    await em.flush()
 
-    const res = await request(global.app)
+    const res = await request(app)
       .patch('/v1/players/auth/toggle_verification')
       .send({ currentPassword: 'password', verificationEnabled: true, email: 'blah' })
       .auth(token, { type: 'bearer' })
@@ -261,7 +260,7 @@ describe('Player auth API service - toggle verification', () => {
       errorCode: 'INVALID_EMAIL'
     })
 
-    const activity = await (<EntityManager>global.em).getRepository(PlayerAuthActivity).findOne({
+    const activity = await em.getRepository(PlayerAuthActivity).findOne({
       type: PlayerAuthActivityType.TOGGLE_VERIFICATION_FAILED,
       player: player.id,
       extra: {

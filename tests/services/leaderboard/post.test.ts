@@ -1,4 +1,3 @@
-import { EntityManager } from '@mikro-orm/mysql'
 import request from 'supertest'
 import { UserType } from '../../../src/entities/user'
 import GameFactory from '../../fixtures/GameFactory'
@@ -16,13 +15,13 @@ describe('Leaderboard service - post', () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({ type }, organisation)
 
-    const res = await request(global.app)
+    const res = await request(app)
       .post(`/games/${game.id}/leaderboards`)
       .send({ internalName: 'highscores', name: 'Highscores', sortMode: 'desc', unique: true, refreshInterval: 'never' })
       .auth(token, { type: 'bearer' })
       .expect(statusCode)
 
-    const activity = await (<EntityManager>global.em).getRepository(GameActivity).findOne({
+    const activity = await em.getRepository(GameActivity).findOne({
       type: GameActivityType.LEADERBOARD_CREATED,
       game
     })
@@ -44,7 +43,7 @@ describe('Leaderboard service - post', () => {
     const [, otherGame] = await createOrganisationAndGame()
     const [token] = await createUserAndToken()
 
-    const res = await request(global.app)
+    const res = await request(app)
       .post(`/games/${otherGame.id}/leaderboards`)
       .send({ internalName: 'highscores', name: 'Highscores', sortMode: 'desc', unique: true, refreshInterval: 'never' })
       .auth(token, { type: 'bearer' })
@@ -56,7 +55,7 @@ describe('Leaderboard service - post', () => {
   it('should not create a leaderboard for a non-existent game', async () => {
     const [token] = await createUserAndToken()
 
-    const res = await request(global.app)
+    const res = await request(app)
       .post('/games/99999/leaderboards')
       .send({ internalName: 'highscores', name: 'Highscores', sortMode: 'desc', unique: true, refreshInterval: 'never' })
       .auth(token, { type: 'bearer' })
@@ -69,7 +68,7 @@ describe('Leaderboard service - post', () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({}, organisation)
 
-    const res = await request(global.app)
+    const res = await request(app)
       .post(`/games/${game.id}/leaderboards`)
       .send({ internalName: 'highscores', name: 'Highscores', sortMode: 'blah', unique: true, refreshInterval: 'never' })
       .auth(token, { type: 'bearer' })
@@ -87,9 +86,9 @@ describe('Leaderboard service - post', () => {
     const [token] = await createUserAndToken({}, organisation)
 
     const leaderboard = await new LeaderboardFactory([game]).state(() => ({ internalName: 'highscores' })).one()
-    await (<EntityManager>global.em).persistAndFlush(leaderboard)
+    await em.persistAndFlush(leaderboard)
 
-    const res = await request(global.app)
+    const res = await request(app)
       .post(`/games/${game.id}/leaderboards`)
       .send({ internalName: 'highscores', name: 'Highscores', sortMode: 'asc', unique: true, refreshInterval: 'never' })
       .auth(token, { type: 'bearer' })
@@ -108,9 +107,9 @@ describe('Leaderboard service - post', () => {
 
     const otherGame = await new GameFactory(organisation).one()
     const otherLeaderboard = await new LeaderboardFactory([otherGame]).state(() => ({ internalName: 'time-survived' })).one()
-    await (<EntityManager>global.em).persistAndFlush(otherLeaderboard)
+    await em.persistAndFlush(otherLeaderboard)
 
-    await request(global.app)
+    await request(app)
       .post(`/games/${game.id}/leaderboards`)
       .send({ internalName: 'time-survived', name: 'Time survived', sortMode: 'asc', unique: true, refreshInterval: 'never' })
       .auth(token, { type: 'bearer' })

@@ -2,7 +2,7 @@ import { Collection, FilterQuery, MikroORM, EntityManager } from '@mikro-orm/mys
 import { HasPermission, Service, Request, Response, Route, Validate, ValidationCondition } from 'koa-clay'
 import DataExport, { DataExportAvailableEntities, DataExportStatus } from '../entities/data-export'
 import DataExportPolicy from '../policies/data-export.policy'
-import Event, { ClickhouseEvent, createEventFromClickhouse } from '../entities/event'
+import Event, { ClickHouseEvent } from '../entities/event'
 import AdmZip from 'adm-zip'
 import { get } from 'lodash'
 import Prop from '../entities/prop'
@@ -24,7 +24,7 @@ import PlayerProp from '../entities/player-prop'
 import { Job, Queue } from 'bullmq'
 import createEmailQueue from '../lib/queues/createEmailQueue'
 import { EmailConfig } from '../lib/messaging/sendEmail'
-import createClickhouseClient from '../lib/clickhouse/createClient'
+import createClickHouseClient from '../lib/clickhouse/createClient'
 import GameFeedback from '../entities/game-feedback'
 
 type PropCollection = Collection<PlayerProp, Player>
@@ -119,7 +119,7 @@ export default class DataExportService extends Service {
   }
 
   private async getEvents(dataExport: DataExport, em: EntityManager, includeDevData: boolean): Promise<Event[]> {
-    const clickhouse = createClickhouseClient()
+    const clickhouse = createClickHouseClient()
 
     let query = `
       SELECT *
@@ -134,9 +134,9 @@ export default class DataExportService extends Service {
     const clickhouseEvents = await clickhouse.query({
       query,
       format: 'JSONEachRow'
-    }).then((res) => res.json<ClickhouseEvent>())
+    }).then((res) => res.json<ClickHouseEvent>())
 
-    const events = await Promise.all(clickhouseEvents.map((data) => createEventFromClickhouse(clickhouse, em, data)))
+    const events = await Promise.all(clickhouseEvents.map((data) => new Event().hydrate(em, data, clickhouse)))
     await clickhouse.close()
 
     return events
@@ -150,7 +150,10 @@ export default class DataExportService extends Service {
       query.andWhere(devDataPlayerFilter(em))
     }
 
-    return await query.getResult()
+    const res = await query.getResult()
+    await em.populate(res, ['props'])
+
+    return res
   }
 
   private async getPlayerAliases(dataExport: DataExport, em: EntityManager, includeDevData: boolean): Promise<PlayerAlias[]> {

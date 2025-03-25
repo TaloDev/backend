@@ -1,4 +1,3 @@
-import { EntityManager } from '@mikro-orm/mysql'
 import request from 'supertest'
 import { UserType } from '../../../src/entities/user'
 import createUserAndToken from '../../utils/createUserAndToken'
@@ -25,14 +24,14 @@ describe('Integration service - sync leaderboards', () => {
 
     const config = await new IntegrationConfigFactory().state(() => ({ syncLeaderboards: true })).one()
     const integration = await new IntegrationFactory().construct(IntegrationType.STEAMWORKS, game, config).one()
-    await (<EntityManager>global.em).persistAndFlush(integration)
+    await em.persistAndFlush(integration)
 
-    const res = await request(global.app)
+    const res = await request(app)
       .post(`/games/${game.id}/integrations/${integration.id}/sync-leaderboards`)
       .auth(token, { type: 'bearer' })
       .expect(statusCode)
 
-    const activity = await (<EntityManager>global.em).getRepository(GameActivity).findOne({
+    const activity = await em.getRepository(GameActivity).findOne({
       type: GameActivityType.GAME_INTEGRATION_STEAMWORKS_LEADERBOARDS_SYNCED,
       game
     })
@@ -56,14 +55,14 @@ describe('Integration service - sync leaderboards', () => {
 
     const config = await new IntegrationConfigFactory().state(() => ({ syncLeaderboards: true })).one()
     const integration = await new IntegrationFactory().construct(IntegrationType.STEAMWORKS, game, config).one()
-    await (<EntityManager>global.em).persistAndFlush(integration)
+    await em.persistAndFlush(integration)
 
-    const res = await request(global.app)
+    const res = await request(app)
       .post(`/games/${game.id}/integrations/${integration.id}/sync-leaderboards`)
       .auth(token, { type: 'bearer' })
       .expect(403)
 
-    const activity = await (<EntityManager>global.em).getRepository(GameActivity).findOne({
+    const activity = await em.getRepository(GameActivity).findOne({
       type: GameActivityType.GAME_INTEGRATION_STEAMWORKS_LEADERBOARDS_SYNCED,
       game
     })
@@ -79,14 +78,14 @@ describe('Integration service - sync leaderboards', () => {
 
     const config = await new IntegrationConfigFactory().state(() => ({ syncLeaderboards: false })).one()
     const integration = await new IntegrationFactory().construct(IntegrationType.STEAMWORKS, game, config).one()
-    await (<EntityManager>global.em).persistAndFlush(integration)
+    await em.persistAndFlush(integration)
 
-    const res = await request(global.app)
+    const res = await request(app)
       .post(`/games/${game.id}/integrations/${integration.id}/sync-leaderboards`)
       .auth(token, { type: 'bearer' })
       .expect(403)
 
-    const activity = await (<EntityManager>global.em).getRepository(GameActivity).findOne({
+    const activity = await em.getRepository(GameActivity).findOne({
       type: GameActivityType.GAME_INTEGRATION_STEAMWORKS_LEADERBOARDS_SYNCED,
       game
     })
@@ -102,14 +101,14 @@ describe('Integration service - sync leaderboards', () => {
 
     const config = await new IntegrationConfigFactory().state(() => ({ syncLeaderboards: false })).one()
     const integration = await new IntegrationFactory().construct(IntegrationType.STEAMWORKS, game, config).one()
-    await (<EntityManager>global.em).persistAndFlush(integration)
+    await em.persistAndFlush(integration)
 
-    const res = await request(global.app)
+    const res = await request(app)
       .post(`/games/${game.id}/integrations/54/sync-leaderboards`)
       .auth(token, { type: 'bearer' })
       .expect(404)
 
-    const activity = await (<EntityManager>global.em).getRepository(GameActivity).findOne({
+    const activity = await em.getRepository(GameActivity).findOne({
       type: GameActivityType.GAME_INTEGRATION_STEAMWORKS_LEADERBOARDS_SYNCED,
       game
     })

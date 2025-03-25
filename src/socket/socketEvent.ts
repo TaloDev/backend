@@ -4,7 +4,7 @@ import { formatDateForClickHouse } from '../lib/clickhouse/formatDateTime'
 import { SocketMessageRequest, SocketMessageResponse } from './messages/socketMessage'
 import { ClickHouseClient } from '@clickhouse/client'
 
-export type ClickhouseSocketEvent = {
+export type ClickHouseSocketEvent = {
   event_type: string
   req_or_res: 'req' | 'res'
   code: string | null
@@ -27,7 +27,7 @@ export type SocketEvent = {
 
 export type SocketEventData = Omit<SocketEvent, 'id' | 'createdAt'>
 
-function getInsertableData(event: SocketEventData): ClickhouseSocketEvent {
+function getInsertableData(event: SocketEventData): ClickHouseSocketEvent {
   return {
     event_type: event.eventType,
     req_or_res: event.reqOrRes,
@@ -35,7 +35,7 @@ function getInsertableData(event: SocketEventData): ClickhouseSocketEvent {
     game_id: event.gameId,
     player_alias_id: event.playerAliasId,
     dev_build: event.devBuild,
-    created_at: formatDateForClickHouse(new Date(), true)
+    created_at: formatDateForClickHouse(new Date())
   }
 }
 

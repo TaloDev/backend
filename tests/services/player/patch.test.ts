@@ -1,4 +1,4 @@
-import { Collection, EntityManager } from '@mikro-orm/mysql'
+import { Collection } from '@mikro-orm/mysql'
 import request from 'supertest'
 import { UserType } from '../../../src/entities/user'
 import PlayerFactory from '../../fixtures/PlayerFactory'
@@ -24,9 +24,9 @@ describe('Player service - patch', () => {
       ])
     })).one()
 
-    await (<EntityManager>global.em).persistAndFlush(player)
+    await em.persistAndFlush(player)
 
-    const res = await request(global.app)
+    const res = await request(app)
       .patch(`/games/${game.id}/players/${player.id}`)
       .send({
         props: [
@@ -39,7 +39,7 @@ describe('Player service - patch', () => {
       .auth(token, { type: 'bearer' })
       .expect(statusCode)
 
-    const activity = await (<EntityManager>global.em).getRepository(GameActivity).findOne({
+    const activity = await em.getRepository(GameActivity).findOne({
       type: GameActivityType.PLAYER_PROPS_UPDATED,
       extra: {
         playerId: player.id
@@ -77,9 +77,9 @@ describe('Player service - patch', () => {
       ])
     })).one()
 
-    await (<EntityManager>global.em).persistAndFlush(player)
+    await em.persistAndFlush(player)
 
-    const res = await request(global.app)
+    const res = await request(app)
       .patch(`/games/${game.id}/players/${player.id}`)
       .send({
         props: [
@@ -109,9 +109,9 @@ describe('Player service - patch', () => {
     const [token] = await createUserAndToken({}, organisation)
 
     const player = await new PlayerFactory([game]).one()
-    await (<EntityManager>global.em).persistAndFlush(player)
+    await em.persistAndFlush(player)
 
-    const res = await request(global.app)
+    const res = await request(app)
       .patch(`/games/${game.id}/players/${player.id}`)
       .send({
         props: {
@@ -132,7 +132,7 @@ describe('Player service - patch', () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({}, organisation)
 
-    const res = await request(global.app)
+    const res = await request(app)
       .patch(`/games/${game.id}/players/2313`)
       .send({
         props: [
@@ -153,9 +153,9 @@ describe('Player service - patch', () => {
     const [token] = await createUserAndToken({})
 
     const player = await new PlayerFactory([otherGame]).one()
-    await (<EntityManager>global.em).persistAndFlush(player)
+    await em.persistAndFlush(player)
 
-    const res = await request(global.app)
+    const res = await request(app)
       .patch(`/games/${otherGame.id}/players/${player.id}`)
       .send({
         props: [
@@ -178,9 +178,9 @@ describe('Player service - patch', () => {
     const player = await new PlayerFactory([game]).state((player) => ({
       props: new Collection<PlayerProp>(player, [])
     })).one()
-    await (<EntityManager>global.em).persistAndFlush(player)
+    await em.persistAndFlush(player)
 
-    const res = await request(global.app)
+    const res = await request(app)
       .patch(`/games/${game.id}/players/${player.id}`)
       .send({
         props: [
@@ -210,11 +210,11 @@ describe('Player service - patch', () => {
     const [token] = await createUserAndToken({}, organisation)
 
     const player = await new PlayerFactory([game]).one()
-    await (<EntityManager>global.em).persistAndFlush(player)
+    await em.persistAndFlush(player)
 
     const propsLength = player.props.length
 
-    const res = await request(global.app)
+    const res = await request(app)
       .patch(`/games/${game.id}/players/${player.id}`)
       .send({
         props: [
@@ -235,7 +235,7 @@ describe('Player service - patch', () => {
       message: 'Prop keys starting with \'META_\' are reserved for internal systems, please use another key name'
     })
 
-    await (<EntityManager>global.em).refresh(player)
+    await em.refresh(player)
     expect(player.props.length).toBe(propsLength)
   })
 })

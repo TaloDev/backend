@@ -8,7 +8,7 @@ export default class DocumentationService extends Service {
     return {
       status: 200,
       body: {
-        docs: global.clay.docs
+        docs: clay.docs
       }
     }
   }

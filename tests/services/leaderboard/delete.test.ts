@@ -1,4 +1,3 @@
-import { EntityManager } from '@mikro-orm/mysql'
 import request from 'supertest'
 import { UserType } from '../../../src/entities/user'
 import LeaderboardFactory from '../../fixtures/LeaderboardFactory'
@@ -15,14 +14,14 @@ describe('Leaderboard service - delete', () => {
     const [token] = await createUserAndToken({ type }, organisation)
 
     const leaderboard = await new LeaderboardFactory([game]).one()
-    await (<EntityManager>global.em).persistAndFlush(leaderboard)
+    await em.persistAndFlush(leaderboard)
 
-    const res = await request(global.app)
+    const res = await request(app)
       .delete(`/games/${game.id}/leaderboards/${leaderboard.id}`)
       .auth(token, { type: 'bearer' })
       .expect(statusCode)
 
-    const activity = await (<EntityManager>global.em).getRepository(GameActivity).findOne({
+    const activity = await em.getRepository(GameActivity).findOne({
       type: GameActivityType.LEADERBOARD_DELETED,
       game
     })
@@ -41,9 +40,9 @@ describe('Leaderboard service - delete', () => {
     const [token] = await createUserAndToken({ type: UserType.ADMIN })
 
     const leaderboard = await new LeaderboardFactory([otherGame]).one()
-    await (<EntityManager>global.em).persistAndFlush([leaderboard])
+    await em.persistAndFlush([leaderboard])
 
-    const res = await request(global.app)
+    const res = await request(app)
       .delete(`/games/${otherGame.id}/leaderboards/${leaderboard.id}`)
       .auth(token, { type: 'bearer' })
       .expect(403)
@@ -55,7 +54,7 @@ describe('Leaderboard service - delete', () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({ type: UserType.ADMIN }, organisation)
 
-    const res = await request(global.app)
+    const res = await request(app)
       .delete(`/games/${game.id}/leaderboards/31223`)
       .auth(token, { type: 'bearer' })
       .expect(404)

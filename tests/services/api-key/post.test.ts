@@ -1,4 +1,3 @@
-import { EntityManager } from '@mikro-orm/mysql'
 import request from 'supertest'
 import { UserType } from '../../../src/entities/user'
 import GameActivity, { GameActivityType } from '../../../src/entities/game-activity'
@@ -13,7 +12,7 @@ describe('API key service - post', () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({ type, emailConfirmed: true }, organisation)
 
-    const res = await request(global.app)
+    const res = await request(app)
       .post(`/games/${game.id}/api-keys`)
       .send({ scopes: ['read:players', 'write:events'] })
       .auth(token, { type: 'bearer' })
@@ -24,7 +23,7 @@ describe('API key service - post', () => {
       expect(res.body.apiKey.scopes).toStrictEqual(['read:players', 'write:events'])
     }
 
-    const activity = await (<EntityManager>global.em).getRepository(GameActivity).findOne({
+    const activity = await em.getRepository(GameActivity).findOne({
       type: GameActivityType.API_KEY_CREATED,
       game,
       extra: {
@@ -45,7 +44,7 @@ describe('API key service - post', () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({ type: UserType.ADMIN }, organisation)
 
-    const res = await request(global.app)
+    const res = await request(app)
       .post(`/games/${game.id}/api-keys`)
       .send({ scopes: ['read:players', 'write:events'] })
       .auth(token, { type: 'bearer' })
@@ -57,7 +56,7 @@ describe('API key service - post', () => {
   it('should not create an api key for a non-existent game', async () => {
     const [token] = await createUserAndToken({ emailConfirmed: true, type: UserType.ADMIN })
 
-    const res = await request(global.app)
+    const res = await request(app)
       .post('/games/99999/api-keys')
       .send({ scopes: [] })
       .auth(token, { type: 'bearer' })
@@ -70,7 +69,7 @@ describe('API key service - post', () => {
     const [, otherGame] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({ emailConfirmed: true, type: UserType.ADMIN })
 
-    const res = await request(global.app)
+    const res = await request(app)
       .post(`/games/${otherGame.id}/api-keys`)
       .send({ scopes: [] })
       .auth(token, { type: 'bearer' })

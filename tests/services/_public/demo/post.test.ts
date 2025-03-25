@@ -1,4 +1,3 @@
-import { EntityManager } from '@mikro-orm/mysql'
 import request from 'supertest'
 import Organisation from '../../../../src/entities/organisation'
 import OrganisationFactory from '../../../fixtures/OrganisationFactory'
@@ -9,18 +8,17 @@ import GameFactory from '../../../fixtures/GameFactory'
 import { sub } from 'date-fns'
 import randomDate from '../../../../src/lib/dates/randomDate'
 import { formatDateForClickHouse } from '../../../../src/lib/clickhouse/formatDateTime'
-import { ClickHouseClient } from '@clickhouse/client'
 
 describe('Demo service - post', () => {
   let demoOrg: Organisation
 
   beforeAll(async () => {
     demoOrg = await new OrganisationFactory().demo().one()
-    await (<EntityManager>global.em).persistAndFlush(demoOrg)
+    await em.persistAndFlush(demoOrg)
   })
 
   it('should create a demo user and then delete them', async () => {
-    const res = await request(global.app)
+    const res = await request(app)
       .post('/public/demo')
       .expect(200)
 
@@ -30,18 +28,18 @@ describe('Demo service - post', () => {
 
     expect(res.body.accessToken).toBeTruthy()
 
-    const user = await (<EntityManager>global.em).getRepository(User).findOne(res.body.user.id)
+    const user = await em.getRepository(User).findOne(res.body.user.id)
     expect(user).toBeNull()
   })
 
   it('should insert events if there arent any for the last month', async () => {
     const game = await new GameFactory(demoOrg).one()
     const players = await new PlayerFactory([game]).many(2)
-    await (<EntityManager>global.em).persistAndFlush(players)
+    await em.persistAndFlush(players)
 
     const date = formatDateForClickHouse(sub(new Date(), { months: 1 }))
 
-    let eventsThisMonth = await (<ClickHouseClient>global.clickhouse).query({
+    let eventsThisMonth = await clickhouse.query({
       query: `SELECT count() as count FROM events WHERE game_id = ${game.id} AND created_at >= '${date}'`,
       format: 'JSONEachRow'
     }).then((res) => res.json<{ count: string }>())
@@ -52,17 +50,17 @@ describe('Demo service - post', () => {
     const randomEvents = await new EventFactory(players).state(() => ({
       createdAt: randomDate(sub(new Date(), { years: 1 }), sub(new Date(), { months: 2 }))
     })).many(20)
-    await (<ClickHouseClient>global.clickhouse).insert({
+    await clickhouse.insert({
       table: 'events',
-      values: randomEvents.map((event) => event.getInsertableData()),
+      values: randomEvents.map((event) => event.toInsertable()),
       format: 'JSONEachRow'
     })
 
-    await request(global.app)
+    await request(app)
       .post('/public/demo')
       .expect(200)
 
-    eventsThisMonth = await (<ClickHouseClient>global.clickhouse).query({
+    eventsThisMonth = await clickhouse.query({
       query: `SELECT count() as count FROM events WHERE game_id = ${game.id} AND created_at >= '${date}'`,
       format: 'JSONEachRow'
     }).then((res) => res.json<{ count: string }>())

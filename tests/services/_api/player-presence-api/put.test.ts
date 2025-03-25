@@ -1,5 +1,4 @@
 import request from 'supertest'
-import { EntityManager } from '@mikro-orm/mysql'
 import { APIKeyScope } from '../../../../src/entities/api-key'
 import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
 import PlayerFactory from '../../../fixtures/PlayerFactory'
@@ -11,9 +10,9 @@ describe('Player presence API service - put', () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_PLAYERS])
 
     const player = await new PlayerFactory([apiKey.game]).one()
-    await (<EntityManager>global.em).persistAndFlush(player)
+    await em.persistAndFlush(player)
 
-    const res = await request(global.app)
+    const res = await request(app)
       .put('/v1/players/presence')
       .auth(token, { type: 'bearer' })
       .set('x-talo-alias', String(player.aliases[0].id))
@@ -28,9 +27,9 @@ describe('Player presence API service - put', () => {
     const [apiKey, token] = await createAPIKeyAndToken([])
 
     const player = await new PlayerFactory([apiKey.game]).one()
-    await (<EntityManager>global.em).persistAndFlush(player)
+    await em.persistAndFlush(player)
 
-    await request(global.app)
+    await request(app)
       .put('/v1/players/presence')
       .auth(token, { type: 'bearer' })
       .set('x-talo-alias', String(player.aliases[0].id))
@@ -41,7 +40,7 @@ describe('Player presence API service - put', () => {
   it('should not update presence with an invalid alias', async () => {
     const [, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_PLAYERS])
 
-    const res = await request(global.app)
+    const res = await request(app)
       .put('/v1/players/presence')
       .auth(token, { type: 'bearer' })
       .set('x-talo-alias', '32144')
@@ -59,11 +58,11 @@ describe('Player presence API service - put', () => {
       APIKeyScope.WRITE_PLAYERS
     ])
 
-    await (<EntityManager>global.em).persistAndFlush(player)
+    await em.persistAndFlush(player)
 
     await createTestSocket(`/?ticket=${ticket}`, async (client) => {
       await client.identify(identifyMessage)
-      await request(global.app)
+      await request(app)
         .put('/v1/players/presence')
         .auth(token, { type: 'bearer' })
         .set('x-talo-alias', String(player.aliases[0].id))
@@ -85,16 +84,16 @@ describe('Player presence API service - put', () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_PLAYERS])
 
     const player = await new PlayerFactory([apiKey.game]).one()
-    await (<EntityManager>global.em).persistAndFlush(player)
+    await em.persistAndFlush(player)
 
-    await request(global.app)
+    await request(app)
       .put('/v1/players/presence')
       .auth(token, { type: 'bearer' })
       .set('x-talo-alias', String(player.aliases[0].id))
       .send({ online: true, customStatus: 'Initial status' })
       .expect(200)
 
-    const res = await request(global.app)
+    const res = await request(app)
       .put('/v1/players/presence')
       .auth(token, { type: 'bearer' })
       .set('x-talo-alias', String(player.aliases[0].id))

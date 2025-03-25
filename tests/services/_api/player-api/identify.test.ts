@@ -1,4 +1,4 @@
-import { Collection, EntityManager } from '@mikro-orm/mysql'
+import { Collection } from '@mikro-orm/mysql'
 import request from 'supertest'
 import { APIKeyScope } from '../../../../src/entities/api-key'
 import PlayerFactory from '../../../fixtures/PlayerFactory'
@@ -16,9 +16,9 @@ describe('Player API service - identify', () => {
   it('should identify a player', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_PLAYERS])
     const player = await new PlayerFactory([apiKey.game]).one()
-    await (<EntityManager>global.em).persistAndFlush(player)
+    await em.persistAndFlush(player)
 
-    const res = await request(global.app)
+    const res = await request(app)
       .get('/v1/players/identify')
       .query({ service: player.aliases[0].service, identifier: player.aliases[0].identifier })
       .auth(token, { type: 'bearer' })
@@ -39,15 +39,15 @@ describe('Player API service - identify', () => {
         aliases: new Collection<PlayerAlias>(player, [alias])
       }
     }).one()
-    await (<EntityManager>global.em).persistAndFlush(player)
+    await em.persistAndFlush(player)
 
-    await request(global.app)
+    await request(app)
       .get('/v1/players/identify')
       .query({ service: player.aliases[0].service, identifier: player.aliases[0].identifier })
       .auth(token, { type: 'bearer' })
       .expect(200)
 
-    await (<EntityManager>global.em).refresh(player, { populate: ['aliases'] })
+    await em.refresh(player, { populate: ['aliases'] })
     expect(isToday(new Date(player.lastSeenAt))).toBe(true)
     expect(isToday(new Date(player.aliases[0].lastSeenAt))).toBe(true)
   })
@@ -55,7 +55,7 @@ describe('Player API service - identify', () => {
   it('should not identify a player if the scope is missing', async () => {
     const [, token] = await createAPIKeyAndToken([])
 
-    await request(global.app)
+    await request(app)
       .get('/v1/players/identify')
       .query({ service: 'steam', identifier: '2131231' })
       .auth(token, { type: 'bearer' })
@@ -65,7 +65,7 @@ describe('Player API service - identify', () => {
   it('should not identify a non-existent player without the write scope', async () => {
     const [, token] = await createAPIKeyAndToken([APIKeyScope.READ_PLAYERS])
 
-    const res = await request(global.app)
+    const res = await request(app)
       .get('/v1/players/identify')
       .query({ service: 'steam', identifier: '2131231' })
       .auth(token, { type: 'bearer' })
@@ -77,7 +77,7 @@ describe('Player API service - identify', () => {
   it('should identify a non-existent player by creating a new player with the write scope', async () => {
     const [, token] = await createAPIKeyAndToken([APIKeyScope.READ_PLAYERS, APIKeyScope.WRITE_PLAYERS])
 
-    const res = await request(global.app)
+    const res = await request(app)
       .get('/v1/players/identify')
       .query({ service: 'steam', identifier: '2131231' })
       .auth(token, { type: 'bearer' })
@@ -108,12 +108,12 @@ describe('Player API service - identify', () => {
         new PlayerProp(player, 'lastSeenAtTesting', 'yes')
       ])
     })).one()
-    await (<EntityManager>global.em).persistAndFlush([group, player])
+    await em.persistAndFlush([group, player])
 
     const playerCount = await group.members.loadCount()
     expect(playerCount).toEqual(0)
 
-    const res = await request(global.app)
+    const res = await request(app)
       .get('/v1/players/identify')
       .query({ service: player.aliases[0].service, identifier: player.aliases[0].identifier })
       .auth(token, { type: 'bearer' })
@@ -128,7 +128,7 @@ describe('Player API service - identify', () => {
   it('should not create a talo alias', async () => {
     const [, token] = await createAPIKeyAndToken([APIKeyScope.READ_PLAYERS, APIKeyScope.WRITE_PLAYERS])
 
-    const res = await request(global.app)
+    const res = await request(app)
       .get('/v1/players/identify')
       .query({ service: 'talo', identifier: 'whatever' })
       .auth(token, { type: 'bearer' })
@@ -140,9 +140,9 @@ describe('Player API service - identify', () => {
   it('should require the service to be set', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_PLAYERS])
     const player = await new PlayerFactory([apiKey.game]).one()
-    await (<EntityManager>global.em).persistAndFlush(player)
+    await em.persistAndFlush(player)
 
-    const res = await request(global.app)
+    const res = await request(app)
       .get('/v1/players/identify')
       .query({ identifier: player.aliases[0].identifier })
       .auth(token, { type: 'bearer' })
@@ -158,9 +158,9 @@ describe('Player API service - identify', () => {
   it('should require the service to be a non-empty string', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_PLAYERS])
     const player = await new PlayerFactory([apiKey.game]).one()
-    await (<EntityManager>global.em).persistAndFlush(player)
+    await em.persistAndFlush(player)
 
-    const res = await request(global.app)
+    const res = await request(app)
       .get('/v1/players/identify')
       .query({ service: '', identifier: player.aliases[0].identifier })
       .auth(token, { type: 'bearer' })
@@ -176,9 +176,9 @@ describe('Player API service - identify', () => {
   it('should require the identifier to be set', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_PLAYERS])
     const player = await new PlayerFactory([apiKey.game]).one()
-    await (<EntityManager>global.em).persistAndFlush(player)
+    await em.persistAndFlush(player)
 
-    const res = await request(global.app)
+    const res = await request(app)
       .get('/v1/players/identify')
       .query({ service: player.aliases[0].service })
       .auth(token, { type: 'bearer' })
@@ -194,9 +194,9 @@ describe('Player API service - identify', () => {
   it('should require the identifier to be a non-empty string', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_PLAYERS])
     const player = await new PlayerFactory([apiKey.game]).one()
-    await (<EntityManager>global.em).persistAndFlush(player)
+    await em.persistAndFlush(player)
 
-    const res = await request(global.app)
+    const res = await request(app)
       .get('/v1/players/identify')
       .query({ service: player.aliases[0].service, identifier: '' })
       .auth(token, { type: 'bearer' })
@@ -210,8 +210,6 @@ describe('Player API service - identify', () => {
   })
 
   it('should identify a Talo player alias with a valid session token', async () => {
-    const em: EntityManager = global.em
-
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_PLAYERS, APIKeyScope.WRITE_PLAYERS])
     const player = await new PlayerFactory([apiKey.game]).withTaloAlias().one()
 
@@ -219,7 +217,7 @@ describe('Player API service - identify', () => {
     const sessionToken = await player.auth!.createSession(player.aliases[0])
     await em.flush()
 
-    await request(global.app)
+    await request(app)
       .get('/v1/players/identify')
       .query({ service: player.aliases[0].service, identifier: player.aliases[0].identifier })
       .auth(token, { type: 'bearer' })
@@ -228,13 +226,11 @@ describe('Player API service - identify', () => {
   })
 
   it('should not identify a Talo player alias with a missing session token', async () => {
-    const em: EntityManager = global.em
-
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_PLAYERS, APIKeyScope.WRITE_PLAYERS])
     const player = await new PlayerFactory([apiKey.game]).withTaloAlias().one()
     await em.persistAndFlush(player)
 
-    const res = await request(global.app)
+    const res = await request(app)
       .get('/v1/players/identify')
       .query({ service: player.aliases[0].service, identifier: player.aliases[0].identifier })
       .auth(token, { type: 'bearer' })
@@ -247,13 +243,11 @@ describe('Player API service - identify', () => {
   })
 
   it('should not identify a Talo player alias with an invalid session token', async () => {
-    const em: EntityManager = global.em
-
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_PLAYERS, APIKeyScope.WRITE_PLAYERS])
     const player = await new PlayerFactory([apiKey.game]).withTaloAlias().one()
     await em.persistAndFlush(player)
 
-    const res = await request(global.app)
+    const res = await request(app)
       .get('/v1/players/identify')
       .query({ service: player.aliases[0].service, identifier: player.aliases[0].identifier })
       .auth(token, { type: 'bearer' })

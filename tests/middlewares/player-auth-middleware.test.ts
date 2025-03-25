@@ -1,4 +1,3 @@
-import { EntityManager } from '@mikro-orm/mysql'
 import request from 'supertest'
 import createAPIKeyAndToken from '../utils/createAPIKeyAndToken'
 import { APIKeyScope } from '../../src/entities/api-key'
@@ -8,8 +7,6 @@ import PlayerAliasFactory from '../fixtures/PlayerAliasFactory'
 
 describe('Player auth middleware', () => {
   it('should allow access to api endpoints when valid session headers are provided', async () => {
-    const em: EntityManager = global.em
-
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_STATS])
     const stat = await new GameStatFactory([apiKey.game]).state(() => ({
       defaultValue: 0,
@@ -22,7 +19,7 @@ describe('Player auth middleware', () => {
     const sessionToken = await player.auth!.createSession(player.aliases[0])
     await em.flush()
 
-    await request(global.app)
+    await request(app)
       .put(`/v1/game-stats/${stat.internalName}`)
       .send({ change: 1 })
       .auth(token, { type: 'bearer' })
@@ -33,15 +30,13 @@ describe('Player auth middleware', () => {
   })
 
   it('should allow access to api endpoints if the alias service is not Talo', async () => {
-    const em: EntityManager = global.em
-
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_STATS])
     const stat = await new GameStatFactory([apiKey.game]).one()
     const player = await new PlayerFactory([apiKey.game]).one()
 
     await em.persistAndFlush([stat, player])
 
-    await request(global.app)
+    await request(app)
       .put(`/v1/game-stats/${stat.internalName}`)
       .send({ change: 1 })
       .auth(token, { type: 'bearer' })
@@ -51,15 +46,13 @@ describe('Player auth middleware', () => {
   })
 
   it('should block access if the alias service is Talo and the x-talo-session header is not set', async () => {
-    const em: EntityManager = global.em
-
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_STATS])
     const stat = await new GameStatFactory([apiKey.game]).one()
     const player = await new PlayerFactory([apiKey.game]).withTaloAlias().one()
 
     await em.persistAndFlush([stat, player])
 
-    const res = await request(global.app)
+    const res = await request(app)
       .put(`/v1/game-stats/${stat.internalName}`)
       .send({ change: 1 })
       .auth(token, { type: 'bearer' })
@@ -73,15 +66,13 @@ describe('Player auth middleware', () => {
   })
 
   it('should block access if the player has an alias where the service is Talo and the x-talo-session header is not set', async () => {
-    const em: EntityManager = global.em
-
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_STATS])
     const stat = await new GameStatFactory([apiKey.game]).one()
     const player = await new PlayerFactory([apiKey.game]).withTaloAlias().one()
 
     await em.persistAndFlush([stat, player])
 
-    const res = await request(global.app)
+    const res = await request(app)
       .put(`/v1/game-stats/${stat.internalName}`)
       .send({ change: 1 })
       .auth(token, { type: 'bearer' })
@@ -95,8 +86,6 @@ describe('Player auth middleware', () => {
   })
 
   it('should block access if the session token is invalid', async () => {
-    const em: EntityManager = global.em
-
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_STATS])
     const stat = await new GameStatFactory([apiKey.game]).one()
     const player = await new PlayerFactory([apiKey.game]).withTaloAlias().one()
@@ -107,7 +96,7 @@ describe('Player auth middleware', () => {
     await player.auth!.createSession(player.aliases[0])
     await em.flush()
 
-    const res = await request(global.app)
+    const res = await request(app)
       .put(`/v1/game-stats/${stat.internalName}`)
       .send({ change: 1 })
       .auth(token, { type: 'bearer' })
@@ -123,8 +112,6 @@ describe('Player auth middleware', () => {
   })
 
   it('should block access if the session token does not match the alias', async () => {
-    const em: EntityManager = global.em
-
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_STATS])
     const stat = await new GameStatFactory([apiKey.game]).one()
     const player = await new PlayerFactory([apiKey.game]).withTaloAlias().one()
@@ -135,7 +122,7 @@ describe('Player auth middleware', () => {
     const sessionToken = await player.auth!.createSession(player.aliases[0])
     await em.flush()
 
-    const res = await request(global.app)
+    const res = await request(app)
       .put(`/v1/game-stats/${stat.internalName}`)
       .send({ change: 1 })
       .auth(token, { type: 'bearer' })
@@ -151,8 +138,6 @@ describe('Player auth middleware', () => {
   })
 
   it('should block access if the session token does not match the player', async () => {
-    const em: EntityManager = global.em
-
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_STATS])
     const stat = await new GameStatFactory([apiKey.game]).one()
     const player = await new PlayerFactory([apiKey.game]).withTaloAlias().one()
@@ -163,7 +148,7 @@ describe('Player auth middleware', () => {
     await otherPlayer.auth!.createSession(otherPlayer.aliases[0])
     await em.flush()
 
-    const res = await request(global.app)
+    const res = await request(app)
       .put(`/v1/game-stats/${stat.internalName}`)
       .send({ change: 1 })
       .auth(token, { type: 'bearer' })

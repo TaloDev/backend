@@ -1,4 +1,3 @@
-import { EntityManager } from '@mikro-orm/mysql'
 import request from 'supertest'
 import { UserType } from '../../../src/entities/user'
 import UserFactory from '../../fixtures/UserFactory'
@@ -22,13 +21,13 @@ describe('Invite service - post', () => {
 
     const email = randEmail()
 
-    const res = await request(global.app)
+    const res = await request(app)
       .post('/invites')
       .send({ email, type: UserType.ADMIN })
       .auth(token, { type: 'bearer' })
       .expect(statusCode)
 
-    const activity = await (<EntityManager>global.em).getRepository(GameActivity).findOne({
+    const activity = await em.getRepository(GameActivity).findOne({
       type: GameActivityType.INVITE_CREATED
     })
 
@@ -48,9 +47,9 @@ describe('Invite service - post', () => {
     const [token, user] = await createUserAndToken({ type: UserType.ADMIN, emailConfirmed: true })
 
     const invite = await new InviteFactory().construct(user.organisation).state(() => ({ email: randEmail() })).one()
-    await (<EntityManager>global.em).persistAndFlush(invite)
+    await em.persistAndFlush(invite)
 
-    const res = await request(global.app)
+    const res = await request(app)
       .post('/invites')
       .send({ email: invite.email, type: UserType.ADMIN })
       .auth(token, { type: 'bearer' })
@@ -67,7 +66,7 @@ describe('Invite service - post', () => {
   ])('should return a %i for a %s user type invite', async (statusCode, _, type) => {
     const [token] = await createUserAndToken({ type: UserType.ADMIN, emailConfirmed: true })
 
-    const res = await request(global.app)
+    const res = await request(app)
       .post('/invites')
       .send({ email: randEmail(), type })
       .auth(token, { type: 'bearer' })
@@ -89,9 +88,9 @@ describe('Invite service - post', () => {
     const [token] = await createUserAndToken({ type: UserType.ADMIN, emailConfirmed: true })
 
     const invite = await new InviteFactory().construct(otherOrg).state(() => ({ email: randEmail() })).one()
-    await (<EntityManager>global.em).persistAndFlush(invite)
+    await em.persistAndFlush(invite)
 
-    const res = await request(global.app)
+    const res = await request(app)
       .post('/invites')
       .send({ email: invite.email, type: UserType.ADMIN })
       .auth(token, { type: 'bearer' })
@@ -104,9 +103,9 @@ describe('Invite service - post', () => {
     const [token] = await createUserAndToken({ type: UserType.ADMIN, emailConfirmed: true })
 
     const user = await new UserFactory().state(() => ({ email: randEmail() })).one()
-    await (<EntityManager>global.em).persistAndFlush(user)
+    await em.persistAndFlush(user)
 
-    const res = await request(global.app)
+    const res = await request(app)
       .post('/invites')
       .send({ email: user.email, type: UserType.ADMIN })
       .auth(token, { type: 'bearer' })
@@ -118,7 +117,7 @@ describe('Invite service - post', () => {
   it('should not create an invite if the user\'s email is not confirmed', async () => {
     const [token] = await createUserAndToken({ type: UserType.ADMIN })
 
-    const res = await request(global.app)
+    const res = await request(app)
       .post('/invites')
       .send({ email: 'dev@game.studio', type: UserType.DEV })
       .auth(token, { type: 'bearer' })

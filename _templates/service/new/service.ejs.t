@@ -2,16 +2,20 @@
 to: src/services/<%= name %>.service.ts
 ---
 import { EntityManager } from '@mikro-orm/mysql'
-import { HasPermission, Service, Request, Response, Validate } from 'koa-clay'
+import { HasPermission, Service, Request, Response, Route, Validate } from 'koa-clay'
 import <%= h.changeCase.pascal(name) %> from '../entities/<%= name %>'
 import <%= h.changeCase.pascal(name) %>Policy from '../policies/<%= name %>.policy'
 
 export default class <%= h.changeCase.pascal(name) %>Service extends Service {
+  @Route({
+    method: 'GET',
+    path: '/:id'
+  })
   @HasPermission(<%= h.changeCase.pascal(name) %>Policy, 'get')
   async get(req: Request): Promise<Response> {
-    const { <%= h.changeCase.camel(name) %>Id } = req.params
+    const { id } = req.params
     const em: EntityManager = req.ctx.em
-    const <%= h.changeCase.camel(name) %> = await em.getRepository(<%= h.changeCase.pascal(name) %>).findOne(Number(<%= h.changeCase.camel(name) %>Id))
+    const <%= h.changeCase.camel(name) %> = await em.getRepository(<%= h.changeCase.pascal(name) %>).findOne(Number(id))
 
     return {
       status: 200,
@@ -21,6 +25,9 @@ export default class <%= h.changeCase.pascal(name) %>Service extends Service {
     }
   }
 
+  @Route({
+    method: 'POST'
+  })
   @Validate({
     body: []
   })

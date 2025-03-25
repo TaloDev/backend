@@ -1,7 +1,6 @@
 import { APIKeyScope } from '../../../../src/entities/api-key'
 import createSocketIdentifyMessage from '../../../utils/createSocketIdentifyMessage'
 import GameChannelFactory from '../../../fixtures/GameChannelFactory'
-import { EntityManager } from '@mikro-orm/mysql'
 import createTestSocket from '../../../utils/createTestSocket'
 
 describe('Game channel listeners - message', () => {
@@ -13,7 +12,7 @@ describe('Game channel listeners - message', () => {
     ])
     const channel = await new GameChannelFactory(player.game).one()
     channel.members.add(player.aliases[0])
-    await (<EntityManager>global.em).persistAndFlush(channel)
+    await em.persistAndFlush(channel)
 
     await createTestSocket(`/?ticket=${ticket}`, async (client) => {
       await client.identify(identifyMessage)
@@ -42,7 +41,7 @@ describe('Game channel listeners - message', () => {
       APIKeyScope.WRITE_GAME_CHANNELS
     ])
     const channel = await new GameChannelFactory(player.game).one()
-    await (<EntityManager>global.em).persistAndFlush(channel)
+    await em.persistAndFlush(channel)
 
     await createTestSocket(`/?ticket=${ticket}`, async (client) => {
       await client.identify(identifyMessage)

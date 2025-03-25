@@ -22,7 +22,7 @@ set -e
 dc up -d
 
 npx mikro-orm migration:up
-tsx ./tests/migrateClickhouse.ts
+tsx ./tests/migrateClickHouse.ts
 echo "\n"
 
 if [ -z "$EXPOSE_GC" ]

@@ -1,5 +1,4 @@
 import request from 'supertest'
-import { EntityManager } from '@mikro-orm/mysql'
 import GameChannelFactory from '../../../fixtures/GameChannelFactory'
 import { APIKeyScope } from '../../../../src/entities/api-key'
 import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
@@ -9,9 +8,9 @@ describe('Game channel API service - get', () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_GAME_CHANNELS])
 
     const channel = await new GameChannelFactory(apiKey.game).one()
-    await (<EntityManager>global.em).persistAndFlush(channel)
+    await em.persistAndFlush(channel)
 
-    const res = await request(global.app)
+    const res = await request(app)
       .get(`/v1/game-channels/${channel.id}`)
       .auth(token, { type: 'bearer' })
       .expect(200)
@@ -24,9 +23,9 @@ describe('Game channel API service - get', () => {
     const [apiKey, token] = await createAPIKeyAndToken([])
 
     const channel = await new GameChannelFactory(apiKey.game).one()
-    await (<EntityManager>global.em).persistAndFlush(channel)
+    await em.persistAndFlush(channel)
 
-    await request(global.app)
+    await request(app)
       .get(`/v1/game-channels/${channel.id}`)
       .auth(token, { type: 'bearer' })
       .expect(403)
@@ -35,7 +34,7 @@ describe('Game channel API service - get', () => {
   it('should return 404 if the channel does not exist', async () => {
     const [, token] = await createAPIKeyAndToken([APIKeyScope.READ_GAME_CHANNELS])
 
-    const res = await request(global.app)
+    const res = await request(app)
       .get('/v1/game-channels/999999')
       .auth(token, { type: 'bearer' })
       .expect(404)

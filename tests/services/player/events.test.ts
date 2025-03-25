@@ -1,10 +1,8 @@
-import { EntityManager } from '@mikro-orm/mysql'
 import request from 'supertest'
 import PlayerFactory from '../../fixtures/PlayerFactory'
 import EventFactory from '../../fixtures/EventFactory'
 import createOrganisationAndGame from '../../utils/createOrganisationAndGame'
 import createUserAndToken from '../../utils/createUserAndToken'
-import { ClickHouseClient } from '@clickhouse/client'
 
 describe('Player service - get events', () => {
   it('should get a player\'s events', async () => {
@@ -12,16 +10,16 @@ describe('Player service - get events', () => {
     const [token] = await createUserAndToken({}, organisation)
 
     const player = await new PlayerFactory([game]).one()
-    await (<EntityManager>global.em).persistAndFlush(player)
+    await em.persistAndFlush(player)
 
     const events = await new EventFactory([player]).many(3)
-    await (<ClickHouseClient>global.clickhouse).insert({
+    await clickhouse.insert({
       table: 'events',
-      values: events.map((event) => event.getInsertableData()),
+      values: events.map((event) => event.toInsertable()),
       format: 'JSONEachRow'
     })
 
-    const res = await request(global.app)
+    const res = await request(app)
       .get(`/games/${game.id}/players/${player.id}/events`)
       .query({ page: 0 })
       .auth(token, { type: 'bearer' })
@@ -35,9 +33,9 @@ describe('Player service - get events', () => {
     const [token] = await createUserAndToken()
 
     const player = await new PlayerFactory([game]).one()
-    await (<EntityManager>global.em).persistAndFlush(player)
+    await em.persistAndFlush(player)
 
-    await request(global.app)
+    await request(app)
       .get(`/games/${game.id}/players/${player.id}/events`)
       .query({ page: 0 })
       .auth(token, { type: 'bearer' })
@@ -49,17 +47,17 @@ describe('Player service - get events', () => {
     const [token] = await createUserAndToken({}, organisation)
 
     const player = await new PlayerFactory([game]).one()
-    await (<EntityManager>global.em).persistAndFlush(player)
+    await em.persistAndFlush(player)
 
     const events = await new EventFactory([player]).state(() => ({ name: 'Find secret' })).many(3)
     const otherEvents = await new EventFactory([player]).state(() => ({ name: 'Kill boss' })).many(3)
-    await (<ClickHouseClient>global.clickhouse).insert({
+    await clickhouse.insert({
       table: 'events',
-      values: [...events, ...otherEvents].map((event) => event.getInsertableData()),
+      values: [...events, ...otherEvents].map((event) => event.toInsertable()),
       format: 'JSONEachRow'
     })
 
-    const res = await request(global.app)
+    const res = await request(app)
       .get(`/games/${game.id}/players/${player.id}/events`)
       .query({ search: 'Find secret', page: 0 })
       .auth(token, { type: 'bearer' })
@@ -75,16 +73,16 @@ describe('Player service - get events', () => {
     const count = 82
 
     const player = await new PlayerFactory([game]).one()
-    await (<EntityManager>global.em).persistAndFlush(player)
+    await em.persistAndFlush(player)
 
     const events = await new EventFactory([player]).many(count)
-    await (<ClickHouseClient>global.clickhouse).insert({
+    await clickhouse.insert({
       table: 'events',
-      values: events.map((event) => event.getInsertableData()),
+      values: events.map((event) => event.toInsertable()),
       format: 'JSONEachRow'
     })
 
-    const res = await request(global.app)
+    const res = await request(app)
       .get(`/games/${game.id}/players/${player.id}/events`)
       .query({ page: 1 })
       .auth(token, { type: 'bearer' })
@@ -99,7 +97,7 @@ describe('Player service - get events', () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({}, organisation)
 
-    const res = await request(global.app)
+    const res = await request(app)
       .get(`/games/${game.id}/players/21312321321/events`)
       .query({ page: 0 })
       .auth(token, { type: 'bearer' })

@@ -34,10 +34,10 @@ async function createUserWithTwoFactorAuth(em: EntityManager): Promise<[string, 
 
 describe('User public service - use recovery code', () => {
   it('should let users login with a recovery code', async () => {
-    const [token, user] = await createUserWithTwoFactorAuth(global.em)
+    const [token, user] = await createUserWithTwoFactorAuth(em)
     await setTwoFactorAuthSession(user)
 
-    const res = await request(global.app)
+    const res = await request(app)
       .post('/public/users/2fa/recover')
       .send({ code: user.recoveryCodes[0].getPlainCode(), userId: user.id })
       .auth(token, { type: 'bearer' })
@@ -47,18 +47,18 @@ describe('User public service - use recovery code', () => {
     expect(res.body.accessToken).toBeTruthy()
     expect(res.body.newRecoveryCodes).toBeUndefined()
 
-    await (<EntityManager>global.em).refresh(user, { populate: ['recoveryCodes'] })
+    await em.refresh(user, { populate: ['recoveryCodes'] })
     expect(user.recoveryCodes).toHaveLength(7)
   })
 
   it('should generate a new set of recovery codes after using the last one', async () => {
-    const [token, user] = await createUserWithTwoFactorAuth(global.em)
+    const [token, user] = await createUserWithTwoFactorAuth(em)
     await setTwoFactorAuthSession(user)
 
     user.recoveryCodes.set([new UserRecoveryCode(user)])
-    await (<EntityManager>global.em).flush()
+    await em.flush()
 
-    const res = await request(global.app)
+    const res = await request(app)
       .post('/public/users/2fa/recover')
       .send({ code: user.recoveryCodes[0].getPlainCode(), userId: user.id })
       .auth(token, { type: 'bearer' })
@@ -68,15 +68,15 @@ describe('User public service - use recovery code', () => {
     expect(res.body.accessToken).toBeTruthy()
     expect(res.body.newRecoveryCodes).toHaveLength(8)
 
-    await (<EntityManager>global.em).refresh(user, { populate: ['recoveryCodes'] })
+    await em.refresh(user, { populate: ['recoveryCodes'] })
     expect(user.recoveryCodes).toHaveLength(8)
   })
 
   it('should not let users login without a 2fa session', async () => {
-    const [token, user] = await createUserWithTwoFactorAuth(global.em)
+    const [token, user] = await createUserWithTwoFactorAuth(em)
     await removeTwoFactorAuthSession(user) // key may exist for id since user ids are reused
 
-    const res = await request(global.app)
+    const res = await request(app)
       .post('/public/users/2fa/recover')
       .send({ code: 'abc123', userId: user.id })
       .auth(token, { type: 'bearer' })
@@ -86,10 +86,10 @@ describe('User public service - use recovery code', () => {
   })
 
   it('should not let users login with an invalid recovery code', async () => {
-    const [token, user] = await createUserWithTwoFactorAuth(global.em)
+    const [token, user] = await createUserWithTwoFactorAuth(em)
     await setTwoFactorAuthSession(user)
 
-    const res = await request(global.app)
+    const res = await request(app)
       .post('/public/users/2fa/recover')
       .send({ code: 'abc123', userId: user.id })
       .auth(token, { type: 'bearer' })

@@ -1,4 +1,3 @@
-import { EntityManager } from '@mikro-orm/mysql'
 import request from 'supertest'
 import LeaderboardFactory from '../../fixtures/LeaderboardFactory'
 import createOrganisationAndGame from '../../utils/createOrganisationAndGame'
@@ -11,9 +10,9 @@ describe('Leaderboard service - index', () => {
     const [token] = await createUserAndToken({}, organisation)
 
     const leaderboards = await new LeaderboardFactory([game]).many(3)
-    await (<EntityManager>global.em).persistAndFlush(leaderboards)
+    await em.persistAndFlush(leaderboards)
 
-    const res = await request(global.app)
+    const res = await request(app)
       .get(`/games/${game.id}/leaderboards`)
       .auth(token, { type: 'bearer' })
       .expect(200)
@@ -26,7 +25,7 @@ describe('Leaderboard service - index', () => {
   it('should not return leaderboards for a non-existent game', async () => {
     const [token] = await createUserAndToken()
 
-    const res = await request(global.app)
+    const res = await request(app)
       .get('/games/99999/leaderboards')
       .auth(token, { type: 'bearer' })
       .expect(404)
@@ -39,9 +38,9 @@ describe('Leaderboard service - index', () => {
     const [token] = await createUserAndToken()
 
     const leaderboards = await new LeaderboardFactory([game]).many(3)
-    await (<EntityManager>global.em).persistAndFlush(leaderboards)
+    await em.persistAndFlush(leaderboards)
 
-    await request(global.app)
+    await request(app)
       .get(`/games/${game.id}/leaderboards`)
       .auth(token, { type: 'bearer' })
       .expect(403)

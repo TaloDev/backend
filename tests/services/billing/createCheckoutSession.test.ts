@@ -1,4 +1,3 @@
-import { EntityManager } from '@mikro-orm/mysql'
 import request from 'supertest'
 import initStripe from '../../../src/lib/billing/initStripe'
 import PricingPlanFactory from '../../fixtures/PricingPlanFactory'
@@ -22,9 +21,9 @@ describe('Billing service - create checkout session', () => {
 
     organisation.pricingPlan.stripeCustomerId = null
     organisation.pricingPlan.stripePriceId = null
-    await (<EntityManager>global.em).flush()
+    await em.flush()
 
-    const res = await request(global.app)
+    const res = await request(app)
       .post('/billing/checkout-session')
       .send({
         pricingPlanId: plan.id,
@@ -34,7 +33,7 @@ describe('Billing service - create checkout session', () => {
       .expect(statusCode)
 
     if (statusCode === 200) {
-      await (<EntityManager>global.em).refresh(organisation)
+      await em.refresh(organisation)
       expect(typeof organisation.pricingPlan.stripeCustomerId).toBe('string')
 
       expect(res.body.redirect).toBeDefined()
@@ -46,7 +45,7 @@ describe('Billing service - create checkout session', () => {
   it('should return a 404 for a plan that doesn\'t exist', async () => {
     const [token] = await createUserAndToken({ type: UserType.OWNER })
 
-    const res = await request(global.app)
+    const res = await request(app)
       .post('/billing/checkout-session')
       .send({
         pricingPlanId: 'abc123',
@@ -67,11 +66,11 @@ describe('Billing service - create checkout session', () => {
 
     const [organisation] = await createOrganisationAndGame({}, {}, plan)
     organisation.pricingPlan.stripeCustomerId = subscription.customer as string
-    await (<EntityManager>global.em).flush()
+    await em.flush()
 
     const [token] = await createUserAndToken({ type: UserType.OWNER }, organisation)
 
-    const res = await request(global.app)
+    const res = await request(app)
       .post('/billing/checkout-session')
       .send({
         pricingPlanId: plan.id,
@@ -91,7 +90,7 @@ describe('Billing service - create checkout session', () => {
     const [organisation] = await createOrganisationAndGame({}, {}, plan)
     const [token] = await createUserAndToken({ type: UserType.OWNER }, organisation)
 
-    const res = await request(global.app)
+    const res = await request(app)
       .post('/billing/checkout-session')
       .send({
         pricingPlanId: plan.id,
@@ -113,9 +112,9 @@ describe('Billing service - create checkout session', () => {
     const games = await orgPlan.organisation.games.loadItems()
     const players = await new PlayerFactory(games).many(10)
 
-    await (<EntityManager>global.em).persistAndFlush([organisation, ...players])
+    await em.persistAndFlush([organisation, ...players])
 
-    const res = await request(global.app)
+    const res = await request(app)
       .post('/billing/checkout-session')
       .send({
         pricingPlanId: orgPlan.pricingPlan.id,
@@ -136,11 +135,11 @@ describe('Billing service - create checkout session', () => {
 
     const [organisation] = await createOrganisationAndGame({}, {}, plan)
     organisation.pricingPlan.stripeCustomerId = subscription.customer as string
-    await (<EntityManager>global.em).flush()
+    await em.flush()
 
     const [token] = await createUserAndToken({ type: UserType.OWNER }, organisation)
 
-    const res = await request(global.app)
+    const res = await request(app)
       .post('/billing/checkout-session')
       .send({
         pricingPlanId: plan.id,

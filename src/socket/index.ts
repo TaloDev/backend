@@ -9,7 +9,7 @@ import { logConnection, logConnectionClosed } from './messages/socketLogger'
 import { Queue } from 'bullmq'
 import { createSocketEventQueue, SocketEventData } from './socketEvent'
 import { ClickHouseClient } from '@clickhouse/client'
-import createClickhouseClient from '../lib/clickhouse/createClient'
+import createClickHouseClient from '../lib/clickhouse/createClient'
 import Redis from 'ioredis'
 import redisConfig from '../config/redis.config'
 import SocketTicket from './socketTicket'
@@ -41,7 +41,7 @@ export default class Socket {
 
     this.router = new SocketRouter(this)
 
-    this.clickhouse = createClickhouseClient()
+    this.clickhouse = createClickHouseClient()
     this.eventQueue = createSocketEventQueue(this.clickhouse)
 
     const interval = this.heartbeat()

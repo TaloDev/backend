@@ -1,4 +1,4 @@
-import { Collection, EntityManager } from '@mikro-orm/mysql'
+import { Collection } from '@mikro-orm/mysql'
 import { UserType } from '../../../src/entities/user'
 import { DataExportAvailableEntities, DataExportStatus } from '../../../src/entities/data-export'
 import DataExportService from '../../../src/services/data-export.service'
@@ -162,14 +162,14 @@ describe('Data export service - generation', () => {
       status: DataExportStatus.QUEUED
     })).one()
 
-    await (<EntityManager>global.em).persistAndFlush(dataExport)
+    await em.persistAndFlush(dataExport)
 
     await proto.updateDataExportStatus(dataExport.id, { id: DataExportStatus.GENERATED })
-    await (<EntityManager>global.em).refresh(dataExport)
+    await em.refresh(dataExport)
     expect(dataExport.status).toBe(DataExportStatus.GENERATED)
 
     await proto.updateDataExportStatus(dataExport.id, { failedAt: new Date() })
-    await (<EntityManager>global.em).refresh(dataExport)
+    await em.refresh(dataExport)
     expect(dataExport.failedAt).toBeTruthy()
   })
 

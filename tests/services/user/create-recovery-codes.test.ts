@@ -1,4 +1,3 @@
-import { EntityManager } from '@mikro-orm/mysql'
 import request from 'supertest'
 import UserTwoFactorAuth from '../../../src/entities/user-two-factor-auth'
 import generateRecoveryCodes from '../../../src/lib/auth/generateRecoveryCodes'
@@ -11,9 +10,9 @@ describe('User service - create recovery codes', () => {
     const [token, user] = await createUserAndToken({ twoFactorAuth })
 
     user.recoveryCodes.set(generateRecoveryCodes(user))
-    await (<EntityManager>global.em).flush()
+    await em.flush()
 
-    const res = await request(global.app)
+    const res = await request(app)
       .post('/users/2fa/recovery_codes/create')
       .send({ password: 'password' })
       .auth(token, { type: 'bearer' })
@@ -21,14 +20,14 @@ describe('User service - create recovery codes', () => {
 
     expect(res.body.recoveryCodes).toHaveLength(8)
 
-    await (<EntityManager>global.em).refresh(user, { populate: ['recoveryCodes'] })
+    await em.refresh(user, { populate: ['recoveryCodes'] })
     expect(user.recoveryCodes).toHaveLength(8)
   })
 
   it('should not create recovery codes if 2fa isn\'t enabled', async () => {
     const [token] = await createUserAndToken()
 
-    const res = await request(global.app)
+    const res = await request(app)
       .post('/users/2fa/recovery_codes/create')
       .send({ password: 'password' })
       .auth(token, { type: 'bearer' })
@@ -42,7 +41,7 @@ describe('User service - create recovery codes', () => {
     twoFactorAuth.enabled = true
     const [token] = await createUserAndToken({ twoFactorAuth })
 
-    const res = await request(global.app)
+    const res = await request(app)
       .post('/users/2fa/recovery_codes/create')
       .send({ password: 'p@ssw0rd' })
       .auth(token, { type: 'bearer' })

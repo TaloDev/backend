@@ -15,7 +15,7 @@ import PricingPlan from '../src/entities/pricing-plan'
 import APIKey, { APIKeyScope } from '../src/entities/api-key'
 import GameFeedbackCategoryFactory from './fixtures/GameFeedbackCategoryFactory'
 import GameFeedbackFactory from './fixtures/GameFeedbackFactory'
-import createClickhouseClient from '../src/lib/clickhouse/createClient'
+import createClickHouseClient from '../src/lib/clickhouse/createClient'
 import { rand } from '@ngneat/falso'
 import ormConfig from '../src/config/mikro-orm.config'
 (async () => {
@@ -132,10 +132,10 @@ import ormConfig from '../src/config/mikro-orm.config'
 
   console.info('Seeding ClickHouse...')
 
-  const clickhouse = createClickhouseClient()
+  const clickhouse = createClickHouseClient()
   await clickhouse.insert({
     table: 'events',
-    values: eventsThisMonth.map((event) => event.getInsertableData()),
+    values: eventsThisMonth.map((event) => event.toInsertable()),
     format: 'JSONEachRow'
   })
   await clickhouse.close()

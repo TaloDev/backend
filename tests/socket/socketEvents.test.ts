@@ -1,6 +1,5 @@
 import createAPIKeyAndToken from '../utils/createAPIKeyAndToken'
-import { ClickHouseClient } from '@clickhouse/client'
-import { ClickhouseSocketEvent } from '../../src/socket/socketEvent'
+import { ClickHouseSocketEvent } from '../../src/socket/socketEvent'
 import createSocketIdentifyMessage from '../utils/createSocketIdentifyMessage'
 import { APIKeyScope } from '../../src/entities/api-key'
 import redisConfig from '../../src/config/redis.config'
@@ -21,12 +20,12 @@ describe('Socket events', () => {
 
     await createTestSocket(`/?ticket=${ticket}`, async () => {})
 
-    let events: ClickhouseSocketEvent[] = []
+    let events: ClickHouseSocketEvent[] = []
     await vi.waitUntil(async () => {
-      events = await (<ClickHouseClient>global.clickhouse).query({
+      events = await clickhouse.query({
         query: `SELECT * FROM socket_events WHERE game_id = ${apiKey.game.id} ORDER BY created_at`,
         format: 'JSONEachRow'
-      }).then((res) => res.json<ClickhouseSocketEvent>())
+      }).then((res) => res.json<ClickHouseSocketEvent>())
       return events.length === 3
     })
 
@@ -59,12 +58,12 @@ describe('Socket events', () => {
       await client.identify(identifyMessage)
     })
 
-    let events: ClickhouseSocketEvent[] = []
+    let events: ClickHouseSocketEvent[] = []
     await vi.waitUntil(async () => {
-      events = await (<ClickHouseClient>global.clickhouse).query({
+      events = await clickhouse.query({
         query: `SELECT * FROM socket_events WHERE game_id = ${player.game.id} ORDER BY created_at`,
         format: 'JSONEachRow'
-      }).then((res) => res.json<ClickhouseSocketEvent>())
+      }).then((res) => res.json<ClickHouseSocketEvent>())
       return events.length === 6
     })
 
@@ -132,12 +131,12 @@ describe('Socket events', () => {
       })
     })
 
-    let events: ClickhouseSocketEvent[] = []
+    let events: ClickHouseSocketEvent[] = []
     await vi.waitUntil(async () => {
-      events = await (<ClickHouseClient>global.clickhouse).query({
+      events = await clickhouse.query({
         query: `SELECT * FROM socket_events WHERE game_id = ${player.game.id} ORDER BY created_at`,
         format: 'JSONEachRow'
-      }).then((res) => res.json<ClickhouseSocketEvent>())
+      }).then((res) => res.json<ClickHouseSocketEvent>())
       return events.length === 5
     })
 
@@ -185,10 +184,10 @@ describe('Socket events', () => {
 
     await createTestSocket(`/?ticket=${ticket}`, async () => {})
 
-    const events = await (<ClickHouseClient>global.clickhouse).query({
+    const events = await clickhouse.query({
       query: `SELECT * FROM socket_events WHERE game_id = ${apiKey.game.id} ORDER BY created_at`,
       format: 'JSONEachRow'
-    }).then((res) => res.json<ClickhouseSocketEvent>())
+    }).then((res) => res.json<ClickHouseSocketEvent>())
 
     expect(events.length).toBe(0)
   })

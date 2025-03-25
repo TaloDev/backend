@@ -1,4 +1,3 @@
-import { EntityManager } from '@mikro-orm/mysql'
 import request from 'supertest'
 import initStripe from '../../../src/lib/billing/initStripe'
 import PricingPlanFactory from '../../fixtures/PricingPlanFactory'
@@ -22,9 +21,9 @@ describe('Billing service - create portal session', () => {
 
     organisation.pricingPlan.stripeCustomerId = subscription.customer as string
     organisation.pricingPlan.stripePriceId = price.id
-    await (<EntityManager>global.em).flush()
+    await em.flush()
 
-    const res = await request(global.app)
+    const res = await request(app)
       .post('/billing/portal-session')
       .auth(token, { type: 'bearer' })
       .expect(statusCode)
@@ -46,9 +45,9 @@ describe('Billing service - create portal session', () => {
 
     organisation.pricingPlan.stripeCustomerId = null
     organisation.pricingPlan.stripePriceId = price.id
-    await (<EntityManager>global.em).flush()
+    await em.flush()
 
-    await request(global.app)
+    await request(app)
       .post('/billing/portal-session')
       .auth(token, { type: 'bearer' })
       .expect(400)

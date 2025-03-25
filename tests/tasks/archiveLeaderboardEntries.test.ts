@@ -1,4 +1,3 @@
-import { EntityManager } from '@mikro-orm/mysql'
 import { LeaderboardRefreshInterval } from '../../src/entities/leaderboard'
 import LeaderboardFactory from '../fixtures/LeaderboardFactory'
 import PlayerFactory from '../fixtures/PlayerFactory'
@@ -44,10 +43,10 @@ describe('archiveLeaderboardEntries', () => {
       .state(() => ({ createdAt: new Date() }))
       .one()
 
-    await (<EntityManager>global.em).persistAndFlush([oldEntry, todayEntry])
+    await em.persistAndFlush([oldEntry, todayEntry])
     await archiveLeaderboardEntries()
-    await (<EntityManager>global.em).refresh(oldEntry)
-    await (<EntityManager>global.em).refresh(todayEntry)
+    await em.refresh(oldEntry)
+    await em.refresh(todayEntry)
 
     expect(oldEntry.deletedAt).toBeDefined()
     expect(todayEntry.deletedAt).toBeNull()
@@ -70,10 +69,10 @@ describe('archiveLeaderboardEntries', () => {
       .state(() => ({ createdAt: new Date() }))
       .one()
 
-    await (<EntityManager>global.em).persistAndFlush([oldEntry, thisWeekEntry])
+    await em.persistAndFlush([oldEntry, thisWeekEntry])
     await archiveLeaderboardEntries()
-    await (<EntityManager>global.em).refresh(oldEntry)
-    await (<EntityManager>global.em).refresh(thisWeekEntry)
+    await em.refresh(oldEntry)
+    await em.refresh(thisWeekEntry)
 
     expect(oldEntry.deletedAt).toBeDefined()
     expect(thisWeekEntry.deletedAt).toBeNull()
@@ -96,10 +95,10 @@ describe('archiveLeaderboardEntries', () => {
       .state(() => ({ createdAt: new Date() }))
       .one()
 
-    await (<EntityManager>global.em).persistAndFlush([oldEntry, thisMonthEntry])
+    await em.persistAndFlush([oldEntry, thisMonthEntry])
     await archiveLeaderboardEntries()
-    await (<EntityManager>global.em).refresh(oldEntry)
-    await (<EntityManager>global.em).refresh(thisMonthEntry)
+    await em.refresh(oldEntry)
+    await em.refresh(thisMonthEntry)
 
     expect(oldEntry.deletedAt).toBeDefined()
     expect(thisMonthEntry.deletedAt).toBeNull()
@@ -122,10 +121,10 @@ describe('archiveLeaderboardEntries', () => {
       .state(() => ({ createdAt: new Date() }))
       .one()
 
-    await (<EntityManager>global.em).persistAndFlush([oldEntry, thisYearEntry])
+    await em.persistAndFlush([oldEntry, thisYearEntry])
     await archiveLeaderboardEntries()
-    await (<EntityManager>global.em).refresh(oldEntry)
-    await (<EntityManager>global.em).refresh(thisYearEntry)
+    await em.refresh(oldEntry)
+    await em.refresh(thisYearEntry)
 
     expect(oldEntry.deletedAt).toBeDefined()
     expect(thisYearEntry.deletedAt).toBeNull()
@@ -153,7 +152,7 @@ describe('archiveLeaderboardEntries', () => {
       .construct(IntegrationType.STEAMWORKS, game, config)
       .one()
 
-    await (<EntityManager>global.em).persistAndFlush([integration, oldEntry, mapping])
+    await em.persistAndFlush([integration, oldEntry, mapping])
     await archiveLeaderboardEntries()
 
     expect(deleteMock).toHaveBeenCalledTimes(1)

@@ -1,4 +1,3 @@
-import { EntityManager } from '@mikro-orm/mysql'
 import request from 'supertest'
 import { APIKeyScope } from '../../src/entities/api-key'
 import createAPIKeyAndToken from '../utils/createAPIKeyAndToken'
@@ -7,17 +6,17 @@ describe('API auth', () => {
   it('should accept a valid api request', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_GAME_CONFIG])
 
-    await request(global.app)
+    await request(app)
       .get('/v1/game-config')
       .auth(token, { type: 'bearer' })
       .expect(200)
 
-    await (<EntityManager>global.em).refresh(apiKey)
+    await em.refresh(apiKey)
     expect(apiKey.lastUsedAt).not.toBeNull()
   })
 
   it('should not accept an api request without an auth header', async () => {
-    const res = await request(global.app)
+    const res = await request(app)
       .get('/v1/game-config')
       .expect(401)
 
@@ -27,7 +26,7 @@ describe('API auth', () => {
   it('should not accept an api request without the bearer component of the auth header', async () => {
     const [, token] = await createAPIKeyAndToken([APIKeyScope.READ_GAME_CONFIG])
 
-    const res = await request(global.app)
+    const res = await request(app)
       .get('/v1/game-config')
       .set('authorization', token)
       .expect(401)
@@ -36,7 +35,7 @@ describe('API auth', () => {
   })
 
   it('should not accept an api request with an invalid token', async () => {
-    const res = await request(global.app)
+    const res = await request(app)
       .get('/v1/game-config')
       .auth('blah', { type: 'bearer' })
       .expect(401)
@@ -47,9 +46,9 @@ describe('API auth', () => {
   it('should not accept an api request with a revoked api key', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_GAME_CONFIG])
     apiKey.revokedAt = new Date()
-    await (<EntityManager>global.em).flush()
+    await em.flush()
 
-    const res = await request(global.app)
+    const res = await request(app)
       .get('/v1/game-config')
       .auth(token, { type: 'bearer' })
       .expect(401)

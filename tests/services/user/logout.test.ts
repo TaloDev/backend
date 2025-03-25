@@ -1,4 +1,3 @@
-import { EntityManager } from '@mikro-orm/mysql'
 import request from 'supertest'
 import UserSession from '../../../src/entities/user-session'
 import createUserAndToken from '../../utils/createUserAndToken'
@@ -9,15 +8,15 @@ describe('User service - logout', () => {
 
     const session = new UserSession(user)
     session.userAgent = 'testybrowser'
-    await (<EntityManager>global.em).persistAndFlush(session)
+    await em.persistAndFlush(session)
 
-    await request(global.app)
+    await request(app)
       .post('/users/logout')
       .set('user-agent', 'testybrowser')
       .auth(token, { type: 'bearer' })
       .expect(204)
 
-    const sessions = await (<EntityManager>global.em).getRepository(UserSession).find({ user })
+    const sessions = await em.getRepository(UserSession).find({ user })
     expect(sessions).toHaveLength(0)
   })
 })

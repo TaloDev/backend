@@ -1,4 +1,3 @@
-import { EntityManager } from '@mikro-orm/mysql'
 import request from 'supertest'
 import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
 import initStripe from '../../../../src/lib/billing/initStripe'
@@ -17,7 +16,7 @@ describe('Webhook service - subscription deleted', () => {
     organisation.pricingPlan.stripePriceId = price.id
 
     const defaultPlan = await new PricingPlanFactory().state(() => ({ default: true })).one()
-    await (<EntityManager>global.em).persistAndFlush(defaultPlan)
+    await em.persistAndFlush(defaultPlan)
 
     const payload = JSON.stringify({
       id: v4(),
@@ -38,13 +37,13 @@ describe('Webhook service - subscription deleted', () => {
       secret: process.env.STRIPE_WEBHOOK_SECRET!
     })
 
-    await request(global.app)
+    await request(app)
       .post('/public/webhooks/subscriptions')
       .set('stripe-signature', header)
       .send(payload)
       .expect(204)
 
-    await (<EntityManager>global.em).refresh(organisation)
+    await em.refresh(organisation)
     expect(organisation.pricingPlan.pricingPlan.id).toBe(defaultPlan.id)
   })
 })

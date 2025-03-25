@@ -4,13 +4,15 @@ import { CreateEventPropsTable } from './002CreateEventPropsTable'
 import { CreateSocketEventsTable } from './003CreateSocketEventsTable'
 import { CreateMigrationsTable } from './000CreateMigrationsTable'
 import { formatDateForClickHouse } from '../../lib/clickhouse/formatDateTime'
+import { CreatePlayerGameStatSnapshotsTable } from './004CreatePlayerGameStatSnapshotsTable'
+import { MigrateEventsTimestampsToDate64 } from './005MigrateEventsTimestampsToDate64'
 
-type ClickhouseMigration = {
+type ClickHouseMigration = {
   name: string
   sql: string
 }
 
-const migrations: ClickhouseMigration[] = [
+const migrations: ClickHouseMigration[] = [
   {
     name: 'CreateEventsTable',
     sql: CreateEventsTable
@@ -22,10 +24,18 @@ const migrations: ClickhouseMigration[] = [
   {
     name: 'CreateSocketEventsTable',
     sql: CreateSocketEventsTable
+  },
+  {
+    name: 'CreatePlayerGameStatSnapshotsTable',
+    sql: CreatePlayerGameStatSnapshotsTable
+  },
+  {
+    name: 'MigrateEventsTimestampsToDate64',
+    sql: MigrateEventsTimestampsToDate64
   }
 ]
 
-export async function runClickhouseMigrations(clickhouse: ClickHouseClient) {
+export async function runClickHouseMigrations(clickhouse: ClickHouseClient) {
   console.info('Running ClickHouse migrations...')
 
   await clickhouse.query({ query: CreateMigrationsTable })
@@ -41,12 +51,15 @@ export async function runClickhouseMigrations(clickhouse: ClickHouseClient) {
 
   for (const migration of pendingMigrations) {
     console.info(`Processing '${migration.name}'`)
-    await clickhouse.query({ query: migration.sql })
+    const queries = migration.sql.split(';').filter((query) => query.trim() !== '')
+    for (const query of queries) {
+      await clickhouse.query({ query })
+    }
     await clickhouse.insert({
       table: 'migrations',
       values: [{
         name: migration.name,
-        executed_at: formatDateForClickHouse(new Date())
+        executed_at: formatDateForClickHouse(new Date(), false)
       }],
       format: 'JSONEachRow'
     })

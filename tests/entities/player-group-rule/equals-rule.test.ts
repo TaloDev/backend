@@ -1,4 +1,4 @@
-import { Collection, EntityManager } from '@mikro-orm/mysql'
+import { Collection } from '@mikro-orm/mysql'
 import request from 'supertest'
 import PlayerGroupRule, { PlayerGroupRuleCastType, PlayerGroupRuleName } from '../../../src/entities/player-group-rule'
 import PlayerFactory from '../../fixtures/PlayerFactory'
@@ -17,7 +17,7 @@ describe('EQUALS rule', () => {
 
     const player1 = await new PlayerFactory([game]).state(() => ({ lastSeenAt: new Date(2022, 4, 3) })).one()
     const player2 = await new PlayerFactory([game]).one()
-    await (<EntityManager>global.em).persistAndFlush([player1, player2])
+    await em.persistAndFlush([player1, player2])
 
     const rules: Partial<PlayerGroupRule>[] = [
       {
@@ -29,7 +29,7 @@ describe('EQUALS rule', () => {
       }
     ]
 
-    const res = await request(global.app)
+    const res = await request(app)
       .get(`/games/${game.id}/player-groups/preview-count`)
       .query({ ruleMode: '$and', rules: encodeURI(JSON.stringify(rules)) })
       .auth(token, { type: 'bearer' })
@@ -44,7 +44,7 @@ describe('EQUALS rule', () => {
 
     const player1 = await new PlayerFactory([game]).state(() => ({ lastSeenAt: new Date(2022, 4, 3) })).one()
     const player2 = await new PlayerFactory([game]).one()
-    await (<EntityManager>global.em).persistAndFlush([player1, player2])
+    await em.persistAndFlush([player1, player2])
 
     const rules: Partial<PlayerGroupRule>[] = [
       {
@@ -56,7 +56,7 @@ describe('EQUALS rule', () => {
       }
     ]
 
-    const res = await request(global.app)
+    const res = await request(app)
       .get(`/games/${game.id}/player-groups/preview-count`)
       .query({ ruleMode: '$and', rules: encodeURI(JSON.stringify(rules)) })
       .auth(token, { type: 'bearer' })
@@ -75,7 +75,7 @@ describe('EQUALS rule', () => {
       ])
     })).one()
     const player2 = await new PlayerFactory([game]).one()
-    await (<EntityManager>global.em).persistAndFlush([player1, player2])
+    await em.persistAndFlush([player1, player2])
 
     const rules: Partial<PlayerGroupRule>[] = [
       {
@@ -87,7 +87,7 @@ describe('EQUALS rule', () => {
       }
     ]
 
-    const res = await request(global.app)
+    const res = await request(app)
       .get(`/games/${game.id}/player-groups/preview-count`)
       .query({ ruleMode: '$and', rules: encodeURI(JSON.stringify(rules)) })
       .auth(token, { type: 'bearer' })
@@ -106,7 +106,7 @@ describe('EQUALS rule', () => {
       ])
     })).one()
     const player2 = await new PlayerFactory([game]).one()
-    await (<EntityManager>global.em).persistAndFlush([player1, player2])
+    await em.persistAndFlush([player1, player2])
 
     const rules: Partial<PlayerGroupRule>[] = [
       {
@@ -118,7 +118,7 @@ describe('EQUALS rule', () => {
       }
     ]
 
-    const res = await request(global.app)
+    const res = await request(app)
       .get(`/games/${game.id}/player-groups/preview-count`)
       .query({ ruleMode: '$and', rules: encodeURI(JSON.stringify(rules)) })
       .auth(token, { type: 'bearer' })
@@ -136,7 +136,7 @@ describe('EQUALS rule', () => {
 
     const stat = await new GameStatFactory([game]).state(() => ({ minValue: 1, maxValue: 80 })).one()
     const playerStat = await new PlayerGameStatFactory().construct(player1, stat).state(() => ({ value: 60 })).one()
-    await (<EntityManager>global.em).persistAndFlush([player1, player2, playerStat])
+    await em.persistAndFlush([player1, player2, playerStat])
 
     const rules: Partial<PlayerGroupRule>[] = [
       {
@@ -148,7 +148,7 @@ describe('EQUALS rule', () => {
       }
     ]
 
-    const res = await request(global.app)
+    const res = await request(app)
       .get(`/games/${game.id}/player-groups/preview-count`)
       .query({ ruleMode: '$and', rules: encodeURI(JSON.stringify(rules)) })
       .auth(token, { type: 'bearer' })
@@ -166,7 +166,7 @@ describe('EQUALS rule', () => {
 
     const stat = await new GameStatFactory([game]).state(() => ({ minValue: 1, maxValue: 80 })).one()
     const playerStat = await new PlayerGameStatFactory().construct(player1, stat).state(() => ({ value: 60 })).one()
-    await (<EntityManager>global.em).persistAndFlush([player1, player2, playerStat])
+    await em.persistAndFlush([player1, player2, playerStat])
 
     const rules: Partial<PlayerGroupRule>[] = [
       {
@@ -178,7 +178,7 @@ describe('EQUALS rule', () => {
       }
     ]
 
-    const res = await request(global.app)
+    const res = await request(app)
       .get(`/games/${game.id}/player-groups/preview-count`)
       .query({ ruleMode: '$and', rules: encodeURI(JSON.stringify(rules)) })
       .auth(token, { type: 'bearer' })
@@ -196,7 +196,7 @@ describe('EQUALS rule', () => {
 
     const leaderboard = await new LeaderboardFactory([game]).one()
     const leaderboardEntry = await new LeaderboardEntryFactory(leaderboard, [player1]).state(() => ({ score: 60 })).one()
-    await (<EntityManager>global.em).persistAndFlush([player1, player2, leaderboardEntry])
+    await em.persistAndFlush([player1, player2, leaderboardEntry])
 
     const rules: Partial<PlayerGroupRule>[] = [
       {
@@ -208,7 +208,7 @@ describe('EQUALS rule', () => {
       }
     ]
 
-    const res = await request(global.app)
+    const res = await request(app)
       .get(`/games/${game.id}/player-groups/preview-count`)
       .query({ ruleMode: '$and', rules: encodeURI(JSON.stringify(rules)) })
       .auth(token, { type: 'bearer' })
@@ -226,7 +226,7 @@ describe('EQUALS rule', () => {
 
     const leaderboard = await new LeaderboardFactory([game]).one()
     const leaderboardEntry = await new LeaderboardEntryFactory(leaderboard, [player1]).state(() => ({ score: 60 })).one()
-    await (<EntityManager>global.em).persistAndFlush([player1, player2, leaderboardEntry])
+    await em.persistAndFlush([player1, player2, leaderboardEntry])
 
     const rules: Partial<PlayerGroupRule>[] = [
       {
@@ -238,7 +238,7 @@ describe('EQUALS rule', () => {
       }
     ]
 
-    const res = await request(global.app)
+    const res = await request(app)
       .get(`/games/${game.id}/player-groups/preview-count`)
       .query({ ruleMode: '$and', rules: encodeURI(JSON.stringify(rules)) })
       .auth(token, { type: 'bearer' })
@@ -256,7 +256,7 @@ describe('EQUALS rule', () => {
 
     const leaderboard = await new LeaderboardFactory([game]).one()
     const leaderboardEntry = await new LeaderboardEntryFactory(leaderboard, [player1]).state(() => ({ score: 60, hidden: true })).one()
-    await (<EntityManager>global.em).persistAndFlush([player1, player2, leaderboardEntry])
+    await em.persistAndFlush([player1, player2, leaderboardEntry])
 
     const rules: Partial<PlayerGroupRule>[] = [
       {
@@ -268,7 +268,7 @@ describe('EQUALS rule', () => {
       }
     ]
 
-    const res = await request(global.app)
+    const res = await request(app)
       .get(`/games/${game.id}/player-groups/preview-count`)
       .query({ ruleMode: '$and', rules: encodeURI(JSON.stringify(rules)) })
       .auth(token, { type: 'bearer' })

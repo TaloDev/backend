@@ -1,4 +1,3 @@
-import { EntityManager } from '@mikro-orm/mysql'
 import request from 'supertest'
 import LeaderboardFactory from '../../fixtures/LeaderboardFactory'
 import { LeaderboardSortMode } from '../../../src/entities/leaderboard'
@@ -23,9 +22,9 @@ describe('Leaderboard service - update leaderboard', () => {
     const [token] = await createUserAndToken({}, organisation)
 
     const leaderboard = await new LeaderboardFactory([game]).one()
-    await (<EntityManager>global.em).persistAndFlush(leaderboard)
+    await em.persistAndFlush(leaderboard)
 
-    const res = await request(global.app)
+    const res = await request(app)
       .put(`/games/${game.id}/leaderboards/${leaderboard.id}`)
       .send({ name: 'The new name', internalName: leaderboard.internalName, sortMode: leaderboard.sortMode, unique: leaderboard.unique, refreshInterval: 'never' })
       .auth(token, { type: 'bearer' })
@@ -33,7 +32,7 @@ describe('Leaderboard service - update leaderboard', () => {
 
     expect(res.body.leaderboard.name).toBe('The new name')
 
-    const activity = await (<EntityManager>global.em).getRepository(GameActivity).findOne({
+    const activity = await em.getRepository(GameActivity).findOne({
       type: GameActivityType.LEADERBOARD_UPDATED,
       game,
       extra: {
@@ -49,9 +48,9 @@ describe('Leaderboard service - update leaderboard', () => {
     const [token] = await createUserAndToken({}, organisation)
 
     const leaderboard = await new LeaderboardFactory([game]).desc().one()
-    await (<EntityManager>global.em).persistAndFlush(leaderboard)
+    await em.persistAndFlush(leaderboard)
 
-    const res = await request(global.app)
+    const res = await request(app)
       .put(`/games/${game.id}/leaderboards/${leaderboard.id}`)
       .send({ sortMode: LeaderboardSortMode.ASC, internalName: leaderboard.internalName, name: leaderboard.name, unique: leaderboard.unique, refreshInterval: 'never' })
       .auth(token, { type: 'bearer' })
@@ -65,9 +64,9 @@ describe('Leaderboard service - update leaderboard', () => {
     const [token] = await createUserAndToken({}, organisation)
 
     const leaderboard = await new LeaderboardFactory([game]).unique().one()
-    await (<EntityManager>global.em).persistAndFlush(leaderboard)
+    await em.persistAndFlush(leaderboard)
 
-    const res = await request(global.app)
+    const res = await request(app)
       .put(`/games/${game.id}/leaderboards/${leaderboard.id}`)
       .send({ unique: false, internalName: leaderboard.internalName, name: leaderboard.name, sortMode: leaderboard.sortMode, refreshInterval: 'never' })
       .auth(token, { type: 'bearer' })
@@ -80,7 +79,7 @@ describe('Leaderboard service - update leaderboard', () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({}, organisation)
 
-    const res = await request(global.app)
+    const res = await request(app)
       .put(`/games/${game.id}/leaderboards/21312321`)
       .send({ internalName: 'this-does-not-exist', name: 'blah', sortMode: LeaderboardSortMode.ASC, unique: true, refreshInterval: 'never' })
       .auth(token, { type: 'bearer' })
@@ -99,9 +98,9 @@ describe('Leaderboard service - update leaderboard', () => {
       .state(() => ({ createdAt: sub(new Date(), { days: 2 }) }))
       .one()
 
-    await (<EntityManager>global.em).persistAndFlush([leaderboard, entry])
+    await em.persistAndFlush([leaderboard, entry])
 
-    const res = await request(global.app)
+    const res = await request(app)
       .put(`/games/${game.id}/leaderboards/${leaderboard.id}`)
       .send({
         refreshInterval: 'daily',
@@ -116,7 +115,7 @@ describe('Leaderboard service - update leaderboard', () => {
     expect(res.body.leaderboard.refreshInterval).toBe('daily')
     await vi.runAllTimersAsync()
 
-    await (<EntityManager>global.em).refresh(entry)
+    await em.refresh(entry)
     expect(entry.deletedAt).toBeDefined()
   })
 })

@@ -6,7 +6,7 @@ import { Entity, PrimaryKey, Property } from '@mikro-orm/mysql'
 @Entity()
 export default class <%= h.changeCase.pascal(name) %> {
   @PrimaryKey()
-  id: number
+  id!: number
 
   @Property()
   createdAt: Date = new Date()

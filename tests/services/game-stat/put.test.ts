@@ -1,4 +1,3 @@
-import { EntityManager } from '@mikro-orm/mysql'
 import request from 'supertest'
 import GameStatFactory from '../../fixtures/GameStatFactory'
 import GameActivity, { GameActivityType } from '../../../src/entities/game-activity'
@@ -11,9 +10,9 @@ describe('Game stat service - put', () => {
     const [token] = await createUserAndToken({}, organisation)
 
     const stat = await new GameStatFactory([game]).one()
-    await (<EntityManager>global.em).persistAndFlush(stat)
+    await em.persistAndFlush(stat)
 
-    const res = await request(global.app)
+    const res = await request(app)
       .put(`/games/${game.id}/game-stats/${stat.id}`)
       .send({ internalName: stat.internalName, name: 'New name', global: stat.global, maxChange: stat.maxChange, minValue: stat.minValue, maxValue: stat.maxValue, defaultValue: stat.defaultValue, minTimeBetweenUpdates: stat.minTimeBetweenUpdates })
       .auth(token, { type: 'bearer' })
@@ -21,7 +20,7 @@ describe('Game stat service - put', () => {
 
     expect(res.body.stat.name).toBe('New name')
 
-    const activity = await (<EntityManager>global.em).getRepository(GameActivity).findOne({
+    const activity = await em.getRepository(GameActivity).findOne({
       type: GameActivityType.GAME_STAT_UPDATED,
       game,
       extra: {
@@ -39,9 +38,9 @@ describe('Game stat service - put', () => {
     const [token] = await createUserAndToken({}, organisation)
 
     const stat = await new GameStatFactory([game]).state(() => ({ global: false })).one()
-    await (<EntityManager>global.em).persistAndFlush(stat)
+    await em.persistAndFlush(stat)
 
-    const res = await request(global.app)
+    const res = await request(app)
       .put(`/games/${game.id}/game-stats/${stat.id}`)
       .send({ global: true, internalName: stat.internalName, name: stat.name, maxChange: stat.maxChange, minValue: stat.minValue, maxValue: stat.maxValue, defaultValue: stat.defaultValue, minTimeBetweenUpdates: stat.minTimeBetweenUpdates })
       .auth(token, { type: 'bearer' })
@@ -49,7 +48,7 @@ describe('Game stat service - put', () => {
 
     expect(res.body.stat.global).toBe(true)
 
-    const activity = await (<EntityManager>global.em).getRepository(GameActivity).findOne({
+    const activity = await em.getRepository(GameActivity).findOne({
       type: GameActivityType.GAME_STAT_UPDATED,
       game,
       extra: {
@@ -67,9 +66,9 @@ describe('Game stat service - put', () => {
     const [token] = await createUserAndToken({}, organisation)
 
     const stat = await new GameStatFactory([game]).one()
-    await (<EntityManager>global.em).persistAndFlush(stat)
+    await em.persistAndFlush(stat)
 
-    const res = await request(global.app)
+    const res = await request(app)
       .put(`/games/${game.id}/game-stats/${stat.id}`)
       .send({ maxChange: 90, internalName: stat.internalName, name: stat.name, global: stat.global, minValue: stat.minValue, maxValue: stat.maxValue, defaultValue: stat.defaultValue, minTimeBetweenUpdates: stat.minTimeBetweenUpdates })
       .auth(token, { type: 'bearer' })
@@ -77,7 +76,7 @@ describe('Game stat service - put', () => {
 
     expect(res.body.stat.maxChange).toBe(90)
 
-    const activity = await (<EntityManager>global.em).getRepository(GameActivity).findOne({
+    const activity = await em.getRepository(GameActivity).findOne({
       type: GameActivityType.GAME_STAT_UPDATED,
       game,
       extra: {
@@ -99,9 +98,9 @@ describe('Game stat service - put', () => {
       defaultValue: 0,
       maxValue: 600
     })).one()
-    await (<EntityManager>global.em).persistAndFlush(stat)
+    await em.persistAndFlush(stat)
 
-    const res = await request(global.app)
+    const res = await request(app)
       .put(`/games/${game.id}/game-stats/${stat.id}`)
       .send({ minValue: -300, internalName: stat.internalName, name: stat.name, global: stat.global, maxChange: stat.maxChange, maxValue: stat.maxValue, defaultValue: stat.defaultValue, minTimeBetweenUpdates: stat.minTimeBetweenUpdates })
       .auth(token, { type: 'bearer' })
@@ -109,7 +108,7 @@ describe('Game stat service - put', () => {
 
     expect(res.body.stat.minValue).toBe(-300)
 
-    const activity = await (<EntityManager>global.em).getRepository(GameActivity).findOne({
+    const activity = await em.getRepository(GameActivity).findOne({
       type: GameActivityType.GAME_STAT_UPDATED,
       game,
       extra: {
@@ -131,9 +130,9 @@ describe('Game stat service - put', () => {
       defaultValue: 0,
       maxValue: 100
     })).one()
-    await (<EntityManager>global.em).persistAndFlush(stat)
+    await em.persistAndFlush(stat)
 
-    const res = await request(global.app)
+    const res = await request(app)
       .put(`/games/${game.id}/game-stats/${stat.id}`)
       .send({ maxValue: 200, internalName: stat.internalName, name: stat.name, global: stat.global, maxChange: stat.maxChange, minValue: stat.minValue, defaultValue: stat.defaultValue, minTimeBetweenUpdates: stat.minTimeBetweenUpdates })
       .auth(token, { type: 'bearer' })
@@ -141,7 +140,7 @@ describe('Game stat service - put', () => {
 
     expect(res.body.stat.maxValue).toBe(200)
 
-    const activity = await (<EntityManager>global.em).getRepository(GameActivity).findOne({
+    const activity = await em.getRepository(GameActivity).findOne({
       type: GameActivityType.GAME_STAT_UPDATED,
       game,
       extra: {
@@ -162,9 +161,9 @@ describe('Game stat service - put', () => {
       minValue: -100,
       maxValue: 300
     })).one()
-    await (<EntityManager>global.em).persistAndFlush(stat)
+    await em.persistAndFlush(stat)
 
-    const res = await request(global.app)
+    const res = await request(app)
       .put(`/games/${game.id}/game-stats/${stat.id}`)
       .send({ defaultValue: 100, internalName: stat.internalName, name: stat.name, global: stat.global, maxChange: stat.maxChange, minValue: stat.minValue, maxValue: stat.maxValue, minTimeBetweenUpdates: stat.minTimeBetweenUpdates })
       .auth(token, { type: 'bearer' })
@@ -172,7 +171,7 @@ describe('Game stat service - put', () => {
 
     expect(res.body.stat.defaultValue).toBe(100)
 
-    const activity = await (<EntityManager>global.em).getRepository(GameActivity).findOne({
+    const activity = await em.getRepository(GameActivity).findOne({
       type: GameActivityType.GAME_STAT_UPDATED,
       game,
       extra: {
@@ -190,9 +189,9 @@ describe('Game stat service - put', () => {
     const [token] = await createUserAndToken({}, organisation)
 
     const stat = await new GameStatFactory([game]).one()
-    await (<EntityManager>global.em).persistAndFlush(stat)
+    await em.persistAndFlush(stat)
 
-    const res = await request(global.app)
+    const res = await request(app)
       .put(`/games/${game.id}/game-stats/${stat.id}`)
       .send({ minTimeBetweenUpdates: 10242, internalName: stat.internalName, name: stat.name, global: stat.global, maxChange: stat.maxChange, minValue: stat.minValue, maxValue: stat.maxValue, defaultValue: stat.defaultValue })
       .auth(token, { type: 'bearer' })
@@ -200,7 +199,7 @@ describe('Game stat service - put', () => {
 
     expect(res.body.stat.minTimeBetweenUpdates).toBe(10242)
 
-    const activity = await (<EntityManager>global.em).getRepository(GameActivity).findOne({
+    const activity = await em.getRepository(GameActivity).findOne({
       type: GameActivityType.GAME_STAT_UPDATED,
       game,
       extra: {
@@ -218,9 +217,9 @@ describe('Game stat service - put', () => {
     const [token] = await createUserAndToken({}, organisation)
 
     const stat = await new GameStatFactory([game]).one()
-    await (<EntityManager>global.em).persistAndFlush(stat)
+    await em.persistAndFlush(stat)
 
-    const res = await request(global.app)
+    const res = await request(app)
       .put(`/games/${game.id}/game-stats/${stat.id}`)
       .send({ internalName: 'new-internal-name', name: stat.name, global: stat.global, maxChange: stat.maxChange, minValue: stat.minValue, maxValue: stat.maxValue, defaultValue: stat.defaultValue, minTimeBetweenUpdates: stat.minTimeBetweenUpdates })
       .auth(token, { type: 'bearer' })
@@ -228,7 +227,7 @@ describe('Game stat service - put', () => {
 
     expect(res.body.stat.internalName).toBe(stat.internalName)
 
-    const activity = await (<EntityManager>global.em).getRepository(GameActivity).findOne({
+    const activity = await em.getRepository(GameActivity).findOne({
       type: GameActivityType.GAME_STAT_UPDATED,
       game,
       extra: {
@@ -246,9 +245,9 @@ describe('Game stat service - put', () => {
     const [token] = await createUserAndToken()
 
     const stat = await new GameStatFactory([otherGame]).one()
-    await (<EntityManager>global.em).persistAndFlush(stat)
+    await em.persistAndFlush(stat)
 
-    const res = await request(global.app)
+    const res = await request(app)
       .put(`/games/${otherGame.id}/game-stats/${stat.id}`)
       .send({ internalName: stat.internalName, name: 'New name', global: stat.global, maxChange: stat.maxChange, minValue: stat.minValue, maxValue: stat.maxValue, defaultValue: stat.defaultValue, minTimeBetweenUpdates: stat.minTimeBetweenUpdates })
       .auth(token, { type: 'bearer' })
@@ -263,7 +262,7 @@ describe('Game stat service - put', () => {
 
     const stat = await new GameStatFactory([game]).one()
 
-    const res = await request(global.app)
+    const res = await request(app)
       .put(`/games/${game.id}/game-stats/31223`)
       .send({ internalName: stat.internalName, name: stat.name, global: stat.global, maxChange: stat.maxChange, minValue: stat.minValue, maxValue: stat.maxValue, defaultValue: stat.defaultValue, minTimeBetweenUpdates: stat.minTimeBetweenUpdates })
       .auth(token, { type: 'bearer' })
@@ -281,9 +280,9 @@ describe('Game stat service - put', () => {
       defaultValue: 0,
       maxValue: 600
     })).one()
-    await (<EntityManager>global.em).persistAndFlush(stat)
+    await em.persistAndFlush(stat)
 
-    const res = await request(global.app)
+    const res = await request(app)
       .put(`/games/${game.id}/game-stats/${stat.id}`)
       .send({ minValue: stat.minValue, internalName: stat.internalName, name: stat.name, global: stat.global, maxChange: stat.maxChange, maxValue: stat.maxValue, defaultValue: stat.defaultValue, minTimeBetweenUpdates: 999_999_999_999_999 })
       .auth(token, { type: 'bearer' })

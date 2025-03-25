@@ -1,4 +1,3 @@
-import { EntityManager } from '@mikro-orm/mysql'
 import request from 'supertest'
 import PlayerGroupFactory from '../../fixtures/PlayerGroupFactory'
 import createOrganisationAndGame from '../../utils/createOrganisationAndGame'
@@ -11,9 +10,9 @@ describe('Player group service - index', () => {
     const [token] = await createUserAndToken({}, organisation)
 
     const groups = await new PlayerGroupFactory().construct(game).many(3)
-    await (<EntityManager>global.em).persistAndFlush(groups)
+    await em.persistAndFlush(groups)
 
-    const res = await request(global.app)
+    const res = await request(app)
       .get(`/games/${game.id}/player-groups`)
       .auth(token, { type: 'bearer' })
       .expect(200)
@@ -29,7 +28,7 @@ describe('Player group service - index', () => {
   it('should not return groups for a non-existent game', async () => {
     const [token] = await createUserAndToken()
 
-    const res = await request(global.app)
+    const res = await request(app)
       .get('/games/99999/player-groups')
       .auth(token, { type: 'bearer' })
       .expect(404)
@@ -41,7 +40,7 @@ describe('Player group service - index', () => {
     const [, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken()
 
-    await request(global.app)
+    await request(app)
       .get(`/games/${game.id}/player-groups`)
       .auth(token, { type: 'bearer' })
       .expect(403)

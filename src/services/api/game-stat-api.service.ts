@@ -20,6 +20,7 @@ type GlobalValueMetrics = {
   medianValue: number
   averageValue: number
   averageChange: number
+  averagePlayerValue: number
 }
 
 export default class GameStatAPIService extends APIService {
@@ -267,8 +268,9 @@ export default class GameStatAPIService extends APIService {
         min(global_value) as minValue,
         max(global_value) as maxValue,
         median(global_value) as medianValue,
-        sum(global_value) as sum,
-        sum(change) / count() as averageChange
+        avg(global_value) as averageValue,
+        avg(change) as averageChange,
+        avg(value) as averagePlayerValue
       FROM player_game_stat_snapshots
       ${whereConditions}
     `
@@ -277,23 +279,25 @@ export default class GameStatAPIService extends APIService {
       query: aggregatesQuery,
       format: 'JSONEachRow'
     }).then((res) => res.json<{
-      rawCount: string
+      rawCount: string | number
       minValue: number
       maxValue: number
       medianValue: number | null
-      sum: number
+      averageValue: number | null
       averageChange: number | null
+      averagePlayerValue: number | null
     }>())
 
-    const { rawCount, minValue, maxValue, medianValue, sum, averageChange } = aggregates[0]
+    const { rawCount, minValue, maxValue, medianValue, averageValue, averageChange, averagePlayerValue } = aggregates[0]
     const count = Number(rawCount)
 
     const globalValue: GlobalValueMetrics = {
       minValue: minValue || stat.defaultValue,
       maxValue: maxValue || stat.defaultValue,
       medianValue: medianValue ?? stat.defaultValue,
-      averageValue: count > 0 ? sum / count : stat.defaultValue,
-      averageChange: averageChange ?? 0
+      averageValue: averageValue ?? stat.defaultValue,
+      averageChange: averageChange ?? 0,
+      averagePlayerValue: averagePlayerValue ?? stat.defaultValue
     }
 
     return {

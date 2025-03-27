@@ -20,11 +20,106 @@ type GlobalValueMetrics = {
   medianValue: number
   averageValue: number
   averageChange: number
-  averagePlayerValue: number
+}
+
+type PlayerValueMetrics = {
+  minValue: number
+  maxValue: number
+  medianValue: number
+  averageValue: number
+}
+
+async function getGlobalValueMetrics(
+  clickhouse: ClickHouseClient,
+  stat: GameStat,
+  whereConditions: string
+): Promise<[number, GlobalValueMetrics]> {
+  const query = `
+    SELECT
+      count() as rawCount,
+      min(global_value) as minValue,
+      max(global_value) as maxValue,
+      median(global_value) as medianValue,
+      avg(global_value) as averageValue,
+      avg(change) as averageChange
+    FROM player_game_stat_snapshots
+    ${whereConditions}
+  `
+
+  const res = await clickhouse.query({
+    query: query,
+    format: 'JSONEachRow'
+  }).then((res) => res.json<{
+    rawCount: string | number
+    minValue: number
+    maxValue: number
+    medianValue: number | null
+    averageValue: number | null
+    averageChange: number | null
+  }>())
+
+  const {
+    rawCount,
+    minValue,
+    maxValue,
+    medianValue,
+    averageValue,
+    averageChange
+  } = res[0]
+
+  return [
+    Number(rawCount),
+    {
+      minValue: minValue || stat.defaultValue,
+      maxValue: maxValue || stat.defaultValue,
+      medianValue: medianValue ?? stat.defaultValue,
+      averageValue: averageValue ?? stat.defaultValue,
+      averageChange: averageChange ?? 0
+    }
+  ]
+}
+
+async function getPlayerValueMetrics(
+  clickhouse: ClickHouseClient,
+  stat: GameStat,
+  whereConditions: string
+): Promise<PlayerValueMetrics> {
+  const query = `
+    SELECT
+      min(value) as minValue,
+      max(value) as maxValue,
+      median(value) as medianValue,
+      avg(value) as averageValue
+    FROM player_game_stat_snapshots
+    ${whereConditions}
+  `
+
+  const res = await clickhouse.query({
+    query: query,
+    format: 'JSONEachRow'
+  }).then((res) => res.json<{
+    minValue: number
+    maxValue: number
+    medianValue: number | null
+    averageValue: number | null
+  }>())
+
+  const {
+    minValue,
+    maxValue,
+    medianValue,
+    averageValue
+  } = res[0]
+
+  return {
+    minValue: minValue || stat.defaultValue,
+    maxValue: maxValue || stat.defaultValue,
+    medianValue: medianValue ?? stat.defaultValue,
+    averageValue: averageValue ?? stat.defaultValue
+  }
 }
 
 export default class GameStatAPIService extends APIService {
-
   @Route({
     method: 'GET',
     docs: GameStatAPIDocs.index
@@ -261,50 +356,15 @@ export default class GameStatAPIService extends APIService {
     }).then((res) => res.json<ClickHousePlayerGameStatSnapshot>())
 
     const history = await Promise.all(snapshots.map((snapshot) => new PlayerGameStatSnapshot().hydrate(em, snapshot)))
-
-    const aggregatesQuery = `
-      SELECT
-        count() as rawCount,
-        min(global_value) as minValue,
-        max(global_value) as maxValue,
-        median(global_value) as medianValue,
-        avg(global_value) as averageValue,
-        avg(change) as averageChange,
-        avg(value) as averagePlayerValue
-      FROM player_game_stat_snapshots
-      ${whereConditions}
-    `
-
-    const aggregates = await clickhouse.query({
-      query: aggregatesQuery,
-      format: 'JSONEachRow'
-    }).then((res) => res.json<{
-      rawCount: string | number
-      minValue: number
-      maxValue: number
-      medianValue: number | null
-      averageValue: number | null
-      averageChange: number | null
-      averagePlayerValue: number | null
-    }>())
-
-    const { rawCount, minValue, maxValue, medianValue, averageValue, averageChange, averagePlayerValue } = aggregates[0]
-    const count = Number(rawCount)
-
-    const globalValue: GlobalValueMetrics = {
-      minValue: minValue || stat.defaultValue,
-      maxValue: maxValue || stat.defaultValue,
-      medianValue: medianValue ?? stat.defaultValue,
-      averageValue: averageValue ?? stat.defaultValue,
-      averageChange: averageChange ?? 0,
-      averagePlayerValue: averagePlayerValue ?? stat.defaultValue
-    }
+    const [count, globalValue] = await getGlobalValueMetrics(clickhouse, stat, whereConditions)
+    const playerValue = await getPlayerValueMetrics(clickhouse, stat, whereConditions)
 
     return {
       status: 200,
       body: {
         history,
         globalValue,
+        playerValue,
         count,
         itemsPerPage,
         isLastPage: (Number(page) * itemsPerPage) + itemsPerPage >= count

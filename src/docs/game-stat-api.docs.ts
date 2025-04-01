@@ -362,10 +362,17 @@ const GameStatAPIDocs: APIDocs<GameStatAPIService> = {
             }
           ],
           globalValue: {
-            min: 1028,
-            max: 1062,
-            median: 1052,
-            average: 1048.5
+            minValue: 1028,
+            maxValue: 1062,
+            medianValue: 1052,
+            averageValue: 1048.5,
+            averageChange: 8.6
+          },
+          playerValue: {
+            minValue: 1028,
+            maxValue: 1062,
+            medianValue: 1052,
+            averageValue: 1051.6
           },
           count: 5,
           itemsPerPage: 50,

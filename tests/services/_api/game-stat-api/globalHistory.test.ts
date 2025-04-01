@@ -366,6 +366,12 @@ describe('Game stats API service - global history', () => {
     expect(res.body.globalValue.averageChange).toBe(
       changes.reduce((acc, val) => acc + val, 0) / changes.length
     )
+
+    expect(res.body.playerValue).toHaveProperty('averageValue')
+
+    expect(res.body.playerValue.averageValue).toBe(
+      changes.reduce((acc, val) => acc + val, 0) / changes.length
+    )
   })
 
   it('should return globalValue metrics equal to the stat default when there are no snapshots', async () => {
@@ -384,5 +390,10 @@ describe('Game stats API service - global history', () => {
     expect(res.body.globalValue).toHaveProperty('medianValue', stat.defaultValue)
     expect(res.body.globalValue).toHaveProperty('averageValue', stat.defaultValue)
     expect(res.body.globalValue).toHaveProperty('averageChange', 0)
+
+    expect(res.body.playerValue).toHaveProperty('minValue', stat.defaultValue)
+    expect(res.body.playerValue).toHaveProperty('maxValue', stat.defaultValue)
+    expect(res.body.playerValue).toHaveProperty('medianValue', stat.defaultValue)
+    expect(res.body.playerValue).toHaveProperty('averageValue', stat.defaultValue)
   })
 })

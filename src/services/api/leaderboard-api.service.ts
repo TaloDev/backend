@@ -106,7 +106,11 @@ export default class LeaderboardAPIService extends APIService {
 
     const query = em.qb(LeaderboardEntry, 'le')
       .select('le.*', true)
-      .where({ leaderboard: entry.leaderboard })
+      .where({
+        leaderboard: entry.leaderboard,
+        hidden: false,
+        deletedAt: null
+      })
       .orderBy({ score: entry.leaderboard.sortMode })
 
     if (!req.ctx.state.includeDevData) {
@@ -117,8 +121,7 @@ export default class LeaderboardAPIService extends APIService {
       })
     }
 
-    const entries = await query
-      .getResultList()
+    const entries = await query.getResultList()
 
     return {
       status: 200,

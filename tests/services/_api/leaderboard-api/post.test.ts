@@ -355,4 +355,56 @@ describe('Leaderboard API service - post', () => {
       }
     })
   })
+
+  it('should return the correct position accounting for hidden entries', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_LEADERBOARDS])
+    const player = await new PlayerFactory([apiKey.game]).one()
+    const leaderboard = await new LeaderboardFactory([apiKey.game]).state(() => ({ sortMode: LeaderboardSortMode.DESC, unique: false })).one()
+    await em.persistAndFlush([player, leaderboard])
+
+    await request(app)
+      .post(`/v1/leaderboards/${leaderboard.internalName}/entries`)
+      .send({ score: 300 })
+      .auth(token, { type: 'bearer' })
+      .set('x-talo-alias', String(player.aliases[0].id))
+      .expect(200)
+
+    const hiddenEntry = await new LeaderboardEntryFactory(leaderboard, [player]).state(() => ({ score: 250 })).hidden().one()
+    await em.persistAndFlush(hiddenEntry)
+
+    const res = await request(app)
+      .post(`/v1/leaderboards/${leaderboard.internalName}/entries`)
+      .send({ score: 200 })
+      .auth(token, { type: 'bearer' })
+      .set('x-talo-alias', String(player.aliases[0].id))
+      .expect(200)
+
+    expect(res.body.entry.position).toBe(1)
+  })
+
+  it('should return the correct position accounting for archived entries', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_LEADERBOARDS])
+    const player = await new PlayerFactory([apiKey.game]).one()
+    const leaderboard = await new LeaderboardFactory([apiKey.game]).state(() => ({ sortMode: LeaderboardSortMode.DESC, unique: false })).one()
+    await em.persistAndFlush([player, leaderboard])
+
+    await request(app)
+      .post(`/v1/leaderboards/${leaderboard.internalName}/entries`)
+      .send({ score: 300 })
+      .auth(token, { type: 'bearer' })
+      .set('x-talo-alias', String(player.aliases[0].id))
+      .expect(200)
+
+    const archivedEntry = await new LeaderboardEntryFactory(leaderboard, [player]).state(() => ({ score: 250 })).archived().one()
+    await em.persistAndFlush(archivedEntry)
+
+    const res = await request(app)
+      .post(`/v1/leaderboards/${leaderboard.internalName}/entries`)
+      .send({ score: 200 })
+      .auth(token, { type: 'bearer' })
+      .set('x-talo-alias', String(player.aliases[0].id))
+      .expect(200)
+
+    expect(res.body.entry.position).toBe(1)
+  })
 })

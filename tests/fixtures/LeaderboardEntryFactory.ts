@@ -34,4 +34,10 @@ export default class LeaderboardEntryFactory extends Factory<LeaderboardEntry> {
       hidden: true
     }))
   }
+
+  archived(): this {
+    return this.state(() => ({
+      deletedAt: new Date()
+    }))
+  }
 }

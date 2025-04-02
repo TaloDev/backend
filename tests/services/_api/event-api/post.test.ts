@@ -285,4 +285,52 @@ describe('Event API service - post', () => {
     })
     expect(prop).toBeTruthy()
   })
+
+  it('should return an error message if inserting events fails', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_EVENTS])
+    const player = await new PlayerFactory([apiKey.game]).one()
+    await em.persistAndFlush(player)
+
+    vi.spyOn(clickhouse, 'insert').mockImplementation(() => {
+      throw new Error('ClickHouse insert failed')
+    })
+
+    const res = await request(app)
+      .post('/v1/events')
+      .send({ events: [{ name: 'Craft bow', timestamp: Date.now(), props: [{ key: 'itemId', value: '8' }] }] })
+      .auth(token, { type: 'bearer' })
+      .set('x-talo-alias', String(player.aliases[0].id))
+      .expect(200)
+
+    expect(res.body.errors[0]).toContain('Failed to insert events\': ClickHouse insert failed')
+
+    vi.restoreAllMocks()
+  })
+
+  it('should return an error message if inserting props fails', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_EVENTS])
+    const player = await new PlayerFactory([apiKey.game]).one()
+    await em.persistAndFlush(player)
+
+    let insertCalls = 0
+    vi.spyOn(clickhouse, 'insert').mockImplementation(() => {
+      insertCalls++
+      if (insertCalls === 1) {
+        return Promise.resolve({ executed: true, query_id: '123', response_headers: {} })
+      } else {
+        throw new Error('ClickHouse insert failed')
+      }
+    })
+
+    const res = await request(app)
+      .post('/v1/events')
+      .send({ events: [{ name: 'Craft bow', timestamp: Date.now(), props: [{ key: 'itemId', value: '8' }] }] })
+      .auth(token, { type: 'bearer' })
+      .set('x-talo-alias', String(player.aliases[0].id))
+      .expect(200)
+
+    expect(res.body.errors[0]).toContain('Failed to insert props\': ClickHouse insert failed')
+
+    vi.restoreAllMocks()
+  })
 })

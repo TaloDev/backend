@@ -6,6 +6,8 @@ import { GameActivityType } from '../entities/game-activity'
 import createGameActivity from '../lib/logging/createGameActivity'
 import { hardSanitiseProps, mergeAndSanitiseProps } from '../lib/props/sanitiseProps'
 import PlayerAlias from '../entities/player-alias'
+import { PropSizeError } from '../lib/errors/propSizeError'
+import buildErrorResponse from '../lib/errors/buildErrorResponse'
 
 const itemsPerPage = 50
 
@@ -88,7 +90,16 @@ export default class GameChannelService extends Service {
     }
 
     if (props) {
-      channel.props = hardSanitiseProps(props)
+      try {
+        channel.props = hardSanitiseProps(props)
+      } catch (err) {
+        if (err instanceof PropSizeError) {
+          return buildErrorResponse({ props: [err.message] })
+        /* v8 ignore start */
+        }
+        throw err
+        /* v8 ignore end */
+      }
     }
 
     if (!req.ctx.state.user.api) {
@@ -136,7 +147,16 @@ export default class GameChannelService extends Service {
     }
 
     if (props) {
-      channel.props = mergeAndSanitiseProps(channel.props, props)
+      try {
+        channel.props = mergeAndSanitiseProps(channel.props, props)
+      } catch (err) {
+        if (err instanceof PropSizeError) {
+          return buildErrorResponse({ props: [err.message] })
+        /* v8 ignore start */
+        }
+        throw err
+        /* v8 ignore end */
+      }
       changedProperties.push('props')
     }
 

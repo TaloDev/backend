@@ -997,22 +997,22 @@
         },
         "key": {
           "name": "key",
-          "type": "varchar(255)",
+          "type": "varchar(128)",
           "unsigned": false,
           "autoincrement": false,
           "primary": false,
           "nullable": false,
-          "length": 255,
+          "length": 128,
           "mappedType": "string"
         },
         "value": {
           "name": "value",
-          "type": "varchar(255)",
+          "type": "varchar(512)",
           "unsigned": false,
           "autoincrement": false,
           "primary": false,
           "nullable": false,
-          "length": 255,
+          "length": 512,
           "mappedType": "string"
         },
         "created_at": {

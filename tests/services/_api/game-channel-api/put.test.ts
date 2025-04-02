@@ -5,6 +5,7 @@ import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
 import PlayerFactory from '../../../fixtures/PlayerFactory'
 import createSocketIdentifyMessage from '../../../utils/createSocketIdentifyMessage'
 import createTestSocket from '../../../utils/createTestSocket'
+import { randText } from '@ngneat/falso'
 
 describe('Game channel API service - put', () => {
   it('should update a channel if the scope is valid', async () => {
@@ -276,6 +277,66 @@ describe('Game channel API service - put', () => {
         expect(actual.data.channel.id).toBe(channel.id)
         expect(actual.data.newOwner.id).toBe(newOwner.aliases[0].id)
       })
+    })
+  })
+
+  it('should reject props where the key is greater than 128 characters', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_CHANNELS])
+
+    const channel = await new GameChannelFactory(apiKey.game).one()
+    const player = await new PlayerFactory([apiKey.game]).one()
+    channel.owner = player.aliases[0]
+    channel.members.add(player.aliases[0])
+    await em.persistAndFlush(channel)
+
+    const res = await request(app)
+      .put(`/v1/game-channels/${channel.id}`)
+      .send({
+        props: [
+          {
+            key: randText({ charCount: 129 }),
+            value: '1'
+          }
+        ]
+      })
+      .auth(token, { type: 'bearer' })
+      .set('x-talo-alias', String(player.aliases[0].id))
+      .expect(400)
+
+    expect(res.body).toStrictEqual({
+      errors: {
+        props: ['Prop key length (129) exceeds 128 characters']
+      }
+    })
+  })
+
+  it('should reject props where the value is greater than 512 characters', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_CHANNELS])
+
+    const channel = await new GameChannelFactory(apiKey.game).one()
+    const player = await new PlayerFactory([apiKey.game]).one()
+    channel.owner = player.aliases[0]
+    channel.members.add(player.aliases[0])
+    await em.persistAndFlush(channel)
+
+    const res = await request(app)
+      .put(`/v1/game-channels/${channel.id}`)
+      .send({
+        props: [
+          {
+            key: 'bio',
+            value: randText({ charCount: 513 })
+          }
+        ]
+      })
+      .auth(token, { type: 'bearer' })
+      .set('x-talo-alias', String(player.aliases[0].id))
+      .expect(400)
+
+    expect(res.body).toStrictEqual({
+      errors: {
+        props: ['Prop value length (513) exceeds 512 characters']
+      }
     })
   })
 })

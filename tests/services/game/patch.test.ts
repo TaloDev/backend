@@ -9,6 +9,7 @@ import createSocketIdentifyMessage from '../../utils/createSocketIdentifyMessage
 import { genAccessToken } from '../../../src/lib/auth/buildTokenPair'
 import { APIKeyScope } from '../../../src/entities/api-key'
 import Prop from '../../../src/entities/prop'
+import { randText } from '@ngneat/falso'
 
 describe('Game service - patch', () => {
   it.each(userPermissionProvider([
@@ -152,7 +153,9 @@ describe('Game service - patch', () => {
       .expect(400)
 
     expect(res.body).toStrictEqual({
-      message: 'Prop keys starting with \'META_\' are reserved for internal systems, please use another key name'
+      errors: {
+        props: ['Prop keys starting with \'META_\' are reserved for internal systems, please use another key name']
+      }
     })
   })
 
@@ -248,6 +251,54 @@ describe('Game service - patch', () => {
       await client.dontExpectJson((actual) => {
         expect(actual.res).toBe('v1.live-config.updated')
       })
+    })
+  })
+
+  it('should reject props where the key is greater than 128 characters', async () => {
+    const [organisation, game] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken({ type: UserType.ADMIN }, organisation)
+
+    const res = await request(app)
+      .patch(`/games/${game.id}`)
+      .send({
+        props: [
+          {
+            key: randText({ charCount: 129 }),
+            value: '1'
+          }
+        ]
+      })
+      .auth(token, { type: 'bearer' })
+      .expect(400)
+
+    expect(res.body).toStrictEqual({
+      errors: {
+        props: ['Prop key length (129) exceeds 128 characters']
+      }
+    })
+  })
+
+  it('should reject props where the value is greater than 512 characters', async () => {
+    const [organisation, game] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken({ type: UserType.ADMIN }, organisation)
+
+    const res = await request(app)
+      .patch(`/games/${game.id}`)
+      .send({
+        props: [
+          {
+            key: 'bio',
+            value: randText({ charCount: 513 })
+          }
+        ]
+      })
+      .auth(token, { type: 'bearer' })
+      .expect(400)
+
+    expect(res.body).toStrictEqual({
+      errors: {
+        props: ['Prop value length (513) exceeds 512 characters']
+      }
     })
   })
 })

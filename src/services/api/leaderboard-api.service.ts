@@ -1,13 +1,15 @@
 import { HasPermission, Request, Response, Route, Validate, ForwardTo, forwardRequest, ValidationCondition } from 'koa-clay'
 import LeaderboardAPIPolicy from '../../policies/api/leaderboard-api.policy'
 import APIService from './api-service'
-import { EntityManager } from '@mikro-orm/mysql'
+import { EntityManager, NotFoundError } from '@mikro-orm/mysql'
 import LeaderboardEntry from '../../entities/leaderboard-entry'
 import Leaderboard, { LeaderboardSortMode } from '../../entities/leaderboard'
 import LeaderboardAPIDocs from '../../docs/leaderboard-api.docs'
 import triggerIntegrations from '../../lib/integrations/triggerIntegrations'
 import { devDataPlayerFilter } from '../../middlewares/dev-data-middleware'
 import { hardSanitiseProps, mergeAndSanitiseProps } from '../../lib/props/sanitiseProps'
+import { PropSizeError } from '../../lib/errors/propSizeError'
+import buildErrorResponse from '../../lib/errors/buildErrorResponse'
 
 export default class LeaderboardAPIService extends APIService {
   @Route({
@@ -97,7 +99,14 @@ export default class LeaderboardAPIService extends APIService {
         entry = await this.createEntry(req, props)
       }
     } catch (err) {
-      entry = await this.createEntry(req, props)
+      if (err instanceof NotFoundError) {
+        entry = await this.createEntry(req, props)
+      } else if (err instanceof PropSizeError) {
+        return buildErrorResponse({ props: [err.message] })
+      /* v8 ignore next 3 */
+      } else {
+        throw err
+      }
     }
 
     await triggerIntegrations(em, leaderboard.game, (integration) => {

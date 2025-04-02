@@ -7,6 +7,7 @@ import Player from '../../entities/player'
 import Event from '../../entities/event'
 import Prop from '../../entities/prop'
 import { ClickHouseClient } from '@clickhouse/client'
+import { PropSizeError } from '../../lib/errors/propSizeError'
 
 export default class EventAPIService extends APIService {
   @Route({
@@ -55,7 +56,16 @@ export default class EventAPIService extends APIService {
         event.createdAt = new Date(item.timestamp)
 
         if (Array.isArray(item.props)) {
-          event.setProps(item.props.map((prop: Prop) => new Prop(prop.key, prop.value)))
+          try {
+            event.setProps(item.props.map((prop: Prop) => new Prop(prop.key, prop.value)))
+          } catch (err) {
+            if (err instanceof PropSizeError) {
+              errors[i].push(err.message)
+            /* v8 ignore next 3 */
+            } else {
+              throw err
+            }
+          }
         } else if (item.props) {
           errors[i].push('Props must be an array')
         }

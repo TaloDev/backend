@@ -40,6 +40,7 @@ import { AddLeaderboardRefreshIntervalAndEntryDeletedAt } from './20250212031914
 import { DeletePlayerAliasAnonymisedColumn } from './20250217004535DeletePlayerAliasAnonymisedColumn'
 import { CreatePlayerPresenceTable } from './20250213081652CreatePlayerPresenceTable'
 import { CascadePlayerPresenceAlias } from './20250219233504CascadePlayerPresenceAlias'
+import { ModifyPlayerPropLengths } from './20250402161623ModifyPlayerPropLengths'
 
 export default [
   {
@@ -209,5 +210,9 @@ export default [
   {
     name: 'CascadePlayerPresenceAlias',
     class: CascadePlayerPresenceAlias
+  },
+  {
+    name: 'ModifyPlayerPropLengths',
+    class: ModifyPlayerPropLengths
   }
 ]

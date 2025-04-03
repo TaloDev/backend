@@ -3,7 +3,7 @@ import Game from '../entities/game'
 import Player from '../entities/player'
 import PlayerPolicy from '../policies/player.policy'
 import PlayerAlias from '../entities/player-alias'
-import { sanitiseProps, mergeAndSanitiseProps } from '../lib/props/sanitiseProps'
+import { sanitiseProps, mergeAndSanitiseProps, hardSanitiseProps } from '../lib/props/sanitiseProps'
 import Event, { ClickHouseEvent } from '../entities/event'
 import { EntityManager } from '@mikro-orm/mysql'
 import { QueryOrder } from '@mikro-orm/mysql'
@@ -19,6 +19,8 @@ import { ClickHouseClient } from '@clickhouse/client'
 import checkPricingPlanPlayerLimit from '../lib/billing/checkPricingPlanPlayerLimit'
 import GameChannel from '../entities/game-channel'
 import Prop from '../entities/prop'
+import buildErrorResponse from '../lib/errors/buildErrorResponse'
+import { PropSizeError } from '../lib/errors/propSizeError'
 
 const propsValidation = async (val: unknown): Promise<ValidationCondition[]> => [
   {
@@ -83,7 +85,16 @@ export default class PlayerService extends Service {
     }
 
     if (props) {
-      player.setProps(props)
+      try {
+        player.setProps(hardSanitiseProps(props))
+      } catch (err) {
+        if (err instanceof PropSizeError) {
+          return buildErrorResponse({ props: [err.message] })
+        /* v8 ignore start */
+        }
+        throw err
+        /* v8 ignore end */
+      }
     }
 
     if (req.headers['x-talo-dev-build'] === '1') {
@@ -223,10 +234,19 @@ export default class PlayerService extends Service {
 
     if (props) {
       if (req.ctx.state.user.api !== true && props.some((prop) => prop.key.startsWith('META_'))) {
-        req.ctx.throw(400, 'Prop keys starting with \'META_\' are reserved for internal systems, please use another key name')
+        return buildErrorResponse({ props: ['Prop keys starting with \'META_\' are reserved for internal systems, please use another key name'] })
       }
 
-      player.setProps(mergeAndSanitiseProps(player.props.getItems(), props, (prop) => !prop.key.startsWith('META_')))
+      try {
+        player.setProps(mergeAndSanitiseProps(player.props.getItems(), props, (prop) => !prop.key.startsWith('META_')))
+      } catch (err) {
+        if (err instanceof PropSizeError) {
+          return buildErrorResponse({ props: [err.message] })
+        /* v8 ignore start */
+        }
+        throw err
+        /* v8 ignore end */
+      }
       player.updatedAt = new Date()
     }
 

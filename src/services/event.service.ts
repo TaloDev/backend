@@ -18,6 +18,13 @@ type AggregatedClickHouseEvent = {
   count: string
 }
 
+type AggregatedClickHouseEventProps = {
+  prop_key: string
+  prop_value: string
+  date: string
+  count: string
+}
+
 // events: {
 //   'Zone explored': [
 //     { name: 'Zone explored', date: 1577836800000, count: 3 },
@@ -79,6 +86,80 @@ export default class EventService extends Service {
 
       data[event.name].push({
         name: event.name,
+        date: Number(event.date),
+        count: Number(event.count),
+        change
+      })
+    }
+
+    return {
+      status: 200,
+      body: {
+        events: data,
+        eventNames: Object.keys(data)
+      }
+    }
+  }
+
+  @Route({
+    method: 'GET',
+    path: '/breakdown'
+  })
+  @Validate({
+    query: {
+      eventName: {
+        required: true
+      },
+      ...dateValidationSchema
+    }
+  })
+  @HasPermission(EventPolicy, 'breakdown')
+  async breakdown(req: Request): Promise<Response> {
+    const { eventName, startDate: startDateQuery, endDate: endDateQuery } = req.query
+    const clickhouse: ClickHouseClient = req.ctx.clickhouse
+
+    const startDate = formatDateForClickHouse(new Date(startDateQuery))
+    const endDate = formatDateForClickHouse(endOfDay(new Date(endDateQuery)))
+
+    let query = `
+      SELECT
+        prop_key,
+        prop_value,
+        toUnixTimestamp(toStartOfDay(events.created_at)) * 1000 AS date,
+        count() AS count
+      FROM event_props
+      LEFT JOIN events ON events.id = event_props.event_id
+      WHERE events.name = '${eventName}'
+        AND events.created_at BETWEEN '${startDate}' AND '${endDate}'
+        AND events.game_id = ${req.ctx.state.game.id}
+    `
+
+    if (!req.ctx.state.includeDevData) {
+      query += ' AND dev_build = false'
+    }
+
+    query += `
+      GROUP BY prop_key, prop_value, date
+      ORDER BY prop_key, prop_value, date
+    `
+
+    const events = await clickhouse.query({
+      query,
+      format: 'JSONEachRow'
+    }).then((res) => res.json<AggregatedClickHouseEventProps>())
+
+    const data: Record<string, EventData[]> = {}
+    for (const event of events) {
+      const keyValueLabel = `[${event.prop_key} = ${event.prop_value}]`
+      if (!data[keyValueLabel]) {
+        data[keyValueLabel] = []
+      }
+
+      const lastEvent = data[keyValueLabel].at(-1)
+      const change = this.calculateChange(Number(event.count), lastEvent)
+
+      data[keyValueLabel].push({
+        name: keyValueLabel,
         date: Number(event.date),
         count: Number(event.count),
         change

@@ -35,4 +35,6 @@ export function buildDateValidationSchema(startDateRequired: boolean, endDateReq
   return schema
 }
 
-export default buildDateValidationSchema(true, true)
+const dateValidationSchema = buildDateValidationSchema(true, true)
+
+export default dateValidationSchema

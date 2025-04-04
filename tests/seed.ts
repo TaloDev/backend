@@ -138,6 +138,11 @@ import ormConfig from '../src/config/mikro-orm.config'
     values: eventsThisMonth.map((event) => event.toInsertable()),
     format: 'JSONEachRow'
   })
+  await clickhouse.insert({
+    table: 'event_props',
+    values: eventsThisMonth.flatMap((event) => event.getInsertableProps()),
+    format: 'JSONEachRow'
+  })
   await clickhouse.close()
 
   console.info('Done!')

@@ -17,7 +17,7 @@ describe('archiveLeaderboardEntries', () => {
   const axiosMock = new AxiosMockAdapter(axios)
 
   beforeEach(() => {
-    vi.useFakeTimers()
+    vi.useFakeTimers({ shouldAdvanceTime: true })
     vi.setSystemTime(new Date('2024-01-15T12:00:00Z'))
   })
 

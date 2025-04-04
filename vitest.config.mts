@@ -6,8 +6,8 @@ export default defineConfig({
     globals: true,
     setupFiles: './tests/setupTest.ts',
     poolOptions: {
-      threads: {
-        singleThread: true
+      forks: {
+        singleFork: true
       }
     },
     deps: {

@@ -294,7 +294,7 @@ export default class PlayerService extends Service {
 
     const aliases = player.aliases.getItems().map((alias) => alias.id).join(',')
 
-    const searchQuery = search ? `AND (name ILIKE '%${search}%' OR prop_value ILIKE '%${search}%')` : ''
+    const searchQuery = search ? 'AND (name ILIKE {search: String} OR prop_value ILIKE {search: String})' : ''
     const baseQuery = `FROM events
       LEFT JOIN event_props ON events.id = event_props.event_id
       WHERE player_alias_id IN (${aliases})
@@ -308,7 +308,13 @@ export default class PlayerService extends Service {
       OFFSET ${Number(page) * itemsPerPage}
     `
 
-    const items = await clickhouse.query({ query, format: 'JSONEachRow' }).then((res) => res.json<ClickHouseEvent>())
+    const queryParams = { search: `%${search}%` }
+
+    const items = await clickhouse.query({
+      query,
+      query_params: queryParams,
+      format: 'JSONEachRow'
+    }).then((res) => res.json<ClickHouseEvent>())
     const events = await Promise.all(items.map((data) => new Event().hydrate(em, data, clickhouse, true)))
 
     const countQuery = `
@@ -317,6 +323,7 @@ export default class PlayerService extends Service {
 
     const count = await clickhouse.query({
       query: countQuery,
+      query_params: queryParams,
       format: 'JSONEachRow'
     }).then((res) => res.json<{ count: string }>())
 

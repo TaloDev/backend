@@ -129,7 +129,7 @@ export default class EventService extends Service {
         count() AS count
       FROM event_props
       LEFT JOIN events ON events.id = event_props.event_id
-      WHERE events.name = '${eventName}'
+      WHERE events.name = {eventName: String}
         AND events.created_at BETWEEN '${startDate}' AND '${endDate}'
         AND events.game_id = ${req.ctx.state.game.id}
     `
@@ -145,6 +145,9 @@ export default class EventService extends Service {
 
     const events = await clickhouse.query({
       query,
+      query_params: {
+        eventName
+      },
       format: 'JSONEachRow'
     }).then((res) => res.json<AggregatedClickHouseEventProps>())
 

@@ -8,6 +8,7 @@ import Event from '../../entities/event'
 import Prop from '../../entities/prop'
 import { ClickHouseClient } from '@clickhouse/client'
 import { PropSizeError } from '../../lib/errors/propSizeError'
+import { isValid } from 'date-fns'
 
 export default class EventAPIService extends APIService {
   @Route({
@@ -70,16 +71,22 @@ export default class EventAPIService extends APIService {
           errors[i].push('Props must be an array')
         }
 
+        if (!isValid(event.createdAt)) {
+          errors[i].push('Event timestamp is invalid')
+        }
+
         if (errors[i].length === 0) {
           eventsMap.set(i, event)
         }
       }
     }
 
+    const eventsArray = Array.from(eventsMap.values())
+
     try {
       await clickhouse.insert({
         table: 'events',
-        values: Array.from(eventsMap.values()),
+        values: eventsArray.map((event) => event.toInsertable()),
         format: 'JSONEachRow'
       })
     } catch (err) {
@@ -91,7 +98,7 @@ export default class EventAPIService extends APIService {
     try {
       await clickhouse.insert({
         table: 'event_props',
-        values: Array.from(eventsMap.values()).flatMap((event) => event.getInsertableProps()),
+        values: eventsArray.flatMap((event) => event.getInsertableProps()),
         format: 'JSONEachRow'
       })
     } catch (err) {
@@ -106,7 +113,7 @@ export default class EventAPIService extends APIService {
     return {
       status: 200,
       body: {
-        events: Array.from(eventsMap.values()),
+        events: eventsArray,
         errors
       }
     }

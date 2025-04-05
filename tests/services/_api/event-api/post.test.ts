@@ -378,4 +378,23 @@ describe('Event API service - post', () => {
       errors: [['Prop value length (513) exceeds 512 characters']]
     })
   })
+
+  it('should capture an error if the event timestamp is invalid', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_EVENTS])
+    const player = await new PlayerFactory([apiKey.game]).one()
+    await em.persistAndFlush(player)
+
+    const res = await request(app)
+      .post('/v1/events')
+      .send({
+        events: [
+          { name: 'Equip bow', timestamp: ' ', props: [] }
+        ]
+      })
+      .auth(token, { type: 'bearer' })
+      .set('x-talo-alias', String(player.aliases[0].id))
+      .expect(200)
+
+    expect(res.body.errors[0]).toStrictEqual(['Event timestamp is invalid'])
+  })
 })

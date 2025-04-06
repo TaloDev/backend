@@ -267,4 +267,40 @@ describe('Event service - breakdown', () => {
 
     expect(res.body.events['[itemId = 1]'][0].count).toBe(events.length)
   })
+
+  it('should not return breakdowns for meta props', async () => {
+    const [organisation, game] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken({}, organisation)
+
+    const player = await new PlayerFactory([game]).one()
+    const now = new Date('2021-01-01')
+
+    const events = await new EventFactory([player]).state((event, idx) => ({
+      name: 'Pickup item',
+      createdAt: addDays(now, idx),
+      props: [
+        { key: 'META_SCREEN_WIDTH', value: '1920' }
+      ]
+    })).many(2)
+
+    await em.persistAndFlush(player)
+    await clickhouse.insert({
+      table: 'events',
+      values: events.map((event) => event.toInsertable()),
+      format: 'JSONEachRow'
+    })
+    await clickhouse.insert({
+      table: 'event_props',
+      values: events.flatMap((event) => event.getInsertableProps()),
+      format: 'JSONEachRow'
+    })
+
+    const res = await request(app)
+      .get(`/games/${game.id}/events/breakdown`)
+      .query({ eventName: 'Pickup item', startDate: '2021-01-01', endDate: '2021-01-03' })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    expect(Object.keys(res.body.events)).toHaveLength(0)
+  })
 })

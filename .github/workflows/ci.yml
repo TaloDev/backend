@@ -47,6 +47,9 @@ jobs:
       - name: Install deps
         run: npm ci --prefer-offline
 
+      - name: Type check
+        run: npx tsc
+
       - name: Build
         run: npm run build
 

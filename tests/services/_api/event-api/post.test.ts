@@ -5,6 +5,7 @@ import PlayerFactory from '../../../fixtures/PlayerFactory'
 import GameFactory from '../../../fixtures/GameFactory'
 import PlayerProp from '../../../../src/entities/player-prop'
 import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
+import { randText } from '@ngneat/falso'
 
 describe('Event API service - post', () => {
   it('should create an event if the scope is valid', async () => {
@@ -284,5 +285,116 @@ describe('Event API service - post', () => {
       value: 'macOS'
     })
     expect(prop).toBeTruthy()
+  })
+
+  it('should return an error message if inserting events fails', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_EVENTS])
+    const player = await new PlayerFactory([apiKey.game]).one()
+    await em.persistAndFlush(player)
+
+    vi.spyOn(clickhouse, 'insert').mockImplementation(() => {
+      throw new Error('ClickHouse insert failed')
+    })
+
+    const res = await request(app)
+      .post('/v1/events')
+      .send({ events: [{ name: 'Craft bow', timestamp: Date.now(), props: [{ key: 'itemId', value: '8' }] }] })
+      .auth(token, { type: 'bearer' })
+      .set('x-talo-alias', String(player.aliases[0].id))
+      .expect(200)
+
+    expect(res.body.errors[0]).toContain('Failed to insert events\': ClickHouse insert failed')
+
+    vi.restoreAllMocks()
+  })
+
+  it('should return an error message if inserting props fails', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_EVENTS])
+    const player = await new PlayerFactory([apiKey.game]).one()
+    await em.persistAndFlush(player)
+
+    let insertCalls = 0
+    vi.spyOn(clickhouse, 'insert').mockImplementation(() => {
+      insertCalls++
+      if (insertCalls === 1) {
+        return Promise.resolve({ executed: true, query_id: '123', response_headers: {} })
+      } else {
+        throw new Error('ClickHouse insert failed')
+      }
+    })
+
+    const res = await request(app)
+      .post('/v1/events')
+      .send({ events: [{ name: 'Craft bow', timestamp: Date.now(), props: [{ key: 'itemId', value: '8' }] }] })
+      .auth(token, { type: 'bearer' })
+      .set('x-talo-alias', String(player.aliases[0].id))
+      .expect(200)
+
+    expect(res.body.errors[0]).toContain('Failed to insert props\': ClickHouse insert failed')
+
+    vi.restoreAllMocks()
+  })
+
+  it('should reject props where the key is greater than 128 characters', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_EVENTS])
+    const player = await new PlayerFactory([apiKey.game]).one()
+    await em.persistAndFlush(player)
+
+    const res = await request(app)
+      .post('/v1/events')
+      .send({
+        events: [
+          { name: 'Equip bow', timestamp: Date.now(), props: [{ key: randText({ charCount: 129 }), value: '1' }] }
+        ]
+      })
+      .auth(token, { type: 'bearer' })
+      .set('x-talo-alias', String(player.aliases[0].id))
+      .expect(200)
+
+    expect(res.body).toStrictEqual({
+      events: [],
+      errors: [['Prop key length (129) exceeds 128 characters']]
+    })
+  })
+
+  it('should reject props where the value is greater than 512 characters', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_EVENTS])
+    const player = await new PlayerFactory([apiKey.game]).one()
+    await em.persistAndFlush(player)
+
+    const res = await request(app)
+      .post('/v1/events')
+      .send({
+        events: [
+          { name: 'Equip bow', timestamp: Date.now(), props: [{ key: 'bio', value: randText({ charCount: 513 }) }] }
+        ]
+      })
+      .auth(token, { type: 'bearer' })
+      .set('x-talo-alias', String(player.aliases[0].id))
+      .expect(200)
+
+    expect(res.body).toStrictEqual({
+      events: [],
+      errors: [['Prop value length (513) exceeds 512 characters']]
+    })
+  })
+
+  it('should capture an error if the event timestamp is invalid', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_EVENTS])
+    const player = await new PlayerFactory([apiKey.game]).one()
+    await em.persistAndFlush(player)
+
+    const res = await request(app)
+      .post('/v1/events')
+      .send({
+        events: [
+          { name: 'Equip bow', timestamp: ' ', props: [] }
+        ]
+      })
+      .auth(token, { type: 'bearer' })
+      .set('x-talo-alias', String(player.aliases[0].id))
+      .expect(200)
+
+    expect(res.body.errors[0]).toStrictEqual(['Event timestamp is invalid'])
   })
 })

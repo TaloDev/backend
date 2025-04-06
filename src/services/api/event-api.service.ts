@@ -7,6 +7,8 @@ import Player from '../../entities/player'
 import Event from '../../entities/event'
 import Prop from '../../entities/prop'
 import { ClickHouseClient } from '@clickhouse/client'
+import { PropSizeError } from '../../lib/errors/propSizeError'
+import { isValid } from 'date-fns'
 
 export default class EventAPIService extends APIService {
   @Route({
@@ -33,7 +35,7 @@ export default class EventAPIService extends APIService {
     const em: EntityManager = req.ctx.em
     const clickhouse: ClickHouseClient = req.ctx.clickhouse
 
-    const events: Event[] = []
+    const eventsMap: Map<number, Event> = new Map()
     const errors: string[][] = Array.from({ length: items.length }, () => [])
 
     const player: Player = req.ctx.state.player
@@ -54,38 +56,54 @@ export default class EventAPIService extends APIService {
         event.playerAlias = playerAlias
         event.createdAt = new Date(item.timestamp)
 
-        try {
-          await clickhouse.insert({
-            table: 'events',
-            values: [event.toInsertable()],
-            format: 'JSONEachRow'
-          })
-        /* v8 ignore next 4 */
-        } catch (err) {
-          errors[i].push(`Failed to insert event: ${(err as Error).message}`)
-          continue
-        }
-
         if (Array.isArray(item.props)) {
-          event.setProps(item.props.map((prop: Prop) => new Prop(prop.key, prop.value)))
-
           try {
-            await clickhouse.insert({
-              table: 'event_props',
-              values: event.getInsertableProps(),
-              format: 'JSONEachRow'
-            })
-          /* v8 ignore next 3 */
+            event.setProps(item.props.map((prop: Prop) => new Prop(prop.key, prop.value)))
           } catch (err) {
-            errors[i].push(`Failed to insert props': ${(err as Error).message}`)
+            if (err instanceof PropSizeError) {
+              errors[i].push(err.message)
+            /* v8 ignore next 3 */
+            } else {
+              throw err
+            }
           }
         } else if (item.props) {
           errors[i].push('Props must be an array')
         }
 
-        if (errors[i].length === 0) {
-          events.push(event)
+        if (!isValid(event.createdAt)) {
+          errors[i].push('Event timestamp is invalid')
         }
+
+        if (errors[i].length === 0) {
+          eventsMap.set(i, event)
+        }
+      }
+    }
+
+    const eventsArray = Array.from(eventsMap.values())
+
+    try {
+      await clickhouse.insert({
+        table: 'events',
+        values: eventsArray.map((event) => event.toInsertable()),
+        format: 'JSONEachRow'
+      })
+    } catch (err) {
+      for (const idx of eventsMap.keys()) {
+        errors[idx].push(`Failed to insert events': ${(err as Error).message}`)
+      }
+    }
+
+    try {
+      await clickhouse.insert({
+        table: 'event_props',
+        values: eventsArray.flatMap((event) => event.getInsertableProps()),
+        format: 'JSONEachRow'
+      })
+    } catch (err) {
+      for (const idx of eventsMap.keys()) {
+        errors[idx].push(`Failed to insert props': ${(err as Error).message}`)
       }
     }
 
@@ -95,7 +113,7 @@ export default class EventAPIService extends APIService {
     return {
       status: 200,
       body: {
-        events,
+        events: eventsArray,
         errors
       }
     }

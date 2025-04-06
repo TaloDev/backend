@@ -1,5 +1,6 @@
 import { Entity, ManyToOne, PrimaryKey, Property } from '@mikro-orm/mysql'
 import Player from './player'
+import { MAX_KEY_LENGTH, MAX_VALUE_LENGTH } from './prop'
 
 @Entity()
 export default class PlayerProp {
@@ -9,10 +10,10 @@ export default class PlayerProp {
   @ManyToOne(() => Player)
   player: Player
 
-  @Property()
+  @Property({ length: MAX_KEY_LENGTH })
   key: string
 
-  @Property()
+  @Property({ length: MAX_VALUE_LENGTH })
   value: string
 
   @Property()

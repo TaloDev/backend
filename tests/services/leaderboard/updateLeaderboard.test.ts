@@ -10,7 +10,7 @@ import { sub } from 'date-fns'
 
 describe('Leaderboard service - update leaderboard', () => {
   beforeEach(() => {
-    vi.useFakeTimers()
+    vi.useFakeTimers({ shouldAdvanceTime: true })
   })
 
   afterEach(() => {

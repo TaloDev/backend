@@ -6,6 +6,7 @@ import PlayerFactory from '../../../fixtures/PlayerFactory'
 import LeaderboardEntryFactory from '../../../fixtures/LeaderboardEntryFactory'
 import { subHours } from 'date-fns'
 import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
+import { randText } from '@ngneat/falso'
 
 describe('Leaderboard API service - post', () => {
   it('should create a leaderboard entry if the scope is valid', async () => {
@@ -406,5 +407,173 @@ describe('Leaderboard API service - post', () => {
       .expect(200)
 
     expect(res.body.entry.position).toBe(1)
+  })
+
+  it('should reject props where the key is greater than 128 characters', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_LEADERBOARDS])
+    const player = await new PlayerFactory([apiKey.game]).one()
+    const leaderboard = await new LeaderboardFactory([apiKey.game]).state(() => ({ unique: false })).one()
+    await em.persistAndFlush([player, leaderboard])
+
+    const res = await request(app)
+      .post(`/v1/leaderboards/${leaderboard.internalName}/entries`)
+      .send({
+        score: 300,
+        props: [
+          {
+            key: randText({ charCount: 129 }),
+            value: '1'
+          }
+        ]
+      })
+      .auth(token, { type: 'bearer' })
+      .set('x-talo-alias', String(player.aliases[0].id))
+      .expect(400)
+
+    expect(res.body).toStrictEqual({
+      errors: {
+        props: ['Prop key length (129) exceeds 128 characters']
+      }
+    })
+  })
+
+  it('should reject props where the value is greater than 512 characters', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_LEADERBOARDS])
+    const player = await new PlayerFactory([apiKey.game]).one()
+    const leaderboard = await new LeaderboardFactory([apiKey.game]).state(() => ({ unique: false })).one()
+    await em.persistAndFlush([player, leaderboard])
+
+    const res = await request(app)
+      .post(`/v1/leaderboards/${leaderboard.internalName}/entries`)
+      .send({
+        score: 300,
+        props: [
+          {
+            key: 'bio',
+            value: randText({ charCount: 513 })
+          }
+        ]
+      })
+      .auth(token, { type: 'bearer' })
+      .set('x-talo-alias', String(player.aliases[0].id))
+      .expect(400)
+
+    expect(res.body).toStrictEqual({
+      errors: {
+        props: ['Prop value length (513) exceeds 512 characters']
+      }
+    })
+  })
+
+  it('should correctly return the position for an ascending leaderboard', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_LEADERBOARDS])
+    const player = await new PlayerFactory([apiKey.game]).one()
+    const leaderboard = await new LeaderboardFactory([apiKey.game]).state(() => ({ unique: false, sortMode: LeaderboardSortMode.ASC })).one()
+    await em.persistAndFlush([player, leaderboard])
+
+    let res = await request(app)
+      .post(`/v1/leaderboards/${leaderboard.internalName}/entries`)
+      .send({ score: 300 })
+      .auth(token, { type: 'bearer' })
+      .set('x-talo-alias', String(player.aliases[0].id))
+      .expect(200)
+
+    expect(res.body.entry.position).toBe(0)
+
+    // higher than above
+    res = await request(app)
+      .post(`/v1/leaderboards/${leaderboard.internalName}/entries`)
+      .send({ score: 400 })
+      .auth(token, { type: 'bearer' })
+      .set('x-talo-alias', String(player.aliases[0].id))
+      .expect(200)
+
+    expect(res.body.entry.position).toBe(1)
+
+    // same result as above
+    res = await request(app)
+      .post(`/v1/leaderboards/${leaderboard.internalName}/entries`)
+      .send({ score: 400 })
+      .auth(token, { type: 'bearer' })
+      .set('x-talo-alias', String(player.aliases[0].id))
+      .expect(200)
+
+    expect(res.body.entry.position).toBe(2)
+
+    // lower than above
+    res = await request(app)
+      .post(`/v1/leaderboards/${leaderboard.internalName}/entries`)
+      .send({ score: 350 })
+      .auth(token, { type: 'bearer' })
+      .set('x-talo-alias', String(player.aliases[0].id))
+      .expect(200)
+
+    expect(res.body.entry.position).toBe(1)
+
+    // lowest result
+    res = await request(app)
+      .post(`/v1/leaderboards/${leaderboard.internalName}/entries`)
+      .send({ score: 100 })
+      .auth(token, { type: 'bearer' })
+      .set('x-talo-alias', String(player.aliases[0].id))
+      .expect(200)
+
+    expect(res.body.entry.position).toBe(0)
+  })
+
+  it('should correctly return the position for a descending leaderboard', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_LEADERBOARDS])
+    const player = await new PlayerFactory([apiKey.game]).one()
+    const leaderboard = await new LeaderboardFactory([apiKey.game]).state(() => ({ unique: false, sortMode: LeaderboardSortMode.DESC })).one()
+    await em.persistAndFlush([player, leaderboard])
+
+    let res = await request(app)
+      .post(`/v1/leaderboards/${leaderboard.internalName}/entries`)
+      .send({ score: 300 })
+      .auth(token, { type: 'bearer' })
+      .set('x-talo-alias', String(player.aliases[0].id))
+      .expect(200)
+
+    expect(res.body.entry.position).toBe(0)
+
+    // lower than above
+    res = await request(app)
+      .post(`/v1/leaderboards/${leaderboard.internalName}/entries`)
+      .send({ score: 200 })
+      .auth(token, { type: 'bearer' })
+      .set('x-talo-alias', String(player.aliases[0].id))
+      .expect(200)
+
+    expect(res.body.entry.position).toBe(1)
+
+    // same result as above
+    res = await request(app)
+      .post(`/v1/leaderboards/${leaderboard.internalName}/entries`)
+      .send({ score: 200 })
+      .auth(token, { type: 'bearer' })
+      .set('x-talo-alias', String(player.aliases[0].id))
+      .expect(200)
+
+    expect(res.body.entry.position).toBe(2)
+
+    // higher than above
+    res = await request(app)
+      .post(`/v1/leaderboards/${leaderboard.internalName}/entries`)
+      .send({ score: 250 })
+      .auth(token, { type: 'bearer' })
+      .set('x-talo-alias', String(player.aliases[0].id))
+      .expect(200)
+
+    expect(res.body.entry.position).toBe(1)
+
+    // highest result
+    res = await request(app)
+      .post(`/v1/leaderboards/${leaderboard.internalName}/entries`)
+      .send({ score: 500 })
+      .auth(token, { type: 'bearer' })
+      .set('x-talo-alias', String(player.aliases[0].id))
+      .expect(200)
+
+    expect(res.body.entry.position).toBe(0)
   })
 })

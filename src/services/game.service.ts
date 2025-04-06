@@ -11,6 +11,8 @@ import Socket from '../socket'
 import { sendMessages } from '../socket/messages/socketMessage'
 import { APIKeyScope } from '../entities/api-key'
 import Prop from '../entities/prop'
+import { PropSizeError } from '../lib/errors/propSizeError'
+import buildErrorResponse from '../lib/errors/buildErrorResponse'
 
 async function sendLiveConfigUpdatedMessage(req: Request, game: Game) {
   const socket: Socket = req.ctx.wss
@@ -80,10 +82,19 @@ export default class GameService extends Service {
 
     if (props) {
       if (props.some((prop) => prop.key.startsWith('META_'))) {
-        req.ctx.throw(400, 'Prop keys starting with \'META_\' are reserved for internal systems, please use another key name')
+        return buildErrorResponse({ props: ['Prop keys starting with \'META_\' are reserved for internal systems, please use another key name'] })
       }
 
-      game.props = mergeAndSanitiseProps(game.props, props)
+      try {
+        game.props = mergeAndSanitiseProps(game.props, props)
+      } catch (err) {
+        if (err instanceof PropSizeError) {
+          return buildErrorResponse({ props: [err.message] })
+        /* v8 ignore start */
+        }
+        throw err
+        /* v8 ignore end */
+      }
       await sendLiveConfigUpdatedMessage(req, game)
 
       createGameActivity(em, {

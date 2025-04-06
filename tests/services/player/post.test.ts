@@ -4,7 +4,7 @@ import PlayerGroupRule, { PlayerGroupRuleCastType, PlayerGroupRuleName } from '.
 import createOrganisationAndGame from '../../utils/createOrganisationAndGame'
 import createUserAndToken from '../../utils/createUserAndToken'
 import PlayerFactory from '../../fixtures/PlayerFactory'
-import { randUserName } from '@ngneat/falso'
+import { randText, randUserName } from '@ngneat/falso'
 
 describe('Player service - post', () => {
   it('should create a player', async () => {
@@ -235,5 +235,53 @@ describe('Player service - post', () => {
       .expect(200)
 
     expect(res.body.player).toBeTruthy()
+  })
+
+  it('should reject props where the key is greater than 128 characters', async () => {
+    const [organisation, game] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken({}, organisation)
+
+    const res = await request(app)
+      .post(`/games/${game.id}/players`)
+      .send({
+        props: [
+          {
+            key: randText({ charCount: 129 }),
+            value: '1'
+          }
+        ]
+      })
+      .auth(token, { type: 'bearer' })
+      .expect(400)
+
+    expect(res.body).toStrictEqual({
+      errors: {
+        props: ['Prop key length (129) exceeds 128 characters']
+      }
+    })
+  })
+
+  it('should reject props where the value is greater than 512 characters', async () => {
+    const [organisation, game] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken({}, organisation)
+
+    const res = await request(app)
+      .post(`/games/${game.id}/players`)
+      .send({
+        props: [
+          {
+            key: 'bio',
+            value: randText({ charCount: 513 })
+          }
+        ]
+      })
+      .auth(token, { type: 'bearer' })
+      .expect(400)
+
+    expect(res.body).toStrictEqual({
+      errors: {
+        props: ['Prop value length (513) exceeds 512 characters']
+      }
+    })
   })
 })

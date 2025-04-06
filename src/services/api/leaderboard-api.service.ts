@@ -113,14 +113,16 @@ export default class LeaderboardAPIService extends APIService {
       return integration.handleLeaderboardEntryCreated(em, entry)
     })
 
-    const query = em.qb(LeaderboardEntry, 'le')
-      .select('le.*', true)
+    const query = em.qb(LeaderboardEntry)
       .where({
-        leaderboard: entry.leaderboard,
+        leaderboard,
         hidden: false,
-        deletedAt: null
+        deletedAt: null,
+        score: leaderboard.sortMode === LeaderboardSortMode.ASC
+          ? { $lte: entry.score }
+          : { $gte: entry.score }
       })
-      .orderBy({ score: entry.leaderboard.sortMode })
+      .orderBy({ createdAt: 'ASC' })
 
     if (!req.ctx.state.includeDevData) {
       query.andWhere({
@@ -130,12 +132,12 @@ export default class LeaderboardAPIService extends APIService {
       })
     }
 
-    const entries = await query.getResultList()
+    const position = (await query.count()) - 1
 
     return {
       status: 200,
       body: {
-        entry: { position: entries.indexOf(entry), ...entry.toJSON() },
+        entry: { position, ...entry.toJSON() },
         updated
       }
     }

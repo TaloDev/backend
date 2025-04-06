@@ -132,6 +132,7 @@ export default class EventService extends Service {
       WHERE events.name = {eventName: String}
         AND events.created_at BETWEEN '${startDate}' AND '${endDate}'
         AND events.game_id = ${req.ctx.state.game.id}
+        AND NOT startsWith(event_props.prop_key, 'META_')
     `
 
     if (!req.ctx.state.includeDevData) {

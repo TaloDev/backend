@@ -84,4 +84,52 @@ describe('Leaderboard API service - get', () => {
       .auth(token, { type: 'bearer' })
       .expect(404)
   })
+
+  it('should correctly calculate positions in an ascending leaderboard for a specific alias', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_LEADERBOARDS])
+    const leaderboard = await new LeaderboardFactory([apiKey.game]).state(() => ({ sortMode: LeaderboardSortMode.ASC })).one()
+
+    const player = await new PlayerFactory([apiKey.game]).one()
+    const entry = await new LeaderboardEntryFactory(leaderboard, [player]).state(() => ({
+      playerAlias: player.aliases[0],
+      score: 400
+    })).one()
+
+    const otherPlayers = await new PlayerFactory([apiKey.game]).many(3)
+    const otherEntries = await new LeaderboardEntryFactory(leaderboard, otherPlayers).state(() => ({ score: 300 })).many(5)
+
+    await em.persistAndFlush([player, entry, ...otherPlayers, ...otherEntries])
+
+    const res = await request(app)
+      .get(`/v1/leaderboards/${leaderboard.internalName}/entries`)
+      .query({ aliasId: player.aliases[0].id, page: 0 })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    expect(res.body.entries[0].position).toBe(5)
+  })
+
+  it('should correctly calculate positions in a descending leaderboard for a specific alias', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_LEADERBOARDS])
+    const leaderboard = await new LeaderboardFactory([apiKey.game]).state(() => ({ sortMode: LeaderboardSortMode.DESC })).one()
+
+    const player = await new PlayerFactory([apiKey.game]).one()
+    const entry = await new LeaderboardEntryFactory(leaderboard, [player]).state(() => ({
+      playerAlias: player.aliases[0],
+      score: 200
+    })).one()
+
+    const otherPlayers = await new PlayerFactory([apiKey.game]).many(3)
+    const otherEntries = await new LeaderboardEntryFactory(leaderboard, otherPlayers).state(() => ({ score: 300 })).many(5)
+
+    await em.persistAndFlush([player, entry, ...otherPlayers, ...otherEntries])
+
+    const res = await request(app)
+      .get(`/v1/leaderboards/${leaderboard.internalName}/entries`)
+      .query({ aliasId: player.aliases[0].id, page: 0 })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    expect(res.body.entries[0].position).toBe(5)
+  })
 })

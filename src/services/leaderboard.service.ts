@@ -1,7 +1,7 @@
 import { FilterQuery, ObjectQuery, EntityManager } from '@mikro-orm/mysql'
 import { HasPermission, Service, Request, Response, Validate, Route } from 'koa-clay'
 import { GameActivityType } from '../entities/game-activity'
-import Leaderboard, { LeaderboardRefreshInterval } from '../entities/leaderboard'
+import Leaderboard, { LeaderboardRefreshInterval, LeaderboardSortMode } from '../entities/leaderboard'
 import LeaderboardEntry from '../entities/leaderboard-entry'
 import PlayerAlias from '../entities/player-alias'
 import triggerIntegrations from '../lib/integrations/triggerIntegrations'
@@ -11,6 +11,53 @@ import LeaderboardPolicy from '../policies/leaderboard.policy'
 import { archiveEntriesForLeaderboard } from '../tasks/archiveLeaderboardEntries'
 import updateAllowedKeys from '../lib/entities/updateAllowedKeys'
 
+async function getGlobalEntryIds({
+  em,
+  includeDevData,
+  aliasId,
+  leaderboard,
+  entries
+}: {
+  em: EntityManager
+  includeDevData: boolean
+  aliasId: string
+  leaderboard: Leaderboard
+  entries: LeaderboardEntry[]
+}): Promise<number[]> {
+  if (aliasId && entries.length > 0) {
+    const scores = entries.map((entry) => entry.score)
+    const boundaryScore = leaderboard.sortMode === LeaderboardSortMode.ASC
+      ? Math.max(...scores)
+      : Math.min(...scores)
+
+    const globalQuery = em.qb(LeaderboardEntry)
+      .select('id')
+      .where({
+        leaderboard,
+        hidden: false,
+        deletedAt: null,
+        score: leaderboard.sortMode === LeaderboardSortMode.ASC
+          ? { $lte: boundaryScore }
+          : { $gte: boundaryScore }
+      })
+      .orderBy({
+        score: leaderboard.sortMode,
+        createdAt: 'ASC'
+      })
+
+    if (!includeDevData) {
+      globalQuery.andWhere({
+        playerAlias: {
+          player: devDataPlayerFilter(em)
+        }
+      })
+    }
+
+    return (await globalQuery.getResultList()).map((entry) => entry.id)
+  }
+
+  return []
+}
 export default class LeaderboardService extends Service {
   @Route({
     method: 'GET'
@@ -82,9 +129,7 @@ export default class LeaderboardService extends Service {
     const leaderboard: Leaderboard = req.ctx.state.leaderboard
     const includeDeleted = withDeleted === '1'
 
-    const where: FilterQuery<LeaderboardEntry> = {
-      leaderboard
-    }
+    const where: FilterQuery<LeaderboardEntry> = { leaderboard }
 
     if (!includeDeleted) {
       where.deletedAt = null
@@ -116,9 +161,23 @@ export default class LeaderboardService extends Service {
       populate: ['playerAlias']
     })
 
-    const mappedEntries = entries.map((entry, idx) => ({
-      position: idx + (Number(page) * itemsPerPage),
-      ...entry.toJSON()
+    const globalEntryIds: number[] = await getGlobalEntryIds({
+      em,
+      aliasId,
+      leaderboard,
+      entries,
+      includeDevData: req.ctx.state.includeDevData
+    })
+
+    const mappedEntries = await Promise.all(entries.map(async (entry, idx) => {
+      const position = aliasId
+        ? globalEntryIds.indexOf(entry.id)
+        : idx + (Number(page) * itemsPerPage)
+
+      return {
+        position,
+        ...entry.toJSON()
+      }
     }))
 
     return {

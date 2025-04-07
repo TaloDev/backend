@@ -42,7 +42,7 @@ async function getGlobalEntryIds({
       })
       .orderBy({
         score: leaderboard.sortMode,
-        createdAt: 'ASC'
+        createdAt: 'asc'
       })
 
     if (!includeDevData) {
@@ -154,7 +154,8 @@ export default class LeaderboardService extends Service {
 
     const [entries, count] = await em.repo(LeaderboardEntry).findAndCount(where, {
       orderBy: {
-        score: leaderboard.sortMode
+        score: leaderboard.sortMode,
+        createdAt: 'asc'
       },
       limit: itemsPerPage,
       offset: Number(page) * itemsPerPage,

@@ -122,7 +122,7 @@ export default class LeaderboardAPIService extends APIService {
           ? { $lte: entry.score }
           : { $gte: entry.score }
       })
-      .orderBy({ createdAt: 'ASC' })
+      .orderBy({ createdAt: 'asc' })
 
     if (!req.ctx.state.includeDevData) {
       query.andWhere({

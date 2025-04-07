@@ -5,6 +5,7 @@ import PlayerFactory from '../../../fixtures/PlayerFactory'
 import LeaderboardEntryFactory from '../../../fixtures/LeaderboardEntryFactory'
 import { LeaderboardSortMode } from '../../../../src/entities/leaderboard'
 import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
+import { addDays } from 'date-fns'
 
 describe('Leaderboard API service - get', () => {
   it('should get leaderboard entries if the scope is valid', async () => {
@@ -131,5 +132,44 @@ describe('Leaderboard API service - get', () => {
       .expect(200)
 
     expect(res.body.entries[0].position).toBe(5)
+  })
+
+  it('should return a consistent position for scores when filtering by player alias', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_LEADERBOARDS])
+
+    const player = await new PlayerFactory([apiKey.game]).one()
+    const otherPlayer = await new PlayerFactory([apiKey.game]).one()
+
+    const leaderboard = await new LeaderboardFactory([apiKey.game]).state(() => ({ sortMode: LeaderboardSortMode.DESC })).one()
+    const entry = await new LeaderboardEntryFactory(leaderboard, [player]).state(() => ({
+      score: 8,
+      createdAt: new Date()
+    })).one()
+    const otherEntry = await new LeaderboardEntryFactory(leaderboard, [otherPlayer]).state(() => ({
+      score: 8,
+      createdAt: addDays(new Date(), 1)
+    })).one()
+    const irrelevantEntry = await new LeaderboardEntryFactory(leaderboard, [otherPlayer]).state(() => ({
+      score: 1,
+      createdAt: new Date()
+    })).one()
+
+    await em.persistAndFlush([entry, otherEntry, irrelevantEntry])
+
+    const filteredRes = await request(app)
+      .get(`/v1/leaderboards/${leaderboard.internalName}/entries`)
+      .query({ aliasId: player.aliases[0].id, page: 0 })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    const globalRes = await request(app)
+      .get(`/v1/leaderboards/${leaderboard.internalName}/entries`)
+      .query({ page: 0 })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    expect(filteredRes.body.entries[0].id).toBe(globalRes.body.entries[0].id)
+    expect(filteredRes.body.entries[0].playerAlias.id).toBe(globalRes.body.entries[0].playerAlias.id)
+    expect(filteredRes.body.entries[0].position).toBe(globalRes.body.entries[0].position)
   })
 })

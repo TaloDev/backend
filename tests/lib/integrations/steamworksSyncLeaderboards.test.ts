@@ -253,7 +253,7 @@ describe('Steamworks integration - sync leaderboards', () => {
 
     expect(getLeaderboardsMock).toHaveBeenCalledTimes(1)
 
-    const event = await em.getRepository(SteamworksIntegrationEvent).findOneOrFail({ integration }, { orderBy: { id: 'DESC' } })
+    const event = await em.getRepository(SteamworksIntegrationEvent).findOneOrFail({ integration }, { orderBy: { id: 'desc' } })
     expect(event.request).toStrictEqual({
       url: 'https://partner.steam-api.com/ISteamLeaderboards/FindOrCreateLeaderboard/v2',
       body: `appid=${config.appId}&name=${leaderboard.internalName}&sortmethod=Descending&displaytype=Numeric&createifnotfound=true&onlytrustedwrites=true&onlyfriendsreads=false`,
@@ -368,7 +368,7 @@ describe('Steamworks integration - sync leaderboards', () => {
     expect(getEntriesMock).toHaveBeenCalledTimes(1)
     expect(createMock).toHaveBeenCalledTimes(1)
 
-    const event = await em.getRepository(SteamworksIntegrationEvent).findOneOrFail({ integration }, { orderBy: { id: 'DESC' } })
+    const event = await em.getRepository(SteamworksIntegrationEvent).findOneOrFail({ integration }, { orderBy: { id: 'desc' } })
     expect(event.request).toStrictEqual({
       url: 'https://partner.steam-api.com/ISteamLeaderboards/SetLeaderboardScore/v1',
       body: `appid=${config.appId}&leaderboardid=${mapping.steamworksLeaderboardId}&steamid=${player.aliases[0].identifier}&score=${entry.score}&scoremethod=KeepBest`,

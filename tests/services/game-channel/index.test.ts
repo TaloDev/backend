@@ -171,4 +171,21 @@ describe('Game channel service - index', () => {
     expect(res.body.itemsPerPage).toBe(50)
     expect(res.body.isLastPage).toBe(true)
   })
+
+  it('should not return private channels', async () => {
+    const [organisation, game] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken({}, organisation)
+
+    const publicChannels = await new GameChannelFactory(game).state(() => ({ private: false })).many(3)
+    const privateChannels = await new GameChannelFactory(game).state(() => ({ private: true })).many(1)
+    await em.persistAndFlush([...publicChannels, ...privateChannels])
+
+    const res = await request(app)
+      .get(`/games/${game.id}/game-channels`)
+      .query({ page: 0 })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    expect(res.body.channels).toHaveLength(publicChannels.length)
+  })
 })

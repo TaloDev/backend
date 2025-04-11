@@ -22,6 +22,8 @@ describe('Game channel API service - post', () => {
     expect(res.body.channel.totalMessages).toBe(0)
     expect(res.body.channel.props).toStrictEqual([])
     expect(res.body.channel.memberCount).toBe(1)
+    expect(res.body.channel.autoCleanup).toBe(false)
+    expect(res.body.channel.private).toBe(false)
   })
 
   it('should not create a game channel if the scope is not valid', async () => {
@@ -126,5 +128,20 @@ describe('Game channel API service - post', () => {
         props: ['Prop value length (513) exceeds 512 characters']
       }
     })
+  })
+
+  it('should create a private game channel', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_CHANNELS])
+    const player = await new PlayerFactory([apiKey.game]).one()
+    await em.persistAndFlush(player)
+
+    const res = await request(app)
+      .post('/v1/game-channels')
+      .send({ name: 'Guild chat', private: true })
+      .auth(token, { type: 'bearer' })
+      .set('x-talo-alias', String(player.aliases[0].id))
+      .expect(200)
+
+    expect(res.body.channel.private).toBe(true)
   })
 })

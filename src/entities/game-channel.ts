@@ -31,6 +31,9 @@ export default class GameChannel {
   @Property()
   autoCleanup: boolean = false
 
+  @Property()
+  private: boolean = false
+
   @ManyToOne(() => Game)
   game: Game
 
@@ -73,6 +76,7 @@ export default class GameChannel {
       totalMessages: this.totalMessages,
       props: this.props,
       autoCleanup: this.autoCleanup,
+      private: this.private,
       createdAt: this.createdAt,
       updatedAt: this.updatedAt
     }

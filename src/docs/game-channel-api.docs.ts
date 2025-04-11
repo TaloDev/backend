@@ -24,6 +24,7 @@ const GameChannelAPIDocs: APIDocs<GameChannelAPIService> = {
                 { key: 'channelType', value: 'public' }
               ],
               autoCleanup: false,
+              private: false,
               createdAt: '2024-12-09T12:00:00.000Z',
               updatedAt: '2024-12-09T12:00:00.000Z'
             },
@@ -53,6 +54,7 @@ const GameChannelAPIDocs: APIDocs<GameChannelAPIService> = {
                 { key: 'guildId', value: '5912' }
               ],
               autoCleanup: true,
+              private: false,
               createdAt: '2024-12-09T12:00:00.000Z',
               updatedAt: '2024-12-09T12:00:00.000Z'
             }
@@ -85,6 +87,7 @@ const GameChannelAPIDocs: APIDocs<GameChannelAPIService> = {
               { key: 'channelType', value: 'public' }
             ],
             autoCleanup: false,
+            private: false,
             createdAt: '2024-12-09T12:00:00.000Z',
             updatedAt: '2024-12-09T12:00:00.000Z'
           }
@@ -114,6 +117,7 @@ const GameChannelAPIDocs: APIDocs<GameChannelAPIService> = {
                 { key: 'channelType', value: 'public' }
               ],
               autoCleanup: false,
+              private: false,
               createdAt: '2024-12-09T12:00:00.000Z',
               updatedAt: '2024-12-09T12:00:00.000Z'
             },
@@ -127,6 +131,7 @@ const GameChannelAPIDocs: APIDocs<GameChannelAPIService> = {
                 { key: 'channelType', value: 'public' }
               ],
               autoCleanup: false,
+              private: false,
               createdAt: '2024-12-09T12:00:00.000Z',
               updatedAt: '2024-12-09T12:00:00.000Z'
             }
@@ -144,7 +149,8 @@ const GameChannelAPIDocs: APIDocs<GameChannelAPIService> = {
       body: {
         name: 'The name of the channel',
         props: 'An array of @type(Props:prop)',
-        autoCleanup: 'Whether the channel should be automatically deleted when the owner leaves or the channel is empty (default is false)'
+        autoCleanup: 'Whether the channel should be automatically deleted when the owner leaves or the channel is empty (default is false)',
+        private: 'Private channels require invites to join them (default is false)'
       }
     },
     samples: [
@@ -156,7 +162,8 @@ const GameChannelAPIDocs: APIDocs<GameChannelAPIService> = {
             { key: 'channelType', value: 'guild' },
             { key: 'guildId', value: '5912' }
           ],
-          autoCleanup: true
+          autoCleanup: true,
+          private: false
         }
       },
       {
@@ -188,6 +195,7 @@ const GameChannelAPIDocs: APIDocs<GameChannelAPIService> = {
               { key: 'guildId', value: '5912' }
             ],
             autoCleanup: true,
+            private: false,
             createdAt: '2024-12-09T12:00:00.000Z',
             updatedAt: '2024-12-09T12:00:00.000Z'
           }
@@ -207,12 +215,6 @@ const GameChannelAPIDocs: APIDocs<GameChannelAPIService> = {
     },
     samples: [
       {
-        title: 'Sample request',
-        sample: {
-          name: 'general-chat'
-        }
-      },
-      {
         title: 'Sample response',
         sample: {
           channel: {
@@ -225,6 +227,7 @@ const GameChannelAPIDocs: APIDocs<GameChannelAPIService> = {
               { key: 'channelType', value: 'public' }
             ],
             autoCleanup: false,
+            private: false,
             createdAt: '2024-12-09T12:00:00.000Z',
             updatedAt: '2024-12-09T12:00:00.000Z'
           }
@@ -299,6 +302,7 @@ const GameChannelAPIDocs: APIDocs<GameChannelAPIService> = {
               { key: 'recentlyUpdated', value: 'true' }
             ],
             autoCleanup: false,
+            private: false,
             createdAt: '2024-12-09T12:00:00.000Z',
             updatedAt: '2024-12-09T12:01:00.000Z'
           }
@@ -314,6 +318,20 @@ const GameChannelAPIDocs: APIDocs<GameChannelAPIService> = {
       },
       route: {
         id: 'The ID of the channel'
+      }
+    }
+  },
+  invite: {
+    description: 'Invite another player to a game channel',
+    params: {
+      headers: {
+        'x-talo-alias': 'The ID of the player\'s alias'
+      },
+      route: {
+        id: 'The ID of the channel'
+      },
+      body: {
+        inviteeAliasId: 'The ID of the player alias to invite'
       }
     }
   }

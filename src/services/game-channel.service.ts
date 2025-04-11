@@ -40,7 +40,8 @@ export default class GameChannelService extends Service {
 
     const [channels, count] = await query
       .andWhere({
-        game: req.ctx.state.game
+        game: req.ctx.state.game,
+        private: false
       })
       .getResultAndCount()
 
@@ -63,12 +64,13 @@ export default class GameChannelService extends Service {
   @Validate({ body: [GameChannel] })
   @HasPermission(GameChannelPolicy, 'post')
   async post(req: Request): Promise<Response> {
-    const { name, props, autoCleanup, ownerAliasId } = req.body
+    const { name, props, autoCleanup, private: isPrivate, ownerAliasId } = req.body
     const em: EntityManager = req.ctx.em
 
     const channel = new GameChannel(req.ctx.state.game)
     channel.name = name
     channel.autoCleanup = autoCleanup ?? false
+    channel.private = isPrivate ?? false
 
     if (req.ctx.state.alias) {
       channel.owner = req.ctx.state.alias

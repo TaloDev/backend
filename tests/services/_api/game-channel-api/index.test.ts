@@ -34,4 +34,20 @@ describe('Game channel API service - index', () => {
       .auth(token, { type: 'bearer' })
       .expect(403)
   })
+
+  it('should not return private channels', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_GAME_CHANNELS])
+
+    const publicChannels = await new GameChannelFactory(apiKey.game).state(() => ({ private: false })).many(3)
+    const privateChannels = await new GameChannelFactory(apiKey.game).state(() => ({ private: true })).many(1)
+    await em.persistAndFlush([...publicChannels, ...privateChannels])
+
+    const res = await request(app)
+      .get('/v1/game-channels')
+      .query({ page: 0 })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    expect(res.body.channels).toHaveLength(publicChannels.length)
+  })
 })

@@ -115,4 +115,23 @@ describe('Game channel API service - join', () => {
       })
     })
   })
+
+  it('should not join a private channel without authorization', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_CHANNELS])
+
+    const channel = await new GameChannelFactory(apiKey.game).one()
+    channel.private = true
+    const player = await new PlayerFactory([apiKey.game]).one()
+    await em.persistAndFlush([channel, player])
+
+    const res = await request(app)
+      .post(`/v1/game-channels/${channel.id}/join`)
+      .auth(token, { type: 'bearer' })
+      .set('x-talo-alias', String(player.aliases[0].id))
+      .expect(403)
+
+    expect(res.body).toStrictEqual({
+      message: 'This channel is private'
+    })
+  })
 })

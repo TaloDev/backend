@@ -26,19 +26,26 @@ async function getGlobalEntryIds({
 }): Promise<number[]> {
   if (aliasId && entries.length > 0) {
     const scores = entries.map((entry) => entry.score)
-    const boundaryScore = leaderboard.sortMode === LeaderboardSortMode.ASC
-      ? Math.max(...scores)
-      : Math.min(...scores)
-
     const globalQuery = em.qb(LeaderboardEntry)
       .select('id')
       .where({
         leaderboard,
         hidden: false,
-        deletedAt: null,
-        score: leaderboard.sortMode === LeaderboardSortMode.ASC
-          ? { $lte: boundaryScore }
-          : { $gte: boundaryScore }
+        deletedAt: null
+      })
+      .andWhere({
+        $or: [
+          // entries with better scores
+          {
+            score: leaderboard.sortMode === LeaderboardSortMode.ASC
+              ? { $lt: Math.min(...scores) }
+              : { $gt: Math.max(...scores) }
+          },
+          // entries with equal scores
+          {
+            score: { $in: scores }
+          }
+        ]
       })
       .orderBy({
         score: leaderboard.sortMode,

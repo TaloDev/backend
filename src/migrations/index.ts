@@ -41,6 +41,7 @@ import { DeletePlayerAliasAnonymisedColumn } from './20250217004535DeletePlayerA
 import { CreatePlayerPresenceTable } from './20250213081652CreatePlayerPresenceTable'
 import { CascadePlayerPresenceAlias } from './20250219233504CascadePlayerPresenceAlias'
 import { ModifyPlayerPropLengths } from './20250402161623ModifyPlayerPropLengths'
+import { AddGameChannelPrivateColumn } from './20250411180623AddGameChannelPrivateColumn'
 
 export default [
   {
@@ -214,5 +215,9 @@ export default [
   {
     name: 'ModifyPlayerPropLengths',
     class: ModifyPlayerPropLengths
+  },
+  {
+    name: 'AddGameChannelPrivateColumn',
+    class: AddGameChannelPrivateColumn
   }
 ]

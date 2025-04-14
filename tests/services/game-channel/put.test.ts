@@ -116,4 +116,55 @@ describe('Game channel service - put', () => {
     expect(updatedChannel.members.length).toBe(1)
     expect(updatedChannel.members.getIdentifiers()).toContain(player.aliases[0].id)
   })
+
+  it('should not update the channel name when set to whitespace', async () => {
+    const [organisation, game] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken({}, organisation)
+
+    const channel = await new GameChannelFactory(game).one()
+    await em.persistAndFlush(channel)
+
+    const originalName = channel.name
+
+    await request(app)
+      .put(`/games/${game.id}/game-channels/${channel.id}`)
+      .send({ name: '   ' })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    const updatedChannel = await em.getRepository(GameChannel).findOneOrFail(channel.id)
+    expect(updatedChannel.name).toBe(originalName)
+  })
+
+  it('should update the autoCleanup property', async () => {
+    const [organisation, game] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken({}, organisation)
+
+    const channel = await new GameChannelFactory(game).state(() => ({ autoCleanup: false })).one()
+    await em.persistAndFlush(channel)
+
+    const res = await request(app)
+      .put(`/games/${game.id}/game-channels/${channel.id}`)
+      .send({ autoCleanup: true })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    expect(res.body.channel.autoCleanup).toBe(true)
+  })
+
+  it('should update private property', async () => {
+    const [organisation, game] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken({}, organisation)
+
+    const channel = await new GameChannelFactory(game).state(() => ({ private: false })).one()
+    await em.persistAndFlush(channel)
+
+    const res = await request(app)
+      .put(`/games/${game.id}/game-channels/${channel.id}`)
+      .send({ private: true })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    expect(res.body.channel.private).toBe(true)
+  })
 })

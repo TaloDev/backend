@@ -90,4 +90,14 @@ export default class GameChannelAPIPolicy extends Policy {
 
     return this.hasScope(APIKeyScope.WRITE_GAME_CHANNELS)
   }
+
+  async invite(req: Request): Promise<PolicyResponse> {
+    this.ctx.state.alias = await this.getAlias()
+    if (!this.ctx.state.alias) return new PolicyDenial({ message: 'Player not found' }, 404)
+
+    this.ctx.state.channel = await this.getChannel(req)
+    if (!this.ctx.state.channel) return new PolicyDenial({ message: 'Channel not found' }, 404)
+
+    return this.hasScope(APIKeyScope.WRITE_GAME_CHANNELS)
+  }
 }

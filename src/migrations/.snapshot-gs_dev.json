@@ -2593,6 +2593,17 @@
           "default": "false",
           "mappedType": "boolean"
         },
+        "private": {
+          "name": "private",
+          "type": "tinyint(1)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "length": 1,
+          "default": "false",
+          "mappedType": "boolean"
+        },
         "game_id": {
           "name": "game_id",
           "type": "int",

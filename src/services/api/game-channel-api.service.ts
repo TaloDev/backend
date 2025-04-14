@@ -10,6 +10,18 @@ function canModifyChannel(channel: GameChannel, alias: PlayerAlias): boolean {
   return channel.owner ? channel.owner.id === alias.id : false
 }
 
+async function joinChannel(req: Request, channel: GameChannel, playerAlias: PlayerAlias) {
+  if (!channel.members.getIdentifiers().includes(playerAlias.id)) {
+    channel.members.add(playerAlias)
+    await channel.sendMessageToMembers(req, 'v1.channels.player-joined', {
+      channel,
+      playerAlias
+    })
+
+    await (req.ctx.em as EntityManager).flush()
+  }
+}
+
 export default class GameChannelAPIService extends APIService {
   @Route({
     method: 'GET',
@@ -87,15 +99,10 @@ export default class GameChannelAPIService extends APIService {
     const em: EntityManager = req.ctx.em
     const channel: GameChannel = req.ctx.state.channel
 
-    if (!channel.members.getIdentifiers().includes(req.ctx.state.alias.id)) {
-      channel.members.add(req.ctx.state.alias)
-      await channel.sendMessageToMembers(req, 'v1.channels.player-joined', {
-        channel,
-        playerAlias: req.ctx.state.alias
-      })
-
-      await em.flush()
+    if (channel.private) {
+      req.ctx.throw(403, 'This channel is private')
     }
+    await joinChannel(req, channel, req.ctx.state.alias)
 
     return {
       status: 200,
@@ -184,5 +191,43 @@ export default class GameChannelAPIService extends APIService {
     }
 
     return forwardRequest(req)
+  }
+
+  @Route({
+    method: 'POST',
+    path: '/:id/invite',
+    docs: GameChannelAPIDocs.invite
+  })
+  @Validate({
+    headers: ['x-talo-alias']
+  })
+  @HasPermission(GameChannelAPIPolicy, 'invite')
+  async invite(req: Request<{ inviteeAliasId: number }>): Promise<Response> {
+    const { inviteeAliasId } = req.body
+    const em: EntityManager = req.ctx.em
+    const channel: GameChannel = req.ctx.state.channel
+
+    if (!canModifyChannel(channel, req.ctx.state.alias)) {
+      req.ctx.throw(403, 'This player is not the owner of the channel')
+    }
+
+    const inviteeAlias = await em.getRepository(PlayerAlias).findOne({
+      id: inviteeAliasId,
+      player: {
+        game: req.ctx.state.game
+      }
+    })
+    if (!inviteeAlias) {
+      req.ctx.throw(404, 'Invitee not found')
+    }
+    if (inviteeAlias.id === req.ctx.state.alias.id) {
+      req.ctx.throw(400, 'Players cannot invite themselves')
+    }
+
+    await joinChannel(req, channel, inviteeAlias)
+
+    return {
+      status: 204
+    }
   }
 }

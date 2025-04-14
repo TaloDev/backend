@@ -42,7 +42,9 @@ async function getGlobalEntryIds({
               : { $gt: Math.max(...scores) }
           },
           // entries with equal scores
-          { score: { $in: scores } }
+          {
+            score: { $in: scores }
+          }
         ]
       })
       .orderBy({

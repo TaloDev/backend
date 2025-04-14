@@ -255,7 +255,9 @@ const GameChannelAPIDocs: APIDocs<GameChannelAPIService> = {
       body: {
         name: 'The new name of the channel',
         props: 'An array of @type(Props:prop)',
-        ownerAliasId: 'The ID of the new owner of the channel'
+        ownerAliasId: 'The ID of the new owner of the channel',
+        autoCleanup: 'Whether the channel should be automatically deleted when the owner leaves or the channel is empty (default is false)',
+        private: 'Private channels require invites to join them (default is false)'
       },
       route: {
         id: 'The ID of the channel'

@@ -172,7 +172,7 @@ describe('Game channel service - index', () => {
     expect(res.body.isLastPage).toBe(true)
   })
 
-  it('should not return private channels', async () => {
+  it('should return private channels', async () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({}, organisation)
 
@@ -186,6 +186,6 @@ describe('Game channel service - index', () => {
       .auth(token, { type: 'bearer' })
       .expect(200)
 
-    expect(res.body.channels).toHaveLength(publicChannels.length)
+    expect(res.body.channels).toHaveLength(publicChannels.length + privateChannels.length)
   })
 })

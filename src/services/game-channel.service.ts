@@ -38,10 +38,15 @@ export default class GameChannelService extends Service {
       })
     }
 
+    if (req.ctx.state.user.api) {
+      query.andWhere({
+        private: false
+      })
+    }
+
     const [channels, count] = await query
       .andWhere({
-        game: req.ctx.state.game,
-        private: false
+        game: req.ctx.state.game
       })
       .getResultAndCount()
 
@@ -137,13 +142,13 @@ export default class GameChannelService extends Service {
   @Validate({ body: [GameChannel] })
   @HasPermission(GameChannelPolicy, 'put')
   async put(req: Request): Promise<Response> {
-    const { name, props, ownerAliasId } = req.body
+    const { name, props, ownerAliasId, autoCleanup, private: isPrivate } = req.body
     const em: EntityManager = req.ctx.em
     const channel: GameChannel = req.ctx.state.channel
 
     const changedProperties = []
 
-    if (name) {
+    if (typeof name === 'string' && name.trim().length > 0) {
       channel.name = name
       changedProperties.push('name')
     }
@@ -190,6 +195,16 @@ export default class GameChannelService extends Service {
       }
 
       changedProperties.push('ownerAliasId')
+    }
+
+    if (typeof autoCleanup === 'boolean') {
+      channel.autoCleanup = autoCleanup
+      changedProperties.push('autoCleanup')
+    }
+
+    if (typeof isPrivate === 'boolean') {
+      channel.private = isPrivate
+      changedProperties.push('private')
     }
 
     if (!req.ctx.state.user.api) {

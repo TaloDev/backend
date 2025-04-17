@@ -207,6 +207,15 @@ export default class GameChannelService extends Service {
       changedProperties.push('private')
     }
 
+    // don't send this message if the only thing that changed is the owner
+    // that is covered by the ownership transferred message
+    if (changedProperties.length > 0 && !(changedProperties.length === 1 && changedProperties[0] === 'ownerAliasId')) {
+      await channel.sendMessageToMembers(req, 'v1.channels.updated', {
+        channel,
+        changedProperties
+      })
+    }
+
     if (!req.ctx.state.user.api) {
       createGameActivity(em, {
         user: req.ctx.state.user,

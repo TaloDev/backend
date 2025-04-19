@@ -59,7 +59,9 @@ const playerListeners = [
       conn.playerAliasId = alias.id
       await sendMessage(conn, 'v1.players.identify.success', alias)
 
-      await alias.player.setPresence(RequestContext.getEntityManager() as EntityManager, socket, alias, true)
+      const em = RequestContext.getEntityManager() as EntityManager
+      await alias.player.handleSession(em, true)
+      await alias.player.setPresence(em, socket, alias, true)
     },
     {
       requirePlayer: false,

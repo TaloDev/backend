@@ -9,7 +9,7 @@ import PlayerAlias from '../../../../src/entities/player-alias'
 import EventFactory from '../../../fixtures/EventFactory'
 import PlayerPresenceFactory from '../../../fixtures/PlayerPresenceFactory'
 
-describe('Player auth API service - delete', () => {
+describe('Player auth API service - delete', { timeout: 30_000 }, () => {
   it('should delete the account if the current password is correct', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_PLAYERS, APIKeyScope.WRITE_PLAYERS])
 
@@ -84,22 +84,28 @@ describe('Player auth API service - delete', () => {
       .expect(204)
 
     await vi.waitUntil(async () => {
-      const count = await clickhouse.query({
+      const updatedEventsCount = await clickhouse.query({
         query: `SELECT count() as count FROM events WHERE player_alias_id = ${alias.id}`,
         format: 'JSONEachRow'
       }).then((res) => res.json<{ count: string }>())
         .then((res) => Number(res[0].count))
 
-      return count === 0
+      const updatedEventPropsCount = await clickhouse.query({
+        query: 'SELECT count() as count FROM event_props',
+        format: 'JSONEachRow'
+      }).then((res) => res.json<{ count: string }>())
+        .then((res) => Number(res[0].count))
+
+      const updatedPlayerSessionsCount = await clickhouse.query({
+        query: 'SELECT count() as count FROM player_sessions',
+        format: 'JSONEachRow'
+      }).then((res) => res.json<{ count: string }>())
+        .then((res) => Number(res[0].count))
+
+      return updatedEventsCount === 0 &&
+        updatedEventPropsCount === 0 &&
+        updatedPlayerSessionsCount === 0
     })
-
-    const updatedEventPropsCount = await clickhouse.query({
-      query: 'SELECT count() as count FROM event_props',
-      format: 'JSONEachRow'
-    }).then((res) => res.json<{ count: string }>())
-      .then((res) => Number(res[0].count))
-
-    expect(updatedEventPropsCount).toBe(0)
   })
 
   it('should not delete the account if the current password is incorrect', async () => {

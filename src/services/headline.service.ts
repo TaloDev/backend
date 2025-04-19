@@ -207,4 +207,85 @@ export default class HeadlineService extends Service {
       }
     }
   }
+
+  @Route({
+    method: 'GET',
+    path: '/total_sessions'
+  })
+  @Validate({ query: dateValidationSchema })
+  @HasPermission(HeadlinePolicy, 'index')
+  async totalSessions(req: Request): Promise<Response> {
+    const { startDate: startDateQuery, endDate: endDateQuery } = req.query
+
+    const clickhouse: ClickHouseClient = req.ctx.clickhouse
+
+    const startDate = formatDateForClickHouse(startOfDay(new Date(startDateQuery)))
+    const endDate = formatDateForClickHouse(endOfDay(new Date(endDateQuery)))
+
+    let query = `
+      SELECT count() AS count
+      FROM player_sessions
+      WHERE started_at BETWEEN '${startDate}' AND '${endDate}'
+        AND game_id = ${req.ctx.state.game.id}
+    `
+
+    if (!req.ctx.state.includeDevData) {
+      query += ' AND dev_build = false'
+    }
+
+    const result = await clickhouse.query({
+      query,
+      format: 'JSONEachRow'
+    }).then((res) => res.json<{ count: string }>())
+
+    return {
+      status: 200,
+      body: {
+        count: Number(result[0].count)
+      }
+    }
+  }
+
+  @Route({
+    method: 'GET',
+    path: '/average_session_duration'
+  })
+  @Validate({ query: dateValidationSchema })
+  @HasPermission(HeadlinePolicy, 'index')
+  async averageSessionDuration(req: Request): Promise<Response> {
+    const { startDate: startDateQuery, endDate: endDateQuery } = req.query
+
+    const clickhouse: ClickHouseClient = req.ctx.clickhouse
+
+    const startDate = formatDateForClickHouse(startOfDay(new Date(startDateQuery)))
+    const endDate = formatDateForClickHouse(endOfDay(new Date(endDateQuery)))
+
+    let query = `
+      SELECT avg(dateDiff('seconds', started_at, ended_at)) AS averageDuration
+      FROM player_sessions
+      WHERE started_at BETWEEN '${startDate}' AND '${endDate}'
+        AND ended_at IS NOT NULL
+        AND game_id = ${req.ctx.state.game.id}
+    `
+
+    if (!req.ctx.state.includeDevData) {
+      query += ' AND dev_build = false'
+    }
+
+    const result = await clickhouse.query({
+      query,
+      format: 'JSONEachRow'
+    }).then((res) => res.json<{ averageDuration: number }>())
+
+    const seconds = result[0].averageDuration
+
+    return {
+      status: 200,
+      body: {
+        hours: Math.floor(seconds / 3600),
+        minutes: Math.floor((seconds % 3600) / 60),
+        seconds: seconds % 60
+      }
+    }
+  }
 }

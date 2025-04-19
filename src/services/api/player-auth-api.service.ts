@@ -630,14 +630,12 @@ export default class PlayerAuthAPIService extends APIService {
       }
     })
 
-    await Promise.all(
-      [
-        `events DELETE WHERE player_alias_id = ${alias.id}`,
-        'event_props DELETE WHERE event_id NOT IN (SELECT id FROM events)'
-      ].map((query) => {
-        clickhouse.query({ query: 'ALTER TABLE ' + query })
-      })
-    )
+    await Promise.all([
+      `DELETE FROM event_props WHERE event_id IN (SELECT id FROM events WHERE player_alias_id = ${alias.id})`,
+      `DELETE FROM events WHERE player_alias_id = ${alias.id}`,
+      `DELETE FROM socket_events WHERE player_alias_id = ${alias.id}`,
+      `DELETE FROM player_sessions WHERE player_id = '${alias.player.id}'`
+    ].map((query) => clickhouse.exec({ query })))
 
     await em.removeAndFlush([alias.player.auth, alias])
 

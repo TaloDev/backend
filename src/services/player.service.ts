@@ -247,7 +247,6 @@ export default class PlayerService extends Service {
         throw err
         /* v8 ignore end */
       }
-      player.updatedAt = new Date()
     }
 
     if (req.ctx.state.user.api !== true) {

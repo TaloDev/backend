@@ -140,9 +140,10 @@ describe('Leaderboard API service - get', () => {
     const player = await new PlayerFactory([apiKey.game]).one()
     const otherPlayer = await new PlayerFactory([apiKey.game]).one()
 
-    const leaderboard = await new LeaderboardFactory([apiKey.game]).state(() => ({ sortMode: LeaderboardSortMode.DESC })).one()
+    const leaderboard = await new LeaderboardFactory([apiKey.game]).state(() => ({ sortMode: LeaderboardSortMode.DESC, unique: false })).one()
     const entry = await new LeaderboardEntryFactory(leaderboard, [player]).state(() => ({
       score: 8,
+      playerAlias: player.aliases[0],
       createdAt: new Date()
     })).one()
     const otherEntry = await new LeaderboardEntryFactory(leaderboard, [otherPlayer]).state(() => ({

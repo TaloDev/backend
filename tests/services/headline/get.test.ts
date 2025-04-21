@@ -8,6 +8,8 @@ import createUserAndToken from '../../utils/createUserAndToken'
 import PlayerAlias from '../../../src/entities/player-alias'
 import PlayerAliasFactory from '../../fixtures/PlayerAliasFactory'
 import PlayerPresenceFactory from '../../fixtures/PlayerPresenceFactory'
+import { v4 } from 'uuid'
+import { formatDateForClickHouse } from '../../../src/lib/clickhouse/formatDateTime'
 
 describe('Headline service - get', () => {
   const startDate = format(sub(new Date(), { days: 7 }), 'yyyy-MM-dd')
@@ -392,6 +394,203 @@ describe('Headline service - get', () => {
       .expect(200)
 
     expect(res.body.count).toBe(5)
+  })
+
+  it('should return the total number of sessions this week', async () => {
+    const [organisation, game] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken({}, organisation)
+
+    const player = await new PlayerFactory([game]).one()
+    await em.persistAndFlush(player)
+
+    await clickhouse.insert({
+      table: 'player_sessions',
+      values: Array(10).fill(0).map(() => ({
+        id: v4(),
+        player_id: player.id,
+        player_alias_id: player.aliases[0].id,
+        game_id: game.id,
+        dev_build: false,
+        started_at: startDate,
+        ended_at: endDate
+      })),
+      format: 'JSONEachRow'
+    })
+
+    const res = await request(app)
+      .get(`/games/${game.id}/headlines/total_sessions`)
+      .query({ startDate, endDate })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    expect(res.body.count).toBe(10)
+  })
+
+  it('should not return dev build sessions without the dev data header', async () => {
+    const [organisation, game] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken({}, organisation)
+
+    const player = await new PlayerFactory([game]).devBuild().one()
+    await em.persistAndFlush(player)
+
+    await clickhouse.insert({
+      table: 'player_sessions',
+      values: Array(5).fill(0).map(() => ({
+        id: v4(),
+        player_id: player.id,
+        player_alias_id: player.aliases[0].id,
+        game_id: game.id,
+        dev_build: true,
+        started_at: startDate,
+        ended_at: endDate
+      })),
+      format: 'JSONEachRow'
+    })
+
+    const res = await request(app)
+      .get(`/games/${game.id}/headlines/total_sessions`)
+      .query({ startDate, endDate })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    expect(res.body.count).toBe(0)
+  })
+
+  it('should return dev build sessions with the dev data header', async () => {
+    const [organisation, game] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken({}, organisation)
+
+    const player = await new PlayerFactory([game]).devBuild().one()
+    await em.persistAndFlush(player)
+
+    await clickhouse.insert({
+      table: 'player_sessions',
+      values: Array(5).fill(0).map(() => ({
+        id: v4(),
+        player_id: player.id,
+        player_alias_id: player.aliases[0].id,
+        game_id: game.id,
+        dev_build: true,
+        started_at: startDate,
+        ended_at: endDate
+      })),
+      format: 'JSONEachRow'
+    })
+
+    const res = await request(app)
+      .get(`/games/${game.id}/headlines/total_sessions`)
+      .query({ startDate, endDate })
+      .auth(token, { type: 'bearer' })
+      .set('x-talo-include-dev-data', '1')
+      .expect(200)
+
+    expect(res.body.count).toBe(5)
+  })
+
+  it('should return the average session duration this week', async () => {
+    const [organisation, game] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken({}, organisation)
+
+    const player = await new PlayerFactory([game]).one()
+    await em.persistAndFlush(player)
+
+    const sessionStartDate = new Date(startDate)
+    await clickhouse.insert({
+      table: 'player_sessions',
+      values: Array(3).fill(0).map(() => ({
+        id: v4(),
+        player_id: player.id,
+        player_alias_id: player.aliases[0].id,
+        game_id: game.id,
+        dev_build: false,
+        started_at: formatDateForClickHouse(sessionStartDate),
+        ended_at: formatDateForClickHouse(new Date(sessionStartDate.getTime() + 7200000)) // 2 hours later
+      })),
+      format: 'JSONEachRow'
+    })
+
+    const res = await request(app)
+      .get(`/games/${game.id}/headlines/average_session_duration`)
+      .query({ startDate, endDate })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    expect(res.body).toStrictEqual({
+      hours: 2,
+      minutes: 0,
+      seconds: 0
+    })
+  })
+
+  it('should not include dev build sessions in average duration without the dev data header', async () => {
+    const [organisation, game] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken({}, organisation)
+
+    const player = await new PlayerFactory([game]).devBuild().one()
+    await em.persistAndFlush(player)
+
+    const sessionStartDate = new Date(startDate)
+    await clickhouse.insert({
+      table: 'player_sessions',
+      values: Array(3).fill(0).map(() => ({
+        id: v4(),
+        player_id: player.id,
+        player_alias_id: player.aliases[0].id,
+        game_id: game.id,
+        dev_build: true,
+        started_at: formatDateForClickHouse(sessionStartDate),
+        ended_at: formatDateForClickHouse(new Date(sessionStartDate.getTime() + 7200000)) // 2 hours later
+      })),
+      format: 'JSONEachRow'
+    })
+
+    const res = await request(app)
+      .get(`/games/${game.id}/headlines/average_session_duration`)
+      .query({ startDate, endDate })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    expect(res.body).toStrictEqual({
+      hours: 0,
+      minutes: 0,
+      seconds: 0
+    })
+  })
+
+  it('should include dev build sessions in average duration with the dev data header', async () => {
+    const [organisation, game] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken({}, organisation)
+
+    const player = await new PlayerFactory([game]).devBuild().one()
+    await em.persistAndFlush(player)
+
+    const sessionStartDate = new Date(startDate)
+    await clickhouse.insert({
+      table: 'player_sessions',
+      values: Array(3).fill(0).map(() => ({
+        id: v4(),
+        player_id: player.id,
+        player_alias_id: player.aliases[0].id,
+        game_id: game.id,
+        dev_build: true,
+        started_at: formatDateForClickHouse(sessionStartDate),
+        ended_at: formatDateForClickHouse(new Date(sessionStartDate.getTime() + 7200000)) // 2 hours later
+      })),
+      format: 'JSONEachRow'
+    })
+
+    const res = await request(app)
+      .get(`/games/${game.id}/headlines/average_session_duration`)
+      .query({ startDate, endDate })
+      .auth(token, { type: 'bearer' })
+      .set('x-talo-include-dev-data', '1')
+      .expect(200)
+
+    expect(res.body).toStrictEqual({
+      hours: 2,
+      minutes: 0,
+      seconds: 0
+    })
   })
 
   it('should not return headlines for a game the user cant access', async () => {

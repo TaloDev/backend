@@ -1,6 +1,6 @@
 import { EventSubscriber } from '@mikro-orm/mysql'
-import PlayerSubscriber from './player.subscriber'
+import PlayerGroupSubscriber from './player-group.subscriber'
 
 export default [
-  PlayerSubscriber
+  PlayerGroupSubscriber
 ] as EventSubscriber<unknown>[]

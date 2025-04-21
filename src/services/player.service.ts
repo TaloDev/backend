@@ -264,6 +264,11 @@ export default class PlayerService extends Service {
       })
     }
 
+    // flush the prop changes
+    await em.flush()
+
+    // update the player separately, triggering the subscriber and preventing a deadlock exception
+    player.updatedAt = new Date()
     await em.flush()
 
     // refresh groups

@@ -9,6 +9,10 @@ import PlayerPresence from './player-presence'
 import Socket from '../socket'
 import { sendMessages } from '../socket/messages/socketMessage'
 import { APIKeyScope } from './api-key'
+import PlayerSession, { ClickHousePlayerSession } from './player-session'
+import createClickHouseClient from '../lib/clickhouse/createClient'
+import { captureException } from '@sentry/node'
+import { ClickHouseClient } from '@clickhouse/client'
 
 @Entity()
 export default class Player {
@@ -66,6 +70,50 @@ export default class Player {
 
   setProps(props: { key: string, value: string }[]) {
     this.props.set(props.map(({ key, value }) => new PlayerProp(this, key, value)))
+  }
+
+  async insertSession(clickhouse: ClickHouseClient, session: PlayerSession) {
+    await clickhouse.insert({
+      table: 'player_sessions',
+      values: [session.toInsertable()],
+      format: 'JSONEachRow'
+    })
+  }
+
+  async handleSession(em: EntityManager, online: boolean) {
+    let clickhouse: ClickHouseClient | null = null
+
+    try {
+      clickhouse = createClickHouseClient()
+
+      if (online) {
+        const session = new PlayerSession()
+        session.construct(this)
+        await this.insertSession(clickhouse, session)
+      } else {
+        const clickhouseSessions = await clickhouse.query({
+          query: `SELECT * FROM player_sessions WHERE player_id = '${this.id}' AND ended_at IS NULL ORDER BY started_at DESC LIMIT 1`,
+          format: 'JSONEachRow'
+        }).then((res) => res.json<ClickHousePlayerSession>())
+
+        /* v8 ignore next 4 */
+        if (clickhouseSessions.length === 0) {
+          captureException(new Error('Player went offline without ending session'))
+          return
+        }
+
+        const currentSession = await new PlayerSession().hydrate(em, clickhouseSessions[0])
+        const prevSessionId = currentSession.id
+        currentSession.endSession()
+
+        await clickhouse.exec({ query: `DELETE FROM player_sessions WHERE id = '${prevSessionId}'` })
+        await this.insertSession(clickhouse, currentSession)
+      }
+    } finally {
+      if (clickhouse) {
+        await clickhouse.close()
+      }
+    }
   }
 
   async setPresence(em: EntityManager, socket: Socket, playerAlias: PlayerAlias, online?: boolean, customStatus?: string) {

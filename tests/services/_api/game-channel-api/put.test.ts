@@ -277,6 +277,10 @@ describe('Game channel API service - put', () => {
         expect(actual.data.channel.id).toBe(channel.id)
         expect(actual.data.newOwner.id).toBe(newOwner.aliases[0].id)
       })
+      // only updating the owner shouldn't send the updated message
+      await client.dontExpectJson((actual) => {
+        expect(actual.res).toBe('v1.channels.updated')
+      })
     })
   })
 
@@ -337,6 +341,65 @@ describe('Game channel API service - put', () => {
       errors: {
         props: ['Prop value length (513) exceeds 512 characters']
       }
+    })
+  })
+
+  it('should notify players in the channel when the channel is updated', async () => {
+    const { identifyMessage, ticket, player, token } = await createSocketIdentifyMessage([
+      APIKeyScope.READ_PLAYERS,
+      APIKeyScope.READ_GAME_CHANNELS,
+      APIKeyScope.WRITE_GAME_CHANNELS
+    ])
+
+    const channel = await new GameChannelFactory(player.game).one()
+    const newOwner = await new PlayerFactory([player.game]).one()
+
+    channel.owner = player.aliases[0]
+    channel.members.add(player.aliases[0], newOwner.aliases[0])
+
+    await em.persistAndFlush(channel)
+
+    await createTestSocket(`/?ticket=${ticket}`, async (client) => {
+      await client.identify(identifyMessage)
+      await request(app)
+        .put(`/v1/game-channels/${channel.id}`)
+        .send({ name: 'New name' })
+        .auth(token, { type: 'bearer' })
+        .set('x-talo-alias', String(player.aliases[0].id))
+        .expect(200)
+      await client.expectJson((actual) => {
+        expect(actual.res).toBe('v1.channels.updated')
+        expect(actual.data.channel.id).toBe(channel.id)
+        expect(actual.data.changedProperties[0]).toBe('name')
+      })
+    })
+  })
+
+  it('should not notify players in the channel if a channel attempt is made but nothing changes', async () => {
+    const { identifyMessage, ticket, player, token } = await createSocketIdentifyMessage([
+      APIKeyScope.READ_PLAYERS,
+      APIKeyScope.READ_GAME_CHANNELS,
+      APIKeyScope.WRITE_GAME_CHANNELS
+    ])
+
+    const channel = await new GameChannelFactory(player.game).one()
+    const newOwner = await new PlayerFactory([player.game]).one()
+
+    channel.owner = player.aliases[0]
+    channel.members.add(player.aliases[0], newOwner.aliases[0])
+
+    await em.persistAndFlush(channel)
+
+    await createTestSocket(`/?ticket=${ticket}`, async (client) => {
+      await client.identify(identifyMessage)
+      await request(app)
+        .put(`/v1/game-channels/${channel.id}`)
+        .auth(token, { type: 'bearer' })
+        .set('x-talo-alias', String(player.aliases[0].id))
+        .expect(200)
+      await client.dontExpectJson((actual) => {
+        expect(actual.res).toBe('v1.channels.updated')
+      })
     })
   })
 })

@@ -105,6 +105,7 @@ export default class SocketConnection {
       const playerAlias = await this.getPlayerAlias()
       if (playerAlias) {
         const em = RequestContext.getEntityManager() as EntityManager
+        await playerAlias.player.handleSession(em, false)
         await playerAlias.player.setPresence(em, this.wss, playerAlias, false)
       }
     }

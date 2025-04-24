@@ -87,11 +87,13 @@ export default class BillingService extends Service {
       price
     }]
 
-    const invoice = await stripe.invoices.retrieveUpcoming({
+    const invoice = await stripe.invoices.createPreview({
       customer: organisation.pricingPlan.stripeCustomerId!,
       subscription: subscription.id,
-      subscription_items: items,
-      subscription_proration_date: prorationDate
+      subscription_details: {
+        items,
+        proration_date: prorationDate
+      }
     })
 
     return {

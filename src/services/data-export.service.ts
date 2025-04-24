@@ -136,7 +136,7 @@ export default class DataExportService extends Service {
       format: 'JSONEachRow'
     }).then((res) => res.json<ClickHouseEvent>())
 
-    const events = await Promise.all(clickhouseEvents.map((data) => new Event().hydrate(em, data, clickhouse)))
+    const events = await Promise.all(clickhouseEvents.map((data) => new Event().hydrate(em, data, clickhouse, true)))
     await clickhouse.close()
 
     return events

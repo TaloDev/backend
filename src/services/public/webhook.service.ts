@@ -45,6 +45,7 @@ export default class WebhookService extends Service {
       case 'customer.subscription.deleted':
         await this.handleSubscriptionDeleted(req, event.data.object as Stripe.Subscription)
         break
+      case 'customer.subscription.created':
       case 'customer.subscription.updated':
         await this.handleSubscriptionUpdated(req, event.data.object as Stripe.Subscription)
         break

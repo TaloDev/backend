@@ -97,7 +97,7 @@ export default class WebhookService extends Service {
     orgPlan.status = subscription.status
     orgPlan.stripePriceId = price.id
     orgPlan.endDate = subscription.cancel_at_period_end
-      ? new Date(subscription.current_period_end * 1000)
+      ? new Date(subscription.items.data[0].current_period_end * 1000)
       : null
 
     await em.flush()

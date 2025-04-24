@@ -5,7 +5,7 @@ export default function initStripe(): Stripe | null {
     return null
   }
 
-  const opts: Stripe.StripeConfig = { apiVersion: '2025-02-24.acacia' }
+  const opts: Stripe.StripeConfig = { apiVersion: '2025-03-31.basil' }
   if (process.env.NODE_ENV === 'test') {
     opts.protocol = 'http'
     opts.host = 'localhost'

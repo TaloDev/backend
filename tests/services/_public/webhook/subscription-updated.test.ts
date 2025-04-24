@@ -191,7 +191,7 @@ describe('Webhook service - subscription updated', () => {
       .expect(204)
 
     await em.refresh(organisation, { populate: ['pricingPlan'] })
-    expect(organisation.pricingPlan.endDate!.getMilliseconds()).toBe(new Date(subscription.current_period_end * 1000).getMilliseconds())
+    expect(organisation.pricingPlan.endDate!.getMilliseconds()).toBe(new Date(subscription.items.data[0].current_period_end * 1000).getMilliseconds())
     expect(sendMock).toHaveBeenCalledWith(new PlanCancelled(organisation).getConfig())
   })
 

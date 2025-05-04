@@ -5,6 +5,7 @@ import GameChannel from '../../entities/game-channel'
 import { EntityManager } from '@mikro-orm/mysql'
 import GameChannelAPIDocs from '../../docs/game-channel-api.docs'
 import PlayerAlias from '../../entities/player-alias'
+import { devDataPlayerFilter } from '../../middlewares/dev-data-middleware'
 
 function canModifyChannel(channel: GameChannel, alias: PlayerAlias): boolean {
   return channel.owner ? channel.owner.id === alias.id : false
@@ -228,6 +229,30 @@ export default class GameChannelAPIService extends APIService {
 
     return {
       status: 204
+    }
+  }
+
+  @Route({
+    method: 'GET',
+    path: '/:id/members',
+    docs: GameChannelAPIDocs.members
+  })
+  @HasPermission(GameChannelAPIPolicy, 'members')
+  async members(req: Request): Promise<Response> {
+    const em: EntityManager = req.ctx.em
+    const channel: GameChannel = req.ctx.state.channel
+
+    const members = await channel.members.loadItems({
+      where: req.ctx.state.includeDevData ? {} : {
+        player: devDataPlayerFilter(em)
+      }
+    })
+
+    return {
+      status: 200,
+      body: {
+        members
+      }
     }
   }
 }

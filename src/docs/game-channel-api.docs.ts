@@ -336,6 +336,39 @@ const GameChannelAPIDocs: APIDocs<GameChannelAPIService> = {
         inviteeAliasId: 'The ID of the player alias to invite'
       }
     }
+  },
+  members: {
+    description: 'Get the members of a game channel',
+    params: {
+      route: {
+        id: 'The ID of the channel'
+      }
+    },
+    samples: [
+      {
+        title: 'Sample response',
+        sample: {
+          members: [
+            {
+              id: 105,
+              service: 'username',
+              identifier: 'player_one',
+              player: {
+                id: '85d67584-1346-4fad-a17f-fd7bd6c85364',
+                props: [],
+                devBuild: false,
+                createdAt: '2025-04-25T18:18:28.000Z',
+                lastSeenAt: '2025-05-04T07:15:13.000Z',
+                groups: []
+              },
+              lastSeenAt: '2025-05-04T07:15:13.000Z',
+              createdAt: '2025-04-25T18:18:28.000Z',
+              updatedAt: '2025-05-04T07:15:13.000Z'
+            }
+          ]
+        }
+      }
+    ]
   }
 }
 

@@ -3,6 +3,7 @@ import { APIKeyScope } from '../../../../src/entities/api-key'
 import PlayerFactory from '../../../fixtures/PlayerFactory'
 import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
 import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
+import { randText } from '@ngneat/falso'
 
 describe('Game save API service - post', () => {
   it('should create a game save if the scope is valid', async () => {
@@ -74,5 +75,24 @@ describe('Game save API service - post', () => {
       .expect(200)
 
     expect(res.body.save.content).toStrictEqual({ progress: 10 })
+  })
+
+  it('should handle save names being too long', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_SAVES])
+    const player = await new PlayerFactory([apiKey.game]).one()
+    await em.persistAndFlush(player)
+
+    const res = await request(app)
+      .post('/v1/game-saves')
+      .send({ name: randText({ charCount: 512 }), content: {} })
+      .auth(token, { type: 'bearer' })
+      .set('x-talo-player', player.id)
+      .expect(400)
+
+    expect(res.body).toStrictEqual({
+      errors: {
+        name: ['name is too long']
+      }
+    })
   })
 })

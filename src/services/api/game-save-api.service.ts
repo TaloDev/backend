@@ -4,6 +4,7 @@ import APIService from './api-service'
 import GameSave from '../../entities/game-save'
 import { EntityManager } from '@mikro-orm/mysql'
 import GameSaveAPIDocs from '../../docs/game-save-api.docs'
+import handleSQLError from '../../lib/errors/handleSQLError'
 
 function decodeContent(content: unknown) {
   return typeof content === 'string' ? JSON.parse(content) : content
@@ -49,7 +50,11 @@ export default class GameSaveAPIService extends APIService {
     const save = new GameSave(name, req.ctx.state.player)
     save.content = decodeContent(content)
 
-    await em.persistAndFlush(save)
+    try {
+      await em.persistAndFlush(save)
+    } catch (err) {
+      return handleSQLError(err as Error)
+    }
 
     return {
       status: 200,
@@ -77,7 +82,11 @@ export default class GameSaveAPIService extends APIService {
     if (name) save.name = name
     save.content = decodeContent(content)
 
-    await em.flush()
+    try {
+      await em.flush()
+    } catch (err) {
+      return handleSQLError(err as Error)
+    }
 
     return {
       status: 200,

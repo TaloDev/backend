@@ -4,6 +4,7 @@ import PlayerFactory from '../../../fixtures/PlayerFactory'
 import GameSaveFactory from '../../../fixtures/GameSaveFactory'
 import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
 import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
+import { randText } from '@ngneat/falso'
 
 describe('Game save API service - patch', () => {
   it('should update a game save if the scope is valid', async () => {
@@ -73,5 +74,25 @@ describe('Game save API service - patch', () => {
       .expect(404)
 
     expect(res.body).toStrictEqual({ message: 'Save not found' })
+  })
+
+  it('should handle save names being too long', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_SAVES])
+    const player = await new PlayerFactory([apiKey.game]).one()
+    const save = await new GameSaveFactory([player]).one()
+    await em.persistAndFlush(save)
+
+    const res = await request(app)
+      .patch(`/v1/game-saves/${save.id}`)
+      .send({ content: {}, name: randText({ charCount: 512 }) })
+      .auth(token, { type: 'bearer' })
+      .set('x-talo-player', player.id)
+      .expect(400)
+
+    expect(res.body).toStrictEqual({
+      errors: {
+        name: ['name is too long']
+      }
+    })
   })
 })

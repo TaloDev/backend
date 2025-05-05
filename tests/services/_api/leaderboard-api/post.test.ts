@@ -7,6 +7,8 @@ import LeaderboardEntryFactory from '../../../fixtures/LeaderboardEntryFactory'
 import { subHours } from 'date-fns'
 import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
 import { randText } from '@ngneat/falso'
+import LeaderboardEntryProp from '../../../../src/entities/leaderboard-entry-prop'
+import { Collection } from '@mikro-orm/core'
 
 describe('Leaderboard API service - post', () => {
   it('should create a leaderboard entry if the scope is valid', async () => {
@@ -298,13 +300,13 @@ describe('Leaderboard API service - post', () => {
     const player = await new PlayerFactory([apiKey.game]).one()
     const leaderboard = await new LeaderboardFactory([apiKey.game]).state(() => ({ unique: true, sortMode: LeaderboardSortMode.DESC })).one()
 
-    const entry = await new LeaderboardEntryFactory(leaderboard, [player]).state(() => ({
+    const entry = await new LeaderboardEntryFactory(leaderboard, [player]).state((entry) => ({
       score: 100,
       playerAlias: player.aliases[0],
-      props: [
-        { key: 'key1', value: 'value1' },
-        { key: 'delete-me', value: 'delete-me' }
-      ]
+      props: new Collection<LeaderboardEntryProp>(entry, [
+        new LeaderboardEntryProp(entry, 'key1', 'value1'),
+        new LeaderboardEntryProp(entry, 'delete-me', 'delete-me')
+      ])
     })).one()
 
     await em.persistAndFlush([player, leaderboard, entry])

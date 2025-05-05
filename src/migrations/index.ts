@@ -42,6 +42,7 @@ import { CreatePlayerPresenceTable } from './20250213081652CreatePlayerPresenceT
 import { CascadePlayerPresenceAlias } from './20250219233504CascadePlayerPresenceAlias'
 import { ModifyPlayerPropLengths } from './20250402161623ModifyPlayerPropLengths'
 import { AddGameChannelPrivateColumn } from './20250411180623AddGameChannelPrivateColumn'
+import { CreateLeaderboardEntryPropTable } from './20250505131919CreateLeaderboardEntryPropTable'
 
 export default [
   {
@@ -219,5 +220,9 @@ export default [
   {
     name: 'AddGameChannelPrivateColumn',
     class: AddGameChannelPrivateColumn
+  },
+  {
+    name: 'CreateLeaderboardEntryPropTable',
+    class: CreateLeaderboardEntryPropTable
   }
 ]

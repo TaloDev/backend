@@ -16,13 +16,13 @@ export default class GameChannelAPIPolicy extends Policy {
     })
   }
 
-  async getChannel(req: Request): Promise<GameChannel | null> {
+  async getChannel(req: Request, loadMembers = true): Promise<GameChannel | null> {
     const em: EntityManager = this.ctx.em
     return em.getRepository(GameChannel).findOne({
       id: Number(req.params.id),
       game: this.ctx.state.game
     }, {
-      populate: ['members']
+      populate: loadMembers ? ['members'] : []
     })
   }
 
@@ -99,5 +99,12 @@ export default class GameChannelAPIPolicy extends Policy {
     if (!this.ctx.state.channel) return new PolicyDenial({ message: 'Channel not found' }, 404)
 
     return this.hasScope(APIKeyScope.WRITE_GAME_CHANNELS)
+  }
+
+  async members(req: Request): Promise<PolicyResponse> {
+    this.ctx.state.channel = await this.getChannel(req, false)
+    if (!this.ctx.state.channel) return new PolicyDenial({ message: 'Channel not found' }, 404)
+
+    return this.hasScope(APIKeyScope.READ_GAME_CHANNELS)
   }
 }

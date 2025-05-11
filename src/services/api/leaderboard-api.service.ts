@@ -38,7 +38,7 @@ export default class LeaderboardAPIService extends APIService {
       entry.createdAt = req.ctx.state.continuityDate
     }
     if (props) {
-      entry.props = hardSanitiseProps(props)
+      entry.setProps(hardSanitiseProps(props))
     }
 
     await em.persistAndFlush(entry)
@@ -89,7 +89,7 @@ export default class LeaderboardAPIService extends APIService {
           entry.score = score
           entry.createdAt = req.ctx.state.continuityDate ?? new Date()
           if (props) {
-            entry.props = mergeAndSanitiseProps(entry.props, props)
+            entry.setProps(mergeAndSanitiseProps(entry.props.getItems(), props))
           }
           await em.flush()
 

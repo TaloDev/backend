@@ -1,7 +1,7 @@
-import { Cascade, Embedded, Entity, ManyToOne, PrimaryKey, Property } from '@mikro-orm/mysql'
+import { Cascade, Collection, Entity, ManyToOne, OneToMany, PrimaryKey, Property } from '@mikro-orm/mysql'
 import Leaderboard from './leaderboard'
 import PlayerAlias from './player-alias'
-import Prop from './prop'
+import LeaderboardEntryProp from './leaderboard-entry-prop'
 
 @Entity()
 export default class LeaderboardEntry {
@@ -17,8 +17,8 @@ export default class LeaderboardEntry {
   @ManyToOne(() => PlayerAlias, { cascade: [Cascade.REMOVE], eager: true })
   playerAlias!: PlayerAlias
 
-  @Embedded(() => Prop, { array: true })
-  props: Prop[] = []
+  @OneToMany(() => LeaderboardEntryProp, (prop) => prop.leaderboardEntry, { eager: true, orphanRemoval: true })
+  props: Collection<LeaderboardEntryProp> = new Collection<LeaderboardEntryProp>(this)
 
   @Property({ default: false })
   hidden!: boolean
@@ -36,6 +36,10 @@ export default class LeaderboardEntry {
     this.leaderboard = leaderboard
   }
 
+  setProps(props: { key: string, value: string }[]) {
+    this.props.set(props.map(({ key, value }) => new LeaderboardEntryProp(this, key, value)))
+  }
+
   toJSON() {
     return {
       id: this.id,
@@ -44,7 +48,7 @@ export default class LeaderboardEntry {
       leaderboardInternalName: this.leaderboard.internalName,
       playerAlias: this.playerAlias,
       hidden: this.hidden,
-      props: this.props,
+      props: this.props.getItems().map(({ key, value }) => ({ key, value })),
       createdAt: this.createdAt,
       updatedAt: this.updatedAt,
       deletedAt: this.deletedAt

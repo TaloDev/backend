@@ -32,8 +32,10 @@ import PlayerProp from './player-prop'
 import PlayerGroup from './player-group'
 import GameSecret from './game-secret'
 import PlayerPresence from './player-presence'
+import LeaderboardEntryProp from './leaderboard-entry-prop'
 
 export default [
+  LeaderboardEntryProp,
   PlayerPresence,
   GameChannel,
   UserPinnedGroup,

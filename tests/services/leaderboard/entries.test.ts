@@ -5,6 +5,8 @@ import LeaderboardEntryFactory from '../../fixtures/LeaderboardEntryFactory'
 import createOrganisationAndGame from '../../utils/createOrganisationAndGame'
 import createUserAndToken from '../../utils/createUserAndToken'
 import LeaderboardEntry from '../../../src/entities/leaderboard-entry'
+import LeaderboardEntryProp from '../../../src/entities/leaderboard-entry-prop'
+import { Collection } from '@mikro-orm/core'
 
 describe('Leaderboard service - entries', () => {
   it('should return a leaderboard\'s entries', async () => {
@@ -132,5 +134,65 @@ describe('Leaderboard service - entries', () => {
 
     expect(resWithDeleted.body.entries).toHaveLength(5)
     expect(resWithDeleted.body.entries.filter((entry: LeaderboardEntry) => entry.deletedAt !== null)).toHaveLength(2)
+  })
+
+  it('should filter leaderboard entries by prop keys', async () => {
+    const [organisation, game] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken({}, organisation)
+
+    const players = await new PlayerFactory([game]).many(2)
+    const leaderboard = await new LeaderboardFactory([game]).state(() => ({ unique: false })).one()
+
+    const entry = await new LeaderboardEntryFactory(leaderboard, players).state((entry) => ({
+      props: new Collection<LeaderboardEntryProp>(entry, [
+        new LeaderboardEntryProp(entry, 'team', 'Blue')
+      ])
+    })).one()
+
+    const otherEntry = await new LeaderboardEntryFactory(leaderboard, players).one()
+
+    await em.persistAndFlush([...players, leaderboard, entry, otherEntry])
+
+    const res = await request(app)
+      .get(`/games/${game.id}/leaderboards/${leaderboard.id}/entries`)
+      .query({ page: 0, propKey: 'team' })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    expect(res.body.entries).toHaveLength(1)
+    expect(res.body.entries[0].id).toBe(entry.id)
+  })
+
+  it('should filter leaderboard entries by prop keys and values', async () => {
+    const [organisation, game] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken({}, organisation)
+
+    const players = await new PlayerFactory([game]).many(2)
+    const leaderboard = await new LeaderboardFactory([game]).state(() => ({ unique: false })).one()
+
+    const entry = await new LeaderboardEntryFactory(leaderboard, players).state((entry) => ({
+      props: new Collection<LeaderboardEntryProp>(entry, [
+        new LeaderboardEntryProp(entry, 'team', 'Blue')
+      ])
+    })).one()
+
+    const otherEntry = await new LeaderboardEntryFactory(leaderboard, players).state((entry) => ({
+      props: new Collection<LeaderboardEntryProp>(entry, [
+        new LeaderboardEntryProp(entry, 'team', 'Red')
+      ])
+    })).one()
+
+    const irrelevantEntry = await new LeaderboardEntryFactory(leaderboard, players).one()
+
+    await em.persistAndFlush([...players, leaderboard, entry, otherEntry, irrelevantEntry])
+
+    const res = await request(app)
+      .get(`/games/${game.id}/leaderboards/${leaderboard.id}/entries`)
+      .query({ page: 0, propKey: 'team', propValue: 'Blue' })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    expect(res.body.entries).toHaveLength(1)
+    expect(res.body.entries[0].id).toBe(entry.id)
   })
 })

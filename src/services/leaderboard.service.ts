@@ -130,7 +130,7 @@ export default class LeaderboardService extends Service {
   async entries(req: Request): Promise<Response> {
     const itemsPerPage = 50
 
-    const { page, aliasId, withDeleted } = req.query
+    const { page, aliasId, withDeleted, propKey, propValue } = req.query
     const em: EntityManager = req.ctx.em
 
     const leaderboard: Leaderboard = req.ctx.state.leaderboard
@@ -156,6 +156,23 @@ export default class LeaderboardService extends Service {
       where.playerAlias = {
         ...((where.playerAlias as ObjectQuery<PlayerAlias>) ?? {}),
         player: devDataPlayerFilter(em)
+      }
+    }
+
+    if (propKey) {
+      if (propValue) {
+        where.props = {
+          $some: {
+            key: propKey,
+            value: propValue
+          }
+        }
+      } else {
+        where.props = {
+          $some: {
+            key: propKey
+          }
+        }
       }
     }
 

@@ -7,7 +7,7 @@ export default class PlayerProp {
   @PrimaryKey()
   id!: number
 
-  @ManyToOne(() => Player)
+  @ManyToOne(() => Player, { deleteRule: 'cascade' })
   player: Player
 
   @Property({ length: MAX_KEY_LENGTH })

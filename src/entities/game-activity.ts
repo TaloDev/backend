@@ -36,7 +36,9 @@ export enum GameActivityType {
   LEADERBOARD_ENTRY_UPDATED,
   GAME_CHANNEL_CREATED,
   GAME_CHANNEL_UPDATED,
-  GAME_CHANNEL_DELETED
+  GAME_CHANNEL_DELETED,
+  INACTIVE_DEV_PLAYERS_DELETED,
+  INACTIVE_LIVE_PLAYERS_DELETED
 }
 
 @Entity()
@@ -138,6 +140,10 @@ export default class GameActivity {
         return `${this.user.username} updated a channel`
       case GameActivityType.GAME_CHANNEL_DELETED:
         return `${this.user.username} deleted a channel`
+      case GameActivityType.INACTIVE_DEV_PLAYERS_DELETED:
+        return `${this.extra.count} inactive dev players were deleted`
+      case GameActivityType.INACTIVE_LIVE_PLAYERS_DELETED:
+        return `${this.extra.count} inactive players were deleted`
       default:
         return ''
     }

@@ -1,4 +1,4 @@
-import { Cascade, Entity, ManyToOne, PrimaryKey, Property } from '@mikro-orm/mysql'
+import { Entity, ManyToOne, PrimaryKey, Property } from '@mikro-orm/mysql'
 import GameFeedbackCategory from './game-feedback-category'
 import { Required } from 'koa-clay'
 import PlayerAlias from './player-alias'
@@ -8,10 +8,10 @@ export default class GameFeedback {
   @PrimaryKey()
   id!: number
 
-  @ManyToOne(() => GameFeedbackCategory, { nullable: false, cascade: [Cascade.REMOVE], eager: true })
+  @ManyToOne(() => GameFeedbackCategory, { nullable: false, deleteRule: 'cascade', eager: true })
   category: GameFeedbackCategory
 
-  @ManyToOne(() => PlayerAlias, { nullable: false, cascade: [Cascade.REMOVE] })
+  @ManyToOne(() => PlayerAlias, { nullable: false, deleteRule: 'cascade' })
   playerAlias: PlayerAlias
 
   @Required()

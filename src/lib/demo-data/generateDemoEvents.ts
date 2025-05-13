@@ -100,7 +100,6 @@ async function getEventCount(clickhouse: ClickHouseClient, game: Game, startDate
     console.error('Error fetching event count from ClickHouse:', err)
     return 0
   }
-
 }
 
 export async function generateDemoEvents(req: Request): Promise<void> {

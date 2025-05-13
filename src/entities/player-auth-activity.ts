@@ -25,7 +25,7 @@ export default class PlayerAuthActivity {
   @PrimaryKey()
   id!: number
 
-  @ManyToOne(() => Player, { eager: true })
+  @ManyToOne(() => Player, { eager: true, deleteRule: 'cascade' })
   player: Player
 
   @Enum(() => PlayerAuthActivityType)

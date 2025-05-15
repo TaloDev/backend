@@ -18,7 +18,7 @@ describe('deleteInactivePlayers', () => {
   })
 
   it('should delete inactive dev players older than 60 days', async () => {
-    const [, game] = await createOrganisationAndGame()
+    const [, game] = await createOrganisationAndGame({}, { purgeDevPlayers: true, purgeLivePlayers: true })
     const owner = await new UserFactory().owner().state(() => ({
       organisation: game.organisation
     })).one()
@@ -38,7 +38,8 @@ describe('deleteInactivePlayers', () => {
 
     expect(players).toHaveLength(1)
 
-    const activity = await em.getRepository(GameActivity).findOne({
+    const activity = await em.repo(GameActivity).findOne({
+      game,
       type: GameActivityType.INACTIVE_DEV_PLAYERS_DELETED,
       extra: {
         count: 1
@@ -48,7 +49,7 @@ describe('deleteInactivePlayers', () => {
   })
 
   it('should delete inactive live players older than 90 days', async () => {
-    const [, game] = await createOrganisationAndGame()
+    const [, game] = await createOrganisationAndGame({}, { purgeDevPlayers: true, purgeLivePlayers: true })
     const owner = await new UserFactory().owner().state(() => ({
       organisation: game.organisation
     })).one()
@@ -68,7 +69,8 @@ describe('deleteInactivePlayers', () => {
 
     expect(players).toHaveLength(1)
 
-    const activity = await em.getRepository(GameActivity).findOne({
+    const activity = await em.repo(GameActivity).findOne({
+      game,
       type: GameActivityType.INACTIVE_LIVE_PLAYERS_DELETED,
       extra: {
         count: 1
@@ -78,7 +80,7 @@ describe('deleteInactivePlayers', () => {
   })
 
   it('should delete players with auth', async () => {
-    const [, game] = await createOrganisationAndGame()
+    const [, game] = await createOrganisationAndGame({}, { purgeDevPlayers: true, purgeLivePlayers: true })
     const owner = await new UserFactory().owner().state(() => ({
       organisation: game.organisation
     })).one()
@@ -96,7 +98,7 @@ describe('deleteInactivePlayers', () => {
   })
 
   it('should delete players with presence', async () => {
-    const [, game] = await createOrganisationAndGame()
+    const [, game] = await createOrganisationAndGame({}, { purgeDevPlayers: true, purgeLivePlayers: true })
     const owner = await new UserFactory().owner().state(() => ({
       organisation: game.organisation
     })).one()
@@ -113,7 +115,7 @@ describe('deleteInactivePlayers', () => {
   })
 
   it('should delete all player data in clickhouse', async () => {
-    const [, game] = await createOrganisationAndGame()
+    const [, game] = await createOrganisationAndGame({}, { purgeDevPlayers: true, purgeLivePlayers: true })
     const owner = await new UserFactory().owner().state(() => ({
       organisation: game.organisation
     })).one()
@@ -152,5 +154,51 @@ describe('deleteInactivePlayers', () => {
         updatedEventPropsCount === 0 &&
         updatedPlayerSessionsCount === 0
     })
+  })
+
+  it('should not delete inactive dev players when purgeDevPlayers is false', async () => {
+    const [, game] = await createOrganisationAndGame({}, { purgeDevPlayers: false, purgeLivePlayers: true })
+    const owner = await new UserFactory().owner().state(() => ({
+      organisation: game.organisation
+    })).one()
+
+    const player = await new PlayerFactory([game]).state(() => ({
+      lastSeenAt: sub(new Date(), { days: 61 })
+    })).devBuild().one()
+
+    await em.persistAndFlush([owner, player])
+    await deleteInactivePlayers()
+
+    const players = await em.repo(Player).find({ game })
+    expect(players).toHaveLength(1)
+
+    const activity = await em.repo(GameActivity).findOne({
+      game,
+      type: GameActivityType.INACTIVE_DEV_PLAYERS_DELETED
+    })
+    expect(activity).toBeNull()
+  })
+
+  it('should not delete inactive live players when purgeLivePlayers is false', async () => {
+    const [, game] = await createOrganisationAndGame({}, { purgeDevPlayers: true, purgeLivePlayers: false })
+    const owner = await new UserFactory().owner().state(() => ({
+      organisation: game.organisation
+    })).one()
+
+    const player = await new PlayerFactory([game]).state(() => ({
+      lastSeenAt: sub(new Date(), { days: 91 })
+    })).one()
+
+    await em.persistAndFlush([owner, player])
+    await deleteInactivePlayers()
+
+    const players = await em.repo(Player).find({ game })
+    expect(players).toHaveLength(1)
+
+    const activity = await em.repo(GameActivity).findOne({
+      game,
+      type: GameActivityType.INACTIVE_LIVE_PLAYERS_DELETED
+    })
+    expect(activity).toBeNull()
   })
 })

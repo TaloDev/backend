@@ -280,7 +280,7 @@ describe('Game service - patch', () => {
 
   it('should reject props where the value is greater than 512 characters', async () => {
     const [organisation, game] = await createOrganisationAndGame()
-    const [token] = await createUserAndToken({ type: UserType.ADMIN }, organisation)
+    const [token] = await createUserAndToken({ type: UserType.OWNER }, organisation)
 
     const res = await request(app)
       .patch(`/games/${game.id}`)
@@ -300,5 +300,51 @@ describe('Game service - patch', () => {
         props: ['Prop value length (513) exceeds 512 characters']
       }
     })
+  })
+
+  it.each(userPermissionProvider([]))('should update purgeDevPlayers for a %s user', async (statusCode, _, type) => {
+    const [organisation, game] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken({ type }, organisation)
+
+    await request(app)
+      .patch(`/games/${game.id}`)
+      .send({ purgeDevPlayers: true })
+      .auth(token, { type: 'bearer' })
+      .expect(statusCode)
+
+    if (statusCode === 200) {
+      expect((await em.refreshOrFail(game)).purgeDevPlayers).toBe(true)
+    }
+  })
+
+  it.each(userPermissionProvider([]))('should update purgeLivePlayers for a %s user', async (statusCode, _, type) => {
+    const [organisation, game] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken({ type }, organisation)
+
+    await request(app)
+      .patch(`/games/${game.id}`)
+      .send({ purgeLivePlayers: true })
+      .auth(token, { type: 'bearer' })
+      .expect(statusCode)
+
+    if (statusCode === 200) {
+      expect((await em.refreshOrFail(game)).purgeLivePlayers).toBe(true)
+    }
+  })
+
+  it.each(userPermissionProvider([]))('should update the website for a %s user', async (statusCode, _, type) => {
+    const [organisation, game] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken({ type }, organisation)
+
+    const website = 'https://example.com'
+    await request(app)
+      .patch(`/games/${game.id}`)
+      .send({ website })
+      .auth(token, { type: 'bearer' })
+      .expect(statusCode)
+
+    if (statusCode === 200) {
+      expect((await em.refreshOrFail(game)).website).toBe(website)
+    }
   })
 })

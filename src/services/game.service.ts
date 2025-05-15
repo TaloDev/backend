@@ -13,6 +13,7 @@ import { APIKeyScope } from '../entities/api-key'
 import Prop from '../entities/prop'
 import { PropSizeError } from '../lib/errors/propSizeError'
 import buildErrorResponse from '../lib/errors/buildErrorResponse'
+import { UserType } from '../entities/user'
 
 async function sendLiveConfigUpdatedMessage(req: Request, game: Game) {
   const socket: Socket = req.ctx.wss
@@ -24,7 +25,33 @@ async function sendLiveConfigUpdatedMessage(req: Request, game: Game) {
   })
 }
 
+function throwUnlessOwner(req: Request) {
+  if (req.ctx.state.user.type !== UserType.OWNER) {
+    req.ctx.throw(403, 'You do not have permissions to update game settings')
+  }
+}
+
 export default class GameService extends Service {
+  @Route({
+    method: 'GET',
+    path: '/:id/settings'
+  })
+  @HasPermission(GamePolicy, 'settings')
+  async settings(req: Request): Promise<Response> {
+    const game: Game = req.ctx.state.game
+
+    return {
+      status: 200,
+      body: {
+        settings: {
+          purgeDevPlayers: game.purgeDevPlayers,
+          purgeLivePlayers: game.purgeLivePlayers,
+          website: game.website
+        }
+      }
+    }
+  }
+
   @Route({
     method: 'POST'
   })
@@ -58,13 +85,19 @@ export default class GameService extends Service {
     path: '/:id'
   })
   @HasPermission(GamePolicy, 'patch')
-  async patch(req: Request<{ name: string, props: Prop[] }>): Promise<Response> {
-    const { name, props } = req.body
+  async patch(req: Request<{
+    name?: string
+    props?: Prop[]
+    purgeDevPlayers?: boolean
+    purgeLivePlayers?: boolean
+    website?: string
+  }>): Promise<Response> {
+    const { name, props, purgeDevPlayers, purgeLivePlayers, website } = req.body
     const em: EntityManager = req.ctx.em
 
     const game: Game = req.ctx.state.game
 
-    if (name) {
+    if (typeof name === 'string') {
       const prevName = game.name
       game.name = name
 
@@ -80,7 +113,7 @@ export default class GameService extends Service {
       })
     }
 
-    if (props) {
+    if (Array.isArray(props)) {
       if (props.some((prop) => prop.key.startsWith('META_'))) {
         return buildErrorResponse({ props: ['Prop keys starting with \'META_\' are reserved for internal systems, please use another key name'] })
       }
@@ -107,6 +140,20 @@ export default class GameService extends Service {
           }
         }
       })
+    }
+
+    if (typeof purgeDevPlayers === 'boolean') {
+      throwUnlessOwner(req)
+      game.purgeDevPlayers = purgeDevPlayers
+    }
+    if (typeof purgeLivePlayers === 'boolean') {
+      throwUnlessOwner(req)
+      game.purgeLivePlayers = purgeLivePlayers
+    }
+
+    if (typeof website === 'string') {
+      throwUnlessOwner(req)
+      game.website = website
     }
 
     await em.flush()

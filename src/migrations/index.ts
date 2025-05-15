@@ -44,6 +44,7 @@ import { ModifyPlayerPropLengths } from './20250402161623ModifyPlayerPropLengths
 import { AddGameChannelPrivateColumn } from './20250411180623AddGameChannelPrivateColumn'
 import { CreateLeaderboardEntryPropTable } from './20250505131919CreateLeaderboardEntryPropTable'
 import { AddCascadeDeleteRules } from './20250512220859AddCascadeDeleteRules'
+import { AddPurgeAndWebsiteGameColumns } from './20250513222143AddPurgeAndWebsiteGameColumns'
 
 export default [
   {
@@ -229,5 +230,9 @@ export default [
   {
     name: 'AddCascadeDeleteRules',
     class: AddCascadeDeleteRules
+  },
+  {
+    name: 'AddPurgeAndWebsiteGameColumns',
+    class: AddPurgeAndWebsiteGameColumns
   }
 ]

@@ -36,6 +36,11 @@ async function getPlayers(em: EntityManager, game: Game, devBuild: boolean) {
 }
 
 async function findAndDeleteInactivePlayers(em: EntityManager, clickhouse: ClickHouseClient, game: Game, devBuild: boolean) {
+  const shouldPurge = devBuild ? game.purgeDevPlayers : game.purgeLivePlayers
+  if (!shouldPurge) {
+    return
+  }
+
   try {
     const players = await getPlayers(em, game, devBuild)
     if (players.length > 0) {
@@ -108,7 +113,13 @@ export default async function deleteInactivePlayers() {
   const em = orm.em.fork()
   const clickhouse = createClickHouseClient()
 
-  const games = await em.repo(Game).findAll()
+  const games = await em.repo(Game).find({
+    $or: [
+      { purgeDevPlayers: true },
+      { purgeLivePlayers: true }
+    ]
+  })
+
   for (const game of games) {
     await Promise.all([true, false].map((devBuild) => {
       return findAndDeleteInactivePlayers(em, clickhouse, game, devBuild)

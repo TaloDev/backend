@@ -25,6 +25,15 @@ export default class Game {
   apiSecret!: GameSecret
 
   @Property()
+  purgeDevPlayers: boolean = false
+
+  @Property()
+  purgeLivePlayers: boolean = false
+
+  @Property({ nullable: true })
+  website: string | null = null
+
+  @Property()
   createdAt: Date = new Date()
 
   @Property({ onUpdate: () => new Date() })

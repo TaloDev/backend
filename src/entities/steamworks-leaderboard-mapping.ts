@@ -1,4 +1,4 @@
-import { Cascade, Entity, ManyToOne, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/mysql'
+import { Entity, ManyToOne, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/mysql'
 import Leaderboard from './leaderboard'
 
 @Entity()
@@ -8,7 +8,7 @@ export default class SteamworksLeaderboardMapping {
   @PrimaryKey()
   steamworksLeaderboardId: number
 
-  @ManyToOne(() => Leaderboard, { primary: true, cascade: [Cascade.REMOVE], nullable: false })
+  @ManyToOne(() => Leaderboard, { primary: true, deleteRule: 'cascade', nullable: false })
   leaderboard: Leaderboard
 
   @Property()

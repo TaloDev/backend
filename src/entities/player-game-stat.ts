@@ -1,4 +1,4 @@
-import { Cascade, Entity, ManyToOne, PrimaryKey, Property } from '@mikro-orm/mysql'
+import { Entity, ManyToOne, PrimaryKey, Property } from '@mikro-orm/mysql'
 import GameStat from './game-stat'
 import Player from './player'
 
@@ -7,10 +7,10 @@ export default class PlayerGameStat {
   @PrimaryKey()
   id!: number
 
-  @ManyToOne(() => Player, { cascade: [Cascade.REMOVE] })
+  @ManyToOne(() => Player, { deleteRule: 'cascade' })
   player: Player
 
-  @ManyToOne(() => GameStat, { cascade: [Cascade.REMOVE], eager: true })
+  @ManyToOne(() => GameStat, { deleteRule: 'cascade', eager: true })
   stat: GameStat
 
   @Property({ type: 'double' })

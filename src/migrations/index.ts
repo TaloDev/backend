@@ -43,6 +43,7 @@ import { CascadePlayerPresenceAlias } from './20250219233504CascadePlayerPresenc
 import { ModifyPlayerPropLengths } from './20250402161623ModifyPlayerPropLengths'
 import { AddGameChannelPrivateColumn } from './20250411180623AddGameChannelPrivateColumn'
 import { CreateLeaderboardEntryPropTable } from './20250505131919CreateLeaderboardEntryPropTable'
+import { AddCascadeDeleteRules } from './20250512220859AddCascadeDeleteRules'
 
 export default [
   {
@@ -224,5 +225,9 @@ export default [
   {
     name: 'CreateLeaderboardEntryPropTable',
     class: CreateLeaderboardEntryPropTable
+  },
+  {
+    name: 'AddCascadeDeleteRules',
+    class: AddCascadeDeleteRules
   }
 ]

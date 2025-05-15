@@ -1,4 +1,4 @@
-import { Cascade, Collection, Entity, ManyToOne, OneToMany, PrimaryKey, Property } from '@mikro-orm/mysql'
+import { Collection, Entity, ManyToOne, OneToMany, PrimaryKey, Property } from '@mikro-orm/mysql'
 import Leaderboard from './leaderboard'
 import PlayerAlias from './player-alias'
 import LeaderboardEntryProp from './leaderboard-entry-prop'
@@ -11,10 +11,10 @@ export default class LeaderboardEntry {
   @Property({ type: 'double' })
   score!: number
 
-  @ManyToOne(() => Leaderboard, { cascade: [Cascade.REMOVE] })
+  @ManyToOne(() => Leaderboard, { deleteRule: 'cascade' })
   leaderboard: Leaderboard
 
-  @ManyToOne(() => PlayerAlias, { cascade: [Cascade.REMOVE], eager: true })
+  @ManyToOne(() => PlayerAlias, { deleteRule: 'cascade', eager: true })
   playerAlias!: PlayerAlias
 
   @OneToMany(() => LeaderboardEntryProp, (prop) => prop.leaderboardEntry, { eager: true, orphanRemoval: true })

@@ -18,6 +18,7 @@ import GameFeedbackFactory from './fixtures/GameFeedbackFactory'
 import createClickHouseClient from '../src/lib/clickhouse/createClient'
 import { rand } from '@ngneat/falso'
 import ormConfig from '../src/config/mikro-orm.config'
+
 (async () => {
   console.info('Running migrations...')
 

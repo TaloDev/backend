@@ -132,7 +132,7 @@ export default class LeaderboardAPIService extends APIService {
       })
     }
 
-    const position = (await query.count()) - 1
+    const position = Math.max((await query.count()) - 1, 0)
 
     return {
       status: 200,

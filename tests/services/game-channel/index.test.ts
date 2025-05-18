@@ -5,6 +5,8 @@ import PlayerAliasFactory from '../../fixtures/PlayerAliasFactory'
 import PlayerFactory from '../../fixtures/PlayerFactory'
 import GameChannelFactory from '../../fixtures/GameChannelFactory'
 import GameChannel from '../../../src/entities/game-channel'
+import GameChannelProp from '../../../src/entities/game-channel-prop'
+import { Collection } from '@mikro-orm/core'
 
 describe('Game channel service - index', () => {
   it('should return a list of game channels', async () => {
@@ -187,5 +189,59 @@ describe('Game channel service - index', () => {
       .expect(200)
 
     expect(res.body.channels).toHaveLength(publicChannels.length + privateChannels.length)
+  })
+
+  it('should filter game channels by prop keys', async () => {
+    const [organisation, game] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken({}, organisation)
+
+    const channel = await new GameChannelFactory(game).state((channel) => ({
+      props: new Collection<GameChannelProp>(channel, [
+        new GameChannelProp(channel, 'guildId', '15')
+      ])
+    })).one()
+
+    const otherChannel = await new GameChannelFactory(game).one()
+
+    await em.persistAndFlush([channel, otherChannel])
+
+    const res = await request(app)
+      .get(`/games/${game.id}/game-channels`)
+      .query({ page: 0, propKey: 'guildId' })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    expect(res.body.channels).toHaveLength(1)
+    expect(res.body.channels[0].id).toBe(channel.id)
+  })
+
+  it('should filter game channels by prop keys and values', async () => {
+    const [organisation, game] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken({}, organisation)
+
+    const channel = await new GameChannelFactory(game).state((channel) => ({
+      props: new Collection<GameChannelProp>(channel, [
+        new GameChannelProp(channel, 'guildId', '15')
+      ])
+    })).one()
+
+    const otherChannel = await new GameChannelFactory(game).state((channel) => ({
+      props: new Collection<GameChannelProp>(channel, [
+        new GameChannelProp(channel, 'guildId', '17')
+      ])
+    })).one()
+
+    const irrelevantChannel = await new GameChannelFactory(game).one()
+
+    await em.persistAndFlush([channel, otherChannel, irrelevantChannel])
+
+    const res = await request(app)
+      .get(`/games/${game.id}/game-channels`)
+      .query({ page: 0, propKey: 'guildId', propValue: '15' })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    expect(res.body.channels).toHaveLength(1)
+    expect(res.body.channels[0].id).toBe(channel.id)
   })
 })

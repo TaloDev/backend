@@ -33,8 +33,10 @@ import PlayerGroup from './player-group'
 import GameSecret from './game-secret'
 import PlayerPresence from './player-presence'
 import LeaderboardEntryProp from './leaderboard-entry-prop'
+import GameChannelProp from './game-channel-prop'
 
 export default [
+  GameChannelProp,
   LeaderboardEntryProp,
   PlayerPresence,
   GameChannel,

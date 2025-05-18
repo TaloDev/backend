@@ -2,7 +2,7 @@ import { forwardRequest, ForwardTo, HasPermission, Request, Response, Route, Val
 import GameChannelAPIPolicy from '../../policies/api/game-channel-api.policy'
 import APIService from './api-service'
 import GameChannel from '../../entities/game-channel'
-import { EntityManager } from '@mikro-orm/mysql'
+import { EntityManager, FilterQuery } from '@mikro-orm/mysql'
 import GameChannelAPIDocs from '../../docs/game-channel-api.docs'
 import PlayerAlias from '../../entities/player-alias'
 import { devDataPlayerFilter } from '../../middlewares/dev-data-middleware'
@@ -45,7 +45,35 @@ export default class GameChannelAPIService extends APIService {
   })
   @HasPermission(GameChannelAPIPolicy, 'subscriptions')
   async subscriptions(req: Request): Promise<Response> {
-    const channels = await (req.ctx.state.alias as PlayerAlias).channels.loadItems()
+    const { propKey, propValue } = req.query
+    const em: EntityManager = req.ctx.em
+
+    const where: FilterQuery<GameChannel> = {
+      members: {
+        $some: {
+          id: req.ctx.state.alias.id
+        }
+      }
+    }
+
+    if (propKey) {
+      if (propValue) {
+        where.props = {
+          $some: {
+            key: propKey,
+            value: propValue
+          }
+        }
+      } else {
+        where.props = {
+          $some: {
+            key: propKey
+          }
+        }
+      }
+    }
+
+    const channels = await em.repo(GameChannel).find(where)
 
     return {
       status: 200,

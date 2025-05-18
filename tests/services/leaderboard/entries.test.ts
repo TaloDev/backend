@@ -151,7 +151,7 @@ describe('Leaderboard service - entries', () => {
 
     const otherEntry = await new LeaderboardEntryFactory(leaderboard, players).one()
 
-    await em.persistAndFlush([...players, leaderboard, entry, otherEntry])
+    await em.persistAndFlush([leaderboard, entry, otherEntry])
 
     const res = await request(app)
       .get(`/games/${game.id}/leaderboards/${leaderboard.id}/entries`)
@@ -184,7 +184,7 @@ describe('Leaderboard service - entries', () => {
 
     const irrelevantEntry = await new LeaderboardEntryFactory(leaderboard, players).one()
 
-    await em.persistAndFlush([...players, leaderboard, entry, otherEntry, irrelevantEntry])
+    await em.persistAndFlush([leaderboard, entry, otherEntry, irrelevantEntry])
 
     const res = await request(app)
       .get(`/games/${game.id}/leaderboards/${leaderboard.id}/entries`)

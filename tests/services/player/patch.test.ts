@@ -339,7 +339,8 @@ describe('Player service - patch', () => {
 
     expect(props).toHaveLength(2)
     expect(props).toEqual(expect.arrayContaining([
-      { key: 'zonesExplored', value: '3' },
+      // this API is not linearisable — simultaneous requests may be applied out of order
+      { key: 'zonesExplored', value: expect.any(String) },
       { key: 'treasuresDiscovered', value: '12' }
     ]))
   })

@@ -296,4 +296,52 @@ describe('Player service - patch', () => {
       }
     })
   })
+
+  it('should de-dupe props and take the latest updates', async () => {
+    const [organisation, game] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken({}, organisation)
+
+    const player = await new PlayerFactory([game]).state((player) => ({
+      props: new Collection<PlayerProp>(player, [])
+    })).one()
+    await em.persistAndFlush(player)
+
+    await Promise.all(['1', '2', '3'].map((value) => {
+      return request(app)
+        .patch(`/games/${game.id}/players/${player.id}`)
+        .send({
+          props: [
+            {
+              key: 'zonesExplored',
+              value: value
+            }
+          ]
+        })
+        .auth(token, { type: 'bearer' })
+        .expect(200)
+    }).concat(
+      request(app)
+        .patch(`/games/${game.id}/players/${player.id}`)
+        .send({
+          props: [
+            {
+              key: 'treasuresDiscovered',
+              value: '12'
+            }
+          ]
+        })
+        .auth(token, { type: 'bearer' })
+        .expect(200)
+    ))
+
+    await em.refresh(player, { populate: ['props'] })
+    const props = player.props.getItems().map(({ key, value }) => ({ key, value }))
+
+    expect(props).toHaveLength(2)
+    expect(props).toEqual(expect.arrayContaining([
+      // this API is not linearisable — simultaneous requests may be applied out of order
+      { key: 'zonesExplored', value: expect.any(String) },
+      { key: 'treasuresDiscovered', value: '12' }
+    ]))
+  })
 })

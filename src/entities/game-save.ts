@@ -12,7 +12,7 @@ export default class GameSave {
   @Property({ type: 'json' })
   content!: { [key: string]: unknown }
 
-  @ManyToOne(() => Player)
+  @ManyToOne(() => Player, { deleteRule: 'cascade' })
   player: Player
 
   @Property()

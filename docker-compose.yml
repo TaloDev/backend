@@ -43,6 +43,7 @@ services:
     restart: always
     ports:
       - ${CLICKHOUSE_PORT}:8123
+      - 9004:9004
     volumes:
       - clickhouse-data:/var/lib/clickhouse
 

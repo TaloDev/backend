@@ -24,7 +24,7 @@ export default class PlayerAlias {
   @Property({ length: 1024 })
   identifier!: string
 
-  @ManyToOne(() => Player, { eager: true })
+  @ManyToOne(() => Player, { eager: true, deleteRule: 'cascade' })
   player!: Player
 
   @Property()

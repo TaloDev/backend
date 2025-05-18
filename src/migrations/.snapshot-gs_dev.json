@@ -593,6 +593,38 @@
           "length": null,
           "mappedType": "integer"
         },
+        "purge_dev_players": {
+          "name": "purge_dev_players",
+          "type": "tinyint(1)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "length": 1,
+          "default": "false",
+          "mappedType": "boolean"
+        },
+        "purge_live_players": {
+          "name": "purge_live_players",
+          "type": "tinyint(1)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "length": 1,
+          "default": "false",
+          "mappedType": "boolean"
+        },
+        "website": {
+          "name": "website",
+          "type": "varchar(255)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "length": 255,
+          "mappedType": "string"
+        },
         "created_at": {
           "name": "created_at",
           "type": "datetime",
@@ -1061,6 +1093,7 @@
             "id"
           ],
           "referencedTableName": "player",
+          "deleteRule": "cascade",
           "updateRule": "cascade"
         }
       },
@@ -1154,6 +1187,7 @@
             "id"
           ],
           "referencedTableName": "player",
+          "deleteRule": "cascade",
           "updateRule": "cascade"
         }
       },
@@ -1267,6 +1301,7 @@
             "id"
           ],
           "referencedTableName": "player",
+          "deleteRule": "cascade",
           "updateRule": "cascade"
         }
       },
@@ -1290,7 +1325,7 @@
           "unsigned": true,
           "autoincrement": false,
           "primary": false,
-          "nullable": true,
+          "nullable": false,
           "length": null,
           "mappedType": "integer"
         },
@@ -1372,7 +1407,8 @@
             "id"
           ],
           "referencedTableName": "player_alias",
-          "deleteRule": "cascade"
+          "deleteRule": "cascade",
+          "updateRule": "cascade"
         }
       },
       "nativeEnums": {}
@@ -1563,6 +1599,7 @@
             "id"
           ],
           "referencedTableName": "player",
+          "deleteRule": "cascade",
           "updateRule": "cascade"
         }
       },
@@ -1740,7 +1777,7 @@
           "unsigned": true,
           "autoincrement": false,
           "primary": false,
-          "nullable": true,
+          "nullable": false,
           "length": null,
           "mappedType": "integer"
         },
@@ -1750,7 +1787,7 @@
           "unsigned": true,
           "autoincrement": false,
           "primary": false,
-          "nullable": true,
+          "nullable": false,
           "length": null,
           "mappedType": "integer"
         },
@@ -1841,7 +1878,8 @@
             "id"
           ],
           "referencedTableName": "leaderboard",
-          "deleteRule": "cascade"
+          "deleteRule": "cascade",
+          "updateRule": "cascade"
         },
         "leaderboard_entry_player_alias_id_foreign": {
           "constraintName": "leaderboard_entry_player_alias_id_foreign",
@@ -1853,7 +1891,8 @@
             "id"
           ],
           "referencedTableName": "player_alias",
-          "deleteRule": "cascade"
+          "deleteRule": "cascade",
+          "updateRule": "cascade"
         }
       },
       "nativeEnums": {}
@@ -1946,6 +1985,7 @@
             "id"
           ],
           "referencedTableName": "leaderboard_entry",
+          "deleteRule": "cascade",
           "updateRule": "cascade"
         }
       },
@@ -2257,7 +2297,7 @@
           "unsigned": false,
           "autoincrement": false,
           "primary": false,
-          "nullable": true,
+          "nullable": false,
           "length": 255,
           "mappedType": "string"
         },
@@ -2267,7 +2307,7 @@
           "unsigned": true,
           "autoincrement": false,
           "primary": false,
-          "nullable": true,
+          "nullable": false,
           "length": null,
           "mappedType": "integer"
         },
@@ -2347,7 +2387,8 @@
             "id"
           ],
           "referencedTableName": "player",
-          "deleteRule": "cascade"
+          "deleteRule": "cascade",
+          "updateRule": "cascade"
         },
         "player_game_stat_stat_id_foreign": {
           "constraintName": "player_game_stat_stat_id_foreign",
@@ -2359,7 +2400,8 @@
             "id"
           ],
           "referencedTableName": "game_stat",
-          "deleteRule": "cascade"
+          "deleteRule": "cascade",
+          "updateRule": "cascade"
         }
       },
       "nativeEnums": {}
@@ -2605,7 +2647,8 @@
             "id"
           ],
           "referencedTableName": "game_feedback_category",
-          "deleteRule": "cascade"
+          "deleteRule": "cascade",
+          "updateRule": "cascade"
         },
         "game_feedback_player_alias_id_foreign": {
           "constraintName": "game_feedback_player_alias_id_foreign",
@@ -2617,7 +2660,8 @@
             "id"
           ],
           "referencedTableName": "player_alias",
-          "deleteRule": "cascade"
+          "deleteRule": "cascade",
+          "updateRule": "cascade"
         }
       },
       "nativeEnums": {}
@@ -3041,7 +3085,8 @@
             "id"
           ],
           "referencedTableName": "leaderboard",
-          "deleteRule": "cascade"
+          "deleteRule": "cascade",
+          "updateRule": "cascade"
         }
       },
       "nativeEnums": {}

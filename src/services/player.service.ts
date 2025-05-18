@@ -5,7 +5,7 @@ import PlayerPolicy from '../policies/player.policy'
 import PlayerAlias from '../entities/player-alias'
 import { sanitiseProps, mergeAndSanitiseProps, hardSanitiseProps } from '../lib/props/sanitiseProps'
 import Event, { ClickHouseEvent } from '../entities/event'
-import { EntityManager } from '@mikro-orm/mysql'
+import { EntityManager, LockMode } from '@mikro-orm/mysql'
 import { QueryOrder } from '@mikro-orm/mysql'
 import createGameActivity from '../lib/logging/createGameActivity'
 import { GameActivityType } from '../entities/game-activity'
@@ -39,6 +39,8 @@ type PlayerPostBody = {
     value: string
   }[]
 }
+
+type PatchTransactionResponse = [Player | null, ReturnType<typeof buildErrorResponse> | null]
 
 export default class PlayerService extends Service {
   @Route({
@@ -228,51 +230,60 @@ export default class PlayerService extends Service {
   @HasPermission(PlayerPolicy, 'patch')
   async patch(req: Request<{ props: Prop[] }>): Promise<Response> {
     const { props } = req.body
-    const player: Player = req.ctx.state.player // set in the policy
-
     const em: EntityManager = req.ctx.em
 
-    if (props) {
-      if (req.ctx.state.user.api !== true && props.some((prop) => prop.key.startsWith('META_'))) {
-        return buildErrorResponse({ props: ['Prop keys starting with \'META_\' are reserved for internal systems, please use another key name'] })
-      }
+    const [player, errorResponse] = await em.transactional(async (em): Promise<PatchTransactionResponse> => {
+      const player = await em.repo(Player).findOneOrFail((req.ctx.state.player as Player).id, { lockMode: LockMode.PESSIMISTIC_WRITE })
 
-      try {
-        player.setProps(mergeAndSanitiseProps(player.props.getItems(), props, (prop) => !prop.key.startsWith('META_')))
-      } catch (err) {
-        if (err instanceof PropSizeError) {
-          return buildErrorResponse({ props: [err.message] })
-        /* v8 ignore start */
+      if (props) {
+        if (req.ctx.state.user.api !== true && props.some((prop) => prop.key.startsWith('META_'))) {
+          const errorMessage = 'Prop keys starting with \'META_\' are reserved for internal systems, please use another key name'
+          return [null, buildErrorResponse({ props: [errorMessage] }) ]
         }
-        throw err
-        /* v8 ignore end */
-      }
-    }
 
-    if (req.ctx.state.user.api !== true) {
-      createGameActivity(em, {
-        user: req.ctx.state.user,
-        game: player.game,
-        type: GameActivityType.PLAYER_PROPS_UPDATED,
-        extra: {
-          playerId: player.id,
-          display: {
-            'Player': player.id,
-            'Updated props': sanitiseProps(props).map((prop) => `${prop.key}: ${prop.value ?? '[deleted]'}`).join(', ')
+        try {
+          player.setProps(mergeAndSanitiseProps(player.props.getItems(), props, (prop) => !prop.key.startsWith('META_')))
+        } catch (err) {
+          if (err instanceof PropSizeError) {
+            return [null, buildErrorResponse({ props: [err.message] })]
           }
+          throw err
         }
-      })
+      }
+
+      if (req.ctx.state.user.api !== true) {
+        createGameActivity(em, {
+          user: req.ctx.state.user,
+          game: player.game,
+          type: GameActivityType.PLAYER_PROPS_UPDATED,
+          extra: {
+            playerId: player.id,
+            display: {
+              'Player': player.id,
+              'Updated props': sanitiseProps(props).map((prop) => `${prop.key}: ${prop.value ?? '[deleted]'}`).join(', ')
+            }
+          }
+        })
+      }
+
+      // step 1: update props
+      await em.flush()
+
+      return [player, null]
+    })
+
+    if (errorResponse) {
+      return errorResponse
     }
 
-    // flush the prop changes
-    await em.flush()
+    if (player) {
+      // step 2: check for group membership changes
+      player.updatedAt = new Date()
+      await em.flush()
 
-    // update the player separately, triggering the subscriber and preventing a deadlock exception
-    player.updatedAt = new Date()
-    await em.flush()
-
-    // refresh groups
-    await em.refresh(player)
+      // step 3: get the latest group memberships
+      await em.refresh(player)
+    }
 
     return {
       status: 200,

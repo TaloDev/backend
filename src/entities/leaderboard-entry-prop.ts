@@ -7,7 +7,7 @@ export default class LeaderboardEntryProp {
   @PrimaryKey()
   id!: number
 
-  @ManyToOne(() => LeaderboardEntry)
+  @ManyToOne(() => LeaderboardEntry, { deleteRule: 'cascade' })
   leaderboardEntry: LeaderboardEntry
 
   @Property({ length: MAX_KEY_LENGTH })

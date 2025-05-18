@@ -1,4 +1,4 @@
-import { Cascade, Entity, ManyToOne, OneToOne, PrimaryKey, Property } from '@mikro-orm/mysql'
+import { Entity, ManyToOne, OneToOne, PrimaryKey, Property } from '@mikro-orm/mysql'
 import Player from './player'
 import PlayerAlias from './player-alias'
 
@@ -15,7 +15,7 @@ export default class PlayerPresence {
   @OneToOne(() => Player, (player) => player.presence)
   player!: Player
 
-  @ManyToOne(() => PlayerAlias, { cascade: [Cascade.REMOVE], eager: true })
+  @ManyToOne(() => PlayerAlias, { deleteRule: 'cascade', eager: true })
   playerAlias!: PlayerAlias
 
   @Property()

@@ -17,6 +17,7 @@ import createPlayerAuthActivity from '../../lib/logging/createPlayerAuthActivity
 import { PlayerAuthActivityType } from '../../entities/player-auth-activity'
 import emailRegex from '../../lib/lang/emailRegex'
 import { ClickHouseClient } from '@clickhouse/client'
+import { deleteClickHousePlayerData } from '../../tasks/deleteInactivePlayers'
 
 export default class PlayerAuthAPIService extends APIService {
   @Route({
@@ -630,14 +631,11 @@ export default class PlayerAuthAPIService extends APIService {
       }
     })
 
-    await Promise.all([
-      `DELETE FROM event_props WHERE event_id IN (SELECT id FROM events WHERE player_alias_id = ${alias.id})`,
-      `DELETE FROM events WHERE player_alias_id = ${alias.id}`,
-      `DELETE FROM socket_events WHERE player_alias_id = ${alias.id}`,
-      `DELETE FROM player_sessions WHERE player_id = '${alias.player.id}'`
-    ].map((query) => clickhouse.exec({ query })))
-
     await em.removeAndFlush([alias.player.auth, alias])
+    await deleteClickHousePlayerData(clickhouse, {
+      playerIds: [alias.player.id],
+      aliasIds: [alias.id]
+    })
 
     return {
       status: 204

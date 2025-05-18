@@ -26,7 +26,7 @@ describe('Leaderboard API service - post', () => {
 
     expect(res.body.entry.score).toBe(300)
     expect(res.body.updated).toBe(false)
-    expect(res.body.entry.position).toBeDefined()
+    expect(res.body.entry.position).toBe(0)
   })
 
   it('should not create a leaderboard entry if the scope is not valid', async () => {
@@ -572,6 +572,24 @@ describe('Leaderboard API service - post', () => {
     res = await request(app)
       .post(`/v1/leaderboards/${leaderboard.internalName}/entries`)
       .send({ score: 500 })
+      .auth(token, { type: 'bearer' })
+      .set('x-talo-alias', String(player.aliases[0].id))
+      .expect(200)
+
+    expect(res.body.entry.position).toBe(0)
+  })
+
+  it('should return position 0 when the first entry in a unique leaderboard is hidden', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_LEADERBOARDS])
+    const player = await new PlayerFactory([apiKey.game]).one()
+    const leaderboard = await new LeaderboardFactory([apiKey.game]).state(() => ({ unique: true, sortMode: LeaderboardSortMode.DESC })).one()
+
+    const hiddenEntry = await new LeaderboardEntryFactory(leaderboard, [player]).state(() => ({ score: 300 })).hidden().one()
+    await em.persistAndFlush([player, leaderboard, hiddenEntry])
+
+    const res = await request(app)
+      .post(`/v1/leaderboards/${leaderboard.internalName}/entries`)
+      .send({ score: 200 })
       .auth(token, { type: 'bearer' })
       .set('x-talo-alias', String(player.aliases[0].id))
       .expect(200)

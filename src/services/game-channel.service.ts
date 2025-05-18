@@ -18,7 +18,7 @@ export default class GameChannelService extends Service {
   @Validate({ query: ['page'] })
   @HasPermission(GameChannelPolicy, 'index')
   async index(req: Request): Promise<Response> {
-    const { search, page } = req.query
+    const { search, page, propKey, propValue } = req.query
     const em: EntityManager = req.ctx.em
 
     const query = em.qb(GameChannel, 'gc')
@@ -42,6 +42,27 @@ export default class GameChannelService extends Service {
       query.andWhere({
         private: false
       })
+    }
+
+    if (propKey) {
+      if (propValue) {
+        query.andWhere({
+          props: {
+            $some: {
+              key: propKey,
+              value: propValue
+            }
+          }
+        })
+      } else {
+        query.andWhere({
+          props: {
+            $some: {
+              key: propKey
+            }
+          }
+        })
+      }
     }
 
     const [channels, count] = await query
@@ -98,7 +119,7 @@ export default class GameChannelService extends Service {
 
     if (props) {
       try {
-        channel.props = hardSanitiseProps(props)
+        channel.setProps(hardSanitiseProps(props))
       } catch (err) {
         if (err instanceof PropSizeError) {
           return buildErrorResponse({ props: [err.message] })
@@ -155,7 +176,7 @@ export default class GameChannelService extends Service {
 
     if (props) {
       try {
-        channel.props = mergeAndSanitiseProps(channel.props, props)
+        channel.setProps(mergeAndSanitiseProps(channel.props.getItems(), props))
       } catch (err) {
         if (err instanceof PropSizeError) {
           return buildErrorResponse({ props: [err.message] })

@@ -6,6 +6,8 @@ import PlayerFactory from '../../../fixtures/PlayerFactory'
 import createSocketIdentifyMessage from '../../../utils/createSocketIdentifyMessage'
 import createTestSocket from '../../../utils/createTestSocket'
 import { randText } from '@ngneat/falso'
+import { Collection } from '@mikro-orm/core'
+import GameChannelProp from '../../../../src/entities/game-channel-prop'
 
 describe('Game channel API service - put', () => {
   it('should update a channel if the scope is valid', async () => {
@@ -84,12 +86,12 @@ describe('Game channel API service - put', () => {
   it('should update the props of a channel', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_CHANNELS])
 
-    const channel = await new GameChannelFactory(apiKey.game).state(() => ({
+    const channel = await new GameChannelFactory(apiKey.game).state((channel) => ({
       name: 'Guild chat',
-      props: [
-        { key: 'guildId', value: '1234' },
-        { key: 'deleteMe', value: 'yes' }
-      ]
+      props: new Collection<GameChannelProp>(channel, [
+        new GameChannelProp(channel, 'guildId', '1234'),
+        new GameChannelProp(channel, 'deleteMe', 'yes')
+      ])
     })).one()
     const player = await new PlayerFactory([apiKey.game]).one()
     channel.owner = player.aliases[0]
@@ -116,11 +118,11 @@ describe('Game channel API service - put', () => {
   it('should require props to be an array', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_CHANNELS])
 
-    const channel = await new GameChannelFactory(apiKey.game).state(() => ({
+    const channel = await new GameChannelFactory(apiKey.game).state((channel) => ({
       name: 'Guild chat',
-      props: [
-        { key: 'guildId', value: '1234' }
-      ]
+      props: new Collection<GameChannelProp>(channel, [
+        new GameChannelProp(channel, 'guildId', '1234')
+      ])
     })).one()
 
     const player = await new PlayerFactory([apiKey.game]).one()

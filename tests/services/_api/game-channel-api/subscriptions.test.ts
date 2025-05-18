@@ -3,6 +3,8 @@ import GameChannelFactory from '../../../fixtures/GameChannelFactory'
 import { APIKeyScope } from '../../../../src/entities/api-key'
 import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
 import PlayerFactory from '../../../fixtures/PlayerFactory'
+import { Collection } from '@mikro-orm/core'
+import GameChannelProp from '../../../../src/entities/game-channel-prop'
 
 describe('Game channel API service - subscriptions', () => {
   it('should return a list of game channel subscriptions if the scope is valid', async () => {
@@ -57,5 +59,67 @@ describe('Game channel API service - subscriptions', () => {
     expect(res.body).toStrictEqual({
       message: 'Player not found'
     })
+  })
+
+  it('should filter game channel subscriptions by prop keys', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_GAME_CHANNELS])
+
+    const player = await new PlayerFactory([apiKey.game]).one()
+    const channel = await new GameChannelFactory(apiKey.game).state((channel) => ({
+      props: new Collection<GameChannelProp>(channel, [
+        new GameChannelProp(channel, 'guildId', '15')
+      ])
+    })).one()
+    channel.members.add(player.aliases[0])
+
+    const otherChannel = await new GameChannelFactory(apiKey.game).one()
+    otherChannel.members.add(player.aliases[0])
+
+    await em.persistAndFlush([channel, otherChannel, player])
+
+    const res = await request(app)
+      .get('/v1/game-channels/subscriptions')
+      .query({ page: 0, propKey: 'guildId' })
+      .auth(token, { type: 'bearer' })
+      .set('x-talo-alias', String(player.aliases[0].id))
+      .expect(200)
+
+    expect(res.body.channels).toHaveLength(1)
+    expect(res.body.channels[0].id).toBe(channel.id)
+  })
+
+  it('should filter game channel subscriptions by prop keys and values', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_GAME_CHANNELS])
+
+    const player = await new PlayerFactory([apiKey.game]).one()
+
+    const channel = await new GameChannelFactory(apiKey.game).state((channel) => ({
+      props: new Collection<GameChannelProp>(channel, [
+        new GameChannelProp(channel, 'guildId', '15')
+      ])
+    })).one()
+    channel.members.add(player.aliases[0])
+
+    const otherChannel = await new GameChannelFactory(apiKey.game).state((channel) => ({
+      props: new Collection<GameChannelProp>(channel, [
+        new GameChannelProp(channel, 'guildId', '17')
+      ])
+    })).one()
+    otherChannel.members.add(player.aliases[0])
+
+    const irrelevantChannel = await new GameChannelFactory(apiKey.game).one()
+    irrelevantChannel.members.add(player.aliases[0])
+
+    await em.persistAndFlush([channel, otherChannel, irrelevantChannel, player])
+
+    const res = await request(app)
+      .get('/v1/game-channels/subscriptions')
+      .query({ page: 0, propKey: 'guildId', propValue: '15' })
+      .auth(token, { type: 'bearer' })
+      .set('x-talo-alias', String(player.aliases[0].id))
+      .expect(200)
+
+    expect(res.body.channels).toHaveLength(1)
+    expect(res.body.channels[0].id).toBe(channel.id)
   })
 })

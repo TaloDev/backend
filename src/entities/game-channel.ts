@@ -7,6 +7,7 @@ import { sendMessages, SocketMessageResponse } from '../socket/messages/socketMe
 import Socket from '../socket'
 import { APIKeyScope } from './api-key'
 import GameChannelProp from './game-channel-prop'
+import GameChannelStorageProp from './game-channel-storage-prop'
 
 @Entity()
 export default class GameChannel {
@@ -48,6 +49,9 @@ export default class GameChannel {
   })
   @OneToMany(() => GameChannelProp, (prop) => prop.gameChannel, { eager: true, orphanRemoval: true })
   props: Collection<GameChannelProp> = new Collection<GameChannelProp>(this)
+
+  @OneToMany(() => GameChannelStorageProp, (prop) => prop.gameChannel, { orphanRemoval: true })
+  storageProps: Collection<GameChannelStorageProp> = new Collection<GameChannelStorageProp>(this)
 
   @Property()
   createdAt: Date = new Date()

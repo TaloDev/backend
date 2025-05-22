@@ -23,6 +23,10 @@ async function joinChannel(req: Request, channel: GameChannel, playerAlias: Play
   }
 }
 
+function isInChannel(channel: GameChannel, alias: PlayerAlias): boolean {
+  return channel.members.getIdentifiers().includes(alias.id)
+}
+
 export default class GameChannelAPIService extends APIService {
   @Route({
     method: 'GET',
@@ -162,7 +166,7 @@ export default class GameChannelAPIService extends APIService {
       }
     }
 
-    if (channel.members.getIdentifiers().includes(req.ctx.state.alias.id)) {
+    if (isInChannel(channel, req.ctx.state.alias)) {
       if (channel.owner?.id === req.ctx.state.alias.id) {
         channel.owner = null
       }
@@ -280,6 +284,64 @@ export default class GameChannelAPIService extends APIService {
       status: 200,
       body: {
         members
+      }
+    }
+  }
+
+  @Route({
+    method: 'GET',
+    path: '/:id/storage'
+  })
+  @HasPermission(GameChannelAPIPolicy, 'getStorage')
+  async getStorage(req: Request): Promise<Response> {
+    const { propKey } = req.query
+    const em: EntityManager = req.ctx.em
+
+    const channel: GameChannel = req.ctx.state.channel
+
+    if (!isInChannel(channel, req.ctx.state.alias)) {
+      req.ctx.throw(403, 'This player is not a member of the channel')
+    }
+
+    const props = await channel.storageProps.loadItems({
+      where: {
+        key: propKey ? propKey : undefined,
+        createdBy: {
+          player: req.ctx.state.includeDevData ? {} : devDataPlayerFilter(em)
+        }
+      }
+    })
+
+    return {
+      status: 200,
+      body: {
+        props
+      }
+    }
+  }
+
+  @Route({
+    method: 'PUT',
+    path: '/:id/storage'
+  })
+  @Validate({
+    headers: ['x-talo-alias'],
+    body: [GameChannel]
+  })
+  @HasPermission(GameChannelAPIPolicy, 'putStorage')
+  async putStorage(req: Request): Promise<Response> {
+    const channel: GameChannel = req.ctx.state.channel
+
+    if (!isInChannel(channel, req.ctx.state.alias)) {
+      req.ctx.throw(403, 'This player is not a member of the channel')
+    }
+
+    const props = await channel.storageProps.loadItems()
+
+    return {
+      status: 200,
+      body: {
+        props
       }
     }
   }

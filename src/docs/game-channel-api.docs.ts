@@ -63,6 +63,25 @@ const GameChannelAPIDocs: APIDocs<GameChannelAPIService> = {
           itemsPerPage: 50,
           isLastPage: true
         }
+      },
+      {
+        title: 'Sample request with prop key filtering',
+        sample: {
+          url: '/v1/game-channels?propKey=guildId',
+          query: {
+            propKey: 'guildId'
+          }
+        }
+      },
+      {
+        title: 'Sample request with prop key and value filtering',
+        sample: {
+          url: '/v1/game-channels?propKey=guildId&propValue=5912',
+          query: {
+            propKey: 'guildId',
+            propValue: '5912'
+          }
+        }
       }
     ]
   },
@@ -71,6 +90,10 @@ const GameChannelAPIDocs: APIDocs<GameChannelAPIService> = {
     params: {
       route: {
         id: 'The ID of the channel'
+      },
+      query: {
+        propKey: 'Only return channels with this prop key',
+        propValue: 'Only return channels with a matching prop key and value'
       }
     },
     samples: [
@@ -100,6 +123,10 @@ const GameChannelAPIDocs: APIDocs<GameChannelAPIService> = {
     params: {
       headers: {
         'x-talo-alias': 'The ID of the player\'s alias'
+      },
+      query: {
+        propKey: 'Only return channels with this prop key',
+        propValue: 'Only return channels with a matching prop key and value'
       }
     },
     samples: [
@@ -136,6 +163,25 @@ const GameChannelAPIDocs: APIDocs<GameChannelAPIService> = {
               updatedAt: '2024-12-09T12:00:00.000Z'
             }
           ]
+        }
+      },
+      {
+        title: 'Sample request with prop key filtering',
+        sample: {
+          url: '/v1/game-channels/subscriptions?propKey=guildId',
+          query: {
+            propKey: 'guildId'
+          }
+        }
+      },
+      {
+        title: 'Sample request with prop key and value filtering',
+        sample: {
+          url: '/v1/game-channels/subscriptions?propKey=guildId&propValue=5912',
+          query: {
+            propKey: 'guildId',
+            propValue: '5912'
+          }
         }
       }
     ]

@@ -1,12 +1,12 @@
-import { Collection, Embedded, Entity, EntityManager, ManyToMany, ManyToOne, PrimaryKey, Property } from '@mikro-orm/mysql'
+import { Collection, Entity, EntityManager, ManyToMany, ManyToOne, OneToMany, PrimaryKey, Property } from '@mikro-orm/mysql'
 import PlayerAlias from './player-alias'
 import Game from './game'
-import Prop from './prop'
 import { Request, Required, ValidationCondition } from 'koa-clay'
 import { devDataPlayerFilter } from '../middlewares/dev-data-middleware'
 import { sendMessages, SocketMessageResponse } from '../socket/messages/socketMessage'
 import Socket from '../socket'
 import { APIKeyScope } from './api-key'
+import GameChannelProp from './game-channel-prop'
 
 @Entity()
 export default class GameChannel {
@@ -46,8 +46,8 @@ export default class GameChannel {
       }
     ]
   })
-  @Embedded(() => Prop, { array: true })
-  props: Prop[] = []
+  @OneToMany(() => GameChannelProp, (prop) => prop.gameChannel, { eager: true, orphanRemoval: true })
+  props: Collection<GameChannelProp> = new Collection<GameChannelProp>(this)
 
   @Property()
   createdAt: Date = new Date()
@@ -68,13 +68,17 @@ export default class GameChannel {
     await sendMessages(conns, res, data)
   }
 
+  setProps(props: { key: string, value: string }[]) {
+    this.props.set(props.map(({ key, value }) => new GameChannelProp(this, key, value)))
+  }
+
   toJSON() {
     return {
       id: this.id,
       name: this.name,
       owner: this.owner,
       totalMessages: this.totalMessages,
-      props: this.props,
+      props: this.props.getItems().map(({ key, value }) => ({ key, value })),
       autoCleanup: this.autoCleanup,
       private: this.private,
       createdAt: this.createdAt,

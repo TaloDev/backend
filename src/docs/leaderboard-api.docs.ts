@@ -13,7 +13,9 @@ const LeaderboardAPIDocs: APIDocs<LeaderboardAPIService> = {
       },
       query: {
         page: 'The current pagination index (starting at 0)',
-        aliasId: 'Only return entries for this alias ID'
+        aliasId: 'Only return entries for this alias ID',
+        propKey: 'Only return entries with this prop key',
+        propValue: 'Only return entries with a matching prop key and value'
       }
     },
     samples: [
@@ -81,6 +83,25 @@ const LeaderboardAPIDocs: APIDocs<LeaderboardAPIService> = {
           ],
           count: 126,
           isLastPage: false
+        }
+      },
+      {
+        title: 'Sample request with prop key filtering',
+        sample: {
+          url: '/v1/leaderboards/highscore?propKey=team',
+          query: {
+            propKey: 'team'
+          }
+        }
+      },
+      {
+        title: 'Sample request with prop key and value filtering',
+        sample: {
+          url: '/v1/leaderboards/highscore?propKey=team&propValue=red',
+          query: {
+            propKey: 'team',
+            propValue: 'red'
+          }
         }
       }
     ]

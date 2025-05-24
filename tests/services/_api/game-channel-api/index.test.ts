@@ -38,8 +38,8 @@ describe('Game channel API service - index', () => {
   it('should not return private channels', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_GAME_CHANNELS])
 
-    const publicChannels = await new GameChannelFactory(apiKey.game).state(() => ({ private: false })).many(3)
-    const privateChannels = await new GameChannelFactory(apiKey.game).state(() => ({ private: true })).many(1)
+    const publicChannels = await new GameChannelFactory(apiKey.game).many(3)
+    const privateChannels = await new GameChannelFactory(apiKey.game).private().many(1)
     await em.persistAndFlush([...publicChannels, ...privateChannels])
 
     const res = await request(app)

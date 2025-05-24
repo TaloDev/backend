@@ -153,8 +153,9 @@ export default class GameChannelAPIService extends APIService {
   async leave(req: Request): Promise<Response> {
     const em: EntityManager = req.ctx.em
     const channel: GameChannel = req.ctx.state.channel
+    const playerAlias: PlayerAlias = req.ctx.state.alias
 
-    if (channel.autoCleanup && (channel.owner?.id === req.ctx.state.alias.id || channel.members.count() === 1)) {
+    if (channel.shouldAutoCleanup(playerAlias)) {
       await em.removeAndFlush(channel)
 
       return {
@@ -162,16 +163,16 @@ export default class GameChannelAPIService extends APIService {
       }
     }
 
-    if (channel.members.getIdentifiers().includes(req.ctx.state.alias.id)) {
-      if (channel.owner?.id === req.ctx.state.alias.id) {
+    if (channel.members.getIdentifiers().includes(playerAlias.id)) {
+      if (channel.owner?.id === playerAlias.id) {
         channel.owner = null
       }
 
       await channel.sendMessageToMembers(req, 'v1.channels.player-left', {
         channel,
-        playerAlias: req.ctx.state.alias
+        playerAlias
       })
-      channel.members.remove(req.ctx.state.alias)
+      channel.members.remove(playerAlias)
 
       await em.flush()
     }

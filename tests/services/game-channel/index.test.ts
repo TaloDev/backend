@@ -178,8 +178,8 @@ describe('Game channel service - index', () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({}, organisation)
 
-    const publicChannels = await new GameChannelFactory(game).state(() => ({ private: false })).many(3)
-    const privateChannels = await new GameChannelFactory(game).state(() => ({ private: true })).many(1)
+    const publicChannels = await new GameChannelFactory(game).many(3)
+    const privateChannels = await new GameChannelFactory(game).private().many(1)
     await em.persistAndFlush([...publicChannels, ...privateChannels])
 
     const res = await request(app)

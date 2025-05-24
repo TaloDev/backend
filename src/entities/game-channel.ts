@@ -50,6 +50,9 @@ export default class GameChannel {
   props: Collection<GameChannelProp> = new Collection<GameChannelProp>(this)
 
   @Property()
+  temporaryMembership: boolean = false
+
+  @Property()
   createdAt: Date = new Date()
 
   @Property({ onUpdate: () => new Date() })
@@ -72,6 +75,10 @@ export default class GameChannel {
     this.props.set(props.map(({ key, value }) => new GameChannelProp(this, key, value)))
   }
 
+  shouldAutoCleanup(aliasToRemove: PlayerAlias) {
+    return this.autoCleanup && (this.owner?.id === aliasToRemove.id || this.members.count() <= 1)
+  }
+
   toJSON() {
     return {
       id: this.id,
@@ -81,6 +88,7 @@ export default class GameChannel {
       props: this.props.getItems().map(({ key, value }) => ({ key, value })),
       autoCleanup: this.autoCleanup,
       private: this.private,
+      temporaryMembership: this.temporaryMembership,
       createdAt: this.createdAt,
       updatedAt: this.updatedAt
     }

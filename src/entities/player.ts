@@ -13,7 +13,7 @@ import PlayerSession, { ClickHousePlayerSession } from './player-session'
 import createClickHouseClient from '../lib/clickhouse/createClient'
 import { captureException } from '@sentry/node'
 import { ClickHouseClient } from '@clickhouse/client'
-import GameChannel from './game-channel'
+import GameChannel, { GameChannelLeavingReason } from './game-channel'
 
 @Entity()
 export default class Player {
@@ -142,7 +142,7 @@ export default class Player {
     }
 
     if (!this.presence.online) {
-      await this.handleTemporaryChannels(em, playerAlias)
+      await this.handleTemporaryChannels(em, socket, playerAlias)
     }
 
     await em.flush()
@@ -161,7 +161,7 @@ export default class Player {
     })
   }
 
-  async handleTemporaryChannels(em: EntityManager, playerAlias: PlayerAlias) {
+  async handleTemporaryChannels(em: EntityManager, socket: Socket, playerAlias: PlayerAlias) {
     const temporaryChannels = await em.repo(GameChannel).find({
       members: {
         $some: {
@@ -175,6 +175,14 @@ export default class Player {
       channel.members.remove(playerAlias)
       if (channel.shouldAutoCleanup(playerAlias)) {
         em.remove(channel)
+      } else {
+        await channel.sendMessageToMembers(socket, 'v1.channels.player-left', {
+          channel,
+          playerAlias,
+          meta: {
+            reason: GameChannelLeavingReason.TEMPORARY_MEMBERSHIP
+          }
+        })
       }
     }
   }

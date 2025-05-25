@@ -90,13 +90,14 @@ export default class GameChannelService extends Service {
   @Validate({ body: [GameChannel] })
   @HasPermission(GameChannelPolicy, 'post')
   async post(req: Request): Promise<Response> {
-    const { name, props, autoCleanup, private: isPrivate, ownerAliasId } = req.body
+    const { name, props, autoCleanup, private: isPrivate, ownerAliasId, temporaryMembership } = req.body
     const em: EntityManager = req.ctx.em
 
     const channel = new GameChannel(req.ctx.state.game)
     channel.name = name
     channel.autoCleanup = autoCleanup ?? false
     channel.private = isPrivate ?? false
+    channel.temporaryMembership = temporaryMembership ?? false
 
     if (req.ctx.state.alias) {
       channel.owner = req.ctx.state.alias
@@ -143,7 +144,7 @@ export default class GameChannelService extends Service {
 
     await em.persistAndFlush(channel)
 
-    await channel.sendMessageToMembers(req, 'v1.channels.player-joined', {
+    await channel.sendMessageToMembers(req.ctx.wss, 'v1.channels.player-joined', {
       channel,
       playerAlias: req.ctx.state.alias
     })
@@ -163,7 +164,7 @@ export default class GameChannelService extends Service {
   @Validate({ body: [GameChannel] })
   @HasPermission(GameChannelPolicy, 'put')
   async put(req: Request): Promise<Response> {
-    const { name, props, ownerAliasId, autoCleanup, private: isPrivate } = req.body
+    const { name, props, ownerAliasId, autoCleanup, private: isPrivate, temporaryMembership } = req.body
     const em: EntityManager = req.ctx.em
     const channel: GameChannel = req.ctx.state.channel
 
@@ -207,7 +208,7 @@ export default class GameChannelService extends Service {
 
         channel.owner = newOwner
 
-        await channel.sendMessageToMembers(req, 'v1.channels.ownership-transferred', {
+        await channel.sendMessageToMembers(req.ctx.wss, 'v1.channels.ownership-transferred', {
           channel,
           newOwner
         })
@@ -228,10 +229,15 @@ export default class GameChannelService extends Service {
       changedProperties.push('private')
     }
 
+    if (typeof temporaryMembership === 'boolean') {
+      channel.temporaryMembership = temporaryMembership
+      changedProperties.push('temporaryMembership')
+    }
+
     // don't send this message if the only thing that changed is the owner
     // that is covered by the ownership transferred message
     if (changedProperties.length > 0 && !(changedProperties.length === 1 && changedProperties[0] === 'ownerAliasId')) {
-      await channel.sendMessageToMembers(req, 'v1.channels.updated', {
+      await channel.sendMessageToMembers(req.ctx.wss, 'v1.channels.updated', {
         channel,
         changedProperties
       })
@@ -273,7 +279,7 @@ export default class GameChannelService extends Service {
     const em: EntityManager = req.ctx.em
     const channel: GameChannel = req.ctx.state.channel
 
-    await channel.sendMessageToMembers(req, 'v1.channels.deleted', {
+    await channel.sendMessageToMembers(req.ctx.wss, 'v1.channels.deleted', {
       channel
     })
 

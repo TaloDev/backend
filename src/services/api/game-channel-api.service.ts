@@ -1,7 +1,7 @@
 import { forwardRequest, ForwardTo, HasPermission, Request, Response, Route, Validate } from 'koa-clay'
 import GameChannelAPIPolicy from '../../policies/api/game-channel-api.policy'
 import APIService from './api-service'
-import GameChannel from '../../entities/game-channel'
+import GameChannel, { GameChannelLeavingReason } from '../../entities/game-channel'
 import { EntityManager, FilterQuery } from '@mikro-orm/mysql'
 import GameChannelAPIDocs from '../../docs/game-channel-api.docs'
 import PlayerAlias from '../../entities/player-alias'
@@ -14,7 +14,7 @@ function canModifyChannel(channel: GameChannel, alias: PlayerAlias): boolean {
 async function joinChannel(req: Request, channel: GameChannel, playerAlias: PlayerAlias) {
   if (!channel.members.getIdentifiers().includes(playerAlias.id)) {
     channel.members.add(playerAlias)
-    await channel.sendMessageToMembers(req, 'v1.channels.player-joined', {
+    await channel.sendMessageToMembers(req.ctx.wss, 'v1.channels.player-joined', {
       channel,
       playerAlias
     })
@@ -153,8 +153,9 @@ export default class GameChannelAPIService extends APIService {
   async leave(req: Request): Promise<Response> {
     const em: EntityManager = req.ctx.em
     const channel: GameChannel = req.ctx.state.channel
+    const playerAlias: PlayerAlias = req.ctx.state.alias
 
-    if (channel.autoCleanup && (channel.owner?.id === req.ctx.state.alias.id || channel.members.count() === 1)) {
+    if (channel.shouldAutoCleanup(playerAlias)) {
       await em.removeAndFlush(channel)
 
       return {
@@ -162,16 +163,19 @@ export default class GameChannelAPIService extends APIService {
       }
     }
 
-    if (channel.members.getIdentifiers().includes(req.ctx.state.alias.id)) {
-      if (channel.owner?.id === req.ctx.state.alias.id) {
+    if (channel.members.getIdentifiers().includes(playerAlias.id)) {
+      if (channel.owner?.id === playerAlias.id) {
         channel.owner = null
       }
 
-      await channel.sendMessageToMembers(req, 'v1.channels.player-left', {
+      await channel.sendMessageToMembers(req.ctx.wss, 'v1.channels.player-left', {
         channel,
-        playerAlias: req.ctx.state.alias
+        playerAlias,
+        meta: {
+          reason: GameChannelLeavingReason.DEFAULT
+        }
       })
-      channel.members.remove(req.ctx.state.alias)
+      channel.members.remove(playerAlias)
 
       await em.flush()
     }

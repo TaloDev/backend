@@ -152,7 +152,7 @@ describe('Game channel service - put', () => {
     expect(res.body.channel.autoCleanup).toBe(true)
   })
 
-  it('should update private property', async () => {
+  it('should update the private property', async () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({}, organisation)
 
@@ -166,5 +166,21 @@ describe('Game channel service - put', () => {
       .expect(200)
 
     expect(res.body.channel.private).toBe(true)
+  })
+
+  it('should update the temporaryMembership property', async () => {
+    const [organisation, game] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken({}, organisation)
+
+    const channel = await new GameChannelFactory(game).state(() => ({ temporaryMembership: false })).one()
+    await em.persistAndFlush(channel)
+
+    const res = await request(app)
+      .put(`/games/${game.id}/game-channels/${channel.id}`)
+      .send({ temporaryMembership: true })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    expect(res.body.channel.temporaryMembership).toBe(true)
   })
 })

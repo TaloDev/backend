@@ -1,12 +1,17 @@
 import { Collection, Entity, EntityManager, ManyToMany, ManyToOne, OneToMany, PrimaryKey, Property } from '@mikro-orm/mysql'
 import PlayerAlias from './player-alias'
 import Game from './game'
-import { Request, Required, ValidationCondition } from 'koa-clay'
+import { Required, ValidationCondition } from 'koa-clay'
 import { devDataPlayerFilter } from '../middlewares/dev-data-middleware'
 import { sendMessages, SocketMessageResponse } from '../socket/messages/socketMessage'
 import Socket from '../socket'
 import { APIKeyScope } from './api-key'
 import GameChannelProp from './game-channel-prop'
+
+export enum GameChannelLeavingReason {
+  DEFAULT,
+  TEMPORARY_MEMBERSHIP
+}
 
 @Entity()
 export default class GameChannel {
@@ -50,6 +55,9 @@ export default class GameChannel {
   props: Collection<GameChannelProp> = new Collection<GameChannelProp>(this)
 
   @Property()
+  temporaryMembership: boolean = false
+
+  @Property()
   createdAt: Date = new Date()
 
   @Property({ onUpdate: () => new Date() })
@@ -59,8 +67,7 @@ export default class GameChannel {
     this.game = game
   }
 
-  async sendMessageToMembers<T extends object>(req: Request, res: SocketMessageResponse, data: T) {
-    const socket: Socket = req.ctx.wss
+  async sendMessageToMembers<T extends object>(socket: Socket, res: SocketMessageResponse, data: T) {
     const conns = socket.findConnections((conn) => {
       return conn.hasScope(APIKeyScope.READ_GAME_CHANNELS) &&
         this.members.getIdentifiers().includes(conn.playerAliasId)
@@ -72,6 +79,10 @@ export default class GameChannel {
     this.props.set(props.map(({ key, value }) => new GameChannelProp(this, key, value)))
   }
 
+  shouldAutoCleanup(aliasToRemove: PlayerAlias) {
+    return this.autoCleanup && (this.owner?.id === aliasToRemove.id || this.members.count() <= 1)
+  }
+
   toJSON() {
     return {
       id: this.id,
@@ -81,6 +92,7 @@ export default class GameChannel {
       props: this.props.getItems().map(({ key, value }) => ({ key, value })),
       autoCleanup: this.autoCleanup,
       private: this.private,
+      temporaryMembership: this.temporaryMembership,
       createdAt: this.createdAt,
       updatedAt: this.updatedAt
     }

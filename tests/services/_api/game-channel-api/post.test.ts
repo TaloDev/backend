@@ -24,6 +24,7 @@ describe('Game channel API service - post', () => {
     expect(res.body.channel.memberCount).toBe(1)
     expect(res.body.channel.autoCleanup).toBe(false)
     expect(res.body.channel.private).toBe(false)
+    expect(res.body.channel.temporaryMembership).toBe(false)
   })
 
   it('should not create a game channel if the scope is not valid', async () => {
@@ -143,5 +144,20 @@ describe('Game channel API service - post', () => {
       .expect(200)
 
     expect(res.body.channel.private).toBe(true)
+  })
+
+  it('should create a game channel with temporary membership', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_CHANNELS])
+    const player = await new PlayerFactory([apiKey.game]).one()
+    await em.persistAndFlush(player)
+
+    const res = await request(app)
+      .post('/v1/game-channels')
+      .send({ name: 'Guild chat', temporaryMembership: true })
+      .auth(token, { type: 'bearer' })
+      .set('x-talo-alias', String(player.aliases[0].id))
+      .expect(200)
+
+    expect(res.body.channel.temporaryMembership).toBe(true)
   })
 })

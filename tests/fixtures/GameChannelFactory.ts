@@ -17,7 +17,20 @@ export default class GameChannelFactory extends Factory<GameChannel> {
     this.state(async () => ({
       name: randText(),
       owner: (await new PlayerFactory([this.game]).one()).aliases[0],
-      game: this.game
+      game: this.game,
+      private: false
+    }))
+  }
+
+  private() {
+    return this.state(() => ({
+      private: true
+    }))
+  }
+
+  temporaryMembership(): this {
+    return this.state(() => ({
+      temporaryMembership: true
     }))
   }
 }

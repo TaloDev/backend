@@ -2741,15 +2741,16 @@
           "length": null,
           "mappedType": "integer"
         },
-        "props": {
-          "name": "props",
-          "type": "json",
+        "temporary_membership": {
+          "name": "temporary_membership",
+          "type": "tinyint(1)",
           "unsigned": false,
           "autoincrement": false,
           "primary": false,
           "nullable": false,
-          "length": null,
-          "mappedType": "json"
+          "length": 1,
+          "default": "false",
+          "mappedType": "boolean"
         },
         "created_at": {
           "name": "created_at",
@@ -2830,6 +2831,100 @@
             "id"
           ],
           "referencedTableName": "game",
+          "updateRule": "cascade"
+        }
+      },
+      "nativeEnums": {}
+    },
+    {
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "int",
+          "unsigned": true,
+          "autoincrement": true,
+          "primary": true,
+          "nullable": false,
+          "length": null,
+          "mappedType": "integer"
+        },
+        "game_channel_id": {
+          "name": "game_channel_id",
+          "type": "int",
+          "unsigned": true,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "length": null,
+          "mappedType": "integer"
+        },
+        "key": {
+          "name": "key",
+          "type": "varchar(128)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "length": 128,
+          "mappedType": "string"
+        },
+        "value": {
+          "name": "value",
+          "type": "varchar(512)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "length": 512,
+          "mappedType": "string"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "datetime",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "length": null,
+          "mappedType": "datetime"
+        }
+      },
+      "name": "game_channel_prop",
+      "indexes": [
+        {
+          "columnNames": [
+            "game_channel_id"
+          ],
+          "composite": false,
+          "keyName": "game_channel_prop_game_channel_id_index",
+          "constraint": false,
+          "primary": false,
+          "unique": false
+        },
+        {
+          "keyName": "PRIMARY",
+          "columnNames": [
+            "id"
+          ],
+          "composite": false,
+          "constraint": true,
+          "primary": true,
+          "unique": true
+        }
+      ],
+      "checks": [],
+      "foreignKeys": {
+        "game_channel_prop_game_channel_id_foreign": {
+          "constraintName": "game_channel_prop_game_channel_id_foreign",
+          "columnNames": [
+            "game_channel_id"
+          ],
+          "localTableName": "game_channel_prop",
+          "referencedColumnNames": [
+            "id"
+          ],
+          "referencedTableName": "game_channel",
+          "deleteRule": "cascade",
           "updateRule": "cascade"
         }
       },

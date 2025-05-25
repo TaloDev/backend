@@ -79,7 +79,8 @@ describe('Webhook service - subscription updated', () => {
       data: {
         object: {
           ...subscription,
-          customer: organisation.pricingPlan.stripeCustomerId
+          customer: organisation.pricingPlan.stripeCustomerId,
+          cancel_at_period_end: false
         }
       },
       api_version: '2020-08-27',
@@ -122,7 +123,8 @@ describe('Webhook service - subscription updated', () => {
       data: {
         object: {
           ...subscription,
-          customer: organisation.pricingPlan.stripeCustomerId
+          customer: organisation.pricingPlan.stripeCustomerId,
+          cancel_at_period_end: false
         }
       },
       api_version: '2020-08-27',
@@ -213,7 +215,8 @@ describe('Webhook service - subscription updated', () => {
       data: {
         object: {
           ...subscription,
-          customer: organisation.pricingPlan.stripeCustomerId
+          customer: organisation.pricingPlan.stripeCustomerId,
+          cancel_at_period_end: false
         }
       },
       api_version: '2020-08-27',

@@ -14,7 +14,7 @@ export default async function initScheduledTasks() {
     ),
     createQueue(DELETE_INACTIVE_PLAYERS, deleteInactivePlayers).upsertJobScheduler(
       `${DELETE_INACTIVE_PLAYERS}-scheduler`,
-      { pattern: '0 0 0 * * 0' },
+      { pattern: '0 0 0 1 * *' },
       { name: `${DELETE_INACTIVE_PLAYERS}-job` }
     )
   ])

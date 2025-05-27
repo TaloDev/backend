@@ -3,13 +3,13 @@ import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
 import initStripe from '../../../../src/lib/billing/initStripe'
 import { v4 } from 'uuid'
 import PricingPlanFactory from '../../../fixtures/PricingPlanFactory'
-import SendGrid from '@sendgrid/mail'
+import * as sendEmail from '../../../../src/lib/messaging/sendEmail'
 import PlanPaymentFailed from '../../../../src/emails/plan-payment-failed'
 
 const stripe = initStripe()!
 
 describe('Webhook service - invoice payment failed', () => {
-  const sendMock = vi.spyOn(SendGrid, 'send')
+  const sendMock = vi.spyOn(sendEmail, 'default')
 
   afterEach(() => {
     sendMock.mockClear()

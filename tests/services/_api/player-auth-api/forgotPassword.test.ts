@@ -4,12 +4,12 @@ import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
 import PlayerFactory from '../../../fixtures/PlayerFactory'
 import Redis from 'ioredis'
 import redisConfig from '../../../../src/config/redis.config'
-import SendGrid from '@sendgrid/mail'
+import * as sendEmail from '../../../../src/lib/messaging/sendEmail'
 import PlayerAuthActivity, { PlayerAuthActivityType } from '../../../../src/entities/player-auth-activity'
 import { randEmail } from '@ngneat/falso'
 
 describe('Player auth API service - forgot password', () => {
-  const sendMock = vi.spyOn(SendGrid, 'send')
+  const sendMock = vi.spyOn(sendEmail, 'default')
 
   afterEach(async () => {
     sendMock.mockClear()

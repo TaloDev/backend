@@ -1,9 +1,9 @@
 import request from 'supertest'
 import UserFactory from '../../../fixtures/UserFactory'
-import SendGrid from '@sendgrid/mail'
+import * as sendEmail from '../../../../src/lib/messaging/sendEmail'
 
 describe('User public service - forgot password', () => {
-  const sendMock = vi.spyOn(SendGrid, 'send')
+  const sendMock = vi.spyOn(sendEmail, 'default')
 
   afterEach(() => {
     sendMock.mockClear()

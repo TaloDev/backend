@@ -1,6 +1,16 @@
 import emailTemplate from './email-template'
 import * as Handlebars from 'handlebars'
-import { MailDataRequired } from '@sendgrid/mail'
+
+export type MailData = {
+  to: string
+  from: {
+    email: string
+    name: string
+  }
+  subject: string
+  html: string
+  attachments?: AttachmentData[]
+}
 
 export type AttachmentData = {
   content: string
@@ -43,7 +53,7 @@ export default class Mail {
     this.why = 'You are receiving this email because you have a Talo account'
   }
 
-  getConfig(): MailDataRequired {
+  getConfig(): MailData {
     const template = Handlebars.compile(this.template)
     const html = template({
       preheader: this.preheader,

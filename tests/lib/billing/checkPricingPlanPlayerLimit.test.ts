@@ -1,12 +1,12 @@
 import PlayerFactory from '../../fixtures/PlayerFactory'
 import createOrganisationAndGame from '../../utils/createOrganisationAndGame'
 import PlanUsageWarning from '../../../src/emails/plan-usage-warning-mail'
-import SendGrid from '@sendgrid/mail'
 import request from 'supertest'
 import createUserAndToken from '../../utils/createUserAndToken'
+import * as sendEmail from '../../../src/lib/messaging/sendEmail'
 
 describe('checkPricingPlanPlayerLimit', () => {
-  const sendMock = vi.spyOn(SendGrid, 'send')
+  const sendMock = vi.spyOn(sendEmail, 'default')
 
   afterEach(() => {
     sendMock.mockClear()

@@ -1,25 +1,37 @@
-import { MikroORM } from '@mikro-orm/mysql'
 import init from '../src'
-import ormConfig from '../src/config/mikro-orm.config'
+
+async function truncateTables() {
+  global.em.execute('SET FOREIGN_KEY_CHECKS = 0;')
+
+  const tables = await global.em.execute(`
+    SELECT table_name as tableName
+    FROM information_schema.tables
+    WHERE table_schema = DATABASE()
+  `)
+
+  for (const { tableName } of tables) {
+    await global.em.execute(`TRUNCATE TABLE \`${tableName}\`;`)
+  }
+
+  global.em.execute('SET FOREIGN_KEY_CHECKS = 1;')
+
+  await (global.clickhouse).command({
+    query: `TRUNCATE ALL TABLES from ${process.env.CLICKHOUSE_DB}`
+  })
+}
 
 beforeAll(async () => {
-  vi.mock('@sendgrid/mail')
+  vi.mock('nodemailer')
   vi.mock('bullmq')
   vi.stubEnv('DISABLE_SOCKET_EVENTS', '1')
-
-  const orm = await MikroORM.init(ormConfig)
-  await orm.getSchemaGenerator().clearDatabase()
-  await orm.close(true)
 
   const app = await init()
   global.app = app.callback()
   global.ctx = app.context
-  global.em = app.context.em
-
+  global.em = app.context.em.fork()
   global.clickhouse = app.context.clickhouse
-  await (global.clickhouse).command({
-    query: `TRUNCATE ALL TABLES from ${process.env.CLICKHOUSE_DB}`
-  })
+
+  await truncateTables()
 })
 
 afterAll(async () => {

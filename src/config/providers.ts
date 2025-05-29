@@ -1,5 +1,4 @@
 import Koa from 'koa'
-import SendGrid from '@sendgrid/mail'
 import * as Sentry from '@sentry/node'
 import ormConfig from './mikro-orm.config'
 import { MikroORM } from '@mikro-orm/mysql'
@@ -21,10 +20,6 @@ export default async function initProviders(app: Koa, isTest: boolean) {
   } catch (err) {
     console.error(err)
     process.exit(1)
-  }
-
-  if (process.env.SENDGRID_KEY) {
-    SendGrid.setApiKey(process.env.SENDGRID_KEY)
   }
 
   app.context.emailQueue = createEmailQueue()

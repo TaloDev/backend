@@ -3,7 +3,7 @@ import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
 import initStripe from '../../../../src/lib/billing/initStripe'
 import { v4 } from 'uuid'
 import PricingPlanFactory from '../../../fixtures/PricingPlanFactory'
-import SendGrid from '@sendgrid/mail'
+import * as sendEmail from '../../../../src/lib/messaging/sendEmail'
 import PlanUpgraded from '../../../../src/emails/plan-upgraded-mail'
 import { addDays } from 'date-fns'
 import PlanRenewed from '../../../../src/emails/plan-renewed-mail'
@@ -12,7 +12,7 @@ import PlanCancelled from '../../../../src/emails/plan-cancelled-mail'
 const stripe = initStripe()!
 
 describe('Webhook service - subscription updated', () => {
-  const sendMock = vi.spyOn(SendGrid, 'send')
+  const sendMock = vi.spyOn(sendEmail, 'default')
 
   afterEach(() => {
     sendMock.mockClear()

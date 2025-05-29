@@ -5,7 +5,7 @@ import createUserAndToken from '../../utils/createUserAndToken'
 import createOrganisationAndGame from '../../utils/createOrganisationAndGame'
 import userPermissionProvider from '../../utils/userPermissionProvider'
 import GameActivity, { GameActivityType } from '../../../src/entities/game-activity'
-import SendGrid from '@sendgrid/mail'
+import * as sendEmail from '../../../src/lib/messaging/sendEmail'
 
 describe('Data export service - post', () => {
   it.each(userPermissionProvider([
@@ -199,7 +199,7 @@ describe('Data export service - post', () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({ type: UserType.ADMIN, emailConfirmed: true }, organisation)
 
-    vi.spyOn(SendGrid, 'send').mockRejectedValueOnce(new Error())
+    vi.spyOn(sendEmail, 'default').mockRejectedValueOnce(new Error())
 
     await request(app)
       .post(`/games/${game.id}/data-exports`)

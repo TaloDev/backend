@@ -4,13 +4,13 @@ import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
 import PlayerFactory from '../../../fixtures/PlayerFactory'
 import PlayerAuthFactory from '../../../fixtures/PlayerAuthFactory'
 import bcrypt from 'bcrypt'
-import SendGrid from '@sendgrid/mail'
+import * as sendEmail from '../../../../src/lib/messaging/sendEmail'
 import Redis from 'ioredis'
 import redisConfig from '../../../../src/config/redis.config'
 import PlayerAuthActivity, { PlayerAuthActivityType } from '../../../../src/entities/player-auth-activity'
 
 describe('Player auth API service - login', () => {
-  const sendMock = vi.spyOn(SendGrid, 'send')
+  const sendMock = vi.spyOn(sendEmail, 'default')
 
   afterEach(() => {
     sendMock.mockClear()

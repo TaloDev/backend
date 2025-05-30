@@ -255,4 +255,30 @@ describe('Player API service - identify - steamworks auth', () => {
       message: 'Failed to authenticate Steamworks ticket: Invalid ticket (101)'
     })
   })
+
+  it('should catch forbidden requests', async () => {
+    const appId = randNumber({ min: 1000, max: 1_000_000 })
+    const ticket = '000validticket'
+
+    const authenticateTicketMock = vi.fn(() => [403, {}])
+    axiosMock.onGet(`https://partner.steam-api.com/ISteamUserAuth/AuthenticateUserTicket/v1?appid=${appId}&ticket=${ticket}`).reply(authenticateTicketMock)
+
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_PLAYERS, APIKeyScope.WRITE_PLAYERS])
+
+    const config = await new IntegrationConfigFactory().state(() => ({ appId })).one()
+    const integration = await new IntegrationFactory().construct(IntegrationType.STEAMWORKS, apiKey.game, config).one()
+    await em.persistAndFlush(integration)
+
+    const res = await request(app)
+      .get('/v1/players/identify')
+      .query({ service: PlayerAliasService.STEAM, identifier: ticket })
+      .auth(token, { type: 'bearer' })
+      .expect(400)
+
+    expect(authenticateTicketMock).toHaveBeenCalledTimes(1)
+
+    expect(res.body).toStrictEqual({
+      message: 'Failed to authenticate Steamworks ticket: Invalid API key'
+    })
+  })
 })

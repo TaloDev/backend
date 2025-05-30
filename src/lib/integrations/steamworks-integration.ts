@@ -512,9 +512,12 @@ export async function authenticateTicket(req: Request, integration: Integration,
   const res = await makeRequest<AuthenticateUserTicketResponse>(config, event)
   await em.persistAndFlush(event)
 
-  if (res.data.response.error) {
+  if (res.data?.response?.error) {
     const message = `Failed to authenticate Steamworks ticket: ${res.data.response.error.errordesc} (${res.data.response.error.errorcode})`
     throw new Error(message, { cause: 400 })
+  } else if (res.status === 403) {
+    // set the cause to 400 so the api doesn't return a 500
+    throw new Error('Failed to authenticate Steamworks ticket: Invalid API key', { cause: 400 })
   }
 
   const steamId = res.data.response.params!.steamid

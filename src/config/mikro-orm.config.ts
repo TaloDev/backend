@@ -19,5 +19,9 @@ export default defineConfig({
   },
   subscribers,
   metadataProvider: TsMorphMetadataProvider,
-  extensions: [Migrator]
+  extensions: [Migrator],
+  pool: {
+    min: Number(process.env.MIKRO_ORM_POOL_MIN) || 2,
+    max: Number(process.env.MIKRO_ORM_POOL_MAX) || 10
+  }
 })

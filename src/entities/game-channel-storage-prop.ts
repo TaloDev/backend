@@ -34,7 +34,7 @@ export default class GameChannelStorageProp {
     return `channel:${channelId}:storage:${propKey}`
   }
 
-  static redisExpirationSeconds = 60 * 60 // 1 hour in seconds
+  static redisExpirationSeconds = 60 * 60 // 1 hour
 
   constructor(gameChannel: GameChannel, key: string, value: string) {
     this.gameChannel = gameChannel

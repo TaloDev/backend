@@ -5,7 +5,7 @@ import PlayerFactory from '../../../fixtures/PlayerFactory'
 import GameChannelFactory from '../../../fixtures/GameChannelFactory'
 import GameChannelStoragePropFactory from '../../../fixtures/GameChannelStoragePropFactory'
 import GameChannelStorageProp from '../../../../src/entities/game-channel-storage-prop'
-import { randText } from '@ngneat/falso'
+import { randText, randWord } from '@ngneat/falso'
 import createSocketIdentifyMessage from '../../../utils/createSocketIdentifyMessage'
 import createTestSocket from '../../../utils/createTestSocket'
 import redisConfig from '../../../../src/config/redis.config'
@@ -290,5 +290,106 @@ describe('Game channel API service - putStorage', () => {
       .auth(token, { type: 'bearer' })
       .set('x-talo-alias', String(player.aliases[0].id))
       .expect(403)
+  })
+
+  it('should return a 404 if the channel does not exist', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_CHANNELS])
+    const player = await new PlayerFactory([apiKey.game]).one()
+    await em.persistAndFlush(player)
+
+    const res = await request(app)
+      .put('/v1/game-channels/999999/storage')
+      .send({
+        props: [
+          { key: 'score', value: '100' }
+        ]
+      })
+      .auth(token, { type: 'bearer' })
+      .set('x-talo-alias', String(player.aliases[0].id))
+      .expect(404)
+
+    expect(res.body).toStrictEqual({ message: 'Channel not found' })
+  })
+
+  it('should return a 404 if the player does not exist', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_CHANNELS])
+    const channel = await new GameChannelFactory(apiKey.game).one()
+    await em.persistAndFlush(channel)
+
+    const res = await request(app)
+      .put(`/v1/game-channels/${channel.id}/storage`)
+      .send({
+        props: [
+          { key: 'score', value: '100' }
+        ]
+      })
+      .auth(token, { type: 'bearer' })
+      .set('x-talo-alias', '999999')
+      .expect(404)
+
+    expect(res.body).toStrictEqual({ message: 'Player not found' })
+  })
+
+  it('should accept an empty array of props', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_CHANNELS])
+    const channel = await new GameChannelFactory(apiKey.game).one()
+    const player = await new PlayerFactory([apiKey.game]).one()
+    channel.members.add(player.aliases[0])
+    await em.persistAndFlush(channel)
+
+    const res = await request(app)
+      .put(`/v1/game-channels/${channel.id}/storage`)
+      .send({
+        props: []
+      })
+      .auth(token, { type: 'bearer' })
+      .set('x-talo-alias', String(player.aliases[0].id))
+      .expect(200)
+
+    expect(res.body.upsertedProps).toHaveLength(0)
+    expect(res.body.deletedProps).toHaveLength(0)
+    expect(res.body.failedProps).toHaveLength(0)
+  })
+
+  it('should handle mixed successes and failures when updating props', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_CHANNELS])
+
+    const channel = await new GameChannelFactory(apiKey.game).one()
+    const player = await new PlayerFactory([apiKey.game]).one()
+    channel.members.add(player.aliases[0])
+
+    const existingProp = await new GameChannelStoragePropFactory(channel).state(() => ({
+      key: randWord(),
+      value: '50',
+      createdBy: player.aliases[0],
+      lastUpdatedBy: player.aliases[0]
+    })).one()
+
+    await em.persistAndFlush([channel, existingProp])
+
+    const res = await request(app)
+      .put(`/v1/game-channels/${channel.id}/storage`)
+      .send({
+        props: [
+          { key: existingProp.key, value: randText({ charCount: 513 }) }, // will fail - value too long
+          { key: 'score', value: '100' }, // will succeed
+          { key: randText({ charCount: 129 }), value: '200' }, // will fail - key too long
+          { key: 'description', value: randText({ charCount: 513 }) } // will fail - value too long
+        ]
+      })
+      .auth(token, { type: 'bearer' })
+      .set('x-talo-alias', String(player.aliases[0].id))
+      .expect(200)
+
+    expect(res.body.upsertedProps).toHaveLength(1)
+    expect(res.body.deletedProps).toHaveLength(0)
+
+    expect(res.body.failedProps).toHaveLength(3)
+    expect(res.body.failedProps[0].error).toBe('Prop value length (513) exceeds 512 characters')
+    expect(res.body.failedProps[1].error).toBe('Prop key length (129) exceeds 128 characters')
+    expect(res.body.failedProps[2].error).toBe('Prop value length (513) exceeds 512 characters')
+
+    await em.refresh(existingProp)
+    expect(existingProp.value).toBe('50') // should remain unchanged
   })
 })

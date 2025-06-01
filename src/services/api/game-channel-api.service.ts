@@ -404,10 +404,13 @@ export default class GameChannelAPIService extends APIService {
 
       for (const existingProp of existingStorageProps) {
         const newPropValue = newPropsMap.get(existingProp.key)
+        newPropsMap.delete(existingProp.key)
+
         if (!newPropValue) {
-          // delete the existing prop
+          // delete the existing prop and track who deleted it
           em.remove(existingProp)
-          newPropsMap.delete(existingProp.key)
+          existingProp.lastUpdatedBy = req.ctx.state.alias
+          existingProp.updatedAt = new Date()
           deletedProps.push(existingProp)
           continue
         } else {
@@ -417,6 +420,7 @@ export default class GameChannelAPIService extends APIService {
             if (error instanceof PropSizeError) {
               failedProps.push({ key: existingProp.key, error: error.message })
               continue
+            /* v8 ignore next 3 */
             } else {
               throw error
             }
@@ -438,6 +442,7 @@ export default class GameChannelAPIService extends APIService {
             if (error instanceof PropSizeError) {
               failedProps.push({ key, error: error.message })
               continue
+            /* v8 ignore next 3 */
             } else {
               throw error
             }

@@ -28,15 +28,18 @@ export function sanitiseProps(props: UnsanitisedProp[], deleteNull = false, extr
     }))
 }
 
+export function testPropSize(key: string, value: string | null): void {
+  if (key.length > MAX_KEY_LENGTH) {
+    throw new PropSizeError(`Prop key length (${key.length}) exceeds ${MAX_KEY_LENGTH} characters`)
+  }
+  if (value && value.length > MAX_VALUE_LENGTH) {
+    throw new PropSizeError(`Prop value length (${value.length}) exceeds ${MAX_VALUE_LENGTH} characters`)
+  }
+}
+
 export function hardSanitiseProps(props: UnsanitisedProp[], extraFilter?: (prop: UnsanitisedProp) => boolean): Prop[] {
   return sanitiseProps(props, true, extraFilter).map((prop) => {
-    if (prop.key.length > MAX_KEY_LENGTH) {
-      throw new PropSizeError(`Prop key length (${prop.key.length}) exceeds ${MAX_KEY_LENGTH} characters`)
-    }
-    if (prop.value && prop.value.length > MAX_VALUE_LENGTH) {
-      throw new PropSizeError(`Prop value length (${prop.value.length}) exceeds ${MAX_VALUE_LENGTH} characters`)
-    }
-
+    testPropSize(prop.key, prop.value)
     return new Prop(prop.key, prop.value as string)
   })
 }

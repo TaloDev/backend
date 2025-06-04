@@ -2,17 +2,27 @@ import { forwardRequest, ForwardTo, HasPermission, Request, Response, Route, Val
 import GameChannelAPIPolicy from '../../policies/api/game-channel-api.policy'
 import APIService from './api-service'
 import GameChannel, { GameChannelLeavingReason } from '../../entities/game-channel'
-import { EntityManager, FilterQuery } from '@mikro-orm/mysql'
+import { EntityManager, FilterQuery, LockMode } from '@mikro-orm/mysql'
 import GameChannelAPIDocs from '../../docs/game-channel-api.docs'
 import PlayerAlias from '../../entities/player-alias'
 import { devDataPlayerFilter } from '../../middlewares/dev-data-middleware'
+import { createRedisConnection } from '../../config/redis.config'
+import GameChannelStorageProp from '../../entities/game-channel-storage-prop'
+import { PropSizeError } from '../../lib/errors/propSizeError'
+import { sanitiseProps, testPropSize } from '../../lib/props/sanitiseProps'
+
+type GameChannelStorageTransaction = {
+  upsertedProps: GameChannelStorageProp[]
+  deletedProps: GameChannelStorageProp[]
+  failedProps: { key: string, error: string }[]
+}
 
 function canModifyChannel(channel: GameChannel, alias: PlayerAlias): boolean {
   return channel.owner ? channel.owner.id === alias.id : false
 }
 
 async function joinChannel(req: Request, channel: GameChannel, playerAlias: PlayerAlias) {
-  if (!channel.members.getIdentifiers().includes(playerAlias.id)) {
+  if (!channel.hasMember(playerAlias.id)) {
     channel.members.add(playerAlias)
     await channel.sendMessageToMembers(req.ctx.wss, 'v1.channels.player-joined', {
       channel,
@@ -22,7 +32,6 @@ async function joinChannel(req: Request, channel: GameChannel, playerAlias: Play
     await (req.ctx.em as EntityManager).flush()
   }
 }
-
 export default class GameChannelAPIService extends APIService {
   @Route({
     method: 'GET',
@@ -163,8 +172,8 @@ export default class GameChannelAPIService extends APIService {
       }
     }
 
-    if (channel.members.getIdentifiers().includes(playerAlias.id)) {
-      if (channel.owner?.id === playerAlias.id) {
+    if (channel.hasMember(req.ctx.state.alias.id)) {
+      if (channel.owner?.id === req.ctx.state.alias.id) {
         channel.owner = null
       }
 
@@ -284,6 +293,201 @@ export default class GameChannelAPIService extends APIService {
       status: 200,
       body: {
         members
+      }
+    }
+  }
+
+  @Route({
+    method: 'GET',
+    path: '/:id/storage'
+  })
+  @Validate({
+    headers: ['x-talo-alias'],
+    query: ['propKey']
+  })
+  @HasPermission(GameChannelAPIPolicy, 'getStorage')
+  async getStorage(req: Request): Promise<Response> {
+    const { propKey } = req.query
+    const em: EntityManager = req.ctx.em
+
+    const channel: GameChannel = req.ctx.state.channel
+
+    if (!channel.hasMember(req.ctx.state.alias.id)) {
+      req.ctx.throw(403, 'This player is not a member of the channel')
+    }
+
+    let result: GameChannelStorageProp | null = null
+
+    const redis = createRedisConnection(req.ctx)
+    const cachedProp = await redis.get(GameChannelStorageProp.getRedisKey(channel.id, propKey))
+
+    if (cachedProp) {
+      return {
+        status: 200,
+        body: {
+          prop: JSON.parse(cachedProp)
+        }
+      }
+    }
+
+    result = await em.repo(GameChannelStorageProp).findOne({
+      gameChannel: channel,
+      key: propKey
+    })
+
+    if (result) {
+      await result.persistToRedis(redis)
+    }
+
+    return {
+      status: 200,
+      body: {
+        prop: result
+      }
+    }
+  }
+
+  @Route({
+    method: 'PUT',
+    path: '/:id/storage'
+  })
+  @Validate({
+    headers: ['x-talo-alias'],
+    body: {
+      props: {
+        required: true,
+        validation: async (val) => [
+          {
+            check: Array.isArray(val),
+            error: 'Props must be an array'
+          }
+        ]
+      }
+    }
+  })
+  @HasPermission(GameChannelAPIPolicy, 'putStorage')
+  async putStorage(req: Request<{ props: { key: string, value: string | null }[] }> ): Promise<Response> {
+    const { props } = req.body
+    const em: EntityManager = req.ctx.em
+
+    const channel: GameChannel = req.ctx.state.channel
+
+    if (!channel.hasMember(req.ctx.state.alias.id)) {
+      req.ctx.throw(403, 'This player is not a member of the channel')
+    }
+
+    const {
+      upsertedProps,
+      deletedProps,
+      failedProps
+    } = await em.transactional(async (em): Promise<GameChannelStorageTransaction> => {
+      const newPropsMap = new Map(sanitiseProps(props).map(({ key, value }) => [key, value]))
+
+      const upsertedProps: GameChannelStorageTransaction['upsertedProps'] = []
+      const deletedProps: GameChannelStorageTransaction['deletedProps'] = []
+      const failedProps: GameChannelStorageTransaction['failedProps'] = []
+
+      if (newPropsMap.size === 0) {
+        return {
+          upsertedProps,
+          deletedProps,
+          failedProps
+        }
+      }
+
+      const existingStorageProps = await em.repo(GameChannelStorageProp).find({
+        gameChannel: channel,
+        key: {
+          $in: Array.from(newPropsMap.keys())
+        }
+      }, { lockMode: LockMode.PESSIMISTIC_WRITE })
+
+      for (const existingProp of existingStorageProps) {
+        const newPropValue = newPropsMap.get(existingProp.key)
+        newPropsMap.delete(existingProp.key)
+
+        if (!newPropValue) {
+          // delete the existing prop and track who deleted it
+          em.remove(existingProp)
+          existingProp.lastUpdatedBy = req.ctx.state.alias
+          existingProp.updatedAt = new Date()
+          deletedProps.push(existingProp)
+          continue
+        } else {
+          try {
+            testPropSize(existingProp.key, newPropValue)
+          } catch (error) {
+            if (error instanceof PropSizeError) {
+              failedProps.push({ key: existingProp.key, error: error.message })
+              continue
+            /* v8 ignore next 3 */
+            } else {
+              throw error
+            }
+          }
+
+          // update the existing prop
+          existingProp.value = String(newPropValue)
+          existingProp.lastUpdatedBy = req.ctx.state.alias
+          newPropsMap.delete(existingProp.key)
+          upsertedProps.push(existingProp)
+        }
+      }
+
+      for (const [key, value] of newPropsMap.entries()) {
+        if (value) {
+          try {
+            testPropSize(key, value)
+          } catch (error) {
+            if (error instanceof PropSizeError) {
+              failedProps.push({ key, error: error.message })
+              continue
+            /* v8 ignore next 3 */
+            } else {
+              throw error
+            }
+          }
+
+          // create a new prop
+          const newProp = new GameChannelStorageProp(channel, key, String(value))
+          newProp.createdBy = req.ctx.state.alias
+          newProp.lastUpdatedBy = req.ctx.state.alias
+          em.persist(newProp)
+          upsertedProps.push(newProp)
+        }
+      }
+
+      await em.flush()
+
+      const redis = createRedisConnection(req.ctx)
+      for (const prop of upsertedProps) {
+        await prop.persistToRedis(redis)
+      }
+      for (const prop of deletedProps) {
+        const redisKey = GameChannelStorageProp.getRedisKey(channel.id, prop.key)
+        const expirationSeconds = GameChannelStorageProp.redisExpirationSeconds
+        await redis.set(redisKey, 'null', 'EX', expirationSeconds)
+      }
+
+      return {
+        upsertedProps,
+        deletedProps,
+        failedProps
+      }
+    })
+
+    await channel.sendMessageToMembers(req.ctx.wss, 'v1.channels.storage.updated', {
+      channel,
+      upsertedProps,
+      deletedProps
+    })
+
+    return {
+      status: 200,
+      body: {
+        upsertedProps,
+        deletedProps,
+        failedProps
       }
     }
   }

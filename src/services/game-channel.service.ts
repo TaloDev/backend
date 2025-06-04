@@ -202,7 +202,7 @@ export default class GameChannelService extends Service {
           req.ctx.throw(404, 'New owner not found')
         }
 
-        if (!channel.members.getIdentifiers().includes(newOwner.id)) {
+        if (!channel.hasMember(newOwner.id)) {
           channel.members.add(newOwner)
         }
 

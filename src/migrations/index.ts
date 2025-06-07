@@ -47,6 +47,7 @@ import { AddCascadeDeleteRules } from './20250512220859AddCascadeDeleteRules'
 import { AddPurgeAndWebsiteGameColumns } from './20250513222143AddPurgeAndWebsiteGameColumns'
 import { CreateGameChannelPropTable } from './20250518214836CreateGameChannelPropTable'
 import { AddGameChannelTemporaryMembershipColumn } from './20250522212229AddGameChannelTemporaryMembershipColumn'
+import { CreateGameChannelStoragePropTable } from './20250531223353CreateGameChannelStoragePropTable'
 
 export default [
   {
@@ -244,5 +245,9 @@ export default [
   {
     name: 'AddGameChannelTemporaryMembershipColumn',
     class: AddGameChannelTemporaryMembershipColumn
+  },
+  {
+    name: 'CreateGameChannelStoragePropTable',
+    class: CreateGameChannelStoragePropTable
   }
 ]

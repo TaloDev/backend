@@ -283,7 +283,12 @@ export default class GameChannelAPIService extends APIService {
     const em: EntityManager = req.ctx.em
     const channel: GameChannel = req.ctx.state.channel
 
+    if (!channel.hasMember(req.ctx.state.alias.id)) {
+      req.ctx.throw(403, 'This player is not a member of the channel')
+    }
+
     const members = await channel.members.loadItems({
+      refresh: true,
       where: req.ctx.state.includeDevData ? {} : {
         player: devDataPlayerFilter(em)
       }

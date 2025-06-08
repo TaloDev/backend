@@ -175,6 +175,7 @@ export default class Player {
       channel.members.remove(playerAlias)
       if (channel.shouldAutoCleanup(playerAlias)) {
         em.remove(channel)
+        await channel.sendDeletedMessage(socket)
       } else {
         await channel.sendMessageToMembers(socket, 'v1.channels.player-left', {
           channel,

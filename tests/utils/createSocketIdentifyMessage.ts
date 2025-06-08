@@ -22,11 +22,7 @@ type SocketIdentifyData = {
   token: string
 }
 
-export default async function createSocketIdentifyMessage(scopes: APIKeyScope[] = []): Promise<SocketIdentifyData> {
-  const [apiKey, token] = await createAPIKeyAndToken(scopes)
-  const player = await new PlayerFactory([apiKey.game]).one()
-  await em.persistAndFlush(player)
-
+export async function persistTestSocketTicket(apiKey: APIKey, player: Player): Promise<Pick<SocketIdentifyData, 'identifyMessage' | 'ticket'>> {
   const redis = new Redis(redisConfig)
   const ticket = await createSocketTicket(redis, apiKey, false)
   const socketToken = await player.aliases[0].createSocketToken(redis)
@@ -40,6 +36,19 @@ export default async function createSocketIdentifyMessage(scopes: APIKeyScope[] 
         socketToken
       }
     },
+    ticket
+  }
+}
+
+export default async function createSocketIdentifyMessage(scopes: APIKeyScope[] = []): Promise<SocketIdentifyData> {
+  const [apiKey, token] = await createAPIKeyAndToken(scopes)
+  const player = await new PlayerFactory([apiKey.game]).one()
+  await em.persistAndFlush(player)
+
+  const { identifyMessage, ticket } = await persistTestSocketTicket(apiKey, player)
+
+  return {
+    identifyMessage,
     ticket,
     player,
     apiKey,

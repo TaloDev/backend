@@ -90,6 +90,10 @@ export default class GameChannel {
     return this.members.getIdentifiers().includes(aliasId)
   }
 
+  async sendDeletedMessage(socket: Socket) {
+    await this.sendMessageToMembers(socket, 'v1.channels.deleted', { channel: this })
+  }
+
   toJSON() {
     return {
       id: this.id,

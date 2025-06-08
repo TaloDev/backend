@@ -66,6 +66,8 @@ describe('Game stat service - updatePlayerStat', () => {
     const [token] = await createUserAndToken({ type: UserType.ADMIN }, organisation)
 
     const stat = await new GameStatFactory([game]).state(() => ({
+      minValue: 0,
+      maxValue: 500,
       global: true,
       globalValue: 100
     })).one()

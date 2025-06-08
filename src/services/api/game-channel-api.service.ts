@@ -164,19 +164,7 @@ export default class GameChannelAPIService extends APIService {
     const channel: GameChannel = req.ctx.state.channel
     const playerAlias: PlayerAlias = req.ctx.state.alias
 
-    if (channel.shouldAutoCleanup(playerAlias)) {
-      await em.removeAndFlush(channel)
-
-      return {
-        status: 204
-      }
-    }
-
     if (channel.hasMember(req.ctx.state.alias.id)) {
-      if (channel.owner?.id === req.ctx.state.alias.id) {
-        channel.owner = null
-      }
-
       await channel.sendMessageToMembers(req.ctx.wss, 'v1.channels.player-left', {
         channel,
         playerAlias,
@@ -184,6 +172,19 @@ export default class GameChannelAPIService extends APIService {
           reason: GameChannelLeavingReason.DEFAULT
         }
       })
+
+      if (channel.shouldAutoCleanup(playerAlias)) {
+        await channel.sendDeletedMessage(req.ctx.wss)
+        await em.removeAndFlush(channel)
+
+        return {
+          status: 204
+        }
+      }
+
+      if (channel.owner?.id === req.ctx.state.alias.id) {
+        channel.owner = null
+      }
       channel.members.remove(playerAlias)
 
       await em.flush()

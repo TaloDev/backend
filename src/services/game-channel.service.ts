@@ -279,11 +279,7 @@ export default class GameChannelService extends Service {
     const em: EntityManager = req.ctx.em
     const channel: GameChannel = req.ctx.state.channel
 
-    await channel.sendMessageToMembers(req.ctx.wss, 'v1.channels.deleted', {
-      channel
-    })
-
-    await channel.members.removeAll()
+    await channel.sendDeletedMessage(req.ctx.wss)
 
     if (!req.ctx.state.user.api) {
       createGameActivity(em, {

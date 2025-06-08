@@ -1,4 +1,5 @@
 import { APIKeyScope } from '../../src/entities/api-key'
+import GameChannel from '../../src/entities/game-channel'
 import GameChannelFactory from '../fixtures/GameChannelFactory'
 import createSocketIdentifyMessage from '../utils/createSocketIdentifyMessage'
 import createTestSocket from '../utils/createTestSocket'
@@ -8,14 +9,14 @@ describe('Socket presence', () => {
     const { identifyMessage, ticket, player } = await createSocketIdentifyMessage([APIKeyScope.READ_PLAYERS])
 
     await createTestSocket(`/?ticket=${ticket}`, async (client) => {
-      client.sendJson(identifyMessage)
-      await client.expectJson((actual) => {
-        expect(actual.res).toBe('v1.players.identify.success')
-      })
+      await client.identify(identifyMessage)
 
-      await em.refresh(player)
-      expect(player.presence!.online).toBe(true)
-      expect(player.presence!.playerAlias.id).toBe(player.aliases[0].id)
+      const updatedPlayer = await em.refresh(player, { populate: ['presence'] })
+      assert(updatedPlayer)
+      assert(updatedPlayer.presence)
+
+      expect(updatedPlayer.presence.online).toBe(true)
+      expect(updatedPlayer.presence.playerAlias.id).toBe(player.aliases[0].id)
     })
   })
 
@@ -23,10 +24,7 @@ describe('Socket presence', () => {
     const { identifyMessage, ticket, player } = await createSocketIdentifyMessage([APIKeyScope.READ_PLAYERS])
 
     await createTestSocket(`/?ticket=${ticket}`, async (client) => {
-      client.sendJson(identifyMessage)
-      await client.expectJson((actual) => {
-        expect(actual.res).toBe('v1.players.identify.success')
-      })
+      await client.identify(identifyMessage)
 
       await em.refresh(player)
       expect(player.presence!.online).toBe(true)
@@ -45,10 +43,7 @@ describe('Socket presence', () => {
     await em.persistAndFlush(channel)
 
     await createTestSocket(`/?ticket=${ticket}`, async (client) => {
-      client.sendJson(identifyMessage)
-      await client.expectJson((actual) => {
-        expect(actual.res).toBe('v1.players.identify.success')
-      })
+      await client.identify(identifyMessage)
     })
 
     const refreshedChannel = await em.refreshOrFail(channel, { populate: ['members'] })
@@ -56,6 +51,8 @@ describe('Socket presence', () => {
   })
 
   it('should run auto-cleanup on temporary membership channels', async () => {
+    const sendMessageToMembersMock = vi.spyOn(GameChannel.prototype, 'sendMessageToMembers')
+
     const { identifyMessage, ticket, player } = await createSocketIdentifyMessage([APIKeyScope.READ_PLAYERS])
 
     const channel = await new GameChannelFactory(player.game)
@@ -66,13 +63,19 @@ describe('Socket presence', () => {
     await em.persistAndFlush(channel)
 
     await createTestSocket(`/?ticket=${ticket}`, async (client) => {
-      client.sendJson(identifyMessage)
-      await client.expectJson((actual) => {
-        expect(actual.res).toBe('v1.players.identify.success')
-      })
+      await client.identify(identifyMessage)
     })
 
     const refreshedChannel = await em.refresh(channel)
     expect(refreshedChannel).toBeNull()
+
+    expect(sendMessageToMembersMock).toHaveBeenCalledOnce()
+    const lastCall = sendMessageToMembersMock.mock.lastCall
+    assert(lastCall)
+
+    const [, res, data] = lastCall
+    expect(res).toBe('v1.channels.deleted')
+    assert('channel' in data)
+    expect((data.channel as GameChannel).id).toBe(channel.id)
   })
 })

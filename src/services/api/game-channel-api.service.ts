@@ -372,7 +372,7 @@ export default class GameChannelAPIService extends APIService {
     }
   })
   @HasPermission(GameChannelAPIPolicy, 'putStorage')
-  async putStorage(req: Request<{ props: { key: string, value: string | null }[] }> ): Promise<Response> {
+  async putStorage(req: Request<{ props: { key: string, value: string | null }[] }> ): Promise<Response<GameChannelStorageTransaction>> {
     const { props } = req.body
     const em: EntityManager = req.ctx.em
 

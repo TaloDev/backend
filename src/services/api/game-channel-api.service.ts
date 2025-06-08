@@ -17,6 +17,14 @@ type GameChannelStorageTransaction = {
   failedProps: { key: string, error: string }[]
 }
 
+type PutStorageRequest = {
+  props: {
+    key: string
+    value: string | null
+  }[]
+}
+type PutStorageResponse = GameChannelStorageTransaction & { channel: GameChannel }
+
 function canModifyChannel(channel: GameChannel, alias: PlayerAlias): boolean {
   return channel.owner ? channel.owner.id === alias.id : false
 }
@@ -372,7 +380,7 @@ export default class GameChannelAPIService extends APIService {
     }
   })
   @HasPermission(GameChannelAPIPolicy, 'putStorage')
-  async putStorage(req: Request<{ props: { key: string, value: string | null }[] }> ): Promise<Response<GameChannelStorageTransaction>> {
+  async putStorage(req: Request<PutStorageRequest> ): Promise<Response<PutStorageResponse>> {
     const { props } = req.body
     const em: EntityManager = req.ctx.em
 
@@ -491,6 +499,7 @@ export default class GameChannelAPIService extends APIService {
     return {
       status: 200,
       body: {
+        channel,
         upsertedProps,
         deletedProps,
         failedProps

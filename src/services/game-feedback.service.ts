@@ -5,7 +5,7 @@ import GameFeedbackPolicy from '../policies/game-feedback.policy'
 import GameFeedbackCategory from '../entities/game-feedback-category'
 import createGameActivity from '../lib/logging/createGameActivity'
 import { GameActivityType } from '../entities/game-activity'
-import { devDataPlayerFilter } from '../middlewares/dev-data-middleware'
+import { devDataPlayerFilter } from '../middleware/dev-data-middleware'
 import updateAllowedKeys from '../lib/entities/updateAllowedKeys'
 
 const itemsPerPage = 50

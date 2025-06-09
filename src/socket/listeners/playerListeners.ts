@@ -8,7 +8,7 @@ import PlayerAlias, { PlayerAliasService } from '../../entities/player-alias'
 import { SocketMessageListener } from '../router/createListener'
 import SocketError, { sendError } from '../messages/socketError'
 import { APIKeyScope } from '../../entities/api-key'
-import { validateSessionTokenJWT } from '../../middlewares/player-auth-middleware'
+import { validateSessionTokenJWT } from '../../middleware/player-auth-middleware'
 
 const playerListeners = [
   createListener(

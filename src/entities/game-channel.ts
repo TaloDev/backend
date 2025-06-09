@@ -2,7 +2,7 @@ import { Collection, Entity, EntityManager, ManyToMany, ManyToOne, OneToMany, Pr
 import PlayerAlias from './player-alias'
 import Game from './game'
 import { Required, ValidationCondition } from 'koa-clay'
-import { devDataPlayerFilter } from '../middlewares/dev-data-middleware'
+import { devDataPlayerFilter } from '../middleware/dev-data-middleware'
 import { sendMessages, SocketMessageResponse } from '../socket/messages/socketMessage'
 import Socket from '../socket'
 import { APIKeyScope } from './api-key'

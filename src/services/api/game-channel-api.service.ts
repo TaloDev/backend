@@ -5,7 +5,7 @@ import GameChannel, { GameChannelLeavingReason } from '../../entities/game-chann
 import { EntityManager, FilterQuery, LockMode } from '@mikro-orm/mysql'
 import GameChannelAPIDocs from '../../docs/game-channel-api.docs'
 import PlayerAlias from '../../entities/player-alias'
-import { devDataPlayerFilter } from '../../middlewares/dev-data-middleware'
+import { devDataPlayerFilter } from '../../middleware/dev-data-middleware'
 import { createRedisConnection } from '../../config/redis.config'
 import GameChannelStorageProp from '../../entities/game-channel-storage-prop'
 import { PropSizeError } from '../../lib/errors/propSizeError'

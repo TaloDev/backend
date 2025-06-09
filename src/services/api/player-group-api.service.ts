@@ -5,7 +5,7 @@ import PlayerGroup from '../../entities/player-group'
 import Player from '../../entities/player'
 import PlayerGroupAPIDocs from '../../docs/player-group-api.docs'
 import { EntityManager } from '@mikro-orm/mysql'
-import { devDataPlayerFilter } from '../../middlewares/dev-data-middleware'
+import { devDataPlayerFilter } from '../../middleware/dev-data-middleware'
 
 type PlayerGroupWithCountAndMembers = Pick<PlayerGroup, 'id' | 'name' | 'description' | 'rules' | 'ruleMode' | 'updatedAt'> & { count: number, members?: Player[] }
 

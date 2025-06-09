@@ -4,7 +4,7 @@ import { Service, Request, Response, Validate, HasPermission, Route } from 'koa-
 import Player from '../entities/player'
 import HeadlinePolicy from '../policies/headline.policy'
 import dateValidationSchema from '../lib/dates/dateValidationSchema'
-import { devDataPlayerFilter } from '../middlewares/dev-data-middleware'
+import { devDataPlayerFilter } from '../middleware/dev-data-middleware'
 import { formatDateForClickHouse } from '../lib/clickhouse/formatDateTime'
 import { ClickHouseClient } from '@clickhouse/client'
 

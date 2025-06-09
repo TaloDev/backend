@@ -5,7 +5,7 @@ import Game from './game'
 import Player from './player'
 import PlayerGroupRule, { PlayerGroupRuleCastType } from './player-group-rule'
 import { ruleModeValidation, rulesValidation } from '../lib/groups/rulesValidation'
-import { devDataPlayerFilter } from '../middlewares/dev-data-middleware'
+import { devDataPlayerFilter } from '../middleware/dev-data-middleware'
 
 export enum RuleMode {
   AND = '$and',

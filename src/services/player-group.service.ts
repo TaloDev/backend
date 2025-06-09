@@ -8,7 +8,7 @@ import createGameActivity from '../lib/logging/createGameActivity'
 import PlayerGroupPolicy from '../policies/player-group.policy'
 import getUserFromToken from '../lib/auth/getUserFromToken'
 import UserPinnedGroup from '../entities/user-pinned-group'
-import { devDataPlayerFilter } from '../middlewares/dev-data-middleware'
+import { devDataPlayerFilter } from '../middleware/dev-data-middleware'
 
 export default class PlayerGroupService extends Service {
   @Route({

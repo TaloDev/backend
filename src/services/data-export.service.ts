@@ -87,8 +87,7 @@ export default class DataExportService extends Service {
           content: zip.toBuffer().toString('base64'),
           filename,
           type: 'application/zip',
-          disposition: 'attachment',
-          content_id: filename
+          disposition: 'attachment'
         }
       ]), { dataExportId })
 

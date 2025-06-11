@@ -67,10 +67,9 @@ async function sendRelayEmail(emailConfig: MailData) {
     html: emailConfig.html,
     attachments: emailConfig.attachments?.map((att) => ({
       filename: att.filename,
-      content: att.content,
+      content: Buffer.from(att.content, 'base64'),
       contentType: att.type,
-      disposition: att.disposition,
-      cid: att.content_id
+      disposition: att.disposition
     }))
   })
 }

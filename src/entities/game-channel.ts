@@ -2,11 +2,12 @@ import { Collection, Entity, EntityManager, ManyToMany, ManyToOne, OneToMany, Pr
 import PlayerAlias from './player-alias'
 import Game from './game'
 import { Required, ValidationCondition } from 'koa-clay'
-import { devDataPlayerFilter } from '../middlewares/dev-data-middleware'
+import { devDataPlayerFilter } from '../middleware/dev-data-middleware'
 import { sendMessages, SocketMessageResponse } from '../socket/messages/socketMessage'
 import Socket from '../socket'
 import { APIKeyScope } from './api-key'
 import GameChannelProp from './game-channel-prop'
+import GameChannelStorageProp from './game-channel-storage-prop'
 
 export enum GameChannelLeavingReason {
   DEFAULT,
@@ -54,6 +55,9 @@ export default class GameChannel {
   @OneToMany(() => GameChannelProp, (prop) => prop.gameChannel, { eager: true, orphanRemoval: true })
   props: Collection<GameChannelProp> = new Collection<GameChannelProp>(this)
 
+  @OneToMany(() => GameChannelStorageProp, (prop) => prop.gameChannel, { orphanRemoval: true })
+  storageProps: Collection<GameChannelStorageProp> = new Collection<GameChannelStorageProp>(this)
+
   @Property()
   temporaryMembership: boolean = false
 
@@ -69,8 +73,7 @@ export default class GameChannel {
 
   async sendMessageToMembers<T extends object>(socket: Socket, res: SocketMessageResponse, data: T) {
     const conns = socket.findConnections((conn) => {
-      return conn.hasScope(APIKeyScope.READ_GAME_CHANNELS) &&
-        this.members.getIdentifiers().includes(conn.playerAliasId)
+      return conn.hasScope(APIKeyScope.READ_GAME_CHANNELS) && this.hasMember(conn.playerAliasId)
     })
     await sendMessages(conns, res, data)
   }
@@ -81,6 +84,14 @@ export default class GameChannel {
 
   shouldAutoCleanup(aliasToRemove: PlayerAlias) {
     return this.autoCleanup && (this.owner?.id === aliasToRemove.id || this.members.count() <= 1)
+  }
+
+  hasMember(aliasId: number) {
+    return this.members.getIdentifiers().includes(aliasId)
+  }
+
+  async sendDeletedMessage(socket: Socket) {
+    await this.sendMessageToMembers(socket, 'v1.channels.deleted', { channel: this })
   }
 
   toJSON() {

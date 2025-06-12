@@ -77,8 +77,7 @@ describe('Send email', () => {
           content: 'file',
           filename: 'file.zip',
           type: 'application/zip',
-          disposition: 'attachment',
-          content_id: 'file.zip'
+          disposition: 'attachment'
         }
       ]
     }
@@ -87,11 +86,10 @@ describe('Send email', () => {
 
     expect(mockTransport.sendMail).toHaveBeenCalledWith(expect.objectContaining({
       attachments: [{
-        content: 'file',
+        content: expect.any(Buffer),
         filename: 'file.zip',
         contentType: 'application/zip',
-        disposition: 'attachment',
-        cid: 'file.zip'
+        disposition: 'attachment'
       }]
     }))
   })

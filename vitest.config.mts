@@ -21,8 +21,8 @@ export default defineConfig({
         'tests',
         'src/index.ts',
         'src/config',
-        'src/middlewares/error-middleware.ts',
-        'src/middlewares/limiter-middleware.ts',
+        'src/middleware/error-middleware.ts',
+        'src/middleware/limiter-middleware.ts',
         'src/migrations',
         'src/global.d.ts',
         'src/lib/clickhouse/clickhouse-entity.ts'

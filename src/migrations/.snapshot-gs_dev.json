@@ -2858,6 +2858,176 @@
           "length": null,
           "mappedType": "integer"
         },
+        "created_by_id": {
+          "name": "created_by_id",
+          "type": "int",
+          "unsigned": true,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "length": null,
+          "mappedType": "integer"
+        },
+        "last_updated_by_id": {
+          "name": "last_updated_by_id",
+          "type": "int",
+          "unsigned": true,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "length": null,
+          "mappedType": "integer"
+        },
+        "key": {
+          "name": "key",
+          "type": "varchar(128)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "length": 128,
+          "mappedType": "string"
+        },
+        "value": {
+          "name": "value",
+          "type": "varchar(512)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "length": 512,
+          "mappedType": "string"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "datetime",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "length": null,
+          "mappedType": "datetime"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "datetime",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "length": null,
+          "mappedType": "datetime"
+        }
+      },
+      "name": "game_channel_storage_prop",
+      "indexes": [
+        {
+          "columnNames": [
+            "game_channel_id"
+          ],
+          "composite": false,
+          "keyName": "game_channel_storage_prop_game_channel_id_index",
+          "constraint": false,
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "created_by_id"
+          ],
+          "composite": false,
+          "keyName": "game_channel_storage_prop_created_by_id_index",
+          "constraint": false,
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "last_updated_by_id"
+          ],
+          "composite": false,
+          "keyName": "game_channel_storage_prop_last_updated_by_id_index",
+          "constraint": false,
+          "primary": false,
+          "unique": false
+        },
+        {
+          "keyName": "PRIMARY",
+          "columnNames": [
+            "id"
+          ],
+          "composite": false,
+          "constraint": true,
+          "primary": true,
+          "unique": true
+        }
+      ],
+      "checks": [],
+      "foreignKeys": {
+        "game_channel_storage_prop_game_channel_id_foreign": {
+          "constraintName": "game_channel_storage_prop_game_channel_id_foreign",
+          "columnNames": [
+            "game_channel_id"
+          ],
+          "localTableName": "game_channel_storage_prop",
+          "referencedColumnNames": [
+            "id"
+          ],
+          "referencedTableName": "game_channel",
+          "deleteRule": "cascade",
+          "updateRule": "cascade"
+        },
+        "game_channel_storage_prop_created_by_id_foreign": {
+          "constraintName": "game_channel_storage_prop_created_by_id_foreign",
+          "columnNames": [
+            "created_by_id"
+          ],
+          "localTableName": "game_channel_storage_prop",
+          "referencedColumnNames": [
+            "id"
+          ],
+          "referencedTableName": "player_alias",
+          "deleteRule": "cascade",
+          "updateRule": "cascade"
+        },
+        "game_channel_storage_prop_last_updated_by_id_foreign": {
+          "constraintName": "game_channel_storage_prop_last_updated_by_id_foreign",
+          "columnNames": [
+            "last_updated_by_id"
+          ],
+          "localTableName": "game_channel_storage_prop",
+          "referencedColumnNames": [
+            "id"
+          ],
+          "referencedTableName": "player_alias",
+          "deleteRule": "cascade",
+          "updateRule": "cascade"
+        }
+      },
+      "nativeEnums": {}
+    },
+    {
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "int",
+          "unsigned": true,
+          "autoincrement": true,
+          "primary": true,
+          "nullable": false,
+          "length": null,
+          "mappedType": "integer"
+        },
+        "game_channel_id": {
+          "name": "game_channel_id",
+          "type": "int",
+          "unsigned": true,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "length": null,
+          "mappedType": "integer"
+        },
         "key": {
           "name": "key",
           "type": "varchar(128)",

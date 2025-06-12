@@ -29,13 +29,13 @@ const gameChannelListeners = [
       if (!channel) {
         throw new Error('Channel not found')
       }
-      if (!channel.members.getIdentifiers().includes(conn.playerAliasId)) {
+      if (!channel.hasMember(conn.playerAliasId)) {
         throw new Error('Player not in channel')
       }
 
       const conns = socket.findConnections((conn) => {
         return conn.hasScope(APIKeyScope.READ_GAME_CHANNELS) &&
-          channel.members.getIdentifiers().includes(conn.playerAliasId)
+          channel.hasMember(conn.playerAliasId)
       })
       await sendMessages(conns, 'v1.channels.message', {
         channel,

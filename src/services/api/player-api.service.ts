@@ -12,8 +12,8 @@ import PlayerProp from '../../entities/player-prop'
 import PlayerGameStat from '../../entities/player-game-stat'
 import checkScope from '../../policies/checkScope'
 import Integration, { IntegrationType } from '../../entities/integration'
-import { validateAuthSessionToken } from '../../middlewares/player-auth-middleware'
-import { setCurrentPlayerState } from '../../middlewares/current-player-middleware'
+import { validateAuthSessionToken } from '../../middleware/player-auth-middleware'
+import { setCurrentPlayerState } from '../../middleware/current-player-middleware'
 import { createRedisConnection } from '../../config/redis.config'
 
 async function getRealIdentifier(

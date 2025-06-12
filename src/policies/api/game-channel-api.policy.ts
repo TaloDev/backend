@@ -16,13 +16,13 @@ export default class GameChannelAPIPolicy extends Policy {
     })
   }
 
-  async getChannel(req: Request, loadMembers = true): Promise<GameChannel | null> {
+  async getChannel(req: Request): Promise<GameChannel | null> {
     const em: EntityManager = this.ctx.em
     return em.getRepository(GameChannel).findOne({
       id: Number(req.params.id),
       game: this.ctx.state.game
     }, {
-      populate: loadMembers ? ['members'] : []
+      populate: ['members']
     })
   }
 
@@ -102,9 +102,32 @@ export default class GameChannelAPIPolicy extends Policy {
   }
 
   async members(req: Request): Promise<PolicyResponse> {
-    this.ctx.state.channel = await this.getChannel(req, false)
+    this.ctx.state.channel = await this.getChannel(req)
     if (!this.ctx.state.channel) return new PolicyDenial({ message: 'Channel not found' }, 404)
 
+    this.ctx.state.alias = await this.getAlias()
+    if (!this.ctx.state.alias) return new PolicyDenial({ message: 'Player not found' }, 404)
+
     return this.hasScope(APIKeyScope.READ_GAME_CHANNELS)
+  }
+
+  async getStorage(req: Request): Promise<PolicyResponse> {
+    this.ctx.state.channel = await this.getChannel(req)
+    if (!this.ctx.state.channel) return new PolicyDenial({ message: 'Channel not found' }, 404)
+
+    this.ctx.state.alias = await this.getAlias()
+    if (!this.ctx.state.alias) return new PolicyDenial({ message: 'Player not found' }, 404)
+
+    return this.hasScope(APIKeyScope.READ_GAME_CHANNELS)
+  }
+
+  async putStorage(req: Request): Promise<PolicyResponse> {
+    this.ctx.state.channel = await this.getChannel(req)
+    if (!this.ctx.state.channel) return new PolicyDenial({ message: 'Channel not found' }, 404)
+
+    this.ctx.state.alias = await this.getAlias()
+    if (!this.ctx.state.alias) return new PolicyDenial({ message: 'Player not found' }, 404)
+
+    return this.hasScope(APIKeyScope.WRITE_GAME_CHANNELS)
   }
 }

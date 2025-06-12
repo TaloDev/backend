@@ -9,13 +9,13 @@ import GameSaveAPIService from '../services/api/game-save-api.service'
 import LeaderboardAPIService from '../services/api/leaderboard-api.service'
 import EventAPIService from '../services/api/event-api.service'
 import PlayerAPIService from '../services/api/player-api.service'
-import limiterMiddleware from '../middlewares/limiter-middleware'
-import currentPlayerMiddleware from '../middlewares/current-player-middleware'
-import { apiRouteAuthMiddleware, getRouteInfo } from '../middlewares/route-middleware'
-import apiKeyMiddleware from '../middlewares/api-key-middleware'
-import playerAuthMiddleware from '../middlewares/player-auth-middleware'
+import limiterMiddleware from '../middleware/limiter-middleware'
+import currentPlayerMiddleware from '../middleware/current-player-middleware'
+import { apiRouteAuthMiddleware, getRouteInfo } from '../middleware/route-middleware'
+import apiKeyMiddleware from '../middleware/api-key-middleware'
+import playerAuthMiddleware from '../middleware/player-auth-middleware'
 import PlayerAuthAPIService from '../services/api/player-auth-api.service'
-import continunityMiddleware from '../middlewares/continunity-middleware'
+import continunityMiddleware from '../middleware/continunity-middleware'
 import PlayerGroupAPIService from '../services/api/player-group-api.service'
 import SocketTicketAPIService from '../services/api/socket-ticket-api.service'
 import PlayerPresenceAPIService from '../services/api/player-presence-api.service'
@@ -25,7 +25,7 @@ export default function configureAPIRoutes(app: Koa) {
   app.use(apiRouteAuthMiddleware)
   app.use(limiterMiddleware)
 
-  app.use(async (ctx: Context, next: Next): Promise<void> => {
+  app.use(async function apiRouteChecker(ctx: Context, next: Next): Promise<void> {
     const route = getRouteInfo(ctx)
     if (route.isAPIRoute && !route.isAPICall) ctx.throw(401)
     await next()

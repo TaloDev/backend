@@ -15,7 +15,7 @@ import LeaderboardEntry from '../entities/leaderboard-entry'
 import PlayerGameStat from '../entities/player-game-stat'
 import GameStat from '../entities/game-stat'
 import GameActivity, { GameActivityType } from '../entities/game-activity'
-import { devDataPlayerFilter } from '../middlewares/dev-data-middleware'
+import { devDataPlayerFilter } from '../middleware/dev-data-middleware'
 import DataExportReady from '../emails/data-export-ready-mail'
 import createGameActivity from '../lib/logging/createGameActivity'
 import queueEmail from '../lib/messaging/queueEmail'
@@ -87,8 +87,7 @@ export default class DataExportService extends Service {
           content: zip.toBuffer().toString('base64'),
           filename,
           type: 'application/zip',
-          disposition: 'attachment',
-          content_id: filename
+          disposition: 'attachment'
         }
       ]), { dataExportId })
 

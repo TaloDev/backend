@@ -77,18 +77,33 @@ describe('Game channel API service - leave', () => {
   })
 
   it('should delete a channel if auto cleanup is enabled the last player leaves', async () => {
-    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_CHANNELS])
+    const { identifyMessage, ticket, player, token } = await createSocketIdentifyMessage([
+      APIKeyScope.READ_PLAYERS,
+      APIKeyScope.READ_GAME_CHANNELS,
+      APIKeyScope.WRITE_GAME_CHANNELS
+    ])
 
-    const channel = await new GameChannelFactory(apiKey.game).state(() => ({ autoCleanup: true })).one()
-    const player = await new PlayerFactory([apiKey.game]).one()
+    const channel = await new GameChannelFactory(player.game).state(() => ({ autoCleanup: true })).one()
     channel.members.add(player.aliases[0])
     await em.persistAndFlush(channel)
 
-    await request(app)
-      .post(`/v1/game-channels/${channel.id}/leave`)
-      .auth(token, { type: 'bearer' })
-      .set('x-talo-alias', String(player.aliases[0].id))
-      .expect(204)
+    await createTestSocket(`/?ticket=${ticket}`, async (client) => {
+      await client.identify(identifyMessage)
+      await request(app)
+        .post(`/v1/game-channels/${channel.id}/leave`)
+        .auth(token, { type: 'bearer' })
+        .set('x-talo-alias', String(player.aliases[0].id))
+        .expect(204)
+      await client.expectJson((actual) => {
+        expect(actual.res).toBe('v1.channels.player-left')
+        expect(actual.data.channel.id).toBe(channel.id)
+        expect(actual.data.playerAlias.id).toBe(player.aliases[0].id)
+      })
+      await client.expectJson((actual) => {
+        expect(actual.res).toBe('v1.channels.deleted')
+        expect(actual.data.channel.id).toBe(channel.id)
+      })
+    })
 
     em.clear()
     expect(await em.getRepository(GameChannel).findOne(channel.id)).toBeNull()

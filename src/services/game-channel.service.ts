@@ -202,7 +202,7 @@ export default class GameChannelService extends Service {
           req.ctx.throw(404, 'New owner not found')
         }
 
-        if (!channel.members.getIdentifiers().includes(newOwner.id)) {
+        if (!channel.hasMember(newOwner.id)) {
           channel.members.add(newOwner)
         }
 
@@ -279,11 +279,7 @@ export default class GameChannelService extends Service {
     const em: EntityManager = req.ctx.em
     const channel: GameChannel = req.ctx.state.channel
 
-    await channel.sendMessageToMembers(req.ctx.wss, 'v1.channels.deleted', {
-      channel
-    })
-
-    await channel.members.removeAll()
+    await channel.sendDeletedMessage(req.ctx.wss)
 
     if (!req.ctx.state.user.api) {
       createGameActivity(em, {

@@ -16,6 +16,7 @@ describe('Game channel API service - members', () => {
     const res = await request(app)
       .get(`/v1/game-channels/${channel.id}/members`)
       .auth(token, { type: 'bearer' })
+      .set('x-talo-alias', String(player.aliases[0].id))
       .expect(200)
 
     expect(res.body.members).toHaveLength(1)
@@ -33,6 +34,7 @@ describe('Game channel API service - members', () => {
     await request(app)
       .get(`/v1/game-channels/${channel.id}/members`)
       .auth(token, { type: 'bearer' })
+      .set('x-talo-alias', String(player.aliases[0].id))
       .expect(403)
   })
 
@@ -50,14 +52,15 @@ describe('Game channel API service - members', () => {
   it('should not return dev build players without the dev data header', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_GAME_CHANNELS])
 
-    const channel = await new GameChannelFactory(apiKey.game).one()
     const player = await new PlayerFactory([apiKey.game]).devBuild().one()
+    const channel = await new GameChannelFactory(apiKey.game).one()
     channel.members.add(player.aliases[0])
     await em.persistAndFlush([channel, player])
 
     const res = await request(app)
       .get(`/v1/game-channels/${channel.id}/members`)
       .auth(token, { type: 'bearer' })
+      .set('x-talo-alias', String(player.aliases[0].id))
       .expect(200)
 
     expect(res.body.members).toHaveLength(0)
@@ -74,10 +77,41 @@ describe('Game channel API service - members', () => {
     const res = await request(app)
       .get(`/v1/game-channels/${channel.id}/members`)
       .auth(token, { type: 'bearer' })
+      .set('x-talo-alias', String(player.aliases[0].id))
       .set('x-talo-include-dev-data', '1')
       .expect(200)
 
     expect(res.body.members).toHaveLength(1)
     expect(res.body.members[0].id).toBe(player.aliases[0].id)
+  })
+
+  it('should return 404 if the player does not exist', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_GAME_CHANNELS])
+
+    const channel = await new GameChannelFactory(apiKey.game).one()
+    await em.persistAndFlush(channel)
+
+    const res = await request(app)
+      .get(`/v1/game-channels/${channel.id}/members`)
+      .auth(token, { type: 'bearer' })
+      .expect(404)
+
+    expect(res.body).toStrictEqual({ message: 'Player not found' })
+  })
+
+  it('should not return members if the player is not in the channel', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_GAME_CHANNELS])
+
+    const channel = await new GameChannelFactory(apiKey.game).one()
+    const player = await new PlayerFactory([apiKey.game]).one()
+    await em.persistAndFlush([channel, player])
+
+    const res = await request(app)
+      .get(`/v1/game-channels/${channel.id}/members`)
+      .auth(token, { type: 'bearer' })
+      .set('x-talo-alias', String(player.aliases[0].id))
+      .expect(403)
+
+    expect(res.body).toStrictEqual({ message: 'This player is not a member of the channel' })
   })
 })

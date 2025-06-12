@@ -2,16 +2,16 @@ import 'dotenv/config'
 import Koa from 'koa'
 import logger from 'koa-logger'
 import bodyParser from 'koa-bodyparser'
-import helmet from 'koa-helmet'
 import configureProtectedRoutes from './config/protected-routes'
 import configurePublicRoutes from './config/public-routes'
 import configureAPIRoutes from './config/api-routes'
-import corsMiddleware from './middlewares/cors-middleware'
-import errorMiddleware from './middlewares/error-middleware'
+import corsMiddleware from './middleware/cors-middleware'
+import errorMiddleware from './middleware/error-middleware'
 import initProviders from './config/providers'
-import devDataMiddleware from './middlewares/dev-data-middleware'
-import cleanupMiddleware from './middlewares/cleanup-middleware'
-import requestContextMiddleware from './middlewares/request-context-middleware'
+import devDataMiddleware from './middleware/dev-data-middleware'
+import cleanupMiddleware from './middleware/cleanup-middleware'
+import requestContextMiddleware from './middleware/request-context-middleware'
+import helmetMiddleware from './middleware/helmet-middleware'
 import { createServer } from 'http'
 import Socket from './socket'
 
@@ -25,7 +25,7 @@ export default async function init(): Promise<Koa> {
   if (!isTest) app.use(logger())
   app.use(errorMiddleware)
   app.use(bodyParser())
-  app.use(helmet())
+  app.use(helmetMiddleware)
   app.use(corsMiddleware)
   app.use(devDataMiddleware)
   app.use(requestContextMiddleware)

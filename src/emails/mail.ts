@@ -17,7 +17,6 @@ export type AttachmentData = {
   filename: string
   type?: string
   disposition?: string
-  content_id?: string
 }
 
 export default class Mail {

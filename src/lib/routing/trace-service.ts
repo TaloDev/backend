@@ -5,7 +5,7 @@ import { SERVICE_ROUTES, Routes, Service } from 'koa-clay'
 export function TraceService() {
   return function <T extends { new (): Service }>(constructor: T) {
     const prototype = constructor.prototype
-    const routes: Routes = Reflect.get(prototype, SERVICE_ROUTES) || []
+    const routes: Routes = Reflect.get(prototype, SERVICE_ROUTES)
 
     routes.forEach((routeConfig) => {
       const handlerName = routeConfig.handler
@@ -20,10 +20,9 @@ export function TraceService() {
             try {
               const result = await originalMethod.apply(this, args)
               span.setStatus({ code: SpanStatusCode.OK })
-              return result // Return the result of the original method.
+              return result
             } catch (error) {
-              const errorMessage = error instanceof Error ? error.message : 'Unknown error'
-              span.setStatus({ code: SpanStatusCode.ERROR, message: errorMessage })
+              span.setStatus({ code: SpanStatusCode.ERROR, message: (error as Error).message })
               throw error
             } finally {
               span.end()

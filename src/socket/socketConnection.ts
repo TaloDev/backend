@@ -12,6 +12,8 @@ import { SocketMessageResponse } from './messages/socketMessage'
 import { logResponse } from './messages/socketLogger'
 import { SocketErrorCode } from './messages/socketError'
 import SocketTicket from './socketTicket'
+import { setTraceAttributes } from '@hyperdx/node-opentelemetry'
+import { getSocketTracer } from './socketTracer'
 
 export default class SocketConnection {
   alive: boolean = true
@@ -79,25 +81,35 @@ export default class SocketConnection {
   }
 
   async sendMessage<T extends object>(res: SocketMessageResponse, data: T): Promise<void> {
-    if (this.ws.readyState === this.ws.OPEN) {
-      const message = JSON.stringify({
-        res,
-        data
-      })
+    await getSocketTracer().startActiveSpan('socket.send_message', async (span) => {
+      if (this.ws.readyState === this.ws.OPEN) {
+        const devBuild = this.isDevBuild()
+        const message = JSON.stringify({
+          res,
+          data
+        })
 
-      logResponse(this, res, message)
+        setTraceAttributes({
+          'socket.message_receiver.alias_id': this.playerAliasId,
+          'socket.message_receiver.dev_build': devBuild
+        })
 
-      await this.wss.trackEvent('message', {
-        eventType: res,
-        reqOrRes: 'res',
-        code: 'errorCode' in data ? (data.errorCode as SocketErrorCode) : null,
-        gameId: this.game.id,
-        playerAliasId: this.playerAliasId,
-        devBuild: this.isDevBuild()
-      })
+        logResponse(this, res, message)
 
-      this.ws.send(message)
-    }
+        await this.wss.trackEvent('message', {
+          eventType: res,
+          reqOrRes: 'res',
+          code: 'errorCode' in data ? (data.errorCode as SocketErrorCode) : null,
+          gameId: this.game.id,
+          playerAliasId: this.playerAliasId,
+          devBuild: devBuild
+        })
+
+        this.ws.send(message)
+      }
+
+      span.end()
+    })
   }
 
   async handleClosed(): Promise<void> {

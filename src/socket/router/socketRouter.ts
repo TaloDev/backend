@@ -10,6 +10,8 @@ import { APIKeyScope } from '../../entities/api-key'
 import playerListeners from '../listeners/playerListeners'
 import gameChannelListeners from '../listeners/gameChannelListeners'
 import { logRequest } from '../messages/socketLogger'
+import { SpanStatusCode } from '@opentelemetry/api'
+import { getSocketTracer } from '../socketTracer'
 
 const socketMessageValidator = z.object({
   req: z.enum(requests),
@@ -27,40 +29,48 @@ export default class SocketRouter {
   constructor(readonly wss: Socket) { }
 
   async handleMessage(conn: SocketConnection, rawData: RawData): Promise<void> {
-    logRequest(conn, rawData.toString())
+    await getSocketTracer().startActiveSpan('socket.message_received', async (span) => {
+      logRequest(conn, rawData.toString())
 
-    addBreadcrumb({
-      category: 'message',
-      message: rawData.toString(),
-      level: 'info'
+      addBreadcrumb({
+        category: 'message',
+        message: rawData.toString(),
+        level: 'info'
+      })
+
+      const rateLimitExceeded = await conn.checkRateLimitExceeded()
+      if (rateLimitExceeded) {
+        if (conn.rateLimitWarnings > 3) {
+          await this.wss.closeConnection(conn.getSocket(), { code: 1008, reason: 'RATE_LIMIT_EXCEEDED' })
+        } else {
+          await sendError(conn, 'unknown', new SocketError('RATE_LIMIT_EXCEEDED', 'Rate limit exceeded'))
+        }
+        return
+      }
+
+      let message: SocketMessage | null = null
+
+      try {
+        message = await socketMessageValidator.parseAsync(JSON.parse(rawData.toString()))
+
+        const handled = await this.routeMessage(conn, message)
+        if (!handled) {
+          await sendError(conn, message.req, new SocketError('UNHANDLED_REQUEST', 'Request not handled'))
+          span.setStatus({ code: SpanStatusCode.ERROR })
+        } else {
+          span.setStatus({ code: SpanStatusCode.OK })
+        }
+      } catch (err) {
+        if (err instanceof ZodError) {
+          await sendError(conn, 'unknown', new SocketError('INVALID_MESSAGE', 'Invalid message request', rawData.toString()))
+        } else {
+          await sendError(conn, message?.req ?? 'unknown', new SocketError('ROUTING_ERROR', 'An error occurred while routing the message'))
+        }
+        span.setStatus({ code: SpanStatusCode.ERROR })
+      } finally {
+        span.end()
+      }
     })
-
-    const rateLimitExceeded = await conn.checkRateLimitExceeded()
-    if (rateLimitExceeded) {
-      if (conn.rateLimitWarnings > 3) {
-        await this.wss.closeConnection(conn.getSocket(), { code: 1008, reason: 'RATE_LIMIT_EXCEEDED' })
-      } else {
-        await sendError(conn, 'unknown', new SocketError('RATE_LIMIT_EXCEEDED', 'Rate limit exceeded'))
-      }
-      return
-    }
-
-    let message: SocketMessage | null = null
-
-    try {
-      message = await socketMessageValidator.parseAsync(JSON.parse(rawData.toString()))
-
-      const handled = await this.routeMessage(conn, message)
-      if (!handled) {
-        await sendError(conn, message.req, new SocketError('UNHANDLED_REQUEST', 'Request not handled'))
-      }
-    } catch (err) {
-      if (err instanceof ZodError) {
-        await sendError(conn, 'unknown', new SocketError('INVALID_MESSAGE', 'Invalid message request', rawData.toString()))
-      } else {
-        await sendError(conn, message?.req ?? 'unknown', new SocketError('ROUTING_ERROR', 'An error occurred while routing the message'))
-      }
-    }
   }
 
   async routeMessage(conn: SocketConnection, message: SocketMessage): Promise<boolean> {

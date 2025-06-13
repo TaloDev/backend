@@ -15,6 +15,7 @@ import Integration, { IntegrationType } from '../../entities/integration'
 import { validateAuthSessionToken } from '../../middleware/player-auth-middleware'
 import { setCurrentPlayerState } from '../../middleware/current-player-middleware'
 import { createRedisConnection } from '../../config/redis.config'
+import { TraceService } from '../../lib/routing/trace-service'
 
 async function getRealIdentifier(
   req: Request,
@@ -82,6 +83,7 @@ function validateIdentifyQueryParam(param: 'service' | 'identifier') {
   ]
 }
 
+@TraceService()
 export default class PlayerAPIService extends APIService {
   @Route({
     method: 'GET',

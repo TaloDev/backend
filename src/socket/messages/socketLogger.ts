@@ -1,3 +1,4 @@
+import { setTraceAttributes } from '@hyperdx/node-opentelemetry'
 import SocketConnection from '../socketConnection'
 import { SocketMessageResponse } from './socketMessage'
 import { IncomingMessage } from 'http'
@@ -6,15 +7,8 @@ function canLog(): boolean {
   return process.env.NODE_ENV !== 'test'
 }
 
-function getSocketUrl(conn: SocketConnection | undefined): string {
-  if (!conn) {
-    return 'WSS /'
-  }
-  return `WSS /games/${conn.game.id}/${conn.playerAliasId ? `aliases/${conn.playerAliasId}/` : ''}`
-}
-
 function getSize(message: string): string {
-  return `${Buffer.byteLength(message)}b`
+  return Buffer.byteLength(message).toString()
 }
 
 export function logRequest(conn: SocketConnection, message: string) {
@@ -28,7 +22,13 @@ export function logRequest(conn: SocketConnection, message: string) {
   } catch {
     req = 'unknown'
   } finally {
-    console.log(`  <-- ${getSocketUrl(conn)}{${req}} ${conn.getRemoteAddress()} ${getSize(message)}`)
+    setTraceAttributes({
+      'socket.ip': conn.getRemoteAddress(),
+      'socket.message.req': req,
+      'socket.message.size': getSize(message)
+    })
+
+    console.info(`--> WSS ${req}`)
   }
 }
 
@@ -37,7 +37,13 @@ export function logResponse(conn: SocketConnection, res: SocketMessageResponse, 
     return
   }
 
-  console.log(`  --> ${getSocketUrl(conn)}{${res}} ${conn.getRemoteAddress()} ${getSize(message)}`)
+  setTraceAttributes({
+    'socket.ip': conn.getRemoteAddress(),
+    'socket.message.res': res,
+    'socket.message.size': getSize(message)
+  })
+
+  console.info(`<-- WSS ${res}`)
 }
 
 export function logConnection(req: IncomingMessage) {
@@ -45,17 +51,25 @@ export function logConnection(req: IncomingMessage) {
     return
   }
 
-  console.log(`  <-- WSS /open ${req.socket.remoteAddress}`)
+  setTraceAttributes({
+    'socket.ip': req.socket.remoteAddress
+  })
+
+  console.info('--> WSS open')
 }
 
-export function logConnectionClosed(conn: SocketConnection | undefined, preclosed: boolean, code: number, reason?: string) {
+export function logConnectionClosed(conn: SocketConnection | undefined, preclosed: boolean, code: number = -1, reason?: string) {
   if (!canLog()) {
     return
   }
 
-  const direction = preclosed ? '<--' : '-->'
-  const ip = conn?.getRemoteAddress() ?? 'unknown'
-  const displayCode = preclosed ? '' : code
-  const displayReason = reason ?? ''
-  console.log(`  ${direction} ${getSocketUrl(conn)}close ${ip} ${displayCode} ${displayReason}`.trimEnd())
+  setTraceAttributes({
+    'socket.ip': conn?.getRemoteAddress() ?? 'unknown',
+    'socket.pre_closed': preclosed ? 'true' : 'false',
+    'socket.close_code': code,
+    'socket.close_reason': reason
+  })
+
+  const direction = preclosed ? '-->' : '<--'
+  console.info(`${direction} WSS close`)
 }

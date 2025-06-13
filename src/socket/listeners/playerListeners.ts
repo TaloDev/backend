@@ -9,6 +9,7 @@ import { SocketMessageListener } from '../router/createListener'
 import SocketError, { sendError } from '../messages/socketError'
 import { APIKeyScope } from '../../entities/api-key'
 import { validateSessionTokenJWT } from '../../middleware/player-auth-middleware'
+import { setTraceAttributes } from '@hyperdx/node-opentelemetry'
 
 const playerListeners = [
   createListener(
@@ -55,6 +56,13 @@ const playerListeners = [
         await sendError(conn, req, new SocketError('INVALID_SOCKET_TOKEN', 'Invalid socket token'))
         return
       }
+
+      setTraceAttributes({
+        'socket.connection.game_id': alias.player.game.id,
+        'socket.connection.player_id': alias.player.id,
+        'socket.connection.alias_id': alias.id,
+        'socket.connection.dev_build': conn.isDevBuild()
+      })
 
       conn.playerAliasId = alias.id
       await sendMessage(conn, 'v1.players.identify.success', alias)

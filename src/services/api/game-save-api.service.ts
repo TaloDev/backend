@@ -5,11 +5,13 @@ import GameSave from '../../entities/game-save'
 import { EntityManager } from '@mikro-orm/mysql'
 import GameSaveAPIDocs from '../../docs/game-save-api.docs'
 import handleSQLError from '../../lib/errors/handleSQLError'
+import { TraceService } from '../../lib/routing/trace-service'
 
 function decodeContent(content: unknown) {
   return typeof content === 'string' ? JSON.parse(content) : content
 }
 
+@TraceService()
 export default class GameSaveAPIService extends APIService {
   @Route({
     method: 'GET',

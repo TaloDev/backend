@@ -1,6 +1,7 @@
 import { Context, Next } from 'koa'
 import * as Sentry from '@sentry/node'
 import Redis from 'ioredis'
+import { recordException as hdxRecordException } from '@hyperdx/node-opentelemetry'
 
 export default async function errorMiddleware(ctx: Context, next: Next) {
   try {
@@ -17,6 +18,8 @@ export default async function errorMiddleware(ctx: Context, next: Next) {
       }
 
       if (ctx.status === 500) {
+        hdxRecordException(err)
+
         Sentry.withScope((scope) => {
           scope.addEventProcessor((event) => {
             return Sentry.addRequestDataToEvent(event, ctx.request as Sentry.PolymorphicRequest)

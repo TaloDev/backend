@@ -1,6 +1,7 @@
 import 'dotenv/config'
+import { init as initHyperDX } from '@hyperdx/node-opentelemetry'
 import Koa from 'koa'
-import logger from 'koa-logger'
+import loggerMiddleware from './middleware/logger-middleware'
 import bodyParser from 'koa-bodyparser'
 import configureProtectedRoutes from './config/protected-routes'
 import configurePublicRoutes from './config/public-routes'
@@ -16,13 +17,18 @@ import { createServer } from 'http'
 import Socket from './socket'
 
 const isTest = process.env.NODE_ENV === 'test'
+if (!isTest) {
+  initHyperDX({
+    service: 'talo'
+  })
+}
 
 export default async function init(): Promise<Koa> {
   const app = new Koa()
 
   await initProviders(app, isTest)
 
-  if (!isTest) app.use(logger())
+  if (!isTest) app.use(loggerMiddleware)
   app.use(errorMiddleware)
   app.use(bodyParser())
   app.use(helmetMiddleware)

@@ -7,7 +7,9 @@ import dateValidationSchema from '../lib/dates/dateValidationSchema'
 import { devDataPlayerFilter } from '../middleware/dev-data-middleware'
 import { formatDateForClickHouse } from '../lib/clickhouse/formatDateTime'
 import { ClickHouseClient } from '@clickhouse/client'
+import { TraceService } from '../lib/routing/trace-service'
 
+@TraceService()
 export default class HeadlineService extends Service {
   @Route({
     method: 'GET',

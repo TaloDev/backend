@@ -133,7 +133,7 @@ describe('Send email', () => {
     await sendEmail(email.getConfig())
 
     expect(mockTransport.sendMail).not.toHaveBeenCalled()
-    expect(consoleSpy).toHaveBeenCalledTimes(2) // once for metadata, once for HTML
+    expect(consoleSpy).toHaveBeenCalledOnce()
     expect(consoleSpy).toHaveBeenCalledWith('New mail:', expect.any(String))
 
     consoleSpy.mockRestore()
@@ -149,7 +149,7 @@ describe('Send email', () => {
     await sendEmail(email.getConfig())
 
     expect(mockTransport.sendMail).not.toHaveBeenCalled()
-    expect(consoleSpy).toHaveBeenCalledTimes(2) // once for metadata, once for HTML
+    expect(consoleSpy).toHaveBeenCalledOnce()
     expect(consoleSpy).toHaveBeenCalledWith('New mail:', expect.any(String))
 
     consoleSpy.mockRestore()

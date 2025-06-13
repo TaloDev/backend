@@ -5,7 +5,9 @@ import Invite from '../entities/invite'
 import Organisation from '../entities/organisation'
 import User from '../entities/user'
 import OrganisationPolicy from '../policies/organisation.policy'
+import { TraceService } from '../lib/routing/trace-service'
 
+@TraceService()
 export default class OrganisationService extends Service {
   @Route({
     method: 'GET',

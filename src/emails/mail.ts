@@ -1,6 +1,15 @@
 import emailTemplate from './email-template'
 import * as Handlebars from 'handlebars'
 
+export type EmailConfigMetadata = {
+  [key: string]: string | number
+}
+
+export type EmailConfig = {
+  mail: MailData
+  metadata?: EmailConfigMetadata
+}
+
 export type MailData = {
   to: string
   from: {
@@ -9,6 +18,16 @@ export type MailData = {
   }
   subject: string
   html: string
+  templateData: {
+    preheader: string
+    title: string
+    mainText: string
+    ctaLink: string
+    ctaText: string
+    footer: string
+    footerText: string
+    why: string
+  }
   attachments?: AttachmentData[]
 }
 
@@ -54,7 +73,7 @@ export default class Mail {
 
   getConfig(): MailData {
     const template = Handlebars.compile(this.template)
-    const html = template({
+    const templateData = {
       preheader: this.preheader,
       title: this.title,
       mainText: this.mainText,
@@ -63,7 +82,9 @@ export default class Mail {
       footer: this.footer,
       footerText: this.footerText,
       why: this.why
-    })
+    }
+
+    const html = template(templateData)
 
     return {
       to: this.to,
@@ -73,6 +94,7 @@ export default class Mail {
       },
       subject: this.subject,
       html,
+      templateData,
       attachments: this.attachments
     }
   }

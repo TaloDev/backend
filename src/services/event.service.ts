@@ -4,6 +4,7 @@ import { endOfDay } from 'date-fns'
 import dateValidationSchema from '../lib/dates/dateValidationSchema'
 import { formatDateForClickHouse } from '../lib/clickhouse/formatDateTime'
 import { ClickHouseClient } from '@clickhouse/client'
+import { TraceService } from '../lib/routing/trace-service'
 
 type EventData = {
   name: string
@@ -35,6 +36,7 @@ type AggregatedClickHouseEventProps = {
 //   ]
 // }
 
+@TraceService()
 export default class EventService extends Service {
   @Route({
     method: 'GET'

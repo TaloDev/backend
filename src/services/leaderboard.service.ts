@@ -10,6 +10,7 @@ import { devDataPlayerFilter } from '../middleware/dev-data-middleware'
 import LeaderboardPolicy from '../policies/leaderboard.policy'
 import { archiveEntriesForLeaderboard } from '../tasks/archiveLeaderboardEntries'
 import updateAllowedKeys from '../lib/entities/updateAllowedKeys'
+import { TraceService } from '../lib/routing/trace-service'
 
 async function getGlobalEntryIds({
   em,
@@ -65,6 +66,8 @@ async function getGlobalEntryIds({
 
   return []
 }
+
+@TraceService()
 export default class LeaderboardService extends Service {
   @Route({
     method: 'GET'

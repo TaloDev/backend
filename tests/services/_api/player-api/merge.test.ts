@@ -9,6 +9,7 @@ import PlayerGameStatFactory from '../../../fixtures/PlayerGameStatFactory'
 import GameStatFactory from '../../../fixtures/GameStatFactory'
 import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
 import Player from '../../../../src/entities/player'
+import PlayerSession from '../../../../src/entities/player-session'
 
 describe('Player API service - merge', () => {
   it('should not merge with no scopes', async () => {
@@ -230,6 +231,41 @@ describe('Player API service - merge', () => {
 
     expect(res.body).toStrictEqual({
       message: `Player ${player2.id} has authentication enabled and cannot be merged`
+    })
+  })
+
+  it('should delete player2\'s sessions', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_PLAYERS, APIKeyScope.WRITE_PLAYERS])
+
+    const player1 = await new PlayerFactory([apiKey.game]).one()
+    const player2 = await new PlayerFactory([apiKey.game]).one()
+
+    await em.persistAndFlush([player1, player2])
+
+    await clickhouse.insert({
+      table: 'player_sessions',
+      values: new Array(10).map((_) => {
+        const session = new PlayerSession()
+        session.construct(player2)
+        return session.toInsertable()
+      }),
+      format: 'JSONEachRow'
+    })
+
+    await request(app)
+      .post('/v1/players/merge')
+      .send({ playerId1: player1.id, playerId2: player2.id })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    await vi.waitUntil(async () => {
+      const updatedPlayerSessionsCount = await clickhouse.query({
+        query: 'SELECT count() as count FROM player_sessions',
+        format: 'JSONEachRow'
+      }).then((res) => res.json<{ count: string }>())
+        .then((res) => Number(res[0].count))
+
+      return updatedPlayerSessionsCount === 0
     })
   })
 })

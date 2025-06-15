@@ -3,7 +3,9 @@ import GameConfigAPIPolicy from '../../policies/api/game-config-api.policy'
 import APIService from './api-service'
 import { EntityManager } from '@mikro-orm/mysql'
 import GameConfigAPIDocs from '../../docs/game-config-api.docs'
+import { TraceService } from '../../lib/tracing/trace-service'
 
+@TraceService()
 export default class GameConfigAPIService extends APIService {
   @Route({
     method: 'GET',

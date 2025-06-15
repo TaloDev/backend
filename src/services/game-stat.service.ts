@@ -8,7 +8,9 @@ import handleSQLError from '../lib/errors/handleSQLError'
 import PlayerGameStat from '../entities/player-game-stat'
 import triggerIntegrations from '../lib/integrations/triggerIntegrations'
 import updateAllowedKeys from '../lib/entities/updateAllowedKeys'
+import { TraceService } from '../lib/tracing/trace-service'
 
+@TraceService()
 export default class GameStatService extends Service {
   @Route({
     method: 'GET'

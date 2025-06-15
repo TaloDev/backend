@@ -9,7 +9,9 @@ import Prop from '../../entities/prop'
 import { ClickHouseClient } from '@clickhouse/client'
 import { PropSizeError } from '../../lib/errors/propSizeError'
 import { isValid } from 'date-fns'
+import { TraceService } from '../../lib/tracing/trace-service'
 
+@TraceService()
 export default class EventAPIService extends APIService {
   @Route({
     method: 'POST',

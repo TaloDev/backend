@@ -1,45 +1,58 @@
 import nodemailer from 'nodemailer'
 import { MailData } from '../../emails/mail'
-import * as Sentry from '@sentry/node'
+import { captureException } from '@sentry/node'
+import { SpanStatusCode, trace } from '@opentelemetry/api'
+import { setTraceAttributes } from '@hyperdx/node-opentelemetry'
 
 type MailDriver = 'relay' | 'log'
 
-export type EmailConfigMetadata = {
-  [key: string]: string | number
-}
-
-export type EmailConfig = {
-  mail: MailData
-  metadata?: EmailConfigMetadata
-}
-
 export default async function sendEmail(emailConfig: MailData): Promise<void> {
-  try {
-    const driver = process.env.EMAIL_DRIVER as MailDriver | undefined
-    if (!driver || driver === 'log') {
-      sendLogEmail(emailConfig)
-    } else if (driver === 'relay') {
-      await sendRelayEmail(emailConfig)
-    } else {
-      throw new Error(`Unknown email driver: ${driver}. Supported drivers are 'relay' and 'log'.`)
-    }
-  } catch (err) {
-    Sentry.captureException(err, {
-      extra: {
-        to: emailConfig.to,
-        subject: emailConfig.subject,
-        attachments: emailConfig.attachments?.map((attachment) => attachment.filename)
-      }
-    })
+  const tracer = trace.getTracer('talo.email')
+  await tracer.startActiveSpan('send_email', async (span) => {
+    const templateData = (Object.entries(emailConfig.templateData).reduce((acc, [key, value]) => ({
+      ...acc,
+      [`email.template_data.${key}`]: value
+    }), {}))
 
-    throw err
-  }
+    setTraceAttributes({
+      'email.recipient': emailConfig.to,
+      'email.subject': emailConfig.subject,
+      ...templateData
+    })
+    console.info('Sending mail')
+
+    try {
+      const driver = process.env.EMAIL_DRIVER as MailDriver | undefined
+      if (!driver || driver === 'log') {
+        sendLogEmail(emailConfig)
+      } else if (driver === 'relay') {
+        await sendRelayEmail(emailConfig)
+      } else {
+        throw new Error(`Unknown email driver: ${driver}. Supported drivers are 'relay' and 'log'.`)
+      }
+
+      span.setStatus({ code: SpanStatusCode.OK })
+    } catch (err) {
+      span.setStatus({ code: SpanStatusCode.ERROR, message: (err as Error).message })
+
+      captureException(err, {
+        extra: {
+          to: emailConfig.to,
+          subject: emailConfig.subject,
+          attachments: emailConfig.attachments?.map((attachment) => attachment.filename)
+        }
+      })
+
+      throw err
+    } finally {
+      span.end()
+    }
+  })
 }
 
 function sendLogEmail(emailConfig: MailData): void {
-  const { html, ...rest } = emailConfig
+  const { html: _, ...rest } = emailConfig
   console.log('New mail:', JSON.stringify(rest, null, 2))
-  console.log(html)
 }
 
 async function sendRelayEmail(emailConfig: MailData) {

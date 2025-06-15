@@ -1,4 +1,5 @@
 import SocketConnection from '../socketConnection'
+import { getSocketTracer } from '../socketTracer'
 
 export const requests = [
   'v1.players.identify',
@@ -29,5 +30,8 @@ export async function sendMessage<T extends object>(conn: SocketConnection, res:
 }
 
 export async function sendMessages<T extends object>(conns: SocketConnection[], type: SocketMessageResponse, data: T) {
-  await Promise.all(conns.map((conn) => conn.sendMessage(type, data)))
+  await getSocketTracer().startActiveSpan('socket.send_many_messages', async (span) => {
+    await Promise.all(conns.map((conn) => conn.sendMessage(type, data)))
+    span.end()
+  })
 }

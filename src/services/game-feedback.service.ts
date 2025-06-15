@@ -7,9 +7,11 @@ import createGameActivity from '../lib/logging/createGameActivity'
 import { GameActivityType } from '../entities/game-activity'
 import { devDataPlayerFilter } from '../middleware/dev-data-middleware'
 import updateAllowedKeys from '../lib/entities/updateAllowedKeys'
+import { TraceService } from '../lib/tracing/trace-service'
 
 const itemsPerPage = 50
 
+@TraceService()
 export default class GameFeedbackService extends Service {
   @Route({
     method: 'GET'

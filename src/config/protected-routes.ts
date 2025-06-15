@@ -1,4 +1,4 @@
-import Koa, { Context, Next } from 'koa'
+import Koa from 'koa'
 import { service, ServiceOpts } from 'koa-clay'
 import GameChannelService from '../services/game-channel.service'
 import GameFeedbackService from '../services/game-feedback.service'
@@ -18,13 +18,24 @@ import UserService from '../services/user.service'
 import BillingService from '../services/billing.service'
 import IntegrationService from '../services/integration.service'
 import { getRouteInfo, protectedRouteAuthMiddleware } from '../middleware/route-middleware'
+import { setTraceAttributes } from '@hyperdx/node-opentelemetry'
 
 export default function protectedRoutes(app: Koa) {
   app.use(protectedRouteAuthMiddleware)
 
-  app.use(async function protectedRouteChecker(ctx: Context, next: Next): Promise<void> {
+  app.use(async function protectedRouteMiddleware(ctx, next) {
     const route = getRouteInfo(ctx)
-    if (route.isProtectedRoute && route.isAPICall) ctx.throw(401)
+
+    if (route.isProtectedRoute) {
+      if (route.isAPICall) {
+        ctx.throw(401)
+      }
+
+      setTraceAttributes({
+        user_id: ctx.state.user.sub
+      })
+    }
+
     await next()
   })
 
@@ -33,7 +44,6 @@ export default function protectedRoutes(app: Koa) {
       hidden: true
     }
   }
-
   app.use(service('/billing', new BillingService(), serviceOpts))
   app.use(service('/organisations', new OrganisationService(), serviceOpts))
   app.use(service('/invites', new InviteService(), serviceOpts))

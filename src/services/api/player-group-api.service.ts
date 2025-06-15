@@ -6,9 +6,11 @@ import Player from '../../entities/player'
 import PlayerGroupAPIDocs from '../../docs/player-group-api.docs'
 import { EntityManager } from '@mikro-orm/mysql'
 import { devDataPlayerFilter } from '../../middleware/dev-data-middleware'
+import { TraceService } from '../../lib/tracing/trace-service'
 
 type PlayerGroupWithCountAndMembers = Pick<PlayerGroup, 'id' | 'name' | 'description' | 'rules' | 'ruleMode' | 'updatedAt'> & { count: number, members?: Player[] }
 
+@TraceService()
 export default class PlayerGroupAPIService extends APIService {
   @Route({
     method: 'GET',

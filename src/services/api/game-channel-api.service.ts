@@ -10,6 +10,7 @@ import { createRedisConnection } from '../../config/redis.config'
 import GameChannelStorageProp from '../../entities/game-channel-storage-prop'
 import { PropSizeError } from '../../lib/errors/propSizeError'
 import { sanitiseProps, testPropSize } from '../../lib/props/sanitiseProps'
+import { TraceService } from '../../lib/tracing/trace-service'
 
 type GameChannelStorageTransaction = {
   upsertedProps: GameChannelStorageProp[]
@@ -40,6 +41,8 @@ async function joinChannel(req: Request, channel: GameChannel, playerAlias: Play
     await (req.ctx.em as EntityManager).flush()
   }
 }
+
+@TraceService()
 export default class GameChannelAPIService extends APIService {
   @Route({
     method: 'GET',

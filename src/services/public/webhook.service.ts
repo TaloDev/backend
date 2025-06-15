@@ -4,7 +4,7 @@ import { Request, Response, Route, Service } from 'koa-clay'
 import OrganisationPricingPlan from '../../entities/organisation-pricing-plan'
 import createDefaultPricingPlan from '../../lib/billing/createDefaultPricingPlan'
 import PricingPlan from '../../entities/pricing-plan'
-import * as Sentry from '@sentry/node'
+import { captureException } from '@sentry/node'
 import { Request as KoaRequest } from 'koa'
 import initStripe from '../../lib/billing/initStripe'
 import PlanCancelled from '../../emails/plan-cancelled-mail'
@@ -13,6 +13,7 @@ import PlanUpgraded from '../../emails/plan-upgraded-mail'
 import PlanInvoice from '../../emails/plan-invoice-mail'
 import queueEmail from '../../lib/messaging/queueEmail'
 import PlanPaymentFailed from '../../emails/plan-payment-failed'
+import { TraceService } from '../../lib/tracing/trace-service'
 
 type RawRequest = KoaRequest & {
   rawBody: Buffer
@@ -20,6 +21,7 @@ type RawRequest = KoaRequest & {
 
 const stripe = initStripe()
 
+@TraceService()
 export default class WebhookService extends Service {
   @Route({
     method: 'POST',
@@ -36,7 +38,7 @@ export default class WebhookService extends Service {
       )
     /* v8 ignore start */
     } catch (err) {
-      Sentry.captureException(err)
+      captureException(err)
       req.ctx.throw(401)
     }
     /* v8 ignore stop */

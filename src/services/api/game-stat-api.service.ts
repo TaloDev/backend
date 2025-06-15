@@ -13,6 +13,7 @@ import Player from '../../entities/player'
 import { buildDateValidationSchema } from '../../lib/dates/dateValidationSchema'
 import { formatDateForClickHouse } from '../../lib/clickhouse/formatDateTime'
 import PlayerAlias from '../../entities/player-alias'
+import { TraceService } from '../../lib/tracing/trace-service'
 
 type GlobalValueMetrics = {
   minValue: number
@@ -119,6 +120,7 @@ async function getPlayerValueMetrics(
   }
 }
 
+@TraceService()
 export default class GameStatAPIService extends APIService {
   @Route({
     method: 'GET',

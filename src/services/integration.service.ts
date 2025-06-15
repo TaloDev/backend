@@ -8,6 +8,7 @@ import IntegrationPolicy from '../policies/integration.policy'
 import ormConfig from '../config/mikro-orm.config'
 import createQueue from '../lib/queues/createQueue'
 import { Job, Queue } from 'bullmq'
+import { TraceService } from '../lib/tracing/trace-service'
 
 type SyncJob = {
   integrationId: number
@@ -22,6 +23,7 @@ const configKeys: IntegrationUpdateableKeys = {
   [IntegrationType.STEAMWORKS]: ['apiKey', 'appId', 'syncLeaderboards', 'syncStats']
 }
 
+@TraceService()
 export default class IntegrationService extends Service {
   queue: Queue<SyncJob>
 

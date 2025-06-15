@@ -21,6 +21,7 @@ import GameChannel from '../entities/game-channel'
 import Prop from '../entities/prop'
 import buildErrorResponse from '../lib/errors/buildErrorResponse'
 import { PropSizeError } from '../lib/errors/propSizeError'
+import { TraceService } from '../lib/tracing/trace-service'
 
 const propsValidation = async (val: unknown): Promise<ValidationCondition[]> => [
   {
@@ -42,6 +43,7 @@ type PlayerPostBody = {
 
 type PatchTransactionResponse = [Player | null, ReturnType<typeof buildErrorResponse> | null]
 
+@TraceService()
 export default class PlayerService extends Service {
   @Route({
     method: 'POST'

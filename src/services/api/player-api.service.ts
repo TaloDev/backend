@@ -15,6 +15,8 @@ import Integration, { IntegrationType } from '../../entities/integration'
 import { validateAuthSessionToken } from '../../middleware/player-auth-middleware'
 import { setCurrentPlayerState } from '../../middleware/current-player-middleware'
 import { createRedisConnection } from '../../config/redis.config'
+import { ClickHouseClient } from '@clickhouse/client'
+import { TraceService } from '../../lib/tracing/trace-service'
 
 async function getRealIdentifier(
   req: Request,
@@ -82,6 +84,7 @@ function validateIdentifyQueryParam(param: 'service' | 'identifier') {
   ]
 }
 
+@TraceService()
 export default class PlayerAPIService extends APIService {
   @Route({
     method: 'GET',
@@ -238,6 +241,9 @@ export default class PlayerAPIService extends APIService {
 
     await em.flush()
     await em.getRepository(Player).nativeDelete(player2)
+
+    const clickhouse: ClickHouseClient = req.ctx.clickhouse
+    await clickhouse.exec({ query: `DELETE FROM player_sessions WHERE player_id = '${player2.id}'` })
 
     return {
       status: 200,

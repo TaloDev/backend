@@ -1,7 +1,9 @@
 import { EntityManager } from '@mikro-orm/mysql'
 import { Service, Request, Response, Route } from 'koa-clay'
 import Invite from '../../entities/invite'
+import { TraceService } from '../../lib/tracing/trace-service'
 
+@TraceService()
 export default class InvitePublicService extends Service {
   @Route({
     method: 'GET',

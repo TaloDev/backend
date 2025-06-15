@@ -1,6 +1,7 @@
 import { ConnectionOptions, Job, Processor, Queue, RedisOptions, Worker } from 'bullmq'
 import redisConfig from '../../config/redis.config'
 import handleJobFailure from './handleJobFailure'
+import { BullMQOtel } from 'bullmq-otel'
 
 export type WorkerEvents<T> = {
   failed?: (job: Job<T>, err: Error) => void | Promise<void>
@@ -9,8 +10,8 @@ export type WorkerEvents<T> = {
 
 function createQueue<T>(name: string, processor: Processor<T, unknown, string>, events: WorkerEvents<T> = {}): Queue<T> {
   const connection: ConnectionOptions = redisConfig as RedisOptions
-  const queue = new Queue<T>(name, { connection })
-  const worker = new Worker<T>(queue.name, processor, { connection })
+  const queue = new Queue<T>(name, { connection, telemetry: new BullMQOtel('talo.queue') })
+  const worker = new Worker<T>(queue.name, processor, { connection, telemetry: new BullMQOtel('talo.worker') })
 
   worker.on('failed', async (job, err) => {
     if (job) {

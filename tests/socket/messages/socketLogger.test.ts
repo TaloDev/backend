@@ -8,7 +8,7 @@ import { logConnection, logConnectionClosed, logRequest, logResponse } from '../
 import SocketTicket from '../../../src/socket/socketTicket'
 
 describe('Socket logger', () => {
-  const consoleMock = vi.spyOn(console, 'log').mockImplementation(() => undefined)
+  const consoleMock = vi.spyOn(console, 'info').mockImplementation(() => undefined)
 
   beforeAll(() => {
     vi.stubEnv('NODE_ENV', 'production')
@@ -50,19 +50,7 @@ describe('Socket logger', () => {
     logRequest(conn, JSON.stringify({ req: 'v1.fake', data: {} }))
 
     expect(consoleMock).toHaveBeenCalledOnce()
-    expect(consoleMock).toHaveBeenLastCalledWith(`  <-- WSS /games/${conn.game.id}/{v1.fake} 0.0.0.0 27b`)
-
-    cleanup()
-  })
-
-  it('should log requests with aliases', async () => {
-    const [conn, cleanup] = await createSocketConnection()
-    conn.playerAliasId = 2
-
-    logRequest(conn, JSON.stringify({ req: 'v1.fake', data: {} }))
-
-    expect(consoleMock).toHaveBeenCalledOnce()
-    expect(consoleMock).toHaveBeenLastCalledWith(`  <-- WSS /games/${conn.game.id}/aliases/2/{v1.fake} 0.0.0.0 27b`)
+    expect(consoleMock).toHaveBeenLastCalledWith('--> WSS v1.fake')
 
     cleanup()
   })
@@ -73,7 +61,7 @@ describe('Socket logger', () => {
     logRequest(conn, 'v1.fake')
 
     expect(consoleMock).toHaveBeenCalledOnce()
-    expect(consoleMock).toHaveBeenLastCalledWith(`  <-- WSS /games/${conn.game.id}/{unknown} 0.0.0.0 7b`)
+    expect(consoleMock).toHaveBeenLastCalledWith('--> WSS unknown')
 
     cleanup()
   })
@@ -84,7 +72,7 @@ describe('Socket logger', () => {
     logRequest(conn, JSON.stringify({ wrong: 'v1.fake' }))
 
     expect(consoleMock).toHaveBeenCalledOnce()
-    expect(consoleMock).toHaveBeenLastCalledWith(`  <-- WSS /games/${conn.game.id}/{unknown} 0.0.0.0 19b`)
+    expect(consoleMock).toHaveBeenLastCalledWith('--> WSS unknown')
 
     cleanup()
   })
@@ -95,7 +83,7 @@ describe('Socket logger', () => {
     logResponse(conn, 'v1.players.identify.success', JSON.stringify({ res: 'v1.players.identify.success', data: {} }))
 
     expect(consoleMock).toHaveBeenCalledOnce()
-    expect(consoleMock).toHaveBeenLastCalledWith(`  --> WSS /games/${conn.game.id}/{v1.players.identify.success} 0.0.0.0 47b`)
+    expect(consoleMock).toHaveBeenLastCalledWith('<-- WSS v1.players.identify.success')
 
     cleanup()
   })
@@ -104,7 +92,7 @@ describe('Socket logger', () => {
     logConnection(new IncomingMessage(new Socket()))
 
     expect(consoleMock).toHaveBeenCalledOnce()
-    expect(consoleMock).toHaveBeenLastCalledWith('  <-- WSS /open undefined')
+    expect(consoleMock).toHaveBeenLastCalledWith('--> WSS open')
   })
 
   it('should log pre-closed connections', async () => {
@@ -113,7 +101,7 @@ describe('Socket logger', () => {
     logConnectionClosed(conn, true, 3000)
 
     expect(consoleMock).toHaveBeenCalledOnce()
-    expect(consoleMock).toHaveBeenLastCalledWith(`  <-- WSS /games/${conn.game.id}/close 0.0.0.0`)
+    expect(consoleMock).toHaveBeenLastCalledWith('--> WSS close')
 
     cleanup()
   })
@@ -124,18 +112,7 @@ describe('Socket logger', () => {
     logConnectionClosed(conn, false, 3000, 'Unauthorised')
 
     expect(consoleMock).toHaveBeenCalledOnce()
-    expect(consoleMock).toHaveBeenLastCalledWith(`  --> WSS /games/${conn.game.id}/close 0.0.0.0 3000 Unauthorised`)
-
-    cleanup()
-  })
-
-  it('should log manually-closed connections without a reason', async () => {
-    const [conn, cleanup] = await createSocketConnection()
-
-    logConnectionClosed(conn, false, 3000)
-
-    expect(consoleMock).toHaveBeenCalledOnce()
-    expect(consoleMock).toHaveBeenLastCalledWith(`  --> WSS /games/${conn.game.id}/close 0.0.0.0 3000`)
+    expect(consoleMock).toHaveBeenLastCalledWith('<-- WSS close')
 
     cleanup()
   })
@@ -144,18 +121,6 @@ describe('Socket logger', () => {
     logConnectionClosed(undefined, false, 3000)
 
     expect(consoleMock).toHaveBeenCalledOnce()
-    expect(consoleMock).toHaveBeenLastCalledWith('  --> WSS /close unknown 3000')
-  })
-
-  it('should log pre-closed connection with aliases', async () => {
-    const [conn, cleanup] = await createSocketConnection()
-    conn.playerAliasId = 2
-
-    logConnectionClosed(conn, true, 3000)
-
-    expect(consoleMock).toHaveBeenCalledOnce()
-    expect(consoleMock).toHaveBeenLastCalledWith(`  <-- WSS /games/${conn.game.id}/aliases/2/close 0.0.0.0`)
-
-    cleanup()
+    expect(consoleMock).toHaveBeenLastCalledWith('<-- WSS close')
   })
 })

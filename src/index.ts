@@ -1,6 +1,7 @@
 import 'dotenv/config'
+import './lib/tracing/sentry-instrument'
 import Koa from 'koa'
-import logger from 'koa-logger'
+import loggerMiddleware from './middleware/logger-middleware'
 import bodyParser from 'koa-bodyparser'
 import configureProtectedRoutes from './config/protected-routes'
 import configurePublicRoutes from './config/public-routes'
@@ -14,15 +15,17 @@ import requestContextMiddleware from './middleware/request-context-middleware'
 import helmetMiddleware from './middleware/helmet-middleware'
 import { createServer } from 'http'
 import Socket from './socket'
+import { enableTracing } from './lib/tracing/enable-tracing'
 
 const isTest = process.env.NODE_ENV === 'test'
+enableTracing(isTest)
 
 export default async function init(): Promise<Koa> {
   const app = new Koa()
 
   await initProviders(app, isTest)
 
-  if (!isTest) app.use(logger())
+  if (!isTest) app.use(loggerMiddleware)
   app.use(errorMiddleware)
   app.use(bodyParser())
   app.use(helmetMiddleware)

@@ -1,7 +1,7 @@
 import { MikroORM } from '@mikro-orm/mysql'
 import ormConfig from '../../config/mikro-orm.config'
 import FailedJob from '../../entities/failed-job'
-import * as Sentry from '@sentry/node'
+import { captureException, setContext } from '@sentry/node'
 import { Job } from 'bullmq'
 
 async function handleJobFailure<T>(job: Job<T>, err: Error): Promise<void> {
@@ -18,11 +18,11 @@ async function handleJobFailure<T>(job: Job<T>, err: Error): Promise<void> {
   await em.persistAndFlush(failedJob)
   await orm.close()
 
-  Sentry.setContext('queue', {
+  setContext('queue', {
     'Name': job.queueName,
     'Failed Job ID': failedJob.id
   })
-  Sentry.captureException(err)
+  captureException(err)
 }
 
 export default handleJobFailure

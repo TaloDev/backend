@@ -23,9 +23,10 @@ import { pick } from 'lodash'
 import PlayerProp from '../entities/player-prop'
 import { Job, Queue } from 'bullmq'
 import createEmailQueue from '../lib/queues/createEmailQueue'
-import { EmailConfig } from '../lib/messaging/sendEmail'
 import createClickHouseClient from '../lib/clickhouse/createClient'
 import GameFeedback from '../entities/game-feedback'
+import { TraceService } from '../lib/tracing/trace-service'
+import { EmailConfig } from '../emails/mail'
 
 type PropCollection = Collection<PlayerProp, Player>
 
@@ -46,6 +47,7 @@ type DataExportJob = {
 type ExportableEntity = Event | Player | PlayerAlias | LeaderboardEntry | GameStat | PlayerGameStat | GameActivity | GameFeedback
 type ExportableEntityWithProps = ExportableEntity & EntityWithProps
 
+@TraceService()
 export default class DataExportService extends Service {
   queue: Queue
   emailQueue: Queue

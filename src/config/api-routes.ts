@@ -1,4 +1,4 @@
-import Koa, { Context, Next } from 'koa'
+import Koa from 'koa'
 import { service } from 'koa-clay'
 import GameChannelAPIService from '../services/api/game-channel-api.service'
 import HealthCheckAPIService from '../services/api/health-check-api.service'
@@ -25,7 +25,7 @@ export default function configureAPIRoutes(app: Koa) {
   app.use(apiRouteAuthMiddleware)
   app.use(limiterMiddleware)
 
-  app.use(async function apiRouteChecker(ctx: Context, next: Next): Promise<void> {
+  app.use(async function apiRouteMiddleware(ctx, next) {
     const route = getRouteInfo(ctx)
     if (route.isAPIRoute && !route.isAPICall) ctx.throw(401)
     await next()

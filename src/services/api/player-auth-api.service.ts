@@ -18,7 +18,9 @@ import { PlayerAuthActivityType } from '../../entities/player-auth-activity'
 import emailRegex from '../../lib/lang/emailRegex'
 import { ClickHouseClient } from '@clickhouse/client'
 import { deleteClickHousePlayerData } from '../../tasks/deleteInactivePlayers'
+import { TraceService } from '../../lib/tracing/trace-service'
 
+@TraceService()
 export default class PlayerAuthAPIService extends APIService {
   @Route({
     method: 'POST',

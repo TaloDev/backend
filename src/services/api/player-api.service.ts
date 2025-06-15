@@ -15,8 +15,7 @@ import Integration, { IntegrationType } from '../../entities/integration'
 import { validateAuthSessionToken } from '../../middleware/player-auth-middleware'
 import { setCurrentPlayerState } from '../../middleware/current-player-middleware'
 import { createRedisConnection } from '../../config/redis.config'
-import { ClickHouseClient } from '@clickhouse/client'
-import { TraceService } from '../../lib/routing/trace-service'
+import { TraceService } from '../../lib/tracing/trace-service'
 
 async function getRealIdentifier(
   req: Request,

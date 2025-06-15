@@ -5,7 +5,7 @@ import GameFeedback from '../../entities/game-feedback'
 import GameFeedbackAPIDocs from '../../docs/game-feedback-api.docs'
 import { EntityManager } from '@mikro-orm/mysql'
 import GameFeedbackCategory from '../../entities/game-feedback-category'
-import { TraceService } from '../../lib/routing/trace-service'
+import { TraceService } from '../../lib/tracing/trace-service'
 
 @TraceService()
 export default class GameFeedbackAPIService extends APIService {

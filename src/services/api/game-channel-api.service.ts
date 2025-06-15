@@ -10,7 +10,7 @@ import { createRedisConnection } from '../../config/redis.config'
 import GameChannelStorageProp from '../../entities/game-channel-storage-prop'
 import { PropSizeError } from '../../lib/errors/propSizeError'
 import { sanitiseProps, testPropSize } from '../../lib/props/sanitiseProps'
-import { TraceService } from '../../lib/routing/trace-service'
+import { TraceService } from '../../lib/tracing/trace-service'
 
 type GameChannelStorageTransaction = {
   upsertedProps: GameChannelStorageProp[]

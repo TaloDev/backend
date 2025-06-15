@@ -10,7 +10,7 @@ import bcrypt from 'bcrypt'
 import GameActivity from '../../entities/game-activity'
 import { Job, Queue } from 'bullmq'
 import { generateDemoEvents } from '../../lib/demo-data/generateDemoEvents'
-import { TraceService } from '../../lib/routing/trace-service'
+import { TraceService } from '../../lib/tracing/trace-service'
 
 type DemoUserJob = {
   userId: number

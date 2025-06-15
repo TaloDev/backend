@@ -11,7 +11,7 @@ import qrcode from 'qrcode'
 import generateRecoveryCodes from '../lib/auth/generateRecoveryCodes'
 import User from '../entities/user'
 import { randomBytes } from 'crypto'
-import { TraceService } from '../lib/routing/trace-service'
+import { TraceService } from '../lib/tracing/trace-service'
 
 async function confirmPassword(req: Request): Promise<void> {
   const { password } = req.body

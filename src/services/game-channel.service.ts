@@ -8,7 +8,7 @@ import { hardSanitiseProps, mergeAndSanitiseProps } from '../lib/props/sanitiseP
 import PlayerAlias from '../entities/player-alias'
 import { PropSizeError } from '../lib/errors/propSizeError'
 import buildErrorResponse from '../lib/errors/buildErrorResponse'
-import { TraceService } from '../lib/routing/trace-service'
+import { TraceService } from '../lib/tracing/trace-service'
 
 const itemsPerPage = 50
 

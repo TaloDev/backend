@@ -9,7 +9,7 @@ import PlayerGroupPolicy from '../policies/player-group.policy'
 import getUserFromToken from '../lib/auth/getUserFromToken'
 import UserPinnedGroup from '../entities/user-pinned-group'
 import { devDataPlayerFilter } from '../middleware/dev-data-middleware'
-import { TraceService } from '../lib/routing/trace-service'
+import { TraceService } from '../lib/tracing/trace-service'
 
 @TraceService()
 export default class PlayerGroupService extends Service {

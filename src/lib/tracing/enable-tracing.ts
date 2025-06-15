@@ -1,6 +1,10 @@
 import { init as initHyperDX } from '@hyperdx/node-opentelemetry'
 
-export function enableTracing() {
+export function enableTracing(isTest: boolean) {
+  if (isTest || typeof process.env.HYPERDX_API_KEY !== 'string') {
+    return
+  }
+
   initHyperDX({
     service: 'talo',
     instrumentations: {

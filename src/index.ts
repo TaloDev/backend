@@ -18,7 +18,7 @@ import Socket from './socket'
 import { enableTracing } from './lib/tracing/enable-tracing'
 
 const isTest = process.env.NODE_ENV === 'test'
-if (!isTest) enableTracing()
+enableTracing(isTest)
 
 export default async function init(): Promise<Koa> {
   const app = new Koa()

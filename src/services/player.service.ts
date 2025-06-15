@@ -21,7 +21,7 @@ import GameChannel from '../entities/game-channel'
 import Prop from '../entities/prop'
 import buildErrorResponse from '../lib/errors/buildErrorResponse'
 import { PropSizeError } from '../lib/errors/propSizeError'
-import { TraceService } from '../lib/routing/trace-service'
+import { TraceService } from '../lib/tracing/trace-service'
 
 const propsValidation = async (val: unknown): Promise<ValidationCondition[]> => [
   {

@@ -13,7 +13,7 @@ import Player from '../../entities/player'
 import { buildDateValidationSchema } from '../../lib/dates/dateValidationSchema'
 import { formatDateForClickHouse } from '../../lib/clickhouse/formatDateTime'
 import PlayerAlias from '../../entities/player-alias'
-import { TraceService } from '../../lib/routing/trace-service'
+import { TraceService } from '../../lib/tracing/trace-service'
 
 type GlobalValueMetrics = {
   minValue: number

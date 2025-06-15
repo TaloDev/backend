@@ -7,7 +7,7 @@ import JoinOrganisation from '../emails/join-organisation-mail'
 import createGameActivity from '../lib/logging/createGameActivity'
 import { GameActivityType } from '../entities/game-activity'
 import queueEmail from '../lib/messaging/queueEmail'
-import { TraceService } from '../lib/routing/trace-service'
+import { TraceService } from '../lib/tracing/trace-service'
 
 @TraceService()
 export default class InviteService extends Service {

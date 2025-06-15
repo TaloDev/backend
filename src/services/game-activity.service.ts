@@ -3,7 +3,7 @@ import { HasPermission, Service, Request, Response, Route } from 'koa-clay'
 import GameActivity from '../entities/game-activity'
 import User from '../entities/user'
 import GameActivityPolicy from '../policies/game-activity.policy'
-import { TraceService } from '../lib/routing/trace-service'
+import { TraceService } from '../lib/tracing/trace-service'
 
 @TraceService()
 export default class GameActivityService extends Service {

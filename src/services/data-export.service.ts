@@ -25,7 +25,7 @@ import { Job, Queue } from 'bullmq'
 import createEmailQueue from '../lib/queues/createEmailQueue'
 import createClickHouseClient from '../lib/clickhouse/createClient'
 import GameFeedback from '../entities/game-feedback'
-import { TraceService } from '../lib/routing/trace-service'
+import { TraceService } from '../lib/tracing/trace-service'
 import { EmailConfig } from '../emails/mail'
 
 type PropCollection = Collection<PlayerProp, Player>

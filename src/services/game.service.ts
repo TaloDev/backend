@@ -14,7 +14,7 @@ import Prop from '../entities/prop'
 import { PropSizeError } from '../lib/errors/propSizeError'
 import buildErrorResponse from '../lib/errors/buildErrorResponse'
 import { UserType } from '../entities/user'
-import { TraceService } from '../lib/routing/trace-service'
+import { TraceService } from '../lib/tracing/trace-service'
 
 async function sendLiveConfigUpdatedMessage(req: Request, game: Game) {
   const socket: Socket = req.ctx.wss

@@ -22,7 +22,7 @@ import queueEmail from '../../lib/messaging/queueEmail'
 import ResetPassword from '../../emails/reset-password'
 import emailRegex from '../../lib/lang/emailRegex'
 import { sign, verify } from '../../lib/auth/jwt'
-import { TraceService } from '../../lib/routing/trace-service'
+import { TraceService } from '../../lib/tracing/trace-service'
 
 async function sendEmailConfirm(req: Request, res: Response): Promise<void> {
   const user: User = req.ctx.state.user

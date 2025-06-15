@@ -13,7 +13,7 @@ import PlanUpgraded from '../../emails/plan-upgraded-mail'
 import PlanInvoice from '../../emails/plan-invoice-mail'
 import queueEmail from '../../lib/messaging/queueEmail'
 import PlanPaymentFailed from '../../emails/plan-payment-failed'
-import { TraceService } from '../../lib/routing/trace-service'
+import { TraceService } from '../../lib/tracing/trace-service'
 
 type RawRequest = KoaRequest & {
   rawBody: Buffer

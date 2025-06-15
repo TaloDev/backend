@@ -3,7 +3,7 @@ import { Context } from 'koa'
 import { sign } from './jwt'
 import User from '../../entities/user'
 import UserSession from '../../entities/user-session'
-import * as Sentry from '@sentry/node'
+import { setUser } from '@sentry/node'
 
 export async function genAccessToken(user: User): Promise<string> {
   const payload = { sub: user.id }
@@ -38,7 +38,7 @@ const buildTokenPair = async (ctx: Context, user: User): Promise<string> => {
   const session = await createSession(ctx, user)
   setRefreshToken(ctx, session)
 
-  Sentry.setUser({ id: String(user.id) })
+  setUser({ id: String(user.id), username: user.username })
 
   return accessToken
 }

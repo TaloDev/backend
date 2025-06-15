@@ -26,7 +26,9 @@ export default defineConfig({
         'src/middleware/logger-middleware.ts',
         'src/migrations',
         'src/global.d.ts',
-        'src/lib/clickhouse/clickhouse-entity.ts'
+        'src/lib/clickhouse/clickhouse-entity.ts',
+        'src/lib/clickhouse/createClient.ts',
+        'src/lib/tracing'
       ]
     }
   }

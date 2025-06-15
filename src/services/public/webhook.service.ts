@@ -4,7 +4,7 @@ import { Request, Response, Route, Service } from 'koa-clay'
 import OrganisationPricingPlan from '../../entities/organisation-pricing-plan'
 import createDefaultPricingPlan from '../../lib/billing/createDefaultPricingPlan'
 import PricingPlan from '../../entities/pricing-plan'
-import * as Sentry from '@sentry/node'
+import { captureException } from '@sentry/node'
 import { Request as KoaRequest } from 'koa'
 import initStripe from '../../lib/billing/initStripe'
 import PlanCancelled from '../../emails/plan-cancelled-mail'
@@ -38,7 +38,7 @@ export default class WebhookService extends Service {
       )
     /* v8 ignore start */
     } catch (err) {
-      Sentry.captureException(err)
+      captureException(err)
       req.ctx.throw(401)
     }
     /* v8 ignore stop */

@@ -1,6 +1,6 @@
 import nodemailer from 'nodemailer'
 import { MailData } from '../../emails/mail'
-import * as Sentry from '@sentry/node'
+import { captureException } from '@sentry/node'
 import { SpanStatusCode, trace } from '@opentelemetry/api'
 import { setTraceAttributes } from '@hyperdx/node-opentelemetry'
 
@@ -35,7 +35,7 @@ export default async function sendEmail(emailConfig: MailData): Promise<void> {
     } catch (err) {
       span.setStatus({ code: SpanStatusCode.ERROR, message: (err as Error).message })
 
-      Sentry.captureException(err, {
+      captureException(err, {
         extra: {
           to: emailConfig.to,
           subject: emailConfig.subject,

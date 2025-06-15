@@ -1,6 +1,6 @@
 import { IncomingMessage, Server } from 'http'
 import { RawData, WebSocket, WebSocketServer } from 'ws'
-import { captureException } from '@sentry/node'
+import { captureException, withIsolationScope } from '@sentry/node'
 import { EntityManager, RequestContext } from '@mikro-orm/mysql'
 import SocketConnection from './socketConnection'
 import SocketRouter from './router/socketRouter'
@@ -77,53 +77,57 @@ export default class Socket {
   /* v8 ignore stop */
 
   async handleConnection(ws: WebSocket, req: IncomingMessage): Promise<void> {
-    await getSocketTracer().startActiveSpan('socket.open', async (span) => {
-      logConnection(req)
+    withIsolationScope(async () => {
+      await getSocketTracer().startActiveSpan('socket.open', async (span) => {
+        logConnection(req)
 
-      const redis = new Redis(redisConfig)
+        const redis = new Redis(redisConfig)
 
-      await RequestContext.create(this.em, async () => {
-        const url = new URL(req.url!, 'http://localhost')
-        const ticket = new SocketTicket(url.searchParams.get('ticket') ?? '')
+        await RequestContext.create(this.em, async () => {
+          const url = new URL(req.url!, 'http://localhost')
+          const ticket = new SocketTicket(url.searchParams.get('ticket') ?? '')
 
-        if (await ticket.validate(redis)) {
-          const connection = new SocketConnection(this, ws, ticket, req.socket.remoteAddress!)
-          this.connections.set(ws, connection)
+          if (await ticket.validate(redis)) {
+            const connection = new SocketConnection(this, ws, ticket, req.socket.remoteAddress!)
+            this.connections.set(ws, connection)
 
-          await this.trackEvent('open', {
-            eventType: 'open',
-            reqOrRes: 'req',
-            code: null,
-            gameId: connection.game.id,
-            playerAliasId: null,
-            devBuild: ticket.devBuild
-          })
+            await this.trackEvent('open', {
+              eventType: 'open',
+              reqOrRes: 'req',
+              code: null,
+              gameId: connection.game.id,
+              playerAliasId: null,
+              devBuild: ticket.devBuild
+            })
 
-          await sendMessage(connection, 'v1.connected', {})
-        } else {
-          await this.closeConnection(ws)
-        }
+            await sendMessage(connection, 'v1.connected', {})
+          } else {
+            await this.closeConnection(ws)
+          }
+        })
+
+        await redis.quit()
+
+        span.end()
       })
-
-      await redis.quit()
-
-      span.end()
     })
   }
 
   async handleMessage(ws: WebSocket, data: RawData): Promise<void> {
-    await getSocketTracer().startActiveSpan('socket.message', async (span) => {
-      await RequestContext.create(this.em, async () => {
-        const connection = this.connections.get(ws)
-        if (connection) {
-          await this.router.handleMessage(connection, data)
-        /* v8 ignore next 3 */
-        } else {
-          await this.closeConnection(ws)
-        }
-      })
+    withIsolationScope(async () => {
+      await getSocketTracer().startActiveSpan('socket.message', async (span) => {
+        await RequestContext.create(this.em, async () => {
+          const connection = this.connections.get(ws)
+          if (connection) {
+            await this.router.handleMessage(connection, data)
+          /* v8 ignore next 3 */
+          } else {
+            await this.closeConnection(ws)
+          }
+        })
 
-      span.end()
+        span.end()
+      })
     })
   }
 

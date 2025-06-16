@@ -273,4 +273,37 @@ describe('Game stats API service - put', () => {
     expect(snapshots[0].value).toBe(50)
     expect(snapshots[0].global_value).toBe(50)
   })
+
+  it('should create a player game stat snapshot with the continuity date', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_STATS, APIKeyScope.WRITE_CONTINUITY_REQUESTS])
+    const stat = await createStat(apiKey.game, { maxValue: 999, maxChange: 99, defaultValue: 0, global: true, globalValue: 0 })
+    const player = await new PlayerFactory([apiKey.game]).one()
+    await em.persistAndFlush(player)
+
+    const continuityDate = subHours(new Date(), 1)
+
+    await request(app)
+      .put(`/v1/game-stats/${stat.internalName}`)
+      .send({ change: 50 })
+      .auth(token, { type: 'bearer' })
+      .set('x-talo-alias', String(player.aliases[0].id))
+      .set('x-talo-continuity-timestamp', String(continuityDate.getTime()))
+      .expect(200)
+
+    let snapshots: ClickHousePlayerGameStatSnapshot[] = []
+    await vi.waitUntil(async () => {
+      snapshots = await clickhouse.query({
+        query: `SELECT * FROM player_game_stat_snapshots WHERE game_stat_id = ${stat.id} AND player_alias_id = ${player.aliases[0].id}`,
+        format: 'JSONEachRow'
+      }).then((res) => res.json<ClickHousePlayerGameStatSnapshot>())
+      return snapshots.length === 1
+    })
+
+    expect(snapshots[0].change).toBe(50)
+    expect(snapshots[0].value).toBe(50)
+    expect(snapshots[0].global_value).toBe(50)
+
+    const date = new Date(snapshots[0].created_at)
+    expect(date.toISOString()).toBe(continuityDate.toISOString())
+  })
 })

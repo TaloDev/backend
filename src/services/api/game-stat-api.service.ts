@@ -195,10 +195,12 @@ export default class GameStatAPIService extends APIService {
       req.ctx.throw(400, `Stat would go above the maxValue of ${stat.maxValue}`)
     }
 
+    const continuityDate: Date = req.ctx.state.continuityDate
+
     if (!playerStat) {
       playerStat = new PlayerGameStat(alias.player, req.ctx.state.stat)
-      if (req.ctx.state.continuityDate) {
-        playerStat.createdAt = req.ctx.state.continuityDate
+      if (continuityDate) {
+        playerStat.createdAt = continuityDate
       }
 
       em.persist(playerStat)
@@ -210,6 +212,9 @@ export default class GameStatAPIService extends APIService {
     const snapshot = new PlayerGameStatSnapshot()
     snapshot.construct(alias, playerStat)
     snapshot.change = change
+    if (continuityDate) {
+      snapshot.createdAt = continuityDate
+    }
 
     await clickhouse.insert({
       table: 'player_game_stat_snapshots',

@@ -9,20 +9,27 @@ import PlayerGameStat from '../entities/player-game-stat'
 import triggerIntegrations from '../lib/integrations/triggerIntegrations'
 import updateAllowedKeys from '../lib/entities/updateAllowedKeys'
 import { TraceService } from '../lib/tracing/trace-service'
+import { buildDateValidationSchema } from '../lib/dates/dateValidationSchema'
 
 @TraceService()
 export default class GameStatService extends Service {
   @Route({
     method: 'GET'
   })
+  @Validate({
+    query: buildDateValidationSchema(false, false)
+  })
   @HasPermission(GameStatPolicy, 'index')
   async index(req: Request): Promise<Response> {
+    const { metricsStartDate, metricsEndDate } = req.query
+
     const em: EntityManager = req.ctx.em
     const stats = await em.getRepository(GameStat).find({ game: req.ctx.state.game })
 
     for (const stat of stats) {
       if (stat.global) {
         await stat.recalculateGlobalValue(req.ctx.state.includeDevData)
+        await stat.loadMetrics(req.ctx.clickhouse, metricsStartDate, metricsEndDate)
       }
     }
 

@@ -2,6 +2,25 @@ import { EntityManager, Entity, ManyToOne, PrimaryKey, Property, Collection, One
 import { Request, Required, ValidationCondition } from 'koa-clay'
 import Game from './game'
 import PlayerGameStat from './player-game-stat'
+import { ClickHouseClient } from '@clickhouse/client'
+import Player from './player'
+import { formatDateForClickHouse } from '../lib/clickhouse/formatDateTime'
+import { endOfDay } from 'date-fns'
+
+type GlobalValueMetrics = {
+  minValue: number
+  maxValue: number
+  medianValue: number
+  averageValue: number
+  averageChange: number
+}
+
+type PlayerValueMetrics = {
+  minValue: number
+  maxValue: number
+  medianValue: number
+  averageValue: number
+}
 
 @Entity()
 export default class GameStat {
@@ -93,6 +112,8 @@ export default class GameStat {
   @Property({ onUpdate: () => new Date() })
   updatedAt: Date = new Date()
 
+  metrics?: { globalCount: number, globalValue: GlobalValueMetrics, playerValue: PlayerValueMetrics }
+
   constructor(game: Game) {
     this.game = game
   }
@@ -109,6 +130,127 @@ export default class GameStat {
       .reduce((acc, curr) => acc += curr.value, 0)
   }
 
+  async buildMetricsWhereConditions(startDate?: string, endDate?: string, player?: Player): Promise<string> {
+    let whereConditions = `WHERE game_stat_id = ${this.id}`
+
+    if (startDate) {
+      whereConditions += ` AND created_at >= '${formatDateForClickHouse(new Date(startDate))}'`
+    }
+    if (endDate) {
+      // when using YYYY-MM-DD, use the end of the day
+      const end = endDate.length === 10 ? endOfDay(new Date(endDate)) : new Date(endDate)
+      whereConditions += ` AND created_at <= '${formatDateForClickHouse(end)}'`
+    }
+    if (player) {
+      await player.aliases.loadItems()
+      const aliasIds = player.aliases.getIdentifiers()
+      whereConditions += ` AND player_alias_id IN (${aliasIds.join(', ')})`
+    }
+
+    return whereConditions
+  }
+
+  async loadMetrics(clickhouse: ClickHouseClient, metricsStartDate?: string, metricsEndDate?: string): Promise<void> {
+    const whereConditions = await this.buildMetricsWhereConditions(metricsStartDate, metricsEndDate)
+
+    const [globalCount, globalValue] = await this.getGlobalValueMetrics(clickhouse, whereConditions)
+    const playerValue = await this.getPlayerValueMetrics(clickhouse, whereConditions)
+
+    this.metrics = {
+      globalCount,
+      globalValue,
+      playerValue
+    }
+  }
+
+  async getGlobalValueMetrics(
+    clickhouse: ClickHouseClient,
+    whereConditions: string
+  ): Promise<[number, GlobalValueMetrics]> {
+    const query = `
+      SELECT
+        count() as rawCount,
+        min(global_value) as minValue,
+        max(global_value) as maxValue,
+        median(global_value) as medianValue,
+        avg(global_value) as averageValue,
+        avg(change) as averageChange
+      FROM player_game_stat_snapshots
+      ${whereConditions}
+    `
+
+    const res = await clickhouse.query({
+      query: query,
+      format: 'JSONEachRow'
+    }).then((res) => res.json<{
+      rawCount: string | number
+      minValue: number
+      maxValue: number
+      medianValue: number | null
+      averageValue: number | null
+      averageChange: number | null
+    }>())
+
+    const {
+      rawCount,
+      minValue,
+      maxValue,
+      medianValue,
+      averageValue,
+      averageChange
+    } = res[0]
+
+    return [
+      Number(rawCount),
+      {
+        minValue: minValue || this.defaultValue,
+        maxValue: maxValue || this.defaultValue,
+        medianValue: medianValue ?? this.defaultValue,
+        averageValue: averageValue ?? this.defaultValue,
+        averageChange: averageChange ?? 0
+      }
+    ]
+  }
+
+  async getPlayerValueMetrics(
+    clickhouse: ClickHouseClient,
+    whereConditions: string
+  ): Promise<PlayerValueMetrics> {
+    const query = `
+      SELECT
+        min(value) as minValue,
+        max(value) as maxValue,
+        median(value) as medianValue,
+        avg(value) as averageValue
+      FROM player_game_stat_snapshots
+      ${whereConditions}
+    `
+
+    const res = await clickhouse.query({
+      query: query,
+      format: 'JSONEachRow'
+    }).then((res) => res.json<{
+      minValue: number
+      maxValue: number
+      medianValue: number | null
+      averageValue: number | null
+    }>())
+
+    const {
+      minValue,
+      maxValue,
+      medianValue,
+      averageValue
+    } = res[0]
+
+    return {
+      minValue: minValue || this.defaultValue,
+      maxValue: maxValue || this.defaultValue,
+      medianValue: medianValue ?? this.defaultValue,
+      averageValue: averageValue ?? this.defaultValue
+    }
+  }
+
   toJSON() {
     return {
       id: this.id,
@@ -116,6 +258,7 @@ export default class GameStat {
       name: this.name,
       global: this.global,
       globalValue: this.hydratedGlobalValue ?? this.globalValue,
+      metrics: this.metrics,
       defaultValue: this.defaultValue,
       maxChange: this.maxChange,
       minValue: this.minValue,

@@ -1,0 +1,26 @@
+name: Reboot
+
+on:
+  workflow_dispatch:
+
+jobs:
+  reboot:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Update backend
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.HOST }}
+          port: ${{ secrets.PORT }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.KEY }}
+          passphrase: ${{ secrets.PASSPHRASE }}
+          proxy_host: ${{ secrets.PROXY_HOST }}
+          proxy_port: ${{ secrets.PROXY_PORT }}
+          proxy_username: ${{ secrets.PROXY_USERNAME }}
+          proxy_key: ${{ secrets.PROXY_KEY }}
+          proxy_passphrase: ${{ secrets.PROXY_PASSPHRASE }}
+          script: |
+            cd /usr/talo
+            ./scripts/reboot.sh

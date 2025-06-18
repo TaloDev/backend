@@ -22,8 +22,7 @@ export default async function errorMiddleware(ctx: Context, next: Next) {
 
         Sentry.withScope((scope) => {
           scope.addEventProcessor((event) => {
-            const headers = Object.entries(ctx.request.headers).reduce((acc, curr) => {
-              const [key, value] = curr
+            const headers = Object.entries(ctx.request.headers).reduce((acc, [key, value]) => {
               if (typeof value === 'string') {
                 acc[key] = value
               }

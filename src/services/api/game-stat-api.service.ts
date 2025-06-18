@@ -1,5 +1,5 @@
 import { EntityManager } from '@mikro-orm/mysql'
-import { differenceInSeconds, endOfDay } from 'date-fns'
+import { differenceInSeconds } from 'date-fns'
 import { HasPermission, Request, Response, Route, Validate } from 'koa-clay'
 import GameStatAPIDocs from '../../docs/game-stat-api.docs'
 import GameStat from '../../entities/game-stat'
@@ -11,114 +11,8 @@ import { ClickHouseClient } from '@clickhouse/client'
 import PlayerGameStatSnapshot, { ClickHousePlayerGameStatSnapshot } from '../../entities/player-game-stat-snapshot'
 import Player from '../../entities/player'
 import { buildDateValidationSchema } from '../../lib/dates/dateValidationSchema'
-import { formatDateForClickHouse } from '../../lib/clickhouse/formatDateTime'
 import PlayerAlias from '../../entities/player-alias'
 import { TraceService } from '../../lib/tracing/trace-service'
-
-type GlobalValueMetrics = {
-  minValue: number
-  maxValue: number
-  medianValue: number
-  averageValue: number
-  averageChange: number
-}
-
-type PlayerValueMetrics = {
-  minValue: number
-  maxValue: number
-  medianValue: number
-  averageValue: number
-}
-
-async function getGlobalValueMetrics(
-  clickhouse: ClickHouseClient,
-  stat: GameStat,
-  whereConditions: string
-): Promise<[number, GlobalValueMetrics]> {
-  const query = `
-    SELECT
-      count() as rawCount,
-      min(global_value) as minValue,
-      max(global_value) as maxValue,
-      median(global_value) as medianValue,
-      avg(global_value) as averageValue,
-      avg(change) as averageChange
-    FROM player_game_stat_snapshots
-    ${whereConditions}
-  `
-
-  const res = await clickhouse.query({
-    query: query,
-    format: 'JSONEachRow'
-  }).then((res) => res.json<{
-    rawCount: string | number
-    minValue: number
-    maxValue: number
-    medianValue: number | null
-    averageValue: number | null
-    averageChange: number | null
-  }>())
-
-  const {
-    rawCount,
-    minValue,
-    maxValue,
-    medianValue,
-    averageValue,
-    averageChange
-  } = res[0]
-
-  return [
-    Number(rawCount),
-    {
-      minValue: minValue || stat.defaultValue,
-      maxValue: maxValue || stat.defaultValue,
-      medianValue: medianValue ?? stat.defaultValue,
-      averageValue: averageValue ?? stat.defaultValue,
-      averageChange: averageChange ?? 0
-    }
-  ]
-}
-
-async function getPlayerValueMetrics(
-  clickhouse: ClickHouseClient,
-  stat: GameStat,
-  whereConditions: string
-): Promise<PlayerValueMetrics> {
-  const query = `
-    SELECT
-      min(value) as minValue,
-      max(value) as maxValue,
-      median(value) as medianValue,
-      avg(value) as averageValue
-    FROM player_game_stat_snapshots
-    ${whereConditions}
-  `
-
-  const res = await clickhouse.query({
-    query: query,
-    format: 'JSONEachRow'
-  }).then((res) => res.json<{
-    minValue: number
-    maxValue: number
-    medianValue: number | null
-    averageValue: number | null
-  }>())
-
-  const {
-    minValue,
-    maxValue,
-    medianValue,
-    averageValue
-  } = res[0]
-
-  return {
-    minValue: minValue || stat.defaultValue,
-    maxValue: maxValue || stat.defaultValue,
-    medianValue: medianValue ?? stat.defaultValue,
-    averageValue: averageValue ?? stat.defaultValue
-  }
-}
 
 @TraceService()
 export default class GameStatAPIService extends APIService {
@@ -195,10 +89,12 @@ export default class GameStatAPIService extends APIService {
       req.ctx.throw(400, `Stat would go above the maxValue of ${stat.maxValue}`)
     }
 
+    const continuityDate: Date = req.ctx.state.continuityDate
+
     if (!playerStat) {
       playerStat = new PlayerGameStat(alias.player, req.ctx.state.stat)
-      if (req.ctx.state.continuityDate) {
-        playerStat.createdAt = req.ctx.state.continuityDate
+      if (continuityDate) {
+        playerStat.createdAt = continuityDate
       }
 
       em.persist(playerStat)
@@ -210,6 +106,9 @@ export default class GameStatAPIService extends APIService {
     const snapshot = new PlayerGameStatSnapshot()
     snapshot.construct(alias, playerStat)
     snapshot.change = change
+    if (continuityDate) {
+      snapshot.createdAt = continuityDate
+    }
 
     await clickhouse.insert({
       table: 'player_game_stat_snapshots',
@@ -256,18 +155,7 @@ export default class GameStatAPIService extends APIService {
     const stat: GameStat = req.ctx.state.stat
     const player: Player = req.ctx.state.player
 
-    await player.aliases.loadItems()
-    const aliasIds = player.aliases.getIdentifiers()
-
-    let whereConditions = `WHERE game_stat_id = ${stat.id} AND player_alias_id IN (${aliasIds.join(', ')})`
-    if (startDate) {
-      whereConditions += ` AND created_at >= '${formatDateForClickHouse(new Date(startDate))}'`
-    }
-    if (endDate) {
-      // when using YYYY-MM-DD, use the end of the day
-      const end = endDate.length === 10 ? endOfDay(new Date(endDate)) : new Date(endDate)
-      whereConditions += ` AND created_at <= '${formatDateForClickHouse(end)}'`
-    }
+    const whereConditions = await stat.buildMetricsWhereConditions(startDate, endDate, player)
 
     const query = `
       WITH (SELECT count() FROM player_game_stat_snapshots ${whereConditions}) AS count
@@ -323,15 +211,8 @@ export default class GameStatAPIService extends APIService {
       req.ctx.throw(400, 'This stat is not globally available')
     }
 
-    let whereConditions = `WHERE game_stat_id = ${stat.id}`
-    if (startDate) {
-      whereConditions += ` AND created_at >= '${formatDateForClickHouse(new Date(startDate))}'`
-    }
-    if (endDate) {
-      // when using YYYY-MM-DD, use the end of the day
-      const end = endDate.length === 10 ? endOfDay(new Date(endDate)) : new Date(endDate)
-      whereConditions += ` AND created_at <= '${formatDateForClickHouse(end)}'`
-    }
+    let whereConditions = await stat.buildMetricsWhereConditions(startDate, endDate)
+
     if (playerId) {
       try {
         const player = await em.repo(Player).findOneOrFail({
@@ -358,8 +239,8 @@ export default class GameStatAPIService extends APIService {
     }).then((res) => res.json<ClickHousePlayerGameStatSnapshot>())
 
     const history = await Promise.all(snapshots.map((snapshot) => new PlayerGameStatSnapshot().hydrate(em, snapshot)))
-    const [count, globalValue] = await getGlobalValueMetrics(clickhouse, stat, whereConditions)
-    const playerValue = await getPlayerValueMetrics(clickhouse, stat, whereConditions)
+    const [count, globalValue] = await stat.getGlobalValueMetrics(clickhouse, whereConditions)
+    const playerValue = await stat.getPlayerValueMetrics(clickhouse, whereConditions)
 
     return {
       status: 200,

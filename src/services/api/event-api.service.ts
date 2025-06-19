@@ -81,8 +81,8 @@ export default class EventAPIService extends APIService {
           errors[i].push(`Event timestamp is invalid (${item.name})`)
         }
 
-        // deduplication logic
         if (errors[i].length === 0) {
+          // deduplication logic
           const hash = createHash('sha256')
             .update(JSON.stringify({
               playerAliasId: playerAlias.id,
@@ -92,7 +92,7 @@ export default class EventAPIService extends APIService {
             }))
             .digest('hex')
 
-          const isNew = await redis.set(`events:dedupe:${hash}`, '1', 'EX', 1, 'NX') // 1 seconds TTL
+          const isNew = await redis.set(`events:dedupe:${hash}`, '1', 'EX', 1, 'NX') // 1 second TTL
           if (!isNew) {
             errors[i].push(`Duplicate event detected (${item.name})`)
           } else {
@@ -128,6 +128,7 @@ export default class EventAPIService extends APIService {
       }
     }
 
+    // flush player meta props set by event.setProps()
     await em.flush()
 
     return {

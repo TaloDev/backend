@@ -21,7 +21,7 @@ export default class GameStatService extends Service {
   })
   @HasPermission(GameStatPolicy, 'index')
   async index(req: Request): Promise<Response> {
-    const { metricsStartDate, metricsEndDate } = req.query
+    const { withMetrics, metricsStartDate, metricsEndDate } = req.query
 
     const em: EntityManager = req.ctx.em
     const stats = await em.getRepository(GameStat).find({ game: req.ctx.state.game })
@@ -29,7 +29,9 @@ export default class GameStatService extends Service {
     for (const stat of stats) {
       if (stat.global) {
         await stat.recalculateGlobalValue(req.ctx.state.includeDevData)
-        await stat.loadMetrics(req.ctx.clickhouse, metricsStartDate, metricsEndDate)
+        if (withMetrics === '1') {
+          await stat.loadMetrics(req.ctx.clickhouse, metricsStartDate, metricsEndDate)
+        }
       }
     }
 

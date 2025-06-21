@@ -57,6 +57,14 @@ export default class GameStatAPIPolicy extends Policy {
     return this.hasScope(APIKeyScope.READ_GAME_STATS)
   }
 
+  async getPlayerStat(req: Request): Promise<PolicyResponse> {
+    const [stat, alias] = await Promise.all([this.getStat(req), this.getAlias()])
+    if (!stat) return new PolicyDenial({ message: 'Stat not found' }, 404)
+    if (!alias) return new PolicyDenial({ message: 'Player not found' }, 404)
+
+    return this.hasScope(APIKeyScope.READ_GAME_STATS)
+  }
+
   async put(req: Request): Promise<PolicyResponse> {
     const [stat, alias] = await Promise.all([this.getStat(req), this.getAlias()])
     if (!stat) return new PolicyDenial({ message: 'Stat not found' }, 404)

@@ -108,7 +108,7 @@ describe('Game stat service - index', () => {
 
     const res = await request(app)
       .get(`/games/${game.id}/game-stats`)
-      .query({ metricsStartDate: values[1][0].toISOString() })
+      .query({ withMetrics: '1', metricsStartDate: values[1][0].toISOString() })
       .auth(token, { type: 'bearer' })
       .expect(200)
 
@@ -153,7 +153,7 @@ describe('Game stat service - index', () => {
 
     const res = await request(app)
       .get(`/games/${game.id}/game-stats`)
-      .query({ metricsEndDate: values[1][0].toISOString() })
+      .query({ withMetrics: '1', metricsEndDate: values[1][0].toISOString() })
       .auth(token, { type: 'bearer' })
       .expect(200)
 
@@ -199,6 +199,7 @@ describe('Game stat service - index', () => {
     const res = await request(app)
       .get(`/games/${game.id}/game-stats`)
       .query({
+        withMetrics: '1',
         metricsStartDate: '2025-06-10',
         metricsEndDate: '2025-06-10'
       })

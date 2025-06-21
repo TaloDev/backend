@@ -49,13 +49,15 @@ describe('Game channel API service - members', () => {
     expect(res.body).toStrictEqual({ message: 'Channel not found' })
   })
 
-  it('should not return dev build players without the dev data header', async () => {
+  it('should not return dev build players without the dev data header, unless its the current player', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_GAME_CHANNELS])
 
     const player = await new PlayerFactory([apiKey.game]).devBuild().one()
+    const otherPlayer = await new PlayerFactory([apiKey.game]).devBuild().one()
     const channel = await new GameChannelFactory(apiKey.game).one()
     channel.members.add(player.aliases[0])
-    await em.persistAndFlush([channel, player])
+    channel.members.add(otherPlayer.aliases[0])
+    await em.persistAndFlush([channel, player, otherPlayer])
 
     const res = await request(app)
       .get(`/v1/game-channels/${channel.id}/members`)
@@ -63,7 +65,7 @@ describe('Game channel API service - members', () => {
       .set('x-talo-alias', String(player.aliases[0].id))
       .expect(200)
 
-    expect(res.body.members).toHaveLength(0)
+    expect(res.body.members).toHaveLength(1)
   })
 
   it('should return dev build players with the dev data header', async () => {

@@ -10,6 +10,9 @@ import { ClickHouseClient } from '@clickhouse/client'
 import { PropSizeError } from '../../lib/errors/propSizeError'
 import { isValid } from 'date-fns'
 import { TraceService } from '../../lib/tracing/trace-service'
+import { createHash } from 'crypto'
+import Redis from 'ioredis'
+import { createRedisConnection } from '../../config/redis.config'
 
 @TraceService()
 export default class EventAPIService extends APIService {
@@ -36,6 +39,7 @@ export default class EventAPIService extends APIService {
     const { events: items } = req.body
     const em: EntityManager = req.ctx.em
     const clickhouse: ClickHouseClient = req.ctx.clickhouse
+    const redis: Redis = createRedisConnection(req.ctx)
 
     const eventsMap: Map<number, Event> = new Map()
     const errors: string[][] = Array.from({ length: items.length }, () => [])
@@ -48,7 +52,7 @@ export default class EventAPIService extends APIService {
 
       for (const key of ['name', 'timestamp']) {
         if (!item[key]) {
-          errors[i].push(`Event is missing the key: ${key}`)
+          errors[i].push(`Event is missing the key: ${key}${key === 'name' ? '' : ` (${item.name})`}`)
         }
       }
 
@@ -63,22 +67,37 @@ export default class EventAPIService extends APIService {
             event.setProps(item.props.map((prop: Prop) => new Prop(prop.key, prop.value)))
           } catch (err) {
             if (err instanceof PropSizeError) {
-              errors[i].push(err.message)
+              errors[i].push(`${err.message} (${item.name})`)
             /* v8 ignore next 3 */
             } else {
               throw err
             }
           }
         } else if (item.props) {
-          errors[i].push('Props must be an array')
+          errors[i].push(`Props must be an array (${item.name})`)
         }
 
         if (!isValid(event.createdAt)) {
-          errors[i].push('Event timestamp is invalid')
+          errors[i].push(`Event timestamp is invalid (${item.name})`)
         }
 
         if (errors[i].length === 0) {
-          eventsMap.set(i, event)
+          // deduplication logic
+          const hash = createHash('sha256')
+            .update(JSON.stringify({
+              playerAliasId: playerAlias.id,
+              name: item.name,
+              props: item.props ?? [],
+              timestamp: Math.floor(new Date(item.timestamp).getTime() / 1000) // round up to nearest second
+            }))
+            .digest('hex')
+
+          const isNew = await redis.set(`events:dedupe:${hash}`, '1', 'EX', 1, 'NX') // 1 second TTL
+          if (!isNew) {
+            errors[i].push(`Duplicate event detected (${item.name})`)
+          } else {
+            eventsMap.set(i, event)
+          }
         }
       }
     }
@@ -93,7 +112,7 @@ export default class EventAPIService extends APIService {
       })
     } catch (err) {
       for (const idx of eventsMap.keys()) {
-        errors[idx].push(`Failed to insert events': ${(err as Error).message}`)
+        errors[idx].push(`Failed to insert event: ${(err as Error).message} (${eventsArray[idx].name})`)
       }
     }
 
@@ -105,7 +124,7 @@ export default class EventAPIService extends APIService {
       })
     } catch (err) {
       for (const idx of eventsMap.keys()) {
-        errors[idx].push(`Failed to insert props': ${(err as Error).message}`)
+        errors[idx].push(`Failed to insert props: ${(err as Error).message} (${eventsArray[idx].name})`)
       }
     }
 

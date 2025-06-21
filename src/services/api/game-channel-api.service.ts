@@ -5,7 +5,6 @@ import GameChannel, { GameChannelLeavingReason } from '../../entities/game-chann
 import { EntityManager, FilterQuery, LockMode } from '@mikro-orm/mysql'
 import GameChannelAPIDocs from '../../docs/game-channel-api.docs'
 import PlayerAlias from '../../entities/player-alias'
-import { devDataPlayerFilter } from '../../middleware/dev-data-middleware'
 import { createRedisConnection } from '../../config/redis.config'
 import GameChannelStorageProp from '../../entities/game-channel-storage-prop'
 import { PropSizeError } from '../../lib/errors/propSizeError'
@@ -292,19 +291,20 @@ export default class GameChannelAPIService extends APIService {
   })
   @HasPermission(GameChannelAPIPolicy, 'members')
   async members(req: Request): Promise<Response> {
-    const em: EntityManager = req.ctx.em
     const channel: GameChannel = req.ctx.state.channel
+    const alias: PlayerAlias = req.ctx.state.alias
 
-    if (!channel.hasMember(req.ctx.state.alias.id)) {
+    if (!channel.hasMember(alias.id)) {
       req.ctx.throw(403, 'This player is not a member of the channel')
     }
 
-    const members = await channel.members.loadItems({
-      refresh: true,
-      where: req.ctx.state.includeDevData ? {} : {
-        player: devDataPlayerFilter(em)
-      }
-    })
+    let members = channel.members.getItems()
+    if (!req.ctx.state.includeDevData) {
+      // filter out dev players unless its the current alias
+      members = members.filter((member) => {
+        return !member.player.isDevBuild() || member.id === alias.id
+      })
+    }
 
     return {
       status: 200,

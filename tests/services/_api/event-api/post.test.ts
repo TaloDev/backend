@@ -115,7 +115,7 @@ describe('Event API service - post', () => {
       .set('x-talo-alias', String(player.aliases[0].id))
       .expect(200)
 
-    expect(res.body.errors[0]).toStrictEqual(['Event is missing the key: timestamp'])
+    expect(res.body.errors[0]).toStrictEqual(['Event is missing the key: timestamp (Craft bow)'])
   })
 
   it('should not create any events if the events body key is not an array', async () => {
@@ -212,7 +212,7 @@ describe('Event API service - post', () => {
       .set('x-talo-alias', String(player.aliases[0].id))
       .expect(200)
 
-    expect(res.body.errors[0]).toStrictEqual(['Props must be an array'])
+    expect(res.body.errors[0]).toStrictEqual(['Props must be an array (Equip bow)'])
   })
 
   it('should add valid meta props to the player\'s props', async () => {
@@ -303,7 +303,7 @@ describe('Event API service - post', () => {
       .set('x-talo-alias', String(player.aliases[0].id))
       .expect(200)
 
-    expect(res.body.errors[0]).toContain('Failed to insert events\': ClickHouse insert failed')
+    expect(res.body.errors[0]).toContain('Failed to insert event: ClickHouse insert failed (Craft bow)')
 
     vi.restoreAllMocks()
   })
@@ -330,7 +330,7 @@ describe('Event API service - post', () => {
       .set('x-talo-alias', String(player.aliases[0].id))
       .expect(200)
 
-    expect(res.body.errors[0]).toContain('Failed to insert props\': ClickHouse insert failed')
+    expect(res.body.errors[0]).toContain('Failed to insert props: ClickHouse insert failed (Craft bow)')
 
     vi.restoreAllMocks()
   })
@@ -353,7 +353,7 @@ describe('Event API service - post', () => {
 
     expect(res.body).toStrictEqual({
       events: [],
-      errors: [['Prop key length (129) exceeds 128 characters']]
+      errors: [['Prop key length (129) exceeds 128 characters (Equip bow)']]
     })
   })
 
@@ -375,7 +375,7 @@ describe('Event API service - post', () => {
 
     expect(res.body).toStrictEqual({
       events: [],
-      errors: [['Prop value length (513) exceeds 512 characters']]
+      errors: [['Prop value length (513) exceeds 512 characters (Equip bow)']]
     })
   })
 
@@ -395,6 +395,30 @@ describe('Event API service - post', () => {
       .set('x-talo-alias', String(player.aliases[0].id))
       .expect(200)
 
-    expect(res.body.errors[0]).toStrictEqual(['Event timestamp is invalid'])
+    expect(res.body.errors[0]).toStrictEqual(['Event timestamp is invalid (Equip bow)'])
+  })
+
+  it('should de-duplicate events', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_EVENTS])
+    const player = await new PlayerFactory([apiKey.game]).one()
+    await em.persistAndFlush(player)
+
+    const res = await request(app)
+      .post('/v1/events')
+      .send({
+        events: [
+          { name: 'Craft bow', timestamp: Date.now() },
+          { name: 'Craft bow', timestamp: Date.now() },
+          { name: 'Craft bow', timestamp: Date.now() }
+        ]
+      })
+      .auth(token, { type: 'bearer' })
+      .set('x-talo-alias', String(player.aliases[0].id))
+      .expect(200)
+
+    expect(res.body.events).toHaveLength(1)
+    expect(res.body.errors[0]).toStrictEqual([])
+    expect(res.body.errors[1]).toStrictEqual(['Duplicate event detected (Craft bow)'])
+    expect(res.body.errors[2]).toStrictEqual(['Duplicate event detected (Craft bow)'])
   })
 })

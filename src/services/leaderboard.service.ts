@@ -14,26 +14,25 @@ import { TraceService } from '../lib/tracing/trace-service'
 
 async function getGlobalEntryIds({
   em,
-  includeDevData,
   aliasId,
   leaderboard,
-  entries
+  entries,
+  includeDevData,
+  includeDeleted
 }: {
   em: EntityManager
   includeDevData: boolean
   aliasId: string
   leaderboard: Leaderboard
   entries: LeaderboardEntry[]
+  includeDeleted: boolean
 }): Promise<number[]> {
   if (aliasId && entries.length > 0) {
     const scores = entries.map((entry) => entry.score)
     const globalQuery = em.qb(LeaderboardEntry)
       .select('id')
-      .where({
-        leaderboard,
-        hidden: false,
-        deletedAt: null
-      })
+      .where({ leaderboard, hidden: false })
+      .andWhere(includeDeleted ? {} : { deletedAt: null })
       .andWhere({
         $or: [
           // entries with better scores
@@ -194,7 +193,8 @@ export default class LeaderboardService extends Service {
       aliasId,
       leaderboard,
       entries,
-      includeDevData: req.ctx.state.includeDevData
+      includeDevData: req.ctx.state.includeDevData,
+      includeDeleted
     })
 
     const mappedEntries = await Promise.all(entries.map(async (entry, idx) => {

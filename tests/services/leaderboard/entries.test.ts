@@ -7,6 +7,7 @@ import createUserAndToken from '../../utils/createUserAndToken'
 import LeaderboardEntry from '../../../src/entities/leaderboard-entry'
 import LeaderboardEntryProp from '../../../src/entities/leaderboard-entry-prop'
 import { Collection } from '@mikro-orm/core'
+import { LeaderboardSortMode } from '../../../src/entities/leaderboard'
 
 describe('Leaderboard service - entries', () => {
   it('should return a leaderboard\'s entries', async () => {
@@ -194,5 +195,38 @@ describe('Leaderboard service - entries', () => {
 
     expect(res.body.entries).toHaveLength(1)
     expect(res.body.entries[0].id).toBe(entry.id)
+  })
+
+  it('should return the correct positions for a mixed of archived, active and hidden entries when fitlering by alias', async () => {
+    const [organisation, game] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken({}, organisation)
+
+    const players = await new PlayerFactory([game]).many(2)
+    const leaderboard = await new LeaderboardFactory([game]).state(() => ({ unique: false, sortMode: LeaderboardSortMode.ASC })).one()
+
+    const entries = await new LeaderboardEntryFactory(leaderboard, [players[0]])
+      .state((_, idx) => ({
+        score: idx + 1,
+        playerAlias: players[0].aliases[0]
+      }))
+      .many(3)
+
+    const hiddenEntry = await new LeaderboardEntryFactory(leaderboard, [players[1]])
+      .state(() => ({ score: 0, hidden: true }))
+      .one()
+
+    entries[0].deletedAt = new Date()
+    entries[1].deletedAt = new Date()
+    await em.persistAndFlush([...entries, hiddenEntry])
+
+    const res = await request(app)
+      .get(`/games/${game.id}/leaderboards/${leaderboard.id}/entries`)
+      .query({ page: 0, withDeleted: '1', aliasId: players[0].aliases[0].id })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    expect(res.body.entries[0].position).toBe(0)
+    expect(res.body.entries[1].position).toBe(1)
+    expect(res.body.entries[2].position).toBe(2)
   })
 })

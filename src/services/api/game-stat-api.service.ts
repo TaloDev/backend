@@ -13,9 +13,44 @@ import Player from '../../entities/player'
 import { buildDateValidationSchema } from '../../lib/dates/dateValidationSchema'
 import PlayerAlias from '../../entities/player-alias'
 import { TraceService } from '../../lib/tracing/trace-service'
+import { Queue } from 'bullmq'
+import createQueue from '../../lib/queues/createQueue'
+import createClickHouseClient from '../../lib/clickhouse/createClient'
 
 @TraceService()
 export default class GameStatAPIService extends APIService {
+  queue: Queue
+  snapshotsBuffer: PlayerGameStatSnapshot[] = []
+
+  constructor() {
+    super()
+
+    this.queue = createQueue('flush-snapshots', async () => {
+      if (this.snapshotsBuffer.length === 0) {
+        return
+      }
+
+      const clickhouse = createClickHouseClient()
+      await clickhouse.insert({
+        table: 'player_game_stat_snapshots',
+        values: [this.snapshotsBuffer.map((snapshot) => snapshot.toInsertable())],
+        format: 'JSONEachRow'
+      })
+      this.snapshotsBuffer = []
+      await clickhouse.close()
+    })
+
+    const flushInterval = process.env.GAME_METRICS_FLUSH_INTERVAL
+      ? Number(process.env.GAME_METRICS_FLUSH_INTERVAL)
+      : 30_000
+
+    this.queue.upsertJobScheduler(
+      'flush-snapshots-scheduler',
+      { every: flushInterval },
+      { name: 'flush-snapshots-job' }
+    )
+  }
+
   @Route({
     method: 'GET',
     docs: GameStatAPIDocs.index
@@ -92,7 +127,6 @@ export default class GameStatAPIService extends APIService {
   async put(req: Request<{ change: number }>): Promise<Response> {
     const { change } = req.body
     const em: EntityManager = req.ctx.em
-    const clickhouse: ClickHouseClient = req.ctx.clickhouse
 
     const stat: GameStat = req.ctx.state.stat
     const alias: PlayerAlias = req.ctx.state.alias
@@ -138,11 +172,7 @@ export default class GameStatAPIService extends APIService {
       snapshot.createdAt = continuityDate
     }
 
-    await clickhouse.insert({
-      table: 'player_game_stat_snapshots',
-      values: [snapshot.toInsertable()],
-      format: 'JSONEachRow'
-    })
+    this.snapshotsBuffer.push(snapshot)
 
     await triggerIntegrations(em, stat.game, (integration) => {
       return integration.handleStatUpdated(em, playerStat)

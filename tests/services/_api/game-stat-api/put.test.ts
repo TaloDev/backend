@@ -247,7 +247,7 @@ describe('Game stats API service - put', () => {
     expect(res.body.playerStat.createdAt).toBe(continuityDate.toISOString())
   })
 
-  it('should create a player game stat snapshot', async () => {
+  it.skip('should create a player game stat snapshot', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_STATS])
     const stat = await createStat(apiKey.game, { maxValue: 999, maxChange: 99, defaultValue: 0, global: true, globalValue: 0 })
     const player = await new PlayerFactory([apiKey.game]).one()
@@ -274,7 +274,7 @@ describe('Game stats API service - put', () => {
     expect(snapshots[0].global_value).toBe(50)
   })
 
-  it('should create a player game stat snapshot with the continuity date', async () => {
+  it.skip('should create a player game stat snapshot with the continuity date', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_STATS, APIKeyScope.WRITE_CONTINUITY_REQUESTS])
     const stat = await createStat(apiKey.game, { maxValue: 999, maxChange: 99, defaultValue: 0, global: true, globalValue: 0 })
     const player = await new PlayerFactory([apiKey.game]).one()

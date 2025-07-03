@@ -57,7 +57,13 @@ export class Queue<T> {
     await Promise.all(this.workers.map((worker) => worker.process(job)))
   }
 
-  async upsertJobScheduler(jobName: string, options: { pattern: string }, jobOptions: { name: string }) {
+  async upsertJobScheduler(jobName: string, options: { pattern: string, every: number }, jobOptions: { name: string }) {
     bullEmitter.emit('job-scheduler-upserted', jobName, options, jobOptions)
+    if (options.every) {
+      setInterval(() => {
+        const job = new Job<T>(this.name, jobName, {} as T)
+        this.workers.forEach((worker) => worker.process(job))
+      }, options.every)
+    }
   }
 }

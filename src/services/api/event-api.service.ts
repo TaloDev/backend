@@ -15,6 +15,8 @@ import { createRedisConnection } from '../../config/redis.config'
 import { Queue } from 'bullmq'
 import createQueue from '../../lib/queues/createQueue'
 import createClickHouseClient from '../../lib/clickhouse/createClient'
+import { getMetricFlushInterval } from '../../lib/clickhouse/getMetricFlushInterval'
+import { captureException } from '@sentry/node'
 
 @TraceService()
 export default class EventAPIService extends APIService {
@@ -42,20 +44,15 @@ export default class EventAPIService extends APIService {
           format: 'JSONEachRow'
         })
       } catch (err) {
-        console.error(err)
+        captureException(err)
       }
-      console.log(`flushing ${this.eventsBuffer.length}`)
       this.eventsBuffer = []
       await clickhouse.close()
     })
 
-    const flushInterval = process.env.GAME_METRICS_FLUSH_INTERVAL
-      ? Number(process.env.GAME_METRICS_FLUSH_INTERVAL)
-      : 30_000
-
     this.queue.upsertJobScheduler(
       'flush-events-scheduler',
-      { every: flushInterval },
+      { every: getMetricFlushInterval() },
       { name: 'flush-events-job' }
     )
   }

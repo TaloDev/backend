@@ -16,6 +16,7 @@ import { TraceService } from '../../lib/tracing/trace-service'
 import { Queue } from 'bullmq'
 import createQueue from '../../lib/queues/createQueue'
 import createClickHouseClient from '../../lib/clickhouse/createClient'
+import { getMetricFlushInterval } from '../../lib/clickhouse/getMetricFlushInterval'
 
 @TraceService()
 export default class GameStatAPIService extends APIService {
@@ -40,13 +41,9 @@ export default class GameStatAPIService extends APIService {
       await clickhouse.close()
     })
 
-    const flushInterval = process.env.GAME_METRICS_FLUSH_INTERVAL
-      ? Number(process.env.GAME_METRICS_FLUSH_INTERVAL)
-      : 30_000
-
     this.queue.upsertJobScheduler(
       'flush-snapshots-scheduler',
-      { every: flushInterval },
+      { every: getMetricFlushInterval() },
       { name: 'flush-snapshots-job' }
     )
   }

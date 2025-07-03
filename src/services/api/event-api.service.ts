@@ -17,6 +17,7 @@ import createQueue from '../../lib/queues/createQueue'
 import createClickHouseClient from '../../lib/clickhouse/createClient'
 import { getMetricFlushInterval } from '../../lib/clickhouse/getMetricFlushInterval'
 import { captureException } from '@sentry/node'
+import { setTraceAttributes } from '@hyperdx/node-opentelemetry'
 
 @TraceService()
 export default class EventAPIService extends APIService {
@@ -30,6 +31,13 @@ export default class EventAPIService extends APIService {
       if (this.eventsBuffer.length === 0) {
         return
       }
+
+      const eventsBufferSize = this.eventsBuffer.length
+      setTraceAttributes({
+        eventsBufferSize
+      })
+
+      console.info(`Flushing ${eventsBufferSize} events...`)
 
       const clickhouse = createClickHouseClient()
       try {

@@ -17,6 +17,7 @@ import { Queue } from 'bullmq'
 import createQueue from '../../lib/queues/createQueue'
 import createClickHouseClient from '../../lib/clickhouse/createClient'
 import { getMetricFlushInterval } from '../../lib/clickhouse/getMetricFlushInterval'
+import { setTraceAttributes } from '@hyperdx/node-opentelemetry'
 
 @TraceService()
 export default class GameStatAPIService extends APIService {
@@ -30,6 +31,13 @@ export default class GameStatAPIService extends APIService {
       if (this.snapshotsBuffer.length === 0) {
         return
       }
+
+      const snapshotsBufferSize = this.snapshotsBuffer.length
+      setTraceAttributes({
+        snapshotsBufferSize
+      })
+
+      console.info(`Flushing ${snapshotsBufferSize} snapshots...`)
 
       const clickhouse = createClickHouseClient()
       await clickhouse.insert({

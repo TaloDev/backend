@@ -17,6 +17,15 @@ describe('Game stats API service - put', () => {
     return stat
   }
 
+  beforeEach(() => {
+    vi.useFakeTimers()
+  })
+
+  afterEach(() => {
+    vi.clearAllTimers()
+    vi.useRealTimers()
+  })
+
   it('should create a player stat if the scope is valid', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_STATS])
     const stat = await createStat(apiKey.game, { maxValue: 999, maxChange: 99 })
@@ -269,6 +278,8 @@ describe('Game stats API service - put', () => {
       return snapshots.length === 1
     })
 
+    vi.runAllTimers()
+
     expect(snapshots[0].change).toBe(50)
     expect(snapshots[0].value).toBe(50)
     expect(snapshots[0].global_value).toBe(50)
@@ -289,6 +300,8 @@ describe('Game stats API service - put', () => {
       .set('x-talo-alias', String(player.aliases[0].id))
       .set('x-talo-continuity-timestamp', String(continuityDate.getTime()))
       .expect(200)
+
+    vi.runAllTimers()
 
     let snapshots: ClickHousePlayerGameStatSnapshot[] = []
     await vi.waitUntil(async () => {

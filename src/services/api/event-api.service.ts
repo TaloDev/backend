@@ -6,16 +6,57 @@ import EventAPIDocs from '../../docs/event-api.docs'
 import Player from '../../entities/player'
 import Event from '../../entities/event'
 import Prop from '../../entities/prop'
-import { ClickHouseClient } from '@clickhouse/client'
 import { PropSizeError } from '../../lib/errors/propSizeError'
 import { isValid } from 'date-fns'
 import { TraceService } from '../../lib/tracing/trace-service'
 import { createHash } from 'crypto'
 import Redis from 'ioredis'
 import { createRedisConnection } from '../../config/redis.config'
+import { Queue } from 'bullmq'
+import createQueue from '../../lib/queues/createQueue'
+import createClickHouseClient from '../../lib/clickhouse/createClient'
+import { getMetricFlushInterval } from '../../lib/clickhouse/getMetricFlushInterval'
+import { captureException } from '@sentry/node'
 
 @TraceService()
 export default class EventAPIService extends APIService {
+  queue: Queue
+  eventsBuffer: Event[] = []
+
+  constructor() {
+    super()
+
+    this.queue = createQueue('flush-events', async () => {
+      if (this.eventsBuffer.length === 0) {
+        return
+      }
+
+      const clickhouse = createClickHouseClient()
+      try {
+        await clickhouse.insert({
+          table: 'events',
+          values: this.eventsBuffer.map((event) => event.toInsertable()),
+          format: 'JSONEachRow'
+        })
+        await clickhouse.insert({
+          table: 'event_props',
+          values: this.eventsBuffer.flatMap((event) => event.getInsertableProps()),
+          format: 'JSONEachRow'
+        })
+      } catch (err) {
+        captureException(err)
+      }
+      this.eventsBuffer = []
+      await clickhouse.close()
+    })
+
+    this.queue.upsertJobScheduler(
+      'flush-events-scheduler',
+      { every: getMetricFlushInterval() },
+      { name: 'flush-events-job' }
+    )
+  }
+
   @Route({
     method: 'POST',
     docs: EventAPIDocs.post
@@ -38,7 +79,6 @@ export default class EventAPIService extends APIService {
   async post(req: Request): Promise<Response> {
     const { events: items } = req.body
     const em: EntityManager = req.ctx.em
-    const clickhouse: ClickHouseClient = req.ctx.clickhouse
     const redis: Redis = createRedisConnection(req.ctx)
 
     const eventsMap: Map<number, Event> = new Map()
@@ -103,30 +143,7 @@ export default class EventAPIService extends APIService {
     }
 
     const eventsArray = Array.from(eventsMap.values())
-
-    try {
-      await clickhouse.insert({
-        table: 'events',
-        values: eventsArray.map((event) => event.toInsertable()),
-        format: 'JSONEachRow'
-      })
-    } catch (err) {
-      for (const idx of eventsMap.keys()) {
-        errors[idx].push(`Failed to insert event: ${(err as Error).message} (${eventsArray[idx].name})`)
-      }
-    }
-
-    try {
-      await clickhouse.insert({
-        table: 'event_props',
-        values: eventsArray.flatMap((event) => event.getInsertableProps()),
-        format: 'JSONEachRow'
-      })
-    } catch (err) {
-      for (const idx of eventsMap.keys()) {
-        errors[idx].push(`Failed to insert props: ${(err as Error).message} (${eventsArray[idx].name})`)
-      }
-    }
+    this.eventsBuffer.push(...eventsArray)
 
     // flush player meta props set by event.setProps()
     await em.flush()

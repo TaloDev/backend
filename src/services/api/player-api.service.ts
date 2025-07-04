@@ -14,7 +14,6 @@ import checkScope from '../../policies/checkScope'
 import Integration, { IntegrationType } from '../../entities/integration'
 import { validateAuthSessionToken } from '../../middleware/player-auth-middleware'
 import { setCurrentPlayerState } from '../../middleware/current-player-middleware'
-import { createRedisConnection } from '../../config/redis.config'
 import { ClickHouseClient } from '@clickhouse/client'
 import { TraceService } from '../../lib/tracing/trace-service'
 import { getResultCacheOptions } from '../../lib/perf/getResultCacheOptions'
@@ -138,7 +137,7 @@ export default class PlayerAPIService extends APIService {
     alias.lastSeenAt = alias.player.lastSeenAt = new Date()
     await em.flush()
 
-    const socketToken = await alias.createSocketToken(createRedisConnection(req.ctx))
+    const socketToken = await alias.createSocketToken(req.ctx.redis)
 
     return {
       status: 200,

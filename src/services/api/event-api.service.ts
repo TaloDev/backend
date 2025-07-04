@@ -11,59 +11,15 @@ import { isValid } from 'date-fns'
 import { TraceService } from '../../lib/tracing/trace-service'
 import { createHash } from 'crypto'
 import Redis from 'ioredis'
-import { Queue } from 'bullmq'
-import createQueue from '../../lib/queues/createQueue'
-import createClickHouseClient from '../../lib/clickhouse/createClient'
-import { getMetricFlushInterval } from '../../lib/clickhouse/getMetricFlushInterval'
-import { captureException } from '@sentry/node'
-import { setTraceAttributes } from '@hyperdx/node-opentelemetry'
+import { FlushEventsQueueHandler } from '../../lib/queues/game-metrics/flush-events-queue-handler'
 
 @TraceService()
 export default class EventAPIService extends APIService {
-  queue: Queue
-  eventsBuffer: Map<string, Event> = new Map()
+  private queueHandler: FlushEventsQueueHandler
 
   constructor() {
     super()
-
-    this.queue = createQueue('flush-events', async () => {
-      const eventsBufferSize = this.eventsBuffer.size
-      if (this.eventsBuffer.size === 0) {
-        return
-      }
-
-      setTraceAttributes({
-        eventsBufferSize
-      })
-
-      console.info(`Flushing ${eventsBufferSize} events...`)
-      const values = Array.from(this.eventsBuffer.values())
-
-      const clickhouse = createClickHouseClient()
-      try {
-        await clickhouse.insert({
-          table: 'events',
-          values: values.map((event) => event.toInsertable()),
-          format: 'JSONEachRow'
-        })
-        await clickhouse.insert({
-          table: 'event_props',
-          values: values.flatMap((event) => event.getInsertableProps()),
-          format: 'JSONEachRow'
-        })
-        await clickhouse.close()
-      } catch (err) {
-        captureException(err)
-      }
-
-      values.forEach(({ id }) => this.eventsBuffer.delete(id))
-    })
-
-    this.queue.upsertJobScheduler(
-      'flush-events-scheduler',
-      { every: getMetricFlushInterval() },
-      { name: 'flush-events-job' }
-    )
+    this.queueHandler = new FlushEventsQueueHandler()
   }
 
   @Route({
@@ -153,7 +109,7 @@ export default class EventAPIService extends APIService {
 
     const eventsArray = Array.from(eventsMap.values())
     eventsArray.forEach((event) => {
-      this.eventsBuffer.set(event.id, event)
+      this.queueHandler.add(event)
     })
 
     // flush player meta props set by event.setProps()

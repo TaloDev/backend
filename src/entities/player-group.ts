@@ -116,8 +116,15 @@ export default class PlayerGroup {
     })
   }
 
+  getQueryCacheKey() {
+    return `group-query-${this.id}`
+  }
+
   async checkMembership(em: EntityManager) {
-    const players = await this.getQuery(em).getResultList()
+    const players = await this.getQuery(em)
+      .cache([this.getQueryCacheKey(), 30_000])
+      .getResultList()
+
     this.members.set(players)
   }
 

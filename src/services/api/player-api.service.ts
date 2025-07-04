@@ -17,6 +17,7 @@ import { setCurrentPlayerState } from '../../middleware/current-player-middlewar
 import { createRedisConnection } from '../../config/redis.config'
 import { ClickHouseClient } from '@clickhouse/client'
 import { TraceService } from '../../lib/tracing/trace-service'
+import { getResultCacheOptions } from '../../lib/perf/getResultCacheOptions'
 
 async function getRealIdentifier(
   req: Request,
@@ -51,7 +52,8 @@ export async function findAliasFromIdentifyRequest(
       game: key.game
     }
   }, {
-    populate: ['player.auth']
+    populate: ['player.auth'],
+    ...(getResultCacheOptions('find-alias-from-identify-request-key', 10_000) ?? {})
   })
 }
 

@@ -1,6 +1,5 @@
 import { Context, Next } from 'koa'
 import * as Sentry from '@sentry/node'
-import Redis from 'ioredis'
 import { recordException as hdxRecordException } from '@hyperdx/node-opentelemetry'
 
 export default async function errorMiddleware(ctx: Context, next: Next) {
@@ -12,10 +11,6 @@ export default async function errorMiddleware(ctx: Context, next: Next) {
       ctx.body = ctx.status === 401 && Boolean('originalError' in err && err.originalError) /* dont expose jwt error */
         ? { message: 'Please provide a valid token in the Authorization header' }
         : { ...err, headers: undefined /* koa cors is inserting headers into the body for some reason */ }
-
-      if (ctx.state.redis instanceof Redis) {
-        await (ctx.state.redis as Redis).quit()
-      }
 
       if (ctx.status === 500) {
         hdxRecordException(err)

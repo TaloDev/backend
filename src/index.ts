@@ -11,7 +11,6 @@ import corsMiddleware from './middleware/cors-middleware'
 import errorMiddleware from './middleware/error-middleware'
 import initProviders from './config/providers'
 import devDataMiddleware from './middleware/dev-data-middleware'
-import cleanupMiddleware from './middleware/cleanup-middleware'
 import requestContextMiddleware from './middleware/request-context-middleware'
 import helmetMiddleware from './middleware/helmet-middleware'
 import { createServer } from 'http'
@@ -35,8 +34,6 @@ export default async function init(): Promise<Koa> {
   configureProtectedRoutes(app)
   configurePublicRoutes(app)
   configureAPIRoutes(app)
-
-  app.use(cleanupMiddleware)
 
   const server = createServer(app.callback())
   app.context.wss = new Socket(server, app.context.em)

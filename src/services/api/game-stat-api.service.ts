@@ -19,35 +19,40 @@ import createClickHouseClient from '../../lib/clickhouse/createClient'
 import { getMetricFlushInterval } from '../../lib/clickhouse/getMetricFlushInterval'
 import { setTraceAttributes } from '@hyperdx/node-opentelemetry'
 import { getResultCacheOptions } from '../../lib/perf/getResultCacheOptions'
+import { captureException } from '@sentry/node'
 
 @TraceService()
 export default class GameStatAPIService extends APIService {
   queue: Queue
-  snapshotsBuffer: PlayerGameStatSnapshot[] = []
+  snapshotsBuffer: Map<string, PlayerGameStatSnapshot> = new Map()
 
   constructor() {
     super()
 
     this.queue = createQueue('flush-snapshots', async () => {
-      if (this.snapshotsBuffer.length === 0) {
+      const snapshotsBufferSize = this.snapshotsBuffer.size
+      if (snapshotsBufferSize === 0) {
         return
       }
 
-      const snapshotsBufferSize = this.snapshotsBuffer.length
-      setTraceAttributes({
-        snapshotsBufferSize
-      })
+      setTraceAttributes({ snapshotsBufferSize })
 
       console.info(`Flushing ${snapshotsBufferSize} snapshots...`)
+      const values = Array.from(this.snapshotsBuffer.values())
 
       const clickhouse = createClickHouseClient()
-      await clickhouse.insert({
-        table: 'player_game_stat_snapshots',
-        values: [this.snapshotsBuffer.map((snapshot) => snapshot.toInsertable())],
-        format: 'JSONEachRow'
-      })
-      this.snapshotsBuffer = []
-      await clickhouse.close()
+      try {
+        await clickhouse.insert({
+          table: 'player_game_stat_snapshots',
+          values: values.map((snapshot) => snapshot.toInsertable()),
+          format: 'JSONEachRow'
+        })
+        await clickhouse.close()
+      } catch (err) {
+        captureException(err)
+      }
+
+      values.forEach(({ id }) => this.snapshotsBuffer.delete(id))
     })
 
     this.queue.upsertJobScheduler(
@@ -184,7 +189,7 @@ export default class GameStatAPIService extends APIService {
       snapshot.createdAt = continuityDate
     }
 
-    this.snapshotsBuffer.push(snapshot)
+    this.snapshotsBuffer.set(snapshot.id, snapshot)
 
     await triggerIntegrations(em, stat.game, (integration) => {
       return integration.handleStatUpdated(em, playerStat)

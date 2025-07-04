@@ -21,40 +21,42 @@ import { setTraceAttributes } from '@hyperdx/node-opentelemetry'
 @TraceService()
 export default class EventAPIService extends APIService {
   queue: Queue
-  eventsBuffer: Event[] = []
+  eventsBuffer: Map<string, Event> = new Map()
 
   constructor() {
     super()
 
     this.queue = createQueue('flush-events', async () => {
-      if (this.eventsBuffer.length === 0) {
+      const eventsBufferSize = this.eventsBuffer.size
+      if (this.eventsBuffer.size === 0) {
         return
       }
 
-      const eventsBufferSize = this.eventsBuffer.length
       setTraceAttributes({
         eventsBufferSize
       })
 
       console.info(`Flushing ${eventsBufferSize} events...`)
+      const values = Array.from(this.eventsBuffer.values())
 
       const clickhouse = createClickHouseClient()
       try {
         await clickhouse.insert({
           table: 'events',
-          values: this.eventsBuffer.map((event) => event.toInsertable()),
+          values: values.map((event) => event.toInsertable()),
           format: 'JSONEachRow'
         })
         await clickhouse.insert({
           table: 'event_props',
-          values: this.eventsBuffer.flatMap((event) => event.getInsertableProps()),
+          values: values.flatMap((event) => event.getInsertableProps()),
           format: 'JSONEachRow'
         })
+        await clickhouse.close()
       } catch (err) {
         captureException(err)
       }
-      this.eventsBuffer = []
-      await clickhouse.close()
+
+      values.forEach(({ id }) => this.eventsBuffer.delete(id))
     })
 
     this.queue.upsertJobScheduler(
@@ -150,7 +152,9 @@ export default class EventAPIService extends APIService {
     }
 
     const eventsArray = Array.from(eventsMap.values())
-    this.eventsBuffer.push(...eventsArray)
+    eventsArray.forEach((event) => {
+      this.eventsBuffer.set(event.id, event)
+    })
 
     // flush player meta props set by event.setProps()
     await em.flush()

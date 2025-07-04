@@ -1,5 +1,4 @@
 import Redis from 'ioredis'
-import { Context } from 'koa'
 
 const redisConfig = {
   host: process.env.REDIS_HOST ?? 'redis',
@@ -9,10 +8,6 @@ const redisConfig = {
 
 export default redisConfig
 
-export function createRedisConnection(ctx: Context): Redis {
-  if (ctx.state.redis instanceof Redis) return ctx.state.redis
-
-  const redis = new Redis(redisConfig)
-  ctx.state.redis = redis
-  return redis
+export function createRedisConnection(): Redis {
+  return new Redis(redisConfig)
 }

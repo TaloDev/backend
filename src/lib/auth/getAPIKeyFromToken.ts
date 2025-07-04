@@ -1,9 +1,6 @@
 import { RequestContext } from '@mikro-orm/mysql'
 import APIKey from '../../entities/api-key'
 import jwt from 'jsonwebtoken'
-import { getResultCacheOptions } from '../perf/getResultCacheOptions'
-
-export const apiKeyFromTokenCacheKey = 'api-key-from-token-key'
 
 export default async function getAPIKeyFromToken(authHeader: string): Promise<APIKey | null> {
   const parts = authHeader.split('Bearer ')
@@ -13,8 +10,7 @@ export default async function getAPIKeyFromToken(authHeader: string): Promise<AP
 
     if (decodedToken) {
       const apiKey = await em.getRepository(APIKey).findOne(Number(decodedToken.sub), {
-        populate: ['game', 'game.apiSecret'],
-        ...(getResultCacheOptions(apiKeyFromTokenCacheKey) ?? {})
+        populate: ['game', 'game.apiSecret']
       })
 
       return apiKey

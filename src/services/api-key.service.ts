@@ -8,7 +8,6 @@ import { GameActivityType } from '../entities/game-activity'
 import Socket from '../socket'
 import { sign } from '../lib/auth/jwt'
 import { TraceService } from '../lib/tracing/trace-service'
-import { apiKeyFromTokenCacheKey } from '../lib/auth/getAPIKeyFromToken'
 
 export async function createToken(em: EntityManager, apiKey: APIKey): Promise<string> {
   await em.populate(apiKey, ['game.apiSecret'])
@@ -105,7 +104,6 @@ export default class APIKeyService extends Service {
 
     const apiKey = req.ctx.state.apiKey as APIKey
     apiKey.revokedAt = new Date()
-    await em.clearCache(apiKeyFromTokenCacheKey)
 
     const token = await createToken(em, apiKey)
 

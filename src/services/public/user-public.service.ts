@@ -10,7 +10,6 @@ import UserAccessCode from '../../entities/user-access-code'
 import Organisation from '../../entities/organisation'
 import { add } from 'date-fns'
 import { authenticator } from '@otplib/preset-default'
-import { createRedisConnection } from '../../config/redis.config'
 import UserRecoveryCode from '../../entities/user-recovery-code'
 import generateRecoveryCodes from '../../lib/auth/generateRecoveryCodes'
 import Invite from '../../entities/invite'
@@ -23,6 +22,7 @@ import ResetPassword from '../../emails/reset-password'
 import emailRegex from '../../lib/lang/emailRegex'
 import { sign, verify } from '../../lib/auth/jwt'
 import { TraceService } from '../../lib/tracing/trace-service'
+import Redis from 'ioredis'
 
 async function sendEmailConfirm(req: Request, res: Response): Promise<void> {
   const user: User = req.ctx.state.user
@@ -152,7 +152,7 @@ export default class UserPublicService extends Service {
     if (!passwordMatches) this.handleFailedLogin(req)
 
     if (user!.twoFactorAuth?.enabled) {
-      const redis = createRedisConnection(req.ctx)
+      const redis: Redis = req.ctx.redis
       await redis.set(`2fa:${user!.id}`, 'true', 'EX', 300)
 
       return {
@@ -282,7 +282,7 @@ export default class UserPublicService extends Service {
 
     const user = await em.getRepository(User).findOneOrFail(userId)
 
-    const redis = createRedisConnection(req.ctx)
+    const redis: Redis = req.ctx.redis
     const hasSession = (await redis.get(`2fa:${user.id}`)) === 'true'
 
     if (!hasSession) {
@@ -318,7 +318,7 @@ export default class UserPublicService extends Service {
 
     const user = await em.getRepository(User).findOneOrFail(userId, { populate: ['recoveryCodes'] })
 
-    const redis = createRedisConnection(req.ctx)
+    const redis: Redis = req.ctx.redis
     const hasSession = (await redis.get(`2fa:${user.id}`)) === 'true'
 
     if (!hasSession) {

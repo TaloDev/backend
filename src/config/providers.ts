@@ -6,6 +6,7 @@ import createClickHouseClient from '../lib/clickhouse/createClient'
 import { runClickHouseMigrations } from '../migrations/clickhouse'
 import initScheduledTasks from './scheduled-tasks'
 import { setupKoaErrorHandler as setupSentryErrorHandler } from '@sentry/node'
+import { createRedisConnection } from './redis.config'
 
 export default async function initProviders(app: Koa, isTest: boolean) {
   try {
@@ -20,6 +21,8 @@ export default async function initProviders(app: Koa, isTest: boolean) {
     console.error(err)
     process.exit(1)
   }
+
+  app.context.redis = createRedisConnection()
 
   app.context.emailQueue = createEmailQueue()
 

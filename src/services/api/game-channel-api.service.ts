@@ -5,11 +5,11 @@ import GameChannel, { GameChannelLeavingReason } from '../../entities/game-chann
 import { EntityManager, FilterQuery, LockMode } from '@mikro-orm/mysql'
 import GameChannelAPIDocs from '../../docs/game-channel-api.docs'
 import PlayerAlias from '../../entities/player-alias'
-import { createRedisConnection } from '../../config/redis.config'
 import GameChannelStorageProp from '../../entities/game-channel-storage-prop'
 import { PropSizeError } from '../../lib/errors/propSizeError'
 import { sanitiseProps, testPropSize } from '../../lib/props/sanitiseProps'
 import { TraceService } from '../../lib/tracing/trace-service'
+import Redis from 'ioredis'
 
 type GameChannelStorageTransaction = {
   upsertedProps: GameChannelStorageProp[]
@@ -335,7 +335,7 @@ export default class GameChannelAPIService extends APIService {
 
     let result: GameChannelStorageProp | null = null
 
-    const redis = createRedisConnection(req.ctx)
+    const redis: Redis = req.ctx.redis
     const cachedProp = await redis.get(GameChannelStorageProp.getRedisKey(channel.id, propKey))
 
     if (cachedProp) {
@@ -476,7 +476,7 @@ export default class GameChannelAPIService extends APIService {
 
       await em.flush()
 
-      const redis = createRedisConnection(req.ctx)
+      const redis: Redis = req.ctx.redis
       for (const prop of upsertedProps) {
         await prop.persistToRedis(redis)
       }

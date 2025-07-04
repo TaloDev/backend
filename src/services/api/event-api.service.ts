@@ -11,7 +11,6 @@ import { isValid } from 'date-fns'
 import { TraceService } from '../../lib/tracing/trace-service'
 import { createHash } from 'crypto'
 import Redis from 'ioredis'
-import { createRedisConnection } from '../../config/redis.config'
 import { Queue } from 'bullmq'
 import createQueue from '../../lib/queues/createQueue'
 import createClickHouseClient from '../../lib/clickhouse/createClient'
@@ -87,7 +86,7 @@ export default class EventAPIService extends APIService {
   async post(req: Request): Promise<Response> {
     const { events: items } = req.body
     const em: EntityManager = req.ctx.em
-    const redis: Redis = createRedisConnection(req.ctx)
+    const redis: Redis = req.ctx.redis
 
     const eventsMap: Map<number, Event> = new Map()
     const errors: string[][] = Array.from({ length: items.length }, () => [])

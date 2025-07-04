@@ -8,7 +8,6 @@ import PlayerAuth from '../../entities/player-auth'
 import bcrypt from 'bcrypt'
 import PlayerAuthAPIPolicy from '../../policies/api/player-auth-api.policy'
 import PlayerAuthAPIDocs from '../../docs/player-auth-api.docs'
-import { createRedisConnection } from '../../config/redis.config'
 import generateSixDigitCode from '../../lib/auth/generateSixDigitCode'
 import queueEmail from '../../lib/messaging/queueEmail'
 import PlayerAuthCode from '../../emails/player-auth-code-mail'
@@ -19,6 +18,7 @@ import emailRegex from '../../lib/lang/emailRegex'
 import { ClickHouseClient } from '@clickhouse/client'
 import { deleteClickHousePlayerData } from '../../tasks/deleteInactivePlayers'
 import { TraceService } from '../../lib/tracing/trace-service'
+import Redis from 'ioredis'
 
 @TraceService()
 export default class PlayerAuthAPIService extends APIService {
@@ -72,7 +72,7 @@ export default class PlayerAuthAPIService extends APIService {
     em.persist(alias.player.auth)
 
     const sessionToken = await alias.player.auth.createSession(alias)
-    const socketToken = await alias.createSocketToken(createRedisConnection(req.ctx))
+    const socketToken = await alias.createSocketToken(req.ctx.redis)
 
     createPlayerAuthActivity(req, alias.player, {
       type: PlayerAuthActivityType.REGISTERED,
@@ -126,7 +126,7 @@ export default class PlayerAuthAPIService extends APIService {
     const passwordMatches = await bcrypt.compare(password, alias.player.auth!.password)
     if (!passwordMatches) this.handleFailedLogin(req)
 
-    const redis = createRedisConnection(req.ctx)
+    const redis: Redis = req.ctx.redis
 
     if (alias.player.auth!.verificationEnabled) {
       await em.populate(alias.player, ['game'])
@@ -195,7 +195,7 @@ export default class PlayerAuthAPIService extends APIService {
       })
     }
 
-    const redis = createRedisConnection(req.ctx)
+    const redis: Redis = req.ctx.redis
     const redisCode = await redis.get(this.getRedisAuthKey(key, alias))
 
     if (!redisCode || code !== redisCode) {
@@ -432,7 +432,7 @@ export default class PlayerAuthAPIService extends APIService {
     })
 
     if (playerAuth) {
-      const redis = createRedisConnection(req.ctx)
+      const redis: Redis = req.ctx.redis
       const alias = playerAuth.player.aliases.find((alias) => alias.service === PlayerAliasService.TALO)
 
       if (alias) {
@@ -470,7 +470,7 @@ export default class PlayerAuthAPIService extends APIService {
 
     const key = await this.getAPIKey(req.ctx)
 
-    const redis = createRedisConnection(req.ctx)
+    const redis: Redis = req.ctx.redis
     const aliasId = await redis.get(this.getRedisPasswordResetKey(key, code))
     const alias = await em.getRepository(PlayerAlias).findOne({
       id: Number(aliasId),

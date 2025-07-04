@@ -13,7 +13,7 @@ export default class GameStatAPIPolicy extends Policy {
     const stat = await this.em.repo(GameStat).findOne({
       internalName,
       game: key.game
-    }, getResultCacheOptions('get-stat-stat-key'))
+    }, getResultCacheOptions('stat-api-policy-stat-key'))
 
     this.ctx.state.stat = stat
     return stat
@@ -29,7 +29,7 @@ export default class GameStatAPIPolicy extends Policy {
       }
     }, {
       populate: ['player'],
-      ...(getResultCacheOptions('get-stat-alias-key') ?? {})
+      ...(getResultCacheOptions('stat-api-policy-alias-key') ?? {})
     })
 
     this.ctx.state.alias = alias
@@ -42,7 +42,7 @@ export default class GameStatAPIPolicy extends Policy {
     const player = await this.em.repo(Player).findOne({
       id: this.ctx.state.currentPlayerId,
       game: key.game
-    }, getResultCacheOptions('get-stat-player-key'))
+    }, getResultCacheOptions('stat-api-policy-player-key'))
 
     this.ctx.state.player = player
     return player

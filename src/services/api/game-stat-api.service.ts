@@ -137,7 +137,7 @@ export default class GameStatAPIService extends APIService {
     const alias: PlayerAlias = req.ctx.state.alias
 
     const playerStatCacheKey = 'put-stat-player-stat-key'
-    const statCacheKey = 'get-stat-stat-key'
+    const statCacheKey = 'stat-api-policy-stat-key'
 
     let playerStat = await em.repo(PlayerGameStat).findOne({
       player: alias.player,

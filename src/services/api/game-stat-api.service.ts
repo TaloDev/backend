@@ -13,53 +13,16 @@ import Player from '../../entities/player'
 import { buildDateValidationSchema } from '../../lib/dates/dateValidationSchema'
 import PlayerAlias from '../../entities/player-alias'
 import { TraceService } from '../../lib/tracing/trace-service'
-import { Queue } from 'bullmq'
-import createQueue from '../../lib/queues/createQueue'
-import createClickHouseClient from '../../lib/clickhouse/createClient'
-import { getMetricFlushInterval } from '../../lib/clickhouse/getMetricFlushInterval'
-import { setTraceAttributes } from '@hyperdx/node-opentelemetry'
 import { getResultCacheOptions } from '../../lib/perf/getResultCacheOptions'
-import { captureException } from '@sentry/node'
+import { FlushStatSnapshotsQueueHandler } from '../../lib/queues/game-metrics/flush-stat-snapshots-queue-handler'
 
 @TraceService()
 export default class GameStatAPIService extends APIService {
-  queue: Queue
-  snapshotsBuffer: Map<string, PlayerGameStatSnapshot> = new Map()
+  private queueHandler: FlushStatSnapshotsQueueHandler
 
   constructor() {
     super()
-
-    this.queue = createQueue('flush-snapshots', async () => {
-      const snapshotsBufferSize = this.snapshotsBuffer.size
-      if (snapshotsBufferSize === 0) {
-        return
-      }
-
-      setTraceAttributes({ snapshotsBufferSize })
-
-      console.info(`Flushing ${snapshotsBufferSize} snapshots...`)
-      const values = Array.from(this.snapshotsBuffer.values())
-
-      const clickhouse = createClickHouseClient()
-      try {
-        await clickhouse.insert({
-          table: 'player_game_stat_snapshots',
-          values: values.map((snapshot) => snapshot.toInsertable()),
-          format: 'JSONEachRow'
-        })
-        await clickhouse.close()
-      } catch (err) {
-        captureException(err)
-      }
-
-      values.forEach(({ id }) => this.snapshotsBuffer.delete(id))
-    })
-
-    this.queue.upsertJobScheduler(
-      'flush-snapshots-scheduler',
-      { every: getMetricFlushInterval() },
-      { name: 'flush-snapshots-job' }
-    )
+    this.queueHandler = new FlushStatSnapshotsQueueHandler()
   }
 
   @Route({
@@ -141,8 +104,8 @@ export default class GameStatAPIService extends APIService {
     const stat: GameStat = req.ctx.state.stat
     const alias: PlayerAlias = req.ctx.state.alias
 
-    const playerStatCacheKey = 'put-stat-player-stat-key'
-    const statCacheKey = 'stat-api-policy-stat-key'
+    const playerStatCacheKey = `put-stat-player-stat-${alias.player.id}-${stat.id}`
+    const statCacheKey = `stat-api-policy-stat-${stat.internalName}`
 
     let playerStat = await em.repo(PlayerGameStat).findOne({
       player: alias.player,
@@ -189,7 +152,7 @@ export default class GameStatAPIService extends APIService {
       snapshot.createdAt = continuityDate
     }
 
-    this.snapshotsBuffer.set(snapshot.id, snapshot)
+    this.queueHandler.add(snapshot)
 
     await triggerIntegrations(em, stat.game, (integration) => {
       return integration.handleStatUpdated(em, playerStat)

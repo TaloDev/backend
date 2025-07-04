@@ -52,7 +52,7 @@ export async function findAliasFromIdentifyRequest(
     }
   }, {
     populate: ['player.auth'],
-    ...(getResultCacheOptions('find-alias-from-identify-request-key', 10_000) ?? {})
+    ...(getResultCacheOptions(`identify-${service}-${identifier}`, 10_000) ?? {})
   })
 }
 

@@ -6,9 +6,13 @@ import GameFactory from '../../../fixtures/GameFactory'
 import PlayerProp from '../../../../src/entities/player-prop'
 import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
 import { randText } from '@ngneat/falso'
+import { FlushEventsQueueHandler } from '../../../../src/lib/queues/game-metrics/flush-events-queue-handler'
+import Event from '../../../../src/entities/event'
 
 describe('Event API service - post', () => {
   it('should create an event if the scope is valid', async () => {
+    const addSpy = vi.spyOn(FlushEventsQueueHandler.prototype, 'add')
+
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_EVENTS])
     const player = await new PlayerFactory([apiKey.game]).one()
     await em.persistAndFlush(player)
@@ -23,6 +27,13 @@ describe('Event API service - post', () => {
     expect(res.body.events).toHaveLength(1)
     expect(res.body.events[0].name).toBe('Craft bow')
     expect(res.body.events[0].playerAlias.id).toBe(player.aliases[0].id)
+
+    expect(addSpy).toHaveBeenCalledOnce()
+    const [arg]: [Event] = addSpy.mock.calls[0]
+    const insertable = arg.toInsertable()
+
+    expect(insertable.name).toBe('Craft bow')
+    expect(insertable.player_alias_id).toBe(player.aliases[0].id)
   })
 
   it('should create multiple events if the scope is valid', async () => {

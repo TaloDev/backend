@@ -13,6 +13,7 @@ const changeSetFilters: ((cs: ChangeSet<Partial<unknown>>) => boolean)[] = [
 export default class PlayerGroupSubscriber implements EventSubscriber {
   async afterFlush(args: FlushEventArgs): Promise<void> {
     const em = (args.em as EntityManager).fork()
+    const playersMap: Map<string, Player> = new Map()
 
     const changeSets = args.uow.getChangeSets()
     for (const filter of changeSetFilters) {
@@ -21,16 +22,20 @@ export default class PlayerGroupSubscriber implements EventSubscriber {
       if (match) {
         const entity = match.entity
         if (entity instanceof Player) {
-          await checkGroupMemberships(em, entity)
+          playersMap.set(entity.id, entity)
         } else if (entity instanceof LeaderboardEntry) {
-          await em.populate(entity, ['playerAlias.player'])
-          await checkGroupMemberships(em, entity.playerAlias.player)
+          const player = entity.playerAlias.player
+          playersMap.set(player.id, player)
         } else if (entity instanceof PlayerGameStat) {
-          await em.populate(entity, ['player'])
-          await checkGroupMemberships(em, entity.player)
+          const player = entity.player
+          playersMap.set(player.id, player)
         }
         break
       }
+    }
+
+    for (const player of playersMap.values()) {
+      await checkGroupMemberships(em, player)
     }
   }
 }

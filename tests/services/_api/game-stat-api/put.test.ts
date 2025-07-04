@@ -7,7 +7,8 @@ import PlayerGameStatFactory from '../../../fixtures/PlayerGameStatFactory'
 import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
 import Game from '../../../../src/entities/game'
 import { subHours } from 'date-fns'
-import { ClickHousePlayerGameStatSnapshot } from '../../../../src/entities/player-game-stat-snapshot'
+import PlayerGameStatSnapshot from '../../../../src/entities/player-game-stat-snapshot'
+import { FlushStatSnapshotsQueueHandler } from '../../../../src/lib/queues/game-metrics/flush-stat-snapshots-queue-handler'
 
 describe('Game stats API service - put', () => {
   const createStat = async (game: Game, props: Partial<GameStat>) => {
@@ -18,12 +19,7 @@ describe('Game stats API service - put', () => {
   }
 
   beforeEach(() => {
-    vi.useFakeTimers()
-  })
-
-  afterEach(() => {
-    vi.clearAllTimers()
-    vi.useRealTimers()
+    vi.clearAllMocks()
   })
 
   it('should create a player stat if the scope is valid', async () => {
@@ -257,6 +253,8 @@ describe('Game stats API service - put', () => {
   })
 
   it('should create a player game stat snapshot', async () => {
+    const addSpy = vi.spyOn(FlushStatSnapshotsQueueHandler.prototype, 'add')
+
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_STATS])
     const stat = await createStat(apiKey.game, { maxValue: 999, maxChange: 99, defaultValue: 0, global: true, globalValue: 0 })
     const player = await new PlayerFactory([apiKey.game]).one()
@@ -269,23 +267,18 @@ describe('Game stats API service - put', () => {
       .set('x-talo-alias', String(player.aliases[0].id))
       .expect(200)
 
-    let snapshots: ClickHousePlayerGameStatSnapshot[] = []
-    await vi.waitUntil(async () => {
-      snapshots = await clickhouse.query({
-        query: `SELECT * FROM player_game_stat_snapshots WHERE game_stat_id = ${stat.id} AND player_alias_id = ${player.aliases[0].id}`,
-        format: 'JSONEachRow'
-      }).then((res) => res.json<ClickHousePlayerGameStatSnapshot>())
-      return snapshots.length === 1
-    })
+    expect(addSpy).toHaveBeenCalledOnce()
+    const [arg]: [PlayerGameStatSnapshot] = addSpy.mock.calls[0]
+    const insertable = arg.toInsertable()
 
-    vi.runAllTimers()
-
-    expect(snapshots[0].change).toBe(50)
-    expect(snapshots[0].value).toBe(50)
-    expect(snapshots[0].global_value).toBe(50)
+    expect(insertable.change).toBe(50)
+    expect(insertable.value).toBe(50)
+    expect(insertable.global_value).toBe(50)
   })
 
   it('should create a player game stat snapshot with the continuity date', async () => {
+    const addSpy = vi.spyOn(FlushStatSnapshotsQueueHandler.prototype, 'add')
+
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_STATS, APIKeyScope.WRITE_CONTINUITY_REQUESTS])
     const stat = await createStat(apiKey.game, { maxValue: 999, maxChange: 99, defaultValue: 0, global: true, globalValue: 0 })
     const player = await new PlayerFactory([apiKey.game]).one()
@@ -301,22 +294,15 @@ describe('Game stats API service - put', () => {
       .set('x-talo-continuity-timestamp', String(continuityDate.getTime()))
       .expect(200)
 
-    vi.runAllTimers()
+    expect(addSpy).toHaveBeenCalledOnce()
+    const [arg]: [PlayerGameStatSnapshot] = addSpy.mock.calls[0]
+    const insertable = arg.toInsertable()
 
-    let snapshots: ClickHousePlayerGameStatSnapshot[] = []
-    await vi.waitUntil(async () => {
-      snapshots = await clickhouse.query({
-        query: `SELECT * FROM player_game_stat_snapshots WHERE game_stat_id = ${stat.id} AND player_alias_id = ${player.aliases[0].id}`,
-        format: 'JSONEachRow'
-      }).then((res) => res.json<ClickHousePlayerGameStatSnapshot>())
-      return snapshots.length === 1
-    })
+    expect(insertable.change).toBe(50)
+    expect(insertable.value).toBe(50)
+    expect(insertable.global_value).toBe(50)
 
-    expect(snapshots[0].change).toBe(50)
-    expect(snapshots[0].value).toBe(50)
-    expect(snapshots[0].global_value).toBe(50)
-
-    const date = new Date(snapshots[0].created_at)
+    const date = new Date(insertable.created_at)
     expect(date.toISOString()).toBe(continuityDate.toISOString())
   })
 })

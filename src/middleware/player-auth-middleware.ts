@@ -14,12 +14,12 @@ export default async function playerAuthMiddleware(ctx: Context, next: Next): Pr
       alias = await em.getRepository(PlayerAlias).findOne({
         player: ctx.state.currentPlayerId,
         service: PlayerAliasService.TALO
-      }, getResultCacheOptions('auth-middleware-alias-key', 10_000))
+      }, getResultCacheOptions(`auth-middleware-player-${ctx.state.currentPlayerId}`, 10_000))
     } else {
       alias = await em.getRepository(PlayerAlias).findOne({
         id: ctx.state.currentAliasId,
         service: PlayerAliasService.TALO
-      }, getResultCacheOptions('auth-middleware-player-key', 10_000))
+      }, getResultCacheOptions(`auth-middleware-alias-${ctx.state.currentAliasId}`, 10_000))
     }
 
     if (alias) {

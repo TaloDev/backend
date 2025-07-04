@@ -18,7 +18,10 @@ async function handleJobFailure<T>(job: Job<T>, err: Error): Promise<void> {
   await em.persistAndFlush(failedJob)
   await orm.close()
 
-  console.error(`Job failed in ${failedJob.queue} queue: ${failedJob.reason}`)
+  /* v8 ignore next 3 */
+  if (process.env.NODE_ENV !== 'test') {
+    console.error(`Job failed in ${failedJob.queue} queue: ${failedJob.reason}`)
+  }
 
   setContext('queue', {
     'Name': job.queueName,

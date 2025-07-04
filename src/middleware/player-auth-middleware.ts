@@ -3,6 +3,7 @@ import { isAPIRoute } from './route-middleware'
 import { EntityManager } from '@mikro-orm/mysql'
 import PlayerAlias, { PlayerAliasService } from '../entities/player-alias'
 import { verify } from '../lib/auth/jwt'
+import { getResultCacheOptions } from '../lib/perf/getResultCacheOptions'
 
 export default async function playerAuthMiddleware(ctx: Context, next: Next): Promise<void> {
   if (isAPIRoute(ctx) && (ctx.state.currentPlayerId || ctx.state.currentAliasId)) {
@@ -13,12 +14,12 @@ export default async function playerAuthMiddleware(ctx: Context, next: Next): Pr
       alias = await em.getRepository(PlayerAlias).findOne({
         player: ctx.state.currentPlayerId,
         service: PlayerAliasService.TALO
-      })
+      }, getResultCacheOptions('auth-middleware-alias-key', 10_000))
     } else {
       alias = await em.getRepository(PlayerAlias).findOne({
         id: ctx.state.currentAliasId,
         service: PlayerAliasService.TALO
-      })
+      }, getResultCacheOptions('auth-middleware-player-key', 10_000))
     }
 
     if (alias) {

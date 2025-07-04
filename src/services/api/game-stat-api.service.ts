@@ -18,6 +18,7 @@ import createQueue from '../../lib/queues/createQueue'
 import createClickHouseClient from '../../lib/clickhouse/createClient'
 import { getMetricFlushInterval } from '../../lib/clickhouse/getMetricFlushInterval'
 import { setTraceAttributes } from '@hyperdx/node-opentelemetry'
+import { getResultCacheOptions } from '../../lib/perf/getResultCacheOptions'
 
 @TraceService()
 export default class GameStatAPIService extends APIService {
@@ -88,7 +89,6 @@ export default class GameStatAPIService extends APIService {
         stat: req.ctx.state.stat
       }
     }
-
   }
 
   @Route({
@@ -136,7 +136,13 @@ export default class GameStatAPIService extends APIService {
     const stat: GameStat = req.ctx.state.stat
     const alias: PlayerAlias = req.ctx.state.alias
 
-    let playerStat = await em.repo(PlayerGameStat).findOne({ player: alias.player, stat })
+    const playerStatCacheKey = 'put-stat-player-stat-key'
+    const statCacheKey = 'get-stat-stat-key'
+
+    let playerStat = await em.repo(PlayerGameStat).findOne({
+      player: alias.player,
+      stat
+    }, getResultCacheOptions(playerStatCacheKey))
 
     if (playerStat && differenceInSeconds(new Date(), playerStat.createdAt) < stat.minTimeBetweenUpdates) {
       req.ctx.throw(400, `Stat cannot be updated more often than every ${stat.minTimeBetweenUpdates} seconds`)
@@ -169,6 +175,7 @@ export default class GameStatAPIService extends APIService {
 
     playerStat.value += change
     if (stat.global) stat.globalValue += change
+    await Promise.all([playerStatCacheKey, statCacheKey].map((key) => em.clearCache(key)))
 
     const snapshot = new PlayerGameStatSnapshot()
     snapshot.construct(alias, playerStat)

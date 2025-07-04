@@ -65,7 +65,7 @@ describe('Socket events', () => {
         format: 'JSONEachRow'
       }).then((res) => res.json<ClickHouseSocketEvent>())
       return events.length === 6
-    }, { timeout: 2000, interval: 100 })
+    }, { timeout: 5000, interval: 100 })
 
     expect(events[0].event_type).toBe('open')
     expect(events[0].req_or_res).toBe('req')

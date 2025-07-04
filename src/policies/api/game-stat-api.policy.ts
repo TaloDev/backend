@@ -4,6 +4,7 @@ import GameStat from '../../entities/game-stat'
 import Player from '../../entities/player'
 import Policy from '../policy'
 import PlayerAlias from '../../entities/player-alias'
+import { getResultCacheOptions } from '../../lib/perf/getResultCacheOptions'
 
 export default class GameStatAPIPolicy extends Policy {
   async getStat(req: Request): Promise<GameStat | null> {
@@ -12,7 +13,7 @@ export default class GameStatAPIPolicy extends Policy {
     const stat = await this.em.repo(GameStat).findOne({
       internalName,
       game: key.game
-    })
+    }, getResultCacheOptions('get-stat-stat-key'))
 
     this.ctx.state.stat = stat
     return stat
@@ -27,7 +28,8 @@ export default class GameStatAPIPolicy extends Policy {
         game: key.game
       }
     }, {
-      populate: ['player']
+      populate: ['player'],
+      ...(getResultCacheOptions('get-stat-alias-key') ?? {})
     })
 
     this.ctx.state.alias = alias
@@ -40,7 +42,7 @@ export default class GameStatAPIPolicy extends Policy {
     const player = await this.em.repo(Player).findOne({
       id: this.ctx.state.currentPlayerId,
       game: key.game
-    })
+    }, getResultCacheOptions('get-stat-player-key'))
 
     this.ctx.state.player = player
     return player

@@ -122,9 +122,12 @@ export default class PlayerGroup {
   }
 
   async isPlayerEligible(em: EntityManager, player: Player): Promise<boolean> {
+    /* v8 ignore next */
+    const ttl = process.env.NODE_ENV === 'test' ? 0 : 500
+
     const query = this.getQuery(em).andWhere({
       id: player.id
-    })
+    }).cache([`group-eligibility-${this.id}-${player.id}`, ttl])
 
     return await query.count() > 0
   }

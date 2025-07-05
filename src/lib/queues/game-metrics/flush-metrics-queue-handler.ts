@@ -3,7 +3,6 @@ import createQueue from '../createQueue'
 import { setTraceAttributes } from '@hyperdx/node-opentelemetry'
 import createClickHouseClient from '../../clickhouse/createClient'
 import { captureException } from '@sentry/node'
-import { getMetricFlushInterval } from '../../clickhouse/getMetricFlushInterval'
 import { ClickHouseClient } from '@clickhouse/client'
 
 type FlushFunc<T> = (clickhouse: ClickHouseClient, values: T[]) => Promise<void>
@@ -21,9 +20,13 @@ export class FlushMetricsQueueHandler<T extends { id: string }> {
       this.handle()
     })
 
+    const flushInterval = process.env.GAME_METRICS_FLUSH_INTERVAL
+      ? Number(process.env.GAME_METRICS_FLUSH_INTERVAL)
+      : 30_000
+
     this.queue.upsertJobScheduler(
       `flush-${metricName}-scheduler`,
-      { every: getMetricFlushInterval() },
+      { every: flushInterval },
       { name: `flush-${metricName}-job` }
     )
   }

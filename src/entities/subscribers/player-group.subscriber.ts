@@ -15,22 +15,19 @@ export default class PlayerGroupSubscriber implements EventSubscriber {
     const em = (args.em as EntityManager).fork()
     const playersMap: Map<string, Player> = new Map()
 
-    const changeSets = args.uow.getChangeSets()
-    for (const filter of changeSetFilters) {
-      const match = changeSets.find(filter)
+    for (const cs of args.uow.getChangeSets()) {
+      const isRelevantChangeSet = changeSetFilters.some((filter) => filter(cs))
 
-      if (match) {
-        const entity = match.entity
-        if (entity instanceof Player) {
-          playersMap.set(entity.id, entity)
-        } else if (entity instanceof LeaderboardEntry) {
-          const player = entity.playerAlias.player
+      if (isRelevantChangeSet) {
+        if (cs.entity instanceof Player) {
+          playersMap.set(cs.entity.id, cs.entity)
+        } else if (cs.entity instanceof LeaderboardEntry) {
+          const player = cs.entity.playerAlias.player
           playersMap.set(player.id, player)
-        } else if (entity instanceof PlayerGameStat) {
-          const player = entity.player
+        } else if (cs.entity instanceof PlayerGameStat) {
+          const player = cs.entity.player
           playersMap.set(player.id, player)
         }
-        break
       }
     }
 

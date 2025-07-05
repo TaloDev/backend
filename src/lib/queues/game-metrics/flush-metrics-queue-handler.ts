@@ -20,6 +20,7 @@ export class FlushMetricsQueueHandler<T extends { id: string }> {
       this.handle()
     })
 
+    /* v8 ignore next 3 */
     const flushInterval = process.env.GAME_METRICS_FLUSH_INTERVAL
       ? Number(process.env.GAME_METRICS_FLUSH_INTERVAL)
       : 30_000

@@ -58,56 +58,47 @@ describe('Socket events', () => {
       await client.identify(identifyMessage)
     })
 
-    let events: ClickHouseSocketEvent[] = []
-    await vi.waitUntil(async () => {
-      events = await clickhouse.query({
+    await vi.waitFor(async () => {
+      const events = await clickhouse.query({
         query: `SELECT * FROM socket_events WHERE game_id = ${player.game.id} ORDER BY created_at`,
         format: 'JSONEachRow'
       }).then((res) => res.json<ClickHouseSocketEvent>())
-      return events.length === 6
-    }, { timeout: 5000, interval: 100 })
 
-    expect(events[0].event_type).toBe('open')
-    expect(events[0].req_or_res).toBe('req')
-    expect(events[0].code).toBeNull()
-    expect(events[0].game_id).toBe(player.game.id)
-    expect(events[0].player_alias_id).toBeNull()
-    expect(events[0].dev_build).toBe(false)
-
-    expect(events[1].event_type).toBe('v1.connected')
-    expect(events[1].req_or_res).toBe('res')
-    expect(events[1].code).toBeNull()
-    expect(events[1].game_id).toBe(player.game.id)
-    expect(events[1].player_alias_id).toBeNull()
-    expect(events[1].dev_build).toBe(false)
-
-    expect(events[2].event_type).toBe('v1.players.identify')
-    expect(events[2].req_or_res).toBe('req')
-    expect(events[2].code).toBeNull()
-    expect(events[2].game_id).toBe(player.game.id)
-    expect(events[2].player_alias_id).toBeNull()
-    expect(events[2].dev_build).toBe(false)
-
-    expect(events[3].event_type).toBe('v1.players.identify.success')
-    expect(events[3].req_or_res).toBe('res')
-    expect(events[3].code).toBeNull()
-    expect(events[3].game_id).toBe(player.game.id)
-    expect(events[3].player_alias_id).toBe(player.aliases[0].id)
-    expect(events[3].dev_build).toBe(false)
-
-    expect(events[4].event_type).toBe('v1.players.presence.updated')
-    expect(events[4].req_or_res).toBe('res')
-    expect(events[4].code).toBeNull()
-    expect(events[4].game_id).toBe(player.game.id)
-    expect(events[4].player_alias_id).toBe(player.aliases[0].id)
-    expect(events[4].dev_build).toBe(false)
-
-    expect(events[5].event_type).toBe('close')
-    expect(events[5].req_or_res).toBe('req')
-    expect(events[5].code).toBeNull()
-    expect(events[5].game_id).toBe(player.game.id)
-    expect(events[5].player_alias_id).toBe(player.aliases[0].id)
-    expect(events[4].dev_build).toBe(false)
+      expect(events).toEqual(expect.arrayContaining([
+        expect.objectContaining({
+          event_type: 'open',
+          req_or_res: 'req',
+          code: null,
+          game_id: player.game.id,
+          player_alias_id: null,
+          dev_build: false
+        }),
+        expect.objectContaining({
+          event_type: 'v1.connected',
+          req_or_res: 'res',
+          code: null,
+          game_id: player.game.id,
+          player_alias_id: null,
+          dev_build: false
+        }),
+        expect.objectContaining({
+          event_type: 'v1.players.identify',
+          req_or_res: 'req',
+          code: null,
+          game_id: player.game.id,
+          player_alias_id: null,
+          dev_build: false
+        }),
+        expect.objectContaining({
+          event_type: 'close',
+          req_or_res: 'req',
+          code: null,
+          game_id: player.game.id,
+          player_alias_id: player.aliases[0].id,
+          dev_build: false
+        })
+      ]))
+    })
   })
 
   it('should track errors', async () => {

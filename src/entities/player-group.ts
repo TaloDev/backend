@@ -101,31 +101,32 @@ export default class PlayerGroup {
     this.game = game
   }
 
-  private buildCondition(em: EntityManager, query: QueryBuilder<Player>, rule: PlayerGroupRule): QueryBuilder<Player> {
-    return query.where(rule.getQuery(em), this.ruleMode)
+  private buildCondition(em: EntityManager, query: QueryBuilder<Player>, rule: PlayerGroupRule) {
+    query.where(rule.getQuery(em), this.ruleMode)
   }
 
   getQuery(em: EntityManager) {
-    let query = em.qb(Player)
+    const query = em.qb(Player)
     for (const rule of this.rules) {
-      query = this.buildCondition(em, query, rule)
+      this.buildCondition(em, query, rule)
     }
 
-    return query.andWhere({
-      game: this.game
-    })
-  }
-
-  getQueryCacheKey() {
-    return `group-query-${this.id}`
+    return query
+      .andWhere({ game: this.game })
+      .select('id')
   }
 
   async checkMembership(em: EntityManager) {
-    const players = await this.getQuery(em)
-      .cache([this.getQueryCacheKey(), 30_000])
-      .getResultList()
-
+    const players = await this.getQuery(em).getResultList()
     this.members.set(players)
+  }
+
+  async isPlayerEligible(em: EntityManager, player: Player): Promise<boolean> {
+    const query = this.getQuery(em).andWhere({
+      id: player.id
+    })
+
+    return await query.count() > 0
   }
 
   toJSON() {

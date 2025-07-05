@@ -1,13 +1,17 @@
-import { Collection, Entity, ManyToOne, OneToMany, PrimaryKey, Property } from '@mikro-orm/mysql'
+import { Collection, Entity, Index, ManyToOne, OneToMany, PrimaryKey, Property } from '@mikro-orm/mysql'
 import Leaderboard from './leaderboard'
 import PlayerAlias from './player-alias'
 import LeaderboardEntryProp from './leaderboard-entry-prop'
+
+const scoreIndexName = 'idx_leaderboardentry_hidden_leaderboard_id_score'
+const scoreIndexExpr = `alter table \`leaderboard_entry\` add index \`${scoreIndexName}\`(\`hidden\`, \`leaderboard_id\`, \`score\`)`
 
 @Entity()
 export default class LeaderboardEntry {
   @PrimaryKey()
   id!: number
 
+  @Index({ name: scoreIndexName, expression: scoreIndexExpr })
   @Property({ type: 'double' })
   score!: number
 
@@ -20,6 +24,7 @@ export default class LeaderboardEntry {
   @OneToMany(() => LeaderboardEntryProp, (prop) => prop.leaderboardEntry, { eager: true, orphanRemoval: true })
   props: Collection<LeaderboardEntryProp> = new Collection<LeaderboardEntryProp>(this)
 
+  @Index()
   @Property({ default: false })
   hidden!: boolean
 

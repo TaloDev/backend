@@ -1,4 +1,4 @@
-import { Collection, Entity, EntityManager, ManyToMany, ManyToOne, OneToMany, OneToOne, PrimaryKey, Property } from '@mikro-orm/mysql'
+import { Collection, Entity, EntityManager, Index, ManyToMany, ManyToOne, OneToMany, OneToOne, PrimaryKey, Property } from '@mikro-orm/mysql'
 import Game from './game'
 import { v4 } from 'uuid'
 import PlayerAlias from './player-alias'
@@ -38,9 +38,11 @@ export default class Player {
   @OneToOne({ nullable: true, orphanRemoval: true, eager: true })
   presence: PlayerPresence | null = null
 
+  @Index()
   @Property()
   lastSeenAt: Date = new Date()
 
+  @Index()
   @Property()
   createdAt: Date = new Date()
 

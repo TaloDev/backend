@@ -48,6 +48,7 @@ import { AddPurgeAndWebsiteGameColumns } from './20250513222143AddPurgeAndWebsit
 import { CreateGameChannelPropTable } from './20250518214836CreateGameChannelPropTable'
 import { AddGameChannelTemporaryMembershipColumn } from './20250522212229AddGameChannelTemporaryMembershipColumn'
 import { CreateGameChannelStoragePropTable } from './20250531223353CreateGameChannelStoragePropTable'
+import { AddPlayerGroupQueryIndexes } from './20250705074341AddPlayerGroupQueryIndexes'
 
 export default [
   {
@@ -249,5 +250,9 @@ export default [
   {
     name: 'CreateGameChannelStoragePropTable',
     class: CreateGameChannelStoragePropTable
+  },
+  {
+    name: 'AddPlayerGroupQueryIndexes',
+    class: AddPlayerGroupQueryIndexes
   }
 ]

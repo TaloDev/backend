@@ -5,7 +5,10 @@ import PlayerGroup from '../../entities/player-group'
 export default async function checkGroupMemberships(em: EntityManager, player: Player) {
   const groups = await em.getRepository(PlayerGroup).find({ game: player.game })
 
-  console.info(`Checking group memberships for ${player.id}...`)
+  /* v8 ignore next 3 */
+  if (process.env.NODE_ENV !== 'test') {
+    console.info(`Checking group memberships for ${player.id}...`)
+  }
 
   for (const group of groups) {
     const eligiblePlayers = await group.getQuery(em).getResultList()

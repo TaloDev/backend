@@ -952,6 +952,26 @@
           "unique": true
         },
         {
+          "columnNames": [
+            "last_seen_at"
+          ],
+          "composite": false,
+          "keyName": "player_last_seen_at_index",
+          "constraint": false,
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "created_at"
+          ],
+          "composite": false,
+          "keyName": "player_created_at_index",
+          "constraint": false,
+          "primary": false,
+          "unique": false
+        },
+        {
           "keyName": "PRIMARY",
           "columnNames": [
             "id"
@@ -1069,6 +1089,27 @@
           "constraint": false,
           "primary": false,
           "unique": false
+        },
+        {
+          "columnNames": [
+            "key"
+          ],
+          "composite": false,
+          "keyName": "player_prop_key_index",
+          "constraint": false,
+          "primary": false,
+          "unique": false
+        },
+        {
+          "keyName": "idx_playerprop_key_value",
+          "columnNames": [
+            "value"
+          ],
+          "composite": false,
+          "constraint": false,
+          "primary": false,
+          "unique": false,
+          "expression": "alter table `player_prop` add index `idx_playerprop_key_value`(`key`, `value`)"
         },
         {
           "keyName": "PRIMARY",
@@ -1713,6 +1754,16 @@
       "indexes": [
         {
           "columnNames": [
+            "internal_name"
+          ],
+          "composite": false,
+          "keyName": "leaderboard_internal_name_index",
+          "constraint": false,
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
             "game_id"
           ],
           "composite": false,
@@ -1854,6 +1905,27 @@
           "constraint": false,
           "primary": false,
           "unique": false
+        },
+        {
+          "columnNames": [
+            "hidden"
+          ],
+          "composite": false,
+          "keyName": "leaderboard_entry_hidden_index",
+          "constraint": false,
+          "primary": false,
+          "unique": false
+        },
+        {
+          "keyName": "idx_leaderboardentry_hidden_leaderboard_id_score",
+          "columnNames": [
+            "score"
+          ],
+          "composite": false,
+          "constraint": false,
+          "primary": false,
+          "unique": false,
+          "expression": "alter table `leaderboard_entry` add index `idx_leaderboardentry_hidden_leaderboard_id_score`(`hidden`, `leaderboard_id`, `score`)"
         },
         {
           "keyName": "PRIMARY",
@@ -2243,6 +2315,16 @@
       "indexes": [
         {
           "columnNames": [
+            "internal_name"
+          ],
+          "composite": false,
+          "keyName": "game_stat_internal_name_index",
+          "constraint": false,
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
             "game_id"
           ],
           "composite": false,
@@ -2363,6 +2445,17 @@
           "constraint": false,
           "primary": false,
           "unique": false
+        },
+        {
+          "keyName": "idx_playergamestat_stat_id_value",
+          "columnNames": [
+            "value"
+          ],
+          "composite": false,
+          "constraint": false,
+          "primary": false,
+          "unique": false,
+          "expression": "alter table `player_game_stat` add index `idx_playergamestat_stat_id_value`(`stat_id`, `value`)"
         },
         {
           "keyName": "PRIMARY",
@@ -2491,6 +2584,16 @@
       },
       "name": "game_feedback_category",
       "indexes": [
+        {
+          "columnNames": [
+            "internal_name"
+          ],
+          "composite": false,
+          "keyName": "game_feedback_category_internal_name_index",
+          "constraint": false,
+          "primary": false,
+          "unique": false
+        },
         {
           "columnNames": [
             "game_id"

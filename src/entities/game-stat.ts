@@ -1,4 +1,4 @@
-import { EntityManager, Entity, ManyToOne, PrimaryKey, Property, Collection, OneToMany } from '@mikro-orm/mysql'
+import { EntityManager, Entity, ManyToOne, PrimaryKey, Property, Collection, OneToMany, Index } from '@mikro-orm/mysql'
 import { Request, Required, ValidationCondition } from 'koa-clay'
 import Game from './game'
 import PlayerGameStat from './player-game-stat'
@@ -44,6 +44,7 @@ export default class GameStat {
       ]
     }
   })
+  @Index()
   @Property()
   internalName!: string
 

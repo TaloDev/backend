@@ -6,6 +6,9 @@ const enableLogging = process.env.NODE_ENV !== 'test'
 
 export default async function checkGroupMemberships(em: EntityManager, player: Player) {
   const groups = await em.getRepository(PlayerGroup).find({ game: player.game })
+  if (groups.length === 0) {
+    return
+  }
 
   /* v8 ignore next 3 */
   if (enableLogging) {

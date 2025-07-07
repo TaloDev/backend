@@ -1,6 +1,6 @@
 {
   "name": "game-services",
-  "version": "0.78.5",
+  "version": "0.78.6",
   "description": "",
   "main": "src/index.ts",
   "scripts": {
@@ -23,7 +23,7 @@
   "devDependencies": {
     "@mikro-orm/cli": "^6.4.13",
     "@stylistic/eslint-plugin": "^2.2.2",
-    "@types/adm-zip": "^0.5.7",
+    "@types/archiver": "^6.0.3",
     "@types/bcrypt": "^5.0.2",
     "@types/jsonwebtoken": "^9.0.9",
     "@types/koa": "^2.15.0",
@@ -35,12 +35,14 @@
     "@types/nodemailer": "^6.4.17",
     "@types/qrcode": "^1.5.5",
     "@types/supertest": "^6.0.2",
+    "@types/unzipper": "^0.10.11",
     "@types/uuid": "^10.0.0",
     "@types/ws": "^8.5.13",
     "@typescript-eslint/eslint-plugin": "^7.13.1",
     "@typescript-eslint/parser": "^7.13.1",
     "@vitest/coverage-v8": "^3.1.1",
     "axios-mock-adapter": "^1.22.0",
+    "csv-parse": "^5.6.0",
     "eslint": "^8.26.0",
     "eslint-plugin-unused-imports": "^4.1.4",
     "hefty": "^2.0.0",
@@ -51,6 +53,7 @@
     "ts-node": "^10.7.0",
     "tsx": "^4.11.0",
     "typescript": "^5.4.5",
+    "unzipper": "^0.12.3",
     "vite": "^6.2.4",
     "vitest": "^3.1.1"
   },
@@ -66,7 +69,7 @@
     "@ngneat/falso": "^7.2.0",
     "@opentelemetry/api": "^1.9.0",
     "@sentry/node": "^9.29.0",
-    "adm-zip": "^0.5.16",
+    "archiver": "^7.0.1",
     "axios": "^1.6.8",
     "bcrypt": "^5.1.0",
     "bullmq": "^5.40.2",

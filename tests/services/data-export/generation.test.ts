@@ -1,10 +1,9 @@
 import { Collection } from '@mikro-orm/mysql'
 import { UserType } from '../../../src/entities/user'
-import { DataExportAvailableEntities, DataExportStatus } from '../../../src/entities/data-export'
-import DataExportService from '../../../src/services/data-export.service'
+import { DataExportAvailableEntities } from '../../../src/entities/data-export'
+import DataExportFactory from '../../fixtures/DataExportFactory'
 import EventFactory from '../../fixtures/EventFactory'
 import PlayerFactory from '../../fixtures/PlayerFactory'
-import DataExportFactory from '../../fixtures/DataExportFactory'
 import GameActivityFactory from '../../fixtures/GameActivityFactory'
 import { GameActivityType } from '../../../src/entities/game-activity'
 import GameStatFactory from '../../fixtures/GameStatFactory'
@@ -12,13 +11,31 @@ import PlayerProp from '../../../src/entities/player-prop'
 import createOrganisationAndGame from '../../utils/createOrganisationAndGame'
 import createUserAndToken from '../../utils/createUserAndToken'
 import GameFeedbackFactory from '../../fixtures/GameFeedbackFactory'
+import { DataExporter } from '../../../src/lib/queues/createDataExportQueue'
+import { readFile, rm, mkdir } from 'fs/promises'
+import path from 'path'
+import { parse } from 'csv-parse'
+import * as unzipper from 'unzipper'
+import * as os from 'os'
+
+async function parseCsvString(csvString: string): Promise<string[][]> {
+  return new Promise((resolve, reject) => {
+    parse(csvString, {
+      columns: false, // don't auto-detect columns, we want raw rows
+      skip_empty_lines: true
+    }, (err, records) => {
+      if (err) reject(err)
+      else resolve(records)
+    })
+  })
+}
 
 describe('Data export service - generation', () => {
   it('should transform basic columns', async () => {
     const [, game] = await createOrganisationAndGame()
 
-    const service = new DataExportService()
-    const proto = Object.getPrototypeOf(service)
+    const exporter = new DataExporter()
+    const proto = Object.getPrototypeOf(exporter)
 
     const player = await new PlayerFactory([game]).one()
     const event = await new EventFactory([player]).one()
@@ -39,8 +56,8 @@ describe('Data export service - generation', () => {
   it('should transform prop columns', async () => {
     const [, game] = await createOrganisationAndGame()
 
-    const service = new DataExportService()
-    const proto = Object.getPrototypeOf(service)
+    const exporter = new DataExporter()
+    const proto = Object.getPrototypeOf(exporter)
 
     const player = await new PlayerFactory([game]).state((player) => ({
       props: new Collection<PlayerProp>(player, [
@@ -63,8 +80,8 @@ describe('Data export service - generation', () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [, user] = await createUserAndToken({ type: UserType.ADMIN, emailConfirmed: true }, organisation)
 
-    const service = new DataExportService()
-    const proto = Object.getPrototypeOf(service)
+    const exporter = new DataExporter()
+    const proto = Object.getPrototypeOf(exporter)
 
     const activity = await new GameActivityFactory([game], [user]).state(() => ({
       type: GameActivityType.API_KEY_CREATED
@@ -77,8 +94,8 @@ describe('Data export service - generation', () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [, user] = await createUserAndToken({ type: UserType.ADMIN, emailConfirmed: true }, organisation)
 
-    const service = new DataExportService()
-    const proto = Object.getPrototypeOf(service)
+    const exporter = new DataExporter()
+    const proto = Object.getPrototypeOf(exporter)
 
     const activity = await new GameActivityFactory([game], [user]).state(() => ({
       extra: {
@@ -92,8 +109,8 @@ describe('Data export service - generation', () => {
   it('should transform globalValue columns', async () => {
     const [, game] = await createOrganisationAndGame()
 
-    const service = new DataExportService()
-    const proto = Object.getPrototypeOf(service)
+    const exporter = new DataExporter()
+    const proto = Object.getPrototypeOf(exporter)
 
     const stat = await new GameStatFactory([game]).global().state(() => ({ globalValue: 50 })).one()
     await stat.recalculateGlobalValue(false)
@@ -104,80 +121,19 @@ describe('Data export service - generation', () => {
   it('should fill globalValue columns with N/A for non-global stats', async () => {
     const [, game] = await createOrganisationAndGame()
 
-    const service = new DataExportService()
-    const proto = Object.getPrototypeOf(service)
+    const exporter = new DataExporter()
+    const proto = Object.getPrototypeOf(exporter)
 
     const stat = await new GameStatFactory([game]).one()
 
     expect(proto.transformColumn('globalValue', stat)).toBe('N/A')
   })
 
-  it('should correctly build a CSV', async () => {
-    const [, game] = await createOrganisationAndGame()
-
-    const service = new DataExportService()
-    const proto = Object.getPrototypeOf(service)
-
-    const player = await new PlayerFactory([game]).one()
-
-    const csv: Buffer = proto.buildCSV(DataExportAvailableEntities.PLAYER_ALIASES, player.aliases)
-
-    const lines = csv.toString().split('\n')
-    expect(lines[0]).toBe('id,service,identifier,player.id,createdAt,updatedAt')
-
-    for (let i = 0; i < player.aliases.length; i++) {
-      const playerAlias = player.aliases[i]
-      expect(lines[i+1]).toBe(`${playerAlias.id},${playerAlias.service},${playerAlias.identifier},${playerAlias.player.id},${playerAlias.createdAt.toISOString()},${playerAlias.updatedAt.toISOString()}`)
-    }
-  })
-
-  it('should correctly build a CSV with prop columns', async () => {
-    const [, game] = await createOrganisationAndGame()
-
-    const service = new DataExportService()
-    const proto = Object.getPrototypeOf(service)
-
-    const player = await new PlayerFactory([game]).one()
-    const event = await new EventFactory([player]).state(() => ({
-      props: [
-        { key: 'timeTaken', value: '99' },
-        { key: 'prevTime', value: '98' }
-      ]
-    })).one()
-
-    const csv: Buffer = proto.buildCSV(DataExportAvailableEntities.EVENTS, [event])
-
-    const lines = csv.toString().split('\n')
-    expect(lines[0]).toBe('id,name,playerAlias.id,playerAlias.service,playerAlias.identifier,playerAlias.player.id,createdAt,updatedAt,props.prevTime,props.timeTaken')
-    expect(lines[1]).toBe(`${event.id},${event.name},${event.playerAlias.id},${event.playerAlias.service},${event.playerAlias.identifier},${event.playerAlias.player.id},${event.createdAt.toISOString()},${event.updatedAt.toISOString()},98,99`)
-  })
-
-  it('should correctly update data export statuses', async () => {
-    const [, game] = await createOrganisationAndGame()
-
-    const service = new DataExportService()
-    const proto = Object.getPrototypeOf(service)
-
-    const dataExport = await new DataExportFactory(game).state(() => ({
-      status: DataExportStatus.QUEUED
-    })).one()
-
-    await em.persistAndFlush(dataExport)
-
-    await proto.updateDataExportStatus(dataExport.id, { id: DataExportStatus.GENERATED })
-    await em.refresh(dataExport)
-    expect(dataExport.status).toBe(DataExportStatus.GENERATED)
-
-    await proto.updateDataExportStatus(dataExport.id, { failedAt: new Date() })
-    await em.refresh(dataExport)
-    expect(dataExport.failedAt).toBeTruthy()
-  })
-
   it('should transform anonymised feedback columns', async () => {
     const [, game] = await createOrganisationAndGame()
 
-    const service = new DataExportService()
-    const proto = Object.getPrototypeOf(service)
+    const exporter = new DataExporter()
+    const proto = Object.getPrototypeOf(exporter)
 
     const feedback = await new GameFeedbackFactory(game).state(() => ({ anonymised: true })).one()
 
@@ -189,13 +145,128 @@ describe('Data export service - generation', () => {
   it('should not transform non-anonymised feedback columns', async () => {
     const [, game] = await createOrganisationAndGame()
 
-    const service = new DataExportService()
-    const proto = Object.getPrototypeOf(service)
+    const exporter = new DataExporter()
+    const proto = Object.getPrototypeOf(exporter)
 
     const feedback = await new GameFeedbackFactory(game).state(() => ({ anonymised: false })).one()
 
     for (const key of ['playerAlias.id', 'playerAlias.service', 'playerAlias.identifier', 'playerAlias.player.id']) {
       expect(proto.transformColumn(key, feedback)).not.toBe('Anonymous')
     }
+  })
+})
+
+describe('Data export service - createZipStream', () => {
+  let tempDir: string
+  let dataExporter: DataExporter
+
+  beforeEach(async () => {
+    dataExporter = new DataExporter()
+    tempDir = path.join(os.tmpdir(), `data-export-test-${Date.now()}`)
+    await mkdir(tempDir, { recursive: true })
+  })
+
+  afterEach(async () => {
+    await rm(tempDir, { recursive: true, force: true })
+  })
+
+  it('should generate a zip with players.csv and correct prop column ordering', async () => {
+    const [, game] = await createOrganisationAndGame()
+
+    const player1 = await new PlayerFactory([game]).state((player) => ({
+      props: new Collection<PlayerProp>(player, [
+        new PlayerProp(player, 'META_OS', 'Windows'),
+        new PlayerProp(player, 'currentArea', 'Forest'),
+        new PlayerProp(player, 'META_GAME_VERSION', '1.0.0')
+      ])
+    })).one()
+
+    const player2 = await new PlayerFactory([game]).state((player) => ({
+      props: new Collection<PlayerProp>(player, [
+        new PlayerProp(player, 'currentHealth', '100'),
+        new PlayerProp(player, 'META_SCREEN_WIDTH', '1920')
+      ])
+    })).one()
+
+    const player3 = await new PlayerFactory([game]).state((player) => ({
+      props: new Collection<PlayerProp>(player, [
+        new PlayerProp(player, 'level', '5')
+      ])
+    })).one()
+
+    const player4 = await new PlayerFactory([game]).state((player) => ({
+      props: new Collection<PlayerProp>(player, [])
+    })).one()
+
+    const dataExport = await new DataExportFactory(game).one()
+    dataExport.entities = [DataExportAvailableEntities.PLAYERS]
+    await em.persistAndFlush([player1, player2, player3, player4, dataExport])
+
+    const zipFilePath = path.join(tempDir, 'test-export.zip')
+    await dataExporter.createZipStream(zipFilePath, dataExport, em, true)
+
+    await readFile(zipFilePath)
+
+    const directory = await unzipper.Open.file(zipFilePath)
+    const playerCsvFile = directory.files.find((f) => f.path === 'players.csv')
+    expect(playerCsvFile).toBeDefined()
+
+    const csvContentBuffer = await playerCsvFile!.buffer()
+    const csvContent = csvContentBuffer.toString('utf8')
+    const records = await parseCsvString(csvContent)
+
+    const header = records[0]
+    expect(header).toBeDefined()
+
+    const expectedBaseColumns = ['id', 'lastSeenAt', 'createdAt', 'updatedAt']
+    const expectedMetaProps = [
+      'props.META_GAME_VERSION',
+      'props.META_OS',
+      'props.META_SCREEN_WIDTH'
+    ]
+    const expectedOtherProps = [
+      'props.currentArea',
+      'props.currentHealth',
+      'props.level'
+    ]
+    const expectedHeader = [...expectedBaseColumns, ...expectedMetaProps, ...expectedOtherProps]
+
+    expect(header).toEqual(expectedHeader)
+
+    const dataRows = records.slice(1)
+    expect(dataRows).toHaveLength(4)
+
+    const findRowById = (id: string) => {
+      const idIndex = header.indexOf('id')
+      return dataRows.find((row) => row[idIndex] === id)
+    }
+
+    const player1Row = findRowById(player1.id)
+    assert(player1Row)
+    expect(player1Row[header.indexOf('props.META_OS')]).toBe('Windows')
+    expect(player1Row[header.indexOf('props.currentArea')]).toBe('Forest')
+    expect(player1Row[header.indexOf('props.META_GAME_VERSION')]).toBe('1.0.0')
+    expect(player1Row[header.indexOf('props.currentHealth')]).toBe('') // should be empty for missing prop
+
+    const player2Row = findRowById(player2.id)
+    assert(player2Row)
+    expect(player2Row[header.indexOf('props.currentHealth')]).toBe('100')
+    expect(player2Row[header.indexOf('props.META_SCREEN_WIDTH')]).toBe('1920')
+    expect(player2Row[header.indexOf('props.META_OS')]).toBe('') // should be empty for missing prop
+
+    const player3Row = findRowById(player3.id)
+    assert(player3Row)
+    expect(player3Row[header.indexOf('props.level')]).toBe('5')
+    expect(player3Row[header.indexOf('props.META_OS')]).toBe('') // should be empty for missing prop
+
+    const player4Row = findRowById(player4.id)
+    assert(player4Row)
+
+    expectedMetaProps.forEach((propCol) => {
+      expect(player4Row[header.indexOf(propCol)]).toBe('')
+    })
+    expectedOtherProps.forEach((propCol) => {
+      expect(player4Row[header.indexOf(propCol)]).toBe('')
+    })
   })
 })

@@ -1,32 +1,29 @@
-import { Collection } from '@mikro-orm/core'
-import ormConfig from '../../config/mikro-orm.config'
-import DataExport, { DataExportAvailableEntities, DataExportStatus } from '../../entities/data-export'
-import PlayerProp from '../../entities/player-prop'
-import Player from '../../entities/player'
-import Prop from '../../entities/prop'
-import PlayerAlias from '../../entities/player-alias'
-import LeaderboardEntry from '../../entities/leaderboard-entry'
-import GameStat from '../../entities/game-stat'
-import PlayerGameStat from '../../entities/player-game-stat'
-import GameActivity, { GameActivityType } from '../../entities/game-activity'
-import GameFeedback from '../../entities/game-feedback'
-import Event from '../../entities/event'
-import createQueue from './createQueue'
-import { Job, Queue } from 'bullmq'
-import { EntityManager, MikroORM } from '@mikro-orm/mysql'
-import { mkdir, unlink } from 'fs/promises'
-import path from 'path'
-import createClickHouseClient from '../clickhouse/createClient'
-import { ClickHouseEvent } from '../../entities/event'
-import { streamCursor } from '../perf/streamByCursor'
-import { devDataPlayerFilter } from '../../middleware/dev-data-middleware'
+import { Collection, EntityManager, MikroORM } from '@mikro-orm/mysql'
+import { SandboxedJob } from 'bullmq'
+import DataExport, { DataExportAvailableEntities, DataExportStatus } from '../../../entities/data-export'
+import Event from '../../../entities/event'
+import ormConfig from '../../../config/mikro-orm.config'
+import PlayerProp from '../../../entities/player-prop'
+import Player from '../../../entities/player'
+import Prop from '../../../entities/prop'
+import PlayerAlias from '../../../entities/player-alias'
+import LeaderboardEntry from '../../../entities/leaderboard-entry'
+import GameStat from '../../../entities/game-stat'
+import PlayerGameStat from '../../../entities/player-game-stat'
+import GameActivity, { GameActivityType } from '../../../entities/game-activity'
+import GameFeedback from '../../../entities/game-feedback'
+import createClickHouseClient from '../../clickhouse/createClient'
+import { ClickHouseEvent } from '../../../entities/event'
+import { streamCursor } from '../../perf/streamByCursor'
+import { devDataPlayerFilter } from '../../../middleware/dev-data-middleware'
 import archiver from 'archiver'
 import { PassThrough } from 'stream'
+import path from 'path'
+import { mkdir } from 'fs/promises'
+import { createWriteStream } from 'fs'
 import { get } from 'lodash'
-import queueEmail from '../messaging/queueEmail'
-import { createWriteStream, readFileSync } from 'fs'
-import { EmailConfig } from '../../emails/mail'
-import DataExportReady from '../../emails/data-export-ready-mail'
+import { DataExportMailer } from './dataExportMailer'
+import { format } from 'date-fns'
 
 export type DataExportJob = {
   dataExportId: number
@@ -445,42 +442,30 @@ export class DataExporter {
   }
 }
 
-export function createDataExportQueue(emailQueue: Queue<EmailConfig>, onFailure: (job: Job<DataExportJob>) => Promise<void>) {
-  return createQueue<DataExportJob>('data-export', async (job: Job<DataExportJob>) => {
-    const { dataExportId, includeDevData } = job.data
+export default async (job: SandboxedJob<DataExportJob>) => {
+  const { dataExportId, includeDevData } = job.data
+  console.info(`Data export (${dataExportId}) - starting`)
 
-    const orm = await MikroORM.init(ormConfig)
-    const em = orm.em.fork()
-    const dataExport = await em.repo(DataExport).findOneOrFail(dataExportId, { populate: ['game', 'createdByUser'] })
+  const orm = await MikroORM.init(ormConfig)
+  const em = orm.em.fork()
+  const dataExport = await em.repo(DataExport).findOneOrFail(dataExportId, { populate: ['game', 'createdByUser'] })
 
-    dataExport.status = DataExportStatus.QUEUED
-    await em.flush()
+  dataExport.status = DataExportStatus.QUEUED
+  await em.flush()
+  console.info(`Data export (${dataExportId}) - queued`)
 
-    const filename = `export-${dataExport.game.id}-${dataExport.createdAt.getTime()}.zip`
-    const filepath = './storage/' + filename
+  const filename = `export-${dataExport.game.id}-${format(dataExport.createdAt, 'yyyyMMddHHssmm')}.zip`
+  const filepath = './storage/' + filename
 
-    const dataExporter = new DataExporter()
-    await dataExporter.createZipStream(filepath, dataExport, em as EntityManager, includeDevData)
+  const dataExporter = new DataExporter()
+  await dataExporter.createZipStream(filepath, dataExport, em as EntityManager, includeDevData)
 
-    dataExport.status = DataExportStatus.GENERATED
-    await em.flush()
-    await orm.close()
+  dataExport.status = DataExportStatus.GENERATED
+  await em.flush()
+  await orm.close()
+  console.info(`Data export (${dataExportId}) - generated`)
 
-    await queueEmail(emailQueue, new DataExportReady(dataExport.createdByUser.email, [
-      {
-        content: readFileSync(filepath).toString('base64'),
-        filename,
-        type: 'application/zip',
-        disposition: 'attachment'
-      }
-    ]), { dataExportId })
-
-    await unlink(filepath)
-  /* v8 ignore start */
-  }, {
-    failed: async (job: Job<DataExportJob>) => {
-      onFailure(job)
-    }
-  })
-  /* v8 ignore stop */
+  const mailer = new DataExportMailer()
+  await mailer.send(dataExport, filepath, filename)
+  console.info(`Data export (${dataExportId}) - sent`)
 }

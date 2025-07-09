@@ -48,6 +48,8 @@ export default class GameService extends Service {
         settings: {
           purgeDevPlayers: game.purgeDevPlayers,
           purgeLivePlayers: game.purgeLivePlayers,
+          purgeDevPlayersRetention: game.purgeDevPlayersRetention,
+          purgeLivePlayersRetention: game.purgeLivePlayersRetention,
           website: game.website
         }
       }
@@ -92,9 +94,20 @@ export default class GameService extends Service {
     props?: Prop[]
     purgeDevPlayers?: boolean
     purgeLivePlayers?: boolean
+    purgeDevPlayersRetention?: boolean
+    purgeLivePlayersRetention?: boolean
     website?: string
   }>): Promise<Response> {
-    const { name, props, purgeDevPlayers, purgeLivePlayers, website } = req.body
+    const {
+      name,
+      props,
+      purgeDevPlayers,
+      purgeLivePlayers,
+      purgeDevPlayersRetention,
+      purgeLivePlayersRetention,
+      website
+    } = req.body
+
     const em: EntityManager = req.ctx.em
 
     const game: Game = req.ctx.state.game
@@ -151,6 +164,14 @@ export default class GameService extends Service {
     if (typeof purgeLivePlayers === 'boolean') {
       throwUnlessOwner(req)
       game.purgeLivePlayers = purgeLivePlayers
+    }
+    if (typeof purgeDevPlayersRetention === 'number') {
+      throwUnlessOwner(req)
+      game.purgeDevPlayersRetention = purgeDevPlayersRetention
+    }
+    if (typeof purgeLivePlayersRetention === 'number') {
+      throwUnlessOwner(req)
+      game.purgeLivePlayersRetention = purgeLivePlayersRetention
     }
 
     if (typeof website === 'string') {

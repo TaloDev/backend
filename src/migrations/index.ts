@@ -49,6 +49,7 @@ import { CreateGameChannelPropTable } from './20250518214836CreateGameChannelPro
 import { AddGameChannelTemporaryMembershipColumn } from './20250522212229AddGameChannelTemporaryMembershipColumn'
 import { CreateGameChannelStoragePropTable } from './20250531223353CreateGameChannelStoragePropTable'
 import { AddPlayerGroupQueryIndexes } from './20250705074341AddPlayerGroupQueryIndexes'
+import { AddPurgeRetentionDaysColumns } from './20250709083216AddPurgeRetentionDaysColumns'
 
 export default [
   {
@@ -254,5 +255,9 @@ export default [
   {
     name: 'AddPlayerGroupQueryIndexes',
     class: AddPlayerGroupQueryIndexes
+  },
+  {
+    name: 'AddPurgeRetentionDaysColumns',
+    class: AddPurgeRetentionDaysColumns
   }
 ]

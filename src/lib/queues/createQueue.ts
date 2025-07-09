@@ -8,7 +8,7 @@ export type WorkerEvents<T> = {
   completed?: (job: Job<T>) => void | Promise<void>
 }
 
-function createQueue<T>(name: string, processor: Processor<T, unknown, string>, events: WorkerEvents<T> = {}): Queue<T> {
+function createQueue<T>(name: string, processor: Processor<T, unknown, string> | string, events: WorkerEvents<T> = {}): Queue<T> {
   const connection: ConnectionOptions = redisConfig as RedisOptions
   const queue = new Queue<T>(name, { connection, telemetry: new BullMQOtel('talo.queue') })
   const worker = new Worker<T>(queue.name, processor, { connection, telemetry: new BullMQOtel('talo.worker') })

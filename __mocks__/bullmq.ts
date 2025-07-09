@@ -2,7 +2,8 @@ import { EventEmitter } from 'events'
 
 const bullEmitter = new EventEmitter()
 
-type Processor<T> = (job: Job<T>) => void|Promise<void>
+type ProcessorFn<T> = (job: Job<T>) => void | Promise<void>
+type Processor<T> = ProcessorFn<T> | string
 
 export class Job<T> {
   queueName: string
@@ -30,10 +31,19 @@ export class Worker<T> extends EventEmitter {
 
   async process(job: Job<T>): Promise<void> {
     try {
-      await this.processor(job)
+      let processorFn: (job: Job<T>) => Promise<void> | void
+
+      if (typeof this.processor === 'string') {
+        const mod = await import(this.processor)
+        processorFn = mod.default
+      } else {
+        processorFn = this.processor
+      }
+
+      await processorFn(job)
       await Promise.all(this.listeners('completed').map((handler) => handler(job)))
     } catch (err) {
-      await Promise.all(this.listeners('failed').map((handler) => handler(job, err)))
+      await Promise.all(this.listeners('failed').map((handler) => handler(job, err as Error)))
     }
   }
 }

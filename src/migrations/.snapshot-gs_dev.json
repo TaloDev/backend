@@ -625,6 +625,28 @@
           "length": 255,
           "mappedType": "string"
         },
+        "purge_dev_players_retention": {
+          "name": "purge_dev_players_retention",
+          "type": "int",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "length": null,
+          "default": "60",
+          "mappedType": "integer"
+        },
+        "purge_live_players_retention": {
+          "name": "purge_live_players_retention",
+          "type": "int",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "length": null,
+          "default": "90",
+          "mappedType": "integer"
+        },
         "created_at": {
           "name": "created_at",
           "type": "datetime",

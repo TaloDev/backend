@@ -1,5 +1,5 @@
-import { FilterQuery, EntityManager } from '@mikro-orm/mysql'
-import { endOfDay, isSameDay, startOfDay } from 'date-fns'
+import { FilterQuery, EntityManager, raw } from '@mikro-orm/mysql'
+import { endOfDay, startOfDay } from 'date-fns'
 import { Service, Request, Response, Validate, HasPermission, Route } from 'koa-clay'
 import Player from '../entities/player'
 import HeadlinePolicy from '../policies/headline.policy'
@@ -33,12 +33,12 @@ export default class HeadlineService extends Service {
       where = Object.assign(where, devDataPlayerFilter(em))
     }
 
-    const players = await em.getRepository(Player).find(where)
+    const count = await em.getRepository(Player).count(where)
 
     return {
       status: 200,
       body: {
-        count: players.length
+        count
       }
     }
   }
@@ -61,6 +61,9 @@ export default class HeadlineService extends Service {
       },
       createdAt: {
         $lt: startOfDay(new Date(startDate))
+      },
+      [raw('datediff(created_at, last_seen_at)')]: {
+        $ne: 0
       }
     }
 
@@ -68,13 +71,12 @@ export default class HeadlineService extends Service {
       where = Object.assign(where, devDataPlayerFilter(em))
     }
 
-    let players = await em.getRepository(Player).find(where)
-    players = players.filter((player) => !isSameDay(new Date(player.createdAt), new Date(player.lastSeenAt)))
+    const count = await em.getRepository(Player).count(where)
 
     return {
       status: 200,
       body: {
-        count: players.length
+        count
       }
     }
   }

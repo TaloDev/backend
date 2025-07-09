@@ -8,7 +8,7 @@ import PlayerGameStatFactory from '../../fixtures/PlayerGameStatFactory'
 import createOrganisationAndGame from '../../utils/createOrganisationAndGame'
 import GameFeedbackFactory from '../../fixtures/GameFeedbackFactory'
 import GameStat from '../../../src/entities/game-stat'
-import { DataExporter } from '../../../src/lib/queues/createDataExportQueue'
+import { DataExporter } from '../../../src/lib/queues/data-exports/dataExportProcessor'
 
 async function collect<T>(gen: AsyncGenerator<T>): Promise<T[]> {
   const result: T[] = []

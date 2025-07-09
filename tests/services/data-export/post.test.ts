@@ -5,7 +5,7 @@ import createUserAndToken from '../../utils/createUserAndToken'
 import createOrganisationAndGame from '../../utils/createOrganisationAndGame'
 import userPermissionProvider from '../../utils/userPermissionProvider'
 import GameActivity, { GameActivityType } from '../../../src/entities/game-activity'
-import * as sendEmail from '../../../src/lib/messaging/sendEmail'
+import { DataExporter } from '../../../src/lib/queues/data-exports/dataExportProcessor'
 
 describe('Data export service - post', () => {
   it.each(userPermissionProvider([
@@ -195,19 +195,19 @@ describe('Data export service - post', () => {
     })
   })
 
-  it('should correctly update the data export status if sending the email fails', async () => {
+  it('should handle data export errors', async () => {
+    vi.spyOn(DataExporter.prototype, 'createZipStream').mockRejectedValueOnce(new Error('bad news'))
+
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({ type: UserType.ADMIN, emailConfirmed: true }, organisation)
 
-    vi.spyOn(sendEmail, 'default').mockRejectedValueOnce(new Error())
-
-    await request(app)
+    const res = await request(app)
       .post(`/games/${game.id}/data-exports`)
-      .send({ entities: [DataExportAvailableEntities.EVENTS] })
+      .send({ entities: [DataExportAvailableEntities.GAME_FEEDBACK] })
       .auth(token, { type: 'bearer' })
       .expect(200)
 
-    const dataExport = await em.getRepository(DataExport).findOneOrFail({ game })
+    const dataExport = await em.repo(DataExport).findOneOrFail(res.body.dataExport.id)
     expect(dataExport.failedAt).toBeTruthy()
   })
 })

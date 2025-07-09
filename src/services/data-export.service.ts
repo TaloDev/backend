@@ -1,58 +1,21 @@
-import { MikroORM, EntityManager } from '@mikro-orm/mysql'
+import { EntityManager } from '@mikro-orm/mysql'
 import { HasPermission, Service, Request, Response, Route, Validate, ValidationCondition } from 'koa-clay'
-import DataExport, { DataExportAvailableEntities, DataExportStatus } from '../entities/data-export'
+import DataExport, { DataExportAvailableEntities } from '../entities/data-export'
 import DataExportPolicy from '../policies/data-export.policy'
-import ormConfig from '../config/mikro-orm.config'
 import { GameActivityType } from '../entities/game-activity'
 import createGameActivity from '../lib/logging/createGameActivity'
-import { Job, Queue } from 'bullmq'
-import createEmailQueue from '../lib/queues/createEmailQueue'
+import { Queue } from 'bullmq'
 import { TraceService } from '../lib/tracing/trace-service'
-import { EmailConfig } from '../emails/mail'
-import { createDataExportQueue, DataExportJob } from '../lib/queues/createDataExportQueue'
-
-type UpdatedDataExportStatus = {
-  id?: DataExportStatus
-  failedAt?: Date
-}
+import { createDataExportQueue } from '../lib/queues/data-exports/createDataExportQueue'
+import { DataExportJob } from '../lib/queues/data-exports/dataExportProcessor'
 
 @TraceService()
 export default class DataExportService extends Service {
   queue: Queue<DataExportJob>
-  emailQueue: Queue<EmailConfig>
 
   constructor() {
     super()
-
-    this.emailQueue = createEmailQueue({
-      completed: async (job: Job<EmailConfig>) => {
-        await this.updateDataExportStatus(job.data.metadata!.dataExportId as number, { id: DataExportStatus.SENT })
-      },
-      failed: async (job: Job<EmailConfig>) => {
-        await this.updateDataExportStatus(job.data.metadata!.dataExportId as number, { failedAt: new Date() })
-      }
-    }, 'data-export')
-
-    this.queue = createDataExportQueue(this.emailQueue, async (job) => {
-      /* v8 ignore next */
-      await this.updateDataExportStatus(job.data.dataExportId, { failedAt: new Date() })
-    })
-  }
-
-  private async updateDataExportStatus(dataExportId: number, newStatus: UpdatedDataExportStatus): Promise<void> {
-    const orm = await MikroORM.init(ormConfig)
-    const em = orm.em.fork()
-
-    const dataExport = await em.getRepository(DataExport).findOneOrFail(dataExportId)
-    if (newStatus.id) {
-      dataExport.status = newStatus.id
-    }
-    if (newStatus.failedAt) {
-      dataExport.failedAt = newStatus.failedAt
-    }
-
-    await em.flush()
-    await orm.close()
+    this.queue = createDataExportQueue()
   }
 
   @Route({

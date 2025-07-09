@@ -10,11 +10,8 @@ import createGameActivity from '../lib/logging/createGameActivity'
 import { GameActivityType } from '../entities/game-activity'
 import User, { UserType } from '../entities/user'
 
-const DEV_PLAYER_INACTIVITY_DAYS = 60
-const LIVE_PLAYER_INACTIVITY_DAYS = 90
-
 async function getPlayers(em: EntityManager, game: Game, devBuild: boolean) {
-  const days = devBuild ? DEV_PLAYER_INACTIVITY_DAYS : LIVE_PLAYER_INACTIVITY_DAYS
+  const days = devBuild ? game.purgeDevPlayersRetention : game.purgeLivePlayersRetention
 
   return em.repo(Player).find({
     game,

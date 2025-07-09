@@ -11,6 +11,8 @@ describe('Game service - settings', () => {
 
     game.purgeDevPlayers = true
     game.purgeLivePlayers = false
+    game.purgeDevPlayersRetention = 30
+    game.purgeLivePlayersRetention = 60
     game.website = 'https://example.com'
     await em.flush()
 
@@ -23,6 +25,8 @@ describe('Game service - settings', () => {
       expect(res.body.settings).toStrictEqual({
         purgeDevPlayers: true,
         purgeLivePlayers: false,
+        purgeDevPlayersRetention: 30,
+        purgeLivePlayersRetention: 60,
         website: 'https://example.com'
       })
     }

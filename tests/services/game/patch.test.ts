@@ -347,4 +347,34 @@ describe('Game service - patch', () => {
       expect((await em.refreshOrFail(game)).website).toBe(website)
     }
   })
+
+  it.each(userPermissionProvider([]))('should update purgeDevPlayersRetention for a %s user', async (statusCode, _, type) => {
+    const [organisation, game] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken({ type }, organisation)
+
+    await request(app)
+      .patch(`/games/${game.id}`)
+      .send({ purgeDevPlayersRetention: 30 })
+      .auth(token, { type: 'bearer' })
+      .expect(statusCode)
+
+    if (statusCode === 200) {
+      expect((await em.refreshOrFail(game)).purgeDevPlayersRetention).toBe(30)
+    }
+  })
+
+  it.each(userPermissionProvider([]))('should update purgeLivePlayersRetention for a %s user', async (statusCode, _, type) => {
+    const [organisation, game] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken({ type }, organisation)
+
+    await request(app)
+      .patch(`/games/${game.id}`)
+      .send({ purgeLivePlayersRetention: 60 })
+      .auth(token, { type: 'bearer' })
+      .expect(statusCode)
+
+    if (statusCode === 200) {
+      expect((await em.refreshOrFail(game)).purgeLivePlayersRetention).toBe(60)
+    }
+  })
 })

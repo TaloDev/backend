@@ -34,6 +34,12 @@ export default class Game {
   website: string | null = null
 
   @Property()
+  purgeDevPlayersRetention: number = 60
+
+  @Property()
+  purgeLivePlayersRetention: number = 90
+
+  @Property()
   createdAt: Date = new Date()
 
   @Property({ onUpdate: () => new Date() })

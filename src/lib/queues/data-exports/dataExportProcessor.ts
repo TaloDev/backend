@@ -1,7 +1,7 @@
 import { Collection, EntityManager, MikroORM } from '@mikro-orm/mysql'
 import { SandboxedJob } from 'bullmq'
 import DataExport, { DataExportAvailableEntities, DataExportStatus } from '../../../entities/data-export'
-import Event from '../../../entities/event'
+import Event, { ClickHouseEventProp } from '../../../entities/event'
 import ormConfig from '../../../config/mikro-orm.config'
 import PlayerProp from '../../../entities/player-prop'
 import Player from '../../../entities/player'
@@ -46,24 +46,103 @@ export class DataExporter {
     includeDevData: boolean
   ): AsyncGenerator<Event> {
     const clickhouse = createClickHouseClient()
-
-    const query = `
-      SELECT *
-      FROM events
-      WHERE game_id = ${dataExport.game.id}
-      ${includeDevData ? '' : 'AND dev_build = false'}
-    `
-
-    const rows = await clickhouse.query({
-      query,
-      format: 'JSONEachRow'
-    })
-    const stream = rows.stream<ClickHouseEvent[]>()
+    const playerAliasCache = new Map<number, Partial<PlayerAlias>>()
 
     try {
-      for await (const rows of stream) {
-        for (const row of rows) {
-          const event = await new Event().hydrate(em, row.json(), clickhouse, true)
+      // step 1: fetch distinct prop keys for this game
+      const keyQuery = `
+        SELECT DISTINCT p.prop_key
+        FROM event_props p
+        INNER JOIN events e ON p.event_id = e.id
+        WHERE e.game_id = ${dataExport.game.id}
+        ${includeDevData ? '' : 'AND e.dev_build = false'}
+      `
+
+      const propKeys = await clickhouse.query({
+        query: keyQuery,
+        format: 'JSONEachRow'
+      }).then((res) => res.json<ClickHouseEventProp>())
+        .then((rows) => rows.map((row) => row.prop_key))
+
+      // step 2: dynamically build pivot select clause
+      const pivotCols = propKeys.map((key) => `MAX(IF(p.prop_key = '${key}', p.prop_value, NULL)) AS "props.${key}"`).join(',\n  ')
+
+      // step 3: build full pivot query
+      const query = `
+        SELECT
+          e.id,
+          e.name,
+          e.game_id,
+          e.player_alias_id,
+          e.created_at,
+          e.updated_at,
+          ${pivotCols}
+        FROM events e
+        LEFT JOIN event_props p ON e.id = p.event_id
+        WHERE e.game_id = ${dataExport.game.id}
+        ${includeDevData ? '' : 'AND e.dev_build = false'}
+        GROUP BY
+          e.id, e.name, e.game_id, e.player_alias_id, e.created_at, e.updated_at
+        ORDER BY e.created_at ASC
+      `
+
+      // step 4: stream the query
+      const rows = await clickhouse.query({
+        query,
+        format: 'JSONEachRow'
+      })
+
+      const stream = rows.stream<ClickHouseEvent & Record<string, string>>()
+
+      for await (const chunk of stream) {
+        const rawEvents = chunk.map((row) => row.json())
+
+        const aliasIds = [...new Set(rawEvents.map((e) => e.player_alias_id))]
+        const unknownAliasIds = aliasIds.filter((id) => !playerAliasCache.has(id))
+
+        // step 5: load aliases
+        if (unknownAliasIds.length > 0) {
+          /* @ts-expect-error types don't work nicely with partial loading */
+          const aliasStream = streamCursor<Partial<PlayerAlias>>(async (batchSize, after) => {
+            return em.repo(PlayerAlias).findByCursor({
+              id: { $in: unknownAliasIds }
+            }, {
+              first: batchSize,
+              after,
+              orderBy: { id: 'asc' },
+              fields: ['service', 'identifier', 'player.id']
+            })
+          })
+
+          for await (const alias of aliasStream) {
+            /* @ts-expect-error primary keys are always loaded with partial loading */
+            playerAliasCache.set(alias.id, alias)
+          }
+        }
+
+        // step 6: hydrate events
+        for (const data of rawEvents) {
+          const playerAlias = playerAliasCache.get(data.player_alias_id as number)
+
+          const event = new Event()
+          event.construct(data.name as string, dataExport.game)
+          event.id = data.id as string
+          event.createdAt = new Date(data.created_at as string)
+          event.updatedAt = new Date(data.updated_at as string)
+          if (playerAlias) {
+            event.playerAlias = playerAlias as PlayerAlias
+          }
+
+          // hydrate props from flattened keys
+          const props: { key: string, value: string }[] = []
+          for (const key of propKeys) {
+            const value = data[`props.${key}`]
+            if (value != null) {
+              props.push({ key, value })
+            }
+          }
+          event.props = props
+
           yield event
         }
       }
@@ -227,44 +306,127 @@ export class DataExporter {
   private async streamCSVToArchive<T extends ExportableEntity>(
     archive: archiver.Archiver,
     filename: string,
-    generatorFactory: (dataExport: DataExport, em: EntityManager, includeDevData: boolean) => AsyncGenerator<T>,
+    generatorFactory: (
+      dataExport: DataExport,
+      em: EntityManager,
+      includeDevData: boolean
+    ) => AsyncGenerator<T>,
     dataExport: DataExport,
     em: EntityManager,
-    includeDevData: boolean
+    includeDevData: boolean,
+    dynamicPropDiscovery: boolean = false,
+    maxRowsPerFile: number = 100_000
   ): Promise<void> {
-    const passThrough = new PassThrough()
-    archive.append(passThrough, { name: filename })
-
     const service = filename.replace('.csv', '') as DataExportAvailableEntities
     const baseColumns = this.getColumns(service)
 
-    const allPropKeys: Set<string> = new Set()
-    const entitiesToProcess: T[] = []
+    const createStreamPart = (partNum: number, finalColumns: string[]) => {
+      const passThrough = new PassThrough()
+      const partFilename = filename.replace('.csv', `-${partNum}.csv`)
+      console.info(`Data export (${dataExport.id}) - building ${partFilename}`)
 
-    // pass 1: collect all unique prop keys
-    const firstPassGenerator = generatorFactory(dataExport, em, includeDevData)
-    for await (const entity of firstPassGenerator) {
-      if ('props' in entity) {
-        this.getProps(entity as ExportableEntityWithProps).forEach((prop) => allPropKeys.add(prop.key))
-      }
-      entitiesToProcess.push(entity)
+      archive.append(passThrough, { name: partFilename })
+      passThrough.write(finalColumns.join(',') + '\n')
+      return passThrough
     }
 
-    // construct prop columns
-    const metaPropKeys = Array.from(allPropKeys).filter((key) => key.startsWith('META_')).sort()
-    const otherPropKeys = Array.from(allPropKeys).filter((key) => !key.startsWith('META_')).sort()
+    if (!dynamicPropDiscovery) {
+      const allPropKeys: Set<string> = new Set()
+      const entitiesToProcess: T[] = []
 
+      // first pass: collect all unique prop keys
+      const firstPassGenerator = generatorFactory(dataExport, em, includeDevData)
+      for await (const entity of firstPassGenerator) {
+        if ('props' in entity) {
+          this.getProps(entity as ExportableEntityWithProps).forEach((prop) =>
+            allPropKeys.add(prop.key)
+          )
+        }
+        entitiesToProcess.push(entity)
+      }
+
+      // construct columns
+      const metaPropKeys = Array.from(allPropKeys)
+        .filter((key) => key.startsWith('META_'))
+        .sort()
+      const otherPropKeys = Array.from(allPropKeys)
+        .filter((key) => !key.startsWith('META_'))
+        .sort()
+      const finalColumns = [
+        ...baseColumns.filter((col) => col !== 'props'),
+        ...metaPropKeys.map((key) => `props.${key}`),
+        ...otherPropKeys.map((key) => `props.${key}`)
+      ]
+
+      // chunked writing
+      let partNum = 1
+      let rowCount = 0
+      let passThrough = createStreamPart(partNum, finalColumns)
+
+      for (const entity of entitiesToProcess) {
+        /* v8 ignore start */
+        if (rowCount >= maxRowsPerFile) {
+          passThrough.end()
+          partNum++
+          rowCount = 0
+          passThrough = createStreamPart(partNum, finalColumns)
+        }
+        /* v8 ignore stop */
+
+        const row = finalColumns.map((col) => this.transformColumn(col, entity)).join(',')
+        passThrough.write(row + '\n')
+        rowCount++
+      }
+
+      passThrough.end()
+      return
+    }
+
+    // build props and buffer rows in one pass
+    const allEntities: T[] = []
+    const allPropKeys: Set<string> = new Set()
+
+    const generator = generatorFactory(dataExport, em, includeDevData)
+    for await (const entity of generator) {
+      if ('props' in entity) {
+        this.getProps(entity as ExportableEntityWithProps).forEach((prop) =>
+          allPropKeys.add(prop.key)
+        )
+      }
+      allEntities.push(entity)
+    }
+
+    // build final columns after seeing all props
+    const metaPropKeys = Array.from(allPropKeys)
+      .filter((key) => key.startsWith('META_'))
+      .sort()
+    const otherPropKeys = Array.from(allPropKeys)
+      .filter((key) => !key.startsWith('META_'))
+      .sort()
     const finalColumns = [
       ...baseColumns.filter((col) => col !== 'props'),
       ...metaPropKeys.map((key) => `props.${key}`),
       ...otherPropKeys.map((key) => `props.${key}`)
     ]
-    passThrough.write(finalColumns.join(',') + '\n')
 
-    // pass 2: write all the rows
-    for (const entity of entitiesToProcess) {
+    // chunked writing
+    let partNum = 1
+    let rowCount = 0
+    let passThrough = createStreamPart(partNum, finalColumns)
+
+    for (const entity of allEntities) {
+      /* v8 ignore start */
+      if (rowCount >= maxRowsPerFile) {
+        passThrough.end()
+        partNum++
+        rowCount = 0
+        passThrough = createStreamPart(partNum, finalColumns)
+      }
+      /* v8 ignore stop */
+
       const row = finalColumns.map((col) => this.transformColumn(col, entity)).join(',')
       passThrough.write(row + '\n')
+      rowCount++
     }
 
     passThrough.end()
@@ -282,6 +444,7 @@ export class DataExporter {
     output.on('error', (err) => { throw err })
 
     if (dataExport.entities.includes(DataExportAvailableEntities.EVENTS)) {
+      console.time(`Data export (${dataExport.id}) - events`)
       await this.streamCSVToArchive(
         archive,
         `${DataExportAvailableEntities.EVENTS}.csv`,
@@ -290,20 +453,25 @@ export class DataExporter {
         em,
         includeDevData
       )
+      console.timeEnd(`Data export (${dataExport.id}) - events`)
     }
 
     if (dataExport.entities.includes(DataExportAvailableEntities.PLAYERS)) {
+      console.time(`Data export (${dataExport.id}) - players`)
       await this.streamCSVToArchive(
         archive,
         `${DataExportAvailableEntities.PLAYERS}.csv`,
         this.streamPlayers,
         dataExport,
         em,
-        includeDevData
+        includeDevData,
+        true
       )
+      console.timeEnd(`Data export (${dataExport.id}) - players`)
     }
 
     if (dataExport.entities.includes(DataExportAvailableEntities.PLAYER_ALIASES)) {
+      console.time(`Data export (${dataExport.id}) - player aliases`)
       await this.streamCSVToArchive(
         archive,
         `${DataExportAvailableEntities.PLAYER_ALIASES}.csv`,
@@ -312,20 +480,25 @@ export class DataExporter {
         em,
         includeDevData
       )
+      console.timeEnd(`Data export (${dataExport.id}) - player aliases`)
     }
 
     if (dataExport.entities.includes(DataExportAvailableEntities.LEADERBOARD_ENTRIES)) {
+      console.time(`Data export (${dataExport.id}) - leaderboard entries`)
       await this.streamCSVToArchive(
         archive,
         `${DataExportAvailableEntities.LEADERBOARD_ENTRIES}.csv`,
         this.streamLeaderboardEntries,
         dataExport,
         em,
-        includeDevData
+        includeDevData,
+        true
       )
+      console.timeEnd(`Data export (${dataExport.id}) - leaderboard entries`)
     }
 
     if (dataExport.entities.includes(DataExportAvailableEntities.GAME_STATS)) {
+      console.time(`Data export (${dataExport.id}) - game stats`)
       await this.streamCSVToArchive(
         archive,
         `${DataExportAvailableEntities.GAME_STATS}.csv`,
@@ -334,9 +507,11 @@ export class DataExporter {
         em,
         includeDevData
       )
+      console.timeEnd(`Data export (${dataExport.id}) - game stats`)
     }
 
     if (dataExport.entities.includes(DataExportAvailableEntities.PLAYER_GAME_STATS)) {
+      console.time(`Data export (${dataExport.id}) - player game stats`)
       await this.streamCSVToArchive(
         archive,
         `${DataExportAvailableEntities.PLAYER_GAME_STATS}.csv`,
@@ -345,9 +520,11 @@ export class DataExporter {
         em,
         includeDevData
       )
+      console.timeEnd(`Data export (${dataExport.id}) - player game stats`)
     }
 
     if (dataExport.entities.includes(DataExportAvailableEntities.GAME_ACTIVITIES)) {
+      console.time(`Data export (${dataExport.id}) - game activities`)
       await this.streamCSVToArchive(
         archive,
         `${DataExportAvailableEntities.GAME_ACTIVITIES}.csv`,
@@ -356,9 +533,11 @@ export class DataExporter {
         em,
         includeDevData
       )
+      console.timeEnd(`Data export (${dataExport.id}) - game activities`)
     }
 
     if (dataExport.entities.includes(DataExportAvailableEntities.GAME_FEEDBACK)) {
+      console.time(`Data export (${dataExport.id}) - game feedback`)
       await this.streamCSVToArchive(
         archive,
         `${DataExportAvailableEntities.GAME_FEEDBACK}.csv`,
@@ -367,9 +546,13 @@ export class DataExporter {
         em,
         includeDevData
       )
+      console.timeEnd(`Data export (${dataExport.id}) - game feedback`)
     }
 
+    console.info(`Data export (${dataExport.id}) - finalising`)
+    console.time(`Data export (${dataExport.id}) - finalise`)
     await archive.finalize()
+    console.timeEnd(`Data export (${dataExport.id}) - finalise`)
 
     return new Promise((resolve, reject) => {
       output.on('close', resolve)
@@ -444,6 +627,7 @@ export class DataExporter {
 
 export default async (job: SandboxedJob<DataExportJob>) => {
   const { dataExportId, includeDevData } = job.data
+  console.time(`Data export (${dataExportId}) - end to end`)
   console.info(`Data export (${dataExportId}) - starting`)
 
   const orm = await MikroORM.init(ormConfig)
@@ -467,5 +651,5 @@ export default async (job: SandboxedJob<DataExportJob>) => {
 
   const mailer = new DataExportMailer()
   await mailer.send(dataExport, filepath, filename)
-  console.info(`Data export (${dataExportId}) - sent`)
+  console.info(`Data export (${dataExportId}) - sending`)
 }

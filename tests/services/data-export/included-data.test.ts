@@ -9,6 +9,7 @@ import createOrganisationAndGame from '../../utils/createOrganisationAndGame'
 import GameFeedbackFactory from '../../fixtures/GameFeedbackFactory'
 import GameStat from '../../../src/entities/game-stat'
 import { DataExporter } from '../../../src/lib/queues/data-exports/dataExportProcessor'
+import Prop from '../../../src/entities/prop'
 
 async function collect<T>(gen: AsyncGenerator<T>): Promise<T[]> {
   const result: T[] = []
@@ -26,12 +27,21 @@ describe('Data export service - included data (unit tests)', () => {
     const proto = Object.getPrototypeOf(exporter)
 
     const player = await new PlayerFactory([game]).devBuild().one()
+
     const event = await new EventFactory([player]).one()
+    event.setProps([new Prop('currentLevel', '80')])
+
     const dataExport = await new DataExportFactory(game).one()
     await em.persistAndFlush(dataExport)
+
     await clickhouse.insert({
       table: 'events',
       values: [event.toInsertable()],
+      format: 'JSONEachRow'
+    })
+    await clickhouse.insert({
+      table: 'events',
+      values: event.getInsertableProps(),
       format: 'JSONEachRow'
     })
 
@@ -46,12 +56,21 @@ describe('Data export service - included data (unit tests)', () => {
     const proto = Object.getPrototypeOf(exporter)
 
     const player = await new PlayerFactory([game]).devBuild().one()
+
     const event = await new EventFactory([player]).one()
+    event.setProps([new Prop('currentLevel', '80')])
+
     const dataExport = await new DataExportFactory(game).one()
+
     await em.persistAndFlush(dataExport)
     await clickhouse.insert({
       table: 'events',
       values: [event.toInsertable()],
+      format: 'JSONEachRow'
+    })
+    await clickhouse.insert({
+      table: 'events',
+      values: event.getInsertableProps(),
       format: 'JSONEachRow'
     })
 

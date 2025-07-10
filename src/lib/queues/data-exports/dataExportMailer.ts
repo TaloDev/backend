@@ -15,7 +15,9 @@ export class DataExportMailer {
   constructor() {
     this.emailQueue = createEmailQueue({
       completed: async (job: Job<EmailConfig>) => {
-        await updateDataExportStatus(this.getDataExportIdFromJob(job), { id: DataExportStatus.SENT })
+        const id = this.getDataExportIdFromJob(job)
+        console.timeEnd(`Data export (${id}) - end to end`)
+        await updateDataExportStatus(id, { id: DataExportStatus.SENT })
       },
       failed: async (job: Job<EmailConfig>) => {
         await updateDataExportStatus(this.getDataExportIdFromJob(job), { failedAt: new Date() })

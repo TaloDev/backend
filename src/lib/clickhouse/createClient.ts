@@ -95,7 +95,8 @@ function createClickHouseTracingProxyHandler(): ProxyHandler<ClickHouseClient> {
 
 export default function createTracedClickHouseClient(): ClickHouseClient {
   const client = createClient({
-    url: `http://${process.env.CLICKHOUSE_USER}:${process.env.CLICKHOUSE_PASSWORD}@${process.env.CLICKHOUSE_HOST}:${process.env.CLICKHOUSE_PORT}/${process.env.CLICKHOUSE_DB}`
+    url: `http://${process.env.CLICKHOUSE_USER}:${process.env.CLICKHOUSE_PASSWORD}@${process.env.CLICKHOUSE_HOST}:${process.env.CLICKHOUSE_PORT}/${process.env.CLICKHOUSE_DB}`,
+    request_timeout: 120_000
   })
 
   return new Proxy(client, createClickHouseTracingProxyHandler())

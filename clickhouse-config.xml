@@ -1,0 +1,5 @@
+<clickhouse>
+  <keep_alive_timeout>60</keep_alive_timeout>
+  <input_format_parallel_parsing>0</input_format_parallel_parsing>
+  <output_format_parallel_formatting>0</output_format_parallel_formatting>
+</clickhouse>

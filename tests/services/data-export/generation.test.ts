@@ -208,7 +208,7 @@ describe('Data export service - createZipStream', () => {
     await readFile(zipFilePath)
 
     const directory = await unzipper.Open.file(zipFilePath)
-    const playerCsvFile = directory.files.find((f) => f.path === 'players.csv')
+    const playerCsvFile = directory.files.find((f) => f.path === 'players-1.csv')
     expect(playerCsvFile).toBeDefined()
 
     const csvContentBuffer = await playerCsvFile!.buffer()

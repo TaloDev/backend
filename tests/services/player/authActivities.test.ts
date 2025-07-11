@@ -53,4 +53,21 @@ describe('Player service - get auth activities', () => {
 
     expect(res.body).toStrictEqual({ message: 'Player not found' })
   })
+
+  it('should not return a player\'s auth activities if they do not have a talo alias', async () => {
+    const [organisation, game] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken({ type: UserType.ADMIN }, organisation)
+
+    const player = await new PlayerFactory([game]).withUsernameAlias().one()
+    const activities = await new PlayerAuthActivityFactory(game).state(() => ({ player })).many(10)
+
+    await em.persistAndFlush(activities)
+
+    const res = await request(app)
+      .get(`/games/${game.id}/players/${player.id}/auth-activities`)
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    expect(res.body.activities).toHaveLength(0)
+  })
 })

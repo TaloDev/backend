@@ -8,6 +8,8 @@ import PlayerAuthActivity, { PlayerAuthActivityType } from '../../../../src/enti
 import PlayerAlias from '../../../../src/entities/player-alias'
 import EventFactory from '../../../fixtures/EventFactory'
 import PlayerPresenceFactory from '../../../fixtures/PlayerPresenceFactory'
+import PlayerAuthActivityFactory from '../../../fixtures/PlayerAuthActivityFactory'
+import assert from 'assert'
 
 describe('Player auth API service - delete', { timeout: 30_000 }, () => {
   it('should delete the account if the current password is correct', async () => {
@@ -19,7 +21,8 @@ describe('Player auth API service - delete', { timeout: 30_000 }, () => {
       })).one()
     })).one()
     const alias = player.aliases[0]
-    await em.persistAndFlush(player)
+    const activities = await new PlayerAuthActivityFactory(player.game).state(() => ({ player })).many(10)
+    await em.persistAndFlush([player, ...activities])
 
     const sessionToken = await player.auth!.createSession(alias)
     await em.flush()
@@ -50,7 +53,13 @@ describe('Player auth API service - delete', { timeout: 30_000 }, () => {
         identifier: prevIdentifier
       }
     })
-    expect(activity).not.toBeNull()
+    assert(activity)
+    expect(activity.extra.ip).toBeUndefined()
+
+    const activityCount = await em.getRepository(PlayerAuthActivity).count({
+      player: player.id
+    })
+    expect(activityCount).toBe(1)
   })
 
   it('should delete events associated with the player alias', async () => {

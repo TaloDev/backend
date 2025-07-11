@@ -20,6 +20,8 @@ const isTest = process.env.NODE_ENV === 'test'
 
 export default async function init(): Promise<Koa> {
   const app = new Koa()
+  /* v8 ignore next */
+  app.proxy = process.env.NO_PROXY !== '1'
 
   await initProviders(app, isTest)
 

@@ -10,12 +10,14 @@ export default function createPlayerAuthActivity(
 ): PlayerAuthActivity {
   const em: EntityManager = req.ctx.em
 
+  const ip = req.ctx.request.ip
+
   const activity = new PlayerAuthActivity(player)
   activity.type = data.type
   activity.extra = {
     ...(data.extra ?? {}),
     userAgent: req.headers['user-agent'],
-    ip: req.ctx.request.ip
+    ip: data.type === PlayerAuthActivityType.DELETED_AUTH ? undefined : ip
   }
 
   em.persist(activity)

@@ -2,7 +2,7 @@ import { Service, Request, Response, Validate, HasPermission, Route, ValidationC
 import Game from '../entities/game'
 import Player from '../entities/player'
 import PlayerPolicy from '../policies/player.policy'
-import PlayerAlias from '../entities/player-alias'
+import PlayerAlias, { PlayerAliasService } from '../entities/player-alias'
 import { sanitiseProps, mergeAndSanitiseProps, hardSanitiseProps } from '../lib/props/sanitiseProps'
 import Event, { ClickHouseEvent } from '../entities/event'
 import { EntityManager, LockMode } from '@mikro-orm/mysql'
@@ -401,7 +401,22 @@ export default class PlayerService extends Service {
   @HasPermission(PlayerPolicy, 'getAuthActivities')
   async authActivities(req: Request): Promise<Response> {
     const em: EntityManager = req.ctx.em
-    const activities = await em.getRepository(PlayerAuthActivity).find({
+
+    const hasTaloAlias = await em.repo(PlayerAlias).count({
+      player: req.ctx.state.player,
+      service: PlayerAliasService.TALO
+    }) > 0
+
+    if (!hasTaloAlias) {
+      return {
+        status: 200,
+        body: {
+          activities: []
+        }
+      }
+    }
+
+    const activities = await em.repo(PlayerAuthActivity).find({
       player: req.ctx.state.player
     }, {
       populate: ['player.aliases']

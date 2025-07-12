@@ -149,8 +149,6 @@ describe('Headline service - get', () => {
     const playersSignedupThisWeek = await new PlayerFactory([game]).notSeenThisWeek().many(5)
     await em.persistAndFlush([...playersNotSeenThisWeek, ...returningPlayersSeenThisWeek, ...playersSignedupThisWeek])
 
-    console.log([...playersNotSeenThisWeek, ...returningPlayersSeenThisWeek, ...playersSignedupThisWeek].map((x) => ({ c: x.createdAt, l: x.lastSeenAt })))
-
     const res = await request(app)
       .get(`/games/${game.id}/headlines/returning_players`)
       .query({ startDate, endDate })

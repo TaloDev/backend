@@ -13,7 +13,7 @@ import queueEmail from '../../lib/messaging/queueEmail'
 import PlayerAuthCode from '../../emails/player-auth-code-mail'
 import PlayerAuthResetPassword from '../../emails/player-auth-reset-password-mail'
 import createPlayerAuthActivity from '../../lib/logging/createPlayerAuthActivity'
-import { PlayerAuthActivityType } from '../../entities/player-auth-activity'
+import PlayerAuthActivity, { PlayerAuthActivityType } from '../../entities/player-auth-activity'
 import emailRegex from '../../lib/lang/emailRegex'
 import { ClickHouseClient } from '@clickhouse/client'
 import { deleteClickHousePlayerData } from '../../tasks/deleteInactivePlayers'
@@ -625,6 +625,10 @@ export default class PlayerAuthAPIService extends APIService {
         errorCode: 'INVALID_CREDENTIALS'
       })
     }
+
+    await em.repo(PlayerAuthActivity).nativeDelete({
+      player: alias.player
+    })
 
     createPlayerAuthActivity(req, alias.player, {
       type: PlayerAuthActivityType.DELETED_AUTH,

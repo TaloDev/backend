@@ -1,6 +1,6 @@
 {
   "name": "game-services",
-  "version": "0.79.1",
+  "version": "0.79.2",
   "description": "",
   "main": "src/index.ts",
   "scripts": {
@@ -16,7 +16,8 @@
     "migration:up": "DB_HOST=127.0.0.1 mikro-orm migration:up",
     "service:create": "hygen service new",
     "prepare": "husky || true",
-    "lint": "eslint src/**/*.ts tests/**/*.ts"
+    "lint": "eslint src/**/*.ts tests/**/*.ts",
+    "stripe:webhooks": "stripe listen --forward-to localhost:3000/public/webhooks/subscriptions"
   },
   "author": "Sleepy Studios",
   "license": "MIT",

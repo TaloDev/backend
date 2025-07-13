@@ -36,8 +36,8 @@ describe('Data export service - included data (unit tests)', () => {
 
     await clickhouse.insert({
       table: 'events',
-      values: [event.toInsertable()],
-      format: 'JSONEachRow'
+      values: event.toInsertable(),
+      format: 'JSON'
     })
     await clickhouse.insert({
       table: 'events',
@@ -65,8 +65,8 @@ describe('Data export service - included data (unit tests)', () => {
     await em.persistAndFlush(dataExport)
     await clickhouse.insert({
       table: 'events',
-      values: [event.toInsertable()],
-      format: 'JSONEachRow'
+      values: event.toInsertable(),
+      format: 'JSON'
     })
     await clickhouse.insert({
       table: 'events',

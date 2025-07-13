@@ -129,7 +129,7 @@ export default class GameChannelService extends Service {
         /* v8 ignore start */
         }
         throw err
-        /* v8 ignore end */
+        /* v8 ignore stop */
       }
     }
 
@@ -186,7 +186,7 @@ export default class GameChannelService extends Service {
         /* v8 ignore start */
         }
         throw err
-        /* v8 ignore end */
+        /* v8 ignore stop */
       }
       changedProperties.push('props')
     }

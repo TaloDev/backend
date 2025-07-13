@@ -1,8 +1,5 @@
-import { Queue } from 'bullmq'
-import createQueue from '../lib/queues/createQueue'
 import { formatDateForClickHouse } from '../lib/clickhouse/formatDateTime'
 import { SocketMessageRequest, SocketMessageResponse } from './messages/socketMessage'
-import { ClickHouseClient } from '@clickhouse/client'
 
 export type ClickHouseSocketEvent = {
   event_type: string
@@ -25,9 +22,9 @@ export type SocketEvent = {
   createdAt: Date
 }
 
-export type SocketEventData = Omit<SocketEvent, 'id' | 'createdAt'>
+export type SocketEventData = Omit<SocketEvent, 'createdAt'>
 
-function getInsertableData(event: SocketEventData): ClickHouseSocketEvent {
+export function getInsertableSocketEventData(event: SocketEventData): ClickHouseSocketEvent {
   return {
     event_type: event.eventType,
     req_or_res: event.reqOrRes,
@@ -37,18 +34,4 @@ function getInsertableData(event: SocketEventData): ClickHouseSocketEvent {
     dev_build: event.devBuild,
     created_at: formatDateForClickHouse(new Date())
   }
-}
-
-export function createSocketEventQueue(clickhouse: ClickHouseClient): Queue<SocketEventData> {
-  return createQueue<SocketEventData>('socketEvents', async (job) => {
-    if (job.data.devBuild) {
-      return
-    }
-
-    await clickhouse.insert({
-      table: 'socket_events',
-      values: [getInsertableData(job.data)],
-      format: 'JSONEachRow'
-    })
-  })
 }

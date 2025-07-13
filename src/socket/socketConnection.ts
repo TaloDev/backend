@@ -96,7 +96,7 @@ export default class SocketConnection {
 
         logResponse(this, res, message)
 
-        await this.wss.trackEvent('message', {
+        await this.wss.trackEvent({
           eventType: res,
           reqOrRes: 'res',
           code: 'errorCode' in data ? (data.errorCode as SocketErrorCode) : null,

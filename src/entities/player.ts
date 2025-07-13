@@ -78,8 +78,8 @@ export default class Player {
   async insertSession(clickhouse: ClickHouseClient, session: PlayerSession) {
     await clickhouse.insert({
       table: 'player_sessions',
-      values: [session.toInsertable()],
-      format: 'JSONEachRow'
+      values: session.toInsertable(),
+      format: 'JSON'
     })
   }
 

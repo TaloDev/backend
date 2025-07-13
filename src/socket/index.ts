@@ -6,14 +6,13 @@ import SocketConnection from './socketConnection'
 import SocketRouter from './router/socketRouter'
 import { sendMessage } from './messages/socketMessage'
 import { logConnection, logConnectionClosed } from './messages/socketLogger'
-import { Queue } from 'bullmq'
-import { createSocketEventQueue, SocketEventData } from './socketEvent'
-import { ClickHouseClient } from '@clickhouse/client'
-import createClickHouseClient from '../lib/clickhouse/createClient'
+import { SocketEventData } from './socketEvent'
 import Redis from 'ioredis'
 import redisConfig from '../config/redis.config'
 import SocketTicket from './socketTicket'
 import { getSocketTracer } from './socketTracer'
+import { FlushSocketEventsQueueHandler } from '../lib/queues/game-metrics/flush-socket-events-queue-handler'
+import { v4 } from 'uuid'
 
 type CloseConnectionOptions = {
   code?: number
@@ -26,8 +25,7 @@ export default class Socket {
   private readonly wss: WebSocketServer
   private connections: Map<WebSocket, SocketConnection> = new Map()
   private router: SocketRouter
-  private clickhouse: ClickHouseClient
-  private eventQueue: Queue<SocketEventData>
+  private queueHandler: FlushSocketEventsQueueHandler
 
   constructor(server: Server, private readonly em: EntityManager) {
     this.wss = new WebSocketServer({ server })
@@ -45,14 +43,11 @@ export default class Socket {
 
     this.router = new SocketRouter(this)
 
-    this.clickhouse = createClickHouseClient()
-    this.eventQueue = createSocketEventQueue(this.clickhouse)
+    this.queueHandler = new FlushSocketEventsQueueHandler()
 
     const interval = this.heartbeat()
-
-    this.wss.on('close', async () => {
+    this.wss.on('close', () => {
       clearInterval(interval)
-      await this.clickhouse.close()
     })
   }
 
@@ -91,7 +86,7 @@ export default class Socket {
             const connection = new SocketConnection(this, ws, ticket, req.socket.remoteAddress!)
             this.connections.set(ws, connection)
 
-            await this.trackEvent('open', {
+            await this.trackEvent({
               eventType: 'open',
               reqOrRes: 'req',
               code: null,
@@ -165,7 +160,7 @@ export default class Socket {
 
     logConnectionClosed(connection, preclosed, code, options.reason)
 
-    await this.trackEvent('close', {
+    await this.trackEvent({
       eventType: 'close',
       reqOrRes: preclosed ? 'req' : 'res',
       code: preclosed ? null : code.toString(),
@@ -196,11 +191,12 @@ export default class Socket {
     return results.filter((r) => r.matches).map((r) => r.conn)
   }
 
-  async trackEvent(name: 'open' | 'close' | 'message', data: SocketEventData): Promise<void> {
+  async trackEvent(data: Omit<SocketEventData, 'id'>): Promise<void> {
     if (process.env.DISABLE_SOCKET_EVENTS === '1') {
       return
     }
 
-    await this.eventQueue.add(name, data)
+    /* v8 ignore next - tests mock this implementation */
+    await this.queueHandler.add({ id: v4(), ...data })
   }
 }

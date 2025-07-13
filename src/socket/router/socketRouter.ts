@@ -74,7 +74,7 @@ export default class SocketRouter {
   }
 
   async routeMessage(conn: SocketConnection, message: SocketMessage): Promise<boolean> {
-    await this.wss.trackEvent('message', {
+    await this.wss.trackEvent({
       eventType: message.req,
       reqOrRes: 'req',
       code: null,

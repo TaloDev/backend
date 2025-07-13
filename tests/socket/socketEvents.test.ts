@@ -6,10 +6,25 @@ import redisConfig from '../../src/config/redis.config'
 import { createSocketTicket } from '../../src/services/api/socket-ticket-api.service'
 import Redis from 'ioredis'
 import createTestSocket from '../utils/createTestSocket'
+import Socket from '../../src/socket'
+import { FlushSocketEventsQueueHandler } from '../../src/lib/queues/game-metrics/flush-socket-events-queue-handler'
+import { v4 } from 'uuid'
 
 describe('Socket events', () => {
   beforeAll(() => {
     vi.stubEnv('DISABLE_SOCKET_EVENTS', '0')
+
+    // essentially the same functionality but with instant flushing
+    vi.spyOn(Socket.prototype, 'trackEvent').mockImplementation(async (data) => {
+      const handler = new FlushSocketEventsQueueHandler()
+      handler.add({ id: v4(), ...data })
+      await handler.handle()
+    })
+  })
+
+  afterAll(() => {
+    vi.stubEnv('DISABLE_SOCKET_EVENTS', '1')
+    vi.restoreAllMocks()
   })
 
   it('should track open, connected and close events', async () => {
@@ -180,6 +195,6 @@ describe('Socket events', () => {
       format: 'JSONEachRow'
     }).then((res) => res.json<ClickHouseSocketEvent>())
 
-    expect(events.length).toBe(0)
+    expect(events).toHaveLength(0)
   })
 })

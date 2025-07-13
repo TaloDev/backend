@@ -20,7 +20,7 @@ export function createDataExportQueue() {
   } else {
     throw new Error(`Data export processor file not found at either ${jsProcessorPath} or ${tsProcessorPath}`)
   }
-  /* v8 ignore end */
+  /* v8 ignore stop */
 
   return createQueue<DataExportJob>(
     'data-export',

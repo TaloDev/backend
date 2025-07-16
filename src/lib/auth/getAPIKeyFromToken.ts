@@ -16,8 +16,8 @@ export default async function getAPIKeyFromToken(authHeader: string): Promise<AP
     if (decodedToken) {
       const sub = Number(decodedToken.sub)
       const apiKey = await em.getRepository(APIKey).findOne(Number(sub), {
-        populate: ['game', 'game.apiSecret'],
-        ...(getResultCacheOptions(getTokenCacheKey(sub)) ?? {})
+        ...(getResultCacheOptions(getTokenCacheKey(sub)) ?? {}),
+        populate: ['game', 'game.apiSecret']
       })
 
       return apiKey

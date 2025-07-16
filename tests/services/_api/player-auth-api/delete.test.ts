@@ -24,7 +24,7 @@ describe('Player auth API service - delete', { timeout: 30_000 }, () => {
     const activities = await new PlayerAuthActivityFactory(player.game).state(() => ({ player })).many(10)
     await em.persistAndFlush([player, ...activities])
 
-    const sessionToken = await player.auth!.createSession(alias)
+    const sessionToken = await player.auth!.createSession(em, alias)
     await em.flush()
 
     const prevIdentifier = alias.identifier
@@ -73,7 +73,7 @@ describe('Player auth API service - delete', { timeout: 30_000 }, () => {
     const alias = player.aliases[0]
     await em.persistAndFlush(player)
 
-    const sessionToken = await player.auth!.createSession(alias)
+    const sessionToken = await player.auth!.createSession(em, alias)
     await em.flush()
 
     const events = await new EventFactory([player]).many(3)
@@ -128,7 +128,7 @@ describe('Player auth API service - delete', { timeout: 30_000 }, () => {
     const alias = player.aliases[0]
     await em.persistAndFlush(player)
 
-    const sessionToken = await player.auth!.createSession(alias)
+    const sessionToken = await player.auth!.createSession(em, alias)
     await em.flush()
 
     const res = await request(app)
@@ -166,7 +166,7 @@ describe('Player auth API service - delete', { timeout: 30_000 }, () => {
     const alias = player.aliases[0]
     await em.persistAndFlush(player)
 
-    const sessionToken = await player.auth!.createSession(alias)
+    const sessionToken = await player.auth!.createSession(em, alias)
     await em.flush()
 
     await request(app)
@@ -197,7 +197,7 @@ describe('Player auth API service - delete', { timeout: 30_000 }, () => {
     player.presence = presence
     await em.persistAndFlush(player)
 
-    const sessionToken = await player.auth!.createSession(alias)
+    const sessionToken = await player.auth!.createSession(em, alias)
     await em.flush()
 
     await request(app)

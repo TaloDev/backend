@@ -97,7 +97,7 @@ export default class PlayerService extends Service {
         /* v8 ignore start */
         }
         throw err
-        /* v8 ignore end */
+        /* v8 ignore stop */
       }
     }
 

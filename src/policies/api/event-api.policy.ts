@@ -13,8 +13,8 @@ export default class EventAPIPolicy extends Policy {
       },
       game: key.game
     }, {
-      populate: ['aliases'],
-      ...(getResultCacheOptions(`event-api-policy-alias-${this.ctx.state.currentAliasId}`) ?? {})
+      ...(getResultCacheOptions(`event-api-policy-alias-${this.ctx.state.currentAliasId}`) ?? {}),
+      populate: ['aliases']
     })
 
     if (!this.ctx.state.player) return new PolicyDenial({ message: 'Player not found' }, 404)

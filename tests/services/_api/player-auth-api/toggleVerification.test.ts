@@ -20,7 +20,7 @@ describe('Player auth API service - toggle verification', () => {
     const alias = player.aliases[0]
     await em.persistAndFlush(player)
 
-    const sessionToken = await player.auth!.createSession(alias)
+    const sessionToken = await player.auth!.createSession(em, alias)
     await em.flush()
 
     await request(app)
@@ -58,7 +58,7 @@ describe('Player auth API service - toggle verification', () => {
     const alias = player.aliases[0]
     await em.persistAndFlush(player)
 
-    const sessionToken = await player.auth!.createSession(alias)
+    const sessionToken = await player.auth!.createSession(em, alias)
     await em.flush()
 
     await request(app)
@@ -96,7 +96,7 @@ describe('Player auth API service - toggle verification', () => {
     const alias = player.aliases[0]
     await em.persistAndFlush(player)
 
-    const sessionToken = await player.auth!.createSession(alias)
+    const sessionToken = await player.auth!.createSession(em, alias)
     await em.flush()
 
     const res = await request(app)
@@ -137,7 +137,7 @@ describe('Player auth API service - toggle verification', () => {
     const alias = player.aliases[0]
     await em.persistAndFlush(player)
 
-    const sessionToken = await player.auth!.createSession(alias)
+    const sessionToken = await player.auth!.createSession(em, alias)
     await em.flush()
 
     await request(app)
@@ -176,7 +176,7 @@ describe('Player auth API service - toggle verification', () => {
     const alias = player.aliases[0]
     await em.persistAndFlush(player)
 
-    const sessionToken = await player.auth!.createSession(alias)
+    const sessionToken = await player.auth!.createSession(em, alias)
     await em.flush()
 
     const res = await request(app)
@@ -217,7 +217,7 @@ describe('Player auth API service - toggle verification', () => {
     const alias = player.aliases[0]
     await em.persistAndFlush(player)
 
-    const sessionToken = await player.auth!.createSession(alias)
+    const sessionToken = await player.auth!.createSession(em, alias)
     await em.flush()
 
     await request(app)
@@ -243,7 +243,7 @@ describe('Player auth API service - toggle verification', () => {
     const alias = player.aliases[0]
     await em.persistAndFlush(player)
 
-    const sessionToken = await player.auth!.createSession(alias)
+    const sessionToken = await player.auth!.createSession(em, alias)
     await em.flush()
 
     const res = await request(app)

@@ -51,8 +51,8 @@ export async function findAliasFromIdentifyRequest(
       game: key.game
     }
   }, {
-    populate: ['player.auth'],
-    ...(getResultCacheOptions(`identify-${service}-${identifier}`, 10_000) ?? {})
+    ...(getResultCacheOptions(`identify-${service}-${identifier}`, 10_000) ?? {}),
+    populate: ['player.auth']
   })
 }
 

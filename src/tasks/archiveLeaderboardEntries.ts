@@ -55,4 +55,6 @@ export default async function archiveLeaderboardEntries() {
   for (const leaderboard of leaderboards) {
     await archiveEntriesForLeaderboard(em, leaderboard)
   }
+
+  await orm.close()
 }

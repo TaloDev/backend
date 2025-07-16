@@ -202,8 +202,8 @@ describe('Event service - index', () => {
     await em.persistAndFlush(player)
     await clickhouse.insert({
       table: 'events',
-      values: [event.toInsertable()],
-      format: 'JSONEachRow'
+      values: event.toInsertable(),
+      format: 'JSON'
     })
 
     const res = await request(app)

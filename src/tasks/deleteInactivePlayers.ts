@@ -123,5 +123,6 @@ export default async function deleteInactivePlayers() {
     }))
   }
 
+  await orm.close()
   await clickhouse.close()
 }

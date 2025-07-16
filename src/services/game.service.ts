@@ -141,7 +141,7 @@ export default class GameService extends Service {
         /* v8 ignore start */
         }
         throw err
-        /* v8 ignore end */
+        /* v8 ignore stop */
       }
       await sendLiveConfigUpdatedMessage(req, game)
 

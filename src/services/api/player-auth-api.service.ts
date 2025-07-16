@@ -71,7 +71,7 @@ export default class PlayerAuthAPIService extends APIService {
     alias.player.auth.verificationEnabled = Boolean(verificationEnabled)
     em.persist(alias.player.auth)
 
-    const sessionToken = await alias.player.auth.createSession(alias)
+    const sessionToken = await alias.player.auth.createSession(em, alias)
     const socketToken = await alias.createSocketToken(req.ctx.redis)
 
     createPlayerAuthActivity(req, alias.player, {
@@ -149,7 +149,7 @@ export default class PlayerAuthAPIService extends APIService {
         }
       }
     } else {
-      const sessionToken = await alias.player.auth!.createSession(alias)
+      const sessionToken = await alias.player.auth!.createSession(em, alias)
       const socketToken = await alias.createSocketToken(redis)
 
       createPlayerAuthActivity(req, alias.player, {
@@ -212,7 +212,7 @@ export default class PlayerAuthAPIService extends APIService {
 
     await redis.del(this.getRedisAuthKey(key, alias))
 
-    const sessionToken = await alias.player.auth!.createSession(alias)
+    const sessionToken = await alias.player.auth!.createSession(em, alias)
     const socketToken = await alias.createSocketToken(redis)
 
     createPlayerAuthActivity(req, alias.player, {
@@ -247,8 +247,7 @@ export default class PlayerAuthAPIService extends APIService {
       populate: ['player.auth']
     })
 
-    alias.player.auth!.sessionKey = null
-    alias.player.auth!.sessionCreatedAt = null
+    await alias.player.auth!.clearSession(em)
 
     createPlayerAuthActivity(req, alias.player, {
       type: PlayerAuthActivityType.LOGGED_OUT
@@ -491,8 +490,7 @@ export default class PlayerAuthAPIService extends APIService {
     await redis.del(this.getRedisPasswordResetKey(key, code))
 
     alias.player.auth!.password = await bcrypt.hash(password, 10)
-    alias.player.auth!.sessionKey = null
-    alias.player.auth!.sessionCreatedAt = null
+    await alias.player.auth!.clearSession(em)
 
     createPlayerAuthActivity(req, alias.player, {
       type: PlayerAuthActivityType.PASSWORD_RESET_COMPLETED

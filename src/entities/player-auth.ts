@@ -1,8 +1,10 @@
-import { Entity, OneToOne, PrimaryKey, Property } from '@mikro-orm/mysql'
+import { Entity, EntityManager, OneToOne, PrimaryKey, Property } from '@mikro-orm/mysql'
 import Player from './player'
 import { v4 } from 'uuid'
-import PlayerAlias from './player-alias'
+import PlayerAlias, { PlayerAliasService } from './player-alias'
 import { sign } from '../lib/auth/jwt'
+import { getAuthMiddlewareAliasKey, getAuthMiddlewarePlayerKey } from '../middleware/player-auth-middleware'
+import { getAliasFromIdentifyCacheKey } from '../middleware/current-player-middleware'
 
 const errorCodes = [
   'INVALID_CREDENTIALS',
@@ -49,14 +51,36 @@ export default class PlayerAuth {
   @Property({ onUpdate: () => new Date() })
   updatedAt: Date = new Date()
 
-  async createSession(alias: PlayerAlias): Promise<string> {
+  async createSession(em: EntityManager, alias: PlayerAlias): Promise<string> {
     this.player.lastSeenAt = new Date()
 
     this.sessionKey = v4()
     this.sessionCreatedAt = new Date()
+    await this.clearAuthMiddlewareKeys(em)
 
     const payload = { playerId: this.player.id, aliasId: alias.id }
     return sign(payload, this.sessionKey)
+  }
+
+  async clearSession(em: EntityManager) {
+    this.sessionKey = null
+    this.sessionCreatedAt = null
+    await this.clearAuthMiddlewareKeys(em)
+  }
+
+  private async clearAuthMiddlewareKeys(em: EntityManager) {
+    const alias = await em.repo(PlayerAlias).findOne({
+      service: PlayerAliasService.TALO,
+      player: this.player
+    })
+
+    const keysToClear: string[] = [getAuthMiddlewarePlayerKey(this.player.id)]
+    if (alias) {
+      keysToClear.push(getAuthMiddlewareAliasKey(alias.id))
+      keysToClear.push(getAliasFromIdentifyCacheKey(alias.service, alias.identifier))
+    }
+
+    await Promise.all(keysToClear.map((key) => em.clearCache(key)))
   }
 
   toJSON() {

@@ -52,7 +52,7 @@ describe('Player listeners - identify', () => {
     const socketToken = await player.aliases[0].createSocketToken(redis)
     await redis.quit()
 
-    const sessionToken = await player.auth!.createSession(player.aliases[0])
+    const sessionToken = await player.auth!.createSession(em, player.aliases[0])
     await em.flush()
 
     await createTestSocket(`/?ticket=${ticket}`, async (client) => {

@@ -26,7 +26,7 @@ Talo is available to use via our [Godot plugin](https://github.com/TaloDev/godot
 - [Documentation](https://docs.trytalo.com)
 - [Self-hosting examples](https://github.com/talodev/hosting)
 
-## Contributing to Talo
+## Contributing
 
 Thinking about contributing to Talo? We’d love the help! Head over to our [contribution guide](CONTRIBUTING.md) to learn how to set up the project, run tests, and start adding new features.
 

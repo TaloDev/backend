@@ -1,6 +1,6 @@
 # Talo backend: self-hostable game dev tools
 
-Talo is the easiest way to add leaderboards, player authentication, socket-based multiplayer and much more to your game. Using the Talo Dashboard, you can visualise and analyse your game data to help make better data-driven decisions.
+Talo is the easiest way to add leaderboards, player authentication, socket-based multiplayer and more to your game. Using the Talo Dashboard, you can visualise and analyse your game data to make data-driven decisions.
 
 Talo is available to use via our [Godot plugin](https://github.com/TaloDev/godot), [Unity package](https://github.com/TaloDev/unity) or [REST API](https://docs.trytalo.com/docs/http/authentication).
 

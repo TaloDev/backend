@@ -60,13 +60,16 @@ async function cleanupSession(em: EntityManager, clickhouse: ClickHouseClient, s
     query: `
       SELECT event_type, created_at FROM socket_events
       WHERE
-        player_alias_id in (${aliases.map(({ id }) => id).join(', ')})
+        player_alias_id IN {aliasIds:Array(UInt32)}
         AND created_at <= dateSub(DAY, 1, now())
         ${sessionSinceOriginal ? `AND created_at <= '${sessionSinceOriginal.started_at}'` : ''}
       ORDER BY created_at DESC
       LIMIT 5
     `,
-    format: 'JSONEachRow'
+    format: 'JSONEachRow',
+    query_params: {
+      aliasIds: aliases.map(({ id }) => id)
+    }
   }).then((res) => res.json<Pick<ClickHouseSocketEvent, 'event_type' | 'created_at'>>())
 
   const hydratedSession = await new PlayerSession().hydrate(em, session)

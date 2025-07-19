@@ -14,6 +14,7 @@ type CleanupStats = {
   hadNoEvents: number
   hadSessionSinceOriginal: number
   newSessionDurationMinutes: number[]
+  newSessionDurationLessThanOneMinute: number
 }
 
 let cleanupStats: Record<number, CleanupStats>
@@ -25,7 +26,8 @@ function getOrCreateGameCleanupStats(gameId: number): CleanupStats {
       hadClosedEvent: 0,
       hadNoEvents: 0,
       hadSessionSinceOriginal: 0,
-      newSessionDurationMinutes: []
+      newSessionDurationMinutes: [],
+      newSessionDurationLessThanOneMinute: 0
     }
   }
   return cleanupStats[gameId]
@@ -62,6 +64,7 @@ async function cleanupSession(em: EntityManager, clickhouse: ClickHouseClient, s
       WHERE
         player_alias_id IN {aliasIds:Array(UInt32)}
         AND created_at <= dateSub(DAY, 1, now())
+        AND created_at >= '${session.started_at}'
         ${sessionSinceOriginal ? `AND created_at <= '${sessionSinceOriginal.started_at}'` : ''}
       ORDER BY created_at DESC
       LIMIT 5
@@ -88,6 +91,13 @@ async function cleanupSession(em: EntityManager, clickhouse: ClickHouseClient, s
     }
   }
 
+  let duration = differenceInMinutes(hydratedSession.endedAt, hydratedSession.startedAt)
+  if (duration < 1) {
+    gameStats.newSessionDurationLessThanOneMinute++
+    hydratedSession.endedAt = addMinutes(hydratedSession.startedAt, 1)
+    duration = 1
+  }
+
   hydratedSession.id = v4()
   await clickhouse.exec({ query: `DELETE FROM player_sessions WHERE id = '${prevSessionId}'` })
   await clickhouse.insert({
@@ -96,7 +106,6 @@ async function cleanupSession(em: EntityManager, clickhouse: ClickHouseClient, s
     format: 'JSON'
   })
 
-  const duration = differenceInMinutes(hydratedSession.endedAt, hydratedSession.startedAt)
   gameStats.newSessionDurationMinutes.push(duration)
 }
 

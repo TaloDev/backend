@@ -4,6 +4,7 @@ import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
 import GameFeedbackCategoryFactory from '../../../fixtures/GameFeedbackCategoryFactory'
 import PlayerFactory from '../../../fixtures/PlayerFactory'
 import { subHours } from 'date-fns'
+import { randText } from '@ngneat/falso'
 
 describe('Game feedback API service - post', () => {
   it('should create feedback if the scope is valid', async () => {
@@ -96,5 +97,85 @@ describe('Game feedback API service - post', () => {
       .expect(200)
 
     expect(res.body.feedback.createdAt).toBe(continuityDate.toISOString())
+  })
+
+  it('should create a game channel with props', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_FEEDBACK])
+
+    const feedbackCategory = await new GameFeedbackCategoryFactory(apiKey.game).one()
+    const player = await new PlayerFactory([apiKey.game]).one()
+
+    await em.persistAndFlush([feedbackCategory, player])
+
+    const res = await request(app)
+      .post(`/v1/game-feedback/categories/${feedbackCategory.internalName}`)
+      .send({ comment: 'This is my comment', props: [{ key: 'gameVersion', value: '0.17.0' }] })
+      .auth(token, { type: 'bearer' })
+      .set('x-talo-alias', String(player.aliases[0].id))
+      .expect(200)
+
+    expect(res.body.feedback.props).toStrictEqual([
+      { key: 'gameVersion', value: '0.17.0' }
+    ])
+  })
+
+  it('should reject props where the key is greater than 128 characters', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_FEEDBACK])
+
+    const feedbackCategory = await new GameFeedbackCategoryFactory(apiKey.game).one()
+    const player = await new PlayerFactory([apiKey.game]).one()
+
+    await em.persistAndFlush([feedbackCategory, player])
+
+    const res = await request(app)
+      .post(`/v1/game-feedback/categories/${feedbackCategory.internalName}`)
+      .send({
+        comment: 'This is my comment',
+        props: [
+          {
+            key: randText({ charCount: 129 }),
+            value: '1'
+          }
+        ]
+      })
+      .auth(token, { type: 'bearer' })
+      .set('x-talo-alias', String(player.aliases[0].id))
+      .expect(400)
+
+    expect(res.body).toStrictEqual({
+      errors: {
+        props: ['Prop key length (129) exceeds 128 characters']
+      }
+    })
+  })
+
+  it('should reject props where the value is greater than 512 characters', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_FEEDBACK])
+
+    const feedbackCategory = await new GameFeedbackCategoryFactory(apiKey.game).one()
+    const player = await new PlayerFactory([apiKey.game]).one()
+
+    await em.persistAndFlush([feedbackCategory, player])
+
+    const res = await request(app)
+      .post(`/v1/game-feedback/categories/${feedbackCategory.internalName}`)
+      .send({
+        comment: 'This is my comment',
+        props: [
+          {
+            key: 'bio',
+            value: randText({ charCount: 513 })
+          }
+        ]
+      })
+      .auth(token, { type: 'bearer' })
+      .set('x-talo-alias', String(player.aliases[0].id))
+      .expect(400)
+
+    expect(res.body).toStrictEqual({
+      errors: {
+        props: ['Prop value length (513) exceeds 512 characters']
+      }
+    })
   })
 })

@@ -6,6 +6,9 @@ import GameFeedbackAPIDocs from '../../docs/game-feedback-api.docs'
 import { EntityManager } from '@mikro-orm/mysql'
 import GameFeedbackCategory from '../../entities/game-feedback-category'
 import { TraceService } from '../../lib/tracing/trace-service'
+import { hardSanitiseProps } from '../../lib/props/sanitiseProps'
+import { PropSizeError } from '../../lib/errors/propSizeError'
+import buildErrorResponse from '../../lib/errors/buildErrorResponse'
 
 @TraceService()
 export default class GameFeedbackAPIService extends APIService {
@@ -31,7 +34,7 @@ export default class GameFeedbackAPIService extends APIService {
     body: [GameFeedback]
   })
   async post(req: Request): Promise<Response> {
-    const { comment } = req.body
+    const { comment, props } = req.body
     const em: EntityManager = req.ctx.em
 
     const category: GameFeedbackCategory = req.ctx.state.category
@@ -41,6 +44,19 @@ export default class GameFeedbackAPIService extends APIService {
     feedback.anonymised = category.anonymised
     if (req.ctx.state.continuityDate) {
       feedback.createdAt = req.ctx.state.continuityDate
+    }
+
+    if (props) {
+      try {
+        feedback.setProps(hardSanitiseProps(props))
+      } catch (err) {
+        if (err instanceof PropSizeError) {
+          return buildErrorResponse({ props: [err.message] })
+        /* v8 ignore start */
+        }
+        throw err
+        /* v8 ignore stop */
+      }
     }
 
     await em.persistAndFlush(feedback)

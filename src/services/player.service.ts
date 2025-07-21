@@ -11,7 +11,6 @@ import createGameActivity from '../lib/logging/createGameActivity'
 import { GameActivityType } from '../entities/game-activity'
 import PlayerGameStat from '../entities/player-game-stat'
 import { devDataPlayerFilter } from '../middleware/dev-data-middleware'
-import PlayerProp from '../entities/player-prop'
 import PlayerGroup from '../entities/player-group'
 import GameSave from '../entities/game-save'
 import PlayerAuthActivity from '../entities/player-auth-activity'
@@ -135,11 +134,11 @@ export default class PlayerService extends Service {
       query
         .where({
           props: {
-            $in: em.qb(PlayerProp).select('id').where({
+            $some: {
               value: {
                 $like: `%${search}%`
               }
-            }).getKnexQuery()
+            }
           }
         })
         .orWhere({

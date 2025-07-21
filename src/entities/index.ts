@@ -35,8 +35,10 @@ import PlayerPresence from './player-presence'
 import LeaderboardEntryProp from './leaderboard-entry-prop'
 import GameChannelProp from './game-channel-prop'
 import GameChannelStorageProp from './game-channel-storage-prop'
+import GameFeedbackProp from './game-feedback-prop'
 
 export default [
+  GameFeedbackProp,
   GameChannelStorageProp,
   GameChannelProp,
   LeaderboardEntryProp,

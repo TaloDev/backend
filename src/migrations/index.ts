@@ -50,6 +50,7 @@ import { AddGameChannelTemporaryMembershipColumn } from './20250522212229AddGame
 import { CreateGameChannelStoragePropTable } from './20250531223353CreateGameChannelStoragePropTable'
 import { AddPlayerGroupQueryIndexes } from './20250705074341AddPlayerGroupQueryIndexes'
 import { AddPurgeRetentionDaysColumns } from './20250709083216AddPurgeRetentionDaysColumns'
+import { CreateGameFeedbackPropTable } from './20250719225216CreateGameFeedbackPropTable'
 
 export default [
   {
@@ -259,5 +260,9 @@ export default [
   {
     name: 'AddPurgeRetentionDaysColumns',
     class: AddPurgeRetentionDaysColumns
+  },
+  {
+    name: 'CreateGameFeedbackPropTable',
+    class: CreateGameFeedbackPropTable
   }
 ]

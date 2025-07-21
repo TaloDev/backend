@@ -9,6 +9,7 @@ import PlayerAlias from '../entities/player-alias'
 import { PropSizeError } from '../lib/errors/propSizeError'
 import buildErrorResponse from '../lib/errors/buildErrorResponse'
 import { TraceService } from '../lib/tracing/trace-service'
+import { captureException } from '@sentry/node'
 
 const itemsPerPage = 50
 
@@ -124,12 +125,10 @@ export default class GameChannelService extends Service {
       try {
         channel.setProps(hardSanitiseProps(props))
       } catch (err) {
-        if (err instanceof PropSizeError) {
-          return buildErrorResponse({ props: [err.message] })
-        /* v8 ignore start */
+        if (!(err instanceof PropSizeError)) {
+          captureException(err)
         }
-        throw err
-        /* v8 ignore stop */
+        return buildErrorResponse({ props: [(err as Error).message] })
       }
     }
 

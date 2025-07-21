@@ -5,6 +5,7 @@ import GameFeedbackCategoryFactory from '../../../fixtures/GameFeedbackCategoryF
 import PlayerFactory from '../../../fixtures/PlayerFactory'
 import { subHours } from 'date-fns'
 import { randText } from '@ngneat/falso'
+import GameFeedback from '../../../../src/entities/game-feedback'
 
 describe('Game feedback API service - post', () => {
   it('should create feedback if the scope is valid', async () => {
@@ -175,6 +176,40 @@ describe('Game feedback API service - post', () => {
     expect(res.body).toStrictEqual({
       errors: {
         props: ['Prop value length (513) exceeds 512 characters']
+      }
+    })
+  })
+
+  it('should reject props if an unknown error occurs', async () => {
+    vi.spyOn(GameFeedback.prototype, 'setProps').mockImplementation(() => {
+      throw new Error('Unknown error')
+    })
+
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_FEEDBACK])
+
+    const feedbackCategory = await new GameFeedbackCategoryFactory(apiKey.game).one()
+    const player = await new PlayerFactory([apiKey.game]).one()
+
+    await em.persistAndFlush([feedbackCategory, player])
+
+    const res = await request(app)
+      .post(`/v1/game-feedback/categories/${feedbackCategory.internalName}`)
+      .send({
+        comment: 'This is my comment',
+        props: [
+          {
+            key: 'bio',
+            value: randText({ charCount: 500 })
+          }
+        ]
+      })
+      .auth(token, { type: 'bearer' })
+      .set('x-talo-alias', String(player.aliases[0].id))
+      .expect(400)
+
+    expect(res.body).toStrictEqual({
+      errors: {
+        props: ['Unknown error']
       }
     })
   })

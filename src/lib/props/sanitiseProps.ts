@@ -10,7 +10,7 @@ export function mergeAndSanitiseProps(prevProps: Prop[], newProps: UnsanitisedPr
     ...prevProps
   ], (a, b) => a.key === b.key)
 
-  return hardSanitiseProps(mergedProps, extraFilter)
+  return hardSanitiseProps(mergedProps)
 }
 
 export function sanitiseProps(props: UnsanitisedProp[], deleteNull = false, extraFilter?: (prop: UnsanitisedProp) => boolean): UnsanitisedProp[] {

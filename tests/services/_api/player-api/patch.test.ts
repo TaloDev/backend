@@ -218,4 +218,54 @@ describe('Player API service - patch', () => {
 
     expect(res.body.player.props).toHaveLength(2)
   })
+
+  it('should keep the META_DEV_BUILD prop', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_PLAYERS])
+
+    const player = await new PlayerFactory([apiKey.game]).state((player) => ({
+      props: new Collection<PlayerProp>(player, [
+        new PlayerProp(player, 'collectibles', '0'),
+        new PlayerProp(player, 'zonesExplored', '1'),
+        new PlayerProp(player, 'META_DEV_BUILD', '1')
+      ])
+    })).one()
+    await em.persistAndFlush(player)
+
+    const res = await request(app)
+      .patch(`/v1/players/${player.id}`)
+      .send({
+        props: [
+          {
+            key: 'collectibles',
+            value: '1'
+          },
+          {
+            key: 'aNewProp',
+            value: 'aNewValue'
+          }
+        ]
+      })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    expect(res.body.player.props).toHaveLength(4)
+    expect(res.body.player.props).toEqual(expect.arrayContaining([
+      {
+        key: 'META_DEV_BUILD',
+        value: '1'
+      },
+      {
+        key: 'collectibles',
+        value: '1'
+      },
+      {
+        key: 'zonesExplored',
+        value: '1'
+      },
+      {
+        key: 'aNewProp',
+        value: 'aNewValue'
+      }
+    ]))
+  })
 })

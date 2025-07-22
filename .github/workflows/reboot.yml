@@ -6,7 +6,6 @@ on:
 jobs:
   reboot:
     runs-on: ubuntu-latest
-    needs: build
     steps:
       - name: Update backend
         uses: appleboy/ssh-action@master

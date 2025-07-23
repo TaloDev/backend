@@ -5,6 +5,7 @@ import createOrganisationAndGame from '../../utils/createOrganisationAndGame'
 import createUserAndToken from '../../utils/createUserAndToken'
 import PlayerFactory from '../../fixtures/PlayerFactory'
 import { randText, randUserName } from '@ngneat/falso'
+import Player from '../../../src/entities/player'
 
 describe('Player service - post', () => {
   it('should create a player', async () => {
@@ -281,6 +282,34 @@ describe('Player service - post', () => {
     expect(res.body).toStrictEqual({
       errors: {
         props: ['Prop value length (513) exceeds 512 characters']
+      }
+    })
+  })
+
+  it('should reject props if an unknown error occurs', async () => {
+    vi.spyOn(Player.prototype, 'setProps').mockImplementation(() => {
+      throw new Error('Unknown error')
+    })
+
+    const [organisation, game] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken({}, organisation)
+
+    const res = await request(app)
+      .post(`/games/${game.id}/players`)
+      .send({
+        props: [
+          {
+            key: 'bio',
+            value: randText({ charCount: 500 })
+          }
+        ]
+      })
+      .auth(token, { type: 'bearer' })
+      .expect(400)
+
+    expect(res.body).toStrictEqual({
+      errors: {
+        props: ['Unknown error']
       }
     })
   })

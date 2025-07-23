@@ -38,17 +38,42 @@ export default class GameFeedbackService extends Service {
     }
 
     if (search) {
-      query.andWhere({
-        $or: [
-          { comment: { $like: `%${search}%` } },
-          {
-            $and: [
-              { playerAlias: { identifier: { $like: `%${search}%` } } },
-              { anonymised: false }
-            ]
+      // prop:{key}={value}
+      const propSearchMatch = search.trim().match(/^prop:([^=]+)=(.+)$/)
+
+      if (propSearchMatch) {
+        const [, key, value] = propSearchMatch
+        query.andWhere({
+          props: {
+            $some: {
+              key,
+              value
+            }
           }
-        ]
-      })
+        })
+      } else {
+        query.andWhere({
+          $or: [
+            { comment: { $like: `%${search}%` } },
+            {
+              $and: [
+                { playerAlias: { identifier: { $like: `%${search}%` } } },
+                { anonymised: false }
+              ]
+            },
+            {
+              props: {
+                $some: {
+                  $or: [
+                    { key: { $like: `%${search}%` } },
+                    { value: { $like: `%${search}%` } }
+                  ]
+                }
+              }
+            }
+          ]
+        })
+      }
     }
 
     if (!req.ctx.state.includeDevData) {

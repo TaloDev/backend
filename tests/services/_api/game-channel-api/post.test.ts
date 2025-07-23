@@ -3,6 +3,7 @@ import { APIKeyScope } from '../../../../src/entities/api-key'
 import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
 import PlayerFactory from '../../../fixtures/PlayerFactory'
 import { randText } from '@ngneat/falso'
+import GameChannel from '../../../../src/entities/game-channel'
 
 describe('Game channel API service - post', () => {
   it('should create a game channel if the scope is valid', async () => {
@@ -159,5 +160,36 @@ describe('Game channel API service - post', () => {
       .expect(200)
 
     expect(res.body.channel.temporaryMembership).toBe(true)
+  })
+
+  it('should reject props if an unknown error occurs', async () => {
+    vi.spyOn(GameChannel.prototype, 'setProps').mockImplementation(() => {
+      throw new Error('Unknown error')
+    })
+
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_CHANNELS])
+    const player = await new PlayerFactory([apiKey.game]).one()
+    await em.persistAndFlush(player)
+
+    const res = await request(app)
+      .post('/v1/game-channels')
+      .send({
+        name: 'Guild chat',
+        props: [
+          {
+            key: 'bio',
+            value: randText({ charCount: 500 })
+          }
+        ]
+      })
+      .auth(token, { type: 'bearer' })
+      .set('x-talo-alias', String(player.aliases[0].id))
+      .expect(400)
+
+    expect(res.body).toStrictEqual({
+      errors: {
+        props: ['Unknown error']
+      }
+    })
   })
 })

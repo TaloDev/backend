@@ -6,6 +6,8 @@ import GameFeedbackCategoryFactory from '../../fixtures/GameFeedbackCategoryFact
 import PlayerAliasFactory from '../../fixtures/PlayerAliasFactory'
 import PlayerFactory from '../../fixtures/PlayerFactory'
 import GameFeedback from '../../../src/entities/game-feedback'
+import { Collection } from '@mikro-orm/core'
+import GameFeedbackProp from '../../../src/entities/game-feedback-prop'
 
 describe('Game feedback service - index', () => {
   it('should return a list of game feedback', async () => {
@@ -233,5 +235,77 @@ describe('Game feedback service - index', () => {
       .expect(200)
 
     expect(res.body.feedback).toHaveLength(0)
+  })
+
+  it('should return a list of game feedback for a specific prop key', async () => {
+    const [organisation, game] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken({}, organisation)
+
+    const category = await new GameFeedbackCategoryFactory(game).one()
+
+    const feedbackWithRelevantPropKey = await new GameFeedbackFactory(game).state((feedback) => ({
+      category,
+      props: new Collection<GameFeedbackProp>(feedback, [
+        new GameFeedbackProp(feedback, 'gameVersion', '0.17.0')
+      ])
+    })).many(3)
+    const feedbackWithoutRelevantPropKey = await new GameFeedbackFactory(game).many(5)
+    await em.persistAndFlush([...feedbackWithRelevantPropKey, ...feedbackWithoutRelevantPropKey])
+
+    const res = await request(app)
+      .get(`/games/${game.id}/game-feedback`)
+      .query({ search: 'gameVersion', page: 0 })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    expect(res.body.feedback).toHaveLength(feedbackWithRelevantPropKey.length)
+  })
+
+  it('should return a list of game feedback for a specific prop value', async () => {
+    const [organisation, game] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken({}, organisation)
+
+    const category = await new GameFeedbackCategoryFactory(game).one()
+
+    const feedbackWithRelevantPropValue = await new GameFeedbackFactory(game).state((feedback) => ({
+      category,
+      props: new Collection<GameFeedbackProp>(feedback, [
+        new GameFeedbackProp(feedback, 'gameVersion', '0.17.0')
+      ])
+    })).many(3)
+    const feedbackWithoutRelevantPropValue = await new GameFeedbackFactory(game).many(5)
+    await em.persistAndFlush([...feedbackWithRelevantPropValue, ...feedbackWithoutRelevantPropValue])
+
+    const res = await request(app)
+      .get(`/games/${game.id}/game-feedback`)
+      .query({ search: '0.17.0', page: 0 })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    expect(res.body.feedback).toHaveLength(feedbackWithRelevantPropValue.length)
+  })
+
+  it('should return a list of game feedback for a specific prop key and value', async () => {
+    const [organisation, game] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken({}, organisation)
+
+    const category = await new GameFeedbackCategoryFactory(game).one()
+
+    const feedbackWithRelevantProp = await new GameFeedbackFactory(game).state((feedback) => ({
+      category,
+      props: new Collection<GameFeedbackProp>(feedback, [
+        new GameFeedbackProp(feedback, 'gameVersion', '0.17.0')
+      ])
+    })).many(3)
+    const feedbackWithoutRelevantProp = await new GameFeedbackFactory(game).many(5)
+    await em.persistAndFlush([...feedbackWithRelevantProp, ...feedbackWithoutRelevantProp])
+
+    const res = await request(app)
+      .get(`/games/${game.id}/game-feedback`)
+      .query({ search: 'prop:gameVersion=0.17.0', page: 0 })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    expect(res.body.feedback).toHaveLength(feedbackWithRelevantProp.length)
   })
 })

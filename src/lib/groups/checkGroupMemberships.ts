@@ -66,7 +66,7 @@ export default async function checkGroupMemberships(em: EntityManager, player: P
     if (shouldFlush) {
       await em.clearCache(`check-groups:${player.id}`)
 
-      /* v8 ignore next */
+      /* v8 ignore next 3 */
       if (enableLogging) {
         console.timeEnd(`checkGroupMemberships flush ${player.id}`)
       }

@@ -5,8 +5,6 @@ import PlayerGroup from '../../entities/player-group'
 const enableLogging = process.env.NODE_ENV !== 'test'
 
 export default async function checkGroupMemberships(em: EntityManager, player: Player) {
-  console.time('checkGroupMemberships')
-
   const groups = await em.getRepository(PlayerGroup).find({ game: player.game })
   if (groups.length === 0) {
     return
@@ -14,20 +12,20 @@ export default async function checkGroupMemberships(em: EntityManager, player: P
 
   /* v8 ignore next 3 */
   if (enableLogging) {
-    console.info(`Checking group memberships for ${player.id}...`)
+    console.time(`Checking group memberships for ${player.id}`)
   }
 
   let shouldFlush = false
 
   for (const group of groups) {
+    await group.members.init({ ref: true })
     const playerIsEligible = await group.isPlayerEligible(em, player)
-    const playerCurrentlyInGroup = player.groups.getItems().some((playerGroup) => playerGroup.id === group.id)
+    const playerCurrentlyInGroup = group.members.getItems().some((member) => member.id === player.id)
 
     const eligibleButNotInGroup = playerIsEligible && !playerCurrentlyInGroup
     const notEligibleButInGroup = !playerIsEligible && playerCurrentlyInGroup
 
     if (eligibleButNotInGroup || notEligibleButInGroup) {
-      await group.members.init({ ref: true })
       shouldFlush = true
     }
 
@@ -52,16 +50,31 @@ export default async function checkGroupMemberships(em: EntityManager, player: P
 
   try {
     if (shouldFlush) {
-      console.time('checkGroupMemberships flush')
+      /* v8 ignore next 3 */
+      if (enableLogging) {
+        console.time(`checkGroupMemberships flush ${player.id}`)
+      }
+
       await em.flush()
-      console.timeEnd('checkGroupMemberships flush')
     }
   /* v8 ignore next 5 */
   } catch (err) {
     if (err instanceof UniqueConstraintViolationException) {
       console.warn('This player is already in the group')
     }
+  } finally {
+    if (shouldFlush) {
+      await em.clearCache(`check-groups:${player.id}`)
+
+      /* v8 ignore next */
+      if (enableLogging) {
+        console.timeEnd(`checkGroupMemberships flush ${player.id}`)
+      }
+    }
   }
 
-  console.timeEnd('checkGroupMemberships')
+  /* v8 ignore next 3 */
+  if (enableLogging) {
+    console.timeEnd(`Checking group memberships for ${player.id}`)
+  }
 }

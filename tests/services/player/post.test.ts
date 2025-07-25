@@ -18,6 +18,7 @@ describe('Player service - post', () => {
       .expect(200)
 
     expect(res.body.player).toBeTruthy()
+    expect(res.body.player.devBuild).toBe(false)
   })
 
   it('should create a player with aliases', async () => {
@@ -136,7 +137,7 @@ describe('Player service - post', () => {
     })
   })
 
-  it('should create a player with a META_DEV_BUILD prop', async () => {
+  it('should create a player with a META_DEV_BUILD prop and devBuild set to true', async () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({}, organisation)
 
@@ -161,6 +162,7 @@ describe('Player service - post', () => {
     expect(res.body.player.props).toStrictEqual([
       { key: 'META_DEV_BUILD', value: '1' }
     ])
+    expect(res.body.player.devBuild).toBe(true)
   })
 
   it('should not create duplicate player aliases', async () => {

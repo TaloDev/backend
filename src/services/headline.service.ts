@@ -1,10 +1,9 @@
-import { FilterQuery, EntityManager, raw } from '@mikro-orm/mysql'
+import { EntityManager, raw } from '@mikro-orm/mysql'
 import { endOfDay, startOfDay } from 'date-fns'
 import { Service, Request, Response, Validate, HasPermission, Route } from 'koa-clay'
 import Player from '../entities/player'
 import HeadlinePolicy from '../policies/headline.policy'
 import dateValidationSchema from '../lib/dates/dateValidationSchema'
-import { devDataPlayerFilter } from '../middleware/dev-data-middleware'
 import { formatDateForClickHouse } from '../lib/clickhouse/formatDateTime'
 import { ClickHouseClient } from '@clickhouse/client'
 import { TraceService } from '../lib/tracing/trace-service'
@@ -21,19 +20,14 @@ export default class HeadlineService extends Service {
     const { startDate, endDate } = req.query
     const em: EntityManager = req.ctx.em
 
-    let where: FilterQuery<Player> = {
+    const count = await em.getRepository(Player).count({
       game: req.ctx.state.game,
+      ...(req.ctx.state.includeDevData ? {} : { devBuild: false }),
       createdAt: {
         $gte: startOfDay(new Date(startDate)),
         $lte: endOfDay(new Date(endDate))
       }
-    }
-
-    if (!req.ctx.state.includeDevData) {
-      where = Object.assign(where, devDataPlayerFilter(em))
-    }
-
-    const count = await em.getRepository(Player).count(where)
+    })
 
     return {
       status: 200,
@@ -53,8 +47,9 @@ export default class HeadlineService extends Service {
     const { startDate, endDate } = req.query
     const em: EntityManager = req.ctx.em
 
-    let where: FilterQuery<Player> = {
+    const count = await em.getRepository(Player).count({
       game: req.ctx.state.game,
+      ...(req.ctx.state.includeDevData ? {} : { devBuild: false }),
       lastSeenAt: {
         $gte: startOfDay(new Date(startDate)),
         $lte: endOfDay(new Date(endDate))
@@ -65,13 +60,7 @@ export default class HeadlineService extends Service {
       [raw('datediff(created_at, last_seen_at)')]: {
         $ne: 0
       }
-    }
-
-    if (!req.ctx.state.includeDevData) {
-      where = Object.assign(where, devDataPlayerFilter(em))
-    }
-
-    const count = await em.getRepository(Player).count(where)
+    })
 
     return {
       status: 200,
@@ -165,15 +154,10 @@ export default class HeadlineService extends Service {
   async totalPlayers(req: Request): Promise<Response> {
     const em: EntityManager = req.ctx.em
 
-    let where: FilterQuery<Player> = {
-      game: req.ctx.state.game
-    }
-
-    if (!req.ctx.state.includeDevData) {
-      where = Object.assign(where, devDataPlayerFilter(em))
-    }
-
-    const count = await em.getRepository(Player).count(where)
+    const count = await em.getRepository(Player).count({
+      game: req.ctx.state.game,
+      ...(req.ctx.state.includeDevData ? {} : { devBuild: false })
+    })
 
     return {
       status: 200,
@@ -191,18 +175,13 @@ export default class HeadlineService extends Service {
   async onlinePlayers(req: Request): Promise<Response> {
     const em: EntityManager = req.ctx.em
 
-    let where: FilterQuery<Player> = {
+    const count = await em.getRepository(Player).count({
       game: req.ctx.state.game,
+      ...(req.ctx.state.includeDevData ? {} : { devBuild: false }),
       presence: {
         online: true
       }
-    }
-
-    if (!req.ctx.state.includeDevData) {
-      where = Object.assign(where, devDataPlayerFilter(em))
-    }
-
-    const count = await em.getRepository(Player).count(where)
+    })
 
     return {
       status: 200,

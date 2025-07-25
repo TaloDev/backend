@@ -12,18 +12,21 @@ export default async function checkGroupMemberships(em: EntityManager, player: P
 
   /* v8 ignore next 3 */
   if (enableLogging) {
-    console.info(`Checking group memberships for ${player.id}...`)
+    console.time(`Checking group memberships for ${player.id}`)
   }
 
+  let shouldFlush = false
+
   for (const group of groups) {
+    await group.members.init({ ref: true })
     const playerIsEligible = await group.isPlayerEligible(em, player)
-    const playerCurrentlyInGroup = player.groups.getItems().some((playerGroup) => playerGroup.id === group.id)
+    const playerCurrentlyInGroup = group.members.getItems().some((member) => member.id === player.id)
 
     const eligibleButNotInGroup = playerIsEligible && !playerCurrentlyInGroup
     const notEligibleButInGroup = !playerIsEligible && playerCurrentlyInGroup
 
     if (eligibleButNotInGroup || notEligibleButInGroup) {
-      await group.members.init({ ref: true })
+      shouldFlush = true
     }
 
     if (eligibleButNotInGroup) {
@@ -46,11 +49,32 @@ export default async function checkGroupMemberships(em: EntityManager, player: P
   }
 
   try {
-    await em.flush()
+    if (shouldFlush) {
+      /* v8 ignore next 3 */
+      if (enableLogging) {
+        console.time(`checkGroupMemberships flush ${player.id}`)
+      }
+
+      await em.flush()
+    }
   /* v8 ignore next 5 */
   } catch (err) {
     if (err instanceof UniqueConstraintViolationException) {
       console.warn('This player is already in the group')
     }
+  } finally {
+    if (shouldFlush) {
+      await em.clearCache(`check-groups:${player.id}`)
+
+      /* v8 ignore next 3 */
+      if (enableLogging) {
+        console.timeEnd(`checkGroupMemberships flush ${player.id}`)
+      }
+    }
+  }
+
+  /* v8 ignore next 3 */
+  if (enableLogging) {
+    console.timeEnd(`Checking group memberships for ${player.id}`)
   }
 }

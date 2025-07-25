@@ -33,7 +33,7 @@ export default class PlayerSession extends ClickHouseEntity<ClickHousePlayerSess
       id: this.id,
       player_id: this.player.id,
       game_id: this.game.id,
-      dev_build: this.player.isDevBuild(),
+      dev_build: this.player.devBuild,
       started_at: formatDateForClickHouse(this.startedAt),
       ended_at: this.endedAt ? formatDateForClickHouse(this.endedAt) : null
     }

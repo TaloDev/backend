@@ -6,7 +6,6 @@ import LeaderboardEntry from '../../entities/leaderboard-entry'
 import Leaderboard, { LeaderboardSortMode } from '../../entities/leaderboard'
 import LeaderboardAPIDocs from '../../docs/leaderboard-api.docs'
 import triggerIntegrations from '../../lib/integrations/triggerIntegrations'
-import { devDataPlayerFilter } from '../../middleware/dev-data-middleware'
 import { hardSanitiseProps, mergeAndSanitiseProps } from '../../lib/props/sanitiseProps'
 import { PropSizeError } from '../../lib/errors/propSizeError'
 import buildErrorResponse from '../../lib/errors/buildErrorResponse'
@@ -129,7 +128,9 @@ export default class LeaderboardAPIService extends APIService {
     if (!req.ctx.state.includeDevData) {
       query.andWhere({
         playerAlias: {
-          player: devDataPlayerFilter(em)
+          player: {
+            devBuild: false
+          }
         }
       })
     }

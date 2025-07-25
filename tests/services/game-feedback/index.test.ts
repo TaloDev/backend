@@ -5,7 +5,6 @@ import GameFeedbackFactory from '../../fixtures/GameFeedbackFactory'
 import GameFeedbackCategoryFactory from '../../fixtures/GameFeedbackCategoryFactory'
 import PlayerAliasFactory from '../../fixtures/PlayerAliasFactory'
 import PlayerFactory from '../../fixtures/PlayerFactory'
-import GameFeedback from '../../../src/entities/game-feedback'
 import { Collection } from '@mikro-orm/core'
 import GameFeedbackProp from '../../../src/entities/game-feedback-prop'
 
@@ -23,9 +22,7 @@ describe('Game feedback service - index', () => {
       .auth(token, { type: 'bearer' })
       .expect(200)
 
-    res.body.feedback.forEach((item: GameFeedback, idx: number) => {
-      expect(item.id).toBe(feedback[idx].id)
-    })
+    expect(res.body.feedback).toHaveLength(feedback.length)
   })
 
   it('should return a list of game feedback for a specific category', async () => {

@@ -38,6 +38,9 @@ export default class Player {
   @OneToOne({ nullable: true, orphanRemoval: true, eager: true })
   presence: PlayerPresence | null = null
 
+  @Property()
+  devBuild: boolean = false
+
   @Index()
   @Property()
   lastSeenAt: Date = new Date()
@@ -51,10 +54,6 @@ export default class Player {
 
   constructor(game: Game) {
     this.game = game
-  }
-
-  isDevBuild() {
-    return this.props.getItems().some((prop) => prop.key === 'META_DEV_BUILD')
   }
 
   addProp(key: string, value: string) {
@@ -190,6 +189,11 @@ export default class Player {
     }
   }
 
+  markAsDevBuild() {
+    this.devBuild = true
+    this.addProp('META_DEV_BUILD', '1')
+  }
+
   toJSON() {
     const presence = this.presence ? { ...this.presence.toJSON(), playerAlias: undefined } : null
 
@@ -197,7 +201,7 @@ export default class Player {
       id: this.id,
       props: this.props.getItems().map(({ key, value }) => ({ key, value })),
       aliases: this.aliases,
-      devBuild: this.isDevBuild(),
+      devBuild: this.devBuild,
       createdAt: this.createdAt,
       lastSeenAt: this.lastSeenAt,
       groups: this.groups.getItems().map((group) => ({ id: group.id, name: group.name })),

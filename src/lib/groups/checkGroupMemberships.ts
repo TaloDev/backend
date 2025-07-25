@@ -10,9 +10,13 @@ export default async function checkGroupMemberships(em: EntityManager, player: P
     return
   }
 
+  const startTime = Date.now()
+  const globalLabel = `Checking group memberships for ${player.id} (${startTime})`
+  const flushLabel = `Memberships flush ${player.id} (${startTime})`
+
   /* v8 ignore next 3 */
   if (enableLogging) {
-    console.time(`Checking group memberships for ${player.id}`)
+    console.time(globalLabel)
   }
 
   let shouldFlush = false
@@ -52,7 +56,7 @@ export default async function checkGroupMemberships(em: EntityManager, player: P
     if (shouldFlush) {
       /* v8 ignore next 3 */
       if (enableLogging) {
-        console.time(`checkGroupMemberships flush ${player.id}`)
+        console.time(flushLabel)
       }
 
       await em.flush()
@@ -64,17 +68,15 @@ export default async function checkGroupMemberships(em: EntityManager, player: P
     }
   } finally {
     if (shouldFlush) {
-      await em.clearCache(`check-groups:${player.id}`)
-
       /* v8 ignore next 3 */
       if (enableLogging) {
-        console.timeEnd(`checkGroupMemberships flush ${player.id}`)
+        console.timeEnd(flushLabel)
       }
     }
   }
 
   /* v8 ignore next 3 */
   if (enableLogging) {
-    console.timeEnd(`Checking group memberships for ${player.id}`)
+    console.timeEnd(globalLabel)
   }
 }

@@ -5,6 +5,8 @@ import PlayerGroup from '../../entities/player-group'
 const enableLogging = process.env.NODE_ENV !== 'test'
 
 export default async function checkGroupMemberships(em: EntityManager, player: Player) {
+  console.time('checkGroupMemberships')
+
   const groups = await em.getRepository(PlayerGroup).find({ game: player.game })
   if (groups.length === 0) {
     return
@@ -15,6 +17,8 @@ export default async function checkGroupMemberships(em: EntityManager, player: P
     console.info(`Checking group memberships for ${player.id}...`)
   }
 
+  let shouldFlush = false
+
   for (const group of groups) {
     const playerIsEligible = await group.isPlayerEligible(em, player)
     const playerCurrentlyInGroup = player.groups.getItems().some((playerGroup) => playerGroup.id === group.id)
@@ -24,6 +28,7 @@ export default async function checkGroupMemberships(em: EntityManager, player: P
 
     if (eligibleButNotInGroup || notEligibleButInGroup) {
       await group.members.init({ ref: true })
+      shouldFlush = true
     }
 
     if (eligibleButNotInGroup) {
@@ -46,11 +51,17 @@ export default async function checkGroupMemberships(em: EntityManager, player: P
   }
 
   try {
-    await em.flush()
+    if (shouldFlush) {
+      console.time('checkGroupMemberships flush')
+      await em.flush()
+      console.timeEnd('checkGroupMemberships flush')
+    }
   /* v8 ignore next 5 */
   } catch (err) {
     if (err instanceof UniqueConstraintViolationException) {
       console.warn('This player is already in the group')
     }
   }
+
+  console.timeEnd('checkGroupMemberships')
 }

@@ -51,6 +51,7 @@ import { CreateGameChannelStoragePropTable } from './20250531223353CreateGameCha
 import { AddPlayerGroupQueryIndexes } from './20250705074341AddPlayerGroupQueryIndexes'
 import { AddPurgeRetentionDaysColumns } from './20250709083216AddPurgeRetentionDaysColumns'
 import { CreateGameFeedbackPropTable } from './20250719225216CreateGameFeedbackPropTable'
+import { AddPlayerDevBuildColumn } from './20250725144253AddPlayerDevBuildColumn'
 
 export default [
   {
@@ -264,5 +265,9 @@ export default [
   {
     name: 'CreateGameFeedbackPropTable',
     class: CreateGameFeedbackPropTable
+  },
+  {
+    name: 'AddPlayerDevBuildColumn',
+    class: AddPlayerDevBuildColumn
   }
 ]

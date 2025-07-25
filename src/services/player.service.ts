@@ -10,7 +10,6 @@ import { QueryOrder } from '@mikro-orm/mysql'
 import createGameActivity from '../lib/logging/createGameActivity'
 import { GameActivityType } from '../entities/game-activity'
 import PlayerGameStat from '../entities/player-game-stat'
-import { devDataPlayerFilter } from '../middleware/dev-data-middleware'
 import PlayerGroup from '../entities/player-group'
 import GameSave from '../entities/game-save'
 import PlayerAuthActivity from '../entities/player-auth-activity'
@@ -100,7 +99,7 @@ export default class PlayerService extends Service {
     }
 
     if (req.headers['x-talo-dev-build'] === '1') {
-      player.addProp('META_DEV_BUILD', '1')
+      player.markAsDevBuild()
     }
 
     await em.persistAndFlush(player)
@@ -197,7 +196,7 @@ export default class PlayerService extends Service {
     }
 
     if (!req.ctx.state.includeDevData) {
-      query.andWhere(devDataPlayerFilter(em))
+      query.andWhere({ devBuild: false })
     }
 
     const [players, count] = await query

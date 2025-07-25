@@ -5,7 +5,6 @@ import Game from './game'
 import Player from './player'
 import PlayerGroupRule, { PlayerGroupRuleCastType } from './player-group-rule'
 import { ruleModeValidation, rulesValidation } from '../lib/groups/rulesValidation'
-import { devDataPlayerFilter } from '../middleware/dev-data-middleware'
 
 export enum RuleMode {
   AND = '$and',
@@ -148,7 +147,7 @@ export default class PlayerGroup {
     return {
       ...this.toJSON(),
       count: await this.members.loadCount({
-        where: includeDevData ? {} : devDataPlayerFilter(em)
+        where: includeDevData ? {} : { devBuild: false }
       })
     }
   }

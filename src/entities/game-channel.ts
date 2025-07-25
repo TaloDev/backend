@@ -2,7 +2,6 @@ import { Collection, Entity, EntityManager, ManyToMany, ManyToOne, OneToMany, Pr
 import PlayerAlias from './player-alias'
 import Game from './game'
 import { Required, ValidationCondition } from 'koa-clay'
-import { devDataPlayerFilter } from '../middleware/dev-data-middleware'
 import { sendMessages, SocketMessageResponse } from '../socket/messages/socketMessage'
 import Socket from '../socket'
 import { APIKeyScope } from './api-key'
@@ -114,7 +113,7 @@ export default class GameChannel {
       ...this.toJSON(),
       memberCount: await this.members.loadCount({
         where: {
-          player: includeDevData ? {} : devDataPlayerFilter(em)
+          player: includeDevData ? {} : { devBuild: false }
         }
       })
     }

@@ -65,7 +65,7 @@ export default class Event extends ClickHouseEntity<ClickHouseEvent, [string, Ga
       name: this.name,
       game_id: this.game.id,
       player_alias_id: this.playerAlias.id,
-      dev_build: this.playerAlias.player.isDevBuild(),
+      dev_build: this.playerAlias.player.devBuild,
       created_at: formatDateForClickHouse(this.createdAt),
       updated_at: formatDateForClickHouse(this.updatedAt)
     }

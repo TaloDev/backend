@@ -15,7 +15,6 @@ import GameFeedback from '../../../entities/game-feedback'
 import createClickHouseClient from '../../clickhouse/createClient'
 import { ClickHouseEvent } from '../../../entities/event'
 import { streamCursor } from '../../perf/streamByCursor'
-import { devDataPlayerFilter } from '../../../middleware/dev-data-middleware'
 import archiver from 'archiver'
 import { PassThrough } from 'stream'
 import path from 'path'
@@ -159,7 +158,7 @@ export class DataExporter {
     yield* streamCursor<Player>(async (batchSize, after) => {
       const page = await em.repo(Player).findByCursor({
         game: dataExport.game,
-        ...(!includeDevData ? devDataPlayerFilter(em) : {})
+        ...(includeDevData ? {} : { devBuild: false })
       }, {
         first: batchSize,
         after,
@@ -179,7 +178,7 @@ export class DataExporter {
       return em.repo(PlayerAlias).findByCursor({
         player: {
           game: dataExport.game,
-          ...(!includeDevData ? devDataPlayerFilter(em) : {})
+          ...includeDevData ? {} : { devBuild: false }
         }
       }, {
         first: batchSize,
@@ -201,8 +200,8 @@ export class DataExporter {
         },
         playerAlias: {
           player: {
-            ...(!includeDevData ? devDataPlayerFilter(em) : {}),
-            game: dataExport.game
+            game: dataExport.game,
+            ...(includeDevData ? {} : { devBuild: false })
           }
         }
       }, {
@@ -250,8 +249,8 @@ export class DataExporter {
           game: dataExport.game
         },
         player: {
-          ...(!includeDevData ? devDataPlayerFilter(em) : {}),
-          game: dataExport.game
+          game: dataExport.game,
+          ...(includeDevData ? {} : { devBuild: false })
         }
       }, {
         first: batchSize,
@@ -289,8 +288,8 @@ export class DataExporter {
       return em.repo(GameFeedback).findByCursor({
         playerAlias: {
           player: {
-            ...(!includeDevData ? devDataPlayerFilter(em) : {}),
-            game: dataExport.game
+            game: dataExport.game,
+            ...(includeDevData ? {} : { devBuild: false })
           }
         }
       }, {

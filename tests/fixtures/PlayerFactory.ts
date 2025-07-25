@@ -71,6 +71,7 @@ export default class PlayerFactory extends Factory<Player> {
 
   devBuild(): this {
     return this.state((player: Player) => {
+      player.devBuild = true
       player.addProp('META_DEV_BUILD', '1')
       return player
     })

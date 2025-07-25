@@ -6,7 +6,6 @@ import LeaderboardEntry from '../entities/leaderboard-entry'
 import PlayerAlias from '../entities/player-alias'
 import triggerIntegrations from '../lib/integrations/triggerIntegrations'
 import createGameActivity from '../lib/logging/createGameActivity'
-import { devDataPlayerFilter } from '../middleware/dev-data-middleware'
 import LeaderboardPolicy from '../policies/leaderboard.policy'
 import { archiveEntriesForLeaderboard } from '../tasks/archiveLeaderboardEntries'
 import updateAllowedKeys from '../lib/entities/updateAllowedKeys'
@@ -55,7 +54,9 @@ async function getGlobalEntryIds({
     if (!includeDevData) {
       globalQuery.andWhere({
         playerAlias: {
-          player: devDataPlayerFilter(em)
+          player: {
+            devBuild: false
+          }
         }
       })
     }
@@ -157,7 +158,9 @@ export default class LeaderboardService extends Service {
     if (!req.ctx.state.includeDevData) {
       where.playerAlias = {
         ...((where.playerAlias as ObjectQuery<PlayerAlias>) ?? {}),
-        player: devDataPlayerFilter(em)
+        player: {
+          devBuild: false
+        }
       }
     }
 

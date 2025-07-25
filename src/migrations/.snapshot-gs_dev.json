@@ -910,6 +910,17 @@
           "length": null,
           "mappedType": "integer"
         },
+        "dev_build": {
+          "name": "dev_build",
+          "type": "tinyint(1)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "length": 1,
+          "default": "false",
+          "mappedType": "boolean"
+        },
         "last_seen_at": {
           "name": "last_seen_at",
           "type": "datetime",

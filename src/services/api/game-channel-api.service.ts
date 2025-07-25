@@ -302,7 +302,7 @@ export default class GameChannelAPIService extends APIService {
     if (!req.ctx.state.includeDevData) {
       // filter out dev players unless its the current alias
       members = members.filter((member) => {
-        return !member.player.isDevBuild() || member.id === alias.id
+        return !member.player.devBuild || member.id === alias.id
       })
     }
 

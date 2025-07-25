@@ -127,7 +127,7 @@ export default class GameStat {
     const playerStats = await this.playerStats.loadItems({ populate: ['player'] })
 
     this.hydratedGlobalValue -= playerStats
-      .filter((playerStat) => playerStat.player.isDevBuild())
+      .filter((playerStat) => playerStat.player.devBuild)
       .reduce((acc, curr) => acc += curr.value, 0)
   }
 

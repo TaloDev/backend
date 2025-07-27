@@ -8,6 +8,7 @@ import PlayerGroupFactory from '../../../fixtures/PlayerGroupFactory'
 import PlayerGroupRule, { PlayerGroupRuleCastType, PlayerGroupRuleName } from '../../../../src/entities/player-group-rule'
 import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
 import { randWord } from '@ngneat/falso'
+import * as checkGroupMemberships from '../../../../src/lib/groups/checkGroupMemberships'
 
 describe('Player API service - patch', () => {
   it('should update a player\'s properties', async () => {
@@ -267,5 +268,47 @@ describe('Player API service - patch', () => {
         value: 'aNewValue'
       }
     ]))
+  })
+
+  it('should only allow memberships to be checked for a player once per request lifecycle', async () => {
+    const checkGroupMembershipsSpy = vi.spyOn(checkGroupMemberships, 'default').mockImplementation(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 1000))
+      return false
+    })
+
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_PLAYERS])
+
+    const rule = new PlayerGroupRule(PlayerGroupRuleName.GTE, 'props.currentLevel')
+    rule.castType = PlayerGroupRuleCastType.DOUBLE
+    rule.operands = ['60']
+
+    const group = await new PlayerGroupFactory().construct(apiKey.game).state(() => ({ rules: [rule] })).one()
+
+    const player = await new PlayerFactory([apiKey.game]).state((player) => ({
+      props: new Collection<PlayerProp>(player, [
+        new PlayerProp(player, 'collectibles', '0'),
+        new PlayerProp(player, 'currentLevel', '59')
+      ])
+    })).one()
+    await em.persistAndFlush([group, player])
+
+    await Promise.allSettled(['60', '61', '62', '63', '64', '65'].map((level) => {
+      return request(app)
+        .patch(`/v1/players/${player.id}`)
+        .send({
+          props: [
+            {
+              key: 'currentLevel',
+              value: level
+            }
+          ]
+        })
+        .auth(token, { type: 'bearer' })
+        .expect(200)
+    }))
+
+    // once when the player is created, and once for the first patch request
+    expect(checkGroupMembershipsSpy).toHaveBeenCalledTimes(2)
+    checkGroupMembershipsSpy.mockRestore()
   })
 })

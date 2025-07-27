@@ -6,7 +6,9 @@ import { ClickHouseClient } from '@clickhouse/client'
 import PlayerAlias from '../entities/player-alias'
 import { ClickHouseSocketEvent } from '../socket/socketEvent'
 import { v4 } from 'uuid'
-import { addMinutes, differenceInMinutes } from 'date-fns'
+import { addMinutes, differenceInMinutes, subDays } from 'date-fns'
+import PlayerPresence from '../entities/player-presence'
+import { formatDateForClickHouse } from '../lib/clickhouse/formatDateTime'
 
 type CleanupStats = {
   unfinishedSessions: number
@@ -15,6 +17,7 @@ type CleanupStats = {
   hadSessionSinceOriginal: number
   newSessionDurationMinutes: number[]
   newSessionDurationLessThanOneMinute: number
+  presenceUpdated: number
 }
 
 let cleanupStats: Record<number, CleanupStats>
@@ -27,7 +30,8 @@ function getOrCreateGameCleanupStats(gameId: number): CleanupStats {
       hadNoEvents: 0,
       hadSessionSinceOriginal: 0,
       newSessionDurationMinutes: [],
-      newSessionDurationLessThanOneMinute: 0
+      newSessionDurationLessThanOneMinute: 0,
+      presenceUpdated: 0
     }
   }
   return cleanupStats[gameId]
@@ -109,6 +113,27 @@ async function cleanupSession(em: EntityManager, clickhouse: ClickHouseClient, s
   gameStats.newSessionDurationMinutes.push(duration)
 }
 
+async function cleanupPresence(em: EntityManager, clickhouse: ClickHouseClient, presence: PlayerPresence) {
+  const gameStats = getOrCreateGameCleanupStats(presence.player.game.id)
+
+  const latestSessionForPresence = await clickhouse.query({
+    query: `
+      SELECT ended_at from player_sessions
+      WHERE player_id = '${presence.player.id}' AND ended_at >= '${formatDateForClickHouse(presence.updatedAt)}'
+      LIMIT 1
+    `,
+    format: 'JSONEachRow'
+  })
+    .then((res) => res.json<Pick<ClickHousePlayerSession, 'ended_at'>>())
+    .then((res) => res[0])
+
+  if (latestSessionForPresence?.ended_at) {
+    gameStats.presenceUpdated++
+    presence.online = false
+    await em.flush()
+  }
+}
+
 export default async function cleanupOnlinePlayers() {
   const orm = await MikroORM.init(ormConfig)
   const em = orm.em.fork()
@@ -132,8 +157,22 @@ export default async function cleanupOnlinePlayers() {
     await cleanupSession(em, clickhouse, session)
   }
 
+  const onlinePresence = await em.repo(PlayerPresence).find({
+    online: true,
+    updatedAt: {
+      $lte: subDays(new Date(), 1)
+    }
+  }, {
+    limit: 100,
+    populate: ['player']
+  })
+
+  for (const presence of onlinePresence) {
+    await cleanupPresence(em, clickhouse, presence)
+  }
+
   await orm.close()
   await clickhouse.close()
 
-  console.table(cleanupStats)
+  console.info(`Cleanup stats: ${JSON.stringify(cleanupStats, null, 2)}`)
 }

@@ -3,12 +3,15 @@ import checkGroupMemberships from '../../lib/groups/checkGroupMemberships'
 import Player from '../player'
 import LeaderboardEntry from '../leaderboard-entry'
 import PlayerGameStat from '../player-game-stat'
+import { createRedisConnection } from '../../config/redis.config'
 
 const changeSetFilters: ((cs: ChangeSet<Partial<unknown>>) => boolean)[] = [
   (cs) => [ChangeSetType.CREATE, ChangeSetType.UPDATE].includes(cs.type) && cs.entity instanceof Player,
   (cs) => [ChangeSetType.CREATE, ChangeSetType.UPDATE].includes(cs.type) && cs.entity instanceof LeaderboardEntry,
   (cs) => [ChangeSetType.CREATE, ChangeSetType.UPDATE].includes(cs.type) && cs.entity instanceof PlayerGameStat
 ]
+
+let redis: ReturnType<typeof createRedisConnection>
 
 export default class PlayerGroupSubscriber implements EventSubscriber {
   async afterFlush(args: FlushEventArgs): Promise<void> {
@@ -31,8 +34,37 @@ export default class PlayerGroupSubscriber implements EventSubscriber {
       }
     }
 
+    if (playersMap.size === 0) {
+      return
+    }
+
+    if (!redis) {
+      redis = createRedisConnection()
+    }
+
+    let shouldFlush = false
+
     for (const player of playersMap.values()) {
-      await checkGroupMemberships(em, player)
+      const redisKey = `checkMembership:${player.id}`
+      let checkMembership = false
+
+      try {
+        const setSuccess = await redis.set(redisKey, '1', 'EX', 30, 'NX')
+        if (setSuccess === 'OK') {
+          checkMembership = true
+          if (await checkGroupMemberships(em, player)) {
+            shouldFlush = true
+          }
+        }
+      } finally {
+        if (checkMembership) {
+          await redis.del(redisKey)
+        }
+      }
+    }
+
+    if (shouldFlush) {
+      await em.flush()
     }
   }
 }

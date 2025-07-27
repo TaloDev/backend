@@ -4,10 +4,10 @@ import PlayerGroup from '../../entities/player-group'
 
 const enableLogging = process.env.NODE_ENV !== 'test'
 
-export default async function checkGroupMemberships(em: EntityManager, player: Player) {
+export default async function checkGroupMemberships(em: EntityManager, player: Player): Promise<boolean> {
   const groups = await em.getRepository(PlayerGroup).find({ game: player.game })
   if (groups.length === 0) {
-    return
+    return false
   }
 
   const startTime = Date.now()
@@ -58,8 +58,6 @@ export default async function checkGroupMemberships(em: EntityManager, player: P
       if (enableLogging) {
         console.time(flushLabel)
       }
-
-      await em.flush()
     }
   /* v8 ignore next 5 */
   } catch (err) {
@@ -79,4 +77,6 @@ export default async function checkGroupMemberships(em: EntityManager, player: P
   if (enableLogging) {
     console.timeEnd(globalLabel)
   }
+
+  return shouldFlush
 }

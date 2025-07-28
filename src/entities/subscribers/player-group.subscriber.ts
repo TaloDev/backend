@@ -5,6 +5,8 @@ import LeaderboardEntry from '../leaderboard-entry'
 import PlayerGameStat from '../player-game-stat'
 import { createRedisConnection } from '../../config/redis.config'
 
+const enableLogging = process.env.NODE_ENV !== 'test'
+
 const changeSetFilters: ((cs: ChangeSet<Partial<unknown>>) => boolean)[] = [
   (cs) => [ChangeSetType.CREATE, ChangeSetType.UPDATE].includes(cs.type) && cs.entity instanceof Player,
   (cs) => [ChangeSetType.CREATE, ChangeSetType.UPDATE].includes(cs.type) && cs.entity instanceof LeaderboardEntry,
@@ -42,29 +44,45 @@ export default class PlayerGroupSubscriber implements EventSubscriber {
       redis = createRedisConnection()
     }
 
-    let shouldFlush = false
-
     for (const player of playersMap.values()) {
       const redisKey = `checkMembership:${player.id}`
-      let checkMembership = false
+      let lockCreated = false
 
       try {
         const setSuccess = await redis.set(redisKey, '1', 'EX', 30, 'NX')
         if (setSuccess === 'OK') {
-          checkMembership = true
+          lockCreated = true
+          /* v8 ignore next 3 */
+          if (enableLogging) {
+            console.info(`Group memberships lock created for ${player.id}`)
+          }
+
           if (await checkGroupMemberships(em, player)) {
-            shouldFlush = true
+            const label = `Flush group memberships for ${player.id}`
+
+            /* v8 ignore next 3 */
+            if (enableLogging) {
+              console.time(label)
+            }
+
+            await em.flush()
+
+            /* v8 ignore next 3 */
+            if (enableLogging) {
+              console.timeEnd(label)
+            }
           }
         }
       } finally {
-        if (checkMembership) {
+        if (lockCreated) {
+          /* v8 ignore next 3 */
+          if (enableLogging) {
+            console.info(`Group memberships lock released for ${player.id}`)
+          }
+
           await redis.del(redisKey)
         }
       }
-    }
-
-    if (shouldFlush) {
-      await em.flush()
     }
   }
 }

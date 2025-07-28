@@ -81,7 +81,7 @@
     "handlebars": "^4.7.7",
     "ioredis": "^5.2.4",
     "jsonwebtoken": "^9.0.0",
-    "koa": "^2.16.1",
+    "koa": "^3.0.0",
     "koa-bodyparser": "^4.4.1",
     "koa-clay": "^7.0.1",
     "koa-helmet": "^7.0.0",

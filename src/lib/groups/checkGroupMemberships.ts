@@ -1,22 +1,20 @@
-import { EntityManager, UniqueConstraintViolationException } from '@mikro-orm/mysql'
+import { EntityManager } from '@mikro-orm/mysql'
 import Player from '../../entities/player'
 import PlayerGroup from '../../entities/player-group'
 
 const enableLogging = process.env.NODE_ENV !== 'test'
 
 export default async function checkGroupMemberships(em: EntityManager, player: Player): Promise<boolean> {
-  const groups = await em.getRepository(PlayerGroup).find({ game: player.game })
+  const groups = await em.repo(PlayerGroup).find({ game: player.game })
   if (groups.length === 0) {
     return false
   }
 
-  const startTime = Date.now()
-  const globalLabel = `Checking group memberships for ${player.id} (${startTime})`
-  const flushLabel = `Memberships flush ${player.id} (${startTime})`
+  const label = `Checking group memberships for ${player.id}`
 
   /* v8 ignore next 3 */
   if (enableLogging) {
-    console.time(globalLabel)
+    console.time(label)
   }
 
   let shouldFlush = false
@@ -52,30 +50,9 @@ export default async function checkGroupMemberships(em: EntityManager, player: P
     }
   }
 
-  try {
-    if (shouldFlush) {
-      /* v8 ignore next 3 */
-      if (enableLogging) {
-        console.time(flushLabel)
-      }
-    }
-  /* v8 ignore next 5 */
-  } catch (err) {
-    if (err instanceof UniqueConstraintViolationException) {
-      console.warn('This player is already in the group')
-    }
-  } finally {
-    if (shouldFlush) {
-      /* v8 ignore next 3 */
-      if (enableLogging) {
-        console.timeEnd(flushLabel)
-      }
-    }
-  }
-
   /* v8 ignore next 3 */
   if (enableLogging) {
-    console.timeEnd(globalLabel)
+    console.timeEnd(label)
   }
 
   return shouldFlush

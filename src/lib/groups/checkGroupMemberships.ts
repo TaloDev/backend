@@ -1,6 +1,7 @@
 import { EntityManager } from '@mikro-orm/mysql'
 import Player from '../../entities/player'
 import PlayerGroup from '../../entities/player-group'
+import { getResultCacheOptions } from '../perf/getResultCacheOptions'
 
 const enableLogging = process.env.NODE_ENV !== 'test'
 
@@ -22,7 +23,10 @@ class PlayerGroupMember {
 }
 
 export default async function checkGroupMemberships(em: EntityManager, player: Player): Promise<boolean> {
-  const groups = await em.repo(PlayerGroup).find({ game: player.game })
+  const groups = await em.repo(PlayerGroup).find({
+    game: player.game
+  }, getResultCacheOptions(`groups-for-memberships-${player.game}`))
+
   if (groups.length === 0) {
     return false
   }

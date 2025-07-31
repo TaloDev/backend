@@ -3,6 +3,7 @@ import { isAPIRoute } from './route-middleware'
 import getAPIKeyFromToken from '../lib/auth/getAPIKeyFromToken'
 import { EntityManager } from '@mikro-orm/mysql'
 import { setTraceAttributes } from '@hyperdx/node-opentelemetry'
+import APIKey from '../entities/api-key'
 
 export default async function apiKeyMiddleware(ctx: Context, next: Next): Promise<void> {
   if (isAPIRoute(ctx)) {
@@ -16,8 +17,13 @@ export default async function apiKeyMiddleware(ctx: Context, next: Next): Promis
         game_id: apiKey.game.id
       })
 
-      if (!apiKey.revokedAt) apiKey.lastUsedAt = new Date()
-      await (<EntityManager>ctx.em).flush()
+      if (!apiKey.revokedAt) {
+        await (<EntityManager>ctx.em).repo(APIKey).nativeUpdate({
+          id: apiKey.id
+        }, {
+          lastUsedAt: new Date()
+        })
+      }
     }
   }
 

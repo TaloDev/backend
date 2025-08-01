@@ -58,14 +58,14 @@ export default class PlayerGroupSubscriber implements EventSubscriber {
           }
 
           if (await checkGroupMemberships(em, player)) {
-            const label = `Flush group memberships for ${player.id}`
+            const label = `Refreshing memberships for ${player.id}`
 
             /* v8 ignore next 3 */
             if (enableLogging) {
               console.time(label)
             }
 
-            await em.flush()
+            await player.groups.loadItems({ refresh: true })
 
             /* v8 ignore next 3 */
             if (enableLogging) {

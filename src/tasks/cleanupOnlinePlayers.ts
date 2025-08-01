@@ -18,6 +18,7 @@ type CleanupStats = {
   newSessionDurationMinutes: number[]
   newSessionDurationLessThanOneMinute: number
   presenceUpdated: number
+  presenceDeleted: number
 }
 
 let cleanupStats: Record<number, CleanupStats>
@@ -31,7 +32,8 @@ function getOrCreateGameCleanupStats(gameId: number): CleanupStats {
       hadSessionSinceOriginal: 0,
       newSessionDurationMinutes: [],
       newSessionDurationLessThanOneMinute: 0,
-      presenceUpdated: 0
+      presenceUpdated: 0,
+      presenceDeleted: 0
     }
   }
   return cleanupStats[gameId]
@@ -134,6 +136,12 @@ async function cleanupPresence(em: EntityManager, clickhouse: ClickHouseClient, 
   }
 }
 
+async function removeDisconnectedPresence(em: EntityManager, presence: PlayerPresence) {
+  const gameStats = getOrCreateGameCleanupStats(presence.playerAlias.player.game.id)
+  gameStats.presenceDeleted++
+  await em.removeAndFlush(presence)
+}
+
 export default async function cleanupOnlinePlayers() {
   const orm = await MikroORM.init(ormConfig)
   const em = orm.em.fork()
@@ -157,6 +165,17 @@ export default async function cleanupOnlinePlayers() {
     await cleanupSession(em, clickhouse, session)
   }
 
+  // todo, find out how this is happening
+  const disconnectedPresence = await em.repo(PlayerPresence).find({
+    player: null
+  })
+
+  console.info(`Found ${disconnectedPresence.length} disconnected presence`)
+
+  for (const presence of disconnectedPresence) {
+    await removeDisconnectedPresence(em, presence)
+  }
+
   const onlinePresence = await em.repo(PlayerPresence).find({
     online: true,
     updatedAt: {
@@ -166,6 +185,8 @@ export default async function cleanupOnlinePlayers() {
     limit: 100,
     populate: ['player']
   })
+
+  console.info(`Found ${onlinePresence.length} online presence`)
 
   for (const presence of onlinePresence) {
     await cleanupPresence(em, clickhouse, presence)

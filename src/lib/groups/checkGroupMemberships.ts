@@ -25,7 +25,7 @@ class PlayerGroupMember {
 export default async function checkGroupMemberships(em: EntityManager, player: Player): Promise<boolean> {
   const groups = await em.repo(PlayerGroup).find({
     game: player.game
-  }, getResultCacheOptions(`groups-for-memberships-${player.game}`))
+  }, getResultCacheOptions(`groups-for-memberships-${player.game}`, 1000))
 
   if (groups.length === 0) {
     return false
@@ -38,7 +38,7 @@ export default async function checkGroupMemberships(em: EntityManager, player: P
     console.time(label)
   }
 
-  let shouldFlush = false
+  let shouldRefresh = false
 
   for (const group of groups) {
     await group.members.init({ ref: true })
@@ -49,7 +49,7 @@ export default async function checkGroupMemberships(em: EntityManager, player: P
     const notEligibleButInGroup = !playerIsEligible && playerCurrentlyInGroup
 
     if (eligibleButNotInGroup || notEligibleButInGroup) {
-      shouldFlush = true
+      shouldRefresh = true
     }
 
     const groupMember = new PlayerGroupMember(player, group)
@@ -74,5 +74,5 @@ export default async function checkGroupMemberships(em: EntityManager, player: P
     console.timeEnd(label)
   }
 
-  return shouldFlush
+  return shouldRefresh
 }

@@ -7,6 +7,7 @@ import { formatDateForClickHouse } from '../../src/lib/clickhouse/formatDateTime
 import PlayerPresenceFactory from '../fixtures/PlayerPresenceFactory'
 import assert from 'node:assert'
 import PlayerPresence from '../../src/entities/player-presence'
+import Player from '../../src/entities/player'
 
 describe('cleanupOnlinePlayers', () => {
   beforeEach(() => {
@@ -386,5 +387,33 @@ describe('cleanupOnlinePlayers', () => {
     assert(updatedPresence)
     expect(updatedPresence.online).toBe(true)
     expect(updatedPresence.updatedAt).toEqual(originalUpdatedAt)
+  })
+
+  it('should delete presence that no longer has a player', async () => {
+    vi.useRealTimers()
+
+    const [, game] = await createOrganisationAndGame()
+    const player = await new PlayerFactory([game])
+      .state(async (player) => ({
+        presence: await new PlayerPresenceFactory(player.game)
+          .online()
+          .state(() => ({ updatedAt: subDays(new Date(), 2) }))
+          .one()
+      }))
+      .one()
+    await em.persistAndFlush(player)
+
+    assert(player.presence)
+    const originalPresenceId = player.presence.id
+
+    await em.nativeDelete(Player, player.id)
+
+    const originalPresence = await em.repo(PlayerPresence).findOne(originalPresenceId)
+    assert(originalPresence)
+
+    await cleanupOnlinePlayers()
+
+    const updatedPresence = await em.refresh(originalPresence)
+    expect(updatedPresence).toBeNull()
   })
 })

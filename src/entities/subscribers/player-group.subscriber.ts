@@ -4,6 +4,7 @@ import Player from '../player'
 import LeaderboardEntry from '../leaderboard-entry'
 import PlayerGameStat from '../player-game-stat'
 import { createRedisConnection } from '../../config/redis.config'
+import { captureException } from '@sentry/node'
 
 const enableLogging = process.env.NODE_ENV !== 'test'
 
@@ -57,7 +58,8 @@ export default class PlayerGroupSubscriber implements EventSubscriber {
             console.info(`Group memberships lock created for ${player.id}`)
           }
 
-          if (await checkGroupMemberships(em, player)) {
+          const shouldRefresh = await checkGroupMemberships(em, player)
+          if (shouldRefresh) {
             const label = `Refreshing memberships for ${player.id}`
 
             /* v8 ignore next 3 */
@@ -73,6 +75,9 @@ export default class PlayerGroupSubscriber implements EventSubscriber {
             }
           }
         }
+      } catch (err) {
+        console.error(`Failed checking memberships: ${(err as Error).message}`)
+        captureException(err)
       } finally {
         if (lockCreated) {
           /* v8 ignore next 3 */

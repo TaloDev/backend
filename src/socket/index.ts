@@ -8,7 +8,7 @@ import { sendMessage } from './messages/socketMessage'
 import { logConnection, logConnectionClosed } from './messages/socketLogger'
 import { SocketEventData } from './socketEvent'
 import Redis from 'ioredis'
-import redisConfig from '../config/redis.config'
+import { createRedisConnection } from '../config/redis.config'
 import SocketTicket from './socketTicket'
 import { getSocketTracer } from './socketTracer'
 import { FlushSocketEventsQueueHandler } from '../lib/queues/game-metrics/flush-socket-events-queue-handler'
@@ -26,6 +26,7 @@ export default class Socket {
   private connections: Map<WebSocket, SocketConnection> = new Map()
   private router: SocketRouter
   private queueHandler: FlushSocketEventsQueueHandler
+  redis: Redis
 
   constructor(server: Server, private readonly em: EntityManager) {
     this.wss = new WebSocketServer({ server })
@@ -49,6 +50,8 @@ export default class Socket {
     this.wss.on('close', () => {
       clearInterval(interval)
     })
+
+    this.redis = createRedisConnection()
   }
 
   getServer(): WebSocketServer {
@@ -76,13 +79,11 @@ export default class Socket {
       await getSocketTracer().startActiveSpan('socket.open', async (span) => {
         logConnection(req)
 
-        const redis = new Redis(redisConfig)
-
         await RequestContext.create(this.em, async () => {
           const url = new URL(req.url!, 'http://localhost')
           const ticket = new SocketTicket(url.searchParams.get('ticket') ?? '')
 
-          if (await ticket.validate(redis)) {
+          if (await ticket.validate(this.redis)) {
             const connection = new SocketConnection(this, ws, ticket, req.socket.remoteAddress!)
             this.connections.set(ws, connection)
 
@@ -100,8 +101,6 @@ export default class Socket {
             await this.closeConnection(ws)
           }
         })
-
-        await redis.quit()
 
         span.end()
       })

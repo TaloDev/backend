@@ -5,7 +5,6 @@ import APIKey, { APIKeyScope } from '../entities/api-key'
 import { RequestContext, EntityManager } from '@mikro-orm/mysql'
 import { v4 } from 'uuid'
 import Redis from 'ioredis'
-import redisConfig from '../config/redis.config'
 import checkRateLimitExceeded from '../lib/errors/checkRateLimitExceeded'
 import Socket from '.'
 import { SocketMessageResponse } from './messages/socketMessage'
@@ -56,10 +55,8 @@ export default class SocketConnection {
     return this.playerAliasId ? 250 : 25
   }
 
-  async checkRateLimitExceeded(): Promise<boolean> {
-    const redis = new Redis(redisConfig)
+  async checkRateLimitExceeded(redis: Redis): Promise<boolean> {
     const rateLimitExceeded = await checkRateLimitExceeded(redis, this.rateLimitKey, this.getRateLimitMaxRequests())
-    await redis.quit()
 
     if (rateLimitExceeded) {
       this.rateLimitWarnings++

@@ -1,9 +1,11 @@
-FROM node:lts AS base
+FROM node:20 AS base
 WORKDIR /usr/backend
 COPY tsconfig.json .
 COPY package.json .
 COPY package-lock.json .
 EXPOSE 80
+HEALTHCHECK --start-period=60s \
+  CMD curl -f -s http://localhost/public/health || exit 1
 
 FROM base AS dev
 RUN npm ci

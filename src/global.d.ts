@@ -4,6 +4,7 @@ import { EntityManager } from '@mikro-orm/mysql'
 import Koa from 'koa'
 import { ClickHouseClient } from '@clickhouse/client'
 import { ClayDocs } from 'koa-clay'
+import Redis from 'ioredis'
 
 declare global {
   // clay
@@ -15,6 +16,7 @@ declare global {
   var ctx: ReturnType<Koa['context']>
   var em: EntityManager
   var clickhouse: ClickHouseClient
+  var redis: Redis
 }
 
 export {}

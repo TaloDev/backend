@@ -4,13 +4,10 @@ import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
 import PlayerFactory from '../../../fixtures/PlayerFactory'
 import PlayerAuthFactory from '../../../fixtures/PlayerAuthFactory'
 import bcrypt from 'bcrypt'
-import Redis from 'ioredis'
-import redisConfig from '../../../../src/config/redis.config'
 import PlayerAuthActivity, { PlayerAuthActivityType } from '../../../../src/entities/player-auth-activity'
 
 describe('Player auth API service - verify', () => {
   it('should login a player if the verification code is correct and if the api key has the correct scopes', async () => {
-    const redis = new Redis(redisConfig)
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_PLAYERS, APIKeyScope.WRITE_PLAYERS])
 
     const player = await new PlayerFactory([apiKey.game]).withTaloAlias().state(async () => ({
@@ -42,8 +39,6 @@ describe('Player auth API service - verify', () => {
     expect(res.body.sessionToken).toBeTruthy()
 
     expect(await redis.get(`player-auth:${apiKey.game.id}:verification:${alias.id}`)).toBeNull()
-
-    await redis.quit()
   })
 
   it('should not login a player if the verification code is correct but the api key does not have the correct scopes', async () => {
@@ -77,7 +72,6 @@ describe('Player auth API service - verify', () => {
   })
 
   it('should not login a player if the verification code is incorrect', async () => {
-    const redis = new Redis(redisConfig)
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_PLAYERS, APIKeyScope.WRITE_PLAYERS])
 
     const player = await new PlayerFactory([apiKey.game]).withTaloAlias().one()
@@ -105,7 +99,5 @@ describe('Player auth API service - verify', () => {
       player: player.id
     })
     expect(activity).not.toBeNull()
-
-    await redis.quit()
   })
 })

@@ -7,8 +7,6 @@ import userPermissionProvider from '../../utils/userPermissionProvider'
 import createUserAndToken from '../../utils/createUserAndToken'
 import createOrganisationAndGame from '../../utils/createOrganisationAndGame'
 import { createSocketTicket } from '../../../src/services/api/socket-ticket-api.service'
-import redisConfig from '../../../src/config/redis.config'
-import { Redis } from 'ioredis'
 import createTestSocket from '../../utils/createTestSocket'
 
 describe('API key service - delete', () => {
@@ -82,9 +80,7 @@ describe('API key service - delete', () => {
     const key = new APIKey(game, user)
     await em.persistAndFlush(key)
 
-    const redis = new Redis(redisConfig)
     const ticket = await createSocketTicket(redis, key, false)
-    await redis.quit()
 
     await createTestSocket(`/?ticket=${ticket}`, async (client) => {
       await request(app)

@@ -57,7 +57,8 @@
           "app",
           "ctx",
           "em",
-          "clickhouse"
+          "clickhouse",
+          "redis"
         ]
       }
     }

@@ -1,23 +1,17 @@
 import { Collection, EntityManager } from '@mikro-orm/mysql'
 import request from 'supertest'
 import UserRecoveryCode from '../../../../src/entities/user-recovery-code'
-import redisConfig from '../../../../src/config/redis.config'
-import Redis from 'ioredis'
 import createUserAndToken from '../../../utils/createUserAndToken'
 import UserTwoFactorAuth from '../../../../src/entities/user-two-factor-auth'
 import User from '../../../../src/entities/user'
 import generateRecoveryCodes from '../../../../src/lib/auth/generateRecoveryCodes'
 
 async function setTwoFactorAuthSession(user: User) {
-  const redis = new Redis(redisConfig)
   await redis.set(`2fa:${user.id}`, 'true')
-  await redis.quit()
 }
 
 async function removeTwoFactorAuthSession(user: User) {
-  const redis = new Redis(redisConfig)
   await redis.del(`2fa:${user.id}`)
-  await redis.quit()
 }
 
 async function createUserWithTwoFactorAuth(em: EntityManager): Promise<[string, User]> {

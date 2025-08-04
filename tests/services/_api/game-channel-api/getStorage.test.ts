@@ -4,12 +4,9 @@ import { APIKeyScope } from '../../../../src/entities/api-key'
 import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
 import PlayerFactory from '../../../fixtures/PlayerFactory'
 import GameChannelStoragePropFactory from '../../../fixtures/GameChannelStoragePropFactory'
-import Redis from 'ioredis'
-import redisConfig from '../../../../src/config/redis.config'
 
 describe('Game channel API service - getStorage', () => {
   it('should return a storage prop from Redis if it exists in the cache', async () => {
-    const redis = new Redis(redisConfig)
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_GAME_CHANNELS])
 
     const channel = await new GameChannelFactory(apiKey.game).one()
@@ -33,8 +30,6 @@ describe('Game channel API service - getStorage', () => {
     expect(res.body.prop.value).toBe(prop.value)
     expect(res.body.prop.createdBy.id).toBe(prop.createdBy.id)
     expect(res.body.prop.lastUpdatedBy.id).toBe(prop.lastUpdatedBy.id)
-
-    await redis.quit()
   })
 
   it('should return a storage prop if it exists', async () => {

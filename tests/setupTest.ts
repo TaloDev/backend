@@ -1,4 +1,5 @@
 import init from '../src'
+import { createRedisConnection } from '../src/config/redis.config'
 
 async function truncateTables() {
   global.em.execute('SET FOREIGN_KEY_CHECKS = 0;')
@@ -30,11 +31,17 @@ beforeAll(async () => {
   global.ctx = app.context
   global.em = app.context.em.fork()
   global.clickhouse = app.context.clickhouse
+  global.redis = createRedisConnection()
 
   await truncateTables()
+})
+
+beforeEach(() => {
+  global.redis.flushdb()
 })
 
 afterAll(async () => {
   await global.em.getConnection().close(true)
   await global.clickhouse.close()
+  await redis.quit()
 })

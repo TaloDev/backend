@@ -13,7 +13,7 @@ export default class EventAPIPolicy extends Policy {
       },
       game: key.game
     }, {
-      ...(getResultCacheOptions(`event-api-policy-alias-${this.ctx.state.currentAliasId}`) ?? {}),
+      ...getResultCacheOptions(`event-api-policy-alias-${this.ctx.state.currentAliasId}`),
       populate: ['aliases']
     })
 

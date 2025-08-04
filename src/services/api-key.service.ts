@@ -145,6 +145,7 @@ export default class APIKeyService extends Service {
     await em.populate(apiKey, ['createdByUser'])
 
     apiKey.scopes = req.body.scopes
+    await em.clearCache(getTokenCacheKey(apiKey.id))
 
     const token = await createToken(em, apiKey)
 

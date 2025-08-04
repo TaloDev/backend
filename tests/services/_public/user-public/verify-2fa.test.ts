@@ -1,7 +1,5 @@
 import request from 'supertest'
 import { authenticator } from '@otplib/preset-default'
-import Redis from 'ioredis'
-import redisConfig from '../../../../src/config/redis.config'
 import UserTwoFactorAuth from '../../../../src/entities/user-two-factor-auth'
 import createUserAndToken from '../../../utils/createUserAndToken'
 
@@ -11,7 +9,6 @@ describe('User public service - verify 2fa', () => {
     twoFactorAuth.enabled = true
     const [token, user] = await createUserAndToken({ twoFactorAuth })
 
-    const redis = new Redis(redisConfig)
     await redis.set(`2fa:${user.id}`, 'true')
 
     authenticator.check = vi.fn().mockReturnValueOnce(true)
@@ -27,8 +24,6 @@ describe('User public service - verify 2fa', () => {
 
     const hasSession = await redis.get(`2fa:${user.id}`)
     expect(hasSession).toBeNull()
-
-    await redis.quit()
   })
 
   it('should not let users verify their 2fa without a session', async () => {
@@ -50,7 +45,6 @@ describe('User public service - verify 2fa', () => {
     twoFactorAuth.enabled = true
     const [token, user] = await createUserAndToken({ twoFactorAuth })
 
-    const redis = new Redis(redisConfig)
     await redis.set(`2fa:${user.id}`, 'true')
 
     authenticator.check = vi.fn().mockReturnValueOnce(false)
@@ -62,7 +56,5 @@ describe('User public service - verify 2fa', () => {
       .expect(403)
 
     expect(res.body).toStrictEqual({ message: 'Invalid code' })
-
-    await redis.quit()
   })
 })

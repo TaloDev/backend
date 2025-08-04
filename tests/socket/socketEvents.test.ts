@@ -2,9 +2,7 @@ import createAPIKeyAndToken from '../utils/createAPIKeyAndToken'
 import { ClickHouseSocketEvent } from '../../src/socket/socketEvent'
 import createSocketIdentifyMessage from '../utils/createSocketIdentifyMessage'
 import { APIKeyScope } from '../../src/entities/api-key'
-import redisConfig from '../../src/config/redis.config'
 import { createSocketTicket } from '../../src/services/api/socket-ticket-api.service'
-import Redis from 'ioredis'
 import createTestSocket from '../utils/createTestSocket'
 import Socket from '../../src/socket'
 import { FlushSocketEventsQueueHandler } from '../../src/lib/queues/game-metrics/flush-socket-events-queue-handler'
@@ -29,9 +27,7 @@ describe('Socket events', () => {
 
   it('should track open, connected and close events', async () => {
     const [apiKey] = await createAPIKeyAndToken([])
-    const redis = new Redis(redisConfig)
     const ticket = await createSocketTicket(redis, apiKey, false)
-    await redis.quit()
 
     await createTestSocket(`/?ticket=${ticket}`, async () => {})
 
@@ -184,9 +180,7 @@ describe('Socket events', () => {
 
   it('should not track dev build events', async () => {
     const [apiKey] = await createAPIKeyAndToken([])
-    const redis = new Redis(redisConfig)
     const ticket = await createSocketTicket(redis, apiKey, true)
-    await redis.quit()
 
     await createTestSocket(`/?ticket=${ticket}`, async () => {})
 

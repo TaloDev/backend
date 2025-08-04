@@ -2,8 +2,6 @@ import { APIKeyScope } from '../../../../src/entities/api-key'
 import createSocketIdentifyMessage from '../../../utils/createSocketIdentifyMessage'
 import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
 import PlayerFactory from '../../../fixtures/PlayerFactory'
-import Redis from 'ioredis'
-import redisConfig from '../../../../src/config/redis.config'
 import { createSocketTicket } from '../../../../src/services/api/socket-ticket-api.service'
 import createTestSocket from '../../../utils/createTestSocket'
 
@@ -47,10 +45,8 @@ describe('Player listeners - identify', () => {
     const player = await new PlayerFactory([apiKey.game]).withTaloAlias().one()
     await em.persistAndFlush(player)
 
-    const redis = new Redis(redisConfig)
     const ticket = await createSocketTicket(redis, apiKey, false)
     const socketToken = await player.aliases[0].createSocketToken(redis)
-    await redis.quit()
 
     const sessionToken = await player.auth!.createSession(em, player.aliases[0])
     await em.flush()
@@ -76,10 +72,8 @@ describe('Player listeners - identify', () => {
     const player = await new PlayerFactory([apiKey.game]).withTaloAlias().one()
     await em.persistAndFlush(player)
 
-    const redis = new Redis(redisConfig)
     const ticket = await createSocketTicket(redis, apiKey, false)
     const socketToken = await player.aliases[0].createSocketToken(redis)
-    await redis.quit()
 
     await createTestSocket(`/?ticket=${ticket}`, async (client) => {
       client.sendJson({

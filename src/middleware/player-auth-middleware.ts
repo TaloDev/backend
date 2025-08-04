@@ -23,7 +23,7 @@ export default async function playerAuthMiddleware(ctx: Context, next: Next): Pr
         player: ctx.state.currentPlayerId,
         service: PlayerAliasService.TALO
       }, {
-        ...(getResultCacheOptions(getAuthMiddlewarePlayerKey(ctx.state.currentPlayerId)) ?? {}),
+        ...getResultCacheOptions(getAuthMiddlewarePlayerKey(ctx.state.currentPlayerId)),
         populate: ['player.auth']
       })
     } else {
@@ -31,7 +31,7 @@ export default async function playerAuthMiddleware(ctx: Context, next: Next): Pr
         id: ctx.state.currentAliasId,
         service: PlayerAliasService.TALO
       }, {
-        ...(getResultCacheOptions(getAuthMiddlewareAliasKey(ctx.state.currentAliasId)) ?? {}),
+        ...getResultCacheOptions(getAuthMiddlewareAliasKey(ctx.state.currentAliasId)),
         populate: ['player.auth']
       })
     }

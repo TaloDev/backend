@@ -38,7 +38,7 @@ export default class SocketRouter {
         level: 'info'
       })
 
-      const rateLimitExceeded = await conn.checkRateLimitExceeded()
+      const rateLimitExceeded = await conn.checkRateLimitExceeded(this.wss.redis)
       if (rateLimitExceeded) {
         if (conn.rateLimitWarnings > 3) {
           await this.wss.closeConnection(conn.getSocket(), { code: 1008, reason: 'RATE_LIMIT_EXCEEDED' })

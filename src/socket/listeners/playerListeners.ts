@@ -1,8 +1,6 @@
 import { z, ZodType } from 'zod'
 import createListener from '../router/createListener'
 import { sendMessage } from '../messages/socketMessage'
-import Redis from 'ioredis'
-import redisConfig from '../../config/redis.config'
 import { EntityManager, RequestContext } from '@mikro-orm/mysql'
 import PlayerAlias, { PlayerAliasService } from '../../entities/player-alias'
 import { SocketMessageListener } from '../router/createListener'
@@ -20,9 +18,7 @@ const playerListeners = [
       sessionToken: z.string().optional()
     }),
     async ({ conn, req, data, socket }) => {
-      const redis = new Redis(redisConfig)
-      const token = await redis.get(`socketTokens.${data.playerAliasId}`)
-      await redis.quit()
+      const token = await socket.redis.get(`socketTokens.${data.playerAliasId}`)
 
       let alias: PlayerAlias
 

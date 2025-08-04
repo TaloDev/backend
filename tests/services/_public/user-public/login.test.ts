@@ -1,8 +1,6 @@
 import request from 'supertest'
 import UserFactory from '../../../fixtures/UserFactory'
 import { differenceInMinutes, sub } from 'date-fns'
-import Redis from 'ioredis'
-import redisConfig from '../../../../src/config/redis.config'
 
 describe('User public service - login', () => {
   it('should let a user login', async () => {
@@ -57,8 +55,6 @@ describe('User public service - login', () => {
   })
 
   it('should initialise the 2fa flow if it is enabled', async () => {
-    const redis = new Redis(redisConfig)
-
     const user = await new UserFactory().loginable().has2fa().one()
     await em.persistAndFlush(user)
 
@@ -74,7 +70,5 @@ describe('User public service - login', () => {
 
     const hasSession = await redis.get(`2fa:${user.id}`)
     expect(hasSession).toBe('true')
-
-    await redis.quit()
   })
 })

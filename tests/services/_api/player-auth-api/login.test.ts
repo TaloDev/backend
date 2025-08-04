@@ -5,8 +5,6 @@ import PlayerFactory from '../../../fixtures/PlayerFactory'
 import PlayerAuthFactory from '../../../fixtures/PlayerAuthFactory'
 import bcrypt from 'bcrypt'
 import * as sendEmail from '../../../../src/lib/messaging/sendEmail'
-import Redis from 'ioredis'
-import redisConfig from '../../../../src/config/redis.config'
 import PlayerAuthActivity, { PlayerAuthActivityType } from '../../../../src/entities/player-auth-activity'
 
 describe('Player auth API service - login', () => {
@@ -123,8 +121,6 @@ describe('Player auth API service - login', () => {
   })
 
   it('should send a verification code if verification is enabled', async () => {
-    const redis = new Redis(redisConfig)
-
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_PLAYERS, APIKeyScope.WRITE_PLAYERS])
 
     const player = await new PlayerFactory([apiKey.game]).withTaloAlias().state(async () => ({
@@ -157,7 +153,5 @@ describe('Player auth API service - login', () => {
       player: player.id
     })
     expect(activity).not.toBeNull()
-
-    await redis.quit()
   })
 })

@@ -2,8 +2,6 @@ import request from 'supertest'
 import { APIKeyScope } from '../../../../src/entities/api-key'
 import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
 import PlayerFactory from '../../../fixtures/PlayerFactory'
-import Redis from 'ioredis'
-import redisConfig from '../../../../src/config/redis.config'
 import * as sendEmail from '../../../../src/lib/messaging/sendEmail'
 import PlayerAuthActivity, { PlayerAuthActivityType } from '../../../../src/entities/player-auth-activity'
 import { randEmail } from '@ngneat/falso'
@@ -13,14 +11,9 @@ describe('Player auth API service - forgot password', () => {
 
   afterEach(async () => {
     sendMock.mockClear()
-
-    const redis = new Redis(redisConfig)
-    await redis.flushall()
-    await redis.quit()
   })
 
   it('should send a reset code if the api key has the correct scopes', async () => {
-    const redis = new Redis(redisConfig)
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_PLAYERS, APIKeyScope.WRITE_PLAYERS])
 
     const player = await new PlayerFactory([apiKey.game]).withTaloAlias().one()
@@ -40,12 +33,9 @@ describe('Player auth API service - forgot password', () => {
       player: player.id
     })
     expect(activity).not.toBeNull()
-
-    await redis.quit()
   })
 
   it('should not send a reset code if the the api key does not have the correct scopes', async () => {
-    const redis = new Redis(redisConfig)
     const [apiKey, token] = await createAPIKeyAndToken([])
 
     const player = await new PlayerFactory([apiKey.game]).withTaloAlias().one()
@@ -59,12 +49,9 @@ describe('Player auth API service - forgot password', () => {
 
     expect(await redis.keys(`player-auth:${apiKey.game.id}:password-reset:*`)).toHaveLength(0)
     expect(sendMock).not.toHaveBeenCalled()
-
-    await redis.quit()
   })
 
   it('should not send a reset code if there are no players with that email address', async () => {
-    const redis = new Redis(redisConfig)
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_PLAYERS, APIKeyScope.WRITE_PLAYERS])
 
     const player = await new PlayerFactory([apiKey.game]).withTaloAlias().one()
@@ -78,12 +65,9 @@ describe('Player auth API service - forgot password', () => {
 
     expect(await redis.keys(`player-auth:${apiKey.game.id}:password-reset:*`)).toHaveLength(0)
     expect(sendMock).not.toHaveBeenCalled()
-
-    await redis.quit()
   })
 
   it('should not send a reset code if the only player with a matching email address is from another game', async () => {
-    const redis = new Redis(redisConfig)
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_PLAYERS, APIKeyScope.WRITE_PLAYERS])
     const [otherKey] = await createAPIKeyAndToken([APIKeyScope.READ_PLAYERS, APIKeyScope.WRITE_PLAYERS])
 
@@ -99,7 +83,5 @@ describe('Player auth API service - forgot password', () => {
 
     expect(await redis.keys(`player-auth:${apiKey.game.id}:password-reset:*`)).toHaveLength(0)
     expect(sendMock).not.toHaveBeenCalled()
-
-    await redis.quit()
   })
 })

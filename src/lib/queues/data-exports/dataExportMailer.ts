@@ -7,7 +7,7 @@ import DataExportReady from '../../../emails/data-export-ready-mail'
 import fs from 'fs'
 import queueEmail from '../../messaging/queueEmail'
 import fsp from 'fs/promises'
-import assert from 'assert'
+import assert from 'node:assert'
 
 export class DataExportMailer {
   private emailQueue: Queue<EmailConfig>

@@ -1,6 +1,4 @@
 import createAPIKeyAndToken from '../utils/createAPIKeyAndToken'
-import { Redis } from 'ioredis'
-import redisConfig from '../../src/config/redis.config'
 import { createSocketTicket } from '../../src/services/api/socket-ticket-api.service'
 import createTestSocket from '../utils/createTestSocket'
 
@@ -8,9 +6,7 @@ describe('Socket server', () => {
   it('should send a connected message when sending an auth ticket', async () => {
     const [apiKey] = await createAPIKeyAndToken([])
 
-    const redis = new Redis(redisConfig)
     const ticket = await createSocketTicket(redis, apiKey, false)
-    await redis.quit()
 
     await createTestSocket(`/?ticket=${ticket}`, async (client) => {
       await client.expectJsonToStrictEqual({
@@ -43,9 +39,7 @@ describe('Socket server', () => {
     apiKey.revokedAt = new Date()
     await em.flush()
 
-    const redis = new Redis(redisConfig)
     const ticket = await createSocketTicket(redis, apiKey, false)
-    await redis.quit()
 
     await createTestSocket(`/?ticket=${ticket}`, async (client) => {
       await client.expectClosed(3000)

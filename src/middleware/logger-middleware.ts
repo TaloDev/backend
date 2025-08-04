@@ -13,6 +13,10 @@ function buildHeaders(prefix: 'req' | 'res', headers: IncomingHttpHeaders | Outg
 }
 
 export default async function loggerMiddleware(ctx: Context, next: Next) {
+  if (ctx.path === '/public/health') {
+    return await next()
+  }
+
   const startTime = Date.now()
 
   setTraceAttributes({

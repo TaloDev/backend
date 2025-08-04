@@ -28,7 +28,7 @@ export default class GameStatAPIPolicy extends Policy {
         game: key.game
       }
     }, {
-      ...(getResultCacheOptions(`stat-api-policy-alias-${this.ctx.state.currentAliasId}`) ?? {}),
+      ...getResultCacheOptions(`stat-api-policy-alias-${this.ctx.state.currentAliasId}`),
       populate: ['player']
     })
 

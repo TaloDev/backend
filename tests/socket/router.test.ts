@@ -3,16 +3,12 @@ import { APIKeyScope } from '../../src/entities/api-key'
 import createSocketIdentifyMessage from '../utils/createSocketIdentifyMessage'
 import GameChannelFactory from '../fixtures/GameChannelFactory'
 import { createSocketTicket } from '../../src/services/api/socket-ticket-api.service'
-import redisConfig from '../../src/config/redis.config'
-import Redis from 'ioredis'
 import createTestSocket from '../utils/createTestSocket'
 
 describe('Socket router', () => {
   it('should reject invalid messages', async () => {
     const [apiKey] = await createAPIKeyAndToken([])
-    const redis = new Redis(redisConfig)
     const ticket = await createSocketTicket(redis, apiKey, false)
-    await redis.quit()
 
     await createTestSocket(`/?ticket=${ticket}`, async (client) => {
       client.sendJson({
@@ -32,9 +28,7 @@ describe('Socket router', () => {
 
   it('should reject unknown requests', async () => {
     const [apiKey] = await createAPIKeyAndToken([])
-    const redis = new Redis(redisConfig)
     const ticket = await createSocketTicket(redis, apiKey, false)
-    await redis.quit()
 
     await createTestSocket(`/?ticket=${ticket}`, async (client) => {
       client.sendJson({
@@ -55,9 +49,7 @@ describe('Socket router', () => {
 
   it('should reject requests where a player is required but one hasn\'t been identified yet', async () => {
     const [apiKey] = await createAPIKeyAndToken([])
-    const redis = new Redis(redisConfig)
     const ticket = await createSocketTicket(redis, apiKey, false)
-    await redis.quit()
 
     await createTestSocket(`/?ticket=${ticket}`, async (client) => {
       client.sendJson({

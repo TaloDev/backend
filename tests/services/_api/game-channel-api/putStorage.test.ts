@@ -8,8 +8,6 @@ import GameChannelStorageProp from '../../../../src/entities/game-channel-storag
 import { randText, randWord } from '@ngneat/falso'
 import createSocketIdentifyMessage from '../../../utils/createSocketIdentifyMessage'
 import createTestSocket from '../../../utils/createTestSocket'
-import redisConfig from '../../../../src/config/redis.config'
-import Redis from 'ioredis'
 
 describe('Game channel API service - putStorage', () => {
   it('should create new storage props', async () => {
@@ -213,7 +211,6 @@ describe('Game channel API service - putStorage', () => {
       .set('x-talo-alias', String(player.aliases[0].id))
       .expect(200)
 
-    const redis = new Redis(redisConfig)
     const cachedValue = await redis.get(GameChannelStorageProp.getRedisKey(channel.id, 'score'))
     const parsedValue = JSON.parse(cachedValue!)
     expect(parsedValue.value).toBe('100')

@@ -3,6 +3,7 @@ import GameChannel from '../../src/entities/game-channel'
 import GameChannelFactory from '../fixtures/GameChannelFactory'
 import createSocketIdentifyMessage from '../utils/createSocketIdentifyMessage'
 import createTestSocket from '../utils/createTestSocket'
+import assert from 'node:assert'
 
 describe('Socket presence', () => {
   it('should set the player presence to online when identifying', async () => {

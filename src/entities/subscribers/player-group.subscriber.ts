@@ -47,17 +47,11 @@ export default class PlayerGroupSubscriber implements EventSubscriber {
 
     for (const player of playersMap.values()) {
       const redisKey = `checkMembership:${player.id}`
-      let lockCreated = false
+      let lockCreated: 'OK' | null = null
 
       try {
-        const setSuccess = await redis.set(redisKey, '1', 'EX', 30, 'NX')
-        if (setSuccess === 'OK') {
-          lockCreated = true
-          /* v8 ignore next 3 */
-          if (enableLogging) {
-            console.info(`Group memberships lock created for ${player.id}`)
-          }
-
+        lockCreated = await redis.set(redisKey, '1', 'EX', 30, 'NX')
+        if (lockCreated) {
           const shouldRefresh = await checkGroupMemberships(em, player)
           if (shouldRefresh) {
             const label = `Refreshing memberships for ${player.id}`
@@ -80,11 +74,6 @@ export default class PlayerGroupSubscriber implements EventSubscriber {
         captureException(err)
       } finally {
         if (lockCreated) {
-          /* v8 ignore next 3 */
-          if (enableLogging) {
-            console.info(`Group memberships lock released for ${player.id}`)
-          }
-
           await redis.del(redisKey)
         }
       }

@@ -9,7 +9,7 @@ import PlayerAlias from '../../../../src/entities/player-alias'
 import EventFactory from '../../../fixtures/EventFactory'
 import PlayerPresenceFactory from '../../../fixtures/PlayerPresenceFactory'
 import PlayerAuthActivityFactory from '../../../fixtures/PlayerAuthActivityFactory'
-import assert from 'assert'
+import assert from 'node:assert'
 
 describe('Player auth API service - delete', { timeout: 30_000 }, () => {
   it('should delete the account if the current password is correct', async () => {

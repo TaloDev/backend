@@ -1,8 +1,6 @@
 import { APIKeyScope } from '../../src/entities/api-key'
 import createSocketIdentifyMessage from '../utils/createSocketIdentifyMessage'
 import GameChannelFactory from '../fixtures/GameChannelFactory'
-import Redis from 'ioredis'
-import redisConfig from '../../src/config/redis.config'
 import createTestSocket from '../utils/createTestSocket'
 
 describe('Socket rate limiting', () => {
@@ -20,9 +18,7 @@ describe('Socket rate limiting', () => {
       await client.identify(identifyMessage)
 
       const conn = socket.findConnections((conn) => conn.playerAliasId === player.aliases[0].id)[0]
-      const redis = new Redis(redisConfig)
       await redis.set(`requests.${conn.rateLimitKey}`, 999)
-      await redis.quit()
 
       client.sendJson({
         req: 'v1.channels.message',
@@ -60,9 +56,7 @@ describe('Socket rate limiting', () => {
       const conn = socket.findConnections((conn) => conn.playerAliasId === player.aliases[0].id)[0]
       conn.rateLimitWarnings = 3
 
-      const redis = new Redis(redisConfig)
       await redis.set(`requests.${conn.rateLimitKey}`, 999)
-      await redis.quit()
 
       client.sendJson({
         req: 'v1.channels.message',

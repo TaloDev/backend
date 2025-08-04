@@ -17,6 +17,7 @@ import path from 'path'
 import { parse } from 'csv-parse'
 import * as unzipper from 'unzipper'
 import * as os from 'os'
+import assert from 'node:assert'
 
 async function parseCsvString(csvString: string): Promise<string[][]> {
   return new Promise((resolve, reject) => {

@@ -1,6 +1,7 @@
 import request from 'supertest'
 import { APIKeyScope } from '../../src/entities/api-key'
 import createAPIKeyAndToken from '../utils/createAPIKeyAndToken'
+import assert from 'node:assert'
 
 describe('API auth', () => {
   it('should accept a valid api request', async () => {

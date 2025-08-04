@@ -55,4 +55,27 @@ describe('API auth', () => {
 
     expect(res.body).toStrictEqual({ message: 'Please provide a valid token in the Authorization header' })
   })
+
+  it('should not update an api key last used at if the difference in minutes is less than 1', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_GAME_CONFIG])
+
+    await request(app)
+      .get('/v1/game-config')
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    await em.refresh(apiKey)
+    const lastUsedAt = apiKey.lastUsedAt
+    assert(lastUsedAt)
+
+    await request(app)
+      .get('/v1/game-config')
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    await em.refresh(apiKey)
+    assert(apiKey.lastUsedAt)
+
+    expect(apiKey.lastUsedAt.toISOString()).toBe(lastUsedAt.toISOString())
+  })
 })

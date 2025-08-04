@@ -23,8 +23,10 @@ export default defineConfig({
   metadataProvider: TsMorphMetadataProvider,
   extensions: [Migrator],
   pool: {
-    min: Number(process.env.MIKRO_ORM_POOL_MIN) || 2,
-    max: Number(process.env.MIKRO_ORM_POOL_MAX) || 10
+    min: Number(process.env.MIKRO_ORM_POOL_MIN) || 0,
+    max: Number(process.env.MIKRO_ORM_POOL_MAX) || 10,
+    idleTimeoutMillis: Number(process.env.MIKRO_ORM_POOL_IDLE_TIMEOUT) || undefined,
+    acquireTimeoutMillis: Number(process.env.MIKRO_ORM_POOL_ACQUIRE_TIMEOUT) || undefined
   },
   resultCache: {
     adapter: RedisCacheAdapter,

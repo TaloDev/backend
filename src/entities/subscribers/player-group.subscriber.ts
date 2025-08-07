@@ -14,6 +14,34 @@ const changeSetFilters: ((cs: ChangeSet<Partial<unknown>>) => boolean)[] = [
 
 let redis: ReturnType<typeof createRedisConnection>
 
+export async function checkGroupsForPlayers(em: EntityManager, players: Player[]) {
+  if (!redis) {
+    redis = createRedisConnection()
+  }
+
+  for (const player of players) {
+    const redisKey = `checkMembership:${player.id}`
+    let lockCreated: 'OK' | null = null
+
+    try {
+      lockCreated = await redis.set(redisKey, '1', 'EX', 30, 'NX')
+      if (lockCreated) {
+        const shouldRefresh = await checkGroupMemberships(em, player)
+        if (shouldRefresh) {
+          await player.groups.loadItems({ refresh: true })
+        }
+      }
+    } catch (err) {
+      console.error(`Failed checking memberships: ${(err as Error).message}`)
+      captureException(err)
+    } finally {
+      if (lockCreated) {
+        await redis.del(redisKey)
+      }
+    }
+  }
+}
+
 export default class PlayerGroupSubscriber implements EventSubscriber {
   async afterFlush(args: FlushEventArgs): Promise<void> {
     const em = (args.em as EntityManager).fork()
@@ -29,40 +57,13 @@ export default class PlayerGroupSubscriber implements EventSubscriber {
           const player = cs.entity.playerAlias.player
           playersMap.set(player.id, player)
         } else if (cs.entity instanceof PlayerGameStat) {
-          const player = cs.entity.player
-          playersMap.set(player.id, player)
+          // no op - we defer this to the FlushStatSnapshotsQueueHandler
         }
       }
     }
 
-    if (playersMap.size === 0) {
-      return
-    }
-
-    if (!redis) {
-      redis = createRedisConnection()
-    }
-
-    for (const player of playersMap.values()) {
-      const redisKey = `checkMembership:${player.id}`
-      let lockCreated: 'OK' | null = null
-
-      try {
-        lockCreated = await redis.set(redisKey, '1', 'EX', 30, 'NX')
-        if (lockCreated) {
-          const shouldRefresh = await checkGroupMemberships(em, player)
-          if (shouldRefresh) {
-            await player.groups.loadItems({ refresh: true })
-          }
-        }
-      } catch (err) {
-        console.error(`Failed checking memberships: ${(err as Error).message}`)
-        captureException(err)
-      } finally {
-        if (lockCreated) {
-          await redis.del(redisKey)
-        }
-      }
+    if (playersMap.size > 0) {
+      await checkGroupsForPlayers(em, Array.from(playersMap.values()))
     }
   }
 }

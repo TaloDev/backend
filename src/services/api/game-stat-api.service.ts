@@ -13,7 +13,6 @@ import Player from '../../entities/player'
 import { buildDateValidationSchema } from '../../lib/dates/dateValidationSchema'
 import PlayerAlias from '../../entities/player-alias'
 import { TraceService } from '../../lib/tracing/trace-service'
-import { getResultCacheOptions } from '../../lib/perf/getResultCacheOptions'
 import { FlushStatSnapshotsQueueHandler } from '../../lib/queues/game-metrics/flush-stat-snapshots-queue-handler'
 
 @TraceService()
@@ -104,13 +103,10 @@ export default class GameStatAPIService extends APIService {
     const stat: GameStat = req.ctx.state.stat
     const alias: PlayerAlias = req.ctx.state.alias
 
-    const playerStatCacheKey = `put-stat-player-stat-${alias.player.id}-${stat.id}`
-    const statCacheKey = `stat-api-policy-stat-${stat.internalName}`
-
     let playerStat = await em.repo(PlayerGameStat).findOne({
       player: alias.player,
       stat
-    }, getResultCacheOptions(playerStatCacheKey))
+    })
 
     if (playerStat && differenceInSeconds(new Date(), playerStat.createdAt) < stat.minTimeBetweenUpdates) {
       req.ctx.throw(400, `Stat cannot be updated more often than every ${stat.minTimeBetweenUpdates} seconds`)
@@ -143,7 +139,6 @@ export default class GameStatAPIService extends APIService {
 
     playerStat.value += change
     if (stat.global) stat.globalValue += change
-    await Promise.all([playerStatCacheKey, statCacheKey].map((key) => em.clearCache(key)))
 
     const snapshot = new PlayerGameStatSnapshot()
     snapshot.construct(alias, playerStat)

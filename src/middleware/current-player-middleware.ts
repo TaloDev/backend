@@ -22,6 +22,6 @@ export default async function currentPlayerMiddleware(ctx: Context, next: Next):
   await next()
 }
 
-export function getAliasFromIdentifyCacheKey(service: string, identifier: string) {
-  return `identify-${service}-${identifier}`
+export function getAliasFromIdentifyCacheKey(gameId: number, service: string, identifier: string) {
+  return `identify-${gameId}-${service}-${identifier}`
 }

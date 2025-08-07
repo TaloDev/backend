@@ -23,21 +23,22 @@ export default async function apiKeyMiddleware(ctx: Context, next: Next): Promis
     setTraceAttributes({
       game_id: apiKey.game.id
     })
+
+    const now = new Date()
+    ctx.res.on('finish', async () => {
+      if (!apiKey.revokedAt) {
+        const key = `api-key:last-used:${apiKey.id}`
+        const result = await redis.set(key, now.getTime(), 'EX', 60, 'NX')
+        if (result === 'OK') {
+          await em.repo(APIKey).nativeUpdate({
+            id: apiKey.id
+          }, {
+            lastUsedAt: now
+          })
+        }
+      }
+    })
   }
 
   await next()
-
-  if (apiKey && !apiKey.revokedAt) {
-    const key = `api-key:last-used:${apiKey.id}`
-    const now = new Date()
-
-    const result = await redis.set(key, now.getTime(), 'EX', 60, 'NX')
-    if (result === 'OK') {
-      await em.repo(APIKey).nativeUpdate({
-        id: apiKey.id
-      }, {
-        lastUsedAt: now
-      })
-    }
-  }
 }

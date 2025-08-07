@@ -100,6 +100,10 @@ export default class PlayerGroup {
     this.game = game
   }
 
+  static getCacheKey(game: Game) {
+    return `groups-for-game-${game.id}`
+  }
+
   private buildCondition(em: EntityManager, query: QueryBuilder<Player>, rule: PlayerGroupRule) {
     query.where(rule.getQuery(em), this.ruleMode)
   }

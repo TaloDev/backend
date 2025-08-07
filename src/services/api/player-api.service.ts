@@ -13,7 +13,7 @@ import PlayerGameStat from '../../entities/player-game-stat'
 import checkScope from '../../policies/checkScope'
 import Integration, { IntegrationType } from '../../entities/integration'
 import { validateAuthSessionToken } from '../../middleware/player-auth-middleware'
-import { setCurrentPlayerState } from '../../middleware/current-player-middleware'
+import { getAliasFromIdentifyCacheKey, setCurrentPlayerState } from '../../middleware/current-player-middleware'
 import { ClickHouseClient } from '@clickhouse/client'
 import { TraceService } from '../../lib/tracing/trace-service'
 import { getResultCacheOptions } from '../../lib/perf/getResultCacheOptions'
@@ -51,7 +51,7 @@ export async function findAliasFromIdentifyRequest(
       game: key.game
     }
   }, {
-    ...getResultCacheOptions(`identify-${service}-${identifier}`),
+    ...getResultCacheOptions(getAliasFromIdentifyCacheKey(service, identifier)),
     populate: ['player.auth']
   })
 }

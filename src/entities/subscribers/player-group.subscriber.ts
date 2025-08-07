@@ -6,8 +6,6 @@ import PlayerGameStat from '../player-game-stat'
 import { createRedisConnection } from '../../config/redis.config'
 import { captureException } from '@sentry/node'
 
-const enableLogging = process.env.NODE_ENV !== 'test'
-
 const changeSetFilters: ((cs: ChangeSet<Partial<unknown>>) => boolean)[] = [
   (cs) => [ChangeSetType.CREATE, ChangeSetType.UPDATE].includes(cs.type) && cs.entity instanceof Player,
   (cs) => [ChangeSetType.CREATE, ChangeSetType.UPDATE].includes(cs.type) && cs.entity instanceof LeaderboardEntry,
@@ -54,19 +52,7 @@ export default class PlayerGroupSubscriber implements EventSubscriber {
         if (lockCreated) {
           const shouldRefresh = await checkGroupMemberships(em, player)
           if (shouldRefresh) {
-            const label = `Refreshing memberships for ${player.id}`
-
-            /* v8 ignore next 3 */
-            if (enableLogging) {
-              console.time(label)
-            }
-
             await player.groups.loadItems({ refresh: true })
-
-            /* v8 ignore next 3 */
-            if (enableLogging) {
-              console.timeEnd(label)
-            }
           }
         }
       } catch (err) {

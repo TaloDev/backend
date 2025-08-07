@@ -28,7 +28,7 @@ services:
       - data:/var/lib/mysql
     
   redis:
-    image: arm64v8/redis:7-alpine
+    image: arm64v8/redis:8-alpine
     command: redis-server --requirepass ${REDIS_PASSWORD}
     restart: unless-stopped
     ports:

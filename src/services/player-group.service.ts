@@ -65,6 +65,7 @@ export default class PlayerGroupService extends Service {
     })
 
     await em.persistAndFlush(group)
+    await em.clearCache(PlayerGroup.getCacheKey(group.game))
 
     return {
       status: 200,
@@ -102,6 +103,7 @@ export default class PlayerGroupService extends Service {
     })
 
     await em.flush()
+    await em.clearCache(PlayerGroup.getCacheKey(group.game))
 
     return {
       status: 200,
@@ -188,6 +190,7 @@ export default class PlayerGroupService extends Service {
 
     await em.getRepository(UserPinnedGroup).nativeDelete({ group: req.ctx.state.group })
     await em.removeAndFlush(req.ctx.state.group)
+    await em.clearCache(PlayerGroup.getCacheKey(req.ctx.state.game))
 
     return {
       status: 204

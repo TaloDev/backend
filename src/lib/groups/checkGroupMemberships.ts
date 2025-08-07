@@ -25,7 +25,7 @@ class PlayerGroupMember {
 export default async function checkGroupMemberships(em: EntityManager, player: Player): Promise<boolean> {
   const groups = await em.repo(PlayerGroup).find({
     game: player.game
-  }, getResultCacheOptions(`groups-for-memberships-${player.game.id}`, 1000))
+  }, getResultCacheOptions(PlayerGroup.getCacheKey(player.game)))
 
   if (groups.length === 0) {
     return false
@@ -38,34 +38,18 @@ export default async function checkGroupMemberships(em: EntityManager, player: P
     console.time(label)
   }
 
-  let shouldRefresh = false
-
   for (const group of groups) {
-    await group.members.init({ ref: true })
-    const playerIsEligible = await group.isPlayerEligible(em, player)
-    const playerCurrentlyInGroup = group.members.getItems().some((member) => member.id === player.id)
+    const eligible = await group.isPlayerEligible(em, player)
+    const groupMember = new PlayerGroupMember(player, group).toJSON()
 
-    const eligibleButNotInGroup = playerIsEligible && !playerCurrentlyInGroup
-    const notEligibleButInGroup = !playerIsEligible && playerCurrentlyInGroup
-
-    if (eligibleButNotInGroup || notEligibleButInGroup) {
-      shouldRefresh = true
-    }
-
-    const groupMember = new PlayerGroupMember(player, group)
-
-    if (eligibleButNotInGroup) {
-      /* v8 ignore next 3 */
-      if (enableLogging) {
-        console.info(`${player.id} is eligible for ${group.id}`)
-      }
-      await em.insert('player_group_members', groupMember.toJSON())
-    } else if (notEligibleButInGroup) {
-      /* v8 ignore next 3 */
-      if (enableLogging) {
-        console.info(`${player.id} is no longer eligible for ${group.id}`)
-      }
-      await em.nativeDelete('player_group_members', groupMember.toJSON())
+    if (eligible) {
+      await em.qb('player_group_members')
+        .insert(groupMember)
+        .onConflict()
+        .ignore()
+        .execute()
+    } else {
+      await em.nativeDelete('player_group_members', groupMember)
     }
   }
 
@@ -74,5 +58,5 @@ export default async function checkGroupMemberships(em: EntityManager, player: P
     console.timeEnd(label)
   }
 
-  return shouldRefresh
+  return true
 }

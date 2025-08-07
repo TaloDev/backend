@@ -6,9 +6,25 @@ import { setTraceAttributes } from '@hyperdx/node-opentelemetry'
 import APIKey from '../entities/api-key'
 import Redis from 'ioredis'
 
-export default async function apiKeyMiddleware(ctx: Context, next: Next): Promise<void> {
+async function updateLastUsedAt(ctx: Context, apiKey: APIKey, lastUsedAt: Date) {
   const em: EntityManager = ctx.em
   const redis: Redis = ctx.redis
+
+  if (!apiKey.revokedAt) {
+    const key = `api-key:last-used:${apiKey.id}`
+    const result = await redis.set(key, lastUsedAt.getTime(), 'EX', 60, 'NX')
+    if (result === 'OK') {
+      await em.repo(APIKey).nativeUpdate({
+        id: apiKey.id
+      }, {
+        lastUsedAt
+      })
+    }
+  }
+}
+
+export default async function apiKeyMiddleware(ctx: Context, next: Next): Promise<void> {
+
 
   if (!isAPIRoute(ctx)) {
     return await next()
@@ -25,19 +41,16 @@ export default async function apiKeyMiddleware(ctx: Context, next: Next): Promis
     })
 
     const now = new Date()
-    ctx.res.on('finish', async () => {
-      if (!apiKey.revokedAt) {
-        const key = `api-key:last-used:${apiKey.id}`
-        const result = await redis.set(key, now.getTime(), 'EX', 60, 'NX')
-        if (result === 'OK') {
-          await em.repo(APIKey).nativeUpdate({
-            id: apiKey.id
-          }, {
-            lastUsedAt: now
-          })
-        }
-      }
-    })
+    /* v8 ignore start */
+    if (process.env.NODE_ENV !== 'test') {
+      ctx.res.on('finish', async () => {
+        await updateLastUsedAt(ctx, apiKey, now)
+      })
+    } else {
+      // in tests the connection would already be closed after the response is sent
+      await updateLastUsedAt(ctx, apiKey, now)
+    }
+    /* v8 ignore stop */
   }
 
   await next()

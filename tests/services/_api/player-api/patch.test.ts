@@ -311,4 +311,44 @@ describe('Player API service - patch', () => {
     expect(checkGroupMembershipsSpy).toHaveBeenCalledTimes(2)
     checkGroupMembershipsSpy.mockRestore()
   })
+
+  it('should handle checkGroupMemberships errors', async () => {
+    const checkGroupMembershipsSpy = vi.spyOn(checkGroupMemberships, 'default')
+      .mockResolvedValueOnce(true)
+      .mockRejectedValueOnce(new Error('unknown'))
+    const consoleSpy = vi.spyOn(console, 'error')
+
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_PLAYERS])
+
+    const rule = new PlayerGroupRule(PlayerGroupRuleName.GTE, 'props.currentLevel')
+    rule.castType = PlayerGroupRuleCastType.DOUBLE
+    rule.operands = ['60']
+
+    const group = await new PlayerGroupFactory().construct(apiKey.game).state(() => ({ rules: [rule] })).one()
+
+    const player = await new PlayerFactory([apiKey.game]).state((player) => ({
+      props: new Collection<PlayerProp>(player, [
+        new PlayerProp(player, 'collectibles', '0'),
+        new PlayerProp(player, 'currentLevel', '59')
+      ])
+    })).one()
+    await em.persistAndFlush([group, player])
+
+    await request(app)
+      .patch(`/v1/players/${player.id}`)
+      .send({
+        props: [
+          {
+            key: 'currentLevel',
+            value: '60'
+          }
+        ]
+      })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    expect(consoleSpy).toHaveBeenCalledWith('Failed checking memberships: unknown')
+    checkGroupMembershipsSpy.mockRestore()
+    consoleSpy.mockRestore()
+  })
 })

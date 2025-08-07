@@ -77,7 +77,7 @@ export default class PlayerAuth {
     const keysToClear: string[] = [getAuthMiddlewarePlayerKey(this.player.id)]
     if (alias) {
       keysToClear.push(getAuthMiddlewareAliasKey(alias.id))
-      keysToClear.push(getAliasFromIdentifyCacheKey(alias.service, alias.identifier))
+      keysToClear.push(getAliasFromIdentifyCacheKey(this.player.game.id, alias.service, alias.identifier))
     }
 
     await Promise.all(keysToClear.map((key) => em.clearCache(key)))

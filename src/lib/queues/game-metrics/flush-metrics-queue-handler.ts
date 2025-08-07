@@ -6,16 +6,17 @@ import { captureException } from '@sentry/node'
 import { ClickHouseClient } from '@clickhouse/client'
 
 type FlushFunc<T> = (clickhouse: ClickHouseClient, values: T[]) => Promise<void>
-type HandlerOptions = {
-  logsInTests: boolean
+type HandlerOptions<T> = {
+  logsInTests?: boolean
+  postFlush?: (values: T[]) => Promise<void>
 }
 
 export class FlushMetricsQueueHandler<T extends { id: string }> {
   private queue: Queue
   private buffer: Map<string, T> = new Map()
-  private options: HandlerOptions
+  private options: HandlerOptions<T>
 
-  constructor(private metricName: string, private flushFunc: FlushFunc<T>, options?: HandlerOptions) {
+  constructor(private metricName: string, private flushFunc: FlushFunc<T>, options?: HandlerOptions<T>) {
     this.metricName = metricName
     this.flushFunc = flushFunc
     this.options = options ?? { logsInTests: true }
@@ -46,7 +47,7 @@ export class FlushMetricsQueueHandler<T extends { id: string }> {
     setTraceAttributes({ metricName: this.metricName, bufferSize })
 
     /* v8 ignore start */
-    if (process.env.NODE_ENV !== 'test' || this.options.logsInTests) {
+    if (process.env.NODE_ENV !== 'test' || (this.options.logsInTests ?? true)) {
       console.info(`Flushing ${bufferSize} ${this.metricName.replace('-', ' ')}...`)
     }
     /* v8 ignore stop */
@@ -56,6 +57,7 @@ export class FlushMetricsQueueHandler<T extends { id: string }> {
     try {
       await this.flushFunc(clickhouse, values)
       await clickhouse.close()
+      await this.options.postFlush?.(values)
     } catch (err) {
       captureException(err)
     }

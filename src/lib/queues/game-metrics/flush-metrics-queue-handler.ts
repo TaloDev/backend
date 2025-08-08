@@ -23,7 +23,7 @@ export class FlushMetricsQueueHandler<T extends { id: string }> {
 
     this.queue = createQueue(`flush-${metricName}`, async () => {
       /* v8 ignore next */
-      this.handle()
+      await this.handle()
     })
 
     /* v8 ignore next 3 */

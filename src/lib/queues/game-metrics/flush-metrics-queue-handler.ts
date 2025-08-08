@@ -31,9 +31,12 @@ export class FlushMetricsQueueHandler<T extends { id: string }> {
       ? Number(process.env.GAME_METRICS_FLUSH_INTERVAL)
       : 30_000
 
+    const jitter = Math.floor(Math.random() * 10_000) - 5_000 // -5000 to +5000ms
+    const intervalWithJitter = Math.max(flushInterval + jitter, 25_000)
+
     this.queue.upsertJobScheduler(
       `flush-${metricName}-scheduler`,
-      { every: flushInterval },
+      { every: intervalWithJitter },
       { name: `flush-${metricName}-job` }
     )
   }

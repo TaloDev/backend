@@ -19,7 +19,7 @@ export async function archiveEntriesForLeaderboard(em: EntityManager, leaderboar
   }
   /* v8 ignore stop */
 
-  const entries = await em.getRepository(LeaderboardEntry).find({ leaderboard })
+  const entries = await em.getRepository(LeaderboardEntry).find({ leaderboard, deletedAt: null })
 
   const refreshCheckers = {
     [LeaderboardRefreshInterval.DAILY]: (date: Date) => isToday(date),

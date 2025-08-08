@@ -14,7 +14,8 @@ export class FlushStatSnapshotsQueueHandler extends FlushMetricsQueueHandler<Pla
       })
     }, {
       postFlush: async (values) => {
-        const playerSet = new Set(values.map((snapshot) => snapshot.playerAlias.player))
+        const playerSet = this.buildPlayerSet(values)
+
         if (playerSet.size > 0) {
           /* v8 ignore next 3 */
           if (process.env.NODE_ENV !== 'test') {
@@ -23,10 +24,16 @@ export class FlushStatSnapshotsQueueHandler extends FlushMetricsQueueHandler<Pla
 
           const orm = await MikroORM.init(ormConfig)
           const em = orm.em.fork()
-          await checkGroupsForPlayers(em, Array.from(playerSet.values()))
+          await checkGroupsForPlayers(em, Array.from(playerSet))
           await orm.close()
         }
       }
     })
+  }
+
+  buildPlayerSet(values: PlayerGameStatSnapshot[]) {
+    const players = values.map((snapshot) => snapshot.playerAlias.player)
+    const playerIdSet = new Set(players.map((player) => player.id))
+    return new Set(players.filter((player) => playerIdSet.has(player.id)))
   }
 }

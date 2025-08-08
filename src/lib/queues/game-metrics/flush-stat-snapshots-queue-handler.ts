@@ -3,6 +3,7 @@ import PlayerGameStatSnapshot from '../../../entities/player-game-stat-snapshot'
 import { FlushMetricsQueueHandler } from './flush-metrics-queue-handler'
 import ormConfig from '../../../config/mikro-orm.config'
 import { checkGroupsForPlayers } from '../../../entities/subscribers/player-group.subscriber'
+import Player from '../../../entities/player'
 
 export class FlushStatSnapshotsQueueHandler extends FlushMetricsQueueHandler<PlayerGameStatSnapshot> {
   constructor() {
@@ -32,8 +33,10 @@ export class FlushStatSnapshotsQueueHandler extends FlushMetricsQueueHandler<Pla
   }
 
   buildPlayerSet(values: PlayerGameStatSnapshot[]) {
-    const players = values.map((snapshot) => snapshot.playerAlias.player)
-    const playerIdSet = new Set(players.map((player) => player.id))
-    return new Set(players.filter((player) => playerIdSet.has(player.id)))
+    const playerMap = new Map<string, Player>()
+    for (const snapshot of values) {
+      playerMap.set(snapshot.playerAlias.player.id, snapshot.playerAlias.player)
+    }
+    return new Set(playerMap.values())
   }
 }

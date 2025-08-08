@@ -57,7 +57,9 @@ export class FlushMetricsQueueHandler<T extends { id: string }> {
     try {
       await this.flushFunc(clickhouse, values)
       await clickhouse.close()
-      await this.options.postFlush?.(values)
+      if (this.options.postFlush) {
+        await this.options.postFlush(values)
+      }
     } catch (err) {
       console.error(err)
       captureException(err)

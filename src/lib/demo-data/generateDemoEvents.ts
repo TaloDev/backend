@@ -82,7 +82,7 @@ async function getEventCount(clickhouse: ClickHouseClient, game: Game, startDate
   const startDateFormatted = formatDateForClickHouse(startDate)
 
   const query = `
-    SELECT count() as count
+    SELECT count() AS count
     FROM events
     WHERE game_id = ${game.id}
       AND created_at >= '${startDateFormatted}'

@@ -5,6 +5,7 @@ import ormConfig from '../config/mikro-orm.config'
 import LeaderboardEntry from '../entities/leaderboard-entry'
 import { isToday, isThisWeek, isThisMonth, isThisYear } from 'date-fns'
 import triggerIntegrations from '../lib/integrations/triggerIntegrations'
+import { streamCursor } from '../lib/perf/streamByCursor'
 
 export async function archiveEntriesForLeaderboard(em: EntityManager, leaderboard: Leaderboard) {
   /* v8 ignore start */
@@ -19,8 +20,6 @@ export async function archiveEntriesForLeaderboard(em: EntityManager, leaderboar
   }
   /* v8 ignore stop */
 
-  const entries = await em.getRepository(LeaderboardEntry).find({ leaderboard })
-
   const refreshCheckers = {
     [LeaderboardRefreshInterval.DAILY]: (date: Date) => isToday(date),
     [LeaderboardRefreshInterval.WEEKLY]: (date: Date) => isThisWeek(date, { weekStartsOn: 1 }),
@@ -29,7 +28,19 @@ export async function archiveEntriesForLeaderboard(em: EntityManager, leaderboar
   }
 
   const shouldKeepEntry = refreshCheckers[leaderboard.refreshInterval]
-  for (const entry of entries) {
+
+  const entryStream = streamCursor<LeaderboardEntry>(async (batchSize, after) => {
+    return em.repo(LeaderboardEntry).findByCursor({
+      leaderboard,
+      deletedAt: null
+    }, {
+      first: batchSize,
+      after,
+      orderBy: { id: 'asc' }
+    })
+  }, 100)
+
+  for await (const entry of entryStream) {
     if (!shouldKeepEntry(entry.createdAt)) {
       entry.deletedAt = new Date()
 

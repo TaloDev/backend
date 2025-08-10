@@ -5,6 +5,7 @@ import PlayerGameStat from './player-game-stat'
 import { EntityManager } from '@mikro-orm/mysql'
 import ClickHouseEntity from '../lib/clickhouse/clickhouse-entity'
 import PlayerAlias from './player-alias'
+import assert from 'node:assert'
 
 export type ClickHousePlayerGameStatSnapshot = {
   id: string
@@ -24,6 +25,55 @@ export default class PlayerGameStatSnapshot extends ClickHouseEntity<ClickHouseP
   value!: number
   globalValue!: number
   createdAt: Date = new Date()
+
+  static async massHydrate(em: EntityManager, data: ClickHousePlayerGameStatSnapshot[]): Promise<PlayerGameStatSnapshot[]> {
+    const playerAliases = await em.repo(PlayerAlias).find({
+      id: {
+        $in: data.map((snapshot) => snapshot.player_alias_id)
+      }
+    })
+
+    const playerAliasesMap = new Map<number, PlayerAlias>()
+    playerAliases.forEach((alias) => playerAliasesMap.set(alias.id, alias))
+
+    const playerIds = Array.from(new Set(playerAliases.map((alias) => alias.player.id)))
+    const gameStatIds = Array.from(new Set(data.map((snapshot) => snapshot.game_stat_id)))
+
+    const playerStats = await em.repo(PlayerGameStat).find({
+      player: {
+        $in: playerIds
+      },
+      stat: {
+        $in: gameStatIds
+      }
+    })
+
+    const playerStatsMap = new Map<string, PlayerGameStat>()
+    playerStats.forEach((stat) => playerStatsMap.set(`${stat.player.id}:${stat.stat.id}`, stat))
+
+    return data.map((snapshotData) => {
+      const playerAlias = playerAliasesMap.get(snapshotData.player_alias_id)
+      if (!playerAlias) {
+        throw new Error(`Player alias with ID ${snapshotData.player_alias_id} not found.`)
+      }
+
+      const playerStatKey = `${playerAlias.player.id}:${snapshotData.game_stat_id}`
+      const playerGameStat = playerStatsMap.get(playerStatKey)
+      if (!playerGameStat) {
+        throw new Error(`PlayerGameStat with key ${playerStatKey} not found.`)
+      }
+
+      const snapshot = new PlayerGameStatSnapshot()
+      snapshot.construct(playerAlias, playerGameStat)
+      snapshot.id = snapshotData.id
+      snapshot.change = snapshotData.change
+      snapshot.value = snapshotData.value
+      snapshot.globalValue = snapshotData.global_value
+      snapshot.createdAt = new Date(snapshotData.created_at)
+
+      return snapshot
+    })
+  }
 
   construct(playerAlias: PlayerAlias, playerStat: PlayerGameStat): this {
     this.playerAlias = playerAlias
@@ -48,11 +98,19 @@ export default class PlayerGameStatSnapshot extends ClickHouseEntity<ClickHouseP
   }
 
   async hydrate(em: EntityManager, data: ClickHousePlayerGameStatSnapshot): Promise<this> {
-    const playerAlias = await em.repo(PlayerAlias).findOneOrFail(data.player_alias_id)
     const playerStat = await em.repo(PlayerGameStat).findOneOrFail({
-      player: playerAlias.player,
+      player: {
+        aliases: {
+          $in: [data.player_alias_id]
+        }
+      },
       stat: data.game_stat_id
+    }, {
+      populate: ['player.aliases']
     })
+
+    const playerAlias = playerStat.player.aliases.find((alias) => alias.id === data.player_alias_id)
+    assert(playerAlias)
 
     this.construct(playerAlias, playerStat)
     this.id = data.id

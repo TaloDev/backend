@@ -205,7 +205,7 @@ export default class GameStatAPIService extends APIService {
     }).then((res) => res.json<ClickHousePlayerGameStatSnapshot & { count: string }>())
 
     const count = Number(snapshots[0]?.count ?? 0)
-    const history = await Promise.all(snapshots.map((snapshot) => new PlayerGameStatSnapshot().hydrate(em, snapshot)))
+    const history = await PlayerGameStatSnapshot.massHydrate(em, snapshots)
 
     return {
       status: 200,
@@ -271,7 +271,7 @@ export default class GameStatAPIService extends APIService {
       format: 'JSONEachRow'
     }).then((res) => res.json<ClickHousePlayerGameStatSnapshot>())
 
-    const history = await Promise.all(snapshots.map((snapshot) => new PlayerGameStatSnapshot().hydrate(em, snapshot)))
+    const history = await PlayerGameStatSnapshot.massHydrate(em, snapshots)
     const [count, globalValue] = await stat.getGlobalValueMetrics(clickhouse, whereConditions)
     const playerValue = await stat.getPlayerValueMetrics(clickhouse, whereConditions)
 

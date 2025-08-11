@@ -21,6 +21,7 @@ import buildErrorResponse from '../lib/errors/buildErrorResponse'
 import { PropSizeError } from '../lib/errors/propSizeError'
 import { TraceService } from '../lib/tracing/trace-service'
 import { captureException } from '@sentry/node'
+import { getResultCacheOptions } from '../lib/perf/getResultCacheOptions'
 
 const propsValidation = async (val: unknown): Promise<ValidationCondition[]> => [
   {
@@ -59,7 +60,10 @@ export default class PlayerService extends Service {
     const { aliases, props } = req.body as PlayerPostBody
     const em: EntityManager = req.ctx.em
 
-    const game = await em.getRepository(Game).findOneOrFail(req.ctx.state.game, { populate: ['organisation'] })
+    const game = await em.getRepository(Game).findOneOrFail(req.ctx.state.game, {
+      ...getResultCacheOptions(`post-player-game-${req.ctx.state.game.id}`),
+      populate: ['organisation']
+    })
     await checkPricingPlanPlayerLimit(req, game.organisation)
 
     const player = new Player(game)

@@ -24,8 +24,6 @@ async function updateLastUsedAt(ctx: Context, apiKey: APIKey, lastUsedAt: Date) 
 }
 
 export default async function apiKeyMiddleware(ctx: Context, next: Next): Promise<void> {
-
-
   if (!isAPIRoute(ctx)) {
     return await next()
   }

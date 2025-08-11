@@ -3,6 +3,7 @@ import { Required, ValidationCondition, Request } from 'koa-clay'
 import Game from './game'
 
 @Entity()
+@Index({ properties: ['game', 'internalName'] })
 export default class GameFeedbackCategory {
   @PrimaryKey()
   id!: number
@@ -24,7 +25,6 @@ export default class GameFeedbackCategory {
       ]
     }
   })
-  @Index()
   @Property()
   internalName!: string
 

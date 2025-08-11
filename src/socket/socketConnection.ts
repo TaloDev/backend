@@ -13,6 +13,7 @@ import { SocketErrorCode } from './messages/socketError'
 import SocketTicket from './socketTicket'
 import { setTraceAttributes } from '@hyperdx/node-opentelemetry'
 import { getSocketTracer } from './socketTracer'
+import { getResultCacheOptions } from '../lib/perf/getResultCacheOptions'
 
 export default class SocketConnection {
   alive: boolean = true
@@ -36,7 +37,7 @@ export default class SocketConnection {
   async getPlayerAlias(): Promise<PlayerAlias | null> {
     return RequestContext.getEntityManager()!
       .getRepository(PlayerAlias)
-      .findOne(this.playerAliasId)
+      .findOne(this.playerAliasId, getResultCacheOptions(`connection-alias-${this.playerAliasId}`))
   }
 
   getAPIKeyId(): number {

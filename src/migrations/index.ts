@@ -52,6 +52,7 @@ import { AddPlayerGroupQueryIndexes } from './20250705074341AddPlayerGroupQueryI
 import { AddPurgeRetentionDaysColumns } from './20250709083216AddPurgeRetentionDaysColumns'
 import { CreateGameFeedbackPropTable } from './20250719225216CreateGameFeedbackPropTable'
 import { AddPlayerDevBuildColumn } from './20250725144253AddPlayerDevBuildColumn'
+import { PlayerAliasIdentifierServiceIndex } from './20250811004719PlayerAliasIdentifierServiceIndex'
 
 export default [
   {
@@ -269,5 +270,9 @@ export default [
   {
     name: 'AddPlayerDevBuildColumn',
     class: AddPlayerDevBuildColumn
+  },
+  {
+    name: 'PlayerAliasIdentifierServiceIndex',
+    class: PlayerAliasIdentifierServiceIndex
   }
 ]

@@ -17,6 +17,7 @@ export enum LeaderboardRefreshInterval {
 }
 
 @Entity()
+@Index({ properties: ['game', 'internalName'] })
 export default class Leaderboard {
   @PrimaryKey()
   id!: number
@@ -38,7 +39,6 @@ export default class Leaderboard {
       ]
     }
   })
-  @Index()
   @Property()
   internalName!: string
 

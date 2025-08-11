@@ -23,6 +23,7 @@ type PlayerValueMetrics = {
 }
 
 @Entity()
+@Index({ properties: ['game', 'internalName'] })
 export default class GameStat {
   @PrimaryKey()
   id!: number
@@ -44,7 +45,6 @@ export default class GameStat {
       ]
     }
   })
-  @Index()
   @Property()
   internalName!: string
 

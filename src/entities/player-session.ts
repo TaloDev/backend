@@ -4,6 +4,7 @@ import { EntityManager } from '@mikro-orm/mysql'
 import ClickHouseEntity from '../lib/clickhouse/clickhouse-entity'
 import Player from './player'
 import Game from './game'
+import { getResultCacheOptions } from '../lib/perf/getResultCacheOptions'
 
 export type ClickHousePlayerSession = {
   id: string
@@ -46,7 +47,10 @@ export default class PlayerSession extends ClickHouseEntity<ClickHousePlayerSess
   }
 
   async hydrate(em: EntityManager, data: ClickHousePlayerSession): Promise<this> {
-    const player = await em.repo(Player).findOneOrFail(data.player_id, { populate: ['game'] })
+    const player = await em.repo(Player).findOneOrFail(data.player_id, {
+      ...getResultCacheOptions(`hydrate-player-session-${data.player_id}`, 60_000),
+      populate: ['game']
+    })
 
     this.construct(player)
     this.id = data.id

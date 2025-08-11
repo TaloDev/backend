@@ -1353,6 +1353,15 @@
           "unique": false
         },
         {
+          "keyName": "idx_player_alias_service_identifier",
+          "columnNames": [],
+          "composite": false,
+          "constraint": false,
+          "primary": false,
+          "unique": false,
+          "expression": "alter table `player_alias` add index `idx_player_alias_service_identifier`(`service`(191), `identifier`(191))"
+        },
+        {
           "keyName": "PRIMARY",
           "columnNames": [
             "id"

@@ -1,4 +1,4 @@
-import { Collection, Entity, ManyToMany, ManyToOne, PrimaryKey, Property } from '@mikro-orm/mysql'
+import { Collection, Entity, Index, ManyToMany, ManyToOne, PrimaryKey, Property } from '@mikro-orm/mysql'
 import Player from './player'
 import Redis from 'ioredis'
 import { v4 } from 'uuid'
@@ -13,7 +13,11 @@ export enum PlayerAliasService {
   TALO = 'talo'
 }
 
+const serviceIdentifierIndexName = 'idx_player_alias_service_identifier'
+const serviceIdentifierIndexExpr = `alter table \`player_alias\` add index \`${serviceIdentifierIndexName}\`(\`service\`(191), \`identifier\`(191))`
+
 @Entity()
+@Index({ name: serviceIdentifierIndexName, expression: serviceIdentifierIndexExpr })
 export default class PlayerAlias {
   @PrimaryKey()
   id!: number

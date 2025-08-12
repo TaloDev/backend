@@ -11,7 +11,7 @@ export default class EventAPIPolicy extends Policy {
       player: {
         game: this.getAPIKey().game
       }
-    }, getResultCacheOptions(`event-api-policy-alias-${this.ctx.state.currentAliasId}`))
+    }, getResultCacheOptions(`event-api-policy-alias-${this.ctx.state.currentAliasId}`, 60_000))
 
     if (!this.ctx.state.alias) return new PolicyDenial({ message: 'Player not found' }, 404)
     return await this.hasScope(APIKeyScope.WRITE_EVENTS)

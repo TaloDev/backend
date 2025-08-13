@@ -10,9 +10,9 @@ import { PropSizeError } from '../../lib/errors/propSizeError'
 import { sanitiseProps, testPropSize } from '../../lib/props/sanitiseProps'
 import { TraceService } from '../../lib/tracing/trace-service'
 import Redis from 'ioredis'
-import { getResultCacheOptions } from '../../lib/perf/getResultCacheOptions'
 import { pageValidation } from '../../lib/pagination/pageValidation'
 import { DEFAULT_PAGE_SIZE } from '../../lib/pagination/itemsPerPage'
+import Player from '../../entities/player'
 
 type GameChannelStorageTransaction = {
   upsertedProps: GameChannelStorageProp[]
@@ -300,7 +300,15 @@ export default class GameChannelAPIService extends APIService {
   @HasPermission(GameChannelAPIPolicy, 'members')
   async members(req: Request): Promise<Response> {
     const itemsPerPage = DEFAULT_PAGE_SIZE
-    const { page = 0 } = req.query
+    const {
+      page = 0,
+      playerId,
+      aliasId,
+      identifier,
+      playerPropKey,
+      playerPropValue,
+      playerGroupId
+    } = req.query
     const em: EntityManager = req.ctx.em
 
     const channel: GameChannel = req.ctx.state.channel
@@ -310,13 +318,49 @@ export default class GameChannelAPIService extends APIService {
       req.ctx.throw(403, 'This player is not a member of the channel')
     }
 
-    const [members, count] = await em.repo(PlayerAlias).findAndCount({
+    const playerFilter: FilterQuery<Player> = req.ctx.state.includeDevData ? {} : { devBuild: false }
+
+    if (playerId) {
+      playerFilter.id = playerId
+    }
+    if (playerPropKey) {
+      if (playerPropValue) {
+        playerFilter.props = {
+          $some: {
+            key: playerPropKey,
+            value: playerPropValue
+          }
+        }
+      } else {
+        playerFilter.props = {
+          $some: {
+            key: playerPropKey
+          }
+        }
+      }
+    }
+
+    if (playerGroupId) {
+      playerFilter.groups = {
+        $some: playerGroupId
+      }
+    }
+
+    const where: FilterQuery<PlayerAlias> = {
       channels: {
         $some: channel
       },
-      player: req.ctx.state.includeDevData ? {} : { devBuild: false }
-    }, {
-      ...getResultCacheOptions(`members-${channel.id}-page-${page}`),
+      player: playerFilter
+    }
+
+    if (aliasId) {
+      where.id = Number(aliasId)
+    }
+    if (identifier) {
+      where.identifier = identifier
+    }
+
+    const [members, count] = await em.repo(PlayerAlias).findAndCount(where, {
       limit: itemsPerPage + 1,
       offset: Number(page) * itemsPerPage
     })

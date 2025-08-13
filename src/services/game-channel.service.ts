@@ -10,24 +10,30 @@ import { PropSizeError } from '../lib/errors/propSizeError'
 import buildErrorResponse from '../lib/errors/buildErrorResponse'
 import { TraceService } from '../lib/tracing/trace-service'
 import { captureException } from '@sentry/node'
+import { pageValidation } from '../lib/pagination/pageValidation'
+import { DEFAULT_PAGE_SIZE } from '../lib/pagination/itemsPerPage'
 
-const itemsPerPage = 50
+const itemsPerPage = DEFAULT_PAGE_SIZE
 
 @TraceService()
 export default class GameChannelService extends Service {
   @Route({
     method: 'GET'
   })
-  @Validate({ query: ['page'] })
+  @Validate({
+    query: {
+      page: pageValidation
+    }
+  })
   @HasPermission(GameChannelPolicy, 'index')
   async index(req: Request): Promise<Response> {
-    const { search, page, propKey, propValue } = req.query
+    const { search, page = 0, propKey, propValue } = req.query
     const em: EntityManager = req.ctx.em
 
     const query = em.qb(GameChannel, 'gc')
       .select('gc.*')
       .orderBy({ totalMessages: QueryOrder.DESC })
-      .limit(itemsPerPage)
+      .limit(itemsPerPage + 1)
       .offset(Number(page) * itemsPerPage)
 
     if (search) {
@@ -76,13 +82,18 @@ export default class GameChannelService extends Service {
 
     await em.populate(channels, ['owner'])
 
+    console.log(channels)
+
+    const channelPromises = channels.slice(0, itemsPerPage)
+      .map((channel) => channel.toJSONWithCount(em, req.ctx.state.includeDevData))
+
     return {
       status: 200,
       body: {
-        channels: await Promise.all(channels.map((channel) => channel.toJSONWithCount(em, req.ctx.state.includeDevData))),
+        channels: await Promise.all(channelPromises),
         count,
         itemsPerPage,
-        isLastPage: (Number(page) * itemsPerPage) + itemsPerPage >= count
+        isLastPage: channels.length <= itemsPerPage
       }
     }
   }

@@ -160,4 +160,26 @@ describe('Game channel API service - members', () => {
       isLastPage: false
     }))
   })
+
+  it('should set the page to 0 if one is not provided', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_GAME_CHANNELS])
+
+    const channel = await new GameChannelFactory(apiKey.game).one()
+    const player = await new PlayerFactory([apiKey.game]).one()
+    channel.members.add(player.aliases[0])
+    await em.persistAndFlush(channel)
+
+    const res = await request(app)
+      .get(`/v1/game-channels/${channel.id}/members`)
+      .auth(token, { type: 'bearer' })
+      .set('x-talo-alias', String(player.aliases[0].id))
+      .expect(200)
+
+    expect(res.body.members).toHaveLength(1)
+    expect(res.body).toStrictEqual(expect.objectContaining({
+      count: 1,
+      itemsPerPage: 50,
+      isLastPage: true
+    }))
+  })
 })

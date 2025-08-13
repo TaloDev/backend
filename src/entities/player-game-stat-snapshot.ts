@@ -6,6 +6,7 @@ import { EntityManager } from '@mikro-orm/mysql'
 import ClickHouseEntity from '../lib/clickhouse/clickhouse-entity'
 import PlayerAlias from './player-alias'
 import assert from 'node:assert'
+import { captureException } from '@sentry/node'
 
 export type ClickHousePlayerGameStatSnapshot = {
   id: string
@@ -53,15 +54,21 @@ export default class PlayerGameStatSnapshot extends ClickHouseEntity<ClickHouseP
 
     return data.map((snapshotData) => {
       const playerAlias = playerAliasesMap.get(snapshotData.player_alias_id)
+      /* v8 ignore start */
       if (!playerAlias) {
-        throw new Error(`Player alias with ID ${snapshotData.player_alias_id} not found.`)
+        captureException(new Error(`Player alias with ID ${snapshotData.player_alias_id} not found.`))
+        return null
       }
+      /* v8 ignore stop */
 
       const playerStatKey = `${playerAlias.player.id}:${snapshotData.game_stat_id}`
       const playerGameStat = playerStatsMap.get(playerStatKey)
+      /* v8 ignore start */
       if (!playerGameStat) {
-        throw new Error(`PlayerGameStat with key ${playerStatKey} not found.`)
+        captureException(new Error(`PlayerGameStat with key ${playerStatKey} not found.`))
+        return null
       }
+      /* v8 ignore stop */
 
       const snapshot = new PlayerGameStatSnapshot()
       snapshot.construct(playerAlias, playerGameStat)
@@ -72,7 +79,7 @@ export default class PlayerGameStatSnapshot extends ClickHouseEntity<ClickHouseP
       snapshot.createdAt = new Date(snapshotData.created_at)
 
       return snapshot
-    })
+    }).filter((snapshot) => !!snapshot)
   }
 
   construct(playerAlias: PlayerAlias, playerStat: PlayerGameStat): this {

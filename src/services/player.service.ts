@@ -22,6 +22,7 @@ import { PropSizeError } from '../lib/errors/propSizeError'
 import { TraceService } from '../lib/tracing/trace-service'
 import { captureException } from '@sentry/node'
 import { getResultCacheOptions } from '../lib/perf/getResultCacheOptions'
+import { DEFAULT_PAGE_SIZE, SMALL_PAGE_SIZE } from '../lib/pagination/itemsPerPage'
 
 const propsValidation = async (val: unknown): Promise<ValidationCondition[]> => [
   {
@@ -121,8 +122,7 @@ export default class PlayerService extends Service {
   })
   @HasPermission(PlayerPolicy, 'index')
   async index(req: Request): Promise<Response> {
-    const itemsPerPage = 25
-
+    const itemsPerPage = SMALL_PAGE_SIZE
     const { search, page } = req.query
     const em: EntityManager = req.ctx.em
 
@@ -303,7 +303,7 @@ export default class PlayerService extends Service {
   @Validate({ query: ['page'] })
   @HasPermission(PlayerPolicy, 'getEvents')
   async events(req: Request): Promise<Response> {
-    const itemsPerPage = 50
+    const itemsPerPage = DEFAULT_PAGE_SIZE
     const { search, page } = req.query
     const player: Player = req.ctx.state.player // set in the policy
 

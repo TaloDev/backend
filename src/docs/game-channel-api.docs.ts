@@ -393,7 +393,13 @@ const GameChannelAPIDocs: APIDocs<GameChannelAPIService> = {
         id: 'The ID of the channel'
       },
       query: {
-        page: 'The current pagination index (starting at 0)'
+        page: 'The current pagination index (starting at 0)',
+        playerId: 'Filter members by this player ID',
+        aliasId: 'Find a member with this player alias ID',
+        identifier: 'Find a member with this identifier',
+        playerPropKey: 'Filter members by players with this prop key',
+        playerPropValue: 'Filter members by players with matching prop keys and values',
+        playerGroupId: 'Filter members by players in this group'
       }
     },
     samples: [

@@ -11,6 +11,8 @@ import { sanitiseProps, testPropSize } from '../../lib/props/sanitiseProps'
 import { TraceService } from '../../lib/tracing/trace-service'
 import Redis from 'ioredis'
 import { getResultCacheOptions } from '../../lib/perf/getResultCacheOptions'
+import { pageValidation } from '../../lib/pagination/pageValidation'
+import { DEFAULT_PAGE_SIZE } from '../../lib/pagination/itemsPerPage'
 
 type GameChannelStorageTransaction = {
   upsertedProps: GameChannelStorageProp[]
@@ -48,7 +50,6 @@ export default class GameChannelAPIService extends APIService {
     method: 'GET',
     docs: GameChannelAPIDocs.index
   })
-  @Validate({ query: ['page'] })
   @HasPermission(GameChannelAPIPolicy, 'index')
   @ForwardTo('games.game-channels', 'index')
   async index(req: Request): Promise<Response> {
@@ -292,13 +293,14 @@ export default class GameChannelAPIService extends APIService {
   })
   @Validate({
     headers: ['x-talo-alias'],
-    query: ['page']
+    query: {
+      page: pageValidation
+    }
   })
   @HasPermission(GameChannelAPIPolicy, 'members')
   async members(req: Request): Promise<Response> {
-    const itemsPerPage = 50
-
-    const { page } = req.query
+    const itemsPerPage = DEFAULT_PAGE_SIZE
+    const { page = 0 } = req.query
     const em: EntityManager = req.ctx.em
 
     const channel: GameChannel = req.ctx.state.channel

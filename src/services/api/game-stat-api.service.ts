@@ -14,6 +14,8 @@ import { buildDateValidationSchema } from '../../lib/dates/dateValidationSchema'
 import PlayerAlias from '../../entities/player-alias'
 import { TraceService } from '../../lib/tracing/trace-service'
 import { FlushStatSnapshotsQueueHandler } from '../../lib/queues/game-metrics/flush-stat-snapshots-queue-handler'
+import { pageValidation } from '../../lib/pagination/pageValidation'
+import { DEFAULT_PAGE_SIZE } from '../../lib/pagination/itemsPerPage'
 
 @TraceService()
 export default class GameStatAPIService extends APIService {
@@ -171,16 +173,14 @@ export default class GameStatAPIService extends APIService {
   @Validate({
     headers: ['x-talo-player'],
     query: {
-      page: {
-        required: true
-      },
+      page: pageValidation,
       ...buildDateValidationSchema(false, false)
     }
   })
   @HasPermission(GameStatAPIPolicy, 'history')
   async history(req: Request): Promise<Response> {
-    const itemsPerPage = 50
-    const { page, startDate, endDate } = req.query
+    const itemsPerPage = DEFAULT_PAGE_SIZE
+    const { page = 0, startDate, endDate } = req.query
 
     const em: EntityManager = req.ctx.em
     const clickhouse: ClickHouseClient = req.ctx.clickhouse
@@ -196,7 +196,7 @@ export default class GameStatAPIService extends APIService {
       FROM player_game_stat_snapshots
       ${whereConditions}
       ORDER BY created_at DESC
-      LIMIT ${itemsPerPage} OFFSET ${Number(page) * itemsPerPage}
+      LIMIT ${itemsPerPage + 1} OFFSET ${Number(page) * itemsPerPage}
     `
 
     const snapshots = await clickhouse.query({
@@ -205,7 +205,7 @@ export default class GameStatAPIService extends APIService {
     }).then((res) => res.json<ClickHousePlayerGameStatSnapshot & { count: string }>())
 
     const count = Number(snapshots[0]?.count ?? 0)
-    const history = await PlayerGameStatSnapshot.massHydrate(em, snapshots)
+    const history = await PlayerGameStatSnapshot.massHydrate(em, snapshots.slice(0, itemsPerPage))
 
     return {
       status: 200,
@@ -213,7 +213,7 @@ export default class GameStatAPIService extends APIService {
         history,
         count,
         itemsPerPage,
-        isLastPage: (Number(page) * itemsPerPage) + itemsPerPage >= count
+        isLastPage: snapshots.length <= itemsPerPage
       }
     }
   }
@@ -225,16 +225,14 @@ export default class GameStatAPIService extends APIService {
   })
   @Validate({
     query: {
-      page: {
-        required: true
-      },
+      page: pageValidation,
       ...buildDateValidationSchema(false, false)
     }
   })
   @HasPermission(GameStatAPIPolicy, 'globalHistory')
   async globalHistory(req: Request): Promise<Response> {
-    const itemsPerPage = 50
-    const { page, startDate, endDate, playerId } = req.query
+    const itemsPerPage = DEFAULT_PAGE_SIZE
+    const { page = 0, startDate, endDate, playerId } = req.query
 
     const em: EntityManager = req.ctx.em
     const clickhouse: ClickHouseClient = req.ctx.clickhouse
@@ -263,7 +261,7 @@ export default class GameStatAPIService extends APIService {
       FROM player_game_stat_snapshots
       ${whereConditions}
       ORDER BY created_at DESC
-      LIMIT ${itemsPerPage} OFFSET ${Number(page) * itemsPerPage}
+      LIMIT ${itemsPerPage + 1} OFFSET ${Number(page) * itemsPerPage}
     `
 
     const snapshots = await clickhouse.query({
@@ -271,7 +269,7 @@ export default class GameStatAPIService extends APIService {
       format: 'JSONEachRow'
     }).then((res) => res.json<ClickHousePlayerGameStatSnapshot>())
 
-    const history = await PlayerGameStatSnapshot.massHydrate(em, snapshots)
+    const history = await PlayerGameStatSnapshot.massHydrate(em, snapshots.slice(0, itemsPerPage))
     const [count, globalValue] = await stat.getGlobalValueMetrics(clickhouse, whereConditions)
     const playerValue = await stat.getPlayerValueMetrics(clickhouse, whereConditions)
 
@@ -283,7 +281,7 @@ export default class GameStatAPIService extends APIService {
         playerValue,
         count,
         itemsPerPage,
-        isLastPage: (Number(page) * itemsPerPage) + itemsPerPage >= count
+        isLastPage: snapshots.length <= itemsPerPage
       }
     }
   }

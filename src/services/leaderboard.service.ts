@@ -10,6 +10,8 @@ import LeaderboardPolicy from '../policies/leaderboard.policy'
 import { archiveEntriesForLeaderboard } from '../tasks/archiveLeaderboardEntries'
 import updateAllowedKeys from '../lib/entities/updateAllowedKeys'
 import { TraceService } from '../lib/tracing/trace-service'
+import { pageValidation } from '../lib/pagination/pageValidation'
+import { DEFAULT_PAGE_SIZE } from '../lib/pagination/itemsPerPage'
 
 async function getGlobalEntryIds({
   em,
@@ -128,12 +130,16 @@ export default class LeaderboardService extends Service {
     method: 'GET',
     path: '/:id/entries'
   })
-  @Validate({ query: ['page'] })
+  @Validate({
+    query: {
+      page: pageValidation
+    }
+  })
   @HasPermission(LeaderboardPolicy, 'get')
   async entries(req: Request): Promise<Response> {
-    const itemsPerPage = 50
+    const itemsPerPage = DEFAULT_PAGE_SIZE
 
-    const { page, aliasId, withDeleted, propKey, propValue } = req.query
+    const { page = 0, aliasId, withDeleted, propKey, propValue } = req.query
     const em: EntityManager = req.ctx.em
 
     const leaderboard: Leaderboard = req.ctx.state.leaderboard
@@ -186,7 +192,7 @@ export default class LeaderboardService extends Service {
         score: leaderboard.sortMode,
         createdAt: 'asc'
       },
-      limit: itemsPerPage,
+      limit: itemsPerPage + 1,
       offset: Number(page) * itemsPerPage,
       populate: ['playerAlias']
     })
@@ -200,7 +206,7 @@ export default class LeaderboardService extends Service {
       includeDeleted
     })
 
-    const mappedEntries = await Promise.all(entries.map(async (entry, idx) => {
+    const mappedEntries = await Promise.all(entries.slice(0, itemsPerPage).map(async (entry, idx) => {
       const position = aliasId
         ? globalEntryIds.indexOf(entry.id)
         : idx + (Number(page) * itemsPerPage)
@@ -217,7 +223,7 @@ export default class LeaderboardService extends Service {
         entries: mappedEntries,
         count,
         itemsPerPage,
-        isLastPage: (Number(page) * itemsPerPage) + itemsPerPage >= count
+        isLastPage: entries.length <= itemsPerPage
       }
     }
   }

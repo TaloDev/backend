@@ -10,6 +10,7 @@ import { PropSizeError } from '../../lib/errors/propSizeError'
 import { sanitiseProps, testPropSize } from '../../lib/props/sanitiseProps'
 import { TraceService } from '../../lib/tracing/trace-service'
 import Redis from 'ioredis'
+import { getResultCacheOptions } from '../../lib/perf/getResultCacheOptions'
 
 type GameChannelStorageTransaction = {
   upsertedProps: GameChannelStorageProp[]
@@ -289,8 +290,17 @@ export default class GameChannelAPIService extends APIService {
     path: '/:id/members',
     docs: GameChannelAPIDocs.members
   })
+  @Validate({
+    headers: ['x-talo-alias'],
+    query: ['page']
+  })
   @HasPermission(GameChannelAPIPolicy, 'members')
   async members(req: Request): Promise<Response> {
+    const itemsPerPage = 50
+
+    const { page } = req.query
+    const em: EntityManager = req.ctx.em
+
     const channel: GameChannel = req.ctx.state.channel
     const alias: PlayerAlias = req.ctx.state.alias
 
@@ -298,18 +308,24 @@ export default class GameChannelAPIService extends APIService {
       req.ctx.throw(403, 'This player is not a member of the channel')
     }
 
-    let members = channel.members.getItems()
-    if (!req.ctx.state.includeDevData) {
-      // filter out dev players unless its the current alias
-      members = members.filter((member) => {
-        return !member.player.devBuild || member.id === alias.id
-      })
-    }
+    const [members, count] = await em.repo(PlayerAlias).findAndCount({
+      channels: {
+        $some: channel
+      },
+      player: req.ctx.state.includeDevData ? {} : { devBuild: false }
+    }, {
+      ...getResultCacheOptions(`members-${channel.id}-page-${page}`),
+      limit: itemsPerPage + 1,
+      offset: Number(page) * itemsPerPage
+    })
 
     return {
       status: 200,
       body: {
-        members
+        members: members.slice(0, itemsPerPage),
+        count,
+        itemsPerPage,
+        isLastPage: members.length <= itemsPerPage
       }
     }
   }

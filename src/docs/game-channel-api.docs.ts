@@ -386,8 +386,20 @@ const GameChannelAPIDocs: APIDocs<GameChannelAPIService> = {
   members: {
     description: 'Get the members of a game channel',
     params: {
+      headers: {
+        'x-talo-alias': 'The ID of the player\'s alias'
+      },
       route: {
         id: 'The ID of the channel'
+      },
+      query: {
+        page: 'The current pagination index (starting at 0)',
+        playerId: 'Filter members by this player ID',
+        aliasId: 'Find a member with this player alias ID',
+        identifier: 'Find a member with this identifier',
+        playerPropKey: 'Filter members by players with this prop key',
+        playerPropValue: 'Filter members by players with matching prop keys and values',
+        playerGroupId: 'Filter members by players in this group'
       }
     },
     samples: [
@@ -411,7 +423,10 @@ const GameChannelAPIDocs: APIDocs<GameChannelAPIService> = {
               createdAt: '2025-04-25T18:18:28.000Z',
               updatedAt: '2025-05-04T07:15:13.000Z'
             }
-          ]
+          ],
+          count: 1,
+          itemsPerPage: 50,
+          isLastPage: true
         }
       }
     ]

@@ -5,6 +5,8 @@ import migrationsList from '../migrations'
 import { TsMorphMetadataProvider } from '@mikro-orm/reflection'
 import { Migrator } from '@mikro-orm/migrations'
 import { defineConfig } from '@mikro-orm/mysql'
+import { RedisCacheAdapter } from 'mikro-orm-cache-adapter-redis'
+import redisConfig from './redis.config'
 
 export default defineConfig({
   entities,
@@ -25,5 +27,9 @@ export default defineConfig({
     max: Number(process.env.MIKRO_ORM_POOL_MAX) || 10,
     idleTimeoutMillis: Number(process.env.MIKRO_ORM_POOL_IDLE_TIMEOUT) || undefined,
     acquireTimeoutMillis: Number(process.env.MIKRO_ORM_POOL_ACQUIRE_TIMEOUT) || undefined
+  },
+  resultCache: {
+    adapter: RedisCacheAdapter,
+    options: redisConfig
   }
 })

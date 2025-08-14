@@ -18,7 +18,6 @@ export default class LeaderboardAPIService extends APIService {
     path: '/:internalName/entries',
     docs: LeaderboardAPIDocs.get
   })
-  @Validate({ query: ['page'] })
   @HasPermission(LeaderboardAPIPolicy, 'get')
   @ForwardTo('games.leaderboards', 'entries')
   async get(req: Request): Promise<Response> {

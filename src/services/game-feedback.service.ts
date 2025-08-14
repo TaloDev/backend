@@ -7,8 +7,9 @@ import createGameActivity from '../lib/logging/createGameActivity'
 import { GameActivityType } from '../entities/game-activity'
 import updateAllowedKeys from '../lib/entities/updateAllowedKeys'
 import { TraceService } from '../lib/tracing/trace-service'
+import { DEFAULT_PAGE_SIZE } from '../lib/pagination/itemsPerPage'
 
-const itemsPerPage = 50
+const itemsPerPage = DEFAULT_PAGE_SIZE
 
 @TraceService()
 export default class GameFeedbackService extends Service {

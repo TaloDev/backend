@@ -30,4 +30,8 @@ export default class PlayerAPIPolicy extends Policy {
   async merge(): Promise<PolicyResponse> {
     return await this.hasScopes([APIKeyScope.READ_PLAYERS, APIKeyScope.WRITE_PLAYERS])
   }
+
+  async search(): Promise<PolicyResponse> {
+    return this.hasScope(APIKeyScope.READ_PLAYERS)
+  }
 }

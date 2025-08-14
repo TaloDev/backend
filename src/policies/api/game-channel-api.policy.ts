@@ -22,7 +22,7 @@ export default class GameChannelAPIPolicy extends Policy {
       id: Number(req.params.id),
       game: this.ctx.state.game
     }, {
-      populate: ['members']
+      populate: ['members:ref']
     })
   }
 

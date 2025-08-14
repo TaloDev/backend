@@ -22,6 +22,8 @@ import { PropSizeError } from '../lib/errors/propSizeError'
 import { TraceService } from '../lib/tracing/trace-service'
 import { captureException } from '@sentry/node'
 import { getResultCacheOptions } from '../lib/perf/getResultCacheOptions'
+import { DEFAULT_PAGE_SIZE, SMALL_PAGE_SIZE } from '../lib/pagination/itemsPerPage'
+import { pageValidation } from '../lib/pagination/pageValidation'
 
 const propsValidation = async (val: unknown): Promise<ValidationCondition[]> => [
   {
@@ -119,18 +121,22 @@ export default class PlayerService extends Service {
   @Route({
     method: 'GET'
   })
+  @Validate({
+    query: {
+      page: pageValidation
+    }
+  })
   @HasPermission(PlayerPolicy, 'index')
   async index(req: Request): Promise<Response> {
-    const itemsPerPage = 25
-
-    const { search, page } = req.query
+    const itemsPerPage = SMALL_PAGE_SIZE
+    const { search, page = 0 } = req.query
     const em: EntityManager = req.ctx.em
 
     const query = em.qb(Player, 'p')
       .select('p.*')
       .orderBy({ lastSeenAt: QueryOrder.DESC })
-      .limit(itemsPerPage)
-      .offset(Number(page ?? 0) * itemsPerPage)
+      .limit(itemsPerPage + 1)
+      .offset(Number(page) * itemsPerPage)
 
     if (search) {
       query
@@ -160,10 +166,12 @@ export default class PlayerService extends Service {
         .filter((part) => part.startsWith('group:'))
 
       const groups = []
-      for (const filter of groupFilters) {
-        const id = filter.split(':')[1]
-        const group = await em.repo(PlayerGroup).findOne({ id, game: req.ctx.state.game })
-        if (group) groups.push(group)
+      if (!req.ctx.state.user.api) {
+        for (const filter of groupFilters) {
+          const id = filter.split(':')[1]
+          const group = await em.repo(PlayerGroup).findOne({ id, game: req.ctx.state.game })
+          if (group) groups.push(group)
+        }
       }
 
       if (groups.length > 0) {
@@ -179,10 +187,12 @@ export default class PlayerService extends Service {
         .filter((part) => part.startsWith('channel:'))
 
       const channels = []
-      for (const filter of channelFilters) {
-        const id = filter.split(':')[1]
-        const channel = await em.repo(GameChannel).findOne({ id: Number(id), game: req.ctx.state.game })
-        if (channel) channels.push(channel)
+      if (!req.ctx.state.user.api) {
+        for (const filter of channelFilters) {
+          const id = filter.split(':')[1]
+          const channel = await em.repo(GameChannel).findOne({ id: Number(id), game: req.ctx.state.game })
+          if (channel) channels.push(channel)
+        }
       }
 
       if (channels.length > 0) {
@@ -203,10 +213,11 @@ export default class PlayerService extends Service {
       query.andWhere({ devBuild: false })
     }
 
-    const [players, count] = await query
+    const [allPlayers, count] = await query
       .andWhere({ game: req.ctx.state.game })
       .getResultAndCount()
 
+    const players = allPlayers.slice(0, itemsPerPage)
     await em.populate(players, ['aliases'])
 
     return {
@@ -214,7 +225,8 @@ export default class PlayerService extends Service {
       body: {
         players,
         count,
-        itemsPerPage
+        itemsPerPage,
+        isLastPage: allPlayers.length <= itemsPerPage
       }
     }
   }
@@ -303,7 +315,7 @@ export default class PlayerService extends Service {
   @Validate({ query: ['page'] })
   @HasPermission(PlayerPolicy, 'getEvents')
   async events(req: Request): Promise<Response> {
-    const itemsPerPage = 50
+    const itemsPerPage = DEFAULT_PAGE_SIZE
     const { search, page } = req.query
     const player: Player = req.ctx.state.player // set in the policy
 

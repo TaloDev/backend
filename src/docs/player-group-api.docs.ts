@@ -7,6 +7,9 @@ const PlayerGroupAPIDocs: APIDocs<PlayerGroupAPIService> = {
     params: {
       route: {
         id: 'The ID of the group'
+      },
+      query: {
+        membersPage: 'The current pagination index for group members (starting at 0)'
       }
     },
     samples: [
@@ -53,6 +56,11 @@ const PlayerGroupAPIDocs: APIDocs<PlayerGroupAPIService> = {
                 ]
               }
             ]
+          },
+          membersPagination: {
+            count: 1,
+            itemsPerPage: 50,
+            isLastPage: true
           }
         }
       },
@@ -78,6 +86,11 @@ const PlayerGroupAPIDocs: APIDocs<PlayerGroupAPIService> = {
             membersVisible: false,
             updatedAt: '2024-10-01T23:09:18.000Z',
             count: 1
+          },
+          membersPagination: {
+            count: 0,
+            itemsPerPage: 50,
+            isLastPage: true
           }
         }
       }

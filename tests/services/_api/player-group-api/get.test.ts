@@ -26,6 +26,12 @@ describe('Player group API service - get', () => {
     expect(res.body.group.id).toBe(group.id)
     expect(res.body.group.count).toBe(1)
     expect(res.body.group.members).toHaveLength(1)
+
+    expect(res.body.membersPagination).toStrictEqual({
+      count: 1,
+      itemsPerPage: 50,
+      isLastPage: true
+    })
   })
 
   it('should not return a group if the scope is not valid', async () => {
@@ -114,5 +120,31 @@ describe('Player group API service - get', () => {
     expect(res.body.group.id).toBe(group.id)
     expect(res.body.group.count).toBe(1)
     expect(res.body.group.members).toHaveLength(1)
+  })
+
+  it('should should paginate player group members', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_PLAYER_GROUPS])
+    await em.populate(apiKey, ['game'])
+
+    const players = await new PlayerFactory([apiKey.game]).state(() => ({ lastSeenAt: new Date(2024, 1, 2) })).many(101)
+    const dateRule = new PlayerGroupRule(PlayerGroupRuleName.GTE, 'lastSeenAt')
+    dateRule.castType = PlayerGroupRuleCastType.DATETIME
+    dateRule.operands = ['2024-01-01']
+
+    const group = await new PlayerGroupFactory().construct(apiKey.game).state(() => ({ rules: [dateRule], membersVisible: true })).one()
+    await em.persistAndFlush([...players, group])
+
+    const res = await request(app)
+      .get(`/v1/player-groups/${group.id}`)
+      .query({ membersPage: 1 })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    expect(res.body.group.members).toHaveLength(50)
+    expect(res.body.membersPagination).toStrictEqual({
+      count: 101,
+      itemsPerPage: 50,
+      isLastPage: false
+    })
   })
 })

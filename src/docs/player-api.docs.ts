@@ -60,6 +60,67 @@ const PlayerAPIDocs: APIDocs<PlayerAPIService> = {
       }
     ]
   },
+  search: {
+    description: 'Search for players',
+    params: {
+      route: {
+        id: 'The ID of the player'
+      },
+      query: {
+        query: 'Search for players by IDs, prop values and alias identifiers',
+        page: 'The current pagination index (starting at 0)'
+      }
+    },
+    samples: [
+      {
+        title: 'Filter by player ID',
+        sample: {
+          url: '/v1/players/search?query=550e8400-e29b-41d4-a716-446655440000',
+          query: {
+            query: '550e8400-e29b-41d4-a716-446655440000'
+          }
+        }
+      },
+      {
+        title: 'Filter by identifier',
+        sample: {
+          url: '/v1/players/search?query=tud0r',
+          query: {
+            query: 'tud0r'
+          }
+        }
+      },
+      {
+        title: 'Filter by prop value',
+        sample: {
+          url: '/v1/players/search?query=Zone3-Stage2',
+          query: {
+            query: 'Zone3-Stage2'
+          }
+        }
+      },
+      {
+        title: 'Sample response',
+        sample: {
+          player: {
+            id: '550e8400-e29b-41d4-a716-446655440000',
+            props: [
+              { key: 'currentLevel', value: 'Zone3-Stage2' }
+            ],
+            aliases: [
+              { id: 1, service: 'username', identifier: 'tud0r', player: '/* [Circular] */' }
+            ],
+            devBuild: false,
+            createdAt: '2025-08-14T13:20:32.133Z',
+            lastSeenAt: '2025-08-14T15:09:43.066Z',
+            groups: [
+              { id: '5826ca71-1964-4a1b-abcb-a61ffbe003be', name: 'Winners' }
+            ]
+          }
+        }
+      }
+    ]
+  },
   get: {
     description: 'Find a player',
     params: {

@@ -150,6 +150,35 @@ export default class PlayerAPIService extends APIService {
 
   @Route({
     method: 'GET',
+    path: '/search',
+    docs: PlayerAPIDocs.search
+  })
+  @Validate({
+    query: {
+      query: {
+        required: true,
+        validation: async (val): Promise<ValidationCondition[]> => [
+          {
+            check: typeof val === 'string' && val.trim().replace('-', '').length > 0, // remove - so it doesn't match every uuid
+            error: 'Query must be a non-empty string'
+          }
+        ]
+      }
+    }
+  })
+  @HasPermission(PlayerAPIPolicy, 'search')
+  @ForwardTo('games.players', 'index')
+  async search(req: Request): Promise<Response> {
+    const { query } = req.query
+    return await forwardRequest(req, {
+      query: {
+        search: query
+      }
+    })
+  }
+
+  @Route({
+    method: 'GET',
     path: '/:id',
     docs: PlayerAPIDocs.get
   })

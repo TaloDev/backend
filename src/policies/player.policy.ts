@@ -13,6 +13,8 @@ export default class PlayerPolicy extends Policy {
   }
 
   async index(req: Request): Promise<boolean> {
+    if (this.isAPICall()) return true
+
     const { gameId } = req.params
     return this.canAccessGame(Number(gameId))
   }

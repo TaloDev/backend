@@ -18,7 +18,7 @@ describe('Socket rate limiting', () => {
       await client.identify(identifyMessage)
 
       const conn = socket.findConnections((conn) => conn.playerAliasId === player.aliases[0].id)[0]
-      await redis.set(`requests.${conn.rateLimitKey}`, 999)
+      await redis.set(conn.rateLimitKey, 999)
 
       client.sendJson({
         req: 'v1.channels.message',
@@ -56,7 +56,7 @@ describe('Socket rate limiting', () => {
       const conn = socket.findConnections((conn) => conn.playerAliasId === player.aliases[0].id)[0]
       conn.rateLimitWarnings = 3
 
-      await redis.set(`requests.${conn.rateLimitKey}`, 999)
+      await redis.set(conn.rateLimitKey, 999)
 
       client.sendJson({
         req: 'v1.channels.message',

@@ -21,7 +21,7 @@ export default class SocketConnection {
   game: Game
   private apiKey: APIKey
 
-  rateLimitKey: string = v4()
+  rateLimitKey: string = `requests.socket:${v4()}`
   rateLimitWarnings: number = 0
 
   constructor(

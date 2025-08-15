@@ -1,5 +1,5 @@
-import { EntityManager, MikroORM } from '@mikro-orm/mysql'
-import ormConfig from '../config/mikro-orm.config'
+import { EntityManager } from '@mikro-orm/mysql'
+import { getMikroORM } from '../config/mikro-orm.config'
 import createClickHouseClient from '../lib/clickhouse/createClient'
 import PlayerSession, { ClickHousePlayerSession } from '../entities/player-session'
 import { ClickHouseClient } from '@clickhouse/client'
@@ -143,8 +143,8 @@ async function removeDisconnectedPresence(em: EntityManager, presence: PlayerPre
 }
 
 export default async function cleanupOnlinePlayers() {
-  const orm = await MikroORM.init(ormConfig)
-  const em = orm.em.fork()
+  const orm = await getMikroORM()
+  const em = orm.em.fork() as EntityManager
   const clickhouse = createClickHouseClient()
 
   cleanupStats = {}
@@ -192,7 +192,6 @@ export default async function cleanupOnlinePlayers() {
     await cleanupPresence(em, clickhouse, presence)
   }
 
-  await orm.close()
   await clickhouse.close()
 
   console.info(`Cleanup stats: ${JSON.stringify(cleanupStats, null, 2)}`)

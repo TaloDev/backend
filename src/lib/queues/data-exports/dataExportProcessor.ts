@@ -1,8 +1,8 @@
-import { Collection, EntityManager, MikroORM } from '@mikro-orm/mysql'
+import { Collection, EntityManager } from '@mikro-orm/mysql'
 import { SandboxedJob } from 'bullmq'
 import DataExport, { DataExportAvailableEntities, DataExportStatus } from '../../../entities/data-export'
 import Event, { ClickHouseEventProp } from '../../../entities/event'
-import ormConfig from '../../../config/mikro-orm.config'
+import { getMikroORM } from '../../../config/mikro-orm.config'
 import PlayerProp from '../../../entities/player-prop'
 import Player from '../../../entities/player'
 import Prop from '../../../entities/prop'
@@ -629,7 +629,7 @@ export default async (job: SandboxedJob<DataExportJob>) => {
   console.time(`Data export (${dataExportId}) - end to end`)
   console.info(`Data export (${dataExportId}) - starting`)
 
-  const orm = await MikroORM.init(ormConfig)
+  const orm = await getMikroORM()
   const em = orm.em.fork()
   const dataExport = await em.repo(DataExport).findOneOrFail(dataExportId, { populate: ['game', 'createdByUser'] })
 
@@ -645,7 +645,6 @@ export default async (job: SandboxedJob<DataExportJob>) => {
 
   dataExport.status = DataExportStatus.GENERATED
   await em.flush()
-  await orm.close()
   console.info(`Data export (${dataExportId}) - generated`)
 
   const mailer = new DataExportMailer()

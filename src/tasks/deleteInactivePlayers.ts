@@ -1,5 +1,5 @@
-import { EntityManager, MikroORM } from '@mikro-orm/mysql'
-import ormConfig from '../config/mikro-orm.config'
+import { EntityManager } from '@mikro-orm/mysql'
+import { getMikroORM } from '../config/mikro-orm.config'
 import Player from '../entities/player'
 import createClickHouseClient from '../lib/clickhouse/createClient'
 import { ClickHouseClient } from '@clickhouse/client'
@@ -106,8 +106,8 @@ async function deletePlayers(em: EntityManager, clickhouse: ClickHouseClient, pl
 }
 
 export default async function deleteInactivePlayers() {
-  const orm = await MikroORM.init(ormConfig)
-  const em = orm.em.fork()
+  const orm = await getMikroORM()
+  const em = orm.em.fork() as EntityManager
   const clickhouse = createClickHouseClient()
 
   const games = await em.repo(Game).find({
@@ -123,6 +123,5 @@ export default async function deleteInactivePlayers() {
     }))
   }
 
-  await orm.close()
   await clickhouse.close()
 }

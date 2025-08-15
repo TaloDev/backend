@@ -4,11 +4,11 @@ import subscribers from '../entities/subscribers'
 import migrationsList from '../migrations'
 import { TsMorphMetadataProvider } from '@mikro-orm/reflection'
 import { Migrator } from '@mikro-orm/migrations'
-import { defineConfig } from '@mikro-orm/mysql'
+import { defineConfig, MikroORM } from '@mikro-orm/mysql'
 import { RedisCacheAdapter } from 'mikro-orm-cache-adapter-redis'
 import redisConfig from './redis.config'
 
-export default defineConfig({
+const config = defineConfig({
   entities,
   host: process.env.DB_HOST,
   port: Number(process.env.DB_PORT),
@@ -33,3 +33,13 @@ export default defineConfig({
     options: redisConfig
   }
 })
+
+export default config // loaded in package.json
+
+let orm: Awaited<ReturnType<typeof MikroORM.init>>
+export async function getMikroORM() {
+  if (!orm || !(await orm.checkConnection())) {
+    orm = await MikroORM.init(config)
+  }
+  return orm
+}

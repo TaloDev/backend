@@ -1,11 +1,10 @@
-import { MikroORM } from '@mikro-orm/mysql'
-import ormConfig from '../../config/mikro-orm.config'
+import { getMikroORM } from '../../config/mikro-orm.config'
 import FailedJob from '../../entities/failed-job'
 import { captureException, setContext } from '@sentry/node'
 import { Job } from 'bullmq'
 
 async function handleJobFailure<T>(job: Job<T>, err: Error): Promise<void> {
-  const orm = await MikroORM.init(ormConfig)
+  const orm = await getMikroORM()
   const em = orm.em.fork()
 
   const failedJob = new FailedJob()
@@ -16,7 +15,6 @@ async function handleJobFailure<T>(job: Job<T>, err: Error): Promise<void> {
   failedJob.stack = err.stack ?? ''
 
   await em.persistAndFlush(failedJob)
-  await orm.close()
 
   /* v8 ignore next 3 */
   if (process.env.NODE_ENV !== 'test') {

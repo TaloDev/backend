@@ -1,6 +1,5 @@
-import { MikroORM } from '@mikro-orm/mysql'
-import ormConfig from '../../../config/mikro-orm.config'
 import DataExport, { DataExportStatus } from '../../../entities/data-export'
+import { getMikroORM } from '../../../config/mikro-orm.config'
 
 type UpdatedDataExportStatus = {
   id?: DataExportStatus
@@ -8,7 +7,7 @@ type UpdatedDataExportStatus = {
 }
 
 export async function updateDataExportStatus(dataExportId: number, newStatus: UpdatedDataExportStatus) {
-  const orm = await MikroORM.init(ormConfig)
+  const orm = await getMikroORM()
   const em = orm.em.fork()
 
   const dataExport = await em.getRepository(DataExport).findOneOrFail(dataExportId)
@@ -22,5 +21,4 @@ export async function updateDataExportStatus(dataExportId: number, newStatus: Up
   }
 
   await em.flush()
-  await orm.close()
 }

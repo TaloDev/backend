@@ -1,9 +1,8 @@
 import { After, Before, Service, Request, Response, Route } from 'koa-clay'
 import User, { UserType } from '../../entities/user'
-import { EntityManager, MikroORM } from '@mikro-orm/mysql'
+import { EntityManager } from '@mikro-orm/mysql'
 import buildTokenPair from '../../lib/auth/buildTokenPair'
 import Organisation from '../../entities/organisation'
-import ormConfig from '../../config/mikro-orm.config'
 import createQueue from '../../lib/queues/createQueue'
 import UserSession from '../../entities/user-session'
 import bcrypt from 'bcrypt'
@@ -11,6 +10,7 @@ import GameActivity from '../../entities/game-activity'
 import { Job, Queue } from 'bullmq'
 import { generateDemoEvents } from '../../lib/demo-data/generateDemoEvents'
 import { TraceService } from '../../lib/tracing/trace-service'
+import { getMikroORM } from '../../config/mikro-orm.config'
 
 type DemoUserJob = {
   userId: number
@@ -33,7 +33,7 @@ export default class DemoService extends Service {
     this.queue = createQueue<DemoUserJob>('demo', async (job: Job<DemoUserJob>) => {
       const { userId } = job.data
 
-      const orm = await MikroORM.init(ormConfig)
+      const orm = await getMikroORM()
       const em = orm.em.fork()
 
       const sessions = await em.getRepository(UserSession).find({ user: { id: userId } })
@@ -41,7 +41,6 @@ export default class DemoService extends Service {
       const user = await em.getRepository(User).findOne(userId)
 
       await em.removeAndFlush([user, ...sessions, ...activities])
-      await orm.close()
     })
   }
 

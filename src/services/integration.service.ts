@@ -1,11 +1,11 @@
-import { EntityManager, MikroORM } from '@mikro-orm/mysql'
+import { EntityManager } from '@mikro-orm/mysql'
 import { HasPermission, Request, Response, Route, Service, Validate } from 'koa-clay'
 import { pick } from 'lodash'
 import { GameActivityType } from '../entities/game-activity'
 import Integration, { IntegrationConfig, IntegrationType } from '../entities/integration'
 import createGameActivity from '../lib/logging/createGameActivity'
 import IntegrationPolicy from '../policies/integration.policy'
-import ormConfig from '../config/mikro-orm.config'
+import { getMikroORM } from '../config/mikro-orm.config'
 import createQueue from '../lib/queues/createQueue'
 import { Job, Queue } from 'bullmq'
 import { TraceService } from '../lib/tracing/trace-service'
@@ -33,8 +33,8 @@ export default class IntegrationService extends Service {
     this.queue = createQueue<SyncJob>('integration-syncing', async (job: Job<SyncJob>) => {
       const { integrationId, type } = job.data
 
-      const orm = await MikroORM.init(ormConfig)
-      const em = orm.em.fork()
+      const orm = await getMikroORM()
+      const em = orm.em.fork() as EntityManager
       const integration = await em.getRepository(Integration).findOneOrFail(integrationId)
 
       if (type === 'leaderboards') {
@@ -42,8 +42,6 @@ export default class IntegrationService extends Service {
       } else if (type === 'stats') {
         await integration.handleSyncStats(em)
       }
-
-      await orm.close()
     })
   }
 

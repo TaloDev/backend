@@ -1,7 +1,7 @@
 import { LeaderboardRefreshInterval } from '../entities/leaderboard'
-import { MikroORM, EntityManager } from '@mikro-orm/mysql'
+import { EntityManager } from '@mikro-orm/mysql'
 import Leaderboard from '../entities/leaderboard'
-import ormConfig from '../config/mikro-orm.config'
+import { getMikroORM } from '../config/mikro-orm.config'
 import LeaderboardEntry from '../entities/leaderboard-entry'
 import { isToday, isThisWeek, isThisMonth, isThisYear } from 'date-fns'
 import triggerIntegrations from '../lib/integrations/triggerIntegrations'
@@ -56,7 +56,7 @@ export async function archiveEntriesForLeaderboard(em: EntityManager, leaderboar
 }
 
 export default async function archiveLeaderboardEntries() {
-  const orm = await MikroORM.init(ormConfig)
+  const orm = await getMikroORM()
   const em = orm.em.fork()
 
   const leaderboards = await em.getRepository(Leaderboard).find({
@@ -64,8 +64,6 @@ export default async function archiveLeaderboardEntries() {
   })
 
   for (const leaderboard of leaderboards) {
-    await archiveEntriesForLeaderboard(em, leaderboard)
+    await archiveEntriesForLeaderboard(em as EntityManager, leaderboard)
   }
-
-  await orm.close()
 }

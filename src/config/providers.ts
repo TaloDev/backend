@@ -1,6 +1,5 @@
 import Koa from 'koa'
-import ormConfig from './mikro-orm.config'
-import { MikroORM } from '@mikro-orm/mysql'
+import { getMikroORM } from './mikro-orm.config'
 import createEmailQueue from '../lib/queues/createEmailQueue'
 import createClickHouseClient from '../lib/clickhouse/createClient'
 import { runClickHouseMigrations } from '../migrations/clickhouse'
@@ -10,7 +9,7 @@ import { createRedisConnection } from './redis.config'
 
 export default async function initProviders(app: Koa, isTest: boolean) {
   try {
-    const orm = await MikroORM.init(ormConfig)
+    const orm = await getMikroORM()
     app.context.em = orm.em
 
     if (!isTest) {

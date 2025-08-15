@@ -1,5 +1,4 @@
 import 'dotenv/config'
-import { MikroORM } from '@mikro-orm/mysql'
 import UserFactory from './fixtures/UserFactory'
 import GameFactory from './fixtures/GameFactory'
 import PlayerFactory from './fixtures/PlayerFactory'
@@ -17,12 +16,12 @@ import GameFeedbackCategoryFactory from './fixtures/GameFeedbackCategoryFactory'
 import GameFeedbackFactory from './fixtures/GameFeedbackFactory'
 import createClickHouseClient from '../src/lib/clickhouse/createClient'
 import { rand } from '@ngneat/falso'
-import ormConfig from '../src/config/mikro-orm.config'
+import { getMikroORM } from '../src/config/mikro-orm.config'
 
 (async () => {
   console.info('Running migrations...')
 
-  const orm = await MikroORM.init(ormConfig)
+  const orm = await getMikroORM()
   await orm.getSchemaGenerator().dropSchema()
   await orm.em.getConnection().execute('drop table if exists mikro_orm_migrations')
   await orm.getMigrator().up()

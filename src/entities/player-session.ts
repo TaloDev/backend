@@ -48,7 +48,7 @@ export default class PlayerSession extends ClickHouseEntity<ClickHousePlayerSess
 
   async hydrate(em: EntityManager, data: ClickHousePlayerSession): Promise<this> {
     const player = await em.repo(Player).findOneOrFail(data.player_id, {
-      ...getResultCacheOptions(`hydrate-player-session-${data.player_id}`, 60_000),
+      ...getResultCacheOptions(`hydrate-player-session-${data.player_id}`),
       populate: ['game']
     })
 

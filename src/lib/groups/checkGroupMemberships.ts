@@ -25,7 +25,7 @@ class PlayerGroupMember {
 export default async function checkGroupMemberships(em: EntityManager, player: Player): Promise<boolean> {
   const groups = await em.repo(PlayerGroup).find({
     game: player.game
-  }, getResultCacheOptions(PlayerGroup.getCacheKey(player.game)))
+  }, getResultCacheOptions(PlayerGroup.getCacheKey(player.game), 10_000))
 
   if (groups.length === 0) {
     return false

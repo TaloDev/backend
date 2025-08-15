@@ -28,7 +28,7 @@ async function getRealIdentifier(
     const integration = await (req.ctx.em as EntityManager).getRepository(Integration).findOne({
       game: key.game,
       type: IntegrationType.STEAMWORKS
-    }, getResultCacheOptions(`identifier-steam-integration-${key.game.id}`, 60_000))
+    }, getResultCacheOptions(`identifier-steam-integration-${key.game.id}`))
 
     if (integration) {
       return integration.getPlayerIdentifier(req, identifier)
@@ -51,7 +51,7 @@ export async function findAliasFromIdentifyRequest(
       game: key.game
     }
   }, {
-    ...getResultCacheOptions(getAliasFromIdentifyCacheKey(key.game.id, service, identifier)),
+    ...getResultCacheOptions(getAliasFromIdentifyCacheKey(key.game.id, service, identifier), 30_000),
     populate: ['player.auth']
   })
 }

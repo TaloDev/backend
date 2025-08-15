@@ -1,4 +1,4 @@
-import Redis from 'ioredis'
+import Redis, { RedisOptions } from 'ioredis'
 
 const redisConfig = {
   host: process.env.REDIS_HOST ?? 'redis',
@@ -8,6 +8,9 @@ const redisConfig = {
 
 export default redisConfig
 
-export function createRedisConnection(): Redis {
-  return new Redis(redisConfig)
+export function createRedisConnection(opts?: RedisOptions): Redis {
+  return new Redis({
+    ...redisConfig,
+    ...(opts ?? {})
+  })
 }

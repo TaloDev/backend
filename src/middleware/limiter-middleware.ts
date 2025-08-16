@@ -13,6 +13,10 @@ const rateLimitOverrides = new Map<string, keyof typeof limitMap>([
   ['/v1/socket-tickets', 'auth']
 ])
 
+const rateLimitBypass = new Set<string>([
+  '/v1/health-check'
+])
+
 export function getMaxRequestsForPath(requestPath: string) {
   const limitMapKey = rateLimitOverrides.get(requestPath) ?? 'default'
   const maxRequests = limitMap[limitMapKey]
@@ -23,9 +27,10 @@ export function getMaxRequestsForPath(requestPath: string) {
 }
 
 export default async function limiterMiddleware(ctx: Context, next: Next): Promise<void> {
-  if (isAPIRoute(ctx) && process.env.NODE_ENV !== 'test') {
+  if (isAPIRoute(ctx) && process.env.NODE_ENV !== 'test' && !rateLimitBypass.has(ctx.request.path)) {
     const { limitMapKey, maxRequests } = getMaxRequestsForPath(ctx.request.path)
-    const redisKey = `requests:${ctx.state.user.sub}:${ctx.request.ip}:${limitMapKey}`
+    const userId = ctx.state.user?.sub || 'anonymous'
+    const redisKey = `requests:${userId}:${ctx.request.ip}:${limitMapKey}`
 
     if (await checkRateLimitExceeded(ctx.redis, redisKey, maxRequests)) {
       ctx.throw(429)

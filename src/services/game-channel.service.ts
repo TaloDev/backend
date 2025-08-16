@@ -82,8 +82,6 @@ export default class GameChannelService extends Service {
 
     await em.populate(channels, ['owner'])
 
-    console.log(channels)
-
     const channelPromises = channels.slice(0, itemsPerPage)
       .map((channel) => channel.toJSONWithCount(em, req.ctx.state.includeDevData))
 

@@ -645,7 +645,6 @@ export default async (job: SandboxedJob<DataExportJob>) => {
 
   dataExport.status = DataExportStatus.GENERATED
   await em.flush()
-  await orm.close()
   console.info(`Data export (${dataExportId}) - generated`)
 
   const mailer = new DataExportMailer()

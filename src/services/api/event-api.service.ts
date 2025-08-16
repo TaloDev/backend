@@ -91,7 +91,7 @@ export default class EventAPIService extends APIService {
       }
     }
 
-    const setPipeline = redis.multi()
+    const pipeline = redis.pipeline()
     const hashes: string[] = []
 
     for (const event of eventsMap.values()) {
@@ -105,17 +105,17 @@ export default class EventAPIService extends APIService {
         .digest('hex')
 
       hashes.push(hash)
-      setPipeline.setnx(`events:dedupe:${hash}`, '1')
+      pipeline.setnx(`events:dedupe:${hash}`, '1')
+      pipeline.expire(`events:dedupe:${hash}`, 1)
     }
 
-    const setResults = await setPipeline.exec()
-    const expirePipeline = redis.pipeline()
+    const results = await pipeline.exec()
 
     /* v8 ignore start */
-    if (!setResults) {
+    if (!results) {
       for (let i = 0; i < items.length; i++) {
         if (eventsMap.has(i)) {
-          errors[i].push('Redis transaction failed')
+          errors[i].push('Redis pipeline failed')
         }
       }
     /* v8 ignore stop */
@@ -123,24 +123,21 @@ export default class EventAPIService extends APIService {
       let resultIndex = 0
       for (const index of Array.from(eventsMap.keys())) {
         const item = items[index]
-        const [err, result] = setResults[resultIndex]
+        // each event has 2 operations (setnx + expire), so we check the setnx result
+        const [err, result] = results[resultIndex * 2]
 
         /* v8 ignore start */
         if (err) {
           eventsMap.delete(index)
           errors[index].push(`Duplicate detection failed (${item.name}): ${err.message}`)
         /* v8 ignore stop */
-        } else if (result === 1) {
-          expirePipeline.expire(`events:dedupe:${hashes[resultIndex]}`, 1)
-        } else {
+        } else if (result !== 1) {
           eventsMap.delete(index)
           errors[index].push(`Duplicate event detected (${item.name})`)
         }
         resultIndex++
       }
     }
-
-    await expirePipeline.exec()
     const eventsArray = Array.from(eventsMap.values())
     await Promise.all(eventsArray.map((event) => this.queueHandler.add(event)))
 

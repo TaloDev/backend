@@ -65,5 +65,6 @@ export default class PlayerGroupSubscriber implements EventSubscriber {
     if (playersMap.size > 0) {
       await checkGroupsForPlayers(em, Array.from(playersMap.values()))
     }
+    em.clear()
   }
 }

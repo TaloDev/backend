@@ -25,7 +25,11 @@ export class FlushStatSnapshotsQueueHandler extends FlushMetricsQueueHandler<Pla
 
           const orm = await getMikroORM()
           const em = orm.em.fork() as EntityManager
-          await checkGroupsForPlayers(em, Array.from(playerSet))
+          try {
+            await checkGroupsForPlayers(em, Array.from(playerSet))
+          } finally {
+            em.clear()
+          }
         }
       }
     })

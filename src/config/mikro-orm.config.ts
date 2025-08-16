@@ -8,7 +8,7 @@ import { defineConfig, MikroORM } from '@mikro-orm/mysql'
 import { RedisCacheAdapter } from 'mikro-orm-cache-adapter-redis'
 import redisConfig from './redis.config'
 
-const config = defineConfig({
+const ormConfig = defineConfig({
   entities,
   host: process.env.DB_HOST,
   port: Number(process.env.DB_PORT),
@@ -34,12 +34,12 @@ const config = defineConfig({
   }
 })
 
-export default config // loaded in package.json
+export default ormConfig // loaded in package.json
 
 let orm: Awaited<ReturnType<typeof MikroORM.init>>
 export async function getMikroORM() {
   if (!orm || !(await orm.checkConnection())) {
-    orm = await MikroORM.init(config)
+    orm = await MikroORM.init(ormConfig)
   }
   return orm
 }

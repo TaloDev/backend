@@ -1,3 +1,4 @@
 ignore:
-  - '/src/config'
-  - '/src/migrations'
+  - "/src/config"
+  - "/src/migrations"
+  - "vitest.config.mts"

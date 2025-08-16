@@ -28,6 +28,7 @@ export default defineConfig({
         'src/global.d.ts',
         'src/lib/clickhouse/clickhouse-entity.ts',
         'src/lib/clickhouse/createClient.ts',
+        'src/lib/errors/checkRateLimitExceeded.ts',
         'src/lib/tracing'
       ]
     }

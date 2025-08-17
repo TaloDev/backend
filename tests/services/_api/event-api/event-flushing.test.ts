@@ -28,7 +28,7 @@ describe('Events API service - event flushing', () => {
     handler.add(event2)
 
     await handler.handle()
-    expect(consoleSpy).toHaveBeenCalledOnce()
+    expect(consoleSpy).toHaveBeenCalledTimes(2)
     consoleSpy.mockClear()
 
     await vi.waitUntil(async () => {

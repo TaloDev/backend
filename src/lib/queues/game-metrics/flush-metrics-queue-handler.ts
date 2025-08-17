@@ -55,8 +55,10 @@ export class FlushMetricsQueueHandler<T extends { id: string }> {
 
     setTraceAttributes({ metricName: this.metricName, bufferSize })
 
+    const canLog = process.env.NODE_ENV !== 'test' || (this.options.logsInTests ?? true)
+
     /* v8 ignore start */
-    if (process.env.NODE_ENV !== 'test' || (this.options.logsInTests ?? true)) {
+    if (canLog) {
       console.info(`Flushing ${bufferSize} ${this.metricName.replace('-', ' ')}...`)
     }
     /* v8 ignore stop */
@@ -67,6 +69,12 @@ export class FlushMetricsQueueHandler<T extends { id: string }> {
       if (this.options.postFlush) {
         await this.options.postFlush(values)
       }
+
+      /* v8 ignore start */
+      if (canLog) {
+        console.info(`Flushed ${bufferSize} ${this.metricName.replace('-', ' ')}`)
+      }
+      /* v8 ignore stop */
     } catch (err) {
       console.error(err)
       captureException(err)

@@ -11,6 +11,8 @@ type HandlerOptions<T> = {
   postFlush?: (values: T[]) => Promise<void>
 }
 
+let clickhouse: ReturnType<typeof createClickHouseClient>
+
 export class FlushMetricsQueueHandler<T extends { id: string }> {
   private queue: Queue
   private buffer: Map<string, T> = new Map()
@@ -20,6 +22,10 @@ export class FlushMetricsQueueHandler<T extends { id: string }> {
     this.metricName = metricName
     this.flushFunc = flushFunc
     this.options = options ?? { logsInTests: true }
+
+    if (!clickhouse) {
+      clickhouse = createClickHouseClient()
+    }
 
     this.queue = createQueue(`flush-${metricName}`, async () => {
       /* v8 ignore next */
@@ -56,19 +62,17 @@ export class FlushMetricsQueueHandler<T extends { id: string }> {
     /* v8 ignore stop */
     const values = Array.from(this.buffer.values())
 
-    const clickhouse = createClickHouseClient()
     try {
       await this.flushFunc(clickhouse, values)
-      await clickhouse.close()
       if (this.options.postFlush) {
         await this.options.postFlush(values)
       }
     } catch (err) {
       console.error(err)
       captureException(err)
+    } finally {
+      values.forEach(({ id }) => this.buffer.delete(id))
     }
-
-    values.forEach(({ id }) => this.buffer.delete(id))
   }
 
   add(item: T) {

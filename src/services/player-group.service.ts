@@ -53,7 +53,7 @@ export default class PlayerGroupService extends Service {
     group.ruleMode = ruleMode
     group.rules = this.buildRulesFromData(rules)
     group.membersVisible = membersVisible
-    await group.checkMembership(em)
+    em.persist(group)
 
     createGameActivity(em, {
       user: req.ctx.state.user,
@@ -64,7 +64,7 @@ export default class PlayerGroupService extends Service {
       }
     })
 
-    await em.persistAndFlush(group)
+    await group.checkMembership(em)
     await em.clearCache(PlayerGroup.getCacheKey(group.game))
 
     return {
@@ -91,7 +91,6 @@ export default class PlayerGroupService extends Service {
     group.ruleMode = ruleMode
     group.rules = this.buildRulesFromData(rules)
     group.membersVisible = membersVisible
-    await group.checkMembership(em)
 
     createGameActivity(em, {
       user: req.ctx.state.user,
@@ -102,7 +101,7 @@ export default class PlayerGroupService extends Service {
       }
     })
 
-    await em.flush()
+    await group.checkMembership(em)
     await em.clearCache(PlayerGroup.getCacheKey(group.game))
 
     return {

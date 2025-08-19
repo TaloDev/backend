@@ -9,6 +9,8 @@ import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
 import { randText } from '@ngneat/falso'
 import LeaderboardEntryProp from '../../../../src/entities/leaderboard-entry-prop'
 import { Collection } from '@mikro-orm/core'
+import PlayerGroupRule, { PlayerGroupRuleCastType, PlayerGroupRuleName } from '../../../../src/entities/player-group-rule'
+import PlayerGroupFactory from '../../../fixtures/PlayerGroupFactory'
 
 describe('Leaderboard API service - post', () => {
   it('should create a leaderboard entry if the scope is valid', async () => {
@@ -595,5 +597,72 @@ describe('Leaderboard API service - post', () => {
       .expect(200)
 
     expect(res.body.entry.position).toBe(0)
+  })
+
+  it('should join eligible groups based on leaderboard scores', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([
+      APIKeyScope.WRITE_LEADERBOARDS
+    ])
+    const player = await new PlayerFactory([apiKey.game]).one()
+    const leaderboard = await new LeaderboardFactory([apiKey.game]).one()
+
+    const rule = new PlayerGroupRule(PlayerGroupRuleName.GTE, `leaderboardEntryScore.${leaderboard.internalName}`)
+    rule.castType = PlayerGroupRuleCastType.DOUBLE
+    rule.operands = ['100']
+
+    const group = await new PlayerGroupFactory().construct(apiKey.game).state(() => ({ rules: [rule] })).one()
+    await em.persistAndFlush([player, leaderboard, group])
+
+    const res = await request(app)
+      .post(`/v1/leaderboards/${leaderboard.internalName}/entries`)
+      .send({ score: 300 })
+      .auth(token, { type: 'bearer' })
+      .set('x-talo-alias', String(player.aliases[0].id))
+      .expect(200)
+
+    expect(res.body.entry.playerAlias.player.groups).toStrictEqual([
+      {
+        id: group.id,
+        name: group.name
+      }
+    ])
+  })
+
+  it('should leave ineligible groups based on leaderboard scores', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([
+      APIKeyScope.WRITE_LEADERBOARDS
+    ])
+    const player = await new PlayerFactory([apiKey.game]).one()
+    const leaderboard = await new LeaderboardFactory([apiKey.game]).state(() => ({
+      unique: true,
+      sortMode: LeaderboardSortMode.DESC
+    })).one()
+
+    const entry = await new LeaderboardEntryFactory(leaderboard, [player]).state(() => ({
+      playerAlias: player.aliases[0],
+      score: 1
+    })).one()
+
+    const rule = new PlayerGroupRule(PlayerGroupRuleName.LTE, `leaderboardEntryScore.${leaderboard.internalName}`)
+    rule.castType = PlayerGroupRuleCastType.DOUBLE
+    rule.operands = ['5']
+
+    const group = await new PlayerGroupFactory()
+      .construct(apiKey.game)
+      .state(() => ({ rules: [rule] }))
+      .one()
+    await em.persistAndFlush([player, leaderboard, entry, group])
+    await group.checkMembership(em)
+
+    expect(group.members).toHaveLength(1)
+
+    const res = await request(app)
+      .post(`/v1/leaderboards/${leaderboard.internalName}/entries`)
+      .send({ score: 300 })
+      .auth(token, { type: 'bearer' })
+      .set('x-talo-alias', String(player.aliases[0].id))
+      .expect(200)
+
+    expect(res.body.entry.playerAlias.player.groups).toStrictEqual([])
   })
 })

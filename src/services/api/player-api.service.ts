@@ -112,6 +112,7 @@ export default class PlayerAPIService extends APIService {
 
     const key = await this.getAPIKey(req.ctx)
     let alias: PlayerAlias | null = null
+    let justCreated = false
 
     try {
       alias = await findAliasFromIdentifyRequest(req, key, service, identifier)
@@ -121,6 +122,7 @@ export default class PlayerAPIService extends APIService {
         } else {
           const player = await createPlayerFromIdentifyRequest(req, key, service, identifier)
           alias = player?.aliases[0]
+          justCreated = true
         }
       } else if (alias.service === PlayerAliasService.TALO) {
         setCurrentPlayerState(req.ctx, alias.player.id, alias.id)
@@ -134,8 +136,11 @@ export default class PlayerAPIService extends APIService {
       }
     }
 
-    alias.lastSeenAt = alias.player.lastSeenAt = new Date()
-    await em.flush()
+    if (!justCreated) {
+      alias.lastSeenAt = alias.player.lastSeenAt = new Date()
+      await em.flush()
+      await alias.player.checkGroupMemberships(em)
+    }
 
     const socketToken = await alias.createSocketToken(req.ctx.redis)
 

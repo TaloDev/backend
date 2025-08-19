@@ -16,12 +16,13 @@ import GameFeedbackCategoryFactory from './fixtures/GameFeedbackCategoryFactory'
 import GameFeedbackFactory from './fixtures/GameFeedbackFactory'
 import createClickHouseClient from '../src/lib/clickhouse/createClient'
 import { rand } from '@ngneat/falso'
-import { getMikroORM } from '../src/config/mikro-orm.config'
+import ormConfig from '../src/config/mikro-orm.config'
+import { MikroORM } from '@mikro-orm/mysql'
 
 (async () => {
   console.info('Running migrations...')
 
-  const orm = await getMikroORM()
+  const orm = await MikroORM.init(ormConfig)
   await orm.getSchemaGenerator().dropSchema()
   await orm.em.getConnection().execute('drop table if exists mikro_orm_migrations')
   await orm.getMigrator().up()

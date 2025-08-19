@@ -1,9 +1,6 @@
 import PlayerGameStatSnapshot from '../../../entities/player-game-stat-snapshot'
-import { FlushMetricsQueueHandler } from './flush-metrics-queue-handler'
-import { getMikroORM } from '../../../config/mikro-orm.config'
-import { checkGroupsForPlayers } from '../../../entities/subscribers/player-group.subscriber'
+import { FlushMetricsQueueHandler, postFlushCheckMemberships } from './flush-metrics-queue-handler'
 import Player from '../../../entities/player'
-import { EntityManager } from '@mikro-orm/mysql'
 
 export class FlushStatSnapshotsQueueHandler extends FlushMetricsQueueHandler<PlayerGameStatSnapshot> {
   constructor() {
@@ -22,14 +19,7 @@ export class FlushStatSnapshotsQueueHandler extends FlushMetricsQueueHandler<Pla
           if (process.env.NODE_ENV !== 'test') {
             console.info(`FlushStatSnapshotsQueueHandler checking groups for ${playerSet.size} players`)
           }
-
-          const orm = await getMikroORM()
-          const em = orm.em.fork() as EntityManager
-          try {
-            await checkGroupsForPlayers(em, Array.from(playerSet))
-          } finally {
-            em.clear()
-          }
+          await postFlushCheckMemberships(Array.from(playerSet))
         }
       }
     })

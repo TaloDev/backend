@@ -122,6 +122,7 @@ export default class PlayerGroup {
   async checkMembership(em: EntityManager) {
     const players = await this.getQuery(em).getResultList()
     this.members.set(players)
+    await em.flush()
   }
 
   async isPlayerEligible(em: EntityManager, player: Player): Promise<boolean> {

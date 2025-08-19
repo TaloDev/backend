@@ -332,6 +332,7 @@ describe('Game channel API service - members', () => {
     channel.members.add(player.aliases[0])
     channel.members.add(otherPlayer.aliases[0])
     await em.persistAndFlush([group, channel, player, otherPlayer])
+    await group.checkMembership(em)
 
     const res = await request(app)
       .get(`/v1/game-channels/${channel.id}/members`)

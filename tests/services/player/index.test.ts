@@ -172,6 +172,7 @@ describe('Player service - index', () => {
 
     const group = await new PlayerGroupFactory().construct(game).state(() => ({ rules: [dateRule] })).one()
     await em.persistAndFlush([player, ...otherPlayers, group])
+    await group.checkMembership(em)
 
     const res = await request(app)
       .get(`/games/${game.id}/players`)

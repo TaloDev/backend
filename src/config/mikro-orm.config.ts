@@ -1,6 +1,5 @@
 import 'dotenv/config'
 import entities from '../entities'
-import subscribers from '../entities/subscribers'
 import migrationsList from '../migrations'
 import { TsMorphMetadataProvider } from '@mikro-orm/reflection'
 import { Migrator } from '@mikro-orm/migrations'
@@ -19,7 +18,6 @@ const ormConfig = defineConfig({
     migrationsList,
     path: 'src/migrations' // for generating migrations via the cli
   },
-  subscribers,
   metadataProvider: TsMorphMetadataProvider,
   extensions: [Migrator],
   pool: {

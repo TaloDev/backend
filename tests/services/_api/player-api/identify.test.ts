@@ -110,8 +110,8 @@ describe('Player API service - identify', () => {
     })).one()
     await em.persistAndFlush([group, player])
 
-    const playerCount = await group.members.loadCount()
-    expect(playerCount).toEqual(0)
+    await group.checkMembership(em)
+    expect(group.members.count()).toBe(0)
 
     const res = await request(app)
       .get('/v1/players/identify')

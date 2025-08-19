@@ -109,6 +109,7 @@ export default class PlayerService extends Service {
     }
 
     await em.persistAndFlush(player)
+    await player.checkGroupMemberships(em)
 
     return {
       status: 200,
@@ -281,9 +282,7 @@ export default class PlayerService extends Service {
         })
       }
 
-      // step 1: update props
       await em.flush()
-
       return [player, null]
     })
 
@@ -292,12 +291,7 @@ export default class PlayerService extends Service {
     }
 
     if (player) {
-      // step 2: check for group membership changes
-      player.updatedAt = new Date()
-      await em.flush()
-
-      // step 3: get the latest group memberships
-      await em.refresh(player)
+      await player.checkGroupMemberships(em)
     }
 
     return {

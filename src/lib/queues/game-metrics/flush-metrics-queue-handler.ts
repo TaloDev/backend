@@ -4,6 +4,9 @@ import { setTraceAttributes } from '@hyperdx/node-opentelemetry'
 import createClickHouseClient from '../../clickhouse/createClient'
 import { captureException } from '@sentry/node'
 import { ClickHouseClient } from '@clickhouse/client'
+import { getMikroORM } from '../../../config/mikro-orm.config'
+import { EntityManager } from '@mikro-orm/mysql'
+import Player from '../../../entities/player'
 
 type FlushFunc<T> = (clickhouse: ClickHouseClient, values: T[]) => Promise<void>
 type HandlerOptions<T> = {
@@ -13,6 +16,16 @@ type HandlerOptions<T> = {
 
 let clickhouse: ReturnType<typeof createClickHouseClient>
 
+export async function postFlushCheckMemberships(players: Player[]) {
+  const orm = await getMikroORM()
+  const em = orm.em.fork() as EntityManager
+  try {
+    const promises = players.map((player) => player.checkGroupMemberships(em))
+    await Promise.all(promises)
+  } finally {
+    em.clear()
+  }
+}
 export class FlushMetricsQueueHandler<T extends { id: string }> {
   private queue: Queue
   private buffer: Map<string, T> = new Map()

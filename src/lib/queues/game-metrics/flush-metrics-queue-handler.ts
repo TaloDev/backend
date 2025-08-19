@@ -4,6 +4,9 @@ import { setTraceAttributes } from '@hyperdx/node-opentelemetry'
 import createClickHouseClient from '../../clickhouse/createClient'
 import { captureException } from '@sentry/node'
 import { ClickHouseClient } from '@clickhouse/client'
+import { getMikroORM } from '../../../config/mikro-orm.config'
+import { EntityManager } from '@mikro-orm/mysql'
+import Player from '../../../entities/player'
 
 type FlushFunc<T> = (clickhouse: ClickHouseClient, values: T[]) => Promise<void>
 type HandlerOptions<T> = {
@@ -11,6 +14,18 @@ type HandlerOptions<T> = {
   postFlush?: (values: T[]) => Promise<void>
 }
 
+let clickhouse: ReturnType<typeof createClickHouseClient>
+
+export async function postFlushCheckMemberships(players: Player[]) {
+  const orm = await getMikroORM()
+  const em = orm.em.fork() as EntityManager
+  try {
+    const promises = players.map((player) => player.checkGroupMemberships(em))
+    await Promise.all(promises)
+  } finally {
+    em.clear()
+  }
+}
 export class FlushMetricsQueueHandler<T extends { id: string }> {
   private queue: Queue
   private buffer: Map<string, T> = new Map()
@@ -20,6 +35,10 @@ export class FlushMetricsQueueHandler<T extends { id: string }> {
     this.metricName = metricName
     this.flushFunc = flushFunc
     this.options = options ?? { logsInTests: true }
+
+    if (!clickhouse) {
+      clickhouse = createClickHouseClient()
+    }
 
     this.queue = createQueue(`flush-${metricName}`, async () => {
       /* v8 ignore next */
@@ -49,26 +68,32 @@ export class FlushMetricsQueueHandler<T extends { id: string }> {
 
     setTraceAttributes({ metricName: this.metricName, bufferSize })
 
+    const canLog = process.env.NODE_ENV !== 'test' || (this.options.logsInTests ?? true)
+
     /* v8 ignore start */
-    if (process.env.NODE_ENV !== 'test' || (this.options.logsInTests ?? true)) {
+    if (canLog) {
       console.info(`Flushing ${bufferSize} ${this.metricName.replace('-', ' ')}...`)
     }
     /* v8 ignore stop */
     const values = Array.from(this.buffer.values())
 
-    const clickhouse = createClickHouseClient()
     try {
       await this.flushFunc(clickhouse, values)
-      await clickhouse.close()
       if (this.options.postFlush) {
         await this.options.postFlush(values)
       }
+
+      /* v8 ignore start */
+      if (canLog) {
+        console.info(`Flushed ${bufferSize} ${this.metricName.replace('-', ' ')}`)
+      }
+      /* v8 ignore stop */
     } catch (err) {
       console.error(err)
       captureException(err)
+    } finally {
+      values.forEach(({ id }) => this.buffer.delete(id))
     }
-
-    values.forEach(({ id }) => this.buffer.delete(id))
   }
 
   add(item: T) {

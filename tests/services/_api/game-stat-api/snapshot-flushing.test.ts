@@ -38,7 +38,7 @@ describe('Game stats API service - snapshot flushing', () => {
     handler.add(new PlayerGameStatSnapshot().construct(alias, playerStat))
 
     await handler.handle()
-    expect(consoleSpy).toHaveBeenCalledOnce()
+    expect(consoleSpy).toHaveBeenCalledTimes(2)
     consoleSpy.mockClear()
 
     let snapshots: ClickHousePlayerGameStatSnapshot[] = []

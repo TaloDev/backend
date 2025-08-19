@@ -8,7 +8,7 @@ import PlayerGroupFactory from '../../../fixtures/PlayerGroupFactory'
 import PlayerGroupRule, { PlayerGroupRuleCastType, PlayerGroupRuleName } from '../../../../src/entities/player-group-rule'
 import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
 import { randWord } from '@ngneat/falso'
-import * as checkGroupMemberships from '../../../../src/lib/groups/checkGroupMemberships'
+import PlayerGroup from '../../../../src/entities/player-group'
 
 describe('Player API service - patch', () => {
   it('should update a player\'s properties', async () => {
@@ -169,7 +169,7 @@ describe('Player API service - patch', () => {
     })).one()
     await em.persistAndFlush([group, player])
 
-    await em.refresh(group, { populate: ['members'] })
+    await group.checkMembership(em)
     expect(group.members).toHaveLength(1)
 
     const res = await request(app)
@@ -271,10 +271,7 @@ describe('Player API service - patch', () => {
   })
 
   it('should only allow memberships to be checked for a player once per request lifecycle', async () => {
-    const checkGroupMembershipsSpy = vi.spyOn(checkGroupMemberships, 'default').mockImplementation(async () => {
-      await new Promise((resolve) => setTimeout(resolve, 1000))
-      return false
-    })
+    const isPlayerEligibleSpy = vi.spyOn(PlayerGroup.prototype, 'isPlayerEligible').mockResolvedValue(true)
 
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_PLAYERS])
 
@@ -307,14 +304,13 @@ describe('Player API service - patch', () => {
         .expect(200)
     }))
 
-    // once when the player is created, and once for the first patch request
-    expect(checkGroupMembershipsSpy).toHaveBeenCalledTimes(2)
-    checkGroupMembershipsSpy.mockRestore()
+    expect(isPlayerEligibleSpy).toHaveBeenCalledTimes(1)
+    isPlayerEligibleSpy.mockRestore()
   })
 
   it('should handle checkGroupMemberships errors', async () => {
-    const checkGroupMembershipsSpy = vi.spyOn(checkGroupMemberships, 'default')
-      .mockResolvedValueOnce(true)
+    const isPlayerEligibleSpy = vi
+      .spyOn(PlayerGroup.prototype, 'isPlayerEligible')
       .mockRejectedValueOnce(new Error('unknown'))
     const consoleSpy = vi.spyOn(console, 'error')
 
@@ -348,7 +344,7 @@ describe('Player API service - patch', () => {
       .expect(200)
 
     expect(consoleSpy).toHaveBeenCalledWith('Failed checking memberships: unknown')
-    checkGroupMembershipsSpy.mockRestore()
+    isPlayerEligibleSpy.mockRestore()
     consoleSpy.mockRestore()
   })
 })

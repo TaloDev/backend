@@ -73,6 +73,7 @@ describe('Player service - post', () => {
 
     const group = await new PlayerGroupFactory().construct(game).state(() => ({ rules: [rule] })).one()
     await em.persistAndFlush(group)
+    await group.checkMembership(em)
 
     const res = await request(app)
       .post(`/games/${game.id}/players`)

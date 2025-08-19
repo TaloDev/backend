@@ -14,6 +14,7 @@ import createClickHouseClient from '../lib/clickhouse/createClient'
 import { captureException } from '@sentry/node'
 import { ClickHouseClient } from '@clickhouse/client'
 import GameChannel, { GameChannelLeavingReason } from './game-channel'
+import checkGroupMemberships from '../lib/groups/checkGroupMemberships'
 
 @Entity()
 export default class Player {
@@ -71,7 +72,9 @@ export default class Player {
   }
 
   setProps(props: { key: string, value: string }[]) {
-    this.props.set(props.map(({ key, value }) => new PlayerProp(this, key, value)))
+    this.props.set(
+      props.map(({ key, value }) => new PlayerProp(this, key, value))
+    )
   }
 
   async insertSession(clickhouse: ClickHouseClient, session: PlayerSession) {
@@ -149,9 +152,11 @@ export default class Player {
     await em.flush()
 
     const conns = await socket.findConnectionsAsync(async (conn) => {
-      return conn.hasScope(APIKeyScope.READ_PLAYERS) &&
+      return (
+        conn.hasScope(APIKeyScope.READ_PLAYERS) &&
         !!conn.playerAliasId &&
         this.game.id === (await conn.getPlayerAlias())?.player.game.id
+      )
     })
     await sendMessages(conns, 'v1.players.presence.updated', {
       presence: this.presence,
@@ -194,8 +199,14 @@ export default class Player {
     this.addProp('META_DEV_BUILD', '1')
   }
 
+  async checkGroupMemberships(em: EntityManager) {
+    await checkGroupMemberships(em, this)
+  }
+
   toJSON() {
-    const presence = this.presence ? { ...this.presence.toJSON(), playerAlias: undefined } : null
+    const presence = this.presence
+      ? { ...this.presence.toJSON(), playerAlias: undefined }
+      : null
 
     return {
       id: this.id,
@@ -204,7 +215,9 @@ export default class Player {
       devBuild: this.devBuild,
       createdAt: this.createdAt,
       lastSeenAt: this.lastSeenAt,
-      groups: this.groups.getItems().map((group) => ({ id: group.id, name: group.name })),
+      groups: this.groups
+        .getItems()
+        .map((group) => ({ id: group.id, name: group.name })),
       auth: this.auth ?? undefined,
       presence
     }

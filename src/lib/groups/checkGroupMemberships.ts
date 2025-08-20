@@ -1,4 +1,4 @@
-import { EntityManager } from '@mikro-orm/mysql'
+import { EntityManager, UniqueConstraintViolationException } from '@mikro-orm/mysql'
 import Player from '../../entities/player'
 import PlayerGroup from '../../entities/player-group'
 import { getResultCacheOptions } from '../perf/getResultCacheOptions'
@@ -21,7 +21,7 @@ async function runMembershipChecksForGroups(em: EntityManager, player: Player, g
 
   for (const group of groups) {
     const eligible = await group.isPlayerEligible(em, player)
-    const isInGroup = player.groups.contains(group)
+    const isInGroup = player.groups.getIdentifiers().includes(group.id)
 
     const eligibleButNotInGroup = eligible && !isInGroup
     const inGroupButNotEligible = !eligible && isInGroup
@@ -60,21 +60,25 @@ export default async function checkGroupMemberships(em: EntityManager, player: P
 
   const redisKey = `checkMembership:${player.id}`
   let lockCreated: 'OK' | null = null
-  let shouldFlush = false
 
   try {
     lockCreated = await redis.set(redisKey, '1', 'EX', 30, 'NX')
     if (lockCreated) {
-      shouldFlush = await runMembershipChecksForGroups(em, player, groups)
+      const shouldFlush = await runMembershipChecksForGroups(em, player, groups)
+      if (shouldFlush) {
+        await em.flush()
+      }
     }
   } catch (err) {
+    if (err instanceof UniqueConstraintViolationException) {
+      console.info(`Duplicate group attempt for player ${player.id}`)
+      return
+    }
+
     console.error(`Failed checking memberships: ${(err as Error).message}`)
     captureException(err)
   } finally {
     if (lockCreated) {
-      if (shouldFlush) {
-        await em.flush()
-      }
       await redis.del(redisKey)
     }
   }

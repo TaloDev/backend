@@ -9,6 +9,7 @@ import PlayerGroupRule, { PlayerGroupRuleCastType, PlayerGroupRuleName } from '.
 import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
 import { randWord } from '@ngneat/falso'
 import PlayerGroup from '../../../../src/entities/player-group'
+import Redis from 'ioredis'
 
 describe('Player API service - patch', () => {
   it('should update a player\'s properties', async () => {
@@ -345,6 +346,48 @@ describe('Player API service - patch', () => {
 
     expect(consoleSpy).toHaveBeenCalledWith('Failed checking memberships: unknown')
     isPlayerEligibleSpy.mockRestore()
+    consoleSpy.mockRestore()
+  })
+
+  // this is more likely to happen with event/stat flushing, but easier to test it here
+  it('should handle unique constraint failures for groups', async () => {
+    const redisSetSpy = vi.spyOn(Redis.prototype, 'set').mockResolvedValue('OK')
+    const consoleSpy = vi.spyOn(console, 'info')
+
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_PLAYERS])
+
+    const rule = new PlayerGroupRule(PlayerGroupRuleName.GTE, 'props.currentLevel')
+    rule.castType = PlayerGroupRuleCastType.DOUBLE
+    rule.operands = ['60']
+
+    const group = await new PlayerGroupFactory().construct(apiKey.game).state(() => ({ rules: [rule] })).one()
+
+    const player = await new PlayerFactory([apiKey.game]).state((player) => ({
+      props: new Collection<PlayerProp>(player, [
+        new PlayerProp(player, 'collectibles', '0'),
+        new PlayerProp(player, 'currentLevel', '59')
+      ])
+    })).one()
+    await em.persistAndFlush([group, player])
+
+    await Promise.allSettled(['60', '61', '62', '63', '64', '65'].map((level) => {
+      return request(app)
+        .patch(`/v1/players/${player.id}`)
+        .send({
+          props: [
+            {
+              key: 'currentLevel',
+              value: level
+            }
+          ]
+        })
+        .auth(token, { type: 'bearer' })
+        .expect(200)
+    }))
+
+    expect(consoleSpy).toHaveBeenCalledWith(`Duplicate group attempt for player ${player.id}`)
+
+    redisSetSpy.mockRestore()
     consoleSpy.mockRestore()
   })
 })

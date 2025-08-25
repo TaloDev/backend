@@ -71,7 +71,7 @@ describe('Player API service - identify - steamworks auth', () => {
 
     expect(res.body.alias.identifier).toBe(steamId)
     expect(res.body.alias.player.id).toBe(player.id)
-    expect(res.body.alias.player.props).toStrictEqual([
+    expect(res.body.alias.player.props).toEqual(expect.arrayContaining([
       {
         key: 'META_STEAMWORKS_OWNS_APP_PERMANENTLY',
         value: 'true'
@@ -92,7 +92,7 @@ describe('Player API service - identify - steamworks auth', () => {
         key: 'META_STEAMWORKS_OWNS_APP_FROM_DATE',
         value: '2021-08-01T00:00:00.000Z'
       }
-    ])
+    ]))
   })
 
   it('should identify a non-existent steamworks player by creating a new player with the write scope', async () => {

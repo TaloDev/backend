@@ -4,7 +4,6 @@ import { v4 } from 'uuid'
 import PlayerAlias, { PlayerAliasService } from './player-alias'
 import { sign } from '../lib/auth/jwt'
 import { getAuthMiddlewareAliasKey, getAuthMiddlewarePlayerKey } from '../middleware/player-auth-middleware'
-import { getAliasFromIdentifyCacheKey } from '../middleware/current-player-middleware'
 
 const errorCodes = [
   'INVALID_CREDENTIALS',
@@ -74,11 +73,10 @@ export default class PlayerAuth {
       player: this.player
     })
 
-    const keysToClear: string[] = [getAuthMiddlewarePlayerKey(this.player.id)]
-    if (alias) {
-      keysToClear.push(getAuthMiddlewareAliasKey(alias.id))
-      keysToClear.push(getAliasFromIdentifyCacheKey(this.player.game.id, alias.service, alias.identifier))
-    }
+    const keysToClear: string[] = [
+      getAuthMiddlewarePlayerKey(this.player.id),
+      alias ? getAuthMiddlewareAliasKey(alias.id) : null
+    ].filter((key): key is string => key !== null)
 
     await Promise.all(keysToClear.map((key) => em.clearCache(key)))
   }

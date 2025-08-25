@@ -145,7 +145,7 @@ export default class PlayerGroup {
     }
   }
 
-  async toJSONWithCount(em: EntityManager, includeDevData: boolean) {
+  async toJSONWithCount(includeDevData: boolean) {
     return {
       ...this.toJSON(),
       count: await this.members.loadCount({

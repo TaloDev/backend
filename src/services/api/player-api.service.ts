@@ -13,10 +13,11 @@ import PlayerGameStat from '../../entities/player-game-stat'
 import checkScope from '../../policies/checkScope'
 import Integration, { IntegrationType } from '../../entities/integration'
 import { validateAuthSessionToken } from '../../middleware/player-auth-middleware'
-import { getAliasFromIdentifyCacheKey, setCurrentPlayerState } from '../../middleware/current-player-middleware'
+import { setCurrentPlayerState } from '../../middleware/current-player-middleware'
 import { ClickHouseClient } from '@clickhouse/client'
 import { TraceService } from '../../lib/tracing/trace-service'
 import { getResultCacheOptions } from '../../lib/perf/getResultCacheOptions'
+import { streamCursor } from '../../lib/perf/streamByCursor'
 
 async function getRealIdentifier(
   req: Request,
@@ -43,17 +44,25 @@ export async function findAliasFromIdentifyRequest(
   key: APIKey,
   service: string,
   identifier: string
-): Promise<PlayerAlias | null> {
-  return (req.ctx.em as EntityManager).getRepository(PlayerAlias).findOne({
-    service,
-    identifier: await getRealIdentifier(req, key, service, identifier),
-    player: {
-      game: key.game
+) {
+  const em: EntityManager = req.ctx.em
+  const aliasStream = streamCursor<PlayerAlias>(async (batchSize, after) => {
+    return em.repo(PlayerAlias).findByCursor({
+      service,
+      identifier: await getRealIdentifier(req, key, service, identifier)
+    }, {
+      first: batchSize,
+      after,
+      orderBy: { id: 'asc' }
+    })
+  }, 100)
+
+  for await (const alias of aliasStream) {
+    if (alias.player.game.id === key.game.id) {
+      return alias
     }
-  }, {
-    ...getResultCacheOptions(getAliasFromIdentifyCacheKey(key.game.id, service, identifier), 30_000),
-    populate: ['player.auth']
-  })
+  }
+  return null
 }
 
 export async function createPlayerFromIdentifyRequest(

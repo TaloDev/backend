@@ -55,6 +55,7 @@ export async function validateAuthSessionToken(ctx: Context, alias: PlayerAlias)
 
   try {
     const valid = await validateSessionTokenJWT(
+      ctx.em,
       sessionToken as string,
       alias,
       ctx.state.currentPlayerId,
@@ -72,11 +73,15 @@ export async function validateAuthSessionToken(ctx: Context, alias: PlayerAlias)
 }
 
 export async function validateSessionTokenJWT(
+  em: EntityManager,
   sessionToken: string,
   alias: PlayerAlias,
   expectedPlayerId: string,
   expectedAliasId: number
 ): Promise<boolean> {
-  const payload = await verify<{ playerId: string, aliasId: number }>(sessionToken, alias.player.auth!.sessionKey!)
+  await em.populate(alias, ['player.auth'])
+  if (!alias.player.auth) return false
+
+  const payload = await verify<{ playerId: string, aliasId: number }>(sessionToken, alias.player.auth.sessionKey!)
   return payload.playerId === expectedPlayerId && payload.aliasId === expectedAliasId
 }

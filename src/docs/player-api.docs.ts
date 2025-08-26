@@ -102,21 +102,26 @@ const PlayerAPIDocs: APIDocs<PlayerAPIService> = {
       {
         title: 'Sample response',
         sample: {
-          player: {
-            id: '550e8400-e29b-41d4-a716-446655440000',
-            props: [
-              { key: 'currentLevel', value: 'Zone3-Stage2' }
-            ],
-            aliases: [
-              { id: 1, service: 'username', identifier: 'tud0r', player: '/* [Circular] */' }
-            ],
-            devBuild: false,
-            createdAt: '2025-08-14T13:20:32.133Z',
-            lastSeenAt: '2025-08-14T15:09:43.066Z',
-            groups: [
-              { id: '5826ca71-1964-4a1b-abcb-a61ffbe003be', name: 'Winners' }
-            ]
-          }
+          players: [
+            {
+              id: '550e8400-e29b-41d4-a716-446655440000',
+              props: [
+                { key: 'currentLevel', value: 'Zone3-Stage2' }
+              ],
+              aliases: [
+                { id: 1, service: 'username', identifier: 'tud0r', player: '/* [Circular] */' }
+              ],
+              devBuild: false,
+              createdAt: '2025-08-14T13:20:32.133Z',
+              lastSeenAt: '2025-08-14T15:09:43.066Z',
+              groups: [
+                { id: '5826ca71-1964-4a1b-abcb-a61ffbe003be', name: 'Winners' }
+              ]
+            }
+          ],
+          count: 1,
+          itemsPerPage: 50,
+          isLastPage: true
         }
       }
     ]

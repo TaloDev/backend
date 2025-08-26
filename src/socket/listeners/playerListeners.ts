@@ -21,10 +21,10 @@ const playerListeners = [
       const token = await socket.redis.get(`socketTokens.${data.playerAliasId}`)
 
       let alias: PlayerAlias
+      const em = RequestContext.getEntityManager() as EntityManager
 
       if (token === data.socketToken) {
-        alias = await RequestContext.getEntityManager()!
-          .getRepository(PlayerAlias)
+        alias = await em.repo(PlayerAlias)
           .findOneOrFail({
             id: data.playerAliasId,
             player: {
@@ -37,6 +37,7 @@ const playerListeners = [
         if (alias.service === PlayerAliasService.TALO) {
           try {
             await validateSessionTokenJWT(
+              em,
               /* v8 ignore next */
               data.sessionToken ?? '',
               alias,
@@ -63,7 +64,6 @@ const playerListeners = [
       conn.playerAliasId = alias.id
       await sendMessage(conn, 'v1.players.identify.success', alias)
 
-      const em = RequestContext.getEntityManager() as EntityManager
       await alias.player.handleSession(em, true)
       await alias.player.setPresence(em, socket, alias, true)
     },

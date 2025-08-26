@@ -123,12 +123,15 @@ export default class PlayerAuthAPIService extends APIService {
     const alias = await findAliasFromIdentifyRequest(req, key, PlayerAliasService.TALO, identifier)
     if (!alias) return this.handleFailedLogin(req)
 
-    const passwordMatches = await bcrypt.compare(password, alias.player.auth!.password)
+    await em.populate(alias, ['player.auth'])
+    if (!alias.player.auth) return this.handleFailedLogin(req)
+
+    const passwordMatches = await bcrypt.compare(password, alias.player.auth.password)
     if (!passwordMatches) this.handleFailedLogin(req)
 
     const redis: Redis = req.ctx.redis
 
-    if (alias.player.auth!.verificationEnabled) {
+    if (alias.player.auth.verificationEnabled) {
       await em.populate(alias.player, ['game'])
 
       const code = generateSixDigitCode()
@@ -149,7 +152,7 @@ export default class PlayerAuthAPIService extends APIService {
         }
       }
     } else {
-      const sessionToken = await alias.player.auth!.createSession(em, alias)
+      const sessionToken = await alias.player.auth.createSession(em, alias)
       const socketToken = await alias.createSocketToken(redis)
 
       createPlayerAuthActivity(req, alias.player, {

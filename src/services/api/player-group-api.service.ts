@@ -30,7 +30,7 @@ export default class PlayerGroupAPIService extends APIService {
     const em: EntityManager = req.ctx.em
     const group: PlayerGroup = req.ctx.state.group
 
-    const groupWithCountAndMembers: PlayerGroupWithCountAndMembers = await group.toJSONWithCount(em, req.ctx.state.includeDevData)
+    const groupWithCountAndMembers: PlayerGroupWithCountAndMembers = await group.toJSONWithCount(req.ctx.state.includeDevData)
 
     let isLastPage = true
     let paginationCount = 0

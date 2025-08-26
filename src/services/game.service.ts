@@ -143,6 +143,8 @@ export default class GameService extends Service {
         throw err
         /* v8 ignore stop */
       }
+
+      await em.clearCache(Game.getLiveConfigCacheKey(game))
       await sendLiveConfigUpdatedMessage(req, game)
 
       createGameActivity(em, {

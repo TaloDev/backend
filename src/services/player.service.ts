@@ -214,9 +214,18 @@ export default class PlayerService extends Service {
       query.andWhere({ devBuild: false })
     }
 
-    const [allPlayers, count] = await query
-      .andWhere({ game: req.ctx.state.game })
-      .getResultAndCount()
+    query.andWhere({ game: req.ctx.state.game })
+
+    const searchComponent = encodeURIComponent(search) || 'no-search'
+    const devDataComponent = req.ctx.state.includeDevData ? 'dev' : 'no-dev'
+    const cacheKey = `player-search-${req.ctx.state.game.id}-${searchComponent}-${page}-${devDataComponent}`
+    query.cache([cacheKey, 5000])
+
+    // getResultAndCount returns NaN for the count when a cache key is set
+    const [allPlayers, count] = await Promise.all([
+      query.clone().getResult(),
+      query.clone().getCount()
+    ])
 
     const players = allPlayers.slice(0, itemsPerPage)
     await em.populate(players, ['aliases'])

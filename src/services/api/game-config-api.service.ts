@@ -4,6 +4,8 @@ import APIService from './api-service'
 import { EntityManager } from '@mikro-orm/mysql'
 import GameConfigAPIDocs from '../../docs/game-config-api.docs'
 import { TraceService } from '../../lib/tracing/trace-service'
+import Game from '../../entities/game'
+import { getResultCacheOptions } from '../../lib/perf/getResultCacheOptions'
 
 @TraceService()
 export default class GameConfigAPIService extends APIService {
@@ -16,12 +18,20 @@ export default class GameConfigAPIService extends APIService {
     const em: EntityManager = req.ctx.em
 
     const key = await this.getAPIKey(req.ctx)
-    await em.populate(key, ['game'])
+    const cacheKey = Game.getLiveConfigCacheKey(key.game)
+
+    const game = await em
+      .fork()
+      .repo(Game)
+      .findOneOrFail(key.game, {
+        ...getResultCacheOptions(cacheKey),
+        fields: ['props']
+      })
 
     return {
       status: 200,
       body: {
-        config: key.game.getLiveConfig()
+        config: game.getLiveConfig()
       }
     }
   }

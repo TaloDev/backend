@@ -50,6 +50,10 @@ export default class Game {
     this.organisation = organisation
   }
 
+  static getLiveConfigCacheKey(game: Game) {
+    return `live-config-${game.id}`
+  }
+
   getLiveConfig(): Prop[] {
     return this.props.filter((prop) => !prop.key.startsWith('META_'))
   }

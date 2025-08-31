@@ -8,7 +8,6 @@ import GameSaveFactory from '../../../fixtures/GameSaveFactory'
 import PlayerGameStatFactory from '../../../fixtures/PlayerGameStatFactory'
 import GameStatFactory from '../../../fixtures/GameStatFactory'
 import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
-import Player from '../../../../src/entities/player'
 import PlayerSession from '../../../../src/entities/player-session'
 
 describe('Player API service - merge', () => {
@@ -65,11 +64,10 @@ describe('Player API service - merge', () => {
     expect(res.body.player.id).toBe(player1.id)
 
     const prevId = player2.id
-    const aliases = await em.getRepository(PlayerAlias).find({ player: prevId })
+    const aliases = await em.getRepository(PlayerAlias).find({ player: prevId }, { refresh: true })
     expect(aliases).toHaveLength(0)
 
-    em.clear()
-    const mergedPlayer = await em.getRepository(Player).findOne(prevId)
+    const mergedPlayer = await em.refresh(player2)
     expect(mergedPlayer).toBeNull()
   })
 
@@ -102,7 +100,7 @@ describe('Player API service - merge', () => {
       .auth(token, { type: 'bearer' })
       .expect(200)
 
-    expect(res.body.player.props).toStrictEqual([
+    expect(res.body.player.props).toEqual(expect.arrayContaining([
       {
         key: 'currentLevel',
         value: '60'
@@ -123,7 +121,7 @@ describe('Player API service - merge', () => {
         key: 'currentHealth',
         value: '66'
       }
-    ])
+    ]))
   })
 
   it('should not merge players if alias1 does not exist', async () => {

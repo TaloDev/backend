@@ -71,7 +71,7 @@ export default class PlayerAuthAPIService extends APIService {
     alias.player.auth.verificationEnabled = Boolean(verificationEnabled)
     em.persist(alias.player.auth)
 
-    const sessionToken = await alias.player.auth.createSession(em, alias)
+    const sessionToken = await alias.player.auth.createSession(alias)
     const socketToken = await alias.createSocketToken(req.ctx.redis)
 
     createPlayerAuthActivity(req, alias.player, {
@@ -152,7 +152,7 @@ export default class PlayerAuthAPIService extends APIService {
         }
       }
     } else {
-      const sessionToken = await alias.player.auth.createSession(em, alias)
+      const sessionToken = await alias.player.auth.createSession(alias)
       const socketToken = await alias.createSocketToken(redis)
 
       createPlayerAuthActivity(req, alias.player, {
@@ -215,7 +215,7 @@ export default class PlayerAuthAPIService extends APIService {
 
     await redis.del(this.getRedisAuthKey(key, alias))
 
-    const sessionToken = await alias.player.auth!.createSession(em, alias)
+    const sessionToken = await alias.player.auth!.createSession(alias)
     const socketToken = await alias.createSocketToken(redis)
 
     createPlayerAuthActivity(req, alias.player, {
@@ -250,7 +250,7 @@ export default class PlayerAuthAPIService extends APIService {
       populate: ['player.auth']
     })
 
-    await alias.player.auth!.clearSession(em)
+    alias.player.auth!.clearSession()
 
     createPlayerAuthActivity(req, alias.player, {
       type: PlayerAuthActivityType.LOGGED_OUT
@@ -493,7 +493,7 @@ export default class PlayerAuthAPIService extends APIService {
     await redis.del(this.getRedisPasswordResetKey(key, code))
 
     alias.player.auth!.password = await bcrypt.hash(password, 10)
-    await alias.player.auth!.clearSession(em)
+    alias.player.auth!.clearSession()
 
     createPlayerAuthActivity(req, alias.player, {
       type: PlayerAuthActivityType.PASSWORD_RESET_COMPLETED
@@ -580,7 +580,7 @@ export default class PlayerAuthAPIService extends APIService {
     }
 
     createPlayerAuthActivity(req, alias.player, {
-      type: PlayerAuthActivityType.VERFICIATION_TOGGLED,
+      type: PlayerAuthActivityType.VERIFICATION_TOGGLED,
       extra: {
         verificationEnabled: alias.player.auth!.verificationEnabled
       }

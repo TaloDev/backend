@@ -20,7 +20,7 @@ describe('Player auth API service - toggle verification', () => {
     const alias = player.aliases[0]
     await em.persistAndFlush(player)
 
-    const sessionToken = await player.auth!.createSession(em, alias)
+    const sessionToken = await player.auth!.createSession(alias)
     await em.flush()
 
     await request(app)
@@ -36,7 +36,7 @@ describe('Player auth API service - toggle verification', () => {
     expect(player.auth!.verificationEnabled).toBe(true)
 
     const activity = await em.getRepository(PlayerAuthActivity).findOne({
-      type: PlayerAuthActivityType.VERFICIATION_TOGGLED,
+      type: PlayerAuthActivityType.VERIFICATION_TOGGLED,
       player: player.id,
       extra: {
         verificationEnabled: true
@@ -58,7 +58,7 @@ describe('Player auth API service - toggle verification', () => {
     const alias = player.aliases[0]
     await em.persistAndFlush(player)
 
-    const sessionToken = await player.auth!.createSession(em, alias)
+    const sessionToken = await player.auth!.createSession(alias)
     await em.flush()
 
     await request(app)
@@ -74,7 +74,7 @@ describe('Player auth API service - toggle verification', () => {
     expect(player.auth!.verificationEnabled).toBe(false)
 
     const activity = await em.getRepository(PlayerAuthActivity).findOne({
-      type: PlayerAuthActivityType.VERFICIATION_TOGGLED,
+      type: PlayerAuthActivityType.VERIFICATION_TOGGLED,
       player: player.id,
       extra: {
         verificationEnabled: false
@@ -96,7 +96,7 @@ describe('Player auth API service - toggle verification', () => {
     const alias = player.aliases[0]
     await em.persistAndFlush(player)
 
-    const sessionToken = await player.auth!.createSession(em, alias)
+    const sessionToken = await player.auth!.createSession(alias)
     await em.flush()
 
     const res = await request(app)
@@ -137,7 +137,7 @@ describe('Player auth API service - toggle verification', () => {
     const alias = player.aliases[0]
     await em.persistAndFlush(player)
 
-    const sessionToken = await player.auth!.createSession(em, alias)
+    const sessionToken = await player.auth!.createSession(alias)
     await em.flush()
 
     await request(app)
@@ -154,7 +154,7 @@ describe('Player auth API service - toggle verification', () => {
     expect(player.auth!.email).toBe('bozzz@mail.com')
 
     const activity = await em.getRepository(PlayerAuthActivity).findOne({
-      type: PlayerAuthActivityType.VERFICIATION_TOGGLED,
+      type: PlayerAuthActivityType.VERIFICATION_TOGGLED,
       player: player.id,
       extra: {
         verificationEnabled: true
@@ -176,7 +176,7 @@ describe('Player auth API service - toggle verification', () => {
     const alias = player.aliases[0]
     await em.persistAndFlush(player)
 
-    const sessionToken = await player.auth!.createSession(em, alias)
+    const sessionToken = await player.auth!.createSession(alias)
     await em.flush()
 
     const res = await request(app)
@@ -217,7 +217,7 @@ describe('Player auth API service - toggle verification', () => {
     const alias = player.aliases[0]
     await em.persistAndFlush(player)
 
-    const sessionToken = await player.auth!.createSession(em, alias)
+    const sessionToken = await player.auth!.createSession(alias)
     await em.flush()
 
     await request(app)
@@ -243,7 +243,7 @@ describe('Player auth API service - toggle verification', () => {
     const alias = player.aliases[0]
     await em.persistAndFlush(player)
 
-    const sessionToken = await player.auth!.createSession(em, alias)
+    const sessionToken = await player.auth!.createSession(alias)
     await em.flush()
 
     const res = await request(app)

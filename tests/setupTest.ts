@@ -36,8 +36,9 @@ beforeAll(async () => {
   await truncateTables()
 })
 
-beforeEach(() => {
-  global.redis.flushdb()
+beforeEach(async () => {
+  global.em.clear()
+  await global.redis.flushdb()
 })
 
 afterAll(async () => {

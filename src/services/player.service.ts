@@ -5,17 +5,15 @@ import PlayerPolicy from '../policies/player.policy'
 import PlayerAlias, { PlayerAliasService } from '../entities/player-alias'
 import { sanitiseProps, mergeAndSanitiseProps, hardSanitiseProps } from '../lib/props/sanitiseProps'
 import Event, { ClickHouseEvent } from '../entities/event'
-import { EntityManager, LockMode } from '@mikro-orm/mysql'
+import { EntityManager, LockMode, FilterQuery } from '@mikro-orm/mysql'
 import { QueryOrder } from '@mikro-orm/mysql'
 import createGameActivity from '../lib/logging/createGameActivity'
 import { GameActivityType } from '../entities/game-activity'
 import PlayerGameStat from '../entities/player-game-stat'
-import PlayerGroup from '../entities/player-group'
 import GameSave from '../entities/game-save'
 import PlayerAuthActivity from '../entities/player-auth-activity'
 import { ClickHouseClient } from '@clickhouse/client'
 import checkPricingPlanPlayerLimit from '../lib/billing/checkPricingPlanPlayerLimit'
-import GameChannel from '../entities/game-channel'
 import Prop from '../entities/prop'
 import buildErrorResponse from '../lib/errors/buildErrorResponse'
 import { PropSizeError } from '../lib/errors/propSizeError'
@@ -133,15 +131,19 @@ export default class PlayerService extends Service {
     const { search, page = 0 } = req.query
     const em: EntityManager = req.ctx.em
 
-    const query = em.qb(Player, 'p')
-      .select('p.*')
-      .orderBy({ lastSeenAt: QueryOrder.DESC })
-      .limit(itemsPerPage + 1)
-      .offset(Number(page) * itemsPerPage)
+    const searchComponent = search ? encodeURIComponent(search) : 'no-search'
+    const devDataComponent = req.ctx.state.includeDevData ? 'dev' : 'no-dev'
+    const cacheKey = `player-search-${req.ctx.state.game.id}-${searchComponent}-${page}-${devDataComponent}`
+
+    const where: FilterQuery<Player> = { game: req.ctx.state.game }
+
+    if (!req.ctx.state.includeDevData) {
+      where.devBuild = false
+    }
 
     if (search) {
-      query
-        .where({
+      const searchConditions: FilterQuery<Player>[] = [
+        {
           props: {
             $some: {
               value: {
@@ -149,86 +151,73 @@ export default class PlayerService extends Service {
               }
             }
           }
-        })
-        .orWhere({
+        },
+        {
           aliases: {
             identifier: {
               $like: `%${search}%`
             }
           }
-        })
-        .orWhere({
+        },
+        {
           id: {
             $like: `%${search}%`
           }
-        })
+        }
+      ]
 
       const groupFilters = search.split(' ')
         .filter((part) => part.startsWith('group:'))
 
-      const groups = []
       if (!req.ctx.state.user.api) {
         for (const filter of groupFilters) {
-          const id = filter.split(':')[1]
-          const group = await em.repo(PlayerGroup).findOne({ id, game: req.ctx.state.game })
-          if (group) groups.push(group)
+          const groupId = filter.split(':')[1]
+          if (groupId) {
+            searchConditions.push({
+              groups: {
+                $some: groupId
+              }
+            })
+          }
         }
-      }
-
-      if (groups.length > 0) {
-        query
-          .orWhere({
-            groups: {
-              $in: groups
-            }
-          })
       }
 
       const channelFilters = search.split(' ')
         .filter((part) => part.startsWith('channel:'))
 
-      const channels = []
       if (!req.ctx.state.user.api) {
         for (const filter of channelFilters) {
-          const id = filter.split(':')[1]
-          const channel = await em.repo(GameChannel).findOne({ id: Number(id), game: req.ctx.state.game })
-          if (channel) channels.push(channel)
+          const channelId = Number(filter.split(':')[1])
+          if (channelId && !isNaN(channelId)) {
+            searchConditions.push({
+              aliases: {
+                channels: {
+                  $some: channelId
+                }
+              }
+            })
+          }
         }
       }
 
-      if (channels.length > 0) {
-        query
-          .orWhere({
-            aliases: {
-              $in: await em.repo(PlayerAlias).find({
-                channels: {
-                  $in: channels
-                }
-              })
-            }
-          })
-      }
+      where.$or = searchConditions
     }
 
-    if (!req.ctx.state.includeDevData) {
-      query.andWhere({ devBuild: false })
-    }
+    const { allPlayers, count } = await (em.fork()).transactional(async (em) => {
+      const allPlayers = await em.repo(Player).find(where, {
+        populate: ['aliases'],
+        orderBy: { lastSeenAt: QueryOrder.DESC },
+        limit: itemsPerPage + 1,
+        offset: Number(page) * itemsPerPage,
+        ...getResultCacheOptions(cacheKey)
+      })
 
-    query.andWhere({ game: req.ctx.state.game })
+      const count = await em.repo(Player).count(where, getResultCacheOptions(`${cacheKey}-count`))
 
-    const searchComponent = encodeURIComponent(search) || 'no-search'
-    const devDataComponent = req.ctx.state.includeDevData ? 'dev' : 'no-dev'
-    const cacheKey = `player-search-${req.ctx.state.game.id}-${searchComponent}-${page}-${devDataComponent}`
-    query.cache([cacheKey, 5000])
-
-    // getResultAndCount returns NaN for the count when a cache key is set
-    const [allPlayers, count] = await Promise.all([
-      query.clone().getResult(),
-      query.clone().getCount()
-    ])
+      return { allPlayers, count }
+    })
 
     const players = allPlayers.slice(0, itemsPerPage)
-    await em.populate(players, ['aliases'])
 
     return {
       status: 200,
@@ -348,7 +337,7 @@ export default class PlayerService extends Service {
       query_params: queryParams,
       format: 'JSONEachRow'
     }).then((res) => res.json<ClickHouseEvent>())
-    const events = await Promise.all(items.map((data) => new Event().hydrate(em, data, clickhouse, true)))
+    const events = await Event.massHydrate(em, items, clickhouse, true)
 
     const countQuery = `
       SELECT count(DISTINCT events.id) AS count

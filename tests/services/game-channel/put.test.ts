@@ -108,13 +108,9 @@ describe('Game channel service - put', () => {
       .auth(token, { type: 'bearer' })
       .expect(200)
 
-    const updatedChannel = await em.getRepository(GameChannel).findOneOrFail(
-      channel.id,
-      { populate: ['members'] }
-    )
-
-    expect(updatedChannel.members.length).toBe(1)
-    expect(updatedChannel.members.getIdentifiers()).toContain(player.aliases[0].id)
+    await em.refreshOrFail(channel, { populate: ['members'] })
+    expect(channel.members.length).toBe(1)
+    expect(channel.members.getIdentifiers()).toContain(player.aliases[0].id)
   })
 
   it('should not update the channel name when set to whitespace', async () => {

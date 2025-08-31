@@ -580,7 +580,7 @@ export default class PlayerAuthAPIService extends APIService {
     }
 
     createPlayerAuthActivity(req, alias.player, {
-      type: PlayerAuthActivityType.VERFICIATION_TOGGLED,
+      type: PlayerAuthActivityType.VERIFICATION_TOGGLED,
       extra: {
         verificationEnabled: alias.player.auth!.verificationEnabled
       }

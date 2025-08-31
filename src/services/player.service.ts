@@ -337,7 +337,7 @@ export default class PlayerService extends Service {
       query_params: queryParams,
       format: 'JSONEachRow'
     }).then((res) => res.json<ClickHouseEvent>())
-    const events = await Promise.all(items.map((data) => new Event().hydrate(em, data, clickhouse, true)))
+    const events = await Event.massHydrate(em, items, clickhouse, true)
 
     const countQuery = `
       SELECT count(DISTINCT events.id) AS count

@@ -18,6 +18,11 @@ describe('Player service - get events', () => {
       values: events.map((event) => event.toInsertable()),
       format: 'JSONEachRow'
     })
+    await clickhouse.insert({
+      table: 'event_props',
+      values: events.flatMap((event) => event.getInsertableProps()),
+      format: 'JSONEachRow'
+    })
 
     const res = await request(app)
       .get(`/games/${game.id}/players/${player.id}/events`)

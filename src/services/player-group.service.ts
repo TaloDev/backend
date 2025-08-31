@@ -9,6 +9,7 @@ import PlayerGroupPolicy from '../policies/player-group.policy'
 import getUserFromToken from '../lib/auth/getUserFromToken'
 import UserPinnedGroup from '../entities/user-pinned-group'
 import { TraceService } from '../lib/tracing/trace-service'
+import { getResultCacheOptions } from '../lib/perf/getResultCacheOptions'
 
 @TraceService()
 export default class PlayerGroupService extends Service {
@@ -250,7 +251,8 @@ export default class PlayerGroupService extends Service {
         game: req.ctx.state.game
       }
     }, {
-      orderBy: { createdAt: 'desc' }
+      orderBy: { createdAt: 'desc' },
+      ...getResultCacheOptions(`pinned-groups-${user.id}-${req.ctx.state.game.id}`)
     })
 
     const groups = await Promise.all(pinnedGroups.map(({ group }) => group.toJSONWithCount(req.ctx.state.includeDevData)))

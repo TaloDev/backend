@@ -13,7 +13,7 @@ export default class Organisation {
   @Property()
   name!: string
 
-  @OneToMany(() => Game, (game) => game.organisation, { eager: true })
+  @OneToMany(() => Game, (game) => game.organisation)
   games = new Collection<Game>(this)
 
   @OneToOne({ orphanRemoval: true, eager: true })

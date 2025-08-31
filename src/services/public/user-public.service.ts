@@ -145,7 +145,7 @@ export default class UserPublicService extends Service {
     const { email, password } = req.body
     const em: EntityManager = req.ctx.em
 
-    const user = await em.getRepository(User).findOne({ email })
+    const user = await em.getRepository(User).findOne({ email }, { populate: ['organisation.games'] })
     if (!user) this.handleFailedLogin(req)
 
     const passwordMatches = await bcrypt.compare(password, user!.password)
@@ -185,7 +185,12 @@ export default class UserPublicService extends Service {
     const userAgent = req.headers['user-agent']
     const em: EntityManager = req.ctx.em
 
-    const session = await em.getRepository(UserSession).findOne({ token, userAgent }, { populate: ['user'] })
+    const session = await em.getRepository(UserSession).findOne({
+      token,
+      userAgent
+    }, {
+      populate: ['user.organisation.games']
+    })
 
     if (!session) {
       req.ctx.throw(401, 'Session not found')

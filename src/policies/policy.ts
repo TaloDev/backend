@@ -6,6 +6,7 @@ import Game from '../entities/game'
 import User from '../entities/user'
 import getUserFromToken from '../lib/auth/getUserFromToken'
 import checkScope from './checkScope'
+import { getResultCacheOptions } from '../lib/perf/getResultCacheOptions'
 
 export default class Policy extends ServicePolicy {
   em: EntityManager
@@ -39,7 +40,11 @@ export default class Policy extends ServicePolicy {
   }
 
   async canAccessGame(gameId: number): Promise<boolean> {
-    const game = await this.em.getRepository(Game).findOne(gameId, { populate: ['organisation'] })
+    const game = await this.em.getRepository(Game).findOne(gameId, {
+      ...getResultCacheOptions(`can-access-game-${gameId}`),
+      populate: ['organisation']
+    })
+
     if (!game) this.ctx.throw(404, 'Game not found')
     this.ctx.state.game = game
 

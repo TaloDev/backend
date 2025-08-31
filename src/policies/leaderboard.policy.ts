@@ -3,6 +3,7 @@ import { PolicyDenial, Request, PolicyResponse } from 'koa-clay'
 import { UserType } from '../entities/user'
 import Leaderboard from '../entities/leaderboard'
 import UserTypeGate from './user-type-gate'
+import { Populate } from '@mikro-orm/mysql'
 
 export default class LeaderboardPolicy extends Policy {
   async index(req: Request): Promise<PolicyResponse> {
@@ -10,10 +11,10 @@ export default class LeaderboardPolicy extends Policy {
     return await this.canAccessGame(Number(gameId))
   }
 
-  async canAccessLeaderboard(req: Request, relations: string[] = []): Promise<PolicyResponse> {
+  async canAccessLeaderboard<T extends string>(req: Request, relations?: Populate<Leaderboard, T>): Promise<PolicyResponse> {
     const { id } = req.params
 
-    const leaderboard = await this.em.getRepository(Leaderboard).findOne(Number(id), { populate: relations as never[] })
+    const leaderboard = await this.em.getRepository(Leaderboard).findOne(Number(id), { populate: relations })
     if (!leaderboard) return new PolicyDenial({ message: 'Leaderboard not found' }, 404)
 
     this.ctx.state.leaderboard = leaderboard

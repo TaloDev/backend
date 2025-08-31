@@ -313,7 +313,7 @@ describe('Game channel API service - members', () => {
   it('should filter by player groups', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_GAME_CHANNELS])
 
-    const rule = new PlayerGroupRule(PlayerGroupRuleName.GTE, 'props.currentLevel')
+    const rule = new PlayerGroupRule(PlayerGroupRuleName.GTE, 'props.someRandomProp')
     rule.castType = PlayerGroupRuleCastType.DOUBLE
     rule.operands = ['60']
 
@@ -324,7 +324,7 @@ describe('Game channel API service - members', () => {
 
     const player = await new PlayerFactory([apiKey.game]).state((player) => ({
       props: new Collection<PlayerProp>(player, [
-        new PlayerProp(player, 'currentLevel', '60')
+        new PlayerProp(player, 'someRandomProp', '60')
       ])
     })).one()
     const otherPlayer = await new PlayerFactory([apiKey.game]).one()

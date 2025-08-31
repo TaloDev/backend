@@ -40,9 +40,9 @@ export default class Policy extends ServicePolicy {
   }
 
   async canAccessGame(gameId: number): Promise<boolean> {
-    const game = await this.em.getRepository(Game).findOne(gameId, {
+    const game = await this.em.repo(Game).findOne(gameId, {
       ...getResultCacheOptions(`can-access-game-${gameId}`),
-      populate: ['organisation']
+      populate: ['organisation.id']
     })
 
     if (!game) this.ctx.throw(404, 'Game not found')

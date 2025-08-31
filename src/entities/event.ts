@@ -49,10 +49,11 @@ export default class Event extends ClickHouseEntity<ClickHouseEvent, [string, Ga
 
     const propsMap = new Map<string, Prop[]>()
     if (loadProps) {
-      const eventIds = data.map((event) => `'${event.id}'`).join(', ')
+      const eventIds = data.map((event) => event.id)
       if (eventIds.length > 0) {
         const props = await clickhouse.query({
-          query: `SELECT * FROM event_props WHERE event_id IN (${eventIds})`,
+          query: 'SELECT * FROM event_props WHERE event_id IN ({eventIds:Array(String)})',
+          query_params: { eventIds },
           format: 'JSONEachRow'
         }).then((res) => res.json<ClickHouseEventProp>())
 
@@ -142,7 +143,8 @@ export default class Event extends ClickHouseEntity<ClickHouseEvent, [string, Ga
 
     if (loadProps) {
       const props = await clickhouse.query({
-        query: `SELECT * FROM event_props WHERE event_id = '${data.id}'`,
+        query: 'SELECT * FROM event_props WHERE event_id = {eventId:String}',
+        query_params: { eventId: data.id },
         format: 'JSONEachRow'
       }).then((res) => res.json<ClickHouseEventProp>())
 

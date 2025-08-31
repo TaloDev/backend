@@ -3,7 +3,6 @@ import GameChannelFactory from '../../../fixtures/GameChannelFactory'
 import { APIKeyScope } from '../../../../src/entities/api-key'
 import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
 import PlayerFactory from '../../../fixtures/PlayerFactory'
-import GameChannel from '../../../../src/entities/game-channel'
 import createSocketIdentifyMessage from '../../../utils/createSocketIdentifyMessage'
 import createTestSocket from '../../../utils/createTestSocket'
 
@@ -23,8 +22,8 @@ describe('Game channel API service - delete', () => {
       .set('x-talo-alias', String(player.aliases[0].id))
       .expect(204)
 
-    em.clear()
-    expect(await em.getRepository(GameChannel).findOne(channel.id)).toBeNull()
+    const refreshedChannel = await em.refresh(channel)
+    expect(refreshedChannel).toBeNull()
   })
 
   it('should not delete a channel if the scope is not valid', async () => {

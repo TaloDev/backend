@@ -3,7 +3,6 @@ import GameChannelFactory from '../../../fixtures/GameChannelFactory'
 import { APIKeyScope } from '../../../../src/entities/api-key'
 import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
 import PlayerFactory from '../../../fixtures/PlayerFactory'
-import GameChannel from '../../../../src/entities/game-channel'
 import createSocketIdentifyMessage from '../../../utils/createSocketIdentifyMessage'
 import createTestSocket from '../../../utils/createTestSocket'
 
@@ -72,8 +71,8 @@ describe('Game channel API service - leave', () => {
       .set('x-talo-alias', String(player.aliases[0].id))
       .expect(204)
 
-    em.clear()
-    expect(await em.getRepository(GameChannel).findOne(channel.id)).toBeNull()
+    const refreshedChannel = await em.refresh(channel)
+    expect(refreshedChannel).toBeNull()
   })
 
   it('should delete a channel if auto cleanup is enabled the last player leaves', async () => {
@@ -105,8 +104,8 @@ describe('Game channel API service - leave', () => {
       })
     })
 
-    em.clear()
-    expect(await em.getRepository(GameChannel).findOne(channel.id)).toBeNull()
+    const refreshedChannel = await em.refresh(channel)
+    expect(refreshedChannel).toBeNull()
   })
 
   it('should not delete a channel if auto cleanup is not enabled and the owner leaves', async () => {
@@ -128,8 +127,7 @@ describe('Game channel API service - leave', () => {
       .set('x-talo-alias', String(player.aliases[0].id))
       .expect(204)
 
-    em.clear()
-    const refreshedChannel = await em.getRepository(GameChannel).findOneOrFail(channel.id)
+    const refreshedChannel = await em.refreshOrFail(channel)
     expect(refreshedChannel.id).toBe(channel.id)
     expect(refreshedChannel.owner).toBe(null)
   })

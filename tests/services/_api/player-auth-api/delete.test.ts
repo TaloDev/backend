@@ -5,7 +5,6 @@ import PlayerFactory from '../../../fixtures/PlayerFactory'
 import bcrypt from 'bcrypt'
 import PlayerAuthFactory from '../../../fixtures/PlayerAuthFactory'
 import PlayerAuthActivity, { PlayerAuthActivityType } from '../../../../src/entities/player-auth-activity'
-import PlayerAlias from '../../../../src/entities/player-alias'
 import EventFactory from '../../../fixtures/EventFactory'
 import PlayerPresenceFactory from '../../../fixtures/PlayerPresenceFactory'
 import PlayerAuthActivityFactory from '../../../fixtures/PlayerAuthActivityFactory'
@@ -38,13 +37,11 @@ describe('Player auth API service - delete', { timeout: 30_000 }, () => {
       .set('x-talo-session', sessionToken)
       .expect(204)
 
-    em.clear()
-
     const updatedPlayer = await em.refreshOrFail(player, { populate: ['aliases', 'auth'] })
     expect(updatedPlayer.aliases).toHaveLength(0)
     expect(updatedPlayer.auth).toBeNull()
 
-    expect(await em.getRepository(PlayerAlias).findOne(alias.id)).toBeNull()
+    expect(await em.refresh(alias)).toBeNull()
 
     const activity = await em.getRepository(PlayerAuthActivity).findOne({
       type: PlayerAuthActivityType.DELETED_AUTH,

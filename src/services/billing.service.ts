@@ -9,7 +9,6 @@ import initStripe from '../lib/billing/initStripe'
 import getUserFromToken from '../lib/auth/getUserFromToken'
 import Player from '../entities/player'
 import getBillablePlayerCount from '../lib/billing/getBillablePlayerCount'
-import { TraceService } from '../lib/tracing/trace-service'
 
 const stripe = initStripe()
 
@@ -23,7 +22,6 @@ type PricingPlanProduct = Omit<PricingPlan & {
   }[]
 }, 'toJSON'>
 
-@TraceService()
 export default class BillingService extends Service {
   @Route({
     method: 'GET',

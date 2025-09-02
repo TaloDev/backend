@@ -15,6 +15,7 @@ import requestContextMiddleware from './middleware/request-context-middleware'
 import helmetMiddleware from './middleware/helmet-middleware'
 import { createServer } from 'http'
 import Socket from './socket'
+import httpTracingMiddleware from './middleware/http-tracing-middleware'
 
 const isTest = process.env.NODE_ENV === 'test'
 
@@ -28,6 +29,7 @@ export default async function init(): Promise<Koa> {
   if (!isTest) app.use(loggerMiddleware)
   app.use(errorMiddleware)
   app.use(bodyParser())
+  app.use(httpTracingMiddleware)
   app.use(helmetMiddleware)
   app.use(corsMiddleware)
   app.use(devDataMiddleware)

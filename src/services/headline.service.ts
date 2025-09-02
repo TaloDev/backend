@@ -6,13 +6,11 @@ import HeadlinePolicy from '../policies/headline.policy'
 import dateValidationSchema from '../lib/dates/dateValidationSchema'
 import { formatDateForClickHouse } from '../lib/clickhouse/formatDateTime'
 import { ClickHouseClient } from '@clickhouse/client'
-import { TraceService } from '../lib/tracing/trace-service'
 import { getResultCacheOptions } from '../lib/perf/getResultCacheOptions'
 import Game from '../entities/game'
 
 const HEADLINES_CACHE_TTL = 600_000
 
-@TraceService()
 export default class HeadlineService extends Service {
   @Route({
     method: 'GET',

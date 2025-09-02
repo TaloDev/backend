@@ -11,7 +11,6 @@ import qrcode from 'qrcode'
 import generateRecoveryCodes from '../lib/auth/generateRecoveryCodes'
 import User from '../entities/user'
 import { randomBytes } from 'crypto'
-import { TraceService } from '../lib/tracing/trace-service'
 
 async function confirmPassword(req: Request): Promise<void> {
   const { password } = req.body
@@ -32,7 +31,6 @@ async function requires2fa(req: Request): Promise<void> {
   req.ctx.state.user = user
 }
 
-@TraceService()
 export default class UserService extends Service {
   @Route({
     method: 'POST',

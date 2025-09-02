@@ -9,9 +9,7 @@ import triggerIntegrations from '../../lib/integrations/triggerIntegrations'
 import { hardSanitiseProps, mergeAndSanitiseProps } from '../../lib/props/sanitiseProps'
 import { PropSizeError } from '../../lib/errors/propSizeError'
 import buildErrorResponse from '../../lib/errors/buildErrorResponse'
-import { TraceService } from '../../lib/tracing/trace-service'
 
-@TraceService()
 export default class LeaderboardAPIService extends APIService {
   @Route({
     method: 'GET',

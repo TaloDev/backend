@@ -15,7 +15,6 @@ import Integration, { IntegrationType } from '../../entities/integration'
 import { validateAuthSessionToken } from '../../middleware/player-auth-middleware'
 import { setCurrentPlayerState } from '../../middleware/current-player-middleware'
 import { ClickHouseClient } from '@clickhouse/client'
-import { TraceService } from '../../lib/tracing/trace-service'
 import { getResultCacheOptions } from '../../lib/perf/getResultCacheOptions'
 import { streamCursor } from '../../lib/perf/streamByCursor'
 
@@ -94,7 +93,6 @@ function validateIdentifyQueryParam(param: 'service' | 'identifier') {
   ]
 }
 
-@TraceService()
 export default class PlayerAPIService extends APIService {
   @Route({
     method: 'GET',

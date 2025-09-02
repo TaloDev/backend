@@ -5,11 +5,9 @@ import DataExportPolicy from '../policies/data-export.policy'
 import { GameActivityType } from '../entities/game-activity'
 import createGameActivity from '../lib/logging/createGameActivity'
 import { Queue } from 'bullmq'
-import { TraceService } from '../lib/tracing/trace-service'
 import { createDataExportQueue } from '../lib/queues/data-exports/createDataExportQueue'
 import { DataExportJob } from '../lib/queues/data-exports/dataExportProcessor'
 
-@TraceService()
 export default class DataExportService extends Service {
   queue: Queue<DataExportJob>
 

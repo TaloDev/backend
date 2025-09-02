@@ -7,13 +7,11 @@ import Event from '../../entities/event'
 import Prop from '../../entities/prop'
 import { PropSizeError } from '../../lib/errors/propSizeError'
 import { isValid } from 'date-fns'
-import { TraceService } from '../../lib/tracing/trace-service'
 import { createHash } from 'crypto'
 import Redis from 'ioredis'
 import { FlushEventsQueueHandler } from '../../lib/queues/game-metrics/flush-events-queue-handler'
 import PlayerAlias from '../../entities/player-alias'
 
-@TraceService()
 export default class EventAPIService extends APIService {
   private queueHandler: FlushEventsQueueHandler
 

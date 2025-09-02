@@ -64,8 +64,18 @@ function deepFilterDataInternal<T>(obj: T, visited: WeakSet<object>): T {
   }
 }
 
-export function deepFilterData<T>(obj: T | string): T {
-  return deepFilterDataInternal(JSON.parse(JSON.stringify(obj)), new WeakSet())
+export function deepFilterData<T>(obj: T | string, lengthCheck?: boolean): T {
+  // serialise the data first
+  const stringified = JSON.stringify(obj)
+
+  // max 20kb for parsing
+  if (lengthCheck && stringified.length > 20 * 1024) {
+    return '[Too large]' as T
+  }
+
+  // parse the toJSON'd data
+  const parsed = JSON.parse(stringified)
+  return deepFilterDataInternal(parsed, new WeakSet())
 }
 
 function buildHeaders(prefix: 'request' | 'response', headers: IncomingHttpHeaders | OutgoingHttpHeaders) {
@@ -86,14 +96,14 @@ export default async function httpTracingMiddleware(ctx: Context, next: Next) {
     ...buildHeaders('request', ctx.request.headers),
     'http.method': ctx.method,
     'http.route': ctx.path,
-    'http.request.body': JSON.stringify(deepFilterData(ctx.request.body))
+    'http.request.body': JSON.stringify(deepFilterData(ctx.request.body, true))
   })
 
   ctx.res.on('finish', () => {
     setTraceAttributes({
       ...buildHeaders('response', ctx.response.headers),
       'http.response_size': ctx.response.length,
-      'http.response.body': JSON.stringify(deepFilterData(ctx.response.body))
+      'http.response.body': JSON.stringify(deepFilterData(ctx.response.body, true))
     })
   })
 

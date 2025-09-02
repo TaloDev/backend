@@ -13,11 +13,11 @@ const DENYLIST = [
   'session',
   'stripe-signature',
   'token'
-].map((item) => item.toLowerCase())
+]
 
-const ALLOWLIST = [
-  'emailConfirmed'
-].map((item) => item.toLowerCase())
+const ALLOWLIST = new Set([
+  'emailconfirmed'
+])
 
 function deepFilterDataInternal<T>(obj: T, visited: WeakSet<object>): T {
   if (obj === null || obj === undefined || typeof obj !== 'object') {
@@ -44,7 +44,7 @@ function deepFilterDataInternal<T>(obj: T, visited: WeakSet<object>): T {
     for (const [key, value] of Object.entries(obj)) {
       const keyLower = key.toLowerCase()
       const inDenyList = DENYLIST.some((deniedKey) => keyLower.includes(deniedKey))
-      const inAllowList = ALLOWLIST.some((allowedKey) => keyLower.includes(allowedKey))
+      const inAllowList = ALLOWLIST.has(keyLower)
 
       if (inDenyList && !inAllowList) {
         // handle array values in filtered fields (like headers)

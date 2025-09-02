@@ -7,7 +7,6 @@ import createGameActivity from '../lib/logging/createGameActivity'
 import { GameActivityType } from '../entities/game-activity'
 import Socket from '../socket'
 import { sign } from '../lib/auth/jwt'
-import { TraceService } from '../lib/tracing/trace-service'
 import { getTokenCacheKey } from '../lib/auth/getAPIKeyFromToken'
 
 export async function createToken(em: EntityManager, apiKey: APIKey): Promise<string> {
@@ -23,7 +22,6 @@ export async function createToken(em: EntityManager, apiKey: APIKey): Promise<st
   return token
 }
 
-@TraceService()
 export default class APIKeyService extends Service {
   @Route({
     method: 'POST'

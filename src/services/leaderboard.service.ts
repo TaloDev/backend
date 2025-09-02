@@ -9,7 +9,6 @@ import createGameActivity from '../lib/logging/createGameActivity'
 import LeaderboardPolicy from '../policies/leaderboard.policy'
 import { archiveEntriesForLeaderboard } from '../tasks/archiveLeaderboardEntries'
 import updateAllowedKeys from '../lib/entities/updateAllowedKeys'
-import { TraceService } from '../lib/tracing/trace-service'
 import { pageValidation } from '../lib/pagination/pageValidation'
 import { DEFAULT_PAGE_SIZE } from '../lib/pagination/itemsPerPage'
 
@@ -69,7 +68,6 @@ async function getGlobalEntryIds({
   return []
 }
 
-@TraceService()
 export default class LeaderboardService extends Service {
   @Route({
     method: 'GET'

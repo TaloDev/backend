@@ -5,13 +5,11 @@ import GameFeedback from '../../entities/game-feedback'
 import GameFeedbackAPIDocs from '../../docs/game-feedback-api.docs'
 import { EntityManager } from '@mikro-orm/mysql'
 import GameFeedbackCategory from '../../entities/game-feedback-category'
-import { TraceService } from '../../lib/tracing/trace-service'
 import { hardSanitiseProps } from '../../lib/props/sanitiseProps'
 import { PropSizeError } from '../../lib/errors/propSizeError'
 import buildErrorResponse from '../../lib/errors/buildErrorResponse'
 import { captureException } from '@sentry/node'
 
-@TraceService()
 export default class GameFeedbackAPIService extends APIService {
   @Route({
     method: 'GET',

@@ -17,7 +17,6 @@ import checkPricingPlanPlayerLimit from '../lib/billing/checkPricingPlanPlayerLi
 import Prop from '../entities/prop'
 import buildErrorResponse from '../lib/errors/buildErrorResponse'
 import { PropSizeError } from '../lib/errors/propSizeError'
-import { TraceService } from '../lib/tracing/trace-service'
 import { captureException } from '@sentry/node'
 import { getResultCacheOptions } from '../lib/perf/getResultCacheOptions'
 import { DEFAULT_PAGE_SIZE, SMALL_PAGE_SIZE } from '../lib/pagination/itemsPerPage'
@@ -43,7 +42,6 @@ type PlayerPostBody = {
 
 type PatchTransactionResponse = [Player | null, ReturnType<typeof buildErrorResponse> | null]
 
-@TraceService()
 export default class PlayerService extends Service {
   @Route({
     method: 'POST'

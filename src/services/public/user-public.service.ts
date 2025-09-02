@@ -21,7 +21,6 @@ import queueEmail from '../../lib/messaging/queueEmail'
 import ResetPassword from '../../emails/reset-password'
 import emailRegex from '../../lib/lang/emailRegex'
 import { sign, verify } from '../../lib/auth/jwt'
-import { TraceService } from '../../lib/tracing/trace-service'
 import Redis from 'ioredis'
 
 async function sendEmailConfirm(req: Request, res: Response): Promise<void> {
@@ -39,7 +38,6 @@ async function sendEmailConfirm(req: Request, res: Response): Promise<void> {
   /* v8 ignore stop */
 }
 
-@TraceService()
 export default class UserPublicService extends Service {
   @Route({
     method: 'POST',

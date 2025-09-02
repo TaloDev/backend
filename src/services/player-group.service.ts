@@ -8,10 +8,8 @@ import createGameActivity from '../lib/logging/createGameActivity'
 import PlayerGroupPolicy from '../policies/player-group.policy'
 import getUserFromToken from '../lib/auth/getUserFromToken'
 import UserPinnedGroup from '../entities/user-pinned-group'
-import { TraceService } from '../lib/tracing/trace-service'
 import { getResultCacheOptions } from '../lib/perf/getResultCacheOptions'
 
-@TraceService()
 export default class PlayerGroupService extends Service {
   @Route({
     method: 'GET'

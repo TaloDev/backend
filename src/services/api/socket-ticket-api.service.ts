@@ -4,7 +4,6 @@ import { v4 } from 'uuid'
 import Redis from 'ioredis'
 import APIKey from '../../entities/api-key'
 import SocketTicketAPIDocs from '../../docs/socket-tickets-api.docs'
-import { TraceService } from '../../lib/tracing/trace-service'
 
 export async function createSocketTicket(redis: Redis, key: APIKey, devBuild: boolean): Promise<string> {
   const ticket = v4()
@@ -14,7 +13,6 @@ export async function createSocketTicket(redis: Redis, key: APIKey, devBuild: bo
   return ticket
 }
 
-@TraceService()
 export default class SocketTicketAPIService extends APIService {
   @Route({
     method: 'POST',

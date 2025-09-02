@@ -38,6 +38,9 @@ describe('User public service - use recovery code', () => {
       .expect(200)
 
     expect(res.body.user).toBeTruthy()
+    expect(res.body.user.organisation).toBeTruthy()
+    expect(res.body.user.organisation.games).toEqual([])
+
     expect(res.body.accessToken).toBeTruthy()
     expect(res.body.newRecoveryCodes).toBeUndefined()
 

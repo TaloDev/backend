@@ -82,8 +82,6 @@ export default async function httpTracingMiddleware(ctx: Context, next: Next) {
     return await next()
   }
 
-  const startTime = Date.now()
-
   setTraceAttributes({
     ...buildHeaders('request', ctx.request.headers),
     'http.method': ctx.method,
@@ -92,18 +90,8 @@ export default async function httpTracingMiddleware(ctx: Context, next: Next) {
   })
 
   ctx.res.on('finish', () => {
-    const endTime = Date.now()
-    const timeMs = endTime - startTime
-
     setTraceAttributes({
-      'clay.matched_route': ctx.state.matchedRoute,
-      'clay.matched_key': ctx.state.matchedServiceKey,
-      'clay.forward_handler': ctx.state.forwardHandler?.handler,
       ...buildHeaders('response', ctx.response.headers),
-      'http.method': ctx.method,
-      'http.route': ctx.path,
-      'http.status': ctx.status,
-      'http.time_taken_ms': timeMs,
       'http.response_size': ctx.response.length,
       'http.response.body': JSON.stringify(deepFilterData(ctx.response.body))
     })

@@ -14,8 +14,14 @@ async function getUserFromToken(ctx: Context) {
   const userId: number = ctx.state.user.sub
   const user = await em.repo(User).findOneOrFail(
     userId,
-    getResultCacheOptions(`user-from-token-${userId}-${ctx.state.user.iat}`)
+    getResultCacheOptions(`user-from-token-${userId}-${ctx.state.user.iat}`, 600_000)
   )
+
+  // populate after so the cache doesn't include from circular structures
+  if (!user.organisation.games.isInitialized()) {
+    await em.populate(user, ['organisation.games'])
+  }
+
   return user
 }
 

@@ -6,6 +6,7 @@ import InviteFactory from '../../../fixtures/InviteFactory'
 import GameActivity, { GameActivityType } from '../../../../src/entities/game-activity'
 import PricingPlanFactory from '../../../fixtures/PricingPlanFactory'
 import { randEmail, randUserName } from '@ngneat/falso'
+import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
 
 describe('User public service - register', () => {
   beforeAll(async () => {
@@ -27,6 +28,7 @@ describe('User public service - register', () => {
     expect(res.body.user.username).toBe(username)
     expect(res.body.user.password).not.toBeDefined()
     expect(res.body.user.organisation.name).toBe('Talo')
+    expect(res.body.user.organisation.games).toEqual([])
   })
 
   it('should not let a user register if the email already exists', async () => {
@@ -60,7 +62,7 @@ describe('User public service - register', () => {
   })
 
   it('should let a user register with an invite', async () => {
-    const organisation = await new OrganisationFactory().one()
+    const [organisation] = await createOrganisationAndGame()
     const invite = await new InviteFactory().construct(organisation).one()
     await em.persistAndFlush(invite)
 
@@ -77,6 +79,7 @@ describe('User public service - register', () => {
     expect(res.body.user.username).toBe(username)
     expect(res.body.user.password).not.toBeDefined()
     expect(res.body.user.organisation.id).toBe(organisation.id)
+    expect(res.body.user.organisation.games).toHaveLength(1)
 
     const activity = await em.getRepository(GameActivity).findOne({
       type: GameActivityType.INVITE_ACCEPTED

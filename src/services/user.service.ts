@@ -89,10 +89,7 @@ export default class UserService extends Service {
     path: '/me'
   })
   async me(req: Request): Promise<Response> {
-    const em: EntityManager = req.ctx.em
     const user = await getUserFromToken(req.ctx)
-    // cache doesn't include the full organisation
-    await em.populate(user, ['organisation.games'])
 
     return {
       status: 200,

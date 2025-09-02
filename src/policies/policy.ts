@@ -41,7 +41,7 @@ export default class Policy extends ServicePolicy {
 
   async canAccessGame(gameId: number): Promise<boolean> {
     const game = await this.em.repo(Game).findOne(gameId, {
-      ...getResultCacheOptions(`can-access-game-${gameId}`),
+      ...getResultCacheOptions(`can-access-game-${gameId}`, 600_000),
       populate: ['organisation.id']
     })
 

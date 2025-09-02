@@ -88,6 +88,18 @@ export default class GameService extends Service {
     method: 'PATCH',
     path: '/:id'
   })
+  @Validate({
+    body: {
+      name: {
+        validation: async (val: unknown) => [
+          {
+            check: typeof val === 'string' ? val.trim().length > 0 : true,
+            error: 'Name must be a non-empty string'
+          }
+        ]
+      }
+    }
+  })
   @HasPermission(GamePolicy, 'patch')
   async patch(req: Request<{
     name?: string

@@ -29,7 +29,7 @@ export default async function init(): Promise<Koa> {
   if (!isTest) app.use(loggerMiddleware)
   app.use(errorMiddleware)
   app.use(bodyParser())
-  app.use(httpTracingMiddleware)
+  if (!isTest) app.use(httpTracingMiddleware)
   app.use(helmetMiddleware)
   app.use(corsMiddleware)
   app.use(devDataMiddleware)

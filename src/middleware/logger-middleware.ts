@@ -10,6 +10,7 @@ export default async function loggerMiddleware(ctx: Context, next: Next) {
   console.info(`--> ${ctx.method} ${ctx.path}`)
 
   ctx.res.on('finish', () => {
+    const status = ctx.status
     const endTime = Date.now()
     const timeMs = endTime - startTime
 
@@ -17,10 +18,11 @@ export default async function loggerMiddleware(ctx: Context, next: Next) {
       'clay.matched_route': ctx.state.matchedRoute,
       'clay.matched_key': ctx.state.matchedServiceKey,
       'clay.forward_handler': ctx.state.forwardHandler?.handler,
+      'http.status': status,
       'http.time_taken_ms': timeMs
     })
 
-    console.info(`<-- ${ctx.method} ${ctx.path} ${ctx.status}`)
+    console.info(`<-- ${ctx.method} ${ctx.path} ${status}`)
   })
 
   await next()

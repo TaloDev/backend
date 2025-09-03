@@ -8,7 +8,6 @@ import PlayerAlias from '../../entities/player-alias'
 import GameChannelStorageProp from '../../entities/game-channel-storage-prop'
 import { PropSizeError } from '../../lib/errors/propSizeError'
 import { sanitiseProps, testPropSize } from '../../lib/props/sanitiseProps'
-import { TraceService } from '../../lib/tracing/trace-service'
 import Redis from 'ioredis'
 import { pageValidation } from '../../lib/pagination/pageValidation'
 import { DEFAULT_PAGE_SIZE } from '../../lib/pagination/itemsPerPage'
@@ -44,7 +43,6 @@ async function joinChannel(req: Request, channel: GameChannel, playerAlias: Play
   }
 }
 
-@TraceService()
 export default class GameChannelAPIService extends APIService {
   @Route({
     method: 'GET',

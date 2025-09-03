@@ -17,7 +17,6 @@ import checkPricingPlanPlayerLimit from '../lib/billing/checkPricingPlanPlayerLi
 import Prop from '../entities/prop'
 import buildErrorResponse from '../lib/errors/buildErrorResponse'
 import { PropSizeError } from '../lib/errors/propSizeError'
-import { TraceService } from '../lib/tracing/trace-service'
 import { captureException } from '@sentry/node'
 import { getResultCacheOptions } from '../lib/perf/getResultCacheOptions'
 import { DEFAULT_PAGE_SIZE, SMALL_PAGE_SIZE } from '../lib/pagination/itemsPerPage'
@@ -43,7 +42,6 @@ type PlayerPostBody = {
 
 type PatchTransactionResponse = [Player | null, ReturnType<typeof buildErrorResponse> | null]
 
-@TraceService()
 export default class PlayerService extends Service {
   @Route({
     method: 'POST'
@@ -314,46 +312,47 @@ export default class PlayerService extends Service {
     const em: EntityManager = req.ctx.em
     const clickhouse: ClickHouseClient = req.ctx.clickhouse
 
-    const aliases = player.aliases.getItems().map((alias) => alias.id).join(',')
+    const searchQuery = search
+      ? 'AND (e.name ILIKE {search: String} OR e.id IN (SELECT event_id FROM event_props WHERE prop_value ILIKE {search: String}))'
+      : ''
 
-    const searchQuery = search ? 'AND (name ILIKE {search: String} OR prop_value ILIKE {search: String})' : ''
-    const baseQuery = `FROM events
-      LEFT JOIN event_props ON events.id = event_props.event_id
-      WHERE player_alias_id IN (${aliases})
+    const baseQuery = `FROM events e
+      WHERE e.player_alias_id IN ({aliasIds:Array(UInt32)})
         ${searchQuery}`
 
     const query = `
-      SELECT DISTINCT events.*
-      ${baseQuery}
+      WITH filtered_events AS (
+        SELECT e.*
+        ${baseQuery}
+      )
+      SELECT 
+        *,
+        count(*) OVER() as total_count
+      FROM filtered_events
       ORDER BY created_at DESC
       LIMIT ${itemsPerPage}
       OFFSET ${Number(page) * itemsPerPage}
     `
 
-    const queryParams = { search: `%${search}%` }
+    const queryParams = {
+      search: `%${search}%`,
+      aliasIds: player.aliases.getItems().map((alias) => alias.id)
+    }
 
-    const items = await clickhouse.query({
+    const results = await clickhouse.query({
       query,
       query_params: queryParams,
       format: 'JSONEachRow'
-    }).then((res) => res.json<ClickHouseEvent>())
-    const events = await Event.massHydrate(em, items, clickhouse, true)
+    }).then((res) => res.json<ClickHouseEvent & { total_count: string }>())
 
-    const countQuery = `
-      SELECT count(DISTINCT events.id) AS count
-      ${baseQuery}`
-
-    const count = await clickhouse.query({
-      query: countQuery,
-      query_params: queryParams,
-      format: 'JSONEachRow'
-    }).then((res) => res.json<{ count: string }>())
+    const events = await Event.massHydrate(em, results, clickhouse, true)
+    const count = results.length > 0 ? Number(results[0].total_count) : 0
 
     return {
       status: 200,
       body: {
         events,
-        count: Number(count[0].count),
+        count,
         itemsPerPage
       }
     }

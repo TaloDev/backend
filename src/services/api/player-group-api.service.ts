@@ -5,13 +5,11 @@ import PlayerGroup from '../../entities/player-group'
 import Player from '../../entities/player'
 import PlayerGroupAPIDocs from '../../docs/player-group-api.docs'
 import { EntityManager } from '@mikro-orm/mysql'
-import { TraceService } from '../../lib/tracing/trace-service'
 import { DEFAULT_PAGE_SIZE } from '../../lib/pagination/itemsPerPage'
 import { pageValidation } from '../../lib/pagination/pageValidation'
 
 type PlayerGroupWithCountAndMembers = Pick<PlayerGroup, 'id' | 'name' | 'description' | 'rules' | 'ruleMode' | 'updatedAt'> & { count: number, members?: Player[] }
 
-@TraceService()
 export default class PlayerGroupAPIService extends APIService {
   @Route({
     method: 'GET',

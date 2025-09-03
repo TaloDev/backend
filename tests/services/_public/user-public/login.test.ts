@@ -16,7 +16,8 @@ describe('User public service - login', () => {
     expect(res.body.accessToken).toBeTruthy()
     expect(res.body.user).toBeTruthy()
     expect(res.body.user.organisation).toBeTruthy()
-    expect(new Date(res.body.user.lastSeenAt).getDay()).toBe(new Date().getDay())
+    expect(res.body.user.organisation.games).toEqual([])
+    expect(new Date(res.body.user.lastSeenAt).getDay()).toEqual(new Date().getDay())
   })
 
   it('should not let a user login with the wrong password', async () => {

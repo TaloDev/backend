@@ -6,9 +6,7 @@ import Player from '../../entities/player'
 import PlayerPresence from '../../entities/player-presence'
 import PlayerAlias from '../../entities/player-alias'
 import PlayerPresenceAPIDocs from '../../docs/player-presence-api.docs'
-import { TraceService } from '../../lib/tracing/trace-service'
 
-@TraceService()
 export default class PlayerPresenceAPIService extends APIService {
   @Route({
     method: 'GET',

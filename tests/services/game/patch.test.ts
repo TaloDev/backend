@@ -377,4 +377,21 @@ describe('Game service - patch', () => {
       expect((await em.refreshOrFail(game)).purgeLivePlayersRetention).toBe(60)
     }
   })
+
+  it('should not update game names if an empty string is sent', async () => {
+    const [organisation, game] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken({ type: UserType.ADMIN }, organisation)
+
+    const res = await request(app)
+      .patch(`/games/${game.id}`)
+      .send({ name: '' })
+      .auth(token, { type: 'bearer' })
+      .expect(400)
+
+    expect(res.body).toStrictEqual({
+      errors: {
+        name: ['Name must be a non-empty string']
+      }
+    })
+  })
 })

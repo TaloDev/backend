@@ -16,7 +16,10 @@ describe('User public service - refresh', () => {
 
     expect(res.body.accessToken).toBeTruthy()
     expect(res.body.user).toBeTruthy()
-    expect(new Date(res.body.user.lastSeenAt).getDay()).toBe(new Date().getDay())
+    expect(res.body.user.organisation).toBeTruthy()
+    expect(res.body.user.organisation.games).toEqual([])
+
+    expect(new Date(res.body.user.lastSeenAt).getDay()).toEqual(new Date().getDay())
   })
 
   it('should not let a user refresh their session if they don\'t have one', async () => {

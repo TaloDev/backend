@@ -12,12 +12,10 @@ import PlayerGameStatSnapshot, { ClickHousePlayerGameStatSnapshot } from '../../
 import Player from '../../entities/player'
 import { buildDateValidationSchema } from '../../lib/dates/dateValidationSchema'
 import PlayerAlias from '../../entities/player-alias'
-import { TraceService } from '../../lib/tracing/trace-service'
 import { FlushStatSnapshotsQueueHandler } from '../../lib/queues/game-metrics/flush-stat-snapshots-queue-handler'
 import { pageValidation } from '../../lib/pagination/pageValidation'
 import { DEFAULT_PAGE_SIZE } from '../../lib/pagination/itemsPerPage'
 
-@TraceService()
 export default class GameStatAPIService extends APIService {
   private queueHandler: FlushStatSnapshotsQueueHandler
 

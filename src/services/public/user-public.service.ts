@@ -21,7 +21,6 @@ import queueEmail from '../../lib/messaging/queueEmail'
 import ResetPassword from '../../emails/reset-password'
 import emailRegex from '../../lib/lang/emailRegex'
 import { sign, verify } from '../../lib/auth/jwt'
-import { TraceService } from '../../lib/tracing/trace-service'
 import Redis from 'ioredis'
 
 async function sendEmailConfirm(req: Request, res: Response): Promise<void> {
@@ -39,7 +38,6 @@ async function sendEmailConfirm(req: Request, res: Response): Promise<void> {
   /* v8 ignore stop */
 }
 
-@TraceService()
 export default class UserPublicService extends Service {
   @Route({
     method: 'POST',
@@ -94,7 +92,12 @@ export default class UserPublicService extends Service {
     user.emailConfirmed = process.env.AUTO_CONFIRM_EMAIL === 'true'
 
     if (inviteToken) {
-      const invite = await em.getRepository(Invite).findOne({ token: inviteToken })
+      const invite = await em.getRepository(Invite).findOne({
+        token: inviteToken
+      }, {
+        populate: ['organisation.games']
+      })
+
       if (!invite || invite.email !== email) req.ctx.throw(404, 'Invite not found')
 
       user.organisation = invite.organisation
@@ -321,7 +324,9 @@ export default class UserPublicService extends Service {
     const { code, userId } = req.body
     const em: EntityManager = req.ctx.em
 
-    const user = await em.getRepository(User).findOneOrFail(userId, { populate: ['recoveryCodes'] })
+    const user = await em.getRepository(User).findOneOrFail(userId, {
+      populate: ['recoveryCodes', 'organisation.games']
+    })
 
     const redis: Redis = req.ctx.redis
     const hasSession = (await redis.get(`2fa:${user.id}`)) === 'true'

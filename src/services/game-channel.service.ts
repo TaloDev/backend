@@ -8,14 +8,12 @@ import { hardSanitiseProps, mergeAndSanitiseProps } from '../lib/props/sanitiseP
 import PlayerAlias from '../entities/player-alias'
 import { PropSizeError } from '../lib/errors/propSizeError'
 import buildErrorResponse from '../lib/errors/buildErrorResponse'
-import { TraceService } from '../lib/tracing/trace-service'
 import { captureException } from '@sentry/node'
 import { pageValidation } from '../lib/pagination/pageValidation'
 import { DEFAULT_PAGE_SIZE } from '../lib/pagination/itemsPerPage'
 
 const itemsPerPage = DEFAULT_PAGE_SIZE
 
-@TraceService()
 export default class GameChannelService extends Service {
   @Route({
     method: 'GET'

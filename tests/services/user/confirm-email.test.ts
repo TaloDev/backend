@@ -18,6 +18,8 @@ describe('User service - confirm email', () => {
       .expect(200)
 
     expect(res.body.user.emailConfirmed).toBe(true)
+    expect(res.body.user.organisation).toBeTruthy()
+    expect(res.body.user.organisation.games).toEqual([])
 
     const updatedAccessCode = await em.getRepository(UserAccessCode).findOne({ code: accessCode.code })
     expect(updatedAccessCode).toBeNull()

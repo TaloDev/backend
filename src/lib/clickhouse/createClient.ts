@@ -4,11 +4,11 @@ import { Attributes, Span, SpanStatusCode, trace } from '@opentelemetry/api'
 function extractTableNameFromQuery(query: string): string | undefined {
   const normalizedQuery = query.replace(/\s+/g, ' ').trim()
 
-  // Regex for "SELECT ... FROM table_name" or "DELETE FROM table_name"
+  // Regex for "SELECT ... FROM table_name", "DELETE FROM table_name", or "WITH ... SELECT ... FROM table_name"
   // It looks for 'FROM' followed by one or more spaces, then captures the table name.
   // It handles optional database.table or schema.table names, and quoted names (`table`, "table", 'table').
-  // The (?:...) creates a non-capturing group for the "SELECT .* " part.
-  const regex = /(?:^SELECT\s+.*?\s+FROM|^DELETE\s+FROM)\s+(`?["']?[\w.-]+["']?`?)/i
+  // It also handles WITH clauses that precede SELECT statements.
+  const regex = /(?:^(?:WITH\s+.*?\s+)?SELECT\s+.*?\s+FROM|^DELETE\s+FROM)\s+(`?["']?[\w.-]+["']?`?)/i
   const match = normalizedQuery.match(regex)
 
   if (match && match[1]) {

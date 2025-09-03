@@ -20,6 +20,9 @@ describe('User public service - verify 2fa', () => {
       .expect(200)
 
     expect(res.body.user).toBeTruthy()
+    expect(res.body.user.organisation).toBeTruthy()
+    expect(res.body.user.organisation.games).toEqual([])
+
     expect(res.body.accessToken).toBeTruthy()
 
     const hasSession = await redis.get(`2fa:${user.id}`)

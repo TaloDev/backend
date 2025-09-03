@@ -96,14 +96,19 @@ export default async function httpTracingMiddleware(ctx: Context, next: Next) {
     ...buildHeaders('request', ctx.request.headers),
     'http.method': ctx.method,
     'http.route': ctx.path,
-    'http.request.body': JSON.stringify(deepFilterData(ctx.request.body, true))
+    'http.request.body': ctx.request.body
+      ? JSON.stringify(deepFilterData(ctx.request.body, true))
+      : undefined
   })
 
   ctx.res.on('finish', () => {
     setTraceAttributes({
       ...buildHeaders('response', ctx.response.headers),
+      'http.status': ctx.status,
       'http.response_size': ctx.response.length,
-      'http.response.body': JSON.stringify(deepFilterData(ctx.response.body, true))
+      'http.response.body': ctx.response.body
+        ? JSON.stringify(deepFilterData(ctx.response.body, true))
+        : undefined
     })
   })
 

@@ -3,12 +3,14 @@ import request from 'supertest'
 import UserTwoFactorAuth from '../../../src/entities/user-two-factor-auth'
 import { authenticator } from '@otplib/preset-default'
 import createUserAndToken from '../../utils/createUserAndToken'
+import createOrganisationAndGame from '../../utils/createOrganisationAndGame'
 
 describe('User service - confirm 2fa', () => {
   it('should let users confirm enabling 2fa', async () => {
+    const [organisation] = await createOrganisationAndGame()
     const [token, user] = await createUserAndToken({
       twoFactorAuth: new UserTwoFactorAuth('blah')
-    })
+    }, organisation)
 
     authenticator.check = vi.fn().mockReturnValueOnce(true)
 
@@ -20,7 +22,7 @@ describe('User service - confirm 2fa', () => {
 
     expect(res.body.user).toBeTruthy()
     expect(res.body.user.organisation).toBeTruthy()
-    expect(res.body.user.organisation.games).toEqual([])
+    expect(res.body.user.organisation.games).toHaveLength(1)
 
     expect(res.body.recoveryCodes).toHaveLength(8)
 

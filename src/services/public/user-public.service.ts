@@ -288,7 +288,7 @@ export default class UserPublicService extends Service {
     const { code, userId } = req.body
     const em: EntityManager = req.ctx.em
 
-    const user = await em.getRepository(User).findOneOrFail(userId)
+    const user = await em.repo(User).findOneOrFail(userId, { populate: ['organisation.games'] })
 
     const redis: Redis = req.ctx.redis
     const hasSession = (await redis.get(`2fa:${user.id}`)) === 'true'

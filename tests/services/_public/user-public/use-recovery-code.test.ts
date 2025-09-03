@@ -5,6 +5,7 @@ import createUserAndToken from '../../../utils/createUserAndToken'
 import UserTwoFactorAuth from '../../../../src/entities/user-two-factor-auth'
 import User from '../../../../src/entities/user'
 import generateRecoveryCodes from '../../../../src/lib/auth/generateRecoveryCodes'
+import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
 
 async function setTwoFactorAuthSession(user: User) {
   await redis.set(`2fa:${user.id}`, 'true')
@@ -15,9 +16,10 @@ async function removeTwoFactorAuthSession(user: User) {
 }
 
 async function createUserWithTwoFactorAuth(em: EntityManager): Promise<[string, User]> {
+  const [organisation] = await createOrganisationAndGame()
   const [token, user] = await createUserAndToken({
     twoFactorAuth: new UserTwoFactorAuth('blah')
-  })
+  }, organisation)
 
   user.twoFactorAuth!.enabled = true
   user.recoveryCodes = new Collection<UserRecoveryCode>(user, generateRecoveryCodes(user))
@@ -39,7 +41,7 @@ describe('User public service - use recovery code', () => {
 
     expect(res.body.user).toBeTruthy()
     expect(res.body.user.organisation).toBeTruthy()
-    expect(res.body.user.organisation.games).toEqual([])
+    expect(res.body.user.organisation.games).toHaveLength(1)
 
     expect(res.body.accessToken).toBeTruthy()
     expect(res.body.newRecoveryCodes).toBeUndefined()

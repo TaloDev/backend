@@ -1,6 +1,6 @@
 {
   "name": "game-services",
-  "version": "0.87.2",
+  "version": "0.87.3",
   "description": "",
   "main": "src/index.ts",
   "scripts": {

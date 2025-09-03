@@ -13,6 +13,7 @@ import SocketTicket from './socketTicket'
 import { getSocketTracer } from './socketTracer'
 import { FlushSocketEventsQueueHandler } from '../lib/queues/game-metrics/flush-socket-events-queue-handler'
 import { v4 } from 'uuid'
+import { enableSocketTracing } from './enableSocketTracing'
 
 type CloseConnectionOptions = {
   code?: number
@@ -52,6 +53,8 @@ export default class Socket {
     })
 
     this.redis = createRedisConnection()
+
+    enableSocketTracing(this)
   }
 
   getServer(): WebSocketServer {

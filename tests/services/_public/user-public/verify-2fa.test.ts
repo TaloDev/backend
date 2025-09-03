@@ -2,12 +2,15 @@ import request from 'supertest'
 import { authenticator } from '@otplib/preset-default'
 import UserTwoFactorAuth from '../../../../src/entities/user-two-factor-auth'
 import createUserAndToken from '../../../utils/createUserAndToken'
+import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
 
 describe('User public service - verify 2fa', () => {
   it('should let users verify their 2fa code and login', async () => {
     const twoFactorAuth = new UserTwoFactorAuth('blah')
     twoFactorAuth.enabled = true
-    const [token, user] = await createUserAndToken({ twoFactorAuth })
+
+    const [organisation] = await createOrganisationAndGame()
+    const [token, user] = await createUserAndToken({ twoFactorAuth }, organisation)
 
     await redis.set(`2fa:${user.id}`, 'true')
 
@@ -21,7 +24,7 @@ describe('User public service - verify 2fa', () => {
 
     expect(res.body.user).toBeTruthy()
     expect(res.body.user.organisation).toBeTruthy()
-    expect(res.body.user.organisation.games).toEqual([])
+    expect(res.body.user.organisation.games).toHaveLength(1)
 
     expect(res.body.accessToken).toBeTruthy()
 

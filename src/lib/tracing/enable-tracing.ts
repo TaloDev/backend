@@ -12,7 +12,6 @@ if (process.env.NODE_ENV !== 'test' && typeof process.env.HYPERDX_API_KEY === 's
   })
 
   const nodeMonitorMeter = metrics.getMeter('node-monitor-meter')
-
   const gauge = nodeMonitorMeter.createObservableGauge(
     'process.runtime.nodejs.memory.heap.total',
     {

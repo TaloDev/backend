@@ -7,6 +7,11 @@ export default async function loggerMiddleware(ctx: Context, next: Next) {
   }
 
   const startTime = Date.now()
+
+  setTraceAttributes({
+    'http.talo_client': ctx.request.headers['x-talo-client']
+  })
+
   console.info(`--> ${ctx.method} ${ctx.path}`)
 
   ctx.res.on('finish', () => {

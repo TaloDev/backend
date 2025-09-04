@@ -35,7 +35,7 @@ async function getRealIdentifier(
     }
   }
 
-  return identifier
+  return identifier.trim()
 }
 
 export async function findAliasFromIdentifyRequest(
@@ -47,7 +47,7 @@ export async function findAliasFromIdentifyRequest(
   const em: EntityManager = req.ctx.em
   const aliasStream = streamCursor<PlayerAlias>(async (batchSize, after) => {
     return em.repo(PlayerAlias).findByCursor({
-      service,
+      service: service.trim(),
       identifier: await getRealIdentifier(req, key, service, identifier)
     }, {
       first: batchSize,

@@ -2,8 +2,15 @@ import { APIKeyScope } from '../../src/entities/api-key'
 import createSocketIdentifyMessage from '../utils/createSocketIdentifyMessage'
 import GameChannelFactory from '../fixtures/GameChannelFactory'
 import createTestSocket from '../utils/createTestSocket'
+import * as checkRateLimitExceeded from '../../src/lib/errors/checkRateLimitExceeded'
 
 describe('Socket rate limiting', () => {
+  const checkRateLimitExceededMock = vi.spyOn(checkRateLimitExceeded, 'default')
+
+  afterEach(() => {
+    checkRateLimitExceededMock.mockClear()
+  })
+
   it('should return a rate limiting error', async () => {
     const { identifyMessage, ticket, player } = await createSocketIdentifyMessage([
       APIKeyScope.READ_PLAYERS,
@@ -14,11 +21,10 @@ describe('Socket rate limiting', () => {
     channel.members.add(player.aliases[0])
     await em.persistAndFlush(channel)
 
-    await createTestSocket(`/?ticket=${ticket}`, async (client, socket) => {
+    await createTestSocket(`/?ticket=${ticket}`, async (client) => {
       await client.identify(identifyMessage)
 
-      const conn = socket.findConnections((conn) => conn.playerAliasId === player.aliases[0].id)[0]
-      await redis.set(conn.rateLimitKey, 999)
+      checkRateLimitExceededMock.mockResolvedValueOnce(true)
 
       client.sendJson({
         req: 'v1.channels.message',
@@ -56,7 +62,7 @@ describe('Socket rate limiting', () => {
       const conn = socket.findConnections((conn) => conn.playerAliasId === player.aliases[0].id)[0]
       conn.rateLimitWarnings = 3
 
-      await redis.set(conn.rateLimitKey, 999)
+      checkRateLimitExceededMock.mockResolvedValueOnce(true)
 
       client.sendJson({
         req: 'v1.channels.message',

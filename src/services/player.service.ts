@@ -67,6 +67,9 @@ export default class PlayerService extends Service {
     const player = new Player(game)
     if (aliases) {
       for await (const alias of aliases) {
+        alias.service = alias.service.trim()
+        alias.identifier = alias.identifier.trim()
+
         const count = await em.getRepository(PlayerAlias).count({
           service: alias.service,
           identifier: alias.identifier,

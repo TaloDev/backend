@@ -1,46 +1,38 @@
 import { Redis } from 'ioredis'
+import { RateLimiterRedis } from 'rate-limiter-flexible'
 
-const cache = new Map<string, { count: number, expires: number }>()
+const rateLimiters = new Map<string, RateLimiterRedis>()
 
-setInterval(() => {
-  const now = Date.now()
-  for (const [key, value] of cache.entries()) {
-    if (now > value.expires) {
-      cache.delete(key)
-    }
+function getRateLimiter(redis: Redis, maxRequests: number, duration = 60): RateLimiterRedis {
+  const limiterKey = `${maxRequests}_${duration}`
+  if (!rateLimiters.has(limiterKey)) {
+    rateLimiters.set(limiterKey, new RateLimiterRedis({
+      storeClient: redis,
+      keyPrefix: `rl_${maxRequests}_${duration}`,
+      points: maxRequests,
+      duration: duration,
+      blockDuration: duration
+    }))
   }
-}, 5000)
-
-const script = `
-  local current = redis.call('INCR', KEYS[1])
-  if current == 1 then
-    redis.call('EXPIRE', KEYS[1], ARGV[1])
-  end
-  return current
-`
+  return rateLimiters.get(limiterKey)!
+}
 
 export default async function checkRateLimitExceeded(
   redis: Redis,
   key: string,
-  maxRequests: number
+  maxRequests: number,
+  duration = 60
 ): Promise<boolean> {
-  // Skip cache in test environment for predictable behavior
-  if (process.env.NODE_ENV !== 'test') {
-    const cached = cache.get(key)
-    if (cached && Date.now() < cached.expires) {
-      return cached.count > maxRequests
+  const rateLimiter = getRateLimiter(redis, maxRequests, duration)
+
+  try {
+    await rateLimiter.consume(key)
+    return false
+  } catch (err) {
+    if (err && typeof err === 'object' && 'remainingPoints' in err) {
+      return true
     }
+    // re-throw actual errors
+    throw err
   }
-
-  const current = await redis.eval(script, 1, key, 1) as number
-
-  // Only cache in production
-  if (process.env.NODE_ENV !== 'test') {
-    cache.set(key, {
-      count: current,
-      expires: Date.now() + 500
-    })
-  }
-
-  return current > maxRequests
 }

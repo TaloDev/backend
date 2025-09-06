@@ -53,7 +53,8 @@ export default class SocketConnection {
   }
 
   getRateLimitMaxRequests(): number {
-    return this.playerAliasId ? 250 : 25
+    // 60 rps for authed, 1 for unauthed
+    return this.playerAliasId ? 3600 : 60
   }
 
   async checkRateLimitExceeded(redis: Redis): Promise<boolean> {

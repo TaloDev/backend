@@ -3,8 +3,8 @@ import { isAPIRoute } from './route-middleware'
 import checkRateLimitExceeded from '../lib/errors/checkRateLimitExceeded'
 
 const limitMap = {
-  default: 50,
-  auth: 5
+  default: 100,
+  auth: 20
 } as const
 
 const rateLimitOverrides = new Map<string, keyof typeof limitMap>([
@@ -33,6 +33,7 @@ export default async function limiterMiddleware(ctx: Context, next: Next): Promi
     const redisKey = `requests:${userId}:${ctx.request.ip}:${limitMapKey}`
 
     if (await checkRateLimitExceeded(ctx.redis, redisKey, maxRequests)) {
+      ctx.set('Retry-After', '60')
       ctx.throw(429)
     }
   }

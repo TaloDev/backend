@@ -4,7 +4,7 @@ import jwt from 'jsonwebtoken'
 import { EntityManager } from '@mikro-orm/mysql'
 import UserSession from '../../entities/user-session'
 import bcrypt from 'bcrypt'
-import buildTokenPair from '../../lib/auth/buildTokenPair'
+import buildTokenPair, { genAccessToken } from '../../lib/auth/buildTokenPair'
 import setUserLastSeenAt from '../../lib/users/setUserLastSeenAt'
 import UserAccessCode from '../../entities/user-access-code'
 import Organisation from '../../entities/organisation'
@@ -204,7 +204,7 @@ export default class UserPublicService extends Service {
       req.ctx.throw(401, 'Refresh token expired')
     }
 
-    const accessToken = await buildTokenPair(req.ctx, session.user)
+    const accessToken = await genAccessToken(session.user)
 
     return {
       status: 200,

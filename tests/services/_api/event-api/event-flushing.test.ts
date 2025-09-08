@@ -24,8 +24,8 @@ describe('Events API service - event flushing', () => {
     event2.createdAt = new Date()
     event2.setProps([{ key: 'type', value: 'quick' }, { key: 'damage', value: '8' }])
 
-    handler.add(event1)
-    handler.add(event2)
+    await handler.add(event1)
+    await handler.add(event2)
 
     await handler.handle()
     expect(consoleSpy).toHaveBeenCalledTimes(2)

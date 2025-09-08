@@ -6,38 +6,50 @@ import { captureException } from '@sentry/node'
 import { ClickHouseClient } from '@clickhouse/client'
 import { getMikroORM } from '../../../config/mikro-orm.config'
 import { EntityManager } from '@mikro-orm/mysql'
+import { createRedisConnection } from '../../../config/redis.config'
+import Redis from 'ioredis'
 import Player from '../../../entities/player'
 
-type FlushFunc<T> = (clickhouse: ClickHouseClient, values: T[]) => Promise<void>
-type HandlerOptions<T> = {
+type FlushFunc<S> = (clickhouse: ClickHouseClient, values: S[]) => Promise<void>
+type HandlerOptions<S> = {
   logsInTests?: boolean
-  postFlush?: (values: T[]) => Promise<void>
+  postFlush?: (values: S[]) => Promise<void>
 }
 
 let clickhouse: ReturnType<typeof createClickHouseClient>
+let redis: Redis
 
-export async function postFlushCheckMemberships(players: Player[]) {
+export async function postFlushCheckMemberships(playerIds: string[]) {
   const orm = await getMikroORM()
   const em = orm.em.fork() as EntityManager
   try {
+    const players = await em.repo(Player).find({ id: { $in: playerIds } })
     const promises = players.map((player) => player.checkGroupMemberships(em))
     await Promise.all(promises)
   } finally {
     em.clear()
   }
 }
-export class FlushMetricsQueueHandler<T extends { id: string }> {
-  private queue: Queue
-  private buffer: Map<string, T> = new Map()
-  private options: HandlerOptions<T>
 
-  constructor(private metricName: string, private flushFunc: FlushFunc<T>, options?: HandlerOptions<T>) {
+type SerialisableData = Record<string, unknown> & { id: string }
+
+export abstract class FlushMetricsQueueHandler<T extends { id: string }, S extends SerialisableData = SerialisableData> {
+  private queue: Queue
+  private options: HandlerOptions<S>
+  private redisKey: string
+
+  constructor(private metricName: string, private flushFunc: FlushFunc<S>, options?: HandlerOptions<S>) {
     this.metricName = metricName
     this.flushFunc = flushFunc
     this.options = options ?? { logsInTests: true }
+    this.redisKey = `metrics:buffer:${metricName}`
 
     if (!clickhouse) {
       clickhouse = createClickHouseClient()
+    }
+
+    if (!redis) {
+      redis = createRedisConnection()
     }
 
     this.queue = createQueue(`flush-${metricName}`, async () => {
@@ -61,7 +73,8 @@ export class FlushMetricsQueueHandler<T extends { id: string }> {
   }
 
   async handle() {
-    const bufferSize = this.buffer.size
+    const values = await this.getAllBufferedItems()
+    const bufferSize = values.length
     if (bufferSize === 0) {
       return
     }
@@ -75,7 +88,6 @@ export class FlushMetricsQueueHandler<T extends { id: string }> {
       console.info(`Flushing ${bufferSize} ${this.metricName.replace('-', ' ')}...`)
     }
     /* v8 ignore stop */
-    const values = Array.from(this.buffer.values())
 
     try {
       await this.flushFunc(clickhouse, values)
@@ -83,20 +95,54 @@ export class FlushMetricsQueueHandler<T extends { id: string }> {
         await this.options.postFlush(values)
       }
 
+      await this.removeBufferedItems(values.map(({ id }) => id))
+
       /* v8 ignore start */
       if (canLog) {
-        console.info(`Flushed ${bufferSize} ${this.metricName.replace('-', ' ')}`)
+        console.info(`Flushed ${bufferSize} ${this.getFriendlyName()}`)
       }
       /* v8 ignore stop */
     } catch (err) {
       console.error(err)
       captureException(err)
-    } finally {
-      values.forEach(({ id }) => this.buffer.delete(id))
     }
   }
 
-  add(item: T) {
-    this.buffer.set(item.id, item)
+  getFriendlyName() {
+    return this.metricName.replace('-', ' ')
+  }
+
+  async add(item: T) {
+    await this.addBufferedItem(this.serialiseItem(item))
+  }
+
+  private async addBufferedItem(item: S): Promise<void> {
+    try {
+      await redis.hset(this.redisKey, item.id, JSON.stringify(item))
+    } catch (err) {
+      captureException(err)
+    }
+  }
+
+  private async getAllBufferedItems(): Promise<S[]> {
+    try {
+      const items = await redis.hgetall(this.redisKey)
+      return Object.values(items).map((itemJson) => JSON.parse(itemJson) as S)
+    } catch (err) {
+      captureException(err)
+      return []
+    }
+  }
+
+  protected abstract serialiseItem(item: T): S
+
+  private async removeBufferedItems(ids: string[]): Promise<void> {
+    if (ids.length === 0) return
+
+    try {
+      await redis.hdel(this.redisKey, ...ids)
+    } catch (err) {
+      captureException(err)
+    }
   }
 }

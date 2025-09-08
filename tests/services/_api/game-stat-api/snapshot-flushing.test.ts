@@ -34,8 +34,8 @@ describe('Game stats API service - snapshot flushing', () => {
 
     const alias = playerStat.player.aliases[0]
     const handler = new FlushStatSnapshotsQueueHandler()
-    handler.add(new PlayerGameStatSnapshot().construct(alias, playerStat))
-    handler.add(new PlayerGameStatSnapshot().construct(alias, playerStat))
+    await handler.add(new PlayerGameStatSnapshot().construct(alias, playerStat))
+    await handler.add(new PlayerGameStatSnapshot().construct(alias, playerStat))
 
     await handler.handle()
     expect(consoleSpy).toHaveBeenCalledTimes(2)

@@ -37,6 +37,7 @@ export abstract class FlushMetricsQueueHandler<T extends { id: string }, S exten
   private queue: Queue
   private options: HandlerOptions<S>
   private redisKey: string
+  private memoryFallback: Map<string, S> = new Map()
 
   constructor(private metricName: string, private flushFunc: FlushFunc<S>, options?: HandlerOptions<S>) {
     this.metricName = metricName
@@ -65,11 +66,19 @@ export abstract class FlushMetricsQueueHandler<T extends { id: string }, S exten
     const jitter = Math.floor(Math.random() * 10_000) - 5_000 // -5000 to +5000ms
     const intervalWithJitter = Math.max(flushInterval + jitter, 25_000)
 
-    this.queue.upsertJobScheduler(
-      `flush-${metricName}-scheduler`,
-      { every: intervalWithJitter },
-      { name: `flush-${metricName}-job` }
-    )
+    setImmediate(() => {
+      const schedulerName = `flush-${metricName}-scheduler`
+      this.queue.upsertJobScheduler(
+        schedulerName,
+        { every: intervalWithJitter },
+        { name: `flush-${metricName}-job` }
+      )
+
+      /* v8 ignore next 3 */
+      if (process.env.NODE_ENV !== 'test') {
+        console.info(`Upserted ${schedulerName} with interval: ${intervalWithJitter}`)
+      }
+    })
   }
 
   async handle() {
@@ -101,11 +110,10 @@ export abstract class FlushMetricsQueueHandler<T extends { id: string }, S exten
       if (canLog) {
         console.info(`Flushed ${bufferSize} ${this.getFriendlyName()}`)
       }
-      /* v8 ignore stop */
     } catch (err) {
-      console.error(err)
       captureException(err)
     }
+    /* v8 ignore stop */
   }
 
   getFriendlyName() {
@@ -113,25 +121,45 @@ export abstract class FlushMetricsQueueHandler<T extends { id: string }, S exten
   }
 
   async add(item: T) {
-    await this.addBufferedItem(this.serialiseItem(item))
+    void this.addBufferedItem(item)
   }
 
-  private async addBufferedItem(item: S): Promise<void> {
+  private async addBufferedItem(item: T): Promise<void> {
+    const serialised = this.serialiseItem(item)
+
     try {
-      await redis.hset(this.redisKey, item.id, JSON.stringify(item))
+      const pipeline = redis.pipeline()
+      pipeline.hset(this.redisKey, serialised.id, JSON.stringify(serialised))
+      pipeline.expire(this.redisKey, 300) // 5 mins, ~10 retries
+      await pipeline.exec()
     } catch (err) {
       captureException(err)
+      this.memoryFallback.set(serialised.id, serialised)
     }
   }
 
   private async getAllBufferedItems(): Promise<S[]> {
+    const itemsMap = new Map<string, S>()
+
     try {
       const items = await redis.hgetall(this.redisKey)
-      return Object.values(items).map((itemJson) => JSON.parse(itemJson) as S)
+      for (const [id, itemJson] of Object.entries(items)) {
+        const parsedItem = JSON.parse(itemJson) as S
+        itemsMap.set(id, parsedItem)
+      }
     } catch (err) {
       captureException(err)
-      return []
     }
+
+    if (this.memoryFallback.size > 0) {
+      for (const [id, item] of this.memoryFallback.entries()) {
+        if (!itemsMap.has(id)) {
+          itemsMap.set(id, item)
+        }
+      }
+    }
+
+    return Array.from(itemsMap.values())
   }
 
   protected abstract serialiseItem(item: T): S
@@ -143,6 +171,10 @@ export abstract class FlushMetricsQueueHandler<T extends { id: string }, S exten
       await redis.hdel(this.redisKey, ...ids)
     } catch (err) {
       captureException(err)
+    }
+
+    for (const id of ids) {
+      this.memoryFallback.delete(id)
     }
   }
 }

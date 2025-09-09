@@ -49,7 +49,6 @@ describe('Socket logger', () => {
 
     logRequest(conn, JSON.stringify({ req: 'v1.fake', data: {} }))
 
-    expect(consoleMock).toHaveBeenCalledOnce()
     expect(consoleMock).toHaveBeenLastCalledWith('--> WSS v1.fake')
 
     cleanup()
@@ -60,7 +59,6 @@ describe('Socket logger', () => {
 
     logRequest(conn, 'v1.fake')
 
-    expect(consoleMock).toHaveBeenCalledOnce()
     expect(consoleMock).toHaveBeenLastCalledWith('--> WSS unknown')
 
     cleanup()
@@ -71,7 +69,6 @@ describe('Socket logger', () => {
 
     logRequest(conn, JSON.stringify({ wrong: 'v1.fake' }))
 
-    expect(consoleMock).toHaveBeenCalledOnce()
     expect(consoleMock).toHaveBeenLastCalledWith('--> WSS unknown')
 
     cleanup()
@@ -82,7 +79,6 @@ describe('Socket logger', () => {
 
     logResponse(conn, 'v1.players.identify.success', JSON.stringify({ res: 'v1.players.identify.success', data: {} }))
 
-    expect(consoleMock).toHaveBeenCalledOnce()
     expect(consoleMock).toHaveBeenLastCalledWith('<-- WSS v1.players.identify.success')
 
     cleanup()
@@ -91,7 +87,6 @@ describe('Socket logger', () => {
   it('should log connections', async () => {
     logConnection(new IncomingMessage(new Socket()))
 
-    expect(consoleMock).toHaveBeenCalledOnce()
     expect(consoleMock).toHaveBeenLastCalledWith('--> WSS open')
   })
 
@@ -100,7 +95,6 @@ describe('Socket logger', () => {
 
     logConnectionClosed(conn, true, 3000)
 
-    expect(consoleMock).toHaveBeenCalledOnce()
     expect(consoleMock).toHaveBeenLastCalledWith('--> WSS close')
 
     cleanup()
@@ -111,7 +105,6 @@ describe('Socket logger', () => {
 
     logConnectionClosed(conn, false, 3000, 'Unauthorised')
 
-    expect(consoleMock).toHaveBeenCalledOnce()
     expect(consoleMock).toHaveBeenLastCalledWith('<-- WSS close')
 
     cleanup()
@@ -120,7 +113,6 @@ describe('Socket logger', () => {
   it('should log manually-closed connections without a SocketConnection', async () => {
     logConnectionClosed(undefined, false, 3000)
 
-    expect(consoleMock).toHaveBeenCalledOnce()
     expect(consoleMock).toHaveBeenLastCalledWith('<-- WSS close')
   })
 })

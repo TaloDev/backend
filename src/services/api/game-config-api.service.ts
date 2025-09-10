@@ -22,7 +22,7 @@ export default class GameConfigAPIService extends APIService {
       .fork()
       .repo(Game)
       .findOneOrFail(key.game, {
-        ...getResultCacheOptions(cacheKey),
+        ...getResultCacheOptions(cacheKey, 600_000),
         fields: ['props']
       })
 

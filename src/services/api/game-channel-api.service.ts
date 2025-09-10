@@ -12,6 +12,7 @@ import Redis from 'ioredis'
 import { pageValidation } from '../../lib/pagination/pageValidation'
 import { DEFAULT_PAGE_SIZE } from '../../lib/pagination/itemsPerPage'
 import Player from '../../entities/player'
+import { clearResponseCache, withResponseCache } from '../../lib/perf/responseCache'
 
 type GameChannelStorageTransaction = {
   upsertedProps: GameChannelStorageProp[]
@@ -34,6 +35,8 @@ function canModifyChannel(channel: GameChannel, alias: PlayerAlias): boolean {
 async function joinChannel(req: Request, channel: GameChannel, playerAlias: PlayerAlias) {
   if (!channel.hasMember(playerAlias.id)) {
     channel.members.add(playerAlias)
+
+    await clearResponseCache(req.ctx.redis, GameChannel.getSubscriptionsCacheKey(playerAlias.id, true))
     await channel.sendMessageToMembers(req.ctx.wss, 'v1.channels.player-joined', {
       channel,
       playerAlias
@@ -67,39 +70,48 @@ export default class GameChannelAPIService extends APIService {
     const { propKey, propValue } = req.query
     const em: EntityManager = req.ctx.em
 
-    const where: FilterQuery<GameChannel> = {
-      members: {
-        $some: {
-          id: req.ctx.state.alias.id
-        }
-      }
-    }
+    const aliasId: number = req.ctx.state.alias.id
+    const cacheKey = `${GameChannel.getSubscriptionsCacheKey(aliasId)}-${propKey}-${propValue}`
 
-    if (propKey) {
-      if (propValue) {
-        where.props = {
+    return withResponseCache({
+      redis: req.ctx.redis,
+      key: cacheKey,
+      ttl: 600
+    }, async () => {
+      const where: FilterQuery<GameChannel> = {
+        members: {
           $some: {
-            key: propKey,
-            value: propValue
-          }
-        }
-      } else {
-        where.props = {
-          $some: {
-            key: propKey
+            id: aliasId
           }
         }
       }
-    }
 
-    const channels = await em.repo(GameChannel).find(where)
-
-    return {
-      status: 200,
-      body: {
-        channels: await Promise.all(channels.map((channel) => channel.toJSONWithCount(req.ctx.em, req.ctx.state.includeDevData)))
+      if (propKey) {
+        if (propValue) {
+          where.props = {
+            $some: {
+              key: propKey,
+              value: propValue
+            }
+          }
+        } else {
+          where.props = {
+            $some: {
+              key: propKey
+            }
+          }
+        }
       }
-    }
+
+      const channels = await em.repo(GameChannel).find(where)
+
+      return {
+        status: 200,
+        body: {
+          channels: await Promise.all(channels.map((channel) => channel.toJSONWithCount(req.ctx.em, req.ctx.state.includeDevData)))
+        }
+      }
+    })
   }
 
   @Route({
@@ -175,6 +187,7 @@ export default class GameChannelAPIService extends APIService {
     const playerAlias: PlayerAlias = req.ctx.state.alias
 
     if (channel.hasMember(req.ctx.state.alias.id)) {
+      await clearResponseCache(req.ctx.redis, GameChannel.getSubscriptionsCacheKey(playerAlias.id, true))
       await channel.sendMessageToMembers(req.ctx.wss, 'v1.channels.player-left', {
         channel,
         playerAlias,

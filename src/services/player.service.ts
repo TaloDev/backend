@@ -21,6 +21,7 @@ import { captureException } from '@sentry/node'
 import { getResultCacheOptions } from '../lib/perf/getResultCacheOptions'
 import { DEFAULT_PAGE_SIZE, SMALL_PAGE_SIZE } from '../lib/pagination/itemsPerPage'
 import { pageValidation } from '../lib/pagination/pageValidation'
+import { withResponseCache } from '../lib/perf/responseCache'
 
 const propsValidation = async (val: unknown): Promise<ValidationCondition[]> => [
   {
@@ -136,99 +137,97 @@ export default class PlayerService extends Service {
     const devDataComponent = req.ctx.state.includeDevData ? 'dev' : 'no-dev'
     const cacheKey = `player-search-${req.ctx.state.game.id}-${searchComponent}-${page}-${devDataComponent}`
 
-    const where: FilterQuery<Player> = { game: req.ctx.state.game }
+    return withResponseCache({
+      redis: req.ctx.redis,
+      key: cacheKey
+    }, async () => {
+      const where: FilterQuery<Player> = { game: req.ctx.state.game }
 
-    if (!req.ctx.state.includeDevData) {
-      where.devBuild = false
-    }
+      if (!req.ctx.state.includeDevData) {
+        where.devBuild = false
+      }
 
-    if (search) {
-      const searchConditions: FilterQuery<Player>[] = [
-        {
-          props: {
-            $some: {
-              value: {
+      if (search) {
+        const searchConditions: FilterQuery<Player>[] = [
+          {
+            props: {
+              $some: {
+                value: {
+                  $like: `%${search}%`
+                }
+              }
+            }
+          },
+          {
+            aliases: {
+              identifier: {
                 $like: `%${search}%`
               }
             }
-          }
-        },
-        {
-          aliases: {
-            identifier: {
+          },
+          {
+            id: {
               $like: `%${search}%`
             }
           }
-        },
-        {
-          id: {
-            $like: `%${search}%`
-          }
-        }
-      ]
+        ]
 
-      const groupFilters = search.split(' ')
-        .filter((part) => part.startsWith('group:'))
+        const groupFilters = search.split(' ')
+          .filter((part) => part.startsWith('group:'))
 
-      if (!req.ctx.state.user.api) {
-        for (const filter of groupFilters) {
-          const groupId = filter.split(':')[1]
-          if (groupId) {
-            searchConditions.push({
-              groups: {
-                $some: groupId
-              }
-            })
-          }
-        }
-      }
-
-      const channelFilters = search.split(' ')
-        .filter((part) => part.startsWith('channel:'))
-
-      if (!req.ctx.state.user.api) {
-        for (const filter of channelFilters) {
-          const channelId = Number(filter.split(':')[1])
-          if (channelId && !isNaN(channelId)) {
-            searchConditions.push({
-              aliases: {
-                channels: {
-                  $some: channelId
+        if (!req.ctx.state.user.api) {
+          for (const filter of groupFilters) {
+            const groupId = filter.split(':')[1]
+            if (groupId) {
+              searchConditions.push({
+                groups: {
+                  $some: groupId
                 }
-              }
-            })
+              })
+            }
           }
         }
+
+        const channelFilters = search.split(' ')
+          .filter((part) => part.startsWith('channel:'))
+
+        if (!req.ctx.state.user.api) {
+          for (const filter of channelFilters) {
+            const channelId = Number(filter.split(':')[1])
+            if (channelId && !isNaN(channelId)) {
+              searchConditions.push({
+                aliases: {
+                  channels: {
+                    $some: channelId
+                  }
+                }
+              })
+            }
+          }
+        }
+
+        where.$or = searchConditions
       }
 
-      where.$or = searchConditions
-    }
-
-    const { allPlayers, count } = await (em.fork()).transactional(async (em) => {
-      const allPlayers = await em.repo(Player).find(where, {
+      const [allPlayers, count] = await em.repo(Player).findAndCount(where, {
         populate: ['aliases'],
         orderBy: { lastSeenAt: QueryOrder.DESC },
         limit: itemsPerPage + 1,
-        offset: Number(page) * itemsPerPage,
-        ...getResultCacheOptions(cacheKey)
+        offset: Number(page) * itemsPerPage
       })
 
-      const count = await em.repo(Player).count(where, getResultCacheOptions(`${cacheKey}-count`))
+      const players = allPlayers.slice(0, itemsPerPage)
 
-      return { allPlayers, count }
-    })
-
-    const players = allPlayers.slice(0, itemsPerPage)
-
-    return {
-      status: 200,
-      body: {
-        players,
-        count,
-        itemsPerPage,
-        isLastPage: allPlayers.length <= itemsPerPage
+      return {
+        status: 200,
+        body: {
+          players,
+          count,
+          itemsPerPage,
+          isLastPage: allPlayers.length <= itemsPerPage
+        }
       }
-    }
+    })
   }
 
   @Route({

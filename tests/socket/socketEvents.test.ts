@@ -15,7 +15,7 @@ describe('Socket events', () => {
     // essentially the same functionality but with instant flushing
     vi.spyOn(Socket.prototype, 'trackEvent').mockImplementation(async (data) => {
       const handler = new FlushSocketEventsQueueHandler()
-      handler.add({ id: v4(), ...data })
+      await handler.add({ id: v4(), ...data })
       await handler.handle()
     })
   })

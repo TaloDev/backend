@@ -12,6 +12,7 @@ import updateAllowedKeys from '../lib/entities/updateAllowedKeys'
 import { pageValidation } from '../lib/pagination/pageValidation'
 import { DEFAULT_PAGE_SIZE } from '../lib/pagination/itemsPerPage'
 import { clearResponseCache, withResponseCache } from '../lib/perf/responseCache'
+import { resetModeValidation, ResetMode, translateResetMode } from '../lib/validation/resetModeValidation'
 
 async function getGlobalEntryIds({
   em,
@@ -407,6 +408,69 @@ export default class LeaderboardService extends Service {
       status: 200,
       body: {
         leaderboard
+      }
+    }
+  }
+
+  @Route({
+    method: 'DELETE',
+    path: '/:id/entries'
+  })
+  @Validate({
+    query: {
+      mode: resetModeValidation
+    }
+  })
+  @HasPermission(LeaderboardPolicy, 'reset')
+  async reset(req: Request): Promise<Response> {
+    const { mode = 'all' } = req.query as { mode?: ResetMode }
+    const em: EntityManager = req.ctx.em
+    const leaderboard: Leaderboard = req.ctx.state.leaderboard
+
+    const where: FilterQuery<LeaderboardEntry> = { leaderboard }
+
+    if (mode === 'dev') {
+      where.playerAlias = {
+        player: {
+          devBuild: true
+        }
+      }
+    } else if (mode === 'live') {
+      where.playerAlias = {
+        player: {
+          devBuild: false
+        }
+      }
+    }
+
+    const entriesToDelete = await em.repo(LeaderboardEntry).find(where, {
+      populate: ['playerAlias.player']
+    })
+
+    const deletedCount = entriesToDelete.length
+
+    createGameActivity(em, {
+      user: req.ctx.state.user,
+      game: leaderboard.game,
+      type: GameActivityType.LEADERBOARD_ENTRIES_RESET,
+      extra: {
+        leaderboardInternalName: leaderboard.internalName,
+        display: {
+          'Reset mode': translateResetMode(mode),
+          'Deleted count': deletedCount
+        }
+      }
+    })
+
+    await em.removeAndFlush(entriesToDelete)
+    await clearResponseCache(req.ctx.redis, leaderboard.getEntriesCacheKey(true))
+
+    // todo: update steam leaderboards
+
+    return {
+      status: 200,
+      body: {
+        deletedCount
       }
     }
   }

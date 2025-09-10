@@ -15,6 +15,7 @@ import { captureException } from '@sentry/node'
 import { ClickHouseClient } from '@clickhouse/client'
 import GameChannel, { GameChannelLeavingReason } from './game-channel'
 import checkGroupMemberships from '../lib/groups/checkGroupMemberships'
+import { clearResponseCache } from '../lib/perf/responseCache'
 
 @Entity()
 export default class Player {
@@ -179,6 +180,8 @@ export default class Player {
 
     for (const channel of temporaryChannels) {
       channel.members.remove(playerAlias)
+      await clearResponseCache(socket.redis, GameChannel.getSubscriptionsCacheKey(playerAlias.id, true))
+
       if (channel.shouldAutoCleanup(playerAlias)) {
         em.remove(channel)
         await channel.sendDeletedMessage(socket)

@@ -11,6 +11,7 @@ import buildErrorResponse from '../lib/errors/buildErrorResponse'
 import { captureException } from '@sentry/node'
 import { pageValidation } from '../lib/pagination/pageValidation'
 import { DEFAULT_PAGE_SIZE } from '../lib/pagination/itemsPerPage'
+import { clearResponseCache, withResponseCache } from '../lib/perf/responseCache'
 
 const itemsPerPage = DEFAULT_PAGE_SIZE
 
@@ -28,70 +29,79 @@ export default class GameChannelService extends Service {
     const { search, page = 0, propKey, propValue } = req.query
     const em: EntityManager = req.ctx.em
 
-    const query = em.qb(GameChannel, 'gc')
-      .select('gc.*')
-      .orderBy({ totalMessages: QueryOrder.DESC })
-      .limit(itemsPerPage + 1)
-      .offset(Number(page) * itemsPerPage)
+    const searchComponent = search ? encodeURIComponent(search) : 'no-search'
+    const cacheKey = `${GameChannel.getSearchCacheKey()}-${searchComponent}-${page}-${propKey}-${propValue}`
 
-    if (search) {
-      query.andWhere({
-        $or: [
-          { name: { $like: `%${search}%` } },
-          {
-            owner: { identifier: { $like: `%${search}%` } }
-          }
-        ]
-      })
-    }
+    return withResponseCache({
+      redis: req.ctx.redis,
+      key: cacheKey,
+      ttl: 600
+    }, async () => {
+      const query = em.qb(GameChannel, 'gc')
+        .select('gc.*')
+        .orderBy({ totalMessages: QueryOrder.DESC })
+        .limit(itemsPerPage + 1)
+        .offset(Number(page) * itemsPerPage)
 
-    if (req.ctx.state.user.api) {
-      query.andWhere({
-        private: false
-      })
-    }
-
-    if (propKey) {
-      if (propValue) {
+      if (search) {
         query.andWhere({
-          props: {
-            $some: {
-              key: propKey,
-              value: propValue
+          $or: [
+            { name: { $like: `%${search}%` } },
+            {
+              owner: { identifier: { $like: `%${search}%` } }
             }
-          }
-        })
-      } else {
-        query.andWhere({
-          props: {
-            $some: {
-              key: propKey
-            }
-          }
+          ]
         })
       }
-    }
 
-    const [channels, count] = await query
-      .andWhere({
-        game: req.ctx.state.game
-      })
-      .getResultAndCount()
-
-    await em.populate(channels, ['owner'])
-
-    const channelPromises = channels.slice(0, itemsPerPage)
-      .map((channel) => channel.toJSONWithCount(em, req.ctx.state.includeDevData))
-
-    return {
-      status: 200,
-      body: {
-        channels: await Promise.all(channelPromises),
-        count,
-        itemsPerPage,
-        isLastPage: channels.length <= itemsPerPage
+      if (req.ctx.state.user.api) {
+        query.andWhere({
+          private: false
+        })
       }
-    }
+
+      if (propKey) {
+        if (propValue) {
+          query.andWhere({
+            props: {
+              $some: {
+                key: propKey,
+                value: propValue
+              }
+            }
+          })
+        } else {
+          query.andWhere({
+            props: {
+              $some: {
+                key: propKey
+              }
+            }
+          })
+        }
+      }
+
+      const [channels, count] = await query
+        .andWhere({
+          game: req.ctx.state.game
+        })
+        .getResultAndCount()
+
+      await em.populate(channels, ['owner'])
+
+      const channelPromises = channels.slice(0, itemsPerPage)
+        .map((channel) => channel.toJSONWithCount(em, req.ctx.state.includeDevData))
+
+      return {
+        status: 200,
+        body: {
+          channels: await Promise.all(channelPromises),
+          count,
+          itemsPerPage,
+          isLastPage: channels.length <= itemsPerPage
+        }
+      }
+    })
   }
 
   @Route({
@@ -151,6 +161,7 @@ export default class GameChannelService extends Service {
     }
 
     await em.persistAndFlush(channel)
+    await clearResponseCache(req.ctx.redis, GameChannel.getSearchCacheKey(true))
 
     await channel.sendMessageToMembers(req.ctx.wss, 'v1.channels.player-joined', {
       channel,
@@ -242,13 +253,17 @@ export default class GameChannelService extends Service {
       changedProperties.push('temporaryMembership')
     }
 
-    // don't send this message if the only thing that changed is the owner
-    // that is covered by the ownership transferred message
-    if (changedProperties.length > 0 && !(changedProperties.length === 1 && changedProperties[0] === 'ownerAliasId')) {
-      await channel.sendMessageToMembers(req.ctx.wss, 'v1.channels.updated', {
-        channel,
-        changedProperties
-      })
+    if (changedProperties.length > 0) {
+      await clearResponseCache(req.ctx.redis, GameChannel.getSearchCacheKey(true))
+
+      // don't send this message if the only thing that changed is the owner
+      // that is covered by the ownership transferred message
+      if (!(changedProperties.length === 1 && changedProperties[0] === 'ownerAliasId')) {
+        await channel.sendMessageToMembers(req.ctx.wss, 'v1.channels.updated', {
+          channel,
+          changedProperties
+        })
+      }
     }
 
     if (!req.ctx.state.user.api) {

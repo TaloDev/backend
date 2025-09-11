@@ -51,4 +51,9 @@ export default class LeaderboardPolicy extends Policy {
     const { gameId } = req.params
     return await this.canAccessGame(Number(gameId))
   }
+
+  @UserTypeGate([UserType.ADMIN], 'reset leaderboard entries')
+  async reset(req: Request): Promise<PolicyResponse> {
+    return await this.canAccessLeaderboard(req)
+  }
 }

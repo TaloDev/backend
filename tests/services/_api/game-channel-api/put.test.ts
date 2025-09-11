@@ -6,7 +6,7 @@ import PlayerFactory from '../../../fixtures/PlayerFactory'
 import createSocketIdentifyMessage from '../../../utils/createSocketIdentifyMessage'
 import createTestSocket from '../../../utils/createTestSocket'
 import { randText } from '@ngneat/falso'
-import { Collection } from '@mikro-orm/core'
+import { Collection } from '@mikro-orm/mysql'
 import GameChannelProp from '../../../../src/entities/game-channel-prop'
 
 describe('Game channel API service - put', () => {

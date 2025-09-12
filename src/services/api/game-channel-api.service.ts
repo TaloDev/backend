@@ -470,7 +470,7 @@ export default class GameChannelAPIService extends APIService {
       upsertedProps,
       deletedProps,
       failedProps
-    } = await em.transactional(async (em): Promise<GameChannelStorageTransaction> => {
+    } = await em.transactional(async (trx): Promise<GameChannelStorageTransaction> => {
       const newPropsMap = new Map(sanitiseProps(props).map(({ key, value }) => [key, value]))
 
       const upsertedProps: GameChannelStorageTransaction['upsertedProps'] = []
@@ -485,7 +485,7 @@ export default class GameChannelAPIService extends APIService {
         }
       }
 
-      const existingStorageProps = await em.repo(GameChannelStorageProp).find({
+      const existingStorageProps = await trx.repo(GameChannelStorageProp).find({
         gameChannel: channel,
         key: {
           $in: Array.from(newPropsMap.keys())
@@ -498,7 +498,7 @@ export default class GameChannelAPIService extends APIService {
 
         if (!newPropValue) {
           // delete the existing prop and track who deleted it
-          em.remove(existingProp)
+          trx.remove(existingProp)
           existingProp.lastUpdatedBy = req.ctx.state.alias
           existingProp.updatedAt = new Date()
           deletedProps.push(existingProp)
@@ -542,12 +542,12 @@ export default class GameChannelAPIService extends APIService {
           const newProp = new GameChannelStorageProp(channel, key, String(value))
           newProp.createdBy = req.ctx.state.alias
           newProp.lastUpdatedBy = req.ctx.state.alias
-          em.persist(newProp)
+          trx.persist(newProp)
           upsertedProps.push(newProp)
         }
       }
 
-      await em.flush()
+      await trx.flush()
 
       const redis: Redis = req.ctx.redis
       for (const prop of upsertedProps) {

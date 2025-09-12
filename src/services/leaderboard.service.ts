@@ -443,12 +443,7 @@ export default class LeaderboardService extends Service {
       }
     }
 
-    const entriesToDelete = await em.repo(LeaderboardEntry).find(where, {
-      populate: ['playerAlias.player']
-    })
-
-    const deletedCount = entriesToDelete.length
-
+    const deletedCount = await em.repo(LeaderboardEntry).nativeDelete(where)
     createGameActivity(em, {
       user: req.ctx.state.user,
       game: leaderboard.game,
@@ -462,10 +457,8 @@ export default class LeaderboardService extends Service {
       }
     })
 
-    await em.removeAndFlush(entriesToDelete)
+    await em.flush()
     await clearResponseCache(req.ctx.redis, leaderboard.getEntriesCacheKey(true))
-
-    // todo: update steam leaderboards
 
     return {
       status: 200,

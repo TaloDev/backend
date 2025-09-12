@@ -13,6 +13,7 @@ import LeaderboardFactory from '../../fixtures/LeaderboardFactory'
 import PlayerFactory from '../../fixtures/PlayerFactory'
 import LeaderboardEntryFactory from '../../fixtures/LeaderboardEntryFactory'
 import { randNumber } from '@ngneat/falso'
+import { SteamworksLeaderboardEntry } from '../../../src/entities/steamworks-leaderboard-entry'
 
 describe('Steamworks integration - sync leaderboards', () => {
   const axiosMock = new AxiosMockAdapter(axios)
@@ -90,6 +91,9 @@ describe('Steamworks integration - sync leaderboards', () => {
 
     const entry = await em.getRepository(LeaderboardEntry).findOne({ score: 1030 })
     expect(entry).toBeTruthy()
+
+    const steamworksEntry = await em.getRepository(SteamworksLeaderboardEntry).findOne({ leaderboardEntry: entry })
+    expect(steamworksEntry).toBeTruthy()
   })
 
   it('should throw if the response leaderboards are not an array', async () => {
@@ -312,6 +316,9 @@ describe('Steamworks integration - sync leaderboards', () => {
 
     const entry = await em.getRepository(LeaderboardEntry).findOne({ playerAlias: player.aliases[0] })
     expect(entry).toBeTruthy()
+
+    const steamworksEntry = await em.getRepository(SteamworksLeaderboardEntry).findOne({ leaderboardEntry: entry })
+    expect(steamworksEntry).toBeTruthy()
   })
 
   it('should push through entries from talo into steamworks', async () => {
@@ -374,5 +381,8 @@ describe('Steamworks integration - sync leaderboards', () => {
       body: `appid=${config.appId}&leaderboardid=${mapping.steamworksLeaderboardId}&steamid=${player.aliases[0].identifier}&score=${entry.score}&scoremethod=KeepBest`,
       method: 'POST'
     })
+
+    const steamworksEntry = await em.getRepository(SteamworksLeaderboardEntry).findOne({ leaderboardEntry: entry })
+    expect(steamworksEntry).toBeTruthy()
   })
 })

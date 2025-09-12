@@ -246,8 +246,8 @@ export default class PlayerService extends Service {
     const { props } = req.body
     const em: EntityManager = req.ctx.em
 
-    const [player, errorResponse] = await em.transactional(async (em): Promise<PatchTransactionResponse> => {
-      const player = await em.repo(Player).findOneOrFail((req.ctx.state.player as Player).id, { lockMode: LockMode.PESSIMISTIC_WRITE })
+    const [player, errorResponse] = await em.transactional(async (trx): Promise<PatchTransactionResponse> => {
+      const player = await trx.repo(Player).findOneOrFail((req.ctx.state.player as Player).id, { lockMode: LockMode.PESSIMISTIC_WRITE })
 
       if (props) {
         if (req.ctx.state.user.api !== true && props.some((prop) => prop.key.startsWith('META_'))) {
@@ -266,7 +266,7 @@ export default class PlayerService extends Service {
       }
 
       if (req.ctx.state.user.api !== true) {
-        createGameActivity(em, {
+        createGameActivity(trx, {
           user: req.ctx.state.user,
           game: player.game,
           type: GameActivityType.PLAYER_PROPS_UPDATED,
@@ -280,7 +280,7 @@ export default class PlayerService extends Service {
         })
       }
 
-      await em.flush()
+      await trx.flush()
       return [player, null]
     })
 

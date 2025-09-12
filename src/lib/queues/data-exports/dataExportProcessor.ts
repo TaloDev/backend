@@ -208,8 +208,7 @@ export class DataExporter {
         first: batchSize,
         after,
         orderBy: { id: 'asc' },
-        /* @ts-expect-error populate types don't work with findByCursor */
-        populate: ['leaderboard']
+        populate: ['leaderboard'] as const
       })
     })
   }
@@ -256,8 +255,7 @@ export class DataExporter {
         first: batchSize,
         after,
         orderBy: { id: 'asc' },
-        /* @ts-expect-error populate types don't work with findByCursor */
-        populate: ['player']
+        populate: ['player'] as const
       })
     })
   }
@@ -273,8 +271,7 @@ export class DataExporter {
         first: batchSize,
         after,
         orderBy: { id: 'asc' },
-        /* @ts-expect-error populate types don't work with findByCursor */
-        populate: ['user']
+        populate: ['user'] as const
       })
     })
   }
@@ -296,8 +293,7 @@ export class DataExporter {
         first: batchSize,
         after,
         orderBy: { id: 'asc' },
-        /* @ts-expect-error populate types don't work with findByCursor */
-        populate: ['playerAlias.player']
+        populate: ['playerAlias.player'] as const
       })
     })
   }

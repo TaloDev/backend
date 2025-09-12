@@ -12,6 +12,8 @@ import { performance } from 'perf_hooks'
 import GameStat from '../../entities/game-stat'
 import PlayerGameStat from '../../entities/player-game-stat'
 import { Request } from 'koa-clay'
+import { SteamworksLeaderboardEntry } from '../../entities/steamworks-leaderboard-entry'
+import assert from 'node:assert'
 
 type SteamworksRequestConfig = {
   method: SteamworksRequestMethod
@@ -196,13 +198,13 @@ export async function createSteamworksLeaderboard(em: EntityManager, integration
   const res = await makeRequest<FindOrCreateLeaderboardResponse>(config, event)
   await em.persistAndFlush(event)
 
-  const leaderboardMapping = await em.getRepository(SteamworksLeaderboardMapping).findOne({ leaderboard })
-  if (!leaderboardMapping) {
-    const steamworksLeaderboard = res.data.result?.leaderboard
-    if (steamworksLeaderboard) {
-      const leaderboardMapping = new SteamworksLeaderboardMapping(steamworksLeaderboard.leaderBoardID, leaderboard)
-      await em.persistAndFlush(leaderboardMapping)
-    }
+  const steamworksLeaderboard = res.data.result?.leaderboard
+  if (steamworksLeaderboard) {
+    await em.repo(SteamworksLeaderboardMapping).upsert({
+      steamworksLeaderboardId: steamworksLeaderboard.leaderBoardID,
+      leaderboard,
+      createdAt: new Date()
+    })
   }
 }
 
@@ -236,6 +238,11 @@ export async function createSteamworksLeaderboardEntry(em: EntityManager, integr
     await makeRequest(config, event)
 
     await em.persistAndFlush(event)
+    await em.upsert(new SteamworksLeaderboardEntry({
+      steamworksLeaderboard: leaderboardMapping,
+      leaderboardEntry: entry,
+      steamUserId: entry.playerAlias.identifier
+    }))
   }
 }
 
@@ -254,6 +261,10 @@ export async function deleteSteamworksLeaderboardEntry(em: EntityManager, integr
     await makeRequest(config, event)
 
     await em.persistAndFlush(event)
+    await em.repo(SteamworksLeaderboardEntry).nativeDelete({
+      steamworksLeaderboard: leaderboardMapping,
+      leaderboardEntry: entry
+    })
   }
 }
 
@@ -280,11 +291,27 @@ async function getEntriesForSteamworksLeaderboard(em: EntityManager, integration
   return res.data
 }
 
-async function createLeaderboardEntry(em: EntityManager, leaderboard: Leaderboard, playerAlias: PlayerAlias, score: number): Promise<LeaderboardEntry> {
-  const entry = new LeaderboardEntry(leaderboard)
+async function createLeaderboardEntry({
+  em,
+  leaderboardMapping,
+  playerAlias,
+  score
+}: {
+  em: EntityManager
+  leaderboardMapping: SteamworksLeaderboardMapping
+  playerAlias: PlayerAlias
+  score: number
+}): Promise<LeaderboardEntry> {
+  const entry = new LeaderboardEntry(leaderboardMapping.leaderboard)
   entry.playerAlias = playerAlias
   entry.score = score
-  await em.persistAndFlush(entry)
+
+  const steamworksEntry = new SteamworksLeaderboardEntry({
+    steamworksLeaderboard: leaderboardMapping,
+    leaderboardEntry: entry,
+    steamUserId: playerAlias.identifier
+  })
+  await em.persistAndFlush(steamworksEntry)
 
   return entry
 }
@@ -295,101 +322,116 @@ export async function syncSteamworksLeaderboards(em: EntityManager, integration:
   const res = await makeRequest<GetLeaderboardsForGameResponse>(config, event)
   await em.persistAndFlush(event)
 
-  const steamworksLeaderboards = res.data?.response?.leaderboards
-  if (!Array.isArray(steamworksLeaderboards)) {
-    throw new Error('Failed to retrieve leaderboards - is your App ID correct?')
-  }
+  await em.transactional(async (trx) => {
+    const steamworksLeaderboards = res.data?.response?.leaderboards
+    if (!Array.isArray(steamworksLeaderboards)) {
+      throw new Error('Failed to retrieve leaderboards - is your App ID correct?')
+    }
 
-  const leaderboards = await em.getRepository(Leaderboard).find({ game: integration.game })
+    const leaderboards = await trx.getRepository(Leaderboard).find({ game: integration.game })
 
-  const combinedLeaderboards = await Promise.all(leaderboards.map(async (leaderboard): Promise<CombinedLeaderboards> => {
-    const leaderboardMapping = await em.getRepository(SteamworksLeaderboardMapping).findOne({ leaderboard })
+    const combinedLeaderboards = await Promise.all(leaderboards.map(async (leaderboard): Promise<CombinedLeaderboards> => {
+      const leaderboardMapping = await trx.getRepository(SteamworksLeaderboardMapping).findOne({ leaderboard })
 
-    const mappingMatch = steamworksLeaderboards.find((steamworksLeaderboard) => steamworksLeaderboard.id === leaderboardMapping?.steamworksLeaderboardId)
-    const nameMatch = steamworksLeaderboards.find((steamworksLeaderboard) => steamworksLeaderboard.name === leaderboard.internalName)
+      const mappingMatch = steamworksLeaderboards.find((steamworksLeaderboard) => steamworksLeaderboard.id === leaderboardMapping?.steamworksLeaderboardId)
+      const nameMatch = steamworksLeaderboards.find((steamworksLeaderboard) => steamworksLeaderboard.name === leaderboard.internalName)
 
-    return [leaderboard, mappingMatch ?? nameMatch ?? null, leaderboardMapping]
-  }))
+      return [leaderboard, mappingMatch ?? nameMatch ?? null, leaderboardMapping]
+    }))
 
-  for (const [leaderboard, steamworksLeaderboard, leaderboardMapping] of combinedLeaderboards) {
-    // update talo leaderboards with properties from steamworks - because we can't do the other way around
-    if (leaderboard && steamworksLeaderboard) {
-      if (!leaderboardMapping) em.persist(new SteamworksLeaderboardMapping(steamworksLeaderboard.id, leaderboard))
+    for (const [leaderboard, steamworksLeaderboard, leaderboardMapping] of combinedLeaderboards) {
+      // update talo leaderboards with properties from steamworks - because we can't do the other way around
+      if (leaderboard && steamworksLeaderboard) {
+        if (!leaderboardMapping) trx.persist(new SteamworksLeaderboardMapping(steamworksLeaderboard.id, leaderboard))
 
+        leaderboard.internalName = leaderboard.name = steamworksLeaderboard.name
+        leaderboard.sortMode = mapSteamworksLeaderboardSortMode(steamworksLeaderboard.sortmethod)
+        leaderboard.unique = true
+        // create in steamworks if it only exists in Talo
+      } else if (leaderboard && !steamworksLeaderboard) {
+        await createSteamworksLeaderboard(trx, integration, leaderboard)
+      }
+    }
+
+    // create leaderboards in talo for ones that only exist in steamworks
+    const leaderboardsOnlyInSteamworks = steamworksLeaderboards.filter((steamworksLeaderboard) => {
+      return !leaderboards.find((leaderboard) => steamworksLeaderboard.name === leaderboard.internalName)
+    })
+    for (const steamworksLeaderboard of leaderboardsOnlyInSteamworks) {
+      const leaderboard = new Leaderboard(integration.game)
       leaderboard.internalName = leaderboard.name = steamworksLeaderboard.name
       leaderboard.sortMode = mapSteamworksLeaderboardSortMode(steamworksLeaderboard.sortmethod)
       leaderboard.unique = true
-      // create in steamworks if it only exists in Talo
-    } else if (leaderboard && !steamworksLeaderboard) {
-      await createSteamworksLeaderboard(em, integration, leaderboard)
+
+      trx.persist(new SteamworksLeaderboardMapping(steamworksLeaderboard.id, leaderboard))
+      trx.persist(leaderboard)
+      leaderboards.push(leaderboard)
     }
-  }
 
-  // create leaderboards in talo for ones that only exist in steamworks
-  const leaderboardsOnlyInSteamworks = steamworksLeaderboards.filter((steamworksLeaderboard) => {
-    return !leaderboards.find((leaderboard) => steamworksLeaderboard.name === leaderboard.internalName)
-  })
-  for (const steamworksLeaderboard of leaderboardsOnlyInSteamworks) {
-    const leaderboard = new Leaderboard(integration.game)
-    leaderboard.internalName = leaderboard.name = steamworksLeaderboard.name
-    leaderboard.sortMode = mapSteamworksLeaderboardSortMode(steamworksLeaderboard.sortmethod)
-    leaderboard.unique = true
+    await trx.flush()
 
-    em.persist(new SteamworksLeaderboardMapping(steamworksLeaderboard.id, leaderboard))
-    em.persist(leaderboard)
-    leaderboards.push(leaderboard)
-  }
+    const syncedEntryIds: number[] = []
 
-  await em.flush()
+    // push entries from steam into talo
+    for (const steamworksLeaderboard of steamworksLeaderboards) {
+      const leaderboard = leaderboards.find((leaderboard) => leaderboard.internalName === steamworksLeaderboard.name)
+      assert(leaderboard, 'Leaderboard not found')
 
-  const syncedEntryIds: number[] = []
+      const entriesRes = await getEntriesForSteamworksLeaderboard(trx, integration, steamworksLeaderboard.id)
+      const leaderboardMapping = await trx.repo(SteamworksLeaderboardMapping).findOneOrFail({ leaderboard })
 
-  // push entries from steam into talo
-  for (const steamworksLeaderboard of steamworksLeaderboards) {
-    const leaderboard = leaderboards.find((leaderboard) => leaderboard.internalName === steamworksLeaderboard.name)
-    const entriesRes = await getEntriesForSteamworksLeaderboard(em, integration, steamworksLeaderboard.id)
+      for (const steamEntry of entriesRes.leaderboardEntryInformation.leaderboardEntries) {
+        const existingPlayerAlias = await trx.repo(PlayerAlias).findOne({
+          service: PlayerAliasService.STEAM,
+          identifier: steamEntry.steamID,
+          player: {
+            game: integration.game
+          }
+        })
 
-    for (const steamEntry of entriesRes.leaderboardEntryInformation.leaderboardEntries) {
-      const existingPlayerAlias = await em.getRepository(PlayerAlias).findOne({
-        service: PlayerAliasService.STEAM,
-        identifier: steamEntry.steamID,
-        player: {
-          game: integration.game
-        }
-      })
+        if (existingPlayerAlias) {
+          const existingEntry = await trx.repo(LeaderboardEntry).findOne({ leaderboard, playerAlias: existingPlayerAlias })
+          if (!existingEntry) {
+            const newEntry = await createLeaderboardEntry({
+              em: trx,
+              leaderboardMapping,
+              playerAlias: existingPlayerAlias,
+              score: steamEntry.score
+            })
+            syncedEntryIds.push(newEntry.id)
+          }
+          // if the alias doesnt exist then neither does the entry, so create both
+        } else {
+          const player = new Player(integration.game)
+          player.addProp('importedFromSteam', new Date().toISOString())
 
-      if (existingPlayerAlias) {
-        const existingEntry = await em.getRepository(LeaderboardEntry).findOne({ leaderboard, playerAlias: existingPlayerAlias })
-        if (!existingEntry) {
-          const newEntry = await createLeaderboardEntry(em, leaderboard!, existingPlayerAlias, steamEntry.score)
+          const playerAlias = new PlayerAlias()
+          playerAlias.player = player
+          playerAlias.service = PlayerAliasService.STEAM
+          playerAlias.identifier = steamEntry.steamID
+          player.aliases.add(playerAlias)
+
+          const newEntry = await createLeaderboardEntry({
+            em: trx,
+            leaderboardMapping,
+            playerAlias,
+            score: steamEntry.score
+          })
           syncedEntryIds.push(newEntry.id)
         }
-        // if the alias doesnt exist then neither does the entry, so create both
-      } else {
-        const player = new Player(integration.game)
-        player.addProp('importedFromSteam', new Date().toISOString())
-
-        const playerAlias = new PlayerAlias()
-        playerAlias.player = player
-        playerAlias.service = PlayerAliasService.STEAM
-        playerAlias.identifier = steamEntry.steamID
-        player.aliases.add(playerAlias)
-
-        const newEntry = await createLeaderboardEntry(em, leaderboard!, playerAlias, steamEntry.score)
-        syncedEntryIds.push(newEntry.id)
       }
     }
-  }
 
-  // push entries from talo into steam
-  for (const leaderboard of leaderboards) {
-    const entries = await leaderboard.entries.loadItems()
-    for (const entry of entries) {
-      if (!syncedEntryIds.includes(entry.id)) {
-        await createSteamworksLeaderboardEntry(em, integration, entry)
+    // push entries from talo into steam
+    for (const leaderboard of leaderboards) {
+      const entries = await leaderboard.entries.loadItems()
+      for (const entry of entries) {
+        if (!syncedEntryIds.includes(entry.id)) {
+          await createSteamworksLeaderboardEntry(trx, integration, entry)
+        }
       }
     }
-  }
+  })
 }
 
 async function getSteamworksStatsForPlayer(em: EntityManager, integration: Integration, steamId: string): Promise<GetUserStatsForGameResponse> {
@@ -566,4 +608,24 @@ export async function verifyOwnership(em: EntityManager, integration: Integratio
   await em.persistAndFlush(event)
 
   return res.data
+}
+
+export async function cleanupSteamworksLeaderboardEntry(
+  em: EntityManager,
+  integration: Integration,
+  steamworksEntry: SteamworksLeaderboardEntry
+) {
+  const body = querystring.stringify({
+    appid: integration.getConfig().appId,
+    leaderboardid: steamworksEntry.steamworksLeaderboard.steamworksLeaderboardId,
+    steamid: steamworksEntry.steamUserId
+  })
+
+  const config = createSteamworksRequestConfig(integration, 'POST', '/ISteamLeaderboards/DeleteLeaderboardScore/v1', body)
+  const event = createSteamworksIntegrationEvent(integration, config)
+  await makeRequest(config, event)
+
+  em.persist(event)
+  em.remove(steamworksEntry)
+  await em.flush()
 }

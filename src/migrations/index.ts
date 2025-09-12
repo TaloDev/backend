@@ -54,6 +54,7 @@ import { CreateGameFeedbackPropTable } from './20250719225216CreateGameFeedbackP
 import { AddPlayerDevBuildColumn } from './20250725144253AddPlayerDevBuildColumn'
 import { PlayerAliasIdentifierServiceIndex } from './20250811004719PlayerAliasIdentifierServiceIndex'
 import { InternalNameGameIndexes } from './20250811115700InternalNameGameIndexes'
+import { CreateSteamworksLeaderboardEntryTable } from './20250912193820CreateSteamworksLeaderboardEntryTable'
 
 export default [
   {
@@ -279,5 +280,9 @@ export default [
   {
     name: 'InternalNameGameIndexes',
     class: InternalNameGameIndexes
+  },
+  {
+    name: 'CreateSteamworksLeaderboardEntryTable',
+    class: CreateSteamworksLeaderboardEntryTable
   }
 ]

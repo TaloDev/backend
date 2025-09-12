@@ -3610,6 +3610,146 @@
           "length": null,
           "mappedType": "integer"
         },
+        "steamworks_leaderboard_id": {
+          "name": "steamworks_leaderboard_id",
+          "type": "int",
+          "unsigned": true,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "length": null,
+          "mappedType": "integer"
+        },
+        "leaderboard_id": {
+          "name": "leaderboard_id",
+          "type": "int",
+          "unsigned": true,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "length": null,
+          "mappedType": "integer"
+        },
+        "leaderboard_entry_id": {
+          "name": "leaderboard_entry_id",
+          "type": "int",
+          "unsigned": true,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "length": null,
+          "mappedType": "integer"
+        },
+        "steam_user_id": {
+          "name": "steam_user_id",
+          "type": "varchar(255)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "length": 255,
+          "mappedType": "string"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "datetime",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "length": null,
+          "mappedType": "datetime"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "datetime",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "length": null,
+          "mappedType": "datetime"
+        }
+      },
+      "name": "steamworks_leaderboard_entry",
+      "indexes": [
+        {
+          "columnNames": [
+            "leaderboard_entry_id"
+          ],
+          "composite": false,
+          "keyName": "steamworks_leaderboard_entry_leaderboard_entry_id_unique",
+          "constraint": true,
+          "primary": false,
+          "unique": true
+        },
+        {
+          "keyName": "steamworks_leaderboard_entry_steamworks_leaderboard_aa6b4_index",
+          "columnNames": [
+            "steamworks_leaderboard_id",
+            "leaderboard_id"
+          ],
+          "composite": true,
+          "constraint": false,
+          "primary": false,
+          "unique": false
+        },
+        {
+          "keyName": "PRIMARY",
+          "columnNames": [
+            "id"
+          ],
+          "composite": false,
+          "constraint": true,
+          "primary": true,
+          "unique": true
+        }
+      ],
+      "checks": [],
+      "foreignKeys": {
+        "steamworks_leaderboard_entry_steamworks_leaderboa_6dc1e_foreign": {
+          "constraintName": "steamworks_leaderboard_entry_steamworks_leaderboa_6dc1e_foreign",
+          "columnNames": [
+            "steamworks_leaderboard_id",
+            "leaderboard_id"
+          ],
+          "localTableName": "steamworks_leaderboard_entry",
+          "referencedColumnNames": [
+            "steamworks_leaderboard_id",
+            "leaderboard_id"
+          ],
+          "referencedTableName": "steamworks_leaderboard_mapping",
+          "deleteRule": "cascade",
+          "updateRule": "cascade"
+        },
+        "steamworks_leaderboard_entry_leaderboard_entry_id_foreign": {
+          "constraintName": "steamworks_leaderboard_entry_leaderboard_entry_id_foreign",
+          "columnNames": [
+            "leaderboard_entry_id"
+          ],
+          "localTableName": "steamworks_leaderboard_entry",
+          "referencedColumnNames": [
+            "id"
+          ],
+          "referencedTableName": "leaderboard_entry",
+          "deleteRule": "set null",
+          "updateRule": "cascade"
+        }
+      },
+      "nativeEnums": {}
+    },
+    {
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "int",
+          "unsigned": true,
+          "autoincrement": true,
+          "primary": true,
+          "nullable": false,
+          "length": null,
+          "mappedType": "integer"
+        },
         "secret": {
           "name": "secret",
           "type": "varchar(255)",

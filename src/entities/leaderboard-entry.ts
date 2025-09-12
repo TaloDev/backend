@@ -51,6 +51,7 @@ export default class LeaderboardEntry {
       score: this.score,
       leaderboardName: this.leaderboard.name,
       leaderboardInternalName: this.leaderboard.internalName,
+      leaderboardSortMode: this.leaderboard.sortMode,
       playerAlias: this.playerAlias,
       hidden: this.hidden,
       props: this.props.getItems().map(({ key, value }) => ({ key, value })),

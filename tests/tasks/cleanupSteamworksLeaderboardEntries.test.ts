@@ -95,4 +95,31 @@ describe('cleanupSteamworksLeaderboardEntries', () => {
     const entryCount = await em.repo(SteamworksLeaderboardEntry).count()
     expect(entryCount).toBe(1)
   })
+
+  it('should still delete steamworks leaderboard entries for games without integrations', async () => {
+    const [, game] = await createOrganisationAndGame()
+
+    const leaderboard = await new LeaderboardFactory([game]).state(() => ({ unique: false })).one()
+    const steamworksLeaderboard = new SteamworksLeaderboardMapping(12345, leaderboard)
+
+    const players = await new PlayerFactory([game]).many(5)
+    const entries = await Promise.all(players.map(async (player) => {
+      return new SteamworksLeaderboardEntry({
+        steamworksLeaderboard,
+        leaderboardEntry: null,
+        steamUserId: player.aliases[0].identifier
+      })
+    }))
+    await em.persistAndFlush(entries)
+
+    await cleanupSteamworksLeaderboardEntries()
+
+    expect(deleteMock).toHaveBeenCalledTimes(0)
+
+    const eventCount = await em.repo(SteamworksIntegrationEvent).count({ integration: { game } })
+    expect(eventCount).toBe(0)
+
+    const entryCount = await em.repo(SteamworksLeaderboardEntry).count()
+    expect(entryCount).toBe(0)
+  })
 })

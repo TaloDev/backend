@@ -2,7 +2,7 @@ import { captureException } from '@sentry/node'
 import { getMikroORM } from '../config/mikro-orm.config'
 import Integration, { IntegrationType } from '../entities/integration'
 import { SteamworksLeaderboardEntry } from '../entities/steamworks-leaderboard-entry'
-import { EntityManager } from '@mikro-orm/mysql'
+import { EntityManager, NotFoundError } from '@mikro-orm/mysql'
 import { streamCursor } from '../lib/perf/streamByCursor'
 
 export default async function cleanupSteamworksLeaderboardEntries() {
@@ -30,7 +30,15 @@ export default async function cleanupSteamworksLeaderboardEntries() {
       const game = entry.steamworksLeaderboard.leaderboard.game
       let integration = integrationsMap.get(game.id)
       if (!integration) {
-        integration = await em.repo(Integration).findOneOrFail({ game, type: IntegrationType.STEAMWORKS })
+        try {
+          integration = await em.repo(Integration).findOneOrFail({ game, type: IntegrationType.STEAMWORKS })
+        } catch (err) {
+          if (err instanceof NotFoundError) {
+            await em.repo(SteamworksLeaderboardEntry).nativeDelete(entry.id)
+            continue
+          }
+          throw err
+        }
         integrationsMap.set(game.id, integration)
       }
 

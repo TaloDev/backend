@@ -351,6 +351,7 @@ async function matchAliasAndLeaderboardEntry({
     const existingEntry = await em.repo(LeaderboardEntry).findOne({ leaderboard: leaderboardMapping.leaderboard, playerAlias })
     if (existingEntry) {
       existingEntry.score = steamEntryData.score
+      await em.flush()
       return { newEntry: undefined, updated: true }
     }
   } else {

@@ -12,7 +12,8 @@ import LeaderboardEntry from '../../../src/entities/leaderboard-entry'
 import LeaderboardFactory from '../../fixtures/LeaderboardFactory'
 import PlayerFactory from '../../fixtures/PlayerFactory'
 import LeaderboardEntryFactory from '../../fixtures/LeaderboardEntryFactory'
-import { randNumber } from '@ngneat/falso'
+import { randNumber, randText } from '@ngneat/falso'
+import { SteamworksLeaderboardEntry } from '../../../src/entities/steamworks-leaderboard-entry'
 
 describe('Steamworks integration - sync leaderboards', () => {
   const axiosMock = new AxiosMockAdapter(axios)
@@ -90,6 +91,9 @@ describe('Steamworks integration - sync leaderboards', () => {
 
     const entry = await em.getRepository(LeaderboardEntry).findOne({ score: 1030 })
     expect(entry).toBeTruthy()
+
+    const steamworksEntry = await em.getRepository(SteamworksLeaderboardEntry).findOne({ leaderboardEntry: entry })
+    expect(steamworksEntry).toBeTruthy()
   })
 
   it('should throw if the response leaderboards are not an array', async () => {
@@ -312,6 +316,9 @@ describe('Steamworks integration - sync leaderboards', () => {
 
     const entry = await em.getRepository(LeaderboardEntry).findOne({ playerAlias: player.aliases[0] })
     expect(entry).toBeTruthy()
+
+    const steamworksEntry = await em.getRepository(SteamworksLeaderboardEntry).findOne({ leaderboardEntry: entry })
+    expect(steamworksEntry).toBeTruthy()
   })
 
   it('should push through entries from talo into steamworks', async () => {
@@ -374,5 +381,198 @@ describe('Steamworks integration - sync leaderboards', () => {
       body: `appid=${config.appId}&leaderboardid=${mapping.steamworksLeaderboardId}&steamid=${player.aliases[0].identifier}&score=${entry.score}&scoremethod=KeepBest`,
       method: 'POST'
     })
+
+    const steamworksEntry = await em.getRepository(SteamworksLeaderboardEntry).findOne({ leaderboardEntry: entry })
+    expect(steamworksEntry).toBeTruthy()
+  })
+
+  it('should continue to push through entries from talo into steamworks even if some fail', async () => {
+    const [, game] = await createOrganisationAndGame()
+
+    const leaderboard = await new LeaderboardFactory([game]).state(() => ({ unique: false })).one()
+    const mapping = new SteamworksLeaderboardMapping(randNumber({ min: 100_000, max: 999_999 }), leaderboard)
+
+    const player = await new PlayerFactory([game]).withSteamAlias().one()
+    const entries = await new LeaderboardEntryFactory(leaderboard, [player]).many(15)
+
+    const config = await new IntegrationConfigFactory().one()
+    const integration = await new IntegrationFactory().construct(IntegrationType.STEAMWORKS, game, config).one()
+    await em.persistAndFlush([leaderboard, mapping, player, ...entries, integration])
+
+    const getLeaderboardsMock = vi.fn((): [number, GetLeaderboardsForGameResponse] => [200, {
+      response: {
+        result: 1,
+        leaderboards: [
+          {
+            id: mapping.steamworksLeaderboardId,
+            name: 'Quickest Win',
+            entries: 0,
+            sortmethod: 'Ascending',
+            displaytype: 'Numeric',
+            onlytrustedwrites: false,
+            onlyfriendsreads: false
+          }
+        ]
+      }
+    }])
+    axiosMock.onGet(`https://partner.steam-api.com/ISteamLeaderboards/GetLeaderboardsForGame/v2?appid=${integration.getConfig().appId}`).replyOnce(getLeaderboardsMock)
+
+    const getEntriesMock = vi.fn((): [number, GetLeaderboardEntriesResponse] => [200, {
+      leaderboardEntryInformation: {
+        appID: 375290,
+        leaderboardID: mapping.steamworksLeaderboardId,
+        totalLeaderBoardEntryCount: 0,
+        leaderboardEntries: []
+      }
+    }])
+    axiosMock.onGet(`https://partner.steam-api.com/ISteamLeaderboards/GetLeaderboardEntries/v1?appid=${integration.getConfig().appId}&leaderboardid=${mapping.steamworksLeaderboardId}&rangestart=0&rangeend=1.7976931348623157e%2B308&datarequest=RequestGlobal`).replyOnce(getEntriesMock)
+
+    const createMock = vi.fn(() => [200, {
+      result: {
+        result: 1
+      }
+    }])
+    const url = 'https://partner.steam-api.com/ISteamLeaderboards/SetLeaderboardScore/v1'
+    axiosMock.onPost(url).networkErrorOnce().onPost(url).reply(createMock)
+
+    await syncSteamworksLeaderboards(em, integration)
+
+    expect(getLeaderboardsMock).toHaveBeenCalledTimes(1)
+    expect(getEntriesMock).toHaveBeenCalledTimes(1)
+    expect(createMock).toHaveBeenCalledTimes(entries.length - 1) // networkErrorOnce doesn't have a mock callback
+
+    const steamworksEntryCount = await em.getRepository(SteamworksLeaderboardEntry).count({ steamworksLeaderboard: mapping })
+    expect(steamworksEntryCount).toBe(entries.length - 1) // 1 failed
+  })
+
+  it('should continue to push through entries from steamworks even if some fail', async () => {
+    const [, game] = await createOrganisationAndGame()
+
+    const steamworksLeaderboardId = randNumber({ min: 100_000, max: 999_999 })
+
+    const config = await new IntegrationConfigFactory().one()
+    const integration = await new IntegrationFactory().construct(IntegrationType.STEAMWORKS, game, config).one()
+    await em.persistAndFlush(integration)
+
+    const getLeaderboardsMock = vi.fn((): [number, GetLeaderboardsForGameResponse] => [200, {
+      response: {
+        result: 1,
+        leaderboards: [
+          {
+            id: steamworksLeaderboardId,
+            name: 'Quickest Win',
+            entries: 0,
+            sortmethod: 'Ascending',
+            displaytype: 'Numeric',
+            onlytrustedwrites: false,
+            onlyfriendsreads: false
+          }
+        ]
+      }
+    }])
+    axiosMock.onGet(`https://partner.steam-api.com/ISteamLeaderboards/GetLeaderboardsForGame/v2?appid=${integration.getConfig().appId}`).replyOnce(getLeaderboardsMock)
+
+    const getEntriesMock = vi.fn((): [number, GetLeaderboardEntriesResponse] => [200, {
+      leaderboardEntryInformation: {
+        appID: 375290,
+        leaderboardID: steamworksLeaderboardId,
+        totalLeaderBoardEntryCount: 3,
+        leaderboardEntries: [
+          {
+            steamID: randText({ charCount: 2048 }), // will throw a database column length error
+            score: 239,
+            rank: 21,
+            ugcid: '-1'
+          },
+          {
+            steamID: '71361095054762901',
+            score: 276,
+            rank: 22,
+            ugcid: '-1'
+          },
+          {
+            steamID: '76561198053368114',
+            score: 301,
+            rank: 23,
+            ugcid: '-1'
+          }
+        ]
+      }
+    }])
+    axiosMock.onGet(`https://partner.steam-api.com/ISteamLeaderboards/GetLeaderboardEntries/v1?appid=${integration.getConfig().appId}&leaderboardid=${steamworksLeaderboardId}&rangestart=0&rangeend=1.7976931348623157e%2B308&datarequest=RequestGlobal`).replyOnce(getEntriesMock)
+
+    await syncSteamworksLeaderboards(em, integration)
+
+    expect(getLeaderboardsMock).toHaveBeenCalledTimes(1)
+    expect(getEntriesMock).toHaveBeenCalledTimes(1)
+
+    const entryCount = await em.getRepository(LeaderboardEntry).count({
+      leaderboard: {
+        game
+      }
+    })
+    expect(entryCount).toBe(2) // 1 failed
+
+    const steamworksEntryCount = await em.getRepository(SteamworksLeaderboardEntry).count({
+      leaderboardEntry: {
+        leaderboard: {
+          game
+        }
+      }
+    })
+    expect(steamworksEntryCount).toBe(entryCount)
+  })
+
+  it('should update leaderboards entries with the scores from steamworks', async () => {
+    const [, game] = await createOrganisationAndGame()
+
+    const leaderboard = await new LeaderboardFactory([game]).state(() => ({ sortMode: LeaderboardSortMode.ASC })).one()
+    const mapping = new SteamworksLeaderboardMapping(randNumber({ min: 100_000, max: 999_999 }), leaderboard)
+    const player = await new PlayerFactory([game]).withSteamAlias().one()
+    const entry = await new LeaderboardEntryFactory(leaderboard, [player]).state(() => ({ score: 10 })).one()
+
+    const config = await new IntegrationConfigFactory().one()
+    const integration = await new IntegrationFactory().construct(IntegrationType.STEAMWORKS, game, config).one()
+    await em.persistAndFlush([leaderboard, mapping, integration, entry])
+
+    const getLeaderboardsMock = vi.fn((): [number, GetLeaderboardsForGameResponse] => [200, {
+      response: {
+        result: 1,
+        leaderboards: [
+          {
+            id: mapping.steamworksLeaderboardId,
+            name: 'Biggest Combo',
+            entries: 0,
+            sortmethod: 'Descending',
+            displaytype: 'Numeric',
+            onlytrustedwrites: false,
+            onlyfriendsreads: false
+          }
+        ]
+      }
+    }])
+    axiosMock.onGet(`https://partner.steam-api.com/ISteamLeaderboards/GetLeaderboardsForGame/v2?appid=${integration.getConfig().appId}`).replyOnce(getLeaderboardsMock)
+
+    const getEntriesMock = vi.fn((): [number, GetLeaderboardEntriesResponse] => [200, {
+      leaderboardEntryInformation: {
+        appID: 375290,
+        leaderboardID: mapping.steamworksLeaderboardId,
+        totalLeaderBoardEntryCount: 0,
+        leaderboardEntries: [
+          {
+            steamID: player.aliases[0].identifier,
+            score: 50,
+            rank: 1,
+            ugcid: '-1'
+          }
+        ]
+      }
+    }])
+    axiosMock.onGet(`https://partner.steam-api.com/ISteamLeaderboards/GetLeaderboardEntries/v1?appid=${integration.getConfig().appId}&leaderboardid=${mapping.steamworksLeaderboardId}&rangestart=0&rangeend=1.7976931348623157e%2B308&datarequest=RequestGlobal`).replyOnce(getEntriesMock)
+
+    await syncSteamworksLeaderboards(em, integration)
+
+    const updatedEntry = await em.refreshOrFail(entry)
+    expect(updatedEntry.score).toBe(50)
   })
 })

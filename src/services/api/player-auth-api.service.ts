@@ -18,6 +18,7 @@ import emailRegex from '../../lib/lang/emailRegex'
 import { ClickHouseClient } from '@clickhouse/client'
 import { deleteClickHousePlayerData } from '../../tasks/deleteInactivePlayers'
 import Redis from 'ioredis'
+import assert from 'node:assert'
 
 export default class PlayerAuthAPIService extends APIService {
   @Route({
@@ -636,11 +637,18 @@ export default class PlayerAuthAPIService extends APIService {
       }
     })
 
-    await em.removeAndFlush([alias.player.auth, alias])
-    await deleteClickHousePlayerData(clickhouse, {
-      playerIds: [alias.player.id],
-      aliasIds: [alias.id]
+    await em.transactional(async (trx) => {
+      assert(alias.player.auth)
+      trx.remove(trx.repo(PlayerAuth).getReference(alias.player.auth.id))
+      trx.remove(trx.repo(PlayerAlias).getReference(alias.id))
+
+      await deleteClickHousePlayerData(clickhouse, {
+        playerIds: [alias.player.id],
+        aliasIds: [alias.id]
+      })
     })
+
+    await em.flush()
 
     return {
       status: 204

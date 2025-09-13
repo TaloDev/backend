@@ -547,8 +547,6 @@ export default class GameChannelAPIService extends APIService {
         }
       }
 
-      await trx.flush()
-
       const redis: Redis = req.ctx.redis
       for (const prop of upsertedProps) {
         await prop.persistToRedis(redis)

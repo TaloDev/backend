@@ -280,7 +280,6 @@ export default class PlayerService extends Service {
         })
       }
 
-      await trx.flush()
       return [player, null]
     })
 

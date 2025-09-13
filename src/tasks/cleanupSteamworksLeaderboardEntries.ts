@@ -37,6 +37,7 @@ export default async function cleanupSteamworksLeaderboardEntries() {
             await em.repo(SteamworksLeaderboardEntry).nativeDelete(entry.id)
             continue
           }
+          /* v8 ignore next */
           throw err
         }
         integrationsMap.set(game.id, integration)
@@ -53,7 +54,7 @@ export default async function cleanupSteamworksLeaderboardEntries() {
       /* v8 ignore start */
       processed++
       if (processed % 10 === 0) {
-        await new Promise<void>((resolve) => setTimeout(resolve, 1000))
+        await new Promise((resolve) => setTimeout(resolve, 1000))
       }
       /* v8 ignore stop */
     }

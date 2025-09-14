@@ -9,6 +9,8 @@ import PlayerGameStat from '../entities/player-game-stat'
 import triggerIntegrations from '../lib/integrations/triggerIntegrations'
 import updateAllowedKeys from '../lib/entities/updateAllowedKeys'
 import { buildDateValidationSchema } from '../lib/dates/dateValidationSchema'
+import { withResponseCache } from '../lib/perf/responseCache'
+import Game from '../entities/game'
 
 export default class GameStatService extends Service {
   @Route({
@@ -22,23 +24,34 @@ export default class GameStatService extends Service {
     const { withMetrics, metricsStartDate, metricsEndDate } = req.query
 
     const em: EntityManager = req.ctx.em
-    const stats = await em.getRepository(GameStat).find({ game: req.ctx.state.game })
+    const game: Game = req.ctx.state.game
 
-    for (const stat of stats) {
-      if (stat.global) {
-        await stat.recalculateGlobalValue(req.ctx.state.includeDevData)
+    return withResponseCache({
+      redis: req.ctx.redis,
+      key: `stats-index-${game.id}-${withMetrics}-${metricsStartDate}-${metricsEndDate}`
+    }, async () => {
+      const stats = await em.repo(GameStat).find({ game })
+      const globalStats = stats.filter((stat) => stat.global)
+
+      if (globalStats.length > 0) {
+        await Promise.allSettled(
+          globalStats.map((stat) => stat.recalculateGlobalValue(req.ctx.state.includeDevData))
+        )
+
         if (withMetrics === '1') {
-          await stat.loadMetrics(req.ctx.clickhouse, metricsStartDate, metricsEndDate)
+          await Promise.allSettled(
+            globalStats.map((stat) => stat.loadMetrics(req.ctx.clickhouse, metricsStartDate, metricsEndDate))
+          )
         }
       }
-    }
 
-    return {
-      status: 200,
-      body: {
-        stats
+      return {
+        status: 200,
+        body: {
+          stats
+        }
       }
-    }
+    })
   }
 
   @Route({

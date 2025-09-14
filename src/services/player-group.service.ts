@@ -229,8 +229,8 @@ export default class PlayerGroupService extends Service {
       .digest('hex')
 
     return withResponseCache({
-      key: hash,
-      redis: req.ctx.redis
+      redis: req.ctx.redis,
+      key: hash
     }, async () => {
       const group = new PlayerGroup(req.ctx.state.game)
       group.rules = this.buildRulesFromData(JSON.parse(decodeURI(rules)))

@@ -11,6 +11,8 @@ import { archiveEntriesForLeaderboard } from '../tasks/archiveLeaderboardEntries
 import updateAllowedKeys from '../lib/entities/updateAllowedKeys'
 import { pageValidation } from '../lib/pagination/pageValidation'
 import { DEFAULT_PAGE_SIZE } from '../lib/pagination/itemsPerPage'
+import { clearResponseCache, withResponseCache } from '../lib/perf/responseCache'
+import { resetModeValidation, ResetMode, translateResetMode } from '../lib/validation/resetModeValidation'
 
 async function getGlobalEntryIds({
   em,
@@ -143,87 +145,96 @@ export default class LeaderboardService extends Service {
     const leaderboard: Leaderboard = req.ctx.state.leaderboard
     const includeDeleted = withDeleted === '1'
 
-    const where: FilterQuery<LeaderboardEntry> = { leaderboard }
+    const devDataComponent = req.ctx.state.includeDevData ? 'dev' : 'no-dev'
+    const cacheKey = `${leaderboard.getEntriesCacheKey()}-${page}-${aliasId}-${withDeleted}-${propKey}-${propValue}-${devDataComponent}`
 
-    if (!includeDeleted) {
-      where.deletedAt = null
-    }
+    return withResponseCache({
+      redis: req.ctx.redis,
+      key: cacheKey,
+      ttl: 600
+    }, async () => {
+      const where: FilterQuery<LeaderboardEntry> = { leaderboard }
 
-    if (aliasId) {
-      where.playerAlias = {
-        id: Number(aliasId)
+      if (!includeDeleted) {
+        where.deletedAt = null
       }
-    }
 
-    if (req.ctx.state.user.api === true) {
-      where.hidden = false
-    }
-
-    if (!req.ctx.state.includeDevData) {
-      where.playerAlias = {
-        ...((where.playerAlias as ObjectQuery<PlayerAlias>) ?? {}),
-        player: {
-          devBuild: false
+      if (aliasId) {
+        where.playerAlias = {
+          id: Number(aliasId)
         }
       }
-    }
 
-    if (propKey) {
-      if (propValue) {
-        where.props = {
-          $some: {
-            key: propKey,
-            value: propValue
-          }
-        }
-      } else {
-        where.props = {
-          $some: {
-            key: propKey
+      if (req.ctx.state.user.api === true) {
+        where.hidden = false
+      }
+
+      if (!req.ctx.state.includeDevData) {
+        where.playerAlias = {
+          ...((where.playerAlias as ObjectQuery<PlayerAlias>) ?? {}),
+          player: {
+            devBuild: false
           }
         }
       }
-    }
 
-    const [entries, count] = await em.repo(LeaderboardEntry).findAndCount(where, {
-      orderBy: {
-        score: leaderboard.sortMode,
-        createdAt: 'asc'
-      },
-      limit: itemsPerPage + 1,
-      offset: Number(page) * itemsPerPage,
-      populate: ['playerAlias']
-    })
+      if (propKey) {
+        if (propValue) {
+          where.props = {
+            $some: {
+              key: propKey,
+              value: propValue
+            }
+          }
+        } else {
+          where.props = {
+            $some: {
+              key: propKey
+            }
+          }
+        }
+      }
 
-    const globalEntryIds: number[] = await getGlobalEntryIds({
-      em,
-      aliasId,
-      leaderboard,
-      entries,
-      includeDevData: req.ctx.state.includeDevData,
-      includeDeleted
-    })
+      const [entries, count] = await em.repo(LeaderboardEntry).findAndCount(where, {
+        orderBy: {
+          score: leaderboard.sortMode,
+          createdAt: 'asc'
+        },
+        limit: itemsPerPage + 1,
+        offset: Number(page) * itemsPerPage,
+        populate: ['playerAlias']
+      })
 
-    const mappedEntries = await Promise.all(entries.slice(0, itemsPerPage).map(async (entry, idx) => {
-      const position = aliasId
-        ? globalEntryIds.indexOf(entry.id)
-        : idx + (Number(page) * itemsPerPage)
+      const globalEntryIds: number[] = await getGlobalEntryIds({
+        em,
+        aliasId,
+        leaderboard,
+        entries,
+        includeDevData: req.ctx.state.includeDevData,
+        includeDeleted
+      })
+
+      const mappedEntries = await Promise.all(entries.slice(0, itemsPerPage).map(async (entry, idx) => {
+        const position = aliasId
+          ? globalEntryIds.indexOf(entry.id)
+          : idx + (Number(page) * itemsPerPage)
+
+        return {
+          position,
+          ...entry.toJSON()
+        }
+      }))
 
       return {
-        position,
-        ...entry.toJSON()
+        status: 200,
+        body: {
+          entries: mappedEntries,
+          count,
+          itemsPerPage,
+          isLastPage: entries.length <= itemsPerPage
+        }
       }
-    }))
-
-    return {
-      status: 200,
-      body: {
-        entries: mappedEntries,
-        count,
-        itemsPerPage,
-        isLastPage: entries.length <= itemsPerPage
-      }
-    }
+    })
   }
 
   @Route({
@@ -290,6 +301,7 @@ export default class LeaderboardService extends Service {
     }
 
     await em.flush()
+    await clearResponseCache(req.ctx.redis, entry.leaderboard.getEntriesCacheKey(true))
 
     return {
       status: 200,
@@ -317,6 +329,8 @@ export default class LeaderboardService extends Service {
     if (changedProperties.includes('refreshInterval') && leaderboard.refreshInterval !== LeaderboardRefreshInterval.NEVER) {
       await archiveEntriesForLeaderboard(em, leaderboard)
     }
+
+    await clearResponseCache(req.ctx.redis, leaderboard.getEntriesCacheKey(true))
 
     createGameActivity(em, {
       user: req.ctx.state.user,
@@ -394,6 +408,62 @@ export default class LeaderboardService extends Service {
       status: 200,
       body: {
         leaderboard
+      }
+    }
+  }
+
+  @Route({
+    method: 'DELETE',
+    path: '/:id/entries'
+  })
+  @Validate({
+    query: {
+      mode: resetModeValidation
+    }
+  })
+  @HasPermission(LeaderboardPolicy, 'reset')
+  async reset(req: Request): Promise<Response> {
+    const { mode = 'all' } = req.query as { mode?: ResetMode }
+    const em: EntityManager = req.ctx.em
+    const leaderboard: Leaderboard = req.ctx.state.leaderboard
+
+    const where: FilterQuery<LeaderboardEntry> = { leaderboard }
+
+    if (mode === 'dev') {
+      where.playerAlias = {
+        player: {
+          devBuild: true
+        }
+      }
+    } else if (mode === 'live') {
+      where.playerAlias = {
+        player: {
+          devBuild: false
+        }
+      }
+    }
+
+    const deletedCount = await em.repo(LeaderboardEntry).nativeDelete(where)
+    createGameActivity(em, {
+      user: req.ctx.state.user,
+      game: leaderboard.game,
+      type: GameActivityType.LEADERBOARD_ENTRIES_RESET,
+      extra: {
+        leaderboardInternalName: leaderboard.internalName,
+        display: {
+          'Reset mode': translateResetMode(mode),
+          'Deleted count': deletedCount
+        }
+      }
+    })
+
+    await em.flush()
+    await clearResponseCache(req.ctx.redis, leaderboard.getEntriesCacheKey(true))
+
+    return {
+      status: 200,
+      body: {
+        deletedCount
       }
     }
   }

@@ -24,4 +24,11 @@ export default class GameFeedbackProp {
     this.key = key
     this.value = value
   }
+
+  toJSON() {
+    return {
+      key: this.key,
+      value: this.value
+    }
+  }
 }

@@ -16,7 +16,6 @@ import { validateAuthSessionToken } from '../../middleware/player-auth-middlewar
 import { setCurrentPlayerState } from '../../middleware/current-player-middleware'
 import { ClickHouseClient } from '@clickhouse/client'
 import { getResultCacheOptions } from '../../lib/perf/getResultCacheOptions'
-import { streamCursor } from '../../lib/perf/streamByCursor'
 
 async function getRealIdentifier(
   req: Request,
@@ -44,24 +43,13 @@ export async function findAliasFromIdentifyRequest(
   service: string,
   identifier: string
 ) {
-  const em: EntityManager = req.ctx.em
-  const aliasStream = streamCursor<PlayerAlias>(async (batchSize, after) => {
-    return em.repo(PlayerAlias).findByCursor({
-      service: service.trim(),
-      identifier: await getRealIdentifier(req, key, service, identifier)
-    }, {
-      first: batchSize,
-      after,
-      orderBy: { id: 'asc' }
-    })
-  }, 100)
-
-  for await (const alias of aliasStream) {
-    if (alias.player.game.id === key.game.id) {
-      return alias
+  return (req.ctx.em as EntityManager).repo(PlayerAlias).findOne({
+    service: service.trim(),
+    identifier: await getRealIdentifier(req, key, service, identifier),
+    player: {
+      game: key.game
     }
-  }
-  return null
+  })
 }
 
 export async function createPlayerFromIdentifyRequest(
@@ -259,38 +247,34 @@ export default class PlayerAPIService extends APIService {
       id: playerId2,
       game: key.game
     }, {
-      populate: ['aliases', 'auth']
+      populate: ['auth']
     })
 
     if (!player2) req.ctx.throw(404, `Player ${playerId2} does not exist`)
     if (player2.auth) req.ctx.throw(400, `Player ${playerId2} has authentication enabled and cannot be merged`)
 
-    const mergedProps: PlayerProp[] = uniqWith([
-      ...player2.props.getItems(),
-      ...player1.props.getItems()
-    ], (a, b) => a.key === b.key)
+    const updatedPlayer = await em.transactional(async (trx) => {
+      const mergedProps: PlayerProp[] = uniqWith([
+        ...player2.props.getItems(),
+        ...player1.props.getItems()
+      ], (a, b) => a.key === b.key)
 
-    player1.setProps(mergedProps.map((prop) => ({ key: prop.key, value: prop.value })))
-    player2.aliases.getItems().forEach((alias) => alias.player = player1)
-    player2.setProps([])
-    await em.flush()
+      player1.setProps(mergedProps.map((prop) => ({ key: prop.key, value: prop.value })))
+      await trx.repo(PlayerAlias).nativeUpdate({ player: player2 }, { player: player1 })
+      await trx.repo(GameSave).nativeUpdate({ player: player2 }, { player: player1 })
+      await trx.repo(PlayerGameStat).nativeUpdate({ player: player2 }, { player: player1 })
+      await trx.repo(Player).nativeDelete(player2)
 
-    const saves = await em.getRepository(GameSave).find({ player: player2 })
-    saves.forEach((save) => save.player = player1)
+      const clickhouse: ClickHouseClient = req.ctx.clickhouse
+      await clickhouse.exec({ query: `DELETE FROM player_sessions WHERE player_id = '${player2.id}'` })
 
-    const stats = await em.getRepository(PlayerGameStat).find({ player: player2 })
-    stats.forEach((stat) => stat.player = player1)
-
-    await em.flush()
-    await em.getRepository(Player).nativeDelete(player2)
-
-    const clickhouse: ClickHouseClient = req.ctx.clickhouse
-    await clickhouse.exec({ query: `DELETE FROM player_sessions WHERE player_id = '${player2.id}'` })
+      return player1
+    })
 
     return {
       status: 200,
       body: {
-        player: player1
+        player: updatedPlayer
       }
     }
   }

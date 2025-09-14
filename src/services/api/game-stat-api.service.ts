@@ -147,7 +147,7 @@ export default class GameStatAPIService extends APIService {
       snapshot.createdAt = continuityDate
     }
 
-    this.queueHandler.add(snapshot)
+    await this.queueHandler.add(snapshot)
 
     await triggerIntegrations(em, stat.game, (integration) => {
       return integration.handleStatUpdated(em, playerStat)

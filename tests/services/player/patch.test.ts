@@ -334,11 +334,11 @@ describe('Player service - patch', () => {
         .expect(200)
     ))
 
-    await em.refresh(player, { populate: ['props'] })
-    const props = player.props.getItems().map(({ key, value }) => ({ key, value }))
-
+    const props = await em.repo(PlayerProp).find({ player }, { refresh: true })
     expect(props).toHaveLength(2)
-    expect(props).toEqual(expect.arrayContaining([
+
+    const serialised = props.map(({ key, value }) => ({ key, value }))
+    expect(serialised).toEqual(expect.arrayContaining([
       // this API is not linearisable — simultaneous requests may be applied out of order
       { key: 'zonesExplored', value: expect.any(String) },
       { key: 'treasuresDiscovered', value: '12' }

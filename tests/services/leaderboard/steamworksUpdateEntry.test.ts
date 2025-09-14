@@ -13,6 +13,7 @@ import PlayerFactory from '../../fixtures/PlayerFactory'
 import SteamworksLeaderboardMapping from '../../../src/entities/steamworks-leaderboard-mapping'
 import { randBoolean, randNumber } from '@ngneat/falso'
 import { UserType } from '../../../src/entities/user'
+import { SteamworksLeaderboardEntry } from '../../../src/entities/steamworks-leaderboard-entry'
 
 describe('Leaderboard service - update entry - steamworks integration', () => {
   const axiosMock = new AxiosMockAdapter(axios)
@@ -37,10 +38,15 @@ describe('Leaderboard service - update entry - steamworks integration', () => {
 
     const player = await new PlayerFactory([game]).withSteamAlias().one()
     const entry = await new LeaderboardEntryFactory(leaderboard, [player]).one()
+    const steamworksEntry = new SteamworksLeaderboardEntry({
+      steamworksLeaderboard: mapping,
+      leaderboardEntry: entry,
+      steamUserId: player.aliases[0].identifier
+    })
 
     const config = await new IntegrationConfigFactory().state(() => ({ syncLeaderboards: true })).one()
     const integration = await new IntegrationFactory().construct(IntegrationType.STEAMWORKS, game, config).one()
-    await em.persistAndFlush([integration, entry, mapping])
+    await em.persistAndFlush([integration, steamworksEntry])
 
     await request(app)
       .patch(`/games/${game.id}/leaderboards/${leaderboard.id}/entries/${entry.id}`)
@@ -56,6 +62,8 @@ describe('Leaderboard service - update entry - steamworks integration', () => {
       body: `appid=${config.appId}&leaderboardid=${mapping.steamworksLeaderboardId}&steamid=${player.aliases[0].identifier}`,
       method: 'POST'
     })
+
+    expect(await em.refresh(steamworksEntry)).toBeNull()
   })
 
   it('should create entries when they are unhidden', async () => {

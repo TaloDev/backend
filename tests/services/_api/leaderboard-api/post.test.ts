@@ -8,7 +8,7 @@ import { subHours } from 'date-fns'
 import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
 import { randText } from '@ngneat/falso'
 import LeaderboardEntryProp from '../../../../src/entities/leaderboard-entry-prop'
-import { Collection } from '@mikro-orm/core'
+import { Collection } from '@mikro-orm/mysql'
 import PlayerGroupRule, { PlayerGroupRuleCastType, PlayerGroupRuleName } from '../../../../src/entities/player-group-rule'
 import PlayerGroupFactory from '../../../fixtures/PlayerGroupFactory'
 

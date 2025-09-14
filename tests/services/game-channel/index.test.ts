@@ -6,7 +6,7 @@ import PlayerFactory from '../../fixtures/PlayerFactory'
 import GameChannelFactory from '../../fixtures/GameChannelFactory'
 import GameChannel from '../../../src/entities/game-channel'
 import GameChannelProp from '../../../src/entities/game-channel-prop'
-import { Collection } from '@mikro-orm/core'
+import { Collection } from '@mikro-orm/mysql'
 
 describe('Game channel service - index', () => {
   it('should return a list of game channels', async () => {

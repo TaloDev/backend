@@ -2,12 +2,13 @@ import { Entity, EntityManager, Enum, Filter, ManyToOne, PrimaryKey, Property } 
 import { Request, Required, ValidationCondition } from 'koa-clay'
 import { decrypt, encrypt } from '../lib/crypto/string-encryption'
 import Game from './game'
-import { authenticateTicket, createSteamworksLeaderboard, createSteamworksLeaderboardEntry, deleteSteamworksLeaderboard, deleteSteamworksLeaderboardEntry, setSteamworksStat, syncSteamworksLeaderboards, syncSteamworksStats } from '../lib/integrations/steamworks-integration'
+import { authenticateTicket, cleanupSteamworksLeaderboardEntry, createSteamworksLeaderboard, createSteamworksLeaderboardEntry, deleteSteamworksLeaderboard, deleteSteamworksLeaderboardEntry, setSteamworksStat, syncSteamworksLeaderboards, syncSteamworksStats } from '../lib/integrations/steamworks-integration'
 import Leaderboard from './leaderboard'
 import { pick } from 'lodash'
 import LeaderboardEntry from './leaderboard-entry'
 import { PlayerAliasService } from './player-alias'
 import PlayerGameStat from './player-game-stat'
+import { SteamworksLeaderboardEntry } from './steamworks-leaderboard-entry'
 
 export enum IntegrationType {
   STEAMWORKS = 'steamworks'
@@ -190,6 +191,10 @@ export default class Integration {
       case IntegrationType.STEAMWORKS:
         return authenticateTicket(req, this, identifier)
     }
+  }
+
+  async cleanupSteamworksLeaderboardEntry(em: EntityManager, steamworksEntry: SteamworksLeaderboardEntry) {
+    await cleanupSteamworksLeaderboardEntry(em, this, steamworksEntry)
   }
 
   toJSON() {

@@ -4,25 +4,31 @@ import { APIKeyScope } from '../../entities/api-key'
 import PlayerAlias from '../../entities/player-alias'
 import { EntityManager } from '@mikro-orm/mysql'
 import GameChannel from '../../entities/game-channel'
+import { getResultCacheOptions } from '../../lib/perf/getResultCacheOptions'
 
 export default class GameChannelAPIPolicy extends Policy {
   async getAlias(): Promise<PlayerAlias | null> {
     const em: EntityManager = this.ctx.em
+    const id = this.ctx.state.currentAliasId
+
     return em.getRepository(PlayerAlias).findOne({
-      id: this.ctx.state.currentAliasId,
+      id,
       player: {
         game: this.ctx.state.game
       }
-    })
+    }, getResultCacheOptions(`game-channel-api-policy-alias-${id}`))
   }
 
   async getChannel(req: Request): Promise<GameChannel | null> {
     const em: EntityManager = this.ctx.em
+    const id = Number(req.params.id)
+
     return em.getRepository(GameChannel).findOne({
-      id: Number(req.params.id),
+      id,
       game: this.ctx.state.game
     }, {
-      populate: ['members:ref']
+      populate: ['members:ref'],
+      ...getResultCacheOptions(`game-channel-api-policy-channel-${id}`)
     })
   }
 

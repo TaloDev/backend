@@ -96,6 +96,12 @@ export default class Leaderboard {
     this.game = game
   }
 
+  getEntriesCacheKey(wildcard = false) {
+    let key = `leaderboard-entries-${this.id}`
+    if (wildcard) key += '*'
+    return key
+  }
+
   toJSON() {
     return {
       id: this.id,

@@ -1,7 +1,7 @@
 import { z, ZodType } from 'zod'
 import { SocketMessageListener } from '../router/createListener'
 import createListener from '../router/createListener'
-import { RequestContext } from '@mikro-orm/core'
+import { RequestContext } from '@mikro-orm/mysql'
 import GameChannel from '../../entities/game-channel'
 import { sendMessages } from '../messages/socketMessage'
 import { APIKeyScope } from '../../entities/api-key'

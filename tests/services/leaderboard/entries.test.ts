@@ -6,7 +6,7 @@ import createOrganisationAndGame from '../../utils/createOrganisationAndGame'
 import createUserAndToken from '../../utils/createUserAndToken'
 import LeaderboardEntry from '../../../src/entities/leaderboard-entry'
 import LeaderboardEntryProp from '../../../src/entities/leaderboard-entry-prop'
-import { Collection } from '@mikro-orm/core'
+import { Collection } from '@mikro-orm/mysql'
 import { LeaderboardSortMode } from '../../../src/entities/leaderboard'
 
 describe('Leaderboard service - entries', () => {

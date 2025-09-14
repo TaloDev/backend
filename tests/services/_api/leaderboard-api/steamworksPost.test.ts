@@ -11,6 +11,7 @@ import IntegrationConfigFactory from '../../../fixtures/IntegrationConfigFactory
 import IntegrationFactory from '../../../fixtures/IntegrationFactory'
 import { IntegrationType } from '../../../../src/entities/integration'
 import { randNumber } from '@ngneat/falso'
+import { SteamworksLeaderboardEntry } from '../../../../src/entities/steamworks-leaderboard-entry'
 
 describe('Leaderboard API service - post - steamworks integration', () => {
   const axiosMock = new AxiosMockAdapter(axios)
@@ -52,6 +53,9 @@ describe('Leaderboard API service - post - steamworks integration', () => {
       body: `appid=${config.appId}&leaderboardid=${mapping.steamworksLeaderboardId}&steamid=${player.aliases[0].identifier}&score=300&scoremethod=KeepBest`,
       method: 'POST'
     })
+
+    const steamworksEntry = await em.getRepository(SteamworksLeaderboardEntry).findOne({ steamworksLeaderboard: mapping })
+    expect(steamworksEntry).toBeTruthy()
   })
 
   it('should not create a leaderboard entry in steamworks if there is no mapping', async () => {
@@ -82,6 +86,13 @@ describe('Leaderboard API service - post - steamworks integration', () => {
 
     const event = await em.getRepository(SteamworksIntegrationEvent).findOne({ integration })
     expect(event).toBeNull()
+
+    const steamworksEntry = await em.getRepository(SteamworksLeaderboardEntry).findOne({
+      steamworksLeaderboard: {
+        leaderboard
+      }
+    })
+    expect(steamworksEntry).toBeNull()
 
     axiosMock.reset()
   })
@@ -114,6 +125,13 @@ describe('Leaderboard API service - post - steamworks integration', () => {
 
     const event = await em.getRepository(SteamworksIntegrationEvent).findOne({ integration })
     expect(event).toBeNull()
+
+    const steamworksEntry = await em.getRepository(SteamworksLeaderboardEntry).findOne({
+      steamworksLeaderboard: {
+        leaderboard
+      }
+    })
+    expect(steamworksEntry).toBeNull()
 
     axiosMock.reset()
   })

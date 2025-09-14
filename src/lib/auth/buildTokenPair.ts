@@ -7,7 +7,7 @@ import { setUser } from '@sentry/node'
 
 export async function genAccessToken(user: User): Promise<string> {
   const payload = { sub: user.id }
-  const accessToken = await sign(payload, process.env.JWT_SECRET!, { expiresIn: '5m' })
+  const accessToken = await sign(payload, process.env.JWT_SECRET!, { expiresIn: '15m' })
   return accessToken
 }
 
@@ -16,7 +16,7 @@ async function createSession(ctx: Context, user: User): Promise<UserSession> {
   const em: EntityManager = ctx.em
 
   const existingSessions = await em.getRepository(UserSession).find({ user, userAgent })
-  await em.removeAndFlush(existingSessions)
+  em.remove(existingSessions)
 
   const session = new UserSession(user)
   session.userAgent = userAgent

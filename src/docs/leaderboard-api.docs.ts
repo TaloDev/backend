@@ -29,6 +29,7 @@ const LeaderboardAPIDocs: APIDocs<LeaderboardAPIService> = {
               score: 593.21,
               leaderboardName: 'Highscore',
               leaderboardInternalName: 'highscore',
+              leaderboardSortMode: 'asc',
               playerAlias: {
                 id: 1,
                 service: 'steam',
@@ -57,6 +58,7 @@ const LeaderboardAPIDocs: APIDocs<LeaderboardAPIService> = {
               score: 400.06,
               leaderboardName: 'Highscore',
               leaderboardInternalName: 'highscore',
+              leaderboardSortMode: 'asc',
               playerAlias: {
                 id: 1,
                 service: 'epic',
@@ -126,6 +128,7 @@ const LeaderboardAPIDocs: APIDocs<LeaderboardAPIService> = {
             score: 593.21,
             leaderboardName: 'Highscore',
             leaderboardInternalName: 'highscore',
+            leaderboardSortMode: 'asc',
             playerAlias: {
               id: 1,
               service: 'steam',

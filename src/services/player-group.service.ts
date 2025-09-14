@@ -9,6 +9,8 @@ import PlayerGroupPolicy from '../policies/player-group.policy'
 import getUserFromToken from '../lib/auth/getUserFromToken'
 import UserPinnedGroup from '../entities/user-pinned-group'
 import { getResultCacheOptions } from '../lib/perf/getResultCacheOptions'
+import { withResponseCache } from '../lib/perf/responseCache'
+import { createHash } from 'crypto'
 
 export default class PlayerGroupService extends Service {
   @Route({
@@ -216,22 +218,37 @@ export default class PlayerGroupService extends Service {
     const { rules, ruleMode } = req.query
     const em: EntityManager = req.ctx.em
 
-    const group = new PlayerGroup(req.ctx.state.game)
-    group.rules = this.buildRulesFromData(JSON.parse(decodeURI(rules)))
-    group.ruleMode = ruleMode as RuleMode
+    const devDataComponent = req.ctx.state.includeDevData ? 'dev' : 'no-dev'
+    const hash = createHash('sha256')
+      .update(JSON.stringify({
+        rules,
+        ruleMode,
+        gameId: req.ctx.state.game.id,
+        includeDevData: devDataComponent
+      }))
+      .digest('hex')
 
-    const query = group.getQuery(em)
-    if (!req.ctx.state.includeDevData) {
-      query.andWhere({ devBuild: false })
-    }
-    const count = await query.getCount()
+    return withResponseCache({
+      key: hash,
+      redis: req.ctx.redis
+    }, async () => {
+      const group = new PlayerGroup(req.ctx.state.game)
+      group.rules = this.buildRulesFromData(JSON.parse(decodeURI(rules)))
+      group.ruleMode = ruleMode as RuleMode
 
-    return {
-      status: 200,
-      body: {
-        count
+      const query = group.getQuery(em)
+      if (!req.ctx.state.includeDevData) {
+        query.andWhere({ devBuild: false })
       }
-    }
+      const count = await query.getCount()
+
+      return {
+        status: 200,
+        body: {
+          count
+        }
+      }
+    })
   }
 
   @Route({

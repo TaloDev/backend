@@ -66,6 +66,18 @@ export default class GameChannel {
   @Property({ onUpdate: () => new Date() })
   updatedAt: Date = new Date()
 
+  static getSearchCacheKey(wildcard = false) {
+    let key = 'channels-search'
+    if (wildcard) key += '*'
+    return key
+  }
+
+  static getSubscriptionsCacheKey(aliasId: number, wildcard = false) {
+    let key = `alias-subscriptions-${aliasId}`
+    if (wildcard) key += '*'
+    return key
+  }
+
   constructor(game: Game) {
     this.game = game
   }
@@ -99,7 +111,7 @@ export default class GameChannel {
       name: this.name,
       owner: this.owner,
       totalMessages: this.totalMessages,
-      props: this.props.getItems().map(({ key, value }) => ({ key, value })),
+      props: this.props,
       autoCleanup: this.autoCleanup,
       private: this.private,
       temporaryMembership: this.temporaryMembership,

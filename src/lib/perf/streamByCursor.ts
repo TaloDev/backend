@@ -1,4 +1,4 @@
-import { Cursor, Loaded } from '@mikro-orm/core'
+import { Cursor, Loaded } from '@mikro-orm/mysql'
 
 export async function* streamCursor<T extends object>(
   fetchPage: (batchSize: number, after?: string) => Promise<Cursor<T>>,

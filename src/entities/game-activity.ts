@@ -38,7 +38,8 @@ export enum GameActivityType {
   GAME_CHANNEL_UPDATED,
   GAME_CHANNEL_DELETED,
   INACTIVE_DEV_PLAYERS_DELETED,
-  INACTIVE_LIVE_PLAYERS_DELETED
+  INACTIVE_LIVE_PLAYERS_DELETED,
+  LEADERBOARD_ENTRIES_RESET
 }
 
 @Entity()
@@ -144,6 +145,8 @@ export default class GameActivity {
         return `${this.extra.count} inactive dev players were deleted`
       case GameActivityType.INACTIVE_LIVE_PLAYERS_DELETED:
         return `${this.extra.count} inactive players were deleted`
+      case GameActivityType.LEADERBOARD_ENTRIES_RESET:
+        return `${this.user.username} reset the leaderboard ${this.extra.leaderboardInternalName}`
       default:
         return ''
     }

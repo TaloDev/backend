@@ -6,7 +6,7 @@ import GameChannelFactory from '../../../fixtures/GameChannelFactory'
 import PlayerGroupFactory from '../../../fixtures/PlayerGroupFactory'
 import PlayerGroupRule, { PlayerGroupRuleCastType, PlayerGroupRuleName } from '../../../../src/entities/player-group-rule'
 import PlayerProp from '../../../../src/entities/player-prop'
-import { Collection } from '@mikro-orm/core'
+import { Collection } from '@mikro-orm/mysql'
 
 describe('Player API service - search', () => {
   it('should search for a player by ID', async () => {

@@ -213,14 +213,12 @@ export default class Player {
 
     return {
       id: this.id,
-      props: this.props.getItems().map(({ key, value }) => ({ key, value })),
+      props: this.props,
       aliases: this.aliases,
       devBuild: this.devBuild,
       createdAt: this.createdAt,
       lastSeenAt: this.lastSeenAt,
-      groups: this.groups
-        .getItems()
-        .map((group) => ({ id: group.id, name: group.name })),
+      groups: this.groups.map(({ id, name }) => ({ id, name })),
       auth: this.auth ?? undefined,
       presence
     }

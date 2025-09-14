@@ -54,7 +54,7 @@ export default class LeaderboardEntry {
       leaderboardSortMode: this.leaderboard.sortMode,
       playerAlias: this.playerAlias,
       hidden: this.hidden,
-      props: this.props.getItems().map(({ key, value }) => ({ key, value })),
+      props: this.props,
       createdAt: this.createdAt,
       updatedAt: this.updatedAt,
       deletedAt: this.deletedAt

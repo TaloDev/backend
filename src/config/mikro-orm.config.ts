@@ -29,7 +29,8 @@ const ormConfig = defineConfig({
   resultCache: {
     adapter: RedisCacheAdapter,
     options: redisConfig
-  }
+  },
+  loadStrategy: 'balanced'
 })
 
 export default ormConfig // loaded in package.json

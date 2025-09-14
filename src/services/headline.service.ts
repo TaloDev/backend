@@ -9,7 +9,7 @@ import { ClickHouseClient } from '@clickhouse/client'
 import { getResultCacheOptions } from '../lib/perf/getResultCacheOptions'
 import Game from '../entities/game'
 
-const HEADLINES_CACHE_TTL = 600_000
+const HEADLINES_CACHE_TTL = 300_000
 
 export default class HeadlineService extends Service {
   @Route({
@@ -23,14 +23,15 @@ export default class HeadlineService extends Service {
     const em: EntityManager = req.ctx.em
 
     const game: Game = req.ctx.state.game
+    const includeDevData = req.ctx.state.includeDevData
     const count = await em.getRepository(Player).count({
       game,
-      ...(req.ctx.state.includeDevData ? {} : { devBuild: false }),
+      ...(includeDevData ? {} : { devBuild: false }),
       createdAt: {
         $gte: startOfDay(new Date(startDate)),
         $lte: endOfDay(new Date(endDate))
       }
-    }, getResultCacheOptions(`new-players-${game.id}-${startDate}-${endDate}`, HEADLINES_CACHE_TTL))
+    }, getResultCacheOptions(`new-players-${game.id}-${includeDevData}-${startDate}-${endDate}`, HEADLINES_CACHE_TTL))
 
     return {
       status: 200,
@@ -51,6 +52,7 @@ export default class HeadlineService extends Service {
     const em: EntityManager = req.ctx.em
 
     const game: Game = req.ctx.state.game
+    const includeDevData = req.ctx.state.includeDevData
     const count = await em.getRepository(Player).count({
       game,
       ...(req.ctx.state.includeDevData ? {} : { devBuild: false }),
@@ -64,7 +66,7 @@ export default class HeadlineService extends Service {
       [raw('datediff(created_at, last_seen_at)')]: {
         $ne: 0
       }
-    }, getResultCacheOptions(`returning-players-${game.id}-${startDate}-${endDate}`, HEADLINES_CACHE_TTL))
+    }, getResultCacheOptions(`returning-players-${game.id}-${includeDevData}-${startDate}-${endDate}`, HEADLINES_CACHE_TTL))
 
     return {
       status: 200,
@@ -159,10 +161,11 @@ export default class HeadlineService extends Service {
     const em: EntityManager = req.ctx.em
 
     const game: Game = req.ctx.state.game
+    const includeDevData = req.ctx.state.includeDevData
     const count = await em.getRepository(Player).count({
       game,
-      ...(req.ctx.state.includeDevData ? {} : { devBuild: false })
-    }, getResultCacheOptions(`total-players-${game.id}`, HEADLINES_CACHE_TTL))
+      ...(includeDevData ? {} : { devBuild: false })
+    }, getResultCacheOptions(`total-players-${game.id}-${includeDevData}`, HEADLINES_CACHE_TTL))
 
     return {
       status: 200,
@@ -181,13 +184,14 @@ export default class HeadlineService extends Service {
     const em: EntityManager = req.ctx.em
 
     const game: Game = req.ctx.state.game
+    const includeDevData = req.ctx.state.includeDevData
     const count = await em.getRepository(Player).count({
       game,
-      ...(req.ctx.state.includeDevData ? {} : { devBuild: false }),
+      ...(includeDevData ? {} : { devBuild: false }),
       presence: {
         online: true
       }
-    }, getResultCacheOptions(`online-players-${game.id}`, HEADLINES_CACHE_TTL))
+    }, getResultCacheOptions(`online-players-${game.id}-${includeDevData}`, HEADLINES_CACHE_TTL))
 
     return {
       status: 200,

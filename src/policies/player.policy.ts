@@ -3,10 +3,11 @@ import { PolicyDenial, Request, PolicyResponse } from 'koa-clay'
 import Player from '../entities/player'
 import { UserType } from '../entities/user'
 import UserTypeGate from './user-type-gate'
+import { Populate } from '@mikro-orm/mysql'
 
 export default class PlayerPolicy extends Policy {
-  async getPlayer(id: string, relations?: string[]): Promise<Player | null> {
-    const player = await this.em.getRepository(Player).findOne(id, { populate: relations as never[] })
+  async getPlayer<T extends string>(id: string, relations?: Populate<Player, T>): Promise<Player | null> {
+    const player = await this.em.getRepository(Player).findOne(id, { populate: relations })
     this.ctx.state.player = player
 
     return player

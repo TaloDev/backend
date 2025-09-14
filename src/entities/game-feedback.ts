@@ -57,7 +57,7 @@ export default class GameFeedback {
       anonymised: this.anonymised,
       playerAlias: this.anonymised ? null : this.playerAlias,
       devBuild: this.playerAlias.player.devBuild,
-      props: this.props.getItems().map(({ key, value }) => ({ key, value })),
+      props: this.props,
       createdAt: this.createdAt
     }
   }

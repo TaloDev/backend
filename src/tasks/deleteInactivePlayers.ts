@@ -28,7 +28,7 @@ async function getPlayers(em: EntityManager, game: Game, devBuild: boolean) {
       $lt: subDays(new Date(), days)
     }
   }, {
-    populate: ['aliases', 'auth', 'presence']
+    populate: ['aliases', 'auth']
   })
 }
 

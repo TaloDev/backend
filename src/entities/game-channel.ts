@@ -111,7 +111,7 @@ export default class GameChannel {
       name: this.name,
       owner: this.owner,
       totalMessages: this.totalMessages,
-      props: this.props.getItems().map(({ key, value }) => ({ key, value })),
+      props: this.props,
       autoCleanup: this.autoCleanup,
       private: this.private,
       temporaryMembership: this.temporaryMembership,

@@ -247,7 +247,7 @@ export default class PlayerService extends Service {
     const em: EntityManager = req.ctx.em
 
     const [player, errorResponse] = await em.transactional(async (trx): Promise<PatchTransactionResponse> => {
-      const player = await trx.repo(Player).findOneOrFail((req.ctx.state.player as Player).id, { lockMode: LockMode.PESSIMISTIC_WRITE })
+      const player = await trx.refreshOrFail(req.ctx.state.player as Player, { lockMode: LockMode.PESSIMISTIC_WRITE })
 
       if (props) {
         if (req.ctx.state.user.api !== true && props.some((prop) => prop.key.startsWith('META_'))) {

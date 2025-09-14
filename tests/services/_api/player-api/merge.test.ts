@@ -64,8 +64,11 @@ describe('Player API service - merge', () => {
     expect(res.body.player.id).toBe(player1.id)
 
     const prevId = player2.id
-    const aliases = await em.getRepository(PlayerAlias).find({ player: prevId }, { refresh: true })
+    const aliases = await em.repo(PlayerAlias).find({ player: prevId }, { refresh: true })
     expect(aliases).toHaveLength(0)
+
+    const props = await em.repo(PlayerProp).find({ player: prevId }, { refresh: true })
+    expect(props).toHaveLength(0)
 
     const mergedPlayer = await em.refresh(player2)
     expect(mergedPlayer).toBeNull()

@@ -1,40 +1,33 @@
+import { captureException } from '@sentry/node'
 import Redis from 'ioredis'
 import { Response } from 'koa-clay'
 
 export const prefix = 'response-cache'
 
 export async function clearResponseCache(redis: Redis, pattern: string) {
-  return new Promise<number>((resolve, reject) => {
-    let deletedCount = 0
-    const stream = redis.scanStream({ match: `${prefix}:${pattern}` })
+  const script = `
+    local cursor = "0"
+    local deleted = 0
+    
+    repeat
+      local result = redis.call('SCAN', cursor, 'MATCH', ARGV[1], 'COUNT', 1000)
+      cursor = result[1]
+      local keys = result[2]
+      
+      if #keys > 0 then
+        deleted = deleted + redis.call('DEL', unpack(keys))
+      end
+    until cursor == "0"
+    
+    return deleted
+  `
 
-    stream.on('data', async (keys: string[]) => {
-      stream.pause()
-
-      if (keys.length > 0) {
-        const pipeline = redis.pipeline()
-        keys.forEach((key) => {
-          pipeline.del(key)
-        })
-
-        const results = await pipeline.exec()
-        if (results) {
-          deletedCount += results.filter(([err, _]) => !err).length
-        }
-      }
-
-      stream.resume()
-    })
-
-    /* v8 ignore next 3 */
-    stream.on('error', (err) => {
-      reject(err)
-    })
-
-    stream.on('end', () => {
-      resolve(deletedCount)
-    })
-  })
+  try {
+    return await redis.eval(script, 0, `${prefix}:${pattern}`) as number
+  } catch (err) {
+    captureException(err)
+    return 0
+  }
 }
 
 export async function withResponseCache<T>({

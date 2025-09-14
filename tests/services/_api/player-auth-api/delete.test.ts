@@ -9,8 +9,13 @@ import EventFactory from '../../../fixtures/EventFactory'
 import PlayerPresenceFactory from '../../../fixtures/PlayerPresenceFactory'
 import PlayerAuthActivityFactory from '../../../fixtures/PlayerAuthActivityFactory'
 import assert from 'node:assert'
+import * as deleteInactivePlayers from '../../../../src/tasks/deleteInactivePlayers'
 
 describe('Player auth API service - delete', { timeout: 30_000 }, () => {
+  afterEach(() => {
+    vi.restoreAllMocks()
+  })
+
   it('should delete the account if the current password is correct', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_PLAYERS, APIKeyScope.WRITE_PLAYERS])
 
@@ -205,5 +210,32 @@ describe('Player auth API service - delete', { timeout: 30_000 }, () => {
       .set('x-talo-alias', String(alias.id))
       .set('x-talo-session', sessionToken)
       .expect(204)
+  })
+
+  it('should rollback if clickhouse fails', async () => {
+    vi.spyOn(deleteInactivePlayers, 'deleteClickHousePlayerData').mockRejectedValue(new Error())
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_PLAYERS, APIKeyScope.WRITE_PLAYERS])
+
+    const player = await new PlayerFactory([apiKey.game]).withTaloAlias().state(async () => ({
+      auth: await new PlayerAuthFactory().state(async () => ({
+        password: await bcrypt.hash('password', 10)
+      })).one()
+    })).one()
+    const alias = player.aliases[0]
+    await em.persistAndFlush(player)
+
+    const sessionToken = await player.auth!.createSession(alias)
+    await em.flush()
+
+    await request(app)
+      .delete('/v1/players/auth/')
+      .send({ currentPassword: 'password' })
+      .auth(token, { type: 'bearer' })
+      .set('x-talo-player', player.id)
+      .set('x-talo-alias', String(alias.id))
+      .set('x-talo-session', sessionToken)
+      .expect(500)
+
+    expect(await em.refresh(alias)).not.toBeNull()
   })
 })

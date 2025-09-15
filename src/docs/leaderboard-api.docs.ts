@@ -15,7 +15,8 @@ const LeaderboardAPIDocs: APIDocs<LeaderboardAPIService> = {
         page: 'The current pagination index (starting at 0)',
         aliasId: 'Only return entries for this alias ID',
         propKey: 'Only return entries with this prop key',
-        propValue: 'Only return entries with a matching prop key and value'
+        propValue: 'Only return entries with a matching prop key and value',
+        withDeleted: 'Include entries that were deleted by a refresh interval'
       }
     },
     samples: [
@@ -103,6 +104,15 @@ const LeaderboardAPIDocs: APIDocs<LeaderboardAPIService> = {
           query: {
             propKey: 'team',
             propValue: 'red'
+          }
+        }
+      },
+      {
+        title: 'Sample request with deleted entries',
+        sample: {
+          url: '/v1/leaderboards/highscore?withDeleted=1',
+          query: {
+            withDeleted: '1'
           }
         }
       }

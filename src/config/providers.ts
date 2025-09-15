@@ -6,6 +6,7 @@ import { runClickHouseMigrations } from '../migrations/clickhouse'
 import initScheduledTasks from './scheduled-tasks'
 import { setupKoaErrorHandler as setupSentryErrorHandler } from '@sentry/node'
 import { createRedisConnection } from './redis.config'
+import { createClearResponseCacheQueue } from '../lib/perf/responseCacheQueue'
 
 export default async function initProviders(app: Koa, isTest: boolean) {
   try {
@@ -24,6 +25,7 @@ export default async function initProviders(app: Koa, isTest: boolean) {
   app.context.redis = createRedisConnection()
 
   app.context.emailQueue = createEmailQueue()
+  app.context.clearResponseCacheQueue = createClearResponseCacheQueue()
 
   if (!isTest) {
     await initScheduledTasks()

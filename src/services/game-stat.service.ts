@@ -27,7 +27,6 @@ export default class GameStatService extends Service {
     const game: Game = req.ctx.state.game
 
     return withResponseCache({
-      redis: req.ctx.redis,
       key: `stats-index-${game.id}-${withMetrics}-${metricsStartDate}-${metricsEndDate}`
     }, async () => {
       const stats = await em.repo(GameStat).find({ game })

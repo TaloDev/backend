@@ -11,7 +11,8 @@ import buildErrorResponse from '../lib/errors/buildErrorResponse'
 import { captureException } from '@sentry/node'
 import { pageValidation } from '../lib/pagination/pageValidation'
 import { DEFAULT_PAGE_SIZE } from '../lib/pagination/itemsPerPage'
-import { clearResponseCache, withResponseCache } from '../lib/perf/responseCache'
+import { withResponseCache } from '../lib/perf/responseCache'
+import { deferClearResponseCache } from '../lib/perf/responseCacheQueue'
 
 const itemsPerPage = DEFAULT_PAGE_SIZE
 
@@ -33,7 +34,6 @@ export default class GameChannelService extends Service {
     const cacheKey = `${GameChannel.getSearchCacheKey()}-${searchComponent}-${page}-${propKey}-${propValue}`
 
     return withResponseCache({
-      redis: req.ctx.redis,
       key: cacheKey,
       ttl: 600
     }, async () => {
@@ -90,7 +90,7 @@ export default class GameChannelService extends Service {
       await em.populate(channels, ['owner'])
 
       const channelPromises = channels.slice(0, itemsPerPage)
-        .map((channel) => channel.toJSONWithCount(em, req.ctx.state.includeDevData))
+        .map((channel) => channel.toJSONWithCount(req.ctx.state.includeDevData))
 
       return {
         status: 200,
@@ -161,7 +161,7 @@ export default class GameChannelService extends Service {
     }
 
     await em.persistAndFlush(channel)
-    await clearResponseCache(req.ctx.redis, GameChannel.getSearchCacheKey(true))
+    await deferClearResponseCache(req.ctx, GameChannel.getSearchCacheKey(true))
 
     await channel.sendMessageToMembers(req.ctx.wss, 'v1.channels.player-joined', {
       channel,
@@ -171,7 +171,7 @@ export default class GameChannelService extends Service {
     return {
       status: 200,
       body: {
-        channel: await channel.toJSONWithCount(em, req.ctx.state.includeDevData)
+        channel: await channel.toJSONWithCount(req.ctx.state.includeDevData)
       }
     }
   }
@@ -254,7 +254,7 @@ export default class GameChannelService extends Service {
     }
 
     if (changedProperties.length > 0) {
-      await clearResponseCache(req.ctx.redis, GameChannel.getSearchCacheKey(true))
+      await deferClearResponseCache(req.ctx, GameChannel.getSearchCacheKey(true))
 
       // don't send this message if the only thing that changed is the owner
       // that is covered by the ownership transferred message
@@ -288,7 +288,7 @@ export default class GameChannelService extends Service {
     return {
       status: 200,
       body: {
-        channel: await channel.toJSONWithCount(em, req.ctx.state.includeDevData)
+        channel: await channel.toJSONWithCount(req.ctx.state.includeDevData)
       }
     }
   }

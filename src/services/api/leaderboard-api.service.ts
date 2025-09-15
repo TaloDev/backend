@@ -9,7 +9,7 @@ import triggerIntegrations from '../../lib/integrations/triggerIntegrations'
 import { hardSanitiseProps, mergeAndSanitiseProps } from '../../lib/props/sanitiseProps'
 import { PropSizeError } from '../../lib/errors/propSizeError'
 import buildErrorResponse from '../../lib/errors/buildErrorResponse'
-import { clearResponseCache } from '../../lib/perf/responseCache'
+import { deferClearResponseCache } from '../../lib/perf/responseCacheQueue'
 
 export default class LeaderboardAPIService extends APIService {
   @Route({
@@ -136,7 +136,7 @@ export default class LeaderboardAPIService extends APIService {
     const position = Math.max((await query.count()) - 1, 0)
     await entry.playerAlias.player.checkGroupMemberships(em)
 
-    await clearResponseCache(req.ctx.redis, leaderboard.getEntriesCacheKey(true))
+    await deferClearResponseCache(req.ctx, leaderboard.getEntriesCacheKey(true))
 
     return {
       status: 200,

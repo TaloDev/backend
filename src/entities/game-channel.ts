@@ -1,4 +1,4 @@
-import { Collection, Entity, EntityManager, ManyToMany, ManyToOne, OneToMany, PrimaryKey, Property } from '@mikro-orm/mysql'
+import { Collection, Entity, ManyToMany, ManyToOne, OneToMany, PrimaryKey, Property } from '@mikro-orm/mysql'
 import PlayerAlias from './player-alias'
 import Game from './game'
 import { Required, ValidationCondition } from 'koa-clay'
@@ -120,7 +120,7 @@ export default class GameChannel {
     }
   }
 
-  async toJSONWithCount(em: EntityManager, includeDevData: boolean) {
+  async toJSONWithCount(includeDevData: boolean) {
     return {
       ...this.toJSON(),
       memberCount: await this.members.loadCount({

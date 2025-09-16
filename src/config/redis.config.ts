@@ -14,3 +14,5 @@ export function createRedisConnection(opts?: RedisOptions): Redis {
     ...(opts ?? {})
   })
 }
+
+export const RESPONSE_CACHE_DB = 1

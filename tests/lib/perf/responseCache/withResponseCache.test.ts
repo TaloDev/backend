@@ -1,7 +1,9 @@
 import Redis from 'ioredis'
-import { prefix, withResponseCache } from '../../../../src/lib/perf/responseCache'
+import { getResponseCacheRedisConnection, prefix, withResponseCache } from '../../../../src/lib/perf/responseCache'
 
 describe('withResponseCache', () => {
+  const responseCacheRedis = getResponseCacheRedisConnection()
+
   afterEach(() => {
     vi.restoreAllMocks()
   })
@@ -10,10 +12,7 @@ describe('withResponseCache', () => {
     const value = '123'
     const key = 'cache-miss'
 
-    const res = await withResponseCache({
-      redis,
-      key
-    }, async () => {
+    const res = await withResponseCache({ key }, async () => {
       return await Promise.resolve({
         status: 200,
         body: {
@@ -24,7 +23,7 @@ describe('withResponseCache', () => {
 
     expect(res.body?.value).toBe(value)
 
-    const cached = await redis.get(`${prefix}:${key}`)
+    const cached = await responseCacheRedis.get(`${prefix}:${key}`)
     assert(cached)
     expect(JSON.parse(cached).body.value).toBe(value)
   })
@@ -33,17 +32,14 @@ describe('withResponseCache', () => {
     const cache = '123'
     const key = 'cache-hit'
 
-    await redis.set(`${prefix}:${key}`, JSON.stringify({
+    await responseCacheRedis.set(`${prefix}:${key}`, JSON.stringify({
       status: 200,
       body: {
         value: cache
       }
     }))
 
-    const res = await withResponseCache({
-      redis,
-      key
-    }, async () => {
+    const res = await withResponseCache({ key }, async () => {
       return await Promise.resolve({
         status: 200,
         body: {
@@ -59,7 +55,7 @@ describe('withResponseCache', () => {
     const key = 'cache-hit'
     const original = 25
 
-    await redis.set(`${prefix}:${key}`, JSON.stringify({
+    await responseCacheRedis.set(`${prefix}:${key}`, JSON.stringify({
       status: 200,
       body: {
         value: '123'
@@ -67,7 +63,6 @@ describe('withResponseCache', () => {
     }), 'EX', original)
 
     await withResponseCache({
-      redis,
       key,
       slidingWindow: true
     }, async () => {
@@ -79,7 +74,7 @@ describe('withResponseCache', () => {
       })
     })
 
-    expect(await redis.ttl(`${prefix}:${key}`)).toBeGreaterThan(original)
+    expect(await responseCacheRedis.ttl(`${prefix}:${key}`)).toBeGreaterThan(original)
   })
 
   it('should still return a response if pipeline() fails', async () => {
@@ -89,17 +84,14 @@ describe('withResponseCache', () => {
 
     const key = 'cache-error'
 
-    await redis.set(`${prefix}:${key}`, JSON.stringify({
+    await responseCacheRedis.set(`${prefix}:${key}`, JSON.stringify({
       status: 200,
       body: {
         value: '123'
       }
     }))
 
-    const res = await withResponseCache({
-      redis,
-      key
-    }, async () => {
+    const res = await withResponseCache({ key }, async () => {
       return await Promise.resolve({
         status: 200,
         body: {
@@ -116,10 +108,7 @@ describe('withResponseCache', () => {
 
     const key = 'cache-error'
 
-    const res = await withResponseCache({
-      redis,
-      key
-    }, async () => {
+    const res = await withResponseCache({ key }, async () => {
       return await Promise.resolve({
         status: 200,
         body: {

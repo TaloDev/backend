@@ -1,8 +1,10 @@
-import { Collection, Entity, Index, ManyToMany, ManyToOne, PrimaryKey, Property } from '@mikro-orm/mysql'
+import { Collection, Entity, EntityManager, Index, ManyToMany, ManyToOne, PrimaryKey, Property } from '@mikro-orm/mysql'
 import Player from './player'
 import Redis from 'ioredis'
 import { v4 } from 'uuid'
-import GameChannel from './game-channel'
+import GameChannel, { GameChannelLeavingReason } from './game-channel'
+import Socket from '../socket'
+import { clearResponseCache } from '../lib/perf/responseCache'
 
 export enum PlayerAliasService {
   STEAM = 'steam',
@@ -47,6 +49,35 @@ export default class PlayerAlias {
     const token = v4()
     await redis.set(`socketTokens.${this.id}`, token, 'EX', 3600)
     return token
+  }
+
+  async handleTemporaryChannels(em: EntityManager, socket: Socket) {
+    const temporaryChannels = await em.repo(GameChannel).find({
+      members: {
+        $some: {
+          id: this.id
+        }
+      },
+      temporaryMembership: true
+    }, { populate: ['members:ref'] })
+
+    for (const channel of temporaryChannels) {
+      channel.members.remove(this)
+      void clearResponseCache(GameChannel.getSubscriptionsCacheKey(this.id, true))
+
+      if (channel.shouldAutoCleanup(this)) {
+        em.remove(channel)
+        await channel.sendDeletedMessage(socket)
+      } else {
+        await channel.sendMessageToMembers(socket, 'v1.channels.player-left', {
+          channel,
+          playerAlias: this,
+          meta: {
+            reason: GameChannelLeavingReason.TEMPORARY_MEMBERSHIP
+          }
+        })
+      }
+    }
   }
 
   toJSON() {

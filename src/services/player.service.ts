@@ -137,10 +137,7 @@ export default class PlayerService extends Service {
     const devDataComponent = req.ctx.state.includeDevData ? 'dev' : 'no-dev'
     const cacheKey = `player-search-${req.ctx.state.game.id}-${searchComponent}-${page}-${devDataComponent}`
 
-    return withResponseCache({
-      redis: req.ctx.redis,
-      key: cacheKey
-    }, async () => {
+    return withResponseCache({ key: cacheKey }, async () => {
       const where: FilterQuery<Player> = { game: req.ctx.state.game }
 
       if (!req.ctx.state.includeDevData) {

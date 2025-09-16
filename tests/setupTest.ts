@@ -38,7 +38,7 @@ beforeAll(async () => {
 
 beforeEach(async () => {
   global.em.clear()
-  await global.redis.flushdb()
+  await global.redis.flushall()
 })
 
 afterAll(async () => {

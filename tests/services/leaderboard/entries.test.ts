@@ -1,4 +1,5 @@
 import request from 'supertest'
+import { subDays, addDays, format } from 'date-fns'
 import LeaderboardFactory from '../../fixtures/LeaderboardFactory'
 import PlayerFactory from '../../fixtures/PlayerFactory'
 import LeaderboardEntryFactory from '../../fixtures/LeaderboardEntryFactory'
@@ -228,5 +229,121 @@ describe('Leaderboard service - entries', () => {
     expect(res.body.entries[0].position).toBe(0)
     expect(res.body.entries[1].position).toBe(1)
     expect(res.body.entries[2].position).toBe(2)
+  })
+
+  it('should filter leaderboard entries by start date', async () => {
+    const [organisation, game] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken({}, organisation)
+
+    const players = await new PlayerFactory([game]).many(3)
+    const leaderboard = await new LeaderboardFactory([game]).state(() => ({ unique: false })).one()
+
+    const today = new Date()
+    const oldDate = subDays(today, 10)
+    const recentDate = subDays(today, 3)
+
+    const oldEntry = await new LeaderboardEntryFactory(leaderboard, players).state(() => ({
+      createdAt: oldDate
+    })).one()
+
+    const recentEntry = await new LeaderboardEntryFactory(leaderboard, players).state(() => ({
+      createdAt: recentDate
+    })).one()
+
+    await em.persistAndFlush([leaderboard, oldEntry, recentEntry])
+
+    const res = await request(app)
+      .get(`/games/${game.id}/leaderboards/${leaderboard.id}/entries`)
+      .query({ page: 0, startDate: format(subDays(today, 5), 'yyyy-MM-dd') })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    expect(res.body.entries).toHaveLength(1)
+    expect(res.body.entries).toEqual(expect.arrayContaining([
+      expect.objectContaining({ id: recentEntry.id })
+    ]))
+  })
+
+  it('should filter leaderboard entries by end date', async () => {
+    const [organisation, game] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken({}, organisation)
+
+    const players = await new PlayerFactory([game]).many(3)
+    const leaderboard = await new LeaderboardFactory([game]).state(() => ({ unique: false })).one()
+
+    const today = new Date()
+    const oldDate = subDays(today, 10)
+    const recentDate = subDays(today, 3)
+    const futureDate = addDays(today, 5)
+
+    const oldEntry = await new LeaderboardEntryFactory(leaderboard, players).state(() => ({
+      createdAt: oldDate
+    })).one()
+
+    const recentEntry = await new LeaderboardEntryFactory(leaderboard, players).state(() => ({
+      createdAt: recentDate
+    })).one()
+
+    const futureEntry = await new LeaderboardEntryFactory(leaderboard, players).state(() => ({
+      createdAt: futureDate
+    })).one()
+
+    await em.persistAndFlush([leaderboard, oldEntry, recentEntry, futureEntry])
+
+    const res = await request(app)
+      .get(`/games/${game.id}/leaderboards/${leaderboard.id}/entries`)
+      .query({ page: 0, endDate: format(addDays(today, 1), 'yyyy-MM-dd') })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    expect(res.body.entries).toHaveLength(2)
+    expect(res.body.entries).toEqual(expect.arrayContaining([
+      expect.objectContaining({ id: oldEntry.id }),
+      expect.objectContaining({ id: recentEntry.id })
+    ]))
+  })
+
+  it('should filter leaderboard entries by both start and end date', async () => {
+    const [organisation, game] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken({}, organisation)
+
+    const players = await new PlayerFactory([game]).many(4)
+    const leaderboard = await new LeaderboardFactory([game]).state(() => ({ unique: false })).one()
+
+    const today = new Date()
+    const veryOldDate = subDays(today, 15)
+    const oldDate = subDays(today, 10)
+    const recentDate = subDays(today, 3)
+    const futureDate = addDays(today, 5)
+
+    const veryOldEntry = await new LeaderboardEntryFactory(leaderboard, players).state(() => ({
+      createdAt: veryOldDate
+    })).one()
+
+    const oldEntry = await new LeaderboardEntryFactory(leaderboard, players).state(() => ({
+      createdAt: oldDate
+    })).one()
+
+    const recentEntry = await new LeaderboardEntryFactory(leaderboard, players).state(() => ({
+      createdAt: recentDate
+    })).one()
+
+    const futureEntry = await new LeaderboardEntryFactory(leaderboard, players).state(() => ({
+      createdAt: futureDate
+    })).one()
+
+    await em.persistAndFlush([leaderboard, veryOldEntry, oldEntry, recentEntry, futureEntry])
+
+    const res = await request(app)
+      .get(`/games/${game.id}/leaderboards/${leaderboard.id}/entries`)
+      .query({ page: 0, startDate: format(subDays(today, 10), 'yyyy-MM-dd'), endDate: format(addDays(today, 1), 'yyyy-MM-dd') })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    expect(res.body.entries).toHaveLength(2)
+    expect(res.body.entries).toEqual(expect.arrayContaining([
+      expect.objectContaining({ id: oldEntry.id }),
+      expect.objectContaining({ id: recentEntry.id })
+    ]))
   })
 })

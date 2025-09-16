@@ -607,7 +607,7 @@ export default class PlayerAuthAPIService extends APIService {
     const clickhouse: ClickHouseClient = req.ctx.clickhouse
 
     const alias = await em.getRepository(PlayerAlias).findOneOrFail(req.ctx.state.currentAliasId, {
-      populate: ['player', 'player.auth']
+      populate: ['player.auth']
     })
 
     const passwordMatches = await bcrypt.compare(currentPassword, alias.player.auth!.password)

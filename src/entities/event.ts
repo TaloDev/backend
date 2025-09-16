@@ -42,7 +42,7 @@ export default class Event extends ClickHouseEntity<ClickHouseEvent, [string, Ga
       id: {
         $in: playerAliasIds
       }
-    }, { populate: ['player'] })
+    })
 
     const playerAliasesMap = new Map<number, PlayerAlias>()
     playerAliases.forEach((alias) => playerAliasesMap.set(alias.id, alias))
@@ -133,7 +133,7 @@ export default class Event extends ClickHouseEntity<ClickHouseEvent, [string, Ga
 
   async hydrate(em: EntityManager, data: ClickHouseEvent, clickhouse: ClickHouseClient, loadProps: boolean = false): Promise<this> {
     const game = await em.getRepository(Game).findOneOrFail(data.game_id)
-    const playerAlias = await em.getRepository(PlayerAlias).findOneOrFail(data.player_alias_id, { populate: ['player'] })
+    const playerAlias = await em.getRepository(PlayerAlias).findOneOrFail(data.player_alias_id)
 
     this.construct(data.name, game)
     this.id = data.id

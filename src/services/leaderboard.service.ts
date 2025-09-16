@@ -11,8 +11,11 @@ import { archiveEntriesForLeaderboard } from '../tasks/archiveLeaderboardEntries
 import updateAllowedKeys from '../lib/entities/updateAllowedKeys'
 import { pageValidation } from '../lib/pagination/pageValidation'
 import { DEFAULT_PAGE_SIZE } from '../lib/pagination/itemsPerPage'
-import { clearResponseCache, withResponseCache } from '../lib/perf/responseCache'
+import { withResponseCache } from '../lib/perf/responseCache'
+import { deferClearResponseCache } from '../lib/perf/responseCacheQueue'
 import { resetModeValidation, ResetMode, translateResetMode } from '../lib/validation/resetModeValidation'
+import { buildDateValidationSchema } from '../lib/dates/dateValidationSchema'
+import { endOfDay, startOfDay } from 'date-fns'
 
 async function getGlobalEntryIds({
   em,
@@ -132,24 +135,24 @@ export default class LeaderboardService extends Service {
   })
   @Validate({
     query: {
-      page: pageValidation
+      page: pageValidation,
+      ...buildDateValidationSchema(false, false)
     }
   })
   @HasPermission(LeaderboardPolicy, 'get')
   async entries(req: Request): Promise<Response> {
     const itemsPerPage = DEFAULT_PAGE_SIZE
 
-    const { page = 0, aliasId, withDeleted, propKey, propValue } = req.query
+    const { page = 0, aliasId, withDeleted, propKey, propValue, startDate, endDate } = req.query
     const em: EntityManager = req.ctx.em
 
     const leaderboard: Leaderboard = req.ctx.state.leaderboard
     const includeDeleted = withDeleted === '1'
 
     const devDataComponent = req.ctx.state.includeDevData ? 'dev' : 'no-dev'
-    const cacheKey = `${leaderboard.getEntriesCacheKey()}-${page}-${aliasId}-${withDeleted}-${propKey}-${propValue}-${devDataComponent}`
+    const cacheKey = `${leaderboard.getEntriesCacheKey()}-${page}-${aliasId}-${withDeleted}-${propKey}-${propValue}-${startDate}-${endDate}-${devDataComponent}`
 
     return withResponseCache({
-      redis: req.ctx.redis,
       key: cacheKey,
       ttl: 600
     }, async () => {
@@ -192,6 +195,20 @@ export default class LeaderboardService extends Service {
               key: propKey
             }
           }
+        }
+      }
+
+      if (startDate) {
+        where.createdAt = {
+          ...((where.createdAt as ObjectQuery<Date>) ?? {}),
+          $gte: startOfDay(new Date(startDate))
+        }
+      }
+
+      if (endDate) {
+        where.createdAt = {
+          ...((where.createdAt as ObjectQuery<Date>) ?? {}),
+          $lte: endOfDay(new Date(endDate))
         }
       }
 
@@ -301,7 +318,7 @@ export default class LeaderboardService extends Service {
     }
 
     await em.flush()
-    await clearResponseCache(req.ctx.redis, entry.leaderboard.getEntriesCacheKey(true))
+    await deferClearResponseCache(req.ctx, entry.leaderboard.getEntriesCacheKey(true))
 
     return {
       status: 200,
@@ -330,7 +347,7 @@ export default class LeaderboardService extends Service {
       await archiveEntriesForLeaderboard(em, leaderboard)
     }
 
-    await clearResponseCache(req.ctx.redis, leaderboard.getEntriesCacheKey(true))
+    await deferClearResponseCache(req.ctx, leaderboard.getEntriesCacheKey(true))
 
     createGameActivity(em, {
       user: req.ctx.state.user,
@@ -458,7 +475,7 @@ export default class LeaderboardService extends Service {
     })
 
     await em.flush()
-    await clearResponseCache(req.ctx.redis, leaderboard.getEntriesCacheKey(true))
+    await deferClearResponseCache(req.ctx, leaderboard.getEntriesCacheKey(true))
 
     return {
       status: 200,

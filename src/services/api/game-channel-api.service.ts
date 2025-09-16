@@ -12,7 +12,8 @@ import Redis from 'ioredis'
 import { pageValidation } from '../../lib/pagination/pageValidation'
 import { DEFAULT_PAGE_SIZE } from '../../lib/pagination/itemsPerPage'
 import Player from '../../entities/player'
-import { clearResponseCache, withResponseCache } from '../../lib/perf/responseCache'
+import { withResponseCache } from '../../lib/perf/responseCache'
+import { deferClearResponseCache } from '../../lib/perf/responseCacheQueue'
 
 type GameChannelStorageTransaction = {
   upsertedProps: GameChannelStorageProp[]
@@ -36,7 +37,7 @@ async function joinChannel(req: Request, channel: GameChannel, playerAlias: Play
   if (!channel.hasMember(playerAlias.id)) {
     channel.members.add(playerAlias)
 
-    await clearResponseCache(req.ctx.redis, GameChannel.getSubscriptionsCacheKey(playerAlias.id, true))
+    await deferClearResponseCache(req.ctx, GameChannel.getSubscriptionsCacheKey(playerAlias.id, true))
     await channel.sendMessageToMembers(req.ctx.wss, 'v1.channels.player-joined', {
       channel,
       playerAlias
@@ -74,7 +75,6 @@ export default class GameChannelAPIService extends APIService {
     const cacheKey = `${GameChannel.getSubscriptionsCacheKey(aliasId)}-${propKey}-${propValue}`
 
     return withResponseCache({
-      redis: req.ctx.redis,
       key: cacheKey,
       ttl: 600
     }, async () => {
@@ -108,7 +108,7 @@ export default class GameChannelAPIService extends APIService {
       return {
         status: 200,
         body: {
-          channels: await Promise.all(channels.map((channel) => channel.toJSONWithCount(req.ctx.em, req.ctx.state.includeDevData)))
+          channels: await Promise.all(channels.map((channel) => channel.toJSONWithCount(req.ctx.state.includeDevData)))
         }
       }
     })
@@ -121,13 +121,12 @@ export default class GameChannelAPIService extends APIService {
   })
   @HasPermission(GameChannelAPIPolicy, 'get')
   async get(req: Request): Promise<Response> {
-    const em: EntityManager = req.ctx.em
     const channel: GameChannel = req.ctx.state.channel
 
     return {
       status: 200,
       body: {
-        channel: await channel.toJSONWithCount(em, req.ctx.state.includeDevData)
+        channel: await channel.toJSONWithCount(req.ctx.state.includeDevData)
       }
     }
   }
@@ -156,7 +155,6 @@ export default class GameChannelAPIService extends APIService {
   })
   @HasPermission(GameChannelAPIPolicy, 'join')
   async join(req: Request): Promise<Response> {
-    const em: EntityManager = req.ctx.em
     const channel: GameChannel = req.ctx.state.channel
 
     if (channel.private) {
@@ -167,7 +165,7 @@ export default class GameChannelAPIService extends APIService {
     return {
       status: 200,
       body: {
-        channel: await channel.toJSONWithCount(em, req.ctx.state.includeDevData)
+        channel: await channel.toJSONWithCount(req.ctx.state.includeDevData)
       }
     }
   }
@@ -187,7 +185,7 @@ export default class GameChannelAPIService extends APIService {
     const playerAlias: PlayerAlias = req.ctx.state.alias
 
     if (channel.hasMember(req.ctx.state.alias.id)) {
-      await clearResponseCache(req.ctx.redis, GameChannel.getSubscriptionsCacheKey(playerAlias.id, true))
+      await deferClearResponseCache(req.ctx, GameChannel.getSubscriptionsCacheKey(playerAlias.id, true))
       await channel.sendMessageToMembers(req.ctx.wss, 'v1.channels.player-left', {
         channel,
         playerAlias,

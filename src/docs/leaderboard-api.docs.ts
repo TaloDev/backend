@@ -15,7 +15,10 @@ const LeaderboardAPIDocs: APIDocs<LeaderboardAPIService> = {
         page: 'The current pagination index (starting at 0)',
         aliasId: 'Only return entries for this alias ID',
         propKey: 'Only return entries with this prop key',
-        propValue: 'Only return entries with a matching prop key and value'
+        propValue: 'Only return entries with a matching prop key and value',
+        withDeleted: 'Include entries that were deleted by a refresh interval',
+        startDate: 'A UTC Date (YYYY-MM-DD), DateTime (ISO 8601) or millisecond timestamp',
+        endDate: 'A UTC Date (YYYY-MM-DD), DateTime (ISO 8601) or millisecond timestamp'
       }
     },
     samples: [
@@ -103,6 +106,25 @@ const LeaderboardAPIDocs: APIDocs<LeaderboardAPIService> = {
           query: {
             propKey: 'team',
             propValue: 'red'
+          }
+        }
+      },
+      {
+        title: 'Sample request with deleted entries',
+        sample: {
+          url: '/v1/leaderboards/highscore?withDeleted=1',
+          query: {
+            withDeleted: '1'
+          }
+        }
+      },
+      {
+        title: 'Sample request with date filtering',
+        sample: {
+          url: '/v1/leaderboards/highscore?startDate=2025-09-01&endDate=2025-09-08',
+          query: {
+            startDate: '2025-09-01',
+            endDate: '2025-09-08'
           }
         }
       }

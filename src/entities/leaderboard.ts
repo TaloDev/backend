@@ -98,7 +98,7 @@ export default class Leaderboard {
 
   getEntriesCacheKey(wildcard = false) {
     let key = `leaderboard-entries-${this.id}`
-    if (wildcard) key += '*'
+    if (wildcard) key += '-*'
     return key
   }
 

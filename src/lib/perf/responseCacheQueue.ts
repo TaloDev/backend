@@ -5,7 +5,8 @@ import { clearResponseCache } from './responseCache'
 
 export function createClearResponseCacheQueue() {
   return createQueue<string>('clearResponseCache', async (job) => {
-    await clearResponseCache(job.data)
+    const cleared = await clearResponseCache(job.data)
+    console.info(`Cleared ${cleared} keys matching pattern ${job.data}`)
   })
 }
 

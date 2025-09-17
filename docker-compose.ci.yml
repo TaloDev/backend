@@ -1,9 +1,7 @@
 services:
   test-redis:
-    image: bitnami/redis:8.0.3
-    command:
-    environment:
-      - REDIS_PASSWORD=${REDIS_PASSWORD}
+    image: redis:8-alpine
+    command: redis-server --requirepass ${REDIS_PASSWORD}
     restart: unless-stopped
 
   stripe-api:

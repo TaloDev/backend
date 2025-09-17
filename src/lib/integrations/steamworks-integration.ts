@@ -1,5 +1,5 @@
 import { EntityManager } from '@mikro-orm/mysql'
-import { streamCursor } from '../perf/streamByCursor'
+import { streamByCursor } from '../perf/streamByCursor'
 import Leaderboard, { LeaderboardSortMode } from '../../entities/leaderboard'
 import axios, { AxiosError, AxiosResponse } from 'axios'
 import querystring from 'qs'
@@ -16,6 +16,7 @@ import { Request } from 'koa-clay'
 import { SteamworksLeaderboardEntry } from '../../entities/steamworks-leaderboard-entry'
 import { captureException } from '@sentry/node'
 import { getResultCacheOptions } from '../perf/getResultCacheOptions'
+import { SteamworksPlayerStat } from '../../entities/steamworks-player-stat'
 
 type SteamworksRequestConfig = {
   method: SteamworksRequestMethod
@@ -79,18 +80,18 @@ type GetLeaderboardEntriesResponseEntry = GetLeaderboardEntriesResponse['leaderb
 
 type CombinedLeaderboards = [Leaderboard, GetLeaderboardsForGameResponseLeaderboard | null, SteamworksLeaderboardMapping | null]
 
+type SteamworksGameStat = {
+  name: string
+  defaultvalue: number
+  displayName: string
+}
+
 export type GetSchemaForGameResponse = {
   game: {
     gameName: string
     gameVersion: string
     availableGameStats: {
-      stats: [
-        {
-          name: string
-          defaultvalue: number
-          displayName: string
-        }
-      ]
+      stats: SteamworksGameStat[]
       achievements: unknown[]
     }
   }
@@ -240,8 +241,8 @@ export async function createSteamworksLeaderboardEntry(em: EntityManager, integr
     const config = createSteamworksRequestConfig(integration, 'POST', '/ISteamLeaderboards/SetLeaderboardScore/v1', body)
     const event = createSteamworksIntegrationEvent(integration, config)
     await makeRequest(config, event)
-
     await em.persistAndFlush(event)
+
     await em.upsert(new SteamworksLeaderboardEntry({
       steamworksLeaderboard: leaderboardMapping,
       leaderboardEntry: entry,
@@ -250,19 +251,36 @@ export async function createSteamworksLeaderboardEntry(em: EntityManager, integr
   }
 }
 
+async function requestDeleteLeaderboardScore({
+  integration,
+  steamworksLeaderboardId,
+  steamUserId
+}: {
+  integration: Integration
+  steamworksLeaderboardId: number
+  steamUserId: string
+}) {
+  const body = querystring.stringify({
+    appid: integration.getConfig().appId,
+    leaderboardid: steamworksLeaderboardId,
+    steamid: steamUserId
+  })
+
+  const config = createSteamworksRequestConfig(integration, 'POST', '/ISteamLeaderboards/DeleteLeaderboardScore/v1', body)
+  const event = createSteamworksIntegrationEvent(integration, config)
+  await makeRequest(config, event)
+  return event
+}
+
 export async function deleteSteamworksLeaderboardEntry(em: EntityManager, integration: Integration, entry: LeaderboardEntry) {
   const leaderboardMapping = await em.repo(SteamworksLeaderboardMapping).findOne({ leaderboard: entry.leaderboard })
 
   if (leaderboardMapping) {
-    const body = querystring.stringify({
-      appid: integration.getConfig().appId,
-      leaderboardid: leaderboardMapping.steamworksLeaderboardId,
-      steamid: entry.playerAlias.identifier
+    const event = await requestDeleteLeaderboardScore({
+      integration,
+      steamworksLeaderboardId: leaderboardMapping.steamworksLeaderboardId,
+      steamUserId: entry.playerAlias.identifier
     })
-
-    const config = createSteamworksRequestConfig(integration, 'POST', '/ISteamLeaderboards/DeleteLeaderboardScore/v1', body)
-    const event = createSteamworksIntegrationEvent(integration, config)
-    await makeRequest(config, event)
 
     await em.persistAndFlush(event)
     await em.repo(SteamworksLeaderboardEntry).nativeDelete({
@@ -319,21 +337,16 @@ async function createLeaderboardEntry({
 
 async function matchAliasAndLeaderboardEntry({
   em,
-  integration,
   steamworksLeaderboard,
   steamEntryData
 }: {
   em: EntityManager
-  integration: Integration
   steamworksLeaderboard: GetLeaderboardsForGameResponseLeaderboard
   steamEntryData: GetLeaderboardEntriesResponseEntry
 }) {
   // this is a necessary evil for ensuring the identity map doesn't get corrupted between entry syncs
   const leaderboardMapping = await em.repo(SteamworksLeaderboardMapping).findOneOrFail({
-    leaderboard: {
-      internalName: steamworksLeaderboard.name,
-      game: integration.game
-    }
+    steamworksLeaderboardId: steamworksLeaderboard.id
   }, {
     ...getResultCacheOptions(`sync-leaderboards-mapping-${steamworksLeaderboard.id}`),
     populate: ['leaderboard.game']
@@ -392,7 +405,6 @@ async function ingestEntriesFromSteamworks({
     try {
       const { newEntry, updated } = await matchAliasAndLeaderboardEntry({
         em: em.fork(),
-        integration,
         steamworksLeaderboard,
         steamEntryData
       })
@@ -426,7 +438,7 @@ async function pushEntriesToSteamworks({
   let processed = 0
   let pushed = 0
 
-  const entryStream = streamCursor<LeaderboardEntry>(async (batchSize, after) => {
+  const entryStream = streamByCursor<LeaderboardEntry>(async (batchSize, after) => {
     return em.repo(LeaderboardEntry).findByCursor({
       leaderboard
     }, {
@@ -544,19 +556,177 @@ async function getSteamworksStatsForPlayer(em: EntityManager, integration: Integ
   return res.data
 }
 
-export async function setSteamworksStat(em: EntityManager, integration: Integration, playerStat: PlayerGameStat, playerAlias: PlayerAlias) {
+async function requestSetSteamworksUserStat({
+  integration,
+  stat,
+  steamUserId,
+  value
+}: {
+  integration: Integration
+  stat: GameStat
+  steamUserId: string
+  value: number
+}) {
   const body = querystring.stringify({
     appid: integration.getConfig().appId,
-    steamid: playerAlias.identifier,
+    steamid: steamUserId,
     count: 1,
-    name: [playerStat.stat.internalName],
-    value: [playerStat.value]
+    name: [stat.internalName],
+    value: [value]
   })
 
   const config = createSteamworksRequestConfig(integration, 'POST', '/ISteamUserStats/SetUserStatsForGame/v1', body)
   const event = createSteamworksIntegrationEvent(integration, config)
   await makeRequest(config, event)
+  return event
+}
+
+export async function setSteamworksStat(em: EntityManager, integration: Integration, playerStat: PlayerGameStat, playerAlias: PlayerAlias) {
+  const event = await requestSetSteamworksUserStat({
+    integration,
+    stat: playerStat.stat,
+    steamUserId: playerAlias.identifier,
+    value: playerStat.value
+  })
   await em.persistAndFlush(event)
+
+  await em.upsert(new SteamworksPlayerStat({
+    stat: playerStat.stat,
+    playerStat,
+    steamUserId: playerAlias.identifier
+  }))
+}
+
+async function ingestSteamworksGameStats(em: EntityManager, integration: Integration, steamworksStats: SteamworksGameStat[]) {
+  for (const steamworksStat of steamworksStats) {
+    try {
+      const existingStat = await em.repo(GameStat).findOne({ internalName: steamworksStat.name, game: integration.game })
+      if (!existingStat) {
+        const stat = new GameStat(integration.game)
+        stat.internalName = steamworksStat.name
+        stat.name = steamworksStat.displayName
+        stat.globalValue = stat.defaultValue = steamworksStat.defaultvalue
+        stat.minTimeBetweenUpdates = 10
+        stat.global = false
+        em.persist(stat)
+      } else {
+        existingStat.defaultValue = steamworksStat.defaultvalue
+        existingStat.name = steamworksStat.displayName
+      }
+      await em.flush()
+    } catch (err) {
+      captureException(err)
+    }
+  }
+}
+
+async function ingestSteamworksPlayerStatForAlias(em: EntityManager, integration: Integration, alias: PlayerAlias) {
+  const res = await getSteamworksStatsForPlayer(em, integration, alias.identifier)
+  const steamworksPlayerStats = res?.playerstats?.stats ?? []
+
+  for (const steamworksPlayerStat of steamworksPlayerStats) {
+    try {
+      return await em.transactional(async (trx) => {
+        const stat = await trx.repo(GameStat).findOneOrFail({ internalName: steamworksPlayerStat.name })
+        const existingPlayerStat = await trx.repo(PlayerGameStat).findOne({
+          player: alias.player,
+          stat
+        })
+
+        if (existingPlayerStat) {
+          existingPlayerStat.value = steamworksPlayerStat.value
+          return existingPlayerStat.id
+        } else {
+          const playerStat = new PlayerGameStat(alias.player, stat)
+          playerStat.value = steamworksPlayerStat.value
+          trx.persist(playerStat)
+
+          const steamsWorksPlayerStat = new SteamworksPlayerStat({
+            stat,
+            playerStat,
+            steamUserId: alias.identifier
+          })
+          trx.persist(steamsWorksPlayerStat)
+
+          return playerStat.id
+        }
+      })
+    } catch (err) {
+      captureException(err)
+    }
+  }
+}
+
+async function ingestSteamworksPlayerStats(em: EntityManager, integration: Integration) {
+  const aliasStream = streamByCursor<PlayerAlias>(async (batchSize, after) => {
+    return em.repo(PlayerAlias).findByCursor({
+      service: PlayerAliasService.STEAM,
+      player: {
+        game: integration.game
+      }
+    }, {
+      first: batchSize,
+      after,
+      orderBy: { id: 'asc' }
+    })
+  }, 100)
+
+  const syncedPlayerStatIds = new Set<number>()
+
+  for await (const alias of aliasStream) {
+    const syncedPlayerStatId = await ingestSteamworksPlayerStatForAlias(em, integration, alias)
+    if (syncedPlayerStatId) {
+      syncedPlayerStatIds.add(syncedPlayerStatId)
+    }
+  }
+
+  return syncedPlayerStatIds
+}
+
+async function pushPlayerStatsToSteamworks({
+  em,
+  integration,
+  steamworksStats,
+  syncedPlayerStatIds
+}: {
+  em: EntityManager
+  integration: Integration
+  steamworksStats: SteamworksGameStat[]
+  syncedPlayerStatIds: Set<number>
+}) {
+  const playerStatStream = streamByCursor<PlayerGameStat>(async (batchSize, after) => {
+    return em.repo(PlayerGameStat).findByCursor({
+      id: {
+        $nin: Array.from(syncedPlayerStatIds)
+      },
+      player: {
+        aliases: {
+          $some: {
+            service: PlayerAliasService.STEAM
+          }
+        }
+      },
+      stat: {
+        internalName: steamworksStats.map((steamworksStat) => steamworksStat.name)
+      }
+    }, {
+      first: batchSize,
+      after,
+      orderBy: { id: 'asc' },
+      populate: ['player.aliases'] as const
+    })
+  }, 100)
+
+  for await (const unsyncedPlayerStat of playerStatStream) {
+    const steamAlias = unsyncedPlayerStat.player.aliases.getItems().find((alias) => alias.service === PlayerAliasService.STEAM)
+    if (steamAlias) {
+      try {
+        await setSteamworksStat(em, integration, unsyncedPlayerStat, steamAlias)
+      } catch (err) {
+        captureException(err)
+      }
+    }
+  }
 }
 
 export async function syncSteamworksStats(em: EntityManager, integration: Integration) {
@@ -570,77 +740,17 @@ export async function syncSteamworksStats(em: EntityManager, integration: Integr
     throw new Error('Failed to retrieve stats - is your App ID correct?')
   }
 
-  for (const steamworksStat of steamworksStats) {
-    const existingStat = await em.repo(GameStat).findOne({ internalName: steamworksStat.name, game: integration.game })
-    if (!existingStat) {
-      const stat = new GameStat(integration.game)
-      stat.internalName = steamworksStat.name
-      stat.name = steamworksStat.displayName
-      stat.globalValue = stat.defaultValue = steamworksStat.defaultvalue
-      stat.minTimeBetweenUpdates = 10
-      stat.global = false
-      em.persist(stat)
-    } else {
-      existingStat.defaultValue = steamworksStat.defaultvalue
-      existingStat.name = steamworksStat.displayName
-    }
-  }
+  await ingestSteamworksGameStats(em, integration, steamworksStats)
 
-  await em.flush()
-
-  const steamAliases = await em.repo(PlayerAlias).find({
-    service: PlayerAliasService.STEAM,
-    player: {
-      game: integration.game
-    }
-  })
-
-  const syncedPlayerStats: PlayerGameStat[] = []
-
-  for (const steamAlias of steamAliases) {
-    const res = await getSteamworksStatsForPlayer(em, integration, steamAlias.identifier)
-    const steamworksPlayerStats = res?.playerstats?.stats ?? []
-
-    for (const steamworksPlayerStat of steamworksPlayerStats) {
-      const stat = await em.repo(GameStat).findOneOrFail({ internalName: steamworksPlayerStat.name })
-      const existingPlayerStat = await em.repo(PlayerGameStat).findOne({
-        player: steamAlias.player,
-        stat
-      }, { populate: ['player'] })
-
-      if (existingPlayerStat) {
-        existingPlayerStat.value = steamworksPlayerStat.value
-        syncedPlayerStats.push(existingPlayerStat)
-      } else {
-        const playerStat = new PlayerGameStat(steamAlias.player, stat)
-        playerStat.value = steamworksPlayerStat.value
-        em.persist(playerStat)
-        syncedPlayerStats.push(playerStat)
-      }
-    }
-  }
-
-  await em.flush()
-
-  const unsyncedPlayerStats = await em.repo(PlayerGameStat).find({
-    player: {
-      id: steamAliases.map((alias) => alias.player.id)
-    },
-    stat: {
-      internalName: steamworksStats.map((steamworksStat) => steamworksStat.name)
-    }
-  }, { populate: ['player', 'player.aliases'] })
-
-  const filteredUnsyncedStats = unsyncedPlayerStats.filter((playerStat) => {
-    const syncedIds = syncedPlayerStats.map((synced) => synced.id)
-    return !syncedIds.includes(playerStat.id)
-  })
+  const syncedPlayerStatIds = await ingestSteamworksPlayerStats(em, integration)
 
   // push through player stats that aren't in steamworks
-  for (const unsyncedPlayerStat of filteredUnsyncedStats) {
-    const steamAlias = unsyncedPlayerStat.player.aliases.getItems().find((alias) => alias.service === PlayerAliasService.STEAM)
-    await setSteamworksStat(em, integration, unsyncedPlayerStat, steamAlias!)
-  }
+  await pushPlayerStatsToSteamworks({
+    em,
+    integration,
+    steamworksStats,
+    syncedPlayerStatIds
+  })
 }
 
 export async function authenticateTicket(req: Request, integration: Integration, identifier: string): Promise<string> {
@@ -716,17 +826,31 @@ export async function cleanupSteamworksLeaderboardEntry(
   integration: Integration,
   steamworksEntry: SteamworksLeaderboardEntry
 ) {
-  const body = querystring.stringify({
-    appid: integration.getConfig().appId,
-    leaderboardid: steamworksEntry.steamworksLeaderboard.steamworksLeaderboardId,
-    steamid: steamworksEntry.steamUserId
+  const event = await requestDeleteLeaderboardScore({
+    integration,
+    steamworksLeaderboardId: steamworksEntry.steamworksLeaderboard.steamworksLeaderboardId,
+    steamUserId: steamworksEntry.steamUserId
   })
-
-  const config = createSteamworksRequestConfig(integration, 'POST', '/ISteamLeaderboards/DeleteLeaderboardScore/v1', body)
-  const event = createSteamworksIntegrationEvent(integration, config)
-  await makeRequest(config, event)
 
   em.persist(event)
   em.remove(steamworksEntry)
+  await em.flush()
+}
+
+export async function cleanupSteamworksPlayerStat(
+  em: EntityManager,
+  integration: Integration,
+  steamworksPlayerStat: SteamworksPlayerStat
+) {
+  // can't delete stats
+  const event = await requestSetSteamworksUserStat({
+    integration,
+    stat: steamworksPlayerStat.stat,
+    steamUserId: steamworksPlayerStat.steamUserId,
+    value: steamworksPlayerStat.stat.defaultValue
+  })
+
+  em.persist(event)
+  em.remove(steamworksPlayerStat)
   await em.flush()
 }

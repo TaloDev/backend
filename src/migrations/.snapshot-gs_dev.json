@@ -433,6 +433,7 @@
             "id"
           ],
           "referencedTableName": "pricing_plan",
+          "createForeignKeyConstraint": true,
           "updateRule": "cascade"
         }
       },
@@ -536,6 +537,7 @@
             "id"
           ],
           "referencedTableName": "organisation_pricing_plan",
+          "createForeignKeyConstraint": true,
           "updateRule": "cascade"
         }
       },
@@ -713,6 +715,7 @@
             "id"
           ],
           "referencedTableName": "organisation",
+          "createForeignKeyConstraint": true,
           "updateRule": "cascade"
         },
         "game_api_secret_id_foreign": {
@@ -725,6 +728,7 @@
             "id"
           ],
           "referencedTableName": "game_secret",
+          "createForeignKeyConstraint": true,
           "updateRule": "cascade"
         }
       },
@@ -863,6 +867,7 @@
             "id"
           ],
           "referencedTableName": "game",
+          "createForeignKeyConstraint": true,
           "updateRule": "cascade"
         }
       },
@@ -1027,6 +1032,7 @@
             "id"
           ],
           "referencedTableName": "game",
+          "createForeignKeyConstraint": true,
           "updateRule": "cascade"
         },
         "player_auth_id_foreign": {
@@ -1039,6 +1045,7 @@
             "id"
           ],
           "referencedTableName": "player_auth",
+          "createForeignKeyConstraint": true,
           "deleteRule": "set null",
           "updateRule": "cascade"
         },
@@ -1052,6 +1059,7 @@
             "id"
           ],
           "referencedTableName": "player_presence",
+          "createForeignKeyConstraint": true,
           "deleteRule": "set null",
           "updateRule": "cascade"
         }
@@ -1167,6 +1175,7 @@
             "id"
           ],
           "referencedTableName": "player",
+          "createForeignKeyConstraint": true,
           "deleteRule": "cascade",
           "updateRule": "cascade"
         }
@@ -1261,6 +1270,7 @@
             "id"
           ],
           "referencedTableName": "player",
+          "createForeignKeyConstraint": true,
           "deleteRule": "cascade",
           "updateRule": "cascade"
         }
@@ -1384,6 +1394,7 @@
             "id"
           ],
           "referencedTableName": "player",
+          "createForeignKeyConstraint": true,
           "deleteRule": "cascade",
           "updateRule": "cascade"
         }
@@ -1490,6 +1501,7 @@
             "id"
           ],
           "referencedTableName": "player_alias",
+          "createForeignKeyConstraint": true,
           "deleteRule": "cascade",
           "updateRule": "cascade"
         }
@@ -1565,6 +1577,7 @@
             "id"
           ],
           "referencedTableName": "player_group",
+          "createForeignKeyConstraint": true,
           "deleteRule": "cascade",
           "updateRule": "cascade"
         },
@@ -1578,6 +1591,7 @@
             "id"
           ],
           "referencedTableName": "player",
+          "createForeignKeyConstraint": true,
           "deleteRule": "cascade",
           "updateRule": "cascade"
         }
@@ -1682,6 +1696,7 @@
             "id"
           ],
           "referencedTableName": "player",
+          "createForeignKeyConstraint": true,
           "deleteRule": "cascade",
           "updateRule": "cascade"
         }
@@ -1838,6 +1853,7 @@
             "id"
           ],
           "referencedTableName": "game",
+          "createForeignKeyConstraint": true,
           "updateRule": "cascade"
         }
       },
@@ -1993,6 +2009,7 @@
             "id"
           ],
           "referencedTableName": "leaderboard",
+          "createForeignKeyConstraint": true,
           "deleteRule": "cascade",
           "updateRule": "cascade"
         },
@@ -2006,6 +2023,7 @@
             "id"
           ],
           "referencedTableName": "player_alias",
+          "createForeignKeyConstraint": true,
           "deleteRule": "cascade",
           "updateRule": "cascade"
         }
@@ -2100,6 +2118,7 @@
             "id"
           ],
           "referencedTableName": "leaderboard_entry",
+          "createForeignKeyConstraint": true,
           "deleteRule": "cascade",
           "updateRule": "cascade"
         }
@@ -2216,6 +2235,7 @@
             "id"
           ],
           "referencedTableName": "game",
+          "createForeignKeyConstraint": true,
           "updateRule": "cascade"
         }
       },
@@ -2400,6 +2420,7 @@
             "id"
           ],
           "referencedTableName": "game",
+          "createForeignKeyConstraint": true,
           "updateRule": "cascade"
         }
       },
@@ -2524,6 +2545,7 @@
             "id"
           ],
           "referencedTableName": "player",
+          "createForeignKeyConstraint": true,
           "deleteRule": "cascade",
           "updateRule": "cascade"
         },
@@ -2537,6 +2559,7 @@
             "id"
           ],
           "referencedTableName": "game_stat",
+          "createForeignKeyConstraint": true,
           "deleteRule": "cascade",
           "updateRule": "cascade"
         }
@@ -2672,6 +2695,7 @@
             "id"
           ],
           "referencedTableName": "game",
+          "createForeignKeyConstraint": true,
           "updateRule": "cascade"
         }
       },
@@ -2795,6 +2819,7 @@
             "id"
           ],
           "referencedTableName": "game_feedback_category",
+          "createForeignKeyConstraint": true,
           "deleteRule": "cascade",
           "updateRule": "cascade"
         },
@@ -2808,6 +2833,7 @@
             "id"
           ],
           "referencedTableName": "player_alias",
+          "createForeignKeyConstraint": true,
           "deleteRule": "cascade",
           "updateRule": "cascade"
         }
@@ -2902,6 +2928,7 @@
             "id"
           ],
           "referencedTableName": "game_feedback",
+          "createForeignKeyConstraint": true,
           "deleteRule": "cascade",
           "updateRule": "cascade"
         }
@@ -3060,6 +3087,7 @@
             "id"
           ],
           "referencedTableName": "player_alias",
+          "createForeignKeyConstraint": true,
           "deleteRule": "set null",
           "updateRule": "cascade"
         },
@@ -3073,6 +3101,7 @@
             "id"
           ],
           "referencedTableName": "game",
+          "createForeignKeyConstraint": true,
           "updateRule": "cascade"
         }
       },
@@ -3216,6 +3245,7 @@
             "id"
           ],
           "referencedTableName": "game_channel",
+          "createForeignKeyConstraint": true,
           "deleteRule": "cascade",
           "updateRule": "cascade"
         },
@@ -3229,6 +3259,7 @@
             "id"
           ],
           "referencedTableName": "player_alias",
+          "createForeignKeyConstraint": true,
           "deleteRule": "cascade",
           "updateRule": "cascade"
         },
@@ -3242,6 +3273,7 @@
             "id"
           ],
           "referencedTableName": "player_alias",
+          "createForeignKeyConstraint": true,
           "deleteRule": "cascade",
           "updateRule": "cascade"
         }
@@ -3336,6 +3368,7 @@
             "id"
           ],
           "referencedTableName": "game_channel",
+          "createForeignKeyConstraint": true,
           "deleteRule": "cascade",
           "updateRule": "cascade"
         }
@@ -3411,6 +3444,7 @@
             "id"
           ],
           "referencedTableName": "game_channel",
+          "createForeignKeyConstraint": true,
           "deleteRule": "cascade",
           "updateRule": "cascade"
         },
@@ -3424,6 +3458,7 @@
             "id"
           ],
           "referencedTableName": "player_alias",
+          "createForeignKeyConstraint": true,
           "deleteRule": "cascade",
           "updateRule": "cascade"
         }
@@ -3518,6 +3553,7 @@
             "id"
           ],
           "referencedTableName": "integration",
+          "createForeignKeyConstraint": true,
           "updateRule": "cascade"
         }
       },
@@ -3592,6 +3628,7 @@
             "id"
           ],
           "referencedTableName": "leaderboard",
+          "createForeignKeyConstraint": true,
           "deleteRule": "cascade",
           "updateRule": "cascade"
         }
@@ -3719,6 +3756,7 @@
             "leaderboard_id"
           ],
           "referencedTableName": "steamworks_leaderboard_mapping",
+          "createForeignKeyConstraint": true,
           "deleteRule": "cascade",
           "updateRule": "cascade"
         },
@@ -3732,6 +3770,136 @@
             "id"
           ],
           "referencedTableName": "leaderboard_entry",
+          "createForeignKeyConstraint": true,
+          "deleteRule": "set null",
+          "updateRule": "cascade"
+        }
+      },
+      "nativeEnums": {}
+    },
+    {
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "int",
+          "unsigned": true,
+          "autoincrement": true,
+          "primary": true,
+          "nullable": false,
+          "length": null,
+          "mappedType": "integer"
+        },
+        "stat_id": {
+          "name": "stat_id",
+          "type": "int",
+          "unsigned": true,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "length": null,
+          "mappedType": "integer"
+        },
+        "player_stat_id": {
+          "name": "player_stat_id",
+          "type": "int",
+          "unsigned": true,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "length": null,
+          "mappedType": "integer"
+        },
+        "steam_user_id": {
+          "name": "steam_user_id",
+          "type": "varchar(255)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "length": 255,
+          "mappedType": "string"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "datetime",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "length": null,
+          "mappedType": "datetime"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "datetime",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "length": null,
+          "mappedType": "datetime"
+        }
+      },
+      "name": "steamworks_player_stat",
+      "indexes": [
+        {
+          "columnNames": [
+            "stat_id"
+          ],
+          "composite": false,
+          "keyName": "steamworks_player_stat_stat_id_index",
+          "constraint": false,
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "player_stat_id"
+          ],
+          "composite": false,
+          "keyName": "steamworks_player_stat_player_stat_id_unique",
+          "constraint": true,
+          "primary": false,
+          "unique": true
+        },
+        {
+          "keyName": "PRIMARY",
+          "columnNames": [
+            "id"
+          ],
+          "composite": false,
+          "constraint": true,
+          "primary": true,
+          "unique": true
+        }
+      ],
+      "checks": [],
+      "foreignKeys": {
+        "steamworks_player_stat_stat_id_foreign": {
+          "constraintName": "steamworks_player_stat_stat_id_foreign",
+          "columnNames": [
+            "stat_id"
+          ],
+          "localTableName": "steamworks_player_stat",
+          "referencedColumnNames": [
+            "id"
+          ],
+          "referencedTableName": "game_stat",
+          "createForeignKeyConstraint": true,
+          "deleteRule": "cascade",
+          "updateRule": "cascade"
+        },
+        "steamworks_player_stat_player_stat_id_foreign": {
+          "constraintName": "steamworks_player_stat_player_stat_id_foreign",
+          "columnNames": [
+            "player_stat_id"
+          ],
+          "localTableName": "steamworks_player_stat",
+          "referencedColumnNames": [
+            "id"
+          ],
+          "referencedTableName": "player_game_stat",
+          "createForeignKeyConstraint": true,
           "deleteRule": "set null",
           "updateRule": "cascade"
         }
@@ -3949,6 +4117,7 @@
             "id"
           ],
           "referencedTableName": "organisation",
+          "createForeignKeyConstraint": true,
           "updateRule": "cascade"
         },
         "user_two_factor_auth_id_foreign": {
@@ -3961,6 +4130,7 @@
             "id"
           ],
           "referencedTableName": "user_two_factor_auth",
+          "createForeignKeyConstraint": true,
           "deleteRule": "set null",
           "updateRule": "cascade"
         }
@@ -4065,6 +4235,7 @@
             "id"
           ],
           "referencedTableName": "user",
+          "createForeignKeyConstraint": true,
           "updateRule": "cascade"
         }
       },
@@ -4148,6 +4319,7 @@
             "id"
           ],
           "referencedTableName": "user",
+          "createForeignKeyConstraint": true,
           "updateRule": "cascade"
         }
       },
@@ -4252,6 +4424,7 @@
             "id"
           ],
           "referencedTableName": "user",
+          "createForeignKeyConstraint": true,
           "updateRule": "cascade"
         },
         "user_pinned_group_group_id_foreign": {
@@ -4264,6 +4437,7 @@
             "id"
           ],
           "referencedTableName": "player_group",
+          "createForeignKeyConstraint": true,
           "updateRule": "cascade"
         }
       },
@@ -4357,6 +4531,7 @@
             "id"
           ],
           "referencedTableName": "user",
+          "createForeignKeyConstraint": true,
           "updateRule": "cascade"
         }
       },
@@ -4481,6 +4656,7 @@
             "id"
           ],
           "referencedTableName": "organisation",
+          "createForeignKeyConstraint": true,
           "updateRule": "cascade"
         },
         "invite_invited_by_user_id_foreign": {
@@ -4493,6 +4669,7 @@
             "id"
           ],
           "referencedTableName": "user",
+          "createForeignKeyConstraint": true,
           "updateRule": "cascade"
         }
       },
@@ -4606,6 +4783,7 @@
             "id"
           ],
           "referencedTableName": "game",
+          "createForeignKeyConstraint": true,
           "deleteRule": "set null",
           "updateRule": "cascade"
         },
@@ -4619,6 +4797,7 @@
             "id"
           ],
           "referencedTableName": "user",
+          "createForeignKeyConstraint": true,
           "updateRule": "cascade"
         }
       },
@@ -4763,6 +4942,7 @@
             "id"
           ],
           "referencedTableName": "user",
+          "createForeignKeyConstraint": true,
           "updateRule": "cascade"
         },
         "data_export_game_id_foreign": {
@@ -4775,6 +4955,7 @@
             "id"
           ],
           "referencedTableName": "game",
+          "createForeignKeyConstraint": true,
           "updateRule": "cascade"
         }
       },
@@ -4929,6 +5110,7 @@
             "id"
           ],
           "referencedTableName": "game",
+          "createForeignKeyConstraint": true,
           "updateRule": "cascade"
         },
         "apikey_created_by_user_id_foreign": {
@@ -4941,6 +5123,7 @@
             "id"
           ],
           "referencedTableName": "user",
+          "createForeignKeyConstraint": true,
           "updateRule": "cascade"
         }
       },

@@ -11,7 +11,7 @@ export async function clearCachePattern(redis: Redis, pattern: string) {
       local keys = result[2]
       
       if #keys > 0 then
-        deleted = deleted + redis.call('DEL', unpack(keys))
+        deleted = deleted + redis.call('UNLINK', unpack(keys))
       end
     until cursor == "0"
     

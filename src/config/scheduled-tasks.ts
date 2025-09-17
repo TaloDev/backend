@@ -3,33 +3,23 @@ import createQueue from '../lib/queues/createQueue'
 import deleteInactivePlayers from '../tasks/deleteInactivePlayers'
 import cleanupOnlinePlayers from '../tasks/cleanupOnlinePlayers'
 import cleanupSteamworksLeaderboardEntries from '../tasks/cleanupSteamworksLeaderboardEntries'
+import cleanupSteamworksPlayerStats from '../tasks/cleanupSteamworksPlayerStats'
 
-const ARCHIVE_LEADERBOARD_ENTRIES = 'archive-leaderboard-entries'
-const DELETE_INACTIVE_PLAYERS = 'delete-inactive-players'
-const CLEANUP_ONLINE_PLAYERS = 'cleanup-online-players'
-const CLEANUP_STEAMWORKS_LEADERBOARD_ENTRIES = 'cleanup-steamworks-leaderboard-entries'
+
+function addScheduledTask(name: string, task: () => Promise<void>, pattern: string) {
+  return createQueue(name, task).upsertJobScheduler(
+    `${name}-scheduler`,
+    { pattern },
+    { name: `${name}-job` }
+  )
+}
 
 export default async function initScheduledTasks() {
   await Promise.all([
-    createQueue(ARCHIVE_LEADERBOARD_ENTRIES, archiveLeaderboardEntries).upsertJobScheduler(
-      `${ARCHIVE_LEADERBOARD_ENTRIES}-scheduler`,
-      { pattern: '0 0 0 * * *' }, // midnight daily
-      { name: `${ARCHIVE_LEADERBOARD_ENTRIES}-job` }
-    ),
-    createQueue(DELETE_INACTIVE_PLAYERS, deleteInactivePlayers).upsertJobScheduler(
-      `${DELETE_INACTIVE_PLAYERS}-scheduler`,
-      { pattern: '0 0 0 1 * *' }, // midnight on the first day of the month
-      { name: `${DELETE_INACTIVE_PLAYERS}-job` }
-    ),
-    createQueue(CLEANUP_ONLINE_PLAYERS, cleanupOnlinePlayers).upsertJobScheduler(
-      `${CLEANUP_ONLINE_PLAYERS}-scheduler`,
-      { pattern: '0 0 */4 * * *' }, // every 4 hours
-      { name: `${CLEANUP_ONLINE_PLAYERS}-job` }
-    ),
-    createQueue(CLEANUP_STEAMWORKS_LEADERBOARD_ENTRIES, cleanupSteamworksLeaderboardEntries).upsertJobScheduler(
-      `${CLEANUP_STEAMWORKS_LEADERBOARD_ENTRIES}-scheduler`,
-      { pattern: '0 0 */1 * * *' }, // every hour
-      { name: `${CLEANUP_STEAMWORKS_LEADERBOARD_ENTRIES}-job` }
-    )
+    addScheduledTask('archive-leaderboard-entries', archiveLeaderboardEntries, '0 0 0 * * *'), // midnight daily
+    addScheduledTask('delete-inactive-players', deleteInactivePlayers, '0 0 0 1 * *'), // midnight on the first day of the month
+    addScheduledTask('cleanup-online-players', cleanupOnlinePlayers, '0 0 */4 * * *'), // every 4 hours
+    addScheduledTask('cleanup-steamworks-leaderboard-entries', cleanupSteamworksLeaderboardEntries, '0 0 */1 * * *'), // every hour
+    addScheduledTask('cleanup-steamworks-player-stats', cleanupSteamworksPlayerStats, '0 0 */1 * * *') // every hour
   ])
 }

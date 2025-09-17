@@ -254,4 +254,48 @@ describe('deleteInactivePlayers', () => {
     })
     expect(activity).not.toBeNull()
   })
+
+  it('should continue processing other games when one game throws an error', async () => {
+    const [, game1] = await createOrganisationAndGame({}, { purgeDevPlayers: true, purgeLivePlayers: true })
+    const [, game2] = await createOrganisationAndGame({}, { purgeDevPlayers: true, purgeLivePlayers: true })
+
+    // no owner for game1, will cause an error
+
+    const owner2 = await new UserFactory().owner().state(() => ({
+      organisation: game2.organisation
+    })).one()
+
+    const player1 = await new PlayerFactory([game1]).state(() => ({
+      lastSeenAt: sub(new Date(), { days: 91 })
+    })).one()
+
+    const player2 = await new PlayerFactory([game2]).state(() => ({
+      lastSeenAt: sub(new Date(), { days: 91 })
+    })).one()
+
+    await em.persistAndFlush([owner2, player1, player2])
+
+    await deleteInactivePlayers()
+
+    const players1 = await em.repo(Player).find({ game: game1 })
+    const players2 = await em.repo(Player).find({ game: game2 })
+
+    expect(players1).toHaveLength(1)
+    expect(players2).toHaveLength(0)
+
+    const activity1 = await em.repo(GameActivity).findOne({
+      game: game1,
+      type: GameActivityType.INACTIVE_LIVE_PLAYERS_DELETED
+    })
+    expect(activity1).toBeNull()
+
+    const activity2 = await em.repo(GameActivity).findOne({
+      game: game2,
+      type: GameActivityType.INACTIVE_LIVE_PLAYERS_DELETED,
+      extra: {
+        count: 1
+      }
+    })
+    expect(activity2).not.toBeNull()
+  })
 })

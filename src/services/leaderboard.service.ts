@@ -460,21 +460,24 @@ export default class LeaderboardService extends Service {
       }
     }
 
-    const deletedCount = await em.repo(LeaderboardEntry).nativeDelete(where)
-    createGameActivity(em, {
-      user: req.ctx.state.user,
-      game: leaderboard.game,
-      type: GameActivityType.LEADERBOARD_ENTRIES_RESET,
-      extra: {
-        leaderboardInternalName: leaderboard.internalName,
-        display: {
-          'Reset mode': translateResetMode(mode),
-          'Deleted count': deletedCount
+    const deletedCount = await em.transactional(async (trx) => {
+      const deletedCount = await trx.repo(LeaderboardEntry).nativeDelete(where)
+      createGameActivity(trx, {
+        user: req.ctx.state.user,
+        game: leaderboard.game,
+        type: GameActivityType.LEADERBOARD_ENTRIES_RESET,
+        extra: {
+          leaderboardInternalName: leaderboard.internalName,
+          display: {
+            'Reset mode': translateResetMode(mode),
+            'Deleted count': deletedCount
+          }
         }
-      }
+      })
+
+      return deletedCount
     })
 
-    await em.flush()
     await deferClearResponseCache(req.ctx, leaderboard.getEntriesCacheKey(true))
 
     return {

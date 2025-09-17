@@ -55,6 +55,7 @@ import { AddPlayerDevBuildColumn } from './20250725144253AddPlayerDevBuildColumn
 import { PlayerAliasIdentifierServiceIndex } from './20250811004719PlayerAliasIdentifierServiceIndex'
 import { InternalNameGameIndexes } from './20250811115700InternalNameGameIndexes'
 import { CreateSteamworksLeaderboardEntryTable } from './20250912193820CreateSteamworksLeaderboardEntryTable'
+import { CreateSteamworksPlayerStatTable } from './20250915220838CreateSteamworksPlayerStatTable'
 
 export default [
   {
@@ -284,5 +285,9 @@ export default [
   {
     name: 'CreateSteamworksLeaderboardEntryTable',
     class: CreateSteamworksLeaderboardEntryTable
+  },
+  {
+    name: 'CreateSteamworksPlayerStatTable',
+    class: CreateSteamworksPlayerStatTable
   }
 ]

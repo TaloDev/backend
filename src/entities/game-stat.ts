@@ -115,6 +115,12 @@ export default class GameStat {
 
   metrics?: { globalCount: number, globalValue: GlobalValueMetrics, playerValue: PlayerValueMetrics }
 
+  static getIndexCacheKey(game: Game, wildcard = false) {
+    let key = `stats-index-${game.id}`
+    if (wildcard) key += '-*'
+    return key
+  }
+
   constructor(game: Game) {
     this.game = game
   }

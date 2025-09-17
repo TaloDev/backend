@@ -1,6 +1,6 @@
 import { Cursor, Loaded } from '@mikro-orm/mysql'
 
-export async function* streamCursor<T extends object>(
+export async function* streamByCursor<T extends object>(
   fetchPage: (batchSize: number, after?: string) => Promise<Cursor<T>>,
   batchSize = 1000
 ): AsyncGenerator<Loaded<T>> {

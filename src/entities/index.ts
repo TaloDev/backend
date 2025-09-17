@@ -37,8 +37,10 @@ import GameChannelProp from './game-channel-prop'
 import GameChannelStorageProp from './game-channel-storage-prop'
 import GameFeedbackProp from './game-feedback-prop'
 import { SteamworksLeaderboardEntry } from './steamworks-leaderboard-entry'
+import { SteamworksPlayerStat } from './steamworks-player-stat'
 
 export default [
+  SteamworksPlayerStat,
   SteamworksLeaderboardEntry,
   GameFeedbackProp,
   GameChannelStorageProp,

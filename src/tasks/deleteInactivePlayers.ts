@@ -9,27 +9,27 @@ import { captureException } from '@sentry/node'
 import createGameActivity from '../lib/logging/createGameActivity'
 import { GameActivityType } from '../entities/game-activity'
 import User, { UserType } from '../entities/user'
+import { streamByCursor } from '../lib/perf/streamByCursor'
 
-async function getPlayers(em: EntityManager, game: Game, devBuild: boolean) {
+const playersBatchSize = 100
+
+function getPlayers(em: EntityManager, game: Game, devBuild: boolean) {
   const days = devBuild ? game.purgeDevPlayersRetention : game.purgeLivePlayersRetention
 
-  return em.repo(Player).find({
-    game,
-    props: devBuild ? {
-      $some: {
-        key: 'META_DEV_BUILD'
+  return streamByCursor<Player>(async (batchSize, after) => {
+    return em.repo(Player).findByCursor({
+      game,
+      devBuild,
+      lastSeenAt: {
+        $lt: subDays(new Date(), days)
       }
-    } : {
-      $none: {
-        key: 'META_DEV_BUILD'
-      }
-    },
-    lastSeenAt: {
-      $lt: subDays(new Date(), days)
-    }
-  }, {
-    populate: ['aliases', 'auth']
-  })
+    }, {
+      first: batchSize,
+      after,
+      orderBy: { id: 'asc' },
+      populate: ['aliases', 'auth'] as const
+    })
+  }, playersBatchSize)
 }
 
 async function findAndDeleteInactivePlayers(em: EntityManager, clickhouse: ClickHouseClient, game: Game, devBuild: boolean) {
@@ -39,12 +39,29 @@ async function findAndDeleteInactivePlayers(em: EntityManager, clickhouse: Click
   }
 
   try {
-    const players = await getPlayers(em, game, devBuild)
-    if (players.length > 0) {
-      await deletePlayers(em, clickhouse, players, game, devBuild)
-      console.info(`Deleted ${players.length} inactive${devBuild ? ' dev' : ''} players from game ${game.id}`)
+    let batch: Player[] = []
+    let totalDeleted = 0
+
+    for await (const player of getPlayers(em, game, devBuild)) {
+      batch.push(player)
+      /* v8 ignore start */
+      if (batch.length >= playersBatchSize) {
+        await deletePlayers(em, clickhouse, batch, game, devBuild)
+        totalDeleted += batch.length
+        batch = []
+      }
+      /* v8 ignore stop */
     }
-  /* v8 ignore next 4 */
+
+    // delete any remaining players in the last batch
+    if (batch.length > 0) {
+      await deletePlayers(em, clickhouse, batch, game, devBuild)
+      totalDeleted += batch.length
+    }
+
+    if (totalDeleted > 0) {
+      console.info(`Deleted ${totalDeleted} inactive${devBuild ? ' dev' : ''} players from game ${game.id}`)
+    }
   } catch (err) {
     console.error(`Error deleting inactive${devBuild ? ' dev' : ''} players:`, err)
     captureException(err)
@@ -79,30 +96,30 @@ async function deletePlayers(em: EntityManager, clickhouse: ClickHouseClient, pl
   const auth = players.flatMap((player) => player.auth).filter((auth) => !!auth)
   const presence = players.flatMap((player) => player.presence).filter((presence) => !!presence)
 
-  em.remove([
-    ...aliases,
-    ...auth,
-    ...presence,
-    ...players
-  ])
+  await em.transactional(async (trx) => {
+    trx.remove([
+      ...aliases,
+      ...auth,
+      ...presence,
+      ...players
+    ])
 
-  createGameActivity(em, {
-    user: await em.repo(User).findOneOrFail({
-      type: UserType.OWNER,
-      organisation: game.organisation
-    }),
-    game,
-    type: devBuild
-      ? GameActivityType.INACTIVE_DEV_PLAYERS_DELETED
-      : GameActivityType.INACTIVE_LIVE_PLAYERS_DELETED,
-    extra: {
-      count: players.length
-    }
+    createGameActivity(trx, {
+      user: await trx.repo(User).findOneOrFail({
+        type: UserType.OWNER,
+        organisation: game.organisation
+      }),
+      game,
+      type: devBuild
+        ? GameActivityType.INACTIVE_DEV_PLAYERS_DELETED
+        : GameActivityType.INACTIVE_LIVE_PLAYERS_DELETED,
+      extra: {
+        count: players.length
+      }
+    })
+
+    await deleteClickHousePlayerData(clickhouse, { playerIds, aliasIds, deleteSessions: true })
   })
-
-  await em.flush()
-
-  await deleteClickHousePlayerData(clickhouse, { playerIds, aliasIds, deleteSessions: true })
 }
 
 export default async function deleteInactivePlayers() {

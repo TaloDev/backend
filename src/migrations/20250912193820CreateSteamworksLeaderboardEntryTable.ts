@@ -28,7 +28,7 @@ export class CreateSteamworksLeaderboardEntryTable extends Migration {
         le.updated_at
       from leaderboard_entry le
         inner join steamworks_leaderboard_mapping slm on slm.leaderboard_id = le.leaderboard_id
-        inner join player_alias pa on pa.id = le.player_alias_id
+        inner join player_alias pa on pa.id = le.player_alias_id and pa.service = 'steam'
     `)
   }
 

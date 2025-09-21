@@ -23,15 +23,12 @@ export default class GameStatAPIPolicy extends Policy {
     const key = this.getAPIKey()
     const id = this.ctx.state.currentAliasId
 
-    const alias = await this.em.repo(PlayerAlias).findOne({
+    const alias = await (this.em).repo(PlayerAlias).findOne({
       id,
       player: {
         game: key.game
       }
-    }, {
-      ...getResultCacheOptions(`game-stat-api-policy-alias-${id}`),
-      populate: ['player']
-    })
+    }, getResultCacheOptions(`game-stat-api-policy-alias-${id}`))
 
     this.ctx.state.alias = alias
     return alias

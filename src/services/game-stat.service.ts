@@ -1,4 +1,4 @@
-import { EntityManager } from '@mikro-orm/mysql'
+import { EntityManager, FilterQuery } from '@mikro-orm/mysql'
 import { HasPermission, Service, Request, Response, Validate, Route } from 'koa-clay'
 import { GameActivityType } from '../entities/game-activity'
 import GameStat from '../entities/game-stat'
@@ -10,7 +10,12 @@ import triggerIntegrations from '../lib/integrations/triggerIntegrations'
 import updateAllowedKeys from '../lib/entities/updateAllowedKeys'
 import { buildDateValidationSchema } from '../lib/dates/dateValidationSchema'
 import { withResponseCache } from '../lib/perf/responseCache'
+import { deferClearResponseCache } from '../lib/perf/responseCacheQueue'
 import Game from '../entities/game'
+import { ResetMode, resetModeValidation, translateResetMode } from '../lib/validation/resetModeValidation'
+import { ClickHouseClient } from '@clickhouse/client'
+import PlayerAlias from '../entities/player-alias'
+import { streamByCursor } from '../lib/perf/streamByCursor'
 
 export default class GameStatService extends Service {
   @Route({
@@ -27,7 +32,7 @@ export default class GameStatService extends Service {
     const game: Game = req.ctx.state.game
 
     return withResponseCache({
-      key: `stats-index-${game.id}-${withMetrics}-${metricsStartDate}-${metricsEndDate}`
+      key: `${GameStat.getIndexCacheKey(game)}-${withMetrics}-${metricsStartDate}-${metricsEndDate}`
     }, async () => {
       const stats = await em.repo(GameStat).find({ game })
       const globalStats = stats.filter((stat) => stat.global)
@@ -220,6 +225,94 @@ export default class GameStatService extends Service {
       status: 200,
       body: {
         playerStat
+      }
+    }
+  }
+
+  @Route({
+    method: 'DELETE',
+    path: '/:id/player-stats'
+  })
+  @Validate({
+    query: {
+      mode: resetModeValidation
+    }
+  })
+  @HasPermission(GameStatPolicy, 'reset')
+  async reset(req: Request): Promise<Response> {
+    const { mode = 'all' } = req.query as { mode?: ResetMode }
+    const em: EntityManager = req.ctx.em
+    const stat: GameStat = req.ctx.state.stat
+
+    const where: FilterQuery<PlayerGameStat> = { stat }
+
+    if (mode === 'dev') {
+      where.player = {
+        devBuild: true
+      }
+    } else if (mode === 'live') {
+      where.player = {
+        devBuild: false
+      }
+    }
+
+    const deletedCount = await em.transactional(async (trx) => {
+      const deletedCount = await trx.repo(PlayerGameStat).nativeDelete(where)
+      await trx.repo(GameStat).nativeUpdate(stat.id, { globalValue: stat.defaultValue })
+
+      createGameActivity(trx, {
+        user: req.ctx.state.user,
+        game: stat.game,
+        type: GameActivityType.GAME_STAT_RESET,
+        extra: {
+          statInternalName: req.ctx.state.stat.internalName,
+          display: {
+            'Reset mode': translateResetMode(mode),
+            'Deleted count': deletedCount
+          }
+        }
+      })
+
+      const clickhouse: ClickHouseClient = req.ctx.clickhouse
+      const aliasStream = streamByCursor<PlayerAlias>(async (batchSize, after) => {
+        return trx.repo(PlayerAlias).findByCursor({
+          player: mode !== 'all' ? {
+            devBuild: mode === 'dev' ? true : false
+          } : undefined
+        }, {
+          first: batchSize,
+          after,
+          orderBy: { id: 'asc' }
+        })
+      }, 1000)
+
+      const query = `
+        DELETE FROM player_game_stat_snapshots
+        WHERE
+          game_stat_id = ${stat.id}
+          AND player_alias_id IN ({aliasIds:Array(UInt32)})
+      `
+      const aliasIds: number[] = []
+      for await (const alias of aliasStream) {
+        aliasIds.push(alias.id)
+      }
+
+      await clickhouse.exec({
+        query,
+        query_params: {
+          aliasIds
+        }
+      })
+
+      return deletedCount
+    })
+
+    await deferClearResponseCache(req.ctx, GameStat.getIndexCacheKey(stat.game, true))
+
+    return {
+      status: 200,
+      body: {
+        deletedCount
       }
     }
   }

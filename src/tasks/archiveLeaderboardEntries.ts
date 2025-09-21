@@ -5,7 +5,7 @@ import { getMikroORM } from '../config/mikro-orm.config'
 import LeaderboardEntry from '../entities/leaderboard-entry'
 import { isToday, isThisWeek, isThisMonth, isThisYear } from 'date-fns'
 import triggerIntegrations from '../lib/integrations/triggerIntegrations'
-import { streamCursor } from '../lib/perf/streamByCursor'
+import { streamByCursor } from '../lib/perf/streamByCursor'
 
 export async function archiveEntriesForLeaderboard(em: EntityManager, leaderboard: Leaderboard) {
   /* v8 ignore start */
@@ -29,7 +29,7 @@ export async function archiveEntriesForLeaderboard(em: EntityManager, leaderboar
 
   const shouldKeepEntry = refreshCheckers[leaderboard.refreshInterval]
 
-  const entryStream = streamCursor<LeaderboardEntry>(async (batchSize, after) => {
+  const entryStream = streamByCursor<LeaderboardEntry>(async (batchSize, after) => {
     return em.repo(LeaderboardEntry).findByCursor({
       leaderboard,
       deletedAt: null

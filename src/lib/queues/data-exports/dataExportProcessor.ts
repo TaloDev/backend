@@ -14,7 +14,7 @@ import GameActivity, { GameActivityType } from '../../../entities/game-activity'
 import GameFeedback from '../../../entities/game-feedback'
 import createClickHouseClient from '../../clickhouse/createClient'
 import { ClickHouseEvent } from '../../../entities/event'
-import { streamCursor } from '../../perf/streamByCursor'
+import { streamByCursor } from '../../perf/streamByCursor'
 import archiver from 'archiver'
 import { PassThrough } from 'stream'
 import path from 'path'
@@ -102,7 +102,7 @@ export class DataExporter {
         // step 5: load aliases
         if (unknownAliasIds.length > 0) {
           /* @ts-expect-error types don't work nicely with partial loading */
-          const aliasStream = streamCursor<Partial<PlayerAlias>>(async (batchSize, after) => {
+          const aliasStream = streamByCursor<Partial<PlayerAlias>>(async (batchSize, after) => {
             return em.repo(PlayerAlias).findByCursor({
               id: { $in: unknownAliasIds }
             }, {
@@ -155,7 +155,7 @@ export class DataExporter {
     em: EntityManager,
     includeDevData: boolean
   ): AsyncGenerator<Player> {
-    yield* streamCursor<Player>(async (batchSize, after) => {
+    yield* streamByCursor<Player>(async (batchSize, after) => {
       const page = await em.repo(Player).findByCursor({
         game: dataExport.game,
         ...(includeDevData ? {} : { devBuild: false })
@@ -174,7 +174,7 @@ export class DataExporter {
     em: EntityManager,
     includeDevData: boolean
   ): AsyncGenerator<PlayerAlias> {
-    yield* streamCursor<PlayerAlias>(async (batchSize, after) => {
+    yield* streamByCursor<PlayerAlias>(async (batchSize, after) => {
       return em.repo(PlayerAlias).findByCursor({
         player: {
           game: dataExport.game,
@@ -193,7 +193,7 @@ export class DataExporter {
     em: EntityManager,
     includeDevData: boolean
   ): AsyncGenerator<LeaderboardEntry> {
-    yield* streamCursor<LeaderboardEntry>(async (batchSize, after) => {
+    yield* streamByCursor<LeaderboardEntry>(async (batchSize, after) => {
       return em.repo(LeaderboardEntry).findByCursor({
         leaderboard: {
           game: dataExport.game
@@ -218,7 +218,7 @@ export class DataExporter {
     em: EntityManager,
     includeDevData: boolean
   ): AsyncGenerator<GameStat> {
-    yield* streamCursor<GameStat>(async (batchSize, after) => {
+    yield* streamByCursor<GameStat>(async (batchSize, after) => {
       const page = await em.repo(GameStat).findByCursor({
         game: dataExport.game
       }, {
@@ -242,7 +242,7 @@ export class DataExporter {
     em: EntityManager,
     includeDevData: boolean
   ): AsyncGenerator<PlayerGameStat> {
-    yield* streamCursor<PlayerGameStat>(async (batchSize, after) => {
+    yield* streamByCursor<PlayerGameStat>(async (batchSize, after) => {
       return em.repo(PlayerGameStat).findByCursor({
         stat: {
           game: dataExport.game
@@ -264,7 +264,7 @@ export class DataExporter {
     dataExport: DataExport,
     em: EntityManager
   ): AsyncGenerator<GameActivity> {
-    yield* streamCursor<GameActivity>(async (batchSize, after) => {
+    yield* streamByCursor<GameActivity>(async (batchSize, after) => {
       return em.repo(GameActivity).findByCursor({
         game: dataExport.game
       }, {
@@ -281,7 +281,7 @@ export class DataExporter {
     em: EntityManager,
     includeDevData: boolean
   ): AsyncGenerator<GameFeedback> {
-    yield* streamCursor<GameFeedback>(async (batchSize, after) => {
+    yield* streamByCursor<GameFeedback>(async (batchSize, after) => {
       return em.repo(GameFeedback).findByCursor({
         playerAlias: {
           player: {

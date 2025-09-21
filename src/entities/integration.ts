@@ -2,13 +2,14 @@ import { Entity, EntityManager, Enum, Filter, ManyToOne, PrimaryKey, Property } 
 import { Request, Required, ValidationCondition } from 'koa-clay'
 import { decrypt, encrypt } from '../lib/crypto/string-encryption'
 import Game from './game'
-import { authenticateTicket, cleanupSteamworksLeaderboardEntry, createSteamworksLeaderboard, createSteamworksLeaderboardEntry, deleteSteamworksLeaderboard, deleteSteamworksLeaderboardEntry, setSteamworksStat, syncSteamworksLeaderboards, syncSteamworksStats } from '../lib/integrations/steamworks-integration'
+import { authenticateTicket, cleanupSteamworksLeaderboardEntry, cleanupSteamworksPlayerStat, createSteamworksLeaderboard, createSteamworksLeaderboardEntry, deleteSteamworksLeaderboard, deleteSteamworksLeaderboardEntry, setSteamworksStat, syncSteamworksLeaderboards, syncSteamworksStats } from '../lib/integrations/steamworks-integration'
 import Leaderboard from './leaderboard'
 import { pick } from 'lodash'
 import LeaderboardEntry from './leaderboard-entry'
 import { PlayerAliasService } from './player-alias'
 import PlayerGameStat from './player-game-stat'
 import { SteamworksLeaderboardEntry } from './steamworks-leaderboard-entry'
+import { SteamworksPlayerStat } from './steamworks-player-stat'
 
 export enum IntegrationType {
   STEAMWORKS = 'steamworks'
@@ -195,6 +196,10 @@ export default class Integration {
 
   async cleanupSteamworksLeaderboardEntry(em: EntityManager, steamworksEntry: SteamworksLeaderboardEntry) {
     await cleanupSteamworksLeaderboardEntry(em, this, steamworksEntry)
+  }
+
+  async cleanupSteamworksPlayerStat(em: EntityManager, steamworksPlayerStat: SteamworksPlayerStat) {
+    await cleanupSteamworksPlayerStat(em, this, steamworksPlayerStat)
   }
 
   toJSON() {

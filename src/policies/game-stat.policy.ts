@@ -62,4 +62,14 @@ export default class GameStatPolicy extends Policy {
 
     return this.canAccessGame(stat.game.id)
   }
+
+  @UserTypeGate([UserType.ADMIN], 'reset stats')
+  async reset(req: Request): Promise<PolicyResponse> {
+    const { id } = req.params
+
+    const stat = await this.getStat(Number(id))
+    if (!stat) return new PolicyDenial({ message: 'Stat not found' }, 404)
+
+    return await this.canAccessGame(stat.game.id)
+  }
 }

@@ -27,8 +27,7 @@ export default class GameChannelAPIPolicy extends Policy {
       id,
       game: this.ctx.state.game
     }, {
-      populate: ['members:ref'],
-      ...getResultCacheOptions(`game-channel-api-policy-channel-${id}`)
+      populate: ['members:ref']
     })
   }
 

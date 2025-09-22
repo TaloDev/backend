@@ -18,7 +18,6 @@ import Prop from '../entities/prop'
 import buildErrorResponse from '../lib/errors/buildErrorResponse'
 import { PropSizeError } from '../lib/errors/propSizeError'
 import { captureException } from '@sentry/node'
-import { getResultCacheOptions } from '../lib/perf/getResultCacheOptions'
 import { DEFAULT_PAGE_SIZE, SMALL_PAGE_SIZE } from '../lib/pagination/itemsPerPage'
 import { pageValidation } from '../lib/pagination/pageValidation'
 import { withResponseCache } from '../lib/perf/responseCache'
@@ -60,7 +59,6 @@ export default class PlayerService extends Service {
     const em: EntityManager = req.ctx.em
 
     const game = await em.getRepository(Game).findOneOrFail(req.ctx.state.game, {
-      ...getResultCacheOptions(`post-player-game-${req.ctx.state.game.id}`),
       populate: ['organisation']
     })
     await checkPricingPlanPlayerLimit(req, game.organisation)
@@ -225,6 +223,23 @@ export default class PlayerService extends Service {
         }
       }
     })
+  }
+
+  @Route({
+    method: 'GET',
+    path: '/:id'
+  })
+  @HasPermission(PlayerPolicy, 'get')
+  async get(req: Request): Promise<Response> {
+    const player: Player = req.ctx.state.player // set in the policy
+    await player.props.loadItems()
+
+    return {
+      status: 200,
+      body: {
+        player
+      }
+    }
   }
 
   @Route({

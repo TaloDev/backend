@@ -382,7 +382,7 @@ describe('Steamworks integration - sync leaderboards', () => {
       method: 'POST'
     })
 
-    const steamworksEntry = await em.getRepository(SteamworksLeaderboardEntry).findOne({ leaderboardEntry: entry })
+    const steamworksEntry = await em.getRepository(SteamworksLeaderboardEntry).findOne({ leaderboardEntry: entry }, { refresh: true })
     expect(steamworksEntry).toBeTruthy()
   })
 

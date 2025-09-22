@@ -8,8 +8,7 @@ import createGameActivity from '../lib/logging/createGameActivity'
 import PlayerGroupPolicy from '../policies/player-group.policy'
 import getUserFromToken from '../lib/auth/getUserFromToken'
 import UserPinnedGroup from '../entities/user-pinned-group'
-import { getResultCacheOptions } from '../lib/perf/getResultCacheOptions'
-import { withResponseCache } from '../lib/perf/responseCache'
+import { clearResponseCache, withResponseCache } from '../lib/perf/responseCache'
 import { createHash } from 'crypto'
 
 export default class PlayerGroupService extends Service {
@@ -257,24 +256,28 @@ export default class PlayerGroupService extends Service {
     const em: EntityManager = req.ctx.em
     const user = await getUserFromToken(req.ctx)
 
-    const pinnedGroups = await em.getRepository(UserPinnedGroup).find({
-      user,
-      group: {
-        game: req.ctx.state.game
+    return withResponseCache({
+      key: UserPinnedGroup.getCacheKeyForUser(user),
+      ttl: 600
+    }, async () => {
+      const pinnedGroups = await em.repo(UserPinnedGroup).find({
+        user,
+        group: {
+          game: req.ctx.state.game
+        }
+      }, {
+        orderBy: { createdAt: 'desc' }
+      })
+
+      const groups = await Promise.all(pinnedGroups.map(({ group }) => group.toJSONWithCount(req.ctx.state.includeDevData)))
+
+      return {
+        status: 200,
+        body: {
+          groups
+        }
       }
-    }, {
-      orderBy: { createdAt: 'desc' },
-      ...getResultCacheOptions(`pinned-groups-${user.id}-${req.ctx.state.game.id}`)
     })
-
-    const groups = await Promise.all(pinnedGroups.map(({ group }) => group.toJSONWithCount(req.ctx.state.includeDevData)))
-
-    return {
-      status: 200,
-      body: {
-        groups
-      }
-    }
   }
 
   @Route({
@@ -297,6 +300,7 @@ export default class PlayerGroupService extends Service {
     }
 
     await em.flush()
+    await clearResponseCache(UserPinnedGroup.getCacheKeyForUser(user))
 
     return {
       status: 204

@@ -13,7 +13,6 @@ import { SocketErrorCode } from './messages/socketError'
 import SocketTicket from './socketTicket'
 import { setTraceAttributes } from '@hyperdx/node-opentelemetry'
 import { getSocketTracer } from './socketTracer'
-import { getResultCacheOptions } from '../lib/perf/getResultCacheOptions'
 
 export default class SocketConnection {
   alive: boolean = true
@@ -35,9 +34,12 @@ export default class SocketConnection {
   }
 
   async getPlayerAlias(): Promise<PlayerAlias | null> {
-    return RequestContext.getEntityManager()!
-      .getRepository(PlayerAlias)
-      .findOne(this.playerAliasId, getResultCacheOptions(`connection-alias-${this.playerAliasId}`))
+    const em = RequestContext.getEntityManager() as EntityManager
+    /* v8 ignore next 3 */
+    if (!em) {
+      throw new Error('Missing request context for entity manager')
+    }
+    return em.repo(PlayerAlias).findOne(this.playerAliasId)
   }
 
   getAPIKeyId(): number {

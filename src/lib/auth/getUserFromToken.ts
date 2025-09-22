@@ -1,7 +1,6 @@
 import { EntityManager } from '@mikro-orm/mysql'
 import { Context } from 'koa'
 import User from '../../entities/user'
-import { getResultCacheOptions } from '../perf/getResultCacheOptions'
 
 async function getUserFromToken(ctx: Context) {
   const em: EntityManager = ctx.em
@@ -12,10 +11,7 @@ async function getUserFromToken(ctx: Context) {
   }
 
   const userId: number = ctx.state.user.sub
-  const user = await em.repo(User).findOneOrFail(
-    userId,
-    getResultCacheOptions(`user-from-token-${userId}-${ctx.state.user.iat}`, 600_000)
-  )
+  const user = await em.repo(User).findOneOrFail(userId)
 
   // populate after so the cache doesn't include from circular structures
   if (!user.organisation.games.isInitialized()) {

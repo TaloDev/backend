@@ -3,11 +3,10 @@ import { PolicyDenial, Request, PolicyResponse } from 'koa-clay'
 import Player from '../entities/player'
 import { UserType } from '../entities/user'
 import UserTypeGate from './user-type-gate'
-import { Populate } from '@mikro-orm/mysql'
 
 export default class PlayerPolicy extends Policy {
-  async getPlayer<T extends string>(id: string, relations?: Populate<Player, T>): Promise<Player | null> {
-    const player = await this.em.getRepository(Player).findOne(id, { populate: relations })
+  async getPlayer(id: string): Promise<Player | null> {
+    const player = await this.em.repo(Player).findOne(id, { populate: ['aliases'], strategy: 'joined' })
     this.ctx.state.player = player
 
     return player
@@ -18,6 +17,15 @@ export default class PlayerPolicy extends Policy {
 
     const { gameId } = req.params
     return this.canAccessGame(Number(gameId))
+  }
+
+  async get(req: Request): Promise<PolicyResponse> {
+    const { id } = req.params
+
+    const player = await this.getPlayer(id)
+    if (!player) return new PolicyDenial({ message: 'Player not found' }, 404)
+
+    return this.canAccessGame(player.game.id)
   }
 
   async post(req: Request): Promise<boolean> {
@@ -42,7 +50,7 @@ export default class PlayerPolicy extends Policy {
   async getEvents(req: Request): Promise<PolicyResponse> {
     const { id } = req.params
 
-    const player = await this.getPlayer(id, ['aliases'])
+    const player = await this.getPlayer(id)
     if (!player) return new PolicyDenial({ message: 'Player not found' }, 404)
 
     return this.canAccessGame(player.game.id)

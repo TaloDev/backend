@@ -247,7 +247,7 @@ export default class GameStatAPIService extends APIService {
         const player = await em.repo(Player).findOneOrFail({
           id: playerId,
           game: stat.game
-        }, { populate: ['aliases'] })
+        }, { populate: ['aliases:ref'] })
         whereConditions += ` AND player_alias_id IN (${player.aliases.getIdentifiers().join(', ')})`
       } catch (err) {
         req.ctx.throw(404, 'Player not found')

@@ -17,6 +17,10 @@ export default class UserPinnedGroup {
   @Property()
   createdAt: Date = new Date()
 
+  static getCacheKeyForUser(user: User) {
+    return `pinned-group-${user.id}`
+  }
+
   constructor(user: User, group: PlayerGroup) {
     this.user = user
     this.group = group

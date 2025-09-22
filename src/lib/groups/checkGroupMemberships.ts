@@ -9,7 +9,18 @@ let redis: ReturnType<typeof createRedisConnection>
 
 const enableLogging = process.env.NODE_ENV !== 'test'
 
-async function runMembershipChecksForGroups(em: EntityManager, player: Player, groups: PlayerGroup[]) {
+function getGroupsFromPlayer(em: EntityManager, player: Player) {
+  return em.repo(PlayerGroup).find({
+    game: player.game
+  }, {
+    ...getResultCacheOptions(PlayerGroup.getCacheKey(player.game)),
+    fields: ['id', 'name', 'rules', 'ruleMode', 'game.id']
+  })
+}
+
+type LoadedGroups = Awaited<ReturnType<typeof getGroupsFromPlayer>>
+
+async function runMembershipChecksForGroups(em: EntityManager, player: Player, groups: LoadedGroups): Promise<boolean> {
   const label = `Checking group memberships for ${player.id}`
 
   /* v8 ignore next 3 */
@@ -27,9 +38,9 @@ async function runMembershipChecksForGroups(em: EntityManager, player: Player, g
     const inGroupButNotEligible = !eligible && isInGroup
 
     if (eligibleButNotInGroup) {
-      player.groups.add(group)
+      player.groups.add(em.getReference(PlayerGroup, group.id))
     } else if (inGroupButNotEligible) {
-      player.groups.remove(group)
+      player.groups.remove(em.getReference(PlayerGroup, group.id))
     }
 
     if (eligibleButNotInGroup || inGroupButNotEligible) {
@@ -50,9 +61,7 @@ export default async function checkGroupMemberships(em: EntityManager, player: P
     redis = createRedisConnection()
   }
 
-  const groups = await em.repo(PlayerGroup).find({
-    game: player.game
-  }, getResultCacheOptions(PlayerGroup.getCacheKey(player.game)))
+  const groups = await getGroupsFromPlayer(em, player)
 
   if (groups.length === 0) {
     return

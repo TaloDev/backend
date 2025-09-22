@@ -149,7 +149,7 @@ export default class GameStat {
       whereConditions += ` AND created_at <= '${formatDateForClickHouse(end)}'`
     }
     if (player) {
-      await player.aliases.loadItems()
+      await player.aliases.loadItems({ ref: true })
       const aliasIds = player.aliases.getIdentifiers()
       whereConditions += ` AND player_alias_id IN (${aliasIds.join(', ')})`
     }

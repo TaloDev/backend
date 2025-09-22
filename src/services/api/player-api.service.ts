@@ -15,7 +15,6 @@ import Integration, { IntegrationType } from '../../entities/integration'
 import { validateAuthSessionToken } from '../../middleware/player-auth-middleware'
 import { setCurrentPlayerState } from '../../middleware/current-player-middleware'
 import { ClickHouseClient } from '@clickhouse/client'
-import { getResultCacheOptions } from '../../lib/perf/getResultCacheOptions'
 
 async function getRealIdentifier(
   req: Request,
@@ -24,10 +23,10 @@ async function getRealIdentifier(
   identifier: string
 ): Promise<string> {
   if (service === PlayerAliasService.STEAM) {
-    const integration = await (req.ctx.em as EntityManager).getRepository(Integration).findOne({
+    const integration = await (req.ctx.em as EntityManager).repo(Integration).findOne({
       game: key.game,
       type: IntegrationType.STEAMWORKS
-    }, getResultCacheOptions(`identifier-steam-integration-${key.game.id}`))
+    })
 
     if (integration) {
       return integration.getPlayerIdentifier(req, identifier)

@@ -27,8 +27,9 @@ describe('Socket presence', () => {
     await createTestSocket(`/?ticket=${ticket}`, async (client) => {
       await client.identify(identifyMessage)
 
-      await em.refresh(player)
-      expect(player.presence!.online).toBe(true)
+      const updatedPlayer = await em.refreshOrFail(player, { populate: ['presence'] })
+      assert(updatedPlayer.presence)
+      expect(updatedPlayer.presence.online).toBe(true)
     })
 
     await em.refresh(player)

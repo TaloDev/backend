@@ -6,7 +6,7 @@ import { setTraceAttributes } from '@hyperdx/node-opentelemetry'
 import APIKey from '../entities/api-key'
 import Redis from 'ioredis'
 
-async function updateLastUsedAt(ctx: Context, apiKey: APIKey, lastUsedAt: Date) {
+async function updateLastUsedAt(ctx: Context, apiKey: Pick<APIKey, 'id' | 'revokedAt'>, lastUsedAt: Date) {
   const em: EntityManager = ctx.em
   const redis: Redis = ctx.redis
 

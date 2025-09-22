@@ -7,9 +7,11 @@ import dateValidationSchema from '../lib/dates/dateValidationSchema'
 import { formatDateForClickHouse } from '../lib/clickhouse/formatDateTime'
 import { ClickHouseClient } from '@clickhouse/client'
 import { getResultCacheOptions } from '../lib/perf/getResultCacheOptions'
+import { withResponseCache } from '../lib/perf/responseCache'
 import Game from '../entities/game'
 
-const HEADLINES_CACHE_TTL = 300_000
+const HEADLINES_CACHE_TTL_MS = 300_000
+const ONLINE_PLAYERS_CACHE_TTL_MS = 30_000
 
 export default class HeadlineService extends Service {
   @Route({
@@ -31,7 +33,7 @@ export default class HeadlineService extends Service {
         $gte: startOfDay(new Date(startDate)),
         $lte: endOfDay(new Date(endDate))
       }
-    }, getResultCacheOptions(`new-players-${game.id}-${includeDevData}-${startDate}-${endDate}`, HEADLINES_CACHE_TTL))
+    }, getResultCacheOptions(`new-players-${game.id}-${includeDevData}-${startDate}-${endDate}`, HEADLINES_CACHE_TTL_MS))
 
     return {
       status: 200,
@@ -66,7 +68,7 @@ export default class HeadlineService extends Service {
       [raw('datediff(created_at, last_seen_at)')]: {
         $ne: 0
       }
-    }, getResultCacheOptions(`returning-players-${game.id}-${includeDevData}-${startDate}-${endDate}`, HEADLINES_CACHE_TTL))
+    }, getResultCacheOptions(`returning-players-${game.id}-${includeDevData}-${startDate}-${endDate}`, HEADLINES_CACHE_TTL_MS))
 
     return {
       status: 200,
@@ -84,34 +86,40 @@ export default class HeadlineService extends Service {
   @HasPermission(HeadlinePolicy, 'index')
   async events(req: Request): Promise<Response> {
     const { startDate: startDateQuery, endDate: endDateQuery } = req.query
-
+    const game: Game = req.ctx.state.game
+    const includeDevData = req.ctx.state.includeDevData
     const clickhouse: ClickHouseClient = req.ctx.clickhouse
 
-    const startDate = formatDateForClickHouse(startOfDay(new Date(startDateQuery)))
-    const endDate = formatDateForClickHouse(endOfDay(new Date(endDateQuery)))
+    return withResponseCache({
+      key: `events-${game.id}-${includeDevData}-${startDateQuery}-${endDateQuery}`,
+      ttl: HEADLINES_CACHE_TTL_MS / 1000
+    }, async () => {
+      const startDate = formatDateForClickHouse(startOfDay(new Date(startDateQuery)))
+      const endDate = formatDateForClickHouse(endOfDay(new Date(endDateQuery)))
 
-    let query = `
-      SELECT count() AS count
-      FROM events
-      WHERE created_at BETWEEN '${startDate}' AND '${endDate}'
-        AND game_id = ${req.ctx.state.game.id}
-    `
+      let query = `
+        SELECT count() AS count
+        FROM events
+        WHERE created_at BETWEEN '${startDate}' AND '${endDate}'
+          AND game_id = ${game.id}
+      `
 
-    if (!req.ctx.state.includeDevData) {
-      query += 'AND dev_build = false'
-    }
-
-    const result = await clickhouse.query({
-      query,
-      format: 'JSONEachRow'
-    }).then((res) => res.json<{ count: string }>())
-
-    return {
-      status: 200,
-      body: {
-        count: Number(result[0].count)
+      if (!includeDevData) {
+        query += 'AND dev_build = false'
       }
-    }
+
+      const result = await clickhouse.query({
+        query,
+        format: 'JSONEachRow'
+      }).then((res) => res.json<{ count: string }>())
+
+      return {
+        status: 200,
+        body: {
+          count: Number(result[0].count)
+        }
+      }
+    })
   }
 
   @Route({
@@ -122,34 +130,40 @@ export default class HeadlineService extends Service {
   @HasPermission(HeadlinePolicy, 'index')
   async uniqueEventSubmitters(req: Request): Promise<Response> {
     const { startDate: startDateQuery, endDate: endDateQuery } = req.query
-
+    const game: Game = req.ctx.state.game
+    const includeDevData = req.ctx.state.includeDevData
     const clickhouse: ClickHouseClient = req.ctx.clickhouse
 
-    const startDate = formatDateForClickHouse(startOfDay(new Date(startDateQuery)))
-    const endDate = formatDateForClickHouse(endOfDay(new Date(endDateQuery)))
+    return withResponseCache({
+      key: `unique-event-submitters-${game.id}-${includeDevData}-${startDateQuery}-${endDateQuery}`,
+      ttl: HEADLINES_CACHE_TTL_MS / 1000
+    }, async () => {
+      const startDate = formatDateForClickHouse(startOfDay(new Date(startDateQuery)))
+      const endDate = formatDateForClickHouse(endOfDay(new Date(endDateQuery)))
 
-    let query = `
-      SELECT count(DISTINCT player_alias_id) AS uniqueSubmitters
-      FROM events
-      WHERE created_at BETWEEN '${startDate}' AND '${endDate}'
-        AND game_id = ${req.ctx.state.game.id}
-    `
+      let query = `
+        SELECT count(DISTINCT player_alias_id) AS uniqueSubmitters
+        FROM events
+        WHERE created_at BETWEEN '${startDate}' AND '${endDate}'
+          AND game_id = ${game.id}
+      `
 
-    if (!req.ctx.state.includeDevData) {
-      query += 'AND dev_build = false'
-    }
-
-    const result = await clickhouse.query({
-      query,
-      format: 'JSONEachRow'
-    }).then((res) => res.json<{ uniqueSubmitters: string }>())
-
-    return {
-      status: 200,
-      body: {
-        count: Number(result[0].uniqueSubmitters)
+      if (!includeDevData) {
+        query += 'AND dev_build = false'
       }
-    }
+
+      const result = await clickhouse.query({
+        query,
+        format: 'JSONEachRow'
+      }).then((res) => res.json<{ uniqueSubmitters: string }>())
+
+      return {
+        status: 200,
+        body: {
+          count: Number(result[0].uniqueSubmitters)
+        }
+      }
+    })
   }
 
   @Route({
@@ -165,7 +179,7 @@ export default class HeadlineService extends Service {
     const count = await em.getRepository(Player).count({
       game,
       ...(includeDevData ? {} : { devBuild: false })
-    }, getResultCacheOptions(`total-players-${game.id}-${includeDevData}`, HEADLINES_CACHE_TTL))
+    }, getResultCacheOptions(`total-players-${game.id}-${includeDevData}`, HEADLINES_CACHE_TTL_MS))
 
     return {
       status: 200,
@@ -191,7 +205,7 @@ export default class HeadlineService extends Service {
       presence: {
         online: true
       }
-    }, getResultCacheOptions(`online-players-${game.id}-${includeDevData}`, HEADLINES_CACHE_TTL))
+    }, getResultCacheOptions(`online-players-${game.id}-${includeDevData}`, ONLINE_PLAYERS_CACHE_TTL_MS))
 
     return {
       status: 200,
@@ -209,34 +223,40 @@ export default class HeadlineService extends Service {
   @HasPermission(HeadlinePolicy, 'index')
   async totalSessions(req: Request): Promise<Response> {
     const { startDate: startDateQuery, endDate: endDateQuery } = req.query
-
+    const game: Game = req.ctx.state.game
+    const includeDevData = req.ctx.state.includeDevData
     const clickhouse: ClickHouseClient = req.ctx.clickhouse
 
-    const startDate = formatDateForClickHouse(startOfDay(new Date(startDateQuery)))
-    const endDate = formatDateForClickHouse(endOfDay(new Date(endDateQuery)))
+    return withResponseCache({
+      key: `total-sessions-${game.id}-${includeDevData}-${startDateQuery}-${endDateQuery}`,
+      ttl: HEADLINES_CACHE_TTL_MS / 1000
+    }, async () => {
+      const startDate = formatDateForClickHouse(startOfDay(new Date(startDateQuery)))
+      const endDate = formatDateForClickHouse(endOfDay(new Date(endDateQuery)))
 
-    let query = `
-      SELECT count() AS count
-      FROM player_sessions
-      WHERE started_at BETWEEN '${startDate}' AND '${endDate}'
-        AND game_id = ${req.ctx.state.game.id}
-    `
+      let query = `
+        SELECT count() AS count
+        FROM player_sessions
+        WHERE started_at BETWEEN '${startDate}' AND '${endDate}'
+          AND game_id = ${game.id}
+      `
 
-    if (!req.ctx.state.includeDevData) {
-      query += ' AND dev_build = false'
-    }
-
-    const result = await clickhouse.query({
-      query,
-      format: 'JSONEachRow'
-    }).then((res) => res.json<{ count: string }>())
-
-    return {
-      status: 200,
-      body: {
-        count: Number(result[0].count)
+      if (!includeDevData) {
+        query += ' AND dev_build = false'
       }
-    }
+
+      const result = await clickhouse.query({
+        query,
+        format: 'JSONEachRow'
+      }).then((res) => res.json<{ count: string }>())
+
+      return {
+        status: 200,
+        body: {
+          count: Number(result[0].count)
+        }
+      }
+    })
   }
 
   @Route({
@@ -247,38 +267,44 @@ export default class HeadlineService extends Service {
   @HasPermission(HeadlinePolicy, 'index')
   async averageSessionDuration(req: Request): Promise<Response> {
     const { startDate: startDateQuery, endDate: endDateQuery } = req.query
-
+    const game: Game = req.ctx.state.game
+    const includeDevData = req.ctx.state.includeDevData
     const clickhouse: ClickHouseClient = req.ctx.clickhouse
 
-    const startDate = formatDateForClickHouse(startOfDay(new Date(startDateQuery)))
-    const endDate = formatDateForClickHouse(endOfDay(new Date(endDateQuery)))
+    return withResponseCache({
+      key: `average-session-duration-${game.id}-${includeDevData}-${startDateQuery}-${endDateQuery}`,
+      ttl: HEADLINES_CACHE_TTL_MS / 1000
+    }, async () => {
+      const startDate = formatDateForClickHouse(startOfDay(new Date(startDateQuery)))
+      const endDate = formatDateForClickHouse(endOfDay(new Date(endDateQuery)))
 
-    let query = `
-      SELECT avg(dateDiff('seconds', started_at, ended_at)) AS averageDuration
-      FROM player_sessions
-      WHERE started_at BETWEEN '${startDate}' AND '${endDate}'
-        AND ended_at IS NOT NULL
-        AND game_id = ${req.ctx.state.game.id}
-    `
+      let query = `
+        SELECT avg(dateDiff('seconds', started_at, ended_at)) AS averageDuration
+        FROM player_sessions
+        WHERE started_at BETWEEN '${startDate}' AND '${endDate}'
+          AND ended_at IS NOT NULL
+          AND game_id = ${game.id}
+      `
 
-    if (!req.ctx.state.includeDevData) {
-      query += ' AND dev_build = false'
-    }
-
-    const result = await clickhouse.query({
-      query,
-      format: 'JSONEachRow'
-    }).then((res) => res.json<{ averageDuration: number }>())
-
-    const seconds = result[0].averageDuration
-
-    return {
-      status: 200,
-      body: {
-        hours: Math.floor(seconds / 3600),
-        minutes: Math.floor((seconds % 3600) / 60),
-        seconds: seconds % 60
+      if (!includeDevData) {
+        query += ' AND dev_build = false'
       }
-    }
+
+      const result = await clickhouse.query({
+        query,
+        format: 'JSONEachRow'
+      }).then((res) => res.json<{ averageDuration: number }>())
+
+      const seconds = result[0].averageDuration
+
+      return {
+        status: 200,
+        body: {
+          hours: Math.floor(seconds / 3600),
+          minutes: Math.floor((seconds % 3600) / 60),
+          seconds: seconds % 60
+        }
+      }
+    })
   }
 }

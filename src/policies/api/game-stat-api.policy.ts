@@ -19,28 +19,34 @@ export default class GameStatAPIPolicy extends Policy {
     return stat
   }
 
-  async getAlias(): Promise<PlayerAlias | null> {
+  async getAlias() {
     const key = this.getAPIKey()
     const id = this.ctx.state.currentAliasId
 
-    const alias = await (this.em).repo(PlayerAlias).findOne({
+    const alias = await this.em.repo(PlayerAlias).findOne({
       id,
       player: {
         game: key.game
       }
-    }, getResultCacheOptions(`game-stat-api-policy-alias-${id}`))
+    }, {
+      ...getResultCacheOptions(`game-stat-api-policy-alias-${id}`),
+      fields: ['id', 'player.id']
+    })
 
     this.ctx.state.alias = alias
     return alias
   }
 
-  async getPlayer(): Promise<Player | null> {
+  async getPlayer() {
     const key = this.getAPIKey()
 
     const player = await this.em.repo(Player).findOne({
       id: this.ctx.state.currentPlayerId,
       game: key.game
-    }, getResultCacheOptions(`game-stat-api-policy-player-${this.ctx.state.currentPlayerId}`))
+    }, {
+      ...getResultCacheOptions(`game-stat-api-policy-player-${this.ctx.state.currentPlayerId}`),
+      fields: ['id']
+    })
 
     this.ctx.state.player = player
     return player

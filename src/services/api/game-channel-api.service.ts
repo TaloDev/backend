@@ -387,7 +387,8 @@ export default class GameChannelAPIService extends APIService {
 
   @Route({
     method: 'GET',
-    path: '/:id/storage'
+    path: '/:id/storage',
+    docs: GameChannelAPIDocs.getStorage
   })
   @Validate({
     headers: ['x-talo-alias'],
@@ -436,8 +437,102 @@ export default class GameChannelAPIService extends APIService {
   }
 
   @Route({
+    method: 'GET',
+    path: '/:id/storage/list',
+    docs: GameChannelAPIDocs.listStorage
+  })
+  @Validate({
+    headers: ['x-talo-alias'],
+    query: {
+      propKeys: {
+        required: true,
+        validation: async (val: unknown) => {
+          const arrayVal = Array.isArray(val) ? val : [val]
+          return [
+            {
+              check: typeof val === 'string' || Array.isArray(val),
+              error: 'propKeys must be an array or string'
+            },
+            {
+              check: arrayVal.length > 0,
+              error: 'At least one key must be provided'
+            },
+            {
+              check: arrayVal.length <= 50,
+              error: 'Maximum 50 keys allowed per request'
+            },
+            {
+              check: arrayVal.every((key: unknown) => typeof key === 'string' && key.trim().length > 0),
+              error: 'All keys must be non-empty strings'
+            }
+          ]
+        }
+      }
+    }
+  })
+  @HasPermission(GameChannelAPIPolicy, 'listStorage')
+  async listStorage(req: Request): Promise<Response> {
+    const { propKeys } = req.query
+    const em: EntityManager = req.ctx.em
+    const channel: GameChannel = req.ctx.state.channel
+    const redis: Redis = req.ctx.redis
+
+    if (!channel.hasMember(req.ctx.state.alias.id)) {
+      req.ctx.throw(403, 'This player is not a member of the channel')
+    }
+
+    const keys = Array.isArray(propKeys) ? propKeys : [propKeys]
+    const redisKeys = keys.map((key) => GameChannelStorageProp.getRedisKey(channel.id, key))
+    const cachedProps = await redis.mget(...redisKeys)
+
+    const resultMap = new Map<string, GameChannelStorageProp>()
+    const missingKeys: string[] = []
+
+    cachedProps.forEach((cachedProp, index) => {
+      const originalKey = keys[index]
+      if (cachedProp) {
+        resultMap.set(originalKey, JSON.parse(cachedProp))
+      } else {
+        missingKeys.push(originalKey)
+      }
+    })
+
+    if (missingKeys.length > 0) {
+      const propsFromDB = await em.repo(GameChannelStorageProp).find({
+        gameChannel: channel,
+        key: { $in: missingKeys }
+      })
+
+      // cache the results using a single operation
+      if (propsFromDB.length > 0) {
+        const pipeline = redis.pipeline()
+
+        for (const prop of propsFromDB) {
+          resultMap.set(prop.key, prop)
+          const redisKey = GameChannelStorageProp.getRedisKey(channel.id, prop.key)
+          const expirationSeconds = GameChannelStorageProp.redisExpirationSeconds
+          pipeline.set(redisKey, JSON.stringify(prop), 'EX', expirationSeconds)
+        }
+
+        await pipeline.exec()
+      }
+    }
+
+    const props = keys.map((key) => resultMap.get(key))
+      .filter((prop): prop is GameChannelStorageProp => prop !== undefined)
+
+    return {
+      status: 200,
+      body: {
+        props
+      }
+    }
+  }
+
+  @Route({
     method: 'PUT',
-    path: '/:id/storage'
+    path: '/:id/storage',
+    docs: GameChannelAPIDocs.putStorage
   })
   @Validate({
     headers: ['x-talo-alias'],

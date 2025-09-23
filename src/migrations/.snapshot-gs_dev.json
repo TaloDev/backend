@@ -3223,6 +3223,17 @@
           "unique": false
         },
         {
+          "keyName": "game_channel_storage_prop_game_channel_id_key_index",
+          "columnNames": [
+            "game_channel_id",
+            "key"
+          ],
+          "composite": true,
+          "constraint": false,
+          "primary": false,
+          "unique": false
+        },
+        {
           "keyName": "PRIMARY",
           "columnNames": [
             "id"

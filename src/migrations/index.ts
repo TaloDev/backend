@@ -56,6 +56,7 @@ import { PlayerAliasIdentifierServiceIndex } from './20250811004719PlayerAliasId
 import { InternalNameGameIndexes } from './20250811115700InternalNameGameIndexes'
 import { CreateSteamworksLeaderboardEntryTable } from './20250912193820CreateSteamworksLeaderboardEntryTable'
 import { CreateSteamworksPlayerStatTable } from './20250915220838CreateSteamworksPlayerStatTable'
+import { AddGameChannelStoragePropKeyIndex } from './20250923194349AddGameChannelStoragePropKeyIndex'
 
 export default [
   {
@@ -289,5 +290,9 @@ export default [
   {
     name: 'CreateSteamworksPlayerStatTable',
     class: CreateSteamworksPlayerStatTable
+  },
+  {
+    name: 'AddGameChannelStoragePropKeyIndex',
+    class: AddGameChannelStoragePropKeyIndex
   }
 ]

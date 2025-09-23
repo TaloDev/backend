@@ -52,6 +52,12 @@ export default class Player {
   @Property({ onUpdate: () => new Date() })
   updatedAt: Date = new Date()
 
+  static getSearchCacheKey(game: Game, wildcard = false) {
+    let key = `player-search-${game.id}`
+    if (wildcard) key += '-*'
+    return key
+  }
+
   constructor(game: Game) {
     this.game = game
   }

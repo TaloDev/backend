@@ -503,6 +503,7 @@ export default class GameChannelAPIService extends APIService {
         key: { $in: missingKeys }
       })
 
+      // cache the results using a single operation
       if (propsFromDB.length > 0) {
         const pipeline = redis.pipeline()
 
@@ -517,12 +518,13 @@ export default class GameChannelAPIService extends APIService {
       }
     }
 
-    const orderedProps = keys.map((key) => resultMap.get(key)).filter(Boolean) as GameChannelStorageProp[]
+    const props = keys.map((key) => resultMap.get(key))
+      .filter((prop): prop is GameChannelStorageProp => prop !== undefined)
 
     return {
       status: 200,
       body: {
-        props: orderedProps
+        props
       }
     }
   }

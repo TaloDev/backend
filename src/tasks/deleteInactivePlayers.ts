@@ -46,7 +46,7 @@ async function findAndDeleteInactivePlayers(em: EntityManager, clickhouse: Click
       batch.push(player)
       /* v8 ignore start */
       if (batch.length >= playersBatchSize) {
-        await deletePlayers(em, clickhouse, batch, game, devBuild)
+        await deletePlayers({ em, clickhouse, players: batch, game, devBuild })
         totalDeleted += batch.length
         batch = []
       }
@@ -55,7 +55,7 @@ async function findAndDeleteInactivePlayers(em: EntityManager, clickhouse: Click
 
     // delete any remaining players in the last batch
     if (batch.length > 0) {
-      await deletePlayers(em, clickhouse, batch, game, devBuild)
+      await deletePlayers({ em, clickhouse, players: batch, game, devBuild })
       totalDeleted += batch.length
     }
 
@@ -88,7 +88,21 @@ export async function deleteClickHousePlayerData(
   await Promise.all(queries.map((query) => clickhouse.exec({ query })))
 }
 
-async function deletePlayers(em: EntityManager, clickhouse: ClickHouseClient, players: Player[], game: Game, devBuild: boolean) {
+export async function deletePlayers({
+  em,
+  clickhouse,
+  players,
+  game,
+  devBuild,
+  createActivity = true
+}: {
+  em: EntityManager
+  clickhouse: ClickHouseClient
+  players: Player[]
+  game: Game
+  devBuild: boolean
+  createActivity?: boolean
+}) {
   const playerIds = players.map((player) => player.id)
   const aliasIds = players.flatMap((player) => player.aliases.map((alias) => alias.id))
 
@@ -104,19 +118,21 @@ async function deletePlayers(em: EntityManager, clickhouse: ClickHouseClient, pl
       ...players
     ])
 
-    createGameActivity(trx, {
-      user: await trx.repo(User).findOneOrFail({
-        type: UserType.OWNER,
-        organisation: game.organisation
-      }),
-      game,
-      type: devBuild
-        ? GameActivityType.INACTIVE_DEV_PLAYERS_DELETED
-        : GameActivityType.INACTIVE_LIVE_PLAYERS_DELETED,
-      extra: {
-        count: players.length
-      }
-    })
+    if (createActivity && players.length > 0) {
+      createGameActivity(trx, {
+        user: await trx.repo(User).findOneOrFail({
+          type: UserType.OWNER,
+          organisation: game.organisation
+        }),
+        game,
+        type: devBuild
+          ? GameActivityType.INACTIVE_DEV_PLAYERS_DELETED
+          : GameActivityType.INACTIVE_LIVE_PLAYERS_DELETED,
+        extra: {
+          count: players.length
+        }
+      })
+    }
 
     await deleteClickHousePlayerData(clickhouse, { playerIds, aliasIds, deleteSessions: true })
   })

@@ -20,7 +20,8 @@ import { PropSizeError } from '../lib/errors/propSizeError'
 import { captureException } from '@sentry/node'
 import { DEFAULT_PAGE_SIZE, SMALL_PAGE_SIZE } from '../lib/pagination/itemsPerPage'
 import { pageValidation } from '../lib/pagination/pageValidation'
-import { withResponseCache } from '../lib/perf/responseCache'
+import { clearResponseCache, withResponseCache } from '../lib/perf/responseCache'
+import { deletePlayers } from '../tasks/deleteInactivePlayers'
 
 const propsValidation = async (val: unknown): Promise<ValidationCondition[]> => [
   {
@@ -129,14 +130,16 @@ export default class PlayerService extends Service {
   async index(req: Request): Promise<Response> {
     const itemsPerPage = SMALL_PAGE_SIZE
     const { search, page = 0 } = req.query
+    const game: Game = req.ctx.state.game
+
     const em: EntityManager = req.ctx.em
 
     const searchComponent = search ? encodeURIComponent(search) : 'no-search'
     const devDataComponent = req.ctx.state.includeDevData ? 'dev' : 'no-dev'
-    const cacheKey = `player-search-${req.ctx.state.game.id}-${searchComponent}-${page}-${devDataComponent}`
+    const cacheKey = `${Player.getSearchCacheKey(game)}-${searchComponent}-${page}-${devDataComponent}`
 
     return withResponseCache({ key: cacheKey }, async () => {
-      const where: FilterQuery<Player> = { game: req.ctx.state.game }
+      const where: FilterQuery<Player> = { game }
 
       if (!req.ctx.state.includeDevData) {
         where.devBuild = false
@@ -308,6 +311,45 @@ export default class PlayerService extends Service {
       body: {
         player
       }
+    }
+  }
+
+  @Route({
+    method: 'DELETE',
+    path: '/:id'
+  })
+  @HasPermission(PlayerPolicy, 'delete')
+  async delete(req: Request): Promise<Response> {
+    const player: Player = req.ctx.state.player // set in the policy
+    const game = player.game
+
+    const em: EntityManager = req.ctx.em
+
+    await deletePlayers({
+      em,
+      clickhouse: req.ctx.clickhouse,
+      players: [player],
+      game,
+      devBuild: player.devBuild,
+      createActivity: false
+    })
+
+    createGameActivity(em, {
+      user: req.ctx.state.user,
+      game,
+      type: GameActivityType.PLAYER_DELETED,
+      extra: {
+        playerId: player.id,
+        display: {
+          'Player ID': player.id
+        }
+      }
+    })
+    await em.flush()
+    await clearResponseCache(Player.getSearchCacheKey(game, true))
+
+    return {
+      status: 204
     }
   }
 

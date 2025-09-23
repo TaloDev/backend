@@ -1,10 +1,11 @@
-import { Entity, ManyToOne, PrimaryKey, Property } from '@mikro-orm/mysql'
+import { Entity, Index, ManyToOne, PrimaryKey, Property } from '@mikro-orm/mysql'
 import { MAX_KEY_LENGTH, MAX_VALUE_LENGTH } from './prop'
 import GameChannel from './game-channel'
 import PlayerAlias from './player-alias'
 import Redis from 'ioredis'
 
 @Entity()
+@Index({ properties: ['gameChannel', 'key'] })
 export default class GameChannelStorageProp {
   @PrimaryKey()
   id!: number

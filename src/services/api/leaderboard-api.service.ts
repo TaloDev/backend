@@ -136,7 +136,7 @@ export default class LeaderboardAPIService extends APIService {
     const position = Math.max((await query.count()) - 1, 0)
     await entry.playerAlias.player.checkGroupMemberships(em)
 
-    await deferClearResponseCache(req.ctx, leaderboard.getEntriesCacheKey(true))
+    await deferClearResponseCache(leaderboard.getEntriesCacheKey(true))
 
     return {
       status: 200,

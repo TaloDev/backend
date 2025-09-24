@@ -161,7 +161,7 @@ export default class GameChannelService extends Service {
     }
 
     await em.persistAndFlush(channel)
-    await deferClearResponseCache(req.ctx, GameChannel.getSearchCacheKey(channel.game, true))
+    await deferClearResponseCache(GameChannel.getSearchCacheKey(channel.game, true))
 
     await channel.sendMessageToMembers(req.ctx.wss, 'v1.channels.player-joined', {
       channel,
@@ -254,7 +254,7 @@ export default class GameChannelService extends Service {
     }
 
     if (changedProperties.length > 0) {
-      await deferClearResponseCache(req.ctx, GameChannel.getSearchCacheKey(channel.game, true))
+      await deferClearResponseCache(GameChannel.getSearchCacheKey(channel.game, true))
 
       // don't send this message if the only thing that changed is the owner
       // that is covered by the ownership transferred message

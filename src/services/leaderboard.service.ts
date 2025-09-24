@@ -318,7 +318,7 @@ export default class LeaderboardService extends Service {
     }
 
     await em.flush()
-    await deferClearResponseCache(req.ctx, entry.leaderboard.getEntriesCacheKey(true))
+    await deferClearResponseCache(entry.leaderboard.getEntriesCacheKey(true))
 
     return {
       status: 200,
@@ -347,7 +347,7 @@ export default class LeaderboardService extends Service {
       await archiveEntriesForLeaderboard(em, leaderboard)
     }
 
-    await deferClearResponseCache(req.ctx, leaderboard.getEntriesCacheKey(true))
+    await deferClearResponseCache(leaderboard.getEntriesCacheKey(true))
 
     createGameActivity(em, {
       user: req.ctx.state.user,
@@ -478,7 +478,7 @@ export default class LeaderboardService extends Service {
       return deletedCount
     })
 
-    await deferClearResponseCache(req.ctx, leaderboard.getEntriesCacheKey(true))
+    await deferClearResponseCache(leaderboard.getEntriesCacheKey(true))
 
     return {
       status: 200,

@@ -762,18 +762,22 @@ export async function authenticateTicket(req: Request, integration: Integration,
 
   const config = createSteamworksRequestConfig(integration, 'GET', `/ISteamUserAuth/AuthenticateUserTicket/v1?appid=${integration.getConfig().appId}&ticket=${ticket}${identity ? `&identity=${identity}` : ''}`)
   const event = createSteamworksIntegrationEvent(integration, config)
-  const res = await makeRequest<AuthenticateUserTicketResponse>(config, event)
+  const authenticateRes = await makeRequest<AuthenticateUserTicketResponse>(config, event)
   await em.persistAndFlush(event)
 
-  if (res.data?.response?.error) {
-    const message = `Failed to authenticate Steamworks ticket: ${res.data.response.error.errordesc} (${res.data.response.error.errorcode})`
-    throw new Error(message, { cause: 400 })
-  } else if (res.status === 403) {
-    // set the cause to 400 so the api doesn't return a 500
-    throw new Error('Failed to authenticate Steamworks ticket: Invalid API key', { cause: 400 })
+  // set the cause to 400 so the api doesn't return a 500
+  const errorOpts = { cause: 400 }
+
+  if (authenticateRes.data?.response?.error) {
+    const message = `Failed to authenticate Steamworks ticket: ${authenticateRes.data.response.error.errordesc} (${authenticateRes.data.response.error.errorcode})`
+    throw new Error(message, errorOpts)
+  } else if (authenticateRes.status === 403) {
+    throw new Error('Failed to authenticate Steamworks ticket: Invalid API key', errorOpts)
+  } else if (!authenticateRes.data?.response?.params) {
+    throw new Error('Failed to authenticate Steamworks ticket: Invalid response from Steamworks', errorOpts)
   }
 
-  const steamId = res.data.response.params!.steamid
+  const steamId = authenticateRes.data.response.params.steamid
   const alias = await em.repo(PlayerAlias).findOne({
     service: PlayerAliasService.STEAM,
     identifier: steamId,
@@ -782,15 +786,17 @@ export async function authenticateTicket(req: Request, integration: Integration,
     }
   })
 
-  const {
-    appownership: {
-      ownsapp,
-      permanent,
-      timestamp
-    }
-  } = await verifyOwnership(em, integration, steamId)
+  const { status, data: verifyOwnershipData } = await verifyOwnership({
+    em,
+    integration,
+    steamId
+  })
+  if (status === 403) {
+    throw new Error('Failed to verify Steamworks ownership: Invalid API key', errorOpts)
+  }
 
-  const { vacbanned, publisherbanned } = res.data.response.params!
+  const { ownsapp, permanent, timestamp } = verifyOwnershipData.appownership
+  const { vacbanned, publisherbanned } = authenticateRes.data.response.params
 
   if (alias) {
     alias.player.upsertProp('META_STEAMWORKS_VAC_BANNED', String(vacbanned))
@@ -812,13 +818,21 @@ export async function authenticateTicket(req: Request, integration: Integration,
   return steamId
 }
 
-export async function verifyOwnership(em: EntityManager, integration: Integration, steamId: string): Promise<CheckAppOwnershipResponse> {
+export async function verifyOwnership({
+  em,
+  integration,
+  steamId
+}: {
+  em: EntityManager
+  integration: Integration
+  steamId: string
+}): Promise<{ status: number, data: CheckAppOwnershipResponse }> {
   const config = createSteamworksRequestConfig(integration, 'GET', `/ISteamUser/CheckAppOwnership/v3?appid=${integration.getConfig().appId}&steamid=${steamId}`)
   const event = createSteamworksIntegrationEvent(integration, config)
   const res = await makeRequest<CheckAppOwnershipResponse>(config, event)
   await em.persistAndFlush(event)
 
-  return res.data
+  return { status: res.status, data: res.data }
 }
 
 export async function cleanupSteamworksLeaderboardEntry(

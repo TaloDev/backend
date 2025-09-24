@@ -15,7 +15,8 @@ export function createDeleteClickHousePlayerDataQueue() {
       const queries: string[] = [
         `DELETE FROM event_props WHERE event_id IN (SELECT id FROM events WHERE player_alias_id IN (${aliasList}))`,
         `DELETE FROM events WHERE player_alias_id IN (${aliasList})`,
-        `DELETE FROM socket_events WHERE player_alias_id IN (${aliasList})`
+        `DELETE FROM socket_events WHERE player_alias_id IN (${aliasList})`,
+        `DELETE FROM player_game_stat_snapshots WHERE player_alias_id IN (${aliasList})`
       ]
       if (deleteSessions) {
         queries.push(`DELETE FROM player_sessions WHERE player_id in (${playerList})`)

@@ -307,7 +307,7 @@ export default class GameStatService extends Service {
       return deletedCount
     })
 
-    await deferClearResponseCache(req.ctx, GameStat.getIndexCacheKey(stat.game, true))
+    await deferClearResponseCache(GameStat.getIndexCacheKey(stat.game, true))
 
     return {
       status: 200,

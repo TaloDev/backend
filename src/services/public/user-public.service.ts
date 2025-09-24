@@ -22,6 +22,7 @@ import ResetPassword from '../../emails/reset-password'
 import emailRegex from '../../lib/lang/emailRegex'
 import { sign, verify } from '../../lib/auth/jwt'
 import Redis from 'ioredis'
+import { getGlobalQueue } from '../../config/global-queues'
 
 async function sendEmailConfirm(req: Request, res: Response): Promise<void> {
   const user: User = req.ctx.state.user
@@ -33,7 +34,7 @@ async function sendEmailConfirm(req: Request, res: Response): Promise<void> {
     const accessCode = new UserAccessCode(user, add(new Date(), { weeks: 1 }))
     await em.persistAndFlush(accessCode)
 
-    await queueEmail(req.ctx.emailQueue, new ConfirmEmail(user, accessCode.code))
+    await queueEmail(getGlobalQueue('email'), new ConfirmEmail(user, accessCode.code))
   }
   /* v8 ignore stop */
 }
@@ -232,7 +233,7 @@ export default class UserPublicService extends Service {
       const secret = user.password.substring(0, 10)
       const payload = { sub: user.id }
       const accessToken = await sign(payload, secret, { expiresIn: '15m' })
-      await queueEmail(req.ctx.emailQueue, new ResetPassword(user, accessToken))
+      await queueEmail(getGlobalQueue('email'), new ResetPassword(user, accessToken))
     }
 
     return {

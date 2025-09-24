@@ -13,6 +13,7 @@ import PlanUpgraded from '../../emails/plan-upgraded-mail'
 import PlanInvoice from '../../emails/plan-invoice-mail'
 import queueEmail from '../../lib/messaging/queueEmail'
 import PlanPaymentFailed from '../../emails/plan-payment-failed'
+import { getGlobalQueue } from '../../config/global-queues'
 
 type RawRequest = KoaRequest & {
   rawBody: Buffer
@@ -106,23 +107,23 @@ export default class WebhookService extends Service {
     if (prevStripePriceId !== orgPlan.stripePriceId) {
       const price = subscription.items.data[0].price
       const product = await stripe!.products.retrieve(price.product as string)
-      await queueEmail(req.ctx.emailQueue, new PlanUpgraded(orgPlan.organisation, price, product))
+      await queueEmail(getGlobalQueue('email'), new PlanUpgraded(orgPlan.organisation, price, product))
     }
 
     if (prevEndDate && !orgPlan.endDate && prevStripePriceId === orgPlan.stripePriceId) {
-      await queueEmail(req.ctx.emailQueue, new PlanRenewed(orgPlan.organisation))
+      await queueEmail(getGlobalQueue('email'), new PlanRenewed(orgPlan.organisation))
     } else if (!prevEndDate && orgPlan.endDate) {
-      await queueEmail(req.ctx.emailQueue, new PlanCancelled(orgPlan.organisation))
+      await queueEmail(getGlobalQueue('email'), new PlanCancelled(orgPlan.organisation))
     }
   }
 
   private async handleNewInvoice(req: Request, invoice: Stripe.Invoice): Promise<void> {
     const orgPlan = await this.getOrganisationPricingPlan(req, invoice.customer as string)
-    await queueEmail(req.ctx.emailQueue, new PlanInvoice(orgPlan.organisation, invoice))
+    await queueEmail(getGlobalQueue('email'), new PlanInvoice(orgPlan.organisation, invoice))
   }
 
   private async handlePaymentFailed(req: Request, invoice: Stripe.Invoice): Promise<void> {
     const orgPlan = await this.getOrganisationPricingPlan(req, invoice.customer as string)
-    await queueEmail(req.ctx.emailQueue, new PlanPaymentFailed(orgPlan.organisation, invoice))
+    await queueEmail(getGlobalQueue('email'), new PlanPaymentFailed(orgPlan.organisation, invoice))
   }
 }

@@ -37,7 +37,7 @@ async function joinChannel(req: Request, channel: GameChannel, playerAlias: Play
   if (!channel.hasMember(playerAlias.id)) {
     channel.members.add(playerAlias)
 
-    await deferClearResponseCache(req.ctx, GameChannel.getSubscriptionsCacheKey(playerAlias.id, true))
+    await deferClearResponseCache(GameChannel.getSubscriptionsCacheKey(playerAlias.id, true))
     await channel.sendMessageToMembers(req.ctx.wss, 'v1.channels.player-joined', {
       channel,
       playerAlias
@@ -185,7 +185,7 @@ export default class GameChannelAPIService extends APIService {
     const playerAlias: PlayerAlias = req.ctx.state.alias
 
     if (channel.hasMember(req.ctx.state.alias.id)) {
-      await deferClearResponseCache(req.ctx, GameChannel.getSubscriptionsCacheKey(playerAlias.id, true))
+      await deferClearResponseCache(GameChannel.getSubscriptionsCacheKey(playerAlias.id, true))
       await channel.sendMessageToMembers(req.ctx.wss, 'v1.channels.player-left', {
         channel,
         playerAlias,

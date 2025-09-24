@@ -19,6 +19,7 @@ import { ClickHouseClient } from '@clickhouse/client'
 import { deleteClickHousePlayerData } from '../../tasks/deleteInactivePlayers'
 import Redis from 'ioredis'
 import assert from 'node:assert'
+import { getGlobalQueue } from '../../config/global-queues'
 
 export default class PlayerAuthAPIService extends APIService {
   @Route({
@@ -135,7 +136,7 @@ export default class PlayerAuthAPIService extends APIService {
 
       const code = generateSixDigitCode()
       await redis.set(this.getRedisAuthKey(key, alias), code, 'EX', 300)
-      await queueEmail(req.ctx.emailQueue, new PlayerAuthCode(alias, code))
+      await queueEmail(getGlobalQueue('email'), new PlayerAuthCode(alias, code))
 
       createPlayerAuthActivity(req, alias.player, {
         type: PlayerAuthActivityType.VERIFICATION_STARTED
@@ -441,7 +442,7 @@ export default class PlayerAuthAPIService extends APIService {
 
         const code = generateSixDigitCode()
         await redis.set(this.getRedisPasswordResetKey(key, code), alias.id, 'EX', 900)
-        await queueEmail(req.ctx.emailQueue, new PlayerAuthResetPassword(alias, code))
+        await queueEmail(getGlobalQueue('email'), new PlayerAuthResetPassword(alias, code))
 
         createPlayerAuthActivity(req, playerAuth.player, {
           type: PlayerAuthActivityType.PASSWORD_RESET_REQUESTED

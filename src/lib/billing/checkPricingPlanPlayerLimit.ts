@@ -4,6 +4,7 @@ import Organisation from '../../entities/organisation'
 import PlanUsageWarning from '../../emails/plan-usage-warning-mail'
 import queueEmail from '../messaging/queueEmail'
 import getBillablePlayerCount from './getBillablePlayerCount'
+import { getGlobalQueue } from '../../config/global-queues'
 
 const OVERAGE_PERCENTAGE = 1.05
 
@@ -26,7 +27,7 @@ export default async function checkPricingPlanPlayerLimit(
   } else {
     const usagePercentage = playerCount / planPlayerLimit * 100
     if (usagePercentage == 75 || usagePercentage == 90 || usagePercentage == 100) {
-      await queueEmail(req.ctx.emailQueue, new PlanUsageWarning(organisation, playerCount, planPlayerLimit))
+      await queueEmail(getGlobalQueue('email'), new PlanUsageWarning(organisation, playerCount, planPlayerLimit))
     }
   }
 }

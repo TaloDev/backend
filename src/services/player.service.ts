@@ -327,7 +327,6 @@ export default class PlayerService extends Service {
 
     await deletePlayers({
       em,
-      clickhouse: req.ctx.clickhouse,
       players: [player],
       game,
       devBuild: player.devBuild,

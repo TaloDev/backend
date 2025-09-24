@@ -141,9 +141,16 @@ describe('deleteInactivePlayers', () => {
       }).then((res) => res.json<{ count: string }>())
         .then((res) => Number(res[0].count))
 
+      const updatedPlayerGameStatSnapshotsCount = await clickhouse.query({
+        query: 'SELECT count() as count FROM player_game_stat_snapshots',
+        format: 'JSONEachRow'
+      }).then((res) => res.json<{ count: string }>())
+        .then((res) => Number(res[0].count))
+
       return updatedEventsCount === 0 &&
         updatedEventPropsCount === 0 &&
-        updatedPlayerSessionsCount === 0
+        updatedPlayerSessionsCount === 0 &&
+        updatedPlayerGameStatSnapshotsCount === 0
     })
   })
 

@@ -77,9 +77,9 @@ export async function deleteClickHousePlayerData(
   const playerList = playerIds.map((id) => `'${id}'`).join(',')
 
   const queries: string[] = [
-    `DELETE FROM event_props WHERE event_id IN (SELECT id FROM events WHERE player_alias_id in (${aliasList}))`,
-    `DELETE FROM events WHERE player_alias_id in (${aliasList})`,
-    `DELETE FROM socket_events WHERE player_alias_id in (${aliasList})`
+    `DELETE FROM event_props WHERE event_id IN (SELECT id FROM events WHERE player_alias_id IN (${aliasList}))`,
+    `DELETE FROM events WHERE player_alias_id IN (${aliasList})`,
+    `DELETE FROM socket_events WHERE player_alias_id IN (${aliasList})`
   ]
   if (deleteSessions) {
     queries.push(`DELETE FROM player_sessions WHERE player_id in (${playerList})`)

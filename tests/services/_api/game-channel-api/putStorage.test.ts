@@ -144,7 +144,7 @@ describe('Game channel API service - putStorage', () => {
     expect(res.body.failedProps[0].error).toBe('Prop key length (129) exceeds 128 characters')
   })
 
-  it('should reject props where the value is greater than 512 characters', async () => {
+  it('should reject props where the value is greater than 4096 characters', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_CHANNELS])
 
     const channel = await new GameChannelFactory(apiKey.game).one()
@@ -158,7 +158,7 @@ describe('Game channel API service - putStorage', () => {
         props: [
           {
             key: 'description',
-            value: randText({ charCount: 513 })
+            value: randText({ charCount: 4097 })
           }
         ]
       })
@@ -167,7 +167,7 @@ describe('Game channel API service - putStorage', () => {
       .expect(200)
 
     expect(res.body.failedProps).toHaveLength(1)
-    expect(res.body.failedProps[0].error).toBe('Prop value length (513) exceeds 512 characters')
+    expect(res.body.failedProps[0].error).toBe('Prop value length (4097) exceeds 4096 characters')
   })
 
   it('should require props to be an array', async () => {
@@ -368,10 +368,10 @@ describe('Game channel API service - putStorage', () => {
       .put(`/v1/game-channels/${channel.id}/storage`)
       .send({
         props: [
-          { key: existingProp.key, value: randText({ charCount: 513 }) }, // will fail - value too long
+          { key: existingProp.key, value: randText({ charCount: 4097 }) }, // will fail - value too long
           { key: 'score', value: '100' }, // will succeed
           { key: randText({ charCount: 129 }), value: '200' }, // will fail - key too long
-          { key: 'description', value: randText({ charCount: 513 }) } // will fail - value too long
+          { key: 'description', value: randText({ charCount: 4097 }) } // will fail - value too long
         ]
       })
       .auth(token, { type: 'bearer' })
@@ -382,9 +382,9 @@ describe('Game channel API service - putStorage', () => {
     expect(res.body.deletedProps).toHaveLength(0)
 
     expect(res.body.failedProps).toHaveLength(3)
-    expect(res.body.failedProps[0].error).toBe('Prop value length (513) exceeds 512 characters')
+    expect(res.body.failedProps[0].error).toBe('Prop value length (4097) exceeds 4096 characters')
     expect(res.body.failedProps[1].error).toBe('Prop key length (129) exceeds 128 characters')
-    expect(res.body.failedProps[2].error).toBe('Prop value length (513) exceeds 512 characters')
+    expect(res.body.failedProps[2].error).toBe('Prop value length (4097) exceeds 4096 characters')
 
     await em.refresh(existingProp)
     expect(existingProp.value).toBe('50') // should remain unchanged

@@ -1,5 +1,5 @@
 import { Entity, ManyToOne, PrimaryKey, Property } from '@mikro-orm/mysql'
-import { MAX_KEY_LENGTH, MAX_VALUE_LENGTH } from './prop'
+import { MAX_KEY_LENGTH } from './prop'
 import GameFeedback from './game-feedback'
 
 @Entity()
@@ -13,7 +13,7 @@ export default class GameFeedbackProp {
   @Property({ length: MAX_KEY_LENGTH })
   key: string
 
-  @Property({ length: MAX_VALUE_LENGTH })
+  @Property({ type: 'text' })
   value: string
 
   @Property()

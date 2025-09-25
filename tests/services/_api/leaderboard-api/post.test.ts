@@ -441,7 +441,7 @@ describe('Leaderboard API service - post', () => {
     })
   })
 
-  it('should reject props where the value is greater than 512 characters', async () => {
+  it('should reject props where the value is greater than 4096 characters', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_LEADERBOARDS])
     const player = await new PlayerFactory([apiKey.game]).one()
     const leaderboard = await new LeaderboardFactory([apiKey.game]).state(() => ({ unique: false })).one()
@@ -454,7 +454,7 @@ describe('Leaderboard API service - post', () => {
         props: [
           {
             key: 'bio',
-            value: randText({ charCount: 513 })
+            value: randText({ charCount: 4097 })
           }
         ]
       })
@@ -464,7 +464,7 @@ describe('Leaderboard API service - post', () => {
 
     expect(res.body).toStrictEqual({
       errors: {
-        props: ['Prop value length (513) exceeds 512 characters']
+        props: ['Prop value length (4097) exceeds 4096 characters']
       }
     })
   })

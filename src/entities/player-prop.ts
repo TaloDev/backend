@@ -1,9 +1,6 @@
 import { Entity, Index, ManyToOne, PrimaryKey, Property } from '@mikro-orm/mysql'
 import Player from './player'
-import { MAX_KEY_LENGTH, MAX_VALUE_LENGTH } from './prop'
-
-const valueIndexName = 'idx_playerprop_key_value'
-const valueIndexExpr = `alter table \`player_prop\` add index \`${valueIndexName}\`(\`key\`, \`value\`)`
+import { MAX_KEY_LENGTH } from './prop'
 
 @Entity()
 export default class PlayerProp {
@@ -17,8 +14,7 @@ export default class PlayerProp {
   @Property({ length: MAX_KEY_LENGTH })
   key: string
 
-  @Index({ name: valueIndexName, expression: valueIndexExpr })
-  @Property({ length: MAX_VALUE_LENGTH })
+  @Property({ type: 'text' })
   value: string
 
   @Property()

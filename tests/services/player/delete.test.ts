@@ -5,6 +5,8 @@ import createUserAndToken from '../../utils/createUserAndToken'
 import userPermissionProvider from '../../utils/userPermissionProvider'
 import { UserType } from '../../../src/entities/user'
 import GameActivity, { GameActivityType } from '../../../src/entities/game-activity'
+import PlayerAlias from '../../../src/entities/player-alias'
+import { Collection } from '@mikro-orm/mysql'
 
 describe('Player service - delete', () => {
   it.each(userPermissionProvider([
@@ -65,5 +67,34 @@ describe('Player service - delete', () => {
       .delete(`/games/${game.id}/players/${player.id}`)
       .auth(otherToken, { type: 'bearer' })
       .expect(403)
+  })
+
+  it('should delete a player and their clickhouse data even if they have no aliases', async () => {
+    const [organisation, game] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken({ type: UserType.ADMIN }, organisation)
+
+    const player = await new PlayerFactory([game]).state((player) => ({
+      aliases: new Collection<PlayerAlias>(player, [])
+    })).one()
+    await em.persistAndFlush(player)
+
+    await request(app)
+      .delete(`/games/${game.id}/players/${player.id}`)
+      .auth(token, { type: 'bearer' })
+      .expect(204)
+
+    const deletedPlayer = await em.refresh(player)
+    expect(deletedPlayer).toBeNull()
+
+    await vi.waitUntil(async () => {
+      // sessions are the only table related to players and not aliases
+      const updatedPlayerSessionsCount = await clickhouse.query({
+        query: 'SELECT count() as count FROM player_sessions',
+        format: 'JSONEachRow'
+      }).then((res) => res.json<{ count: string }>())
+        .then((res) => Number(res[0].count))
+
+      return updatedPlayerSessionsCount === 0
+    })
   })
 })

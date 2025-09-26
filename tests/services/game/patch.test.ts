@@ -278,7 +278,7 @@ describe('Game service - patch', () => {
     })
   })
 
-  it('should reject props where the value is greater than 4096 characters', async () => {
+  it('should reject props where the value is greater than 512 characters', async () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({ type: UserType.OWNER }, organisation)
 
@@ -288,7 +288,7 @@ describe('Game service - patch', () => {
         props: [
           {
             key: 'bio',
-            value: randText({ charCount: 4097 })
+            value: randText({ charCount: 513 })
           }
         ]
       })
@@ -297,7 +297,7 @@ describe('Game service - patch', () => {
 
     expect(res.body).toStrictEqual({
       errors: {
-        props: ['Prop value length (4097) exceeds 4096 characters']
+        props: ['Prop value length (513) exceeds 512 characters']
       }
     })
   })

@@ -84,7 +84,7 @@ describe('Game save API service - patch', () => {
 
     const res = await request(app)
       .patch(`/v1/game-saves/${save.id}`)
-      .send({ content: {}, name: randText({ charCount: 4096 }) })
+      .send({ content: {}, name: randText({ charCount: 512 }) })
       .auth(token, { type: 'bearer' })
       .set('x-talo-player', player.id)
       .expect(400)

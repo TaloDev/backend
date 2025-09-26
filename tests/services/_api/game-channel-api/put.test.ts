@@ -316,7 +316,7 @@ describe('Game channel API service - put', () => {
     })
   })
 
-  it('should reject props where the value is greater than 4096 characters', async () => {
+  it('should reject props where the value is greater than 512 characters', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_CHANNELS])
 
     const channel = await new GameChannelFactory(apiKey.game).one()
@@ -331,7 +331,7 @@ describe('Game channel API service - put', () => {
         props: [
           {
             key: 'bio',
-            value: randText({ charCount: 4097 })
+            value: randText({ charCount: 513 })
           }
         ]
       })
@@ -341,7 +341,7 @@ describe('Game channel API service - put', () => {
 
     expect(res.body).toStrictEqual({
       errors: {
-        props: ['Prop value length (4097) exceeds 4096 characters']
+        props: ['Prop value length (513) exceeds 512 characters']
       }
     })
   })

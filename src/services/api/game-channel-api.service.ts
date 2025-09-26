@@ -564,7 +564,7 @@ export default class GameChannelAPIService extends APIService {
       deletedProps,
       failedProps
     } = await em.transactional(async (trx): Promise<GameChannelStorageTransaction> => {
-      const newPropsMap = new Map(sanitiseProps(props).map(({ key, value }) => [key, value]))
+      const newPropsMap = new Map(sanitiseProps({ props }).map(({ key, value }) => [key, value]))
 
       const upsertedProps: GameChannelStorageTransaction['upsertedProps'] = []
       const deletedProps: GameChannelStorageTransaction['deletedProps'] = []
@@ -598,7 +598,7 @@ export default class GameChannelAPIService extends APIService {
           continue
         } else {
           try {
-            testPropSize(existingProp.key, newPropValue)
+            testPropSize({ key: existingProp.key, value: newPropValue })
           } catch (error) {
             if (error instanceof PropSizeError) {
               failedProps.push({ key: existingProp.key, error: error.message })
@@ -620,7 +620,7 @@ export default class GameChannelAPIService extends APIService {
       for (const [key, value] of newPropsMap.entries()) {
         if (value) {
           try {
-            testPropSize(key, value)
+            testPropSize({ key, value })
           } catch (error) {
             if (error instanceof PropSizeError) {
               failedProps.push({ key, error: error.message })

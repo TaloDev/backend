@@ -140,7 +140,7 @@ export default class GameChannelService extends Service {
 
     if (props) {
       try {
-        channel.setProps(hardSanitiseProps(props))
+        channel.setProps(hardSanitiseProps({ props }))
       } catch (err) {
         if (!(err instanceof PropSizeError)) {
           captureException(err)
@@ -196,7 +196,7 @@ export default class GameChannelService extends Service {
 
     if (props) {
       try {
-        channel.setProps(mergeAndSanitiseProps(channel.props.getItems(), props))
+        channel.setProps(mergeAndSanitiseProps({ prevProps: channel.props.getItems(), newProps: props }))
       } catch (err) {
         if (err instanceof PropSizeError) {
           return buildErrorResponse({ props: [err.message] })

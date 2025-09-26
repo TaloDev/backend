@@ -94,7 +94,7 @@ export default class PlayerService extends Service {
 
     if (props) {
       try {
-        player.setProps(hardSanitiseProps(props))
+        player.setProps(hardSanitiseProps({ props }))
       } catch (err) {
         if (!(err instanceof PropSizeError)) {
           captureException(err)
@@ -271,7 +271,11 @@ export default class PlayerService extends Service {
         }
 
         try {
-          player.setProps(mergeAndSanitiseProps(player.props.getItems(), props, (prop) => !prop.key.startsWith('META_')))
+          player.setProps(mergeAndSanitiseProps({
+            prevProps: player.props.getItems(),
+            newProps: props,
+            extraFilter: (prop) => !prop.key.startsWith('META_')
+          }))
         } catch (err) {
           if (err instanceof PropSizeError) {
             return [null, buildErrorResponse({ props: [err.message] })]
@@ -289,7 +293,7 @@ export default class PlayerService extends Service {
             playerId: player.id,
             display: {
               'Player': player.id,
-              'Updated props': sanitiseProps(props).map((prop) => `${prop.key}: ${prop.value ?? '[deleted]'}`).join(', ')
+              'Updated props': sanitiseProps({ props }).map((prop) => `${prop.key}: ${prop.value ?? '[deleted]'}`).join(', ')
             }
           }
         })

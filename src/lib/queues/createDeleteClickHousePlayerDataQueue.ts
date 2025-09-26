@@ -12,7 +12,7 @@ export function createDeleteClickHousePlayerDataQueue() {
       const aliasList = aliasIds.join(', ')
       const playerList = playerIds.map((id) => `'${id}'`).join(',')
 
-      const queries: string[] = aliasList.length > 0 ? [
+      const queries: string[] = aliasIds.length > 0 ? [
         `DELETE FROM event_props WHERE event_id IN (SELECT id FROM events WHERE player_alias_id IN (${aliasList}))`,
         `DELETE FROM events WHERE player_alias_id IN (${aliasList})`,
         `DELETE FROM socket_events WHERE player_alias_id IN (${aliasList})`,

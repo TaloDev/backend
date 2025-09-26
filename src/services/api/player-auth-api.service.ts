@@ -15,10 +15,10 @@ import PlayerAuthResetPassword from '../../emails/player-auth-reset-password-mai
 import createPlayerAuthActivity from '../../lib/logging/createPlayerAuthActivity'
 import PlayerAuthActivity, { PlayerAuthActivityType } from '../../entities/player-auth-activity'
 import emailRegex from '../../lib/lang/emailRegex'
-import { ClickHouseClient } from '@clickhouse/client'
 import { deleteClickHousePlayerData } from '../../tasks/deleteInactivePlayers'
 import Redis from 'ioredis'
 import assert from 'node:assert'
+import { getGlobalQueue } from '../../config/global-queues'
 
 export default class PlayerAuthAPIService extends APIService {
   @Route({
@@ -135,7 +135,7 @@ export default class PlayerAuthAPIService extends APIService {
 
       const code = generateSixDigitCode()
       await redis.set(this.getRedisAuthKey(key, alias), code, 'EX', 300)
-      await queueEmail(req.ctx.emailQueue, new PlayerAuthCode(alias, code))
+      await queueEmail(getGlobalQueue('email'), new PlayerAuthCode(alias, code))
 
       createPlayerAuthActivity(req, alias.player, {
         type: PlayerAuthActivityType.VERIFICATION_STARTED
@@ -441,7 +441,7 @@ export default class PlayerAuthAPIService extends APIService {
 
         const code = generateSixDigitCode()
         await redis.set(this.getRedisPasswordResetKey(key, code), alias.id, 'EX', 900)
-        await queueEmail(req.ctx.emailQueue, new PlayerAuthResetPassword(alias, code))
+        await queueEmail(getGlobalQueue('email'), new PlayerAuthResetPassword(alias, code))
 
         createPlayerAuthActivity(req, playerAuth.player, {
           type: PlayerAuthActivityType.PASSWORD_RESET_REQUESTED
@@ -604,7 +604,6 @@ export default class PlayerAuthAPIService extends APIService {
   async delete(req: Request): Promise<Response> {
     const { currentPassword } = req.body
     const em: EntityManager = req.ctx.em
-    const clickhouse: ClickHouseClient = req.ctx.clickhouse
 
     const alias = await em.getRepository(PlayerAlias).findOneOrFail(req.ctx.state.currentAliasId, {
       populate: ['player.auth']
@@ -642,7 +641,7 @@ export default class PlayerAuthAPIService extends APIService {
       trx.remove(trx.repo(PlayerAuth).getReference(alias.player.auth.id))
       trx.remove(trx.repo(PlayerAlias).getReference(alias.id))
 
-      await deleteClickHousePlayerData(clickhouse, {
+      await deleteClickHousePlayerData({
         playerIds: [alias.player.id],
         aliasIds: [alias.id]
       })

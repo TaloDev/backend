@@ -29,9 +29,9 @@ describe('Game channel API service - listStorage', () => {
       .expect(200)
 
     expect(res.body.props).toHaveLength(2)
-    expect(res.body.props[0].key).toBe('key1')
+    expect(res.body.props[0].key).toBe(prop1.key)
     expect(res.body.props[0].value).toBe(prop1.value)
-    expect(res.body.props[1].key).toBe('key2')
+    expect(res.body.props[1].key).toBe(prop2.key)
     expect(res.body.props[1].value).toBe(prop2.value)
   })
 
@@ -55,9 +55,9 @@ describe('Game channel API service - listStorage', () => {
       .expect(200)
 
     expect(res.body.props).toHaveLength(2)
-    expect(res.body.props[0].key).toBe('testKey1')
+    expect(res.body.props[0].key).toBe(prop1.key)
     expect(res.body.props[0].value).toBe(prop1.value)
-    expect(res.body.props[1].key).toBe('testKey2')
+    expect(res.body.props[1].key).toBe(prop2.key)
     expect(res.body.props[1].value).toBe(prop2.value)
   })
 
@@ -83,10 +83,10 @@ describe('Game channel API service - listStorage', () => {
       .expect(200)
 
     expect(res.body.props).toHaveLength(2)
-    expect(res.body.props[0].key).toBe('cached')
     expect(res.body.props[0].key).toBe(cachedProp.key)
-    expect(res.body.props[1].key).toBe('fromdb')
+    expect(res.body.props[0].value).toBe(cachedProp.value)
     expect(res.body.props[1].key).toBe(dbProp.key)
+    expect(res.body.props[1].value).toBe(dbProp.value)
   })
 
   it('should return an empty array when requesting non-existent keys', async () => {

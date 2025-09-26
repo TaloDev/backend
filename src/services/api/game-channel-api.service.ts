@@ -37,7 +37,7 @@ async function joinChannel(req: Request, channel: GameChannel, playerAlias: Play
   if (!channel.hasMember(playerAlias.id)) {
     channel.members.add(playerAlias)
 
-    await deferClearResponseCache(req.ctx, GameChannel.getSubscriptionsCacheKey(playerAlias.id, true))
+    await deferClearResponseCache(GameChannel.getSubscriptionsCacheKey(playerAlias.id, true))
     await channel.sendMessageToMembers(req.ctx.wss, 'v1.channels.player-joined', {
       channel,
       playerAlias
@@ -185,7 +185,7 @@ export default class GameChannelAPIService extends APIService {
     const playerAlias: PlayerAlias = req.ctx.state.alias
 
     if (channel.hasMember(req.ctx.state.alias.id)) {
-      await deferClearResponseCache(req.ctx, GameChannel.getSubscriptionsCacheKey(playerAlias.id, true))
+      await deferClearResponseCache(GameChannel.getSubscriptionsCacheKey(playerAlias.id, true))
       await channel.sendMessageToMembers(req.ctx.wss, 'v1.channels.player-left', {
         channel,
         playerAlias,
@@ -564,7 +564,7 @@ export default class GameChannelAPIService extends APIService {
       deletedProps,
       failedProps
     } = await em.transactional(async (trx): Promise<GameChannelStorageTransaction> => {
-      const newPropsMap = new Map(sanitiseProps(props).map(({ key, value }) => [key, value]))
+      const newPropsMap = new Map(sanitiseProps({ props }).map(({ key, value }) => [key, value]))
 
       const upsertedProps: GameChannelStorageTransaction['upsertedProps'] = []
       const deletedProps: GameChannelStorageTransaction['deletedProps'] = []
@@ -598,7 +598,7 @@ export default class GameChannelAPIService extends APIService {
           continue
         } else {
           try {
-            testPropSize(existingProp.key, newPropValue)
+            testPropSize({ key: existingProp.key, value: newPropValue })
           } catch (error) {
             if (error instanceof PropSizeError) {
               failedProps.push({ key: existingProp.key, error: error.message })
@@ -620,7 +620,7 @@ export default class GameChannelAPIService extends APIService {
       for (const [key, value] of newPropsMap.entries()) {
         if (value) {
           try {
-            testPropSize(key, value)
+            testPropSize({ key, value })
           } catch (error) {
             if (error instanceof PropSizeError) {
               failedProps.push({ key, error: error.message })

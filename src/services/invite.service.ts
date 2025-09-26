@@ -7,6 +7,7 @@ import JoinOrganisation from '../emails/join-organisation-mail'
 import createGameActivity from '../lib/logging/createGameActivity'
 import { GameActivityType } from '../entities/game-activity'
 import queueEmail from '../lib/messaging/queueEmail'
+import { getGlobalQueue } from '../config/global-queues'
 
 export default class InviteService extends Service {
   @Route({
@@ -71,7 +72,7 @@ export default class InviteService extends Service {
 
     await em.persistAndFlush(invite)
 
-    await queueEmail(req.ctx.emailQueue, new JoinOrganisation(invite))
+    await queueEmail(getGlobalQueue('email'), new JoinOrganisation(invite))
 
     return {
       status: 200,

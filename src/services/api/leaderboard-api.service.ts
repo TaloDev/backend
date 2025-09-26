@@ -37,7 +37,7 @@ export default class LeaderboardAPIService extends APIService {
       entry.createdAt = req.ctx.state.continuityDate
     }
     if (props) {
-      entry.setProps(hardSanitiseProps(props))
+      entry.setProps(hardSanitiseProps({ props }))
     }
 
     await em.persistAndFlush(entry)
@@ -88,7 +88,7 @@ export default class LeaderboardAPIService extends APIService {
           entry.score = score
           entry.createdAt = req.ctx.state.continuityDate ?? new Date()
           if (props) {
-            entry.setProps(mergeAndSanitiseProps(entry.props.getItems(), props))
+            entry.setProps(mergeAndSanitiseProps({ prevProps: entry.props.getItems(), newProps: props }))
           }
           await em.flush()
 
@@ -136,7 +136,7 @@ export default class LeaderboardAPIService extends APIService {
     const position = Math.max((await query.count()) - 1, 0)
     await entry.playerAlias.player.checkGroupMemberships(em)
 
-    await deferClearResponseCache(req.ctx, leaderboard.getEntriesCacheKey(true))
+    await deferClearResponseCache(leaderboard.getEntriesCacheKey(true))
 
     return {
       status: 200,

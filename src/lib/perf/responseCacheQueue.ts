@@ -1,7 +1,6 @@
-import { Queue } from 'bullmq'
-import { Context } from 'koa'
 import createQueue from '../queues/createQueue'
 import { clearResponseCache } from './responseCache'
+import { getGlobalQueue } from '../../config/global-queues'
 
 export function createClearResponseCacheQueue() {
   return createQueue<string>('clearResponseCache', async (job) => {
@@ -9,7 +8,7 @@ export function createClearResponseCacheQueue() {
   })
 }
 
-export async function deferClearResponseCache(ctx: Context, key: string) {
-  const queue: Queue<string> = ctx.clearResponseCacheQueue
+export async function deferClearResponseCache(key: string) {
+  const queue = getGlobalQueue('clear-response-cache')
   await queue.add('clear-key', key)
 }

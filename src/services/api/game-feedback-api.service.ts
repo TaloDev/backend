@@ -47,7 +47,7 @@ export default class GameFeedbackAPIService extends APIService {
 
     if (props) {
       try {
-        feedback.setProps(hardSanitiseProps(props))
+        feedback.setProps(hardSanitiseProps({ props }))
       } catch (err) {
         if (!(err instanceof PropSizeError)) {
           captureException(err)

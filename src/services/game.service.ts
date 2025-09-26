@@ -1,6 +1,6 @@
 import { EntityManager } from '@mikro-orm/mysql'
 import { HasPermission, Service, Request, Response, Validate, Route } from 'koa-clay'
-import Game from '../entities/game'
+import Game, { MAX_LIVE_CONFIG_VALUE_LENGTH } from '../entities/game'
 import { GameActivityType } from '../entities/game-activity'
 import GameSecret from '../entities/game-secret'
 import getUserFromToken from '../lib/auth/getUserFromToken'
@@ -144,7 +144,11 @@ export default class GameService extends Service {
       }
 
       try {
-        game.props = mergeAndSanitiseProps(game.props, props)
+        game.props = mergeAndSanitiseProps({
+          prevProps: game.props,
+          newProps: props,
+          valueLimit: MAX_LIVE_CONFIG_VALUE_LENGTH
+        })
       } catch (err) {
         if (err instanceof PropSizeError) {
           return buildErrorResponse({ props: [err.message] })
@@ -163,7 +167,7 @@ export default class GameService extends Service {
         type: GameActivityType.GAME_PROPS_UPDATED,
         extra: {
           display: {
-            'Updated props': sanitiseProps(props).map((prop) => `${prop.key}: ${prop.value ?? '[deleted]'}`).join(', ')
+            'Updated props': sanitiseProps({ props }).map((prop) => `${prop.key}: ${prop.value ?? '[deleted]'}`).join(', ')
           }
         }
       })

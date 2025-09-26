@@ -84,7 +84,7 @@ describe('Game save API service - post', () => {
 
     const res = await request(app)
       .post('/v1/game-saves')
-      .send({ name: randText({ charCount: 4096 }), content: {} })
+      .send({ name: randText({ charCount: 512 }), content: {} })
       .auth(token, { type: 'bearer' })
       .set('x-talo-player', player.id)
       .expect(400)

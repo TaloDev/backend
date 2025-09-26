@@ -520,7 +520,7 @@ describe('Steamworks integration - sync stats', () => {
               displayName: randText()
             },
             {
-              name: randText({ charCount: 4096 }), // will cause a database column length error
+              name: randText({ charCount: 512 }), // will cause a database column length error
               defaultvalue: 200,
               displayName: randText()
             },

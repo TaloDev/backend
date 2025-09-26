@@ -1100,13 +1100,13 @@
         },
         "value": {
           "name": "value",
-          "type": "text",
+          "type": "varchar(512)",
           "unsigned": false,
           "autoincrement": false,
           "primary": false,
           "nullable": false,
-          "length": null,
-          "mappedType": "text"
+          "length": 512,
+          "mappedType": "string"
         },
         "created_at": {
           "name": "created_at",
@@ -1140,6 +1140,17 @@
           "constraint": false,
           "primary": false,
           "unique": false
+        },
+        {
+          "keyName": "idx_playerprop_key_value",
+          "columnNames": [
+            "value"
+          ],
+          "composite": false,
+          "constraint": false,
+          "primary": false,
+          "unique": false,
+          "expression": "alter table `player_prop` add index `idx_playerprop_key_value`(`key`, `value`)"
         },
         {
           "keyName": "PRIMARY",
@@ -2053,13 +2064,13 @@
         },
         "value": {
           "name": "value",
-          "type": "text",
+          "type": "varchar(512)",
           "unsigned": false,
           "autoincrement": false,
           "primary": false,
           "nullable": false,
-          "length": null,
-          "mappedType": "text"
+          "length": 512,
+          "mappedType": "string"
         },
         "created_at": {
           "name": "created_at",
@@ -2863,13 +2874,13 @@
         },
         "value": {
           "name": "value",
-          "type": "text",
+          "type": "varchar(512)",
           "unsigned": false,
           "autoincrement": false,
           "primary": false,
           "nullable": false,
-          "length": null,
-          "mappedType": "text"
+          "length": 512,
+          "mappedType": "string"
         },
         "created_at": {
           "name": "created_at",
@@ -3150,13 +3161,13 @@
         },
         "value": {
           "name": "value",
-          "type": "text",
+          "type": "varchar(512)",
           "unsigned": false,
           "autoincrement": false,
           "primary": false,
           "nullable": false,
-          "length": null,
-          "mappedType": "text"
+          "length": 512,
+          "mappedType": "string"
         },
         "created_at": {
           "name": "created_at",
@@ -3314,13 +3325,13 @@
         },
         "value": {
           "name": "value",
-          "type": "text",
+          "type": "varchar(512)",
           "unsigned": false,
           "autoincrement": false,
           "primary": false,
           "nullable": false,
-          "length": null,
-          "mappedType": "text"
+          "length": 512,
+          "mappedType": "string"
         },
         "created_at": {
           "name": "created_at",

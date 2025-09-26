@@ -4,6 +4,8 @@ import Organisation from './organisation'
 import Player from './player'
 import Prop from './prop'
 
+export const MAX_LIVE_CONFIG_VALUE_LENGTH = 4096
+
 @Entity()
 export default class Game {
   @PrimaryKey()

@@ -320,7 +320,7 @@ describe('Event API service - post', () => {
     })
   })
 
-  it('should reject props where the value is greater than 4096 characters', async () => {
+  it('should reject props where the value is greater than 512 characters', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_EVENTS])
     const player = await new PlayerFactory([apiKey.game]).one()
     await em.persistAndFlush(player)
@@ -329,7 +329,7 @@ describe('Event API service - post', () => {
       .post('/v1/events')
       .send({
         events: [
-          { name: 'Equip bow', timestamp: Date.now(), props: [{ key: 'bio', value: randText({ charCount: 4097 }) }] }
+          { name: 'Equip bow', timestamp: Date.now(), props: [{ key: 'bio', value: randText({ charCount: 513 }) }] }
         ]
       })
       .auth(token, { type: 'bearer' })
@@ -338,7 +338,7 @@ describe('Event API service - post', () => {
 
     expect(res.body).toStrictEqual({
       events: [],
-      errors: [['Prop value length (4097) exceeds 4096 characters (Equip bow)']]
+      errors: [['Prop value length (513) exceeds 512 characters (Equip bow)']]
     })
   })
 

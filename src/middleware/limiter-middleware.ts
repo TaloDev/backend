@@ -10,6 +10,7 @@ const limitMap = {
 const rateLimitOverrides = new Map<string, keyof typeof limitMap>([
   ['/v1/players/auth', 'auth'],
   ['/v1/players/identify', 'auth'],
+  ['/v1/players/socket-token', 'auth'],
   ['/v1/socket-tickets', 'auth']
 ])
 

@@ -277,4 +277,25 @@ export default class PlayerAPIService extends APIService {
       }
     }
   }
+
+  @Route({
+    method: 'POST',
+    path: '/socket-token',
+    docs: PlayerAPIDocs.socketToken
+  })
+  @Validate({
+    headers: ['x-talo-alias']
+  })
+  @HasPermission(PlayerAPIPolicy, 'socketToken')
+  async socketToken(req: Request): Promise<Response> {
+    const alias: PlayerAlias = req.ctx.state.alias
+    const socketToken = await alias.createSocketToken(req.ctx.redis)
+
+    return {
+      status: 200,
+      body: {
+        socketToken
+      }
+    }
+  }
 }

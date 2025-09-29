@@ -249,6 +249,22 @@ const PlayerAPIDocs: APIDocs<PlayerAPIService> = {
         }
       }
     ]
+  },
+  socketToken: {
+    description: 'Create a socket token for a player',
+    params: {
+      headers: {
+        'x-talo-alias': 'The ID of the player\'s alias'
+      }
+    },
+    samples: [
+      {
+        title: 'Sample response',
+        sample: {
+          socketToken: '15b49ed6-1a7b-40c3-a8c2-e79f7983b478'
+        }
+      }
+    ]
   }
 }
 

@@ -119,11 +119,6 @@ export default class GameChannelService extends Service {
     channel.private = isPrivate ?? false
     channel.temporaryMembership = temporaryMembership ?? false
 
-    if (req.ctx.state.alias) {
-      channel.owner = req.ctx.state.alias
-      channel.members.add(req.ctx.state.alias)
-    }
-
     if (ownerAliasId) {
       const owner = await em.getRepository(PlayerAlias).findOne({
         id: ownerAliasId,
@@ -136,6 +131,9 @@ export default class GameChannelService extends Service {
 
       channel.owner = owner
       channel.members.add(owner)
+    } else if (req.ctx.state.alias) {
+      channel.owner = req.ctx.state.alias
+      channel.members.add(req.ctx.state.alias)
     }
 
     if (props) {
@@ -302,6 +300,7 @@ export default class GameChannelService extends Service {
     const em: EntityManager = req.ctx.em
     const channel: GameChannel = req.ctx.state.channel
 
+    await deferClearResponseCache(GameChannel.getSearchCacheKey(channel.game, true))
     await channel.sendDeletedMessage(req.ctx.wss)
 
     if (!req.ctx.state.user.api) {

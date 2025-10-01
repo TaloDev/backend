@@ -72,12 +72,6 @@ export default class GameChannel {
     return key
   }
 
-  static getSubscriptionsCacheKey(aliasId: number, wildcard = false) {
-    let key = `alias-subscriptions-${aliasId}`
-    if (wildcard) key += '-*'
-    return key
-  }
-
   constructor(game: Game) {
     this.game = game
   }

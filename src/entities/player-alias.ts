@@ -4,7 +4,6 @@ import Redis from 'ioredis'
 import { v4 } from 'uuid'
 import GameChannel, { GameChannelLeavingReason } from './game-channel'
 import Socket from '../socket'
-import { clearResponseCache } from '../lib/perf/responseCache'
 
 export enum PlayerAliasService {
   STEAM = 'steam',
@@ -63,7 +62,6 @@ export default class PlayerAlias {
 
     for (const channel of temporaryChannels) {
       channel.members.remove(this)
-      void clearResponseCache(GameChannel.getSubscriptionsCacheKey(this.id, true))
 
       if (channel.shouldAutoCleanup(this)) {
         em.remove(channel)

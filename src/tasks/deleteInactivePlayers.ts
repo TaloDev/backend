@@ -37,6 +37,8 @@ async function findAndDeleteInactivePlayers(em: EntityManager, game: Game, devBu
     return
   }
 
+  console.info(`Purging players for game ${game.id}`)
+
   try {
     let batch: Player[] = []
     let totalDeleted = 0
@@ -96,9 +98,9 @@ export async function deletePlayers({
 
   await em.transactional(async (trx) => {
     trx.remove([
-      ...aliases,
       ...auth,
       ...presence,
+      ...aliases,
       ...players
     ])
 

@@ -1,7 +1,6 @@
 import { PolicyDenial, PolicyResponse } from 'koa-clay'
 import { APIKeyScope } from '../../entities/api-key'
 import Policy from '../policy'
-import { getResultCacheOptions } from '../../lib/perf/getResultCacheOptions'
 import PlayerAlias from '../../entities/player-alias'
 
 export default class EventAPIPolicy extends Policy {
@@ -12,7 +11,6 @@ export default class EventAPIPolicy extends Policy {
         game: this.getAPIKey().game
       }
     }, {
-      ...getResultCacheOptions(`event-api-policy-alias-${this.ctx.state.currentAliasId}`),
       fields: ['id', 'player.game.id', 'player.props:ref', 'player.devBuild']
     })
 

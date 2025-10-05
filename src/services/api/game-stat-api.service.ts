@@ -15,6 +15,7 @@ import PlayerAlias from '../../entities/player-alias'
 import { FlushStatSnapshotsQueueHandler } from '../../lib/queues/game-metrics/flush-stat-snapshots-queue-handler'
 import { pageValidation } from '../../lib/pagination/pageValidation'
 import { DEFAULT_PAGE_SIZE } from '../../lib/pagination/itemsPerPage'
+import { withResponseCache } from '../../lib/perf/responseCache'
 
 export default class GameStatAPIService extends APIService {
   private queueHandler: FlushStatSnapshotsQueueHandler
@@ -72,18 +73,23 @@ export default class GameStatAPIService extends APIService {
 
     const stat: GameStat = req.ctx.state.stat
     const alias: PlayerAlias = req.ctx.state.alias
-    const playerStat = await em.repo(PlayerGameStat).findOne({
-      player: alias.player,
-      stat
-    })
 
-    return {
-      status: 200,
-      body: {
-        playerStat
+    return withResponseCache({
+      key: PlayerGameStat.getCacheKey(alias.player, req.ctx.state.stat),
+      slidingWindow: true
+    }, async () => {
+      const playerStat = await em.repo(PlayerGameStat).findOne({
+        player: alias.player,
+        stat
+      })
+
+      return {
+        status: 200,
+        body: {
+          playerStat
+        }
       }
-    }
-
+    })
   }
 
   @Route({

@@ -5,7 +5,7 @@ import { getResultCacheOptions } from '../perf/getResultCacheOptions'
 import GameSecret from '../../entities/game-secret'
 
 export function getTokenCacheKey(sub: number) {
-  return `api-key-from-token2-${sub}`
+  return `api-key-from-token-${sub}`
 }
 
 export default async function getAPIKeyFromToken(authHeader: string) {

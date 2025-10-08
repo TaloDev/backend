@@ -8,6 +8,7 @@ import { sub } from 'date-fns'
 import PlayerProp from '../../src/entities/player-prop'
 import PlayerAuthFactory from './PlayerAuthFactory'
 import { rand, randNumber } from '@ngneat/falso'
+import PlayerPresenceFactory from './PlayerPresenceFactory'
 
 export default class PlayerFactory extends Factory<Player> {
   private availableGames: Game[]
@@ -107,6 +108,14 @@ export default class PlayerFactory extends Factory<Player> {
       return {
         aliases: new Collection<PlayerAlias>(player, [alias]),
         auth
+      }
+    })
+  }
+
+  withPresence(): this {
+    return this.state(async (player) => {
+      return {
+        presence: await new PlayerPresenceFactory(player.game).construct(player).one()
       }
     })
   }

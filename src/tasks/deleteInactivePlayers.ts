@@ -31,13 +31,40 @@ function getPlayers(em: EntityManager, game: Game, devBuild: boolean) {
   }, playersBatchSize)
 }
 
+async function createPurgeActivity({
+  em,
+  game,
+  devBuild,
+  count
+}: {
+  em: EntityManager
+  game: Game
+  devBuild: boolean
+  count: number
+}) {
+  createGameActivity(em, {
+    user: await em.repo(User).findOneOrFail({
+      type: UserType.OWNER,
+      organisation: game.organisation
+    }),
+    game,
+    type: devBuild
+      ? GameActivityType.INACTIVE_DEV_PLAYERS_DELETED
+      : GameActivityType.INACTIVE_LIVE_PLAYERS_DELETED,
+    extra: {
+      count
+    }
+  })
+  await em.flush()
+}
+
 async function findAndDeleteInactivePlayers(em: EntityManager, game: Game, devBuild: boolean) {
   const shouldPurge = devBuild ? game.purgeDevPlayers : game.purgeLivePlayers
   if (!shouldPurge) {
     return
   }
 
-  console.info(`Purging players for game ${game.id}`)
+  console.info(`Purging ${devBuild ? 'dev' : 'live'} players for game ${game.id}`)
 
   try {
     let batch: Player[] = []
@@ -47,7 +74,7 @@ async function findAndDeleteInactivePlayers(em: EntityManager, game: Game, devBu
       batch.push(player)
       /* v8 ignore start */
       if (batch.length >= playersBatchSize) {
-        await deletePlayers({ em, players: batch, game, devBuild })
+        await deletePlayers(em, batch)
         totalDeleted += batch.length
         batch = []
       }
@@ -56,12 +83,13 @@ async function findAndDeleteInactivePlayers(em: EntityManager, game: Game, devBu
 
     // delete any remaining players in the last batch
     if (batch.length > 0) {
-      await deletePlayers({ em, players: batch, game, devBuild })
+      await deletePlayers(em, batch)
       totalDeleted += batch.length
     }
 
     if (totalDeleted > 0) {
       console.info(`Deleted ${totalDeleted} inactive${devBuild ? ' dev' : ''} players from game ${game.id}`)
+      await createPurgeActivity({ em, game, devBuild, count: totalDeleted })
     }
   } catch (err) {
     console.error(`Error deleting inactive${devBuild ? ' dev' : ''} players:`, err)
@@ -76,52 +104,12 @@ export async function deleteClickHousePlayerData(
   await queue.add('delete-clickhouse-player-data', options)
 }
 
-export async function deletePlayers({
-  em,
-  players,
-  game,
-  devBuild,
-  createActivity = true
-}: {
-  em: EntityManager
-  players: Player[]
-  game: Game
-  devBuild: boolean
-  createActivity?: boolean
-}) {
+export async function deletePlayers(em: EntityManager, players: Player[]) {
   const playerIds = players.map((player) => player.id)
   const aliasIds = players.flatMap((player) => player.aliases.map((alias) => alias.id))
 
-  const aliases = players.flatMap((player) => player.aliases.getItems())
-  const auth = players.flatMap((player) => player.auth).filter((auth) => !!auth)
-  const presence = players.flatMap((player) => player.presence).filter((presence) => !!presence)
-
-  await em.transactional(async (trx) => {
-    trx.remove([
-      ...auth,
-      ...presence,
-      ...aliases,
-      ...players
-    ])
-
-    if (createActivity && players.length > 0) {
-      createGameActivity(trx, {
-        user: await trx.repo(User).findOneOrFail({
-          type: UserType.OWNER,
-          organisation: game.organisation
-        }),
-        game,
-        type: devBuild
-          ? GameActivityType.INACTIVE_DEV_PLAYERS_DELETED
-          : GameActivityType.INACTIVE_LIVE_PLAYERS_DELETED,
-        extra: {
-          count: players.length
-        }
-      })
-    }
-
-    await deleteClickHousePlayerData({ playerIds, aliasIds, deleteSessions: true })
-  })
+  await deleteClickHousePlayerData({ playerIds, aliasIds, deleteSessions: true })
+  await em.removeAndFlush(players)
 }
 
 export default async function deleteInactivePlayers() {
@@ -136,8 +124,7 @@ export default async function deleteInactivePlayers() {
   })
 
   for (const game of games) {
-    await Promise.all([true, false].map((devBuild) => {
-      return findAndDeleteInactivePlayers(em, game, devBuild)
-    }))
+    await findAndDeleteInactivePlayers(em.fork(), game, true)
+    await findAndDeleteInactivePlayers(em.fork(), game, false)
   }
 }

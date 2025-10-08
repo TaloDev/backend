@@ -162,8 +162,7 @@ export class DataExporter {
       }, {
         first: batchSize,
         after,
-        orderBy: { id: 'asc' },
-        populate: ['props']
+        orderBy: { id: 'asc' }
       })
       return page
     })

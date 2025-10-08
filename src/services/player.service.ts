@@ -328,14 +328,7 @@ export default class PlayerService extends Service {
     const game = player.game
 
     const em: EntityManager = req.ctx.em
-
-    await deletePlayers({
-      em,
-      players: [player],
-      game,
-      devBuild: player.devBuild,
-      createActivity: false
-    })
+    await deletePlayers(em, [player])
 
     createGameActivity(em, {
       user: req.ctx.state.user,

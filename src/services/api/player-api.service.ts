@@ -8,7 +8,6 @@ import PlayerAPIPolicy from '../../policies/api/player-api.policy'
 import APIService from './api-service'
 import { uniqWith } from 'lodash'
 import PlayerAPIDocs from '../../docs/player-api.docs'
-import PlayerProp from '../../entities/player-prop'
 import PlayerGameStat from '../../entities/player-game-stat'
 import checkScope from '../../policies/checkScope'
 import Integration, { IntegrationType } from '../../entities/integration'
@@ -228,7 +227,7 @@ export default class PlayerAPIService extends APIService {
   @HasPermission(PlayerAPIPolicy, 'merge')
   async merge(req: Request): Promise<Response> {
     const { playerId1, playerId2 } = req.body
-    const em: EntityManager = req.ctx.em
+    const em = (req.ctx.em as EntityManager).fork()
 
     const key = await this.getAPIKey(req.ctx)
 
@@ -253,12 +252,14 @@ export default class PlayerAPIService extends APIService {
     if (player2.auth) req.ctx.throw(400, `Player ${playerId2} has authentication enabled and cannot be merged`)
 
     const updatedPlayer = await em.transactional(async (trx) => {
-      const mergedProps: PlayerProp[] = uniqWith([
-        ...player2.props.getItems(),
-        ...player1.props.getItems()
-      ], (a, b) => a.key === b.key)
+      const player1Props = player1.props.getItems().map(({ key, value }) => ({ key, value }))
+      const player2Props = player2.props.getItems().map(({ key, value }) => ({ key, value }))
+      const mergedProps = uniqWith([...player2Props, ...player1Props], (a, b) => a.key === b.key)
 
-      player1.setProps(mergedProps.map((prop) => ({ key: prop.key, value: prop.value })))
+      em.remove(player1.props)
+      em.remove(player2.props)
+      player1.setProps(mergedProps)
+
       await trx.repo(PlayerAlias).nativeUpdate({ player: player2 }, { player: player1 })
       await trx.repo(GameSave).nativeUpdate({ player: player2 }, { player: player1 })
       await trx.repo(PlayerGameStat).nativeUpdate({ player: player2 }, { player: player1 })

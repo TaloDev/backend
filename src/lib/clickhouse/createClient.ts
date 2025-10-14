@@ -36,8 +36,8 @@ function buildOtelAttributes(methodName: string, params: unknown): Attributes {
     case 'query':
     case 'exec':
       attributes['db.statement'] = cleanStatement((params as QueryParams | ExecParams).query)
+      attributes['db.clickhouse.table'] = extractTableNameFromQuery(attributes['db.statement'])
       if ((params as QueryParams).format) {
-        attributes['db.clickhouse.table'] = extractTableNameFromQuery(attributes['db.statement'])
         attributes['db.clickhouse.format'] = (params as QueryParams).format
       }
       break

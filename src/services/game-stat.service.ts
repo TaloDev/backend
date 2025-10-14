@@ -274,7 +274,7 @@ export default class GameStatService extends Service {
       })
 
       const clickhouse: ClickHouseClient = req.ctx.clickhouse
-      const aliasStream = streamByCursor<PlayerAlias>(async (batchSize, after) => {
+      const aliasStream = streamByCursor<{ id: number }>(async (batchSize, after) => {
         return trx.repo(PlayerAlias).findByCursor({
           player: mode !== 'all' ? {
             devBuild: mode === 'dev' ? true : false
@@ -282,7 +282,9 @@ export default class GameStatService extends Service {
         }, {
           first: batchSize,
           after,
-          orderBy: { id: 'asc' }
+          orderBy: { id: 'asc' },
+          fields: ['id'],
+          strategy: 'joined'
         })
       }, 1000)
 

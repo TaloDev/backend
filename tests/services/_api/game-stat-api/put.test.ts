@@ -305,4 +305,35 @@ describe('Game stats API service - put', () => {
     const date = new Date(insertable.created_at)
     expect(date.toISOString()).toBe(continuityDate.toISOString())
   })
+
+  it('should handle concurrent updates to global stats without deadlocks', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_STATS])
+    const stat = await createStat(apiKey.game, {
+      maxValue: 999999,
+      maxChange: 999,
+      defaultValue: 0,
+      global: true,
+      globalValue: 0,
+      minTimeBetweenUpdates: 0
+    })
+
+    const players = await new PlayerFactory([apiKey.game]).many(10)
+    await em.persistAndFlush(players)
+
+    const requests = players.map((player) =>
+      request(app)
+        .put(`/v1/game-stats/${stat.internalName}`)
+        .send({ change: 10 })
+        .auth(token, { type: 'bearer' })
+        .set('x-talo-alias', String(player.aliases[0].id))
+    )
+
+    const responses = await Promise.all(requests)
+    responses.forEach((res) => {
+      expect(res.status).toBe(200)
+    })
+
+    await em.refresh(stat)
+    expect(stat.globalValue).toBe(100)
+  })
 })

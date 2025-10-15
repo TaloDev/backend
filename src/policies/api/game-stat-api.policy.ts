@@ -90,4 +90,11 @@ export default class GameStatAPIPolicy extends Policy {
 
     return this.hasScope(APIKeyScope.READ_GAME_STATS)
   }
+
+  async listPlayerStats(): Promise<PolicyResponse> {
+    const alias = await this.getAlias()
+    if (!alias) return new PolicyDenial({ message: 'Player not found' }, 404)
+
+    return this.hasScope(APIKeyScope.READ_GAME_STATS)
+  }
 }

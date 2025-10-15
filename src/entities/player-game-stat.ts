@@ -1,4 +1,4 @@
-import { AfterUpdate, Entity, Index, ManyToOne, PrimaryKey, Property } from '@mikro-orm/mysql'
+import { AfterCreate, AfterDelete, AfterUpdate, Entity, Index, ManyToOne, PrimaryKey, Property } from '@mikro-orm/mysql'
 import GameStat from './game-stat'
 import Player from './player'
 import { clearResponseCache } from '../lib/perf/responseCache'
@@ -31,15 +31,22 @@ export default class PlayerGameStat {
     return `player-stat-${stat.id}-${player.id}`
   }
 
+  static getListCacheKey(player: Player) {
+    return `player-stats-${player.id}`
+  }
+
   constructor(player: Player, stat: GameStat) {
     this.player = player
     this.stat = stat
     this.value = stat.defaultValue
   }
 
+  @AfterCreate()
   @AfterUpdate()
+  @AfterDelete()
   clearCacheKey() {
     void clearResponseCache(PlayerGameStat.getCacheKey(this.player, this.stat))
+    void clearResponseCache(PlayerGameStat.getListCacheKey(this.player))
   }
 
   toJSON() {

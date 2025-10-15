@@ -426,6 +426,58 @@ const GameStatAPIDocs: APIDocs<GameStatAPIService> = {
         }
       }
     ]
+  },
+  listPlayerStats: {
+    description: 'Get the current values of all the player\'s stats',
+    samples: [
+      {
+        title: 'Sample response',
+        sample: {
+          playerStats: [
+            {
+              id: 15,
+              stat: {
+                id: 4,
+                internalName: 'gold-collected',
+                name: 'Gold collected',
+                global: true,
+                globalValue: 5839,
+                defaultValue: 0,
+                maxChange: null,
+                minValue: 0,
+                maxValue: null,
+                minTimeBetweenUpdates: 5,
+                createdAt: '2021-12-24T12:45:39.409Z',
+                updatedAt: '2021-12-24T12:49:14.315Z'
+              },
+              value: 52,
+              createdAt: '2025-06-19T06:18:11.881Z',
+              updatedAt: '2025-06-19T08:32:46.123Z'
+            },
+            {
+              id: 16,
+              stat: {
+                id: 7,
+                internalName: 'silver-collected',
+                name: 'Silver collected',
+                global: true,
+                globalValue: 15874,
+                defaultValue: 0,
+                maxChange: null,
+                minValue: 0,
+                maxValue: null,
+                minTimeBetweenUpdates: 5,
+                createdAt: '2021-12-24T12:45:39.409Z',
+                updatedAt: '2021-12-24T12:49:14.315Z'
+              },
+              value: 152,
+              createdAt: '2025-06-19T06:18:11.881Z',
+              updatedAt: '2025-06-19T08:32:46.123Z'
+            }
+          ]
+        }
+      }
+    ]
   }
 }
 

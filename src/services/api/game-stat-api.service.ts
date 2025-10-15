@@ -46,6 +46,37 @@ export default class GameStatAPIService extends APIService {
 
   @Route({
     method: 'GET',
+    path: '/player-stats',
+    docs: GameStatAPIDocs.listPlayerStats
+  })
+  @Validate({
+    headers: ['x-talo-alias']
+  })
+  @HasPermission(GameStatAPIPolicy, 'listPlayerStats')
+  async listPlayerStats(req: Request) : Promise<Response> {
+    const em: EntityManager = req.ctx.em
+
+    const alias: PlayerAlias = req.ctx.state.alias
+
+    return withResponseCache({
+      key: PlayerGameStat.getListCacheKey(alias.player),
+      slidingWindow: true
+    }, async () => {
+      const playerStats = await em.repo(PlayerGameStat).find({
+        player: alias.player
+      })
+
+      return {
+        status: 200,
+        body: {
+          playerStats
+        }
+      }
+    })
+  }
+
+  @Route({
+    method: 'GET',
     path: '/:internalName',
     docs: GameStatAPIDocs.get
   })

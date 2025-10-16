@@ -309,8 +309,10 @@ export default class GameStatService extends Service {
       return deletedCount
     })
 
-    await deferClearResponseCache(GameStat.getIndexCacheKey(stat.game, true))
-    await deferClearResponseCache(PlayerGameStat.getCacheKeyForStat(stat, true))
+    await Promise.allSettled([
+      deferClearResponseCache(GameStat.getIndexCacheKey(stat.game, true)),
+      deferClearResponseCache(PlayerGameStat.getCacheKeyForStat(stat, true))
+    ])
 
     return {
       status: 200,

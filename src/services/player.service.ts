@@ -20,8 +20,9 @@ import { PropSizeError } from '../lib/errors/propSizeError'
 import { captureException } from '@sentry/node'
 import { DEFAULT_PAGE_SIZE, SMALL_PAGE_SIZE } from '../lib/pagination/itemsPerPage'
 import { pageValidation } from '../lib/pagination/pageValidation'
-import { clearResponseCache, withResponseCache } from '../lib/perf/responseCache'
+import { withResponseCache } from '../lib/perf/responseCache'
 import { deletePlayers } from '../tasks/deleteInactivePlayers'
+import { deferClearResponseCache } from '../lib/perf/responseCacheQueue'
 
 const propsValidation = async (val: unknown): Promise<ValidationCondition[]> => [
   {
@@ -342,7 +343,7 @@ export default class PlayerService extends Service {
       }
     })
     await em.flush()
-    await clearResponseCache(Player.getSearchCacheKey(game, true))
+    await deferClearResponseCache(Player.getSearchCacheKey(game, true))
 
     return {
       status: 204

@@ -6,6 +6,7 @@ import LeaderboardEntry from '../entities/leaderboard-entry'
 import { isToday, isThisWeek, isThisMonth, isThisYear } from 'date-fns'
 import triggerIntegrations from '../lib/integrations/triggerIntegrations'
 import { streamByCursor } from '../lib/perf/streamByCursor'
+import { deferClearResponseCache } from '../lib/perf/responseCacheQueue'
 
 export async function archiveEntriesForLeaderboard(em: EntityManager, leaderboard: Leaderboard) {
   /* v8 ignore start */
@@ -53,6 +54,7 @@ export async function archiveEntriesForLeaderboard(em: EntityManager, leaderboar
   }
 
   await em.flush()
+  await deferClearResponseCache(leaderboard.getEntriesCacheKey(true))
 }
 
 export default async function archiveLeaderboardEntries() {

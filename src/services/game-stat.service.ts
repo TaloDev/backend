@@ -310,6 +310,7 @@ export default class GameStatService extends Service {
     })
 
     await deferClearResponseCache(GameStat.getIndexCacheKey(stat.game, true))
+    await deferClearResponseCache(PlayerGameStat.getCacheKeyForStat(stat, true))
 
     return {
       status: 200,

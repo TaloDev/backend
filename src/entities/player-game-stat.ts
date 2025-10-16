@@ -1,4 +1,4 @@
-import { AfterCreate, AfterDelete, AfterUpdate, Entity, Index, ManyToOne, PrimaryKey, Property } from '@mikro-orm/mysql'
+import { AfterCreate, AfterUpdate, Entity, Index, ManyToOne, PrimaryKey, Property } from '@mikro-orm/mysql'
 import GameStat from './game-stat'
 import Player from './player'
 import { clearResponseCache } from '../lib/perf/responseCache'
@@ -27,12 +27,18 @@ export default class PlayerGameStat {
   @Property({ onUpdate: () => new Date() })
   updatedAt: Date = new Date()
 
-  static getCacheKey(player: Player, stat: GameStat) {
-    return `player-stat-${stat.id}-${player.id}`
+  static getCacheKeyForStat(stat: GameStat, wildcard = false) {
+    let key = `player-stat-${stat.id}`
+    if (wildcard) key += '-*'
+    return key
   }
 
-  static getListCacheKey(player: Player) {
-    return `player-stats-${player.id}`
+  static getCacheKey(player: Player, stat: GameStat) {
+    return `${PlayerGameStat.getCacheKeyForStat(stat)}-${player.id}`
+  }
+
+  static getListCacheKey(player?: Player) {
+    return `player-stats-list-${player ? player.id : '*'}`
   }
 
   constructor(player: Player, stat: GameStat) {
@@ -43,7 +49,6 @@ export default class PlayerGameStat {
 
   @AfterCreate()
   @AfterUpdate()
-  @AfterDelete()
   clearCacheKey() {
     void clearResponseCache(PlayerGameStat.getCacheKey(this.player, this.stat))
     void clearResponseCache(PlayerGameStat.getListCacheKey(this.player))

@@ -10,6 +10,7 @@ import { hardSanitiseProps, mergeAndSanitiseProps } from '../../lib/props/saniti
 import { PropSizeError } from '../../lib/errors/propSizeError'
 import buildErrorResponse from '../../lib/errors/buildErrorResponse'
 import { deferClearResponseCache } from '../../lib/perf/responseCacheQueue'
+import { LeaderboardEntryPropsChangedError } from '../../lib/errors/leaderboardEntryPropsChangedError'
 
 export default class LeaderboardAPIService extends APIService {
   @Route({
@@ -68,7 +69,7 @@ export default class LeaderboardAPIService extends APIService {
   })
   @HasPermission(LeaderboardAPIPolicy, 'post')
   async post(req: Request): Promise<Response> {
-    const { score, props } = req.body
+    const { score, props = [] } = req.body
     const em: EntityManager = req.ctx.em
 
     const leaderboard: Leaderboard = req.ctx.state.leaderboard
@@ -78,11 +79,15 @@ export default class LeaderboardAPIService extends APIService {
 
     try {
       if (leaderboard.unique) {
-        entry = await em.getRepository(LeaderboardEntry).findOneOrFail({
+        entry = await em.repo(LeaderboardEntry).findOneOrFail({
           leaderboard,
           playerAlias: req.ctx.state.alias,
           deletedAt: null
         })
+
+        if (leaderboard.uniqueByProps) {
+          entry.compareProps(props)
+        }
 
         if ((leaderboard.sortMode === LeaderboardSortMode.ASC && score < entry.score) || (leaderboard.sortMode === LeaderboardSortMode.DESC && score > entry.score)) {
           entry.score = score
@@ -98,7 +103,7 @@ export default class LeaderboardAPIService extends APIService {
         entry = await this.createEntry(req, props)
       }
     } catch (err) {
-      if (err instanceof NotFoundError) {
+      if (err instanceof NotFoundError || err instanceof LeaderboardEntryPropsChangedError) {
         entry = await this.createEntry(req, props)
       } else if (err instanceof PropSizeError) {
         return buildErrorResponse({ props: [err.message] })

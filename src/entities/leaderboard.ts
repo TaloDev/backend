@@ -65,6 +65,9 @@ export default class Leaderboard {
   @Property()
   unique!: boolean
 
+  @Property()
+  uniqueByProps: boolean = false
+
   @OneToMany(() => LeaderboardEntry, (entry) => entry.leaderboard)
   entries: Collection<LeaderboardEntry> = new Collection<LeaderboardEntry>(this)
 
@@ -109,6 +112,7 @@ export default class Leaderboard {
       name: this.name,
       sortMode: this.sortMode,
       unique: this.unique,
+      uniqueByProps: this.uniqueByProps,
       refreshInterval: this.refreshInterval,
       createdAt: this.createdAt,
       updatedAt: this.updatedAt

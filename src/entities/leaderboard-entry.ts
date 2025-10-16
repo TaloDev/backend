@@ -1,8 +1,9 @@
-import { Collection, Entity, Index, ManyToOne, OneToMany, PrimaryKey, Property } from '@mikro-orm/mysql'
+import { AfterCreate, AfterDelete, AfterUpdate, Collection, Entity, Index, ManyToOne, OneToMany, PrimaryKey, Property } from '@mikro-orm/mysql'
 import Leaderboard from './leaderboard'
 import PlayerAlias from './player-alias'
 import LeaderboardEntryProp from './leaderboard-entry-prop'
 import { LeaderboardEntryPropsChangedError } from '../lib/errors/leaderboardEntryPropsChangedError'
+import { deferClearResponseCache } from '../lib/perf/responseCacheQueue'
 
 const scoreIndexName = 'idx_leaderboardentry_hidden_leaderboard_id_score'
 const scoreIndexExpr = `alter table \`leaderboard_entry\` add index \`${scoreIndexName}\`(\`hidden\`, \`leaderboard_id\`, \`score\`)`
@@ -59,6 +60,13 @@ export default class LeaderboardEntry {
         throw new LeaderboardEntryPropsChangedError()
       }
     }
+  }
+
+  @AfterCreate()
+  @AfterUpdate()
+  @AfterDelete()
+  clearCacheKey() {
+    void deferClearResponseCache(this.leaderboard.getEntriesCacheKey(true))
   }
 
   toJSON() {

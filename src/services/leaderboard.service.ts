@@ -96,7 +96,7 @@ export default class LeaderboardService extends Service {
   @Validate({ body: [Leaderboard] })
   @HasPermission(LeaderboardPolicy, 'post')
   async post(req: Request): Promise<Response> {
-    const { internalName, name, sortMode, unique, refreshInterval } = req.body
+    const { internalName, name, sortMode, unique, refreshInterval, uniqueByProps } = req.body
     const em: EntityManager = req.ctx.em
 
     const leaderboard = new Leaderboard(req.ctx.state.game)
@@ -105,6 +105,7 @@ export default class LeaderboardService extends Service {
     leaderboard.sortMode = sortMode
     leaderboard.unique = unique
     leaderboard.refreshInterval = refreshInterval
+    leaderboard.uniqueByProps = uniqueByProps
 
     createGameActivity(em, {
       user: req.ctx.state.user,
@@ -318,7 +319,6 @@ export default class LeaderboardService extends Service {
     }
 
     await em.flush()
-    await deferClearResponseCache(entry.leaderboard.getEntriesCacheKey(true))
 
     return {
       status: 200,
@@ -340,7 +340,7 @@ export default class LeaderboardService extends Service {
     const [leaderboard, changedProperties] = updateAllowedKeys(
       req.ctx.state.leaderboard as Leaderboard,
       req.body,
-      ['name', 'sortMode', 'unique', 'refreshInterval']
+      ['name', 'sortMode', 'unique', 'refreshInterval', 'uniqueByProps']
     )
 
     if (changedProperties.includes('refreshInterval') && leaderboard.refreshInterval !== LeaderboardRefreshInterval.NEVER) {

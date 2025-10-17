@@ -6,6 +6,13 @@ import Player from '../../src/entities/player'
 import UserFactory from '../fixtures/UserFactory'
 import GameActivity, { GameActivityType } from '../../src/entities/game-activity'
 import PlayerPresenceFactory from '../fixtures/PlayerPresenceFactory'
+import { randBoolean, randNumber } from '@ngneat/falso'
+import PlayerAlias from '../../src/entities/player-alias'
+import PlayerPresence from '../../src/entities/player-presence'
+import PlayerAuth from '../../src/entities/player-auth'
+import PlayerProp from '../../src/entities/player-prop'
+import * as GlobalQueuesModule from '../../src/config/global-queues'
+import getBillablePlayerCount from '../../src/lib/billing/getBillablePlayerCount'
 
 describe('deleteInactivePlayers', () => {
   it('should delete inactive dev players older than 60 days', async () => {
@@ -263,10 +270,14 @@ describe('deleteInactivePlayers', () => {
   })
 
   it('should continue processing other games when one game throws an error', async () => {
+    vi.spyOn(GlobalQueuesModule, 'getGlobalQueue').mockRejectedValueOnce(new Error())
+
     const [, game1] = await createOrganisationAndGame({}, { purgeDevPlayers: true, purgeLivePlayers: true })
     const [, game2] = await createOrganisationAndGame({}, { purgeDevPlayers: true, purgeLivePlayers: true })
 
-    // no owner for game1, will cause an error
+    const owner1 = await new UserFactory().owner().state(() => ({
+      organisation: game1.organisation
+    })).one()
 
     const owner2 = await new UserFactory().owner().state(() => ({
       organisation: game2.organisation
@@ -280,7 +291,7 @@ describe('deleteInactivePlayers', () => {
       lastSeenAt: sub(new Date(), { days: 91 })
     })).one()
 
-    await em.persistAndFlush([owner2, player1, player2])
+    await em.persistAndFlush([owner1, owner2, player1, player2])
 
     await deleteInactivePlayers()
 
@@ -304,5 +315,115 @@ describe('deleteInactivePlayers', () => {
       }
     })
     expect(activity2).not.toBeNull()
+  })
+
+  describe('integration tests', () => {
+    beforeEach(async () => {
+      const allPlayers = await em.repo(Player).findAll()
+      await em.removeAndFlush(allPlayers)
+    })
+
+    it('should delete over 100 players with presence and auth', async () => {
+      const [organisation, game] = await createOrganisationAndGame({}, { purgeDevPlayers: true, purgeLivePlayers: true })
+      const owner = await new UserFactory().owner().state(() => ({ organisation })).one()
+
+      const playerCount = randNumber({ min: 100, max: 200 })
+
+      const players = await new PlayerFactory([game]).state(() => ({
+        lastSeenAt: sub(new Date(), { days: 91 })
+      }))
+        .withTaloAlias()
+        .withPresence()
+        .many(playerCount)
+
+      await em.persistAndFlush([owner, ...players])
+
+      await deleteInactivePlayers()
+      em.clear()
+
+      const activity = await em.repo(GameActivity).findOne({
+        game,
+        type: GameActivityType.INACTIVE_LIVE_PLAYERS_DELETED
+      })
+      expect(activity?.extra).toStrictEqual({
+        count: playerCount
+      })
+
+      const updatedPlayerCount = await em.repo(Player).count()
+      expect(updatedPlayerCount).toBe(0)
+
+      const updatedAliasCount = await em.repo(PlayerAlias).count()
+      expect(updatedAliasCount).toBe(0)
+
+      const updatedPresenceCount = await em.repo(PlayerPresence).count()
+      expect(updatedPresenceCount).toBe(0)
+
+      const updatedAuthCount = await em.repo(PlayerAuth).count()
+      expect(updatedAuthCount).toBe(0)
+
+      const updatedPropCount = await em.repo(PlayerProp).count()
+      expect(updatedPropCount).toBe(0)
+
+      // just in case
+      expect(await getBillablePlayerCount(em, game.organisation)).toBe(0)
+    })
+
+    it('should delete players across multiple games', async () => {
+      const games = await Promise.all([
+        em.fork(),
+        em.fork(),
+        em.fork()
+      ].map(async (fork) => {
+        const [organisation, game] = await createOrganisationAndGame({}, { purgeDevPlayers: true, purgeLivePlayers: true })
+        const owner = await new UserFactory().owner().state(() => ({ organisation })).one()
+
+        const playerCount = randNumber({ min: 100, max: 200 })
+        const players = await new PlayerFactory([game]).state(() => ({
+          lastSeenAt: sub(new Date(), { days: 91 }),
+          devBuild: randBoolean()
+        }))
+          .withTaloAlias()
+          .withPresence()
+          .many(playerCount)
+
+        await fork.persistAndFlush([owner, ...players])
+        return game
+      }))
+
+      await deleteInactivePlayers()
+      em.clear()
+
+      for (const game of games) {
+        const devActivity = await em.repo(GameActivity).findOne({
+          game,
+          type: GameActivityType.INACTIVE_DEV_PLAYERS_DELETED
+        })
+        expect(devActivity).not.toBeNull()
+
+        const liveActivity = await em.repo(GameActivity).findOne({
+          game,
+          type: GameActivityType.INACTIVE_LIVE_PLAYERS_DELETED
+        })
+        expect(liveActivity).not.toBeNull()
+
+        // just in case
+        expect(await getBillablePlayerCount(em, game.organisation)).toBe(0)
+      }
+
+      const updatedPlayerCount = await em.repo(Player).count()
+      expect(updatedPlayerCount).toBe(0)
+
+      const updatedAliasCount = await em.repo(PlayerAlias).count()
+      expect(updatedAliasCount).toBe(0)
+
+      const updatedPresenceCount = await em.repo(PlayerPresence).count()
+      expect(updatedPresenceCount).toBe(0)
+
+      const updatedAuthCount = await em.repo(PlayerAuth).count()
+      expect(updatedAuthCount).toBe(0)
+
+      const updatedPropCount = await em.repo(PlayerProp).count()
+      expect(updatedPropCount).toBe(0)
+    })
   })
 })

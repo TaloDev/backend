@@ -629,14 +629,14 @@ export default class PlayerAuthAPIService extends APIService {
       player: alias.player
     })
 
-    createPlayerAuthActivity(req, alias.player, {
-      type: PlayerAuthActivityType.DELETED_AUTH,
-      extra: {
-        identifier: alias.identifier
-      }
-    })
-
     await em.transactional(async (trx) => {
+      createPlayerAuthActivity(req, alias.player, {
+        type: PlayerAuthActivityType.DELETED_AUTH,
+        extra: {
+          identifier: alias.identifier
+        }
+      })
+
       assert(alias.player.auth)
       trx.remove(trx.repo(PlayerAuth).getReference(alias.player.auth.id))
       trx.remove(trx.repo(PlayerAlias).getReference(alias.id))
@@ -646,8 +646,6 @@ export default class PlayerAuthAPIService extends APIService {
         aliasIds: [alias.id]
       })
     })
-
-    await em.flush()
 
     return {
       status: 204

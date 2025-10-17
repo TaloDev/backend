@@ -8,8 +8,9 @@ import createGameActivity from '../lib/logging/createGameActivity'
 import PlayerGroupPolicy from '../policies/player-group.policy'
 import getUserFromToken from '../lib/auth/getUserFromToken'
 import UserPinnedGroup from '../entities/user-pinned-group'
-import { clearResponseCache, withResponseCache } from '../lib/perf/responseCache'
+import { withResponseCache } from '../lib/perf/responseCache'
 import { createHash } from 'crypto'
+import { deferClearResponseCache } from '../lib/perf/responseCacheQueue'
 
 export default class PlayerGroupService extends Service {
   @Route({
@@ -300,7 +301,7 @@ export default class PlayerGroupService extends Service {
     }
 
     await em.flush()
-    await clearResponseCache(UserPinnedGroup.getCacheKeyForUser(user))
+    await deferClearResponseCache(UserPinnedGroup.getCacheKeyForUser(user))
 
     return {
       status: 204

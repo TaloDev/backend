@@ -1,4 +1,4 @@
-import { EntityManager } from '@mikro-orm/mysql'
+import { EntityManager, LockMode } from '@mikro-orm/mysql'
 import { differenceInSeconds } from 'date-fns'
 import { HasPermission, Request, Response, Route, Validate } from 'koa-clay'
 import GameStatAPIDocs from '../../docs/game-stat-api.docs'
@@ -42,6 +42,37 @@ export default class GameStatAPIService extends APIService {
         stats
       }
     }
+  }
+
+  @Route({
+    method: 'GET',
+    path: '/player-stats',
+    docs: GameStatAPIDocs.listPlayerStats
+  })
+  @Validate({
+    headers: ['x-talo-alias']
+  })
+  @HasPermission(GameStatAPIPolicy, 'listPlayerStats')
+  async listPlayerStats(req: Request) : Promise<Response> {
+    const em: EntityManager = req.ctx.em
+
+    const alias: PlayerAlias = req.ctx.state.alias
+
+    return withResponseCache({
+      key: PlayerGameStat.getListCacheKey(alias.player),
+      slidingWindow: true
+    }, async () => {
+      const playerStats = await em.repo(PlayerGameStat).find({
+        player: alias.player
+      })
+
+      return {
+        status: 200,
+        body: {
+          playerStats
+        }
+      }
+    })
   }
 
   @Route({
@@ -108,58 +139,93 @@ export default class GameStatAPIService extends APIService {
 
     const stat: GameStat = req.ctx.state.stat
     const alias: PlayerAlias = req.ctx.state.alias
-
-    let playerStat = await em.repo(PlayerGameStat).findOne({
-      player: alias.player,
-      stat
-    })
-
-    if (playerStat && differenceInSeconds(new Date(), playerStat.createdAt) < stat.minTimeBetweenUpdates) {
-      req.ctx.throw(400, `Stat cannot be updated more often than every ${stat.minTimeBetweenUpdates} seconds`)
-    }
-
-    if (Math.abs(change) > (stat.maxChange ?? Infinity)) {
-      req.ctx.throw(400, `Stat change cannot be more than ${stat.maxChange}`)
-    }
-
-    const currentValue = playerStat?.value ?? stat.defaultValue
-
-    if (currentValue + change < (stat.minValue ?? -Infinity)) {
-      req.ctx.throw(400, `Stat would go below the minValue of ${stat.minValue}`)
-    }
-
-    if (currentValue + change > (stat.maxValue ?? Infinity)) {
-      req.ctx.throw(400, `Stat would go above the maxValue of ${stat.maxValue}`)
-    }
-
     const continuityDate: Date = req.ctx.state.continuityDate
 
-    if (!playerStat) {
-      playerStat = new PlayerGameStat(alias.player, req.ctx.state.stat)
-      if (continuityDate) {
-        playerStat.createdAt = continuityDate
+    type PutTransactionResponse = [PlayerGameStat | null, Response | null]
+
+    const [playerStat, errorResponse] = await em.transactional(async (trx): Promise<PutTransactionResponse> => {
+      let lockedStat: GameStat = stat
+      if (stat.global) {
+        lockedStat = await trx.repo(GameStat).findOneOrFail(
+          { id: stat.id },
+          { lockMode: LockMode.PESSIMISTIC_WRITE, refresh: true }
+        )
       }
 
-      em.persist(playerStat)
-    }
+      let playerStat = await trx.repo(PlayerGameStat).findOne({
+        player: alias.player,
+        stat: lockedStat
+      }, { lockMode: LockMode.PESSIMISTIC_WRITE })
 
-    playerStat.value += change
-    if (stat.global) stat.globalValue += change
+      if (playerStat && differenceInSeconds(new Date(), playerStat.createdAt) < lockedStat.minTimeBetweenUpdates) {
+        return [null, {
+          status: 400,
+          body: {
+            message: `Stat cannot be updated more often than every ${lockedStat.minTimeBetweenUpdates} seconds`
+          }
+        }]
+      }
 
-    const snapshot = new PlayerGameStatSnapshot()
-    snapshot.construct(alias, playerStat)
-    snapshot.change = change
-    if (continuityDate) {
-      snapshot.createdAt = continuityDate
-    }
+      if (Math.abs(change) > (lockedStat.maxChange ?? Infinity)) {
+        return [null, {
+          status: 400,
+          body: {
+            message: `Stat change cannot be more than ${lockedStat.maxChange}`
+          }
+        }]
+      }
 
-    await this.queueHandler.add(snapshot)
+      const currentValue = playerStat?.value ?? lockedStat.defaultValue
 
-    await triggerIntegrations(em, stat.game, (integration) => {
-      return integration.handleStatUpdated(em, playerStat)
+      if (currentValue + change < (lockedStat.minValue ?? -Infinity)) {
+        return [null, {
+          status: 400,
+          body: {
+            message: `Stat would go below the minValue of ${lockedStat.minValue}`
+          }
+        }]
+      }
+
+      if (currentValue + change > (lockedStat.maxValue ?? Infinity)) {
+        return [null, {
+          status: 400,
+          body: {
+            message: `Stat would go above the maxValue of ${lockedStat.maxValue}`
+          }
+        }]
+      }
+
+      if (!playerStat) {
+        playerStat = new PlayerGameStat(alias.player, lockedStat)
+        if (continuityDate) {
+          playerStat.createdAt = continuityDate
+        }
+        trx.persist(playerStat)
+      }
+
+      playerStat.value += change
+      if (lockedStat.global) lockedStat.globalValue += change
+
+      return [playerStat, null]
     })
 
-    await em.flush()
+    if (errorResponse) {
+      return errorResponse
+    }
+
+    if (playerStat) {
+      await triggerIntegrations(em, playerStat.stat.game, (integration) => {
+        return integration.handleStatUpdated(em, playerStat)
+      })
+
+      const snapshot = new PlayerGameStatSnapshot()
+      snapshot.construct(alias, playerStat)
+      snapshot.change = change
+      if (continuityDate) {
+        snapshot.createdAt = continuityDate
+      }
+      await this.queueHandler.add(snapshot)
+    }
 
     return {
       status: 200,

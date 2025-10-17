@@ -39,7 +39,7 @@ import GameFeedbackProp from './game-feedback-prop'
 import { SteamworksLeaderboardEntry } from './steamworks-leaderboard-entry'
 import { SteamworksPlayerStat } from './steamworks-player-stat'
 
-export default [
+export const entities = [
   SteamworksPlayerStat,
   SteamworksLeaderboardEntry,
   GameFeedbackProp,

@@ -57,6 +57,7 @@ import { InternalNameGameIndexes } from './20250811115700InternalNameGameIndexes
 import { CreateSteamworksLeaderboardEntryTable } from './20250912193820CreateSteamworksLeaderboardEntryTable'
 import { CreateSteamworksPlayerStatTable } from './20250915220838CreateSteamworksPlayerStatTable'
 import { AddGameChannelStoragePropKeyIndex } from './20250923194349AddGameChannelStoragePropKeyIndex'
+import { AddLeaderboardUniqueByPropsColumn } from './20251015211635AddLeaderboardUniqueByPropsColumn'
 
 export default [
   {
@@ -294,5 +295,9 @@ export default [
   {
     name: 'AddGameChannelStoragePropKeyIndex',
     class: AddGameChannelStoragePropKeyIndex
+  },
+  {
+    name: 'AddLeaderboardUniqueByPropsColumn',
+    class: AddLeaderboardUniqueByPropsColumn
   }
 ]

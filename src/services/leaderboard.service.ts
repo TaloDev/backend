@@ -319,7 +319,6 @@ export default class LeaderboardService extends Service {
     }
 
     await em.flush()
-    await deferClearResponseCache(entry.leaderboard.getEntriesCacheKey(true))
 
     return {
       status: 200,

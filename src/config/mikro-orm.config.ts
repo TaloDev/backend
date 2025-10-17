@@ -1,5 +1,6 @@
 import 'dotenv/config'
-import entities from '../entities'
+import { entities } from '../entities'
+import { subscribers } from '../subscribers'
 import migrationsList from '../migrations'
 import { TsMorphMetadataProvider } from '@mikro-orm/reflection'
 import { Migrator } from '@mikro-orm/migrations'
@@ -9,6 +10,7 @@ import redisConfig from './redis.config'
 
 const ormConfig = defineConfig({
   entities,
+  subscribers,
   host: process.env.DB_HOST,
   port: Number(process.env.DB_PORT),
   dbName: process.env.DB_NAME,

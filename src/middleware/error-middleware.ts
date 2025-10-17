@@ -7,13 +7,18 @@ export default async function errorMiddleware(ctx: Context, next: Next) {
     await next()
   } catch (err) {
     if (err instanceof Error) {
+      const isJWTError = 'originalError' in err && Boolean(err.originalError)
+
       ctx.status = 'status' in err ? err.status as number : 500
-      ctx.body = ctx.status === 401 && Boolean('originalError' in err && err.originalError) /* dont expose jwt error */
+      ctx.body = ctx.status === 401 && isJWTError /* dont expose jwt error */
         ? { message: 'Please provide a valid token in the Authorization header' }
         : { ...err, headers: undefined /* koa cors is inserting headers into the body for some reason */ }
 
-      if (ctx.status === 500) {
+      if (ctx.status === 500 || isJWTError) {
         hdxRecordException(err)
+        if (isJWTError) {
+          hdxRecordException(err.originalError)
+        }
 
         Sentry.withScope((scope) => {
           scope.addEventProcessor((event) => {
@@ -43,6 +48,9 @@ export default async function errorMiddleware(ctx: Context, next: Next) {
           }
 
           Sentry.captureException(err)
+          if (isJWTError) {
+            Sentry.captureException(err.originalError)
+          }
         })
 
         if (process.env.NODE_ENV !== 'production') {

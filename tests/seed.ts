@@ -22,7 +22,12 @@ import { MikroORM } from '@mikro-orm/mysql'
 (async () => {
   console.info('Running migrations...')
 
-  const orm = await MikroORM.init(ormConfig)
+  const seedOrmConfig: typeof ormConfig = {
+    ...ormConfig,
+    subscribers: []
+  }
+
+  const orm = await MikroORM.init(seedOrmConfig)
   await orm.getSchemaGenerator().dropSchema()
   await orm.em.getConnection().execute('drop table if exists mikro_orm_migrations')
   await orm.getMigrator().up()

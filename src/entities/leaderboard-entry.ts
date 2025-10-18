@@ -2,7 +2,6 @@ import { Collection, Entity, Index, ManyToOne, OneToMany, PrimaryKey, Property }
 import Leaderboard from './leaderboard'
 import PlayerAlias from './player-alias'
 import LeaderboardEntryProp from './leaderboard-entry-prop'
-import { LeaderboardEntryPropsChangedError } from '../lib/errors/leaderboardEntryPropsChangedError'
 
 const scoreIndexName = 'idx_leaderboardentry_hidden_leaderboard_id_score'
 const scoreIndexExpr = `alter table \`leaderboard_entry\` add index \`${scoreIndexName}\`(\`hidden\`, \`leaderboard_id\`, \`score\`)`
@@ -46,19 +45,21 @@ export default class LeaderboardEntry {
     this.props.set(props.map(({ key, value }) => new LeaderboardEntryProp(this, key, value)))
   }
 
-  compareProps(incomingProps: { key: string, value: string }[]) {
+  compareProps(incomingProps: { key: string, value: string }[]): boolean {
     const existingMap = new Map(this.props.map((prop) => ([prop.key, prop.value])))
     const incomingMap = new Map(incomingProps.map((prop) => ([prop.key, prop.value])))
 
     if (existingMap.size !== incomingMap.size) {
-      throw new LeaderboardEntryPropsChangedError()
+      return false
     }
 
     for (const [key, value] of existingMap) {
       if (!incomingMap.has(key) || incomingMap.get(key) !== value) {
-        throw new LeaderboardEntryPropsChangedError()
+        return false
       }
     }
+
+    return true
   }
 
   toJSON() {

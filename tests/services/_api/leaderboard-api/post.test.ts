@@ -4,7 +4,7 @@ import { LeaderboardSortMode } from '../../../../src/entities/leaderboard'
 import LeaderboardFactory from '../../../fixtures/LeaderboardFactory'
 import PlayerFactory from '../../../fixtures/PlayerFactory'
 import LeaderboardEntryFactory from '../../../fixtures/LeaderboardEntryFactory'
-import { subHours } from 'date-fns'
+import { subHours, subMinutes } from 'date-fns'
 import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
 import { randText } from '@ngneat/falso'
 import LeaderboardEntryProp from '../../../../src/entities/leaderboard-entry-prop'
@@ -813,5 +813,125 @@ describe('Leaderboard API service - post', () => {
         { key: 'difficulty', value: 'hard' }
       ])
     )
+  })
+
+  it('should not create a new entry if uniqueByProps is enabled and the player has multiple entries but the latest entry props match', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_LEADERBOARDS])
+    const player = await new PlayerFactory([apiKey.game]).one()
+    const leaderboard = await new LeaderboardFactory([apiKey.game]).state(() => ({
+      unique: true,
+      uniqueByProps: true,
+      sortMode: LeaderboardSortMode.DESC
+    })).one()
+
+    const oldEntry = await new LeaderboardEntryFactory(leaderboard, [player]).state(() => ({
+      score: 100,
+      playerAlias: player.aliases[0],
+      createdAt: subMinutes(new Date(), 10)
+    })).one()
+    const newerEntry = await new LeaderboardEntryFactory(leaderboard, [player]).state((entry) => ({
+      score: 100,
+      playerAlias: player.aliases[0],
+      props: new Collection<LeaderboardEntryProp>(entry, [
+        new LeaderboardEntryProp(entry, 'level', '1'),
+        new LeaderboardEntryProp(entry, 'difficulty', 'hard')
+      ])
+    })).one()
+
+    await em.persistAndFlush([player, leaderboard, oldEntry, newerEntry])
+
+    const res = await request(app)
+      .post(`/v1/leaderboards/${leaderboard.internalName}/entries`)
+      .send({
+        score: 200,
+        props: [
+          { key: 'level', value: '1' },
+          { key: 'difficulty', value: 'hard' }
+        ]
+      })
+      .auth(token, { type: 'bearer' })
+      .set('x-talo-alias', String(player.aliases[0].id))
+      .expect(200)
+
+    expect(res.body.entry.id).toBe(newerEntry.id)
+    expect(res.body.entry.score).toBe(200)
+    expect(res.body.updated).toBe(true)
+  })
+
+  it('should keep creating new entries if uniqueByProps is enabled and the latest entry props do not match incoming ones', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_LEADERBOARDS])
+    const player = await new PlayerFactory([apiKey.game]).one()
+    const leaderboard = await new LeaderboardFactory([apiKey.game]).state(() => ({
+      unique: true,
+      uniqueByProps: true,
+      sortMode: LeaderboardSortMode.DESC
+    })).one()
+
+    const entry = await new LeaderboardEntryFactory(leaderboard, [player]).state((entry) => ({
+      score: 100,
+      playerAlias: player.aliases[0],
+      props: new Collection<LeaderboardEntryProp>(entry, [
+        new LeaderboardEntryProp(entry, 'level', '1'),
+        new LeaderboardEntryProp(entry, 'difficulty', 'hard')
+      ])
+    })).one()
+
+    await em.persistAndFlush([player, leaderboard, entry])
+
+    // level 2
+    const level2Res = await request(app)
+      .post(`/v1/leaderboards/${leaderboard.internalName}/entries`)
+      .send({
+        score: 200,
+        props: [
+          { key: 'level', value: '2' },
+          { key: 'difficulty', value: 'hard' }
+        ]
+      })
+      .auth(token, { type: 'bearer' })
+      .set('x-talo-alias', String(player.aliases[0].id))
+      .expect(200)
+
+    expect(level2Res.body.entry.id).not.toBe(entry.id)
+    expect(level2Res.body.entry.score).toBe(200)
+    expect(level2Res.body.updated).toBe(false)
+
+    const level2EntryId = level2Res.body.entry.id
+
+    // level 3
+    const level3Res = await request(app)
+      .post(`/v1/leaderboards/${leaderboard.internalName}/entries`)
+      .send({
+        score: 300,
+        props: [
+          { key: 'level', value: '3' },
+          { key: 'difficulty', value: 'hard' }
+        ]
+      })
+      .auth(token, { type: 'bearer' })
+      .set('x-talo-alias', String(player.aliases[0].id))
+      .expect(200)
+
+    expect(level3Res.body.entry.id).not.toBe(level2EntryId)
+    expect(level3Res.body.entry.score).toBe(300)
+    expect(level3Res.body.updated).toBe(false)
+
+    // level 2 again
+    const level2AgainRes = await request(app)
+      .post(`/v1/leaderboards/${leaderboard.internalName}/entries`)
+      .send({
+        score: 250,
+        props: [
+          { key: 'level', value: '2' },
+          { key: 'difficulty', value: 'hard' }
+        ]
+      })
+      .auth(token, { type: 'bearer' })
+      .set('x-talo-alias', String(player.aliases[0].id))
+      .expect(200)
+
+    expect(level2AgainRes.body.entry.id).toBe(level2EntryId)
+    expect(level2AgainRes.body.entry.score).toBe(250)
+    expect(level2AgainRes.body.updated).toBe(true)
   })
 })

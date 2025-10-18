@@ -78,14 +78,21 @@ export default class LeaderboardAPIService extends APIService {
 
     try {
       if (leaderboard.unique) {
-        entry = await em.repo(LeaderboardEntry).findOneOrFail({
-          leaderboard,
-          playerAlias: req.ctx.state.alias,
-          deletedAt: null
-        })
-
         if (leaderboard.uniqueByProps) {
-          entry.compareProps(props)
+          entry = await leaderboard.findEntryWithProps({
+            em,
+            playerAliasId: req.ctx.state.alias.id,
+            props
+          })
+          if (!entry) {
+            throw new LeaderboardEntryPropsChangedError()
+          }
+        } else {
+          entry = await em.repo(LeaderboardEntry).findOneOrFail({
+            leaderboard,
+            playerAlias: req.ctx.state.alias,
+            deletedAt: null
+          })
         }
 
         if ((leaderboard.sortMode === LeaderboardSortMode.ASC && score < entry.score) || (leaderboard.sortMode === LeaderboardSortMode.DESC && score > entry.score)) {

@@ -7,7 +7,7 @@
     "watch": "tsx watch src/index.ts",
     "build": "npx tsc -p tsconfig.build.json",
     "seed": "DB_HOST=127.0.0.1 CLICKHOUSE_HOST=127.0.0.1 tsx tests/seed.ts",
-    "test": "./tests/run-tests.sh",
+    "test": "TZ=UTC ./tests/run-tests.sh",
     "up": "docker compose up --build -d",
     "down": "docker compose down",
     "restart": "docker compose restart backend && npm run logs",

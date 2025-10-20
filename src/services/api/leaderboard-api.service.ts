@@ -9,7 +9,7 @@ import triggerIntegrations from '../../lib/integrations/triggerIntegrations'
 import { hardSanitiseProps, mergeAndSanitiseProps } from '../../lib/props/sanitiseProps'
 import { PropSizeError } from '../../lib/errors/propSizeError'
 import buildErrorResponse from '../../lib/errors/buildErrorResponse'
-import { LeaderboardEntryPropsChangedError } from '../../lib/errors/leaderboardEntryPropsChangedError'
+import { UniqueLeaderboardEntryPropsDigestError } from '../../lib/errors/uniqueLeaderboardEntryPropsDigestError'
 
 export default class LeaderboardAPIService extends APIService {
   @Route({
@@ -85,7 +85,7 @@ export default class LeaderboardAPIService extends APIService {
             props
           })
           if (!entry) {
-            throw new LeaderboardEntryPropsChangedError()
+            throw new UniqueLeaderboardEntryPropsDigestError()
           }
         } else {
           entry = await em.repo(LeaderboardEntry).findOneOrFail({
@@ -109,7 +109,7 @@ export default class LeaderboardAPIService extends APIService {
         entry = await this.createEntry(req, props)
       }
     } catch (err) {
-      if (err instanceof NotFoundError || err instanceof LeaderboardEntryPropsChangedError) {
+      if (err instanceof NotFoundError || err instanceof UniqueLeaderboardEntryPropsDigestError) {
         entry = await this.createEntry(req, props)
       } else if (err instanceof PropSizeError) {
         return buildErrorResponse({ props: [err.message] })

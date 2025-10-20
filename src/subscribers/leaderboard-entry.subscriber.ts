@@ -11,8 +11,22 @@ export class LeaderboardEntrySubscriber implements EventSubscriber {
     void deferClearResponseCache(entry.leaderboard.getEntriesCacheKey(true))
   }
 
+  createPropsDigest(entry: LeaderboardEntry) {
+    return LeaderboardEntry.createPropsDigest(entry.props.getItems())
+  }
+
+  beforeCreate(args: EventArgs<LeaderboardEntry>) {
+    args.entity.propsDigest = this.createPropsDigest(args.entity)
+  }
+
   afterCreate(args: EventArgs<LeaderboardEntry>) {
     this.clearCacheKeys(args.entity)
+  }
+
+  beforeUpdate(args: EventArgs<LeaderboardEntry>) {
+    if (args.entity.props.isDirty()) {
+      args.entity.propsDigest = this.createPropsDigest(args.entity)
+    }
   }
 
   afterUpdate(args: EventArgs<LeaderboardEntry>) {

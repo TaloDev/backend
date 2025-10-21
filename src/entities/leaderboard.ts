@@ -2,7 +2,6 @@ import { Collection, Entity, EntityManager, Enum, Index, ManyToOne, OneToMany, P
 import { Request, Required, ValidationCondition } from 'koa-clay'
 import Game from './game'
 import LeaderboardEntry from './leaderboard-entry'
-import { streamByCursor } from '../lib/perf/streamByCursor'
 
 export enum LeaderboardSortMode {
   DESC = 'desc',
@@ -115,25 +114,12 @@ export default class Leaderboard {
     playerAliasId: number
     props: { key: string, value: string }[]
   }): Promise<LeaderboardEntry | null> {
-    const entryStream = streamByCursor<LeaderboardEntry>(async (batchSize, after) => {
-      return em.repo(LeaderboardEntry).findByCursor({
-        leaderboard: this,
-        playerAlias: playerAliasId,
-        deletedAt: null
-      }, {
-        first: batchSize,
-        after,
-        orderBy: { id: 'desc' }
-      })
-    }, 100)
-
-    for await (const entry of entryStream) {
-      if (entry.compareProps(props)) {
-        return entry
-      }
-    }
-
-    return null
+    return em.repo(LeaderboardEntry).findOne({
+      leaderboard: this,
+      playerAlias: playerAliasId,
+      deletedAt: null,
+      propsDigest: LeaderboardEntry.createPropsDigest(props)
+    })
   }
 
   toJSON() {

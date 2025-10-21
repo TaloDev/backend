@@ -2,6 +2,7 @@ import { Collection, Entity, Index, ManyToOne, OneToMany, PrimaryKey, Property }
 import Leaderboard from './leaderboard'
 import PlayerAlias from './player-alias'
 import LeaderboardEntryProp from './leaderboard-entry-prop'
+import { createHash } from 'node:crypto'
 
 const scoreIndexName = 'idx_leaderboardentry_hidden_leaderboard_id_score'
 const scoreIndexExpr = `alter table \`leaderboard_entry\` add index \`${scoreIndexName}\`(\`hidden\`, \`leaderboard_id\`, \`score\`)`
@@ -28,6 +29,10 @@ export default class LeaderboardEntry {
   @Property({ default: false })
   hidden!: boolean
 
+  @Index()
+  @Property()
+  propsDigest!: string
+
   @Property()
   createdAt: Date = new Date()
 
@@ -37,29 +42,25 @@ export default class LeaderboardEntry {
   @Property({ nullable: true })
   deletedAt: Date | null = null
 
+  static createPropsDigest(props: { key: string, value: string }[]) {
+    const propsToHash = props.map((prop) => ({
+      key: prop.key,
+      value: prop.value
+    }))
+
+    propsToHash.sort((a, b) => a.key.localeCompare(b.key))
+
+    return createHash('sha256')
+      .update(JSON.stringify(propsToHash))
+      .digest('hex')
+  }
+
   constructor(leaderboard: Leaderboard) {
     this.leaderboard = leaderboard
   }
 
   setProps(props: { key: string, value: string }[]) {
     this.props.set(props.map(({ key, value }) => new LeaderboardEntryProp(this, key, value)))
-  }
-
-  compareProps(incomingProps: { key: string, value: string }[]): boolean {
-    const existingMap = new Map(this.props.map((prop) => ([prop.key, prop.value])))
-    const incomingMap = new Map(incomingProps.map((prop) => ([prop.key, prop.value])))
-
-    if (existingMap.size !== incomingMap.size) {
-      return false
-    }
-
-    for (const [key, value] of existingMap) {
-      if (!incomingMap.has(key) || incomingMap.get(key) !== value) {
-        return false
-      }
-    }
-
-    return true
   }
 
   toJSON() {

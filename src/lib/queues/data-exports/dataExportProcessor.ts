@@ -23,6 +23,7 @@ import { createWriteStream } from 'fs'
 import { get } from 'lodash'
 import { DataExportMailer } from './dataExportMailer'
 import { format } from 'date-fns'
+import { escapeCSVValue } from '../../lang/escapeCSVValue'
 
 export type DataExportJob = {
   dataExportId: number
@@ -585,7 +586,7 @@ export class DataExporter {
   private transformColumn(column: string, object: ExportableEntity): string {
     if (column.startsWith('props')) {
       const value = this.getProps(object as ExportableEntityWithProps).find((prop) => column.endsWith(prop.key))?.value ?? ''
-      return value
+      return escapeCSVValue(value)
     }
 
     let value = get(object, column)
@@ -611,10 +612,10 @@ export class DataExporter {
         if (object instanceof GameFeedback && object.anonymised) {
           return 'Anonymous'
         } else {
-          return String(value)
+          return escapeCSVValue(String(value))
         }
       default:
-        return String(value)
+        return escapeCSVValue(String(value))
     }
   }
 }

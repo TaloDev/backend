@@ -1,35 +1,41 @@
 import { Context, Next } from 'koa'
 import { isAPIRoute } from './route-middleware'
-import { EntityManager } from '@mikro-orm/mysql'
+import { EntityManager, Loaded } from '@mikro-orm/mysql'
 import PlayerAlias, { PlayerAliasService } from '../entities/player-alias'
 import { verify } from '../lib/auth/jwt'
 
+type PlayerAliasPartial = Loaded<PlayerAlias, 'player.auth', 'id' | 'player.auth' | 'player.id'>
+
 export default async function playerAuthMiddleware(ctx: Context, next: Next): Promise<void> {
   if (isAPIRoute(ctx) && (ctx.state.currentPlayerId || ctx.state.currentAliasId)) {
-    const em: EntityManager = ctx.em
-    let alias: PlayerAlias | null = null
-
-    if (ctx.state.currentPlayerId) {
-      alias = await em.getRepository(PlayerAlias).findOne({
-        service: PlayerAliasService.TALO,
-        player: {
-          id: ctx.state.currentPlayerId,
-          game: ctx.state.game
-        }
+    const alias = await (ctx.em as EntityManager)
+      .fork()
+      .repo(PlayerAlias)
+      .findOne({
+        $and: [
+          {
+            $or: [
+              {
+                id: ctx.state.currentAliasId
+              },
+              {
+                player: {
+                  id: ctx.state.currentPlayerId
+                }
+              }
+            ]
+          },
+          {
+            service: PlayerAliasService.TALO,
+            player: {
+              game: ctx.state.game
+            }
+          }
+        ]
       }, {
-        populate: ['player.auth']
+        populate: ['player.auth'],
+        fields: ['id', 'player.id', 'player.auth']
       })
-    } else {
-      alias = await em.getRepository(PlayerAlias).findOne({
-        id: ctx.state.currentAliasId,
-        service: PlayerAliasService.TALO,
-        player: {
-          game: ctx.state.game
-        }
-      }, {
-        populate: ['player.auth']
-      })
-    }
 
     if (alias) {
       await validateAuthSessionToken(ctx, alias)
@@ -39,7 +45,7 @@ export default async function playerAuthMiddleware(ctx: Context, next: Next): Pr
   await next()
 }
 
-export async function validateAuthSessionToken(ctx: Context, alias: PlayerAlias): Promise<void> {
+export async function validateAuthSessionToken(ctx: Context, alias: PlayerAliasPartial): Promise<void> {
   const sessionToken = ctx.headers['x-talo-session']
   if (!sessionToken) {
     ctx.throw(401, {
@@ -70,7 +76,7 @@ export async function validateAuthSessionToken(ctx: Context, alias: PlayerAlias)
 export async function validateSessionTokenJWT(
   em: EntityManager,
   sessionToken: string,
-  alias: PlayerAlias,
+  alias: PlayerAliasPartial,
   expectedPlayerId: string,
   expectedAliasId: number
 ): Promise<boolean> {

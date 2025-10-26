@@ -28,7 +28,8 @@ export default class GameStatAPIPolicy extends Policy {
         game: key.game
       }
     }, {
-      fields: ['id', 'player.id']
+      fields: ['id', 'player.id'],
+      strategy: 'joined'
     })
 
     this.ctx.state.alias = alias
@@ -42,7 +43,8 @@ export default class GameStatAPIPolicy extends Policy {
       id: this.ctx.state.currentPlayerId,
       game: key.game
     }, {
-      fields: ['id']
+      fields: ['id'],
+      strategy: 'joined'
     })
 
     this.ctx.state.player = player

@@ -94,4 +94,31 @@ describe('Player listeners - identify', () => {
       })
     })
   })
+
+  it('should reject identify for Talo aliases a missing session token', async () => {
+    const [apiKey] = await createAPIKeyAndToken([APIKeyScope.READ_PLAYERS])
+    const player = await new PlayerFactory([apiKey.game]).withTaloAlias().one()
+    await em.persistAndFlush(player)
+
+    const ticket = await createSocketTicket(redis, apiKey, false)
+    const socketToken = await player.aliases[0].createSocketToken(redis)
+
+    await createTestSocket(`/?ticket=${ticket}`, async (client) => {
+      client.sendJson({
+        req: 'v1.players.identify',
+        data: {
+          playerAliasId: player.aliases[0].id,
+          socketToken: socketToken
+        }
+      })
+      await client.expectJsonToStrictEqual({
+        res: 'v1.error',
+        data: {
+          req: 'v1.players.identify',
+          message: 'Invalid session token',
+          errorCode: 'INVALID_SESSION_TOKEN'
+        }
+      })
+    })
+  })
 })

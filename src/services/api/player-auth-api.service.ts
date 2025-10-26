@@ -197,6 +197,10 @@ export default class PlayerAuthAPIService extends APIService {
       })
     }
 
+    if (!alias.player.auth) {
+      req.ctx.throw(400, 'Player does not have authentication')
+    }
+
     const redis: Redis = req.ctx.redis
     const redisCode = await redis.get(this.getRedisAuthKey(key, alias))
 
@@ -214,7 +218,7 @@ export default class PlayerAuthAPIService extends APIService {
 
     await redis.del(this.getRedisAuthKey(key, alias))
 
-    const sessionToken = await alias.player.auth!.createSession(alias)
+    const sessionToken = await alias.player.auth.createSession(alias)
     const socketToken = await alias.createSocketToken(redis)
 
     createPlayerAuthActivity(req, alias.player, {
@@ -249,7 +253,11 @@ export default class PlayerAuthAPIService extends APIService {
       populate: ['player.auth']
     })
 
-    alias.player.auth!.clearSession()
+    if (!alias.player.auth) {
+      req.ctx.throw(400, 'Player does not have authentication')
+    }
+
+    alias.player.auth.clearSession()
 
     createPlayerAuthActivity(req, alias.player, {
       type: PlayerAuthActivityType.LOGGED_OUT
@@ -280,7 +288,11 @@ export default class PlayerAuthAPIService extends APIService {
       populate: ['player.auth']
     })
 
-    const passwordMatches = await bcrypt.compare(currentPassword, alias.player.auth!.password)
+    if (!alias.player.auth) {
+      req.ctx.throw(400, 'Player does not have authentication')
+    }
+
+    const passwordMatches = await bcrypt.compare(currentPassword, alias.player.auth.password)
     if (!passwordMatches) {
       createPlayerAuthActivity(req, alias.player, {
         type: PlayerAuthActivityType.CHANGE_PASSWORD_FAILED,
@@ -296,7 +308,7 @@ export default class PlayerAuthAPIService extends APIService {
       })
     }
 
-    const isSamePassword = await bcrypt.compare(newPassword, alias.player.auth!.password)
+    const isSamePassword = await bcrypt.compare(newPassword, alias.player.auth.password)
     if (isSamePassword) {
       createPlayerAuthActivity(req, alias.player, {
         type: PlayerAuthActivityType.CHANGE_PASSWORD_FAILED,
@@ -312,7 +324,7 @@ export default class PlayerAuthAPIService extends APIService {
       })
     }
 
-    alias.player.auth!.password = await bcrypt.hash(newPassword, 10)
+    alias.player.auth.password = await bcrypt.hash(newPassword, 10)
 
     createPlayerAuthActivity(req, alias.player, {
       type: PlayerAuthActivityType.CHANGED_PASSWORD
@@ -343,7 +355,11 @@ export default class PlayerAuthAPIService extends APIService {
       populate: ['player.auth']
     })
 
-    const passwordMatches = await bcrypt.compare(currentPassword, alias.player.auth!.password)
+    if (!alias.player.auth) {
+      req.ctx.throw(400, 'Player does not have authentication')
+    }
+
+    const passwordMatches = await bcrypt.compare(currentPassword, alias.player.auth.password)
     if (!passwordMatches) {
       createPlayerAuthActivity(req, alias.player, {
         type: PlayerAuthActivityType.CHANGE_EMAIL_FAILED,
@@ -359,7 +375,7 @@ export default class PlayerAuthAPIService extends APIService {
       })
     }
 
-    const isSameEmail = newEmail === alias.player.auth!.email
+    const isSameEmail = newEmail === alias.player.auth.email
     if (isSameEmail) {
       createPlayerAuthActivity(req, alias.player, {
         type: PlayerAuthActivityType.CHANGE_EMAIL_FAILED,
@@ -375,10 +391,10 @@ export default class PlayerAuthAPIService extends APIService {
       })
     }
 
-    const oldEmail = alias.player.auth!.email
+    const oldEmail = alias.player.auth.email
     const sanitisedEmail = (newEmail as string).trim().toLowerCase()
     if (emailRegex.test(sanitisedEmail)) {
-      alias.player.auth!.email = sanitisedEmail
+      alias.player.auth.email = sanitisedEmail
     } else {
       createPlayerAuthActivity(req, alias.player, {
         type: PlayerAuthActivityType.CHANGE_EMAIL_FAILED,
@@ -482,7 +498,7 @@ export default class PlayerAuthAPIService extends APIService {
       populate: ['player.auth']
     })
 
-    if (!aliasId || !alias) {
+    if (!aliasId || !alias || !alias.player.auth) {
       req.ctx.throw(401, {
         message: 'This code is either invalid or has expired',
         errorCode: 'PASSWORD_RESET_CODE_INVALID'
@@ -491,8 +507,8 @@ export default class PlayerAuthAPIService extends APIService {
 
     await redis.del(this.getRedisPasswordResetKey(key, code))
 
-    alias.player.auth!.password = await bcrypt.hash(password, 10)
-    alias.player.auth!.clearSession()
+    alias.player.auth.password = await bcrypt.hash(password, 10)
+    alias.player.auth.clearSession()
 
     createPlayerAuthActivity(req, alias.player, {
       type: PlayerAuthActivityType.PASSWORD_RESET_COMPLETED
@@ -523,7 +539,11 @@ export default class PlayerAuthAPIService extends APIService {
       populate: ['player.auth']
     })
 
-    if (verificationEnabled && !alias.player.auth!.email && !email) {
+    if (!alias.player.auth) {
+      req.ctx.throw(400, 'Player does not have authentication')
+    }
+
+    if (verificationEnabled && !alias.player.auth.email && !email) {
       createPlayerAuthActivity(req, alias.player, {
         type: PlayerAuthActivityType.TOGGLE_VERIFICATION_FAILED,
         extra: {
@@ -539,7 +559,7 @@ export default class PlayerAuthAPIService extends APIService {
       })
     }
 
-    const passwordMatches = await bcrypt.compare(currentPassword, alias.player.auth!.password)
+    const passwordMatches = await bcrypt.compare(currentPassword, alias.player.auth.password)
     if (!passwordMatches) {
       createPlayerAuthActivity(req, alias.player, {
         type: PlayerAuthActivityType.TOGGLE_VERIFICATION_FAILED,
@@ -556,11 +576,11 @@ export default class PlayerAuthAPIService extends APIService {
       })
     }
 
-    alias.player.auth!.verificationEnabled = Boolean(verificationEnabled)
+    alias.player.auth.verificationEnabled = Boolean(verificationEnabled)
     if (email?.trim()) {
       const sanitisedEmail = (email as string).trim().toLowerCase()
       if (emailRegex.test(sanitisedEmail)) {
-        alias.player.auth!.email = sanitisedEmail
+        alias.player.auth.email = sanitisedEmail
       } else {
         createPlayerAuthActivity(req, alias.player, {
           type: PlayerAuthActivityType.TOGGLE_VERIFICATION_FAILED,
@@ -581,7 +601,7 @@ export default class PlayerAuthAPIService extends APIService {
     createPlayerAuthActivity(req, alias.player, {
       type: PlayerAuthActivityType.VERIFICATION_TOGGLED,
       extra: {
-        verificationEnabled: alias.player.auth!.verificationEnabled
+        verificationEnabled: alias.player.auth.verificationEnabled
       }
     })
 
@@ -609,7 +629,11 @@ export default class PlayerAuthAPIService extends APIService {
       populate: ['player.auth']
     })
 
-    const passwordMatches = await bcrypt.compare(currentPassword, alias.player.auth!.password)
+    if (!alias.player.auth) {
+      req.ctx.throw(400, 'Player does not have authentication')
+    }
+
+    const passwordMatches = await bcrypt.compare(currentPassword, alias.player.auth.password)
     if (!passwordMatches) {
       createPlayerAuthActivity(req, alias.player, {
         type: PlayerAuthActivityType.DELETE_AUTH_FAILED,

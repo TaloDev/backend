@@ -52,4 +52,23 @@ describe('Player auth API service - logout', () => {
       .set('x-talo-session', sessionToken)
       .expect(403)
   })
+
+  it('should return a 400 if the player does not have authentication', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_PLAYERS, APIKeyScope.WRITE_PLAYERS])
+
+    const player = await new PlayerFactory([apiKey.game]).one()
+    await em.persistAndFlush(player)
+
+    const alias = player.aliases[0]
+
+    const res = await request(app)
+      .post('/v1/players/auth/logout')
+      .auth(token, { type: 'bearer' })
+      .set('x-talo-player', player.id)
+      .set('x-talo-alias', String(alias.id))
+      .set('x-talo-session', 'fake-session')
+      .expect(400)
+
+    expect(res.body).toStrictEqual({ message: 'Player does not have authentication' })
+  })
 })

@@ -54,23 +54,23 @@ export async function validateAuthSessionToken(ctx: Context, alias: PlayerAliasP
     })
   }
 
-  try {
-    const valid = await validateSessionTokenJWT(
-      ctx.em,
-      sessionToken as string,
-      alias,
-      ctx.state.currentPlayerId,
-      ctx.state.currentAliasId
-    )
-    if (!valid) {
-      throw new Error()
-    }
-  } catch (err) {
-    ctx.throw(401, {
-      message: 'The x-talo-session header is invalid',
-      errorCode: 'INVALID_SESSION'
-    })
+  const valid = await validateSessionTokenJWT(
+    ctx.em,
+    sessionToken as string,
+    alias,
+    ctx.state.currentPlayerId,
+    ctx.state.currentAliasId
+  )
+  if (!valid) {
+    throwInvalidSessionError(ctx)
   }
+}
+
+export function throwInvalidSessionError(ctx: Context): void {
+  ctx.throw(401, {
+    message: 'The x-talo-session header is invalid',
+    errorCode: 'INVALID_SESSION'
+  })
 }
 
 export async function validateSessionTokenJWT(
@@ -80,9 +80,13 @@ export async function validateSessionTokenJWT(
   expectedPlayerId: string,
   expectedAliasId: number
 ): Promise<boolean> {
-  await em.populate(alias, ['player.auth'])
   if (!alias.player.auth) return false
+  if (!alias.player.auth.sessionKey) return false
 
-  const payload = await verify<{ playerId: string, aliasId: number }>(sessionToken, alias.player.auth.sessionKey!)
-  return payload.playerId === expectedPlayerId && payload.aliasId === expectedAliasId
+  try {
+    const payload = await verify<{ playerId: string, aliasId: number }>(sessionToken, alias.player.auth.sessionKey)
+    return payload.playerId === expectedPlayerId && payload.aliasId === expectedAliasId
+  } catch {
+    return false
+  }
 }

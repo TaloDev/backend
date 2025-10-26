@@ -89,7 +89,7 @@ describe('Steamworks integration - sync leaderboards', () => {
 
     expect(mapping).toBeTruthy()
 
-    const entry = await em.getRepository(LeaderboardEntry).findOne({ score: 1030 })
+    const entry = await em.getRepository(LeaderboardEntry).findOne({ score: 1030 }, { refresh: true })
     expect(entry).toBeTruthy()
 
     const steamworksEntry = await em.getRepository(SteamworksLeaderboardEntry).findOne({ leaderboardEntry: entry }, { refresh: true })

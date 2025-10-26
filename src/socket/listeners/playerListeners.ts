@@ -35,16 +35,14 @@ const playerListeners = [
           })
 
         if (alias.service === PlayerAliasService.TALO) {
-          try {
-            await validateSessionTokenJWT(
-              em,
-              /* v8 ignore next */
-              data.sessionToken ?? '',
-              alias,
-              alias.player.id,
-              alias.id
-            )
-          } catch (err) {
+          const valid = await validateSessionTokenJWT(
+            em,
+            data.sessionToken ?? '',
+            alias,
+            alias.player.id,
+            alias.id
+          )
+          if (!valid) {
             await sendError(conn, req, new SocketError('INVALID_SESSION_TOKEN', 'Invalid session token'))
             return
           }

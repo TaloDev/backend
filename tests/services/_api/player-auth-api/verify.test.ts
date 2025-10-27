@@ -100,4 +100,21 @@ describe('Player auth API service - verify', () => {
     })
     expect(activity).not.toBeNull()
   })
+
+  it('should return a 400 if the player does not have authentication', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_PLAYERS, APIKeyScope.WRITE_PLAYERS])
+
+    const player = await new PlayerFactory([apiKey.game]).one()
+    await em.persistAndFlush(player)
+
+    const alias = player.aliases[0]
+
+    const res = await request(app)
+      .post('/v1/players/auth/verify')
+      .send({ aliasId: alias.id, code: '123456' })
+      .auth(token, { type: 'bearer' })
+      .expect(400)
+
+    expect(res.body).toStrictEqual({ message: 'Player does not have authentication' })
+  })
 })

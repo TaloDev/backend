@@ -1,6 +1,6 @@
 import { Context, Next } from 'koa'
 import { isAPIRoute } from './route-middleware'
-import { EntityManager, Loaded } from '@mikro-orm/mysql'
+import { EntityManager, FilterQuery, Loaded } from '@mikro-orm/mysql'
 import PlayerAlias, { PlayerAliasService } from '../entities/player-alias'
 import { verify } from '../lib/auth/jwt'
 
@@ -8,22 +8,24 @@ type PlayerAliasPartial = Loaded<PlayerAlias, 'player.auth', 'id' | 'player.auth
 
 export default async function playerAuthMiddleware(ctx: Context, next: Next): Promise<void> {
   if (isAPIRoute(ctx) && (ctx.state.currentPlayerId || ctx.state.currentAliasId)) {
+    const conditions: FilterQuery<PlayerAlias>[] = [
+      ctx.state.currentAliasId ? {
+        id: ctx.state.currentAliasId as number
+      } : {},
+      ctx.state.currentPlayerId ? {
+        player: {
+          id: ctx.state.currentPlayerId as string
+        }
+      } : {}
+    ].filter((x) => Object.keys(x).length > 0)
+
     const alias = await (ctx.em as EntityManager)
       .fork()
       .repo(PlayerAlias)
       .findOne({
         $and: [
           {
-            $or: [
-              {
-                id: ctx.state.currentAliasId
-              },
-              {
-                player: {
-                  id: ctx.state.currentPlayerId
-                }
-              }
-            ]
+            $or: conditions
           },
           {
             service: PlayerAliasService.TALO,

@@ -11,6 +11,8 @@ import userPermissionProvider from '../../utils/userPermissionProvider'
 import createUserAndToken from '../../utils/createUserAndToken'
 import createOrganisationAndGame from '../../utils/createOrganisationAndGame'
 import assert from 'node:assert'
+import PlayerGameStatSnapshot from '../../../src/entities/player-game-stat-snapshot'
+import { FlushStatSnapshotsQueueHandler } from '../../../src/lib/queues/game-metrics/flush-stat-snapshots-queue-handler'
 
 describe('GameStat service - reset', () => {
   it.each(userPermissionProvider([
@@ -359,5 +361,74 @@ describe('GameStat service - reset', () => {
       game
     })
     expect(activity.extra.display?.['Deleted count']).toBe(0)
+  })
+
+  it('should batch clickhouse deletions when resetting stats with over 100 player aliases', async () => {
+    const [organisation, game] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken({ type: UserType.ADMIN }, organisation)
+
+    const stat = await new GameStatFactory([game]).state(() => ({
+      global: true,
+      globalValue: 1000,
+      defaultValue: 0
+    })).one()
+
+    const players = await new PlayerFactory([game]).many(105)
+    const playerStats = await Promise.all(players.map(async (player) => {
+      return new PlayerGameStatFactory().construct(player, stat).state(() => ({ value: 10 })).one()
+    }))
+
+    await em.persistAndFlush(playerStats)
+
+    const handler = new FlushStatSnapshotsQueueHandler()
+    for (const playerStat of playerStats) {
+      const alias = playerStat.player.aliases[0]
+      await handler.add(new PlayerGameStatSnapshot().construct(alias, playerStat))
+    }
+    await handler.handle()
+
+    let snapshotCount = 0
+    await vi.waitUntil(async () => {
+      const result = await clickhouse.query({
+        query: `SELECT COUNT(*) as count FROM player_game_stat_snapshots WHERE game_stat_id = ${stat.id}`,
+        format: 'JSONEachRow'
+      })
+      const rows = await result.json<{ count: string }>()
+      snapshotCount = parseInt(rows[0].count)
+      return snapshotCount === 105
+    }, { timeout: 10000 })
+
+    expect(snapshotCount).toBe(105)
+
+    const res = await request(app)
+      .delete(`/games/${game.id}/game-stats/${stat.id}/player-stats`)
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    expect(res.body.deletedCount).toBe(105)
+
+    const remainingPlayerStats = await em.repo(PlayerGameStat).find({ stat })
+    expect(remainingPlayerStats).toHaveLength(0)
+
+    await vi.waitUntil(async () => {
+      const result = await clickhouse.query({
+        query: `SELECT COUNT(*) as count FROM player_game_stat_snapshots WHERE game_stat_id = ${stat.id}`,
+        format: 'JSONEachRow'
+      })
+      const rows = await result.json<{ count: string }>()
+      const count = parseInt(rows[0].count)
+      return count === 0
+    })
+
+    const finalResult = await clickhouse.query({
+      query: `SELECT COUNT(*) as count FROM player_game_stat_snapshots WHERE game_stat_id = ${stat.id}`,
+      format: 'JSONEachRow'
+    })
+    const finalRows = await finalResult.json<{ count: string }>()
+    const finalCount = parseInt(finalRows[0].count)
+    expect(finalCount).toBe(0)
+
+    await em.refresh(stat)
+    expect(stat.globalValue).toBe(stat.defaultValue)
   })
 })

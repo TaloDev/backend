@@ -256,7 +256,11 @@ export default class GameStatService extends Service {
       }
     }
 
-    const deletedCount = await em.transactional(async (trx) => {
+    const deletedCount = await (em.fork()).transactional(async (trx) => {
+      const playerIds = await trx.repo(PlayerGameStat).find(where, {
+        fields: ['player.id']
+      })
+
       const deletedCount = await trx.repo(PlayerGameStat).nativeDelete(where)
       await trx.repo(GameStat).nativeUpdate(stat.id, { globalValue: stat.defaultValue })
 
@@ -276,9 +280,7 @@ export default class GameStatService extends Service {
       const clickhouse: ClickHouseClient = req.ctx.clickhouse
       const aliasStream = streamByCursor<{ id: number }>(async (batchSize, after) => {
         return trx.repo(PlayerAlias).findByCursor({
-          player: mode !== 'all' ? {
-            devBuild: mode === 'dev' ? true : false
-          } : undefined
+          player: { id: playerIds.map((p) => p.player.id) }
         }, {
           first: batchSize,
           after,
@@ -295,16 +297,31 @@ export default class GameStatService extends Service {
           AND player_alias_id IN ({aliasIds:Array(UInt32)})
       `
       const aliasIds: number[] = []
+      const CLICKHOUSE_BATCH_SIZE = 100
+
       for await (const alias of aliasStream) {
         aliasIds.push(alias.id)
+
+        if (aliasIds.length >= CLICKHOUSE_BATCH_SIZE) {
+          const batchIds = aliasIds.splice(0, CLICKHOUSE_BATCH_SIZE)
+          await clickhouse.exec({
+            query,
+            query_params: {
+              aliasIds: batchIds
+            }
+          })
+        }
       }
 
-      await clickhouse.exec({
-        query,
-        query_params: {
-          aliasIds
-        }
-      })
+      // delete any remaining unspliced aliases
+      if (aliasIds.length > 0) {
+        await clickhouse.exec({
+          query,
+          query_params: {
+            aliasIds
+          }
+        })
+      }
 
       return deletedCount
     })

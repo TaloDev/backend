@@ -119,6 +119,7 @@ export default class PlayerAPIService extends APIService {
         }
       } else if (alias.service === PlayerAliasService.TALO) {
         setCurrentPlayerState(req.ctx, alias.player.id, alias.id)
+        await em.populate(alias, ['player.auth'])
         await validateAuthSessionToken(req.ctx, alias)
       }
     } catch (err) {

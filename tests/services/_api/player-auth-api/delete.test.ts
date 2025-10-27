@@ -238,4 +238,24 @@ describe('Player auth API service - delete', { timeout: 30_000 }, () => {
 
     expect(await em.refresh(alias)).not.toBeNull()
   })
+
+  it('should return a 400 if the player does not have authentication', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_PLAYERS, APIKeyScope.WRITE_PLAYERS])
+
+    const player = await new PlayerFactory([apiKey.game]).one()
+    await em.persistAndFlush(player)
+
+    const alias = player.aliases[0]
+
+    const res = await request(app)
+      .delete('/v1/players/auth/')
+      .send({ currentPassword: 'password' })
+      .auth(token, { type: 'bearer' })
+      .set('x-talo-player', player.id)
+      .set('x-talo-alias', String(alias.id))
+      .set('x-talo-session', 'fake-session')
+      .expect(400)
+
+    expect(res.body).toStrictEqual({ message: 'Player does not have authentication' })
+  })
 })

@@ -1907,6 +1907,16 @@
           "default": "false",
           "mappedType": "boolean"
         },
+        "props_digest": {
+          "name": "props_digest",
+          "type": "varchar(255)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "length": 255,
+          "mappedType": "string"
+        },
         "created_at": {
           "name": "created_at",
           "type": "datetime",
@@ -1966,6 +1976,16 @@
           ],
           "composite": false,
           "keyName": "leaderboard_entry_hidden_index",
+          "constraint": false,
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "props_digest"
+          ],
+          "composite": false,
+          "keyName": "leaderboard_entry_props_digest_index",
           "constraint": false,
           "primary": false,
           "unique": false

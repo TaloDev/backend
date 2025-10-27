@@ -78,4 +78,26 @@ describe('Player auth API service - reset password', () => {
 
     expect(await redis.get(`player-auth:${apiKey.game.id}:password-reset:123456`)).toBe(String(alias.id))
   })
+
+  it('should return a 401 if the player does not have authentication', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_PLAYERS, APIKeyScope.WRITE_PLAYERS])
+
+    const player = await new PlayerFactory([apiKey.game]).one()
+    await em.persistAndFlush(player)
+
+    const alias = player.aliases[0]
+
+    await redis.set(`player-auth:${apiKey.game.id}:password-reset:123456`, alias.id)
+
+    const res = await request(app)
+      .post('/v1/players/auth/reset_password')
+      .send({ code: '123456', password: 'password' })
+      .auth(token, { type: 'bearer' })
+      .expect(401)
+
+    expect(res.body).toStrictEqual({
+      message: 'This code is either invalid or has expired',
+      errorCode: 'PASSWORD_RESET_CODE_INVALID'
+    })
+  })
 })

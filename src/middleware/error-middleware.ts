@@ -14,11 +14,13 @@ export default async function errorMiddleware(ctx: Context, next: Next) {
         ? { message: 'Please provide a valid token in the Authorization header' }
         : { ...err, headers: undefined /* koa cors is inserting headers into the body for some reason */ }
 
-      if (ctx.status === 500 || isJWTError) {
+      if (isJWTError) {
+        hdxRecordException(err.originalError)
+        Sentry.captureException(err.originalError)
+      }
+
+      if (ctx.status === 500) {
         hdxRecordException(err)
-        if (isJWTError) {
-          hdxRecordException(err.originalError)
-        }
 
         Sentry.withScope((scope) => {
           scope.addEventProcessor((event) => {
@@ -48,9 +50,6 @@ export default async function errorMiddleware(ctx: Context, next: Next) {
           }
 
           Sentry.captureException(err)
-          if (isJWTError) {
-            Sentry.captureException(err.originalError)
-          }
         })
 
         if (process.env.NODE_ENV !== 'production') {

@@ -2,7 +2,17 @@ import { Migration } from '@mikro-orm/migrations'
 import LeaderboardEntry from '../entities/leaderboard-entry'
 import { streamByCursor } from '../lib/perf/streamByCursor'
 
+type LeaderboardEntryBatch = { id: number, propsDigest: string }
+const MAX_BATCH_SIZE = 100
+
 export class AddLeaderboardEntryPropsDigestColumn extends Migration {
+  private async updateBatch(batch: LeaderboardEntryBatch[]) {
+    await this.getEntityManager().getConnection().execute(
+      'UPDATE leaderboard_entry SET props_digest = CASE id ' +
+      batch.map(() => 'WHEN ? THEN ?').join(' ') + ' END WHERE id IN (' + batch.map(() => '?').join(',') + ')',
+      [...batch.flatMap((b) => [b.id, b.propsDigest]), ...batch.map((b) => b.id)]
+    )
+  }
 
   override async up(): Promise<void> {
     const em = this.getEntityManager()
@@ -16,9 +26,20 @@ export class AddLeaderboardEntryPropsDigestColumn extends Migration {
       })
     }, 100)
 
+    const batch: LeaderboardEntryBatch[] = []
     for await (const entry of entryStream) {
       const propsDigest = LeaderboardEntry.createPropsDigest(entry.props.getItems())
-      await em.repo(LeaderboardEntry).nativeUpdate(entry.id, { propsDigest })
+      batch.push({ id: entry.id, propsDigest })
+
+      if (batch.length >= MAX_BATCH_SIZE) {
+        await this.updateBatch(batch)
+        batch.length = 0
+      }
+    }
+
+    // handle remaining items in batch
+    if (batch.length > 0) {
+      await this.updateBatch(batch)
     }
 
     this.addSql('alter table `leaderboard_entry` modify `props_digest` varchar(255) not null;')

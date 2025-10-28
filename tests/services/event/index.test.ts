@@ -31,7 +31,7 @@ describe('Event service - index', () => {
       .auth(token, { type: 'bearer' })
       .expect(200)
 
-    expect(res.body.events['Open inventory']).toHaveLength(2)
+    expect(res.body.events['Open inventory']).toHaveLength(3)
 
     expect(res.body.events['Open inventory'][0]).toEqual({
       name: 'Open inventory',
@@ -45,6 +45,13 @@ describe('Event service - index', () => {
       date: addDays(now, 1).getTime(),
       count: 1,
       change: 0
+    })
+
+    expect(res.body.events['Open inventory'][2]).toEqual({
+      name: 'Open inventory',
+      date: addDays(now, 2).getTime(),
+      count: 0,
+      change: -1
     })
   })
 
@@ -257,7 +264,12 @@ describe('Event service - index', () => {
       .auth(token, { type: 'bearer' })
       .expect(200)
 
-    expect(res.body.events['Talk to NPC'][0].count).toBe(events.length)
+    // should have 2 entries (yesterday and today)
+    expect(res.body.events['Talk to NPC']).toHaveLength(2)
+    // yesterday should have 0 events
+    expect(res.body.events['Talk to NPC'][0].count).toBe(0)
+    // today should have the actual events
+    expect(res.body.events['Talk to NPC'][1].count).toBe(events.length)
   })
 
   it('should not return events by dev build players if the dev data header is not set', async () => {
@@ -302,6 +314,78 @@ describe('Event service - index', () => {
       .set('x-talo-include-dev-data', '1')
       .expect(200)
 
-    expect(res.body.events['Talk to NPC'][0].count).toBe(events.length)
+    // should have 2 entries (yesterday and today)
+    expect(res.body.events['Talk to NPC']).toHaveLength(2)
+    // yesterday should have 0 events
+    expect(res.body.events['Talk to NPC'][0].count).toBe(0)
+    // today should have the actual events
+    expect(res.body.events['Talk to NPC'][1].count).toBe(events.length)
+  })
+
+  it('should include dates with zero counts in the results', async () => {
+    const [organisation, game] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken({}, organisation)
+
+    const player = await new PlayerFactory([game]).one()
+    const now = new Date('2021-01-01')
+
+    // create events only on Jan 1st and Jan 4th, leaving Jan 2nd and 3rd empty
+    const events = await new EventFactory([player]).state(() => ({
+      name: 'Complete quest',
+      createdAt: now
+    })).many(2)
+
+    const moreEvents = await new EventFactory([player]).state(() => ({
+      name: 'Complete quest',
+      createdAt: addDays(now, 3)
+    })).many(3)
+
+    await em.persistAndFlush(player)
+    await clickhouse.insert({
+      table: 'events',
+      values: [...events, ...moreEvents].map((event) => event.toInsertable()),
+      format: 'JSONEachRow'
+    })
+
+    const res = await request(app)
+      .get(`/games/${game.id}/events`)
+      .query({ startDate: '2021-01-01', endDate: '2021-01-04' })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    // should have 4 entries (one for each day in the range)
+    expect(res.body.events['Complete quest']).toHaveLength(4)
+
+    // Jan 1st should have 2 events
+    expect(res.body.events['Complete quest'][0]).toEqual({
+      name: 'Complete quest',
+      date: now.getTime(),
+      count: 2,
+      change: 2 // when previous is 0 and count is not 0, change is count
+    })
+
+    // Jan 2nd should have 0 events
+    expect(res.body.events['Complete quest'][1]).toEqual({
+      name: 'Complete quest',
+      date: addDays(now, 1).getTime(),
+      count: 0,
+      change: -1
+    })
+
+    // Jan 3rd should have 0 events
+    expect(res.body.events['Complete quest'][2]).toEqual({
+      name: 'Complete quest',
+      date: addDays(now, 2).getTime(),
+      count: 0,
+      change: 0
+    })
+
+    // Jan 4th should have 3 events
+    expect(res.body.events['Complete quest'][3]).toEqual({
+      name: 'Complete quest',
+      date: addDays(now, 3).getTime(),
+      count: 3,
+      change: 3 // when previous is 0 and count is not 0, change is count
+    })
   })
 })

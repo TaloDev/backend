@@ -1,9 +1,10 @@
 import { HasPermission, Service, Request, Response, Route, Validate } from 'koa-clay'
 import EventPolicy from '../policies/event.policy'
-import { endOfDay } from 'date-fns'
+import { endOfDay, startOfDay } from 'date-fns'
 import dateValidationSchema from '../lib/dates/dateValidationSchema'
 import { formatDateForClickHouse } from '../lib/clickhouse/formatDateTime'
 import { ClickHouseClient } from '@clickhouse/client'
+import { millisecondsInDay } from 'date-fns/constants'
 
 type EventData = {
   name: string
@@ -35,6 +36,62 @@ type AggregatedClickHouseEventProps = {
 //   ]
 // }
 
+function calculateChange(count: number, lastEvent: EventData | undefined): number {
+  const previousCount = lastEvent?.count ?? 0
+
+  if (previousCount === 0) {
+    return count
+  }
+
+  return (count - previousCount) / previousCount
+}
+
+function fillDateGaps(
+  data: Record<string, EventData[]>,
+  startDateQuery: string,
+  endDateQuery: string
+): Record<string, EventData[]> {
+  const startDateMs = startOfDay(new Date(startDateQuery)).getTime()
+  const endDateMs = startOfDay(new Date(endDateQuery)).getTime()
+
+  const result: Record<string, EventData[]> = {}
+
+  for (const seriesName of Object.keys(data)) {
+    const eventData = data[seriesName]
+    const filledData: EventData[] = []
+
+    const eventsByDate = new Map<number, EventData>()
+    for (const event of eventData) {
+      eventsByDate.set(event.date, event)
+    }
+
+    // fill all dates in the range
+    for (let currentDateMs = startDateMs; currentDateMs <= endDateMs; currentDateMs += millisecondsInDay) {
+      const existingEvent = eventsByDate.get(currentDateMs)
+
+      if (existingEvent) {
+        filledData.push({ ...existingEvent, change: 0 })
+      } else {
+        filledData.push({
+          name: seriesName,
+          date: currentDateMs,
+          count: 0,
+          change: 0
+        })
+      }
+    }
+
+    for (let i = 0; i < filledData.length; i++) {
+      const previousEvent = i > 0 ? filledData[i - 1] : undefined
+      filledData[i].change = calculateChange(filledData[i].count, previousEvent)
+    }
+
+    result[seriesName] = filledData
+  }
+
+  return result
+}
+
 export default class EventService extends Service {
   @Route({
     method: 'GET'
@@ -62,7 +119,7 @@ export default class EventService extends Service {
     `
 
     if (!req.ctx.state.includeDevData) {
-      query += 'AND dev_build = false'
+      query += ' AND dev_build = false'
     }
 
     query += `
@@ -81,22 +138,21 @@ export default class EventService extends Service {
         data[event.name] = []
       }
 
-      const lastEvent = data[event.name].at(-1)
-      const change = this.calculateChange(Number(event.count), lastEvent)
-
       data[event.name].push({
         name: event.name,
         date: Number(event.date),
         count: Number(event.count),
-        change
+        change: 0 // will be calculated after filling gaps
       })
     }
+
+    const filledData = fillDateGaps(data, startDateQuery, endDateQuery)
 
     return {
       status: 200,
       body: {
-        events: data,
-        eventNames: Object.keys(data)
+        events: filledData,
+        eventNames: Object.keys(filledData)
       }
     }
   }
@@ -159,29 +215,22 @@ export default class EventService extends Service {
         data[keyValueLabel] = []
       }
 
-      const lastEvent = data[keyValueLabel].at(-1)
-      const change = this.calculateChange(Number(event.count), lastEvent)
-
       data[keyValueLabel].push({
         name: keyValueLabel,
         date: Number(event.date),
         count: Number(event.count),
-        change
+        change: 0 // will be calculated after filling gaps
       })
     }
+
+    const filledData = fillDateGaps(data, startDateQuery, endDateQuery)
 
     return {
       status: 200,
       body: {
-        events: data,
-        eventNames: Object.keys(data)
+        events: filledData,
+        eventNames: Object.keys(filledData)
       }
     }
-  }
-
-  private calculateChange(count: number, lastEvent: EventData | undefined): number {
-    if ((lastEvent?.count ?? 0) === 0) return count || 1
-
-    return (count - lastEvent!.count) / lastEvent!.count
   }
 }

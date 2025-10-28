@@ -42,6 +42,8 @@ describe('Event service - breakdown', () => {
 
     expect(Object.keys(res.body.events)).toHaveLength(3)
 
+    // itemId = 0 should have 3 entries (Jan 1-3), with the event on Jan 1
+    expect(res.body.events['[itemId = 0]']).toHaveLength(3)
     expect(res.body.events['[itemId = 0]'][0]).toEqual({
       name: '[itemId = 0]',
       date: now.getTime(),
@@ -49,13 +51,17 @@ describe('Event service - breakdown', () => {
       change: 1
     })
 
-    expect(res.body.events['[itemId = 1]'][0]).toEqual({
+    // itemId = 1 should have 3 entries (Jan 1-3), with the event on Jan 2
+    expect(res.body.events['[itemId = 1]']).toHaveLength(3)
+    expect(res.body.events['[itemId = 1]'][1]).toEqual({
       name: '[itemId = 1]',
       date: addDays(now, 1).getTime(),
       count: 1,
       change: 1
     })
 
+    // inventorySize = 16 should have 3 entries (Jan 1-3), with events on Jan 1 and Jan 2
+    expect(res.body.events['[inventorySize = 16]']).toHaveLength(3)
     expect(res.body.events['[inventorySize = 16]'][0]).toEqual({
       name: '[inventorySize = 16]',
       date: now.getTime(),
@@ -196,7 +202,12 @@ describe('Event service - breakdown', () => {
       .auth(token, { type: 'bearer' })
       .expect(200)
 
-    expect(res.body.events['[itemId = 1]'][0].count).toBe(events.length)
+    // should have 2 entries (yesterday and today)
+    expect(res.body.events['[itemId = 1]']).toHaveLength(2)
+    // yesterday should have 0 events
+    expect(res.body.events['[itemId = 1]'][0].count).toBe(0)
+    // today should have the actual events
+    expect(res.body.events['[itemId = 1]'][1].count).toBe(events.length)
   })
 
   it('should not return event props by dev build players if the dev data header is not set', async () => {
@@ -265,7 +276,12 @@ describe('Event service - breakdown', () => {
       .set('x-talo-include-dev-data', '1')
       .expect(200)
 
-    expect(res.body.events['[itemId = 1]'][0].count).toBe(events.length)
+    // should have 2 entries (yesterday and today)
+    expect(res.body.events['[itemId = 1]']).toHaveLength(2)
+    // yesterday should have 0 events
+    expect(res.body.events['[itemId = 1]'][0].count).toBe(0)
+    // today should have the actual events
+    expect(res.body.events['[itemId = 1]'][1].count).toBe(events.length)
   })
 
   it('should not return breakdowns for meta props', async () => {
@@ -302,5 +318,83 @@ describe('Event service - breakdown', () => {
       .expect(200)
 
     expect(Object.keys(res.body.events)).toHaveLength(0)
+  })
+
+  it('should include dates with zero counts in the breakdown results', async () => {
+    const [organisation, game] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken({}, organisation)
+
+    const player = await new PlayerFactory([game]).one()
+    const now = new Date('2021-01-01')
+
+    // create events only on Jan 1st and Jan 4th, leaving Jan 2nd and 3rd empty
+    const events = await new EventFactory([player]).state(() => ({
+      name: 'Pickup item',
+      createdAt: now,
+      props: [
+        { key: 'itemId', value: '5' }
+      ]
+    })).many(2)
+
+    const moreEvents = await new EventFactory([player]).state(() => ({
+      name: 'Pickup item',
+      createdAt: addDays(now, 3),
+      props: [
+        { key: 'itemId', value: '5' }
+      ]
+    })).many(3)
+
+    await em.persistAndFlush(player)
+    await clickhouse.insert({
+      table: 'events',
+      values: [...events, ...moreEvents].map((event) => event.toInsertable()),
+      format: 'JSONEachRow'
+    })
+    await clickhouse.insert({
+      table: 'event_props',
+      values: [...events, ...moreEvents].flatMap((event) => event.getInsertableProps()),
+      format: 'JSONEachRow'
+    })
+
+    const res = await request(app)
+      .get(`/games/${game.id}/events/breakdown`)
+      .query({ eventName: 'Pickup item', startDate: '2021-01-01', endDate: '2021-01-04' })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    // should have 4 entries (one for each day in the range)
+    expect(res.body.events['[itemId = 5]']).toHaveLength(4)
+
+    // Jan 1st should have 2 events
+    expect(res.body.events['[itemId = 5]'][0]).toEqual({
+      name: '[itemId = 5]',
+      date: now.getTime(),
+      count: 2,
+      change: 2 // when previous is 0 and count is not 0, change is count
+    })
+
+    // Jan 2nd should have 0 events
+    expect(res.body.events['[itemId = 5]'][1]).toEqual({
+      name: '[itemId = 5]',
+      date: addDays(now, 1).getTime(),
+      count: 0,
+      change: -1
+    })
+
+    // Jan 3rd should have 0 events
+    expect(res.body.events['[itemId = 5]'][2]).toEqual({
+      name: '[itemId = 5]',
+      date: addDays(now, 2).getTime(),
+      count: 0,
+      change: 0
+    })
+
+    // Jan 4th should have 3 events
+    expect(res.body.events['[itemId = 5]'][3]).toEqual({
+      name: '[itemId = 5]',
+      date: addDays(now, 3).getTime(),
+      count: 3,
+      change: 3 // when previous is 0 and count is not 0, change is count
+    })
   })
 })

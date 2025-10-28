@@ -450,7 +450,7 @@ async function pushEntriesToSteamworks({
 
   for await (const entry of entryStream) {
     try {
-      if (!syncedEntryIds.has(entry.id)) {
+      if (!syncedEntryIds.has(entry.id) && entry.playerAlias.service === PlayerAliasService.STEAM) {
         await createSteamworksLeaderboardEntry(em, integration, entry)
       }
       pushed++

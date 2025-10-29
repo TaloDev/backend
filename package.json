@@ -1,6 +1,6 @@
 {
   "name": "game-services",
-  "version": "0.93.2",
+  "version": "0.93.3",
   "description": "",
   "main": "src/index.ts",
   "scripts": {
@@ -75,13 +75,13 @@
     "bcrypt": "^5.1.0",
     "bullmq": "^5.40.2",
     "bullmq-otel": "^1.0.1",
-    "date-fns": "^2.28.0",
+    "date-fns": "^4.1.0",
     "dinero.js": "^2.0.0-alpha.14",
     "dotenv": "^16.0.0",
     "handlebars": "^4.7.7",
     "ioredis": "^5.2.4",
     "jsonwebtoken": "^9.0.0",
-    "koa": "^3.1.0",
+    "koa": "^3.1.1",
     "koa-bodyparser": "^4.4.1",
     "koa-clay": "^9.0.0",
     "koa-helmet": "^7.0.0",

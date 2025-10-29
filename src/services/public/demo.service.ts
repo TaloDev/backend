@@ -54,7 +54,11 @@ export default class DemoService extends Service {
     user.username = `demo+${Date.now()}`
     user.email = `${user.username}@demo.io`
     user.type = UserType.DEMO
-    user.organisation = await em.getRepository(Organisation).findOneOrFail({ name: process.env.DEMO_ORGANISATION_NAME })
+    user.organisation = await em.repo(Organisation).findOneOrFail({
+      name: process.env.DEMO_ORGANISATION_NAME
+    }, {
+      populate: ['games']
+    })
     user.emailConfirmed = true
     user.password = await bcrypt.hash(user.email, 10)
 

@@ -128,6 +128,10 @@ export async function generateDemoEvents(req: Request): Promise<void> {
         }
       })
 
+      if (playerAliases.length === 0) {
+        continue
+      }
+
       for (let dayStep = 0; dayStep < differenceInDays(new Date(), startDate) + 1; dayStep++) {
         const day = addDays(startDate, dayStep)
 

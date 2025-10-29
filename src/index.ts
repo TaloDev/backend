@@ -16,6 +16,7 @@ import helmetMiddleware from './middleware/helmet-middleware'
 import { createServer } from 'http'
 import Socket from './socket'
 import httpTracingMiddleware from './middleware/http-tracing-middleware'
+import { secondsToMilliseconds } from 'date-fns'
 
 const isTest = process.env.NODE_ENV === 'test'
 
@@ -39,8 +40,15 @@ export default async function init(): Promise<Koa> {
   configurePublicRoutes(app)
   configureAPIRoutes(app)
 
-  const server = createServer(app.callback())
+  const server = createServer({
+    connectionsCheckingInterval: secondsToMilliseconds(5),
+    headersTimeout: secondsToMilliseconds(15),
+    requestTimeout: secondsToMilliseconds(20),
+    keepAliveTimeout: secondsToMilliseconds(60)
+  }, app.callback())
+
   app.context.wss = new Socket(server, app.context.em)
+
   if (!isTest) {
     server.listen(80, () => console.info('Listening on port 80'))
   }

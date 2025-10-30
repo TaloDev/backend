@@ -185,7 +185,7 @@ describe('Game stats API service - put', () => {
     const player = await new PlayerFactory([apiKey.game]).one()
     const playerStat = await new PlayerGameStatFactory()
       .construct(player, stat)
-      .state(() => ({ value: 10, createdAt: new Date(2021, 1, 1) }))
+      .state(() => ({ value: 10, updatedAt: new Date(2021, 1, 1) })) // ensure we don't get blocked by minTimeBetweenUpdates
       .one()
     await em.persistAndFlush(playerStat)
 

@@ -157,7 +157,7 @@ export default class GameStatAPIService extends APIService {
         stat: lockedStat
       }, { lockMode: LockMode.PESSIMISTIC_WRITE })
 
-      if (playerStat && differenceInSeconds(new Date(), playerStat.createdAt) < lockedStat.minTimeBetweenUpdates) {
+      if (playerStat && differenceInSeconds(new Date(), playerStat.updatedAt) < lockedStat.minTimeBetweenUpdates) {
         return [null, {
           status: 400,
           body: {

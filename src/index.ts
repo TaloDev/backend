@@ -17,6 +17,7 @@ import { createServer } from 'http'
 import Socket from './socket'
 import httpTracingMiddleware from './middleware/http-tracing-middleware'
 import { secondsToMilliseconds } from 'date-fns'
+import compress from 'koa-compress'
 
 const isTest = process.env.NODE_ENV === 'test'
 
@@ -27,6 +28,7 @@ export default async function init(): Promise<Koa> {
 
   await initProviders(app, isTest)
 
+  app.use(compress())
   if (!isTest) app.use(loggerMiddleware)
   app.use(errorMiddleware)
   app.use(bodyParser())

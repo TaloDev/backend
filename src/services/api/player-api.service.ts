@@ -79,6 +79,20 @@ function validateIdentifyQueryParam(param: 'service' | 'identifier') {
   ]
 }
 
+async function findMergeAliasServiceConflicts(
+  em: EntityManager,
+  player1: Player,
+  player2: Player
+) {
+  const player1Aliases = await em.repo(PlayerAlias).find({ player: player1 })
+  const player2Aliases = await em.repo(PlayerAlias).find({ player: player2 })
+
+  const player1Services = new Set(player1Aliases.map((a) => a.service))
+  const player2Services = new Set(player2Aliases.map((a) => a.service))
+
+  return player1Services.intersection(player2Services)
+}
+
 export default class PlayerAPIService extends APIService {
   @Route({
     method: 'GET',
@@ -230,6 +244,10 @@ export default class PlayerAPIService extends APIService {
     const { playerId1, playerId2 } = req.body
     const em = (req.ctx.em as EntityManager).fork()
 
+    if (playerId1 === playerId2) {
+      req.ctx.throw(400, 'Cannot merge a player into itself')
+    }
+
     const key = await this.getAPIKey(req.ctx)
 
     const player1 = await em.getRepository(Player).findOne({
@@ -251,6 +269,11 @@ export default class PlayerAPIService extends APIService {
 
     if (!player2) req.ctx.throw(404, `Player ${playerId2} does not exist`)
     if (player2.auth) req.ctx.throw(400, `Player ${playerId2} has authentication enabled and cannot be merged`)
+
+    const sharedServices = await findMergeAliasServiceConflicts(em, player1, player2)
+    if (sharedServices.size > 0) {
+      req.ctx.throw(400, `Cannot merge players: both players have aliases with the following service(s): ${Array.from(sharedServices).join(', ')}`)
+    }
 
     const updatedPlayer = await em.transactional(async (trx) => {
       const player1Props = player1.props.getItems().map(({ key, value }) => ({ key, value }))

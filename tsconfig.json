@@ -9,7 +9,7 @@
     "emitDecoratorMetadata": true,
     "declaration": true,
     "types": ["vitest/globals", "./src/global.d.ts"],
-    "lib": ["esnext"],
+    "lib": ["esnext", "ES2024.Collection"],
     "skipLibCheck": true /* https://github.com/rollup/rollup/issues/5199 and https://github.com/vitejs/vite/issues/14513 */,
     "strict": true,
     "inlineSources": true,

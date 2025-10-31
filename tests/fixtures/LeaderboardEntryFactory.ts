@@ -16,7 +16,7 @@ export default class LeaderboardEntryFactory extends Factory<LeaderboardEntry> {
   }
 
   protected definition(): void {
-    this.state(async () => {
+    this.state(async (entry) => {
       const player: Player = rand(this.availablePlayers)
       await player.aliases.loadItems()
 
@@ -24,7 +24,8 @@ export default class LeaderboardEntryFactory extends Factory<LeaderboardEntry> {
         leaderboard: this.leaderboard,
         playerAlias: rand(player.aliases.getItems()),
         score: Number(randFloat({ min: 10, max: 100000 })),
-        hidden: false
+        hidden: false,
+        propsDigest: LeaderboardEntry.createPropsDigest(entry.props.getItems())
       }
     })
   }

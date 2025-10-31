@@ -84,8 +84,8 @@ async function findMergeAliasServiceConflicts(
   player1: Player,
   player2: Player
 ) {
-  const player1Aliases = await em.repo(PlayerAlias).find({ player: player1 })
-  const player2Aliases = await em.repo(PlayerAlias).find({ player: player2 })
+  const player1Aliases = await em.repo(PlayerAlias).find({ player: player1 }, { fields: ['service'] })
+  const player2Aliases = await em.repo(PlayerAlias).find({ player: player2 }, { fields: ['service'] })
 
   const player1Services = new Set(player1Aliases.map((a) => a.service))
   const player2Services = new Set(player2Aliases.map((a) => a.service))
@@ -290,8 +290,10 @@ export default class PlayerAPIService extends APIService {
       await trx.repo(Player).nativeDelete(player2)
 
       const clickhouse: ClickHouseClient = req.ctx.clickhouse
-      await clickhouse.exec({ query: `DELETE FROM player_sessions WHERE player_id = '${player2.id}'` })
-
+      await clickhouse.exec({
+        query: 'DELETE FROM player_sessions WHERE player_id = {playerId:String}',
+        query_params: { playerId: player2.id }
+      })
       return player1
     })
 

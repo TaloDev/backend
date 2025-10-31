@@ -46,8 +46,8 @@ describe('Policy base class', () => {
   it('should correctly verify having all scopes when the key has full access', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.FULL_ACCESS])
 
-    const player1 = await new PlayerFactory([apiKey.game]).one()
-    const player2 = await new PlayerFactory([apiKey.game]).one()
+    const player1 = await new PlayerFactory([apiKey.game]).withSteamAlias().one()
+    const player2 = await new PlayerFactory([apiKey.game]).withUsernameAlias().one()
     await em.persistAndFlush([player1, player2])
 
     await request(app)

@@ -19,6 +19,7 @@ export default defineConfig({
       exclude: [
         '__mocks__',
         'tests',
+        'eslint.config.mjs',
         'src/index.ts',
         'src/config',
         'src/middleware/error-middleware.ts',

@@ -29,7 +29,7 @@ export default class Policy extends ServicePolicy {
       const user = await getUserFromToken(ctx)
       ctx.state.user = user
       return user
-    } catch (err) {
+    } catch {
       return ctx.throw(401)
     }
   }

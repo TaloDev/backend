@@ -4,7 +4,7 @@ import { createClearResponseCacheQueue } from '../lib/perf/responseCacheQueue'
 import { EmailConfig } from '../emails/mail'
 import { createDeleteClickHousePlayerDataQueue, DeleteClickHousePlayerDataConfig } from '../lib/queues/createDeleteClickHousePlayerDataQueue'
 
-const queueNames = [
+export const queueNames = [
   'email',
   'clear-response-cache',
   'delete-clickhouse-player-data'

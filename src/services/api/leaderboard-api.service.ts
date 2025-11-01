@@ -1,7 +1,7 @@
 import { HasPermission, Request, Response, Route, Validate, ForwardTo, forwardRequest, ValidationCondition } from 'koa-clay'
 import LeaderboardAPIPolicy from '../../policies/api/leaderboard-api.policy'
 import APIService from './api-service'
-import { EntityManager, NotFoundError } from '@mikro-orm/mysql'
+import { EntityManager, NotFoundError, LockMode } from '@mikro-orm/mysql'
 import LeaderboardEntry from '../../entities/leaderboard-entry'
 import Leaderboard, { LeaderboardSortMode } from '../../entities/leaderboard'
 import LeaderboardAPIDocs from '../../docs/leaderboard-api.docs'
@@ -10,6 +10,7 @@ import { hardSanitiseProps, mergeAndSanitiseProps } from '../../lib/props/saniti
 import { PropSizeError } from '../../lib/errors/propSizeError'
 import buildErrorResponse from '../../lib/errors/buildErrorResponse'
 import { UniqueLeaderboardEntryPropsDigestError } from '../../lib/errors/uniqueLeaderboardEntryPropsDigestError'
+import PlayerAlias from '../../entities/player-alias'
 
 export default class LeaderboardAPIService extends APIService {
   @Route({
@@ -73,51 +74,98 @@ export default class LeaderboardAPIService extends APIService {
 
     const leaderboard: Leaderboard = req.ctx.state.leaderboard
 
-    let entry: LeaderboardEntry | null = null
-    let updated = false
+    let result: { entry: LeaderboardEntry | null, updated: boolean, errorResponse?: ReturnType<typeof buildErrorResponse> }
 
     try {
-      if (leaderboard.unique) {
-        if (leaderboard.uniqueByProps) {
-          entry = await leaderboard.findEntryWithProps({
-            em,
-            playerAliasId: req.ctx.state.alias.id,
-            props
-          })
-          if (!entry) {
-            throw new UniqueLeaderboardEntryPropsDigestError()
+      result = await em.transactional(async (trx) => {
+        // lock the alias to prevent concurrent entry creation
+        const lockedAlias = await trx.findOneOrFail(PlayerAlias, req.ctx.state.alias.id, {
+          lockMode: LockMode.PESSIMISTIC_WRITE
+        })
+
+        let entry: LeaderboardEntry | null = null
+        let updated = false
+
+        try {
+          if (leaderboard.unique) {
+            if (leaderboard.uniqueByProps) {
+              entry = await leaderboard.findEntryWithProps({
+                em: trx,
+                playerAliasId: lockedAlias.id,
+                props
+              })
+              if (!entry) {
+                throw new UniqueLeaderboardEntryPropsDigestError()
+              }
+            } else {
+              entry = await trx.repo(LeaderboardEntry).findOneOrFail({
+                leaderboard,
+                playerAlias: lockedAlias,
+                deletedAt: null
+              })
+            }
+
+            if ((leaderboard.sortMode === LeaderboardSortMode.ASC && score < entry.score) || (leaderboard.sortMode === LeaderboardSortMode.DESC && score > entry.score)) {
+              entry.score = score
+              entry.createdAt = req.ctx.state.continuityDate ?? new Date()
+              if (props) {
+                entry.setProps(mergeAndSanitiseProps({ prevProps: entry.props.getItems(), newProps: props }))
+              }
+
+              updated = true
+            }
+          } else {
+            // for non-unique leaderboards, create a new entry
+            entry = new LeaderboardEntry(leaderboard)
+            entry.playerAlias = lockedAlias
+            entry.score = score
+            if (req.ctx.state.continuityDate) {
+              entry.createdAt = req.ctx.state.continuityDate
+            }
+            if (props) {
+              entry.setProps(hardSanitiseProps({ props }))
+            }
+            await trx.persistAndFlush(entry)
           }
-        } else {
-          entry = await em.repo(LeaderboardEntry).findOneOrFail({
-            leaderboard,
-            playerAlias: req.ctx.state.alias,
-            deletedAt: null
-          })
+        } catch (err) {
+          if (err instanceof NotFoundError || err instanceof UniqueLeaderboardEntryPropsDigestError) {
+            // entry doesn't exist, create a new one
+            entry = new LeaderboardEntry(leaderboard)
+            entry.playerAlias = lockedAlias
+            entry.score = score
+            if (req.ctx.state.continuityDate) {
+              entry.createdAt = req.ctx.state.continuityDate
+            }
+            if (props) {
+              entry.setProps(hardSanitiseProps({ props }))
+            }
+            await trx.persistAndFlush(entry)
+          } else if (err instanceof PropSizeError) {
+            return { entry: null, updated: false, errorResponse: buildErrorResponse({ props: [err.message] }) }
+          /* v8 ignore next 3 */
+          } else {
+            throw err
+          }
         }
 
-        if ((leaderboard.sortMode === LeaderboardSortMode.ASC && score < entry.score) || (leaderboard.sortMode === LeaderboardSortMode.DESC && score > entry.score)) {
-          entry.score = score
-          entry.createdAt = req.ctx.state.continuityDate ?? new Date()
-          if (props) {
-            entry.setProps(mergeAndSanitiseProps({ prevProps: entry.props.getItems(), newProps: props }))
-          }
-          await em.flush()
-
-          updated = true
-        }
-      } else {
-        entry = await this.createEntry(req, props)
-      }
+        return { entry, updated }
+      })
     } catch (err) {
-      if (err instanceof NotFoundError || err instanceof UniqueLeaderboardEntryPropsDigestError) {
-        entry = await this.createEntry(req, props)
-      } else if (err instanceof PropSizeError) {
+      if (err instanceof PropSizeError) {
         return buildErrorResponse({ props: [err.message] })
-      /* v8 ignore next 3 */
-      } else {
-        throw err
       }
+      throw err
     }
+
+    if (result.errorResponse) {
+      return result.errorResponse
+    }
+
+    if (result.entry === null) {
+      return buildErrorResponse({ props: ['Failed to create entry'] })
+    }
+
+    const { entry, updated } = result
 
     await triggerIntegrations(em, leaderboard.game, (integration) => {
       return integration.handleLeaderboardEntryCreated(em, entry)

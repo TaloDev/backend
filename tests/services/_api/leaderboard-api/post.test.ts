@@ -997,4 +997,76 @@ describe('Leaderboard API service - post', () => {
     })
     expect(finalEntry.score).toBe(200)
   })
+
+  it('should handle prop size errors during unique entry creation', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_LEADERBOARDS])
+    const player = await new PlayerFactory([apiKey.game]).one()
+    const leaderboard = await new LeaderboardFactory([apiKey.game]).state(() => ({
+      unique: true,
+      sortMode: LeaderboardSortMode.DESC
+    })).one()
+    await em.persistAndFlush([player, leaderboard])
+
+    const res = await request(app)
+      .post(`/v1/leaderboards/${leaderboard.internalName}/entries`)
+      .send({
+        score: 100,
+        props: [
+          {
+            key: 'description',
+            value: randText({ charCount: 513 })
+          }
+        ]
+      })
+      .auth(token, { type: 'bearer' })
+      .set('x-talo-alias', String(player.aliases[0].id))
+      .expect(400)
+
+    expect(res.body).toStrictEqual({
+      errors: {
+        props: ['Prop value length (513) exceeds 512 characters']
+      }
+    })
+
+    const entryCount = await em.repo(LeaderboardEntry).count({
+      leaderboard,
+      playerAlias: player.aliases[0]
+    })
+    expect(entryCount).toBe(0)
+  })
+
+  it('should handle prop size errors when score would not be updated', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_LEADERBOARDS])
+    const player = await new PlayerFactory([apiKey.game]).one()
+    const leaderboard = await new LeaderboardFactory([apiKey.game]).state(() => ({
+      unique: true,
+      sortMode: LeaderboardSortMode.DESC
+    })).one()
+
+    const entry = await new LeaderboardEntryFactory(leaderboard, [player]).state(() => ({
+      score: 200,
+      playerAlias: player.aliases[0]
+    })).one()
+
+    await em.persistAndFlush([player, leaderboard, entry])
+
+    const res = await request(app)
+      .post(`/v1/leaderboards/${leaderboard.internalName}/entries`)
+      .send({
+        score: 50,
+        props: [
+          {
+            key: 'bio',
+            value: randText({ charCount: 513 })
+          }
+        ]
+      })
+      .auth(token, { type: 'bearer' })
+      .set('x-talo-alias', String(player.aliases[0].id))
+      .expect(200)
+
+    // should pass because the entry wasn't going to be updated
+    expect(res.body.entry.score).toBe(200)
+    expect(res.body.updated).toBe(false)
+  })
 })

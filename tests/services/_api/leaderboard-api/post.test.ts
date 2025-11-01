@@ -8,6 +8,7 @@ import { subHours, subMinutes } from 'date-fns'
 import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
 import { randText } from '@ngneat/falso'
 import LeaderboardEntryProp from '../../../../src/entities/leaderboard-entry-prop'
+import LeaderboardEntry from '../../../../src/entities/leaderboard-entry'
 import { Collection } from '@mikro-orm/mysql'
 import PlayerGroupRule, { PlayerGroupRuleCastType, PlayerGroupRuleName } from '../../../../src/entities/player-group-rule'
 import PlayerGroupFactory from '../../../fixtures/PlayerGroupFactory'
@@ -933,5 +934,139 @@ describe('Leaderboard API service - post', () => {
     expect(level2AgainRes.body.entry.id).toBe(level2EntryId)
     expect(level2AgainRes.body.entry.score).toBe(250)
     expect(level2AgainRes.body.updated).toBe(true)
+  })
+
+  it('should handle concurrent requests for non-unique leaderboards and create only one entry per request', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_LEADERBOARDS])
+    const player = await new PlayerFactory([apiKey.game]).one()
+    const leaderboard = await new LeaderboardFactory([apiKey.game]).state(() => ({ unique: false })).one()
+    await em.persistAndFlush([player, leaderboard])
+
+    const results = await Promise.all(Array.from({ length: 3 }, () =>
+      request(app)
+        .post(`/v1/leaderboards/${leaderboard.internalName}/entries`)
+        .send({ score: 100 })
+        .auth(token, { type: 'bearer' })
+        .set('x-talo-alias', String(player.aliases[0].id))
+    ))
+
+    results.forEach((res) => {
+      expect(res.status).toBe(200)
+      expect(res.body.entry.score).toBe(100)
+      expect(res.body.updated).toBe(false)
+    })
+
+    const uniqueIds = new Set(results.map((res) => res.body.entry.id))
+    expect(uniqueIds.size).toBe(3)
+  })
+
+  it('should handle concurrent requests for unique leaderboards and create only one entry', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_LEADERBOARDS])
+    const player = await new PlayerFactory([apiKey.game]).one()
+    const leaderboard = await new LeaderboardFactory([apiKey.game]).state(() => ({
+      unique: true,
+      sortMode: LeaderboardSortMode.DESC
+    })).one()
+    await em.persistAndFlush([player, leaderboard])
+
+    const results = await Promise.all(Array.from({ length: 3 }, (_, i) =>
+      request(app)
+        .post(`/v1/leaderboards/${leaderboard.internalName}/entries`)
+        .send({ score: 100 + (50 * i) })
+        .auth(token, { type: 'bearer' })
+        .set('x-talo-alias', String(player.aliases[0].id))
+    ))
+
+    results.forEach((res) => {
+      expect(res.status).toBe(200)
+    })
+
+    const uniqueIds = new Set(results.map((res) => res.body.entry.id))
+    expect(uniqueIds.size).toBe(1)
+
+    const entryCount = await em.repo(LeaderboardEntry).count({
+      leaderboard,
+      playerAlias: player.aliases[0]
+    })
+    expect(entryCount).toBe(1)
+
+    // the final score should be 200 (highest score for DESC)
+    const finalEntry = await em.repo(LeaderboardEntry).findOneOrFail({
+      leaderboard,
+      playerAlias: player.aliases[0]
+    })
+    expect(finalEntry.score).toBe(200)
+  })
+
+  it('should handle prop size errors during unique entry creation', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_LEADERBOARDS])
+    const player = await new PlayerFactory([apiKey.game]).one()
+    const leaderboard = await new LeaderboardFactory([apiKey.game]).state(() => ({
+      unique: true,
+      sortMode: LeaderboardSortMode.DESC
+    })).one()
+    await em.persistAndFlush([player, leaderboard])
+
+    const res = await request(app)
+      .post(`/v1/leaderboards/${leaderboard.internalName}/entries`)
+      .send({
+        score: 100,
+        props: [
+          {
+            key: 'description',
+            value: randText({ charCount: 513 })
+          }
+        ]
+      })
+      .auth(token, { type: 'bearer' })
+      .set('x-talo-alias', String(player.aliases[0].id))
+      .expect(400)
+
+    expect(res.body).toStrictEqual({
+      errors: {
+        props: ['Prop value length (513) exceeds 512 characters']
+      }
+    })
+
+    const entryCount = await em.repo(LeaderboardEntry).count({
+      leaderboard,
+      playerAlias: player.aliases[0]
+    })
+    expect(entryCount).toBe(0)
+  })
+
+  it('should handle prop size errors when score would not be updated', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_LEADERBOARDS])
+    const player = await new PlayerFactory([apiKey.game]).one()
+    const leaderboard = await new LeaderboardFactory([apiKey.game]).state(() => ({
+      unique: true,
+      sortMode: LeaderboardSortMode.DESC
+    })).one()
+
+    const entry = await new LeaderboardEntryFactory(leaderboard, [player]).state(() => ({
+      score: 200,
+      playerAlias: player.aliases[0]
+    })).one()
+
+    await em.persistAndFlush([player, leaderboard, entry])
+
+    const res = await request(app)
+      .post(`/v1/leaderboards/${leaderboard.internalName}/entries`)
+      .send({
+        score: 50,
+        props: [
+          {
+            key: 'bio',
+            value: randText({ charCount: 513 })
+          }
+        ]
+      })
+      .auth(token, { type: 'bearer' })
+      .set('x-talo-alias', String(player.aliases[0].id))
+      .expect(200)
+
+    // should pass because the entry wasn't going to be updated
+    expect(res.body.entry.score).toBe(200)
+    expect(res.body.updated).toBe(false)
   })
 })

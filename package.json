@@ -1,6 +1,6 @@
 {
   "name": "game-services",
-  "version": "0.93.3",
+  "version": "0.93.4",
   "description": "",
   "main": "src/index.ts",
   "scripts": {
@@ -23,29 +23,29 @@
   "license": "MIT",
   "devDependencies": {
     "@mikro-orm/cli": "^6.5.9",
-    "@stylistic/eslint-plugin": "^2.2.2",
+    "@stylistic/eslint-plugin": "^5.5.0",
     "@types/archiver": "^6.0.3",
     "@types/bcrypt": "^5.0.2",
     "@types/jsonwebtoken": "^9.0.9",
     "@types/koa": "^3.0.1",
     "@types/koa__cors": "^5.0.0",
     "@types/koa-bodyparser": "^4.3.12",
+    "@types/koa-compress": "^4.0.7",
     "@types/koa-logger": "^3.1.2",
     "@types/lodash": "^4.14.182",
-    "@types/node": "20",
+    "@types/node": "22",
     "@types/nodemailer": "^6.4.17",
     "@types/qrcode": "^1.5.5",
     "@types/supertest": "^6.0.2",
     "@types/unzipper": "^0.10.11",
     "@types/uuid": "^10.0.0",
     "@types/ws": "^8.5.13",
-    "@typescript-eslint/eslint-plugin": "^7.13.1",
-    "@typescript-eslint/parser": "^7.13.1",
+    "@typescript-eslint/eslint-plugin": "^8.46.2",
+    "@typescript-eslint/parser": "^8.46.2",
     "@vitest/coverage-v8": "^3.1.1",
     "axios-mock-adapter": "^1.22.0",
     "csv-parse": "^5.6.0",
-    "eslint": "^8.26.0",
-    "eslint-plugin-unused-imports": "^4.1.4",
+    "eslint": "^9.38.0",
     "hefty": "^2.0.0",
     "husky": "^9.0.11",
     "hygen": "^6.2.11",
@@ -53,7 +53,7 @@
     "supertest": "^7.0.0",
     "ts-node": "^10.7.0",
     "tsx": "^4.11.0",
-    "typescript": "^5.4.5",
+    "typescript": "^5.9.3",
     "unzipper": "^0.12.3",
     "vite": "^6.4.1",
     "vitest": "^3.1.1"
@@ -84,6 +84,7 @@
     "koa": "^3.1.1",
     "koa-bodyparser": "^4.4.1",
     "koa-clay": "^9.0.0",
+    "koa-compress": "^5.1.1",
     "koa-helmet": "^7.0.0",
     "koa-jwt": "^4.0.4",
     "koa-logger": "^3.2.1",
@@ -107,5 +108,8 @@
   },
   "lint-staged": {
     "*.{js,ts}": "eslint --fix"
+  },
+  "engines": {
+    "node": ">=22.0.0"
   }
 }

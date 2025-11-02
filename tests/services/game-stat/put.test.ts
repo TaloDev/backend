@@ -159,7 +159,8 @@ describe('Game stat service - put', () => {
 
     const stat = await new GameStatFactory([game]).state(() => ({
       minValue: -100,
-      maxValue: 300
+      maxValue: 300,
+      defaultValue: 99
     })).one()
     await em.persistAndFlush(stat)
 

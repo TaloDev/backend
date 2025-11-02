@@ -1,7 +1,7 @@
 import { HasPermission, Request, Response, Route, Validate, ForwardTo, forwardRequest, ValidationCondition } from 'koa-clay'
 import LeaderboardAPIPolicy from '../../policies/api/leaderboard-api.policy'
 import APIService from './api-service'
-import { EntityManager, NotFoundError } from '@mikro-orm/mysql'
+import { EntityManager, NotFoundError, LockMode } from '@mikro-orm/mysql'
 import LeaderboardEntry from '../../entities/leaderboard-entry'
 import Leaderboard, { LeaderboardSortMode } from '../../entities/leaderboard'
 import LeaderboardAPIDocs from '../../docs/leaderboard-api.docs'
@@ -10,6 +10,15 @@ import { hardSanitiseProps, mergeAndSanitiseProps } from '../../lib/props/saniti
 import { PropSizeError } from '../../lib/errors/propSizeError'
 import buildErrorResponse from '../../lib/errors/buildErrorResponse'
 import { UniqueLeaderboardEntryPropsDigestError } from '../../lib/errors/uniqueLeaderboardEntryPropsDigestError'
+import PlayerAlias from '../../entities/player-alias'
+
+type LeaderboardEntryPostRequest = {
+  score: number
+  props?: {
+    key: string
+    value: string
+  }[]
+}
 
 export default class LeaderboardAPIService extends APIService {
   @Route({
@@ -27,21 +36,28 @@ export default class LeaderboardAPIService extends APIService {
     })
   }
 
-  async createEntry(req: Request, props?: { key: string, value: string }[]): Promise<LeaderboardEntry> {
-    const em: EntityManager = req.ctx.em
-
-    const entry = new LeaderboardEntry(req.ctx.state.leaderboard)
-    entry.playerAlias = req.ctx.state.alias
-    entry.score = req.body.score
-    if (req.ctx.state.continuityDate) {
-      entry.createdAt = req.ctx.state.continuityDate
+  private createEntry({
+    leaderboard,
+    playerAlias,
+    score,
+    continuityDate,
+    props
+  }: {
+    leaderboard: Leaderboard
+    playerAlias: PlayerAlias
+    score: number
+    continuityDate?: Date
+    props: { key: string, value: string }[]
+  }): LeaderboardEntry {
+    const entry = new LeaderboardEntry(leaderboard)
+    entry.playerAlias = playerAlias
+    entry.score = score
+    if (continuityDate) {
+      entry.createdAt = continuityDate
     }
-    if (props) {
+    if (props.length > 0) {
       entry.setProps(hardSanitiseProps({ props }))
     }
-
-    await em.persistAndFlush(entry)
-
     return entry
   }
 
@@ -67,57 +83,101 @@ export default class LeaderboardAPIService extends APIService {
     }
   })
   @HasPermission(LeaderboardAPIPolicy, 'post')
-  async post(req: Request): Promise<Response> {
+  async post(req: Request<LeaderboardEntryPostRequest>): Promise<Response> {
     const { score, props = [] } = req.body
     const em: EntityManager = req.ctx.em
 
     const leaderboard: Leaderboard = req.ctx.state.leaderboard
 
-    let entry: LeaderboardEntry | null = null
-    let updated = false
+    const result = await em.transactional(async (trx) => {
+      // lock the alias to prevent concurrent entry creation
+      const lockedAlias = await trx.findOneOrFail(PlayerAlias, req.ctx.state.alias.id, {
+        lockMode: LockMode.PESSIMISTIC_WRITE
+      })
 
-    try {
-      if (leaderboard.unique) {
-        if (leaderboard.uniqueByProps) {
-          entry = await leaderboard.findEntryWithProps({
-            em,
-            playerAliasId: req.ctx.state.alias.id,
-            props
-          })
-          if (!entry) {
-            throw new UniqueLeaderboardEntryPropsDigestError()
+      let entry: LeaderboardEntry | null = null
+      let updated = false
+
+      try {
+        if (leaderboard.unique) {
+          // try to find existing entry for unique leaderboards
+          if (leaderboard.uniqueByProps) {
+            entry = await leaderboard.findEntryWithProps({
+              em: trx,
+              playerAliasId: lockedAlias.id,
+              props
+            })
+            if (!entry) {
+              throw new UniqueLeaderboardEntryPropsDigestError()
+            }
+          } else {
+            entry = await trx.repo(LeaderboardEntry).findOneOrFail({
+              leaderboard,
+              playerAlias: lockedAlias,
+              deletedAt: null
+            })
+          }
+
+          // update entry if new score is better
+          const shouldUpdate = (leaderboard.sortMode === LeaderboardSortMode.ASC && score < entry.score) ||
+                               (leaderboard.sortMode === LeaderboardSortMode.DESC && score > entry.score)
+
+          if (shouldUpdate) {
+            entry.score = score
+            entry.createdAt = req.ctx.state.continuityDate ?? new Date()
+            if (props.length > 0) {
+              entry.setProps(mergeAndSanitiseProps({ prevProps: entry.props.getItems(), newProps: props }))
+            }
+            updated = true
           }
         } else {
-          entry = await em.repo(LeaderboardEntry).findOneOrFail({
+          // for non-unique leaderboards, always create a new entry
+          entry = this.createEntry({
             leaderboard,
-            playerAlias: req.ctx.state.alias,
-            deletedAt: null
+            playerAlias: lockedAlias,
+            score,
+            continuityDate: req.ctx.state.continuityDate,
+            props
           })
+          await trx.persistAndFlush(entry)
+        }
+      } catch (err) {
+        // handle PropSizeError from setProps or createEntry
+        if (err instanceof PropSizeError) {
+          return { entry: null, updated: false, errorResponse: buildErrorResponse({ props: [err.message] }) }
         }
 
-        if ((leaderboard.sortMode === LeaderboardSortMode.ASC && score < entry.score) || (leaderboard.sortMode === LeaderboardSortMode.DESC && score > entry.score)) {
-          entry.score = score
-          entry.createdAt = req.ctx.state.continuityDate ?? new Date()
-          if (props) {
-            entry.setProps(mergeAndSanitiseProps({ prevProps: entry.props.getItems(), newProps: props }))
+        // if unique entry doesn't exist, create it
+        if (err instanceof NotFoundError || err instanceof UniqueLeaderboardEntryPropsDigestError) {
+          try {
+            entry = this.createEntry({
+              leaderboard,
+              playerAlias: lockedAlias,
+              score,
+              continuityDate: req.ctx.state.continuityDate,
+              props
+            })
+            await trx.persistAndFlush(entry)
+          } catch (createErr) {
+            // handle PropSizeError from creating new entry
+            if (createErr instanceof PropSizeError) {
+              return { entry: null, updated: false, errorResponse: buildErrorResponse({ props: [createErr.message] }) }
+            }
+            throw createErr
           }
-          await em.flush()
-
-          updated = true
+        } else {
+          throw err
         }
-      } else {
-        entry = await this.createEntry(req, props)
       }
-    } catch (err) {
-      if (err instanceof NotFoundError || err instanceof UniqueLeaderboardEntryPropsDigestError) {
-        entry = await this.createEntry(req, props)
-      } else if (err instanceof PropSizeError) {
-        return buildErrorResponse({ props: [err.message] })
-      /* v8 ignore next 3 */
-      } else {
-        throw err
-      }
+
+      return { entry, updated }
+    })
+
+    if (result.errorResponse) {
+      return result.errorResponse
     }
+
+    const { entry, updated } = result
 
     await triggerIntegrations(em, leaderboard.game, (integration) => {
       return integration.handleLeaderboardEntryCreated(em, entry)

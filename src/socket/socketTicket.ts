@@ -26,7 +26,7 @@ export default class SocketTicket {
         })
 
         return true
-      } catch (error) {
+      } catch {
         return false
       }
     }

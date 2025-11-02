@@ -4,7 +4,7 @@ import { v4 } from 'uuid'
 import PlayerAlias from './player-alias'
 import { sign } from '../lib/auth/jwt'
 
-const errorCodes = [
+export const playerAuthErrorCodes = [
   'INVALID_CREDENTIALS',
   'VERIFICATION_ALIAS_NOT_FOUND',
   'VERIFICATION_CODE_INVALID',
@@ -18,7 +18,7 @@ const errorCodes = [
   'INVALID_EMAIL'
 ] as const
 
-export type PlayerAuthErrorCode = typeof errorCodes[number]
+export type PlayerAuthErrorCode = typeof playerAuthErrorCodes[number]
 
 @Entity()
 export default class PlayerAuth {

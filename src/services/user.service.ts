@@ -121,7 +121,7 @@ export default class UserService extends Service {
           $gt: new Date()
         }
       })
-    } catch (err) {
+    } catch {
       req.ctx.throw(400, 'Invalid or expired code')
     }
 

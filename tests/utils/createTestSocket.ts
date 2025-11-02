@@ -66,7 +66,7 @@ class TestClient extends WebSocket {
         }
         return false
       })
-    } catch (err) {
+    } catch {
       throw new Error('Message not found')
     }
   }
@@ -89,7 +89,7 @@ class TestClient extends WebSocket {
       await this.expectJson((actual) => {
         expect(actual).toStrictEqual(json)
       })
-    } catch (err) {
+    } catch {
       throw new Error(`Message not found: ${JSON.stringify(json)}`)
     }
   }

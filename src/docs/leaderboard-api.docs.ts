@@ -14,6 +14,7 @@ const LeaderboardAPIDocs: APIDocs<LeaderboardAPIService> = {
       query: {
         page: 'The current pagination index (starting at 0)',
         aliasId: 'Only return entries for this alias ID',
+        service: 'Only return entries for this player alias service (e.g. steam, epic, username)',
         propKey: 'Only return entries with this prop key',
         propValue: 'Only return entries with a matching prop key and value',
         withDeleted: 'Include entries that were deleted by a refresh interval',
@@ -125,6 +126,15 @@ const LeaderboardAPIDocs: APIDocs<LeaderboardAPIService> = {
           query: {
             startDate: '2025-09-01',
             endDate: '2025-09-08'
+          }
+        }
+      },
+      {
+        title: 'Sample request with service filtering',
+        sample: {
+          url: '/v1/leaderboards/highscore?service=steam',
+          query: {
+            service: 'steam'
           }
         }
       }

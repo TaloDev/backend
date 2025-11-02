@@ -144,14 +144,14 @@ export default class LeaderboardService extends Service {
   async entries(req: Request): Promise<Response> {
     const itemsPerPage = DEFAULT_PAGE_SIZE
 
-    const { page = 0, aliasId, withDeleted, propKey, propValue, startDate, endDate } = req.query
+    const { page = 0, aliasId, withDeleted, propKey, propValue, startDate, endDate, service } = req.query
     const em: EntityManager = req.ctx.em
 
     const leaderboard: Leaderboard = req.ctx.state.leaderboard
     const includeDeleted = withDeleted === '1'
 
     const devDataComponent = req.ctx.state.includeDevData ? 'dev' : 'no-dev'
-    const cacheKey = `${leaderboard.getEntriesCacheKey()}-${page}-${aliasId}-${withDeleted}-${propKey}-${propValue}-${startDate}-${endDate}-${devDataComponent}`
+    const cacheKey = `${leaderboard.getEntriesCacheKey()}-${page}-${aliasId}-${withDeleted}-${propKey}-${propValue}-${startDate}-${endDate}-${service}-${devDataComponent}`
 
     return withResponseCache({
       key: cacheKey,
@@ -166,6 +166,13 @@ export default class LeaderboardService extends Service {
       if (aliasId) {
         where.playerAlias = {
           id: Number(aliasId)
+        }
+      }
+
+      if (service) {
+        where.playerAlias = {
+          ...((where.playerAlias as ObjectQuery<PlayerAlias>) ?? {}),
+          service
         }
       }
 

@@ -21,7 +21,7 @@ import { captureException } from '@sentry/node'
 import { DEFAULT_PAGE_SIZE, SMALL_PAGE_SIZE } from '../lib/pagination/itemsPerPage'
 import { pageValidation } from '../lib/pagination/pageValidation'
 import { withResponseCache } from '../lib/perf/responseCache'
-import { deletePlayers } from '../tasks/deleteInactivePlayers'
+import { deletePlayersFromDB } from '../tasks/deletePlayers'
 import { deferClearResponseCache } from '../lib/perf/responseCacheQueue'
 
 const propsValidation = async (val: unknown): Promise<ValidationCondition[]> => [
@@ -329,7 +329,7 @@ export default class PlayerService extends Service {
     const game = player.game
 
     const em: EntityManager = req.ctx.em
-    await deletePlayers(em, [player])
+    await deletePlayersFromDB(em, [player])
 
     createGameActivity(em, {
       user: req.ctx.state.user,

@@ -15,7 +15,7 @@ import PlayerAuthResetPassword from '../../emails/player-auth-reset-password-mai
 import createPlayerAuthActivity from '../../lib/logging/createPlayerAuthActivity'
 import PlayerAuthActivity, { PlayerAuthActivityType } from '../../entities/player-auth-activity'
 import emailRegex from '../../lib/lang/emailRegex'
-import { deleteClickHousePlayerData } from '../../tasks/deleteInactivePlayers'
+import { deleteClickHousePlayerData } from '../../tasks/deletePlayers'
 import Redis from 'ioredis'
 import assert from 'node:assert'
 import { getGlobalQueue } from '../../config/global-queues'

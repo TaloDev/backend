@@ -59,6 +59,7 @@ import { CreateSteamworksPlayerStatTable } from './20250915220838CreateSteamwork
 import { AddGameChannelStoragePropKeyIndex } from './20250923194349AddGameChannelStoragePropKeyIndex'
 import { AddLeaderboardUniqueByPropsColumn } from './20251015211635AddLeaderboardUniqueByPropsColumn'
 import { AddLeaderboardEntryPropsDigestColumn } from './20251019231730AddLeaderboardEntryPropsDigestColumn'
+import { CreatePlayersToDeleteTable } from './20251102174957CreatePlayersToDeleteTable'
 
 export default [
   {
@@ -304,5 +305,9 @@ export default [
   {
     name: 'AddLeaderboardEntryPropsDigestColumn',
     class: AddLeaderboardEntryPropsDigestColumn
+  },
+  {
+    name: 'CreatePlayersToDeleteTable',
+    class: CreatePlayersToDeleteTable
   }
 ]

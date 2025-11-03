@@ -11,11 +11,17 @@ import PlayerAlias from '../../src/entities/player-alias'
 import PlayerPresence from '../../src/entities/player-presence'
 import PlayerAuth from '../../src/entities/player-auth'
 import PlayerProp from '../../src/entities/player-prop'
-import * as GlobalQueuesModule from '../../src/config/global-queues'
 import getBillablePlayerCount from '../../src/lib/billing/getBillablePlayerCount'
+import { PlayerToDelete } from '../../src/entities/player-to-delete'
+import deletePlayers from '../../src/tasks/deletePlayers'
+import { EntityManager } from '@mikro-orm/mysql'
 
 describe('deleteInactivePlayers', () => {
-  it('should delete inactive dev players older than 60 days', async () => {
+  beforeEach(async () => {
+    await em.nativeDelete(PlayerToDelete, {})
+  })
+
+  it('should delete inactive dev players older than 60 days for deletion', async () => {
     const [, game] = await createOrganisationAndGame({}, { purgeDevPlayers: true, purgeLivePlayers: true })
     const owner = await new UserFactory().owner().state(() => ({
       organisation: game.organisation
@@ -31,6 +37,8 @@ describe('deleteInactivePlayers', () => {
 
     await em.persistAndFlush([owner, player, otherPlayer])
     await deleteInactivePlayers()
+    // actually delete the players
+    await deletePlayers()
 
     const players = await em.repo(Player).find({ game })
 
@@ -62,6 +70,8 @@ describe('deleteInactivePlayers', () => {
 
     await em.persistAndFlush([owner, player, otherPlayer])
     await deleteInactivePlayers()
+    // actually delete the players
+    await deletePlayers()
 
     const players = await em.repo(Player).find({ game })
 
@@ -89,6 +99,8 @@ describe('deleteInactivePlayers', () => {
 
     await em.persistAndFlush([owner, player])
     await deleteInactivePlayers()
+    // actually delete the players
+    await deletePlayers()
 
     const players = await em.repo(Player).find({ game })
 
@@ -106,6 +118,8 @@ describe('deleteInactivePlayers', () => {
 
     await em.persistAndFlush([owner, presence])
     await deleteInactivePlayers()
+    // actually delete the players
+    await deletePlayers()
 
     const players = await em.repo(Player).find({ game })
 
@@ -124,6 +138,8 @@ describe('deleteInactivePlayers', () => {
 
     await em.persistAndFlush([owner, player])
     await deleteInactivePlayers()
+    // actually delete the players
+    await deletePlayers()
 
     const players = await em.repo(Player).find({ game })
 
@@ -173,6 +189,8 @@ describe('deleteInactivePlayers', () => {
 
     await em.persistAndFlush([owner, player])
     await deleteInactivePlayers()
+    // actually delete the players
+    await deletePlayers()
 
     const players = await em.repo(Player).find({ game })
     expect(players).toHaveLength(1)
@@ -196,6 +214,8 @@ describe('deleteInactivePlayers', () => {
 
     await em.persistAndFlush([owner, player])
     await deleteInactivePlayers()
+    // actually delete the players
+    await deletePlayers()
 
     const players = await em.repo(Player).find({ game })
     expect(players).toHaveLength(1)
@@ -223,6 +243,8 @@ describe('deleteInactivePlayers', () => {
 
     await em.persistAndFlush([owner, player, otherPlayer])
     await deleteInactivePlayers()
+    // actually delete the players
+    await deletePlayers()
 
     const players = await em.repo(Player).find({ game })
 
@@ -254,6 +276,8 @@ describe('deleteInactivePlayers', () => {
 
     await em.persistAndFlush([owner, player, otherPlayer])
     await deleteInactivePlayers()
+    // actually delete the players
+    await deletePlayers()
 
     const players = await em.repo(Player).find({ game })
 
@@ -270,8 +294,6 @@ describe('deleteInactivePlayers', () => {
   })
 
   it('should continue processing other games when one game throws an error', async () => {
-    vi.spyOn(GlobalQueuesModule, 'getGlobalQueue').mockRejectedValueOnce(new Error())
-
     const [, game1] = await createOrganisationAndGame({}, { purgeDevPlayers: true, purgeLivePlayers: true })
     const [, game2] = await createOrganisationAndGame({}, { purgeDevPlayers: true, purgeLivePlayers: true })
 
@@ -293,7 +315,12 @@ describe('deleteInactivePlayers', () => {
 
     await em.persistAndFlush([owner1, owner2, player1, player2])
 
+    // makes persisting the first player_to_delete fail
+    vi.spyOn(EntityManager.prototype, 'persistAndFlush').mockRejectedValueOnce(new Error())
+
     await deleteInactivePlayers()
+    // actually delete the players
+    await deletePlayers()
 
     const players1 = await em.repo(Player).find({ game: game1 })
     const players2 = await em.repo(Player).find({ game: game2 })
@@ -339,6 +366,14 @@ describe('deleteInactivePlayers', () => {
       await em.persistAndFlush([owner, ...players])
 
       await deleteInactivePlayers()
+
+      // actually delete the players
+      let remaining = await em.repo(PlayerToDelete).count()
+      while (remaining > 0) {
+        await deletePlayers()
+        remaining = await em.repo(PlayerToDelete).count()
+      }
+
       em.clear()
 
       const activity = await em.repo(GameActivity).findOne({
@@ -391,6 +426,14 @@ describe('deleteInactivePlayers', () => {
       }))
 
       await deleteInactivePlayers()
+
+      // actually delete the players
+      let remaining = await em.repo(PlayerToDelete).count()
+      while (remaining > 0) {
+        await deletePlayers()
+        remaining = await em.repo(PlayerToDelete).count()
+      }
+
       em.clear()
 
       for (const game of games) {

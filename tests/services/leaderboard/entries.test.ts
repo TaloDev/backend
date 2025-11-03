@@ -352,13 +352,13 @@ describe('Leaderboard service - entries', () => {
     const [token] = await createUserAndToken({}, organisation)
 
     const steamPlayers = await new PlayerFactory([game]).withSteamAlias().many(2)
-    const epicPlayers = await new PlayerFactory([game]).many(2)
+    const usernamePlayers = await new PlayerFactory([game]).withUsernameAlias().many(2)
     const leaderboard = await new LeaderboardFactory([game]).state(() => ({ unique: false })).one()
 
     const steamEntries = await new LeaderboardEntryFactory(leaderboard, steamPlayers).many(2)
-    const epicEntries = await new LeaderboardEntryFactory(leaderboard, epicPlayers).many(2)
+    const usernameEntries = await new LeaderboardEntryFactory(leaderboard, usernamePlayers).many(2)
 
-    await em.persistAndFlush([leaderboard, ...steamEntries, ...epicEntries])
+    await em.persistAndFlush([leaderboard, ...steamEntries, ...usernameEntries])
 
     const res = await request(app)
       .get(`/games/${game.id}/leaderboards/${leaderboard.id}/entries`)

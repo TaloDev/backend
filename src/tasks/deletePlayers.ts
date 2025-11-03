@@ -9,7 +9,13 @@ export async function deleteClickHousePlayerData(
   options: { playerIds: string[], aliasIds: number[], deleteSessions?: boolean }
 ) {
   const queue = getGlobalQueue('delete-clickhouse-player-data')
-  await queue.add('delete-clickhouse-player-data', options)
+  await queue.add('delete-clickhouse-player-data', options, {
+    attempts: 5,
+    backoff: {
+      type: 'exponential',
+      delay: 3000
+    }
+  })
 }
 
 export async function deletePlayersFromDB(em: EntityManager, players: Player[]) {
@@ -28,7 +34,7 @@ export default async function deletePlayers() {
 
   const playersToDelete = await em.repo(PlayerToDelete).findAll({
     limit: 100,
-    populate: ['player', 'player.aliases' ]
+    populate: ['player', 'player.aliases:ref']
   })
 
   const count = playersToDelete.length

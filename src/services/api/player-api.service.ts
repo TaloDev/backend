@@ -297,6 +297,8 @@ export default class PlayerAPIService extends APIService {
       return player1
     })
 
+    await em.populate(updatedPlayer, ['aliases'])
+
     return {
       status: 200,
       body: {

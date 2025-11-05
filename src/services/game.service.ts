@@ -105,8 +105,8 @@ export default class GameService extends Service {
     props?: Prop[]
     purgeDevPlayers?: boolean
     purgeLivePlayers?: boolean
-    purgeDevPlayersRetention?: boolean
-    purgeLivePlayersRetention?: boolean
+    purgeDevPlayersRetention?: number
+    purgeLivePlayersRetention?: number
     website?: string
   }>): Promise<Response> {
     const {

@@ -41,7 +41,8 @@ export enum GameActivityType {
   INACTIVE_LIVE_PLAYERS_DELETED,
   LEADERBOARD_ENTRIES_RESET,
   GAME_STAT_RESET,
-  PLAYER_DELETED
+  PLAYER_DELETED,
+  GAME_SETTINGS_UPDATED
 }
 
 @Entity()
@@ -153,6 +154,8 @@ export default class GameActivity {
         return `${this.user.username} reset the stat ${this.extra.statInternalName}`
       case GameActivityType.PLAYER_DELETED:
         return `${this.user.username} deleted a player`
+      case GameActivityType.GAME_SETTINGS_UPDATED:
+        return `${this.user.username} updated game settings`
       default:
         return ''
     }

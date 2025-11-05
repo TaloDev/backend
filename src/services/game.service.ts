@@ -14,6 +14,7 @@ import Prop from '../entities/prop'
 import { PropSizeError } from '../lib/errors/propSizeError'
 import buildErrorResponse from '../lib/errors/buildErrorResponse'
 import { UserType } from '../entities/user'
+import updateAllowedKeys from '../lib/entities/updateAllowedKeys'
 
 async function sendLiveConfigUpdatedMessage(req: Request, game: Game) {
   const socket: Socket = req.ctx.wss
@@ -104,8 +105,8 @@ export default class GameService extends Service {
     props?: Prop[]
     purgeDevPlayers?: boolean
     purgeLivePlayers?: boolean
-    purgeDevPlayersRetention?: boolean
-    purgeLivePlayersRetention?: boolean
+    purgeDevPlayersRetention?: number
+    purgeLivePlayersRetention?: number
     website?: string
   }>): Promise<Response> {
     const {
@@ -173,26 +174,46 @@ export default class GameService extends Service {
       })
     }
 
+    const settingsToUpdate: Partial<Game> = {}
+
     if (typeof purgeDevPlayers === 'boolean') {
       throwUnlessOwner(req)
-      game.purgeDevPlayers = purgeDevPlayers
+      settingsToUpdate.purgeDevPlayers = purgeDevPlayers
     }
     if (typeof purgeLivePlayers === 'boolean') {
       throwUnlessOwner(req)
-      game.purgeLivePlayers = purgeLivePlayers
+      settingsToUpdate.purgeLivePlayers = purgeLivePlayers
     }
     if (typeof purgeDevPlayersRetention === 'number') {
       throwUnlessOwner(req)
-      game.purgeDevPlayersRetention = purgeDevPlayersRetention
+      settingsToUpdate.purgeDevPlayersRetention = purgeDevPlayersRetention
     }
     if (typeof purgeLivePlayersRetention === 'number') {
       throwUnlessOwner(req)
-      game.purgeLivePlayersRetention = purgeLivePlayersRetention
+      settingsToUpdate.purgeLivePlayersRetention = purgeLivePlayersRetention
     }
-
     if (typeof website === 'string') {
       throwUnlessOwner(req)
-      game.website = website
+      settingsToUpdate.website = website
+    }
+
+    const [, changedProperties] = updateAllowedKeys(
+      game,
+      settingsToUpdate,
+      ['purgeDevPlayers', 'purgeLivePlayers', 'purgeDevPlayersRetention', 'purgeLivePlayersRetention', 'website']
+    )
+
+    if (changedProperties.length > 0) {
+      createGameActivity(em, {
+        user: req.ctx.state.user,
+        game,
+        type: GameActivityType.GAME_SETTINGS_UPDATED,
+        extra: {
+          display: {
+            'Updated properties': changedProperties.map((prop) => `${prop}: ${settingsToUpdate[prop as keyof Game]}`).join(', ')
+          }
+        }
+      })
     }
 
     await em.flush()

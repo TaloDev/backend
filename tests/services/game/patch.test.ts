@@ -394,4 +394,50 @@ describe('Game service - patch', () => {
       }
     })
   })
+
+  it('should create a GAME_SETTINGS_UPDATED activity when updating game settings', async () => {
+    const [organisation, game] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken({ type: UserType.OWNER }, organisation)
+
+    await request(app)
+      .patch(`/games/${game.id}`)
+      .send({
+        purgeDevPlayers: true,
+        website: 'https://example.com'
+      })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    const activity = await em.getRepository(GameActivity).findOne({
+      type: GameActivityType.GAME_SETTINGS_UPDATED,
+      game
+    })
+
+    expect(activity).not.toBeNull()
+    expect(activity?.extra.display).toEqual({
+      'Updated properties': 'purgeDevPlayers: true, website: https://example.com'
+    })
+  })
+
+  it('should not create a GAME_SETTINGS_UPDATED activity when no settings are changed', async () => {
+    const [organisation, game] = await createOrganisationAndGame({}, {
+      purgeDevPlayers: true
+    })
+    const [token] = await createUserAndToken({ type: UserType.OWNER }, organisation)
+
+    await request(app)
+      .patch(`/games/${game.id}`)
+      .send({
+        purgeDevPlayers: true
+      })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    const activity = await em.getRepository(GameActivity).findOne({
+      type: GameActivityType.GAME_SETTINGS_UPDATED,
+      game
+    })
+
+    expect(activity).toBeNull()
+  })
 })

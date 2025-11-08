@@ -138,6 +138,16 @@ export type CheckAppOwnershipResponse = {
   }
 }
 
+export type GetPlayerSummariesResponse = {
+  response: {
+    players: {
+      steamid: string
+      personaname: string
+      avatarhash: string
+    }[]
+  }
+}
+
 function createSteamworksRequestConfig(integration: Integration, method: SteamworksRequestMethod, url: string, body = ''): SteamworksRequestConfig {
   return {
     method,
@@ -786,33 +796,48 @@ export async function authenticateTicket(req: Request, integration: Integration,
     }
   })
 
-  const { status, data: verifyOwnershipData } = await verifyOwnership({
-    em,
-    integration,
-    steamId
-  })
-  if (status === 403) {
+  const [
+    { status: verifyOwnershipStatus, data: verifyOwnershipData },
+    playerSummary
+  ] = await Promise.all([
+    verifyOwnership({ em, integration, steamId }),
+    getPlayerSummary({ em, integration, steamId })
+  ])
+
+  if (verifyOwnershipStatus === 403) {
     throw new Error('Failed to verify Steamworks ownership: Invalid API key', errorOpts)
   }
 
   const { ownsapp, permanent, timestamp } = verifyOwnershipData.appownership
   const { vacbanned, publisherbanned } = authenticateRes.data.response.params
 
+  const props = [
+    { key: 'META_STEAMWORKS_VAC_BANNED', value: String(vacbanned) },
+    { key: 'META_STEAMWORKS_PUBLISHER_BANNED', value: String(publisherbanned) },
+    { key: 'META_STEAMWORKS_OWNS_APP', value: String(ownsapp) },
+    { key: 'META_STEAMWORKS_OWNS_APP_PERMANENTLY', value: String(permanent) },
+    { key: 'META_STEAMWORKS_OWNS_APP_FROM_DATE', value: timestamp }
+  ]
+
+  if (playerSummary) {
+    props.push({ key: 'META_STEAMWORKS_PERSONA_NAME', value: playerSummary.personaname })
+    props.push({ key: 'META_STEAMWORKS_AVATAR_HASH', value: playerSummary.avatarhash })
+  } else {
+    captureException(new Error('Failed to find Steamworks player summary'), {
+      extra: {
+        steamId,
+        integrationId: integration.id
+      }
+    })
+  }
+
   if (alias) {
-    alias.player.upsertProp('META_STEAMWORKS_VAC_BANNED', String(vacbanned))
-    alias.player.upsertProp('META_STEAMWORKS_PUBLISHER_BANNED', String(publisherbanned))
-    alias.player.upsertProp('META_STEAMWORKS_OWNS_APP', String(ownsapp))
-    alias.player.upsertProp('META_STEAMWORKS_OWNS_APP_PERMANENTLY', String(permanent))
-    alias.player.upsertProp('META_STEAMWORKS_OWNS_APP_FROM_DATE', timestamp)
+    for (const prop of props) {
+      alias.player.upsertProp(prop.key, prop.value)
+    }
     await em.flush()
   } else {
-    req.ctx.state.initialPlayerProps = [
-      { key: 'META_STEAMWORKS_VAC_BANNED', value: String(vacbanned) },
-      { key: 'META_STEAMWORKS_PUBLISHER_BANNED', value: String(publisherbanned) },
-      { key: 'META_STEAMWORKS_OWNS_APP', value: String(ownsapp) },
-      { key: 'META_STEAMWORKS_OWNS_APP_PERMANENTLY', value: String(permanent) },
-      { key: 'META_STEAMWORKS_OWNS_APP_FROM_DATE', value: timestamp }
-    ]
+    req.ctx.state.initialPlayerProps = props
   }
 
   return steamId
@@ -833,6 +858,31 @@ export async function verifyOwnership({
   await em.persistAndFlush(event)
 
   return { status: res.status, data: res.data }
+}
+
+export async function getPlayerSummary({
+  em,
+  integration,
+  steamId
+}: {
+  em: EntityManager
+  integration: Integration
+  steamId: string
+}): Promise<GetPlayerSummariesResponse['response']['players'][number] | null> {
+  const config = createSteamworksRequestConfig(integration, 'GET', `/ISteamUser/GetPlayerSummaries/v2?steamids=${steamId}`)
+  const event = createSteamworksIntegrationEvent(integration, config)
+  const res = await makeRequest<GetPlayerSummariesResponse>(config, event)
+  await em.persistAndFlush(event)
+
+  if (res.status !== 200) {
+    return null
+  }
+
+  if (!Array.isArray(res.data?.response?.players)) {
+    return null
+  }
+
+  return res.data.response.players.find((p) => p.steamid === steamId) ?? null
 }
 
 export async function cleanupSteamworksLeaderboardEntry(

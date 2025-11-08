@@ -8,7 +8,7 @@ import createGameActivity from '../lib/logging/createGameActivity'
 import { GameActivityType } from '../entities/game-activity'
 import User, { UserType } from '../entities/user'
 import { streamByCursor } from '../lib/perf/streamByCursor'
-import { getGlobalQueue } from '../config/global-queues'
+import { PlayerToDelete } from '../entities/player-to-delete'
 
 const playersBatchSize = 100
 
@@ -58,58 +58,45 @@ async function createPurgeActivity({
   await em.flush()
 }
 
-async function findAndDeleteInactivePlayers(em: EntityManager, game: Game, devBuild: boolean) {
+async function findAndQueueInactivePlayers(em: EntityManager, game: Game, devBuild: boolean) {
   const shouldPurge = devBuild ? game.purgeDevPlayers : game.purgeLivePlayers
   if (!shouldPurge) {
     return
   }
 
-  console.info(`Purging ${devBuild ? 'dev' : 'live'} players for game ${game.id}`)
+  console.info(`Queueing ${devBuild ? 'dev' : 'live'} players for deletion for game ${game.id}`)
 
   try {
     let batch: Player[] = []
-    let totalDeleted = 0
+    let totalQueued = 0
 
     for await (const player of getPlayers(em, game, devBuild)) {
       batch.push(player)
       /* v8 ignore start */
       if (batch.length >= playersBatchSize) {
-        await deletePlayers(em, batch)
-        totalDeleted += batch.length
+        const playersToDelete = batch.map((player) => new PlayerToDelete(player))
+        await em.persistAndFlush(playersToDelete)
+        totalQueued += batch.length
         batch = []
       }
       /* v8 ignore stop */
     }
 
-    // delete any remaining players in the last batch
+    // Queue any remaining players in the last batch
     if (batch.length > 0) {
-      await deletePlayers(em, batch)
-      totalDeleted += batch.length
+      const playersToDelete = batch.map((player) => new PlayerToDelete(player))
+      await em.persistAndFlush(playersToDelete)
+      totalQueued += batch.length
     }
 
-    if (totalDeleted > 0) {
-      console.info(`Deleted ${totalDeleted} inactive${devBuild ? ' dev' : ''} players from game ${game.id}`)
-      await createPurgeActivity({ em, game, devBuild, count: totalDeleted })
+    if (totalQueued > 0) {
+      console.info(`Queued ${totalQueued} inactive${devBuild ? ' dev' : ''} players for deletion from game ${game.id}`)
+      await createPurgeActivity({ em, game, devBuild, count: totalQueued })
     }
   } catch (err) {
-    console.error(`Error deleting inactive${devBuild ? ' dev' : ''} players:`, err)
+    console.error(`Error queueing inactive${devBuild ? ' dev' : ''} players for deletion:`, err)
     captureException(err)
   }
-}
-
-export async function deleteClickHousePlayerData(
-  options: { playerIds: string[], aliasIds: number[], deleteSessions?: boolean }
-) {
-  const queue = getGlobalQueue('delete-clickhouse-player-data')
-  await queue.add('delete-clickhouse-player-data', options)
-}
-
-export async function deletePlayers(em: EntityManager, players: Player[]) {
-  const playerIds = players.map((player) => player.id)
-  const aliasIds = players.flatMap((player) => player.aliases.map((alias) => alias.id))
-
-  await deleteClickHousePlayerData({ playerIds, aliasIds, deleteSessions: true })
-  await em.removeAndFlush(players)
 }
 
 export default async function deleteInactivePlayers() {
@@ -124,7 +111,7 @@ export default async function deleteInactivePlayers() {
   })
 
   for (const game of games) {
-    await findAndDeleteInactivePlayers(em.fork(), game, true)
-    await findAndDeleteInactivePlayers(em.fork(), game, false)
+    await findAndQueueInactivePlayers(em.fork(), game, true)
+    await findAndQueueInactivePlayers(em.fork(), game, false)
   }
 }

@@ -22,6 +22,10 @@ export default class GameChannelAPIPolicy extends Policy {
     const em: EntityManager = this.ctx.em
     const id = Number(req.params.id)
 
+    if (isNaN(id)) {
+      return null
+    }
+
     return em.repo(GameChannel).findOne({
       id,
       game: this.ctx.state.game

@@ -9,7 +9,7 @@ import EventFactory from '../../../fixtures/EventFactory'
 import PlayerPresenceFactory from '../../../fixtures/PlayerPresenceFactory'
 import PlayerAuthActivityFactory from '../../../fixtures/PlayerAuthActivityFactory'
 import assert from 'node:assert'
-import * as deleteInactivePlayers from '../../../../src/tasks/deleteInactivePlayers'
+import * as deletePlayers from '../../../../src/tasks/deletePlayers'
 
 describe('Player auth API service - delete', { timeout: 30_000 }, () => {
   afterEach(() => {
@@ -213,7 +213,7 @@ describe('Player auth API service - delete', { timeout: 30_000 }, () => {
   })
 
   it('should rollback if clickhouse fails', async () => {
-    vi.spyOn(deleteInactivePlayers, 'deleteClickHousePlayerData').mockRejectedValue(new Error())
+    vi.spyOn(deletePlayers, 'deleteClickHousePlayerData').mockRejectedValue(new Error())
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_PLAYERS, APIKeyScope.WRITE_PLAYERS])
 
     const player = await new PlayerFactory([apiKey.game]).withTaloAlias().state(async () => ({

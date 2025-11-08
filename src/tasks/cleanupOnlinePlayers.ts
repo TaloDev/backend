@@ -1,4 +1,4 @@
-import { EntityManager } from '@mikro-orm/mysql'
+import { EntityManager, NotFoundError } from '@mikro-orm/mysql'
 import { getMikroORM } from '../config/mikro-orm.config'
 import createClickHouseClient from '../lib/clickhouse/createClient'
 import PlayerSession, { ClickHousePlayerSession } from '../entities/player-session'
@@ -162,7 +162,22 @@ export default async function cleanupOnlinePlayers() {
   console.info(`Found ${sessions.length} unfinished sessions`)
 
   for (const session of sessions) {
-    await cleanupSession(em, clickhouse, session)
+    try {
+      await cleanupSession(em, clickhouse, session)
+    } catch (err) {
+      if (err instanceof NotFoundError) {
+        // player was deleted, just delete their sessions
+        await clickhouse.exec({
+          query: 'DELETE FROM player_sessions WHERE player_id = {playerId:String}',
+          query_params: {
+            playerId: session.player_id
+          }
+        })
+      /* v8 ignore next 3 */
+      } else {
+        throw err
+      }
+    }
   }
 
   // todo, find out how this is happening

@@ -134,4 +134,21 @@ describe('Game channel API service - join', () => {
       message: 'This channel is private'
     })
   })
+
+  it('should not join a channel if the id is not numeric', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_CHANNELS])
+
+    const player = await new PlayerFactory([apiKey.game]).one()
+    await em.persistAndFlush(player)
+
+    const res = await request(app)
+      .post('/v1/game-channels/abc/join')
+      .auth(token, { type: 'bearer' })
+      .set('x-talo-alias', String(player.aliases[0].id))
+      .expect(404)
+
+    expect(res.body).toStrictEqual({
+      message: 'Channel not found'
+    })
+  })
 })

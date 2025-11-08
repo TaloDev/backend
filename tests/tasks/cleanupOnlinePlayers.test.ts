@@ -416,4 +416,40 @@ describe('cleanupOnlinePlayers', () => {
     const updatedPresence = await em.refresh(originalPresence)
     expect(updatedPresence).toBeNull()
   })
+
+  it('should delete sessions for a deleted player', async () => {
+    const deletedPlayerId = crypto.randomUUID()
+
+    await clickhouse.insert({
+      table: 'player_sessions',
+      values: {
+        player_id: deletedPlayerId,
+        player_alias_id: 123,
+        started_at: formatDateForClickHouse(new Date()),
+        ended_at: null,
+        dev_build: true
+      },
+      format: 'JSON'
+    })
+
+    // verify the session was inserted
+    await vi.waitUntil(async () => {
+      const sessions = await clickhouse.query({
+        query: `SELECT * FROM player_sessions WHERE player_id = '${deletedPlayerId}'`,
+        format: 'JSONEachRow'
+      }).then((res) => res.json<ClickHousePlayerSession>())
+      return sessions.length === 1
+    })
+
+    await cleanupOnlinePlayers()
+
+    // verify the session was deleted
+    await vi.waitUntil(async () => {
+      const sessions = await clickhouse.query({
+        query: `SELECT * FROM player_sessions WHERE player_id = '${deletedPlayerId}'`,
+        format: 'JSONEachRow'
+      }).then((res) => res.json<ClickHousePlayerSession>())
+      return sessions.length === 0
+    })
+  })
 })

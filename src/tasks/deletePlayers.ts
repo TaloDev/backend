@@ -4,9 +4,10 @@ import { PlayerToDelete } from '../entities/player-to-delete'
 import Player from '../entities/player'
 import { getGlobalQueue } from '../config/global-queues'
 import { captureException } from '@sentry/node'
+import { DeleteClickHousePlayerDataConfig } from '../lib/queues/createDeleteClickHousePlayerDataQueue'
 
 export async function deleteClickHousePlayerData(
-  options: { playerIds: string[], aliasIds: number[], deleteSessions?: boolean }
+  options: DeleteClickHousePlayerDataConfig
 ) {
   const queue = getGlobalQueue('delete-clickhouse-player-data')
   await queue.add('delete-clickhouse-player-data', options, {
@@ -24,7 +25,7 @@ export async function deletePlayersFromDB(em: EntityManager, players: Player[]) 
 
   await em.transactional(async (trx) => {
     await trx.remove(players)
-    await deleteClickHousePlayerData({ playerIds, aliasIds, deleteSessions: true })
+    await deleteClickHousePlayerData({ playerIds, aliasIds })
   })
 }
 

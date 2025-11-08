@@ -46,7 +46,6 @@ export default async function deletePlayers() {
 
   try {
     await deletePlayersFromDB(em, playersToDelete.map((ptd) => ptd.player))
-    await em.removeAndFlush(playersToDelete)
     console.info(`Deleted ${count} players`)
   } catch (err) {
     console.error('Failed to delete players', err)

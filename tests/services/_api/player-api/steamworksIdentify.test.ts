@@ -49,6 +49,17 @@ describe('Player API service - identify - steamworks auth', () => {
     }])
     axiosMock.onGet(`https://partner.steam-api.com/ISteamUser/CheckAppOwnership/v3?appid=${appId}&steamid=${steamId}`).reply(verifyOwnershipMock)
 
+    const playerSummaryMock = vi.fn(() => [200, {
+      response: {
+        players: [{
+          steamid: steamId,
+          personaname: 'TestPlayer',
+          avatarhash: 'abcd1234'
+        }]
+      }
+    }])
+    axiosMock.onGet(`https://partner.steam-api.com/ISteamUser/GetPlayerSummaries/v2?steamids=${steamId}`).reply(playerSummaryMock)
+
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_PLAYERS])
     const player = await new PlayerFactory([apiKey.game]).withSteamAlias(steamId).state((player) => ({
       props: new Collection<PlayerProp>(player, [
@@ -68,6 +79,7 @@ describe('Player API service - identify - steamworks auth', () => {
 
     expect(authenticateTicketMock).toHaveBeenCalledTimes(1)
     expect(verifyOwnershipMock).toHaveBeenCalledTimes(1)
+    expect(playerSummaryMock).toHaveBeenCalledTimes(1)
 
     expect(res.body.alias.identifier).toBe(steamId)
     expect(res.body.alias.player.id).toBe(player.id)
@@ -91,6 +103,14 @@ describe('Player API service - identify - steamworks auth', () => {
       {
         key: 'META_STEAMWORKS_OWNS_APP_FROM_DATE',
         value: '2021-08-01T00:00:00.000Z'
+      },
+      {
+        key: 'META_STEAMWORKS_PERSONA_NAME',
+        value: 'TestPlayer'
+      },
+      {
+        key: 'META_STEAMWORKS_AVATAR_HASH',
+        value: 'abcd1234'
       }
     ]))
   })
@@ -125,6 +145,17 @@ describe('Player API service - identify - steamworks auth', () => {
     }])
     axiosMock.onGet(`https://partner.steam-api.com/ISteamUser/CheckAppOwnership/v3?appid=${appId}&steamid=${steamId}`).reply(verifyOwnershipMock)
 
+    const playerSummaryMock = vi.fn(() => [200, {
+      response: {
+        players: [{
+          steamid: steamId,
+          personaname: 'NewPlayer',
+          avatarhash: 'xyz789'
+        }]
+      }
+    }])
+    axiosMock.onGet(`https://partner.steam-api.com/ISteamUser/GetPlayerSummaries/v2?steamids=${steamId}`).reply(playerSummaryMock)
+
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_PLAYERS, APIKeyScope.WRITE_PLAYERS])
 
     const config = await new IntegrationConfigFactory().state(() => ({ appId })).one()
@@ -139,6 +170,7 @@ describe('Player API service - identify - steamworks auth', () => {
 
     expect(authenticateTicketMock).toHaveBeenCalledTimes(2) // check + create
     expect(verifyOwnershipMock).toHaveBeenCalledTimes(2)
+    expect(playerSummaryMock).toHaveBeenCalledTimes(2)
 
     expect(res.body.alias.identifier).toBe(steamId)
     expect(res.body.alias.player.props).toStrictEqual([
@@ -161,6 +193,14 @@ describe('Player API service - identify - steamworks auth', () => {
       {
         key: 'META_STEAMWORKS_OWNS_APP_FROM_DATE',
         value: '2021-08-01T00:00:00.000Z'
+      },
+      {
+        key: 'META_STEAMWORKS_PERSONA_NAME',
+        value: 'NewPlayer'
+      },
+      {
+        key: 'META_STEAMWORKS_AVATAR_HASH',
+        value: 'xyz789'
       }
     ])
   })
@@ -349,5 +389,315 @@ describe('Player API service - identify - steamworks auth', () => {
     expect(res.body).toStrictEqual({
       message: 'Failed to authenticate Steamworks ticket: Invalid response from Steamworks'
     })
+  })
+
+  it('should handle non-200 player summary responses gracefully', async () => {
+    const appId = randNumber({ min: 1000, max: 1_000_000 })
+    const steamId = randNumber({ min: 100_000, max: 1_000_000 }).toString()
+    const ticket = '000validticket'
+    const identity = 'talo'
+
+    const authenticateTicketMock = vi.fn(() => [200, {
+      response: {
+        params: {
+          steamid: steamId,
+          ownersteamid: steamId,
+          vacbanned: false,
+          publisherbanned: false
+        }
+      }
+    }])
+    axiosMock.onGet(`https://partner.steam-api.com/ISteamUserAuth/AuthenticateUserTicket/v1?appid=${appId}&ticket=${ticket}&identity=${identity}`).reply(authenticateTicketMock)
+
+    const verifyOwnershipMock = vi.fn(() => [200, {
+      appownership: {
+        appid: appId,
+        ownsapp: true,
+        permanent: true,
+        timestamp: '2021-08-01T00:00:00.000Z',
+        ownersteamid: steamId,
+        usercanceled: false
+      }
+    }])
+    axiosMock.onGet(`https://partner.steam-api.com/ISteamUser/CheckAppOwnership/v3?appid=${appId}&steamid=${steamId}`).reply(verifyOwnershipMock)
+
+    const playerSummaryMock = vi.fn(() => [500, {}])
+    axiosMock.onGet(`https://partner.steam-api.com/ISteamUser/GetPlayerSummaries/v2?steamids=${steamId}`).reply(playerSummaryMock)
+
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_PLAYERS, APIKeyScope.WRITE_PLAYERS])
+
+    const config = await new IntegrationConfigFactory().state(() => ({ appId })).one()
+    const integration = await new IntegrationFactory().construct(IntegrationType.STEAMWORKS, apiKey.game, config).one()
+    await em.persistAndFlush(integration)
+
+    const res = await request(app)
+      .get('/v1/players/identify')
+      .query({ service: PlayerAliasService.STEAM, identifier: `${identity}:${ticket}` })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    expect(authenticateTicketMock).toHaveBeenCalledTimes(2)
+    expect(verifyOwnershipMock).toHaveBeenCalledTimes(2)
+    expect(playerSummaryMock).toHaveBeenCalledTimes(2)
+
+    expect(res.body.alias.identifier).toBe(steamId)
+    // should not include persona name or avatar hash props
+    expect(res.body.alias.player.props).toStrictEqual([
+      {
+        key: 'META_STEAMWORKS_VAC_BANNED',
+        value: 'false'
+      },
+      {
+        key: 'META_STEAMWORKS_PUBLISHER_BANNED',
+        value: 'false'
+      },
+      {
+        key: 'META_STEAMWORKS_OWNS_APP',
+        value: 'true'
+      },
+      {
+        key: 'META_STEAMWORKS_OWNS_APP_PERMANENTLY',
+        value: 'true'
+      },
+      {
+        key: 'META_STEAMWORKS_OWNS_APP_FROM_DATE',
+        value: '2021-08-01T00:00:00.000Z'
+      }
+    ])
+  })
+
+  it('should handle malformed player summary responses gracefully', async () => {
+    // this test exists just in case of some undocumented Steamworks API behaviour
+
+    const appId = randNumber({ min: 1000, max: 1_000_000 })
+    const steamId = randNumber({ min: 100_000, max: 1_000_000 }).toString()
+    const ticket = '000validticket'
+
+    const authenticateTicketMock = vi.fn(() => [200, {
+      response: {
+        params: {
+          steamid: steamId,
+          ownersteamid: steamId,
+          vacbanned: false,
+          publisherbanned: false
+        }
+      }
+    }])
+    axiosMock.onGet(`https://partner.steam-api.com/ISteamUserAuth/AuthenticateUserTicket/v1?appid=${appId}&ticket=${ticket}`).reply(authenticateTicketMock)
+
+    const verifyOwnershipMock = vi.fn(() => [200, {
+      appownership: {
+        appid: appId,
+        ownsapp: true,
+        permanent: true,
+        timestamp: '2021-08-01T00:00:00.000Z',
+        ownersteamid: steamId,
+        usercanceled: false
+      }
+    }])
+    axiosMock.onGet(`https://partner.steam-api.com/ISteamUser/CheckAppOwnership/v3?appid=${appId}&steamid=${steamId}`).reply(verifyOwnershipMock)
+
+    const playerSummaryMock = vi.fn(() => [200, {
+      response: {
+        // no players array
+      }
+    }])
+    axiosMock.onGet(`https://partner.steam-api.com/ISteamUser/GetPlayerSummaries/v2?steamids=${steamId}`).reply(playerSummaryMock)
+
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_PLAYERS, APIKeyScope.WRITE_PLAYERS])
+
+    const config = await new IntegrationConfigFactory().state(() => ({ appId })).one()
+    const integration = await new IntegrationFactory().construct(IntegrationType.STEAMWORKS, apiKey.game, config).one()
+    await em.persistAndFlush(integration)
+
+    const res = await request(app)
+      .get('/v1/players/identify')
+      .query({ service: PlayerAliasService.STEAM, identifier: ticket })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    expect(authenticateTicketMock).toHaveBeenCalledTimes(2)
+    expect(verifyOwnershipMock).toHaveBeenCalledTimes(2)
+    expect(playerSummaryMock).toHaveBeenCalledTimes(2)
+
+    expect(res.body.alias.identifier).toBe(steamId)
+    // should not include persona name or avatar hash props
+    expect(res.body.alias.player.props).toStrictEqual([
+      {
+        key: 'META_STEAMWORKS_VAC_BANNED',
+        value: 'false'
+      },
+      {
+        key: 'META_STEAMWORKS_PUBLISHER_BANNED',
+        value: 'false'
+      },
+      {
+        key: 'META_STEAMWORKS_OWNS_APP',
+        value: 'true'
+      },
+      {
+        key: 'META_STEAMWORKS_OWNS_APP_PERMANENTLY',
+        value: 'true'
+      },
+      {
+        key: 'META_STEAMWORKS_OWNS_APP_FROM_DATE',
+        value: '2021-08-01T00:00:00.000Z'
+      }
+    ])
+  })
+
+  it('should handle the identified player not being in the summary response gracefully', async () => {
+    const appId = randNumber({ min: 1000, max: 1_000_000 })
+    const steamId = randNumber({ min: 100_000, max: 1_000_000 }).toString()
+    const ticket = '000validticket'
+
+    const authenticateTicketMock = vi.fn(() => [200, {
+      response: {
+        params: {
+          steamid: steamId,
+          ownersteamid: steamId,
+          vacbanned: true,
+          publisherbanned: false
+        }
+      }
+    }])
+    axiosMock.onGet(`https://partner.steam-api.com/ISteamUserAuth/AuthenticateUserTicket/v1?appid=${appId}&ticket=${ticket}`).reply(authenticateTicketMock)
+
+    const verifyOwnershipMock = vi.fn(() => [200, {
+      appownership: {
+        appid: appId,
+        ownsapp: true,
+        permanent: false,
+        timestamp: '2022-01-15T00:00:00.000Z',
+        ownersteamid: steamId,
+        usercanceled: false
+      }
+    }])
+    axiosMock.onGet(`https://partner.steam-api.com/ISteamUser/CheckAppOwnership/v3?appid=${appId}&steamid=${steamId}`).reply(verifyOwnershipMock)
+
+    const playerSummaryMock = vi.fn(() => [200, {
+      response: {
+        players: [{
+          steamid: 'different-steam-id',
+          personaname: 'DifferentPlayer',
+          avatarhash: 'different-hash'
+        }]
+      }
+    }])
+    axiosMock.onGet(`https://partner.steam-api.com/ISteamUser/GetPlayerSummaries/v2?steamids=${steamId}`).reply(playerSummaryMock)
+
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_PLAYERS, APIKeyScope.WRITE_PLAYERS])
+
+    const config = await new IntegrationConfigFactory().state(() => ({ appId })).one()
+    const integration = await new IntegrationFactory().construct(IntegrationType.STEAMWORKS, apiKey.game, config).one()
+    await em.persistAndFlush(integration)
+
+    const res = await request(app)
+      .get('/v1/players/identify')
+      .query({ service: PlayerAliasService.STEAM, identifier: ticket })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    expect(authenticateTicketMock).toHaveBeenCalledTimes(2)
+    expect(verifyOwnershipMock).toHaveBeenCalledTimes(2)
+    expect(playerSummaryMock).toHaveBeenCalledTimes(2)
+
+    expect(res.body.alias.identifier).toBe(steamId)
+    // should not include persona name or avatar hash props since player wasn't found
+    expect(res.body.alias.player.props).toStrictEqual([
+      {
+        key: 'META_STEAMWORKS_VAC_BANNED',
+        value: 'true'
+      },
+      {
+        key: 'META_STEAMWORKS_PUBLISHER_BANNED',
+        value: 'false'
+      },
+      {
+        key: 'META_STEAMWORKS_OWNS_APP',
+        value: 'true'
+      },
+      {
+        key: 'META_STEAMWORKS_OWNS_APP_PERMANENTLY',
+        value: 'false'
+      },
+      {
+        key: 'META_STEAMWORKS_OWNS_APP_FROM_DATE',
+        value: '2022-01-15T00:00:00.000Z'
+      }
+    ])
+  })
+
+  it('should update existing persona name and avatar hash props on re-identification', async () => {
+    const appId = randNumber({ min: 1000, max: 1_000_000 })
+    const steamId = randNumber({ min: 100_000, max: 1_000_000 }).toString()
+    const ticket = '000validticket'
+
+    const authenticateTicketMock = vi.fn(() => [200, {
+      response: {
+        params: {
+          steamid: steamId,
+          ownersteamid: steamId,
+          vacbanned: false,
+          publisherbanned: false
+        }
+      }
+    }])
+    axiosMock.onGet(`https://partner.steam-api.com/ISteamUserAuth/AuthenticateUserTicket/v1?appid=${appId}&ticket=${ticket}`).reply(authenticateTicketMock)
+
+    const verifyOwnershipMock = vi.fn(() => [200, {
+      appownership: {
+        appid: appId,
+        ownsapp: true,
+        permanent: true,
+        timestamp: '2021-08-01T00:00:00.000Z',
+        ownersteamid: steamId,
+        usercanceled: false
+      }
+    }])
+    axiosMock.onGet(`https://partner.steam-api.com/ISteamUser/CheckAppOwnership/v3?appid=${appId}&steamid=${steamId}`).reply(verifyOwnershipMock)
+
+    const playerSummaryMock = vi.fn(() => [200, {
+      response: {
+        players: [{
+          steamid: steamId,
+          personaname: 'UpdatedPlayerName',
+          avatarhash: 'newhash456'
+        }]
+      }
+    }])
+    axiosMock.onGet(`https://partner.steam-api.com/ISteamUser/GetPlayerSummaries/v2?steamids=${steamId}`).reply(playerSummaryMock)
+
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_PLAYERS])
+    const player = await new PlayerFactory([apiKey.game]).withSteamAlias(steamId).state((player) => ({
+      props: new Collection<PlayerProp>(player, [
+        new PlayerProp(player, 'META_STEAMWORKS_PERSONA_NAME', 'OldPlayerName'),
+        new PlayerProp(player, 'META_STEAMWORKS_AVATAR_HASH', 'oldhash123')
+      ])
+    })).one()
+
+    const config = await new IntegrationConfigFactory().state(() => ({ appId })).one()
+    const integration = await new IntegrationFactory().construct(IntegrationType.STEAMWORKS, apiKey.game, config).one()
+    await em.persistAndFlush([integration, player])
+
+    const res = await request(app)
+      .get('/v1/players/identify')
+      .query({ service: PlayerAliasService.STEAM, identifier: ticket })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    expect(authenticateTicketMock).toHaveBeenCalledTimes(1)
+    expect(verifyOwnershipMock).toHaveBeenCalledTimes(1)
+    expect(playerSummaryMock).toHaveBeenCalledTimes(1)
+
+    expect(res.body.alias.identifier).toBe(steamId)
+    expect(res.body.alias.player.id).toBe(player.id)
+
+    // check that persona name and avatar hash are updated
+    const personaProp = res.body.alias.player.props.find((p: { key: string }) => p.key === 'META_STEAMWORKS_PERSONA_NAME')
+    const avatarProp = res.body.alias.player.props.find((p: { key: string }) => p.key === 'META_STEAMWORKS_AVATAR_HASH')
+
+    expect(personaProp?.value).toBe('UpdatedPlayerName')
+    expect(avatarProp?.value).toBe('newhash456')
   })
 })

@@ -2,6 +2,7 @@ import ConfirmEmail from '../../../src/emails/confirm-email-mail'
 import sendEmail from '../../../src/lib/messaging/sendEmail'
 import UserFactory from '../../fixtures/UserFactory'
 import nodemailer, { Transporter } from 'nodemailer'
+import fs from 'fs/promises'
 
 describe('Send email', () => {
   const originalDriver = process.env.EMAIL_DRIVER
@@ -133,7 +134,6 @@ describe('Send email', () => {
     await sendEmail(email.getConfig())
 
     expect(mockTransport.sendMail).not.toHaveBeenCalled()
-    expect(consoleSpy).toHaveBeenCalledOnce()
     expect(consoleSpy).toHaveBeenCalledWith('New mail:', expect.any(String))
 
     consoleSpy.mockRestore()
@@ -149,7 +149,6 @@ describe('Send email', () => {
     await sendEmail(email.getConfig())
 
     expect(mockTransport.sendMail).not.toHaveBeenCalled()
-    expect(consoleSpy).toHaveBeenCalledOnce()
     expect(consoleSpy).toHaveBeenCalledWith('New mail:', expect.any(String))
 
     consoleSpy.mockRestore()
@@ -178,5 +177,147 @@ describe('Send email', () => {
     )
 
     process.env.EMAIL_HOST = originalHost
+  })
+
+  describe('log driver file saving', () => {
+    beforeEach(() => {
+      process.env.EMAIL_DRIVER = 'log'
+    })
+
+    afterEach(() => {
+      vi.restoreAllMocks()
+    })
+
+    it('should always save mail.html file', async () => {
+      vi.spyOn(fs, 'mkdir').mockResolvedValue(undefined)
+      const writeFileSpy = vi.spyOn(fs, 'writeFile').mockResolvedValue(undefined)
+
+      const user = await new UserFactory().one()
+      const email = new ConfirmEmail(user, 'abc123')
+      const emailConfig = email.getConfig()
+
+      await sendEmail(emailConfig)
+
+      expect(writeFileSpy).toHaveBeenCalledWith(
+        expect.stringContaining('mail.html'),
+        emailConfig.html,
+        'utf-8'
+      )
+    })
+
+    it('should write attachments with correct filenames when present', async () => {
+      vi.spyOn(fs, 'mkdir').mockResolvedValue(undefined)
+      const writeFileSpy = vi.spyOn(fs, 'writeFile').mockResolvedValue(undefined)
+
+      const user = await new UserFactory().one()
+      const email = new ConfirmEmail(user, 'abc123')
+      const base64Content = Buffer.from('test file content').toString('base64')
+
+      const emailConfig = {
+        ...email.getConfig(),
+        attachments: [
+          {
+            content: base64Content,
+            filename: 'test-file.txt',
+            type: 'text/plain',
+            disposition: 'attachment'
+          },
+          {
+            content: Buffer.from('another file').toString('base64'),
+            filename: 'document.pdf',
+            type: 'application/pdf',
+            disposition: 'attachment'
+          }
+        ]
+      }
+
+      await sendEmail(emailConfig)
+
+      // should write HTML file + 2 attachments
+      expect(writeFileSpy).toHaveBeenCalledTimes(3)
+
+      expect(writeFileSpy).toHaveBeenCalledWith(
+        expect.stringContaining('mail.html'),
+        emailConfig.html,
+        'utf-8'
+      )
+
+      expect(writeFileSpy).toHaveBeenCalledWith(
+        expect.stringContaining('test-file.txt'),
+        Buffer.from('test file content')
+      )
+
+      expect(writeFileSpy).toHaveBeenCalledWith(
+        expect.stringContaining('document.pdf'),
+        Buffer.from('another file')
+      )
+    })
+
+    it('should decode base64 attachment content correctly', async () => {
+      vi.spyOn(fs, 'mkdir').mockResolvedValue(undefined)
+      const writeFileSpy = vi.spyOn(fs, 'writeFile').mockResolvedValue(undefined)
+
+      const user = await new UserFactory().one()
+      const email = new ConfirmEmail(user, 'abc123')
+      const originalContent = 'This is a test file with special characters: áéíóú'
+      const base64Content = Buffer.from(originalContent).toString('base64')
+
+      const emailConfig = {
+        ...email.getConfig(),
+        attachments: [
+          {
+            content: base64Content,
+            filename: 'special-chars.txt',
+            type: 'text/plain',
+            disposition: 'attachment'
+          }
+        ]
+      }
+
+      await sendEmail(emailConfig)
+
+      expect(writeFileSpy).toHaveBeenCalledWith(
+        expect.stringContaining('special-chars.txt'),
+        Buffer.from(originalContent)
+      )
+    })
+
+    it('should only write mail.html when no attachments', async () => {
+      vi.spyOn(fs, 'mkdir').mockResolvedValue(undefined)
+      const writeFileSpy = vi.spyOn(fs, 'writeFile').mockResolvedValue(undefined)
+
+      const user = await new UserFactory().one()
+      const email = new ConfirmEmail(user, 'abc123')
+      const emailConfig = {
+        ...email.getConfig(),
+        attachments: undefined
+      }
+
+      await sendEmail(emailConfig)
+
+      expect(writeFileSpy).toHaveBeenCalledTimes(1)
+      expect(writeFileSpy).toHaveBeenCalledWith(
+        expect.stringContaining('mail.html'),
+        emailConfig.html,
+        'utf-8'
+      )
+    })
+
+    it('should handle write errors gracefully', async () => {
+      const fsError = new Error('Disk full')
+      vi.spyOn(fs, 'mkdir').mockResolvedValue(undefined)
+      vi.spyOn(fs, 'writeFile').mockRejectedValue(fsError)
+      const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => undefined)
+
+      const user = await new UserFactory().one()
+      const email = new ConfirmEmail(user, 'abc123')
+
+      await expect(sendEmail(email.getConfig())).resolves.not.toThrow()
+
+      expect(consoleErrorSpy).toHaveBeenCalledWith(
+        'Could not write mail file to disk:',
+        fsError
+      )
+    })
   })
 })

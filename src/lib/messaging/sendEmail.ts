@@ -3,6 +3,8 @@ import { MailData } from '../../emails/mail'
 import { captureException } from '@sentry/node'
 import { SpanStatusCode, trace } from '@opentelemetry/api'
 import { setTraceAttributes } from '@hyperdx/node-opentelemetry'
+import fs from 'fs/promises'
+import path from 'path'
 
 type MailDriver = 'relay' | 'log'
 
@@ -24,7 +26,7 @@ export default async function sendEmail(emailConfig: MailData): Promise<void> {
     try {
       const driver = process.env.EMAIL_DRIVER as MailDriver | undefined
       if (!driver || driver === 'log') {
-        sendLogEmail(emailConfig)
+        await sendLogEmail(emailConfig)
       } else if (driver === 'relay') {
         await sendRelayEmail(emailConfig)
       } else {
@@ -50,9 +52,47 @@ export default async function sendEmail(emailConfig: MailData): Promise<void> {
   })
 }
 
-function sendLogEmail(emailConfig: MailData): void {
-  const { html: _, ...rest } = emailConfig
+function sanitisePathPart(part: Date | string): string {
+  if (part instanceof Date) {
+    return part.toISOString().replace(/[:.\-TZ]/g, '')
+  }
+
+  return part.replace(/[^a-z0-9\-_]/gi, '-').toLowerCase()
+}
+
+async function sendLogEmail(emailConfig: MailData): Promise<void> {
+  const {
+    html,
+    attachments,
+    ...rest
+  } = emailConfig
+
   console.log('New mail:', JSON.stringify(rest, null, 2))
+
+  const baseDir = path.join(process.cwd(), 'storage', 'mail')
+  const safeTo = sanitisePathPart(emailConfig.to)
+  const safeSubject = sanitisePathPart(emailConfig.subject)
+  const timestamp = sanitisePathPart(new Date())
+
+  // save files to storage/mail/{safeEmail}/{safeSubject}/{timestamp}
+  const fullDir = path.join(baseDir, safeTo, safeSubject, timestamp)
+
+  try {
+    await fs.mkdir(fullDir, { recursive: true })
+
+    const htmlPath = path.join(fullDir, 'mail.html')
+    await fs.writeFile(htmlPath, html, 'utf-8')
+
+    await Promise.all((attachments ?? []).map(async (attachment) => {
+      const contentBuffer = Buffer.from(attachment.content, 'base64')
+      const safeFilename = path.basename(attachment.filename)
+      const filePath = path.join(fullDir, safeFilename)
+      await fs.writeFile(filePath, contentBuffer)
+    }))
+    console.log(`Saved mail files to ${fullDir}`)
+  } catch (error) {
+    console.error('Could not write mail file to disk:', error)
+  }
 }
 
 async function sendRelayEmail(emailConfig: MailData) {

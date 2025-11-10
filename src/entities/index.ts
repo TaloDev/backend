@@ -39,8 +39,10 @@ import GameFeedbackProp from './game-feedback-prop'
 import { SteamworksLeaderboardEntry } from './steamworks-leaderboard-entry'
 import { SteamworksPlayerStat } from './steamworks-player-stat'
 import { PlayerToDelete } from './player-to-delete'
+import PlayerAliasSubscription from './player-alias-subscription'
 
 export const entities = [
+  PlayerAliasSubscription,
   PlayerToDelete,
   SteamworksPlayerStat,
   SteamworksLeaderboardEntry,

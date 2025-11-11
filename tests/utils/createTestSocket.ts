@@ -103,9 +103,23 @@ function getRandPort() {
   return randNumber({ min: 1024, max: 65535 })
 }
 
+export async function createTestClient(
+  port: number,
+  url: string,
+  opts: TestSocketOptions = {
+    waitForReady: true
+  }
+): Promise<TestClient> {
+  const client = new TestClient(`ws://localhost:${port}${url}`)
+  if (opts.waitForReady) {
+    await client.expectReady()
+  }
+  return client
+}
+
 export default async function createTestSocket(
   url: string,
-  cb: (client: TestClient, wss: Socket) => Promise<void>,
+  cb: (client: TestClient, wss: Socket, port: number) => Promise<void>,
   opts: TestSocketOptions = {
     waitForReady: true
   }
@@ -140,9 +154,16 @@ export default async function createTestSocket(
   if (opts.waitForReady) {
     await client.expectReady()
   }
-  await cb(client, wss)
-  client.close()
+
+  // run the callback
+  await cb(client, wss, port)
+
+  // close all connections
+  for (const conn of wss.findConnections(() => true)) {
+    conn.getSocket().close()
+  }
   await vi.waitUntil(() => wss.findConnections(() => true).length === 0)
 
+  // close the server
   await new Promise<void>((resolve) => server.close(() => resolve()))
 }

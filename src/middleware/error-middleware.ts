@@ -10,13 +10,16 @@ export default async function errorMiddleware(ctx: Context, next: Next) {
       const isJWTError = 'originalError' in err && Boolean(err.originalError)
 
       ctx.status = 'status' in err ? err.status as number : 500
-      ctx.body = ctx.status === 401 && isJWTError /* dont expose jwt error */
+      ctx.body = ctx.status === 401 && isJWTError // dont expose jwt error
         ? { message: 'Please provide a valid token in the Authorization header' }
-        : { ...err, headers: undefined /* koa cors is inserting headers into the body for some reason */ }
+        : { ...err, headers: undefined } // koa cors is inserting headers into the body for some reason
 
       if (isJWTError) {
-        hdxRecordException(err.originalError)
-        Sentry.captureException(err.originalError)
+        const originalError = err.originalError as Error
+        if (originalError.name !== 'TokenExpiredError') {
+          hdxRecordException(err.originalError)
+          Sentry.captureException(err.originalError)
+        }
       }
 
       if (ctx.status === 500) {

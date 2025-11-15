@@ -15,8 +15,8 @@ export default async function errorMiddleware(ctx: Context, next: Next) {
         : { ...err, headers: undefined } // koa cors is inserting headers into the body for some reason
 
       if (isJWTError) {
-        const originalError = err.originalError as Error
-        if (originalError.name !== 'TokenExpiredError') {
+        const originalError = err.originalError
+        if (originalError instanceof Error && originalError.name !== 'TokenExpiredError') {
           hdxRecordException(err.originalError)
           Sentry.captureException(err.originalError)
         }

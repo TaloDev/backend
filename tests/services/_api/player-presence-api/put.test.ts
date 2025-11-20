@@ -55,7 +55,8 @@ describe('Player presence API service - put', () => {
   it('should notify other players when presence is updated', async () => {
     const { identifyMessage, ticket, player, token } = await createSocketIdentifyMessage([
       APIKeyScope.READ_PLAYERS,
-      APIKeyScope.WRITE_PLAYERS
+      APIKeyScope.WRITE_PLAYERS,
+      APIKeyScope.READ_PLAYER_PRESENCE
     ])
 
     await em.persistAndFlush(player)

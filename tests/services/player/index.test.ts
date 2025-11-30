@@ -203,4 +203,27 @@ describe('Player service - index', () => {
 
     expect(res.body.players).toHaveLength(1)
   })
+
+  it('should include player props', async () => {
+    const [organisation, game] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken({ organisation })
+
+    const player = await new PlayerFactory([game]).state((player) => ({
+      props: new Collection<PlayerProp>(player, [
+        new PlayerProp(player, 'level', '25')
+      ])
+    })).one()
+    await em.persistAndFlush(player)
+
+    const res = await request(app)
+      .get(`/games/${game.id}/players`)
+      .query({ page: 0 })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    expect(res.body.players[0].props).toBeDefined()
+    expect(res.body.players[0].props).toHaveLength(1)
+    expect(res.body.players[0].props[0].key).toBe('level')
+    expect(res.body.players[0].props[0].value).toBe('25')
+  })
 })

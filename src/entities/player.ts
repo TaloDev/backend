@@ -158,7 +158,7 @@ export default class Player {
 
     const conns = await socket.findConnectionsAsync(async (conn) => {
       return (
-        conn.hasScope(APIKeyScope.READ_PLAYERS) &&
+        conn.hasScope(APIKeyScope.READ_PLAYER_PRESENCE) &&
         !!conn.playerAliasId &&
         this.game.id === (await conn.getPlayerAlias())?.player.game.id
       )

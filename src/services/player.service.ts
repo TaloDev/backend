@@ -139,7 +139,7 @@ export default class PlayerService extends Service {
     const devDataComponent = req.ctx.state.includeDevData ? 'dev' : 'no-dev'
     const cacheKey = `${Player.getSearchCacheKey(game)}-${searchComponent}-${page}-${devDataComponent}`
 
-    return withResponseCache({ key: cacheKey, ttl: 1 }, async () => {
+    return withResponseCache({ key: cacheKey, ttl: 5 }, async () => {
       const where: FilterQuery<Player> = { game }
 
       if (!req.ctx.state.includeDevData) {

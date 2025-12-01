@@ -12,7 +12,6 @@ import { captureException } from '@sentry/node'
 import { pageValidation } from '../lib/pagination/pageValidation'
 import { DEFAULT_PAGE_SIZE } from '../lib/pagination/itemsPerPage'
 import { withResponseCache } from '../lib/perf/responseCache'
-import { deferClearResponseCache } from '../lib/perf/responseCacheQueue'
 import Game from '../entities/game'
 
 const itemsPerPage = DEFAULT_PAGE_SIZE
@@ -159,7 +158,6 @@ export default class GameChannelService extends Service {
     }
 
     await em.persistAndFlush(channel)
-    await deferClearResponseCache(GameChannel.getSearchCacheKey(channel.game, true))
 
     await channel.sendMessageToMembers(req.ctx.wss, 'v1.channels.player-joined', {
       channel,
@@ -252,8 +250,6 @@ export default class GameChannelService extends Service {
     }
 
     if (changedProperties.length > 0) {
-      await deferClearResponseCache(GameChannel.getSearchCacheKey(channel.game, true))
-
       // don't send this message if the only thing that changed is the owner
       // that is covered by the ownership transferred message
       if (!(changedProperties.length === 1 && changedProperties[0] === 'ownerAliasId')) {
@@ -300,7 +296,6 @@ export default class GameChannelService extends Service {
     const em: EntityManager = req.ctx.em
     const channel: GameChannel = req.ctx.state.channel
 
-    await deferClearResponseCache(GameChannel.getSearchCacheKey(channel.game, true))
     await channel.sendDeletedMessage(req.ctx.wss)
 
     if (!req.ctx.state.user.api) {

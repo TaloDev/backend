@@ -133,4 +133,20 @@ describe('Player auth API service - register', () => {
       errorCode: 'INVALID_EMAIL'
     })
   })
+
+  it('should trim whitespace from identifiers before storing', async () => {
+    const [, token] = await createAPIKeyAndToken([APIKeyScope.READ_PLAYERS, APIKeyScope.WRITE_PLAYERS])
+
+    const identifier = randUserName()
+    const identifierWithSpaces = `  ${identifier}  `
+
+    const res = await request(app)
+      .post('/v1/players/auth/register')
+      .send({ identifier: identifierWithSpaces, password: 'password' })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    expect(res.body.alias.identifier).toBe(identifier)
+    expect(res.body.alias.identifier).not.toBe(identifierWithSpaces)
+  })
 })

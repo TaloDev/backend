@@ -77,9 +77,9 @@ describe('Player API service - identify - steamworks auth', () => {
       .auth(token, { type: 'bearer' })
       .expect(200)
 
-    expect(authenticateTicketMock).toHaveBeenCalledTimes(1)
-    expect(verifyOwnershipMock).toHaveBeenCalledTimes(1)
-    expect(playerSummaryMock).toHaveBeenCalledTimes(1)
+    expect(authenticateTicketMock).toHaveBeenCalledOnce()
+    expect(verifyOwnershipMock).toHaveBeenCalledOnce()
+    expect(playerSummaryMock).toHaveBeenCalledOnce()
 
     expect(res.body.alias.identifier).toBe(steamId)
     expect(res.body.alias.player.id).toBe(player.id)
@@ -168,9 +168,9 @@ describe('Player API service - identify - steamworks auth', () => {
       .auth(token, { type: 'bearer' })
       .expect(200)
 
-    expect(authenticateTicketMock).toHaveBeenCalledTimes(2) // check + create
-    expect(verifyOwnershipMock).toHaveBeenCalledTimes(2)
-    expect(playerSummaryMock).toHaveBeenCalledTimes(2)
+    expect(authenticateTicketMock).toHaveBeenCalledOnce()
+    expect(verifyOwnershipMock).toHaveBeenCalledOnce()
+    expect(playerSummaryMock).toHaveBeenCalledOnce()
 
     expect(res.body.alias.identifier).toBe(steamId)
     expect(res.body.alias.player.props).toStrictEqual([
@@ -436,9 +436,9 @@ describe('Player API service - identify - steamworks auth', () => {
       .auth(token, { type: 'bearer' })
       .expect(200)
 
-    expect(authenticateTicketMock).toHaveBeenCalledTimes(2)
-    expect(verifyOwnershipMock).toHaveBeenCalledTimes(2)
-    expect(playerSummaryMock).toHaveBeenCalledTimes(2)
+    expect(authenticateTicketMock).toHaveBeenCalledOnce()
+    expect(verifyOwnershipMock).toHaveBeenCalledOnce()
+    expect(playerSummaryMock).toHaveBeenCalledOnce()
 
     expect(res.body.alias.identifier).toBe(steamId)
     // should not include persona name or avatar hash props
@@ -516,9 +516,9 @@ describe('Player API service - identify - steamworks auth', () => {
       .auth(token, { type: 'bearer' })
       .expect(200)
 
-    expect(authenticateTicketMock).toHaveBeenCalledTimes(2)
-    expect(verifyOwnershipMock).toHaveBeenCalledTimes(2)
-    expect(playerSummaryMock).toHaveBeenCalledTimes(2)
+    expect(authenticateTicketMock).toHaveBeenCalledOnce()
+    expect(verifyOwnershipMock).toHaveBeenCalledOnce()
+    expect(playerSummaryMock).toHaveBeenCalledOnce()
 
     expect(res.body.alias.identifier).toBe(steamId)
     // should not include persona name or avatar hash props
@@ -598,9 +598,9 @@ describe('Player API service - identify - steamworks auth', () => {
       .auth(token, { type: 'bearer' })
       .expect(200)
 
-    expect(authenticateTicketMock).toHaveBeenCalledTimes(2)
-    expect(verifyOwnershipMock).toHaveBeenCalledTimes(2)
-    expect(playerSummaryMock).toHaveBeenCalledTimes(2)
+    expect(authenticateTicketMock).toHaveBeenCalledOnce()
+    expect(verifyOwnershipMock).toHaveBeenCalledOnce()
+    expect(playerSummaryMock).toHaveBeenCalledOnce()
 
     expect(res.body.alias.identifier).toBe(steamId)
     // should not include persona name or avatar hash props since player wasn't found
@@ -686,9 +686,9 @@ describe('Player API service - identify - steamworks auth', () => {
       .auth(token, { type: 'bearer' })
       .expect(200)
 
-    expect(authenticateTicketMock).toHaveBeenCalledTimes(1)
-    expect(verifyOwnershipMock).toHaveBeenCalledTimes(1)
-    expect(playerSummaryMock).toHaveBeenCalledTimes(1)
+    expect(authenticateTicketMock).toHaveBeenCalledOnce()
+    expect(verifyOwnershipMock).toHaveBeenCalledOnce()
+    expect(playerSummaryMock).toHaveBeenCalledOnce()
 
     expect(res.body.alias.identifier).toBe(steamId)
     expect(res.body.alias.player.id).toBe(player.id)

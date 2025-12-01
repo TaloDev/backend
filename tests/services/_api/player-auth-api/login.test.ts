@@ -154,4 +154,27 @@ describe('Player auth API service - login', () => {
     })
     expect(activity).not.toBeNull()
   })
+
+  it('should login successfully when identifier has whitespace', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_PLAYERS, APIKeyScope.WRITE_PLAYERS])
+
+    const player = await new PlayerFactory([apiKey.game]).withTaloAlias().state(async () => ({
+      auth: await new PlayerAuthFactory().state(async () => ({
+        password: await bcrypt.hash('password', 10),
+        verificationEnabled: false
+      })).one()
+    })).one()
+    const alias = player.aliases[0]
+
+    await em.persistAndFlush(player)
+
+    const res = await request(app)
+      .post('/v1/players/auth/login')
+      .send({ identifier: `  ${alias.identifier}  `, password: 'password' })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    expect(res.body.alias.identifier).toBe(alias.identifier)
+    expect(res.body.sessionToken).toBeTruthy()
+  })
 })

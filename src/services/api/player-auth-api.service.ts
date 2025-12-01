@@ -46,8 +46,9 @@ export default class PlayerAuthAPIService extends APIService {
     const em: EntityManager = req.ctx.em
 
     const key = await this.getAPIKey(req.ctx)
+    const realIdentifier = await PlayerAlias.resolveIdentifier(req, key.game, PlayerAliasService.TALO, identifier)
 
-    const player = await createPlayerFromIdentifyRequest(req, key, PlayerAliasService.TALO, identifier)
+    const player = await createPlayerFromIdentifyRequest(req, key, PlayerAliasService.TALO, realIdentifier)
     const alias = player?.aliases[0]
 
     alias.player.auth = new PlayerAuth()
@@ -118,8 +119,9 @@ export default class PlayerAuthAPIService extends APIService {
     const em: EntityManager = req.ctx.em
 
     const key = await this.getAPIKey(req.ctx)
+    const realIdentifier = await PlayerAlias.resolveIdentifier(req, key.game, PlayerAliasService.TALO, identifier)
 
-    const alias = await findAliasFromIdentifyRequest(req, key, PlayerAliasService.TALO, identifier)
+    const alias = await findAliasFromIdentifyRequest(req, key, PlayerAliasService.TALO, realIdentifier)
     if (!alias) return this.handleFailedLogin(req)
 
     await em.populate(alias, ['player.auth'])

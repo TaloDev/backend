@@ -4,6 +4,9 @@ import Redis from 'ioredis'
 import { v4 } from 'uuid'
 import GameChannel, { GameChannelLeavingReason } from './game-channel'
 import Socket from '../socket'
+import Integration, { IntegrationType } from './integration'
+import Game from './game'
+import { Request } from 'koa-clay'
 
 export enum PlayerAliasService {
   STEAM = 'steam',
@@ -43,6 +46,27 @@ export default class PlayerAlias {
 
   @Property({ onUpdate: () => new Date() })
   updatedAt: Date = new Date()
+
+  static async resolveIdentifier(
+    req: Request,
+    game: Game,
+    service: string,
+    identifier: string
+  ): Promise<string> {
+    if (service.trim() === PlayerAliasService.STEAM) {
+      const em = req.ctx.em as EntityManager
+      const integration = await em.repo(Integration).findOne({
+        game,
+        type: IntegrationType.STEAMWORKS
+      })
+
+      if (integration) {
+        return integration.getPlayerIdentifier(req, identifier)
+      }
+    }
+
+    return identifier.trim()
+  }
 
   async createSocketToken(redis: Redis): Promise<string> {
     const token = v4()

@@ -4,10 +4,10 @@ import Policy from '../policy'
 
 export default class PlayerPresenceAPIPolicy extends Policy {
   async get(): Promise<PolicyResponse> {
-    return this.hasScope(APIKeyScope.READ_PLAYERS)
+    return this.hasScope(APIKeyScope.READ_PLAYER_PRESENCE)
   }
 
   async put(): Promise<PolicyResponse> {
-    return this.hasScope(APIKeyScope.WRITE_PLAYERS)
+    return this.hasScope(APIKeyScope.WRITE_PLAYER_PRESENCE)
   }
 }

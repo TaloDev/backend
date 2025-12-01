@@ -147,7 +147,7 @@ export default class PlayerAPIService extends APIService {
     if (!justCreated) {
       alias.lastSeenAt = alias.player.lastSeenAt = new Date()
       await em.flush()
-      await alias.player.checkGroupMemberships(em)
+      await alias.player.checkGroupMemberships(em.fork())
     }
 
     const socketToken = await alias.createSocketToken(req.ctx.redis)

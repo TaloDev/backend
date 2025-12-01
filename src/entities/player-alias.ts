@@ -53,7 +53,10 @@ export default class PlayerAlias {
     service: string,
     identifier: string
   ): Promise<string> {
-    if (service.trim() === PlayerAliasService.STEAM) {
+    const trimmedService = service.trim()
+    const trimmedIdentifier = identifier.trim()
+
+    if (trimmedService === PlayerAliasService.STEAM) {
       const em = req.ctx.em as EntityManager
       const integration = await em.repo(Integration).findOne({
         game,
@@ -61,11 +64,11 @@ export default class PlayerAlias {
       })
 
       if (integration) {
-        return integration.getPlayerIdentifier(req, identifier)
+        return integration.getPlayerIdentifier(req, trimmedIdentifier)
       }
     }
 
-    return identifier.trim()
+    return trimmedIdentifier
   }
 
   async createSocketToken(redis: Redis): Promise<string> {

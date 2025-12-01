@@ -7,7 +7,7 @@ import createTestSocket from '../../../utils/createTestSocket'
 
 describe('Player presence API service - put', () => {
   it('should update presence if the scope is valid', async () => {
-    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_PLAYERS])
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_PLAYER_PRESENCE])
 
     const player = await new PlayerFactory([apiKey.game]).one()
     await em.persistAndFlush(player)
@@ -38,7 +38,7 @@ describe('Player presence API service - put', () => {
   })
 
   it('should not update presence with an invalid alias', async () => {
-    const [, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_PLAYERS])
+    const [, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_PLAYER_PRESENCE])
 
     const res = await request(app)
       .put('/v1/players/presence')
@@ -55,8 +55,8 @@ describe('Player presence API service - put', () => {
   it('should notify other players when presence is updated', async () => {
     const { identifyMessage, ticket, player, token } = await createSocketIdentifyMessage([
       APIKeyScope.READ_PLAYERS,
-      APIKeyScope.WRITE_PLAYERS,
-      APIKeyScope.READ_PLAYER_PRESENCE
+      APIKeyScope.READ_PLAYER_PRESENCE,
+      APIKeyScope.WRITE_PLAYER_PRESENCE
     ])
 
     await em.persistAndFlush(player)
@@ -82,7 +82,7 @@ describe('Player presence API service - put', () => {
   })
 
   it('should only update specified fields', async () => {
-    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_PLAYERS])
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_PLAYER_PRESENCE])
 
     const player = await new PlayerFactory([apiKey.game]).one()
     await em.persistAndFlush(player)

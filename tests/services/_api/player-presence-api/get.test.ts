@@ -6,7 +6,7 @@ import PlayerPresenceFactory from '../../../fixtures/PlayerPresenceFactory'
 
 describe('Player Presence API service - get', () => {
   it('should get a player presence', async () => {
-    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_PLAYERS])
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_PLAYER_PRESENCE])
     const player = await new PlayerFactory([apiKey.game]).one()
     const presence = await new PlayerPresenceFactory(apiKey.game)
       .online()
@@ -27,7 +27,7 @@ describe('Player Presence API service - get', () => {
   })
 
   it('should return the default presence when the player has no presence', async () => {
-    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_PLAYERS])
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_PLAYER_PRESENCE])
     const player = await new PlayerFactory([apiKey.game]).one()
     await em.persistAndFlush(player)
 
@@ -50,7 +50,7 @@ describe('Player Presence API service - get', () => {
   })
 
   it('should not find presence for a non-existent player', async () => {
-    const [, token] = await createAPIKeyAndToken([APIKeyScope.READ_PLAYERS])
+    const [, token] = await createAPIKeyAndToken([APIKeyScope.READ_PLAYER_PRESENCE])
 
     const res = await request(app)
       .get('/v1/players/presence/non-existent-id')

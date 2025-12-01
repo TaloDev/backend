@@ -23,7 +23,7 @@ const gameChannelListeners = [
           id: data.channel.id,
           game: conn.game
         }, {
-          populate: ['members']
+          populate: ['members:ref']
         })
 
       if (!channel) {

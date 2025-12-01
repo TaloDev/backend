@@ -156,11 +156,11 @@ export default class Player {
 
     await em.flush()
 
-    const conns = await socket.findConnectionsAsync(async (conn) => {
+    const conns = socket.findConnections((conn) => {
       return (
         conn.hasScope(APIKeyScope.READ_PLAYER_PRESENCE) &&
         !!conn.playerAliasId &&
-        this.game.id === (await conn.getPlayerAlias())?.player.game.id
+        this.game.id === conn.game.id
       )
     })
     await sendMessages(conns, 'v1.players.presence.updated', {

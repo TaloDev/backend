@@ -31,9 +31,11 @@ export async function sendMessage<T extends object>(conn: SocketConnection, res:
 
 export async function sendMessages<T extends object>(conns: SocketConnection[], type: SocketMessageResponse, data: T) {
   await getSocketTracer().startActiveSpan('socket.send_many_messages', async (span) => {
-    // serialise once instead of per-connection to reduce memory usage
-    const message = JSON.stringify({ res: type, data })
-    await Promise.all(conns.map((conn) => conn.sendMessage(type, data, message)))
-    span.end()
+    try {
+      const message = JSON.stringify({ res: type, data })
+      await Promise.all(conns.map((conn) => conn.sendMessage(type, data, message)))
+    } finally {
+      span.end()
+    }
   })
 }

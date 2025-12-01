@@ -81,14 +81,11 @@ export default class SocketConnection {
     return this.ticket.devBuild
   }
 
-  async sendMessage<T extends object>(res: SocketMessageResponse, data: T): Promise<void> {
+  async sendMessage<T extends object>(res: SocketMessageResponse, data: T, serialisedMessage?: string): Promise<void> {
     await getSocketTracer().startActiveSpan('socket.send_message', async (span) => {
       if (this.ws.readyState === this.ws.OPEN) {
         const devBuild = this.isDevBuild()
-        const message = JSON.stringify({
-          res,
-          data
-        })
+        const message = serialisedMessage ?? JSON.stringify({ res, data })
 
         setTraceAttributes({
           'socket.message_receiver.alias_id': this.playerAliasId,

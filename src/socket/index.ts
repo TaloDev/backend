@@ -182,17 +182,6 @@ export default class Socket {
     return Array.from(this.connections.values()).filter(filter)
   }
 
-  async findConnectionsAsync(filter: (conn: SocketConnection) => Promise<boolean>): Promise<SocketConnection[]> {
-    const connections = Array.from(this.connections.values())
-    const results = await Promise.all(
-      connections.map(async (conn) => ({
-        conn,
-        matches: await filter(conn)
-      }))
-    )
-    return results.filter((r) => r.matches).map((r) => r.conn)
-  }
-
   async trackEvent(data: Omit<SocketEventData, 'id'>): Promise<void> {
     if (process.env.DISABLE_SOCKET_EVENTS === '1') {
       return

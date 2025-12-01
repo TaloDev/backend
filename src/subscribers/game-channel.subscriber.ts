@@ -8,7 +8,8 @@ export class GameChannelSubscriber implements EventSubscriber {
     return [GameChannel, GameChannelProp]
   }
 
-  async clearSearchCacheKey(entity: GameChannel | GameChannelProp) {
+  async clearSearchCacheKey(args: EventArgs<GameChannel | GameChannelProp>) {
+    const { entity, em } = args
     const channel = entity instanceof GameChannel ? entity : entity.gameChannel
 
     if (!channel) {
@@ -17,21 +18,21 @@ export class GameChannelSubscriber implements EventSubscriber {
     }
 
     if (!wrap(channel.game).isInitialized()) {
-      await wrap(channel).populate(['game'])
+      await em.fork().populate(channel, ['game'])
     }
 
     await deferClearResponseCache(GameChannel.getSearchCacheKey(channel.game, true))
   }
 
   afterCreate(args: EventArgs<GameChannel | GameChannelProp>) {
-    void this.clearSearchCacheKey(args.entity)
+    void this.clearSearchCacheKey(args)
   }
 
   afterUpdate(args: EventArgs<GameChannel | GameChannelProp>) {
-    void this.clearSearchCacheKey(args.entity)
+    void this.clearSearchCacheKey(args)
   }
 
   afterDelete(args: EventArgs<GameChannel | GameChannelProp>) {
-    void this.clearSearchCacheKey(args.entity)
+    void this.clearSearchCacheKey(args)
   }
 }

@@ -10,30 +10,9 @@ import { uniqWith } from 'lodash'
 import PlayerAPIDocs from '../../docs/player-api.docs'
 import PlayerGameStat from '../../entities/player-game-stat'
 import checkScope from '../../policies/checkScope'
-import Integration, { IntegrationType } from '../../entities/integration'
 import { validateAuthSessionToken } from '../../middleware/player-auth-middleware'
 import { setCurrentPlayerState } from '../../middleware/current-player-middleware'
 import { ClickHouseClient } from '@clickhouse/client'
-
-async function getRealIdentifier(
-  req: Request,
-  key: APIKey,
-  service: string,
-  identifier: string
-): Promise<string> {
-  if (service === PlayerAliasService.STEAM) {
-    const integration = await (req.ctx.em as EntityManager).repo(Integration).findOne({
-      game: key.game,
-      type: IntegrationType.STEAMWORKS
-    })
-
-    if (integration) {
-      return integration.getPlayerIdentifier(req, identifier)
-    }
-  }
-
-  return identifier.trim()
-}
 
 export async function findAliasFromIdentifyRequest(
   req: Request,
@@ -43,7 +22,7 @@ export async function findAliasFromIdentifyRequest(
 ) {
   return (req.ctx.em as EntityManager).repo(PlayerAlias).findOne({
     service: service.trim(),
-    identifier: await getRealIdentifier(req, key, service, identifier),
+    identifier,
     player: {
       game: key.game
     }
@@ -59,7 +38,7 @@ export async function createPlayerFromIdentifyRequest(
   if (checkScope(key, APIKeyScope.WRITE_PLAYERS)) {
     const res = await forwardRequest<{ player: Player }>(req, {
       body: {
-        aliases: [{ service, identifier: await getRealIdentifier(req, key, service, identifier) }],
+        aliases: [{ service, identifier }],
         props: req.ctx.state.initialPlayerProps
       }
     })
@@ -122,12 +101,14 @@ export default class PlayerAPIService extends APIService {
     let justCreated = false
 
     try {
-      alias = await findAliasFromIdentifyRequest(req, key, service, identifier)
+      const realIdentifier = await PlayerAlias.resolveIdentifier(req, key.game, service, identifier)
+
+      alias = await findAliasFromIdentifyRequest(req, key, service, realIdentifier)
       if (!alias) {
         if (service === PlayerAliasService.TALO) {
           req.ctx.throw(404, 'Player not found: Talo aliases must be created using the /v1/players/auth API')
         } else {
-          const player = await createPlayerFromIdentifyRequest(req, key, service, identifier)
+          const player = await createPlayerFromIdentifyRequest(req, key, service, realIdentifier)
           alias = player?.aliases[0]
           justCreated = true
         }

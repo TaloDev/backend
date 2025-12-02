@@ -10,5 +10,9 @@ export function createClearResponseCacheQueue() {
 
 export async function deferClearResponseCache(key: string) {
   const queue = getGlobalQueue('clear-response-cache')
-  await queue.add('clear-key', key)
+  await queue.add('clear-key', key, {
+    jobId: `clear-cache-${key}`,
+    removeOnComplete: true,
+    removeOnFail: true
+  })
 }

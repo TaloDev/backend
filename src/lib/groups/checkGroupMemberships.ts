@@ -57,14 +57,14 @@ async function runMembershipChecksForGroups(em: EntityManager, player: Player, g
 }
 
 export default async function checkGroupMemberships(em: EntityManager, player: Player) {
-  if (!redis) {
-    redis = createRedisConnection()
-  }
-
-  const redisKey = `checkMembership:${player.id}`
   let lockCreated: 'OK' | null = null
+  const redisKey = `checkMembership:${player.id}`
 
   try {
+    if (!redis) {
+      redis = createRedisConnection()
+    }
+
     lockCreated = await redis.set(redisKey, '1', 'EX', 30, 'NX')
     if (!lockCreated) {
       return

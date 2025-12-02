@@ -1,4 +1,4 @@
-import { EventArgs, EventSubscriber, wrap } from '@mikro-orm/mysql'
+import { EventArgs, EventSubscriber } from '@mikro-orm/mysql'
 import { deferClearResponseCache } from '../lib/perf/responseCacheQueue'
 import GameChannel from '../entities/game-channel'
 import GameChannelProp from '../entities/game-channel-prop'
@@ -9,16 +9,12 @@ export class GameChannelSubscriber implements EventSubscriber {
   }
 
   async clearSearchCacheKey(args: EventArgs<GameChannel | GameChannelProp>) {
-    const { entity, em } = args
+    const { entity } = args
     const channel = entity instanceof GameChannel ? entity : entity.gameChannel
 
     if (!channel) {
       // can happen when a prop is being deleted, the reference to the channel is gone
       return
-    }
-
-    if (!wrap(channel.game).isInitialized()) {
-      await em.fork().populate(channel, ['game'])
     }
 
     await deferClearResponseCache(GameChannel.getSearchCacheKey(channel.game, true))

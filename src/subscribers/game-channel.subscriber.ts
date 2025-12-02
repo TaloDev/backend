@@ -24,10 +24,6 @@ export class GameChannelSubscriber implements EventSubscriber {
     void this.clearSearchCacheKey(args)
   }
 
-  afterUpdate(args: EventArgs<GameChannel | GameChannelProp>) {
-    void this.clearSearchCacheKey(args)
-  }
-
   afterDelete(args: EventArgs<GameChannel | GameChannelProp>) {
     void this.clearSearchCacheKey(args)
   }

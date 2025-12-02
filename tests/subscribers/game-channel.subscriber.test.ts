@@ -90,42 +90,6 @@ describe('GameChannel subscriber', () => {
   })
 
   describe('cache invalidation on update', () => {
-    it('should invalidate the channel search cache when a channel is updated', async () => {
-      const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_GAME_CHANNELS, APIKeyScope.WRITE_GAME_CHANNELS])
-      const player = await new PlayerFactory([apiKey.game]).one()
-      const channel = await new GameChannelFactory(apiKey.game).state(() => ({ owner: player.aliases[0], name: 'Original Name' })).one()
-      channel.members.add(player.aliases[0])
-      await em.persistAndFlush([player, channel])
-
-      // populate cache with original name
-      const res1 = await request(app)
-        .get('/v1/game-channels')
-        .set('x-talo-alias', String(player.aliases[0].id))
-        .auth(token, { type: 'bearer' })
-        .expect(200)
-
-      expect(res1.body.channels).toHaveLength(1)
-      expect(res1.body.channels[0].name).toBe('Original Name')
-
-      // update the channel
-      await request(app)
-        .put(`/v1/game-channels/${channel.id}`)
-        .send({ name: 'Updated Name' })
-        .auth(token, { type: 'bearer' })
-        .set('x-talo-alias', String(player.aliases[0].id))
-        .expect(200)
-
-      // should return the updated channel (not cached original)
-      const res2 = await request(app)
-        .get('/v1/game-channels')
-        .set('x-talo-alias', String(player.aliases[0].id))
-        .auth(token, { type: 'bearer' })
-        .expect(200)
-
-      expect(res2.body.channels).toHaveLength(1)
-      expect(res2.body.channels[0].name).toBe('Updated Name')
-    })
-
     it('should invalidate cache when channel props are updated', async () => {
       const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_GAME_CHANNELS, APIKeyScope.WRITE_GAME_CHANNELS])
       const player = await new PlayerFactory([apiKey.game]).one()

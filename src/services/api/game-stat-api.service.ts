@@ -321,7 +321,7 @@ export default class GameStatAPIService extends APIService {
           game: stat.game
         }, { populate: ['aliases:ref'] })
         whereConditions += ` AND player_alias_id IN (${player.aliases.getIdentifiers().join(', ')})`
-      } catch (err) {
+      } catch {
         req.ctx.throw(404, 'Player not found')
       }
     }

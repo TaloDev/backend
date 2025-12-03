@@ -18,6 +18,7 @@ import Socket from './socket'
 import httpTracingMiddleware from './middleware/http-tracing-middleware'
 import { secondsToMilliseconds } from 'date-fns'
 import compress from 'koa-compress'
+import { EntityManager } from '@mikro-orm/mysql'
 
 const isTest = process.env.NODE_ENV === 'test'
 
@@ -49,7 +50,7 @@ export default async function init(): Promise<Koa> {
     keepAliveTimeout: secondsToMilliseconds(60)
   }, app.callback())
 
-  app.context.wss = new Socket(server, app.context.em)
+  app.context.wss = new Socket(server, (app.context.em as EntityManager).fork())
 
   if (!isTest) {
     server.listen(80, () => console.info('Listening on port 80'))

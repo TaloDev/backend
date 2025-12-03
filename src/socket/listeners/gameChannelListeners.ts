@@ -5,6 +5,7 @@ import { RequestContext } from '@mikro-orm/mysql'
 import GameChannel from '../../entities/game-channel'
 import { sendMessages } from '../messages/socketMessage'
 import { APIKeyScope } from '../../entities/api-key'
+import { getResultCacheOptions } from '../../lib/perf/getResultCacheOptions'
 
 const gameChannelListeners = [
   createListener(
@@ -21,9 +22,10 @@ const gameChannelListeners = [
         .getRepository(GameChannel)
         .findOne({
           id: data.channel.id,
-          game: conn.game
+          game: conn.gameId
         }, {
-          populate: ['members:ref']
+          populate: ['members:ref'],
+          ...getResultCacheOptions(`channel-listener-members-${data.channel.id}`, 1000)
         })
 
       if (!channel) {

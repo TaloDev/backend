@@ -160,7 +160,7 @@ export default class Player {
       return (
         conn.hasScope(APIKeyScope.READ_PLAYER_PRESENCE) &&
         !!conn.playerAliasId &&
-        this.game.id === conn.game.id
+        this.game.id === conn.gameId
       )
     })
     await sendMessages(conns, 'v1.players.presence.updated', {

@@ -19,7 +19,7 @@ import updateAllowedKeys from '../lib/entities/updateAllowedKeys'
 async function sendLiveConfigUpdatedMessage(req: Request, game: Game) {
   const socket: Socket = req.ctx.wss
   const conns = socket.findConnections((conn) => {
-    return conn.game.id === game.id && conn.hasScope(APIKeyScope.READ_GAME_CONFIG)
+    return conn.gameId === game.id && conn.hasScope(APIKeyScope.READ_GAME_CONFIG)
   })
   await sendMessages(conns, 'v1.live-config.updated', {
     config: game.getLiveConfig()

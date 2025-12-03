@@ -57,26 +57,27 @@ async function runMembershipChecksForGroups(em: EntityManager, player: Player, g
 }
 
 export default async function checkGroupMemberships(em: EntityManager, player: Player) {
-  if (!redis) {
-    redis = createRedisConnection()
-  }
-
-  const groups = await getGroupsFromPlayer(em, player)
-
-  if (groups.length === 0) {
-    return
-  }
-
-  const redisKey = `checkMembership:${player.id}`
   let lockCreated: 'OK' | null = null
+  const redisKey = `checkMembership:${player.id}`
 
   try {
+    if (!redis) {
+      redis = createRedisConnection()
+    }
+
     lockCreated = await redis.set(redisKey, '1', 'EX', 30, 'NX')
-    if (lockCreated) {
-      const shouldFlush = await runMembershipChecksForGroups(em, player, groups)
-      if (shouldFlush) {
-        await em.flush()
-      }
+    if (!lockCreated) {
+      return
+    }
+
+    const groups = await getGroupsFromPlayer(em, player)
+    if (groups.length === 0) {
+      return
+    }
+
+    const shouldFlush = await runMembershipChecksForGroups(em, player, groups)
+    if (shouldFlush) {
+      await em.flush()
     }
   } catch (err) {
     if (err instanceof UniqueConstraintViolationException) {

@@ -46,7 +46,7 @@ async function cleanupSession(em: EntityManager, clickhouse: ClickHouseClient, s
   const aliases = await em.createQueryBuilder(PlayerAlias)
     .select('id')
     .where({ player: session.player_id })
-    .getResultList()
+    .execute('all', false) as { id: number }[]
 
   const sessionSinceOriginal = await clickhouse.query({
     query: `

@@ -17,12 +17,14 @@ import { pageValidation } from '../../lib/pagination/pageValidation'
 import { DEFAULT_PAGE_SIZE } from '../../lib/pagination/itemsPerPage'
 import { withResponseCache } from '../../lib/perf/responseCache'
 
-export default class GameStatAPIService extends APIService {
-  private queueHandler: FlushStatSnapshotsQueueHandler
+let queueHandler: FlushStatSnapshotsQueueHandler
 
+export default class GameStatAPIService extends APIService {
   constructor() {
     super()
-    this.queueHandler = new FlushStatSnapshotsQueueHandler()
+    if (!queueHandler) {
+      queueHandler = new FlushStatSnapshotsQueueHandler()
+    }
   }
 
   @Route({
@@ -224,7 +226,7 @@ export default class GameStatAPIService extends APIService {
       if (continuityDate) {
         snapshot.createdAt = continuityDate
       }
-      await this.queueHandler.add(snapshot)
+      await queueHandler.add(snapshot)
     }
 
     return {

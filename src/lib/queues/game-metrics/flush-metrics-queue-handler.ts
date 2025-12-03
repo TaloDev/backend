@@ -24,9 +24,8 @@ export async function postFlushCheckMemberships(playerIds: string[]) {
   const em = orm.em.fork() as EntityManager
   try {
     const players = await em.repo(Player).find({ id: { $in: playerIds } })
-    for (const player of players) {
-      await player.checkGroupMemberships(em.fork())
-    }
+    const promises = players.map((player) => player.checkGroupMemberships(em))
+    await Promise.all(promises)
   } finally {
     em.clear()
   }

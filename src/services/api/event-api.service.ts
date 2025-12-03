@@ -12,12 +12,14 @@ import Redis from 'ioredis'
 import { FlushEventsQueueHandler } from '../../lib/queues/game-metrics/flush-events-queue-handler'
 import PlayerAlias from '../../entities/player-alias'
 
-export default class EventAPIService extends APIService {
-  private queueHandler: FlushEventsQueueHandler
+let queueHandler: FlushEventsQueueHandler
 
+export default class EventAPIService extends APIService {
   constructor() {
     super()
-    this.queueHandler = new FlushEventsQueueHandler()
+    if (!queueHandler) {
+      queueHandler = new FlushEventsQueueHandler()
+    }
   }
 
   @Route({
@@ -137,7 +139,7 @@ export default class EventAPIService extends APIService {
       }
     }
     const eventsArray = Array.from(eventsMap.values())
-    await Promise.all(eventsArray.map((event) => this.queueHandler.add(event)))
+    await Promise.all(eventsArray.map((event) => queueHandler.add(event)))
 
     // flush player meta props set by event.setProps()
     await em.flush()

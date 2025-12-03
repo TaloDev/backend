@@ -209,14 +209,13 @@ export default class PlayerService extends Service {
       }
 
       const [allPlayers, count] = await em.repo(Player).findAndCount(where, {
-        populate: ['aliases'],
         orderBy: { lastSeenAt: QueryOrder.DESC },
         limit: itemsPerPage + 1,
-        offset: Number(page) * itemsPerPage,
-        refresh: true // without this, props don't get populated
+        offset: Number(page) * itemsPerPage
       })
 
       const players = allPlayers.slice(0, itemsPerPage)
+      await em.populate(players, ['aliases'])
 
       return {
         status: 200,

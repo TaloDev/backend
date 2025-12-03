@@ -28,7 +28,7 @@ const playerListeners = [
           .findOneOrFail({
             id: data.playerAliasId,
             player: {
-              game: conn.game
+              game: conn.gameId
             }
           }, {
             populate: ['player.auth']

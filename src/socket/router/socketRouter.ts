@@ -78,7 +78,7 @@ export default class SocketRouter {
       eventType: message.req,
       reqOrRes: 'req',
       code: null,
-      gameId: conn.game.id,
+      gameId: conn.gameId,
       playerAliasId: conn.playerAliasId,
       devBuild: conn.isDevBuild()
     })

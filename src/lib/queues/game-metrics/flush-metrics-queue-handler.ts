@@ -22,12 +22,15 @@ let redis: Redis
 export async function postFlushCheckMemberships(playerIds: string[]) {
   const orm = await getMikroORM()
   const em = orm.em.fork() as EntityManager
-  try {
-    const players = await em.repo(Player).find({ id: { $in: playerIds } })
-    const promises = players.map((player) => player.checkGroupMemberships(em))
-    await Promise.all(promises)
-  } finally {
-    em.clear()
+
+  const players = await em.repo(Player).find({ id: { $in: playerIds } })
+  for (const player of players) {
+    const emFork = em.fork()
+    try {
+      await player.checkGroupMemberships(emFork)
+    } finally {
+      emFork.clear()
+    }
   }
 }
 

@@ -6,13 +6,10 @@ import SocketConnection from './socketConnection'
 import SocketRouter from './router/socketRouter'
 import { sendMessage } from './messages/socketMessage'
 import { logConnection, logConnectionClosed } from './messages/socketLogger'
-import { SocketEventData } from './socketEvent'
 import Redis from 'ioredis'
 import { createRedisConnection } from '../config/redis.config'
 import SocketTicket from './socketTicket'
 import { getSocketTracer } from './socketTracer'
-import { FlushSocketEventsQueueHandler } from '../lib/queues/game-metrics/flush-socket-events-queue-handler'
-import { v4 } from 'uuid'
 import { enableSocketTracing } from './enableSocketTracing'
 
 type CloseConnectionOptions = {
@@ -26,7 +23,6 @@ export default class Socket {
   private readonly wss: WebSocketServer
   private connections: Map<WebSocket, SocketConnection> = new Map()
   private router: SocketRouter
-  private queueHandler: FlushSocketEventsQueueHandler
   redis: Redis
 
   constructor(server: Server, private readonly em: EntityManager) {
@@ -41,8 +37,6 @@ export default class Socket {
     })
 
     this.router = new SocketRouter(this)
-
-    this.queueHandler = new FlushSocketEventsQueueHandler()
 
     const interval = this.heartbeat()
     this.wss.on('close', () => {
@@ -87,15 +81,6 @@ export default class Socket {
             if (await ticket.validate(this.redis)) {
               const connection = new SocketConnection(this, ws, ticket, req.socket.remoteAddress!)
               this.connections.set(ws, connection)
-
-              await this.trackEvent({
-                eventType: 'open',
-                reqOrRes: 'req',
-                code: null,
-                gameId: connection.gameId,
-                playerAliasId: null,
-                devBuild: ticket.devBuild
-              })
 
               await sendMessage(connection, 'v1.connected', {})
             } else {
@@ -163,15 +148,6 @@ export default class Socket {
 
     logConnectionClosed(connection, preclosed, code, options.reason)
 
-    await this.trackEvent({
-      eventType: 'close',
-      reqOrRes: preclosed ? 'req' : 'res',
-      code: preclosed ? null : code.toString(),
-      gameId: connection.gameId,
-      playerAliasId: connection.playerAliasId,
-      devBuild: connection.isDevBuild()
-    })
-
     this.connections.delete(ws)
   }
 
@@ -181,14 +157,5 @@ export default class Socket {
 
   findConnections(filter: (conn: SocketConnection) => boolean): SocketConnection[] {
     return Array.from(this.connections.values()).filter(filter)
-  }
-
-  async trackEvent(data: Omit<SocketEventData, 'id'>): Promise<void> {
-    if (process.env.DISABLE_SOCKET_EVENTS === '1') {
-      return
-    }
-
-    /* v8 ignore next - tests mock this implementation */
-    await this.queueHandler.add({ id: v4(), ...data })
   }
 }

@@ -24,7 +24,6 @@ async function truncateTables() {
 beforeAll(async () => {
   vi.mock('nodemailer')
   vi.mock('bullmq')
-  vi.stubEnv('DISABLE_SOCKET_EVENTS', '1')
 
   const app = await init()
   global.app = app.callback()

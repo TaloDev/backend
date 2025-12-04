@@ -1,13 +1,12 @@
 import { ClickHouseClient } from '@clickhouse/client'
 import { CreateEventsTable } from './001CreateEventsTable'
 import { CreateEventPropsTable } from './002CreateEventPropsTable'
-import { CreateSocketEventsTable } from './003CreateSocketEventsTable'
 import { CreateMigrationsTable } from './000CreateMigrationsTable'
 import { formatDateForClickHouse } from '../../lib/clickhouse/formatDateTime'
-import { CreatePlayerGameStatSnapshotsTable } from './004CreatePlayerGameStatSnapshotsTable'
-import { MigrateEventsTimestampsToDate64 } from './005MigrateEventsTimestampsToDate64'
-import { CreatePlayerSessionsTable } from './006CreatePlayerSessionsTable'
-import { AddEventPropsEventIdIndex } from './007AddEventPropsEventIdIndex'
+import { CreatePlayerGameStatSnapshotsTable } from './003CreatePlayerGameStatSnapshotsTable'
+import { MigrateEventsTimestampsToDate64 } from './004MigrateEventsTimestampsToDate64'
+import { CreatePlayerSessionsTable } from './005CreatePlayerSessionsTable'
+import { AddEventPropsEventIdIndex } from './006AddEventPropsEventIdIndex'
 
 type ClickHouseMigration = {
   name: string
@@ -22,10 +21,6 @@ const migrations: ClickHouseMigration[] = [
   {
     name: 'CreateEventPropsTable',
     sql: CreateEventPropsTable
-  },
-  {
-    name: 'CreateSocketEventsTable',
-    sql: CreateSocketEventsTable
   },
   {
     name: 'CreatePlayerGameStatSnapshotsTable',

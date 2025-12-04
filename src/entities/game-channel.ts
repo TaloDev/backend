@@ -39,7 +39,7 @@ export default class GameChannel {
   @Property()
   private: boolean = false
 
-  @ManyToOne(() => Game)
+  @ManyToOne(() => Game, { eager: true })
   game: Game
 
   @Required({

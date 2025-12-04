@@ -9,3 +9,4 @@ backup.sql
 .eslintcache
 storage
 temp
+.vitest-reports/

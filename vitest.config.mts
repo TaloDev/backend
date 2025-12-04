@@ -5,13 +5,12 @@ export default defineConfig({
     watch: false,
     globals: true,
     setupFiles: './tests/setupTest.ts',
-    poolOptions: {
-      forks: {
-        singleFork: true
-      }
-    },
+    maxWorkers: 1,
     deps: {
       interopDefault: true
+    },
+    outputFile: {
+      blob: '.vitest-reports/results.blob'
     },
     coverage: {
       provider: 'v8',

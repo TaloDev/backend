@@ -74,15 +74,6 @@ export default class SocketRouter {
   }
 
   async routeMessage(conn: SocketConnection, message: SocketMessage): Promise<boolean> {
-    await this.wss.trackEvent({
-      eventType: message.req,
-      reqOrRes: 'req',
-      code: null,
-      gameId: conn.game.id,
-      playerAliasId: conn.playerAliasId,
-      devBuild: conn.isDevBuild()
-    })
-
     for (const route of routes) {
       for await (const listener of route) {
         if (listener.req === message.req) {

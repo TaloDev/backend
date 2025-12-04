@@ -6,13 +6,10 @@ import SocketConnection from './socketConnection'
 import SocketRouter from './router/socketRouter'
 import { sendMessage } from './messages/socketMessage'
 import { logConnection, logConnectionClosed } from './messages/socketLogger'
-import { SocketEventData } from './socketEvent'
 import Redis from 'ioredis'
 import { createRedisConnection } from '../config/redis.config'
 import SocketTicket from './socketTicket'
 import { getSocketTracer } from './socketTracer'
-import { FlushSocketEventsQueueHandler } from '../lib/queues/game-metrics/flush-socket-events-queue-handler'
-import { v4 } from 'uuid'
 import { enableSocketTracing } from './enableSocketTracing'
 
 type CloseConnectionOptions = {
@@ -26,26 +23,20 @@ export default class Socket {
   private readonly wss: WebSocketServer
   private connections: Map<WebSocket, SocketConnection> = new Map()
   private router: SocketRouter
-  private queueHandler: FlushSocketEventsQueueHandler
   redis: Redis
 
   constructor(server: Server, private readonly em: EntityManager) {
     this.wss = new WebSocketServer({ server })
     this.wss.on('connection', async (ws, req) => {
-      await getSocketTracer().startActiveSpan('socket.event_handler', async (span) => {
-        await this.handleConnection(ws, req)
+      await this.handleConnection(ws, req)
 
-        ws.on('message', (data) => this.handleMessage(ws, data))
-        ws.on('pong', () => this.handlePong(ws))
-        ws.on('close', () => this.closeConnection(ws, { preclosed: true }))
-        ws.on('error', captureException)
-        span.end()
-      })
+      ws.on('message', (data) => this.handleMessage(ws, data))
+      ws.on('pong', () => this.handlePong(ws))
+      ws.on('close', () => this.closeConnection(ws, { preclosed: true }))
+      ws.on('error', captureException)
     })
 
     this.router = new SocketRouter(this)
-
-    this.queueHandler = new FlushSocketEventsQueueHandler()
 
     const interval = this.heartbeat()
     this.wss.on('close', () => {
@@ -80,32 +71,25 @@ export default class Socket {
   async handleConnection(ws: WebSocket, req: IncomingMessage): Promise<void> {
     withIsolationScope(async () => {
       await getSocketTracer().startActiveSpan('socket.open', async (span) => {
-        logConnection(req)
+        try {
+          logConnection(req)
 
-        await RequestContext.create(this.em, async () => {
-          const url = new URL(req.url!, 'http://localhost')
-          const ticket = new SocketTicket(url.searchParams.get('ticket') ?? '')
+          await RequestContext.create(this.em, async () => {
+            const url = new URL(req.url!, 'http://localhost')
+            const ticket = new SocketTicket(url.searchParams.get('ticket') ?? '')
 
-          if (await ticket.validate(this.redis)) {
-            const connection = new SocketConnection(this, ws, ticket, req.socket.remoteAddress!)
-            this.connections.set(ws, connection)
+            if (await ticket.validate(this.redis)) {
+              const connection = new SocketConnection(this, ws, ticket, req.socket.remoteAddress!)
+              this.connections.set(ws, connection)
 
-            await this.trackEvent({
-              eventType: 'open',
-              reqOrRes: 'req',
-              code: null,
-              gameId: connection.game.id,
-              playerAliasId: null,
-              devBuild: ticket.devBuild
-            })
-
-            await sendMessage(connection, 'v1.connected', {})
-          } else {
-            await this.closeConnection(ws)
-          }
-        })
-
-        span.end()
+              await sendMessage(connection, 'v1.connected', {})
+            } else {
+              await this.closeConnection(ws)
+            }
+          })
+        } finally {
+          span.end()
+        }
       })
     })
   }
@@ -113,17 +97,19 @@ export default class Socket {
   async handleMessage(ws: WebSocket, data: RawData): Promise<void> {
     withIsolationScope(async () => {
       await getSocketTracer().startActiveSpan('socket.message', async (span) => {
-        await RequestContext.create(this.em, async () => {
-          const connection = this.connections.get(ws)
-          if (connection) {
-            await this.router.handleMessage(connection, data)
-          /* v8 ignore next 3 */
-          } else {
-            await this.closeConnection(ws)
-          }
-        })
-
-        span.end()
+        try {
+          await RequestContext.create(this.em, async () => {
+            const connection = this.connections.get(ws)
+            if (connection) {
+              await this.router.handleMessage(connection, data)
+            /* v8 ignore next 3 */
+            } else {
+              await this.closeConnection(ws)
+            }
+          })
+        } finally {
+          span.end()
+        }
       })
     })
   }
@@ -162,15 +148,6 @@ export default class Socket {
 
     logConnectionClosed(connection, preclosed, code, options.reason)
 
-    await this.trackEvent({
-      eventType: 'close',
-      reqOrRes: preclosed ? 'req' : 'res',
-      code: preclosed ? null : code.toString(),
-      gameId: connection.game.id,
-      playerAliasId: connection.playerAliasId,
-      devBuild: connection.isDevBuild()
-    })
-
     this.connections.delete(ws)
   }
 
@@ -180,14 +157,5 @@ export default class Socket {
 
   findConnections(filter: (conn: SocketConnection) => boolean): SocketConnection[] {
     return Array.from(this.connections.values()).filter(filter)
-  }
-
-  async trackEvent(data: Omit<SocketEventData, 'id'>): Promise<void> {
-    if (process.env.DISABLE_SOCKET_EVENTS === '1') {
-      return
-    }
-
-    /* v8 ignore next - tests mock this implementation */
-    await this.queueHandler.add({ id: v4(), ...data })
   }
 }

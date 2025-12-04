@@ -1,7 +1,6 @@
 import { WebSocket } from 'ws'
 import PlayerAlias from '../entities/player-alias'
-import Game from '../entities/game'
-import APIKey, { APIKeyScope } from '../entities/api-key'
+import { APIKeyScope } from '../entities/api-key'
 import { RequestContext, EntityManager } from '@mikro-orm/mysql'
 import { v4 } from 'uuid'
 import Redis from 'ioredis'
@@ -13,12 +12,15 @@ import { SocketErrorCode } from './messages/socketError'
 import SocketTicket from './socketTicket'
 import { setTraceAttributes } from '@hyperdx/node-opentelemetry'
 import { getSocketTracer } from './socketTracer'
+import { getResultCacheOptions } from '../lib/perf/getResultCacheOptions'
 
 export default class SocketConnection {
   alive: boolean = true
   playerAliasId!: number
-  game: Game
-  private apiKey: APIKey
+  readonly gameId: number
+  private readonly apiKeyId: number
+  private readonly apiKeyScopes: APIKeyScope[]
+  private readonly devBuild: boolean
 
   rateLimitKey: string = `requests.socket:${v4()}`
   rateLimitWarnings: number = 0
@@ -26,11 +28,13 @@ export default class SocketConnection {
   constructor(
     private readonly wss: Socket,
     private readonly ws: WebSocket,
-    private readonly ticket: SocketTicket,
+    ticket: SocketTicket,
     private readonly remoteAddress: string
   ) {
-    this.game = this.ticket.apiKey.game
-    this.apiKey = this.ticket.apiKey
+    this.gameId = ticket.apiKey.game.id
+    this.apiKeyId = ticket.apiKey.id
+    this.apiKeyScopes = ticket.apiKey.scopes
+    this.devBuild = ticket.devBuild
   }
 
   async getPlayerAlias(): Promise<PlayerAlias | null> {
@@ -39,15 +43,18 @@ export default class SocketConnection {
     if (!em) {
       throw new Error('Missing request context for entity manager')
     }
-    return em.repo(PlayerAlias).findOne(this.playerAliasId)
+    return em.repo(PlayerAlias).findOne(
+      this.playerAliasId,
+      getResultCacheOptions(`socket-connection-alias-${this.playerAliasId}`, 1000)
+    )
   }
 
   getAPIKeyId(): number {
-    return this.ticket.apiKey.id
+    return this.apiKeyId
   }
 
   hasScope(scope: APIKeyScope): boolean {
-    return this.apiKey.scopes.includes(APIKeyScope.FULL_ACCESS) || this.apiKey.scopes.includes(scope)
+    return this.apiKeyScopes.includes(APIKeyScope.FULL_ACCESS) || this.apiKeyScopes.includes(scope)
   }
 
   hasScopes(scopes: APIKeyScope[]): boolean {
@@ -78,35 +85,28 @@ export default class SocketConnection {
   }
 
   isDevBuild(): boolean {
-    return this.ticket.devBuild
+    return this.devBuild
   }
 
   async sendMessage<T extends object>(res: SocketMessageResponse, data: T, serialisedMessage?: string): Promise<void> {
     await getSocketTracer().startActiveSpan('socket.send_message', async (span) => {
-      if (this.ws.readyState === this.ws.OPEN) {
-        const devBuild = this.isDevBuild()
-        const message = serialisedMessage ?? JSON.stringify({ res, data })
+      try {
+        if (this.ws.readyState === this.ws.OPEN) {
+          const devBuild = this.isDevBuild()
+          const message = serialisedMessage ?? JSON.stringify({ res, data })
 
-        setTraceAttributes({
-          'socket.message_receiver.alias_id': this.playerAliasId,
-          'socket.message_receiver.dev_build': devBuild
-        })
+          setTraceAttributes({
+            'socket.message_receiver.alias_id': this.playerAliasId,
+            'socket.message_receiver.dev_build': devBuild
+          })
 
-        logResponse(this, res, message)
+          logResponse(this, res, message)
 
-        await this.wss.trackEvent({
-          eventType: res,
-          reqOrRes: 'res',
-          code: 'errorCode' in data ? (data.errorCode as SocketErrorCode) : null,
-          gameId: this.game.id,
-          playerAliasId: this.playerAliasId,
-          devBuild: devBuild
-        })
-
-        this.ws.send(message)
+          this.ws.send(message)
+        }
+      } finally {
+        span.end()
       }
-
-      span.end()
     })
   }
 

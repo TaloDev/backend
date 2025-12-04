@@ -11,6 +11,7 @@ import buildErrorResponse from '../lib/errors/buildErrorResponse'
 import { captureException } from '@sentry/node'
 import { pageValidation } from '../lib/pagination/pageValidation'
 import { DEFAULT_PAGE_SIZE } from '../lib/pagination/itemsPerPage'
+import { withResponseCache } from '../lib/perf/responseCache'
 import Game from '../entities/game'
 
 const itemsPerPage = DEFAULT_PAGE_SIZE
@@ -30,69 +31,76 @@ export default class GameChannelService extends Service {
     const em: EntityManager = req.ctx.em
 
     const game: Game = req.ctx.state.game
+    const searchComponent = search ? encodeURIComponent(search) : 'no-search'
+    const cacheKey = `${GameChannel.getSearchCacheKey(game)}-${searchComponent}-${page}-${propKey}-${propValue}`
 
-    const query = em.qb(GameChannel, 'gc')
-      .select('gc.*')
-      .orderBy({ totalMessages: QueryOrder.DESC })
-      .limit(itemsPerPage + 1)
-      .offset(Number(page) * itemsPerPage)
+    return withResponseCache({
+      key: cacheKey,
+      ttl: 600
+    }, async () => {
+      const query = em.qb(GameChannel, 'gc')
+        .select('gc.*')
+        .orderBy({ totalMessages: QueryOrder.DESC })
+        .limit(itemsPerPage + 1)
+        .offset(Number(page) * itemsPerPage)
 
-    if (search) {
-      query.andWhere({
-        $or: [
-          { name: { $like: `%${search}%` } },
-          {
-            owner: { identifier: { $like: `%${search}%` } }
-          }
-        ]
-      })
-    }
-
-    if (req.ctx.state.user.api) {
-      query.andWhere({
-        private: false
-      })
-    }
-
-    if (propKey) {
-      if (propValue) {
+      if (search) {
         query.andWhere({
-          props: {
-            $some: {
-              key: propKey,
-              value: propValue
+          $or: [
+            { name: { $like: `%${search}%` } },
+            {
+              owner: { identifier: { $like: `%${search}%` } }
             }
-          }
-        })
-      } else {
-        query.andWhere({
-          props: {
-            $some: {
-              key: propKey
-            }
-          }
+          ]
         })
       }
-    }
 
-    const [channels, count] = await query
-      .andWhere({ game })
-      .getResultAndCount()
-
-    await em.populate(channels, ['owner'])
-
-    const channelPromises = channels.slice(0, itemsPerPage)
-      .map((channel) => channel.toJSONWithCount(req.ctx.state.includeDevData))
-
-    return {
-      status: 200,
-      body: {
-        channels: await Promise.all(channelPromises),
-        count,
-        itemsPerPage,
-        isLastPage: channels.length <= itemsPerPage
+      if (req.ctx.state.user.api) {
+        query.andWhere({
+          private: false
+        })
       }
-    }
+
+      if (propKey) {
+        if (propValue) {
+          query.andWhere({
+            props: {
+              $some: {
+                key: propKey,
+                value: propValue
+              }
+            }
+          })
+        } else {
+          query.andWhere({
+            props: {
+              $some: {
+                key: propKey
+              }
+            }
+          })
+        }
+      }
+
+      const [channels, count] = await query
+        .andWhere({ game })
+        .getResultAndCount()
+
+      await em.populate(channels, ['owner'])
+
+      const channelPromises = channels.slice(0, itemsPerPage)
+        .map((channel) => channel.toJSONWithCount(req.ctx.state.includeDevData))
+
+      return {
+        status: 200,
+        body: {
+          channels: await Promise.all(channelPromises),
+          count,
+          itemsPerPage,
+          isLastPage: channels.length <= itemsPerPage
+        }
+      }
+    })
   }
 
   @Route({

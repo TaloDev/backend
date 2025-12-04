@@ -28,11 +28,7 @@ export class FlushEventsQueueHandler extends FlushMetricsQueueHandler<Event, Ser
         const playerIds = this.buildPlayerIdSet(serializedValues)
 
         if (playerIds.size > 0) {
-          /* v8 ignore next 3 */
-          if (process.env.NODE_ENV !== 'test') {
-            console.info(`FlushEventsQueueHandler checking groups for ${playerIds.size} players`)
-          }
-          await postFlushCheckMemberships(Array.from(playerIds))
+          await postFlushCheckMemberships('FlushEventsQueueHandler', Array.from(playerIds))
         }
       }
     })

@@ -19,7 +19,15 @@ type HandlerOptions<S> = {
 let clickhouse: ReturnType<typeof createClickHouseClient>
 let redis: Redis
 
-export async function postFlushCheckMemberships(playerIds: string[]) {
+export async function postFlushCheckMemberships(handlerName: string, playerIds: string[]) {
+  const canLog = process.env.NODE_ENV !== 'test'
+  const timeLabel = `${handlerName} checking groups for ${playerIds.length} players`
+
+  /* v8 ignore next 3 */
+  if (canLog) {
+    console.time(timeLabel)
+  }
+
   const orm = await getMikroORM()
   const em = orm.em.fork() as EntityManager
 
@@ -31,6 +39,11 @@ export async function postFlushCheckMemberships(playerIds: string[]) {
     } finally {
       emFork.clear()
     }
+  }
+
+  /* v8 ignore next 3 */
+  if (canLog) {
+    console.timeEnd(timeLabel)
   }
 }
 
@@ -57,7 +70,7 @@ export abstract class FlushMetricsQueueHandler<T extends { id: string }, S exten
     }
 
     this.queue = createQueue(`flush-${metricName}`, async () => {
-      /* v8 ignore next */
+      /* v8 ignore next - called manually in tests */
       await this.handle()
     })
 

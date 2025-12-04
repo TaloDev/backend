@@ -10,7 +10,7 @@ async function handleJobFailure<T>(job: Job<T>, err: Error): Promise<void> {
   const failedJob = new FailedJob()
   failedJob.payload = job.data as unknown as (typeof failedJob.payload)
   failedJob.queue = job.queueName
-  failedJob.reason = err.message
+  failedJob.reason = err.message.substring(0, 255)
   /* v8 ignore next */
   failedJob.stack = err.stack ?? ''
 

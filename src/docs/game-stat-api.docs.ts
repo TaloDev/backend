@@ -1,9 +1,11 @@
 import GameStatAPIService from '../services/api/game-stat-api.service'
 import APIDocs from './api-docs'
+import { APIKeyScope } from '../entities/api-key'
 
 const GameStatAPIDocs: APIDocs<GameStatAPIService> = {
   index: {
     description: 'Get all game stats',
+    scopes: [APIKeyScope.READ_GAME_STATS],
     samples: [
       {
         title: 'Sample response',
@@ -44,6 +46,7 @@ const GameStatAPIDocs: APIDocs<GameStatAPIService> = {
   },
   get: {
     description: 'Get an individual game stat',
+    scopes: [APIKeyScope.READ_GAME_STATS],
     params: {
       route: {
         internalName: 'The internal name of the stat'
@@ -73,6 +76,7 @@ const GameStatAPIDocs: APIDocs<GameStatAPIService> = {
   },
   getPlayerStat: {
     description: 'Get the current value of a player\'s stat',
+    scopes: [APIKeyScope.READ_GAME_STATS],
     params: {
       route: {
         internalName: 'The internal name of the stat'
@@ -108,6 +112,7 @@ const GameStatAPIDocs: APIDocs<GameStatAPIService> = {
   },
   put: {
     description: 'Update a stat value',
+    scopes: [APIKeyScope.WRITE_GAME_STATS],
     params: {
       headers: {
         'x-talo-alias': 'The ID of the player\'s alias'
@@ -155,6 +160,7 @@ const GameStatAPIDocs: APIDocs<GameStatAPIService> = {
   },
   history: {
     description: 'Get a history of changes to a player stat',
+    scopes: [APIKeyScope.READ_GAME_STATS],
     params: {
       headers: {
         'x-talo-player': 'The ID of the player'
@@ -263,6 +269,7 @@ const GameStatAPIDocs: APIDocs<GameStatAPIService> = {
   },
   globalHistory: {
     description: 'Get a history of changes to a global stat',
+    scopes: [APIKeyScope.READ_GAME_STATS],
     params: {
       route: {
         internalName: 'The internal name of the stat'
@@ -429,6 +436,7 @@ const GameStatAPIDocs: APIDocs<GameStatAPIService> = {
   },
   listPlayerStats: {
     description: 'Get the current values of all the player\'s stats',
+    scopes: [APIKeyScope.READ_GAME_STATS],
     samples: [
       {
         title: 'Sample response',
@@ -481,4 +489,4 @@ const GameStatAPIDocs: APIDocs<GameStatAPIService> = {
   }
 }
 
-export default GameStatAPIDocs
+export { GameStatAPIDocs }

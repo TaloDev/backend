@@ -1,5 +1,6 @@
 import GameSaveAPIService from '../services/api/game-save-api.service'
 import APIDocs from './api-docs'
+import { APIKeyScope } from '../entities/api-key'
 
 const sampleSave = {
   id: 143,
@@ -51,6 +52,7 @@ const sampleSave = {
 const GameSaveAPIDocs: APIDocs<GameSaveAPIService> = {
   index: {
     description: 'Get a player\'s saves',
+    scopes: [APIKeyScope.READ_GAME_SAVES],
     params: {
       headers: {
         'x-talo-player': 'The ID of the player'
@@ -67,6 +69,7 @@ const GameSaveAPIDocs: APIDocs<GameSaveAPIService> = {
   },
   post: {
     description: 'Create a save',
+    scopes: [APIKeyScope.WRITE_GAME_SAVES],
     params: {
       headers: {
         'x-talo-player': 'The ID of the player'
@@ -94,6 +97,7 @@ const GameSaveAPIDocs: APIDocs<GameSaveAPIService> = {
   },
   patch: {
     description: 'Update a save',
+    scopes: [APIKeyScope.WRITE_GAME_SAVES],
     params: {
       headers: {
         'x-talo-player': 'The ID of the player'
@@ -124,6 +128,7 @@ const GameSaveAPIDocs: APIDocs<GameSaveAPIService> = {
   },
   delete: {
     description: 'Delete a save',
+    scopes: [APIKeyScope.WRITE_GAME_SAVES],
     params: {
       headers: {
         'x-talo-player': 'The ID of the player'
@@ -135,4 +140,4 @@ const GameSaveAPIDocs: APIDocs<GameSaveAPIService> = {
   }
 }
 
-export default GameSaveAPIDocs
+export { GameSaveAPIDocs }

@@ -1,9 +1,11 @@
 import PlayerAuthAPIService from '../services/api/player-auth-api.service'
 import APIDocs from './api-docs'
+import { APIKeyScope } from '../entities/api-key'
 
 const PlayerAuthAPIDocs: APIDocs<PlayerAuthAPIService> = {
   register: {
     description: 'Create a new player account',
+    scopes: [APIKeyScope.READ_PLAYERS, APIKeyScope.WRITE_PLAYERS],
     params: {
       body: {
         identifier: 'The unique identifier of the player. This can be their username, an email or a numeric ID',
@@ -53,6 +55,7 @@ const PlayerAuthAPIDocs: APIDocs<PlayerAuthAPIService> = {
   },
   login: {
     description: 'Login to a player account',
+    scopes: [APIKeyScope.READ_PLAYERS, APIKeyScope.WRITE_PLAYERS],
     params: {
       body: {
         identifier: 'The unique identifier of the player. This can be their username, an email or a numeric ID',
@@ -105,6 +108,7 @@ const PlayerAuthAPIDocs: APIDocs<PlayerAuthAPIService> = {
   },
   verify: {
     description: 'Provide the verification code to start the player session',
+    scopes: [APIKeyScope.READ_PLAYERS, APIKeyScope.WRITE_PLAYERS],
     params: {
       body: {
         aliasId: 'The ID of the alias to verify',
@@ -150,6 +154,7 @@ const PlayerAuthAPIDocs: APIDocs<PlayerAuthAPIService> = {
   },
   logout: {
     description: 'Logout of a player account (and invalidate the session token)',
+    scopes: [APIKeyScope.READ_PLAYERS, APIKeyScope.WRITE_PLAYERS],
     params: {
       headers: {
         'x-talo-player': 'The ID of the player',
@@ -160,6 +165,7 @@ const PlayerAuthAPIDocs: APIDocs<PlayerAuthAPIService> = {
   },
   changePassword: {
     description: 'Change the password of a player account',
+    scopes: [APIKeyScope.READ_PLAYERS, APIKeyScope.WRITE_PLAYERS],
     params: {
       headers: {
         'x-talo-player': 'The ID of the player',
@@ -183,6 +189,7 @@ const PlayerAuthAPIDocs: APIDocs<PlayerAuthAPIService> = {
   },
   changeEmail: {
     description: 'Change the email address of a player account',
+    scopes: [APIKeyScope.READ_PLAYERS, APIKeyScope.WRITE_PLAYERS],
     params: {
       headers: {
         'x-talo-player': 'The ID of the player',
@@ -206,6 +213,7 @@ const PlayerAuthAPIDocs: APIDocs<PlayerAuthAPIService> = {
   },
   forgotPassword: {
     description: 'Send a password reset email to an email address',
+    scopes: [APIKeyScope.READ_PLAYERS, APIKeyScope.WRITE_PLAYERS],
     params: {
       body: {
         email: 'The email address to send the verification code to. If no player with this email exists, the request will be ignored'
@@ -222,6 +230,7 @@ const PlayerAuthAPIDocs: APIDocs<PlayerAuthAPIService> = {
   },
   resetPassword: {
     description: 'Reset the password of a player account (invalidates any existing session tokens)',
+    scopes: [APIKeyScope.READ_PLAYERS, APIKeyScope.WRITE_PLAYERS],
     params: {
       body: {
         code: 'The 6-digit verification code sent to the email address (must be a string)',
@@ -240,6 +249,7 @@ const PlayerAuthAPIDocs: APIDocs<PlayerAuthAPIService> = {
   },
   toggleVerification: {
     description: 'Toggle verification for a player account',
+    scopes: [APIKeyScope.READ_PLAYERS, APIKeyScope.WRITE_PLAYERS],
     params: {
       headers: {
         'x-talo-player': 'The ID of the player',
@@ -279,6 +289,7 @@ const PlayerAuthAPIDocs: APIDocs<PlayerAuthAPIService> = {
   },
   delete: {
     description: 'Delete a player account',
+    scopes: [APIKeyScope.READ_PLAYERS, APIKeyScope.WRITE_PLAYERS],
     params: {
       headers: {
         'x-talo-player': 'The ID of the player',
@@ -300,4 +311,4 @@ const PlayerAuthAPIDocs: APIDocs<PlayerAuthAPIService> = {
   }
 }
 
-export default PlayerAuthAPIDocs
+export { PlayerAuthAPIDocs }

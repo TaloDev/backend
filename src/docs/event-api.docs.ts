@@ -1,9 +1,11 @@
 import EventAPIService from '../services/api/event-api.service'
 import APIDocs from './api-docs'
+import { APIKeyScope } from '../entities/api-key'
 
 const EventAPIDocs: APIDocs<EventAPIService> = {
   post: {
     description: 'Track events',
+    scopes: [APIKeyScope.WRITE_EVENTS],
     params: {
       headers: {
         'x-talo-alias': 'The ID of the player\'s alias'
@@ -89,4 +91,4 @@ const EventAPIDocs: APIDocs<EventAPIService> = {
   }
 }
 
-export default EventAPIDocs
+export { EventAPIDocs }

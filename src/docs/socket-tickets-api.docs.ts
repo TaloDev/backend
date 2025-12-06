@@ -15,4 +15,4 @@ const SocketTicketAPIDocs: APIDocs<SocketTicketAPIService> = {
   }
 }
 
-export default SocketTicketAPIDocs
+export { SocketTicketAPIDocs }

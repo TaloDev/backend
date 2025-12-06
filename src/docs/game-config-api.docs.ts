@@ -1,9 +1,11 @@
 import GameConfigAPIService from '../services/api/game-config-api.service'
 import APIDocs from './api-docs'
+import { APIKeyScope } from '../entities/api-key'
 
 const GameConfigAPIDocs: APIDocs<GameConfigAPIService> = {
   index: {
     description: 'Get the live config for the game',
+    scopes: [APIKeyScope.READ_GAME_CONFIG],
     samples: [
       {
         title: 'Sample response',
@@ -19,4 +21,4 @@ const GameConfigAPIDocs: APIDocs<GameConfigAPIService> = {
   }
 }
 
-export default GameConfigAPIDocs
+export { GameConfigAPIDocs }

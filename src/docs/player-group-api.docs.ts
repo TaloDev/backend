@@ -1,9 +1,11 @@
 import PlayerGroupAPIService from '../services/api/player-group-api.service'
 import APIDocs from './api-docs'
+import { APIKeyScope } from '../entities/api-key'
 
 const PlayerGroupAPIDocs: APIDocs<PlayerGroupAPIService> = {
   get: {
     description: 'Get a group and its members',
+    scopes: [APIKeyScope.READ_PLAYER_GROUPS],
     params: {
       route: {
         id: 'The ID of the group'
@@ -98,4 +100,4 @@ const PlayerGroupAPIDocs: APIDocs<PlayerGroupAPIService> = {
   }
 }
 
-export default PlayerGroupAPIDocs
+export { PlayerGroupAPIDocs }

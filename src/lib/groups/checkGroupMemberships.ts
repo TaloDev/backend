@@ -7,8 +7,6 @@ import { createRedisConnection } from '../../config/redis.config'
 
 let redis: ReturnType<typeof createRedisConnection>
 
-const enableLogging = process.env.NODE_ENV !== 'test'
-
 function getGroupsFromPlayer(em: EntityManager, player: Player) {
   return em.repo(PlayerGroup).find({
     game: player.game
@@ -21,13 +19,6 @@ function getGroupsFromPlayer(em: EntityManager, player: Player) {
 type LoadedGroups = Awaited<ReturnType<typeof getGroupsFromPlayer>>
 
 async function runMembershipChecksForGroups(em: EntityManager, player: Player, groups: LoadedGroups): Promise<boolean> {
-  const label = `Checking group memberships for ${player.id}`
-
-  /* v8 ignore next 3 */
-  if (enableLogging) {
-    console.time(label)
-  }
-
   let shouldFlush = false
 
   for (const group of groups) {
@@ -46,11 +37,6 @@ async function runMembershipChecksForGroups(em: EntityManager, player: Player, g
     if (eligibleButNotInGroup || inGroupButNotEligible) {
       shouldFlush = true
     }
-  }
-
-  /* v8 ignore next 3 */
-  if (enableLogging) {
-    console.timeEnd(label)
   }
 
   return shouldFlush

@@ -3,7 +3,7 @@ import GameSaveAPIPolicy from '../../policies/api/game-save-api.policy'
 import APIService from './api-service'
 import GameSave from '../../entities/game-save'
 import { EntityManager } from '@mikro-orm/mysql'
-import GameSaveAPIDocs from '../../docs/game-save-api.docs'
+import { GameSaveAPIDocs } from '../../docs/game-save-api.docs'
 import handleSQLError from '../../lib/errors/handleSQLError'
 
 function decodeContent(content: unknown) {

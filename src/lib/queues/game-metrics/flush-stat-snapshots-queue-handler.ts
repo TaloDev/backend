@@ -17,11 +17,7 @@ export class FlushStatSnapshotsQueueHandler extends FlushMetricsQueueHandler<Pla
         const playerIds = this.buildPlayerIdSet(values)
 
         if (playerIds.size > 0) {
-          /* v8 ignore next 3 */
-          if (process.env.NODE_ENV !== 'test') {
-            console.info(`FlushStatSnapshotsQueueHandler checking groups for ${playerIds.size} players`)
-          }
-          await postFlushCheckMemberships(Array.from(playerIds))
+          await postFlushCheckMemberships('FlushStatSnapshotsQueueHandler', Array.from(playerIds))
         }
       }
     })

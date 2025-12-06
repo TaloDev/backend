@@ -5,7 +5,7 @@ import PlayerPresenceAPIPolicy from '../../policies/api/player-presence-api.poli
 import Player from '../../entities/player'
 import PlayerPresence from '../../entities/player-presence'
 import PlayerAlias from '../../entities/player-alias'
-import PlayerPresenceAPIDocs from '../../docs/player-presence-api.docs'
+import { PlayerPresenceAPIDocs } from '../../docs/player-presence-api.docs'
 
 export default class PlayerPresenceAPIService extends APIService {
   @Route({

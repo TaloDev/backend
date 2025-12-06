@@ -7,7 +7,7 @@ import { createPlayerFromIdentifyRequest, findAliasFromIdentifyRequest } from '.
 import PlayerAuth from '../../entities/player-auth'
 import bcrypt from 'bcrypt'
 import PlayerAuthAPIPolicy from '../../policies/api/player-auth-api.policy'
-import PlayerAuthAPIDocs from '../../docs/player-auth-api.docs'
+import { PlayerAuthAPIDocs } from '../../docs/player-auth-api.docs'
 import generateSixDigitCode from '../../lib/auth/generateSixDigitCode'
 import queueEmail from '../../lib/messaging/queueEmail'
 import PlayerAuthCode from '../../emails/player-auth-code-mail'

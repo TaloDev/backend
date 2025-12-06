@@ -2,7 +2,7 @@ import { ForwardTo, HasPermission, Request, Response, Route, Validate, forwardRe
 import GameFeedbackAPIPolicy from '../../policies/api/game-feedback-api.policy'
 import APIService from './api-service'
 import GameFeedback from '../../entities/game-feedback'
-import GameFeedbackAPIDocs from '../../docs/game-feedback-api.docs'
+import { GameFeedbackAPIDocs } from '../../docs/game-feedback-api.docs'
 import { EntityManager } from '@mikro-orm/mysql'
 import GameFeedbackCategory from '../../entities/game-feedback-category'
 import { hardSanitiseProps } from '../../lib/props/sanitiseProps'

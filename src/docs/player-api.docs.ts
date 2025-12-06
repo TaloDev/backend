@@ -1,9 +1,11 @@
 import PlayerAPIService from '../services/api/player-api.service'
 import APIDocs from './api-docs'
+import { APIKeyScope } from '../entities/api-key'
 
 const PlayerAPIDocs: APIDocs<PlayerAPIService> = {
   identify: {
     description: 'Identify a player',
+    scopes: [APIKeyScope.READ_PLAYERS, APIKeyScope.WRITE_PLAYERS],
     params: {
       headers: {
         'x-talo-session': 'The session token (required if using Talo player authentication)'
@@ -62,6 +64,7 @@ const PlayerAPIDocs: APIDocs<PlayerAPIService> = {
   },
   search: {
     description: 'Search for players',
+    scopes: [APIKeyScope.READ_PLAYERS],
     params: {
       route: {
         id: 'The ID of the player'
@@ -128,6 +131,7 @@ const PlayerAPIDocs: APIDocs<PlayerAPIService> = {
   },
   get: {
     description: 'Find a player',
+    scopes: [APIKeyScope.READ_PLAYERS],
     params: {
       route: {
         id: 'The ID of the player'
@@ -163,6 +167,7 @@ const PlayerAPIDocs: APIDocs<PlayerAPIService> = {
   },
   patch: {
     description: 'Update a player\'s props',
+    scopes: [APIKeyScope.WRITE_PLAYERS],
     params: {
       body: {
         props: 'An array of @type(Props:prop). Props that the player doesn\'t have will be added. Props with updated values will overwrite existing props. Props with a null value will be deleted from the player'
@@ -209,6 +214,7 @@ const PlayerAPIDocs: APIDocs<PlayerAPIService> = {
   },
   merge: {
     description: 'Merge two players',
+    scopes: [APIKeyScope.READ_PLAYERS, APIKeyScope.WRITE_PLAYERS],
     params: {
       body: {
         playerId1: 'The first player ID - the second player will be merged into this player',
@@ -252,6 +258,7 @@ const PlayerAPIDocs: APIDocs<PlayerAPIService> = {
   },
   socketToken: {
     description: 'Create a socket token for a player',
+    scopes: [APIKeyScope.WRITE_PLAYERS],
     params: {
       headers: {
         'x-talo-alias': 'The ID of the player\'s alias'
@@ -268,4 +275,4 @@ const PlayerAPIDocs: APIDocs<PlayerAPIService> = {
   }
 }
 
-export default PlayerAPIDocs
+export { PlayerAPIDocs }

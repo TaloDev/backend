@@ -1,9 +1,11 @@
 import GameFeedbackAPIService from '../services/api/game-feedback-api.service'
 import APIDocs from './api-docs'
+import { APIKeyScope } from '../entities/api-key'
 
 const GameFeedbackAPIDocs: APIDocs<GameFeedbackAPIService> = {
   indexCategories: {
     description: 'Get available feedback categories',
+    scopes: [APIKeyScope.READ_GAME_FEEDBACK],
     samples: [
       {
         title: 'Sample response',
@@ -23,6 +25,7 @@ const GameFeedbackAPIDocs: APIDocs<GameFeedbackAPIService> = {
   },
   post: {
     description: 'Create a player feedback entry',
+    scopes: [APIKeyScope.WRITE_GAME_FEEDBACK],
     params: {
       headers: {
         'x-talo-alias': 'The ID of the player\'s alias'
@@ -102,4 +105,4 @@ const GameFeedbackAPIDocs: APIDocs<GameFeedbackAPIService> = {
   }
 }
 
-export default GameFeedbackAPIDocs
+export { GameFeedbackAPIDocs }

@@ -1,7 +1,7 @@
 import { EntityManager, LockMode } from '@mikro-orm/mysql'
 import { differenceInSeconds } from 'date-fns'
 import { HasPermission, Request, Response, Route, Validate } from 'koa-clay'
-import GameStatAPIDocs from '../../docs/game-stat-api.docs'
+import { GameStatAPIDocs } from '../../docs/game-stat-api.docs'
 import GameStat from '../../entities/game-stat'
 import PlayerGameStat from '../../entities/player-game-stat'
 import triggerIntegrations from '../../lib/integrations/triggerIntegrations'

@@ -1,9 +1,11 @@
 import PlayerPresenceAPIService from '../services/api/player-presence-api.service'
 import APIDocs from './api-docs'
+import { APIKeyScope } from '../entities/api-key'
 
 const PlayerPresenceAPIDocs: APIDocs<PlayerPresenceAPIService> = {
   get: {
     description: 'Get a player\'s online status and custom status',
+    scopes: [APIKeyScope.READ_PLAYER_PRESENCE],
     params: {
       route: {
         id: 'The ID of the player'
@@ -42,6 +44,7 @@ const PlayerPresenceAPIDocs: APIDocs<PlayerPresenceAPIService> = {
   },
   put: {
     description: 'Update a player\'s online status and custom status',
+    scopes: [APIKeyScope.WRITE_PLAYER_PRESENCE],
     params: {
       headers: {
         'x-talo-alias': 'The ID of the player\'s alias'
@@ -91,4 +94,4 @@ const PlayerPresenceAPIDocs: APIDocs<PlayerPresenceAPIService> = {
   }
 }
 
-export default PlayerPresenceAPIDocs
+export { PlayerPresenceAPIDocs }

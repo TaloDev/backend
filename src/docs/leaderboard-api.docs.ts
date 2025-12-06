@@ -1,9 +1,11 @@
 import LeaderboardAPIService from '../services/api/leaderboard-api.service'
 import APIDocs from './api-docs'
+import { APIKeyScope } from '../entities/api-key'
 
 const LeaderboardAPIDocs: APIDocs<LeaderboardAPIService> = {
   get: {
     description: 'Get a leaderboard\'s entries\n50 results are returned per page, in the sort order defined by the leaderboard',
+    scopes: [APIKeyScope.READ_LEADERBOARDS],
     params: {
       headers: {
         'x-talo-alias': 'The ID of the player\'s alias'
@@ -142,6 +144,7 @@ const LeaderboardAPIDocs: APIDocs<LeaderboardAPIService> = {
   },
   post: {
     description: 'Create or update a leaderboard\'s entry\nIf an entry exists for the player and the leaderboard mode is set to unique, that entry will be updated with the new score (and the updated key will return true)',
+    scopes: [APIKeyScope.WRITE_LEADERBOARDS],
     params: {
       body: {
         score: 'A numeric score for the entry'
@@ -190,4 +193,4 @@ const LeaderboardAPIDocs: APIDocs<LeaderboardAPIService> = {
   }
 }
 
-export default LeaderboardAPIDocs
+export { LeaderboardAPIDocs }

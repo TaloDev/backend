@@ -3,7 +3,7 @@ import APIService from './api-service'
 import { v4 } from 'uuid'
 import Redis from 'ioredis'
 import APIKey from '../../entities/api-key'
-import SocketTicketAPIDocs from '../../docs/socket-tickets-api.docs'
+import { SocketTicketAPIDocs } from '../../docs/socket-tickets-api.docs'
 
 export async function createSocketTicket(redis: Redis, key: APIKey, devBuild: boolean): Promise<string> {
   const ticket = v4()

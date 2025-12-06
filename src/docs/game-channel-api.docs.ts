@@ -1,9 +1,11 @@
 import GameChannelAPIService from '../services/api/game-channel-api.service'
 import APIDocs from './api-docs'
+import { APIKeyScope } from '../entities/api-key'
 
 const GameChannelAPIDocs: APIDocs<GameChannelAPIService> = {
   index: {
     description: 'List game channels',
+    scopes: [APIKeyScope.READ_GAME_CHANNELS],
     params: {
       query: {
         page: 'The current pagination index (starting at 0)'
@@ -87,6 +89,7 @@ const GameChannelAPIDocs: APIDocs<GameChannelAPIService> = {
   },
   get: {
     description: 'Find a game channel',
+    scopes: [APIKeyScope.READ_GAME_CHANNELS],
     params: {
       route: {
         id: 'The ID of the channel'
@@ -120,6 +123,7 @@ const GameChannelAPIDocs: APIDocs<GameChannelAPIService> = {
   },
   subscriptions: {
     description: 'List game channels that the player is subscribed to',
+    scopes: [APIKeyScope.READ_GAME_CHANNELS],
     params: {
       headers: {
         'x-talo-alias': 'The ID of the player\'s alias'
@@ -188,6 +192,7 @@ const GameChannelAPIDocs: APIDocs<GameChannelAPIService> = {
   },
   post: {
     description: 'Create a game channel',
+    scopes: [APIKeyScope.WRITE_GAME_CHANNELS],
     params: {
       headers: {
         'x-talo-alias': 'The ID of the player\'s alias'
@@ -251,6 +256,7 @@ const GameChannelAPIDocs: APIDocs<GameChannelAPIService> = {
   },
   join: {
     description: 'Join a game channel',
+    scopes: [APIKeyScope.WRITE_GAME_CHANNELS],
     params: {
       headers: {
         'x-talo-alias': 'The ID of the player\'s alias'
@@ -283,6 +289,7 @@ const GameChannelAPIDocs: APIDocs<GameChannelAPIService> = {
   },
   leave: {
     description: 'Leave a game channel',
+    scopes: [APIKeyScope.WRITE_GAME_CHANNELS],
     params: {
       headers: {
         'x-talo-alias': 'The ID of the player\'s alias'
@@ -294,6 +301,7 @@ const GameChannelAPIDocs: APIDocs<GameChannelAPIService> = {
   },
   put: {
     description: 'Update a game channel',
+    scopes: [APIKeyScope.WRITE_GAME_CHANNELS],
     params: {
       headers: {
         'x-talo-alias': 'The ID of the player\'s alias'
@@ -360,6 +368,7 @@ const GameChannelAPIDocs: APIDocs<GameChannelAPIService> = {
   },
   delete: {
     description: 'Delete a game channel',
+    scopes: [APIKeyScope.WRITE_GAME_CHANNELS],
     params: {
       headers: {
         'x-talo-alias': 'The ID of the player\'s alias'
@@ -371,6 +380,7 @@ const GameChannelAPIDocs: APIDocs<GameChannelAPIService> = {
   },
   invite: {
     description: 'Invite another player to a game channel',
+    scopes: [APIKeyScope.WRITE_GAME_CHANNELS],
     params: {
       headers: {
         'x-talo-alias': 'The ID of the player\'s alias'
@@ -385,6 +395,7 @@ const GameChannelAPIDocs: APIDocs<GameChannelAPIService> = {
   },
   members: {
     description: 'Get the members of a game channel',
+    scopes: [APIKeyScope.READ_GAME_CHANNELS],
     params: {
       headers: {
         'x-talo-alias': 'The ID of the player\'s alias'
@@ -433,6 +444,7 @@ const GameChannelAPIDocs: APIDocs<GameChannelAPIService> = {
   },
   getStorage: {
     description: 'Get a single storage property from a game channel',
+    scopes: [APIKeyScope.READ_GAME_CHANNELS],
     params: {
       headers: {
         'x-talo-alias': 'The ID of the player\'s alias'
@@ -498,6 +510,7 @@ const GameChannelAPIDocs: APIDocs<GameChannelAPIService> = {
   },
   listStorage: {
     description: 'Get multiple storage properties from a game channel',
+    scopes: [APIKeyScope.READ_GAME_CHANNELS],
     params: {
       headers: {
         'x-talo-alias': 'The ID of the player\'s alias'
@@ -606,6 +619,7 @@ const GameChannelAPIDocs: APIDocs<GameChannelAPIService> = {
   },
   putStorage: {
     description: 'Create or update storage properties in a game channel',
+    scopes: [APIKeyScope.WRITE_GAME_CHANNELS],
     params: {
       headers: {
         'x-talo-alias': 'The ID of the player\'s alias'
@@ -832,4 +846,4 @@ const GameChannelAPIDocs: APIDocs<GameChannelAPIService> = {
   }
 }
 
-export default GameChannelAPIDocs
+export { GameChannelAPIDocs }

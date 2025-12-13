@@ -5,7 +5,7 @@ import PlayerGameStat from './player-game-stat'
 import { ClickHouseClient } from '@clickhouse/client'
 import Player from './player'
 import { formatDateForClickHouse } from '../lib/clickhouse/formatDateTime'
-import { endOfDay } from 'date-fns'
+import { endOfDay, startOfDay } from 'date-fns'
 
 type GlobalValueMetrics = {
   minValue: number
@@ -141,7 +141,9 @@ export default class GameStat {
     let whereConditions = `WHERE game_stat_id = ${this.id}`
 
     if (startDate) {
-      whereConditions += ` AND created_at >= '${formatDateForClickHouse(new Date(startDate))}'`
+      // when using YYYY-MM-DD, use the start of the day
+      const start = startDate.length === 10 ? startOfDay(new Date(startDate)) : new Date(startDate)
+      whereConditions += ` AND created_at >= '${formatDateForClickHouse(start)}'`
     }
     if (endDate) {
       // when using YYYY-MM-DD, use the end of the day

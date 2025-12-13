@@ -3,8 +3,8 @@ import { isAPIRoute } from './route-middleware'
 import checkRateLimitExceeded from '../lib/errors/checkRateLimitExceeded'
 
 const limitMap = {
-  default: 100,
-  auth: 20
+  default: Number(process.env.API_RATE_LIMIT) || 100,
+  auth: Number(process.env.API_RATE_LIMIT_AUTH) || 20
 } as const
 
 const rateLimitOverrides = new Map<string, keyof typeof limitMap>([

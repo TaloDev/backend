@@ -113,8 +113,7 @@ describe('Data export service - generation', () => {
     const exporter = new DataExporter()
     const proto = Object.getPrototypeOf(exporter)
 
-    const stat = await new GameStatFactory([game]).global().state(() => ({ globalValue: 50 })).one()
-    await stat.recalculateGlobalValue(false)
+    const stat = await new GameStatFactory([game]).global().state(() => ({ globalValue: 50, defaultValue: 0 })).one()
 
     expect(proto.transformColumn('globalValue', stat)).toBe('50')
   })
@@ -125,7 +124,7 @@ describe('Data export service - generation', () => {
     const exporter = new DataExporter()
     const proto = Object.getPrototypeOf(exporter)
 
-    const stat = await new GameStatFactory([game]).one()
+    const stat = await new GameStatFactory([game]).state(() => ({ global: false })).one()
 
     expect(proto.transformColumn('globalValue', stat)).toBe('N/A')
   })

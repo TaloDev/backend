@@ -172,14 +172,19 @@ describe('Data export service - included data (unit tests)', () => {
     const exporter = new DataExporter()
     const proto = Object.getPrototypeOf(exporter)
 
-    const player = await new PlayerFactory([game]).devBuild().one()
     const stat = await new GameStatFactory([game]).global().state(() => ({ globalValue: 50 })).one()
-    const playerStat = await new PlayerGameStatFactory().construct(player, stat).state(() => ({ value: 10 })).one()
+
+    const devPlayer = await new PlayerFactory([game]).devBuild().one()
+    const devPlayerStat = await new PlayerGameStatFactory().construct(devPlayer, stat).state(() => ({ value: 10 })).one()
+
+    const livePlayer = await new PlayerFactory([game]).one()
+    const livePlayerStat = await new PlayerGameStatFactory().construct(livePlayer, stat).state(() => ({ value: 40 })).one()
+
     const dataExport = await new DataExportFactory(game).one()
-    await em.persistAndFlush([playerStat, dataExport])
+    await em.persistAndFlush([devPlayerStat, livePlayerStat, dataExport])
 
     const items = await collect(proto.streamGameStats(dataExport, em, false)) as GameStat[]
-    expect(items[0].hydratedGlobalValue).toBe(40)
+    expect(items[0].globalValue).toBe(40)
   })
 
   it('should not recalculate global stat values with the dev data header', async () => {

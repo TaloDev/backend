@@ -1,4 +1,4 @@
-import { EntityManager, Entity, ManyToOne, PrimaryKey, Property, Collection, OneToMany, Index } from '@mikro-orm/mysql'
+import { EntityManager, Entity, ManyToOne, PrimaryKey, Property, Collection, OneToMany, Index, raw } from '@mikro-orm/mysql'
 import { Request, Required, ValidationCondition } from 'koa-clay'
 import Game from './game'
 import PlayerGameStat from './player-game-stat'
@@ -58,8 +58,6 @@ export default class GameStat {
 
   @Property({ type: 'double' })
   globalValue!: number
-
-  hydratedGlobalValue!: number
 
   @Required({
     validation: async (value: unknown): Promise<ValidationCondition[]> => [{
@@ -125,16 +123,18 @@ export default class GameStat {
     this.game = game
   }
 
-  async recalculateGlobalValue(includeDevData: boolean): Promise<void> {
-    this.hydratedGlobalValue = this.globalValue
+  async recalculateGlobalValue({ em, includeDevData }: { em: EntityManager, includeDevData: boolean }) {
+    const qb = em.qb(PlayerGameStat, 'pgs')
+      .select(raw('SUM(pgs.value) as total'))
+      .where({ stat: this.id })
 
-    if (includeDevData) return
+    if (!includeDevData) {
+      qb.innerJoin('pgs.player', 'p')
+        .andWhere({ 'p.devBuild': false })
+    }
 
-    const playerStats = await this.playerStats.loadItems({ populate: ['player'] })
-
-    this.hydratedGlobalValue -= playerStats
-      .filter((playerStat) => playerStat.player.devBuild)
-      .reduce((acc, curr) => acc += curr.value, 0)
+    const result = await qb.execute<{ total: string | null }>('get')
+    this.globalValue = Number(result?.total ?? 0)
   }
 
   async buildMetricsWhereConditions(startDate?: string, endDate?: string, player?: Player): Promise<string> {
@@ -266,7 +266,7 @@ export default class GameStat {
       internalName: this.internalName,
       name: this.name,
       global: this.global,
-      globalValue: this.hydratedGlobalValue ?? this.globalValue,
+      globalValue: this.globalValue,
       metrics: this.metrics,
       defaultValue: this.defaultValue,
       maxChange: this.maxChange,

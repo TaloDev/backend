@@ -227,11 +227,14 @@ export class DataExporter {
         orderBy: { id: 'asc' }
       })
 
-      await Promise.all(page.items.map(async (stat) => {
-        if (stat.global) {
-          await stat.recalculateGlobalValue(includeDevData)
-        }
-      }))
+      // for data exports excluding dev data, recalculate global values without dev players
+      if (!includeDevData) {
+        await Promise.all(page.items.map(async (stat) => {
+          if (stat.global) {
+            await stat.recalculateGlobalValue({ em, includeDevData: false })
+          }
+        }))
+      }
 
       return page
     })
@@ -603,8 +606,7 @@ export class DataExporter {
         value = get(object, 'extra')
         return `"${JSON.stringify(value).replace(/"/g, '\'')}"`
       case 'globalValue':
-        value = get(object, 'hydratedGlobalValue')
-        return value ? String(value) : 'N/A'
+        return (object as GameStat).global ? String(get(object, 'globalValue')) : 'N/A'
       case 'playerAlias.id':
       case 'playerAlias.service':
       case 'playerAlias.identifier':

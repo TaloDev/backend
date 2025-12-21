@@ -1,6 +1,7 @@
 import { setTraceAttributes } from '@hyperdx/node-opentelemetry'
 import { IncomingHttpHeaders, OutgoingHttpHeaders } from 'http'
 import { Context, Next } from 'koa'
+import { isPublicHealthCheck } from './route-middleware'
 
 const DENYLIST = [
   'authorization',
@@ -88,7 +89,7 @@ function buildHeaders(prefix: 'request' | 'response', headers: IncomingHttpHeade
 }
 
 export default async function httpTracingMiddleware(ctx: Context, next: Next) {
-  if (ctx.path === '/public/health') {
+  if (isPublicHealthCheck(ctx)) {
     return await next()
   }
 

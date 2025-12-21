@@ -1,9 +1,9 @@
 import { Context, Next } from 'koa'
 import cors from '@koa/cors'
-import { isAPIRoute } from './route-middleware'
+import { isAPIRoute, isPublicHealthCheck } from './route-middleware'
 
 export default async function corsMiddleware(ctx: Context, next: Next): Promise<void> {
-  if (isAPIRoute(ctx)) {
+  if (isPublicHealthCheck(ctx) || isAPIRoute(ctx)) {
     return cors()(ctx, next)
   } else {
     return cors({

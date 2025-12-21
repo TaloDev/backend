@@ -54,4 +54,33 @@ describe('Game stats API service - snapshot flushing', () => {
     await handler.handle()
     expect(consoleSpy).not.toHaveBeenCalled()
   })
+
+  it('should recalculate global value when flushing global stat snapshots', async () => {
+    const [apiKey] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_STATS])
+    const stat = await new GameStatFactory([apiKey.game]).global().state(() => ({
+      globalValue: 0,
+      defaultValue: 0,
+      maxValue: 999,
+      maxChange: 99
+    })).one()
+
+    const player1 = await new PlayerFactory([apiKey.game]).one()
+    const playerStat1 = await new PlayerGameStatFactory().construct(player1, stat).state(() => ({ value: 10 })).one()
+
+    const player2 = await new PlayerFactory([apiKey.game]).one()
+    const playerStat2 = await new PlayerGameStatFactory().construct(player2, stat).state(() => ({ value: 25 })).one()
+
+    await em.persist([stat, playerStat1, playerStat2]).flush()
+
+    const handler = new FlushStatSnapshotsQueueHandler()
+    await handler.add(new PlayerGameStatSnapshot().construct(player1.aliases[0], playerStat1))
+    await handler.add(new PlayerGameStatSnapshot().construct(player2.aliases[0], playerStat2))
+
+    await handler.handle()
+
+    await vi.waitUntil(async () => {
+      await em.refresh(stat)
+      return stat.globalValue === 35
+    })
+  })
 })

@@ -17,6 +17,10 @@ function isAPICall(ctx: Context): boolean {
   return ctx.state.user?.api === true
 }
 
+export function isPublicHealthCheck(ctx: Context): boolean {
+  return ctx.path === '/public/health'
+}
+
 type RouteInfo = {
   isPublicRoute: boolean
   isProtectedRoute: boolean

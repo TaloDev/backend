@@ -30,23 +30,26 @@ export default class GameStatService extends Service {
 
     const em: EntityManager = req.ctx.em
     const game: Game = req.ctx.state.game
+    const includeDevData = req.ctx.state.includeDevData
 
     return withResponseCache({
-      key: `${GameStat.getIndexCacheKey(game)}-${withMetrics}-${metricsStartDate}-${metricsEndDate}`
+      key: `${GameStat.getIndexCacheKey(game)}-${withMetrics}-${metricsStartDate}-${metricsEndDate}-${includeDevData ? 'dev' : 'live'}`
     }, async () => {
       const stats = await em.repo(GameStat).find({ game })
       const globalStats = stats.filter((stat) => stat.global)
 
       if (globalStats.length > 0) {
-        await Promise.allSettled(
-          globalStats.map((stat) => stat.recalculateGlobalValue(req.ctx.state.includeDevData))
-        )
+        const promises = []
 
         if (withMetrics === '1') {
-          await Promise.allSettled(
-            globalStats.map((stat) => stat.loadMetrics(req.ctx.clickhouse, metricsStartDate, metricsEndDate))
-          )
+          promises.push(...globalStats.map((stat) => stat.loadMetrics(req.ctx.clickhouse, metricsStartDate, metricsEndDate)))
         }
+
+        if (!includeDevData) {
+          promises.push(...globalStats.map((stat) => stat.recalculateGlobalValue({ em, includeDevData: false })))
+        }
+
+        await Promise.allSettled(promises)
       }
 
       return {

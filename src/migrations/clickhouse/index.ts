@@ -43,7 +43,20 @@ const migrations: ClickHouseMigration[] = [
 export async function runClickHouseMigrations(clickhouse: ClickHouseClient) {
   console.info('Running ClickHouse migrations...')
 
-  await clickhouse.query({ query: CreateMigrationsTable })
+  // Get the actual database name from the client URL
+  // In tests, this will be the worker-specific database (e.g., gs_ch_test_w1)
+  const vitestPoolId = process.env.VITEST_POOL_ID
+  const dbName = vitestPoolId
+    ? `${process.env.CLICKHOUSE_DB}_w${vitestPoolId}`
+    : process.env.CLICKHOUSE_DB
+
+  // Replace template string references with actual database name
+  const createMigrationsTableQuery = CreateMigrationsTable.replace(
+    new RegExp(process.env.CLICKHOUSE_DB || 'gs_ch_test', 'g'),
+    dbName
+  )
+
+  await clickhouse.query({ query: createMigrationsTableQuery })
 
   const completedMigrations = await clickhouse.query({
     query: 'SELECT name FROM migrations',
@@ -56,7 +69,12 @@ export async function runClickHouseMigrations(clickhouse: ClickHouseClient) {
 
   for (const migration of pendingMigrations) {
     console.info(`Processing '${migration.name}'`)
-    const queries = migration.sql.split(';').filter((query) => query.trim() !== '')
+    // Replace database name in SQL to use worker-specific database
+    const processedSql = migration.sql.replace(
+      new RegExp(process.env.CLICKHOUSE_DB || 'gs_ch_test', 'g'),
+      dbName
+    )
+    const queries = processedSql.split(';').filter((query) => query.trim() !== '')
     for (const query of queries) {
       await clickhouse.query({ query })
     }

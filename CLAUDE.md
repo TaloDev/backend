@@ -26,12 +26,30 @@ npm run down            # Stop Docker containers
 
 ### Testing
 ```bash
-npm test                # Run all tests with Vitest
-npm test path/to/file   # Run specific test file
-npm test -- --coverage  # Run with coverage report
+npm test                           # Run all tests (parallel by default)
+npm test path/to/file              # Run specific test file
+npm test -- --coverage             # Run with coverage report
+npm test -- --no-file-parallelism  # Force sequential execution (debugging)
 ```
 
-Tests run against Docker containers and automatically backup/restore database state. Environment variables from `.env` are combined with `envs/.env.test`.
+Tests run against Docker containers with **parallel execution** enabled by default. Each test file runs in its own worker with isolated database environments.
+
+**Worker Isolation**:
+- MySQL: Separate database per worker (`gs_test_w1`, `gs_test_w2`, etc.)
+- Redis: Key prefixing per worker (`worker:1:*`, `worker:2:*`, etc.)
+- ClickHouse: Separate database per worker (`gs_ch_test_w1`, `gs_ch_test_w2`, etc.)
+
+Each worker automatically:
+- Creates its own databases on startup
+- Runs migrations independently
+- Cleans up databases on teardown
+
+**Troubleshooting**:
+- If tests fail with database errors, ensure Docker containers are running (`npm run up`)
+- Orphaned test databases can be cleaned manually: `./tests/cleanup-test-dbs.sh`
+- Default worker count is 4; adjust in `vitest.config.mts` based on machine capacity
+
+Environment variables from `.env` are combined with `envs/.env.test`.
 
 ### Building & Linting
 ```bash

@@ -7,9 +7,11 @@ export default defineConfig({
     setupFiles: './tests/setupTest.ts',
     poolOptions: {
       forks: {
-        singleFork: true
+        maxForks: 4,
+        minForks: 1
       }
     },
+    hookTimeout: 30_000,
     deps: {
       interopDefault: true
     },

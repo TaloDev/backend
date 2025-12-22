@@ -39,8 +39,29 @@ export default ormConfig // loaded in package.json
 
 let orm: Awaited<ReturnType<typeof MikroORM.init>>
 export async function getMikroORM() {
-  if (!orm || !(await orm.checkConnection())) {
-    orm = await MikroORM.init(ormConfig)
+  // Check if running in Vitest worker
+  const vitestPoolId = process.env.VITEST_POOL_ID
+  const dbName = vitestPoolId
+    ? `${process.env.DB_NAME}_w${vitestPoolId}`
+    : process.env.DB_NAME
+
+  // Check if ORM exists AND is for the correct database
+  if (orm && orm.config.get('dbName') === dbName) {
+    if (await orm.checkConnection()) {
+      return orm
+    }
   }
+
+  // Close existing ORM if database name changed
+  if (orm) {
+    await orm.close()
+  }
+
+  // Create new ORM with worker-specific database
+  orm = await MikroORM.init({
+    ...ormConfig,
+    dbName
+  })
+
   return orm
 }

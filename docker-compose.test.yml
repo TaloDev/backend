@@ -3,7 +3,6 @@ services:
     image: mysql:8.4
     command: --mysql-native-password=ON
     environment:
-      - MYSQL_DATABASE=${DB_NAME}
       - MYSQL_ROOT_PASSWORD=${DB_PASS}
     restart: always
     healthcheck:
@@ -35,7 +34,6 @@ services:
     environment:
       CLICKHOUSE_USER: ${CLICKHOUSE_USER}
       CLICKHOUSE_PASSWORD: ${CLICKHOUSE_PASSWORD}
-      CLICKHOUSE_DB: ${CLICKHOUSE_DB}
     restart: always
     ports:
       - ${CLICKHOUSE_PORT}:8123

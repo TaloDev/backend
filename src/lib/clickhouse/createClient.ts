@@ -94,8 +94,13 @@ function createClickHouseTracingProxyHandler(): ProxyHandler<ClickHouseClient> {
 }
 
 export default function createTracedClickHouseClient(): ClickHouseClient {
+  const vitestPoolId = process.env.VITEST_POOL_ID
+  const clickhouseDb = vitestPoolId
+    ? `${process.env.CLICKHOUSE_DB}_w${vitestPoolId}`
+    : process.env.CLICKHOUSE_DB
+
   const client = createClient({
-    url: `http://${process.env.CLICKHOUSE_USER}:${process.env.CLICKHOUSE_PASSWORD}@${process.env.CLICKHOUSE_HOST}:${process.env.CLICKHOUSE_PORT}/${process.env.CLICKHOUSE_DB}`,
+    url: `http://${process.env.CLICKHOUSE_USER}:${process.env.CLICKHOUSE_PASSWORD}@${process.env.CLICKHOUSE_HOST}:${process.env.CLICKHOUSE_PORT}/${clickhouseDb}`,
     request_timeout: 120_000
   })
 

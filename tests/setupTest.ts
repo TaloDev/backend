@@ -2,7 +2,7 @@ import init from '../src'
 import { createRedisConnection } from '../src/config/redis.config'
 
 async function truncateTables() {
-  global.em.execute('SET FOREIGN_KEY_CHECKS = 0;')
+  await global.em.execute('SET FOREIGN_KEY_CHECKS = 0;')
 
   const tables = await global.em.execute(`
     SELECT table_name as tableName
@@ -14,9 +14,9 @@ async function truncateTables() {
     await global.em.execute(`TRUNCATE TABLE \`${tableName}\`;`)
   }
 
-  global.em.execute('SET FOREIGN_KEY_CHECKS = 1;')
+  await global.em.execute('SET FOREIGN_KEY_CHECKS = 1;')
 
-  await (global.clickhouse).command({
+  await global.clickhouse.command({
     query: `TRUNCATE ALL TABLES from ${process.env.CLICKHOUSE_DB}`
   })
 }
@@ -43,5 +43,5 @@ beforeEach(async () => {
 afterAll(async () => {
   await global.em.getConnection().close(true)
   await global.clickhouse.close()
-  await redis.quit()
+  await global.redis.quit()
 })

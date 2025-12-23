@@ -60,6 +60,7 @@ import { AddGameChannelStoragePropKeyIndex } from './20250923194349AddGameChanne
 import { AddLeaderboardUniqueByPropsColumn } from './20251015211635AddLeaderboardUniqueByPropsColumn'
 import { AddLeaderboardEntryPropsDigestColumn } from './20251019231730AddLeaderboardEntryPropsDigestColumn'
 import { CreatePlayersToDeleteTable } from './20251102174957CreatePlayersToDeleteTable'
+import { CreatePlayerAliasSubscriptionTable } from './20251222221535CreatePlayerAliasSubscriptionTable'
 
 export default [
   {
@@ -309,5 +310,9 @@ export default [
   {
     name: 'CreatePlayersToDeleteTable',
     class: CreatePlayersToDeleteTable
+  },
+  {
+    name: 'CreatePlayerAliasSubscriptionTable',
+    class: CreatePlayerAliasSubscriptionTable
   }
 ]

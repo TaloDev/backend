@@ -23,6 +23,10 @@ export enum APIKeyScope {
   WRITE_PLAYERS = 'write:players',
   READ_EVENTS = 'read:events',
   WRITE_EVENTS = 'write:events',
+  READ_PLAYER_RELATIONSHIPS = 'read:playerRelationships',
+  WRITE_PLAYER_RELATIONSHIPS = 'write:playerRelationships',
+  READ_PLAYER_BROADCASTS = 'read:playerBroadcasts',
+  WRITE_PLAYER_BROADCASTS = 'write:playerBroadcasts',
   FULL_ACCESS = '*'
 }
 

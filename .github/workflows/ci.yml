@@ -32,7 +32,7 @@ jobs:
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
 
-  build-check:
+  type-check:
     runs-on: ubuntu-latest
 
     steps:

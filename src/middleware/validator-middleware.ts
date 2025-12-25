@@ -29,7 +29,7 @@ export function validator<T extends ZodSchema>(
     if (!result.success) {
       const errors: Record<string, string[]> = {}
       for (const issue of result.error.issues) {
-        const path = issue.path.join('.') || target
+        const path = issue.path.join('.')
         if (!errors[path]) {
           errors[path] = []
         }

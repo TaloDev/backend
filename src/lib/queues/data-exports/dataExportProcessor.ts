@@ -601,7 +601,7 @@ export class DataExporter {
         return (value as Date).toISOString()
       case 'gameActivityType':
         value = get(object, 'type')
-        return GameActivityType[(value as number)] ?? 'Unknown'
+        return GameActivityType[(value as number)]!
       case 'gameActivityExtra':
         value = get(object, 'extra')
         return `"${JSON.stringify(value).replace(/"/g, '\'')}"`

@@ -3,6 +3,7 @@ import Organisation from '../../entities/organisation'
 import OrganisationPricingPlan from '../../entities/organisation-pricing-plan'
 import PricingPlan from '../../entities/pricing-plan'
 import initStripe from './initStripe'
+import assert from 'node:assert'
 
 export default async function createDefaultPricingPlan(em: EntityManager, organisation: Organisation): Promise<OrganisationPricingPlan> {
   const stripe = initStripe()
@@ -13,9 +14,7 @@ export default async function createDefaultPricingPlan(em: EntityManager, organi
   if (process.env.STRIPE_KEY && defaultPlan) {
     const prices = await stripe!.prices.list({ product: defaultPlan.stripeId, active: true })
     const activePrice = prices.data[0]
-    if (!activePrice) {
-      throw new Error('No active price found for default pricing plan')
-    }
+    assert(activePrice)
     price = activePrice.id
   } else {
     // self-hosted logic

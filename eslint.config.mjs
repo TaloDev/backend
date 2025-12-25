@@ -28,7 +28,8 @@ export default [
         ...globals.node,
         ...globals.es2021,
         'clay': 'readonly',
-        NodeJS: 'readonly'
+        NodeJS: 'readonly',
+        Bun: false
       }
     },
     plugins: {

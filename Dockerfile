@@ -14,5 +14,4 @@ FROM base AS prod
 ENV NODE_ENV=production
 RUN bun install --frozen-lockfile
 COPY src ./src
-RUN bun run build
-CMD [ "bun", "run", "dist/index.js" ]
+CMD [ "bun", "run", "src/index.ts" ]

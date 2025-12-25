@@ -51,7 +51,6 @@
     "husky": "^9.0.11",
     "lint-staged": ">=10",
     "supertest": "^7.0.0",
-    "ts-node": "^10.7.0",
     "typescript": "^5.9.3",
     "unzipper": "^0.12.3",
     "vite": "^6.4.1",

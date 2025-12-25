@@ -9,7 +9,7 @@ export class CreateIntegrationsTable extends Migration {
     this.addSql('alter table `integration` add constraint `integration_game_id_foreign` foreign key (`game_id`) references `game` (`id`) on update cascade;')
   }
 
-  async down(): Promise<void> {
+  override async down(): Promise<void> {
     this.addSql('drop table if exists `integration`;')
   }
 

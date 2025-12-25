@@ -50,6 +50,7 @@ export default class PlayerAuthAPIService extends APIService {
 
     const player = await createPlayerFromIdentifyRequest(req, key, PlayerAliasService.TALO, realIdentifier)
     const alias = player?.aliases[0]
+    assert(alias)
 
     alias.player.auth = new PlayerAuth()
     alias.player.auth.password = await bcrypt.hash(password, 10)

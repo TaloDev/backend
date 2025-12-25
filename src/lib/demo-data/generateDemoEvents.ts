@@ -9,6 +9,7 @@ import PlayerAlias from '../../entities/player-alias'
 import { formatDateForClickHouse } from '../clickhouse/formatDateTime'
 import { rand, randNumber } from '@ngneat/falso'
 import { ClickHouseClient } from '@clickhouse/client'
+import assert from 'node:assert'
 
 type DemoEvent = {
   name: string
@@ -58,6 +59,7 @@ function getDemoEventProps(demoEvent: DemoEvent) {
   const eventProps: Prop[] = []
 
   for (const key in demoEvent.props) {
+    assert(demoEvent.props[key])
     eventProps.push(new Prop(key, demoEvent.props[key]()))
   }
 
@@ -94,6 +96,7 @@ async function getEventCount(clickhouse: ClickHouseClient, game: Game, startDate
       format: 'JSONEachRow'
     }).then((res) => res.json<{ count: string }>())
 
+    assert(result[0])
     return Number(result[0].count)
   /* v8 ignore next 4 */
   } catch (err) {
@@ -138,9 +141,10 @@ export async function generateDemoEvents(req: Request): Promise<void> {
         for (const demoEvent of demoEvents) {
           let numToGenerate = randNumber({ min: 1, max: 3 })
 
-          if (prev[demoEvent.name]) {
-            const increaseAmount = Math.max(randNumber({ max: 3 }) === 0 ? 0 : 1, Math.ceil(prev[demoEvent.name] * (randNumber({ max: 30 }) / 100)))
-            numToGenerate = prev[demoEvent.name] + (increaseAmount * (randNumber({ max: 2 }) === 0 ? -1 : 1))
+          const previousDemoEvent = prev[demoEvent.name]
+          if (previousDemoEvent) {
+            const increaseAmount = Math.max(randNumber({ max: 3 }) === 0 ? 0 : 1, Math.ceil(previousDemoEvent * (randNumber({ max: 30 }) / 100)))
+            numToGenerate = previousDemoEvent + (increaseAmount * (randNumber({ max: 2 }) === 0 ? -1 : 1))
           }
 
           prev[demoEvent.name] = numToGenerate

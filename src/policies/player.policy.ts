@@ -3,6 +3,7 @@ import { PolicyDenial, Request, PolicyResponse } from 'koa-clay'
 import Player from '../entities/player'
 import { UserType } from '../entities/user'
 import UserTypeGate from './user-type-gate'
+import assert from 'node:assert'
 
 export default class PlayerPolicy extends Policy {
   async getPlayer(id: string): Promise<Player | null> {
@@ -24,6 +25,7 @@ export default class PlayerPolicy extends Policy {
 
   async get(req: Request): Promise<PolicyResponse> {
     const { id } = req.params
+    assert(id)
 
     const player = await this.getPlayer(id)
     if (!player) return new PolicyDenial({ message: 'Player not found' }, 404)
@@ -43,6 +45,7 @@ export default class PlayerPolicy extends Policy {
     if (this.isAPICall()) return true
 
     const { id } = req.params
+    assert(id)
 
     const player = await this.getPlayer(id)
     if (!player) return new PolicyDenial({ message: 'Player not found' }, 404)
@@ -53,6 +56,7 @@ export default class PlayerPolicy extends Policy {
   @UserTypeGate([UserType.ADMIN], 'delete players')
   async delete(req: Request): Promise<PolicyResponse> {
     const { id } = req.params
+    assert(id)
 
     const player = await this.getPlayer(id)
     if (!player) return new PolicyDenial({ message: 'Player not found' }, 404)
@@ -62,6 +66,7 @@ export default class PlayerPolicy extends Policy {
 
   async getEvents(req: Request): Promise<PolicyResponse> {
     const { id } = req.params
+    assert(id)
 
     const player = await this.getPlayer(id)
     if (!player) return new PolicyDenial({ message: 'Player not found' }, 404)
@@ -71,6 +76,7 @@ export default class PlayerPolicy extends Policy {
 
   async getStats(req: Request): Promise<PolicyResponse> {
     const { id } = req.params
+    assert(id)
 
     const player = await this.getPlayer(id)
     if (!player) return new PolicyDenial({ message: 'Player not found' }, 404)
@@ -80,6 +86,7 @@ export default class PlayerPolicy extends Policy {
 
   async getSaves(req: Request): Promise<PolicyResponse> {
     const { id } = req.params
+    assert(id)
 
     const player = await this.getPlayer(id)
     if (!player) return new PolicyDenial({ message: 'Player not found' }, 404)
@@ -90,6 +97,7 @@ export default class PlayerPolicy extends Policy {
   @UserTypeGate([UserType.ADMIN], 'view player auth activities')
   async getAuthActivities(req: Request): Promise<PolicyResponse> {
     const { id } = req.params
+    assert(id)
 
     const player = await this.getPlayer(id)
     if (!player) return new PolicyDenial({ message: 'Player not found' }, 404)

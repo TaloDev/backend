@@ -13,6 +13,7 @@ import checkScope from '../../policies/checkScope'
 import { validateAuthSessionToken } from '../../middleware/player-auth-middleware'
 import { setCurrentPlayerState } from '../../middleware/current-player-middleware'
 import { ClickHouseClient } from '@clickhouse/client'
+import assert from 'node:assert'
 
 export async function findAliasFromIdentifyRequest(
   req: Request,
@@ -96,6 +97,9 @@ export default class PlayerAPIService extends APIService {
     const { service, identifier } = req.query
     const em: EntityManager = req.ctx.em
 
+    assert(service)
+    assert(identifier)
+
     const key = await this.getAPIKey(req.ctx)
     let alias: PlayerAlias | null = null
     let justCreated = false
@@ -109,6 +113,7 @@ export default class PlayerAPIService extends APIService {
           req.ctx.throw(404, 'Player not found: Talo aliases must be created using the /v1/players/auth API')
         } else {
           const player = await createPlayerFromIdentifyRequest(req, key, service, realIdentifier)
+          assert(player?.aliases[0])
           alias = player?.aliases[0]
           justCreated = true
         }
@@ -164,6 +169,8 @@ export default class PlayerAPIService extends APIService {
   @ForwardTo('games.players', 'index')
   async search(req: Request): Promise<Response> {
     const { query } = req.query
+    assert(query)
+
     return await forwardRequest(req, {
       query: {
         search: query

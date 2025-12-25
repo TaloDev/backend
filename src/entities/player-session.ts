@@ -21,14 +21,14 @@ export default class PlayerSession extends ClickHouseEntity<ClickHousePlayerSess
   startedAt: Date = new Date()
   endedAt: Date | null = null
 
-  construct(player: Player): this {
+  override construct(player: Player): this {
     this.player = player
     this.game = player.game
 
     return this
   }
 
-  toInsertable(): ClickHousePlayerSession {
+  override toInsertable(): ClickHousePlayerSession {
     return {
       id: this.id,
       player_id: this.player.id,
@@ -45,7 +45,7 @@ export default class PlayerSession extends ClickHouseEntity<ClickHousePlayerSess
     this.id = v4()
   }
 
-  async hydrate(em: EntityManager, data: ClickHousePlayerSession): Promise<this> {
+  override async hydrate(em: EntityManager, data: ClickHousePlayerSession): Promise<this> {
     const player = await em.repo(Player).findOneOrFail(data.player_id)
 
     this.construct(player)

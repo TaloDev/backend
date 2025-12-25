@@ -23,6 +23,7 @@ import { pageValidation } from '../lib/pagination/pageValidation'
 import { withResponseCache } from '../lib/perf/responseCache'
 import { deletePlayersFromDB } from '../tasks/deletePlayers'
 import { deferClearResponseCache } from '../lib/perf/responseCacheQueue'
+import assert from 'node:assert'
 
 const propsValidation = async (val: unknown): Promise<ValidationCondition[]> => [
   {
@@ -398,6 +399,7 @@ export default class PlayerService extends Service {
     }).then((res) => res.json<ClickHouseEvent & { total_count: string }>())
 
     const events = await Event.massHydrate(em, results, clickhouse, true)
+    assert(results[0])
     const count = results.length > 0 ? Number(results[0].total_count) : 0
 
     return {

@@ -5,6 +5,7 @@ import dateValidationSchema from '../lib/dates/dateValidationSchema'
 import { formatDateForClickHouse } from '../lib/clickhouse/formatDateTime'
 import { ClickHouseClient } from '@clickhouse/client'
 import { millisecondsInDay } from 'date-fns/constants'
+import assert from 'node:assert'
 
 type EventData = {
   name: string
@@ -58,6 +59,7 @@ function fillDateGaps(
 
   for (const seriesName of Object.keys(data)) {
     const eventData = data[seriesName]
+    assert(eventData)
     const filledData: EventData[] = []
 
     const eventsByDate = new Map<number, EventData>()
@@ -82,8 +84,10 @@ function fillDateGaps(
     }
 
     for (let i = 0; i < filledData.length; i++) {
+      const item = filledData[i]
+      assert(item)
       const previousEvent = i > 0 ? filledData[i - 1] : undefined
-      filledData[i].change = calculateChange(filledData[i].count, previousEvent)
+      item.change = calculateChange(item.count, previousEvent)
     }
 
     result[seriesName] = filledData
@@ -105,6 +109,8 @@ export default class EventService extends Service {
 
     const clickhouse: ClickHouseClient = req.ctx.clickhouse
 
+    assert(startDateQuery)
+    assert(endDateQuery)
     const startDate = formatDateForClickHouse(new Date(startDateQuery))
     const endDate = formatDateForClickHouse(endOfDay(new Date(endDateQuery)))
 
@@ -138,7 +144,7 @@ export default class EventService extends Service {
         data[event.name] = []
       }
 
-      data[event.name].push({
+      data[event.name]?.push({
         name: event.name,
         date: Number(event.date),
         count: Number(event.count),
@@ -174,6 +180,8 @@ export default class EventService extends Service {
     const { eventName, startDate: startDateQuery, endDate: endDateQuery } = req.query
     const clickhouse: ClickHouseClient = req.ctx.clickhouse
 
+    assert(startDateQuery)
+    assert(endDateQuery)
     const startDate = formatDateForClickHouse(new Date(startDateQuery))
     const endDate = formatDateForClickHouse(endOfDay(new Date(endDateQuery)))
 

@@ -12,7 +12,7 @@ export class CreatePlayerAuthTable extends Migration {
     this.addSql('alter table `player_alias` modify `service` enum(\'steam\', \'epic\', \'username\', \'email\', \'custom\', \'talo\') not null;')
   }
 
-  async down(): Promise<void> {
+  override async down(): Promise<void> {
     this.addSql('alter table `player` drop foreign key `player_auth_id_foreign`;')
 
     this.addSql('drop table if exists `player_auth`;')

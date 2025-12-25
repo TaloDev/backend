@@ -14,6 +14,7 @@ import createClickHouseClient from '../lib/clickhouse/createClient'
 import { captureException } from '@sentry/node'
 import { ClickHouseClient } from '@clickhouse/client'
 import checkGroupMemberships from '../lib/groups/checkGroupMemberships'
+import assert from 'node:assert'
 
 @Entity()
 export default class Player {
@@ -112,7 +113,9 @@ export default class Player {
           return
         }
 
-        const currentSession = await new PlayerSession().hydrate(em, clickhouseSessions[0])
+        const session = clickhouseSessions[0]
+        assert(session)
+        const currentSession = await new PlayerSession().hydrate(em, session)
         const prevSessionId = currentSession.id
         currentSession.endSession()
 

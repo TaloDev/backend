@@ -11,6 +11,7 @@ import UserPinnedGroup from '../entities/user-pinned-group'
 import { withResponseCache } from '../lib/perf/responseCache'
 import { createHash } from 'crypto'
 import { deferClearResponseCache } from '../lib/perf/responseCacheQueue'
+import assert from 'node:assert'
 
 export default class PlayerGroupService extends Service {
   @Route({
@@ -230,6 +231,7 @@ export default class PlayerGroupService extends Service {
 
     return withResponseCache({ key: hash }, async () => {
       const group = new PlayerGroup(req.ctx.state.game)
+      assert(rules)
       group.rules = this.buildRulesFromData(JSON.parse(decodeURI(rules)))
       group.ruleMode = ruleMode as RuleMode
 

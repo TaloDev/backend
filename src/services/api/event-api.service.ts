@@ -11,6 +11,7 @@ import { createHash } from 'crypto'
 import Redis from 'ioredis'
 import { FlushEventsQueueHandler } from '../../lib/queues/game-metrics/flush-events-queue-handler'
 import PlayerAlias from '../../entities/player-alias'
+import assert from 'node:assert'
 
 let queueHandler: FlushEventsQueueHandler
 
@@ -56,11 +57,11 @@ export default class EventAPIService extends APIService {
 
       for (const key of ['name', 'timestamp']) {
         if (!item[key]) {
-          errors[i].push(`Event is missing the key: ${key}${key === 'name' ? '' : ` (${item.name})`}`)
+          errors[i]?.push(`Event is missing the key: ${key}${key === 'name' ? '' : ` (${item.name})`}`)
         }
       }
 
-      if (errors[i].length === 0) {
+      if (errors[i]?.length === 0) {
         const event = new Event()
         event.construct(item.name, playerAlias.player.game)
         event.playerAlias = playerAlias
@@ -71,21 +72,21 @@ export default class EventAPIService extends APIService {
             event.setProps(item.props.map((prop: Prop) => new Prop(prop.key, prop.value)))
           } catch (err) {
             if (err instanceof PropSizeError) {
-              errors[i].push(`${err.message} (${item.name})`)
+              errors[i]?.push(`${err.message} (${item.name})`)
             /* v8 ignore next 3 */
             } else {
               throw err
             }
           }
         } else if (item.props) {
-          errors[i].push(`Props must be an array (${item.name})`)
+          errors[i]?.push(`Props must be an array (${item.name})`)
         }
 
         if (!isValid(event.createdAt)) {
-          errors[i].push(`Event timestamp is invalid (${item.name})`)
+          errors[i]?.push(`Event timestamp is invalid (${item.name})`)
         }
 
-        if (errors[i].length === 0) {
+        if (errors[i]?.length === 0) {
           eventsMap.set(i, event)
         }
       }
@@ -115,7 +116,7 @@ export default class EventAPIService extends APIService {
     if (!results) {
       for (let i = 0; i < items.length; i++) {
         if (eventsMap.has(i)) {
-          errors[i].push('Redis pipeline failed')
+          errors[i]?.push('Redis pipeline failed')
         }
       }
     /* v8 ignore stop */
@@ -124,16 +125,18 @@ export default class EventAPIService extends APIService {
       for (const index of Array.from(eventsMap.keys())) {
         const item = items[index]
         // each event has 2 operations (setnx + expire), so we check the setnx result
-        const [err, result] = results[resultIndex * 2]
+        const resultPair = results[resultIndex * 2]
+        assert(resultPair)
+        const [err, result] = resultPair
 
         /* v8 ignore start */
         if (err) {
           eventsMap.delete(index)
-          errors[index].push(`Duplicate detection failed (${item.name}): ${err.message}`)
+          errors[index]?.push(`Duplicate detection failed (${item.name}): ${err.message}`)
         /* v8 ignore stop */
         } else if (result !== 1) {
           eventsMap.delete(index)
-          errors[index].push(`Duplicate event detected (${item.name})`)
+          errors[index]?.push(`Duplicate event detected (${item.name})`)
         }
         resultIndex++
       }

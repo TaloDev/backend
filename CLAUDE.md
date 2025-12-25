@@ -45,8 +45,8 @@ Tests run against Docker containers and automatically backup/restore database st
 
 ### Building & Linting
 ```bash
-bun run build           # Compile TypeScript
-bun run lint            # Run ESLint
+bunx tsc -p tsconfig.build.json   # Check types
+bun run lint                      # Run ESLint
 ```
 
 ### Database Migrations

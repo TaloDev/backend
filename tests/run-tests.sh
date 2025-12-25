@@ -25,9 +25,4 @@ bunx mikro-orm migration:up
 bun ./tests/migrateClickHouse.ts
 echo "\n"
 
-if [ -z "$EXPOSE_GC" ]
-then
-  bunx vitest "$@"
-else
-  bunx --expose-gc vitest "$@"
-fi
+bunx vitest "$@"

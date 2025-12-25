@@ -238,7 +238,7 @@ src/
 ### Adding a New Entity
 
 1. Create entity in `src/entities/my-entity.ts` with decorators
-2. Run `npm run migration:create` to generate migration
+2. Run `bun run migration:create` to generate migration
 3. Rename and register migration in `src/migrations/index.ts`
 4. MikroORM will auto-migrate on next startup
 

@@ -7,11 +7,12 @@ HEALTHCHECK --start-period=60s \
   CMD curl -f -s http://localhost/public/health || exit 1
 
 FROM base AS dev
-RUN bun ci
+RUN bun install --frozen-lockfile
 CMD [ "bun", "run", "watch" ]
 
 FROM base AS prod
 ENV NODE_ENV=production
 RUN bun install --frozen-lockfile
-COPY src .
-CMD [ "bun", "index.ts" ]
+COPY src ./src
+RUN bun run build
+CMD [ "bun", "run", "dist/index.js" ]

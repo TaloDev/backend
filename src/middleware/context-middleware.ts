@@ -1,6 +1,6 @@
 import { createMiddleware } from 'hono/factory'
 import { EntityManager } from '@mikro-orm/mysql'
-import assert from 'assert'
+import assert from 'node:assert'
 
 export const contextMiddleware = createMiddleware(async (c, next) => {
   const koa = c.env.koaCtx

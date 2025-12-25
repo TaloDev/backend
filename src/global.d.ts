@@ -4,7 +4,7 @@ import Koa from 'koa'
 import { ClickHouseClient } from '@clickhouse/client'
 import { ClayDocs } from 'koa-clay'
 import Redis from 'ioredis'
-import { DocsRegistry } from './lib/hono-docs/registry'
+import { DocsRegistry } from './lib/docs/docs-registry'
 
 declare global {
   // clay (legacy, will be removed)

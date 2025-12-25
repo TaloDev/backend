@@ -8,23 +8,25 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: oven-sh/setup-bun@v2
         with:
           node-version: 24
 
       - uses: actions/cache@v4
         with:
-          path: '**/node_modules'
-          key: ${{ runner.os }}-modules-${{ hashFiles('**/package-lock.json') }}
+          path: ~/.bun/install/cache
+          key: ${{ runner.os }}-bun-${{ hashFiles('**/bun.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-bun-
 
       - name: Install deps
-        run: npm ci --prefer-offline
+        run: bun install --frozen-lockfile
 
       - name: Setup environment
         run: cp envs/.env.dev .env
 
       - name: Run tests
-        run: npm test -- --coverage
+        run: bun run test -- --coverage
 
       - uses: codecov/codecov-action@v4
         with:
@@ -35,40 +37,44 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: oven-sh/setup-bun@v2
         with:
           node-version: 24
 
       - uses: actions/cache@v4
         with:
-          path: '**/node_modules'
-          key: ${{ runner.os }}-modules-${{ hashFiles('**/package-lock.json') }}
+          path: ~/.bun/install/cache
+          key: ${{ runner.os }}-bun-${{ hashFiles('**/bun.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-bun-
 
       - name: Install deps
-        run: npm ci --prefer-offline
+        run: bun install --frozen-lockfile
 
       - name: Type check
         run: npx tsc --noEmit
 
       - name: Build
-        run: npm run build
+        run: bun build-check
 
   lint:
     runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: oven-sh/setup-bun@v2
         with:
           node-version: 24
 
       - uses: actions/cache@v4
         with:
-          path: '**/node_modules'
-          key: ${{ runner.os }}-modules-${{ hashFiles('**/package-lock.json') }}
+          path: ~/.bun/install/cache
+          key: ${{ runner.os }}-bun-${{ hashFiles('**/bun.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-bun-
 
       - name: Install deps
-        run: npm ci --prefer-offline
+        run: bun install --frozen-lockfile
 
       - name: Lint
-        run: npx eslint
+        run: bunx eslint

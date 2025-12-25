@@ -5,6 +5,7 @@ import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
 import PlayerFactory from '../../../fixtures/PlayerFactory'
 import createSocketIdentifyMessage from '../../../utils/createSocketIdentifyMessage'
 import createTestSocket from '../../../utils/createTestSocket'
+import assert from 'node:assert'
 
 describe('Game channel API service - invite', () => {
   it('should invite a player to a channel if the inviter is the owner', async () => {
@@ -13,6 +14,9 @@ describe('Game channel API service - invite', () => {
     const channel = await new GameChannelFactory(apiKey.game).one()
     const owner = await new PlayerFactory([apiKey.game]).one()
     const invitee = await new PlayerFactory([apiKey.game]).one()
+
+    assert(owner.aliases[0])
+    assert(invitee.aliases[0])
 
     channel.owner = owner.aliases[0]
     await em.persistAndFlush([channel, owner, invitee])
@@ -33,6 +37,9 @@ describe('Game channel API service - invite', () => {
     const invitee = await new PlayerFactory([apiKey.game]).one()
     await em.persistAndFlush([channel, nonOwner, invitee])
 
+    assert(nonOwner.aliases[0])
+    assert(invitee.aliases[0])
+
     const res = await request(app)
       .post(`/v1/game-channels/${channel.id}/invite`)
       .auth(token, { type: 'bearer' })
@@ -51,6 +58,9 @@ describe('Game channel API service - invite', () => {
     const channel = await new GameChannelFactory(apiKey.game).one()
     const owner = await new PlayerFactory([apiKey.game]).one()
     const invitee = await new PlayerFactory([apiKey.game]).one()
+
+    assert(owner.aliases[0])
+    assert(invitee.aliases[0])
 
     channel.owner = owner.aliases[0]
     await em.persistAndFlush([channel, owner, invitee])
@@ -86,13 +96,16 @@ describe('Game channel API service - invite', () => {
 
     const channel = await new GameChannelFactory(apiKey.game).one()
     const player = await new PlayerFactory([apiKey.game]).one()
-    await em.persistAndFlush(channel)
+    await em.persistAndFlush([channel, player])
+
+    const alias = player.aliases[0]
+    assert(alias)
 
     const res = await request(app)
       .post('/v1/game-channels/54252/invite')
       .send({ inviteeAliasId: 32144 })
       .auth(token, { type: 'bearer' })
-      .set('x-talo-alias', String(player.aliases[0].id))
+      .set('x-talo-alias', String(alias.id))
       .expect(404)
 
     expect(res.body).toStrictEqual({
@@ -106,6 +119,7 @@ describe('Game channel API service - invite', () => {
     const channel = await new GameChannelFactory(apiKey.game).one()
     const owner = await new PlayerFactory([apiKey.game]).one()
 
+    assert(owner.aliases[0])
     channel.owner = owner.aliases[0]
     await em.persistAndFlush([channel, owner])
 
@@ -127,6 +141,7 @@ describe('Game channel API service - invite', () => {
     const channel = await new GameChannelFactory(apiKey.game).one()
     const owner = await new PlayerFactory([apiKey.game]).one()
 
+    assert(owner.aliases[0])
     channel.owner = owner.aliases[0]
     await em.persistAndFlush([channel, owner])
 
@@ -150,10 +165,16 @@ describe('Game channel API service - invite', () => {
     ])
 
     const channel = await new GameChannelFactory(player.game).one()
-    channel.owner = player.aliases[0]
-    channel.members.add(player.aliases[0])
+
+    const alias = player.aliases[0]
+    assert(alias)
+    channel.owner = alias
+    channel.members.add(alias)
 
     const invitee = await new PlayerFactory([player.game]).one()
+    const inviteeAlias = invitee.aliases[0]
+    assert(inviteeAlias)
+
     await em.persistAndFlush([channel, player, invitee])
 
     await createTestSocket(`/?ticket=${ticket}`, async (client) => {
@@ -161,13 +182,13 @@ describe('Game channel API service - invite', () => {
       await request(app)
         .post(`/v1/game-channels/${channel.id}/invite`)
         .auth(token, { type: 'bearer' })
-        .set('x-talo-alias', String(player.aliases[0].id))
-        .send({ inviteeAliasId: invitee.aliases[0].id })
+        .set('x-talo-alias', String(alias.id))
+        .send({ inviteeAliasId: inviteeAlias.id })
         .expect(204)
       await client.expectJson((actual) => {
         expect(actual.res).toBe('v1.channels.player-joined')
         expect(actual.data.channel.id).toBe(channel.id)
-        expect(actual.data.playerAlias.id).toBe(invitee.aliases[0].id)
+        expect(actual.data.playerAlias.id).toBe(inviteeAlias.id)
       })
     })
   })

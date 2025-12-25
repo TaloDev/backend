@@ -13,6 +13,7 @@ import AxiosMockAdapter from 'axios-mock-adapter'
 import axios from 'axios'
 import { IntegrationType } from '../../../src/entities/integration'
 import SteamworksIntegrationEvent from '../../../src/entities/steamworks-integration-event'
+import assert from 'node:assert'
 
 describe('Game stat service - updatePlayerStat', () => {
   const axiosMock = new AxiosMockAdapter(axios)
@@ -169,10 +170,12 @@ describe('Game stat service - updatePlayerStat', () => {
     const stat = await new GameStatFactory([game]).state(() => ({ maxChange: 99, maxValue: 3000 })).one()
     const player = await new PlayerFactory([game]).withSteamAlias().one()
     const playerStat = await new PlayerGameStatFactory().construct(player, stat).state(() => ({ value: 90 })).one()
+    const alias = player.aliases[0]
+    assert(alias)
 
     const config = await new IntegrationConfigFactory().state(() => ({ syncStats: true })).one()
     const integration = await new IntegrationFactory().construct(IntegrationType.STEAMWORKS, game, config).one()
-    await em.persistAndFlush([integration, stat, player])
+    await em.persistAndFlush([integration, stat, player, playerStat])
 
     await request(app)
       .patch(`/games/${game.id}/game-stats/${stat.id}/player-stats/${playerStat.id}`)
@@ -185,7 +188,7 @@ describe('Game stat service - updatePlayerStat', () => {
     const event = await em.getRepository(SteamworksIntegrationEvent).findOneOrFail({ integration })
     expect(event.request).toStrictEqual({
       url: 'https://partner.steam-api.com/ISteamUserStats/SetUserStatsForGame/v1',
-      body: `appid=${config.appId}&steamid=${player.aliases[0].identifier}&count=1&name%5B0%5D=${stat.internalName}&value%5B0%5D=20`,
+      body: `appid=${config.appId}&steamid=${alias.identifier}&count=1&name%5B0%5D=${stat.internalName}&value%5B0%5D=20`,
       method: 'POST'
     })
   })

@@ -1,4 +1,4 @@
-name: Node tests
+name: Tests
 
 on: push
 

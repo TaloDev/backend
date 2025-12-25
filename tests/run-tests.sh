@@ -27,7 +27,7 @@ echo "\n"
 
 if [ -z "$EXPOSE_GC" ]
 then
-  node --trace-warnings ./node_modules/.bin/vitest "$@"
+  bunx vitest "$@"
 else
-  node --expose-gc --trace-warnings ./node_modules/.bin/vitest "$@" --logHeapUsage
+  bunx --expose-gc vitest "$@"
 fi

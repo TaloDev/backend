@@ -5,6 +5,7 @@ import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
 import PlayerFactory from '../../../fixtures/PlayerFactory'
 import createSocketIdentifyMessage from '../../../utils/createSocketIdentifyMessage'
 import createTestSocket from '../../../utils/createTestSocket'
+import assert from 'node:assert'
 
 describe('Game channel API service - join', () => {
   it('should join a channel if the scope is valid', async () => {
@@ -13,6 +14,8 @@ describe('Game channel API service - join', () => {
     const channel = await new GameChannelFactory(apiKey.game).one()
     const player = await new PlayerFactory([apiKey.game]).one()
     await em.persistAndFlush([channel, player])
+
+    assert(player.aliases[0])
 
     const res = await request(app)
       .post(`/v1/game-channels/${channel.id}/join`)
@@ -31,6 +34,8 @@ describe('Game channel API service - join', () => {
     const player = await new PlayerFactory([apiKey.game]).one()
     await em.persistAndFlush([channel, player])
 
+    assert(player.aliases[0])
+
     await request(app)
       .post(`/v1/game-channels/${channel.id}/join`)
       .auth(token, { type: 'bearer' })
@@ -43,13 +48,16 @@ describe('Game channel API service - join', () => {
 
     const channel = await new GameChannelFactory(apiKey.game).one()
     const player = await new PlayerFactory([apiKey.game]).one()
-    channel.members.add(player.aliases[0])
-    await em.persistAndFlush(channel)
+    const alias = player.aliases[0]
+    assert(alias)
+    channel.members.add(alias)
+
+    await em.persistAndFlush([channel, player])
 
     const res = await request(app)
       .post(`/v1/game-channels/${channel.id}/join`)
       .auth(token, { type: 'bearer' })
-      .set('x-talo-alias', String(player.aliases[0].id))
+      .set('x-talo-alias', String(alias.id))
       .expect(200)
 
     expect(res.body.channel.id).toBe(channel.id)
@@ -78,7 +86,9 @@ describe('Game channel API service - join', () => {
 
     const channel = await new GameChannelFactory(apiKey.game).one()
     const player = await new PlayerFactory([apiKey.game]).one()
-    await em.persistAndFlush(channel)
+    await em.persistAndFlush([channel, player])
+
+    assert(player.aliases[0])
 
     const res = await request(app)
       .post('/v1/game-channels/54252/join')
@@ -101,17 +111,20 @@ describe('Game channel API service - join', () => {
     const channel = await new GameChannelFactory(player.game).one()
     await em.persistAndFlush([channel, player])
 
+    const alias = player.aliases[0]
+    assert(alias)
+
     await createTestSocket(`/?ticket=${ticket}`, async (client) => {
       await client.identify(identifyMessage)
       await request(app)
         .post(`/v1/game-channels/${channel.id}/join`)
         .auth(token, { type: 'bearer' })
-        .set('x-talo-alias', String(player.aliases[0].id))
+        .set('x-talo-alias', String(alias.id))
         .expect(200)
       await client.expectJson((actual) => {
         expect(actual.res).toBe('v1.channels.player-joined')
         expect(actual.data.channel.id).toBe(channel.id)
-        expect(actual.data.playerAlias.id).toBe(player.aliases[0].id)
+        expect(actual.data.playerAlias.id).toBe(alias.id)
       })
     })
   })
@@ -123,6 +136,8 @@ describe('Game channel API service - join', () => {
     channel.private = true
     const player = await new PlayerFactory([apiKey.game]).one()
     await em.persistAndFlush([channel, player])
+
+    assert(player.aliases[0])
 
     const res = await request(app)
       .post(`/v1/game-channels/${channel.id}/join`)
@@ -140,6 +155,8 @@ describe('Game channel API service - join', () => {
 
     const player = await new PlayerFactory([apiKey.game]).one()
     await em.persistAndFlush(player)
+
+    assert(player.aliases[0])
 
     const res = await request(app)
       .post('/v1/game-channels/abc/join')

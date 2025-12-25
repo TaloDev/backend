@@ -12,6 +12,6 @@ CMD [ "bun", "run", "watch" ]
 
 FROM base AS prod
 ENV NODE_ENV=production
-RUN bun ci
+RUN bun install --frozen-lockfile
 COPY src .
 CMD [ "bun", "index.ts" ]

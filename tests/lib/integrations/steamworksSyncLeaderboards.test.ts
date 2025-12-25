@@ -14,6 +14,7 @@ import PlayerFactory from '../../fixtures/PlayerFactory'
 import LeaderboardEntryFactory from '../../fixtures/LeaderboardEntryFactory'
 import { randNumber, randText } from '@ngneat/falso'
 import { SteamworksLeaderboardEntry } from '../../../src/entities/steamworks-leaderboard-entry'
+import assert from 'node:assert'
 
 describe('Steamworks integration - sync leaderboards', () => {
   const axiosMock = new AxiosMockAdapter(axios)
@@ -294,13 +295,16 @@ describe('Steamworks integration - sync leaderboards', () => {
     }])
     axiosMock.onGet(`https://partner.steam-api.com/ISteamLeaderboards/GetLeaderboardsForGame/v2?appid=${integration.getConfig().appId}`).replyOnce(getLeaderboardsMock)
 
+    const alias = player.aliases[0]
+    assert(alias)
+
     const getEntriesMock = vi.fn((): [number, GetLeaderboardEntriesResponse] => [200, {
       leaderboardEntryInformation: {
         appID: 375290,
         leaderboardID: steamworksLeaderboardId,
         totalLeaderBoardEntryCount: 1,
         leaderboardEntries: [{
-          steamID: player.aliases[0].identifier,
+          steamID: alias.identifier,
           score: 239,
           rank: 21,
           ugcid: '-1'
@@ -374,6 +378,8 @@ describe('Steamworks integration - sync leaderboards', () => {
     expect(getLeaderboardsMock).toHaveBeenCalledTimes(1)
     expect(getEntriesMock).toHaveBeenCalledTimes(1)
     expect(createMock).toHaveBeenCalledTimes(1)
+
+    assert(player.aliases[0])
 
     const event = await em.getRepository(SteamworksIntegrationEvent).findOneOrFail({ integration }, { orderBy: { id: 'desc' } })
     expect(event.request).toStrictEqual({
@@ -553,6 +559,9 @@ describe('Steamworks integration - sync leaderboards', () => {
     }])
     axiosMock.onGet(`https://partner.steam-api.com/ISteamLeaderboards/GetLeaderboardsForGame/v2?appid=${integration.getConfig().appId}`).replyOnce(getLeaderboardsMock)
 
+    const alias = player.aliases[0]
+    assert(alias)
+
     const getEntriesMock = vi.fn((): [number, GetLeaderboardEntriesResponse] => [200, {
       leaderboardEntryInformation: {
         appID: 375290,
@@ -560,7 +569,7 @@ describe('Steamworks integration - sync leaderboards', () => {
         totalLeaderBoardEntryCount: 0,
         leaderboardEntries: [
           {
-            steamID: player.aliases[0].identifier,
+            steamID: alias.identifier,
             score: 50,
             rank: 1,
             ugcid: '-1'

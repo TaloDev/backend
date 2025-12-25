@@ -1,6 +1,7 @@
 import 'dotenv/config'
 import './lib/tracing/sentry-instrument'
 import './lib/tracing/enable-tracing'
+import './lib/docs/docs-registry'
 import Koa from 'koa'
 import loggerMiddleware from './middleware/logger-middleware'
 import bodyParser from 'koa-bodyparser'

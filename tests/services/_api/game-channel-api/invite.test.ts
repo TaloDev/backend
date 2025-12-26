@@ -86,7 +86,7 @@ describe('Game channel API service - invite', () => {
 
     const channel = await new GameChannelFactory(apiKey.game).one()
     const player = await new PlayerFactory([apiKey.game]).one()
-    await em.persistAndFlush(channel)
+    await em.persist([channel, player]).flush()
 
     const res = await request(app)
       .post('/v1/game-channels/54252/invite')

@@ -8,7 +8,7 @@ describe('User service - logout', () => {
 
     const session = new UserSession(user)
     session.userAgent = 'testybrowser'
-    await em.persistAndFlush(session)
+    await em.persist(session).flush()
 
     await request(app)
       .post('/users/logout')
@@ -16,7 +16,7 @@ describe('User service - logout', () => {
       .auth(token, { type: 'bearer' })
       .expect(204)
 
-    const sessions = await em.getRepository(UserSession).find({ user })
+    const sessions = await em.repo(UserSession).find({ user })
     expect(sessions).toHaveLength(0)
   })
 })

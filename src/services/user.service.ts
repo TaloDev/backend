@@ -41,8 +41,8 @@ export default class UserService extends Service {
     const userId: number = req.ctx.state.user.sub
     const userAgent = req.headers['user-agent']
 
-    const sessions = await em.getRepository(UserSession).find({ user: userId, userAgent })
-    await em.persist(sessions).flush()
+    const sessions = await em.repo(UserSession).find({ user: userId, userAgent })
+    await em.remove(sessions).flush()
     req.ctx.cookies.set('refreshToken', null, { expires: new Date(0) })
 
     return {

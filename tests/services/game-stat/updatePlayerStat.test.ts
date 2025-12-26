@@ -172,7 +172,7 @@ describe('Game stat service - updatePlayerStat', () => {
 
     const config = await new IntegrationConfigFactory().state(() => ({ syncStats: true })).one()
     const integration = await new IntegrationFactory().construct(IntegrationType.STEAMWORKS, game, config).one()
-    await em.persistAndFlush([integration, stat, player])
+    await em.persist([integration, stat, player, playerStat]).flush()
 
     await request(app)
       .patch(`/games/${game.id}/game-stats/${stat.id}/player-stats/${playerStat.id}`)

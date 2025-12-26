@@ -87,7 +87,7 @@ export default class Event extends ClickHouseEntity<ClickHouseEvent, [string, Ga
     }).filter((event) => !!event)
   }
 
-  construct(name: string, game: Game): this {
+  override construct(name: string, game: Game): this {
     this.name = name
     this.game = game
 
@@ -114,7 +114,7 @@ export default class Event extends ClickHouseEntity<ClickHouseEvent, [string, Ga
     })
   }
 
-  toInsertable(): ClickHouseEvent {
+  override toInsertable(): ClickHouseEvent {
     return {
       id: this.id,
       name: this.name,
@@ -134,7 +134,7 @@ export default class Event extends ClickHouseEntity<ClickHouseEvent, [string, Ga
     }))
   }
 
-  async hydrate(em: EntityManager, data: ClickHouseEvent, clickhouse: ClickHouseClient, loadProps: boolean = false): Promise<this> {
+  override async hydrate(em: EntityManager, data: ClickHouseEvent, clickhouse: ClickHouseClient, loadProps: boolean = false): Promise<this> {
     const game = await em.getRepository(Game).findOneOrFail(data.game_id)
     const playerAlias = await em.getRepository(PlayerAlias).findOneOrFail(data.player_alias_id)
 

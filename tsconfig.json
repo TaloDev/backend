@@ -13,6 +13,7 @@
     "skipLibCheck": true /* https://github.com/rollup/rollup/issues/5199 and https://github.com/vitejs/vite/issues/14513 */,
     "strict": true,
     "inlineSources": true,
+    "noImplicitOverride": true,
     // Set `sourceRoot` to  "/" to strip the build path prefix
     // from generated source code references.
     // This improves issue grouping in Sentry.

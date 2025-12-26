@@ -82,7 +82,7 @@ export default class PlayerGameStatSnapshot extends ClickHouseEntity<ClickHouseP
     }).filter((snapshot) => !!snapshot)
   }
 
-  construct(playerAlias: PlayerAlias, playerStat: PlayerGameStat): this {
+  override construct(playerAlias: PlayerAlias, playerStat: PlayerGameStat): this {
     this.playerAlias = playerAlias
     this.stat = playerStat.stat
 
@@ -92,7 +92,7 @@ export default class PlayerGameStatSnapshot extends ClickHouseEntity<ClickHouseP
     return this
   }
 
-  toInsertable(): ClickHousePlayerGameStatSnapshot {
+  override toInsertable(): ClickHousePlayerGameStatSnapshot {
     return {
       id: this.id,
       player_alias_id: this.playerAlias.id,
@@ -104,7 +104,7 @@ export default class PlayerGameStatSnapshot extends ClickHouseEntity<ClickHouseP
     }
   }
 
-  async hydrate(em: EntityManager, data: ClickHousePlayerGameStatSnapshot): Promise<this> {
+  override async hydrate(em: EntityManager, data: ClickHousePlayerGameStatSnapshot): Promise<this> {
     const playerStat = await em.repo(PlayerGameStat).findOneOrFail({
       player: {
         aliases: {

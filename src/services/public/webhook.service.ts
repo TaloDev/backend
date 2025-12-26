@@ -14,6 +14,7 @@ import PlanInvoice from '../../emails/plan-invoice-mail'
 import queueEmail from '../../lib/messaging/queueEmail'
 import PlanPaymentFailed from '../../emails/plan-payment-failed'
 import { getGlobalQueue } from '../../config/global-queues'
+import assert from 'node:assert'
 
 type RawRequest = KoaRequest & {
   rawBody: Buffer
@@ -30,9 +31,16 @@ export default class WebhookService extends Service {
     let event: Stripe.Event
 
     try {
+      const stripeSignature = req.headers['stripe-signature']
+      /* v8 ignore start */
+      if (!stripeSignature) {
+        throw new Error('Missing Stripe signature header')
+      }
+      /* v8 ignore stop */
+
       event = stripe!.webhooks.constructEvent(
         (req.ctx.request as RawRequest).rawBody,
-        req.headers['stripe-signature'],
+        stripeSignature,
         process.env.STRIPE_WEBHOOK_SECRET!
       )
     /* v8 ignore start */
@@ -89,7 +97,9 @@ export default class WebhookService extends Service {
 
     const orgPlan = await this.getOrganisationPricingPlan(req, subscription.customer as string)
 
-    const price = subscription.items.data[0].price
+    const subscriptionData = subscription.items.data[0]
+    assert(subscriptionData)
+    const price = subscriptionData.price
     const plan = await em.getRepository(PricingPlan).findOneOrFail({ stripeId: price.product as string })
 
     const prevEndDate = orgPlan.endDate
@@ -99,13 +109,12 @@ export default class WebhookService extends Service {
     orgPlan.status = subscription.status
     orgPlan.stripePriceId = price.id
     orgPlan.endDate = subscription.cancel_at_period_end
-      ? new Date(subscription.items.data[0].current_period_end * 1000)
+      ? new Date(subscriptionData.current_period_end * 1000)
       : null
 
     await em.flush()
 
     if (prevStripePriceId !== orgPlan.stripePriceId) {
-      const price = subscription.items.data[0].price
       const product = await stripe!.products.retrieve(price.product as string)
       await queueEmail(getGlobalQueue('email'), new PlanUpgraded(orgPlan.organisation, price, product))
     }

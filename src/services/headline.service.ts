@@ -9,6 +9,7 @@ import { ClickHouseClient } from '@clickhouse/client'
 import { getResultCacheOptions } from '../lib/perf/getResultCacheOptions'
 import { withResponseCache } from '../lib/perf/responseCache'
 import Game from '../entities/game'
+import assert from 'node:assert'
 
 const HEADLINES_CACHE_TTL_MS = 300_000
 const ONLINE_PLAYERS_CACHE_TTL_MS = 30_000
@@ -23,6 +24,9 @@ export default class HeadlineService extends Service {
   async newPlayers(req: Request): Promise<Response> {
     const { startDate, endDate } = req.query
     const em: EntityManager = req.ctx.em
+
+    assert(startDate)
+    assert(endDate)
 
     const game: Game = req.ctx.state.game
     const includeDevData = req.ctx.state.includeDevData
@@ -52,6 +56,9 @@ export default class HeadlineService extends Service {
   async returningPlayers(req: Request): Promise<Response> {
     const { startDate, endDate } = req.query
     const em: EntityManager = req.ctx.em
+
+    assert(startDate)
+    assert(endDate)
 
     const game: Game = req.ctx.state.game
     const includeDevData = req.ctx.state.includeDevData
@@ -94,6 +101,8 @@ export default class HeadlineService extends Service {
       key: `events-${game.id}-${includeDevData}-${startDateQuery}-${endDateQuery}`,
       ttl: HEADLINES_CACHE_TTL_MS / 1000
     }, async () => {
+      assert(startDateQuery)
+      assert(endDateQuery)
       const startDate = formatDateForClickHouse(startOfDay(new Date(startDateQuery)))
       const endDate = formatDateForClickHouse(endOfDay(new Date(endDateQuery)))
 
@@ -112,6 +121,7 @@ export default class HeadlineService extends Service {
         query,
         format: 'JSONEachRow'
       }).then((res) => res.json<{ count: string }>())
+      assert(result[0])
 
       return {
         status: 200,
@@ -138,6 +148,8 @@ export default class HeadlineService extends Service {
       key: `unique-event-submitters-${game.id}-${includeDevData}-${startDateQuery}-${endDateQuery}`,
       ttl: HEADLINES_CACHE_TTL_MS / 1000
     }, async () => {
+      assert(startDateQuery)
+      assert(endDateQuery)
       const startDate = formatDateForClickHouse(startOfDay(new Date(startDateQuery)))
       const endDate = formatDateForClickHouse(endOfDay(new Date(endDateQuery)))
 
@@ -156,6 +168,7 @@ export default class HeadlineService extends Service {
         query,
         format: 'JSONEachRow'
       }).then((res) => res.json<{ uniqueSubmitters: string }>())
+      assert(result[0])
 
       return {
         status: 200,
@@ -231,6 +244,8 @@ export default class HeadlineService extends Service {
       key: `total-sessions-${game.id}-${includeDevData}-${startDateQuery}-${endDateQuery}`,
       ttl: HEADLINES_CACHE_TTL_MS / 1000
     }, async () => {
+      assert(startDateQuery)
+      assert(endDateQuery)
       const startDate = formatDateForClickHouse(startOfDay(new Date(startDateQuery)))
       const endDate = formatDateForClickHouse(endOfDay(new Date(endDateQuery)))
 
@@ -249,6 +264,7 @@ export default class HeadlineService extends Service {
         query,
         format: 'JSONEachRow'
       }).then((res) => res.json<{ count: string }>())
+      assert(result[0])
 
       return {
         status: 200,
@@ -275,6 +291,8 @@ export default class HeadlineService extends Service {
       key: `average-session-duration-${game.id}-${includeDevData}-${startDateQuery}-${endDateQuery}`,
       ttl: HEADLINES_CACHE_TTL_MS / 1000
     }, async () => {
+      assert(startDateQuery)
+      assert(endDateQuery)
       const startDate = formatDateForClickHouse(startOfDay(new Date(startDateQuery)))
       const endDate = formatDateForClickHouse(endOfDay(new Date(endDateQuery)))
 
@@ -295,6 +313,7 @@ export default class HeadlineService extends Service {
         format: 'JSONEachRow'
       }).then((res) => res.json<{ averageDuration: number }>())
 
+      assert(result[0])
       const seconds = result[0].averageDuration
 
       return {

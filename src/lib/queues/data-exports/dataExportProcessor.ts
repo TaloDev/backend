@@ -1,7 +1,7 @@
 import { Collection, EntityManager, MikroORM } from '@mikro-orm/mysql'
-import { SandboxedJob } from 'bullmq'
+import type { SandboxedJob } from 'bullmq'
 import DataExport, { DataExportAvailableEntities, DataExportStatus } from '../../../entities/data-export'
-import Event, { ClickHouseEventProp } from '../../../entities/event'
+import Event, { type ClickHouseEventProp } from '../../../entities/event'
 import ormConfig from '../../../config/mikro-orm.config'
 import PlayerProp from '../../../entities/player-prop'
 import Player from '../../../entities/player'
@@ -13,7 +13,7 @@ import PlayerGameStat from '../../../entities/player-game-stat'
 import GameActivity, { GameActivityType } from '../../../entities/game-activity'
 import GameFeedback from '../../../entities/game-feedback'
 import createClickHouseClient from '../../clickhouse/createClient'
-import { ClickHouseEvent } from '../../../entities/event'
+import type { ClickHouseEvent } from '../../../entities/event'
 import { streamByCursor } from '../../perf/streamByCursor'
 import archiver from 'archiver'
 import { PassThrough } from 'stream'
@@ -601,7 +601,7 @@ export class DataExporter {
         return (value as Date).toISOString()
       case 'gameActivityType':
         value = get(object, 'type')
-        return GameActivityType[(value as number)]
+        return GameActivityType[(value as number)] ?? 'Unknown'
       case 'gameActivityExtra':
         value = get(object, 'extra')
         return `"${JSON.stringify(value).replace(/"/g, '\'')}"`

@@ -27,7 +27,7 @@ async function getGlobalEntryIds({
 }: {
   em: EntityManager
   includeDevData: boolean
-  aliasId: string
+  aliasId?: string
   leaderboard: Leaderboard
   entries: LeaderboardEntry[]
   includeDeleted: boolean

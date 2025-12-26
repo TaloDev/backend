@@ -9,6 +9,7 @@ import initStripe from '../lib/billing/initStripe'
 import getUserFromToken from '../lib/auth/getUserFromToken'
 import Player from '../entities/player'
 import getBillablePlayerCount from '../lib/billing/getBillablePlayerCount'
+import assert from 'node:assert'
 
 const stripe = initStripe()
 
@@ -51,9 +52,12 @@ export default class BillingService extends Service {
         expand: ['data.product']
       })
 
+      const priceData = prices.data[0]
+      assert(priceData)
+
       pricingPlanProducts.push({
         ...plan,
-        name: (prices.data[0].product as Stripe.Product).name,
+        name: (priceData.product as Stripe.Product).name,
         prices: prices.data.map((price) => ({
           /* v8 ignore next */
           amount: price.unit_amount ?? 0, // handle null case by defaulting to 0
@@ -81,9 +85,13 @@ export default class BillingService extends Service {
     const organisation: Organisation = req.ctx.state.user.organisation
     const subscriptions = await stripe.subscriptions.list({ customer: organisation.pricingPlan.stripeCustomerId!  })
     const subscription = subscriptions.data[0]
+    assert(subscription)
+
+    const subscriptionItem = subscription.items.data[0]
+    assert(subscriptionItem)
 
     const items = [{
-      id: subscription.items.data[0].id,
+      id: subscriptionItem.id,
       price
     }]
 
@@ -212,12 +220,16 @@ export default class BillingService extends Service {
 
     const subscriptions = await stripe.subscriptions.list({ customer: organisation.pricingPlan.stripeCustomerId  })
     const subscription = subscriptions.data[0]
+    assert(subscription)
+
+    const subscriptionItem = subscription.items.data[0]
+    assert(subscriptionItem)
 
     await stripe.subscriptions.update(
       subscription.id,
       {
         items: [{
-          id: subscription.items.data[0].id,
+          id: subscriptionItem.id,
           price
         }],
         proration_date: prorationDate,

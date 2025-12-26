@@ -6,6 +6,7 @@ import { ClickHouseClient } from '@clickhouse/client'
 import Player from './player'
 import { formatDateForClickHouse } from '../lib/clickhouse/formatDateTime'
 import { endOfDay, startOfDay } from 'date-fns'
+import assert from 'node:assert'
 
 type GlobalValueMetrics = {
   minValue: number
@@ -200,6 +201,7 @@ export default class GameStat {
       averageChange: number | null
     }>())
 
+    assert(res[0])
     const {
       rawCount,
       minValue,
@@ -245,6 +247,7 @@ export default class GameStat {
       averageValue: number | null
     }>())
 
+    assert(res[0])
     const {
       minValue,
       maxValue,

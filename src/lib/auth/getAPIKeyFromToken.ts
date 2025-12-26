@@ -3,6 +3,7 @@ import APIKey from '../../entities/api-key'
 import jwt from 'jsonwebtoken'
 import { getResultCacheOptions } from '../perf/getResultCacheOptions'
 import GameSecret from '../../entities/game-secret'
+import assert from 'node:assert'
 
 export function getTokenCacheKey(sub: number) {
   return `api-key-from-token-${sub}`
@@ -11,8 +12,12 @@ export function getTokenCacheKey(sub: number) {
 export default async function getAPIKeyFromToken(authHeader: string) {
   const parts = authHeader.split('Bearer ')
   if (parts.length === 2) {
-    const em = RequestContext.getEntityManager()!
-    const decodedToken = jwt.decode(parts[1])
+    const em = RequestContext.getEntityManager()
+    assert(em)
+
+    const token = parts[1]
+    assert(token)
+    const decodedToken = jwt.decode(token)
 
     if (decodedToken) {
       const sub = Number(decodedToken.sub)

@@ -4,6 +4,7 @@ import PlayerProp from './player-prop'
 import PlayerGameStat from './player-game-stat'
 import LeaderboardEntry from './leaderboard-entry'
 import { leaderboardEntryScoreNamespace, propWithKeyNamespace, statValueNamespace } from './player-group'
+import assert from 'node:assert'
 
 export enum PlayerGroupRuleName {
   EQUALS = 'EQUALS',
@@ -53,8 +54,10 @@ export default class PlayerGroupRule {
     return this.field.startsWith(`${namespace}.`)
   }
 
-  private getNamespacedValue(namespace: RuleNamespace): string {
-    return this.field.split(`${namespace}.`)[1]
+  private getNamespacedValue(namespace: RuleNamespace) {
+    const namespacedValue = this.field.split(`${namespace}.`)[1]
+    assert(namespacedValue)
+    return namespacedValue
   }
 
   private isPropsNotSetQuery() {

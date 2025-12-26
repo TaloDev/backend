@@ -3,6 +3,7 @@ import { PolicyDenial, PolicyResponse, Request } from 'koa-clay'
 import { UserType } from '../entities/user'
 import UserTypeGate from './user-type-gate'
 import PlayerGroup from '../entities/player-group'
+import assert from 'node:assert'
 
 export default class PlayerGroupPolicy extends Policy {
   async index(req: Request): Promise<PolicyResponse> {
@@ -19,6 +20,7 @@ export default class PlayerGroupPolicy extends Policy {
   @UserTypeGate([UserType.ADMIN, UserType.DEV], 'update groups')
   async put(req: Request): Promise<PolicyResponse> {
     const { gameId, id } = req.params
+    assert(id)
 
     this.ctx.state.group = await this.em.getRepository(PlayerGroup).findOne(id)
     if (!this.ctx.state.group) return new PolicyDenial({ message: 'Group not found' }, 404)
@@ -29,6 +31,7 @@ export default class PlayerGroupPolicy extends Policy {
   @UserTypeGate([UserType.ADMIN, UserType.DEV], 'delete groups')
   async delete(req: Request): Promise<PolicyResponse> {
     const { gameId, id } = req.params
+    assert(id)
 
     this.ctx.state.group = await this.em.getRepository(PlayerGroup).findOne(id)
     if (!this.ctx.state.group) return new PolicyDenial({ message: 'Group not found' }, 404)
@@ -43,6 +46,7 @@ export default class PlayerGroupPolicy extends Policy {
 
   async togglePinned(req: Request): Promise<PolicyResponse> {
     const { gameId, id } = req.params
+    assert(id)
 
     this.ctx.state.group = await this.em.getRepository(PlayerGroup).findOne(id)
     if (!this.ctx.state.group) return new PolicyDenial({ message: 'Group not found' }, 404)

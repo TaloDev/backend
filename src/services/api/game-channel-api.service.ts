@@ -12,6 +12,7 @@ import Redis from 'ioredis'
 import { pageValidation } from '../../lib/pagination/pageValidation'
 import { DEFAULT_PAGE_SIZE } from '../../lib/pagination/itemsPerPage'
 import Player from '../../entities/player'
+import assert from 'node:assert'
 
 type GameChannelStorageTransaction = {
   upsertedProps: GameChannelStorageProp[]
@@ -398,6 +399,7 @@ export default class GameChannelAPIService extends APIService {
     let result: GameChannelStorageProp | null = null
 
     const redis: Redis = req.ctx.redis
+    assert(propKey)
     const cachedProp = await redis.get(GameChannelStorageProp.getRedisKey(channel.id, propKey))
 
     if (cachedProp) {

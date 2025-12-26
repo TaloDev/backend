@@ -13,7 +13,7 @@ export default async function initProviders(app: Koa, isTest: boolean) {
     app.context.em = orm.em
 
     if (!isTest) {
-      const migrator = orm.getMigrator()
+      const migrator = orm.migrator
       await migrator.up()
     }
   } catch (err) {

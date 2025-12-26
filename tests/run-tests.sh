@@ -21,8 +21,13 @@ set -e
 
 dc up -d
 
-bunx mikro-orm migration:up
-bun ./tests/migrateClickHouse.ts
+npx mikro-orm migration:up
+tsx ./tests/migrateClickHouse.ts
 echo "\n"
 
-bunx vitest "$@"
+if [ -z "$EXPOSE_GC" ]
+then
+  node --trace-warnings ./node_modules/.bin/vitest "$@"
+else
+  node --expose-gc --trace-warnings ./node_modules/.bin/vitest "$@" --logHeapUsage
+fi

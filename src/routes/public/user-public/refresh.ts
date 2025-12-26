@@ -1,16 +1,15 @@
-import { RouteConfig } from '../../../lib/routing/router'
-import { BaseContext } from '../../../lib/context'
+import { publicRoute } from '../../../lib/routing/router'
 import UserSession from '../../../entities/user-session'
 import { genAccessToken } from '../../../lib/auth/buildTokenPair'
 import { updateLastSeenAt } from './common'
 
-export const refreshRoute: RouteConfig<BaseContext> = {
+export const refreshRoute = publicRoute({
   method: 'get',
   path: '/refresh',
-  handler: async (c) => {
-    const token = c.req.header('cookie')?.match(/refreshToken=([^;]+)/)?.[1]
-    const userAgent = c.req.header('user-agent')
-    const em = c.get('em')
+  handler: async (ctx) => {
+    const token = ctx.cookies.get('refreshToken')
+    const userAgent = ctx.get('user-agent') || undefined
+    const em = ctx.em
 
     const session = await em.getRepository(UserSession).findOne({
       token,
@@ -20,20 +19,24 @@ export const refreshRoute: RouteConfig<BaseContext> = {
     })
 
     if (!session) {
-      return c.json({ message: 'Session not found' }, 401)
+      ctx.status = 401
+      ctx.body = { message: 'Session not found' }
+      return
     }
 
     if (new Date() > session.validUntil) {
       await em.removeAndFlush(session)
-      return c.json({ message: 'Refresh token expired' }, 401)
+      ctx.status = 401
+      ctx.body = { message: 'Refresh token expired' }
+      return
     }
 
     const accessToken = await genAccessToken(session.user)
-    await updateLastSeenAt(c, session.user)
+    await updateLastSeenAt({ em, user: session.user })
 
-    return c.json({
+    ctx.body = {
       accessToken,
       user: session.user
-    })
+    }
   }
-}
+})

@@ -70,13 +70,7 @@ async function findMergeAliasServiceConflicts(
   const player1Services = new Set(player1Aliases.map((a) => a.service))
   const player2Services = new Set(player2Aliases.map((a) => a.service))
 
-  const intersection = new Set<string>()
-  for (const service of player1Services) {
-    if (player2Services.has(service)) {
-      intersection.add(service)
-    }
-  }
-  return intersection
+  return player1Services.intersection(player2Services)
 }
 
 export default class PlayerAPIService extends APIService {

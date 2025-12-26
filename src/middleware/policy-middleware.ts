@@ -1,64 +1,78 @@
+import type Koa from 'koa'
 import { APIKeyScope } from '../entities/api-key'
 import { UserType } from '../entities/user'
 import checkScope from '../policies/checkScope'
-import { createMiddleware } from 'hono/factory'
+import { Middleware } from '../lib/routing/router'
+import { APIRouteState, AppParameterizedContext, ProtectedRouteState } from '../lib/context'
 
-export function requireScopes(scopes: APIKeyScope[]) {
-  return createMiddleware(async (c, next) => {
-    const key = c.get('key')
+export function requireScopes(scopes: APIKeyScope[]): Middleware<APIRouteState> {
+  return async (ctx: AppParameterizedContext<APIRouteState>, next: Koa.Next) => {
+    const key = ctx.state.key
     if (!key) {
-      return c.json({}, 401)
+      ctx.status = 401
+      ctx.body = {}
+      return
     }
 
     const missing = scopes.filter((scope) => !checkScope(key, scope))
 
     if (missing.length > 0) {
-      return c.json({
+      ctx.status = 403
+      ctx.body = {
         message: `Missing access key scope(s): ${missing.join(', ')}`
-      }, 403)
+      }
+      return
     }
 
     await next()
-  })
+  }
 }
 
-export function userTypeGate(types: UserType[], action: string) {
-  return createMiddleware(async (c, next) => {
-    if (c.get('user')?.api) {
+export function userTypeGate(types: UserType[], action: string): Middleware<ProtectedRouteState> {
+  return async (ctx: AppParameterizedContext<ProtectedRouteState>, next: Koa.Next) => {
+    if ((ctx.state.user as { api?: boolean }).api) {
       await next()
       return
     }
 
-    const user = c.get('user')
+    const user = ctx.state.user
 
     if (!user) {
-      return c.json({}, 401)
+      ctx.status = 401
+      ctx.body = {}
+      return
     }
 
     if (user.type !== UserType.OWNER && !types.includes(user.type)) {
-      return c.json({
+      ctx.status = 403
+      ctx.body = {
         message: `You do not have permissions to ${action}`
-      }, 403)
+      }
+      return
     }
 
     await next()
-  })
+  }
 }
 
-export function requireEmailConfirmed(action: string) {
-  return createMiddleware(async (c, next) => {
-    const user = c.get('user')
+export function requireEmailConfirmed(action: string): Middleware<ProtectedRouteState> {
+  return async (ctx: AppParameterizedContext<ProtectedRouteState>, next: Koa.Next) => {
+    const user = ctx.state.user
 
     if (!user) {
-      return c.json({}, 401)
+      ctx.status = 401
+      ctx.body = {}
+      return
     }
 
     if (!user.emailConfirmed) {
-      return c.json({
+      ctx.status = 403
+      ctx.body = {
         message: `You need to confirm your email address to ${action}`
-      }, 403)
+      }
+      return
     }
 
     await next()
-  })
+  }
 }

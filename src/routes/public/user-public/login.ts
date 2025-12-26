@@ -1,4 +1,3 @@
-import { validator } from '../../../middleware/validator-middleware'
 import { publicRoute } from '../../../lib/routing/router'
 import User from '../../../entities/user'
 import bcrypt from 'bcrypt'
@@ -7,42 +6,47 @@ import { buildTokenPair, updateLastSeenAt } from './common'
 export const loginRoute = publicRoute({
   method: 'post',
   path: '/login',
-  middleware: [
-    validator('json', (z) => z.object({
+  schema: (z) => ({
+    body: z.object({
       email: z.string().min(1),
       password: z.string().min(1)
-    }))
-  ],
-  handler: async (c) => {
-    const { email, password } = await c.req.json()
-    const em = c.get('em')
-    const redis = c.get('redis')
+    })
+  }),
+  handler: async (ctx) => {
+    const { email, password } = ctx.request.body
+    const em = ctx.em
+    const redis = ctx.redis
 
     const user = await em.getRepository(User).findOne({ email }, { populate: ['organisation.games'] })
     if (!user) {
-      return c.json({ message: 'Incorrect email address or password' }, 401)
+      ctx.status = 401
+      ctx.body = { message: 'Incorrect email address or password' }
+      return
     }
 
     const passwordMatches = await bcrypt.compare(password, user.password)
     if (!passwordMatches) {
-      return c.json({ message: 'Incorrect email address or password' }, 401)
+      ctx.status = 401
+      ctx.body = { message: 'Incorrect email address or password' }
+      return
     }
 
     if (user.twoFactorAuth?.enabled) {
       await redis.set(`2fa:${user.id}`, 'true', 'EX', 300)
 
-      return c.json({
+      ctx.body = {
         twoFactorAuthRequired: true,
         userId: user.id
-      })
+      }
+      return
     }
 
-    const accessToken = await buildTokenPair(c, user)
-    await updateLastSeenAt(c, user)
+    const accessToken = await buildTokenPair({ em, ctx, user, userAgent: ctx.get('user-agent') })
+    await updateLastSeenAt({ em, user })
 
-    return c.json({
+    ctx.body = {
       accessToken,
       user
-    })
+    }
   }
 })

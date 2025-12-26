@@ -4,55 +4,50 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Talo is a self-hostable game development services platform providing leaderboards, player authentication, peer-to-peer multiplayer, event tracking, and more. The backend is built with Koa (Node.js web framework) running on Bun and follows a service-based architecture with three routing tiers.
+Talo is a self-hostable game development services platform providing leaderboards, player authentication, peer-to-peer multiplayer, event tracking, and more. The backend is built with Koa (Node.js web framework) and follows a service-based architecture with three routing tiers.
 
 ## Runtime
 
-This project uses **Bun** (not Node.js) as the JavaScript runtime. Bun is a fast all-in-one toolkit that includes:
-- JavaScript/TypeScript runtime (drop-in Node.js replacement)
-- Package manager (replaces npm)
-- Test runner (uses Vitest)
-- Bundler and transpiler
-
-All commands use `bun` instead of `npm`. The `NODE_ENV` environment variable is still used for backwards compatibility with ecosystem libraries.
+This project uses **Node.js** (version 24+) as the JavaScript runtime with npm as the package manager. Tests use Vitest for compatibility with the existing test suite.
 
 ## Development Commands
 
 ### Setup
 ```bash
-bun install
+npm install
 # Copy envs/.env.dev to .env, then:
-bun run up              # Start Docker containers (MySQL, Redis, ClickHouse)
-bun run seed            # Seed database with test data (creates admin@trytalo.com and dev@trytalo.com, password: password)
+npm run up              # Start Docker containers (MySQL, Redis, ClickHouse)
+npm run seed            # Seed database with test data (creates admin@trytalo.com and dev@trytalo.com, password: password)
 ```
 
 ### Development
 ```bash
-bun run watch           # Run with hot reload (uses bun --hot)
-bun run logs            # View backend logs
-bun run restart         # Restart backend container and show logs
-bun run down            # Stop Docker containers
+npm run watch           # Run with hot reload (uses tsx watch)
+npm run logs            # View backend logs
+npm run restart         # Restart backend container and show logs
+npm run down            # Stop Docker containers
 ```
 
 ### Testing
 ```bash
-bun test                # Run all tests with Vitest
-bun test path/to/file   # Run specific test file
-bun test -- --coverage  # Run with coverage report
+npm test                # Run all tests with Vitest
+npm test path/to/file   # Run specific test file
+npm test -- --coverage  # Run with coverage report
 ```
 
-Tests run against Docker containers and automatically backup/restore database state. Environment variables from `.env` are combined with `envs/.env.test`. Tests use Vitest for compatibility with the existing test suite.
+Tests run against Docker containers and automatically backup/restore database state. Environment variables from `.env` are combined with `envs/.env.test`.
 
 ### Building & Linting
 ```bash
-bunx tsc -p tsconfig.build.json   # Check types
-bun run lint                      # Run ESLint
+npx tsc -p tsconfig.build.json   # Check types
+npm run lint                      # Run ESLint
+npm run build                    # Build for production
 ```
 
 ### Database Migrations
 ```bash
-bun run migration:create    # Create new MikroORM migration
-bun run migration:up        # Run pending migrations
+npm run migration:create    # Create new MikroORM migration
+npm run migration:up        # Run pending migrations
 ```
 
 After creating a migration:
@@ -238,7 +233,7 @@ src/
 ### Adding a New Entity
 
 1. Create entity in `src/entities/my-entity.ts` with decorators
-2. Run `bun run migration:create` to generate migration
+2. Run `npm run migration:create` to generate migration
 3. Rename and register migration in `src/migrations/index.ts`
 4. MikroORM will auto-migrate on next startup
 

@@ -1,38 +1,40 @@
-import { validator } from '../../../middleware/validator-middleware'
-import { RouteConfig } from '../../../lib/routing/router'
-import { BaseContext } from '../../../lib/context'
+import { publicRoute } from '../../../lib/routing/router'
 import User from '../../../entities/user'
 import UserSession from '../../../entities/user-session'
 import jwt from 'jsonwebtoken'
 import bcrypt from 'bcrypt'
 import { verify } from '../../../lib/auth/jwt'
 
-export const resetPasswordRoute: RouteConfig<BaseContext> = {
+export const resetPasswordRoute = publicRoute({
   method: 'post',
   path: '/reset_password',
-  middleware: [
-    validator('json', (z) => z.object({
+  schema: (z) => ({
+    body: z.object({
       password: z.string().min(1),
       token: z.string().min(1)
-    }))
-  ],
-  handler: async (c) => {
-    const { password, token } = await c.req.json()
+    })
+  }),
+  handler: async (ctx) => {
+    const { password, token } = ctx.request.body
     const decodedToken = jwt.decode(token)
 
-    const em = c.get('em')
+    const em = ctx.em
     const user = await em.getRepository(User).findOne(Number(decodedToken?.sub))
     const secret = user?.password.substring(0, 10)
 
     try {
       await verify(token, secret!)
     } catch {
-      return c.json({ message: 'Request expired', expired: true }, 401)
+      ctx.status = 401
+      ctx.body = { message: 'Request expired', expired: true }
+      return
     }
 
     const isSamePassword = await bcrypt.compare(password, user!.password)
     if (isSamePassword) {
-      return c.json({ message: 'Please choose a different password' }, 400)
+      ctx.status = 400
+      ctx.body = { message: 'Please choose a different password' }
+      return
     }
 
     user!.password = await bcrypt.hash(password, 10)
@@ -40,6 +42,6 @@ export const resetPasswordRoute: RouteConfig<BaseContext> = {
     const sessions = await em.repo(UserSession).find({ user })
     await em.removeAndFlush(sessions)
 
-    return c.body(null, 204)
+    ctx.status = 204
   }
-}
+})

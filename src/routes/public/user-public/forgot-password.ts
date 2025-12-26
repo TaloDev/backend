@@ -1,23 +1,21 @@
-import { validator } from '../../../middleware/validator-middleware'
-import { RouteConfig } from '../../../lib/routing/router'
-import { BaseContext } from '../../../lib/context'
+import { publicRoute } from '../../../lib/routing/router'
 import User from '../../../entities/user'
 import { sign } from '../../../lib/auth/jwt'
 import queueEmail from '../../../lib/messaging/queueEmail'
 import ResetPassword from '../../../emails/reset-password'
 import { getGlobalQueue } from '../../../config/global-queues'
 
-export const forgotPasswordRoute: RouteConfig<BaseContext> = {
+export const forgotPasswordRoute = publicRoute({
   method: 'post',
   path: '/forgot_password',
-  middleware: [
-    validator('json', (z) => z.object({
+  schema: (z) => ({
+    body: z.object({
       email: z.string().min(1)
-    }))
-  ],
-  handler: async (c) => {
-    const { email } = await c.req.json()
-    const em = c.get('em')
+    })
+  }),
+  handler: async (ctx) => {
+    const { email } = ctx.request.body
+    const em = ctx.em
 
     const user = await em.getRepository(User).findOne({ email })
 
@@ -28,6 +26,6 @@ export const forgotPasswordRoute: RouteConfig<BaseContext> = {
       await queueEmail(getGlobalQueue('email'), new ResetPassword(user, accessToken))
     }
 
-    return c.body(null, 204)
+    ctx.status = 204
   }
-}
+})

@@ -1,43 +1,45 @@
-import { validator } from '../../../middleware/validator-middleware'
-import { RouteConfig } from '../../../lib/routing/router'
-import { BaseContext } from '../../../lib/context'
+import { publicRoute } from '../../../lib/routing/router'
 import User from '../../../entities/user'
 import { authenticator } from '@otplib/preset-default'
 import { buildTokenPair, updateLastSeenAt } from './common'
 
-export const verify2faRoute: RouteConfig<BaseContext> = {
+export const verify2faRoute = publicRoute({
   method: 'post',
   path: '/2fa',
-  middleware: [
-    validator('json', (z) => z.object({
+  schema: (z) => ({
+    body: z.object({
       code: z.string().min(1),
       userId: z.number()
-    }))
-  ],
-  handler: async (c) => {
-    const { code, userId } = await c.req.json()
-    const em = c.get('em')
-    const redis = c.get('redis')
+    })
+  }),
+  handler: async (ctx) => {
+    const { code, userId } = ctx.request.body
+    const em = ctx.em
+    const redis = ctx.redis
 
     const user = await em.repo(User).findOneOrFail(userId, { populate: ['organisation.games'] })
 
     const hasSession = (await redis.get(`2fa:${user.id}`)) === 'true'
 
     if (!hasSession) {
-      return c.json({ message: 'Session expired', sessionExpired: true }, 403)
+      ctx.status = 403
+      ctx.body = { message: 'Session expired', sessionExpired: true }
+      return
     }
 
     if (!authenticator.check(code, user.twoFactorAuth!.secret)) {
-      return c.json({ message: 'Invalid code' }, 403)
+      ctx.status = 403
+      ctx.body = { message: 'Invalid code' }
+      return
     }
 
-    const accessToken = await buildTokenPair(c, user)
+    const accessToken = await buildTokenPair({ em, ctx, user, userAgent: ctx.get('user-agent') })
     await redis.del(`2fa:${user.id}`)
-    await updateLastSeenAt(c, user)
+    await updateLastSeenAt({ em, user })
 
-    return c.json({
+    ctx.body = {
       accessToken,
       user
-    })
+    }
   }
-}
+})

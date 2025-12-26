@@ -1,31 +1,28 @@
-import { EntityManager } from '@mikro-orm/mysql'
-import { ClickHouseClient } from '@clickhouse/client'
-import Redis from 'ioredis'
-import APIKey from '../../entities/api-key'
-import Game from '../../entities/game'
-import User from '../../entities/user'
-import Socket from '../../socket'
+import type Koa from 'koa'
+import type { EntityManager } from '@mikro-orm/mysql'
+import type { ClickHouseClient } from '@clickhouse/client'
+import type Redis from 'ioredis'
+import type APIKey from '../../entities/api-key'
+import type Game from '../../entities/game'
+import type User from '../../entities/user'
+import type Socket from '../../socket'
 
-export type BaseContext = {
-  Variables: {
-    em: EntityManager
-    redis: Redis
-    clickhouse: ClickHouseClient
-    wss: Socket
-  }
+type AppContext = {
+  em: EntityManager
+  redis: Redis
+  clickhouse: ClickHouseClient
+  wss: Socket
 }
 
-export type PublicRouteContext = BaseContext
+export type PublicRouteState = Record<string, never>
 
-export type ProtectedRouteContext = {
-  Variables: BaseContext['Variables'] & {
-    user: User
-  }
+export type ProtectedRouteState = {
+  user: User
+}
+export type APIRouteState = {
+  key: APIKey
+  game: Game
 }
 
-export type APIRouteContext = {
-  Variables: BaseContext['Variables'] & {
-    key: APIKey
-    game: Game
-  }
-}
+export type AppParameterizedContext<S = PublicRouteState> =
+  Koa.ParameterizedContext<S> & AppContext

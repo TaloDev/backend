@@ -1,4 +1,3 @@
-import { BaseContext } from '../../../lib/context'
 import { registerRoute } from './register'
 import { loginRoute } from './login'
 import { refreshRoute } from './refresh'
@@ -8,8 +7,8 @@ import { verify2faRoute } from './verify-2fa'
 import { useRecoveryCodeRoute } from './use-recovery-code'
 import { publicRouter } from '../../../lib/routing/router'
 
-export function userPublicRoutes() {
-  return publicRouter<BaseContext>('UserPublic', '/users', ({ route }) => {
+export function userPublicRouter() {
+  return publicRouter('UserPublic', '/public/users', ({ route }) => {
     route(registerRoute)
     route(loginRoute)
     route(refreshRoute)

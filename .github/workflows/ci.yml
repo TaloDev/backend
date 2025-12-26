@@ -1,4 +1,4 @@
-name: Tests
+name: Node tests
 
 on: push
 
@@ -8,48 +8,44 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-      - uses: oven-sh/setup-bun@v2
+      - uses: actions/setup-node@v4
         with:
           node-version: 24
 
       - uses: actions/cache@v4
         with:
-          path: ~/.bun/install/cache
-          key: ${{ runner.os }}-bun-${{ hashFiles('**/bun.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-bun-
+          path: '**/node_modules'
+          key: ${{ runner.os }}-modules-${{ hashFiles('**/package-lock.json') }}
 
       - name: Install deps
-        run: bun install --frozen-lockfile
+        run: npm ci --prefer-offline
 
       - name: Setup environment
         run: cp envs/.env.dev .env
 
       - name: Run tests
-        run: bun run test -- --coverage
+        run: npm test -- --coverage
 
       - uses: codecov/codecov-action@v4
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
 
-  type-check:
+  build-check:
     runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v4
-      - uses: oven-sh/setup-bun@v2
+      - uses: actions/setup-node@v4
         with:
           node-version: 24
 
       - uses: actions/cache@v4
         with:
-          path: ~/.bun/install/cache
-          key: ${{ runner.os }}-bun-${{ hashFiles('**/bun.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-bun-
+          path: '**/node_modules'
+          key: ${{ runner.os }}-modules-${{ hashFiles('**/package-lock.json') }}
 
       - name: Install deps
-        run: bun install --frozen-lockfile
+        run: npm ci --prefer-offline
 
       - name: Type check
         run: npx tsc --noEmit
@@ -62,19 +58,17 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-      - uses: oven-sh/setup-bun@v2
+      - uses: actions/setup-node@v4
         with:
           node-version: 24
 
       - uses: actions/cache@v4
         with:
-          path: ~/.bun/install/cache
-          key: ${{ runner.os }}-bun-${{ hashFiles('**/bun.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-bun-
+          path: '**/node_modules'
+          key: ${{ runner.os }}-modules-${{ hashFiles('**/package-lock.json') }}
 
       - name: Install deps
-        run: bun install --frozen-lockfile
+        run: npm ci --prefer-offline
 
       - name: Lint
-        run: bunx eslint
+        run: npx eslint

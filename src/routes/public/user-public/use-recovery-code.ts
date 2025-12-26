@@ -1,24 +1,22 @@
-import { validator } from '../../../middleware/validator-middleware'
-import { RouteConfig } from '../../../lib/routing/router'
-import { BaseContext } from '../../../lib/context'
+import { publicRoute } from '../../../lib/routing/router'
 import User from '../../../entities/user'
 import UserRecoveryCode from '../../../entities/user-recovery-code'
 import generateRecoveryCodes from '../../../lib/auth/generateRecoveryCodes'
 import { buildTokenPair } from './common'
 
-export const useRecoveryCodeRoute: RouteConfig<BaseContext> = {
+export const useRecoveryCodeRoute = publicRoute({
   method: 'post',
   path: '/2fa/recover',
-  middleware: [
-    validator('json', (z) => z.object({
+  schema: (z) => ({
+    body: z.object({
       userId: z.number(),
       code: z.string().min(1)
-    }))
-  ],
-  handler: async (c) => {
-    const { code, userId } = await c.req.json()
-    const em = c.get('em')
-    const redis = c.get('redis')
+    })
+  }),
+  handler: async (ctx) => {
+    const { code, userId } = ctx.request.body
+    const em = ctx.em
+    const redis = ctx.redis
 
     const user = await em.getRepository(User).findOneOrFail(userId, {
       populate: ['recoveryCodes', 'organisation.games']
@@ -27,7 +25,9 @@ export const useRecoveryCodeRoute: RouteConfig<BaseContext> = {
     const hasSession = (await redis.get(`2fa:${user.id}`)) === 'true'
 
     if (!hasSession) {
-      return c.json({ message: 'Session expired', sessionExpired: true }, 403)
+      ctx.status = 403
+      ctx.body = { message: 'Session expired', sessionExpired: true }
+      return
     }
 
     const recoveryCode = user.recoveryCodes.getItems().find((recoveryCode) => {
@@ -35,7 +35,9 @@ export const useRecoveryCodeRoute: RouteConfig<BaseContext> = {
     })
 
     if (!recoveryCode) {
-      return c.json({ message: 'Invalid code' }, 403)
+      ctx.status = 403
+      ctx.body = { message: 'Invalid code' }
+      return
     }
 
     em.remove(recoveryCode)
@@ -48,13 +50,13 @@ export const useRecoveryCodeRoute: RouteConfig<BaseContext> = {
 
     await em.flush()
 
-    const accessToken = await buildTokenPair(c, user)
+    const accessToken = await buildTokenPair({ em, ctx, user, userAgent: ctx.get('user-agent') })
     await redis.del(`2fa:${user.id}`)
 
-    return c.json({
+    ctx.body = {
       user,
       accessToken,
       newRecoveryCodes: newRecoveryCodes.length === 0 ? undefined : newRecoveryCodes
-    })
+    }
   }
-}
+})

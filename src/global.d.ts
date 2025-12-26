@@ -18,7 +18,7 @@ declare global {
 
   // tests
   var app: ReturnType<Koa['callback']>
-  var ctx: ReturnType<Koa['context']>
+  var ctx: Koa.Context
   var em: EntityManager
   var clickhouse: ClickHouseClient
   var redis: Redis

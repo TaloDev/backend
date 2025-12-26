@@ -1,12 +1,12 @@
 import { publicRouter } from '../../../lib/routing/router'
 
-export function healthCheckRoutes() {
-  return publicRouter('HealthCheck', '', ({ route }) => {
+export function healthCheckRouter() {
+  return publicRouter('HealthCheck', '/public', ({ route }) => {
     route({
       method: 'get',
       path: '/health',
-      handler: (c) => {
-        return c.body(null, 204)
+      handler: (ctx) => {
+        ctx.status = 204
       }
     })
   })

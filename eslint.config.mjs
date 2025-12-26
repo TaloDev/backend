@@ -28,8 +28,7 @@ export default [
         ...globals.node,
         ...globals.es2021,
         'clay': 'readonly',
-        NodeJS: 'readonly',
-        Bun: false
+        NodeJS: 'readonly'
       }
     },
     plugins: {
@@ -67,6 +66,8 @@ export default [
           ]
         }
       ],
+      'no-redeclare': 'off',
+      '@typescript-eslint/no-redeclare': 'error'
     }
   },
   {

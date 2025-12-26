@@ -18,6 +18,7 @@ import createClickHouseClient from '../src/lib/clickhouse/createClient'
 import { rand } from '@ngneat/falso'
 import ormConfig from '../src/config/mikro-orm.config'
 import { MikroORM } from '@mikro-orm/mysql'
+import assert from 'node:assert'
 
 (async () => {
   console.info('Running migrations...')
@@ -39,7 +40,11 @@ import { MikroORM } from '@mikro-orm/mysql'
     { stripeId: 'prod_LbW295xhmo2bk0', playerLimit: 100000, default: false },
     { stripeId: 'prod_LcNy4ow2VoJ8kc', playerLimit: 1000000, default: false }
   ]
-  const pricingPlans = await new PricingPlanFactory().state((_, idx) => plansMap[idx]).many(3)
+  const pricingPlans = await new PricingPlanFactory().state((_, idx) => {
+    const plan = plansMap[idx]
+    assert(plan)
+    return plan
+  }).many(3)
 
   const organisation = await new OrganisationFactory().state(async (organisation) => {
     const orgPlan = await new OrganisationPricingPlanFactory()

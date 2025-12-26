@@ -1,6 +1,4 @@
-import { validator } from '../../../middleware/validator-middleware'
-import { RouteConfig } from '../../../lib/routing/router'
-import { BaseContext } from '../../../lib/context'
+import { publicRoute } from '../../../lib/routing/router'
 import User, { UserType } from '../../../entities/user'
 import Organisation from '../../../entities/organisation'
 import Invite from '../../../entities/invite'
@@ -15,11 +13,11 @@ import ConfirmEmail from '../../../emails/confirm-email-mail'
 import { getGlobalQueue } from '../../../config/global-queues'
 import { buildTokenPair } from './common'
 
-export const registerRoute: RouteConfig<BaseContext> = {
+export const registerRoute = publicRoute({
   method: 'post',
   path: '/register',
-  middleware: [
-    validator('json', (z) => z.object({
+  schema: (z) => ({
+    body: z.object({
       email: z.string().email('Email address is invalid'),
       username: z.string().min(1),
       password: z.string().min(1),
@@ -27,24 +25,30 @@ export const registerRoute: RouteConfig<BaseContext> = {
       inviteToken: z.string().optional()
     }).refine((data) => data.organisationName || data.inviteToken, {
       message: 'Either organisationName or inviteToken is required'
-    }))
-  ],
-  handler: async (c) => {
-    const { email, username, password, organisationName, inviteToken } = await c.req.json()
-    const em = c.get('em')
+    })
+  }),
+  handler: async (ctx) => {
+    const { email, username, password, organisationName, inviteToken } = ctx.request.body
+    const em = ctx.em
 
     const registrationMode = process.env.REGISTRATION_MODE || 'open'
     if (registrationMode === 'disabled') {
-      return c.json({ message: 'Registration is disabled' }, 400)
+      ctx.status = 400
+      ctx.body = { message: 'Registration is disabled' }
+      return
     }
     if (registrationMode === 'exclusive' && !inviteToken) {
-      return c.json({ message: 'Registration requires an invitation' }, 400)
+      ctx.status = 400
+      ctx.body = { message: 'Registration requires an invitation' }
+      return
     }
 
     const userWithEmail = await em.getRepository(User).findOne({ email })
     const orgWithEmail = await em.getRepository(Organisation).findOne({ email })
     if (userWithEmail || orgWithEmail) {
-      return c.json({ message: 'Email address is already in use' }, 400)
+      ctx.status = 400
+      ctx.body = { message: 'Email address is already in use' }
+      return
     }
 
     const user = new User()
@@ -61,7 +65,9 @@ export const registerRoute: RouteConfig<BaseContext> = {
       })
 
       if (!invite || invite.email !== email) {
-        return c.json({ message: 'Invite not found' }, 404)
+        ctx.status = 404
+        ctx.body = { message: 'Invite not found' }
+        return
       }
 
       user.organisation = invite.organisation
@@ -92,11 +98,11 @@ export const registerRoute: RouteConfig<BaseContext> = {
     }
 
     // Build token pair (creates session and sets cookie)
-    const accessToken = await buildTokenPair(c, user)
+    const accessToken = await buildTokenPair({ em, ctx, user, userAgent: ctx.get('user-agent') })
 
-    return c.json({
+    ctx.body = {
       accessToken,
       user
-    })
+    }
   }
-}
+})

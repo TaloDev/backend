@@ -6,7 +6,7 @@ export class PlayerAliasServiceUseEnum extends Migration {
     this.addSql('alter table `player_alias` modify `service` enum(\'steam\', \'epic\', \'username\', \'email\', \'custom\') not null;')
   }
 
-  async down(): Promise<void> {
+  override async down(): Promise<void> {
     this.addSql('alter table `player_alias` modify `service` varchar(255) not null;')
   }
 

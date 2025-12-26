@@ -9,7 +9,7 @@ export class CreatePlayerAuthActivityTable extends Migration {
     this.addSql('alter table `player_auth_activity` add constraint `player_auth_activity_player_id_foreign` foreign key (`player_id`) references `player` (`id`) on update cascade;')
   }
 
-  async down(): Promise<void> {
+  override async down(): Promise<void> {
     this.addSql('drop table if exists `player_auth_activity`;')
   }
 

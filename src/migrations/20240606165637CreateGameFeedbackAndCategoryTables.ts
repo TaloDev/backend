@@ -18,7 +18,7 @@ export class CreateGameFeedbackAndCategoryTables extends Migration {
     this.addSql('alter table `apikey` modify `scopes` text not null;')
   }
 
-  async down(): Promise<void> {
+  override async down(): Promise<void> {
     this.addSql('alter table `game_feedback` drop foreign key `game_feedback_category_id_foreign`;')
 
     this.addSql('drop table if exists `game_feedback_category`;')

@@ -25,7 +25,7 @@ export class CreatePricingPlansTable extends Migration {
     this.addSql('alter table `organisation` add unique `organisation_pricing_plan_id_unique`(`pricing_plan_id`);')
   }
 
-  async down(): Promise<void> {
+  override async down(): Promise<void> {
     this.addSql('alter table `pricing_plan_action` drop foreign key `pricing_plan_action_pricing_plan_id_foreign`;')
 
     this.addSql('alter table `organisation_pricing_plan` drop foreign key `organisation_pricing_plan_pricing_plan_id_foreign`;')

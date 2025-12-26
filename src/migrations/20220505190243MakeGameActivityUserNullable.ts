@@ -11,7 +11,7 @@ export class MakeGameActivityUserNullable extends Migration {
     this.addSql('alter table `game_activity` add constraint `game_activity_game_id_foreign` foreign key (`game_id`) references `game` (`id`) on update cascade on delete set null;')
   }
 
-  async down(): Promise<void> {
+  override async down(): Promise<void> {
     this.addSql('alter table `game_activity` drop foreign key `game_activity_game_id_foreign`;')
 
     this.addSql('alter table `user` add index `user_two_factor_auth_id_index`(`two_factor_auth_id`);')

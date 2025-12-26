@@ -16,7 +16,7 @@ export class CreatePlayerGroupsTables extends Migration {
     this.addSql('alter table `player_group_members` add constraint `player_group_members_player_id_foreign` foreign key (`player_id`) references `player` (`id`) on update cascade on delete cascade;')
   }
 
-  async down(): Promise<void> {
+  override async down(): Promise<void> {
     this.addSql('alter table `player_group_members` drop foreign key `player_group_members_player_group_id_foreign`;')
 
     this.addSql('drop table if exists `player_group`;')

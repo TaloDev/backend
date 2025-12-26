@@ -20,7 +20,7 @@ export class CreateGameStatsTable extends Migration {
     this.addSql('alter table `apikey` modify `scopes` text not null;')
   }
 
-  async down(): Promise<void> {
+  override async down(): Promise<void> {
     this.addSql('alter table `player_game_stat` drop foreign key `player_game_stat_stat_id_foreign`;')
 
     this.addSql('drop table if exists `game_stat`;')

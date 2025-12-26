@@ -11,7 +11,7 @@ export class CreateInvitesTable extends Migration {
     this.addSql('alter table `invite` add constraint `invite_invited_by_user_id_foreign` foreign key (`invited_by_user_id`) references `user` (`id`) on update cascade;')
   }
 
-  async down(): Promise<void> {
+  override async down(): Promise<void> {
     this.addSql('drop table if exists `invite`;')
   }
 

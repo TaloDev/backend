@@ -4,7 +4,6 @@
     "module": "Preserve",
     "moduleDetection": "force",
     "moduleResolution": "bundler",
-    // "verbatimModuleSyntax": true,
     "sourceMap": true,
     "outDir": "dist",
     "experimentalDecorators": true,
@@ -15,6 +14,10 @@
     "skipLibCheck": true,
     "strict": true,
     "inlineSources": true,
+    // "verbatimModuleSyntax": true,
+    "noFallthroughCasesInSwitch": true,
+    "noUncheckedIndexedAccess": true,
+    "noImplicitOverride": true,
     // strips the build path prefix, improves issue grouping in Sentry
     "sourceRoot": "/"
   }

@@ -2,10 +2,6 @@
 
 Want to add a new system? Are the docs not clear enough? We're always accepting contributions so please share any new features, improvements or bug fixes with us.
 
-## Prerequisites
-
-This project uses **Node.js** (version 24+) with npm as the package manager. Install Node.js from [nodejs.org](https://nodejs.org).
-
 ## Installation
 
 1. Clone the repo and run `npm install`.
@@ -23,7 +19,7 @@ The seed command will create two users: `admin@trytalo.com` (an admin user) and 
 
 Run `npm test` to run the unit tests.
 
-The tests run against your database container using Vitest. They'll automatically backup and restore the current state of your database before executing the tests.
+The tests run against your database container. They'll automatically backup and restore the current state of your database before executing the tests.
 
 Your `.env` file will be used along with any additional env vars you define in `envs/.env.test`.
 

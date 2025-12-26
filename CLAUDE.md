@@ -6,10 +6,6 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Talo is a self-hostable game development services platform providing leaderboards, player authentication, peer-to-peer multiplayer, event tracking, and more. The backend is built with Koa (Node.js web framework) and follows a service-based architecture with three routing tiers.
 
-## Runtime
-
-This project uses **Node.js** (version 24+) as the JavaScript runtime with npm as the package manager. Tests use Vitest for compatibility with the existing test suite.
-
 ## Development Commands
 
 ### Setup
@@ -22,7 +18,7 @@ npm run seed            # Seed database with test data (creates admin@trytalo.co
 
 ### Development
 ```bash
-npm run watch           # Run with hot reload (uses tsx watch)
+npm run watch           # Run with hot reload
 npm run logs            # View backend logs
 npm run restart         # Restart backend container and show logs
 npm run down            # Stop Docker containers
@@ -39,9 +35,8 @@ Tests run against Docker containers and automatically backup/restore database st
 
 ### Building & Linting
 ```bash
-npx tsc -p tsconfig.build.json   # Check types
-npm run lint                      # Run ESLint
-npm run build                    # Build for production
+npm run build           # Compile TypeScript
+npm run lint            # Run ESLint
 ```
 
 ### Database Migrations

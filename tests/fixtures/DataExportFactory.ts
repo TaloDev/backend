@@ -12,7 +12,7 @@ export default class DataExportFactory extends Factory<DataExport> {
     this.game = game
   }
 
-  protected definition(): void {
+  protected override definition() {
     this.state(async () => {
       const createdByUser = await new UserFactory().one()
 

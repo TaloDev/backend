@@ -12,7 +12,7 @@ export default class GameChannelStoragePropFactory extends Factory<GameChannelSt
     this.channel = channel
   }
 
-  protected definition(): void {
+  protected override definition() {
     this.state(async () => {
       const playerAlias = await new PlayerAliasFactory(this.channel.owner!.player).one()
 

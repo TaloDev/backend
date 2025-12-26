@@ -19,7 +19,7 @@ export default class PlayerFactory extends Factory<Player> {
     this.availableGames = availableGames
   }
 
-  protected definition(): void {
+  protected override definition() {
     const availableProps = ['zonesExplored', 'currentArea', 'position.x', 'position.y', 'deaths', 'position.z', 'currentLevel', 'inventorySpace', 'currentHealth', 'currentMana', 'currentEnergy', 'npcKills', 'playerKills']
 
     this.state(async (player) => {

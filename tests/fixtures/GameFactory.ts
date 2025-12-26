@@ -14,7 +14,7 @@ export default class GameFactory extends Factory<Game> {
     this.organisation = organisation
   }
 
-  protected definition(): void {
+  protected override definition() {
     const availableProps = ['xpRate', 'maxLevel', 'halloweenEventNumber', 'christmasEventNumber', 'availableRooms', 'maxPlayersPerServer', 'structuresBuilt', 'maxCurrency']
 
     this.state(() => {

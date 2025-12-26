@@ -9,7 +9,7 @@ export default class OrganisationFactory extends Factory<Organisation> {
     super(Organisation)
   }
 
-  protected definition(): void {
+  protected override definition() {
     this.state(async (organisation) => {
       const plan = await new PricingPlanFactory().one()
       const orgPlan = await new OrganisationPricingPlanFactory().state(() => ({

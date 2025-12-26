@@ -7,7 +7,7 @@ export default class PlayerAuthFactory extends Factory<PlayerAuth> {
     super(PlayerAuth)
   }
 
-  protected definition(): void {
+  protected override definition() {
     this.state(() => ({
       email: randEmail(),
       password: ''

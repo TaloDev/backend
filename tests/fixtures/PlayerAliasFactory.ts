@@ -12,7 +12,7 @@ export default class PlayerAliasFactory extends Factory<PlayerAlias> {
     this.player = player
   }
 
-  protected definition(): void {
+  protected override definition() {
     const identifiers = [randUuid(), randUserName(), randCreditCardNumber()]
     this.state(() => ({
       service: rand([

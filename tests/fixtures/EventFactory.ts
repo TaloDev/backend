@@ -14,7 +14,7 @@ export default class EventFactory extends Factory<Event> {
     this.availablePlayers = availablePlayers
   }
 
-  protected definition(): void {
+  protected override definition() {
     const player: Player = rand(this.availablePlayers)
 
     this.state(() => ({

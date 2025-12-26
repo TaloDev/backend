@@ -15,7 +15,7 @@ export default class LeaderboardEntryFactory extends Factory<LeaderboardEntry> {
     this.availablePlayers = availablePlayers
   }
 
-  protected definition(): void {
+  protected override definition() {
     this.state(async (entry) => {
       const player: Player = rand(this.availablePlayers)
       await player.aliases.loadItems()

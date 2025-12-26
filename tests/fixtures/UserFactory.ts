@@ -13,7 +13,7 @@ export default class UserFactory extends Factory<User> {
     super(User)
   }
 
-  protected definition(): void {
+  protected override definition() {
     this.state(async () => ({
       email: randEmail(),
       username: randUserName(),

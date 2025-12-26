@@ -258,7 +258,7 @@ export default class UserPublicService extends Service {
 
     try {
       await verify(token, secret!)
-    } catch (err) {
+    } catch {
       req.ctx.throw(401, { message: 'Request expired', expired: true })
     }
 

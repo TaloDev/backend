@@ -13,7 +13,7 @@ export default class GameChannelFactory extends Factory<GameChannel> {
     this.game = game
   }
 
-  protected definition(): void {
+  protected override definition() {
     this.state(async () => ({
       name: randText(),
       owner: (await new PlayerFactory([this.game]).one()).aliases[0],

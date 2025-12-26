@@ -14,7 +14,7 @@ export default class GameSaveFactory extends Factory<GameSave> {
     this.availablePlayers = availablePlayers
   }
 
-  protected definition(): void {
+  protected override definition() {
     const objects = [...new Array(randNumber({ min: 2, max: 5 }))].map(() => ({
       id: randUuid(),
       name: randText(),

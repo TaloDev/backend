@@ -15,7 +15,7 @@ export default class GameActivityFactory extends Factory<GameActivity> {
     this.availableUsers = availableUsers
   }
 
-  protected definition(): void {
+  protected override definition() {
     const type: GameActivityType = rand([GameActivityType.LEADERBOARD_DELETED])
     const extra: { [key: string]: unknown } = {}
 

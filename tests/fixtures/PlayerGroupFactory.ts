@@ -7,7 +7,7 @@ export default class PlayerGroupFactory extends Factory<PlayerGroup> {
     super(PlayerGroup)
   }
 
-  protected definition(): void {
+  protected override definition() {
     this.state(() => ({
       name: randText(),
       description: randText(),

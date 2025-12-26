@@ -14,7 +14,7 @@ export default class IntegrationConfigFactory extends Factory<IntegrationConfigP
     super(IntegrationConfigProvider)
   }
 
-  protected definition(): void {
+  protected override definition() {
     this.state(() => {
       return {
         apiKey: randUuid().replace(/-/g, ''),

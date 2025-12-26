@@ -1,0 +1,9 @@
+{
+  "extends": "./tsconfig.build.json",
+  // these all help Sentry issue grouping
+  "compilerOptions": {
+    "sourceMap": true,
+    "inlineSources": true,
+    "sourceRoot": "/"
+  }
+}

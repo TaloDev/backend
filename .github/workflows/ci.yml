@@ -48,7 +48,7 @@ jobs:
         run: npm ci --prefer-offline
 
       - name: Type check
-        run: npx tsc
+        run: npx tsc --noEmit
 
       - name: Build
         run: npm run build

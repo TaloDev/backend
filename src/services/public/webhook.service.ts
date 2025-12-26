@@ -14,6 +14,7 @@ import PlanInvoice from '../../emails/plan-invoice-mail'
 import queueEmail from '../../lib/messaging/queueEmail'
 import PlanPaymentFailed from '../../emails/plan-payment-failed'
 import { getGlobalQueue } from '../../config/global-queues'
+import assert from 'node:assert'
 
 type RawRequest = KoaRequest & {
   rawBody: Buffer
@@ -29,8 +30,10 @@ export default class WebhookService extends Service {
   async subscriptions(req: Request): Promise<Response> {
     let event: Stripe.Event
 
+    assert(stripe)
+
     try {
-      event = stripe!.webhooks.constructEvent(
+      event = stripe.webhooks.constructEvent(
         (req.ctx.request as RawRequest).rawBody,
         req.headers['stripe-signature'],
         process.env.STRIPE_WEBHOOK_SECRET!

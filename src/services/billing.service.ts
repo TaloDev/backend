@@ -9,6 +9,7 @@ import initStripe from '../lib/billing/initStripe'
 import getUserFromToken from '../lib/auth/getUserFromToken'
 import Player from '../entities/player'
 import getBillablePlayerCount from '../lib/billing/getBillablePlayerCount'
+import assert from 'node:assert'
 
 const stripe = initStripe()
 
@@ -29,7 +30,7 @@ export default class BillingService extends Service {
   })
   async plans(req: Request): Promise<Response> {
     const em: EntityManager = req.ctx.em
-    const plans = await em.getRepository(PricingPlan).find({ hidden: false })
+    const plans = await em.repo(PricingPlan).find({ hidden: false })
 
     const pricingPlanProducts: PricingPlanProduct[] = []
     const user = await getUserFromToken(req.ctx)
@@ -54,13 +55,16 @@ export default class BillingService extends Service {
       pricingPlanProducts.push({
         ...plan,
         name: (prices.data[0].product as Stripe.Product).name,
-        prices: prices.data.map((price) => ({
-          /* v8 ignore next */
-          amount: price.unit_amount ?? 0, // handle null case by defaulting to 0
-          currency: price.currency,
-          interval: price.recurring!.interval,
-          current: price.id === organisation.pricingPlan.stripePriceId
-        }))
+        prices: prices.data.map((price) => {
+          assert(price.recurring, 'Price must be recurring')
+          return {
+            /* v8 ignore next */
+            amount: price.unit_amount ?? 0, // handle null case by defaulting to 0
+            currency: price.currency,
+            interval: price.recurring.interval,
+            current: price.id === organisation.pricingPlan.stripePriceId
+          }
+        })
       })
     }
 
@@ -113,7 +117,7 @@ export default class BillingService extends Service {
     const planPlayerLimit = newPlan.playerLimit ?? Infinity
 
     const organisation: Organisation = req.ctx.state.user.organisation
-    const playerCount = await em.getRepository(Player).count({
+    const playerCount = await em.repo(Player).count({
       game: { organisation }
     })
 
@@ -126,18 +130,23 @@ export default class BillingService extends Service {
     const { pricingPlanId, pricingInterval } = req.body
     const em: EntityManager = req.ctx.em
 
-    const plan = await em.getRepository(PricingPlan).findOne(pricingPlanId)
+    const plan = await em.repo(PricingPlan).findOne(pricingPlanId)
     if (!plan) req.ctx.throw(404, 'Pricing plan not found')
 
     await this.checkCanDowngrade(em, req, plan)
 
-    const prices = await stripe!.prices.list({
+    assert(stripe)
+    const prices = await stripe.prices.list({
       product: plan.stripeId,
       active: true,
       expand: ['data.product']
     })
 
-    return prices.data.find((p) => p.recurring!.interval === pricingInterval)!.id
+    const price = prices.data.find((p) => p.recurring?.interval === pricingInterval)
+    /* v8 ignore next */
+    if (!price) req.ctx.throw(404, 'Price not found for the specified interval')
+
+    return price.id
   }
 
   @Route({

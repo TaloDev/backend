@@ -14,7 +14,6 @@
     "logs": "docker compose logs backend --follow",
     "migration:create": "DB_HOST=127.0.0.1 mikro-orm migration:create",
     "migration:up": "DB_HOST=127.0.0.1 mikro-orm migration:up",
-    "service:create": "hygen service new",
     "prepare": "husky || true",
     "lint": "eslint src/**/*.ts tests/**/*.ts",
     "stripe:webhooks": "stripe listen --forward-to localhost:3000/public/webhooks/subscriptions"

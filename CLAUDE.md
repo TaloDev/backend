@@ -52,14 +52,6 @@ After creating a migration:
 
 ClickHouse migrations are created manually in `src/migrations/clickhouse/` and registered in `src/migrations/clickhouse/index.ts`.
 
-### Scaffolding
-```bash
-npm run service:create -- entity-name       # Generate service, policy, entity, and routes
-npm run service:create -- entity-name --api # Also expose API endpoints for Unity/Godot SDKs
-```
-
-Pass entity name in singular form (e.g., `global-stat` not `global-stats`).
-
 ## Architecture
 
 ### Three-Tier Routing System

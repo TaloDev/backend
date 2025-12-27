@@ -9,7 +9,7 @@ export default class InviteFactory extends Factory<Invite> {
     super(Invite)
   }
 
-  protected definition(): void {
+  protected override definition() {
     this.state(async (invite) => {
       const invitedByUser = await new UserFactory().state(() => ({ organisation: invite.organisation })).one()
 

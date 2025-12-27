@@ -14,7 +14,7 @@ export default class GameFeedbackFactory extends Factory<GameFeedback> {
     this.game = game
   }
 
-  protected definition(): void {
+  protected override definition(): void {
     this.state(async () => {
       const category = await new GameFeedbackCategoryFactory(this.game).one()
       const player = await new PlayerFactory([this.game]).one()

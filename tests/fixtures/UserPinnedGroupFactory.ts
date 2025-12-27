@@ -10,7 +10,7 @@ export default class UserPinnedGroupFactory extends Factory<UserPinnedGroup> {
     super(UserPinnedGroup)
   }
 
-  protected definition(): void {
+  protected override definition() {
     this.state(async () => {
       const organisation = await new OrganisationFactory().one()
       const game = await new GameFactory(organisation).one()

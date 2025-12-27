@@ -7,7 +7,7 @@ export default class PlayerGameStatFactory extends Factory<PlayerGameStat> {
     super(PlayerGameStat)
   }
 
-  protected definition(): void {
+  protected override definition() {
     this.state(async ({ stat }) => {
       return {
         value: randBoolean()

@@ -13,7 +13,7 @@ export class CreatePlayerPropsTable extends Migration {
     this.addSql('alter table `player` drop `props`;')
   }
 
-  async down(): Promise<void> {
+  override async down(): Promise<void> {
     this.addSql('drop table if exists `player_prop`;')
 
     this.addSql('alter table `player` add `props` json not null;')

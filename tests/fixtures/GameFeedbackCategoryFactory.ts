@@ -12,7 +12,7 @@ export default class GameFeedbackCategoryFactory extends Factory<GameFeedbackCat
     this.game = game
   }
 
-  protected definition(): void {
+  protected override definition() {
     this.state(() => ({
       internalName: randSlug(),
       name: randText(),

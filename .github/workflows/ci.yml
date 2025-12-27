@@ -10,7 +10,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: 24
 
       - uses: actions/cache@v4
         with:
@@ -37,7 +37,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: 24
 
       - uses: actions/cache@v4
         with:
@@ -48,7 +48,7 @@ jobs:
         run: npm ci --prefer-offline
 
       - name: Type check
-        run: npx tsc
+        run: npx tsc --noEmit
 
       - name: Build
         run: npm run build
@@ -60,7 +60,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: 24
 
       - uses: actions/cache@v4
         with:

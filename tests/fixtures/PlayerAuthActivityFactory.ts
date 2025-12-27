@@ -13,7 +13,7 @@ export default class PlayerAuthActivityFactory extends Factory<PlayerAuthActivit
     this.game = game
   }
 
-  protected definition(): void {
+  protected override definition() {
     this.state(async () => ({
       type: rand([
         PlayerAuthActivityType.REGISTERED,

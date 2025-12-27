@@ -12,7 +12,7 @@ export default class GameStatFactory extends Factory<GameStat> {
     this.availableGames = availableGames
   }
 
-  protected definition(): void {
+  protected override definition() {
     this.state(() => {
       const global = randBoolean()
       const minValue = randNumber({ min: -999, max: -1 })

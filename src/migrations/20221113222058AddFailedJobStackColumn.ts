@@ -6,7 +6,7 @@ export class AddFailedJobStackColumn extends Migration {
     this.addSql('alter table `failed_job` add `stack` text not null;')
   }
 
-  async down(): Promise<void> {
+  override async down(): Promise<void> {
     this.addSql('alter table `failed_job` drop `stack`;')
   }
 

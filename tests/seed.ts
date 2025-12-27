@@ -28,9 +28,9 @@ import { MikroORM } from '@mikro-orm/mysql'
   }
 
   const orm = await MikroORM.init(seedOrmConfig)
-  await orm.getSchemaGenerator().dropSchema()
+  await orm.schema.dropSchema()
   await orm.em.getConnection().execute('drop table if exists mikro_orm_migrations')
-  await orm.getMigrator().up()
+  await orm.migrator.up()
 
   console.info('Seeding DB...')
 

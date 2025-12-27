@@ -15,7 +15,7 @@ export default class LeaderboardFactory extends Factory<Leaderboard> {
     this.availableGames = availableGames
   }
 
-  protected definition(): void {
+  protected override definition() {
     this.state(() => ({
       game: rand(this.availableGames),
       internalName: randSlug(),

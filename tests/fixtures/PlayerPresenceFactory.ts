@@ -13,7 +13,7 @@ export default class PlayerPresenceFactory extends Factory<PlayerPresence> {
     this.game = game
   }
 
-  protected definition(): void {
+  protected override definition() {
     this.state(async (presence) => {
       const player = presence.player ?? await new PlayerFactory([this.game]).one()
       await player.aliases.loadItems()

@@ -10,7 +10,7 @@ export class CreateGameSecretsTable extends Migration {
     this.addSql('alter table `game` add unique `game_api_secret_id_unique`(`api_secret_id`);')
   }
 
-  async down(): Promise<void> {
+  override async down(): Promise<void> {
     this.addSql('alter table `game` drop foreign key `game_api_secret_id_foreign`;')
 
     this.addSql('drop table if exists `game_secret`;')

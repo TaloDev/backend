@@ -14,7 +14,7 @@ export class CreateSteamIntegrationTables extends Migration {
     this.addSql('alter table `steamworks_leaderboard_mapping` add constraint `steamworks_leaderboard_mapping_leaderboard_id_foreign` foreign key (`leaderboard_id`) references `leaderboard` (`id`) on delete cascade;')
   }
 
-  async down(): Promise<void> {
+  override async down(): Promise<void> {
     this.addSql('drop table if exists `steam_integration_event`;')
 
     this.addSql('drop table if exists `steamworks_leaderboard_mapping`;')

@@ -7,7 +7,7 @@ export default class OrganisationPricingPlanFactory extends Factory<Organisation
     super(OrganisationPricingPlan)
   }
 
-  protected definition(): void {
+  protected override definition() {
     this.state(() => ({
       stripePriceId: `price_${randUuid().split('-')[0]}`,
       stripeCustomerId: `cus_${randUuid().split('-')[0]}`,

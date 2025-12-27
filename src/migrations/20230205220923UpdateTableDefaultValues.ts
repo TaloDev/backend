@@ -23,7 +23,7 @@ export class UpdateTableDefaultValues extends Migration {
     this.addSql('alter table `apikey` modify `scopes` text not null;')
   }
 
-  async down(): Promise<void> {
+  override async down(): Promise<void> {
     this.addSql('alter table `game_save` drop foreign key `game_save_player_id_foreign`;')
 
     this.addSql('alter table `organisation_pricing_plan` modify `status` varchar(255) not null;')

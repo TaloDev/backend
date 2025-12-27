@@ -7,7 +7,7 @@ export default class PricingPlanFactory extends Factory<PricingPlan> {
     super(PricingPlan)
   }
 
-  protected definition(): void {
+  protected override definition() {
     this.state(() => ({
       stripeId: `prod_${randUuid().split('-')[0]}`,
       playerLimit: 10000

@@ -2,7 +2,7 @@ import { captureException, setTag } from '@sentry/node'
 import { sendMessage, SocketMessageRequest } from './socketMessage'
 import SocketConnection from '../socketConnection'
 
-const errorCodes = [
+export type SocketErrorCode = [
   'INVALID_MESSAGE',
   'INVALID_MESSAGE_DATA',
   'NO_PLAYER_FOUND',
@@ -13,9 +13,7 @@ const errorCodes = [
   'INVALID_SESSION_TOKEN',
   'MISSING_ACCESS_KEY_SCOPES',
   'RATE_LIMIT_EXCEEDED'
-] as const
-
-export type SocketErrorCode = typeof errorCodes[number]
+][number]
 
 const validSentryErrorCodes: SocketErrorCode[] = [
   'UNHANDLED_REQUEST',

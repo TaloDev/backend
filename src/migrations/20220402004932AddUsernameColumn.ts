@@ -8,7 +8,7 @@ export class AddUsernameColumn extends Migration {
     this.addSql('alter table `data_export` modify `entities` text not null;')
   }
 
-  async down(): Promise<void> {
+  override async down(): Promise<void> {
     this.addSql('alter table `user` drop `username`;')
 
     this.addSql('alter table `data_export` modify `entities` text not null;')

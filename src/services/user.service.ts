@@ -39,10 +39,10 @@ export default class UserService extends Service {
   async logout(req: Request): Promise<Response> {
     const em: EntityManager = req.ctx.em
     const userId: number = req.ctx.state.user.sub
-    const userAgent: string = req.headers['user-agent']
+    const userAgent = req.headers['user-agent']
 
-    const sessions = await em.getRepository(UserSession).find({ user: userId, userAgent })
-    await em.removeAndFlush(sessions)
+    const sessions = await em.repo(UserSession).find({ user: userId, userAgent })
+    await em.remove(sessions).flush()
     req.ctx.cookies.set('refreshToken', null, { expires: new Date(0) })
 
     return {

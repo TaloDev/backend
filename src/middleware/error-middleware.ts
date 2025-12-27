@@ -16,9 +16,9 @@ export default async function errorMiddleware(ctx: Context, next: Next) {
 
       if (isJWTError) {
         const originalError = err.originalError
-        if (originalError instanceof Error && originalError.name !== 'TokenExpiredError') {
-          hdxRecordException(err.originalError)
-          Sentry.captureException(err.originalError)
+        if (canCaptureJWTError(originalError)) {
+          hdxRecordException(originalError)
+          Sentry.captureException(originalError)
         }
       }
 
@@ -61,4 +61,11 @@ export default async function errorMiddleware(ctx: Context, next: Next) {
       }
     }
   }
+}
+
+function canCaptureJWTError(err: unknown) {
+  if (!(err instanceof Error)) return false
+  if (err.name === 'TokenExpiredError') return false
+  if (err.message === 'Token revoked') return false
+  return true
 }

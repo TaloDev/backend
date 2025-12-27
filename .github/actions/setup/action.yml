@@ -14,3 +14,4 @@ runs:
 
     - name: Install deps
       run: npm ci --prefer-offline
+      shell: bash

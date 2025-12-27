@@ -14,16 +14,10 @@ jobs:
       - name: Setup
         uses: ./.github/actions/setup
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Cache Docker layers
-        uses: actions/cache@v4
+      - name: Cache Docker images
+        uses: ScribeMD/docker-cache@0.5.0
         with:
-          path: /tmp/.buildx-cache
-          key: ${{ runner.os }}-buildx-${{ hashFiles('docker-compose.test.yml', 'docker-compose.ci.yml') }}
-          restore-keys: |
-            ${{ runner.os }}-buildx-
+          key: docker-${{ runner.os }}-${{ hashFiles('docker-compose.test.yml', 'docker-compose.ci.yml') }}
 
       - name: Setup environment
         run: |

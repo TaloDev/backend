@@ -1,4 +1,5 @@
 import Koa from 'koa'
+import type { EntityManager } from '@mikro-orm/mysql'
 import { getMikroORM } from './mikro-orm.config'
 import createClickHouseClient from '../lib/clickhouse/createClient'
 import { runClickHouseMigrations } from '../migrations/clickhouse'
@@ -10,7 +11,7 @@ import { setupGlobalQueues } from './global-queues'
 export default async function initProviders(app: Koa, isTest: boolean) {
   try {
     const orm = await getMikroORM()
-    app.context.em = orm.em
+    app.context.em = orm.em as EntityManager
 
     if (!isTest) {
       const migrator = orm.migrator

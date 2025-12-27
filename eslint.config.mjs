@@ -66,6 +66,8 @@ export default [
           ]
         }
       ],
+      'no-redeclare': 'off',
+      '@typescript-eslint/no-redeclare': 'error'
     }
   },
   {

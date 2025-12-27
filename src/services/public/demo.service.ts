@@ -1,7 +1,7 @@
 import { After, Before, Service, Request, Response, Route } from 'koa-clay'
 import User, { UserType } from '../../entities/user'
 import { EntityManager } from '@mikro-orm/mysql'
-import buildTokenPair from '../../lib/auth/buildTokenPair'
+import { buildTokenPair } from '../../lib/auth/buildTokenPair'
 import Organisation from '../../entities/organisation'
 import createQueue from '../../lib/queues/createQueue'
 import UserSession from '../../entities/user-session'
@@ -64,7 +64,11 @@ export default class DemoService extends Service {
 
     await em.persistAndFlush(user)
 
-    const accessToken = await buildTokenPair(req.ctx, user)
+    const accessToken = await buildTokenPair({
+      em: req.ctx.em,
+      ctx: req.ctx,
+      user
+    })
 
     return {
       status: 200,

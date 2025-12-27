@@ -3,13 +3,13 @@ name: Node tests
 on: push
 
 jobs:
-  test:
+  test-shard:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        shard: [1, 2, 3, 4, 5, 6, 7, 8]
+        shard: [1, 2, 3, 4]
     env:
-      SHARD_COUNT: 8
+      SHARD_COUNT: 4
 
     steps:
       - uses: actions/checkout@v4
@@ -19,6 +19,7 @@ jobs:
       - name: Setup environment
         run: |
           cp envs/.env.dev .env
+          echo "COMPOSE_PROJECT_NAME=test-shard-${{ matrix.shard }}" >> envs/.env.test
           echo "DB_PORT=$((3306 + ${{ matrix.shard }}))" >> envs/.env.test
           echo "REDIS_PORT=$((6379 + ${{ matrix.shard }}))" >> envs/.env.test
           echo "CLICKHOUSE_PORT=$((8123 + ${{ matrix.shard }}))" >> envs/.env.test
@@ -35,7 +36,7 @@ jobs:
           include-hidden-files: true
           retention-days: 1
 
-  merge-reports:
+  test:
     if: ${{ !cancelled() }}
     runs-on: ubuntu-latest
     needs: test
@@ -45,7 +46,7 @@ jobs:
       - name: Setup
         uses: ./.github/actions/setup
 
-      - name: Download all test reports
+      - name: Download reports
         uses: actions/download-artifact@v4
         with:
           pattern: test-reports-*

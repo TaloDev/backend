@@ -1572,6 +1572,169 @@
     },
     {
       "columns": {
+        "id": {
+          "name": "id",
+          "type": "int",
+          "unsigned": true,
+          "autoincrement": true,
+          "primary": true,
+          "nullable": false,
+          "length": null,
+          "mappedType": "integer"
+        },
+        "subscriber_id": {
+          "name": "subscriber_id",
+          "type": "int",
+          "unsigned": true,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "length": null,
+          "mappedType": "integer"
+        },
+        "subscribed_to_id": {
+          "name": "subscribed_to_id",
+          "type": "int",
+          "unsigned": true,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "length": null,
+          "mappedType": "integer"
+        },
+        "confirmed": {
+          "name": "confirmed",
+          "type": "tinyint(1)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "length": 1,
+          "default": "false",
+          "mappedType": "boolean"
+        },
+        "relationship_type": {
+          "name": "relationship_type",
+          "type": "enum('unidirectional','bidirectional')",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "enumItems": [
+            "unidirectional",
+            "bidirectional"
+          ],
+          "mappedType": "enum"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "datetime",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "length": null,
+          "mappedType": "datetime"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "datetime",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "length": null,
+          "mappedType": "datetime"
+        }
+      },
+      "name": "player_alias_subscription",
+      "indexes": [
+        {
+          "columnNames": [
+            "subscriber_id"
+          ],
+          "composite": false,
+          "keyName": "player_alias_subscription_subscriber_id_index",
+          "constraint": false,
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "subscribed_to_id"
+          ],
+          "composite": false,
+          "keyName": "player_alias_subscription_subscribed_to_id_index",
+          "constraint": false,
+          "primary": false,
+          "unique": false
+        },
+        {
+          "keyName": "player_alias_subscription_subscribed_to_id_confirmed_index",
+          "columnNames": [
+            "subscribed_to_id",
+            "confirmed"
+          ],
+          "composite": true,
+          "constraint": false,
+          "primary": false,
+          "unique": false
+        },
+        {
+          "keyName": "player_alias_subscription_subscriber_id_subscribed_to_id_unique",
+          "columnNames": [
+            "subscriber_id",
+            "subscribed_to_id"
+          ],
+          "composite": true,
+          "constraint": true,
+          "primary": false,
+          "unique": true
+        },
+        {
+          "keyName": "PRIMARY",
+          "columnNames": [
+            "id"
+          ],
+          "composite": false,
+          "constraint": true,
+          "primary": true,
+          "unique": true
+        }
+      ],
+      "checks": [],
+      "foreignKeys": {
+        "player_alias_subscription_subscriber_id_foreign": {
+          "constraintName": "player_alias_subscription_subscriber_id_foreign",
+          "columnNames": [
+            "subscriber_id"
+          ],
+          "localTableName": "player_alias_subscription",
+          "referencedColumnNames": [
+            "id"
+          ],
+          "referencedTableName": "player_alias",
+          "deleteRule": "cascade",
+          "updateRule": "cascade"
+        },
+        "player_alias_subscription_subscribed_to_id_foreign": {
+          "constraintName": "player_alias_subscription_subscribed_to_id_foreign",
+          "columnNames": [
+            "subscribed_to_id"
+          ],
+          "localTableName": "player_alias_subscription",
+          "referencedColumnNames": [
+            "id"
+          ],
+          "referencedTableName": "player_alias",
+          "deleteRule": "cascade",
+          "updateRule": "cascade"
+        }
+      },
+      "nativeEnums": {}
+    },
+    {
+      "columns": {
         "player_group_id": {
           "name": "player_group_id",
           "type": "varchar(255)",
@@ -5044,6 +5207,8 @@
           "nullable": false,
           "length": null,
           "enumItems": [
+            "read:playerPresence",
+            "write:playerPresence",
             "read:gameChannels",
             "write:gameChannels",
             "read:playerGroups",
@@ -5062,6 +5227,10 @@
             "write:players",
             "read:events",
             "write:events",
+            "read:playerRelationships",
+            "write:playerRelationships",
+            "read:playerBroadcasts",
+            "write:playerBroadcasts",
             "*"
           ],
           "mappedType": "text"

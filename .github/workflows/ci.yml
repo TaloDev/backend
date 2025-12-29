@@ -6,6 +6,7 @@ jobs:
   test-shard:
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         shard: [1, 2, 3, 4]
     env:
@@ -26,6 +27,7 @@ jobs:
 
       - name: Run tests
         run: npm test -- --reporter=blob --shard=${{ matrix.shard }}/${{ env.SHARD_COUNT }}
+        continue-on-error: true
 
       - name: Upload test reports
         if: ${{ !cancelled() }}
@@ -57,6 +59,7 @@ jobs:
         run: npx vitest --merge-reports --coverage
 
       - uses: codecov/codecov-action@v4
+        if: always()
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
 

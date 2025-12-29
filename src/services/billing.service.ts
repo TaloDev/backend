@@ -97,6 +97,9 @@ export default class BillingService extends Service {
       subscription_details: {
         items,
         proration_date: prorationDate
+      },
+      automatic_tax: {
+        enabled: true
       }
     })
 
@@ -179,7 +182,6 @@ export default class BillingService extends Service {
     }
 
     const session = await stripe.checkout.sessions.create({
-      billing_address_collection: 'auto',
       line_items: [{
         price,
         quantity: 1
@@ -187,7 +189,13 @@ export default class BillingService extends Service {
       mode: 'subscription',
       customer: organisation.pricingPlan.stripeCustomerId ?? (await stripe.customers.create()).id,
       success_url: `${process.env.DASHBOARD_URL}/billing?new_plan=${pricingPlanId}`,
-      cancel_url: `${process.env.DASHBOARD_URL}/billing`
+      cancel_url: `${process.env.DASHBOARD_URL}/billing`,
+      automatic_tax: {
+        enabled: true
+      },
+      customer_update: {
+        address: 'auto'
+      }
     })
 
     organisation.pricingPlan.stripeCustomerId = session.customer as string

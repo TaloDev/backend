@@ -10,6 +10,14 @@ import { DEFAULT_PAGE_SIZE } from '../../lib/pagination/itemsPerPage'
 import Socket from '../../socket'
 import { sendMessages } from '../../socket/messages/socketMessage'
 import { APIKeyScope } from '../../entities/api-key'
+import { withResponseCache } from '../../lib/perf/responseCache'
+
+const relationshipTypeValidation = async (val: unknown) => [
+  {
+    check: Object.values(RelationshipType).includes(val as RelationshipType),
+    error: 'relationshipType must be either "unidirectional" or "bidirectional"'
+  }
+]
 
 export default class PlayerRelationshipsAPIService extends APIService {
   @Route({
@@ -24,12 +32,7 @@ export default class PlayerRelationshipsAPIService extends APIService {
       },
       relationshipType: {
         required: true,
-        validation: async (val: unknown) => [
-          {
-            check: Object.values(RelationshipType).includes(val as RelationshipType),
-            error: 'relationshipType must be either "unidirectional" or "bidirectional"'
-          }
-        ]
+        validation: relationshipTypeValidation
       }
     }
   })
@@ -67,7 +70,7 @@ export default class PlayerRelationshipsAPIService extends APIService {
       subscribedTo,
       relationshipType as RelationshipType
     )
-    await em.persistAndFlush(subscription)
+    await em.persist(subscription).flush()
 
     const conns = (req.ctx.wss as Socket).findConnections((conn) => {
       return (
@@ -96,7 +99,7 @@ export default class PlayerRelationshipsAPIService extends APIService {
   async confirm(req: Request): Promise<Response> {
     const em: EntityManager = req.ctx.em
     const { id } = req.params
-    const currentAlias = req.ctx.state.currentAlias
+    const currentAlias: PlayerAlias = req.ctx.state.currentAlias
 
     const subscription = await em.repo(PlayerAliasSubscription).findOne({
       id: Number(id),
@@ -125,7 +128,7 @@ export default class PlayerRelationshipsAPIService extends APIService {
           RelationshipType.BIDIRECTIONAL
         )
         reciprocalSubscription.confirmed = true
-        await em.persistAndFlush(reciprocalSubscription)
+        await em.persist(reciprocalSubscription).flush()
       } else if (!existingReciprocal.confirmed) {
         existingReciprocal.confirmed = true
         reciprocalSubscription = existingReciprocal
@@ -160,7 +163,10 @@ export default class PlayerRelationshipsAPIService extends APIService {
   })
   @Validate({
     query: {
-      page: pageValidation
+      page: pageValidation,
+      relationshipType: {
+        validation: relationshipTypeValidation
+      }
     }
   })
   @HasPermission(PlayerRelationshipsAPIPolicy, 'getSubscribers')
@@ -168,35 +174,44 @@ export default class PlayerRelationshipsAPIService extends APIService {
     const itemsPerPage = DEFAULT_PAGE_SIZE
 
     const em: EntityManager = req.ctx.em
-    const currentAlias = req.ctx.state.currentAlias
-    const { confirmed, aliasId, page = 0 } = req.query
+    const currentAlias: PlayerAlias = req.ctx.state.currentAlias
+    const { confirmed, aliasId, relationshipType, page = 0 } = req.query
 
-    const where: FilterQuery<PlayerAliasSubscription> = {
-      subscribedTo: currentAlias
-    }
+    const cacheKey = `${PlayerAliasSubscription.getSubscribersCacheKey(currentAlias)}-${confirmed}-${aliasId}-${relationshipType}-${page}`
 
-    if (confirmed !== undefined) {
-      where.confirmed = confirmed === 'true'
-    }
+    return withResponseCache({ key: cacheKey }, async () => {
 
-    if (aliasId) {
-      where.subscriber = Number(aliasId)
-    }
-
-    const [subscriptions, count] = await em.repo(PlayerAliasSubscription).findAndCount(where, {
-      limit: itemsPerPage + 1,
-      offset: Number(page) * itemsPerPage
-    })
-
-    return {
-      status: 200,
-      body: {
-        subscriptions: subscriptions.slice(0, itemsPerPage),
-        count,
-        itemsPerPage,
-        isLastPage: subscriptions.length <= itemsPerPage
+      const where: FilterQuery<PlayerAliasSubscription> = {
+        subscribedTo: currentAlias
       }
-    }
+
+      if (confirmed !== undefined) {
+        where.confirmed = confirmed === 'true'
+      }
+
+      if (aliasId) {
+        where.subscriber = Number(aliasId)
+      }
+
+      if (relationshipType) {
+        where.relationshipType = relationshipType as RelationshipType
+      }
+
+      const [subscriptions, count] = await em.repo(PlayerAliasSubscription).findAndCount(where, {
+        limit: itemsPerPage + 1,
+        offset: Number(page) * itemsPerPage
+      })
+
+      return {
+        status: 200,
+        body: {
+          subscriptions: subscriptions.slice(0, itemsPerPage),
+          count,
+          itemsPerPage,
+          isLastPage: subscriptions.length <= itemsPerPage
+        }
+      }
+    })
   }
 
   @Route({
@@ -206,7 +221,10 @@ export default class PlayerRelationshipsAPIService extends APIService {
   })
   @Validate({
     query: {
-      page: pageValidation
+      page: pageValidation,
+      relationshipType: {
+        validation: relationshipTypeValidation
+      }
     }
   })
   @HasPermission(PlayerRelationshipsAPIPolicy, 'getSubscriptions')
@@ -215,34 +233,42 @@ export default class PlayerRelationshipsAPIService extends APIService {
 
     const em: EntityManager = req.ctx.em
     const currentAlias = req.ctx.state.currentAlias
-    const { confirmed, aliasId, page = 0 } = req.query
+    const { confirmed, aliasId, relationshipType, page = 0 } = req.query
 
-    const where: FilterQuery<PlayerAliasSubscription> = {
-      subscriber: currentAlias
-    }
+    const cacheKey = `${PlayerAliasSubscription.getSubscriptionsCacheKey(currentAlias)}-${confirmed}-${aliasId}-${relationshipType}-${page}`
 
-    if (confirmed !== undefined) {
-      where.confirmed = confirmed === 'true'
-    }
-
-    if (aliasId) {
-      where.subscribedTo = Number(aliasId)
-    }
-
-    const [subscriptions, count] = await em.repo(PlayerAliasSubscription).findAndCount(where, {
-      limit: itemsPerPage + 1,
-      offset: Number(page) * itemsPerPage
-    })
-
-    return {
-      status: 200,
-      body: {
-        subscriptions: subscriptions.slice(0, itemsPerPage),
-        count,
-        itemsPerPage,
-        isLastPage: subscriptions.length <= itemsPerPage
+    return withResponseCache({ key: cacheKey }, async () => {
+      const where: FilterQuery<PlayerAliasSubscription> = {
+        subscriber: currentAlias
       }
-    }
+
+      if (confirmed !== undefined) {
+        where.confirmed = confirmed === 'true'
+      }
+
+      if (aliasId) {
+        where.subscribedTo = Number(aliasId)
+      }
+
+      if (relationshipType) {
+        where.relationshipType = relationshipType as RelationshipType
+      }
+
+      const [subscriptions, count] = await em.repo(PlayerAliasSubscription).findAndCount(where, {
+        limit: itemsPerPage + 1,
+        offset: Number(page) * itemsPerPage
+      })
+
+      return {
+        status: 200,
+        body: {
+          subscriptions: subscriptions.slice(0, itemsPerPage),
+          count,
+          itemsPerPage,
+          isLastPage: subscriptions.length <= itemsPerPage
+        }
+      }
+    })
   }
 
   @Route({

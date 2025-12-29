@@ -3,6 +3,7 @@ import { APIKeyScope } from '../../../../src/entities/api-key'
 import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
 import PlayerFactory from '../../../fixtures/PlayerFactory'
 import PlayerAliasSubscriptionFactory from '../../../fixtures/PlayerAliasSubscriptionFactory'
+import { RelationshipType } from '../../../../src/entities/player-alias-subscription'
 
 describe('Player relationships API service - getSubscribers', () => {
   it('should get confirmed subscribers', async () => {
@@ -197,5 +198,71 @@ describe('Player relationships API service - getSubscribers', () => {
     expect(res.body.count).toBe(1)
     expect(res.body.isLastPage).toBe(true)
     expect(res.body.subscriptions[0].subscriber.id).toBe(player2.aliases[0].id)
+  })
+
+  it('should filter subscribers by unidirectional relationshipType', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_PLAYER_RELATIONSHIPS])
+    const player1 = await new PlayerFactory([apiKey.game]).one()
+    const player2 = await new PlayerFactory([apiKey.game]).one()
+    const player3 = await new PlayerFactory([apiKey.game]).one()
+
+    const unidirectionalSubscription = await new PlayerAliasSubscriptionFactory()
+      .withSubscriber(player2.aliases[0])
+      .withSubscribedTo(player1.aliases[0])
+      .unidirectional()
+      .confirmed()
+      .one()
+    const bidirectionalSubscription = await new PlayerAliasSubscriptionFactory()
+      .withSubscriber(player3.aliases[0])
+      .withSubscribedTo(player1.aliases[0])
+      .bidirectional()
+      .confirmed()
+      .one()
+    await em.persist([player1, player2, player3, unidirectionalSubscription, bidirectionalSubscription]).flush()
+
+    const res = await request(app)
+      .get(`/v1/players/relationships/subscribers?relationshipType=${RelationshipType.UNIDIRECTIONAL}`)
+      .auth(token, { type: 'bearer' })
+      .set('x-talo-alias', String(player1.aliases[0].id))
+      .expect(200)
+
+    expect(res.body.subscriptions).toHaveLength(1)
+    expect(res.body.count).toBe(1)
+    expect(res.body.isLastPage).toBe(true)
+    expect(res.body.subscriptions[0].subscriber.id).toBe(player2.aliases[0].id)
+    expect(res.body.subscriptions[0].relationshipType).toBe(RelationshipType.UNIDIRECTIONAL)
+  })
+
+  it('should filter subscribers by bidirectional relationshipType', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_PLAYER_RELATIONSHIPS])
+    const player1 = await new PlayerFactory([apiKey.game]).one()
+    const player2 = await new PlayerFactory([apiKey.game]).one()
+    const player3 = await new PlayerFactory([apiKey.game]).one()
+
+    const unidirectionalSubscription = await new PlayerAliasSubscriptionFactory()
+      .withSubscriber(player2.aliases[0])
+      .withSubscribedTo(player1.aliases[0])
+      .unidirectional()
+      .confirmed()
+      .one()
+    const bidirectionalSubscription = await new PlayerAliasSubscriptionFactory()
+      .withSubscriber(player3.aliases[0])
+      .withSubscribedTo(player1.aliases[0])
+      .bidirectional()
+      .confirmed()
+      .one()
+    await em.persist([player1, player2, player3, unidirectionalSubscription, bidirectionalSubscription]).flush()
+
+    const res = await request(app)
+      .get(`/v1/players/relationships/subscribers?relationshipType=${RelationshipType.BIDIRECTIONAL}`)
+      .auth(token, { type: 'bearer' })
+      .set('x-talo-alias', String(player1.aliases[0].id))
+      .expect(200)
+
+    expect(res.body.subscriptions).toHaveLength(1)
+    expect(res.body.count).toBe(1)
+    expect(res.body.isLastPage).toBe(true)
+    expect(res.body.subscriptions[0].subscriber.id).toBe(player3.aliases[0].id)
+    expect(res.body.subscriptions[0].relationshipType).toBe(RelationshipType.BIDIRECTIONAL)
   })
 })

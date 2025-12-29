@@ -31,6 +31,18 @@ export default class PlayerAliasSubscription {
   @Property({ onUpdate: () => new Date() })
   updatedAt: Date = new Date()
 
+  static getSubscribersCacheKey(alias: PlayerAlias, wildcard = false) {
+    let key = `subscribers-${alias.id}`
+    if (wildcard) key += '-*'
+    return key
+  }
+
+  static getSubscriptionsCacheKey(alias: PlayerAlias, wildcard = false) {
+    let key = `subscriptions-${alias.id}`
+    if (wildcard) key += '-*'
+    return key
+  }
+
   constructor(subscriber: PlayerAlias, subscribedTo: PlayerAlias, relationshipType: RelationshipType) {
     this.subscriber = subscriber
     this.subscribedTo = subscribedTo

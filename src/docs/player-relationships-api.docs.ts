@@ -133,6 +133,7 @@ const PlayerRelationshipsAPIDocs: APIDocs<PlayerRelationshipsAPIService> = {
       query: {
         confirmed: 'Filter by confirmation status (true or false)',
         aliasId: 'Filter by a specific subscriber alias ID',
+        relationshipType: 'Filter by relationship type (unidirectional or bidirectional)',
         page: 'Page number for pagination (default: 0)'
       }
     },
@@ -224,15 +225,6 @@ const PlayerRelationshipsAPIDocs: APIDocs<PlayerRelationshipsAPIService> = {
           itemsPerPage: 50,
           isLastPage: true
         }
-      },
-      {
-        title: 'Sample response when no subscribers exist',
-        sample: {
-          subscriptions: [],
-          count: 0,
-          itemsPerPage: 50,
-          isLastPage: true
-        }
       }
     ]
   },
@@ -245,6 +237,7 @@ const PlayerRelationshipsAPIDocs: APIDocs<PlayerRelationshipsAPIService> = {
       query: {
         confirmed: 'Filter by confirmation status (true or false)',
         aliasId: 'Filter by a specific subscribed-to alias ID',
+        relationshipType: 'Filter by relationship type (unidirectional or bidirectional)',
         page: 'Page number for pagination (default: 0)'
       }
     },
@@ -333,15 +326,6 @@ const PlayerRelationshipsAPIDocs: APIDocs<PlayerRelationshipsAPIService> = {
             }
           ],
           count: 2,
-          itemsPerPage: 50,
-          isLastPage: true
-        }
-      },
-      {
-        title: 'Sample response when not subscribed to anyone',
-        sample: {
-          subscriptions: [],
-          count: 0,
           itemsPerPage: 50,
           isLastPage: true
         }

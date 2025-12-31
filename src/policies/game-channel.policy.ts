@@ -40,4 +40,8 @@ export default class GameChannelPolicy extends Policy {
     if (this.isAPICall()) return true
     return this.canAccessChannel(req)
   }
+
+  async storage(req: Request): Promise<PolicyResponse> {
+    return this.canAccessChannel(req)
+  }
 }

@@ -13,6 +13,7 @@ import { pageValidation } from '../lib/pagination/pageValidation'
 import { DEFAULT_PAGE_SIZE } from '../lib/pagination/itemsPerPage'
 import { withResponseCache } from '../lib/perf/responseCache'
 import Game from '../entities/game'
+import GameChannelStorageProp from '../entities/game-channel-storage-prop'
 
 const itemsPerPage = DEFAULT_PAGE_SIZE
 
@@ -313,6 +314,72 @@ export default class GameChannelService extends Service {
 
     return {
       status: 204
+    }
+  }
+
+  @Route({
+    method: 'GET',
+    path: '/:id/storage'
+  })
+  @Validate({
+    query: {
+      page: pageValidation
+    }
+  })
+  @HasPermission(GameChannelPolicy, 'storage')
+  async storage(req: Request): Promise<Response> {
+
+    const { search, page } = req.ctx.query
+    const em: EntityManager = req.ctx.em
+    const channel: GameChannel = req.ctx.state.channel
+
+    const [storageProps, count] = await em.repo(GameChannelStorageProp).findAndCount({
+      gameChannel: channel.id,
+      ...(search ? {
+        $or: [
+          {
+            key: {
+              $like: `%${search}%`
+            }
+          },
+          {
+            value: {
+              $like: `%${search}%`
+            }
+          },
+          {
+            createdBy: {
+              identifier: {
+                $like: `%${search}%`
+              }
+            }
+          },
+          {
+            lastUpdatedBy: {
+              identifier: {
+                $like: `%${search}%`
+              }
+            }
+          }
+        ]
+      } : {})
+    }, {
+      orderBy: {
+        updatedAt: QueryOrder.DESC
+      },
+      limit: itemsPerPage + 1,
+      offset: Number(page) * itemsPerPage
+    })
+
+    return {
+      status: 200,
+      body: {
+        channelName: channel.name,
+        storageProps: storageProps.slice(0, itemsPerPage),
+        count,
+        itemsPerPage,
+        isLastPage: storageProps.length <= itemsPerPage
+      }
     }
   }
 }

@@ -5,6 +5,7 @@ import Invite from '../entities/invite'
 import Organisation from '../entities/organisation'
 import User from '../entities/user'
 import OrganisationPolicy from '../policies/organisation.policy'
+import Player from '../entities/player'
 
 export default class OrganisationService extends Service {
   @Route({
@@ -17,20 +18,23 @@ export default class OrganisationService extends Service {
 
     const organisation: Organisation = req.ctx.state.user.organisation
 
-    const games = await em.getRepository(Game).find({
-      organisation
-    }, {
-      populate: ['players']
-    })
+    const games = await em.repo(Game).find({ organisation })
+    const playerCountMap: Map<number, number> = new Map()
+    for (const game of games) {
+      const playerCount = await em.repo(Player).count({ game })
+      playerCountMap.set(game.id, playerCount)
+    }
 
-    const members = await em.getRepository(User).find({ organisation })
-
-    const pendingInvites = await em.getRepository(Invite).find({ organisation })
+    const members = await em.repo(User).find({ organisation })
+    const pendingInvites = await em.repo(Invite).find({ organisation })
 
     return {
       status: 200,
       body: {
-        games,
+        games: games.map((game) => ({
+          ...game.toJSON(),
+          playerCount: playerCountMap.get(game.id)
+        })),
         members,
         pendingInvites
       }

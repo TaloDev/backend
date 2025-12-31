@@ -328,8 +328,7 @@ export default class GameChannelService extends Service {
   })
   @HasPermission(GameChannelPolicy, 'storage')
   async storage(req: Request): Promise<Response> {
-
-    const { search, page } = req.ctx.query
+    const { search, page = 0 } = req.ctx.query
     const em: EntityManager = req.ctx.em
     const channel: GameChannel = req.ctx.state.channel
 

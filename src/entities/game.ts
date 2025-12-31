@@ -65,7 +65,6 @@ export default class Game {
       id: this.id,
       name: this.name,
       props: this.props,
-      playerCount: this.players.isInitialized() ? this.players.count() : undefined,
       createdAt: this.createdAt
     }
   }

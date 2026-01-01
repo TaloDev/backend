@@ -9,6 +9,7 @@ import SocketError, { sendError } from '../messages/socketError'
 import { APIKeyScope } from '../../entities/api-key'
 import playerListeners from '../listeners/playerListeners'
 import gameChannelListeners from '../listeners/gameChannelListeners'
+import playerRelationshipsListeners from '../listeners/playerRelationshipsListeners'
 import { logRequest } from '../messages/socketLogger'
 import { SpanStatusCode } from '@opentelemetry/api'
 import { getSocketTracer } from '../socketTracer'
@@ -22,7 +23,8 @@ type SocketMessage = z.infer<typeof socketMessageValidator>
 
 const routes: SocketMessageListener<ZodType>[][] = [
   playerListeners,
-  gameChannelListeners
+  gameChannelListeners,
+  playerRelationshipsListeners
 ]
 
 export default class SocketRouter {

@@ -61,8 +61,7 @@ export default class Socket {
           continue
         }
 
-        conn.alive = false
-        ws.ping()
+        conn.ping()
       }
     }, 30_000)
   }
@@ -118,11 +117,7 @@ export default class Socket {
   handlePong(ws: WebSocket): void {
     const connection = this.findConnection(ws)
     if (!connection) return
-
-    connection.alive = true
-    if (connection.rateLimitWarnings > 0) {
-      connection.rateLimitWarnings--
-    }
+    connection.handleHeartbeat()
   }
   /* v8 ignore stop */
 

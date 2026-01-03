@@ -26,7 +26,7 @@ jobs:
           echo "CLICKHOUSE_PORT=$((8123 + ${{ matrix.shard }}))" >> envs/.env.test
 
       - name: Run tests
-        run: npm test -- --reporter=blob --shard=${{ matrix.shard }}/${{ env.SHARD_COUNT }}
+        run: npm test -- --coverage --reporter=blob --shard=${{ matrix.shard }}/${{ env.SHARD_COUNT }}
         continue-on-error: true
 
       - name: Upload test reports

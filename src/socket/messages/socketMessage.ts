@@ -30,6 +30,8 @@ export const responses = [
 
 export type SocketMessageResponse = typeof responses[number]
 
+export const heartbeatMessage = 'v1.heartbeat'
+
 export async function sendMessage<T extends object>(conn: SocketConnection, res: SocketMessageResponse, data: T) {
   await conn.sendMessage(res, data)
 }

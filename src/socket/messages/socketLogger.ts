@@ -1,6 +1,6 @@
 import { setTraceAttributes } from '@hyperdx/node-opentelemetry'
 import SocketConnection from '../socketConnection'
-import { SocketMessageResponse } from './socketMessage'
+import { heartbeatMessage, SocketMessageResponse } from './socketMessage'
 import { IncomingMessage } from 'http'
 
 function canLog(): boolean {
@@ -12,7 +12,7 @@ function getSize(message: string): string {
 }
 
 export function logRequest(conn: SocketConnection, message: string) {
-  if (!canLog()) {
+  if (!canLog() || message === heartbeatMessage) {
     return
   }
 

@@ -6,7 +6,7 @@ import { v4 } from 'uuid'
 import Redis from 'ioredis'
 import checkRateLimitExceeded from '../lib/errors/checkRateLimitExceeded'
 import Socket from '.'
-import { SocketMessageResponse } from './messages/socketMessage'
+import { heartbeatMessage, SocketMessageResponse } from './messages/socketMessage'
 import { logResponse } from './messages/socketLogger'
 import SocketTicket from './socketTicket'
 import { setTraceAttributes } from '@hyperdx/node-opentelemetry'
@@ -36,7 +36,7 @@ export default class SocketConnection {
     this.devBuild = ticket.devBuild
   }
 
-  async getPlayerAlias(): Promise<PlayerAlias | null> {
+  async getPlayerAlias() {
     const em = RequestContext.getEntityManager() as EntityManager
     /* v8 ignore next 3 */
     if (!em) {
@@ -48,19 +48,19 @@ export default class SocketConnection {
     )
   }
 
-  getAPIKeyId(): number {
+  getAPIKeyId() {
     return this.apiKeyId
   }
 
-  hasScope(scope: APIKeyScope): boolean {
+  hasScope(scope: APIKeyScope) {
     return this.apiKeyScopes.includes(APIKeyScope.FULL_ACCESS) || this.apiKeyScopes.includes(scope)
   }
 
-  hasScopes(scopes: APIKeyScope[]): boolean {
+  hasScopes(scopes: APIKeyScope[]) {
     return this.hasScope(APIKeyScope.FULL_ACCESS) || scopes.every((scope) => this.hasScope(scope))
   }
 
-  getRateLimitMaxRequests(): number {
+  getRateLimitMaxRequests() {
     // 60 rps for authed, 1 for unauthed
     return this.playerAliasId ? 3600 : 60
   }
@@ -75,19 +75,19 @@ export default class SocketConnection {
     return rateLimitExceeded
   }
 
-  getRemoteAddress(): string {
+  getRemoteAddress() {
     return this.remoteAddress
   }
 
-  getSocket(): WebSocket {
+  getSocket() {
     return this.ws
   }
 
-  isDevBuild(): boolean {
+  isDevBuild() {
     return this.devBuild
   }
 
-  async sendMessage<T extends object>(res: SocketMessageResponse, data: T, serialisedMessage?: string): Promise<void> {
+  async sendMessage<T extends object>(res: SocketMessageResponse, data: T, serialisedMessage?: string) {
     await getSocketTracer().startActiveSpan('socket.send_message', async (span) => {
       try {
         if (this.ws.readyState === this.ws.OPEN) {
@@ -109,7 +109,23 @@ export default class SocketConnection {
     })
   }
 
-  async handleClosed(): Promise<void> {
+  ping() {
+    this.alive = false
+    this.ws.ping()
+  }
+
+  handleHeartbeat(asPing = false) {
+    this.alive = true
+    if (this.rateLimitWarnings > 0) {
+      this.rateLimitWarnings--
+    }
+
+    if (asPing) {
+      this.ws.send(heartbeatMessage)
+    }
+  }
+
+  async handleClosed() {
     if (this.playerAliasId) {
       const playerAlias = await this.getPlayerAlias()
       if (playerAlias) {

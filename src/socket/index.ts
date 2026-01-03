@@ -48,12 +48,12 @@ export default class Socket {
     enableSocketTracing(this)
   }
 
-  getServer(): WebSocketServer {
+  getServer() {
     return this.wss
   }
 
   /* v8 ignore start */
-  heartbeat(): NodeJS.Timeout {
+  heartbeat() {
     return setInterval(async () => {
       for (const [ws, conn] of this.connections.entries()) {
         if (!conn.alive) {
@@ -67,7 +67,7 @@ export default class Socket {
   }
   /* v8 ignore stop */
 
-  async handleConnection(ws: WebSocket, req: IncomingMessage): Promise<void> {
+  async handleConnection(ws: WebSocket, req: IncomingMessage) {
     withIsolationScope(async () => {
       await getSocketTracer().startActiveSpan('socket.open', async (span) => {
         try {
@@ -93,7 +93,7 @@ export default class Socket {
     })
   }
 
-  async handleMessage(ws: WebSocket, data: RawData): Promise<void> {
+  async handleMessage(ws: WebSocket, data: RawData) {
     withIsolationScope(async () => {
       await getSocketTracer().startActiveSpan('socket.message', async (span) => {
         try {
@@ -114,14 +114,14 @@ export default class Socket {
   }
 
   /* v8 ignore start */
-  handlePong(ws: WebSocket): void {
+  handlePong(ws: WebSocket) {
     const connection = this.findConnection(ws)
     if (!connection) return
     connection.handleHeartbeat()
   }
   /* v8 ignore stop */
 
-  async closeConnection(ws: WebSocket, options: CloseConnectionOptions = {}): Promise<void> {
+  async closeConnection(ws: WebSocket, options: CloseConnectionOptions = {}) {
     const terminate = options.terminate ?? false
     const preclosed = options.preclosed ?? false
     const code = options.code ?? 3000
@@ -146,11 +146,11 @@ export default class Socket {
     this.connections.delete(ws)
   }
 
-  findConnection(ws: WebSocket): SocketConnection | undefined {
+  findConnection(ws: WebSocket) {
     return this.connections.get(ws)
   }
 
-  findConnections(filter: (conn: SocketConnection) => boolean): SocketConnection[] {
+  findConnections(filter: (conn: SocketConnection) => boolean) {
     return Array.from(this.connections.values()).filter(filter)
   }
 }

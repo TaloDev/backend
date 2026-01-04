@@ -1,6 +1,6 @@
 import { z, ZodError, ZodType } from 'zod'
 import Socket from '..'
-import { requests } from '../messages/socketMessage'
+import { heartbeatMessage, requests } from '../messages/socketMessage'
 import SocketConnection from '../socketConnection'
 import { RawData } from 'ws'
 import { addBreadcrumb } from '@sentry/node'
@@ -9,6 +9,7 @@ import SocketError, { sendError } from '../messages/socketError'
 import { APIKeyScope } from '../../entities/api-key'
 import playerListeners from '../listeners/playerListeners'
 import gameChannelListeners from '../listeners/gameChannelListeners'
+import playerRelationshipsListeners from '../listeners/playerRelationshipsListeners'
 import { logRequest } from '../messages/socketLogger'
 import { SpanStatusCode } from '@opentelemetry/api'
 import { getSocketTracer } from '../socketTracer'
@@ -22,7 +23,8 @@ type SocketMessage = z.infer<typeof socketMessageValidator>
 
 const routes: SocketMessageListener<ZodType>[][] = [
   playerListeners,
-  gameChannelListeners
+  gameChannelListeners,
+  playerRelationshipsListeners
 ]
 
 export default class SocketRouter {
@@ -30,11 +32,13 @@ export default class SocketRouter {
 
   async handleMessage(conn: SocketConnection, rawData: RawData): Promise<void> {
     await getSocketTracer().startActiveSpan('socket.message_received', async (span) => {
-      logRequest(conn, rawData.toString())
+      const message = rawData.toString()
+
+      logRequest(conn, message)
 
       addBreadcrumb({
         category: 'message',
-        message: rawData.toString(),
+        message,
         level: 'info'
       })
 
@@ -48,23 +52,28 @@ export default class SocketRouter {
         return
       }
 
-      let message: SocketMessage | null = null
+      if (message === heartbeatMessage) {
+        await conn.handleHeartbeat(true)
+        return
+      }
+
+      let parsedMessage: SocketMessage | null = null
 
       try {
-        message = await socketMessageValidator.parseAsync(JSON.parse(rawData.toString()))
+        parsedMessage = await socketMessageValidator.parseAsync(JSON.parse(message))
 
-        const handled = await this.routeMessage(conn, message)
+        const handled = await this.routeMessage(conn, parsedMessage)
         if (!handled) {
-          await sendError(conn, message.req, new SocketError('UNHANDLED_REQUEST', 'Request not handled'))
+          await sendError(conn, parsedMessage.req, new SocketError('UNHANDLED_REQUEST', 'Request not handled'))
           span.setStatus({ code: SpanStatusCode.ERROR })
         } else {
           span.setStatus({ code: SpanStatusCode.OK })
         }
       } catch (err) {
         if (err instanceof ZodError) {
-          await sendError(conn, 'unknown', new SocketError('INVALID_MESSAGE', 'Invalid message request', rawData.toString()))
+          await sendError(conn, 'unknown', new SocketError('INVALID_MESSAGE', 'Invalid message request', message))
         } else {
-          await sendError(conn, message?.req ?? 'unknown', new SocketError('ROUTING_ERROR', 'An error occurred while routing the message'))
+          await sendError(conn, parsedMessage?.req ?? 'unknown', new SocketError('ROUTING_ERROR', 'An error occurred while routing the message'))
         }
         span.setStatus({ code: SpanStatusCode.ERROR })
       } finally {

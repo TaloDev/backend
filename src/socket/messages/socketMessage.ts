@@ -3,7 +3,8 @@ import { getSocketTracer } from '../socketTracer'
 
 export const requests = [
   'v1.players.identify',
-  'v1.channels.message'
+  'v1.channels.message',
+  'v1.player-relationships.broadcast'
 ] as const
 
 export type SocketMessageRequest = typeof requests[number]
@@ -20,10 +21,16 @@ export const responses = [
   'v1.live-config.updated',
   'v1.players.presence.updated',
   'v1.channels.updated',
-  'v1.channels.storage.updated'
+  'v1.channels.storage.updated',
+  'v1.player-relationships.broadcast',
+  'v1.player-relationships.subscription-created',
+  'v1.player-relationships.subscription-confirmed',
+  'v1.player-relationships.subscription-deleted'
 ] as const
 
 export type SocketMessageResponse = typeof responses[number]
+
+export const heartbeatMessage = 'v1.heartbeat'
 
 export async function sendMessage<T extends object>(conn: SocketConnection, res: SocketMessageResponse, data: T) {
   await conn.sendMessage(res, data)

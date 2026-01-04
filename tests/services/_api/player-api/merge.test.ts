@@ -143,6 +143,12 @@ describe('Player API service - merge', () => {
         value: '66'
       }
     ]))
+
+    const player1PropCount = await em.repo(PlayerProp).count({ player: player1 })
+    expect(player1PropCount).toBe(5)
+
+    const player2PropCount = await em.repo(PlayerProp).count({ player: player2 })
+    expect(player2PropCount).toBe(0)
   })
 
   it('should not merge players if alias1 does not exist', async () => {

@@ -180,7 +180,6 @@ export default class PlayerRelationshipsAPIService extends APIService {
     const cacheKey = `${PlayerAliasSubscription.getSubscribersCacheKey(currentAlias)}-${confirmed}-${aliasId}-${relationshipType}-${page}`
 
     return withResponseCache({ key: cacheKey }, async () => {
-
       const where: FilterQuery<PlayerAliasSubscription> = {
         subscribedTo: currentAlias
       }

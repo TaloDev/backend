@@ -1,9 +1,11 @@
 import PlayerRelationshipsAPIService from '../services/api/player-relationships-api.service'
 import APIDocs from './api-docs'
+import { APIKeyScope } from '../entities/api-key'
 
 const PlayerRelationshipsAPIDocs: APIDocs<PlayerRelationshipsAPIService> = {
   post: {
     description: 'Create a subscription request to another player',
+    scopes: [APIKeyScope.WRITE_PLAYER_RELATIONSHIPS],
     params: {
       headers: {
         'x-talo-alias': 'The ID of the player\'s alias'
@@ -69,6 +71,7 @@ const PlayerRelationshipsAPIDocs: APIDocs<PlayerRelationshipsAPIService> = {
   },
   confirm: {
     description: 'Confirm a pending subscription request',
+    scopes: [APIKeyScope.WRITE_PLAYER_RELATIONSHIPS],
     params: {
       headers: {
         'x-talo-alias': 'The ID of the player\'s alias'
@@ -126,6 +129,7 @@ const PlayerRelationshipsAPIDocs: APIDocs<PlayerRelationshipsAPIService> = {
   },
   getSubscribers: {
     description: 'List subscriptions from players who have subscribed to the current player',
+    scopes: [APIKeyScope.READ_PLAYER_RELATIONSHIPS],
     params: {
       headers: {
         'x-talo-alias': 'The ID of the player\'s alias'
@@ -230,6 +234,7 @@ const PlayerRelationshipsAPIDocs: APIDocs<PlayerRelationshipsAPIService> = {
   },
   getSubscriptions: {
     description: 'List subscriptions where the current player is the subscriber',
+    scopes: [APIKeyScope.READ_PLAYER_RELATIONSHIPS],
     params: {
       headers: {
         'x-talo-alias': 'The ID of the player\'s alias'
@@ -334,6 +339,7 @@ const PlayerRelationshipsAPIDocs: APIDocs<PlayerRelationshipsAPIService> = {
   },
   delete: {
     description: 'Delete a subscription (unsubscribe from a player)',
+    scopes: [APIKeyScope.WRITE_PLAYER_RELATIONSHIPS],
     params: {
       headers: {
         'x-talo-alias': 'The ID of the player\'s alias'

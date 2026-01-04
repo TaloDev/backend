@@ -261,8 +261,8 @@ export default class PlayerAPIService extends APIService {
       const player2Props = player2.props.getItems().map(({ key, value }) => ({ key, value }))
       const mergedProps = uniqWith([...player2Props, ...player1Props], (a, b) => a.key === b.key)
 
-      em.remove(player1.props)
-      em.remove(player2.props)
+      trx.remove(player1.props)
+      trx.remove(player2.props)
       player1.setProps(mergedProps)
 
       await trx.repo(PlayerAlias).nativeUpdate({ player: player2 }, { player: player1 })

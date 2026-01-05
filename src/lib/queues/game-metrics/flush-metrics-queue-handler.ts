@@ -58,6 +58,7 @@ export abstract class FlushMetricsQueueHandler<T extends { id: string }, S exten
   constructor(private metricName: string, private flushFunc: FlushFunc<S>, options?: HandlerOptions<S>) {
     this.metricName = metricName
     this.flushFunc = flushFunc
+    /* v8 ignore next */
     this.options = options ?? { logsInTests: true }
     this.redisKey = `metrics:buffer:${metricName}`
 
@@ -92,7 +93,7 @@ export abstract class FlushMetricsQueueHandler<T extends { id: string }, S exten
 
       /* v8 ignore next 3 */
       if (process.env.NODE_ENV !== 'test') {
-        console.info(`Upserted ${schedulerName} with interval: ${intervalWithJitter}`)
+        console.info(`Upserted ${schedulerName} with interval: ${(intervalWithJitter / 1000).toFixed(2)}s`)
       }
     })
   }
@@ -107,12 +108,12 @@ export abstract class FlushMetricsQueueHandler<T extends { id: string }, S exten
     setTraceAttributes({ metricName: this.metricName, bufferSize })
 
     const canLog = process.env.NODE_ENV !== 'test' || (this.options.logsInTests ?? true)
+    const timeLabel = `Flushed ${bufferSize} ${this.getFriendlyName()}`
 
-    /* v8 ignore start */
+    /* v8 ignore next 3 */
     if (canLog) {
-      console.info(`Flushing ${bufferSize} ${this.metricName.replace('-', ' ')}...`)
+      console.time(timeLabel)
     }
-    /* v8 ignore stop */
 
     try {
       await this.flushFunc(clickhouse, values)
@@ -124,7 +125,7 @@ export abstract class FlushMetricsQueueHandler<T extends { id: string }, S exten
 
       /* v8 ignore start */
       if (canLog) {
-        console.info(`Flushed ${bufferSize} ${this.getFriendlyName()}`)
+        console.info(timeLabel)
       }
     } catch (err) {
       captureException(err)

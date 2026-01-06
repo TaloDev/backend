@@ -15,6 +15,7 @@ import requestContextMiddleware from './middleware/request-context-middleware'
 import helmetMiddleware from './middleware/helmet-middleware'
 import { createServer } from 'http'
 import Socket from './socket'
+import { setSocketInstance } from './socket/socketRegistry'
 import httpTracingMiddleware from './middleware/http-tracing-middleware'
 import { secondsToMilliseconds } from 'date-fns'
 import compress from 'koa-compress'
@@ -50,7 +51,9 @@ export default async function init(): Promise<Koa> {
     keepAliveTimeout: secondsToMilliseconds(60)
   }, app.callback())
 
-  app.context.wss = new Socket(server, (app.context.em as EntityManager).fork())
+  const socket = new Socket(server, (app.context.em as EntityManager).fork())
+  app.context.wss = socket
+  setSocketInstance(socket)
 
   if (!isTest) {
     server.listen(80, () => console.info('Listening on port 80'))

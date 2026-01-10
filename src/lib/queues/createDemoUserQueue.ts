@@ -4,7 +4,7 @@ import UserSession from '../../entities/user-session'
 import GameActivity from '../../entities/game-activity'
 import User from '../../entities/user'
 
-export type DemoUserConfig = {
+type DemoUserConfig = {
   userId: number
 }
 

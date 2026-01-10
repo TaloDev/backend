@@ -79,7 +79,7 @@ function mountRoute<S = PublicRouteState, V extends ValidationSchema | undefined
 
   const applyResponse = (ctx: AppParameterizedContext<S>, response: HandlerResponse) => {
     ctx.status = response.status
-    if (response.body !== undefined) {
+    if (response.body) {
       ctx.body = response.body
     }
     if (response.headers) {

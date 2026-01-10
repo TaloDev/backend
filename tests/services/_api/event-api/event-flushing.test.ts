@@ -33,7 +33,7 @@ describe('Events API service - event flushing', () => {
     await handler.add(event2)
 
     await handler.handle()
-    expect(consoleSpy).toHaveBeenCalledTimes(2)
+    expect(consoleSpy).toHaveBeenCalledTimes(1)
     consoleSpy.mockClear()
 
     await vi.waitUntil(async () => {
@@ -78,7 +78,7 @@ describe('Events API service - event flushing', () => {
     await handler.add(event1)
 
     await handler.handle()
-    expect(consoleSpy).toHaveBeenCalledTimes(2)
+    expect(consoleSpy).toHaveBeenCalledTimes(1)
     consoleSpy.mockClear()
 
     await vi.waitUntil(async () => {

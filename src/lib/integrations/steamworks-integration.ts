@@ -17,6 +17,7 @@ import { SteamworksLeaderboardEntry } from '../../entities/steamworks-leaderboar
 import { captureException } from '@sentry/node'
 import { getResultCacheOptions } from '../perf/getResultCacheOptions'
 import { SteamworksPlayerStat } from '../../entities/steamworks-player-stat'
+import assert from 'node:assert'
 
 type SteamworksRequestConfig = {
   method: SteamworksRequestMethod
@@ -211,7 +212,7 @@ export async function createSteamworksLeaderboard(em: EntityManager, integration
   const event = createSteamworksIntegrationEvent(integration, config)
 
   const res = await makeRequest<FindOrCreateLeaderboardResponse>(config, event)
-  await em.persistAndFlush(event)
+  await em.persist(event).flush()
 
   const steamworksLeaderboard = res.data?.result?.leaderboard
   if (steamworksLeaderboard) {
@@ -233,7 +234,7 @@ export async function deleteSteamworksLeaderboard(em: EntityManager, integration
   const event = createSteamworksIntegrationEvent(integration, config)
   await makeRequest(config, event)
 
-  await em.persistAndFlush(event)
+  await em.persist(event).flush()
 }
 
 export async function createSteamworksLeaderboardEntry(em: EntityManager, integration: Integration, entry: LeaderboardEntry) {
@@ -251,7 +252,7 @@ export async function createSteamworksLeaderboardEntry(em: EntityManager, integr
     const config = createSteamworksRequestConfig(integration, 'POST', '/ISteamLeaderboards/SetLeaderboardScore/v1', body)
     const event = createSteamworksIntegrationEvent(integration, config)
     await makeRequest(config, event)
-    await em.persistAndFlush(event)
+    await em.persist(event).flush()
 
     await em.upsert(new SteamworksLeaderboardEntry({
       steamworksLeaderboard: leaderboardMapping,
@@ -292,7 +293,7 @@ export async function deleteSteamworksLeaderboardEntry(em: EntityManager, integr
       steamUserId: entry.playerAlias.identifier
     })
 
-    await em.persistAndFlush(event)
+    await em.persist(event).flush()
     await em.repo(SteamworksLeaderboardEntry).nativeDelete({
       steamworksLeaderboard: leaderboardMapping,
       leaderboardEntry: entry
@@ -318,7 +319,7 @@ async function getEntriesForSteamworksLeaderboard(em: EntityManager, integration
   const config = createSteamworksRequestConfig(integration, 'GET', `/ISteamLeaderboards/GetLeaderboardEntries/v1?${qs}`)
   const event = createSteamworksIntegrationEvent(integration, config)
   const res = await makeRequest<GetLeaderboardEntriesResponse>(config, event)
-  await em.persistAndFlush(event)
+  await em.persist(event).flush()
 
   return res.data
 }
@@ -392,7 +393,7 @@ async function matchAliasAndLeaderboardEntry({
     playerAlias,
     score: steamEntryData.score
   })
-  await em.persistAndFlush(newEntry)
+  await em.persist(newEntry).flush()
 
   return { newEntry: newEntry.leaderboardEntry, updated: false }
 }
@@ -481,7 +482,7 @@ export async function syncSteamworksLeaderboards(em: EntityManager, integration:
   const config = createSteamworksRequestConfig(integration, 'GET', `/ISteamLeaderboards/GetLeaderboardsForGame/v2?appid=${integration.getConfig().appId}`)
   const event = createSteamworksIntegrationEvent(integration, config)
   const res = await makeRequest<GetLeaderboardsForGameResponse>(config, event)
-  await em.persistAndFlush(event)
+  await em.persist(event).flush()
 
   const steamworksLeaderboards = res.data?.response?.leaderboards
   if (!Array.isArray(steamworksLeaderboards)) {
@@ -561,7 +562,7 @@ async function getSteamworksStatsForPlayer(em: EntityManager, integration: Integ
   const config = createSteamworksRequestConfig(integration, 'GET', `/ISteamUserStats/GetUserStatsForGame/v2?appid=${integration.getConfig().appId}&steamid=${steamId}`)
   const event = createSteamworksIntegrationEvent(integration, config)
   const res = await makeRequest<GetUserStatsForGameResponse>(config, event)
-  await em.persistAndFlush(event)
+  await em.persist(event).flush()
 
   return res.data
 }
@@ -598,7 +599,7 @@ export async function setSteamworksStat(em: EntityManager, integration: Integrat
     steamUserId: playerAlias.identifier,
     value: playerStat.value
   })
-  await em.persistAndFlush(event)
+  await em.persist(event).flush()
 
   await em.upsert(new SteamworksPlayerStat({
     stat: playerStat.stat,
@@ -743,7 +744,7 @@ export async function syncSteamworksStats(em: EntityManager, integration: Integr
   const config = createSteamworksRequestConfig(integration, 'GET', `/ISteamUserStats/GetSchemaForGame/v2?appid=${integration.getConfig().appId}`)
   const event = createSteamworksIntegrationEvent(integration, config)
   const res = await makeRequest<GetSchemaForGameResponse>(config, event)
-  await em.persistAndFlush(event)
+  await em.persist(event).flush()
 
   const steamworksStats = res.data?.game?.availableGameStats?.stats
   if (!Array.isArray(steamworksStats)) {
@@ -763,31 +764,60 @@ export async function syncSteamworksStats(em: EntityManager, integration: Integr
   })
 }
 
+async function requestAuthenticateUserTicket({
+  em,
+  integration,
+  ticket,
+  identity
+}: {
+  em: EntityManager
+  integration: Integration
+  ticket: string
+  identity?: string
+}): Promise<{ status: number, data: AuthenticateUserTicketResponse }> {
+  const config = createSteamworksRequestConfig(integration, 'GET', `/ISteamUserAuth/AuthenticateUserTicket/v1?appid=${integration.getConfig().appId}&ticket=${ticket}${identity ? `&identity=${identity}` : ''}`)
+  const event = createSteamworksIntegrationEvent(integration, config)
+  const res = await makeRequest<AuthenticateUserTicketResponse>(config, event)
+  await em.persist(event).flush()
+
+  // set the cause to 400 so the api doesn't return a 500
+  const errorOpts = { cause: 400 }
+
+  if (res.status >= 500) {
+    throw new Error('Failed to authenticate Steamworks ticket: Steam service unavailable', errorOpts)
+  } else if (res.data?.response?.error) {
+    const message = `Failed to authenticate Steamworks ticket: ${res.data.response.error.errordesc} (${res.data.response.error.errorcode})`
+    throw new Error(message, errorOpts)
+  } else if (res.status === 403) {
+    throw new Error('Failed to authenticate Steamworks ticket: Invalid API key', errorOpts)
+  } else if (!res.data?.response?.params) {
+    throw new Error('Failed to authenticate Steamworks ticket: Invalid response from Steamworks', errorOpts)
+  }
+
+  return { status: res.status, data: res.data }
+}
+
 export async function authenticateTicket(req: Request, integration: Integration, identifier: string): Promise<string> {
   const em: EntityManager = req.ctx.em
 
   const parts = identifier.split(':')
   const identity = parts.length > 1 ? parts[0] : undefined
   const ticket = parts.at(-1)
+  // this assert shouldn't fail since identify() checks for empty identifiers
+  assert(ticket, 'Missing Steamworks ticket')
 
-  const config = createSteamworksRequestConfig(integration, 'GET', `/ISteamUserAuth/AuthenticateUserTicket/v1?appid=${integration.getConfig().appId}&ticket=${ticket}${identity ? `&identity=${identity}` : ''}`)
-  const event = createSteamworksIntegrationEvent(integration, config)
-  const authenticateRes = await makeRequest<AuthenticateUserTicketResponse>(config, event)
-  await em.persistAndFlush(event)
+  const { data: authenticateData } = await requestAuthenticateUserTicket({
+    em,
+    integration,
+    ticket,
+    identity
+  })
+
+  const authenticateParams = authenticateData.response.params!
+  const steamId = authenticateParams.steamid
 
   // set the cause to 400 so the api doesn't return a 500
   const errorOpts = { cause: 400 }
-
-  if (authenticateRes.data?.response?.error) {
-    const message = `Failed to authenticate Steamworks ticket: ${authenticateRes.data.response.error.errordesc} (${authenticateRes.data.response.error.errorcode})`
-    throw new Error(message, errorOpts)
-  } else if (authenticateRes.status === 403) {
-    throw new Error('Failed to authenticate Steamworks ticket: Invalid API key', errorOpts)
-  } else if (!authenticateRes.data?.response?.params) {
-    throw new Error('Failed to authenticate Steamworks ticket: Invalid response from Steamworks', errorOpts)
-  }
-
-  const steamId = authenticateRes.data.response.params.steamid
   const alias = await em.repo(PlayerAlias).findOne({
     service: PlayerAliasService.STEAM,
     identifier: steamId,
@@ -809,7 +839,7 @@ export async function authenticateTicket(req: Request, integration: Integration,
   }
 
   const { ownsapp, permanent, timestamp } = verifyOwnershipData.appownership
-  const { vacbanned, publisherbanned } = authenticateRes.data.response.params
+  const { vacbanned, publisherbanned } = authenticateParams
 
   const props = [
     { key: 'META_STEAMWORKS_VAC_BANNED', value: String(vacbanned) },
@@ -855,7 +885,15 @@ export async function verifyOwnership({
   const config = createSteamworksRequestConfig(integration, 'GET', `/ISteamUser/CheckAppOwnership/v3?appid=${integration.getConfig().appId}&steamid=${steamId}`)
   const event = createSteamworksIntegrationEvent(integration, config)
   const res = await makeRequest<CheckAppOwnershipResponse>(config, event)
-  await em.persistAndFlush(event)
+  await em.persist(event).flush()
+
+  if (res.status >= 500) {
+    throw new Error('Failed to verify Steamworks ownership: Steam service unavailable', { cause: 400 })
+  }
+
+  if (res.status === 200 && !res.data?.appownership) {
+    throw new Error('Failed to verify Steamworks ownership: Invalid response from Steamworks', { cause: 400 })
+  }
 
   return { status: res.status, data: res.data }
 }
@@ -872,7 +910,7 @@ export async function getPlayerSummary({
   const config = createSteamworksRequestConfig(integration, 'GET', `/ISteamUser/GetPlayerSummaries/v2?steamids=${steamId}`)
   const event = createSteamworksIntegrationEvent(integration, config)
   const res = await makeRequest<GetPlayerSummariesResponse>(config, event)
-  await em.persistAndFlush(event)
+  await em.persist(event).flush()
 
   if (res.status !== 200) {
     return null

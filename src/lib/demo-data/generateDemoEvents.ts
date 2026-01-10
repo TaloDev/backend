@@ -1,5 +1,3 @@
-import { EntityManager } from '@mikro-orm/mysql'
-import { Request } from 'koa-clay'
 import Event from '../../entities/event'
 import { addDays, differenceInDays, endOfDay, startOfDay, subMonths } from 'date-fns'
 import Prop from '../../entities/prop'
@@ -9,6 +7,7 @@ import PlayerAlias from '../../entities/player-alias'
 import { formatDateForClickHouse } from '../clickhouse/formatDateTime'
 import { rand, randNumber } from '@ngneat/falso'
 import { ClickHouseClient } from '@clickhouse/client'
+import { AppParameterizedContext, PublicRouteState } from '../context'
 
 type DemoEvent = {
   name: string
@@ -102,9 +101,9 @@ async function getEventCount(clickhouse: ClickHouseClient, game: Game, startDate
   }
 }
 
-export async function generateDemoEvents(req: Request): Promise<void> {
-  const em: EntityManager = req.ctx.em
-  const clickhouse: ClickHouseClient = req.ctx.clickhouse
+export async function generateDemoEvents(ctx: AppParameterizedContext<PublicRouteState>): Promise<void> {
+  const em = ctx.em
+  const clickhouse = ctx.clickhouse
 
   const games = await em.getRepository(Game).find({
     organisation: {

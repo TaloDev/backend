@@ -125,7 +125,7 @@ export abstract class FlushMetricsQueueHandler<T extends { id: string }, S exten
 
       /* v8 ignore start */
       if (canLog) {
-        console.info(timeLabel)
+        console.timeEnd(timeLabel)
       }
     } catch (err) {
       captureException(err)

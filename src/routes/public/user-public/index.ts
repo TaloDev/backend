@@ -8,7 +8,7 @@ import { useRecoveryCodeRoute } from './use-recovery-code'
 import { publicRouter } from '../../../lib/routing/router'
 
 export function userPublicRouter() {
-  return publicRouter('UserPublic', '/public/users', ({ route }) => {
+  return publicRouter('/public/users', ({ route }) => {
     route(registerRoute)
     route(loginRoute)
     route(refreshRoute)

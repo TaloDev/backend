@@ -31,6 +31,7 @@ describe('DocsRegistry', () => {
       method: 'get',
       path: '/v1/players/identify',
       docs: {
+        serviceName: 'PlayerAPI',
         description: 'Identify a player'
       }
     })
@@ -54,6 +55,7 @@ describe('DocsRegistry', () => {
       method: 'get',
       path: '/v1/players/identify',
       docs: {
+        serviceName: 'PlayerAPI',
         description: 'Identify a player',
         params: {
           query: {
@@ -90,6 +92,7 @@ describe('DocsRegistry', () => {
       method: 'get',
       path: '/v1/players/identify',
       docs: {
+        serviceName: 'PlayerAPI',
         samples: [
           {
             title: 'Example request',

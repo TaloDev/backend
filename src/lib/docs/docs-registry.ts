@@ -18,6 +18,7 @@ type RouteParams = {
 }
 
 export type RouteDocs = {
+  serviceName: string
   description?: string
   params?: RouteParams
   samples?: RouteSample[]

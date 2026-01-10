@@ -70,7 +70,6 @@ type RouteConfig<
 
 function mountRoute<S = PublicRouteState, V extends ValidationSchema | undefined = undefined>(
   router: Router,
-  serviceName: string,
   basePath: string,
   config: RouteConfig<S, V>
 ) {
@@ -128,7 +127,7 @@ function mountRoute<S = PublicRouteState, V extends ValidationSchema | undefined
 
   if (config.docs) {
     globalThis.talo.docs.addRoute({
-      serviceName,
+      serviceName: config.docs.serviceName,
       method: config.method,
       path: fullPath,
       docs: config.docs
@@ -137,17 +136,18 @@ function mountRoute<S = PublicRouteState, V extends ValidationSchema | undefined
 }
 
 function createRouter<S = PublicRouteState>(
-  serviceName: string,
   basePath: string,
   builder: (helpers: RouteHelpers<S>) => void
 ): Router {
   const router = new Router()
 
-  globalThis.talo.docs.addService(serviceName, basePath)
-
   const helpers: RouteHelpers<S> = {
     route: <RS extends S = S, V extends ValidationSchema | undefined = undefined>(config: RouteConfig<RS, V>) => {
-      mountRoute(router, serviceName, basePath, config)
+      mountRoute(router, basePath, config)
+
+      if (config.docs) {
+        globalThis.talo.docs.addService(config.docs.serviceName, basePath)
+      }
     }
   }
 
@@ -156,27 +156,24 @@ function createRouter<S = PublicRouteState>(
 }
 
 export function publicRouter<S extends PublicRouteState = PublicRouteState>(
-  serviceName: string,
   basePath: string,
   builder: (helpers: RouteHelpers<S>) => void
 ): Router {
-  return createRouter<S>(serviceName, basePath, builder)
+  return createRouter<S>(basePath, builder)
 }
 
 export function protectedRouter<S extends ProtectedRouteState = ProtectedRouteState>(
-  serviceName: string,
   basePath: string,
   builder: (helpers: RouteHelpers<S>) => void
 ): Router {
-  return createRouter<S>(serviceName, basePath, builder)
+  return createRouter<S>(basePath, builder)
 }
 
 export function apiRouter<S extends APIRouteState = APIRouteState>(
-  serviceName: string,
   basePath: string,
   builder: (helpers: RouteHelpers<S>) => void
 ): Router {
-  return createRouter<S>(serviceName, basePath, builder)
+  return createRouter<S>(basePath, builder)
 }
 
 // validated route

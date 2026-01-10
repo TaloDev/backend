@@ -7,10 +7,10 @@ import { generateDemoEvents } from '../../../lib/demo-data/generateDemoEvents'
 import { getGlobalQueue } from '../../../config/global-queues'
 
 export function demoRouter() {
-  return publicRouter('Demo', '/public', ({ route }) => {
+  return publicRouter('/public/demo', ({ route }) => {
     route({
       method: 'post',
-      path: '/demo',
+      path: '/',
       handler: async (ctx) => {
         const em = ctx.em
 

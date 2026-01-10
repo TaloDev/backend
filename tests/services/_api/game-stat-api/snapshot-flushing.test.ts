@@ -25,7 +25,7 @@ describe('Game stats API service - snapshot flushing', () => {
   }
 
   it('should flush player game stat snapshots', async () => {
-    const consoleSpy = vi.spyOn(console, 'info')
+    const consoleSpy = vi.spyOn(console, 'timeEnd')
 
     const [apiKey] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_STATS])
     const stat = await createStat(apiKey.game)

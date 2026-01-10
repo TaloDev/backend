@@ -11,7 +11,7 @@ describe('Events API service - event flushing', () => {
   })
 
   it('should flush events', async () => {
-    const consoleSpy = vi.spyOn(console, 'info')
+    const consoleSpy = vi.spyOn(console, 'timeEnd')
 
     const [apiKey] = await createAPIKeyAndToken([APIKeyScope.WRITE_EVENTS])
     const player = await new PlayerFactory([apiKey.game]).one()
@@ -56,7 +56,7 @@ describe('Events API service - event flushing', () => {
   })
 
   it('should still flush events if redis fails', async () => {
-    const consoleSpy = vi.spyOn(console, 'info')
+    const consoleSpy = vi.spyOn(console, 'timeEnd')
 
     const error = new Error('Something went wrong')
     vi.spyOn(Redis.prototype, 'pipeline').mockImplementation(() => {

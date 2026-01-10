@@ -69,7 +69,7 @@ describe('Player API service - identify - steamworks auth', () => {
 
     const config = await new IntegrationConfigFactory().state(() => ({ appId })).one()
     const integration = await new IntegrationFactory().construct(IntegrationType.STEAMWORKS, apiKey.game, config).one()
-    await em.persistAndFlush([integration, player])
+    await em.persist([integration, player]).flush()
 
     const res = await request(app)
       .get('/v1/players/identify')
@@ -160,7 +160,7 @@ describe('Player API service - identify - steamworks auth', () => {
 
     const config = await new IntegrationConfigFactory().state(() => ({ appId })).one()
     const integration = await new IntegrationFactory().construct(IntegrationType.STEAMWORKS, apiKey.game, config).one()
-    await em.persistAndFlush(integration)
+    await em.persist(integration).flush()
 
     const res = await request(app)
       .get('/v1/players/identify')
@@ -238,7 +238,7 @@ describe('Player API service - identify - steamworks auth', () => {
 
     const config = await new IntegrationConfigFactory().state(() => ({ appId })).one()
     const integration = await new IntegrationFactory().construct(IntegrationType.STEAMWORKS, apiKey.game, config).one()
-    await em.persistAndFlush(integration)
+    await em.persist(integration).flush()
 
     const res = await request(app)
       .get('/v1/players/identify')
@@ -280,7 +280,7 @@ describe('Player API service - identify - steamworks auth', () => {
 
     const config = await new IntegrationConfigFactory().state(() => ({ appId })).one()
     const integration = await new IntegrationFactory().construct(IntegrationType.STEAMWORKS, apiKey.game, config).one()
-    await em.persistAndFlush(integration)
+    await em.persist(integration).flush()
 
     const res = await request(app)
       .get('/v1/players/identify')
@@ -296,6 +296,39 @@ describe('Player API service - identify - steamworks auth', () => {
     })
   })
 
+  it('should catch bad request errors from Steam', async () => {
+    const appId = randNumber({ min: 1000, max: 1_000_000 })
+    const ticket = '000validticket'
+
+    const authenticateTicketMock = vi.fn(() => [200, {
+      response: {
+        error: {
+          errorcode: 100,
+          errordesc: 'User is offline'
+        }
+      }
+    }])
+    axiosMock.onGet(`https://partner.steam-api.com/ISteamUserAuth/AuthenticateUserTicket/v1?appid=${appId}&ticket=${ticket}`).reply(authenticateTicketMock)
+
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_PLAYERS, APIKeyScope.WRITE_PLAYERS])
+
+    const config = await new IntegrationConfigFactory().state(() => ({ appId })).one()
+    const integration = await new IntegrationFactory().construct(IntegrationType.STEAMWORKS, apiKey.game, config).one()
+    await em.persist(integration).flush()
+
+    const res = await request(app)
+      .get('/v1/players/identify')
+      .query({ service: PlayerAliasService.STEAM, identifier: ticket })
+      .auth(token, { type: 'bearer' })
+      .expect(400)
+
+    expect(authenticateTicketMock).toHaveBeenCalledTimes(1)
+
+    expect(res.body).toStrictEqual({
+      message: 'Failed to authenticate Steamworks ticket: User is offline (100)'
+    })
+  })
+
   it('should catch forbidden authenticate ticket requests', async () => {
     const appId = randNumber({ min: 1000, max: 1_000_000 })
     const ticket = '000validticket'
@@ -307,7 +340,7 @@ describe('Player API service - identify - steamworks auth', () => {
 
     const config = await new IntegrationConfigFactory().state(() => ({ appId })).one()
     const integration = await new IntegrationFactory().construct(IntegrationType.STEAMWORKS, apiKey.game, config).one()
-    await em.persistAndFlush(integration)
+    await em.persist(integration).flush()
 
     const res = await request(app)
       .get('/v1/players/identify')
@@ -346,7 +379,7 @@ describe('Player API service - identify - steamworks auth', () => {
 
     const config = await new IntegrationConfigFactory().state(() => ({ appId })).one()
     const integration = await new IntegrationFactory().construct(IntegrationType.STEAMWORKS, apiKey.game, config).one()
-    await em.persistAndFlush(integration)
+    await em.persist(integration).flush()
 
     const res = await request(app)
       .get('/v1/players/identify')
@@ -376,7 +409,7 @@ describe('Player API service - identify - steamworks auth', () => {
 
     const config = await new IntegrationConfigFactory().state(() => ({ appId })).one()
     const integration = await new IntegrationFactory().construct(IntegrationType.STEAMWORKS, apiKey.game, config).one()
-    await em.persistAndFlush(integration)
+    await em.persist(integration).flush()
 
     const res = await request(app)
       .get('/v1/players/identify')
@@ -428,7 +461,7 @@ describe('Player API service - identify - steamworks auth', () => {
 
     const config = await new IntegrationConfigFactory().state(() => ({ appId })).one()
     const integration = await new IntegrationFactory().construct(IntegrationType.STEAMWORKS, apiKey.game, config).one()
-    await em.persistAndFlush(integration)
+    await em.persist(integration).flush()
 
     const res = await request(app)
       .get('/v1/players/identify')
@@ -508,7 +541,7 @@ describe('Player API service - identify - steamworks auth', () => {
 
     const config = await new IntegrationConfigFactory().state(() => ({ appId })).one()
     const integration = await new IntegrationFactory().construct(IntegrationType.STEAMWORKS, apiKey.game, config).one()
-    await em.persistAndFlush(integration)
+    await em.persist(integration).flush()
 
     const res = await request(app)
       .get('/v1/players/identify')
@@ -590,7 +623,7 @@ describe('Player API service - identify - steamworks auth', () => {
 
     const config = await new IntegrationConfigFactory().state(() => ({ appId })).one()
     const integration = await new IntegrationFactory().construct(IntegrationType.STEAMWORKS, apiKey.game, config).one()
-    await em.persistAndFlush(integration)
+    await em.persist(integration).flush()
 
     const res = await request(app)
       .get('/v1/players/identify')
@@ -624,6 +657,188 @@ describe('Player API service - identify - steamworks auth', () => {
       {
         key: 'META_STEAMWORKS_OWNS_APP_FROM_DATE',
         value: '2022-01-15T00:00:00.000Z'
+      }
+    ])
+  })
+
+  it('should handle 5xx errors from the authenticate ticket endpoint', async () => {
+    const appId = randNumber({ min: 1000, max: 1_000_000 })
+    const ticket = '000validticket'
+
+    const authenticateTicketMock = vi.fn(() => [500, {}])
+    axiosMock.onGet(`https://partner.steam-api.com/ISteamUserAuth/AuthenticateUserTicket/v1?appid=${appId}&ticket=${ticket}`).reply(authenticateTicketMock)
+
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_PLAYERS, APIKeyScope.WRITE_PLAYERS])
+
+    const config = await new IntegrationConfigFactory().state(() => ({ appId })).one()
+    const integration = await new IntegrationFactory().construct(IntegrationType.STEAMWORKS, apiKey.game, config).one()
+    await em.persist(integration).flush()
+
+    const res = await request(app)
+      .get('/v1/players/identify')
+      .query({ service: PlayerAliasService.STEAM, identifier: ticket })
+      .auth(token, { type: 'bearer' })
+      .expect(400)
+
+    expect(authenticateTicketMock).toHaveBeenCalledTimes(1)
+
+    expect(res.body).toStrictEqual({
+      message: 'Failed to authenticate Steamworks ticket: Steam service unavailable'
+    })
+  })
+
+  it('should handle 5xx errors from the verify ownership endpoint', async () => {
+    const appId = randNumber({ min: 1000, max: 1_000_000 })
+    const steamId = randNumber({ min: 100_000, max: 1_000_000 }).toString()
+    const ticket = '000validticket'
+
+    const authenticateTicketMock = vi.fn(() => [200, {
+      response: {
+        params: {
+          steamid: steamId,
+          ownersteamid: steamId,
+          vacbanned: false,
+          publisherbanned: false
+        }
+      }
+    }])
+    axiosMock.onGet(`https://partner.steam-api.com/ISteamUserAuth/AuthenticateUserTicket/v1?appid=${appId}&ticket=${ticket}`).reply(authenticateTicketMock)
+
+    const verifyOwnershipMock = vi.fn(() => [503, {}])
+    axiosMock.onGet(`https://partner.steam-api.com/ISteamUser/CheckAppOwnership/v3?appid=${appId}&steamid=${steamId}`).reply(verifyOwnershipMock)
+
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_PLAYERS, APIKeyScope.WRITE_PLAYERS])
+
+    const config = await new IntegrationConfigFactory().state(() => ({ appId })).one()
+    const integration = await new IntegrationFactory().construct(IntegrationType.STEAMWORKS, apiKey.game, config).one()
+    await em.persist(integration).flush()
+
+    const res = await request(app)
+      .get('/v1/players/identify')
+      .query({ service: PlayerAliasService.STEAM, identifier: ticket })
+      .auth(token, { type: 'bearer' })
+      .expect(400)
+
+    expect(authenticateTicketMock).toHaveBeenCalledTimes(1)
+    expect(verifyOwnershipMock).toHaveBeenCalledTimes(1)
+
+    expect(res.body).toStrictEqual({
+      message: 'Failed to verify Steamworks ownership: Steam service unavailable'
+    })
+  })
+
+  it('should handle malformed verify ownership responses', async () => {
+    const appId = randNumber({ min: 1000, max: 1_000_000 })
+    const steamId = randNumber({ min: 100_000, max: 1_000_000 }).toString()
+    const ticket = '000validticket'
+
+    const authenticateTicketMock = vi.fn(() => [200, {
+      response: {
+        params: {
+          steamid: steamId,
+          ownersteamid: steamId,
+          vacbanned: false,
+          publisherbanned: false
+        }
+      }
+    }])
+    axiosMock.onGet(`https://partner.steam-api.com/ISteamUserAuth/AuthenticateUserTicket/v1?appid=${appId}&ticket=${ticket}`).reply(authenticateTicketMock)
+
+    const verifyOwnershipMock = vi.fn(() => [200, {
+      // missing appownership field
+    }])
+    axiosMock.onGet(`https://partner.steam-api.com/ISteamUser/CheckAppOwnership/v3?appid=${appId}&steamid=${steamId}`).reply(verifyOwnershipMock)
+
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_PLAYERS, APIKeyScope.WRITE_PLAYERS])
+
+    const config = await new IntegrationConfigFactory().state(() => ({ appId })).one()
+    const integration = await new IntegrationFactory().construct(IntegrationType.STEAMWORKS, apiKey.game, config).one()
+    await em.persist(integration).flush()
+
+    const res = await request(app)
+      .get('/v1/players/identify')
+      .query({ service: PlayerAliasService.STEAM, identifier: ticket })
+      .auth(token, { type: 'bearer' })
+      .expect(400)
+
+    expect(authenticateTicketMock).toHaveBeenCalledTimes(1)
+    expect(verifyOwnershipMock).toHaveBeenCalledTimes(1)
+
+    expect(res.body).toStrictEqual({
+      message: 'Failed to verify Steamworks ownership: Invalid response from Steamworks'
+    })
+  })
+
+  it('should handle 5xx errors from the player summary endpoint gracefully', async () => {
+    const appId = randNumber({ min: 1000, max: 1_000_000 })
+    const steamId = randNumber({ min: 100_000, max: 1_000_000 }).toString()
+    const ticket = '000validticket'
+
+    const authenticateTicketMock = vi.fn(() => [200, {
+      response: {
+        params: {
+          steamid: steamId,
+          ownersteamid: steamId,
+          vacbanned: false,
+          publisherbanned: false
+        }
+      }
+    }])
+    axiosMock.onGet(`https://partner.steam-api.com/ISteamUserAuth/AuthenticateUserTicket/v1?appid=${appId}&ticket=${ticket}`).reply(authenticateTicketMock)
+
+    const verifyOwnershipMock = vi.fn(() => [200, {
+      appownership: {
+        appid: appId,
+        ownsapp: true,
+        permanent: true,
+        timestamp: '2021-08-01T00:00:00.000Z',
+        ownersteamid: steamId,
+        usercanceled: false
+      }
+    }])
+    axiosMock.onGet(`https://partner.steam-api.com/ISteamUser/CheckAppOwnership/v3?appid=${appId}&steamid=${steamId}`).reply(verifyOwnershipMock)
+
+    const playerSummaryMock = vi.fn(() => [502, {}])
+    axiosMock.onGet(`https://partner.steam-api.com/ISteamUser/GetPlayerSummaries/v2?steamids=${steamId}`).reply(playerSummaryMock)
+
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_PLAYERS, APIKeyScope.WRITE_PLAYERS])
+
+    const config = await new IntegrationConfigFactory().state(() => ({ appId })).one()
+    const integration = await new IntegrationFactory().construct(IntegrationType.STEAMWORKS, apiKey.game, config).one()
+    await em.persist(integration).flush()
+
+    const res = await request(app)
+      .get('/v1/players/identify')
+      .query({ service: PlayerAliasService.STEAM, identifier: ticket })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    expect(authenticateTicketMock).toHaveBeenCalledOnce()
+    expect(verifyOwnershipMock).toHaveBeenCalledOnce()
+    expect(playerSummaryMock).toHaveBeenCalledOnce()
+
+    expect(res.body.alias.identifier).toBe(steamId)
+    // should not include persona name or avatar hash props since player summary failed
+    expect(res.body.alias.player.props).toStrictEqual([
+      {
+        key: 'META_STEAMWORKS_VAC_BANNED',
+        value: 'false'
+      },
+      {
+        key: 'META_STEAMWORKS_PUBLISHER_BANNED',
+        value: 'false'
+      },
+      {
+        key: 'META_STEAMWORKS_OWNS_APP',
+        value: 'true'
+      },
+      {
+        key: 'META_STEAMWORKS_OWNS_APP_PERMANENTLY',
+        value: 'true'
+      },
+      {
+        key: 'META_STEAMWORKS_OWNS_APP_FROM_DATE',
+        value: '2021-08-01T00:00:00.000Z'
       }
     ])
   })
@@ -678,7 +893,7 @@ describe('Player API service - identify - steamworks auth', () => {
 
     const config = await new IntegrationConfigFactory().state(() => ({ appId })).one()
     const integration = await new IntegrationFactory().construct(IntegrationType.STEAMWORKS, apiKey.game, config).one()
-    await em.persistAndFlush([integration, player])
+    await em.persist([integration, player]).flush()
 
     const res = await request(app)
       .get('/v1/players/identify')

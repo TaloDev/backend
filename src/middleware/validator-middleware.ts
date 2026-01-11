@@ -1,6 +1,6 @@
 import type { ZodSchema, z as zodType } from 'zod'
 import type Koa from 'koa'
-import type { AppParameterizedContext } from '../lib/context'
+import type { AppParameterizedContext, RouteState } from '../lib/context'
 
 export type ValidationSchema = {
   body?: ZodSchema
@@ -16,14 +16,14 @@ export type InferValidation<V extends ValidationSchema> = {
   headers: V['headers'] extends ZodSchema ? zodType.infer<V['headers']> : unknown
 }
 
-export type ValidatedContext<V extends ValidationSchema, S = Record<string, never>> =
+export type ValidatedContext<V extends ValidationSchema, S extends RouteState> =
   AppParameterizedContext<S> & {
     state: S & {
       validated: InferValidation<V>
     }
   }
 
-export function validate<V extends ValidationSchema, S = Record<string, never>>(
+export function validate<V extends ValidationSchema, S extends RouteState>(
   schemaObject: V
 ): (ctx: AppParameterizedContext<S>, next: Koa.Next) => Promise<void> {
   return async (ctx, next) => {

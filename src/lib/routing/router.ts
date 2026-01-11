@@ -1,7 +1,7 @@
 import Router from 'koa-tree-router'
 import type Koa from 'koa'
 import { HttpMethod, RouteDocs } from '../docs/docs-registry'
-import { APIRouteState, AppParameterizedContext, ProtectedRouteState, PublicRouteState } from '../context'
+import { APIRouteState, AppParameterizedContext, ProtectedRouteState, PublicRouteState, RouteState } from '../context'
 import type { ValidationSchema, ValidatedContext } from '../../middleware/validator-middleware'
 import { validate } from '../../middleware/validator-middleware'
 import { z } from 'zod'
@@ -12,36 +12,36 @@ type HandlerResponse = {
   headers?: Record<string, string>
 }
 
-type Handler<S = PublicRouteState> = (
+type Handler<S extends RouteState> = (
   ctx: AppParameterizedContext<S>
 ) => HandlerResponse | Promise<HandlerResponse>
 
 type ValidatedHandler<
   V extends ValidationSchema,
-  S = PublicRouteState
+  S extends RouteState
 > = (
   ctx: ValidatedContext<V, S>
 ) => HandlerResponse | Promise<HandlerResponse>
 
-export type Middleware<S = PublicRouteState> = (
+export type Middleware<S extends RouteState> = (
   ctx: AppParameterizedContext<S>,
   next: Koa.Next
 ) => Promise<void> | void
 
-export function withMiddleware<S = PublicRouteState>(
+export function withMiddleware<S extends RouteState>(
   ...middleware: Middleware<S>[]
 ) {
   return middleware
 }
 
-type RouteHelpers<S = PublicRouteState> = {
+type RouteHelpers<S extends RouteState> = {
   route: <RS extends S = S, V extends ValidationSchema | undefined = undefined>(config: RouteConfig<RS, V>) => void
 }
 
 type ZodBuilder = typeof z
 
 export type ValidatedRouteConfig<
-  S = PublicRouteState,
+  S extends RouteState,
   V extends ValidationSchema = ValidationSchema
 > = {
   method: HttpMethod
@@ -52,7 +52,7 @@ export type ValidatedRouteConfig<
   handler: ValidatedHandler<V, S>
 }
 
-export type UnvalidatedRouteConfig<S = PublicRouteState> = {
+export type UnvalidatedRouteConfig<S extends RouteState> = {
   method: HttpMethod
   path: string
   docs?: RouteDocs
@@ -62,13 +62,13 @@ export type UnvalidatedRouteConfig<S = PublicRouteState> = {
 }
 
 type RouteConfig<
-  S = PublicRouteState,
+  S extends RouteState,
   V extends ValidationSchema | undefined = undefined
 > = V extends ValidationSchema
   ? ValidatedRouteConfig<S, V>
   : UnvalidatedRouteConfig<S>
 
-function mountRoute<S = PublicRouteState, V extends ValidationSchema | undefined = undefined>(
+function mountRoute<S extends RouteState, V extends ValidationSchema | undefined = undefined>(
   router: Router,
   basePath: string,
   config: RouteConfig<S, V>
@@ -103,9 +103,8 @@ function mountRoute<S = PublicRouteState, V extends ValidationSchema | undefined
         const response = await (config as UnvalidatedRouteConfig<S>).handler(ctx)
         applyResponse(ctx, response)
       }
-      // koa doesn't handle generic context very well
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    ]) as any[]
+    // koa doesn't handle generic context very well
+    ]) as unknown as Router.Middleware[]
 
   switch (config.method) {
     case 'get':
@@ -135,7 +134,7 @@ function mountRoute<S = PublicRouteState, V extends ValidationSchema | undefined
   }
 }
 
-function createRouter<S = PublicRouteState>(
+function createRouter<S extends RouteState>(
   basePath: string,
   builder: (helpers: RouteHelpers<S>) => void
 ): Router {

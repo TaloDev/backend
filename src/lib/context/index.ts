@@ -24,5 +24,7 @@ export type APIRouteState = {
   game: Game
 }
 
-export type AppParameterizedContext<S = PublicRouteState> =
+export type RouteState = PublicRouteState | ProtectedRouteState | APIRouteState
+
+export type AppParameterizedContext<S extends RouteState> =
   Koa.ParameterizedContext<S> & AppContext

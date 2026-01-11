@@ -1,10 +1,11 @@
 import Router from 'koa-tree-router'
 import type Koa from 'koa'
 import { HttpMethod, RouteDocs } from '../docs/docs-registry'
-import { APIRouteState, AppParameterizedContext, ProtectedRouteState, PublicRouteState, RouteState } from '../context'
+import type { AppParameterizedContext } from './context'
 import type { ValidationSchema, ValidatedContext } from '../../middleware/validator-middleware'
 import { validate } from '../../middleware/validator-middleware'
 import { z } from 'zod'
+import { APIRouteState, ProtectedRouteState, PublicRouteState, RouteState } from './state'
 
 type HandlerResponse = {
   status: number

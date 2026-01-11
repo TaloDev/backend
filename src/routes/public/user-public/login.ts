@@ -3,6 +3,7 @@ import User from '../../../entities/user'
 import bcrypt from 'bcrypt'
 import { buildTokenPair } from '../../../lib/auth/buildTokenPair'
 import { setUserLastSeenAt } from '../../../lib/users/setUserLastSeenAt'
+import { passwordSchema } from '../../../lib/validation/passwordSchema'
 
 export const loginRoute = publicRoute({
   method: 'post',
@@ -10,7 +11,7 @@ export const loginRoute = publicRoute({
   schema: (z) => ({
     body: z.object({
       email: z.string().min(1),
-      password: z.string().min(1)
+      password: passwordSchema
     })
   }),
   handler: async (ctx) => {

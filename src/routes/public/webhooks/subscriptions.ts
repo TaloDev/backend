@@ -1,5 +1,5 @@
 import Stripe from 'stripe'
-import { AppParameterizedContext, PublicRouteState } from '../../../lib/context'
+import { PublicRouteContext } from '../../../lib/routing/context'
 import OrganisationPricingPlan from '../../../entities/organisation-pricing-plan'
 import createDefaultPricingPlan from '../../../lib/billing/createDefaultPricingPlan'
 import PricingPlan from '../../../entities/pricing-plan'
@@ -18,7 +18,7 @@ import { publicRoute } from '../../../lib/routing/router'
 const stripe = initStripe()
 
 async function getOrganisationPricingPlan(
-  ctx: AppParameterizedContext<PublicRouteState>,
+  ctx: PublicRouteContext,
   stripeCustomerId: string
 ): Promise<OrganisationPricingPlan> {
   const em = ctx.em
@@ -33,7 +33,7 @@ async function getOrganisationPricingPlan(
 }
 
 async function handleSubscriptionDeleted(
-  ctx: AppParameterizedContext<PublicRouteState>,
+  ctx: PublicRouteContext,
   subscription: Stripe.Subscription
 ) {
   const em = ctx.em
@@ -45,7 +45,7 @@ async function handleSubscriptionDeleted(
 }
 
 async function handleSubscriptionUpdated(
-  ctx: AppParameterizedContext<PublicRouteState>,
+  ctx: PublicRouteContext,
   subscription: Stripe.Subscription
 ) {
   const em = ctx.em
@@ -81,7 +81,7 @@ async function handleSubscriptionUpdated(
 }
 
 async function handleNewInvoice(
-  ctx: AppParameterizedContext<PublicRouteState>,
+  ctx: PublicRouteContext,
   invoice: Stripe.Invoice
 ): Promise<void> {
   const orgPlan = await getOrganisationPricingPlan(ctx, invoice.customer as string)
@@ -89,7 +89,7 @@ async function handleNewInvoice(
 }
 
 async function handlePaymentFailed(
-  ctx: AppParameterizedContext<PublicRouteState>,
+  ctx: PublicRouteContext,
   invoice: Stripe.Invoice
 ): Promise<void> {
   const orgPlan = await getOrganisationPricingPlan(ctx, invoice.customer as string)

@@ -8,6 +8,8 @@ import PlayerPresence from '../entities/player-presence'
 import { formatDateForClickHouse } from '../lib/clickhouse/formatDateTime'
 import { getSocketInstance } from '../socket/socketRegistry'
 
+const BATCH_SIZE = 500
+
 type CleanupStats = {
   sessionsDeleted: number
   presenceUpdated: number
@@ -15,17 +17,7 @@ type CleanupStats = {
   presenceStillOnline: number
 }
 
-const BATCH_SIZE = 500
-
 let cleanupStats: CleanupStats
-
-async function deleteSessions(clickhouse: ClickHouseClient, sessionIds: string[]) {
-  await clickhouse.exec({
-    query: 'DELETE FROM player_sessions WHERE id IN ({sessionIds:Array(String)})',
-    query_params: { sessionIds }
-  })
-  cleanupStats.sessionsDeleted += sessionIds.length
-}
 
 async function getSessions(clickhouse: ClickHouseClient, onlinePresence: PlayerPresence[]) {
   const playerIds = onlinePresence.map((p) => p.player.id)
@@ -35,11 +27,11 @@ async function getSessions(clickhouse: ClickHouseClient, onlinePresence: PlayerP
 
   const sessions = await clickhouse.query({
     query: `
-      SELECT player_id, ended_at, started_at
+      SELECT id, player_id, ended_at, started_at
       FROM player_sessions
       WHERE player_id IN ({playerIds:Array(String)})
         AND (ended_at >= {cutoffTime:DateTime64(3)} OR ended_at IS NULL)
-      ORDER BY player_id, ended_at DESC
+      ORDER BY player_id, ended_at DESC NULLS FIRST
     `,
     query_params: {
       playerIds,
@@ -72,21 +64,6 @@ export default async function cleanupOnlinePlayers() {
     presenceStillOnline: 0
   }
 
-  const sessions = await clickhouse.query({
-    query: `
-      SELECT * FROM player_sessions
-      WHERE ended_at IS NULL AND started_at <= dateSub(DAY, 1, now())
-      ORDER BY started_at DESC
-      LIMIT ${BATCH_SIZE}
-    `,
-    format: 'JSONEachRow'
-  }).then((res) => res.json<ClickHousePlayerSession>())
-
-  if (sessions.length > 0) {
-    const sessionIds = sessions.map((s) => s.id)
-    await deleteSessions(clickhouse, sessionIds)
-  }
-
   // todo: find out how this is happening
   const disconnectedPresenceCount = await em.nativeDelete(PlayerPresence, {
     player: null
@@ -116,6 +93,7 @@ export default async function cleanupOnlinePlayers() {
     }
 
     const sessionsByPlayer = await getSessions(clickhouse, onlinePresence)
+    const unfinishedSessionIds: string[] = []
 
     for (const presence of onlinePresence) {
       if (activePlayerAliasIds.has(presence.playerAlias.id)) {
@@ -138,7 +116,16 @@ export default async function cleanupOnlinePlayers() {
       } else if (!latestSession.ended_at) {
         cleanupStats.presenceUpdated++
         presence.online = false
+        unfinishedSessionIds.push(latestSession.id)
       }
+    }
+
+    if (unfinishedSessionIds.length > 0) {
+      cleanupStats.sessionsDeleted += unfinishedSessionIds.length
+      await clickhouse.exec({
+        query: 'DELETE FROM player_sessions WHERE id IN ({sessionIds:Array(String)})',
+        query_params: { sessionIds: unfinishedSessionIds }
+      })
     }
   }
 

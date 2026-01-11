@@ -3,7 +3,6 @@ import cleanupOnlinePlayers from '../../src/tasks/cleanupOnlinePlayers'
 import PlayerFactory from '../fixtures/PlayerFactory'
 import createOrganisationAndGame from '../utils/createOrganisationAndGame'
 import PlayerSession, { ClickHousePlayerSession } from '../../src/entities/player-session'
-import { formatDateForClickHouse } from '../../src/lib/clickhouse/formatDateTime'
 import PlayerPresenceFactory from '../fixtures/PlayerPresenceFactory'
 import assert from 'node:assert'
 import PlayerPresence from '../../src/entities/player-presence'
@@ -23,13 +22,26 @@ describe('cleanupOnlinePlayers', () => {
     vi.useRealTimers()
   })
 
-  it('should delete unfinished sessions older than 1 day', async () => {
+  it('should delete unfinished session when marking presence offline', async () => {
+    vi.useRealTimers()
+
     const [, game] = await createOrganisationAndGame()
-    const player = await new PlayerFactory([game]).one()
+    const player = await new PlayerFactory([game])
+      .state(async (player) => ({
+        presence: await new PlayerPresenceFactory(player.game)
+          .online()
+          .state(() => ({ updatedAt: subHours(new Date(), 2) }))
+          .one()
+      }))
+      .one()
     await em.persist(player).flush()
+
+    assert(player.presence)
 
     const session = new PlayerSession()
     session.construct(player)
+    session.startedAt = player.presence.updatedAt
+    session.endedAt = null
     await player.insertSession(clickhouse, session)
 
     await vi.waitUntil(async () => {
@@ -42,12 +54,15 @@ describe('cleanupOnlinePlayers', () => {
 
     await cleanupOnlinePlayers()
 
-    await vi.waitUntil(async () => {
+    const updatedPresence = await em.repo(PlayerPresence).findOneOrFail({ player: player.id })
+    expect(updatedPresence.online).toBe(false)
+
+    await vi.waitFor(async () => {
       const sessions = await clickhouse.query({
-        query: `SELECT * FROM player_sessions WHERE player_id = '${player.id}'`,
+        query: `SELECT * FROM player_sessions WHERE player_id = '${player.id}' AND ended_at IS NULL`,
         format: 'JSONEachRow'
       }).then((res) => res.json<ClickHousePlayerSession>())
-      return sessions.length === 0
+      expect(sessions.length).toBe(0)
     })
   })
 
@@ -166,26 +181,23 @@ describe('cleanupOnlinePlayers', () => {
     expect(updatedPresence).toBeNull()
   })
 
-  it('should delete sessions for a deleted player', async () => {
-    // Use the time from beforeEach (2 days ago) to ensure session is old enough
-    const deletedPlayerId = crypto.randomUUID()
+  it('should not delete sessions when there is no presence to process', async () => {
+    vi.useRealTimers()
 
-    await clickhouse.insert({
-      table: 'player_sessions',
-      values: {
-        player_id: deletedPlayerId,
-        player_alias_id: 123,
-        started_at: formatDateForClickHouse(subDays(new Date(), 2)),
-        ended_at: null,
-        dev_build: true
-      },
-      format: 'JSON'
-    })
+    // player without presence
+    const [, game] = await createOrganisationAndGame()
+    const player = await new PlayerFactory([game]).one()
+    await em.persist(player).flush()
+
+    // unfinished session
+    const session = new PlayerSession()
+    session.construct(player)
+    await player.insertSession(clickhouse, session)
 
     // verify the session was inserted
     await vi.waitUntil(async () => {
       const sessions = await clickhouse.query({
-        query: `SELECT * FROM player_sessions WHERE player_id = '${deletedPlayerId}'`,
+        query: `SELECT * FROM player_sessions WHERE player_id = '${player.id}' AND ended_at IS NULL`,
         format: 'JSONEachRow'
       }).then((res) => res.json<ClickHousePlayerSession>())
       return sessions.length === 1
@@ -193,14 +205,12 @@ describe('cleanupOnlinePlayers', () => {
 
     await cleanupOnlinePlayers()
 
-    // verify the session was deleted
-    await vi.waitUntil(async () => {
-      const sessions = await clickhouse.query({
-        query: `SELECT * FROM player_sessions WHERE player_id = '${deletedPlayerId}'`,
-        format: 'JSONEachRow'
-      }).then((res) => res.json<ClickHousePlayerSession>())
-      return sessions.length === 0
-    })
+    // session should NOT be deleted because there's no presence to mark offline
+    const sessions = await clickhouse.query({
+      query: `SELECT * FROM player_sessions WHERE player_id = '${player.id}' AND ended_at IS NULL`,
+      format: 'JSONEachRow'
+    }).then((res) => res.json<ClickHousePlayerSession>())
+    expect(sessions.length).toBe(1)
   })
 
   it('should handle empty state when no sessions or presence need cleanup', async () => {
@@ -209,34 +219,6 @@ describe('cleanupOnlinePlayers', () => {
     // no data
     await cleanupOnlinePlayers()
     expect(true).toBe(true)
-  })
-
-  it('should delete old sessions when there is no online presence to check', async () => {
-    const [, game] = await createOrganisationAndGame()
-    const player = await new PlayerFactory([game]).one()
-    await em.persist(player).flush()
-
-    const session = new PlayerSession()
-    session.construct(player)
-    await player.insertSession(clickhouse, session)
-
-    await vi.waitUntil(async () => {
-      const sessions = await clickhouse.query({
-        query: `SELECT * FROM player_sessions WHERE player_id = '${player.id}' and ended_at IS NULL`,
-        format: 'JSONEachRow'
-      }).then((res) => res.json<ClickHousePlayerSession>())
-      return sessions.length === 1
-    })
-
-    await cleanupOnlinePlayers()
-
-    await vi.waitUntil(async () => {
-      const sessions = await clickhouse.query({
-        query: `SELECT * FROM player_sessions WHERE player_id = '${player.id}'`,
-        format: 'JSONEachRow'
-      }).then((res) => res.json<ClickHousePlayerSession>())
-      return sessions.length === 0
-    })
   })
 
   it('should not mark a player as offline if they have an active socket connection', async () => {

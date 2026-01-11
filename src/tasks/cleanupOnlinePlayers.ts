@@ -3,7 +3,7 @@ import { getMikroORM } from '../config/mikro-orm.config'
 import createClickHouseClient from '../lib/clickhouse/createClient'
 import { ClickHousePlayerSession } from '../entities/player-session'
 import { ClickHouseClient } from '@clickhouse/client'
-import { subHours } from 'date-fns'
+import { subMinutes } from 'date-fns'
 import PlayerPresence from '../entities/player-presence'
 import { formatDateForClickHouse } from '../lib/clickhouse/formatDateTime'
 import { getSocketInstance } from '../socket/socketRegistry'
@@ -12,8 +12,10 @@ type CleanupStats = {
   sessionsDeleted: number
   presenceUpdated: number
   presenceDeleted: number
-  presenceCheckedAgainstSocket: number
+  presenceStillOnline: number
 }
+
+const BATCH_SIZE = 500
 
 let cleanupStats: CleanupStats
 
@@ -36,7 +38,7 @@ async function getSessions(clickhouse: ClickHouseClient, onlinePresence: PlayerP
       SELECT player_id, ended_at, started_at
       FROM player_sessions
       WHERE player_id IN ({playerIds:Array(String)})
-        AND ended_at >= {cutoffTime:DateTime64(3)}
+        AND (ended_at >= {cutoffTime:DateTime64(3)} OR ended_at IS NULL)
       ORDER BY player_id, ended_at DESC
     `,
     query_params: {
@@ -67,7 +69,7 @@ export default async function cleanupOnlinePlayers() {
     sessionsDeleted: 0,
     presenceUpdated: 0,
     presenceDeleted: 0,
-    presenceCheckedAgainstSocket: 0
+    presenceStillOnline: 0
   }
 
   const sessions = await clickhouse.query({
@@ -75,7 +77,7 @@ export default async function cleanupOnlinePlayers() {
       SELECT * FROM player_sessions
       WHERE ended_at IS NULL AND started_at <= dateSub(DAY, 1, now())
       ORDER BY started_at DESC
-      LIMIT 100
+      LIMIT ${BATCH_SIZE}
     `,
     format: 'JSONEachRow'
   }).then((res) => res.json<ClickHousePlayerSession>())
@@ -94,10 +96,10 @@ export default async function cleanupOnlinePlayers() {
   const onlinePresence = await em.repo(PlayerPresence).find({
     online: true,
     updatedAt: {
-      $lte: subHours(new Date(), 1)
+      $lte: subMinutes(new Date(), 30)
     }
   }, {
-    limit: 100,
+    limit: BATCH_SIZE,
     populate: ['player']
   })
 
@@ -117,13 +119,23 @@ export default async function cleanupOnlinePlayers() {
 
     for (const presence of onlinePresence) {
       if (activePlayerAliasIds.has(presence.playerAlias.id)) {
-        cleanupStats.presenceCheckedAgainstSocket++
+        cleanupStats.presenceStillOnline++
         continue
       }
 
-      // check if there's a session that ended after the presence was updated
       const latestSession = sessionsByPlayer.get(presence.player.id)
-      if (latestSession?.ended_at && new Date(latestSession.ended_at) >= presence.updatedAt) {
+
+      // mark offline if presence is stale (>30 min) and no active WebSocket, AND:
+      // 1. no session found at all, OR
+      // 2. session ended after the presence was last updated (proof of disconnect), OR
+      // 3. session exists but never ended (ended_at is null), meaning improper disconnect
+      if (!latestSession) {
+        cleanupStats.presenceUpdated++
+        presence.online = false
+      } else if (latestSession.ended_at && new Date(latestSession.ended_at) >= presence.updatedAt) {
+        cleanupStats.presenceUpdated++
+        presence.online = false
+      } else if (!latestSession.ended_at) {
         cleanupStats.presenceUpdated++
         presence.online = false
       }

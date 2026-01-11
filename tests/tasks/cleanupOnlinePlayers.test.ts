@@ -81,7 +81,7 @@ describe('cleanupOnlinePlayers', () => {
     expect(isToday(updatedPresence.updatedAt)).toBe(true)
   })
 
-  it('does not set presence to offline if the latest session ended before the presence was updated', async () => {
+  it('marks presence offline even if the session ended before the presence was updated, when presence is stale', async () => {
     vi.useRealTimers()
 
     const [, game] = await createOrganisationAndGame()
@@ -96,10 +96,9 @@ describe('cleanupOnlinePlayers', () => {
     await em.persist(player).flush()
 
     assert(player.presence)
-    const originalUpdatedAt = player.presence.updatedAt
-    originalUpdatedAt.setMilliseconds(0) // no milliseconds in db
 
     // simulate a session that ended before the presence was updated
+    // this old session won't be found because it's older than the cutoff time
     const session = new PlayerSession()
     session.construct(player)
     session.startedAt = session.endedAt = subMinutes(player.presence.updatedAt, 10)
@@ -108,11 +107,14 @@ describe('cleanupOnlinePlayers', () => {
     await cleanupOnlinePlayers()
 
     const updatedPresence = await em.repo(PlayerPresence).findOneOrFail({ player: player.id })
-    expect(updatedPresence.online).toBe(true)
-    expect(updatedPresence.updatedAt).toEqual(originalUpdatedAt)
+    // should be marked offline because:
+    // 1. presence is stale (>30 min old)
+    // 2. no active WebSocket
+    // 3. no recent session found (session is too old to be in query results)
+    expect(updatedPresence.online).toBe(false)
   })
 
-  it('should not update presence if no sessions are found', async () => {
+  it('should mark presence offline if no sessions are found and presence is stale', async () => {
     vi.useRealTimers()
 
     const [, game] = await createOrganisationAndGame()
@@ -127,16 +129,14 @@ describe('cleanupOnlinePlayers', () => {
     await em.persist(player).flush()
 
     assert(player.presence)
-    const originalUpdatedAt = player.presence.updatedAt
-    originalUpdatedAt.setMilliseconds(0) // no milliseconds in db
 
     // no sessions inserted for this player
 
     await cleanupOnlinePlayers()
 
     const updatedPresence = await em.repo(PlayerPresence).findOneOrFail({ player: player.id })
-    expect(updatedPresence.online).toBe(true)
-    expect(updatedPresence.updatedAt).toEqual(originalUpdatedAt)
+    // Should be marked offline because presence is stale and no session exists
+    expect(updatedPresence.online).toBe(false)
   })
 
   it('should delete presence that no longer has a player', async () => {
@@ -333,5 +333,45 @@ describe('cleanupOnlinePlayers', () => {
 
     const updatedPresence3 = await em.repo(PlayerPresence).findOneOrFail({ player: player3.id })
     expect(updatedPresence3.online).toBe(false)
+  })
+
+  it('should mark presence offline if session never ended but presence is stale and no active socket', async () => {
+    vi.useRealTimers()
+
+    const [, game] = await createOrganisationAndGame()
+    const player = await new PlayerFactory([game])
+      .state(async (player) => ({
+        presence: await new PlayerPresenceFactory(player.game)
+          .online()
+          .state(() => ({ updatedAt: subHours(new Date(), 2) }))
+          .one()
+      }))
+      .one()
+    await em.persist(player).flush()
+
+    assert(player.presence)
+
+    // simulate a session that never properly ended (ended_at is null)
+    // this happens when WebSocket disconnects improperly
+    const session = new PlayerSession()
+    session.construct(player)
+    session.startedAt = player.presence.updatedAt
+    session.endedAt = null // never ended!
+    await player.insertSession(clickhouse, session)
+
+    await vi.waitUntil(async () => {
+      const sessions = await clickhouse.query({
+        query: `SELECT * FROM player_sessions WHERE player_id = '${player.id}' AND ended_at IS NULL`,
+        format: 'JSONEachRow'
+      }).then((res) => res.json<ClickHousePlayerSession>())
+      return sessions.length === 1
+    })
+
+    await cleanupOnlinePlayers()
+
+    const updatedPresence = await em.repo(PlayerPresence).findOneOrFail({ player: player.id })
+    // should be marked offline even though session never ended
+    // because presence is stale (>30 min) and no active WebSocket
+    expect(updatedPresence.online).toBe(false)
   })
 })

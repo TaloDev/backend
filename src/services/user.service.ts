@@ -1,7 +1,7 @@
 import { EntityManager } from '@mikro-orm/mysql'
 import { Service, Request, Response, Route, Validate, Before } from 'koa-clay'
 import UserSession from '../entities/user-session'
-import buildTokenPair from '../lib/auth/buildTokenPair'
+import { buildTokenPair } from '../lib/auth/buildTokenPair'
 import bcrypt from 'bcrypt'
 import getUserFromToken from '../lib/auth/getUserFromToken'
 import UserAccessCode from '../entities/user-access-code'
@@ -74,7 +74,11 @@ export default class UserService extends Service {
     const sessions = await userSessionRepo.find({ user })
     em.remove(sessions)
 
-    const accessToken = await buildTokenPair(req.ctx, user)
+    const accessToken = await buildTokenPair({
+      em: req.ctx.em,
+      ctx: req.ctx,
+      user
+    })
 
     return {
       status: 200,

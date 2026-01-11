@@ -3,7 +3,7 @@ import { Queue } from 'bullmq'
 import DataExportReady from '../../../src/emails/data-export-ready-mail'
 import queueEmail from '../../../src/lib/messaging/queueEmail'
 import Mail, { EmailConfig } from '../../../src/emails/mail'
-import createEmailQueue from '../../../src/lib/queues/createEmailQueue'
+import { createEmailQueue } from '../../../src/lib/queues/createEmailQueue'
 import * as checkRateLimitExceeded from '../../../src/lib/errors/checkRateLimitExceeded'
 
 const consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})

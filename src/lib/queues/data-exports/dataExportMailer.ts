@@ -1,6 +1,6 @@
 import { Job, Queue } from 'bullmq'
 import { EmailConfig } from '../../../emails/mail'
-import createEmailQueue from '../createEmailQueue'
+import { createEmailQueue } from '../createEmailQueue'
 import { updateDataExportStatus } from './updateDataExportStatus'
 import DataExport, { DataExportStatus } from '../../../entities/data-export'
 import DataExportReady from '../../../emails/data-export-ready-mail'

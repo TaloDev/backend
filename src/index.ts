@@ -1,31 +1,31 @@
 import 'dotenv/config'
 import './lib/tracing/sentry-instrument'
 import './lib/tracing/enable-tracing'
+import './lib/docs/docs-registry'
 import Koa from 'koa'
-import loggerMiddleware from './middleware/logger-middleware'
 import bodyParser from 'koa-bodyparser'
+import loggerMiddleware from './middleware/logger-middleware'
 import configureProtectedRoutes from './config/protected-routes'
-import configurePublicRoutes from './config/public-routes'
 import configureAPIRoutes from './config/api-routes'
+import configurePublicRoutes from './config/public-routes'
 import corsMiddleware from './middleware/cors-middleware'
 import errorMiddleware from './middleware/error-middleware'
 import initProviders from './config/providers'
 import devDataMiddleware from './middleware/dev-data-middleware'
 import requestContextMiddleware from './middleware/request-context-middleware'
 import helmetMiddleware from './middleware/helmet-middleware'
+import httpTracingMiddleware from './middleware/http-tracing-middleware'
+import compress from 'koa-compress'
 import { createServer } from 'http'
 import Socket from './socket'
 import { setSocketInstance } from './socket/socketRegistry'
-import httpTracingMiddleware from './middleware/http-tracing-middleware'
 import { secondsToMilliseconds } from 'date-fns'
-import compress from 'koa-compress'
 import { EntityManager } from '@mikro-orm/mysql'
 
 const isTest = process.env.NODE_ENV === 'test'
 
-export default async function init(): Promise<Koa> {
+export default async function init() {
   const app = new Koa()
-  /* v8 ignore next */
   app.proxy = process.env.NO_PROXY !== '1'
 
   await initProviders(app, isTest)
@@ -40,8 +40,8 @@ export default async function init(): Promise<Koa> {
   app.use(devDataMiddleware)
   app.use(requestContextMiddleware)
 
-  configureProtectedRoutes(app)
   configurePublicRoutes(app)
+  configureProtectedRoutes(app)
   configureAPIRoutes(app)
 
   const server = createServer({

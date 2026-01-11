@@ -1,0 +1,76 @@
+import type { ZodSchema, z as zodType } from 'zod'
+import type Koa from 'koa'
+import type { AppParameterizedContext, RouteState } from '../lib/context'
+
+export type ValidationSchema = {
+  body?: ZodSchema
+  query?: ZodSchema
+  params?: ZodSchema
+  headers?: ZodSchema
+}
+
+export type InferValidation<V extends ValidationSchema> = {
+  body: V['body'] extends ZodSchema ? zodType.infer<V['body']> : unknown
+  query: V['query'] extends ZodSchema ? zodType.infer<V['query']> : unknown
+  params: V['params'] extends ZodSchema ? zodType.infer<V['params']> : unknown
+  headers: V['headers'] extends ZodSchema ? zodType.infer<V['headers']> : unknown
+}
+
+export type ValidatedContext<V extends ValidationSchema, S extends RouteState> =
+  AppParameterizedContext<S> & {
+    state: S & {
+      validated: InferValidation<V>
+    }
+  }
+
+export function validate<V extends ValidationSchema, S extends RouteState>(
+  schemaObject: V
+): (ctx: AppParameterizedContext<S>, next: Koa.Next) => Promise<void> {
+  return async (ctx, next) => {
+    const targets = ['body', 'query', 'params', 'headers'] as const
+    const validated: InferValidation<V> = {
+      body: {},
+      query: {},
+      params: {},
+      headers: {}
+    }
+
+    for (const target of targets) {
+      const schema = schemaObject[target]
+      if (!schema) continue
+
+      let data: unknown
+      if (target === 'body') {
+        data = ctx.request.body
+      } else if (target === 'query') {
+        data = ctx.query
+      } else if (target === 'params') {
+        data = ctx.params
+      } else {
+        data = ctx.headers
+      }
+
+      const result = schema.safeParse(data)
+      if (!result.success) {
+        const errors: Record<string, string[]> = {}
+        for (const issue of result.error.issues) {
+          const path = issue.path.join('.')
+          if (!errors[path]) {
+            errors[path] = []
+          }
+          errors[path].push(issue.message)
+        }
+
+        ctx.status = 400
+        ctx.body = { errors }
+        return
+      }
+
+      validated[target] = result.data
+    }
+
+    (ctx.state as ValidatedContext<V, S>['state']).validated = validated
+
+    await next()
+  }
+}

@@ -1,28 +1,29 @@
 import { Queue } from 'bullmq'
-import createEmailQueue from '../lib/queues/createEmailQueue'
+import { createEmailQueue } from '../lib/queues/createEmailQueue'
 import { createClearResponseCacheQueue } from '../lib/perf/responseCacheQueue'
-import { EmailConfig } from '../emails/mail'
-import { createDeleteClickHousePlayerDataQueue, DeleteClickHousePlayerDataConfig } from '../lib/queues/createDeleteClickHousePlayerDataQueue'
+import { createDeleteClickHousePlayerDataQueue } from '../lib/queues/createDeleteClickHousePlayerDataQueue'
+import { createDemoUserQueue } from '../lib/queues/createDemoUserQueue'
 
-export const queueNames = [
-  'email',
-  'clear-response-cache',
-  'delete-clickhouse-player-data'
-] as const
+const queueFactories = {
+  'email': createEmailQueue,
+  'clear-response-cache': createClearResponseCacheQueue,
+  'delete-clickhouse-player-data': createDeleteClickHousePlayerDataQueue,
+  'demo': createDemoUserQueue
+} as const
+
+export const queueNames = Object.keys(queueFactories) as (keyof typeof queueFactories)[]
 
 type QueueName = typeof queueNames[number]
 type QueueTypeMapping = {
-  'email': Queue<EmailConfig>
-  'clear-response-cache': Queue<string>
-  'delete-clickhouse-player-data': Queue<DeleteClickHousePlayerDataConfig>
+  [K in keyof typeof queueFactories]: ReturnType<typeof queueFactories[K]>
 }
 
 const queueMap = new Map<QueueName, Queue>()
 
 export function setupGlobalQueues() {
-  queueMap.set('email', createEmailQueue())
-  queueMap.set('clear-response-cache', createClearResponseCacheQueue())
-  queueMap.set('delete-clickhouse-player-data', createDeleteClickHousePlayerDataQueue())
+  for (const [name, factory] of Object.entries(queueFactories)) {
+    queueMap.set(name as QueueName, factory())
+  }
 }
 
 export function getGlobalQueue<T extends QueueName>(queueName: T): QueueTypeMapping[T] {

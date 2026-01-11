@@ -22,15 +22,14 @@ describe('cleanupOnlinePlayers', () => {
     vi.useRealTimers()
   })
 
-  it('should delete unfinished session when marking presence offline', async () => {
+  it('should delete unfinished sessions for offline player', async () => {
     vi.useRealTimers()
 
     const [, game] = await createOrganisationAndGame()
     const player = await new PlayerFactory([game])
       .state(async (player) => ({
         presence: await new PlayerPresenceFactory(player.game)
-          .online()
-          .state(() => ({ updatedAt: subHours(new Date(), 2) }))
+          .offline()
           .one()
       }))
       .one()
@@ -53,9 +52,6 @@ describe('cleanupOnlinePlayers', () => {
     })
 
     await cleanupOnlinePlayers()
-
-    const updatedPresence = await em.repo(PlayerPresence).findOneOrFail({ player: player.id })
-    expect(updatedPresence.online).toBe(false)
 
     await vi.waitFor(async () => {
       const sessions = await clickhouse.query({
@@ -181,7 +177,7 @@ describe('cleanupOnlinePlayers', () => {
     expect(updatedPresence).toBeNull()
   })
 
-  it('should not delete sessions when there is no presence to process', async () => {
+  it('should delete unfinished sessions when there is no presence', async () => {
     vi.useRealTimers()
 
     // player without presence
@@ -205,12 +201,14 @@ describe('cleanupOnlinePlayers', () => {
 
     await cleanupOnlinePlayers()
 
-    // session should NOT be deleted because there's no presence to mark offline
-    const sessions = await clickhouse.query({
-      query: `SELECT * FROM player_sessions WHERE player_id = '${player.id}' AND ended_at IS NULL`,
-      format: 'JSONEachRow'
-    }).then((res) => res.json<ClickHousePlayerSession>())
-    expect(sessions.length).toBe(1)
+    // session should be deleted because there's no presence (player is considered offline)
+    await vi.waitFor(async () => {
+      const sessions = await clickhouse.query({
+        query: `SELECT * FROM player_sessions WHERE player_id = '${player.id}' AND ended_at IS NULL`,
+        format: 'JSONEachRow'
+      }).then((res) => res.json<ClickHousePlayerSession>())
+      expect(sessions.length).toBe(0)
+    })
   })
 
   it('should handle empty state when no sessions or presence need cleanup', async () => {

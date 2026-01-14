@@ -4,7 +4,16 @@ import Organisation from '../../../entities/organisation'
 import bcrypt from 'bcrypt'
 import { buildTokenPair } from '../../../lib/auth/buildTokenPair'
 import { generateDemoEvents } from '../../../lib/demo-data/generateDemoEvents'
-import { getGlobalQueue } from '../../../config/global-queues'
+import { createDemoUserQueue } from '../../../lib/queues/createDemoUserQueue'
+
+let demoQueue: ReturnType<typeof createDemoUserQueue> | null = null
+
+function getDemoQueue() {
+  if (!demoQueue) {
+    demoQueue = createDemoUserQueue()
+  }
+  return demoQueue
+}
 
 export function demoRouter() {
   return publicRouter('/public', ({ route }) => {
@@ -38,7 +47,7 @@ export function demoRouter() {
         })
 
         // schedule deletion after 1 hour
-        await getGlobalQueue('demo').add('demo-user', {
+        await getDemoQueue().add('demo-user', {
           userId: user.id
         }, {
           delay: 3_600_000

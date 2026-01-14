@@ -12,6 +12,7 @@ import queueEmail from '../../../lib/messaging/queueEmail'
 import ConfirmEmail from '../../../emails/confirm-email-mail'
 import { getGlobalQueue } from '../../../config/global-queues'
 import { buildTokenPair } from '../../../lib/auth/buildTokenPair'
+import { passwordSchema } from '../../../lib/validation/passwordSchema'
 
 export const registerRoute = publicRoute({
   method: 'post',
@@ -20,7 +21,7 @@ export const registerRoute = publicRoute({
     body: z.object({
       email: z.string().email('Email address is invalid'),
       username: z.string().min(1),
-      password: z.string().min(1),
+      password: passwordSchema,
       organisationName: z.string().optional(),
       inviteToken: z.string().optional()
     }).refine((data) => data.organisationName || data.inviteToken, {

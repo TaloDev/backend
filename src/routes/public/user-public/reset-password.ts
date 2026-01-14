@@ -5,13 +5,14 @@ import jwt from 'jsonwebtoken'
 import bcrypt from 'bcrypt'
 import { verify } from '../../../lib/auth/jwt'
 import assert from 'node:assert'
+import { passwordSchema } from '../../../lib/validation/passwordSchema'
 
 export const resetPasswordRoute = publicRoute({
   method: 'post',
   path: '/reset_password',
   schema: (z) => ({
     body: z.object({
-      password: z.string().min(1),
+      password: passwordSchema,
       token: z.string().min(1)
     })
   }),

@@ -7,7 +7,7 @@ import PlayerAlias from '../../entities/player-alias'
 import { formatDateForClickHouse } from '../clickhouse/formatDateTime'
 import { rand, randNumber } from '@ngneat/falso'
 import { ClickHouseClient } from '@clickhouse/client'
-import { AppParameterizedContext, PublicRouteState } from '../context'
+import { PublicRouteContext } from '../routing/context'
 
 type DemoEvent = {
   name: string
@@ -101,7 +101,7 @@ async function getEventCount(clickhouse: ClickHouseClient, game: Game, startDate
   }
 }
 
-export async function generateDemoEvents(ctx: AppParameterizedContext<PublicRouteState>): Promise<void> {
+export async function generateDemoEvents(ctx: PublicRouteContext): Promise<void> {
   const em = ctx.em
   const clickhouse = ctx.clickhouse
 

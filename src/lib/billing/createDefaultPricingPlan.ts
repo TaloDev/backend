@@ -15,10 +15,7 @@ export default async function createDefaultPricingPlan(em: EntityManager, organi
     assert(stripe)
     const prices = await stripe.prices.list({ product: defaultPlan.stripeId, active: true })
     const activePrice = prices.data[0]
-    /* v8 ignore next 3 */
-    if (!activePrice) {
-      throw new Error('No active price found for default pricing plan')
-    }
+    assert(activePrice, 'No active price found for default pricing plan')
     price = activePrice.id
   } else {
     // self-hosted logic

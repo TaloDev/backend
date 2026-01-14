@@ -7,15 +7,16 @@ import { isToday, isThisWeek, isThisMonth, isThisYear } from 'date-fns'
 import triggerIntegrations from '../lib/integrations/triggerIntegrations'
 import { streamByCursor } from '../lib/perf/streamByCursor'
 import { deferClearResponseCache } from '../lib/perf/responseCacheQueue'
+import assert from 'node:assert'
 
 export async function archiveEntriesForLeaderboard(em: EntityManager, leaderboard: Leaderboard) {
-  /* v8 ignore start */
-  if (leaderboard.refreshInterval === LeaderboardRefreshInterval.NEVER) {
-    // this should never happen, but it enforces correct typing for refreshCheckers
-    console.warn(`Leaderboard ${leaderboard.id} has a NEVER refresh interval, skipping...`)
-    return
-  }
+  // this should never happen, but it enforces correct typing for refreshCheckers
+  assert(
+    leaderboard.refreshInterval !== LeaderboardRefreshInterval.NEVER,
+    `Leaderboard ${leaderboard.id} has a NEVER refresh interval, skipping...`
+  )
 
+  /* v8 ignore start */
   if (process.env.NODE_ENV !== 'test') {
     console.info(`Archiving entries for leaderboard ${leaderboard.id}...`)
   }

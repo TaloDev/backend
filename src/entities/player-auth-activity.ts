@@ -1,6 +1,7 @@
 import { Entity, Enum, ManyToOne, PrimaryKey, Property } from '@mikro-orm/mysql'
 import Player from './player'
 import PlayerAlias, { PlayerAliasService } from './player-alias'
+import assert from 'node:assert'
 
 export enum PlayerAuthActivityType {
   REGISTERED,
@@ -45,13 +46,9 @@ export default class PlayerAuthActivity {
 
   private getAuthAlias(): PlayerAlias {
     const alias = this.player.aliases.find((alias) => alias.service === PlayerAliasService.TALO)
-    /* v8 ignore start */
-    if (!alias) {
-      // technically this should never happen,
-      // if an alias is deleted, so are the auth activities
-      throw new Error('No Talo alias found for player')
-    }
-    /* v8 ignore stop */
+    // technically this should never happen,
+    // if an alias is deleted, so are the auth activities
+    assert(alias, 'No Talo alias found for player')
     return alias
   }
 

@@ -15,6 +15,8 @@ type AppContext = {
 export type AppParameterizedContext<S extends RouteState> =
   Koa.ParameterizedContext<S> & AppContext
 
-export type PublicRouteContext = AppParameterizedContext<PublicRouteState>
-export type ProtectedRouteContext = AppParameterizedContext<ProtectedRouteState>
-export type APIRouteContext = AppParameterizedContext<APIRouteState>
+type ExtendedRouteContext = Record<string, unknown>
+
+export type PublicRouteContext<T = ExtendedRouteContext> = AppParameterizedContext<PublicRouteState & T>
+export type ProtectedRouteContext<T = ExtendedRouteContext> = AppParameterizedContext<ProtectedRouteState & T>
+export type APIRouteContext<T = ExtendedRouteContext> = AppParameterizedContext<APIRouteState & T>

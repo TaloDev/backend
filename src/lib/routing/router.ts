@@ -46,7 +46,7 @@ export type ValidatedRouteConfig<
   V extends ValidationSchema = ValidationSchema
 > = {
   method: HttpMethod
-  path: string
+  path?: string
   docs?: RouteDocs
   middleware?: Middleware<S>[]
   schema: (z: ZodBuilder) => V
@@ -55,7 +55,7 @@ export type ValidatedRouteConfig<
 
 export type UnvalidatedRouteConfig<S extends RouteState> = {
   method: HttpMethod
-  path: string
+  path?: string
   docs?: RouteDocs
   middleware?: Middleware<S>[]
   schema?: never
@@ -74,7 +74,7 @@ function mountRoute<S extends RouteState, V extends ValidationSchema | undefined
   basePath: string,
   config: RouteConfig<S, V>
 ) {
-  const fullPath = `${basePath}${config.path}`
+  const fullPath = `${basePath}${config.path ?? ''}`
   const middleware = config.middleware ?? []
 
   const applyResponse = (ctx: AppParameterizedContext<S>, response: HandlerResponse) => {

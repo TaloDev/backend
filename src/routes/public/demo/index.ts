@@ -16,10 +16,9 @@ function getDemoQueue() {
 }
 
 export function demoRouter() {
-  return publicRouter('/public', ({ route }) => {
+  return publicRouter('/public/demo', ({ route }) => {
     route({
       method: 'post',
-      path: '/demo',
       handler: async (ctx) => {
         const em = ctx.em
 

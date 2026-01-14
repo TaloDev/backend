@@ -40,11 +40,36 @@ export function userTypeGate(types: UserType[], action: string): Middleware<Prot
 
     if (!user) {
       ctx.status = 401
-      ctx.body = {}
       return
     }
 
     if (user.type !== UserType.OWNER && !types.includes(user.type)) {
+      ctx.status = 403
+      ctx.body = {
+        message: `You do not have permissions to ${action}`
+      }
+      return
+    }
+
+    await next()
+  }
+}
+
+export function ownerGate(action: string): Middleware<ProtectedRouteState> {
+  return async (ctx: ProtectedRouteContext, next: Koa.Next) => {
+    if (ctx.state.user.api) {
+      await next()
+      return
+    }
+
+    const user = ctx.state.authenticatedUser
+
+    if (!user) {
+      ctx.status = 401
+      return
+    }
+
+    if (user.type !== UserType.OWNER) {
       ctx.status = 403
       ctx.body = {
         message: `You do not have permissions to ${action}`

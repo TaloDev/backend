@@ -367,11 +367,29 @@ export const disable2faRoute = protectedRoute({
 })
 ```
 
+**Built-in Authorization Middleware:**
+
+The codebase provides reusable authorization middleware in `src/middleware/policy-middleware.ts`:
+
+```typescript
+import { userTypeGate, ownerGate } from '../../../middleware/policy-middleware'
+
+// Allow specific user types (OWNER always allowed)
+userTypeGate([UserType.ADMIN, UserType.DEV], 'create games')
+
+// Require OWNER user type only
+ownerGate('view game settings')
+
+// For API routes - require specific scopes
+requireScopes([APIKeyScope.READ_PLAYERS, APIKeyScope.WRITE_PLAYERS])
+```
+
 **IMPORTANT:**
 - Do NOT wrap middleware definitions with `withMiddleware()` in common.ts
 - Do NOT use array spread syntax like `[...middleware1, ...middleware2]`
 - DO use `withMiddleware(middleware1, middleware2)` in route configs
 - Middleware functions are plain async functions; `withMiddleware()` converts them to the format expected by the router
+- Use `ownerGate()` instead of `userTypeGate([])` for OWNER-only routes - it's more readable
 
 #### Context Types
 
@@ -391,7 +409,7 @@ Access context properties:
 
 #### Validation with Zod
 
-Replace `@Validate` decorators with inline Zod schemas:
+Replace `@Validate` decorators with inline Zod schemas using the `schema` field:
 
 **Old Pattern:**
 ```typescript
@@ -404,23 +422,28 @@ class UserService extends Service {
 
 **New Pattern:**
 ```typescript
-import { z } from 'zod'
-
 export const registerRoute = publicRoute({
   method: 'post',
   path: '/register',
-  validation: {
+  schema: (z) => ({
     body: z.object({
       email: z.string().email(),
       password: z.string().min(8)
     })
-  },
+  }),
   handler: async (ctx) => {
-    const { email, password } = ctx.request.body
+    // Validated data is available at ctx.state.validated
+    const { email, password } = ctx.state.validated.body
     // ... handler logic
   }
 })
 ```
+
+**IMPORTANT:**
+- Use `schema` field (not `validation`) which receives `z` (Zod) as a parameter
+- Access validated data from `ctx.state.validated.body`, not `ctx.request.body`
+- The schema function can validate `body`, `query`, `params`, etc.
+- All validated fields are available under `ctx.state.validated`
 
 #### Documentation
 

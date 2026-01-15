@@ -4,7 +4,6 @@ import GameChannelService from '../services/game-channel.service'
 import GameFeedbackService from '../services/game-feedback.service'
 import PlayerGroupService from '../services/player-group.service'
 import OrganisationService from '../services/organisation.service'
-import InviteService from '../services/invite.service'
 import GameStatService from '../services/game-stat.service'
 import GameActivityService from '../services/game-activity.service'
 import LeaderboardService from '../services/leaderboard.service'
@@ -19,6 +18,7 @@ import { getRouteInfo, protectedRouteAuthMiddleware } from '../middleware/route-
 import { setTraceAttributes } from '@hyperdx/node-opentelemetry'
 import { userRouter } from '../routes/protected/user'
 import { gameRouter } from '../routes/protected/game'
+import { inviteRouter } from '../routes/protected/invite'
 import getUserFromToken from '../lib/auth/getUserFromToken'
 
 export default function protectedRoutes(app: Koa) {
@@ -53,7 +53,6 @@ export default function protectedRoutes(app: Koa) {
   }
   app.use(service('/billing', new BillingService(), serviceOpts))
   app.use(service('/organisations', new OrganisationService(), serviceOpts))
-  app.use(service('/invites', new InviteService(), serviceOpts))
   app.use(service('/games/:gameId/game-stats', new GameStatService(), serviceOpts))
   app.use(service('/games/:gameId/game-activities', new GameActivityService(), serviceOpts))
   app.use(service('/games/:gameId/leaderboards', new LeaderboardService(), serviceOpts))
@@ -70,4 +69,5 @@ export default function protectedRoutes(app: Koa) {
   // new router-based routes
   app.use(userRouter().routes())
   app.use(gameRouter().routes())
+  app.use(inviteRouter().routes())
 }

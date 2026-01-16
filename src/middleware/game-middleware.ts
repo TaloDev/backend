@@ -1,15 +1,15 @@
-import { ProtectedRouteContext } from '../../../lib/routing/context'
 import { Next } from 'koa'
-import Game from '../../../entities/game'
+import Game from '../entities/game'
+import { ProtectedRouteContext } from '../lib/routing/context'
 
 type GameRouteContext = ProtectedRouteContext<{ game: Game }>
 
 export const loadGame = async (ctx: GameRouteContext, next: Next) => {
-  const { id } = ctx.params as { id: string }
+  const { gameId } = ctx.params as { gameId: string }
   const em = ctx.em
 
   const game = await em.repo(Game).findOne(
-    { id: Number(id) },
+    { id: Number(gameId) },
     { populate: ['organisation'] }
   )
 

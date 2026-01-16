@@ -1,10 +1,10 @@
 import { protectedRoute, withMiddleware } from '../../../lib/routing/router'
-import { loadGame } from './common'
+import { loadGame } from '../../../middleware/game-middleware'
 import { ownerGate } from '../../../middleware/policy-middleware'
 
 export const settingsRoute = protectedRoute({
   method: 'get',
-  path: '/:id/settings',
+  path: '/:gameId/settings',
   middleware: withMiddleware(ownerGate('view game settings'), loadGame),
   handler: (ctx) => {
     const game = ctx.state.game

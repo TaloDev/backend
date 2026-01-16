@@ -1,5 +1,4 @@
 import { protectedRoute, withMiddleware } from '../../../lib/routing/router'
-import { loadGame } from './common'
 import { userTypeGate } from '../../../middleware/policy-middleware'
 import { UserType } from '../../../entities/user'
 import { GameActivityType } from '../../../entities/game-activity'
@@ -13,6 +12,7 @@ import { sendMessages } from '../../../socket/messages/socketMessage'
 import { APIKeyScope } from '../../../entities/api-key'
 import Prop from '../../../entities/prop'
 import { ProtectedRouteContext } from '../../../lib/routing/context'
+import { loadGame } from '../../../middleware/game-middleware'
 
 async function sendLiveConfigUpdatedMessage(ctx: ProtectedRouteContext, game: Game) {
   const socket = ctx.wss
@@ -32,7 +32,7 @@ function throwUnlessOwner(ctx: ProtectedRouteContext) {
 
 export const updateRoute = protectedRoute({
   method: 'patch',
-  path: '/:id',
+  path: '/:gameId',
   schema: (z) => ({
     body: z.object({
       name: z.string().trim().min(1, 'Name must be a non-empty string').optional(),

@@ -390,6 +390,7 @@ requireScopes([APIKeyScope.READ_PLAYERS, APIKeyScope.WRITE_PLAYERS])
 - DO use `withMiddleware(middleware1, middleware2)` in route configs
 - Middleware functions are plain async functions; `withMiddleware()` converts them to the format expected by the router
 - Use `ownerGate()` instead of `userTypeGate([])` for OWNER-only routes - it's more readable
+- Middleware ordering: user type gates (`userTypeGate()`, `ownerGate()`) come first, then `requireEmailConfirmed`, then other middleware (e.g., `loadGame`)
 
 #### Context Types
 

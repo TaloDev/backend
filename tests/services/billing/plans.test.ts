@@ -54,4 +54,20 @@ describe('Billing service - plans', () => {
       expect(plan.hidden).toBe(false)
     }
   })
+
+  it('should return an empty array with no stripe key', async () => {
+    const originalKey = process.env.STRIPE_KEY
+    delete process.env.STRIPE_KEY
+
+    const [token] = await createUserAndToken()
+
+    const res = await request(app)
+      .get('/billing/plans')
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    expect(res.body.pricingPlans).toStrictEqual([])
+
+    process.env.STRIPE_KEY = originalKey
+  })
 })

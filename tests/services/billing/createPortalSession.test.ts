@@ -52,4 +52,18 @@ describe('Billing service - create portal session', () => {
       .auth(token, { type: 'bearer' })
       .expect(400)
   })
+
+  it('should return a 405 with no stripe key', async () => {
+    const originalKey = process.env.STRIPE_KEY
+    delete process.env.STRIPE_KEY
+
+    const [token] = await createUserAndToken({ type: UserType.OWNER })
+
+    await request(app)
+      .post('/billing/portal-session')
+      .auth(token, { type: 'bearer' })
+      .expect(405)
+
+    process.env.STRIPE_KEY = originalKey
+  })
 })

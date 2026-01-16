@@ -11,7 +11,7 @@ import APIKeyService from '../services/api-key.service'
 import EventService from '../services/event.service'
 import HeadlineService from '../services/headline.service'
 import PlayerService from '../services/player.service'
-import BillingService from '../services/billing.service'
+import { billingRouter } from '../routes/protected/billing'
 import IntegrationService from '../services/integration.service'
 import { getRouteInfo, protectedRouteAuthMiddleware } from '../middleware/route-middleware'
 import { setTraceAttributes } from '@hyperdx/node-opentelemetry'
@@ -51,7 +51,6 @@ export default function protectedRoutes(app: Koa) {
       hidden: true
     }
   }
-  app.use(service('/billing', new BillingService(), serviceOpts))
   app.use(service('/games/:gameId/game-stats', new GameStatService(), serviceOpts))
   app.use(service('/games/:gameId/game-activities', new GameActivityService(), serviceOpts))
   app.use(service('/games/:gameId/leaderboards', new LeaderboardService(), serviceOpts))
@@ -66,8 +65,9 @@ export default function protectedRoutes(app: Koa) {
   app.use(service('/games/:gameId/game-channels', new GameChannelService(), serviceOpts))
 
   // new router-based routes
-  app.use(userRouter().routes())
+  app.use(billingRouter().routes())
   app.use(gameRouter().routes())
   app.use(inviteRouter().routes())
   app.use(organisationRouter().routes())
+  app.use(userRouter().routes())
 }

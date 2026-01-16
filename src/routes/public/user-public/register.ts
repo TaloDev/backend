@@ -92,12 +92,12 @@ export const registerRoute = publicRoute({
       user.type = UserType.OWNER
     }
 
-    await em.persistAndFlush(user)
+    await em.persist(user).flush()
     await em.populate(user, ['organisation'])
 
     if (!user.emailConfirmed) {
       const accessCode = new UserAccessCode(user, add(new Date(), { weeks: 1 }))
-      await em.persistAndFlush(accessCode)
+      await em.persist(accessCode).flush()
       await queueEmail(getGlobalQueue('email'), new ConfirmEmail(user, accessCode.code))
     }
 

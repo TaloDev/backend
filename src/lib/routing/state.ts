@@ -11,11 +11,13 @@ export type ProtectedRouteState = {
     api?: boolean
   }
   authenticatedUser: User
+  includeDevData: boolean
 }
 
 export type APIRouteState = {
   key: APIKey
   game: Game
+  includeDevData: boolean
 }
 
 export type RouteState = PublicRouteState | ProtectedRouteState | APIRouteState

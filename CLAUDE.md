@@ -290,7 +290,7 @@ Route configurations support:
 
 #### File Organization
 
-**One route per file** for clarity:
+**One route per file** unless the router only has one route, in which case it can be inlined in `index.ts`:
 
 ```
 src/routes/

@@ -71,7 +71,7 @@
     "@sentry/node": "^9.29.0",
     "archiver": "^7.0.1",
     "axios": "^1.12.1",
-    "bcrypt": "^5.1.0",
+    "bcrypt": "^6.0.0",
     "bullmq": "^5.40.2",
     "bullmq-otel": "^1.0.1",
     "date-fns": "^4.1.0",

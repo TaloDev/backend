@@ -282,7 +282,7 @@ Three route helpers provide type safety for route configurations:
 
 Route configurations support:
 - `method`: HTTP method ('get', 'post', 'put', 'patch', 'delete')
-- `path`: Route path (relative to router basePath)
+- `path`: Route path (relative to router basePath, can be omitted for root routes)
 - `handler`: Async function receiving typed context
 - `middleware`: Optional middleware array (use `withMiddleware()` wrapper)
 - `validation`: Optional Zod schema for request body validation

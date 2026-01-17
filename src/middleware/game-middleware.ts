@@ -2,7 +2,8 @@ import { Next } from 'koa'
 import Game from '../entities/game'
 import { ProtectedRouteContext } from '../lib/routing/context'
 
-type GameRouteContext = ProtectedRouteContext<{ game: Game }>
+export type GameRouteState = { game: Game }
+type GameRouteContext = ProtectedRouteContext<GameRouteState>
 
 export const loadGame = async (ctx: GameRouteContext, next: Next) => {
   const { gameId } = ctx.params as { gameId: string }

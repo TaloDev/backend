@@ -1,0 +1,2 @@
+export const HEADLINES_CACHE_TTL_MS = 300_000
+export const ONLINE_PLAYERS_CACHE_TTL_MS = 30_000

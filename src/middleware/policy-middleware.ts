@@ -3,10 +3,11 @@ import { APIKeyScope } from '../entities/api-key'
 import { UserType } from '../entities/user'
 import checkScope from '../policies/checkScope'
 import { Middleware } from '../lib/routing/router'
-import { APIRouteState, AppParameterizedContext, ProtectedRouteState } from '../lib/context'
+import { APIRouteContext, ProtectedRouteContext } from '../lib/routing/context'
+import { APIRouteState, ProtectedRouteState } from '../lib/routing/state'
 
 export function requireScopes(scopes: APIKeyScope[]): Middleware<APIRouteState> {
-  return async (ctx: AppParameterizedContext<APIRouteState>, next: Koa.Next) => {
+  return async (ctx: APIRouteContext, next: Koa.Next) => {
     const key = ctx.state.key
     if (!key) {
       ctx.status = 401
@@ -29,17 +30,16 @@ export function requireScopes(scopes: APIKeyScope[]): Middleware<APIRouteState> 
 }
 
 export function userTypeGate(types: UserType[], action: string): Middleware<ProtectedRouteState> {
-  return async (ctx: AppParameterizedContext<ProtectedRouteState>, next: Koa.Next) => {
-    if ((ctx.state.user as { api?: boolean }).api) {
+  return async (ctx: ProtectedRouteContext, next: Koa.Next) => {
+    if (ctx.state.user.api) {
       await next()
       return
     }
 
-    const user = ctx.state.user
+    const user = ctx.state.authenticatedUser
 
     if (!user) {
       ctx.status = 401
-      ctx.body = {}
       return
     }
 
@@ -55,9 +55,35 @@ export function userTypeGate(types: UserType[], action: string): Middleware<Prot
   }
 }
 
+export function ownerGate(action: string): Middleware<ProtectedRouteState> {
+  return async (ctx: ProtectedRouteContext, next: Koa.Next) => {
+    if (ctx.state.user.api) {
+      await next()
+      return
+    }
+
+    const user = ctx.state.authenticatedUser
+
+    if (!user) {
+      ctx.status = 401
+      return
+    }
+
+    if (user.type !== UserType.OWNER) {
+      ctx.status = 403
+      ctx.body = {
+        message: `You do not have permissions to ${action}`
+      }
+      return
+    }
+
+    await next()
+  }
+}
+
 export function requireEmailConfirmed(action: string): Middleware<ProtectedRouteState> {
-  return async (ctx: AppParameterizedContext<ProtectedRouteState>, next: Koa.Next) => {
-    const user = ctx.state.user
+  return async (ctx: ProtectedRouteContext, next: Koa.Next) => {
+    const user = ctx.state.authenticatedUser
 
     if (!user) {
       ctx.status = 401

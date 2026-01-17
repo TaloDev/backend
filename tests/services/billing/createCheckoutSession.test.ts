@@ -48,7 +48,7 @@ describe('Billing service - create checkout session', () => {
     const res = await request(app)
       .post('/billing/checkout-session')
       .send({
-        pricingPlanId: 'abc123',
+        pricingPlanId: 123,
         pricingInterval: 'month'
       })
       .auth(token, { type: 'bearer' })
@@ -149,5 +149,23 @@ describe('Billing service - create checkout session', () => {
       .expect(200)
 
     expect(res.body.invoice).toBeDefined()
+  })
+
+  it('should return a 405 with no stripe key', async () => {
+    const originalKey = process.env.STRIPE_KEY
+    delete process.env.STRIPE_KEY
+
+    const [token] = await createUserAndToken({ type: UserType.OWNER })
+
+    await request(app)
+      .post('/billing/checkout-session')
+      .send({
+        pricingPlanId: 1,
+        pricingInterval: 'month'
+      })
+      .auth(token, { type: 'bearer' })
+      .expect(405)
+
+    process.env.STRIPE_KEY = originalKey
   })
 })

@@ -1,6 +1,7 @@
 import type { ZodSchema, z as zodType } from 'zod'
 import type Koa from 'koa'
-import type { AppParameterizedContext, RouteState } from '../lib/context'
+import type { AppParameterizedContext } from '../lib/routing/context'
+import { RouteState } from '../lib/routing/state'
 
 export type ValidationSchema = {
   body?: ZodSchema

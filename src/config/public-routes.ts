@@ -5,7 +5,7 @@ import { healthCheckRouter } from '../routes/public/health-check'
 import { userPublicRouter } from '../routes/public/user-public'
 import { demoRouter } from '../routes/public/demo'
 import { invitePublicRouter } from '../routes/public/invite-public'
-import { webhooksRouter } from '../routes/public/webhooks'
+import { webhookRouter } from '../routes/public/webhook'
 
 export default function configurePublicRoutes(app: Koa) {
   const serviceOpts: ServiceOpts = {
@@ -21,5 +21,5 @@ export default function configurePublicRoutes(app: Koa) {
   app.use(userPublicRouter().routes())
   app.use(demoRouter().routes())
   app.use(invitePublicRouter().routes())
-  app.use(webhooksRouter().routes())
+  app.use(webhookRouter().routes())
 }

@@ -15,12 +15,10 @@ import { getGlobalQueue } from '../../../config/global-queues'
 import assert from 'node:assert'
 import { publicRoute } from '../../../lib/routing/router'
 
-const stripe = initStripe()
-
 async function getOrganisationPricingPlan(
   ctx: PublicRouteContext,
   stripeCustomerId: string
-): Promise<OrganisationPricingPlan> {
+) {
   const em = ctx.em
 
   const orgPlan = await em.repo(OrganisationPricingPlan).findOneOrFail({
@@ -46,7 +44,8 @@ async function handleSubscriptionDeleted(
 
 async function handleSubscriptionUpdated(
   ctx: PublicRouteContext,
-  subscription: Stripe.Subscription
+  subscription: Stripe.Subscription,
+  stripe: Stripe
 ) {
   const em = ctx.em
 
@@ -69,7 +68,7 @@ async function handleSubscriptionUpdated(
 
   if (prevStripePriceId !== orgPlan.stripePriceId) {
     const price = subscription.items.data[0].price
-    const product = await stripe!.products.retrieve(price.product as string)
+    const product = await stripe.products.retrieve(price.product as string)
     await queueEmail(getGlobalQueue('email'), new PlanUpgraded(orgPlan.organisation, price, product))
   }
 
@@ -83,7 +82,7 @@ async function handleSubscriptionUpdated(
 async function handleNewInvoice(
   ctx: PublicRouteContext,
   invoice: Stripe.Invoice
-): Promise<void> {
+) {
   const orgPlan = await getOrganisationPricingPlan(ctx, invoice.customer as string)
   await queueEmail(getGlobalQueue('email'), new PlanInvoice(orgPlan.organisation, invoice))
 }
@@ -91,7 +90,7 @@ async function handleNewInvoice(
 async function handlePaymentFailed(
   ctx: PublicRouteContext,
   invoice: Stripe.Invoice
-): Promise<void> {
+) {
   const orgPlan = await getOrganisationPricingPlan(ctx, invoice.customer as string)
   await queueEmail(getGlobalQueue('email'), new PlanPaymentFailed(orgPlan.organisation, invoice))
 }
@@ -100,6 +99,7 @@ export const subscriptionsRoute = publicRoute({
   method: 'post',
   path: '/subscriptions',
   handler: async (ctx) => {
+    const stripe = initStripe()
     assert(stripe)
 
     let event: Stripe.Event
@@ -122,7 +122,7 @@ export const subscriptionsRoute = publicRoute({
         break
       case 'customer.subscription.created':
       case 'customer.subscription.updated':
-        await handleSubscriptionUpdated(ctx, event.data.object as Stripe.Subscription)
+        await handleSubscriptionUpdated(ctx, event.data.object as Stripe.Subscription, stripe)
         break
       case 'invoice.finalized':
         await handleNewInvoice(ctx, event.data.object as Stripe.Invoice)

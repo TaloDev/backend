@@ -94,4 +94,21 @@ describe('Integration service - post', () => {
 
     expect(activity).toBe(null)
   })
+
+  it('should not add a duplicate integration for the same type', async () => {
+    const [organisation, game] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken({ type: UserType.ADMIN }, organisation)
+
+    const config = await new IntegrationConfigFactory().one()
+    const integration = new Integration(IntegrationType.STEAMWORKS, game, config)
+    await em.persistAndFlush(integration)
+
+    const res = await request(app)
+      .post(`/games/${game.id}/integrations`)
+      .send({ type: IntegrationType.STEAMWORKS, config })
+      .auth(token, { type: 'bearer' })
+      .expect(400)
+
+    expect(res.body).toStrictEqual({ message: `This game already has an integration for ${IntegrationType.STEAMWORKS}` })
+  })
 })

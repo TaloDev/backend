@@ -24,11 +24,7 @@ import { get } from 'lodash'
 import { DataExportMailer } from './dataExportMailer'
 import { format } from 'date-fns'
 import { escapeCSVValue } from '../../lang/escapeCSVValue'
-
-export type DataExportJob = {
-  dataExportId: number
-  includeDevData: boolean
-}
+import { DataExportJob } from './createDataExportQueue'
 
 type PropCollection = Collection<PlayerProp, Player>
 

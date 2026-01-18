@@ -91,6 +91,11 @@ export function requireEmailConfirmed(action: string): Middleware<ProtectedRoute
       return
     }
 
+    if (ctx.state.user.api) {
+      await next()
+      return
+    }
+
     if (!user.emailConfirmed) {
       ctx.status = 403
       ctx.body = {

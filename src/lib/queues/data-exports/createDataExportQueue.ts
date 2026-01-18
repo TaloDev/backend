@@ -1,24 +1,28 @@
 import createQueue from '../createQueue'
 import { Job } from 'bullmq'
 import path from 'path'
-import { DataExportJob } from './dataExportProcessor'
 import fs from 'fs'
 import { updateDataExportStatus } from './updateDataExportStatus'
 
+export type DataExportJob = {
+  dataExportId: number
+  includeDevData: boolean
+}
+
 export function createDataExportQueue() {
-  const processorBasePath = path.join('lib', 'queues', 'data-exports', 'dataExportProcessor')
-  const jsProcessorPath = path.join(process.cwd(), `${processorBasePath}.js`)
-  const tsProcessorPath = path.join(process.cwd(), 'src', `${processorBasePath}.ts`)
+  const filename = 'dataExportProcessor'
+  const jsProcessorPath = path.join(__dirname, `${filename}.js`)
+  const cjsProcessorPath = path.join(__dirname, `${filename}.cjs`)
 
   let processorPath: string
-
   /* v8 ignore start */
   if (fs.existsSync(jsProcessorPath)) {
     processorPath = jsProcessorPath
-  } else if (fs.existsSync(tsProcessorPath)) {
-    processorPath = tsProcessorPath
+  } else if (fs.existsSync(cjsProcessorPath)) {
+    // in development use a wrapper that loads the file via ts-node
+    processorPath = cjsProcessorPath
   } else {
-    throw new Error(`Data export processor file not found at either ${jsProcessorPath} or ${tsProcessorPath}`)
+    throw new Error(`Data export processor file not found at either ${jsProcessorPath} or ${cjsProcessorPath}`)
   }
   /* v8 ignore stop */
 

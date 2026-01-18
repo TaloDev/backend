@@ -5,7 +5,8 @@ import GameActivityFactory from '../../../fixtures/GameActivityFactory'
 import DataExportFactory from '../../../fixtures/DataExportFactory'
 import { DataExportAvailableEntities, DataExportStatus } from '../../../../src/entities/data-export'
 import { SandboxedJob } from 'bullmq'
-import dataExportProcessor, { DataExportJob } from '../../../../src/lib/queues/data-exports/dataExportProcessor'
+import dataExportProcessor, { DataExporter } from '../../../../src/lib/queues/data-exports/dataExportProcessor'
+import { DataExportJob } from '../../../../src/lib/queues/data-exports/createDataExportQueue'
 import * as sendEmail from '../../../../src/lib/messaging/sendEmail'
 
 describe('Data export service - processor', () => {
@@ -37,5 +38,26 @@ describe('Data export service - processor', () => {
 
     const updatedDataExport = await em.refreshOrFail(dataExport)
     expect(updatedDataExport.status).toBe(DataExportStatus.SENT)
+  })
+
+  it('should handle errors', async () => {
+    vi.spyOn(DataExporter.prototype, 'createZipStream').mockRejectedValueOnce(new Error('bad news'))
+
+    const [, game] = await createOrganisationAndGame()
+
+    const dataExport = await new DataExportFactory(game).state(() => ({
+      entities: [DataExportAvailableEntities.GAME_FEEDBACK]
+    })).one()
+
+    await em.persist(dataExport).flush()
+
+    const job = {
+      data: {
+        dataExportId: dataExport.id,
+        includeDevData: true
+      }
+    } as unknown as SandboxedJob<DataExportJob>
+
+    await expect(dataExportProcessor(job)).rejects.toThrow('bad news')
   })
 })

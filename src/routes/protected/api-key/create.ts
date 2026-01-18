@@ -11,7 +11,7 @@ export const createRoute = protectedRoute({
   method: 'post',
   schema: (z) => ({
     body: z.object({
-      scopes: z.array(z.nativeEnum(APIKeyScope))
+      scopes: z.array(z.nativeEnum(APIKeyScope)).nonempty()
     })
   }),
   middleware: withMiddleware(

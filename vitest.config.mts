@@ -31,11 +31,8 @@ export default defineConfig({
         'src/lib/clickhouse/clickhouse-entity.ts',
         'src/lib/clickhouse/createClient.ts',
         'src/lib/errors/checkRateLimitExceeded.ts',
-        'src/lib/tracing',
-        // temporary while migrating to the new router
-        'src/middleware/policy-middleware.ts',
-        'src/middleware/validator-middleware.ts',
-        'src/lib/routing/router.ts'
+        'src/lib/queues/data-exports/dataExportProcessor.cjs',
+        'src/lib/tracing'
       ]
     }
   }

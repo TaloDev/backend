@@ -83,7 +83,7 @@ describe('Integration service - sync leaderboards', () => {
     const res = await request(app)
       .post(`/games/${game.id}/integrations/${integration.id}/sync-leaderboards`)
       .auth(token, { type: 'bearer' })
-      .expect(403)
+      .expect(400)
 
     const activity = await em.getRepository(GameActivity).findOne({
       type: GameActivityType.GAME_INTEGRATION_STEAMWORKS_LEADERBOARDS_SYNCED,

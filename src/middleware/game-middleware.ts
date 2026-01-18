@@ -20,7 +20,7 @@ export const loadGame = async (ctx: GameRouteContext, next: Next) => {
 
   const userOrganisation = ctx.state.authenticatedUser.organisation
   if (game.organisation.id !== userOrganisation.id) {
-    ctx.throw(403, 'Forbidden')
+    ctx.throw(403)
   }
 
   ctx.state.game = game

@@ -83,7 +83,7 @@ describe('Integration service - sync stats', () => {
     const res = await request(app)
       .post(`/games/${game.id}/integrations/${integration.id}/sync-stats`)
       .auth(token, { type: 'bearer' })
-      .expect(403)
+      .expect(400)
 
     const activity = await em.getRepository(GameActivity).findOne({
       type: GameActivityType.GAME_INTEGRATION_STEAMWORKS_STATS_SYNCED,

@@ -6,7 +6,7 @@ import PlayerGroupService from '../services/player-group.service'
 import GameStatService from '../services/game-stat.service'
 import { gameActivityRouter } from '../routes/protected/game-activity'
 import LeaderboardService from '../services/leaderboard.service'
-import DataExportService from '../services/data-export.service'
+import { dataExportRouter } from '../routes/protected/data-export'
 import { apiKeyRouter } from '../routes/protected/api-key'
 import EventService from '../services/event.service'
 import { headlineRouter } from '../routes/protected/headline'
@@ -53,7 +53,6 @@ export default function protectedRoutes(app: Koa) {
   }
   app.use(service('/games/:gameId/game-stats', new GameStatService(), serviceOpts))
   app.use(service('/games/:gameId/leaderboards', new LeaderboardService(), serviceOpts))
-  app.use(service('/games/:gameId/data-exports', new DataExportService(), serviceOpts))
   app.use(service('/games/:gameId/events', new EventService(), serviceOpts))
   app.use(service('/games/:gameId/players', new PlayerService(), serviceOpts))
   app.use(service('/games/:gameId/integrations', new IntegrationService(), serviceOpts))
@@ -64,6 +63,7 @@ export default function protectedRoutes(app: Koa) {
   // new router-based routes
   app.use(apiKeyRouter().routes())
   app.use(billingRouter().routes())
+  app.use(dataExportRouter().routes())
   app.use(gameActivityRouter().routes())
   app.use(gameRouter().routes())
   app.use(headlineRouter().routes())

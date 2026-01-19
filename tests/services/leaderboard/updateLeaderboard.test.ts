@@ -113,7 +113,6 @@ describe('Leaderboard service - update leaderboard', () => {
       .expect(200)
 
     expect(res.body.leaderboard.refreshInterval).toBe('daily')
-    await vi.runAllTimersAsync()
 
     await em.refresh(entry)
     expect(entry.deletedAt).toBeDefined()

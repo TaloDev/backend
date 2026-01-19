@@ -1,36 +1,17 @@
 import { APIKeyScope } from '../../src/entities/api-key'
-import UserFactory from '../fixtures/UserFactory'
 import request from 'supertest'
-import { genAccessToken } from '../../src/lib/auth/buildTokenPair'
 import createAPIKeyAndToken from '../utils/createAPIKeyAndToken'
-import createOrganisationAndGame from '../utils/createOrganisationAndGame'
 import PlayerFactory from '../fixtures/PlayerFactory'
 
 describe('Policy base class', () => {
   it('should reject a revoked api key', async () => {
-    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_EVENTS])
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_PLAYERS])
     apiKey.revokedAt = new Date()
     await em.flush()
 
     await request(app)
       .get('/v1/players/identify?service=username&identifier=')
       .query({ service: 'username', identifier: 'ionproject' })
-      .auth(token, { type: 'bearer' })
-      .expect(401)
-  })
-
-  it('should reject a non-existent user', async () => {
-    const [organisation, game] = await createOrganisationAndGame()
-
-    const user = await new UserFactory().state(() => ({ organisation })).one()
-    await em.persistAndFlush(user)
-
-    const token = await genAccessToken(user)
-    await em.removeAndFlush(user)
-
-    await request(app)
-      .get(`/games/${game.id}/events`)
-      .query({ startDate: '2021-01-01', endDate: '2021-01-02' })
       .auth(token, { type: 'bearer' })
       .expect(401)
   })

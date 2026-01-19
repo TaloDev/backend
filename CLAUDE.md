@@ -446,6 +446,49 @@ export const registerRoute = publicRoute({
 - The schema function can validate `body`, `query`, `params`, etc.
 - All validated fields are available under `ctx.state.validated`
 
+**Migrating `@Required` Decorators from Entities:**
+
+The old koa-clay pattern used `@Required` decorators on entity properties for validation. When migrating to the new router pattern, this validation moves to Zod schemas in the route configuration.
+
+**Old Pattern (entity with @Required):**
+```typescript
+// src/entities/integration.ts
+@Required({
+  methods: ['POST'],
+  validation: async (val: unknown): Promise<ValidationCondition[]> => {
+    const keys = Object.values(IntegrationType)
+    return [{
+      check: keys.includes(val as IntegrationType),
+      error: `Integration type must be one of ${keys.join(', ')}`
+    }]
+  }
+})
+@Enum(() => IntegrationType)
+type: IntegrationType
+```
+
+**New Pattern (Zod schema in route):**
+```typescript
+// src/routes/protected/integration/create.ts
+const integrationTypeValues = Object.values(IntegrationType).join(', ')
+
+export const createRoute = protectedRoute({
+  schema: (z) => ({
+    body: z.object({
+      type: z.nativeEnum(IntegrationType, {
+        message: `Integration type must be one of ${integrationTypeValues}`
+      })
+    })
+  }),
+  // ...
+})
+```
+
+**Key points:**
+- Complex validation (like checking for duplicates) should be done in the handler, not the schema
+- After migrating a service to the new router pattern, remove the `@Required` decorators from the entity if they are no longer used by any koa-clay services
+- Check that no other services still reference the entity's `@Required` validation before removing it
+
 #### Documentation
 
 Add documentation inline with route configuration:
@@ -590,13 +633,14 @@ When converting a koa-clay Service to new router pattern:
 2. ✅ Create one file per route (or inline simple routes in index.ts)
 3. ✅ Extract shared middleware to `common.ts` as plain async functions
 4. ✅ Use `withMiddleware()` wrapper in route configs, not in middleware definitions
-5. ✅ Replace `@Validate` decorators with Zod `validation` config
+5. ✅ Replace `@Validate` decorators with Zod `schema` config
 6. ✅ Replace `@HasPermission` with inline authorization checks or middleware
 7. ✅ Move documentation from decorators to `docs` config field
 8. ✅ Create index.ts that exports router function
 9. ✅ Register router in appropriate config file
-10. ✅ Remove old Service class and imports
-11. ✅ Update tests to match new route paths
+10. ✅ Remove old Service class and Policy class
+11. ✅ Remove `@Required` decorators from entities if no longer used by other koa-clay services
+12. ✅ Update tests to match new route paths and error message formats
 
 #### Type Safety Limitations
 

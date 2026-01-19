@@ -8,11 +8,15 @@ import { GameActivityType } from '../../../entities/game-activity'
 import createGameActivity from '../../../lib/logging/createGameActivity'
 import { configKeys } from './common'
 
+const integrationTypeValues = Object.values(IntegrationType).join(', ')
+
 export const createRoute = protectedRoute({
   method: 'post',
   schema: (z) => ({
     body: z.object({
-      type: z.nativeEnum(IntegrationType),
+      type: z.nativeEnum(IntegrationType, {
+        message: `Integration type must be one of ${integrationTypeValues}`
+      }),
       config: z.object({
         apiKey: z.string().optional(),
         appId: z.number().optional(),

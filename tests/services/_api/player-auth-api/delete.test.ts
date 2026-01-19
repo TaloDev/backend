@@ -73,7 +73,7 @@ describe('Player auth API service - delete', { timeout: 30_000 }, () => {
       })).one()
     })).one()
     const alias = player.aliases[0]
-    await em.persistAndFlush(player)
+    await em.persist(player).flush()
 
     const sessionToken = await player.auth!.createSession(alias)
     await em.flush()
@@ -102,13 +102,13 @@ describe('Player auth API service - delete', { timeout: 30_000 }, () => {
         .then((res) => Number(res[0].count))
 
       const updatedEventPropsCount = await clickhouse.query({
-        query: 'SELECT count() as count FROM event_props',
+        query: `SELECT count() as count FROM event_props ep INNER JOIN events e ON e.id = ep.event_id WHERE e.player_alias_id = ${alias.id}`,
         format: 'JSONEachRow'
       }).then((res) => res.json<{ count: string }>())
         .then((res) => Number(res[0].count))
 
       const updatedPlayerSessionsCount = await clickhouse.query({
-        query: 'SELECT count() as count FROM player_sessions',
+        query: `SELECT count() as count FROM player_sessions WHERE player_id = '${player.id}'`,
         format: 'JSONEachRow'
       }).then((res) => res.json<{ count: string }>())
         .then((res) => Number(res[0].count))

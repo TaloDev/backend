@@ -3,10 +3,18 @@ import initStripe from '../../../src/lib/billing/initStripe'
 import PricingPlanFactory from '../../fixtures/PricingPlanFactory'
 import createOrganisationAndGame from '../../utils/createOrganisationAndGame'
 import createUserAndToken from '../../utils/createUserAndToken'
-
-const stripe = initStripe()!
+import { truncateTables } from '../../utils/truncateTables'
+import assert from 'node:assert'
 
 describe('Billing service - plans', () => {
+  const stripe = initStripe()
+  assert(stripe)
+
+  // prevent conflicts with existing DB plans
+  beforeAll(async () => {
+    await truncateTables()
+  })
+
   it('should return a list of pricing plans', async () => {
     const product = (await stripe.products.list()).data[0]
     const price = (await stripe.prices.list({ product: product.id })).data[0]

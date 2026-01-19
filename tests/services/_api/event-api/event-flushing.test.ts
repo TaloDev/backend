@@ -15,7 +15,7 @@ describe('Events API service - event flushing', () => {
 
     const [apiKey] = await createAPIKeyAndToken([APIKeyScope.WRITE_EVENTS])
     const player = await new PlayerFactory([apiKey.game]).one()
-    await em.persistAndFlush(player)
+    await em.persist(player).flush()
 
     const alias = player.aliases[0]
     const handler = new FlushEventsQueueHandler()
@@ -43,7 +43,7 @@ describe('Events API service - event flushing', () => {
       }).then((res) => res.json<ClickHouseEvent>())
 
       const props = await clickhouse.query({
-        query: 'SELECT * FROM event_props',
+        query: `SELECT * FROM event_props ep INNER JOIN events e ON e.id = ep.event_id WHERE game_id = ${apiKey.game.id}`,
         format: 'JSONEachRow'
       }).then((res) => res.json<ClickHouseEvent>())
 
@@ -67,7 +67,7 @@ describe('Events API service - event flushing', () => {
 
     const [apiKey] = await createAPIKeyAndToken([APIKeyScope.WRITE_EVENTS])
     const player = await new PlayerFactory([apiKey.game]).one()
-    await em.persistAndFlush(player)
+    await em.persist(player).flush()
 
     const alias = player.aliases[0]
     const handler = new FlushEventsQueueHandler()

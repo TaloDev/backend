@@ -6,7 +6,7 @@ import Player from '../../src/entities/player'
 import UserFactory from '../fixtures/UserFactory'
 import GameActivity, { GameActivityType } from '../../src/entities/game-activity'
 import PlayerPresenceFactory from '../fixtures/PlayerPresenceFactory'
-import { randBoolean, randNumber } from '@ngneat/falso'
+import { randBoolean, randNumber, randWord } from '@ngneat/falso'
 import PlayerAlias from '../../src/entities/player-alias'
 import PlayerPresence from '../../src/entities/player-presence'
 import PlayerAuth from '../../src/entities/player-auth'
@@ -15,6 +15,9 @@ import getBillablePlayerCount from '../../src/lib/billing/getBillablePlayerCount
 import { PlayerToDelete } from '../../src/entities/player-to-delete'
 import deletePlayers from '../../src/tasks/deletePlayers'
 import { EntityManager } from '@mikro-orm/mysql'
+import EventFactory from '../fixtures/EventFactory'
+import { v4 } from 'uuid'
+import { formatDateForClickHouse } from '../../src/lib/clickhouse/formatDateTime'
 
 describe('deleteInactivePlayers', () => {
   beforeEach(async () => {
@@ -35,7 +38,7 @@ describe('deleteInactivePlayers', () => {
       lastSeenAt: sub(new Date(), { days: 59 })
     })).devBuild().one()
 
-    await em.persistAndFlush([owner, player, otherPlayer])
+    await em.persist([owner, player, otherPlayer]).flush()
     await deleteInactivePlayers()
     // actually delete the players
     await deletePlayers()
@@ -68,7 +71,7 @@ describe('deleteInactivePlayers', () => {
       lastSeenAt: sub(new Date(), { days: 89 })
     })).one()
 
-    await em.persistAndFlush([owner, player, otherPlayer])
+    await em.persist([owner, player, otherPlayer]).flush()
     await deleteInactivePlayers()
     // actually delete the players
     await deletePlayers()
@@ -97,7 +100,7 @@ describe('deleteInactivePlayers', () => {
       lastSeenAt: sub(new Date(), { days: 91 })
     })).withTaloAlias().one()
 
-    await em.persistAndFlush([owner, player])
+    await em.persist([owner, player]).flush()
     await deleteInactivePlayers()
     // actually delete the players
     await deletePlayers()
@@ -116,7 +119,7 @@ describe('deleteInactivePlayers', () => {
     const presence = await new PlayerPresenceFactory(game).one()
     presence.player.lastSeenAt = sub(new Date(), { days: 91 })
 
-    await em.persistAndFlush([owner, presence])
+    await em.persist([owner, presence]).flush()
     await deleteInactivePlayers()
     // actually delete the players
     await deletePlayers()
@@ -136,7 +139,58 @@ describe('deleteInactivePlayers', () => {
       lastSeenAt: sub(new Date(), { days: 91 })
     })).one()
 
-    await em.persistAndFlush([owner, player])
+    const playerAlias = player.aliases[0]
+
+    // seed events
+    const events = await new EventFactory([player]).state(() => ({
+      playerAlias,
+      props: [
+        { key: 'word', value: randWord() }
+      ]
+    })).many(5)
+
+    await clickhouse.insert({
+      table: 'events',
+      values: events.map((event) => event.toInsertable()),
+      format: 'JSONEachRow'
+    })
+    await clickhouse.insert({
+      table: 'event_props',
+      values: events.flatMap((event) => event.getInsertableProps()),
+      format: 'JSONEachRow'
+    })
+
+    // seed sessions
+    await clickhouse.insert({
+      table: 'player_sessions',
+      values: Array(5).fill({}).map(() => ({
+        id: v4(),
+        player_id: player.id,
+        player_alias_id: playerAlias.id,
+        game_id: game.id,
+        dev_build: true,
+        started_at: formatDateForClickHouse(new Date()),
+        ended_at: formatDateForClickHouse(new Date())
+      })),
+      format: 'JSONEachRow'
+    })
+
+    // seed stat snapshots
+    await clickhouse.insert({
+      table: 'player_game_stat_snapshots',
+      values: Array(5).fill({}).map((_, idx) => ({
+        id: v4(),
+        player_alias_id: playerAlias.id,
+        game_stat_id: 1,
+        change: 1,
+        value: idx,
+        global_value: idx,
+        created_at: formatDateForClickHouse(new Date())
+      })),
+      format: 'JSONEachRow'
+    })
+
+    await em.persist([owner, player]).flush()
     await deleteInactivePlayers()
     // actually delete the players
     await deletePlayers()
@@ -147,25 +201,25 @@ describe('deleteInactivePlayers', () => {
 
     await vi.waitUntil(async () => {
       const updatedEventsCount = await clickhouse.query({
-        query: 'SELECT count() as count FROM events',
+        query: `SELECT count() as count FROM events WHERE player_alias_id = ${playerAlias.id}`,
         format: 'JSONEachRow'
       }).then((res) => res.json<{ count: string }>())
         .then((res) => Number(res[0].count))
 
       const updatedEventPropsCount = await clickhouse.query({
-        query: 'SELECT count() as count FROM event_props',
+        query: `SELECT count() as count FROM event_props ep INNER JOIN events e ON e.id = ep.event_id WHERE e.player_alias_id = ${playerAlias.id}`,
         format: 'JSONEachRow'
       }).then((res) => res.json<{ count: string }>())
         .then((res) => Number(res[0].count))
 
       const updatedPlayerSessionsCount = await clickhouse.query({
-        query: 'SELECT count() as count FROM player_sessions',
+        query: `SELECT count() as count FROM player_sessions WHERE player_id = '${player.id}'`,
         format: 'JSONEachRow'
       }).then((res) => res.json<{ count: string }>())
         .then((res) => Number(res[0].count))
 
       const updatedPlayerGameStatSnapshotsCount = await clickhouse.query({
-        query: 'SELECT count() as count FROM player_game_stat_snapshots',
+        query: `SELECT count() as count FROM player_game_stat_snapshots WHERE player_alias_id = ${playerAlias.id}`,
         format: 'JSONEachRow'
       }).then((res) => res.json<{ count: string }>())
         .then((res) => Number(res[0].count))
@@ -187,7 +241,7 @@ describe('deleteInactivePlayers', () => {
       lastSeenAt: sub(new Date(), { days: 61 })
     })).devBuild().one()
 
-    await em.persistAndFlush([owner, player])
+    await em.persist([owner, player]).flush()
     await deleteInactivePlayers()
     // actually delete the players
     await deletePlayers()
@@ -212,7 +266,7 @@ describe('deleteInactivePlayers', () => {
       lastSeenAt: sub(new Date(), { days: 91 })
     })).one()
 
-    await em.persistAndFlush([owner, player])
+    await em.persist([owner, player]).flush()
     await deleteInactivePlayers()
     // actually delete the players
     await deletePlayers()
@@ -241,7 +295,7 @@ describe('deleteInactivePlayers', () => {
       lastSeenAt: sub(new Date(), { days: 29 })
     })).devBuild().one()
 
-    await em.persistAndFlush([owner, player, otherPlayer])
+    await em.persist([owner, player, otherPlayer]).flush()
     await deleteInactivePlayers()
     // actually delete the players
     await deletePlayers()
@@ -274,7 +328,7 @@ describe('deleteInactivePlayers', () => {
       lastSeenAt: sub(new Date(), { days: 59 })
     })).one()
 
-    await em.persistAndFlush([owner, player, otherPlayer])
+    await em.persist([owner, player, otherPlayer]).flush()
     await deleteInactivePlayers()
     // actually delete the players
     await deletePlayers()
@@ -313,7 +367,7 @@ describe('deleteInactivePlayers', () => {
       lastSeenAt: sub(new Date(), { days: 91 })
     })).one()
 
-    await em.persistAndFlush([owner1, owner2, player1, player2])
+    await em.persist([owner1, owner2, player1, player2]).flush()
 
     // makes persisting the first player_to_delete fail
     vi.spyOn(EntityManager.prototype, 'persistAndFlush').mockRejectedValueOnce(new Error())
@@ -347,7 +401,7 @@ describe('deleteInactivePlayers', () => {
   describe('integration tests', () => {
     beforeEach(async () => {
       const allPlayers = await em.repo(Player).findAll()
-      await em.removeAndFlush(allPlayers)
+      await em.remove(allPlayers).flush()
     })
 
     it('should delete over 100 players with presence and auth', async () => {
@@ -421,7 +475,7 @@ describe('deleteInactivePlayers', () => {
           .withPresence()
           .many(playerCount)
 
-        await fork.persistAndFlush([owner, ...players])
+        await fork.persist([owner, ...players]).flush()
         return game
       }))
 

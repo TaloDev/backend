@@ -4,6 +4,7 @@ export default defineConfig({
   test: {
     watch: false,
     globals: true,
+    dir: './tests',
     setupFiles: './tests/setupTest.ts',
     poolOptions: {
       forks: {

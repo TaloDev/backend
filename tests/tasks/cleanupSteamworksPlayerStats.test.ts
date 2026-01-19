@@ -21,11 +21,14 @@ describe('cleanupSteamworksPlayerStats', () => {
   }])
   axiosMock.onPost('https://partner.steam-api.com/ISteamUserStats/SetUserStatsForGame/v1').reply(setMock)
 
-  afterEach(async () => {
+  beforeEach(async () => {
     setMock.mockReset()
-    vi.restoreAllMocks()
     // these tests run globally, not per-game
     await em.repo(SteamworksPlayerStat).nativeDelete({})
+  })
+
+  afterEach(() => {
+    vi.restoreAllMocks()
   })
 
   it('should cleanup steamworks player stats with null player stats', async () => {

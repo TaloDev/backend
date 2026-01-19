@@ -98,7 +98,7 @@ describe('Leaderboard service - update leaderboard', () => {
       .state(() => ({ createdAt: sub(new Date(), { days: 2 }) }))
       .one()
 
-    await em.persistAndFlush([leaderboard, entry])
+    await em.persist([leaderboard, entry]).flush()
 
     const res = await request(app)
       .put(`/games/${game.id}/leaderboards/${leaderboard.id}`)
@@ -113,7 +113,6 @@ describe('Leaderboard service - update leaderboard', () => {
       .expect(200)
 
     expect(res.body.leaderboard.refreshInterval).toBe('daily')
-    await vi.runAllTimersAsync()
 
     await em.refresh(entry)
     expect(entry.deletedAt).toBeDefined()

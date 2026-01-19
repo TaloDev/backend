@@ -89,7 +89,7 @@ describe('Player service - delete', () => {
     await vi.waitUntil(async () => {
       // sessions are the only table related to players and not aliases
       const updatedPlayerSessionsCount = await clickhouse.query({
-        query: 'SELECT count() as count FROM player_sessions',
+        query: `SELECT count() as count FROM player_sessions WHERE player_id = '${player.id}'`,
         format: 'JSONEachRow'
       }).then((res) => res.json<{ count: string }>())
         .then((res) => Number(res[0].count))

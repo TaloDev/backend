@@ -5,11 +5,13 @@ import { v4 } from 'uuid'
 import PricingPlanFactory from '../../../fixtures/PricingPlanFactory'
 import * as sendEmail from '../../../../src/lib/messaging/sendEmail'
 import PlanUpgraded from '../../../../src/emails/plan-upgraded-mail'
-
-const stripe = initStripe()!
+import assert from 'node:assert'
 
 describe('Webhook service - subscription created', () => {
   const sendMock = vi.spyOn(sendEmail, 'default')
+
+  const stripe = initStripe()
+  assert(stripe)
 
   afterEach(() => {
     sendMock.mockClear()

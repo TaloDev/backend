@@ -101,10 +101,10 @@ describe('Integration service - sync leaderboards', () => {
 
     const config = await new IntegrationConfigFactory().state(() => ({ syncLeaderboards: false })).one()
     const integration = await new IntegrationFactory().construct(IntegrationType.STEAMWORKS, game, config).one()
-    await em.persistAndFlush(integration)
+    await em.persist(integration).flush()
 
     const res = await request(app)
-      .post(`/games/${game.id}/integrations/54/sync-leaderboards`)
+      .post(`/games/${game.id}/integrations/${Number.MAX_SAFE_INTEGER}/sync-leaderboards`)
       .auth(token, { type: 'bearer' })
       .expect(404)
 

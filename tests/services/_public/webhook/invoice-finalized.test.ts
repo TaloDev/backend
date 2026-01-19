@@ -5,11 +5,19 @@ import { v4 } from 'uuid'
 import PricingPlanFactory from '../../../fixtures/PricingPlanFactory'
 import * as sendEmail from '../../../../src/lib/messaging/sendEmail'
 import PlanInvoice from '../../../../src/emails/plan-invoice-mail'
-
-const stripe = initStripe()!
+import { truncateTables } from '../../../utils/truncateTables'
+import assert from 'node:assert'
 
 describe('Webhook service - invoice finalized', () => {
   const sendMock = vi.spyOn(sendEmail, 'default')
+
+  const stripe = initStripe()
+  assert(stripe)
+
+  // prevent conflicts with existing DB plans
+  beforeAll(async () => {
+    await truncateTables()
+  })
 
   afterEach(() => {
     sendMock.mockClear()

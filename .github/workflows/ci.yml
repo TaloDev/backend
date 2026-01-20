@@ -17,6 +17,32 @@ jobs:
       - name: Setup
         uses: ./.github/actions/setup
 
+      - name: Docker cache
+        uses: actions/cache@v4
+        with:
+          path: /tmp/docker-cache
+          key: ${{ runner.os }}-docker-${{ hashFiles('docker-compose.test.yml', 'docker-compose.ci.yml') }}
+
+      - name: Load Docker images
+        run: |
+          dc() {
+            docker compose -f docker-compose.test.yml -f docker-compose.ci.yml "$@"
+          }
+
+          if [ -f /tmp/docker-cache/images.tar ]; then
+            docker load -i /tmp/docker-cache/images.tar
+          else
+            dc pull
+            
+            IMAGES=$(dc images -q 2>/dev/null | sort -u)
+
+            if [ -n "$IMAGES" ]; then
+              mkdir -p /tmp/docker-cache
+              docker save $IMAGES -o /tmp/docker-cache/images.tar
+            fi
+          fi
+        shell: bash
+
       - name: Setup environment
         run: |
           cp envs/.env.dev .env

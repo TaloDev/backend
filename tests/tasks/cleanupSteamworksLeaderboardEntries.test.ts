@@ -49,7 +49,7 @@ describe('cleanupSteamworksLeaderboardEntries', () => {
     entries[0].leaderboardEntry = null
     entries[1].leaderboardEntry = null
     entries[2].leaderboardEntry = null
-    await em.persistAndFlush([integration, ...entries])
+    await em.persist([integration, ...entries]).flush()
 
     await cleanupSteamworksLeaderboardEntries()
 
@@ -58,7 +58,11 @@ describe('cleanupSteamworksLeaderboardEntries', () => {
     const eventCount = await em.repo(SteamworksIntegrationEvent).count({ integration })
     expect(eventCount).toBe(3)
 
-    const entryCount = await em.repo(SteamworksLeaderboardEntry).count()
+    const entryCount = await em.repo(SteamworksLeaderboardEntry).count({
+      steamworksLeaderboard: {
+        leaderboard
+      }
+    })
     expect(entryCount).toBe(7)
   })
 
@@ -82,7 +86,7 @@ describe('cleanupSteamworksLeaderboardEntries', () => {
       })
     })
 
-    await em.persistAndFlush([integration, ...entries])
+    await em.persist([integration, ...entries]).flush()
 
     await cleanupSteamworksLeaderboardEntries()
     expect(consoleSpy).toHaveBeenCalled()
@@ -110,7 +114,7 @@ describe('cleanupSteamworksLeaderboardEntries', () => {
         steamUserId: player.aliases[0].identifier
       })
     }))
-    await em.persistAndFlush(entries)
+    await em.persist(entries).flush()
 
     await cleanupSteamworksLeaderboardEntries()
 

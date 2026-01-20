@@ -163,6 +163,9 @@ export default async function createTestSocket(
     wss.findConnections(() => true).map((conn) => wss.closeConnection(conn.getSocket()))
   )
 
+  // wait for any background close operations
+  await wss.waitForPendingOperations()
+
   // close the server
   await new Promise<void>((resolve) => server.close(() => resolve()))
 }

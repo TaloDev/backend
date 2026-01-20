@@ -22,6 +22,7 @@ type CloseConnectionOptions = {
 export default class Socket {
   private readonly wss: WebSocketServer
   private connections: Map<WebSocket, SocketConnection> = new Map()
+  private pendingCloseOperations: Set<Promise<void>> = new Set()
   private router: SocketRouter
   redis: Redis
 
@@ -137,13 +138,32 @@ export default class Socket {
     /* v8 ignore next */
     if (!connection) return
 
+    // delete before async work to prevent duplicate handleClosed calls
+    this.connections.delete(ws)
+
+    const closeOperation = this.createCloseOperation({ connection, preclosed, code, reason: options.reason })
+    this.pendingCloseOperations.add(closeOperation)
+    try {
+      await closeOperation
+    } finally {
+      this.pendingCloseOperations.delete(closeOperation)
+    }
+  }
+
+  private async createCloseOperation({ connection, preclosed, code, reason }: {
+    connection: SocketConnection
+    preclosed: boolean
+    code: number
+    reason?: string
+  }) {
     await RequestContext.create(this.em, async () => {
       await connection.handleClosed()
     })
+    logConnectionClosed(connection, preclosed, code, reason)
+  }
 
-    logConnectionClosed(connection, preclosed, code, options.reason)
-
-    this.connections.delete(ws)
+  async waitForPendingOperations() {
+    await Promise.all(this.pendingCloseOperations)
   }
 
   findConnection(ws: WebSocket) {

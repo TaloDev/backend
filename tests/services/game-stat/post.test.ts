@@ -227,4 +227,55 @@ describe('Game stat service - post', () => {
       }
     })
   })
+
+  it('should not create a stat where the min value is >= the max value', async () => {
+    const [organisation, game] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken({}, organisation)
+
+    const res = await request(app)
+      .post(`/games/${game.id}/game-stats`)
+      .send({ internalName: 'buildings-built', name: 'Buildings built', defaultValue: 10, global: false, minTimeBetweenUpdates: 0, minValue: 10, maxValue: 10, maxChange: 1 })
+      .auth(token, { type: 'bearer' })
+      .expect(400)
+
+    expect(res.body).toStrictEqual({
+      errors: {
+        minValue: ['minValue must be less than maxValue']
+      }
+    })
+  })
+
+  it('should not create a stat where the default value is less than the min value', async () => {
+    const [organisation, game] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken({}, organisation)
+
+    const res = await request(app)
+      .post(`/games/${game.id}/game-stats`)
+      .send({ internalName: 'buildings-built', name: 'Buildings built', defaultValue: 5, global: false, minTimeBetweenUpdates: 0, minValue: 6, maxValue: 10, maxChange: 1 })
+      .auth(token, { type: 'bearer' })
+      .expect(400)
+
+    expect(res.body).toStrictEqual({
+      errors: {
+        defaultValue: ['defaultValue must be between minValue and maxValue']
+      }
+    })
+  })
+
+  it('should not create a stat where the default value is more than the max value', async () => {
+    const [organisation, game] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken({}, organisation)
+
+    const res = await request(app)
+      .post(`/games/${game.id}/game-stats`)
+      .send({ internalName: 'buildings-built', name: 'Buildings built', defaultValue: 15, global: false, minTimeBetweenUpdates: 0, minValue: 6, maxValue: 10, maxChange: 1 })
+      .auth(token, { type: 'bearer' })
+      .expect(400)
+
+    expect(res.body).toStrictEqual({
+      errors: {
+        defaultValue: ['defaultValue must be between minValue and maxValue']
+      }
+    })
+  })
 })

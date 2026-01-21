@@ -1,4 +1,4 @@
-import type { ZodSchema, z as zodType } from 'zod'
+import type { ZodSchema, z } from 'zod'
 import type Koa from 'koa'
 import type { AppParameterizedContext } from '../lib/routing/context'
 import { RouteState } from '../lib/routing/state'
@@ -11,10 +11,10 @@ export type ValidationSchema = {
 }
 
 export type InferValidation<V extends ValidationSchema> = {
-  body: V['body'] extends ZodSchema ? zodType.infer<V['body']> : unknown
-  query: V['query'] extends ZodSchema ? zodType.infer<V['query']> : unknown
-  params: V['params'] extends ZodSchema ? zodType.infer<V['params']> : unknown
-  headers: V['headers'] extends ZodSchema ? zodType.infer<V['headers']> : unknown
+  body: V['body'] extends ZodSchema ? z.infer<V['body']> : unknown
+  query: V['query'] extends ZodSchema ? z.infer<V['query']> : unknown
+  params: V['params'] extends ZodSchema ? z.infer<V['params']> : unknown
+  headers: V['headers'] extends ZodSchema ? z.infer<V['headers']> : unknown
 }
 
 export type ValidatedContext<V extends ValidationSchema, S extends RouteState> =

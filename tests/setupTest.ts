@@ -19,7 +19,9 @@ beforeEach(async () => {
 })
 
 afterAll(async () => {
-  await global.em.getConnection().close(true)
-  await global.clickhouse.close()
-  await global.redis.quit()
+  await Promise.allSettled([
+    global.em.getConnection().close(true),
+    global.clickhouse.close(),
+    global.redis.quit()
+  ])
 })

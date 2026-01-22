@@ -62,6 +62,7 @@ jobs:
             2. **Validation Phase**: For each issue you find, verify it by:
                - Re-reading the relevant code carefully
                - Checking if your suggested fix is actually different from the current code
+               - Checking if existing tests demonstrate the code handles this case
                - Confirming the issue violates documented standards (check CLAUDE.md)
                - Ensuring your criticism is actionable and specific
             3. **Draft Phase**: Write your review only after validating all issues

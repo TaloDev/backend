@@ -1,4 +1,4 @@
-import { ForwardTo, HasPermission, Request, Response, Route, Validate, forwardRequest } from 'koa-clay'
+import { HasPermission, Request, Response, Route, Validate } from 'koa-clay'
 import GameFeedbackAPIPolicy from '../../policies/api/game-feedback-api.policy'
 import APIService from './api-service'
 import GameFeedback from '../../entities/game-feedback'
@@ -9,6 +9,7 @@ import { hardSanitiseProps } from '../../lib/props/sanitiseProps'
 import { PropSizeError } from '../../lib/errors/propSizeError'
 import buildErrorResponse from '../../lib/errors/buildErrorResponse'
 import { captureException } from '@sentry/node'
+import { listCategoriesHandler } from '../../routes/protected/game-feedback/list-categories'
 
 export default class GameFeedbackAPIService extends APIService {
   @Route({
@@ -17,9 +18,8 @@ export default class GameFeedbackAPIService extends APIService {
     docs: GameFeedbackAPIDocs.indexCategories
   })
   @HasPermission(GameFeedbackAPIPolicy, 'indexCategories')
-  @ForwardTo('games.game-feedback', 'indexCategories')
   async indexCategories(req: Request): Promise<Response> {
-    return forwardRequest(req)
+    return await listCategoriesHandler({ em: req.ctx.em, game: req.ctx.state.game })
   }
 
   @Route({

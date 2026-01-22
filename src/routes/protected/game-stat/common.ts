@@ -1,12 +1,13 @@
 import { Next } from 'koa'
-import { RefinementCtx, z as zodLib } from 'zod'
+import { RefinementCtx, z } from 'zod'
 import GameStat from '../../../entities/game-stat'
 import PlayerGameStat from '../../../entities/player-game-stat'
 import { ProtectedRouteContext } from '../../../lib/routing/context'
-import { GameRouteState } from '../../../middleware/game-middleware'
 import { deferClearResponseCache } from '../../../lib/perf/responseCacheQueue'
+import { GameRouteState } from '../../../middleware/game-middleware'
+import assert from 'node:assert'
 
-type Z = typeof zodLib
+type Z = typeof z
 
 type StatSchemaData = {
   maxChange?: number | null
@@ -14,6 +15,17 @@ type StatSchemaData = {
   maxValue?: number | null
   defaultValue?: number
 }
+
+type StatRouteState = { stat: GameStat }
+type StatRouteContext = ProtectedRouteContext<StatRouteState>
+
+type PlayerStatRouteContext = ProtectedRouteContext<
+  StatRouteState & { playerStat: PlayerGameStat }
+>
+
+type ClearStatIndexResponseCacheContext = ProtectedRouteContext<
+  Partial<StatRouteState> & Partial<GameRouteState>
+>
 
 function validateStatBody(data: StatSchemaData, ctx: RefinementCtx) {
   if (typeof data.maxChange === 'number' && data.maxChange <= 0) {
@@ -68,12 +80,6 @@ export function updateStatBodySchema(z: Z) {
   return z.object(statFields(z)).partial().superRefine(validateStatBody)
 }
 
-export type StatRouteState = GameRouteState & { stat: GameStat }
-type StatRouteContext = ProtectedRouteContext<StatRouteState>
-
-export type PlayerStatRouteState = StatRouteState & { playerStat: PlayerGameStat }
-type PlayerStatRouteContext = ProtectedRouteContext<PlayerStatRouteState>
-
 export const loadStat = async (ctx: StatRouteContext, next: Next) => {
   const { id } = ctx.params as { id: string }
   const em = ctx.em
@@ -90,7 +96,6 @@ export const loadStat = async (ctx: StatRouteContext, next: Next) => {
   }
 
   ctx.state.stat = stat
-  ctx.state.game = stat.game
   await next()
 }
 
@@ -113,7 +118,10 @@ export const loadPlayerStat = async (ctx: PlayerStatRouteContext, next: Next) =>
   await next()
 }
 
-export const clearStatIndexResponseCache = async (ctx: StatRouteContext, next: Next) => {
+export const clearStatIndexResponseCache = async (ctx: ClearStatIndexResponseCacheContext, next: Next) => {
   await next()
-  await deferClearResponseCache(GameStat.getIndexCacheKey(ctx.state.game, true))
+
+  const game = ctx.state.game ?? ctx.state.stat?.game
+  assert(game)
+  await deferClearResponseCache(GameStat.getIndexCacheKey(game, true))
 }

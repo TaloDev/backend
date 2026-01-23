@@ -114,7 +114,7 @@ describe('Player group service - post', () => {
 
     expect(res.body).toStrictEqual({
       errors: {
-        ruleMode: ['PlayerGroupRule mode must be one of $and, $or']
+        ruleMode: ['Invalid enum value. Expected \'$and\' | \'$or\', received \'$not\'']
       }
     })
   })
@@ -137,7 +137,7 @@ describe('Player group service - post', () => {
 
     expect(res.body).toStrictEqual({
       errors: {
-        rules: ['Rules must be an array']
+        rules: ['Expected array, received object']
       }
     })
   })
@@ -168,7 +168,7 @@ describe('Player group service - post', () => {
 
     expect(res.body).toStrictEqual({
       errors: {
-        rules: ['Invalid rule name(s) provided']
+        'rules.0.name': ['Invalid enum value. Expected \'EQUALS\' | \'SET\' | \'GT\' | \'GTE\' | \'LT\' | \'LTE\', received \'DROP\'']
       }
     })
   })
@@ -199,7 +199,7 @@ describe('Player group service - post', () => {
 
     expect(res.body).toStrictEqual({
       errors: {
-        rules: ['Invalid rule type(s) provided']
+        'rules.0.castType': ['Invalid enum value. Expected \'CHAR\' | \'DOUBLE\' | \'DATETIME\', received \'VARCHAR\'']
       }
     })
   })
@@ -230,7 +230,7 @@ describe('Player group service - post', () => {
 
     expect(res.body).toStrictEqual({
       errors: {
-        rules: ['Missing rule type(s)']
+        'rules.0.negate': ['Expected boolean, received string']
       }
     })
   })

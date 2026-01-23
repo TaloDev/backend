@@ -2,8 +2,8 @@ import Koa from 'koa'
 import { service, ServiceOpts } from 'koa-clay'
 import GameChannelService from '../services/game-channel.service'
 import { gameFeedbackRouter } from '../routes/protected/game-feedback'
-import PlayerGroupService from '../services/player-group.service'
 import { gameStatRouter } from '../routes/protected/game-stat'
+import { playerGroupRouter } from '../routes/protected/player-group'
 import { gameActivityRouter } from '../routes/protected/game-activity'
 import LeaderboardService from '../services/leaderboard.service'
 import { dataExportRouter } from '../routes/protected/data-export'
@@ -53,7 +53,6 @@ export default function protectedRoutes(app: Koa) {
   }
   app.use(service('/games/:gameId/leaderboards', new LeaderboardService(), serviceOpts))
   app.use(service('/games/:gameId/players', new PlayerService(), serviceOpts))
-  app.use(service('/games/:gameId/player-groups', new PlayerGroupService(), serviceOpts))
   app.use(service('/games/:gameId/game-channels', new GameChannelService(), serviceOpts))
 
   // new router-based routes
@@ -69,5 +68,6 @@ export default function protectedRoutes(app: Koa) {
   app.use(integrationRouter().routes())
   app.use(inviteRouter().routes())
   app.use(organisationRouter().routes())
+  app.use(playerGroupRouter().routes())
   app.use(userRouter().routes())
 }

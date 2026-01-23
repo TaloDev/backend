@@ -1,10 +1,8 @@
 import { Collection, Embedded, Entity, Enum, ManyToMany, ManyToOne, PrimaryKey, Property, EntityManager, QueryBuilder } from '@mikro-orm/mysql'
 import { v4 } from 'uuid'
-import { Required } from 'koa-clay'
 import Game from './game'
 import Player from './player'
 import PlayerGroupRule, { PlayerGroupRuleCastType } from './player-group-rule'
-import { ruleModeValidation, rulesValidation } from '../lib/groups/rulesValidation'
 
 export enum RuleMode {
   AND = '$and',
@@ -60,27 +58,18 @@ export default class PlayerGroup {
   @PrimaryKey()
   id: string = v4()
 
-  @Required()
   @Property()
   name!: string
 
-  @Required()
   @Property()
   description!: string
 
-  @Required()
   @Property({ default: false })
   membersVisible!: boolean
 
-  @Required({
-    validation: rulesValidation
-  })
   @Embedded(() => PlayerGroupRule, { array: true })
   rules: PlayerGroupRule[] = []
 
-  @Required({
-    validation: ruleModeValidation
-  })
   @Enum(() => RuleMode)
   ruleMode: RuleMode = RuleMode.AND
 

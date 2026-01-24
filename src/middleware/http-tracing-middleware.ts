@@ -4,7 +4,6 @@ import { Context, Next } from 'koa'
 import { isPublicHealthCheck } from './route-middleware'
 
 const DENYLIST = [
-  'authorization',
   'code',
   'cookie',
   'email',

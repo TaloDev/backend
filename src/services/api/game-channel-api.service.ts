@@ -1,4 +1,4 @@
-import { forwardRequest, ForwardTo, HasPermission, Request, Response, Route, Validate } from 'koa-clay'
+import { HasPermission, Request, Response, Route, Validate } from 'koa-clay'
 import GameChannelAPIPolicy from '../../policies/api/game-channel-api.policy'
 import APIService from './api-service'
 import GameChannel, { GameChannelLeavingReason } from '../../entities/game-channel'
@@ -12,6 +12,10 @@ import Redis from 'ioredis'
 import { pageValidation } from '../../lib/pagination/pageValidation'
 import { DEFAULT_PAGE_SIZE } from '../../lib/pagination/itemsPerPage'
 import Player from '../../entities/player'
+import { listChannelsHandler } from '../../routes/protected/game-channel/list'
+import { createChannelHandler } from '../../routes/protected/game-channel/create'
+import { updateChannelHandler } from '../../routes/protected/game-channel/update'
+import { deleteChannelHandler } from '../../routes/protected/game-channel/delete'
 
 type GameChannelStorageTransaction = {
   upsertedProps: GameChannelStorageProp[]
@@ -50,9 +54,19 @@ export default class GameChannelAPIService extends APIService {
     docs: GameChannelAPIDocs.index
   })
   @HasPermission(GameChannelAPIPolicy, 'index')
-  @ForwardTo('games.game-channels', 'index')
   async index(req: Request): Promise<Response> {
-    return forwardRequest(req)
+    const { search, page, propKey, propValue } = req.query
+
+    return listChannelsHandler({
+      em: req.ctx.em,
+      game: req.ctx.state.game,
+      includeDevData: req.ctx.state.includeDevData,
+      forwarded: true,
+      search,
+      page: page ? Number(page) : 0,
+      propKey,
+      propValue
+    })
   }
 
   @Route({
@@ -131,9 +145,22 @@ export default class GameChannelAPIService extends APIService {
     body: [GameChannel]
   })
   @HasPermission(GameChannelAPIPolicy, 'post')
-  @ForwardTo('games.game-channels', 'post')
   async post(req: Request): Promise<Response> {
-    return forwardRequest(req)
+    const { name, props, autoCleanup, private: isPrivate, temporaryMembership } = req.body
+
+    return createChannelHandler({
+      em: req.ctx.em,
+      game: req.ctx.state.game,
+      includeDevData: req.ctx.state.includeDevData,
+      wss: req.ctx.wss,
+      forwarded: true,
+      alias: req.ctx.state.alias,
+      name,
+      props,
+      autoCleanup,
+      isPrivate,
+      temporaryMembership
+    })
   }
 
   @Route({
@@ -216,7 +243,6 @@ export default class GameChannelAPIService extends APIService {
     body: [GameChannel]
   })
   @HasPermission(GameChannelAPIPolicy, 'put')
-  @ForwardTo('games.game-channels', 'put')
   async put(req: Request): Promise<Response> {
     const channel: GameChannel = req.ctx.state.channel
 
@@ -224,7 +250,21 @@ export default class GameChannelAPIService extends APIService {
       req.ctx.throw(403, 'This player is not the owner of the channel')
     }
 
-    return forwardRequest(req)
+    const { name, props, ownerAliasId, autoCleanup, private: isPrivate, temporaryMembership } = req.body
+
+    return updateChannelHandler({
+      em: req.ctx.em,
+      channel,
+      includeDevData: req.ctx.state.includeDevData,
+      wss: req.ctx.wss,
+      forwarded: true,
+      name,
+      ownerAliasId,
+      props,
+      autoCleanup,
+      isPrivate,
+      temporaryMembership
+    })
   }
 
   @Route({
@@ -236,7 +276,6 @@ export default class GameChannelAPIService extends APIService {
     headers: ['x-talo-alias']
   })
   @HasPermission(GameChannelAPIPolicy, 'delete')
-  @ForwardTo('games.game-channels', 'delete')
   async delete(req: Request): Promise<Response> {
     const channel: GameChannel = req.ctx.state.channel
 
@@ -244,7 +283,12 @@ export default class GameChannelAPIService extends APIService {
       req.ctx.throw(403, 'This player is not the owner of the channel')
     }
 
-    return forwardRequest(req)
+    return deleteChannelHandler({
+      em: req.ctx.em,
+      channel,
+      wss: req.ctx.wss,
+      forwarded: true
+    })
   }
 
   @Route({

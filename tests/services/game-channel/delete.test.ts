@@ -65,8 +65,8 @@ describe('Game channel service - delete', () => {
   })
 
   it('should not delete a non-existent game channel', async () => {
-    const [, game] = await createOrganisationAndGame()
-    const [token] = await createUserAndToken({ type: UserType.ADMIN })
+    const [organisation, game] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken({ type: UserType.ADMIN }, organisation)
 
     const res = await request(app)
       .delete(`/games/${game.id}/game-channels/99999`)

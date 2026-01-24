@@ -12,7 +12,7 @@ describe('Game channel service - put', () => {
     const [token] = await createUserAndToken({}, organisation)
 
     const channel = await new GameChannelFactory(game).one()
-    await em.persistAndFlush(channel)
+    await em.persist(channel).flush()
 
     const res = await request(app)
       .put(`/games/${game.id}/game-channels/${channel.id}`)
@@ -38,7 +38,7 @@ describe('Game channel service - put', () => {
     const [token] = await createUserAndToken()
 
     const channel = await new GameChannelFactory(game).one()
-    await em.persistAndFlush(channel)
+    await em.persist(channel).flush()
 
     const res = await request(app)
       .put(`/games/${game.id}/game-channels/${channel.id}`)
@@ -54,7 +54,7 @@ describe('Game channel service - put', () => {
     const [token] = await createUserAndToken()
 
     const channel = await new GameChannelFactory(game).one()
-    await em.persistAndFlush(channel)
+    await em.persist(channel).flush()
 
     const res = await request(app)
       .put(`/games/99999/game-channels/${channel.id}`)
@@ -66,8 +66,8 @@ describe('Game channel service - put', () => {
   })
 
   it('should not update a non-existent game channel', async () => {
-    const [, game] = await createOrganisationAndGame()
-    const [token] = await createUserAndToken()
+    const [organisation, game] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken({}, organisation)
 
     const res = await request(app)
       .put(`/games/${game.id}/game-channels/99999`)
@@ -83,7 +83,7 @@ describe('Game channel service - put', () => {
     const [token] = await createUserAndToken({}, organisation)
 
     const channel = await new GameChannelFactory(game).one()
-    await em.persistAndFlush(channel)
+    await em.persist(channel).flush()
 
     const res = await request(app)
       .put(`/games/${game.id}/game-channels/${channel.id}`)
@@ -100,7 +100,7 @@ describe('Game channel service - put', () => {
 
     const channel = await new GameChannelFactory(game).one()
     const player = await new PlayerFactory([game]).one()
-    await em.persistAndFlush([channel, player])
+    await em.persist([channel, player]).flush()
 
     await request(app)
       .put(`/games/${game.id}/game-channels/${channel.id}`)
@@ -118,7 +118,7 @@ describe('Game channel service - put', () => {
     const [token] = await createUserAndToken({}, organisation)
 
     const channel = await new GameChannelFactory(game).one()
-    await em.persistAndFlush(channel)
+    await em.persist(channel).flush()
 
     const originalName = channel.name
 
@@ -137,7 +137,7 @@ describe('Game channel service - put', () => {
     const [token] = await createUserAndToken({}, organisation)
 
     const channel = await new GameChannelFactory(game).state(() => ({ autoCleanup: false })).one()
-    await em.persistAndFlush(channel)
+    await em.persist(channel).flush()
 
     const res = await request(app)
       .put(`/games/${game.id}/game-channels/${channel.id}`)
@@ -153,7 +153,7 @@ describe('Game channel service - put', () => {
     const [token] = await createUserAndToken({}, organisation)
 
     const channel = await new GameChannelFactory(game).state(() => ({ private: false })).one()
-    await em.persistAndFlush(channel)
+    await em.persist(channel).flush()
 
     const res = await request(app)
       .put(`/games/${game.id}/game-channels/${channel.id}`)
@@ -169,7 +169,7 @@ describe('Game channel service - put', () => {
     const [token] = await createUserAndToken({}, organisation)
 
     const channel = await new GameChannelFactory(game).state(() => ({ temporaryMembership: false })).one()
-    await em.persistAndFlush(channel)
+    await em.persist(channel).flush()
 
     const res = await request(app)
       .put(`/games/${game.id}/game-channels/${channel.id}`)

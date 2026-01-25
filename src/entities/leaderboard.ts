@@ -1,5 +1,4 @@
 import { Collection, Entity, EntityManager, Enum, Index, ManyToOne, OneToMany, PrimaryKey, Property } from '@mikro-orm/mysql'
-import { Request, Required, ValidationCondition } from 'koa-clay'
 import Game from './game'
 import LeaderboardEntry from './leaderboard-entry'
 
@@ -22,46 +21,15 @@ export default class Leaderboard {
   @PrimaryKey()
   id!: number
 
-  @Required({
-    validation: async (val: unknown, req: Request): Promise<ValidationCondition[]> => {
-      const { gameId, id } = req.params
-      const duplicateInternalName = await (<EntityManager>req.ctx.em).getRepository(Leaderboard).findOne({
-        id: { $ne: Number(id ?? null) },
-        internalName: val as string,
-        game: Number(gameId)
-      })
-
-      return [
-        {
-          check: !duplicateInternalName,
-          error: `A leaderboard with the internalName '${val}' already exists`
-        }
-      ]
-    }
-  })
   @Property()
   internalName!: string
 
-  @Required()
   @Property()
   name!: string
 
-  @Required({
-    validation: async (val: unknown): Promise<ValidationCondition[]> => {
-      const keys = Object.keys(LeaderboardSortMode).map((key) => LeaderboardSortMode[key as keyof typeof LeaderboardSortMode])
-
-      return [
-        {
-          check: keys.includes(val as LeaderboardSortMode),
-          error: `Sort mode must be one of ${keys.join(', ')}`
-        }
-      ]
-    }
-  })
   @Enum(() => LeaderboardSortMode)
   sortMode: LeaderboardSortMode = LeaderboardSortMode.DESC
 
-  @Required()
   @Property()
   unique!: boolean
 
@@ -74,18 +42,6 @@ export default class Leaderboard {
   @ManyToOne(() => Game)
   game: Game
 
-  @Required({
-    validation: async (val: unknown): Promise<ValidationCondition[]> => {
-      const keys = Object.keys(LeaderboardRefreshInterval).map((key) => LeaderboardRefreshInterval[key as keyof typeof LeaderboardRefreshInterval])
-
-      return [
-        {
-          check: keys.includes(val as LeaderboardRefreshInterval),
-          error: `Refresh interval must be one of ${keys.join(', ')}`
-        }
-      ]
-    }
-  })
   @Enum(() => LeaderboardRefreshInterval)
   refreshInterval: LeaderboardRefreshInterval = LeaderboardRefreshInterval.NEVER
 

@@ -1,22 +1,6 @@
-import { ValidationCondition } from 'koa-clay'
+export const resetModes = ['all', 'live', 'dev'] as const
 
-export type ResetMode = 'all' | 'live' | 'dev'
-
-const allowedModes: ResetMode[] = ['all', 'live', 'dev']
-
-export const resetModeValidation = {
-  validation: async (val: unknown): Promise<ValidationCondition[]> => {
-    const mode = val as ResetMode
-    return [
-      {
-        check: !!val && allowedModes.includes(mode),
-        error: `Mode must be one of: ${allowedModes.join(', ')}`
-      }
-    ]
-  }
-}
-
-export function translateResetMode(resetMode: ResetMode) {
+export function translateResetMode(resetMode: typeof resetModes[number]) {
   switch (resetMode) {
     case 'all':
       return 'All players'

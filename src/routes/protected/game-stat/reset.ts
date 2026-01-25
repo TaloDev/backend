@@ -8,19 +8,17 @@ import PlayerAlias from '../../../entities/player-alias'
 import { GameActivityType } from '../../../entities/game-activity'
 import createGameActivity from '../../../lib/logging/createGameActivity'
 import { deferClearResponseCache } from '../../../lib/perf/responseCacheQueue'
-import { ResetMode, translateResetMode } from '../../../lib/validation/resetModeValidation'
+import { resetModes, translateResetMode } from '../../../lib/validation/resetModeValidation'
 import { streamByCursor } from '../../../lib/perf/streamByCursor'
 import { loadStat } from './common'
-
-const allowedModes: ResetMode[] = ['all', 'live', 'dev']
 
 export const resetRoute = protectedRoute({
   method: 'delete',
   path: '/:id/player-stats',
   schema: (z) => ({
     query: z.object({
-      mode: z.enum(['all', 'live', 'dev'], {
-        message: `Mode must be one of: ${allowedModes.join(', ')}`
+      mode: z.enum(resetModes, {
+        message: `Mode must be one of: ${resetModes.join(', ')}`
       }).optional().default('all')
     })
   }),

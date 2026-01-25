@@ -1,4 +1,4 @@
-import { HasPermission, Request, Response, Route, Validate, ForwardTo, forwardRequest, ValidationCondition } from 'koa-clay'
+import { HasPermission, Request, Response, Route, Validate, ValidationCondition } from 'koa-clay'
 import LeaderboardAPIPolicy from '../../policies/api/leaderboard-api.policy'
 import APIService from './api-service'
 import { EntityManager, NotFoundError, LockMode } from '@mikro-orm/mysql'
@@ -11,6 +11,7 @@ import { PropSizeError } from '../../lib/errors/propSizeError'
 import buildErrorResponse from '../../lib/errors/buildErrorResponse'
 import { UniqueLeaderboardEntryPropsDigestError } from '../../lib/errors/uniqueLeaderboardEntryPropsDigestError'
 import PlayerAlias from '../../entities/player-alias'
+import { listEntriesHandler } from '../../routes/protected/leaderboard/entries'
 
 type LeaderboardEntryPostRequest = {
   score: number
@@ -27,12 +28,22 @@ export default class LeaderboardAPIService extends APIService {
     docs: LeaderboardAPIDocs.get
   })
   @HasPermission(LeaderboardAPIPolicy, 'get')
-  @ForwardTo('games.leaderboards', 'entries')
   async get(req: Request): Promise<Response> {
-    return forwardRequest(req, {
-      params: {
-        id: String(req.ctx.state.leaderboard.id)
-      }
+    const { page, aliasId, withDeleted, propKey, propValue, startDate, endDate, service } = req.query
+
+    return listEntriesHandler({
+      em: req.ctx.em,
+      leaderboard: req.ctx.state.leaderboard,
+      includeDevData: req.ctx.state.includeDevData,
+      forwarded: true,
+      page: page ? Number(page) : 0,
+      aliasId: aliasId ? Number(aliasId) : undefined,
+      withDeleted: withDeleted === '1',
+      propKey,
+      propValue,
+      startDate,
+      endDate,
+      service
     })
   }
 

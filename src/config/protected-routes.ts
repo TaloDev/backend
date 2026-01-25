@@ -5,7 +5,7 @@ import { gameFeedbackRouter } from '../routes/protected/game-feedback'
 import { gameStatRouter } from '../routes/protected/game-stat'
 import { playerGroupRouter } from '../routes/protected/player-group'
 import { gameActivityRouter } from '../routes/protected/game-activity'
-import LeaderboardService from '../services/leaderboard.service'
+import { leaderboardRouter } from '../routes/protected/leaderboard'
 import { dataExportRouter } from '../routes/protected/data-export'
 import { apiKeyRouter } from '../routes/protected/api-key'
 import { eventRouter } from '../routes/protected/event'
@@ -51,7 +51,6 @@ export default function protectedRoutes(app: Koa) {
       hidden: true
     }
   }
-  app.use(service('/games/:gameId/leaderboards', new LeaderboardService(), serviceOpts))
   app.use(service('/games/:gameId/players', new PlayerService(), serviceOpts))
 
   // new router-based routes
@@ -67,6 +66,7 @@ export default function protectedRoutes(app: Koa) {
   app.use(headlineRouter().routes())
   app.use(integrationRouter().routes())
   app.use(inviteRouter().routes())
+  app.use(leaderboardRouter().routes())
   app.use(organisationRouter().routes())
   app.use(playerGroupRouter().routes())
   app.use(userRouter().routes())

@@ -5,6 +5,7 @@ import createUserAndToken from '../../utils/createUserAndToken'
 import userPermissionProvider from '../../utils/userPermissionProvider'
 import { UserType } from '../../../src/entities/user'
 import GameActivity, { GameActivityType } from '../../../src/entities/game-activity'
+import UserPinnedGroupFactory from '../../fixtures/UserPinnedGroupFactory'
 
 describe('Player group service - delete', () => {
   it.each(userPermissionProvider([
@@ -15,7 +16,7 @@ describe('Player group service - delete', () => {
     const [token] = await createUserAndToken({ type }, organisation)
 
     const group = await new PlayerGroupFactory().construct(game).one()
-    await em.persistAndFlush(group)
+    await em.persist(group).flush()
 
     const res = await request(app)
       .delete(`/games/${game.id}/player-groups/${group.id}`)
@@ -29,6 +30,7 @@ describe('Player group service - delete', () => {
 
     if (statusCode === 204) {
       expect(activity!.extra.groupName).toBe(group.name)
+      expect(await em.refresh(group)).toBeNull()
     } else {
       expect(res.body).toStrictEqual({ message: 'You do not have permissions to delete groups' })
 
@@ -41,7 +43,7 @@ describe('Player group service - delete', () => {
     const [token] = await createUserAndToken({ type: UserType.ADMIN })
 
     const group = await new PlayerGroupFactory().construct(otherGame).one()
-    await em.persistAndFlush([group])
+    await em.persist([group]).flush()
 
     const res = await request(app)
       .delete(`/games/${otherGame.id}/player-groups/${group.id}`)
@@ -61,5 +63,24 @@ describe('Player group service - delete', () => {
       .expect(404)
 
     expect(res.body).toStrictEqual({ message: 'Group not found' })
+  })
+
+  it('should delete groups with pinned groups', async () => {
+    const [organisation, game] = await createOrganisationAndGame()
+    const [token, user] = await createUserAndToken({ type: UserType.ADMIN }, organisation)
+
+    let pinnedGroup = await new UserPinnedGroupFactory()
+      .state(() => ({ user }))
+      .state(async () => ({ group: await new PlayerGroupFactory().construct(game).one() }))
+      .one()
+
+    await em.persist(pinnedGroup).flush()
+
+    await request(app)
+      .delete(`/games/${game.id}/player-groups/${pinnedGroup.group.id}`)
+      .auth(token, { type: 'bearer' })
+      .expect(204)
+
+    expect(await em.refresh(pinnedGroup)).toBeNull()
   })
 })

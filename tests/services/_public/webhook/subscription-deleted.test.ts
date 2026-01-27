@@ -3,10 +3,18 @@ import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
 import initStripe from '../../../../src/lib/billing/initStripe'
 import PricingPlanFactory from '../../../fixtures/PricingPlanFactory'
 import { v4 } from 'uuid'
-
-const stripe = initStripe()!
+import { truncateTables } from '../../../utils/truncateTables'
+import assert from 'node:assert'
 
 describe('Webhook service - subscription deleted', () => {
+  const stripe = initStripe()
+  assert(stripe)
+
+  // prevent conflicts with existing DB plans
+  beforeAll(async () => {
+    await truncateTables()
+  })
+
   it('should reset the organisation pricing plan to the default plan after the subscription is deleted', async () => {
     const [organisation] = await createOrganisationAndGame()
     const subscription = (await stripe.subscriptions.list()).data[0]

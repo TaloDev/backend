@@ -19,7 +19,7 @@ describe('Player auth API service - verify', () => {
     })).one()
     const alias = player.aliases[0]
 
-    await em.persistAndFlush(player)
+    await em.persist(player).flush()
 
     await redis.set(`player-auth:${apiKey.game.id}:verification:${alias.id}`, '123456')
 
@@ -47,7 +47,7 @@ describe('Player auth API service - verify', () => {
     const player = await new PlayerFactory([apiKey.game]).withTaloAlias().one()
     const alias = player.aliases[0]
 
-    await em.persistAndFlush(player)
+    await em.persist(player).flush()
 
     await request(app)
       .post('/v1/players/auth/verify')
@@ -61,7 +61,7 @@ describe('Player auth API service - verify', () => {
 
     const res = await request(app)
       .post('/v1/players/auth/verify')
-      .send({ aliasId: 812, code: '123456' })
+      .send({ aliasId: Number.MAX_SAFE_INTEGER, code: '123456' })
       .auth(token, { type: 'bearer' })
       .expect(403)
 
@@ -77,7 +77,7 @@ describe('Player auth API service - verify', () => {
     const player = await new PlayerFactory([apiKey.game]).withTaloAlias().one()
     const alias = player.aliases[0]
 
-    await em.persistAndFlush(player)
+    await em.persist(player).flush()
 
     await redis.set(`player-auth:${apiKey.game.id}:verification:${alias.id}`, '123456')
 
@@ -105,7 +105,7 @@ describe('Player auth API service - verify', () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_PLAYERS, APIKeyScope.WRITE_PLAYERS])
 
     const player = await new PlayerFactory([apiKey.game]).one()
-    await em.persistAndFlush(player)
+    await em.persist(player).flush()
 
     const alias = player.aliases[0]
 

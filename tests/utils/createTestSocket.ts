@@ -159,10 +159,12 @@ export default async function createTestSocket(
   await cb(client, wss, port)
 
   // close all connections
-  for (const conn of wss.findConnections(() => true)) {
-    conn.getSocket().close()
-  }
-  await vi.waitUntil(() => wss.findConnections(() => true).length === 0)
+  await Promise.all(
+    wss.findConnections(() => true).map((conn) => wss.closeConnection(conn.getSocket()))
+  )
+
+  // wait for any background close operations
+  await wss.waitForPendingOperations()
 
   // close the server
   await new Promise<void>((resolve) => server.close(() => resolve()))

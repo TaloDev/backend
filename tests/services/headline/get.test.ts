@@ -405,7 +405,7 @@ describe('Headline service - get', () => {
 
     await clickhouse.insert({
       table: 'player_sessions',
-      values: Array(10).fill(0).map(() => ({
+      values: Array(10).fill({}).map(() => ({
         id: v4(),
         player_id: player.id,
         player_alias_id: player.aliases[0].id,
@@ -435,7 +435,7 @@ describe('Headline service - get', () => {
 
     await clickhouse.insert({
       table: 'player_sessions',
-      values: Array(5).fill(0).map(() => ({
+      values: Array(5).fill({}).map(() => ({
         id: v4(),
         player_id: player.id,
         player_alias_id: player.aliases[0].id,
@@ -465,7 +465,7 @@ describe('Headline service - get', () => {
 
     await clickhouse.insert({
       table: 'player_sessions',
-      values: Array(5).fill(0).map(() => ({
+      values: Array(5).fill({}).map(() => ({
         id: v4(),
         player_id: player.id,
         player_alias_id: player.aliases[0].id,
@@ -497,7 +497,7 @@ describe('Headline service - get', () => {
     const sessionStartDate = new Date(startDate)
     await clickhouse.insert({
       table: 'player_sessions',
-      values: Array(3).fill(0).map(() => ({
+      values: Array(3).fill({}).map(() => ({
         id: v4(),
         player_id: player.id,
         player_alias_id: player.aliases[0].id,
@@ -532,7 +532,7 @@ describe('Headline service - get', () => {
     const sessionStartDate = new Date(startDate)
     await clickhouse.insert({
       table: 'player_sessions',
-      values: Array(3).fill(0).map(() => ({
+      values: Array(3).fill({}).map(() => ({
         id: v4(),
         player_id: player.id,
         player_alias_id: player.aliases[0].id,
@@ -567,7 +567,7 @@ describe('Headline service - get', () => {
     const sessionStartDate = new Date(startDate)
     await clickhouse.insert({
       table: 'player_sessions',
-      values: Array(3).fill(0).map(() => ({
+      values: Array(3).fill({}).map(() => ({
         id: v4(),
         player_id: player.id,
         player_alias_id: player.aliases[0].id,

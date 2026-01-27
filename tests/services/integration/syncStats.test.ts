@@ -83,7 +83,7 @@ describe('Integration service - sync stats', () => {
     const res = await request(app)
       .post(`/games/${game.id}/integrations/${integration.id}/sync-stats`)
       .auth(token, { type: 'bearer' })
-      .expect(403)
+      .expect(400)
 
     const activity = await em.getRepository(GameActivity).findOne({
       type: GameActivityType.GAME_INTEGRATION_STEAMWORKS_STATS_SYNCED,
@@ -101,10 +101,10 @@ describe('Integration service - sync stats', () => {
 
     const config = await new IntegrationConfigFactory().state(() => ({ syncStats: false })).one()
     const integration = await new IntegrationFactory().construct(IntegrationType.STEAMWORKS, game, config).one()
-    await em.persistAndFlush(integration)
+    await em.persist(integration).flush()
 
     const res = await request(app)
-      .post(`/games/${game.id}/integrations/64/sync-stats`)
+      .post(`/games/${game.id}/integrations/${Number.MAX_SAFE_INTEGER}/sync-stats`)
       .auth(token, { type: 'bearer' })
       .expect(404)
 

@@ -8,11 +8,13 @@ import PlanUpgraded from '../../../../src/emails/plan-upgraded-mail'
 import { addDays } from 'date-fns'
 import PlanRenewed from '../../../../src/emails/plan-renewed-mail'
 import PlanCancelled from '../../../../src/emails/plan-cancelled-mail'
-
-const stripe = initStripe()!
+import assert from 'node:assert'
 
 describe('Webhook service - subscription updated', () => {
   const sendMock = vi.spyOn(sendEmail, 'default')
+
+  const stripe = initStripe()
+  assert(stripe)
 
   afterEach(() => {
     sendMock.mockClear()

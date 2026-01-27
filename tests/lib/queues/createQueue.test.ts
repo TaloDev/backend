@@ -3,6 +3,10 @@ import FailedJob from '../../../src/entities/failed-job'
 import createQueue from '../../../src/lib/queues/createQueue'
 
 describe('Create queue', () => {
+  beforeAll(async () => {
+    await em.repo(FailedJob).nativeDelete({})
+  })
+
   it('should put failed jobs in the database', async () => {
     const payload = { message: 'knock knock' }
 

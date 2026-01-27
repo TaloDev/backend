@@ -1,5 +1,5 @@
 import { Entity, EntityManager, Enum, Filter, ManyToOne, PrimaryKey, Property } from '@mikro-orm/mysql'
-import { Request, Required, ValidationCondition } from 'koa-clay'
+import { Request } from 'koa-clay'
 import { decrypt, encrypt } from '../lib/crypto/string-encryption'
 import Game from './game'
 import { authenticateTicket, cleanupSteamworksLeaderboardEntry, cleanupSteamworksPlayerStat, createSteamworksLeaderboard, createSteamworksLeaderboardEntry, deleteSteamworksLeaderboard, deleteSteamworksLeaderboardEntry, setSteamworksStat, syncSteamworksLeaderboards, syncSteamworksStats } from '../lib/integrations/steamworks-integration'
@@ -30,37 +30,12 @@ export default class Integration {
   @PrimaryKey()
   id!: number
 
-  @Required({
-    methods: ['POST'],
-    validation: async (val: unknown, req: Request): Promise<ValidationCondition[]> => {
-      const keys = Object.keys(IntegrationType).map((key) => IntegrationType[key as keyof typeof IntegrationType])
-
-      const { gameId, id } = req.params
-      const duplicateIntegrationType = await (<EntityManager>req.ctx.em).getRepository(Integration).findOne({
-        id: { $ne: Number(id ?? null) },
-        type: val as IntegrationType,
-        game: Number(gameId)
-      })
-
-      return [
-        {
-          check: keys.includes(val as IntegrationType),
-          error: `Integration type must be one of ${keys.join(', ')}`
-        },
-        {
-          check: !duplicateIntegrationType,
-          error: `This game already has an integration for ${val}`
-        }
-      ]
-    }
-  })
   @Enum(() => IntegrationType)
   type: IntegrationType
 
   @ManyToOne(() => Game)
   game: Game
 
-  @Required({ methods: ['POST', 'PATCH'] })
   @Property({ type: 'json' })
   private config: IntegrationConfig
 

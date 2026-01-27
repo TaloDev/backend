@@ -7,10 +7,12 @@ import userPermissionProvider from '../../utils/userPermissionProvider'
 import { UserType } from '../../../src/entities/user'
 import OrganisationPricingPlanFactory from '../../fixtures/OrganisationPricingPlanFactory'
 import PlayerFactory from '../../fixtures/PlayerFactory'
-
-const stripe = initStripe()!
+import assert from 'node:assert'
 
 describe('Billing service - create checkout session', () => {
+  const stripe = initStripe()
+  assert(stripe)
+
   it.each(userPermissionProvider())('should return a %i for a %s user', async (statusCode, _, type) => {
     const product = (await stripe.products.list()).data[0]
     const price = (await stripe.prices.list({ product: product.id })).data[0]
@@ -48,7 +50,7 @@ describe('Billing service - create checkout session', () => {
     const res = await request(app)
       .post('/billing/checkout-session')
       .send({
-        pricingPlanId: 123,
+        pricingPlanId: Number.MAX_SAFE_INTEGER,
         pricingInterval: 'month'
       })
       .auth(token, { type: 'bearer' })

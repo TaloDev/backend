@@ -1,5 +1,4 @@
-import { EntityManager, Entity, ManyToOne, PrimaryKey, Property, Collection, OneToMany, Index, raw } from '@mikro-orm/mysql'
-import { Request, Required, ValidationCondition } from 'koa-clay'
+import { Entity, ManyToOne, PrimaryKey, Property, Collection, OneToMany, Index, raw, EntityManager } from '@mikro-orm/mysql'
 import Game from './game'
 import PlayerGameStat from './player-game-stat'
 import { ClickHouseClient } from '@clickhouse/client'
@@ -28,74 +27,30 @@ export default class GameStat {
   @PrimaryKey()
   id!: number
 
-  @Required({
-    validation: async (val: unknown, req: Request): Promise<ValidationCondition[]> => {
-      const { gameId, id } = req.params
-      const duplicateInternalName = await (<EntityManager>req.ctx.em).getRepository(GameStat).findOne({
-        id: { $ne: Number(id ?? null) },
-        internalName: val as string,
-        game: Number(gameId)
-      })
-
-      return [
-        {
-          check: !duplicateInternalName,
-          error: `A stat with the internalName '${val}' already exists`
-        }
-      ]
-    }
-  })
   @Property()
   internalName!: string
 
-  @Required()
   @Property()
   name!: string
 
-  @Required()
   @Property()
   global!: boolean
 
   @Property({ type: 'double' })
   globalValue!: number
 
-  @Required({
-    validation: async (value: unknown): Promise<ValidationCondition[]> => [{
-      check: value !== null ? (value as number) > 0 : true,
-      error: 'maxChange must be greater than 0'
-    }]
-  })
   @Property({ nullable: true, type: 'double' })
   maxChange: number | null = null
 
-  @Required({
-    validation: async (value: unknown, req: Request): Promise<ValidationCondition[]> => [{
-      check: req.body.maxValue ? (value as number) < (req.body.maxValue as number) : true,
-      error: 'minValue must be less than maxValue'
-    }]
-  })
   @Property({ nullable: true, type: 'double' })
   minValue: number | null = null
 
-  @Required({
-    validation: async (value: unknown, req: Request): Promise<ValidationCondition[]> => [{
-      check: req.body.minValue ? (value as number) > (req.body.minValue as number) : true,
-      error: 'maxValue must be greater than minValue'
-    }]
-  })
   @Property({ nullable: true, type: 'double' })
   maxValue: number | null = null
 
-  @Required({
-    validation: async (value: unknown, req: Request): Promise<ValidationCondition[]> => [{
-      check: value !== null && (value as number) >= (req.body.minValue ?? -Infinity) && (value as number) <= (req.body.maxValue ?? Infinity),
-      error: 'defaultValue must be between minValue and maxValue'
-    }]
-  })
   @Property({ type: 'double' })
   defaultValue!: number
 
-  @Required()
   @Property()
   minTimeBetweenUpdates!: number
 

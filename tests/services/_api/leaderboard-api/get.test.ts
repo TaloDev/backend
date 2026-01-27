@@ -16,11 +16,10 @@ describe('Leaderboard API service - get', () => {
     const entries = await new LeaderboardEntryFactory(leaderboard, players).many(3)
     const hiddenEntries = await new LeaderboardEntryFactory(leaderboard, players).hidden().many(3)
 
-    await em.persistAndFlush([...players, ...entries, ...hiddenEntries])
+    await em.persist([...players, ...entries, ...hiddenEntries]).flush()
 
     const res = await request(app)
       .get(`/v1/leaderboards/${leaderboard.internalName}/entries`)
-      .query({ page: 0 })
       .auth(token, { type: 'bearer' })
       .expect(200)
 

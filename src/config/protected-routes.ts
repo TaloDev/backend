@@ -1,18 +1,18 @@
 import Koa from 'koa'
 import { service, ServiceOpts } from 'koa-clay'
-import GameChannelService from '../services/game-channel.service'
-import GameFeedbackService from '../services/game-feedback.service'
-import PlayerGroupService from '../services/player-group.service'
-import GameStatService from '../services/game-stat.service'
+import { gameChannelRouter } from '../routes/protected/game-channel'
+import { gameFeedbackRouter } from '../routes/protected/game-feedback'
+import { gameStatRouter } from '../routes/protected/game-stat'
+import { playerGroupRouter } from '../routes/protected/player-group'
 import { gameActivityRouter } from '../routes/protected/game-activity'
-import LeaderboardService from '../services/leaderboard.service'
+import { leaderboardRouter } from '../routes/protected/leaderboard'
 import { dataExportRouter } from '../routes/protected/data-export'
 import { apiKeyRouter } from '../routes/protected/api-key'
-import EventService from '../services/event.service'
+import { eventRouter } from '../routes/protected/event'
 import { headlineRouter } from '../routes/protected/headline'
 import PlayerService from '../services/player.service'
 import { billingRouter } from '../routes/protected/billing'
-import IntegrationService from '../services/integration.service'
+import { integrationRouter } from '../routes/protected/integration'
 import { getRouteInfo, protectedRouteAuthMiddleware } from '../middleware/route-middleware'
 import { setTraceAttributes } from '@hyperdx/node-opentelemetry'
 import { userRouter } from '../routes/protected/user'
@@ -51,23 +51,23 @@ export default function protectedRoutes(app: Koa) {
       hidden: true
     }
   }
-  app.use(service('/games/:gameId/game-stats', new GameStatService(), serviceOpts))
-  app.use(service('/games/:gameId/leaderboards', new LeaderboardService(), serviceOpts))
-  app.use(service('/games/:gameId/events', new EventService(), serviceOpts))
   app.use(service('/games/:gameId/players', new PlayerService(), serviceOpts))
-  app.use(service('/games/:gameId/integrations', new IntegrationService(), serviceOpts))
-  app.use(service('/games/:gameId/player-groups', new PlayerGroupService(), serviceOpts))
-  app.use(service('/games/:gameId/game-feedback', new GameFeedbackService(), serviceOpts))
-  app.use(service('/games/:gameId/game-channels', new GameChannelService(), serviceOpts))
 
   // new router-based routes
   app.use(apiKeyRouter().routes())
   app.use(billingRouter().routes())
   app.use(dataExportRouter().routes())
+  app.use(eventRouter().routes())
   app.use(gameActivityRouter().routes())
+  app.use(gameChannelRouter().routes())
+  app.use(gameFeedbackRouter().routes())
   app.use(gameRouter().routes())
+  app.use(gameStatRouter().routes())
   app.use(headlineRouter().routes())
+  app.use(integrationRouter().routes())
   app.use(inviteRouter().routes())
+  app.use(leaderboardRouter().routes())
   app.use(organisationRouter().routes())
+  app.use(playerGroupRouter().routes())
   app.use(userRouter().routes())
 }

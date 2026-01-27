@@ -21,8 +21,10 @@ set -e
 
 dc up -d
 
-npx mikro-orm migration:up
-ts-node ./tests/migrateClickHouse.ts
+npx mikro-orm migration:up &
+ts-node ./tests/migrateClickHouse.ts &
+wait
+
 echo "\n"
 
 if [ -z "$EXPOSE_GC" ]

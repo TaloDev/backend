@@ -83,7 +83,7 @@ describe('Integration service - sync leaderboards', () => {
     const res = await request(app)
       .post(`/games/${game.id}/integrations/${integration.id}/sync-leaderboards`)
       .auth(token, { type: 'bearer' })
-      .expect(403)
+      .expect(400)
 
     const activity = await em.getRepository(GameActivity).findOne({
       type: GameActivityType.GAME_INTEGRATION_STEAMWORKS_LEADERBOARDS_SYNCED,
@@ -101,10 +101,10 @@ describe('Integration service - sync leaderboards', () => {
 
     const config = await new IntegrationConfigFactory().state(() => ({ syncLeaderboards: false })).one()
     const integration = await new IntegrationFactory().construct(IntegrationType.STEAMWORKS, game, config).one()
-    await em.persistAndFlush(integration)
+    await em.persist(integration).flush()
 
     const res = await request(app)
-      .post(`/games/${game.id}/integrations/54/sync-leaderboards`)
+      .post(`/games/${game.id}/integrations/${Number.MAX_SAFE_INTEGER}/sync-leaderboards`)
       .auth(token, { type: 'bearer' })
       .expect(404)
 

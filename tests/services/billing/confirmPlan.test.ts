@@ -6,10 +6,12 @@ import createUserAndToken from '../../utils/createUserAndToken'
 import userPermissionProvider from '../../utils/userPermissionProvider'
 import { UserType } from '../../../src/entities/user'
 import { addHours } from 'date-fns'
-
-const stripe = initStripe()!
+import assert from 'node:assert'
 
 describe('Billing service - confirm plan', () => {
+  const stripe = initStripe()
+  assert(stripe)
+
   it.each(userPermissionProvider([], 204))('should return a %i for a %s user', async (statusCode, _, type) => {
     const product = (await stripe.products.list()).data[0]
     const price = (await stripe.prices.list({ product: product.id })).data[0]

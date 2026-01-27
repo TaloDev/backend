@@ -102,7 +102,7 @@ describe('Socket router', () => {
     const { identifyMessage, ticket, player } = await createSocketIdentifyMessage([APIKeyScope.FULL_ACCESS])
     const channel = await new GameChannelFactory(player.game).one()
     channel.members.add(player.aliases[0])
-    await em.persistAndFlush(channel)
+    await em.persist(channel).flush()
 
     await createTestSocket(`/?ticket=${ticket}`, async (client) => {
       await client.identify(identifyMessage)
@@ -111,7 +111,7 @@ describe('Socket router', () => {
         req: 'v1.channels.message',
         data: {
           channel: {
-            id: 1
+            id: channel.id
           },
           message: 'Hello world'
         }

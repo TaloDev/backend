@@ -110,4 +110,48 @@ describe('Player group service - preview count', () => {
       .auth(token, { type: 'bearer' })
       .expect(403)
   })
+
+  it('should return an error for invalid JSON in rules', async () => {
+    const [organisation, game] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken({}, organisation)
+
+    const res = await request(app)
+      .get(`/games/${game.id}/player-groups/preview-count`)
+      .query({ ruleMode: '$and', rules: 'not-valid-json' })
+      .auth(token, { type: 'bearer' })
+      .expect(400)
+
+    expect(res.body).toStrictEqual({
+      errors: {
+        rules: ['Rules must be valid JSON']
+      }
+    })
+  })
+
+  it('should return an error for invalid rule data', async () => {
+    const [organisation, game] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken({}, organisation)
+
+    const rules = [
+      {
+        name: 'INVALID_RULE',
+        field: 'lastSeenAt',
+        operands: ['2022-05-03'],
+        negate: false,
+        castType: PlayerGroupRuleCastType.DATETIME
+      }
+    ]
+
+    const res = await request(app)
+      .get(`/games/${game.id}/player-groups/preview-count`)
+      .query({ ruleMode: '$and', rules: encodeURI(JSON.stringify(rules)) })
+      .auth(token, { type: 'bearer' })
+      .expect(400)
+
+    expect(res.body).toStrictEqual({
+      errors: {
+        'rules.0.name': ['Invalid enum value. Expected \'EQUALS\' | \'SET\' | \'GT\' | \'GTE\' | \'LT\' | \'LTE\', received \'INVALID_RULE\'']
+      }
+    })
+  })
 })

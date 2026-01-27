@@ -265,7 +265,7 @@ describe('Player API service - merge', () => {
     const player1 = await new PlayerFactory([apiKey.game]).withSteamAlias().one()
     const player2 = await new PlayerFactory([apiKey.game]).withUsernameAlias().one()
 
-    await em.persistAndFlush([player1, player2])
+    await em.persist([player1, player2]).flush()
 
     await clickhouse.insert({
       table: 'player_sessions',
@@ -285,7 +285,7 @@ describe('Player API service - merge', () => {
 
     await vi.waitUntil(async () => {
       const updatedPlayerSessionsCount = await clickhouse.query({
-        query: 'SELECT count() as count FROM player_sessions',
+        query: `SELECT count() as count FROM player_sessions WHERE player_id = '${player2.id}'`,
         format: 'JSONEachRow'
       }).then((res) => res.json<{ count: string }>())
         .then((res) => Number(res[0].count))

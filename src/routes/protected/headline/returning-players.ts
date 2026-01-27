@@ -27,12 +27,7 @@ export const returningPlayersRoute = protectedRoute({
         $gte: startOfDay(new Date(startDate)),
         $lte: endOfDay(new Date(endDate))
       },
-      createdAt: {
-        $lt: startOfDay(new Date(startDate))
-      },
-      [raw('datediff(created_at, last_seen_at)')]: {
-        $ne: 0
-      }
+      [raw('created_at < last_seen_at')]: true
     }, getResultCacheOptions(`returning-players-${game.id}-${includeDevData}-${startDate}-${endDate}`, HEADLINES_CACHE_TTL_MS))
 
     return {

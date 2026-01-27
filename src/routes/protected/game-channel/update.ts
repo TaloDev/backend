@@ -44,7 +44,7 @@ export async function updateChannelHandler({
   const changedProperties: string[] = []
 
   if (typeof name === 'string' && name.trim().length > 0) {
-    channel.name = name
+    channel.name = name.trim()
     changedProperties.push('name')
   }
 

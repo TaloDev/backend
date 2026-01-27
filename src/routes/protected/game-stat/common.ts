@@ -65,7 +65,7 @@ function statFields(z: Z) {
     minValue: z.number().nullable().optional(),
     maxValue: z.number().nullable().optional(),
     defaultValue: z.number(),
-    minTimeBetweenUpdates: z.number()
+    minTimeBetweenUpdates: z.number().min(0)
   }
 }
 

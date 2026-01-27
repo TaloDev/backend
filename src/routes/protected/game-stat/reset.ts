@@ -80,7 +80,7 @@ export const resetRoute = protectedRoute({
       const query = `
         DELETE FROM player_game_stat_snapshots
         WHERE
-          game_stat_id = ${stat.id}
+          game_stat_id = {statId:UInt32}
           AND player_alias_id IN ({aliasIds:Array(UInt32)})
       `
       const aliasIds: number[] = []
@@ -94,6 +94,7 @@ export const resetRoute = protectedRoute({
           await clickhouse.exec({
             query,
             query_params: {
+              statId: stat.id,
               aliasIds: batchIds
             }
           })
@@ -105,6 +106,7 @@ export const resetRoute = protectedRoute({
         await clickhouse.exec({
           query,
           query_params: {
+            statId: stat.id,
             aliasIds
           }
         })

@@ -8,6 +8,7 @@ import { loadLeaderboard } from './common'
 import { DEFAULT_PAGE_SIZE } from '../../../lib/pagination/itemsPerPage'
 import { withResponseCache } from '../../../lib/perf/responseCache'
 import { endOfDay, startOfDay } from 'date-fns'
+import { pageSchema } from '../../../lib/validation/pageSchema'
 
 const itemsPerPage = DEFAULT_PAGE_SIZE
 
@@ -72,7 +73,7 @@ type ListEntriesParams = {
   leaderboard: Leaderboard
   includeDevData: boolean
   forwarded?: boolean
-  page?: number
+  page: number
   aliasId?: number
   withDeleted?: boolean
   propKey?: string
@@ -87,7 +88,7 @@ export async function listEntriesHandler({
   leaderboard,
   includeDevData,
   forwarded,
-  page = 0,
+  page,
   aliasId,
   withDeleted,
   propKey,
@@ -215,7 +216,7 @@ export const entriesRoute = protectedRoute({
   path: '/:id/entries',
   schema: (z) => ({
     query: z.object({
-      page: z.coerce.number().int().min(0).optional(),
+      page: pageSchema,
       aliasId: z.coerce.number().int().optional(),
       withDeleted: z.enum(['0', '1']).optional().transform((val) => val === '1'),
       propKey: z.string().optional(),

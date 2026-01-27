@@ -5,6 +5,7 @@ import GameChannel from '../../../entities/game-channel'
 import Game from '../../../entities/game'
 import { withResponseCache } from '../../../lib/perf/responseCache'
 import { DEFAULT_PAGE_SIZE } from '../../../lib/pagination/itemsPerPage'
+import { pageSchema } from '../../../lib/validation/pageSchema'
 
 const itemsPerPage = DEFAULT_PAGE_SIZE
 
@@ -106,7 +107,7 @@ export const listRoute = protectedRoute({
   schema: (z) => ({
     query: z.object({
       search: z.string().optional(),
-      page: z.coerce.number().catch(0),
+      page: pageSchema,
       propKey: z.string().optional(),
       propValue: z.string().optional()
     })

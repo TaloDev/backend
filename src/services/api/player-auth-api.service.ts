@@ -1,9 +1,10 @@
 import { EntityManager } from '@mikro-orm/mysql'
-import { Request, Response, Route, Validate, HasPermission, ForwardTo } from 'koa-clay'
+import { Request, Response, Route, Validate, HasPermission } from 'koa-clay'
 import APIKey from '../../entities/api-key'
 import PlayerAlias, { PlayerAliasService } from '../../entities/player-alias'
 import APIService from './api-service'
-import { createPlayerFromIdentifyRequest, findAliasFromIdentifyRequest } from './player-api.service'
+import { createPlayerFromIdentifyRequest, PlayerCreationError } from '../../lib/players/createPlayer'
+import { PricingPlanLimitError } from '../../lib/billing/checkPricingPlanPlayerLimit'
 import PlayerAuth from '../../entities/player-auth'
 import bcrypt from 'bcrypt'
 import PlayerAuthAPIPolicy from '../../policies/api/player-auth-api.policy'
@@ -19,6 +20,7 @@ import { deleteClickHousePlayerData } from '../../tasks/deletePlayers'
 import Redis from 'ioredis'
 import assert from 'node:assert'
 import { getGlobalQueue } from '../../config/global-queues'
+import { findAliasFromIdentifyRequest } from '../../lib/players/findAlias'
 
 export default class PlayerAuthAPIService extends APIService {
   @Route({
@@ -40,15 +42,40 @@ export default class PlayerAuthAPIService extends APIService {
     }
   })
   @HasPermission(PlayerAuthAPIPolicy, 'register')
-  @ForwardTo('games.players', 'post')
   async register(req: Request): Promise<Response> {
     const { identifier, password, email, verificationEnabled } = req.body
     const em: EntityManager = req.ctx.em
 
     const key = await this.getAPIKey(req.ctx)
-    const realIdentifier = await PlayerAlias.resolveIdentifier(req, key.game, PlayerAliasService.TALO, identifier)
+    const realIdentifier = await PlayerAlias.resolveIdentifier({
+      req,
+      game: key.game,
+      service: PlayerAliasService.TALO,
+      identifier
+    })
 
-    const player = await createPlayerFromIdentifyRequest(req, key, PlayerAliasService.TALO, realIdentifier)
+    const devBuild = req.ctx.request.headers['x-talo-dev-build'] === '1'
+    let player
+    try {
+      player = await createPlayerFromIdentifyRequest({
+        em,
+        key,
+        service: PlayerAliasService.TALO,
+        identifier: realIdentifier,
+        devBuild
+      })
+    } catch (err) {
+      if (err instanceof PlayerCreationError) {
+        req.ctx.throw(err.statusCode, {
+          message: err.message,
+          errorCode: err.errorCode
+        })
+      }
+      if (err instanceof PricingPlanLimitError) {
+        req.ctx.throw(402, err.message)
+      }
+      throw err
+    }
     const alias = player?.aliases[0]
 
     alias.player.auth = new PlayerAuth()
@@ -119,9 +146,19 @@ export default class PlayerAuthAPIService extends APIService {
     const em: EntityManager = req.ctx.em
 
     const key = await this.getAPIKey(req.ctx)
-    const realIdentifier = await PlayerAlias.resolveIdentifier(req, key.game, PlayerAliasService.TALO, identifier)
+    const realIdentifier = await PlayerAlias.resolveIdentifier({
+      req,
+      game: key.game,
+      service: PlayerAliasService.TALO,
+      identifier
+    })
 
-    const alias = await findAliasFromIdentifyRequest(req, key, PlayerAliasService.TALO, realIdentifier)
+    const alias = await findAliasFromIdentifyRequest({
+      em,
+      key,
+      service: PlayerAliasService.TALO,
+      identifier: realIdentifier
+    })
     if (!alias) return this.handleFailedLogin(req)
 
     await em.populate(alias, ['player.auth'])

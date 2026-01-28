@@ -1,6 +1,5 @@
 import { EntityManager } from '@mikro-orm/mysql'
-import { Request, Response, Route, Validate, HasPermission, ForwardTo, forwardRequest, ValidationCondition } from 'koa-clay'
-import APIKey, { APIKeyScope } from '../../entities/api-key'
+import { Request, Response, Route, Validate, HasPermission, ValidationCondition } from 'koa-clay'
 import Player from '../../entities/player'
 import GameSave from '../../entities/game-save'
 import PlayerAlias, { PlayerAliasService } from '../../entities/player-alias'
@@ -9,45 +8,14 @@ import APIService from './api-service'
 import { uniqWith } from 'lodash'
 import { PlayerAPIDocs } from '../../docs/player-api.docs'
 import PlayerGameStat from '../../entities/player-game-stat'
-import checkScope from '../../policies/checkScope'
 import { validateAuthSessionToken } from '../../middleware/player-auth-middleware'
 import { setCurrentPlayerState } from '../../middleware/current-player-middleware'
 import { ClickHouseClient } from '@clickhouse/client'
-
-export async function findAliasFromIdentifyRequest(
-  req: Request,
-  key: APIKey,
-  service: string,
-  identifier: string
-) {
-  return (req.ctx.em as EntityManager).repo(PlayerAlias).findOne({
-    service: service.trim(),
-    identifier,
-    player: {
-      game: key.game
-    }
-  })
-}
-
-export async function createPlayerFromIdentifyRequest(
-  req: Request,
-  key: APIKey,
-  service: string,
-  identifier: string
-): Promise<Player> {
-  if (checkScope(key, APIKeyScope.WRITE_PLAYERS)) {
-    const res = await forwardRequest<{ player: Player }>(req, {
-      body: {
-        aliases: [{ service, identifier }],
-        props: req.ctx.state.initialPlayerProps
-      }
-    })
-
-    return res.body!.player
-  } else {
-    req.ctx.throw(404, 'Player not found. Use an access key with the write:players scope to automatically create players')
-  }
-}
+import { createPlayerFromIdentifyRequest, PlayerCreationError } from '../../lib/players/createPlayer'
+import { PricingPlanLimitError } from '../../lib/billing/checkPricingPlanPlayerLimit'
+import { listPlayersHandler } from '../../routes/protected/player/list'
+import { updatePlayerHandler } from '../../routes/protected/player/update'
+import { findAliasFromIdentifyRequest } from '../../lib/players/findAlias'
 
 function validateIdentifyQueryParam(param: 'service' | 'identifier') {
   return async (val?: unknown): Promise<ValidationCondition[]> => [
@@ -91,7 +59,6 @@ export default class PlayerAPIService extends APIService {
     }
   })
   @HasPermission(PlayerAPIPolicy, 'identify')
-  @ForwardTo('games.players', 'post')
   async identify(req: Request): Promise<Response> {
     const { service, identifier } = req.query
     const em: EntityManager = req.ctx.em
@@ -101,14 +68,27 @@ export default class PlayerAPIService extends APIService {
     let justCreated = false
 
     try {
-      const realIdentifier = await PlayerAlias.resolveIdentifier(req, key.game, service, identifier)
+      const realIdentifier = await PlayerAlias.resolveIdentifier({
+        req,
+        game: key.game,
+        service,
+        identifier
+      })
 
-      alias = await findAliasFromIdentifyRequest(req, key, service, realIdentifier)
+      alias = await findAliasFromIdentifyRequest({ em, key, service, identifier: realIdentifier })
       if (!alias) {
         if (service === PlayerAliasService.TALO) {
           req.ctx.throw(404, 'Player not found: Talo aliases must be created using the /v1/players/auth API')
         } else {
-          const player = await createPlayerFromIdentifyRequest(req, key, service, realIdentifier)
+          const devBuild = req.ctx.request.headers['x-talo-dev-build'] === '1'
+          const player = await createPlayerFromIdentifyRequest({
+            em,
+            key,
+            service,
+            identifier: realIdentifier,
+            initialProps: req.ctx.state.initialPlayerProps,
+            devBuild
+          })
           alias = player?.aliases[0]
           justCreated = true
         }
@@ -118,11 +98,20 @@ export default class PlayerAPIService extends APIService {
         await validateAuthSessionToken(req.ctx, alias)
       }
     } catch (err) {
+      if (err instanceof PlayerCreationError) {
+        req.ctx.throw(err.statusCode, {
+          message: err.message,
+          errorCode: err.errorCode
+        })
+      }
+      if (err instanceof PricingPlanLimitError) {
+        req.ctx.throw(402, err.message)
+      }
+      // catches steam integration errors
       if (err instanceof Error && err.cause === 400) {
         req.ctx.throw(400, err.message)
-      } else {
-        throw err
       }
+      throw err
     }
 
     if (!justCreated) {
@@ -161,13 +150,17 @@ export default class PlayerAPIService extends APIService {
     }
   })
   @HasPermission(PlayerAPIPolicy, 'search')
-  @ForwardTo('games.players', 'index')
   async search(req: Request): Promise<Response> {
     const { query } = req.query
-    return await forwardRequest(req, {
-      query: {
-        search: query
-      }
+    const key = await this.getAPIKey(req.ctx)
+
+    return listPlayersHandler({
+      em: req.ctx.em,
+      game: key.game,
+      search: query as string,
+      page: 0,
+      includeDevData: req.ctx.state.includeDevData,
+      forwarded: true
     })
   }
 
@@ -207,9 +200,16 @@ export default class PlayerAPIService extends APIService {
     docs: PlayerAPIDocs.patch
   })
   @HasPermission(PlayerAPIPolicy, 'patch')
-  @ForwardTo('games.players', 'patch')
-  async patch(req: Request): Promise<Response> {
-    return await forwardRequest(req)
+  patch(req: Request): Promise<Response> {
+    const { props } = req.body
+    const em: EntityManager = req.ctx.em
+
+    return updatePlayerHandler({
+      em,
+      player: req.ctx.state.player,
+      props,
+      forwarded: true
+    })
   }
 
   @Route({

@@ -11,7 +11,7 @@ describe('Player service - get', () => {
     const [token] = await createUserAndToken({ organisation })
 
     const player = await new PlayerFactory([game]).one()
-    await em.persistAndFlush(player)
+    await em.persist(player).flush()
 
     const res = await request(app)
       .get(`/games/${game.id}/players/${player.id}`)
@@ -39,7 +39,7 @@ describe('Player service - get', () => {
     const [otherToken] = await createUserAndToken()
 
     const player = await new PlayerFactory([game]).one()
-    await em.persistAndFlush(player)
+    await em.persist(player).flush()
 
     await request(app)
       .get(`/games/${game.id}/players/${player.id}`)
@@ -57,7 +57,7 @@ describe('Player service - get', () => {
         new PlayerProp(player, 'username', 'TestPlayer')
       ])
     })).one()
-    await em.persistAndFlush(player)
+    await em.persist(player).flush()
 
     const res = await request(app)
       .get(`/games/${game.id}/players/${player.id}`)
@@ -84,11 +84,11 @@ describe('Player service - get', () => {
     const [token] = await createUserAndToken({ organisation: organisation1 })
 
     const player = await new PlayerFactory([game2]).one()
-    await em.persistAndFlush(player)
+    await em.persist(player).flush()
 
     await request(app)
       .get(`/games/${game1.id}/players/${player.id}`)
       .auth(token, { type: 'bearer' })
-      .expect(403)
+      .expect(404)
   })
 })

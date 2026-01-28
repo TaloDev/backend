@@ -3,6 +3,7 @@ import { APIKeyScope } from '../../../../src/entities/api-key'
 import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
 import PlayerAuthActivity, { PlayerAuthActivityType } from '../../../../src/entities/player-auth-activity'
 import { randUserName } from '@ngneat/falso'
+import PlayerFactory from '../../../fixtures/PlayerFactory'
 
 describe('Player auth API service - register', () => {
   it('should register a player if the api key has the correct scopes', async () => {
@@ -148,5 +149,41 @@ describe('Player auth API service - register', () => {
 
     expect(res.body.alias.identifier).toBe(identifier)
     expect(res.body.alias.identifier).not.toBe(identifierWithSpaces)
+  })
+
+  it('should return an error if the identifier is already taken', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_PLAYERS, APIKeyScope.WRITE_PLAYERS])
+
+    const player = await new PlayerFactory([apiKey.game]).withTaloAlias().one()
+    await em.persist(player).flush()
+    const existingIdentifier = player.aliases[0].identifier
+
+    const res = await request(app)
+      .post('/v1/players/auth/register')
+      .send({ identifier: existingIdentifier, password: 'password' })
+      .auth(token, { type: 'bearer' })
+      .expect(400)
+
+    expect(res.body).toStrictEqual({
+      message: `Player with identifier '${existingIdentifier}' already exists`,
+      errorCode: 'IDENTIFIER_TAKEN'
+    })
+  })
+
+  it('should return a 402 when the player limit is exceeded', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_PLAYERS, APIKeyScope.WRITE_PLAYERS])
+    apiKey.game.organisation.pricingPlan.pricingPlan.playerLimit = 1
+    apiKey.game.organisation.pricingPlan.status = 'active'
+
+    const player = await new PlayerFactory([apiKey.game]).one()
+    await em.persist(player).flush()
+
+    const res = await request(app)
+      .post('/v1/players/auth/register')
+      .send({ identifier: randUserName(), password: 'password' })
+      .auth(token, { type: 'bearer' })
+      .expect(402)
+
+    expect(res.body.message).toBe('Limit reached')
   })
 })

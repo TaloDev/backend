@@ -5,6 +5,7 @@ import createOrganisationAndGame from '../../utils/createOrganisationAndGame'
 import userPermissionProvider from '../../utils/userPermissionProvider'
 import { UserType } from '../../../src/entities/user'
 import PlayerAuthActivityFactory from '../../fixtures/PlayerAuthActivityFactory'
+import { PlayerAuthActivityType } from '../../../src/entities/player-auth-activity'
 
 describe('Player service - get auth activities', () => {
   it.each(userPermissionProvider([UserType.ADMIN]))('should return a %i for a %s user', async (statusCode, _, type) => {
@@ -14,7 +15,7 @@ describe('Player service - get auth activities', () => {
     const player = await new PlayerFactory([game]).withTaloAlias().one()
     const activities = await new PlayerAuthActivityFactory(game).state(() => ({ player })).many(10)
 
-    await em.persistAndFlush(activities)
+    await em.persist(activities).flush()
 
     const res = await request(app)
       .get(`/games/${game.id}/players/${player.id}/auth-activities`)
@@ -34,7 +35,7 @@ describe('Player service - get auth activities', () => {
 
     const player = await new PlayerFactory([game]).one()
 
-    await em.persistAndFlush(player)
+    await em.persist(player).flush()
 
     await request(app)
       .get(`/games/${game.id}/players/${player.id}/auth-activities`)
@@ -61,7 +62,7 @@ describe('Player service - get auth activities', () => {
     const player = await new PlayerFactory([game]).withUsernameAlias().one()
     const activities = await new PlayerAuthActivityFactory(game).state(() => ({ player })).many(10)
 
-    await em.persistAndFlush(activities)
+    await em.persist(activities).flush()
 
     const res = await request(app)
       .get(`/games/${game.id}/players/${player.id}/auth-activities`)
@@ -69,5 +70,33 @@ describe('Player service - get auth activities', () => {
       .expect(200)
 
     expect(res.body.activities).toHaveLength(0)
+  })
+
+  it('should return contextual activity descriptions', async () => {
+    const [organisation, game] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken({ type: UserType.ADMIN }, organisation)
+
+    const player = await new PlayerFactory([game]).withTaloAlias().one()
+    const activity = await new PlayerAuthActivityFactory(game).state(() => ({
+      player,
+      type: PlayerAuthActivityType.REGISTERED
+    })).one()
+
+    await em.persist(activity).flush()
+
+    const res = await request(app)
+      .get(`/games/${game.id}/players/${player.id}/auth-activities`)
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    const identifier = player.aliases[0].identifier
+
+    expect(res.body.activities[0]).toStrictEqual({
+      id: activity.id,
+      type: activity.type,
+      description: `${identifier} created their account`,
+      extra: expect.any(Object),
+      createdAt: expect.any(String)
+    })
   })
 })

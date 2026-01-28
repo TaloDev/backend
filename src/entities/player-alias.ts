@@ -47,12 +47,17 @@ export default class PlayerAlias {
   @Property({ onUpdate: () => new Date() })
   updatedAt: Date = new Date()
 
-  static async resolveIdentifier(
-    req: Request,
-    game: Game,
-    service: string,
+  static async resolveIdentifier({
+    req,
+    game,
+    service,
+    identifier
+  }: {
+    req: Request
+    game: Game
+    service: string
     identifier: string
-  ): Promise<string> {
+  }) {
     const trimmedService = service.trim()
     const trimmedIdentifier = identifier.trim()
 

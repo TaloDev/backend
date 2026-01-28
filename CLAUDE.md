@@ -129,10 +129,8 @@ export default class GamePolicy extends Policy {
 ```
 
 Base `Policy` class provides:
-- `canAccessGame()` - Verify user/API key can access game
 - `hasScope()` / `hasScopes()` - Check API key scopes (READ_PLAYERS, WRITE_PLAYERS, etc.)
-- `getUser()` / `getAPIKey()` - Get authenticated identity
-- `@UserTypeGate()` decorator - Gate by user role (OWNER, ADMIN, DEV)
+- `getAPIKey()` - Get authenticated identity
 
 API policies check scopes; protected policies check user organization membership.
 

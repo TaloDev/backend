@@ -1,8 +1,8 @@
 import Koa from 'koa'
 import { service } from 'koa-clay'
 import GameChannelAPIService from '../services/api/game-channel-api.service'
-import HealthCheckAPIService from '../services/api/health-check-api.service'
 import GameFeedbackAPIService from '../services/api/game-feedback-api.service'
+import { healthCheckAPIRouter } from '../routes/api/health-check'
 import GameConfigAPIService from '../services/api/game-config-api.service'
 import GameStatAPIService from '../services/api/game-stat-api.service'
 import GameSaveAPIService from '../services/api/game-save-api.service'
@@ -39,7 +39,6 @@ export default function configureAPIRoutes(app: Koa) {
   app.use(service('/v1/socket-tickets', new SocketTicketAPIService()))
   app.use(service('/v1/game-channels', new GameChannelAPIService()))
   app.use(service('/v1/player-groups', new PlayerGroupAPIService()))
-  app.use(service('/v1/health-check', new HealthCheckAPIService()))
   app.use(service('/v1/game-feedback', new GameFeedbackAPIService()))
   app.use(service('/v1/game-config', new GameConfigAPIService()))
   app.use(service('/v1/game-stats', new GameStatAPIService()))
@@ -50,4 +49,6 @@ export default function configureAPIRoutes(app: Koa) {
   app.use(service('/v1/players/presence', new PlayerPresenceAPIService()))
   app.use(service('/v1/players/relationships', new PlayerRelationshipsAPIService()))
   app.use(service('/v1/players', new PlayerAPIService()))
+
+  app.use(healthCheckAPIRouter().routes())
 }

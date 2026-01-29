@@ -6,7 +6,7 @@ type RouteSample = {
 }
 
 type RouteParamConfig = {
-  required: boolean
+  required?: boolean
   description: string
 }
 
@@ -42,6 +42,7 @@ export type ServiceDocs = {
     description?: string
     params?: ServiceDocsParam[]
     samples?: RouteSample[]
+    scopes?: string[]
   }[]
 }
 
@@ -57,7 +58,7 @@ export class DocsRegistry {
         flattenedParams.push({
           type: paramType as ParamType,
           name,
-          required,
+          required: required ?? paramType === 'route',
           description
         })
       }
@@ -78,7 +79,8 @@ export class DocsRegistry {
       path: config.path,
       description: config.docs?.description,
       params: this.flattenParams(config.docs?.params),
-      samples: config.docs?.samples
+      samples: config.docs?.samples,
+      scopes: config.docs?.scopes
     })
   }
 

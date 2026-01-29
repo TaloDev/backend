@@ -284,7 +284,7 @@ Route configurations support:
 - `handler`: Async function receiving typed context
 - `middleware`: Optional middleware array (use `withMiddleware()` wrapper)
 - `validation`: Optional Zod schema for request body validation
-- `docs`: Optional documentation metadata (description, params, samples, scopes, serviceName)
+- `docs`: Optional documentation metadata (description, params, samples, scopes)
 
 #### File Organization
 
@@ -489,32 +489,49 @@ export const createRoute = protectedRoute({
 
 #### Documentation
 
-Add documentation inline with route configuration:
+For API routes, use the `docsKey` option in the router to set a shared service name for all routes, and define a `docs` const at the bottom of the file (after the handler):
 
 ```typescript
-export const createRoute = protectedRoute({
-  method: 'post',
-  path: '/',
-  docs: {
-    serviceName: 'MyService',
-    description: 'Creates a new resource',
-    params: {
-      body: {
-        name: { type: 'string', description: 'Resource name' }
+// src/routes/api/socket-ticket/index.ts
+import { apiRouter } from '../../../lib/routing/router'
+import { RouteDocs } from 'koa-clay'
+
+export function socketTicketAPIRouter() {
+  return apiRouter('/v1/socket-tickets', ({ route }) => {
+    route({
+      method: 'post',
+      docs,
+      handler: async (ctx) => {
+        // ... handler logic
+        return {
+          status: 200,
+          body: { ticket }
+        }
       }
-    },
-    samples: [{
-      title: 'Create resource',
-      method: 'POST',
-      uri: '/resources',
-      body: { name: 'Example' }
-    }]
-  },
-  handler: async (ctx) => { ... }
-})
+    })
+  }, {
+    docsKey: 'SocketTicketsAPIService'
+  })
+}
+
+const docs = {
+  description: 'Create a socket ticket (expires after 5 minutes)',
+  samples: [
+    {
+      title: 'Sample response',
+      sample: {
+        ticket: '6c6ef345-0ac3-4edc-a221-b807fbbac4ac'
+      }
+    }
+  ]
+} satisfies RouteDocs
 ```
 
-The `serviceName` field is used for documentation generation. For routes without docs, it can be omitted.
+**Key points:**
+- `docsKey` in the router options sets the service name for all routes in that router
+- Individual routes can override with `docs.key` if needed
+- Place the `docs` const at the bottom of the file, after the handler
+- Import `RouteDocs` from `koa-clay` for type safety
 
 #### Background Jobs Integration
 
@@ -633,7 +650,7 @@ When converting a koa-clay Service to new router pattern:
 4. ✅ Use `withMiddleware()` wrapper in route configs, not in middleware definitions
 5. ✅ Replace `@Validate` decorators with Zod `schema` config
 6. ✅ Replace `@HasPermission` with inline authorization checks or middleware
-7. ✅ Move documentation from decorators to `docs` config field
+7. ✅ Move documentation from decorators to `docs` config field (use `docsKey` option for API routers)
 8. ✅ Create index.ts that exports router function
 9. ✅ Register router in appropriate config file
 10. ✅ Remove old Service class and Policy class

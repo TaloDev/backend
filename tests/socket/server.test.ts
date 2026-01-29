@@ -1,5 +1,5 @@
 import createAPIKeyAndToken from '../utils/createAPIKeyAndToken'
-import { createSocketTicket } from '../../src/services/api/socket-ticket-api.service'
+import { createSocketTicket } from '../../src/lib/sockets/createSocketTicket'
 import createTestSocket from '../utils/createTestSocket'
 
 describe('Socket server', () => {

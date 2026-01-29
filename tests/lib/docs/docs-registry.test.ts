@@ -27,11 +27,10 @@ describe('DocsRegistry', () => {
 
   it('should add a route to a service', () => {
     registry.addRoute({
-      serviceName: 'PlayerAPI',
+      key: 'PlayerAPI',
       method: 'get',
       path: '/v1/players/identify',
       docs: {
-        serviceName: 'PlayerAPI',
         description: 'Identify a player'
       }
     })
@@ -51,11 +50,10 @@ describe('DocsRegistry', () => {
 
   it('should add parameters to a route', () => {
     registry.addRoute({
-      serviceName: 'PlayerAPI',
+      key: 'PlayerAPI',
       method: 'get',
       path: '/v1/players/identify',
       docs: {
-        serviceName: 'PlayerAPI',
         description: 'Identify a player',
         params: {
           query: {
@@ -88,11 +86,10 @@ describe('DocsRegistry', () => {
 
   it('should add samples to a route', () => {
     registry.addRoute({
-      serviceName: 'PlayerAPI',
+      key: 'PlayerAPI',
       method: 'get',
       path: '/v1/players/identify',
       docs: {
-        serviceName: 'PlayerAPI',
         samples: [
           {
             title: 'Example request',
@@ -116,13 +113,13 @@ describe('DocsRegistry', () => {
 
   it('should handle multiple routes in same service', () => {
     registry.addRoute({
-      serviceName: 'PlayerAPI',
+      key: 'PlayerAPI',
       method: 'get',
       path: '/v1/players/identify'
     })
 
     registry.addRoute({
-      serviceName: 'PlayerAPI',
+      key: 'PlayerAPI',
       method: 'post',
       path: '/v1/players'
     })

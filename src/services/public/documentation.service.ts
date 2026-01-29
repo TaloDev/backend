@@ -1,5 +1,8 @@
-import { Response, Route, Service } from 'koa-clay'
+import { ClayDocs, Response, Route, RouteDocs, Service } from 'koa-clay'
 import * as APIDocs from '../../docs'
+import { APIKeyScope } from '../../entities/api-key'
+
+type RouteDocsWithScopes = RouteDocs & { scopes?: APIKeyScope[] }
 
 // ServiceName -> APIDocs
 const docsMap = Object.fromEntries(
@@ -15,30 +18,36 @@ export default class DocumentationService extends Service {
   })
   async index(): Promise<Response> {
     const clayDocs = clay.docs
-    const enrichedDocs = this.enrichDocsWithScopes(clayDocs as unknown as Record<string, unknown>)
+    const enrichedDocs = this.enrichDocsWithScopes(clayDocs)
+
+    const services = [
+      ...enrichedDocs.services,
+      ...globalThis.talo.docs.toJSON().services
+    ]
 
     return {
       status: 200,
       body: {
-        docs: enrichedDocs
+        docs: {
+          services
+        }
       }
     }
   }
 
-  private enrichDocsWithScopes(clayDocs: Record<string, unknown>): Record<string, unknown> {
-    const docs = JSON.parse(JSON.stringify(clayDocs))
-    const services = (docs as { services?: Record<string, unknown>[] }).services
-    if (!Array.isArray(services)) return docs
+  private enrichDocsWithScopes(clayDocs: ClayDocs) {
+    const docs = JSON.parse(JSON.stringify(clayDocs)) as ClayDocs
+    const services = docs.services
 
     for (const service of services) {
       const apiDocs = docsMap[service.name as keyof typeof docsMap]
-      if (!apiDocs || !Array.isArray(service.routes)) continue
-
-      for (const route of service.routes as Record<string, unknown>[]) {
+      for (const route of service.routes) {
         const match = Object.values(apiDocs).find(
           (doc) => doc?.description === route.description && doc.scopes
         )
-        if (match) route.scopes = match.scopes
+        if (match) {
+          (route as RouteDocsWithScopes).scopes = match.scopes
+        }
       }
     }
 

@@ -6,7 +6,7 @@ import GameActivity, { GameActivityType } from '../../../src/entities/game-activ
 import userPermissionProvider from '../../utils/userPermissionProvider'
 import createUserAndToken from '../../utils/createUserAndToken'
 import createOrganisationAndGame from '../../utils/createOrganisationAndGame'
-import { createSocketTicket } from '../../../src/services/api/socket-ticket-api.service'
+import { createSocketTicket } from '../../../src/lib/sockets/createSocketTicket'
 import createTestSocket from '../../utils/createTestSocket'
 
 describe('API key service - delete', () => {

@@ -18,7 +18,7 @@ type RouteParams = {
 }
 
 export type RouteDocs = {
-  serviceName: string
+  key?: string
   description?: string
   params?: RouteParams
   samples?: RouteSample[]
@@ -66,12 +66,12 @@ export class DocsRegistry {
   }
 
   addRoute(config: {
-    serviceName: string
+    key: string
     method: HttpMethod
     path: string
     docs?: RouteDocs
   }) {
-    const service = this.services.get(config.serviceName) ?? this.addService(config.serviceName, config.path)
+    const service = this.services.get(config.key) ?? this.addService(config.key, config.path)
 
     service.routes.push({
       method: config.method,

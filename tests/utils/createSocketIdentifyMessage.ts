@@ -4,7 +4,7 @@ import createAPIKeyAndToken from './createAPIKeyAndToken'
 import Redis from 'ioredis'
 import redisConfig from '../../src/config/redis.config'
 import Player from '../../src/entities/player'
-import { createSocketTicket } from '../../src/services/api/socket-ticket-api.service'
+import { createSocketTicket } from '../../src/lib/sockets/createSocketTicket'
 
 export type IdentifyMessage = {
   req: 'v1.players.identify'

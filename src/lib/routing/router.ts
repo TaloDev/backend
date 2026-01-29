@@ -72,7 +72,8 @@ type RouteConfig<
 function mountRoute<S extends RouteState, V extends ValidationSchema | undefined = undefined>(
   router: Router,
   basePath: string,
-  config: RouteConfig<S, V>
+  config: RouteConfig<S, V>,
+  docsKey?: string
 ) {
   const fullPath = `${basePath}${config.path ?? ''}`
   const middleware = config.middleware ?? []
@@ -126,28 +127,28 @@ function mountRoute<S extends RouteState, V extends ValidationSchema | undefined
   }
 
   if (config.docs) {
-    globalThis.talo.docs.addRoute({
-      serviceName: config.docs.serviceName,
-      method: config.method,
-      path: fullPath,
-      docs: config.docs
-    })
+    const key = config.docs.key ?? docsKey
+    if (key) {
+      globalThis.talo.docs.addRoute({
+        key,
+        method: config.method,
+        path: fullPath,
+        docs: config.docs
+      })
+    }
   }
 }
 
 function createRouter<S extends RouteState>(
   basePath: string,
-  builder: (helpers: RouteHelpers<S>) => void
+  builder: (helpers: RouteHelpers<S>) => void,
+  docsKey?: string
 ): Router {
   const router = new Router()
 
   const helpers: RouteHelpers<S> = {
     route: <RS extends S = S, V extends ValidationSchema | undefined = undefined>(config: RouteConfig<RS, V>) => {
-      mountRoute(router, basePath, config)
-
-      if (config.docs) {
-        globalThis.talo.docs.addService(config.docs.serviceName, basePath)
-      }
+      mountRoute(router, basePath, config, docsKey)
     }
   }
 
@@ -171,9 +172,12 @@ export function protectedRouter<S extends ProtectedRouteState = ProtectedRouteSt
 
 export function apiRouter<S extends APIRouteState = APIRouteState>(
   basePath: string,
-  builder: (helpers: RouteHelpers<S>) => void
+  builder: (helpers: RouteHelpers<S>) => void,
+  opts: {
+    docsKey?: string
+  } = {}
 ): Router {
-  return createRouter<S>(basePath, builder)
+  return createRouter<S>(basePath, builder, opts.docsKey)
 }
 
 // validated route

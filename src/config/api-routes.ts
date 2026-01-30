@@ -17,7 +17,7 @@ import apiKeyMiddleware from '../middleware/api-key-middleware'
 import playerAuthMiddleware from '../middleware/player-auth-middleware'
 import PlayerAuthAPIService from '../services/api/player-auth-api.service'
 import continunityMiddleware from '../middleware/continunity-middleware'
-import PlayerGroupAPIService from '../services/api/player-group-api.service'
+import { playerGroupAPIRouter } from '../routes/api/player-group'
 import PlayerPresenceAPIService from '../services/api/player-presence-api.service'
 import PlayerRelationshipsAPIService from '../services/api/player-relationships-api.service'
 
@@ -37,7 +37,6 @@ export default function configureAPIRoutes(app: Koa) {
   app.use(continunityMiddleware)
 
   app.use(service('/v1/game-channels', new GameChannelAPIService()))
-  app.use(service('/v1/player-groups', new PlayerGroupAPIService()))
   app.use(service('/v1/game-feedback', new GameFeedbackAPIService()))
   app.use(service('/v1/game-config', new GameConfigAPIService()))
   app.use(service('/v1/game-stats', new GameStatAPIService()))
@@ -50,5 +49,6 @@ export default function configureAPIRoutes(app: Koa) {
   app.use(service('/v1/players', new PlayerAPIService()))
 
   app.use(healthCheckAPIRouter().routes())
+  app.use(playerGroupAPIRouter().routes())
   app.use(socketTicketAPIRouter().routes())
 }

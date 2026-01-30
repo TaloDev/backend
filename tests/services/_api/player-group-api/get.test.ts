@@ -48,7 +48,7 @@ describe('Player group API service - get', () => {
   })
 
   it('should not return a non-existent group', async () => {
-    const [, token] = await createAPIKeyAndToken([])
+    const [, token] = await createAPIKeyAndToken([APIKeyScope.READ_PLAYER_GROUPS])
 
     await request(app)
       .get('/v1/player-groups/abcdef')

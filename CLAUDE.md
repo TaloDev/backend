@@ -283,8 +283,36 @@ Route configurations support:
 - `path`: Route path (relative to router basePath, can be omitted for root routes)
 - `handler`: Async function receiving typed context
 - `middleware`: Optional middleware array (use `withMiddleware()` wrapper)
-- `validation`: Optional Zod schema for request body validation
+- `schema`: Optional Zod schema for request validation (see Validation with Zod section)
 - `docs`: Optional documentation metadata (description, params, samples, scopes)
+
+**IMPORTANT - Type Inference with Validation Schemas:**
+
+When using `schema` for validation inside a router builder, wrap the config with the appropriate route helper (`apiRoute`, `protectedRoute`, `publicRoute`) to ensure proper type inference for `ctx.state.validated`:
+
+```typescript
+// ✅ Correct - wrap with apiRoute() for proper type inference
+route(apiRoute({
+  method: 'get',
+  schema: (z) => ({
+    query: z.object({ page: z.coerce.number() })
+  }),
+  handler: async (ctx) => {
+    const { page } = ctx.state.validated.query  // ✅ TypeScript knows the type
+  }
+}))
+
+// ❌ Wrong - inline config loses type inference for validated state
+route({
+  method: 'get',
+  schema: (z) => ({
+    query: z.object({ page: z.coerce.number() })
+  }),
+  handler: async (ctx) => {
+    const { page } = ctx.state.validated.query  // ❌ Type error
+  }
+})
+```
 
 #### File Organization
 
@@ -389,6 +417,7 @@ requireScopes([APIKeyScope.READ_PLAYERS, APIKeyScope.WRITE_PLAYERS])
 - Middleware functions are plain async functions; `withMiddleware()` converts them to the format expected by the router
 - Use `ownerGate()` instead of `userTypeGate([])` for OWNER-only routes - it's more readable
 - Middleware ordering: user type gates (`userTypeGate()`, `ownerGate()`) come first, then `requireEmailConfirmed`, then other middleware (e.g., `loadGame`)
+- For API routes, `requireScopes()` should always be checked first in the middleware list, before any resource-loading middleware
 
 #### Context Types
 
@@ -489,12 +518,14 @@ export const createRoute = protectedRoute({
 
 #### Documentation
 
-For API routes, use the `docsKey` option in the router to set a shared service name for all routes, and define a `docs` const at the bottom of the file (after the handler):
+For API routes, use the `docsKey` option in the router to set a shared service name for all routes. Import `RouteDocs` from `src/lib/docs/docs-registry` (not `koa-clay`) to get the type with `scopes` support.
+
+**Inline routes (inside router function)** - docs can be at the bottom:
 
 ```typescript
 // src/routes/api/socket-ticket/index.ts
 import { apiRouter } from '../../../lib/routing/router'
-import { RouteDocs } from 'koa-clay'
+import { RouteDocs } from '../../../lib/docs/docs-registry'
 
 export function socketTicketAPIRouter() {
   return apiRouter('/v1/socket-tickets', ({ route }) => {
@@ -516,22 +547,39 @@ export function socketTicketAPIRouter() {
 
 const docs = {
   description: 'Create a socket ticket (expires after 5 minutes)',
-  samples: [
-    {
-      title: 'Sample response',
-      sample: {
-        ticket: '6c6ef345-0ac3-4edc-a221-b807fbbac4ac'
-      }
-    }
-  ]
+  samples: [...]
 } satisfies RouteDocs
+```
+
+**Exported routes (module level)** - docs must be defined BEFORE the route:
+
+```typescript
+// src/routes/api/player-group/get.ts
+import { apiRoute } from '../../../lib/routing/router'
+import { RouteDocs } from '../../../lib/docs/docs-registry'
+
+// docs MUST be defined before the route for module-level exports
+const docs = {
+  description: 'Get a group',
+  scopes: [APIKeyScope.READ_PLAYER_GROUPS],
+  samples: [...]
+} satisfies RouteDocs
+
+export const getRoute = apiRoute({
+  method: 'get',
+  path: '/:id',
+  docs,
+  handler: async (ctx) => { ... }
+})
 ```
 
 **Key points:**
 - `docsKey` in the router options sets the service name for all routes in that router
 - Individual routes can override with `docs.key` if needed
-- Place the `docs` const at the bottom of the file, after the handler
-- Import `RouteDocs` from `koa-clay` for type safety
+- For inline routes (inside function body), docs can be at the bottom of the file
+- For exported routes (module level), docs MUST be defined before the route to avoid "Cannot access before initialization" errors
+- Import `RouteDocs` from `../../../lib/docs/docs-registry` for the type with `scopes` support
+- When routes are split into separate files, you can create a `docs.ts` file in the route folder to keep all documentation together
 
 #### Background Jobs Integration
 

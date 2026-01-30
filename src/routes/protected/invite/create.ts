@@ -13,10 +13,10 @@ export const createRoute = protectedRoute({
   method: 'post',
   schema: (z) => ({
     body: z.object({
-      email: z.string().email(),
-      type: z.nativeEnum(UserType).refine(
+      email: z.email(),
+      type: z.enum(UserType).refine(
         (val) => [UserType.ADMIN, UserType.DEV].includes(val),
-        { message: 'You can only invite an admin or developer user' }
+        { error: 'You can only invite an admin or developer user' }
       )
     })
   }),

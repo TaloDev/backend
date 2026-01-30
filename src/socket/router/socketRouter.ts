@@ -16,7 +16,7 @@ import { getSocketTracer } from '../socketTracer'
 
 const socketMessageValidator = z.object({
   req: z.enum(requests),
-  data: z.object({}).passthrough()
+  data: z.looseObject({})
 })
 
 type SocketMessage = z.infer<typeof socketMessageValidator>

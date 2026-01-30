@@ -3,14 +3,14 @@ import { z } from 'zod'
 
 export const dateRangeSchema = z.object({
   startDate: z.string({
-    required_error: 'startDate is missing from the request query'
+    error: 'startDate is missing from the request query'
   }).refine((val) => isValid(new Date(val)), {
-    message: 'Invalid start date, please use YYYY-MM-DD or a timestamp'
+    error: 'Invalid start date, please use YYYY-MM-DD or a timestamp'
   }),
   endDate: z.string({
-    required_error: 'endDate is missing from the request query'
+    error: 'endDate is missing from the request query'
   }).refine((val) => isValid(new Date(val)), {
-    message: 'Invalid end date, please use YYYY-MM-DD or a timestamp'
+    error: 'Invalid end date, please use YYYY-MM-DD or a timestamp'
   })
 }).refine((data) => {
   const start = new Date(data.startDate)
@@ -20,6 +20,6 @@ export const dateRangeSchema = z.object({
   }
   return isBefore(start, end) || isSameDay(start, end)
 }, {
-  message: 'Invalid start date, it should be before the end date',
+  error: 'Invalid start date, it should be before the end date',
   path: ['startDate']
 })

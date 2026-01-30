@@ -107,7 +107,7 @@ export const updateRoute = protectedRoute({
       props: z.array(z.object({
         key: z.string(),
         value: z.string().nullable()
-      }), { message: 'Props must be an array' }).optional()
+      }), { error: 'Props must be an array' }).optional()
     })
   }),
   middleware: withMiddleware(

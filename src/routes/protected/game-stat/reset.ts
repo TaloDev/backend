@@ -18,7 +18,7 @@ export const resetRoute = protectedRoute({
   schema: (z) => ({
     query: z.object({
       mode: z.enum(resetModes, {
-        message: `Mode must be one of: ${resetModes.join(', ')}`
+        error: `Mode must be one of: ${resetModes.join(', ')}`
       }).optional().default('all')
     })
   }),

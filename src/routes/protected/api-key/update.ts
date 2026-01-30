@@ -13,7 +13,7 @@ export const updateRoute = protectedRoute({
   path: '/:id',
   schema: (z) => ({
     body: z.object({
-      scopes: z.array(z.nativeEnum(APIKeyScope))
+      scopes: z.array(z.enum(APIKeyScope))
     })
   }),
   middleware: withMiddleware(

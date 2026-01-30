@@ -503,7 +503,7 @@ export const createRoute = protectedRoute({
   schema: (z) => ({
     body: z.object({
       type: z.nativeEnum(IntegrationType, {
-        message: `Integration type must be one of ${integrationTypeValues}`
+        error: `Integration type must be one of ${integrationTypeValues}`
       })
     })
   }),

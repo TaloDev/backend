@@ -32,7 +32,7 @@ export const plansRoute = protectedRoute({
     const plans = await em.repo(PricingPlan).find({ hidden: false })
 
     const pricingPlanProducts: PricingPlanProduct[] = []
-    const organisation = ctx.state.authenticatedUser.organisation
+    const organisation = ctx.state.user.organisation
 
     for (const plan of plans) {
       const prices = await stripe.prices.list({

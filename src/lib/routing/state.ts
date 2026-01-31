@@ -5,16 +5,19 @@ import type Game from '../../entities/game'
 export type PublicRouteState = Record<string, never>
 
 export type ProtectedRouteState = {
-  // TODO move to jwt or accessToken
-  user: {
+  jwt: {
     sub: number
     api?: boolean
   }
-  authenticatedUser: User
+  user: User
   includeDevData: boolean
 }
 
 export type APIRouteState = {
+  jwt: {
+    sub: number
+    api: true
+  }
   key: APIKey
   game: Game
   includeDevData: boolean

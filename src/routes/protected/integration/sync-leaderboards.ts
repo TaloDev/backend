@@ -23,7 +23,7 @@ export const syncLeaderboardsRoute = protectedRoute({
     await addLeaderboardSyncJob(integration.id)
 
     createGameActivity(em, {
-      user: ctx.state.authenticatedUser,
+      user: ctx.state.user,
       game: ctx.state.game,
       type: GameActivityType.GAME_INTEGRATION_STEAMWORKS_LEADERBOARDS_SYNCED
     })

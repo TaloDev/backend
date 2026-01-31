@@ -6,7 +6,7 @@ export const organisationPlanRoute = protectedRoute({
   path: '/organisation-plan',
   middleware: withMiddleware(ownerGate('view the organisation pricing plan')),
   handler: async (ctx) => {
-    const organisation = ctx.state.authenticatedUser.organisation
+    const organisation = ctx.state.user.organisation
 
     return {
       status: 200,

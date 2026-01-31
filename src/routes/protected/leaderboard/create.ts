@@ -105,7 +105,7 @@ export const createRoute = protectedRoute({
     return createLeaderboardHandler({
       em: ctx.em,
       game: ctx.state.game,
-      user: ctx.state.authenticatedUser,
+      user: ctx.state.user,
       internalName,
       name,
       sortMode,

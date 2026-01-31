@@ -9,7 +9,7 @@ export const usageRoute = protectedRoute({
   handler: async (ctx) => {
     const em = ctx.em
 
-    const organisation = ctx.state.authenticatedUser.organisation
+    const organisation = ctx.state.user.organisation
     const playerLimit = organisation.pricingPlan.pricingPlan.playerLimit
     const playerCount = await getBillablePlayerCount(em, organisation)
 

@@ -17,7 +17,7 @@ export const togglePinnedRoute = protectedRoute({
     const { pinned } = ctx.state.validated.body
     const em = ctx.em
     const group = ctx.state.group
-    const user = ctx.state.authenticatedUser
+    const user = ctx.state.user
 
     const pinnedGroup = await em.repo(UserPinnedGroup).findOne({ user, group })
     if (pinned && !pinnedGroup) {

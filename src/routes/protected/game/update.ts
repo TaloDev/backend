@@ -25,7 +25,7 @@ async function sendLiveConfigUpdatedMessage(ctx: ProtectedRouteContext, game: Ga
 }
 
 function throwUnlessOwner(ctx: ProtectedRouteContext) {
-  if (ctx.state.authenticatedUser.type !== UserType.OWNER) {
+  if (ctx.state.user.type !== UserType.OWNER) {
     ctx.throw(403, 'You do not have permissions to update game settings')
   }
 }
@@ -64,7 +64,7 @@ export const updateRoute = protectedRoute({
       game.name = name
 
       createGameActivity(em, {
-        user: ctx.state.authenticatedUser,
+        user: ctx.state.user,
         game,
         type: GameActivityType.GAME_NAME_UPDATED,
         extra: {
@@ -99,7 +99,7 @@ export const updateRoute = protectedRoute({
       await sendLiveConfigUpdatedMessage(ctx, game)
 
       createGameActivity(em, {
-        user: ctx.state.authenticatedUser,
+        user: ctx.state.user,
         game,
         type: GameActivityType.GAME_PROPS_UPDATED,
         extra: {
@@ -141,7 +141,7 @@ export const updateRoute = protectedRoute({
 
     if (changedProperties.length > 0) {
       createGameActivity(em, {
-        user: ctx.state.authenticatedUser,
+        user: ctx.state.user,
         game,
         type: GameActivityType.GAME_SETTINGS_UPDATED,
         extra: {

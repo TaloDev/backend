@@ -29,7 +29,7 @@ export const createRoute = protectedRoute({
     em.persist(group)
 
     createGameActivity(em, {
-      user: ctx.state.authenticatedUser,
+      user: ctx.state.user,
       game: ctx.state.game,
       type: GameActivityType.PLAYER_GROUP_CREATED,
       extra: {

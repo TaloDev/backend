@@ -353,7 +353,7 @@ import { Next } from 'koa'
 
 export const confirmPassword = async (ctx: ProtectedRouteContext, next: Next) => {
   const { password } = ctx.request.body as { password: string }
-  const user = ctx.state.authenticatedUser
+  const user = ctx.state.user
 
   const passwordMatches = await bcrypt.compare(password, user.password)
   if (!passwordMatches) {
@@ -364,7 +364,7 @@ export const confirmPassword = async (ctx: ProtectedRouteContext, next: Next) =>
 }
 
 export const requires2fa = async (ctx: ProtectedRouteContext, next: Next) => {
-  const user = ctx.state.authenticatedUser
+  const user = ctx.state.user
 
   if (!user.twoFactorAuth?.enabled) {
     ctx.throw(403, 'Two factor authentication needs to be enabled')
@@ -387,7 +387,7 @@ export const disable2faRoute = protectedRoute({
   path: '/2fa/disable',
   middleware: withMiddleware(confirmPassword, requires2fa),
   handler: async (ctx) => {
-    const user = ctx.state.authenticatedUser
+    const user = ctx.state.user
     // ... handler logic
   }
 })

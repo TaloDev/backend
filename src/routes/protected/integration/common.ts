@@ -29,7 +29,7 @@ export const loadIntegration = async (ctx: IntegrationRouteContext, next: Next) 
     ctx.throw(404, 'Integration not found')
   }
 
-  const userOrganisation = ctx.state.authenticatedUser.organisation
+  const userOrganisation = ctx.state.user.organisation
   if (integration.game.organisation.id !== userOrganisation.id) {
     ctx.throw(403)
   }

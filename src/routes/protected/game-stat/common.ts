@@ -90,7 +90,7 @@ export const loadStat = async (ctx: StatRouteContext, next: Next) => {
     ctx.throw(404, 'Stat not found')
   }
 
-  const userOrganisation = ctx.state.authenticatedUser.organisation
+  const userOrganisation = ctx.state.user.organisation
   if (stat.game.organisation.id !== userOrganisation.id) {
     ctx.throw(403)
   }

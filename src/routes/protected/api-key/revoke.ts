@@ -26,7 +26,7 @@ export const revokeRoute = protectedRoute({
     const token = await createToken(em, apiKey)
 
     createGameActivity(em, {
-      user: ctx.state.authenticatedUser,
+      user: ctx.state.user,
       game: ctx.state.game,
       type: GameActivityType.API_KEY_REVOKED,
       extra: {

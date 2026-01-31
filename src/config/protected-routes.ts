@@ -18,12 +18,13 @@ import { userRouter } from '../routes/protected/user'
 import { gameRouter } from '../routes/protected/game'
 import { inviteRouter } from '../routes/protected/invite'
 import { organisationRouter } from '../routes/protected/organisation'
-import getUserFromToken from '../lib/auth/getUserFromToken'
+import { getUserFromToken } from '../lib/auth/getUserFromToken'
+import { ProtectedRouteContext } from '../lib/routing/context'
 
 export default function protectedRoutes(app: Koa) {
   app.use(protectedRouteAuthMiddleware)
 
-  app.use(async function protectedRouteMiddleware(ctx, next) {
+  app.use(async (ctx, next) => {
     const route = getRouteInfo(ctx)
 
     if (route.isProtectedRoute) {
@@ -32,14 +33,12 @@ export default function protectedRoutes(app: Koa) {
       }
 
       try {
-        ctx.state.authenticatedUser = await getUserFromToken(ctx)
+        ctx.state.user = await getUserFromToken(ctx as ProtectedRouteContext)
       } catch {
         return await next()
       }
 
-      setTraceAttributes({
-        user_id: ctx.state.user.sub
-      })
+      setTraceAttributes({ user_id: ctx.state.jwt.sub })
     }
 
     await next()

@@ -9,7 +9,7 @@ export const listRoute = protectedRoute({
   handler: async (ctx) => {
     const em = ctx.em
     const invites = await em.repo(Invite).find({
-      organisation: ctx.state.authenticatedUser.organisation
+      organisation: ctx.state.user.organisation
     })
 
     return {

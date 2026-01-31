@@ -15,7 +15,7 @@ export const createRecoveryCodesRoute = protectedRoute({
   handler: async (ctx) => {
     const em = ctx.em
 
-    const user = ctx.state.authenticatedUser
+    const user = ctx.state.user
     await user.recoveryCodes.init()
     user.recoveryCodes.set(generateRecoveryCodes(user))
 

@@ -7,7 +7,7 @@ export const meRoute = protectedRoute({
     return {
       status: 200,
       body: {
-        user: ctx.state.authenticatedUser
+        user: ctx.state.user
       }
     }
   }

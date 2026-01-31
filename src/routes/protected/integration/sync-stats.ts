@@ -23,7 +23,7 @@ export const syncStatsRoute = protectedRoute({
     await addStatSyncJob(integration.id)
 
     createGameActivity(em, {
-      user: ctx.state.authenticatedUser,
+      user: ctx.state.user,
       game: ctx.state.game,
       type: GameActivityType.GAME_INTEGRATION_STEAMWORKS_STATS_SYNCED
     })

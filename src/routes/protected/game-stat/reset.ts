@@ -52,7 +52,7 @@ export const resetRoute = protectedRoute({
       await trx.repo(GameStat).nativeUpdate(stat.id, { globalValue: stat.defaultValue })
 
       createGameActivity(trx, {
-        user: ctx.state.authenticatedUser,
+        user: ctx.state.user,
         game: stat.game,
         type: GameActivityType.GAME_STAT_RESET,
         extra: {

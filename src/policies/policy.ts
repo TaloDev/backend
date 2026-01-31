@@ -13,7 +13,7 @@ export default class Policy extends ServicePolicy {
   }
 
   isAPICall(): boolean {
-    return this.ctx.state.user.api === true
+    return !!this.ctx.state.jwt.api
   }
 
   getAPIKey(): APIKey {

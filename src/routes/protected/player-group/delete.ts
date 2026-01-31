@@ -22,7 +22,7 @@ export const deleteRoute = protectedRoute({
     const group = ctx.state.group
 
     createGameActivity(em, {
-      user: ctx.state.authenticatedUser,
+      user: ctx.state.user,
       game: ctx.state.game,
       type: GameActivityType.PLAYER_GROUP_DELETED,
       extra: {

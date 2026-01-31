@@ -12,7 +12,7 @@ export const confirmEmailRoute = protectedRoute({
   handler: async (ctx) => {
     const { code } = ctx.state.validated.body
     const em = ctx.em
-    const user = ctx.state.authenticatedUser
+    const user = ctx.state.user
 
     let accessCode: UserAccessCode
     try {

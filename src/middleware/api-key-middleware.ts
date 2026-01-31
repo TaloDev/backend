@@ -34,12 +34,10 @@ export default async function apiKeyMiddleware(ctx: Context, next: Next): Promis
     ctx.state.secret = apiKey.game.apiSecret.getPlainSecret()
     ctx.state.game = apiKey.game
 
-    setTraceAttributes({
-      game_id: apiKey.game.id
-    })
+    setTraceAttributes({ game_id: apiKey.game.id })
 
-    const now = new Date()
     /* v8 ignore start */
+    const now = new Date()
     if (process.env.NODE_ENV !== 'test') {
       ctx.res.on('finish', async () => {
         await updateLastUsedAt(ctx, apiKey, now)

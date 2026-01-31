@@ -180,7 +180,7 @@ export const updateRoute = protectedRoute({
       channel: ctx.state.channel,
       includeDevData: ctx.state.includeDevData,
       wss: ctx.wss,
-      user: ctx.state.authenticatedUser,
+      user: ctx.state.user,
       name,
       ownerAliasId,
       props,

@@ -43,11 +43,11 @@ export default async function errorMiddleware(ctx: Context, next: Next) {
             return event
           })
 
-          if (ctx.state.user) {
-            const userId = ctx.state.user?.id ?? ctx.state.user?.sub
+          const userId = ctx.state.jwt?.sub
+          if (userId) {
             Sentry.setUser({
               id: userId,
-              apiKey: ctx.state.user?.api ?? false,
+              apiKey: ctx.state.jwt?.api ?? false,
               username: ctx.state.user?.username
             })
           }

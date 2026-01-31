@@ -21,7 +21,7 @@ export const deleteRoute = protectedRoute({
     const leaderboardInternalName = leaderboard.internalName
 
     createGameActivity(em, {
-      user: ctx.state.authenticatedUser,
+      user: ctx.state.user,
       game: leaderboard.game,
       type: GameActivityType.LEADERBOARD_DELETED,
       extra: {

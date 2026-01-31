@@ -31,12 +31,12 @@ export function requireScopes(scopes: APIKeyScope[]): Middleware<APIRouteState> 
 
 export function userTypeGate(types: UserType[], action: string): Middleware<ProtectedRouteState> {
   return async (ctx: ProtectedRouteContext, next: Koa.Next) => {
-    if (ctx.state.user.api) {
+    if (ctx.state.jwt.api) {
       await next()
       return
     }
 
-    const user = ctx.state.authenticatedUser
+    const user = ctx.state.user
 
     if (!user) {
       ctx.status = 401
@@ -57,12 +57,12 @@ export function userTypeGate(types: UserType[], action: string): Middleware<Prot
 
 export function ownerGate(action: string): Middleware<ProtectedRouteState> {
   return async (ctx: ProtectedRouteContext, next: Koa.Next) => {
-    if (ctx.state.user.api) {
+    if (ctx.state.jwt.api) {
       await next()
       return
     }
 
-    const user = ctx.state.authenticatedUser
+    const user = ctx.state.user
 
     if (!user) {
       ctx.status = 401
@@ -83,7 +83,7 @@ export function ownerGate(action: string): Middleware<ProtectedRouteState> {
 
 export function requireEmailConfirmed(action: string): Middleware<ProtectedRouteState> {
   return async (ctx: ProtectedRouteContext, next: Koa.Next) => {
-    const user = ctx.state.authenticatedUser
+    const user = ctx.state.user
 
     if (!user) {
       ctx.status = 401
@@ -91,7 +91,7 @@ export function requireEmailConfirmed(action: string): Middleware<ProtectedRoute
       return
     }
 
-    if (ctx.state.user.api) {
+    if (ctx.state.jwt.api) {
       await next()
       return
     }

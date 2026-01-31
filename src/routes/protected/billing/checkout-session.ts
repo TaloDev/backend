@@ -20,7 +20,7 @@ export const checkoutSessionRoute = protectedRoute({
 
     const price = await getPrice(ctx, pricingPlanId, pricingInterval)
 
-    const organisation = ctx.state.authenticatedUser.organisation
+    const organisation = ctx.state.user.organisation
 
     if (organisation.pricingPlan.stripeCustomerId) {
       const subscriptions = await stripe.subscriptions.list({

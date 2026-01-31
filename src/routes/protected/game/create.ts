@@ -16,7 +16,7 @@ export const createRoute = protectedRoute({
     const { name } = ctx.state.validated.body
     const em = ctx.em
 
-    const game = new Game(name, ctx.state.authenticatedUser.organisation)
+    const game = new Game(name, ctx.state.user.organisation)
     try {
       game.apiSecret = new GameSecret()
     } catch (err) {

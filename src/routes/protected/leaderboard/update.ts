@@ -45,7 +45,7 @@ export const updateRoute = protectedRoute({
     await deferClearResponseCache(leaderboard.getEntriesCacheKey(true))
 
     createGameActivity(em, {
-      user: ctx.state.authenticatedUser,
+      user: ctx.state.user,
       game: leaderboard.game,
       type: GameActivityType.LEADERBOARD_UPDATED,
       extra: {

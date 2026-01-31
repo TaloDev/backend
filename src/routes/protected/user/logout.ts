@@ -9,7 +9,7 @@ export const logoutRoute = protectedRoute({
     const userAgent = ctx.get('user-agent')
 
     const sessions = await em.repo(UserSession).find({
-      user: ctx.state.user.sub,
+      user: ctx.state.jwt.sub,
       userAgent
     })
     await em.remove(sessions).flush()

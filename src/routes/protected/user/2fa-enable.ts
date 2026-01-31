@@ -8,7 +8,7 @@ export const enable2faRoute = protectedRoute({
   path: '/2fa/enable',
   handler: async (ctx) => {
     const em = ctx.em
-    const user = ctx.state.authenticatedUser
+    const user = ctx.state.user
 
     if (user.twoFactorAuth?.enabled) {
       return {

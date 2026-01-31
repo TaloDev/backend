@@ -49,7 +49,7 @@ export const createRoute = protectedRoute({
     )
 
     createGameActivity(em, {
-      user: ctx.state.authenticatedUser,
+      user: ctx.state.user,
       game: ctx.state.game,
       type: GameActivityType.GAME_INTEGRATION_ADDED,
       extra: {

@@ -9,7 +9,7 @@ export const portalSessionRoute = protectedRoute({
   handler: async (ctx) => {
     const stripe = ctx.state.stripe
 
-    const organisation = ctx.state.authenticatedUser.organisation
+    const organisation = ctx.state.user.organisation
     const stripeCustomerId = organisation.pricingPlan.stripeCustomerId
     if (!stripeCustomerId) {
       return ctx.throw(400)

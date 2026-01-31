@@ -25,7 +25,7 @@ export const deleteRoute = protectedRoute({
     await deletePlayersFromDB(em, [player])
 
     createGameActivity(em, {
-      user: ctx.state.authenticatedUser,
+      user: ctx.state.user,
       game,
       type: GameActivityType.PLAYER_DELETED,
       extra: {

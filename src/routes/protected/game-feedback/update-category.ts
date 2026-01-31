@@ -33,7 +33,7 @@ export const updateCategoryRoute = protectedRoute({
     )
 
     createGameActivity(em, {
-      user: ctx.state.authenticatedUser,
+      user: ctx.state.user,
       game: feedbackCategory.game,
       type: GameActivityType.GAME_FEEDBACK_CATEGORY_UPDATED,
       extra: {

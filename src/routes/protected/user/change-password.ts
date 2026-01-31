@@ -16,7 +16,7 @@ export const changePasswordRoute = protectedRoute({
   handler: async (ctx) => {
     const { currentPassword, newPassword } = ctx.state.validated.body
     const em = ctx.em
-    const user = ctx.state.authenticatedUser
+    const user = ctx.state.user
 
     const passwordMatches = await bcrypt.compare(currentPassword, user.password)
     if (!passwordMatches) {

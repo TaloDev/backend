@@ -21,7 +21,7 @@ export function gameActivityRouter() {
                 {
                   game: null,
                   user: {
-                    organisation: ctx.state.authenticatedUser.organisation
+                    organisation: ctx.state.user.organisation
                   }
                 }
               ]

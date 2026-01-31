@@ -23,7 +23,7 @@ export const requireStripe = async (ctx: RequireStripeContext, next: Next) => {
 export async function checkCanDowngrade(em: EntityManager, ctx: ProtectedRouteContext, newPlan: PricingPlan) {
   const planPlayerLimit = newPlan.playerLimit ?? Infinity
 
-  const organisation: Organisation = ctx.state.authenticatedUser.organisation
+  const organisation: Organisation = ctx.state.user.organisation
   const playerCount = await em.repo(Player).count({
     game: { organisation }
   })

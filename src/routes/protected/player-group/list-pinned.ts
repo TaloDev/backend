@@ -9,7 +9,7 @@ export const listPinnedRoute = protectedRoute({
   middleware: withMiddleware(loadGame),
   handler: async (ctx) => {
     const em = ctx.em
-    const user = ctx.state.authenticatedUser
+    const user = ctx.state.user
 
     return withResponseCache({
       key: UserPinnedGroup.getCacheKeyForUser(user),

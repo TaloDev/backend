@@ -131,7 +131,7 @@ export const createRoute = protectedRoute({
       game: ctx.state.game,
       includeDevData: ctx.state.includeDevData,
       wss: ctx.wss,
-      user: ctx.state.authenticatedUser,
+      user: ctx.state.user,
       name,
       ownerAliasId,
       props,

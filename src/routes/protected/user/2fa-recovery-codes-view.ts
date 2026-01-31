@@ -12,7 +12,7 @@ export const viewRecoveryCodesRoute = protectedRoute({
   }),
   middleware: withMiddleware(confirmPassword, requires2fa),
   handler: async (ctx) => {
-    const user = ctx.state.authenticatedUser
+    const user = ctx.state.user
     const recoveryCodes = await user.recoveryCodes.loadItems()
 
     return {

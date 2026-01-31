@@ -22,7 +22,7 @@ export const confirmPlanRoute = protectedRoute({
       ctx.throw(400)
     }
 
-    const organisation = ctx.state.authenticatedUser.organisation
+    const organisation = ctx.state.user.organisation
     const stripeCustomerId = organisation.pricingPlan.stripeCustomerId
     // should already be on a plan before preview/confirming another
     if (!stripeCustomerId) {

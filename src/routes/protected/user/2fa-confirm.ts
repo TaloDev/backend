@@ -15,7 +15,7 @@ export const confirm2faRoute = protectedRoute({
   handler: async (ctx) => {
     const { code } = ctx.state.validated.body
     const em = ctx.em
-    const user = ctx.state.authenticatedUser
+    const user = ctx.state.user
     const twoFactorAuth = user.twoFactorAuth
 
     if (twoFactorAuth?.enabled) {

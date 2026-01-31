@@ -28,7 +28,7 @@ export const createRoute = protectedRoute({
     const { email, type } = ctx.state.validated.body
     const em = ctx.em
 
-    const inviter = ctx.state.authenticatedUser
+    const inviter = ctx.state.user
 
     const duplicateEmailUser = await em.repo(User).findOne({ email: email.toLowerCase() })
     if (duplicateEmailUser) {
@@ -49,7 +49,7 @@ export const createRoute = protectedRoute({
     invite.invitedByUser = inviter
 
     createGameActivity(em, {
-      user: ctx.state.authenticatedUser,
+      user: ctx.state.user,
       type: GameActivityType.INVITE_CREATED,
       extra: {
         inviteEmail: invite.email,

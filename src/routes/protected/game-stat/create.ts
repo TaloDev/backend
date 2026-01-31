@@ -51,7 +51,7 @@ export const createRoute = protectedRoute({
     }
 
     createGameActivity(em, {
-      user: ctx.state.authenticatedUser,
+      user: ctx.state.user,
       game: stat.game,
       type: GameActivityType.GAME_STAT_CREATED,
       extra: {

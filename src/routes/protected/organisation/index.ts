@@ -14,7 +14,7 @@ export function organisationRouter() {
       middleware: withMiddleware(userTypeGate([UserType.ADMIN], 'view organisation info')),
       handler: async (ctx) => {
         const em = ctx.em
-        const organisation = ctx.state.authenticatedUser.organisation
+        const organisation = ctx.state.user.organisation
 
         const games = await em.repo(Game).find({ organisation })
         const playerCountMap = new Map<number, number>()

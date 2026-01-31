@@ -118,7 +118,7 @@ export const updateRoute = protectedRoute({
   handler: (ctx) => {
     const { props } = ctx.state.validated.body
     const em = ctx.em
-    const user = ctx.state.authenticatedUser
+    const user = ctx.state.user
 
     return updatePlayerHandler({
       em,

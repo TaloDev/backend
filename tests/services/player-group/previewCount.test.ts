@@ -150,7 +150,7 @@ describe('Player group service - preview count', () => {
 
     expect(res.body).toStrictEqual({
       errors: {
-        'rules.0.name': ['Invalid enum value. Expected \'EQUALS\' | \'SET\' | \'GT\' | \'GTE\' | \'LT\' | \'LTE\', received \'INVALID_RULE\'']
+        'rules.0.name': ['Invalid option: expected one of "EQUALS"|"SET"|"GT"|"GTE"|"LT"|"LTE"']
       }
     })
   })

@@ -114,7 +114,7 @@ describe('Player group service - post', () => {
 
     expect(res.body).toStrictEqual({
       errors: {
-        ruleMode: ['Invalid enum value. Expected \'$and\' | \'$or\', received \'$not\'']
+        ruleMode: ['Invalid option: expected one of "$and"|"$or"']
       }
     })
   })
@@ -137,7 +137,7 @@ describe('Player group service - post', () => {
 
     expect(res.body).toStrictEqual({
       errors: {
-        rules: ['Expected array, received object']
+        rules: ['Invalid input: expected array, received object']
       }
     })
   })
@@ -168,7 +168,7 @@ describe('Player group service - post', () => {
 
     expect(res.body).toStrictEqual({
       errors: {
-        'rules.0.name': ['Invalid enum value. Expected \'EQUALS\' | \'SET\' | \'GT\' | \'GTE\' | \'LT\' | \'LTE\', received \'DROP\'']
+        'rules.0.name': ['Invalid option: expected one of "EQUALS"|"SET"|"GT"|"GTE"|"LT"|"LTE"']
       }
     })
   })
@@ -199,7 +199,7 @@ describe('Player group service - post', () => {
 
     expect(res.body).toStrictEqual({
       errors: {
-        'rules.0.castType': ['Invalid enum value. Expected \'CHAR\' | \'DOUBLE\' | \'DATETIME\', received \'VARCHAR\'']
+        'rules.0.castType': ['Invalid option: expected one of "CHAR"|"DOUBLE"|"DATETIME"']
       }
     })
   })
@@ -230,7 +230,7 @@ describe('Player group service - post', () => {
 
     expect(res.body).toStrictEqual({
       errors: {
-        'rules.0.negate': ['Expected boolean, received string']
+        'rules.0.negate': ['Invalid input: expected boolean, received string']
       }
     })
   })

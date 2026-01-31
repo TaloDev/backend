@@ -55,15 +55,15 @@ function validateRules(rules: RuleInput[], ctx: RefinementCtx) {
 }
 
 const ruleSchema = (z: Z) => z.object({
-  name: z.nativeEnum(PlayerGroupRuleName),
+  name: z.enum(PlayerGroupRuleName),
   field: z.string(),
   operands: z.array(z.string()),
   negate: z.boolean(),
-  castType: z.nativeEnum(PlayerGroupRuleCastType)
+  castType: z.enum(PlayerGroupRuleCastType)
 })
 
 const rulesAndModeFields = (z: Z) => ({
-  ruleMode: z.nativeEnum(RuleMode),
+  ruleMode: z.enum(RuleMode),
   rules: z.array(ruleSchema(z))
 })
 

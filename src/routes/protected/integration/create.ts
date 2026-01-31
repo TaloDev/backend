@@ -14,8 +14,8 @@ export const createRoute = protectedRoute({
   method: 'post',
   schema: (z) => ({
     body: z.object({
-      type: z.nativeEnum(IntegrationType, {
-        message: `Integration type must be one of ${integrationTypeValues}`
+      type: z.enum(IntegrationType, {
+        error: `Integration type must be one of ${integrationTypeValues}`
       }),
       config: z.object({
         apiKey: z.string().optional(),

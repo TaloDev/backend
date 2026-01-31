@@ -21,7 +21,7 @@ export const createRoute = protectedRoute({
   method: 'post',
   schema: (z) => ({
     body: z.object({
-      entities: z.array(z.nativeEnum(DataExportAvailableEntities)).nonempty()
+      entities: z.array(z.enum(DataExportAvailableEntities)).nonempty()
     })
   }),
   middleware: withMiddleware(

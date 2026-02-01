@@ -1,3 +1,11 @@
+import { extractParamsFromSchema, type ExtractedParam, type ExtractedParams } from './schema-introspector'
+import type { ValidationSchema } from '../../middleware/validator-middleware'
+import z from 'zod'
+import { Middleware } from '../routing/router'
+import { RouteState } from '../routing/state'
+
+type ZodType = typeof z
+
 export type HttpMethod = 'get' | 'post' | 'put' | 'patch' | 'delete'
 
 type RouteSample = {
@@ -5,32 +13,20 @@ type RouteSample = {
   sample: Record<string, unknown>
 }
 
-type RouteParamConfig = {
-  required?: boolean
-  description: string
-}
-
-type RouteParams = {
-  query?: Record<string, RouteParamConfig>
-  body?: Record<string, RouteParamConfig>
-  headers?: Record<string, RouteParamConfig>
-  route?: Record<string, RouteParamConfig>
-}
-
 export type RouteDocs = {
   key?: string
   description?: string
-  params?: RouteParams
   samples?: RouteSample[]
-  scopes?: string[]
 }
 
-type ParamType = keyof RouteParams
+type ParamLocation = 'query' | 'body' | 'headers' | 'route'
+
 type ServiceDocsParam = {
-  type: ParamType
+  location: ParamLocation
   name: string
   required: boolean
   description?: string
+  type?: ExtractedParam['type']
 }
 
 export type ServiceDocs = {
@@ -40,47 +36,70 @@ export type ServiceDocs = {
     method: HttpMethod
     path: string
     description?: string
-    params?: ServiceDocsParam[]
+    params: ServiceDocsParam[]
     samples?: RouteSample[]
     scopes?: string[]
   }[]
 }
 
+function extractScopesFromMiddleware<S extends RouteState>(middleware?: Middleware<S>[]) {
+  for (const mw of (middleware ?? [])) {
+    if (typeof mw === 'function' && 'scopes' in mw && Array.isArray(mw.scopes)) {
+      return mw.scopes as string[]
+    }
+  }
+}
+
 export class DocsRegistry {
   private services: Map<string, ServiceDocs> = new Map()
 
-  private flattenParams(params: RouteParams | undefined) {
-    const flattenedParams: ServiceDocsParam[] = []
-    for (const [paramType, paramObj] of Object.entries(params ?? {})) {
-      for (const [name, value] of Object.entries(paramObj)) {
-        const { required, description } = value
+  private flattenParams(extracted?: ExtractedParams) {
+    const params: ServiceDocsParam[] = []
 
-        flattenedParams.push({
-          type: paramType as ParamType,
+    const locations = ['body', 'query', 'route', 'headers'] as const
+    for (const location of locations) {
+      for (const [name, value] of Object.entries(extracted?.[location] ?? {})) {
+        params.push({
+          location,
           name,
-          required: required ?? paramType === 'route',
-          description
+          required: value.required,
+          description: value.description,
+          type: value.type
         })
       }
     }
-    return flattenedParams
+
+    return params
   }
 
-  addRoute(config: {
+  addRoute<S extends RouteState>({
+    key,
+    method,
+    path,
+    schema,
+    middleware,
+    docs
+  }: {
     key: string
     method: HttpMethod
     path: string
+    schema?: (z: ZodType) => ValidationSchema
+    middleware?: Middleware<S>[]
     docs?: RouteDocs
   }) {
-    const service = this.services.get(config.key) ?? this.addService(config.key, config.path)
+    const service = this.services.get(key) ?? this.addService(key, path)
+
+    const params = schema
+      ? extractParamsFromSchema(schema(z))
+      : undefined
 
     service.routes.push({
-      method: config.method,
-      path: config.path,
-      description: config.docs?.description,
-      params: this.flattenParams(config.docs?.params),
-      samples: config.docs?.samples,
-      scopes: config.docs?.scopes
+      method: method,
+      path: path,
+      description: docs?.description,
+      params: this.flattenParams(params),
+      samples: docs?.samples,
+      scopes: extractScopesFromMiddleware(middleware)
     })
   }
 

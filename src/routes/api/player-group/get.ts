@@ -21,8 +21,11 @@ export const getRoute = apiRoute({
     loadGroup
   ),
   schema: (z) => ({
+    route: z.object({
+      id: z.string().meta({ description: 'The ID of the group' })
+    }),
     query: z.object({
-      membersPage: pageSchema
+      membersPage: pageSchema.meta({ description: 'The current pagination index for group members (starting at 0)' })
     })
   }),
   handler: async (ctx) => {

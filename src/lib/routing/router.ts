@@ -126,16 +126,16 @@ function mountRoute<S extends RouteState, V extends ValidationSchema | undefined
       break
   }
 
-  if (config.docs) {
-    const key = config.docs.key ?? docsKey
-    if (key) {
-      globalThis.talo.docs.addRoute({
-        key,
-        method: config.method,
-        path: fullPath,
-        docs: config.docs
-      })
-    }
+  const key = config.docs?.key ?? docsKey
+  if (key) {
+    globalThis.talo.docs.addRoute({
+      key,
+      method: config.method,
+      path: fullPath,
+      schema: config.schema,
+      middleware,
+      docs: config.docs
+    })
   }
 }
 

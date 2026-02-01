@@ -6,8 +6,12 @@ import { Middleware } from '../lib/routing/router'
 import { APIRouteContext, ProtectedRouteContext } from '../lib/routing/context'
 import { APIRouteState, ProtectedRouteState } from '../lib/routing/state'
 
-export function requireScopes(scopes: APIKeyScope[]): Middleware<APIRouteState> {
-  return async (ctx: APIRouteContext, next: Koa.Next) => {
+export type RequireScopesMiddleware = Middleware<APIRouteState> & {
+  readonly scopes: APIKeyScope[]
+}
+
+export function requireScopes(scopes: APIKeyScope[]): RequireScopesMiddleware {
+  const middleware = async (ctx: APIRouteContext, next: Koa.Next) => {
     const key = ctx.state.key
     if (!key) {
       ctx.status = 401
@@ -27,6 +31,8 @@ export function requireScopes(scopes: APIKeyScope[]): Middleware<APIRouteState> 
 
     await next()
   }
+
+  return Object.assign(middleware, { scopes })
 }
 
 export function userTypeGate(types: UserType[], action: string): Middleware<ProtectedRouteState> {

@@ -41,6 +41,12 @@ type RouteHelpers<S extends RouteState> = {
 
 type ZodBuilder = typeof z
 
+// used to ensure we only pass in the schema properties
+// while keeping type inference
+type Exact<T, Shape> = {
+  [K in keyof T]: K extends keyof Shape ? T[K] : never
+}
+
 export type ValidatedRouteConfig<
   S extends RouteState,
   V extends ValidationSchema = ValidationSchema
@@ -49,7 +55,7 @@ export type ValidatedRouteConfig<
   path?: string
   docs?: RouteDocs
   middleware?: Middleware<S>[]
-  schema: (z: ZodBuilder) => V
+  schema: (z: ZodBuilder) => V & Exact<V, ValidationSchema>
   handler: ValidatedHandler<V, S>
 }
 

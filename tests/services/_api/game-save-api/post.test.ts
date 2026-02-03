@@ -33,7 +33,7 @@ describe('Game save API service - post', () => {
   })
 
   it('should not create a game save for a missing player', async () => {
-    const [, token] = await createAPIKeyAndToken([])
+    const [, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_SAVES])
 
     const res = await request(app)
       .post('/v1/game-saves')
@@ -46,7 +46,7 @@ describe('Game save API service - post', () => {
   })
 
   it('should not create a game save for a player from another game', async () => {
-    const [, token] = await createAPIKeyAndToken([])
+    const [, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_SAVES])
     const [, game] = await createOrganisationAndGame()
     const otherPlayer = await new PlayerFactory([game]).one()
 

@@ -10,7 +10,7 @@ describe('Game save API service - index', () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_GAME_SAVES])
     const players = await new PlayerFactory([apiKey.game]).many(4)
     const saves = await new GameSaveFactory(players).many(5)
-    await em.persistAndFlush(saves)
+    await em.persist(saves).flush()
 
     const res = await request(app)
       .get('/v1/game-saves')
@@ -26,7 +26,7 @@ describe('Game save API service - index', () => {
     const [apiKey, token] = await createAPIKeyAndToken([])
     const players = await new PlayerFactory([apiKey.game]).many(4)
     const saves = await new GameSaveFactory(players).many(5)
-    await em.persistAndFlush(saves)
+    await em.persist(saves).flush()
 
     await request(app)
       .get('/v1/game-saves')
@@ -36,7 +36,7 @@ describe('Game save API service - index', () => {
   })
 
   it('should not return game saves for a missing player', async () => {
-    const [, token] = await createAPIKeyAndToken([])
+    const [, token] = await createAPIKeyAndToken([APIKeyScope.READ_GAME_SAVES])
 
     const res = await request(app)
       .get('/v1/game-saves')
@@ -48,14 +48,14 @@ describe('Game save API service - index', () => {
   })
 
   it('should not return game saves for a player from another game', async () => {
-    const [, token] = await createAPIKeyAndToken([])
+    const [, token] = await createAPIKeyAndToken([APIKeyScope.READ_GAME_SAVES])
     const [, game] = await createOrganisationAndGame()
     const otherPlayer = await new PlayerFactory([game]).one()
 
-    await em.persistAndFlush(otherPlayer)
+    await em.persist(otherPlayer).flush()
 
     const res = await request(app)
-      .post('/v1/game-saves')
+      .get('/v1/game-saves')
       .send({ name: 'save', content: {} })
       .auth(token, { type: 'bearer' })
       .set('x-talo-player', otherPlayer.id)

@@ -1,6 +1,5 @@
 import { Collection, Entity, ManyToOne, OneToMany, PrimaryKey, Property } from '@mikro-orm/mysql'
 import GameFeedbackCategory from './game-feedback-category'
-import { Required } from 'koa-clay'
 import PlayerAlias from './player-alias'
 import GameFeedbackProp from './game-feedback-prop'
 
@@ -15,22 +14,12 @@ export default class GameFeedback {
   @ManyToOne(() => PlayerAlias, { nullable: false, deleteRule: 'cascade' })
   playerAlias: PlayerAlias
 
-  @Required()
   @Property({ type: 'text' })
   comment!: string
 
   @Property()
   anonymised!: boolean
 
-  @Required({
-    methods: [],
-    validation: async (val: unknown) => [
-      {
-        check: Array.isArray(val),
-        error: 'Props must be an array'
-      }
-    ]
-  })
   @OneToMany(() => GameFeedbackProp, (prop) => prop.gameFeedback, { eager: true, orphanRemoval: true })
   props: Collection<GameFeedbackProp> = new Collection<GameFeedbackProp>(this)
 

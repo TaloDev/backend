@@ -10,6 +10,7 @@ import User, { UserType } from '../../../entities/user'
 import { loadPlayer } from './common'
 import { loadGame } from '../../../middleware/game-middleware'
 import buildErrorResponse from '../../../lib/errors/buildErrorResponse'
+import { updatePropsSchema } from '../../../lib/validation/propsSchema'
 
 type UpdatePlayerParams = {
   em: EntityManager
@@ -104,10 +105,7 @@ export const updateRoute = protectedRoute({
   path: '/:id',
   schema: (z) => ({
     body: z.object({
-      props: z.array(z.object({
-        key: z.string(),
-        value: z.string().nullable()
-      }), { error: 'Props must be an array' }).optional()
+      props: updatePropsSchema.optional()
     })
   }),
   middleware: withMiddleware(

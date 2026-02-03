@@ -5,6 +5,6 @@ export function playerGroupAPIRouter() {
   return apiRouter('/v1/player-groups', ({ route }) => {
     route(getRoute)
   }, {
-    docsKey: 'PlayerGroupAPIService'
+    docsKey: 'PlayerGroupAPI'
   })
 }

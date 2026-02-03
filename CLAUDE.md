@@ -419,6 +419,35 @@ requireScopes([APIKeyScope.READ_PLAYERS, APIKeyScope.WRITE_PLAYERS])
 - Middleware ordering: user type gates (`userTypeGate()`, `ownerGate()`) come first, then `requireEmailConfirmed`, then other middleware (e.g., `loadGame`)
 - For API routes, `requireScopes()` should always be checked first in the middleware list, before any resource-loading middleware
 
+**Reusable Middleware:**
+
+Common middleware that loads entities (like `loadGame`, `loadAlias`) should be defined in `src/middleware/` and export a route state type. When using these in route-specific middleware, define a context type that extends the base context with the combined state:
+
+```typescript
+// src/middleware/player-alias-middleware.ts
+export type PlayerAliasRouteState = {
+  alias: PlayerAlias
+  currentAliasId?: number
+}
+
+export const loadAlias = async (ctx: APIRouteContext<PlayerAliasRouteState>, next: Next) => {
+  // ... load alias into ctx.state.alias
+}
+
+// src/routes/api/game-feedback/common.ts
+import { PlayerAliasRouteState } from '../../../middleware/player-alias-middleware'
+
+type GameFeedbackCategoryRouteContext = APIRouteContext<
+  PlayerAliasRouteState & { category: GameFeedbackCategory, continuityDate?: Date }
+>
+
+export const loadCategory = async (ctx: GameFeedbackCategoryRouteContext, next: Next) => {
+  // ctx.state has access to both alias (from PlayerAliasRouteState) and category
+}
+```
+
+This pattern ensures type safety when composing multiple middleware that each add properties to `ctx.state`.
+
 #### Context Types
 
 Use typed context for better type safety:
@@ -580,6 +609,7 @@ export const getRoute = apiRoute({
 - For exported routes (module level), docs MUST be defined before the route to avoid "Cannot access before initialization" errors
 - Import `RouteDocs` from `../../../lib/docs/docs-registry` for the type with `scopes` support
 - When routes are split into separate files, you can create a `docs.ts` file in the route folder to keep all documentation together
+- The docs key should be migrated from `XAPIService` to `XAPI`
 
 #### Background Jobs Integration
 
@@ -696,7 +726,7 @@ When converting a koa-clay Service to new router pattern:
 2. ✅ Create one file per route (or inline simple routes in index.ts)
 3. ✅ Extract shared middleware to `common.ts` as plain async functions
 4. ✅ Use `withMiddleware()` wrapper in route configs, not in middleware definitions
-5. ✅ Replace `@Validate` decorators with Zod `schema` config
+5. ✅ Replace `@Validate` decorators with Zod `schema` config (see below for details)
 6. ✅ Replace `@HasPermission` with inline authorization checks or middleware
 7. ✅ Move documentation from decorators to `docs` config field (use `docsKey` option for API routers)
 8. ✅ Create index.ts that exports router function
@@ -704,6 +734,30 @@ When converting a koa-clay Service to new router pattern:
 10. ✅ Remove old Service class and Policy class
 11. ✅ Remove `@Required` decorators from entities if no longer used by other koa-clay services
 12. ✅ Update tests to match new route paths and error message formats
+
+**IMPORTANT - Don't miss validation when migrating:**
+
+Always check the old service's `@Validate` decorator for ALL validated fields including headers. Common patterns to migrate:
+
+```typescript
+// Old koa-clay pattern
+@Validate({
+  headers: ['x-talo-alias'],  // Required header
+  body: [GameFeedback]        // Entity validation
+})
+
+// New router pattern - migrate ALL validation to schema
+schema: (z) => ({
+  headers: z.looseObject({
+    'x-talo-alias': playerAliasHeaderSchema  // Numeric string validation
+  }),
+  body: z.object({
+    comment: z.string()
+  })
+})
+```
+
+Note: Use `z.looseObject()` for headers since Koa includes many default headers. Use `z.string().regex(/^\d+$/)` for numeric ID headers like `x-talo-alias` and `x-talo-player`.
 
 #### Type Safety Limitations
 

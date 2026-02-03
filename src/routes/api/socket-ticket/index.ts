@@ -20,7 +20,7 @@ export function socketTicketAPIRouter() {
       }
     })
   }, {
-    docsKey: 'SocketTicketAPIService'
+    docsKey: 'SocketTicketAPI'
   })
 }
 

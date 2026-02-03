@@ -12,6 +12,7 @@ import { hardSanitiseProps } from '../../../lib/props/sanitiseProps'
 import { PropSizeError } from '../../../lib/errors/propSizeError'
 import buildErrorResponse from '../../../lib/errors/buildErrorResponse'
 import Socket from '../../../socket'
+import { createPropsSchema } from '../../../lib/validation/propsSchema'
 
 type CreateChannelParams = {
   em: EntityManager
@@ -113,10 +114,7 @@ export const createRoute = protectedRoute({
     body: z.object({
       name: z.string(),
       ownerAliasId: z.number().nullish(),
-      props: z.array(z.object({
-        key: z.string(),
-        value: z.string()
-      })).optional(),
+      props: createPropsSchema.optional(),
       autoCleanup: z.boolean().optional(),
       private: z.boolean().optional(),
       temporaryMembership: z.boolean().optional()

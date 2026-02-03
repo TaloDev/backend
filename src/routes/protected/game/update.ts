@@ -10,9 +10,9 @@ import buildErrorResponse from '../../../lib/errors/buildErrorResponse'
 import updateAllowedKeys from '../../../lib/entities/updateAllowedKeys'
 import { sendMessages } from '../../../socket/messages/socketMessage'
 import { APIKeyScope } from '../../../entities/api-key'
-import Prop from '../../../entities/prop'
 import { ProtectedRouteContext } from '../../../lib/routing/context'
 import { loadGame } from '../../../middleware/game-middleware'
+import { updatePropsSchema } from '../../../lib/validation/propsSchema'
 
 async function sendLiveConfigUpdatedMessage(ctx: ProtectedRouteContext, game: Game) {
   const socket = ctx.wss
@@ -36,7 +36,7 @@ export const updateRoute = protectedRoute({
   schema: (z) => ({
     body: z.object({
       name: z.string().trim().min(1, 'Name must be a non-empty string').optional(),
-      props: z.array(z.custom<Prop>()).optional(),
+      props: updatePropsSchema.optional(),
       purgeDevPlayers: z.boolean().optional(),
       purgeLivePlayers: z.boolean().optional(),
       purgeDevPlayersRetention: z.number().optional(),

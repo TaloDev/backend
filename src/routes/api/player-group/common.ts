@@ -12,7 +12,7 @@ export const loadGroup = async (ctx: APIRouteContext<PlayerGroupRouteState>, nex
 
   const group = await ctx.em.getRepository(PlayerGroup).findOne({
     id,
-    game: ctx.state.key.game
+    game: ctx.state.game
   })
 
   if (!group) {

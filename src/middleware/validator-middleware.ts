@@ -6,14 +6,14 @@ import { RouteState } from '../lib/routing/state'
 export type ValidationSchema = {
   body?: ZodType
   query?: ZodType
-  params?: ZodType
+  route?: ZodType
   headers?: ZodType
 }
 
 export type InferValidation<V extends ValidationSchema> = {
   body: V['body'] extends ZodType ? z.infer<V['body']> : unknown
   query: V['query'] extends ZodType ? z.infer<V['query']> : unknown
-  params: V['params'] extends ZodType ? z.infer<V['params']> : unknown
+  route: V['route'] extends ZodType ? z.infer<V['route']> : unknown
   headers: V['headers'] extends ZodType ? z.infer<V['headers']> : unknown
 }
 
@@ -28,11 +28,11 @@ export function validate<V extends ValidationSchema, S extends RouteState>(
   schemaObject: V
 ): (ctx: AppParameterizedContext<S>, next: Koa.Next) => Promise<void> {
   return async (ctx, next) => {
-    const targets = ['body', 'query', 'params', 'headers'] as const
+    const targets = ['body', 'query', 'route', 'headers'] as const
     const validated: Record<typeof targets[number], unknown> = {
       body: {},
       query: {},
-      params: {},
+      route: {},
       headers: {}
     }
 
@@ -45,7 +45,7 @@ export function validate<V extends ValidationSchema, S extends RouteState>(
         data = ctx.request.body
       } else if (target === 'query') {
         data = ctx.query
-      } else if (target === 'params') {
+      } else if (target === 'route') {
         data = ctx.params
       } else {
         data = ctx.headers

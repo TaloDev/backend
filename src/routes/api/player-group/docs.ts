@@ -1,21 +1,7 @@
 import { RouteDocs } from '../../../lib/docs/docs-registry'
-import { APIKeyScope } from '../../../entities/api-key'
 
 export const getDocs = {
   description: 'Get a group and its members',
-  scopes: [APIKeyScope.READ_PLAYER_GROUPS],
-  params: {
-    route: {
-      id: {
-        description: 'The ID of the group'
-      }
-    },
-    query: {
-      membersPage: {
-        description: 'The current pagination index for group members (starting at 0)'
-      }
-    }
-  },
   samples: [
     {
       title: 'Sample response (members visible)',

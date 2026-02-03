@@ -502,7 +502,7 @@ const integrationTypeValues = Object.values(IntegrationType).join(', ')
 export const createRoute = protectedRoute({
   schema: (z) => ({
     body: z.object({
-      type: z.nativeEnum(IntegrationType, {
+      type: z.enum(IntegrationType, {
         error: `Integration type must be one of ${integrationTypeValues}`
       })
     })

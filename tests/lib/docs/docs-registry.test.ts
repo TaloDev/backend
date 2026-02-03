@@ -53,20 +53,14 @@ describe('DocsRegistry', () => {
       key: 'PlayerAPI',
       method: 'get',
       path: '/v1/players/identify',
+      schema: (z) => ({
+        query: z.object({
+          service: z.string().meta({ description: 'Service name' }),
+          identifier: z.string().meta({ description: 'Player identifier' })
+        })
+      }),
       docs: {
-        description: 'Identify a player',
-        params: {
-          query: {
-            service: {
-              required: true,
-              description: 'Service name'
-            },
-            identifier: {
-              required: true,
-              description: 'Player identifier'
-            }
-          }
-        }
+        description: 'Identify a player'
       }
     })
 
@@ -79,7 +73,7 @@ describe('DocsRegistry', () => {
     expect(route.params).toHaveLength(2)
     assert(route.params?.[0])
 
-    expect(route.params[0].type).toBe('query')
+    expect(route.params[0].location).toBe('query')
     expect(route.params[0].name).toBe('service')
     expect(route.params[0].description).toBe('Service name')
   })

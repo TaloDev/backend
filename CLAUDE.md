@@ -607,9 +607,46 @@ export const getRoute = apiRoute({
 - Individual routes can override with `docs.key` if needed
 - For inline routes (inside function body), docs can be at the bottom of the file
 - For exported routes (module level), docs MUST be defined before the route to avoid "Cannot access before initialization" errors
-- Import `RouteDocs` from `../../../lib/docs/docs-registry` for the type with `scopes` support
+- Import `RouteDocs` from `../../../lib/docs/docs-registry` for the type
 - When routes are split into separate files, you can create a `docs.ts` file in the route folder to keep all documentation together
 - The docs key should be migrated from `XAPIService` to `XAPI`
+- **Scopes are automatically extracted** from `requireScopes()` middleware - do NOT add them manually to docs
+
+**Documenting Schema Parameters:**
+
+When migrating docs, use `.meta({ description: '...' })` on schema fields to document parameters. This replaces the old `params` object in the docs:
+
+```typescript
+// Old pattern (docs object with params)
+const docs = {
+  description: 'Get a group',
+  params: {
+    route: { id: 'The ID of the group' },
+    query: { membersPage: 'The current pagination index' }
+  }
+}
+
+// New pattern (descriptions in schema via .meta())
+schema: (z) => ({
+  route: z.object({
+    id: z.string().meta({ description: 'The ID of the group' })
+  }),
+  query: z.object({
+    membersPage: pageSchema.meta({ description: 'The current pagination index for group members (starting at 0)' })
+  })
+})
+```
+
+For header schemas that are reused across routes, add `.meta()` in the schema definition file:
+
+```typescript
+// src/lib/validation/playerHeaderSchema.ts
+export const playerHeaderSchema = z.uuid({
+  error: 'x-talo-player header must be a valid player ID'
+}).meta({
+  description: 'The ID of the player'
+})
+```
 
 #### Background Jobs Integration
 

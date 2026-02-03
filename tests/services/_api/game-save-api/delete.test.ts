@@ -68,6 +68,6 @@ describe('Game save API service - delete', () => {
       .set('x-talo-player', otherPlayer.id)
       .expect(404)
 
-    expect(res.body).toStrictEqual({ message: 'Save not found' })
+    expect(res.body).toStrictEqual({ message: 'Player not found' })
   })
 })

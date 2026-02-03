@@ -1,6 +1,5 @@
 export * from './player-api.docs'
 export * from './event-api.docs'
-export * from './game-save-api.docs'
 export * from './player-auth-api.docs'
 export * from './player-presence-api.docs'
 export * from './game-channel-api.docs'

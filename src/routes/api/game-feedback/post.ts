@@ -21,8 +21,8 @@ export const postRoute = apiRoute({
       'x-talo-alias': playerAliasHeaderSchema
     }),
     body: z.object({
-      comment: z.string().min(1).max(5000),
-      props: createPropsSchema.optional()
+      comment: z.string().min(1).max(5000).meta({ description: 'The comment made by the player' }),
+      props: createPropsSchema.optional().meta({ description: 'An array of @type(Props:prop)' })
     })
   }),
   middleware: withMiddleware(

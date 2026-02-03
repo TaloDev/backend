@@ -11,7 +11,7 @@ export const loadAlias = async (ctx: APIRouteContext<PlayerAliasRouteState>, nex
   const playerAlias = await ctx.em.repo(PlayerAlias).findOne({
     id: Number(ctx.state.currentAliasId),
     player: {
-      game: ctx.state.key.game
+      game: ctx.state.game
     }
   })
 

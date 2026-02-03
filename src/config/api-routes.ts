@@ -18,7 +18,7 @@ import playerAuthMiddleware from '../middleware/player-auth-middleware'
 import PlayerAuthAPIService from '../services/api/player-auth-api.service'
 import continunityMiddleware from '../middleware/continunity-middleware'
 import { playerGroupAPIRouter } from '../routes/api/player-group'
-import PlayerPresenceAPIService from '../services/api/player-presence-api.service'
+import { playerPresenceAPIRouter } from '../routes/api/player-presence'
 import PlayerRelationshipsAPIService from '../services/api/player-relationships-api.service'
 
 export default function configureAPIRoutes(app: Koa) {
@@ -41,7 +41,6 @@ export default function configureAPIRoutes(app: Koa) {
   app.use(service('/v1/leaderboards', new LeaderboardAPIService()))
   app.use(service('/v1/events', new EventAPIService()))
   app.use(service('/v1/players/auth', new PlayerAuthAPIService()))
-  app.use(service('/v1/players/presence', new PlayerPresenceAPIService()))
   app.use(service('/v1/players/relationships', new PlayerRelationshipsAPIService()))
   app.use(service('/v1/players', new PlayerAPIService()))
 
@@ -50,5 +49,6 @@ export default function configureAPIRoutes(app: Koa) {
   app.use(gameSaveAPIRouter().routes())
   app.use(healthCheckAPIRouter().routes())
   app.use(playerGroupAPIRouter().routes())
+  app.use(playerPresenceAPIRouter().routes())
   app.use(socketTicketAPIRouter().routes())
 }

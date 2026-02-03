@@ -1,58 +1,52 @@
-import { EntityManager } from '@mikro-orm/mysql'
-import { HasPermission, Request, Response, Validate, ValidationCondition, Route } from 'koa-clay'
-import EventAPIPolicy from '../../policies/api/event-api.policy'
-import APIService from './api-service'
-import { EventAPIDocs } from '../../docs/event-api.docs'
-import Event from '../../entities/event'
-import Prop from '../../entities/prop'
-import { PropSizeError } from '../../lib/errors/propSizeError'
+import { apiRoute, withMiddleware } from '../../../lib/routing/router'
+import { requireScopes } from '../../../middleware/policy-middleware'
+import { APIKeyScope } from '../../../entities/api-key'
+import { loadAlias } from '../../../middleware/player-alias-middleware'
+import { playerAliasHeaderSchema } from '../../../lib/validation/playerAliasHeaderSchema'
+import Event from '../../../entities/event'
+import Prop from '../../../entities/prop'
+import { PropSizeError } from '../../../lib/errors/propSizeError'
 import { isValid } from 'date-fns'
 import { createHash } from 'crypto'
-import Redis from 'ioredis'
-import { FlushEventsQueueHandler } from '../../lib/queues/game-metrics/flush-events-queue-handler'
-import PlayerAlias from '../../entities/player-alias'
+import { FlushEventsQueueHandler } from '../../../lib/queues/game-metrics/flush-events-queue-handler'
+import { postDocs } from './docs'
 
 let queueHandler: FlushEventsQueueHandler
 
-export default class EventAPIService extends APIService {
-  constructor() {
-    super()
-    if (!queueHandler) {
-      queueHandler = new FlushEventsQueueHandler()
-    }
+function getQueueHandler() {
+  if (!queueHandler) {
+    queueHandler = new FlushEventsQueueHandler()
   }
+  return queueHandler
+}
 
-  @Route({
-    method: 'POST',
-    docs: EventAPIDocs.post
-  })
-  @Validate({
-    headers: ['x-talo-alias'],
-    body: {
-      events: {
-        required: true,
-        validation: async (val: unknown): Promise<ValidationCondition[]> => [
-          {
-            check: Array.isArray(val),
-            error: 'Events must be an array'
-          }
-        ]
-      }
-    }
-  })
-  @HasPermission(EventAPIPolicy, 'post')
-  async post(req: Request): Promise<Response> {
-    const { events: items } = req.body
-    const em: EntityManager = req.ctx.em
-    const redis: Redis = req.ctx.redis
+export const postRoute = apiRoute({
+  method: 'post',
+  docs: postDocs,
+  schema: (z) => ({
+    headers: z.looseObject({
+      'x-talo-alias': playerAliasHeaderSchema
+    }),
+    body: z.object({
+      events: z.array(z.unknown()).meta({ description: 'An array of @type(EventData:eventdata)' })
+    })
+  }),
+  middleware: withMiddleware(
+    requireScopes([APIKeyScope.WRITE_EVENTS]),
+    loadAlias
+  ),
+  handler: async (ctx) => {
+    const { events: items } = ctx.state.validated.body
+    const em = ctx.em
+    const redis = ctx.redis
 
     const eventsMap: Map<number, Event> = new Map()
     const errors: string[][] = Array.from({ length: items.length }, () => [])
 
-    const playerAlias: PlayerAlias = req.ctx.state.alias
+    const playerAlias = ctx.state.alias
 
     for (let i = 0; i < items.length; i++) {
-      const item = items[i]
+      const item = items[i] as Record<string, unknown>
 
       for (const key of ['name', 'timestamp']) {
         if (!item[key]) {
@@ -62,9 +56,9 @@ export default class EventAPIService extends APIService {
 
       if (errors[i].length === 0) {
         const event = new Event()
-        event.construct(item.name, playerAlias.player.game)
+        event.construct(item.name as string, playerAlias.player.game)
         event.playerAlias = playerAlias
-        event.createdAt = new Date(item.timestamp)
+        event.createdAt = new Date(item.timestamp as number)
 
         if (Array.isArray(item.props)) {
           try {
@@ -122,7 +116,7 @@ export default class EventAPIService extends APIService {
     } else {
       let resultIndex = 0
       for (const index of Array.from(eventsMap.keys())) {
-        const item = items[index]
+        const item = items[index] as Record<string, unknown>
         // each event has 2 operations (setnx + expire), so we check the setnx result
         const [err, result] = results[resultIndex * 2]
 
@@ -139,7 +133,7 @@ export default class EventAPIService extends APIService {
       }
     }
     const eventsArray = Array.from(eventsMap.values())
-    await Promise.all(eventsArray.map((event) => queueHandler.add(event)))
+    await Promise.all(eventsArray.map((event) => getQueueHandler().add(event)))
 
     // flush player meta props set by event.setProps()
     await em.flush()
@@ -152,4 +146,4 @@ export default class EventAPIService extends APIService {
       }
     }
   }
-}
+})

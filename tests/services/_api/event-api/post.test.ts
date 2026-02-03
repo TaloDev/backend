@@ -143,7 +143,7 @@ describe('Event API service - post', () => {
 
     expect(res.body).toStrictEqual({
       errors: {
-        events: ['events is missing from the request body']
+        events: ['Invalid input: expected array, received undefined']
       }
     })
   })

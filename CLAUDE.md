@@ -170,6 +170,30 @@ Key patterns:
 
 All handlers receive `ctx.em` (EntityManager) for queries. Migrations run automatically on startup (except in test mode).
 
+### MikroORM Identity Map & Request Context
+
+Each HTTP request has its own isolated EntityManager with an **Identity Map** - an in-memory cache that maintains a single instance of each entity throughout the request lifecycle.
+
+**Key behaviors:**
+- When you query the same entity multiple times within a request, you get the identical object reference
+- Entities already loaded in the Identity Map are automatically populated into newly fetched entities
+- If entity A is loaded with its relations, and later entity B references A, the already-loaded A (with its relations) is used
+
+**Practical implication:** You don't need to explicitly load relations if they're already in memory from a previous query in the same request. For example:
+
+```typescript
+// In API middleware, ctx.state.game is loaded
+// Later in loadAlias middleware:
+const alias = await ctx.em.repo(PlayerAlias).findOne({
+  id: aliasId,
+  player: { game: ctx.state.game }  // game already in Identity Map
+})
+// alias.player.game is automatically populated from the Identity Map
+// No need to explicitly load it via `fields: ['player.game.id']`
+```
+
+The request context is set up via middleware using Node's `AsyncLocalStorage`, ensuring parallel requests don't interfere with each other.
+
 ### Background Jobs & Scheduling
 
 BullMQ for async jobs, configured in `src/config/global-queues.ts`. Scheduled tasks defined in `src/config/scheduled-tasks.ts`:
@@ -796,21 +820,24 @@ schema: (z) => ({
 
 Note: Use `z.looseObject()` for headers since Koa includes many default headers. Use `z.string().regex(/^\d+$/)` for numeric ID headers like `x-talo-alias` and `x-talo-player`.
 
-#### Type Safety Limitations
+#### Type Inference
 
-TypeScript cannot partially infer type parameters. This means:
+You do not need to provide generics to `apiRoute`, `protectedRoute`, `publicRoute`, or similar helpers - types are inferred automatically from the schema and middleware.
 
-**Does NOT work:**
 ```typescript
-type CustomState = ProtectedRouteState & { customProp: string }
-export const route = protectedRoute<CustomState>({ ... })  // ❌ Won't infer validation type
+// ✅ Correct - let TypeScript infer types
+export const postRoute = apiRoute({
+  method: 'post',
+  schema: (z) => ({ ... }),
+  middleware: withMiddleware(requireScopes([...]), loadAlias),
+  handler: async (ctx) => { ... }
+})
+
+// ❌ Wrong - don't provide explicit generics
+export const postRoute = apiRoute<SomeCustomState>({ ... })
 ```
 
-**Workarounds:**
-- Let TypeScript fully infer types (recommended for most cases)
-- Specify both type parameters if needed (rare)
-- Use type assertions only when necessary
-- Extend state in middleware and access directly in handlers
+TypeScript cannot partially infer type parameters, so providing a custom state generic will break validation type inference. Instead, let middleware extend the state and access properties directly in handlers.
 
 ### Adding a New API Endpoint
 

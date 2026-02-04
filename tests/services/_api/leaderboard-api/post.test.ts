@@ -336,6 +336,38 @@ describe('Leaderboard API service - post', () => {
     ])
   })
 
+  it('should delete props when only null values are sent', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_LEADERBOARDS])
+    const player = await new PlayerFactory([apiKey.game]).one()
+    const leaderboard = await new LeaderboardFactory([apiKey.game]).state(() => ({ unique: true, sortMode: LeaderboardSortMode.DESC })).one()
+
+    const entry = await new LeaderboardEntryFactory(leaderboard, [player]).state((entry) => ({
+      score: 100,
+      playerAlias: player.aliases[0],
+      props: new Collection<LeaderboardEntryProp>(entry, [
+        new LeaderboardEntryProp(entry, 'delete-me', 'delete-me')
+      ])
+    })).one()
+
+    await em.persistAndFlush([player, leaderboard, entry])
+
+    const res = await request(app)
+      .post(`/v1/leaderboards/${leaderboard.internalName}/entries`)
+      .send({
+        score: 300,
+        props: [
+          { key: 'delete-me', value: null }
+        ]
+      })
+      .auth(token, { type: 'bearer' })
+      .set('x-talo-alias', String(player.aliases[0].id))
+      .expect(200)
+
+    expect(res.body.entry.score).toBe(300)
+    expect(res.body.updated).toBe(true)
+    expect(res.body.entry.props).toStrictEqual([])
+  })
+
   it('should return a 400 if props are not an array', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_LEADERBOARDS])
     const player = await new PlayerFactory([apiKey.game]).one()

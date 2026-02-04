@@ -4,7 +4,7 @@ import GameActivity, { GameActivityType } from '../../../src/entities/game-activ
 import createUserAndToken from '../../utils/createUserAndToken'
 import userPermissionProvider from '../../utils/userPermissionProvider'
 import createOrganisationAndGame from '../../utils/createOrganisationAndGame'
-import APIKey from '../../../src/entities/api-key'
+import APIKey, { APIKeyScope } from '../../../src/entities/api-key'
 
 describe('API key service - put', () => {
   it.each(userPermissionProvider([
@@ -14,7 +14,7 @@ describe('API key service - put', () => {
     const [token, user] = await createUserAndToken({ type, emailConfirmed: true }, organisation)
 
     const key = new APIKey(game, user)
-    await em.persistAndFlush(key)
+    await em.persist(key).flush()
 
     const res = await request(app)
       .put(`/games/${game.id}/api-keys/${key.id}`)
@@ -50,7 +50,7 @@ describe('API key service - put', () => {
     const [token, user] = await createUserAndToken({ type: UserType.ADMIN }, organisation)
 
     const key = new APIKey(game, user)
-    await em.persistAndFlush(key)
+    await em.persist(key).flush()
 
     const res = await request(app)
       .put(`/games/${game.id}/api-keys/${key.id}`)
@@ -66,7 +66,7 @@ describe('API key service - put', () => {
     const [token, user] = await createUserAndToken({ emailConfirmed: true, type: UserType.ADMIN })
 
     const key = new APIKey(game, user)
-    await em.persistAndFlush(key)
+    await em.persist(key).flush()
 
     const res = await request(app)
       .put(`/games/99999/api-keys/${key.id}`)
@@ -77,16 +77,16 @@ describe('API key service - put', () => {
     expect(res.body).toStrictEqual({ message: 'Game not found' })
   })
 
-  it('should not create an api key for a game the user has no access to', async () => {
+  it('should not update an api key for a game the user has no access to', async () => {
     const [, otherGame] = await createOrganisationAndGame()
     const [token, user] = await createUserAndToken({ emailConfirmed: true, type: UserType.ADMIN })
 
     const key = new APIKey(otherGame, user)
-    await em.persistAndFlush(key)
+    await em.persist(key).flush()
 
     const res = await request(app)
       .put(`/games/${otherGame.id}/api-keys/${key.id}`)
-      .send({ scopes: [] })
+      .send({ scopes: [APIKeyScope.READ_PLAYERS] })
       .auth(token, { type: 'bearer' })
       .expect(403)
 

@@ -21,7 +21,7 @@ describe('Game stats API service - history', () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_GAME_STATS])
     const stat = await createStat(apiKey.game)
     const player = await new PlayerFactory([apiKey.game]).one()
-    await em.persistAndFlush(player)
+    await em.persist(player).flush()
 
     const changes = [5, 10, 15]
 
@@ -33,7 +33,7 @@ describe('Game stats API service - history', () => {
           .reduce((sum, val) => sum + val, stat.defaultValue)
 
         const playerStat = await new PlayerGameStatFactory().construct(player, stat).state(() => ({ value: currentValue })).one()
-        await em.persistAndFlush(playerStat)
+        await em.persist(playerStat).flush()
 
         const snapshot = new PlayerGameStatSnapshot()
         snapshot.construct(player.aliases[0], playerStat)
@@ -67,7 +67,7 @@ describe('Game stats API service - history', () => {
     const [apiKey, token] = await createAPIKeyAndToken([])
     const stat = await createStat(apiKey.game)
     const player = await new PlayerFactory([apiKey.game]).one()
-    await em.persistAndFlush(player)
+    await em.persist(player).flush()
 
     await request(app)
       .get(`/v1/game-stats/${stat.internalName}/history`)
@@ -81,13 +81,13 @@ describe('Game stats API service - history', () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_GAME_STATS])
     const stat = await createStat(apiKey.game)
     const player = await new PlayerFactory([apiKey.game]).one()
-    await em.persistAndFlush(player)
+    await em.persist(player).flush()
 
     const res = await request(app)
       .get(`/v1/game-stats/${stat.internalName}/history`)
       .query({ page: 0 })
       .auth(token, { type: 'bearer' })
-      .set('x-talo-player', '12345')
+      .set('x-talo-player', '7810f88e-fe80-49e7-b043-75b7ca8c43ae')
       .expect(404)
 
     expect(res.body).toStrictEqual({ message: 'Player not found' })
@@ -96,7 +96,7 @@ describe('Game stats API service - history', () => {
   it('should not return player stat snapshots for a non-existent stat', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_GAME_STATS])
     const player = await new PlayerFactory([apiKey.game]).one()
-    await em.persistAndFlush(player)
+    await em.persist(player).flush()
 
     const res = await request(app)
       .get('/v1/game-stats/blah/history')
@@ -113,7 +113,7 @@ describe('Game stats API service - history', () => {
     const stat = await createStat(apiKey.game)
     const player = await new PlayerFactory([apiKey.game]).one()
     const playerStat = await new PlayerGameStatFactory().construct(player, stat).one()
-    await em.persistAndFlush(playerStat)
+    await em.persist(playerStat).flush()
 
     const dates = [
       new Date('2025-03-19T09:00:00.000Z'),
@@ -151,7 +151,7 @@ describe('Game stats API service - history', () => {
     const stat = await createStat(apiKey.game)
     const player = await new PlayerFactory([apiKey.game]).one()
     const playerStat = await new PlayerGameStatFactory().construct(player, stat).one()
-    await em.persistAndFlush(playerStat)
+    await em.persist(playerStat).flush()
 
     const dates = [
       new Date('2025-03-19T09:00:00.000Z'),
@@ -189,7 +189,7 @@ describe('Game stats API service - history', () => {
     const stat = await createStat(apiKey.game)
     const player = await new PlayerFactory([apiKey.game]).one()
     const playerStat = await new PlayerGameStatFactory().construct(player, stat).one()
-    await em.persistAndFlush(playerStat)
+    await em.persist(playerStat).flush()
 
     const dates = [
       new Date('2025-03-19T09:00:00.000Z'),
@@ -227,7 +227,7 @@ describe('Game stats API service - history', () => {
     const stat = await createStat(apiKey.game)
     const player = await new PlayerFactory([apiKey.game]).one()
     const playerStat = await new PlayerGameStatFactory().construct(player, stat).one()
-    await em.persistAndFlush(playerStat)
+    await em.persist(playerStat).flush()
 
     const changes = randNumber({ min: 1, max: 999, length: 60 })
 
@@ -239,7 +239,7 @@ describe('Game stats API service - history', () => {
           .reduce((sum, val) => sum + val, stat.defaultValue)
 
         const playerStat = await new PlayerGameStatFactory().construct(player, stat).state(() => ({ value: currentValue })).one()
-        await em.persistAndFlush(playerStat)
+        await em.persist(playerStat).flush()
 
         const snapshot = new PlayerGameStatSnapshot()
         snapshot.construct(player.aliases[0], playerStat)
@@ -268,7 +268,7 @@ describe('Game stats API service - history', () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_GAME_STATS])
     const stat = await createStat(apiKey.game)
     const player = await new PlayerFactory([apiKey.game]).one()
-    await em.persistAndFlush([stat, player])
+    await em.persist([stat, player]).flush()
 
     const res = await request(app)
       .get(`/v1/game-stats/${stat.internalName}/history`)

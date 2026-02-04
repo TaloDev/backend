@@ -34,8 +34,8 @@ export const membersRoute = apiRoute({
   }),
   middleware: withMiddleware(
     requireScopes([APIKeyScope.READ_GAME_CHANNELS]),
-    loadChannel,
-    loadAlias
+    loadAlias,
+    loadChannel
   ),
   handler: async (ctx) => {
     const itemsPerPage = DEFAULT_PAGE_SIZE

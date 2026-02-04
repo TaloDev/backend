@@ -9,7 +9,7 @@ describe('Game save API service - post', () => {
   it('should create a game save if the scope is valid', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_SAVES])
     const player = await new PlayerFactory([apiKey.game]).one()
-    await em.persistAndFlush(player)
+    await em.persist(player).flush()
 
     await request(app)
       .post('/v1/game-saves')
@@ -22,7 +22,7 @@ describe('Game save API service - post', () => {
   it('should not create a game save if the scope is not valid', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([])
     const player = await new PlayerFactory([apiKey.game]).one()
-    await em.persistAndFlush(player)
+    await em.persist(player).flush()
 
     await request(app)
       .post('/v1/game-saves')
@@ -39,7 +39,7 @@ describe('Game save API service - post', () => {
       .post('/v1/game-saves')
       .send({ name: 'save', content: {} })
       .auth(token, { type: 'bearer' })
-      .set('x-talo-player', '123456')
+      .set('x-talo-player', '14866aa4-9be3-4892-9932-b8c276170396')
       .expect(404)
 
     expect(res.body).toStrictEqual({ message: 'Player not found' })
@@ -50,7 +50,7 @@ describe('Game save API service - post', () => {
     const [, game] = await createOrganisationAndGame()
     const otherPlayer = await new PlayerFactory([game]).one()
 
-    await em.persistAndFlush(otherPlayer)
+    await em.persist(otherPlayer).flush()
 
     const res = await request(app)
       .post('/v1/game-saves')
@@ -65,7 +65,7 @@ describe('Game save API service - post', () => {
   it('should convert content to JSON if it is a string', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_SAVES])
     const player = await new PlayerFactory([apiKey.game]).one()
-    await em.persistAndFlush(player)
+    await em.persist(player).flush()
 
     const res = await request(app)
       .post('/v1/game-saves')
@@ -80,7 +80,7 @@ describe('Game save API service - post', () => {
   it('should handle save names being too long', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_SAVES])
     const player = await new PlayerFactory([apiKey.game]).one()
-    await em.persistAndFlush(player)
+    await em.persist(player).flush()
 
     const res = await request(app)
       .post('/v1/game-saves')

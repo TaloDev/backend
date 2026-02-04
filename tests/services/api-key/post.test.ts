@@ -4,6 +4,7 @@ import GameActivity, { GameActivityType } from '../../../src/entities/game-activ
 import createUserAndToken from '../../utils/createUserAndToken'
 import userPermissionProvider from '../../utils/userPermissionProvider'
 import createOrganisationAndGame from '../../utils/createOrganisationAndGame'
+import { APIKeyScope } from '../../../src/entities/api-key'
 
 describe('API key service - post', () => {
   it.each(userPermissionProvider([
@@ -46,7 +47,7 @@ describe('API key service - post', () => {
 
     const res = await request(app)
       .post(`/games/${game.id}/api-keys`)
-      .send({ scopes: ['read:players', 'write:events'] })
+      .send({ scopes: [APIKeyScope.READ_PLAYERS, APIKeyScope.WRITE_EVENTS] })
       .auth(token, { type: 'bearer' })
       .expect(403)
 
@@ -58,7 +59,7 @@ describe('API key service - post', () => {
 
     const res = await request(app)
       .post('/games/99999/api-keys')
-      .send({ scopes: [] })
+      .send({ scopes: [APIKeyScope.READ_PLAYERS] })
       .auth(token, { type: 'bearer' })
       .expect(404)
 
@@ -71,7 +72,7 @@ describe('API key service - post', () => {
 
     const res = await request(app)
       .post(`/games/${otherGame.id}/api-keys`)
-      .send({ scopes: [] })
+      .send({ scopes: [APIKeyScope.READ_PLAYERS] })
       .auth(token, { type: 'bearer' })
       .expect(403)
 

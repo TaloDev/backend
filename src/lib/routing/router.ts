@@ -98,8 +98,8 @@ function mountRoute<S extends RouteState, V extends ValidationSchema | undefined
 
   const allMiddleware = ('schema' in config && config.schema
     ? [
-      ...middleware,
       validate(config.schema(z)),
+      ...middleware,
       async (ctx: ValidatedContext<V extends ValidationSchema ? V : never, S>) => {
         const response = await (config as ValidatedRouteConfig<S, V extends ValidationSchema ? V : never>).handler(ctx)
         applyResponse(ctx, response)

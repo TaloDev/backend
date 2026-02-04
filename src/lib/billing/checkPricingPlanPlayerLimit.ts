@@ -17,7 +17,6 @@ export class PricingPlanLimitError<T> extends Error {
   }
 }
 
-
 export default async function checkPricingPlanPlayerLimit(
   em: EntityManager,
   organisation: Organisation

@@ -41,7 +41,7 @@ describe('Game save API service - index', () => {
     const res = await request(app)
       .get('/v1/game-saves')
       .auth(token, { type: 'bearer' })
-      .set('x-talo-player', '123456')
+      .set('x-talo-player', 'f00c6423-0e3e-4a4f-a6db-0d2a934ad275')
       .expect(404)
 
     expect(res.body).toStrictEqual({ message: 'Player not found' })

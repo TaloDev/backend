@@ -1,7 +1,7 @@
 import { setTraceAttributes } from '@hyperdx/node-opentelemetry'
 import { Context, Next } from 'koa'
 
-export function setCurrentPlayerState(ctx: Context, playerId: string, aliasId: number | undefined) {
+export function setCurrentPlayerState(ctx: Context, playerId: string, aliasId?: number) {
   ctx.state.currentPlayerId = playerId
   ctx.state.currentAliasId = aliasId
 
@@ -13,7 +13,7 @@ export function setCurrentPlayerState(ctx: Context, playerId: string, aliasId: n
   }
 }
 
-export default async function currentPlayerMiddleware(ctx: Context, next: Next): Promise<void> {
+export async function currentPlayerMiddleware(ctx: Context, next: Next) {
   setCurrentPlayerState(
     ctx,
     ctx.headers['x-talo-player'] as string,

@@ -16,7 +16,7 @@ describe('Game channel API service - members', () => {
     const channel = await new GameChannelFactory(apiKey.game).one()
     const player = await new PlayerFactory([apiKey.game]).one()
     channel.members.add(player.aliases[0])
-    await em.persistAndFlush([channel, player])
+    await em.persist([channel, player]).flush()
 
     const res = await request(app)
       .get(`/v1/game-channels/${channel.id}/members`)
@@ -41,7 +41,7 @@ describe('Game channel API service - members', () => {
     const channel = await new GameChannelFactory(apiKey.game).one()
     const player = await new PlayerFactory([apiKey.game]).one()
     channel.members.add(player.aliases[0])
-    await em.persistAndFlush([channel, player])
+    await em.persist([channel, player]).flush()
 
     await request(app)
       .get(`/v1/game-channels/${channel.id}/members`)
@@ -54,6 +54,7 @@ describe('Game channel API service - members', () => {
   it('should return 404 if the channel does not exist', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_GAME_CHANNELS])
     const player = await new PlayerFactory([apiKey.game]).one()
+    await em.persist(player).flush()
 
     const res = await request(app)
       .get('/v1/game-channels/999999/members')
@@ -73,7 +74,7 @@ describe('Game channel API service - members', () => {
     const channel = await new GameChannelFactory(apiKey.game).one()
     channel.members.add(player.aliases[0])
     channel.members.add(otherPlayer.aliases[0])
-    await em.persistAndFlush([channel, player, otherPlayer])
+    await em.persist([channel, player, otherPlayer]).flush()
 
     const res = await request(app)
       .get(`/v1/game-channels/${channel.id}/members`)
@@ -92,7 +93,7 @@ describe('Game channel API service - members', () => {
     const channel = await new GameChannelFactory(apiKey.game).one()
     const player = await new PlayerFactory([apiKey.game]).devBuild().one()
     channel.members.add(player.aliases[0])
-    await em.persistAndFlush([channel, player])
+    await em.persist([channel, player]).flush()
 
     const res = await request(app)
       .get(`/v1/game-channels/${channel.id}/members`)
@@ -110,7 +111,7 @@ describe('Game channel API service - members', () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_GAME_CHANNELS])
 
     const channel = await new GameChannelFactory(apiKey.game).one()
-    await em.persistAndFlush(channel)
+    await em.persist(channel).flush()
 
     const res = await request(app)
       .get(`/v1/game-channels/${channel.id}/members`)
@@ -127,7 +128,7 @@ describe('Game channel API service - members', () => {
 
     const channel = await new GameChannelFactory(apiKey.game).one()
     const player = await new PlayerFactory([apiKey.game]).one()
-    await em.persistAndFlush([channel, player])
+    await em.persist([channel, player]).flush()
 
     const res = await request(app)
       .get(`/v1/game-channels/${channel.id}/members`)
@@ -148,7 +149,7 @@ describe('Game channel API service - members', () => {
       player.aliases[0],
       ...(await new PlayerAliasFactory(player).many(100))
     ])
-    await em.persistAndFlush(channel)
+    await em.persist(channel).flush()
 
     const res = await request(app)
       .get(`/v1/game-channels/${channel.id}/members`)
@@ -171,7 +172,7 @@ describe('Game channel API service - members', () => {
     const channel = await new GameChannelFactory(apiKey.game).one()
     const player = await new PlayerFactory([apiKey.game]).one()
     channel.members.add(player.aliases[0])
-    await em.persistAndFlush(channel)
+    await em.persist(channel).flush()
 
     const res = await request(app)
       .get(`/v1/game-channels/${channel.id}/members`)
@@ -195,7 +196,7 @@ describe('Game channel API service - members', () => {
     const channel = await new GameChannelFactory(apiKey.game).one()
     channel.members.add(player.aliases[0])
     channel.members.add(otherPlayer.aliases[0])
-    await em.persistAndFlush([channel, player, otherPlayer])
+    await em.persist([channel, player, otherPlayer]).flush()
 
     const res = await request(app)
       .get(`/v1/game-channels/${channel.id}/members`)
@@ -218,7 +219,7 @@ describe('Game channel API service - members', () => {
     const channel = await new GameChannelFactory(apiKey.game).one()
     channel.members.add(player.aliases[0])
     channel.members.add(otherPlayer.aliases[0])
-    await em.persistAndFlush([channel, player, otherPlayer])
+    await em.persist([channel, player, otherPlayer]).flush()
 
     const res = await request(app)
       .get(`/v1/game-channels/${channel.id}/members`)
@@ -241,7 +242,7 @@ describe('Game channel API service - members', () => {
     const channel = await new GameChannelFactory(apiKey.game).one()
     channel.members.add(player.aliases[0])
     channel.members.add(otherPlayer.aliases[0])
-    await em.persistAndFlush([channel, player, otherPlayer])
+    await em.persist([channel, player, otherPlayer]).flush()
 
     const res = await request(app)
       .get(`/v1/game-channels/${channel.id}/members`)
@@ -268,7 +269,7 @@ describe('Game channel API service - members', () => {
     const channel = await new GameChannelFactory(apiKey.game).one()
     channel.members.add(player.aliases[0])
     channel.members.add(otherPlayer.aliases[0])
-    await em.persistAndFlush([channel, player, otherPlayer])
+    await em.persist([channel, player, otherPlayer]).flush()
 
     const res = await request(app)
       .get(`/v1/game-channels/${channel.id}/members`)
@@ -295,7 +296,7 @@ describe('Game channel API service - members', () => {
     const channel = await new GameChannelFactory(apiKey.game).one()
     channel.members.add(player.aliases[0])
     channel.members.add(otherPlayer.aliases[0])
-    await em.persistAndFlush([channel, player, otherPlayer])
+    await em.persist([channel, player, otherPlayer]).flush()
 
     const res = await request(app)
       .get(`/v1/game-channels/${channel.id}/members`)
@@ -331,7 +332,7 @@ describe('Game channel API service - members', () => {
     const channel = await new GameChannelFactory(apiKey.game).one()
     channel.members.add(player.aliases[0])
     channel.members.add(otherPlayer.aliases[0])
-    await em.persistAndFlush([group, channel, player, otherPlayer])
+    await em.persist([group, channel, player, otherPlayer]).flush()
     await group.checkMembership(em)
 
     const res = await request(app)

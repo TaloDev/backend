@@ -221,7 +221,7 @@ describe('Game stats API service - global history', () => {
     const stat = await createStat(apiKey.game)
     const player1 = await new PlayerFactory([apiKey.game]).one()
     const player2 = await new PlayerFactory([apiKey.game]).one()
-    await em.persistAndFlush([player1, player2])
+    await em.persist([player1, player2]).flush()
 
     const changesPlayer1 = randNumber({ length: 2 })
     const changesPlayer2 = randNumber({ length: 8 })
@@ -279,7 +279,7 @@ describe('Game stats API service - global history', () => {
 
     const res = await request(app)
       .get(`/v1/game-stats/${stat.internalName}/global-history`)
-      .query({ page: 0, playerId: 'blah' })
+      .query({ page: 0, playerId: 'ae5dbdef-c609-4547-a45b-b79af70324b0' })
       .auth(token, { type: 'bearer' })
       .expect(404)
 

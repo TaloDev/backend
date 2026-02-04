@@ -1,0 +1,72 @@
+import { EntityManager } from '@mikro-orm/mysql'
+import Redis from 'ioredis'
+import { apiRoute, withMiddleware } from '../../../lib/routing/router'
+import { requireScopes } from '../../../middleware/policy-middleware'
+import { APIKeyScope } from '../../../entities/api-key'
+import { loadAlias } from '../../../middleware/player-alias-middleware'
+import { loadChannel } from './common'
+import GameChannelStorageProp from '../../../entities/game-channel-storage-prop'
+import { getStorageDocs } from './docs'
+import { playerAliasHeaderSchema } from '../../../lib/validation/playerAliasHeaderSchema'
+
+export const getStorageRoute = apiRoute({
+  method: 'get',
+  path: '/:id/storage',
+  docs: getStorageDocs,
+  schema: (z) => ({
+    route: z.object({
+      id: z.string().meta({ description: 'The ID of the channel' })
+    }),
+    headers: z.looseObject({
+      'x-talo-alias': playerAliasHeaderSchema
+    }),
+    query: z.object({
+      propKey: z.string().meta({ description: 'The key of the storage property to retrieve' })
+    })
+  }),
+  middleware: withMiddleware(
+    requireScopes([APIKeyScope.READ_GAME_CHANNELS]),
+    loadAlias,
+    loadChannel
+  ),
+  handler: async (ctx) => {
+    const { propKey } = ctx.state.validated.query
+    const em: EntityManager = ctx.em
+
+    const channel = ctx.state.channel
+
+    if (!channel.hasMember(ctx.state.alias.id)) {
+      ctx.throw(403, 'This player is not a member of the channel')
+    }
+
+    let result: GameChannelStorageProp | null = null
+
+    const redis: Redis = ctx.redis
+    const cachedProp = await redis.get(GameChannelStorageProp.getRedisKey(channel.id, propKey))
+
+    if (cachedProp) {
+      return {
+        status: 200,
+        body: {
+          prop: JSON.parse(cachedProp)
+        }
+      }
+    }
+
+    result = await em.repo(GameChannelStorageProp).findOne({
+      gameChannel: channel,
+      key: propKey
+    })
+
+    if (result) {
+      await result.persistToRedis(redis)
+    }
+
+    return {
+      status: 200,
+      body: {
+        prop: result
+      }
+    }
+  }
+})

@@ -14,12 +14,12 @@ import { currentPlayerMiddleware } from '../middleware/current-player-middleware
 import { apiRouteAuthMiddleware, getRouteInfo } from '../middleware/route-middleware'
 import apiKeyMiddleware from '../middleware/api-key-middleware'
 import playerAuthMiddleware from '../middleware/player-auth-middleware'
-import PlayerAuthAPIService from '../services/api/player-auth-api.service'
 import continunityMiddleware from '../middleware/continunity-middleware'
 import { playerGroupAPIRouter } from '../routes/api/player-group'
 import { playerPresenceAPIRouter } from '../routes/api/player-presence'
 import PlayerRelationshipsAPIService from '../services/api/player-relationships-api.service'
 import { gameChannelAPIRouter } from '../routes/api/game-channel'
+import { playerAuthAPIRouter } from '../routes/api/player-auth'
 
 export default function configureAPIRoutes(app: Koa) {
   app.use(apiKeyMiddleware)
@@ -36,7 +36,6 @@ export default function configureAPIRoutes(app: Koa) {
   app.use(playerAuthMiddleware)
   app.use(continunityMiddleware)
 
-  app.use(service('/v1/players/auth', new PlayerAuthAPIService()))
   app.use(service('/v1/players/relationships', new PlayerRelationshipsAPIService()))
   app.use(service('/v1/players', new PlayerAPIService()))
 
@@ -48,6 +47,7 @@ export default function configureAPIRoutes(app: Koa) {
   app.use(gameSaveAPIRouter().routes())
   app.use(gameStatAPIRouter().routes())
   app.use(healthCheckAPIRouter().routes())
+  app.use(playerAuthAPIRouter().routes())
   app.use(playerGroupAPIRouter().routes())
   app.use(playerPresenceAPIRouter().routes())
   app.use(socketTicketAPIRouter().routes())

@@ -115,7 +115,7 @@ describe('Player auth API service - register', () => {
 
     expect(res.body).toStrictEqual({
       errors: {
-        email: ['email is missing from the request body']
+        email: ['email is required when verificationEnabled is true']
       }
     })
   })

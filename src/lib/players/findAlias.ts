@@ -5,8 +5,8 @@ import PlayerAlias from '../../entities/player-alias'
 export async function findAliasFromIdentifyRequest({
   em,
   key,
-  service
-  ,identifier
+  service,
+  identifier
 }: {
   em: EntityManager
   key: APIKey
@@ -15,7 +15,7 @@ export async function findAliasFromIdentifyRequest({
 }) {
   return em.repo(PlayerAlias).findOne({
     service: service.trim(),
-    identifier,
+    identifier: identifier.trim(),
     player: {
       game: key.game
     }

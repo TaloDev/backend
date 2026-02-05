@@ -21,6 +21,8 @@ export type APIRouteState = {
   key: APIKey
   game: Game
   includeDevData: boolean
+  currentPlayerId?: string
+  currentAliasId?: number
 }
 
 export type RouteState = PublicRouteState | ProtectedRouteState | APIRouteState

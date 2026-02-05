@@ -34,7 +34,7 @@ describe('Player auth API service - delete', { timeout: 30_000 }, () => {
     const prevIdentifier = alias.identifier
 
     await request(app)
-      .delete('/v1/players/auth/')
+      .delete('/v1/players/auth')
       .send({ currentPassword: 'password' })
       .auth(token, { type: 'bearer' })
       .set('x-talo-player', player.id)
@@ -86,7 +86,7 @@ describe('Player auth API service - delete', { timeout: 30_000 }, () => {
     })
 
     await request(app)
-      .delete('/v1/players/auth/')
+      .delete('/v1/players/auth')
       .send({ currentPassword: 'password' })
       .auth(token, { type: 'bearer' })
       .set('x-talo-player', player.id)
@@ -134,7 +134,7 @@ describe('Player auth API service - delete', { timeout: 30_000 }, () => {
     await em.flush()
 
     const res = await request(app)
-      .delete('/v1/players/auth/')
+      .delete('/v1/players/auth')
       .send({ currentPassword: 'wrongpassword' })
       .auth(token, { type: 'bearer' })
       .set('x-talo-player', player.id)
@@ -172,7 +172,7 @@ describe('Player auth API service - delete', { timeout: 30_000 }, () => {
     await em.flush()
 
     await request(app)
-      .delete('/v1/players/auth/')
+      .delete('/v1/players/auth')
       .send({ currentPassword: 'password' })
       .auth(token, { type: 'bearer' })
       .set('x-talo-player', player.id)
@@ -203,7 +203,7 @@ describe('Player auth API service - delete', { timeout: 30_000 }, () => {
     await em.flush()
 
     await request(app)
-      .delete('/v1/players/auth/')
+      .delete('/v1/players/auth')
       .send({ currentPassword: 'password' })
       .auth(token, { type: 'bearer' })
       .set('x-talo-player', player.id)
@@ -228,7 +228,7 @@ describe('Player auth API service - delete', { timeout: 30_000 }, () => {
     await em.flush()
 
     await request(app)
-      .delete('/v1/players/auth/')
+      .delete('/v1/players/auth')
       .send({ currentPassword: 'password' })
       .auth(token, { type: 'bearer' })
       .set('x-talo-player', player.id)
@@ -248,7 +248,7 @@ describe('Player auth API service - delete', { timeout: 30_000 }, () => {
     const alias = player.aliases[0]
 
     const res = await request(app)
-      .delete('/v1/players/auth/')
+      .delete('/v1/players/auth')
       .send({ currentPassword: 'password' })
       .auth(token, { type: 'bearer' })
       .set('x-talo-player', player.id)

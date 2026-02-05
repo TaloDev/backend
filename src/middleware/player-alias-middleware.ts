@@ -4,12 +4,11 @@ import { APIRouteContext } from '../lib/routing/context'
 
 export type PlayerAliasRouteState = {
   alias: PlayerAlias
-  currentAliasId?: number
 }
 
 export const loadAlias = async (ctx: APIRouteContext<PlayerAliasRouteState>, next: Next) => {
   const playerAlias = await ctx.em.repo(PlayerAlias).findOne({
-    id: Number(ctx.state.currentAliasId),
+    id: ctx.state.currentAliasId,
     player: {
       game: ctx.state.game
     }

@@ -5,6 +5,7 @@ import { loadAlias } from '../../../middleware/player-alias-middleware'
 import { loadChannel, joinChannel } from './common'
 import { joinDocs } from './docs'
 import { playerAliasHeaderSchema } from '../../../lib/validation/playerAliasHeaderSchema'
+import { numericStringSchema } from '../../../lib/validation/numericStringSchema'
 
 export const joinRoute = apiRoute({
   method: 'post',
@@ -12,7 +13,7 @@ export const joinRoute = apiRoute({
   docs: joinDocs,
   schema: (z) => ({
     route: z.object({
-      id: z.string().meta({ description: 'The ID of the channel' })
+      id: numericStringSchema.meta({ description: 'The ID of the channel' })
     }),
     headers: z.looseObject({
       'x-talo-alias': playerAliasHeaderSchema

@@ -6,6 +6,7 @@ import PlayerAliasSubscription, { RelationshipType } from '../../../entities/pla
 import { sendMessages } from '../../../socket/messages/socketMessage'
 import { deleteDocs } from './docs'
 import { playerAliasHeaderSchema } from '../../../lib/validation/playerAliasHeaderSchema'
+import { numericStringSchema } from '../../../lib/validation/numericStringSchema'
 
 export const deleteRoute = apiRoute({
   method: 'delete',
@@ -16,7 +17,7 @@ export const deleteRoute = apiRoute({
       'x-talo-alias': playerAliasHeaderSchema
     }),
     route: z.object({
-      id: z.string().meta({ description: 'The ID of the subscription to delete' })
+      id: numericStringSchema.meta({ description: 'The ID of the subscription to delete' })
     })
   }),
   middleware: withMiddleware(
@@ -29,7 +30,7 @@ export const deleteRoute = apiRoute({
     const currentAlias = ctx.state.alias
 
     const subscription = await em.repo(PlayerAliasSubscription).findOne({
-      id: Number(id),
+      id,
       subscriber: currentAlias
     })
 
@@ -61,7 +62,7 @@ export const deleteRoute = apiRoute({
     })
     await sendMessages(conns, 'v1.player-relationships.subscription-deleted', {
       subscription,
-      reciprocalSubscription: reciprocalSubscription
+      reciprocalSubscription
     })
 
     return {

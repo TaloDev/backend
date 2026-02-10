@@ -1,4 +1,4 @@
-import { EntityManager, LockMode } from '@mikro-orm/mysql'
+import { LockMode } from '@mikro-orm/mysql'
 import Redis from 'ioredis'
 import { apiRoute, withMiddleware } from '../../../lib/routing/router'
 import { requireScopes } from '../../../middleware/policy-middleware'
@@ -10,6 +10,7 @@ import { PropSizeError } from '../../../lib/errors/propSizeError'
 import { sanitiseProps, testPropSize } from '../../../lib/props/sanitiseProps'
 import { putStorageDocs } from './docs'
 import { playerAliasHeaderSchema } from '../../../lib/validation/playerAliasHeaderSchema'
+import { numericStringSchema } from '../../../lib/validation/numericStringSchema'
 
 type GameChannelStorageTransaction = {
   upsertedProps: GameChannelStorageProp[]
@@ -23,7 +24,7 @@ export const putStorageRoute = apiRoute({
   docs: putStorageDocs,
   schema: (z) => ({
     route: z.object({
-      id: z.string().meta({ description: 'The ID of the channel' })
+      id: numericStringSchema.meta({ description: 'The ID of the channel' })
     }),
     headers: z.looseObject({
       'x-talo-alias': playerAliasHeaderSchema
@@ -45,7 +46,7 @@ export const putStorageRoute = apiRoute({
   ),
   handler: async (ctx) => {
     const { props } = ctx.state.validated.body
-    const em: EntityManager = ctx.em
+    const em = ctx.em
 
     const channel = ctx.state.channel
 

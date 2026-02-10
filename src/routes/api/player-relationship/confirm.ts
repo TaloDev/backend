@@ -6,6 +6,7 @@ import PlayerAliasSubscription, { RelationshipType } from '../../../entities/pla
 import { sendMessages } from '../../../socket/messages/socketMessage'
 import { confirmDocs } from './docs'
 import { playerAliasHeaderSchema } from '../../../lib/validation/playerAliasHeaderSchema'
+import { numericStringSchema } from '../../../lib/validation/numericStringSchema'
 
 export const confirmRoute = apiRoute({
   method: 'put',
@@ -16,7 +17,7 @@ export const confirmRoute = apiRoute({
       'x-talo-alias': playerAliasHeaderSchema
     }),
     route: z.object({
-      id: z.string().meta({ description: 'The ID of the subscription request to confirm' })
+      id: numericStringSchema.meta({ description: 'The ID of the subscription request to confirm' })
     })
   }),
   middleware: withMiddleware(
@@ -29,7 +30,7 @@ export const confirmRoute = apiRoute({
     const currentAlias = ctx.state.alias
 
     const subscription = await em.repo(PlayerAliasSubscription).findOne({
-      id: Number(id),
+      id,
       subscribedTo: currentAlias,
       confirmed: false
     })

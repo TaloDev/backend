@@ -5,6 +5,7 @@ import { loadLeaderboard } from './common'
 import { listEntriesHandler } from '../../protected/leaderboard/entries'
 import { getDocs } from './docs'
 import { pageSchema } from '../../../lib/validation/pageSchema'
+import { numericStringSchema } from '../../../lib/validation/numericStringSchema'
 
 export const getRoute = apiRoute({
   method: 'get',
@@ -16,7 +17,7 @@ export const getRoute = apiRoute({
     }),
     query: z.object({
       page: pageSchema.meta({ description: 'The current pagination index (starting at 0)' }),
-      aliasId: z.coerce.number().int().optional().meta({ description: 'Only return entries for this alias ID' }),
+      aliasId: numericStringSchema.optional().meta({ description: 'Only return entries for this alias ID' }),
       withDeleted: z.enum(['0', '1']).optional().transform((val) => val === '1').meta({ description: 'Include entries that were deleted by a refresh interval' }),
       propKey: z.string().optional().meta({ description: 'Only return entries with this prop key' }),
       propValue: z.string().optional().meta({ description: 'Only return entries with a matching prop key and value' }),

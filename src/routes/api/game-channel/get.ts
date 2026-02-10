@@ -3,6 +3,7 @@ import { requireScopes } from '../../../middleware/policy-middleware'
 import { APIKeyScope } from '../../../entities/api-key'
 import { loadChannel } from './common'
 import { getDocs } from './docs'
+import { numericStringSchema } from '../../../lib/validation/numericStringSchema'
 
 export const getRoute = apiRoute({
   method: 'get',
@@ -10,7 +11,7 @@ export const getRoute = apiRoute({
   docs: getDocs,
   schema: (z) => ({
     route: z.object({
-      id: z.string().meta({ description: 'The ID of the channel' })
+      id: numericStringSchema.meta({ description: 'The ID of the channel' })
     })
   }),
   middleware: withMiddleware(

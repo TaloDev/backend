@@ -7,6 +7,7 @@ import { updateChannelHandler } from '../../protected/game-channel/update'
 import { putDocs } from './docs'
 import { playerAliasHeaderSchema } from '../../../lib/validation/playerAliasHeaderSchema'
 import { updatePropsSchema } from '../../../lib/validation/propsSchema'
+import { numericStringSchema } from '../../../lib/validation/numericStringSchema'
 
 export const putRoute = apiRoute({
   method: 'put',
@@ -14,7 +15,7 @@ export const putRoute = apiRoute({
   docs: putDocs,
   schema: (z) => ({
     route: z.object({
-      id: z.string().meta({ description: 'The ID of the channel' })
+      id: numericStringSchema.meta({ description: 'The ID of the channel' })
     }),
     headers: z.looseObject({
       'x-talo-alias': playerAliasHeaderSchema

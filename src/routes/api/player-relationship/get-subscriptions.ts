@@ -10,6 +10,7 @@ import { getSubscriptionsDocs } from './docs'
 import { playerAliasHeaderSchema } from '../../../lib/validation/playerAliasHeaderSchema'
 import { pageSchema } from '../../../lib/validation/pageSchema'
 import { relationshipTypeSchema } from './common'
+import { numericStringSchema } from '../../../lib/validation/numericStringSchema'
 
 export const getSubscriptionsRoute = apiRoute({
   method: 'get',
@@ -21,7 +22,7 @@ export const getSubscriptionsRoute = apiRoute({
     }),
     query: z.object({
       confirmed: z.enum(['true', 'false']).optional().meta({ description: 'Filter by confirmation status ("true" or "false")' }),
-      aliasId: z.coerce.number().int().optional().meta({ description: 'Filter by a specific subscribed-to alias ID' }),
+      aliasId: numericStringSchema.optional().meta({ description: 'Filter by a specific subscribed-to alias ID' }),
       relationshipType: relationshipTypeSchema.optional().meta({ description: 'Filter by relationship type ("unidirectional" or "bidirectional")' }),
       page: pageSchema.meta({ description: 'Page number for pagination (default: 0)' })
     })

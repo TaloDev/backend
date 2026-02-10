@@ -1,4 +1,4 @@
-import { EntityManager, FilterQuery } from '@mikro-orm/mysql'
+import { FilterQuery } from '@mikro-orm/mysql'
 import { apiRoute, withMiddleware } from '../../../lib/routing/router'
 import { requireScopes } from '../../../middleware/policy-middleware'
 import { APIKeyScope } from '../../../entities/api-key'
@@ -26,7 +26,7 @@ export const subscriptionsRoute = apiRoute({
   ),
   handler: async (ctx) => {
     const { propKey, propValue } = ctx.state.validated.query
-    const em: EntityManager = ctx.em
+    const em = ctx.em
 
     const aliasId = ctx.state.alias.id
 

@@ -1,4 +1,3 @@
-import { EntityManager } from '@mikro-orm/mysql'
 import { apiRoute, withMiddleware } from '../../../lib/routing/router'
 import { requireScopes } from '../../../middleware/policy-middleware'
 import { APIKeyScope } from '../../../entities/api-key'
@@ -7,6 +6,7 @@ import { loadChannel } from './common'
 import { GameChannelLeavingReason } from '../../../entities/game-channel'
 import { leaveDocs } from './docs'
 import { playerAliasHeaderSchema } from '../../../lib/validation/playerAliasHeaderSchema'
+import { numericStringSchema } from '../../../lib/validation/numericStringSchema'
 
 export const leaveRoute = apiRoute({
   method: 'post',
@@ -14,7 +14,7 @@ export const leaveRoute = apiRoute({
   docs: leaveDocs,
   schema: (z) => ({
     route: z.object({
-      id: z.string().meta({ description: 'The ID of the channel' })
+      id: numericStringSchema.meta({ description: 'The ID of the channel' })
     }),
     headers: z.looseObject({
       'x-talo-alias': playerAliasHeaderSchema
@@ -26,7 +26,7 @@ export const leaveRoute = apiRoute({
     loadChannel
   ),
   handler: async (ctx) => {
-    const em: EntityManager = ctx.em
+    const em = ctx.em
     const channel = ctx.state.channel
     const playerAlias = ctx.state.alias
 

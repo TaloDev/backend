@@ -51,7 +51,7 @@ describe('Player group API service - get', () => {
     const [, token] = await createAPIKeyAndToken([APIKeyScope.READ_PLAYER_GROUPS])
 
     await request(app)
-      .get('/v1/player-groups/abcdef')
+      .get('/v1/player-groups/4658a3b3-6305-433e-957c-330ca2273ebe')
       .auth(token, { type: 'bearer' })
       .expect(404)
   })

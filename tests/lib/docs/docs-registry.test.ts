@@ -10,19 +10,19 @@ describe('DocsRegistry', () => {
   })
 
   it('should initialize with empty services', () => {
-    const json = registry.toJSON()
-    expect(json.services).toEqual([])
+    const services = registry.getServices()
+    expect(services).toEqual([])
   })
 
   it('should add a service', () => {
     registry.addService('TestService', '/test')
 
-    const json = registry.toJSON()
-    expect(json.services).toHaveLength(1)
+    const services = registry.getServices()
+    expect(services).toHaveLength(1)
 
-    assert(json.services[0])
-    expect(json.services[0].name).toBe('TestService')
-    expect(json.services[0].path).toBe('/test')
+    assert(services[0])
+    expect(services[0].name).toBe('TestService')
+    expect(services[0].path).toBe('/test')
   })
 
   it('should add a route to a service', () => {
@@ -35,17 +35,17 @@ describe('DocsRegistry', () => {
       }
     })
 
-    const json = registry.toJSON()
-    expect(json.services).toHaveLength(1)
+    const services = registry.getServices()
+    expect(services).toHaveLength(1)
 
-    assert(json.services[0])
-    expect(json.services[0].name).toBe('PlayerAPI')
-    expect(json.services[0].routes).toHaveLength(1)
+    assert(services[0])
+    expect(services[0].name).toBe('PlayerAPI')
+    expect(services[0].routes).toHaveLength(1)
 
-    assert(json.services[0].routes[0])
-    expect(json.services[0].routes[0].method).toBe('get')
-    expect(json.services[0].routes[0].path).toBe('/v1/players/identify')
-    expect(json.services[0].routes[0].description).toBe('Identify a player')
+    assert(services[0].routes[0])
+    expect(services[0].routes[0].method).toBe('get')
+    expect(services[0].routes[0].path).toBe('/v1/players/identify')
+    expect(services[0].routes[0].description).toBe('Identify a player')
   })
 
   it('should add parameters to a route', () => {
@@ -64,10 +64,10 @@ describe('DocsRegistry', () => {
       }
     })
 
-    const json = registry.toJSON()
-    assert(json.services[0])
+    const services = registry.getServices()
+    assert(services[0])
 
-    const route = json.services[0].routes[0]
+    const route = services[0].routes[0]
     assert(route)
 
     expect(route.params).toHaveLength(2)
@@ -93,10 +93,10 @@ describe('DocsRegistry', () => {
       }
     })
 
-    const json = registry.toJSON()
-    assert(json.services[0])
+    const services = registry.getServices()
+    assert(services[0])
 
-    const route = json.services[0].routes[0]
+    const route = services[0].routes[0]
     assert(route)
     assert(route.samples?.[0])
 
@@ -118,21 +118,21 @@ describe('DocsRegistry', () => {
       path: '/v1/players'
     })
 
-    const json = registry.toJSON()
-    expect(json.services).toHaveLength(1)
+    const services = registry.getServices()
+    expect(services).toHaveLength(1)
 
-    assert(json.services[0])
-    expect(json.services[0].routes).toHaveLength(2)
+    assert(services[0])
+    expect(services[0].routes).toHaveLength(2)
   })
 
   it('should update existing service when adding with same name', () => {
     registry.addService('TestService', '/test')
     registry.addService('TestService', '/test/v2')
 
-    const json = registry.toJSON()
-    expect(json.services).toHaveLength(1)
+    const services = registry.getServices()
+    expect(services).toHaveLength(1)
 
-    assert(json.services[0])
-    expect(json.services[0].path).toBe('/test/v2')
+    assert(services[0])
+    expect(services[0].path).toBe('/test/v2')
   })
 })

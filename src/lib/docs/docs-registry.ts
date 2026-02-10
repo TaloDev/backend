@@ -120,10 +120,8 @@ export class DocsRegistry {
     return service
   }
 
-  toJSON() {
-    return {
-      services: Array.from(this.services.values())
-    }
+  getServices() {
+    return Array.from(this.services.values())
   }
 }
 

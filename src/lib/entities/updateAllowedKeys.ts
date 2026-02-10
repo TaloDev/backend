@@ -1,6 +1,8 @@
-import { Request } from 'koa-clay'
-
-export default function updateAllowedKeys<T>(entity: T, body: Request['body'], allowedKeys: (keyof T)[]): [T, string[]] {
+export default function updateAllowedKeys<T>(
+  entity: T,
+  body: Record<string, unknown>,
+  allowedKeys: (keyof T)[]
+): [T, string[]] {
   const changedProperties: string[] = []
 
   for (const key in body) {
@@ -8,7 +10,7 @@ export default function updateAllowedKeys<T>(entity: T, body: Request['body'], a
 
     if (allowedKeys.includes(typedKey)) {
       const original = entity[typedKey]
-      entity[typedKey] = body[key]
+      entity[typedKey] = body[key] as T[keyof T]
 
       if (original !== entity[typedKey]) {
         changedProperties.push(key)

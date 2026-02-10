@@ -6,7 +6,6 @@ import GameChannel, { GameChannelLeavingReason } from './game-channel'
 import Socket from '../socket'
 import Integration, { IntegrationType } from './integration'
 import Game from './game'
-import { Request } from 'koa-clay'
 
 export enum PlayerAliasService {
   STEAM = 'steam',
@@ -48,12 +47,12 @@ export default class PlayerAlias {
   updatedAt: Date = new Date()
 
   static async resolveIdentifier({
-    req,
+    em,
     game,
     service,
     identifier
   }: {
-    req: Request
+    em: EntityManager
     game: Game
     service: string
     identifier: string
@@ -62,18 +61,21 @@ export default class PlayerAlias {
     const trimmedIdentifier = identifier.trim()
 
     if (trimmedService === PlayerAliasService.STEAM) {
-      const em = req.ctx.em as EntityManager
       const integration = await em.repo(Integration).findOne({
         game,
         type: IntegrationType.STEAMWORKS
       })
 
       if (integration) {
-        return integration.getPlayerIdentifier(req, trimmedIdentifier)
+        const result = await integration.getPlayerIdentifier(em, trimmedIdentifier)
+        return {
+          identifier: result.steamId,
+          initialPlayerProps: result.initialPlayerProps
+        }
       }
     }
 
-    return trimmedIdentifier
+    return { identifier: trimmedIdentifier }
   }
 
   async createSocketToken(redis: Redis): Promise<string> {

@@ -1,22 +1,13 @@
 import Koa from 'koa'
-import { service, ServiceOpts } from 'koa-clay'
-import DocumentationService from '../services/public/documentation.service'
 import { healthCheckRouter } from '../routes/public/health-check'
 import { userPublicRouter } from '../routes/public/user-public'
 import { demoRouter } from '../routes/public/demo'
 import { invitePublicRouter } from '../routes/public/invite-public'
 import { webhookRouter } from '../routes/public/webhook'
+import { documentationRouter } from '../routes/public/documentation'
 
 export default function configurePublicRoutes(app: Koa) {
-  const serviceOpts: ServiceOpts = {
-    docs: {
-      hidden: true
-    }
-  }
-
-  app.use(service('/public/docs', new DocumentationService(), serviceOpts))
-
-  // new router-based routes
+  app.use(documentationRouter().routes())
   app.use(healthCheckRouter().routes())
   app.use(userPublicRouter().routes())
   app.use(demoRouter().routes())

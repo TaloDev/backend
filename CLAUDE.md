@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Talo is a self-hostable game development services platform providing leaderboards, player authentication, peer-to-peer multiplayer, event tracking, and more. The backend is built with Koa (Node.js web framework) and follows a service-based architecture with three routing tiers.
+Talo is a self-hostable game development services platform providing leaderboards, player authentication, peer-to-peer multiplayer, event tracking, and more. The backend is built with Koa (Node.js web framework) using `koa-tree-router` for routing.
 
 ## Development Commands
 
@@ -61,17 +61,17 @@ The application uses three distinct routing layers with different authentication
 1. **Protected Routes** (`/` prefix) - Web dashboard endpoints
    - Auth: JWT signed with `JWT_SECRET` (user identity)
    - Configured in: `src/config/protected-routes.ts`
-   - Services in: `src/services/`
+   - Routes in: `src/routes/protected/`
 
 2. **API Routes** (`/v1/` prefix) - Game-facing REST API
    - Auth: JWT signed with `game.apiSecret` (per-game API key)
    - Configured in: `src/config/api-routes.ts`
-   - Services in: `src/services/api/`
+   - Routes in: `src/routes/api/`
 
 3. **Public Routes** (`/public/` prefix) - Unauthenticated endpoints
    - Use cases: Webhooks, health checks, password reset
    - Configured in: `src/config/public-routes.ts`
-   - Services in: `src/services/public/`
+   - Routes in: `src/routes/public/`
 
 ### Request Flow
 
@@ -91,48 +91,7 @@ Then route-specific middleware:
 - **Protected Routes**: JWT auth → user authorization
 - **Public Routes**: No authentication
 
-Finally, service handlers execute with policy-based authorization.
-
-### Service Layer (Controllers)
-
-Services extend `koa-clay`'s `Service` class and use decorators to define routes:
-
-```typescript
-import { Service, Route } from 'koa-clay'
-import { HasPermission } from '../policies/decorators'
-import { GamePolicy } from '../policies/game.policy'
-
-class GameService extends Service {
-  @Route('GET /')
-  @HasPermission(GamePolicy, 'list')
-  async index(ctx: Koa.Context) {
-    const games = await ctx.em.find(Game, { organisation: ctx.state.user.organisation })
-    return { games }
-  }
-}
-```
-
-Services receive `ctx.em` (MikroORM EntityManager) for database access and `ctx.state` containing authenticated user/player/game/API key.
-
-### Policy Layer (Authorization)
-
-Policies enforce authorization rules. Use `@HasPermission(PolicyClass, methodName)` decorator on routes:
-
-```typescript
-import Policy from './policy'
-
-export default class GamePolicy extends Policy {
-  async list(ctx: Koa.Context) {
-    await this.checkUserAccessForGame(ctx) // Throws if unauthorized
-  }
-}
-```
-
-Base `Policy` class provides:
-- `hasScope()` / `hasScopes()` - Check API key scopes (READ_PLAYERS, WRITE_PLAYERS, etc.)
-- `getAPIKey()` - Get authenticated identity
-
-API policies check scopes; protected policies check user organization membership.
+Finally, route handlers execute.
 
 ### Entity Layer (Models)
 
@@ -214,14 +173,15 @@ Real-time communication via custom WebSocket implementation in `src/socket/`:
 src/
 ├── index.ts                 # App entry point, middleware pipeline
 ├── entities/                # MikroORM data models
-├── services/                # Route handlers (controllers)
-│   ├── api/                 # Game-facing API endpoints
-│   └── public/              # Unauthenticated endpoints
-├── policies/                # Authorization logic
-│   └── api/                 # API-specific policies (scope checks)
+├── routes/                  # Route handlers
+│   ├── api/                 # Game-facing API endpoints (/v1/*)
+│   ├── protected/           # Dashboard endpoints (/*)
+│   └── public/              # Unauthenticated endpoints (/public/*)
 ├── middleware/              # Request pipeline processors
 ├── config/                  # Route registration, providers, scheduled tasks
 ├── lib/                     # Shared utilities
+│   ├── routing/             # Router factories and types
+│   ├── docs/                # API documentation registry
 │   ├── auth/                # JWT, API key handling
 │   ├── props/               # Game live config, property validation
 │   ├── billing/             # Stripe integration
@@ -231,33 +191,39 @@ src/
 ├── tasks/                   # Background job definitions
 ├── migrations/              # Database schema migrations
 │   └── clickhouse/          # ClickHouse-specific migrations
-├── emails/                  # Email templates (Handlebars)
-└── docs/                    # API documentation generators
+└── emails/                  # Email templates (Handlebars)
 ```
 
-## Common Patterns
+## Routing
 
-### Migrating from koa-clay Services to New Router Pattern
+### Router Factory Functions
 
-The codebase is transitioning from `koa-clay` Service classes to a new router-based pattern using `koa-tree-router`. This provides better type safety, clearer route organization, and eliminates the need for decorator-based routing.
+Three router factories correspond to the three routing tiers:
 
-#### Key Differences
+1. **`publicRouter(basePath, builder)`** - For public routes (`/public/*`)
+2. **`protectedRouter(basePath, builder)`** - For protected routes (`/*`)
+3. **`apiRouter(basePath, builder)`** - For API routes (`/v1/*`)
 
-**Old Pattern (koa-clay):**
-```typescript
-import { Service, Route } from 'koa-clay'
-import { HasPermission } from '../policies/decorators'
+Each factory provides a `route()` helper that accepts route configurations.
 
-class UserService extends Service {
-  @Route('GET /me')
-  @HasPermission(UserPolicy, 'me')
-  async me(ctx: Koa.Context) {
-    return { user: ctx.state.user }
-  }
-}
-```
+### Route Helper Functions
 
-**New Pattern (koa-tree-router):**
+Three route helpers provide type safety for route configurations:
+
+1. **`publicRoute(config)`** - Returns `RouteConfig<PublicRouteState>`
+2. **`protectedRoute(config)`** - Returns `RouteConfig<ProtectedRouteState>`
+3. **`apiRoute(config)`** - Returns `RouteConfig<APIRouteState>`
+
+Route configurations support:
+- `method`: HTTP method ('get', 'post', 'put', 'patch', 'delete')
+- `path`: Route path (relative to router basePath, can be omitted for root routes)
+- `handler`: Async function receiving typed context
+- `middleware`: Optional middleware array (use `withMiddleware()` wrapper)
+- `schema`: Optional Zod schema for request validation
+- `docs`: Optional documentation metadata (description, samples)
+
+### Basic Route Example
+
 ```typescript
 // src/routes/protected/user/me.ts
 import { protectedRoute } from '../../../lib/routing/router'
@@ -284,33 +250,7 @@ export function userRouter() {
 }
 ```
 
-#### Router Factory Functions
-
-Three router factories correspond to the three routing tiers:
-
-1. **`publicRouter(basePath, builder)`** - For public routes (`/public/*`)
-2. **`protectedRouter(basePath, builder)`** - For protected routes (`/*`)
-3. **`apiRouter(basePath, builder)`** - For API routes (`/v1/*`)
-
-Each factory provides a `route()` helper that accepts route configurations.
-
-#### Route Helper Functions
-
-Three route helpers provide type safety for route configurations:
-
-1. **`publicRoute(config)`** - Returns `RouteConfig<PublicRouteState>`
-2. **`protectedRoute(config)`** - Returns `RouteConfig<ProtectedRouteState>`
-3. **`apiRoute(config)`** - Returns `RouteConfig<APIRouteState>`
-
-Route configurations support:
-- `method`: HTTP method ('get', 'post', 'put', 'patch', 'delete')
-- `path`: Route path (relative to router basePath, can be omitted for root routes)
-- `handler`: Async function receiving typed context
-- `middleware`: Optional middleware array (use `withMiddleware()` wrapper)
-- `schema`: Optional Zod schema for request validation (see Validation with Zod section)
-- `docs`: Optional documentation metadata (description, params, samples, scopes)
-
-**IMPORTANT - Type Inference with Validation Schemas:**
+### Type Inference with Validation Schemas
 
 When using `schema` for validation inside a router builder, wrap the config with the appropriate route helper (`apiRoute`, `protectedRoute`, `publicRoute`) to ensure proper type inference for `ctx.state.validated`:
 
@@ -338,7 +278,7 @@ route({
 })
 ```
 
-#### File Organization
+### File Organization
 
 **One route per file** unless the router only has one route, in which case it can be inlined in `index.ts`:
 
@@ -347,7 +287,7 @@ src/routes/
 ├── public/
 │   ├── demo/
 │   │   └── index.ts              # Simple routes inline in index
-│   ├── webhooks/
+│   ├── webhook/
 │   │   └── subscriptions.ts      # Complex routes in separate files
 │   └── documentation/
 │       └── index.ts
@@ -361,10 +301,16 @@ src/routes/
 │       ├── 2fa-enable.ts
 │       └── 2fa-disable.ts
 └── api/
-    └── [future API routes]
+    └── player/
+        ├── index.ts
+        ├── common.ts
+        ├── docs.ts                # Documentation for all routes
+        ├── identify.ts
+        ├── search.ts
+        └── ...
 ```
 
-#### Middleware Patterns
+### Middleware Patterns
 
 **Creating Middleware (common.ts):**
 
@@ -422,7 +368,7 @@ export const disable2faRoute = protectedRoute({
 The codebase provides reusable authorization middleware in `src/middleware/policy-middleware.ts`:
 
 ```typescript
-import { userTypeGate, ownerGate } from '../../../middleware/policy-middleware'
+import { userTypeGate, ownerGate, requireScopes } from '../../../middleware/policy-middleware'
 
 // Allow specific user types (OWNER always allowed)
 userTypeGate([UserType.ADMIN, UserType.DEV], 'create games')
@@ -472,7 +418,7 @@ export const loadCategory = async (ctx: GameFeedbackCategoryRouteContext, next: 
 
 This pattern ensures type safety when composing multiple middleware that each add properties to `ctx.state`.
 
-#### Context Types
+### Context Types
 
 Use typed context for better type safety:
 
@@ -483,25 +429,16 @@ Use typed context for better type safety:
 Access context properties:
 - `ctx.em` - MikroORM EntityManager
 - `ctx.state.user` - Authenticated user (protected routes)
-- `ctx.state.apiKey` - API key (API routes)
+- `ctx.state.key` - API key (API routes)
 - `ctx.state.currentPlayer` - Current player (API routes)
-- `ctx.request.body` - Parsed request body
+- `ctx.state.validated` - Validated request data (when using schema)
+- `ctx.request.body` - Parsed request body (use ctx.state.validated.body instead when using schema)
 - `ctx.throw(status, message)` - Throw HTTP errors
 
-#### Validation with Zod
+### Validation with Zod
 
-Replace `@Validate` decorators with inline Zod schemas using the `schema` field:
+Use inline Zod schemas with the `schema` field:
 
-**Old Pattern:**
-```typescript
-class UserService extends Service {
-  @Route('POST /register')
-  @Validate({ body: { email: { type: 'string', format: 'email' } } })
-  async register(ctx: Koa.Context) { ... }
-}
-```
-
-**New Pattern:**
 ```typescript
 export const registerRoute = publicRoute({
   method: 'post',
@@ -520,58 +457,31 @@ export const registerRoute = publicRoute({
 })
 ```
 
-**IMPORTANT:**
-- Use `schema` field (not `validation`) which receives `z` (Zod) as a parameter
-- Access validated data from `ctx.state.validated.body`, not `ctx.request.body`
-- The schema function can validate `body`, `query`, `params`, etc.
-- All validated fields are available under `ctx.state.validated`
-
-**Migrating `@Required` Decorators from Entities:**
-
-The old koa-clay pattern used `@Required` decorators on entity properties for validation. When migrating to the new router pattern, this validation moves to Zod schemas in the route configuration.
-
-**Old Pattern (entity with @Required):**
-```typescript
-// src/entities/integration.ts
-@Required({
-  methods: ['POST'],
-  validation: async (val: unknown): Promise<ValidationCondition[]> => {
-    const keys = Object.values(IntegrationType)
-    return [{
-      check: keys.includes(val as IntegrationType),
-      error: `Integration type must be one of ${keys.join(', ')}`
-    }]
-  }
-})
-@Enum(() => IntegrationType)
-type: IntegrationType
-```
-
-**New Pattern (Zod schema in route):**
-```typescript
-// src/routes/protected/integration/create.ts
-const integrationTypeValues = Object.values(IntegrationType).join(', ')
-
-export const createRoute = protectedRoute({
-  schema: (z) => ({
-    body: z.object({
-      type: z.enum(IntegrationType, {
-        error: `Integration type must be one of ${integrationTypeValues}`
-      })
-    })
-  }),
-  // ...
-})
-```
-
 **Key points:**
-- Complex validation (like checking for duplicates) should be done in the handler, not the schema
-- After migrating a service to the new router pattern, remove the `@Required` decorators from the entity if they are no longer used by any koa-clay services
-- Check that no other services still reference the entity's `@Required` validation before removing it
+- Use `schema` field which receives `z` (Zod) as a parameter
+- Access validated data from `ctx.state.validated.body`, not `ctx.request.body`
+- The schema function can validate `body`, `query`, `params`, `headers`, etc.
+- All validated fields are available under `ctx.state.validated`
+- Use `z.looseObject()` for headers since Koa includes many default headers
+- For custom error messages, use `z.string({ error: 'field is missing' })` for missing fields and `.min(1, { message: 'Invalid field' })` for validation errors
 
-#### Documentation
+**Header Validation Example:**
 
-For API routes, use the `docsKey` option in the router to set a shared service name for all routes. Import `RouteDocs` from `src/lib/docs/docs-registry` (not `koa-clay`) to get the type with `scopes` support.
+```typescript
+schema: (z) => ({
+  headers: z.looseObject({
+    'x-talo-alias': z.string({ error: 'x-talo-alias is missing from the request headers' })
+      .regex(/^\d+$/, { error: 'x-talo-alias header must be a numeric string' })
+  }),
+  body: z.object({
+    comment: z.string()
+  })
+})
+```
+
+### Documentation
+
+For API routes, use the `docsKey` option in the router to set a shared service name for all routes. Import `RouteDocs` from `src/lib/docs/docs-registry` for the type.
 
 **Inline routes (inside router function)** - docs can be at the bottom:
 
@@ -594,7 +504,7 @@ export function socketTicketAPIRouter() {
       }
     })
   }, {
-    docsKey: 'SocketTicketsAPIService'
+    docsKey: 'SocketTicketsAPI'
   })
 }
 
@@ -614,7 +524,6 @@ import { RouteDocs } from '../../../lib/docs/docs-registry'
 // docs MUST be defined before the route for module-level exports
 const docs = {
   description: 'Get a group',
-  scopes: [APIKeyScope.READ_PLAYER_GROUPS],
   samples: [...]
 } satisfies RouteDocs
 
@@ -632,28 +541,17 @@ export const getRoute = apiRoute({
 - For inline routes (inside function body), docs can be at the bottom of the file
 - For exported routes (module level), docs MUST be defined before the route to avoid "Cannot access before initialization" errors
 - Import `RouteDocs` from `../../../lib/docs/docs-registry` for the type
-- When routes are split into separate files, you can create a `docs.ts` file in the route folder to keep all documentation together
-- The docs key should be migrated from `XAPIService` to `XAPI`
+- When routes are split into separate files, create a `docs.ts` file in the route folder to keep all documentation together
 - **Scopes are automatically extracted** from `requireScopes()` middleware - do NOT add them manually to docs
 
 **Documenting Schema Parameters:**
 
-When migrating docs, use `.meta({ description: '...' })` on schema fields to document parameters. This replaces the old `params` object in the docs:
+Use `.meta({ description: '...' })` on schema fields to document parameters:
 
 ```typescript
-// Old pattern (docs object with params)
-const docs = {
-  description: 'Get a group',
-  params: {
-    route: { id: 'The ID of the group' },
-    query: { membersPage: 'The current pagination index' }
-  }
-}
-
-// New pattern (descriptions in schema via .meta())
 schema: (z) => ({
   route: z.object({
-    id: z.string().meta({ description: 'The ID of the group' })
+    id: z.uuid().meta({ description: 'The ID of the group' })
   }),
   query: z.object({
     membersPage: pageSchema.meta({ description: 'The current pagination index for group members (starting at 0)' })
@@ -672,7 +570,7 @@ export const playerHeaderSchema = z.uuid({
 })
 ```
 
-#### Background Jobs Integration
+### Background Jobs Integration
 
 **Global Queues (for shared queues used across the application):**
 
@@ -696,7 +594,7 @@ const queueFactories = {
   // ... other shared queues
 } as const
 
-// Use in routes/services:
+// Use in routes:
 import { getGlobalQueue } from '../../../config/global-queues'
 await getGlobalQueue('email').add('send', emailData)
 ```
@@ -728,24 +626,9 @@ export function demoRouter() {
     })
   })
 }
-
-// src/lib/queues/createDemoUserQueue.ts
-import createQueue from './createQueue'
-import { getMikroORM } from '../../config/mikro-orm.config'
-
-export function createDemoUserQueue() {
-  return createQueue<{ userId: number }>('demo', async (job) => {
-    const { userId } = job.data
-    const orm = await getMikroORM()
-    const em = orm.em.fork()
-    // ... cleanup logic
-  })
-}
 ```
 
-This pattern keeps route-specific logic localized while still organizing queue creation in the lib/queues directory.
-
-#### Registering Routers
+### Registering Routers
 
 Add router to appropriate config file:
 
@@ -764,63 +647,20 @@ import { userRouter } from '../routes/protected/user'
 
 export default function protectedRoutes(app: Koa) {
   app.use(protectedRouteAuthMiddleware)
-  // ... existing services
   app.use(userRouter().routes())
 }
 ```
 
 **API routes (`src/config/api-routes.ts`):**
 ```typescript
-import { playerRouter } from '../routes/api/player'
+import { playerAPIRouter } from '../routes/api/player'
 
 export default function apiRoutes(app: Koa) {
-  // ... existing services
-  app.use(playerRouter().routes())
+  app.use(playerAPIRouter().routes())
 }
 ```
 
-#### Migration Checklist
-
-When converting a koa-clay Service to new router pattern:
-
-1. ✅ Create route directory: `src/routes/{public|protected|api}/[feature]/`
-2. ✅ Create one file per route (or inline simple routes in index.ts)
-3. ✅ Extract shared middleware to `common.ts` as plain async functions
-4. ✅ Use `withMiddleware()` wrapper in route configs, not in middleware definitions
-5. ✅ Replace `@Validate` decorators with Zod `schema` config (see below for details)
-6. ✅ Replace `@HasPermission` with inline authorization checks or middleware
-7. ✅ Move documentation from decorators to `docs` config field (use `docsKey` option for API routers)
-8. ✅ Create index.ts that exports router function
-9. ✅ Register router in appropriate config file
-10. ✅ Remove old Service class and Policy class
-11. ✅ Remove `@Required` decorators from entities if no longer used by other koa-clay services
-12. ✅ Update tests to match new route paths and error message formats
-
-**IMPORTANT - Don't miss validation when migrating:**
-
-Always check the old service's `@Validate` decorator for ALL validated fields including headers. Common patterns to migrate:
-
-```typescript
-// Old koa-clay pattern
-@Validate({
-  headers: ['x-talo-alias'],  // Required header
-  body: [GameFeedback]        // Entity validation
-})
-
-// New router pattern - migrate ALL validation to schema
-schema: (z) => ({
-  headers: z.looseObject({
-    'x-talo-alias': playerAliasHeaderSchema  // Numeric string validation
-  }),
-  body: z.object({
-    comment: z.string()
-  })
-})
-```
-
-Note: Use `z.looseObject()` for headers since Koa includes many default headers. Use `z.string().regex(/^\d+$/)` for numeric ID headers like `x-talo-alias` and `x-talo-player`.
-
-#### Type Inference
+### Type Inference
 
 You do not need to provide generics to `apiRoute`, `protectedRoute`, `publicRoute`, or similar helpers - types are inferred automatically from the schema and middleware.
 
@@ -839,15 +679,15 @@ export const postRoute = apiRoute<SomeCustomState>({ ... })
 
 TypeScript cannot partially infer type parameters, so providing a custom state generic will break validation type inference. Instead, let middleware extend the state and access properties directly in handlers.
 
+## Common Patterns
+
 ### Adding a New API Endpoint
 
-1. Create service in `src/services/api/my-feature-api.service.ts`
-2. Create policy in `src/policies/api/my-feature-api.policy.ts` with scope checks
-3. Register in `src/config/api-routes.ts`:
-   ```typescript
-   app.use(service('/v1/my-feature', new MyFeatureAPIService()))
-   ```
-4. Add tests in `tests/services/_api/my-feature-api/`
+1. Create route directory: `src/routes/api/my-feature/`
+2. Create route file(s) with handler logic
+3. Create `index.ts` that exports the router function
+4. Register in `src/config/api-routes.ts`
+5. Add tests in `tests/services/_api/my-feature-api/`
 
 ### Adding a New Entity
 
@@ -865,10 +705,20 @@ All errors caught by `src/middleware/error-middleware.ts`:
 
 Throw errors with status codes: `ctx.throw(400, 'Invalid request')`
 
+Use `return ctx.throw()` pattern when you need TypeScript to narrow types after the throw:
+
+```typescript
+const player = await em.repo(Player).findOne({ id })
+if (!player) {
+  return ctx.throw(404, 'Player not found')  // return ensures type narrowing
+}
+// TypeScript knows player is not null here
+```
+
 ### Authentication vs Authorization
 
 - **Authentication**: Handled by middleware (JWT validation, API key extraction)
-- **Authorization**: Handled by policies (user roles, API scopes, game access)
+- **Authorization**: Handled by middleware (user type gates, API scopes)
 
 ### Working with Props
 
@@ -883,7 +733,8 @@ Tests use Vitest with Docker containers for MySQL/Redis/ClickHouse.
 
 Test file structure mirrors `src/` directory:
 - `tests/services/_api/` - API endpoint tests
-- `tests/services/` - Protected route tests
+- `tests/services/_protected/` - Protected route tests
+- `tests/services/_public/` - Public route tests
 - `tests/lib/` - Utility tests
 - `tests/entities/` - Entity behavior tests
 
@@ -902,10 +753,9 @@ All use environment variables from `.env` file.
 ## Important Conventions
 
 - Entity names are singular (Player, not Players)
-- Services are named `[Entity]Service` or `[Entity]APIService`
-- Policies are named `[Entity]Policy` or `[Entity]APIPolicy`
+- Router functions are named `[feature]Router` or `[feature]APIRouter`
 - Test files end with `.test.ts`
 - Migration files: `[Timestamp][PascalCaseDescription].ts`
 - Use lazy loading for entity relationships to avoid circular dependencies
-- Always check authorization in policies before handler execution
-- API endpoints require scope checks; protected endpoints require user access checks
+- API endpoints require scope checks via `requireScopes()` middleware
+- Protected endpoints require user type checks via `userTypeGate()` or `ownerGate()` middleware

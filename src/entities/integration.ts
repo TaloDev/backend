@@ -1,5 +1,4 @@
 import { Entity, EntityManager, Enum, Filter, ManyToOne, PrimaryKey, Property } from '@mikro-orm/mysql'
-import { Request } from 'koa-clay'
 import { decrypt, encrypt } from '../lib/crypto/string-encryption'
 import Game from './game'
 import { authenticateTicket, cleanupSteamworksLeaderboardEntry, cleanupSteamworksPlayerStat, createSteamworksLeaderboard, createSteamworksLeaderboardEntry, deleteSteamworksLeaderboard, deleteSteamworksLeaderboardEntry, setSteamworksStat, syncSteamworksLeaderboards, syncSteamworksStats } from '../lib/integrations/steamworks-integration'
@@ -162,10 +161,10 @@ export default class Integration {
     }
   }
 
-  async getPlayerIdentifier(req: Request, identifier: string): Promise<string> {
+  async getPlayerIdentifier(em: EntityManager, identifier: string) {
     switch (this.type) {
       case IntegrationType.STEAMWORKS:
-        return authenticateTicket(req, this, identifier)
+        return authenticateTicket(em, this, identifier)
     }
   }
 

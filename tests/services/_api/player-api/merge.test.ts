@@ -160,11 +160,11 @@ describe('Player API service - merge', () => {
 
     const res = await request(app)
       .post('/v1/players/merge')
-      .send({ playerId1: 'nah', playerId2: player2.id })
+      .send({ playerId1: '600dc817-8664-4a22-8ce6-cce0d2b683dd', playerId2: player2.id })
       .auth(token, { type: 'bearer' })
       .expect(404)
 
-    expect(res.body).toStrictEqual({ message: 'Player nah does not exist' })
+    expect(res.body).toStrictEqual({ message: 'Player 600dc817-8664-4a22-8ce6-cce0d2b683dd does not exist' })
   })
 
   it('should not merge players if alias2 does not exist', async () => {
@@ -176,11 +176,11 @@ describe('Player API service - merge', () => {
 
     const res = await request(app)
       .post('/v1/players/merge')
-      .send({ playerId1: player1.id, playerId2: 'nah' })
+      .send({ playerId1: player1.id, playerId2: '600dc817-8664-4a22-8ce6-cce0d2b683dd' })
       .auth(token, { type: 'bearer' })
       .expect(404)
 
-    expect(res.body).toStrictEqual({ message: 'Player nah does not exist' })
+    expect(res.body).toStrictEqual({ message: 'Player 600dc817-8664-4a22-8ce6-cce0d2b683dd does not exist' })
   })
 
   it('should transfer player2\'s saves to player1', async () => {

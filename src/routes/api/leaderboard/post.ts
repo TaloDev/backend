@@ -6,7 +6,7 @@ import { loadAlias } from '../../../middleware/player-alias-middleware'
 import LeaderboardEntry from '../../../entities/leaderboard-entry'
 import Leaderboard, { LeaderboardSortMode } from '../../../entities/leaderboard'
 import PlayerAlias from '../../../entities/player-alias'
-import { EntityManager, NotFoundError, LockMode } from '@mikro-orm/mysql'
+import { NotFoundError, LockMode } from '@mikro-orm/mysql'
 import { hardSanitiseProps, mergeAndSanitiseProps } from '../../../lib/props/sanitiseProps'
 import { PropSizeError } from '../../../lib/errors/propSizeError'
 import buildErrorResponse from '../../../lib/errors/buildErrorResponse'
@@ -69,7 +69,7 @@ export const postRoute = apiRoute({
   ),
   handler: async (ctx) => {
     const { score, props = [] } = ctx.state.validated.body
-    const em: EntityManager = ctx.em
+    const em = ctx.em
 
     const leaderboard = ctx.state.leaderboard
 

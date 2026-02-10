@@ -139,16 +139,18 @@ describe('Game channel API service - join', () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_CHANNELS])
 
     const player = await new PlayerFactory([apiKey.game]).one()
-    await em.persistAndFlush(player)
+    await em.persist(player).flush()
 
     const res = await request(app)
       .post('/v1/game-channels/abc/join')
       .auth(token, { type: 'bearer' })
       .set('x-talo-alias', String(player.aliases[0].id))
-      .expect(404)
+      .expect(400)
 
     expect(res.body).toStrictEqual({
-      message: 'Channel not found'
+      errors: {
+        id: ['Invalid input: expected number, received NaN']
+      }
     })
   })
 })

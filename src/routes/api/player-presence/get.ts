@@ -45,7 +45,7 @@ export const getRoute = apiRoute({
   docs,
   schema: (z) => ({
     route: z.object({
-      id: z.string().meta({ description: 'The ID of the player' })
+      id: z.uuid().meta({ description: 'The ID of the player' })
     })
   }),
   middleware: withMiddleware(

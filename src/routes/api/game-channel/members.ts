@@ -1,4 +1,4 @@
-import { EntityManager, FilterQuery } from '@mikro-orm/mysql'
+import { FilterQuery } from '@mikro-orm/mysql'
 import { apiRoute, withMiddleware } from '../../../lib/routing/router'
 import { requireScopes } from '../../../middleware/policy-middleware'
 import { APIKeyScope } from '../../../entities/api-key'
@@ -10,6 +10,7 @@ import { DEFAULT_PAGE_SIZE } from '../../../lib/pagination/itemsPerPage'
 import { membersDocs } from './docs'
 import { playerAliasHeaderSchema } from '../../../lib/validation/playerAliasHeaderSchema'
 import { pageSchema } from '../../../lib/validation/pageSchema'
+import { numericStringSchema } from '../../../lib/validation/numericStringSchema'
 
 export const membersRoute = apiRoute({
   method: 'get',
@@ -17,19 +18,19 @@ export const membersRoute = apiRoute({
   docs: membersDocs,
   schema: (z) => ({
     route: z.object({
-      id: z.string().meta({ description: 'The ID of the channel' })
+      id: numericStringSchema.meta({ description: 'The ID of the channel' })
     }),
     headers: z.looseObject({
       'x-talo-alias': playerAliasHeaderSchema
     }),
     query: z.object({
       page: pageSchema.meta({ description: 'The current pagination index (starting at 0)' }),
-      playerId: z.string().optional().meta({ description: 'Filter members by this player ID' }),
-      aliasId: z.coerce.number().optional().meta({ description: 'Find a member with this player alias ID' }),
+      playerId: z.uuid().optional().meta({ description: 'Filter members by this player ID' }),
+      aliasId: numericStringSchema.optional().meta({ description: 'Find a member with this player alias ID' }),
       identifier: z.string().optional().meta({ description: 'Find a member with this identifier' }),
       playerPropKey: z.string().optional().meta({ description: 'Filter members by players with this prop key' }),
       playerPropValue: z.string().optional().meta({ description: 'Filter members by players with matching prop keys and values' }),
-      playerGroupId: z.string().optional().meta({ description: 'Filter members by players in this group' })
+      playerGroupId: z.uuid().optional().meta({ description: 'Filter members by players in this group' })
     })
   }),
   middleware: withMiddleware(
@@ -48,7 +49,7 @@ export const membersRoute = apiRoute({
       playerPropValue,
       playerGroupId
     } = ctx.state.validated.query
-    const em: EntityManager = ctx.em
+    const em = ctx.em
 
     const channel = ctx.state.channel
     const alias = ctx.state.alias

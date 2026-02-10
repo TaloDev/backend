@@ -6,6 +6,7 @@ import { loadChannel, canModifyChannel } from './common'
 import { deleteChannelHandler } from '../../protected/game-channel/delete'
 import { deleteDocs } from './docs'
 import { playerAliasHeaderSchema } from '../../../lib/validation/playerAliasHeaderSchema'
+import { numericStringSchema } from '../../../lib/validation/numericStringSchema'
 
 export const deleteRoute = apiRoute({
   method: 'delete',
@@ -13,7 +14,7 @@ export const deleteRoute = apiRoute({
   docs: deleteDocs,
   schema: (z) => ({
     route: z.object({
-      id: z.string().meta({ description: 'The ID of the channel' })
+      id: numericStringSchema.meta({ description: 'The ID of the channel' })
     }),
     headers: z.looseObject({
       'x-talo-alias': playerAliasHeaderSchema

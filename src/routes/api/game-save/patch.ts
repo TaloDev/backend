@@ -6,6 +6,7 @@ import handleSQLError from '../../../lib/errors/handleSQLError'
 import { decodeContent, loadSave } from './common'
 import { patchDocs } from './docs'
 import { playerHeaderSchema } from '../../../lib/validation/playerHeaderSchema'
+import { numericStringSchema } from '../../../lib/validation/numericStringSchema'
 
 export const patchRoute = apiRoute({
   method: 'patch',
@@ -16,7 +17,7 @@ export const patchRoute = apiRoute({
       'x-talo-player': playerHeaderSchema
     }),
     route: z.object({
-      id: z.string().meta({ description: 'The ID of the save' })
+      id: numericStringSchema.meta({ description: 'The ID of the save' })
     }),
     body: z.object({
       name: z.string().optional().meta({ description: 'A new name for the save' }),

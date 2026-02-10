@@ -5,6 +5,7 @@ import { loadPlayer } from '../../../middleware/player-middleware'
 import { loadSave } from './common'
 import { deleteDocs } from './docs'
 import { playerHeaderSchema } from '../../../lib/validation/playerHeaderSchema'
+import { numericStringSchema } from '../../../lib/validation/numericStringSchema'
 
 export const deleteRoute = apiRoute({
   method: 'delete',
@@ -15,7 +16,7 @@ export const deleteRoute = apiRoute({
       'x-talo-player': playerHeaderSchema
     }),
     route: z.object({
-      id: z.string().meta({ description: 'The ID of the save' })
+      id: numericStringSchema.meta({ description: 'The ID of the save' })
     })
   }),
   middleware: withMiddleware(

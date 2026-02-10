@@ -9,6 +9,7 @@ import { DEFAULT_PAGE_SIZE } from '../../../lib/pagination/itemsPerPage'
 import { withResponseCache } from '../../../lib/perf/responseCache'
 import { endOfDay, startOfDay } from 'date-fns'
 import { pageSchema } from '../../../lib/validation/pageSchema'
+import { numericStringSchema } from '../../../lib/validation/numericStringSchema'
 
 const itemsPerPage = DEFAULT_PAGE_SIZE
 
@@ -217,7 +218,7 @@ export const entriesRoute = protectedRoute({
   schema: (z) => ({
     query: z.object({
       page: pageSchema,
-      aliasId: z.coerce.number().int().optional(),
+      aliasId: numericStringSchema.optional(),
       withDeleted: z.enum(['0', '1']).optional().transform((val) => val === '1'),
       propKey: z.string().optional(),
       propValue: z.string().optional(),

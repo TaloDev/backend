@@ -1,4 +1,3 @@
-import { EntityManager } from '@mikro-orm/mysql'
 import Redis from 'ioredis'
 import { apiRoute, withMiddleware } from '../../../lib/routing/router'
 import { requireScopes } from '../../../middleware/policy-middleware'
@@ -8,6 +7,7 @@ import { loadChannel } from './common'
 import GameChannelStorageProp from '../../../entities/game-channel-storage-prop'
 import { getStorageDocs } from './docs'
 import { playerAliasHeaderSchema } from '../../../lib/validation/playerAliasHeaderSchema'
+import { numericStringSchema } from '../../../lib/validation/numericStringSchema'
 
 export const getStorageRoute = apiRoute({
   method: 'get',
@@ -15,7 +15,7 @@ export const getStorageRoute = apiRoute({
   docs: getStorageDocs,
   schema: (z) => ({
     route: z.object({
-      id: z.string().meta({ description: 'The ID of the channel' })
+      id: numericStringSchema.meta({ description: 'The ID of the channel' })
     }),
     headers: z.looseObject({
       'x-talo-alias': playerAliasHeaderSchema
@@ -31,7 +31,7 @@ export const getStorageRoute = apiRoute({
   ),
   handler: async (ctx) => {
     const { propKey } = ctx.state.validated.query
-    const em: EntityManager = ctx.em
+    const em = ctx.em
 
     const channel = ctx.state.channel
 

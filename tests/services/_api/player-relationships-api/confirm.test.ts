@@ -54,7 +54,7 @@ describe('Player relationships API service - confirm', () => {
     const [, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_PLAYER_RELATIONSHIPS])
 
     const res = await request(app)
-      .put('/v1/players/relationships/some-id/confirm')
+      .put('/v1/players/relationships/123456/confirm')
       .auth(token, { type: 'bearer' })
       .set('x-talo-alias', '999')
       .expect(404)

@@ -1,4 +1,3 @@
-import { EntityManager } from '@mikro-orm/mysql'
 import { apiRoute, withMiddleware } from '../../../lib/routing/router'
 import { requireScopes } from '../../../middleware/policy-middleware'
 import { APIKeyScope } from '../../../entities/api-key'
@@ -7,6 +6,7 @@ import { loadChannel, canModifyChannel, joinChannel } from './common'
 import PlayerAlias from '../../../entities/player-alias'
 import { inviteDocs } from './docs'
 import { playerAliasHeaderSchema } from '../../../lib/validation/playerAliasHeaderSchema'
+import { numericStringSchema } from '../../../lib/validation/numericStringSchema'
 
 export const inviteRoute = apiRoute({
   method: 'post',
@@ -14,7 +14,7 @@ export const inviteRoute = apiRoute({
   docs: inviteDocs,
   schema: (z) => ({
     route: z.object({
-      id: z.string().meta({ description: 'The ID of the channel' })
+      id: numericStringSchema.meta({ description: 'The ID of the channel' })
     }),
     headers: z.looseObject({
       'x-talo-alias': playerAliasHeaderSchema
@@ -30,7 +30,7 @@ export const inviteRoute = apiRoute({
   ),
   handler: async (ctx) => {
     const { inviteeAliasId } = ctx.state.validated.body
-    const em: EntityManager = ctx.em
+    const em = ctx.em
     const channel = ctx.state.channel
 
     if (!canModifyChannel(channel, ctx.state.alias)) {

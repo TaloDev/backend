@@ -14,7 +14,7 @@ describe('Player Presence API service - get', () => {
       .one()
     player.presence = presence
 
-    await em.persistAndFlush(player)
+    await em.persist(player).flush()
 
     const res = await request(app)
       .get(`/v1/players/presence/${player.id}`)
@@ -29,7 +29,7 @@ describe('Player Presence API service - get', () => {
   it('should return the default presence when the player has no presence', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_PLAYER_PRESENCE])
     const player = await new PlayerFactory([apiKey.game]).one()
-    await em.persistAndFlush(player)
+    await em.persist(player).flush()
 
     const res = await request(app)
       .get(`/v1/players/presence/${player.id}`)
@@ -41,10 +41,12 @@ describe('Player Presence API service - get', () => {
   })
 
   it('should not find presence if the scope is missing', async () => {
-    const [, token] = await createAPIKeyAndToken([])
+    const [apiKey, token] = await createAPIKeyAndToken([])
+    const player = await new PlayerFactory([apiKey.game]).one()
+    await em.persist(player).flush()
 
     await request(app)
-      .get('/v1/players/presence/123')
+      .get(`/v1/players/presence/${player.id}`)
       .auth(token, { type: 'bearer' })
       .expect(403)
   })
@@ -53,7 +55,7 @@ describe('Player Presence API service - get', () => {
     const [, token] = await createAPIKeyAndToken([APIKeyScope.READ_PLAYER_PRESENCE])
 
     const res = await request(app)
-      .get('/v1/players/presence/non-existent-id')
+      .get('/v1/players/presence/240fd578-0367-45d8-b0a3-f451f9d0a9a2')
       .auth(token, { type: 'bearer' })
       .expect(404)
 

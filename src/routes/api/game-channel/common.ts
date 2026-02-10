@@ -11,15 +11,10 @@ type GameChannelRouteState = PlayerAliasRouteState & {
 
 export const loadChannel = async (ctx: APIRouteContext<GameChannelRouteState>, next: Next) => {
   const { id } = ctx.params as { id: string }
-  const em: EntityManager = ctx.em
-
-  const channelId = Number(id)
-  if (isNaN(channelId)) {
-    ctx.throw(404, 'Channel not found')
-  }
+  const em = ctx.em
 
   const channel = await em.repo(GameChannel).findOne({
-    id: channelId,
+    id: Number(id),
     game: ctx.state.game
   }, {
     populate: ['members:ref']

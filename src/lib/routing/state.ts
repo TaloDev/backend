@@ -23,6 +23,7 @@ export type APIRouteState = {
   includeDevData: boolean
   currentPlayerId?: string
   currentAliasId?: number
+  continuityDate?: Date
 }
 
 export type RouteState = PublicRouteState | ProtectedRouteState | APIRouteState

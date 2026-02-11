@@ -6,7 +6,6 @@ import { Next } from 'koa'
 
 export type GameStatRouteState = {
   stat: GameStat
-  continuityDate?: Date
 }
 
 async function fetchStat(ctx: APIRouteContext) {

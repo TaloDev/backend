@@ -6,7 +6,6 @@ import { PlayerAliasRouteState } from '../../../middleware/player-alias-middlewa
 type GameFeedbackCategoryRouteContext = APIRouteContext<
   PlayerAliasRouteState & {
     category: GameFeedbackCategory
-    continuityDate?: Date
   }
 >
 

@@ -25,7 +25,7 @@ export async function protectedRouteActorMiddleware(ctx: ProtectedRouteContext, 
     try {
       ctx.state.user = await getUserFromToken(ctx)
     } catch {
-      ctx.throw(401)
+      return next()
     }
     setTraceAttributes({ user_id: ctx.state.jwt.sub })
   }

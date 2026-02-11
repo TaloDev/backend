@@ -70,7 +70,7 @@
     "@opentelemetry/api": "^1.9.0",
     "@sentry/node": "^9.29.0",
     "archiver": "^7.0.1",
-    "axios": "^1.12.1",
+    "axios": "^1.13.5",
     "bcrypt": "^6.0.0",
     "bullmq": "^5.40.2",
     "bullmq-otel": "^1.0.1",

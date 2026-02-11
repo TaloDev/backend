@@ -9,9 +9,9 @@ export async function apiRouteAuthMiddleware(ctx: Context, next: Next) {
       isRevoked: async (ctx) => ctx.state.key.revokedAt !== null,
       key: 'jwt'
     })(ctx, next)
-  } else {
-    await next()
   }
+
+  await next()
 }
 
 export async function apiRouteActorMiddleware(ctx: Context, next: Next) {

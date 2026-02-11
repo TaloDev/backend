@@ -18,9 +18,6 @@ export function isProtectedRoute(ctx: Context) {
 
 export function getRouteActor(ctx: Context) {
   const jwt = ctx.state.jwt
-  if (!jwt) {
-    return null
-  }
 
   if (jwt.api) {
     return 'api' as const

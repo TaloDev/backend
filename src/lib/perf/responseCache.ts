@@ -1,8 +1,12 @@
 import { captureException } from '@sentry/node'
 import Redis from 'ioredis'
-import { Response } from 'koa-clay'
 import { clearCachePattern } from './clearCachePattern'
 import { createRedisConnection, RESPONSE_CACHE_DB } from '../../config/redis.config'
+
+type Response<T = unknown> = {
+  status: number
+  body?: T
+}
 
 let redis: Redis
 

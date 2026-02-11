@@ -1,6 +1,6 @@
+import { RouteDocs } from '../../../lib/docs/docs-registry'
 import { apiRouter } from '../../../lib/routing/router'
 import { createSocketTicket } from '../../../lib/sockets/createSocketTicket'
-import { RouteDocs } from 'koa-clay'
 
 export function socketTicketAPIRouter() {
   return apiRouter('/v1/socket-tickets', ({ route }) => {

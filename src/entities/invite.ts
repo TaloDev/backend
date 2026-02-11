@@ -1,5 +1,4 @@
 import { Entity, Enum, ManyToOne, PrimaryKey, Property } from '@mikro-orm/mysql'
-import { Required, ValidationCondition } from 'koa-clay'
 import Organisation from './organisation'
 import User, { UserType } from './user'
 
@@ -11,16 +10,9 @@ export default class Invite {
   @Property()
   token: string = this.generateToken()
 
-  @Required()
   @Property()
   email!: string
 
-  @Required({
-    validation: async (value: unknown): Promise<ValidationCondition[]> => [{
-      check: [UserType.ADMIN, UserType.DEV].includes(value as UserType),
-      error: 'You can only invite an admin or developer user'
-    }]
-  })
   @Enum(() => UserType)
   type: UserType = UserType.DEV
 

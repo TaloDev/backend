@@ -82,7 +82,6 @@
     "jsonwebtoken": "^9.0.0",
     "koa": "^3.1.1",
     "koa-bodyparser": "^4.4.1",
-    "koa-clay": "^9.0.0",
     "koa-compose": "^4.1.0",
     "koa-compress": "^5.1.1",
     "koa-helmet": "^7.0.0",

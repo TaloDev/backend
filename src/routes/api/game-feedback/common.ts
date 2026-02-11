@@ -10,7 +10,7 @@ type GameFeedbackCategoryRouteContext = APIRouteContext<
   }
 >
 
-export const loadCategory = async (ctx: GameFeedbackCategoryRouteContext, next: Next) => {
+export async function loadCategory(ctx: GameFeedbackCategoryRouteContext, next: Next) {
   const { internalName } = ctx.params
 
   const category = await ctx.em.repo(GameFeedbackCategory).findOne({

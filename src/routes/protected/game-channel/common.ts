@@ -7,7 +7,7 @@ type GameChannelRouteContext = ProtectedRouteContext<
   GameRouteState & { channel: GameChannel }
 >
 
-export const loadChannel = async (ctx: GameChannelRouteContext, next: Next) => {
+export async function loadChannel(ctx: GameChannelRouteContext, next: Next) {
   const { id } = ctx.params as { id: string }
   const em = ctx.em
 

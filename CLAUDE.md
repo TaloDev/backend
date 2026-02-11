@@ -321,7 +321,7 @@ import bcrypt from 'bcrypt'
 import { ProtectedRouteContext } from '../../../lib/routing/context'
 import { Next } from 'koa'
 
-export const confirmPassword = async (ctx: ProtectedRouteContext, next: Next) => {
+export async function confirmPassword(ctx: ProtectedRouteContext, next: Next) {
   const { password } = ctx.request.body as { password: string }
   const user = ctx.state.user
 
@@ -333,7 +333,7 @@ export const confirmPassword = async (ctx: ProtectedRouteContext, next: Next) =>
   await next()
 }
 
-export const requires2fa = async (ctx: ProtectedRouteContext, next: Next) => {
+export async function requires2fa(ctx: ProtectedRouteContext, next: Next) {
   const user = ctx.state.user
 
   if (!user.twoFactorAuth?.enabled) {
@@ -400,7 +400,7 @@ export type PlayerAliasRouteState = {
   currentAliasId?: number
 }
 
-export const loadAlias = async (ctx: APIRouteContext<PlayerAliasRouteState>, next: Next) => {
+export async function loadAlias(ctx: APIRouteContext<PlayerAliasRouteState>, next: Next) {
   // ... load alias into ctx.state.alias
 }
 
@@ -411,7 +411,7 @@ type GameFeedbackCategoryRouteContext = APIRouteContext<
   PlayerAliasRouteState & { category: GameFeedbackCategory, continuityDate?: Date }
 >
 
-export const loadCategory = async (ctx: GameFeedbackCategoryRouteContext, next: Next) => {
+export async function loadCategory(ctx: GameFeedbackCategoryRouteContext, next: Next) {
   // ctx.state has access to both alias (from PlayerAliasRouteState) and category
 }
 ```

@@ -24,17 +24,17 @@ async function fetchStat(ctx: APIRouteContext) {
   return stat
 }
 
-export const loadStat = async (ctx: APIRouteContext<GameStatRouteState>, next: Next) => {
+export async function loadStat(ctx: APIRouteContext<GameStatRouteState>, next: Next) {
   ctx.state.stat = await fetchStat(ctx)
   await next()
 }
 
-export const loadStatWithPlayer = async (ctx: APIRouteContext<GameStatRouteState & PlayerRouteState>, next: Next) => {
+export async function loadStatWithPlayer(ctx: APIRouteContext<GameStatRouteState & PlayerRouteState>, next: Next) {
   ctx.state.stat = await fetchStat(ctx)
   await next()
 }
 
-export const loadStatWithAlias = async (ctx: APIRouteContext<GameStatRouteState & PlayerAliasRouteState>, next: Next) => {
+export async function loadStatWithAlias(ctx: APIRouteContext<GameStatRouteState & PlayerAliasRouteState>, next: Next) {
   ctx.state.stat = await fetchStat(ctx)
   await next()
 }

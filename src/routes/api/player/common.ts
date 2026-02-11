@@ -22,12 +22,12 @@ async function fetchPlayer(ctx: APIRouteContext<PlayerRouteState>, loadAliases =
   return player
 }
 
-export const loadPlayer = async (ctx: APIRouteContext<PlayerRouteState>, next: Next) => {
+export async function loadPlayer(ctx: APIRouteContext<PlayerRouteState>, next: Next) {
   ctx.state.player = await fetchPlayer(ctx)
   await next()
 }
 
-export const loadPlayerWithAliases = async (ctx: APIRouteContext<PlayerRouteState>, next: Next) => {
+export async function loadPlayerWithAliases(ctx: APIRouteContext<PlayerRouteState>, next: Next) {
   ctx.state.player = await fetchPlayer(ctx, true)
   await next()
 }

@@ -9,7 +9,7 @@ type GameChannelRouteState = PlayerAliasRouteState & {
   channel: GameChannel
 }
 
-export const loadChannel = async (ctx: APIRouteContext<GameChannelRouteState>, next: Next) => {
+export async function loadChannel(ctx: APIRouteContext<GameChannelRouteState>, next: Next) {
   const { id } = ctx.params as { id: string }
   const em = ctx.em
 

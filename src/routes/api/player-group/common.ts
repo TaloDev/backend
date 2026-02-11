@@ -7,7 +7,7 @@ type PlayerGroupRouteState = APIRouteState & {
   group: PlayerGroup
 }
 
-export const loadGroup = async (ctx: APIRouteContext<PlayerGroupRouteState>, next: Next) => {
+export async function loadGroup(ctx: APIRouteContext<PlayerGroupRouteState>, next: Next) {
   const { id } = ctx.params
 
   const group = await ctx.em.getRepository(PlayerGroup).findOne({

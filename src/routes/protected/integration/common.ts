@@ -16,7 +16,7 @@ type IntegrationUpdateableKeys = {
   [key in IntegrationType]: (keyof IntegrationConfig)[]
 }
 
-export const loadIntegration = async (ctx: IntegrationRouteContext, next: Next) => {
+export async function loadIntegration(ctx: IntegrationRouteContext, next: Next) {
   const { id } = ctx.params as { id: string }
   const em = ctx.em
 

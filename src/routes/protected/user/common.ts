@@ -2,7 +2,7 @@ import bcrypt from 'bcrypt'
 import { ProtectedRouteContext } from '../../../lib/routing/context'
 import { Next } from 'koa'
 
-export const confirmPassword = async (ctx: ProtectedRouteContext, next: Next) => {
+export async function confirmPassword(ctx: ProtectedRouteContext, next: Next) {
   const { password } = ctx.request.body as { password: string }
   const user = ctx.state.user
 
@@ -14,7 +14,7 @@ export const confirmPassword = async (ctx: ProtectedRouteContext, next: Next) =>
   await next()
 }
 
-export const requires2fa = async (ctx: ProtectedRouteContext, next: Next) => {
+export async function requires2fa(ctx: ProtectedRouteContext, next: Next) {
   const user = ctx.state.user
 
   if (!user.twoFactorAuth?.enabled) {

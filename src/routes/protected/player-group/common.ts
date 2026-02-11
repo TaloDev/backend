@@ -11,7 +11,7 @@ type PlayerGroupRouteContext = ProtectedRouteContext<
   GameRouteState & { group: PlayerGroup }
 >
 
-export const loadGroup = async (ctx: PlayerGroupRouteContext, next: Next) => {
+export async function loadGroup(ctx: PlayerGroupRouteContext, next: Next) {
   const { id } = ctx.params as { id: string }
   const em = ctx.em
 

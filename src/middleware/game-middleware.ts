@@ -5,7 +5,7 @@ import { ProtectedRouteContext } from '../lib/routing/context'
 export type GameRouteState = { game: Game }
 type GameRouteContext = ProtectedRouteContext<GameRouteState>
 
-export const loadGame = async (ctx: GameRouteContext, next: Next) => {
+export async function loadGame(ctx: GameRouteContext, next: Next) {
   const { gameId } = ctx.params as { gameId: string }
   const em = ctx.em
 

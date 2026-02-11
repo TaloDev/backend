@@ -7,7 +7,7 @@ export type PlayerRouteState = {
   currentPlayerId?: string
 }
 
-export const loadPlayer = async (ctx: APIRouteContext<PlayerRouteState>, next: Next) => {
+export async function loadPlayer(ctx: APIRouteContext<PlayerRouteState>, next: Next) {
   const player = await ctx.em.repo(Player).findOne({
     id: ctx.state.currentPlayerId,
     game: ctx.state.game

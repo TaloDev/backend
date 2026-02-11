@@ -8,32 +8,27 @@ import { gameSaveAPIRouter } from '../routes/api/game-save'
 import { leaderboardAPIRouter } from '../routes/api/leaderboard'
 import { eventAPIRouter } from '../routes/api/event'
 import { playerAPIRouter } from '../routes/api/player'
-import limiterMiddleware from '../middleware/limiter-middleware'
+import { limiterMiddleware } from '../middleware/limiter-middleware'
 import { currentPlayerMiddleware } from '../middleware/current-player-middleware'
-import { apiRouteAuthMiddleware, getRouteInfo } from '../middleware/route-middleware'
-import apiKeyMiddleware from '../middleware/api-key-middleware'
-import playerAuthMiddleware from '../middleware/player-auth-middleware'
-import continunityMiddleware from '../middleware/continunity-middleware'
+import { apiRouteActorMiddleware, apiRouteAuthMiddleware } from '../middleware/api-route-middleware'
+import { apiKeyMiddleware } from '../middleware/api-key-middleware'
+import { playerAuthMiddleware } from '../middleware/player-auth-middleware'
+import { continuityMiddleware } from '../middleware/continuity-middleware'
 import { playerGroupAPIRouter } from '../routes/api/player-group'
 import { playerPresenceAPIRouter } from '../routes/api/player-presence'
 import { playerRelationshipAPIRouter } from '../routes/api/player-relationship'
 import { gameChannelAPIRouter } from '../routes/api/game-channel'
 import { playerAuthAPIRouter } from '../routes/api/player-auth'
 
-export default function configureAPIRoutes(app: Koa) {
+export function configureAPIRoutes(app: Koa) {
   app.use(apiKeyMiddleware)
   app.use(apiRouteAuthMiddleware)
+  app.use(apiRouteActorMiddleware)
   app.use(limiterMiddleware)
-
-  app.use(async function apiRouteMiddleware(ctx, next) {
-    const route = getRouteInfo(ctx)
-    if (route.isAPIRoute && !route.isAPICall) ctx.throw(401)
-    await next()
-  })
 
   app.use(currentPlayerMiddleware)
   app.use(playerAuthMiddleware)
-  app.use(continunityMiddleware)
+  app.use(continuityMiddleware)
 
   app.use(eventAPIRouter().routes())
   app.use(gameChannelAPIRouter().routes())

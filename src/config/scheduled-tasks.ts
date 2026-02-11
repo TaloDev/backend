@@ -15,7 +15,7 @@ function addScheduledTask(name: string, task: () => Promise<void>, pattern: stri
   )
 }
 
-export default async function initScheduledTasks() {
+export async function initScheduledTasks() {
   const tasks = [
     addScheduledTask('archive-leaderboard-entries', archiveLeaderboardEntries, '0 0 0 * * *'), // midnight daily
     addScheduledTask('delete-inactive-players', deleteInactivePlayers, '0 0 0 1 * *'), // midnight on the first day of the month

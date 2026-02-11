@@ -1,5 +1,5 @@
 import { Context, Next } from 'koa'
-import { isAPIRoute } from './route-middleware'
+import { isAPIRoute } from '../lib/routing/route-info'
 import getAPIKeyFromToken from '../lib/auth/getAPIKeyFromToken'
 import { EntityManager } from '@mikro-orm/mysql'
 import { setTraceAttributes } from '@hyperdx/node-opentelemetry'
@@ -23,9 +23,9 @@ async function updateLastUsedAt(ctx: Context, apiKey: Pick<APIKey, 'id' | 'revok
   }
 }
 
-export default async function apiKeyMiddleware(ctx: Context, next: Next): Promise<void> {
+export async function apiKeyMiddleware(ctx: Context, next: Next) {
   if (!isAPIRoute(ctx)) {
-    return await next()
+    return next()
   }
 
   const apiKey = await getAPIKeyFromToken(ctx.headers?.authorization ?? '')

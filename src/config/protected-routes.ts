@@ -12,37 +12,15 @@ import { headlineRouter } from '../routes/protected/headline'
 import { playerRouter } from '../routes/protected/player'
 import { billingRouter } from '../routes/protected/billing'
 import { integrationRouter } from '../routes/protected/integration'
-import { getRouteInfo, protectedRouteAuthMiddleware } from '../middleware/route-middleware'
-import { setTraceAttributes } from '@hyperdx/node-opentelemetry'
 import { userRouter } from '../routes/protected/user'
 import { gameRouter } from '../routes/protected/game'
 import { inviteRouter } from '../routes/protected/invite'
 import { organisationRouter } from '../routes/protected/organisation'
-import { getUserFromToken } from '../lib/auth/getUserFromToken'
-import { ProtectedRouteContext } from '../lib/routing/context'
+import { protectedRouteAuthMiddleware, protectedRouteActorMiddleware } from '../middleware/protected-route-middleware'
 
-export default function protectedRoutes(app: Koa) {
+export function configureProtectedRoutes(app: Koa) {
   app.use(protectedRouteAuthMiddleware)
-
-  app.use(async (ctx, next) => {
-    const route = getRouteInfo(ctx)
-
-    if (route.isProtectedRoute) {
-      if (route.isAPICall) {
-        ctx.throw(401)
-      }
-
-      try {
-        ctx.state.user = await getUserFromToken(ctx as ProtectedRouteContext)
-      } catch {
-        return await next()
-      }
-
-      setTraceAttributes({ user_id: ctx.state.jwt.sub })
-    }
-
-    await next()
-  })
+  app.use(protectedRouteActorMiddleware)
 
   app.use(apiKeyRouter().routes())
   app.use(billingRouter().routes())

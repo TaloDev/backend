@@ -1,5 +1,5 @@
 import { Context, Next } from 'koa'
-import { isAPIRoute } from './route-middleware'
+import { isAPIRoute } from '../lib/routing/route-info'
 import getAPIKeyFromToken from '../lib/auth/getAPIKeyFromToken'
 import { EntityManager } from '@mikro-orm/mysql'
 import { setTraceAttributes } from '@hyperdx/node-opentelemetry'
@@ -23,30 +23,32 @@ async function updateLastUsedAt(ctx: Context, apiKey: Pick<APIKey, 'id' | 'revok
   }
 }
 
-export default async function apiKeyMiddleware(ctx: Context, next: Next): Promise<void> {
-  if (!isAPIRoute(ctx)) {
-    return await next()
-  }
+export async function apiKeyMiddleware(ctx: Context, next: Next) {
+  if (isAPIRoute(ctx)) {
+    try {
+      const apiKey = await getAPIKeyFromToken(ctx.headers?.authorization ?? '')
+      if (apiKey) {
+        ctx.state.key = apiKey
+        ctx.state.secret = apiKey.game.apiSecret.getPlainSecret()
+        ctx.state.game = apiKey.game
 
-  const apiKey = await getAPIKeyFromToken(ctx.headers?.authorization ?? '')
-  if (apiKey) {
-    ctx.state.key = apiKey
-    ctx.state.secret = apiKey.game.apiSecret.getPlainSecret()
-    ctx.state.game = apiKey.game
+        setTraceAttributes({ game_id: apiKey.game.id })
 
-    setTraceAttributes({ game_id: apiKey.game.id })
-
-    /* v8 ignore start */
-    const now = new Date()
-    if (process.env.NODE_ENV !== 'test') {
-      ctx.res.on('finish', async () => {
-        await updateLastUsedAt(ctx, apiKey, now)
-      })
-    } else {
-      // in tests the connection would already be closed after the response is sent
-      await updateLastUsedAt(ctx, apiKey, now)
+        /* v8 ignore start */
+        const now = new Date()
+        if (process.env.NODE_ENV !== 'test') {
+          ctx.res.on('finish', async () => {
+            await updateLastUsedAt(ctx, apiKey, now)
+          })
+        } else {
+          // in tests the connection would already be closed after the response is sent
+          await updateLastUsedAt(ctx, apiKey, now)
+        }
+        /* v8 ignore stop */
+      }
+    } catch {
+      ctx.throw(401)
     }
-    /* v8 ignore stop */
   }
 
   await next()

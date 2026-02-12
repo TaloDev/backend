@@ -7,7 +7,7 @@ type FeedbackCategoryRouteContext = ProtectedRouteContext<
   GameRouteState & { feedbackCategory: GameFeedbackCategory }
 >
 
-export const loadFeedbackCategory = async (ctx: FeedbackCategoryRouteContext, next: Next) => {
+export async function loadFeedbackCategory(ctx: FeedbackCategoryRouteContext, next: Next) {
   const { id } = ctx.params as { id: string }
   const em = ctx.em
 

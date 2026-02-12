@@ -3,12 +3,12 @@ import type { EntityManager } from '@mikro-orm/mysql'
 import { getMikroORM } from './mikro-orm.config'
 import createClickHouseClient from '../lib/clickhouse/createClient'
 import { runClickHouseMigrations } from '../migrations/clickhouse'
-import initScheduledTasks from './scheduled-tasks'
+import { initScheduledTasks } from './scheduled-tasks'
 import { setupKoaErrorHandler as setupSentryErrorHandler } from '@sentry/node'
 import { createRedisConnection } from './redis.config'
 import { setupGlobalQueues } from './global-queues'
 
-export default async function initProviders(app: Koa, isTest: boolean) {
+export async function initProviders(app: Koa, isTest: boolean) {
   try {
     const orm = await getMikroORM()
     app.context.em = orm.em as EntityManager

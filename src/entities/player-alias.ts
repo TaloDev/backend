@@ -78,7 +78,7 @@ export default class PlayerAlias {
     return { identifier: trimmedIdentifier }
   }
 
-  async createSocketToken(redis: Redis): Promise<string> {
+  async createSocketToken(redis: Redis) {
     const token = v4()
     await redis.set(`socketTokens.${this.id}`, token, 'EX', 3600)
     return token
@@ -113,13 +113,11 @@ export default class PlayerAlias {
   }
 
   toJSON() {
-    const player = { ...this.player.toJSON(), aliases: undefined }
-
     return {
       id: this.id,
       service: this.service,
       identifier: this.identifier,
-      player,
+      player: { ...this.player.toJSON(), aliases: undefined },
       lastSeenAt: this.lastSeenAt,
       createdAt: this.createdAt,
       updatedAt: this.updatedAt

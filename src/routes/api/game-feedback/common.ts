@@ -6,11 +6,10 @@ import { PlayerAliasRouteState } from '../../../middleware/player-alias-middlewa
 type GameFeedbackCategoryRouteContext = APIRouteContext<
   PlayerAliasRouteState & {
     category: GameFeedbackCategory
-    continuityDate?: Date
   }
 >
 
-export const loadCategory = async (ctx: GameFeedbackCategoryRouteContext, next: Next) => {
+export async function loadCategory(ctx: GameFeedbackCategoryRouteContext, next: Next) {
   const { internalName } = ctx.params
 
   const category = await ctx.em.repo(GameFeedbackCategory).findOne({

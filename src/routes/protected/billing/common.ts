@@ -10,7 +10,7 @@ import assert from 'node:assert'
 
 type RequireStripeContext = ProtectedRouteContext<{ stripe: Stripe }>
 
-export const requireStripe = async (ctx: RequireStripeContext, next: Next) => {
+export async function requireStripe(ctx: RequireStripeContext, next: Next) {
   const stripe = initStripe()
   if (!stripe) {
     ctx.throw(405)

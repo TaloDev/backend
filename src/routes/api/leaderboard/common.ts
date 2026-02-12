@@ -5,10 +5,9 @@ import { PlayerAliasRouteState } from '../../../middleware/player-alias-middlewa
 
 export type LeaderboardRouteState = PlayerAliasRouteState & {
   leaderboard: Leaderboard
-  continuityDate?: Date
 }
 
-export const loadLeaderboard = async (ctx: APIRouteContext<LeaderboardRouteState>, next: Next) => {
+export async function loadLeaderboard(ctx: APIRouteContext<LeaderboardRouteState>, next: Next) {
   const { internalName } = ctx.params
 
   const leaderboard = await ctx.em.repo(Leaderboard).findOne({

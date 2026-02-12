@@ -7,7 +7,7 @@ export type GameSaveRouteState = PlayerRouteState & {
   save: GameSave
 }
 
-export const loadSave = async (ctx: APIRouteContext<GameSaveRouteState>, next: Next) => {
+export async function loadSave(ctx: APIRouteContext<GameSaveRouteState>, next: Next) {
   const { id } = ctx.params
 
   const save = await ctx.em.repo(GameSave).findOne({

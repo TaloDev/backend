@@ -2,7 +2,7 @@ import { Context, Next } from 'koa'
 import * as Sentry from '@sentry/node'
 import { recordException as hdxRecordException } from '@hyperdx/node-opentelemetry'
 
-export default async function errorMiddleware(ctx: Context, next: Next) {
+export async function errorMiddleware(ctx: Context, next: Next) {
   try {
     await next()
   } catch (err) {

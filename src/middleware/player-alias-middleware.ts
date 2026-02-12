@@ -6,7 +6,7 @@ export type PlayerAliasRouteState = {
   alias: PlayerAlias
 }
 
-export const loadAlias = async (ctx: APIRouteContext<PlayerAliasRouteState>, next: Next) => {
+export async function loadAlias(ctx: APIRouteContext<PlayerAliasRouteState>, next: Next) {
   const playerAlias = await ctx.em.repo(PlayerAlias).findOne({
     id: ctx.state.currentAliasId,
     player: {

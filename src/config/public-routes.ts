@@ -6,7 +6,7 @@ import { invitePublicRouter } from '../routes/public/invite-public'
 import { webhookRouter } from '../routes/public/webhook'
 import { documentationRouter } from '../routes/public/documentation'
 
-export default function configurePublicRoutes(app: Koa) {
+export function configurePublicRoutes(app: Koa) {
   app.use(documentationRouter().routes())
   app.use(healthCheckRouter().routes())
   app.use(userPublicRouter().routes())

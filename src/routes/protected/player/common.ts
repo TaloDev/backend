@@ -7,7 +7,7 @@ type PlayerRouteContext = ProtectedRouteContext<
   GameRouteState & { player: Player }
 >
 
-export const loadPlayer = async (ctx: PlayerRouteContext, next: Next) => {
+export async function loadPlayer(ctx: PlayerRouteContext, next: Next) {
   const { id } = ctx.params as { id: string }
   const em = ctx.em
 

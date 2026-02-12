@@ -10,7 +10,7 @@ import { eventAPIRouter } from '../routes/api/event'
 import { playerAPIRouter } from '../routes/api/player'
 import { limiterMiddleware } from '../middleware/limiter-middleware'
 import { currentPlayerMiddleware } from '../middleware/current-player-middleware'
-import { apiRouteActorMiddleware, apiRouteAuthMiddleware } from '../middleware/api-route-middleware'
+import { apiRouteAuthMiddleware } from '../middleware/api-route-middleware'
 import { apiKeyMiddleware } from '../middleware/api-key-middleware'
 import { playerAuthMiddleware } from '../middleware/player-auth-middleware'
 import { continuityMiddleware } from '../middleware/continuity-middleware'
@@ -23,7 +23,6 @@ import { playerAuthAPIRouter } from '../routes/api/player-auth'
 export function configureAPIRoutes(app: Koa) {
   app.use(apiKeyMiddleware)
   app.use(apiRouteAuthMiddleware)
-  app.use(apiRouteActorMiddleware)
   app.use(limiterMiddleware)
 
   app.use(currentPlayerMiddleware)

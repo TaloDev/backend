@@ -3,7 +3,7 @@ import jwt from 'koa-jwt'
 import { setTraceAttributes } from '@hyperdx/node-opentelemetry'
 import { ProtectedRouteContext } from '../lib/routing/context'
 import { getUserFromToken } from '../lib/auth/getUserFromToken'
-import { getRouteActor, isProtectedRoute } from '../lib/routing/route-info'
+import { isProtectedRoute } from '../lib/routing/route-info'
 
 export async function protectedRouteAuthMiddleware(ctx: Context, next: Next) {
   if (isProtectedRoute(ctx)) {
@@ -16,12 +16,8 @@ export async function protectedRouteAuthMiddleware(ctx: Context, next: Next) {
   }
 }
 
-export async function protectedRouteActorMiddleware(ctx: ProtectedRouteContext, next: Next) {
+export async function protectedRouteUserMiddleware(ctx: ProtectedRouteContext, next: Next) {
   if (isProtectedRoute(ctx)) {
-    if (getRouteActor(ctx) !== 'user') {
-      ctx.throw(401)
-    }
-
     try {
       ctx.state.user = await getUserFromToken(ctx)
     } catch {

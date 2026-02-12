@@ -15,13 +15,3 @@ export function isAPIRoute(ctx: Context) {
 export function isProtectedRoute(ctx: Context) {
   return !isPublicRoute(ctx) && !isAPIRoute(ctx)
 }
-
-export function getRouteActor(ctx: Context) {
-  const jwt = ctx.state.jwt
-
-  if (jwt.api) {
-    return 'api' as const
-  }
-
-  return 'user' as const
-}

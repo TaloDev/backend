@@ -47,13 +47,13 @@ export const registerRoute = apiRoute({
       })
     } catch (err) {
       if (err instanceof PlayerCreationError) {
-        ctx.throw(err.statusCode, {
+        return ctx.throw(err.statusCode, {
           message: err.message,
           errorCode: err.errorCode
         })
       }
       if (err instanceof PricingPlanLimitError) {
-        ctx.throw(402, err.message)
+        return ctx.throw(402, err.message)
       }
       throw err
     }
@@ -67,7 +67,7 @@ export const registerRoute = apiRoute({
       if (emailRegex.test(sanitisedEmail)) {
         alias.player.auth.email = sanitisedEmail
       } else {
-        ctx.throw(400, {
+        return ctx.throw(400, {
           message: 'Invalid email address',
           errorCode: 'INVALID_EMAIL'
         })

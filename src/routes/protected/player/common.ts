@@ -20,7 +20,7 @@ export async function loadPlayer(ctx: PlayerRouteContext, next: Next) {
   })
 
   if (!player) {
-    ctx.throw(404, 'Player not found')
+    return ctx.throw(404, 'Player not found')
   }
 
   ctx.state.player = player

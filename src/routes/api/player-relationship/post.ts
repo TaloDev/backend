@@ -42,7 +42,7 @@ export const postRoute = apiRoute({
     }
 
     if (currentAlias.id === subscribedTo.id) {
-      ctx.throw(400, 'Cannot subscribe to yourself')
+      return ctx.throw(400, 'Cannot subscribe to yourself')
     }
 
     const existing = await em.repo(PlayerAliasSubscription).findOne({
@@ -51,7 +51,7 @@ export const postRoute = apiRoute({
     })
 
     if (existing) {
-      ctx.throw(400, 'Subscription already exists')
+      return ctx.throw(400, 'Subscription already exists')
     }
 
     const subscription = new PlayerAliasSubscription(

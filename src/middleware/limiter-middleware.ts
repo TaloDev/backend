@@ -35,7 +35,7 @@ export async function limiterMiddleware(ctx: Context, next: Next): Promise<void>
 
     if (await checkRateLimitExceeded(ctx.redis, redisKey, maxRequests)) {
       ctx.set('Retry-After', '60')
-      ctx.throw(429)
+      return ctx.throw(429)
     }
   }
 

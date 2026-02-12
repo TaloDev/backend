@@ -16,7 +16,7 @@ async function fetchPlayer(ctx: APIRouteContext<PlayerRouteState>, loadAliases =
   }, { populate: loadAliases ? ['aliases'] : undefined })
 
   if (!player) {
-    ctx.throw(404, 'Player not found')
+    return ctx.throw(404, 'Player not found')
   }
 
   return player

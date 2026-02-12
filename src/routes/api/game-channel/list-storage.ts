@@ -44,7 +44,7 @@ export const listStorageRoute = apiRoute({
     const redis: Redis = ctx.redis
 
     if (!channel.hasMember(ctx.state.alias.id)) {
-      ctx.throw(403, 'This player is not a member of the channel')
+      return ctx.throw(403, 'This player is not a member of the channel')
     }
 
     const keys = propKeys

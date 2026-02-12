@@ -87,12 +87,12 @@ export async function loadStat(ctx: StatRouteContext, next: Next) {
   const stat = await em.repo(GameStat).findOne(Number(id), { populate: ['game'] })
 
   if (!stat) {
-    ctx.throw(404, 'Stat not found')
+    return ctx.throw(404, 'Stat not found')
   }
 
   const userOrganisation = ctx.state.user.organisation
   if (stat.game.organisation.id !== userOrganisation.id) {
-    ctx.throw(403)
+    return ctx.throw(403)
   }
 
   ctx.state.stat = stat
@@ -111,7 +111,7 @@ export async function loadPlayerStat(ctx: PlayerStatRouteContext, next: Next) {
   })
 
   if (!playerStat) {
-    ctx.throw(404, 'Player stat not found')
+    return ctx.throw(404, 'Player stat not found')
   }
 
   ctx.state.playerStat = playerStat

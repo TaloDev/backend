@@ -18,7 +18,7 @@ export async function loadCategory(ctx: GameFeedbackCategoryRouteContext, next: 
   })
 
   if (!category) {
-    ctx.throw(404, 'Feedback category not found')
+    return ctx.throw(404, 'Feedback category not found')
   }
 
   ctx.state.category = category

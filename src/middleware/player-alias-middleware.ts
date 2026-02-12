@@ -15,7 +15,7 @@ export async function loadAlias(ctx: APIRouteContext<PlayerAliasRouteState>, nex
   })
 
   if (!playerAlias) {
-    ctx.throw(404, 'Player not found')
+    return ctx.throw(404, 'Player not found')
   }
 
   ctx.state.alias = playerAlias

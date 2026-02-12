@@ -47,7 +47,7 @@ export async function apiKeyMiddleware(ctx: Context, next: Next) {
         /* v8 ignore stop */
       }
     } catch {
-      ctx.throw(401)
+      return ctx.throw(401)
     }
   }
 

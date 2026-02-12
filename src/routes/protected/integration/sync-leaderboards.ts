@@ -17,7 +17,7 @@ export const syncLeaderboardsRoute = protectedRoute({
     const integration = ctx.state.integration
 
     if (!integration.getConfig().syncLeaderboards) {
-      ctx.throw(400, 'Leaderboard syncing is not enabled')
+      return ctx.throw(400, 'Leaderboard syncing is not enabled')
     }
 
     await addLeaderboardSyncJob(integration.id)

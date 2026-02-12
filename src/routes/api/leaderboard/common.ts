@@ -16,7 +16,7 @@ export async function loadLeaderboard(ctx: APIRouteContext<LeaderboardRouteState
   })
 
   if (!leaderboard) {
-    ctx.throw(404, 'Leaderboard not found')
+    return ctx.throw(404, 'Leaderboard not found')
   }
 
   ctx.state.leaderboard = leaderboard

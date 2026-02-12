@@ -21,7 +21,7 @@ export async function loadGroup(ctx: PlayerGroupRouteContext, next: Next) {
   })
 
   if (!group) {
-    ctx.throw(404, 'Group not found')
+    return ctx.throw(404, 'Group not found')
   }
 
   ctx.state.group = group

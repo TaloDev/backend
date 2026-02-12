@@ -32,12 +32,12 @@ export const createRoute = protectedRoute({
 
     const duplicateEmailUser = await em.repo(User).findOne({ email: email.toLowerCase() })
     if (duplicateEmailUser) {
-      ctx.throw(400, 'This email address is already in use')
+      return ctx.throw(400, 'This email address is already in use')
     }
 
     const duplicateEmailInvite = await em.repo(Invite).findOne({ email: email.toLowerCase() })
     if (duplicateEmailInvite) {
-      ctx.throw(400, duplicateEmailInvite.organisation.id === inviter.organisation.id
+      return ctx.throw(400, duplicateEmailInvite.organisation.id === inviter.organisation.id
         ? 'An invite for this email address already exists'
         : 'This email address is already in use'
       )

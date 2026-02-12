@@ -26,7 +26,7 @@ async function sendLiveConfigUpdatedMessage(ctx: ProtectedRouteContext, game: Ga
 
 function throwUnlessOwner(ctx: ProtectedRouteContext) {
   if (ctx.state.user.type !== UserType.OWNER) {
-    ctx.throw(403, 'You do not have permissions to update game settings')
+    return ctx.throw(403, 'You do not have permissions to update game settings')
   }
 }
 

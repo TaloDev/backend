@@ -28,7 +28,7 @@ export const joinRoute = apiRoute({
     const channel = ctx.state.channel
 
     if (channel.private) {
-      ctx.throw(403, 'This channel is private')
+      return ctx.throw(403, 'This channel is private')
     }
 
     await joinChannel(ctx.em, ctx.wss, channel, ctx.state.alias)

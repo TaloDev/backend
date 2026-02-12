@@ -41,7 +41,7 @@ export const mergeRoute = apiRoute({
     const em = ctx.em.fork()
 
     if (playerId1 === playerId2) {
-      ctx.throw(400, 'Cannot merge a player into itself')
+      return ctx.throw(400, 'Cannot merge a player into itself')
     }
 
     const key = ctx.state.key
@@ -76,7 +76,7 @@ export const mergeRoute = apiRoute({
 
     const sharedServices = await findMergeAliasServiceConflicts(em, player1, player2)
     if (sharedServices.size > 0) {
-      ctx.throw(400, `Cannot merge players: both players have aliases with the following service(s): ${Array.from(sharedServices).join(', ')}`)
+      return ctx.throw(400, `Cannot merge players: both players have aliases with the following service(s): ${Array.from(sharedServices).join(', ')}`)
     }
 
     const updatedPlayer = await em.transactional(async (trx) => {

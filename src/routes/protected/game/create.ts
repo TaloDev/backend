@@ -20,7 +20,7 @@ export const createRoute = protectedRoute({
     try {
       game.apiSecret = new GameSecret()
     } catch (err) {
-      ctx.throw(500, (err as Error).message)
+      return ctx.throw(500, (err as Error).message)
     }
     await em.persist(game).flush()
 

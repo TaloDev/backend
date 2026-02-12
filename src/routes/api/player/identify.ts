@@ -46,7 +46,7 @@ export const identifyRoute = apiRoute({
       alias = await findAliasFromIdentifyRequest({ em, key, service, identifier: resolved.identifier })
       if (!alias) {
         if (service === PlayerAliasService.TALO) {
-          ctx.throw(404, 'Player not found: Talo aliases must be created using the /v1/players/auth API')
+          return ctx.throw(404, 'Player not found: Talo aliases must be created using the /v1/players/auth API')
         } else {
           const player = await createPlayerFromIdentifyRequest({
             em,
@@ -66,17 +66,17 @@ export const identifyRoute = apiRoute({
       }
     } catch (err) {
       if (err instanceof PlayerCreationError) {
-        ctx.throw(err.statusCode, {
+        return ctx.throw(err.statusCode, {
           message: err.message,
           errorCode: err.errorCode
         })
       }
       if (err instanceof PricingPlanLimitError) {
-        ctx.throw(402, err.message)
+        return ctx.throw(402, err.message)
       }
       // catches steam integration errors
       if (err instanceof Error && err.cause === 400) {
-        ctx.throw(400, err.message)
+        return ctx.throw(400, err.message)
       }
       throw err
     }

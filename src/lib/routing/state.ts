@@ -21,6 +21,7 @@ export type APIRouteState = {
   key: APIKey
   game: Game
   includeDevData: boolean
+  devBuild: boolean
   currentPlayerId?: string
   currentAliasId?: number
   continuityDate?: Date

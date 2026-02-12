@@ -17,7 +17,7 @@ export const syncStatsRoute = protectedRoute({
     const integration = ctx.state.integration
 
     if (!integration.getConfig().syncStats) {
-      ctx.throw(400, 'Stat syncing is not enabled')
+      return ctx.throw(400, 'Stat syncing is not enabled')
     }
 
     await addStatSyncJob(integration.id)

@@ -17,7 +17,7 @@ export async function loadFeedbackCategory(ctx: FeedbackCategoryRouteContext, ne
   })
 
   if (!feedbackCategory) {
-    ctx.throw(404, 'Feedback category not found')
+    return ctx.throw(404, 'Feedback category not found')
   }
 
   ctx.state.feedbackCategory = feedbackCategory

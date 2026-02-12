@@ -34,7 +34,7 @@ export const inviteRoute = apiRoute({
     const channel = ctx.state.channel
 
     if (!canModifyChannel(channel, ctx.state.alias)) {
-      ctx.throw(403, 'This player is not the owner of the channel')
+      return ctx.throw(403, 'This player is not the owner of the channel')
     }
 
     const inviteeAlias = await em.getRepository(PlayerAlias).findOne({

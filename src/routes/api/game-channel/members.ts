@@ -55,7 +55,7 @@ export const membersRoute = apiRoute({
     const alias = ctx.state.alias
 
     if (!channel.hasMember(alias.id)) {
-      ctx.throw(403, 'This player is not a member of the channel')
+      return ctx.throw(403, 'This player is not a member of the channel')
     }
 
     const playerFilter: FilterQuery<Player> = ctx.state.includeDevData ? {} : { devBuild: false }

@@ -51,7 +51,7 @@ export const putStorageRoute = apiRoute({
     const channel = ctx.state.channel
 
     if (!channel.hasMember(ctx.state.alias.id)) {
-      ctx.throw(403, 'This player is not a member of the channel')
+      return ctx.throw(403, 'This player is not a member of the channel')
     }
 
     const {

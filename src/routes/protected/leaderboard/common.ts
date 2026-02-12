@@ -18,7 +18,7 @@ export function loadLeaderboard(withEntries: boolean = false) {
     }, { populate: withEntries ? ['entries'] : [] })
 
     if (!leaderboard) {
-      ctx.throw(404, 'Leaderboard not found')
+      return ctx.throw(404, 'Leaderboard not found')
     }
 
     ctx.state.leaderboard = leaderboard

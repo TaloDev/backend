@@ -15,12 +15,12 @@ export async function loadGame(ctx: GameRouteContext, next: Next) {
   )
 
   if (!game) {
-    ctx.throw(404, 'Game not found')
+    return ctx.throw(404, 'Game not found')
   }
 
   const userOrganisation = ctx.state.user.organisation
   if (game.organisation.id !== userOrganisation.id) {
-    ctx.throw(403)
+    return ctx.throw(403)
   }
 
   ctx.state.game = game

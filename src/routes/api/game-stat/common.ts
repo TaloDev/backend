@@ -17,7 +17,7 @@ async function fetchStat(ctx: APIRouteContext) {
   })
 
   if (!stat) {
-    ctx.throw(404, 'Stat not found')
+    return ctx.throw(404, 'Stat not found')
   }
 
   return stat

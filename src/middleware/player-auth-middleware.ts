@@ -50,7 +50,7 @@ export async function playerAuthMiddleware(ctx: Context, next: Next) {
 export async function validateAuthSessionToken(ctx: Context, alias: PlayerAliasPartial) {
   const sessionToken = ctx.headers['x-talo-session']
   if (!sessionToken) {
-    ctx.throw(401, {
+    return ctx.throw(401, {
       message: 'The x-talo-session header is required for this player',
       errorCode: 'MISSING_SESSION'
     })
@@ -64,12 +64,12 @@ export async function validateAuthSessionToken(ctx: Context, alias: PlayerAliasP
     ctx.state.currentAliasId
   )
   if (!valid) {
-    throwInvalidSessionError(ctx)
+    return throwInvalidSessionError(ctx)
   }
 }
 
-export function throwInvalidSessionError(ctx: Context) {
-  ctx.throw(401, {
+export function throwInvalidSessionError(ctx: Context): never {
+  return ctx.throw(401, {
     message: 'The x-talo-session header is invalid',
     errorCode: 'INVALID_SESSION'
   })

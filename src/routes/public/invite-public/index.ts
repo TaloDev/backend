@@ -17,7 +17,7 @@ export function invitePublicRouter() {
         })
 
         if (!invite) {
-          ctx.throw(404, 'Invite not found')
+          return ctx.throw(404, 'Invite not found')
         }
 
         return {

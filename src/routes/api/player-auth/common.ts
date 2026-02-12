@@ -33,7 +33,7 @@ export function getRedisPasswordResetKey(key: APIKey, code: string): string {
 }
 
 export function handleFailedLogin(ctx: APIRouteContext): never {
-  ctx.throw(401, { message: 'Incorrect identifier or password', errorCode: 'INVALID_CREDENTIALS' })
+  return ctx.throw(401, { message: 'Incorrect identifier or password', errorCode: 'INVALID_CREDENTIALS' })
 }
 
 export function createPlayerAuthActivity(

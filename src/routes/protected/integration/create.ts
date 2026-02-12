@@ -39,7 +39,7 @@ export const createRoute = protectedRoute({
     })
 
     if (existingIntegration) {
-      ctx.throw(400, `This game already has an integration for ${type}`)
+      return ctx.throw(400, `This game already has an integration for ${type}`)
     }
 
     const integration = new Integration(

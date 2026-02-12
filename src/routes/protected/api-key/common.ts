@@ -17,7 +17,7 @@ export async function loadAPIKey(ctx: APIKeyRouteContext, next: Next) {
   })
 
   if (!apiKey) {
-    ctx.throw(404, 'API key not found')
+    return ctx.throw(404, 'API key not found')
   }
 
   ctx.state.apiKey = apiKey

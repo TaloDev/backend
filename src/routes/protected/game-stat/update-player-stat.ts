@@ -27,11 +27,11 @@ export const updatePlayerStatRoute = protectedRoute({
     const oldValue = playerStat.value
 
     if (newValue < (playerStat.stat.minValue ?? -Infinity)) {
-      ctx.throw(400, `Stat would go below the minValue of ${playerStat.stat.minValue}`)
+      return ctx.throw(400, `Stat would go below the minValue of ${playerStat.stat.minValue}`)
     }
 
     if (newValue > (playerStat.stat.maxValue ?? Infinity)) {
-      ctx.throw(400, `Stat would go above the maxValue of ${playerStat.stat.maxValue}`)
+      return ctx.throw(400, `Stat would go above the maxValue of ${playerStat.stat.maxValue}`)
     }
 
     playerStat.value = newValue

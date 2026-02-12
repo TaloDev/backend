@@ -19,7 +19,7 @@ export const confirmPlanRoute = protectedRoute({
 
     const { prorationDate, pricingPlanId, pricingInterval } = ctx.state.validated.body
     if (!isSameHour(new Date(), new Date(prorationDate * 1000))) {
-      ctx.throw(400)
+      return ctx.throw(400)
     }
 
     const organisation = ctx.state.user.organisation

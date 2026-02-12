@@ -38,7 +38,7 @@ export const putRoute = apiRoute({
     const channel = ctx.state.channel
 
     if (!canModifyChannel(channel, ctx.state.alias)) {
-      ctx.throw(403, 'This player is not the owner of the channel')
+      return ctx.throw(403, 'This player is not the owner of the channel')
     }
 
     const { name, props, ownerAliasId, autoCleanup, private: isPrivate, temporaryMembership } = ctx.state.validated.body

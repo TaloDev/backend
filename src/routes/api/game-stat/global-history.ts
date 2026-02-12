@@ -36,7 +36,7 @@ export const globalHistoryRoute = apiRoute({
 
     const stat = ctx.state.stat
     if (!stat.global) {
-      ctx.throw(400, 'This stat is not globally available')
+      return ctx.throw(400, 'This stat is not globally available')
     }
 
     let whereConditions = await stat.buildMetricsWhereConditions(startDate, endDate)
@@ -49,7 +49,7 @@ export const globalHistoryRoute = apiRoute({
         }, { populate: ['aliases:ref'] })
         whereConditions += ` AND player_alias_id IN (${player.aliases.getIdentifiers().join(', ')})`
       } catch {
-        ctx.throw(404, 'Player not found')
+        return ctx.throw(404, 'Player not found')
       }
     }
 

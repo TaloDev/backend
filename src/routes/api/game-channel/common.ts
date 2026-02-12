@@ -21,7 +21,7 @@ export async function loadChannel(ctx: APIRouteContext<GameChannelRouteState>, n
   })
 
   if (!channel) {
-    ctx.throw(404, 'Channel not found')
+    return ctx.throw(404, 'Channel not found')
   }
 
   ctx.state.channel = channel

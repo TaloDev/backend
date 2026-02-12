@@ -16,7 +16,7 @@ export async function loadSave(ctx: APIRouteContext<GameSaveRouteState>, next: N
   })
 
   if (!save) {
-    ctx.throw(404, 'Save not found')
+    return ctx.throw(404, 'Save not found')
   }
 
   ctx.state.save = save

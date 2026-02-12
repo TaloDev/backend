@@ -8,8 +8,7 @@ export function socketTicketAPIRouter() {
       method: 'post',
       docs,
       handler: async (ctx) => {
-        const devBuild = ctx.headers['x-talo-dev-build'] === '1'
-        const ticket = await createSocketTicket(ctx.redis, ctx.state.key, devBuild)
+        const ticket = await createSocketTicket(ctx.redis, ctx.state.key, ctx.state.devBuild)
 
         return {
           status: 200,

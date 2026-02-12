@@ -10,6 +10,7 @@ import emailRegex from '../../../lib/lang/emailRegex'
 import { createPlayerAuthActivity } from './common'
 import { PlayerAuthActivityType } from '../../../entities/player-auth-activity'
 import { registerDocs } from './docs'
+import Player from '../../../entities/player'
 
 export const registerRoute = apiRoute({
   method: 'post',
@@ -35,15 +36,14 @@ export const registerRoute = apiRoute({
 
     const key = ctx.state.key
 
-    const devBuild = ctx.request.headers['x-talo-dev-build'] === '1'
-    let player
+    let player: Player | null = null
     try {
       player = await createPlayerFromIdentifyRequest({
         em,
         key,
         service: PlayerAliasService.TALO,
         identifier,
-        devBuild
+        devBuild: ctx.state.devBuild
       })
     } catch (err) {
       if (err instanceof PlayerCreationError) {

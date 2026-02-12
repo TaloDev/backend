@@ -48,14 +48,13 @@ export const identifyRoute = apiRoute({
         if (service === PlayerAliasService.TALO) {
           ctx.throw(404, 'Player not found: Talo aliases must be created using the /v1/players/auth API')
         } else {
-          const devBuild = ctx.request.headers['x-talo-dev-build'] === '1'
           const player = await createPlayerFromIdentifyRequest({
             em,
             key,
             service,
             identifier: resolved.identifier,
             initialProps: resolved.initialPlayerProps,
-            devBuild
+            devBuild: ctx.state.devBuild
           })
           alias = player?.aliases[0]
           justCreated = true

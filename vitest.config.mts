@@ -17,8 +17,11 @@ export default defineConfig({
     coverage: {
       provider: 'v8',
       reporter: 'lcov',
+      include: ['src/**/*.ts'],
       exclude: [
         '__mocks__',
+        'node_modules',
+        'dist',
         'tests',
         'eslint.config.mjs',
         'src/global.d.ts',
@@ -32,7 +35,6 @@ export default defineConfig({
         'src/lib/clickhouse/clickhouse-entity.ts',
         'src/lib/clickhouse/createClient.ts',
         'src/lib/errors/checkRateLimitExceeded.ts',
-        'src/lib/queues/data-exports/dataExportProcessor.cjs',
         'src/lib/tracing'
       ]
     }

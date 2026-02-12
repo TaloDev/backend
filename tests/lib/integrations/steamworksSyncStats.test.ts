@@ -497,6 +497,65 @@ describe('Steamworks integration - sync stats', () => {
     expect(steamworksStatCount).toBe(playerStatCount)
   })
 
+  it('should pull in multiple player stats from steamworks for a single player', async () => {
+    const [, game] = await createOrganisationAndGame()
+
+    const statName1 = 'stat_' + randSlug()
+    const statName2 = 'stat_' + randSlug()
+    const statName3 = 'stat_' + randSlug()
+
+    const player = await new PlayerFactory([game]).withSteamAlias().one()
+
+    const config = await new IntegrationConfigFactory().one()
+    const integration = await new IntegrationFactory().construct(IntegrationType.STEAMWORKS, game, config).one()
+
+    await em.persistAndFlush([player, integration])
+
+    const getSchemaMock = vi.fn((): [number, GetSchemaForGameResponse] => [200, {
+      game: {
+        gameName: game.name,
+        gameVersion: '22',
+        availableGameStats: {
+          stats: [
+            { name: statName1, defaultvalue: 100, displayName: randText() },
+            { name: statName2, defaultvalue: 200, displayName: randText() },
+            { name: statName3, defaultvalue: 300, displayName: randText() }
+          ],
+          achievements: []
+        }
+      }
+    }])
+    axiosMock.onGet(`https://partner.steam-api.com/ISteamUserStats/GetSchemaForGame/v2?appid=${integration.getConfig().appId}`).replyOnce(getSchemaMock)
+
+    const getUserStatsMock = vi.fn((): [number, GetUserStatsForGameResponse] => [200, {
+      playerstats: {
+        steamID: player.aliases[0].identifier,
+        gameName: game.name,
+        stats: [
+          { name: statName1, value: 111 },
+          { name: statName2, value: 222 },
+          { name: statName3, value: 333 }
+        ],
+        achievements: []
+      }
+    }])
+    axiosMock.onGet(`https://partner.steam-api.com/ISteamUserStats/GetUserStatsForGame/v2?appid=${integration.getConfig().appId}&steamid=${player.aliases[0].identifier}`).replyOnce(getUserStatsMock)
+
+    await syncSteamworksStats(em, integration)
+
+    expect(getSchemaMock).toHaveBeenCalledTimes(1)
+    expect(getUserStatsMock).toHaveBeenCalledTimes(1)
+
+    const playerStats = await em.getRepository(PlayerGameStat).find({ player })
+    expect(playerStats).toHaveLength(3)
+
+    const values = playerStats.map((ps) => ps.value).sort((a, b) => a - b)
+    expect(values).toStrictEqual([111, 222, 333])
+
+    const steamworksStats = await em.getRepository(SteamworksPlayerStat).find({ playerStat: { player } })
+    expect(steamworksStats).toHaveLength(3)
+  })
+
   it('should continue to ingest game stats from steamworks even if some fail', async () => {
     const [, game] = await createOrganisationAndGame()
 

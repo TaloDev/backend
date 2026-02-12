@@ -27,7 +27,7 @@ async function getGlobalEntryIds({
   leaderboard: Leaderboard
   entries: LeaderboardEntry[]
   includeDeleted: boolean
-}): Promise<number[]> {
+}) {
   if (aliasId && entries.length > 0) {
     const scores = entries.map((entry) => entry.score)
     const globalQuery = em.qb(LeaderboardEntry)

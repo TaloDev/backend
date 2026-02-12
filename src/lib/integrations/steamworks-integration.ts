@@ -633,10 +633,11 @@ async function ingestSteamworksGameStats(em: EntityManager, integration: Integra
 async function ingestSteamworksPlayerStatForAlias(em: EntityManager, integration: Integration, alias: PlayerAlias) {
   const res = await getSteamworksStatsForPlayer(em, integration, alias.identifier)
   const steamworksPlayerStats = res?.playerstats?.stats ?? []
+  const syncedIds: number[] = []
 
   for (const steamworksPlayerStat of steamworksPlayerStats) {
     try {
-      return await em.transactional(async (trx) => {
+      const id = await em.transactional(async (trx) => {
         const stat = await trx.repo(GameStat).findOneOrFail({ internalName: steamworksPlayerStat.name })
         const existingPlayerStat = await trx.repo(PlayerGameStat).findOne({
           player: alias.player,
@@ -661,10 +662,13 @@ async function ingestSteamworksPlayerStatForAlias(em: EntityManager, integration
           return playerStat.id
         }
       })
+      syncedIds.push(id)
     } catch (err) {
       captureException(err)
     }
   }
+
+  return syncedIds
 }
 
 async function ingestSteamworksPlayerStats(em: EntityManager, integration: Integration) {
@@ -684,9 +688,9 @@ async function ingestSteamworksPlayerStats(em: EntityManager, integration: Integ
   const syncedPlayerStatIds = new Set<number>()
 
   for await (const alias of aliasStream) {
-    const syncedPlayerStatId = await ingestSteamworksPlayerStatForAlias(em, integration, alias)
-    if (syncedPlayerStatId) {
-      syncedPlayerStatIds.add(syncedPlayerStatId)
+    const syncedIds = await ingestSteamworksPlayerStatForAlias(em, integration, alias)
+    for (const id of syncedIds) {
+      syncedPlayerStatIds.add(id)
     }
   }
 

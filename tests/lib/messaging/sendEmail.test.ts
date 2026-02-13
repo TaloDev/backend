@@ -1,16 +1,12 @@
 import ConfirmEmail from '../../../src/emails/confirm-email-mail'
 import sendEmail from '../../../src/lib/messaging/sendEmail'
 import UserFactory from '../../fixtures/UserFactory'
-import nodemailer, { Transporter } from 'nodemailer'
+import nodemailer from 'nodemailer'
+import { mockTransport } from '../../../__mocks__/nodemailer'
 import fs from 'fs/promises'
 
 describe('Send email', () => {
   const originalDriver = process.env.EMAIL_DRIVER
-
-  const mockTransport = {
-    verify: vi.fn().mockResolvedValue(true),
-    sendMail: vi.fn().mockResolvedValue(true)
-  }
 
   beforeEach(() => {
     process.env.EMAIL_DRIVER = 'relay'
@@ -18,14 +14,10 @@ describe('Send email', () => {
     process.env.EMAIL_PORT = '587'
     process.env.EMAIL_USERNAME = 'user@example.com'
     process.env.EMAIL_PASSWORD = 'password'
-
-    vi.spyOn(nodemailer, 'createTransport').mockReturnValue(
-      mockTransport as unknown as Transporter
-    )
   })
 
   afterEach(() => {
-    vi.restoreAllMocks()
+    vi.mocked(nodemailer.createTransport).mockClear()
     mockTransport.verify.mockClear()
     mockTransport.sendMail.mockClear()
     process.env.EMAIL_DRIVER = originalDriver

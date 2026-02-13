@@ -6,14 +6,8 @@ export default defineConfig({
     globals: true,
     dir: './tests',
     setupFiles: './tests/setupTest.ts',
-    poolOptions: {
-      forks: {
-        singleFork: true
-      }
-    },
-    deps: {
-      interopDefault: true
-    },
+    maxWorkers: 1,
+    isolate: false,
     coverage: {
       provider: 'v8',
       reporter: 'lcov',

@@ -16,7 +16,7 @@ describe('Game channel API service - putStorage', () => {
     const channel = await new GameChannelFactory(apiKey.game).one()
     const player = await new PlayerFactory([apiKey.game]).one()
     channel.members.add(player.aliases[0])
-    await em.persistAndFlush(channel)
+    await em.persist(channel).flush()
 
     const res = await request(app)
       .put(`/v1/game-channels/${channel.id}/storage`)
@@ -34,7 +34,7 @@ describe('Game channel API service - putStorage', () => {
     expect(res.body.deletedProps).toHaveLength(0)
     expect(res.body.failedProps).toHaveLength(0)
 
-    const props = await em.getRepository(GameChannelStorageProp).findAll()
+    const props = await em.getRepository(GameChannelStorageProp).find({ gameChannel: channel })
     expect(props).toHaveLength(2)
 
     const scoreProp = props.find((p) => p.key === 'score')

@@ -29,7 +29,7 @@ export async function loadChannel(ctx: APIRouteContext<GameChannelRouteState>, n
 }
 
 export function canModifyChannel(channel: GameChannel, alias: PlayerAlias) {
-  return channel.owner ? channel.owner.id === alias.id : false
+  return channel.owner?.id === alias.id
 }
 
 export async function joinChannel(

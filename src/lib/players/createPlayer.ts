@@ -47,9 +47,9 @@ export async function createPlayer(
   const player = new Player(game)
 
   if (aliases) {
-    for (const alias of aliases) {
-      const trimmedService = alias.service.trim()
-      const trimmedIdentifier = alias.identifier.trim()
+    for (const { service, identifier } of aliases) {
+      const trimmedService = service.trim()
+      const trimmedIdentifier = identifier.trim()
 
       const count = await em.repo(PlayerAlias).count({
         service: trimmedService,
@@ -65,14 +65,12 @@ export async function createPlayer(
           field: 'aliases'
         })
       }
-    }
 
-    player.aliases.set(aliases.map((item) => {
       const alias = new PlayerAlias()
-      alias.service = item.service.trim()
-      alias.identifier = item.identifier.trim()
-      return alias
-    }))
+      alias.service = trimmedService
+      alias.identifier = trimmedIdentifier
+      player.aliases.add(alias)
+    }
   }
 
   if (props) {

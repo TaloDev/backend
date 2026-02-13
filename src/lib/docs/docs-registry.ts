@@ -103,20 +103,13 @@ export class DocsRegistry {
     })
   }
 
-  addService(name: string, path: string) {
-    let service = this.services.get(name)
-
-    if (!service) {
-      service = {
-        name,
-        path,
-        routes: []
-      }
-      this.services.set(name, service)
-    } else {
-      service.path = path
+  private addService(name: string, path: string) {
+    const service: ServiceDocs = {
+      name,
+      path,
+      routes: []
     }
-
+    this.services.set(name, service)
     return service
   }
 

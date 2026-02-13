@@ -29,7 +29,7 @@ describe('Policy base class', () => {
 
     const player1 = await new PlayerFactory([apiKey.game]).withSteamAlias().one()
     const player2 = await new PlayerFactory([apiKey.game]).withUsernameAlias().one()
-    await em.persistAndFlush([player1, player2])
+    await em.persist([player1, player2]).flush()
 
     await request(app)
       .post('/v1/players/merge')
@@ -43,7 +43,7 @@ describe('Policy base class', () => {
 
     const player1 = await new PlayerFactory([apiKey.game]).one()
     const player2 = await new PlayerFactory([apiKey.game]).one()
-    await em.persistAndFlush([player1, player2])
+    await em.persist([player1, player2]).flush()
 
     const res = await request(app)
       .post('/v1/players/merge')

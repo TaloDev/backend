@@ -24,7 +24,7 @@ export function socketTicketAPIRouter() {
 }
 
 const docs = {
-  description: 'Create a socket ticket (expires after 5 minutes)',
+  description: 'Create a socket ticket\nThe ticket is valid for 5 minutes and can only be used once.',
   samples: [
     {
       title: 'Sample response',

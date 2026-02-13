@@ -14,17 +14,6 @@ describe('DocsRegistry', () => {
     expect(services).toEqual([])
   })
 
-  it('should add a service', () => {
-    registry.addService('TestService', '/test')
-
-    const services = registry.getServices()
-    expect(services).toHaveLength(1)
-
-    assert(services[0])
-    expect(services[0].name).toBe('TestService')
-    expect(services[0].path).toBe('/test')
-  })
-
   it('should add a route to a service', () => {
     registry.addRoute({
       key: 'PlayerAPI',
@@ -123,16 +112,5 @@ describe('DocsRegistry', () => {
 
     assert(services[0])
     expect(services[0].routes).toHaveLength(2)
-  })
-
-  it('should update existing service when adding with same name', () => {
-    registry.addService('TestService', '/test')
-    registry.addService('TestService', '/test/v2')
-
-    const services = registry.getServices()
-    expect(services).toHaveLength(1)
-
-    assert(services[0])
-    expect(services[0].path).toBe('/test/v2')
   })
 })

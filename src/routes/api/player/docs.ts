@@ -1,7 +1,7 @@
 import { RouteDocs } from '../../../lib/docs/docs-registry'
 
 export const identifyDocs = {
-  description: 'Identify a player. You must provide the write:players scope to create a new player if one does not already exist for the provided service and identifier.',
+  description: 'Identify a player\nYou must provide the write:players scope to create a new player if one does not already exist for the provided service and identifier.',
   samples: [
     {
       title: 'Sample response',

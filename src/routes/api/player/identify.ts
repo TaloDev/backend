@@ -56,7 +56,7 @@ export const identifyRoute = apiRoute({
             initialProps: resolved.initialPlayerProps,
             devBuild: ctx.state.devBuild
           })
-          alias = player?.aliases[0]
+          alias = player.aliases[0]
           justCreated = true
         }
       } else if (alias.service === PlayerAliasService.TALO) {
@@ -68,7 +68,8 @@ export const identifyRoute = apiRoute({
       if (err instanceof PlayerCreationError) {
         return ctx.throw(err.statusCode, {
           message: err.message,
-          errorCode: err.errorCode
+          errorCode: err.errorCode,
+          field: err.field
         })
       }
       if (err instanceof PricingPlanLimitError) {

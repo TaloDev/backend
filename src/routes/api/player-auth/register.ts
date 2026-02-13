@@ -49,7 +49,8 @@ export const registerRoute = apiRoute({
       if (err instanceof PlayerCreationError) {
         return ctx.throw(err.statusCode, {
           message: err.message,
-          errorCode: err.errorCode
+          errorCode: err.errorCode,
+          field: err.field
         })
       }
       if (err instanceof PricingPlanLimitError) {
@@ -57,7 +58,7 @@ export const registerRoute = apiRoute({
       }
       throw err
     }
-    const alias = player?.aliases[0]
+    const alias = player.aliases[0]
 
     alias.player.auth = new PlayerAuth()
     alias.player.auth.password = await bcrypt.hash(password, 10)

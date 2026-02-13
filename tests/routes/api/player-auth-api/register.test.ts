@@ -166,7 +166,8 @@ describe('Player auth API service - register', () => {
 
     expect(res.body).toStrictEqual({
       message: `Player with identifier '${existingIdentifier}' already exists`,
-      errorCode: 'IDENTIFIER_TAKEN'
+      errorCode: 'IDENTIFIER_TAKEN',
+      field: 'aliases'
     })
   })
 

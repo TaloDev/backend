@@ -21,6 +21,7 @@ import Socket from './socket'
 import { setSocketInstance } from './socket/socketRegistry'
 import { secondsToMilliseconds } from 'date-fns'
 import { EntityManager } from '@mikro-orm/mysql'
+import { trailingSlashMiddleware } from './middleware/trailing-slash-middleware'
 
 const isTest = process.env.NODE_ENV === 'test'
 
@@ -31,6 +32,7 @@ export default async function init() {
   await initProviders(app, isTest)
 
   app.use(compress())
+  app.use(trailingSlashMiddleware)
   if (!isTest) app.use(loggerMiddleware)
   app.use(errorMiddleware)
   app.use(bodyParser())

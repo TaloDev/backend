@@ -3,6 +3,7 @@ import { APIKeyScope } from '../../../../src/entities/api-key'
 import PlayerFactory from '../../../fixtures/PlayerFactory'
 import GameStatFactory from '../../../fixtures/GameStatFactory'
 import GameStat from '../../../../src/entities/game-stat'
+import PlayerGameStat from '../../../../src/entities/player-game-stat'
 import PlayerGameStatFactory from '../../../fixtures/PlayerGameStatFactory'
 import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
 import Game from '../../../../src/entities/game'
@@ -26,7 +27,7 @@ describe('Game stats API  - put', () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_STATS])
     const stat = await createStat(apiKey.game, { maxValue: 999, maxChange: 99 })
     const player = await new PlayerFactory([apiKey.game]).one()
-    await em.persistAndFlush(player)
+    await em.persist(player).flush()
 
     await request(app)
       .put(`/v1/game-stats/${stat.internalName}`)
@@ -40,7 +41,7 @@ describe('Game stats API  - put', () => {
     const [apiKey, token] = await createAPIKeyAndToken([])
     const stat = await createStat(apiKey.game, { maxValue: 999, maxChange: 99 })
     const player = await new PlayerFactory([apiKey.game]).one()
-    await em.persistAndFlush(player)
+    await em.persist(player).flush()
 
     await request(app)
       .put(`/v1/game-stats/${stat.internalName}`)
@@ -54,7 +55,7 @@ describe('Game stats API  - put', () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_STATS])
     const stat = await createStat(apiKey.game, { maxValue: 999, maxChange: 99 })
     const player = await new PlayerFactory([apiKey.game]).one()
-    await em.persistAndFlush(player)
+    await em.persist(player).flush()
 
     const res = await request(app)
       .put(`/v1/game-stats/${stat.internalName}`)
@@ -70,7 +71,7 @@ describe('Game stats API  - put', () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_STATS])
     const stat = await createStat(apiKey.game, { maxValue: 999, maxChange: 99, minTimeBetweenUpdates: 30 })
     const player = await new PlayerFactory([apiKey.game]).one()
-    await em.persistAndFlush(player)
+    await em.persist(player).flush()
 
     await request(app)
       .put(`/v1/game-stats/${stat.internalName}`)
@@ -93,7 +94,7 @@ describe('Game stats API  - put', () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_STATS])
     const stat = await createStat(apiKey.game, { maxValue: 999, maxChange: 99 })
     const player = await new PlayerFactory([apiKey.game]).one()
-    await em.persistAndFlush(player)
+    await em.persist(player).flush()
 
     const res = await request(app)
       .put(`/v1/game-stats/${stat.internalName}`)
@@ -109,7 +110,7 @@ describe('Game stats API  - put', () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_STATS])
     const stat = await createStat(apiKey.game, { maxValue: 999, defaultValue: 1, maxChange: null })
     const player = await new PlayerFactory([apiKey.game]).one()
-    await em.persistAndFlush(player)
+    await em.persist(player).flush()
 
     await request(app)
       .put(`/v1/game-stats/${stat.internalName}`)
@@ -123,7 +124,7 @@ describe('Game stats API  - put', () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_STATS])
     const stat = await createStat(apiKey.game, { maxValue: 999, maxChange: 99, minValue: -1, defaultValue: 0 })
     const player = await new PlayerFactory([apiKey.game]).one()
-    await em.persistAndFlush(player)
+    await em.persist(player).flush()
 
     const res = await request(app)
       .put(`/v1/game-stats/${stat.internalName}`)
@@ -139,7 +140,7 @@ describe('Game stats API  - put', () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_STATS])
     const stat = await createStat(apiKey.game, { maxValue: 999, maxChange: 99, minValue: null, defaultValue: 0 })
     const player = await new PlayerFactory([apiKey.game]).one()
-    await em.persistAndFlush(player)
+    await em.persist(player).flush()
 
     await request(app)
       .put(`/v1/game-stats/${stat.internalName}`)
@@ -153,7 +154,7 @@ describe('Game stats API  - put', () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_STATS])
     const stat = await createStat(apiKey.game, { maxChange: 99, maxValue: 3, defaultValue: 0 })
     const player = await new PlayerFactory([apiKey.game]).one()
-    await em.persistAndFlush(player)
+    await em.persist(player).flush()
 
     const res = await request(app)
       .put(`/v1/game-stats/${stat.internalName}`)
@@ -169,7 +170,7 @@ describe('Game stats API  - put', () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_STATS])
     const stat = await createStat(apiKey.game, { maxValue: null, maxChange: 99, defaultValue: 0 })
     const player = await new PlayerFactory([apiKey.game]).one()
-    await em.persistAndFlush(player)
+    await em.persist(player).flush()
 
     await request(app)
       .put(`/v1/game-stats/${stat.internalName}`)
@@ -187,7 +188,7 @@ describe('Game stats API  - put', () => {
       .construct(player, stat)
       .state(() => ({ value: 10, updatedAt: new Date(2021, 1, 1) })) // ensure we don't get blocked by minTimeBetweenUpdates
       .one()
-    await em.persistAndFlush(playerStat)
+    await em.persist(playerStat).flush()
 
     const res = await request(app)
       .put(`/v1/game-stats/${stat.internalName}`)
@@ -203,7 +204,7 @@ describe('Game stats API  - put', () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_STATS])
     const stat = await createStat(apiKey.game, { maxValue: 999, maxChange: 99, defaultValue: 0, global: true, globalValue: 0 })
     const player = await new PlayerFactory([apiKey.game]).one()
-    await em.persistAndFlush(player)
+    await em.persist(player).flush()
 
     const res = await request(app)
       .put(`/v1/game-stats/${stat.internalName}`)
@@ -221,7 +222,7 @@ describe('Game stats API  - put', () => {
   it('should not update a non-existent stat', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_STATS])
     const player = await new PlayerFactory([apiKey.game]).one()
-    await em.persistAndFlush(player)
+    await em.persist(player).flush()
 
     const res = await request(app)
       .put('/v1/game-stats/blah')
@@ -237,7 +238,7 @@ describe('Game stats API  - put', () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_STATS, APIKeyScope.WRITE_CONTINUITY_REQUESTS])
     const stat = await createStat(apiKey.game, { maxValue: 999, maxChange: 99 })
     const player = await new PlayerFactory([apiKey.game]).one()
-    await em.persistAndFlush(player)
+    await em.persist(player).flush()
 
     const continuityDate = subHours(new Date(), 1)
 
@@ -258,7 +259,7 @@ describe('Game stats API  - put', () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_STATS])
     const stat = await createStat(apiKey.game, { maxValue: 999, maxChange: 99, defaultValue: 0, global: true, globalValue: 0 })
     const player = await new PlayerFactory([apiKey.game]).one()
-    await em.persistAndFlush(player)
+    await em.persist(player).flush()
 
     await request(app)
       .put(`/v1/game-stats/${stat.internalName}`)
@@ -282,7 +283,7 @@ describe('Game stats API  - put', () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_STATS, APIKeyScope.WRITE_CONTINUITY_REQUESTS])
     const stat = await createStat(apiKey.game, { maxValue: 999, maxChange: 99, defaultValue: 0, global: true, globalValue: 0 })
     const player = await new PlayerFactory([apiKey.game]).one()
-    await em.persistAndFlush(player)
+    await em.persist(player).flush()
 
     const continuityDate = subHours(new Date(), 1)
 
@@ -318,7 +319,7 @@ describe('Game stats API  - put', () => {
     })
 
     const players = await new PlayerFactory([apiKey.game]).many(10)
-    await em.persistAndFlush(players)
+    await em.persist(players).flush()
 
     const requests = players.map((player) =>
       request(app)
@@ -335,5 +336,64 @@ describe('Game stats API  - put', () => {
 
     await em.refresh(stat)
     expect(stat.globalValue).toBe(100)
+  })
+
+  it('should handle concurrent first-time updates to a non-global stat for the same player', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_STATS])
+    const stat = await createStat(apiKey.game, {
+      maxValue: 999999,
+      maxChange: 999,
+      defaultValue: 0,
+      global: false,
+      minTimeBetweenUpdates: 0
+    })
+
+    const player = await new PlayerFactory([apiKey.game]).one()
+    await em.persist(player).flush()
+
+    const makeRequest = () =>
+      request(app)
+        .put(`/v1/game-stats/${stat.internalName}`)
+        .send({ change: 10 })
+        .auth(token, { type: 'bearer' })
+        .set('x-talo-alias', String(player.aliases[0].id))
+
+    const responses = await Promise.all(Array.from({ length: 5 }, makeRequest))
+    responses.forEach((res) => {
+      expect(res.status).toBe(200)
+    })
+
+    const playerStats = await em.repo(PlayerGameStat).find({ player, stat })
+    expect(playerStats).toHaveLength(1)
+  })
+
+  it('should handle concurrent first-time updates to a global stat for the same player', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_STATS])
+    const stat = await createStat(apiKey.game, {
+      maxValue: 999999,
+      maxChange: 999,
+      defaultValue: 0,
+      global: true,
+      globalValue: 0,
+      minTimeBetweenUpdates: 0
+    })
+
+    const player = await new PlayerFactory([apiKey.game]).one()
+    await em.persist(player).flush()
+
+    const makeRequest = () =>
+      request(app)
+        .put(`/v1/game-stats/${stat.internalName}`)
+        .send({ change: 10 })
+        .auth(token, { type: 'bearer' })
+        .set('x-talo-alias', String(player.aliases[0].id))
+
+    const responses = await Promise.all(Array.from({ length: 5 }, makeRequest))
+    responses.forEach((res) => {
+      expect(res.status).toBe(200)
+    })
+
+    const playerStats = await em.repo(PlayerGameStat).find({ player, stat })
+    expect(playerStats).toHaveLength(1)
   })
 })

@@ -1,4 +1,4 @@
-import { Entity, Index, ManyToOne, PrimaryKey, Property } from '@mikro-orm/mysql'
+import { Entity, Index, ManyToOne, PrimaryKey, Property, Unique } from '@mikro-orm/mysql'
 import GameStat from './game-stat'
 import Player from './player'
 
@@ -6,6 +6,7 @@ const valueIndexName = 'idx_playergamestat_stat_id_value'
 const valueIndexExpr = `alter table \`player_game_stat\` add index \`${valueIndexName}\`(\`stat_id\`, \`value\`)`
 
 @Entity()
+@Unique({ properties: ['player', 'stat'] })
 export default class PlayerGameStat {
   @PrimaryKey()
   id!: number

@@ -2770,6 +2770,17 @@
           "expression": "alter table `player_game_stat` add index `idx_playergamestat_stat_id_value`(`stat_id`, `value`)"
         },
         {
+          "keyName": "player_game_stat_player_id_stat_id_unique",
+          "columnNames": [
+            "player_id",
+            "stat_id"
+          ],
+          "composite": true,
+          "constraint": true,
+          "primary": false,
+          "unique": true
+        },
+        {
           "keyName": "PRIMARY",
           "columnNames": [
             "id"

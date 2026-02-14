@@ -8,6 +8,8 @@ import { loadLeaderboard } from './common'
 import { DEFAULT_PAGE_SIZE } from '../../../lib/pagination/itemsPerPage'
 import { withResponseCache } from '../../../lib/perf/responseCache'
 import { endOfDay, startOfDay } from 'date-fns'
+import { pageSchema } from '../../../lib/validation/pageSchema'
+import { numericStringSchema } from '../../../lib/validation/numericStringSchema'
 
 const itemsPerPage = DEFAULT_PAGE_SIZE
 
@@ -25,7 +27,7 @@ async function getGlobalEntryIds({
   leaderboard: Leaderboard
   entries: LeaderboardEntry[]
   includeDeleted: boolean
-}): Promise<number[]> {
+}) {
   if (aliasId && entries.length > 0) {
     const scores = entries.map((entry) => entry.score)
     const globalQuery = em.qb(LeaderboardEntry)
@@ -72,7 +74,7 @@ type ListEntriesParams = {
   leaderboard: Leaderboard
   includeDevData: boolean
   forwarded?: boolean
-  page?: number
+  page: number
   aliasId?: number
   withDeleted?: boolean
   propKey?: string
@@ -87,7 +89,7 @@ export async function listEntriesHandler({
   leaderboard,
   includeDevData,
   forwarded,
-  page = 0,
+  page,
   aliasId,
   withDeleted,
   propKey,
@@ -215,8 +217,8 @@ export const entriesRoute = protectedRoute({
   path: '/:id/entries',
   schema: (z) => ({
     query: z.object({
-      page: z.coerce.number().int().min(0).optional(),
-      aliasId: z.coerce.number().int().optional(),
+      page: pageSchema,
+      aliasId: numericStringSchema.optional(),
       withDeleted: z.enum(['0', '1']).optional().transform((val) => val === '1'),
       propKey: z.string().optional(),
       propValue: z.string().optional(),

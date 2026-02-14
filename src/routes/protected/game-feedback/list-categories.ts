@@ -25,7 +25,7 @@ export const listCategoriesRoute = protectedRoute({
   method: 'get',
   path: '/categories',
   middleware: withMiddleware(loadGame),
-  handler: async (ctx) => {
-    return await listCategoriesHandler({ em: ctx.em, game: ctx.state.game })
+  handler: (ctx) => {
+    return listCategoriesHandler({ em: ctx.em, game: ctx.state.game })
   }
 })

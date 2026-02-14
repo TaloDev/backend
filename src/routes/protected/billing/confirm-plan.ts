@@ -19,10 +19,10 @@ export const confirmPlanRoute = protectedRoute({
 
     const { prorationDate, pricingPlanId, pricingInterval } = ctx.state.validated.body
     if (!isSameHour(new Date(), new Date(prorationDate * 1000))) {
-      ctx.throw(400)
+      return ctx.throw(400)
     }
 
-    const organisation = ctx.state.authenticatedUser.organisation
+    const organisation = ctx.state.user.organisation
     const stripeCustomerId = organisation.pricingPlan.stripeCustomerId
     // should already be on a plan before preview/confirming another
     if (!stripeCustomerId) {

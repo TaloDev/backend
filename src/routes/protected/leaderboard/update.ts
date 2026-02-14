@@ -18,12 +18,12 @@ export const updateRoute = protectedRoute({
   schema: (z) => ({
     body: z.object({
       name: z.string().optional(),
-      sortMode: z.nativeEnum(LeaderboardSortMode, {
-        message: `Sort mode must be one of ${sortModeValues}`
+      sortMode: z.enum(LeaderboardSortMode, {
+        error: `Sort mode must be one of ${sortModeValues}`
       }).optional(),
       unique: z.boolean().optional(),
-      refreshInterval: z.nativeEnum(LeaderboardRefreshInterval, {
-        message: `Refresh interval must be one of ${refreshIntervalValues}`
+      refreshInterval: z.enum(LeaderboardRefreshInterval, {
+        error: `Refresh interval must be one of ${refreshIntervalValues}`
       }).optional(),
       uniqueByProps: z.boolean().optional()
     })
@@ -45,7 +45,7 @@ export const updateRoute = protectedRoute({
     await deferClearResponseCache(leaderboard.getEntriesCacheKey(true))
 
     createGameActivity(em, {
-      user: ctx.state.authenticatedUser,
+      user: ctx.state.user,
       game: leaderboard.game,
       type: GameActivityType.LEADERBOARD_UPDATED,
       extra: {

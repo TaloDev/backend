@@ -19,7 +19,7 @@ export const deleteRoute = protectedRoute({
     integration.deletedAt = new Date()
 
     createGameActivity(em, {
-      user: ctx.state.authenticatedUser,
+      user: ctx.state.user,
       game: ctx.state.game,
       type: GameActivityType.GAME_INTEGRATION_DELETED,
       extra: {

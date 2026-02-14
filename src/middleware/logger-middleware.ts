@@ -1,10 +1,10 @@
 import { setTraceAttributes } from '@hyperdx/node-opentelemetry'
 import { Context, Next } from 'koa'
-import { isPublicHealthCheck } from './route-middleware'
+import { isPublicHealthCheck } from '../lib/routing/route-info'
 
-export default async function loggerMiddleware(ctx: Context, next: Next) {
+export async function loggerMiddleware(ctx: Context, next: Next) {
   if (isPublicHealthCheck(ctx)) {
-    return await next()
+    return next()
   }
 
   const startTime = Date.now()

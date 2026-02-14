@@ -14,8 +14,8 @@ export const createRoute = protectedRoute({
   method: 'post',
   schema: (z) => ({
     body: z.object({
-      type: z.nativeEnum(IntegrationType, {
-        message: `Integration type must be one of ${integrationTypeValues}`
+      type: z.enum(IntegrationType, {
+        error: `Integration type must be one of ${integrationTypeValues}`
       }),
       config: z.object({
         apiKey: z.string().optional(),
@@ -39,7 +39,7 @@ export const createRoute = protectedRoute({
     })
 
     if (existingIntegration) {
-      ctx.throw(400, `This game already has an integration for ${type}`)
+      return ctx.throw(400, `This game already has an integration for ${type}`)
     }
 
     const integration = new Integration(
@@ -49,7 +49,7 @@ export const createRoute = protectedRoute({
     )
 
     createGameActivity(em, {
-      user: ctx.state.authenticatedUser,
+      user: ctx.state.user,
       game: ctx.state.game,
       type: GameActivityType.GAME_INTEGRATION_ADDED,
       extra: {

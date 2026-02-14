@@ -7,7 +7,7 @@ type FeedbackCategoryRouteContext = ProtectedRouteContext<
   GameRouteState & { feedbackCategory: GameFeedbackCategory }
 >
 
-export const loadFeedbackCategory = async (ctx: FeedbackCategoryRouteContext, next: Next) => {
+export async function loadFeedbackCategory(ctx: FeedbackCategoryRouteContext, next: Next) {
   const { id } = ctx.params as { id: string }
   const em = ctx.em
 
@@ -17,7 +17,7 @@ export const loadFeedbackCategory = async (ctx: FeedbackCategoryRouteContext, ne
   })
 
   if (!feedbackCategory) {
-    ctx.throw(404, 'Feedback category not found')
+    return ctx.throw(404, 'Feedback category not found')
   }
 
   ctx.state.feedbackCategory = feedbackCategory

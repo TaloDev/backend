@@ -18,7 +18,7 @@ export const resetRoute = protectedRoute({
   schema: (z) => ({
     query: z.object({
       mode: z.enum(resetModes, {
-        message: `Mode must be one of: ${resetModes.join(', ')}`
+        error: `Mode must be one of: ${resetModes.join(', ')}`
       }).optional().default('all')
     })
   }),
@@ -52,7 +52,7 @@ export const resetRoute = protectedRoute({
       await trx.repo(GameStat).nativeUpdate(stat.id, { globalValue: stat.defaultValue })
 
       createGameActivity(trx, {
-        user: ctx.state.authenticatedUser,
+        user: ctx.state.user,
         game: stat.game,
         type: GameActivityType.GAME_STAT_RESET,
         extra: {
@@ -80,7 +80,7 @@ export const resetRoute = protectedRoute({
       const query = `
         DELETE FROM player_game_stat_snapshots
         WHERE
-          game_stat_id = ${stat.id}
+          game_stat_id = {statId:UInt32}
           AND player_alias_id IN ({aliasIds:Array(UInt32)})
       `
       const aliasIds: number[] = []
@@ -94,6 +94,7 @@ export const resetRoute = protectedRoute({
           await clickhouse.exec({
             query,
             query_params: {
+              statId: stat.id,
               aliasIds: batchIds
             }
           })
@@ -105,6 +106,7 @@ export const resetRoute = protectedRoute({
         await clickhouse.exec({
           query,
           query_params: {
+            statId: stat.id,
             aliasIds
           }
         })

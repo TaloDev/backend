@@ -11,7 +11,7 @@ type PlayerGroupRouteContext = ProtectedRouteContext<
   GameRouteState & { group: PlayerGroup }
 >
 
-export const loadGroup = async (ctx: PlayerGroupRouteContext, next: Next) => {
+export async function loadGroup(ctx: PlayerGroupRouteContext, next: Next) {
   const { id } = ctx.params as { id: string }
   const em = ctx.em
 
@@ -21,7 +21,7 @@ export const loadGroup = async (ctx: PlayerGroupRouteContext, next: Next) => {
   })
 
   if (!group) {
-    ctx.throw(404, 'Group not found')
+    return ctx.throw(404, 'Group not found')
   }
 
   ctx.state.group = group
@@ -55,15 +55,15 @@ function validateRules(rules: RuleInput[], ctx: RefinementCtx) {
 }
 
 const ruleSchema = (z: Z) => z.object({
-  name: z.nativeEnum(PlayerGroupRuleName),
+  name: z.enum(PlayerGroupRuleName),
   field: z.string(),
   operands: z.array(z.string()),
   negate: z.boolean(),
-  castType: z.nativeEnum(PlayerGroupRuleCastType)
+  castType: z.enum(PlayerGroupRuleCastType)
 })
 
 const rulesAndModeFields = (z: Z) => ({
-  ruleMode: z.nativeEnum(RuleMode),
+  ruleMode: z.enum(RuleMode),
   rules: z.array(ruleSchema(z))
 })
 

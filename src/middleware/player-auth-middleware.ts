@@ -1,12 +1,12 @@
 import { Context, Next } from 'koa'
-import { isAPIRoute } from './route-middleware'
+import { isAPIRoute } from '../lib/routing/route-info'
 import { EntityManager, FilterQuery, Loaded } from '@mikro-orm/mysql'
 import PlayerAlias, { PlayerAliasService } from '../entities/player-alias'
 import { verify } from '../lib/auth/jwt'
 
 type PlayerAliasPartial = Loaded<PlayerAlias, 'player.auth', 'id' | 'player.auth' | 'player.id'>
 
-export default async function playerAuthMiddleware(ctx: Context, next: Next): Promise<void> {
+export async function playerAuthMiddleware(ctx: Context, next: Next) {
   if (isAPIRoute(ctx) && (ctx.state.currentPlayerId || ctx.state.currentAliasId)) {
     const conditions: FilterQuery<PlayerAlias>[] = [
       ctx.state.currentAliasId ? {
@@ -47,10 +47,10 @@ export default async function playerAuthMiddleware(ctx: Context, next: Next): Pr
   await next()
 }
 
-export async function validateAuthSessionToken(ctx: Context, alias: PlayerAliasPartial): Promise<void> {
+export async function validateAuthSessionToken(ctx: Context, alias: PlayerAliasPartial) {
   const sessionToken = ctx.headers['x-talo-session']
   if (!sessionToken) {
-    ctx.throw(401, {
+    return ctx.throw(401, {
       message: 'The x-talo-session header is required for this player',
       errorCode: 'MISSING_SESSION'
     })
@@ -64,12 +64,12 @@ export async function validateAuthSessionToken(ctx: Context, alias: PlayerAliasP
     ctx.state.currentAliasId
   )
   if (!valid) {
-    throwInvalidSessionError(ctx)
+    return throwInvalidSessionError(ctx)
   }
 }
 
-export function throwInvalidSessionError(ctx: Context): void {
-  ctx.throw(401, {
+export function throwInvalidSessionError(ctx: Context): never {
+  return ctx.throw(401, {
     message: 'The x-talo-session header is invalid',
     errorCode: 'INVALID_SESSION'
   })
@@ -81,7 +81,7 @@ export async function validateSessionTokenJWT(
   alias: PlayerAliasPartial,
   expectedPlayerId: string,
   expectedAliasId: number
-): Promise<boolean> {
+) {
   if (!alias.player.auth) return false
   if (!alias.player.auth.sessionKey) return false
 

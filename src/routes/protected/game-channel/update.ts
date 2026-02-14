@@ -11,6 +11,7 @@ import { PropSizeError } from '../../../lib/errors/propSizeError'
 import buildErrorResponse from '../../../lib/errors/buildErrorResponse'
 import Socket from '../../../socket'
 import { loadChannel } from './common'
+import { updatePropsSchema } from '../../../lib/validation/propsSchema'
 
 type UpdateChannelParams = {
   em: EntityManager
@@ -21,7 +22,7 @@ type UpdateChannelParams = {
   user?: User
   name?: string
   ownerAliasId?: number | null
-  props?: { key: string, value: string }[]
+  props?: { key: string, value: string | null }[]
   autoCleanup?: boolean
   isPrivate?: boolean
   temporaryMembership?: boolean
@@ -44,7 +45,7 @@ export async function updateChannelHandler({
   const changedProperties: string[] = []
 
   if (typeof name === 'string' && name.trim().length > 0) {
-    channel.name = name
+    channel.name = name.trim()
     changedProperties.push('name')
   }
 
@@ -162,10 +163,7 @@ export const updateRoute = protectedRoute({
     body: z.object({
       name: z.string().optional(),
       ownerAliasId: z.number().nullable().optional(),
-      props: z.array(z.object({
-        key: z.string(),
-        value: z.string()
-      })).optional(),
+      props: updatePropsSchema.optional(),
       autoCleanup: z.boolean().optional(),
       private: z.boolean().optional(),
       temporaryMembership: z.boolean().optional()
@@ -180,7 +178,7 @@ export const updateRoute = protectedRoute({
       channel: ctx.state.channel,
       includeDevData: ctx.state.includeDevData,
       wss: ctx.wss,
-      user: ctx.state.authenticatedUser,
+      user: ctx.state.user,
       name,
       ownerAliasId,
       props,

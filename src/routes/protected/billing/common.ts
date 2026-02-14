@@ -10,10 +10,10 @@ import assert from 'node:assert'
 
 type RequireStripeContext = ProtectedRouteContext<{ stripe: Stripe }>
 
-export const requireStripe = async (ctx: RequireStripeContext, next: Next) => {
+export async function requireStripe(ctx: RequireStripeContext, next: Next) {
   const stripe = initStripe()
   if (!stripe) {
-    ctx.throw(405)
+    return ctx.throw(405)
   }
 
   ctx.state.stripe = stripe
@@ -23,13 +23,13 @@ export const requireStripe = async (ctx: RequireStripeContext, next: Next) => {
 export async function checkCanDowngrade(em: EntityManager, ctx: ProtectedRouteContext, newPlan: PricingPlan) {
   const planPlayerLimit = newPlan.playerLimit ?? Infinity
 
-  const organisation: Organisation = ctx.state.authenticatedUser.organisation
+  const organisation: Organisation = ctx.state.user.organisation
   const playerCount = await em.repo(Player).count({
     game: { organisation }
   })
 
   if (playerCount >= planPlayerLimit) {
-    ctx.throw(400, 'You cannot downgrade your plan because your organisation has reached its player limit.')
+    return ctx.throw(400, 'You cannot downgrade your plan because your organisation has reached its player limit.')
   }
 }
 
@@ -39,7 +39,7 @@ export async function getPrice(ctx: RequireStripeContext, pricingPlanId: number,
 
   const plan = await em.repo(PricingPlan).findOne(pricingPlanId)
   if (!plan) {
-    ctx.throw(404, 'Pricing plan not found')
+    return ctx.throw(404, 'Pricing plan not found')
   }
 
   await checkCanDowngrade(em, ctx, plan)

@@ -58,7 +58,7 @@ export const deleteRoute = protectedRoute({
       em: ctx.em,
       channel: ctx.state.channel,
       wss: ctx.wss,
-      user: ctx.state.authenticatedUser
+      user: ctx.state.user
     })
   }
 })

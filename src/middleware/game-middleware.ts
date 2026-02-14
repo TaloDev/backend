@@ -5,7 +5,7 @@ import { ProtectedRouteContext } from '../lib/routing/context'
 export type GameRouteState = { game: Game }
 type GameRouteContext = ProtectedRouteContext<GameRouteState>
 
-export const loadGame = async (ctx: GameRouteContext, next: Next) => {
+export async function loadGame(ctx: GameRouteContext, next: Next) {
   const { gameId } = ctx.params as { gameId: string }
   const em = ctx.em
 
@@ -15,12 +15,12 @@ export const loadGame = async (ctx: GameRouteContext, next: Next) => {
   )
 
   if (!game) {
-    ctx.throw(404, 'Game not found')
+    return ctx.throw(404, 'Game not found')
   }
 
-  const userOrganisation = ctx.state.authenticatedUser.organisation
+  const userOrganisation = ctx.state.user.organisation
   if (game.organisation.id !== userOrganisation.id) {
-    ctx.throw(403)
+    return ctx.throw(403)
   }
 
   ctx.state.game = game

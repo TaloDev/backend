@@ -3,6 +3,7 @@ import { protectedRoute, withMiddleware } from '../../../lib/routing/router'
 import { loadGame } from '../../../middleware/game-middleware'
 import GameFeedback from '../../../entities/game-feedback'
 import { DEFAULT_PAGE_SIZE } from '../../../lib/pagination/itemsPerPage'
+import { pageSchema } from '../../../lib/validation/pageSchema'
 
 const itemsPerPage = DEFAULT_PAGE_SIZE
 
@@ -10,7 +11,7 @@ export const listRoute = protectedRoute({
   method: 'get',
   schema: (z) => ({
     query: z.object({
-      page: z.coerce.number().catch(0),
+      page: pageSchema,
       feedbackCategoryInternalName: z.string().optional(),
       search: z.string().optional()
     })

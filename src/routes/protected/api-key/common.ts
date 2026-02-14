@@ -7,7 +7,7 @@ import { sign } from '../../../lib/auth/jwt'
 
 type APIKeyRouteContext = ProtectedRouteContext<GameRouteState & { apiKey: APIKey }>
 
-export const loadAPIKey = async (ctx: APIKeyRouteContext, next: Next) => {
+export async function loadAPIKey(ctx: APIKeyRouteContext, next: Next) {
   const { id } = ctx.params as { id: string }
   const em = ctx.em
 
@@ -17,7 +17,7 @@ export const loadAPIKey = async (ctx: APIKeyRouteContext, next: Next) => {
   })
 
   if (!apiKey) {
-    ctx.throw(404, 'API key not found')
+    return ctx.throw(404, 'API key not found')
   }
 
   ctx.state.apiKey = apiKey

@@ -18,7 +18,7 @@ export const deleteRoute = protectedRoute({
     const stat = ctx.state.stat
 
     createGameActivity(em, {
-      user: ctx.state.authenticatedUser,
+      user: ctx.state.user,
       game: stat.game,
       type: GameActivityType.GAME_STAT_DELETED,
       extra: {

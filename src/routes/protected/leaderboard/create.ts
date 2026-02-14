@@ -85,12 +85,12 @@ export const createRoute = protectedRoute({
     body: z.object({
       internalName: z.string(),
       name: z.string(),
-      sortMode: z.nativeEnum(LeaderboardSortMode, {
-        message: `Sort mode must be one of ${sortModeValues}`
+      sortMode: z.enum(LeaderboardSortMode, {
+        error: `Sort mode must be one of ${sortModeValues}`
       }),
       unique: z.boolean(),
-      refreshInterval: z.nativeEnum(LeaderboardRefreshInterval, {
-        message: `Refresh interval must be one of ${refreshIntervalValues}`
+      refreshInterval: z.enum(LeaderboardRefreshInterval, {
+        error: `Refresh interval must be one of ${refreshIntervalValues}`
       }).optional(),
       uniqueByProps: z.boolean().optional()
     })
@@ -105,7 +105,7 @@ export const createRoute = protectedRoute({
     return createLeaderboardHandler({
       em: ctx.em,
       game: ctx.state.game,
-      user: ctx.state.authenticatedUser,
+      user: ctx.state.user,
       internalName,
       name,
       sortMode,

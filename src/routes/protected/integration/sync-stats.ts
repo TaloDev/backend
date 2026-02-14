@@ -17,13 +17,13 @@ export const syncStatsRoute = protectedRoute({
     const integration = ctx.state.integration
 
     if (!integration.getConfig().syncStats) {
-      ctx.throw(400, 'Stat syncing is not enabled')
+      return ctx.throw(400, 'Stat syncing is not enabled')
     }
 
     await addStatSyncJob(integration.id)
 
     createGameActivity(em, {
-      user: ctx.state.authenticatedUser,
+      user: ctx.state.user,
       game: ctx.state.game,
       type: GameActivityType.GAME_INTEGRATION_STEAMWORKS_STATS_SYNCED
     })

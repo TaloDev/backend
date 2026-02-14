@@ -13,7 +13,7 @@ export const disable2faRoute = protectedRoute({
   middleware: withMiddleware(confirmPassword, requires2fa),
   handler: async (ctx) => {
     const em = ctx.em
-    const user = ctx.state.authenticatedUser
+    const user = ctx.state.user
 
     const recoveryCodes = await user.recoveryCodes.loadItems()
     await em.remove([user.twoFactorAuth, ...recoveryCodes]).flush()

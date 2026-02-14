@@ -11,7 +11,7 @@ export const createRoute = protectedRoute({
   method: 'post',
   schema: (z) => ({
     body: z.object({
-      scopes: z.array(z.nativeEnum(APIKeyScope)).nonempty()
+      scopes: z.array(z.enum(APIKeyScope)).nonempty()
     })
   }),
   middleware: withMiddleware(
@@ -23,11 +23,11 @@ export const createRoute = protectedRoute({
     const { scopes } = ctx.state.validated.body
     const em = ctx.em
 
-    const apiKey = new APIKey(ctx.state.game, ctx.state.authenticatedUser)
+    const apiKey = new APIKey(ctx.state.game, ctx.state.user)
     apiKey.scopes = scopes
 
     createGameActivity(em, {
-      user: ctx.state.authenticatedUser,
+      user: ctx.state.user,
       game: ctx.state.game,
       type: GameActivityType.API_KEY_CREATED,
       extra: {

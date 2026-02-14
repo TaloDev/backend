@@ -21,7 +21,7 @@ export const createRoute = protectedRoute({
   method: 'post',
   schema: (z) => ({
     body: z.object({
-      entities: z.array(z.nativeEnum(DataExportAvailableEntities)).nonempty()
+      entities: z.array(z.enum(DataExportAvailableEntities)).nonempty()
     })
   }),
   middleware: withMiddleware(
@@ -33,12 +33,12 @@ export const createRoute = protectedRoute({
     const { entities } = ctx.state.validated.body
     const em = ctx.em
 
-    const dataExport = new DataExport(ctx.state.authenticatedUser, ctx.state.game)
+    const dataExport = new DataExport(ctx.state.user, ctx.state.game)
     dataExport.entities = entities
-    await em.persistAndFlush(dataExport)
+    await em.persist(dataExport).flush()
 
     createGameActivity(em, {
-      user: ctx.state.authenticatedUser,
+      user: ctx.state.user,
       game: ctx.state.game,
       type: GameActivityType.DATA_EXPORT_REQUESTED,
       extra: {

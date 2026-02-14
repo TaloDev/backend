@@ -13,10 +13,10 @@ export const createRoute = protectedRoute({
   method: 'post',
   schema: (z) => ({
     body: z.object({
-      email: z.string().email(),
-      type: z.nativeEnum(UserType).refine(
+      email: z.email(),
+      type: z.enum(UserType).refine(
         (val) => [UserType.ADMIN, UserType.DEV].includes(val),
-        { message: 'You can only invite an admin or developer user' }
+        { error: 'You can only invite an admin or developer user' }
       )
     })
   }),
@@ -28,16 +28,16 @@ export const createRoute = protectedRoute({
     const { email, type } = ctx.state.validated.body
     const em = ctx.em
 
-    const inviter = ctx.state.authenticatedUser
+    const inviter = ctx.state.user
 
     const duplicateEmailUser = await em.repo(User).findOne({ email: email.toLowerCase() })
     if (duplicateEmailUser) {
-      ctx.throw(400, 'This email address is already in use')
+      return ctx.throw(400, 'This email address is already in use')
     }
 
     const duplicateEmailInvite = await em.repo(Invite).findOne({ email: email.toLowerCase() })
     if (duplicateEmailInvite) {
-      ctx.throw(400, duplicateEmailInvite.organisation.id === inviter.organisation.id
+      return ctx.throw(400, duplicateEmailInvite.organisation.id === inviter.organisation.id
         ? 'An invite for this email address already exists'
         : 'This email address is already in use'
       )
@@ -49,7 +49,7 @@ export const createRoute = protectedRoute({
     invite.invitedByUser = inviter
 
     createGameActivity(em, {
-      user: ctx.state.authenticatedUser,
+      user: ctx.state.user,
       type: GameActivityType.INVITE_CREATED,
       extra: {
         inviteEmail: invite.email,

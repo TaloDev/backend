@@ -12,7 +12,6 @@ import Player from '../../entities/player'
 import { performance } from 'perf_hooks'
 import GameStat from '../../entities/game-stat'
 import PlayerGameStat from '../../entities/player-game-stat'
-import { Request } from 'koa-clay'
 import { SteamworksLeaderboardEntry } from '../../entities/steamworks-leaderboard-entry'
 import { captureException } from '@sentry/node'
 import { getResultCacheOptions } from '../perf/getResultCacheOptions'
@@ -634,10 +633,11 @@ async function ingestSteamworksGameStats(em: EntityManager, integration: Integra
 async function ingestSteamworksPlayerStatForAlias(em: EntityManager, integration: Integration, alias: PlayerAlias) {
   const res = await getSteamworksStatsForPlayer(em, integration, alias.identifier)
   const steamworksPlayerStats = res?.playerstats?.stats ?? []
+  const syncedIds: number[] = []
 
   for (const steamworksPlayerStat of steamworksPlayerStats) {
     try {
-      return await em.transactional(async (trx) => {
+      const id = await em.transactional(async (trx) => {
         const stat = await trx.repo(GameStat).findOneOrFail({ internalName: steamworksPlayerStat.name })
         const existingPlayerStat = await trx.repo(PlayerGameStat).findOne({
           player: alias.player,
@@ -662,10 +662,13 @@ async function ingestSteamworksPlayerStatForAlias(em: EntityManager, integration
           return playerStat.id
         }
       })
+      syncedIds.push(id)
     } catch (err) {
       captureException(err)
     }
   }
+
+  return syncedIds
 }
 
 async function ingestSteamworksPlayerStats(em: EntityManager, integration: Integration) {
@@ -685,9 +688,9 @@ async function ingestSteamworksPlayerStats(em: EntityManager, integration: Integ
   const syncedPlayerStatIds = new Set<number>()
 
   for await (const alias of aliasStream) {
-    const syncedPlayerStatId = await ingestSteamworksPlayerStatForAlias(em, integration, alias)
-    if (syncedPlayerStatId) {
-      syncedPlayerStatIds.add(syncedPlayerStatId)
+    const syncedIds = await ingestSteamworksPlayerStatForAlias(em, integration, alias)
+    for (const id of syncedIds) {
+      syncedPlayerStatIds.add(id)
     }
   }
 
@@ -797,8 +800,12 @@ async function requestAuthenticateUserTicket({
   return { status: res.status, data: res.data }
 }
 
-export async function authenticateTicket(req: Request, integration: Integration, identifier: string): Promise<string> {
-  const em: EntityManager = req.ctx.em
+export type AuthenticateTicketResult = {
+  steamId: string
+  initialPlayerProps?: { key: string, value: string }[]
+}
+
+export async function authenticateTicket(em: EntityManager, integration: Integration, identifier: string): Promise<AuthenticateTicketResult> {
 
   const parts = identifier.split(':')
   const identity = parts.length > 1 ? parts[0] : undefined
@@ -866,11 +873,10 @@ export async function authenticateTicket(req: Request, integration: Integration,
       alias.player.upsertProp(prop.key, prop.value)
     }
     await em.flush()
+    return { steamId }
   } else {
-    req.ctx.state.initialPlayerProps = props
+    return { steamId, initialPlayerProps: props }
   }
-
-  return steamId
 }
 
 export async function verifyOwnership({

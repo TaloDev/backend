@@ -1,5 +1,5 @@
 import { Context, Next } from 'koa'
-import { isAPIRoute } from './route-middleware'
+import { isAPIRoute } from '../lib/routing/route-info'
 import checkRateLimitExceeded from '../lib/errors/checkRateLimitExceeded'
 
 const limitMap = {
@@ -27,15 +27,15 @@ export function getMaxRequestsForPath(requestPath: string) {
   }
 }
 
-export default async function limiterMiddleware(ctx: Context, next: Next): Promise<void> {
+export async function limiterMiddleware(ctx: Context, next: Next): Promise<void> {
   if (isAPIRoute(ctx) && process.env.NODE_ENV !== 'test' && !rateLimitBypass.has(ctx.request.path)) {
     const { limitMapKey, maxRequests } = getMaxRequestsForPath(ctx.request.path)
-    const userId = ctx.state.user?.sub || 'anonymous'
+    const userId = ctx.state.jwt?.sub || 'anonymous'
     const redisKey = `requests:${userId}:${ctx.request.ip}:${limitMapKey}`
 
     if (await checkRateLimitExceeded(ctx.redis, redisKey, maxRequests)) {
       ctx.set('Retry-After', '60')
-      ctx.throw(429)
+      return ctx.throw(429)
     }
   }
 

@@ -65,7 +65,7 @@ function statFields(z: Z) {
     minValue: z.number().nullable().optional(),
     maxValue: z.number().nullable().optional(),
     defaultValue: z.number(),
-    minTimeBetweenUpdates: z.number()
+    minTimeBetweenUpdates: z.number().min(0)
   }
 }
 
@@ -80,26 +80,26 @@ export function updateStatBodySchema(z: Z) {
   return z.object(statFields(z)).partial().superRefine(validateStatBody)
 }
 
-export const loadStat = async (ctx: StatRouteContext, next: Next) => {
+export async function loadStat(ctx: StatRouteContext, next: Next) {
   const { id } = ctx.params as { id: string }
   const em = ctx.em
 
   const stat = await em.repo(GameStat).findOne(Number(id), { populate: ['game'] })
 
   if (!stat) {
-    ctx.throw(404, 'Stat not found')
+    return ctx.throw(404, 'Stat not found')
   }
 
-  const userOrganisation = ctx.state.authenticatedUser.organisation
+  const userOrganisation = ctx.state.user.organisation
   if (stat.game.organisation.id !== userOrganisation.id) {
-    ctx.throw(403)
+    return ctx.throw(403)
   }
 
   ctx.state.stat = stat
   await next()
 }
 
-export const loadPlayerStat = async (ctx: PlayerStatRouteContext, next: Next) => {
+export async function loadPlayerStat(ctx: PlayerStatRouteContext, next: Next) {
   const { playerStatId } = ctx.params as { playerStatId: string }
   const em = ctx.em
 
@@ -111,14 +111,14 @@ export const loadPlayerStat = async (ctx: PlayerStatRouteContext, next: Next) =>
   })
 
   if (!playerStat) {
-    ctx.throw(404, 'Player stat not found')
+    return ctx.throw(404, 'Player stat not found')
   }
 
   ctx.state.playerStat = playerStat
   await next()
 }
 
-export const clearStatIndexResponseCache = async (ctx: ClearStatIndexResponseCacheContext, next: Next) => {
+export async function clearStatIndexResponseCache(ctx: ClearStatIndexResponseCacheContext, next: Next) {
   await next()
 
   const game = ctx.state.game ?? ctx.state.stat?.game

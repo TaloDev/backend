@@ -10,9 +10,9 @@ import buildErrorResponse from '../../../lib/errors/buildErrorResponse'
 import updateAllowedKeys from '../../../lib/entities/updateAllowedKeys'
 import { sendMessages } from '../../../socket/messages/socketMessage'
 import { APIKeyScope } from '../../../entities/api-key'
-import Prop from '../../../entities/prop'
 import { ProtectedRouteContext } from '../../../lib/routing/context'
 import { loadGame } from '../../../middleware/game-middleware'
+import { updatePropsSchema } from '../../../lib/validation/propsSchema'
 
 async function sendLiveConfigUpdatedMessage(ctx: ProtectedRouteContext, game: Game) {
   const socket = ctx.wss
@@ -25,8 +25,8 @@ async function sendLiveConfigUpdatedMessage(ctx: ProtectedRouteContext, game: Ga
 }
 
 function throwUnlessOwner(ctx: ProtectedRouteContext) {
-  if (ctx.state.authenticatedUser.type !== UserType.OWNER) {
-    ctx.throw(403, 'You do not have permissions to update game settings')
+  if (ctx.state.user.type !== UserType.OWNER) {
+    return ctx.throw(403, 'You do not have permissions to update game settings')
   }
 }
 
@@ -36,7 +36,7 @@ export const updateRoute = protectedRoute({
   schema: (z) => ({
     body: z.object({
       name: z.string().trim().min(1, 'Name must be a non-empty string').optional(),
-      props: z.array(z.custom<Prop>()).optional(),
+      props: updatePropsSchema.optional(),
       purgeDevPlayers: z.boolean().optional(),
       purgeLivePlayers: z.boolean().optional(),
       purgeDevPlayersRetention: z.number().optional(),
@@ -64,7 +64,7 @@ export const updateRoute = protectedRoute({
       game.name = name
 
       createGameActivity(em, {
-        user: ctx.state.authenticatedUser,
+        user: ctx.state.user,
         game,
         type: GameActivityType.GAME_NAME_UPDATED,
         extra: {
@@ -99,7 +99,7 @@ export const updateRoute = protectedRoute({
       await sendLiveConfigUpdatedMessage(ctx, game)
 
       createGameActivity(em, {
-        user: ctx.state.authenticatedUser,
+        user: ctx.state.user,
         game,
         type: GameActivityType.GAME_PROPS_UPDATED,
         extra: {
@@ -141,7 +141,7 @@ export const updateRoute = protectedRoute({
 
     if (changedProperties.length > 0) {
       createGameActivity(em, {
-        user: ctx.state.authenticatedUser,
+        user: ctx.state.user,
         game,
         type: GameActivityType.GAME_SETTINGS_UPDATED,
         extra: {

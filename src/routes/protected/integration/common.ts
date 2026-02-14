@@ -16,7 +16,7 @@ type IntegrationUpdateableKeys = {
   [key in IntegrationType]: (keyof IntegrationConfig)[]
 }
 
-export const loadIntegration = async (ctx: IntegrationRouteContext, next: Next) => {
+export async function loadIntegration(ctx: IntegrationRouteContext, next: Next) {
   const { id } = ctx.params as { id: string }
   const em = ctx.em
 
@@ -26,12 +26,12 @@ export const loadIntegration = async (ctx: IntegrationRouteContext, next: Next) 
   )
 
   if (!integration) {
-    ctx.throw(404, 'Integration not found')
+    return ctx.throw(404, 'Integration not found')
   }
 
-  const userOrganisation = ctx.state.authenticatedUser.organisation
+  const userOrganisation = ctx.state.user.organisation
   if (integration.game.organisation.id !== userOrganisation.id) {
-    ctx.throw(403)
+    return ctx.throw(403)
   }
 
   ctx.state.integration = integration

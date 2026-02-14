@@ -1,7 +1,6 @@
 import { Collection, Entity, ManyToMany, ManyToOne, OneToMany, PrimaryKey, Property } from '@mikro-orm/mysql'
 import PlayerAlias from './player-alias'
 import Game from './game'
-import { Required, ValidationCondition } from 'koa-clay'
 import { sendMessages, SocketMessageResponse } from '../socket/messages/socketMessage'
 import Socket from '../socket'
 import { APIKeyScope } from './api-key'
@@ -18,9 +17,6 @@ export default class GameChannel {
   @PrimaryKey()
   id!: number
 
-  @Required({
-    methods: ['POST']
-  })
   @Property()
   name!: string
 
@@ -42,15 +38,6 @@ export default class GameChannel {
   @ManyToOne(() => Game, { eager: true })
   game: Game
 
-  @Required({
-    methods: [],
-    validation: async (val: unknown): Promise<ValidationCondition[]> => [
-      {
-        check: Array.isArray(val),
-        error: 'Props must be an array'
-      }
-    ]
-  })
   @OneToMany(() => GameChannelProp, (prop) => prop.gameChannel, { eager: true, orphanRemoval: true })
   props: Collection<GameChannelProp> = new Collection<GameChannelProp>(this)
 

@@ -19,7 +19,7 @@ export const deleteCategoryRoute = protectedRoute({
     const feedbackCategory = ctx.state.feedbackCategory
 
     createGameActivity(em, {
-      user: ctx.state.authenticatedUser,
+      user: ctx.state.user,
       game: feedbackCategory.game,
       type: GameActivityType.GAME_FEEDBACK_CATEGORY_DELETED,
       extra: {

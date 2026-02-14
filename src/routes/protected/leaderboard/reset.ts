@@ -16,7 +16,7 @@ export const resetRoute = protectedRoute({
   schema: (z) => ({
     query: z.object({
       mode: z.enum(resetModes, {
-        message: `Mode must be one of: ${resetModes.join(', ')}`
+        error: `Mode must be one of: ${resetModes.join(', ')}`
       }).optional().default('all')
     })
   }),
@@ -49,7 +49,7 @@ export const resetRoute = protectedRoute({
     const deletedCount = await em.transactional(async (trx) => {
       const count = await trx.repo(LeaderboardEntry).nativeDelete(where)
       createGameActivity(trx, {
-        user: ctx.state.authenticatedUser,
+        user: ctx.state.user,
         game: leaderboard.game,
         type: GameActivityType.LEADERBOARD_ENTRIES_RESET,
         extra: {

@@ -17,13 +17,13 @@ export const syncLeaderboardsRoute = protectedRoute({
     const integration = ctx.state.integration
 
     if (!integration.getConfig().syncLeaderboards) {
-      ctx.throw(400, 'Leaderboard syncing is not enabled')
+      return ctx.throw(400, 'Leaderboard syncing is not enabled')
     }
 
     await addLeaderboardSyncJob(integration.id)
 
     createGameActivity(em, {
-      user: ctx.state.authenticatedUser,
+      user: ctx.state.user,
       game: ctx.state.game,
       type: GameActivityType.GAME_INTEGRATION_STEAMWORKS_LEADERBOARDS_SYNCED
     })

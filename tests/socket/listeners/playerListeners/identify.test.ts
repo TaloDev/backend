@@ -2,7 +2,7 @@ import { APIKeyScope } from '../../../../src/entities/api-key'
 import createSocketIdentifyMessage from '../../../utils/createSocketIdentifyMessage'
 import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
 import PlayerFactory from '../../../fixtures/PlayerFactory'
-import { createSocketTicket } from '../../../../src/services/api/socket-ticket-api.service'
+import { createSocketTicket } from '../../../../src/lib/sockets/createSocketTicket'
 import createTestSocket from '../../../utils/createTestSocket'
 
 describe('Player listeners - identify', () => {

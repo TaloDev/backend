@@ -4,6 +4,7 @@ import { loadGame } from '../../../middleware/game-middleware'
 import GameChannelStorageProp from '../../../entities/game-channel-storage-prop'
 import { DEFAULT_PAGE_SIZE } from '../../../lib/pagination/itemsPerPage'
 import { loadChannel } from './common'
+import { pageSchema } from '../../../lib/validation/pageSchema'
 
 const itemsPerPage = DEFAULT_PAGE_SIZE
 
@@ -13,7 +14,7 @@ export const storageRoute = protectedRoute({
   schema: (z) => ({
     query: z.object({
       search: z.string().optional(),
-      page: z.coerce.number().catch(0)
+      page: pageSchema
     })
   }),
   middleware: withMiddleware(loadGame, loadChannel),

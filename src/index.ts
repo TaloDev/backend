@@ -4,17 +4,17 @@ import './lib/tracing/enable-tracing'
 import './lib/docs/docs-registry'
 import Koa from 'koa'
 import bodyParser from 'koa-bodyparser'
-import loggerMiddleware from './middleware/logger-middleware'
-import configureProtectedRoutes from './config/protected-routes'
-import configureAPIRoutes from './config/api-routes'
-import configurePublicRoutes from './config/public-routes'
-import corsMiddleware from './middleware/cors-middleware'
-import errorMiddleware from './middleware/error-middleware'
-import initProviders from './config/providers'
-import devDataMiddleware from './middleware/dev-data-middleware'
-import requestContextMiddleware from './middleware/request-context-middleware'
-import helmetMiddleware from './middleware/helmet-middleware'
-import httpTracingMiddleware from './middleware/http-tracing-middleware'
+import { loggerMiddleware } from './middleware/logger-middleware'
+import { configureProtectedRoutes } from './config/protected-routes'
+import { configureAPIRoutes } from './config/api-routes'
+import { configurePublicRoutes } from './config/public-routes'
+import { corsMiddleware } from './middleware/cors-middleware'
+import { errorMiddleware } from './middleware/error-middleware'
+import { initProviders } from './config/providers'
+import { devDataMiddleware } from './middleware/dev-data-middleware'
+import { requestContextMiddleware } from './middleware/request-context-middleware'
+import { httpTracingMiddleware } from './middleware/http-tracing-middleware'
+import helmet from 'koa-helmet'
 import compress from 'koa-compress'
 import { createServer } from 'http'
 import Socket from './socket'
@@ -35,7 +35,7 @@ export default async function init() {
   app.use(errorMiddleware)
   app.use(bodyParser())
   if (!isTest) app.use(httpTracingMiddleware)
-  app.use(helmetMiddleware)
+  app.use(helmet())
   app.use(corsMiddleware)
   app.use(devDataMiddleware)
   app.use(requestContextMiddleware)

@@ -13,23 +13,43 @@ import ConfirmEmail from '../../../emails/confirm-email-mail'
 import { getGlobalQueue } from '../../../config/global-queues'
 import { buildTokenPair } from '../../../lib/auth/buildTokenPair'
 import { passwordSchema } from '../../../lib/validation/passwordSchema'
+import axios from 'axios'
+import { metrics } from '@opentelemetry/api'
+import assert from 'node:assert'
+
+const hcaptchaMonitorMeter = metrics.getMeter('hcaptcha-monitor-meter')
+const hcaptchaSuccessCounter = hcaptchaMonitorMeter.createCounter('talo.hcaptcha.success_total')
+const hcaptchaFailedCounter = hcaptchaMonitorMeter.createCounter('talo.hcaptcha.failed_total')
+
+function getCaptchaSecret() {
+  return process.env.HCAPTCHA_SECRET
+}
 
 export const registerRoute = publicRoute({
   method: 'post',
   path: '/register',
   schema: (z) => ({
     body: z.object({
-      email: z.string().email('Email address is invalid'),
+      email: z.email('Email address is invalid'),
       username: z.string().min(1),
       password: passwordSchema,
       organisationName: z.string().optional(),
-      inviteToken: z.string().optional()
+      inviteToken: z.string().optional(),
+      captchaToken: z.string().optional()
     }).refine((data) => data.organisationName || data.inviteToken, {
-      message: 'Either organisationName or inviteToken is required'
+      error: 'Either organisationName or inviteToken is required'
+    }).superRefine((data, zodCtx) => {
+      if (getCaptchaSecret() && !data.captchaToken) {
+        zodCtx.addIssue({
+          code: 'custom',
+          path: ['captchaToken'],
+          message: 'Captcha is required'
+        })
+      }
     })
   }),
   handler: async (ctx) => {
-    const { email, username, password, organisationName, inviteToken } = ctx.state.validated.body
+    const { email, username, password, organisationName, inviteToken, captchaToken } = ctx.state.validated.body
     const em = ctx.em
 
     const registrationMode = process.env.REGISTRATION_MODE || 'open'
@@ -44,6 +64,20 @@ export const registerRoute = publicRoute({
         status: 400,
         body: { message: 'Registration requires an invitation' }
       }
+    }
+
+    if (getCaptchaSecret()) {
+      const isValid = await verifyCaptcha(captchaToken!, ctx.request.ip)
+      if (!isValid) {
+        hcaptchaFailedCounter.add(1)
+
+        return {
+          status: 400,
+          body: { message: 'Captcha verification failed, please try again' }
+        }
+      }
+
+      hcaptchaSuccessCounter.add(1)
     }
 
     const userWithEmail = await em.repo(User).findOne({ email })
@@ -112,3 +146,20 @@ export const registerRoute = publicRoute({
     }
   }
 })
+
+async function verifyCaptcha(token: string, ip: string) {
+  const secret = getCaptchaSecret()
+  assert(secret)
+
+  try {
+    const params = new URLSearchParams()
+    params.append('secret', secret)
+    params.append('response', token)
+    params.append('remoteip', ip)
+
+    const { data } = await axios.post('https://hcaptcha.com/siteverify', params)
+    return data.success
+  } catch {
+    return false
+  }
+}

@@ -7,11 +7,13 @@ import GameActivity, { GameActivityType } from '../../../../src/entities/game-ac
 import PricingPlanFactory from '../../../fixtures/PricingPlanFactory'
 import { randEmail, randUserName } from '@ngneat/falso'
 import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
+import AxiosMockAdapter from 'axios-mock-adapter'
+import axios from 'axios'
 
 describe('User public  - register', () => {
   beforeAll(async () => {
     const pricingPlan = await new PricingPlanFactory().one()
-    await em.persistAndFlush(pricingPlan)
+    await em.persist(pricingPlan).flush()
   })
 
   it('should register a user', async () => {
@@ -34,7 +36,7 @@ describe('User public  - register', () => {
   it('should not let a user register if the email already exists', async () => {
     const email = randEmail()
     const user = await new UserFactory().state(() => ({ email })).one()
-    await em.persistAndFlush(user)
+    await em.persist(user).flush()
 
     const res = await request(app)
       .post('/public/users/register')
@@ -64,7 +66,7 @@ describe('User public  - register', () => {
   it('should let a user register with an invite', async () => {
     const [organisation] = await createOrganisationAndGame()
     const invite = await new InviteFactory().construct(organisation).one()
-    await em.persistAndFlush(invite)
+    await em.persist(invite).flush()
 
     const email = invite.email
     const username = randUserName()
@@ -91,7 +93,7 @@ describe('User public  - register', () => {
   it('should not let a user register with an invite if the email doesn\'t match', async () => {
     const organisation = await new OrganisationFactory().one()
     const invite = await new InviteFactory().construct(organisation).one()
-    await em.persistAndFlush(invite)
+    await em.persist(invite).flush()
 
     const email = randEmail()
     const username = randUserName()
@@ -105,7 +107,7 @@ describe('User public  - register', () => {
   it('should not let a user register with a missing invite', async () => {
     const organisation = await new OrganisationFactory().one()
     const invite = await new InviteFactory().construct(organisation).one()
-    await em.persistAndFlush(invite)
+    await em.persist(invite).flush()
 
     const email = randEmail()
     const username = randUserName()
@@ -130,7 +132,7 @@ describe('User public  - register', () => {
   })
 
   it('should not let a user register if registration is disabled', async () => {
-    process.env.REGISTRATION_MODE = 'disabled'
+    vi.stubEnv('REGISTRATION_MODE', 'disabled')
 
     const res = await request(app)
       .post('/public/users/register')
@@ -139,11 +141,11 @@ describe('User public  - register', () => {
 
     expect(res.body).toStrictEqual({ message: 'Registration is disabled' })
 
-    delete process.env.REGISTRATION_MODE
+    vi.unstubAllEnvs()
   })
 
   it('should not let a user register if registration is exclusive', async () => {
-    process.env.REGISTRATION_MODE = 'exclusive'
+    vi.stubEnv('REGISTRATION_MODE', 'exclusive')
 
     const res = await request(app)
       .post('/public/users/register')
@@ -152,6 +154,75 @@ describe('User public  - register', () => {
 
     expect(res.body).toStrictEqual({ message: 'Registration requires an invitation' })
 
-    delete process.env.REGISTRATION_MODE
+    vi.unstubAllEnvs()
+  })
+
+  describe('hCaptcha', () => {
+    const axiosMock = new AxiosMockAdapter(axios)
+
+    beforeEach(() => {
+      vi.stubEnv('HCAPTCHA_SECRET', 'test-secret')
+    })
+
+    afterEach(() => {
+      axiosMock.reset()
+      vi.unstubAllEnvs()
+    })
+
+    it('should register a user when captcha verification succeeds', async () => {
+      const verifyCaptchaMock = vi.fn(() => [200, { success: true }])
+      axiosMock.onPost('https://hcaptcha.com/siteverify').reply(verifyCaptchaMock)
+
+      const email = randEmail()
+      const username = randUserName()
+
+      const res = await request(app)
+        .post('/public/users/register')
+        .send({ email, username, password: 'password', organisationName: 'Talo', captchaToken: 'valid-token' })
+        .expect(200)
+
+      expect(verifyCaptchaMock).toHaveBeenCalledOnce()
+      expect(res.body.accessToken).toBeTruthy()
+      expect(res.body.user.email).toBe(email.toLowerCase())
+    })
+
+    it('should not register a user when captcha verification fails', async () => {
+      const verifyCaptchaMock = vi.fn(() => [200, { success: false }])
+      axiosMock.onPost('https://hcaptcha.com/siteverify').reply(verifyCaptchaMock)
+
+      const res = await request(app)
+        .post('/public/users/register')
+        .send({ email: randEmail(), username: randUserName(), password: 'password', organisationName: 'Talo', captchaToken: 'invalid-token' })
+        .expect(400)
+
+      expect(verifyCaptchaMock).toHaveBeenCalledOnce()
+      expect(res.body).toStrictEqual({ message: 'Captcha verification failed, please try again' })
+    })
+
+    it('should not register a user when no captcha token is provided', async () => {
+      const res = await request(app)
+        .post('/public/users/register')
+        .send({ email: randEmail(), username: randUserName(), password: 'password', organisationName: 'Talo' })
+        .expect(400)
+
+      expect(res.body).toStrictEqual({
+        errors: {
+          captchaToken: ['Captcha is required']
+        }
+      })
+    })
+
+    it('should not register a user when the hcaptcha API returns an error', async () => {
+      const verifyCaptchaMock = vi.fn(() => [500, {}])
+      axiosMock.onPost('https://hcaptcha.com/siteverify').reply(verifyCaptchaMock)
+
+      const res = await request(app)
+        .post('/public/users/register')
+        .send({ email: randEmail(), username: randUserName(), password: 'password', organisationName: 'Talo', captchaToken: 'some-token' })
+        .expect(400)
+
+      expect(verifyCaptchaMock).toHaveBeenCalledOnce()
+      expect(res.body).toStrictEqual({ message: 'Captcha verification failed, please try again' })
+    })
   })
 })

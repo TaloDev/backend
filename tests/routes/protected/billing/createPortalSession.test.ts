@@ -7,7 +7,7 @@ import userPermissionProvider from '../../../utils/userPermissionProvider'
 import { UserType } from '../../../../src/entities/user'
 import assert from 'node:assert'
 
-describe('Billing service - create portal session', () => {
+describe('Billing  - create portal session', () => {
   const stripe = initStripe()
   assert(stripe)
 

@@ -8,7 +8,7 @@ import IntegrationConfigFactory from '../../../fixtures/IntegrationConfigFactory
 import IntegrationFactory from '../../../fixtures/IntegrationFactory'
 import GameActivity, { GameActivityType } from '../../../../src/entities/game-activity'
 
-describe('Integration service - delete', () => {
+describe('Integration  - delete', () => {
   it.each(userPermissionProvider([
     UserType.ADMIN
   ], 204))('should return a %i for a %s user', async (statusCode, _, type) => {

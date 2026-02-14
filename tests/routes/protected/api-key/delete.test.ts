@@ -9,7 +9,7 @@ import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
 import { createSocketTicket } from '../../../../src/lib/sockets/createSocketTicket'
 import createTestSocket from '../../../utils/createTestSocket'
 
-describe('API key service - delete', () => {
+describe('API key  - delete', () => {
   it.each(userPermissionProvider([
     UserType.ADMIN
   ], 204))('should return a %i for a %s user', async (statusCode, _, type) => {

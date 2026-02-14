@@ -10,7 +10,7 @@ import { subHours } from 'date-fns'
 import PlayerGameStatSnapshot from '../../../../src/entities/player-game-stat-snapshot'
 import { FlushStatSnapshotsQueueHandler } from '../../../../src/lib/queues/game-metrics/flush-stat-snapshots-queue-handler'
 
-describe('Game stats API service - put', () => {
+describe('Game stats API  - put', () => {
   const createStat = async (game: Game, props: Partial<GameStat>) => {
     const stat = await new GameStatFactory([game]).state(() => ({ ...props })).one()
     em.persist(stat)

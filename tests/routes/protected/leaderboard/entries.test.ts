@@ -10,7 +10,7 @@ import LeaderboardEntryProp from '../../../../src/entities/leaderboard-entry-pro
 import { Collection } from '@mikro-orm/mysql'
 import { LeaderboardSortMode } from '../../../../src/entities/leaderboard'
 
-describe('Leaderboard service - entries', () => {
+describe('Leaderboard  - entries', () => {
   it('should return a leaderboard\'s entries', async () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({}, organisation)

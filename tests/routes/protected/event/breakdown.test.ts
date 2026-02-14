@@ -5,7 +5,7 @@ import { addDays, sub } from 'date-fns'
 import createUserAndToken from '../../../utils/createUserAndToken'
 import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
 
-describe('Event service - breakdown', () => {
+describe('Event  - breakdown', () => {
   it('should return a breakdown of an event', async () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({}, organisation)

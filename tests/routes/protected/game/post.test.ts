@@ -4,7 +4,7 @@ import Game from '../../../../src/entities/game'
 import userPermissionProvider from '../../../utils/userPermissionProvider'
 import createUserAndToken from '../../../utils/createUserAndToken'
 
-describe('Game service - post', () => {
+describe('Game  - post', () => {
   it.each(userPermissionProvider([
     UserType.ADMIN,
     UserType.DEV

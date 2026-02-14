@@ -3,7 +3,7 @@ import UserTwoFactorAuth from '../../../../src/entities/user-two-factor-auth'
 import generateRecoveryCodes from '../../../../src/lib/auth/generateRecoveryCodes'
 import createUserAndToken from '../../../utils/createUserAndToken'
 
-describe('User service - create recovery codes', () => {
+describe('User  - create recovery codes', () => {
   it('should let users create a new set of recovery codes', async () => {
     const twoFactorAuth = new UserTwoFactorAuth('blah')
     twoFactorAuth.enabled = true

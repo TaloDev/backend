@@ -6,7 +6,7 @@ import PlayerAliasFactory from '../../../fixtures/PlayerAliasFactory'
 import GameChannelFactory from '../../../fixtures/GameChannelFactory'
 import GameChannelStoragePropFactory from '../../../fixtures/GameChannelStoragePropFactory'
 
-describe('Game channel service - storage', () => {
+describe('Game channel  - storage', () => {
   it('should return a list of storage props for a channel', async () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({}, organisation)

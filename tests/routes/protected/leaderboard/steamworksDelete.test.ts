@@ -14,7 +14,7 @@ import PlayerFactory from '../../../fixtures/PlayerFactory'
 import { SteamworksLeaderboardEntry } from '../../../../src/entities/steamworks-leaderboard-entry'
 import LeaderboardEntryFactory from '../../../fixtures/LeaderboardEntryFactory'
 
-describe('Leaderboard service - delete - steamworks integration', () => {
+describe('Leaderboard  - delete - steamworks integration', () => {
   const axiosMock = new AxiosMockAdapter(axios)
 
   afterEach(() => {

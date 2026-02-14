@@ -19,7 +19,7 @@ async function collect<T>(gen: AsyncGenerator<T>): Promise<T[]> {
   return result
 }
 
-describe('Data export service - included data (unit tests)', () => {
+describe('Data export  - included data (unit tests)', () => {
   it('should not include events from dev build players without the dev data header', async () => {
     const [, game] = await createOrganisationAndGame()
 

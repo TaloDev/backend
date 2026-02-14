@@ -2,7 +2,7 @@ import request from 'supertest'
 import { APIKeyScope } from '../../../../src/entities/api-key'
 import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
 
-describe('Game config API service - index', () => {
+describe('Game config API  - index', () => {
   it('should return the game config if the scope is valid', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_GAME_CONFIG])
     await em.populate(apiKey, ['game'])

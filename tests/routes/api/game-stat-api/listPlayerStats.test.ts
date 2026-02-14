@@ -5,7 +5,7 @@ import GameStatFactory from '../../../fixtures/GameStatFactory'
 import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
 import PlayerGameStatFactory from '../../../fixtures/PlayerGameStatFactory'
 
-describe('Game stats API service - list player stats', () => {
+describe('Game stats API  - list player stats', () => {
   it('should return player stats if the scope is valid', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_GAME_STATS])
     const stat1 = await new GameStatFactory([apiKey.game]).one()

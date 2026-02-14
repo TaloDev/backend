@@ -7,7 +7,7 @@ import PlayerAuthFactory from '../../../fixtures/PlayerAuthFactory'
 import PlayerAuthActivity, { PlayerAuthActivityType } from '../../../../src/entities/player-auth-activity'
 import { randBoolean, randEmail } from '@ngneat/falso'
 
-describe('Player auth API service - change email', () => {
+describe('Player auth API  - change email', () => {
   it('should change a player\'s email if the current password is correct and the api key has the correct scopes', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_PLAYERS, APIKeyScope.WRITE_PLAYERS])
 

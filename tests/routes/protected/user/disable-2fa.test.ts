@@ -4,7 +4,7 @@ import UserRecoveryCode from '../../../../src/entities/user-recovery-code'
 import createUserAndToken from '../../../utils/createUserAndToken'
 import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
 
-describe('User service - disable 2fa', () => {
+describe('User  - disable 2fa', () => {
   it('should let users disable 2fa', async () => {
     const twoFactorAuth = new UserTwoFactorAuth('blah')
     twoFactorAuth.enabled = true

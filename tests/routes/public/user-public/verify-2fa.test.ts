@@ -4,7 +4,7 @@ import UserTwoFactorAuth from '../../../../src/entities/user-two-factor-auth'
 import createUserAndToken from '../../../utils/createUserAndToken'
 import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
 
-describe('User public service - verify 2fa', () => {
+describe('User public  - verify 2fa', () => {
   it('should let users verify their 2fa code and login', async () => {
     const twoFactorAuth = new UserTwoFactorAuth('blah')
     twoFactorAuth.enabled = true

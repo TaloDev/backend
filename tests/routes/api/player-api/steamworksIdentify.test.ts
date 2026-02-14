@@ -12,7 +12,7 @@ import { PlayerAliasService } from '../../../../src/entities/player-alias'
 import PlayerProp from '../../../../src/entities/player-prop'
 import { randNumber } from '@ngneat/falso'
 
-describe('Player API service - identify - steamworks auth', () => {
+describe('Player API  - identify - steamworks auth', () => {
   const axiosMock = new AxiosMockAdapter(axios)
 
   afterEach(async () => {

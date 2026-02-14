@@ -8,7 +8,7 @@ import PlayerFactory from '../../../fixtures/PlayerFactory'
 import LeaderboardEntryFactory from '../../../fixtures/LeaderboardEntryFactory'
 import { sub } from 'date-fns'
 
-describe('Leaderboard service - update leaderboard', () => {
+describe('Leaderboard  - update leaderboard', () => {
   beforeEach(() => {
     vi.useFakeTimers({ shouldAdvanceTime: true })
   })

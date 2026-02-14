@@ -8,7 +8,7 @@ import createUserAndToken from '../../../utils/createUserAndToken'
 import { UserType } from '../../../../src/entities/user'
 import userPermissionProvider from '../../../utils/userPermissionProvider'
 
-describe('Leaderboard service - update entry', () => {
+describe('Leaderboard  - update entry', () => {
   it.each(userPermissionProvider([
     UserType.ADMIN
   ]))('should mark a leaderboard entry as hidden with %i for a %s user', async (statusCode, _, type) => {

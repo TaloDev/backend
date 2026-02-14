@@ -11,7 +11,7 @@ import PlayerAuthActivityFactory from '../../../fixtures/PlayerAuthActivityFacto
 import assert from 'node:assert'
 import * as deletePlayers from '../../../../src/tasks/deletePlayers'
 
-describe('Player auth API service - delete', { timeout: 30_000 }, () => {
+describe('Player auth API  - delete', { timeout: 30_000 }, () => {
   afterEach(() => {
     vi.restoreAllMocks()
   })

@@ -7,7 +7,7 @@ import userPermissionProvider from '../../../utils/userPermissionProvider'
 import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
 import createUserAndToken from '../../../utils/createUserAndToken'
 
-describe('Leaderboard service - post', () => {
+describe('Leaderboard  - post', () => {
   it.each(userPermissionProvider([
     UserType.ADMIN,
     UserType.DEV

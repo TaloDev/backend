@@ -8,7 +8,7 @@ import PricingPlanFactory from '../../../fixtures/PricingPlanFactory'
 import { randEmail, randUserName } from '@ngneat/falso'
 import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
 
-describe('User public service - register', () => {
+describe('User public  - register', () => {
   beforeAll(async () => {
     const pricingPlan = await new PricingPlanFactory().one()
     await em.persistAndFlush(pricingPlan)

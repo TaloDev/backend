@@ -9,7 +9,7 @@ import PlayerGameStatFactory from '../../../fixtures/PlayerGameStatFactory'
 import { addMinutes, isSameDay } from 'date-fns'
 import { randNumber } from '@ngneat/falso'
 
-describe('Game stats API service - history', () => {
+describe('Game stats API  - history', () => {
   const createStat = async (game: Game) => {
     const stat = await new GameStatFactory([game]).state(() => ({ maxValue: 999, maxChange: 99 })).one()
     em.persist(stat)

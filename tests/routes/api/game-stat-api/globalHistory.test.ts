@@ -11,7 +11,7 @@ import { randNumber } from '@ngneat/falso'
 import PlayerGameStat from '../../../../src/entities/player-game-stat'
 import GameStat from '../../../../src/entities/game-stat'
 
-describe('Game stats API service - global history', () => {
+describe('Game stats API  - global history', () => {
   const createStat = async (game: Game) => {
     const stat = await new GameStatFactory([game]).state(() => ({ maxValue: 999, maxChange: 99, global: true })).one()
     em.persist(stat)

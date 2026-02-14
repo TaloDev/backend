@@ -1,7 +1,7 @@
 import request from 'supertest'
 import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
 
-describe('Socket ticket API service - post', () => {
+describe('Socket ticket API  - post', () => {
   it('should return a valid socket ticket', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([])
 

@@ -5,7 +5,7 @@ import PlayerFactory from '../../../fixtures/PlayerFactory'
 import PlayerGroupRule, { PlayerGroupRuleCastType, PlayerGroupRuleName } from '../../../../src/entities/player-group-rule'
 import PlayerGroupFactory from '../../../fixtures/PlayerGroupFactory'
 
-describe('Player group API service - get', () => {
+describe('Player group API  - get', () => {
   it('should return a group if the scope is valid', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_PLAYER_GROUPS])
     await em.populate(apiKey, ['game'])

@@ -6,7 +6,7 @@ import createUserAndToken from '../../../utils/createUserAndToken'
 import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
 import PlayerGameStatSnapshot from '../../../../src/entities/player-game-stat-snapshot'
 
-describe('Game stat service - index', () => {
+describe('Game stat  - index', () => {
   it('should return a list of game stats', async () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({}, organisation)

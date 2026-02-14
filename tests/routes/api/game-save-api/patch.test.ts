@@ -6,7 +6,7 @@ import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
 import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
 import { randText } from '@ngneat/falso'
 
-describe('Game save API service - patch', () => {
+describe('Game save API  - patch', () => {
   it('should update a game save if the scope is valid', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_SAVES])
     const player = await new PlayerFactory([apiKey.game]).one()

@@ -4,7 +4,7 @@ import createUserAndToken from '../../../utils/createUserAndToken'
 import GameActivity, { GameActivityType } from '../../../../src/entities/game-activity'
 import PlayerFactory from '../../../fixtures/PlayerFactory'
 
-describe('Game channel service - post', () => {
+describe('Game channel  - post', () => {
   it('should create a game channel', async () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({}, organisation)

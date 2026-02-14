@@ -7,7 +7,7 @@ import { UserType } from '../../../../src/entities/user'
 import PlayerAuthActivityFactory from '../../../fixtures/PlayerAuthActivityFactory'
 import { PlayerAuthActivityType } from '../../../../src/entities/player-auth-activity'
 
-describe('Player service - get auth activities', () => {
+describe('Player  - get auth activities', () => {
   it.each(userPermissionProvider([UserType.ADMIN]))('should return a %i for a %s user', async (statusCode, _, type) => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({ type }, organisation)

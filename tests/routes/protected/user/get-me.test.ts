@@ -2,7 +2,7 @@ import request from 'supertest'
 import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
 import createUserAndToken from '../../../utils/createUserAndToken'
 
-describe('User service - get me', () => {
+describe('User  - get me', () => {
   it('should return the user\'s data', async () => {
     const [organisation] = await createOrganisationAndGame({}, { name: 'Vigilante 2084' })
     const [token] = await createUserAndToken({}, organisation)

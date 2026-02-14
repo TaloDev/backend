@@ -9,7 +9,7 @@ import { sub } from 'date-fns'
 import randomDate from '../../../../src/lib/dates/randomDate'
 import { formatDateForClickHouse } from '../../../../src/lib/clickhouse/formatDateTime'
 
-describe('Demo service - post', () => {
+describe('Demo  - post', () => {
   let demoOrg: Organisation
 
   beforeAll(async () => {

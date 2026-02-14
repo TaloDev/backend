@@ -15,7 +15,7 @@ import { randBoolean, randNumber } from '@ngneat/falso'
 import { UserType } from '../../../../src/entities/user'
 import { SteamworksLeaderboardEntry } from '../../../../src/entities/steamworks-leaderboard-entry'
 
-describe('Leaderboard service - update entry - steamworks integration', () => {
+describe('Leaderboard  - update entry - steamworks integration', () => {
   const axiosMock = new AxiosMockAdapter(axios)
 
   afterEach(async () => {

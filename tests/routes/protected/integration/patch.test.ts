@@ -8,7 +8,7 @@ import IntegrationConfigFactory from '../../../fixtures/IntegrationConfigFactory
 import IntegrationFactory from '../../../fixtures/IntegrationFactory'
 import GameActivity, { GameActivityType } from '../../../../src/entities/game-activity'
 
-describe('Integration service - patch', () => {
+describe('Integration  - patch', () => {
   it.each(userPermissionProvider([
     UserType.ADMIN
   ]))('should return a %i for a %s user', async (statusCode, _, type) => {

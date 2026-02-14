@@ -6,7 +6,7 @@ import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
 import createUserAndToken from '../../../utils/createUserAndToken'
 import userPermissionProvider from '../../../utils/userPermissionProvider'
 
-describe('Game stat service - post', () => {
+describe('Game stat  - post', () => {
   it.each(userPermissionProvider([
     UserType.ADMIN,
     UserType.DEV

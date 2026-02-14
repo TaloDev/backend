@@ -3,7 +3,7 @@ import UserFactory from '../../../fixtures/UserFactory'
 import bcrypt from 'bcrypt'
 import { sign } from '../../../../src/lib/auth/jwt'
 
-describe('User public service - reset password', () => {
+describe('User public  - reset password', () => {
   it('should let a user reset their password', async () => {
     const password = await bcrypt.hash('p4ssw0rd112233', 10)
     const user = await new UserFactory().state(() => ({ password })).one()

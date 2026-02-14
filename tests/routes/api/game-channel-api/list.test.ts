@@ -4,7 +4,7 @@ import { APIKeyScope } from '../../../../src/entities/api-key'
 import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
 import GameChannel from '../../../../src/entities/game-channel'
 
-describe('Game channel API service - index', () => {
+describe('Game channel API  - index', () => {
   it('should return a list of game channels if the scope is valid', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_GAME_CHANNELS])
 

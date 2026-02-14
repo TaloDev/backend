@@ -5,7 +5,7 @@ import PlayerAuthActivity, { PlayerAuthActivityType } from '../../../../src/enti
 import { randUserName } from '@ngneat/falso'
 import PlayerFactory from '../../../fixtures/PlayerFactory'
 
-describe('Player auth API service - register', () => {
+describe('Player auth API  - register', () => {
   it('should register a player if the api key has the correct scopes', async () => {
     const [, token] = await createAPIKeyAndToken([APIKeyScope.READ_PLAYERS, APIKeyScope.WRITE_PLAYERS])
 

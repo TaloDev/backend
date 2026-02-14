@@ -9,7 +9,7 @@ import { randText } from '@ngneat/falso'
 import { FlushEventsQueueHandler } from '../../../../src/lib/queues/game-metrics/flush-events-queue-handler'
 import Event from '../../../../src/entities/event'
 
-describe('Event API service - post', () => {
+describe('Event API  - post', () => {
   it('should create an event if the scope is valid', async () => {
     const addSpy = vi.spyOn(FlushEventsQueueHandler.prototype, 'add')
 

@@ -5,7 +5,7 @@ import PlayerFactory from '../../../fixtures/PlayerFactory'
 import PlayerAliasSubscriptionFactory from '../../../fixtures/PlayerAliasSubscriptionFactory'
 import { RelationshipType } from '../../../../src/entities/player-alias-subscription'
 
-describe('Player relationships API service - getSubscriptions', () => {
+describe('Player relationships API  - getSubscriptions', () => {
   it('should get confirmed subscriptions', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_PLAYER_RELATIONSHIPS])
     const player1 = await new PlayerFactory([apiKey.game]).one()

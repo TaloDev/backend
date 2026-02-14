@@ -10,7 +10,7 @@ import PlanRenewed from '../../../../src/emails/plan-renewed-mail'
 import PlanCancelled from '../../../../src/emails/plan-cancelled-mail'
 import assert from 'node:assert'
 
-describe('Webhook service - subscription updated', () => {
+describe('Webhook  - subscription updated', () => {
   const sendMock = vi.spyOn(sendEmail, 'default')
 
   const stripe = initStripe()

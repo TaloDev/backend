@@ -12,7 +12,7 @@ import createUserAndToken from '../../../utils/createUserAndToken'
 import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
 import assert from 'node:assert'
 
-describe('Leaderboard service - reset', () => {
+describe('Leaderboard  - reset', () => {
   it.each(userPermissionProvider([
     UserType.ADMIN
   ], 200))('should return a %i for a %s user', async (statusCode, _, type) => {

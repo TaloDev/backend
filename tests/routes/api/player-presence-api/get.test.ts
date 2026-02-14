@@ -4,7 +4,7 @@ import PlayerFactory from '../../../fixtures/PlayerFactory'
 import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
 import PlayerPresenceFactory from '../../../fixtures/PlayerPresenceFactory'
 
-describe('Player Presence API service - get', () => {
+describe('Player Presence API  - get', () => {
   it('should get a player presence', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_PLAYER_PRESENCE])
     const player = await new PlayerFactory([apiKey.game]).one()

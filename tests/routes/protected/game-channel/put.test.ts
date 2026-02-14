@@ -6,7 +6,7 @@ import GameChannelFactory from '../../../fixtures/GameChannelFactory'
 import GameChannel from '../../../../src/entities/game-channel'
 import PlayerFactory from '../../../fixtures/PlayerFactory'
 
-describe('Game channel service - put', () => {
+describe('Game channel  - put', () => {
   it('should update a game channel', async () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({}, organisation)

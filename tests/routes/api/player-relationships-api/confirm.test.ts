@@ -7,7 +7,7 @@ import PlayerAliasSubscription from '../../../../src/entities/player-alias-subsc
 import createSocketIdentifyMessage, { persistTestSocketTicket } from '../../../utils/createSocketIdentifyMessage'
 import createTestSocket, { createTestClient } from '../../../utils/createTestSocket'
 
-describe('Player relationships API service - confirm', () => {
+describe('Player relationships API  - confirm', () => {
   it('should confirm a pending subscription request', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_PLAYER_RELATIONSHIPS])
     const player1 = await new PlayerFactory([apiKey.game]).one()

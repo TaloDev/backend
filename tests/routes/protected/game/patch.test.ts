@@ -11,7 +11,7 @@ import { APIKeyScope } from '../../../../src/entities/api-key'
 import Prop from '../../../../src/entities/prop'
 import { randText } from '@ngneat/falso'
 
-describe('Game service - patch', () => {
+describe('Game  - patch', () => {
   it.each(userPermissionProvider([
     UserType.ADMIN
   ]))('should return a %i for a %s user', async (statusCode, _, type) => {

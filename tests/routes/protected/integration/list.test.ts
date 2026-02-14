@@ -7,7 +7,7 @@ import { IntegrationType } from '../../../../src/entities/integration'
 import IntegrationConfigFactory from '../../../fixtures/IntegrationConfigFactory'
 import IntegrationFactory from '../../../fixtures/IntegrationFactory'
 
-describe('Integration service - index', () => {
+describe('Integration  - index', () => {
   it.each(userPermissionProvider([
     UserType.ADMIN
   ]))('should return a %i for a %s user', async (statusCode, _, type) => {

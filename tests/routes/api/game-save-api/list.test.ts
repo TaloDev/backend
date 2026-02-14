@@ -5,7 +5,7 @@ import GameSaveFactory from '../../../fixtures/GameSaveFactory'
 import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
 import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
 
-describe('Game save API service - index', () => {
+describe('Game save API  - index', () => {
   it('should return game saves if the scope is valid', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_GAME_SAVES])
     const players = await new PlayerFactory([apiKey.game]).many(4)

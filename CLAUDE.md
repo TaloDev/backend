@@ -687,7 +687,7 @@ TypeScript cannot partially infer type parameters, so providing a custom state g
 2. Create route file(s) with handler logic
 3. Create `index.ts` that exports the router function
 4. Register in `src/config/api-routes.ts`
-5. Add tests in `tests/services/_api/my-feature-api/`
+5. Add tests in `tests/routes/api/my-feature-api/`
 
 ### Adding a New Entity
 
@@ -732,9 +732,9 @@ Props are flexible key-value pairs on entities (Player, Game, LeaderboardEntry):
 Tests use Vitest with Docker containers for MySQL/Redis/ClickHouse.
 
 Test file structure mirrors `src/` directory:
-- `tests/services/_api/` - API endpoint tests
-- `tests/services/_protected/` - Protected route tests
-- `tests/services/_public/` - Public route tests
+- `tests/routes/api/` - API endpoint tests
+- `tests/routes/protected/` - Protected route tests
+- `tests/routes/public/` - Public route tests
 - `tests/lib/` - Utility tests
 - `tests/entities/` - Entity behavior tests
 

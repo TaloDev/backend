@@ -6,7 +6,7 @@ import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
 import userPermissionProvider from '../../../utils/userPermissionProvider'
 import GameActivity, { GameActivityType } from '../../../../src/entities/game-activity'
 
-describe('Data export service - post', () => {
+describe('Data export  - post', () => {
   it.each(userPermissionProvider([
     UserType.ADMIN
   ], 200))('should return a %i for a %s user', async (statusCode, _, type) => {

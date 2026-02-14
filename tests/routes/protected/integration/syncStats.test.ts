@@ -9,7 +9,7 @@ import IntegrationFactory from '../../../fixtures/IntegrationFactory'
 import GameActivity, { GameActivityType } from '../../../../src/entities/game-activity'
 import * as steamworksIntegration from '../../../../src/lib/integrations/steamworks-integration'
 
-describe('Integration service - sync stats', () => {
+describe('Integration  - sync stats', () => {
   const syncMock = vi.spyOn(steamworksIntegration, 'syncSteamworksStats').mockImplementation(Promise.resolve)
 
   beforeEach(async () => {

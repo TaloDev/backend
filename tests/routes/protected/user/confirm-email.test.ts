@@ -3,7 +3,7 @@ import UserAccessCode from '../../../../src/entities/user-access-code'
 import createUserAndToken from '../../../utils/createUserAndToken'
 import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
 
-describe('User service - confirm email', () => {
+describe('User  - confirm email', () => {
   it('should let a user confirm their email', async () => {
     const [organisation] = await createOrganisationAndGame()
     const [token, user] = await createUserAndToken({}, organisation)

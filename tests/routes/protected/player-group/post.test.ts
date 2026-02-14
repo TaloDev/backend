@@ -9,7 +9,7 @@ import PlayerGroupRule, { PlayerGroupRuleCastType, PlayerGroupRuleName } from '.
 import PlayerProp from '../../../../src/entities/player-prop'
 import PlayerFactory from '../../../fixtures/PlayerFactory'
 
-describe('Player group service - post', () => {
+describe('Player group  - post', () => {
   it.each(userPermissionProvider([
     UserType.DEV,
     UserType.ADMIN

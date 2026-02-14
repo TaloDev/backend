@@ -9,7 +9,7 @@ import PlayerProp from '../../../../src/entities/player-prop'
 import PlayerGroupFactory from '../../../fixtures/PlayerGroupFactory'
 import PlayerGroupRule, { PlayerGroupRuleCastType, PlayerGroupRuleName } from '../../../../src/entities/player-group-rule'
 
-describe('Game channel API service - members', () => {
+describe('Game channel API  - members', () => {
   it('should return channel members if the scope is valid', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_GAME_CHANNELS])
 

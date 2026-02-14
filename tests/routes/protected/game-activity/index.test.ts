@@ -6,7 +6,7 @@ import createUserAndToken from '../../../utils/createUserAndToken'
 import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
 import userPermissionProvider from '../../../utils/userPermissionProvider'
 
-describe('Game activity service - index', () => {
+describe('Game activity  - index', () => {
   it.each(userPermissionProvider([
     UserType.ADMIN,
     UserType.DEMO

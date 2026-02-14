@@ -9,7 +9,7 @@ import dataExportProcessor, { DataExporter } from '../../../../src/lib/queues/da
 import { DataExportJob } from '../../../../src/lib/queues/data-exports/createDataExportQueue'
 import * as sendEmail from '../../../../src/lib/messaging/sendEmail'
 
-describe('Data export service - processor', () => {
+describe('Data export  - processor', () => {
   afterEach(async () => {
     await rm('storage', { recursive: true, force: true })
   })

@@ -8,7 +8,7 @@ import PlanPaymentFailed from '../../../../src/emails/plan-payment-failed'
 import { truncateTables } from '../../../utils/truncateTables'
 import assert from 'node:assert'
 
-describe('Webhook service - invoice payment failed', () => {
+describe('Webhook  - invoice payment failed', () => {
   const sendMock = vi.spyOn(sendEmail, 'default')
 
   const stripe = initStripe()

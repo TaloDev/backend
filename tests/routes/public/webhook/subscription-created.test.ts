@@ -7,7 +7,7 @@ import * as sendEmail from '../../../../src/lib/messaging/sendEmail'
 import PlanUpgraded from '../../../../src/emails/plan-upgraded-mail'
 import assert from 'node:assert'
 
-describe('Webhook service - subscription created', () => {
+describe('Webhook  - subscription created', () => {
   const sendMock = vi.spyOn(sendEmail, 'default')
 
   const stripe = initStripe()

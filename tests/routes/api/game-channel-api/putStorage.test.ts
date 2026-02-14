@@ -9,7 +9,7 @@ import { randText, randWord } from '@ngneat/falso'
 import createSocketIdentifyMessage from '../../../utils/createSocketIdentifyMessage'
 import createTestSocket from '../../../utils/createTestSocket'
 
-describe('Game channel API service - putStorage', () => {
+describe('Game channel API  - putStorage', () => {
   it('should create new storage props', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_CHANNELS])
 

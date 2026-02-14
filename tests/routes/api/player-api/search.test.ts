@@ -8,7 +8,7 @@ import PlayerGroupRule, { PlayerGroupRuleCastType, PlayerGroupRuleName } from '.
 import PlayerProp from '../../../../src/entities/player-prop'
 import { Collection } from '@mikro-orm/mysql'
 
-describe('Player API service - search', () => {
+describe('Player API  - search', () => {
   it('should search for a player by ID', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_PLAYERS])
     const player = await new PlayerFactory([apiKey.game]).one()

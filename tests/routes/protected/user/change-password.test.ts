@@ -2,7 +2,7 @@ import request from 'supertest'
 import bcrypt from 'bcrypt'
 import createUserAndToken from '../../../utils/createUserAndToken'
 
-describe('User service - change password', () => {
+describe('User  - change password', () => {
   it('should let users change their password', async () => {
     const [token, user] = await createUserAndToken()
 

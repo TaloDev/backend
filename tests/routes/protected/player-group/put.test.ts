@@ -10,7 +10,7 @@ import PlayerProp from '../../../../src/entities/player-prop'
 import PlayerFactory from '../../../fixtures/PlayerFactory'
 import PlayerGroupFactory from '../../../fixtures/PlayerGroupFactory'
 
-describe('Player group service - put', () => {
+describe('Player group  - put', () => {
   it.each(userPermissionProvider([
     UserType.DEV,
     UserType.ADMIN

@@ -6,7 +6,7 @@ import userPermissionProvider from '../../../utils/userPermissionProvider'
 import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
 import APIKey, { APIKeyScope } from '../../../../src/entities/api-key'
 
-describe('API key service - put', () => {
+describe('API key  - put', () => {
   it.each(userPermissionProvider([
     UserType.ADMIN
   ]))('should return a %i for a %s user', async (statusCode, _, type) => {

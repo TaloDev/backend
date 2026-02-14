@@ -6,7 +6,7 @@ import createUserAndToken from '../../../utils/createUserAndToken'
 import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
 import { rand } from '@ngneat/falso'
 
-describe('Player service - get stats', () => {
+describe('Player  - get stats', () => {
 
   it('should get a player\'s stats', async () => {
     const [organisation, game] = await createOrganisationAndGame()

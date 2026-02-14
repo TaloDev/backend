@@ -11,7 +11,7 @@ import GameStatFactory from '../../../fixtures/GameStatFactory'
 import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
 import PlayerSession from '../../../../src/entities/player-session'
 
-describe('Player API service - merge', () => {
+describe('Player API  - merge', () => {
   it('should not merge with no scopes', async () => {
     const [, token] = await createAPIKeyAndToken([])
 

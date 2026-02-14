@@ -5,7 +5,7 @@ import Event, { ClickHouseEvent } from '../../../../src/entities/event'
 import { FlushEventsQueueHandler } from '../../../../src/lib/queues/game-metrics/flush-events-queue-handler'
 import Redis from 'ioredis'
 
-describe('Events API service - event flushing', () => {
+describe('Events API  - event flushing', () => {
   afterEach(() => {
     vi.restoreAllMocks()
   })

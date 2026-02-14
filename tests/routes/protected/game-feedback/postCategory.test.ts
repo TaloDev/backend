@@ -6,7 +6,7 @@ import userPermissionProvider from '../../../utils/userPermissionProvider'
 import { UserType } from '../../../../src/entities/user'
 import GameActivity, { GameActivityType } from '../../../../src/entities/game-activity'
 
-describe('Game feedback service - post category', () => {
+describe('Game feedback  - post category', () => {
   it.each(userPermissionProvider([
     UserType.ADMIN,
     UserType.DEV

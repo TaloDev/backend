@@ -5,7 +5,7 @@ import PlayerProp from '../../../../src/entities/player-prop'
 import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
 import createUserAndToken from '../../../utils/createUserAndToken'
 
-describe('Player service - get', () => {
+describe('Player  - get', () => {
   it('should return a player', async () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({ organisation })

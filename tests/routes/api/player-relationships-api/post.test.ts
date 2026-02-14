@@ -6,7 +6,7 @@ import PlayerAliasSubscriptionFactory from '../../../fixtures/PlayerAliasSubscri
 import createSocketIdentifyMessage, { persistTestSocketTicket } from '../../../utils/createSocketIdentifyMessage'
 import createTestSocket, { createTestClient } from '../../../utils/createTestSocket'
 
-describe('Player relationships API service - post', () => {
+describe('Player relationships API  - post', () => {
   it('should create a subscription if the scope is valid', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_PLAYER_RELATIONSHIPS])
     const player1 = await new PlayerFactory([apiKey.game]).one()

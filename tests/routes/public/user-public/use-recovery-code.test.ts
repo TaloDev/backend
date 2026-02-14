@@ -28,7 +28,7 @@ async function createUserWithTwoFactorAuth(em: EntityManager): Promise<[string, 
   return [token, user]
 }
 
-describe('User public service - use recovery code', () => {
+describe('User public  - use recovery code', () => {
   it('should let users login with a recovery code', async () => {
     const [token, user] = await createUserWithTwoFactorAuth(em)
     await setTwoFactorAuthSession(user)

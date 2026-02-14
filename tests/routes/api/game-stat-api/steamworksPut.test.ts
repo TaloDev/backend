@@ -10,7 +10,7 @@ import IntegrationFactory from '../../../fixtures/IntegrationFactory'
 import { IntegrationType } from '../../../../src/entities/integration'
 import GameStatFactory from '../../../fixtures/GameStatFactory'
 
-describe('Game stats API service - put - steamworks integration', () => {
+describe('Game stats API  - put - steamworks integration', () => {
   const axiosMock = new AxiosMockAdapter(axios)
 
   afterAll(async () => {

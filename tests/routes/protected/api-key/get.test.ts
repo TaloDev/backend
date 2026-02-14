@@ -3,7 +3,7 @@ import APIKey from '../../../../src/entities/api-key'
 import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
 import createUserAndToken from '../../../utils/createUserAndToken'
 
-describe('API key service - get', () => {
+describe('API key  - get', () => {
   it('should return a list of api keys', async () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token, user] = await createUserAndToken({}, organisation)

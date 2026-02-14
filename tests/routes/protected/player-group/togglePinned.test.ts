@@ -5,7 +5,7 @@ import UserPinnedGroupFactory from '../../../fixtures/UserPinnedGroupFactory'
 import PlayerGroupFactory from '../../../fixtures/PlayerGroupFactory'
 import UserPinnedGroup from '../../../../src/entities/user-pinned-group'
 
-describe('Player group service - toggle pinned', () => {
+describe('Player group  - toggle pinned', () => {
   it('should pin a group', async () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({}, organisation)

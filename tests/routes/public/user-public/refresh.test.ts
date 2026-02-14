@@ -3,7 +3,7 @@ import UserSession from '../../../../src/entities/user-session'
 import UserFactory from '../../../fixtures/UserFactory'
 import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
 
-describe('User public service - refresh', () => {
+describe('User public  - refresh', () => {
   it('should let a user refresh their session if they have one', async () => {
     const [organisation] = await createOrganisationAndGame()
     const user = await new UserFactory().state(() => ({

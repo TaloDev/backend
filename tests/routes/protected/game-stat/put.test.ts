@@ -4,7 +4,7 @@ import GameActivity, { GameActivityType } from '../../../../src/entities/game-ac
 import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
 import createUserAndToken from '../../../utils/createUserAndToken'
 
-describe('Game stat service - put', () => {
+describe('Game stat  - put', () => {
   it('should update the name', async () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({}, organisation)

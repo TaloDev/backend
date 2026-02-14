@@ -67,5 +67,6 @@ function canCaptureJWTError(err: unknown) {
   if (!(err instanceof Error)) return false
   if (err.name === 'TokenExpiredError') return false
   if (err.message === 'Token revoked') return false
+  if (err.message === 'Secret not provided') return false
   return true
 }

@@ -7,7 +7,7 @@ import { LeaderboardSortMode } from '../../../../src/entities/leaderboard'
 import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
 import { addDays } from 'date-fns'
 
-describe('Leaderboard API  - get', () => {
+describe('Leaderboard API - get', () => {
   it('should get leaderboard entries if the scope is valid', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_LEADERBOARDS])
     const leaderboard = await new LeaderboardFactory([apiKey.game]).one()

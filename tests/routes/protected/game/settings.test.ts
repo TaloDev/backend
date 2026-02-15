@@ -4,7 +4,7 @@ import userPermissionProvider from '../../../utils/userPermissionProvider'
 import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
 import createUserAndToken from '../../../utils/createUserAndToken'
 
-describe('Game  - settings', () => {
+describe('Game - settings', () => {
   it.each(userPermissionProvider([]))('should return settings for a %s user', async (statusCode, _, type) => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({ type }, organisation)

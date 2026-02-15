@@ -14,7 +14,7 @@ import axios from 'axios'
 import { IntegrationType } from '../../../../src/entities/integration'
 import SteamworksIntegrationEvent from '../../../../src/entities/steamworks-integration-event'
 
-describe('Game stat  - updatePlayerStat', () => {
+describe('Game stat - updatePlayerStat', () => {
   const axiosMock = new AxiosMockAdapter(axios)
 
   afterAll(async () => {

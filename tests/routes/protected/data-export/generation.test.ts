@@ -31,7 +31,7 @@ async function parseCsvString(csvString: string): Promise<string[][]> {
   })
 }
 
-describe('Data export  - generation', () => {
+describe('Data export - generation', () => {
   it('should transform basic columns', async () => {
     const [, game] = await createOrganisationAndGame()
 
@@ -156,7 +156,7 @@ describe('Data export  - generation', () => {
   })
 })
 
-describe('Data export  - createZipStream', () => {
+describe('Data export - createZipStream', () => {
   let tempDir: string
   let dataExporter: DataExporter
 

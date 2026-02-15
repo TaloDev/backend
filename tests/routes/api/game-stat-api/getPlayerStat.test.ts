@@ -8,7 +8,7 @@ import PlayerGameStatFactory from '../../../fixtures/PlayerGameStatFactory'
 import GameStat from '../../../../src/entities/game-stat'
 import PlayerGameStat from '../../../../src/entities/player-game-stat'
 
-describe('Game stats API  - get player stat', () => {
+describe('Game stats API - get player stat', () => {
   const createStat = async (game: Game) => {
     const stat = await new GameStatFactory([game]).state(() => ({ maxValue: 999, maxChange: 99 })).one()
     em.persist(stat)

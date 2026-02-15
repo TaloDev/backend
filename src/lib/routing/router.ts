@@ -6,6 +6,7 @@ import type { ValidationSchema, ValidatedContext } from '../../middleware/valida
 import { validate } from '../../middleware/validator-middleware'
 import { z } from 'zod'
 import { APIRouteState, ProtectedRouteState, PublicRouteState, RouteState } from './state'
+import { decodeParamsMiddleware } from '../../middleware/decode-params-middleware'
 
 type HandlerResponse = {
   status: number
@@ -82,7 +83,10 @@ function mountRoute<S extends RouteState, V extends ValidationSchema | undefined
   docsKey?: string
 ) {
   const fullPath = `${basePath}${config.path ?? ''}`
-  const middleware = config.middleware ?? []
+  const middleware = [
+    decodeParamsMiddleware,
+    ...(config.middleware ?? [])
+  ]
 
   const applyResponse = (ctx: AppParameterizedContext<S>, response: HandlerResponse) => {
     ctx.status = response.status

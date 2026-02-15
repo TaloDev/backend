@@ -5,7 +5,7 @@ import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
 import createUserAndToken from '../../../utils/createUserAndToken'
 import { v4 } from 'uuid'
 
-describe('Headline  - total sessions', () => {
+describe('Headline - total sessions', () => {
   const startDate = format(sub(new Date(), { days: 7 }), 'yyyy-MM-dd')
   const endDate = format(new Date(), 'yyyy-MM-dd')
 

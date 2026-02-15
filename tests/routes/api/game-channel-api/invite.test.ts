@@ -6,7 +6,7 @@ import PlayerFactory from '../../../fixtures/PlayerFactory'
 import createSocketIdentifyMessage from '../../../utils/createSocketIdentifyMessage'
 import createTestSocket from '../../../utils/createTestSocket'
 
-describe('Game channel API  - invite', () => {
+describe('Game channel API - invite', () => {
   it('should invite a player to a channel if the inviter is the owner', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_CHANNELS])
 

@@ -6,7 +6,7 @@ import GameActivity, { GameActivityType } from '../../../../src/entities/game-ac
 import GameChannelFactory from '../../../fixtures/GameChannelFactory'
 import userPermissionProvider from '../../../utils/userPermissionProvider'
 
-describe('Game channel  - delete', () => {
+describe('Game channel - delete', () => {
   it.each(userPermissionProvider([
     UserType.ADMIN
   ], 204))('should return a %i for a %s user', async (statusCode, _, type) => {

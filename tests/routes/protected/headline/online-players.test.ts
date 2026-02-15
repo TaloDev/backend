@@ -4,7 +4,7 @@ import PlayerPresenceFactory from '../../../fixtures/PlayerPresenceFactory'
 import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
 import createUserAndToken from '../../../utils/createUserAndToken'
 
-describe('Headline  - online players', () => {
+describe('Headline - online players', () => {
   it('should return the number of online players', async () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({}, organisation)

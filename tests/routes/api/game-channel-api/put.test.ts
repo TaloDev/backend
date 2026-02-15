@@ -9,7 +9,7 @@ import { randText } from '@ngneat/falso'
 import { Collection } from '@mikro-orm/mysql'
 import GameChannelProp from '../../../../src/entities/game-channel-prop'
 
-describe('Game channel API  - put', () => {
+describe('Game channel API - put', () => {
   it('should update a channel if the scope is valid', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_CHANNELS])
 

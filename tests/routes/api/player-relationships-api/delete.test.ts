@@ -7,7 +7,7 @@ import PlayerAliasSubscription from '../../../../src/entities/player-alias-subsc
 import createSocketIdentifyMessage, { persistTestSocketTicket } from '../../../utils/createSocketIdentifyMessage'
 import createTestSocket, { createTestClient } from '../../../utils/createTestSocket'
 
-describe('Player relationships API  - delete', () => {
+describe('Player relationships API - delete', () => {
   it('should delete a subscription', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_PLAYER_RELATIONSHIPS])
     const player1 = await new PlayerFactory([apiKey.game]).one()

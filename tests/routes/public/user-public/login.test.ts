@@ -3,7 +3,7 @@ import UserFactory from '../../../fixtures/UserFactory'
 import { differenceInMinutes, sub } from 'date-fns'
 import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
 
-describe('User public  - login', () => {
+describe('User public - login', () => {
   it('should let a user login', async () => {
     const [organisation] = await createOrganisationAndGame()
     const user = await new UserFactory().loginable().state(() => ({

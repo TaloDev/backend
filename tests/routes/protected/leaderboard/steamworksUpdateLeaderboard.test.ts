@@ -10,7 +10,7 @@ import SteamworksIntegrationEvent from '../../../../src/entities/steamworks-inte
 import LeaderboardFactory from '../../../fixtures/LeaderboardFactory'
 import { LeaderboardSortMode } from '../../../../src/entities/leaderboard'
 
-describe('Leaderboard  - update leaderboard - steamworks integration', () => {
+describe('Leaderboard - update leaderboard - steamworks integration', () => {
   const axiosMock = new AxiosMockAdapter(axios)
 
   afterAll(async () => {

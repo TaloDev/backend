@@ -9,7 +9,7 @@ import createUserAndToken from '../../../utils/createUserAndToken'
 import PlayerProp from '../../../../src/entities/player-prop'
 import { randText, randWord } from '@ngneat/falso'
 
-describe('Player  - patch', () => {
+describe('Player - patch', () => {
   it.each(userPermissionProvider([
     UserType.ADMIN,
     UserType.DEV

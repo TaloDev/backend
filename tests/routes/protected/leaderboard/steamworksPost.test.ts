@@ -10,7 +10,7 @@ import SteamworksIntegrationEvent from '../../../../src/entities/steamworks-inte
 import SteamworksLeaderboardMapping from '../../../../src/entities/steamworks-leaderboard-mapping'
 import clearEntities from '../../../utils/clearEntities'
 
-describe('Leaderboard  - post - steamworks integration', () => {
+describe('Leaderboard - post - steamworks integration', () => {
   const axiosMock = new AxiosMockAdapter(axios)
 
   beforeEach(async () => {

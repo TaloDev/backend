@@ -13,7 +13,7 @@ import { Collection } from '@mikro-orm/mysql'
 import PlayerGroupRule, { PlayerGroupRuleCastType, PlayerGroupRuleName } from '../../../../src/entities/player-group-rule'
 import PlayerGroupFactory from '../../../fixtures/PlayerGroupFactory'
 
-describe('Leaderboard API  - post', () => {
+describe('Leaderboard API - post', () => {
   it('should create a leaderboard entry if the scope is valid', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_LEADERBOARDS])
     const player = await new PlayerFactory([apiKey.game]).one()
@@ -1100,5 +1100,23 @@ describe('Leaderboard API  - post', () => {
     // should pass because the entry wasn't going to be updated
     expect(res.body.entry.score).toBe(200)
     expect(res.body.updated).toBe(false)
+  })
+
+  it('should handle spaces in the internal name', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_LEADERBOARDS])
+    const player = await new PlayerFactory([apiKey.game]).one()
+    const leaderboard = await new LeaderboardFactory([apiKey.game]).state(() => ({ internalName: 'with space' })).one()
+    await em.persist([player, leaderboard]).flush()
+
+    const res = await request(app)
+      .post(`/v1/leaderboards/${encodeURIComponent(leaderboard.internalName)}/entries`)
+      .send({ score: 300 })
+      .auth(token, { type: 'bearer' })
+      .set('x-talo-alias', String(player.aliases[0].id))
+      .expect(200)
+
+    expect(res.body.entry.score).toBe(300)
+    expect(res.body.updated).toBe(false)
+    expect(res.body.entry.position).toBe(0)
   })
 })

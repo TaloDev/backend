@@ -5,7 +5,7 @@ import PlayerFactory from '../../../fixtures/PlayerFactory'
 import createSocketIdentifyMessage from '../../../utils/createSocketIdentifyMessage'
 import createTestSocket from '../../../utils/createTestSocket'
 
-describe('Player presence API  - put', () => {
+describe('Player presence API - put', () => {
   it('should update presence if the scope is valid', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_PLAYER_PRESENCE])
 

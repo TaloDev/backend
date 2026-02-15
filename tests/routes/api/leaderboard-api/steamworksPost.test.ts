@@ -13,7 +13,7 @@ import { IntegrationType } from '../../../../src/entities/integration'
 import { randNumber } from '@ngneat/falso'
 import { SteamworksLeaderboardEntry } from '../../../../src/entities/steamworks-leaderboard-entry'
 
-describe('Leaderboard API  - post - steamworks integration', () => {
+describe('Leaderboard API - post - steamworks integration', () => {
   const axiosMock = new AxiosMockAdapter(axios)
 
   afterAll(async () => {

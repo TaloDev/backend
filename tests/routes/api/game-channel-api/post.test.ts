@@ -5,7 +5,7 @@ import PlayerFactory from '../../../fixtures/PlayerFactory'
 import { randText } from '@ngneat/falso'
 import GameChannel from '../../../../src/entities/game-channel'
 
-describe('Game channel API  - post', () => {
+describe('Game channel API - post', () => {
   it('should create a game channel if the scope is valid', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_CHANNELS])
     const player = await new PlayerFactory([apiKey.game]).one()

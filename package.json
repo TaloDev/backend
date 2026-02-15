@@ -1,6 +1,6 @@
 {
   "name": "game-services",
-  "version": "0.103.0",
+  "version": "0.103.1",
   "description": "",
   "main": "src/index.ts",
   "scripts": {
@@ -22,7 +22,7 @@
   "author": "Sleepy Studios",
   "license": "MIT",
   "devDependencies": {
-    "@mikro-orm/cli": "^6.6.4",
+    "@mikro-orm/cli": "^6.6.6",
     "@stylistic/eslint-plugin": "^5.5.0",
     "@types/archiver": "^6.0.3",
     "@types/bcrypt": "^5.0.2",
@@ -62,10 +62,10 @@
     "@dinero.js/currencies": "^2.0.0-alpha.14",
     "@hyperdx/node-opentelemetry": "^0.8.2",
     "@koa/cors": "^5.0.0",
-    "@mikro-orm/core": "^6.6.4",
-    "@mikro-orm/migrations": "^6.6.4",
-    "@mikro-orm/mysql": "^6.6.4",
-    "@mikro-orm/reflection": "^6.6.4",
+    "@mikro-orm/core": "^6.6.6",
+    "@mikro-orm/migrations": "^6.6.6",
+    "@mikro-orm/mysql": "^6.6.6",
+    "@mikro-orm/reflection": "^6.6.6",
     "@ngneat/falso": "^7.2.0",
     "@opentelemetry/api": "^1.9.0",
     "@sentry/node": "^9.29.0",

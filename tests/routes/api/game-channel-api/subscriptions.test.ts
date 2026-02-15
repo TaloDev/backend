@@ -6,7 +6,7 @@ import PlayerFactory from '../../../fixtures/PlayerFactory'
 import { Collection } from '@mikro-orm/mysql'
 import GameChannelProp from '../../../../src/entities/game-channel-prop'
 
-describe('Game channel API  - subscriptions', () => {
+describe('Game channel API - subscriptions', () => {
   it('should return a list of game channel subscriptions if the scope is valid', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_GAME_CHANNELS])
 

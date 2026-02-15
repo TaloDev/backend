@@ -6,7 +6,7 @@ import PlayerAuthFactory from '../../../fixtures/PlayerAuthFactory'
 import bcrypt from 'bcrypt'
 import PlayerAuthActivity, { PlayerAuthActivityType } from '../../../../src/entities/player-auth-activity'
 
-describe('Player auth API  - verify', () => {
+describe('Player auth API - verify', () => {
   it('should login a player if the verification code is correct and if the api key has the correct scopes', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_PLAYERS, APIKeyScope.WRITE_PLAYERS])
 

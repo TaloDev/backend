@@ -2,7 +2,7 @@ import request from 'supertest'
 import UserTwoFactorAuth from '../../../../src/entities/user-two-factor-auth'
 import createUserAndToken from '../../../utils/createUserAndToken'
 
-describe('User  - enable 2fa', () => {
+describe('User - enable 2fa', () => {
   it('should let users enable 2fa', async () => {
     const [token, user] = await createUserAndToken()
 

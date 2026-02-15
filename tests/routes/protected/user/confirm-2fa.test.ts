@@ -5,7 +5,7 @@ import { authenticator } from '@otplib/preset-default'
 import createUserAndToken from '../../../utils/createUserAndToken'
 import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
 
-describe('User  - confirm 2fa', () => {
+describe('User - confirm 2fa', () => {
   it('should let users confirm enabling 2fa', async () => {
     const [organisation] = await createOrganisationAndGame()
     const [token, user] = await createUserAndToken({

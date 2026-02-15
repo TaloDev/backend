@@ -9,7 +9,7 @@ import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
 import GameActivity, { GameActivityType } from '../../../../src/entities/game-activity'
 import { randEmail } from '@ngneat/falso'
 
-describe('Invite  - post', () => {
+describe('Invite - post', () => {
   beforeEach(async () => {
     await clearEntities(['GameActivity'])
   })

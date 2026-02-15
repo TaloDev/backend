@@ -6,7 +6,7 @@ import PlayerFactory from '../../../fixtures/PlayerFactory'
 import createSocketIdentifyMessage from '../../../utils/createSocketIdentifyMessage'
 import createTestSocket from '../../../utils/createTestSocket'
 
-describe('Game channel API  - delete', () => {
+describe('Game channel API - delete', () => {
   it('should delete a channel if the scope is valid', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_CHANNELS])
 

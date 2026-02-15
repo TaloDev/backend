@@ -36,12 +36,6 @@ export default class SocketRouter {
 
       logRequest(conn, message)
 
-      addBreadcrumb({
-        category: 'message',
-        message,
-        level: 'info'
-      })
-
       const rateLimitExceeded = await conn.checkRateLimitExceeded(this.wss.redis)
       if (rateLimitExceeded) {
         if (conn.rateLimitWarnings > 3) {
@@ -61,6 +55,12 @@ export default class SocketRouter {
 
       try {
         parsedMessage = await socketMessageValidator.parseAsync(JSON.parse(message))
+
+        addBreadcrumb({
+          category: 'message',
+          message: parsedMessage.req,
+          level: 'info'
+        })
 
         const handled = await this.routeMessage(conn, parsedMessage)
         if (!handled) {

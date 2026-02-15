@@ -1,6 +1,6 @@
 import { getMikroORM } from '../../config/mikro-orm.config'
 import FailedJob from '../../entities/failed-job'
-import { captureException, setContext } from '@sentry/node'
+import * as Sentry from '@sentry/node'
 import { Job } from 'bullmq'
 
 async function handleJobFailure<T>(job: Job<T>, err: Error): Promise<void> {
@@ -14,18 +14,20 @@ async function handleJobFailure<T>(job: Job<T>, err: Error): Promise<void> {
   /* v8 ignore next */
   failedJob.stack = err.stack ?? ''
 
-  await em.persistAndFlush(failedJob)
+  await em.persist(failedJob).flush()
 
   /* v8 ignore next 3 */
   if (process.env.NODE_ENV !== 'test') {
     console.error(`Job failed in ${failedJob.queue} queue: ${failedJob.reason}`)
   }
 
-  setContext('queue', {
-    'Name': job.queueName,
-    'Failed Job ID': failedJob.id
+  Sentry.withScope((scope) => {
+    scope.setContext('queue', {
+      'Name': job.queueName,
+      'Failed Job ID': failedJob.id
+    })
+    Sentry.captureException(err)
   })
-  captureException(err)
 }
 
 export default handleJobFailure

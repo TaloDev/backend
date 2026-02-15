@@ -4,7 +4,6 @@ import GameStatFactory from '../../../fixtures/GameStatFactory'
 import PlayerGameStatFactory from '../../../fixtures/PlayerGameStatFactory'
 import createUserAndToken from '../../../utils/createUserAndToken'
 import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
-import { rand } from '@ngneat/falso'
 
 describe('Player  - get stats', () => {
 
@@ -15,9 +14,9 @@ describe('Player  - get stats', () => {
     const stats = await new GameStatFactory([game]).many(3)
 
     const player = await new PlayerFactory([game]).one()
-    const playerStats = await new PlayerGameStatFactory().construct(player, rand(stats)).many(3)
+    const playerStats = await Promise.all(stats.map((stat) => new PlayerGameStatFactory().construct(player, stat).one()))
 
-    await em.persistAndFlush([player, ...playerStats])
+    await em.persist([player, ...playerStats]).flush()
 
     const res = await request(app)
       .get(`/games/${game.id}/players/${player.id}/stats`)

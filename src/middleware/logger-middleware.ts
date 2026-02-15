@@ -21,9 +21,6 @@ export async function loggerMiddleware(ctx: Context, next: Next) {
     const timeMs = endTime - startTime
 
     setTraceAttributes({
-      'clay.matched_route': ctx.state.matchedRoute,
-      'clay.matched_key': ctx.state.matchedServiceKey,
-      'clay.forward_handler': ctx.state.forwardHandler?.handler,
       'http.status': status,
       'http.time_taken_ms': timeMs
     })

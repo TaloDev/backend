@@ -53,13 +53,10 @@ export const putRoute = apiRoute({
     type PutTransactionResponse = [PlayerGameStat | null, { status: number, body: { message: string } } | null]
 
     const [playerStat, errorResponse] = await em.transactional(async (trx): Promise<PutTransactionResponse> => {
-      let lockedStat: GameStat = stat
-      if (stat.global) {
-        lockedStat = await trx.repo(GameStat).findOneOrFail(
-          { id: stat.id },
-          { lockMode: LockMode.PESSIMISTIC_WRITE, refresh: true }
-        )
-      }
+      const lockedStat = await trx.repo(GameStat).findOneOrFail(
+        { id: stat.id },
+        { lockMode: LockMode.PESSIMISTIC_WRITE, refresh: true }
+      )
 
       let playerStat = await trx.repo(PlayerGameStat).findOne({
         player: alias.player,

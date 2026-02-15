@@ -226,12 +226,14 @@ describe('Game stats API  - global history', () => {
     const changesPlayer1 = randNumber({ length: 2 })
     const changesPlayer2 = randNumber({ length: 8 })
 
+    const playerStat1 = await new PlayerGameStatFactory().construct(player1, stat).one()
+    const playerStat2 = await new PlayerGameStatFactory().construct(player2, stat).one()
+    await em.persist([playerStat1, playerStat2]).flush()
+
     await clickhouse.insert({
       table: 'player_game_stat_snapshots',
-      values: await Promise.all([...changesPlayer1, ...changesPlayer2].map(async (change, idx) => {
-        const playerStat = await createPlayerStat(stat, { value: change })
-        playerStat.player = idx < changesPlayer1.length ? player1 : player2
-        await em.flush()
+      values: [...changesPlayer1, ...changesPlayer2].map((change, idx) => {
+        const playerStat = idx < changesPlayer1.length ? playerStat1 : playerStat2
 
         const snapshot = new PlayerGameStatSnapshot()
         snapshot.construct(playerStat.player.aliases[0], playerStat)
@@ -239,7 +241,7 @@ describe('Game stats API  - global history', () => {
         snapshot.createdAt = addMinutes(snapshot.createdAt, idx)
 
         return snapshot.toInsertable()
-      })),
+      }),
       format: 'JSONEachRow'
     })
 

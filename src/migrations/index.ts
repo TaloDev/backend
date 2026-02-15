@@ -61,6 +61,7 @@ import { AddLeaderboardUniqueByPropsColumn } from './20251015211635AddLeaderboar
 import { AddLeaderboardEntryPropsDigestColumn } from './20251019231730AddLeaderboardEntryPropsDigestColumn'
 import { CreatePlayersToDeleteTable } from './20251102174957CreatePlayersToDeleteTable'
 import { CreatePlayerAliasSubscriptionTable } from './20251222221535CreatePlayerAliasSubscriptionTable'
+import { AddPlayerGameStatUniqueConstraint } from './20260214224025AddPlayerGameStatUniqueConstraint'
 
 export default [
   {
@@ -314,5 +315,9 @@ export default [
   {
     name: 'CreatePlayerAliasSubscriptionTable',
     class: CreatePlayerAliasSubscriptionTable
+  },
+  {
+    name: 'AddPlayerGameStatUniqueConstraint',
+    class: AddPlayerGameStatUniqueConstraint
   }
 ]

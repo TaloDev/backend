@@ -3,7 +3,6 @@ import type Koa from 'koa'
 import { sign } from './jwt'
 import User from '../../entities/user'
 import UserSession from '../../entities/user-session'
-import { setUser } from '@sentry/node'
 
 export async function genAccessToken(user: User) {
   const payload = { sub: user.id }
@@ -39,8 +38,6 @@ export async function buildTokenPair({ em, ctx, user, userAgent }: {
   const accessToken = await genAccessToken(user)
   const session = await createSession(em, user, userAgent)
   setRefreshToken(ctx, session)
-
-  setUser({ id: String(user.id), username: user.username })
 
   return accessToken
 }

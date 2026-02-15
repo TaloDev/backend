@@ -2,7 +2,7 @@ import request from 'supertest'
 import UserFactory from '../../../fixtures/UserFactory'
 import * as sendEmail from '../../../../src/lib/messaging/sendEmail'
 
-describe('User public  - forgot password', () => {
+describe('User public - forgot password', () => {
   const sendMock = vi.spyOn(sendEmail, 'default')
 
   afterEach(() => {

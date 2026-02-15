@@ -8,7 +8,7 @@ import PlayerGameStatSnapshot, { ClickHousePlayerGameStatSnapshot } from '../../
 import PlayerGameStatFactory from '../../../fixtures/PlayerGameStatFactory'
 import { FlushStatSnapshotsQueueHandler } from '../../../../src/lib/queues/game-metrics/flush-stat-snapshots-queue-handler'
 
-describe('Game stats API  - snapshot flushing', () => {
+describe('Game stats API - snapshot flushing', () => {
   const createStat = async (game: Game) => {
     const stat = await new GameStatFactory([game]).state(() => ({ maxValue: 999, maxChange: 99 })).one()
     em.persist(stat)

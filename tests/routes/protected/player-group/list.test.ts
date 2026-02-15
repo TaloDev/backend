@@ -4,7 +4,7 @@ import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
 import createUserAndToken from '../../../utils/createUserAndToken'
 import PlayerGroup from '../../../../src/entities/player-group'
 
-describe('Player group  - index', () => {
+describe('Player group - index', () => {
   it('should return a list of groups', async () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({}, organisation)

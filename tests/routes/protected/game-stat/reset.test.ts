@@ -14,7 +14,7 @@ import assert from 'node:assert'
 import PlayerGameStatSnapshot from '../../../../src/entities/player-game-stat-snapshot'
 import { FlushStatSnapshotsQueueHandler } from '../../../../src/lib/queues/game-metrics/flush-stat-snapshots-queue-handler'
 
-describe('GameStat  - reset', () => {
+describe('GameStat - reset', () => {
   it.each(userPermissionProvider([
     UserType.ADMIN
   ], 200))('should return a %i for a %s user', async (statusCode, _, type) => {

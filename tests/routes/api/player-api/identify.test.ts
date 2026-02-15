@@ -12,7 +12,7 @@ import PlayerAlias from '../../../../src/entities/player-alias'
 import PlayerAliasFactory from '../../../fixtures/PlayerAliasFactory'
 import { randNumber } from '@ngneat/falso'
 
-describe('Player API  - identify', () => {
+describe('Player API - identify', () => {
   it('should identify a player', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_PLAYERS])
     const player = await new PlayerFactory([apiKey.game]).one()

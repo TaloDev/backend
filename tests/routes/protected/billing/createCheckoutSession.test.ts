@@ -9,7 +9,7 @@ import OrganisationPricingPlanFactory from '../../../fixtures/OrganisationPricin
 import PlayerFactory from '../../../fixtures/PlayerFactory'
 import assert from 'node:assert'
 
-describe('Billing  - create checkout session', () => {
+describe('Billing - create checkout session', () => {
   const stripe = initStripe()
   assert(stripe)
 

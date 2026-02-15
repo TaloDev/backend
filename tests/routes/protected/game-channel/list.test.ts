@@ -8,7 +8,7 @@ import GameChannel from '../../../../src/entities/game-channel'
 import GameChannelProp from '../../../../src/entities/game-channel-prop'
 import { Collection } from '@mikro-orm/mysql'
 
-describe('Game channel  - index', () => {
+describe('Game channel - index', () => {
   it('should return a list of game channels', async () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({}, organisation)

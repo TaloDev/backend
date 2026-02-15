@@ -5,7 +5,7 @@ import GameSaveFactory from '../../../fixtures/GameSaveFactory'
 import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
 import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
 
-describe('Game save API  - delete', () => {
+describe('Game save API - delete', () => {
   it('should delete a game save if the scope is valid', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_SAVES])
     const player = await new PlayerFactory([apiKey.game]).one()

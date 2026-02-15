@@ -8,7 +8,7 @@ import GameActivity, { GameActivityType } from '../../../../src/entities/game-ac
 import PlayerAlias from '../../../../src/entities/player-alias'
 import { Collection } from '@mikro-orm/mysql'
 
-describe('Player  - delete', () => {
+describe('Player - delete', () => {
   it.each(userPermissionProvider([
     UserType.ADMIN
   ], 204))('should return a %i for a %s user', async (statusCode, _, type) => {

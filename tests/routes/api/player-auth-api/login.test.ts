@@ -7,7 +7,7 @@ import bcrypt from 'bcrypt'
 import * as sendEmail from '../../../../src/lib/messaging/sendEmail'
 import PlayerAuthActivity, { PlayerAuthActivityType } from '../../../../src/entities/player-auth-activity'
 
-describe('Player auth API  - login', () => {
+describe('Player auth API - login', () => {
   const sendMock = vi.spyOn(sendEmail, 'default')
 
   afterEach(() => {

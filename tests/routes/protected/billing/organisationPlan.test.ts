@@ -7,7 +7,7 @@ import userPermissionProvider from '../../../utils/userPermissionProvider'
 import { UserType } from '../../../../src/entities/user'
 import assert from 'node:assert'
 
-describe('Billing  - organisation plan', () => {
+describe('Billing - organisation plan', () => {
   const stripe = initStripe()
   assert(stripe)
 

@@ -4,7 +4,7 @@ import { UserType } from '../../../../src/entities/user'
 import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
 import createUserAndToken from '../../../utils/createUserAndToken'
 
-describe('Data export  - index', () => {
+describe('Data export - index', () => {
   it('should return a list of data exports', async () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({ type: UserType.ADMIN, emailConfirmed: true }, organisation)

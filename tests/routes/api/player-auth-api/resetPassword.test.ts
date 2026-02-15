@@ -5,7 +5,7 @@ import PlayerFactory from '../../../fixtures/PlayerFactory'
 import bcrypt from 'bcrypt'
 import PlayerAuthActivity, { PlayerAuthActivityType } from '../../../../src/entities/player-auth-activity'
 
-describe('Player auth API  - reset password', () => {
+describe('Player auth API - reset password', () => {
   it('should reset a player\'s password if the reset code is correct and if the api key has the correct scopes', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_PLAYERS, APIKeyScope.WRITE_PLAYERS])
 

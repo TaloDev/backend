@@ -10,7 +10,7 @@ import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
 import AxiosMockAdapter from 'axios-mock-adapter'
 import axios from 'axios'
 
-describe('User public  - register', () => {
+describe('User public - register', () => {
   beforeAll(async () => {
     const pricingPlan = await new PricingPlanFactory().one()
     await em.persist(pricingPlan).flush()

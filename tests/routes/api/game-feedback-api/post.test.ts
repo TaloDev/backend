@@ -7,7 +7,7 @@ import { subHours } from 'date-fns'
 import { randText } from '@ngneat/falso'
 import GameFeedback from '../../../../src/entities/game-feedback'
 
-describe('Game feedback API  - post', () => {
+describe('Game feedback API - post', () => {
   it('should create feedback if the scope is valid', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_FEEDBACK])
 

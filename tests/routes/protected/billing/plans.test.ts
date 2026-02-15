@@ -6,7 +6,7 @@ import createUserAndToken from '../../../utils/createUserAndToken'
 import { truncateTables } from '../../../utils/truncateTables'
 import assert from 'node:assert'
 
-describe('Billing  - plans', () => {
+describe('Billing - plans', () => {
   const stripe = initStripe()
   assert(stripe)
 

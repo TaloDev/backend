@@ -4,7 +4,7 @@ import { sub, format } from 'date-fns'
 import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
 import createUserAndToken from '../../../utils/createUserAndToken'
 
-describe('Headline  - returning players', () => {
+describe('Headline - returning players', () => {
   const startDate = format(sub(new Date(), { days: 7 }), 'yyyy-MM-dd')
   const endDate = format(new Date(), 'yyyy-MM-dd')
 

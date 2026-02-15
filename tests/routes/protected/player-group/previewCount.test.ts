@@ -4,7 +4,7 @@ import createUserAndToken from '../../../utils/createUserAndToken'
 import PlayerGroupRule, { PlayerGroupRuleName, PlayerGroupRuleCastType } from '../../../../src/entities/player-group-rule'
 import PlayerFactory from '../../../fixtures/PlayerFactory'
 
-describe('Player group  - preview count', () => {
+describe('Player group - preview count', () => {
   it('should return a preview for the number of players in a group', async () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({}, organisation)

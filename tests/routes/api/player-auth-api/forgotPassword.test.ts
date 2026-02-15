@@ -6,7 +6,7 @@ import * as sendEmail from '../../../../src/lib/messaging/sendEmail'
 import PlayerAuthActivity, { PlayerAuthActivityType } from '../../../../src/entities/player-auth-activity'
 import { randEmail } from '@ngneat/falso'
 
-describe('Player auth API  - forgot password', () => {
+describe('Player auth API - forgot password', () => {
   const sendMock = vi.spyOn(sendEmail, 'default')
 
   afterEach(async () => {

@@ -13,7 +13,7 @@ import { Collection } from '@mikro-orm/mysql'
 import PlayerGroupRule, { PlayerGroupRuleCastType, PlayerGroupRuleName } from '../../../../src/entities/player-group-rule'
 import PlayerGroupFactory from '../../../fixtures/PlayerGroupFactory'
 
-describe('Leaderboard API  - post', () => {
+describe('Leaderboard API - post', () => {
   it('should create a leaderboard entry if the scope is valid', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_LEADERBOARDS])
     const player = await new PlayerFactory([apiKey.game]).one()

@@ -4,7 +4,7 @@ import { APIKeyScope } from '../../../../src/entities/api-key'
 import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
 import createUserAndToken from '../../../utils/createUserAndToken'
 
-describe('API key  - get scopes', () => {
+describe('API key - get scopes', () => {
   it('should return a list of api key scopes', async () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({ type: UserType.ADMIN }, organisation)

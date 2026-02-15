@@ -6,7 +6,7 @@ import createUserAndToken from '../../../utils/createUserAndToken'
 import { v4 } from 'uuid'
 import { formatDateForClickHouse } from '../../../../src/lib/clickhouse/formatDateTime'
 
-describe('Headline  - average session duration', () => {
+describe('Headline - average session duration', () => {
   const startDate = format(sub(new Date(), { days: 7 }), 'yyyy-MM-dd')
   const endDate = format(new Date(), 'yyyy-MM-dd')
 

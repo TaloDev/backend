@@ -4,7 +4,7 @@ import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
 import createUserAndToken from '../../../utils/createUserAndToken'
 import GameFeedbackCategoryFactory from '../../../fixtures/GameFeedbackCategoryFactory'
 
-describe('Game feedback  - put category', () => {
+describe('Game feedback - put category', () => {
   it('should update the name and description', async () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({}, organisation)

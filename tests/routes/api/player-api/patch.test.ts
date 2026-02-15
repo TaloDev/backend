@@ -11,7 +11,7 @@ import { randWord } from '@ngneat/falso'
 import PlayerGroup from '../../../../src/entities/player-group'
 import Redis from 'ioredis'
 
-describe('Player API  - patch', () => {
+describe('Player API - patch', () => {
   it('should update a player\'s properties', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_PLAYERS])
 

@@ -7,7 +7,7 @@ import Integration, { IntegrationType } from '../../../../src/entities/integrati
 import IntegrationConfigFactory from '../../../fixtures/IntegrationConfigFactory'
 import GameActivity, { GameActivityType } from '../../../../src/entities/game-activity'
 
-describe('Integration  - post', () => {
+describe('Integration - post', () => {
   it.each(userPermissionProvider([
     UserType.ADMIN
   ]))('should return a %i for a %s user', async (statusCode, _, type) => {

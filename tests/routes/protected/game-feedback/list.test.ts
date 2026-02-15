@@ -8,7 +8,7 @@ import PlayerFactory from '../../../fixtures/PlayerFactory'
 import { Collection } from '@mikro-orm/mysql'
 import GameFeedbackProp from '../../../../src/entities/game-feedback-prop'
 
-describe('Game feedback  - index', () => {
+describe('Game feedback - index', () => {
   it('should return a list of game feedback', async () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({}, organisation)

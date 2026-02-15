@@ -4,7 +4,7 @@ import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
 import createUserAndToken from '../../../utils/createUserAndToken'
 import Leaderboard from '../../../../src/entities/leaderboard'
 
-describe('Leaderboard  - index', () => {
+describe('Leaderboard - index', () => {
   it('should return a list of leaderboards', async () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({}, organisation)

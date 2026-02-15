@@ -4,7 +4,7 @@ import createUserAndToken from '../../../utils/createUserAndToken'
 import PlayerGroupRule, { PlayerGroupRuleName, PlayerGroupRuleCastType } from '../../../../src/entities/player-group-rule'
 import PlayerFactory from '../../../fixtures/PlayerFactory'
 
-describe('Player group  - rules', () => {
+describe('Player group - rules', () => {
   it('should return a list of available rules and player fields', async () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({}, organisation)

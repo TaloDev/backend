@@ -2,7 +2,7 @@ import request from 'supertest'
 import InviteFactory from '../../../fixtures/InviteFactory'
 import OrganisationFactory from '../../../fixtures/OrganisationFactory'
 
-describe('Invite public  - get', () => {
+describe('Invite public - get', () => {
   it('should return an existing invite', async () => {
     const organisation = await new OrganisationFactory().one()
     const invite = await new InviteFactory().construct(organisation).one()

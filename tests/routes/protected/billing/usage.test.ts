@@ -4,7 +4,7 @@ import createUserAndToken from '../../../utils/createUserAndToken'
 import userPermissionProvider from '../../../utils/userPermissionProvider'
 import PlayerFactory from '../../../fixtures/PlayerFactory'
 
-describe('Billing  - usage', () => {
+describe('Billing - usage', () => {
   it.each(userPermissionProvider())('should return a %i for a %s user', async (statusCode, _, type) => {
     const [organisation] = await createOrganisationAndGame({}, {})
     const [token] = await createUserAndToken({ type }, organisation)

@@ -7,7 +7,7 @@ import { UserType } from '../../../../src/entities/user'
 import GameActivity, { GameActivityType } from '../../../../src/entities/game-activity'
 import UserPinnedGroupFactory from '../../../fixtures/UserPinnedGroupFactory'
 
-describe('Player group  - delete', () => {
+describe('Player group - delete', () => {
   it.each(userPermissionProvider([
     UserType.DEV,
     UserType.ADMIN

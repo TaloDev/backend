@@ -1,6 +1,6 @@
 import request from 'supertest'
 
-describe('Documentation  - index', () => {
+describe('Documentation - index', () => {
   it('should return api documentation', async () => {
     const res = await request(app)
       .get('/public/docs')

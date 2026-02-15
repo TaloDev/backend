@@ -6,7 +6,7 @@ import userPermissionProvider from '../../../utils/userPermissionProvider'
 import createUserAndToken from '../../../utils/createUserAndToken'
 import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
 
-describe('Leaderboard  - delete', () => {
+describe('Leaderboard - delete', () => {
   it.each(userPermissionProvider([
     UserType.ADMIN
   ], 204))('should return a %i for a %s user', async (statusCode, _, type) => {

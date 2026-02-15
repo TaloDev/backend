@@ -3,7 +3,7 @@ import { APIKeyScope } from '../../../../src/entities/api-key'
 import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
 import GameFeedbackCategoryFactory from '../../../fixtures/GameFeedbackCategoryFactory'
 
-describe('Game feedback API  - index categories', () => {
+describe('Game feedback API - index categories', () => {
   it('should get categories if the scope is valid', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_GAME_FEEDBACK])
 

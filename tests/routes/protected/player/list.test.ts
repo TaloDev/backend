@@ -8,7 +8,7 @@ import PlayerGroupFactory from '../../../fixtures/PlayerGroupFactory'
 import PlayerGroupRule, { PlayerGroupRuleCastType, PlayerGroupRuleName } from '../../../../src/entities/player-group-rule'
 import GameChannelFactory from '../../../fixtures/GameChannelFactory'
 
-describe('Player  - index', () => {
+describe('Player - index', () => {
   it('should return a list of players', async () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({ organisation })

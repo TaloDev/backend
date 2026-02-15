@@ -8,7 +8,7 @@ import createUserAndToken from '../../../utils/createUserAndToken'
 import PlayerAlias from '../../../../src/entities/player-alias'
 import PlayerAliasFactory from '../../../fixtures/PlayerAliasFactory'
 
-describe('Headline  - unique event submitters', () => {
+describe('Headline - unique event submitters', () => {
   const startDate = format(sub(new Date(), { days: 7 }), 'yyyy-MM-dd')
   const endDate = format(new Date(), 'yyyy-MM-dd')
 

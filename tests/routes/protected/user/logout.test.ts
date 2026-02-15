@@ -2,7 +2,7 @@ import request from 'supertest'
 import UserSession from '../../../../src/entities/user-session'
 import createUserAndToken from '../../../utils/createUserAndToken'
 
-describe('User  - logout', () => {
+describe('User - logout', () => {
   it('should be able to log a user out and clear sessions', async () => {
     const [token, user] = await createUserAndToken()
 

@@ -8,7 +8,7 @@ import PlanInvoice from '../../../../src/emails/plan-invoice-mail'
 import { truncateTables } from '../../../utils/truncateTables'
 import assert from 'node:assert'
 
-describe('Webhook  - invoice finalized', () => {
+describe('Webhook - invoice finalized', () => {
   const sendMock = vi.spyOn(sendEmail, 'default')
 
   const stripe = initStripe()

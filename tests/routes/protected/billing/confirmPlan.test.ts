@@ -8,7 +8,7 @@ import { UserType } from '../../../../src/entities/user'
 import { addHours } from 'date-fns'
 import assert from 'node:assert'
 
-describe('Billing  - confirm plan', () => {
+describe('Billing - confirm plan', () => {
   const stripe = initStripe()
   assert(stripe)
 

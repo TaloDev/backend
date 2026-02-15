@@ -6,7 +6,7 @@ import { v4 } from 'uuid'
 import { truncateTables } from '../../../utils/truncateTables'
 import assert from 'node:assert'
 
-describe('Webhook  - subscription deleted', () => {
+describe('Webhook - subscription deleted', () => {
   const stripe = initStripe()
   assert(stripe)
 

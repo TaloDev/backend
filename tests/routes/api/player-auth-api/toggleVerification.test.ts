@@ -6,7 +6,7 @@ import bcrypt from 'bcrypt'
 import PlayerAuthFactory from '../../../fixtures/PlayerAuthFactory'
 import PlayerAuthActivity, { PlayerAuthActivityType } from '../../../../src/entities/player-auth-activity'
 
-describe('Player auth API  - toggle verification', () => {
+describe('Player auth API - toggle verification', () => {
   it('should enable verification if the current password is correct and an email is provided', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_PLAYERS, APIKeyScope.WRITE_PLAYERS])
 

@@ -3,10 +3,11 @@ import { isAPIRoute } from '../lib/routing/route-info'
 import { EntityManager, FilterQuery, Loaded } from '@mikro-orm/mysql'
 import PlayerAlias, { PlayerAliasService } from '../entities/player-alias'
 import { verify } from '../lib/auth/jwt'
+import { APIRouteContext } from '../lib/routing/context'
 
 type PlayerAliasPartial = Loaded<PlayerAlias, 'player.auth', 'id' | 'player.auth' | 'player.id'>
 
-export async function playerAuthMiddleware(ctx: Context, next: Next) {
+export async function playerAuthMiddleware(ctx: APIRouteContext, next: Next) {
   if (isAPIRoute(ctx) && (ctx.state.currentPlayerId || ctx.state.currentAliasId)) {
     const conditions: FilterQuery<PlayerAlias>[] = [
       ctx.state.currentAliasId ? {
@@ -19,7 +20,7 @@ export async function playerAuthMiddleware(ctx: Context, next: Next) {
       } : {}
     ].filter((x) => Object.keys(x).length > 0)
 
-    const alias = await (ctx.em as EntityManager)
+    const alias = await ctx.em
       .fork()
       .repo(PlayerAlias)
       .findOne({
@@ -82,8 +83,7 @@ export async function validateSessionTokenJWT(
   expectedPlayerId: string,
   expectedAliasId: number
 ) {
-  if (!alias.player.auth) return false
-  if (!alias.player.auth.sessionKey) return false
+  if (!alias.player.auth?.sessionKey) return false
 
   try {
     const payload = await verify<{ playerId: string, aliasId: number }>(sessionToken, alias.player.auth.sessionKey)

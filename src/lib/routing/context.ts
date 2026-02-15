@@ -10,6 +10,7 @@ type AppContext = {
   redis: Redis
   clickhouse: ClickHouseClient
   wss: Socket
+  params: Record<string, string>
 }
 
 export type AppParameterizedContext<S extends RouteState> =
@@ -17,6 +18,7 @@ export type AppParameterizedContext<S extends RouteState> =
 
 type ExtendedRouteContext = Record<string, unknown>
 
+export type GlobalContext<T = ExtendedRouteContext> = AppParameterizedContext<RouteState & T>
 export type PublicRouteContext<T = ExtendedRouteContext> = AppParameterizedContext<PublicRouteState & T>
 export type ProtectedRouteContext<T = ExtendedRouteContext> = AppParameterizedContext<ProtectedRouteState & T>
 export type APIRouteContext<T = ExtendedRouteContext> = AppParameterizedContext<APIRouteState & T>

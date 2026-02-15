@@ -28,7 +28,17 @@ export default class SocketError {
 
 type SocketErrorReq = SocketMessageRequest | 'unknown'
 
-export async function sendError(conn: SocketConnection, req: SocketErrorReq, error: SocketError) {
+export async function sendError({
+  conn,
+  req,
+  error,
+  originalError
+}: {
+  conn: SocketConnection
+  req: SocketErrorReq
+  error: SocketError
+  originalError?: Error
+}) {
   if (validSentryErrorCodes.includes(error.code)) {
     Sentry.withScope((scope) => {
       scope.setTag('request', req)
@@ -36,7 +46,7 @@ export async function sendError(conn: SocketConnection, req: SocketErrorReq, err
       if (error.cause) {
         scope.setContext('socketError', { cause: error.cause })
       }
-      Sentry.captureException(new Error(error.message))
+      Sentry.captureException(originalError ?? new Error(error.message))
     })
   }
 

@@ -41,7 +41,7 @@ export default class SocketRouter {
         if (conn.rateLimitWarnings > 3) {
           await this.wss.closeConnection(conn.getSocket(), { code: 1008, reason: 'RATE_LIMIT_EXCEEDED' })
         } else {
-          await sendError(conn, 'unknown', new SocketError('RATE_LIMIT_EXCEEDED', 'Rate limit exceeded'))
+          await sendError({ conn, req: 'unknown', error: new SocketError('RATE_LIMIT_EXCEEDED', 'Rate limit exceeded') })
         }
         return
       }
@@ -64,16 +64,17 @@ export default class SocketRouter {
 
         const handled = await this.routeMessage(conn, parsedMessage)
         if (!handled) {
-          await sendError(conn, parsedMessage.req, new SocketError('UNHANDLED_REQUEST', 'Request not handled'))
+          await sendError({ conn, req: parsedMessage.req, error: new SocketError('UNHANDLED_REQUEST', 'Request not handled') })
           span.setStatus({ code: SpanStatusCode.ERROR })
         } else {
           span.setStatus({ code: SpanStatusCode.OK })
         }
       } catch (err) {
         if (err instanceof ZodError) {
-          await sendError(conn, 'unknown', new SocketError('INVALID_MESSAGE', 'Invalid message request', message))
+          await sendError({ conn, req: 'unknown', error: new SocketError('INVALID_MESSAGE', 'Invalid message request', message) })
         } else {
-          await sendError(conn, parsedMessage?.req ?? 'unknown', new SocketError('ROUTING_ERROR', 'An error occurred while routing the message'))
+          const originalError = err as Error
+          await sendError({ conn, req: parsedMessage?.req ?? 'unknown', error: new SocketError('ROUTING_ERROR', 'An error occurred while routing the message'), originalError })
         }
         span.setStatus({ code: SpanStatusCode.ERROR })
       } finally {
@@ -88,10 +89,10 @@ export default class SocketRouter {
         if (listener.req === message.req) {
           try {
             if (!this.meetsPlayerRequirement(conn, listener)) {
-              await sendError(conn, message.req, new SocketError('NO_PLAYER_FOUND', 'You must identify a player before sending this request'))
+              await sendError({ conn, req: message.req, error: new SocketError('NO_PLAYER_FOUND', 'You must identify a player before sending this request') })
             } else if (!this.meetsScopeRequirements(conn, listener)) {
               const missing = this.getMissingScopes(conn, listener)
-              await sendError(conn, message.req, new SocketError('MISSING_ACCESS_KEY_SCOPES', `Missing access key scope(s): ${missing.join(', ')}`))
+              await sendError({ conn, req: message.req, error: new SocketError('MISSING_ACCESS_KEY_SCOPES', `Missing access key scope(s): ${missing.join(', ')}`) })
             } else {
               const data = await listener.validator.parseAsync(message.data)
               await listener.handler({ conn, req: listener.req, data, socket: this.wss })
@@ -99,9 +100,10 @@ export default class SocketRouter {
             return true
           } catch (err) {
             if (err instanceof ZodError) {
-              await sendError(conn, message.req, new SocketError('INVALID_MESSAGE_DATA', 'Invalid message data for request', JSON.stringify(message.data)))
+              await sendError({ conn, req: message.req, error: new SocketError('INVALID_MESSAGE_DATA', 'Invalid message data for request', JSON.stringify(message.data)) })
             } else {
-              await sendError(conn, message?.req ?? 'unknown', new SocketError('LISTENER_ERROR', 'An error occurred while processing the message', (err as Error).message))
+              const originalError = err as Error
+              await sendError({ conn, req: message?.req ?? 'unknown', error: new SocketError('LISTENER_ERROR', 'An error occurred while processing the message', originalError.message), originalError })
             }
             return true
           }

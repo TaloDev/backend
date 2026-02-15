@@ -18,7 +18,16 @@ export async function errorMiddleware(ctx: Context, next: Next) {
         const originalError = err.originalError
         if (canCaptureJWTError(originalError)) {
           hdxRecordException(originalError)
-          Sentry.captureException(originalError)
+          Sentry.withScope((scope) => {
+            scope.addEventProcessor((event) => {
+              event.request = {
+                method: ctx.request.method,
+                url: ctx.request.url
+              }
+              return event
+            })
+            Sentry.captureException(originalError)
+          })
         }
       }
 
@@ -45,11 +54,15 @@ export async function errorMiddleware(ctx: Context, next: Next) {
 
           const userId = ctx.state.jwt?.sub
           if (userId) {
-            Sentry.setUser({
+            scope.setUser({
               id: userId,
               apiKey: ctx.state.jwt?.api ?? false,
               username: ctx.state.user?.username
             })
+          }
+
+          if (ctx.state.game) {
+            scope.setContext('game', { id: ctx.state.game.id })
           }
 
           Sentry.captureException(err)

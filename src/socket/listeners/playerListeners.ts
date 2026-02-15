@@ -43,12 +43,12 @@ const playerListeners = [
             alias.id
           )
           if (!valid) {
-            await sendError(conn, req, new SocketError('INVALID_SESSION_TOKEN', 'Invalid session token'))
+            await sendError({ conn, req, error: new SocketError('INVALID_SESSION_TOKEN', 'Invalid session token') })
             return
           }
         }
       } else {
-        await sendError(conn, req, new SocketError('INVALID_SOCKET_TOKEN', 'Invalid socket token'))
+        await sendError({ conn, req, error: new SocketError('INVALID_SOCKET_TOKEN', 'Invalid socket token') })
         return
       }
 

@@ -1,4 +1,4 @@
-import { captureException, setTag } from '@sentry/node'
+import * as Sentry from '@sentry/node'
 import { sendMessage, SocketMessageRequest } from './socketMessage'
 import SocketConnection from '../socketConnection'
 
@@ -28,11 +28,26 @@ export default class SocketError {
 
 type SocketErrorReq = SocketMessageRequest | 'unknown'
 
-export async function sendError(conn: SocketConnection, req: SocketErrorReq, error: SocketError) {
+export async function sendError({
+  conn,
+  req,
+  error,
+  originalError
+}: {
+  conn: SocketConnection
+  req: SocketErrorReq
+  error: SocketError
+  originalError?: Error
+}) {
   if (validSentryErrorCodes.includes(error.code)) {
-    setTag('request', req)
-    setTag('errorCode', error.code)
-    captureException(new Error(error.message, { cause: error }))
+    Sentry.withScope((scope) => {
+      scope.setTag('request', req)
+      scope.setTag('errorCode', error.code)
+      if (error.cause) {
+        scope.setContext('socketError', { cause: error.cause })
+      }
+      Sentry.captureException(originalError ?? new Error(error.message))
+    })
   }
 
   await sendMessage<{

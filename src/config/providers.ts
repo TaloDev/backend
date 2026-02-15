@@ -34,5 +34,7 @@ export async function initProviders(app: Koa, isTest: boolean) {
     await runClickHouseMigrations(app.context.clickhouse)
   }
 
-  setupSentryErrorHandler(app)
+  if (!isTest) {
+    setupSentryErrorHandler(app)
+  }
 }

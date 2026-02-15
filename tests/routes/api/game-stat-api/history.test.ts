@@ -25,23 +25,19 @@ describe('Game stats API  - history', () => {
 
     const changes = [5, 10, 15]
 
+    const playerStat = await new PlayerGameStatFactory().construct(player, stat).one()
+    await em.persist(playerStat).flush()
+
     await clickhouse.insert({
       table: 'player_game_stat_snapshots',
-      values: await Promise.all(changes.map(async (change, idx, arr) => {
-        const currentValue = arr
-          .slice(0, idx)
-          .reduce((sum, val) => sum + val, stat.defaultValue)
-
-        const playerStat = await new PlayerGameStatFactory().construct(player, stat).state(() => ({ value: currentValue })).one()
-        await em.persist(playerStat).flush()
-
+      values: changes.map((change, idx) => {
         const snapshot = new PlayerGameStatSnapshot()
         snapshot.construct(player.aliases[0], playerStat)
         snapshot.change = change
         snapshot.createdAt = addMinutes(snapshot.createdAt, idx)
 
         return snapshot.toInsertable()
-      })),
+      }),
       format: 'JSONEachRow'
     })
 
@@ -233,21 +229,14 @@ describe('Game stats API  - history', () => {
 
     await clickhouse.insert({
       table: 'player_game_stat_snapshots',
-      values: await Promise.all(changes.map(async (change, idx) => {
-        const currentValue = changes
-          .slice(0, idx)
-          .reduce((sum, val) => sum + val, stat.defaultValue)
-
-        const playerStat = await new PlayerGameStatFactory().construct(player, stat).state(() => ({ value: currentValue })).one()
-        await em.persist(playerStat).flush()
-
+      values: changes.map((change, idx) => {
         const snapshot = new PlayerGameStatSnapshot()
         snapshot.construct(player.aliases[0], playerStat)
         snapshot.change = change
         snapshot.createdAt = addMinutes(snapshot.createdAt, idx)
 
         return snapshot.toInsertable()
-      })),
+      }),
       format: 'JSONEachRow'
     })
 

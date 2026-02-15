@@ -89,20 +89,23 @@ describe('Game stat  - index', () => {
       [new Date('2025-06-11T09:00:00.000Z'), 7]
     ]
 
+    const playerStat = await new PlayerGameStatFactory().construct(player, stat).one()
+    await em.persist(playerStat).flush()
+
     await clickhouse.insert({
       table: 'player_game_stat_snapshots',
-      values: await Promise.all(values.map(async ([date, value]) => {
-        const playerStat = await new PlayerGameStatFactory().construct(player, stat).state(() => ({ value })).one()
-        await em.persistAndFlush(playerStat)
+      values: values.map(([date, value]) => {
         stat.globalValue += value
 
         const snapshot = new PlayerGameStatSnapshot()
         snapshot.construct(playerStat.player.aliases[0], playerStat)
+        snapshot.value = value
+        snapshot.globalValue = stat.globalValue
         snapshot.change = value
         snapshot.createdAt = date
 
         return snapshot.toInsertable()
-      })),
+      }),
       format: 'JSONEachRow'
     })
 
@@ -114,8 +117,8 @@ describe('Game stat  - index', () => {
 
     // only changes from the last 2 dates
     expect(res.body.stats[0].metrics.globalCount).toBe(2)
-    expect(res.body.stats[0].metrics.globalValue.minValue).toBe(5)
-    expect(res.body.stats[0].metrics.globalValue.maxValue).toBe(12)
+    expect(res.body.stats[0].metrics.globalValue.minValue).toBe(6)
+    expect(res.body.stats[0].metrics.globalValue.maxValue).toBe(13)
     expect(res.body.stats[0].metrics.playerValue.minValue).toBe(5)
     expect(res.body.stats[0].metrics.playerValue.maxValue).toBe(7)
   })
@@ -134,20 +137,23 @@ describe('Game stat  - index', () => {
       [new Date('2025-06-11T09:00:00.000Z'), 7]
     ]
 
+    const playerStat = await new PlayerGameStatFactory().construct(player, stat).one()
+    await em.persist(playerStat).flush()
+
     await clickhouse.insert({
       table: 'player_game_stat_snapshots',
-      values: await Promise.all(values.map(async ([date, value]) => {
-        const playerStat = await new PlayerGameStatFactory().construct(player, stat).state(() => ({ value })).one()
-        await em.persistAndFlush(playerStat)
+      values: values.map(([date, value]) => {
         stat.globalValue += value
 
         const snapshot = new PlayerGameStatSnapshot()
         snapshot.construct(playerStat.player.aliases[0], playerStat)
+        snapshot.value = value
+        snapshot.globalValue = stat.globalValue
         snapshot.change = value
         snapshot.createdAt = date
 
         return snapshot.toInsertable()
-      })),
+      }),
       format: 'JSONEachRow'
     })
 
@@ -159,8 +165,8 @@ describe('Game stat  - index', () => {
 
     // only changes from the first 2 dates
     expect(res.body.stats[0].metrics.globalCount).toBe(2)
-    expect(res.body.stats[0].metrics.globalValue.minValue).toBe(5)
-    expect(res.body.stats[0].metrics.globalValue.maxValue).toBe(13)
+    expect(res.body.stats[0].metrics.globalValue.minValue).toBe(1)
+    expect(res.body.stats[0].metrics.globalValue.maxValue).toBe(6)
     expect(res.body.stats[0].metrics.playerValue.minValue).toBe(1)
     expect(res.body.stats[0].metrics.playerValue.maxValue).toBe(5)
   })
@@ -179,20 +185,23 @@ describe('Game stat  - index', () => {
       [new Date('2025-06-11T09:00:00.000Z'), 7]
     ]
 
+    const playerStat = await new PlayerGameStatFactory().construct(player, stat).one()
+    await em.persist(playerStat).flush()
+
     await clickhouse.insert({
       table: 'player_game_stat_snapshots',
-      values: await Promise.all(values.map(async ([date, value]) => {
-        const playerStat = await new PlayerGameStatFactory().construct(player, stat).state(() => ({ value })).one()
-        await em.persistAndFlush(playerStat)
+      values: values.map(([date, value]) => {
         stat.globalValue += value
 
         const snapshot = new PlayerGameStatSnapshot()
         snapshot.construct(playerStat.player.aliases[0], playerStat)
+        snapshot.value = value
+        snapshot.globalValue = stat.globalValue
         snapshot.change = value
         snapshot.createdAt = date
 
         return snapshot.toInsertable()
-      })),
+      }),
       format: 'JSONEachRow'
     })
 
@@ -208,8 +217,8 @@ describe('Game stat  - index', () => {
 
     // only changes from the middle date
     expect(res.body.stats[0].metrics.globalCount).toBe(1)
-    expect(res.body.stats[0].metrics.globalValue.minValue).toBe(5)
-    expect(res.body.stats[0].metrics.globalValue.maxValue).toBe(5)
+    expect(res.body.stats[0].metrics.globalValue.minValue).toBe(6)
+    expect(res.body.stats[0].metrics.globalValue.maxValue).toBe(6)
     expect(res.body.stats[0].metrics.playerValue.minValue).toBe(5)
     expect(res.body.stats[0].metrics.playerValue.maxValue).toBe(5)
   })

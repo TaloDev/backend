@@ -16,6 +16,7 @@ import { userRouter } from '../routes/protected/user'
 import { gameRouter } from '../routes/protected/game'
 import { inviteRouter } from '../routes/protected/invite'
 import { organisationRouter } from '../routes/protected/organisation'
+import { chartRouter } from '../routes/protected/chart'
 import { protectedRouteAuthMiddleware, protectedRouteUserMiddleware } from '../middleware/protected-route-middleware'
 
 export function configureProtectedRoutes(app: Koa) {
@@ -24,6 +25,7 @@ export function configureProtectedRoutes(app: Koa) {
 
   app.use(apiKeyRouter().routes())
   app.use(billingRouter().routes())
+  app.use(chartRouter().routes())
   app.use(dataExportRouter().routes())
   app.use(eventRouter().routes())
   app.use(gameActivityRouter().routes())

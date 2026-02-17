@@ -1,21 +1,12 @@
 import { startOfDay } from 'date-fns'
 import { millisecondsInDay } from 'date-fns/constants'
+import { calculateChange } from '../../../lib/math/calculateChange'
 
 export type EventData = {
   name: string
   date: number
   count: number
   change: number
-}
-
-function calculateChange(count: number, lastEvent: EventData | undefined): number {
-  const previousCount = lastEvent?.count ?? 0
-
-  if (previousCount === 0) {
-    return count
-  }
-
-  return (count - previousCount) / previousCount
 }
 
 export function fillDateGaps(
@@ -37,24 +28,28 @@ export function fillDateGaps(
       eventsByDate.set(event.date, event)
     }
 
+    let prev: EventData | null = null
     for (let currentDateMs = startDateMs; currentDateMs <= endDateMs; currentDateMs += millisecondsInDay) {
       const existingEvent = eventsByDate.get(currentDateMs)
 
+      let entry: EventData
+
       if (existingEvent) {
-        filledData.push({ ...existingEvent, change: 0 })
+        entry = {
+          ...existingEvent,
+          change: calculateChange(existingEvent.count, prev?.count ?? 0)
+        }
       } else {
-        filledData.push({
+        entry = {
           name: seriesName,
           date: currentDateMs,
           count: 0,
-          change: 0
-        })
+          change: calculateChange(0, prev?.count ?? 0)
+        }
       }
-    }
 
-    for (let i = 0; i < filledData.length; i++) {
-      const previousEvent = i > 0 ? filledData[i - 1] : undefined
-      filledData[i].change = calculateChange(filledData[i].count, previousEvent)
+      filledData.push(entry)
+      prev = entry
     }
 
     result[seriesName] = filledData

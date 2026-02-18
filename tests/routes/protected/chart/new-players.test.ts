@@ -170,7 +170,7 @@ describe('Chart - new players', () => {
     expect(res.body.data[0].count).toBe(5)
   })
 
-  it('should require startDate query parameter', async () => {
+  it('should require the startDate query parameter', async () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({ organisation })
 
@@ -187,7 +187,7 @@ describe('Chart - new players', () => {
     })
   })
 
-  it('should require endDate query parameter', async () => {
+  it('should require the endDate query parameter', async () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({ organisation })
 

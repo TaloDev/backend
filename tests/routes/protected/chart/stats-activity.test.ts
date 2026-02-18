@@ -237,7 +237,7 @@ describe('Chart - stats activity', () => {
       .expect(403)
   })
 
-  it('should require startDate query parameter', async () => {
+  it('should require the startDate query parameter', async () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({ organisation })
 
@@ -254,7 +254,7 @@ describe('Chart - stats activity', () => {
     })
   })
 
-  it('should require endDate query parameter', async () => {
+  it('should require the endDate query parameter', async () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({ organisation })
 

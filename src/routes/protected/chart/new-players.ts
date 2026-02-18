@@ -64,7 +64,7 @@ export const newPlayersRoute = protectedRoute({
           raw('COUNT(*) as count')
         ])
         .where({
-          game: game.id,
+          game,
           createdAt: {
             $gte: startOfDay(new Date(startDate)),
             $lte: endOfDay(new Date(endDate))

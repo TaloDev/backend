@@ -308,4 +308,21 @@ describe('Chart - new players', () => {
     expect(res.body.data[2].count).toBe(0)
     expect(res.body.data[2].change).toBe(0)
   })
+
+  it('should return an empty list when there are no players for the data range', async () => {
+    const [organisation, game] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken({ organisation })
+
+    const today = new Date()
+    const startDate = format(today, 'yyyy-MM-dd')
+    const endDate = format(today, 'yyyy-MM-dd')
+
+    const res = await request(app)
+      .get(`/games/${game.id}/charts/new-players`)
+      .query({ startDate, endDate })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    expect(res.body.data).toHaveLength(0)
+  })
 })

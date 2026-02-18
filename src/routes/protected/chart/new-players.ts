@@ -78,6 +78,15 @@ export const newPlayersRoute = protectedRoute({
       }
 
       const results = await qb.execute<{ date_group: string, count: string }[]>()
+      if (results.length === 0) {
+        return {
+          status: 200,
+          body: {
+            data: []
+          }
+        }
+      }
+
       const data: PlayerCountData[] = results.map((row) => ({
         date: new Date(row.date_group).getTime(),
         count: Number(row.count),

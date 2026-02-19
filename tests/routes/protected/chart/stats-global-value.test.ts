@@ -1,5 +1,5 @@
 import request from 'supertest'
-import { subDays, format, startOfDay } from 'date-fns'
+import { subDays, format, startOfDay, addMinutes } from 'date-fns'
 import GameStatFactory from '../../../fixtures/GameStatFactory'
 import PlayerFactory from '../../../fixtures/PlayerFactory'
 import PlayerGameStatFactory from '../../../fixtures/PlayerGameStatFactory'
@@ -82,11 +82,11 @@ describe('Chart - stats global value', () => {
     expect(todayData.change).toBeCloseTo(0.333, 2)
   })
 
-  it('should return the max global value when multiple snapshots exist on the same day', async () => {
+  it('should return the latest global value when multiple snapshots exist on the same day', async () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({ organisation })
 
-    const stat = await new GameStatFactory([game]).state(() => ({ internalName: 'total-kills', name: 'Total kills', global: true, globalValue: 200 })).one()
+    const stat = await new GameStatFactory([game]).state(() => ({ internalName: 'total-kills', name: 'Total kills', global: true, globalValue: 150 })).one()
     const player = await new PlayerFactory([game]).one()
     const playerStat = await new PlayerGameStatFactory().construct(player, stat).one()
     await em.persist(playerStat).flush()
@@ -96,7 +96,8 @@ describe('Chart - stats global value', () => {
     await clickhouse.insert({
       table: 'player_game_stat_snapshots',
       values: [
-        // Multiple snapshots on the same day with different global values
+        // Multiple snapshots on the same day - latest timestamp has the lower value
+        // This distinguishes argMax (picks by latest time) from max (picks highest value)
         (() => {
           const snapshot = new PlayerGameStatSnapshot()
           snapshot.construct(player.aliases[0], playerStat)
@@ -108,14 +109,14 @@ describe('Chart - stats global value', () => {
           const snapshot = new PlayerGameStatSnapshot()
           snapshot.construct(player.aliases[0], playerStat)
           snapshot.globalValue = 200
-          snapshot.createdAt = today
+          snapshot.createdAt = addMinutes(today, 10)
           return snapshot.toInsertable()
         })(),
         (() => {
           const snapshot = new PlayerGameStatSnapshot()
           snapshot.construct(player.aliases[0], playerStat)
           snapshot.globalValue = 150
-          snapshot.createdAt = today
+          snapshot.createdAt = addMinutes(today, 20)
           return snapshot.toInsertable()
         })()
       ],
@@ -131,7 +132,8 @@ describe('Chart - stats global value', () => {
       .auth(token, { type: 'bearer' })
       .expect(200)
 
-    expect(res.body.data[0].value).toBe(200)
+    // argMax returns 150 (latest by time)
+    expect(res.body.data[0].value).toBe(150)
   })
 
   it('should fill gaps with previous day values', async () => {

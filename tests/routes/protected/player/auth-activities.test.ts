@@ -6,6 +6,7 @@ import userPermissionProvider from '../../../utils/userPermissionProvider'
 import { UserType } from '../../../../src/entities/user'
 import PlayerAuthActivityFactory from '../../../fixtures/PlayerAuthActivityFactory'
 import { PlayerAuthActivityType } from '../../../../src/entities/player-auth-activity'
+import { DEFAULT_PAGE_SIZE } from '../../../../src/lib/pagination/itemsPerPage'
 
 describe('Player - get auth activities', () => {
   it.each(userPermissionProvider([UserType.ADMIN]))('should return a %i for a %s user', async (statusCode, _, type) => {
@@ -24,6 +25,9 @@ describe('Player - get auth activities', () => {
 
     if (statusCode === 200) {
       expect(res.body.activities).toHaveLength(10)
+      expect(res.body.count).toBe(10)
+      expect(res.body.itemsPerPage).toBe(DEFAULT_PAGE_SIZE)
+      expect(res.body.isLastPage).toBe(true)
     } else {
       expect(res.body).toStrictEqual({ message: 'You do not have permissions to view player auth activities' })
     }
@@ -70,6 +74,38 @@ describe('Player - get auth activities', () => {
       .expect(200)
 
     expect(res.body.activities).toHaveLength(0)
+    expect(res.body.count).toBe(0)
+    expect(res.body.itemsPerPage).toBe(DEFAULT_PAGE_SIZE)
+    expect(res.body.isLastPage).toBe(true)
+  })
+
+  it('should paginate auth activities', async () => {
+    const [organisation, game] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken({ type: UserType.ADMIN }, organisation)
+
+    const player = await new PlayerFactory([game]).withTaloAlias().one()
+    const activities = await new PlayerAuthActivityFactory(game).state(() => ({ player })).many(DEFAULT_PAGE_SIZE + 5)
+
+    await em.persist(activities).flush()
+
+    const res = await request(app)
+      .get(`/games/${game.id}/players/${player.id}/auth-activities`)
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    expect(res.body.activities).toHaveLength(DEFAULT_PAGE_SIZE)
+    expect(res.body.count).toBe(DEFAULT_PAGE_SIZE + 5)
+    expect(res.body.itemsPerPage).toBe(DEFAULT_PAGE_SIZE)
+    expect(res.body.isLastPage).toBe(false)
+
+    const res2 = await request(app)
+      .get(`/games/${game.id}/players/${player.id}/auth-activities?page=1`)
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    expect(res2.body.activities).toHaveLength(5)
+    expect(res2.body.count).toBe(DEFAULT_PAGE_SIZE + 5)
+    expect(res2.body.isLastPage).toBe(true)
   })
 
   it('should return contextual activity descriptions', async () => {

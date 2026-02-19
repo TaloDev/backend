@@ -5,9 +5,9 @@ import { UserType } from '../../../entities/user'
 import GameActivity from '../../../entities/game-activity'
 import { pageSchema } from '../../../lib/validation/pageSchema'
 import { QueryOrder } from '@mikro-orm/mysql'
-import { SMALL_PAGE_SIZE } from '../../../lib/pagination/itemsPerPage'
+import { DEFAULT_PAGE_SIZE } from '../../../lib/pagination/itemsPerPage'
 
-const itemsPerPage = SMALL_PAGE_SIZE
+const itemsPerPage = DEFAULT_PAGE_SIZE
 
 export function gameActivityRouter() {
   return protectedRouter('/games/:gameId/game-activities', ({ route }) => {

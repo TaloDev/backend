@@ -5,7 +5,7 @@ import GameActivityFactory from '../../../fixtures/GameActivityFactory'
 import createUserAndToken from '../../../utils/createUserAndToken'
 import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
 import userPermissionProvider from '../../../utils/userPermissionProvider'
-import { SMALL_PAGE_SIZE } from '../../../../src/lib/pagination/itemsPerPage'
+import { DEFAULT_PAGE_SIZE } from '../../../../src/lib/pagination/itemsPerPage'
 
 describe('Game activity - index', () => {
   it.each(userPermissionProvider([
@@ -26,7 +26,7 @@ describe('Game activity - index', () => {
     if (statusCode === 200) {
       expect(res.body.activities).toHaveLength(activities.length)
       expect(res.body.count).toBe(activities.length)
-      expect(res.body.itemsPerPage).toBe(SMALL_PAGE_SIZE)
+      expect(res.body.itemsPerPage).toBe(DEFAULT_PAGE_SIZE)
       expect(res.body.isLastPage).toBe(true)
     } else {
       expect(res.body).toStrictEqual({ message: 'You do not have permissions to view game activities' })
@@ -52,7 +52,7 @@ describe('Game activity - index', () => {
 
     expect(res.body.activities).toHaveLength(activities.length)
     expect(res.body.count).toBe(activities.length)
-    expect(res.body.itemsPerPage).toBe(SMALL_PAGE_SIZE)
+    expect(res.body.itemsPerPage).toBe(DEFAULT_PAGE_SIZE)
     expect(res.body.isLastPage).toBe(true)
   })
 
@@ -60,7 +60,7 @@ describe('Game activity - index', () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token, user] = await createUserAndToken({ type: UserType.ADMIN }, organisation)
 
-    const activities = await new GameActivityFactory([game], [user]).many(SMALL_PAGE_SIZE + 5)
+    const activities = await new GameActivityFactory([game], [user]).many(DEFAULT_PAGE_SIZE + 5)
     await em.persistAndFlush(activities)
 
     const res = await request(app)
@@ -68,9 +68,9 @@ describe('Game activity - index', () => {
       .auth(token, { type: 'bearer' })
       .expect(200)
 
-    expect(res.body.activities).toHaveLength(SMALL_PAGE_SIZE)
-    expect(res.body.count).toBe(SMALL_PAGE_SIZE + 5)
-    expect(res.body.itemsPerPage).toBe(SMALL_PAGE_SIZE)
+    expect(res.body.activities).toHaveLength(DEFAULT_PAGE_SIZE)
+    expect(res.body.count).toBe(DEFAULT_PAGE_SIZE + 5)
+    expect(res.body.itemsPerPage).toBe(DEFAULT_PAGE_SIZE)
     expect(res.body.isLastPage).toBe(false)
 
     const res2 = await request(app)
@@ -79,7 +79,7 @@ describe('Game activity - index', () => {
       .expect(200)
 
     expect(res2.body.activities).toHaveLength(5)
-    expect(res2.body.count).toBe(SMALL_PAGE_SIZE + 5)
+    expect(res2.body.count).toBe(DEFAULT_PAGE_SIZE + 5)
     expect(res2.body.isLastPage).toBe(true)
   })
 

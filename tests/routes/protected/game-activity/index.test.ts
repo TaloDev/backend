@@ -5,6 +5,7 @@ import GameActivityFactory from '../../../fixtures/GameActivityFactory'
 import createUserAndToken from '../../../utils/createUserAndToken'
 import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
 import userPermissionProvider from '../../../utils/userPermissionProvider'
+import { DEFAULT_PAGE_SIZE } from '../../../../src/lib/pagination/itemsPerPage'
 
 describe('Game activity - index', () => {
   it.each(userPermissionProvider([
@@ -24,6 +25,9 @@ describe('Game activity - index', () => {
 
     if (statusCode === 200) {
       expect(res.body.activities).toHaveLength(activities.length)
+      expect(res.body.count).toBe(activities.length)
+      expect(res.body.itemsPerPage).toBe(DEFAULT_PAGE_SIZE)
+      expect(res.body.isLastPage).toBe(true)
     } else {
       expect(res.body).toStrictEqual({ message: 'You do not have permissions to view game activities' })
     }
@@ -47,6 +51,36 @@ describe('Game activity - index', () => {
       .expect(200)
 
     expect(res.body.activities).toHaveLength(activities.length)
+    expect(res.body.count).toBe(activities.length)
+    expect(res.body.itemsPerPage).toBe(DEFAULT_PAGE_SIZE)
+    expect(res.body.isLastPage).toBe(true)
+  })
+
+  it('should paginate game activities', async () => {
+    const [organisation, game] = await createOrganisationAndGame()
+    const [token, user] = await createUserAndToken({ type: UserType.ADMIN }, organisation)
+
+    const activities = await new GameActivityFactory([game], [user]).many(DEFAULT_PAGE_SIZE + 5)
+    await em.persistAndFlush(activities)
+
+    const res = await request(app)
+      .get(`/games/${game.id}/game-activities`)
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    expect(res.body.activities).toHaveLength(DEFAULT_PAGE_SIZE)
+    expect(res.body.count).toBe(DEFAULT_PAGE_SIZE + 5)
+    expect(res.body.itemsPerPage).toBe(DEFAULT_PAGE_SIZE)
+    expect(res.body.isLastPage).toBe(false)
+
+    const res2 = await request(app)
+      .get(`/games/${game.id}/game-activities?page=1`)
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    expect(res2.body.activities).toHaveLength(5)
+    expect(res2.body.count).toBe(DEFAULT_PAGE_SIZE + 5)
+    expect(res2.body.isLastPage).toBe(true)
   })
 
   it('should not return a list of game activities for a game the user has no access to', async () => {

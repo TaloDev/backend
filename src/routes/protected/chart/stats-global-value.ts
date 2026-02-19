@@ -73,7 +73,7 @@ export const statsGlobalValueRoute = protectedRoute({
       const query = `
         SELECT
           toUnixTimestamp(toStartOfDay(created_at)) * 1000 AS date,
-          max(global_value) AS global_value
+          argMax(global_value, created_at) AS global_value
         FROM player_game_stat_snapshots
         WHERE created_at BETWEEN {startDate:String} AND {endDate:String}
           AND game_stat_id = {statId:Int32}

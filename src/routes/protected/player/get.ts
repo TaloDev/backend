@@ -13,8 +13,8 @@ export const getRoute = protectedRoute({
     return {
       status: 200,
       body: {
-        player
-      }
+        player,
+      },
     }
-  }
+  },
 })

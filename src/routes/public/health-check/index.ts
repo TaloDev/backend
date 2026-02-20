@@ -6,9 +6,9 @@ export function healthCheckRouter() {
       method: 'get',
       handler: () => {
         return {
-          status: 204
+          status: 204,
         }
-      }
+      },
     })
   })
 }

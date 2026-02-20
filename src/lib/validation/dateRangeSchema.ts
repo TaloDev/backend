@@ -1,25 +1,34 @@
 import { isBefore, isSameDay, isValid } from 'date-fns'
 import { z } from 'zod'
 
-export const dateRangeSchema = z.object({
-  startDate: z.string({
-    error: 'startDate is missing from the request query'
-  }).refine((val) => isValid(new Date(val)), {
-    error: 'Invalid start date, please use YYYY-MM-DD or a timestamp'
-  }),
-  endDate: z.string({
-    error: 'endDate is missing from the request query'
-  }).refine((val) => isValid(new Date(val)), {
-    error: 'Invalid end date, please use YYYY-MM-DD or a timestamp'
+export const dateRangeSchema = z
+  .object({
+    startDate: z
+      .string({
+        error: 'startDate is missing from the request query',
+      })
+      .refine((val) => isValid(new Date(val)), {
+        error: 'Invalid start date, please use YYYY-MM-DD or a timestamp',
+      }),
+    endDate: z
+      .string({
+        error: 'endDate is missing from the request query',
+      })
+      .refine((val) => isValid(new Date(val)), {
+        error: 'Invalid end date, please use YYYY-MM-DD or a timestamp',
+      }),
   })
-}).refine((data) => {
-  const start = new Date(data.startDate)
-  const end = new Date(data.endDate)
-  if (!isValid(start) || !isValid(end)) {
-    return true
-  }
-  return isBefore(start, end) || isSameDay(start, end)
-}, {
-  error: 'Invalid start date, it should be before the end date',
-  path: ['startDate']
-})
+  .refine(
+    (data) => {
+      const start = new Date(data.startDate)
+      const end = new Date(data.endDate)
+      if (!isValid(start) || !isValid(end)) {
+        return true
+      }
+      return isBefore(start, end) || isSameDay(start, end)
+    },
+    {
+      error: 'Invalid start date, it should be before the end date',
+      path: ['startDate'],
+    },
+  )

@@ -1,10 +1,12 @@
+import { randEmail } from '@ngneat/falso'
 import request from 'supertest'
 import { APIKeyScope } from '../../../../src/entities/api-key'
-import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
-import PlayerFactory from '../../../fixtures/PlayerFactory'
+import PlayerAuthActivity, {
+  PlayerAuthActivityType,
+} from '../../../../src/entities/player-auth-activity'
 import * as sendEmail from '../../../../src/lib/messaging/sendEmail'
-import PlayerAuthActivity, { PlayerAuthActivityType } from '../../../../src/entities/player-auth-activity'
-import { randEmail } from '@ngneat/falso'
+import PlayerFactory from '../../../fixtures/PlayerFactory'
+import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
 
 describe('Player auth API - forgot password', () => {
   const sendMock = vi.spyOn(sendEmail, 'default')
@@ -14,7 +16,10 @@ describe('Player auth API - forgot password', () => {
   })
 
   it('should send a reset code if the api key has the correct scopes', async () => {
-    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_PLAYERS, APIKeyScope.WRITE_PLAYERS])
+    const [apiKey, token] = await createAPIKeyAndToken([
+      APIKeyScope.READ_PLAYERS,
+      APIKeyScope.WRITE_PLAYERS,
+    ])
 
     const player = await new PlayerFactory([apiKey.game]).withTaloAlias().one()
     await em.persistAndFlush(player)
@@ -30,7 +35,7 @@ describe('Player auth API - forgot password', () => {
 
     const activity = await em.getRepository(PlayerAuthActivity).findOne({
       type: PlayerAuthActivityType.PASSWORD_RESET_REQUESTED,
-      player: player.id
+      player: player.id,
     })
     expect(activity).not.toBeNull()
   })
@@ -52,7 +57,10 @@ describe('Player auth API - forgot password', () => {
   })
 
   it('should not send a reset code if there are no players with that email address', async () => {
-    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_PLAYERS, APIKeyScope.WRITE_PLAYERS])
+    const [apiKey, token] = await createAPIKeyAndToken([
+      APIKeyScope.READ_PLAYERS,
+      APIKeyScope.WRITE_PLAYERS,
+    ])
 
     const player = await new PlayerFactory([apiKey.game]).withTaloAlias().one()
     await em.persistAndFlush(player)
@@ -68,8 +76,14 @@ describe('Player auth API - forgot password', () => {
   })
 
   it('should not send a reset code if the only player with a matching email address is from another game', async () => {
-    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_PLAYERS, APIKeyScope.WRITE_PLAYERS])
-    const [otherKey] = await createAPIKeyAndToken([APIKeyScope.READ_PLAYERS, APIKeyScope.WRITE_PLAYERS])
+    const [apiKey, token] = await createAPIKeyAndToken([
+      APIKeyScope.READ_PLAYERS,
+      APIKeyScope.WRITE_PLAYERS,
+    ])
+    const [otherKey] = await createAPIKeyAndToken([
+      APIKeyScope.READ_PLAYERS,
+      APIKeyScope.WRITE_PLAYERS,
+    ])
 
     const player = await new PlayerFactory([apiKey.game]).withTaloAlias().one()
     const otherPlayer = await new PlayerFactory([otherKey.game]).withTaloAlias().one()

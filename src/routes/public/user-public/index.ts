@@ -1,11 +1,11 @@
-import { registerRoute } from './register'
+import { publicRouter } from '../../../lib/routing/router'
+import { forgotPasswordRoute } from './forgot-password'
 import { loginRoute } from './login'
 import { refreshRoute } from './refresh'
-import { forgotPasswordRoute } from './forgot-password'
+import { registerRoute } from './register'
 import { resetPasswordRoute } from './reset-password'
-import { verify2faRoute } from './verify-2fa'
 import { useRecoveryCodeRoute } from './use-recovery-code'
-import { publicRouter } from '../../../lib/routing/router'
+import { verify2faRoute } from './verify-2fa'
 
 export function userPublicRouter() {
   return publicRouter('/public/users', ({ route }) => {

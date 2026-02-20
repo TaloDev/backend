@@ -1,22 +1,22 @@
+import { GameActivityType } from '../../../entities/game-activity'
+import PlayerGroup from '../../../entities/player-group'
+import { UserType } from '../../../entities/user'
+import createGameActivity from '../../../lib/logging/createGameActivity'
 import { protectedRoute, withMiddleware } from '../../../lib/routing/router'
 import { loadGame } from '../../../middleware/game-middleware'
 import { userTypeGate } from '../../../middleware/policy-middleware'
-import { UserType } from '../../../entities/user'
-import PlayerGroup from '../../../entities/player-group'
-import { GameActivityType } from '../../../entities/game-activity'
-import createGameActivity from '../../../lib/logging/createGameActivity'
 import { groupBodySchema, buildRulesFromData, loadGroup } from './common'
 
 export const updateRoute = protectedRoute({
   method: 'put',
   path: '/:id',
   schema: (z) => ({
-    body: groupBodySchema(z)
+    body: groupBodySchema(z),
   }),
   middleware: withMiddleware(
     userTypeGate([UserType.ADMIN, UserType.DEV], 'update groups'),
     loadGame,
-    loadGroup
+    loadGroup,
   ),
   handler: async (ctx) => {
     const { name, description, ruleMode, rules, membersVisible } = ctx.state.validated.body
@@ -34,8 +34,8 @@ export const updateRoute = protectedRoute({
       game: ctx.state.game,
       type: GameActivityType.PLAYER_GROUP_UPDATED,
       extra: {
-        groupName: group.name
-      }
+        groupName: group.name,
+      },
     })
 
     await group.checkMembership(em)
@@ -44,8 +44,8 @@ export const updateRoute = protectedRoute({
     return {
       status: 200,
       body: {
-        group: await group.toJSONWithCount(ctx.state.includeDevData)
-      }
+        group: await group.toJSONWithCount(ctx.state.includeDevData),
+      },
     }
-  }
+  },
 })

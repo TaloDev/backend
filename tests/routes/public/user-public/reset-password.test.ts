@@ -1,7 +1,7 @@
-import request from 'supertest'
-import UserFactory from '../../../fixtures/UserFactory'
 import bcrypt from 'bcrypt'
+import request from 'supertest'
 import { sign } from '../../../../src/lib/auth/jwt'
+import UserFactory from '../../../fixtures/UserFactory'
 
 describe('User public - reset password', () => {
   it('should let a user reset their password', async () => {

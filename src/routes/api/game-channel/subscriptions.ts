@@ -1,11 +1,11 @@
 import { FilterQuery } from '@mikro-orm/mysql'
-import { apiRoute, withMiddleware } from '../../../lib/routing/router'
-import { requireScopes } from '../../../middleware/policy-middleware'
 import { APIKeyScope } from '../../../entities/api-key'
-import { loadAlias } from '../../../middleware/player-alias-middleware'
 import GameChannel from '../../../entities/game-channel'
-import { subscriptionsDocs } from './docs'
+import { apiRoute, withMiddleware } from '../../../lib/routing/router'
 import { playerAliasHeaderSchema } from '../../../lib/validation/playerAliasHeaderSchema'
+import { loadAlias } from '../../../middleware/player-alias-middleware'
+import { requireScopes } from '../../../middleware/policy-middleware'
+import { subscriptionsDocs } from './docs'
 
 export const subscriptionsRoute = apiRoute({
   method: 'get',
@@ -13,17 +13,20 @@ export const subscriptionsRoute = apiRoute({
   docs: subscriptionsDocs,
   schema: (z) => ({
     headers: z.looseObject({
-      'x-talo-alias': playerAliasHeaderSchema
+      'x-talo-alias': playerAliasHeaderSchema,
     }),
     query: z.object({
-      propKey: z.string().optional().meta({ description: 'Only return channels with this prop key' }),
-      propValue: z.string().optional().meta({ description: 'Only return channels with a matching prop key and value' })
-    })
+      propKey: z
+        .string()
+        .optional()
+        .meta({ description: 'Only return channels with this prop key' }),
+      propValue: z
+        .string()
+        .optional()
+        .meta({ description: 'Only return channels with a matching prop key and value' }),
+    }),
   }),
-  middleware: withMiddleware(
-    requireScopes([APIKeyScope.READ_GAME_CHANNELS]),
-    loadAlias
-  ),
+  middleware: withMiddleware(requireScopes([APIKeyScope.READ_GAME_CHANNELS]), loadAlias),
   handler: async (ctx) => {
     const { propKey, propValue } = ctx.state.validated.query
     const em = ctx.em
@@ -33,9 +36,9 @@ export const subscriptionsRoute = apiRoute({
     const where: FilterQuery<GameChannel> = {
       members: {
         $some: {
-          id: aliasId
-        }
-      }
+          id: aliasId,
+        },
+      },
     }
 
     if (propKey) {
@@ -43,14 +46,14 @@ export const subscriptionsRoute = apiRoute({
         where.props = {
           $some: {
             key: propKey,
-            value: propValue
-          }
+            value: propValue,
+          },
         }
       } else {
         where.props = {
           $some: {
-            key: propKey
-          }
+            key: propKey,
+          },
         }
       }
     }
@@ -60,8 +63,10 @@ export const subscriptionsRoute = apiRoute({
     return {
       status: 200,
       body: {
-        channels: await Promise.all(channels.map((channel) => channel.toJSONWithCount(ctx.state.includeDevData)))
-      }
+        channels: await Promise.all(
+          channels.map((channel) => channel.toJSONWithCount(ctx.state.includeDevData)),
+        ),
+      },
     }
-  }
+  },
 })

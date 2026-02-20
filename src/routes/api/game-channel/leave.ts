@@ -1,12 +1,12 @@
-import { apiRoute, withMiddleware } from '../../../lib/routing/router'
-import { requireScopes } from '../../../middleware/policy-middleware'
 import { APIKeyScope } from '../../../entities/api-key'
-import { loadAlias } from '../../../middleware/player-alias-middleware'
-import { loadChannel } from './common'
 import { GameChannelLeavingReason } from '../../../entities/game-channel'
-import { leaveDocs } from './docs'
-import { playerAliasHeaderSchema } from '../../../lib/validation/playerAliasHeaderSchema'
+import { apiRoute, withMiddleware } from '../../../lib/routing/router'
 import { numericStringSchema } from '../../../lib/validation/numericStringSchema'
+import { playerAliasHeaderSchema } from '../../../lib/validation/playerAliasHeaderSchema'
+import { loadAlias } from '../../../middleware/player-alias-middleware'
+import { requireScopes } from '../../../middleware/policy-middleware'
+import { loadChannel } from './common'
+import { leaveDocs } from './docs'
 
 export const leaveRoute = apiRoute({
   method: 'post',
@@ -14,16 +14,16 @@ export const leaveRoute = apiRoute({
   docs: leaveDocs,
   schema: (z) => ({
     route: z.object({
-      id: numericStringSchema.meta({ description: 'The ID of the channel' })
+      id: numericStringSchema.meta({ description: 'The ID of the channel' }),
     }),
     headers: z.looseObject({
-      'x-talo-alias': playerAliasHeaderSchema
-    })
+      'x-talo-alias': playerAliasHeaderSchema,
+    }),
   }),
   middleware: withMiddleware(
     requireScopes([APIKeyScope.WRITE_GAME_CHANNELS]),
     loadAlias,
-    loadChannel
+    loadChannel,
   ),
   handler: async (ctx) => {
     const em = ctx.em
@@ -35,8 +35,8 @@ export const leaveRoute = apiRoute({
         channel,
         playerAlias,
         meta: {
-          reason: GameChannelLeavingReason.DEFAULT
-        }
+          reason: GameChannelLeavingReason.DEFAULT,
+        },
       })
 
       if (channel.shouldAutoCleanup(playerAlias)) {
@@ -44,7 +44,7 @@ export const leaveRoute = apiRoute({
         await em.remove(channel).flush()
 
         return {
-          status: 204
+          status: 204,
         }
       }
 
@@ -57,7 +57,7 @@ export const leaveRoute = apiRoute({
     }
 
     return {
-      status: 204
+      status: 204,
     }
-  }
+  },
 })

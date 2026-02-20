@@ -1,8 +1,7 @@
-
-import { createServer } from 'http'
-import Socket from '../../src/socket'
 import { randNumber } from '@ngneat/falso'
+import { createServer } from 'http'
 import { WebSocket } from 'ws'
+import Socket from '../../src/socket'
 import { IdentifyMessage } from './createSocketIdentifyMessage'
 
 class TestClient extends WebSocket {
@@ -35,15 +34,17 @@ class TestClient extends WebSocket {
   expectReady() {
     return this.expectJsonToStrictEqual({
       res: 'v1.connected',
-      data: {}
+      data: {},
     })
   }
 
   expectClosed(code?: number, reason?: string) {
     return vi.waitUntil(() => {
-      return this.closed &&
+      return (
+        this.closed &&
         (code !== undefined ? this.closeCode === code : true) &&
         (reason !== undefined ? this.closeReason === reason : true)
+      )
     })
   }
 
@@ -52,7 +53,7 @@ class TestClient extends WebSocket {
     this.send(JSON.stringify(json))
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // oxlint-disable-next-line typescript/no-explicit-any
   async expectJson(cb: (json: any) => void) {
     try {
       await vi.waitUntil(async () => {
@@ -71,7 +72,7 @@ class TestClient extends WebSocket {
     }
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // oxlint-disable-next-line typescript/no-explicit-any
   async dontExpectJson(cb: (json: any) => void) {
     try {
       await this.expectJson(cb)
@@ -107,8 +108,8 @@ export async function createTestClient(
   port: number,
   url: string,
   opts: TestSocketOptions = {
-    waitForReady: true
-  }
+    waitForReady: true,
+  },
 ): Promise<TestClient> {
   const client = new TestClient(`ws://localhost:${port}${url}`)
   if (opts.waitForReady) {
@@ -121,8 +122,8 @@ export default async function createTestSocket(
   url: string,
   cb: (client: TestClient, wss: Socket, port: number) => Promise<void>,
   opts: TestSocketOptions = {
-    waitForReady: true
-  }
+    waitForReady: true,
+  },
 ) {
   const server = createServer()
   let port = getRandPort()
@@ -160,7 +161,7 @@ export default async function createTestSocket(
 
   // close all connections
   await Promise.all(
-    wss.findConnections(() => true).map((conn) => wss.closeConnection(conn.getSocket()))
+    wss.findConnections(() => true).map((conn) => wss.closeConnection(conn.getSocket())),
   )
 
   // wait for any background close operations

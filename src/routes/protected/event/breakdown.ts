@@ -1,9 +1,9 @@
 import { endOfDay } from 'date-fns'
 import { z } from 'zod'
-import { protectedRoute, withMiddleware } from '../../../lib/routing/router'
-import { loadGame } from '../../../middleware/game-middleware'
 import { formatDateForClickHouse } from '../../../lib/clickhouse/formatDateTime'
+import { protectedRoute, withMiddleware } from '../../../lib/routing/router'
 import { dateRangeSchema } from '../../../lib/validation/dateRangeSchema'
+import { loadGame } from '../../../middleware/game-middleware'
 import { EventData, fillDateGaps } from './common'
 
 type AggregatedClickHouseEventProps = {
@@ -17,13 +17,19 @@ export const breakdownRoute = protectedRoute({
   method: 'get',
   path: '/breakdown',
   schema: () => ({
-    query: dateRangeSchema.and(z.object({
-      eventName: z.string()
-    }))
+    query: dateRangeSchema.and(
+      z.object({
+        eventName: z.string(),
+      }),
+    ),
   }),
   middleware: withMiddleware(loadGame),
   handler: async (ctx) => {
-    const { eventName, startDate: startDateQuery, endDate: endDateQuery } = ctx.state.validated.query
+    const {
+      eventName,
+      startDate: startDateQuery,
+      endDate: endDateQuery,
+    } = ctx.state.validated.query
     const clickhouse = ctx.clickhouse
 
     const startDate = formatDateForClickHouse(new Date(startDateQuery))
@@ -52,13 +58,15 @@ export const breakdownRoute = protectedRoute({
       ORDER BY prop_key, prop_value, date
     `
 
-    const events = await clickhouse.query({
-      query,
-      query_params: {
-        eventName
-      },
-      format: 'JSONEachRow'
-    }).then((res) => res.json<AggregatedClickHouseEventProps>())
+    const events = await clickhouse
+      .query({
+        query,
+        query_params: {
+          eventName,
+        },
+        format: 'JSONEachRow',
+      })
+      .then((res) => res.json<AggregatedClickHouseEventProps>())
 
     const data: Record<string, EventData[]> = {}
     for (const event of events) {
@@ -71,7 +79,7 @@ export const breakdownRoute = protectedRoute({
         name: keyValueLabel,
         date: Number(event.date),
         count: Number(event.count),
-        change: 0
+        change: 0,
       })
     }
 
@@ -81,8 +89,8 @@ export const breakdownRoute = protectedRoute({
       status: 200,
       body: {
         events: filledData,
-        eventNames: Object.keys(filledData)
-      }
+        eventNames: Object.keys(filledData),
+      },
     }
-  }
+  },
 })

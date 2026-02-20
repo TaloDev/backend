@@ -1,14 +1,14 @@
-import request from 'supertest'
-import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
-import createUserAndToken from '../../../utils/createUserAndToken'
-import IntegrationConfigFactory from '../../../fixtures/IntegrationConfigFactory'
-import IntegrationFactory from '../../../fixtures/IntegrationFactory'
-import { IntegrationType } from '../../../../src/entities/integration'
-import AxiosMockAdapter from 'axios-mock-adapter'
 import axios from 'axios'
+import AxiosMockAdapter from 'axios-mock-adapter'
+import request from 'supertest'
+import { IntegrationType } from '../../../../src/entities/integration'
 import SteamworksIntegrationEvent from '../../../../src/entities/steamworks-integration-event'
 import SteamworksLeaderboardMapping from '../../../../src/entities/steamworks-leaderboard-mapping'
+import IntegrationConfigFactory from '../../../fixtures/IntegrationConfigFactory'
+import IntegrationFactory from '../../../fixtures/IntegrationFactory'
 import clearEntities from '../../../utils/clearEntities'
+import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
+import createUserAndToken from '../../../utils/createUserAndToken'
 
 describe('Leaderboard - post - steamworks integration', () => {
   const axiosMock = new AxiosMockAdapter(axios)
@@ -25,29 +25,44 @@ describe('Leaderboard - post - steamworks integration', () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({}, organisation)
 
-    const createMock = vi.fn(() => [200, {
-      result: {
-        result: 1,
-        leaderboard: {
-          leaderBoardID: 12233213,
-          leaderboardName: 'highscores',
-          onlyfriendsreads: false,
-          onlytrustedwrites: true,
-          leaderBoardEntries: 0,
-          leaderBoardSortMethod: 'Descending',
-          leaderBoardDisplayType: 'Numeric'
-        }
-      }
-    }])
-    axiosMock.onPost('https://partner.steam-api.com/ISteamLeaderboards/FindOrCreateLeaderboard/v2').replyOnce(createMock)
+    const createMock = vi.fn(() => [
+      200,
+      {
+        result: {
+          result: 1,
+          leaderboard: {
+            leaderBoardID: 12233213,
+            leaderboardName: 'highscores',
+            onlyfriendsreads: false,
+            onlytrustedwrites: true,
+            leaderBoardEntries: 0,
+            leaderBoardSortMethod: 'Descending',
+            leaderBoardDisplayType: 'Numeric',
+          },
+        },
+      },
+    ])
+    axiosMock
+      .onPost('https://partner.steam-api.com/ISteamLeaderboards/FindOrCreateLeaderboard/v2')
+      .replyOnce(createMock)
 
-    const config = await new IntegrationConfigFactory().state(() => ({ syncLeaderboards: true })).one()
-    const integration = await new IntegrationFactory().construct(IntegrationType.STEAMWORKS, game, config).one()
+    const config = await new IntegrationConfigFactory()
+      .state(() => ({ syncLeaderboards: true }))
+      .one()
+    const integration = await new IntegrationFactory()
+      .construct(IntegrationType.STEAMWORKS, game, config)
+      .one()
     await em.persistAndFlush(integration)
 
     await request(app)
       .post(`/games/${game.id}/leaderboards`)
-      .send({ internalName: 'highscores', name: 'Highscores', sortMode: 'desc', unique: true, refreshInterval: 'never' })
+      .send({
+        internalName: 'highscores',
+        name: 'Highscores',
+        sortMode: 'desc',
+        unique: true,
+        refreshInterval: 'never',
+      })
       .auth(token, { type: 'bearer' })
       .expect(200)
 
@@ -57,12 +72,15 @@ describe('Leaderboard - post - steamworks integration', () => {
     expect(event.request).toStrictEqual({
       url: 'https://partner.steam-api.com/ISteamLeaderboards/FindOrCreateLeaderboard/v2',
       body: `appid=${config.appId}&name=highscores&sortmethod=Descending&displaytype=Numeric&createifnotfound=true&onlytrustedwrites=true&onlyfriendsreads=false`,
-      method: 'POST'
+      method: 'POST',
     })
 
-    const mapping = await em.getRepository(SteamworksLeaderboardMapping).findOneOrFail({
-      steamworksLeaderboardId: 12233213
-    }, { populate: ['leaderboard'] })
+    const mapping = await em.getRepository(SteamworksLeaderboardMapping).findOneOrFail(
+      {
+        steamworksLeaderboardId: 12233213,
+      },
+      { populate: ['leaderboard'] },
+    )
 
     expect(mapping.leaderboard.internalName).toBe('highscores')
   })
@@ -72,15 +90,27 @@ describe('Leaderboard - post - steamworks integration', () => {
     const [token] = await createUserAndToken({}, organisation)
 
     const createMock = vi.fn(() => [200, {}])
-    axiosMock.onPost('https://partner.steam-api.com/ISteamLeaderboards/FindOrCreateLeaderboard/v2').replyOnce(createMock)
+    axiosMock
+      .onPost('https://partner.steam-api.com/ISteamLeaderboards/FindOrCreateLeaderboard/v2')
+      .replyOnce(createMock)
 
-    const config = await new IntegrationConfigFactory().state(() => ({ syncLeaderboards: false })).one()
-    const integration = await new IntegrationFactory().construct(IntegrationType.STEAMWORKS, game, config).one()
+    const config = await new IntegrationConfigFactory()
+      .state(() => ({ syncLeaderboards: false }))
+      .one()
+    const integration = await new IntegrationFactory()
+      .construct(IntegrationType.STEAMWORKS, game, config)
+      .one()
     await em.persistAndFlush(integration)
 
     await request(app)
       .post(`/games/${game.id}/leaderboards`)
-      .send({ internalName: 'highscores', name: 'Highscores', sortMode: 'desc', unique: true, refreshInterval: 'never' })
+      .send({
+        internalName: 'highscores',
+        name: 'Highscores',
+        sortMode: 'desc',
+        unique: true,
+        refreshInterval: 'never',
+      })
       .auth(token, { type: 'bearer' })
       .expect(200)
 
@@ -89,7 +119,9 @@ describe('Leaderboard - post - steamworks integration', () => {
     const event = await em.getRepository(SteamworksIntegrationEvent).findOne({ integration })
     expect(event).toBeNull()
 
-    const mapping = await em.getRepository(SteamworksLeaderboardMapping).findOne({ steamworksLeaderboardId: 3242332 })
+    const mapping = await em
+      .getRepository(SteamworksLeaderboardMapping)
+      .findOne({ steamworksLeaderboardId: 3242332 })
     expect(mapping).toBeNull()
 
     axiosMock.reset()
@@ -99,16 +131,28 @@ describe('Leaderboard - post - steamworks integration', () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({}, organisation)
 
-    const createMock = vi.fn(() => [400, 'Required parameter \'appid\' is missing'])
-    axiosMock.onPost('https://partner.steam-api.com/ISteamLeaderboards/FindOrCreateLeaderboard/v2').replyOnce(createMock)
+    const createMock = vi.fn(() => [400, "Required parameter 'appid' is missing"])
+    axiosMock
+      .onPost('https://partner.steam-api.com/ISteamLeaderboards/FindOrCreateLeaderboard/v2')
+      .replyOnce(createMock)
 
-    const config = await new IntegrationConfigFactory().state(() => ({ syncLeaderboards: true })).one()
-    const integration = await new IntegrationFactory().construct(IntegrationType.STEAMWORKS, game, config).one()
+    const config = await new IntegrationConfigFactory()
+      .state(() => ({ syncLeaderboards: true }))
+      .one()
+    const integration = await new IntegrationFactory()
+      .construct(IntegrationType.STEAMWORKS, game, config)
+      .one()
     await em.persistAndFlush(integration)
 
     await request(app)
       .post(`/games/${game.id}/leaderboards`)
-      .send({ internalName: 'highscores', name: 'Highscores', sortMode: 'desc', unique: true, refreshInterval: 'never' })
+      .send({
+        internalName: 'highscores',
+        name: 'Highscores',
+        sortMode: 'desc',
+        unique: true,
+        refreshInterval: 'never',
+      })
       .auth(token, { type: 'bearer' })
       .expect(200)
 
@@ -118,7 +162,7 @@ describe('Leaderboard - post - steamworks integration', () => {
     expect(event.request).toStrictEqual({
       url: 'https://partner.steam-api.com/ISteamLeaderboards/FindOrCreateLeaderboard/v2',
       body: `appid=${config.appId}&name=highscores&sortmethod=Descending&displaytype=Numeric&createifnotfound=true&onlytrustedwrites=true&onlyfriendsreads=false`,
-      method: 'POST'
+      method: 'POST',
     })
 
     const mappings = await em.getRepository(SteamworksLeaderboardMapping).findAll()

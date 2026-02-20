@@ -1,15 +1,18 @@
+import { differenceInMinutes, sub } from 'date-fns'
 import request from 'supertest'
 import UserFactory from '../../../fixtures/UserFactory'
-import { differenceInMinutes, sub } from 'date-fns'
 import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
 
 describe('User public - login', () => {
   it('should let a user login', async () => {
     const [organisation] = await createOrganisationAndGame()
-    const user = await new UserFactory().loginable().state(() => ({
-      organisation,
-      lastSeenAt: new Date(2020, 1, 1)
-    })).one()
+    const user = await new UserFactory()
+      .loginable()
+      .state(() => ({
+        organisation,
+        lastSeenAt: new Date(2020, 1, 1),
+      }))
+      .one()
     await em.persistAndFlush(user)
 
     const res = await request(app)
@@ -48,7 +51,10 @@ describe('User public - login', () => {
   it('should not update the last seen at if the user was last seen today', async () => {
     const lastSeenAt = sub(new Date(), { hours: 1 })
 
-    const user = await new UserFactory().loginable().state(() => ({ lastSeenAt })).one()
+    const user = await new UserFactory()
+      .loginable()
+      .state(() => ({ lastSeenAt }))
+      .one()
     await em.persistAndFlush(user)
 
     const res = await request(app)
@@ -70,7 +76,7 @@ describe('User public - login', () => {
 
     expect(res.body).toStrictEqual({
       twoFactorAuthRequired: true,
-      userId: user.id
+      userId: user.id,
     })
 
     const hasSession = await redis.get(`2fa:${user.id}`)

@@ -1,13 +1,13 @@
-import PlayerAuthActivity from '../../../entities/player-auth-activity'
-import { protectedRoute, withMiddleware } from '../../../lib/routing/router'
-import { userTypeGate } from '../../../middleware/policy-middleware'
-import { UserType } from '../../../entities/user'
-import { loadPlayer } from './common'
-import { loadGame } from '../../../middleware/game-middleware'
-import PlayerAlias, { PlayerAliasService } from '../../../entities/player-alias'
-import { pageSchema } from '../../../lib/validation/pageSchema'
 import { QueryOrder } from '@mikro-orm/mysql'
+import PlayerAlias, { PlayerAliasService } from '../../../entities/player-alias'
+import PlayerAuthActivity from '../../../entities/player-auth-activity'
+import { UserType } from '../../../entities/user'
 import { DEFAULT_PAGE_SIZE } from '../../../lib/pagination/itemsPerPage'
+import { protectedRoute, withMiddleware } from '../../../lib/routing/router'
+import { pageSchema } from '../../../lib/validation/pageSchema'
+import { loadGame } from '../../../middleware/game-middleware'
+import { userTypeGate } from '../../../middleware/policy-middleware'
+import { loadPlayer } from './common'
 
 const itemsPerPage = DEFAULT_PAGE_SIZE
 
@@ -16,23 +16,24 @@ export const authActivitiesRoute = protectedRoute({
   path: '/:id/auth-activities',
   schema: (z) => ({
     query: z.object({
-      page: pageSchema
-    })
+      page: pageSchema,
+    }),
   }),
   middleware: withMiddleware(
     userTypeGate([UserType.ADMIN], 'view player auth activities'),
     loadGame,
-    loadPlayer
+    loadPlayer,
   ),
   handler: async (ctx) => {
     const em = ctx.em
     const player = ctx.state.player
     const { page } = ctx.state.validated.query
 
-    const hasTaloAlias = await em.repo(PlayerAlias).count({
-      player,
-      service: PlayerAliasService.TALO
-    }) > 0
+    const hasTaloAlias =
+      (await em.repo(PlayerAlias).count({
+        player,
+        service: PlayerAliasService.TALO,
+      })) > 0
 
     if (!hasTaloAlias) {
       return {
@@ -41,8 +42,8 @@ export const authActivitiesRoute = protectedRoute({
           activities: [],
           count: 0,
           itemsPerPage,
-          isLastPage: true
-        }
+          isLastPage: true,
+        },
       }
     }
 
@@ -51,8 +52,8 @@ export const authActivitiesRoute = protectedRoute({
       {
         orderBy: { createdAt: QueryOrder.DESC },
         limit: itemsPerPage + 1,
-        offset: page * itemsPerPage
-      }
+        offset: page * itemsPerPage,
+      },
     )
 
     const activities = allActivities.slice(0, itemsPerPage)
@@ -63,8 +64,8 @@ export const authActivitiesRoute = protectedRoute({
         activities,
         count,
         itemsPerPage,
-        isLastPage: allActivities.length <= itemsPerPage
-      }
+        isLastPage: allActivities.length <= itemsPerPage,
+      },
     }
-  }
+  },
 })

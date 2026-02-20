@@ -1,7 +1,7 @@
+import Invite from '../../../entities/invite'
+import { UserType } from '../../../entities/user'
 import { protectedRoute, withMiddleware } from '../../../lib/routing/router'
 import { userTypeGate } from '../../../middleware/policy-middleware'
-import { UserType } from '../../../entities/user'
-import Invite from '../../../entities/invite'
 
 export const listRoute = protectedRoute({
   method: 'get',
@@ -9,14 +9,14 @@ export const listRoute = protectedRoute({
   handler: async (ctx) => {
     const em = ctx.em
     const invites = await em.repo(Invite).find({
-      organisation: ctx.state.user.organisation
+      organisation: ctx.state.user.organisation,
     })
 
     return {
       status: 200,
       body: {
-        invites
-      }
+        invites,
+      },
     }
-  }
+  },
 })

@@ -33,7 +33,7 @@ export default class PlayerProp {
   toJSON() {
     return {
       key: this.key,
-      value: this.value
+      value: this.value,
     }
   }
 }

@@ -1,9 +1,9 @@
-import request from 'supertest'
-import PlayerFactory from '../../../fixtures/PlayerFactory'
 import { sub, format } from 'date-fns'
+import request from 'supertest'
+import { v4 } from 'uuid'
+import PlayerFactory from '../../../fixtures/PlayerFactory'
 import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
 import createUserAndToken from '../../../utils/createUserAndToken'
-import { v4 } from 'uuid'
 
 describe('Headline - total sessions', () => {
   const startDate = format(sub(new Date(), { days: 7 }), 'yyyy-MM-dd')
@@ -18,16 +18,18 @@ describe('Headline - total sessions', () => {
 
     await clickhouse.insert({
       table: 'player_sessions',
-      values: Array(10).fill({}).map(() => ({
-        id: v4(),
-        player_id: player.id,
-        player_alias_id: player.aliases[0].id,
-        game_id: game.id,
-        dev_build: false,
-        started_at: startDate,
-        ended_at: endDate
-      })),
-      format: 'JSONEachRow'
+      values: Array(10)
+        .fill({})
+        .map(() => ({
+          id: v4(),
+          player_id: player.id,
+          player_alias_id: player.aliases[0].id,
+          game_id: game.id,
+          dev_build: false,
+          started_at: startDate,
+          ended_at: endDate,
+        })),
+      format: 'JSONEachRow',
     })
 
     const res = await request(app)
@@ -48,16 +50,18 @@ describe('Headline - total sessions', () => {
 
     await clickhouse.insert({
       table: 'player_sessions',
-      values: Array(5).fill({}).map(() => ({
-        id: v4(),
-        player_id: player.id,
-        player_alias_id: player.aliases[0].id,
-        game_id: game.id,
-        dev_build: true,
-        started_at: startDate,
-        ended_at: endDate
-      })),
-      format: 'JSONEachRow'
+      values: Array(5)
+        .fill({})
+        .map(() => ({
+          id: v4(),
+          player_id: player.id,
+          player_alias_id: player.aliases[0].id,
+          game_id: game.id,
+          dev_build: true,
+          started_at: startDate,
+          ended_at: endDate,
+        })),
+      format: 'JSONEachRow',
     })
 
     const res = await request(app)
@@ -78,16 +82,18 @@ describe('Headline - total sessions', () => {
 
     await clickhouse.insert({
       table: 'player_sessions',
-      values: Array(5).fill({}).map(() => ({
-        id: v4(),
-        player_id: player.id,
-        player_alias_id: player.aliases[0].id,
-        game_id: game.id,
-        dev_build: true,
-        started_at: startDate,
-        ended_at: endDate
-      })),
-      format: 'JSONEachRow'
+      values: Array(5)
+        .fill({})
+        .map(() => ({
+          id: v4(),
+          player_id: player.id,
+          player_alias_id: player.aliases[0].id,
+          game_id: game.id,
+          dev_build: true,
+          started_at: startDate,
+          ended_at: endDate,
+        })),
+      format: 'JSONEachRow',
     })
 
     const res = await request(app)

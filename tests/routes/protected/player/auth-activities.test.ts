@@ -1,39 +1,46 @@
 import request from 'supertest'
-import PlayerFactory from '../../../fixtures/PlayerFactory'
-import createUserAndToken from '../../../utils/createUserAndToken'
-import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
-import userPermissionProvider from '../../../utils/userPermissionProvider'
-import { UserType } from '../../../../src/entities/user'
-import PlayerAuthActivityFactory from '../../../fixtures/PlayerAuthActivityFactory'
 import { PlayerAuthActivityType } from '../../../../src/entities/player-auth-activity'
+import { UserType } from '../../../../src/entities/user'
 import { DEFAULT_PAGE_SIZE } from '../../../../src/lib/pagination/itemsPerPage'
+import PlayerAuthActivityFactory from '../../../fixtures/PlayerAuthActivityFactory'
+import PlayerFactory from '../../../fixtures/PlayerFactory'
+import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
+import createUserAndToken from '../../../utils/createUserAndToken'
+import userPermissionProvider from '../../../utils/userPermissionProvider'
 
 describe('Player - get auth activities', () => {
-  it.each(userPermissionProvider([UserType.ADMIN]))('should return a %i for a %s user', async (statusCode, _, type) => {
-    const [organisation, game] = await createOrganisationAndGame()
-    const [token] = await createUserAndToken({ type }, organisation)
+  it.each(userPermissionProvider([UserType.ADMIN]))(
+    'should return a %i for a %s user',
+    async (statusCode, _, type) => {
+      const [organisation, game] = await createOrganisationAndGame()
+      const [token] = await createUserAndToken({ type }, organisation)
 
-    const player = await new PlayerFactory([game]).withTaloAlias().one()
-    const activities = await new PlayerAuthActivityFactory(game).state(() => ({ player })).many(10)
+      const player = await new PlayerFactory([game]).withTaloAlias().one()
+      const activities = await new PlayerAuthActivityFactory(game)
+        .state(() => ({ player }))
+        .many(10)
 
-    await em.persist(activities).flush()
+      await em.persist(activities).flush()
 
-    const res = await request(app)
-      .get(`/games/${game.id}/players/${player.id}/auth-activities`)
-      .auth(token, { type: 'bearer' })
-      .expect(statusCode)
+      const res = await request(app)
+        .get(`/games/${game.id}/players/${player.id}/auth-activities`)
+        .auth(token, { type: 'bearer' })
+        .expect(statusCode)
 
-    if (statusCode === 200) {
-      expect(res.body.activities).toHaveLength(10)
-      expect(res.body.count).toBe(10)
-      expect(res.body.itemsPerPage).toBe(DEFAULT_PAGE_SIZE)
-      expect(res.body.isLastPage).toBe(true)
-    } else {
-      expect(res.body).toStrictEqual({ message: 'You do not have permissions to view player auth activities' })
-    }
-  })
+      if (statusCode === 200) {
+        expect(res.body.activities).toHaveLength(10)
+        expect(res.body.count).toBe(10)
+        expect(res.body.itemsPerPage).toBe(DEFAULT_PAGE_SIZE)
+        expect(res.body.isLastPage).toBe(true)
+      } else {
+        expect(res.body).toStrictEqual({
+          message: 'You do not have permissions to view player auth activities',
+        })
+      }
+    },
+  )
 
-  it('should not get a player\'s auth activities for a player they have no access to', async () => {
+  it("should not get a player's auth activities for a player they have no access to", async () => {
     const [, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({ type: UserType.ADMIN })
 
@@ -47,7 +54,7 @@ describe('Player - get auth activities', () => {
       .expect(403)
   })
 
-  it('should not get a player\'s auth activities if they do not exist', async () => {
+  it("should not get a player's auth activities if they do not exist", async () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({ type: UserType.ADMIN }, organisation)
 
@@ -59,7 +66,7 @@ describe('Player - get auth activities', () => {
     expect(res.body).toStrictEqual({ message: 'Player not found' })
   })
 
-  it('should not return a player\'s auth activities if they do not have a talo alias', async () => {
+  it("should not return a player's auth activities if they do not have a talo alias", async () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({ type: UserType.ADMIN }, organisation)
 
@@ -84,7 +91,9 @@ describe('Player - get auth activities', () => {
     const [token] = await createUserAndToken({ type: UserType.ADMIN }, organisation)
 
     const player = await new PlayerFactory([game]).withTaloAlias().one()
-    const activities = await new PlayerAuthActivityFactory(game).state(() => ({ player })).many(DEFAULT_PAGE_SIZE + 5)
+    const activities = await new PlayerAuthActivityFactory(game)
+      .state(() => ({ player }))
+      .many(DEFAULT_PAGE_SIZE + 5)
 
     await em.persist(activities).flush()
 
@@ -113,10 +122,12 @@ describe('Player - get auth activities', () => {
     const [token] = await createUserAndToken({ type: UserType.ADMIN }, organisation)
 
     const player = await new PlayerFactory([game]).withTaloAlias().one()
-    const activity = await new PlayerAuthActivityFactory(game).state(() => ({
-      player,
-      type: PlayerAuthActivityType.REGISTERED
-    })).one()
+    const activity = await new PlayerAuthActivityFactory(game)
+      .state(() => ({
+        player,
+        type: PlayerAuthActivityType.REGISTERED,
+      }))
+      .one()
 
     await em.persist(activity).flush()
 
@@ -132,7 +143,7 @@ describe('Player - get auth activities', () => {
       type: activity.type,
       description: `${identifier} created their account`,
       extra: expect.any(Object),
-      createdAt: expect.any(String)
+      createdAt: expect.any(String),
     })
   })
 })

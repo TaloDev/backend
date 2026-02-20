@@ -1,13 +1,13 @@
 import { Collection } from '@mikro-orm/mysql'
+import { randText } from '@ngneat/falso'
 import request from 'supertest'
 import { APIKeyScope } from '../../../../src/entities/api-key'
-import PlayerFactory from '../../../fixtures/PlayerFactory'
-import GameFactory from '../../../fixtures/GameFactory'
-import PlayerProp from '../../../../src/entities/player-prop'
-import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
-import { randText } from '@ngneat/falso'
-import { FlushEventsQueueHandler } from '../../../../src/lib/queues/game-metrics/flush-events-queue-handler'
 import Event from '../../../../src/entities/event'
+import PlayerProp from '../../../../src/entities/player-prop'
+import { FlushEventsQueueHandler } from '../../../../src/lib/queues/game-metrics/flush-events-queue-handler'
+import GameFactory from '../../../fixtures/GameFactory'
+import PlayerFactory from '../../../fixtures/PlayerFactory'
+import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
 
 describe('Event API - post', () => {
   it('should create an event if the scope is valid', async () => {
@@ -47,8 +47,8 @@ describe('Event API - post', () => {
         events: [
           { name: 'Craft bow', timestamp: Date.now() },
           { name: 'Equip bow', timestamp: Date.now(), props: [{ key: 'itemId', value: 5 }] },
-          { name: 'Shoot arrow', timestamp: Date.now() }
-        ]
+          { name: 'Shoot arrow', timestamp: Date.now() },
+        ],
       })
       .auth(token, { type: 'bearer' })
       .set('x-talo-alias', String(player.aliases[0].id))
@@ -70,7 +70,7 @@ describe('Event API - post', () => {
       .expect(403)
   })
 
-  it('should not create an event if the alias doesn\'t exist', async () => {
+  it("should not create an event if the alias doesn't exist", async () => {
     const [, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_EVENTS])
 
     const res = await request(app)
@@ -143,8 +143,8 @@ describe('Event API - post', () => {
 
     expect(res.body).toStrictEqual({
       errors: {
-        events: ['Invalid input: expected array, received undefined']
-      }
+        events: ['Invalid input: expected array, received undefined'],
+      },
     })
   })
 
@@ -157,8 +157,8 @@ describe('Event API - post', () => {
       .post('/v1/events')
       .send({
         events: [
-          { name: 'Equip bow', timestamp: Date.now(), props: [{ key: 'itemId', value: 5 }] }
-        ]
+          { name: 'Equip bow', timestamp: Date.now(), props: [{ key: 'itemId', value: 5 }] },
+        ],
       })
       .auth(token, { type: 'bearer' })
       .set('x-talo-alias', String(player.aliases[0].id))
@@ -177,8 +177,15 @@ describe('Event API - post', () => {
       .post('/v1/events')
       .send({
         events: [
-          { name: 'Equip bow', timestamp: Date.now(), props: [{ key: 'itemId', value: 5 }, { key: 'name', value: null }] }
-        ]
+          {
+            name: 'Equip bow',
+            timestamp: Date.now(),
+            props: [
+              { key: 'itemId', value: 5 },
+              { key: 'name', value: null },
+            ],
+          },
+        ],
       })
       .auth(token, { type: 'bearer' })
       .set('x-talo-alias', String(player.aliases[0].id))
@@ -196,8 +203,8 @@ describe('Event API - post', () => {
       .post('/v1/events')
       .send({
         events: [
-          { name: 'Equip bow', timestamp: Date.now(), props: [{ key: 'itemId', value: '' }] }
-        ]
+          { name: 'Equip bow', timestamp: Date.now(), props: [{ key: 'itemId', value: '' }] },
+        ],
       })
       .auth(token, { type: 'bearer' })
       .set('x-talo-alias', String(player.aliases[0].id))
@@ -215,9 +222,7 @@ describe('Event API - post', () => {
     const res = await request(app)
       .post('/v1/events')
       .send({
-        events: [
-          { name: 'Equip bow', timestamp: Date.now(), props: { itemId: 5 } }
-        ]
+        events: [{ name: 'Equip bow', timestamp: Date.now(), props: { itemId: 5 } }],
       })
       .auth(token, { type: 'bearer' })
       .set('x-talo-alias', String(player.aliases[0].id))
@@ -226,7 +231,7 @@ describe('Event API - post', () => {
     expect(res.body.errors[0]).toStrictEqual(['Props must be an array (Equip bow)'])
   })
 
-  it('should add valid meta props to the player\'s props', async () => {
+  it("should add valid meta props to the player's props", async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_EVENTS])
     const player = await new PlayerFactory([apiKey.game]).one()
     await em.persistAndFlush(player)
@@ -235,8 +240,8 @@ describe('Event API - post', () => {
       .post('/v1/events')
       .send({
         events: [
-          { name: 'Equip bow', timestamp: Date.now(), props: [{ key: 'META_OS', value: 'macOS' }] }
-        ]
+          { name: 'Equip bow', timestamp: Date.now(), props: [{ key: 'META_OS', value: 'macOS' }] },
+        ],
       })
       .auth(token, { type: 'bearer' })
       .set('x-talo-alias', String(player.aliases[0].id))
@@ -245,12 +250,12 @@ describe('Event API - post', () => {
     const prop = await em.getRepository(PlayerProp).findOne({
       player: player.id,
       key: 'META_OS',
-      value: 'macOS'
+      value: 'macOS',
     })
     expect(prop).toBeTruthy()
   })
 
-  it('should strip out event props that start with META_ but aren\'t in the meta props list', async () => {
+  it("should strip out event props that start with META_ but aren't in the meta props list", async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_EVENTS])
     const player = await new PlayerFactory([apiKey.game]).one()
     await em.persistAndFlush(player)
@@ -259,8 +264,15 @@ describe('Event API - post', () => {
       .post('/v1/events')
       .send({
         events: [
-          { name: 'Equip bow', timestamp: Date.now(), props: [{ key: 'META_NO_WAY', value: 'true' }, { key: 'META_OS', value: 'macOS' }] }
-        ]
+          {
+            name: 'Equip bow',
+            timestamp: Date.now(),
+            props: [
+              { key: 'META_NO_WAY', value: 'true' },
+              { key: 'META_OS', value: 'macOS' },
+            ],
+          },
+        ],
       })
       .auth(token, { type: 'bearer' })
       .set('x-talo-alias', String(player.aliases[0].id))
@@ -272,19 +284,19 @@ describe('Event API - post', () => {
 
   it('should update meta props instead of creating new ones', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_EVENTS])
-    const player = await new PlayerFactory([apiKey.game]).state((player) => ({
-      props: new Collection<PlayerProp>(player, [
-        new PlayerProp(player, 'META_OS', 'Windows')
-      ])
-    })).one()
+    const player = await new PlayerFactory([apiKey.game])
+      .state((player) => ({
+        props: new Collection<PlayerProp>(player, [new PlayerProp(player, 'META_OS', 'Windows')]),
+      }))
+      .one()
     await em.persistAndFlush(player)
 
     await request(app)
       .post('/v1/events')
       .send({
         events: [
-          { name: 'Equip bow', timestamp: Date.now(), props: [{ key: 'META_OS', value: 'macOS' }] }
-        ]
+          { name: 'Equip bow', timestamp: Date.now(), props: [{ key: 'META_OS', value: 'macOS' }] },
+        ],
       })
       .auth(token, { type: 'bearer' })
       .set('x-talo-alias', String(player.aliases[0].id))
@@ -293,7 +305,7 @@ describe('Event API - post', () => {
     const prop = await em.getRepository(PlayerProp).findOne({
       player: player.id,
       key: 'META_OS',
-      value: 'macOS'
+      value: 'macOS',
     })
     expect(prop).toBeTruthy()
   })
@@ -307,8 +319,12 @@ describe('Event API - post', () => {
       .post('/v1/events')
       .send({
         events: [
-          { name: 'Equip bow', timestamp: Date.now(), props: [{ key: randText({ charCount: 129 }), value: '1' }] }
-        ]
+          {
+            name: 'Equip bow',
+            timestamp: Date.now(),
+            props: [{ key: randText({ charCount: 129 }), value: '1' }],
+          },
+        ],
       })
       .auth(token, { type: 'bearer' })
       .set('x-talo-alias', String(player.aliases[0].id))
@@ -316,7 +332,7 @@ describe('Event API - post', () => {
 
     expect(res.body).toStrictEqual({
       events: [],
-      errors: [['Prop key length (129) exceeds 128 characters (Equip bow)']]
+      errors: [['Prop key length (129) exceeds 128 characters (Equip bow)']],
     })
   })
 
@@ -329,8 +345,12 @@ describe('Event API - post', () => {
       .post('/v1/events')
       .send({
         events: [
-          { name: 'Equip bow', timestamp: Date.now(), props: [{ key: 'bio', value: randText({ charCount: 513 }) }] }
-        ]
+          {
+            name: 'Equip bow',
+            timestamp: Date.now(),
+            props: [{ key: 'bio', value: randText({ charCount: 513 }) }],
+          },
+        ],
       })
       .auth(token, { type: 'bearer' })
       .set('x-talo-alias', String(player.aliases[0].id))
@@ -338,7 +358,7 @@ describe('Event API - post', () => {
 
     expect(res.body).toStrictEqual({
       events: [],
-      errors: [['Prop value length (513) exceeds 512 characters (Equip bow)']]
+      errors: [['Prop value length (513) exceeds 512 characters (Equip bow)']],
     })
   })
 
@@ -350,9 +370,7 @@ describe('Event API - post', () => {
     const res = await request(app)
       .post('/v1/events')
       .send({
-        events: [
-          { name: 'Equip bow', timestamp: ' ', props: [] }
-        ]
+        events: [{ name: 'Equip bow', timestamp: ' ', props: [] }],
       })
       .auth(token, { type: 'bearer' })
       .set('x-talo-alias', String(player.aliases[0].id))
@@ -372,8 +390,8 @@ describe('Event API - post', () => {
         events: [
           { name: 'Craft bow', timestamp: Date.now() },
           { name: 'Craft bow', timestamp: Date.now() },
-          { name: 'Craft bow', timestamp: Date.now() }
-        ]
+          { name: 'Craft bow', timestamp: Date.now() },
+        ],
       })
       .auth(token, { type: 'bearer' })
       .set('x-talo-alias', String(player.aliases[0].id))

@@ -1,17 +1,19 @@
+import { randNumber } from '@ngneat/falso'
+import { addMinutes, isSameDay } from 'date-fns'
 import request from 'supertest'
 import { APIKeyScope } from '../../../../src/entities/api-key'
-import PlayerFactory from '../../../fixtures/PlayerFactory'
-import GameStatFactory from '../../../fixtures/GameStatFactory'
-import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
 import Game from '../../../../src/entities/game'
 import PlayerGameStatSnapshot from '../../../../src/entities/player-game-stat-snapshot'
+import GameStatFactory from '../../../fixtures/GameStatFactory'
+import PlayerFactory from '../../../fixtures/PlayerFactory'
 import PlayerGameStatFactory from '../../../fixtures/PlayerGameStatFactory'
-import { addMinutes, isSameDay } from 'date-fns'
-import { randNumber } from '@ngneat/falso'
+import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
 
 describe('Game stats API - history', () => {
   const createStat = async (game: Game) => {
-    const stat = await new GameStatFactory([game]).state(() => ({ maxValue: 999, maxChange: 99 })).one()
+    const stat = await new GameStatFactory([game])
+      .state(() => ({ maxValue: 999, maxChange: 99 }))
+      .one()
     em.persist(stat)
 
     return stat
@@ -38,7 +40,7 @@ describe('Game stats API - history', () => {
 
         return snapshot.toInsertable()
       }),
-      format: 'JSONEachRow'
+      format: 'JSONEachRow',
     })
 
     const res = await request(app)
@@ -114,7 +116,7 @@ describe('Game stats API - history', () => {
     const dates = [
       new Date('2025-03-19T09:00:00.000Z'),
       new Date('2025-03-20T09:00:00.000Z'),
-      new Date('2025-03-21T09:00:00.000Z')
+      new Date('2025-03-21T09:00:00.000Z'),
     ]
 
     await clickhouse.insert({
@@ -126,7 +128,7 @@ describe('Game stats API - history', () => {
         snapshot.createdAt = date
         return snapshot.toInsertable()
       }),
-      format: 'JSONEachRow'
+      format: 'JSONEachRow',
     })
 
     const res = await request(app)
@@ -137,9 +139,11 @@ describe('Game stats API - history', () => {
       .expect(200)
 
     expect(res.body.history).toHaveLength(2)
-    expect(res.body.history.every((snapshot: PlayerGameStatSnapshot) => {
-      return new Date(snapshot.createdAt) >= dates[1]
-    })).toBe(true)
+    expect(
+      res.body.history.every((snapshot: PlayerGameStatSnapshot) => {
+        return new Date(snapshot.createdAt) >= dates[1]
+      }),
+    ).toBe(true)
   })
 
   it('should return player stat snapshots filtered by endDate', async () => {
@@ -152,7 +156,7 @@ describe('Game stats API - history', () => {
     const dates = [
       new Date('2025-03-19T09:00:00.000Z'),
       new Date('2025-03-20T09:00:00.000Z'),
-      new Date('2025-03-21T09:00:00.000Z')
+      new Date('2025-03-21T09:00:00.000Z'),
     ]
 
     await clickhouse.insert({
@@ -164,7 +168,7 @@ describe('Game stats API - history', () => {
         snapshot.createdAt = date
         return snapshot.toInsertable()
       }),
-      format: 'JSONEachRow'
+      format: 'JSONEachRow',
     })
 
     const res = await request(app)
@@ -175,9 +179,11 @@ describe('Game stats API - history', () => {
       .expect(200)
 
     expect(res.body.history).toHaveLength(2)
-    expect(res.body.history.every((snapshot: PlayerGameStatSnapshot) => {
-      return new Date(snapshot.createdAt) <= dates[1]
-    })).toBe(true)
+    expect(
+      res.body.history.every((snapshot: PlayerGameStatSnapshot) => {
+        return new Date(snapshot.createdAt) <= dates[1]
+      }),
+    ).toBe(true)
   })
 
   it('should return player stat snapshots filtered by both startDate and endDate', async () => {
@@ -190,7 +196,7 @@ describe('Game stats API - history', () => {
     const dates = [
       new Date('2025-03-19T09:00:00.000Z'),
       new Date('2025-03-20T09:00:00.000Z'),
-      new Date('2025-03-21T09:00:00.000Z')
+      new Date('2025-03-21T09:00:00.000Z'),
     ]
 
     await clickhouse.insert({
@@ -202,7 +208,7 @@ describe('Game stats API - history', () => {
         snapshot.createdAt = date
         return snapshot.toInsertable()
       }),
-      format: 'JSONEachRow'
+      format: 'JSONEachRow',
     })
 
     const res = await request(app)
@@ -213,9 +219,11 @@ describe('Game stats API - history', () => {
       .expect(200)
 
     expect(res.body.history).toHaveLength(1)
-    expect(res.body.history.every((snapshot: PlayerGameStatSnapshot) => {
-      return isSameDay(new Date(snapshot.createdAt), dates[1])
-    })).toBe(true)
+    expect(
+      res.body.history.every((snapshot: PlayerGameStatSnapshot) => {
+        return isSameDay(new Date(snapshot.createdAt), dates[1])
+      }),
+    ).toBe(true)
   })
 
   it('should return paginated player stat snapshots', async () => {
@@ -237,7 +245,7 @@ describe('Game stats API - history', () => {
 
         return snapshot.toInsertable()
       }),
-      format: 'JSONEachRow'
+      format: 'JSONEachRow',
     })
 
     const res = await request(app)

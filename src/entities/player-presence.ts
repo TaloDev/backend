@@ -4,7 +4,7 @@ import PlayerAlias from './player-alias'
 
 export enum PlayerPresenceStatus {
   ONLINE = 'online',
-  OFFLINE = 'offline'
+  OFFLINE = 'offline',
 }
 
 @Entity()
@@ -39,7 +39,7 @@ export default class PlayerPresence {
       playerAlias: this.playerAlias ?? null,
       online: this.online,
       customStatus: this.customStatus,
-      updatedAt: this.updatedAt
+      updatedAt: this.updatedAt,
     }
   }
 }

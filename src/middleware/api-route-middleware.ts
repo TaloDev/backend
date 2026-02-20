@@ -7,7 +7,7 @@ export async function apiRouteAuthMiddleware(ctx: Context, next: Next) {
     return jwt({
       secret: ctx.state.secret,
       isRevoked: async (ctx) => ctx.state.key.revokedAt !== null,
-      key: 'jwt'
+      key: 'jwt',
     })(ctx, next)
   }
 

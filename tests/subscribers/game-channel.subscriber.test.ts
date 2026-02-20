@@ -1,13 +1,16 @@
 import request from 'supertest'
 import { APIKeyScope } from '../../src/entities/api-key'
-import PlayerFactory from '../fixtures/PlayerFactory'
 import GameChannelFactory from '../fixtures/GameChannelFactory'
+import PlayerFactory from '../fixtures/PlayerFactory'
 import createAPIKeyAndToken from '../utils/createAPIKeyAndToken'
 
 describe('GameChannel subscriber', () => {
   describe('cache invalidation on create', () => {
     it('should invalidate the channel search cache when a new channel is created', async () => {
-      const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_GAME_CHANNELS, APIKeyScope.WRITE_GAME_CHANNELS])
+      const [apiKey, token] = await createAPIKeyAndToken([
+        APIKeyScope.READ_GAME_CHANNELS,
+        APIKeyScope.WRITE_GAME_CHANNELS,
+      ])
       const player = await new PlayerFactory([apiKey.game]).one()
       await em.persistAndFlush([player])
 
@@ -40,7 +43,10 @@ describe('GameChannel subscriber', () => {
     })
 
     it('should invalidate cache when multiple channels are created', async () => {
-      const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_GAME_CHANNELS, APIKeyScope.WRITE_GAME_CHANNELS])
+      const [apiKey, token] = await createAPIKeyAndToken([
+        APIKeyScope.READ_GAME_CHANNELS,
+        APIKeyScope.WRITE_GAME_CHANNELS,
+      ])
       const player = await new PlayerFactory([apiKey.game]).one()
       await em.persistAndFlush([player])
 
@@ -91,12 +97,17 @@ describe('GameChannel subscriber', () => {
 
   describe('cache invalidation on update', () => {
     it('should invalidate cache when channel props are updated', async () => {
-      const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_GAME_CHANNELS, APIKeyScope.WRITE_GAME_CHANNELS])
+      const [apiKey, token] = await createAPIKeyAndToken([
+        APIKeyScope.READ_GAME_CHANNELS,
+        APIKeyScope.WRITE_GAME_CHANNELS,
+      ])
       const player = await new PlayerFactory([apiKey.game]).one()
-      const channel = await new GameChannelFactory(apiKey.game).state(() => ({
-        owner: player.aliases[0],
-        name: 'Test Channel'
-      })).one()
+      const channel = await new GameChannelFactory(apiKey.game)
+        .state(() => ({
+          owner: player.aliases[0],
+          name: 'Test Channel',
+        }))
+        .one()
       channel.members.add(player.aliases[0])
       channel.setProps([{ key: 'level', value: '1' }])
       await em.persistAndFlush([player, channel])
@@ -135,9 +146,14 @@ describe('GameChannel subscriber', () => {
 
   describe('cache invalidation on delete', () => {
     it('should invalidate the channel search cache when a channel is deleted', async () => {
-      const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_GAME_CHANNELS, APIKeyScope.WRITE_GAME_CHANNELS])
+      const [apiKey, token] = await createAPIKeyAndToken([
+        APIKeyScope.READ_GAME_CHANNELS,
+        APIKeyScope.WRITE_GAME_CHANNELS,
+      ])
       const player = await new PlayerFactory([apiKey.game]).one()
-      const channel = await new GameChannelFactory(apiKey.game).state(() => ({ owner: player.aliases[0] })).one()
+      const channel = await new GameChannelFactory(apiKey.game)
+        .state(() => ({ owner: player.aliases[0] }))
+        .one()
       channel.members.add(player.aliases[0])
       await em.persistAndFlush([player, channel])
 
@@ -168,12 +184,17 @@ describe('GameChannel subscriber', () => {
     })
 
     it('should invalidate cache when auto-cleanup deletes a channel', async () => {
-      const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_GAME_CHANNELS, APIKeyScope.WRITE_GAME_CHANNELS])
+      const [apiKey, token] = await createAPIKeyAndToken([
+        APIKeyScope.READ_GAME_CHANNELS,
+        APIKeyScope.WRITE_GAME_CHANNELS,
+      ])
       const player = await new PlayerFactory([apiKey.game]).one()
-      const channel = await new GameChannelFactory(apiKey.game).state(() => ({
-        owner: player.aliases[0],
-        autoCleanup: true
-      })).one()
+      const channel = await new GameChannelFactory(apiKey.game)
+        .state(() => ({
+          owner: player.aliases[0],
+          autoCleanup: true,
+        }))
+        .one()
       channel.members.add(player.aliases[0])
       await em.persistAndFlush([player, channel])
 
@@ -206,14 +227,24 @@ describe('GameChannel subscriber', () => {
 
   describe('cache isolation by game', () => {
     it('should only invalidate cache for the affected game', async () => {
-      const [apiKey1, token1] = await createAPIKeyAndToken([APIKeyScope.READ_GAME_CHANNELS, APIKeyScope.WRITE_GAME_CHANNELS])
-      const [apiKey2, token2] = await createAPIKeyAndToken([APIKeyScope.READ_GAME_CHANNELS, APIKeyScope.WRITE_GAME_CHANNELS])
+      const [apiKey1, token1] = await createAPIKeyAndToken([
+        APIKeyScope.READ_GAME_CHANNELS,
+        APIKeyScope.WRITE_GAME_CHANNELS,
+      ])
+      const [apiKey2, token2] = await createAPIKeyAndToken([
+        APIKeyScope.READ_GAME_CHANNELS,
+        APIKeyScope.WRITE_GAME_CHANNELS,
+      ])
 
       const player1 = await new PlayerFactory([apiKey1.game]).one()
       const player2 = await new PlayerFactory([apiKey2.game]).one()
 
-      const channel1 = await new GameChannelFactory(apiKey1.game).state(() => ({ owner: player1.aliases[0] })).one()
-      const channel2 = await new GameChannelFactory(apiKey2.game).state(() => ({ owner: player2.aliases[0] })).one()
+      const channel1 = await new GameChannelFactory(apiKey1.game)
+        .state(() => ({ owner: player1.aliases[0] }))
+        .one()
+      const channel2 = await new GameChannelFactory(apiKey2.game)
+        .state(() => ({ owner: player2.aliases[0] }))
+        .one()
 
       channel1.members.add(player1.aliases[0])
       channel2.members.add(player2.aliases[0])

@@ -1,52 +1,56 @@
-import request from 'supertest'
-import { UserType } from '../../../../src/entities/user'
-import UserFactory from '../../../fixtures/UserFactory'
-import InviteFactory from '../../../fixtures/InviteFactory'
-import clearEntities from '../../../utils/clearEntities'
-import userPermissionProvider from '../../../utils/userPermissionProvider'
-import createUserAndToken from '../../../utils/createUserAndToken'
-import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
-import GameActivity, { GameActivityType } from '../../../../src/entities/game-activity'
 import { randEmail } from '@ngneat/falso'
+import request from 'supertest'
+import GameActivity, { GameActivityType } from '../../../../src/entities/game-activity'
+import { UserType } from '../../../../src/entities/user'
+import InviteFactory from '../../../fixtures/InviteFactory'
+import UserFactory from '../../../fixtures/UserFactory'
+import clearEntities from '../../../utils/clearEntities'
+import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
+import createUserAndToken from '../../../utils/createUserAndToken'
+import userPermissionProvider from '../../../utils/userPermissionProvider'
 
 describe('Invite - post', () => {
   beforeEach(async () => {
     await clearEntities(['GameActivity'])
   })
 
-  it.each(userPermissionProvider([
-    UserType.ADMIN
-  ]))('should return a %i for a %s user', async (statusCode, _, type) => {
-    const [token, user] = await createUserAndToken({ type, emailConfirmed: true })
+  it.each(userPermissionProvider([UserType.ADMIN]))(
+    'should return a %i for a %s user',
+    async (statusCode, _, type) => {
+      const [token, user] = await createUserAndToken({ type, emailConfirmed: true })
 
-    const email = randEmail()
+      const email = randEmail()
 
-    const res = await request(app)
-      .post('/invites')
-      .send({ email, type: UserType.ADMIN })
-      .auth(token, { type: 'bearer' })
-      .expect(statusCode)
+      const res = await request(app)
+        .post('/invites')
+        .send({ email, type: UserType.ADMIN })
+        .auth(token, { type: 'bearer' })
+        .expect(statusCode)
 
-    const activity = await em.getRepository(GameActivity).findOne({
-      type: GameActivityType.INVITE_CREATED
-    })
+      const activity = await em.getRepository(GameActivity).findOne({
+        type: GameActivityType.INVITE_CREATED,
+      })
 
-    if (statusCode === 200) {
-      expect(res.body.invite.email).toBe(email)
-      expect(res.body.invite.organisation.id).toBe(user.organisation.id)
+      if (statusCode === 200) {
+        expect(res.body.invite.email).toBe(email)
+        expect(res.body.invite.organisation.id).toBe(user.organisation.id)
 
-      expect(activity!.extra.inviteEmail).toBe(email)
-    } else {
-      expect(res.body).toStrictEqual({ message: 'You do not have permissions to create invites' })
+        expect(activity!.extra.inviteEmail).toBe(email)
+      } else {
+        expect(res.body).toStrictEqual({ message: 'You do not have permissions to create invites' })
 
-      expect(activity).toBe(null)
-    }
-  })
+        expect(activity).toBe(null)
+      }
+    },
+  )
 
   it('should not create an invite when an invite exists for the same email', async () => {
     const [token, user] = await createUserAndToken({ type: UserType.ADMIN, emailConfirmed: true })
 
-    const invite = await new InviteFactory().construct(user.organisation).state(() => ({ email: randEmail() })).one()
+    const invite = await new InviteFactory()
+      .construct(user.organisation)
+      .state(() => ({ email: randEmail() }))
+      .one()
     await em.persistAndFlush(invite)
 
     const res = await request(app)
@@ -62,7 +66,7 @@ describe('Invite - post', () => {
     [400, 'owner', UserType.OWNER],
     [200, 'admin', UserType.ADMIN],
     [200, 'dev', UserType.DEV],
-    [400, 'demo', UserType.DEMO]
+    [400, 'demo', UserType.DEMO],
   ])('should return a %i for a %s user type invite', async (statusCode, _, type) => {
     const [token] = await createUserAndToken({ type: UserType.ADMIN, emailConfirmed: true })
 
@@ -75,10 +79,8 @@ describe('Invite - post', () => {
     if (statusCode !== 200) {
       expect(res.body).toStrictEqual({
         errors: {
-          type: [
-            'You can only invite an admin or developer user'
-          ]
-        }
+          type: ['You can only invite an admin or developer user'],
+        },
       })
     }
   })
@@ -87,7 +89,10 @@ describe('Invite - post', () => {
     const [otherOrg] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({ type: UserType.ADMIN, emailConfirmed: true })
 
-    const invite = await new InviteFactory().construct(otherOrg).state(() => ({ email: randEmail() })).one()
+    const invite = await new InviteFactory()
+      .construct(otherOrg)
+      .state(() => ({ email: randEmail() }))
+      .one()
     await em.persistAndFlush(invite)
 
     const res = await request(app)
@@ -114,7 +119,7 @@ describe('Invite - post', () => {
     expect(res.body).toStrictEqual({ message: 'This email address is already in use' })
   })
 
-  it('should not create an invite if the user\'s email is not confirmed', async () => {
+  it("should not create an invite if the user's email is not confirmed", async () => {
     const [token] = await createUserAndToken({ type: UserType.ADMIN })
 
     const res = await request(app)
@@ -123,6 +128,8 @@ describe('Invite - post', () => {
       .auth(token, { type: 'bearer' })
       .expect(403)
 
-    expect(res.body).toStrictEqual({ message: 'You need to confirm your email address to create invites' })
+    expect(res.body).toStrictEqual({
+      message: 'You need to confirm your email address to create invites',
+    })
   })
 })

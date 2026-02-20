@@ -12,12 +12,10 @@ const DENYLIST = [
   'secret',
   'session',
   'stripe-signature',
-  'token'
+  'token',
 ]
 
-const ALLOWLIST = new Set([
-  'emailconfirmed'
-])
+const ALLOWLIST = new Set(['emailconfirmed'])
 
 function deepFilterDataInternal<T>(obj: T, visited: WeakSet<object>): T {
   if (obj === null || obj === undefined || typeof obj !== 'object') {
@@ -78,11 +76,14 @@ export function deepFilterData<T>(obj: T | string, lengthCheck?: boolean): T {
   return deepFilterDataInternal(parsed, new WeakSet())
 }
 
-function buildHeaders(prefix: 'request' | 'response', headers: IncomingHttpHeaders | OutgoingHttpHeaders) {
+function buildHeaders(
+  prefix: 'request' | 'response',
+  headers: IncomingHttpHeaders | OutgoingHttpHeaders,
+) {
   return Object.entries(deepFilterData(headers)).reduce((acc, [key, value]) => {
     return {
       ...acc,
-      [`http.${prefix}.header.${key.toLowerCase()}`]: value
+      [`http.${prefix}.header.${key.toLowerCase()}`]: value,
     }
   }, {})
 }
@@ -98,7 +99,7 @@ export async function httpTracingMiddleware(ctx: Context, next: Next) {
     'http.route': ctx.path,
     'http.request.body': ctx.request.body
       ? JSON.stringify(deepFilterData(ctx.request.body, true))
-      : undefined
+      : undefined,
   })
 
   ctx.res.on('finish', () => {
@@ -107,7 +108,7 @@ export async function httpTracingMiddleware(ctx: Context, next: Next) {
       'http.response_size': ctx.response.length,
       'http.response.body': ctx.response.body
         ? JSON.stringify(deepFilterData(ctx.response.body, true))
-        : undefined
+        : undefined,
     })
   })
 

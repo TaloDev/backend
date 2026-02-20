@@ -1,13 +1,13 @@
-import { protectedRoute } from '../../../lib/routing/router'
 import UserAccessCode from '../../../entities/user-access-code'
+import { protectedRoute } from '../../../lib/routing/router'
 
 export const confirmEmailRoute = protectedRoute({
   method: 'post',
   path: '/confirm_email',
   schema: (z) => ({
     body: z.object({
-      code: z.string()
-    })
+      code: z.string(),
+    }),
   }),
   handler: async (ctx) => {
     const { code } = ctx.state.validated.body
@@ -20,13 +20,13 @@ export const confirmEmailRoute = protectedRoute({
         user,
         code,
         validUntil: {
-          $gt: new Date()
-        }
+          $gt: new Date(),
+        },
       })
     } catch {
       return {
         status: 400,
-        body: { message: 'Invalid or expired code' }
+        body: { message: 'Invalid or expired code' },
       }
     }
 
@@ -36,8 +36,8 @@ export const confirmEmailRoute = protectedRoute({
     return {
       status: 200,
       body: {
-        user
-      }
+        user,
+      },
     }
-  }
+  },
 })

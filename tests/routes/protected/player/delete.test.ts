@@ -1,48 +1,49 @@
+import { Collection } from '@mikro-orm/mysql'
 import request from 'supertest'
+import GameActivity, { GameActivityType } from '../../../../src/entities/game-activity'
+import PlayerAlias from '../../../../src/entities/player-alias'
+import { UserType } from '../../../../src/entities/user'
 import PlayerFactory from '../../../fixtures/PlayerFactory'
 import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
 import createUserAndToken from '../../../utils/createUserAndToken'
 import userPermissionProvider from '../../../utils/userPermissionProvider'
-import { UserType } from '../../../../src/entities/user'
-import GameActivity, { GameActivityType } from '../../../../src/entities/game-activity'
-import PlayerAlias from '../../../../src/entities/player-alias'
-import { Collection } from '@mikro-orm/mysql'
 
 describe('Player - delete', () => {
-  it.each(userPermissionProvider([
-    UserType.ADMIN
-  ], 204))('should return a %i for a %s user', async (statusCode, _, type) => {
-    const [organisation, game] = await createOrganisationAndGame()
-    const [token] = await createUserAndToken({ type }, organisation)
+  it.each(userPermissionProvider([UserType.ADMIN], 204))(
+    'should return a %i for a %s user',
+    async (statusCode, _, type) => {
+      const [organisation, game] = await createOrganisationAndGame()
+      const [token] = await createUserAndToken({ type }, organisation)
 
-    const player = await new PlayerFactory([game]).one()
-    await em.persistAndFlush(player)
+      const player = await new PlayerFactory([game]).one()
+      await em.persistAndFlush(player)
 
-    const res = await request(app)
-      .delete(`/games/${game.id}/players/${player.id}`)
-      .auth(token, { type: 'bearer' })
-      .expect(statusCode)
+      const res = await request(app)
+        .delete(`/games/${game.id}/players/${player.id}`)
+        .auth(token, { type: 'bearer' })
+        .expect(statusCode)
 
-    const activity = await em.repo(GameActivity).findOne({
-      type: GameActivityType.PLAYER_DELETED,
-      extra: {
-        playerId: player.id
-      }
-    })
-
-    const deletedPlayer = await em.refresh(player)
-    if (statusCode === 204) {
-      expect(activity).not.toBeNull()
-      expect(deletedPlayer).toBeNull()
-    } else {
-      expect(res.body).toStrictEqual({
-        message: 'You do not have permissions to delete players'
+      const activity = await em.repo(GameActivity).findOne({
+        type: GameActivityType.PLAYER_DELETED,
+        extra: {
+          playerId: player.id,
+        },
       })
 
-      expect(activity).toBeNull()
-      expect(deletedPlayer).not.toBeNull()
-    }
-  })
+      const deletedPlayer = await em.refresh(player)
+      if (statusCode === 204) {
+        expect(activity).not.toBeNull()
+        expect(deletedPlayer).toBeNull()
+      } else {
+        expect(res.body).toStrictEqual({
+          message: 'You do not have permissions to delete players',
+        })
+
+        expect(activity).toBeNull()
+        expect(deletedPlayer).not.toBeNull()
+      }
+    },
+  )
 
   it('should return 404 for non-existent player', async () => {
     const [organisation, game] = await createOrganisationAndGame()
@@ -73,9 +74,11 @@ describe('Player - delete', () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({ type: UserType.ADMIN }, organisation)
 
-    const player = await new PlayerFactory([game]).state((player) => ({
-      aliases: new Collection<PlayerAlias>(player, [])
-    })).one()
+    const player = await new PlayerFactory([game])
+      .state((player) => ({
+        aliases: new Collection<PlayerAlias>(player, []),
+      }))
+      .one()
     await em.persistAndFlush(player)
 
     await request(app)
@@ -88,10 +91,12 @@ describe('Player - delete', () => {
 
     await vi.waitUntil(async () => {
       // sessions are the only table related to players and not aliases
-      const updatedPlayerSessionsCount = await clickhouse.query({
-        query: `SELECT count() as count FROM player_sessions WHERE player_id = '${player.id}'`,
-        format: 'JSONEachRow'
-      }).then((res) => res.json<{ count: string }>())
+      const updatedPlayerSessionsCount = await clickhouse
+        .query({
+          query: `SELECT count() as count FROM player_sessions WHERE player_id = '${player.id}'`,
+          format: 'JSONEachRow',
+        })
+        .then((res) => res.json<{ count: string }>())
         .then((res) => Number(res[0].count))
 
       return updatedPlayerSessionsCount === 0

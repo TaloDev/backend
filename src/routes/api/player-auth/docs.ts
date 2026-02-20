@@ -7,9 +7,7 @@ const sampleAlias = {
   player: {
     id: '7a4e70ec-6ee6-418e-923d-b3a45051b7f9',
     props: [],
-    aliases: [
-      '/* [Circular] */'
-    ],
+    aliases: ['/* [Circular] */'],
     devBuild: false,
     createdAt: '2024-06-28T12:37:43.514Z',
     lastSeenAt: '2024-06-28T12:37:43.514Z',
@@ -17,12 +15,13 @@ const sampleAlias = {
     auth: {
       email: 'boz@mail.com',
       verificationEnabled: true,
-      sessionCreatedAt: '2024-06-28T12:37:43.514Z'
-    }
-  }
+      sessionCreatedAt: '2024-06-28T12:37:43.514Z',
+    },
+  },
 }
 
-const sampleSessionToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwbGF5ZXJJZCI6IjdhNGU3MGVjLTZlZTYtNDE4ZS05MjNkLWIzYTQ1MDUxYjdmOSIsImFsaWFzSWQiOjEsImlhdCI6MTcxOTU5Mjk3Nn0.gb4-IA_fsDcXOnS3PkQp1eBqwYBaYWiHEmjlqXfd078'
+const sampleSessionToken =
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwbGF5ZXJJZCI6IjdhNGU3MGVjLTZlZTYtNDE4ZS05MjNkLWIzYTQ1MDUxYjdmOSIsImFsaWFzSWQiOjEsImlhdCI6MTcxOTU5Mjk3Nn0.gb4-IA_fsDcXOnS3PkQp1eBqwYBaYWiHEmjlqXfd078'
 
 export const registerDocs = {
   description: 'Create a new player account',
@@ -33,17 +32,17 @@ export const registerDocs = {
         identifier: 'boz',
         password: 'password',
         verificationEnabled: true,
-        email: 'boz@mail.com'
-      }
+        email: 'boz@mail.com',
+      },
     },
     {
       title: 'Sample response',
       sample: {
         alias: sampleAlias,
-        sessionToken: sampleSessionToken
-      }
-    }
-  ]
+        sessionToken: sampleSessionToken,
+      },
+    },
+  ],
 } satisfies RouteDocs
 
 export const loginDocs = {
@@ -53,24 +52,24 @@ export const loginDocs = {
       title: 'Sample request',
       sample: {
         identifier: 'boz',
-        password: 'password'
-      }
+        password: 'password',
+      },
     },
     {
       title: 'Sample response (verification not enabled)',
       sample: {
         alias: sampleAlias,
-        sessionToken: sampleSessionToken
-      }
+        sessionToken: sampleSessionToken,
+      },
     },
     {
       title: 'Sample response (verification enabled)',
       sample: {
         aliasId: 1,
-        verificationRequired: true
-      }
-    }
-  ]
+        verificationRequired: true,
+      },
+    },
+  ],
 } satisfies RouteDocs
 
 export const verifyDocs = {
@@ -80,21 +79,21 @@ export const verifyDocs = {
       title: 'Sample request',
       sample: {
         aliasId: 1,
-        code: '023251'
-      }
+        code: '023251',
+      },
     },
     {
       title: 'Sample response',
       sample: {
         alias: sampleAlias,
-        sessionToken: sampleSessionToken
-      }
-    }
-  ]
+        sessionToken: sampleSessionToken,
+      },
+    },
+  ],
 } satisfies RouteDocs
 
 export const logoutDocs = {
-  description: 'Logout of a player account (and invalidate the session token)'
+  description: 'Logout of a player account (and invalidate the session token)',
 } satisfies RouteDocs
 
 export const changePasswordDocs = {
@@ -104,10 +103,10 @@ export const changePasswordDocs = {
       title: 'Sample request',
       sample: {
         currentPassword: 'password',
-        newPassword: 'new_password'
-      }
-    }
-  ]
+        newPassword: 'new_password',
+      },
+    },
+  ],
 } satisfies RouteDocs
 
 export const changeEmailDocs = {
@@ -117,10 +116,10 @@ export const changeEmailDocs = {
       title: 'Sample request',
       sample: {
         currentPassword: 'password',
-        newEmail: 'boz2@mail.com'
-      }
-    }
-  ]
+        newEmail: 'boz2@mail.com',
+      },
+    },
+  ],
 } satisfies RouteDocs
 
 export const forgotPasswordDocs = {
@@ -129,10 +128,10 @@ export const forgotPasswordDocs = {
     {
       title: 'Sample request',
       sample: {
-        email: 'boz@mail.com'
-      }
-    }
-  ]
+        email: 'boz@mail.com',
+      },
+    },
+  ],
 } satisfies RouteDocs
 
 export const resetPasswordDocs = {
@@ -142,10 +141,10 @@ export const resetPasswordDocs = {
       title: 'Sample request',
       sample: {
         code: '642230',
-        password: 'new_password'
-      }
-    }
-  ]
+        password: 'new_password',
+      },
+    },
+  ],
 } satisfies RouteDocs
 
 export const toggleVerificationDocs = {
@@ -155,25 +154,25 @@ export const toggleVerificationDocs = {
       title: 'Sample request (disabling verification)',
       sample: {
         currentPassword: 'password',
-        verificationEnabled: false
-      }
+        verificationEnabled: false,
+      },
     },
     {
       title: 'Sample request (enabling verification, player does not have an email address)',
       sample: {
         currentPassword: 'password',
         email: 'boz@mail.com',
-        verificationEnabled: true
-      }
+        verificationEnabled: true,
+      },
     },
     {
       title: 'Sample request (enabling verification, player has an email address)',
       sample: {
         currentPassword: 'password',
-        verificationEnabled: true
-      }
-    }
-  ]
+        verificationEnabled: true,
+      },
+    },
+  ],
 } satisfies RouteDocs
 
 export const deleteDocs = {
@@ -182,8 +181,8 @@ export const deleteDocs = {
     {
       title: 'Sample request',
       sample: {
-        currentPassword: 'password'
-      }
-    }
-  ]
+        currentPassword: 'password',
+      },
+    },
+  ],
 } satisfies RouteDocs

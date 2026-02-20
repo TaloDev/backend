@@ -1,6 +1,6 @@
 import { Entity, ManyToOne, PrimaryKey, Property, Unique } from '@mikro-orm/mysql'
-import User from './user'
 import PlayerGroup from './player-group'
+import User from './user'
 
 @Entity()
 @Unique({ properties: ['user', 'group'] })

@@ -1,7 +1,7 @@
 import { Job, Processor, Queue, Worker } from 'bullmq'
+import { BullMQOtel } from 'bullmq-otel'
 import { createRedisConnection } from '../../config/redis.config'
 import handleJobFailure from './handleJobFailure'
-import { BullMQOtel } from 'bullmq-otel'
 
 export type WorkerEvents<T> = {
   failed?: (job: Job<T>, err: Error) => void | Promise<void>
@@ -10,15 +10,22 @@ export type WorkerEvents<T> = {
 
 let redis: ReturnType<typeof createRedisConnection>
 
-function createQueue<T>(name: string, processor: Processor<T, unknown, string> | string, events: WorkerEvents<T> = {}): Queue<T> {
+function createQueue<T>(
+  name: string,
+  processor: Processor<T, unknown, string> | string,
+  events: WorkerEvents<T> = {},
+): Queue<T> {
   if (!redis) {
     redis = createRedisConnection({
-      maxRetriesPerRequest: null
+      maxRetriesPerRequest: null,
     })
   }
 
   const queue = new Queue<T>(name, { connection: redis, telemetry: new BullMQOtel('talo.queue') })
-  const worker = new Worker<T>(queue.name, processor, { connection: redis, telemetry: new BullMQOtel('talo.worker') })
+  const worker = new Worker<T>(queue.name, processor, {
+    connection: redis,
+    telemetry: new BullMQOtel('talo.worker'),
+  })
 
   worker.on('failed', async (job, err) => {
     if (job) {

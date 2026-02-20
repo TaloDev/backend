@@ -1,17 +1,17 @@
+import { randNumber } from '@ngneat/falso'
+import axios from 'axios'
+import AxiosMockAdapter from 'axios-mock-adapter'
 import request from 'supertest'
 import { APIKeyScope } from '../../../../src/entities/api-key'
+import { IntegrationType } from '../../../../src/entities/integration'
+import SteamworksIntegrationEvent from '../../../../src/entities/steamworks-integration-event'
+import { SteamworksLeaderboardEntry } from '../../../../src/entities/steamworks-leaderboard-entry'
+import SteamworksLeaderboardMapping from '../../../../src/entities/steamworks-leaderboard-mapping'
+import IntegrationConfigFactory from '../../../fixtures/IntegrationConfigFactory'
+import IntegrationFactory from '../../../fixtures/IntegrationFactory'
 import LeaderboardFactory from '../../../fixtures/LeaderboardFactory'
 import PlayerFactory from '../../../fixtures/PlayerFactory'
 import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
-import SteamworksLeaderboardMapping from '../../../../src/entities/steamworks-leaderboard-mapping'
-import AxiosMockAdapter from 'axios-mock-adapter'
-import axios from 'axios'
-import SteamworksIntegrationEvent from '../../../../src/entities/steamworks-integration-event'
-import IntegrationConfigFactory from '../../../fixtures/IntegrationConfigFactory'
-import IntegrationFactory from '../../../fixtures/IntegrationFactory'
-import { IntegrationType } from '../../../../src/entities/integration'
-import { randNumber } from '@ngneat/falso'
-import { SteamworksLeaderboardEntry } from '../../../../src/entities/steamworks-leaderboard-entry'
 
 describe('Leaderboard API - post - steamworks integration', () => {
   const axiosMock = new AxiosMockAdapter(axios)
@@ -21,21 +21,33 @@ describe('Leaderboard API - post - steamworks integration', () => {
   })
 
   it('should create a leaderboard entry in steamworks', async () => {
-    const createMock = vi.fn(() => [200, {
-      result: {
-        result: 1
-      }
-    }])
-    axiosMock.onPost('https://partner.steam-api.com/ISteamLeaderboards/SetLeaderboardScore/v1').replyOnce(createMock)
+    const createMock = vi.fn(() => [
+      200,
+      {
+        result: {
+          result: 1,
+        },
+      },
+    ])
+    axiosMock
+      .onPost('https://partner.steam-api.com/ISteamLeaderboards/SetLeaderboardScore/v1')
+      .replyOnce(createMock)
 
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_LEADERBOARDS])
 
     const leaderboard = await new LeaderboardFactory([apiKey.game]).notUnique().one()
-    const mapping = new SteamworksLeaderboardMapping(randNumber({ min: 100_000, max: 999_999 }), leaderboard)
+    const mapping = new SteamworksLeaderboardMapping(
+      randNumber({ min: 100_000, max: 999_999 }),
+      leaderboard,
+    )
     const player = await new PlayerFactory([apiKey.game]).withSteamAlias().one()
 
-    const config = await new IntegrationConfigFactory().state(() => ({ syncLeaderboards: true })).one()
-    const integration = await new IntegrationFactory().construct(IntegrationType.STEAMWORKS, apiKey.game, config).one()
+    const config = await new IntegrationConfigFactory()
+      .state(() => ({ syncLeaderboards: true }))
+      .one()
+    const integration = await new IntegrationFactory()
+      .construct(IntegrationType.STEAMWORKS, apiKey.game, config)
+      .one()
     await em.persistAndFlush([integration, leaderboard, player, mapping])
 
     await request(app)
@@ -51,28 +63,39 @@ describe('Leaderboard API - post - steamworks integration', () => {
     expect(event.request).toStrictEqual({
       url: 'https://partner.steam-api.com/ISteamLeaderboards/SetLeaderboardScore/v1',
       body: `appid=${config.appId}&leaderboardid=${mapping.steamworksLeaderboardId}&steamid=${player.aliases[0].identifier}&score=300&scoremethod=KeepBest`,
-      method: 'POST'
+      method: 'POST',
     })
 
-    const steamworksEntry = await em.getRepository(SteamworksLeaderboardEntry).findOne({ steamworksLeaderboard: mapping })
+    const steamworksEntry = await em
+      .getRepository(SteamworksLeaderboardEntry)
+      .findOne({ steamworksLeaderboard: mapping })
     expect(steamworksEntry).toBeTruthy()
   })
 
   it('should not create a leaderboard entry in steamworks if there is no mapping', async () => {
-    const createMock = vi.fn(() => [200, {
-      result: {
-        result: 1
-      }
-    }])
-    axiosMock.onPost('https://partner.steam-api.com/ISteamLeaderboards/SetLeaderboardScore/v1').replyOnce(createMock)
+    const createMock = vi.fn(() => [
+      200,
+      {
+        result: {
+          result: 1,
+        },
+      },
+    ])
+    axiosMock
+      .onPost('https://partner.steam-api.com/ISteamLeaderboards/SetLeaderboardScore/v1')
+      .replyOnce(createMock)
 
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_LEADERBOARDS])
 
     const leaderboard = await new LeaderboardFactory([apiKey.game]).notUnique().one()
     const player = await new PlayerFactory([apiKey.game]).withSteamAlias().one()
 
-    const config = await new IntegrationConfigFactory().state(() => ({ syncLeaderboards: true })).one()
-    const integration = await new IntegrationFactory().construct(IntegrationType.STEAMWORKS, apiKey.game, config).one()
+    const config = await new IntegrationConfigFactory()
+      .state(() => ({ syncLeaderboards: true }))
+      .one()
+    const integration = await new IntegrationFactory()
+      .construct(IntegrationType.STEAMWORKS, apiKey.game, config)
+      .one()
     await em.persistAndFlush([integration, leaderboard, player])
 
     await request(app)
@@ -89,8 +112,8 @@ describe('Leaderboard API - post - steamworks integration', () => {
 
     const steamworksEntry = await em.getRepository(SteamworksLeaderboardEntry).findOne({
       steamworksLeaderboard: {
-        leaderboard
-      }
+        leaderboard,
+      },
     })
     expect(steamworksEntry).toBeNull()
 
@@ -98,20 +121,29 @@ describe('Leaderboard API - post - steamworks integration', () => {
   })
 
   it('should not create a leaderboard entry in steamworks if syncLeaderboards is false', async () => {
-    const createMock = vi.fn(() => [200, {
-      result: {
-        result: 1
-      }
-    }])
-    axiosMock.onPost('https://partner.steam-api.com/ISteamLeaderboards/SetLeaderboardScore/v1').replyOnce(createMock)
+    const createMock = vi.fn(() => [
+      200,
+      {
+        result: {
+          result: 1,
+        },
+      },
+    ])
+    axiosMock
+      .onPost('https://partner.steam-api.com/ISteamLeaderboards/SetLeaderboardScore/v1')
+      .replyOnce(createMock)
 
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_LEADERBOARDS])
 
     const leaderboard = await new LeaderboardFactory([apiKey.game]).notUnique().one()
     const player = await new PlayerFactory([apiKey.game]).withSteamAlias().one()
 
-    const config = await new IntegrationConfigFactory().state(() => ({ syncLeaderboards: false })).one()
-    const integration = await new IntegrationFactory().construct(IntegrationType.STEAMWORKS, apiKey.game, config).one()
+    const config = await new IntegrationConfigFactory()
+      .state(() => ({ syncLeaderboards: false }))
+      .one()
+    const integration = await new IntegrationFactory()
+      .construct(IntegrationType.STEAMWORKS, apiKey.game, config)
+      .one()
     await em.persistAndFlush([integration, leaderboard, player])
 
     await request(app)
@@ -128,8 +160,8 @@ describe('Leaderboard API - post - steamworks integration', () => {
 
     const steamworksEntry = await em.getRepository(SteamworksLeaderboardEntry).findOne({
       steamworksLeaderboard: {
-        leaderboard
-      }
+        leaderboard,
+      },
     })
     expect(steamworksEntry).toBeNull()
 

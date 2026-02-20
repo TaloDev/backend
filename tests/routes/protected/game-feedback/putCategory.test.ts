@@ -1,20 +1,27 @@
 import request from 'supertest'
 import GameActivity, { GameActivityType } from '../../../../src/entities/game-activity'
+import GameFeedbackCategoryFactory from '../../../fixtures/GameFeedbackCategoryFactory'
 import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
 import createUserAndToken from '../../../utils/createUserAndToken'
-import GameFeedbackCategoryFactory from '../../../fixtures/GameFeedbackCategoryFactory'
 
 describe('Game feedback - put category', () => {
   it('should update the name and description', async () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({}, organisation)
 
-    const feedbackCategory = await new GameFeedbackCategoryFactory(game).state(() => ({ anonymised: false })).one()
+    const feedbackCategory = await new GameFeedbackCategoryFactory(game)
+      .state(() => ({ anonymised: false }))
+      .one()
     await em.persistAndFlush(feedbackCategory)
 
     const res = await request(app)
       .put(`/games/${game.id}/game-feedback/categories/${feedbackCategory.id}`)
-      .send({ internalName: feedbackCategory.internalName, name: 'Bugs', description: 'Bug reports', anonymised: false })
+      .send({
+        internalName: feedbackCategory.internalName,
+        name: 'Bugs',
+        description: 'Bug reports',
+        anonymised: false,
+      })
       .auth(token, { type: 'bearer' })
       .expect(200)
 
@@ -25,12 +32,12 @@ describe('Game feedback - put category', () => {
       type: GameActivityType.GAME_FEEDBACK_CATEGORY_UPDATED,
       game,
       extra: {
-        feedbackCategoryInternalName: res.body.feedbackCategory.internalName
-      }
+        feedbackCategoryInternalName: res.body.feedbackCategory.internalName,
+      },
     })
 
     expect(activity!.extra.display).toStrictEqual({
-      'Updated properties': 'name: Bugs, description: Bug reports'
+      'Updated properties': 'name: Bugs, description: Bug reports',
     })
   })
 
@@ -38,17 +45,24 @@ describe('Game feedback - put category', () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({}, organisation)
 
-    const feedbackCategory = await new GameFeedbackCategoryFactory(game).state(() => ({
-      name: 'Bugs',
-      description: 'Bug reports',
-      anonymised: true
-    })).one()
+    const feedbackCategory = await new GameFeedbackCategoryFactory(game)
+      .state(() => ({
+        name: 'Bugs',
+        description: 'Bug reports',
+        anonymised: true,
+      }))
+      .one()
 
     await em.persistAndFlush(feedbackCategory)
 
     const res = await request(app)
       .put(`/games/${game.id}/game-feedback/categories/${feedbackCategory.id}`)
-      .send({ internalName: feedbackCategory.internalName, name: 'Bugs', description: 'Bug reports', anonymised: false })
+      .send({
+        internalName: feedbackCategory.internalName,
+        name: 'Bugs',
+        description: 'Bug reports',
+        anonymised: false,
+      })
       .auth(token, { type: 'bearer' })
       .expect(200)
 
@@ -58,12 +72,12 @@ describe('Game feedback - put category', () => {
       type: GameActivityType.GAME_FEEDBACK_CATEGORY_UPDATED,
       game,
       extra: {
-        feedbackCategoryInternalName: res.body.feedbackCategory.internalName
-      }
+        feedbackCategoryInternalName: res.body.feedbackCategory.internalName,
+      },
     })
 
     expect(activity!.extra.display).toStrictEqual({
-      'Updated properties': 'anonymised: false'
+      'Updated properties': 'anonymised: false',
     })
   })
 
@@ -71,7 +85,9 @@ describe('Game feedback - put category', () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({}, organisation)
 
-    const feedbackCategory = await new GameFeedbackCategoryFactory(game).state(() => ({ anonymised: false })).one()
+    const feedbackCategory = await new GameFeedbackCategoryFactory(game)
+      .state(() => ({ anonymised: false }))
+      .one()
     await em.persistAndFlush(feedbackCategory)
 
     const res = await request(app)
@@ -86,12 +102,12 @@ describe('Game feedback - put category', () => {
       type: GameActivityType.GAME_FEEDBACK_CATEGORY_UPDATED,
       game,
       extra: {
-        feedbackCategoryInternalName: res.body.feedbackCategory.internalName
-      }
+        feedbackCategoryInternalName: res.body.feedbackCategory.internalName,
+      },
     })
 
     expect(activity!.extra.display).toStrictEqual({
-      'Updated properties': 'name: Bugs, description: Bug reports'
+      'Updated properties': 'name: Bugs, description: Bug reports',
     })
   })
 

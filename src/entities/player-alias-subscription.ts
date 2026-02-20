@@ -3,7 +3,7 @@ import PlayerAlias from './player-alias'
 
 export enum RelationshipType {
   UNIDIRECTIONAL = 'unidirectional',
-  BIDIRECTIONAL = 'bidirectional'
+  BIDIRECTIONAL = 'bidirectional',
 }
 
 @Entity()
@@ -43,7 +43,11 @@ export default class PlayerAliasSubscription {
     return key
   }
 
-  constructor(subscriber: PlayerAlias, subscribedTo: PlayerAlias, relationshipType: RelationshipType) {
+  constructor(
+    subscriber: PlayerAlias,
+    subscribedTo: PlayerAlias,
+    relationshipType: RelationshipType,
+  ) {
     this.subscriber = subscriber
     this.subscribedTo = subscribedTo
     this.relationshipType = relationshipType
@@ -57,7 +61,7 @@ export default class PlayerAliasSubscription {
       confirmed: this.confirmed,
       relationshipType: this.relationshipType,
       createdAt: this.createdAt,
-      updatedAt: this.updatedAt
+      updatedAt: this.updatedAt,
     }
   }
 }

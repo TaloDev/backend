@@ -1,7 +1,7 @@
+import { isSameHour } from 'date-fns'
 import { protectedRoute, withMiddleware } from '../../../lib/routing/router'
 import { ownerGate } from '../../../middleware/policy-middleware'
 import { requireStripe, getPrice } from './common'
-import { isSameHour } from 'date-fns'
 
 export const confirmPlanRoute = protectedRoute({
   method: 'post',
@@ -10,8 +10,8 @@ export const confirmPlanRoute = protectedRoute({
     body: z.object({
       prorationDate: z.number(),
       pricingPlanId: z.number(),
-      pricingInterval: z.enum(['month', 'year'])
-    })
+      pricingInterval: z.enum(['month', 'year']),
+    }),
   }),
   middleware: withMiddleware(requireStripe, ownerGate('update the organisation pricing plan')),
   handler: async (ctx) => {
@@ -34,20 +34,19 @@ export const confirmPlanRoute = protectedRoute({
     const subscriptions = await stripe.subscriptions.list({ customer: stripeCustomerId })
     const subscription = subscriptions.data[0]
 
-    await stripe.subscriptions.update(
-      subscription.id,
-      {
-        items: [{
+    await stripe.subscriptions.update(subscription.id, {
+      items: [
+        {
           id: subscription.items.data[0].id,
-          price
-        }],
-        proration_date: prorationDate,
-        cancel_at_period_end: false
-      }
-    )
+          price,
+        },
+      ],
+      proration_date: prorationDate,
+      cancel_at_period_end: false,
+    })
 
     return {
-      status: 204
+      status: 204,
     }
-  }
+  },
 })

@@ -1,6 +1,6 @@
 import request from 'supertest'
-import GameStatFactory from '../../../fixtures/GameStatFactory'
 import GameActivity, { GameActivityType } from '../../../../src/entities/game-activity'
+import GameStatFactory from '../../../fixtures/GameStatFactory'
 import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
 import createUserAndToken from '../../../utils/createUserAndToken'
 
@@ -14,7 +14,16 @@ describe('Game stat - put', () => {
 
     const res = await request(app)
       .put(`/games/${game.id}/game-stats/${stat.id}`)
-      .send({ internalName: stat.internalName, name: 'New name', global: stat.global, maxChange: stat.maxChange, minValue: stat.minValue, maxValue: stat.maxValue, defaultValue: stat.defaultValue, minTimeBetweenUpdates: stat.minTimeBetweenUpdates })
+      .send({
+        internalName: stat.internalName,
+        name: 'New name',
+        global: stat.global,
+        maxChange: stat.maxChange,
+        minValue: stat.minValue,
+        maxValue: stat.maxValue,
+        defaultValue: stat.defaultValue,
+        minTimeBetweenUpdates: stat.minTimeBetweenUpdates,
+      })
       .auth(token, { type: 'bearer' })
       .expect(200)
 
@@ -24,12 +33,12 @@ describe('Game stat - put', () => {
       type: GameActivityType.GAME_STAT_UPDATED,
       game,
       extra: {
-        statInternalName: res.body.stat.internalName
-      }
+        statInternalName: res.body.stat.internalName,
+      },
     })
 
     expect(activity!.extra.display).toStrictEqual({
-      'Updated properties': 'name: New name'
+      'Updated properties': 'name: New name',
     })
   })
 
@@ -42,7 +51,16 @@ describe('Game stat - put', () => {
 
     const res = await request(app)
       .put(`/games/${game.id}/game-stats/${stat.id}`)
-      .send({ global: true, internalName: stat.internalName, name: stat.name, maxChange: stat.maxChange, minValue: stat.minValue, maxValue: stat.maxValue, defaultValue: stat.defaultValue, minTimeBetweenUpdates: stat.minTimeBetweenUpdates })
+      .send({
+        global: true,
+        internalName: stat.internalName,
+        name: stat.name,
+        maxChange: stat.maxChange,
+        minValue: stat.minValue,
+        maxValue: stat.maxValue,
+        defaultValue: stat.defaultValue,
+        minTimeBetweenUpdates: stat.minTimeBetweenUpdates,
+      })
       .auth(token, { type: 'bearer' })
       .expect(200)
 
@@ -52,12 +70,12 @@ describe('Game stat - put', () => {
       type: GameActivityType.GAME_STAT_UPDATED,
       game,
       extra: {
-        statInternalName: res.body.stat.internalName
-      }
+        statInternalName: res.body.stat.internalName,
+      },
     })
 
     expect(activity!.extra.display).toStrictEqual({
-      'Updated properties': 'global: true'
+      'Updated properties': 'global: true',
     })
   })
 
@@ -70,7 +88,16 @@ describe('Game stat - put', () => {
 
     const res = await request(app)
       .put(`/games/${game.id}/game-stats/${stat.id}`)
-      .send({ maxChange: 90, internalName: stat.internalName, name: stat.name, global: stat.global, minValue: stat.minValue, maxValue: stat.maxValue, defaultValue: stat.defaultValue, minTimeBetweenUpdates: stat.minTimeBetweenUpdates })
+      .send({
+        maxChange: 90,
+        internalName: stat.internalName,
+        name: stat.name,
+        global: stat.global,
+        minValue: stat.minValue,
+        maxValue: stat.maxValue,
+        defaultValue: stat.defaultValue,
+        minTimeBetweenUpdates: stat.minTimeBetweenUpdates,
+      })
       .auth(token, { type: 'bearer' })
       .expect(200)
 
@@ -80,12 +107,12 @@ describe('Game stat - put', () => {
       type: GameActivityType.GAME_STAT_UPDATED,
       game,
       extra: {
-        statInternalName: res.body.stat.internalName
-      }
+        statInternalName: res.body.stat.internalName,
+      },
     })
 
     expect(activity!.extra.display).toStrictEqual({
-      'Updated properties': 'maxChange: 90'
+      'Updated properties': 'maxChange: 90',
     })
   })
 
@@ -93,16 +120,27 @@ describe('Game stat - put', () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({}, organisation)
 
-    const stat = await new GameStatFactory([game]).state(() => ({
-      minValue: -600,
-      defaultValue: 0,
-      maxValue: 600
-    })).one()
+    const stat = await new GameStatFactory([game])
+      .state(() => ({
+        minValue: -600,
+        defaultValue: 0,
+        maxValue: 600,
+      }))
+      .one()
     await em.persistAndFlush(stat)
 
     const res = await request(app)
       .put(`/games/${game.id}/game-stats/${stat.id}`)
-      .send({ minValue: -300, internalName: stat.internalName, name: stat.name, global: stat.global, maxChange: stat.maxChange, maxValue: stat.maxValue, defaultValue: stat.defaultValue, minTimeBetweenUpdates: stat.minTimeBetweenUpdates })
+      .send({
+        minValue: -300,
+        internalName: stat.internalName,
+        name: stat.name,
+        global: stat.global,
+        maxChange: stat.maxChange,
+        maxValue: stat.maxValue,
+        defaultValue: stat.defaultValue,
+        minTimeBetweenUpdates: stat.minTimeBetweenUpdates,
+      })
       .auth(token, { type: 'bearer' })
       .expect(200)
 
@@ -112,12 +150,12 @@ describe('Game stat - put', () => {
       type: GameActivityType.GAME_STAT_UPDATED,
       game,
       extra: {
-        statInternalName: res.body.stat.internalName
-      }
+        statInternalName: res.body.stat.internalName,
+      },
     })
 
     expect(activity!.extra.display).toStrictEqual({
-      'Updated properties': 'minValue: -300'
+      'Updated properties': 'minValue: -300',
     })
   })
 
@@ -125,16 +163,27 @@ describe('Game stat - put', () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({}, organisation)
 
-    const stat = await new GameStatFactory([game]).state(() => ({
-      minValue: -100,
-      defaultValue: 0,
-      maxValue: 100
-    })).one()
+    const stat = await new GameStatFactory([game])
+      .state(() => ({
+        minValue: -100,
+        defaultValue: 0,
+        maxValue: 100,
+      }))
+      .one()
     await em.persistAndFlush(stat)
 
     const res = await request(app)
       .put(`/games/${game.id}/game-stats/${stat.id}`)
-      .send({ maxValue: 200, internalName: stat.internalName, name: stat.name, global: stat.global, maxChange: stat.maxChange, minValue: stat.minValue, defaultValue: stat.defaultValue, minTimeBetweenUpdates: stat.minTimeBetweenUpdates })
+      .send({
+        maxValue: 200,
+        internalName: stat.internalName,
+        name: stat.name,
+        global: stat.global,
+        maxChange: stat.maxChange,
+        minValue: stat.minValue,
+        defaultValue: stat.defaultValue,
+        minTimeBetweenUpdates: stat.minTimeBetweenUpdates,
+      })
       .auth(token, { type: 'bearer' })
       .expect(200)
 
@@ -144,12 +193,12 @@ describe('Game stat - put', () => {
       type: GameActivityType.GAME_STAT_UPDATED,
       game,
       extra: {
-        statInternalName: res.body.stat.internalName
-      }
+        statInternalName: res.body.stat.internalName,
+      },
     })
 
     expect(activity!.extra.display).toStrictEqual({
-      'Updated properties': 'maxValue: 200'
+      'Updated properties': 'maxValue: 200',
     })
   })
 
@@ -157,16 +206,27 @@ describe('Game stat - put', () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({}, organisation)
 
-    const stat = await new GameStatFactory([game]).state(() => ({
-      minValue: -100,
-      maxValue: 300,
-      defaultValue: 99
-    })).one()
+    const stat = await new GameStatFactory([game])
+      .state(() => ({
+        minValue: -100,
+        maxValue: 300,
+        defaultValue: 99,
+      }))
+      .one()
     await em.persistAndFlush(stat)
 
     const res = await request(app)
       .put(`/games/${game.id}/game-stats/${stat.id}`)
-      .send({ defaultValue: 100, internalName: stat.internalName, name: stat.name, global: stat.global, maxChange: stat.maxChange, minValue: stat.minValue, maxValue: stat.maxValue, minTimeBetweenUpdates: stat.minTimeBetweenUpdates })
+      .send({
+        defaultValue: 100,
+        internalName: stat.internalName,
+        name: stat.name,
+        global: stat.global,
+        maxChange: stat.maxChange,
+        minValue: stat.minValue,
+        maxValue: stat.maxValue,
+        minTimeBetweenUpdates: stat.minTimeBetweenUpdates,
+      })
       .auth(token, { type: 'bearer' })
       .expect(200)
 
@@ -176,12 +236,12 @@ describe('Game stat - put', () => {
       type: GameActivityType.GAME_STAT_UPDATED,
       game,
       extra: {
-        statInternalName: res.body.stat.internalName
-      }
+        statInternalName: res.body.stat.internalName,
+      },
     })
 
     expect(activity!.extra.display).toStrictEqual({
-      'Updated properties': 'defaultValue: 100'
+      'Updated properties': 'defaultValue: 100',
     })
   })
 
@@ -194,7 +254,16 @@ describe('Game stat - put', () => {
 
     const res = await request(app)
       .put(`/games/${game.id}/game-stats/${stat.id}`)
-      .send({ minTimeBetweenUpdates: 10242, internalName: stat.internalName, name: stat.name, global: stat.global, maxChange: stat.maxChange, minValue: stat.minValue, maxValue: stat.maxValue, defaultValue: stat.defaultValue })
+      .send({
+        minTimeBetweenUpdates: 10242,
+        internalName: stat.internalName,
+        name: stat.name,
+        global: stat.global,
+        maxChange: stat.maxChange,
+        minValue: stat.minValue,
+        maxValue: stat.maxValue,
+        defaultValue: stat.defaultValue,
+      })
       .auth(token, { type: 'bearer' })
       .expect(200)
 
@@ -204,12 +273,12 @@ describe('Game stat - put', () => {
       type: GameActivityType.GAME_STAT_UPDATED,
       game,
       extra: {
-        statInternalName: res.body.stat.internalName
-      }
+        statInternalName: res.body.stat.internalName,
+      },
     })
 
     expect(activity!.extra.display).toStrictEqual({
-      'Updated properties': 'minTimeBetweenUpdates: 10242'
+      'Updated properties': 'minTimeBetweenUpdates: 10242',
     })
   })
 
@@ -222,7 +291,16 @@ describe('Game stat - put', () => {
 
     const res = await request(app)
       .put(`/games/${game.id}/game-stats/${stat.id}`)
-      .send({ internalName: 'new-internal-name', name: stat.name, global: stat.global, maxChange: stat.maxChange, minValue: stat.minValue, maxValue: stat.maxValue, defaultValue: stat.defaultValue, minTimeBetweenUpdates: stat.minTimeBetweenUpdates })
+      .send({
+        internalName: 'new-internal-name',
+        name: stat.name,
+        global: stat.global,
+        maxChange: stat.maxChange,
+        minValue: stat.minValue,
+        maxValue: stat.maxValue,
+        defaultValue: stat.defaultValue,
+        minTimeBetweenUpdates: stat.minTimeBetweenUpdates,
+      })
       .auth(token, { type: 'bearer' })
       .expect(200)
 
@@ -232,12 +310,12 @@ describe('Game stat - put', () => {
       type: GameActivityType.GAME_STAT_UPDATED,
       game,
       extra: {
-        statInternalName: res.body.stat.internalName
-      }
+        statInternalName: res.body.stat.internalName,
+      },
     })
 
     expect(activity!.extra.display).toStrictEqual({
-      'Updated properties': ''
+      'Updated properties': '',
     })
   })
 
@@ -250,7 +328,16 @@ describe('Game stat - put', () => {
 
     const res = await request(app)
       .put(`/games/${otherGame.id}/game-stats/${stat.id}`)
-      .send({ internalName: stat.internalName, name: 'New name', global: stat.global, maxChange: stat.maxChange, minValue: stat.minValue, maxValue: stat.maxValue, defaultValue: stat.defaultValue, minTimeBetweenUpdates: stat.minTimeBetweenUpdates })
+      .send({
+        internalName: stat.internalName,
+        name: 'New name',
+        global: stat.global,
+        maxChange: stat.maxChange,
+        minValue: stat.minValue,
+        maxValue: stat.maxValue,
+        defaultValue: stat.defaultValue,
+        minTimeBetweenUpdates: stat.minTimeBetweenUpdates,
+      })
       .auth(token, { type: 'bearer' })
       .expect(403)
 
@@ -265,7 +352,16 @@ describe('Game stat - put', () => {
 
     const res = await request(app)
       .put(`/games/${game.id}/game-stats/31223`)
-      .send({ internalName: stat.internalName, name: stat.name, global: stat.global, maxChange: stat.maxChange, minValue: stat.minValue, maxValue: stat.maxValue, defaultValue: stat.defaultValue, minTimeBetweenUpdates: stat.minTimeBetweenUpdates })
+      .send({
+        internalName: stat.internalName,
+        name: stat.name,
+        global: stat.global,
+        maxChange: stat.maxChange,
+        minValue: stat.minValue,
+        maxValue: stat.maxValue,
+        defaultValue: stat.defaultValue,
+        minTimeBetweenUpdates: stat.minTimeBetweenUpdates,
+      })
       .auth(token, { type: 'bearer' })
       .expect(404)
 
@@ -276,23 +372,34 @@ describe('Game stat - put', () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({}, organisation)
 
-    const stat = await new GameStatFactory([game]).state(() => ({
-      minValue: -600,
-      defaultValue: 0,
-      maxValue: 600
-    })).one()
+    const stat = await new GameStatFactory([game])
+      .state(() => ({
+        minValue: -600,
+        defaultValue: 0,
+        maxValue: 600,
+      }))
+      .one()
     await em.persistAndFlush(stat)
 
     const res = await request(app)
       .put(`/games/${game.id}/game-stats/${stat.id}`)
-      .send({ minValue: stat.minValue, internalName: stat.internalName, name: stat.name, global: stat.global, maxChange: stat.maxChange, maxValue: stat.maxValue, defaultValue: stat.defaultValue, minTimeBetweenUpdates: 999_999_999_999_999 })
+      .send({
+        minValue: stat.minValue,
+        internalName: stat.internalName,
+        name: stat.name,
+        global: stat.global,
+        maxChange: stat.maxChange,
+        maxValue: stat.maxValue,
+        defaultValue: stat.defaultValue,
+        minTimeBetweenUpdates: 999_999_999_999_999,
+      })
       .auth(token, { type: 'bearer' })
       .expect(400)
 
     expect(res.body).toStrictEqual({
       errors: {
-        minTimeBetweenUpdates: ['Value is out of range']
-      }
+        minTimeBetweenUpdates: ['Value is out of range'],
+      },
     })
   })
 })

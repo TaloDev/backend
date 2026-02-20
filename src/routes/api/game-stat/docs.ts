@@ -19,7 +19,7 @@ export const indexDocs = {
             maxValue: null,
             minTimeBetweenUpdates: 5,
             createdAt: '2021-12-24T12:45:39.409Z',
-            updatedAt: '2021-12-24T12:49:14.315Z'
+            updatedAt: '2021-12-24T12:49:14.315Z',
           },
           {
             id: 7,
@@ -33,12 +33,12 @@ export const indexDocs = {
             maxValue: null,
             minTimeBetweenUpdates: 5,
             createdAt: '2021-12-24T12:45:39.409Z',
-            updatedAt: '2021-12-24T12:49:14.315Z'
-          }
-        ]
-      }
-    }
-  ]
+            updatedAt: '2021-12-24T12:49:14.315Z',
+          },
+        ],
+      },
+    },
+  ],
 } satisfies RouteDocs
 
 export const getDocs = {
@@ -59,15 +59,15 @@ export const getDocs = {
           maxValue: null,
           minTimeBetweenUpdates: 5,
           createdAt: '2021-12-24T12:45:39.409Z',
-          updatedAt: '2021-12-24T12:49:14.315Z'
-        }
-      }
-    }
-  ]
+          updatedAt: '2021-12-24T12:49:14.315Z',
+        },
+      },
+    },
+  ],
 } satisfies RouteDocs
 
 export const getPlayerStatDocs = {
-  description: 'Get the current value of a player\'s stat',
+  description: "Get the current value of a player's stat",
   samples: [
     {
       title: 'Sample response',
@@ -86,15 +86,15 @@ export const getPlayerStatDocs = {
             maxValue: null,
             minTimeBetweenUpdates: 5,
             createdAt: '2021-12-24T12:45:39.409Z',
-            updatedAt: '2021-12-24T12:49:14.315Z'
+            updatedAt: '2021-12-24T12:49:14.315Z',
           },
           value: 52,
           createdAt: '2025-06-19T06:18:11.881Z',
-          updatedAt: '2025-06-19T08:32:46.123Z'
-        }
-      }
-    }
-  ]
+          updatedAt: '2025-06-19T08:32:46.123Z',
+        },
+      },
+    },
+  ],
 } satisfies RouteDocs
 
 export const putDocs = {
@@ -103,8 +103,8 @@ export const putDocs = {
     {
       title: 'Sample request',
       sample: {
-        change: 47
-      }
+        change: 47,
+      },
     },
     {
       title: 'Sample response',
@@ -123,15 +123,15 @@ export const putDocs = {
             maxValue: null,
             minTimeBetweenUpdates: 5,
             createdAt: '2021-12-24T12:45:39.409Z',
-            updatedAt: '2021-12-24T12:49:14.315Z'
+            updatedAt: '2021-12-24T12:49:14.315Z',
           },
           value: 52,
           createdAt: '2022-01-01T06:18:11.881Z',
-          updatedAt: '2022-01-03T08:32:46.123Z'
-        }
-      }
-    }
-  ]
+          updatedAt: '2022-01-03T08:32:46.123Z',
+        },
+      },
+    },
+  ],
 } satisfies RouteDocs
 
 export const historyDocs = {
@@ -153,16 +153,16 @@ export const historyDocs = {
                 createdAt: '2025-03-13T20:09:09.000Z',
                 lastSeenAt: '2025-03-13T20:09:09.000Z',
                 groups: [],
-                presence: null
+                presence: null,
               },
               lastSeenAt: '2025-03-13T20:09:09.000Z',
               createdAt: '2025-03-13T20:09:09.000Z',
-              updatedAt: '2025-03-13T20:09:09.000Z'
+              updatedAt: '2025-03-13T20:09:09.000Z',
             },
             change: 2,
             value: 1064,
             globalValue: 1064,
-            createdAt: '2025-03-19T00:56:40.019Z'
+            createdAt: '2025-03-19T00:56:40.019Z',
           },
           {
             playerAlias: {
@@ -176,16 +176,16 @@ export const historyDocs = {
                 createdAt: '2025-03-13T20:09:09.000Z',
                 lastSeenAt: '2025-03-13T20:09:09.000Z',
                 groups: [],
-                presence: null
+                presence: null,
               },
               lastSeenAt: '2025-03-13T20:09:09.000Z',
               createdAt: '2025-03-13T20:09:09.000Z',
-              updatedAt: '2025-03-13T20:09:09.000Z'
+              updatedAt: '2025-03-13T20:09:09.000Z',
             },
             change: 1,
             value: 1062,
             globalValue: 1062,
-            createdAt: '2025-03-19T00:56:36.774Z'
+            createdAt: '2025-03-19T00:56:36.774Z',
           },
           {
             playerAlias: {
@@ -199,22 +199,22 @@ export const historyDocs = {
                 createdAt: '2025-03-13T20:09:09.000Z',
                 lastSeenAt: '2025-03-13T20:09:09.000Z',
                 groups: [],
-                presence: null
+                presence: null,
               },
               lastSeenAt: '2025-03-13T20:09:09.000Z',
               createdAt: '2025-03-13T20:09:09.000Z',
-              updatedAt: '2025-03-13T20:09:09.000Z'
+              updatedAt: '2025-03-13T20:09:09.000Z',
             },
             change: 18,
             value: 1061,
             globalValue: 1061,
-            createdAt: '2025-03-19T00:55:27.003Z'
-          }
+            createdAt: '2025-03-19T00:55:27.003Z',
+          },
         ],
         count: 3,
         itemsPerPage: 50,
-        isLastPage: true
-      }
+        isLastPage: true,
+      },
     },
     {
       title: 'Sample request with filtering',
@@ -223,11 +223,11 @@ export const historyDocs = {
         query: {
           page: '0',
           startDate: '2025-03-19',
-          endDate: '2025-03-19T00:56:00.000Z'
-        }
-      }
-    }
-  ]
+          endDate: '2025-03-19T00:56:00.000Z',
+        },
+      },
+    },
+  ],
 } satisfies RouteDocs
 
 export const globalHistoryDocs = {
@@ -249,16 +249,16 @@ export const globalHistoryDocs = {
                 createdAt: '2025-03-13T20:09:09.000Z',
                 lastSeenAt: '2025-03-13T20:09:09.000Z',
                 groups: [],
-                presence: null
+                presence: null,
               },
               lastSeenAt: '2025-03-13T20:09:09.000Z',
               createdAt: '2025-03-13T20:09:09.000Z',
-              updatedAt: '2025-03-13T20:09:09.000Z'
+              updatedAt: '2025-03-13T20:09:09.000Z',
             },
             change: 2,
             value: 1064,
             globalValue: 1064,
-            createdAt: '2025-03-19T00:56:40.019Z'
+            createdAt: '2025-03-19T00:56:40.019Z',
           },
           {
             playerAlias: {
@@ -272,16 +272,16 @@ export const globalHistoryDocs = {
                 createdAt: '2025-03-13T20:09:09.000Z',
                 lastSeenAt: '2025-03-13T20:09:09.000Z',
                 groups: [],
-                presence: null
+                presence: null,
               },
               lastSeenAt: '2025-03-13T20:09:09.000Z',
               createdAt: '2025-03-13T20:09:09.000Z',
-              updatedAt: '2025-03-13T20:09:09.000Z'
+              updatedAt: '2025-03-13T20:09:09.000Z',
             },
             change: 1,
             value: 1062,
             globalValue: 1062,
-            createdAt: '2025-03-19T00:56:36.774Z'
+            createdAt: '2025-03-19T00:56:36.774Z',
           },
           {
             playerAlias: {
@@ -295,16 +295,16 @@ export const globalHistoryDocs = {
                 createdAt: '2025-03-13T20:09:09.000Z',
                 lastSeenAt: '2025-03-13T20:09:09.000Z',
                 groups: [],
-                presence: null
+                presence: null,
               },
               lastSeenAt: '2025-03-13T20:09:09.000Z',
               createdAt: '2025-03-13T20:09:09.000Z',
-              updatedAt: '2025-03-13T20:09:09.000Z'
+              updatedAt: '2025-03-13T20:09:09.000Z',
             },
             change: 18,
             value: 1061,
             globalValue: 1061,
-            createdAt: '2025-03-19T00:55:27.003Z'
+            createdAt: '2025-03-19T00:55:27.003Z',
           },
           {
             playerAlias: {
@@ -318,16 +318,16 @@ export const globalHistoryDocs = {
                 createdAt: '2025-03-13T20:09:09.000Z',
                 lastSeenAt: '2025-03-13T20:09:09.000Z',
                 groups: [],
-                presence: null
+                presence: null,
               },
               lastSeenAt: '2025-03-13T20:09:09.000Z',
               createdAt: '2025-03-13T20:09:09.000Z',
-              updatedAt: '2025-03-13T20:09:09.000Z'
+              updatedAt: '2025-03-13T20:09:09.000Z',
             },
             change: 15,
             value: 1043,
             globalValue: 1043,
-            createdAt: '2025-03-19T00:55:21.252Z'
+            createdAt: '2025-03-19T00:55:21.252Z',
           },
           {
             playerAlias: {
@@ -341,35 +341,35 @@ export const globalHistoryDocs = {
                 createdAt: '2025-03-13T20:09:09.000Z',
                 lastSeenAt: '2025-03-13T20:09:09.000Z',
                 groups: [],
-                presence: null
+                presence: null,
               },
               lastSeenAt: '2025-03-13T20:09:09.000Z',
               createdAt: '2025-03-13T20:09:09.000Z',
-              updatedAt: '2025-03-13T20:09:09.000Z'
+              updatedAt: '2025-03-13T20:09:09.000Z',
             },
             change: 15,
             value: 1028,
             globalValue: 1028,
-            createdAt: '2025-03-18T21:17:08.516Z'
-          }
+            createdAt: '2025-03-18T21:17:08.516Z',
+          },
         ],
         globalValue: {
           minValue: 1028,
           maxValue: 1062,
           medianValue: 1052,
           averageValue: 1048.5,
-          averageChange: 8.6
+          averageChange: 8.6,
         },
         playerValue: {
           minValue: 1028,
           maxValue: 1062,
           medianValue: 1052,
-          averageValue: 1051.6
+          averageValue: 1051.6,
         },
         count: 5,
         itemsPerPage: 50,
-        isLastPage: true
-      }
+        isLastPage: true,
+      },
     },
     {
       title: 'Sample request with filtering',
@@ -379,15 +379,15 @@ export const globalHistoryDocs = {
           page: '0',
           startDate: '2025-03-19',
           endDate: '2025-03-19T00:56:00.000Z',
-          playerId: '550e8400-e29b-41d4-a716-446655440000'
-        }
-      }
-    }
-  ]
+          playerId: '550e8400-e29b-41d4-a716-446655440000',
+        },
+      },
+    },
+  ],
 } satisfies RouteDocs
 
 export const listPlayerStatsDocs = {
-  description: 'Get the current values of all the player\'s stats',
+  description: "Get the current values of all the player's stats",
   samples: [
     {
       title: 'Sample response',
@@ -407,11 +407,11 @@ export const listPlayerStatsDocs = {
               maxValue: null,
               minTimeBetweenUpdates: 5,
               createdAt: '2021-12-24T12:45:39.409Z',
-              updatedAt: '2021-12-24T12:49:14.315Z'
+              updatedAt: '2021-12-24T12:49:14.315Z',
             },
             value: 52,
             createdAt: '2025-06-19T06:18:11.881Z',
-            updatedAt: '2025-06-19T08:32:46.123Z'
+            updatedAt: '2025-06-19T08:32:46.123Z',
           },
           {
             id: 16,
@@ -427,14 +427,14 @@ export const listPlayerStatsDocs = {
               maxValue: null,
               minTimeBetweenUpdates: 5,
               createdAt: '2021-12-24T12:45:39.409Z',
-              updatedAt: '2021-12-24T12:49:14.315Z'
+              updatedAt: '2021-12-24T12:49:14.315Z',
             },
             value: 152,
             createdAt: '2025-06-19T06:18:11.881Z',
-            updatedAt: '2025-06-19T08:32:46.123Z'
-          }
-        ]
-      }
-    }
-  ]
+            updatedAt: '2025-06-19T08:32:46.123Z',
+          },
+        ],
+      },
+    },
+  ],
 } satisfies RouteDocs

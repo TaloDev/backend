@@ -1,12 +1,14 @@
-import { apiRoute, withMiddleware } from '../../../lib/routing/router'
-import { requireScopes } from '../../../middleware/policy-middleware'
 import { APIKeyScope } from '../../../entities/api-key'
+import PlayerAliasSubscription, {
+  RelationshipType,
+} from '../../../entities/player-alias-subscription'
+import { apiRoute, withMiddleware } from '../../../lib/routing/router'
+import { numericStringSchema } from '../../../lib/validation/numericStringSchema'
+import { playerAliasHeaderSchema } from '../../../lib/validation/playerAliasHeaderSchema'
 import { loadAlias } from '../../../middleware/player-alias-middleware'
-import PlayerAliasSubscription, { RelationshipType } from '../../../entities/player-alias-subscription'
+import { requireScopes } from '../../../middleware/policy-middleware'
 import { sendMessages } from '../../../socket/messages/socketMessage'
 import { confirmDocs } from './docs'
-import { playerAliasHeaderSchema } from '../../../lib/validation/playerAliasHeaderSchema'
-import { numericStringSchema } from '../../../lib/validation/numericStringSchema'
 
 export const confirmRoute = apiRoute({
   method: 'put',
@@ -14,16 +16,15 @@ export const confirmRoute = apiRoute({
   docs: confirmDocs,
   schema: (z) => ({
     headers: z.looseObject({
-      'x-talo-alias': playerAliasHeaderSchema
+      'x-talo-alias': playerAliasHeaderSchema,
     }),
     route: z.object({
-      id: numericStringSchema.meta({ description: 'The ID of the subscription request to confirm' })
-    })
+      id: numericStringSchema.meta({
+        description: 'The ID of the subscription request to confirm',
+      }),
+    }),
   }),
-  middleware: withMiddleware(
-    requireScopes([APIKeyScope.WRITE_PLAYER_RELATIONSHIPS]),
-    loadAlias
-  ),
+  middleware: withMiddleware(requireScopes([APIKeyScope.WRITE_PLAYER_RELATIONSHIPS]), loadAlias),
   handler: async (ctx) => {
     const em = ctx.em
     const { id } = ctx.state.validated.route
@@ -32,7 +33,7 @@ export const confirmRoute = apiRoute({
     const subscription = await em.repo(PlayerAliasSubscription).findOne({
       id,
       subscribedTo: currentAlias,
-      confirmed: false
+      confirmed: false,
     })
 
     if (!subscription) {
@@ -46,14 +47,14 @@ export const confirmRoute = apiRoute({
     if (subscription.relationshipType === RelationshipType.BIDIRECTIONAL) {
       const existingReciprocal = await em.repo(PlayerAliasSubscription).findOne({
         subscriber: subscription.subscribedTo,
-        subscribedTo: subscription.subscriber
+        subscribedTo: subscription.subscriber,
       })
 
       if (!existingReciprocal) {
         reciprocalSubscription = new PlayerAliasSubscription(
           subscription.subscribedTo,
           subscription.subscriber,
-          RelationshipType.BIDIRECTIONAL
+          RelationshipType.BIDIRECTIONAL,
         )
         reciprocalSubscription.confirmed = true
         await em.persist(reciprocalSubscription).flush()
@@ -73,14 +74,14 @@ export const confirmRoute = apiRoute({
       )
     })
     await sendMessages(subscriberConns, 'v1.player-relationships.subscription-confirmed', {
-      subscription
+      subscription,
     })
 
     return {
       status: 200,
       body: {
-        subscription
-      }
+        subscription,
+      },
     }
-  }
+  },
 })

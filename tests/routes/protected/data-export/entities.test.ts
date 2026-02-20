@@ -13,6 +13,15 @@ describe('Data export - available entities', () => {
       .auth(token, { type: 'bearer' })
       .expect(200)
 
-    expect(res.body.entities).toStrictEqual([ 'events', 'players', 'playerAliases', 'leaderboardEntries', 'gameStats', 'playerGameStats', 'gameActivities', 'gameFeedback' ])
+    expect(res.body.entities).toStrictEqual([
+      'events',
+      'players',
+      'playerAliases',
+      'leaderboardEntries',
+      'gameStats',
+      'playerGameStats',
+      'gameActivities',
+      'gameFeedback',
+    ])
   })
 })

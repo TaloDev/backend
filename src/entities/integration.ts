@@ -1,9 +1,28 @@
-import { Entity, EntityManager, Enum, Filter, ManyToOne, PrimaryKey, Property } from '@mikro-orm/mysql'
-import { decrypt, encrypt } from '../lib/crypto/string-encryption'
-import Game from './game'
-import { authenticateTicket, cleanupSteamworksLeaderboardEntry, cleanupSteamworksPlayerStat, createSteamworksLeaderboard, createSteamworksLeaderboardEntry, deleteSteamworksLeaderboard, deleteSteamworksLeaderboardEntry, setSteamworksStat, syncSteamworksLeaderboards, syncSteamworksStats } from '../lib/integrations/steamworks-integration'
-import Leaderboard from './leaderboard'
+import {
+  Entity,
+  EntityManager,
+  Enum,
+  Filter,
+  ManyToOne,
+  PrimaryKey,
+  Property,
+} from '@mikro-orm/mysql'
 import { pick } from 'lodash'
+import { decrypt, encrypt } from '../lib/crypto/string-encryption'
+import {
+  authenticateTicket,
+  cleanupSteamworksLeaderboardEntry,
+  cleanupSteamworksPlayerStat,
+  createSteamworksLeaderboard,
+  createSteamworksLeaderboardEntry,
+  deleteSteamworksLeaderboard,
+  deleteSteamworksLeaderboardEntry,
+  setSteamworksStat,
+  syncSteamworksLeaderboards,
+  syncSteamworksStats,
+} from '../lib/integrations/steamworks-integration'
+import Game from './game'
+import Leaderboard from './leaderboard'
 import LeaderboardEntry from './leaderboard-entry'
 import { PlayerAliasService } from './player-alias'
 import PlayerGameStat from './player-game-stat'
@@ -11,7 +30,7 @@ import { SteamworksLeaderboardEntry } from './steamworks-leaderboard-entry'
 import { SteamworksPlayerStat } from './steamworks-player-stat'
 
 export enum IntegrationType {
-  STEAMWORKS = 'steamworks'
+  STEAMWORKS = 'steamworks',
 }
 
 export type SteamIntegrationConfig = {
@@ -53,7 +72,7 @@ export default class Integration {
 
     this.config = {
       ...config,
-      apiKey: encrypt(config.apiKey, process.env.STEAM_INTEGRATION_SECRET!)
+      apiKey: encrypt(config.apiKey, process.env.STEAM_INTEGRATION_SECRET!),
     }
   }
 
@@ -62,7 +81,7 @@ export default class Integration {
 
     this.config = {
       ...this.config,
-      ...config
+      ...config,
     }
   }
 
@@ -107,7 +126,10 @@ export default class Integration {
   async handleLeaderboardEntryCreated(em: EntityManager, entry: LeaderboardEntry) {
     switch (this.type) {
       case IntegrationType.STEAMWORKS:
-        if (entry.playerAlias.service === PlayerAliasService.STEAM && this.config.syncLeaderboards) {
+        if (
+          entry.playerAlias.service === PlayerAliasService.STEAM &&
+          this.config.syncLeaderboards
+        ) {
           await createSteamworksLeaderboardEntry(em, this, entry)
         }
     }
@@ -116,7 +138,10 @@ export default class Integration {
   async handleLeaderboardEntryVisibilityToggled(em: EntityManager, entry: LeaderboardEntry) {
     switch (this.type) {
       case IntegrationType.STEAMWORKS:
-        if (entry.playerAlias.service === PlayerAliasService.STEAM && this.config.syncLeaderboards) {
+        if (
+          entry.playerAlias.service === PlayerAliasService.STEAM &&
+          this.config.syncLeaderboards
+        ) {
           if (entry.hidden || entry.deletedAt) {
             await deleteSteamworksLeaderboardEntry(em, this, entry)
           } else {
@@ -129,7 +154,10 @@ export default class Integration {
   async handleLeaderboardEntryArchived(em: EntityManager, entry: LeaderboardEntry) {
     switch (this.type) {
       case IntegrationType.STEAMWORKS:
-        if (entry.playerAlias.service === PlayerAliasService.STEAM && this.config.syncLeaderboards) {
+        if (
+          entry.playerAlias.service === PlayerAliasService.STEAM &&
+          this.config.syncLeaderboards
+        ) {
           await deleteSteamworksLeaderboardEntry(em, this, entry)
         }
     }
@@ -144,7 +172,9 @@ export default class Integration {
 
   async handleStatUpdated(em: EntityManager, playerStat: PlayerGameStat) {
     await playerStat.player.aliases.loadItems()
-    const steamAlias = playerStat.player.aliases.getItems().find((alias) => alias.service === PlayerAliasService.STEAM)
+    const steamAlias = playerStat.player.aliases
+      .getItems()
+      .find((alias) => alias.service === PlayerAliasService.STEAM)
 
     switch (this.type) {
       case IntegrationType.STEAMWORKS:
@@ -168,7 +198,10 @@ export default class Integration {
     }
   }
 
-  async cleanupSteamworksLeaderboardEntry(em: EntityManager, steamworksEntry: SteamworksLeaderboardEntry) {
+  async cleanupSteamworksLeaderboardEntry(
+    em: EntityManager,
+    steamworksEntry: SteamworksLeaderboardEntry,
+  ) {
     await cleanupSteamworksLeaderboardEntry(em, this, steamworksEntry)
   }
 
@@ -182,7 +215,7 @@ export default class Integration {
       type: this.type,
       config: this.getConfig(),
       createdAt: this.createdAt,
-      updatedAt: this.updatedAt
+      updatedAt: this.updatedAt,
     }
   }
 }

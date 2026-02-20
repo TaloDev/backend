@@ -1,18 +1,26 @@
-import request from 'supertest'
 import { subDays, format, startOfDay, addMinutes } from 'date-fns'
+import request from 'supertest'
+import PlayerGameStatSnapshot from '../../../../src/entities/player-game-stat-snapshot'
 import GameStatFactory from '../../../fixtures/GameStatFactory'
 import PlayerFactory from '../../../fixtures/PlayerFactory'
 import PlayerGameStatFactory from '../../../fixtures/PlayerGameStatFactory'
 import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
 import createUserAndToken from '../../../utils/createUserAndToken'
-import PlayerGameStatSnapshot from '../../../../src/entities/player-game-stat-snapshot'
 
 describe('Chart - stats global value', () => {
   it('should return global values by day', async () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({ organisation })
 
-    const stat = await new GameStatFactory([game]).state(() => ({ internalName: 'total-coins', name: 'Total coins', global: true, globalValue: 100, defaultValue: 0 })).one()
+    const stat = await new GameStatFactory([game])
+      .state(() => ({
+        internalName: 'total-coins',
+        name: 'Total coins',
+        global: true,
+        globalValue: 100,
+        defaultValue: 0,
+      }))
+      .one()
     const player = await new PlayerFactory([game]).one()
     const playerStat = await new PlayerGameStatFactory().construct(player, stat).one()
     await em.persist(playerStat).flush()
@@ -47,9 +55,9 @@ describe('Chart - stats global value', () => {
           snapshot.globalValue = 50
           snapshot.createdAt = twoDaysAgo
           return snapshot.toInsertable()
-        })()
+        })(),
       ],
-      format: 'JSONEachRow'
+      format: 'JSONEachRow',
     })
 
     const startDate = format(twoDaysAgo, 'yyyy-MM-dd')
@@ -64,14 +72,14 @@ describe('Chart - stats global value', () => {
     expect(res.body.stat.internalName).toBe('total-coins')
     expect(res.body.data).toHaveLength(3)
 
-    const twoDaysAgoData = res.body.data.find((d: { date: number }) =>
-      d.date === startOfDay(twoDaysAgo).getTime()
+    const twoDaysAgoData = res.body.data.find(
+      (d: { date: number }) => d.date === startOfDay(twoDaysAgo).getTime(),
     )
-    const yesterdayData = res.body.data.find((d: { date: number }) =>
-      d.date === startOfDay(yesterday).getTime()
+    const yesterdayData = res.body.data.find(
+      (d: { date: number }) => d.date === startOfDay(yesterday).getTime(),
     )
-    const todayData = res.body.data.find((d: { date: number }) =>
-      d.date === startOfDay(today).getTime()
+    const todayData = res.body.data.find(
+      (d: { date: number }) => d.date === startOfDay(today).getTime(),
     )
 
     expect(twoDaysAgoData.value).toBe(50)
@@ -86,7 +94,14 @@ describe('Chart - stats global value', () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({ organisation })
 
-    const stat = await new GameStatFactory([game]).state(() => ({ internalName: 'total-kills', name: 'Total kills', global: true, globalValue: 150 })).one()
+    const stat = await new GameStatFactory([game])
+      .state(() => ({
+        internalName: 'total-kills',
+        name: 'Total kills',
+        global: true,
+        globalValue: 150,
+      }))
+      .one()
     const player = await new PlayerFactory([game]).one()
     const playerStat = await new PlayerGameStatFactory().construct(player, stat).one()
     await em.persist(playerStat).flush()
@@ -118,9 +133,9 @@ describe('Chart - stats global value', () => {
           snapshot.globalValue = 150
           snapshot.createdAt = addMinutes(today, 20)
           return snapshot.toInsertable()
-        })()
+        })(),
       ],
-      format: 'JSONEachRow'
+      format: 'JSONEachRow',
     })
 
     const startDate = format(today, 'yyyy-MM-dd')
@@ -140,7 +155,14 @@ describe('Chart - stats global value', () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({ organisation })
 
-    const stat = await new GameStatFactory([game]).state(() => ({ internalName: 'total-score', name: 'Total score', global: true, globalValue: 300 })).one()
+    const stat = await new GameStatFactory([game])
+      .state(() => ({
+        internalName: 'total-score',
+        name: 'Total score',
+        global: true,
+        globalValue: 300,
+      }))
+      .one()
     const player = await new PlayerFactory([game]).one()
     const playerStat = await new PlayerGameStatFactory().construct(player, stat).one()
     await em.persist(playerStat).flush()
@@ -165,9 +187,9 @@ describe('Chart - stats global value', () => {
           snapshot.globalValue = 100
           snapshot.createdAt = threeDaysAgo
           return snapshot.toInsertable()
-        })()
+        })(),
       ],
-      format: 'JSONEachRow'
+      format: 'JSONEachRow',
     })
 
     const startDate = format(threeDaysAgo, 'yyyy-MM-dd')
@@ -192,13 +214,15 @@ describe('Chart - stats global value', () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({ organisation })
 
-    const stat = await new GameStatFactory([game]).state(() => ({
-      internalName: 'total-xp',
-      name: 'Total XP',
-      global: true,
-      globalValue: 150,
-      defaultValue: 100
-    })).one()
+    const stat = await new GameStatFactory([game])
+      .state(() => ({
+        internalName: 'total-xp',
+        name: 'Total XP',
+        global: true,
+        globalValue: 150,
+        defaultValue: 100,
+      }))
+      .one()
     const player = await new PlayerFactory([game]).one()
     const playerStat = await new PlayerGameStatFactory().construct(player, stat).one()
     await em.persist(playerStat).flush()
@@ -216,9 +240,9 @@ describe('Chart - stats global value', () => {
           snapshot.globalValue = 150
           snapshot.createdAt = today
           return snapshot.toInsertable()
-        })()
+        })(),
       ],
-      format: 'JSONEachRow'
+      format: 'JSONEachRow',
     })
 
     const startDate = format(yesterday, 'yyyy-MM-dd')
@@ -245,13 +269,15 @@ describe('Chart - stats global value', () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({ organisation })
 
-    const stat = await new GameStatFactory([game]).state(() => ({
-      internalName: 'total-gold',
-      name: 'Total gold',
-      global: true,
-      globalValue: 0,
-      defaultValue: 50
-    })).one()
+    const stat = await new GameStatFactory([game])
+      .state(() => ({
+        internalName: 'total-gold',
+        name: 'Total gold',
+        global: true,
+        globalValue: 0,
+        defaultValue: 50,
+      }))
+      .one()
     await em.persist(stat).flush()
 
     const today = new Date()
@@ -279,7 +305,9 @@ describe('Chart - stats global value', () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({ organisation })
 
-    const stat = await new GameStatFactory([game]).state(() => ({ internalName: 'local-stat', name: 'Local stat', global: false })).one()
+    const stat = await new GameStatFactory([game])
+      .state(() => ({ internalName: 'local-stat', name: 'Local stat', global: false }))
+      .one()
     await em.persist(stat).flush()
 
     const res = await request(app)
@@ -339,8 +367,8 @@ describe('Chart - stats global value', () => {
 
     expect(res.body).toStrictEqual({
       errors: {
-        startDate: ['startDate is missing from the request query']
-      }
+        startDate: ['startDate is missing from the request query'],
+      },
     })
   })
 
@@ -356,8 +384,8 @@ describe('Chart - stats global value', () => {
 
     expect(res.body).toStrictEqual({
       errors: {
-        endDate: ['endDate is missing from the request query']
-      }
+        endDate: ['endDate is missing from the request query'],
+      },
     })
   })
 })

@@ -1,15 +1,17 @@
 import APIKey, { APIKeyScope } from '../../../../src/entities/api-key'
-import createSocketIdentifyMessage, { persistTestSocketTicket } from '../../../utils/createSocketIdentifyMessage'
-import createTestSocket, { createTestClient } from '../../../utils/createTestSocket'
-import PlayerFactory from '../../../fixtures/PlayerFactory'
 import PlayerAliasSubscriptionFactory from '../../../fixtures/PlayerAliasSubscriptionFactory'
+import PlayerFactory from '../../../fixtures/PlayerFactory'
+import createSocketIdentifyMessage, {
+  persistTestSocketTicket,
+} from '../../../utils/createSocketIdentifyMessage'
+import createTestSocket, { createTestClient } from '../../../utils/createTestSocket'
 
 describe('Player relationship listeners - broadcast', () => {
   it('should broadcast to multiple confirmed subscribers', async () => {
     const { identifyMessage, ticket, player, apiKey } = await createSocketIdentifyMessage([
       APIKeyScope.READ_PLAYERS,
       APIKeyScope.WRITE_PLAYER_BROADCASTS,
-      APIKeyScope.READ_PLAYER_BROADCASTS
+      APIKeyScope.READ_PLAYER_BROADCASTS,
     ])
 
     const subscriber1 = await new PlayerFactory([apiKey.game]).one()
@@ -27,12 +29,18 @@ describe('Player relationship listeners - broadcast', () => {
       .one()
     await em.persist([subscriber1, subscriber2, subscription1, subscription2]).flush()
 
-    const { identifyMessage: sub1IdentifyMessage, ticket: sub1Ticket } = await persistTestSocketTicket(apiKey, subscriber1)
-    const { identifyMessage: sub2IdentifyMessage, ticket: sub2Ticket } = await persistTestSocketTicket(apiKey, subscriber2)
+    const { identifyMessage: sub1IdentifyMessage, ticket: sub1Ticket } =
+      await persistTestSocketTicket(apiKey, subscriber1)
+    const { identifyMessage: sub2IdentifyMessage, ticket: sub2Ticket } =
+      await persistTestSocketTicket(apiKey, subscriber2)
 
     await createTestSocket(`/?ticket=${ticket}`, async (broadcaster, _wss, port) => {
-      const sub1Client = await createTestClient(port, `/?ticket=${sub1Ticket}`, { waitForReady: false })
-      const sub2Client = await createTestClient(port, `/?ticket=${sub2Ticket}`, { waitForReady: false })
+      const sub1Client = await createTestClient(port, `/?ticket=${sub1Ticket}`, {
+        waitForReady: false,
+      })
+      const sub2Client = await createTestClient(port, `/?ticket=${sub2Ticket}`, {
+        waitForReady: false,
+      })
 
       await broadcaster.identify(identifyMessage)
       await sub1Client.identify(sub1IdentifyMessage)
@@ -41,8 +49,8 @@ describe('Player relationship listeners - broadcast', () => {
       broadcaster.sendJson({
         req: 'v1.player-relationships.broadcast',
         data: {
-          message: 'Hello everyone!'
-        }
+          message: 'Hello everyone!',
+        },
       })
 
       await sub1Client.expectJson((actual) => {
@@ -61,7 +69,7 @@ describe('Player relationship listeners - broadcast', () => {
     const { identifyMessage, ticket, player, apiKey } = await createSocketIdentifyMessage([
       APIKeyScope.READ_PLAYERS,
       APIKeyScope.WRITE_PLAYER_BROADCASTS,
-      APIKeyScope.READ_PLAYER_BROADCASTS
+      APIKeyScope.READ_PLAYER_BROADCASTS,
     ])
 
     const subscriber = await new PlayerFactory([apiKey.game]).one()
@@ -73,10 +81,13 @@ describe('Player relationship listeners - broadcast', () => {
       .one()
     await em.persist([subscriber, subscription]).flush()
 
-    const { identifyMessage: subscriberIdentifyMessage, ticket: subscriberTicket } = await persistTestSocketTicket(apiKey, subscriber)
+    const { identifyMessage: subscriberIdentifyMessage, ticket: subscriberTicket } =
+      await persistTestSocketTicket(apiKey, subscriber)
 
     await createTestSocket(`/?ticket=${ticket}`, async (broadcaster, _wss, port) => {
-      const subscriberClient = await createTestClient(port, `/?ticket=${subscriberTicket}`, { waitForReady: false })
+      const subscriberClient = await createTestClient(port, `/?ticket=${subscriberTicket}`, {
+        waitForReady: false,
+      })
 
       await broadcaster.identify(identifyMessage)
       await subscriberClient.identify(subscriberIdentifyMessage)
@@ -84,8 +95,8 @@ describe('Player relationship listeners - broadcast', () => {
       broadcaster.sendJson({
         req: 'v1.player-relationships.broadcast',
         data: {
-          message: 'Hello subscribers!'
-        }
+          message: 'Hello subscribers!',
+        },
       })
 
       await subscriberClient.dontExpectJson((actual) => {
@@ -98,16 +109,19 @@ describe('Player relationship listeners - broadcast', () => {
     const { identifyMessage, ticket, apiKey } = await createSocketIdentifyMessage([
       APIKeyScope.READ_PLAYERS,
       APIKeyScope.WRITE_PLAYER_BROADCASTS,
-      APIKeyScope.READ_PLAYER_BROADCASTS
+      APIKeyScope.READ_PLAYER_BROADCASTS,
     ])
 
     const nonSubscriber = await new PlayerFactory([apiKey.game]).one()
     await em.persist(nonSubscriber).flush()
 
-    const { identifyMessage: nonSubIdentifyMessage, ticket: nonSubTicket } = await persistTestSocketTicket(apiKey, nonSubscriber)
+    const { identifyMessage: nonSubIdentifyMessage, ticket: nonSubTicket } =
+      await persistTestSocketTicket(apiKey, nonSubscriber)
 
     await createTestSocket(`/?ticket=${ticket}`, async (broadcaster, _wss, port) => {
-      const nonSubClient = await createTestClient(port, `/?ticket=${nonSubTicket}`, { waitForReady: false })
+      const nonSubClient = await createTestClient(port, `/?ticket=${nonSubTicket}`, {
+        waitForReady: false,
+      })
 
       await broadcaster.identify(identifyMessage)
       await nonSubClient.identify(nonSubIdentifyMessage)
@@ -115,8 +129,8 @@ describe('Player relationship listeners - broadcast', () => {
       broadcaster.sendJson({
         req: 'v1.player-relationships.broadcast',
         data: {
-          message: 'Hello subscribers!'
-        }
+          message: 'Hello subscribers!',
+        },
       })
 
       await nonSubClient.dontExpectJson((actual) => {
@@ -127,7 +141,7 @@ describe('Player relationship listeners - broadcast', () => {
 
   it('should receive an error if the WRITE_PLAYER_BROADCASTS scope is missing', async () => {
     const { identifyMessage, ticket } = await createSocketIdentifyMessage([
-      APIKeyScope.READ_PLAYERS
+      APIKeyScope.READ_PLAYERS,
     ])
 
     await createTestSocket(`/?ticket=${ticket}`, async (client) => {
@@ -135,8 +149,8 @@ describe('Player relationship listeners - broadcast', () => {
       client.sendJson({
         req: 'v1.player-relationships.broadcast',
         data: {
-          message: 'Hello subscribers!'
-        }
+          message: 'Hello subscribers!',
+        },
       })
 
       await client.expectJsonToStrictEqual({
@@ -144,8 +158,8 @@ describe('Player relationship listeners - broadcast', () => {
         data: {
           req: 'v1.player-relationships.broadcast',
           message: 'Missing access key scope(s): write:playerBroadcasts',
-          errorCode: 'MISSING_ACCESS_KEY_SCOPES'
-        }
+          errorCode: 'MISSING_ACCESS_KEY_SCOPES',
+        },
       })
     })
   })
@@ -154,7 +168,7 @@ describe('Player relationship listeners - broadcast', () => {
     const { identifyMessage, ticket, player, apiKey } = await createSocketIdentifyMessage([
       APIKeyScope.READ_PLAYERS,
       APIKeyScope.WRITE_PLAYER_BROADCASTS,
-      APIKeyScope.READ_PLAYER_BROADCASTS
+      APIKeyScope.READ_PLAYER_BROADCASTS,
     ])
 
     const apiKeyWithScope = new APIKey(apiKey.game, apiKey.createdByUser)
@@ -165,7 +179,9 @@ describe('Player relationship listeners - broadcast', () => {
 
     const subscriberWithScope = await new PlayerFactory([apiKey.game]).one()
     const subscriberNoScope = await new PlayerFactory([apiKey.game]).one()
-    await em.persist([apiKeyWithScope, apiKeyNoScope, subscriberWithScope, subscriberNoScope]).flush()
+    await em
+      .persist([apiKeyWithScope, apiKeyNoScope, subscriberWithScope, subscriberNoScope])
+      .flush()
 
     const subscriptionWithScope = await new PlayerAliasSubscriptionFactory()
       .withSubscriber(subscriberWithScope.aliases[0])
@@ -179,12 +195,18 @@ describe('Player relationship listeners - broadcast', () => {
       .one()
     await em.persist([subscriptionWithScope, subscriptionNoScope]).flush()
 
-    const { identifyMessage: withScopeIdentify, ticket: withScopeTicket } = await persistTestSocketTicket(apiKeyWithScope, subscriberWithScope)
-    const { identifyMessage: noScopeIdentify, ticket: noScopeTicket } = await persistTestSocketTicket(apiKeyNoScope, subscriberNoScope)
+    const { identifyMessage: withScopeIdentify, ticket: withScopeTicket } =
+      await persistTestSocketTicket(apiKeyWithScope, subscriberWithScope)
+    const { identifyMessage: noScopeIdentify, ticket: noScopeTicket } =
+      await persistTestSocketTicket(apiKeyNoScope, subscriberNoScope)
 
     await createTestSocket(`/?ticket=${ticket}`, async (broadcaster, _wss, port) => {
-      const withScopeClient = await createTestClient(port, `/?ticket=${withScopeTicket}`, { waitForReady: false })
-      const noScopeClient = await createTestClient(port, `/?ticket=${noScopeTicket}`, { waitForReady: false })
+      const withScopeClient = await createTestClient(port, `/?ticket=${withScopeTicket}`, {
+        waitForReady: false,
+      })
+      const noScopeClient = await createTestClient(port, `/?ticket=${noScopeTicket}`, {
+        waitForReady: false,
+      })
 
       await broadcaster.identify(identifyMessage)
       await withScopeClient.identify(withScopeIdentify)
@@ -193,8 +215,8 @@ describe('Player relationship listeners - broadcast', () => {
       broadcaster.sendJson({
         req: 'v1.player-relationships.broadcast',
         data: {
-          message: 'Hello subscribers!'
-        }
+          message: 'Hello subscribers!',
+        },
       })
 
       await withScopeClient.expectJson((actual) => {
@@ -211,7 +233,7 @@ describe('Player relationship listeners - broadcast', () => {
   it('should validate message data', async () => {
     const { identifyMessage, ticket } = await createSocketIdentifyMessage([
       APIKeyScope.READ_PLAYERS,
-      APIKeyScope.WRITE_PLAYER_BROADCASTS
+      APIKeyScope.WRITE_PLAYER_BROADCASTS,
     ])
 
     await createTestSocket(`/?ticket=${ticket}`, async (client) => {
@@ -220,7 +242,7 @@ describe('Player relationship listeners - broadcast', () => {
         req: 'v1.player-relationships.broadcast',
         data: {
           // missing 'message' field
-        }
+        },
       })
 
       await client.expectJson((actual) => {

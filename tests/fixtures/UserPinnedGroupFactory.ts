@@ -1,9 +1,9 @@
 import { Factory } from 'hefty'
 import UserPinnedGroup from '../../src/entities/user-pinned-group'
-import UserFactory from './UserFactory'
-import PlayerGroupFactory from './PlayerGroupFactory'
 import GameFactory from './GameFactory'
 import OrganisationFactory from './OrganisationFactory'
+import PlayerGroupFactory from './PlayerGroupFactory'
+import UserFactory from './UserFactory'
 
 export default class UserPinnedGroupFactory extends Factory<UserPinnedGroup> {
   constructor() {
@@ -17,7 +17,7 @@ export default class UserPinnedGroupFactory extends Factory<UserPinnedGroup> {
 
       return {
         user: await new UserFactory().state(() => ({ organisation })).one(),
-        group: await new PlayerGroupFactory().state(() => ({ game })).one()
+        group: await new PlayerGroupFactory().state(() => ({ game })).one(),
       }
     })
   }

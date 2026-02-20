@@ -1,8 +1,8 @@
 import { ClickHouseClient } from '@clickhouse/client'
+import { formatDateForClickHouse } from '../../lib/clickhouse/formatDateTime'
+import { CreateMigrationsTable } from './000CreateMigrationsTable'
 import { CreateEventsTable } from './001CreateEventsTable'
 import { CreateEventPropsTable } from './002CreateEventPropsTable'
-import { CreateMigrationsTable } from './000CreateMigrationsTable'
-import { formatDateForClickHouse } from '../../lib/clickhouse/formatDateTime'
 import { CreatePlayerGameStatSnapshotsTable } from './003CreatePlayerGameStatSnapshotsTable'
 import { MigrateEventsTimestampsToDate64 } from './004MigrateEventsTimestampsToDate64'
 import { CreatePlayerSessionsTable } from './005CreatePlayerSessionsTable'
@@ -16,28 +16,28 @@ type ClickHouseMigration = {
 const migrations: ClickHouseMigration[] = [
   {
     name: 'CreateEventsTable',
-    sql: CreateEventsTable
+    sql: CreateEventsTable,
   },
   {
     name: 'CreateEventPropsTable',
-    sql: CreateEventPropsTable
+    sql: CreateEventPropsTable,
   },
   {
     name: 'CreatePlayerGameStatSnapshotsTable',
-    sql: CreatePlayerGameStatSnapshotsTable
+    sql: CreatePlayerGameStatSnapshotsTable,
   },
   {
     name: 'MigrateEventsTimestampsToDate64',
-    sql: MigrateEventsTimestampsToDate64
+    sql: MigrateEventsTimestampsToDate64,
   },
   {
     name: 'CreatePlayerSessionsTable',
-    sql: CreatePlayerSessionsTable
+    sql: CreatePlayerSessionsTable,
   },
   {
     name: 'AddEventPropsEventIdIndex',
-    sql: AddEventPropsEventIdIndex
-  }
+    sql: AddEventPropsEventIdIndex,
+  },
 ]
 
 export async function runClickHouseMigrations(clickhouse: ClickHouseClient) {
@@ -45,10 +45,12 @@ export async function runClickHouseMigrations(clickhouse: ClickHouseClient) {
 
   await clickhouse.query({ query: CreateMigrationsTable })
 
-  const completedMigrations = await clickhouse.query({
-    query: 'SELECT name FROM migrations',
-    format: 'JSONEachRow'
-  }).then((res) => res.json<{ name: string }>())
+  const completedMigrations = await clickhouse
+    .query({
+      query: 'SELECT name FROM migrations',
+      format: 'JSONEachRow',
+    })
+    .then((res) => res.json<{ name: string }>())
 
   const pendingMigrations = migrations.filter((migration) => {
     return !completedMigrations.map((row) => row.name).includes(migration.name)
@@ -62,11 +64,13 @@ export async function runClickHouseMigrations(clickhouse: ClickHouseClient) {
     }
     await clickhouse.insert({
       table: 'migrations',
-      values: [{
-        name: migration.name,
-        executed_at: formatDateForClickHouse(new Date(), false)
-      }],
-      format: 'JSONEachRow'
+      values: [
+        {
+          name: migration.name,
+          executed_at: formatDateForClickHouse(new Date(), false),
+        },
+      ],
+      format: 'JSONEachRow',
     })
     console.info(`Applied '${migration.name}'`)
   }

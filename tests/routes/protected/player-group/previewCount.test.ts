@@ -1,15 +1,20 @@
 import request from 'supertest'
+import PlayerGroupRule, {
+  PlayerGroupRuleName,
+  PlayerGroupRuleCastType,
+} from '../../../../src/entities/player-group-rule'
+import PlayerFactory from '../../../fixtures/PlayerFactory'
 import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
 import createUserAndToken from '../../../utils/createUserAndToken'
-import PlayerGroupRule, { PlayerGroupRuleName, PlayerGroupRuleCastType } from '../../../../src/entities/player-group-rule'
-import PlayerFactory from '../../../fixtures/PlayerFactory'
 
 describe('Player group - preview count', () => {
   it('should return a preview for the number of players in a group', async () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({}, organisation)
 
-    const player = await new PlayerFactory([game]).state(() => ({ lastSeenAt: new Date(2022, 4, 3) })).one()
+    const player = await new PlayerFactory([game])
+      .state(() => ({ lastSeenAt: new Date(2022, 4, 3) }))
+      .one()
     await em.persistAndFlush(player)
 
     const rules: Partial<PlayerGroupRule>[] = [
@@ -18,8 +23,8 @@ describe('Player group - preview count', () => {
         field: 'lastSeenAt',
         operands: ['2022-05-03'],
         negate: false,
-        castType: PlayerGroupRuleCastType.DATETIME
-      }
+        castType: PlayerGroupRuleCastType.DATETIME,
+      },
     ]
 
     const res = await request(app)
@@ -35,7 +40,10 @@ describe('Player group - preview count', () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({}, organisation)
 
-    const player = await new PlayerFactory([game]).devBuild().state(() => ({ lastSeenAt: new Date(2022, 4, 3) })).one()
+    const player = await new PlayerFactory([game])
+      .devBuild()
+      .state(() => ({ lastSeenAt: new Date(2022, 4, 3) }))
+      .one()
     await em.persistAndFlush(player)
 
     const rules: Partial<PlayerGroupRule>[] = [
@@ -44,8 +52,8 @@ describe('Player group - preview count', () => {
         field: 'lastSeenAt',
         operands: ['2022-05-03'],
         negate: false,
-        castType: PlayerGroupRuleCastType.DATETIME
-      }
+        castType: PlayerGroupRuleCastType.DATETIME,
+      },
     ]
 
     const res = await request(app)
@@ -61,7 +69,10 @@ describe('Player group - preview count', () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({}, organisation)
 
-    const player = await new PlayerFactory([game]).devBuild().state(() => ({ lastSeenAt: new Date(2022, 4, 3) })).one()
+    const player = await new PlayerFactory([game])
+      .devBuild()
+      .state(() => ({ lastSeenAt: new Date(2022, 4, 3) }))
+      .one()
     await em.persistAndFlush(player)
 
     const rules: Partial<PlayerGroupRule>[] = [
@@ -70,8 +81,8 @@ describe('Player group - preview count', () => {
         field: 'lastSeenAt',
         operands: ['2022-05-03'],
         negate: false,
-        castType: PlayerGroupRuleCastType.DATETIME
-      }
+        castType: PlayerGroupRuleCastType.DATETIME,
+      },
     ]
 
     const res = await request(app)
@@ -123,8 +134,8 @@ describe('Player group - preview count', () => {
 
     expect(res.body).toStrictEqual({
       errors: {
-        rules: ['Rules must be valid JSON']
-      }
+        rules: ['Rules must be valid JSON'],
+      },
     })
   })
 
@@ -138,8 +149,8 @@ describe('Player group - preview count', () => {
         field: 'lastSeenAt',
         operands: ['2022-05-03'],
         negate: false,
-        castType: PlayerGroupRuleCastType.DATETIME
-      }
+        castType: PlayerGroupRuleCastType.DATETIME,
+      },
     ]
 
     const res = await request(app)
@@ -150,8 +161,8 @@ describe('Player group - preview count', () => {
 
     expect(res.body).toStrictEqual({
       errors: {
-        'rules.0.name': ['Invalid option: expected one of "EQUALS"|"SET"|"GT"|"GTE"|"LT"|"LTE"']
-      }
+        'rules.0.name': ['Invalid option: expected one of "EQUALS"|"SET"|"GT"|"GTE"|"LT"|"LTE"'],
+      },
     })
   })
 })

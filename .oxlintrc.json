@@ -1,0 +1,33 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "plugins": null,
+  "categories": {},
+  "rules": {
+    "typescript/consistent-type-definitions": ["error", "type"],
+    "no-restricted-imports": [
+      "error",
+      {
+        "patterns": ["@mikro-orm/core"]
+      }
+    ],
+    "typescript/no-explicit-any": "error"
+  },
+  "overrides": [
+    {
+      "files": ["src/**/*.ts"],
+      "rules": {
+        "no-restricted-globals": ["error", "app", "ctx", "em", "clickhouse", "redis"]
+      }
+    }
+  ],
+  "settings": {
+    "vitest": {
+      "typecheck": false
+    }
+  },
+  "env": {
+    "builtin": true
+  },
+  "globals": {},
+  "ignorePatterns": []
+}

@@ -1,19 +1,21 @@
+import { randNumber } from '@ngneat/falso'
+import { addMinutes, isSameDay } from 'date-fns'
 import request from 'supertest'
 import { APIKeyScope } from '../../../../src/entities/api-key'
-import PlayerFactory from '../../../fixtures/PlayerFactory'
-import GameStatFactory from '../../../fixtures/GameStatFactory'
-import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
 import Game from '../../../../src/entities/game'
-import PlayerGameStatSnapshot from '../../../../src/entities/player-game-stat-snapshot'
-import PlayerGameStatFactory from '../../../fixtures/PlayerGameStatFactory'
-import { addMinutes, isSameDay } from 'date-fns'
-import { randNumber } from '@ngneat/falso'
-import PlayerGameStat from '../../../../src/entities/player-game-stat'
 import GameStat from '../../../../src/entities/game-stat'
+import PlayerGameStat from '../../../../src/entities/player-game-stat'
+import PlayerGameStatSnapshot from '../../../../src/entities/player-game-stat-snapshot'
+import GameStatFactory from '../../../fixtures/GameStatFactory'
+import PlayerFactory from '../../../fixtures/PlayerFactory'
+import PlayerGameStatFactory from '../../../fixtures/PlayerGameStatFactory'
+import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
 
 describe('Game stats API - global history', () => {
   const createStat = async (game: Game) => {
-    const stat = await new GameStatFactory([game]).state(() => ({ maxValue: 999, maxChange: 99, global: true })).one()
+    const stat = await new GameStatFactory([game])
+      .state(() => ({ maxValue: 999, maxChange: 99, global: true }))
+      .one()
     em.persist(stat)
 
     return stat
@@ -21,7 +23,10 @@ describe('Game stats API - global history', () => {
 
   const createPlayerStat = async (stat: GameStat, extra: Partial<PlayerGameStat> = {}) => {
     const player = await new PlayerFactory([stat.game]).one()
-    const playerStat = await new PlayerGameStatFactory().construct(player, stat).state(() => extra).one()
+    const playerStat = await new PlayerGameStatFactory()
+      .construct(player, stat)
+      .state(() => extra)
+      .one()
     em.persist(playerStat)
 
     return playerStat
@@ -35,18 +40,20 @@ describe('Game stats API - global history', () => {
 
     await clickhouse.insert({
       table: 'player_game_stat_snapshots',
-      values: await Promise.all(changes.map(async (change, idx) => {
-        const playerStat = await createPlayerStat(stat, { value: change })
-        await em.flush()
+      values: await Promise.all(
+        changes.map(async (change, idx) => {
+          const playerStat = await createPlayerStat(stat, { value: change })
+          await em.flush()
 
-        const snapshot = new PlayerGameStatSnapshot()
-        snapshot.construct(playerStat.player.aliases[0], playerStat)
-        snapshot.change = change
-        snapshot.createdAt = addMinutes(snapshot.createdAt, idx)
+          const snapshot = new PlayerGameStatSnapshot()
+          snapshot.construct(playerStat.player.aliases[0], playerStat)
+          snapshot.change = change
+          snapshot.createdAt = addMinutes(snapshot.createdAt, idx)
 
-        return snapshot.toInsertable()
-      })),
-      format: 'JSONEachRow'
+          return snapshot.toInsertable()
+        }),
+      ),
+      format: 'JSONEachRow',
     })
 
     const res = await request(app)
@@ -112,22 +119,24 @@ describe('Game stats API - global history', () => {
     const dates = [
       new Date('2025-03-19T09:00:00.000Z'),
       new Date('2025-03-20T09:00:00.000Z'),
-      new Date('2025-03-21T09:00:00.000Z')
+      new Date('2025-03-21T09:00:00.000Z'),
     ]
 
     await clickhouse.insert({
       table: 'player_game_stat_snapshots',
-      values: await Promise.all(dates.map(async (date) => {
-        const snapshot = new PlayerGameStatSnapshot()
-        const playerStat = await createPlayerStat(stat)
-        await em.flush()
+      values: await Promise.all(
+        dates.map(async (date) => {
+          const snapshot = new PlayerGameStatSnapshot()
+          const playerStat = await createPlayerStat(stat)
+          await em.flush()
 
-        snapshot.construct(playerStat.player.aliases[0], playerStat)
-        snapshot.change = randNumber({ min: 1, max: 999 })
-        snapshot.createdAt = date
-        return snapshot.toInsertable()
-      })),
-      format: 'JSONEachRow'
+          snapshot.construct(playerStat.player.aliases[0], playerStat)
+          snapshot.change = randNumber({ min: 1, max: 999 })
+          snapshot.createdAt = date
+          return snapshot.toInsertable()
+        }),
+      ),
+      format: 'JSONEachRow',
     })
 
     const res = await request(app)
@@ -137,9 +146,11 @@ describe('Game stats API - global history', () => {
       .expect(200)
 
     expect(res.body.history).toHaveLength(2)
-    expect(res.body.history.every((snapshot: PlayerGameStatSnapshot) => {
-      return new Date(snapshot.createdAt) >= dates[1]
-    })).toBe(true)
+    expect(
+      res.body.history.every((snapshot: PlayerGameStatSnapshot) => {
+        return new Date(snapshot.createdAt) >= dates[1]
+      }),
+    ).toBe(true)
   })
 
   it('should return global stat snapshots filtered by endDate', async () => {
@@ -149,22 +160,24 @@ describe('Game stats API - global history', () => {
     const dates = [
       new Date('2025-03-19T09:00:00.000Z'),
       new Date('2025-03-20T09:00:00.000Z'),
-      new Date('2025-03-21T09:00:00.000Z')
+      new Date('2025-03-21T09:00:00.000Z'),
     ]
 
     await clickhouse.insert({
       table: 'player_game_stat_snapshots',
-      values: await Promise.all(dates.map(async (date) => {
-        const snapshot = new PlayerGameStatSnapshot()
-        const playerStat = await createPlayerStat(stat)
-        await em.flush()
+      values: await Promise.all(
+        dates.map(async (date) => {
+          const snapshot = new PlayerGameStatSnapshot()
+          const playerStat = await createPlayerStat(stat)
+          await em.flush()
 
-        snapshot.construct(playerStat.player.aliases[0], playerStat)
-        snapshot.change = randNumber({ min: 1, max: 999 })
-        snapshot.createdAt = date
-        return snapshot.toInsertable()
-      })),
-      format: 'JSONEachRow'
+          snapshot.construct(playerStat.player.aliases[0], playerStat)
+          snapshot.change = randNumber({ min: 1, max: 999 })
+          snapshot.createdAt = date
+          return snapshot.toInsertable()
+        }),
+      ),
+      format: 'JSONEachRow',
     })
 
     const res = await request(app)
@@ -174,9 +187,11 @@ describe('Game stats API - global history', () => {
       .expect(200)
 
     expect(res.body.history).toHaveLength(2)
-    expect(res.body.history.every((snapshot: PlayerGameStatSnapshot) => {
-      return new Date(snapshot.createdAt) <= dates[1]
-    })).toBe(true)
+    expect(
+      res.body.history.every((snapshot: PlayerGameStatSnapshot) => {
+        return new Date(snapshot.createdAt) <= dates[1]
+      }),
+    ).toBe(true)
   })
 
   it('should return global stat snapshots filtered by both startDate and endDate', async () => {
@@ -186,22 +201,24 @@ describe('Game stats API - global history', () => {
     const dates = [
       new Date('2025-03-19T09:00:00.000Z'),
       new Date('2025-03-20T09:00:00.000Z'),
-      new Date('2025-03-21T09:00:00.000Z')
+      new Date('2025-03-21T09:00:00.000Z'),
     ]
 
     await clickhouse.insert({
       table: 'player_game_stat_snapshots',
-      values: await Promise.all(dates.map(async (date) => {
-        const snapshot = new PlayerGameStatSnapshot()
-        const playerStat = await createPlayerStat(stat)
-        await em.flush()
+      values: await Promise.all(
+        dates.map(async (date) => {
+          const snapshot = new PlayerGameStatSnapshot()
+          const playerStat = await createPlayerStat(stat)
+          await em.flush()
 
-        snapshot.construct(playerStat.player.aliases[0], playerStat)
-        snapshot.change = randNumber({ min: 1, max: 999 })
-        snapshot.createdAt = date
-        return snapshot.toInsertable()
-      })),
-      format: 'JSONEachRow'
+          snapshot.construct(playerStat.player.aliases[0], playerStat)
+          snapshot.change = randNumber({ min: 1, max: 999 })
+          snapshot.createdAt = date
+          return snapshot.toInsertable()
+        }),
+      ),
+      format: 'JSONEachRow',
     })
 
     const res = await request(app)
@@ -211,9 +228,11 @@ describe('Game stats API - global history', () => {
       .expect(200)
 
     expect(res.body.history).toHaveLength(1)
-    expect(res.body.history.every((snapshot: PlayerGameStatSnapshot) => {
-      return isSameDay(new Date(snapshot.createdAt), dates[1])
-    })).toBe(true)
+    expect(
+      res.body.history.every((snapshot: PlayerGameStatSnapshot) => {
+        return isSameDay(new Date(snapshot.createdAt), dates[1])
+      }),
+    ).toBe(true)
   })
 
   it('should return global stat snapshots filtered by player', async () => {
@@ -242,7 +261,7 @@ describe('Game stats API - global history', () => {
 
         return snapshot.toInsertable()
       }),
-      format: 'JSONEachRow'
+      format: 'JSONEachRow',
     })
 
     const res = await request(app)
@@ -265,18 +284,20 @@ describe('Game stats API - global history', () => {
 
     await clickhouse.insert({
       table: 'player_game_stat_snapshots',
-      values: await Promise.all(changes.map(async (change, idx) => {
-        const playerStat = await createPlayerStat(stat, { value: change })
-        await em.flush()
+      values: await Promise.all(
+        changes.map(async (change, idx) => {
+          const playerStat = await createPlayerStat(stat, { value: change })
+          await em.flush()
 
-        const snapshot = new PlayerGameStatSnapshot()
-        snapshot.construct(playerStat.player.aliases[0], playerStat)
-        snapshot.change = change
-        snapshot.createdAt = addMinutes(snapshot.createdAt, idx)
+          const snapshot = new PlayerGameStatSnapshot()
+          snapshot.construct(playerStat.player.aliases[0], playerStat)
+          snapshot.change = change
+          snapshot.createdAt = addMinutes(snapshot.createdAt, idx)
 
-        return snapshot.toInsertable()
-      })),
-      format: 'JSONEachRow'
+          return snapshot.toInsertable()
+        }),
+      ),
+      format: 'JSONEachRow',
     })
 
     const res = await request(app)
@@ -296,18 +317,20 @@ describe('Game stats API - global history', () => {
 
     await clickhouse.insert({
       table: 'player_game_stat_snapshots',
-      values: await Promise.all(changes.map(async (change, idx) => {
-        const playerStat = await createPlayerStat(stat, { value: change })
-        await em.flush()
+      values: await Promise.all(
+        changes.map(async (change, idx) => {
+          const playerStat = await createPlayerStat(stat, { value: change })
+          await em.flush()
 
-        const snapshot = new PlayerGameStatSnapshot()
-        snapshot.construct(playerStat.player.aliases[0], playerStat)
-        snapshot.change = change
-        snapshot.createdAt = addMinutes(snapshot.createdAt, idx)
+          const snapshot = new PlayerGameStatSnapshot()
+          snapshot.construct(playerStat.player.aliases[0], playerStat)
+          snapshot.change = change
+          snapshot.createdAt = addMinutes(snapshot.createdAt, idx)
 
-        return snapshot.toInsertable()
-      })),
-      format: 'JSONEachRow'
+          return snapshot.toInsertable()
+        }),
+      ),
+      format: 'JSONEachRow',
     })
 
     const res = await request(app)
@@ -332,21 +355,23 @@ describe('Game stats API - global history', () => {
 
     await clickhouse.insert({
       table: 'player_game_stat_snapshots',
-      values: await Promise.all(changes.map(async (change, idx) => {
-        const playerStat = await createPlayerStat(stat, { value: change })
-        stat.globalValue += change
-        globalValues.push(stat.globalValue)
+      values: await Promise.all(
+        changes.map(async (change, idx) => {
+          const playerStat = await createPlayerStat(stat, { value: change })
+          stat.globalValue += change
+          globalValues.push(stat.globalValue)
 
-        const snapshot = new PlayerGameStatSnapshot()
-        snapshot.construct(playerStat.player.aliases[0], playerStat)
-        snapshot.change = change
-        snapshot.createdAt = addMinutes(snapshot.createdAt, idx)
+          const snapshot = new PlayerGameStatSnapshot()
+          snapshot.construct(playerStat.player.aliases[0], playerStat)
+          snapshot.change = change
+          snapshot.createdAt = addMinutes(snapshot.createdAt, idx)
 
-        await em.flush()
+          await em.flush()
 
-        return snapshot.toInsertable()
-      })),
-      format: 'JSONEachRow'
+          return snapshot.toInsertable()
+        }),
+      ),
+      format: 'JSONEachRow',
     })
 
     const res = await request(app)
@@ -362,17 +387,17 @@ describe('Game stats API - global history', () => {
     expect(res.body.globalValue).toHaveProperty('averageChange')
 
     expect(res.body.globalValue.averageValue).toBe(
-      globalValues.reduce((acc, val) => acc + val, 0) / changes.length
+      globalValues.reduce((acc, val) => acc + val, 0) / changes.length,
     )
 
     expect(res.body.globalValue.averageChange).toBe(
-      changes.reduce((acc, val) => acc + val, 0) / changes.length
+      changes.reduce((acc, val) => acc + val, 0) / changes.length,
     )
 
     expect(res.body.playerValue).toHaveProperty('averageValue')
 
     expect(res.body.playerValue.averageValue).toBe(
-      changes.reduce((acc, val) => acc + val, 0) / changes.length
+      changes.reduce((acc, val) => acc + val, 0) / changes.length,
     )
   })
 

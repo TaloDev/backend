@@ -1,15 +1,23 @@
-import { Collection, Entity, ManyToMany, ManyToOne, OneToMany, PrimaryKey, Property } from '@mikro-orm/mysql'
-import PlayerAlias from './player-alias'
-import Game from './game'
-import { sendMessages, SocketMessageResponse } from '../socket/messages/socketMessage'
+import {
+  Collection,
+  Entity,
+  ManyToMany,
+  ManyToOne,
+  OneToMany,
+  PrimaryKey,
+  Property,
+} from '@mikro-orm/mysql'
 import Socket from '../socket'
+import { sendMessages, SocketMessageResponse } from '../socket/messages/socketMessage'
 import { APIKeyScope } from './api-key'
+import Game from './game'
 import GameChannelProp from './game-channel-prop'
 import GameChannelStorageProp from './game-channel-storage-prop'
+import PlayerAlias from './player-alias'
 
 export enum GameChannelLeavingReason {
   DEFAULT,
-  TEMPORARY_MEMBERSHIP
+  TEMPORARY_MEMBERSHIP,
 }
 
 @Entity()
@@ -38,7 +46,10 @@ export default class GameChannel {
   @ManyToOne(() => Game, { eager: true })
   game: Game
 
-  @OneToMany(() => GameChannelProp, (prop) => prop.gameChannel, { eager: true, orphanRemoval: true })
+  @OneToMany(() => GameChannelProp, (prop) => prop.gameChannel, {
+    eager: true,
+    orphanRemoval: true,
+  })
   props: Collection<GameChannelProp> = new Collection<GameChannelProp>(this)
 
   @OneToMany(() => GameChannelStorageProp, (prop) => prop.gameChannel, { orphanRemoval: true })
@@ -63,14 +74,18 @@ export default class GameChannel {
     this.game = game
   }
 
-  async sendMessageToMembers<T extends object>(socket: Socket, res: SocketMessageResponse, data: T) {
+  async sendMessageToMembers<T extends object>(
+    socket: Socket,
+    res: SocketMessageResponse,
+    data: T,
+  ) {
     const conns = socket.findConnections((conn) => {
       return conn.hasScope(APIKeyScope.READ_GAME_CHANNELS) && this.hasMember(conn.playerAliasId)
     })
     await sendMessages(conns, res, data)
   }
 
-  setProps(props: { key: string, value: string }[]) {
+  setProps(props: { key: string; value: string }[]) {
     this.props.set(props.map(({ key, value }) => new GameChannelProp(this, key, value)))
   }
 
@@ -97,7 +112,7 @@ export default class GameChannel {
       private: this.private,
       temporaryMembership: this.temporaryMembership,
       createdAt: this.createdAt,
-      updatedAt: this.updatedAt
+      updatedAt: this.updatedAt,
     }
   }
 
@@ -106,9 +121,9 @@ export default class GameChannel {
       ...this.toJSON(),
       memberCount: await this.members.loadCount({
         where: {
-          player: includeDevData ? {} : { devBuild: false }
-        }
-      })
+          player: includeDevData ? {} : { devBuild: false },
+        },
+      }),
     }
   }
 }

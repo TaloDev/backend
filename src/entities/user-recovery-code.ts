@@ -1,6 +1,6 @@
 import { Entity, ManyToOne, PrimaryKey, Property } from '@mikro-orm/mysql'
-import User from './user'
 import { decrypt, encrypt } from '../lib/crypto/string-encryption'
+import User from './user'
 
 @Entity()
 export default class UserRecoveryCode {
@@ -24,7 +24,7 @@ export default class UserRecoveryCode {
     const characters = 'ABCDEFGHIJKMNOPQRSTUVWXYZ0123456789'
     let code = ''
 
-    for (let i = 0; i < 10; i++ ) {
+    for (let i = 0; i < 10; i++) {
       code += characters.charAt(Math.floor(Math.random() * characters.length))
     }
 

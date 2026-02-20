@@ -1,8 +1,8 @@
-import { publicRoute } from '../../../lib/routing/router'
 import User from '../../../entities/user'
 import UserRecoveryCode from '../../../entities/user-recovery-code'
-import generateRecoveryCodes from '../../../lib/auth/generateRecoveryCodes'
 import { buildTokenPair } from '../../../lib/auth/buildTokenPair'
+import generateRecoveryCodes from '../../../lib/auth/generateRecoveryCodes'
+import { publicRoute } from '../../../lib/routing/router'
 
 export const useRecoveryCodeRoute = publicRoute({
   method: 'post',
@@ -10,8 +10,8 @@ export const useRecoveryCodeRoute = publicRoute({
   schema: (z) => ({
     body: z.object({
       userId: z.number(),
-      code: z.string().min(1)
-    })
+      code: z.string().min(1),
+    }),
   }),
   handler: async (ctx) => {
     const { code, userId } = ctx.state.validated.body
@@ -19,7 +19,7 @@ export const useRecoveryCodeRoute = publicRoute({
     const redis = ctx.redis
 
     const user = await em.repo(User).findOneOrFail(userId, {
-      populate: ['recoveryCodes', 'organisation.games']
+      populate: ['recoveryCodes', 'organisation.games'],
     })
 
     const hasSession = (await redis.get(`2fa:${user.id}`)) === 'true'
@@ -27,7 +27,7 @@ export const useRecoveryCodeRoute = publicRoute({
     if (!hasSession) {
       return {
         status: 403,
-        body: { message: 'Session expired', sessionExpired: true }
+        body: { message: 'Session expired', sessionExpired: true },
       }
     }
 
@@ -38,7 +38,7 @@ export const useRecoveryCodeRoute = publicRoute({
     if (!recoveryCode) {
       return {
         status: 403,
-        body: { message: 'Invalid code' }
+        body: { message: 'Invalid code' },
       }
     }
 
@@ -60,8 +60,8 @@ export const useRecoveryCodeRoute = publicRoute({
       body: {
         user,
         accessToken,
-        newRecoveryCodes: newRecoveryCodes.length === 0 ? undefined : newRecoveryCodes
-      }
+        newRecoveryCodes: newRecoveryCodes.length === 0 ? undefined : newRecoveryCodes,
+      },
     }
-  }
+  },
 })

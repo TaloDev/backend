@@ -1,15 +1,20 @@
 import request from 'supertest'
+import PlayerGroupRule, {
+  PlayerGroupRuleName,
+  PlayerGroupRuleCastType,
+} from '../../../../src/entities/player-group-rule'
+import PlayerFactory from '../../../fixtures/PlayerFactory'
 import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
 import createUserAndToken from '../../../utils/createUserAndToken'
-import PlayerGroupRule, { PlayerGroupRuleName, PlayerGroupRuleCastType } from '../../../../src/entities/player-group-rule'
-import PlayerFactory from '../../../fixtures/PlayerFactory'
 
 describe('Player group - rules', () => {
   it('should return a list of available rules and player fields', async () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({}, organisation)
 
-    const player = await new PlayerFactory([game]).state(() => ({ lastSeenAt: new Date(2022, 4, 3) })).one()
+    const player = await new PlayerFactory([game])
+      .state(() => ({ lastSeenAt: new Date(2022, 4, 3) }))
+      .one()
     await em.persistAndFlush(player)
 
     const rules: Partial<PlayerGroupRule>[] = [
@@ -18,8 +23,8 @@ describe('Player group - rules', () => {
         field: 'lastSeenAt',
         operands: ['2022-05-03'],
         negate: false,
-        castType: PlayerGroupRuleCastType.DATETIME
-      }
+        castType: PlayerGroupRuleCastType.DATETIME,
+      },
     ]
 
     const res = await request(app)
@@ -31,84 +36,56 @@ describe('Player group - rules', () => {
     expect(res.body.availableRules).toStrictEqual([
       {
         name: 'EQUALS',
-        castTypes: [
-          'CHAR',
-          'DOUBLE',
-          'DATETIME'
-        ],
+        castTypes: ['CHAR', 'DOUBLE', 'DATETIME'],
         operandCount: 1,
-        negate: false
+        negate: false,
       },
       {
         name: 'EQUALS',
-        castTypes: [
-          'CHAR',
-          'DOUBLE',
-          'DATETIME'
-        ],
+        castTypes: ['CHAR', 'DOUBLE', 'DATETIME'],
         operandCount: 1,
-        negate: true
+        negate: true,
       },
       {
         name: 'GT',
         negatable: false,
-        castTypes: [
-          'DOUBLE',
-          'DATETIME'
-        ],
+        castTypes: ['DOUBLE', 'DATETIME'],
         operandCount: 1,
-        negate: false
+        negate: false,
       },
       {
         name: 'GTE',
         negatable: false,
-        castTypes: [
-          'DOUBLE',
-          'DATETIME'
-        ],
+        castTypes: ['DOUBLE', 'DATETIME'],
         operandCount: 1,
-        negate: false
+        negate: false,
       },
       {
         name: 'LT',
         negatable: false,
-        castTypes: [
-          'DOUBLE',
-          'DATETIME'
-        ],
+        castTypes: ['DOUBLE', 'DATETIME'],
         operandCount: 1,
-        negate: false
+        negate: false,
       },
       {
         name: 'LTE',
         negatable: false,
-        castTypes: [
-          'DOUBLE',
-          'DATETIME'
-        ],
+        castTypes: ['DOUBLE', 'DATETIME'],
         operandCount: 1,
-        negate: false
+        negate: false,
       },
       {
         name: 'SET',
-        castTypes: [
-          'CHAR',
-          'DOUBLE',
-          'DATETIME'
-        ],
+        castTypes: ['CHAR', 'DOUBLE', 'DATETIME'],
         operandCount: 0,
-        negate: false
+        negate: false,
       },
       {
         name: 'SET',
-        castTypes: [
-          'CHAR',
-          'DOUBLE',
-          'DATETIME'
-        ],
+        castTypes: ['CHAR', 'DOUBLE', 'DATETIME'],
         operandCount: 0,
-        negate: true
-      }
+        negate: true,
+      },
     ])
 
     expect(res.body.availableFields).toStrictEqual([
@@ -116,32 +93,32 @@ describe('Player group - rules', () => {
         fieldDisplayName: 'prop with key',
         defaultCastType: 'CHAR',
         mapsTo: 'props',
-        namespaced: true
+        namespaced: true,
       },
       {
         fieldDisplayName: 'latest login',
         defaultCastType: 'DATETIME',
         mapsTo: 'lastSeenAt',
-        namespaced: false
+        namespaced: false,
       },
       {
         fieldDisplayName: 'first login',
         defaultCastType: 'DATETIME',
         mapsTo: 'createdAt',
-        namespaced: false
+        namespaced: false,
       },
       {
         fieldDisplayName: 'value for stat',
         defaultCastType: 'DOUBLE',
         mapsTo: 'statValue',
-        namespaced: true
+        namespaced: true,
       },
       {
         fieldDisplayName: 'score in leaderboard',
         defaultCastType: 'DOUBLE',
         mapsTo: 'leaderboardEntryScore',
-        namespaced: true
-      }
+        namespaced: true,
+      },
     ])
   })
 })

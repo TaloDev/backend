@@ -1,11 +1,11 @@
+import { GameActivityType } from '../../../entities/game-activity'
+import LeaderboardEntry from '../../../entities/leaderboard-entry'
+import { UserType } from '../../../entities/user'
+import triggerIntegrations from '../../../lib/integrations/triggerIntegrations'
+import createGameActivity from '../../../lib/logging/createGameActivity'
 import { protectedRoute, withMiddleware } from '../../../lib/routing/router'
 import { loadGame } from '../../../middleware/game-middleware'
 import { userTypeGate } from '../../../middleware/policy-middleware'
-import { UserType } from '../../../entities/user'
-import LeaderboardEntry from '../../../entities/leaderboard-entry'
-import { GameActivityType } from '../../../entities/game-activity'
-import createGameActivity from '../../../lib/logging/createGameActivity'
-import triggerIntegrations from '../../../lib/integrations/triggerIntegrations'
 import { loadLeaderboard } from './common'
 
 export const updateEntryRoute = protectedRoute({
@@ -14,13 +14,13 @@ export const updateEntryRoute = protectedRoute({
   schema: (z) => ({
     body: z.object({
       hidden: z.boolean().optional(),
-      newScore: z.number().optional()
-    })
+      newScore: z.number().optional(),
+    }),
   }),
   middleware: withMiddleware(
     userTypeGate([UserType.ADMIN], 'update leaderboard entries'),
     loadGame,
-    loadLeaderboard(true)
+    loadLeaderboard(true),
   ),
   handler: async (ctx) => {
     const { entryId } = ctx.params as { entryId: string }
@@ -29,7 +29,7 @@ export const updateEntryRoute = protectedRoute({
 
     const entry = await em.repo(LeaderboardEntry).findOne({
       id: Number(entryId),
-      leaderboard: ctx.state.leaderboard
+      leaderboard: ctx.state.leaderboard,
     })
 
     if (!entry) {
@@ -42,15 +42,17 @@ export const updateEntryRoute = protectedRoute({
       createGameActivity(em, {
         user: ctx.state.user,
         game: entry.leaderboard.game,
-        type: hidden ? GameActivityType.LEADERBOARD_ENTRY_HIDDEN : GameActivityType.LEADERBOARD_ENTRY_RESTORED,
+        type: hidden
+          ? GameActivityType.LEADERBOARD_ENTRY_HIDDEN
+          : GameActivityType.LEADERBOARD_ENTRY_RESTORED,
         extra: {
           leaderboardInternalName: entry.leaderboard.internalName,
           entryId: entry.id,
           display: {
-            'Player': entry.playerAlias.player.id,
-            'Score': entry.score
-          }
-        }
+            Player: entry.playerAlias.player.id,
+            Score: entry.score,
+          },
+        },
       })
 
       await triggerIntegrations(em, entry.leaderboard.game, (integration) => {
@@ -70,12 +72,12 @@ export const updateEntryRoute = protectedRoute({
           leaderboardInternalName: entry.leaderboard.internalName,
           entryId: entry.id,
           display: {
-            'Player': entry.playerAlias.player.id,
-            'Leaderboard': entry.leaderboard.internalName,
+            Player: entry.playerAlias.player.id,
+            Leaderboard: entry.leaderboard.internalName,
             'Old score': oldScore,
-            'New score': newScore
-          }
-        }
+            'New score': newScore,
+          },
+        },
       })
 
       await triggerIntegrations(em, entry.leaderboard.game, (integration) => {
@@ -88,8 +90,8 @@ export const updateEntryRoute = protectedRoute({
     return {
       status: 200,
       body: {
-        entry
-      }
+        entry,
+      },
     }
-  }
+  },
 })

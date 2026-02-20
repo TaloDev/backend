@@ -1,12 +1,12 @@
-import { Factory } from 'hefty'
-import User, { UserType } from '../../src/entities/user'
-import bcrypt from 'bcrypt'
-import OrganisationFactory from './OrganisationFactory'
-import UserTwoFactorAuth from '../../src/entities/user-two-factor-auth'
-import UserRecoveryCode from '../../src/entities/user-recovery-code'
-import generateRecoveryCodes from '../../src/lib/auth/generateRecoveryCodes'
 import { Collection } from '@mikro-orm/mysql'
 import { randEmail, randUserName, randWord } from '@ngneat/falso'
+import bcrypt from 'bcrypt'
+import { Factory } from 'hefty'
+import User, { UserType } from '../../src/entities/user'
+import UserRecoveryCode from '../../src/entities/user-recovery-code'
+import UserTwoFactorAuth from '../../src/entities/user-two-factor-auth'
+import generateRecoveryCodes from '../../src/lib/auth/generateRecoveryCodes'
+import OrganisationFactory from './OrganisationFactory'
 
 export default class UserFactory extends Factory<User> {
   constructor() {
@@ -19,32 +19,32 @@ export default class UserFactory extends Factory<User> {
       username: randUserName(),
       password: '',
       organisation: await new OrganisationFactory().one(),
-      type: UserType.DEV
+      type: UserType.DEV,
     }))
   }
 
   emailConfirmed(): this {
     return this.state(() => ({
-      emailConfirmed: true
+      emailConfirmed: true,
     }))
   }
 
   loginable(): this {
     return this.state(async () => ({
       email: randEmail(),
-      password: await bcrypt.hash('password', 10)
+      password: await bcrypt.hash('password', 10),
     }))
   }
 
   owner(): this {
     return this.state(() => ({
-      type: UserType.OWNER
+      type: UserType.OWNER,
     }))
   }
 
   admin(): this {
     return this.state(() => ({
-      type: UserType.ADMIN
+      type: UserType.ADMIN,
     }))
   }
 
@@ -52,7 +52,7 @@ export default class UserFactory extends Factory<User> {
     return this.state(() => ({
       type: UserType.DEMO,
       email: `demo+${Date.now()}@demo.io`,
-      emailConfirmed: true
+      emailConfirmed: true,
     }))
   }
 
@@ -65,7 +65,7 @@ export default class UserFactory extends Factory<User> {
 
       return {
         twoFactorAuth,
-        recoveryCodes
+        recoveryCodes,
       }
     })
   }

@@ -1,5 +1,5 @@
-import type { ZodType, z } from 'zod'
 import type Koa from 'koa'
+import type { ZodType, z } from 'zod'
 import type { AppParameterizedContext } from '../lib/routing/context'
 import { RouteState } from '../lib/routing/state'
 
@@ -17,23 +17,25 @@ export type InferValidation<V extends ValidationSchema> = {
   headers: V['headers'] extends ZodType ? z.infer<V['headers']> : unknown
 }
 
-export type ValidatedContext<V extends ValidationSchema, S extends RouteState> =
-  AppParameterizedContext<S> & {
-    state: S & {
-      validated: InferValidation<V>
-    }
+export type ValidatedContext<
+  V extends ValidationSchema,
+  S extends RouteState,
+> = AppParameterizedContext<S> & {
+  state: S & {
+    validated: InferValidation<V>
   }
+}
 
 export function validate<V extends ValidationSchema, S extends RouteState>(
-  schemaObject: V
+  schemaObject: V,
 ): (ctx: AppParameterizedContext<S>, next: Koa.Next) => Promise<void> {
   return async (ctx, next) => {
     const targets = ['body', 'query', 'route', 'headers'] as const
-    const validated: Record<typeof targets[number], unknown> = {
+    const validated: Record<(typeof targets)[number], unknown> = {
       body: {},
       query: {},
       route: {},
-      headers: {}
+      headers: {},
     }
 
     for (const target of targets) {
@@ -70,7 +72,7 @@ export function validate<V extends ValidationSchema, S extends RouteState>(
       validated[target] = result.data
     }
 
-    (ctx.state as ValidatedContext<V, S>['state']).validated = validated as InferValidation<V>
+    ;(ctx.state as ValidatedContext<V, S>['state']).validated = validated as InferValidation<V>
 
     await next()
   }

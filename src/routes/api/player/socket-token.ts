@@ -1,8 +1,8 @@
-import { apiRoute, withMiddleware } from '../../../lib/routing/router'
-import { requireScopes } from '../../../middleware/policy-middleware'
 import { APIKeyScope } from '../../../entities/api-key'
-import { loadAlias } from '../../../middleware/player-alias-middleware'
+import { apiRoute, withMiddleware } from '../../../lib/routing/router'
 import { playerAliasHeaderSchema } from '../../../lib/validation/playerAliasHeaderSchema'
+import { loadAlias } from '../../../middleware/player-alias-middleware'
+import { requireScopes } from '../../../middleware/policy-middleware'
 import { socketTokenDocs } from './docs'
 
 export const socketTokenRoute = apiRoute({
@@ -11,13 +11,10 @@ export const socketTokenRoute = apiRoute({
   docs: socketTokenDocs,
   schema: (z) => ({
     headers: z.looseObject({
-      'x-talo-alias': playerAliasHeaderSchema
-    })
+      'x-talo-alias': playerAliasHeaderSchema,
+    }),
   }),
-  middleware: withMiddleware(
-    requireScopes([APIKeyScope.WRITE_PLAYERS]),
-    loadAlias
-  ),
+  middleware: withMiddleware(requireScopes([APIKeyScope.WRITE_PLAYERS]), loadAlias),
   handler: async (ctx) => {
     const alias = ctx.state.alias
     const socketToken = await alias.createSocketToken(ctx.redis)
@@ -25,8 +22,8 @@ export const socketTokenRoute = apiRoute({
     return {
       status: 200,
       body: {
-        socketToken
-      }
+        socketToken,
+      },
     }
-  }
+  },
 })

@@ -40,7 +40,7 @@ export default class GameFeedbackCategory {
       description: this.description,
       anonymised: this.anonymised,
       createdAt: this.createdAt,
-      updatedAt: this.updatedAt
+      updatedAt: this.updatedAt,
     }
   }
 }

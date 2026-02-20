@@ -1,12 +1,12 @@
 import { endOfDay, startOfDay } from 'date-fns'
 import { millisecondsInDay } from 'date-fns/constants'
-import { protectedRoute, withMiddleware } from '../../../lib/routing/router'
-import { loadGame } from '../../../middleware/game-middleware'
-import { formatDateForClickHouse } from '../../../lib/clickhouse/formatDateTime'
-import { dateRangeSchema } from '../../../lib/validation/dateRangeSchema'
 import GameStat from '../../../entities/game-stat'
+import { formatDateForClickHouse } from '../../../lib/clickhouse/formatDateTime'
 import { calculateChange } from '../../../lib/math/calculateChange'
 import { withResponseCache } from '../../../lib/perf/responseCache'
+import { protectedRoute, withMiddleware } from '../../../lib/routing/router'
+import { dateRangeSchema } from '../../../lib/validation/dateRangeSchema'
+import { loadGame } from '../../../middleware/game-middleware'
 
 type StatGlobalValueData = {
   date: number
@@ -18,7 +18,7 @@ function fillDateGaps(
   data: Map<number, number>,
   startDateQuery: string,
   endDateQuery: string,
-  defaultValue: number
+  defaultValue: number,
 ): StatGlobalValueData[] {
   const startDateMs = startOfDay(new Date(startDateQuery)).getTime()
   const endDateMs = startOfDay(new Date(endDateQuery)).getTime()
@@ -26,7 +26,11 @@ function fillDateGaps(
   const result: StatGlobalValueData[] = []
   let prev = defaultValue
 
-  for (let currentDateMs = startDateMs; currentDateMs <= endDateMs; currentDateMs += millisecondsInDay) {
+  for (
+    let currentDateMs = startDateMs;
+    currentDateMs <= endDateMs;
+    currentDateMs += millisecondsInDay
+  ) {
     const value = data.get(currentDateMs) ?? prev
     const change = calculateChange(value, prev)
     result.push({ date: currentDateMs, value, change })
@@ -46,9 +50,9 @@ export const statsGlobalValueRoute = protectedRoute({
   path: '/global-stats/:internalName',
   schema: (z) => ({
     route: z.object({
-      internalName: z.string()
+      internalName: z.string(),
     }),
-    query: dateRangeSchema
+    query: dateRangeSchema,
   }),
   middleware: withMiddleware(loadGame),
   handler: async (ctx) => {
@@ -64,13 +68,15 @@ export const statsGlobalValueRoute = protectedRoute({
       return ctx.throw(404, 'Stat not found')
     }
 
-    return withResponseCache({
-      key: `stats-global-value-${stat.id}-${startDateQuery}-${endDateQuery}`
-    }, async () => {
-      const startDate = formatDateForClickHouse(new Date(startDateQuery))
-      const endDate = formatDateForClickHouse(endOfDay(new Date(endDateQuery)))
+    return withResponseCache(
+      {
+        key: `stats-global-value-${stat.id}-${startDateQuery}-${endDateQuery}`,
+      },
+      async () => {
+        const startDate = formatDateForClickHouse(new Date(startDateQuery))
+        const endDate = formatDateForClickHouse(endOfDay(new Date(endDateQuery)))
 
-      const query = `
+        const query = `
         SELECT
           toUnixTimestamp(toStartOfDay(created_at)) * 1000 AS date,
           argMax(global_value, created_at) AS global_value
@@ -81,30 +87,33 @@ export const statsGlobalValueRoute = protectedRoute({
         ORDER BY date
       `
 
-      const snapshots = await clickhouse.query({
-        query,
-        query_params: {
-          startDate,
-          endDate,
-          statId: stat.id
-        },
-        format: 'JSONEachRow'
-      }).then((res) => res.json<AggregatedClickHouseSnapshot>())
+        const snapshots = await clickhouse
+          .query({
+            query,
+            query_params: {
+              startDate,
+              endDate,
+              statId: stat.id,
+            },
+            format: 'JSONEachRow',
+          })
+          .then((res) => res.json<AggregatedClickHouseSnapshot>())
 
-      const valuesMap = new Map<number, number>()
-      for (const snapshot of snapshots) {
-        valuesMap.set(Number(snapshot.date), Number(snapshot.global_value))
-      }
-
-      const data = fillDateGaps(valuesMap, startDateQuery, endDateQuery, stat.defaultValue)
-
-      return {
-        status: 200,
-        body: {
-          stat,
-          data
+        const valuesMap = new Map<number, number>()
+        for (const snapshot of snapshots) {
+          valuesMap.set(Number(snapshot.date), Number(snapshot.global_value))
         }
-      }
-    })
-  }
+
+        const data = fillDateGaps(valuesMap, startDateQuery, endDateQuery, stat.defaultValue)
+
+        return {
+          status: 200,
+          body: {
+            stat,
+            data,
+          },
+        }
+      },
+    )
+  },
 })

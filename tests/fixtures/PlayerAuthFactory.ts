@@ -1,6 +1,6 @@
+import { randEmail } from '@ngneat/falso'
 import { Factory } from 'hefty'
 import PlayerAuth from '../../src/entities/player-auth'
-import { randEmail } from '@ngneat/falso'
 
 export default class PlayerAuthFactory extends Factory<PlayerAuth> {
   constructor() {
@@ -10,7 +10,7 @@ export default class PlayerAuthFactory extends Factory<PlayerAuth> {
   protected override definition() {
     this.state(() => ({
       email: randEmail(),
-      password: ''
+      password: '',
     }))
   }
 }

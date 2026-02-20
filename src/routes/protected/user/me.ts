@@ -7,8 +7,8 @@ export const meRoute = protectedRoute({
     return {
       status: 200,
       body: {
-        user: ctx.state.user
-      }
+        user: ctx.state.user,
+      },
     }
-  }
+  },
 })

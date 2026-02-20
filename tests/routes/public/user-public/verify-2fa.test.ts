@@ -1,8 +1,8 @@
-import request from 'supertest'
 import { authenticator } from '@otplib/preset-default'
+import request from 'supertest'
 import UserTwoFactorAuth from '../../../../src/entities/user-two-factor-auth'
-import createUserAndToken from '../../../utils/createUserAndToken'
 import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
+import createUserAndToken from '../../../utils/createUserAndToken'
 
 describe('User public - verify 2fa', () => {
   it('should let users verify their 2fa code and login', async () => {

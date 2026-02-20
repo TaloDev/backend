@@ -1,11 +1,11 @@
-import { protectedRoute, withMiddleware } from '../../../lib/routing/router'
-import { loadGame } from '../../../middleware/game-middleware'
-import { pageSchema } from '../../../lib/validation/pageSchema'
 import { EntityManager, FilterQuery, QueryOrder } from '@mikro-orm/mysql'
 import Game from '../../../entities/game'
 import Player from '../../../entities/player'
-import { withResponseCache } from '../../../lib/perf/responseCache'
 import { SMALL_PAGE_SIZE } from '../../../lib/pagination/itemsPerPage'
+import { withResponseCache } from '../../../lib/perf/responseCache'
+import { protectedRoute, withMiddleware } from '../../../lib/routing/router'
+import { pageSchema } from '../../../lib/validation/pageSchema'
+import { loadGame } from '../../../middleware/game-middleware'
 
 type SearchPlayersParams = {
   em: EntityManager
@@ -24,7 +24,7 @@ export async function listPlayersHandler({
   search,
   page,
   includeDevData,
-  forwarded
+  forwarded,
 }: SearchPlayersParams) {
   const searchComponent = search ? encodeURIComponent(search) : 'no-search'
   const devDataComponent = includeDevData ? 'dev' : 'no-dev'
@@ -43,23 +43,23 @@ export async function listPlayersHandler({
           props: {
             $some: {
               value: {
-                $like: `%${search}%`
-              }
-            }
-          }
+                $like: `%${search}%`,
+              },
+            },
+          },
         },
         {
           aliases: {
             identifier: {
-              $like: `%${search}%`
-            }
-          }
+              $like: `%${search}%`,
+            },
+          },
         },
         {
           id: {
-            $like: `%${search}%`
-          }
-        }
+            $like: `%${search}%`,
+          },
+        },
       ]
 
       if (!forwarded) {
@@ -72,8 +72,8 @@ export async function listPlayersHandler({
           if (groupId) {
             searchConditions.push({
               groups: {
-                $some: groupId
-              }
+                $some: groupId,
+              },
             })
           }
         }
@@ -84,9 +84,9 @@ export async function listPlayersHandler({
             searchConditions.push({
               aliases: {
                 channels: {
-                  $some: channelId
-                }
-              }
+                  $some: channelId,
+                },
+              },
             })
           }
         }
@@ -98,7 +98,7 @@ export async function listPlayersHandler({
     const [allPlayers, count] = await em.repo(Player).findAndCount(where, {
       orderBy: { lastSeenAt: QueryOrder.DESC },
       limit: itemsPerPage + 1,
-      offset: page * itemsPerPage
+      offset: page * itemsPerPage,
     })
 
     const players = allPlayers.slice(0, itemsPerPage)
@@ -110,8 +110,8 @@ export async function listPlayersHandler({
         players,
         count,
         itemsPerPage,
-        isLastPage: allPlayers.length <= itemsPerPage
-      }
+        isLastPage: allPlayers.length <= itemsPerPage,
+      },
     }
   })
 }
@@ -121,8 +121,8 @@ export const listRoute = protectedRoute({
   schema: (z) => ({
     query: z.object({
       search: z.string().optional(),
-      page: pageSchema
-    })
+      page: pageSchema,
+    }),
   }),
   middleware: withMiddleware(loadGame),
   handler: async (ctx) => {
@@ -133,7 +133,7 @@ export const listRoute = protectedRoute({
       game: ctx.state.game,
       search,
       page,
-      includeDevData: ctx.state.includeDevData
+      includeDevData: ctx.state.includeDevData,
     })
-  }
+  },
 })

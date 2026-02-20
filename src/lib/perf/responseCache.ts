@@ -1,7 +1,7 @@
 import { captureException } from '@sentry/node'
 import Redis from 'ioredis'
-import { clearCachePattern } from './clearCachePattern'
 import { createRedisConnection, RESPONSE_CACHE_DB } from '../../config/redis.config'
+import { clearCachePattern } from './clearCachePattern'
 
 type Response<T = unknown> = {
   status: number
@@ -29,15 +29,18 @@ export async function clearResponseCache(pattern: string) {
   }
 }
 
-export async function withResponseCache<T>({
-  key,
-  ttl = 60,
-  slidingWindow
-}: {
-  key: string
-  ttl?: number
-  slidingWindow?: boolean
-}, cb: () => Promise<Response<T>>): Promise<Response<T>> {
+export async function withResponseCache<T>(
+  {
+    key,
+    ttl = 60,
+    slidingWindow,
+  }: {
+    key: string
+    ttl?: number
+    slidingWindow?: boolean
+  },
+  cb: () => Promise<Response<T>>,
+): Promise<Response<T>> {
   const fullKey = `${prefix}:${key}`
 
   try {

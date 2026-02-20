@@ -1,7 +1,7 @@
-import { protectedRoute } from '../../../lib/routing/router'
 import bcrypt from 'bcrypt'
 import UserSession from '../../../entities/user-session'
 import { buildTokenPair } from '../../../lib/auth/buildTokenPair'
+import { protectedRoute } from '../../../lib/routing/router'
 import { passwordSchema } from '../../../lib/validation/passwordSchema'
 
 export const changePasswordRoute = protectedRoute({
@@ -10,8 +10,8 @@ export const changePasswordRoute = protectedRoute({
   schema: (z) => ({
     body: z.object({
       currentPassword: passwordSchema,
-      newPassword: passwordSchema
-    })
+      newPassword: passwordSchema,
+    }),
   }),
   handler: async (ctx) => {
     const { currentPassword, newPassword } = ctx.state.validated.body
@@ -22,7 +22,7 @@ export const changePasswordRoute = protectedRoute({
     if (!passwordMatches) {
       return {
         status: 403,
-        body: { message: 'Current password is incorrect' }
+        body: { message: 'Current password is incorrect' },
       }
     }
 
@@ -30,7 +30,7 @@ export const changePasswordRoute = protectedRoute({
     if (isSamePassword) {
       return {
         status: 400,
-        body: { message: 'Please choose a different password' }
+        body: { message: 'Please choose a different password' },
       }
     }
 
@@ -42,14 +42,14 @@ export const changePasswordRoute = protectedRoute({
       em,
       ctx,
       user,
-      userAgent: ctx.get('user-agent')
+      userAgent: ctx.get('user-agent'),
     })
 
     return {
       status: 200,
       body: {
-        accessToken
-      }
+        accessToken,
+      },
     }
-  }
+  },
 })

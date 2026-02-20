@@ -1,6 +1,6 @@
+import { randBoolean, randNumber, randUuid } from '@ngneat/falso'
 import { Factory } from 'hefty'
 import { IntegrationConfig } from '../../src/entities/integration'
-import { randBoolean, randNumber, randUuid } from '@ngneat/falso'
 
 class IntegrationConfigProvider implements IntegrationConfig {
   apiKey!: string
@@ -20,7 +20,7 @@ export default class IntegrationConfigFactory extends Factory<IntegrationConfigP
         apiKey: randUuid().replace(/-/g, ''),
         appId: randNumber({ min: 100000, max: 999999 }),
         syncLeaderboards: randBoolean(),
-        syncStats: randBoolean()
+        syncStats: randBoolean(),
       }
     })
   }

@@ -1,19 +1,19 @@
-import { apiRoute, withMiddleware } from '../../../lib/routing/router'
-import { requireScopes } from '../../../middleware/policy-middleware'
 import { APIKeyScope } from '../../../entities/api-key'
 import Player from '../../../entities/player'
 import PlayerPresence from '../../../entities/player-presence'
 import { RouteDocs } from '../../../lib/docs/docs-registry'
+import { apiRoute, withMiddleware } from '../../../lib/routing/router'
+import { requireScopes } from '../../../middleware/policy-middleware'
 
 const docs: RouteDocs = {
-  description: 'Get a player\'s online status and custom status',
+  description: "Get a player's online status and custom status",
   samples: [
     {
       title: 'Sample response',
       sample: {
         presence: {
           online: true,
-          customStatus: 'I\'m loving this game',
+          customStatus: "I'm loving this game",
           playerAlias: {
             id: 1,
             service: 'username',
@@ -24,19 +24,19 @@ const docs: RouteDocs = {
                 { key: 'currentLevel', value: '58' },
                 { key: 'xPos', value: '13.29' },
                 { key: 'yPos', value: '26.44' },
-                { key: 'zoneId', value: '3' }
+                { key: 'zoneId', value: '3' },
               ],
               devBuild: false,
               createdAt: '2025-01-15T13:20:32.133Z',
               lastSeenAt: '2025-02-12T15:09:43.066Z',
-              groups: []
-            }
+              groups: [],
+            },
           },
-          updatedAt: '2025-02-12T15:09:43.066Z'
-        }
-      }
-    }
-  ]
+          updatedAt: '2025-02-12T15:09:43.066Z',
+        },
+      },
+    },
+  ],
 }
 
 export const getRoute = apiRoute({
@@ -45,19 +45,17 @@ export const getRoute = apiRoute({
   docs,
   schema: (z) => ({
     route: z.object({
-      id: z.uuid().meta({ description: 'The ID of the player' })
-    })
+      id: z.uuid().meta({ description: 'The ID of the player' }),
+    }),
   }),
-  middleware: withMiddleware(
-    requireScopes([APIKeyScope.READ_PLAYER_PRESENCE])
-  ),
+  middleware: withMiddleware(requireScopes([APIKeyScope.READ_PLAYER_PRESENCE])),
   handler: async (ctx) => {
     const { id } = ctx.state.validated.route
     const em = ctx.em
 
     const player = await em.repo(Player).findOne({
       id,
-      game: ctx.state.game
+      game: ctx.state.game,
     })
 
     if (!player) {
@@ -69,8 +67,8 @@ export const getRoute = apiRoute({
     return {
       status: 200,
       body: {
-        presence
-      }
+        presence,
+      },
     }
-  }
+  },
 })

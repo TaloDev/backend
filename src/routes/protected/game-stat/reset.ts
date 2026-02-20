@@ -1,15 +1,15 @@
 import { FilterQuery } from '@mikro-orm/mysql'
-import { protectedRoute, withMiddleware } from '../../../lib/routing/router'
-import { userTypeGate } from '../../../middleware/policy-middleware'
-import { UserType } from '../../../entities/user'
-import GameStat from '../../../entities/game-stat'
-import PlayerGameStat from '../../../entities/player-game-stat'
-import PlayerAlias from '../../../entities/player-alias'
 import { GameActivityType } from '../../../entities/game-activity'
+import GameStat from '../../../entities/game-stat'
+import PlayerAlias from '../../../entities/player-alias'
+import PlayerGameStat from '../../../entities/player-game-stat'
+import { UserType } from '../../../entities/user'
 import createGameActivity from '../../../lib/logging/createGameActivity'
 import { deferClearResponseCache } from '../../../lib/perf/responseCacheQueue'
-import { resetModes, translateResetMode } from '../../../lib/validation/resetModeValidation'
 import { streamByCursor } from '../../../lib/perf/streamByCursor'
+import { protectedRoute, withMiddleware } from '../../../lib/routing/router'
+import { resetModes, translateResetMode } from '../../../lib/validation/resetModeValidation'
+import { userTypeGate } from '../../../middleware/policy-middleware'
 import { loadStat } from './common'
 
 export const resetRoute = protectedRoute({
@@ -17,15 +17,15 @@ export const resetRoute = protectedRoute({
   path: '/:id/player-stats',
   schema: (z) => ({
     query: z.object({
-      mode: z.enum(resetModes, {
-        error: `Mode must be one of: ${resetModes.join(', ')}`
-      }).optional().default('all')
-    })
+      mode: z
+        .enum(resetModes, {
+          error: `Mode must be one of: ${resetModes.join(', ')}`,
+        })
+        .optional()
+        .default('all'),
+    }),
   }),
-  middleware: withMiddleware(
-    userTypeGate([UserType.ADMIN], 'reset stats'),
-    loadStat
-  ),
+  middleware: withMiddleware(userTypeGate([UserType.ADMIN], 'reset stats'), loadStat),
   handler: async (ctx) => {
     const { mode } = ctx.state.validated.query
     const em = ctx.em
@@ -35,17 +35,17 @@ export const resetRoute = protectedRoute({
 
     if (mode === 'dev') {
       where.player = {
-        devBuild: true
+        devBuild: true,
       }
     } else if (mode === 'live') {
       where.player = {
-        devBuild: false
+        devBuild: false,
       }
     }
 
-    const deletedCount = await (em.fork()).transactional(async (trx) => {
+    const deletedCount = await em.fork().transactional(async (trx) => {
       const playerIds = await trx.repo(PlayerGameStat).find(where, {
-        fields: ['player.id']
+        fields: ['player.id'],
       })
 
       const deletedCount = await trx.repo(PlayerGameStat).nativeDelete(where)
@@ -59,22 +59,25 @@ export const resetRoute = protectedRoute({
           statInternalName: stat.internalName,
           display: {
             'Reset mode': translateResetMode(mode),
-            'Deleted count': deletedCount
-          }
-        }
+            'Deleted count': deletedCount,
+          },
+        },
       })
 
       const clickhouse = ctx.clickhouse
       const aliasStream = streamByCursor<{ id: number }>(async (batchSize, after) => {
-        return trx.repo(PlayerAlias).findByCursor({
-          player: { id: playerIds.map((p) => p.player.id) }
-        }, {
-          first: batchSize,
-          after,
-          orderBy: { id: 'asc' },
-          fields: ['id'],
-          strategy: 'joined'
-        })
+        return trx.repo(PlayerAlias).findByCursor(
+          {
+            player: { id: playerIds.map((p) => p.player.id) },
+          },
+          {
+            first: batchSize,
+            after,
+            orderBy: { id: 'asc' },
+            fields: ['id'],
+            strategy: 'joined',
+          },
+        )
       }, 1000)
 
       const query = `
@@ -95,8 +98,8 @@ export const resetRoute = protectedRoute({
             query,
             query_params: {
               statId: stat.id,
-              aliasIds: batchIds
-            }
+              aliasIds: batchIds,
+            },
           })
         }
       }
@@ -107,8 +110,8 @@ export const resetRoute = protectedRoute({
           query,
           query_params: {
             statId: stat.id,
-            aliasIds
-          }
+            aliasIds,
+          },
         })
       }
 
@@ -117,14 +120,14 @@ export const resetRoute = protectedRoute({
 
     await Promise.allSettled([
       deferClearResponseCache(GameStat.getIndexCacheKey(stat.game, true)),
-      deferClearResponseCache(PlayerGameStat.getCacheKeyForStat(stat, true))
+      deferClearResponseCache(PlayerGameStat.getCacheKeyForStat(stat, true)),
     ])
 
     return {
       status: 200,
       body: {
-        deletedCount
-      }
+        deletedCount,
+      },
     }
-  }
+  },
 })

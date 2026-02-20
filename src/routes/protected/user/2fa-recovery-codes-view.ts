@@ -7,8 +7,8 @@ export const viewRecoveryCodesRoute = protectedRoute({
   path: '/2fa/recovery_codes/view',
   schema: (z) => ({
     body: z.object({
-      password: passwordSchema
-    })
+      password: passwordSchema,
+    }),
   }),
   middleware: withMiddleware(confirmPassword, requires2fa),
   handler: async (ctx) => {
@@ -18,8 +18,8 @@ export const viewRecoveryCodesRoute = protectedRoute({
     return {
       status: 200,
       body: {
-        recoveryCodes
-      }
+        recoveryCodes,
+      },
     }
-  }
+  },
 })

@@ -1,8 +1,8 @@
 import { Entity, OneToOne, PrimaryKey, Property } from '@mikro-orm/mysql'
-import Player from './player'
 import { v4 } from 'uuid'
-import PlayerAlias from './player-alias'
 import { sign } from '../lib/auth/jwt'
+import Player from './player'
+import PlayerAlias from './player-alias'
 
 export const playerAuthErrorCodes = [
   'INVALID_CREDENTIALS',
@@ -15,10 +15,10 @@ export const playerAuthErrorCodes = [
   'NEW_EMAIL_MATCHES_CURRENT_EMAIL',
   'PASSWORD_RESET_CODE_INVALID',
   'VERIFICATION_EMAIL_REQUIRED',
-  'INVALID_EMAIL'
+  'INVALID_EMAIL',
 ] as const
 
-export type PlayerAuthErrorCode = typeof playerAuthErrorCodes[number]
+export type PlayerAuthErrorCode = (typeof playerAuthErrorCodes)[number]
 
 @Entity()
 export default class PlayerAuth {
@@ -68,7 +68,7 @@ export default class PlayerAuth {
     return {
       email: this.email,
       verificationEnabled: this.verificationEnabled,
-      sessionCreatedAt: this.sessionCreatedAt
+      sessionCreatedAt: this.sessionCreatedAt,
     }
   }
 }

@@ -1,38 +1,38 @@
-import Stripe from 'stripe'
-import { PublicRouteContext } from '../../../lib/routing/context'
-import OrganisationPricingPlan from '../../../entities/organisation-pricing-plan'
-import createDefaultPricingPlan from '../../../lib/billing/createDefaultPricingPlan'
-import PricingPlan from '../../../entities/pricing-plan'
 import { captureException } from '@sentry/node'
-import initStripe from '../../../lib/billing/initStripe'
+import assert from 'node:assert'
+import Stripe from 'stripe'
+import { getGlobalQueue } from '../../../config/global-queues'
 import PlanCancelled from '../../../emails/plan-cancelled-mail'
+import PlanInvoice from '../../../emails/plan-invoice-mail'
+import PlanPaymentFailed from '../../../emails/plan-payment-failed'
 import PlanRenewed from '../../../emails/plan-renewed-mail'
 import PlanUpgraded from '../../../emails/plan-upgraded-mail'
-import PlanInvoice from '../../../emails/plan-invoice-mail'
+import OrganisationPricingPlan from '../../../entities/organisation-pricing-plan'
+import PricingPlan from '../../../entities/pricing-plan'
+import createDefaultPricingPlan from '../../../lib/billing/createDefaultPricingPlan'
+import initStripe from '../../../lib/billing/initStripe'
 import queueEmail from '../../../lib/messaging/queueEmail'
-import PlanPaymentFailed from '../../../emails/plan-payment-failed'
-import { getGlobalQueue } from '../../../config/global-queues'
-import assert from 'node:assert'
+import { PublicRouteContext } from '../../../lib/routing/context'
 import { publicRoute } from '../../../lib/routing/router'
 
-async function getOrganisationPricingPlan(
-  ctx: PublicRouteContext,
-  stripeCustomerId: string
-) {
+async function getOrganisationPricingPlan(ctx: PublicRouteContext, stripeCustomerId: string) {
   const em = ctx.em
 
-  const orgPlan = await em.repo(OrganisationPricingPlan).findOneOrFail({
-    stripeCustomerId
-  }, {
-    populate: ['organisation']
-  })
+  const orgPlan = await em.repo(OrganisationPricingPlan).findOneOrFail(
+    {
+      stripeCustomerId,
+    },
+    {
+      populate: ['organisation'],
+    },
+  )
 
   return orgPlan
 }
 
 async function handleSubscriptionDeleted(
   ctx: PublicRouteContext,
-  subscription: Stripe.Subscription
+  subscription: Stripe.Subscription,
 ) {
   const em = ctx.em
 
@@ -45,7 +45,7 @@ async function handleSubscriptionDeleted(
 async function handleSubscriptionUpdated(
   ctx: PublicRouteContext,
   subscription: Stripe.Subscription,
-  stripe: Stripe
+  stripe: Stripe,
 ) {
   const em = ctx.em
 
@@ -69,7 +69,10 @@ async function handleSubscriptionUpdated(
   if (prevStripePriceId !== orgPlan.stripePriceId) {
     const price = subscription.items.data[0].price
     const product = await stripe.products.retrieve(price.product as string)
-    await queueEmail(getGlobalQueue('email'), new PlanUpgraded(orgPlan.organisation, price, product))
+    await queueEmail(
+      getGlobalQueue('email'),
+      new PlanUpgraded(orgPlan.organisation, price, product),
+    )
   }
 
   if (prevEndDate && !orgPlan.endDate && prevStripePriceId === orgPlan.stripePriceId) {
@@ -79,18 +82,12 @@ async function handleSubscriptionUpdated(
   }
 }
 
-async function handleNewInvoice(
-  ctx: PublicRouteContext,
-  invoice: Stripe.Invoice
-) {
+async function handleNewInvoice(ctx: PublicRouteContext, invoice: Stripe.Invoice) {
   const orgPlan = await getOrganisationPricingPlan(ctx, invoice.customer as string)
   await queueEmail(getGlobalQueue('email'), new PlanInvoice(orgPlan.organisation, invoice))
 }
 
-async function handlePaymentFailed(
-  ctx: PublicRouteContext,
-  invoice: Stripe.Invoice
-) {
+async function handlePaymentFailed(ctx: PublicRouteContext, invoice: Stripe.Invoice) {
   const orgPlan = await getOrganisationPricingPlan(ctx, invoice.customer as string)
   await queueEmail(getGlobalQueue('email'), new PlanPaymentFailed(orgPlan.organisation, invoice))
 }
@@ -107,9 +104,9 @@ export const subscriptionsRoute = publicRoute({
       event = stripe.webhooks.constructEvent(
         ctx.request.rawBody,
         ctx.get('stripe-signature'),
-        process.env.STRIPE_WEBHOOK_SECRET!
+        process.env.STRIPE_WEBHOOK_SECRET!,
       )
-    /* v8 ignore start */
+      /* v8 ignore start */
     } catch (err) {
       captureException(err)
       return ctx.throw(401)
@@ -133,7 +130,7 @@ export const subscriptionsRoute = publicRoute({
     }
 
     return {
-      status: 204
+      status: 204,
     }
-  }
+  },
 })

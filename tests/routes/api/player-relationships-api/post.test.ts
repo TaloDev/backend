@@ -1,9 +1,11 @@
 import request from 'supertest'
 import { APIKeyScope } from '../../../../src/entities/api-key'
-import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
-import PlayerFactory from '../../../fixtures/PlayerFactory'
 import PlayerAliasSubscriptionFactory from '../../../fixtures/PlayerAliasSubscriptionFactory'
-import createSocketIdentifyMessage, { persistTestSocketTicket } from '../../../utils/createSocketIdentifyMessage'
+import PlayerFactory from '../../../fixtures/PlayerFactory'
+import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
+import createSocketIdentifyMessage, {
+  persistTestSocketTicket,
+} from '../../../utils/createSocketIdentifyMessage'
 import createTestSocket, { createTestClient } from '../../../utils/createTestSocket'
 
 describe('Player relationships API - post', () => {
@@ -136,19 +138,30 @@ describe('Player relationships API - post', () => {
       .set('x-talo-alias', String(player1.aliases[0].id))
       .expect(400)
 
-    expect(res.body.errors.relationshipType).toStrictEqual(['relationshipType must be either "unidirectional" or "bidirectional"'])
+    expect(res.body.errors.relationshipType).toStrictEqual([
+      'relationshipType must be either "unidirectional" or "bidirectional"',
+    ])
   })
 
   it('should notify the target player when a subscription is created', async () => {
-    const { identifyMessage: identifyMessage1, ticket: ticket1, player: player1, apiKey, token: token1 } = await createSocketIdentifyMessage([
+    const {
+      identifyMessage: identifyMessage1,
+      ticket: ticket1,
+      player: player1,
+      apiKey,
+      token: token1,
+    } = await createSocketIdentifyMessage([
       APIKeyScope.READ_PLAYERS,
       APIKeyScope.READ_PLAYER_RELATIONSHIPS,
-      APIKeyScope.WRITE_PLAYER_RELATIONSHIPS
+      APIKeyScope.WRITE_PLAYER_RELATIONSHIPS,
     ])
     const player2 = await new PlayerFactory([apiKey.game]).one()
     await em.persist(player2).flush()
 
-    const { identifyMessage: identifyMessage2, ticket: ticket2 } = await persistTestSocketTicket(apiKey, player2)
+    const { identifyMessage: identifyMessage2, ticket: ticket2 } = await persistTestSocketTicket(
+      apiKey,
+      player2,
+    )
 
     await createTestSocket(`/?ticket=${ticket1}`, async (client1, _wss, port) => {
       const client2 = await createTestClient(port, `/?ticket=${ticket2}`, { waitForReady: false })

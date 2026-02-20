@@ -1,13 +1,13 @@
 import { endOfDay, startOfDay } from 'date-fns'
 import { millisecondsInDay } from 'date-fns/constants'
-import { protectedRoute, withMiddleware } from '../../../lib/routing/router'
-import { loadGame } from '../../../middleware/game-middleware'
-import { formatDateForClickHouse } from '../../../lib/clickhouse/formatDateTime'
-import { dateRangeSchema } from '../../../lib/validation/dateRangeSchema'
+import assert from 'node:assert'
 import GameStat from '../../../entities/game-stat'
+import { formatDateForClickHouse } from '../../../lib/clickhouse/formatDateTime'
 import { calculateChange } from '../../../lib/math/calculateChange'
 import { withResponseCache } from '../../../lib/perf/responseCache'
-import assert from 'node:assert'
+import { protectedRoute, withMiddleware } from '../../../lib/routing/router'
+import { dateRangeSchema } from '../../../lib/validation/dateRangeSchema'
+import { loadGame } from '../../../middleware/game-middleware'
 
 type StatValues = {
   [key: string]: number
@@ -23,7 +23,7 @@ function buildDataWithChanges(
   data: Map<number, StatValues>,
   startDateQuery: string,
   endDateQuery: string,
-  statNames: string[]
+  statNames: string[],
 ): StatCountData[] {
   const startDateMs = startOfDay(new Date(startDateQuery)).getTime()
   const endDateMs = startOfDay(new Date(endDateQuery)).getTime()
@@ -31,7 +31,11 @@ function buildDataWithChanges(
   const result: StatCountData[] = []
   let prev: StatValues = {}
 
-  for (let currentDateMs = startDateMs; currentDateMs <= endDateMs; currentDateMs += millisecondsInDay) {
+  for (
+    let currentDateMs = startDateMs;
+    currentDateMs <= endDateMs;
+    currentDateMs += millisecondsInDay
+  ) {
     const stats = data.get(currentDateMs) ?? {}
     const change: StatValues = {}
 
@@ -56,7 +60,7 @@ export const statsActivityRoute = protectedRoute({
   method: 'get',
   path: '/stats-activity',
   schema: () => ({
-    query: dateRangeSchema
+    query: dateRangeSchema,
   }),
   middleware: withMiddleware(loadGame),
   handler: async (ctx) => {
@@ -66,30 +70,32 @@ export const statsActivityRoute = protectedRoute({
 
     const game = ctx.state.game
 
-    return withResponseCache({
-      key: `stats-activity-${game.id}-${startDateQuery}-${endDateQuery}`
-    }, async () => {
-      const startDate = formatDateForClickHouse(new Date(startDateQuery))
-      const endDate = formatDateForClickHouse(endOfDay(new Date(endDateQuery)))
-      const gameStats = await em.repo(GameStat).find({ game })
+    return withResponseCache(
+      {
+        key: `stats-activity-${game.id}-${startDateQuery}-${endDateQuery}`,
+      },
+      async () => {
+        const startDate = formatDateForClickHouse(new Date(startDateQuery))
+        const endDate = formatDateForClickHouse(endOfDay(new Date(endDateQuery)))
+        const gameStats = await em.repo(GameStat).find({ game })
 
-      const statIdToName = new Map<number, string>()
-      for (const stat of gameStats) {
-        statIdToName.set(stat.id, stat.name)
-      }
+        const statIdToName = new Map<number, string>()
+        for (const stat of gameStats) {
+          statIdToName.set(stat.id, stat.name)
+        }
 
-      const statIds = gameStats.map((stat) => stat.id)
-      if (statIds.length === 0) {
-        return {
-          status: 200,
-          body: {
-            data: [] as StatCountData[],
-            statNames: [] as string[]
+        const statIds = gameStats.map((stat) => stat.id)
+        if (statIds.length === 0) {
+          return {
+            status: 200,
+            body: {
+              data: [] as StatCountData[],
+              statNames: [] as string[],
+            },
           }
         }
-      }
 
-      const query = `
+        const query = `
         SELECT
           game_stat_id,
           toUnixTimestamp(toStartOfDay(created_at)) * 1000 AS date,
@@ -101,39 +107,42 @@ export const statsActivityRoute = protectedRoute({
         ORDER BY game_stat_id, date
       `
 
-      const snapshots = await clickhouse.query({
-        query,
-        query_params: {
-          startDate,
-          endDate,
-          statIds
-        },
-        format: 'JSONEachRow'
-      }).then((res) => res.json<AggregatedClickHouseSnapshot>())
+        const snapshots = await clickhouse
+          .query({
+            query,
+            query_params: {
+              startDate,
+              endDate,
+              statIds,
+            },
+            format: 'JSONEachRow',
+          })
+          .then((res) => res.json<AggregatedClickHouseSnapshot>())
 
-      const statsMap = new Map<number, StatValues>()
-      for (const snapshot of snapshots) {
-        const statName = statIdToName.get(Number(snapshot.game_stat_id))
-        assert(statName)
+        const statsMap = new Map<number, StatValues>()
+        for (const snapshot of snapshots) {
+          const statName = statIdToName.get(Number(snapshot.game_stat_id))
+          assert(statName)
 
-        const date = Number(snapshot.date)
-        const existing = statsMap.get(date) ?? {}
-        statsMap.set(date, {
-          ...existing,
-          [statName]: Number(snapshot.count)
-        })
-      }
-
-      const statNames = Array.from(statIdToName.values())
-      const data = buildDataWithChanges(statsMap, startDateQuery, endDateQuery, statNames)
-
-      return {
-        status: 200,
-        body: {
-          data,
-          statNames
+          const date = Number(snapshot.date)
+          const existing = statsMap.get(date) ?? {}
+          statsMap.set(date, {
+            ...existing,
+            [statName]: Number(snapshot.count),
+          })
         }
-      }
-    })
-  }
+
+        const statNames = Array.from(statIdToName.values())
+        const data = buildDataWithChanges(statsMap, startDateQuery, endDateQuery, statNames)
+
+        return {
+          status: 200,
+          body: {
+            data,
+            statNames,
+          },
+        }
+      },
+    )
+  },
 })

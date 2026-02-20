@@ -1,9 +1,9 @@
+import { rand, randText } from '@ngneat/falso'
 import { Factory } from 'hefty'
+import Game from '../../src/entities/game'
 import GameFeedback from '../../src/entities/game-feedback'
 import GameFeedbackCategoryFactory from './GameFeedbackCategoryFactory'
-import Game from '../../src/entities/game'
 import PlayerFactory from './PlayerFactory'
-import { rand, randText } from '@ngneat/falso'
 
 export default class GameFeedbackFactory extends Factory<GameFeedback> {
   private game: Game
@@ -23,7 +23,7 @@ export default class GameFeedbackFactory extends Factory<GameFeedback> {
         category,
         comment: randText(),
         anonymised: category.anonymised,
-        playerAlias: rand(player.aliases.getItems())
+        playerAlias: rand(player.aliases.getItems()),
       }
     })
   }

@@ -7,8 +7,8 @@ export const disable2faRoute = protectedRoute({
   path: '/2fa/disable',
   schema: (z) => ({
     body: z.object({
-      password: passwordSchema
-    })
+      password: passwordSchema,
+    }),
   }),
   middleware: withMiddleware(confirmPassword, requires2fa),
   handler: async (ctx) => {
@@ -21,8 +21,8 @@ export const disable2faRoute = protectedRoute({
     return {
       status: 200,
       body: {
-        user
-      }
+        user,
+      },
     }
-  }
+  },
 })

@@ -1,24 +1,31 @@
 import { EntityManager, UniqueConstraintViolationException } from '@mikro-orm/mysql'
+import { captureException } from '@sentry/node'
+import { createRedisConnection } from '../../config/redis.config'
 import Player from '../../entities/player'
 import PlayerGroup from '../../entities/player-group'
 import { getResultCacheOptions } from '../perf/getResultCacheOptions'
-import { captureException } from '@sentry/node'
-import { createRedisConnection } from '../../config/redis.config'
 
 let redis: ReturnType<typeof createRedisConnection>
 
 function getGroupsFromPlayer(em: EntityManager, player: Player) {
-  return em.repo(PlayerGroup).find({
-    game: player.game
-  }, {
-    ...getResultCacheOptions(PlayerGroup.getCacheKey(player.game)),
-    fields: ['id', 'name', 'rules', 'ruleMode', 'game.id']
-  })
+  return em.repo(PlayerGroup).find(
+    {
+      game: player.game,
+    },
+    {
+      ...getResultCacheOptions(PlayerGroup.getCacheKey(player.game)),
+      fields: ['id', 'name', 'rules', 'ruleMode', 'game.id'],
+    },
+  )
 }
 
 type LoadedGroups = Awaited<ReturnType<typeof getGroupsFromPlayer>>
 
-async function runMembershipChecksForGroups(em: EntityManager, player: Player, groups: LoadedGroups): Promise<boolean> {
+async function runMembershipChecksForGroups(
+  em: EntityManager,
+  player: Player,
+  groups: LoadedGroups,
+): Promise<boolean> {
   let shouldFlush = false
 
   for (const group of groups) {

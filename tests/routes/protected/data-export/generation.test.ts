@@ -1,33 +1,37 @@
 import { Collection } from '@mikro-orm/mysql'
-import { UserType } from '../../../../src/entities/user'
+import { parse } from 'csv-parse'
+import { readFile, rm, mkdir } from 'fs/promises'
+import assert from 'node:assert'
+import * as os from 'os'
+import path from 'path'
+import * as unzipper from 'unzipper'
 import { DataExportAvailableEntities } from '../../../../src/entities/data-export'
+import { GameActivityType } from '../../../../src/entities/game-activity'
+import PlayerProp from '../../../../src/entities/player-prop'
+import { UserType } from '../../../../src/entities/user'
+import { DataExporter } from '../../../../src/lib/queues/data-exports/dataExportProcessor'
 import DataExportFactory from '../../../fixtures/DataExportFactory'
 import EventFactory from '../../../fixtures/EventFactory'
-import PlayerFactory from '../../../fixtures/PlayerFactory'
 import GameActivityFactory from '../../../fixtures/GameActivityFactory'
-import { GameActivityType } from '../../../../src/entities/game-activity'
+import GameFeedbackFactory from '../../../fixtures/GameFeedbackFactory'
 import GameStatFactory from '../../../fixtures/GameStatFactory'
-import PlayerProp from '../../../../src/entities/player-prop'
+import PlayerFactory from '../../../fixtures/PlayerFactory'
 import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
 import createUserAndToken from '../../../utils/createUserAndToken'
-import GameFeedbackFactory from '../../../fixtures/GameFeedbackFactory'
-import { DataExporter } from '../../../../src/lib/queues/data-exports/dataExportProcessor'
-import { readFile, rm, mkdir } from 'fs/promises'
-import path from 'path'
-import { parse } from 'csv-parse'
-import * as unzipper from 'unzipper'
-import * as os from 'os'
-import assert from 'node:assert'
 
 async function parseCsvString(csvString: string): Promise<string[][]> {
   return new Promise((resolve, reject) => {
-    parse(csvString, {
-      columns: false, // don't auto-detect columns, we want raw rows
-      skip_empty_lines: true
-    }, (err, records) => {
-      if (err) reject(err)
-      else resolve(records)
-    })
+    parse(
+      csvString,
+      {
+        columns: false, // don't auto-detect columns, we want raw rows
+        skip_empty_lines: true,
+      },
+      (err, records) => {
+        if (err) reject(err)
+        else resolve(records)
+      },
+    )
   })
 }
 
@@ -60,12 +64,14 @@ describe('Data export - generation', () => {
     const exporter = new DataExporter()
     const proto = Object.getPrototypeOf(exporter)
 
-    const player = await new PlayerFactory([game]).state((player) => ({
-      props: new Collection<PlayerProp>(player, [
-        new PlayerProp(player, 'level', '70'),
-        new PlayerProp(player, 'guildName', 'The Best Guild')
-      ])
-    })).one()
+    const player = await new PlayerFactory([game])
+      .state((player) => ({
+        props: new Collection<PlayerProp>(player, [
+          new PlayerProp(player, 'level', '70'),
+          new PlayerProp(player, 'guildName', 'The Best Guild'),
+        ]),
+      }))
+      .one()
 
     let val: string = proto.transformColumn('props.level', player)
     expect(val).toBe('70')
@@ -79,32 +85,44 @@ describe('Data export - generation', () => {
 
   it('should transform gameActivityType columns', async () => {
     const [organisation, game] = await createOrganisationAndGame()
-    const [, user] = await createUserAndToken({ type: UserType.ADMIN, emailConfirmed: true }, organisation)
+    const [, user] = await createUserAndToken(
+      { type: UserType.ADMIN, emailConfirmed: true },
+      organisation,
+    )
 
     const exporter = new DataExporter()
     const proto = Object.getPrototypeOf(exporter)
 
-    const activity = await new GameActivityFactory([game], [user]).state(() => ({
-      type: GameActivityType.API_KEY_CREATED
-    })).one()
+    const activity = await new GameActivityFactory([game], [user])
+      .state(() => ({
+        type: GameActivityType.API_KEY_CREATED,
+      }))
+      .one()
 
     expect(proto.transformColumn('gameActivityType', activity)).toBe('API_KEY_CREATED')
   })
 
   it('should transform gameActivityExtra columns', async () => {
     const [organisation, game] = await createOrganisationAndGame()
-    const [, user] = await createUserAndToken({ type: UserType.ADMIN, emailConfirmed: true }, organisation)
+    const [, user] = await createUserAndToken(
+      { type: UserType.ADMIN, emailConfirmed: true },
+      organisation,
+    )
 
     const exporter = new DataExporter()
     const proto = Object.getPrototypeOf(exporter)
 
-    const activity = await new GameActivityFactory([game], [user]).state(() => ({
-      extra: {
-        statInternalName: 'hearts-collected'
-      }
-    })).one()
+    const activity = await new GameActivityFactory([game], [user])
+      .state(() => ({
+        extra: {
+          statInternalName: 'hearts-collected',
+        },
+      }))
+      .one()
 
-    expect(proto.transformColumn('gameActivityExtra', activity)).toBe('"{\'statInternalName\':\'hearts-collected\'}"')
+    expect(proto.transformColumn('gameActivityExtra', activity)).toBe(
+      "\"{'statInternalName':'hearts-collected'}\"",
+    )
   })
 
   it('should transform globalValue columns', async () => {
@@ -113,7 +131,10 @@ describe('Data export - generation', () => {
     const exporter = new DataExporter()
     const proto = Object.getPrototypeOf(exporter)
 
-    const stat = await new GameStatFactory([game]).global().state(() => ({ globalValue: 50, defaultValue: 0 })).one()
+    const stat = await new GameStatFactory([game])
+      .global()
+      .state(() => ({ globalValue: 50, defaultValue: 0 }))
+      .one()
 
     expect(proto.transformColumn('globalValue', stat)).toBe('50')
   })
@@ -137,7 +158,12 @@ describe('Data export - generation', () => {
 
     const feedback = await new GameFeedbackFactory(game).state(() => ({ anonymised: true })).one()
 
-    for (const key of ['playerAlias.id', 'playerAlias.service', 'playerAlias.identifier', 'playerAlias.player.id']) {
+    for (const key of [
+      'playerAlias.id',
+      'playerAlias.service',
+      'playerAlias.identifier',
+      'playerAlias.player.id',
+    ]) {
       expect(proto.transformColumn(key, feedback)).toBe('Anonymous')
     }
   })
@@ -150,7 +176,12 @@ describe('Data export - generation', () => {
 
     const feedback = await new GameFeedbackFactory(game).state(() => ({ anonymised: false })).one()
 
-    for (const key of ['playerAlias.id', 'playerAlias.service', 'playerAlias.identifier', 'playerAlias.player.id']) {
+    for (const key of [
+      'playerAlias.id',
+      'playerAlias.service',
+      'playerAlias.identifier',
+      'playerAlias.player.id',
+    ]) {
       expect(proto.transformColumn(key, feedback)).not.toBe('Anonymous')
     }
   })
@@ -173,30 +204,36 @@ describe('Data export - createZipStream', () => {
   it('should generate a zip with players.csv and correct prop column ordering', async () => {
     const [, game] = await createOrganisationAndGame()
 
-    const player1 = await new PlayerFactory([game]).state((player) => ({
-      props: new Collection<PlayerProp>(player, [
-        new PlayerProp(player, 'META_OS', 'Windows'),
-        new PlayerProp(player, 'currentArea', 'Forest'),
-        new PlayerProp(player, 'META_GAME_VERSION', '1.0.0')
-      ])
-    })).one()
+    const player1 = await new PlayerFactory([game])
+      .state((player) => ({
+        props: new Collection<PlayerProp>(player, [
+          new PlayerProp(player, 'META_OS', 'Windows'),
+          new PlayerProp(player, 'currentArea', 'Forest'),
+          new PlayerProp(player, 'META_GAME_VERSION', '1.0.0'),
+        ]),
+      }))
+      .one()
 
-    const player2 = await new PlayerFactory([game]).state((player) => ({
-      props: new Collection<PlayerProp>(player, [
-        new PlayerProp(player, 'currentHealth', '100'),
-        new PlayerProp(player, 'META_SCREEN_WIDTH', '1920')
-      ])
-    })).one()
+    const player2 = await new PlayerFactory([game])
+      .state((player) => ({
+        props: new Collection<PlayerProp>(player, [
+          new PlayerProp(player, 'currentHealth', '100'),
+          new PlayerProp(player, 'META_SCREEN_WIDTH', '1920'),
+        ]),
+      }))
+      .one()
 
-    const player3 = await new PlayerFactory([game]).state((player) => ({
-      props: new Collection<PlayerProp>(player, [
-        new PlayerProp(player, 'level', '5')
-      ])
-    })).one()
+    const player3 = await new PlayerFactory([game])
+      .state((player) => ({
+        props: new Collection<PlayerProp>(player, [new PlayerProp(player, 'level', '5')]),
+      }))
+      .one()
 
-    const player4 = await new PlayerFactory([game]).state((player) => ({
-      props: new Collection<PlayerProp>(player, [])
-    })).one()
+    const player4 = await new PlayerFactory([game])
+      .state((player) => ({
+        props: new Collection<PlayerProp>(player, []),
+      }))
+      .one()
 
     const dataExport = await new DataExportFactory(game).one()
     dataExport.entities = [DataExportAvailableEntities.PLAYERS]
@@ -222,13 +259,9 @@ describe('Data export - createZipStream', () => {
     const expectedMetaProps = [
       'props.META_GAME_VERSION',
       'props.META_OS',
-      'props.META_SCREEN_WIDTH'
+      'props.META_SCREEN_WIDTH',
     ]
-    const expectedOtherProps = [
-      'props.currentArea',
-      'props.currentHealth',
-      'props.level'
-    ]
+    const expectedOtherProps = ['props.currentArea', 'props.currentHealth', 'props.level']
     const expectedHeader = [...expectedBaseColumns, ...expectedMetaProps, ...expectedOtherProps]
 
     expect(header).toEqual(expectedHeader)

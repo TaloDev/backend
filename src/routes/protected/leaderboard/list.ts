@@ -1,8 +1,8 @@
 import { EntityManager, FilterQuery } from '@mikro-orm/mysql'
+import Game from '../../../entities/game'
+import Leaderboard from '../../../entities/leaderboard'
 import { protectedRoute, withMiddleware } from '../../../lib/routing/router'
 import { loadGame } from '../../../middleware/game-middleware'
-import Leaderboard from '../../../entities/leaderboard'
-import Game from '../../../entities/game'
 
 type ListLeaderboardsParams = {
   em: EntityManager
@@ -22,8 +22,8 @@ export async function listLeaderboardsHandler({ em, game, internalName }: ListLe
   return {
     status: 200,
     body: {
-      leaderboards
-    }
+      leaderboards,
+    },
   }
 }
 
@@ -31,8 +31,8 @@ export const listRoute = protectedRoute({
   method: 'get',
   schema: (z) => ({
     query: z.object({
-      internalName: z.string().optional()
-    })
+      internalName: z.string().optional(),
+    }),
   }),
   middleware: withMiddleware(loadGame),
   handler: async (ctx) => {
@@ -41,7 +41,7 @@ export const listRoute = protectedRoute({
     return listLeaderboardsHandler({
       em: ctx.em,
       game: ctx.state.game,
-      internalName
+      internalName,
     })
-  }
+  },
 })

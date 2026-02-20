@@ -27,7 +27,7 @@ export enum APIKeyScope {
   WRITE_PLAYER_RELATIONSHIPS = 'write:playerRelationships',
   READ_PLAYER_BROADCASTS = 'read:playerBroadcasts',
   WRITE_PLAYER_BROADCASTS = 'write:playerBroadcasts',
-  FULL_ACCESS = '*'
+  FULL_ACCESS = '*',
 }
 
 @Entity()
@@ -68,7 +68,7 @@ export default class APIKey {
       gameId: this.game.id,
       createdBy: this.createdByUser.username,
       createdAt: this.createdAt,
-      lastUsedAt: this.lastUsedAt
+      lastUsedAt: this.lastUsedAt,
     }
   }
 }

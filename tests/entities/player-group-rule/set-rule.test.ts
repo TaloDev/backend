@@ -1,25 +1,28 @@
 import { Collection } from '@mikro-orm/mysql'
 import request from 'supertest'
-import PlayerGroupRule, { PlayerGroupRuleCastType, PlayerGroupRuleName } from '../../../src/entities/player-group-rule'
-import PlayerFactory from '../../fixtures/PlayerFactory'
-import createUserAndToken from '../../utils/createUserAndToken'
-import createOrganisationAndGame from '../../utils/createOrganisationAndGame'
+import PlayerGroupRule, {
+  PlayerGroupRuleCastType,
+  PlayerGroupRuleName,
+} from '../../../src/entities/player-group-rule'
 import PlayerProp from '../../../src/entities/player-prop'
 import GameStatFactory from '../../fixtures/GameStatFactory'
-import PlayerGameStatFactory from '../../fixtures/PlayerGameStatFactory'
-import LeaderboardFactory from '../../fixtures/LeaderboardFactory'
 import LeaderboardEntryFactory from '../../fixtures/LeaderboardEntryFactory'
+import LeaderboardFactory from '../../fixtures/LeaderboardFactory'
+import PlayerFactory from '../../fixtures/PlayerFactory'
+import PlayerGameStatFactory from '../../fixtures/PlayerGameStatFactory'
+import createOrganisationAndGame from '../../utils/createOrganisationAndGame'
+import createUserAndToken from '../../utils/createUserAndToken'
 
 describe('SET rule', () => {
   it('should correctly evaluate a SET rule with props', async () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({}, organisation)
 
-    const player1 = await new PlayerFactory([game]).state((player) => ({
-      props: new Collection<PlayerProp>(player, [
-        new PlayerProp(player, 'hasFinishedGame', '1')
-      ])
-    })).one()
+    const player1 = await new PlayerFactory([game])
+      .state((player) => ({
+        props: new Collection<PlayerProp>(player, [new PlayerProp(player, 'hasFinishedGame', '1')]),
+      }))
+      .one()
     const player2 = await new PlayerFactory([game]).one()
     await em.persistAndFlush([player1, player2])
 
@@ -29,8 +32,8 @@ describe('SET rule', () => {
         field: 'props.hasFinishedGame',
         operands: [],
         negate: false,
-        castType: PlayerGroupRuleCastType.CHAR
-      }
+        castType: PlayerGroupRuleCastType.CHAR,
+      },
     ]
 
     const res = await request(app)
@@ -46,11 +49,11 @@ describe('SET rule', () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({}, organisation)
 
-    const player1 = await new PlayerFactory([game]).state((player) => ({
-      props: new Collection<PlayerProp>(player, [
-        new PlayerProp(player, 'hasFinishedGame', '1')
-      ])
-    })).one()
+    const player1 = await new PlayerFactory([game])
+      .state((player) => ({
+        props: new Collection<PlayerProp>(player, [new PlayerProp(player, 'hasFinishedGame', '1')]),
+      }))
+      .one()
     const player2 = await new PlayerFactory([game]).one()
     await em.persistAndFlush([player1, player2])
 
@@ -60,8 +63,8 @@ describe('SET rule', () => {
         field: 'props.hasFinishedGame',
         operands: [],
         negate: true,
-        castType: PlayerGroupRuleCastType.CHAR
-      }
+        castType: PlayerGroupRuleCastType.CHAR,
+      },
     ]
 
     const res = await request(app)
@@ -90,8 +93,8 @@ describe('SET rule', () => {
         field: `statValue.${stat.internalName}`,
         operands: [],
         negate: false,
-        castType: PlayerGroupRuleCastType.DOUBLE
-      }
+        castType: PlayerGroupRuleCastType.DOUBLE,
+      },
     ]
 
     const res = await request(app)
@@ -120,8 +123,8 @@ describe('SET rule', () => {
         field: `statValue.${stat.internalName}`,
         operands: [],
         negate: true,
-        castType: PlayerGroupRuleCastType.DOUBLE
-      }
+        castType: PlayerGroupRuleCastType.DOUBLE,
+      },
     ]
 
     const res = await request(app)
@@ -150,8 +153,8 @@ describe('SET rule', () => {
         field: `leaderboardEntryScore.${leaderboard.internalName}`,
         operands: [],
         negate: false,
-        castType: PlayerGroupRuleCastType.DOUBLE
-      }
+        castType: PlayerGroupRuleCastType.DOUBLE,
+      },
     ]
 
     const res = await request(app)
@@ -180,8 +183,8 @@ describe('SET rule', () => {
         field: `leaderboardEntryScore.${leaderboard.internalName}`,
         operands: [],
         negate: true,
-        castType: PlayerGroupRuleCastType.DOUBLE
-      }
+        castType: PlayerGroupRuleCastType.DOUBLE,
+      },
     ]
 
     const res = await request(app)

@@ -19,11 +19,11 @@ $ARGUMENTS
 
 Choose the correct tier based on what's being built:
 
-| Tier | Prefix | Auth | Config file | Routes dir |
-|------|--------|------|-------------|------------|
-| **Protected** | `/` | JWT (`JWT_SECRET`) | `src/config/protected-routes.ts` | `src/routes/protected/` |
-| **API** | `/v1/` | JWT (`game.apiSecret`) | `src/config/api-routes.ts` | `src/routes/api/` |
-| **Public** | `/public/` | None | `src/config/public-routes.ts` | `src/routes/public/` |
+| Tier          | Prefix     | Auth                   | Config file                      | Routes dir              |
+| ------------- | ---------- | ---------------------- | -------------------------------- | ----------------------- |
+| **Protected** | `/`        | JWT (`JWT_SECRET`)     | `src/config/protected-routes.ts` | `src/routes/protected/` |
+| **API**       | `/v1/`     | JWT (`game.apiSecret`) | `src/config/api-routes.ts`       | `src/routes/api/`       |
+| **Public**    | `/public/` | None                   | `src/config/public-routes.ts`    | `src/routes/public/`    |
 
 ## Step-by-Step Checklist
 
@@ -36,6 +36,7 @@ Determine which tier applies and whether a feature directory already exists (e.g
 ### 2. Create the route file
 
 **File placement:**
+
 - One route per file (e.g., `get.ts`, `post.ts`, `update.ts`, `delete.ts`)
 - Exception: if the router has only one route, inline it in `index.ts`
 - If the feature is new, create the directory first
@@ -68,6 +69,7 @@ export const getRoute = apiRoute({
 ```
 
 Use the correct route helper and context for the tier:
+
 - API: `apiRoute` / `APIRouteContext`
 - Protected: `protectedRoute` / `ProtectedRouteContext`
 - Public: `publicRoute` / `PublicRouteContext`
@@ -78,19 +80,20 @@ Use the correct route helper and context for the tier:
 
 ```typescript
 middleware: withMiddleware(
-  requireScopes([APIKeyScope.READ_PLAYERS]),  // API routes: ALWAYS first
-  loadAlias,                                  // then resource loaders
+  requireScopes([APIKeyScope.READ_PLAYERS]), // API routes: ALWAYS first
+  loadAlias, // then resource loaders
 )
 
 // Protected routes:
 middleware: withMiddleware(
-  ownerGate('view settings'),   // or userTypeGate([...]) - ALWAYS first
-  requireEmailConfirmed,        // then email check
-  loadGame,                     // then resource loaders
+  ownerGate('view settings'), // or userTypeGate([...]) - ALWAYS first
+  requireEmailConfirmed, // then email check
+  loadGame, // then resource loaders
 )
 ```
 
 **Ordering rules:**
+
 - API routes: `requireScopes()` → resource loaders
 - Protected routes: `ownerGate()` / `userTypeGate()` → `requireEmailConfirmed` → resource loaders
 - Never wrap middleware definitions with `withMiddleware()` in `common.ts`
@@ -120,26 +123,27 @@ Use `return ctx.throw()` (with `return`) for type narrowing after the throw.
 schema: (z) => ({
   // For route params:
   params: z.object({
-    id: z.coerce.number().meta({ description: 'The entity ID' })
+    id: z.coerce.number().meta({ description: 'The entity ID' }),
   }),
   // For query strings:
   query: z.object({
-    page: z.coerce.number().optional()
+    page: z.coerce.number().optional(),
   }),
   // For request body:
   body: z.object({
-    name: z.string({ error: 'name is missing' }).min(1, { message: 'name is invalid' })
+    name: z.string({ error: 'name is missing' }).min(1, { message: 'name is invalid' }),
   }),
   // For headers (use looseObject):
   headers: z.looseObject({
-    'x-talo-alias': z.string({ error: 'x-talo-alias is missing' })
-  })
+    'x-talo-alias': z.string({ error: 'x-talo-alias is missing' }),
+  }),
 })
 ```
 
 Access validated data via `ctx.state.validated.body`, `.query`, `.params`, `.headers` - NOT `ctx.request.body`.
 
 Always wrap inline routes with the route helper when using `schema`:
+
 ```typescript
 route(apiRoute({ schema: ..., handler: ... }))  // ✅
 route({ schema: ..., handler: ... })             // ❌ loses type inference
@@ -154,12 +158,16 @@ import { getRoute } from './get'
 import { postRoute } from './post'
 
 export function myFeatureAPIRouter() {
-  return apiRouter('/v1/my-feature', ({ route }) => {
-    route(getRoute)
-    route(postRoute)
-  }, {
-    docsKey: 'MyFeatureAPI'  // set if this router has docs
-  })
+  return apiRouter(
+    '/v1/my-feature',
+    ({ route }) => {
+      route(getRoute)
+      route(postRoute)
+    },
+    {
+      docsKey: 'MyFeatureAPI', // set if this router has docs
+    },
+  )
 }
 ```
 
@@ -191,13 +199,14 @@ export const getDocs = {
     {
       title: 'Get my-feature',
       request: {},
-      response: { status: 200, body: { myFeature: { id: 1 } } }
-    }
-  ]
+      response: { status: 200, body: { myFeature: { id: 1 } } },
+    },
+  ],
 } satisfies RouteDocs
 ```
 
 **Key docs rules:**
+
 - For module-level exported routes: define `docs` const BEFORE the route (avoid "Cannot access before initialization")
 - For inline routes (inside router function body): docs can go at the bottom
 - `docsKey` on the router sets the service name for all routes
@@ -206,6 +215,7 @@ export const getDocs = {
 ### 8. Write tests
 
 Create tests in the matching location:
+
 - API route at `src/routes/api/my-feature/` → tests at `tests/routes/api/my-feature-api/`
 - Protected route at `src/routes/protected/my-feature/` → tests at `tests/routes/protected/my-feature/`
 

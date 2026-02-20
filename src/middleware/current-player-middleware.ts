@@ -17,7 +17,7 @@ export async function currentPlayerMiddleware(ctx: Context, next: Next) {
   setCurrentPlayerState(
     ctx,
     ctx.headers['x-talo-player'] as string,
-    ctx.headers['x-talo-alias'] ? Number(ctx.headers['x-talo-alias']) : undefined
+    ctx.headers['x-talo-alias'] ? Number(ctx.headers['x-talo-alias']) : undefined,
   )
 
   await next()

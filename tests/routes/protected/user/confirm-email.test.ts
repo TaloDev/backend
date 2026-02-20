@@ -1,7 +1,7 @@
 import request from 'supertest'
 import UserAccessCode from '../../../../src/entities/user-access-code'
-import createUserAndToken from '../../../utils/createUserAndToken'
 import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
+import createUserAndToken from '../../../utils/createUserAndToken'
 
 describe('User - confirm email', () => {
   it('should let a user confirm their email', async () => {
@@ -23,7 +23,9 @@ describe('User - confirm email', () => {
     expect(res.body.user.organisation).toBeTruthy()
     expect(res.body.user.organisation.games).toHaveLength(1)
 
-    const updatedAccessCode = await em.getRepository(UserAccessCode).findOne({ code: accessCode.code })
+    const updatedAccessCode = await em
+      .getRepository(UserAccessCode)
+      .findOne({ code: accessCode.code })
     expect(updatedAccessCode).toBeNull()
   })
 

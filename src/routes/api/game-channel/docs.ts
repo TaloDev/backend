@@ -13,13 +13,11 @@ export const listDocs = {
             owner: null,
             totalMessages: 308,
             memberCount: 42,
-            props: [
-              { key: 'channelType', value: 'public' }
-            ],
+            props: [{ key: 'channelType', value: 'public' }],
             autoCleanup: false,
             private: false,
             createdAt: '2024-12-09T12:00:00.000Z',
-            updatedAt: '2024-12-09T12:00:00.000Z'
+            updatedAt: '2024-12-09T12:00:00.000Z',
           },
           {
             id: 2,
@@ -34,37 +32,37 @@ export const listDocs = {
                 devBuild: false,
                 createdAt: '2024-10-25T18:18:28.000Z',
                 lastSeenAt: '2024-12-04T07:15:13.000Z',
-                groups: []
+                groups: [],
               },
               lastSeenAt: '2024-12-04T07:15:13.000Z',
               createdAt: '2024-10-25T18:18:28.000Z',
-              updatedAt: '2024-12-04T07:15:13.000Z'
+              updatedAt: '2024-12-04T07:15:13.000Z',
             },
             totalMessages: 36,
             memberCount: 8,
             props: [
               { key: 'channelType', value: 'guild' },
-              { key: 'guildId', value: '5912' }
+              { key: 'guildId', value: '5912' },
             ],
             autoCleanup: true,
             private: false,
             createdAt: '2024-12-09T12:00:00.000Z',
-            updatedAt: '2024-12-09T12:00:00.000Z'
-          }
+            updatedAt: '2024-12-09T12:00:00.000Z',
+          },
         ],
         count: 2,
         itemsPerPage: 50,
-        isLastPage: true
-      }
+        isLastPage: true,
+      },
     },
     {
       title: 'Sample request with prop key filtering',
       sample: {
         url: '/v1/game-channels?propKey=guildId',
         query: {
-          propKey: 'guildId'
-        }
-      }
+          propKey: 'guildId',
+        },
+      },
     },
     {
       title: 'Sample request with prop key and value filtering',
@@ -72,11 +70,11 @@ export const listDocs = {
         url: '/v1/game-channels?propKey=guildId&propValue=5912',
         query: {
           propKey: 'guildId',
-          propValue: '5912'
-        }
-      }
-    }
-  ]
+          propValue: '5912',
+        },
+      },
+    },
+  ],
 } satisfies RouteDocs
 
 export const getDocs = {
@@ -91,17 +89,15 @@ export const getDocs = {
           owner: null,
           totalMessages: 308,
           memberCount: 42,
-          props: [
-            { key: 'channelType', value: 'public' }
-          ],
+          props: [{ key: 'channelType', value: 'public' }],
           autoCleanup: false,
           private: false,
           createdAt: '2024-12-09T12:00:00.000Z',
-          updatedAt: '2024-12-09T12:00:00.000Z'
-        }
-      }
-    }
-  ]
+          updatedAt: '2024-12-09T12:00:00.000Z',
+        },
+      },
+    },
+  ],
 } satisfies RouteDocs
 
 export const subscriptionsDocs = {
@@ -117,13 +113,11 @@ export const subscriptionsDocs = {
             owner: null,
             totalMessages: 308,
             memberCount: 42,
-            props: [
-              { key: 'channelType', value: 'public' }
-            ],
+            props: [{ key: 'channelType', value: 'public' }],
             autoCleanup: false,
             private: false,
             createdAt: '2024-12-09T12:00:00.000Z',
-            updatedAt: '2024-12-09T12:00:00.000Z'
+            updatedAt: '2024-12-09T12:00:00.000Z',
           },
           {
             id: 2,
@@ -131,25 +125,23 @@ export const subscriptionsDocs = {
             owner: null,
             totalMessages: 23439,
             memberCount: 124,
-            props: [
-              { key: 'channelType', value: 'public' }
-            ],
+            props: [{ key: 'channelType', value: 'public' }],
             autoCleanup: false,
             private: false,
             createdAt: '2024-12-09T12:00:00.000Z',
-            updatedAt: '2024-12-09T12:00:00.000Z'
-          }
-        ]
-      }
+            updatedAt: '2024-12-09T12:00:00.000Z',
+          },
+        ],
+      },
     },
     {
       title: 'Sample request with prop key filtering',
       sample: {
         url: '/v1/game-channels/subscriptions?propKey=guildId',
         query: {
-          propKey: 'guildId'
-        }
-      }
+          propKey: 'guildId',
+        },
+      },
     },
     {
       title: 'Sample request with prop key and value filtering',
@@ -157,11 +149,11 @@ export const subscriptionsDocs = {
         url: '/v1/game-channels/subscriptions?propKey=guildId&propValue=5912',
         query: {
           propKey: 'guildId',
-          propValue: '5912'
-        }
-      }
-    }
-  ]
+          propValue: '5912',
+        },
+      },
+    },
+  ],
 } satisfies RouteDocs
 
 export const postDocs = {
@@ -173,11 +165,11 @@ export const postDocs = {
         name: 'guild-chat',
         props: [
           { key: 'channelType', value: 'guild' },
-          { key: 'guildId', value: '5912' }
+          { key: 'guildId', value: '5912' },
         ],
         autoCleanup: true,
-        private: false
-      }
+        private: false,
+      },
     },
     {
       title: 'Sample response',
@@ -195,26 +187,26 @@ export const postDocs = {
               devBuild: false,
               createdAt: '2024-10-25T18:18:28.000Z',
               lastSeenAt: '2024-12-04T07:15:13.000Z',
-              groups: []
+              groups: [],
             },
             lastSeenAt: '2024-12-04T07:15:13.000Z',
             createdAt: '2024-10-25T18:18:28.000Z',
-            updatedAt: '2024-12-04T07:15:13.000Z'
+            updatedAt: '2024-12-04T07:15:13.000Z',
           },
           totalMessages: 0,
           memberCount: 1,
           props: [
             { key: 'channelType', value: 'guild' },
-            { key: 'guildId', value: '5912' }
+            { key: 'guildId', value: '5912' },
           ],
           autoCleanup: true,
           private: false,
           createdAt: '2024-12-09T12:00:00.000Z',
-          updatedAt: '2024-12-09T12:00:00.000Z'
-        }
-      }
-    }
-  ]
+          updatedAt: '2024-12-09T12:00:00.000Z',
+        },
+      },
+    },
+  ],
 } satisfies RouteDocs
 
 export const joinDocs = {
@@ -229,21 +221,19 @@ export const joinDocs = {
           owner: null,
           totalMessages: 308,
           memberCount: 42,
-          props: [
-            { key: 'channelType', value: 'public' }
-          ],
+          props: [{ key: 'channelType', value: 'public' }],
           autoCleanup: false,
           private: false,
           createdAt: '2024-12-09T12:00:00.000Z',
-          updatedAt: '2024-12-09T12:00:00.000Z'
-        }
-      }
-    }
-  ]
+          updatedAt: '2024-12-09T12:00:00.000Z',
+        },
+      },
+    },
+  ],
 } satisfies RouteDocs
 
 export const leaveDocs = {
-  description: 'Leave a game channel'
+  description: 'Leave a game channel',
 } satisfies RouteDocs
 
 export const putDocs = {
@@ -255,10 +245,10 @@ export const putDocs = {
         name: 'new-general-chat',
         props: [
           { key: 'channelType', value: 'public' },
-          { key: 'recentlyUpdated', value: 'true' }
+          { key: 'recentlyUpdated', value: 'true' },
         ],
-        ownerAliasId: 2
-      }
+        ownerAliasId: 2,
+      },
     },
     {
       title: 'Sample response',
@@ -276,34 +266,34 @@ export const putDocs = {
               devBuild: false,
               createdAt: '2024-10-25T18:18:28.000Z',
               lastSeenAt: '2024-12-04T07:15:13.000Z',
-              groups: []
+              groups: [],
             },
             lastSeenAt: '2024-12-04T07:15:13.000Z',
             createdAt: '2024-10-25T18:18:28.000Z',
-            updatedAt: '2024-12-04T07:15:13.000Z'
+            updatedAt: '2024-12-04T07:15:13.000Z',
           },
           totalMessages: 308,
           memberCount: 42,
           props: [
             { key: 'channelType', value: 'public' },
-            { key: 'recentlyUpdated', value: 'true' }
+            { key: 'recentlyUpdated', value: 'true' },
           ],
           autoCleanup: false,
           private: false,
           createdAt: '2024-12-09T12:00:00.000Z',
-          updatedAt: '2024-12-09T12:01:00.000Z'
-        }
-      }
-    }
-  ]
+          updatedAt: '2024-12-09T12:01:00.000Z',
+        },
+      },
+    },
+  ],
 } satisfies RouteDocs
 
 export const deleteDocs = {
-  description: 'Delete a game channel'
+  description: 'Delete a game channel',
 } satisfies RouteDocs
 
 export const inviteDocs = {
-  description: 'Invite another player to a game channel'
+  description: 'Invite another player to a game channel',
 } satisfies RouteDocs
 
 export const membersDocs = {
@@ -323,19 +313,19 @@ export const membersDocs = {
               devBuild: false,
               createdAt: '2025-04-25T18:18:28.000Z',
               lastSeenAt: '2025-05-04T07:15:13.000Z',
-              groups: []
+              groups: [],
             },
             lastSeenAt: '2025-05-04T07:15:13.000Z',
             createdAt: '2025-04-25T18:18:28.000Z',
-            updatedAt: '2025-05-04T07:15:13.000Z'
-          }
+            updatedAt: '2025-05-04T07:15:13.000Z',
+          },
         ],
         count: 1,
         itemsPerPage: 50,
-        isLastPage: true
-      }
-    }
-  ]
+        isLastPage: true,
+      },
+    },
+  ],
 } satisfies RouteDocs
 
 export const getStorageDocs = {
@@ -357,11 +347,11 @@ export const getStorageDocs = {
               devBuild: false,
               createdAt: '2025-08-15T18:18:28.000Z',
               lastSeenAt: '2025-09-20T07:15:13.000Z',
-              groups: []
+              groups: [],
             },
             lastSeenAt: '2025-09-20T07:15:13.000Z',
             createdAt: '2025-08-15T18:18:28.000Z',
-            updatedAt: '2025-09-20T07:15:13.000Z'
+            updatedAt: '2025-09-20T07:15:13.000Z',
           },
           lastUpdatedBy: {
             id: 105,
@@ -373,24 +363,24 @@ export const getStorageDocs = {
               devBuild: false,
               createdAt: '2025-08-15T18:18:28.000Z',
               lastSeenAt: '2025-09-20T07:15:13.000Z',
-              groups: []
+              groups: [],
             },
             lastSeenAt: '2025-09-20T07:15:13.000Z',
             createdAt: '2025-08-15T18:18:28.000Z',
-            updatedAt: '2025-09-20T07:15:13.000Z'
+            updatedAt: '2025-09-20T07:15:13.000Z',
           },
           createdAt: '2025-09-15T12:00:00.000Z',
-          updatedAt: '2025-09-20T12:30:00.000Z'
-        }
-      }
+          updatedAt: '2025-09-20T12:30:00.000Z',
+        },
+      },
     },
     {
       title: 'Sample response when property does not exist',
       sample: {
-        prop: null
-      }
-    }
-  ]
+        prop: null,
+      },
+    },
+  ],
 } satisfies RouteDocs
 
 export const listStorageDocs = {
@@ -401,9 +391,9 @@ export const listStorageDocs = {
       sample: {
         url: '/v1/game-channels/1/storage/list?propKeys=guildConfig&propKeys=memberList',
         query: {
-          propKeys: ['guildConfig', 'memberList']
-        }
-      }
+          propKeys: ['guildConfig', 'memberList'],
+        },
+      },
     },
     {
       title: 'Sample response',
@@ -422,11 +412,11 @@ export const listStorageDocs = {
                 devBuild: false,
                 createdAt: '2025-08-15T18:18:28.000Z',
                 lastSeenAt: '2025-09-20T07:15:13.000Z',
-                groups: []
+                groups: [],
               },
               lastSeenAt: '2025-09-20T07:15:13.000Z',
               createdAt: '2025-08-15T18:18:28.000Z',
-              updatedAt: '2025-09-20T07:15:13.000Z'
+              updatedAt: '2025-09-20T07:15:13.000Z',
             },
             lastUpdatedBy: {
               id: 105,
@@ -438,14 +428,14 @@ export const listStorageDocs = {
                 devBuild: false,
                 createdAt: '2025-08-15T18:18:28.000Z',
                 lastSeenAt: '2025-09-20T07:15:13.000Z',
-                groups: []
+                groups: [],
               },
               lastSeenAt: '2025-09-20T07:15:13.000Z',
               createdAt: '2025-08-15T18:18:28.000Z',
-              updatedAt: '2025-09-20T07:15:13.000Z'
+              updatedAt: '2025-09-20T07:15:13.000Z',
             },
             createdAt: '2025-09-15T12:00:00.000Z',
-            updatedAt: '2025-09-20T12:30:00.000Z'
+            updatedAt: '2025-09-20T12:30:00.000Z',
           },
           {
             key: 'memberList',
@@ -460,11 +450,11 @@ export const listStorageDocs = {
                 devBuild: false,
                 createdAt: '2025-08-15T18:18:28.000Z',
                 lastSeenAt: '2025-09-20T07:15:13.000Z',
-                groups: []
+                groups: [],
               },
               lastSeenAt: '2025-09-20T07:15:13.000Z',
               createdAt: '2025-08-15T18:18:28.000Z',
-              updatedAt: '2025-09-20T07:15:13.000Z'
+              updatedAt: '2025-09-20T07:15:13.000Z',
             },
             lastUpdatedBy: {
               id: 107,
@@ -476,19 +466,19 @@ export const listStorageDocs = {
                 devBuild: false,
                 createdAt: '2025-08-25T14:22:18.000Z',
                 lastSeenAt: '2025-09-18T09:30:45.000Z',
-                groups: []
+                groups: [],
               },
               lastSeenAt: '2025-09-18T09:30:45.000Z',
               createdAt: '2025-08-25T14:22:18.000Z',
-              updatedAt: '2025-09-18T09:30:45.000Z'
+              updatedAt: '2025-09-18T09:30:45.000Z',
             },
             createdAt: '2025-09-15T12:00:00.000Z',
-            updatedAt: '2025-09-20T15:45:00.000Z'
-          }
-        ]
-      }
-    }
-  ]
+            updatedAt: '2025-09-20T15:45:00.000Z',
+          },
+        ],
+      },
+    },
+  ],
 } satisfies RouteDocs
 
 export const putStorageDocs = {
@@ -500,17 +490,15 @@ export const putStorageDocs = {
         props: [
           { key: 'guildConfig', value: '{"joinRequirement":"level15","maxMembers":75}' },
           { key: 'memberList', value: '["player1","player2","player3","player4"]' },
-          { key: 'lastUpdated', value: '2025-09-20T16:30:00.000Z' }
-        ]
-      }
+          { key: 'lastUpdated', value: '2025-09-20T16:30:00.000Z' },
+        ],
+      },
     },
     {
       title: 'Sample request to delete a property',
       sample: {
-        props: [
-          { key: 'temporaryData', value: null }
-        ]
-      }
+        props: [{ key: 'temporaryData', value: null }],
+      },
     },
     {
       title: 'Sample response',
@@ -528,22 +516,22 @@ export const putStorageDocs = {
               devBuild: false,
               createdAt: '2025-08-15T18:18:28.000Z',
               lastSeenAt: '2025-09-20T07:15:13.000Z',
-              groups: []
+              groups: [],
             },
             lastSeenAt: '2025-09-20T07:15:13.000Z',
             createdAt: '2025-08-15T18:18:28.000Z',
-            updatedAt: '2025-09-20T07:15:13.000Z'
+            updatedAt: '2025-09-20T07:15:13.000Z',
           },
           totalMessages: 156,
           memberCount: 8,
           props: [
             { key: 'channelType', value: 'guild' },
-            { key: 'guildId', value: '5912' }
+            { key: 'guildId', value: '5912' },
           ],
           autoCleanup: true,
           private: false,
           createdAt: '2025-09-15T12:00:00.000Z',
-          updatedAt: '2025-09-20T16:30:00.000Z'
+          updatedAt: '2025-09-20T16:30:00.000Z',
         },
         upsertedProps: [
           {
@@ -559,11 +547,11 @@ export const putStorageDocs = {
                 devBuild: false,
                 createdAt: '2025-08-15T18:18:28.000Z',
                 lastSeenAt: '2025-09-20T07:15:13.000Z',
-                groups: []
+                groups: [],
               },
               lastSeenAt: '2025-09-20T07:15:13.000Z',
               createdAt: '2025-08-15T18:18:28.000Z',
-              updatedAt: '2025-09-20T07:15:13.000Z'
+              updatedAt: '2025-09-20T07:15:13.000Z',
             },
             lastUpdatedBy: {
               id: 105,
@@ -575,19 +563,19 @@ export const putStorageDocs = {
                 devBuild: false,
                 createdAt: '2025-08-15T18:18:28.000Z',
                 lastSeenAt: '2025-09-20T07:15:13.000Z',
-                groups: []
+                groups: [],
               },
               lastSeenAt: '2025-09-20T07:15:13.000Z',
               createdAt: '2025-08-15T18:18:28.000Z',
-              updatedAt: '2025-09-20T07:15:13.000Z'
+              updatedAt: '2025-09-20T07:15:13.000Z',
             },
             createdAt: '2025-09-15T12:00:00.000Z',
-            updatedAt: '2025-09-20T16:30:00.000Z'
-          }
+            updatedAt: '2025-09-20T16:30:00.000Z',
+          },
         ],
         deletedProps: [],
-        failedProps: []
-      }
-    }
-  ]
+        failedProps: [],
+      },
+    },
+  ],
 } satisfies RouteDocs

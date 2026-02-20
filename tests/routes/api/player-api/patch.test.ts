@@ -1,26 +1,31 @@
 import { Collection } from '@mikro-orm/mysql'
+import { randWord } from '@ngneat/falso'
+import Redis from 'ioredis'
 import request from 'supertest'
 import { APIKeyScope } from '../../../../src/entities/api-key'
-import PlayerFactory from '../../../fixtures/PlayerFactory'
-import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
-import PlayerProp from '../../../../src/entities/player-prop'
-import PlayerGroupFactory from '../../../fixtures/PlayerGroupFactory'
-import PlayerGroupRule, { PlayerGroupRuleCastType, PlayerGroupRuleName } from '../../../../src/entities/player-group-rule'
-import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
-import { randWord } from '@ngneat/falso'
 import PlayerGroup from '../../../../src/entities/player-group'
-import Redis from 'ioredis'
+import PlayerGroupRule, {
+  PlayerGroupRuleCastType,
+  PlayerGroupRuleName,
+} from '../../../../src/entities/player-group-rule'
+import PlayerProp from '../../../../src/entities/player-prop'
+import PlayerFactory from '../../../fixtures/PlayerFactory'
+import PlayerGroupFactory from '../../../fixtures/PlayerGroupFactory'
+import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
+import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
 
 describe('Player API - patch', () => {
-  it('should update a player\'s properties', async () => {
+  it("should update a player's properties", async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_PLAYERS])
 
-    const player = await new PlayerFactory([apiKey.game]).state((player) => ({
-      props: new Collection<PlayerProp>(player, [
-        new PlayerProp(player, 'collectibles', '0'),
-        new PlayerProp(player, 'zonesExplored', '1')
-      ])
-    })).one()
+    const player = await new PlayerFactory([apiKey.game])
+      .state((player) => ({
+        props: new Collection<PlayerProp>(player, [
+          new PlayerProp(player, 'collectibles', '0'),
+          new PlayerProp(player, 'zonesExplored', '1'),
+        ]),
+      }))
+      .one()
     await em.persistAndFlush(player)
 
     const res = await request(app)
@@ -29,34 +34,38 @@ describe('Player API - patch', () => {
         props: [
           {
             key: 'collectibles',
-            value: '1'
-          }
-        ]
+            value: '1',
+          },
+        ],
       })
       .auth(token, { type: 'bearer' })
       .expect(200)
 
-    expect(res.body.player.props).toEqual(expect.arrayContaining([
-      {
-        key: 'collectibles',
-        value: '1'
-      },
-      {
-        key: 'zonesExplored',
-        value: '1'
-      }
-    ]))
+    expect(res.body.player.props).toEqual(
+      expect.arrayContaining([
+        {
+          key: 'collectibles',
+          value: '1',
+        },
+        {
+          key: 'zonesExplored',
+          value: '1',
+        },
+      ]),
+    )
   })
 
-  it('should not update a player\'s properties if the scope is missing', async () => {
+  it("should not update a player's properties if the scope is missing", async () => {
     const [apiKey, token] = await createAPIKeyAndToken([])
 
-    const player = await new PlayerFactory([apiKey.game]).state((player) => ({
-      props: new Collection<PlayerProp>(player, [
-        new PlayerProp(player, 'collectibles', '0'),
-        new PlayerProp(player, 'zonesExplored', '1')
-      ])
-    })).one()
+    const player = await new PlayerFactory([apiKey.game])
+      .state((player) => ({
+        props: new Collection<PlayerProp>(player, [
+          new PlayerProp(player, 'collectibles', '0'),
+          new PlayerProp(player, 'zonesExplored', '1'),
+        ]),
+      }))
+      .one()
     await em.persistAndFlush(player)
 
     await request(app)
@@ -65,15 +74,15 @@ describe('Player API - patch', () => {
         props: [
           {
             key: 'collectibles',
-            value: '1'
-          }
-        ]
+            value: '1',
+          },
+        ],
       })
       .auth(token, { type: 'bearer' })
       .expect(403)
   })
 
-  it('should not update a non-existent player\'s properties', async () => {
+  it("should not update a non-existent player's properties", async () => {
     const [, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_PLAYERS])
 
     const res = await request(app)
@@ -82,9 +91,9 @@ describe('Player API - patch', () => {
         props: [
           {
             key: 'collectibles',
-            value: '1'
-          }
-        ]
+            value: '1',
+          },
+        ],
       })
       .auth(token, { type: 'bearer' })
       .expect(404)
@@ -92,7 +101,7 @@ describe('Player API - patch', () => {
     expect(res.body).toStrictEqual({ message: 'Player not found' })
   })
 
-  it('should not update a player from another game\'s properties', async () => {
+  it("should not update a player from another game's properties", async () => {
     const [, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_PLAYERS])
 
     const [, otherGame] = await createOrganisationAndGame()
@@ -105,9 +114,9 @@ describe('Player API - patch', () => {
         props: [
           {
             key: 'collectibles',
-            value: '1'
-          }
-        ]
+            value: '1',
+          },
+        ],
       })
       .auth(token, { type: 'bearer' })
       .expect(404)
@@ -122,14 +131,19 @@ describe('Player API - patch', () => {
     rule.castType = PlayerGroupRuleCastType.DOUBLE
     rule.operands = ['60']
 
-    const group = await new PlayerGroupFactory().construct(apiKey.game).state(() => ({ rules: [rule] })).one()
+    const group = await new PlayerGroupFactory()
+      .construct(apiKey.game)
+      .state(() => ({ rules: [rule] }))
+      .one()
 
-    const player = await new PlayerFactory([apiKey.game]).state((player) => ({
-      props: new Collection<PlayerProp>(player, [
-        new PlayerProp(player, 'collectibles', '0'),
-        new PlayerProp(player, 'currentLevel', '59')
-      ])
-    })).one()
+    const player = await new PlayerFactory([apiKey.game])
+      .state((player) => ({
+        props: new Collection<PlayerProp>(player, [
+          new PlayerProp(player, 'collectibles', '0'),
+          new PlayerProp(player, 'currentLevel', '59'),
+        ]),
+      }))
+      .one()
     await em.persistAndFlush([group, player])
 
     const res = await request(app)
@@ -138,9 +152,9 @@ describe('Player API - patch', () => {
         props: [
           {
             key: 'currentLevel',
-            value: '60'
-          }
-        ]
+            value: '60',
+          },
+        ],
       })
       .auth(token, { type: 'bearer' })
       .expect(200)
@@ -148,8 +162,8 @@ describe('Player API - patch', () => {
     expect(res.body.player.groups).toStrictEqual([
       {
         id: group.id,
-        name: group.name
-      }
+        name: group.name,
+      },
     ])
   })
 
@@ -160,14 +174,19 @@ describe('Player API - patch', () => {
     rule.castType = PlayerGroupRuleCastType.DOUBLE
     rule.operands = ['59']
 
-    const group = await new PlayerGroupFactory().construct(apiKey.game).state(() => ({ rules: [rule] })).one()
+    const group = await new PlayerGroupFactory()
+      .construct(apiKey.game)
+      .state(() => ({ rules: [rule] }))
+      .one()
 
-    const player = await new PlayerFactory([apiKey.game]).state((player) => ({
-      props: new Collection<PlayerProp>(player, [
-        new PlayerProp(player, 'collectibles', '0'),
-        new PlayerProp(player, 'currentLevel', '59')
-      ])
-    })).one()
+    const player = await new PlayerFactory([apiKey.game])
+      .state((player) => ({
+        props: new Collection<PlayerProp>(player, [
+          new PlayerProp(player, 'collectibles', '0'),
+          new PlayerProp(player, 'currentLevel', '59'),
+        ]),
+      }))
+      .one()
     await em.persistAndFlush([group, player])
 
     await group.checkMembership(em)
@@ -179,9 +198,9 @@ describe('Player API - patch', () => {
         props: [
           {
             key: 'currentLevel',
-            value: '60'
-          }
-        ]
+            value: '60',
+          },
+        ],
       })
       .auth(token, { type: 'bearer' })
       .expect(200)
@@ -196,8 +215,8 @@ describe('Player API - patch', () => {
     player.setProps([
       {
         key: `${randWord()}${randWord()}${randWord()}`,
-        value: randWord()
-      }
+        value: randWord(),
+      },
     ])
     await em.persistAndFlush(player)
 
@@ -207,13 +226,13 @@ describe('Player API - patch', () => {
         props: [
           {
             key: `${randWord()}${randWord()}${randWord()}`,
-            value: randWord()
+            value: randWord(),
           },
           {
             key: 'META_BREAK_THINGS',
-            value: 'true'
-          }
-        ]
+            value: 'true',
+          },
+        ],
       })
       .auth(token, { type: 'bearer' })
       .expect(200)
@@ -224,13 +243,15 @@ describe('Player API - patch', () => {
   it('should keep the META_DEV_BUILD prop', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_PLAYERS])
 
-    const player = await new PlayerFactory([apiKey.game]).state((player) => ({
-      props: new Collection<PlayerProp>(player, [
-        new PlayerProp(player, 'collectibles', '0'),
-        new PlayerProp(player, 'zonesExplored', '1'),
-        new PlayerProp(player, 'META_DEV_BUILD', '1')
-      ])
-    })).one()
+    const player = await new PlayerFactory([apiKey.game])
+      .state((player) => ({
+        props: new Collection<PlayerProp>(player, [
+          new PlayerProp(player, 'collectibles', '0'),
+          new PlayerProp(player, 'zonesExplored', '1'),
+          new PlayerProp(player, 'META_DEV_BUILD', '1'),
+        ]),
+      }))
+      .one()
     await em.persistAndFlush(player)
 
     const res = await request(app)
@@ -239,40 +260,44 @@ describe('Player API - patch', () => {
         props: [
           {
             key: 'collectibles',
-            value: '1'
+            value: '1',
           },
           {
             key: 'aNewProp',
-            value: 'aNewValue'
-          }
-        ]
+            value: 'aNewValue',
+          },
+        ],
       })
       .auth(token, { type: 'bearer' })
       .expect(200)
 
     expect(res.body.player.props).toHaveLength(4)
-    expect(res.body.player.props).toEqual(expect.arrayContaining([
-      {
-        key: 'META_DEV_BUILD',
-        value: '1'
-      },
-      {
-        key: 'collectibles',
-        value: '1'
-      },
-      {
-        key: 'zonesExplored',
-        value: '1'
-      },
-      {
-        key: 'aNewProp',
-        value: 'aNewValue'
-      }
-    ]))
+    expect(res.body.player.props).toEqual(
+      expect.arrayContaining([
+        {
+          key: 'META_DEV_BUILD',
+          value: '1',
+        },
+        {
+          key: 'collectibles',
+          value: '1',
+        },
+        {
+          key: 'zonesExplored',
+          value: '1',
+        },
+        {
+          key: 'aNewProp',
+          value: 'aNewValue',
+        },
+      ]),
+    )
   })
 
   it('should only allow memberships to be checked for a player once per request lifecycle', async () => {
-    const isPlayerEligibleSpy = vi.spyOn(PlayerGroup.prototype, 'isPlayerEligible').mockResolvedValue(true)
+    const isPlayerEligibleSpy = vi
+      .spyOn(PlayerGroup.prototype, 'isPlayerEligible')
+      .mockResolvedValue(true)
 
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_PLAYERS])
 
@@ -280,30 +305,37 @@ describe('Player API - patch', () => {
     rule.castType = PlayerGroupRuleCastType.DOUBLE
     rule.operands = ['60']
 
-    const group = await new PlayerGroupFactory().construct(apiKey.game).state(() => ({ rules: [rule] })).one()
+    const group = await new PlayerGroupFactory()
+      .construct(apiKey.game)
+      .state(() => ({ rules: [rule] }))
+      .one()
 
-    const player = await new PlayerFactory([apiKey.game]).state((player) => ({
-      props: new Collection<PlayerProp>(player, [
-        new PlayerProp(player, 'collectibles', '0'),
-        new PlayerProp(player, 'currentLevel', '59')
-      ])
-    })).one()
+    const player = await new PlayerFactory([apiKey.game])
+      .state((player) => ({
+        props: new Collection<PlayerProp>(player, [
+          new PlayerProp(player, 'collectibles', '0'),
+          new PlayerProp(player, 'currentLevel', '59'),
+        ]),
+      }))
+      .one()
     await em.persistAndFlush([group, player])
 
-    await Promise.allSettled(['60', '61', '62', '63', '64', '65'].map((level) => {
-      return request(app)
-        .patch(`/v1/players/${player.id}`)
-        .send({
-          props: [
-            {
-              key: 'currentLevel',
-              value: level
-            }
-          ]
-        })
-        .auth(token, { type: 'bearer' })
-        .expect(200)
-    }))
+    await Promise.allSettled(
+      ['60', '61', '62', '63', '64', '65'].map((level) => {
+        return request(app)
+          .patch(`/v1/players/${player.id}`)
+          .send({
+            props: [
+              {
+                key: 'currentLevel',
+                value: level,
+              },
+            ],
+          })
+          .auth(token, { type: 'bearer' })
+          .expect(200)
+      }),
+    )
 
     expect(isPlayerEligibleSpy).toHaveBeenCalledTimes(1)
     isPlayerEligibleSpy.mockRestore()
@@ -321,14 +353,19 @@ describe('Player API - patch', () => {
     rule.castType = PlayerGroupRuleCastType.DOUBLE
     rule.operands = ['60']
 
-    const group = await new PlayerGroupFactory().construct(apiKey.game).state(() => ({ rules: [rule] })).one()
+    const group = await new PlayerGroupFactory()
+      .construct(apiKey.game)
+      .state(() => ({ rules: [rule] }))
+      .one()
 
-    const player = await new PlayerFactory([apiKey.game]).state((player) => ({
-      props: new Collection<PlayerProp>(player, [
-        new PlayerProp(player, 'collectibles', '0'),
-        new PlayerProp(player, 'currentLevel', '59')
-      ])
-    })).one()
+    const player = await new PlayerFactory([apiKey.game])
+      .state((player) => ({
+        props: new Collection<PlayerProp>(player, [
+          new PlayerProp(player, 'collectibles', '0'),
+          new PlayerProp(player, 'currentLevel', '59'),
+        ]),
+      }))
+      .one()
     await em.persistAndFlush([group, player])
 
     await request(app)
@@ -337,9 +374,9 @@ describe('Player API - patch', () => {
         props: [
           {
             key: 'currentLevel',
-            value: '60'
-          }
-        ]
+            value: '60',
+          },
+        ],
       })
       .auth(token, { type: 'bearer' })
       .expect(200)
@@ -360,30 +397,37 @@ describe('Player API - patch', () => {
     rule.castType = PlayerGroupRuleCastType.DOUBLE
     rule.operands = ['60']
 
-    const group = await new PlayerGroupFactory().construct(apiKey.game).state(() => ({ rules: [rule] })).one()
+    const group = await new PlayerGroupFactory()
+      .construct(apiKey.game)
+      .state(() => ({ rules: [rule] }))
+      .one()
 
-    const player = await new PlayerFactory([apiKey.game]).state((player) => ({
-      props: new Collection<PlayerProp>(player, [
-        new PlayerProp(player, 'collectibles', '0'),
-        new PlayerProp(player, 'currentLevel', '59')
-      ])
-    })).one()
+    const player = await new PlayerFactory([apiKey.game])
+      .state((player) => ({
+        props: new Collection<PlayerProp>(player, [
+          new PlayerProp(player, 'collectibles', '0'),
+          new PlayerProp(player, 'currentLevel', '59'),
+        ]),
+      }))
+      .one()
     await em.persistAndFlush([group, player])
 
-    await Promise.allSettled(['60', '61', '62', '63', '64', '65'].map((level) => {
-      return request(app)
-        .patch(`/v1/players/${player.id}`)
-        .send({
-          props: [
-            {
-              key: 'currentLevel',
-              value: level
-            }
-          ]
-        })
-        .auth(token, { type: 'bearer' })
-        .expect(200)
-    }))
+    await Promise.allSettled(
+      ['60', '61', '62', '63', '64', '65'].map((level) => {
+        return request(app)
+          .patch(`/v1/players/${player.id}`)
+          .send({
+            props: [
+              {
+                key: 'currentLevel',
+                value: level,
+              },
+            ],
+          })
+          .auth(token, { type: 'bearer' })
+          .expect(200)
+      }),
+    )
 
     expect(consoleSpy).toHaveBeenCalledWith(`Duplicate group attempt for player ${player.id}`)
 

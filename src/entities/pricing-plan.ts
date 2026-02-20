@@ -1,4 +1,4 @@
-import {  Entity, PrimaryKey, Property } from '@mikro-orm/mysql'
+import { Entity, PrimaryKey, Property } from '@mikro-orm/mysql'
 
 @Entity()
 export default class PricingPlan {
@@ -29,7 +29,7 @@ export default class PricingPlan {
       stripeId: this.stripeId,
       hidden: this.hidden,
       default: this.default,
-      playerLimit: this.playerLimit
+      playerLimit: this.playerLimit,
     }
   }
 }

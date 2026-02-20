@@ -1,10 +1,10 @@
+import { randText } from '@ngneat/falso'
 import request from 'supertest'
 import { APIKeyScope } from '../../../../src/entities/api-key'
-import PlayerFactory from '../../../fixtures/PlayerFactory'
 import GameSaveFactory from '../../../fixtures/GameSaveFactory'
+import PlayerFactory from '../../../fixtures/PlayerFactory'
 import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
 import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
-import { randText } from '@ngneat/falso'
 
 describe('Game save API - patch', () => {
   it('should update a game save if the scope is valid', async () => {
@@ -21,7 +21,7 @@ describe('Game save API - patch', () => {
       .expect(200)
 
     expect(res.body.save.content).toStrictEqual({
-      progress: 10
+      progress: 10,
     })
   })
 
@@ -55,7 +55,7 @@ describe('Game save API - patch', () => {
       .expect(403)
   })
 
-  it('should not update another player\'s save from another game', async () => {
+  it("should not update another player's save from another game", async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_SAVES])
     const player = await new PlayerFactory([apiKey.game]).one()
     const save = await new GameSaveFactory([player]).one()
@@ -91,8 +91,8 @@ describe('Game save API - patch', () => {
 
     expect(res.body).toStrictEqual({
       errors: {
-        name: ['name is too long']
-      }
+        name: ['name is too long'],
+      },
     })
   })
 })

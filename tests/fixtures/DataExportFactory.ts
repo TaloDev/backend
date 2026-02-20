@@ -19,7 +19,7 @@ export default class DataExportFactory extends Factory<DataExport> {
       return {
         status: DataExportStatus.REQUESTED,
         createdByUser,
-        game: this.game
+        game: this.game,
       }
     })
   }

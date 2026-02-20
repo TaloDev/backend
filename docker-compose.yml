@@ -26,7 +26,7 @@ services:
       - 3306:3306
     volumes:
       - data:/var/lib/mysql
-    
+
   redis:
     image: arm64v8/redis:8-alpine
     command: redis-server --requirepass ${REDIS_PASSWORD}

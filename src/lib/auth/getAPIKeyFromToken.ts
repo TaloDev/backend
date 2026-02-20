@@ -1,8 +1,8 @@
 import { RequestContext } from '@mikro-orm/mysql'
-import APIKey from '../../entities/api-key'
 import jwt from 'jsonwebtoken'
-import { getResultCacheOptions } from '../perf/getResultCacheOptions'
+import APIKey from '../../entities/api-key'
 import GameSecret from '../../entities/game-secret'
+import { getResultCacheOptions } from '../perf/getResultCacheOptions'
 
 export function getTokenCacheKey(sub: number) {
   return `api-key-from-token-${sub}`
@@ -20,7 +20,7 @@ export default async function getAPIKeyFromToken(authHeader: string) {
         const apiKey = await trx.repo(APIKey).findOneOrFail(sub, {
           ...getResultCacheOptions(getTokenCacheKey(sub), 600_000),
           exclude: ['game.props'],
-          populate: ['game']
+          populate: ['game'],
         })
 
         const apiSecret = await trx.repo(GameSecret).findOneOrFail({ game: apiKey.game })

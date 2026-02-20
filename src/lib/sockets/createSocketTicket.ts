@@ -1,5 +1,5 @@
-import { v4 } from 'uuid'
 import Redis from 'ioredis'
+import { v4 } from 'uuid'
 import APIKey from '../../entities/api-key'
 
 export async function createSocketTicket(redis: Redis, key: APIKey, devBuild: boolean) {

@@ -1,7 +1,7 @@
 import type { Next } from 'koa'
+import GameSave from '../../../entities/game-save'
 import { APIRouteContext } from '../../../lib/routing/context'
 import { PlayerRouteState } from '../../../middleware/player-middleware'
-import GameSave from '../../../entities/game-save'
 
 export type GameSaveRouteState = PlayerRouteState & {
   save: GameSave
@@ -12,7 +12,7 @@ export async function loadSave(ctx: APIRouteContext<GameSaveRouteState>, next: N
 
   const save = await ctx.em.repo(GameSave).findOne({
     id: Number(id),
-    player: ctx.state.player
+    player: ctx.state.player,
   })
 
   if (!save) {

@@ -1,6 +1,6 @@
+import { sub, format } from 'date-fns'
 import request from 'supertest'
 import PlayerFactory from '../../../fixtures/PlayerFactory'
-import { sub, format } from 'date-fns'
 import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
 import createUserAndToken from '../../../utils/createUserAndToken'
 
@@ -20,7 +20,13 @@ describe('Headline - returning players', () => {
       .many(4)
 
     const playersSignedupThisWeek = await new PlayerFactory([game]).notSeenThisWeek().many(5)
-    await em.persist([...playersNotSeenThisWeek, ...returningPlayersSeenThisWeek, ...playersSignedupThisWeek]).flush()
+    await em
+      .persist([
+        ...playersNotSeenThisWeek,
+        ...returningPlayersSeenThisWeek,
+        ...playersSignedupThisWeek,
+      ])
+      .flush()
 
     const res = await request(app)
       .get(`/games/${game.id}/headlines/returning_players`)

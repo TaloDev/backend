@@ -3,16 +3,14 @@ import GameChannel from '../../../entities/game-channel'
 import { ProtectedRouteContext } from '../../../lib/routing/context'
 import { GameRouteState } from '../../../middleware/game-middleware'
 
-type GameChannelRouteContext = ProtectedRouteContext<
-  GameRouteState & { channel: GameChannel }
->
+type GameChannelRouteContext = ProtectedRouteContext<GameRouteState & { channel: GameChannel }>
 
 export async function loadChannel(ctx: GameChannelRouteContext, next: Next) {
   const { id } = ctx.params as { id: string }
   const em = ctx.em
 
   const channel = await em.repo(GameChannel).findOne(Number(id), {
-    populate: ['members']
+    populate: ['members'],
   })
 
   if (!channel) {

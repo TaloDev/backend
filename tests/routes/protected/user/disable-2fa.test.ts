@@ -1,8 +1,8 @@
 import request from 'supertest'
-import UserTwoFactorAuth from '../../../../src/entities/user-two-factor-auth'
 import UserRecoveryCode from '../../../../src/entities/user-recovery-code'
-import createUserAndToken from '../../../utils/createUserAndToken'
+import UserTwoFactorAuth from '../../../../src/entities/user-two-factor-auth'
 import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
+import createUserAndToken from '../../../utils/createUserAndToken'
 
 describe('User - disable 2fa', () => {
   it('should let users disable 2fa', async () => {
@@ -29,7 +29,7 @@ describe('User - disable 2fa', () => {
     expect(user2fa).toBeNull()
   })
 
-  it('should not try to disable 2fa if it isn\'t enabled', async () => {
+  it("should not try to disable 2fa if it isn't enabled", async () => {
     const [token] = await createUserAndToken()
 
     const res = await request(app)

@@ -1,9 +1,9 @@
 import { pick } from 'lodash'
+import { GameActivityType } from '../../../entities/game-activity'
+import { UserType } from '../../../entities/user'
+import createGameActivity from '../../../lib/logging/createGameActivity'
 import { protectedRoute, withMiddleware } from '../../../lib/routing/router'
 import { userTypeGate } from '../../../middleware/policy-middleware'
-import { UserType } from '../../../entities/user'
-import { GameActivityType } from '../../../entities/game-activity'
-import createGameActivity from '../../../lib/logging/createGameActivity'
 import { loadIntegration, configKeys } from './common'
 
 export const updateRoute = protectedRoute({
@@ -15,13 +15,13 @@ export const updateRoute = protectedRoute({
         apiKey: z.string().optional(),
         appId: z.number().optional(),
         syncLeaderboards: z.boolean().optional(),
-        syncStats: z.boolean().optional()
-      })
-    })
+        syncStats: z.boolean().optional(),
+      }),
+    }),
   }),
   middleware: withMiddleware(
     userTypeGate([UserType.ADMIN], 'update integrations'),
-    loadIntegration
+    loadIntegration,
   ),
   handler: async (ctx) => {
     const { config } = ctx.state.validated.body
@@ -38,9 +38,9 @@ export const updateRoute = protectedRoute({
       extra: {
         integrationType: integration.type,
         display: {
-          'Updated properties': Object.keys(newConfig).join(', ')
-        }
-      }
+          'Updated properties': Object.keys(newConfig).join(', '),
+        },
+      },
     })
 
     await em.flush()
@@ -48,8 +48,8 @@ export const updateRoute = protectedRoute({
     return {
       status: 200,
       body: {
-        integration
-      }
+        integration,
+      },
     }
-  }
+  },
 })

@@ -1,13 +1,13 @@
-import Player from '../../../entities/player'
-import { protectedRoute, withMiddleware } from '../../../lib/routing/router'
 import { GameActivityType } from '../../../entities/game-activity'
-import createGameActivity from '../../../lib/logging/createGameActivity'
-import { userTypeGate } from '../../../middleware/policy-middleware'
+import Player from '../../../entities/player'
 import { UserType } from '../../../entities/user'
-import { deletePlayersFromDB } from '../../../tasks/deletePlayers'
+import createGameActivity from '../../../lib/logging/createGameActivity'
 import { deferClearResponseCache } from '../../../lib/perf/responseCacheQueue'
-import { loadPlayer } from './common'
+import { protectedRoute, withMiddleware } from '../../../lib/routing/router'
 import { loadGame } from '../../../middleware/game-middleware'
+import { userTypeGate } from '../../../middleware/policy-middleware'
+import { deletePlayersFromDB } from '../../../tasks/deletePlayers'
+import { loadPlayer } from './common'
 
 export const deleteRoute = protectedRoute({
   method: 'delete',
@@ -15,7 +15,7 @@ export const deleteRoute = protectedRoute({
   middleware: withMiddleware(
     userTypeGate([UserType.ADMIN], 'delete players'),
     loadGame,
-    loadPlayer
+    loadPlayer,
   ),
   handler: async (ctx) => {
     const player = ctx.state.player
@@ -31,16 +31,16 @@ export const deleteRoute = protectedRoute({
       extra: {
         playerId: player.id,
         display: {
-          'Player ID': player.id
-        }
-      }
+          'Player ID': player.id,
+        },
+      },
     })
 
     await em.flush()
     await deferClearResponseCache(Player.getSearchCacheKey(game, true))
 
     return {
-      status: 204
+      status: 204,
     }
-  }
+  },
 })

@@ -1,8 +1,8 @@
+import { GameActivityType } from '../../../entities/game-activity'
+import { UserType } from '../../../entities/user'
+import createGameActivity from '../../../lib/logging/createGameActivity'
 import { protectedRoute, withMiddleware } from '../../../lib/routing/router'
 import { userTypeGate } from '../../../middleware/policy-middleware'
-import { UserType } from '../../../entities/user'
-import { GameActivityType } from '../../../entities/game-activity'
-import createGameActivity from '../../../lib/logging/createGameActivity'
 import { clearStatIndexResponseCache, loadStat } from './common'
 
 export const deleteRoute = protectedRoute({
@@ -11,7 +11,7 @@ export const deleteRoute = protectedRoute({
   middleware: withMiddleware(
     userTypeGate([UserType.ADMIN], 'delete stats'),
     loadStat,
-    clearStatIndexResponseCache
+    clearStatIndexResponseCache,
   ),
   handler: async (ctx) => {
     const em = ctx.em
@@ -22,14 +22,14 @@ export const deleteRoute = protectedRoute({
       game: stat.game,
       type: GameActivityType.GAME_STAT_DELETED,
       extra: {
-        statInternalName: stat.internalName
-      }
+        statInternalName: stat.internalName,
+      },
     })
 
     await em.remove(stat).flush()
 
     return {
-      status: 204
+      status: 204,
     }
-  }
+  },
 })

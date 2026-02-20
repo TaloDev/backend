@@ -1,15 +1,16 @@
 import { Next } from 'koa'
 import { RefinementCtx, z as zodLib } from 'zod'
 import PlayerGroup, { PlayerRuleFields, RuleMode } from '../../../entities/player-group'
-import PlayerGroupRule, { PlayerGroupRuleCastType, PlayerGroupRuleName } from '../../../entities/player-group-rule'
+import PlayerGroupRule, {
+  PlayerGroupRuleCastType,
+  PlayerGroupRuleName,
+} from '../../../entities/player-group-rule'
 import { ProtectedRouteContext } from '../../../lib/routing/context'
 import { GameRouteState } from '../../../middleware/game-middleware'
 
 type Z = typeof zodLib
 
-type PlayerGroupRouteContext = ProtectedRouteContext<
-  GameRouteState & { group: PlayerGroup }
->
+type PlayerGroupRouteContext = ProtectedRouteContext<GameRouteState & { group: PlayerGroup }>
 
 export async function loadGroup(ctx: PlayerGroupRouteContext, next: Next) {
   const { id } = ctx.params as { id: string }
@@ -17,7 +18,7 @@ export async function loadGroup(ctx: PlayerGroupRouteContext, next: Next) {
 
   const group = await em.repo(PlayerGroup).findOne({
     id,
-    game: ctx.state.game
+    game: ctx.state.game,
   })
 
   if (!group) {
@@ -54,17 +55,18 @@ function validateRules(rules: RuleInput[], ctx: RefinementCtx) {
   }
 }
 
-const ruleSchema = (z: Z) => z.object({
-  name: z.enum(PlayerGroupRuleName),
-  field: z.string(),
-  operands: z.array(z.string()),
-  negate: z.boolean(),
-  castType: z.enum(PlayerGroupRuleCastType)
-})
+const ruleSchema = (z: Z) =>
+  z.object({
+    name: z.enum(PlayerGroupRuleName),
+    field: z.string(),
+    operands: z.array(z.string()),
+    negate: z.boolean(),
+    castType: z.enum(PlayerGroupRuleCastType),
+  })
 
 const rulesAndModeFields = (z: Z) => ({
   ruleMode: z.enum(RuleMode),
-  rules: z.array(ruleSchema(z))
+  rules: z.array(ruleSchema(z)),
 })
 
 export function rulesAndModeSchema(z: Z) {
@@ -74,14 +76,16 @@ export function rulesAndModeSchema(z: Z) {
 }
 
 export function groupBodySchema(z: Z) {
-  return z.object({
-    ...rulesAndModeFields(z),
-    name: z.string(),
-    description: z.string(),
-    membersVisible: z.boolean()
-  }).superRefine((data, ctx) => {
-    validateRules(data.rules, ctx)
-  })
+  return z
+    .object({
+      ...rulesAndModeFields(z),
+      name: z.string(),
+      description: z.string(),
+      membersVisible: z.boolean(),
+    })
+    .superRefine((data, ctx) => {
+      validateRules(data.rules, ctx)
+    })
 }
 
 export function buildRulesFromData(data: RuleInput[]) {

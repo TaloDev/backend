@@ -1,5 +1,5 @@
-import { protectedRoute } from '../../../lib/routing/router'
 import { DataExportAvailableEntities } from '../../../entities/data-export'
+import { protectedRoute } from '../../../lib/routing/router'
 
 export const entitiesRoute = protectedRoute({
   method: 'get',
@@ -10,8 +10,8 @@ export const entitiesRoute = protectedRoute({
     return {
       status: 200,
       body: {
-        entities
-      }
+        entities,
+      },
     }
-  }
+  },
 })

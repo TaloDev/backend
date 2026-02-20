@@ -1,11 +1,11 @@
-import request from 'supertest'
 import { subDays, format, startOfDay } from 'date-fns'
+import request from 'supertest'
+import PlayerGameStatSnapshot from '../../../../src/entities/player-game-stat-snapshot'
 import GameStatFactory from '../../../fixtures/GameStatFactory'
 import PlayerFactory from '../../../fixtures/PlayerFactory'
 import PlayerGameStatFactory from '../../../fixtures/PlayerGameStatFactory'
 import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
 import createUserAndToken from '../../../utils/createUserAndToken'
-import PlayerGameStatSnapshot from '../../../../src/entities/player-game-stat-snapshot'
 
 describe('Chart - stats activity', () => {
   it('should return stat snapshot counts by day', async () => {
@@ -44,9 +44,9 @@ describe('Chart - stats activity', () => {
           snapshot.construct(player.aliases[0], playerStat)
           snapshot.createdAt = twoDaysAgo
           return snapshot.toInsertable()
-        })
+        }),
       ],
-      format: 'JSONEachRow'
+      format: 'JSONEachRow',
     })
 
     const startDate = format(twoDaysAgo, 'yyyy-MM-dd')
@@ -61,14 +61,14 @@ describe('Chart - stats activity', () => {
     expect(res.body.statNames).toContain('Coins collected')
     expect(res.body.data).toHaveLength(3)
 
-    const twoDaysAgoData = res.body.data.find((d: { date: number }) =>
-      d.date === startOfDay(twoDaysAgo).getTime()
+    const twoDaysAgoData = res.body.data.find(
+      (d: { date: number }) => d.date === startOfDay(twoDaysAgo).getTime(),
     )
-    const yesterdayData = res.body.data.find((d: { date: number }) =>
-      d.date === startOfDay(yesterday).getTime()
+    const yesterdayData = res.body.data.find(
+      (d: { date: number }) => d.date === startOfDay(yesterday).getTime(),
     )
-    const todayData = res.body.data.find((d: { date: number }) =>
-      d.date === startOfDay(today).getTime()
+    const todayData = res.body.data.find(
+      (d: { date: number }) => d.date === startOfDay(today).getTime(),
     )
 
     expect(twoDaysAgoData.stats['Coins collected']).toBe(1)
@@ -108,9 +108,9 @@ describe('Chart - stats activity', () => {
           snapshot.construct(player.aliases[0], playerStat2)
           snapshot.createdAt = today
           return snapshot.toInsertable()
-        })
+        }),
       ],
-      format: 'JSONEachRow'
+      format: 'JSONEachRow',
     })
 
     const startDate = format(today, 'yyyy-MM-dd')
@@ -155,9 +155,9 @@ describe('Chart - stats activity', () => {
           snapshot.construct(player.aliases[0], playerStat)
           snapshot.createdAt = threeDaysAgo
           return snapshot.toInsertable()
-        })
+        }),
       ],
-      format: 'JSONEachRow'
+      format: 'JSONEachRow',
     })
 
     const startDate = format(threeDaysAgo, 'yyyy-MM-dd')
@@ -249,8 +249,8 @@ describe('Chart - stats activity', () => {
 
     expect(res.body).toStrictEqual({
       errors: {
-        startDate: ['startDate is missing from the request query']
-      }
+        startDate: ['startDate is missing from the request query'],
+      },
     })
   })
 
@@ -266,8 +266,8 @@ describe('Chart - stats activity', () => {
 
     expect(res.body).toStrictEqual({
       errors: {
-        endDate: ['endDate is missing from the request query']
-      }
+        endDate: ['endDate is missing from the request query'],
+      },
     })
   })
 })

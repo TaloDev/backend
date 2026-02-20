@@ -19,7 +19,7 @@ export async function clearCachePattern(redis: Redis, pattern: string) {
   `
 
   try {
-    return await redis.eval(script, 0, pattern) as number
+    return (await redis.eval(script, 0, pattern)) as number
   } catch {
     return 0
   }

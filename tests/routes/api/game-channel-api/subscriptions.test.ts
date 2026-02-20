@@ -1,10 +1,10 @@
-import request from 'supertest'
-import GameChannelFactory from '../../../fixtures/GameChannelFactory'
-import { APIKeyScope } from '../../../../src/entities/api-key'
-import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
-import PlayerFactory from '../../../fixtures/PlayerFactory'
 import { Collection } from '@mikro-orm/mysql'
+import request from 'supertest'
+import { APIKeyScope } from '../../../../src/entities/api-key'
 import GameChannelProp from '../../../../src/entities/game-channel-prop'
+import GameChannelFactory from '../../../fixtures/GameChannelFactory'
+import PlayerFactory from '../../../fixtures/PlayerFactory'
+import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
 
 describe('Game channel API - subscriptions', () => {
   it('should return a list of game channel subscriptions if the scope is valid', async () => {
@@ -57,7 +57,7 @@ describe('Game channel API - subscriptions', () => {
       .expect(404)
 
     expect(res.body).toStrictEqual({
-      message: 'Player not found'
+      message: 'Player not found',
     })
   })
 
@@ -65,11 +65,13 @@ describe('Game channel API - subscriptions', () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_GAME_CHANNELS])
 
     const player = await new PlayerFactory([apiKey.game]).one()
-    const channel = await new GameChannelFactory(apiKey.game).state((channel) => ({
-      props: new Collection<GameChannelProp>(channel, [
-        new GameChannelProp(channel, 'guildId', '15')
-      ])
-    })).one()
+    const channel = await new GameChannelFactory(apiKey.game)
+      .state((channel) => ({
+        props: new Collection<GameChannelProp>(channel, [
+          new GameChannelProp(channel, 'guildId', '15'),
+        ]),
+      }))
+      .one()
     channel.members.add(player.aliases[0])
 
     const otherChannel = await new GameChannelFactory(apiKey.game).one()
@@ -93,18 +95,22 @@ describe('Game channel API - subscriptions', () => {
 
     const player = await new PlayerFactory([apiKey.game]).one()
 
-    const channel = await new GameChannelFactory(apiKey.game).state((channel) => ({
-      props: new Collection<GameChannelProp>(channel, [
-        new GameChannelProp(channel, 'guildId', '15')
-      ])
-    })).one()
+    const channel = await new GameChannelFactory(apiKey.game)
+      .state((channel) => ({
+        props: new Collection<GameChannelProp>(channel, [
+          new GameChannelProp(channel, 'guildId', '15'),
+        ]),
+      }))
+      .one()
     channel.members.add(player.aliases[0])
 
-    const otherChannel = await new GameChannelFactory(apiKey.game).state((channel) => ({
-      props: new Collection<GameChannelProp>(channel, [
-        new GameChannelProp(channel, 'guildId', '17')
-      ])
-    })).one()
+    const otherChannel = await new GameChannelFactory(apiKey.game)
+      .state((channel) => ({
+        props: new Collection<GameChannelProp>(channel, [
+          new GameChannelProp(channel, 'guildId', '17'),
+        ]),
+      }))
+      .one()
     otherChannel.members.add(player.aliases[0])
 
     const irrelevantChannel = await new GameChannelFactory(apiKey.game).one()

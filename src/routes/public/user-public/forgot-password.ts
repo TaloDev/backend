@@ -1,17 +1,17 @@
-import { publicRoute } from '../../../lib/routing/router'
+import { getGlobalQueue } from '../../../config/global-queues'
+import ResetPassword from '../../../emails/reset-password'
 import User from '../../../entities/user'
 import { sign } from '../../../lib/auth/jwt'
 import queueEmail from '../../../lib/messaging/queueEmail'
-import ResetPassword from '../../../emails/reset-password'
-import { getGlobalQueue } from '../../../config/global-queues'
+import { publicRoute } from '../../../lib/routing/router'
 
 export const forgotPasswordRoute = publicRoute({
   method: 'post',
   path: '/forgot_password',
   schema: (z) => ({
     body: z.object({
-      email: z.string().min(1)
-    })
+      email: z.string().min(1),
+    }),
   }),
   handler: async (ctx) => {
     const { email } = ctx.state.validated.body
@@ -27,7 +27,7 @@ export const forgotPasswordRoute = publicRoute({
     }
 
     return {
-      status: 204
+      status: 204,
     }
-  }
+  },
 })

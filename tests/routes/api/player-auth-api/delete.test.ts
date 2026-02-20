@@ -1,15 +1,17 @@
+import bcrypt from 'bcrypt'
+import assert from 'node:assert'
 import request from 'supertest'
 import { APIKeyScope } from '../../../../src/entities/api-key'
-import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
-import PlayerFactory from '../../../fixtures/PlayerFactory'
-import bcrypt from 'bcrypt'
-import PlayerAuthFactory from '../../../fixtures/PlayerAuthFactory'
-import PlayerAuthActivity, { PlayerAuthActivityType } from '../../../../src/entities/player-auth-activity'
-import EventFactory from '../../../fixtures/EventFactory'
-import PlayerPresenceFactory from '../../../fixtures/PlayerPresenceFactory'
-import PlayerAuthActivityFactory from '../../../fixtures/PlayerAuthActivityFactory'
-import assert from 'node:assert'
+import PlayerAuthActivity, {
+  PlayerAuthActivityType,
+} from '../../../../src/entities/player-auth-activity'
 import * as deletePlayers from '../../../../src/tasks/deletePlayers'
+import EventFactory from '../../../fixtures/EventFactory'
+import PlayerAuthActivityFactory from '../../../fixtures/PlayerAuthActivityFactory'
+import PlayerAuthFactory from '../../../fixtures/PlayerAuthFactory'
+import PlayerFactory from '../../../fixtures/PlayerFactory'
+import PlayerPresenceFactory from '../../../fixtures/PlayerPresenceFactory'
+import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
 
 describe('Player auth API - delete', { timeout: 30_000 }, () => {
   afterEach(() => {
@@ -17,15 +19,25 @@ describe('Player auth API - delete', { timeout: 30_000 }, () => {
   })
 
   it('should delete the account if the current password is correct', async () => {
-    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_PLAYERS, APIKeyScope.WRITE_PLAYERS])
+    const [apiKey, token] = await createAPIKeyAndToken([
+      APIKeyScope.READ_PLAYERS,
+      APIKeyScope.WRITE_PLAYERS,
+    ])
 
-    const player = await new PlayerFactory([apiKey.game]).withTaloAlias().state(async () => ({
-      auth: await new PlayerAuthFactory().state(async () => ({
-        password: await bcrypt.hash('password', 10)
-      })).one()
-    })).one()
+    const player = await new PlayerFactory([apiKey.game])
+      .withTaloAlias()
+      .state(async () => ({
+        auth: await new PlayerAuthFactory()
+          .state(async () => ({
+            password: await bcrypt.hash('password', 10),
+          }))
+          .one(),
+      }))
+      .one()
     const alias = player.aliases[0]
-    const activities = await new PlayerAuthActivityFactory(player.game).state(() => ({ player })).many(10)
+    const activities = await new PlayerAuthActivityFactory(player.game)
+      .state(() => ({ player }))
+      .many(10)
     await em.persistAndFlush([player, ...activities])
 
     const sessionToken = await player.auth!.createSession(alias)
@@ -52,26 +64,34 @@ describe('Player auth API - delete', { timeout: 30_000 }, () => {
       type: PlayerAuthActivityType.DELETED_AUTH,
       player: player.id,
       extra: {
-        identifier: prevIdentifier
-      }
+        identifier: prevIdentifier,
+      },
     })
     assert(activity)
     expect(activity.extra.ip).toBeUndefined()
 
     const activityCount = await em.getRepository(PlayerAuthActivity).count({
-      player: player.id
+      player: player.id,
     })
     expect(activityCount).toBe(1)
   })
 
   it('should delete events associated with the player alias', async () => {
-    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_PLAYERS, APIKeyScope.WRITE_PLAYERS])
+    const [apiKey, token] = await createAPIKeyAndToken([
+      APIKeyScope.READ_PLAYERS,
+      APIKeyScope.WRITE_PLAYERS,
+    ])
 
-    const player = await new PlayerFactory([apiKey.game]).withTaloAlias().state(async () => ({
-      auth: await new PlayerAuthFactory().state(async () => ({
-        password: await bcrypt.hash('password', 10)
-      })).one()
-    })).one()
+    const player = await new PlayerFactory([apiKey.game])
+      .withTaloAlias()
+      .state(async () => ({
+        auth: await new PlayerAuthFactory()
+          .state(async () => ({
+            password: await bcrypt.hash('password', 10),
+          }))
+          .one(),
+      }))
+      .one()
     const alias = player.aliases[0]
     await em.persist(player).flush()
 
@@ -82,7 +102,7 @@ describe('Player auth API - delete', { timeout: 30_000 }, () => {
     await clickhouse.insert({
       table: 'events',
       values: events.map((event) => event.toInsertable()),
-      format: 'JSONEachRow'
+      format: 'JSONEachRow',
     })
 
     await request(app)
@@ -95,38 +115,52 @@ describe('Player auth API - delete', { timeout: 30_000 }, () => {
       .expect(204)
 
     await vi.waitUntil(async () => {
-      const updatedEventsCount = await clickhouse.query({
-        query: `SELECT count() as count FROM events WHERE player_alias_id = ${alias.id}`,
-        format: 'JSONEachRow'
-      }).then((res) => res.json<{ count: string }>())
+      const updatedEventsCount = await clickhouse
+        .query({
+          query: `SELECT count() as count FROM events WHERE player_alias_id = ${alias.id}`,
+          format: 'JSONEachRow',
+        })
+        .then((res) => res.json<{ count: string }>())
         .then((res) => Number(res[0].count))
 
-      const updatedEventPropsCount = await clickhouse.query({
-        query: `SELECT count() as count FROM event_props ep INNER JOIN events e ON e.id = ep.event_id WHERE e.player_alias_id = ${alias.id}`,
-        format: 'JSONEachRow'
-      }).then((res) => res.json<{ count: string }>())
+      const updatedEventPropsCount = await clickhouse
+        .query({
+          query: `SELECT count() as count FROM event_props ep INNER JOIN events e ON e.id = ep.event_id WHERE e.player_alias_id = ${alias.id}`,
+          format: 'JSONEachRow',
+        })
+        .then((res) => res.json<{ count: string }>())
         .then((res) => Number(res[0].count))
 
-      const updatedPlayerSessionsCount = await clickhouse.query({
-        query: `SELECT count() as count FROM player_sessions WHERE player_id = '${player.id}'`,
-        format: 'JSONEachRow'
-      }).then((res) => res.json<{ count: string }>())
+      const updatedPlayerSessionsCount = await clickhouse
+        .query({
+          query: `SELECT count() as count FROM player_sessions WHERE player_id = '${player.id}'`,
+          format: 'JSONEachRow',
+        })
+        .then((res) => res.json<{ count: string }>())
         .then((res) => Number(res[0].count))
 
-      return updatedEventsCount === 0 &&
-        updatedEventPropsCount === 0 &&
-        updatedPlayerSessionsCount === 0
+      return (
+        updatedEventsCount === 0 && updatedEventPropsCount === 0 && updatedPlayerSessionsCount === 0
+      )
     })
   })
 
   it('should not delete the account if the current password is incorrect', async () => {
-    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_PLAYERS, APIKeyScope.WRITE_PLAYERS])
+    const [apiKey, token] = await createAPIKeyAndToken([
+      APIKeyScope.READ_PLAYERS,
+      APIKeyScope.WRITE_PLAYERS,
+    ])
 
-    const player = await new PlayerFactory([apiKey.game]).withTaloAlias().state(async () => ({
-      auth: await new PlayerAuthFactory().state(async () => ({
-        password: await bcrypt.hash('password', 10)
-      })).one()
-    })).one()
+    const player = await new PlayerFactory([apiKey.game])
+      .withTaloAlias()
+      .state(async () => ({
+        auth: await new PlayerAuthFactory()
+          .state(async () => ({
+            password: await bcrypt.hash('password', 10),
+          }))
+          .one(),
+      }))
+      .one()
     const alias = player.aliases[0]
     await em.persistAndFlush(player)
 
@@ -144,7 +178,7 @@ describe('Player auth API - delete', { timeout: 30_000 }, () => {
 
     expect(res.body).toStrictEqual({
       message: 'Current password is incorrect',
-      errorCode: 'INVALID_CREDENTIALS'
+      errorCode: 'INVALID_CREDENTIALS',
     })
 
     await em.refresh(player.auth!)
@@ -152,7 +186,7 @@ describe('Player auth API - delete', { timeout: 30_000 }, () => {
 
     const activity = await em.getRepository(PlayerAuthActivity).findOne({
       type: PlayerAuthActivityType.DELETE_AUTH_FAILED,
-      player: player.id
+      player: player.id,
     })
     expect(activity).not.toBeNull()
   })
@@ -160,11 +194,16 @@ describe('Player auth API - delete', { timeout: 30_000 }, () => {
   it('should not delete the account if the api key does not have the correct scopes', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([])
 
-    const player = await new PlayerFactory([apiKey.game]).withTaloAlias().state(async () => ({
-      auth: await new PlayerAuthFactory().state(async () => ({
-        password: await bcrypt.hash('password', 10)
-      })).one()
-    })).one()
+    const player = await new PlayerFactory([apiKey.game])
+      .withTaloAlias()
+      .state(async () => ({
+        auth: await new PlayerAuthFactory()
+          .state(async () => ({
+            password: await bcrypt.hash('password', 10),
+          }))
+          .one(),
+      }))
+      .one()
     const alias = player.aliases[0]
     await em.persistAndFlush(player)
 
@@ -182,19 +221,29 @@ describe('Player auth API - delete', { timeout: 30_000 }, () => {
   })
 
   it('should delete the account when the player has presence attached to the current alias', async () => {
-    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_PLAYERS, APIKeyScope.WRITE_PLAYERS])
+    const [apiKey, token] = await createAPIKeyAndToken([
+      APIKeyScope.READ_PLAYERS,
+      APIKeyScope.WRITE_PLAYERS,
+    ])
 
-    const player = await new PlayerFactory([apiKey.game]).withTaloAlias().state(async () => ({
-      auth: await new PlayerAuthFactory().state(async () => ({
-        password: await bcrypt.hash('password', 10)
-      })).one()
-    })).one()
+    const player = await new PlayerFactory([apiKey.game])
+      .withTaloAlias()
+      .state(async () => ({
+        auth: await new PlayerAuthFactory()
+          .state(async () => ({
+            password: await bcrypt.hash('password', 10),
+          }))
+          .one(),
+      }))
+      .one()
 
     const alias = player.aliases[0]
 
-    const presence = await new PlayerPresenceFactory(apiKey.game).state(async () => ({
-      playerAlias: alias
-    })).one()
+    const presence = await new PlayerPresenceFactory(apiKey.game)
+      .state(async () => ({
+        playerAlias: alias,
+      }))
+      .one()
 
     player.presence = presence
     await em.persistAndFlush(player)
@@ -214,13 +263,21 @@ describe('Player auth API - delete', { timeout: 30_000 }, () => {
 
   it('should rollback if clickhouse fails', async () => {
     vi.spyOn(deletePlayers, 'deleteClickHousePlayerData').mockRejectedValue(new Error())
-    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_PLAYERS, APIKeyScope.WRITE_PLAYERS])
+    const [apiKey, token] = await createAPIKeyAndToken([
+      APIKeyScope.READ_PLAYERS,
+      APIKeyScope.WRITE_PLAYERS,
+    ])
 
-    const player = await new PlayerFactory([apiKey.game]).withTaloAlias().state(async () => ({
-      auth: await new PlayerAuthFactory().state(async () => ({
-        password: await bcrypt.hash('password', 10)
-      })).one()
-    })).one()
+    const player = await new PlayerFactory([apiKey.game])
+      .withTaloAlias()
+      .state(async () => ({
+        auth: await new PlayerAuthFactory()
+          .state(async () => ({
+            password: await bcrypt.hash('password', 10),
+          }))
+          .one(),
+      }))
+      .one()
     const alias = player.aliases[0]
     await em.persistAndFlush(player)
 
@@ -240,7 +297,10 @@ describe('Player auth API - delete', { timeout: 30_000 }, () => {
   })
 
   it('should return a 400 if the player does not have authentication', async () => {
-    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_PLAYERS, APIKeyScope.WRITE_PLAYERS])
+    const [apiKey, token] = await createAPIKeyAndToken([
+      APIKeyScope.READ_PLAYERS,
+      APIKeyScope.WRITE_PLAYERS,
+    ])
 
     const player = await new PlayerFactory([apiKey.game]).one()
     await em.persistAndFlush(player)

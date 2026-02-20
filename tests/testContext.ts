@@ -19,7 +19,7 @@ export async function getTestContext() {
       ctx: app.context,
       em: app.context.em.fork(),
       clickhouse: app.context.clickhouse,
-      redis: createRedisConnection()
+      redis: createRedisConnection(),
     }
   }
   return cachedContext

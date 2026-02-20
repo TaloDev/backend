@@ -1,10 +1,12 @@
 import request from 'supertest'
 import { APIKeyScope } from '../../../../src/entities/api-key'
-import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
-import PlayerFactory from '../../../fixtures/PlayerFactory'
-import PlayerAliasSubscriptionFactory from '../../../fixtures/PlayerAliasSubscriptionFactory'
 import PlayerAliasSubscription from '../../../../src/entities/player-alias-subscription'
-import createSocketIdentifyMessage, { persistTestSocketTicket } from '../../../utils/createSocketIdentifyMessage'
+import PlayerAliasSubscriptionFactory from '../../../fixtures/PlayerAliasSubscriptionFactory'
+import PlayerFactory from '../../../fixtures/PlayerFactory'
+import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
+import createSocketIdentifyMessage, {
+  persistTestSocketTicket,
+} from '../../../utils/createSocketIdentifyMessage'
 import createTestSocket, { createTestClient } from '../../../utils/createTestSocket'
 
 describe('Player relationships API - delete', () => {
@@ -26,7 +28,9 @@ describe('Player relationships API - delete', () => {
       .set('x-talo-alias', String(player1.aliases[0].id))
       .expect(204)
 
-    const deletedSubscription = await em.repo(PlayerAliasSubscription).findOne(subscription.id, { refresh: true })
+    const deletedSubscription = await em
+      .repo(PlayerAliasSubscription)
+      .findOne(subscription.id, { refresh: true })
     expect(deletedSubscription).toBeNull()
   })
 
@@ -48,7 +52,9 @@ describe('Player relationships API - delete', () => {
       .set('x-talo-alias', String(player1.aliases[0].id))
       .expect(204)
 
-    const deletedSubscription = await em.repo(PlayerAliasSubscription).findOne(subscription.id, { refresh: true })
+    const deletedSubscription = await em
+      .repo(PlayerAliasSubscription)
+      .findOne(subscription.id, { refresh: true })
     expect(deletedSubscription).toBeNull()
   })
 
@@ -107,7 +113,7 @@ describe('Player relationships API - delete', () => {
     expect(res.body.message).toBe('Subscription not found')
   })
 
-  it('should not delete another player\'s subscription', async () => {
+  it("should not delete another player's subscription", async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_PLAYER_RELATIONSHIPS])
     const player1 = await new PlayerFactory([apiKey.game]).one()
     const player2 = await new PlayerFactory([apiKey.game]).one()
@@ -128,7 +134,9 @@ describe('Player relationships API - delete', () => {
 
     expect(res.body.message).toBe('Subscription not found')
 
-    const updatedSubscription = await em.repo(PlayerAliasSubscription).findOne(subscription.id, { refresh: true })
+    const updatedSubscription = await em
+      .repo(PlayerAliasSubscription)
+      .findOne(subscription.id, { refresh: true })
     expect(updatedSubscription).not.toBeNull()
   })
 
@@ -151,7 +159,9 @@ describe('Player relationships API - delete', () => {
       .set('x-talo-alias', String(player1.aliases[0].id))
       .expect(204)
 
-    const deleted = await em.repo(PlayerAliasSubscription).findOne(subscription.id, { refresh: true })
+    const deleted = await em
+      .repo(PlayerAliasSubscription)
+      .findOne(subscription.id, { refresh: true })
     expect(deleted).toBeNull()
   })
 
@@ -182,22 +192,35 @@ describe('Player relationships API - delete', () => {
       .set('x-talo-alias', String(player1.aliases[0].id))
       .expect(204)
 
-    const deleted1 = await em.repo(PlayerAliasSubscription).findOne(subscription1.id, { refresh: true })
-    const deleted2 = await em.repo(PlayerAliasSubscription).findOne(subscription2.id, { refresh: true })
+    const deleted1 = await em
+      .repo(PlayerAliasSubscription)
+      .findOne(subscription1.id, { refresh: true })
+    const deleted2 = await em
+      .repo(PlayerAliasSubscription)
+      .findOne(subscription2.id, { refresh: true })
     expect(deleted1).toBeNull()
     expect(deleted2).toBeNull()
   })
 
   it('should notify both players when a subscription is deleted', async () => {
-    const { identifyMessage: identifyMessage1, ticket: ticket1, player: player1, apiKey, token: token1 } = await createSocketIdentifyMessage([
+    const {
+      identifyMessage: identifyMessage1,
+      ticket: ticket1,
+      player: player1,
+      apiKey,
+      token: token1,
+    } = await createSocketIdentifyMessage([
       APIKeyScope.READ_PLAYERS,
       APIKeyScope.READ_PLAYER_RELATIONSHIPS,
-      APIKeyScope.WRITE_PLAYER_RELATIONSHIPS
+      APIKeyScope.WRITE_PLAYER_RELATIONSHIPS,
     ])
     const player2 = await new PlayerFactory([apiKey.game]).one()
     await em.persist(player2).flush()
 
-    const { identifyMessage: identifyMessage2, ticket: ticket2 } = await persistTestSocketTicket(apiKey, player2)
+    const { identifyMessage: identifyMessage2, ticket: ticket2 } = await persistTestSocketTicket(
+      apiKey,
+      player2,
+    )
 
     const subscription = await new PlayerAliasSubscriptionFactory()
       .withSubscriber(player1.aliases[0])

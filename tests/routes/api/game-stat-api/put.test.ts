@@ -1,15 +1,15 @@
+import { subHours } from 'date-fns'
 import request from 'supertest'
 import { APIKeyScope } from '../../../../src/entities/api-key'
-import PlayerFactory from '../../../fixtures/PlayerFactory'
-import GameStatFactory from '../../../fixtures/GameStatFactory'
+import Game from '../../../../src/entities/game'
 import GameStat from '../../../../src/entities/game-stat'
 import PlayerGameStat from '../../../../src/entities/player-game-stat'
-import PlayerGameStatFactory from '../../../fixtures/PlayerGameStatFactory'
-import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
-import Game from '../../../../src/entities/game'
-import { subHours } from 'date-fns'
 import PlayerGameStatSnapshot from '../../../../src/entities/player-game-stat-snapshot'
 import { FlushStatSnapshotsQueueHandler } from '../../../../src/lib/queues/game-metrics/flush-stat-snapshots-queue-handler'
+import GameStatFactory from '../../../fixtures/GameStatFactory'
+import PlayerFactory from '../../../fixtures/PlayerFactory'
+import PlayerGameStatFactory from '../../../fixtures/PlayerGameStatFactory'
+import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
 
 describe('Game stats API - put', () => {
   const createStat = async (game: Game, props: Partial<GameStat>) => {
@@ -69,7 +69,11 @@ describe('Game stats API - put', () => {
 
   it('should not create a player stat if the last update was less than the min time between updates', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_STATS])
-    const stat = await createStat(apiKey.game, { maxValue: 999, maxChange: 99, minTimeBetweenUpdates: 30 })
+    const stat = await createStat(apiKey.game, {
+      maxValue: 999,
+      maxChange: 99,
+      minTimeBetweenUpdates: 30,
+    })
     const player = await new PlayerFactory([apiKey.game]).one()
     await em.persist(player).flush()
 
@@ -87,7 +91,9 @@ describe('Game stats API - put', () => {
       .set('x-talo-alias', String(player.aliases[0].id))
       .expect(400)
 
-    expect(res.body).toStrictEqual({ message: 'Stat cannot be updated more often than every 30 seconds' })
+    expect(res.body).toStrictEqual({
+      message: 'Stat cannot be updated more often than every 30 seconds',
+    })
   })
 
   it('should not create a player stat if the change is greater than the max change', async () => {
@@ -122,7 +128,12 @@ describe('Game stats API - put', () => {
 
   it('should not create a player stat if the change would bring the value below the min value', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_STATS])
-    const stat = await createStat(apiKey.game, { maxValue: 999, maxChange: 99, minValue: -1, defaultValue: 0 })
+    const stat = await createStat(apiKey.game, {
+      maxValue: 999,
+      maxChange: 99,
+      minValue: -1,
+      defaultValue: 0,
+    })
     const player = await new PlayerFactory([apiKey.game]).one()
     await em.persist(player).flush()
 
@@ -138,7 +149,12 @@ describe('Game stats API - put', () => {
 
   it('should create a player stat if there is no min value', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_STATS])
-    const stat = await createStat(apiKey.game, { maxValue: 999, maxChange: 99, minValue: null, defaultValue: 0 })
+    const stat = await createStat(apiKey.game, {
+      maxValue: 999,
+      maxChange: 99,
+      minValue: null,
+      defaultValue: 0,
+    })
     const player = await new PlayerFactory([apiKey.game]).one()
     await em.persist(player).flush()
 
@@ -182,7 +198,12 @@ describe('Game stats API - put', () => {
 
   it('should update an existing player stat', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_STATS])
-    const stat = await createStat(apiKey.game, { maxValue: 999, maxChange: 99, defaultValue: 0, global: false })
+    const stat = await createStat(apiKey.game, {
+      maxValue: 999,
+      maxChange: 99,
+      defaultValue: 0,
+      global: false,
+    })
     const player = await new PlayerFactory([apiKey.game]).one()
     const playerStat = await new PlayerGameStatFactory()
       .construct(player, stat)
@@ -202,7 +223,13 @@ describe('Game stats API - put', () => {
 
   it('should increment global stats', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_STATS])
-    const stat = await createStat(apiKey.game, { maxValue: 999, maxChange: 99, defaultValue: 0, global: true, globalValue: 0 })
+    const stat = await createStat(apiKey.game, {
+      maxValue: 999,
+      maxChange: 99,
+      defaultValue: 0,
+      global: true,
+      globalValue: 0,
+    })
     const player = await new PlayerFactory([apiKey.game]).one()
     await em.persist(player).flush()
 
@@ -235,7 +262,10 @@ describe('Game stats API - put', () => {
   })
 
   it('should set the createdAt of the player stat to the continuity date', async () => {
-    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_STATS, APIKeyScope.WRITE_CONTINUITY_REQUESTS])
+    const [apiKey, token] = await createAPIKeyAndToken([
+      APIKeyScope.WRITE_GAME_STATS,
+      APIKeyScope.WRITE_CONTINUITY_REQUESTS,
+    ])
     const stat = await createStat(apiKey.game, { maxValue: 999, maxChange: 99 })
     const player = await new PlayerFactory([apiKey.game]).one()
     await em.persist(player).flush()
@@ -257,7 +287,13 @@ describe('Game stats API - put', () => {
     const addSpy = vi.spyOn(FlushStatSnapshotsQueueHandler.prototype, 'add')
 
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_STATS])
-    const stat = await createStat(apiKey.game, { maxValue: 999, maxChange: 99, defaultValue: 0, global: true, globalValue: 0 })
+    const stat = await createStat(apiKey.game, {
+      maxValue: 999,
+      maxChange: 99,
+      defaultValue: 0,
+      global: true,
+      globalValue: 0,
+    })
     const player = await new PlayerFactory([apiKey.game]).one()
     await em.persist(player).flush()
 
@@ -280,8 +316,17 @@ describe('Game stats API - put', () => {
   it('should create a player game stat snapshot with the continuity date', async () => {
     const addSpy = vi.spyOn(FlushStatSnapshotsQueueHandler.prototype, 'add')
 
-    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_STATS, APIKeyScope.WRITE_CONTINUITY_REQUESTS])
-    const stat = await createStat(apiKey.game, { maxValue: 999, maxChange: 99, defaultValue: 0, global: true, globalValue: 0 })
+    const [apiKey, token] = await createAPIKeyAndToken([
+      APIKeyScope.WRITE_GAME_STATS,
+      APIKeyScope.WRITE_CONTINUITY_REQUESTS,
+    ])
+    const stat = await createStat(apiKey.game, {
+      maxValue: 999,
+      maxChange: 99,
+      defaultValue: 0,
+      global: true,
+      globalValue: 0,
+    })
     const player = await new PlayerFactory([apiKey.game]).one()
     await em.persist(player).flush()
 
@@ -315,7 +360,7 @@ describe('Game stats API - put', () => {
       defaultValue: 0,
       global: true,
       globalValue: 0,
-      minTimeBetweenUpdates: 0
+      minTimeBetweenUpdates: 0,
     })
 
     const players = await new PlayerFactory([apiKey.game]).many(10)
@@ -326,7 +371,7 @@ describe('Game stats API - put', () => {
         .put(`/v1/game-stats/${stat.internalName}`)
         .send({ change: 10 })
         .auth(token, { type: 'bearer' })
-        .set('x-talo-alias', String(player.aliases[0].id))
+        .set('x-talo-alias', String(player.aliases[0].id)),
     )
 
     const responses = await Promise.all(requests)
@@ -345,7 +390,7 @@ describe('Game stats API - put', () => {
       maxChange: 999,
       defaultValue: 0,
       global: false,
-      minTimeBetweenUpdates: 0
+      minTimeBetweenUpdates: 0,
     })
 
     const player = await new PlayerFactory([apiKey.game]).one()
@@ -375,7 +420,7 @@ describe('Game stats API - put', () => {
       defaultValue: 0,
       global: true,
       globalValue: 0,
-      minTimeBetweenUpdates: 0
+      minTimeBetweenUpdates: 0,
     })
 
     const player = await new PlayerFactory([apiKey.game]).one()

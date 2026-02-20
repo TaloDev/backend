@@ -1,13 +1,13 @@
+import { Collection } from '@mikro-orm/mysql'
+import { randText } from '@ngneat/falso'
 import request from 'supertest'
-import GameChannelFactory from '../../../fixtures/GameChannelFactory'
 import { APIKeyScope } from '../../../../src/entities/api-key'
-import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
+import GameChannelProp from '../../../../src/entities/game-channel-prop'
+import GameChannelFactory from '../../../fixtures/GameChannelFactory'
 import PlayerFactory from '../../../fixtures/PlayerFactory'
+import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
 import createSocketIdentifyMessage from '../../../utils/createSocketIdentifyMessage'
 import createTestSocket from '../../../utils/createTestSocket'
-import { randText } from '@ngneat/falso'
-import { Collection } from '@mikro-orm/mysql'
-import GameChannelProp from '../../../../src/entities/game-channel-prop'
 
 describe('Game channel API - put', () => {
   it('should update a channel if the scope is valid', async () => {
@@ -86,13 +86,15 @@ describe('Game channel API - put', () => {
   it('should update the props of a channel', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_CHANNELS])
 
-    const channel = await new GameChannelFactory(apiKey.game).state((channel) => ({
-      name: 'Guild chat',
-      props: new Collection<GameChannelProp>(channel, [
-        new GameChannelProp(channel, 'guildId', '1234'),
-        new GameChannelProp(channel, 'deleteMe', 'yes')
-      ])
-    })).one()
+    const channel = await new GameChannelFactory(apiKey.game)
+      .state((channel) => ({
+        name: 'Guild chat',
+        props: new Collection<GameChannelProp>(channel, [
+          new GameChannelProp(channel, 'guildId', '1234'),
+          new GameChannelProp(channel, 'deleteMe', 'yes'),
+        ]),
+      }))
+      .one()
     const player = await new PlayerFactory([apiKey.game]).one()
     channel.owner = player.aliases[0]
     channel.members.add(player.aliases[0])
@@ -103,27 +105,27 @@ describe('Game channel API - put', () => {
       .send({
         props: [
           { key: 'guildId', value: '4321' },
-          { key: 'deleteMe', value: null }
-        ]
+          { key: 'deleteMe', value: null },
+        ],
       })
       .auth(token, { type: 'bearer' })
       .set('x-talo-alias', String(player.aliases[0].id))
       .expect(200)
 
-    expect(res.body.channel.props).toStrictEqual([
-      { key: 'guildId', value: '4321' }
-    ])
+    expect(res.body.channel.props).toStrictEqual([{ key: 'guildId', value: '4321' }])
   })
 
   it('should require props to be an array', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_CHANNELS])
 
-    const channel = await new GameChannelFactory(apiKey.game).state((channel) => ({
-      name: 'Guild chat',
-      props: new Collection<GameChannelProp>(channel, [
-        new GameChannelProp(channel, 'guildId', '1234')
-      ])
-    })).one()
+    const channel = await new GameChannelFactory(apiKey.game)
+      .state((channel) => ({
+        name: 'Guild chat',
+        props: new Collection<GameChannelProp>(channel, [
+          new GameChannelProp(channel, 'guildId', '1234'),
+        ]),
+      }))
+      .one()
 
     const player = await new PlayerFactory([apiKey.game]).one()
     channel.owner = player.aliases[0]
@@ -135,8 +137,8 @@ describe('Game channel API - put', () => {
       .put(`/v1/game-channels/${channel.id}`)
       .send({
         props: {
-          guildId: '4321'
-        }
+          guildId: '4321',
+        },
       })
       .auth(token, { type: 'bearer' })
       .set('x-talo-alias', String(player.aliases[0].id))
@@ -144,8 +146,8 @@ describe('Game channel API - put', () => {
 
     expect(res.body).toStrictEqual({
       errors: {
-        props: ['Props must be an array']
-      }
+        props: ['Props must be an array'],
+      },
     })
   })
 
@@ -226,7 +228,7 @@ describe('Game channel API - put', () => {
       .expect(404)
 
     expect(res.body).toStrictEqual({
-      message: 'Player not found'
+      message: 'Player not found',
     })
   })
 
@@ -247,7 +249,7 @@ describe('Game channel API - put', () => {
       .expect(404)
 
     expect(res.body).toStrictEqual({
-      message: 'Channel not found'
+      message: 'Channel not found',
     })
   })
 
@@ -255,7 +257,7 @@ describe('Game channel API - put', () => {
     const { identifyMessage, ticket, player, token } = await createSocketIdentifyMessage([
       APIKeyScope.READ_PLAYERS,
       APIKeyScope.READ_GAME_CHANNELS,
-      APIKeyScope.WRITE_GAME_CHANNELS
+      APIKeyScope.WRITE_GAME_CHANNELS,
     ])
 
     const channel = await new GameChannelFactory(player.game).one()
@@ -301,9 +303,9 @@ describe('Game channel API - put', () => {
         props: [
           {
             key: randText({ charCount: 129 }),
-            value: '1'
-          }
-        ]
+            value: '1',
+          },
+        ],
       })
       .auth(token, { type: 'bearer' })
       .set('x-talo-alias', String(player.aliases[0].id))
@@ -311,8 +313,8 @@ describe('Game channel API - put', () => {
 
     expect(res.body).toStrictEqual({
       errors: {
-        props: ['Prop key length (129) exceeds 128 characters']
-      }
+        props: ['Prop key length (129) exceeds 128 characters'],
+      },
     })
   })
 
@@ -331,9 +333,9 @@ describe('Game channel API - put', () => {
         props: [
           {
             key: 'bio',
-            value: randText({ charCount: 513 })
-          }
-        ]
+            value: randText({ charCount: 513 }),
+          },
+        ],
       })
       .auth(token, { type: 'bearer' })
       .set('x-talo-alias', String(player.aliases[0].id))
@@ -341,8 +343,8 @@ describe('Game channel API - put', () => {
 
     expect(res.body).toStrictEqual({
       errors: {
-        props: ['Prop value length (513) exceeds 512 characters']
-      }
+        props: ['Prop value length (513) exceeds 512 characters'],
+      },
     })
   })
 
@@ -350,7 +352,7 @@ describe('Game channel API - put', () => {
     const { identifyMessage, ticket, player, token } = await createSocketIdentifyMessage([
       APIKeyScope.READ_PLAYERS,
       APIKeyScope.READ_GAME_CHANNELS,
-      APIKeyScope.WRITE_GAME_CHANNELS
+      APIKeyScope.WRITE_GAME_CHANNELS,
     ])
 
     const channel = await new GameChannelFactory(player.game).one()
@@ -381,7 +383,7 @@ describe('Game channel API - put', () => {
     const { identifyMessage, ticket, player, token } = await createSocketIdentifyMessage([
       APIKeyScope.READ_PLAYERS,
       APIKeyScope.READ_GAME_CHANNELS,
-      APIKeyScope.WRITE_GAME_CHANNELS
+      APIKeyScope.WRITE_GAME_CHANNELS,
     ])
 
     const channel = await new GameChannelFactory(player.game).one()

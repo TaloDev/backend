@@ -1,11 +1,11 @@
 import request from 'supertest'
-import PlayerFactory from '../../../fixtures/PlayerFactory'
 import EventFactory from '../../../fixtures/EventFactory'
+import PlayerFactory from '../../../fixtures/PlayerFactory'
 import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
 import createUserAndToken from '../../../utils/createUserAndToken'
 
 describe('Player - get events', () => {
-  it('should get a player\'s events', async () => {
+  it("should get a player's events", async () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({}, organisation)
 
@@ -16,12 +16,12 @@ describe('Player - get events', () => {
     await clickhouse.insert({
       table: 'events',
       values: events.map((event) => event.toInsertable()),
-      format: 'JSONEachRow'
+      format: 'JSONEachRow',
     })
     await clickhouse.insert({
       table: 'event_props',
       values: events.flatMap((event) => event.getInsertableProps()),
-      format: 'JSONEachRow'
+      format: 'JSONEachRow',
     })
 
     const res = await request(app)
@@ -33,7 +33,7 @@ describe('Player - get events', () => {
     expect(res.body.events).toHaveLength(3)
   })
 
-  it('should not get a player\'s events for a player they have no access to', async () => {
+  it("should not get a player's events for a player they have no access to", async () => {
     const [, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken()
 
@@ -55,11 +55,13 @@ describe('Player - get events', () => {
     await em.persistAndFlush(player)
 
     const events = await new EventFactory([player]).state(() => ({ name: 'Find secret' })).many(3)
-    const otherEvents = await new EventFactory([player]).state(() => ({ name: 'Kill boss' })).many(3)
+    const otherEvents = await new EventFactory([player])
+      .state(() => ({ name: 'Kill boss' }))
+      .many(3)
     await clickhouse.insert({
       table: 'events',
       values: [...events, ...otherEvents].map((event) => event.toInsertable()),
-      format: 'JSONEachRow'
+      format: 'JSONEachRow',
     })
 
     const res = await request(app)
@@ -84,7 +86,7 @@ describe('Player - get events', () => {
     await clickhouse.insert({
       table: 'events',
       values: events.map((event) => event.toInsertable()),
-      format: 'JSONEachRow'
+      format: 'JSONEachRow',
     })
 
     const res = await request(app)
@@ -98,7 +100,7 @@ describe('Player - get events', () => {
     expect(res.body.itemsPerPage).toBe(50)
   })
 
-  it('should not get a player\'s events if they do not exist', async () => {
+  it("should not get a player's events if they do not exist", async () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({}, organisation)
 

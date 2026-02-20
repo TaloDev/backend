@@ -1,9 +1,9 @@
 import { QueryOrder } from '@mikro-orm/mysql'
-import { protectedRoute, withMiddleware } from '../../../lib/routing/router'
-import { loadGame } from '../../../middleware/game-middleware'
 import GameFeedback from '../../../entities/game-feedback'
 import { DEFAULT_PAGE_SIZE } from '../../../lib/pagination/itemsPerPage'
+import { protectedRoute, withMiddleware } from '../../../lib/routing/router'
 import { pageSchema } from '../../../lib/validation/pageSchema'
+import { loadGame } from '../../../middleware/game-middleware'
 
 const itemsPerPage = DEFAULT_PAGE_SIZE
 
@@ -13,15 +13,16 @@ export const listRoute = protectedRoute({
     query: z.object({
       page: pageSchema,
       feedbackCategoryInternalName: z.string().optional(),
-      search: z.string().optional()
-    })
+      search: z.string().optional(),
+    }),
   }),
   middleware: withMiddleware(loadGame),
   handler: async (ctx) => {
     const { feedbackCategoryInternalName, search, page } = ctx.state.validated.query
     const em = ctx.em
 
-    const query = em.qb(GameFeedback, 'gf')
+    const query = em
+      .qb(GameFeedback, 'gf')
       .select('gf.*')
       .orderBy({ createdAt: QueryOrder.DESC })
       .limit(itemsPerPage)
@@ -30,8 +31,8 @@ export const listRoute = protectedRoute({
     if (feedbackCategoryInternalName) {
       query.andWhere({
         category: {
-          internalName: feedbackCategoryInternalName
-        }
+          internalName: feedbackCategoryInternalName,
+        },
       })
     }
 
@@ -45,9 +46,9 @@ export const listRoute = protectedRoute({
           props: {
             $some: {
               key,
-              value
-            }
-          }
+              value,
+            },
+          },
         })
       } else {
         query.andWhere({
@@ -56,20 +57,17 @@ export const listRoute = protectedRoute({
             {
               $and: [
                 { playerAlias: { identifier: { $like: `%${search}%` } } },
-                { anonymised: false }
-              ]
+                { anonymised: false },
+              ],
             },
             {
               props: {
                 $some: {
-                  $or: [
-                    { key: { $like: `%${search}%` } },
-                    { value: { $like: `%${search}%` } }
-                  ]
-                }
-              }
-            }
-          ]
+                  $or: [{ key: { $like: `%${search}%` } }, { value: { $like: `%${search}%` } }],
+                },
+              },
+            },
+          ],
         })
       }
     }
@@ -78,17 +76,17 @@ export const listRoute = protectedRoute({
       query.andWhere({
         playerAlias: {
           player: {
-            devBuild: false
-          }
-        }
+            devBuild: false,
+          },
+        },
       })
     }
 
     const [feedback, count] = await query
       .andWhere({
         category: {
-          game: ctx.state.game
-        }
+          game: ctx.state.game,
+        },
       })
       .getResultAndCount()
 
@@ -99,8 +97,8 @@ export const listRoute = protectedRoute({
       body: {
         feedback,
         count,
-        itemsPerPage
-      }
+        itemsPerPage,
+      },
     }
-  }
+  },
 })

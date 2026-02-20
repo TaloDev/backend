@@ -1,6 +1,10 @@
 import jwt from 'jsonwebtoken'
 
-export function sign<T extends object>(payload: T, secret: string, options: jwt.SignOptions = {}): Promise<string> {
+export function sign<T extends object>(
+  payload: T,
+  secret: string,
+  options: jwt.SignOptions = {},
+): Promise<string> {
   return new Promise((resolve, reject) => {
     jwt.sign(payload, secret, options, (err, token) => {
       if (err) reject(err)

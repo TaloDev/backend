@@ -10,7 +10,7 @@ export async function loggerMiddleware(ctx: Context, next: Next) {
   const startTime = Date.now()
 
   setTraceAttributes({
-    'http.talo_client': ctx.request.headers['x-talo-client']
+    'http.talo_client': ctx.request.headers['x-talo-client'],
   })
 
   console.info(`--> ${ctx.method} ${ctx.path}`)
@@ -22,7 +22,7 @@ export async function loggerMiddleware(ctx: Context, next: Next) {
 
     setTraceAttributes({
       'http.status': status,
-      'http.time_taken_ms': timeMs
+      'http.time_taken_ms': timeMs,
     })
 
     console.info(`<-- ${ctx.method} ${ctx.path} ${status}`)

@@ -10,8 +10,8 @@ export async function loadAlias(ctx: APIRouteContext<PlayerAliasRouteState>, nex
   const playerAlias = await ctx.em.repo(PlayerAlias).findOne({
     id: ctx.state.currentAliasId,
     player: {
-      game: ctx.state.game
-    }
+      game: ctx.state.game,
+    },
   })
 
   if (!playerAlias) {

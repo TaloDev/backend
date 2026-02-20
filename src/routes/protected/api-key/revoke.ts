@@ -1,10 +1,10 @@
+import { GameActivityType } from '../../../entities/game-activity'
+import { UserType } from '../../../entities/user'
+import { getTokenCacheKey } from '../../../lib/auth/getAPIKeyFromToken'
+import createGameActivity from '../../../lib/logging/createGameActivity'
 import { protectedRoute, withMiddleware } from '../../../lib/routing/router'
 import { loadGame } from '../../../middleware/game-middleware'
 import { userTypeGate, requireEmailConfirmed } from '../../../middleware/policy-middleware'
-import { UserType } from '../../../entities/user'
-import { GameActivityType } from '../../../entities/game-activity'
-import createGameActivity from '../../../lib/logging/createGameActivity'
-import { getTokenCacheKey } from '../../../lib/auth/getAPIKeyFromToken'
 import { loadAPIKey, createToken } from './common'
 
 export const revokeRoute = protectedRoute({
@@ -14,7 +14,7 @@ export const revokeRoute = protectedRoute({
     userTypeGate([UserType.ADMIN], 'revoke API keys'),
     requireEmailConfirmed('revoke API keys'),
     loadGame,
-    loadAPIKey
+    loadAPIKey,
   ),
   handler: async (ctx) => {
     const em = ctx.em
@@ -32,9 +32,9 @@ export const revokeRoute = protectedRoute({
       extra: {
         keyId: apiKey.id,
         display: {
-          'Key ending in': token.substring(token.length - 5, token.length)
-        }
-      }
+          'Key ending in': token.substring(token.length - 5, token.length),
+        },
+      },
     })
 
     const socket = ctx.wss
@@ -44,7 +44,7 @@ export const revokeRoute = protectedRoute({
     await em.flush()
 
     return {
-      status: 204
+      status: 204,
     }
-  }
+  },
 })

@@ -1,12 +1,12 @@
-import Router from 'koa-tree-router'
 import type Koa from 'koa'
-import { HttpMethod, RouteDocs } from '../docs/docs-registry'
-import type { AppParameterizedContext } from './context'
-import type { ValidationSchema, ValidatedContext } from '../../middleware/validator-middleware'
-import { validate } from '../../middleware/validator-middleware'
+import Router from 'koa-tree-router'
 import { z } from 'zod'
-import { APIRouteState, ProtectedRouteState, PublicRouteState, RouteState } from './state'
+import type { ValidationSchema, ValidatedContext } from '../../middleware/validator-middleware'
+import type { AppParameterizedContext } from './context'
 import { decodeParamsMiddleware } from '../../middleware/decode-params-middleware'
+import { validate } from '../../middleware/validator-middleware'
+import { HttpMethod, RouteDocs } from '../docs/docs-registry'
+import { APIRouteState, ProtectedRouteState, PublicRouteState, RouteState } from './state'
 
 type HandlerResponse = {
   status: number
@@ -15,29 +15,26 @@ type HandlerResponse = {
 }
 
 type Handler<S extends RouteState> = (
-  ctx: AppParameterizedContext<S>
+  ctx: AppParameterizedContext<S>,
 ) => HandlerResponse | Promise<HandlerResponse>
 
-type ValidatedHandler<
-  V extends ValidationSchema,
-  S extends RouteState
-> = (
-  ctx: ValidatedContext<V, S>
+type ValidatedHandler<V extends ValidationSchema, S extends RouteState> = (
+  ctx: ValidatedContext<V, S>,
 ) => HandlerResponse | Promise<HandlerResponse>
 
 export type Middleware<S extends RouteState> = (
   ctx: AppParameterizedContext<S>,
-  next: Koa.Next
+  next: Koa.Next,
 ) => Promise<void> | void
 
-export function withMiddleware<S extends RouteState>(
-  ...middleware: Middleware<S>[]
-) {
+export function withMiddleware<S extends RouteState>(...middleware: Middleware<S>[]) {
   return middleware
 }
 
 type RouteHelpers<S extends RouteState> = {
-  route: <RS extends S = S, V extends ValidationSchema | undefined = undefined>(config: RouteConfig<RS, V>) => void
+  route: <RS extends S = S, V extends ValidationSchema | undefined = undefined>(
+    config: RouteConfig<RS, V>,
+  ) => void
 }
 
 type ZodBuilder = typeof z
@@ -50,7 +47,7 @@ type Exact<T, Shape> = {
 
 export type ValidatedRouteConfig<
   S extends RouteState,
-  V extends ValidationSchema = ValidationSchema
+  V extends ValidationSchema = ValidationSchema,
 > = {
   method: HttpMethod
   path?: string
@@ -71,22 +68,17 @@ export type UnvalidatedRouteConfig<S extends RouteState> = {
 
 type RouteConfig<
   S extends RouteState,
-  V extends ValidationSchema | undefined = undefined
-> = V extends ValidationSchema
-  ? ValidatedRouteConfig<S, V>
-  : UnvalidatedRouteConfig<S>
+  V extends ValidationSchema | undefined = undefined,
+> = V extends ValidationSchema ? ValidatedRouteConfig<S, V> : UnvalidatedRouteConfig<S>
 
 function mountRoute<S extends RouteState, V extends ValidationSchema | undefined = undefined>(
   router: Router,
   basePath: string,
   config: RouteConfig<S, V>,
-  docsKey?: string
+  docsKey?: string,
 ) {
   const fullPath = `${basePath}${config.path ?? ''}`
-  const middleware = [
-    decodeParamsMiddleware,
-    ...(config.middleware ?? [])
-  ]
+  const middleware = [decodeParamsMiddleware, ...(config.middleware ?? [])]
 
   const applyResponse = (ctx: AppParameterizedContext<S>, response: HandlerResponse) => {
     ctx.status = response.status
@@ -102,21 +94,23 @@ function mountRoute<S extends RouteState, V extends ValidationSchema | undefined
 
   const allMiddleware = ('schema' in config && config.schema
     ? [
-      validate(config.schema(z)),
-      ...middleware,
-      async (ctx: ValidatedContext<V extends ValidationSchema ? V : never, S>) => {
-        const response = await (config as ValidatedRouteConfig<S, V extends ValidationSchema ? V : never>).handler(ctx)
-        applyResponse(ctx, response)
-      }
-    ]
+        validate(config.schema(z)),
+        ...middleware,
+        async (ctx: ValidatedContext<V extends ValidationSchema ? V : never, S>) => {
+          const response = await (
+            config as ValidatedRouteConfig<S, V extends ValidationSchema ? V : never>
+          ).handler(ctx)
+          applyResponse(ctx, response)
+        },
+      ]
     : [
-      ...middleware,
-      async (ctx: AppParameterizedContext<S>) => {
-        const response = await (config as UnvalidatedRouteConfig<S>).handler(ctx)
-        applyResponse(ctx, response)
-      }
-    // koa doesn't handle generic context very well
-    ]) as unknown as Router.Middleware[]
+        ...middleware,
+        async (ctx: AppParameterizedContext<S>) => {
+          const response = await (config as UnvalidatedRouteConfig<S>).handler(ctx)
+          applyResponse(ctx, response)
+        },
+        // koa doesn't handle generic context very well
+      ]) as unknown as Router.Middleware[]
 
   switch (config.method) {
     case 'get':
@@ -144,7 +138,7 @@ function mountRoute<S extends RouteState, V extends ValidationSchema | undefined
       path: fullPath,
       schema: config.schema,
       middleware,
-      docs: config.docs
+      docs: config.docs,
     })
   }
 }
@@ -152,14 +146,16 @@ function mountRoute<S extends RouteState, V extends ValidationSchema | undefined
 function createRouter<S extends RouteState>(
   basePath: string,
   builder: (helpers: RouteHelpers<S>) => void,
-  docsKey?: string
+  docsKey?: string,
 ): Router {
   const router = new Router()
 
   const helpers: RouteHelpers<S> = {
-    route: <RS extends S = S, V extends ValidationSchema | undefined = undefined>(config: RouteConfig<RS, V>) => {
+    route: <RS extends S = S, V extends ValidationSchema | undefined = undefined>(
+      config: RouteConfig<RS, V>,
+    ) => {
       mountRoute(router, basePath, config, docsKey)
-    }
+    },
   }
 
   builder(helpers)
@@ -168,14 +164,14 @@ function createRouter<S extends RouteState>(
 
 export function publicRouter<S extends PublicRouteState = PublicRouteState>(
   basePath: string,
-  builder: (helpers: RouteHelpers<S>) => void
+  builder: (helpers: RouteHelpers<S>) => void,
 ): Router {
   return createRouter<S>(basePath, builder)
 }
 
 export function protectedRouter<S extends ProtectedRouteState = ProtectedRouteState>(
   basePath: string,
-  builder: (helpers: RouteHelpers<S>) => void
+  builder: (helpers: RouteHelpers<S>) => void,
 ): Router {
   return createRouter<S>(basePath, builder)
 }
@@ -185,18 +181,18 @@ export function apiRouter<S extends APIRouteState = APIRouteState>(
   builder: (helpers: RouteHelpers<S>) => void,
   opts: {
     docsKey?: string
-  } = {}
+  } = {},
 ): Router {
   return createRouter<S>(basePath, builder, opts.docsKey)
 }
 
 // validated route
 export function publicRoute<S extends PublicRouteState, V extends ValidationSchema>(
-  config: ValidatedRouteConfig<S, V>
+  config: ValidatedRouteConfig<S, V>,
 ): ValidatedRouteConfig<S, V>
 // unvalidated route
 export function publicRoute<S extends PublicRouteState>(
-  config: UnvalidatedRouteConfig<S>
+  config: UnvalidatedRouteConfig<S>,
 ): UnvalidatedRouteConfig<S>
 // implementation signature required for overloads
 export function publicRoute(config: unknown) {
@@ -204,12 +200,13 @@ export function publicRoute(config: unknown) {
 }
 
 // validated route
-export function protectedRoute<S extends ProtectedRouteState = ProtectedRouteState, V extends ValidationSchema = ValidationSchema>(
-  config: ValidatedRouteConfig<S, V>
-): ValidatedRouteConfig<S, V>
+export function protectedRoute<
+  S extends ProtectedRouteState = ProtectedRouteState,
+  V extends ValidationSchema = ValidationSchema,
+>(config: ValidatedRouteConfig<S, V>): ValidatedRouteConfig<S, V>
 // unvalidated route
 export function protectedRoute<S extends ProtectedRouteState = ProtectedRouteState>(
-  config: UnvalidatedRouteConfig<S>
+  config: UnvalidatedRouteConfig<S>,
 ): UnvalidatedRouteConfig<S>
 // implementation signature required for overloads
 export function protectedRoute(config: unknown) {
@@ -217,12 +214,13 @@ export function protectedRoute(config: unknown) {
 }
 
 // validated route
-export function apiRoute<S extends APIRouteState = APIRouteState, V extends ValidationSchema = ValidationSchema>(
-  config: ValidatedRouteConfig<S, V>
-): ValidatedRouteConfig<S, V>
+export function apiRoute<
+  S extends APIRouteState = APIRouteState,
+  V extends ValidationSchema = ValidationSchema,
+>(config: ValidatedRouteConfig<S, V>): ValidatedRouteConfig<S, V>
 // unvalidated route
 export function apiRoute<S extends APIRouteState = APIRouteState>(
-  config: UnvalidatedRouteConfig<S>
+  config: UnvalidatedRouteConfig<S>,
 ): UnvalidatedRouteConfig<S>
 // implementation signature required for overloads
 export function apiRoute(config: unknown) {

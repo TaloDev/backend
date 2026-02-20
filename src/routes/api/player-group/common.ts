@@ -1,6 +1,6 @@
 import { Next } from 'koa'
-import { APIRouteContext } from '../../../lib/routing/context'
 import PlayerGroup from '../../../entities/player-group'
+import { APIRouteContext } from '../../../lib/routing/context'
 import { APIRouteState } from '../../../lib/routing/state'
 
 type PlayerGroupRouteState = APIRouteState & {
@@ -12,7 +12,7 @@ export async function loadGroup(ctx: APIRouteContext<PlayerGroupRouteState>, nex
 
   const group = await ctx.em.getRepository(PlayerGroup).findOne({
     id,
-    game: ctx.state.game
+    game: ctx.state.game,
   })
 
   if (!group) {

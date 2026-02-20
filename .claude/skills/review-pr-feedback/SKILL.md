@@ -1,7 +1,7 @@
 ---
 name: review-pr-feedback
 description: Review and analyze PR feedback comments from Claude bot on the current branch's PR
-argument-hint: "[--all]"
+argument-hint: '[--all]'
 disable-model-invocation: true
 ---
 
@@ -27,16 +27,19 @@ PR number and title: !`gh pr view --json number,title --jq '"#\(.number): \(.tit
 For each piece of feedback from Claude, you must think deeply and pragmatically:
 
 ### 1. Validity Assessment
+
 - Is the claim technically accurate?
 - Does it correctly understand the code context and intent?
 - Are there any misunderstandings about the codebase patterns or conventions?
 
 ### 2. Actionability Assessment
+
 - Is this feedback specific enough to act on?
 - Does it point to a clear problem with a clear solution?
 - Or is it vague/general advice that doesn't lead to concrete changes?
 
 ### 3. Value Assessment
+
 - Does implementing this change provide meaningful benefit?
 - Is it worth the time and effort to implement?
 - Does it align with the project's priorities and coding standards?

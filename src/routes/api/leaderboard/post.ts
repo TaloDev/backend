@@ -1,32 +1,32 @@
-import { apiRoute, withMiddleware } from '../../../lib/routing/router'
-import { requireScopes } from '../../../middleware/policy-middleware'
-import { APIKeyScope } from '../../../entities/api-key'
-import { loadLeaderboard } from './common'
-import { loadAlias } from '../../../middleware/player-alias-middleware'
-import LeaderboardEntry from '../../../entities/leaderboard-entry'
-import Leaderboard, { LeaderboardSortMode } from '../../../entities/leaderboard'
-import PlayerAlias from '../../../entities/player-alias'
 import { NotFoundError, LockMode } from '@mikro-orm/mysql'
-import { hardSanitiseProps, mergeAndSanitiseProps } from '../../../lib/props/sanitiseProps'
-import { PropSizeError } from '../../../lib/errors/propSizeError'
+import { APIKeyScope } from '../../../entities/api-key'
+import Leaderboard, { LeaderboardSortMode } from '../../../entities/leaderboard'
+import LeaderboardEntry from '../../../entities/leaderboard-entry'
+import PlayerAlias from '../../../entities/player-alias'
 import buildErrorResponse from '../../../lib/errors/buildErrorResponse'
+import { PropSizeError } from '../../../lib/errors/propSizeError'
 import { UniqueLeaderboardEntryPropsDigestError } from '../../../lib/errors/uniqueLeaderboardEntryPropsDigestError'
 import triggerIntegrations from '../../../lib/integrations/triggerIntegrations'
-import { postDocs } from './docs'
+import { hardSanitiseProps, mergeAndSanitiseProps } from '../../../lib/props/sanitiseProps'
+import { apiRoute, withMiddleware } from '../../../lib/routing/router'
 import { playerAliasHeaderSchema } from '../../../lib/validation/playerAliasHeaderSchema'
+import { loadAlias } from '../../../middleware/player-alias-middleware'
+import { requireScopes } from '../../../middleware/policy-middleware'
+import { loadLeaderboard } from './common'
+import { postDocs } from './docs'
 
 function createEntry({
   leaderboard,
   playerAlias,
   score,
   continuityDate,
-  props
+  props,
 }: {
   leaderboard: Leaderboard
   playerAlias: PlayerAlias
   score: number
   continuityDate?: Date
-  props: { key: string, value: string }[]
+  props: { key: string; value: string }[]
 }): LeaderboardEntry {
   const entry = new LeaderboardEntry(leaderboard)
   entry.playerAlias = playerAlias
@@ -46,26 +46,28 @@ export const postRoute = apiRoute({
   docs: postDocs,
   schema: (z) => ({
     headers: z.looseObject({
-      'x-talo-alias': playerAliasHeaderSchema
+      'x-talo-alias': playerAliasHeaderSchema,
     }),
     route: z.object({
-      internalName: z.string().meta({ description: 'The internal name of the leaderboard' })
+      internalName: z.string().meta({ description: 'The internal name of the leaderboard' }),
     }),
     body: z.object({
       score: z.number().meta({ description: 'A numeric score for the entry' }),
-      props: z.array(
-        z.object({
-          key: z.string(),
-          value: z.string().nullable()
-        }),
-        { error: 'Props must be an array' }
-      ).optional()
-    })
+      props: z
+        .array(
+          z.object({
+            key: z.string(),
+            value: z.string().nullable(),
+          }),
+          { error: 'Props must be an array' },
+        )
+        .optional(),
+    }),
   }),
   middleware: withMiddleware(
     requireScopes([APIKeyScope.WRITE_LEADERBOARDS]),
     loadLeaderboard,
-    loadAlias
+    loadAlias,
   ),
   handler: async (ctx) => {
     const { score, props = [] } = ctx.state.validated.body
@@ -76,14 +78,14 @@ export const postRoute = apiRoute({
     const result = await em.transactional(async (trx) => {
       // lock the alias to prevent concurrent entry creation
       const lockedAlias = await trx.findOneOrFail(PlayerAlias, ctx.state.alias.id, {
-        lockMode: LockMode.PESSIMISTIC_WRITE
+        lockMode: LockMode.PESSIMISTIC_WRITE,
       })
 
       let entry: LeaderboardEntry | null = null
       let updated = false
 
       // filter out props with null values for createEntry (only used for merging in updates)
-      const createProps = props.filter((p): p is { key: string, value: string } => p.value !== null)
+      const createProps = props.filter((p): p is { key: string; value: string } => p.value !== null)
 
       try {
         if (leaderboard.unique) {
@@ -92,7 +94,7 @@ export const postRoute = apiRoute({
             entry = await leaderboard.findEntryWithProps({
               em: trx,
               playerAliasId: lockedAlias.id,
-              props: createProps
+              props: createProps,
             })
             if (!entry) {
               throw new UniqueLeaderboardEntryPropsDigestError()
@@ -101,19 +103,22 @@ export const postRoute = apiRoute({
             entry = await trx.repo(LeaderboardEntry).findOneOrFail({
               leaderboard,
               playerAlias: lockedAlias,
-              deletedAt: null
+              deletedAt: null,
             })
           }
 
           // update entry if new score is better
-          const shouldUpdate = (leaderboard.sortMode === LeaderboardSortMode.ASC && score < entry.score) ||
-                               (leaderboard.sortMode === LeaderboardSortMode.DESC && score > entry.score)
+          const shouldUpdate =
+            (leaderboard.sortMode === LeaderboardSortMode.ASC && score < entry.score) ||
+            (leaderboard.sortMode === LeaderboardSortMode.DESC && score > entry.score)
 
           if (shouldUpdate) {
             entry.score = score
             entry.createdAt = ctx.state.continuityDate ?? new Date()
             if (props.length > 0) {
-              entry.setProps(mergeAndSanitiseProps({ prevProps: entry.props.getItems(), newProps: props }))
+              entry.setProps(
+                mergeAndSanitiseProps({ prevProps: entry.props.getItems(), newProps: props }),
+              )
             }
             updated = true
           }
@@ -124,14 +129,18 @@ export const postRoute = apiRoute({
             playerAlias: lockedAlias,
             score,
             continuityDate: ctx.state.continuityDate,
-            props: createProps
+            props: createProps,
           })
           await trx.persistAndFlush(entry)
         }
       } catch (err) {
         // handle PropSizeError from setProps or createEntry
         if (err instanceof PropSizeError) {
-          return { entry: null, updated: false, errorResponse: buildErrorResponse({ props: [err.message] }) }
+          return {
+            entry: null,
+            updated: false,
+            errorResponse: buildErrorResponse({ props: [err.message] }),
+          }
         }
 
         // if unique entry doesn't exist, create it
@@ -142,13 +151,17 @@ export const postRoute = apiRoute({
               playerAlias: lockedAlias,
               score,
               continuityDate: ctx.state.continuityDate,
-              props: createProps
+              props: createProps,
             })
             await trx.persistAndFlush(entry)
           } catch (createErr) {
             // handle PropSizeError from creating new entry
             if (createErr instanceof PropSizeError) {
-              return { entry: null, updated: false, errorResponse: buildErrorResponse({ props: [createErr.message] }) }
+              return {
+                entry: null,
+                updated: false,
+                errorResponse: buildErrorResponse({ props: [createErr.message] }),
+              }
             }
             throw createErr
           }
@@ -170,14 +183,16 @@ export const postRoute = apiRoute({
       return integration.handleLeaderboardEntryCreated(em, entry)
     })
 
-    const query = em.qb(LeaderboardEntry)
+    const query = em
+      .qb(LeaderboardEntry)
       .where({
         leaderboard,
         hidden: false,
         deletedAt: null,
-        score: leaderboard.sortMode === LeaderboardSortMode.ASC
-          ? { $lte: entry.score }
-          : { $gte: entry.score }
+        score:
+          leaderboard.sortMode === LeaderboardSortMode.ASC
+            ? { $lte: entry.score }
+            : { $gte: entry.score },
       })
       .orderBy({ createdAt: 'asc' })
 
@@ -185,9 +200,9 @@ export const postRoute = apiRoute({
       query.andWhere({
         playerAlias: {
           player: {
-            devBuild: false
-          }
-        }
+            devBuild: false,
+          },
+        },
       })
     }
 
@@ -198,8 +213,8 @@ export const postRoute = apiRoute({
       status: 200,
       body: {
         entry: { position, ...entry.toJSON() },
-        updated
-      }
+        updated,
+      },
     }
-  }
+  },
 })

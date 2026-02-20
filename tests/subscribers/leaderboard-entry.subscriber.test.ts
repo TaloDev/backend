@@ -1,14 +1,17 @@
 import request from 'supertest'
 import { APIKeyScope } from '../../src/entities/api-key'
+import { LeaderboardSortMode } from '../../src/entities/leaderboard'
 import LeaderboardFactory from '../fixtures/LeaderboardFactory'
 import PlayerFactory from '../fixtures/PlayerFactory'
 import createAPIKeyAndToken from '../utils/createAPIKeyAndToken'
-import { LeaderboardSortMode } from '../../src/entities/leaderboard'
 
 describe('LeaderboardEntry subscriber', () => {
   describe('cache invalidation on create', () => {
     it('should invalidate the leaderboard entries cache when a new entry is created', async () => {
-      const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_LEADERBOARDS, APIKeyScope.WRITE_LEADERBOARDS])
+      const [apiKey, token] = await createAPIKeyAndToken([
+        APIKeyScope.READ_LEADERBOARDS,
+        APIKeyScope.WRITE_LEADERBOARDS,
+      ])
       const leaderboard = await new LeaderboardFactory([apiKey.game]).one()
       const player = await new PlayerFactory([apiKey.game]).one()
       await em.persistAndFlush([leaderboard, player])
@@ -42,8 +45,13 @@ describe('LeaderboardEntry subscriber', () => {
     })
 
     it('should invalidate the cache for multiple entries on the same leaderboard', async () => {
-      const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_LEADERBOARDS, APIKeyScope.WRITE_LEADERBOARDS])
-      const leaderboard = await new LeaderboardFactory([apiKey.game]).state(() => ({ unique: false })).one()
+      const [apiKey, token] = await createAPIKeyAndToken([
+        APIKeyScope.READ_LEADERBOARDS,
+        APIKeyScope.WRITE_LEADERBOARDS,
+      ])
+      const leaderboard = await new LeaderboardFactory([apiKey.game])
+        .state(() => ({ unique: false }))
+        .one()
       const players = await new PlayerFactory([apiKey.game]).many(2)
       await em.persistAndFlush([leaderboard, ...players])
 
@@ -94,11 +102,16 @@ describe('LeaderboardEntry subscriber', () => {
 
   describe('cache invalidation on update', () => {
     it('should invalidate the leaderboard entries cache when an entry is updated', async () => {
-      const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_LEADERBOARDS, APIKeyScope.WRITE_LEADERBOARDS])
-      const leaderboard = await new LeaderboardFactory([apiKey.game]).state(() => ({
-        unique: true,
-        sortMode: LeaderboardSortMode.DESC
-      })).one()
+      const [apiKey, token] = await createAPIKeyAndToken([
+        APIKeyScope.READ_LEADERBOARDS,
+        APIKeyScope.WRITE_LEADERBOARDS,
+      ])
+      const leaderboard = await new LeaderboardFactory([apiKey.game])
+        .state(() => ({
+          unique: true,
+          sortMode: LeaderboardSortMode.DESC,
+        }))
+        .one()
       const player = await new PlayerFactory([apiKey.game]).one()
       await em.persistAndFlush([leaderboard, player])
 
@@ -140,11 +153,16 @@ describe('LeaderboardEntry subscriber', () => {
     })
 
     it('should invalidate the cache when entry position changes', async () => {
-      const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_LEADERBOARDS, APIKeyScope.WRITE_LEADERBOARDS])
-      const leaderboard = await new LeaderboardFactory([apiKey.game]).state(() => ({
-        unique: true,
-        sortMode: LeaderboardSortMode.DESC
-      })).one()
+      const [apiKey, token] = await createAPIKeyAndToken([
+        APIKeyScope.READ_LEADERBOARDS,
+        APIKeyScope.WRITE_LEADERBOARDS,
+      ])
+      const leaderboard = await new LeaderboardFactory([apiKey.game])
+        .state(() => ({
+          unique: true,
+          sortMode: LeaderboardSortMode.DESC,
+        }))
+        .one()
       const players = await new PlayerFactory([apiKey.game]).many(2)
       await em.persistAndFlush([leaderboard, ...players])
 

@@ -1,10 +1,10 @@
+import assert from 'node:assert'
 import request from 'supertest'
 import initStripe from '../../../../src/lib/billing/initStripe'
 import PricingPlanFactory from '../../../fixtures/PricingPlanFactory'
 import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
 import createUserAndToken from '../../../utils/createUserAndToken'
 import { truncateTables } from '../../../utils/truncateTables'
-import assert from 'node:assert'
 
 describe('Billing - plans', () => {
   const stripe = initStripe()
@@ -25,10 +25,7 @@ describe('Billing - plans', () => {
     organisation.pricingPlan.stripePriceId = price.id
     await em.flush()
 
-    const res = await request(app)
-      .get('/billing/plans')
-      .auth(token, { type: 'bearer' })
-      .expect(200)
+    const res = await request(app).get('/billing/plans').auth(token, { type: 'bearer' }).expect(200)
 
     expect(res.body.pricingPlans).toHaveLength(1)
     expect(res.body.pricingPlans[0].stripeId).toBe(product.id)
@@ -37,7 +34,7 @@ describe('Billing - plans', () => {
       amount: price.unit_amount,
       currency: price.currency,
       interval: price.recurring!.interval,
-      current: true
+      current: true,
     })
   })
 
@@ -53,10 +50,7 @@ describe('Billing - plans', () => {
     organisation.pricingPlan.stripePriceId = price.id
     await em.persistAndFlush(hiddenPlan)
 
-    const res = await request(app)
-      .get('/billing/plans')
-      .auth(token, { type: 'bearer' })
-      .expect(200)
+    const res = await request(app).get('/billing/plans').auth(token, { type: 'bearer' }).expect(200)
 
     for (const plan of res.body.pricingPlans) {
       expect(plan.hidden).toBe(false)
@@ -69,10 +63,7 @@ describe('Billing - plans', () => {
 
     const [token] = await createUserAndToken()
 
-    const res = await request(app)
-      .get('/billing/plans')
-      .auth(token, { type: 'bearer' })
-      .expect(200)
+    const res = await request(app).get('/billing/plans').auth(token, { type: 'bearer' }).expect(200)
 
     expect(res.body.pricingPlans).toStrictEqual([])
 

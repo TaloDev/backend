@@ -1,13 +1,16 @@
 import request from 'supertest'
 import { APIKeyScope } from '../../src/entities/api-key'
+import { RelationshipType } from '../../src/entities/player-alias-subscription'
 import PlayerFactory from '../fixtures/PlayerFactory'
 import createAPIKeyAndToken from '../utils/createAPIKeyAndToken'
-import { RelationshipType } from '../../src/entities/player-alias-subscription'
 
 describe('PlayerAliasSubscription subscriber', () => {
   describe('cache invalidation on create', () => {
     it('should invalidate both subscribers and subscriptions cache when a unidirectional subscription is created', async () => {
-      const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_PLAYER_RELATIONSHIPS, APIKeyScope.WRITE_PLAYER_RELATIONSHIPS])
+      const [apiKey, token] = await createAPIKeyAndToken([
+        APIKeyScope.READ_PLAYER_RELATIONSHIPS,
+        APIKeyScope.WRITE_PLAYER_RELATIONSHIPS,
+      ])
       const [player1, player2] = await new PlayerFactory([apiKey.game]).many(2)
       await em.persistAndFlush([player1, player2])
 
@@ -62,7 +65,10 @@ describe('PlayerAliasSubscription subscriber', () => {
     })
 
     it('should invalidate cache with query parameters', async () => {
-      const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_PLAYER_RELATIONSHIPS, APIKeyScope.WRITE_PLAYER_RELATIONSHIPS])
+      const [apiKey, token] = await createAPIKeyAndToken([
+        APIKeyScope.READ_PLAYER_RELATIONSHIPS,
+        APIKeyScope.WRITE_PLAYER_RELATIONSHIPS,
+      ])
       const [player1, player2] = await new PlayerFactory([apiKey.game]).many(2)
       await em.persistAndFlush([player1, player2])
 
@@ -99,7 +105,10 @@ describe('PlayerAliasSubscription subscriber', () => {
 
   describe('cache invalidation on update', () => {
     it('should invalidate cache when confirming a unidirectional subscription', async () => {
-      const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_PLAYER_RELATIONSHIPS, APIKeyScope.WRITE_PLAYER_RELATIONSHIPS])
+      const [apiKey, token] = await createAPIKeyAndToken([
+        APIKeyScope.READ_PLAYER_RELATIONSHIPS,
+        APIKeyScope.WRITE_PLAYER_RELATIONSHIPS,
+      ])
       const [player1, player2] = await new PlayerFactory([apiKey.game]).many(2)
       await em.persistAndFlush([player1, player2])
 
@@ -162,7 +171,10 @@ describe('PlayerAliasSubscription subscriber', () => {
     })
 
     it('should invalidate all 4 cache keys when confirming a bidirectional subscription', async () => {
-      const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_PLAYER_RELATIONSHIPS, APIKeyScope.WRITE_PLAYER_RELATIONSHIPS])
+      const [apiKey, token] = await createAPIKeyAndToken([
+        APIKeyScope.READ_PLAYER_RELATIONSHIPS,
+        APIKeyScope.WRITE_PLAYER_RELATIONSHIPS,
+      ])
       const [player1, player2] = await new PlayerFactory([apiKey.game]).many(2)
       await em.persistAndFlush([player1, player2])
 
@@ -272,7 +284,10 @@ describe('PlayerAliasSubscription subscriber', () => {
 
   describe('cache invalidation on delete', () => {
     it('should invalidate cache when deleting a unidirectional subscription', async () => {
-      const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_PLAYER_RELATIONSHIPS, APIKeyScope.WRITE_PLAYER_RELATIONSHIPS])
+      const [apiKey, token] = await createAPIKeyAndToken([
+        APIKeyScope.READ_PLAYER_RELATIONSHIPS,
+        APIKeyScope.WRITE_PLAYER_RELATIONSHIPS,
+      ])
       const [player1, player2] = await new PlayerFactory([apiKey.game]).many(2)
       await em.persistAndFlush([player1, player2])
 
@@ -332,7 +347,10 @@ describe('PlayerAliasSubscription subscriber', () => {
     })
 
     it('should invalidate all 4 cache keys when deleting a bidirectional subscription', async () => {
-      const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_PLAYER_RELATIONSHIPS, APIKeyScope.WRITE_PLAYER_RELATIONSHIPS])
+      const [apiKey, token] = await createAPIKeyAndToken([
+        APIKeyScope.READ_PLAYER_RELATIONSHIPS,
+        APIKeyScope.WRITE_PLAYER_RELATIONSHIPS,
+      ])
       const [player1, player2] = await new PlayerFactory([apiKey.game]).many(2)
       await em.persistAndFlush([player1, player2])
 
@@ -426,7 +444,10 @@ describe('PlayerAliasSubscription subscriber', () => {
 
   describe('cache isolation by player', () => {
     it('should only invalidate cache for affected players', async () => {
-      const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_PLAYER_RELATIONSHIPS, APIKeyScope.WRITE_PLAYER_RELATIONSHIPS])
+      const [apiKey, token] = await createAPIKeyAndToken([
+        APIKeyScope.READ_PLAYER_RELATIONSHIPS,
+        APIKeyScope.WRITE_PLAYER_RELATIONSHIPS,
+      ])
       const [player1, player2, player3] = await new PlayerFactory([apiKey.game]).many(3)
       await em.persistAndFlush([player1, player2, player3])
 

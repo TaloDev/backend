@@ -1,8 +1,8 @@
 import { protectedRouter } from '../../../lib/routing/router'
 import { createRoute } from './create'
 import { listRoute } from './list'
-import { scopesRoute } from './scopes'
 import { revokeRoute } from './revoke'
+import { scopesRoute } from './scopes'
 import { updateRoute } from './update'
 
 export function apiKeyRouter() {

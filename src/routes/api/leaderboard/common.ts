@@ -1,6 +1,6 @@
 import { Next } from 'koa'
-import { APIRouteContext } from '../../../lib/routing/context'
 import Leaderboard from '../../../entities/leaderboard'
+import { APIRouteContext } from '../../../lib/routing/context'
 import { PlayerAliasRouteState } from '../../../middleware/player-alias-middleware'
 
 export type LeaderboardRouteState = PlayerAliasRouteState & {
@@ -12,7 +12,7 @@ export async function loadLeaderboard(ctx: APIRouteContext<LeaderboardRouteState
 
   const leaderboard = await ctx.em.repo(Leaderboard).findOne({
     internalName,
-    game: ctx.state.game
+    game: ctx.state.game,
   })
 
   if (!leaderboard) {

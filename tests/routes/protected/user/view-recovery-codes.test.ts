@@ -21,7 +21,7 @@ describe('User - view recovery codes', () => {
     expect(res.body.recoveryCodes).toHaveLength(8)
   })
 
-  it('should not show recovery codes if 2fa isn\'t enabled', async () => {
+  it("should not show recovery codes if 2fa isn't enabled", async () => {
     const [token] = await createUserAndToken()
 
     const res = await request(app)

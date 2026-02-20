@@ -3,7 +3,9 @@ import { createToken } from '../../src/routes/protected/api-key/common'
 import GameFactory from '../fixtures/GameFactory'
 import UserFactory from '../fixtures/UserFactory'
 
-export default async function createAPIKeyAndToken(scopes: APIKeyScope[]): Promise<[APIKey, string]> {
+export default async function createAPIKeyAndToken(
+  scopes: APIKeyScope[],
+): Promise<[APIKey, string]> {
   const user = await new UserFactory().one()
 
   const game = await new GameFactory(user.organisation).one()

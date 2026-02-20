@@ -1,6 +1,6 @@
 import { protectedRouter } from '../../../lib/routing/router'
-import { settingsRoute } from './settings'
 import { createRoute } from './create'
+import { settingsRoute } from './settings'
 import { updateRoute } from './update'
 
 export function gameRouter() {

@@ -25,7 +25,7 @@ export class SteamworksPlayerStat {
   constructor({
     stat,
     playerStat,
-    steamUserId
+    steamUserId,
   }: {
     stat: GameStat
     playerStat: PlayerGameStat | null

@@ -1,16 +1,18 @@
 import request from 'supertest'
 import { APIKeyScope } from '../../../../src/entities/api-key'
-import PlayerFactory from '../../../fixtures/PlayerFactory'
-import GameStatFactory from '../../../fixtures/GameStatFactory'
-import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
 import Game from '../../../../src/entities/game'
-import PlayerGameStatFactory from '../../../fixtures/PlayerGameStatFactory'
 import GameStat from '../../../../src/entities/game-stat'
 import PlayerGameStat from '../../../../src/entities/player-game-stat'
+import GameStatFactory from '../../../fixtures/GameStatFactory'
+import PlayerFactory from '../../../fixtures/PlayerFactory'
+import PlayerGameStatFactory from '../../../fixtures/PlayerGameStatFactory'
+import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
 
 describe('Game stats API - get player stat', () => {
   const createStat = async (game: Game) => {
-    const stat = await new GameStatFactory([game]).state(() => ({ maxValue: 999, maxChange: 99 })).one()
+    const stat = await new GameStatFactory([game])
+      .state(() => ({ maxValue: 999, maxChange: 99 }))
+      .one()
     em.persist(stat)
 
     return stat
@@ -18,7 +20,10 @@ describe('Game stats API - get player stat', () => {
 
   const createPlayerStat = async (stat: GameStat, extra: Partial<PlayerGameStat> = {}) => {
     const player = await new PlayerFactory([stat.game]).one()
-    const playerStat = await new PlayerGameStatFactory().construct(player, stat).state(() => extra).one()
+    const playerStat = await new PlayerGameStatFactory()
+      .construct(player, stat)
+      .state(() => extra)
+      .one()
     em.persist(playerStat)
 
     return playerStat

@@ -1,6 +1,6 @@
+import { sub, format } from 'date-fns'
 import request from 'supertest'
 import PlayerFactory from '../../../fixtures/PlayerFactory'
-import { sub, format } from 'date-fns'
 import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
 import createUserAndToken from '../../../utils/createUserAndToken'
 

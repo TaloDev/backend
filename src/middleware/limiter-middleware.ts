@@ -1,34 +1,36 @@
 import { Context, Next } from 'koa'
-import { isAPIRoute } from '../lib/routing/route-info'
 import checkRateLimitExceeded from '../lib/errors/checkRateLimitExceeded'
+import { isAPIRoute } from '../lib/routing/route-info'
 
 const limitMap = {
   default: Number(process.env.API_RATE_LIMIT) || 100,
-  auth: Number(process.env.API_RATE_LIMIT_AUTH) || 20
+  auth: Number(process.env.API_RATE_LIMIT_AUTH) || 20,
 } as const
 
 const rateLimitOverrides = new Map<string, keyof typeof limitMap>([
   ['/v1/players/auth', 'auth'],
   ['/v1/players/identify', 'auth'],
   ['/v1/players/socket-token', 'auth'],
-  ['/v1/socket-tickets', 'auth']
+  ['/v1/socket-tickets', 'auth'],
 ])
 
-const rateLimitBypass = new Set<string>([
-  '/v1/health-check'
-])
+const rateLimitBypass = new Set<string>(['/v1/health-check'])
 
 export function getMaxRequestsForPath(requestPath: string) {
   const limitMapKey = rateLimitOverrides.get(requestPath) ?? 'default'
   const maxRequests = limitMap[limitMapKey]
   return {
     limitMapKey,
-    maxRequests
+    maxRequests,
   }
 }
 
 export async function limiterMiddleware(ctx: Context, next: Next): Promise<void> {
-  if (isAPIRoute(ctx) && process.env.NODE_ENV !== 'test' && !rateLimitBypass.has(ctx.request.path)) {
+  if (
+    isAPIRoute(ctx) &&
+    process.env.NODE_ENV !== 'test' &&
+    !rateLimitBypass.has(ctx.request.path)
+  ) {
     const { limitMapKey, maxRequests } = getMaxRequestsForPath(ctx.request.path)
     const userId = ctx.state.jwt?.sub || 'anonymous'
     const redisKey = `requests:${userId}:${ctx.request.ip}:${limitMapKey}`

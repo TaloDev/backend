@@ -28,7 +28,7 @@ export default class LeaderboardEntryProp {
   toJSON() {
     return {
       key: this.key,
-      value: this.value
+      value: this.value,
     }
   }
 }

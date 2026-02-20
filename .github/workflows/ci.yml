@@ -85,5 +85,8 @@ jobs:
       - name: Setup
         uses: ./.github/actions/setup
 
+      - name: Format
+        run: npm run fmt
+
       - name: Lint
-        run: npx eslint
+        run: npm run lint

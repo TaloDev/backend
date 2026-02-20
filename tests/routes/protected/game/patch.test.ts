@@ -1,73 +1,80 @@
-import request from 'supertest'
-import { UserType } from '../../../../src/entities/user'
-import GameActivity, { GameActivityType } from '../../../../src/entities/game-activity'
-import userPermissionProvider from '../../../utils/userPermissionProvider'
-import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
-import createUserAndToken from '../../../utils/createUserAndToken'
-import createTestSocket from '../../../utils/createTestSocket'
-import createSocketIdentifyMessage from '../../../utils/createSocketIdentifyMessage'
-import { genAccessToken } from '../../../../src/lib/auth/buildTokenPair'
-import { APIKeyScope } from '../../../../src/entities/api-key'
-import Prop from '../../../../src/entities/prop'
 import { randText } from '@ngneat/falso'
+import request from 'supertest'
+import { APIKeyScope } from '../../../../src/entities/api-key'
+import GameActivity, { GameActivityType } from '../../../../src/entities/game-activity'
+import Prop from '../../../../src/entities/prop'
+import { UserType } from '../../../../src/entities/user'
+import { genAccessToken } from '../../../../src/lib/auth/buildTokenPair'
+import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
+import createSocketIdentifyMessage from '../../../utils/createSocketIdentifyMessage'
+import createTestSocket from '../../../utils/createTestSocket'
+import createUserAndToken from '../../../utils/createUserAndToken'
+import userPermissionProvider from '../../../utils/userPermissionProvider'
 
 describe('Game - patch', () => {
-  it.each(userPermissionProvider([
-    UserType.ADMIN
-  ]))('should return a %i for a %s user', async (statusCode, _, type) => {
-    const [organisation, game] = await createOrganisationAndGame({}, {
-      props: [
-        { key: 'xpRate', value: '1' },
-        { key: 'halloweenEventEnabled', value: '0' }
-      ]
-    })
-    const [token] = await createUserAndToken({ type }, organisation)
+  it.each(userPermissionProvider([UserType.ADMIN]))(
+    'should return a %i for a %s user',
+    async (statusCode, _, type) => {
+      const [organisation, game] = await createOrganisationAndGame(
+        {},
+        {
+          props: [
+            { key: 'xpRate', value: '1' },
+            { key: 'halloweenEventEnabled', value: '0' },
+          ],
+        },
+      )
+      const [token] = await createUserAndToken({ type }, organisation)
 
-    const res = await request(app)
-      .patch(`/games/${game.id}`)
-      .send({
-        props: [
-          {
-            key: 'xpRate',
-            value: '2'
-          }
-        ]
+      const res = await request(app)
+        .patch(`/games/${game.id}`)
+        .send({
+          props: [
+            {
+              key: 'xpRate',
+              value: '2',
+            },
+          ],
+        })
+        .auth(token, { type: 'bearer' })
+        .expect(statusCode)
+
+      const activity = await em.getRepository(GameActivity).findOne({
+        type: GameActivityType.GAME_PROPS_UPDATED,
+        game,
       })
-      .auth(token, { type: 'bearer' })
-      .expect(statusCode)
 
-    const activity = await em.getRepository(GameActivity).findOne({
-      type: GameActivityType.GAME_PROPS_UPDATED,
-      game
-    })
+      if (statusCode === 200) {
+        expect(res.body.game.props).toEqual(
+          expect.arrayContaining([
+            {
+              key: 'xpRate',
+              value: '2',
+            },
+            {
+              key: 'halloweenEventEnabled',
+              value: '0',
+            },
+          ]),
+        )
 
-    if (statusCode === 200) {
-      expect(res.body.game.props).toEqual(expect.arrayContaining(
-        [
-          {
-            key: 'xpRate',
-            value: '2'
-          },
-          {
-            key: 'halloweenEventEnabled',
-            value: '0'
-          }
-        ]
-      ))
-
-      expect(activity).not.toBeNull()
-    } else {
-      expect(activity).toBeNull()
-    }
-  })
+        expect(activity).not.toBeNull()
+      } else {
+        expect(activity).toBeNull()
+      }
+    },
+  )
 
   it('should delete null player properties', async () => {
-    const [organisation, game] = await createOrganisationAndGame({}, {
-      props: [
-        { key: 'xpRate', value: '1' },
-        { key: 'halloweenEventEnabled', value: '0' }
-      ]
-    })
+    const [organisation, game] = await createOrganisationAndGame(
+      {},
+      {
+        props: [
+          { key: 'xpRate', value: '1' },
+          { key: 'halloweenEventEnabled', value: '0' },
+        ],
+      },
+    )
     const [token] = await createUserAndToken({ type: UserType.ADMIN }, organisation)
 
     const res = await request(app)
@@ -76,13 +83,13 @@ describe('Game - patch', () => {
         props: [
           {
             key: 'xpRate',
-            value: '1'
+            value: '1',
           },
           {
             key: 'halloweenEventEnabled',
-            value: null
-          }
-        ]
+            value: null,
+          },
+        ],
       })
       .auth(token, { type: 'bearer' })
       .expect(200)
@@ -90,12 +97,12 @@ describe('Game - patch', () => {
     expect(res.body.game.props).toStrictEqual([
       {
         key: 'xpRate',
-        value: '1'
-      }
+        value: '1',
+      },
     ])
   })
 
-  it('should not update a non-existent game\'s properties', async () => {
+  it("should not update a non-existent game's properties", async () => {
     const [organisation] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({ type: UserType.ADMIN }, organisation)
 
@@ -105,9 +112,9 @@ describe('Game - patch', () => {
         props: [
           {
             key: 'collectibles',
-            value: '2'
-          }
-        ]
+            value: '2',
+          },
+        ],
       })
       .auth(token, { type: 'bearer' })
       .expect(404)
@@ -115,7 +122,7 @@ describe('Game - patch', () => {
     expect(res.body).toStrictEqual({ message: 'Game not found' })
   })
 
-  it('should not update a player\'s properties for a game the user has no access to', async () => {
+  it("should not update a player's properties for a game the user has no access to", async () => {
     const [, otherGame] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({ type: UserType.ADMIN })
 
@@ -125,9 +132,9 @@ describe('Game - patch', () => {
         props: [
           {
             key: 'xpRate',
-            value: '2'
-          }
-        ]
+            value: '2',
+          },
+        ],
       })
       .auth(token, { type: 'bearer' })
       .expect(403)
@@ -145,17 +152,19 @@ describe('Game - patch', () => {
         props: [
           {
             key: 'META_BREAK_THINGS',
-            value: 'true'
-          }
-        ]
+            value: 'true',
+          },
+        ],
       })
       .auth(token, { type: 'bearer' })
       .expect(400)
 
     expect(res.body).toStrictEqual({
       errors: {
-        props: ['Prop keys starting with \'META_\' are reserved for internal systems, please use another key name']
-      }
+        props: [
+          "Prop keys starting with 'META_' are reserved for internal systems, please use another key name",
+        ],
+      },
     })
   })
 
@@ -166,7 +175,7 @@ describe('Game - patch', () => {
     const res = await request(app)
       .patch(`/games/${game.id}`)
       .send({
-        name: 'New game name'
+        name: 'New game name',
       })
       .auth(token, { type: 'bearer' })
       .expect(200)
@@ -178,9 +187,9 @@ describe('Game - patch', () => {
       game,
       extra: {
         display: {
-          'Previous name': game.name
-        }
-      }
+          'Previous name': game.name,
+        },
+      },
     })
     expect(activity).not.toBeNull()
   })
@@ -188,7 +197,7 @@ describe('Game - patch', () => {
   it('should notify players when the live config has been updated', async () => {
     const { identifyMessage, ticket, apiKey } = await createSocketIdentifyMessage([
       APIKeyScope.READ_PLAYERS,
-      APIKeyScope.READ_GAME_CONFIG
+      APIKeyScope.READ_GAME_CONFIG,
     ])
 
     apiKey.game.props = [new Prop('xpRate', '1')]
@@ -205,9 +214,9 @@ describe('Game - patch', () => {
           props: [
             {
               key: 'xpRate',
-              value: '2'
-            }
-          ]
+              value: '2',
+            },
+          ],
         })
         .auth(token, { type: 'bearer' })
         .expect(200)
@@ -216,8 +225,8 @@ describe('Game - patch', () => {
         expect(actual.data.config).toStrictEqual([
           {
             key: 'xpRate',
-            value: '2'
-          }
+            value: '2',
+          },
         ])
       })
     })
@@ -225,7 +234,7 @@ describe('Game - patch', () => {
 
   it('should not notify players without the correct scope when the live config has been updated', async () => {
     const { identifyMessage, ticket, apiKey } = await createSocketIdentifyMessage([
-      APIKeyScope.READ_PLAYERS
+      APIKeyScope.READ_PLAYERS,
     ])
 
     apiKey.game.props = [new Prop('xpRate', '1')]
@@ -242,9 +251,9 @@ describe('Game - patch', () => {
           props: [
             {
               key: 'xpRate',
-              value: '2'
-            }
-          ]
+              value: '2',
+            },
+          ],
         })
         .auth(token, { type: 'bearer' })
         .expect(200)
@@ -264,17 +273,17 @@ describe('Game - patch', () => {
         props: [
           {
             key: randText({ charCount: 129 }),
-            value: '1'
-          }
-        ]
+            value: '1',
+          },
+        ],
       })
       .auth(token, { type: 'bearer' })
       .expect(400)
 
     expect(res.body).toStrictEqual({
       errors: {
-        props: ['Prop key length (129) exceeds 128 characters']
-      }
+        props: ['Prop key length (129) exceeds 128 characters'],
+      },
     })
   })
 
@@ -288,95 +297,110 @@ describe('Game - patch', () => {
         props: [
           {
             key: 'bio',
-            value: randText({ charCount: 4097 })
-          }
-        ]
+            value: randText({ charCount: 4097 }),
+          },
+        ],
       })
       .auth(token, { type: 'bearer' })
       .expect(400)
 
     expect(res.body).toStrictEqual({
       errors: {
-        props: ['Prop value length (4097) exceeds 4096 characters']
-      }
+        props: ['Prop value length (4097) exceeds 4096 characters'],
+      },
     })
   })
 
-  it.each(userPermissionProvider([]))('should update purgeDevPlayers for a %s user', async (statusCode, _, type) => {
-    const [organisation, game] = await createOrganisationAndGame()
-    const [token] = await createUserAndToken({ type }, organisation)
+  it.each(userPermissionProvider([]))(
+    'should update purgeDevPlayers for a %s user',
+    async (statusCode, _, type) => {
+      const [organisation, game] = await createOrganisationAndGame()
+      const [token] = await createUserAndToken({ type }, organisation)
 
-    await request(app)
-      .patch(`/games/${game.id}`)
-      .send({ purgeDevPlayers: true })
-      .auth(token, { type: 'bearer' })
-      .expect(statusCode)
+      await request(app)
+        .patch(`/games/${game.id}`)
+        .send({ purgeDevPlayers: true })
+        .auth(token, { type: 'bearer' })
+        .expect(statusCode)
 
-    if (statusCode === 200) {
-      expect((await em.refreshOrFail(game)).purgeDevPlayers).toBe(true)
-    }
-  })
+      if (statusCode === 200) {
+        expect((await em.refreshOrFail(game)).purgeDevPlayers).toBe(true)
+      }
+    },
+  )
 
-  it.each(userPermissionProvider([]))('should update purgeLivePlayers for a %s user', async (statusCode, _, type) => {
-    const [organisation, game] = await createOrganisationAndGame()
-    const [token] = await createUserAndToken({ type }, organisation)
+  it.each(userPermissionProvider([]))(
+    'should update purgeLivePlayers for a %s user',
+    async (statusCode, _, type) => {
+      const [organisation, game] = await createOrganisationAndGame()
+      const [token] = await createUserAndToken({ type }, organisation)
 
-    await request(app)
-      .patch(`/games/${game.id}`)
-      .send({ purgeLivePlayers: true })
-      .auth(token, { type: 'bearer' })
-      .expect(statusCode)
+      await request(app)
+        .patch(`/games/${game.id}`)
+        .send({ purgeLivePlayers: true })
+        .auth(token, { type: 'bearer' })
+        .expect(statusCode)
 
-    if (statusCode === 200) {
-      expect((await em.refreshOrFail(game)).purgeLivePlayers).toBe(true)
-    }
-  })
+      if (statusCode === 200) {
+        expect((await em.refreshOrFail(game)).purgeLivePlayers).toBe(true)
+      }
+    },
+  )
 
-  it.each(userPermissionProvider([]))('should update the website for a %s user', async (statusCode, _, type) => {
-    const [organisation, game] = await createOrganisationAndGame()
-    const [token] = await createUserAndToken({ type }, organisation)
+  it.each(userPermissionProvider([]))(
+    'should update the website for a %s user',
+    async (statusCode, _, type) => {
+      const [organisation, game] = await createOrganisationAndGame()
+      const [token] = await createUserAndToken({ type }, organisation)
 
-    const website = 'https://example.com'
-    await request(app)
-      .patch(`/games/${game.id}`)
-      .send({ website })
-      .auth(token, { type: 'bearer' })
-      .expect(statusCode)
+      const website = 'https://example.com'
+      await request(app)
+        .patch(`/games/${game.id}`)
+        .send({ website })
+        .auth(token, { type: 'bearer' })
+        .expect(statusCode)
 
-    if (statusCode === 200) {
-      expect((await em.refreshOrFail(game)).website).toBe(website)
-    }
-  })
+      if (statusCode === 200) {
+        expect((await em.refreshOrFail(game)).website).toBe(website)
+      }
+    },
+  )
 
-  it.each(userPermissionProvider([]))('should update purgeDevPlayersRetention for a %s user', async (statusCode, _, type) => {
-    const [organisation, game] = await createOrganisationAndGame()
-    const [token] = await createUserAndToken({ type }, organisation)
+  it.each(userPermissionProvider([]))(
+    'should update purgeDevPlayersRetention for a %s user',
+    async (statusCode, _, type) => {
+      const [organisation, game] = await createOrganisationAndGame()
+      const [token] = await createUserAndToken({ type }, organisation)
 
-    await request(app)
-      .patch(`/games/${game.id}`)
-      .send({ purgeDevPlayersRetention: 30 })
-      .auth(token, { type: 'bearer' })
-      .expect(statusCode)
+      await request(app)
+        .patch(`/games/${game.id}`)
+        .send({ purgeDevPlayersRetention: 30 })
+        .auth(token, { type: 'bearer' })
+        .expect(statusCode)
 
-    if (statusCode === 200) {
-      expect((await em.refreshOrFail(game)).purgeDevPlayersRetention).toBe(30)
-    }
-  })
+      if (statusCode === 200) {
+        expect((await em.refreshOrFail(game)).purgeDevPlayersRetention).toBe(30)
+      }
+    },
+  )
 
-  it.each(userPermissionProvider([]))('should update purgeLivePlayersRetention for a %s user', async (statusCode, _, type) => {
-    const [organisation, game] = await createOrganisationAndGame()
-    const [token] = await createUserAndToken({ type }, organisation)
+  it.each(userPermissionProvider([]))(
+    'should update purgeLivePlayersRetention for a %s user',
+    async (statusCode, _, type) => {
+      const [organisation, game] = await createOrganisationAndGame()
+      const [token] = await createUserAndToken({ type }, organisation)
 
-    await request(app)
-      .patch(`/games/${game.id}`)
-      .send({ purgeLivePlayersRetention: 60 })
-      .auth(token, { type: 'bearer' })
-      .expect(statusCode)
+      await request(app)
+        .patch(`/games/${game.id}`)
+        .send({ purgeLivePlayersRetention: 60 })
+        .auth(token, { type: 'bearer' })
+        .expect(statusCode)
 
-    if (statusCode === 200) {
-      expect((await em.refreshOrFail(game)).purgeLivePlayersRetention).toBe(60)
-    }
-  })
+      if (statusCode === 200) {
+        expect((await em.refreshOrFail(game)).purgeLivePlayersRetention).toBe(60)
+      }
+    },
+  )
 
   it('should not update game names if an empty string is sent', async () => {
     const [organisation, game] = await createOrganisationAndGame()
@@ -390,8 +414,8 @@ describe('Game - patch', () => {
 
     expect(res.body).toStrictEqual({
       errors: {
-        name: ['Name must be a non-empty string']
-      }
+        name: ['Name must be a non-empty string'],
+      },
     })
   })
 
@@ -403,39 +427,42 @@ describe('Game - patch', () => {
       .patch(`/games/${game.id}`)
       .send({
         purgeDevPlayers: true,
-        website: 'https://example.com'
+        website: 'https://example.com',
       })
       .auth(token, { type: 'bearer' })
       .expect(200)
 
     const activity = await em.getRepository(GameActivity).findOne({
       type: GameActivityType.GAME_SETTINGS_UPDATED,
-      game
+      game,
     })
 
     expect(activity).not.toBeNull()
     expect(activity?.extra.display).toEqual({
-      'Updated properties': 'purgeDevPlayers: true, website: https://example.com'
+      'Updated properties': 'purgeDevPlayers: true, website: https://example.com',
     })
   })
 
   it('should not create a GAME_SETTINGS_UPDATED activity when no settings are changed', async () => {
-    const [organisation, game] = await createOrganisationAndGame({}, {
-      purgeDevPlayers: true
-    })
+    const [organisation, game] = await createOrganisationAndGame(
+      {},
+      {
+        purgeDevPlayers: true,
+      },
+    )
     const [token] = await createUserAndToken({ type: UserType.OWNER }, organisation)
 
     await request(app)
       .patch(`/games/${game.id}`)
       .send({
-        purgeDevPlayers: true
+        purgeDevPlayers: true,
       })
       .auth(token, { type: 'bearer' })
       .expect(200)
 
     const activity = await em.getRepository(GameActivity).findOne({
       type: GameActivityType.GAME_SETTINGS_UPDATED,
-      game
+      game,
     })
 
     expect(activity).toBeNull()

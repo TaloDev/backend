@@ -1,14 +1,14 @@
-import { apiRoute, withMiddleware } from '../../../lib/routing/router'
-import { requireScopes } from '../../../middleware/policy-middleware'
+import { createHash } from 'crypto'
+import { isValid } from 'date-fns'
 import { APIKeyScope } from '../../../entities/api-key'
-import { loadAlias } from '../../../middleware/player-alias-middleware'
-import { playerAliasHeaderSchema } from '../../../lib/validation/playerAliasHeaderSchema'
 import Event from '../../../entities/event'
 import Prop from '../../../entities/prop'
 import { PropSizeError } from '../../../lib/errors/propSizeError'
-import { isValid } from 'date-fns'
-import { createHash } from 'crypto'
 import { FlushEventsQueueHandler } from '../../../lib/queues/game-metrics/flush-events-queue-handler'
+import { apiRoute, withMiddleware } from '../../../lib/routing/router'
+import { playerAliasHeaderSchema } from '../../../lib/validation/playerAliasHeaderSchema'
+import { loadAlias } from '../../../middleware/player-alias-middleware'
+import { requireScopes } from '../../../middleware/policy-middleware'
 import { postDocs } from './docs'
 
 let queueHandler: FlushEventsQueueHandler
@@ -25,16 +25,13 @@ export const postRoute = apiRoute({
   docs: postDocs,
   schema: (z) => ({
     headers: z.looseObject({
-      'x-talo-alias': playerAliasHeaderSchema
+      'x-talo-alias': playerAliasHeaderSchema,
     }),
     body: z.object({
-      events: z.array(z.unknown()).meta({ description: 'An array of @type(EventData:eventdata)' })
-    })
+      events: z.array(z.unknown()).meta({ description: 'An array of @type(EventData:eventdata)' }),
+    }),
   }),
-  middleware: withMiddleware(
-    requireScopes([APIKeyScope.WRITE_EVENTS]),
-    loadAlias
-  ),
+  middleware: withMiddleware(requireScopes([APIKeyScope.WRITE_EVENTS]), loadAlias),
   handler: async (ctx) => {
     const { events: items } = ctx.state.validated.body
     const em = ctx.em
@@ -50,7 +47,9 @@ export const postRoute = apiRoute({
 
       for (const key of ['name', 'timestamp']) {
         if (!item[key]) {
-          errors[i].push(`Event is missing the key: ${key}${key === 'name' ? '' : ` (${item.name})`}`)
+          errors[i].push(
+            `Event is missing the key: ${key}${key === 'name' ? '' : ` (${item.name})`}`,
+          )
         }
       }
 
@@ -66,7 +65,7 @@ export const postRoute = apiRoute({
           } catch (err) {
             if (err instanceof PropSizeError) {
               errors[i].push(`${err.message} (${item.name})`)
-            /* v8 ignore next 3 */
+              /* v8 ignore next 3 */
             } else {
               throw err
             }
@@ -90,12 +89,14 @@ export const postRoute = apiRoute({
 
     for (const event of eventsMap.values()) {
       const hash = createHash('sha256')
-        .update(JSON.stringify({
-          playerAliasId: playerAlias.id,
-          name: event.name,
-          props: event.props,
-          timestamp: Math.floor(event.createdAt.getTime() / 1000)
-        }))
+        .update(
+          JSON.stringify({
+            playerAliasId: playerAlias.id,
+            name: event.name,
+            props: event.props,
+            timestamp: Math.floor(event.createdAt.getTime() / 1000),
+          }),
+        )
         .digest('hex')
 
       hashes.push(hash)
@@ -112,7 +113,7 @@ export const postRoute = apiRoute({
           errors[i].push('Redis pipeline failed')
         }
       }
-    /* v8 ignore stop */
+      /* v8 ignore stop */
     } else {
       let resultIndex = 0
       for (const index of Array.from(eventsMap.keys())) {
@@ -124,7 +125,7 @@ export const postRoute = apiRoute({
         if (err) {
           eventsMap.delete(index)
           errors[index].push(`Duplicate detection failed (${item.name}): ${err.message}`)
-        /* v8 ignore stop */
+          /* v8 ignore stop */
         } else if (result !== 1) {
           eventsMap.delete(index)
           errors[index].push(`Duplicate event detected (${item.name})`)
@@ -142,8 +143,8 @@ export const postRoute = apiRoute({
       status: 200,
       body: {
         events: eventsArray,
-        errors
-      }
+        errors,
+      },
     }
-  }
+  },
 })

@@ -1,16 +1,16 @@
 import { addMinutes, isToday, subDays, subHours, subMinutes } from 'date-fns'
+import assert from 'node:assert'
+import { APIKeyScope } from '../../src/entities/api-key'
+import Player from '../../src/entities/player'
+import PlayerPresence from '../../src/entities/player-presence'
+import PlayerSession, { ClickHousePlayerSession } from '../../src/entities/player-session'
+import { setSocketInstance } from '../../src/socket/socketRegistry'
 import cleanupOnlinePlayers from '../../src/tasks/cleanupOnlinePlayers'
 import PlayerFactory from '../fixtures/PlayerFactory'
-import createOrganisationAndGame from '../utils/createOrganisationAndGame'
-import PlayerSession, { ClickHousePlayerSession } from '../../src/entities/player-session'
 import PlayerPresenceFactory from '../fixtures/PlayerPresenceFactory'
-import assert from 'node:assert'
-import PlayerPresence from '../../src/entities/player-presence'
-import Player from '../../src/entities/player'
+import createOrganisationAndGame from '../utils/createOrganisationAndGame'
 import createSocketIdentifyMessage from '../utils/createSocketIdentifyMessage'
-import { APIKeyScope } from '../../src/entities/api-key'
 import createTestSocket from '../utils/createTestSocket'
-import { setSocketInstance } from '../../src/socket/socketRegistry'
 
 describe('cleanupOnlinePlayers', () => {
   beforeEach(() => {
@@ -28,9 +28,7 @@ describe('cleanupOnlinePlayers', () => {
     const [, game] = await createOrganisationAndGame()
     const player = await new PlayerFactory([game])
       .state(async (player) => ({
-        presence: await new PlayerPresenceFactory(player.game)
-          .offline()
-          .one()
+        presence: await new PlayerPresenceFactory(player.game).offline().one(),
       }))
       .one()
     await em.persist(player).flush()
@@ -44,20 +42,24 @@ describe('cleanupOnlinePlayers', () => {
     await player.insertSession(clickhouse, session)
 
     await vi.waitUntil(async () => {
-      const sessions = await clickhouse.query({
-        query: `SELECT * FROM player_sessions WHERE player_id = '${player.id}' and ended_at IS NULL`,
-        format: 'JSONEachRow'
-      }).then((res) => res.json<ClickHousePlayerSession>())
+      const sessions = await clickhouse
+        .query({
+          query: `SELECT * FROM player_sessions WHERE player_id = '${player.id}' and ended_at IS NULL`,
+          format: 'JSONEachRow',
+        })
+        .then((res) => res.json<ClickHousePlayerSession>())
       return sessions.length === 1
     })
 
     await cleanupOnlinePlayers()
 
     await vi.waitFor(async () => {
-      const sessions = await clickhouse.query({
-        query: `SELECT * FROM player_sessions WHERE player_id = '${player.id}' AND ended_at IS NULL`,
-        format: 'JSONEachRow'
-      }).then((res) => res.json<ClickHousePlayerSession>())
+      const sessions = await clickhouse
+        .query({
+          query: `SELECT * FROM player_sessions WHERE player_id = '${player.id}' AND ended_at IS NULL`,
+          format: 'JSONEachRow',
+        })
+        .then((res) => res.json<ClickHousePlayerSession>())
       expect(sessions.length).toBe(0)
     })
   })
@@ -71,7 +73,7 @@ describe('cleanupOnlinePlayers', () => {
         presence: await new PlayerPresenceFactory(player.game)
           .online()
           .state(() => ({ updatedAt: subHours(new Date(), 2) }))
-          .one()
+          .one(),
       }))
       .one()
     await em.persist(player).flush()
@@ -101,7 +103,7 @@ describe('cleanupOnlinePlayers', () => {
         presence: await new PlayerPresenceFactory(player.game)
           .online()
           .state(() => ({ updatedAt: subHours(new Date(), 2) }))
-          .one()
+          .one(),
       }))
       .one()
     await em.persist(player).flush()
@@ -134,7 +136,7 @@ describe('cleanupOnlinePlayers', () => {
         presence: await new PlayerPresenceFactory(player.game)
           .online()
           .state(() => ({ updatedAt: subHours(new Date(), 2) }))
-          .one()
+          .one(),
       }))
       .one()
     await em.persist(player).flush()
@@ -159,7 +161,7 @@ describe('cleanupOnlinePlayers', () => {
         presence: await new PlayerPresenceFactory(player.game)
           .online()
           .state(() => ({ updatedAt: subHours(new Date(), 2) }))
-          .one()
+          .one(),
       }))
       .one()
     await em.persist(player).flush()
@@ -192,10 +194,12 @@ describe('cleanupOnlinePlayers', () => {
 
     // verify the session was inserted
     await vi.waitUntil(async () => {
-      const sessions = await clickhouse.query({
-        query: `SELECT * FROM player_sessions WHERE player_id = '${player.id}' AND ended_at IS NULL`,
-        format: 'JSONEachRow'
-      }).then((res) => res.json<ClickHousePlayerSession>())
+      const sessions = await clickhouse
+        .query({
+          query: `SELECT * FROM player_sessions WHERE player_id = '${player.id}' AND ended_at IS NULL`,
+          format: 'JSONEachRow',
+        })
+        .then((res) => res.json<ClickHousePlayerSession>())
       return sessions.length === 1
     })
 
@@ -203,10 +207,12 @@ describe('cleanupOnlinePlayers', () => {
 
     // session should be deleted because there's no presence (player is considered offline)
     await vi.waitFor(async () => {
-      const sessions = await clickhouse.query({
-        query: `SELECT * FROM player_sessions WHERE player_id = '${player.id}' AND ended_at IS NULL`,
-        format: 'JSONEachRow'
-      }).then((res) => res.json<ClickHousePlayerSession>())
+      const sessions = await clickhouse
+        .query({
+          query: `SELECT * FROM player_sessions WHERE player_id = '${player.id}' AND ended_at IS NULL`,
+          format: 'JSONEachRow',
+        })
+        .then((res) => res.json<ClickHousePlayerSession>())
       expect(sessions.length).toBe(0)
     })
   })
@@ -222,7 +228,9 @@ describe('cleanupOnlinePlayers', () => {
   it('should not mark a player as offline if they have an active socket connection', async () => {
     vi.useRealTimers()
 
-    const { identifyMessage, ticket, player } = await createSocketIdentifyMessage([APIKeyScope.READ_PLAYERS])
+    const { identifyMessage, ticket, player } = await createSocketIdentifyMessage([
+      APIKeyScope.READ_PLAYERS,
+    ])
 
     await createTestSocket(`/?ticket=${ticket}`, async (client, wss) => {
       await client.identify(identifyMessage)
@@ -230,9 +238,13 @@ describe('cleanupOnlinePlayers', () => {
       const presence = await em.repo(PlayerPresence).findOneOrFail({ player: player.id })
 
       // manually update the presence to be old enough to be picked up for cleanup
-      await em.nativeUpdate(PlayerPresence, { id: presence.id }, {
-        updatedAt: subHours(new Date(), 2)
-      })
+      await em.nativeUpdate(
+        PlayerPresence,
+        { id: presence.id },
+        {
+          updatedAt: subHours(new Date(), 2),
+        },
+      )
 
       setSocketInstance(wss)
 
@@ -255,7 +267,7 @@ describe('cleanupOnlinePlayers', () => {
         presence: await new PlayerPresenceFactory(player.game)
           .online()
           .state(() => ({ updatedAt: subHours(new Date(), 5) }))
-          .one()
+          .one(),
       }))
       .one()
 
@@ -264,7 +276,7 @@ describe('cleanupOnlinePlayers', () => {
         presence: await new PlayerPresenceFactory(player.game)
           .online()
           .state(() => ({ updatedAt: subHours(new Date(), 3) }))
-          .one()
+          .one(),
       }))
       .one()
 
@@ -273,7 +285,7 @@ describe('cleanupOnlinePlayers', () => {
         presence: await new PlayerPresenceFactory(player.game)
           .online()
           .state(() => ({ updatedAt: subHours(new Date(), 2) }))
-          .one()
+          .one(),
       }))
       .one()
 
@@ -324,7 +336,7 @@ describe('cleanupOnlinePlayers', () => {
         presence: await new PlayerPresenceFactory(player.game)
           .online()
           .state(() => ({ updatedAt: subHours(new Date(), 2) }))
-          .one()
+          .one(),
       }))
       .one()
     await em.persist(player).flush()
@@ -340,10 +352,12 @@ describe('cleanupOnlinePlayers', () => {
     await player.insertSession(clickhouse, session)
 
     await vi.waitUntil(async () => {
-      const sessions = await clickhouse.query({
-        query: `SELECT * FROM player_sessions WHERE player_id = '${player.id}' AND ended_at IS NULL`,
-        format: 'JSONEachRow'
-      }).then((res) => res.json<ClickHousePlayerSession>())
+      const sessions = await clickhouse
+        .query({
+          query: `SELECT * FROM player_sessions WHERE player_id = '${player.id}' AND ended_at IS NULL`,
+          format: 'JSONEachRow',
+        })
+        .then((res) => res.json<ClickHousePlayerSession>())
       return sessions.length === 1
     })
 

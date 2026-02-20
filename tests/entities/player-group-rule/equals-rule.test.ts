@@ -1,21 +1,26 @@
 import { Collection } from '@mikro-orm/mysql'
 import request from 'supertest'
-import PlayerGroupRule, { PlayerGroupRuleCastType, PlayerGroupRuleName } from '../../../src/entities/player-group-rule'
-import PlayerFactory from '../../fixtures/PlayerFactory'
-import createUserAndToken from '../../utils/createUserAndToken'
-import createOrganisationAndGame from '../../utils/createOrganisationAndGame'
+import PlayerGroupRule, {
+  PlayerGroupRuleCastType,
+  PlayerGroupRuleName,
+} from '../../../src/entities/player-group-rule'
 import PlayerProp from '../../../src/entities/player-prop'
 import GameStatFactory from '../../fixtures/GameStatFactory'
-import PlayerGameStatFactory from '../../fixtures/PlayerGameStatFactory'
-import LeaderboardFactory from '../../fixtures/LeaderboardFactory'
 import LeaderboardEntryFactory from '../../fixtures/LeaderboardEntryFactory'
+import LeaderboardFactory from '../../fixtures/LeaderboardFactory'
+import PlayerFactory from '../../fixtures/PlayerFactory'
+import PlayerGameStatFactory from '../../fixtures/PlayerGameStatFactory'
+import createOrganisationAndGame from '../../utils/createOrganisationAndGame'
+import createUserAndToken from '../../utils/createUserAndToken'
 
 describe('EQUALS rule', () => {
   it('should correctly evaluate an EQUALS rule', async () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({}, organisation)
 
-    const player1 = await new PlayerFactory([game]).state(() => ({ lastSeenAt: new Date(2022, 4, 3) })).one()
+    const player1 = await new PlayerFactory([game])
+      .state(() => ({ lastSeenAt: new Date(2022, 4, 3) }))
+      .one()
     const player2 = await new PlayerFactory([game]).one()
     await em.persistAndFlush([player1, player2])
 
@@ -25,8 +30,8 @@ describe('EQUALS rule', () => {
         field: 'lastSeenAt',
         operands: ['2022-05-03'],
         negate: false,
-        castType: PlayerGroupRuleCastType.DATETIME
-      }
+        castType: PlayerGroupRuleCastType.DATETIME,
+      },
     ]
 
     const res = await request(app)
@@ -42,7 +47,9 @@ describe('EQUALS rule', () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({}, organisation)
 
-    const player1 = await new PlayerFactory([game]).state(() => ({ lastSeenAt: new Date(2022, 4, 3) })).one()
+    const player1 = await new PlayerFactory([game])
+      .state(() => ({ lastSeenAt: new Date(2022, 4, 3) }))
+      .one()
     const player2 = await new PlayerFactory([game]).one()
     await em.persistAndFlush([player1, player2])
 
@@ -52,8 +59,8 @@ describe('EQUALS rule', () => {
         field: 'lastSeenAt',
         operands: ['2022-05-03'],
         negate: true,
-        castType: PlayerGroupRuleCastType.DATETIME
-      }
+        castType: PlayerGroupRuleCastType.DATETIME,
+      },
     ]
 
     const res = await request(app)
@@ -69,11 +76,11 @@ describe('EQUALS rule', () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({}, organisation)
 
-    const player1 = await new PlayerFactory([game]).state((player) => ({
-      props: new Collection<PlayerProp>(player, [
-        new PlayerProp(player, 'currentLevel', '80')
-      ])
-    })).one()
+    const player1 = await new PlayerFactory([game])
+      .state((player) => ({
+        props: new Collection<PlayerProp>(player, [new PlayerProp(player, 'currentLevel', '80')]),
+      }))
+      .one()
     const player2 = await new PlayerFactory([game]).one()
     await em.persistAndFlush([player1, player2])
 
@@ -83,8 +90,8 @@ describe('EQUALS rule', () => {
         field: 'props.currentLevel',
         operands: ['80'],
         negate: false,
-        castType: PlayerGroupRuleCastType.CHAR
-      }
+        castType: PlayerGroupRuleCastType.CHAR,
+      },
     ]
 
     const res = await request(app)
@@ -100,11 +107,11 @@ describe('EQUALS rule', () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({}, organisation)
 
-    const player1 = await new PlayerFactory([game]).state((player) => ({
-      props: new Collection<PlayerProp>(player, [
-        new PlayerProp(player, 'currentLevel', '80')
-      ])
-    })).one()
+    const player1 = await new PlayerFactory([game])
+      .state((player) => ({
+        props: new Collection<PlayerProp>(player, [new PlayerProp(player, 'currentLevel', '80')]),
+      }))
+      .one()
     const player2 = await new PlayerFactory([game]).one()
     await em.persistAndFlush([player1, player2])
 
@@ -114,8 +121,8 @@ describe('EQUALS rule', () => {
         field: 'props.currentLevel',
         operands: ['80'],
         negate: true,
-        castType: PlayerGroupRuleCastType.CHAR
-      }
+        castType: PlayerGroupRuleCastType.CHAR,
+      },
     ]
 
     const res = await request(app)
@@ -134,8 +141,13 @@ describe('EQUALS rule', () => {
     const player1 = await new PlayerFactory([game]).one()
     const player2 = await new PlayerFactory([game]).one()
 
-    const stat = await new GameStatFactory([game]).state(() => ({ minValue: 1, maxValue: 80 })).one()
-    const playerStat = await new PlayerGameStatFactory().construct(player1, stat).state(() => ({ value: 60 })).one()
+    const stat = await new GameStatFactory([game])
+      .state(() => ({ minValue: 1, maxValue: 80 }))
+      .one()
+    const playerStat = await new PlayerGameStatFactory()
+      .construct(player1, stat)
+      .state(() => ({ value: 60 }))
+      .one()
     await em.persistAndFlush([player1, player2, playerStat])
 
     const rules: Partial<PlayerGroupRule>[] = [
@@ -144,8 +156,8 @@ describe('EQUALS rule', () => {
         field: `statValue.${stat.internalName}`,
         operands: ['60'],
         negate: false,
-        castType: PlayerGroupRuleCastType.DOUBLE
-      }
+        castType: PlayerGroupRuleCastType.DOUBLE,
+      },
     ]
 
     const res = await request(app)
@@ -164,8 +176,13 @@ describe('EQUALS rule', () => {
     const player1 = await new PlayerFactory([game]).one()
     const player2 = await new PlayerFactory([game]).one()
 
-    const stat = await new GameStatFactory([game]).state(() => ({ minValue: 1, maxValue: 80 })).one()
-    const playerStat = await new PlayerGameStatFactory().construct(player1, stat).state(() => ({ value: 60 })).one()
+    const stat = await new GameStatFactory([game])
+      .state(() => ({ minValue: 1, maxValue: 80 }))
+      .one()
+    const playerStat = await new PlayerGameStatFactory()
+      .construct(player1, stat)
+      .state(() => ({ value: 60 }))
+      .one()
     await em.persistAndFlush([player1, player2, playerStat])
 
     const rules: Partial<PlayerGroupRule>[] = [
@@ -174,8 +191,8 @@ describe('EQUALS rule', () => {
         field: `statValue.${stat.internalName}`,
         operands: ['60'],
         negate: true,
-        castType: PlayerGroupRuleCastType.DOUBLE
-      }
+        castType: PlayerGroupRuleCastType.DOUBLE,
+      },
     ]
 
     const res = await request(app)
@@ -195,7 +212,9 @@ describe('EQUALS rule', () => {
     const player2 = await new PlayerFactory([game]).one()
 
     const leaderboard = await new LeaderboardFactory([game]).one()
-    const leaderboardEntry = await new LeaderboardEntryFactory(leaderboard, [player1]).state(() => ({ score: 60 })).one()
+    const leaderboardEntry = await new LeaderboardEntryFactory(leaderboard, [player1])
+      .state(() => ({ score: 60 }))
+      .one()
     await em.persistAndFlush([player1, player2, leaderboardEntry])
 
     const rules: Partial<PlayerGroupRule>[] = [
@@ -204,8 +223,8 @@ describe('EQUALS rule', () => {
         field: `leaderboardEntryScore.${leaderboard.internalName}`,
         operands: ['60'],
         negate: false,
-        castType: PlayerGroupRuleCastType.DOUBLE
-      }
+        castType: PlayerGroupRuleCastType.DOUBLE,
+      },
     ]
 
     const res = await request(app)
@@ -225,7 +244,9 @@ describe('EQUALS rule', () => {
     const player2 = await new PlayerFactory([game]).one()
 
     const leaderboard = await new LeaderboardFactory([game]).one()
-    const leaderboardEntry = await new LeaderboardEntryFactory(leaderboard, [player1]).state(() => ({ score: 60 })).one()
+    const leaderboardEntry = await new LeaderboardEntryFactory(leaderboard, [player1])
+      .state(() => ({ score: 60 }))
+      .one()
     await em.persistAndFlush([player1, player2, leaderboardEntry])
 
     const rules: Partial<PlayerGroupRule>[] = [
@@ -234,8 +255,8 @@ describe('EQUALS rule', () => {
         field: `leaderboardEntryScore.${leaderboard.internalName}`,
         operands: ['60'],
         negate: true,
-        castType: PlayerGroupRuleCastType.DOUBLE
-      }
+        castType: PlayerGroupRuleCastType.DOUBLE,
+      },
     ]
 
     const res = await request(app)
@@ -255,7 +276,9 @@ describe('EQUALS rule', () => {
     const player2 = await new PlayerFactory([game]).one()
 
     const leaderboard = await new LeaderboardFactory([game]).one()
-    const leaderboardEntry = await new LeaderboardEntryFactory(leaderboard, [player1]).state(() => ({ score: 60, hidden: true })).one()
+    const leaderboardEntry = await new LeaderboardEntryFactory(leaderboard, [player1])
+      .state(() => ({ score: 60, hidden: true }))
+      .one()
     await em.persistAndFlush([player1, player2, leaderboardEntry])
 
     const rules: Partial<PlayerGroupRule>[] = [
@@ -264,8 +287,8 @@ describe('EQUALS rule', () => {
         field: `leaderboardEntryScore.${leaderboard.internalName}`,
         operands: ['60'],
         negate: false,
-        castType: PlayerGroupRuleCastType.DOUBLE
-      }
+        castType: PlayerGroupRuleCastType.DOUBLE,
+      },
     ]
 
     const res = await request(app)

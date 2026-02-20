@@ -1,15 +1,15 @@
-import { apiRoute, withMiddleware } from '../../../lib/routing/router'
-import { requireScopes } from '../../../middleware/policy-middleware'
+import bcrypt from 'bcrypt'
+import { getGlobalQueue } from '../../../config/global-queues'
+import PlayerAuthCode from '../../../emails/player-auth-code-mail'
 import { APIKeyScope } from '../../../entities/api-key'
 import { PlayerAliasService } from '../../../entities/player-alias'
-import bcrypt from 'bcrypt'
+import { PlayerAuthActivityType } from '../../../entities/player-auth-activity'
 import generateSixDigitCode from '../../../lib/auth/generateSixDigitCode'
 import queueEmail from '../../../lib/messaging/queueEmail'
-import PlayerAuthCode from '../../../emails/player-auth-code-mail'
-import { createPlayerAuthActivity, getRedisAuthKey, handleFailedLogin } from './common'
-import { PlayerAuthActivityType } from '../../../entities/player-auth-activity'
 import { findAliasFromIdentifyRequest } from '../../../lib/players/findAlias'
-import { getGlobalQueue } from '../../../config/global-queues'
+import { apiRoute, withMiddleware } from '../../../lib/routing/router'
+import { requireScopes } from '../../../middleware/policy-middleware'
+import { createPlayerAuthActivity, getRedisAuthKey, handleFailedLogin } from './common'
 import { loginDocs } from './docs'
 
 export const loginRoute = apiRoute({
@@ -18,13 +18,16 @@ export const loginRoute = apiRoute({
   docs: loginDocs,
   schema: (z) => ({
     body: z.object({
-      identifier: z.string().meta({ description: 'The unique identifier of the player. This can be their username, an email or a numeric ID' }),
-      password: z.string().meta({ description: 'The player\'s password' })
-    })
+      identifier: z
+        .string()
+        .meta({
+          description:
+            'The unique identifier of the player. This can be their username, an email or a numeric ID',
+        }),
+      password: z.string().meta({ description: "The player's password" }),
+    }),
   }),
-  middleware: withMiddleware(
-    requireScopes([APIKeyScope.READ_PLAYERS, APIKeyScope.WRITE_PLAYERS])
-  ),
+  middleware: withMiddleware(requireScopes([APIKeyScope.READ_PLAYERS, APIKeyScope.WRITE_PLAYERS])),
   handler: async (ctx) => {
     const { identifier, password } = ctx.state.validated.body
     const em = ctx.em
@@ -35,7 +38,7 @@ export const loginRoute = apiRoute({
       em,
       key,
       service: PlayerAliasService.TALO,
-      identifier
+      identifier,
     })
     if (!alias) return handleFailedLogin(ctx)
 
@@ -55,7 +58,7 @@ export const loginRoute = apiRoute({
       await queueEmail(getGlobalQueue('email'), new PlayerAuthCode(alias, code))
 
       createPlayerAuthActivity(ctx, alias.player, {
-        type: PlayerAuthActivityType.VERIFICATION_STARTED
+        type: PlayerAuthActivityType.VERIFICATION_STARTED,
       })
 
       await em.flush()
@@ -64,15 +67,15 @@ export const loginRoute = apiRoute({
         status: 200,
         body: {
           aliasId: alias.id,
-          verificationRequired: true
-        }
+          verificationRequired: true,
+        },
       }
     } else {
       const sessionToken = await alias.player.auth.createSession(alias)
       const socketToken = await alias.createSocketToken(redis)
 
       createPlayerAuthActivity(ctx, alias.player, {
-        type: PlayerAuthActivityType.LOGGED_IN
+        type: PlayerAuthActivityType.LOGGED_IN,
       })
 
       await em.flush()
@@ -82,9 +85,9 @@ export const loginRoute = apiRoute({
         body: {
           alias,
           sessionToken,
-          socketToken
-        }
+          socketToken,
+        },
       }
     }
-  }
+  },
 })

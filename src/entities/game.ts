@@ -1,4 +1,13 @@
-import { Collection, Embedded, Entity, ManyToOne, OneToMany, OneToOne, PrimaryKey, Property } from '@mikro-orm/mysql'
+import {
+  Collection,
+  Embedded,
+  Entity,
+  ManyToOne,
+  OneToMany,
+  OneToOne,
+  PrimaryKey,
+  Property,
+} from '@mikro-orm/mysql'
 import GameSecret from './game-secret'
 import Organisation from './organisation'
 import Player from './player'
@@ -65,7 +74,7 @@ export default class Game {
       id: this.id,
       name: this.name,
       props: this.props,
-      createdAt: this.createdAt
+      createdAt: this.createdAt,
     }
   }
 }

@@ -1,15 +1,15 @@
-import EventFactory from '../../../fixtures/EventFactory'
-import PlayerFactory from '../../../fixtures/PlayerFactory'
+import GameStat from '../../../../src/entities/game-stat'
+import Prop from '../../../../src/entities/prop'
+import { DataExporter } from '../../../../src/lib/queues/data-exports/dataExportProcessor'
 import DataExportFactory from '../../../fixtures/DataExportFactory'
-import LeaderboardFactory from '../../../fixtures/LeaderboardFactory'
-import LeaderboardEntryFactory from '../../../fixtures/LeaderboardEntryFactory'
+import EventFactory from '../../../fixtures/EventFactory'
+import GameFeedbackFactory from '../../../fixtures/GameFeedbackFactory'
 import GameStatFactory from '../../../fixtures/GameStatFactory'
+import LeaderboardEntryFactory from '../../../fixtures/LeaderboardEntryFactory'
+import LeaderboardFactory from '../../../fixtures/LeaderboardFactory'
+import PlayerFactory from '../../../fixtures/PlayerFactory'
 import PlayerGameStatFactory from '../../../fixtures/PlayerGameStatFactory'
 import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
-import GameFeedbackFactory from '../../../fixtures/GameFeedbackFactory'
-import GameStat from '../../../../src/entities/game-stat'
-import { DataExporter } from '../../../../src/lib/queues/data-exports/dataExportProcessor'
-import Prop from '../../../../src/entities/prop'
 
 async function collect<T>(gen: AsyncGenerator<T>): Promise<T[]> {
   const result: T[] = []
@@ -37,12 +37,12 @@ describe('Data export - included data (unit tests)', () => {
     await clickhouse.insert({
       table: 'events',
       values: event.toInsertable(),
-      format: 'JSON'
+      format: 'JSON',
     })
     await clickhouse.insert({
       table: 'events',
       values: event.getInsertableProps(),
-      format: 'JSONEachRow'
+      format: 'JSONEachRow',
     })
 
     const items = await collect(proto.streamEvents(dataExport, em, false))
@@ -66,12 +66,12 @@ describe('Data export - included data (unit tests)', () => {
     await clickhouse.insert({
       table: 'events',
       values: event.toInsertable(),
-      format: 'JSON'
+      format: 'JSON',
     })
     await clickhouse.insert({
       table: 'events',
       values: event.getInsertableProps(),
-      format: 'JSONEachRow'
+      format: 'JSONEachRow',
     })
 
     const items = await collect(proto.streamEvents(dataExport, em, true))
@@ -172,18 +172,27 @@ describe('Data export - included data (unit tests)', () => {
     const exporter = new DataExporter()
     const proto = Object.getPrototypeOf(exporter)
 
-    const stat = await new GameStatFactory([game]).global().state(() => ({ globalValue: 50 })).one()
+    const stat = await new GameStatFactory([game])
+      .global()
+      .state(() => ({ globalValue: 50 }))
+      .one()
 
     const devPlayer = await new PlayerFactory([game]).devBuild().one()
-    const devPlayerStat = await new PlayerGameStatFactory().construct(devPlayer, stat).state(() => ({ value: 10 })).one()
+    const devPlayerStat = await new PlayerGameStatFactory()
+      .construct(devPlayer, stat)
+      .state(() => ({ value: 10 }))
+      .one()
 
     const livePlayer = await new PlayerFactory([game]).one()
-    const livePlayerStat = await new PlayerGameStatFactory().construct(livePlayer, stat).state(() => ({ value: 40 })).one()
+    const livePlayerStat = await new PlayerGameStatFactory()
+      .construct(livePlayer, stat)
+      .state(() => ({ value: 40 }))
+      .one()
 
     const dataExport = await new DataExportFactory(game).one()
     await em.persistAndFlush([devPlayerStat, livePlayerStat, dataExport])
 
-    const items = await collect(proto.streamGameStats(dataExport, em, false)) as GameStat[]
+    const items = (await collect(proto.streamGameStats(dataExport, em, false))) as GameStat[]
     expect(items[0].globalValue).toBe(40)
   })
 
@@ -194,12 +203,18 @@ describe('Data export - included data (unit tests)', () => {
     const proto = Object.getPrototypeOf(exporter)
 
     const player = await new PlayerFactory([game]).devBuild().one()
-    const stat = await new GameStatFactory([game]).global().state(() => ({ globalValue: 50 })).one()
-    const playerStat = await new PlayerGameStatFactory().construct(player, stat).state(() => ({ value: 10 })).one()
+    const stat = await new GameStatFactory([game])
+      .global()
+      .state(() => ({ globalValue: 50 }))
+      .one()
+    const playerStat = await new PlayerGameStatFactory()
+      .construct(player, stat)
+      .state(() => ({ value: 10 }))
+      .one()
     const dataExport = await new DataExportFactory(game).one()
     await em.persistAndFlush([playerStat, dataExport])
 
-    const items = await collect(proto.streamGameStats(dataExport, em, true)) as GameStat[]
+    const items = (await collect(proto.streamGameStats(dataExport, em, true))) as GameStat[]
     expect(items[0].globalValue).toBe(50)
   })
 
@@ -210,8 +225,14 @@ describe('Data export - included data (unit tests)', () => {
     const proto = Object.getPrototypeOf(exporter)
 
     const player = await new PlayerFactory([game]).devBuild().one()
-    const stat = await new GameStatFactory([game]).global().state(() => ({ globalValue: 50 })).one()
-    const playerStat = await new PlayerGameStatFactory().construct(player, stat).state(() => ({ value: 10 })).one()
+    const stat = await new GameStatFactory([game])
+      .global()
+      .state(() => ({ globalValue: 50 }))
+      .one()
+    const playerStat = await new PlayerGameStatFactory()
+      .construct(player, stat)
+      .state(() => ({ value: 10 }))
+      .one()
     const dataExport = await new DataExportFactory(game).one()
     await em.persistAndFlush([playerStat, dataExport])
 
@@ -226,8 +247,14 @@ describe('Data export - included data (unit tests)', () => {
     const proto = Object.getPrototypeOf(exporter)
 
     const player = await new PlayerFactory([game]).devBuild().one()
-    const stat = await new GameStatFactory([game]).global().state(() => ({ globalValue: 50 })).one()
-    const playerStat = await new PlayerGameStatFactory().construct(player, stat).state(() => ({ value: 10 })).one()
+    const stat = await new GameStatFactory([game])
+      .global()
+      .state(() => ({ globalValue: 50 }))
+      .one()
+    const playerStat = await new PlayerGameStatFactory()
+      .construct(player, stat)
+      .state(() => ({ value: 10 }))
+      .one()
     const dataExport = await new DataExportFactory(game).one()
     await em.persistAndFlush([playerStat, dataExport])
 
@@ -242,9 +269,11 @@ describe('Data export - included data (unit tests)', () => {
     const proto = Object.getPrototypeOf(exporter)
 
     const player = await new PlayerFactory([game]).devBuild().one()
-    const feedback = await new GameFeedbackFactory(game).state(() => ({
-      playerAlias: player.aliases[0]
-    })).one()
+    const feedback = await new GameFeedbackFactory(game)
+      .state(() => ({
+        playerAlias: player.aliases[0],
+      }))
+      .one()
     const dataExport = await new DataExportFactory(game).one()
     await em.persistAndFlush([feedback, dataExport])
 
@@ -259,9 +288,11 @@ describe('Data export - included data (unit tests)', () => {
     const proto = Object.getPrototypeOf(exporter)
 
     const player = await new PlayerFactory([game]).devBuild().one()
-    const feedback = await new GameFeedbackFactory(game).state(() => ({
-      playerAlias: player.aliases[0]
-    })).one()
+    const feedback = await new GameFeedbackFactory(game)
+      .state(() => ({
+        playerAlias: player.aliases[0],
+      }))
+      .one()
     const dataExport = await new DataExportFactory(game).one()
     await em.persistAndFlush([feedback, dataExport])
 

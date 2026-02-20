@@ -1,16 +1,16 @@
-import { apiRoute, withMiddleware } from '../../../lib/routing/router'
-import { requireScopes } from '../../../middleware/policy-middleware'
+import bcrypt from 'bcrypt'
+import assert from 'node:assert'
 import { APIKeyScope } from '../../../entities/api-key'
 import PlayerAlias from '../../../entities/player-alias'
 import PlayerAuth from '../../../entities/player-auth'
-import bcrypt from 'bcrypt'
-import assert from 'node:assert'
-import { createPlayerAuthActivity, loadAliasWithAuth } from './common'
 import PlayerAuthActivity, { PlayerAuthActivityType } from '../../../entities/player-auth-activity'
-import { deleteClickHousePlayerData } from '../../../tasks/deletePlayers'
-import { playerHeaderSchema } from '../../../lib/validation/playerHeaderSchema'
+import { apiRoute, withMiddleware } from '../../../lib/routing/router'
 import { playerAliasHeaderSchema } from '../../../lib/validation/playerAliasHeaderSchema'
+import { playerHeaderSchema } from '../../../lib/validation/playerHeaderSchema'
 import { sessionHeaderSchema } from '../../../lib/validation/sessionHeaderSchema'
+import { requireScopes } from '../../../middleware/policy-middleware'
+import { deleteClickHousePlayerData } from '../../../tasks/deletePlayers'
+import { createPlayerAuthActivity, loadAliasWithAuth } from './common'
 import { deleteDocs } from './docs'
 
 export const deleteRoute = apiRoute({
@@ -20,15 +20,15 @@ export const deleteRoute = apiRoute({
     headers: z.looseObject({
       'x-talo-player': playerHeaderSchema,
       'x-talo-alias': playerAliasHeaderSchema,
-      'x-talo-session': sessionHeaderSchema
+      'x-talo-session': sessionHeaderSchema,
     }),
     body: z.object({
-      currentPassword: z.string().meta({ description: 'The current password of the player' })
-    })
+      currentPassword: z.string().meta({ description: 'The current password of the player' }),
+    }),
   }),
   middleware: withMiddleware(
     requireScopes([APIKeyScope.READ_PLAYERS, APIKeyScope.WRITE_PLAYERS]),
-    loadAliasWithAuth
+    loadAliasWithAuth,
   ),
   handler: async (ctx) => {
     const { currentPassword } = ctx.state.validated.body
@@ -44,27 +44,27 @@ export const deleteRoute = apiRoute({
       createPlayerAuthActivity(ctx, alias.player, {
         type: PlayerAuthActivityType.DELETE_AUTH_FAILED,
         extra: {
-          errorCode: 'INVALID_CREDENTIALS'
-        }
+          errorCode: 'INVALID_CREDENTIALS',
+        },
       })
       await em.flush()
 
       return ctx.throw(403, {
         message: 'Current password is incorrect',
-        errorCode: 'INVALID_CREDENTIALS'
+        errorCode: 'INVALID_CREDENTIALS',
       })
     }
 
     await em.repo(PlayerAuthActivity).nativeDelete({
-      player: alias.player
+      player: alias.player,
     })
 
     await em.transactional(async (trx) => {
       createPlayerAuthActivity(ctx, alias.player, {
         type: PlayerAuthActivityType.DELETED_AUTH,
         extra: {
-          identifier: alias.identifier
-        }
+          identifier: alias.identifier,
+        },
       })
 
       assert(alias.player.auth)
@@ -73,12 +73,12 @@ export const deleteRoute = apiRoute({
 
       await deleteClickHousePlayerData({
         playerIds: [alias.player.id],
-        aliasIds: [alias.id]
+        aliasIds: [alias.id],
       })
     })
 
     return {
-      status: 204
+      status: 204,
     }
-  }
+  },
 })

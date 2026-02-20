@@ -1,13 +1,13 @@
 import { FilterQuery } from '@mikro-orm/mysql'
-import { protectedRoute, withMiddleware } from '../../../lib/routing/router'
-import { loadGame } from '../../../middleware/game-middleware'
-import { userTypeGate } from '../../../middleware/policy-middleware'
-import { UserType } from '../../../entities/user'
-import LeaderboardEntry from '../../../entities/leaderboard-entry'
 import { GameActivityType } from '../../../entities/game-activity'
+import LeaderboardEntry from '../../../entities/leaderboard-entry'
+import { UserType } from '../../../entities/user'
 import createGameActivity from '../../../lib/logging/createGameActivity'
 import { deferClearResponseCache } from '../../../lib/perf/responseCacheQueue'
+import { protectedRoute, withMiddleware } from '../../../lib/routing/router'
 import { resetModes, translateResetMode } from '../../../lib/validation/resetModeValidation'
+import { loadGame } from '../../../middleware/game-middleware'
+import { userTypeGate } from '../../../middleware/policy-middleware'
 import { loadLeaderboard } from './common'
 
 export const resetRoute = protectedRoute({
@@ -15,15 +15,18 @@ export const resetRoute = protectedRoute({
   path: '/:id/entries',
   schema: (z) => ({
     query: z.object({
-      mode: z.enum(resetModes, {
-        error: `Mode must be one of: ${resetModes.join(', ')}`
-      }).optional().default('all')
-    })
+      mode: z
+        .enum(resetModes, {
+          error: `Mode must be one of: ${resetModes.join(', ')}`,
+        })
+        .optional()
+        .default('all'),
+    }),
   }),
   middleware: withMiddleware(
     userTypeGate([UserType.ADMIN], 'reset leaderboard entries'),
     loadGame,
-    loadLeaderboard()
+    loadLeaderboard(),
   ),
   handler: async (ctx) => {
     const { mode } = ctx.state.validated.query
@@ -35,14 +38,14 @@ export const resetRoute = protectedRoute({
     if (mode === 'dev') {
       where.playerAlias = {
         player: {
-          devBuild: true
-        }
+          devBuild: true,
+        },
       }
     } else if (mode === 'live') {
       where.playerAlias = {
         player: {
-          devBuild: false
-        }
+          devBuild: false,
+        },
       }
     }
 
@@ -56,9 +59,9 @@ export const resetRoute = protectedRoute({
           leaderboardInternalName: leaderboard.internalName,
           display: {
             'Reset mode': translateResetMode(mode),
-            'Deleted count': count
-          }
-        }
+            'Deleted count': count,
+          },
+        },
       })
 
       return count
@@ -69,8 +72,8 @@ export const resetRoute = protectedRoute({
     return {
       status: 200,
       body: {
-        deletedCount
-      }
+        deletedCount,
+      },
     }
-  }
+  },
 })

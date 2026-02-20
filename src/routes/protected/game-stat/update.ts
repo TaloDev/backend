@@ -1,26 +1,30 @@
-import { protectedRoute, withMiddleware } from '../../../lib/routing/router'
 import { GameActivityType } from '../../../entities/game-activity'
-import createGameActivity from '../../../lib/logging/createGameActivity'
-import handleSQLError from '../../../lib/errors/handleSQLError'
 import updateAllowedKeys from '../../../lib/entities/updateAllowedKeys'
+import handleSQLError from '../../../lib/errors/handleSQLError'
+import createGameActivity from '../../../lib/logging/createGameActivity'
+import { protectedRoute, withMiddleware } from '../../../lib/routing/router'
 import { clearStatIndexResponseCache, loadStat, updateStatBodySchema } from './common'
 
 export const updateRoute = protectedRoute({
   method: 'put',
   path: '/:id',
   schema: (z) => ({
-    body: updateStatBodySchema(z)
+    body: updateStatBodySchema(z),
   }),
   middleware: withMiddleware(loadStat, clearStatIndexResponseCache),
   handler: async (ctx) => {
     const em = ctx.em
     const body = ctx.state.validated.body
 
-    const [stat, changedProperties] = updateAllowedKeys(
-      ctx.state.stat,
-      body,
-      ['name', 'global', 'maxChange', 'minValue', 'maxValue', 'defaultValue', 'minTimeBetweenUpdates']
-    )
+    const [stat, changedProperties] = updateAllowedKeys(ctx.state.stat, body, [
+      'name',
+      'global',
+      'maxChange',
+      'minValue',
+      'maxValue',
+      'defaultValue',
+      'minTimeBetweenUpdates',
+    ])
 
     createGameActivity(em, {
       user: ctx.state.user,
@@ -29,9 +33,11 @@ export const updateRoute = protectedRoute({
       extra: {
         statInternalName: stat.internalName,
         display: {
-          'Updated properties': changedProperties.map((prop) => `${prop}: ${body[prop as keyof typeof body]}`).join(', ')
-        }
-      }
+          'Updated properties': changedProperties
+            .map((prop) => `${prop}: ${body[prop as keyof typeof body]}`)
+            .join(', '),
+        },
+      },
     })
 
     try {
@@ -43,8 +49,8 @@ export const updateRoute = protectedRoute({
     return {
       status: 200,
       body: {
-        stat
-      }
+        stat,
+      },
     }
-  }
+  },
 })

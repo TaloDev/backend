@@ -1,11 +1,11 @@
-import { apiRoute, withMiddleware } from '../../../lib/routing/router'
-import { requireScopes } from '../../../middleware/policy-middleware'
 import { APIKeyScope } from '../../../entities/api-key'
-import { createPlayerAuthActivity, loadAliasWithAuth } from './common'
 import { PlayerAuthActivityType } from '../../../entities/player-auth-activity'
-import { playerHeaderSchema } from '../../../lib/validation/playerHeaderSchema'
+import { apiRoute, withMiddleware } from '../../../lib/routing/router'
 import { playerAliasHeaderSchema } from '../../../lib/validation/playerAliasHeaderSchema'
+import { playerHeaderSchema } from '../../../lib/validation/playerHeaderSchema'
 import { sessionHeaderSchema } from '../../../lib/validation/sessionHeaderSchema'
+import { requireScopes } from '../../../middleware/policy-middleware'
+import { createPlayerAuthActivity, loadAliasWithAuth } from './common'
 import { logoutDocs } from './docs'
 
 export const logoutRoute = apiRoute({
@@ -16,12 +16,12 @@ export const logoutRoute = apiRoute({
     headers: z.looseObject({
       'x-talo-player': playerHeaderSchema,
       'x-talo-alias': playerAliasHeaderSchema,
-      'x-talo-session': sessionHeaderSchema
-    })
+      'x-talo-session': sessionHeaderSchema,
+    }),
   }),
   middleware: withMiddleware(
     requireScopes([APIKeyScope.READ_PLAYERS, APIKeyScope.WRITE_PLAYERS]),
-    loadAliasWithAuth
+    loadAliasWithAuth,
   ),
   handler: async (ctx) => {
     const em = ctx.em
@@ -34,13 +34,13 @@ export const logoutRoute = apiRoute({
     alias.player.auth.clearSession()
 
     createPlayerAuthActivity(ctx, alias.player, {
-      type: PlayerAuthActivityType.LOGGED_OUT
+      type: PlayerAuthActivityType.LOGGED_OUT,
     })
 
     await em.flush()
 
     return {
-      status: 204
+      status: 204,
     }
-  }
+  },
 })

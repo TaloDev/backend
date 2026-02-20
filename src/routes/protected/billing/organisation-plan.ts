@@ -11,8 +11,8 @@ export const organisationPlanRoute = protectedRoute({
     return {
       status: 200,
       body: {
-        pricingPlan: organisation.pricingPlan
-      }
+        pricingPlan: organisation.pricingPlan,
+      },
     }
-  }
+  },
 })

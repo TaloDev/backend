@@ -1,12 +1,12 @@
+import { Collection } from '@mikro-orm/mysql'
 import request from 'supertest'
-import createUserAndToken from '../../../utils/createUserAndToken'
-import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
-import GameFeedbackFactory from '../../../fixtures/GameFeedbackFactory'
+import GameFeedbackProp from '../../../../src/entities/game-feedback-prop'
 import GameFeedbackCategoryFactory from '../../../fixtures/GameFeedbackCategoryFactory'
+import GameFeedbackFactory from '../../../fixtures/GameFeedbackFactory'
 import PlayerAliasFactory from '../../../fixtures/PlayerAliasFactory'
 import PlayerFactory from '../../../fixtures/PlayerFactory'
-import { Collection } from '@mikro-orm/mysql'
-import GameFeedbackProp from '../../../../src/entities/game-feedback-prop'
+import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
+import createUserAndToken from '../../../utils/createUserAndToken'
 
 describe('Game feedback - index', () => {
   it('should return a list of game feedback', async () => {
@@ -31,7 +31,9 @@ describe('Game feedback - index', () => {
 
     const category = await new GameFeedbackCategoryFactory(game).one()
 
-    const feedbackWithRelevantCategory = await new GameFeedbackFactory(game).state(() => ({ category })).many(5)
+    const feedbackWithRelevantCategory = await new GameFeedbackFactory(game)
+      .state(() => ({ category }))
+      .many(5)
     const feedbackWithoutRelevantCategory = await new GameFeedbackFactory(game).many(5)
     await em.persistAndFlush([...feedbackWithRelevantCategory, ...feedbackWithoutRelevantCategory])
 
@@ -96,8 +98,12 @@ describe('Game feedback - index', () => {
 
     const category = await new GameFeedbackCategoryFactory(game).one()
 
-    const feedbackWithRelevantComment = await new GameFeedbackFactory(game).state(() => ({ category, comment: 'blah' })).many(3)
-    const feedbackWithoutRelevantComment = await new GameFeedbackFactory(game).state(() => ({ comment: 'bleh' })).many(5)
+    const feedbackWithRelevantComment = await new GameFeedbackFactory(game)
+      .state(() => ({ category, comment: 'blah' }))
+      .many(3)
+    const feedbackWithoutRelevantComment = await new GameFeedbackFactory(game)
+      .state(() => ({ comment: 'bleh' }))
+      .many(5)
     await em.persistAndFlush([...feedbackWithRelevantComment, ...feedbackWithoutRelevantComment])
 
     const res = await request(app)
@@ -115,10 +121,20 @@ describe('Game feedback - index', () => {
 
     const category = await new GameFeedbackCategoryFactory(game).one()
 
-    const feedbackWithRelevantCategory = await new GameFeedbackFactory(game).state(() => ({ category })).many(10)
-    const feedbackWithRelevantCategoryAndComment = await new GameFeedbackFactory(game).state(() => ({ category, comment: 'blah' })).many(3)
-    const feedbackWithoutRelevantCategory = await new GameFeedbackFactory(game).state(() => ({ comment: 'blah' })).many(5)
-    await em.persistAndFlush([...feedbackWithRelevantCategory, ...feedbackWithRelevantCategoryAndComment, ...feedbackWithoutRelevantCategory])
+    const feedbackWithRelevantCategory = await new GameFeedbackFactory(game)
+      .state(() => ({ category }))
+      .many(10)
+    const feedbackWithRelevantCategoryAndComment = await new GameFeedbackFactory(game)
+      .state(() => ({ category, comment: 'blah' }))
+      .many(3)
+    const feedbackWithoutRelevantCategory = await new GameFeedbackFactory(game)
+      .state(() => ({ comment: 'blah' }))
+      .many(5)
+    await em.persistAndFlush([
+      ...feedbackWithRelevantCategory,
+      ...feedbackWithRelevantCategoryAndComment,
+      ...feedbackWithoutRelevantCategory,
+    ])
 
     const res = await request(app)
       .get(`/games/${game.id}/game-feedback`)
@@ -136,13 +152,17 @@ describe('Game feedback - index', () => {
     const category = await new GameFeedbackCategoryFactory(game).one()
 
     const player = await new PlayerFactory([game]).one()
-    const playerAlias = await new PlayerAliasFactory(player).state(async () => ({ player, identifier: 'big_complainer_01' })).one()
+    const playerAlias = await new PlayerAliasFactory(player)
+      .state(async () => ({ player, identifier: 'big_complainer_01' }))
+      .one()
 
-    const feedbackWithRelevantAlias = await new GameFeedbackFactory(game).state(() => ({
-      category,
-      playerAlias,
-      anonymised: false
-    })).many(3)
+    const feedbackWithRelevantAlias = await new GameFeedbackFactory(game)
+      .state(() => ({
+        category,
+        playerAlias,
+        anonymised: false,
+      }))
+      .many(3)
 
     const feedbackWithoutRelevantAlias = await new GameFeedbackFactory(game).many(5)
 
@@ -164,13 +184,17 @@ describe('Game feedback - index', () => {
     const category = await new GameFeedbackCategoryFactory(game).one()
 
     const player = await new PlayerFactory([game]).one()
-    const playerAlias = await new PlayerAliasFactory(player).state(async () => ({ player, identifier: 'big_complainer_01' })).one()
+    const playerAlias = await new PlayerAliasFactory(player)
+      .state(async () => ({ player, identifier: 'big_complainer_01' }))
+      .one()
 
-    const feedbackWithRelevantAlias = await new GameFeedbackFactory(game).state(() => ({
-      category,
-      playerAlias,
-      anonymised: true
-    })).many(3)
+    const feedbackWithRelevantAlias = await new GameFeedbackFactory(game)
+      .state(() => ({
+        category,
+        playerAlias,
+        anonymised: true,
+      }))
+      .many(3)
 
     await em.persistAndFlush(feedbackWithRelevantAlias)
 
@@ -190,27 +214,43 @@ describe('Game feedback - index', () => {
     const category = await new GameFeedbackCategoryFactory(game).one()
 
     const player = await new PlayerFactory([game]).one()
-    const playerAlias = await new PlayerAliasFactory(player).state(async () => ({ player, identifier: 'big_complainer_01' })).one()
+    const playerAlias = await new PlayerAliasFactory(player)
+      .state(async () => ({ player, identifier: 'big_complainer_01' }))
+      .one()
 
-    const feedbackWithRelevantCategory = await new GameFeedbackFactory(game).state(() => ({ category })).many(10)
+    const feedbackWithRelevantCategory = await new GameFeedbackFactory(game)
+      .state(() => ({ category }))
+      .many(10)
 
-    const feedbackWithRelevantCategoryAndAlias = await new GameFeedbackFactory(game).state(() => ({
-      category,
-      comment: 'blah',
-      playerAlias,
-      anonymised: false
-    })).many(3)
+    const feedbackWithRelevantCategoryAndAlias = await new GameFeedbackFactory(game)
+      .state(() => ({
+        category,
+        comment: 'blah',
+        playerAlias,
+        anonymised: false,
+      }))
+      .many(3)
 
-    const feedbackWithoutRelevantCategory = await new GameFeedbackFactory(game).state(() => ({
-      playerAlias,
-      anonymised: false
-    })).many(5)
+    const feedbackWithoutRelevantCategory = await new GameFeedbackFactory(game)
+      .state(() => ({
+        playerAlias,
+        anonymised: false,
+      }))
+      .many(5)
 
-    await em.persistAndFlush([...feedbackWithRelevantCategory, ...feedbackWithRelevantCategoryAndAlias, ...feedbackWithoutRelevantCategory])
+    await em.persistAndFlush([
+      ...feedbackWithRelevantCategory,
+      ...feedbackWithRelevantCategoryAndAlias,
+      ...feedbackWithoutRelevantCategory,
+    ])
 
     const res = await request(app)
       .get(`/games/${game.id}/game-feedback`)
-      .query({ feedbackCategoryInternalName: category.internalName, search: 'big_complainer_01', page: 0 })
+      .query({
+        feedbackCategoryInternalName: category.internalName,
+        search: 'big_complainer_01',
+        page: 0,
+      })
       .auth(token, { type: 'bearer' })
       .expect(200)
 
@@ -222,7 +262,9 @@ describe('Game feedback - index', () => {
     const [token] = await createUserAndToken({}, organisation)
 
     const player = await new PlayerFactory([game]).devBuild().one()
-    const feedback = await new GameFeedbackFactory(game).state(() => ({ playerAlias: player.aliases[0] })).many(10)
+    const feedback = await new GameFeedbackFactory(game)
+      .state(() => ({ playerAlias: player.aliases[0] }))
+      .many(10)
     await em.persistAndFlush(feedback)
 
     const res = await request(app)
@@ -240,12 +282,14 @@ describe('Game feedback - index', () => {
 
     const category = await new GameFeedbackCategoryFactory(game).one()
 
-    const feedbackWithRelevantPropKey = await new GameFeedbackFactory(game).state((feedback) => ({
-      category,
-      props: new Collection<GameFeedbackProp>(feedback, [
-        new GameFeedbackProp(feedback, 'gameVersion', '0.17.0')
-      ])
-    })).many(3)
+    const feedbackWithRelevantPropKey = await new GameFeedbackFactory(game)
+      .state((feedback) => ({
+        category,
+        props: new Collection<GameFeedbackProp>(feedback, [
+          new GameFeedbackProp(feedback, 'gameVersion', '0.17.0'),
+        ]),
+      }))
+      .many(3)
     const feedbackWithoutRelevantPropKey = await new GameFeedbackFactory(game).many(5)
     await em.persistAndFlush([...feedbackWithRelevantPropKey, ...feedbackWithoutRelevantPropKey])
 
@@ -264,14 +308,19 @@ describe('Game feedback - index', () => {
 
     const category = await new GameFeedbackCategoryFactory(game).one()
 
-    const feedbackWithRelevantPropValue = await new GameFeedbackFactory(game).state((feedback) => ({
-      category,
-      props: new Collection<GameFeedbackProp>(feedback, [
-        new GameFeedbackProp(feedback, 'gameVersion', '0.17.0')
-      ])
-    })).many(3)
+    const feedbackWithRelevantPropValue = await new GameFeedbackFactory(game)
+      .state((feedback) => ({
+        category,
+        props: new Collection<GameFeedbackProp>(feedback, [
+          new GameFeedbackProp(feedback, 'gameVersion', '0.17.0'),
+        ]),
+      }))
+      .many(3)
     const feedbackWithoutRelevantPropValue = await new GameFeedbackFactory(game).many(5)
-    await em.persistAndFlush([...feedbackWithRelevantPropValue, ...feedbackWithoutRelevantPropValue])
+    await em.persistAndFlush([
+      ...feedbackWithRelevantPropValue,
+      ...feedbackWithoutRelevantPropValue,
+    ])
 
     const res = await request(app)
       .get(`/games/${game.id}/game-feedback`)
@@ -288,12 +337,14 @@ describe('Game feedback - index', () => {
 
     const category = await new GameFeedbackCategoryFactory(game).one()
 
-    const feedbackWithRelevantProp = await new GameFeedbackFactory(game).state((feedback) => ({
-      category,
-      props: new Collection<GameFeedbackProp>(feedback, [
-        new GameFeedbackProp(feedback, 'gameVersion', '0.17.0')
-      ])
-    })).many(3)
+    const feedbackWithRelevantProp = await new GameFeedbackFactory(game)
+      .state((feedback) => ({
+        category,
+        props: new Collection<GameFeedbackProp>(feedback, [
+          new GameFeedbackProp(feedback, 'gameVersion', '0.17.0'),
+        ]),
+      }))
+      .many(3)
     const feedbackWithoutRelevantProp = await new GameFeedbackFactory(game).many(5)
     await em.persistAndFlush([...feedbackWithRelevantProp, ...feedbackWithoutRelevantProp])
 

@@ -1,7 +1,7 @@
-import { Factory } from 'hefty'
-import GameStat from '../../src/entities/game-stat'
-import Game from '../../src/entities/game'
 import { rand, randBoolean, randNumber, randSlug, randText } from '@ngneat/falso'
+import { Factory } from 'hefty'
+import Game from '../../src/entities/game'
+import GameStat from '../../src/entities/game-stat'
 
 export default class GameStatFactory extends Factory<GameStat> {
   private availableGames: Game[]
@@ -29,14 +29,14 @@ export default class GameStatFactory extends Factory<GameStat> {
         defaultValue,
         globalValue: defaultValue,
         maxChange: randNumber({ max: 1000 }),
-        minTimeBetweenUpdates: randNumber({ max: 5 })
+        minTimeBetweenUpdates: randNumber({ max: 5 }),
       }
     })
   }
 
   global(): this {
     return this.state(() => ({
-      global: true
+      global: true,
     }))
   }
 }

@@ -1,7 +1,7 @@
 import request from 'supertest'
+import { APIKeyScope } from '../../../../src/entities/api-key'
 import GameStatFactory from '../../../fixtures/GameStatFactory'
 import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
-import { APIKeyScope } from '../../../../src/entities/api-key'
 
 describe('Game stats API - get', () => {
   it('should get a game stat if the scope is valid', async () => {
@@ -29,9 +29,6 @@ describe('Game stats API - get', () => {
   it('should return a 404 for a non-existent game stat', async () => {
     const [, token] = await createAPIKeyAndToken([APIKeyScope.READ_GAME_STATS])
 
-    await request(app)
-      .get('/v1/game-stats/blah')
-      .auth(token, { type: 'bearer' })
-      .expect(404)
+    await request(app).get('/v1/game-stats/blah').auth(token, { type: 'bearer' }).expect(404)
   })
 })

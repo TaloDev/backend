@@ -22,7 +22,7 @@ export default class UserTwoFactorAuth {
   toJSON() {
     return {
       id: this.id,
-      enabled: this.enabled
+      enabled: this.enabled,
     }
   }
 }

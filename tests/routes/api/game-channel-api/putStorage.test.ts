@@ -1,11 +1,11 @@
+import { randText, randWord } from '@ngneat/falso'
 import request from 'supertest'
 import { APIKeyScope } from '../../../../src/entities/api-key'
-import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
-import PlayerFactory from '../../../fixtures/PlayerFactory'
+import GameChannelStorageProp from '../../../../src/entities/game-channel-storage-prop'
 import GameChannelFactory from '../../../fixtures/GameChannelFactory'
 import GameChannelStoragePropFactory from '../../../fixtures/GameChannelStoragePropFactory'
-import GameChannelStorageProp from '../../../../src/entities/game-channel-storage-prop'
-import { randText, randWord } from '@ngneat/falso'
+import PlayerFactory from '../../../fixtures/PlayerFactory'
+import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
 import createSocketIdentifyMessage from '../../../utils/createSocketIdentifyMessage'
 import createTestSocket from '../../../utils/createTestSocket'
 
@@ -23,8 +23,8 @@ describe('Game channel API - putStorage', () => {
       .send({
         props: [
           { key: 'score', value: '100' },
-          { key: 'level', value: '5' }
-        ]
+          { key: 'level', value: '5' },
+        ],
       })
       .auth(token, { type: 'bearer' })
       .set('x-talo-alias', String(player.aliases[0].id))
@@ -51,21 +51,21 @@ describe('Game channel API - putStorage', () => {
     const player = await new PlayerFactory([apiKey.game]).one()
     channel.members.add(player.aliases[0])
 
-    const existingProp = await new GameChannelStoragePropFactory(channel).state(() => ({
-      key: 'score',
-      value: '50',
-      createdBy: player.aliases[0],
-      lastUpdatedBy: player.aliases[0]
-    })).one()
+    const existingProp = await new GameChannelStoragePropFactory(channel)
+      .state(() => ({
+        key: 'score',
+        value: '50',
+        createdBy: player.aliases[0],
+        lastUpdatedBy: player.aliases[0],
+      }))
+      .one()
 
     await em.persistAndFlush([channel, existingProp])
 
     const res = await request(app)
       .put(`/v1/game-channels/${channel.id}/storage`)
       .send({
-        props: [
-          { key: 'score', value: '100' }
-        ]
+        props: [{ key: 'score', value: '100' }],
       })
       .auth(token, { type: 'bearer' })
       .set('x-talo-alias', String(player.aliases[0].id))
@@ -87,21 +87,21 @@ describe('Game channel API - putStorage', () => {
     const player = await new PlayerFactory([apiKey.game]).one()
     channel.members.add(player.aliases[0])
 
-    const existingProp = await new GameChannelStoragePropFactory(channel).state(() => ({
-      key: 'score',
-      value: '50',
-      createdBy: player.aliases[0],
-      lastUpdatedBy: player.aliases[0]
-    })).one()
+    const existingProp = await new GameChannelStoragePropFactory(channel)
+      .state(() => ({
+        key: 'score',
+        value: '50',
+        createdBy: player.aliases[0],
+        lastUpdatedBy: player.aliases[0],
+      }))
+      .one()
 
     await em.persistAndFlush([channel, existingProp])
 
     const res = await request(app)
       .put(`/v1/game-channels/${channel.id}/storage`)
       .send({
-        props: [
-          { key: 'score', value: null }
-        ]
+        props: [{ key: 'score', value: null }],
       })
       .auth(token, { type: 'bearer' })
       .set('x-talo-alias', String(player.aliases[0].id))
@@ -113,7 +113,7 @@ describe('Game channel API - putStorage', () => {
 
     const props = await em.getRepository(GameChannelStorageProp).find({
       key: 'score',
-      gameChannel: channel
+      gameChannel: channel,
     })
     expect(props).toHaveLength(0)
   })
@@ -132,9 +132,9 @@ describe('Game channel API - putStorage', () => {
         props: [
           {
             key: randText({ charCount: 129 }),
-            value: '100'
-          }
-        ]
+            value: '100',
+          },
+        ],
       })
       .auth(token, { type: 'bearer' })
       .set('x-talo-alias', String(player.aliases[0].id))
@@ -158,9 +158,9 @@ describe('Game channel API - putStorage', () => {
         props: [
           {
             key: 'description',
-            value: randText({ charCount: 513 })
-          }
-        ]
+            value: randText({ charCount: 513 }),
+          },
+        ],
       })
       .auth(token, { type: 'bearer' })
       .set('x-talo-alias', String(player.aliases[0].id))
@@ -182,8 +182,8 @@ describe('Game channel API - putStorage', () => {
       .put(`/v1/game-channels/${channel.id}/storage`)
       .send({
         props: {
-          score: '100'
-        }
+          score: '100',
+        },
       })
       .auth(token, { type: 'bearer' })
       .set('x-talo-alias', String(player.aliases[0].id))
@@ -203,9 +203,7 @@ describe('Game channel API - putStorage', () => {
     await request(app)
       .put(`/v1/game-channels/${channel.id}/storage`)
       .send({
-        props: [
-          { key: 'score', value: '100' }
-        ]
+        props: [{ key: 'score', value: '100' }],
       })
       .auth(token, { type: 'bearer' })
       .set('x-talo-alias', String(player.aliases[0].id))
@@ -226,9 +224,7 @@ describe('Game channel API - putStorage', () => {
     const res = await request(app)
       .put(`/v1/game-channels/${channel.id}/storage`)
       .send({
-        props: [
-          { key: 'score', value: '100' }
-        ]
+        props: [{ key: 'score', value: '100' }],
       })
       .auth(token, { type: 'bearer' })
       .set('x-talo-alias', String(player.aliases[0].id))
@@ -241,7 +237,7 @@ describe('Game channel API - putStorage', () => {
     const { identifyMessage, ticket, player, token } = await createSocketIdentifyMessage([
       APIKeyScope.READ_PLAYERS,
       APIKeyScope.READ_GAME_CHANNELS,
-      APIKeyScope.WRITE_GAME_CHANNELS
+      APIKeyScope.WRITE_GAME_CHANNELS,
     ])
 
     const channel = await new GameChannelFactory(player.game).one()
@@ -253,9 +249,7 @@ describe('Game channel API - putStorage', () => {
       await request(app)
         .put(`/v1/game-channels/${channel.id}/storage`)
         .send({
-          props: [
-            { key: 'score', value: '100' }
-          ]
+          props: [{ key: 'score', value: '100' }],
         })
         .auth(token, { type: 'bearer' })
         .set('x-talo-alias', String(player.aliases[0].id))
@@ -280,9 +274,7 @@ describe('Game channel API - putStorage', () => {
     await request(app)
       .put(`/v1/game-channels/${channel.id}/storage`)
       .send({
-        props: [
-          { key: 'score', value: '100' }
-        ]
+        props: [{ key: 'score', value: '100' }],
       })
       .auth(token, { type: 'bearer' })
       .set('x-talo-alias', String(player.aliases[0].id))
@@ -297,9 +289,7 @@ describe('Game channel API - putStorage', () => {
     const res = await request(app)
       .put('/v1/game-channels/999999/storage')
       .send({
-        props: [
-          { key: 'score', value: '100' }
-        ]
+        props: [{ key: 'score', value: '100' }],
       })
       .auth(token, { type: 'bearer' })
       .set('x-talo-alias', String(player.aliases[0].id))
@@ -316,9 +306,7 @@ describe('Game channel API - putStorage', () => {
     const res = await request(app)
       .put(`/v1/game-channels/${channel.id}/storage`)
       .send({
-        props: [
-          { key: 'score', value: '100' }
-        ]
+        props: [{ key: 'score', value: '100' }],
       })
       .auth(token, { type: 'bearer' })
       .set('x-talo-alias', '999999')
@@ -337,7 +325,7 @@ describe('Game channel API - putStorage', () => {
     const res = await request(app)
       .put(`/v1/game-channels/${channel.id}/storage`)
       .send({
-        props: []
+        props: [],
       })
       .auth(token, { type: 'bearer' })
       .set('x-talo-alias', String(player.aliases[0].id))
@@ -355,12 +343,14 @@ describe('Game channel API - putStorage', () => {
     const player = await new PlayerFactory([apiKey.game]).one()
     channel.members.add(player.aliases[0])
 
-    const existingProp = await new GameChannelStoragePropFactory(channel).state(() => ({
-      key: randWord(),
-      value: '50',
-      createdBy: player.aliases[0],
-      lastUpdatedBy: player.aliases[0]
-    })).one()
+    const existingProp = await new GameChannelStoragePropFactory(channel)
+      .state(() => ({
+        key: randWord(),
+        value: '50',
+        createdBy: player.aliases[0],
+        lastUpdatedBy: player.aliases[0],
+      }))
+      .one()
 
     await em.persistAndFlush([channel, existingProp])
 
@@ -371,8 +361,8 @@ describe('Game channel API - putStorage', () => {
           { key: existingProp.key, value: randText({ charCount: 513 }) }, // will fail - value too long
           { key: 'score', value: '100' }, // will succeed
           { key: randText({ charCount: 129 }), value: '200' }, // will fail - key too long
-          { key: 'description', value: randText({ charCount: 513 }) } // will fail - value too long
-        ]
+          { key: 'description', value: randText({ charCount: 513 }) }, // will fail - value too long
+        ],
       })
       .auth(token, { type: 'bearer' })
       .set('x-talo-alias', String(player.aliases[0].id))

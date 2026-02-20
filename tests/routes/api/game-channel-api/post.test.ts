@@ -1,9 +1,9 @@
+import { randText } from '@ngneat/falso'
 import request from 'supertest'
 import { APIKeyScope } from '../../../../src/entities/api-key'
-import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
-import PlayerFactory from '../../../fixtures/PlayerFactory'
-import { randText } from '@ngneat/falso'
 import GameChannel from '../../../../src/entities/game-channel'
+import PlayerFactory from '../../../fixtures/PlayerFactory'
+import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
 
 describe('Game channel API - post', () => {
   it('should create a game channel if the scope is valid', async () => {
@@ -65,17 +65,13 @@ describe('Game channel API - post', () => {
       .post('/v1/game-channels')
       .send({
         name: 'Guild chat',
-        props: [
-          { key: 'guildId', value: '213432' }
-        ]
+        props: [{ key: 'guildId', value: '213432' }],
       })
       .auth(token, { type: 'bearer' })
       .set('x-talo-alias', String(player.aliases[0].id))
       .expect(200)
 
-    expect(res.body.channel.props).toStrictEqual([
-      { key: 'guildId', value: '213432' }
-    ])
+    expect(res.body.channel.props).toStrictEqual([{ key: 'guildId', value: '213432' }])
   })
 
   it('should reject props where the key is greater than 128 characters', async () => {
@@ -90,9 +86,9 @@ describe('Game channel API - post', () => {
         props: [
           {
             key: randText({ charCount: 129 }),
-            value: '1'
-          }
-        ]
+            value: '1',
+          },
+        ],
       })
       .auth(token, { type: 'bearer' })
       .set('x-talo-alias', String(player.aliases[0].id))
@@ -100,8 +96,8 @@ describe('Game channel API - post', () => {
 
     expect(res.body).toStrictEqual({
       errors: {
-        props: ['Prop key length (129) exceeds 128 characters']
-      }
+        props: ['Prop key length (129) exceeds 128 characters'],
+      },
     })
   })
 
@@ -117,9 +113,9 @@ describe('Game channel API - post', () => {
         props: [
           {
             key: 'bio',
-            value: randText({ charCount: 513 })
-          }
-        ]
+            value: randText({ charCount: 513 }),
+          },
+        ],
       })
       .auth(token, { type: 'bearer' })
       .set('x-talo-alias', String(player.aliases[0].id))
@@ -127,8 +123,8 @@ describe('Game channel API - post', () => {
 
     expect(res.body).toStrictEqual({
       errors: {
-        props: ['Prop value length (513) exceeds 512 characters']
-      }
+        props: ['Prop value length (513) exceeds 512 characters'],
+      },
     })
   })
 
@@ -178,9 +174,9 @@ describe('Game channel API - post', () => {
         props: [
           {
             key: 'bio',
-            value: randText({ charCount: 500 })
-          }
-        ]
+            value: randText({ charCount: 500 }),
+          },
+        ],
       })
       .auth(token, { type: 'bearer' })
       .set('x-talo-alias', String(player.aliases[0].id))
@@ -188,8 +184,8 @@ describe('Game channel API - post', () => {
 
     expect(res.body).toStrictEqual({
       errors: {
-        props: ['Unknown error']
-      }
+        props: ['Unknown error'],
+      },
     })
   })
 })

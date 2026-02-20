@@ -1,6 +1,6 @@
 import * as Sentry from '@sentry/node'
-import { sendMessage, SocketMessageRequest } from './socketMessage'
 import SocketConnection from '../socketConnection'
+import { sendMessage, SocketMessageRequest } from './socketMessage'
 
 export type SocketErrorCode = [
   'INVALID_MESSAGE',
@@ -12,18 +12,22 @@ export type SocketErrorCode = [
   'INVALID_SOCKET_TOKEN',
   'INVALID_SESSION_TOKEN',
   'MISSING_ACCESS_KEY_SCOPES',
-  'RATE_LIMIT_EXCEEDED'
+  'RATE_LIMIT_EXCEEDED',
 ][number]
 
 const validSentryErrorCodes: SocketErrorCode[] = [
   'UNHANDLED_REQUEST',
   'ROUTING_ERROR',
   'LISTENER_ERROR',
-  'RATE_LIMIT_EXCEEDED'
+  'RATE_LIMIT_EXCEEDED',
 ]
 
 export default class SocketError {
-  constructor(public code: SocketErrorCode, public message: string, public cause?: string) { }
+  constructor(
+    public code: SocketErrorCode,
+    public message: string,
+    public cause?: string,
+  ) {}
 }
 
 type SocketErrorReq = SocketMessageRequest | 'unknown'
@@ -32,7 +36,7 @@ export async function sendError({
   conn,
   req,
   error,
-  originalError
+  originalError,
 }: {
   conn: SocketConnection
   req: SocketErrorReq
@@ -59,6 +63,6 @@ export async function sendError({
     req,
     message: error.message,
     errorCode: error.code,
-    cause: error.cause
+    cause: error.cause,
   })
 }

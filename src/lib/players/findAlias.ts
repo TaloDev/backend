@@ -6,7 +6,7 @@ export async function findAliasFromIdentifyRequest({
   em,
   key,
   service,
-  identifier
+  identifier,
 }: {
   em: EntityManager
   key: APIKey
@@ -17,7 +17,7 @@ export async function findAliasFromIdentifyRequest({
     service: service.trim(),
     identifier: identifier.trim(),
     player: {
-      game: key.game
-    }
+      game: key.game,
+    },
   })
 }

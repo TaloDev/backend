@@ -2,45 +2,45 @@ name: Tag
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
 
 jobs:
   tag:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
-    
-    - name: Check version change
-      id: check
-      uses: EndBug/version-check@v2
+      - uses: actions/checkout@v4
 
-    - name: Create tag
-      if: steps.check.outputs.changed == 'true'
-      uses: tvdias/github-tagger@v0.0.2
-      with:
-        repo-token: ${{ secrets.GITHUB_TOKEN }}
-        tag: ${{ steps.check.outputs.version }}
+      - name: Check version change
+        id: check
+        uses: EndBug/version-check@v2
 
-    - name: Trigger Docker workflow
-      if: steps.check.outputs.changed == 'true'
-      uses: actions/github-script@v7
-      with:
-        script: |
-          github.rest.actions.createWorkflowDispatch({
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-            workflow_id: 'docker.yml',
-            ref: '${{ steps.check.outputs.version }}'
-          })
+      - name: Create tag
+        if: steps.check.outputs.changed == 'true'
+        uses: tvdias/github-tagger@v0.0.2
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          tag: ${{ steps.check.outputs.version }}
 
-    - name: Trigger Release workflow
-      if: steps.check.outputs.changed == 'true'
-      uses: actions/github-script@v7
-      with:
-        script: |
-          github.rest.actions.createWorkflowDispatch({
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-            workflow_id: 'create-release.yml',
-            ref: '${{ steps.check.outputs.version }}'
-          })
+      - name: Trigger Docker workflow
+        if: steps.check.outputs.changed == 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.actions.createWorkflowDispatch({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              workflow_id: 'docker.yml',
+              ref: '${{ steps.check.outputs.version }}'
+            })
+
+      - name: Trigger Release workflow
+        if: steps.check.outputs.changed == 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.actions.createWorkflowDispatch({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              workflow_id: 'create-release.yml',
+              ref: '${{ steps.check.outputs.version }}'
+            })

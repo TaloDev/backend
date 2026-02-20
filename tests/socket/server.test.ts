@@ -1,5 +1,5 @@
-import createAPIKeyAndToken from '../utils/createAPIKeyAndToken'
 import { createSocketTicket } from '../../src/lib/sockets/createSocketTicket'
+import createAPIKeyAndToken from '../utils/createAPIKeyAndToken'
 import createTestSocket from '../utils/createTestSocket'
 
 describe('Socket server', () => {
@@ -8,30 +8,42 @@ describe('Socket server', () => {
 
     const ticket = await createSocketTicket(redis, apiKey, false)
 
-    await createTestSocket(`/?ticket=${ticket}`, async (client) => {
-      await client.expectJsonToStrictEqual({
-        res: 'v1.connected',
-        data: {}
-      })
-    }, {
-      waitForReady: false
-    })
+    await createTestSocket(
+      `/?ticket=${ticket}`,
+      async (client) => {
+        await client.expectJsonToStrictEqual({
+          res: 'v1.connected',
+          data: {},
+        })
+      },
+      {
+        waitForReady: false,
+      },
+    )
   })
 
   it('should close connections without an auth ticket', async () => {
-    await createTestSocket('/', async (client) => {
-      await client.expectClosed(3000)
-    }, {
-      waitForReady: false
-    })
+    await createTestSocket(
+      '/',
+      async (client) => {
+        await client.expectClosed(3000)
+      },
+      {
+        waitForReady: false,
+      },
+    )
   })
 
   it('should close connections message when sending an invalid auth ticket', async () => {
-    await createTestSocket('/?ticket=abc123', async (client) => {
-      await client.expectClosed(3000)
-    }, {
-      waitForReady: false
-    })
+    await createTestSocket(
+      '/?ticket=abc123',
+      async (client) => {
+        await client.expectClosed(3000)
+      },
+      {
+        waitForReady: false,
+      },
+    )
   })
 
   it('should close connections where the socket ticket has a revoked api key', async () => {
@@ -41,10 +53,14 @@ describe('Socket server', () => {
 
     const ticket = await createSocketTicket(redis, apiKey, false)
 
-    await createTestSocket(`/?ticket=${ticket}`, async (client) => {
-      await client.expectClosed(3000)
-    }, {
-      waitForReady: false
-    })
+    await createTestSocket(
+      `/?ticket=${ticket}`,
+      async (client) => {
+        await client.expectClosed(3000)
+      },
+      {
+        waitForReady: false,
+      },
+    )
   })
 })

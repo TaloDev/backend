@@ -1,13 +1,13 @@
-import { apiRoute, withMiddleware } from '../../../lib/routing/router'
-import { requireScopes } from '../../../middleware/policy-middleware'
-import { APIKeyScope } from '../../../entities/api-key'
 import bcrypt from 'bcrypt'
-import emailRegex from '../../../lib/lang/emailRegex'
-import { createPlayerAuthActivity, loadAliasWithAuth } from './common'
+import { APIKeyScope } from '../../../entities/api-key'
 import { PlayerAuthActivityType } from '../../../entities/player-auth-activity'
-import { playerHeaderSchema } from '../../../lib/validation/playerHeaderSchema'
+import emailRegex from '../../../lib/lang/emailRegex'
+import { apiRoute, withMiddleware } from '../../../lib/routing/router'
 import { playerAliasHeaderSchema } from '../../../lib/validation/playerAliasHeaderSchema'
+import { playerHeaderSchema } from '../../../lib/validation/playerHeaderSchema'
 import { sessionHeaderSchema } from '../../../lib/validation/sessionHeaderSchema'
+import { requireScopes } from '../../../middleware/policy-middleware'
+import { createPlayerAuthActivity, loadAliasWithAuth } from './common'
 import { toggleVerificationDocs } from './docs'
 
 export const toggleVerificationRoute = apiRoute({
@@ -18,17 +18,25 @@ export const toggleVerificationRoute = apiRoute({
     headers: z.looseObject({
       'x-talo-player': playerHeaderSchema,
       'x-talo-alias': playerAliasHeaderSchema,
-      'x-talo-session': sessionHeaderSchema
+      'x-talo-session': sessionHeaderSchema,
     }),
     body: z.object({
       currentPassword: z.string().meta({ description: 'The current password of the player' }),
-      verificationEnabled: z.boolean().meta({ description: 'The new verification status for the player account' }),
-      email: z.string().optional().meta({ description: 'Required when attempting to enable verification if the player does not currently have an email address set' })
-    })
+      verificationEnabled: z
+        .boolean()
+        .meta({ description: 'The new verification status for the player account' }),
+      email: z
+        .string()
+        .optional()
+        .meta({
+          description:
+            'Required when attempting to enable verification if the player does not currently have an email address set',
+        }),
+    }),
   }),
   middleware: withMiddleware(
     requireScopes([APIKeyScope.READ_PLAYERS, APIKeyScope.WRITE_PLAYERS]),
-    loadAliasWithAuth
+    loadAliasWithAuth,
   ),
   handler: async (ctx) => {
     const { currentPassword, verificationEnabled, email } = ctx.state.validated.body
@@ -44,14 +52,14 @@ export const toggleVerificationRoute = apiRoute({
         type: PlayerAuthActivityType.TOGGLE_VERIFICATION_FAILED,
         extra: {
           errorCode: 'VERIFICATION_EMAIL_REQUIRED',
-          verificationEnabled: Boolean(verificationEnabled)
-        }
+          verificationEnabled: Boolean(verificationEnabled),
+        },
       })
       await em.flush()
 
       return ctx.throw(400, {
         message: 'An email address is required to enable verification',
-        errorCode: 'VERIFICATION_EMAIL_REQUIRED'
+        errorCode: 'VERIFICATION_EMAIL_REQUIRED',
       })
     }
 
@@ -61,14 +69,14 @@ export const toggleVerificationRoute = apiRoute({
         type: PlayerAuthActivityType.TOGGLE_VERIFICATION_FAILED,
         extra: {
           errorCode: 'INVALID_CREDENTIALS',
-          verificationEnabled: Boolean(verificationEnabled)
-        }
+          verificationEnabled: Boolean(verificationEnabled),
+        },
       })
       await em.flush()
 
       return ctx.throw(403, {
         message: 'Current password is incorrect',
-        errorCode: 'INVALID_CREDENTIALS'
+        errorCode: 'INVALID_CREDENTIALS',
       })
     }
 
@@ -82,14 +90,14 @@ export const toggleVerificationRoute = apiRoute({
           type: PlayerAuthActivityType.TOGGLE_VERIFICATION_FAILED,
           extra: {
             errorCode: 'INVALID_EMAIL',
-            verificationEnabled: Boolean(verificationEnabled)
-          }
+            verificationEnabled: Boolean(verificationEnabled),
+          },
         })
         await em.flush()
 
         return ctx.throw(400, {
           message: 'Invalid email address',
-          errorCode: 'INVALID_EMAIL'
+          errorCode: 'INVALID_EMAIL',
         })
       }
     }
@@ -97,14 +105,14 @@ export const toggleVerificationRoute = apiRoute({
     createPlayerAuthActivity(ctx, alias.player, {
       type: PlayerAuthActivityType.VERIFICATION_TOGGLED,
       extra: {
-        verificationEnabled: alias.player.auth.verificationEnabled
-      }
+        verificationEnabled: alias.player.auth.verificationEnabled,
+      },
     })
 
     await em.flush()
 
     return {
-      status: 204
+      status: 204,
     }
-  }
+  },
 })

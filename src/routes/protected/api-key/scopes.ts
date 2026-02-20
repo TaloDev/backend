@@ -1,6 +1,6 @@
-import { protectedRoute } from '../../../lib/routing/router'
-import { APIKeyScope } from '../../../entities/api-key'
 import { groupBy } from 'lodash'
+import { APIKeyScope } from '../../../entities/api-key'
+import { protectedRoute } from '../../../lib/routing/router'
 
 type ScopeKey = keyof typeof APIKeyScope
 
@@ -15,8 +15,8 @@ export const scopesRoute = protectedRoute({
     return {
       status: 200,
       body: {
-        scopes: groupBy(scopes, (scope) => scope.split(':')[1])
-      }
+        scopes: groupBy(scopes, (scope) => scope.split(':')[1]),
+      },
     }
-  }
+  },
 })

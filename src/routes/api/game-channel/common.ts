@@ -1,9 +1,9 @@
 import type { Next } from 'koa'
 import { EntityManager } from '@mikro-orm/mysql'
-import { APIRouteContext } from '../../../lib/routing/context'
-import { PlayerAliasRouteState } from '../../../middleware/player-alias-middleware'
 import GameChannel from '../../../entities/game-channel'
 import PlayerAlias from '../../../entities/player-alias'
+import { APIRouteContext } from '../../../lib/routing/context'
+import { PlayerAliasRouteState } from '../../../middleware/player-alias-middleware'
 
 type GameChannelRouteState = PlayerAliasRouteState & {
   channel: GameChannel
@@ -13,12 +13,15 @@ export async function loadChannel(ctx: APIRouteContext<GameChannelRouteState>, n
   const { id } = ctx.params as { id: string }
   const em = ctx.em
 
-  const channel = await em.repo(GameChannel).findOne({
-    id: Number(id),
-    game: ctx.state.game
-  }, {
-    populate: ['members:ref']
-  })
+  const channel = await em.repo(GameChannel).findOne(
+    {
+      id: Number(id),
+      game: ctx.state.game,
+    },
+    {
+      populate: ['members:ref'],
+    },
+  )
 
   if (!channel) {
     return ctx.throw(404, 'Channel not found')
@@ -36,14 +39,14 @@ export async function joinChannel(
   em: EntityManager,
   wss: APIRouteContext['wss'],
   channel: GameChannel,
-  playerAlias: PlayerAlias
+  playerAlias: PlayerAlias,
 ) {
   if (!channel.hasMember(playerAlias.id)) {
     channel.members.add(playerAlias)
 
     await channel.sendMessageToMembers(wss, 'v1.channels.player-joined', {
       channel,
-      playerAlias
+      playerAlias,
     })
 
     await em.flush()

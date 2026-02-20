@@ -1,21 +1,21 @@
 import { EntityManager } from '@mikro-orm/mysql'
 import { uniqWith } from 'lodash'
-import { apiRoute, withMiddleware } from '../../../lib/routing/router'
-import { requireScopes } from '../../../middleware/policy-middleware'
 import { APIKeyScope } from '../../../entities/api-key'
+import GameSave from '../../../entities/game-save'
 import Player from '../../../entities/player'
 import PlayerAlias from '../../../entities/player-alias'
-import GameSave from '../../../entities/game-save'
 import PlayerGameStat from '../../../entities/player-game-stat'
+import { apiRoute, withMiddleware } from '../../../lib/routing/router'
+import { requireScopes } from '../../../middleware/policy-middleware'
 import { mergeDocs } from './docs'
 
-async function findMergeAliasServiceConflicts(
-  em: EntityManager,
-  player1: Player,
-  player2: Player
-) {
-  const player1Aliases = await em.repo(PlayerAlias).find({ player: player1 }, { fields: ['service'] })
-  const player2Aliases = await em.repo(PlayerAlias).find({ player: player2 }, { fields: ['service'] })
+async function findMergeAliasServiceConflicts(em: EntityManager, player1: Player, player2: Player) {
+  const player1Aliases = await em
+    .repo(PlayerAlias)
+    .find({ player: player1 }, { fields: ['service'] })
+  const player2Aliases = await em
+    .repo(PlayerAlias)
+    .find({ player: player2 }, { fields: ['service'] })
 
   const player1Services = new Set(player1Aliases.map((a) => a.service))
   const player2Services = new Set(player2Aliases.map((a) => a.service))
@@ -29,13 +29,15 @@ export const mergeRoute = apiRoute({
   docs: mergeDocs,
   schema: (z) => ({
     body: z.object({
-      playerId1: z.uuid().meta({ description: 'The first player ID - the second player will be merged into this player' }),
-      playerId2: z.uuid().meta({ description: 'The second player ID' })
-    })
+      playerId1: z
+        .uuid()
+        .meta({
+          description: 'The first player ID - the second player will be merged into this player',
+        }),
+      playerId2: z.uuid().meta({ description: 'The second player ID' }),
+    }),
   }),
-  middleware: withMiddleware(
-    requireScopes([APIKeyScope.READ_PLAYERS, APIKeyScope.WRITE_PLAYERS])
-  ),
+  middleware: withMiddleware(requireScopes([APIKeyScope.READ_PLAYERS, APIKeyScope.WRITE_PLAYERS])),
   handler: async (ctx) => {
     const { playerId1, playerId2 } = ctx.state.validated.body
     const em = ctx.em.fork()
@@ -46,12 +48,15 @@ export const mergeRoute = apiRoute({
 
     const key = ctx.state.key
 
-    const player1 = await em.repo(Player).findOne({
-      id: playerId1,
-      game: key.game
-    }, {
-      populate: ['auth']
-    })
+    const player1 = await em.repo(Player).findOne(
+      {
+        id: playerId1,
+        game: key.game,
+      },
+      {
+        populate: ['auth'],
+      },
+    )
 
     if (!player1) {
       return ctx.throw(404, `Player ${playerId1} does not exist`)
@@ -60,12 +65,15 @@ export const mergeRoute = apiRoute({
       return ctx.throw(400, `Player ${playerId1} has authentication enabled and cannot be merged`)
     }
 
-    const player2 = await em.repo(Player).findOne({
-      id: playerId2,
-      game: key.game
-    }, {
-      populate: ['auth']
-    })
+    const player2 = await em.repo(Player).findOne(
+      {
+        id: playerId2,
+        game: key.game,
+      },
+      {
+        populate: ['auth'],
+      },
+    )
 
     if (!player2) {
       return ctx.throw(404, `Player ${playerId2} does not exist`)
@@ -76,7 +84,10 @@ export const mergeRoute = apiRoute({
 
     const sharedServices = await findMergeAliasServiceConflicts(em, player1, player2)
     if (sharedServices.size > 0) {
-      return ctx.throw(400, `Cannot merge players: both players have aliases with the following service(s): ${Array.from(sharedServices).join(', ')}`)
+      return ctx.throw(
+        400,
+        `Cannot merge players: both players have aliases with the following service(s): ${Array.from(sharedServices).join(', ')}`,
+      )
     }
 
     const updatedPlayer = await em.transactional(async (trx) => {
@@ -95,7 +106,7 @@ export const mergeRoute = apiRoute({
 
       await ctx.clickhouse.exec({
         query: 'DELETE FROM player_sessions WHERE player_id = {playerId:String}',
-        query_params: { playerId: player2.id }
+        query_params: { playerId: player2.id },
       })
       return player1
     })
@@ -105,8 +116,8 @@ export const mergeRoute = apiRoute({
     return {
       status: 200,
       body: {
-        player: updatedPlayer
-      }
+        player: updatedPlayer,
+      },
     }
-  }
+  },
 })

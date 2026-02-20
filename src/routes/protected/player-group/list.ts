@@ -1,6 +1,6 @@
+import PlayerGroup from '../../../entities/player-group'
 import { protectedRoute, withMiddleware } from '../../../lib/routing/router'
 import { loadGame } from '../../../middleware/game-middleware'
-import PlayerGroup from '../../../entities/player-group'
 
 export const listRoute = protectedRoute({
   method: 'get',
@@ -12,10 +12,12 @@ export const listRoute = protectedRoute({
     return {
       status: 200,
       body: {
-        groups: await Promise.all(groups.map((group) => {
-          return group.toJSONWithCount(ctx.state.includeDevData)
-        }))
-      }
+        groups: await Promise.all(
+          groups.map((group) => {
+            return group.toJSONWithCount(ctx.state.includeDevData)
+          }),
+        ),
+      },
     }
-  }
+  },
 })

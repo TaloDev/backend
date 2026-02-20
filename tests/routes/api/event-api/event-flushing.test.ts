@@ -1,9 +1,9 @@
+import Redis from 'ioredis'
 import { APIKeyScope } from '../../../../src/entities/api-key'
-import PlayerFactory from '../../../fixtures/PlayerFactory'
-import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
 import Event, { ClickHouseEvent } from '../../../../src/entities/event'
 import { FlushEventsQueueHandler } from '../../../../src/lib/queues/game-metrics/flush-events-queue-handler'
-import Redis from 'ioredis'
+import PlayerFactory from '../../../fixtures/PlayerFactory'
+import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
 
 describe('Events API - event flushing', () => {
   afterEach(() => {
@@ -27,7 +27,10 @@ describe('Events API - event flushing', () => {
     const event2 = new Event().construct('Shoot bow', apiKey.game)
     event2.playerAlias = alias
     event2.createdAt = new Date()
-    event2.setProps([{ key: 'type', value: 'quick' }, { key: 'damage', value: '8' }])
+    event2.setProps([
+      { key: 'type', value: 'quick' },
+      { key: 'damage', value: '8' },
+    ])
 
     await handler.add(event1)
     await handler.add(event2)
@@ -37,15 +40,19 @@ describe('Events API - event flushing', () => {
     consoleSpy.mockClear()
 
     await vi.waitUntil(async () => {
-      const events = await clickhouse.query({
-        query: `SELECT * FROM events WHERE game_id = ${apiKey.game.id}`,
-        format: 'JSONEachRow'
-      }).then((res) => res.json<ClickHouseEvent>())
+      const events = await clickhouse
+        .query({
+          query: `SELECT * FROM events WHERE game_id = ${apiKey.game.id}`,
+          format: 'JSONEachRow',
+        })
+        .then((res) => res.json<ClickHouseEvent>())
 
-      const props = await clickhouse.query({
-        query: `SELECT * FROM event_props ep INNER JOIN events e ON e.id = ep.event_id WHERE game_id = ${apiKey.game.id}`,
-        format: 'JSONEachRow'
-      }).then((res) => res.json<ClickHouseEvent>())
+      const props = await clickhouse
+        .query({
+          query: `SELECT * FROM event_props ep INNER JOIN events e ON e.id = ep.event_id WHERE game_id = ${apiKey.game.id}`,
+          format: 'JSONEachRow',
+        })
+        .then((res) => res.json<ClickHouseEvent>())
 
       return events.length === 2 && props.length == 2
     })
@@ -82,10 +89,12 @@ describe('Events API - event flushing', () => {
     consoleSpy.mockClear()
 
     await vi.waitUntil(async () => {
-      const events = await clickhouse.query({
-        query: `SELECT * FROM events WHERE game_id = ${apiKey.game.id}`,
-        format: 'JSONEachRow'
-      }).then((res) => res.json<ClickHouseEvent>())
+      const events = await clickhouse
+        .query({
+          query: `SELECT * FROM events WHERE game_id = ${apiKey.game.id}`,
+          format: 'JSONEachRow',
+        })
+        .then((res) => res.json<ClickHouseEvent>())
 
       return events.length === 1
     })

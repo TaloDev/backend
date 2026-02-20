@@ -1,45 +1,52 @@
 import request from 'supertest'
-import { UserType } from '../../../../src/entities/user'
-import createUserAndToken from '../../../utils/createUserAndToken'
-import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
-import userPermissionProvider from '../../../utils/userPermissionProvider'
 import { IntegrationType } from '../../../../src/entities/integration'
+import { UserType } from '../../../../src/entities/user'
 import IntegrationConfigFactory from '../../../fixtures/IntegrationConfigFactory'
 import IntegrationFactory from '../../../fixtures/IntegrationFactory'
+import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
+import createUserAndToken from '../../../utils/createUserAndToken'
+import userPermissionProvider from '../../../utils/userPermissionProvider'
 
 describe('Integration - index', () => {
-  it.each(userPermissionProvider([
-    UserType.ADMIN
-  ]))('should return a %i for a %s user', async (statusCode, _, type) => {
-    const [organisation, game] = await createOrganisationAndGame()
-    const [token] = await createUserAndToken({ type }, organisation)
+  it.each(userPermissionProvider([UserType.ADMIN]))(
+    'should return a %i for a %s user',
+    async (statusCode, _, type) => {
+      const [organisation, game] = await createOrganisationAndGame()
+      const [token] = await createUserAndToken({ type }, organisation)
 
-    const config = await new IntegrationConfigFactory().one()
-    const integrations = await new IntegrationFactory().construct(IntegrationType.STEAMWORKS, game, config).many(3)
-    await em.persistAndFlush(integrations)
+      const config = await new IntegrationConfigFactory().one()
+      const integrations = await new IntegrationFactory()
+        .construct(IntegrationType.STEAMWORKS, game, config)
+        .many(3)
+      await em.persistAndFlush(integrations)
 
-    const res = await request(app)
-      .get(`/games/${game.id}/integrations`)
-      .auth(token, { type: 'bearer' })
-      .expect(statusCode)
+      const res = await request(app)
+        .get(`/games/${game.id}/integrations`)
+        .auth(token, { type: 'bearer' })
+        .expect(statusCode)
 
-    if (statusCode === 200) {
-      expect(res.body.integrations).toHaveLength(integrations.length)
-      for (const integration of res.body.integrations) {
-        expect(integration.config.appId).toBeDefined()
-        expect(integration.config.apiKey).not.toBeDefined()
+      if (statusCode === 200) {
+        expect(res.body.integrations).toHaveLength(integrations.length)
+        for (const integration of res.body.integrations) {
+          expect(integration.config.appId).toBeDefined()
+          expect(integration.config.apiKey).not.toBeDefined()
+        }
+      } else {
+        expect(res.body).toStrictEqual({
+          message: 'You do not have permissions to view integrations',
+        })
       }
-    } else {
-      expect(res.body).toStrictEqual({ message: 'You do not have permissions to view integrations' })
-    }
-  })
+    },
+  )
 
   it('should not return integrations for a game the user has no access to', async () => {
     const [, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({ type: UserType.ADMIN })
 
     const config = await new IntegrationConfigFactory().one()
-    const integrations = await new IntegrationFactory().construct(IntegrationType.STEAMWORKS, game, config).many(3)
+    const integrations = await new IntegrationFactory()
+      .construct(IntegrationType.STEAMWORKS, game, config)
+      .many(3)
     await em.persistAndFlush(integrations)
 
     const res = await request(app)

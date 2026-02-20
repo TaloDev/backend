@@ -1,9 +1,9 @@
 import request from 'supertest'
-import createUserAndToken from '../../../utils/createUserAndToken'
-import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
-import GameFeedbackFactory from '../../../fixtures/GameFeedbackFactory'
-import GameFeedbackCategoryFactory from '../../../fixtures/GameFeedbackCategoryFactory'
 import GameFeedbackCategory from '../../../../src/entities/game-feedback-category'
+import GameFeedbackCategoryFactory from '../../../fixtures/GameFeedbackCategoryFactory'
+import GameFeedbackFactory from '../../../fixtures/GameFeedbackFactory'
+import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
+import createUserAndToken from '../../../utils/createUserAndToken'
 
 describe('Game feedback - index categories', () => {
   it('should return a list of categories', async () => {

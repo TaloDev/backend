@@ -1,8 +1,8 @@
 import { Entity, Index, ManyToOne, PrimaryKey, Property } from '@mikro-orm/mysql'
-import { MAX_KEY_LENGTH, MAX_VALUE_LENGTH } from './prop'
+import Redis from 'ioredis'
 import GameChannel from './game-channel'
 import PlayerAlias from './player-alias'
-import Redis from 'ioredis'
+import { MAX_KEY_LENGTH, MAX_VALUE_LENGTH } from './prop'
 
 @Entity()
 @Index({ properties: ['gameChannel', 'key'] })
@@ -56,7 +56,7 @@ export default class GameChannelStorageProp {
       createdBy: this.createdBy,
       lastUpdatedBy: this.lastUpdatedBy,
       createdAt: this.createdAt.toISOString(),
-      updatedAt: this.updatedAt.toISOString()
+      updatedAt: this.updatedAt.toISOString(),
     }
   }
 }

@@ -1,9 +1,9 @@
 import request from 'supertest'
-import GameChannelFactory from '../../../fixtures/GameChannelFactory'
 import { APIKeyScope } from '../../../../src/entities/api-key'
-import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
-import PlayerFactory from '../../../fixtures/PlayerFactory'
+import GameChannelFactory from '../../../fixtures/GameChannelFactory'
 import GameChannelStoragePropFactory from '../../../fixtures/GameChannelStoragePropFactory'
+import PlayerFactory from '../../../fixtures/PlayerFactory'
+import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
 
 describe('Game channel API - getStorage', () => {
   it('should return a storage prop from Redis if it exists in the cache', async () => {
@@ -40,7 +40,9 @@ describe('Game channel API - getStorage', () => {
     channel.owner = player.aliases[0]
     channel.members.add(player.aliases[0])
 
-    const prop = await new GameChannelStoragePropFactory(channel).state(() => ({ key: 'testKey' })).one()
+    const prop = await new GameChannelStoragePropFactory(channel)
+      .state(() => ({ key: 'testKey' }))
+      .one()
     await em.persistAndFlush([channel, player, prop])
 
     const res = await request(app)

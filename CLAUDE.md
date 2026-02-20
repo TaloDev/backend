@@ -7,6 +7,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 Talo is a self-hostable game development services platform providing leaderboards, player authentication, peer-to-peer multiplayer, event tracking, and more. The backend is built with Koa (Node.js web framework) using `koa-tree-router` for routing.
 
 ### Testing
+
 ```bash
 npm test                # Run all tests with Vitest
 npm test path/to/file   # Run specific test file
@@ -16,18 +17,20 @@ npm test -- --coverage  # Run with coverage report
 Tests run against fresh Docker containers. Environment variables from `.env` are combined with `envs/.env.test`.
 
 ### Building & Linting
+
 ```bash
-npm run build           # Compile TypeScript
-npm run lint            # Run ESLint
+npm run lint -- --check   # Run Oxlint + type-checker
 ```
 
 ### Database Migrations
+
 ```bash
 npm run migration:create    # Create new MikroORM migration
 npm run migration:up        # Run pending migrations
 ```
 
 After creating a migration:
+
 1. Rename from `Migration[Timestamp].ts` to `[Timestamp][PascalCaseDescription].ts`
 2. Rename the exported class to match the description
 3. Import and add to `migrations/index.ts`
@@ -60,6 +63,7 @@ The application uses three distinct routing layers with different authentication
 Middleware executes in order (see `src/index.ts`).
 
 Then route-specific middleware:
+
 - **API Routes**: API key extraction → JWT auth → rate limiting → current player resolution → player auth validation → continuity checks
 - **Protected Routes**: JWT auth → user authorization
 - **Public Routes**: No authentication
@@ -88,6 +92,7 @@ export default class Player {
   props: PlayerProp[] = []
 }
 ```
+
 ### Database Architecture
 
 - **MySQL** (MikroORM): Core relational data (users, games, players, leaderboards)
@@ -101,6 +106,7 @@ All handlers receive `ctx.em` (EntityManager) for queries. Migrations run automa
 Each HTTP request has its own isolated EntityManager with an **Identity Map** - an in-memory cache that maintains a single instance of each entity throughout the request lifecycle.
 
 **Key behaviors:**
+
 - When you query the same entity multiple times within a request, you get the identical object reference
 - Entities already loaded in the Identity Map are automatically populated into newly fetched entities
 - If entity A is loaded with its relations, and later entity B references A, the already-loaded A (with its relations) is used
@@ -112,7 +118,7 @@ Each HTTP request has its own isolated EntityManager with an **Identity Map** - 
 // Later in loadAlias middleware:
 const alias = await ctx.em.repo(PlayerAlias).findOne({
   id: aliasId,
-  player: { game: ctx.state.game }  // game already in Identity Map
+  player: { game: ctx.state.game }, // game already in Identity Map
 })
 // alias.player.game is automatically populated from the Identity Map
 // No need to explicitly load it via `fields: ['player.game.id']`
@@ -123,6 +129,7 @@ The request context is set up via middleware using Node's `AsyncLocalStorage`, e
 ### Background Jobs & Scheduling
 
 BullMQ for async jobs, configured in `src/config/global-queues.ts`. Scheduled tasks defined in `src/config/scheduled-tasks.ts`:
+
 - Archive leaderboard entries
 - Delete inactive players
 - Cleanup jobs
@@ -130,6 +137,7 @@ BullMQ for async jobs, configured in `src/config/global-queues.ts`. Scheduled ta
 ### WebSocket Layer
 
 Real-time communication via custom WebSocket implementation in `src/socket/`:
+
 - Connection state tracking (game, API key, scopes)
 - Message routing and pub/sub patterns
 - Socket tickets for authentication
@@ -177,6 +185,7 @@ Use the `/new-route` skill for step-by-step guidance on creating routes.
 ### Error Handling
 
 All errors caught by `src/middleware/error-middleware.ts`:
+
 - Automatic HTTP status code mapping
 - Sentry integration for production
 - OpenTelemetry tracing context
@@ -188,7 +197,7 @@ Use `return ctx.throw()` pattern when you need TypeScript to narrow types after 
 ```typescript
 const player = await em.repo(Player).findOne({ id })
 if (!player) {
-  return ctx.throw(404, 'Player not found')  // return ensures type narrowing
+  return ctx.throw(404, 'Player not found') // return ensures type narrowing
 }
 // TypeScript knows player is not null here
 ```
@@ -201,6 +210,7 @@ if (!player) {
 ### Working with Props
 
 Props are flexible key-value pairs on entities (Player, Game, LeaderboardEntry):
+
 - Validated size limits (prevent abuse)
 - Stored as JSON in database
 - Access via entity's `props` array

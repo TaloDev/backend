@@ -7,8 +7,8 @@ export const postDocs = {
       title: 'Sample request',
       sample: {
         aliasId: 42,
-        relationshipType: 'unidirectional'
-      }
+        relationshipType: 'unidirectional',
+      },
     },
     {
       title: 'Sample response',
@@ -25,11 +25,11 @@ export const postDocs = {
               devBuild: false,
               createdAt: '2025-11-05T10:30:00.000Z',
               lastSeenAt: '2025-11-09T14:22:00.000Z',
-              groups: []
+              groups: [],
             },
             lastSeenAt: '2025-11-09T14:22:00.000Z',
             createdAt: '2025-11-05T10:30:00.000Z',
-            updatedAt: '2025-11-09T14:22:00.000Z'
+            updatedAt: '2025-11-09T14:22:00.000Z',
           },
           subscribedTo: {
             id: 42,
@@ -41,20 +41,20 @@ export const postDocs = {
               devBuild: false,
               createdAt: '2025-11-01T08:15:00.000Z',
               lastSeenAt: '2025-11-09T15:45:00.000Z',
-              groups: []
+              groups: [],
             },
             lastSeenAt: '2025-11-09T15:45:00.000Z',
             createdAt: '2025-11-01T08:15:00.000Z',
-            updatedAt: '2025-11-09T15:45:00.000Z'
+            updatedAt: '2025-11-09T15:45:00.000Z',
           },
           confirmed: false,
           relationshipType: 'unidirectional',
           createdAt: '2025-11-09T16:00:00.000Z',
-          updatedAt: '2025-11-09T16:00:00.000Z'
-        }
-      }
-    }
-  ]
+          updatedAt: '2025-11-09T16:00:00.000Z',
+        },
+      },
+    },
+  ],
 } satisfies RouteDocs
 
 export const confirmDocs = {
@@ -75,11 +75,11 @@ export const confirmDocs = {
               devBuild: false,
               createdAt: '2025-11-06T12:00:00.000Z',
               lastSeenAt: '2025-11-09T10:30:00.000Z',
-              groups: []
+              groups: [],
             },
             lastSeenAt: '2025-11-09T10:30:00.000Z',
             createdAt: '2025-11-06T12:00:00.000Z',
-            updatedAt: '2025-11-09T10:30:00.000Z'
+            updatedAt: '2025-11-09T10:30:00.000Z',
           },
           subscribedTo: {
             id: 42,
@@ -91,20 +91,20 @@ export const confirmDocs = {
               devBuild: false,
               createdAt: '2025-11-01T08:15:00.000Z',
               lastSeenAt: '2025-11-09T15:45:00.000Z',
-              groups: []
+              groups: [],
             },
             lastSeenAt: '2025-11-09T15:45:00.000Z',
             createdAt: '2025-11-01T08:15:00.000Z',
-            updatedAt: '2025-11-09T15:45:00.000Z'
+            updatedAt: '2025-11-09T15:45:00.000Z',
           },
           confirmed: true,
           relationshipType: 'bidirectional',
           createdAt: '2025-11-09T11:15:00.000Z',
-          updatedAt: '2025-11-09T16:30:00.000Z'
-        }
-      }
-    }
-  ]
+          updatedAt: '2025-11-09T16:30:00.000Z',
+        },
+      },
+    },
+  ],
 } satisfies RouteDocs
 
 export const getSubscribersDocs = {
@@ -126,11 +126,11 @@ export const getSubscribersDocs = {
                 devBuild: false,
                 createdAt: '2025-11-06T12:00:00.000Z',
                 lastSeenAt: '2025-11-09T10:30:00.000Z',
-                groups: []
+                groups: [],
               },
               lastSeenAt: '2025-11-09T10:30:00.000Z',
               createdAt: '2025-11-06T12:00:00.000Z',
-              updatedAt: '2025-11-09T10:30:00.000Z'
+              updatedAt: '2025-11-09T10:30:00.000Z',
             },
             subscribedTo: {
               id: 42,
@@ -142,16 +142,16 @@ export const getSubscribersDocs = {
                 devBuild: false,
                 createdAt: '2025-11-01T08:15:00.000Z',
                 lastSeenAt: '2025-11-09T15:45:00.000Z',
-                groups: []
+                groups: [],
               },
               lastSeenAt: '2025-11-09T15:45:00.000Z',
               createdAt: '2025-11-01T08:15:00.000Z',
-              updatedAt: '2025-11-09T15:45:00.000Z'
+              updatedAt: '2025-11-09T15:45:00.000Z',
             },
             confirmed: true,
             relationshipType: 'unidirectional',
             createdAt: '2025-11-09T10:30:00.000Z',
-            updatedAt: '2025-11-09T10:30:00.000Z'
+            updatedAt: '2025-11-09T10:30:00.000Z',
           },
           {
             id: '2b3c4d5e-6f7a-8b9c-0d1e-2f3a4b5c6d7e',
@@ -165,11 +165,11 @@ export const getSubscribersDocs = {
                 devBuild: false,
                 createdAt: '2025-11-07T09:45:00.000Z',
                 lastSeenAt: '2025-11-09T13:20:00.000Z',
-                groups: []
+                groups: [],
               },
               lastSeenAt: '2025-11-09T13:20:00.000Z',
               createdAt: '2025-11-07T09:45:00.000Z',
-              updatedAt: '2025-11-09T13:20:00.000Z'
+              updatedAt: '2025-11-09T13:20:00.000Z',
             },
             subscribedTo: {
               id: 42,
@@ -181,24 +181,24 @@ export const getSubscribersDocs = {
                 devBuild: false,
                 createdAt: '2025-11-01T08:15:00.000Z',
                 lastSeenAt: '2025-11-09T15:45:00.000Z',
-                groups: []
+                groups: [],
               },
               lastSeenAt: '2025-11-09T15:45:00.000Z',
               createdAt: '2025-11-01T08:15:00.000Z',
-              updatedAt: '2025-11-09T15:45:00.000Z'
+              updatedAt: '2025-11-09T15:45:00.000Z',
             },
             confirmed: true,
             relationshipType: 'bidirectional',
             createdAt: '2025-11-09T13:20:00.000Z',
-            updatedAt: '2025-11-09T13:20:00.000Z'
-          }
+            updatedAt: '2025-11-09T13:20:00.000Z',
+          },
         ],
         count: 2,
         itemsPerPage: 50,
-        isLastPage: true
-      }
-    }
-  ]
+        isLastPage: true,
+      },
+    },
+  ],
 } satisfies RouteDocs
 
 export const getSubscriptionsDocs = {
@@ -220,11 +220,11 @@ export const getSubscriptionsDocs = {
                 devBuild: false,
                 createdAt: '2025-11-05T10:30:00.000Z',
                 lastSeenAt: '2025-11-09T14:22:00.000Z',
-                groups: []
+                groups: [],
               },
               lastSeenAt: '2025-11-09T14:22:00.000Z',
               createdAt: '2025-11-05T10:30:00.000Z',
-              updatedAt: '2025-11-09T14:22:00.000Z'
+              updatedAt: '2025-11-09T14:22:00.000Z',
             },
             subscribedTo: {
               id: 42,
@@ -236,16 +236,16 @@ export const getSubscriptionsDocs = {
                 devBuild: false,
                 createdAt: '2025-11-01T08:15:00.000Z',
                 lastSeenAt: '2025-11-09T15:45:00.000Z',
-                groups: []
+                groups: [],
               },
               lastSeenAt: '2025-11-09T15:45:00.000Z',
               createdAt: '2025-11-01T08:15:00.000Z',
-              updatedAt: '2025-11-09T15:45:00.000Z'
+              updatedAt: '2025-11-09T15:45:00.000Z',
             },
             confirmed: true,
             relationshipType: 'unidirectional',
             createdAt: '2025-11-09T11:00:00.000Z',
-            updatedAt: '2025-11-09T11:00:00.000Z'
+            updatedAt: '2025-11-09T11:00:00.000Z',
           },
           {
             id: '4d5e6f7a-8b9c-0d1e-2f3a-4b5c6d7e8f9a',
@@ -259,11 +259,11 @@ export const getSubscriptionsDocs = {
                 devBuild: false,
                 createdAt: '2025-11-05T10:30:00.000Z',
                 lastSeenAt: '2025-11-09T14:22:00.000Z',
-                groups: []
+                groups: [],
               },
               lastSeenAt: '2025-11-09T14:22:00.000Z',
               createdAt: '2025-11-05T10:30:00.000Z',
-              updatedAt: '2025-11-09T14:22:00.000Z'
+              updatedAt: '2025-11-09T14:22:00.000Z',
             },
             subscribedTo: {
               id: 43,
@@ -275,26 +275,26 @@ export const getSubscriptionsDocs = {
                 devBuild: false,
                 createdAt: '2025-11-02T10:30:00.000Z',
                 lastSeenAt: '2025-11-09T14:15:00.000Z',
-                groups: []
+                groups: [],
               },
               lastSeenAt: '2025-11-09T14:15:00.000Z',
               createdAt: '2025-11-02T10:30:00.000Z',
-              updatedAt: '2025-11-09T14:15:00.000Z'
+              updatedAt: '2025-11-09T14:15:00.000Z',
             },
             confirmed: false,
             relationshipType: 'bidirectional',
             createdAt: '2025-11-09T12:15:00.000Z',
-            updatedAt: '2025-11-09T12:15:00.000Z'
-          }
+            updatedAt: '2025-11-09T12:15:00.000Z',
+          },
         ],
         count: 2,
         itemsPerPage: 50,
-        isLastPage: true
-      }
-    }
-  ]
+        isLastPage: true,
+      },
+    },
+  ],
 } satisfies RouteDocs
 
 export const deleteDocs = {
-  description: 'Delete a subscription (unsubscribe from a player)'
+  description: 'Delete a subscription (unsubscribe from a player)',
 } satisfies RouteDocs

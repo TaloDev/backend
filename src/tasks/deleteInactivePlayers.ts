@@ -1,14 +1,14 @@
 import { EntityManager } from '@mikro-orm/mysql'
-import { getMikroORM } from '../config/mikro-orm.config'
-import Player from '../entities/player'
-import Game from '../entities/game'
-import { subDays } from 'date-fns'
 import { captureException } from '@sentry/node'
-import createGameActivity from '../lib/logging/createGameActivity'
+import { subDays } from 'date-fns'
+import { getMikroORM } from '../config/mikro-orm.config'
+import Game from '../entities/game'
 import { GameActivityType } from '../entities/game-activity'
-import User, { UserType } from '../entities/user'
-import { streamByCursor } from '../lib/perf/streamByCursor'
+import Player from '../entities/player'
 import { PlayerToDelete } from '../entities/player-to-delete'
+import User, { UserType } from '../entities/user'
+import createGameActivity from '../lib/logging/createGameActivity'
+import { streamByCursor } from '../lib/perf/streamByCursor'
 
 const playersBatchSize = 100
 
@@ -16,18 +16,21 @@ function getPlayers(em: EntityManager, game: Game, devBuild: boolean) {
   const days = devBuild ? game.purgeDevPlayersRetention : game.purgeLivePlayersRetention
 
   return streamByCursor<Player>(async (batchSize, after) => {
-    return em.repo(Player).findByCursor({
-      game,
-      devBuild,
-      lastSeenAt: {
-        $lt: subDays(new Date(), days)
-      }
-    }, {
-      first: batchSize,
-      after,
-      orderBy: { id: 'asc' },
-      populate: ['aliases', 'auth'] as const
-    })
+    return em.repo(Player).findByCursor(
+      {
+        game,
+        devBuild,
+        lastSeenAt: {
+          $lt: subDays(new Date(), days),
+        },
+      },
+      {
+        first: batchSize,
+        after,
+        orderBy: { id: 'asc' },
+        populate: ['aliases', 'auth'] as const,
+      },
+    )
   }, playersBatchSize)
 }
 
@@ -35,7 +38,7 @@ async function createPurgeActivity({
   em,
   game,
   devBuild,
-  count
+  count,
 }: {
   em: EntityManager
   game: Game
@@ -45,15 +48,15 @@ async function createPurgeActivity({
   createGameActivity(em, {
     user: await em.repo(User).findOneOrFail({
       type: UserType.OWNER,
-      organisation: game.organisation
+      organisation: game.organisation,
     }),
     game,
     type: devBuild
       ? GameActivityType.INACTIVE_DEV_PLAYERS_DELETED
       : GameActivityType.INACTIVE_LIVE_PLAYERS_DELETED,
     extra: {
-      count
-    }
+      count,
+    },
   })
   await em.flush()
 }
@@ -90,7 +93,9 @@ async function findAndQueueInactivePlayers(em: EntityManager, game: Game, devBui
     }
 
     if (totalQueued > 0) {
-      console.info(`Queued ${totalQueued} inactive${devBuild ? ' dev' : ''} players for deletion from game ${game.id}`)
+      console.info(
+        `Queued ${totalQueued} inactive${devBuild ? ' dev' : ''} players for deletion from game ${game.id}`,
+      )
       await createPurgeActivity({ em, game, devBuild, count: totalQueued })
     }
   } catch (err) {
@@ -104,10 +109,7 @@ export default async function deleteInactivePlayers() {
   const em = orm.em.fork() as EntityManager
 
   const games = await em.repo(Game).find({
-    $or: [
-      { purgeDevPlayers: true },
-      { purgeLivePlayers: true }
-    ]
+    $or: [{ purgeDevPlayers: true }, { purgeLivePlayers: true }],
   })
 
   for (const game of games) {

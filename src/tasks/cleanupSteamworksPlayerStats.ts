@@ -1,9 +1,9 @@
+import { EntityManager, NotFoundError } from '@mikro-orm/mysql'
 import { captureException } from '@sentry/node'
 import { getMikroORM } from '../config/mikro-orm.config'
 import Integration, { IntegrationType } from '../entities/integration'
-import { EntityManager, NotFoundError } from '@mikro-orm/mysql'
-import { streamByCursor } from '../lib/perf/streamByCursor'
 import { SteamworksPlayerStat } from '../entities/steamworks-player-stat'
+import { streamByCursor } from '../lib/perf/streamByCursor'
 
 export default async function cleanupSteamworksPlayerStats() {
   const startTime = performance.now()
@@ -12,14 +12,17 @@ export default async function cleanupSteamworksPlayerStats() {
   const em = orm.em.fork() as EntityManager
 
   const playerStatStream = streamByCursor<SteamworksPlayerStat>(async (batchSize, after) => {
-    return em.repo(SteamworksPlayerStat).findByCursor({
-      playerStat: null
-    }, {
-      first: batchSize,
-      after,
-      orderBy: { id: 'asc' },
-      populate: ['stat.game'] as const
-    })
+    return em.repo(SteamworksPlayerStat).findByCursor(
+      {
+        playerStat: null,
+      },
+      {
+        first: batchSize,
+        after,
+        orderBy: { id: 'asc' },
+        populate: ['stat.game'] as const,
+      },
+    )
   }, 100)
 
   const integrationsMap = new Map<number, Integration>()
@@ -31,7 +34,9 @@ export default async function cleanupSteamworksPlayerStats() {
       let integration = integrationsMap.get(game.id)
       if (!integration) {
         try {
-          integration = await em.repo(Integration).findOneOrFail({ game, type: IntegrationType.STEAMWORKS })
+          integration = await em
+            .repo(Integration)
+            .findOneOrFail({ game, type: IntegrationType.STEAMWORKS })
         } catch (err) {
           if (err instanceof NotFoundError) {
             await em.repo(SteamworksPlayerStat).nativeDelete(playerStat.id)
@@ -48,7 +53,7 @@ export default async function cleanupSteamworksPlayerStats() {
     } catch (err) {
       console.error(
         `Steamworks player stat cleanup failed (${playerStat.stat.internalName}, ${playerStat.steamUserId}):`,
-        (err as Error).message
+        (err as Error).message,
       )
       captureException(err)
     } finally {

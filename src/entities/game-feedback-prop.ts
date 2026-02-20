@@ -1,6 +1,6 @@
 import { Entity, ManyToOne, PrimaryKey, Property } from '@mikro-orm/mysql'
-import { MAX_KEY_LENGTH, MAX_VALUE_LENGTH } from './prop'
 import GameFeedback from './game-feedback'
+import { MAX_KEY_LENGTH, MAX_VALUE_LENGTH } from './prop'
 
 @Entity()
 export default class GameFeedbackProp {
@@ -28,7 +28,7 @@ export default class GameFeedbackProp {
   toJSON() {
     return {
       key: this.key,
-      value: this.value
+      value: this.value,
     }
   }
 }

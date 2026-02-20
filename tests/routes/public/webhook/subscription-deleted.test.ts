@@ -1,10 +1,10 @@
+import assert from 'node:assert'
 import request from 'supertest'
-import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
+import { v4 } from 'uuid'
 import initStripe from '../../../../src/lib/billing/initStripe'
 import PricingPlanFactory from '../../../fixtures/PricingPlanFactory'
-import { v4 } from 'uuid'
+import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
 import { truncateTables } from '../../../utils/truncateTables'
-import assert from 'node:assert'
 
 describe('Webhook - subscription deleted', () => {
   const stripe = initStripe()
@@ -26,23 +26,27 @@ describe('Webhook - subscription deleted', () => {
     const defaultPlan = await new PricingPlanFactory().state(() => ({ default: true })).one()
     await em.persistAndFlush(defaultPlan)
 
-    const payload = JSON.stringify({
-      id: v4(),
-      object: 'event',
-      data: {
-        object: subscription
+    const payload = JSON.stringify(
+      {
+        id: v4(),
+        object: 'event',
+        data: {
+          object: subscription,
+        },
+        api_version: '2020-08-27',
+        created: Date.now(),
+        livemode: false,
+        pending_webhooks: 0,
+        request: null,
+        type: 'customer.subscription.deleted',
       },
-      api_version: '2020-08-27',
-      created: Date.now(),
-      livemode: false,
-      pending_webhooks: 0,
-      request: null,
-      type: 'customer.subscription.deleted'
-    }, null, 2)
+      null,
+      2,
+    )
 
     const header = stripe.webhooks.generateTestHeaderString({
       payload,
-      secret: process.env.STRIPE_WEBHOOK_SECRET!
+      secret: process.env.STRIPE_WEBHOOK_SECRET!,
     })
 
     await request(app)

@@ -1,7 +1,7 @@
 import request from 'supertest'
 import { APIKeyScope } from '../../../../src/entities/api-key'
-import PlayerFactory from '../../../fixtures/PlayerFactory'
 import GameSaveFactory from '../../../fixtures/GameSaveFactory'
+import PlayerFactory from '../../../fixtures/PlayerFactory'
 import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
 import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
 
@@ -32,7 +32,7 @@ describe('Game save API - delete', () => {
       .expect(403)
   })
 
-  it('should not delete another player\'s save', async () => {
+  it("should not delete another player's save", async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_SAVES])
     const player = await new PlayerFactory([apiKey.game]).one()
 
@@ -51,7 +51,7 @@ describe('Game save API - delete', () => {
     expect(res.body).toStrictEqual({ message: 'Save not found' })
   })
 
-  it('should not delete a player\'s save from another game', async () => {
+  it("should not delete a player's save from another game", async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_SAVES])
     const player = await new PlayerFactory([apiKey.game]).one()
     const save = await new GameSaveFactory([player]).one()

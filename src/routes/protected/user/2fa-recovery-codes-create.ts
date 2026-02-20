@@ -1,15 +1,15 @@
-import { protectedRoute, withMiddleware } from '../../../lib/routing/router'
-import { confirmPassword, requires2fa } from './common'
 import generateRecoveryCodes from '../../../lib/auth/generateRecoveryCodes'
+import { protectedRoute, withMiddleware } from '../../../lib/routing/router'
 import { passwordSchema } from '../../../lib/validation/passwordSchema'
+import { confirmPassword, requires2fa } from './common'
 
 export const createRecoveryCodesRoute = protectedRoute({
   method: 'post',
   path: '/2fa/recovery_codes/create',
   schema: (z) => ({
     body: z.object({
-      password: passwordSchema
-    })
+      password: passwordSchema,
+    }),
   }),
   middleware: withMiddleware(confirmPassword, requires2fa),
   handler: async (ctx) => {
@@ -24,8 +24,8 @@ export const createRecoveryCodesRoute = protectedRoute({
     return {
       status: 200,
       body: {
-        recoveryCodes: user.recoveryCodes
-      }
+        recoveryCodes: user.recoveryCodes,
+      },
     }
-  }
+  },
 })

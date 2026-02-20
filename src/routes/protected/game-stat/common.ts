@@ -1,11 +1,11 @@
 import { Next } from 'koa'
+import assert from 'node:assert'
 import { RefinementCtx, z } from 'zod'
 import GameStat from '../../../entities/game-stat'
 import PlayerGameStat from '../../../entities/player-game-stat'
-import { ProtectedRouteContext } from '../../../lib/routing/context'
 import { deferClearResponseCache } from '../../../lib/perf/responseCacheQueue'
+import { ProtectedRouteContext } from '../../../lib/routing/context'
 import { GameRouteState } from '../../../middleware/game-middleware'
-import assert from 'node:assert'
 
 type Z = typeof z
 
@@ -19,9 +19,7 @@ type StatSchemaData = {
 type StatRouteState = { stat: GameStat }
 type StatRouteContext = ProtectedRouteContext<StatRouteState>
 
-type PlayerStatRouteContext = ProtectedRouteContext<
-  StatRouteState & { playerStat: PlayerGameStat }
->
+type PlayerStatRouteContext = ProtectedRouteContext<StatRouteState & { playerStat: PlayerGameStat }>
 
 type ClearStatIndexResponseCacheContext = ProtectedRouteContext<
   Partial<StatRouteState> & Partial<GameRouteState>
@@ -32,15 +30,19 @@ function validateStatBody(data: StatSchemaData, ctx: RefinementCtx) {
     ctx.addIssue({
       code: 'custom',
       message: 'maxChange must be greater than 0',
-      path: ['maxChange']
+      path: ['maxChange'],
     })
   }
 
-  if (typeof data.minValue === 'number' && typeof data.maxValue === 'number' && data.minValue >= data.maxValue) {
+  if (
+    typeof data.minValue === 'number' &&
+    typeof data.maxValue === 'number' &&
+    data.minValue >= data.maxValue
+  ) {
     ctx.addIssue({
       code: 'custom',
       message: 'minValue must be less than maxValue',
-      path: ['minValue']
+      path: ['minValue'],
     })
   }
 
@@ -51,7 +53,7 @@ function validateStatBody(data: StatSchemaData, ctx: RefinementCtx) {
       ctx.addIssue({
         code: 'custom',
         message: 'defaultValue must be between minValue and maxValue',
-        path: ['defaultValue']
+        path: ['defaultValue'],
       })
     }
   }
@@ -65,15 +67,17 @@ function statFields(z: Z) {
     minValue: z.number().nullable().optional(),
     maxValue: z.number().nullable().optional(),
     defaultValue: z.number(),
-    minTimeBetweenUpdates: z.number().min(0)
+    minTimeBetweenUpdates: z.number().min(0),
   }
 }
 
 export function createStatBodySchema(z: Z) {
-  return z.object({
-    internalName: z.string(),
-    ...statFields(z)
-  }).superRefine(validateStatBody)
+  return z
+    .object({
+      internalName: z.string(),
+      ...statFields(z),
+    })
+    .superRefine(validateStatBody)
 }
 
 export function updateStatBodySchema(z: Z) {
@@ -103,12 +107,15 @@ export async function loadPlayerStat(ctx: PlayerStatRouteContext, next: Next) {
   const { playerStatId } = ctx.params as { playerStatId: string }
   const em = ctx.em
 
-  const playerStat = await em.repo(PlayerGameStat).findOne({
-    id: Number(playerStatId),
-    stat: ctx.state.stat
-  }, {
-    populate: ['player']
-  })
+  const playerStat = await em.repo(PlayerGameStat).findOne(
+    {
+      id: Number(playerStatId),
+      stat: ctx.state.stat,
+    },
+    {
+      populate: ['player'],
+    },
+  )
 
   if (!playerStat) {
     return ctx.throw(404, 'Player stat not found')
@@ -118,7 +125,10 @@ export async function loadPlayerStat(ctx: PlayerStatRouteContext, next: Next) {
   await next()
 }
 
-export async function clearStatIndexResponseCache(ctx: ClearStatIndexResponseCacheContext, next: Next) {
+export async function clearStatIndexResponseCache(
+  ctx: ClearStatIndexResponseCacheContext,
+  next: Next,
+) {
   await next()
 
   const game = ctx.state.game ?? ctx.state.stat?.game

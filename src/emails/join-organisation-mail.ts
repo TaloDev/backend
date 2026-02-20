@@ -3,7 +3,11 @@ import Mail from './mail'
 
 export default class JoinOrganisation extends Mail {
   constructor(invite: Invite) {
-    super(invite.email, 'You\'ve been invited to Talo', `Hey there, you've been invited by ${invite.invitedByUser.username} to join them and the rest of ${invite.organisation.name} on Talo.`)
+    super(
+      invite.email,
+      "You've been invited to Talo",
+      `Hey there, you've been invited by ${invite.invitedByUser.username} to join them and the rest of ${invite.organisation.name} on Talo.`,
+    )
 
     this.title = `Join ${invite.organisation.name} on Talo`
     this.mainText = `Hey there, you've been invited by ${invite.invitedByUser.username} to join them on Talo.`

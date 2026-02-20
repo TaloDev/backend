@@ -1,10 +1,10 @@
+import { GameActivityType } from '../../../entities/game-activity'
+import { UserType } from '../../../entities/user'
+import triggerIntegrations from '../../../lib/integrations/triggerIntegrations'
+import createGameActivity from '../../../lib/logging/createGameActivity'
 import { protectedRoute, withMiddleware } from '../../../lib/routing/router'
 import { loadGame } from '../../../middleware/game-middleware'
 import { userTypeGate } from '../../../middleware/policy-middleware'
-import { UserType } from '../../../entities/user'
-import { GameActivityType } from '../../../entities/game-activity'
-import createGameActivity from '../../../lib/logging/createGameActivity'
-import triggerIntegrations from '../../../lib/integrations/triggerIntegrations'
 import { loadLeaderboard } from './common'
 
 export const deleteRoute = protectedRoute({
@@ -13,7 +13,7 @@ export const deleteRoute = protectedRoute({
   middleware: withMiddleware(
     userTypeGate([UserType.ADMIN], 'delete leaderboards'),
     loadGame,
-    loadLeaderboard()
+    loadLeaderboard(),
   ),
   handler: async (ctx) => {
     const em = ctx.em
@@ -25,8 +25,8 @@ export const deleteRoute = protectedRoute({
       game: leaderboard.game,
       type: GameActivityType.LEADERBOARD_DELETED,
       extra: {
-        leaderboardInternalName
-      }
+        leaderboardInternalName,
+      },
     })
 
     await em.remove(leaderboard).flush()
@@ -36,7 +36,7 @@ export const deleteRoute = protectedRoute({
     })
 
     return {
-      status: 204
+      status: 204,
     }
-  }
+  },
 })

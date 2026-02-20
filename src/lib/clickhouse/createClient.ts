@@ -1,4 +1,10 @@
-import { ClickHouseClient, createClient, QueryParams, ExecParams, InsertParams } from '@clickhouse/client'
+import {
+  ClickHouseClient,
+  createClient,
+  QueryParams,
+  ExecParams,
+  InsertParams,
+} from '@clickhouse/client'
 import { Attributes, Span, SpanStatusCode, trace } from '@opentelemetry/api'
 
 function extractTableNameFromQuery(query: string): string | undefined {
@@ -8,7 +14,8 @@ function extractTableNameFromQuery(query: string): string | undefined {
   // It looks for 'FROM' followed by one or more spaces, then captures the table name.
   // It handles optional database.table or schema.table names, and quoted names (`table`, "table", 'table').
   // It also handles WITH clauses that precede SELECT statements.
-  const regex = /(?:^(?:WITH\s+.*?\s+)?SELECT\s+.*?\s+FROM|^DELETE\s+FROM)\s+(`?["']?[\w.-]+["']?`?)/i
+  const regex =
+    /(?:^(?:WITH\s+.*?\s+)?SELECT\s+.*?\s+FROM|^DELETE\s+FROM)\s+(`?["']?[\w.-]+["']?`?)/i
   const match = normalizedQuery.match(regex)
 
   if (match && match[1]) {
@@ -29,7 +36,7 @@ function cleanStatement(query: string) {
 function buildOtelAttributes(methodName: string, params: unknown): Attributes {
   const attributes: Attributes = {
     'db.system': 'clickhouse',
-    'db.operation': methodName
+    'db.operation': methodName,
   }
 
   switch (methodName) {
@@ -45,7 +52,9 @@ function buildOtelAttributes(methodName: string, params: unknown): Attributes {
       attributes['db.clickhouse.table'] = (params as InsertParams<unknown>).table
       attributes['db.statement'] = `INSERT INTO ${(params as InsertParams<unknown>).table}`
       if (Array.isArray((params as InsertParams<unknown>).values)) {
-        attributes['db.clickhouse.rows'] = ((params as InsertParams<unknown>).values as Array<unknown>).length
+        attributes['db.clickhouse.rows'] = (
+          (params as InsertParams<unknown>).values as Array<unknown>
+        ).length
       }
       break
   }
@@ -55,7 +64,7 @@ function buildOtelAttributes(methodName: string, params: unknown): Attributes {
 async function withTracing<T>(
   name: string,
   attributes: Attributes,
-  operation: (span: Span) => Promise<T>
+  operation: (span: Span) => Promise<T>,
 ): Promise<T> {
   const tracer = trace.getTracer('talo.clickhouse')
   return tracer.startActiveSpan(name, { attributes }, async (span) => {
@@ -66,7 +75,7 @@ async function withTracing<T>(
     } catch (error) {
       span.setStatus({
         code: SpanStatusCode.ERROR,
-        message: error instanceof Error ? error.message : 'Unknown error'
+        message: error instanceof Error ? error.message : 'Unknown error',
       })
       throw error
     } finally {
@@ -80,23 +89,26 @@ function createClickHouseTracingProxyHandler(): ProxyHandler<ClickHouseClient> {
   return {
     get: (target, prop, receiver) => {
       if (typeof prop === 'string' && tracedClickHouseMethods.includes(prop)) {
-        const originalMethod = Reflect.get(target, prop, receiver) as (...args: unknown[]) => Promise<unknown>
+        const originalMethod = Reflect.get(target, prop, receiver) as (
+          ...args: unknown[]
+        ) => Promise<unknown>
         return (...args: unknown[]) => {
           const attributes = buildOtelAttributes(prop, args[0])
-          const operation = `clickhouse.${prop}.${attributes['db.clickhouse.table']}`
+          const table = attributes['db.clickhouse.table'] ?? 'unknown_table'
+          const operation = `clickhouse.${prop}.${table}`
           return withTracing(operation, attributes, () => originalMethod.apply(target, args))
         }
       }
 
       return Reflect.get(target, prop, receiver)
-    }
+    },
   }
 }
 
 export default function createTracedClickHouseClient(): ClickHouseClient {
   const client = createClient({
     url: `http://${process.env.CLICKHOUSE_USER}:${process.env.CLICKHOUSE_PASSWORD}@${process.env.CLICKHOUSE_HOST}:${process.env.CLICKHOUSE_PORT}/${process.env.CLICKHOUSE_DB}`,
-    request_timeout: 120_000
+    request_timeout: 120_000,
   })
 
   return new Proxy(client, createClickHouseTracingProxyHandler())

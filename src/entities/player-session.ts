@@ -1,9 +1,9 @@
-import { v4 } from 'uuid'
-import { formatDateForClickHouse } from '../lib/clickhouse/formatDateTime'
 import { EntityManager } from '@mikro-orm/mysql'
+import { v4 } from 'uuid'
 import ClickHouseEntity from '../lib/clickhouse/clickhouse-entity'
-import Player from './player'
+import { formatDateForClickHouse } from '../lib/clickhouse/formatDateTime'
 import Game from './game'
+import Player from './player'
 
 export type ClickHousePlayerSession = {
   id: string
@@ -35,7 +35,7 @@ export default class PlayerSession extends ClickHouseEntity<ClickHousePlayerSess
       game_id: this.game.id,
       dev_build: this.player.devBuild,
       started_at: formatDateForClickHouse(this.startedAt),
-      ended_at: this.endedAt ? formatDateForClickHouse(this.endedAt) : null
+      ended_at: this.endedAt ? formatDateForClickHouse(this.endedAt) : null,
     }
   }
 
@@ -60,7 +60,7 @@ export default class PlayerSession extends ClickHouseEntity<ClickHousePlayerSess
     return {
       player: this.player,
       startedAt: this.startedAt,
-      endedAt: this.endedAt
+      endedAt: this.endedAt,
     }
   }
 }

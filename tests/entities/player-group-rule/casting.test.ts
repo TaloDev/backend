@@ -1,21 +1,24 @@
 import { Collection } from '@mikro-orm/mysql'
 import request from 'supertest'
-import PlayerGroupRule, { PlayerGroupRuleCastType, PlayerGroupRuleName } from '../../../src/entities/player-group-rule'
-import PlayerFactory from '../../fixtures/PlayerFactory'
-import createUserAndToken from '../../utils/createUserAndToken'
-import createOrganisationAndGame from '../../utils/createOrganisationAndGame'
+import PlayerGroupRule, {
+  PlayerGroupRuleCastType,
+  PlayerGroupRuleName,
+} from '../../../src/entities/player-group-rule'
 import PlayerProp from '../../../src/entities/player-prop'
+import PlayerFactory from '../../fixtures/PlayerFactory'
+import createOrganisationAndGame from '../../utils/createOrganisationAndGame'
+import createUserAndToken from '../../utils/createUserAndToken'
 
 describe('PlayerGroupRule casting', () => {
   it('should correctly evaluate an EQUALS rule with fields casted to CHAR', async () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({}, organisation)
 
-    const player1 = await new PlayerFactory([game]).state((player) => ({
-      props: new Collection<PlayerProp>(player, [
-        new PlayerProp(player, 'currentLevel', '80')
-      ])
-    })).one()
+    const player1 = await new PlayerFactory([game])
+      .state((player) => ({
+        props: new Collection<PlayerProp>(player, [new PlayerProp(player, 'currentLevel', '80')]),
+      }))
+      .one()
     const player2 = await new PlayerFactory([game]).one()
     await em.persistAndFlush([player1, player2])
 
@@ -25,8 +28,8 @@ describe('PlayerGroupRule casting', () => {
         field: 'props.currentLevel',
         operands: ['80'],
         negate: false,
-        castType: PlayerGroupRuleCastType.CHAR
-      }
+        castType: PlayerGroupRuleCastType.CHAR,
+      },
     ]
 
     const res = await request(app)
@@ -42,11 +45,11 @@ describe('PlayerGroupRule casting', () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({}, organisation)
 
-    const player1 = await new PlayerFactory([game]).state((player) => ({
-      props: new Collection<PlayerProp>(player, [
-        new PlayerProp(player, 'currentLevel', '80')
-      ])
-    })).one()
+    const player1 = await new PlayerFactory([game])
+      .state((player) => ({
+        props: new Collection<PlayerProp>(player, [new PlayerProp(player, 'currentLevel', '80')]),
+      }))
+      .one()
     const player2 = await new PlayerFactory([game]).one()
     await em.persistAndFlush([player1, player2])
 
@@ -56,8 +59,8 @@ describe('PlayerGroupRule casting', () => {
         field: 'props.currentLevel',
         operands: ['80'],
         negate: false,
-        castType: PlayerGroupRuleCastType.DOUBLE
-      }
+        castType: PlayerGroupRuleCastType.DOUBLE,
+      },
     ]
 
     const res = await request(app)
@@ -73,11 +76,13 @@ describe('PlayerGroupRule casting', () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({}, organisation)
 
-    const player1 = await new PlayerFactory([game]).state((player) => ({
-      props: new Collection<PlayerProp>(player, [
-        new PlayerProp(player, 'firstLoginAt', '2022-05-03 00:00:00')
-      ])
-    })).one()
+    const player1 = await new PlayerFactory([game])
+      .state((player) => ({
+        props: new Collection<PlayerProp>(player, [
+          new PlayerProp(player, 'firstLoginAt', '2022-05-03 00:00:00'),
+        ]),
+      }))
+      .one()
     const player2 = await new PlayerFactory([game]).one()
     await em.persistAndFlush([player1, player2])
 
@@ -87,8 +92,8 @@ describe('PlayerGroupRule casting', () => {
         field: 'props.firstLoginAt',
         operands: ['2022-05-03 00:00:00'],
         negate: false,
-        castType: PlayerGroupRuleCastType.DATETIME
-      }
+        castType: PlayerGroupRuleCastType.DATETIME,
+      },
     ]
 
     const res = await request(app)
@@ -104,11 +109,13 @@ describe('PlayerGroupRule casting', () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({}, organisation)
 
-    const player1 = await new PlayerFactory([game]).state((player) => ({
-      props: new Collection<PlayerProp>(player, [
-        new PlayerProp(player, 'firstLoginAt', '2022-05-03 08:59:36')
-      ])
-    })).one()
+    const player1 = await new PlayerFactory([game])
+      .state((player) => ({
+        props: new Collection<PlayerProp>(player, [
+          new PlayerProp(player, 'firstLoginAt', '2022-05-03 08:59:36'),
+        ]),
+      }))
+      .one()
     const player2 = await new PlayerFactory([game]).one()
     await em.persistAndFlush([player1, player2])
 
@@ -118,8 +125,8 @@ describe('PlayerGroupRule casting', () => {
         field: 'props.firstLoginAt',
         operands: ['2022-05-03 00:00:00'],
         negate: false,
-        castType: PlayerGroupRuleCastType.DATETIME
-      }
+        castType: PlayerGroupRuleCastType.DATETIME,
+      },
     ]
 
     const res = await request(app)

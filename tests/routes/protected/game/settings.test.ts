@@ -1,36 +1,39 @@
 import request from 'supertest'
 import { UserType } from '../../../../src/entities/user'
-import userPermissionProvider from '../../../utils/userPermissionProvider'
 import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
 import createUserAndToken from '../../../utils/createUserAndToken'
+import userPermissionProvider from '../../../utils/userPermissionProvider'
 
 describe('Game - settings', () => {
-  it.each(userPermissionProvider([]))('should return settings for a %s user', async (statusCode, _, type) => {
-    const [organisation, game] = await createOrganisationAndGame()
-    const [token] = await createUserAndToken({ type }, organisation)
+  it.each(userPermissionProvider([]))(
+    'should return settings for a %s user',
+    async (statusCode, _, type) => {
+      const [organisation, game] = await createOrganisationAndGame()
+      const [token] = await createUserAndToken({ type }, organisation)
 
-    game.purgeDevPlayers = true
-    game.purgeLivePlayers = false
-    game.purgeDevPlayersRetention = 30
-    game.purgeLivePlayersRetention = 60
-    game.website = 'https://example.com'
-    await em.flush()
+      game.purgeDevPlayers = true
+      game.purgeLivePlayers = false
+      game.purgeDevPlayersRetention = 30
+      game.purgeLivePlayersRetention = 60
+      game.website = 'https://example.com'
+      await em.flush()
 
-    const res = await request(app)
-      .get(`/games/${game.id}/settings`)
-      .auth(token, { type: 'bearer' })
-      .expect(statusCode)
+      const res = await request(app)
+        .get(`/games/${game.id}/settings`)
+        .auth(token, { type: 'bearer' })
+        .expect(statusCode)
 
-    if (statusCode === 200) {
-      expect(res.body.settings).toStrictEqual({
-        purgeDevPlayers: true,
-        purgeLivePlayers: false,
-        purgeDevPlayersRetention: 30,
-        purgeLivePlayersRetention: 60,
-        website: 'https://example.com'
-      })
-    }
-  })
+      if (statusCode === 200) {
+        expect(res.body.settings).toStrictEqual({
+          purgeDevPlayers: true,
+          purgeLivePlayers: false,
+          purgeDevPlayersRetention: 30,
+          purgeLivePlayersRetention: 60,
+          website: 'https://example.com',
+        })
+      }
+    },
+  )
 
   it('should not return settings for a non-existent game', async () => {
     const [organisation] = await createOrganisationAndGame()

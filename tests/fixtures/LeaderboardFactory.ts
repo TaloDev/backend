@@ -1,10 +1,10 @@
-import { Factory } from 'hefty'
-import Leaderboard, { LeaderboardSortMode } from '../../src/entities/leaderboard'
-import Game from '../../src/entities/game'
-import LeaderboardEntryFactory from './LeaderboardEntryFactory'
 import { Collection } from '@mikro-orm/mysql'
-import LeaderboardEntry from '../../src/entities/leaderboard-entry'
 import { rand, randBoolean, randNumber, randSlug, randText } from '@ngneat/falso'
+import { Factory } from 'hefty'
+import Game from '../../src/entities/game'
+import Leaderboard, { LeaderboardSortMode } from '../../src/entities/leaderboard'
+import LeaderboardEntry from '../../src/entities/leaderboard-entry'
+import LeaderboardEntryFactory from './LeaderboardEntryFactory'
 
 export default class LeaderboardFactory extends Factory<Leaderboard> {
   private availableGames: Game[]
@@ -21,31 +21,33 @@ export default class LeaderboardFactory extends Factory<Leaderboard> {
       internalName: randSlug(),
       name: randText(),
       sortMode: rand([LeaderboardSortMode.ASC, LeaderboardSortMode.DESC]),
-      unique: randBoolean()
+      unique: randBoolean(),
     }))
   }
 
   unique(): this {
     return this.state(() => ({
-      unique: true
+      unique: true,
     }))
   }
 
   notUnique(): this {
     return this.state(() => ({
-      unique: false
+      unique: false,
     }))
   }
 
   withEntries(): this {
     return this.state(async (leaderboard: Leaderboard) => {
-      const entryFactory = new LeaderboardEntryFactory(leaderboard, leaderboard.game.players.getItems())
-      const entries = leaderboard.game.players.length > 0 ?
-        await entryFactory.many(randNumber({ max: 20 }))
-        : []
+      const entryFactory = new LeaderboardEntryFactory(
+        leaderboard,
+        leaderboard.game.players.getItems(),
+      )
+      const entries =
+        leaderboard.game.players.length > 0 ? await entryFactory.many(randNumber({ max: 20 })) : []
 
       return {
-        entries: new Collection<LeaderboardEntry>(leaderboard, entries)
+        entries: new Collection<LeaderboardEntry>(leaderboard, entries),
       }
     })
   }
@@ -57,20 +59,20 @@ export default class LeaderboardFactory extends Factory<Leaderboard> {
       })
 
       return {
-        entries: leaderboard.entries
+        entries: leaderboard.entries,
       }
     })
   }
 
   asc(): this {
     return this.state(() => ({
-      sortMode: LeaderboardSortMode.ASC
+      sortMode: LeaderboardSortMode.ASC,
     }))
   }
 
   desc(): this {
     return this.state(() => ({
-      sortMode: LeaderboardSortMode.DESC
+      sortMode: LeaderboardSortMode.DESC,
     }))
   }
 }

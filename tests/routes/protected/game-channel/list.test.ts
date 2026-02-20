@@ -1,12 +1,12 @@
+import { Collection } from '@mikro-orm/mysql'
 import request from 'supertest'
-import createUserAndToken from '../../../utils/createUserAndToken'
-import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
-import PlayerAliasFactory from '../../../fixtures/PlayerAliasFactory'
-import PlayerFactory from '../../../fixtures/PlayerFactory'
-import GameChannelFactory from '../../../fixtures/GameChannelFactory'
 import GameChannel from '../../../../src/entities/game-channel'
 import GameChannelProp from '../../../../src/entities/game-channel-prop'
-import { Collection } from '@mikro-orm/mysql'
+import GameChannelFactory from '../../../fixtures/GameChannelFactory'
+import PlayerAliasFactory from '../../../fixtures/PlayerAliasFactory'
+import PlayerFactory from '../../../fixtures/PlayerFactory'
+import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
+import createUserAndToken from '../../../utils/createUserAndToken'
 
 describe('Game channel - index', () => {
   it('should return a list of game channels', async () => {
@@ -77,8 +77,12 @@ describe('Game channel - index', () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({}, organisation)
 
-    const channelsWithName = await new GameChannelFactory(game).state(() => ({ name: 'General chat' })).many(3)
-    const channelsWithoutName = await new GameChannelFactory(game).state(() => ({ name: 'Guild chat' })).many(3)
+    const channelsWithName = await new GameChannelFactory(game)
+      .state(() => ({ name: 'General chat' }))
+      .many(3)
+    const channelsWithoutName = await new GameChannelFactory(game)
+      .state(() => ({ name: 'Guild chat' }))
+      .many(3)
     await em.persistAndFlush([...channelsWithName, ...channelsWithoutName])
 
     const res = await request(app)
@@ -95,11 +99,15 @@ describe('Game channel - index', () => {
     const [token] = await createUserAndToken({}, organisation)
 
     const player = await new PlayerFactory([game]).one()
-    const playerAlias = await new PlayerAliasFactory(player).state(async () => ({ player, identifier: 'johnny_the_admin' })).one()
+    const playerAlias = await new PlayerAliasFactory(player)
+      .state(async () => ({ player, identifier: 'johnny_the_admin' }))
+      .one()
 
-    const channelsWithOwner = await new GameChannelFactory(game).state(() => ({
-      owner: playerAlias
-    })).many(3)
+    const channelsWithOwner = await new GameChannelFactory(game)
+      .state(() => ({
+        owner: playerAlias,
+      }))
+      .many(3)
 
     const channelsWithoutOwner = await new GameChannelFactory(game).many(5)
 
@@ -121,7 +129,7 @@ describe('Game channel - index', () => {
     const channel = await new GameChannelFactory(game).one()
     channel.members.add(
       (await new PlayerFactory([game]).devBuild().one()).aliases[0],
-      (await new PlayerFactory([game]).one()).aliases[0]
+      (await new PlayerFactory([game]).one()).aliases[0],
     )
     await em.persistAndFlush(channel)
 
@@ -142,7 +150,7 @@ describe('Game channel - index', () => {
     const channel = await new GameChannelFactory(game).one()
     channel.members.add(
       (await new PlayerFactory([game]).devBuild().one()).aliases[0],
-      (await new PlayerFactory([game]).one()).aliases[0]
+      (await new PlayerFactory([game]).one()).aliases[0],
     )
     await em.persistAndFlush(channel)
 
@@ -195,11 +203,13 @@ describe('Game channel - index', () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({}, organisation)
 
-    const channel = await new GameChannelFactory(game).state((channel) => ({
-      props: new Collection<GameChannelProp>(channel, [
-        new GameChannelProp(channel, 'guildId', '15')
-      ])
-    })).one()
+    const channel = await new GameChannelFactory(game)
+      .state((channel) => ({
+        props: new Collection<GameChannelProp>(channel, [
+          new GameChannelProp(channel, 'guildId', '15'),
+        ]),
+      }))
+      .one()
 
     const otherChannel = await new GameChannelFactory(game).one()
 
@@ -219,17 +229,21 @@ describe('Game channel - index', () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({}, organisation)
 
-    const channel = await new GameChannelFactory(game).state((channel) => ({
-      props: new Collection<GameChannelProp>(channel, [
-        new GameChannelProp(channel, 'guildId', '15')
-      ])
-    })).one()
+    const channel = await new GameChannelFactory(game)
+      .state((channel) => ({
+        props: new Collection<GameChannelProp>(channel, [
+          new GameChannelProp(channel, 'guildId', '15'),
+        ]),
+      }))
+      .one()
 
-    const otherChannel = await new GameChannelFactory(game).state((channel) => ({
-      props: new Collection<GameChannelProp>(channel, [
-        new GameChannelProp(channel, 'guildId', '17')
-      ])
-    })).one()
+    const otherChannel = await new GameChannelFactory(game)
+      .state((channel) => ({
+        props: new Collection<GameChannelProp>(channel, [
+          new GameChannelProp(channel, 'guildId', '17'),
+        ]),
+      }))
+      .one()
 
     const irrelevantChannel = await new GameChannelFactory(game).one()
 

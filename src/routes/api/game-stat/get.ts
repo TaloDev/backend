@@ -1,6 +1,6 @@
+import { APIKeyScope } from '../../../entities/api-key'
 import { apiRoute, withMiddleware } from '../../../lib/routing/router'
 import { requireScopes } from '../../../middleware/policy-middleware'
-import { APIKeyScope } from '../../../entities/api-key'
 import { loadStat } from './common'
 import { getDocs } from './docs'
 
@@ -10,19 +10,16 @@ export const getRoute = apiRoute({
   docs: getDocs,
   schema: (z) => ({
     route: z.object({
-      internalName: z.string().meta({ description: 'The internal name of the stat' })
-    })
+      internalName: z.string().meta({ description: 'The internal name of the stat' }),
+    }),
   }),
-  middleware: withMiddleware(
-    requireScopes([APIKeyScope.READ_GAME_STATS]),
-    loadStat
-  ),
+  middleware: withMiddleware(requireScopes([APIKeyScope.READ_GAME_STATS]), loadStat),
   handler: async (ctx) => {
     return {
       status: 200,
       body: {
-        stat: ctx.state.stat
-      }
+        stat: ctx.state.stat,
+      },
     }
-  }
+  },
 })

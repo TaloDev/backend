@@ -1,8 +1,8 @@
 import { z, ZodType } from 'zod'
-import { SocketMessageRequest } from '../messages/socketMessage'
-import SocketConnection from '../socketConnection'
 import Socket from '..'
 import { APIKeyScope } from '../../entities/api-key'
+import { SocketMessageRequest } from '../messages/socketMessage'
+import SocketConnection from '../socketConnection'
 
 type SocketMessageListenerHandlerParams<T> = {
   conn: SocketConnection
@@ -11,7 +11,9 @@ type SocketMessageListenerHandlerParams<T> = {
   socket: Socket
 }
 
-type SocketMessageListenerHandler<T> = (params: SocketMessageListenerHandlerParams<T>) => void | Promise<void>
+type SocketMessageListenerHandler<T> = (
+  params: SocketMessageListenerHandlerParams<T>,
+) => void | Promise<void>
 type SocketMessageListenerOptions = {
   requirePlayer?: boolean
   apiKeyScopes?: APIKeyScope[]
@@ -28,12 +30,12 @@ export default function createListener<T extends ZodType>(
   req: SocketMessageRequest,
   validator: T,
   handler: SocketMessageListenerHandler<z.infer<T>>,
-  options?: SocketMessageListenerOptions
+  options?: SocketMessageListenerOptions,
 ): SocketMessageListener<T> {
   return {
     req,
     validator,
     handler,
-    options
+    options,
   }
 }

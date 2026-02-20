@@ -1,10 +1,10 @@
-import request from 'supertest'
-import PlayerFactory from '../../../fixtures/PlayerFactory'
 import { sub, format } from 'date-fns'
-import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
-import createUserAndToken from '../../../utils/createUserAndToken'
+import request from 'supertest'
 import { v4 } from 'uuid'
 import { formatDateForClickHouse } from '../../../../src/lib/clickhouse/formatDateTime'
+import PlayerFactory from '../../../fixtures/PlayerFactory'
+import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
+import createUserAndToken from '../../../utils/createUserAndToken'
 
 describe('Headline - average session duration', () => {
   const startDate = format(sub(new Date(), { days: 7 }), 'yyyy-MM-dd')
@@ -20,16 +20,18 @@ describe('Headline - average session duration', () => {
     const sessionStartDate = new Date(startDate)
     await clickhouse.insert({
       table: 'player_sessions',
-      values: Array(3).fill({}).map(() => ({
-        id: v4(),
-        player_id: player.id,
-        player_alias_id: player.aliases[0].id,
-        game_id: game.id,
-        dev_build: false,
-        started_at: formatDateForClickHouse(sessionStartDate),
-        ended_at: formatDateForClickHouse(new Date(sessionStartDate.getTime() + 7200000)) // 2 hours later
-      })),
-      format: 'JSONEachRow'
+      values: Array(3)
+        .fill({})
+        .map(() => ({
+          id: v4(),
+          player_id: player.id,
+          player_alias_id: player.aliases[0].id,
+          game_id: game.id,
+          dev_build: false,
+          started_at: formatDateForClickHouse(sessionStartDate),
+          ended_at: formatDateForClickHouse(new Date(sessionStartDate.getTime() + 7200000)), // 2 hours later
+        })),
+      format: 'JSONEachRow',
     })
 
     const res = await request(app)
@@ -41,7 +43,7 @@ describe('Headline - average session duration', () => {
     expect(res.body).toStrictEqual({
       hours: 2,
       minutes: 0,
-      seconds: 0
+      seconds: 0,
     })
   })
 
@@ -55,16 +57,18 @@ describe('Headline - average session duration', () => {
     const sessionStartDate = new Date(startDate)
     await clickhouse.insert({
       table: 'player_sessions',
-      values: Array(3).fill({}).map(() => ({
-        id: v4(),
-        player_id: player.id,
-        player_alias_id: player.aliases[0].id,
-        game_id: game.id,
-        dev_build: true,
-        started_at: formatDateForClickHouse(sessionStartDate),
-        ended_at: formatDateForClickHouse(new Date(sessionStartDate.getTime() + 7200000)) // 2 hours later
-      })),
-      format: 'JSONEachRow'
+      values: Array(3)
+        .fill({})
+        .map(() => ({
+          id: v4(),
+          player_id: player.id,
+          player_alias_id: player.aliases[0].id,
+          game_id: game.id,
+          dev_build: true,
+          started_at: formatDateForClickHouse(sessionStartDate),
+          ended_at: formatDateForClickHouse(new Date(sessionStartDate.getTime() + 7200000)), // 2 hours later
+        })),
+      format: 'JSONEachRow',
     })
 
     const res = await request(app)
@@ -76,7 +80,7 @@ describe('Headline - average session duration', () => {
     expect(res.body).toStrictEqual({
       hours: 0,
       minutes: 0,
-      seconds: 0
+      seconds: 0,
     })
   })
 
@@ -90,16 +94,18 @@ describe('Headline - average session duration', () => {
     const sessionStartDate = new Date(startDate)
     await clickhouse.insert({
       table: 'player_sessions',
-      values: Array(3).fill({}).map(() => ({
-        id: v4(),
-        player_id: player.id,
-        player_alias_id: player.aliases[0].id,
-        game_id: game.id,
-        dev_build: true,
-        started_at: formatDateForClickHouse(sessionStartDate),
-        ended_at: formatDateForClickHouse(new Date(sessionStartDate.getTime() + 7200000)) // 2 hours later
-      })),
-      format: 'JSONEachRow'
+      values: Array(3)
+        .fill({})
+        .map(() => ({
+          id: v4(),
+          player_id: player.id,
+          player_alias_id: player.aliases[0].id,
+          game_id: game.id,
+          dev_build: true,
+          started_at: formatDateForClickHouse(sessionStartDate),
+          ended_at: formatDateForClickHouse(new Date(sessionStartDate.getTime() + 7200000)), // 2 hours later
+        })),
+      format: 'JSONEachRow',
     })
 
     const res = await request(app)
@@ -112,7 +118,7 @@ describe('Headline - average session duration', () => {
     expect(res.body).toStrictEqual({
       hours: 2,
       minutes: 0,
-      seconds: 0
+      seconds: 0,
     })
   })
 })

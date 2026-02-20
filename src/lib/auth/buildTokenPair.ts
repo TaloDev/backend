@@ -1,8 +1,8 @@
 import type { EntityManager } from '@mikro-orm/mysql'
 import type Koa from 'koa'
-import { sign } from './jwt'
 import User from '../../entities/user'
 import UserSession from '../../entities/user-session'
+import { sign } from './jwt'
 
 export async function genAccessToken(user: User) {
   const payload = { sub: user.id }
@@ -25,11 +25,16 @@ const setRefreshToken = (ctx: Pick<Koa.Context, 'cookies' | 'request'>, session:
   ctx.cookies.set('refreshToken', refreshToken, {
     secure: ctx.request.secure,
     expires: session.validUntil,
-    sameSite: 'strict'
+    sameSite: 'strict',
   })
 }
 
-export async function buildTokenPair({ em, ctx, user, userAgent }: {
+export async function buildTokenPair({
+  em,
+  ctx,
+  user,
+  userAgent,
+}: {
   em: EntityManager
   ctx: Pick<Koa.Context, 'cookies' | 'request'>
   user: User

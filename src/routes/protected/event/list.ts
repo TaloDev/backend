@@ -1,8 +1,8 @@
 import { endOfDay } from 'date-fns'
-import { protectedRoute, withMiddleware } from '../../../lib/routing/router'
-import { loadGame } from '../../../middleware/game-middleware'
 import { formatDateForClickHouse } from '../../../lib/clickhouse/formatDateTime'
+import { protectedRoute, withMiddleware } from '../../../lib/routing/router'
 import { dateRangeSchema } from '../../../lib/validation/dateRangeSchema'
+import { loadGame } from '../../../middleware/game-middleware'
 import { EventData, fillDateGaps } from './common'
 
 type AggregatedClickHouseEvent = {
@@ -14,7 +14,7 @@ type AggregatedClickHouseEvent = {
 export const listRoute = protectedRoute({
   method: 'get',
   schema: () => ({
-    query: dateRangeSchema
+    query: dateRangeSchema,
   }),
   middleware: withMiddleware(loadGame),
   handler: async (ctx) => {
@@ -43,10 +43,12 @@ export const listRoute = protectedRoute({
       ORDER BY name, date
     `
 
-    const events = await clickhouse.query({
-      query,
-      format: 'JSONEachRow'
-    }).then((res) => res.json<AggregatedClickHouseEvent>())
+    const events = await clickhouse
+      .query({
+        query,
+        format: 'JSONEachRow',
+      })
+      .then((res) => res.json<AggregatedClickHouseEvent>())
 
     const data: Record<string, EventData[]> = {}
     for (const event of events) {
@@ -58,7 +60,7 @@ export const listRoute = protectedRoute({
         name: event.name,
         date: Number(event.date),
         count: Number(event.count),
-        change: 0
+        change: 0,
       })
     }
 
@@ -68,8 +70,8 @@ export const listRoute = protectedRoute({
       status: 200,
       body: {
         events: filledData,
-        eventNames: Object.keys(filledData)
-      }
+        eventNames: Object.keys(filledData),
+      },
     }
-  }
+  },
 })

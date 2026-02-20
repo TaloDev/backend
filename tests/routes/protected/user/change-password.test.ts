@@ -1,5 +1,5 @@
-import request from 'supertest'
 import bcrypt from 'bcrypt'
+import request from 'supertest'
 import createUserAndToken from '../../../utils/createUserAndToken'
 
 describe('User - change password', () => {

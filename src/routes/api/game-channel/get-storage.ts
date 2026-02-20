@@ -1,13 +1,13 @@
 import Redis from 'ioredis'
-import { apiRoute, withMiddleware } from '../../../lib/routing/router'
-import { requireScopes } from '../../../middleware/policy-middleware'
 import { APIKeyScope } from '../../../entities/api-key'
-import { loadAlias } from '../../../middleware/player-alias-middleware'
-import { loadChannel } from './common'
 import GameChannelStorageProp from '../../../entities/game-channel-storage-prop'
-import { getStorageDocs } from './docs'
-import { playerAliasHeaderSchema } from '../../../lib/validation/playerAliasHeaderSchema'
+import { apiRoute, withMiddleware } from '../../../lib/routing/router'
 import { numericStringSchema } from '../../../lib/validation/numericStringSchema'
+import { playerAliasHeaderSchema } from '../../../lib/validation/playerAliasHeaderSchema'
+import { loadAlias } from '../../../middleware/player-alias-middleware'
+import { requireScopes } from '../../../middleware/policy-middleware'
+import { loadChannel } from './common'
+import { getStorageDocs } from './docs'
 
 export const getStorageRoute = apiRoute({
   method: 'get',
@@ -15,19 +15,19 @@ export const getStorageRoute = apiRoute({
   docs: getStorageDocs,
   schema: (z) => ({
     route: z.object({
-      id: numericStringSchema.meta({ description: 'The ID of the channel' })
+      id: numericStringSchema.meta({ description: 'The ID of the channel' }),
     }),
     headers: z.looseObject({
-      'x-talo-alias': playerAliasHeaderSchema
+      'x-talo-alias': playerAliasHeaderSchema,
     }),
     query: z.object({
-      propKey: z.string().meta({ description: 'The key of the storage property to retrieve' })
-    })
+      propKey: z.string().meta({ description: 'The key of the storage property to retrieve' }),
+    }),
   }),
   middleware: withMiddleware(
     requireScopes([APIKeyScope.READ_GAME_CHANNELS]),
     loadAlias,
-    loadChannel
+    loadChannel,
   ),
   handler: async (ctx) => {
     const { propKey } = ctx.state.validated.query
@@ -48,14 +48,14 @@ export const getStorageRoute = apiRoute({
       return {
         status: 200,
         body: {
-          prop: JSON.parse(cachedProp)
-        }
+          prop: JSON.parse(cachedProp),
+        },
       }
     }
 
     result = await em.repo(GameChannelStorageProp).findOne({
       gameChannel: channel,
-      key: propKey
+      key: propKey,
     })
 
     if (result) {
@@ -65,8 +65,8 @@ export const getStorageRoute = apiRoute({
     return {
       status: 200,
       body: {
-        prop: result
-      }
+        prop: result,
+      },
     }
-  }
+  },
 })

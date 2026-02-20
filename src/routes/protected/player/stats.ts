@@ -11,14 +11,14 @@ export const statsRoute = protectedRoute({
     const em = ctx.em
 
     const stats = await em.repo(PlayerGameStat).find({
-      player: ctx.state.player
+      player: ctx.state.player,
     })
 
     return {
       status: 200,
       body: {
-        stats
-      }
+        stats,
+      },
     }
-  }
+  },
 })

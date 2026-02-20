@@ -1,5 +1,5 @@
-import request from 'supertest'
 import { subDays, format, startOfDay } from 'date-fns'
+import request from 'supertest'
 import PlayerFactory from '../../../fixtures/PlayerFactory'
 import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
 import createUserAndToken from '../../../utils/createUserAndToken'
@@ -13,17 +13,23 @@ describe('Chart - new players', () => {
     const yesterday = subDays(today, 1)
     const twoDaysAgo = subDays(today, 2)
 
-    const playersToday = await new PlayerFactory([game]).state(() => ({
-      createdAt: today
-    })).many(3)
+    const playersToday = await new PlayerFactory([game])
+      .state(() => ({
+        createdAt: today,
+      }))
+      .many(3)
 
-    const playersYesterday = await new PlayerFactory([game]).state(() => ({
-      createdAt: yesterday
-    })).many(2)
+    const playersYesterday = await new PlayerFactory([game])
+      .state(() => ({
+        createdAt: yesterday,
+      }))
+      .many(2)
 
-    const playersTwoDaysAgo = await new PlayerFactory([game]).state(() => ({
-      createdAt: twoDaysAgo
-    })).many(1)
+    const playersTwoDaysAgo = await new PlayerFactory([game])
+      .state(() => ({
+        createdAt: twoDaysAgo,
+      }))
+      .many(1)
 
     await em.persist([...playersToday, ...playersYesterday, ...playersTwoDaysAgo]).flush()
 
@@ -38,14 +44,14 @@ describe('Chart - new players', () => {
 
     expect(res.body.data).toHaveLength(3)
 
-    const twoDaysAgoData = res.body.data.find((d: { date: number }) =>
-      d.date === startOfDay(twoDaysAgo).getTime()
+    const twoDaysAgoData = res.body.data.find(
+      (d: { date: number }) => d.date === startOfDay(twoDaysAgo).getTime(),
     )
-    const yesterdayData = res.body.data.find((d: { date: number }) =>
-      d.date === startOfDay(yesterday).getTime()
+    const yesterdayData = res.body.data.find(
+      (d: { date: number }) => d.date === startOfDay(yesterday).getTime(),
     )
-    const todayData = res.body.data.find((d: { date: number }) =>
-      d.date === startOfDay(today).getTime()
+    const todayData = res.body.data.find(
+      (d: { date: number }) => d.date === startOfDay(today).getTime(),
     )
 
     expect(twoDaysAgoData.count).toBe(1)
@@ -60,13 +66,17 @@ describe('Chart - new players', () => {
     const today = new Date()
     const threeDaysAgo = subDays(today, 3)
 
-    const playersToday = await new PlayerFactory([game]).state(() => ({
-      createdAt: today
-    })).many(2)
+    const playersToday = await new PlayerFactory([game])
+      .state(() => ({
+        createdAt: today,
+      }))
+      .many(2)
 
-    const playersThreeDaysAgo = await new PlayerFactory([game]).state(() => ({
-      createdAt: threeDaysAgo
-    })).many(1)
+    const playersThreeDaysAgo = await new PlayerFactory([game])
+      .state(() => ({
+        createdAt: threeDaysAgo,
+      }))
+      .many(1)
 
     await em.persist([...playersToday, ...playersThreeDaysAgo]).flush()
 
@@ -117,13 +127,18 @@ describe('Chart - new players', () => {
 
     const today = new Date()
 
-    const regularPlayers = await new PlayerFactory([game]).state(() => ({
-      createdAt: today
-    })).many(2)
+    const regularPlayers = await new PlayerFactory([game])
+      .state(() => ({
+        createdAt: today,
+      }))
+      .many(2)
 
-    const devPlayers = await new PlayerFactory([game]).devBuild().state(() => ({
-      createdAt: today
-    })).many(3)
+    const devPlayers = await new PlayerFactory([game])
+      .devBuild()
+      .state(() => ({
+        createdAt: today,
+      }))
+      .many(3)
 
     await em.persist([...regularPlayers, ...devPlayers]).flush()
 
@@ -146,13 +161,18 @@ describe('Chart - new players', () => {
 
     const today = new Date()
 
-    const regularPlayers = await new PlayerFactory([game]).state(() => ({
-      createdAt: today
-    })).many(2)
+    const regularPlayers = await new PlayerFactory([game])
+      .state(() => ({
+        createdAt: today,
+      }))
+      .many(2)
 
-    const devPlayers = await new PlayerFactory([game]).devBuild().state(() => ({
-      createdAt: today
-    })).many(3)
+    const devPlayers = await new PlayerFactory([game])
+      .devBuild()
+      .state(() => ({
+        createdAt: today,
+      }))
+      .many(3)
 
     await em.persist([...regularPlayers, ...devPlayers]).flush()
 
@@ -182,8 +202,8 @@ describe('Chart - new players', () => {
 
     expect(res.body).toStrictEqual({
       errors: {
-        startDate: ['startDate is missing from the request query']
-      }
+        startDate: ['startDate is missing from the request query'],
+      },
     })
   })
 
@@ -199,8 +219,8 @@ describe('Chart - new players', () => {
 
     expect(res.body).toStrictEqual({
       errors: {
-        endDate: ['endDate is missing from the request query']
-      }
+        endDate: ['endDate is missing from the request query'],
+      },
     })
   })
 
@@ -216,8 +236,8 @@ describe('Chart - new players', () => {
 
     expect(res.body).toStrictEqual({
       errors: {
-        startDate: ['Invalid start date, it should be before the end date']
-      }
+        startDate: ['Invalid start date, it should be before the end date'],
+      },
     })
   })
 
@@ -229,17 +249,23 @@ describe('Chart - new players', () => {
     const yesterday = subDays(today, 1)
     const twoDaysAgo = subDays(today, 2)
 
-    const playersTwoDaysAgo = await new PlayerFactory([game]).state(() => ({
-      createdAt: twoDaysAgo
-    })).many(2)
+    const playersTwoDaysAgo = await new PlayerFactory([game])
+      .state(() => ({
+        createdAt: twoDaysAgo,
+      }))
+      .many(2)
 
-    const playersYesterday = await new PlayerFactory([game]).state(() => ({
-      createdAt: yesterday
-    })).many(4)
+    const playersYesterday = await new PlayerFactory([game])
+      .state(() => ({
+        createdAt: yesterday,
+      }))
+      .many(4)
 
-    const playersToday = await new PlayerFactory([game]).state(() => ({
-      createdAt: today
-    })).many(3)
+    const playersToday = await new PlayerFactory([game])
+      .state(() => ({
+        createdAt: today,
+      }))
+      .many(3)
 
     await em.persist([...playersTwoDaysAgo, ...playersYesterday, ...playersToday]).flush()
 
@@ -254,14 +280,14 @@ describe('Chart - new players', () => {
 
     expect(res.body.data).toHaveLength(3)
 
-    const twoDaysAgoData = res.body.data.find((d: { date: number }) =>
-      d.date === startOfDay(twoDaysAgo).getTime()
+    const twoDaysAgoData = res.body.data.find(
+      (d: { date: number }) => d.date === startOfDay(twoDaysAgo).getTime(),
     )
-    const yesterdayData = res.body.data.find((d: { date: number }) =>
-      d.date === startOfDay(yesterday).getTime()
+    const yesterdayData = res.body.data.find(
+      (d: { date: number }) => d.date === startOfDay(yesterday).getTime(),
     )
-    const todayData = res.body.data.find((d: { date: number }) =>
-      d.date === startOfDay(today).getTime()
+    const todayData = res.body.data.find(
+      (d: { date: number }) => d.date === startOfDay(today).getTime(),
     )
 
     // two days ago: change equals count when prev is 0
@@ -279,9 +305,11 @@ describe('Chart - new players', () => {
     const today = new Date()
     const twoDaysAgo = subDays(today, 2)
 
-    const playersTwoDaysAgo = await new PlayerFactory([game]).state(() => ({
-      createdAt: twoDaysAgo
-    })).many(2)
+    const playersTwoDaysAgo = await new PlayerFactory([game])
+      .state(() => ({
+        createdAt: twoDaysAgo,
+      }))
+      .many(2)
 
     await em.persist(playersTwoDaysAgo).flush()
 

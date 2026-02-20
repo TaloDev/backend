@@ -18,12 +18,10 @@ export const loginRoute = apiRoute({
   docs: loginDocs,
   schema: (z) => ({
     body: z.object({
-      identifier: z
-        .string()
-        .meta({
-          description:
-            'The unique identifier of the player. This can be their username, an email or a numeric ID',
-        }),
+      identifier: z.string().meta({
+        description:
+          'The unique identifier of the player. This can be their username, an email or a numeric ID',
+      }),
       password: z.string().meta({ description: "The player's password" }),
     }),
   }),

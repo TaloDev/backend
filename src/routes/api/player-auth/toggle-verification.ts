@@ -25,13 +25,10 @@ export const toggleVerificationRoute = apiRoute({
       verificationEnabled: z
         .boolean()
         .meta({ description: 'The new verification status for the player account' }),
-      email: z
-        .string()
-        .optional()
-        .meta({
-          description:
-            'Required when attempting to enable verification if the player does not currently have an email address set',
-        }),
+      email: z.string().optional().meta({
+        description:
+          'Required when attempting to enable verification if the player does not currently have an email address set',
+      }),
     }),
   }),
   middleware: withMiddleware(

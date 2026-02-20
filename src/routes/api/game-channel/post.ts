@@ -17,23 +17,17 @@ export const postRoute = apiRoute({
     body: z.object({
       name: z.string().meta({ description: 'The name of the channel' }),
       props: createPropsSchema.optional().meta({ description: 'An array of @type(Props:prop)' }),
-      autoCleanup: z
-        .boolean()
-        .optional()
-        .meta({
-          description:
-            'Whether the channel should be automatically deleted when the owner leaves or the channel is empty (default is false)',
-        }),
+      autoCleanup: z.boolean().optional().meta({
+        description:
+          'Whether the channel should be automatically deleted when the owner leaves or the channel is empty (default is false)',
+      }),
       private: z
         .boolean()
         .optional()
         .meta({ description: 'Private channels require invites to join them (default is false)' }),
-      temporaryMembership: z
-        .boolean()
-        .optional()
-        .meta({
-          description: 'Whether members should be removed when they disconnect (default is false)',
-        }),
+      temporaryMembership: z.boolean().optional().meta({
+        description: 'Whether members should be removed when they disconnect (default is false)',
+      }),
     }),
   }),
   middleware: withMiddleware(requireScopes([APIKeyScope.WRITE_GAME_CHANNELS]), loadAlias),

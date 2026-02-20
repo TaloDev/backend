@@ -29,11 +29,9 @@ export const mergeRoute = apiRoute({
   docs: mergeDocs,
   schema: (z) => ({
     body: z.object({
-      playerId1: z
-        .uuid()
-        .meta({
-          description: 'The first player ID - the second player will be merged into this player',
-        }),
+      playerId1: z.uuid().meta({
+        description: 'The first player ID - the second player will be merged into this player',
+      }),
       playerId2: z.uuid().meta({ description: 'The second player ID' }),
     }),
   }),

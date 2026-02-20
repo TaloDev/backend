@@ -17,12 +17,10 @@ export const forgotPasswordRoute = apiRoute({
   docs: forgotPasswordDocs,
   schema: (z) => ({
     body: z.object({
-      email: z
-        .string()
-        .meta({
-          description:
-            'The email address to send the verification code to. If no player with this email exists, the request will be ignored',
-        }),
+      email: z.string().meta({
+        description:
+          'The email address to send the verification code to. If no player with this email exists, the request will be ignored',
+      }),
     }),
   }),
   middleware: withMiddleware(requireScopes([APIKeyScope.READ_PLAYERS, APIKeyScope.WRITE_PLAYERS])),

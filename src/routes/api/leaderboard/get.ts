@@ -33,25 +33,16 @@ export const getRoute = apiRoute({
         .string()
         .optional()
         .meta({ description: 'Only return entries with a matching prop key and value' }),
-      startDate: z
-        .string()
-        .optional()
-        .meta({
-          description: 'A UTC Date (YYYY-MM-DD), DateTime (ISO 8601) or millisecond timestamp',
-        }),
-      endDate: z
-        .string()
-        .optional()
-        .meta({
-          description: 'A UTC Date (YYYY-MM-DD), DateTime (ISO 8601) or millisecond timestamp',
-        }),
-      service: z
-        .string()
-        .optional()
-        .meta({
-          description:
-            'Only return entries for this player alias service (e.g. steam, epic, username)',
-        }),
+      startDate: z.string().optional().meta({
+        description: 'A UTC Date (YYYY-MM-DD), DateTime (ISO 8601) or millisecond timestamp',
+      }),
+      endDate: z.string().optional().meta({
+        description: 'A UTC Date (YYYY-MM-DD), DateTime (ISO 8601) or millisecond timestamp',
+      }),
+      service: z.string().optional().meta({
+        description:
+          'Only return entries for this player alias service (e.g. steam, epic, username)',
+      }),
     }),
   }),
   middleware: withMiddleware(requireScopes([APIKeyScope.READ_LEADERBOARDS]), loadLeaderboard),

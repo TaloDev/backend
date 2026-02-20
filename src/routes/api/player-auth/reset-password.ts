@@ -13,11 +13,9 @@ export const resetPasswordRoute = apiRoute({
   docs: resetPasswordDocs,
   schema: (z) => ({
     body: z.object({
-      code: z
-        .string()
-        .meta({
-          description: 'The 6-digit verification code sent to the email address (must be a string)',
-        }),
+      code: z.string().meta({
+        description: 'The 6-digit verification code sent to the email address (must be a string)',
+      }),
       password: z.string().meta({ description: 'The new password for the player' }),
     }),
   }),

@@ -24,18 +24,12 @@ export const historyRoute = apiRoute({
     }),
     query: z.object({
       page: pageSchema.meta({ description: 'The current pagination index (starting at 0)' }),
-      startDate: z
-        .string()
-        .optional()
-        .meta({
-          description: 'A UTC Date (YYYY-MM-DD), DateTime (ISO 8601) or millisecond timestamp',
-        }),
-      endDate: z
-        .string()
-        .optional()
-        .meta({
-          description: 'A UTC Date (YYYY-MM-DD), DateTime (ISO 8601) or millisecond timestamp',
-        }),
+      startDate: z.string().optional().meta({
+        description: 'A UTC Date (YYYY-MM-DD), DateTime (ISO 8601) or millisecond timestamp',
+      }),
+      endDate: z.string().optional().meta({
+        description: 'A UTC Date (YYYY-MM-DD), DateTime (ISO 8601) or millisecond timestamp',
+      }),
     }),
   }),
   middleware: withMiddleware(

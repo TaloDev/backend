@@ -13,11 +13,9 @@ export const verifyRoute = apiRoute({
   schema: (z) => ({
     body: z.object({
       aliasId: z.number().meta({ description: 'The ID of the alias to verify' }),
-      code: z
-        .string()
-        .meta({
-          description: 'The 6-digit verification code sent to the player (must be a string)',
-        }),
+      code: z.string().meta({
+        description: 'The 6-digit verification code sent to the player (must be a string)',
+      }),
     }),
   }),
   middleware: withMiddleware(requireScopes([APIKeyScope.READ_PLAYERS, APIKeyScope.WRITE_PLAYERS])),

@@ -14,11 +14,9 @@ export const createRoute = protectedRoute({
   schema: (z) => ({
     body: z.object({
       email: z.email(),
-      type: z
-        .enum(UserType)
-        .refine((val) => [UserType.ADMIN, UserType.DEV].includes(val), {
-          error: 'You can only invite an admin or developer user',
-        }),
+      type: z.enum(UserType).refine((val) => [UserType.ADMIN, UserType.DEV].includes(val), {
+        error: 'You can only invite an admin or developer user',
+      }),
     }),
   }),
   middleware: withMiddleware(

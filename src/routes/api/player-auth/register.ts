@@ -22,27 +22,19 @@ export const registerRoute = apiRoute({
   schema: (z) => ({
     body: z
       .object({
-        identifier: z
-          .string()
-          .meta({
-            description:
-              'The unique identifier of the player. This can be their username, an email or a numeric ID',
-          }),
+        identifier: z.string().meta({
+          description:
+            'The unique identifier of the player. This can be their username, an email or a numeric ID',
+        }),
         password: z.string().meta({ description: 'The password the player will login with' }),
-        verificationEnabled: z
-          .boolean()
-          .optional()
-          .meta({
-            description:
-              'When enabled, the player will be sent a verification code to their email address before they can login',
-          }),
-        email: z
-          .string()
-          .optional()
-          .meta({
-            description:
-              'Required when verification is enabled. This is also used for password resets: players without an email cannot reset their password',
-          }),
+        verificationEnabled: z.boolean().optional().meta({
+          description:
+            'When enabled, the player will be sent a verification code to their email address before they can login',
+        }),
+        email: z.string().optional().meta({
+          description:
+            'Required when verification is enabled. This is also used for password resets: players without an email cannot reset their password',
+        }),
       })
       .refine((data) => !data.verificationEnabled || data.email, {
         message: 'email is required when verificationEnabled is true',

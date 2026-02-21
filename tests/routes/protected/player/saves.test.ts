@@ -1,11 +1,11 @@
 import request from 'supertest'
-import PlayerFactory from '../../../fixtures/PlayerFactory'
-import createUserAndToken from '../../../utils/createUserAndToken'
-import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
 import GameSaveFactory from '../../../fixtures/GameSaveFactory'
+import PlayerFactory from '../../../fixtures/PlayerFactory'
+import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
+import createUserAndToken from '../../../utils/createUserAndToken'
 
 describe('Player - get saves', () => {
-  it('should get a player\'s saves', async () => {
+  it("should get a player's saves", async () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({}, organisation)
 
@@ -22,7 +22,7 @@ describe('Player - get saves', () => {
     expect(res.body.saves).toHaveLength(3)
   })
 
-  it('should not get a player\'s saves for a player they have no access to', async () => {
+  it("should not get a player's saves for a player they have no access to", async () => {
     const [, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken()
 
@@ -36,7 +36,7 @@ describe('Player - get saves', () => {
       .expect(403)
   })
 
-  it('should not get a player\'s saves if they do not exist', async () => {
+  it("should not get a player's saves if they do not exist", async () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({}, organisation)
 

@@ -1,6 +1,10 @@
 import { EntityManager } from '@mikro-orm/mysql'
 
-export default class ClickHouseEntity<T, U extends Array<unknown> = [], V extends Array<unknown> = []> {
+export default class ClickHouseEntity<
+  T,
+  U extends Array<unknown> = [],
+  V extends Array<unknown> = [],
+> {
   constructor() {}
 
   construct(..._args: U): this {

@@ -16,10 +16,8 @@ export const getDocs = {
               negate: false,
               field: 'props.online',
               castType: 'CHAR',
-              operands: [
-                'true'
-              ]
-            }
+              operands: ['true'],
+            },
           ],
           ruleMode: '$and',
           membersVisible: true,
@@ -31,8 +29,8 @@ export const getDocs = {
               props: [
                 {
                   key: 'online',
-                  value: 'true'
-                }
+                  value: 'true',
+                },
               ],
               aliases: [],
               devBuild: false,
@@ -41,18 +39,18 @@ export const getDocs = {
               groups: [
                 {
                   id: '74b6a013-6c3d-4de6-8f61-444b4cf6e909',
-                  name: 'Online players'
-                }
-              ]
-            }
-          ]
+                  name: 'Online players',
+                },
+              ],
+            },
+          ],
         },
         membersPagination: {
           count: 1,
           itemsPerPage: 50,
-          isLastPage: true
-        }
-      }
+          isLastPage: true,
+        },
+      },
     },
     {
       title: 'Sample response (members not visible)',
@@ -67,22 +65,20 @@ export const getDocs = {
               negate: false,
               field: 'props.online',
               castType: 'CHAR',
-              operands: [
-                'true'
-              ]
-            }
+              operands: ['true'],
+            },
           ],
           ruleMode: '$and',
           membersVisible: false,
           updatedAt: '2024-10-01T23:09:18.000Z',
-          count: 1
+          count: 1,
         },
         membersPagination: {
           count: 0,
           itemsPerPage: 50,
-          isLastPage: true
-        }
-      }
-    }
-  ]
+          isLastPage: true,
+        },
+      },
+    },
+  ],
 } satisfies RouteDocs

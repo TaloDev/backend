@@ -7,11 +7,19 @@ export const postDocs = {
       title: 'Sample request',
       sample: {
         events: [
-          { name: 'Levelled up', timestamp: 1657063169020, props: [{ key: 'newLevel', value: '81' }] },
-          { name: 'Quest completed', timestamp: 1657063169324, props: [{ key: 'questId', value: '122' }] },
-          { name: 'Quested started', props: [{ key: 'questId', value: '128' }] }
-        ]
-      }
+          {
+            name: 'Levelled up',
+            timestamp: 1657063169020,
+            props: [{ key: 'newLevel', value: '81' }],
+          },
+          {
+            name: 'Quest completed',
+            timestamp: 1657063169324,
+            props: [{ key: 'questId', value: '122' }],
+          },
+          { name: 'Quested started', props: [{ key: 'questId', value: '128' }] },
+        ],
+      },
     },
     {
       title: 'Sample response',
@@ -29,18 +37,16 @@ export const postDocs = {
                 id: '7a4e70ec-6ee6-418e-923d-b3a45051b7f9',
                 props: [
                   { key: 'xPos', value: '13.29' },
-                  { key: 'yPos', value: '26.44' }
+                  { key: 'yPos', value: '26.44' },
                 ],
-                aliases: [
-                  '/* [Circular] */'
-                ],
+                aliases: ['/* [Circular] */'],
                 devBuild: false,
                 createdAt: '2022-01-15T13:20:32.133Z',
-                lastSeenAt: '2022-07-05T12:09:43.124Z'
-              }
+                lastSeenAt: '2022-07-05T12:09:43.124Z',
+              },
             },
             gameId: 1,
-            createdAt: '2022-07-05T12:26:09.020Z'
+            createdAt: '2022-07-05T12:26:09.020Z',
           },
           {
             id: 'd58b8a63-525b-4994-b04c-602485976245',
@@ -54,26 +60,20 @@ export const postDocs = {
                 id: '7a4e70ec-6ee6-418e-923d-b3a45051b7f9',
                 props: [
                   { key: 'xPos', value: '13.29' },
-                  { key: 'yPos', value: '26.44' }
+                  { key: 'yPos', value: '26.44' },
                 ],
-                aliases: [
-                  '/* [Circular] */'
-                ],
+                aliases: ['/* [Circular] */'],
                 devBuild: false,
                 createdAt: '2022-01-15T13:20:32.133Z',
-                lastSeenAt: '2022-07-05T12:09:43.124Z'
-              }
+                lastSeenAt: '2022-07-05T12:09:43.124Z',
+              },
             },
             gameId: 1,
-            createdAt: '2022-07-05T12:26:09.324Z'
-          }
+            createdAt: '2022-07-05T12:26:09.324Z',
+          },
         ],
-        errors: [
-          [],
-          [],
-          ['Event is missing the key: timestamp']
-        ]
-      }
-    }
-  ]
+        errors: [[], [], ['Event is missing the key: timestamp']],
+      },
+    },
+  ],
 } satisfies RouteDocs

@@ -1,30 +1,33 @@
 import { Collection, EntityManager, MikroORM } from '@mikro-orm/mysql'
+import archiver from 'archiver'
 import { SandboxedJob } from 'bullmq'
-import DataExport, { DataExportAvailableEntities, DataExportStatus } from '../../../entities/data-export'
-import Event, { ClickHouseEventProp } from '../../../entities/event'
+import { format } from 'date-fns'
+import { createWriteStream } from 'fs'
+import { mkdir } from 'fs/promises'
+import { get } from 'lodash'
+import path from 'path'
+import { PassThrough } from 'stream'
 import ormConfig from '../../../config/mikro-orm.config'
-import PlayerProp from '../../../entities/player-prop'
-import Player from '../../../entities/player'
-import Prop from '../../../entities/prop'
-import PlayerAlias from '../../../entities/player-alias'
-import LeaderboardEntry from '../../../entities/leaderboard-entry'
-import GameStat from '../../../entities/game-stat'
-import PlayerGameStat from '../../../entities/player-game-stat'
+import DataExport, {
+  DataExportAvailableEntities,
+  DataExportStatus,
+} from '../../../entities/data-export'
+import Event, { ClickHouseEventProp } from '../../../entities/event'
+import { ClickHouseEvent } from '../../../entities/event'
 import GameActivity, { GameActivityType } from '../../../entities/game-activity'
 import GameFeedback from '../../../entities/game-feedback'
+import GameStat from '../../../entities/game-stat'
+import LeaderboardEntry from '../../../entities/leaderboard-entry'
+import Player from '../../../entities/player'
+import PlayerAlias from '../../../entities/player-alias'
+import PlayerGameStat from '../../../entities/player-game-stat'
+import PlayerProp from '../../../entities/player-prop'
+import Prop from '../../../entities/prop'
 import createClickHouseClient from '../../clickhouse/createClient'
-import { ClickHouseEvent } from '../../../entities/event'
-import { streamByCursor } from '../../perf/streamByCursor'
-import archiver from 'archiver'
-import { PassThrough } from 'stream'
-import path from 'path'
-import { mkdir } from 'fs/promises'
-import { createWriteStream } from 'fs'
-import { get } from 'lodash'
-import { DataExportMailer } from './dataExportMailer'
-import { format } from 'date-fns'
 import { escapeCSVValue } from '../../lang/escapeCSVValue'
+import { streamByCursor } from '../../perf/streamByCursor'
 import { DataExportJob } from './createDataExportQueue'
+import { DataExportMailer } from './dataExportMailer'
 
 type PropCollection = Collection<PlayerProp, Player>
 
@@ -32,14 +35,22 @@ type EntityWithProps = {
   props: Prop[] | PropCollection
 }
 
-type ExportableEntity = Event | Player | PlayerAlias | LeaderboardEntry | GameStat | PlayerGameStat | GameActivity | GameFeedback
+type ExportableEntity =
+  | Event
+  | Player
+  | PlayerAlias
+  | LeaderboardEntry
+  | GameStat
+  | PlayerGameStat
+  | GameActivity
+  | GameFeedback
 type ExportableEntityWithProps = ExportableEntity & EntityWithProps
 
 export class DataExporter {
   private async *streamEvents(
     dataExport: DataExport,
     em: EntityManager,
-    includeDevData: boolean
+    includeDevData: boolean,
   ): AsyncGenerator<Event> {
     const clickhouse = createClickHouseClient()
     const playerAliasCache = new Map<number, Partial<PlayerAlias>>()
@@ -54,14 +65,18 @@ export class DataExporter {
         ${includeDevData ? '' : 'AND e.dev_build = false'}
       `
 
-      const propKeys = await clickhouse.query({
-        query: keyQuery,
-        format: 'JSONEachRow'
-      }).then((res) => res.json<ClickHouseEventProp>())
+      const propKeys = await clickhouse
+        .query({
+          query: keyQuery,
+          format: 'JSONEachRow',
+        })
+        .then((res) => res.json<ClickHouseEventProp>())
         .then((rows) => rows.map((row) => row.prop_key))
 
       // step 2: dynamically build pivot select clause
-      const pivotCols = propKeys.map((key) => `MAX(IF(p.prop_key = '${key}', p.prop_value, NULL)) AS "props.${key}"`).join(',\n  ')
+      const pivotCols = propKeys
+        .map((key) => `MAX(IF(p.prop_key = '${key}', p.prop_value, NULL)) AS "props.${key}"`)
+        .join(',\n  ')
 
       // step 3: build full pivot query
       const query = `
@@ -85,7 +100,7 @@ export class DataExporter {
       // step 4: stream the query
       const rows = await clickhouse.query({
         query,
-        format: 'JSONEachRow'
+        format: 'JSONEachRow',
       })
 
       const stream = rows.stream<ClickHouseEvent & Record<string, string>>()
@@ -100,14 +115,17 @@ export class DataExporter {
         if (unknownAliasIds.length > 0) {
           /* @ts-expect-error types don't work nicely with partial loading */
           const aliasStream = streamByCursor<Partial<PlayerAlias>>(async (batchSize, after) => {
-            return em.repo(PlayerAlias).findByCursor({
-              id: { $in: unknownAliasIds }
-            }, {
-              first: batchSize,
-              after,
-              orderBy: { id: 'asc' },
-              fields: ['service', 'identifier', 'player.id']
-            })
+            return em.repo(PlayerAlias).findByCursor(
+              {
+                id: { $in: unknownAliasIds },
+              },
+              {
+                first: batchSize,
+                after,
+                orderBy: { id: 'asc' },
+                fields: ['service', 'identifier', 'player.id'],
+              },
+            )
           })
 
           for await (const alias of aliasStream) {
@@ -130,7 +148,7 @@ export class DataExporter {
           }
 
           // hydrate props from flattened keys
-          const props: { key: string, value: string }[] = []
+          const props: { key: string; value: string }[] = []
           for (const key of propKeys) {
             const value = data[`props.${key}`]
             if (value != null) {
@@ -150,17 +168,20 @@ export class DataExporter {
   private async *streamPlayers(
     dataExport: DataExport,
     em: EntityManager,
-    includeDevData: boolean
+    includeDevData: boolean,
   ): AsyncGenerator<Player> {
     yield* streamByCursor<Player>(async (batchSize, after) => {
-      const page = await em.repo(Player).findByCursor({
-        game: dataExport.game,
-        ...(includeDevData ? {} : { devBuild: false })
-      }, {
-        first: batchSize,
-        after,
-        orderBy: { id: 'asc' }
-      })
+      const page = await em.repo(Player).findByCursor(
+        {
+          game: dataExport.game,
+          ...(includeDevData ? {} : { devBuild: false }),
+        },
+        {
+          first: batchSize,
+          after,
+          orderBy: { id: 'asc' },
+        },
+      )
       return page
     })
   }
@@ -168,68 +189,79 @@ export class DataExporter {
   private async *streamPlayerAliases(
     dataExport: DataExport,
     em: EntityManager,
-    includeDevData: boolean
+    includeDevData: boolean,
   ): AsyncGenerator<PlayerAlias> {
     yield* streamByCursor<PlayerAlias>(async (batchSize, after) => {
-      return em.repo(PlayerAlias).findByCursor({
-        player: {
-          game: dataExport.game,
-          ...includeDevData ? {} : { devBuild: false }
-        }
-      }, {
-        first: batchSize,
-        after,
-        orderBy: { id: 'asc' }
-      })
+      return em.repo(PlayerAlias).findByCursor(
+        {
+          player: {
+            game: dataExport.game,
+            ...(includeDevData ? {} : { devBuild: false }),
+          },
+        },
+        {
+          first: batchSize,
+          after,
+          orderBy: { id: 'asc' },
+        },
+      )
     })
   }
 
   private async *streamLeaderboardEntries(
     dataExport: DataExport,
     em: EntityManager,
-    includeDevData: boolean
+    includeDevData: boolean,
   ): AsyncGenerator<LeaderboardEntry> {
     yield* streamByCursor<LeaderboardEntry>(async (batchSize, after) => {
-      return em.repo(LeaderboardEntry).findByCursor({
-        leaderboard: {
-          game: dataExport.game
-        },
-        playerAlias: {
-          player: {
+      return em.repo(LeaderboardEntry).findByCursor(
+        {
+          leaderboard: {
             game: dataExport.game,
-            ...(includeDevData ? {} : { devBuild: false })
-          }
-        }
-      }, {
-        first: batchSize,
-        after,
-        orderBy: { id: 'asc' },
-        populate: ['leaderboard'] as const
-      })
+          },
+          playerAlias: {
+            player: {
+              game: dataExport.game,
+              ...(includeDevData ? {} : { devBuild: false }),
+            },
+          },
+        },
+        {
+          first: batchSize,
+          after,
+          orderBy: { id: 'asc' },
+          populate: ['leaderboard'] as const,
+        },
+      )
     })
   }
 
   private async *streamGameStats(
     dataExport: DataExport,
     em: EntityManager,
-    includeDevData: boolean
+    includeDevData: boolean,
   ): AsyncGenerator<GameStat> {
     yield* streamByCursor<GameStat>(async (batchSize, after) => {
-      const page = await em.repo(GameStat).findByCursor({
-        game: dataExport.game
-      }, {
-        first: batchSize,
-        after,
-        orderBy: { id: 'asc' }
-      })
+      const page = await em.repo(GameStat).findByCursor(
+        {
+          game: dataExport.game,
+        },
+        {
+          first: batchSize,
+          after,
+          orderBy: { id: 'asc' },
+        },
+      )
 
       // for data exports excluding dev data, recalculate global values without dev players
       if (!includeDevData) {
-        await Promise.all(page.items.map(async (stat) => {
-          if (stat.global) {
-            await stat.recalculateGlobalValue({ em, includeDevData: false })
-          }
-        }))
+        await Promise.all(
+          page.items.map(async (stat) => {
+            if (stat.global) {
+              await stat.recalculateGlobalValue({ em, includeDevData: false })
+            }
+          }),
+        )
       }
 
       return page
@@ -239,61 +271,70 @@ export class DataExporter {
   private async *streamPlayerGameStats(
     dataExport: DataExport,
     em: EntityManager,
-    includeDevData: boolean
+    includeDevData: boolean,
   ): AsyncGenerator<PlayerGameStat> {
     yield* streamByCursor<PlayerGameStat>(async (batchSize, after) => {
-      return em.repo(PlayerGameStat).findByCursor({
-        stat: {
-          game: dataExport.game
+      return em.repo(PlayerGameStat).findByCursor(
+        {
+          stat: {
+            game: dataExport.game,
+          },
+          player: {
+            game: dataExport.game,
+            ...(includeDevData ? {} : { devBuild: false }),
+          },
         },
-        player: {
-          game: dataExport.game,
-          ...(includeDevData ? {} : { devBuild: false })
-        }
-      }, {
-        first: batchSize,
-        after,
-        orderBy: { id: 'asc' },
-        populate: ['player'] as const
-      })
+        {
+          first: batchSize,
+          after,
+          orderBy: { id: 'asc' },
+          populate: ['player'] as const,
+        },
+      )
     })
   }
 
   private async *streamGameActivities(
     dataExport: DataExport,
-    em: EntityManager
+    em: EntityManager,
   ): AsyncGenerator<GameActivity> {
     yield* streamByCursor<GameActivity>(async (batchSize, after) => {
-      return em.repo(GameActivity).findByCursor({
-        game: dataExport.game
-      }, {
-        first: batchSize,
-        after,
-        orderBy: { id: 'asc' },
-        populate: ['user'] as const
-      })
+      return em.repo(GameActivity).findByCursor(
+        {
+          game: dataExport.game,
+        },
+        {
+          first: batchSize,
+          after,
+          orderBy: { id: 'asc' },
+          populate: ['user'] as const,
+        },
+      )
     })
   }
 
   private async *streamGameFeedback(
     dataExport: DataExport,
     em: EntityManager,
-    includeDevData: boolean
+    includeDevData: boolean,
   ): AsyncGenerator<GameFeedback> {
     yield* streamByCursor<GameFeedback>(async (batchSize, after) => {
-      return em.repo(GameFeedback).findByCursor({
-        playerAlias: {
-          player: {
-            game: dataExport.game,
-            ...(includeDevData ? {} : { devBuild: false })
-          }
-        }
-      }, {
-        first: batchSize,
-        after,
-        orderBy: { id: 'asc' },
-        populate: ['playerAlias.player'] as const
-      })
+      return em.repo(GameFeedback).findByCursor(
+        {
+          playerAlias: {
+            player: {
+              game: dataExport.game,
+              ...(includeDevData ? {} : { devBuild: false }),
+            },
+          },
+        },
+        {
+          first: batchSize,
+          after,
+          orderBy: { id: 'asc' },
+          populate: ['playerAlias.player'] as const,
+        },
+      )
     })
   }
 
@@ -303,13 +344,13 @@ export class DataExporter {
     generatorFactory: (
       dataExport: DataExport,
       em: EntityManager,
-      includeDevData: boolean
+      includeDevData: boolean,
     ) => AsyncGenerator<T>,
     dataExport: DataExport,
     em: EntityManager,
     includeDevData: boolean,
     dynamicPropDiscovery: boolean = false,
-    maxRowsPerFile: number = 100_000
+    maxRowsPerFile: number = 100_000,
   ): Promise<void> {
     const service = filename.replace('.csv', '') as DataExportAvailableEntities
     const baseColumns = this.getColumns(service)
@@ -333,7 +374,7 @@ export class DataExporter {
       for await (const entity of firstPassGenerator) {
         if ('props' in entity) {
           this.getProps(entity as ExportableEntityWithProps).forEach((prop) =>
-            allPropKeys.add(prop.key)
+            allPropKeys.add(prop.key),
           )
         }
         entitiesToProcess.push(entity)
@@ -349,7 +390,7 @@ export class DataExporter {
       const finalColumns = [
         ...baseColumns.filter((col) => col !== 'props'),
         ...metaPropKeys.map((key) => `props.${key}`),
-        ...otherPropKeys.map((key) => `props.${key}`)
+        ...otherPropKeys.map((key) => `props.${key}`),
       ]
 
       // chunked writing
@@ -384,7 +425,7 @@ export class DataExporter {
     for await (const entity of generator) {
       if ('props' in entity) {
         this.getProps(entity as ExportableEntityWithProps).forEach((prop) =>
-          allPropKeys.add(prop.key)
+          allPropKeys.add(prop.key),
         )
       }
       allEntities.push(entity)
@@ -400,7 +441,7 @@ export class DataExporter {
     const finalColumns = [
       ...baseColumns.filter((col) => col !== 'props'),
       ...metaPropKeys.map((key) => `props.${key}`),
-      ...otherPropKeys.map((key) => `props.${key}`)
+      ...otherPropKeys.map((key) => `props.${key}`),
     ]
 
     // chunked writing
@@ -426,7 +467,12 @@ export class DataExporter {
     passThrough.end()
   }
 
-  public async createZipStream(filepath: string, dataExport: DataExport, em: EntityManager, includeDevData: boolean): Promise<void> {
+  public async createZipStream(
+    filepath: string,
+    dataExport: DataExport,
+    em: EntityManager,
+    includeDevData: boolean,
+  ): Promise<void> {
     const dir = path.dirname(filepath)
     await mkdir(dir, { recursive: true })
 
@@ -434,8 +480,12 @@ export class DataExporter {
     const archive = archiver('zip', { zlib: { level: 9 } })
 
     archive.pipe(output)
-    archive.on('error', (err) => { throw err })
-    output.on('error', (err) => { throw err })
+    archive.on('error', (err) => {
+      throw err
+    })
+    output.on('error', (err) => {
+      throw err
+    })
 
     if (dataExport.entities.includes(DataExportAvailableEntities.EVENTS)) {
       console.time(`Data export (${dataExport.id}) - events`)
@@ -445,7 +495,7 @@ export class DataExporter {
         this.streamEvents,
         dataExport,
         em,
-        includeDevData
+        includeDevData,
       )
       console.timeEnd(`Data export (${dataExport.id}) - events`)
     }
@@ -459,7 +509,7 @@ export class DataExporter {
         dataExport,
         em,
         includeDevData,
-        true
+        true,
       )
       console.timeEnd(`Data export (${dataExport.id}) - players`)
     }
@@ -472,7 +522,7 @@ export class DataExporter {
         this.streamPlayerAliases,
         dataExport,
         em,
-        includeDevData
+        includeDevData,
       )
       console.timeEnd(`Data export (${dataExport.id}) - player aliases`)
     }
@@ -486,7 +536,7 @@ export class DataExporter {
         dataExport,
         em,
         includeDevData,
-        true
+        true,
       )
       console.timeEnd(`Data export (${dataExport.id}) - leaderboard entries`)
     }
@@ -499,7 +549,7 @@ export class DataExporter {
         this.streamGameStats,
         dataExport,
         em,
-        includeDevData
+        includeDevData,
       )
       console.timeEnd(`Data export (${dataExport.id}) - game stats`)
     }
@@ -512,7 +562,7 @@ export class DataExporter {
         this.streamPlayerGameStats,
         dataExport,
         em,
-        includeDevData
+        includeDevData,
       )
       console.timeEnd(`Data export (${dataExport.id}) - player game stats`)
     }
@@ -525,7 +575,7 @@ export class DataExporter {
         this.streamGameActivities,
         dataExport,
         em,
-        includeDevData
+        includeDevData,
       )
       console.timeEnd(`Data export (${dataExport.id}) - game activities`)
     }
@@ -538,7 +588,7 @@ export class DataExporter {
         this.streamGameFeedback,
         dataExport,
         em,
-        includeDevData
+        includeDevData,
       )
       console.timeEnd(`Data export (${dataExport.id}) - game feedback`)
     }
@@ -558,25 +608,75 @@ export class DataExporter {
   private getColumns(service: DataExportAvailableEntities): string[] {
     switch (service) {
       case DataExportAvailableEntities.EVENTS:
-        return ['id', 'name', 'playerAlias.id', 'playerAlias.service', 'playerAlias.identifier', 'playerAlias.player.id', 'createdAt', 'updatedAt', 'props']
+        return [
+          'id',
+          'name',
+          'playerAlias.id',
+          'playerAlias.service',
+          'playerAlias.identifier',
+          'playerAlias.player.id',
+          'createdAt',
+          'updatedAt',
+          'props',
+        ]
       case DataExportAvailableEntities.PLAYERS:
         return ['id', 'lastSeenAt', 'createdAt', 'updatedAt', 'props']
       case DataExportAvailableEntities.PLAYER_ALIASES:
         return ['id', 'service', 'identifier', 'player.id', 'createdAt', 'updatedAt']
       case DataExportAvailableEntities.LEADERBOARD_ENTRIES:
-        return ['id', 'score', 'leaderboard.id', 'leaderboard.internalName', 'playerAlias.id', 'playerAlias.service', 'playerAlias.identifier', 'playerAlias.player.id', 'createdAt', 'updatedAt', 'props']
+        return [
+          'id',
+          'score',
+          'leaderboard.id',
+          'leaderboard.internalName',
+          'playerAlias.id',
+          'playerAlias.service',
+          'playerAlias.identifier',
+          'playerAlias.player.id',
+          'createdAt',
+          'updatedAt',
+          'props',
+        ]
       case DataExportAvailableEntities.GAME_STATS:
-        return ['id', 'internalName', 'name', 'defaultValue', 'minValue', 'maxValue', 'global', 'globalValue', 'createdAt', 'updatedAt']
+        return [
+          'id',
+          'internalName',
+          'name',
+          'defaultValue',
+          'minValue',
+          'maxValue',
+          'global',
+          'globalValue',
+          'createdAt',
+          'updatedAt',
+        ]
       case DataExportAvailableEntities.PLAYER_GAME_STATS:
-        return ['id', 'player.id', 'value', 'stat.id', 'stat.internalName', 'createdAt', 'updatedAt']
+        return [
+          'id',
+          'player.id',
+          'value',
+          'stat.id',
+          'stat.internalName',
+          'createdAt',
+          'updatedAt',
+        ]
       case DataExportAvailableEntities.GAME_ACTIVITIES:
         return ['id', 'user.username', 'gameActivityType', 'gameActivityExtra', 'createdAt']
       case DataExportAvailableEntities.GAME_FEEDBACK:
-        return ['id', 'category.internalName', 'comment', 'playerAlias.id', 'playerAlias.service', 'playerAlias.identifier', 'playerAlias.player.id', 'createdAt']
+        return [
+          'id',
+          'category.internalName',
+          'comment',
+          'playerAlias.id',
+          'playerAlias.service',
+          'playerAlias.identifier',
+          'playerAlias.player.id',
+          'createdAt',
+        ]
     }
   }
 
-  private getProps(object: ExportableEntityWithProps): { key: string, value: string }[] {
+  private getProps(object: ExportableEntityWithProps): { key: string; value: string }[] {
     let props = object.props
     if (props instanceof Collection) props = props.getItems()
     return props.map(({ key, value }) => ({ key, value }))
@@ -584,7 +684,9 @@ export class DataExporter {
 
   private transformColumn(column: string, object: ExportableEntity): string {
     if (column.startsWith('props')) {
-      const value = this.getProps(object as ExportableEntityWithProps).find((prop) => column.endsWith(prop.key))?.value ?? ''
+      const value =
+        this.getProps(object as ExportableEntityWithProps).find((prop) => column.endsWith(prop.key))
+          ?.value ?? ''
       return escapeCSVValue(value)
     }
 
@@ -597,10 +699,10 @@ export class DataExporter {
         return (value as Date).toISOString()
       case 'gameActivityType':
         value = get(object, 'type')
-        return GameActivityType[(value as number)]
+        return GameActivityType[value as number]
       case 'gameActivityExtra':
         value = get(object, 'extra')
-        return `"${JSON.stringify(value).replace(/"/g, '\'')}"`
+        return `"${JSON.stringify(value).replace(/"/g, "'")}"`
       case 'globalValue':
         return (object as GameStat).global ? String(get(object, 'globalValue')) : 'N/A'
       case 'playerAlias.id':
@@ -625,7 +727,9 @@ export default async (job: SandboxedJob<DataExportJob>) => {
 
   const orm = await MikroORM.init(ormConfig)
   const em = orm.em.fork()
-  const dataExport = await em.repo(DataExport).findOneOrFail(dataExportId, { populate: ['game', 'createdByUser'] })
+  const dataExport = await em
+    .repo(DataExport)
+    .findOneOrFail(dataExportId, { populate: ['game', 'createdByUser'] })
 
   dataExport.status = DataExportStatus.QUEUED
   await em.flush()

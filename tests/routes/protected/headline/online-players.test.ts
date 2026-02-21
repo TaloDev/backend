@@ -10,10 +10,14 @@ describe('Headline - online players', () => {
     const [token] = await createUserAndToken({}, organisation)
 
     const onlinePlayers = await new PlayerFactory([game])
-      .state(async (player) => ({ presence: await new PlayerPresenceFactory(player.game).online().one() }))
+      .state(async (player) => ({
+        presence: await new PlayerPresenceFactory(player.game).online().one(),
+      }))
       .many(5)
     const offlinePlayers = await new PlayerFactory([game])
-      .state(async (player) => ({ presence: await new PlayerPresenceFactory(player.game).offline().one() }))
+      .state(async (player) => ({
+        presence: await new PlayerPresenceFactory(player.game).offline().one(),
+      }))
       .many(5)
 
     await em.persist([...onlinePlayers, ...offlinePlayers]).flush()
@@ -32,7 +36,9 @@ describe('Headline - online players', () => {
 
     const onlinePlayers = await new PlayerFactory([game])
       .devBuild()
-      .state(async (player) => ({ presence: await new PlayerPresenceFactory(player.game).online().one() }))
+      .state(async (player) => ({
+        presence: await new PlayerPresenceFactory(player.game).online().one(),
+      }))
       .many(5)
 
     await em.persist(onlinePlayers).flush()
@@ -51,7 +57,9 @@ describe('Headline - online players', () => {
 
     const onlinePlayers = await new PlayerFactory([game])
       .devBuild()
-      .state(async (player) => ({ presence: await new PlayerPresenceFactory(player.game).online().one() }))
+      .state(async (player) => ({
+        presence: await new PlayerPresenceFactory(player.game).online().one(),
+      }))
       .many(5)
 
     await em.persist(onlinePlayers).flush()

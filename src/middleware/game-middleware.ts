@@ -9,10 +9,7 @@ export async function loadGame(ctx: GameRouteContext, next: Next) {
   const { gameId } = ctx.params as { gameId: string }
   const em = ctx.em
 
-  const game = await em.repo(Game).findOne(
-    { id: Number(gameId) },
-    { populate: ['organisation'] }
-  )
+  const game = await em.repo(Game).findOne({ id: Number(gameId) }, { populate: ['organisation'] })
 
   if (!game) {
     return ctx.throw(404, 'Game not found')

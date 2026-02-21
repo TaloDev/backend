@@ -1,12 +1,12 @@
-import request from 'supertest'
-import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
-import initStripe from '../../../../src/lib/billing/initStripe'
-import { v4 } from 'uuid'
-import PricingPlanFactory from '../../../fixtures/PricingPlanFactory'
-import * as sendEmail from '../../../../src/lib/messaging/sendEmail'
-import PlanInvoice from '../../../../src/emails/plan-invoice-mail'
-import { truncateTables } from '../../../utils/truncateTables'
 import assert from 'node:assert'
+import request from 'supertest'
+import { v4 } from 'uuid'
+import PlanInvoice from '../../../../src/emails/plan-invoice-mail'
+import initStripe from '../../../../src/lib/billing/initStripe'
+import * as sendEmail from '../../../../src/lib/messaging/sendEmail'
+import PricingPlanFactory from '../../../fixtures/PricingPlanFactory'
+import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
+import { truncateTables } from '../../../utils/truncateTables'
 
 describe('Webhook - invoice finalized', () => {
   const sendMock = vi.spyOn(sendEmail, 'default')
@@ -33,23 +33,27 @@ describe('Webhook - invoice finalized', () => {
     organisation.pricingPlan.stripeCustomerId = invoice.customer as string
     await em.flush()
 
-    const payload = JSON.stringify({
-      id: v4(),
-      object: 'event',
-      data: {
-        object: invoice
+    const payload = JSON.stringify(
+      {
+        id: v4(),
+        object: 'event',
+        data: {
+          object: invoice,
+        },
+        api_version: '2020-08-27',
+        created: Date.now(),
+        livemode: false,
+        pending_webhooks: 0,
+        request: null,
+        type: 'invoice.finalized',
       },
-      api_version: '2020-08-27',
-      created: Date.now(),
-      livemode: false,
-      pending_webhooks: 0,
-      request: null,
-      type: 'invoice.finalized'
-    }, null, 2)
+      null,
+      2,
+    )
 
     const header = stripe.webhooks.generateTestHeaderString({
       payload,
-      secret: process.env.STRIPE_WEBHOOK_SECRET!
+      secret: process.env.STRIPE_WEBHOOK_SECRET!,
     })
 
     await request(app)

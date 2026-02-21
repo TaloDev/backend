@@ -1,16 +1,19 @@
 import { wrap } from '@mikro-orm/mysql'
+import { authenticator } from '@otplib/preset-default'
 import request from 'supertest'
 import UserTwoFactorAuth from '../../../../src/entities/user-two-factor-auth'
-import { authenticator } from '@otplib/preset-default'
-import createUserAndToken from '../../../utils/createUserAndToken'
 import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
+import createUserAndToken from '../../../utils/createUserAndToken'
 
 describe('User - confirm 2fa', () => {
   it('should let users confirm enabling 2fa', async () => {
     const [organisation] = await createOrganisationAndGame()
-    const [token, user] = await createUserAndToken({
-      twoFactorAuth: new UserTwoFactorAuth('blah')
-    }, organisation)
+    const [token, user] = await createUserAndToken(
+      {
+        twoFactorAuth: new UserTwoFactorAuth('blah'),
+      },
+      organisation,
+    )
 
     authenticator.check = vi.fn().mockReturnValueOnce(true)
 
@@ -32,7 +35,7 @@ describe('User - confirm 2fa', () => {
 
   it('should not let users confirm enabling 2fa if it is already enabled', async () => {
     const [token, user] = await createUserAndToken({
-      twoFactorAuth: new UserTwoFactorAuth('blah')
+      twoFactorAuth: new UserTwoFactorAuth('blah'),
     })
 
     user.twoFactorAuth!.enabled = true
@@ -49,7 +52,7 @@ describe('User - confirm 2fa', () => {
 
   it('should not let users confirm enabling 2fa if the code is invalid', async () => {
     const [token] = await createUserAndToken({
-      twoFactorAuth: new UserTwoFactorAuth('blah')
+      twoFactorAuth: new UserTwoFactorAuth('blah'),
     })
 
     authenticator.check = vi.fn().mockReturnValueOnce(false)

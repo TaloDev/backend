@@ -1,10 +1,10 @@
-import { publicRoute } from '../../../lib/routing/router'
+import bcrypt from 'bcrypt'
+import jwt from 'jsonwebtoken'
+import assert from 'node:assert'
 import User from '../../../entities/user'
 import UserSession from '../../../entities/user-session'
-import jwt from 'jsonwebtoken'
-import bcrypt from 'bcrypt'
 import { verify } from '../../../lib/auth/jwt'
-import assert from 'node:assert'
+import { publicRoute } from '../../../lib/routing/router'
 import { passwordSchema } from '../../../lib/validation/passwordSchema'
 
 export const resetPasswordRoute = publicRoute({
@@ -13,8 +13,8 @@ export const resetPasswordRoute = publicRoute({
   schema: (z) => ({
     body: z.object({
       password: passwordSchema,
-      token: z.string().min(1)
-    })
+      token: z.string().min(1),
+    }),
   }),
   handler: async (ctx) => {
     const { password, token } = ctx.state.validated.body
@@ -29,7 +29,7 @@ export const resetPasswordRoute = publicRoute({
     } catch {
       return {
         status: 401,
-        body: { message: 'Request expired', expired: true }
+        body: { message: 'Request expired', expired: true },
       }
     }
 
@@ -40,7 +40,7 @@ export const resetPasswordRoute = publicRoute({
     if (isSamePassword) {
       return {
         status: 400,
-        body: { message: 'Please choose a different password' }
+        body: { message: 'Please choose a different password' },
       }
     }
 
@@ -50,5 +50,5 @@ export const resetPasswordRoute = publicRoute({
     await em.remove(sessions).flush()
 
     return { status: 204 }
-  }
+  },
 })

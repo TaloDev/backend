@@ -7,7 +7,7 @@ services:
       - MYSQL_ROOT_PASSWORD=${DB_PASS}
     restart: always
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1"]
+      test: ['CMD', 'mysqladmin', 'ping', '-h', '127.0.0.1']
       interval: 2s
       timeout: 2s
       retries: 10
@@ -17,7 +17,7 @@ services:
       - test-data:/var/lib/mysql
     networks:
       - test-network
-    
+
   test-redis:
     image: arm64v8/redis:8-alpine
     command: redis-server --requirepass ${REDIS_PASSWORD}

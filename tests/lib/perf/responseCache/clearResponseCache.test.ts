@@ -1,6 +1,10 @@
-import { clearResponseCache, getResponseCacheRedisConnection, prefix } from '../../../../src/lib/perf/responseCache'
-import * as clearCachePattern from '../../../../src/lib/perf/clearCachePattern'
 import Redis from 'ioredis'
+import * as clearCachePattern from '../../../../src/lib/perf/clearCachePattern'
+import {
+  clearResponseCache,
+  getResponseCacheRedisConnection,
+  prefix,
+} from '../../../../src/lib/perf/responseCache'
 
 describe('clearResponseCache', () => {
   const responseCacheRedis = getResponseCacheRedisConnection()
@@ -30,7 +34,9 @@ describe('clearResponseCache', () => {
   })
 
   it('should catch errors', async () => {
-    const clearPatternSpy = vi.spyOn(clearCachePattern, 'clearCachePattern').mockRejectedValueOnce(new Error('Clear pattern failed'))
+    const clearPatternSpy = vi
+      .spyOn(clearCachePattern, 'clearCachePattern')
+      .mockRejectedValueOnce(new Error('Clear pattern failed'))
     await responseCacheRedis.set(`${prefix}:key1`, 'key1')
     await responseCacheRedis.set(`${prefix}:key2`, 'key2')
 
@@ -40,7 +46,9 @@ describe('clearResponseCache', () => {
   })
 
   it('should return 0 if the redis eval fails', async () => {
-    const evalSpy = vi.spyOn(Redis.prototype, 'eval').mockRejectedValueOnce(new Error('Clear pattern failed'))
+    const evalSpy = vi
+      .spyOn(Redis.prototype, 'eval')
+      .mockRejectedValueOnce(new Error('Clear pattern failed'))
     await responseCacheRedis.set(`${prefix}:key1`, 'key1')
     await responseCacheRedis.set(`${prefix}:key2`, 'key2')
 

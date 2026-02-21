@@ -1,10 +1,10 @@
 import request from 'supertest'
+import PlayerGameStatSnapshot from '../../../../src/entities/player-game-stat-snapshot'
 import GameStatFactory from '../../../fixtures/GameStatFactory'
 import PlayerFactory from '../../../fixtures/PlayerFactory'
 import PlayerGameStatFactory from '../../../fixtures/PlayerGameStatFactory'
-import createUserAndToken from '../../../utils/createUserAndToken'
 import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
-import PlayerGameStatSnapshot from '../../../../src/entities/player-game-stat-snapshot'
+import createUserAndToken from '../../../utils/createUserAndToken'
 
 describe('Game stat - index', () => {
   it('should return a list of game stats', async () => {
@@ -39,13 +39,22 @@ describe('Game stat - index', () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({}, organisation)
 
-    const stat = await new GameStatFactory([game]).global().state(() => ({ globalValue: 50 })).one()
+    const stat = await new GameStatFactory([game])
+      .global()
+      .state(() => ({ globalValue: 50 }))
+      .one()
 
     const player = await new PlayerFactory([game]).devBuild().one()
-    const playerStat = await new PlayerGameStatFactory().construct(player, stat).state(() => ({ value: 10 })).one()
+    const playerStat = await new PlayerGameStatFactory()
+      .construct(player, stat)
+      .state(() => ({ value: 10 }))
+      .one()
 
     const otherPlayer = await new PlayerFactory([game]).one()
-    const otherPlayerStat = await new PlayerGameStatFactory().construct(otherPlayer, stat).state(() => ({ value: 40 })).one()
+    const otherPlayerStat = await new PlayerGameStatFactory()
+      .construct(otherPlayer, stat)
+      .state(() => ({ value: 40 }))
+      .one()
 
     await em.persistAndFlush([playerStat, otherPlayerStat])
 
@@ -62,8 +71,14 @@ describe('Game stat - index', () => {
     const [token] = await createUserAndToken({}, organisation)
 
     const player = await new PlayerFactory([game]).devBuild().one()
-    const stat = await new GameStatFactory([game]).global().state(() => ({ globalValue: 50 })).one()
-    const playerStat = await new PlayerGameStatFactory().construct(player, stat).state(() => ({ value: 10 })).one()
+    const stat = await new GameStatFactory([game])
+      .global()
+      .state(() => ({ globalValue: 50 }))
+      .one()
+    const playerStat = await new PlayerGameStatFactory()
+      .construct(player, stat)
+      .state(() => ({ value: 10 }))
+      .one()
     await em.persistAndFlush(playerStat)
 
     const res = await request(app)
@@ -79,14 +94,17 @@ describe('Game stat - index', () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({}, organisation)
 
-    const stat = await new GameStatFactory([game]).global().state(() => ({ globalValue: 0 })).one()
+    const stat = await new GameStatFactory([game])
+      .global()
+      .state(() => ({ globalValue: 0 }))
+      .one()
     const player = await new PlayerFactory([game]).one()
     await em.persistAndFlush([stat, player])
 
     const values: [Date, number][] = [
       [new Date('2025-06-09T09:00:00.000Z'), 1],
       [new Date('2025-06-10T09:00:00.000Z'), 5],
-      [new Date('2025-06-11T09:00:00.000Z'), 7]
+      [new Date('2025-06-11T09:00:00.000Z'), 7],
     ]
 
     const playerStat = await new PlayerGameStatFactory().construct(player, stat).one()
@@ -106,7 +124,7 @@ describe('Game stat - index', () => {
 
         return snapshot.toInsertable()
       }),
-      format: 'JSONEachRow'
+      format: 'JSONEachRow',
     })
 
     const res = await request(app)
@@ -127,14 +145,17 @@ describe('Game stat - index', () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({}, organisation)
 
-    const stat = await new GameStatFactory([game]).global().state(() => ({ globalValue: 0 })).one()
+    const stat = await new GameStatFactory([game])
+      .global()
+      .state(() => ({ globalValue: 0 }))
+      .one()
     const player = await new PlayerFactory([game]).one()
     await em.persistAndFlush([stat, player])
 
     const values: [Date, number][] = [
       [new Date('2025-06-09T09:00:00.000Z'), 1],
       [new Date('2025-06-10T09:00:00.000Z'), 5],
-      [new Date('2025-06-11T09:00:00.000Z'), 7]
+      [new Date('2025-06-11T09:00:00.000Z'), 7],
     ]
 
     const playerStat = await new PlayerGameStatFactory().construct(player, stat).one()
@@ -154,7 +175,7 @@ describe('Game stat - index', () => {
 
         return snapshot.toInsertable()
       }),
-      format: 'JSONEachRow'
+      format: 'JSONEachRow',
     })
 
     const res = await request(app)
@@ -175,14 +196,17 @@ describe('Game stat - index', () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({}, organisation)
 
-    const stat = await new GameStatFactory([game]).global().state(() => ({ globalValue: 0 })).one()
+    const stat = await new GameStatFactory([game])
+      .global()
+      .state(() => ({ globalValue: 0 }))
+      .one()
     const player = await new PlayerFactory([game]).one()
     await em.persistAndFlush([stat, player])
 
     const values: [Date, number][] = [
       [new Date('2025-06-09T09:00:00.000Z'), 1],
       [new Date('2025-06-10T09:00:00.000Z'), 5],
-      [new Date('2025-06-11T09:00:00.000Z'), 7]
+      [new Date('2025-06-11T09:00:00.000Z'), 7],
     ]
 
     const playerStat = await new PlayerGameStatFactory().construct(player, stat).one()
@@ -202,7 +226,7 @@ describe('Game stat - index', () => {
 
         return snapshot.toInsertable()
       }),
-      format: 'JSONEachRow'
+      format: 'JSONEachRow',
     })
 
     const res = await request(app)
@@ -210,7 +234,7 @@ describe('Game stat - index', () => {
       .query({
         withMetrics: '1',
         metricsStartDate: '2025-06-10',
-        metricsEndDate: '2025-06-10'
+        metricsEndDate: '2025-06-10',
       })
       .auth(token, { type: 'bearer' })
       .expect(200)

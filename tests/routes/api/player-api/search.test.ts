@@ -1,12 +1,15 @@
+import { Collection } from '@mikro-orm/mysql'
 import request from 'supertest'
 import { APIKeyScope } from '../../../../src/entities/api-key'
-import PlayerFactory from '../../../fixtures/PlayerFactory'
-import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
-import GameChannelFactory from '../../../fixtures/GameChannelFactory'
-import PlayerGroupFactory from '../../../fixtures/PlayerGroupFactory'
-import PlayerGroupRule, { PlayerGroupRuleCastType, PlayerGroupRuleName } from '../../../../src/entities/player-group-rule'
+import PlayerGroupRule, {
+  PlayerGroupRuleCastType,
+  PlayerGroupRuleName,
+} from '../../../../src/entities/player-group-rule'
 import PlayerProp from '../../../../src/entities/player-prop'
-import { Collection } from '@mikro-orm/mysql'
+import GameChannelFactory from '../../../fixtures/GameChannelFactory'
+import PlayerFactory from '../../../fixtures/PlayerFactory'
+import PlayerGroupFactory from '../../../fixtures/PlayerGroupFactory'
+import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
 
 describe('Player API - search', () => {
   it('should search for a player by ID', async () => {
@@ -47,15 +50,15 @@ describe('Player API - search', () => {
     rule.operands = ['60']
 
     const group = await new PlayerGroupFactory()
-      .construct(apiKey.game).
-      state(() => ({ rules: [rule] }))
+      .construct(apiKey.game)
+      .state(() => ({ rules: [rule] }))
       .one()
 
-    const player = await new PlayerFactory([apiKey.game]).state((player) => ({
-      props: new Collection<PlayerProp>(player, [
-        new PlayerProp(player, 'currentLevel', '60')
-      ])
-    })).one()
+    const player = await new PlayerFactory([apiKey.game])
+      .state((player) => ({
+        props: new Collection<PlayerProp>(player, [new PlayerProp(player, 'currentLevel', '60')]),
+      }))
+      .one()
     await em.persistAndFlush([group, player])
 
     const res = await request(app)
@@ -77,8 +80,8 @@ describe('Player API - search', () => {
 
     expect(res.body).toStrictEqual({
       errors: {
-        query: ['query is missing from the request query']
-      }
+        query: ['query is missing from the request query'],
+      },
     })
   })
 
@@ -93,12 +96,13 @@ describe('Player API - search', () => {
 
     expect(res.body).toStrictEqual({
       errors: {
-        query: ['Query must be a non-empty string']
-      }
+        query: ['Query must be a non-empty string'],
+      },
     })
   })
 
-  it('should not search for players if the query is a single -', async () => { // it would match all UUIDs
+  it('should not search for players if the query is a single -', async () => {
+    // it would match all UUIDs
     const [, token] = await createAPIKeyAndToken([APIKeyScope.READ_PLAYERS])
 
     const res = await request(app)
@@ -109,8 +113,8 @@ describe('Player API - search', () => {
 
     expect(res.body).toStrictEqual({
       errors: {
-        query: ['Query must be a non-empty string']
-      }
+        query: ['Query must be a non-empty string'],
+      },
     })
   })
 

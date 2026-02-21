@@ -1,9 +1,9 @@
+import { addDays, sub } from 'date-fns'
 import request from 'supertest'
 import EventFactory from '../../../fixtures/EventFactory'
 import PlayerFactory from '../../../fixtures/PlayerFactory'
-import { addDays, sub } from 'date-fns'
-import createUserAndToken from '../../../utils/createUserAndToken'
 import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
+import createUserAndToken from '../../../utils/createUserAndToken'
 
 describe('Event - list', () => {
   it('should return a list of events', async () => {
@@ -13,16 +13,18 @@ describe('Event - list', () => {
     const player = await new PlayerFactory([game]).one()
     const now = new Date('2021-01-01')
 
-    const events = await new EventFactory([player]).state((event, idx) => ({
-      name: 'Open inventory',
-      createdAt: addDays(now, idx)
-    })).many(2)
+    const events = await new EventFactory([player])
+      .state((event, idx) => ({
+        name: 'Open inventory',
+        createdAt: addDays(now, idx),
+      }))
+      .many(2)
 
     await em.persistAndFlush(player)
     await clickhouse.insert({
       table: 'events',
       values: events.map((event) => event.toInsertable()),
-      format: 'JSONEachRow'
+      format: 'JSONEachRow',
     })
 
     const res = await request(app)
@@ -37,21 +39,21 @@ describe('Event - list', () => {
       name: 'Open inventory',
       date: now.getTime(),
       count: 1,
-      change: 1
+      change: 1,
     })
 
     expect(res.body.events['Open inventory'][1]).toEqual({
       name: 'Open inventory',
       date: addDays(now, 1).getTime(),
       count: 1,
-      change: 0
+      change: 0,
     })
 
     expect(res.body.events['Open inventory'][2]).toEqual({
       name: 'Open inventory',
       date: addDays(now, 2).getTime(),
       count: 0,
-      change: -1
+      change: -1,
     })
   })
 
@@ -67,8 +69,8 @@ describe('Event - list', () => {
     expect(res.body).toStrictEqual({
       errors: {
         endDate: ['endDate is missing from the request query'],
-        startDate: ['startDate is missing from the request query']
-      }
+        startDate: ['startDate is missing from the request query'],
+      },
     })
   })
 
@@ -84,8 +86,8 @@ describe('Event - list', () => {
 
     expect(res.body).toStrictEqual({
       errors: {
-        startDate: ['Invalid start date, please use YYYY-MM-DD or a timestamp']
-      }
+        startDate: ['Invalid start date, please use YYYY-MM-DD or a timestamp'],
+      },
     })
   })
 
@@ -101,8 +103,8 @@ describe('Event - list', () => {
 
     expect(res.body).toStrictEqual({
       errors: {
-        startDate: ['Invalid start date, it should be before the end date']
-      }
+        startDate: ['Invalid start date, it should be before the end date'],
+      },
     })
   })
 
@@ -118,8 +120,8 @@ describe('Event - list', () => {
 
     expect(res.body).toStrictEqual({
       errors: {
-        endDate: ['endDate is missing from the request query']
-      }
+        endDate: ['endDate is missing from the request query'],
+      },
     })
   })
 
@@ -135,8 +137,8 @@ describe('Event - list', () => {
 
     expect(res.body).toStrictEqual({
       errors: {
-        endDate: ['Invalid end date, please use YYYY-MM-DD or a timestamp']
-      }
+        endDate: ['Invalid end date, please use YYYY-MM-DD or a timestamp'],
+      },
     })
   })
 
@@ -148,36 +150,41 @@ describe('Event - list', () => {
     const now = new Date('2021-01-01')
 
     const eventFactory = new EventFactory([player])
-    const firstEvent = await eventFactory.state(() => ({
-      name: 'Open inventory',
-      createdAt: now
-    })).one()
+    const firstEvent = await eventFactory
+      .state(() => ({
+        name: 'Open inventory',
+        createdAt: now,
+      }))
+      .one()
 
-    const moreEvents = await eventFactory.state(() => ({
-      name: 'Open inventory',
-      createdAt: addDays(now, 1)
-    })).many(2)
+    const moreEvents = await eventFactory
+      .state(() => ({
+        name: 'Open inventory',
+        createdAt: addDays(now, 1),
+      }))
+      .many(2)
 
-    const evenMoreEvents = await eventFactory.state(() => ({
-      name: 'Open inventory',
-      createdAt: addDays(now, 2)
-    })).many(3)
+    const evenMoreEvents = await eventFactory
+      .state(() => ({
+        name: 'Open inventory',
+        createdAt: addDays(now, 2),
+      }))
+      .many(3)
 
-    const lastEvent = await eventFactory.state(() => ({
-      name: 'Open inventory',
-      createdAt: addDays(now, 3)
-    })).one()
+    const lastEvent = await eventFactory
+      .state(() => ({
+        name: 'Open inventory',
+        createdAt: addDays(now, 3),
+      }))
+      .one()
 
     await em.persistAndFlush(player)
     await clickhouse.insert({
       table: 'events',
-      values: [
-        firstEvent,
-        ...moreEvents,
-        ...evenMoreEvents,
-        lastEvent
-      ].map((event) => event.toInsertable()),
-      format: 'JSONEachRow'
+      values: [firstEvent, ...moreEvents, ...evenMoreEvents, lastEvent].map((event) =>
+        event.toInsertable(),
+      ),
+      format: 'JSONEachRow',
     })
 
     const res = await request(app)
@@ -201,16 +208,18 @@ describe('Event - list', () => {
 
     const eventFactory = new EventFactory([player])
 
-    const event = await eventFactory.state((_, idx) => ({
-      name: 'Join guild',
-      createdAt: addDays(now, idx)
-    })).one()
+    const event = await eventFactory
+      .state((_, idx) => ({
+        name: 'Join guild',
+        createdAt: addDays(now, idx),
+      }))
+      .one()
 
     await em.persistAndFlush(player)
     await clickhouse.insert({
       table: 'events',
       values: event.toInsertable(),
-      format: 'JSON'
+      format: 'JSON',
     })
 
     const res = await request(app)
@@ -250,12 +259,14 @@ describe('Event - list', () => {
     const [token] = await createUserAndToken({}, organisation)
 
     const player = await new PlayerFactory([game]).one()
-    const events = await new EventFactory([player]).state(() => ({ name: 'Talk to NPC', createdAt: new Date() })).many(3)
+    const events = await new EventFactory([player])
+      .state(() => ({ name: 'Talk to NPC', createdAt: new Date() }))
+      .many(3)
     await em.persistAndFlush(player)
     await clickhouse.insert({
       table: 'events',
       values: events.map((event) => event.toInsertable()),
-      format: 'JSONEachRow'
+      format: 'JSONEachRow',
     })
 
     const res = await request(app)
@@ -277,12 +288,14 @@ describe('Event - list', () => {
     const [token] = await createUserAndToken({}, organisation)
 
     const player = await new PlayerFactory([game]).devBuild().one()
-    const events = await new EventFactory([player]).state(() => ({ name: 'Talk to NPC', createdAt: new Date() })).many(3)
+    const events = await new EventFactory([player])
+      .state(() => ({ name: 'Talk to NPC', createdAt: new Date() }))
+      .many(3)
     await em.persistAndFlush(player)
     await clickhouse.insert({
       table: 'events',
       values: events.map((event) => event.toInsertable()),
-      format: 'JSONEachRow'
+      format: 'JSONEachRow',
     })
 
     const res = await request(app)
@@ -299,12 +312,14 @@ describe('Event - list', () => {
     const [token] = await createUserAndToken({}, organisation)
 
     const player = await new PlayerFactory([game]).devBuild().one()
-    const events = await new EventFactory([player]).state(() => ({ name: 'Talk to NPC', createdAt: new Date() })).many(3)
+    const events = await new EventFactory([player])
+      .state(() => ({ name: 'Talk to NPC', createdAt: new Date() }))
+      .many(3)
     await em.persistAndFlush(player)
     await clickhouse.insert({
       table: 'events',
       values: events.map((event) => event.toInsertable()),
-      format: 'JSONEachRow'
+      format: 'JSONEachRow',
     })
 
     const res = await request(app)
@@ -330,21 +345,25 @@ describe('Event - list', () => {
     const now = new Date('2021-01-01')
 
     // create events only on Jan 1st and Jan 4th, leaving Jan 2nd and 3rd empty
-    const events = await new EventFactory([player]).state(() => ({
-      name: 'Complete quest',
-      createdAt: now
-    })).many(2)
+    const events = await new EventFactory([player])
+      .state(() => ({
+        name: 'Complete quest',
+        createdAt: now,
+      }))
+      .many(2)
 
-    const moreEvents = await new EventFactory([player]).state(() => ({
-      name: 'Complete quest',
-      createdAt: addDays(now, 3)
-    })).many(3)
+    const moreEvents = await new EventFactory([player])
+      .state(() => ({
+        name: 'Complete quest',
+        createdAt: addDays(now, 3),
+      }))
+      .many(3)
 
     await em.persistAndFlush(player)
     await clickhouse.insert({
       table: 'events',
       values: [...events, ...moreEvents].map((event) => event.toInsertable()),
-      format: 'JSONEachRow'
+      format: 'JSONEachRow',
     })
 
     const res = await request(app)
@@ -361,7 +380,7 @@ describe('Event - list', () => {
       name: 'Complete quest',
       date: now.getTime(),
       count: 2,
-      change: 2 // when previous is 0 and count is not 0, change is count
+      change: 2, // when previous is 0 and count is not 0, change is count
     })
 
     // Jan 2nd should have 0 events
@@ -369,7 +388,7 @@ describe('Event - list', () => {
       name: 'Complete quest',
       date: addDays(now, 1).getTime(),
       count: 0,
-      change: -1
+      change: -1,
     })
 
     // Jan 3rd should have 0 events
@@ -377,7 +396,7 @@ describe('Event - list', () => {
       name: 'Complete quest',
       date: addDays(now, 2).getTime(),
       count: 0,
-      change: 0
+      change: 0,
     })
 
     // Jan 4th should have 3 events
@@ -385,7 +404,7 @@ describe('Event - list', () => {
       name: 'Complete quest',
       date: addDays(now, 3).getTime(),
       count: 3,
-      change: 3 // when previous is 0 and count is not 0, change is count
+      change: 3, // when previous is 0 and count is not 0, change is count
     })
   })
 })

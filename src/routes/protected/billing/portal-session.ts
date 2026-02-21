@@ -17,14 +17,14 @@ export const portalSessionRoute = protectedRoute({
 
     const portalSession = await stripe.billingPortal.sessions.create({
       customer: stripeCustomerId,
-      return_url: `${process.env.DASHBOARD_URL}/billing`
+      return_url: `${process.env.DASHBOARD_URL}/billing`,
     })
 
     return {
       status: 200,
       body: {
-        redirect: portalSession.url
-      }
+        redirect: portalSession.url,
+      },
     }
-  }
+  },
 })

@@ -1,10 +1,10 @@
-import * as sendEmail from '../../../../src/lib/messaging/sendEmail'
-import DataExportFactory from '../../../fixtures/DataExportFactory'
-import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
-import { DataExportMailer } from '../../../../src/lib/queues/data-exports/dataExportMailer'
 import fs from 'fs'
 import fsp from 'fs/promises'
 import { DataExportStatus } from '../../../../src/entities/data-export'
+import * as sendEmail from '../../../../src/lib/messaging/sendEmail'
+import { DataExportMailer } from '../../../../src/lib/queues/data-exports/dataExportMailer'
+import DataExportFactory from '../../../fixtures/DataExportFactory'
+import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
 
 describe('DataExportMailer', () => {
   beforeAll(() => {

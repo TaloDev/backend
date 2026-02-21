@@ -1,18 +1,18 @@
-import request from 'supertest'
-import { UserType } from '../../../../src/entities/user'
-import PlayerFactory from '../../../fixtures/PlayerFactory'
-import GameActivity, { GameActivityType } from '../../../../src/entities/game-activity'
-import userPermissionProvider from '../../../utils/userPermissionProvider'
-import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
-import createUserAndToken from '../../../utils/createUserAndToken'
-import GameStatFactory from '../../../fixtures/GameStatFactory'
-import PlayerGameStatFactory from '../../../fixtures/PlayerGameStatFactory'
-import IntegrationConfigFactory from '../../../fixtures/IntegrationConfigFactory'
-import IntegrationFactory from '../../../fixtures/IntegrationFactory'
-import AxiosMockAdapter from 'axios-mock-adapter'
 import axios from 'axios'
+import AxiosMockAdapter from 'axios-mock-adapter'
+import request from 'supertest'
+import GameActivity, { GameActivityType } from '../../../../src/entities/game-activity'
 import { IntegrationType } from '../../../../src/entities/integration'
 import SteamworksIntegrationEvent from '../../../../src/entities/steamworks-integration-event'
+import { UserType } from '../../../../src/entities/user'
+import GameStatFactory from '../../../fixtures/GameStatFactory'
+import IntegrationConfigFactory from '../../../fixtures/IntegrationConfigFactory'
+import IntegrationFactory from '../../../fixtures/IntegrationFactory'
+import PlayerFactory from '../../../fixtures/PlayerFactory'
+import PlayerGameStatFactory from '../../../fixtures/PlayerGameStatFactory'
+import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
+import createUserAndToken from '../../../utils/createUserAndToken'
+import userPermissionProvider from '../../../utils/userPermissionProvider'
 
 describe('Game stat - updatePlayerStat', () => {
   const axiosMock = new AxiosMockAdapter(axios)
@@ -21,58 +21,71 @@ describe('Game stat - updatePlayerStat', () => {
     axiosMock.reset()
   })
 
-  it.each(userPermissionProvider([UserType.ADMIN]))('should return a %i for a %s user', async (statusCode, _, type) => {
-    const [organisation, game] = await createOrganisationAndGame()
-    const [token] = await createUserAndToken({ type }, organisation)
+  it.each(userPermissionProvider([UserType.ADMIN]))(
+    'should return a %i for a %s user',
+    async (statusCode, _, type) => {
+      const [organisation, game] = await createOrganisationAndGame()
+      const [token] = await createUserAndToken({ type }, organisation)
 
-    const stat = await new GameStatFactory([game]).state(() => ({
-      minValue: null,
-      maxValue: null
-    })).one()
-    const player = await new PlayerFactory([game]).one()
-    const playerStat = await new PlayerGameStatFactory().construct(player, stat).state(() => ({ value: 10 })).one()
+      const stat = await new GameStatFactory([game])
+        .state(() => ({
+          minValue: null,
+          maxValue: null,
+        }))
+        .one()
+      const player = await new PlayerFactory([game]).one()
+      const playerStat = await new PlayerGameStatFactory()
+        .construct(player, stat)
+        .state(() => ({ value: 10 }))
+        .one()
 
-    await em.persistAndFlush([stat, player, playerStat])
+      await em.persistAndFlush([stat, player, playerStat])
 
-    const res = await request(app)
-      .patch(`/games/${game.id}/game-stats/${stat.id}/player-stats/${playerStat.id}`)
-      .send({ newValue: 20 })
-      .auth(token, { type: 'bearer' })
-      .expect(statusCode)
+      const res = await request(app)
+        .patch(`/games/${game.id}/game-stats/${stat.id}/player-stats/${playerStat.id}`)
+        .send({ newValue: 20 })
+        .auth(token, { type: 'bearer' })
+        .expect(statusCode)
 
-    const activity = await em.getRepository(GameActivity).findOne({
-      type: GameActivityType.PLAYER_STAT_UPDATED,
-      extra: {
-        statInternalName: stat.internalName,
-        display: {
-          'Player': player.id,
-          'Stat': stat.internalName,
-          'Old value': 10,
-          'New value': 20
-        }
+      const activity = await em.getRepository(GameActivity).findOne({
+        type: GameActivityType.PLAYER_STAT_UPDATED,
+        extra: {
+          statInternalName: stat.internalName,
+          display: {
+            Player: player.id,
+            Stat: stat.internalName,
+            'Old value': 10,
+            'New value': 20,
+          },
+        },
+      })
+
+      if (statusCode === 200) {
+        expect(res.body.playerStat.value).toBe(20)
+        expect(activity).not.toBeNull()
+      } else {
+        expect(activity).toBeNull()
       }
-    })
-
-    if (statusCode === 200) {
-      expect(res.body.playerStat.value).toBe(20)
-      expect(activity).not.toBeNull()
-    } else {
-      expect(activity).toBeNull()
-    }
-  })
+    },
+  )
 
   it('should update global value for global stats', async () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({ type: UserType.ADMIN }, organisation)
 
-    const stat = await new GameStatFactory([game]).state(() => ({
-      minValue: 0,
-      maxValue: 500,
-      global: true,
-      globalValue: 100
-    })).one()
+    const stat = await new GameStatFactory([game])
+      .state(() => ({
+        minValue: 0,
+        maxValue: 500,
+        global: true,
+        globalValue: 100,
+      }))
+      .one()
     const player = await new PlayerFactory([game]).one()
-    const playerStat = await new PlayerGameStatFactory().construct(player, stat).state(() => ({ value: 10 })).one()
+    const playerStat = await new PlayerGameStatFactory()
+      .construct(player, stat)
+      .state(() => ({ value: 10 }))
+      .one()
 
     await em.persistAndFlush([stat, player, playerStat])
 
@@ -90,11 +103,16 @@ describe('Game stat - updatePlayerStat', () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({ type: UserType.ADMIN }, organisation)
 
-    const stat = await new GameStatFactory([game]).state(() => ({
-      minValue: 0
-    })).one()
+    const stat = await new GameStatFactory([game])
+      .state(() => ({
+        minValue: 0,
+      }))
+      .one()
     const player = await new PlayerFactory([game]).one()
-    const playerStat = await new PlayerGameStatFactory().construct(player, stat).state(() => ({ value: 10 })).one()
+    const playerStat = await new PlayerGameStatFactory()
+      .construct(player, stat)
+      .state(() => ({ value: 10 }))
+      .one()
 
     await em.persistAndFlush([stat, player, playerStat])
 
@@ -105,7 +123,7 @@ describe('Game stat - updatePlayerStat', () => {
       .expect(400)
 
     expect(res.body).toStrictEqual({
-      message: 'Stat would go below the minValue of 0'
+      message: 'Stat would go below the minValue of 0',
     })
   })
 
@@ -113,11 +131,16 @@ describe('Game stat - updatePlayerStat', () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({ type: UserType.ADMIN }, organisation)
 
-    const stat = await new GameStatFactory([game]).state(() => ({
-      maxValue: 100
-    })).one()
+    const stat = await new GameStatFactory([game])
+      .state(() => ({
+        maxValue: 100,
+      }))
+      .one()
     const player = await new PlayerFactory([game]).one()
-    const playerStat = await new PlayerGameStatFactory().construct(player, stat).state(() => ({ value: 90 })).one()
+    const playerStat = await new PlayerGameStatFactory()
+      .construct(player, stat)
+      .state(() => ({ value: 90 }))
+      .one()
 
     await em.persistAndFlush([stat, player, playerStat])
 
@@ -128,7 +151,7 @@ describe('Game stat - updatePlayerStat', () => {
       .expect(400)
 
     expect(res.body).toStrictEqual({
-      message: 'Stat would go above the maxValue of 100'
+      message: 'Stat would go above the maxValue of 100',
     })
   })
 
@@ -136,12 +159,17 @@ describe('Game stat - updatePlayerStat', () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({ type: UserType.ADMIN }, organisation)
 
-    const stat = await new GameStatFactory([game]).state(() => ({
-      minValue: 0,
-      maxValue: 100
-    })).one()
+    const stat = await new GameStatFactory([game])
+      .state(() => ({
+        minValue: 0,
+        maxValue: 100,
+      }))
+      .one()
     const player = await new PlayerFactory([game]).one()
-    const playerStat = await new PlayerGameStatFactory().construct(player, stat).state(() => ({ value: 50 })).one()
+    const playerStat = await new PlayerGameStatFactory()
+      .construct(player, stat)
+      .state(() => ({ value: 50 }))
+      .one()
 
     await em.persistAndFlush([stat, player, playerStat])
 
@@ -156,22 +184,34 @@ describe('Game stat - updatePlayerStat', () => {
   })
 
   it('should trigger a steamworks integration event', async () => {
-    const setMock = vi.fn(() => [200, {
-      result: {
-        result: 1
-      }
-    }])
-    axiosMock.onPost('https://partner.steam-api.com/ISteamUserStats/SetUserStatsForGame/v1').replyOnce(setMock)
+    const setMock = vi.fn(() => [
+      200,
+      {
+        result: {
+          result: 1,
+        },
+      },
+    ])
+    axiosMock
+      .onPost('https://partner.steam-api.com/ISteamUserStats/SetUserStatsForGame/v1')
+      .replyOnce(setMock)
 
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({ type: UserType.ADMIN }, organisation)
 
-    const stat = await new GameStatFactory([game]).state(() => ({ maxChange: 99, maxValue: 3000 })).one()
+    const stat = await new GameStatFactory([game])
+      .state(() => ({ maxChange: 99, maxValue: 3000 }))
+      .one()
     const player = await new PlayerFactory([game]).withSteamAlias().one()
-    const playerStat = await new PlayerGameStatFactory().construct(player, stat).state(() => ({ value: 90 })).one()
+    const playerStat = await new PlayerGameStatFactory()
+      .construct(player, stat)
+      .state(() => ({ value: 90 }))
+      .one()
 
     const config = await new IntegrationConfigFactory().state(() => ({ syncStats: true })).one()
-    const integration = await new IntegrationFactory().construct(IntegrationType.STEAMWORKS, game, config).one()
+    const integration = await new IntegrationFactory()
+      .construct(IntegrationType.STEAMWORKS, game, config)
+      .one()
     await em.persist([integration, stat, player, playerStat]).flush()
 
     await request(app)
@@ -186,7 +226,7 @@ describe('Game stat - updatePlayerStat', () => {
     expect(event.request).toStrictEqual({
       url: 'https://partner.steam-api.com/ISteamUserStats/SetUserStatsForGame/v1',
       body: `appid=${config.appId}&steamid=${player.aliases[0].identifier}&count=1&name%5B0%5D=${stat.internalName}&value%5B0%5D=20`,
-      method: 'POST'
+      method: 'POST',
     })
   })
 
@@ -196,7 +236,10 @@ describe('Game stat - updatePlayerStat', () => {
 
     const stat = await new GameStatFactory([otherGame]).one()
     const player = await new PlayerFactory([otherGame]).one()
-    const playerStat = await new PlayerGameStatFactory().construct(player, stat).state(() => ({ value: 10 })).one()
+    const playerStat = await new PlayerGameStatFactory()
+      .construct(player, stat)
+      .state(() => ({ value: 10 }))
+      .one()
 
     await em.persistAndFlush([stat, player, playerStat])
 
@@ -223,7 +266,7 @@ describe('Game stat - updatePlayerStat', () => {
       .expect(404)
 
     expect(res.body).toStrictEqual({
-      message: 'Player stat not found'
+      message: 'Player stat not found',
     })
   })
 
@@ -243,7 +286,7 @@ describe('Game stat - updatePlayerStat', () => {
       .expect(404)
 
     expect(res.body).toStrictEqual({
-      message: 'Stat not found'
+      message: 'Stat not found',
     })
   })
 })

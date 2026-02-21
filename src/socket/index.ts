@@ -1,16 +1,16 @@
-import { IncomingMessage, Server } from 'http'
-import { RawData, WebSocket, WebSocketServer } from 'ws'
-import { captureException, withIsolationScope } from '@sentry/node'
 import { EntityManager, RequestContext } from '@mikro-orm/mysql'
-import SocketConnection from './socketConnection'
-import SocketRouter from './router/socketRouter'
-import { sendMessage } from './messages/socketMessage'
-import { logConnection, logConnectionClosed } from './messages/socketLogger'
+import { captureException, withIsolationScope } from '@sentry/node'
+import { IncomingMessage, Server } from 'http'
 import Redis from 'ioredis'
+import { RawData, WebSocket, WebSocketServer } from 'ws'
 import { createRedisConnection } from '../config/redis.config'
+import { enableSocketTracing } from './enableSocketTracing'
+import { logConnection, logConnectionClosed } from './messages/socketLogger'
+import { sendMessage } from './messages/socketMessage'
+import SocketRouter from './router/socketRouter'
+import SocketConnection from './socketConnection'
 import SocketTicket from './socketTicket'
 import { getSocketTracer } from './socketTracer'
-import { enableSocketTracing } from './enableSocketTracing'
 
 type CloseConnectionOptions = {
   code?: number
@@ -26,7 +26,10 @@ export default class Socket {
   private router: SocketRouter
   redis: Redis
 
-  constructor(server: Server, private readonly em: EntityManager) {
+  constructor(
+    server: Server,
+    private readonly em: EntityManager,
+  ) {
     this.wss = new WebSocketServer({ server })
     this.wss.on('connection', async (ws, req) => {
       await this.handleConnection(ws, req)
@@ -69,7 +72,7 @@ export default class Socket {
   /* v8 ignore stop */
 
   async handleConnection(ws: WebSocket, req: IncomingMessage) {
-    withIsolationScope(async () => {
+    await withIsolationScope(async () => {
       await getSocketTracer().startActiveSpan('socket.open', async (span) => {
         try {
           logConnection(req)
@@ -95,14 +98,14 @@ export default class Socket {
   }
 
   async handleMessage(ws: WebSocket, data: RawData) {
-    withIsolationScope(async () => {
+    await withIsolationScope(async () => {
       await getSocketTracer().startActiveSpan('socket.message', async (span) => {
         try {
           await RequestContext.create(this.em, async () => {
             const connection = this.connections.get(ws)
             if (connection) {
               await this.router.handleMessage(connection, data)
-            /* v8 ignore next 3 */
+              /* v8 ignore next 3 */
             } else {
               await this.closeConnection(ws)
             }
@@ -141,7 +144,12 @@ export default class Socket {
     // delete before async work to prevent duplicate handleClosed calls
     this.connections.delete(ws)
 
-    const closeOperation = this.createCloseOperation({ connection, preclosed, code, reason: options.reason })
+    const closeOperation = this.createCloseOperation({
+      connection,
+      preclosed,
+      code,
+      reason: options.reason,
+    })
     this.pendingCloseOperations.add(closeOperation)
     try {
       await closeOperation
@@ -150,7 +158,12 @@ export default class Socket {
     }
   }
 
-  private async createCloseOperation({ connection, preclosed, code, reason }: {
+  private async createCloseOperation({
+    connection,
+    preclosed,
+    code,
+    reason,
+  }: {
     connection: SocketConnection
     preclosed: boolean
     code: number

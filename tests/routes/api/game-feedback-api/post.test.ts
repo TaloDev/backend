@@ -1,11 +1,11 @@
+import { randText } from '@ngneat/falso'
+import { subHours } from 'date-fns'
 import request from 'supertest'
 import { APIKeyScope } from '../../../../src/entities/api-key'
-import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
+import GameFeedback from '../../../../src/entities/game-feedback'
 import GameFeedbackCategoryFactory from '../../../fixtures/GameFeedbackCategoryFactory'
 import PlayerFactory from '../../../fixtures/PlayerFactory'
-import { subHours } from 'date-fns'
-import { randText } from '@ngneat/falso'
-import GameFeedback from '../../../../src/entities/game-feedback'
+import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
 
 describe('Game feedback API - post', () => {
   it('should create feedback if the scope is valid', async () => {
@@ -25,7 +25,7 @@ describe('Game feedback API - post', () => {
 
     expect(res.body.feedback).toMatchObject({
       comment: 'This is my comment',
-      anonymised: feedbackCategory.anonymised
+      anonymised: feedbackCategory.anonymised,
     })
   })
 
@@ -80,7 +80,10 @@ describe('Game feedback API - post', () => {
   })
 
   it('should set the createdAt for the feedback to the continuity date', async () => {
-    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_FEEDBACK, APIKeyScope.WRITE_CONTINUITY_REQUESTS])
+    const [apiKey, token] = await createAPIKeyAndToken([
+      APIKeyScope.WRITE_GAME_FEEDBACK,
+      APIKeyScope.WRITE_CONTINUITY_REQUESTS,
+    ])
 
     const feedbackCategory = await new GameFeedbackCategoryFactory(apiKey.game).one()
     const player = await new PlayerFactory([apiKey.game]).one()
@@ -115,9 +118,7 @@ describe('Game feedback API - post', () => {
       .set('x-talo-alias', String(player.aliases[0].id))
       .expect(200)
 
-    expect(res.body.feedback.props).toStrictEqual([
-      { key: 'gameVersion', value: '0.17.0' }
-    ])
+    expect(res.body.feedback.props).toStrictEqual([{ key: 'gameVersion', value: '0.17.0' }])
   })
 
   it('should reject props where the key is greater than 128 characters', async () => {
@@ -135,9 +136,9 @@ describe('Game feedback API - post', () => {
         props: [
           {
             key: randText({ charCount: 129 }),
-            value: '1'
-          }
-        ]
+            value: '1',
+          },
+        ],
       })
       .auth(token, { type: 'bearer' })
       .set('x-talo-alias', String(player.aliases[0].id))
@@ -145,8 +146,8 @@ describe('Game feedback API - post', () => {
 
     expect(res.body).toStrictEqual({
       errors: {
-        props: ['Prop key length (129) exceeds 128 characters']
-      }
+        props: ['Prop key length (129) exceeds 128 characters'],
+      },
     })
   })
 
@@ -165,9 +166,9 @@ describe('Game feedback API - post', () => {
         props: [
           {
             key: 'bio',
-            value: randText({ charCount: 513 })
-          }
-        ]
+            value: randText({ charCount: 513 }),
+          },
+        ],
       })
       .auth(token, { type: 'bearer' })
       .set('x-talo-alias', String(player.aliases[0].id))
@@ -175,8 +176,8 @@ describe('Game feedback API - post', () => {
 
     expect(res.body).toStrictEqual({
       errors: {
-        props: ['Prop value length (513) exceeds 512 characters']
-      }
+        props: ['Prop value length (513) exceeds 512 characters'],
+      },
     })
   })
 
@@ -199,9 +200,9 @@ describe('Game feedback API - post', () => {
         props: [
           {
             key: 'bio',
-            value: randText({ charCount: 500 })
-          }
-        ]
+            value: randText({ charCount: 500 }),
+          },
+        ],
       })
       .auth(token, { type: 'bearer' })
       .set('x-talo-alias', String(player.aliases[0].id))
@@ -209,8 +210,8 @@ describe('Game feedback API - post', () => {
 
     expect(res.body).toStrictEqual({
       errors: {
-        props: ['Unknown error']
-      }
+        props: ['Unknown error'],
+      },
     })
   })
 })

@@ -12,7 +12,7 @@
     "types": ["vitest/globals", "./src/global.d.ts"],
     "skipLibCheck": true,
     "strict": true,
-    "noImplicitOverride": true,
+    "noImplicitOverride": true
   },
   "ts-node": {
     "transpileOnly": true

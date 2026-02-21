@@ -1,9 +1,9 @@
+import { rand, randFloat, randNumber, randText, randUuid } from '@ngneat/falso'
+import { sub } from 'date-fns'
 import { Factory } from 'hefty'
 import GameSave from '../../src/entities/game-save'
 import Player from '../../src/entities/player'
 import randomDate from '../../src/lib/dates/randomDate'
-import { sub } from 'date-fns'
-import { rand, randFloat, randNumber, randText, randUuid } from '@ngneat/falso'
 
 export default class GameSaveFactory extends Factory<GameSave> {
   private availablePlayers: Player[]
@@ -15,26 +15,26 @@ export default class GameSaveFactory extends Factory<GameSave> {
   }
 
   protected override definition() {
-    const objects = [...new Array(randNumber({ min: 2, max: 5 }))].map(() => ({
+    const objects = Array.from({ length: randNumber({ min: 2, max: 5 }) }).map(() => ({
       id: randUuid(),
       name: randText(),
       data: [
         {
           key: 'x',
           value: String(randFloat({ min: -99, max: 99 })),
-          dataType: 'System.Single'
+          dataType: 'System.Single',
         },
         {
           key: 'y',
           value: String(randFloat({ min: -99, max: 99 })),
-          dataType: 'System.Single'
+          dataType: 'System.Single',
         },
         {
           key: 'z',
           value: String(randFloat({ min: -99, max: 99 })),
-          dataType: 'System.Single'
-        }
-      ]
+          dataType: 'System.Single',
+        },
+      ],
     }))
 
     const player = rand(this.availablePlayers)
@@ -42,10 +42,10 @@ export default class GameSaveFactory extends Factory<GameSave> {
     this.state(() => ({
       name: `save-level${randNumber({ min: 1, max: 20 })}-${Date.now()}`,
       content: {
-        objects
+        objects,
       },
       player,
-      updatedAt: randomDate(sub(new Date(), { weeks: 2 }), new Date())
+      updatedAt: randomDate(sub(new Date(), { weeks: 2 }), new Date()),
     }))
   }
 }

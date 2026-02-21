@@ -1,7 +1,7 @@
-import { publicRoute } from '../../../lib/routing/router'
-import User from '../../../entities/user'
 import bcrypt from 'bcrypt'
+import User from '../../../entities/user'
 import { buildTokenPair } from '../../../lib/auth/buildTokenPair'
+import { publicRoute } from '../../../lib/routing/router'
 import { setUserLastSeenAt } from '../../../lib/users/setUserLastSeenAt'
 import { passwordSchema } from '../../../lib/validation/passwordSchema'
 
@@ -11,8 +11,8 @@ export const loginRoute = publicRoute({
   schema: (z) => ({
     body: z.object({
       email: z.string().min(1),
-      password: passwordSchema
-    })
+      password: passwordSchema,
+    }),
   }),
   handler: async (ctx) => {
     const { email, password } = ctx.state.validated.body
@@ -23,7 +23,7 @@ export const loginRoute = publicRoute({
     if (!user) {
       return {
         status: 401,
-        body: { message: 'Incorrect email address or password' }
+        body: { message: 'Incorrect email address or password' },
       }
     }
 
@@ -31,7 +31,7 @@ export const loginRoute = publicRoute({
     if (!passwordMatches) {
       return {
         status: 401,
-        body: { message: 'Incorrect email address or password' }
+        body: { message: 'Incorrect email address or password' },
       }
     }
 
@@ -42,8 +42,8 @@ export const loginRoute = publicRoute({
         status: 200,
         body: {
           twoFactorAuthRequired: true,
-          userId: user.id
-        }
+          userId: user.id,
+        },
       }
     }
 
@@ -55,8 +55,8 @@ export const loginRoute = publicRoute({
       status: 200,
       body: {
         accessToken,
-        user
-      }
+        user,
+      },
     }
-  }
+  },
 })

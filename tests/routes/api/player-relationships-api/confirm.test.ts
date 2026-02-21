@@ -1,10 +1,12 @@
 import request from 'supertest'
 import { APIKeyScope } from '../../../../src/entities/api-key'
-import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
-import PlayerFactory from '../../../fixtures/PlayerFactory'
-import PlayerAliasSubscriptionFactory from '../../../fixtures/PlayerAliasSubscriptionFactory'
 import PlayerAliasSubscription from '../../../../src/entities/player-alias-subscription'
-import createSocketIdentifyMessage, { persistTestSocketTicket } from '../../../utils/createSocketIdentifyMessage'
+import PlayerAliasSubscriptionFactory from '../../../fixtures/PlayerAliasSubscriptionFactory'
+import PlayerFactory from '../../../fixtures/PlayerFactory'
+import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
+import createSocketIdentifyMessage, {
+  persistTestSocketTicket,
+} from '../../../utils/createSocketIdentifyMessage'
 import createTestSocket, { createTestClient } from '../../../utils/createTestSocket'
 
 describe('Player relationships API - confirm', () => {
@@ -183,7 +185,7 @@ describe('Player relationships API - confirm', () => {
 
     const reciprocal = await em.repo(PlayerAliasSubscription).findOneOrFail({
       subscriber: player2.aliases[0],
-      subscribedTo: player1.aliases[0]
+      subscribedTo: player1.aliases[0],
     })
 
     expect(reciprocal.confirmed).toBe(true)
@@ -211,21 +213,30 @@ describe('Player relationships API - confirm', () => {
 
     const reciprocal = await em.repo(PlayerAliasSubscription).findOne({
       subscriber: player2.aliases[0],
-      subscribedTo: player1.aliases[0]
+      subscribedTo: player1.aliases[0],
     })
     expect(reciprocal).toBeNull()
   })
 
   it('should notify the subscriber when their subscription is confirmed', async () => {
-    const { identifyMessage: identifyMessage1, ticket: ticket1, player: player1, apiKey, token } = await createSocketIdentifyMessage([
+    const {
+      identifyMessage: identifyMessage1,
+      ticket: ticket1,
+      player: player1,
+      apiKey,
+      token,
+    } = await createSocketIdentifyMessage([
       APIKeyScope.READ_PLAYERS,
       APIKeyScope.READ_PLAYER_RELATIONSHIPS,
-      APIKeyScope.WRITE_PLAYER_RELATIONSHIPS
+      APIKeyScope.WRITE_PLAYER_RELATIONSHIPS,
     ])
     const player2 = await new PlayerFactory([apiKey.game]).one()
     await em.persist(player2).flush()
 
-    const { identifyMessage: identifyMessage2, ticket: ticket2 } = await persistTestSocketTicket(apiKey, player2)
+    const { identifyMessage: identifyMessage2, ticket: ticket2 } = await persistTestSocketTicket(
+      apiKey,
+      player2,
+    )
 
     const subscription = await new PlayerAliasSubscriptionFactory()
       .withSubscriber(player1.aliases[0])

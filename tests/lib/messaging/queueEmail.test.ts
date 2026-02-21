@@ -1,10 +1,10 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { Queue } from 'bullmq'
+import { describe, it, expect, vi, beforeEach } from 'vitest'
 import DataExportReady from '../../../src/emails/data-export-ready-mail'
-import queueEmail from '../../../src/lib/messaging/queueEmail'
 import Mail, { EmailConfig } from '../../../src/emails/mail'
-import { createEmailQueue } from '../../../src/lib/queues/createEmailQueue'
 import * as checkRateLimitExceeded from '../../../src/lib/errors/checkRateLimitExceeded'
+import queueEmail from '../../../src/lib/messaging/queueEmail'
+import { createEmailQueue } from '../../../src/lib/queues/createEmailQueue'
 
 const consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
 const checkRateLimitExceededMock = vi.spyOn(checkRateLimitExceeded, 'default')
@@ -47,7 +47,9 @@ describe('Queue email', () => {
     await queueEmail(mockEmailQueue, mail1)
     expect(mockEmailQueue.add).toHaveBeenCalledTimes(3)
     expect(consoleWarnSpy).toHaveBeenCalledTimes(1)
-    expect(consoleWarnSpy).toHaveBeenCalledWith(`Mail rate limit exceeded (to: ${recipient}, type: DataExportReady)`)
+    expect(consoleWarnSpy).toHaveBeenCalledWith(
+      `Mail rate limit exceeded (to: ${recipient}, type: DataExportReady)`,
+    )
   })
 
   it('should not rate limit different email types or recipients', async () => {

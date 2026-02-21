@@ -2,23 +2,23 @@ import { uniqWith } from 'lodash'
 import Prop, { MAX_KEY_LENGTH, MAX_VALUE_LENGTH } from '../../entities/prop'
 import { PropSizeError } from '../errors/propSizeError'
 
-type UnsanitisedProp = { key: string, value: string | null }
+type UnsanitisedProp = { key: string; value: string | null }
 
 export function mergeAndSanitiseProps({
   prevProps,
   newProps,
   extraFilter,
-  valueLimit
+  valueLimit,
 }: {
   prevProps: Prop[]
   newProps: UnsanitisedProp[]
   extraFilter?: (prop: UnsanitisedProp) => boolean
   valueLimit?: number
 }): Prop[] {
-  const mergedProps = uniqWith([
-    ...sanitiseProps({ props: newProps, deleteNull: false, extraFilter }),
-    ...prevProps
-  ], (a, b) => a.key === b.key)
+  const mergedProps = uniqWith(
+    [...sanitiseProps({ props: newProps, deleteNull: false, extraFilter }), ...prevProps],
+    (a, b) => a.key === b.key,
+  )
 
   return hardSanitiseProps({ props: mergedProps, valueLimit })
 }
@@ -26,7 +26,7 @@ export function mergeAndSanitiseProps({
 export function sanitiseProps({
   props,
   deleteNull = false,
-  extraFilter
+  extraFilter,
 }: {
   props: UnsanitisedProp[]
   deleteNull?: boolean
@@ -42,14 +42,14 @@ export function sanitiseProps({
     })
     .map((prop) => ({
       key: String(prop.key),
-      value: prop.value === null ? null : String(prop.value)
+      value: prop.value === null ? null : String(prop.value),
     }))
 }
 
 export function testPropSize({
   key,
   value,
-  valueLimit
+  valueLimit,
 }: {
   key: string
   value: string | null
@@ -61,14 +61,16 @@ export function testPropSize({
 
   const safeValueLimit = valueLimit || MAX_VALUE_LENGTH
   if (value && value.length > safeValueLimit) {
-    throw new PropSizeError(`Prop value length (${value.length}) exceeds ${safeValueLimit} characters`)
+    throw new PropSizeError(
+      `Prop value length (${value.length}) exceeds ${safeValueLimit} characters`,
+    )
   }
 }
 
 export function hardSanitiseProps({
   props,
   extraFilter,
-  valueLimit
+  valueLimit,
 }: {
   props: UnsanitisedProp[]
   extraFilter?: (prop: UnsanitisedProp) => boolean

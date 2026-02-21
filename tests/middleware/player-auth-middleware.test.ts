@@ -1,18 +1,20 @@
 import request from 'supertest'
-import createAPIKeyAndToken from '../utils/createAPIKeyAndToken'
 import { APIKeyScope } from '../../src/entities/api-key'
 import GameStatFactory from '../fixtures/GameStatFactory'
-import PlayerFactory from '../fixtures/PlayerFactory'
 import PlayerAliasFactory from '../fixtures/PlayerAliasFactory'
+import PlayerFactory from '../fixtures/PlayerFactory'
+import createAPIKeyAndToken from '../utils/createAPIKeyAndToken'
 
 describe('Player auth middleware', () => {
   it('should allow access to api endpoints when valid session headers are provided', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_STATS])
-    const stat = await new GameStatFactory([apiKey.game]).state(() => ({
-      defaultValue: 0,
-      maxChange: 1,
-      maxValue: 1000
-    })).one()
+    const stat = await new GameStatFactory([apiKey.game])
+      .state(() => ({
+        defaultValue: 0,
+        maxChange: 1,
+        maxValue: 1000,
+      }))
+      .one()
     const player = await new PlayerFactory([apiKey.game]).withTaloAlias().one()
 
     await em.persistAndFlush([stat, player])
@@ -61,7 +63,7 @@ describe('Player auth middleware', () => {
 
     expect(res.body).toStrictEqual({
       message: 'The x-talo-session header is required for this player',
-      errorCode: 'MISSING_SESSION'
+      errorCode: 'MISSING_SESSION',
     })
   })
 
@@ -81,7 +83,7 @@ describe('Player auth middleware', () => {
 
     expect(res.body).toStrictEqual({
       message: 'The x-talo-session header is required for this player',
-      errorCode: 'MISSING_SESSION'
+      errorCode: 'MISSING_SESSION',
     })
   })
 
@@ -107,7 +109,7 @@ describe('Player auth middleware', () => {
 
     expect(res.body).toStrictEqual({
       message: 'The x-talo-session header is invalid',
-      errorCode: 'INVALID_SESSION'
+      errorCode: 'INVALID_SESSION',
     })
   })
 
@@ -133,7 +135,7 @@ describe('Player auth middleware', () => {
 
     expect(res.body).toStrictEqual({
       message: 'The x-talo-session header is invalid',
-      errorCode: 'INVALID_SESSION'
+      errorCode: 'INVALID_SESSION',
     })
   })
 
@@ -159,7 +161,7 @@ describe('Player auth middleware', () => {
 
     expect(res.body).toStrictEqual({
       message: 'The x-talo-session header is invalid',
-      errorCode: 'INVALID_SESSION'
+      errorCode: 'INVALID_SESSION',
     })
   })
 })

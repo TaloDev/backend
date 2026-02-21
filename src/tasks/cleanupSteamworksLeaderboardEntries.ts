@@ -1,8 +1,8 @@
+import { EntityManager, NotFoundError } from '@mikro-orm/mysql'
 import { captureException } from '@sentry/node'
 import { getMikroORM } from '../config/mikro-orm.config'
 import Integration, { IntegrationType } from '../entities/integration'
 import { SteamworksLeaderboardEntry } from '../entities/steamworks-leaderboard-entry'
-import { EntityManager, NotFoundError } from '@mikro-orm/mysql'
 import { streamByCursor } from '../lib/perf/streamByCursor'
 
 export default async function cleanupSteamworksLeaderboardEntries() {
@@ -12,14 +12,17 @@ export default async function cleanupSteamworksLeaderboardEntries() {
   const em = orm.em.fork() as EntityManager
 
   const entryStream = streamByCursor<SteamworksLeaderboardEntry>(async (batchSize, after) => {
-    return em.repo(SteamworksLeaderboardEntry).findByCursor({
-      leaderboardEntry: null
-    }, {
-      first: batchSize,
-      after,
-      orderBy: { id: 'asc' },
-      populate: ['steamworksLeaderboard.leaderboard.game'] as const
-    })
+    return em.repo(SteamworksLeaderboardEntry).findByCursor(
+      {
+        leaderboardEntry: null,
+      },
+      {
+        first: batchSize,
+        after,
+        orderBy: { id: 'asc' },
+        populate: ['steamworksLeaderboard.leaderboard.game'] as const,
+      },
+    )
   }, 100)
 
   const integrationsMap = new Map<number, Integration>()
@@ -31,7 +34,9 @@ export default async function cleanupSteamworksLeaderboardEntries() {
       let integration = integrationsMap.get(game.id)
       if (!integration) {
         try {
-          integration = await em.repo(Integration).findOneOrFail({ game, type: IntegrationType.STEAMWORKS })
+          integration = await em
+            .repo(Integration)
+            .findOneOrFail({ game, type: IntegrationType.STEAMWORKS })
         } catch (err) {
           if (err instanceof NotFoundError) {
             await em.repo(SteamworksLeaderboardEntry).nativeDelete(entry.id)
@@ -48,7 +53,7 @@ export default async function cleanupSteamworksLeaderboardEntries() {
     } catch (err) {
       console.error(
         `Steamworks leaderboard entry cleanup failed (${entry.steamworksLeaderboard.steamworksLeaderboardId}, ${entry.steamUserId}):`,
-        (err as Error).message
+        (err as Error).message,
       )
       captureException(err)
     } finally {
@@ -58,5 +63,7 @@ export default async function cleanupSteamworksLeaderboardEntries() {
 
   const endTime = performance.now()
   const timeTakenSec = (endTime - startTime) / 1000
-  console.info(`Cleaned up ${processed} Steamworks leaderboard entries in ${timeTakenSec.toFixed(2)}s`)
+  console.info(
+    `Cleaned up ${processed} Steamworks leaderboard entries in ${timeTakenSec.toFixed(2)}s`,
+  )
 }

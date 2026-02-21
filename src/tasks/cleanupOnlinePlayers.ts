@@ -1,10 +1,10 @@
-import { EntityManager } from '@mikro-orm/mysql'
-import { getMikroORM } from '../config/mikro-orm.config'
-import createClickHouseClient from '../lib/clickhouse/createClient'
-import { ClickHousePlayerSession } from '../entities/player-session'
 import { ClickHouseClient } from '@clickhouse/client'
+import { EntityManager } from '@mikro-orm/mysql'
 import { subMinutes } from 'date-fns'
+import { getMikroORM } from '../config/mikro-orm.config'
 import PlayerPresence from '../entities/player-presence'
+import { ClickHousePlayerSession } from '../entities/player-session'
+import createClickHouseClient from '../lib/clickhouse/createClient'
 import { formatDateForClickHouse } from '../lib/clickhouse/formatDateTime'
 import { getSocketInstance } from '../socket/socketRegistry'
 
@@ -19,31 +19,34 @@ let cleanupStats: {
 
 async function deleteDisconnectedPresence(em: EntityManager) {
   const disconnectedPresenceCount = await em.nativeDelete(PlayerPresence, {
-    player: null
+    player: null,
   })
   cleanupStats.presenceDeleted += disconnectedPresenceCount
 }
 
 async function getSessions(clickhouse: ClickHouseClient, onlinePresence: PlayerPresence[]) {
   const playerIds = onlinePresence.map((p) => p.player.id)
-  const oldestUpdatedAt = onlinePresence.reduce((oldest, p) =>
-    p.updatedAt < oldest ? p.updatedAt : oldest,
-  onlinePresence[0].updatedAt)
+  const oldestUpdatedAt = onlinePresence.reduce(
+    (oldest, p) => (p.updatedAt < oldest ? p.updatedAt : oldest),
+    onlinePresence[0].updatedAt,
+  )
 
-  const sessions = await clickhouse.query({
-    query: `
+  const sessions = await clickhouse
+    .query({
+      query: `
       SELECT id, player_id, ended_at, started_at
       FROM player_sessions
       WHERE player_id IN ({playerIds:Array(String)})
         AND (ended_at >= {cutoffTime:DateTime64(3)} OR ended_at IS NULL)
       ORDER BY player_id, ended_at DESC NULLS FIRST
     `,
-    query_params: {
-      playerIds,
-      cutoffTime: formatDateForClickHouse(oldestUpdatedAt)
-    },
-    format: 'JSONEachRow'
-  }).then((res) => res.json<ClickHousePlayerSession>())
+      query_params: {
+        playerIds,
+        cutoffTime: formatDateForClickHouse(oldestUpdatedAt),
+      },
+      format: 'JSONEachRow',
+    })
+    .then((res) => res.json<ClickHousePlayerSession>())
 
   // map players to their latest session
   const sessionsByPlayer = new Map<string, ClickHousePlayerSession>()
@@ -57,15 +60,18 @@ async function getSessions(clickhouse: ClickHouseClient, onlinePresence: PlayerP
 }
 
 async function cleanupStaleOnlinePresence(em: EntityManager, clickhouse: ClickHouseClient) {
-  const onlinePresence = await em.repo(PlayerPresence).find({
-    online: true,
-    updatedAt: {
-      $lte: subMinutes(new Date(), 30)
-    }
-  }, {
-    limit: BATCH_SIZE,
-    populate: ['player']
-  })
+  const onlinePresence = await em.repo(PlayerPresence).find(
+    {
+      online: true,
+      updatedAt: {
+        $lte: subMinutes(new Date(), 30),
+      },
+    },
+    {
+      limit: BATCH_SIZE,
+      populate: ['player'],
+    },
+  )
 
   if (onlinePresence.length === 0) {
     return
@@ -110,16 +116,18 @@ async function cleanupStaleOnlinePresence(em: EntityManager, clickhouse: ClickHo
 }
 
 async function cleanupUnfinishedSessions(em: EntityManager, clickhouse: ClickHouseClient) {
-  const unfinishedSessions = await clickhouse.query({
-    query: `
+  const unfinishedSessions = await clickhouse
+    .query({
+      query: `
       SELECT id, player_id
       FROM player_sessions
       WHERE ended_at IS NULL
       LIMIT {limit:UInt32}
     `,
-    query_params: { limit: BATCH_SIZE },
-    format: 'JSONEachRow'
-  }).then((res) => res.json<{ id: string, player_id: string }>())
+      query_params: { limit: BATCH_SIZE },
+      format: 'JSONEachRow',
+    })
+    .then((res) => res.json<{ id: string; player_id: string }>())
 
   if (unfinishedSessions.length === 0) {
     return
@@ -127,17 +135,23 @@ async function cleanupUnfinishedSessions(em: EntityManager, clickhouse: ClickHou
 
   // map players to their presence
   const playerIds = unfinishedSessions.map((s) => s.player_id)
-  const presenceMap = await em.repo(PlayerPresence).find({
-    player: { id: { $in: playerIds } }
-  }, {
-    populate: ['player']
-  }).then((presence) => {
-    const map = new Map<string, PlayerPresence>()
-    for (const p of presence) {
-      map.set(p.player.id, p)
-    }
-    return map
-  })
+  const presenceMap = await em
+    .repo(PlayerPresence)
+    .find(
+      {
+        player: { id: { $in: playerIds } },
+      },
+      {
+        populate: ['player'],
+      },
+    )
+    .then((presence) => {
+      const map = new Map<string, PlayerPresence>()
+      for (const p of presence) {
+        map.set(p.player.id, p)
+      }
+      return map
+    })
 
   // delete sessions where the player is offline (or has no presence)
   const sessionsToDelete: string[] = []
@@ -152,7 +166,7 @@ async function cleanupUnfinishedSessions(em: EntityManager, clickhouse: ClickHou
     cleanupStats.sessionsDeleted += sessionsToDelete.length
     await clickhouse.exec({
       query: 'DELETE FROM player_sessions WHERE id IN ({sessionIds:Array(String)})',
-      query_params: { sessionIds: sessionsToDelete }
+      query_params: { sessionIds: sessionsToDelete },
     })
   }
 }
@@ -166,7 +180,7 @@ export default async function cleanupOnlinePlayers() {
     sessionsDeleted: 0,
     presenceUpdated: 0,
     presenceDeleted: 0,
-    presenceStillOnline: 0
+    presenceStillOnline: 0,
   }
 
   // todo: find out how this is happening

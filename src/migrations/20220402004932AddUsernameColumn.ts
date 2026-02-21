@@ -1,7 +1,6 @@
 import { Migration } from '@mikro-orm/migrations'
 
 export class AddUsernameColumn extends Migration {
-
   async up(): Promise<void> {
     this.addSql('alter table `user` add `username` varchar(255) not null;')
 
@@ -13,5 +12,4 @@ export class AddUsernameColumn extends Migration {
 
     this.addSql('alter table `data_export` modify `entities` text not null;')
   }
-
 }

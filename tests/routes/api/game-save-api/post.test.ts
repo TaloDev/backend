@@ -1,9 +1,9 @@
+import { randText } from '@ngneat/falso'
 import request from 'supertest'
 import { APIKeyScope } from '../../../../src/entities/api-key'
 import PlayerFactory from '../../../fixtures/PlayerFactory'
 import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
 import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
-import { randText } from '@ngneat/falso'
 
 describe('Game save API - post', () => {
   it('should create a game save if the scope is valid', async () => {
@@ -91,8 +91,8 @@ describe('Game save API - post', () => {
 
     expect(res.body).toStrictEqual({
       errors: {
-        name: ['name is too long']
-      }
+        name: ['name is too long'],
+      },
     })
   })
 })

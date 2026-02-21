@@ -1,10 +1,21 @@
-import { Entity, ManyToOne, PrimaryKey, Property, Collection, OneToMany, Index, raw, EntityManager } from '@mikro-orm/mysql'
-import Game from './game'
-import PlayerGameStat from './player-game-stat'
+import type Redis from 'ioredis'
 import { ClickHouseClient } from '@clickhouse/client'
-import Player from './player'
-import { formatDateForClickHouse } from '../lib/clickhouse/formatDateTime'
+import {
+  Entity,
+  ManyToOne,
+  PrimaryKey,
+  Property,
+  Collection,
+  OneToMany,
+  Index,
+  raw,
+  EntityManager,
+} from '@mikro-orm/mysql'
 import { endOfDay, startOfDay } from 'date-fns'
+import { formatDateForClickHouse } from '../lib/clickhouse/formatDateTime'
+import Game from './game'
+import Player from './player'
+import PlayerGameStat from './player-game-stat'
 
 type GlobalValueMetrics = {
   minValue: number
@@ -66,7 +77,11 @@ export default class GameStat {
   @Property({ onUpdate: () => new Date() })
   updatedAt: Date = new Date()
 
-  metrics?: { globalCount: number, globalValue: GlobalValueMetrics, playerValue: PlayerValueMetrics }
+  metrics?: {
+    globalCount: number
+    globalValue: GlobalValueMetrics
+    playerValue: PlayerValueMetrics
+  }
 
   static getIndexCacheKey(game: Game, wildcard = false) {
     let key = `stats-index-${game.id}`
@@ -74,25 +89,55 @@ export default class GameStat {
     return key
   }
 
+  static getGlobalValueCacheKey(id: number) {
+    return `stat:global-value:${id}`
+  }
+
+  async incrementGlobalValue(redis: Redis, change: number) {
+    const key = GameStat.getGlobalValueCacheKey(this.id)
+    await redis.setnx(key, this.globalValue)
+    this.globalValue = Number(await redis.incrbyfloat(key, change))
+  }
+
+  async getGlobalValueFromCache(redis: Redis) {
+    const key = GameStat.getGlobalValueCacheKey(this.id)
+    const value = await redis.get(key)
+    if (value !== null) {
+      this.globalValue = Number(value)
+    }
+
+    return this.globalValue
+  }
+
   constructor(game: Game) {
     this.game = game
   }
 
-  async recalculateGlobalValue({ em, includeDevData }: { em: EntityManager, includeDevData: boolean }) {
-    const qb = em.qb(PlayerGameStat, 'pgs')
+  async recalculateGlobalValue({
+    em,
+    includeDevData,
+  }: {
+    em: EntityManager
+    includeDevData: boolean
+  }) {
+    const qb = em
+      .qb(PlayerGameStat, 'pgs')
       .select(raw('SUM(pgs.value) as total'))
       .where({ stat: this.id })
 
     if (!includeDevData) {
-      qb.innerJoin('pgs.player', 'p')
-        .andWhere({ 'p.devBuild': false })
+      qb.innerJoin('pgs.player', 'p').andWhere({ 'p.devBuild': false })
     }
 
     const result = await qb.execute<{ total: string | null }>('get')
     this.globalValue = Number(result?.total ?? 0)
   }
 
-  async buildMetricsWhereConditions(startDate?: string, endDate?: string, player?: Player): Promise<string> {
+  async buildMetricsWhereConditions(
+    startDate?: string,
+    endDate?: string,
+    player?: Player,
+  ): Promise<string> {
     let whereConditions = `WHERE game_stat_id = ${this.id}`
 
     if (startDate) {
@@ -114,7 +159,11 @@ export default class GameStat {
     return whereConditions
   }
 
-  async loadMetrics(clickhouse: ClickHouseClient, metricsStartDate?: string, metricsEndDate?: string): Promise<void> {
+  async loadMetrics(
+    clickhouse: ClickHouseClient,
+    metricsStartDate?: string,
+    metricsEndDate?: string,
+  ): Promise<void> {
     const whereConditions = await this.buildMetricsWhereConditions(metricsStartDate, metricsEndDate)
 
     const [globalCount, globalValue] = await this.getGlobalValueMetrics(clickhouse, whereConditions)
@@ -123,13 +172,13 @@ export default class GameStat {
     this.metrics = {
       globalCount,
       globalValue,
-      playerValue
+      playerValue,
     }
   }
 
   async getGlobalValueMetrics(
     clickhouse: ClickHouseClient,
-    whereConditions: string
+    whereConditions: string,
   ): Promise<[number, GlobalValueMetrics]> {
     const query = `
       SELECT
@@ -143,26 +192,23 @@ export default class GameStat {
       ${whereConditions}
     `
 
-    const res = await clickhouse.query({
-      query: query,
-      format: 'JSONEachRow'
-    }).then((res) => res.json<{
-      rawCount: string | number
-      minValue: number
-      maxValue: number
-      medianValue: number | null
-      averageValue: number | null
-      averageChange: number | null
-    }>())
+    const res = await clickhouse
+      .query({
+        query: query,
+        format: 'JSONEachRow',
+      })
+      .then((res) =>
+        res.json<{
+          rawCount: string | number
+          minValue: number
+          maxValue: number
+          medianValue: number | null
+          averageValue: number | null
+          averageChange: number | null
+        }>(),
+      )
 
-    const {
-      rawCount,
-      minValue,
-      maxValue,
-      medianValue,
-      averageValue,
-      averageChange
-    } = res[0]
+    const { rawCount, minValue, maxValue, medianValue, averageValue, averageChange } = res[0]
 
     return [
       Number(rawCount),
@@ -171,14 +217,14 @@ export default class GameStat {
         maxValue: maxValue || this.defaultValue,
         medianValue: medianValue ?? this.defaultValue,
         averageValue: averageValue ?? this.defaultValue,
-        averageChange: averageChange ?? 0
-      }
+        averageChange: averageChange ?? 0,
+      },
     ]
   }
 
   async getPlayerValueMetrics(
     clickhouse: ClickHouseClient,
-    whereConditions: string
+    whereConditions: string,
   ): Promise<PlayerValueMetrics> {
     const query = `
       SELECT
@@ -190,28 +236,27 @@ export default class GameStat {
       ${whereConditions}
     `
 
-    const res = await clickhouse.query({
-      query: query,
-      format: 'JSONEachRow'
-    }).then((res) => res.json<{
-      minValue: number
-      maxValue: number
-      medianValue: number | null
-      averageValue: number | null
-    }>())
+    const res = await clickhouse
+      .query({
+        query: query,
+        format: 'JSONEachRow',
+      })
+      .then((res) =>
+        res.json<{
+          minValue: number
+          maxValue: number
+          medianValue: number | null
+          averageValue: number | null
+        }>(),
+      )
 
-    const {
-      minValue,
-      maxValue,
-      medianValue,
-      averageValue
-    } = res[0]
+    const { minValue, maxValue, medianValue, averageValue } = res[0]
 
     return {
       minValue: minValue || this.defaultValue,
       maxValue: maxValue || this.defaultValue,
       medianValue: medianValue ?? this.defaultValue,
-      averageValue: averageValue ?? this.defaultValue
+      averageValue: averageValue ?? this.defaultValue,
     }
   }
 
@@ -229,7 +274,7 @@ export default class GameStat {
       maxValue: this.maxValue,
       minTimeBetweenUpdates: this.minTimeBetweenUpdates,
       createdAt: this.createdAt,
-      updatedAt: this.updatedAt
+      updatedAt: this.updatedAt,
     }
   }
 }

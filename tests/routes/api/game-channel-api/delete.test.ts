@@ -1,8 +1,8 @@
 import request from 'supertest'
-import GameChannelFactory from '../../../fixtures/GameChannelFactory'
 import { APIKeyScope } from '../../../../src/entities/api-key'
-import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
+import GameChannelFactory from '../../../fixtures/GameChannelFactory'
 import PlayerFactory from '../../../fixtures/PlayerFactory'
+import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
 import createSocketIdentifyMessage from '../../../utils/createSocketIdentifyMessage'
 import createTestSocket from '../../../utils/createTestSocket'
 
@@ -93,7 +93,7 @@ describe('Game channel API - delete', () => {
       .expect(404)
 
     expect(res.body).toStrictEqual({
-      message: 'Player not found'
+      message: 'Player not found',
     })
   })
 
@@ -113,7 +113,7 @@ describe('Game channel API - delete', () => {
       .expect(404)
 
     expect(res.body).toStrictEqual({
-      message: 'Channel not found'
+      message: 'Channel not found',
     })
   })
 
@@ -121,7 +121,7 @@ describe('Game channel API - delete', () => {
     const { identifyMessage, ticket, player, token } = await createSocketIdentifyMessage([
       APIKeyScope.READ_PLAYERS,
       APIKeyScope.READ_GAME_CHANNELS,
-      APIKeyScope.WRITE_GAME_CHANNELS
+      APIKeyScope.WRITE_GAME_CHANNELS,
     ])
 
     const channel = await new GameChannelFactory(player.game).one()

@@ -1,8 +1,8 @@
-import { Factory } from 'hefty'
-import GameActivity, { GameActivityType } from '../../src/entities/game-activity'
-import Game from '../../src/entities/game'
-import User from '../../src/entities/user'
 import { rand, randWord } from '@ngneat/falso'
+import { Factory } from 'hefty'
+import Game from '../../src/entities/game'
+import GameActivity, { GameActivityType } from '../../src/entities/game-activity'
+import User from '../../src/entities/user'
 
 export default class GameActivityFactory extends Factory<GameActivity> {
   private availableGames: Game[]
@@ -29,7 +29,7 @@ export default class GameActivityFactory extends Factory<GameActivity> {
       game: this.availableGames.length > 0 ? rand(this.availableGames) : undefined,
       user: rand(this.availableUsers),
       type,
-      extra
+      extra,
     }))
   }
 }

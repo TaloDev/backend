@@ -1,12 +1,12 @@
 import { Collection } from '@mikro-orm/mysql'
-import request from 'supertest'
-import EventFactory from '../../../fixtures/EventFactory'
-import PlayerFactory from '../../../fixtures/PlayerFactory'
 import { sub, format } from 'date-fns'
+import request from 'supertest'
+import PlayerAlias from '../../../../src/entities/player-alias'
+import EventFactory from '../../../fixtures/EventFactory'
+import PlayerAliasFactory from '../../../fixtures/PlayerAliasFactory'
+import PlayerFactory from '../../../fixtures/PlayerFactory'
 import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
 import createUserAndToken from '../../../utils/createUserAndToken'
-import PlayerAlias from '../../../../src/entities/player-alias'
-import PlayerAliasFactory from '../../../fixtures/PlayerAliasFactory'
 
 describe('Headline - unique event submitters', () => {
   const startDate = format(sub(new Date(), { days: 7 }), 'yyyy-MM-dd')
@@ -16,28 +16,30 @@ describe('Headline - unique event submitters', () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({}, organisation)
 
-    const players = await new PlayerFactory([game]).state(async (player) => {
-      const alias = await new PlayerAliasFactory(player).one()
-      return {
-        aliases: new Collection<PlayerAlias>(player, [alias])
-      }
-    }).many(4)
+    const players = await new PlayerFactory([game])
+      .state(async (player) => {
+        const alias = await new PlayerAliasFactory(player).one()
+        return {
+          aliases: new Collection<PlayerAlias>(player, [alias]),
+        }
+      })
+      .many(4)
 
     const validEvents = await new EventFactory([players[0]]).many(3)
-    const validEventsButNotThisWeek = await new EventFactory([players[1]]).state(() => ({
-      createdAt: sub(new Date(), { weeks: 2 })
-    })).many(3)
+    const validEventsButNotThisWeek = await new EventFactory([players[1]])
+      .state(() => ({
+        createdAt: sub(new Date(), { weeks: 2 }),
+      }))
+      .many(3)
     const moreValidEvents = await new EventFactory([players[2]]).many(3)
 
     await em.persist(players).flush()
     await clickhouse.insert({
       table: 'events',
-      values: [
-        ...validEvents,
-        ...validEventsButNotThisWeek,
-        ...moreValidEvents
-      ].map((event) => event.toInsertable()),
-      format: 'JSONEachRow'
+      values: [...validEvents, ...validEventsButNotThisWeek, ...moreValidEvents].map((event) =>
+        event.toInsertable(),
+      ),
+      format: 'JSONEachRow',
     })
 
     const res = await request(app)
@@ -60,7 +62,7 @@ describe('Headline - unique event submitters', () => {
     await clickhouse.insert({
       table: 'events',
       values: validEvents.map((event) => event.toInsertable()),
-      format: 'JSONEachRow'
+      format: 'JSONEachRow',
     })
 
     const res = await request(app)
@@ -76,19 +78,22 @@ describe('Headline - unique event submitters', () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({}, organisation)
 
-    const player = await new PlayerFactory([game]).devBuild().state(async (player) => {
-      const alias = await new PlayerAliasFactory(player).one()
-      return {
-        aliases: new Collection<PlayerAlias>(player, [alias])
-      }
-    }).one()
+    const player = await new PlayerFactory([game])
+      .devBuild()
+      .state(async (player) => {
+        const alias = await new PlayerAliasFactory(player).one()
+        return {
+          aliases: new Collection<PlayerAlias>(player, [alias]),
+        }
+      })
+      .one()
     await em.persist(player).flush()
 
     const validEvents = await new EventFactory([player]).many(3)
     await clickhouse.insert({
       table: 'events',
       values: validEvents.map((event) => event.toInsertable()),
-      format: 'JSONEachRow'
+      format: 'JSONEachRow',
     })
 
     const res = await request(app)

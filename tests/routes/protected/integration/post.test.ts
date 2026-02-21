@@ -1,43 +1,46 @@
 import request from 'supertest'
-import { UserType } from '../../../../src/entities/user'
-import createUserAndToken from '../../../utils/createUserAndToken'
-import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
-import userPermissionProvider from '../../../utils/userPermissionProvider'
-import Integration, { IntegrationType } from '../../../../src/entities/integration'
-import IntegrationConfigFactory from '../../../fixtures/IntegrationConfigFactory'
 import GameActivity, { GameActivityType } from '../../../../src/entities/game-activity'
+import Integration, { IntegrationType } from '../../../../src/entities/integration'
+import { UserType } from '../../../../src/entities/user'
+import IntegrationConfigFactory from '../../../fixtures/IntegrationConfigFactory'
+import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
+import createUserAndToken from '../../../utils/createUserAndToken'
+import userPermissionProvider from '../../../utils/userPermissionProvider'
 
 describe('Integration - post', () => {
-  it.each(userPermissionProvider([
-    UserType.ADMIN
-  ]))('should return a %i for a %s user', async (statusCode, _, type) => {
-    const [organisation, game] = await createOrganisationAndGame()
-    const [token] = await createUserAndToken({ type }, organisation)
+  it.each(userPermissionProvider([UserType.ADMIN]))(
+    'should return a %i for a %s user',
+    async (statusCode, _, type) => {
+      const [organisation, game] = await createOrganisationAndGame()
+      const [token] = await createUserAndToken({ type }, organisation)
 
-    const config = await new IntegrationConfigFactory().one()
+      const config = await new IntegrationConfigFactory().one()
 
-    const res = await request(app)
-      .post(`/games/${game.id}/integrations`)
-      .send({ type: IntegrationType.STEAMWORKS, config })
-      .auth(token, { type: 'bearer' })
-      .expect(statusCode)
+      const res = await request(app)
+        .post(`/games/${game.id}/integrations`)
+        .send({ type: IntegrationType.STEAMWORKS, config })
+        .auth(token, { type: 'bearer' })
+        .expect(statusCode)
 
-    const activity = await em.getRepository(GameActivity).findOne({
-      type: GameActivityType.GAME_INTEGRATION_ADDED,
-      game
-    })
+      const activity = await em.getRepository(GameActivity).findOne({
+        type: GameActivityType.GAME_INTEGRATION_ADDED,
+        game,
+      })
 
-    if (statusCode === 200) {
-      expect(res.body.integration.config.appId).toBeDefined()
-      expect(res.body.integration.config.apiKey).not.toBeDefined()
+      if (statusCode === 200) {
+        expect(res.body.integration.config.appId).toBeDefined()
+        expect(res.body.integration.config.apiKey).not.toBeDefined()
 
-      expect(activity!.extra.integrationType).toBe(IntegrationType.STEAMWORKS)
-    } else {
-      expect(res.body).toStrictEqual({ message: 'You do not have permissions to add integrations' })
+        expect(activity!.extra.integrationType).toBe(IntegrationType.STEAMWORKS)
+      } else {
+        expect(res.body).toStrictEqual({
+          message: 'You do not have permissions to add integrations',
+        })
 
-      expect(activity).toBe(null)
-    }
-  })
+        expect(activity).toBe(null)
+      }
+    },
+  )
 
   it('should encrypt the api key for a steamworks integration', async () => {
     const [organisation, game] = await createOrganisationAndGame()
@@ -66,7 +69,10 @@ describe('Integration - post', () => {
 
     const res = await request(app)
       .post(`/games/${game.id}/integrations`)
-      .send({ type: IntegrationType.STEAMWORKS, config: { ...config, syncCrazyNewSteamworksFeature: true } })
+      .send({
+        type: IntegrationType.STEAMWORKS,
+        config: { ...config, syncCrazyNewSteamworksFeature: true },
+      })
       .auth(token, { type: 'bearer' })
       .expect(200)
 
@@ -89,7 +95,7 @@ describe('Integration - post', () => {
 
     const activity = await em.getRepository(GameActivity).findOne({
       type: GameActivityType.GAME_INTEGRATION_ADDED,
-      game
+      game,
     })
 
     expect(activity).toBe(null)
@@ -109,7 +115,9 @@ describe('Integration - post', () => {
       .auth(token, { type: 'bearer' })
       .expect(400)
 
-    expect(res.body).toStrictEqual({ message: `This game already has an integration for ${IntegrationType.STEAMWORKS}` })
+    expect(res.body).toStrictEqual({
+      message: `This game already has an integration for ${IntegrationType.STEAMWORKS}`,
+    })
   })
 
   it('should not add an integration with an invalid type', async () => {
@@ -126,8 +134,8 @@ describe('Integration - post', () => {
 
     expect(res.body).toStrictEqual({
       errors: {
-        type: [`Integration type must be one of ${Object.values(IntegrationType).join(', ')}`]
-      }
+        type: [`Integration type must be one of ${Object.values(IntegrationType).join(', ')}`],
+      },
     })
   })
 })

@@ -53,7 +53,7 @@ export default class PlayerGameStat {
       stat: this.stat,
       value: this.value,
       createdAt: this.createdAt,
-      updatedAt: this.updatedAt
+      updatedAt: this.updatedAt,
     }
   }
 }

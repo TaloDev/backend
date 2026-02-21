@@ -7,8 +7,8 @@ describe('extractParamsFromSchema', () => {
     it('should extract string type', () => {
       const schema = {
         body: z.object({
-          name: z.string()
-        })
+          name: z.string(),
+        }),
       }
 
       const result = extractParamsFromSchema(schema)
@@ -16,15 +16,15 @@ describe('extractParamsFromSchema', () => {
       expect(result.body?.name).toEqual({
         type: 'string',
         required: true,
-        description: undefined
+        description: undefined,
       })
     })
 
     it('should extract number type', () => {
       const schema = {
         body: z.object({
-          count: z.number()
-        })
+          count: z.number(),
+        }),
       }
 
       const result = extractParamsFromSchema(schema)
@@ -32,15 +32,15 @@ describe('extractParamsFromSchema', () => {
       expect(result.body?.count).toEqual({
         type: 'number',
         required: true,
-        description: undefined
+        description: undefined,
       })
     })
 
     it('should extract int as number type', () => {
       const schema = {
         body: z.object({
-          count: z.int()
-        })
+          count: z.int(),
+        }),
       }
 
       const result = extractParamsFromSchema(schema)
@@ -51,8 +51,8 @@ describe('extractParamsFromSchema', () => {
     it('should extract boolean type', () => {
       const schema = {
         body: z.object({
-          enabled: z.boolean()
-        })
+          enabled: z.boolean(),
+        }),
       }
 
       const result = extractParamsFromSchema(schema)
@@ -60,15 +60,15 @@ describe('extractParamsFromSchema', () => {
       expect(result.body?.enabled).toEqual({
         type: 'boolean',
         required: true,
-        description: undefined
+        description: undefined,
       })
     })
 
     it('should extract array type', () => {
       const schema = {
         body: z.object({
-          items: z.array(z.string())
-        })
+          items: z.array(z.string()),
+        }),
       }
 
       const result = extractParamsFromSchema(schema)
@@ -79,8 +79,8 @@ describe('extractParamsFromSchema', () => {
     it('should extract object type', () => {
       const schema = {
         body: z.object({
-          data: z.object({ key: z.string() })
-        })
+          data: z.object({ key: z.string() }),
+        }),
       }
 
       const result = extractParamsFromSchema(schema)
@@ -91,8 +91,8 @@ describe('extractParamsFromSchema', () => {
     it('should extract enum type', () => {
       const schema = {
         body: z.object({
-          status: z.enum(['active', 'inactive'])
-        })
+          status: z.enum(['active', 'inactive']),
+        }),
       }
 
       const result = extractParamsFromSchema(schema)
@@ -103,8 +103,8 @@ describe('extractParamsFromSchema', () => {
     it('should extract email as string type', () => {
       const schema = {
         body: z.object({
-          email: z.email()
-        })
+          email: z.email(),
+        }),
       }
 
       const result = extractParamsFromSchema(schema)
@@ -115,8 +115,8 @@ describe('extractParamsFromSchema', () => {
     it('should extract uuid as string type', () => {
       const schema = {
         body: z.object({
-          id: z.uuid()
-        })
+          id: z.uuid(),
+        }),
       }
 
       const result = extractParamsFromSchema(schema)
@@ -129,8 +129,8 @@ describe('extractParamsFromSchema', () => {
     it('should mark required fields as required', () => {
       const schema = {
         body: z.object({
-          name: z.string()
-        })
+          name: z.string(),
+        }),
       }
 
       const result = extractParamsFromSchema(schema)
@@ -141,8 +141,8 @@ describe('extractParamsFromSchema', () => {
     it('should mark optional fields as not required', () => {
       const schema = {
         body: z.object({
-          name: z.string().optional()
-        })
+          name: z.string().optional(),
+        }),
       }
 
       const result = extractParamsFromSchema(schema)
@@ -153,8 +153,8 @@ describe('extractParamsFromSchema', () => {
     it('should mark nullable fields as not required', () => {
       const schema = {
         body: z.object({
-          name: z.string().nullable()
-        })
+          name: z.string().nullable(),
+        }),
       }
 
       const result = extractParamsFromSchema(schema)
@@ -165,8 +165,8 @@ describe('extractParamsFromSchema', () => {
     it('should mark fields with default as not required', () => {
       const schema = {
         body: z.object({
-          count: z.number().default(0)
-        })
+          count: z.number().default(0),
+        }),
       }
 
       const result = extractParamsFromSchema(schema)
@@ -177,8 +177,8 @@ describe('extractParamsFromSchema', () => {
     it('should unwrap nested optionals correctly', () => {
       const schema = {
         body: z.object({
-          name: z.string().optional().nullable()
-        })
+          name: z.string().optional().nullable(),
+        }),
       }
 
       const result = extractParamsFromSchema(schema)
@@ -192,8 +192,8 @@ describe('extractParamsFromSchema', () => {
     it('should extract description from meta', () => {
       const schema = {
         body: z.object({
-          name: z.string().meta({ description: 'The user name' })
-        })
+          name: z.string().meta({ description: 'The user name' }),
+        }),
       }
 
       const result = extractParamsFromSchema(schema)
@@ -204,8 +204,8 @@ describe('extractParamsFromSchema', () => {
     it('should extract description from describe', () => {
       const schema = {
         body: z.object({
-          name: z.string().describe('The user name')
-        })
+          name: z.string().describe('The user name'),
+        }),
       }
 
       const result = extractParamsFromSchema(schema)
@@ -216,8 +216,8 @@ describe('extractParamsFromSchema', () => {
     it('should extract description when meta is after optional', () => {
       const schema = {
         body: z.object({
-          name: z.string().optional().meta({ description: 'The user name' })
-        })
+          name: z.string().optional().meta({ description: 'The user name' }),
+        }),
       }
 
       const result = extractParamsFromSchema(schema)
@@ -229,8 +229,8 @@ describe('extractParamsFromSchema', () => {
     it('should extract description when meta is after default', () => {
       const schema = {
         body: z.object({
-          count: z.number().default(0).meta({ description: 'Item count' })
-        })
+          count: z.number().default(0).meta({ description: 'Item count' }),
+        }),
       }
 
       const result = extractParamsFromSchema(schema)
@@ -244,8 +244,8 @@ describe('extractParamsFromSchema', () => {
     it('should extract body params', () => {
       const schema = {
         body: z.object({
-          name: z.string()
-        })
+          name: z.string(),
+        }),
       }
 
       const result = extractParamsFromSchema(schema)
@@ -257,8 +257,8 @@ describe('extractParamsFromSchema', () => {
     it('should extract query params', () => {
       const schema = {
         query: z.object({
-          page: z.number()
-        })
+          page: z.number(),
+        }),
       }
 
       const result = extractParamsFromSchema(schema)
@@ -270,8 +270,8 @@ describe('extractParamsFromSchema', () => {
     it('should extract route params', () => {
       const schema = {
         route: z.object({
-          id: z.string()
-        })
+          id: z.string(),
+        }),
       }
 
       const result = extractParamsFromSchema(schema)
@@ -283,8 +283,8 @@ describe('extractParamsFromSchema', () => {
     it('should extract header params', () => {
       const schema = {
         headers: z.object({
-          authorization: z.string()
-        })
+          authorization: z.string(),
+        }),
       }
 
       const result = extractParamsFromSchema(schema)
@@ -297,7 +297,7 @@ describe('extractParamsFromSchema', () => {
       const schema = {
         body: z.object({ name: z.string() }),
         query: z.object({ page: z.number() }),
-        route: z.object({ id: z.string() })
+        route: z.object({ id: z.string() }),
       }
 
       const result = extractParamsFromSchema(schema)
@@ -315,8 +315,8 @@ describe('extractParamsFromSchema', () => {
           name: z.string().meta({ description: 'User name' }),
           email: z.email().meta({ description: 'User email' }),
           age: z.number().optional(),
-          active: z.boolean().default(true)
-        })
+          active: z.boolean().default(true),
+        }),
       }
 
       const result = extractParamsFromSchema(schema)
@@ -324,30 +324,30 @@ describe('extractParamsFromSchema', () => {
       expect(result.body?.name).toEqual({
         type: 'string',
         required: true,
-        description: 'User name'
+        description: 'User name',
       })
       expect(result.body?.email).toEqual({
         type: 'string',
         required: true,
-        description: 'User email'
+        description: 'User email',
       })
       expect(result.body?.age).toEqual({
         type: 'number',
         required: false,
-        description: undefined
+        description: undefined,
       })
       expect(result.body?.active).toEqual({
         type: 'boolean',
         required: false,
-        description: undefined
+        description: undefined,
       })
     })
 
     it('should handle coerced numbers with defaults', () => {
       const schema = {
         query: z.object({
-          page: z.coerce.number().default(0)
-        })
+          page: z.coerce.number().default(0),
+        }),
       }
 
       const result = extractParamsFromSchema(schema)
@@ -358,8 +358,8 @@ describe('extractParamsFromSchema', () => {
     it('should extract input type from transform/pipe schemas', () => {
       const schema = {
         body: z.object({
-          value: z.string().transform((val) => parseInt(val, 10))
-        })
+          value: z.string().transform((val) => parseInt(val, 10)),
+        }),
       }
 
       const result = extractParamsFromSchema(schema)
@@ -370,8 +370,11 @@ describe('extractParamsFromSchema', () => {
     it('should extract input type from transform with optional', () => {
       const schema = {
         body: z.object({
-          value: z.string().transform((val) => parseInt(val, 10)).optional()
-        })
+          value: z
+            .string()
+            .transform((val) => parseInt(val, 10))
+            .optional(),
+        }),
       }
 
       const result = extractParamsFromSchema(schema)

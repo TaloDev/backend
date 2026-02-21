@@ -1,10 +1,10 @@
-import { protectedRoute, withMiddleware } from '../../../lib/routing/router'
-import { userTypeGate } from '../../../middleware/policy-middleware'
-import { UserType } from '../../../entities/user'
 import { GameActivityType } from '../../../entities/game-activity'
+import { UserType } from '../../../entities/user'
 import createGameActivity from '../../../lib/logging/createGameActivity'
-import { loadFeedbackCategory } from './common'
+import { protectedRoute, withMiddleware } from '../../../lib/routing/router'
 import { loadGame } from '../../../middleware/game-middleware'
+import { userTypeGate } from '../../../middleware/policy-middleware'
+import { loadFeedbackCategory } from './common'
 
 export const deleteCategoryRoute = protectedRoute({
   method: 'delete',
@@ -12,7 +12,7 @@ export const deleteCategoryRoute = protectedRoute({
   middleware: withMiddleware(
     userTypeGate([UserType.ADMIN], 'delete feedback categories'),
     loadGame,
-    loadFeedbackCategory
+    loadFeedbackCategory,
   ),
   handler: async (ctx) => {
     const em = ctx.em
@@ -23,14 +23,14 @@ export const deleteCategoryRoute = protectedRoute({
       game: feedbackCategory.game,
       type: GameActivityType.GAME_FEEDBACK_CATEGORY_DELETED,
       extra: {
-        feedbackCategoryInternalName: feedbackCategory.internalName
-      }
+        feedbackCategoryInternalName: feedbackCategory.internalName,
+      },
     })
 
     await em.remove(feedbackCategory).flush()
 
     return {
-      status: 204
+      status: 204,
     }
-  }
+  },
 })

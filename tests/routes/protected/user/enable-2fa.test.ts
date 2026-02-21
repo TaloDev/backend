@@ -20,7 +20,7 @@ describe('User - enable 2fa', () => {
 
   it('should not let users enable 2fa if it is already enabled', async () => {
     const [token, user] = await createUserAndToken({
-      twoFactorAuth: new UserTwoFactorAuth('blah')
+      twoFactorAuth: new UserTwoFactorAuth('blah'),
     })
 
     user.twoFactorAuth!.enabled = true

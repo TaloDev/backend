@@ -1,10 +1,13 @@
-import PlayerGroupFactory from '../../fixtures/PlayerGroupFactory'
-import PlayerGroupRule, { PlayerGroupRuleCastType, PlayerGroupRuleName } from '../../../src/entities/player-group-rule'
-import createOrganisationAndGame from '../../utils/createOrganisationAndGame'
-import PlayerFactory from '../../fixtures/PlayerFactory'
 import { randText } from '@ngneat/falso'
 import Player from '../../../src/entities/player'
+import PlayerGroupRule, {
+  PlayerGroupRuleCastType,
+  PlayerGroupRuleName,
+} from '../../../src/entities/player-group-rule'
 import { createPlayer, PlayerCreationError } from '../../../src/lib/players/createPlayer'
+import PlayerFactory from '../../fixtures/PlayerFactory'
+import PlayerGroupFactory from '../../fixtures/PlayerGroupFactory'
+import createOrganisationAndGame from '../../utils/createOrganisationAndGame'
 
 describe('createPlayer', () => {
   it('should create a player', async () => {
@@ -20,10 +23,12 @@ describe('createPlayer', () => {
     const [, game] = await createOrganisationAndGame()
 
     const player = await createPlayer(em, game, {
-      aliases: [{
-        service: 'steam',
-        identifier: '12345'
-      }]
+      aliases: [
+        {
+          service: 'steam',
+          identifier: '12345',
+        },
+      ],
     })
 
     expect(player).toBeTruthy()
@@ -39,9 +44,9 @@ describe('createPlayer', () => {
       props: [
         {
           key: 'characterName',
-          value: 'Bob John'
-        }
-      ]
+          value: 'Bob John',
+        },
+      ],
     })
 
     expect(player.props[0].key).toBe('characterName')
@@ -55,7 +60,10 @@ describe('createPlayer', () => {
     rule.castType = PlayerGroupRuleCastType.DOUBLE
     rule.operands = ['60']
 
-    const group = await new PlayerGroupFactory().construct(game).state(() => ({ rules: [rule] })).one()
+    const group = await new PlayerGroupFactory()
+      .construct(game)
+      .state(() => ({ rules: [rule] }))
+      .one()
     await em.persistAndFlush(group)
     await group.checkMembership(em)
 
@@ -63,16 +71,16 @@ describe('createPlayer', () => {
       props: [
         {
           key: 'currentLevel',
-          value: '1'
-        }
-      ]
+          value: '1',
+        },
+      ],
     })
 
     expect(player.groups.getItems().map((g) => ({ id: g.id, name: g.name }))).toStrictEqual([
       {
         id: group.id,
-        name: group.name
-      }
+        name: group.name,
+      },
     ])
   })
 
@@ -80,18 +88,21 @@ describe('createPlayer', () => {
     const [, game] = await createOrganisationAndGame()
 
     const player = await createPlayer(em, game, {
-      aliases: [{
-        service: 'steam',
-        identifier: randText()
-      }],
-      devBuild: true
+      aliases: [
+        {
+          service: 'steam',
+          identifier: randText(),
+        },
+      ],
+      devBuild: true,
     })
 
     expect(player).toBeTruthy()
     expect(player.aliases).toHaveLength(1)
-    expect(player.props.map((p) => ({ key: p.key, value: p.value }))).toContainEqual(
-      { key: 'META_DEV_BUILD', value: '1' }
-    )
+    expect(player.props.map((p) => ({ key: p.key, value: p.value }))).toContainEqual({
+      key: 'META_DEV_BUILD',
+      value: '1',
+    })
     expect(player.devBuild).toBe(true)
   })
 
@@ -103,10 +114,12 @@ describe('createPlayer', () => {
 
     try {
       await createPlayer(em, game, {
-        aliases: [{
-          service: existingPlayer.aliases[0].service,
-          identifier: existingPlayer.aliases[0].identifier
-        }]
+        aliases: [
+          {
+            service: existingPlayer.aliases[0].service,
+            identifier: existingPlayer.aliases[0].identifier,
+          },
+        ],
       })
       expect.fail('Should have thrown')
     } catch (err) {
@@ -115,7 +128,9 @@ describe('createPlayer', () => {
       expect(error.statusCode).toBe(400)
       expect(error.errorCode).toBe('IDENTIFIER_TAKEN')
       expect(error.field).toBe('aliases')
-      expect(error.message).toBe(`Player with identifier '${existingPlayer.aliases[0].identifier}' already exists`)
+      expect(error.message).toBe(
+        `Player with identifier '${existingPlayer.aliases[0].identifier}' already exists`,
+      )
     }
   })
 
@@ -127,9 +142,9 @@ describe('createPlayer', () => {
         props: [
           {
             key: randText({ charCount: 129 }),
-            value: '1'
-          }
-        ]
+            value: '1',
+          },
+        ],
       })
       expect.fail('Should have thrown')
     } catch (err) {
@@ -149,9 +164,9 @@ describe('createPlayer', () => {
         props: [
           {
             key: 'bio',
-            value: randText({ charCount: 513 })
-          }
-        ]
+            value: randText({ charCount: 513 }),
+          },
+        ],
       })
       expect.fail('Should have thrown')
     } catch (err) {
@@ -175,9 +190,9 @@ describe('createPlayer', () => {
         props: [
           {
             key: 'bio',
-            value: randText({ charCount: 500 })
-          }
-        ]
+            value: randText({ charCount: 500 }),
+          },
+        ],
       })
       expect.fail('Should have thrown')
     } catch (err) {

@@ -1,7 +1,7 @@
 import { Collection, Entity, ManyToOne, OneToMany, PrimaryKey, Property } from '@mikro-orm/mysql'
 import GameFeedbackCategory from './game-feedback-category'
-import PlayerAlias from './player-alias'
 import GameFeedbackProp from './game-feedback-prop'
+import PlayerAlias from './player-alias'
 
 @Entity()
 export default class GameFeedback {
@@ -20,7 +20,10 @@ export default class GameFeedback {
   @Property()
   anonymised!: boolean
 
-  @OneToMany(() => GameFeedbackProp, (prop) => prop.gameFeedback, { eager: true, orphanRemoval: true })
+  @OneToMany(() => GameFeedbackProp, (prop) => prop.gameFeedback, {
+    eager: true,
+    orphanRemoval: true,
+  })
   props: Collection<GameFeedbackProp> = new Collection<GameFeedbackProp>(this)
 
   @Property()
@@ -34,7 +37,7 @@ export default class GameFeedback {
     this.playerAlias = playerAlias
   }
 
-  setProps(props: { key: string, value: string }[]) {
+  setProps(props: { key: string; value: string }[]) {
     this.props.set(props.map(({ key, value }) => new GameFeedbackProp(this, key, value)))
   }
 
@@ -47,7 +50,7 @@ export default class GameFeedback {
       playerAlias: this.anonymised ? null : this.playerAlias,
       devBuild: this.playerAlias.player.devBuild,
       props: this.props,
-      createdAt: this.createdAt
+      createdAt: this.createdAt,
     }
   }
 }

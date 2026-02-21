@@ -1,12 +1,12 @@
+import { sub } from 'date-fns'
 import request from 'supertest'
-import LeaderboardFactory from '../../../fixtures/LeaderboardFactory'
-import { LeaderboardSortMode } from '../../../../src/entities/leaderboard'
 import GameActivity, { GameActivityType } from '../../../../src/entities/game-activity'
+import { LeaderboardSortMode } from '../../../../src/entities/leaderboard'
+import LeaderboardEntryFactory from '../../../fixtures/LeaderboardEntryFactory'
+import LeaderboardFactory from '../../../fixtures/LeaderboardFactory'
+import PlayerFactory from '../../../fixtures/PlayerFactory'
 import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
 import createUserAndToken from '../../../utils/createUserAndToken'
-import PlayerFactory from '../../../fixtures/PlayerFactory'
-import LeaderboardEntryFactory from '../../../fixtures/LeaderboardEntryFactory'
-import { sub } from 'date-fns'
 
 describe('Leaderboard - update leaderboard', () => {
   beforeEach(() => {
@@ -17,7 +17,7 @@ describe('Leaderboard - update leaderboard', () => {
     vi.useRealTimers()
   })
 
-  it('should update a leaderboard\'s name', async () => {
+  it("should update a leaderboard's name", async () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({}, organisation)
 
@@ -26,7 +26,13 @@ describe('Leaderboard - update leaderboard', () => {
 
     const res = await request(app)
       .put(`/games/${game.id}/leaderboards/${leaderboard.id}`)
-      .send({ name: 'The new name', internalName: leaderboard.internalName, sortMode: leaderboard.sortMode, unique: leaderboard.unique, refreshInterval: 'never' })
+      .send({
+        name: 'The new name',
+        internalName: leaderboard.internalName,
+        sortMode: leaderboard.sortMode,
+        unique: leaderboard.unique,
+        refreshInterval: 'never',
+      })
       .auth(token, { type: 'bearer' })
       .expect(200)
 
@@ -36,14 +42,14 @@ describe('Leaderboard - update leaderboard', () => {
       type: GameActivityType.LEADERBOARD_UPDATED,
       game,
       extra: {
-        leaderboardInternalName: res.body.leaderboard.internalName
-      }
+        leaderboardInternalName: res.body.leaderboard.internalName,
+      },
     })
 
     expect(activity).not.toBeNull()
   })
 
-  it('should update a leaderboard\'s sort mode', async () => {
+  it("should update a leaderboard's sort mode", async () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({}, organisation)
 
@@ -52,14 +58,20 @@ describe('Leaderboard - update leaderboard', () => {
 
     const res = await request(app)
       .put(`/games/${game.id}/leaderboards/${leaderboard.id}`)
-      .send({ sortMode: LeaderboardSortMode.ASC, internalName: leaderboard.internalName, name: leaderboard.name, unique: leaderboard.unique, refreshInterval: 'never' })
+      .send({
+        sortMode: LeaderboardSortMode.ASC,
+        internalName: leaderboard.internalName,
+        name: leaderboard.name,
+        unique: leaderboard.unique,
+        refreshInterval: 'never',
+      })
       .auth(token, { type: 'bearer' })
       .expect(200)
 
     expect(res.body.leaderboard.sortMode).toBe('asc')
   })
 
-  it('should update a leaderboard\'s entry uniqueness mode', async () => {
+  it("should update a leaderboard's entry uniqueness mode", async () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({}, organisation)
 
@@ -68,7 +80,13 @@ describe('Leaderboard - update leaderboard', () => {
 
     const res = await request(app)
       .put(`/games/${game.id}/leaderboards/${leaderboard.id}`)
-      .send({ unique: false, internalName: leaderboard.internalName, name: leaderboard.name, sortMode: leaderboard.sortMode, refreshInterval: 'never' })
+      .send({
+        unique: false,
+        internalName: leaderboard.internalName,
+        name: leaderboard.name,
+        sortMode: leaderboard.sortMode,
+        refreshInterval: 'never',
+      })
       .auth(token, { type: 'bearer' })
       .expect(200)
 
@@ -81,7 +99,13 @@ describe('Leaderboard - update leaderboard', () => {
 
     const res = await request(app)
       .put(`/games/${game.id}/leaderboards/21312321`)
-      .send({ internalName: 'this-does-not-exist', name: 'blah', sortMode: LeaderboardSortMode.ASC, unique: true, refreshInterval: 'never' })
+      .send({
+        internalName: 'this-does-not-exist',
+        name: 'blah',
+        sortMode: LeaderboardSortMode.ASC,
+        unique: true,
+        refreshInterval: 'never',
+      })
       .auth(token, { type: 'bearer' })
       .expect(404)
 
@@ -107,7 +131,7 @@ describe('Leaderboard - update leaderboard', () => {
         internalName: leaderboard.internalName,
         name: leaderboard.name,
         sortMode: leaderboard.sortMode,
-        unique: leaderboard.unique
+        unique: leaderboard.unique,
       })
       .auth(token, { type: 'bearer' })
       .expect(200)

@@ -1,35 +1,47 @@
+import bcrypt from 'bcrypt'
+import { APIKeyScope } from '../../../entities/api-key'
+import Player from '../../../entities/player'
+import { PlayerAliasService } from '../../../entities/player-alias'
+import PlayerAuth from '../../../entities/player-auth'
+import { PlayerAuthActivityType } from '../../../entities/player-auth-activity'
+import { PricingPlanLimitError } from '../../../lib/billing/checkPricingPlanPlayerLimit'
+import emailRegex from '../../../lib/lang/emailRegex'
+import {
+  createPlayerFromIdentifyRequest,
+  PlayerCreationError,
+} from '../../../lib/players/createPlayer'
 import { apiRoute, withMiddleware } from '../../../lib/routing/router'
 import { requireScopes } from '../../../middleware/policy-middleware'
-import { APIKeyScope } from '../../../entities/api-key'
-import { PlayerAliasService } from '../../../entities/player-alias'
-import { createPlayerFromIdentifyRequest, PlayerCreationError } from '../../../lib/players/createPlayer'
-import { PricingPlanLimitError } from '../../../lib/billing/checkPricingPlanPlayerLimit'
-import PlayerAuth from '../../../entities/player-auth'
-import bcrypt from 'bcrypt'
-import emailRegex from '../../../lib/lang/emailRegex'
 import { createPlayerAuthActivity } from './common'
-import { PlayerAuthActivityType } from '../../../entities/player-auth-activity'
 import { registerDocs } from './docs'
-import Player from '../../../entities/player'
 
 export const registerRoute = apiRoute({
   method: 'post',
   path: '/register',
   docs: registerDocs,
   schema: (z) => ({
-    body: z.object({
-      identifier: z.string().meta({ description: 'The unique identifier of the player. This can be their username, an email or a numeric ID' }),
-      password: z.string().meta({ description: 'The password the player will login with' }),
-      verificationEnabled: z.boolean().optional().meta({ description: 'When enabled, the player will be sent a verification code to their email address before they can login' }),
-      email: z.string().optional().meta({ description: 'Required when verification is enabled. This is also used for password resets: players without an email cannot reset their password' })
-    }).refine(
-      (data) => !data.verificationEnabled || data.email,
-      { message: 'email is required when verificationEnabled is true', path: ['email'] }
-    )
+    body: z
+      .object({
+        identifier: z.string().meta({
+          description:
+            'The unique identifier of the player. This can be their username, an email or a numeric ID',
+        }),
+        password: z.string().meta({ description: 'The password the player will login with' }),
+        verificationEnabled: z.boolean().optional().meta({
+          description:
+            'When enabled, the player will be sent a verification code to their email address before they can login',
+        }),
+        email: z.string().optional().meta({
+          description:
+            'Required when verification is enabled. This is also used for password resets: players without an email cannot reset their password',
+        }),
+      })
+      .refine((data) => !data.verificationEnabled || data.email, {
+        message: 'email is required when verificationEnabled is true',
+        path: ['email'],
+      }),
   }),
-  middleware: withMiddleware(
-    requireScopes([APIKeyScope.READ_PLAYERS, APIKeyScope.WRITE_PLAYERS])
-  ),
+  middleware: withMiddleware(requireScopes([APIKeyScope.READ_PLAYERS, APIKeyScope.WRITE_PLAYERS])),
   handler: async (ctx) => {
     const { identifier, password, email, verificationEnabled } = ctx.state.validated.body
     const em = ctx.em
@@ -43,14 +55,14 @@ export const registerRoute = apiRoute({
         key,
         service: PlayerAliasService.TALO,
         identifier,
-        devBuild: ctx.state.devBuild
+        devBuild: ctx.state.devBuild,
       })
     } catch (err) {
       if (err instanceof PlayerCreationError) {
         return ctx.throw(err.statusCode, {
           message: err.message,
           errorCode: err.errorCode,
-          field: err.field
+          field: err.field,
         })
       }
       if (err instanceof PricingPlanLimitError) {
@@ -70,7 +82,7 @@ export const registerRoute = apiRoute({
       } else {
         return ctx.throw(400, {
           message: 'Invalid email address',
-          errorCode: 'INVALID_EMAIL'
+          errorCode: 'INVALID_EMAIL',
         })
       }
     } else {
@@ -86,8 +98,8 @@ export const registerRoute = apiRoute({
     createPlayerAuthActivity(ctx, alias.player, {
       type: PlayerAuthActivityType.REGISTERED,
       extra: {
-        verificationEnabled: alias.player.auth.verificationEnabled
-      }
+        verificationEnabled: alias.player.auth.verificationEnabled,
+      },
     })
 
     await em.flush()
@@ -97,8 +109,8 @@ export const registerRoute = apiRoute({
       body: {
         alias,
         sessionToken,
-        socketToken
-      }
+        socketToken,
+      },
     }
-  }
+  },
 })

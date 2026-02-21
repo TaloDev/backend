@@ -1,9 +1,9 @@
+import { setTraceAttributes } from '@hyperdx/node-opentelemetry'
 import { isValid } from 'date-fns'
 import { Context, Next } from 'koa'
 import { APIKeyScope } from '../entities/api-key'
 import { isAPIRoute } from '../lib/routing/route-info'
 import checkScope from '../policies/checkScope'
-import { setTraceAttributes } from '@hyperdx/node-opentelemetry'
 
 export async function continuityMiddleware(ctx: Context, next: Next) {
   if (isAPIRoute(ctx) && checkScope(ctx.state.key, APIKeyScope.WRITE_CONTINUITY_REQUESTS)) {

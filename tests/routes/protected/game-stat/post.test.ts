@@ -1,48 +1,57 @@
 import request from 'supertest'
-import { UserType } from '../../../../src/entities/user'
 import GameActivity, { GameActivityType } from '../../../../src/entities/game-activity'
+import { UserType } from '../../../../src/entities/user'
 import GameStatFactory from '../../../fixtures/GameStatFactory'
 import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
 import createUserAndToken from '../../../utils/createUserAndToken'
 import userPermissionProvider from '../../../utils/userPermissionProvider'
 
 describe('Game stat - post', () => {
-  it.each(userPermissionProvider([
-    UserType.ADMIN,
-    UserType.DEV
-  ]))('should return a %i for a %s user', async (statusCode, _, type) => {
-    const [organisation, game] = await createOrganisationAndGame()
-    const [token] = await createUserAndToken({ type }, organisation)
+  it.each(userPermissionProvider([UserType.ADMIN, UserType.DEV]))(
+    'should return a %i for a %s user',
+    async (statusCode, _, type) => {
+      const [organisation, game] = await createOrganisationAndGame()
+      const [token] = await createUserAndToken({ type }, organisation)
 
-    const res = await request(app)
-      .post(`/games/${game.id}/game-stats`)
-      .send({ internalName: 'levels-completed', name: 'Levels completed', defaultValue: 0, global: false, minTimeBetweenUpdates: 0, minValue: -10, maxValue: 10, maxChange: 1 })
-      .auth(token, { type: 'bearer' })
-      .expect(statusCode)
+      const res = await request(app)
+        .post(`/games/${game.id}/game-stats`)
+        .send({
+          internalName: 'levels-completed',
+          name: 'Levels completed',
+          defaultValue: 0,
+          global: false,
+          minTimeBetweenUpdates: 0,
+          minValue: -10,
+          maxValue: 10,
+          maxChange: 1,
+        })
+        .auth(token, { type: 'bearer' })
+        .expect(statusCode)
 
-    const activity = await em.getRepository(GameActivity).findOne({
-      type: GameActivityType.GAME_STAT_CREATED,
-      game
-    })
+      const activity = await em.getRepository(GameActivity).findOne({
+        type: GameActivityType.GAME_STAT_CREATED,
+        game,
+      })
 
-    if (statusCode === 200) {
-      expect(res.body.stat.internalName).toBe('levels-completed')
-      expect(res.body.stat.name).toBe('Levels completed')
-      expect(res.body.stat.global).toBe(false)
-      expect(res.body.stat.globalValue).toBe(0)
-      expect(res.body.stat.defaultValue).toBe(0)
-      expect(res.body.stat.maxChange).toBe(1)
-      expect(res.body.stat.minValue).toBe(-10)
-      expect(res.body.stat.maxValue).toBe(10)
-      expect(res.body.stat.minTimeBetweenUpdates).toBe(0)
+      if (statusCode === 200) {
+        expect(res.body.stat.internalName).toBe('levels-completed')
+        expect(res.body.stat.name).toBe('Levels completed')
+        expect(res.body.stat.global).toBe(false)
+        expect(res.body.stat.globalValue).toBe(0)
+        expect(res.body.stat.defaultValue).toBe(0)
+        expect(res.body.stat.maxChange).toBe(1)
+        expect(res.body.stat.minValue).toBe(-10)
+        expect(res.body.stat.maxValue).toBe(10)
+        expect(res.body.stat.minTimeBetweenUpdates).toBe(0)
 
-      expect(activity!.extra.statInternalName).toBe(res.body.stat.internalName)
-    } else {
-      expect(res.body).toStrictEqual({ message: 'You do not have permissions to create stats' })
+        expect(activity!.extra.statInternalName).toBe(res.body.stat.internalName)
+      } else {
+        expect(res.body).toStrictEqual({ message: 'You do not have permissions to create stats' })
 
-      expect(activity).toBeNull()
-    }
-  })
+        expect(activity).toBeNull()
+      }
+    },
+  )
 
   it('should create a global stat', async () => {
     const [organisation, game] = await createOrganisationAndGame()
@@ -50,7 +59,16 @@ describe('Game stat - post', () => {
 
     const res = await request(app)
       .post(`/games/${game.id}/game-stats`)
-      .send({ internalName: 'buildings-built', name: 'Buildings built', defaultValue: 5, global: true, minTimeBetweenUpdates: 0, minValue: -10, maxValue: 10, maxChange: null })
+      .send({
+        internalName: 'buildings-built',
+        name: 'Buildings built',
+        defaultValue: 5,
+        global: true,
+        minTimeBetweenUpdates: 0,
+        minValue: -10,
+        maxValue: 10,
+        maxChange: null,
+      })
       .auth(token, { type: 'bearer' })
       .expect(200)
 
@@ -68,8 +86,8 @@ describe('Game stat - post', () => {
       type: GameActivityType.GAME_STAT_CREATED,
       game,
       extra: {
-        statInternalName: res.body.stat.internalName
-      }
+        statInternalName: res.body.stat.internalName,
+      },
     })
 
     expect(activity).not.toBeNull()
@@ -81,7 +99,16 @@ describe('Game stat - post', () => {
 
     const res = await request(app)
       .post(`/games/${otherGame.id}/game-stats`)
-      .send({ internalName: 'levels-completed', name: 'Levels completed', defaultValue: 0, global: false, minTimeBetweenUpdates: 0, minValue: -10, maxValue: 10, maxChange: null })
+      .send({
+        internalName: 'levels-completed',
+        name: 'Levels completed',
+        defaultValue: 0,
+        global: false,
+        minTimeBetweenUpdates: 0,
+        minValue: -10,
+        maxValue: 10,
+        maxChange: null,
+      })
       .auth(token, { type: 'bearer' })
       .expect(403)
 
@@ -93,7 +120,16 @@ describe('Game stat - post', () => {
 
     const res = await request(app)
       .post('/games/99999/game-stats')
-      .send({ internalName: 'levels-completed', name: 'Levels completed', defaultValue: 0, global: false, minTimeBetweenUpdates: 0, minValue: -10, maxValue: 10, maxChange: null })
+      .send({
+        internalName: 'levels-completed',
+        name: 'Levels completed',
+        defaultValue: 0,
+        global: false,
+        minTimeBetweenUpdates: 0,
+        minValue: -10,
+        maxValue: 10,
+        maxChange: null,
+      })
       .auth(token, { type: 'bearer' })
       .expect(404)
 
@@ -104,19 +140,30 @@ describe('Game stat - post', () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({}, organisation)
 
-    const stat = await new GameStatFactory([game]).state(() => ({ internalName: 'levels-completed' })).one()
+    const stat = await new GameStatFactory([game])
+      .state(() => ({ internalName: 'levels-completed' }))
+      .one()
     await em.persistAndFlush(stat)
 
     const res = await request(app)
       .post(`/games/${game.id}/game-stats`)
-      .send({ internalName: 'levels-completed', name: 'Levels completed', defaultValue: 0, global: false, minTimeBetweenUpdates: 0, minValue: -10, maxValue: 10, maxChange: null })
+      .send({
+        internalName: 'levels-completed',
+        name: 'Levels completed',
+        defaultValue: 0,
+        global: false,
+        minTimeBetweenUpdates: 0,
+        minValue: -10,
+        maxValue: 10,
+        maxChange: null,
+      })
       .auth(token, { type: 'bearer' })
       .expect(400)
 
     expect(res.body).toStrictEqual({
       errors: {
-        internalName: ['A stat with the internalName \'levels-completed\' already exists']
-      }
+        internalName: ["A stat with the internalName 'levels-completed' already exists"],
+      },
     })
   })
 
@@ -125,12 +172,23 @@ describe('Game stat - post', () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({}, organisation)
 
-    const stat = await new GameStatFactory([otherGame]).state(() => ({ internalName: 'levels-completed' })).one()
+    const stat = await new GameStatFactory([otherGame])
+      .state(() => ({ internalName: 'levels-completed' }))
+      .one()
     await em.persistAndFlush(stat)
 
     await request(app)
       .post(`/games/${game.id}/game-stats`)
-      .send({ internalName: 'levels-completed', name: 'Levels completed', defaultValue: 0, global: false, minTimeBetweenUpdates: 0, minValue: -10, maxValue: 10, maxChange: null })
+      .send({
+        internalName: 'levels-completed',
+        name: 'Levels completed',
+        defaultValue: 0,
+        global: false,
+        minTimeBetweenUpdates: 0,
+        minValue: -10,
+        maxValue: 10,
+        maxChange: null,
+      })
       .auth(token, { type: 'bearer' })
       .expect(200)
   })
@@ -141,7 +199,16 @@ describe('Game stat - post', () => {
 
     const res = await request(app)
       .post(`/games/${game.id}/game-stats`)
-      .send({ internalName: 'buildings-built', name: 'Buildings built', defaultValue: 5, global: false, minTimeBetweenUpdates: 0, minValue: null, maxValue: 10, maxChange: null })
+      .send({
+        internalName: 'buildings-built',
+        name: 'Buildings built',
+        defaultValue: 5,
+        global: false,
+        minTimeBetweenUpdates: 0,
+        minValue: null,
+        maxValue: 10,
+        maxChange: null,
+      })
       .auth(token, { type: 'bearer' })
       .expect(200)
 
@@ -155,7 +222,16 @@ describe('Game stat - post', () => {
 
     const res = await request(app)
       .post(`/games/${game.id}/game-stats`)
-      .send({ internalName: 'buildings-built', name: 'Buildings built', defaultValue: 5, global: false, minTimeBetweenUpdates: 0, minValue: -10, maxValue: null, maxChange: null })
+      .send({
+        internalName: 'buildings-built',
+        name: 'Buildings built',
+        defaultValue: 5,
+        global: false,
+        minTimeBetweenUpdates: 0,
+        minValue: -10,
+        maxValue: null,
+        maxChange: null,
+      })
       .auth(token, { type: 'bearer' })
       .expect(200)
 
@@ -169,7 +245,16 @@ describe('Game stat - post', () => {
 
     const res = await request(app)
       .post(`/games/${game.id}/game-stats`)
-      .send({ internalName: 'buildings-built', name: 'Buildings built', defaultValue: 5, global: false, minTimeBetweenUpdates: 0, minValue: -10, maxValue: 10, maxChange: null })
+      .send({
+        internalName: 'buildings-built',
+        name: 'Buildings built',
+        defaultValue: 5,
+        global: false,
+        minTimeBetweenUpdates: 0,
+        minValue: -10,
+        maxValue: 10,
+        maxChange: null,
+      })
       .auth(token, { type: 'bearer' })
       .expect(200)
 
@@ -183,14 +268,23 @@ describe('Game stat - post', () => {
 
     const res = await request(app)
       .post(`/games/${game.id}/game-stats`)
-      .send({ internalName: 'buildings-built', name: 'Buildings built', defaultValue: 5, global: false, minTimeBetweenUpdates: 0, minValue: -10, maxValue: 10, maxChange: 0 })
+      .send({
+        internalName: 'buildings-built',
+        name: 'Buildings built',
+        defaultValue: 5,
+        global: false,
+        minTimeBetweenUpdates: 0,
+        minValue: -10,
+        maxValue: 10,
+        maxChange: 0,
+      })
       .auth(token, { type: 'bearer' })
       .expect(400)
 
     expect(res.body).toStrictEqual({
       errors: {
-        maxChange: ['maxChange must be greater than 0']
-      }
+        maxChange: ['maxChange must be greater than 0'],
+      },
     })
   })
 
@@ -200,14 +294,23 @@ describe('Game stat - post', () => {
 
     const res = await request(app)
       .post(`/games/${game.id}/game-stats`)
-      .send({ internalName: 'buildings-built', name: 'Buildings built', defaultValue: 5, global: false, minTimeBetweenUpdates: 0, minValue: -10, maxValue: 10, maxChange: -10 })
+      .send({
+        internalName: 'buildings-built',
+        name: 'Buildings built',
+        defaultValue: 5,
+        global: false,
+        minTimeBetweenUpdates: 0,
+        minValue: -10,
+        maxValue: 10,
+        maxChange: -10,
+      })
       .auth(token, { type: 'bearer' })
       .expect(400)
 
     expect(res.body).toStrictEqual({
       errors: {
-        maxChange: ['maxChange must be greater than 0']
-      }
+        maxChange: ['maxChange must be greater than 0'],
+      },
     })
   })
 
@@ -217,14 +320,23 @@ describe('Game stat - post', () => {
 
     const res = await request(app)
       .post(`/games/${game.id}/game-stats`)
-      .send({ internalName: 'buildings-built', name: 'Buildings built', defaultValue: 5, global: false, minTimeBetweenUpdates: 999_999_999_999_999, minValue: -10, maxValue: 10, maxChange: null })
+      .send({
+        internalName: 'buildings-built',
+        name: 'Buildings built',
+        defaultValue: 5,
+        global: false,
+        minTimeBetweenUpdates: 999_999_999_999_999,
+        minValue: -10,
+        maxValue: 10,
+        maxChange: null,
+      })
       .auth(token, { type: 'bearer' })
       .expect(400)
 
     expect(res.body).toStrictEqual({
       errors: {
-        minTimeBetweenUpdates: ['Value is out of range']
-      }
+        minTimeBetweenUpdates: ['Value is out of range'],
+      },
     })
   })
 
@@ -234,14 +346,23 @@ describe('Game stat - post', () => {
 
     const res = await request(app)
       .post(`/games/${game.id}/game-stats`)
-      .send({ internalName: 'buildings-built', name: 'Buildings built', defaultValue: 10, global: false, minTimeBetweenUpdates: 0, minValue: 10, maxValue: 10, maxChange: 1 })
+      .send({
+        internalName: 'buildings-built',
+        name: 'Buildings built',
+        defaultValue: 10,
+        global: false,
+        minTimeBetweenUpdates: 0,
+        minValue: 10,
+        maxValue: 10,
+        maxChange: 1,
+      })
       .auth(token, { type: 'bearer' })
       .expect(400)
 
     expect(res.body).toStrictEqual({
       errors: {
-        minValue: ['minValue must be less than maxValue']
-      }
+        minValue: ['minValue must be less than maxValue'],
+      },
     })
   })
 
@@ -251,14 +372,23 @@ describe('Game stat - post', () => {
 
     const res = await request(app)
       .post(`/games/${game.id}/game-stats`)
-      .send({ internalName: 'buildings-built', name: 'Buildings built', defaultValue: 5, global: false, minTimeBetweenUpdates: 0, minValue: 6, maxValue: 10, maxChange: 1 })
+      .send({
+        internalName: 'buildings-built',
+        name: 'Buildings built',
+        defaultValue: 5,
+        global: false,
+        minTimeBetweenUpdates: 0,
+        minValue: 6,
+        maxValue: 10,
+        maxChange: 1,
+      })
       .auth(token, { type: 'bearer' })
       .expect(400)
 
     expect(res.body).toStrictEqual({
       errors: {
-        defaultValue: ['defaultValue must be between minValue and maxValue']
-      }
+        defaultValue: ['defaultValue must be between minValue and maxValue'],
+      },
     })
   })
 
@@ -268,14 +398,23 @@ describe('Game stat - post', () => {
 
     const res = await request(app)
       .post(`/games/${game.id}/game-stats`)
-      .send({ internalName: 'buildings-built', name: 'Buildings built', defaultValue: 15, global: false, minTimeBetweenUpdates: 0, minValue: 6, maxValue: 10, maxChange: 1 })
+      .send({
+        internalName: 'buildings-built',
+        name: 'Buildings built',
+        defaultValue: 15,
+        global: false,
+        minTimeBetweenUpdates: 0,
+        minValue: 6,
+        maxValue: 10,
+        maxChange: 1,
+      })
       .auth(token, { type: 'bearer' })
       .expect(400)
 
     expect(res.body).toStrictEqual({
       errors: {
-        defaultValue: ['defaultValue must be between minValue and maxValue']
-      }
+        defaultValue: ['defaultValue must be between minValue and maxValue'],
+      },
     })
   })
 })

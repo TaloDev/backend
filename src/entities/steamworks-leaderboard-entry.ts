@@ -1,13 +1,16 @@
 import { Entity, ManyToOne, OneToOne, PrimaryKey, Property } from '@mikro-orm/mysql'
-import SteamworksLeaderboardMapping from './steamworks-leaderboard-mapping'
 import LeaderboardEntry from './leaderboard-entry'
+import SteamworksLeaderboardMapping from './steamworks-leaderboard-mapping'
 
 @Entity()
 export class SteamworksLeaderboardEntry {
   @PrimaryKey()
   id!: number
 
-  @ManyToOne(() => SteamworksLeaderboardMapping, { deleteRule: 'cascade', fieldNames: ['steamworks_leaderboard_id', 'leaderboard_id'] })
+  @ManyToOne(() => SteamworksLeaderboardMapping, {
+    deleteRule: 'cascade',
+    fieldNames: ['steamworks_leaderboard_id', 'leaderboard_id'],
+  })
   steamworksLeaderboard: SteamworksLeaderboardMapping
 
   @OneToOne(() => LeaderboardEntry, { nullable: true })
@@ -25,7 +28,7 @@ export class SteamworksLeaderboardEntry {
   constructor({
     steamworksLeaderboard,
     leaderboardEntry,
-    steamUserId
+    steamUserId,
   }: {
     steamworksLeaderboard: SteamworksLeaderboardMapping
     leaderboardEntry: LeaderboardEntry | null

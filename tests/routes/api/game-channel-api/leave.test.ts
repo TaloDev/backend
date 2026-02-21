@@ -1,8 +1,8 @@
 import request from 'supertest'
-import GameChannelFactory from '../../../fixtures/GameChannelFactory'
 import { APIKeyScope } from '../../../../src/entities/api-key'
-import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
+import GameChannelFactory from '../../../fixtures/GameChannelFactory'
 import PlayerFactory from '../../../fixtures/PlayerFactory'
+import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
 import createSocketIdentifyMessage from '../../../utils/createSocketIdentifyMessage'
 import createTestSocket from '../../../utils/createTestSocket'
 
@@ -55,13 +55,15 @@ describe('Game channel API - leave', () => {
   it('should delete a channel if auto cleanup is enabled the owner leaves', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_CHANNELS])
 
-    const channel = await new GameChannelFactory(apiKey.game).state(() => ({ autoCleanup: true })).one()
+    const channel = await new GameChannelFactory(apiKey.game)
+      .state(() => ({ autoCleanup: true }))
+      .one()
     const player = await new PlayerFactory([apiKey.game]).one()
     channel.owner = player.aliases[0]
     channel.members.add(player.aliases[0])
     channel.members.add([
       (await new PlayerFactory([apiKey.game]).one()).aliases[0],
-      (await new PlayerFactory([apiKey.game]).one()).aliases[0]
+      (await new PlayerFactory([apiKey.game]).one()).aliases[0],
     ])
     await em.persistAndFlush(channel)
 
@@ -79,10 +81,12 @@ describe('Game channel API - leave', () => {
     const { identifyMessage, ticket, player, token } = await createSocketIdentifyMessage([
       APIKeyScope.READ_PLAYERS,
       APIKeyScope.READ_GAME_CHANNELS,
-      APIKeyScope.WRITE_GAME_CHANNELS
+      APIKeyScope.WRITE_GAME_CHANNELS,
     ])
 
-    const channel = await new GameChannelFactory(player.game).state(() => ({ autoCleanup: true })).one()
+    const channel = await new GameChannelFactory(player.game)
+      .state(() => ({ autoCleanup: true }))
+      .one()
     channel.members.add(player.aliases[0])
     await em.persistAndFlush(channel)
 
@@ -111,13 +115,15 @@ describe('Game channel API - leave', () => {
   it('should not delete a channel if auto cleanup is not enabled and the owner leaves', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_CHANNELS])
 
-    const channel = await new GameChannelFactory(apiKey.game).state(() => ({ autoCleanup: false })).one()
+    const channel = await new GameChannelFactory(apiKey.game)
+      .state(() => ({ autoCleanup: false }))
+      .one()
     const player = await new PlayerFactory([apiKey.game]).one()
     channel.owner = player.aliases[0]
     channel.members.add(player.aliases[0])
     channel.members.add([
       (await new PlayerFactory([apiKey.game]).one()).aliases[0],
-      (await new PlayerFactory([apiKey.game]).one()).aliases[0]
+      (await new PlayerFactory([apiKey.game]).one()).aliases[0],
     ])
     await em.persistAndFlush(channel)
 
@@ -147,7 +153,7 @@ describe('Game channel API - leave', () => {
       .expect(404)
 
     expect(res.body).toStrictEqual({
-      message: 'Player not found'
+      message: 'Player not found',
     })
   })
 
@@ -167,7 +173,7 @@ describe('Game channel API - leave', () => {
       .expect(404)
 
     expect(res.body).toStrictEqual({
-      message: 'Channel not found'
+      message: 'Channel not found',
     })
   })
 
@@ -175,7 +181,7 @@ describe('Game channel API - leave', () => {
     const { identifyMessage, ticket, player, token } = await createSocketIdentifyMessage([
       APIKeyScope.READ_PLAYERS,
       APIKeyScope.READ_GAME_CHANNELS,
-      APIKeyScope.WRITE_GAME_CHANNELS
+      APIKeyScope.WRITE_GAME_CHANNELS,
     ])
 
     const channel = await new GameChannelFactory(player.game).one()

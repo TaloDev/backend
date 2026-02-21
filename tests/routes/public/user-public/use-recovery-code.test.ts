@@ -1,11 +1,11 @@
 import { Collection, EntityManager } from '@mikro-orm/mysql'
 import request from 'supertest'
-import UserRecoveryCode from '../../../../src/entities/user-recovery-code'
-import createUserAndToken from '../../../utils/createUserAndToken'
-import UserTwoFactorAuth from '../../../../src/entities/user-two-factor-auth'
 import User from '../../../../src/entities/user'
+import UserRecoveryCode from '../../../../src/entities/user-recovery-code'
+import UserTwoFactorAuth from '../../../../src/entities/user-two-factor-auth'
 import generateRecoveryCodes from '../../../../src/lib/auth/generateRecoveryCodes'
 import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
+import createUserAndToken from '../../../utils/createUserAndToken'
 
 async function setTwoFactorAuthSession(user: User) {
   await redis.set(`2fa:${user.id}`, 'true')
@@ -17,9 +17,12 @@ async function removeTwoFactorAuthSession(user: User) {
 
 async function createUserWithTwoFactorAuth(em: EntityManager): Promise<[string, User]> {
   const [organisation] = await createOrganisationAndGame()
-  const [token, user] = await createUserAndToken({
-    twoFactorAuth: new UserTwoFactorAuth('blah')
-  }, organisation)
+  const [token, user] = await createUserAndToken(
+    {
+      twoFactorAuth: new UserTwoFactorAuth('blah'),
+    },
+    organisation,
+  )
 
   user.twoFactorAuth!.enabled = true
   user.recoveryCodes = new Collection<UserRecoveryCode>(user, generateRecoveryCodes(user))

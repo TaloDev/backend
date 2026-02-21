@@ -1,7 +1,7 @@
-import { protectedRoute, withMiddleware } from '../../../lib/routing/router'
-import { loadGame } from '../../../middleware/game-middleware'
 import UserPinnedGroup from '../../../entities/user-pinned-group'
 import { deferClearResponseCache } from '../../../lib/perf/responseCacheQueue'
+import { protectedRoute, withMiddleware } from '../../../lib/routing/router'
+import { loadGame } from '../../../middleware/game-middleware'
 import { loadGroup } from './common'
 
 export const togglePinnedRoute = protectedRoute({
@@ -9,8 +9,8 @@ export const togglePinnedRoute = protectedRoute({
   path: '/:id/toggle-pinned',
   schema: (z) => ({
     body: z.object({
-      pinned: z.boolean()
-    })
+      pinned: z.boolean(),
+    }),
   }),
   middleware: withMiddleware(loadGame, loadGroup),
   handler: async (ctx) => {
@@ -30,7 +30,7 @@ export const togglePinnedRoute = protectedRoute({
     await deferClearResponseCache(UserPinnedGroup.getCacheKeyForUser(user))
 
     return {
-      status: 204
+      status: 204,
     }
-  }
+  },
 })

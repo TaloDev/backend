@@ -1,8 +1,8 @@
 import request from 'supertest'
-import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
-import createUserAndToken from '../../../utils/createUserAndToken'
 import GameActivity, { GameActivityType } from '../../../../src/entities/game-activity'
 import PlayerFactory from '../../../fixtures/PlayerFactory'
+import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
+import createUserAndToken from '../../../utils/createUserAndToken'
 
 describe('Game channel - post', () => {
   it('should create a game channel', async () => {
@@ -17,7 +17,7 @@ describe('Game channel - post', () => {
 
     const activity = await em.getRepository(GameActivity).findOne({
       type: GameActivityType.GAME_CHANNEL_CREATED,
-      game
+      game,
     })
 
     expect(res.body.channel.name).toBe('Test channel')

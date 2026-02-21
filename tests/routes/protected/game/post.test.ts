@@ -1,31 +1,33 @@
 import request from 'supertest'
-import { UserType } from '../../../../src/entities/user'
 import Game from '../../../../src/entities/game'
-import userPermissionProvider from '../../../utils/userPermissionProvider'
+import { UserType } from '../../../../src/entities/user'
 import createUserAndToken from '../../../utils/createUserAndToken'
+import userPermissionProvider from '../../../utils/userPermissionProvider'
 
 describe('Game - post', () => {
-  it.each(userPermissionProvider([
-    UserType.ADMIN,
-    UserType.DEV
-  ]))('should return a %i for a %s user', async (statusCode, _, type) => {
-    const [token, user] = await createUserAndToken({ type })
+  it.each(userPermissionProvider([UserType.ADMIN, UserType.DEV]))(
+    'should return a %i for a %s user',
+    async (statusCode, _, type) => {
+      const [token, user] = await createUserAndToken({ type })
 
-    const res = await request(app)
-      .post('/games')
-      .send({ name: 'Twodoors' })
-      .auth(token, { type: 'bearer' })
-      .expect(statusCode)
+      const res = await request(app)
+        .post('/games')
+        .send({ name: 'Twodoors' })
+        .auth(token, { type: 'bearer' })
+        .expect(statusCode)
 
-    if (statusCode === 200) {
-      expect(res.body.game.name).toBe('Twodoors')
+      if (statusCode === 200) {
+        expect(res.body.game.name).toBe('Twodoors')
 
-      const game = await em.getRepository(Game).findOneOrFail(res.body.game.id, { populate: ['organisation'] })
-      expect(game.organisation.id).toBe(user.organisation.id)
-    } else {
-      expect(res.body).toStrictEqual({ message: 'You do not have permissions to create games' })
-    }
-  })
+        const game = await em
+          .getRepository(Game)
+          .findOneOrFail(res.body.game.id, { populate: ['organisation'] })
+        expect(game.organisation.id).toBe(user.organisation.id)
+      } else {
+        expect(res.body).toStrictEqual({ message: 'You do not have permissions to create games' })
+      }
+    },
+  )
 
   it('should return a 500 when API_SECRET is not 32 characters long', async () => {
     const originalSecret = process.env.API_SECRET

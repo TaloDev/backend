@@ -1,19 +1,19 @@
-import { apiRoute, withMiddleware } from '../../../lib/routing/router'
-import { requireScopes } from '../../../middleware/policy-middleware'
 import { APIKeyScope } from '../../../entities/api-key'
-import { loadAlias } from '../../../middleware/player-alias-middleware'
 import { RouteDocs } from '../../../lib/docs/docs-registry'
+import { apiRoute, withMiddleware } from '../../../lib/routing/router'
 import { playerAliasHeaderSchema } from '../../../lib/validation/playerAliasHeaderSchema'
+import { loadAlias } from '../../../middleware/player-alias-middleware'
+import { requireScopes } from '../../../middleware/policy-middleware'
 
 const docs: RouteDocs = {
-  description: 'Update a player\'s online status and custom status',
+  description: "Update a player's online status and custom status",
   samples: [
     {
       title: 'Sample request',
       sample: {
         online: true,
-        customStatus: 'In a match'
-      }
+        customStatus: 'In a match',
+      },
     },
     {
       title: 'Sample response',
@@ -31,19 +31,19 @@ const docs: RouteDocs = {
                 { key: 'currentLevel', value: '58' },
                 { key: 'xPos', value: '13.29' },
                 { key: 'yPos', value: '26.44' },
-                { key: 'zoneId', value: '3' }
+                { key: 'zoneId', value: '3' },
               ],
               devBuild: false,
               createdAt: '2025-01-15T13:20:32.133Z',
               lastSeenAt: '2025-02-12T15:09:43.066Z',
-              groups: []
-            }
+              groups: [],
+            },
           },
-          updatedAt: '2025-02-12T15:09:43.066Z'
-        }
-      }
-    }
-  ]
+          updatedAt: '2025-02-12T15:09:43.066Z',
+        },
+      },
+    },
+  ],
 }
 
 export const putRoute = apiRoute({
@@ -51,17 +51,17 @@ export const putRoute = apiRoute({
   docs,
   schema: (z) => ({
     headers: z.looseObject({
-      'x-talo-alias': playerAliasHeaderSchema
+      'x-talo-alias': playerAliasHeaderSchema,
     }),
     body: z.object({
       online: z.boolean().optional().meta({ description: 'Whether the player is online' }),
-      customStatus: z.string().optional().meta({ description: 'A custom status message for the player' })
-    })
+      customStatus: z
+        .string()
+        .optional()
+        .meta({ description: 'A custom status message for the player' }),
+    }),
   }),
-  middleware: withMiddleware(
-    requireScopes([APIKeyScope.WRITE_PLAYER_PRESENCE]),
-    loadAlias
-  ),
+  middleware: withMiddleware(requireScopes([APIKeyScope.WRITE_PLAYER_PRESENCE]), loadAlias),
   handler: async (ctx) => {
     const { online, customStatus } = ctx.state.validated.body
     const em = ctx.em
@@ -74,8 +74,8 @@ export const putRoute = apiRoute({
     return {
       status: 200,
       body: {
-        presence: player.presence
-      }
+        presence: player.presence,
+      },
     }
-  }
+  },
 })

@@ -1,7 +1,7 @@
 import { Entity, Enum, ManyToOne, PrimaryKey, Property } from '@mikro-orm/mysql'
+import assert from 'node:assert'
 import Player from './player'
 import PlayerAlias, { PlayerAliasService } from './player-alias'
-import assert from 'node:assert'
 
 export enum PlayerAuthActivityType {
   REGISTERED,
@@ -18,7 +18,7 @@ export enum PlayerAuthActivityType {
   CHANGE_EMAIL_FAILED,
   TOGGLE_VERIFICATION_FAILED,
   DELETED_AUTH,
-  DELETE_AUTH_FAILED
+  DELETE_AUTH_FAILED,
 }
 
 @Entity()
@@ -99,7 +99,7 @@ export default class PlayerAuthActivity {
       type: this.type,
       description: this.getActivity(),
       extra: this.extra,
-      createdAt: this.createdAt
+      createdAt: this.createdAt,
     }
   }
 }

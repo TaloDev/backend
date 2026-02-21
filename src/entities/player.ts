@@ -1,19 +1,30 @@
-import { Collection, Entity, EntityManager, Index, ManyToMany, ManyToOne, OneToMany, OneToOne, PrimaryKey, Property } from '@mikro-orm/mysql'
-import Game from './game'
+import { ClickHouseClient } from '@clickhouse/client'
+import {
+  Collection,
+  Entity,
+  EntityManager,
+  Index,
+  ManyToMany,
+  ManyToOne,
+  OneToMany,
+  OneToOne,
+  PrimaryKey,
+  Property,
+} from '@mikro-orm/mysql'
+import { captureException } from '@sentry/node'
 import { v4 } from 'uuid'
-import PlayerAlias from './player-alias'
-import PlayerProp from './player-prop'
-import PlayerGroup from './player-group'
-import PlayerAuth from './player-auth'
-import PlayerPresence from './player-presence'
+import createClickHouseClient from '../lib/clickhouse/createClient'
+import checkGroupMemberships from '../lib/groups/checkGroupMemberships'
 import Socket from '../socket'
 import { sendMessages } from '../socket/messages/socketMessage'
 import { APIKeyScope } from './api-key'
+import Game from './game'
+import PlayerAlias from './player-alias'
+import PlayerAuth from './player-auth'
+import PlayerGroup from './player-group'
+import PlayerPresence from './player-presence'
+import PlayerProp from './player-prop'
 import PlayerSession, { ClickHousePlayerSession } from './player-session'
-import createClickHouseClient from '../lib/clickhouse/createClient'
-import { captureException } from '@sentry/node'
-import { ClickHouseClient } from '@clickhouse/client'
-import checkGroupMemberships from '../lib/groups/checkGroupMemberships'
 
 @Entity()
 export default class Player {
@@ -76,17 +87,15 @@ export default class Player {
     }
   }
 
-  setProps(props: { key: string, value: string }[]) {
-    this.props.set(
-      props.map(({ key, value }) => new PlayerProp(this, key, value))
-    )
+  setProps(props: { key: string; value: string }[]) {
+    this.props.set(props.map(({ key, value }) => new PlayerProp(this, key, value)))
   }
 
   async insertSession(clickhouse: ClickHouseClient, session: PlayerSession) {
     await clickhouse.insert({
       table: 'player_sessions',
       values: session.toInsertable(),
-      format: 'JSON'
+      format: 'JSON',
     })
   }
 
@@ -101,10 +110,12 @@ export default class Player {
         session.construct(this)
         await this.insertSession(clickhouse, session)
       } else {
-        const clickhouseSessions = await clickhouse.query({
-          query: `SELECT * FROM player_sessions WHERE player_id = '${this.id}' AND ended_at IS NULL ORDER BY started_at DESC LIMIT 1`,
-          format: 'JSONEachRow'
-        }).then((res) => res.json<ClickHousePlayerSession>())
+        const clickhouseSessions = await clickhouse
+          .query({
+            query: `SELECT * FROM player_sessions WHERE player_id = '${this.id}' AND ended_at IS NULL ORDER BY started_at DESC LIMIT 1`,
+            format: 'JSONEachRow',
+          })
+          .then((res) => res.json<ClickHousePlayerSession>())
 
         /* v8 ignore next 4 */
         if (clickhouseSessions.length === 0) {
@@ -116,7 +127,9 @@ export default class Player {
         const prevSessionId = currentSession.id
         currentSession.endSession()
 
-        await clickhouse.exec({ query: `DELETE FROM player_sessions WHERE id = '${prevSessionId}'` })
+        await clickhouse.exec({
+          query: `DELETE FROM player_sessions WHERE id = '${prevSessionId}'`,
+        })
         await this.insertSession(clickhouse, currentSession)
       }
     } finally {
@@ -126,7 +139,13 @@ export default class Player {
     }
   }
 
-  async setPresence(em: EntityManager, socket: Socket, playerAlias: PlayerAlias, online?: boolean, customStatus?: string) {
+  async setPresence(
+    em: EntityManager,
+    socket: Socket,
+    playerAlias: PlayerAlias,
+    online?: boolean,
+    customStatus?: string,
+  ) {
     if (!this.presence) {
       this.presence = new PlayerPresence(this)
       em.persist(this.presence)
@@ -167,8 +186,8 @@ export default class Player {
       presence: this.presence,
       meta: {
         onlineChanged: prevOnline !== online,
-        customStatusChanged: prevCustomStatus !== customStatus
-      }
+        customStatusChanged: prevCustomStatus !== customStatus,
+      },
     })
   }
 
@@ -182,9 +201,7 @@ export default class Player {
   }
 
   toJSON() {
-    const presence = this.presence
-      ? { ...this.presence.toJSON(), playerAlias: undefined }
-      : null
+    const presence = this.presence ? { ...this.presence.toJSON(), playerAlias: undefined } : null
 
     return {
       id: this.id,
@@ -195,7 +212,7 @@ export default class Player {
       lastSeenAt: this.lastSeenAt,
       groups: this.groups.map(({ id, name }) => ({ id, name })),
       auth: this.auth ?? undefined,
-      presence
+      presence,
     }
   }
 }

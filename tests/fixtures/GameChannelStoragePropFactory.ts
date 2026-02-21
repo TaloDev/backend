@@ -1,7 +1,7 @@
-import { Factory } from 'hefty'
-import GameChannelStorageProp from '../../src/entities/game-channel-storage-prop'
-import GameChannel from '../../src/entities/game-channel'
 import { randWord } from '@ngneat/falso'
+import { Factory } from 'hefty'
+import GameChannel from '../../src/entities/game-channel'
+import GameChannelStorageProp from '../../src/entities/game-channel-storage-prop'
 import PlayerAliasFactory from './PlayerAliasFactory'
 
 export default class GameChannelStoragePropFactory extends Factory<GameChannelStorageProp> {
@@ -21,7 +21,7 @@ export default class GameChannelStoragePropFactory extends Factory<GameChannelSt
         key: randWord(),
         value: randWord(),
         createdBy: playerAlias,
-        lastUpdatedBy: playerAlias
+        lastUpdatedBy: playerAlias,
       }
     })
   }

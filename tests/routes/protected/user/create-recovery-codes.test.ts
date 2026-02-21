@@ -24,7 +24,7 @@ describe('User - create recovery codes', () => {
     expect(user.recoveryCodes).toHaveLength(8)
   })
 
-  it('should not create recovery codes if 2fa isn\'t enabled', async () => {
+  it("should not create recovery codes if 2fa isn't enabled", async () => {
     const [token] = await createUserAndToken()
 
     const res = await request(app)

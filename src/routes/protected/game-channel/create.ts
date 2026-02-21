@@ -1,18 +1,18 @@
 import { EntityManager } from '@mikro-orm/mysql'
 import { captureException } from '@sentry/node'
-import { protectedRoute, withMiddleware } from '../../../lib/routing/router'
-import { loadGame } from '../../../middleware/game-middleware'
-import GameChannel from '../../../entities/game-channel'
 import Game from '../../../entities/game'
+import { GameActivityType } from '../../../entities/game-activity'
+import GameChannel from '../../../entities/game-channel'
 import PlayerAlias from '../../../entities/player-alias'
 import User from '../../../entities/user'
-import { GameActivityType } from '../../../entities/game-activity'
+import buildErrorResponse from '../../../lib/errors/buildErrorResponse'
+import { PropSizeError } from '../../../lib/errors/propSizeError'
 import createGameActivity from '../../../lib/logging/createGameActivity'
 import { hardSanitiseProps } from '../../../lib/props/sanitiseProps'
-import { PropSizeError } from '../../../lib/errors/propSizeError'
-import buildErrorResponse from '../../../lib/errors/buildErrorResponse'
-import Socket from '../../../socket'
+import { protectedRoute, withMiddleware } from '../../../lib/routing/router'
 import { createPropsSchema } from '../../../lib/validation/propsSchema'
+import { loadGame } from '../../../middleware/game-middleware'
+import Socket from '../../../socket'
 
 type CreateChannelParams = {
   em: EntityManager
@@ -24,7 +24,7 @@ type CreateChannelParams = {
   alias?: PlayerAlias
   name: string
   ownerAliasId?: number | null
-  props?: { key: string, value: string }[]
+  props?: { key: string; value: string }[]
   autoCleanup?: boolean
   isPrivate?: boolean
   temporaryMembership?: boolean
@@ -43,7 +43,7 @@ export async function createChannelHandler({
   props,
   autoCleanup,
   isPrivate,
-  temporaryMembership
+  temporaryMembership,
 }: CreateChannelParams) {
   const channel = new GameChannel(game)
   channel.name = name
@@ -54,13 +54,13 @@ export async function createChannelHandler({
   if (ownerAliasId) {
     const owner = await em.repo(PlayerAlias).findOne({
       id: ownerAliasId,
-      player: { game }
+      player: { game },
     })
 
     if (!owner) {
       return {
         status: 404,
-        body: { message: 'Owner not found' }
+        body: { message: 'Owner not found' },
       }
     }
 
@@ -88,8 +88,8 @@ export async function createChannelHandler({
       game,
       type: GameActivityType.GAME_CHANNEL_CREATED,
       extra: {
-        channelName: channel.name
-      }
+        channelName: channel.name,
+      },
     })
   }
 
@@ -97,14 +97,14 @@ export async function createChannelHandler({
 
   await channel.sendMessageToMembers(wss, 'v1.channels.player-joined', {
     channel,
-    playerAlias: alias
+    playerAlias: alias,
   })
 
   return {
     status: 200,
     body: {
-      channel: await channel.toJSONWithCount(includeDevData)
-    }
+      channel: await channel.toJSONWithCount(includeDevData),
+    },
   }
 }
 
@@ -117,12 +117,19 @@ export const createRoute = protectedRoute({
       props: createPropsSchema.optional(),
       autoCleanup: z.boolean().optional(),
       private: z.boolean().optional(),
-      temporaryMembership: z.boolean().optional()
-    })
+      temporaryMembership: z.boolean().optional(),
+    }),
   }),
   middleware: withMiddleware(loadGame),
   handler: async (ctx) => {
-    const { name, ownerAliasId, props, autoCleanup, private: isPrivate, temporaryMembership } = ctx.state.validated.body
+    const {
+      name,
+      ownerAliasId,
+      props,
+      autoCleanup,
+      private: isPrivate,
+      temporaryMembership,
+    } = ctx.state.validated.body
 
     return createChannelHandler({
       em: ctx.em,
@@ -135,7 +142,7 @@ export const createRoute = protectedRoute({
       props,
       autoCleanup,
       isPrivate,
-      temporaryMembership
+      temporaryMembership,
     })
-  }
+  },
 })

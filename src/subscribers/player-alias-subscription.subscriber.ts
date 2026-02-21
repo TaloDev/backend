@@ -1,6 +1,6 @@
 import { EventArgs, EventSubscriber } from '@mikro-orm/mysql'
-import { deferClearResponseCache } from '../lib/perf/responseCacheQueue'
 import PlayerAliasSubscription from '../entities/player-alias-subscription'
+import { deferClearResponseCache } from '../lib/perf/responseCacheQueue'
 
 export class PlayerAliasSubscriptionSubscriber implements EventSubscriber {
   getSubscribedEntities() {
@@ -8,8 +8,12 @@ export class PlayerAliasSubscriptionSubscriber implements EventSubscriber {
   }
 
   clearCacheKeys(subscription: PlayerAliasSubscription) {
-    void deferClearResponseCache(PlayerAliasSubscription.getSubscribersCacheKey(subscription.subscribedTo, true))
-    void deferClearResponseCache(PlayerAliasSubscription.getSubscriptionsCacheKey(subscription.subscriber, true))
+    void deferClearResponseCache(
+      PlayerAliasSubscription.getSubscribersCacheKey(subscription.subscribedTo, true),
+    )
+    void deferClearResponseCache(
+      PlayerAliasSubscription.getSubscriptionsCacheKey(subscription.subscriber, true),
+    )
   }
 
   afterCreate(args: EventArgs<PlayerAliasSubscription>) {

@@ -1,44 +1,51 @@
-import { Context, Next } from 'koa'
-import { isAPIRoute } from '../lib/routing/route-info'
 import { EntityManager, FilterQuery, Loaded } from '@mikro-orm/mysql'
+import { Context, Next } from 'koa'
 import PlayerAlias, { PlayerAliasService } from '../entities/player-alias'
 import { verify } from '../lib/auth/jwt'
 import { APIRouteContext } from '../lib/routing/context'
+import { isAPIRoute } from '../lib/routing/route-info'
 
 type PlayerAliasPartial = Loaded<PlayerAlias, 'player.auth', 'id' | 'player.auth' | 'player.id'>
 
 export async function playerAuthMiddleware(ctx: APIRouteContext, next: Next) {
   if (isAPIRoute(ctx) && (ctx.state.currentPlayerId || ctx.state.currentAliasId)) {
     const conditions: FilterQuery<PlayerAlias>[] = [
-      ctx.state.currentAliasId ? {
-        id: ctx.state.currentAliasId as number
-      } : {},
-      ctx.state.currentPlayerId ? {
-        player: {
-          id: ctx.state.currentPlayerId as string
-        }
-      } : {}
+      ctx.state.currentAliasId
+        ? {
+            id: ctx.state.currentAliasId as number,
+          }
+        : {},
+      ctx.state.currentPlayerId
+        ? {
+            player: {
+              id: ctx.state.currentPlayerId as string,
+            },
+          }
+        : {},
     ].filter((x) => Object.keys(x).length > 0)
 
     const alias = await ctx.em
       .fork()
       .repo(PlayerAlias)
-      .findOne({
-        $and: [
-          {
-            $or: conditions
-          },
-          {
-            service: PlayerAliasService.TALO,
-            player: {
-              game: ctx.state.game
-            }
-          }
-        ]
-      }, {
-        populate: ['player.auth'],
-        fields: ['id', 'player.id', 'player.auth']
-      })
+      .findOne(
+        {
+          $and: [
+            {
+              $or: conditions,
+            },
+            {
+              service: PlayerAliasService.TALO,
+              player: {
+                game: ctx.state.game,
+              },
+            },
+          ],
+        },
+        {
+          populate: ['player.auth'],
+          fields: ['id', 'player.id', 'player.auth'],
+        },
+      )
 
     if (alias) {
       await validateAuthSessionToken(ctx, alias)
@@ -53,7 +60,7 @@ export async function validateAuthSessionToken(ctx: Context, alias: PlayerAliasP
   if (!sessionToken) {
     return ctx.throw(401, {
       message: 'The x-talo-session header is required for this player',
-      errorCode: 'MISSING_SESSION'
+      errorCode: 'MISSING_SESSION',
     })
   }
 
@@ -62,7 +69,7 @@ export async function validateAuthSessionToken(ctx: Context, alias: PlayerAliasP
     sessionToken as string,
     alias,
     ctx.state.currentPlayerId,
-    ctx.state.currentAliasId
+    ctx.state.currentAliasId,
   )
   if (!valid) {
     return throwInvalidSessionError(ctx)
@@ -72,7 +79,7 @@ export async function validateAuthSessionToken(ctx: Context, alias: PlayerAliasP
 export function throwInvalidSessionError(ctx: Context): never {
   return ctx.throw(401, {
     message: 'The x-talo-session header is invalid',
-    errorCode: 'INVALID_SESSION'
+    errorCode: 'INVALID_SESSION',
   })
 }
 
@@ -81,12 +88,15 @@ export async function validateSessionTokenJWT(
   sessionToken: string,
   alias: PlayerAliasPartial,
   expectedPlayerId: string,
-  expectedAliasId: number
+  expectedAliasId: number,
 ) {
   if (!alias.player.auth?.sessionKey) return false
 
   try {
-    const payload = await verify<{ playerId: string, aliasId: number }>(sessionToken, alias.player.auth.sessionKey)
+    const payload = await verify<{ playerId: string; aliasId: number }>(
+      sessionToken,
+      alias.player.auth.sessionKey,
+    )
     return payload.playerId === expectedPlayerId && payload.aliasId === expectedAliasId
   } catch {
     return false

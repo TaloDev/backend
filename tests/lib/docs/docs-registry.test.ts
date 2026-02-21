@@ -1,6 +1,6 @@
+import assert from 'node:assert'
 import { describe, it, expect, beforeEach } from 'vitest'
 import { DocsRegistry } from '../../../src/lib/docs/docs-registry'
-import assert from 'node:assert'
 
 describe('DocsRegistry', () => {
   let registry: DocsRegistry
@@ -20,8 +20,8 @@ describe('DocsRegistry', () => {
       method: 'get',
       path: '/v1/players/identify',
       docs: {
-        description: 'Identify a player'
-      }
+        description: 'Identify a player',
+      },
     })
 
     const services = registry.getServices()
@@ -45,12 +45,12 @@ describe('DocsRegistry', () => {
       schema: (z) => ({
         query: z.object({
           service: z.string().meta({ description: 'Service name' }),
-          identifier: z.string().meta({ description: 'Player identifier' })
-        })
+          identifier: z.string().meta({ description: 'Player identifier' }),
+        }),
       }),
       docs: {
-        description: 'Identify a player'
-      }
+        description: 'Identify a player',
+      },
     })
 
     const services = registry.getServices()
@@ -76,10 +76,10 @@ describe('DocsRegistry', () => {
         samples: [
           {
             title: 'Example request',
-            sample: { service: 'steam', identifier: '12345' }
-          }
-        ]
-      }
+            sample: { service: 'steam', identifier: '12345' },
+          },
+        ],
+      },
     })
 
     const services = registry.getServices()
@@ -98,13 +98,13 @@ describe('DocsRegistry', () => {
     registry.addRoute({
       key: 'PlayerAPI',
       method: 'get',
-      path: '/v1/players/identify'
+      path: '/v1/players/identify',
     })
 
     registry.addRoute({
       key: 'PlayerAPI',
       method: 'post',
-      path: '/v1/players'
+      path: '/v1/players',
     })
 
     const services = registry.getServices()

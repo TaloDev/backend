@@ -1,4 +1,15 @@
-import { Collection, Embedded, Entity, Enum, ManyToMany, ManyToOne, PrimaryKey, Property, EntityManager, QueryBuilder } from '@mikro-orm/mysql'
+import {
+  Collection,
+  Embedded,
+  Entity,
+  Enum,
+  ManyToMany,
+  ManyToOne,
+  PrimaryKey,
+  Property,
+  EntityManager,
+  QueryBuilder,
+} from '@mikro-orm/mysql'
 import { v4 } from 'uuid'
 import Game from './game'
 import Player from './player'
@@ -6,7 +17,7 @@ import PlayerGroupRule, { PlayerGroupRuleCastType } from './player-group-rule'
 
 export enum RuleMode {
   AND = '$and',
-  OR = '$or'
+  OR = '$or',
 }
 
 export const propWithKeyNamespace = 'props'
@@ -25,32 +36,32 @@ export const PlayerRuleFields: RuleFields[] = [
     fieldDisplayName: 'prop with key',
     defaultCastType: PlayerGroupRuleCastType.CHAR,
     mapsTo: 'props',
-    namespaced: true
+    namespaced: true,
   },
   {
     fieldDisplayName: 'latest login',
     defaultCastType: PlayerGroupRuleCastType.DATETIME,
     mapsTo: 'lastSeenAt',
-    namespaced: false
+    namespaced: false,
   },
   {
     fieldDisplayName: 'first login',
     defaultCastType: PlayerGroupRuleCastType.DATETIME,
     mapsTo: 'createdAt',
-    namespaced: false
+    namespaced: false,
   },
   {
     fieldDisplayName: 'value for stat',
     defaultCastType: PlayerGroupRuleCastType.DOUBLE,
     mapsTo: 'statValue',
-    namespaced: true
+    namespaced: true,
   },
   {
     fieldDisplayName: 'score in leaderboard',
     defaultCastType: PlayerGroupRuleCastType.DOUBLE,
     mapsTo: 'leaderboardEntryScore',
-    namespaced: true
-  }
+    namespaced: true,
+  },
 ]
 
 @Entity()
@@ -103,9 +114,7 @@ export default class PlayerGroup {
       this.buildCondition(em, query, rule)
     }
 
-    return query
-      .andWhere({ game: this.game })
-      .select('id')
+    return query.andWhere({ game: this.game }).select('id')
   }
 
   async checkMembership(em: EntityManager) {
@@ -116,10 +125,10 @@ export default class PlayerGroup {
 
   async isPlayerEligible(em: EntityManager, player: Player): Promise<boolean> {
     const query = this.getQuery(em).andWhere({
-      id: player.id
+      id: player.id,
     })
 
-    return await query.count() > 0
+    return (await query.count()) > 0
   }
 
   toJSON() {
@@ -130,7 +139,7 @@ export default class PlayerGroup {
       rules: this.rules,
       ruleMode: this.ruleMode,
       membersVisible: this.membersVisible,
-      updatedAt: this.updatedAt
+      updatedAt: this.updatedAt,
     }
   }
 
@@ -138,8 +147,8 @@ export default class PlayerGroup {
     return {
       ...this.toJSON(),
       count: await this.members.loadCount({
-        where: includeDevData ? {} : { devBuild: false }
-      })
+        where: includeDevData ? {} : { devBuild: false },
+      }),
     }
   }
 }

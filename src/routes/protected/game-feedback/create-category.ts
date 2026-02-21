@@ -1,11 +1,11 @@
+import { GameActivityType } from '../../../entities/game-activity'
+import GameFeedbackCategory from '../../../entities/game-feedback-category'
+import { UserType } from '../../../entities/user'
+import buildErrorResponse from '../../../lib/errors/buildErrorResponse'
+import createGameActivity from '../../../lib/logging/createGameActivity'
 import { protectedRoute, withMiddleware } from '../../../lib/routing/router'
 import { loadGame } from '../../../middleware/game-middleware'
 import { userTypeGate } from '../../../middleware/policy-middleware'
-import { UserType } from '../../../entities/user'
-import GameFeedbackCategory from '../../../entities/game-feedback-category'
-import { GameActivityType } from '../../../entities/game-activity'
-import createGameActivity from '../../../lib/logging/createGameActivity'
-import buildErrorResponse from '../../../lib/errors/buildErrorResponse'
 
 export const createCategoryRoute = protectedRoute({
   method: 'post',
@@ -15,12 +15,12 @@ export const createCategoryRoute = protectedRoute({
       internalName: z.string(),
       name: z.string(),
       description: z.string(),
-      anonymised: z.boolean()
-    })
+      anonymised: z.boolean(),
+    }),
   }),
   middleware: withMiddleware(
     userTypeGate([UserType.ADMIN, UserType.DEV], 'create feedback categories'),
-    loadGame
+    loadGame,
   ),
   handler: async (ctx) => {
     const { internalName, name, description, anonymised } = ctx.state.validated.body
@@ -28,12 +28,14 @@ export const createCategoryRoute = protectedRoute({
 
     const existingCategory = await em.repo(GameFeedbackCategory).findOne({
       internalName,
-      game: ctx.state.game
+      game: ctx.state.game,
     })
 
     if (existingCategory) {
       return buildErrorResponse({
-        internalName: [`A feedback category with the internalName '${internalName}' already exists`]
+        internalName: [
+          `A feedback category with the internalName '${internalName}' already exists`,
+        ],
       })
     }
 
@@ -48,8 +50,8 @@ export const createCategoryRoute = protectedRoute({
       game: feedbackCategory.game,
       type: GameActivityType.GAME_FEEDBACK_CATEGORY_CREATED,
       extra: {
-        feedbackCategoryInternalName: feedbackCategory.internalName
-      }
+        feedbackCategoryInternalName: feedbackCategory.internalName,
+      },
     })
 
     await em.persist(feedbackCategory).flush()
@@ -57,8 +59,8 @@ export const createCategoryRoute = protectedRoute({
     return {
       status: 200,
       body: {
-        feedbackCategory
-      }
+        feedbackCategory,
+      },
     }
-  }
+  },
 })

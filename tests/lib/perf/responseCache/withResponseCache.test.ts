@@ -1,6 +1,10 @@
 import Redis from 'ioredis'
-import { getResponseCacheRedisConnection, prefix, withResponseCache } from '../../../../src/lib/perf/responseCache'
 import assert from 'node:assert'
+import {
+  getResponseCacheRedisConnection,
+  prefix,
+  withResponseCache,
+} from '../../../../src/lib/perf/responseCache'
 
 describe('withResponseCache', () => {
   const responseCacheRedis = getResponseCacheRedisConnection()
@@ -17,8 +21,8 @@ describe('withResponseCache', () => {
       return await Promise.resolve({
         status: 200,
         body: {
-          value
-        }
+          value,
+        },
       })
     })
 
@@ -33,19 +37,22 @@ describe('withResponseCache', () => {
     const cache = '123'
     const key = 'cache-hit'
 
-    await responseCacheRedis.set(`${prefix}:${key}`, JSON.stringify({
-      status: 200,
-      body: {
-        value: cache
-      }
-    }))
+    await responseCacheRedis.set(
+      `${prefix}:${key}`,
+      JSON.stringify({
+        status: 200,
+        body: {
+          value: cache,
+        },
+      }),
+    )
 
     const res = await withResponseCache({ key }, async () => {
       return await Promise.resolve({
         status: 200,
         body: {
-          value: '456'
-        }
+          value: '456',
+        },
       })
     })
 
@@ -56,24 +63,32 @@ describe('withResponseCache', () => {
     const key = 'cache-hit'
     const original = 25
 
-    await responseCacheRedis.set(`${prefix}:${key}`, JSON.stringify({
-      status: 200,
-      body: {
-        value: '123'
-      }
-    }), 'EX', original)
-
-    await withResponseCache({
-      key,
-      slidingWindow: true
-    }, async () => {
-      return await Promise.resolve({
+    await responseCacheRedis.set(
+      `${prefix}:${key}`,
+      JSON.stringify({
         status: 200,
         body: {
-          value: '123'
-        }
-      })
-    })
+          value: '123',
+        },
+      }),
+      'EX',
+      original,
+    )
+
+    await withResponseCache(
+      {
+        key,
+        slidingWindow: true,
+      },
+      async () => {
+        return await Promise.resolve({
+          status: 200,
+          body: {
+            value: '123',
+          },
+        })
+      },
+    )
 
     expect(await responseCacheRedis.ttl(`${prefix}:${key}`)).toBeGreaterThan(original)
   })
@@ -85,19 +100,22 @@ describe('withResponseCache', () => {
 
     const key = 'cache-error'
 
-    await responseCacheRedis.set(`${prefix}:${key}`, JSON.stringify({
-      status: 200,
-      body: {
-        value: '123'
-      }
-    }))
+    await responseCacheRedis.set(
+      `${prefix}:${key}`,
+      JSON.stringify({
+        status: 200,
+        body: {
+          value: '123',
+        },
+      }),
+    )
 
     const res = await withResponseCache({ key }, async () => {
       return await Promise.resolve({
         status: 200,
         body: {
-          value: '456'
-        }
+          value: '456',
+        },
       })
     })
 
@@ -113,8 +131,8 @@ describe('withResponseCache', () => {
       return await Promise.resolve({
         status: 200,
         body: {
-          value: '456'
-        }
+          value: '456',
+        },
       })
     })
 

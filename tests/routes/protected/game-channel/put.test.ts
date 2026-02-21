@@ -1,10 +1,10 @@
 import request from 'supertest'
+import GameActivity, { GameActivityType } from '../../../../src/entities/game-activity'
+import GameChannel from '../../../../src/entities/game-channel'
+import GameChannelFactory from '../../../fixtures/GameChannelFactory'
+import PlayerFactory from '../../../fixtures/PlayerFactory'
 import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
 import createUserAndToken from '../../../utils/createUserAndToken'
-import GameActivity, { GameActivityType } from '../../../../src/entities/game-activity'
-import GameChannelFactory from '../../../fixtures/GameChannelFactory'
-import GameChannel from '../../../../src/entities/game-channel'
-import PlayerFactory from '../../../fixtures/PlayerFactory'
 
 describe('Game channel - put', () => {
   it('should update a game channel', async () => {
@@ -22,14 +22,14 @@ describe('Game channel - put', () => {
 
     const activity = await em.getRepository(GameActivity).findOne({
       type: GameActivityType.GAME_CHANNEL_UPDATED,
-      game
+      game,
     })
 
     expect(res.body.channel.name).toBe('Updated channel')
     expect(activity!.extra.channelName).toBe('Updated channel')
 
     expect(activity!.extra.display).toStrictEqual({
-      'Updated properties': 'name: Updated channel, props: [{"key":"test","value":"value"}]'
+      'Updated properties': 'name: Updated channel, props: [{"key":"test","value":"value"}]',
     })
   })
 
@@ -168,7 +168,9 @@ describe('Game channel - put', () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({}, organisation)
 
-    const channel = await new GameChannelFactory(game).state(() => ({ temporaryMembership: false })).one()
+    const channel = await new GameChannelFactory(game)
+      .state(() => ({ temporaryMembership: false }))
+      .one()
     await em.persist(channel).flush()
 
     const res = await request(app)

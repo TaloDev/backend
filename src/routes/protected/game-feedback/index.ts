@@ -1,9 +1,9 @@
 import { protectedRouter } from '../../../lib/routing/router'
+import { createCategoryRoute } from './create-category'
+import { deleteCategoryRoute } from './delete-category'
 import { listRoute } from './list'
 import { listCategoriesRoute } from './list-categories'
-import { createCategoryRoute } from './create-category'
 import { updateCategoryRoute } from './update-category'
-import { deleteCategoryRoute } from './delete-category'
 
 export function gameFeedbackRouter() {
   return protectedRouter('/games/:gameId/game-feedback', ({ route }) => {

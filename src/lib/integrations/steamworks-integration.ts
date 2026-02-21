@@ -1,22 +1,25 @@
 import { EntityManager } from '@mikro-orm/mysql'
-import { streamByCursor } from '../perf/streamByCursor'
-import Leaderboard, { LeaderboardSortMode } from '../../entities/leaderboard'
-import axios, { AxiosError, AxiosResponse } from 'axios'
-import querystring from 'qs'
-import Integration from '../../entities/integration'
-import SteamworksIntegrationEvent, { SteamworksRequestMethod, SteamworksResponseStatusCode } from '../../entities/steamworks-integration-event'
-import LeaderboardEntry from '../../entities/leaderboard-entry'
-import SteamworksLeaderboardMapping from '../../entities/steamworks-leaderboard-mapping'
-import PlayerAlias, { PlayerAliasService } from '../../entities/player-alias'
-import Player from '../../entities/player'
-import { performance } from 'perf_hooks'
-import GameStat from '../../entities/game-stat'
-import PlayerGameStat from '../../entities/player-game-stat'
-import { SteamworksLeaderboardEntry } from '../../entities/steamworks-leaderboard-entry'
 import { captureException } from '@sentry/node'
-import { getResultCacheOptions } from '../perf/getResultCacheOptions'
-import { SteamworksPlayerStat } from '../../entities/steamworks-player-stat'
+import axios, { AxiosError, AxiosResponse } from 'axios'
 import assert from 'node:assert'
+import { performance } from 'perf_hooks'
+import querystring from 'qs'
+import GameStat from '../../entities/game-stat'
+import Integration from '../../entities/integration'
+import Leaderboard, { LeaderboardSortMode } from '../../entities/leaderboard'
+import LeaderboardEntry from '../../entities/leaderboard-entry'
+import Player from '../../entities/player'
+import PlayerAlias, { PlayerAliasService } from '../../entities/player-alias'
+import PlayerGameStat from '../../entities/player-game-stat'
+import SteamworksIntegrationEvent, {
+  SteamworksRequestMethod,
+  SteamworksResponseStatusCode,
+} from '../../entities/steamworks-integration-event'
+import { SteamworksLeaderboardEntry } from '../../entities/steamworks-leaderboard-entry'
+import SteamworksLeaderboardMapping from '../../entities/steamworks-leaderboard-mapping'
+import { SteamworksPlayerStat } from '../../entities/steamworks-player-stat'
+import { getResultCacheOptions } from '../perf/getResultCacheOptions'
+import { streamByCursor } from '../perf/streamByCursor'
 
 type SteamworksRequestConfig = {
   method: SteamworksRequestMethod
@@ -76,9 +79,14 @@ export type GetLeaderboardEntriesResponse = {
   }
 }
 
-type GetLeaderboardEntriesResponseEntry = GetLeaderboardEntriesResponse['leaderboardEntryInformation']['leaderboardEntries'][number]
+type GetLeaderboardEntriesResponseEntry =
+  GetLeaderboardEntriesResponse['leaderboardEntryInformation']['leaderboardEntries'][number]
 
-type CombinedLeaderboards = [Leaderboard, GetLeaderboardsForGameResponseLeaderboard | null, SteamworksLeaderboardMapping | null]
+type CombinedLeaderboards = [
+  Leaderboard,
+  GetLeaderboardsForGameResponseLeaderboard | null,
+  SteamworksLeaderboardMapping | null,
+]
 
 type SteamworksGameStat = {
   name: string
@@ -148,28 +156,39 @@ export type GetPlayerSummariesResponse = {
   }
 }
 
-function createSteamworksRequestConfig(integration: Integration, method: SteamworksRequestMethod, url: string, body = ''): SteamworksRequestConfig {
+function createSteamworksRequestConfig(
+  integration: Integration,
+  method: SteamworksRequestMethod,
+  url: string,
+  body = '',
+): SteamworksRequestConfig {
   return {
     method,
     baseURL: 'https://partner.steam-api.com',
     url,
     headers: { 'x-webapi-key': integration.getSteamAPIKey() },
-    data: body
+    data: body,
   }
 }
 
-function createSteamworksIntegrationEvent(integration: Integration, config: SteamworksRequestConfig): SteamworksIntegrationEvent {
+function createSteamworksIntegrationEvent(
+  integration: Integration,
+  config: SteamworksRequestConfig,
+): SteamworksIntegrationEvent {
   const event = new SteamworksIntegrationEvent(integration)
   event.request = {
     method: config.method,
     url: config.baseURL + config.url,
-    body: config.data
+    body: config.data,
   }
 
   return event
 }
 
-async function makeRequest<T>(config: SteamworksRequestConfig, event: SteamworksIntegrationEvent): Promise<AxiosResponse<T, SteamworksRequestConfig>> {
+async function makeRequest<T>(
+  config: SteamworksRequestConfig,
+  event: SteamworksIntegrationEvent,
+): Promise<AxiosResponse<T, SteamworksRequestConfig>> {
   const startTime = performance.now()
 
   try {
@@ -179,7 +198,7 @@ async function makeRequest<T>(config: SteamworksRequestConfig, event: Steamworks
     event.response = {
       status: res.status as SteamworksResponseStatusCode,
       body: res.data,
-      timeTaken: endTime - startTime
+      timeTaken: endTime - startTime,
     }
 
     return res
@@ -189,14 +208,18 @@ async function makeRequest<T>(config: SteamworksRequestConfig, event: Steamworks
     event.response = {
       status: (err as AxiosError).response!.status as SteamworksResponseStatusCode,
       body: (err as AxiosError).response!.data as { [key: string]: unknown },
-      timeTaken: endTime - startTime
+      timeTaken: endTime - startTime,
     }
 
     return (err as AxiosError).response as AxiosResponse
   }
 }
 
-export async function createSteamworksLeaderboard(em: EntityManager, integration: Integration, leaderboard: Leaderboard) {
+export async function createSteamworksLeaderboard(
+  em: EntityManager,
+  integration: Integration,
+  leaderboard: Leaderboard,
+) {
   const body = querystring.stringify({
     appid: integration.getConfig().appId,
     name: leaderboard.internalName,
@@ -204,10 +227,15 @@ export async function createSteamworksLeaderboard(em: EntityManager, integration
     displaytype: 'Numeric',
     createifnotfound: true,
     onlytrustedwrites: true,
-    onlyfriendsreads: false
+    onlyfriendsreads: false,
   })
 
-  const config = createSteamworksRequestConfig(integration, 'POST', '/ISteamLeaderboards/FindOrCreateLeaderboard/v2', body)
+  const config = createSteamworksRequestConfig(
+    integration,
+    'POST',
+    '/ISteamLeaderboards/FindOrCreateLeaderboard/v2',
+    body,
+  )
   const event = createSteamworksIntegrationEvent(integration, config)
 
   const res = await makeRequest<FindOrCreateLeaderboardResponse>(config, event)
@@ -218,26 +246,41 @@ export async function createSteamworksLeaderboard(em: EntityManager, integration
     await em.repo(SteamworksLeaderboardMapping).upsert({
       steamworksLeaderboardId: steamworksLeaderboard.leaderBoardID,
       leaderboard,
-      createdAt: new Date()
+      createdAt: new Date(),
     })
   }
 }
 
-export async function deleteSteamworksLeaderboard(em: EntityManager, integration: Integration, leaderboardInternalName: string) {
+export async function deleteSteamworksLeaderboard(
+  em: EntityManager,
+  integration: Integration,
+  leaderboardInternalName: string,
+) {
   const body = querystring.stringify({
     appid: integration.getConfig().appId,
-    name: leaderboardInternalName
+    name: leaderboardInternalName,
   })
 
-  const config = createSteamworksRequestConfig(integration, 'POST', '/ISteamLeaderboards/DeleteLeaderboard/v1', body)
+  const config = createSteamworksRequestConfig(
+    integration,
+    'POST',
+    '/ISteamLeaderboards/DeleteLeaderboard/v1',
+    body,
+  )
   const event = createSteamworksIntegrationEvent(integration, config)
   await makeRequest(config, event)
 
   await em.persist(event).flush()
 }
 
-export async function createSteamworksLeaderboardEntry(em: EntityManager, integration: Integration, entry: LeaderboardEntry) {
-  const leaderboardMapping = await em.repo(SteamworksLeaderboardMapping).findOne({ leaderboard: entry.leaderboard })
+export async function createSteamworksLeaderboardEntry(
+  em: EntityManager,
+  integration: Integration,
+  entry: LeaderboardEntry,
+) {
+  const leaderboardMapping = await em
+    .repo(SteamworksLeaderboardMapping)
+    .findOne({ leaderboard: entry.leaderboard })
 
   if (leaderboardMapping) {
     const body = querystring.stringify({
@@ -245,26 +288,33 @@ export async function createSteamworksLeaderboardEntry(em: EntityManager, integr
       leaderboardid: leaderboardMapping.steamworksLeaderboardId,
       steamid: entry.playerAlias.identifier,
       score: entry.score,
-      scoremethod: 'KeepBest'
+      scoremethod: 'KeepBest',
     })
 
-    const config = createSteamworksRequestConfig(integration, 'POST', '/ISteamLeaderboards/SetLeaderboardScore/v1', body)
+    const config = createSteamworksRequestConfig(
+      integration,
+      'POST',
+      '/ISteamLeaderboards/SetLeaderboardScore/v1',
+      body,
+    )
     const event = createSteamworksIntegrationEvent(integration, config)
     await makeRequest(config, event)
     await em.persist(event).flush()
 
-    await em.upsert(new SteamworksLeaderboardEntry({
-      steamworksLeaderboard: leaderboardMapping,
-      leaderboardEntry: entry,
-      steamUserId: entry.playerAlias.identifier
-    }))
+    await em.upsert(
+      new SteamworksLeaderboardEntry({
+        steamworksLeaderboard: leaderboardMapping,
+        leaderboardEntry: entry,
+        steamUserId: entry.playerAlias.identifier,
+      }),
+    )
   }
 }
 
 async function requestDeleteLeaderboardScore({
   integration,
   steamworksLeaderboardId,
-  steamUserId
+  steamUserId,
 }: {
   integration: Integration
   steamworksLeaderboardId: number
@@ -273,49 +323,66 @@ async function requestDeleteLeaderboardScore({
   const body = querystring.stringify({
     appid: integration.getConfig().appId,
     leaderboardid: steamworksLeaderboardId,
-    steamid: steamUserId
+    steamid: steamUserId,
   })
 
-  const config = createSteamworksRequestConfig(integration, 'POST', '/ISteamLeaderboards/DeleteLeaderboardScore/v1', body)
+  const config = createSteamworksRequestConfig(
+    integration,
+    'POST',
+    '/ISteamLeaderboards/DeleteLeaderboardScore/v1',
+    body,
+  )
   const event = createSteamworksIntegrationEvent(integration, config)
   await makeRequest(config, event)
   return event
 }
 
-export async function deleteSteamworksLeaderboardEntry(em: EntityManager, integration: Integration, entry: LeaderboardEntry) {
-  const leaderboardMapping = await em.repo(SteamworksLeaderboardMapping).findOne({ leaderboard: entry.leaderboard })
+export async function deleteSteamworksLeaderboardEntry(
+  em: EntityManager,
+  integration: Integration,
+  entry: LeaderboardEntry,
+) {
+  const leaderboardMapping = await em
+    .repo(SteamworksLeaderboardMapping)
+    .findOne({ leaderboard: entry.leaderboard })
 
   if (leaderboardMapping) {
     const event = await requestDeleteLeaderboardScore({
       integration,
       steamworksLeaderboardId: leaderboardMapping.steamworksLeaderboardId,
-      steamUserId: entry.playerAlias.identifier
+      steamUserId: entry.playerAlias.identifier,
     })
 
     await em.persist(event).flush()
     await em.repo(SteamworksLeaderboardEntry).nativeDelete({
       steamworksLeaderboard: leaderboardMapping,
-      leaderboardEntry: entry
+      leaderboardEntry: entry,
     })
   }
 }
 
 function mapSteamworksLeaderboardSortMode(sortMode: string) {
-  return sortMode === 'Ascending'
-    ? LeaderboardSortMode.ASC
-    : LeaderboardSortMode.DESC
+  return sortMode === 'Ascending' ? LeaderboardSortMode.ASC : LeaderboardSortMode.DESC
 }
 
-async function getEntriesForSteamworksLeaderboard(em: EntityManager, integration: Integration, leaderboardId: number): Promise<GetLeaderboardEntriesResponse> {
+async function getEntriesForSteamworksLeaderboard(
+  em: EntityManager,
+  integration: Integration,
+  leaderboardId: number,
+): Promise<GetLeaderboardEntriesResponse> {
   const qs = querystring.stringify({
     appid: integration.getConfig().appId,
     leaderboardid: leaderboardId,
     rangestart: 0,
     rangeend: Number.MAX_VALUE,
-    datarequest: 'RequestGlobal'
+    datarequest: 'RequestGlobal',
   })
 
-  const config = createSteamworksRequestConfig(integration, 'GET', `/ISteamLeaderboards/GetLeaderboardEntries/v1?${qs}`)
+  const config = createSteamworksRequestConfig(
+    integration,
+    'GET',
+    `/ISteamLeaderboards/GetLeaderboardEntries/v1?${qs}`,
+  )
   const event = createSteamworksIntegrationEvent(integration, config)
   const res = await makeRequest<GetLeaderboardEntriesResponse>(config, event)
   await em.persist(event).flush()
@@ -326,7 +393,7 @@ async function getEntriesForSteamworksLeaderboard(em: EntityManager, integration
 async function createLeaderboardEntry({
   leaderboardMapping,
   playerAlias,
-  score
+  score,
 }: {
   leaderboardMapping: SteamworksLeaderboardMapping
   playerAlias: PlayerAlias
@@ -339,7 +406,7 @@ async function createLeaderboardEntry({
   const steamworksEntry = new SteamworksLeaderboardEntry({
     steamworksLeaderboard: leaderboardMapping,
     leaderboardEntry: entry,
-    steamUserId: playerAlias.identifier
+    steamUserId: playerAlias.identifier,
   })
 
   return steamworksEntry
@@ -348,30 +415,35 @@ async function createLeaderboardEntry({
 async function matchAliasAndLeaderboardEntry({
   em,
   steamworksLeaderboard,
-  steamEntryData
+  steamEntryData,
 }: {
   em: EntityManager
   steamworksLeaderboard: GetLeaderboardsForGameResponseLeaderboard
   steamEntryData: GetLeaderboardEntriesResponseEntry
 }) {
   // this is a necessary evil for ensuring the identity map doesn't get corrupted between entry syncs
-  const leaderboardMapping = await em.repo(SteamworksLeaderboardMapping).findOneOrFail({
-    steamworksLeaderboardId: steamworksLeaderboard.id
-  }, {
-    ...getResultCacheOptions(`sync-leaderboards-mapping-${steamworksLeaderboard.id}`),
-    populate: ['leaderboard.game']
-  })
+  const leaderboardMapping = await em.repo(SteamworksLeaderboardMapping).findOneOrFail(
+    {
+      steamworksLeaderboardId: steamworksLeaderboard.id,
+    },
+    {
+      ...getResultCacheOptions(`sync-leaderboards-mapping-${steamworksLeaderboard.id}`),
+      populate: ['leaderboard.game'],
+    },
+  )
 
   let playerAlias = await em.repo(PlayerAlias).findOne({
     service: PlayerAliasService.STEAM,
     identifier: steamEntryData.steamID,
     player: {
-      game: leaderboardMapping.leaderboard.game
-    }
+      game: leaderboardMapping.leaderboard.game,
+    },
   })
 
   if (playerAlias) {
-    const existingEntry = await em.repo(LeaderboardEntry).findOne({ leaderboard: leaderboardMapping.leaderboard, playerAlias })
+    const existingEntry = await em
+      .repo(LeaderboardEntry)
+      .findOne({ leaderboard: leaderboardMapping.leaderboard, playerAlias })
     if (existingEntry) {
       existingEntry.score = steamEntryData.score
       await em.flush()
@@ -390,7 +462,7 @@ async function matchAliasAndLeaderboardEntry({
   const newEntry = await createLeaderboardEntry({
     leaderboardMapping,
     playerAlias,
-    score: steamEntryData.score
+    score: steamEntryData.score,
   })
   await em.persist(newEntry).flush()
 
@@ -400,13 +472,17 @@ async function matchAliasAndLeaderboardEntry({
 async function ingestEntriesFromSteamworks({
   em,
   integration,
-  steamworksLeaderboard
+  steamworksLeaderboard,
 }: {
   em: EntityManager
   integration: Integration
   steamworksLeaderboard: GetLeaderboardsForGameResponseLeaderboard
 }) {
-  const entriesRes = await getEntriesForSteamworksLeaderboard(em, integration, steamworksLeaderboard.id)
+  const entriesRes = await getEntriesForSteamworksLeaderboard(
+    em,
+    integration,
+    steamworksLeaderboard.id,
+  )
 
   let processed = 0
   const syncedEntryIds = new Set<number>()
@@ -416,7 +492,7 @@ async function ingestEntriesFromSteamworks({
       const { newEntry, updated } = await matchAliasAndLeaderboardEntry({
         em: em.fork(),
         steamworksLeaderboard,
-        steamEntryData
+        steamEntryData,
       })
 
       if (newEntry) {
@@ -430,7 +506,9 @@ async function ingestEntriesFromSteamworks({
     }
   }
 
-  console.info(`Ingested ${processed} entries from Steamworks for leaderboard ${steamworksLeaderboard.name}`)
+  console.info(
+    `Ingested ${processed} entries from Steamworks for leaderboard ${steamworksLeaderboard.name}`,
+  )
   return syncedEntryIds
 }
 
@@ -438,7 +516,7 @@ async function pushEntriesToSteamworks({
   em,
   leaderboard,
   integration,
-  syncedEntryIds
+  syncedEntryIds,
 }: {
   em: EntityManager
   leaderboard: Leaderboard
@@ -449,13 +527,16 @@ async function pushEntriesToSteamworks({
   let pushed = 0
 
   const entryStream = streamByCursor<LeaderboardEntry>(async (batchSize, after) => {
-    return em.repo(LeaderboardEntry).findByCursor({
-      leaderboard
-    }, {
-      first: batchSize,
-      after,
-      orderBy: { id: 'asc' }
-    })
+    return em.repo(LeaderboardEntry).findByCursor(
+      {
+        leaderboard,
+      },
+      {
+        first: batchSize,
+        after,
+        orderBy: { id: 'asc' },
+      },
+    )
   }, 10)
 
   for await (const entry of entryStream) {
@@ -478,7 +559,11 @@ async function pushEntriesToSteamworks({
 }
 
 export async function syncSteamworksLeaderboards(em: EntityManager, integration: Integration) {
-  const config = createSteamworksRequestConfig(integration, 'GET', `/ISteamLeaderboards/GetLeaderboardsForGame/v2?appid=${integration.getConfig().appId}`)
+  const config = createSteamworksRequestConfig(
+    integration,
+    'GET',
+    `/ISteamLeaderboards/GetLeaderboardsForGame/v2?appid=${integration.getConfig().appId}`,
+  )
   const event = createSteamworksIntegrationEvent(integration, config)
   const res = await makeRequest<GetLeaderboardsForGameResponse>(config, event)
   await em.persist(event).flush()
@@ -490,20 +575,30 @@ export async function syncSteamworksLeaderboards(em: EntityManager, integration:
 
   const leaderboards = await em.repo(Leaderboard).find({ game: integration.game })
 
-  const combinedLeaderboards = await Promise.all(leaderboards.map(async (leaderboard): Promise<CombinedLeaderboards> => {
-    const leaderboardMapping = await em.repo(SteamworksLeaderboardMapping).findOne({ leaderboard })
+  const combinedLeaderboards = await Promise.all(
+    leaderboards.map(async (leaderboard): Promise<CombinedLeaderboards> => {
+      const leaderboardMapping = await em
+        .repo(SteamworksLeaderboardMapping)
+        .findOne({ leaderboard })
 
-    const mappingMatch = steamworksLeaderboards.find((steamworksLeaderboard) => steamworksLeaderboard.id === leaderboardMapping?.steamworksLeaderboardId)
-    const nameMatch = steamworksLeaderboards.find((steamworksLeaderboard) => steamworksLeaderboard.name === leaderboard.internalName)
+      const mappingMatch = steamworksLeaderboards.find(
+        (steamworksLeaderboard) =>
+          steamworksLeaderboard.id === leaderboardMapping?.steamworksLeaderboardId,
+      )
+      const nameMatch = steamworksLeaderboards.find(
+        (steamworksLeaderboard) => steamworksLeaderboard.name === leaderboard.internalName,
+      )
 
-    return [leaderboard, mappingMatch ?? nameMatch ?? null, leaderboardMapping]
-  }))
+      return [leaderboard, mappingMatch ?? nameMatch ?? null, leaderboardMapping]
+    }),
+  )
 
   for (const [leaderboard, steamworksLeaderboard, leaderboardMapping] of combinedLeaderboards) {
     await em.transactional(async (trx) => {
       // update talo leaderboards with properties from steamworks - because we can't do the other way around
       if (leaderboard && steamworksLeaderboard) {
-        if (!leaderboardMapping) trx.persist(new SteamworksLeaderboardMapping(steamworksLeaderboard.id, leaderboard))
+        if (!leaderboardMapping)
+          trx.persist(new SteamworksLeaderboardMapping(steamworksLeaderboard.id, leaderboard))
 
         leaderboard.internalName = leaderboard.name = steamworksLeaderboard.name
         leaderboard.sortMode = mapSteamworksLeaderboardSortMode(steamworksLeaderboard.sortmethod)
@@ -517,10 +612,12 @@ export async function syncSteamworksLeaderboards(em: EntityManager, integration:
 
   // create leaderboards in talo for ones that only exist in steamworks
   const leaderboardsOnlyInSteamworks = steamworksLeaderboards.filter((steamworksLeaderboard) => {
-    return !leaderboards.find((leaderboard) => steamworksLeaderboard.name === leaderboard.internalName)
+    return !leaderboards.find(
+      (leaderboard) => steamworksLeaderboard.name === leaderboard.internalName,
+    )
   })
   for (const steamworksLeaderboard of leaderboardsOnlyInSteamworks) {
-    em.transactional((trx) => {
+    await em.transactional((trx) => {
       const leaderboard = new Leaderboard(integration.game)
       leaderboard.internalName = leaderboard.name = steamworksLeaderboard.name
       leaderboard.sortMode = mapSteamworksLeaderboardSortMode(steamworksLeaderboard.sortmethod)
@@ -539,7 +636,7 @@ export async function syncSteamworksLeaderboards(em: EntityManager, integration:
     const entryIds = await ingestEntriesFromSteamworks({
       em: em.fork(),
       integration,
-      steamworksLeaderboard
+      steamworksLeaderboard,
     })
     for (const entryId of entryIds) {
       syncedEntryIds.add(entryId)
@@ -552,13 +649,21 @@ export async function syncSteamworksLeaderboards(em: EntityManager, integration:
       em: em.fork(),
       leaderboard,
       integration,
-      syncedEntryIds
+      syncedEntryIds,
     })
   }
 }
 
-async function getSteamworksStatsForPlayer(em: EntityManager, integration: Integration, steamId: string): Promise<GetUserStatsForGameResponse> {
-  const config = createSteamworksRequestConfig(integration, 'GET', `/ISteamUserStats/GetUserStatsForGame/v2?appid=${integration.getConfig().appId}&steamid=${steamId}`)
+async function getSteamworksStatsForPlayer(
+  em: EntityManager,
+  integration: Integration,
+  steamId: string,
+): Promise<GetUserStatsForGameResponse> {
+  const config = createSteamworksRequestConfig(
+    integration,
+    'GET',
+    `/ISteamUserStats/GetUserStatsForGame/v2?appid=${integration.getConfig().appId}&steamid=${steamId}`,
+  )
   const event = createSteamworksIntegrationEvent(integration, config)
   const res = await makeRequest<GetUserStatsForGameResponse>(config, event)
   await em.persist(event).flush()
@@ -570,7 +675,7 @@ async function requestSetSteamworksUserStat({
   integration,
   stat,
   steamUserId,
-  value
+  value,
 }: {
   integration: Integration
   stat: GameStat
@@ -582,35 +687,53 @@ async function requestSetSteamworksUserStat({
     steamid: steamUserId,
     count: 1,
     name: [stat.internalName],
-    value: [value]
+    value: [value],
   })
 
-  const config = createSteamworksRequestConfig(integration, 'POST', '/ISteamUserStats/SetUserStatsForGame/v1', body)
+  const config = createSteamworksRequestConfig(
+    integration,
+    'POST',
+    '/ISteamUserStats/SetUserStatsForGame/v1',
+    body,
+  )
   const event = createSteamworksIntegrationEvent(integration, config)
   await makeRequest(config, event)
   return event
 }
 
-export async function setSteamworksStat(em: EntityManager, integration: Integration, playerStat: PlayerGameStat, playerAlias: PlayerAlias) {
+export async function setSteamworksStat(
+  em: EntityManager,
+  integration: Integration,
+  playerStat: PlayerGameStat,
+  playerAlias: PlayerAlias,
+) {
   const event = await requestSetSteamworksUserStat({
     integration,
     stat: playerStat.stat,
     steamUserId: playerAlias.identifier,
-    value: playerStat.value
+    value: playerStat.value,
   })
   await em.persist(event).flush()
 
-  await em.upsert(new SteamworksPlayerStat({
-    stat: playerStat.stat,
-    playerStat,
-    steamUserId: playerAlias.identifier
-  }))
+  await em.upsert(
+    new SteamworksPlayerStat({
+      stat: playerStat.stat,
+      playerStat,
+      steamUserId: playerAlias.identifier,
+    }),
+  )
 }
 
-async function ingestSteamworksGameStats(em: EntityManager, integration: Integration, steamworksStats: SteamworksGameStat[]) {
+async function ingestSteamworksGameStats(
+  em: EntityManager,
+  integration: Integration,
+  steamworksStats: SteamworksGameStat[],
+) {
   for (const steamworksStat of steamworksStats) {
     try {
-      const existingStat = await em.repo(GameStat).findOne({ internalName: steamworksStat.name, game: integration.game })
+      const existingStat = await em
+        .repo(GameStat)
+        .findOne({ internalName: steamworksStat.name, game: integration.game })
       if (!existingStat) {
         const stat = new GameStat(integration.game)
         stat.internalName = steamworksStat.name
@@ -630,7 +753,11 @@ async function ingestSteamworksGameStats(em: EntityManager, integration: Integra
   }
 }
 
-async function ingestSteamworksPlayerStatForAlias(em: EntityManager, integration: Integration, alias: PlayerAlias) {
+async function ingestSteamworksPlayerStatForAlias(
+  em: EntityManager,
+  integration: Integration,
+  alias: PlayerAlias,
+) {
   const res = await getSteamworksStatsForPlayer(em, integration, alias.identifier)
   const steamworksPlayerStats = res?.playerstats?.stats ?? []
   const syncedIds: number[] = []
@@ -638,10 +765,12 @@ async function ingestSteamworksPlayerStatForAlias(em: EntityManager, integration
   for (const steamworksPlayerStat of steamworksPlayerStats) {
     try {
       const id = await em.transactional(async (trx) => {
-        const stat = await trx.repo(GameStat).findOneOrFail({ internalName: steamworksPlayerStat.name })
+        const stat = await trx
+          .repo(GameStat)
+          .findOneOrFail({ internalName: steamworksPlayerStat.name })
         const existingPlayerStat = await trx.repo(PlayerGameStat).findOne({
           player: alias.player,
-          stat
+          stat,
         })
 
         if (existingPlayerStat) {
@@ -655,7 +784,7 @@ async function ingestSteamworksPlayerStatForAlias(em: EntityManager, integration
           const steamsWorksPlayerStat = new SteamworksPlayerStat({
             stat,
             playerStat,
-            steamUserId: alias.identifier
+            steamUserId: alias.identifier,
           })
           trx.persist(steamsWorksPlayerStat)
 
@@ -673,16 +802,19 @@ async function ingestSteamworksPlayerStatForAlias(em: EntityManager, integration
 
 async function ingestSteamworksPlayerStats(em: EntityManager, integration: Integration) {
   const aliasStream = streamByCursor<PlayerAlias>(async (batchSize, after) => {
-    return em.repo(PlayerAlias).findByCursor({
-      service: PlayerAliasService.STEAM,
-      player: {
-        game: integration.game
-      }
-    }, {
-      first: batchSize,
-      after,
-      orderBy: { id: 'asc' }
-    })
+    return em.repo(PlayerAlias).findByCursor(
+      {
+        service: PlayerAliasService.STEAM,
+        player: {
+          game: integration.game,
+        },
+      },
+      {
+        first: batchSize,
+        after,
+        orderBy: { id: 'asc' },
+      },
+    )
   }, 100)
 
   const syncedPlayerStatIds = new Set<number>()
@@ -701,7 +833,7 @@ async function pushPlayerStatsToSteamworks({
   em,
   integration,
   steamworksStats,
-  syncedPlayerStatIds
+  syncedPlayerStatIds,
 }: {
   em: EntityManager
   integration: Integration
@@ -709,30 +841,35 @@ async function pushPlayerStatsToSteamworks({
   syncedPlayerStatIds: Set<number>
 }) {
   const playerStatStream = streamByCursor<PlayerGameStat>(async (batchSize, after) => {
-    return em.repo(PlayerGameStat).findByCursor({
-      id: {
-        $nin: Array.from(syncedPlayerStatIds)
+    return em.repo(PlayerGameStat).findByCursor(
+      {
+        id: {
+          $nin: Array.from(syncedPlayerStatIds),
+        },
+        player: {
+          aliases: {
+            $some: {
+              service: PlayerAliasService.STEAM,
+            },
+          },
+        },
+        stat: {
+          internalName: steamworksStats.map((steamworksStat) => steamworksStat.name),
+        },
       },
-      player: {
-        aliases: {
-          $some: {
-            service: PlayerAliasService.STEAM
-          }
-        }
+      {
+        first: batchSize,
+        after,
+        orderBy: { id: 'asc' },
+        populate: ['player.aliases'] as const,
       },
-      stat: {
-        internalName: steamworksStats.map((steamworksStat) => steamworksStat.name)
-      }
-    }, {
-      first: batchSize,
-      after,
-      orderBy: { id: 'asc' },
-      populate: ['player.aliases'] as const
-    })
+    )
   }, 100)
 
   for await (const unsyncedPlayerStat of playerStatStream) {
-    const steamAlias = unsyncedPlayerStat.player.aliases.getItems().find((alias) => alias.service === PlayerAliasService.STEAM)
+    const steamAlias = unsyncedPlayerStat.player.aliases
+      .getItems()
+      .find((alias) => alias.service === PlayerAliasService.STEAM)
     if (steamAlias) {
       try {
         await setSteamworksStat(em, integration, unsyncedPlayerStat, steamAlias)
@@ -744,7 +881,11 @@ async function pushPlayerStatsToSteamworks({
 }
 
 export async function syncSteamworksStats(em: EntityManager, integration: Integration) {
-  const config = createSteamworksRequestConfig(integration, 'GET', `/ISteamUserStats/GetSchemaForGame/v2?appid=${integration.getConfig().appId}`)
+  const config = createSteamworksRequestConfig(
+    integration,
+    'GET',
+    `/ISteamUserStats/GetSchemaForGame/v2?appid=${integration.getConfig().appId}`,
+  )
   const event = createSteamworksIntegrationEvent(integration, config)
   const res = await makeRequest<GetSchemaForGameResponse>(config, event)
   await em.persist(event).flush()
@@ -763,7 +904,7 @@ export async function syncSteamworksStats(em: EntityManager, integration: Integr
     em,
     integration,
     steamworksStats,
-    syncedPlayerStatIds
+    syncedPlayerStatIds,
   })
 }
 
@@ -771,14 +912,18 @@ async function requestAuthenticateUserTicket({
   em,
   integration,
   ticket,
-  identity
+  identity,
 }: {
   em: EntityManager
   integration: Integration
   ticket: string
   identity?: string
-}): Promise<{ status: number, data: AuthenticateUserTicketResponse }> {
-  const config = createSteamworksRequestConfig(integration, 'GET', `/ISteamUserAuth/AuthenticateUserTicket/v1?appid=${integration.getConfig().appId}&ticket=${ticket}${identity ? `&identity=${identity}` : ''}`)
+}): Promise<{ status: number; data: AuthenticateUserTicketResponse }> {
+  const config = createSteamworksRequestConfig(
+    integration,
+    'GET',
+    `/ISteamUserAuth/AuthenticateUserTicket/v1?appid=${integration.getConfig().appId}&ticket=${ticket}${identity ? `&identity=${identity}` : ''}`,
+  )
   const event = createSteamworksIntegrationEvent(integration, config)
   const res = await makeRequest<AuthenticateUserTicketResponse>(config, event)
   await em.persist(event).flush()
@@ -787,14 +932,20 @@ async function requestAuthenticateUserTicket({
   const errorOpts = { cause: 400 }
 
   if (res.status >= 500) {
-    throw new Error('Failed to authenticate Steamworks ticket: Steam service unavailable', errorOpts)
+    throw new Error(
+      'Failed to authenticate Steamworks ticket: Steam service unavailable',
+      errorOpts,
+    )
   } else if (res.data?.response?.error) {
     const message = `Failed to authenticate Steamworks ticket: ${res.data.response.error.errordesc} (${res.data.response.error.errorcode})`
     throw new Error(message, errorOpts)
   } else if (res.status === 403) {
     throw new Error('Failed to authenticate Steamworks ticket: Invalid API key', errorOpts)
   } else if (!res.data?.response?.params) {
-    throw new Error('Failed to authenticate Steamworks ticket: Invalid response from Steamworks', errorOpts)
+    throw new Error(
+      'Failed to authenticate Steamworks ticket: Invalid response from Steamworks',
+      errorOpts,
+    )
   }
 
   return { status: res.status, data: res.data }
@@ -802,11 +953,14 @@ async function requestAuthenticateUserTicket({
 
 export type AuthenticateTicketResult = {
   steamId: string
-  initialPlayerProps?: { key: string, value: string }[]
+  initialPlayerProps?: { key: string; value: string }[]
 }
 
-export async function authenticateTicket(em: EntityManager, integration: Integration, identifier: string): Promise<AuthenticateTicketResult> {
-
+export async function authenticateTicket(
+  em: EntityManager,
+  integration: Integration,
+  identifier: string,
+): Promise<AuthenticateTicketResult> {
   const parts = identifier.split(':')
   const identity = parts.length > 1 ? parts[0] : undefined
   const ticket = parts.at(-1)
@@ -817,7 +971,7 @@ export async function authenticateTicket(em: EntityManager, integration: Integra
     em,
     integration,
     ticket,
-    identity
+    identity,
   })
 
   const authenticateParams = authenticateData.response.params!
@@ -829,17 +983,15 @@ export async function authenticateTicket(em: EntityManager, integration: Integra
     service: PlayerAliasService.STEAM,
     identifier: steamId,
     player: {
-      game: integration.game
-    }
+      game: integration.game,
+    },
   })
 
-  const [
-    { status: verifyOwnershipStatus, data: verifyOwnershipData },
-    playerSummary
-  ] = await Promise.all([
-    verifyOwnership({ em, integration, steamId }),
-    getPlayerSummary({ em, integration, steamId })
-  ])
+  const [{ status: verifyOwnershipStatus, data: verifyOwnershipData }, playerSummary] =
+    await Promise.all([
+      verifyOwnership({ em, integration, steamId }),
+      getPlayerSummary({ em, integration, steamId }),
+    ])
 
   if (verifyOwnershipStatus === 403) {
     throw new Error('Failed to verify Steamworks ownership: Invalid API key', errorOpts)
@@ -853,7 +1005,7 @@ export async function authenticateTicket(em: EntityManager, integration: Integra
     { key: 'META_STEAMWORKS_PUBLISHER_BANNED', value: String(publisherbanned) },
     { key: 'META_STEAMWORKS_OWNS_APP', value: String(ownsapp) },
     { key: 'META_STEAMWORKS_OWNS_APP_PERMANENTLY', value: String(permanent) },
-    { key: 'META_STEAMWORKS_OWNS_APP_FROM_DATE', value: timestamp }
+    { key: 'META_STEAMWORKS_OWNS_APP_FROM_DATE', value: timestamp },
   ]
 
   if (playerSummary) {
@@ -863,8 +1015,8 @@ export async function authenticateTicket(em: EntityManager, integration: Integra
     captureException(new Error('Failed to find Steamworks player summary'), {
       extra: {
         steamId,
-        integrationId: integration.id
-      }
+        integrationId: integration.id,
+      },
     })
   }
 
@@ -882,23 +1034,31 @@ export async function authenticateTicket(em: EntityManager, integration: Integra
 export async function verifyOwnership({
   em,
   integration,
-  steamId
+  steamId,
 }: {
   em: EntityManager
   integration: Integration
   steamId: string
-}): Promise<{ status: number, data: CheckAppOwnershipResponse }> {
-  const config = createSteamworksRequestConfig(integration, 'GET', `/ISteamUser/CheckAppOwnership/v3?appid=${integration.getConfig().appId}&steamid=${steamId}`)
+}): Promise<{ status: number; data: CheckAppOwnershipResponse }> {
+  const config = createSteamworksRequestConfig(
+    integration,
+    'GET',
+    `/ISteamUser/CheckAppOwnership/v3?appid=${integration.getConfig().appId}&steamid=${steamId}`,
+  )
   const event = createSteamworksIntegrationEvent(integration, config)
   const res = await makeRequest<CheckAppOwnershipResponse>(config, event)
   await em.persist(event).flush()
 
   if (res.status >= 500) {
-    throw new Error('Failed to verify Steamworks ownership: Steam service unavailable', { cause: 400 })
+    throw new Error('Failed to verify Steamworks ownership: Steam service unavailable', {
+      cause: 400,
+    })
   }
 
   if (res.status === 200 && !res.data?.appownership) {
-    throw new Error('Failed to verify Steamworks ownership: Invalid response from Steamworks', { cause: 400 })
+    throw new Error('Failed to verify Steamworks ownership: Invalid response from Steamworks', {
+      cause: 400,
+    })
   }
 
   return { status: res.status, data: res.data }
@@ -907,13 +1067,17 @@ export async function verifyOwnership({
 export async function getPlayerSummary({
   em,
   integration,
-  steamId
+  steamId,
 }: {
   em: EntityManager
   integration: Integration
   steamId: string
 }): Promise<GetPlayerSummariesResponse['response']['players'][number] | null> {
-  const config = createSteamworksRequestConfig(integration, 'GET', `/ISteamUser/GetPlayerSummaries/v2?steamids=${steamId}`)
+  const config = createSteamworksRequestConfig(
+    integration,
+    'GET',
+    `/ISteamUser/GetPlayerSummaries/v2?steamids=${steamId}`,
+  )
   const event = createSteamworksIntegrationEvent(integration, config)
   const res = await makeRequest<GetPlayerSummariesResponse>(config, event)
   await em.persist(event).flush()
@@ -932,12 +1096,12 @@ export async function getPlayerSummary({
 export async function cleanupSteamworksLeaderboardEntry(
   em: EntityManager,
   integration: Integration,
-  steamworksEntry: SteamworksLeaderboardEntry
+  steamworksEntry: SteamworksLeaderboardEntry,
 ) {
   const event = await requestDeleteLeaderboardScore({
     integration,
     steamworksLeaderboardId: steamworksEntry.steamworksLeaderboard.steamworksLeaderboardId,
-    steamUserId: steamworksEntry.steamUserId
+    steamUserId: steamworksEntry.steamUserId,
   })
 
   em.persist(event)
@@ -948,14 +1112,14 @@ export async function cleanupSteamworksLeaderboardEntry(
 export async function cleanupSteamworksPlayerStat(
   em: EntityManager,
   integration: Integration,
-  steamworksPlayerStat: SteamworksPlayerStat
+  steamworksPlayerStat: SteamworksPlayerStat,
 ) {
   // can't delete stats
   const event = await requestSetSteamworksUserStat({
     integration,
     stat: steamworksPlayerStat.stat,
     steamUserId: steamworksPlayerStat.steamUserId,
-    value: steamworksPlayerStat.stat.defaultValue
+    value: steamworksPlayerStat.stat.defaultValue,
   })
 
   em.persist(event)

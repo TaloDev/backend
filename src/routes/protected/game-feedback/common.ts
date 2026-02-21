@@ -13,7 +13,7 @@ export async function loadFeedbackCategory(ctx: FeedbackCategoryRouteContext, ne
 
   const feedbackCategory = await em.repo(GameFeedbackCategory).findOne({
     id: Number(id),
-    game: ctx.state.game
+    game: ctx.state.game,
   })
 
   if (!feedbackCategory) {

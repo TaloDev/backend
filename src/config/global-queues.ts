@@ -1,19 +1,19 @@
 import { Queue } from 'bullmq'
-import { createEmailQueue } from '../lib/queues/createEmailQueue'
 import { createClearResponseCacheQueue } from '../lib/perf/responseCacheQueue'
 import { createDeleteClickHousePlayerDataQueue } from '../lib/queues/createDeleteClickHousePlayerDataQueue'
+import { createEmailQueue } from '../lib/queues/createEmailQueue'
 
 const queueFactories = {
-  'email': createEmailQueue,
+  email: createEmailQueue,
   'clear-response-cache': createClearResponseCacheQueue,
-  'delete-clickhouse-player-data': createDeleteClickHousePlayerDataQueue
+  'delete-clickhouse-player-data': createDeleteClickHousePlayerDataQueue,
 } as const
 
 export const queueNames = Object.keys(queueFactories) as (keyof typeof queueFactories)[]
 
-type QueueName = typeof queueNames[number]
+type QueueName = (typeof queueNames)[number]
 type QueueTypeMapping = {
-  [K in keyof typeof queueFactories]: ReturnType<typeof queueFactories[K]>
+  [K in keyof typeof queueFactories]: ReturnType<(typeof queueFactories)[K]>
 }
 
 const queueMap = new Map<QueueName, Queue>()

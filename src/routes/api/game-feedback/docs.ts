@@ -12,12 +12,12 @@ export const listCategoriesDocs = {
             internalName: 'bugs',
             name: 'Bugs',
             description: 'Issues that hinder the player experience',
-            createdAt: '2024-06-01T21:36:02.008Z'
-          }
-        ]
-      }
-    }
-  ]
+            createdAt: '2024-06-01T21:36:02.008Z',
+          },
+        ],
+      },
+    },
+  ],
 } satisfies RouteDocs
 
 export const postDocs = {
@@ -26,8 +26,8 @@ export const postDocs = {
     {
       title: 'Sample request',
       sample: {
-        comment: 'The new quest in the new zone cannot be completed!'
-      }
+        comment: 'The new quest in the new zone cannot be completed!',
+      },
     },
     {
       title: 'Sample anonymised feedback response',
@@ -40,14 +40,14 @@ export const postDocs = {
             name: 'Bugs',
             description: 'Issues that hinder the player experience',
             anonymised: false,
-            createdAt: '2024-06-01T21:36:02.008Z'
+            createdAt: '2024-06-01T21:36:02.008Z',
           },
           comment: 'The new quest in the new zone cannot be completed!',
           anonymised: true,
           playerAlias: null,
-          createdAt: '2024-06-03T18:04:44.336Z'
-        }
-      }
+          createdAt: '2024-06-03T18:04:44.336Z',
+        },
+      },
     },
     {
       title: 'Sample identifiable feedback response',
@@ -60,7 +60,7 @@ export const postDocs = {
             name: 'Bugs',
             description: 'Issues that hinder the player experience',
             anonymised: false,
-            createdAt: '2024-06-01T21:36:02.008Z'
+            createdAt: '2024-06-01T21:36:02.008Z',
           },
           comment: 'The new quest in the new zone cannot be completed!',
           anonymised: false,
@@ -72,19 +72,17 @@ export const postDocs = {
               id: '7a4e70ec-6ee6-418e-923d-b3a45051b7f9',
               props: [
                 { key: 'xPos', value: '13.29' },
-                { key: 'yPos', value: '26.44' }
+                { key: 'yPos', value: '26.44' },
               ],
-              aliases: [
-                '/* [Circular] */'
-              ],
+              aliases: ['/* [Circular] */'],
               devBuild: false,
               createdAt: '2022-01-15T13:20:32.133Z',
-              lastSeenAt: '2022-04-12T15:09:43.066Z'
-            }
+              lastSeenAt: '2022-04-12T15:09:43.066Z',
+            },
           },
-          createdAt: '2024-06-03T18:04:44.336Z'
-        }
-      }
-    }
-  ]
+          createdAt: '2024-06-03T18:04:44.336Z',
+        },
+      },
+    },
+  ],
 } satisfies RouteDocs

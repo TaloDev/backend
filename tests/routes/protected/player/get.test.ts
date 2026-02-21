@@ -1,7 +1,7 @@
 import { Collection } from '@mikro-orm/mysql'
 import request from 'supertest'
-import PlayerFactory from '../../../fixtures/PlayerFactory'
 import PlayerProp from '../../../../src/entities/player-prop'
+import PlayerFactory from '../../../fixtures/PlayerFactory'
 import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
 import createUserAndToken from '../../../utils/createUserAndToken'
 
@@ -51,12 +51,14 @@ describe('Player - get', () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({ organisation })
 
-    const player = await new PlayerFactory([game]).state((player) => ({
-      props: new Collection<PlayerProp>(player, [
-        new PlayerProp(player, 'level', '25'),
-        new PlayerProp(player, 'username', 'TestPlayer')
-      ])
-    })).one()
+    const player = await new PlayerFactory([game])
+      .state((player) => ({
+        props: new Collection<PlayerProp>(player, [
+          new PlayerProp(player, 'level', '25'),
+          new PlayerProp(player, 'username', 'TestPlayer'),
+        ]),
+      }))
+      .one()
     await em.persist(player).flush()
 
     const res = await request(app)

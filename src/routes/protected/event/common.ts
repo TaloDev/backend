@@ -12,7 +12,7 @@ export type EventData = {
 export function fillDateGaps(
   data: Record<string, EventData[]>,
   startDateQuery: string,
-  endDateQuery: string
+  endDateQuery: string,
 ): Record<string, EventData[]> {
   const startDateMs = startOfDay(new Date(startDateQuery)).getTime()
   const endDateMs = startOfDay(new Date(endDateQuery)).getTime()
@@ -29,7 +29,11 @@ export function fillDateGaps(
     }
 
     let prev: EventData | null = null
-    for (let currentDateMs = startDateMs; currentDateMs <= endDateMs; currentDateMs += millisecondsInDay) {
+    for (
+      let currentDateMs = startDateMs;
+      currentDateMs <= endDateMs;
+      currentDateMs += millisecondsInDay
+    ) {
       const existingEvent = eventsByDate.get(currentDateMs)
 
       let entry: EventData
@@ -37,14 +41,14 @@ export function fillDateGaps(
       if (existingEvent) {
         entry = {
           ...existingEvent,
-          change: calculateChange(existingEvent.count, prev?.count ?? 0)
+          change: calculateChange(existingEvent.count, prev?.count ?? 0),
         }
       } else {
         entry = {
           name: seriesName,
           date: currentDateMs,
           count: 0,
-          change: calculateChange(0, prev?.count ?? 0)
+          change: calculateChange(0, prev?.count ?? 0),
         }
       }
 

@@ -1,9 +1,9 @@
 import request from 'supertest'
 import { APIKeyScope } from '../../../../src/entities/api-key'
-import PlayerFactory from '../../../fixtures/PlayerFactory'
 import GameStatFactory from '../../../fixtures/GameStatFactory'
-import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
+import PlayerFactory from '../../../fixtures/PlayerFactory'
 import PlayerGameStatFactory from '../../../fixtures/PlayerGameStatFactory'
+import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
 
 describe('Game stats API - list player stats', () => {
   it('should return player stats if the scope is valid', async () => {
@@ -12,8 +12,14 @@ describe('Game stats API - list player stats', () => {
     const stat2 = await new GameStatFactory([apiKey.game]).one()
     const player = await new PlayerFactory([apiKey.game]).one()
 
-    const playerStat1 = await new PlayerGameStatFactory().construct(player, stat1).state(() => ({ value: 42 })).one()
-    const playerStat2 = await new PlayerGameStatFactory().construct(player, stat2).state(() => ({ value: 66 })).one()
+    const playerStat1 = await new PlayerGameStatFactory()
+      .construct(player, stat1)
+      .state(() => ({ value: 42 }))
+      .one()
+    const playerStat2 = await new PlayerGameStatFactory()
+      .construct(player, stat2)
+      .state(() => ({ value: 66 }))
+      .one()
     await em.persistAndFlush([playerStat1, playerStat2])
 
     const res = await request(app)

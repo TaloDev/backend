@@ -1,16 +1,16 @@
 import { FilterQuery } from '@mikro-orm/mysql'
-import { apiRoute, withMiddleware } from '../../../lib/routing/router'
-import { requireScopes } from '../../../middleware/policy-middleware'
 import { APIKeyScope } from '../../../entities/api-key'
-import { loadAlias } from '../../../middleware/player-alias-middleware'
 import PlayerAliasSubscription from '../../../entities/player-alias-subscription'
 import { DEFAULT_PAGE_SIZE } from '../../../lib/pagination/itemsPerPage'
 import { withResponseCache } from '../../../lib/perf/responseCache'
-import { getSubscriptionsDocs } from './docs'
-import { playerAliasHeaderSchema } from '../../../lib/validation/playerAliasHeaderSchema'
-import { pageSchema } from '../../../lib/validation/pageSchema'
-import { relationshipTypeSchema } from './common'
+import { apiRoute, withMiddleware } from '../../../lib/routing/router'
 import { numericStringSchema } from '../../../lib/validation/numericStringSchema'
+import { pageSchema } from '../../../lib/validation/pageSchema'
+import { playerAliasHeaderSchema } from '../../../lib/validation/playerAliasHeaderSchema'
+import { loadAlias } from '../../../middleware/player-alias-middleware'
+import { requireScopes } from '../../../middleware/policy-middleware'
+import { relationshipTypeSchema } from './common'
+import { getSubscriptionsDocs } from './docs'
 
 export const getSubscriptionsRoute = apiRoute({
   method: 'get',
@@ -18,19 +18,23 @@ export const getSubscriptionsRoute = apiRoute({
   docs: getSubscriptionsDocs,
   schema: (z) => ({
     headers: z.looseObject({
-      'x-talo-alias': playerAliasHeaderSchema
+      'x-talo-alias': playerAliasHeaderSchema,
     }),
     query: z.object({
-      confirmed: z.enum(['true', 'false']).optional().meta({ description: 'Filter by confirmation status ("true" or "false")' }),
-      aliasId: numericStringSchema.optional().meta({ description: 'Filter by a specific subscribed-to alias ID' }),
-      relationshipType: relationshipTypeSchema.optional().meta({ description: 'Filter by relationship type ("unidirectional" or "bidirectional")' }),
-      page: pageSchema.meta({ description: 'Page number for pagination (default: 0)' })
-    })
+      confirmed: z
+        .enum(['true', 'false'])
+        .optional()
+        .meta({ description: 'Filter by confirmation status ("true" or "false")' }),
+      aliasId: numericStringSchema
+        .optional()
+        .meta({ description: 'Filter by a specific subscribed-to alias ID' }),
+      relationshipType: relationshipTypeSchema
+        .optional()
+        .meta({ description: 'Filter by relationship type ("unidirectional" or "bidirectional")' }),
+      page: pageSchema.meta({ description: 'Page number for pagination (default: 0)' }),
+    }),
   }),
-  middleware: withMiddleware(
-    requireScopes([APIKeyScope.READ_PLAYER_RELATIONSHIPS]),
-    loadAlias
-  ),
+  middleware: withMiddleware(requireScopes([APIKeyScope.READ_PLAYER_RELATIONSHIPS]), loadAlias),
   handler: async (ctx) => {
     const itemsPerPage = DEFAULT_PAGE_SIZE
     const em = ctx.em
@@ -41,7 +45,7 @@ export const getSubscriptionsRoute = apiRoute({
 
     return withResponseCache({ key: cacheKey }, async () => {
       const where: FilterQuery<PlayerAliasSubscription> = {
-        subscriber: currentAlias
+        subscriber: currentAlias,
       }
 
       if (confirmed !== undefined) {
@@ -58,7 +62,7 @@ export const getSubscriptionsRoute = apiRoute({
 
       const [subscriptions, count] = await em.repo(PlayerAliasSubscription).findAndCount(where, {
         limit: itemsPerPage + 1,
-        offset: page * itemsPerPage
+        offset: page * itemsPerPage,
       })
 
       return {
@@ -67,9 +71,9 @@ export const getSubscriptionsRoute = apiRoute({
           subscriptions: subscriptions.slice(0, itemsPerPage),
           count,
           itemsPerPage,
-          isLastPage: subscriptions.length <= itemsPerPage
-        }
+          isLastPage: subscriptions.length <= itemsPerPage,
+        },
       }
     })
-  }
+  },
 })

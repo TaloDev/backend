@@ -1,14 +1,14 @@
-import { Queue } from 'bullmq'
-import createQueue from '../createQueue'
-import { setTraceAttributes } from '@hyperdx/node-opentelemetry'
-import createClickHouseClient from '../../clickhouse/createClient'
-import { captureException } from '@sentry/node'
 import { ClickHouseClient } from '@clickhouse/client'
-import { getMikroORM } from '../../../config/mikro-orm.config'
+import { setTraceAttributes } from '@hyperdx/node-opentelemetry'
 import { EntityManager } from '@mikro-orm/mysql'
-import { createRedisConnection } from '../../../config/redis.config'
+import { captureException } from '@sentry/node'
+import { Queue } from 'bullmq'
 import Redis from 'ioredis'
+import { getMikroORM } from '../../../config/mikro-orm.config'
+import { createRedisConnection } from '../../../config/redis.config'
 import Player from '../../../entities/player'
+import createClickHouseClient from '../../clickhouse/createClient'
+import createQueue from '../createQueue'
 
 type FlushFunc<S> = (clickhouse: ClickHouseClient, values: S[]) => Promise<void>
 type HandlerOptions<S> = {
@@ -49,15 +49,20 @@ export async function postFlushCheckMemberships(handlerName: string, playerIds: 
 
 type SerialisableData = Record<string, unknown> & { id: string }
 
-export abstract class FlushMetricsQueueHandler<T extends { id: string }, S extends SerialisableData = SerialisableData> {
+export abstract class FlushMetricsQueueHandler<
+  T extends { id: string },
+  S extends SerialisableData = SerialisableData,
+> {
   private queue: Queue
   private options: HandlerOptions<S>
   private redisKey: string
   private memoryFallback: Map<string, S> = new Map()
 
-  constructor(private metricName: string, private flushFunc: FlushFunc<S>, options?: HandlerOptions<S>) {
-    this.metricName = metricName
-    this.flushFunc = flushFunc
+  constructor(
+    private metricName: string,
+    private flushFunc: FlushFunc<S>,
+    options?: HandlerOptions<S>,
+  ) {
     /* v8 ignore next */
     this.options = options ?? { logsInTests: true }
     this.redisKey = `metrics:buffer:${metricName}`
@@ -83,19 +88,27 @@ export abstract class FlushMetricsQueueHandler<T extends { id: string }, S exten
     const jitter = Math.floor(Math.random() * 10_000) - 5_000 // -5000 to +5000ms
     const intervalWithJitter = Math.max(flushInterval + jitter, 25_000)
 
-    setImmediate(() => {
-      const schedulerName = `flush-${metricName}-scheduler`
-      this.queue.upsertJobScheduler(
-        schedulerName,
-        { every: intervalWithJitter },
-        { name: `flush-${metricName}-job` }
-      )
-
-      /* v8 ignore next 3 */
+    setImmediate(async () => {
+      /* v8 ignore start */
       if (process.env.NODE_ENV !== 'test') {
-        console.info(`Upserted ${schedulerName} with interval: ${(intervalWithJitter / 1000).toFixed(2)}s`)
+        const schedulerName = `flush-${metricName}-scheduler`
+
+        await this.queue.upsertJobScheduler(
+          schedulerName,
+          { every: intervalWithJitter },
+          { name: `flush-${metricName}-job` },
+        )
+
+        console.info(
+          `Upserted ${schedulerName} with interval: ${(intervalWithJitter / 1000).toFixed(2)}s`,
+        )
       }
+      /* v8 ignore stop */
     })
+  }
+
+  getRedis() {
+    return redis
   }
 
   async handle() {
@@ -138,7 +151,7 @@ export abstract class FlushMetricsQueueHandler<T extends { id: string }, S exten
   }
 
   async add(item: T) {
-    void this.addBufferedItem(item)
+    await this.addBufferedItem(item)
   }
 
   private async addBufferedItem(item: T): Promise<void> {

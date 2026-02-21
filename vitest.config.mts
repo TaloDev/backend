@@ -17,7 +17,6 @@ export default defineConfig({
         'node_modules',
         'dist',
         'tests',
-        'eslint.config.mjs',
         'src/global.d.ts',
         'src/index.ts',
         'src/config',
@@ -29,8 +28,8 @@ export default defineConfig({
         'src/lib/clickhouse/clickhouse-entity.ts',
         'src/lib/clickhouse/createClient.ts',
         'src/lib/errors/checkRateLimitExceeded.ts',
-        'src/lib/tracing'
-      ]
-    }
-  }
+        'src/lib/tracing',
+      ],
+    },
+  },
 })

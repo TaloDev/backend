@@ -1,9 +1,9 @@
+import fs from 'fs/promises'
+import nodemailer from 'nodemailer'
+import { mockTransport } from '../../../__mocks__/nodemailer'
 import ConfirmEmail from '../../../src/emails/confirm-email-mail'
 import sendEmail from '../../../src/lib/messaging/sendEmail'
 import UserFactory from '../../fixtures/UserFactory'
-import nodemailer from 'nodemailer'
-import { mockTransport } from '../../../__mocks__/nodemailer'
-import fs from 'fs/promises'
 
 describe('Send email', () => {
   const originalDriver = process.env.EMAIL_DRIVER
@@ -52,10 +52,10 @@ describe('Send email', () => {
       secure: Number(process.env.EMAIL_PORT) === 465,
       auth: {
         user: process.env.EMAIL_USERNAME,
-        pass: process.env.EMAIL_PASSWORD
+        pass: process.env.EMAIL_PASSWORD,
       },
       logger: Boolean(process.env.EMAIL_DEBUG),
-      debug: Boolean(process.env.EMAIL_DEBUG)
+      debug: Boolean(process.env.EMAIL_DEBUG),
     })
   })
 
@@ -70,21 +70,25 @@ describe('Send email', () => {
           content: 'file',
           filename: 'file.zip',
           type: 'application/zip',
-          disposition: 'attachment'
-        }
-      ]
+          disposition: 'attachment',
+        },
+      ],
     }
 
     await sendEmail(emailConfig)
 
-    expect(mockTransport.sendMail).toHaveBeenCalledWith(expect.objectContaining({
-      attachments: [{
-        content: expect.any(Buffer),
-        filename: 'file.zip',
-        contentType: 'application/zip',
-        disposition: 'attachment'
-      }]
-    }))
+    expect(mockTransport.sendMail).toHaveBeenCalledWith(
+      expect.objectContaining({
+        attachments: [
+          {
+            content: expect.any(Buffer),
+            filename: 'file.zip',
+            contentType: 'application/zip',
+            disposition: 'attachment',
+          },
+        ],
+      }),
+    )
   })
 
   it('should throw an error if part of the email configuration is missing', async () => {
@@ -95,7 +99,7 @@ describe('Send email', () => {
     delete process.env.EMAIL_HOST
 
     await expect(sendEmail(email.getConfig())).rejects.toThrow(
-      'Invalid mail configuration. One or more environment variables are missing: EMAIL_HOST, EMAIL_PORT, EMAIL_USERNAME, EMAIL_PASSWORD.'
+      'Invalid mail configuration. One or more environment variables are missing: EMAIL_HOST, EMAIL_PORT, EMAIL_USERNAME, EMAIL_PASSWORD.',
     )
 
     process.env.EMAIL_HOST = originalHost
@@ -153,7 +157,7 @@ describe('Send email', () => {
     process.env.EMAIL_DRIVER = 'unknown'
 
     await expect(sendEmail(email.getConfig())).rejects.toThrow(
-      'Unknown email driver: unknown. Supported drivers are \'relay\' and \'log\'.'
+      "Unknown email driver: unknown. Supported drivers are 'relay' and 'log'.",
     )
   })
 
@@ -165,7 +169,7 @@ describe('Send email', () => {
     delete process.env.EMAIL_HOST
 
     await expect(sendEmail(email.getConfig())).rejects.toThrow(
-      'Invalid mail configuration. One or more environment variables are missing: EMAIL_HOST, EMAIL_PORT, EMAIL_USERNAME, EMAIL_PASSWORD.'
+      'Invalid mail configuration. One or more environment variables are missing: EMAIL_HOST, EMAIL_PORT, EMAIL_USERNAME, EMAIL_PASSWORD.',
     )
 
     process.env.EMAIL_HOST = originalHost
@@ -193,7 +197,7 @@ describe('Send email', () => {
       expect(writeFileSpy).toHaveBeenCalledWith(
         expect.stringContaining('mail.html'),
         emailConfig.html,
-        'utf-8'
+        'utf-8',
       )
     })
 
@@ -212,15 +216,15 @@ describe('Send email', () => {
             content: base64Content,
             filename: 'test-file.txt',
             type: 'text/plain',
-            disposition: 'attachment'
+            disposition: 'attachment',
           },
           {
             content: Buffer.from('another file').toString('base64'),
             filename: 'document.pdf',
             type: 'application/pdf',
-            disposition: 'attachment'
-          }
-        ]
+            disposition: 'attachment',
+          },
+        ],
       }
 
       await sendEmail(emailConfig)
@@ -231,17 +235,17 @@ describe('Send email', () => {
       expect(writeFileSpy).toHaveBeenCalledWith(
         expect.stringContaining('mail.html'),
         emailConfig.html,
-        'utf-8'
+        'utf-8',
       )
 
       expect(writeFileSpy).toHaveBeenCalledWith(
         expect.stringContaining('test-file.txt'),
-        Buffer.from('test file content')
+        Buffer.from('test file content'),
       )
 
       expect(writeFileSpy).toHaveBeenCalledWith(
         expect.stringContaining('document.pdf'),
-        Buffer.from('another file')
+        Buffer.from('another file'),
       )
     })
 
@@ -261,16 +265,16 @@ describe('Send email', () => {
             content: base64Content,
             filename: 'special-chars.txt',
             type: 'text/plain',
-            disposition: 'attachment'
-          }
-        ]
+            disposition: 'attachment',
+          },
+        ],
       }
 
       await sendEmail(emailConfig)
 
       expect(writeFileSpy).toHaveBeenCalledWith(
         expect.stringContaining('special-chars.txt'),
-        Buffer.from(originalContent)
+        Buffer.from(originalContent),
       )
     })
 
@@ -282,7 +286,7 @@ describe('Send email', () => {
       const email = new ConfirmEmail(user, 'abc123')
       const emailConfig = {
         ...email.getConfig(),
-        attachments: undefined
+        attachments: undefined,
       }
 
       await sendEmail(emailConfig)
@@ -291,7 +295,7 @@ describe('Send email', () => {
       expect(writeFileSpy).toHaveBeenCalledWith(
         expect.stringContaining('mail.html'),
         emailConfig.html,
-        'utf-8'
+        'utf-8',
       )
     })
 
@@ -306,10 +310,7 @@ describe('Send email', () => {
 
       await expect(sendEmail(email.getConfig())).resolves.not.toThrow()
 
-      expect(consoleErrorSpy).toHaveBeenCalledWith(
-        'Could not write mail file to disk:',
-        fsError
-      )
+      expect(consoleErrorSpy).toHaveBeenCalledWith('Could not write mail file to disk:', fsError)
     })
   })
 })

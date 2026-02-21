@@ -1,15 +1,18 @@
 import { EntityManager } from '@mikro-orm/mysql'
+import Game from '../../../entities/game'
+import { GameActivityType } from '../../../entities/game-activity'
+import Leaderboard, {
+  LeaderboardSortMode,
+  LeaderboardRefreshInterval,
+} from '../../../entities/leaderboard'
+import { UserType } from '../../../entities/user'
+import User from '../../../entities/user'
+import buildErrorResponse from '../../../lib/errors/buildErrorResponse'
+import triggerIntegrations from '../../../lib/integrations/triggerIntegrations'
+import createGameActivity from '../../../lib/logging/createGameActivity'
 import { protectedRoute, withMiddleware } from '../../../lib/routing/router'
 import { loadGame } from '../../../middleware/game-middleware'
 import { userTypeGate } from '../../../middleware/policy-middleware'
-import { UserType } from '../../../entities/user'
-import User from '../../../entities/user'
-import Game from '../../../entities/game'
-import Leaderboard, { LeaderboardSortMode, LeaderboardRefreshInterval } from '../../../entities/leaderboard'
-import { GameActivityType } from '../../../entities/game-activity'
-import createGameActivity from '../../../lib/logging/createGameActivity'
-import triggerIntegrations from '../../../lib/integrations/triggerIntegrations'
-import buildErrorResponse from '../../../lib/errors/buildErrorResponse'
 
 type CreateLeaderboardParams = {
   em: EntityManager
@@ -32,16 +35,16 @@ export async function createLeaderboardHandler({
   sortMode,
   unique,
   refreshInterval = LeaderboardRefreshInterval.NEVER,
-  uniqueByProps = false
+  uniqueByProps = false,
 }: CreateLeaderboardParams) {
   const duplicateInternalName = await em.repo(Leaderboard).findOne({
     internalName,
-    game
+    game,
   })
 
   if (duplicateInternalName) {
     return buildErrorResponse({
-      internalName: [`A leaderboard with the internalName '${internalName}' already exists`]
+      internalName: [`A leaderboard with the internalName '${internalName}' already exists`],
     })
   }
 
@@ -58,8 +61,8 @@ export async function createLeaderboardHandler({
     game: leaderboard.game,
     type: GameActivityType.LEADERBOARD_CREATED,
     extra: {
-      leaderboardInternalName: leaderboard.internalName
-    }
+      leaderboardInternalName: leaderboard.internalName,
+    },
   })
 
   await em.persist(leaderboard).flush()
@@ -71,8 +74,8 @@ export async function createLeaderboardHandler({
   return {
     status: 200,
     body: {
-      leaderboard
-    }
+      leaderboard,
+    },
   }
 }
 
@@ -86,21 +89,24 @@ export const createRoute = protectedRoute({
       internalName: z.string(),
       name: z.string(),
       sortMode: z.enum(LeaderboardSortMode, {
-        error: `Sort mode must be one of ${sortModeValues}`
+        error: `Sort mode must be one of ${sortModeValues}`,
       }),
       unique: z.boolean(),
-      refreshInterval: z.enum(LeaderboardRefreshInterval, {
-        error: `Refresh interval must be one of ${refreshIntervalValues}`
-      }).optional(),
-      uniqueByProps: z.boolean().optional()
-    })
+      refreshInterval: z
+        .enum(LeaderboardRefreshInterval, {
+          error: `Refresh interval must be one of ${refreshIntervalValues}`,
+        })
+        .optional(),
+      uniqueByProps: z.boolean().optional(),
+    }),
   }),
   middleware: withMiddleware(
     userTypeGate([UserType.ADMIN, UserType.DEV], 'create leaderboards'),
-    loadGame
+    loadGame,
   ),
   handler: async (ctx) => {
-    const { internalName, name, sortMode, unique, refreshInterval, uniqueByProps } = ctx.state.validated.body
+    const { internalName, name, sortMode, unique, refreshInterval, uniqueByProps } =
+      ctx.state.validated.body
 
     return createLeaderboardHandler({
       em: ctx.em,
@@ -111,7 +117,7 @@ export const createRoute = protectedRoute({
       sortMode,
       unique,
       refreshInterval,
-      uniqueByProps
+      uniqueByProps,
     })
-  }
+  },
 })

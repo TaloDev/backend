@@ -1,16 +1,16 @@
 import { FilterQuery } from '@mikro-orm/mysql'
-import { apiRoute, withMiddleware } from '../../../lib/routing/router'
-import { requireScopes } from '../../../middleware/policy-middleware'
 import { APIKeyScope } from '../../../entities/api-key'
-import { loadAlias } from '../../../middleware/player-alias-middleware'
-import { loadChannel } from './common'
-import PlayerAlias from '../../../entities/player-alias'
 import Player from '../../../entities/player'
+import PlayerAlias from '../../../entities/player-alias'
 import { DEFAULT_PAGE_SIZE } from '../../../lib/pagination/itemsPerPage'
-import { membersDocs } from './docs'
-import { playerAliasHeaderSchema } from '../../../lib/validation/playerAliasHeaderSchema'
-import { pageSchema } from '../../../lib/validation/pageSchema'
+import { apiRoute, withMiddleware } from '../../../lib/routing/router'
 import { numericStringSchema } from '../../../lib/validation/numericStringSchema'
+import { pageSchema } from '../../../lib/validation/pageSchema'
+import { playerAliasHeaderSchema } from '../../../lib/validation/playerAliasHeaderSchema'
+import { loadAlias } from '../../../middleware/player-alias-middleware'
+import { requireScopes } from '../../../middleware/policy-middleware'
+import { loadChannel } from './common'
+import { membersDocs } from './docs'
 
 export const membersRoute = apiRoute({
   method: 'get',
@@ -18,37 +18,41 @@ export const membersRoute = apiRoute({
   docs: membersDocs,
   schema: (z) => ({
     route: z.object({
-      id: numericStringSchema.meta({ description: 'The ID of the channel' })
+      id: numericStringSchema.meta({ description: 'The ID of the channel' }),
     }),
     headers: z.looseObject({
-      'x-talo-alias': playerAliasHeaderSchema
+      'x-talo-alias': playerAliasHeaderSchema,
     }),
     query: z.object({
       page: pageSchema.meta({ description: 'The current pagination index (starting at 0)' }),
       playerId: z.uuid().optional().meta({ description: 'Filter members by this player ID' }),
-      aliasId: numericStringSchema.optional().meta({ description: 'Find a member with this player alias ID' }),
+      aliasId: numericStringSchema
+        .optional()
+        .meta({ description: 'Find a member with this player alias ID' }),
       identifier: z.string().optional().meta({ description: 'Find a member with this identifier' }),
-      playerPropKey: z.string().optional().meta({ description: 'Filter members by players with this prop key' }),
-      playerPropValue: z.string().optional().meta({ description: 'Filter members by players with matching prop keys and values' }),
-      playerGroupId: z.uuid().optional().meta({ description: 'Filter members by players in this group' })
-    })
+      playerPropKey: z
+        .string()
+        .optional()
+        .meta({ description: 'Filter members by players with this prop key' }),
+      playerPropValue: z
+        .string()
+        .optional()
+        .meta({ description: 'Filter members by players with matching prop keys and values' }),
+      playerGroupId: z
+        .uuid()
+        .optional()
+        .meta({ description: 'Filter members by players in this group' }),
+    }),
   }),
   middleware: withMiddleware(
     requireScopes([APIKeyScope.READ_GAME_CHANNELS]),
     loadAlias,
-    loadChannel
+    loadChannel,
   ),
   handler: async (ctx) => {
     const itemsPerPage = DEFAULT_PAGE_SIZE
-    const {
-      page,
-      playerId,
-      aliasId,
-      identifier,
-      playerPropKey,
-      playerPropValue,
-      playerGroupId
-    } = ctx.state.validated.query
+    const { page, playerId, aliasId, identifier, playerPropKey, playerPropValue, playerGroupId } =
+      ctx.state.validated.query
     const em = ctx.em
 
     const channel = ctx.state.channel
@@ -68,29 +72,29 @@ export const membersRoute = apiRoute({
         playerFilter.props = {
           $some: {
             key: playerPropKey,
-            value: playerPropValue
-          }
+            value: playerPropValue,
+          },
         }
       } else {
         playerFilter.props = {
           $some: {
-            key: playerPropKey
-          }
+            key: playerPropKey,
+          },
         }
       }
     }
 
     if (playerGroupId) {
       playerFilter.groups = {
-        $some: playerGroupId
+        $some: playerGroupId,
       }
     }
 
     const where: FilterQuery<PlayerAlias> = {
       channels: {
-        $some: channel
+        $some: channel,
       },
-      player: playerFilter
+      player: playerFilter,
     }
 
     if (aliasId) {
@@ -102,7 +106,7 @@ export const membersRoute = apiRoute({
 
     const [members, count] = await em.repo(PlayerAlias).findAndCount(where, {
       limit: itemsPerPage + 1,
-      offset: page * itemsPerPage
+      offset: page * itemsPerPage,
     })
 
     return {
@@ -111,8 +115,8 @@ export const membersRoute = apiRoute({
         members: members.slice(0, itemsPerPage),
         count,
         itemsPerPage,
-        isLastPage: members.length <= itemsPerPage
-      }
+        isLastPage: members.length <= itemsPerPage,
+      },
     }
-  }
+  },
 })

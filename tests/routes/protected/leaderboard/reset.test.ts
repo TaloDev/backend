@@ -1,58 +1,61 @@
+import assert from 'node:assert'
 import request from 'supertest'
+import GameActivity, { GameActivityType } from '../../../../src/entities/game-activity'
+import Leaderboard from '../../../../src/entities/leaderboard'
+import LeaderboardEntry from '../../../../src/entities/leaderboard-entry'
+import Player from '../../../../src/entities/player'
 import { UserType } from '../../../../src/entities/user'
+import LeaderboardEntryFactory from '../../../fixtures/LeaderboardEntryFactory'
 import LeaderboardFactory from '../../../fixtures/LeaderboardFactory'
 import PlayerFactory from '../../../fixtures/PlayerFactory'
-import LeaderboardEntryFactory from '../../../fixtures/LeaderboardEntryFactory'
-import GameActivity, { GameActivityType } from '../../../../src/entities/game-activity'
-import LeaderboardEntry from '../../../../src/entities/leaderboard-entry'
-import Leaderboard from '../../../../src/entities/leaderboard'
-import Player from '../../../../src/entities/player'
-import userPermissionProvider from '../../../utils/userPermissionProvider'
-import createUserAndToken from '../../../utils/createUserAndToken'
 import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
-import assert from 'node:assert'
+import createUserAndToken from '../../../utils/createUserAndToken'
+import userPermissionProvider from '../../../utils/userPermissionProvider'
 
 describe('Leaderboard - reset', () => {
-  it.each(userPermissionProvider([
-    UserType.ADMIN
-  ], 200))('should return a %i for a %s user', async (statusCode, _, type) => {
-    const [organisation, game] = await createOrganisationAndGame()
-    const [token] = await createUserAndToken({ type }, organisation)
+  it.each(userPermissionProvider([UserType.ADMIN], 200))(
+    'should return a %i for a %s user',
+    async (statusCode, _, type) => {
+      const [organisation, game] = await createOrganisationAndGame()
+      const [token] = await createUserAndToken({ type }, organisation)
 
-    const leaderboard = await new LeaderboardFactory([game]).one()
+      const leaderboard = await new LeaderboardFactory([game]).one()
 
-    const devPlayers = await new PlayerFactory([game]).devBuild().many(3)
-    const livePlayers = await new PlayerFactory([game]).many(3)
-    const allPlayers = [...devPlayers, ...livePlayers]
+      const devPlayers = await new PlayerFactory([game]).devBuild().many(3)
+      const livePlayers = await new PlayerFactory([game]).many(3)
+      const allPlayers = [...devPlayers, ...livePlayers]
 
-    const entries = await new LeaderboardEntryFactory(leaderboard, allPlayers).many(6)
-    await em.persistAndFlush(entries)
+      const entries = await new LeaderboardEntryFactory(leaderboard, allPlayers).many(6)
+      await em.persistAndFlush(entries)
 
-    const res = await request(app)
-      .delete(`/games/${game.id}/leaderboards/${leaderboard.id}/entries`)
-      .auth(token, { type: 'bearer' })
-      .expect(statusCode)
+      const res = await request(app)
+        .delete(`/games/${game.id}/leaderboards/${leaderboard.id}/entries`)
+        .auth(token, { type: 'bearer' })
+        .expect(statusCode)
 
-    const activity = await em.repo(GameActivity).findOne({
-      type: GameActivityType.LEADERBOARD_ENTRIES_RESET,
-      game
-    })
+      const activity = await em.repo(GameActivity).findOne({
+        type: GameActivityType.LEADERBOARD_ENTRIES_RESET,
+        game,
+      })
 
-    if (statusCode === 200) {
-      expect(res.body.deletedCount).toBe(6)
+      if (statusCode === 200) {
+        expect(res.body.deletedCount).toBe(6)
 
-      const entries = await em.repo(LeaderboardEntry).find({ leaderboard })
-      expect(entries).toHaveLength(0)
+        const entries = await em.repo(LeaderboardEntry).find({ leaderboard })
+        expect(entries).toHaveLength(0)
 
-      assert(activity?.extra.display)
-      expect(activity.extra.leaderboardInternalName).toBe(leaderboard.internalName)
-      expect(activity.extra.display['Reset mode']).toBe('All players')
-      expect(activity.extra.display['Deleted count']).toBe(6)
-    } else {
-      expect(res.body).toStrictEqual({ message: 'You do not have permissions to reset leaderboard entries' })
-      expect(activity).toBeNull()
-    }
-  })
+        assert(activity?.extra.display)
+        expect(activity.extra.leaderboardInternalName).toBe(leaderboard.internalName)
+        expect(activity.extra.display['Reset mode']).toBe('All players')
+        expect(activity.extra.display['Deleted count']).toBe(6)
+      } else {
+        expect(res.body).toStrictEqual({
+          message: 'You do not have permissions to reset leaderboard entries',
+        })
+        expect(activity).toBeNull()
+      }
+    },
+  )
 
   it('should reset all entries when mode is "all"', async () => {
     const [organisation, game] = await createOrganisationAndGame()
@@ -101,11 +104,14 @@ describe('Leaderboard - reset', () => {
 
     expect(res.body.deletedCount).toBe(2)
 
-    const remainingEntries = await em.repo(LeaderboardEntry).find({
-      leaderboard
-    }, {
-      populate: ['playerAlias.player']
-    })
+    const remainingEntries = await em.repo(LeaderboardEntry).find(
+      {
+        leaderboard,
+      },
+      {
+        populate: ['playerAlias.player'],
+      },
+    )
     expect(remainingEntries).toHaveLength(3)
     expect(remainingEntries.every((entry) => !entry.playerAlias.player.devBuild)).toBe(true)
   })
@@ -132,11 +138,14 @@ describe('Leaderboard - reset', () => {
 
     expect(res.body.deletedCount).toBe(3)
 
-    const remainingEntries = await em.repo(LeaderboardEntry).find({
-      leaderboard
-    }, {
-      populate: ['playerAlias.player']
-    })
+    const remainingEntries = await em.repo(LeaderboardEntry).find(
+      {
+        leaderboard,
+      },
+      {
+        populate: ['playerAlias.player'],
+      },
+    )
     expect(remainingEntries).toHaveLength(2)
     expect(remainingEntries.every((entry) => entry.playerAlias.player.devBuild)).toBe(true)
   })
@@ -183,7 +192,7 @@ describe('Leaderboard - reset', () => {
     const activity = await em.repo(GameActivity).findOne({
       type: GameActivityType.LEADERBOARD_ENTRIES_RESET,
       game,
-      user
+      user,
     })
 
     expect(activity).not.toBeNull()
@@ -191,8 +200,8 @@ describe('Leaderboard - reset', () => {
       leaderboardInternalName: leaderboard.internalName,
       display: {
         'Reset mode': 'Dev players',
-        'Deleted count': expect.any(Number)
-      }
+        'Deleted count': expect.any(Number),
+      },
     })
   })
 
@@ -244,8 +253,8 @@ describe('Leaderboard - reset', () => {
 
     expect(res.body).toStrictEqual({
       errors: {
-        mode: ['Mode must be one of: all, live, dev']
-      }
+        mode: ['Mode must be one of: all, live, dev'],
+      },
     })
   })
 

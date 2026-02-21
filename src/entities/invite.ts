@@ -33,7 +33,7 @@ export default class Invite {
     const characters = 'ABCDEFGHIJKMNOPQRSTUVWXYZ0123456789'
     let token = ''
 
-    for (let i = 0; i < 10; i++ ) {
+    for (let i = 0; i < 10; i++) {
       token += characters.charAt(Math.floor(Math.random() * characters.length))
     }
 
@@ -47,7 +47,7 @@ export default class Invite {
       organisation: this.organisation,
       type: this.type,
       invitedBy: this.invitedByUser.username,
-      createdAt: this.createdAt
+      createdAt: this.createdAt,
     }
   }
 }

@@ -1,9 +1,9 @@
+import { addDays, sub } from 'date-fns'
 import request from 'supertest'
 import EventFactory from '../../../fixtures/EventFactory'
 import PlayerFactory from '../../../fixtures/PlayerFactory'
-import { addDays, sub } from 'date-fns'
-import createUserAndToken from '../../../utils/createUserAndToken'
 import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
+import createUserAndToken from '../../../utils/createUserAndToken'
 
 describe('Event - breakdown', () => {
   it('should return a breakdown of an event', async () => {
@@ -13,25 +13,27 @@ describe('Event - breakdown', () => {
     const player = await new PlayerFactory([game]).one()
     const now = new Date('2021-01-01')
 
-    const events = await new EventFactory([player]).state((event, idx) => ({
-      name: 'Pickup item',
-      createdAt: addDays(now, idx),
-      props: [
-        { key: 'itemId', value: idx.toString() },
-        { key: 'inventorySize', value: '16' }
-      ]
-    })).many(2)
+    const events = await new EventFactory([player])
+      .state((event, idx) => ({
+        name: 'Pickup item',
+        createdAt: addDays(now, idx),
+        props: [
+          { key: 'itemId', value: idx.toString() },
+          { key: 'inventorySize', value: '16' },
+        ],
+      }))
+      .many(2)
 
     await em.persistAndFlush(player)
     await clickhouse.insert({
       table: 'events',
       values: events.map((event) => event.toInsertable()),
-      format: 'JSONEachRow'
+      format: 'JSONEachRow',
     })
     await clickhouse.insert({
       table: 'event_props',
       values: events.flatMap((event) => event.getInsertableProps()),
-      format: 'JSONEachRow'
+      format: 'JSONEachRow',
     })
 
     const res = await request(app)
@@ -48,7 +50,7 @@ describe('Event - breakdown', () => {
       name: '[itemId = 0]',
       date: now.getTime(),
       count: 1,
-      change: 1
+      change: 1,
     })
 
     // itemId = 1 should have 3 entries (Jan 1-3), with the event on Jan 2
@@ -57,7 +59,7 @@ describe('Event - breakdown', () => {
       name: '[itemId = 1]',
       date: addDays(now, 1).getTime(),
       count: 1,
-      change: 1
+      change: 1,
     })
 
     // inventorySize = 16 should have 3 entries (Jan 1-3), with events on Jan 1 and Jan 2
@@ -66,14 +68,14 @@ describe('Event - breakdown', () => {
       name: '[inventorySize = 16]',
       date: now.getTime(),
       count: 1,
-      change: 1
+      change: 1,
     })
 
     expect(res.body.events['[inventorySize = 16]'][1]).toEqual({
       name: '[inventorySize = 16]',
       date: addDays(now, 1).getTime(),
       count: 1,
-      change: 0
+      change: 0,
     })
   })
 
@@ -85,55 +87,50 @@ describe('Event - breakdown', () => {
     const now = new Date('2021-01-01')
 
     const eventFactory = new EventFactory([player])
-    const firstEvent = await eventFactory.state(() => ({
-      name: 'Pickup item',
-      createdAt: now,
-      props: [
-        { key: 'itemId', value: '1' }
-      ]
-    })).one()
+    const firstEvent = await eventFactory
+      .state(() => ({
+        name: 'Pickup item',
+        createdAt: now,
+        props: [{ key: 'itemId', value: '1' }],
+      }))
+      .one()
 
-    const moreEvents = await eventFactory.state(() => ({
-      name: 'Pickup item',
-      createdAt: addDays(now, 1),
-      props: [
-        { key: 'itemId', value: '1' }
-      ]
-    })).many(2)
+    const moreEvents = await eventFactory
+      .state(() => ({
+        name: 'Pickup item',
+        createdAt: addDays(now, 1),
+        props: [{ key: 'itemId', value: '1' }],
+      }))
+      .many(2)
 
-    const evenMoreEvents = await eventFactory.state(() => ({
-      name: 'Pickup item',
-      createdAt: addDays(now, 2),
-      props: [
-        { key: 'itemId', value: '1' }
-      ]
-    })).many(3)
+    const evenMoreEvents = await eventFactory
+      .state(() => ({
+        name: 'Pickup item',
+        createdAt: addDays(now, 2),
+        props: [{ key: 'itemId', value: '1' }],
+      }))
+      .many(3)
 
-    const lastEvent = await eventFactory.state(() => ({
-      name: 'Pickup item',
-      createdAt: addDays(now, 3),
-      props: [
-        { key: 'itemId', value: '1' }
-      ]
-    })).one()
+    const lastEvent = await eventFactory
+      .state(() => ({
+        name: 'Pickup item',
+        createdAt: addDays(now, 3),
+        props: [{ key: 'itemId', value: '1' }],
+      }))
+      .one()
 
-    const events = [
-      firstEvent,
-      ...moreEvents,
-      ...evenMoreEvents,
-      lastEvent
-    ]
+    const events = [firstEvent, ...moreEvents, ...evenMoreEvents, lastEvent]
 
     await em.persistAndFlush(player)
     await clickhouse.insert({
       table: 'events',
       values: events.map((event) => event.toInsertable()),
-      format: 'JSONEachRow'
+      format: 'JSONEachRow',
     })
     await clickhouse.insert({
       table: 'event_props',
       values: events.flatMap((event) => event.getInsertableProps()),
-      format: 'JSONEachRow'
+      format: 'JSONEachRow',
     })
 
     const res = await request(app)
@@ -176,29 +173,33 @@ describe('Event - breakdown', () => {
     const [token] = await createUserAndToken({}, organisation)
 
     const player = await new PlayerFactory([game]).one()
-    const events = await new EventFactory([player]).state(() => ({
-      name: 'Pickup item',
-      createdAt: new Date(),
-      props: [
-        { key: 'itemId', value: '1' }
-      ]
-    })).many(3)
+    const events = await new EventFactory([player])
+      .state(() => ({
+        name: 'Pickup item',
+        createdAt: new Date(),
+        props: [{ key: 'itemId', value: '1' }],
+      }))
+      .many(3)
     await em.persistAndFlush(player)
 
     await clickhouse.insert({
       table: 'events',
       values: events.map((event) => event.toInsertable()),
-      format: 'JSONEachRow'
+      format: 'JSONEachRow',
     })
     await clickhouse.insert({
       table: 'event_props',
       values: events.flatMap((event) => event.getInsertableProps()),
-      format: 'JSONEachRow'
+      format: 'JSONEachRow',
     })
 
     const res = await request(app)
       .get(`/games/${game.id}/events/breakdown`)
-      .query({ eventName: 'Pickup item', startDate: sub(new Date(), { days: 1 }), endDate: new Date() })
+      .query({
+        eventName: 'Pickup item',
+        startDate: sub(new Date(), { days: 1 }),
+        endDate: new Date(),
+      })
       .auth(token, { type: 'bearer' })
       .expect(200)
 
@@ -215,29 +216,33 @@ describe('Event - breakdown', () => {
     const [token] = await createUserAndToken({}, organisation)
 
     const player = await new PlayerFactory([game]).devBuild().one()
-    const events = await new EventFactory([player]).state(() => ({
-      name: 'Pickup item',
-      createdAt: new Date(),
-      props: [
-        { key: 'itemId', value: '1' }
-      ]
-    })).many(3)
+    const events = await new EventFactory([player])
+      .state(() => ({
+        name: 'Pickup item',
+        createdAt: new Date(),
+        props: [{ key: 'itemId', value: '1' }],
+      }))
+      .many(3)
     await em.persistAndFlush(player)
 
     await clickhouse.insert({
       table: 'events',
       values: events.map((event) => event.toInsertable()),
-      format: 'JSONEachRow'
+      format: 'JSONEachRow',
     })
     await clickhouse.insert({
       table: 'event_props',
       values: events.flatMap((event) => event.getInsertableProps()),
-      format: 'JSONEachRow'
+      format: 'JSONEachRow',
     })
 
     const res = await request(app)
       .get(`/games/${game.id}/events/breakdown`)
-      .query({ eventName: 'Pickup item', startDate: sub(new Date(), { days: 1 }), endDate: new Date() })
+      .query({
+        eventName: 'Pickup item',
+        startDate: sub(new Date(), { days: 1 }),
+        endDate: new Date(),
+      })
       .auth(token, { type: 'bearer' })
       .expect(200)
 
@@ -249,29 +254,33 @@ describe('Event - breakdown', () => {
     const [token] = await createUserAndToken({}, organisation)
 
     const player = await new PlayerFactory([game]).devBuild().one()
-    const events = await new EventFactory([player]).state(() => ({
-      name: 'Pickup item',
-      createdAt: new Date(),
-      props: [
-        { key: 'itemId', value: '1' }
-      ]
-    })).many(3)
+    const events = await new EventFactory([player])
+      .state(() => ({
+        name: 'Pickup item',
+        createdAt: new Date(),
+        props: [{ key: 'itemId', value: '1' }],
+      }))
+      .many(3)
     await em.persistAndFlush(player)
 
     await clickhouse.insert({
       table: 'events',
       values: events.map((event) => event.toInsertable()),
-      format: 'JSONEachRow'
+      format: 'JSONEachRow',
     })
     await clickhouse.insert({
       table: 'event_props',
       values: events.flatMap((event) => event.getInsertableProps()),
-      format: 'JSONEachRow'
+      format: 'JSONEachRow',
     })
 
     const res = await request(app)
       .get(`/games/${game.id}/events/breakdown`)
-      .query({ eventName: 'Pickup item', startDate: sub(new Date(), { days: 1 }), endDate: new Date() })
+      .query({
+        eventName: 'Pickup item',
+        startDate: sub(new Date(), { days: 1 }),
+        endDate: new Date(),
+      })
       .auth(token, { type: 'bearer' })
       .set('x-talo-include-dev-data', '1')
       .expect(200)
@@ -291,24 +300,24 @@ describe('Event - breakdown', () => {
     const player = await new PlayerFactory([game]).one()
     const now = new Date('2021-01-01')
 
-    const events = await new EventFactory([player]).state((event, idx) => ({
-      name: 'Pickup item',
-      createdAt: addDays(now, idx),
-      props: [
-        { key: 'META_SCREEN_WIDTH', value: '1920' }
-      ]
-    })).many(2)
+    const events = await new EventFactory([player])
+      .state((event, idx) => ({
+        name: 'Pickup item',
+        createdAt: addDays(now, idx),
+        props: [{ key: 'META_SCREEN_WIDTH', value: '1920' }],
+      }))
+      .many(2)
 
     await em.persistAndFlush(player)
     await clickhouse.insert({
       table: 'events',
       values: events.map((event) => event.toInsertable()),
-      format: 'JSONEachRow'
+      format: 'JSONEachRow',
     })
     await clickhouse.insert({
       table: 'event_props',
       values: events.flatMap((event) => event.getInsertableProps()),
-      format: 'JSONEachRow'
+      format: 'JSONEachRow',
     })
 
     const res = await request(app)
@@ -328,32 +337,32 @@ describe('Event - breakdown', () => {
     const now = new Date('2021-01-01')
 
     // create events only on Jan 1st and Jan 4th, leaving Jan 2nd and 3rd empty
-    const events = await new EventFactory([player]).state(() => ({
-      name: 'Pickup item',
-      createdAt: now,
-      props: [
-        { key: 'itemId', value: '5' }
-      ]
-    })).many(2)
+    const events = await new EventFactory([player])
+      .state(() => ({
+        name: 'Pickup item',
+        createdAt: now,
+        props: [{ key: 'itemId', value: '5' }],
+      }))
+      .many(2)
 
-    const moreEvents = await new EventFactory([player]).state(() => ({
-      name: 'Pickup item',
-      createdAt: addDays(now, 3),
-      props: [
-        { key: 'itemId', value: '5' }
-      ]
-    })).many(3)
+    const moreEvents = await new EventFactory([player])
+      .state(() => ({
+        name: 'Pickup item',
+        createdAt: addDays(now, 3),
+        props: [{ key: 'itemId', value: '5' }],
+      }))
+      .many(3)
 
     await em.persistAndFlush(player)
     await clickhouse.insert({
       table: 'events',
       values: [...events, ...moreEvents].map((event) => event.toInsertable()),
-      format: 'JSONEachRow'
+      format: 'JSONEachRow',
     })
     await clickhouse.insert({
       table: 'event_props',
       values: [...events, ...moreEvents].flatMap((event) => event.getInsertableProps()),
-      format: 'JSONEachRow'
+      format: 'JSONEachRow',
     })
 
     const res = await request(app)
@@ -370,7 +379,7 @@ describe('Event - breakdown', () => {
       name: '[itemId = 5]',
       date: now.getTime(),
       count: 2,
-      change: 2 // when previous is 0 and count is not 0, change is count
+      change: 2, // when previous is 0 and count is not 0, change is count
     })
 
     // Jan 2nd should have 0 events
@@ -378,7 +387,7 @@ describe('Event - breakdown', () => {
       name: '[itemId = 5]',
       date: addDays(now, 1).getTime(),
       count: 0,
-      change: -1
+      change: -1,
     })
 
     // Jan 3rd should have 0 events
@@ -386,7 +395,7 @@ describe('Event - breakdown', () => {
       name: '[itemId = 5]',
       date: addDays(now, 2).getTime(),
       count: 0,
-      change: 0
+      change: 0,
     })
 
     // Jan 4th should have 3 events
@@ -394,7 +403,7 @@ describe('Event - breakdown', () => {
       name: '[itemId = 5]',
       date: addDays(now, 3).getTime(),
       count: 3,
-      change: 3 // when previous is 0 and count is not 0, change is count
+      change: 3, // when previous is 0 and count is not 0, change is count
     })
   })
 })

@@ -1,4 +1,13 @@
-import { Collection, Entity, Enum, ManyToOne, OneToMany, OneToOne, PrimaryKey, Property } from '@mikro-orm/mysql'
+import {
+  Collection,
+  Entity,
+  Enum,
+  ManyToOne,
+  OneToMany,
+  OneToOne,
+  PrimaryKey,
+  Property,
+} from '@mikro-orm/mysql'
 import Organisation from './organisation'
 import UserRecoveryCode from './user-recovery-code'
 import UserTwoFactorAuth from './user-two-factor-auth'
@@ -7,7 +16,7 @@ export enum UserType {
   OWNER,
   ADMIN,
   DEV,
-  DEMO
+  DEMO,
 }
 
 @Entity()
@@ -58,7 +67,7 @@ export default class User {
       organisation: this.organisation,
       type: this.type,
       has2fa: this.twoFactorAuth?.enabled ?? false,
-      createdAt: this.createdAt
+      createdAt: this.createdAt,
     }
   }
 }

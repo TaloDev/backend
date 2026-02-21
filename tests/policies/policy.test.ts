@@ -1,7 +1,7 @@
-import { APIKeyScope } from '../../src/entities/api-key'
 import request from 'supertest'
-import createAPIKeyAndToken from '../utils/createAPIKeyAndToken'
+import { APIKeyScope } from '../../src/entities/api-key'
 import PlayerFactory from '../fixtures/PlayerFactory'
+import createAPIKeyAndToken from '../utils/createAPIKeyAndToken'
 
 describe('Policy base class', () => {
   it('should reject a revoked api key', async () => {
@@ -18,10 +18,7 @@ describe('Policy base class', () => {
 
   it('should correctly verify having a scope when the key has full access', async () => {
     const [, token] = await createAPIKeyAndToken([APIKeyScope.FULL_ACCESS])
-    await request(app)
-      .get('/v1/game-config')
-      .auth(token, { type: 'bearer' })
-      .expect(200)
+    await request(app).get('/v1/game-config').auth(token, { type: 'bearer' }).expect(200)
   })
 
   it('should correctly verify having all scopes when the key has full access', async () => {
@@ -51,6 +48,8 @@ describe('Policy base class', () => {
       .auth(token, { type: 'bearer' })
       .expect(403)
 
-    expect(res.body).toStrictEqual({ message: 'Missing access key scope(s): read:players, write:players' })
+    expect(res.body).toStrictEqual({
+      message: 'Missing access key scope(s): read:players, write:players',
+    })
   })
 })

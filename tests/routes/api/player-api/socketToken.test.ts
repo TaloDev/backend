@@ -54,8 +54,8 @@ describe('Player API - socket token', () => {
 
     expect(res.body).toStrictEqual({
       errors: {
-        'x-talo-alias': ['x-talo-alias is missing from the request headers']
-      }
+        'x-talo-alias': ['x-talo-alias is missing from the request headers'],
+      },
     })
   })
 

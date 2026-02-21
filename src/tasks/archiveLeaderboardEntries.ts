@@ -1,19 +1,19 @@
-import { LeaderboardRefreshInterval } from '../entities/leaderboard'
 import { EntityManager } from '@mikro-orm/mysql'
-import Leaderboard from '../entities/leaderboard'
-import { getMikroORM } from '../config/mikro-orm.config'
-import LeaderboardEntry from '../entities/leaderboard-entry'
 import { isToday, isThisWeek, isThisMonth, isThisYear } from 'date-fns'
-import triggerIntegrations from '../lib/integrations/triggerIntegrations'
-import { streamByCursor } from '../lib/perf/streamByCursor'
-import { deferClearResponseCache } from '../lib/perf/responseCacheQueue'
 import assert from 'node:assert'
+import { getMikroORM } from '../config/mikro-orm.config'
+import { LeaderboardRefreshInterval } from '../entities/leaderboard'
+import Leaderboard from '../entities/leaderboard'
+import LeaderboardEntry from '../entities/leaderboard-entry'
+import triggerIntegrations from '../lib/integrations/triggerIntegrations'
+import { deferClearResponseCache } from '../lib/perf/responseCacheQueue'
+import { streamByCursor } from '../lib/perf/streamByCursor'
 
 export async function archiveEntriesForLeaderboard(em: EntityManager, leaderboard: Leaderboard) {
   // this should never happen, but it enforces correct typing for refreshCheckers
   assert(
     leaderboard.refreshInterval !== LeaderboardRefreshInterval.NEVER,
-    `Leaderboard ${leaderboard.id} has a NEVER refresh interval, skipping...`
+    `Leaderboard ${leaderboard.id} has a NEVER refresh interval, skipping...`,
   )
 
   /* v8 ignore start */
@@ -26,20 +26,23 @@ export async function archiveEntriesForLeaderboard(em: EntityManager, leaderboar
     [LeaderboardRefreshInterval.DAILY]: (date: Date) => isToday(date),
     [LeaderboardRefreshInterval.WEEKLY]: (date: Date) => isThisWeek(date, { weekStartsOn: 1 }),
     [LeaderboardRefreshInterval.MONTHLY]: (date: Date) => isThisMonth(date),
-    [LeaderboardRefreshInterval.YEARLY]: (date: Date) => isThisYear(date)
+    [LeaderboardRefreshInterval.YEARLY]: (date: Date) => isThisYear(date),
   }
 
   const shouldKeepEntry = refreshCheckers[leaderboard.refreshInterval]
 
   const entryStream = streamByCursor<LeaderboardEntry>(async (batchSize, after) => {
-    return em.repo(LeaderboardEntry).findByCursor({
-      leaderboard,
-      deletedAt: null
-    }, {
-      first: batchSize,
-      after,
-      orderBy: { id: 'asc' }
-    })
+    return em.repo(LeaderboardEntry).findByCursor(
+      {
+        leaderboard,
+        deletedAt: null,
+      },
+      {
+        first: batchSize,
+        after,
+        orderBy: { id: 'asc' },
+      },
+    )
   }, 100)
 
   for await (const entry of entryStream) {
@@ -63,7 +66,7 @@ export default async function archiveLeaderboardEntries() {
   const em = orm.em.fork()
 
   const leaderboards = await em.getRepository(Leaderboard).find({
-    refreshInterval: { $ne: LeaderboardRefreshInterval.NEVER }
+    refreshInterval: { $ne: LeaderboardRefreshInterval.NEVER },
   })
 
   for (const leaderboard of leaderboards) {

@@ -1,11 +1,11 @@
-import { apiRoute, withMiddleware } from '../../../lib/routing/router'
-import { requireScopes } from '../../../middleware/policy-middleware'
 import { APIKeyScope } from '../../../entities/api-key'
+import { apiRoute, withMiddleware } from '../../../lib/routing/router'
+import { numericStringSchema } from '../../../lib/validation/numericStringSchema'
+import { playerAliasHeaderSchema } from '../../../lib/validation/playerAliasHeaderSchema'
 import { loadAlias } from '../../../middleware/player-alias-middleware'
+import { requireScopes } from '../../../middleware/policy-middleware'
 import { loadChannel, joinChannel } from './common'
 import { joinDocs } from './docs'
-import { playerAliasHeaderSchema } from '../../../lib/validation/playerAliasHeaderSchema'
-import { numericStringSchema } from '../../../lib/validation/numericStringSchema'
 
 export const joinRoute = apiRoute({
   method: 'post',
@@ -13,16 +13,16 @@ export const joinRoute = apiRoute({
   docs: joinDocs,
   schema: (z) => ({
     route: z.object({
-      id: numericStringSchema.meta({ description: 'The ID of the channel' })
+      id: numericStringSchema.meta({ description: 'The ID of the channel' }),
     }),
     headers: z.looseObject({
-      'x-talo-alias': playerAliasHeaderSchema
-    })
+      'x-talo-alias': playerAliasHeaderSchema,
+    }),
   }),
   middleware: withMiddleware(
     requireScopes([APIKeyScope.WRITE_GAME_CHANNELS]),
     loadAlias,
-    loadChannel
+    loadChannel,
   ),
   handler: async (ctx) => {
     const channel = ctx.state.channel
@@ -36,8 +36,8 @@ export const joinRoute = apiRoute({
     return {
       status: 200,
       body: {
-        channel: await channel.toJSONWithCount(ctx.state.includeDevData)
-      }
+        channel: await channel.toJSONWithCount(ctx.state.includeDevData),
+      },
     }
-  }
+  },
 })

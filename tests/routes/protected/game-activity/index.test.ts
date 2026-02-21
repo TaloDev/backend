@@ -1,37 +1,39 @@
 import request from 'supertest'
 import { UserType } from '../../../../src/entities/user'
-import UserFactory from '../../../fixtures/UserFactory'
-import GameActivityFactory from '../../../fixtures/GameActivityFactory'
-import createUserAndToken from '../../../utils/createUserAndToken'
-import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
-import userPermissionProvider from '../../../utils/userPermissionProvider'
 import { DEFAULT_PAGE_SIZE } from '../../../../src/lib/pagination/itemsPerPage'
+import GameActivityFactory from '../../../fixtures/GameActivityFactory'
+import UserFactory from '../../../fixtures/UserFactory'
+import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
+import createUserAndToken from '../../../utils/createUserAndToken'
+import userPermissionProvider from '../../../utils/userPermissionProvider'
 
 describe('Game activity - index', () => {
-  it.each(userPermissionProvider([
-    UserType.ADMIN,
-    UserType.DEMO
-  ]))('should return a %i for a %s user', async (statusCode, _, type) => {
-    const [organisation, game] = await createOrganisationAndGame()
-    const [token, user] = await createUserAndToken({ type }, organisation)
+  it.each(userPermissionProvider([UserType.ADMIN, UserType.DEMO]))(
+    'should return a %i for a %s user',
+    async (statusCode, _, type) => {
+      const [organisation, game] = await createOrganisationAndGame()
+      const [token, user] = await createUserAndToken({ type }, organisation)
 
-    const activities = await new GameActivityFactory([game], [user]).many(5)
-    await em.persistAndFlush([user, game, ...activities])
+      const activities = await new GameActivityFactory([game], [user]).many(5)
+      await em.persistAndFlush([user, game, ...activities])
 
-    const res = await request(app)
-      .get(`/games/${game.id}/game-activities`)
-      .auth(token, { type: 'bearer' })
-      .expect(statusCode)
+      const res = await request(app)
+        .get(`/games/${game.id}/game-activities`)
+        .auth(token, { type: 'bearer' })
+        .expect(statusCode)
 
-    if (statusCode === 200) {
-      expect(res.body.activities).toHaveLength(activities.length)
-      expect(res.body.count).toBe(activities.length)
-      expect(res.body.itemsPerPage).toBe(DEFAULT_PAGE_SIZE)
-      expect(res.body.isLastPage).toBe(true)
-    } else {
-      expect(res.body).toStrictEqual({ message: 'You do not have permissions to view game activities' })
-    }
-  })
+      if (statusCode === 200) {
+        expect(res.body.activities).toHaveLength(activities.length)
+        expect(res.body.count).toBe(activities.length)
+        expect(res.body.itemsPerPage).toBe(DEFAULT_PAGE_SIZE)
+        expect(res.body.isLastPage).toBe(true)
+      } else {
+        expect(res.body).toStrictEqual({
+          message: 'You do not have permissions to view game activities',
+        })
+      }
+    },
+  )
 
   it('should return game activities with no games but from the same organisation', async () => {
     const [organisation, game] = await createOrganisationAndGame()

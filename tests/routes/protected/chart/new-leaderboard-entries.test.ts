@@ -1,7 +1,7 @@
-import request from 'supertest'
 import { subDays, format, startOfDay } from 'date-fns'
-import LeaderboardFactory from '../../../fixtures/LeaderboardFactory'
+import request from 'supertest'
 import LeaderboardEntryFactory from '../../../fixtures/LeaderboardEntryFactory'
+import LeaderboardFactory from '../../../fixtures/LeaderboardFactory'
 import PlayerFactory from '../../../fixtures/PlayerFactory'
 import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
 import createUserAndToken from '../../../utils/createUserAndToken'
@@ -11,7 +11,9 @@ describe('Chart - new leaderboard entries', () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({ organisation })
 
-    const leaderboard = await new LeaderboardFactory([game]).state(() => ({ internalName: 'high-scores' })).one()
+    const leaderboard = await new LeaderboardFactory([game])
+      .state(() => ({ internalName: 'high-scores' }))
+      .one()
     const player = await new PlayerFactory([game]).one()
     await em.persist([leaderboard, player]).flush()
     await player.aliases.loadItems()
@@ -22,11 +24,17 @@ describe('Chart - new leaderboard entries', () => {
 
     const entries = [
       // 3 entries today
-      ...await new LeaderboardEntryFactory(leaderboard, [player]).state(() => ({ createdAt: today })).many(3),
+      ...(await new LeaderboardEntryFactory(leaderboard, [player])
+        .state(() => ({ createdAt: today }))
+        .many(3)),
       // 2 entries yesterday
-      ...await new LeaderboardEntryFactory(leaderboard, [player]).state(() => ({ createdAt: yesterday })).many(2),
+      ...(await new LeaderboardEntryFactory(leaderboard, [player])
+        .state(() => ({ createdAt: yesterday }))
+        .many(2)),
       // 1 entry two days ago
-      ...await new LeaderboardEntryFactory(leaderboard, [player]).state(() => ({ createdAt: twoDaysAgo })).many(1)
+      ...(await new LeaderboardEntryFactory(leaderboard, [player])
+        .state(() => ({ createdAt: twoDaysAgo }))
+        .many(1)),
     ]
     await em.persist(entries).flush()
 
@@ -42,14 +50,14 @@ describe('Chart - new leaderboard entries', () => {
     expect(res.body.leaderboardNames).toContain('high-scores')
     expect(res.body.data).toHaveLength(3)
 
-    const twoDaysAgoData = res.body.data.find((d: { date: number }) =>
-      d.date === startOfDay(twoDaysAgo).getTime()
+    const twoDaysAgoData = res.body.data.find(
+      (d: { date: number }) => d.date === startOfDay(twoDaysAgo).getTime(),
     )
-    const yesterdayData = res.body.data.find((d: { date: number }) =>
-      d.date === startOfDay(yesterday).getTime()
+    const yesterdayData = res.body.data.find(
+      (d: { date: number }) => d.date === startOfDay(yesterday).getTime(),
     )
-    const todayData = res.body.data.find((d: { date: number }) =>
-      d.date === startOfDay(today).getTime()
+    const todayData = res.body.data.find(
+      (d: { date: number }) => d.date === startOfDay(today).getTime(),
     )
 
     expect(twoDaysAgoData.leaderboards['high-scores']).toBe(1)
@@ -64,8 +72,12 @@ describe('Chart - new leaderboard entries', () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({ organisation })
 
-    const leaderboard1 = await new LeaderboardFactory([game]).state(() => ({ internalName: 'kills' })).one()
-    const leaderboard2 = await new LeaderboardFactory([game]).state(() => ({ internalName: 'deaths' })).one()
+    const leaderboard1 = await new LeaderboardFactory([game])
+      .state(() => ({ internalName: 'kills' }))
+      .one()
+    const leaderboard2 = await new LeaderboardFactory([game])
+      .state(() => ({ internalName: 'deaths' }))
+      .one()
     const player = await new PlayerFactory([game]).one()
     await em.persist([leaderboard1, leaderboard2, player]).flush()
     await player.aliases.loadItems()
@@ -74,9 +86,13 @@ describe('Chart - new leaderboard entries', () => {
 
     const entries = [
       // 5 entries for leaderboard1
-      ...await new LeaderboardEntryFactory(leaderboard1, [player]).state(() => ({ createdAt: today })).many(5),
+      ...(await new LeaderboardEntryFactory(leaderboard1, [player])
+        .state(() => ({ createdAt: today }))
+        .many(5)),
       // 3 entries for leaderboard2
-      ...await new LeaderboardEntryFactory(leaderboard2, [player]).state(() => ({ createdAt: today })).many(3)
+      ...(await new LeaderboardEntryFactory(leaderboard2, [player])
+        .state(() => ({ createdAt: today }))
+        .many(3)),
     ]
     await em.persist(entries).flush()
 
@@ -99,7 +115,9 @@ describe('Chart - new leaderboard entries', () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({ organisation })
 
-    const leaderboard = await new LeaderboardFactory([game]).state(() => ({ internalName: 'score' })).one()
+    const leaderboard = await new LeaderboardFactory([game])
+      .state(() => ({ internalName: 'score' }))
+      .one()
     const player = await new PlayerFactory([game]).one()
     await em.persist([leaderboard, player]).flush()
     await player.aliases.loadItems()
@@ -109,8 +127,12 @@ describe('Chart - new leaderboard entries', () => {
 
     const entries = [
       // entries only on first and last day (gap in middle)
-      ...await new LeaderboardEntryFactory(leaderboard, [player]).state(() => ({ createdAt: today })).many(2),
-      ...await new LeaderboardEntryFactory(leaderboard, [player]).state(() => ({ createdAt: threeDaysAgo })).many(1)
+      ...(await new LeaderboardEntryFactory(leaderboard, [player])
+        .state(() => ({ createdAt: today }))
+        .many(2)),
+      ...(await new LeaderboardEntryFactory(leaderboard, [player])
+        .state(() => ({ createdAt: threeDaysAgo }))
+        .many(1)),
     ]
     await em.persist(entries).flush()
 
@@ -161,7 +183,9 @@ describe('Chart - new leaderboard entries', () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({ organisation })
 
-    const leaderboard = await new LeaderboardFactory([game]).state(() => ({ internalName: 'level' })).one()
+    const leaderboard = await new LeaderboardFactory([game])
+      .state(() => ({ internalName: 'level' }))
+      .one()
     await em.persist(leaderboard).flush()
 
     const today = new Date()
@@ -183,7 +207,9 @@ describe('Chart - new leaderboard entries', () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({ organisation })
 
-    const leaderboard = await new LeaderboardFactory([game]).state(() => ({ internalName: 'high-scores' })).one()
+    const leaderboard = await new LeaderboardFactory([game])
+      .state(() => ({ internalName: 'high-scores' }))
+      .one()
     const regularPlayer = await new PlayerFactory([game]).one()
     const devPlayer = await new PlayerFactory([game]).devBuild().one()
     await em.persist([leaderboard, regularPlayer, devPlayer]).flush()
@@ -193,8 +219,12 @@ describe('Chart - new leaderboard entries', () => {
     const today = new Date()
 
     const entries = [
-      ...await new LeaderboardEntryFactory(leaderboard, [regularPlayer]).state(() => ({ createdAt: today })).many(2),
-      ...await new LeaderboardEntryFactory(leaderboard, [devPlayer]).state(() => ({ createdAt: today })).many(3)
+      ...(await new LeaderboardEntryFactory(leaderboard, [regularPlayer])
+        .state(() => ({ createdAt: today }))
+        .many(2)),
+      ...(await new LeaderboardEntryFactory(leaderboard, [devPlayer])
+        .state(() => ({ createdAt: today }))
+        .many(3)),
     ]
     await em.persist(entries).flush()
 
@@ -215,7 +245,9 @@ describe('Chart - new leaderboard entries', () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({ organisation })
 
-    const leaderboard = await new LeaderboardFactory([game]).state(() => ({ internalName: 'high-scores' })).one()
+    const leaderboard = await new LeaderboardFactory([game])
+      .state(() => ({ internalName: 'high-scores' }))
+      .one()
     const regularPlayer = await new PlayerFactory([game]).one()
     const devPlayer = await new PlayerFactory([game]).devBuild().one()
     await em.persist([leaderboard, regularPlayer, devPlayer]).flush()
@@ -225,8 +257,12 @@ describe('Chart - new leaderboard entries', () => {
     const today = new Date()
 
     const entries = [
-      ...await new LeaderboardEntryFactory(leaderboard, [regularPlayer]).state(() => ({ createdAt: today })).many(2),
-      ...await new LeaderboardEntryFactory(leaderboard, [devPlayer]).state(() => ({ createdAt: today })).many(3)
+      ...(await new LeaderboardEntryFactory(leaderboard, [regularPlayer])
+        .state(() => ({ createdAt: today }))
+        .many(2)),
+      ...(await new LeaderboardEntryFactory(leaderboard, [devPlayer])
+        .state(() => ({ createdAt: today }))
+        .many(3)),
     ]
     await em.persist(entries).flush()
 
@@ -279,8 +315,8 @@ describe('Chart - new leaderboard entries', () => {
 
     expect(res.body).toStrictEqual({
       errors: {
-        startDate: ['startDate is missing from the request query']
-      }
+        startDate: ['startDate is missing from the request query'],
+      },
     })
   })
 
@@ -296,8 +332,8 @@ describe('Chart - new leaderboard entries', () => {
 
     expect(res.body).toStrictEqual({
       errors: {
-        endDate: ['endDate is missing from the request query']
-      }
+        endDate: ['endDate is missing from the request query'],
+      },
     })
   })
 })

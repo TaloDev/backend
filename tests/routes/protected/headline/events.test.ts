@@ -1,7 +1,7 @@
+import { sub, format } from 'date-fns'
 import request from 'supertest'
 import EventFactory from '../../../fixtures/EventFactory'
 import PlayerFactory from '../../../fixtures/PlayerFactory'
-import { sub, format } from 'date-fns'
 import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
 import createUserAndToken from '../../../utils/createUserAndToken'
 
@@ -20,7 +20,7 @@ describe('Headline - events', () => {
     await clickhouse.insert({
       table: 'events',
       values: events.map((event) => event.toInsertable()),
-      format: 'JSONEachRow'
+      format: 'JSONEachRow',
     })
 
     const res = await request(app)
@@ -43,7 +43,7 @@ describe('Headline - events', () => {
     await clickhouse.insert({
       table: 'events',
       values: events.map((event) => event.toInsertable()),
-      format: 'JSONEachRow'
+      format: 'JSONEachRow',
     })
 
     const res = await request(app)
@@ -66,7 +66,7 @@ describe('Headline - events', () => {
     await clickhouse.insert({
       table: 'events',
       values: events.map((event) => event.toInsertable()),
-      format: 'JSONEachRow'
+      format: 'JSONEachRow',
     })
 
     const res = await request(app)

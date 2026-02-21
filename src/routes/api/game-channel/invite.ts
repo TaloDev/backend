@@ -1,12 +1,12 @@
-import { apiRoute, withMiddleware } from '../../../lib/routing/router'
-import { requireScopes } from '../../../middleware/policy-middleware'
 import { APIKeyScope } from '../../../entities/api-key'
-import { loadAlias } from '../../../middleware/player-alias-middleware'
-import { loadChannel, canModifyChannel, joinChannel } from './common'
 import PlayerAlias from '../../../entities/player-alias'
-import { inviteDocs } from './docs'
-import { playerAliasHeaderSchema } from '../../../lib/validation/playerAliasHeaderSchema'
+import { apiRoute, withMiddleware } from '../../../lib/routing/router'
 import { numericStringSchema } from '../../../lib/validation/numericStringSchema'
+import { playerAliasHeaderSchema } from '../../../lib/validation/playerAliasHeaderSchema'
+import { loadAlias } from '../../../middleware/player-alias-middleware'
+import { requireScopes } from '../../../middleware/policy-middleware'
+import { loadChannel, canModifyChannel, joinChannel } from './common'
+import { inviteDocs } from './docs'
 
 export const inviteRoute = apiRoute({
   method: 'post',
@@ -14,19 +14,19 @@ export const inviteRoute = apiRoute({
   docs: inviteDocs,
   schema: (z) => ({
     route: z.object({
-      id: numericStringSchema.meta({ description: 'The ID of the channel' })
+      id: numericStringSchema.meta({ description: 'The ID of the channel' }),
     }),
     headers: z.looseObject({
-      'x-talo-alias': playerAliasHeaderSchema
+      'x-talo-alias': playerAliasHeaderSchema,
     }),
     body: z.object({
-      inviteeAliasId: z.number().meta({ description: 'The ID of the player alias to invite' })
-    })
+      inviteeAliasId: z.number().meta({ description: 'The ID of the player alias to invite' }),
+    }),
   }),
   middleware: withMiddleware(
     requireScopes([APIKeyScope.WRITE_GAME_CHANNELS]),
     loadAlias,
-    loadChannel
+    loadChannel,
   ),
   handler: async (ctx) => {
     const { inviteeAliasId } = ctx.state.validated.body
@@ -40,8 +40,8 @@ export const inviteRoute = apiRoute({
     const inviteeAlias = await em.getRepository(PlayerAlias).findOne({
       id: inviteeAliasId,
       player: {
-        game: ctx.state.game
-      }
+        game: ctx.state.game,
+      },
     })
 
     if (!inviteeAlias) {
@@ -55,7 +55,7 @@ export const inviteRoute = apiRoute({
     await joinChannel(em, ctx.wss, channel, inviteeAlias)
 
     return {
-      status: 204
+      status: 204,
     }
-  }
+  },
 })

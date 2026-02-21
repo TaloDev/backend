@@ -1,12 +1,12 @@
 import { Entity, Enum, ManyToOne, PrimaryKey, Property } from '@mikro-orm/mysql'
-import User from './user'
 import Game from './game'
+import User from './user'
 
 export enum DataExportStatus {
   REQUESTED,
   QUEUED,
   GENERATED,
-  SENT
+  SENT,
 }
 
 export enum DataExportAvailableEntities {
@@ -17,7 +17,7 @@ export enum DataExportAvailableEntities {
   GAME_STATS = 'gameStats',
   PLAYER_GAME_STATS = 'playerGameStats',
   GAME_ACTIVITIES = 'gameActivities',
-  GAME_FEEDBACK = 'gameFeedback'
+  GAME_FEEDBACK = 'gameFeedback',
 }
 
 @Entity()
@@ -58,7 +58,7 @@ export default class DataExport {
       createdBy: this.createdByUser.username,
       status: this.status,
       createdAt: this.createdAt,
-      failedAt: this.failedAt
+      failedAt: this.failedAt,
     }
   }
 }

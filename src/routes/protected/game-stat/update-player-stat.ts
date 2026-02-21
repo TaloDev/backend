@@ -1,9 +1,9 @@
+import { GameActivityType } from '../../../entities/game-activity'
+import { UserType } from '../../../entities/user'
+import triggerIntegrations from '../../../lib/integrations/triggerIntegrations'
+import createGameActivity from '../../../lib/logging/createGameActivity'
 import { protectedRoute, withMiddleware } from '../../../lib/routing/router'
 import { userTypeGate } from '../../../middleware/policy-middleware'
-import { UserType } from '../../../entities/user'
-import { GameActivityType } from '../../../entities/game-activity'
-import createGameActivity from '../../../lib/logging/createGameActivity'
-import triggerIntegrations from '../../../lib/integrations/triggerIntegrations'
 import { loadStat, loadPlayerStat, clearStatIndexResponseCache } from './common'
 
 export const updatePlayerStatRoute = protectedRoute({
@@ -11,14 +11,14 @@ export const updatePlayerStatRoute = protectedRoute({
   path: '/:id/player-stats/:playerStatId',
   schema: (z) => ({
     body: z.object({
-      newValue: z.number()
-    })
+      newValue: z.number(),
+    }),
   }),
   middleware: withMiddleware(
     userTypeGate([UserType.ADMIN], 'update player stats'),
     loadStat,
     loadPlayerStat,
-    clearStatIndexResponseCache
+    clearStatIndexResponseCache,
   ),
   handler: async (ctx) => {
     const { newValue } = ctx.state.validated.body
@@ -36,7 +36,7 @@ export const updatePlayerStatRoute = protectedRoute({
 
     playerStat.value = newValue
     if (playerStat.stat.global) {
-      playerStat.stat.globalValue += newValue - oldValue
+      await playerStat.stat.incrementGlobalValue(ctx.redis, newValue - oldValue)
     }
 
     await triggerIntegrations(em, playerStat.player.game, (integration) => {
@@ -50,12 +50,12 @@ export const updatePlayerStatRoute = protectedRoute({
       extra: {
         statInternalName: playerStat.stat.internalName,
         display: {
-          'Player': playerStat.player.id,
-          'Stat': playerStat.stat.internalName,
+          Player: playerStat.player.id,
+          Stat: playerStat.stat.internalName,
           'Old value': oldValue,
-          'New value': newValue
-        }
-      }
+          'New value': newValue,
+        },
+      },
     })
 
     await em.flush()
@@ -63,8 +63,8 @@ export const updatePlayerStatRoute = protectedRoute({
     return {
       status: 200,
       body: {
-        playerStat
-      }
+        playerStat,
+      },
     }
-  }
+  },
 })

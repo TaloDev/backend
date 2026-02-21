@@ -21,10 +21,7 @@ describe('Player API - get', () => {
   it('should not find a player if the scope is missing', async () => {
     const [, token] = await createAPIKeyAndToken([])
 
-    await request(app)
-      .get('/v1/players/123')
-      .auth(token, { type: 'bearer' })
-      .expect(403)
+    await request(app).get('/v1/players/123').auth(token, { type: 'bearer' }).expect(403)
   })
 
   it('should not find a non-existent player', async () => {

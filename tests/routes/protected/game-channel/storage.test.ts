@@ -1,10 +1,10 @@
 import request from 'supertest'
-import createUserAndToken from '../../../utils/createUserAndToken'
-import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
-import PlayerFactory from '../../../fixtures/PlayerFactory'
-import PlayerAliasFactory from '../../../fixtures/PlayerAliasFactory'
 import GameChannelFactory from '../../../fixtures/GameChannelFactory'
 import GameChannelStoragePropFactory from '../../../fixtures/GameChannelStoragePropFactory'
+import PlayerAliasFactory from '../../../fixtures/PlayerAliasFactory'
+import PlayerFactory from '../../../fixtures/PlayerFactory'
+import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
+import createUserAndToken from '../../../utils/createUserAndToken'
 
 describe('Game channel - storage', () => {
   it('should return a list of storage props for a channel', async () => {
@@ -14,9 +14,11 @@ describe('Game channel - storage', () => {
     const player = await new PlayerFactory([game]).one()
     const playerAlias = await new PlayerAliasFactory(player).one()
 
-    const channel = await new GameChannelFactory(game).state(() => ({
-      owner: playerAlias
-    })).one()
+    const channel = await new GameChannelFactory(game)
+      .state(() => ({
+        owner: playerAlias,
+      }))
+      .one()
 
     const storageProps = await new GameChannelStoragePropFactory(channel).many(5)
     await em.persistAndFlush([channel, ...storageProps])
@@ -54,9 +56,11 @@ describe('Game channel - storage', () => {
     const player = await new PlayerFactory([game]).one()
     const playerAlias = await new PlayerAliasFactory(player).one()
 
-    const channel = await new GameChannelFactory(game).state(() => ({
-      owner: playerAlias
-    })).one()
+    const channel = await new GameChannelFactory(game)
+      .state(() => ({
+        owner: playerAlias,
+      }))
+      .one()
 
     await em.persistAndFlush(channel)
 
@@ -74,9 +78,11 @@ describe('Game channel - storage', () => {
     const player = await new PlayerFactory([game]).one()
     const playerAlias = await new PlayerAliasFactory(player).one()
 
-    const channel = await new GameChannelFactory(game).state(() => ({
-      owner: playerAlias
-    })).one()
+    const channel = await new GameChannelFactory(game)
+      .state(() => ({
+        owner: playerAlias,
+      }))
+      .one()
 
     const count = 82
     const storageProps = await new GameChannelStoragePropFactory(channel).many(count)
@@ -103,17 +109,23 @@ describe('Game channel - storage', () => {
     const player = await new PlayerFactory([game]).one()
     const playerAlias = await new PlayerAliasFactory(player).one()
 
-    const channel = await new GameChannelFactory(game).state(() => ({
-      owner: playerAlias
-    })).one()
+    const channel = await new GameChannelFactory(game)
+      .state(() => ({
+        owner: playerAlias,
+      }))
+      .one()
 
-    const matchingProps = await new GameChannelStoragePropFactory(channel).state(() => ({
-      key: 'player_score'
-    })).many(3)
+    const matchingProps = await new GameChannelStoragePropFactory(channel)
+      .state(() => ({
+        key: 'player_score',
+      }))
+      .many(3)
 
-    const nonMatchingProps = await new GameChannelStoragePropFactory(channel).state(() => ({
-      key: 'guild_level'
-    })).many(2)
+    const nonMatchingProps = await new GameChannelStoragePropFactory(channel)
+      .state(() => ({
+        key: 'guild_level',
+      }))
+      .many(2)
 
     await em.persistAndFlush([channel, ...matchingProps, ...nonMatchingProps])
 
@@ -133,17 +145,23 @@ describe('Game channel - storage', () => {
     const player = await new PlayerFactory([game]).one()
     const playerAlias = await new PlayerAliasFactory(player).one()
 
-    const channel = await new GameChannelFactory(game).state(() => ({
-      owner: playerAlias
-    })).one()
+    const channel = await new GameChannelFactory(game)
+      .state(() => ({
+        owner: playerAlias,
+      }))
+      .one()
 
-    const matchingProps = await new GameChannelStoragePropFactory(channel).state(() => ({
-      value: 'legendary'
-    })).many(2)
+    const matchingProps = await new GameChannelStoragePropFactory(channel)
+      .state(() => ({
+        value: 'legendary',
+      }))
+      .many(2)
 
-    const nonMatchingProps = await new GameChannelStoragePropFactory(channel).state(() => ({
-      value: 'common'
-    })).many(3)
+    const nonMatchingProps = await new GameChannelStoragePropFactory(channel)
+      .state(() => ({
+        value: 'common',
+      }))
+      .many(3)
 
     await em.persistAndFlush([channel, ...matchingProps, ...nonMatchingProps])
 
@@ -161,27 +179,37 @@ describe('Game channel - storage', () => {
     const [token] = await createUserAndToken({}, organisation)
 
     const player = await new PlayerFactory([game]).one()
-    const playerAlias = await new PlayerAliasFactory(player).state(() => ({
-      identifier: 'admin_user'
-    })).one()
+    const playerAlias = await new PlayerAliasFactory(player)
+      .state(() => ({
+        identifier: 'admin_user',
+      }))
+      .one()
 
-    const otherPlayerAlias = await new PlayerAliasFactory(player).state(() => ({
-      identifier: 'regular_user'
-    })).one()
+    const otherPlayerAlias = await new PlayerAliasFactory(player)
+      .state(() => ({
+        identifier: 'regular_user',
+      }))
+      .one()
 
-    const channel = await new GameChannelFactory(game).state(() => ({
-      owner: playerAlias
-    })).one()
+    const channel = await new GameChannelFactory(game)
+      .state(() => ({
+        owner: playerAlias,
+      }))
+      .one()
 
-    const propsCreatedByAdmin = await new GameChannelStoragePropFactory(channel).state(() => ({
-      createdBy: playerAlias,
-      lastUpdatedBy: playerAlias
-    })).many(3)
+    const propsCreatedByAdmin = await new GameChannelStoragePropFactory(channel)
+      .state(() => ({
+        createdBy: playerAlias,
+        lastUpdatedBy: playerAlias,
+      }))
+      .many(3)
 
-    const propsCreatedByOther = await new GameChannelStoragePropFactory(channel).state(() => ({
-      createdBy: otherPlayerAlias,
-      lastUpdatedBy: otherPlayerAlias
-    })).many(2)
+    const propsCreatedByOther = await new GameChannelStoragePropFactory(channel)
+      .state(() => ({
+        createdBy: otherPlayerAlias,
+        lastUpdatedBy: otherPlayerAlias,
+      }))
+      .many(2)
 
     await em.persistAndFlush([channel, ...propsCreatedByAdmin, ...propsCreatedByOther])
 
@@ -199,27 +227,37 @@ describe('Game channel - storage', () => {
     const [token] = await createUserAndToken({}, organisation)
 
     const player = await new PlayerFactory([game]).one()
-    const creatorAlias = await new PlayerAliasFactory(player).state(() => ({
-      identifier: 'creator'
-    })).one()
+    const creatorAlias = await new PlayerAliasFactory(player)
+      .state(() => ({
+        identifier: 'creator',
+      }))
+      .one()
 
-    const editorAlias = await new PlayerAliasFactory(player).state(() => ({
-      identifier: 'editor_123'
-    })).one()
+    const editorAlias = await new PlayerAliasFactory(player)
+      .state(() => ({
+        identifier: 'editor_123',
+      }))
+      .one()
 
-    const channel = await new GameChannelFactory(game).state(() => ({
-      owner: creatorAlias
-    })).one()
+    const channel = await new GameChannelFactory(game)
+      .state(() => ({
+        owner: creatorAlias,
+      }))
+      .one()
 
-    const propsUpdatedByEditor = await new GameChannelStoragePropFactory(channel).state(() => ({
-      createdBy: creatorAlias,
-      lastUpdatedBy: editorAlias
-    })).many(4)
+    const propsUpdatedByEditor = await new GameChannelStoragePropFactory(channel)
+      .state(() => ({
+        createdBy: creatorAlias,
+        lastUpdatedBy: editorAlias,
+      }))
+      .many(4)
 
-    const propsUpdatedByCreator = await new GameChannelStoragePropFactory(channel).state(() => ({
-      createdBy: creatorAlias,
-      lastUpdatedBy: creatorAlias
-    })).many(2)
+    const propsUpdatedByCreator = await new GameChannelStoragePropFactory(channel)
+      .state(() => ({
+        createdBy: creatorAlias,
+        lastUpdatedBy: creatorAlias,
+      }))
+      .many(2)
 
     await em.persistAndFlush([channel, ...propsUpdatedByEditor, ...propsUpdatedByCreator])
 

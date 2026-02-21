@@ -1,14 +1,19 @@
 import request from 'supertest'
 import { APIKeyScope } from '../../src/entities/api-key'
-import PlayerFactory from '../fixtures/PlayerFactory'
 import GameStatFactory from '../fixtures/GameStatFactory'
+import PlayerFactory from '../fixtures/PlayerFactory'
 import createAPIKeyAndToken from '../utils/createAPIKeyAndToken'
 
 describe('PlayerGameStat subscriber', () => {
   describe('cache invalidation on create', () => {
     it('should invalidate the player stat cache when a new stat is created', async () => {
-      const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_GAME_STATS, APIKeyScope.WRITE_GAME_STATS])
-      const stat = await new GameStatFactory([apiKey.game]).state(() => ({ maxValue: 999, maxChange: 99, defaultValue: 0 })).one()
+      const [apiKey, token] = await createAPIKeyAndToken([
+        APIKeyScope.READ_GAME_STATS,
+        APIKeyScope.WRITE_GAME_STATS,
+      ])
+      const stat = await new GameStatFactory([apiKey.game])
+        .state(() => ({ maxValue: 999, maxChange: 99, defaultValue: 0 }))
+        .one()
       const player = await new PlayerFactory([apiKey.game]).one()
       await em.persistAndFlush([stat, player])
 
@@ -41,8 +46,13 @@ describe('PlayerGameStat subscriber', () => {
     })
 
     it('should invalidate the player stats list cache when a new stat is created', async () => {
-      const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_GAME_STATS, APIKeyScope.WRITE_GAME_STATS])
-      const stats = await new GameStatFactory([apiKey.game]).state(() => ({ maxValue: 999, maxChange: 99, defaultValue: 0 })).many(2)
+      const [apiKey, token] = await createAPIKeyAndToken([
+        APIKeyScope.READ_GAME_STATS,
+        APIKeyScope.WRITE_GAME_STATS,
+      ])
+      const stats = await new GameStatFactory([apiKey.game])
+        .state(() => ({ maxValue: 999, maxChange: 99, defaultValue: 0 }))
+        .many(2)
       const player = await new PlayerFactory([apiKey.game]).one()
       await em.persistAndFlush([...stats, player])
 
@@ -93,8 +103,13 @@ describe('PlayerGameStat subscriber', () => {
 
   describe('cache invalidation on update', () => {
     it('should invalidate the player stat cache when a stat is updated', async () => {
-      const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_GAME_STATS, APIKeyScope.WRITE_GAME_STATS])
-      const stat = await new GameStatFactory([apiKey.game]).state(() => ({ maxValue: 999, maxChange: 99, defaultValue: 0, minTimeBetweenUpdates: 0 })).one()
+      const [apiKey, token] = await createAPIKeyAndToken([
+        APIKeyScope.READ_GAME_STATS,
+        APIKeyScope.WRITE_GAME_STATS,
+      ])
+      const stat = await new GameStatFactory([apiKey.game])
+        .state(() => ({ maxValue: 999, maxChange: 99, defaultValue: 0, minTimeBetweenUpdates: 0 }))
+        .one()
       const player = await new PlayerFactory([apiKey.game]).one()
       await em.persistAndFlush([stat, player])
 
@@ -134,8 +149,13 @@ describe('PlayerGameStat subscriber', () => {
     })
 
     it('should invalidate the player stats list cache when a stat is updated', async () => {
-      const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_GAME_STATS, APIKeyScope.WRITE_GAME_STATS])
-      const stat = await new GameStatFactory([apiKey.game]).state(() => ({ maxValue: 999, maxChange: 99, defaultValue: 0, minTimeBetweenUpdates: 0 })).one()
+      const [apiKey, token] = await createAPIKeyAndToken([
+        APIKeyScope.READ_GAME_STATS,
+        APIKeyScope.WRITE_GAME_STATS,
+      ])
+      const stat = await new GameStatFactory([apiKey.game])
+        .state(() => ({ maxValue: 999, maxChange: 99, defaultValue: 0, minTimeBetweenUpdates: 0 }))
+        .one()
       const player = await new PlayerFactory([apiKey.game]).one()
       await em.persistAndFlush([stat, player])
 
@@ -177,13 +197,18 @@ describe('PlayerGameStat subscriber', () => {
     })
 
     it('should handle multiple updates correctly', async () => {
-      const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_GAME_STATS, APIKeyScope.WRITE_GAME_STATS])
-      const stat = await new GameStatFactory([apiKey.game]).state(() => ({
-        maxValue: 999,
-        maxChange: 99,
-        defaultValue: 0,
-        minTimeBetweenUpdates: 0
-      })).one()
+      const [apiKey, token] = await createAPIKeyAndToken([
+        APIKeyScope.READ_GAME_STATS,
+        APIKeyScope.WRITE_GAME_STATS,
+      ])
+      const stat = await new GameStatFactory([apiKey.game])
+        .state(() => ({
+          maxValue: 999,
+          maxChange: 99,
+          defaultValue: 0,
+          minTimeBetweenUpdates: 0,
+        }))
+        .one()
       const player = await new PlayerFactory([apiKey.game]).one()
       await em.persistAndFlush([stat, player])
 
@@ -231,8 +256,13 @@ describe('PlayerGameStat subscriber', () => {
 
   describe('cache invalidation for specific player', () => {
     it('should only invalidate cache for the affected player', async () => {
-      const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_GAME_STATS, APIKeyScope.WRITE_GAME_STATS])
-      const stat = await new GameStatFactory([apiKey.game]).state(() => ({ maxValue: 999, maxChange: 150, defaultValue: 0, minTimeBetweenUpdates: 0 })).one()
+      const [apiKey, token] = await createAPIKeyAndToken([
+        APIKeyScope.READ_GAME_STATS,
+        APIKeyScope.WRITE_GAME_STATS,
+      ])
+      const stat = await new GameStatFactory([apiKey.game])
+        .state(() => ({ maxValue: 999, maxChange: 150, defaultValue: 0, minTimeBetweenUpdates: 0 }))
+        .one()
       const players = await new PlayerFactory([apiKey.game]).many(2)
       await em.persistAndFlush([stat, ...players])
 

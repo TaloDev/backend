@@ -32,6 +32,7 @@ export default class PlanUsageWarning extends Mail {
     this.ctaText = 'Go to billing'
     this.ctaLink = `${process.env.DASHBOARD_URL}/billing`
 
-    this.why = 'You are receiving this email because your player count is approaching or exceeding your pricing plan limit'
+    this.why =
+      'You are receiving this email because your player count is approaching or exceeding your pricing plan limit'
   }
 }

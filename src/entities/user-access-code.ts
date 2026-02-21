@@ -1,6 +1,6 @@
 import { Entity, ManyToOne, PrimaryKey, Property } from '@mikro-orm/mysql'
-import User from './user'
 import generateSixDigitCode from '../lib/auth/generateSixDigitCode'
+import User from './user'
 
 @Entity()
 export default class UserAccessCode {

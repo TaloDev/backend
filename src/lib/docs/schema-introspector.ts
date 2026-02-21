@@ -1,6 +1,6 @@
 import type { ZodType } from 'zod'
-import type { ValidationSchema } from '../../middleware/validator-middleware'
 import assert from 'node:assert'
+import type { ValidationSchema } from '../../middleware/validator-middleware'
 
 export type ExtractedParam = {
   type: 'string' | 'number' | 'boolean' | 'array' | 'object' | 'enum' | 'unknown'
@@ -66,7 +66,7 @@ function getSchemaType(schema: ZodType): ExtractedParam['type'] {
   const internals = getZodInternals(schema)
   const type = internals.def.type
 
-  if (knownTypes.includes(type as typeof knownTypes[number])) {
+  if (knownTypes.includes(type as (typeof knownTypes)[number])) {
     return type as ExtractedParam['type']
   }
 
@@ -89,7 +89,7 @@ function extractParamInfo(schema: ZodType) {
   return {
     type: getSchemaType(innerSchema),
     required: !isOptional,
-    description
+    description,
   } satisfies ExtractedParam
 }
 

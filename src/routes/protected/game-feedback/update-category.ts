@@ -1,11 +1,11 @@
-import { protectedRoute, withMiddleware } from '../../../lib/routing/router'
-import { userTypeGate } from '../../../middleware/policy-middleware'
-import { UserType } from '../../../entities/user'
 import { GameActivityType } from '../../../entities/game-activity'
-import createGameActivity from '../../../lib/logging/createGameActivity'
+import { UserType } from '../../../entities/user'
 import updateAllowedKeys from '../../../lib/entities/updateAllowedKeys'
-import { loadFeedbackCategory } from './common'
+import createGameActivity from '../../../lib/logging/createGameActivity'
+import { protectedRoute, withMiddleware } from '../../../lib/routing/router'
 import { loadGame } from '../../../middleware/game-middleware'
+import { userTypeGate } from '../../../middleware/policy-middleware'
+import { loadFeedbackCategory } from './common'
 
 export const updateCategoryRoute = protectedRoute({
   method: 'put',
@@ -14,13 +14,13 @@ export const updateCategoryRoute = protectedRoute({
     body: z.object({
       name: z.string().optional(),
       description: z.string().optional(),
-      anonymised: z.boolean().optional()
-    })
+      anonymised: z.boolean().optional(),
+    }),
   }),
   middleware: withMiddleware(
     userTypeGate([UserType.ADMIN, UserType.DEV], 'update feedback categories'),
     loadGame,
-    loadFeedbackCategory
+    loadFeedbackCategory,
   ),
   handler: async (ctx) => {
     const em = ctx.em
@@ -29,7 +29,7 @@ export const updateCategoryRoute = protectedRoute({
     const [feedbackCategory, changedProperties] = updateAllowedKeys(
       ctx.state.feedbackCategory,
       body,
-      ['name', 'description', 'anonymised']
+      ['name', 'description', 'anonymised'],
     )
 
     createGameActivity(em, {
@@ -39,9 +39,11 @@ export const updateCategoryRoute = protectedRoute({
       extra: {
         feedbackCategoryInternalName: feedbackCategory.internalName,
         display: {
-          'Updated properties': changedProperties.map((prop) => `${prop}: ${body[prop as keyof typeof body]}`).join(', ')
-        }
-      }
+          'Updated properties': changedProperties
+            .map((prop) => `${prop}: ${body[prop as keyof typeof body]}`)
+            .join(', '),
+        },
+      },
     })
 
     await em.flush()
@@ -49,8 +51,8 @@ export const updateCategoryRoute = protectedRoute({
     return {
       status: 200,
       body: {
-        feedbackCategory
-      }
+        feedbackCategory,
+      },
     }
-  }
+  },
 })

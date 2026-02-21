@@ -1,9 +1,9 @@
 import Event, { ClickHouseEvent } from '../../../entities/event'
-import { protectedRoute, withMiddleware } from '../../../lib/routing/router'
 import { DEFAULT_PAGE_SIZE } from '../../../lib/pagination/itemsPerPage'
-import { loadPlayer } from './common'
-import { loadGame } from '../../../middleware/game-middleware'
+import { protectedRoute, withMiddleware } from '../../../lib/routing/router'
 import { pageSchema } from '../../../lib/validation/pageSchema'
+import { loadGame } from '../../../middleware/game-middleware'
+import { loadPlayer } from './common'
 
 export const eventsRoute = protectedRoute({
   method: 'get',
@@ -11,8 +11,8 @@ export const eventsRoute = protectedRoute({
   schema: (z) => ({
     query: z.object({
       search: z.string().optional(),
-      page: pageSchema
-    })
+      page: pageSchema,
+    }),
   }),
   middleware: withMiddleware(loadGame, loadPlayer),
   handler: async (ctx) => {
@@ -46,14 +46,16 @@ export const eventsRoute = protectedRoute({
       OFFSET ${page * itemsPerPage}
     `
 
-    const results = await clickhouse.query({
-      query,
-      query_params: {
-        search: `%${search}%`,
-        aliasIds: player.aliases.getItems().map((alias) => alias.id)
-      },
-      format: 'JSONEachRow'
-    }).then((res) => res.json<ClickHouseEvent & { total_count: string }>())
+    const results = await clickhouse
+      .query({
+        query,
+        query_params: {
+          search: `%${search}%`,
+          aliasIds: player.aliases.getItems().map((alias) => alias.id),
+        },
+        format: 'JSONEachRow',
+      })
+      .then((res) => res.json<ClickHouseEvent & { total_count: string }>())
 
     const events = await Event.massHydrate(em, results, clickhouse, true)
     const count = results.length > 0 ? Number(results[0].total_count) : 0
@@ -63,8 +65,8 @@ export const eventsRoute = protectedRoute({
       body: {
         events,
         count,
-        itemsPerPage
-      }
+        itemsPerPage,
+      },
     }
-  }
+  },
 })

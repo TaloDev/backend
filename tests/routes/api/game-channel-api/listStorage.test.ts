@@ -1,9 +1,9 @@
 import request from 'supertest'
-import GameChannelFactory from '../../../fixtures/GameChannelFactory'
 import { APIKeyScope } from '../../../../src/entities/api-key'
-import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
-import PlayerFactory from '../../../fixtures/PlayerFactory'
+import GameChannelFactory from '../../../fixtures/GameChannelFactory'
 import GameChannelStoragePropFactory from '../../../fixtures/GameChannelStoragePropFactory'
+import PlayerFactory from '../../../fixtures/PlayerFactory'
+import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
 
 describe('Game channel API - listStorage', () => {
   it('should return multiple storage props from Redis if they exist in the cache', async () => {
@@ -15,8 +15,12 @@ describe('Game channel API - listStorage', () => {
     channel.members.add(player.aliases[0])
     await em.persistAndFlush([channel, player])
 
-    const prop1 = await new GameChannelStoragePropFactory(channel).state(() => ({ key: 'key1' })).one()
-    const prop2 = await new GameChannelStoragePropFactory(channel).state(() => ({ key: 'key2' })).one()
+    const prop1 = await new GameChannelStoragePropFactory(channel)
+      .state(() => ({ key: 'key1' }))
+      .one()
+    const prop2 = await new GameChannelStoragePropFactory(channel)
+      .state(() => ({ key: 'key2' }))
+      .one()
     await em.persistAndFlush([prop1, prop2])
     await prop1.persistToRedis(redis)
     await prop2.persistToRedis(redis)
@@ -43,8 +47,12 @@ describe('Game channel API - listStorage', () => {
     channel.owner = player.aliases[0]
     channel.members.add(player.aliases[0])
 
-    const prop1 = await new GameChannelStoragePropFactory(channel).state(() => ({ key: 'testKey1' })).one()
-    const prop2 = await new GameChannelStoragePropFactory(channel).state(() => ({ key: 'testKey2' })).one()
+    const prop1 = await new GameChannelStoragePropFactory(channel)
+      .state(() => ({ key: 'testKey1' }))
+      .one()
+    const prop2 = await new GameChannelStoragePropFactory(channel)
+      .state(() => ({ key: 'testKey2' }))
+      .one()
     await em.persistAndFlush([channel, player, prop1, prop2])
 
     const res = await request(app)
@@ -69,8 +77,12 @@ describe('Game channel API - listStorage', () => {
     channel.owner = player.aliases[0]
     channel.members.add(player.aliases[0])
 
-    const cachedProp = await new GameChannelStoragePropFactory(channel).state(() => ({ key: 'cached' })).one()
-    const dbProp = await new GameChannelStoragePropFactory(channel).state(() => ({ key: 'fromdb' })).one()
+    const cachedProp = await new GameChannelStoragePropFactory(channel)
+      .state(() => ({ key: 'cached' }))
+      .one()
+    const dbProp = await new GameChannelStoragePropFactory(channel)
+      .state(() => ({ key: 'fromdb' }))
+      .one()
     await em.persistAndFlush([channel, player, cachedProp, dbProp])
 
     await cachedProp.persistToRedis(redis)
@@ -114,7 +126,9 @@ describe('Game channel API - listStorage', () => {
     const player = await new PlayerFactory([apiKey.game]).one()
     channel.members.add(player.aliases[0])
 
-    const existingProp = await new GameChannelStoragePropFactory(channel).state(() => ({ key: 'exists' })).one()
+    const existingProp = await new GameChannelStoragePropFactory(channel)
+      .state(() => ({ key: 'exists' }))
+      .one()
     await em.persistAndFlush([channel, player, existingProp])
 
     const res = await request(app)
@@ -146,7 +160,7 @@ describe('Game channel API - listStorage', () => {
       .expect(400)
 
     expect(res.body).toStrictEqual({
-      errors: { propKeys: ['Maximum 50 keys allowed per request'] }
+      errors: { propKeys: ['Maximum 50 keys allowed per request'] },
     })
   })
 
@@ -167,8 +181,8 @@ describe('Game channel API - listStorage', () => {
 
     expect(res.body).toStrictEqual({
       errors: {
-        propKeys: ['propKeys is missing from the request query']
-      }
+        propKeys: ['propKeys is missing from the request query'],
+      },
     })
   })
 
@@ -189,8 +203,8 @@ describe('Game channel API - listStorage', () => {
 
     expect(res.body).toStrictEqual({
       errors: {
-        propKeys: ['All keys must be non-empty strings']
-      }
+        propKeys: ['All keys must be non-empty strings'],
+      },
     })
   })
 
@@ -201,7 +215,9 @@ describe('Game channel API - listStorage', () => {
     const player = await new PlayerFactory([apiKey.game]).one()
     channel.members.add(player.aliases[0])
 
-    const prop = await new GameChannelStoragePropFactory(channel).state(() => ({ key: 'singleKey' })).one()
+    const prop = await new GameChannelStoragePropFactory(channel)
+      .state(() => ({ key: 'singleKey' }))
+      .one()
     await em.persistAndFlush([channel, player, prop])
 
     const res = await request(app)
@@ -231,7 +247,7 @@ describe('Game channel API - listStorage', () => {
       .expect(403)
 
     expect(res.body).toStrictEqual({
-      message: 'This player is not a member of the channel'
+      message: 'This player is not a member of the channel',
     })
   })
 

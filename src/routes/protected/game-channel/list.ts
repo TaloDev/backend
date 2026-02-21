@@ -1,11 +1,11 @@
 import { QueryOrder, EntityManager } from '@mikro-orm/mysql'
-import { protectedRoute, withMiddleware } from '../../../lib/routing/router'
-import { loadGame } from '../../../middleware/game-middleware'
-import GameChannel from '../../../entities/game-channel'
 import Game from '../../../entities/game'
-import { withResponseCache } from '../../../lib/perf/responseCache'
+import GameChannel from '../../../entities/game-channel'
 import { DEFAULT_PAGE_SIZE } from '../../../lib/pagination/itemsPerPage'
+import { withResponseCache } from '../../../lib/perf/responseCache'
+import { protectedRoute, withMiddleware } from '../../../lib/routing/router'
 import { pageSchema } from '../../../lib/validation/pageSchema'
+import { loadGame } from '../../../middleware/game-middleware'
 
 const itemsPerPage = DEFAULT_PAGE_SIZE
 
@@ -28,78 +28,81 @@ export async function listChannelsHandler({
   search,
   page = 0,
   propKey,
-  propValue
+  propValue,
 }: ListChannelsParams) {
   const searchComponent = search ? encodeURIComponent(search) : 'no-search'
   const cacheKey = `${GameChannel.getSearchCacheKey(game)}-${searchComponent}-${page}-${propKey}-${propValue}`
 
-  return withResponseCache({
-    key: cacheKey,
-    ttl: 600
-  }, async () => {
-    const query = em.qb(GameChannel, 'gc')
-      .select('gc.*')
-      .orderBy({ totalMessages: QueryOrder.DESC })
-      .limit(itemsPerPage + 1)
-      .offset(Number(page) * itemsPerPage)
+  return withResponseCache(
+    {
+      key: cacheKey,
+      ttl: 600,
+    },
+    async () => {
+      const query = em
+        .qb(GameChannel, 'gc')
+        .select('gc.*')
+        .orderBy({ totalMessages: QueryOrder.DESC })
+        .limit(itemsPerPage + 1)
+        .offset(Number(page) * itemsPerPage)
 
-    if (search) {
-      query.andWhere({
-        $or: [
-          { name: { $like: `%${search}%` } },
-          {
-            owner: { identifier: { $like: `%${search}%` } }
-          }
-        ]
-      })
-    }
-
-    if (forwarded) {
-      query.andWhere({
-        private: false
-      })
-    }
-
-    if (propKey) {
-      if (propValue) {
+      if (search) {
         query.andWhere({
-          props: {
-            $some: {
-              key: propKey,
-              value: propValue
-            }
-          }
-        })
-      } else {
-        query.andWhere({
-          props: {
-            $some: {
-              key: propKey
-            }
-          }
+          $or: [
+            { name: { $like: `%${search}%` } },
+            {
+              owner: { identifier: { $like: `%${search}%` } },
+            },
+          ],
         })
       }
-    }
 
-    const [channels, count] = await query
-      .andWhere({ game })
-      .getResultAndCount()
-
-    await em.populate(channels, ['owner'])
-
-    const channelPromises = channels.slice(0, itemsPerPage)
-      .map((channel) => channel.toJSONWithCount(includeDevData))
-
-    return {
-      status: 200,
-      body: {
-        channels: await Promise.all(channelPromises),
-        count,
-        itemsPerPage,
-        isLastPage: channels.length <= itemsPerPage
+      if (forwarded) {
+        query.andWhere({
+          private: false,
+        })
       }
-    }
-  })
+
+      if (propKey) {
+        if (propValue) {
+          query.andWhere({
+            props: {
+              $some: {
+                key: propKey,
+                value: propValue,
+              },
+            },
+          })
+        } else {
+          query.andWhere({
+            props: {
+              $some: {
+                key: propKey,
+              },
+            },
+          })
+        }
+      }
+
+      const [channels, count] = await query.andWhere({ game }).getResultAndCount()
+
+      await em.populate(channels, ['owner'])
+
+      const channelPromises = channels
+        .slice(0, itemsPerPage)
+        .map((channel) => channel.toJSONWithCount(includeDevData))
+
+      return {
+        status: 200,
+        body: {
+          channels: await Promise.all(channelPromises),
+          count,
+          itemsPerPage,
+          isLastPage: channels.length <= itemsPerPage,
+        },
+      }
+    },
+  )
 }
 
 export const listRoute = protectedRoute({
@@ -109,8 +112,8 @@ export const listRoute = protectedRoute({
       search: z.string().optional(),
       page: pageSchema,
       propKey: z.string().optional(),
-      propValue: z.string().optional()
-    })
+      propValue: z.string().optional(),
+    }),
   }),
   middleware: withMiddleware(loadGame),
   handler: async (ctx) => {
@@ -123,7 +126,7 @@ export const listRoute = protectedRoute({
       search,
       page,
       propKey,
-      propValue
+      propValue,
     })
-  }
+  },
 })

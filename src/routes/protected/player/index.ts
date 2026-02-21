@@ -1,12 +1,12 @@
 import { protectedRouter } from '../../../lib/routing/router'
-import { listRoute } from './list'
-import { getRoute } from './get'
-import { updateRoute } from './update'
+import { authActivitiesRoute } from './auth-activities'
 import { deleteRoute } from './delete'
 import { eventsRoute } from './events'
-import { statsRoute } from './stats'
+import { getRoute } from './get'
+import { listRoute } from './list'
 import { savesRoute } from './saves'
-import { authActivitiesRoute } from './auth-activities'
+import { statsRoute } from './stats'
+import { updateRoute } from './update'
 
 export function playerRouter() {
   return protectedRouter('/games/:gameId/players', ({ route }) => {

@@ -1,8 +1,8 @@
 import request from 'supertest'
 import { APIKeyScope } from '../../../../src/entities/api-key'
 import PlayerFactory from '../../../fixtures/PlayerFactory'
-import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
 import PlayerPresenceFactory from '../../../fixtures/PlayerPresenceFactory'
+import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
 
 describe('Player Presence API - get', () => {
   it('should get a player presence', async () => {

@@ -1,13 +1,15 @@
 import { APIKeyScope } from '../../../../src/entities/api-key'
-import createSocketIdentifyMessage from '../../../utils/createSocketIdentifyMessage'
-import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
-import PlayerFactory from '../../../fixtures/PlayerFactory'
 import { createSocketTicket } from '../../../../src/lib/sockets/createSocketTicket'
+import PlayerFactory from '../../../fixtures/PlayerFactory'
+import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
+import createSocketIdentifyMessage from '../../../utils/createSocketIdentifyMessage'
 import createTestSocket from '../../../utils/createTestSocket'
 
 describe('Player listeners - identify', () => {
   it('should successfully identify a player', async () => {
-    const { identifyMessage, ticket, player } = await createSocketIdentifyMessage([APIKeyScope.READ_PLAYERS])
+    const { identifyMessage, ticket, player } = await createSocketIdentifyMessage([
+      APIKeyScope.READ_PLAYERS,
+    ])
 
     await createTestSocket(`/?ticket=${ticket}`, async (client) => {
       client.sendJson(identifyMessage)
@@ -19,23 +21,25 @@ describe('Player listeners - identify', () => {
   })
 
   it('should require the socket token to be valid', async () => {
-    const { identifyMessage, ticket } = await createSocketIdentifyMessage([APIKeyScope.READ_PLAYERS])
+    const { identifyMessage, ticket } = await createSocketIdentifyMessage([
+      APIKeyScope.READ_PLAYERS,
+    ])
 
     await createTestSocket(`/?ticket=${ticket}`, async (client) => {
       client.sendJson({
         ...identifyMessage,
         data: {
           ...identifyMessage.data,
-          socketToken: 'invalid'
-        }
+          socketToken: 'invalid',
+        },
       })
       await client.expectJsonToStrictEqual({
         res: 'v1.error',
         data: {
           req: 'v1.players.identify',
           message: 'Invalid socket token',
-          errorCode: 'INVALID_SOCKET_TOKEN'
-        }
+          errorCode: 'INVALID_SOCKET_TOKEN',
+        },
       })
     })
   })
@@ -57,8 +61,8 @@ describe('Player listeners - identify', () => {
         data: {
           playerAliasId: player.aliases[0].id,
           socketToken: socketToken,
-          sessionToken: sessionToken
-        }
+          sessionToken: sessionToken,
+        },
       })
       await client.expectJson((actual) => {
         expect(actual.res).toBe('v1.players.identify.success')
@@ -81,16 +85,16 @@ describe('Player listeners - identify', () => {
         data: {
           playerAliasId: player.aliases[0].id,
           socketToken: socketToken,
-          sessionToken: 'blah'
-        }
+          sessionToken: 'blah',
+        },
       })
       await client.expectJsonToStrictEqual({
         res: 'v1.error',
         data: {
           req: 'v1.players.identify',
           message: 'Invalid session token',
-          errorCode: 'INVALID_SESSION_TOKEN'
-        }
+          errorCode: 'INVALID_SESSION_TOKEN',
+        },
       })
     })
   })
@@ -108,16 +112,16 @@ describe('Player listeners - identify', () => {
         req: 'v1.players.identify',
         data: {
           playerAliasId: player.aliases[0].id,
-          socketToken: socketToken
-        }
+          socketToken: socketToken,
+        },
       })
       await client.expectJsonToStrictEqual({
         res: 'v1.error',
         data: {
           req: 'v1.players.identify',
           message: 'Invalid session token',
-          errorCode: 'INVALID_SESSION_TOKEN'
-        }
+          errorCode: 'INVALID_SESSION_TOKEN',
+        },
       })
     })
   })

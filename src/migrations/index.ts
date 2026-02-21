@@ -37,8 +37,8 @@ import { CreateGameChannelTables } from './20241206233511CreateGameChannelTables
 import { IncreasePlayerAliasIdentifierLength } from './20241221210019IncreasePlayerAliasIdentifierLength'
 import { DropPlanActionTablesAddPlayerLimit } from './20250126082032DropPlanActionTablesAddPlayerLimit'
 import { AddLeaderboardRefreshIntervalAndEntryDeletedAt } from './20250212031914AddLeaderboardRefreshIntervalAndEntryDeletedAt'
-import { DeletePlayerAliasAnonymisedColumn } from './20250217004535DeletePlayerAliasAnonymisedColumn'
 import { CreatePlayerPresenceTable } from './20250213081652CreatePlayerPresenceTable'
+import { DeletePlayerAliasAnonymisedColumn } from './20250217004535DeletePlayerAliasAnonymisedColumn'
 import { CascadePlayerPresenceAlias } from './20250219233504CascadePlayerPresenceAlias'
 import { ModifyPlayerPropLengths } from './20250402161623ModifyPlayerPropLengths'
 import { AddGameChannelPrivateColumn } from './20250411180623AddGameChannelPrivateColumn'
@@ -66,258 +66,258 @@ import { AddPlayerGameStatUniqueConstraint } from './20260214224025AddPlayerGame
 export default [
   {
     name: 'InitialMigration',
-    class: InitialMigration
+    class: InitialMigration,
   },
   {
     name: 'CreateDataExportsTable',
-    class: CreateDataExportsTable
+    class: CreateDataExportsTable,
   },
   {
     name: 'CreateLeaderboardsTable',
-    class: CreateLeaderboardsTable
+    class: CreateLeaderboardsTable,
   },
   {
     name: 'CreateUserTwoFactorAuthTable',
-    class: CreateUserTwoFactorAuthTable
+    class: CreateUserTwoFactorAuthTable,
   },
   {
     name: 'CreateUserRecoveryCodeTable',
-    class: CreateUserRecoveryCodeTable
+    class: CreateUserRecoveryCodeTable,
   },
   {
     name: 'AddLeaderboardEntryHiddenColumn',
-    class: AddLeaderboardEntryHiddenColumn
+    class: AddLeaderboardEntryHiddenColumn,
   },
   {
     name: 'CreateGameSavesTable',
-    class: CreateGameSavesTable
+    class: CreateGameSavesTable,
   },
   {
     name: 'CreateGameActivitiesTable',
-    class: CreateGameActivitiesTable
+    class: CreateGameActivitiesTable,
   },
   {
     name: 'SetUserTwoFactorAuthEnabledDefaultFalse',
-    class: SetUserTwoFactorAuthEnabledDefaultFalse
+    class: SetUserTwoFactorAuthEnabledDefaultFalse,
   },
   {
     name: 'CreateGameStatsTable',
-    class: CreateGameStatsTable
+    class: CreateGameStatsTable,
   },
   {
     name: 'AddUsernameColumn',
-    class: AddUsernameColumn
+    class: AddUsernameColumn,
   },
   {
     name: 'CreateInvitesTable',
-    class: CreateInvitesTable
+    class: CreateInvitesTable,
   },
   {
     name: 'MakeGameActivityUserNullable',
-    class: MakeGameActivityUserNullable
+    class: MakeGameActivityUserNullable,
   },
   {
     name: 'CreatePricingPlansTable',
-    class: CreatePricingPlansTable
+    class: CreatePricingPlansTable,
   },
   {
     name: 'CreateIntegrationsTable',
-    class: CreateIntegrationsTable
+    class: CreateIntegrationsTable,
   },
   {
     name: 'CreateSteamIntegrationTables',
-    class: CreateSteamIntegrationTables
+    class: CreateSteamIntegrationTables,
   },
   {
     name: 'PlayerAliasServiceUseEnum',
-    class: PlayerAliasServiceUseEnum
+    class: PlayerAliasServiceUseEnum,
   },
   {
     name: 'CreatePlayerPropsTable',
-    class: CreatePlayerPropsTable
+    class: CreatePlayerPropsTable,
   },
   {
     name: 'CreatePlayerGroupsTables',
-    class: CreatePlayerGroupsTables
+    class: CreatePlayerGroupsTables,
   },
   {
     name: 'AddFailedJobStackColumn',
-    class: AddFailedJobStackColumn
+    class: AddFailedJobStackColumn,
   },
   {
     name: 'DropSteamworksLeaderboardMappingUnique',
-    class: DropSteamworksLeaderboardMappingUnique
+    class: DropSteamworksLeaderboardMappingUnique,
   },
   {
     name: 'UpdateTableDefaultValues',
-    class: UpdateTableDefaultValues
+    class: UpdateTableDefaultValues,
   },
   {
     name: 'CreateGameSecretsTable',
-    class: CreateGameSecretsTable
+    class: CreateGameSecretsTable,
   },
   {
     name: 'AddAPIKeyLastUsedAtColumn',
-    class: AddAPIKeyLastUsedAtColumn
+    class: AddAPIKeyLastUsedAtColumn,
   },
   {
     name: 'CreateGameFeedbackAndCategoryTables',
-    class: CreateGameFeedbackAndCategoryTables
+    class: CreateGameFeedbackAndCategoryTables,
   },
   {
     name: 'AddAPIKeyUpdatedAtColumn',
-    class: AddAPIKeyUpdatedAtColumn
+    class: AddAPIKeyUpdatedAtColumn,
   },
   {
     name: 'CreatePlayerAuthTable',
-    class: CreatePlayerAuthTable
+    class: CreatePlayerAuthTable,
   },
   {
     name: 'CreatePlayerAuthActivityTable',
-    class: CreatePlayerAuthActivityTable
+    class: CreatePlayerAuthActivityTable,
   },
   {
     name: 'UpdatePlayerAliasServiceColumn',
-    class: UpdatePlayerAliasServiceColumn
+    class: UpdatePlayerAliasServiceColumn,
   },
   {
     name: 'AddPlayerAliasAnonymisedColumn',
-    class: AddPlayerAliasAnonymisedColumn
+    class: AddPlayerAliasAnonymisedColumn,
   },
   {
     name: 'AddLeaderboardEntryPropsColumn',
-    class: AddLeaderboardEntryPropsColumn
+    class: AddLeaderboardEntryPropsColumn,
   },
   {
     name: 'CreateUserPinnedGroupsTable',
-    class: CreateUserPinnedGroupsTable
+    class: CreateUserPinnedGroupsTable,
   },
   {
     name: 'AddPlayerGroupMembersVisibleColumn',
-    class: AddPlayerGroupMembersVisibleColumn
+    class: AddPlayerGroupMembersVisibleColumn,
   },
   {
     name: 'AddPlayerPropCreatedAtColumn',
-    class: AddPlayerPropCreatedAtColumn
+    class: AddPlayerPropCreatedAtColumn,
   },
   {
     name: 'AddPlayerAliasLastSeenAtColumn',
-    class: AddPlayerAliasLastSeenAtColumn
+    class: AddPlayerAliasLastSeenAtColumn,
   },
   {
     name: 'CreateGameChannelTables',
-    class: CreateGameChannelTables
+    class: CreateGameChannelTables,
   },
   {
     name: 'IncreasePlayerAliasIdentifierLength',
-    class: IncreasePlayerAliasIdentifierLength
+    class: IncreasePlayerAliasIdentifierLength,
   },
   {
     name: 'DropPlanActionTablesAddPlayerLimit',
-    class: DropPlanActionTablesAddPlayerLimit
+    class: DropPlanActionTablesAddPlayerLimit,
   },
   {
     name: 'AddLeaderboardRefreshIntervalAndEntryDeletedAt',
-    class: AddLeaderboardRefreshIntervalAndEntryDeletedAt
+    class: AddLeaderboardRefreshIntervalAndEntryDeletedAt,
   },
   {
     name: 'DeletePlayerAliasAnonymisedColumn',
-    class: DeletePlayerAliasAnonymisedColumn
+    class: DeletePlayerAliasAnonymisedColumn,
   },
   {
     name: 'CreatePlayerPresenceTable',
-    class: CreatePlayerPresenceTable
+    class: CreatePlayerPresenceTable,
   },
   {
     name: 'CascadePlayerPresenceAlias',
-    class: CascadePlayerPresenceAlias
+    class: CascadePlayerPresenceAlias,
   },
   {
     name: 'ModifyPlayerPropLengths',
-    class: ModifyPlayerPropLengths
+    class: ModifyPlayerPropLengths,
   },
   {
     name: 'AddGameChannelPrivateColumn',
-    class: AddGameChannelPrivateColumn
+    class: AddGameChannelPrivateColumn,
   },
   {
     name: 'CreateLeaderboardEntryPropTable',
-    class: CreateLeaderboardEntryPropTable
+    class: CreateLeaderboardEntryPropTable,
   },
   {
     name: 'AddCascadeDeleteRules',
-    class: AddCascadeDeleteRules
+    class: AddCascadeDeleteRules,
   },
   {
     name: 'AddPurgeAndWebsiteGameColumns',
-    class: AddPurgeAndWebsiteGameColumns
+    class: AddPurgeAndWebsiteGameColumns,
   },
   {
     name: 'CreateGameChannelPropTable',
-    class: CreateGameChannelPropTable
+    class: CreateGameChannelPropTable,
   },
   {
     name: 'AddGameChannelTemporaryMembershipColumn',
-    class: AddGameChannelTemporaryMembershipColumn
+    class: AddGameChannelTemporaryMembershipColumn,
   },
   {
     name: 'CreateGameChannelStoragePropTable',
-    class: CreateGameChannelStoragePropTable
+    class: CreateGameChannelStoragePropTable,
   },
   {
     name: 'AddPlayerGroupQueryIndexes',
-    class: AddPlayerGroupQueryIndexes
+    class: AddPlayerGroupQueryIndexes,
   },
   {
     name: 'AddPurgeRetentionDaysColumns',
-    class: AddPurgeRetentionDaysColumns
+    class: AddPurgeRetentionDaysColumns,
   },
   {
     name: 'CreateGameFeedbackPropTable',
-    class: CreateGameFeedbackPropTable
+    class: CreateGameFeedbackPropTable,
   },
   {
     name: 'AddPlayerDevBuildColumn',
-    class: AddPlayerDevBuildColumn
+    class: AddPlayerDevBuildColumn,
   },
   {
     name: 'PlayerAliasIdentifierServiceIndex',
-    class: PlayerAliasIdentifierServiceIndex
+    class: PlayerAliasIdentifierServiceIndex,
   },
   {
     name: 'InternalNameGameIndexes',
-    class: InternalNameGameIndexes
+    class: InternalNameGameIndexes,
   },
   {
     name: 'CreateSteamworksLeaderboardEntryTable',
-    class: CreateSteamworksLeaderboardEntryTable
+    class: CreateSteamworksLeaderboardEntryTable,
   },
   {
     name: 'CreateSteamworksPlayerStatTable',
-    class: CreateSteamworksPlayerStatTable
+    class: CreateSteamworksPlayerStatTable,
   },
   {
     name: 'AddGameChannelStoragePropKeyIndex',
-    class: AddGameChannelStoragePropKeyIndex
+    class: AddGameChannelStoragePropKeyIndex,
   },
   {
     name: 'AddLeaderboardUniqueByPropsColumn',
-    class: AddLeaderboardUniqueByPropsColumn
+    class: AddLeaderboardUniqueByPropsColumn,
   },
   {
     name: 'AddLeaderboardEntryPropsDigestColumn',
-    class: AddLeaderboardEntryPropsDigestColumn
+    class: AddLeaderboardEntryPropsDigestColumn,
   },
   {
     name: 'CreatePlayersToDeleteTable',
-    class: CreatePlayersToDeleteTable
+    class: CreatePlayersToDeleteTable,
   },
   {
     name: 'CreatePlayerAliasSubscriptionTable',
-    class: CreatePlayerAliasSubscriptionTable
+    class: CreatePlayerAliasSubscriptionTable,
   },
   {
     name: 'AddPlayerGameStatUniqueConstraint',
-    class: AddPlayerGameStatUniqueConstraint
-  }
+    class: AddPlayerGameStatUniqueConstraint,
+  },
 ]

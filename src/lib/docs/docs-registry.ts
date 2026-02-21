@@ -1,8 +1,12 @@
-import { extractParamsFromSchema, type ExtractedParam, type ExtractedParams } from './schema-introspector'
-import type { ValidationSchema } from '../../middleware/validator-middleware'
 import z from 'zod'
+import type { ValidationSchema } from '../../middleware/validator-middleware'
 import { Middleware } from '../routing/router'
 import { RouteState } from '../routing/state'
+import {
+  extractParamsFromSchema,
+  type ExtractedParam,
+  type ExtractedParams,
+} from './schema-introspector'
 
 type ZodType = typeof z
 
@@ -43,7 +47,7 @@ export type ServiceDocs = {
 }
 
 function extractScopesFromMiddleware<S extends RouteState>(middleware?: Middleware<S>[]) {
-  for (const mw of (middleware ?? [])) {
+  for (const mw of middleware ?? []) {
     if (typeof mw === 'function' && 'scopes' in mw && Array.isArray(mw.scopes)) {
       return mw.scopes as string[]
     }
@@ -64,7 +68,7 @@ export class DocsRegistry {
           name,
           required: value.required,
           description: value.description,
-          type: value.type
+          type: value.type,
         })
       }
     }
@@ -78,7 +82,7 @@ export class DocsRegistry {
     path,
     schema,
     middleware,
-    docs
+    docs,
   }: {
     key: string
     method: HttpMethod
@@ -89,9 +93,7 @@ export class DocsRegistry {
   }) {
     const service = this.services.get(key) ?? this.addService(key, path)
 
-    const params = schema
-      ? extractParamsFromSchema(schema(z))
-      : undefined
+    const params = schema ? extractParamsFromSchema(schema(z)) : undefined
 
     service.routes.push({
       method: method,
@@ -99,7 +101,7 @@ export class DocsRegistry {
       description: docs?.description,
       params: this.flattenParams(params),
       samples: docs?.samples,
-      scopes: extractScopesFromMiddleware(middleware)
+      scopes: extractScopesFromMiddleware(middleware),
     })
   }
 
@@ -107,7 +109,7 @@ export class DocsRegistry {
     const service: ServiceDocs = {
       name,
       path,
-      routes: []
+      routes: [],
     }
     this.services.set(name, service)
     return service
@@ -120,6 +122,6 @@ export class DocsRegistry {
 
 if (!globalThis.talo) {
   globalThis.talo = {
-    docs: new DocsRegistry()
+    docs: new DocsRegistry(),
   }
 }

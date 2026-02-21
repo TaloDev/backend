@@ -1,5 +1,5 @@
-import { protectedRoute } from '../../../lib/routing/router'
 import UserSession from '../../../entities/user-session'
+import { protectedRoute } from '../../../lib/routing/router'
 
 export const logoutRoute = protectedRoute({
   method: 'post',
@@ -10,14 +10,14 @@ export const logoutRoute = protectedRoute({
 
     const sessions = await em.repo(UserSession).find({
       user: ctx.state.jwt.sub,
-      userAgent
+      userAgent,
     })
     await em.remove(sessions).flush()
 
     ctx.cookies.set('refreshToken', null, { expires: new Date(0) })
 
     return {
-      status: 204
+      status: 204,
     }
-  }
+  },
 })

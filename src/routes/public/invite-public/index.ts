@@ -1,5 +1,5 @@
-import { publicRouter } from '../../../lib/routing/router'
 import Invite from '../../../entities/invite'
+import { publicRouter } from '../../../lib/routing/router'
 
 export function invitePublicRouter() {
   return publicRouter('/public/invites', ({ route }) => {
@@ -10,11 +10,14 @@ export function invitePublicRouter() {
         const { id } = ctx.params
         const em = ctx.em
 
-        const invite = await em.repo(Invite).findOne({
-          token: id
-        }, {
-          populate: ['organisation', 'invitedByUser']
-        })
+        const invite = await em.repo(Invite).findOne(
+          {
+            token: id,
+          },
+          {
+            populate: ['organisation', 'invitedByUser'],
+          },
+        )
 
         if (!invite) {
           return ctx.throw(404, 'Invite not found')
@@ -23,10 +26,10 @@ export function invitePublicRouter() {
         return {
           status: 200,
           body: {
-            invite
-          }
+            invite,
+          },
         }
-      }
+      },
     })
   })
 }

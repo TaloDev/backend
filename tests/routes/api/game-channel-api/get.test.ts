@@ -1,6 +1,6 @@
 import request from 'supertest'
-import GameChannelFactory from '../../../fixtures/GameChannelFactory'
 import { APIKeyScope } from '../../../../src/entities/api-key'
+import GameChannelFactory from '../../../fixtures/GameChannelFactory'
 import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
 
 describe('Game channel API - get', () => {

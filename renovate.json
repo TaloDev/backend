@@ -1,8 +1,6 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": [
-    "config:base"
-  ],
+  "extends": ["config:base"],
   "packageRules": [
     {
       "matchDepTypes": ["devDependencies"],
@@ -16,9 +14,7 @@
       "enabled": false
     },
     {
-      "matchSourceUrls": [
-        "https://github.com/mikro-orm/mikro-orm"
-      ],
+      "matchSourceUrls": ["https://github.com/mikro-orm/mikro-orm"],
       "matchUpdateTypes": ["minor", "patch"],
       "groupName": "mikro-orm"
     }

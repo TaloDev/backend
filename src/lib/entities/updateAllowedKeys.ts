@@ -1,7 +1,7 @@
 export default function updateAllowedKeys<T>(
   entity: T,
   body: Record<string, unknown>,
-  allowedKeys: (keyof T)[]
+  allowedKeys: (keyof T)[],
 ): [T, string[]] {
   const changedProperties: string[] = []
 

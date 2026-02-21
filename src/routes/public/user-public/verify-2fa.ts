@@ -1,7 +1,7 @@
-import { publicRoute } from '../../../lib/routing/router'
-import User from '../../../entities/user'
 import { authenticator } from '@otplib/preset-default'
+import User from '../../../entities/user'
 import { buildTokenPair } from '../../../lib/auth/buildTokenPair'
+import { publicRoute } from '../../../lib/routing/router'
 import { setUserLastSeenAt } from '../../../lib/users/setUserLastSeenAt'
 
 export const verify2faRoute = publicRoute({
@@ -10,8 +10,8 @@ export const verify2faRoute = publicRoute({
   schema: (z) => ({
     body: z.object({
       code: z.string().min(1),
-      userId: z.number()
-    })
+      userId: z.number(),
+    }),
   }),
   handler: async (ctx) => {
     const { code, userId } = ctx.state.validated.body
@@ -25,14 +25,14 @@ export const verify2faRoute = publicRoute({
     if (!hasSession) {
       return {
         status: 403,
-        body: { message: 'Session expired', sessionExpired: true }
+        body: { message: 'Session expired', sessionExpired: true },
       }
     }
 
     if (!authenticator.check(code, user.twoFactorAuth!.secret)) {
       return {
         status: 403,
-        body: { message: 'Invalid code' }
+        body: { message: 'Invalid code' },
       }
     }
 
@@ -44,8 +44,8 @@ export const verify2faRoute = publicRoute({
       status: 200,
       body: {
         accessToken,
-        user
-      }
+        user,
+      },
     }
-  }
+  },
 })

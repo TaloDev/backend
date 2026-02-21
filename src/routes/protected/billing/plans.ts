@@ -1,18 +1,21 @@
+import assert from 'node:assert'
 import Stripe from 'stripe'
-import { protectedRoute } from '../../../lib/routing/router'
 import PricingPlan from '../../../entities/pricing-plan'
 import initStripe from '../../../lib/billing/initStripe'
-import assert from 'node:assert'
+import { protectedRoute } from '../../../lib/routing/router'
 
-type PricingPlanProduct = Omit<PricingPlan & {
-  name: string
-  prices: {
-    currency: string
-    amount: number
-    interval: Stripe.Price.Recurring.Interval
-    current: boolean
-  }[]
-}, 'toJSON'>
+type PricingPlanProduct = Omit<
+  PricingPlan & {
+    name: string
+    prices: {
+      currency: string
+      amount: number
+      interval: Stripe.Price.Recurring.Interval
+      current: boolean
+    }[]
+  },
+  'toJSON'
+>
 
 export const plansRoute = protectedRoute({
   method: 'get',
@@ -23,8 +26,8 @@ export const plansRoute = protectedRoute({
       return {
         status: 200,
         body: {
-          pricingPlans: []
-        }
+          pricingPlans: [],
+        },
       }
     }
 
@@ -38,7 +41,7 @@ export const plansRoute = protectedRoute({
       const prices = await stripe.prices.list({
         product: plan.stripeId,
         active: true,
-        expand: ['data.product']
+        expand: ['data.product'],
       })
 
       pricingPlanProducts.push({
@@ -52,17 +55,17 @@ export const plansRoute = protectedRoute({
             amount: price.unit_amount,
             currency: price.currency,
             interval: price.recurring.interval,
-            current: price.id === organisation.pricingPlan.stripePriceId
+            current: price.id === organisation.pricingPlan.stripePriceId,
           }
-        })
+        }),
       })
     }
 
     return {
       status: 200,
       body: {
-        pricingPlans: pricingPlanProducts
-      }
+        pricingPlans: pricingPlanProducts,
+      },
     }
-  }
+  },
 })

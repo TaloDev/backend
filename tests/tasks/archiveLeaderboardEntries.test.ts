@@ -1,16 +1,16 @@
+import { randNumber } from '@ngneat/falso'
+import axios from 'axios'
+import AxiosMockAdapter from 'axios-mock-adapter'
+import { sub } from 'date-fns'
+import { IntegrationType } from '../../src/entities/integration'
 import { LeaderboardRefreshInterval } from '../../src/entities/leaderboard'
+import SteamworksLeaderboardMapping from '../../src/entities/steamworks-leaderboard-mapping'
+import archiveLeaderboardEntries from '../../src/tasks/archiveLeaderboardEntries'
+import IntegrationConfigFactory from '../fixtures/IntegrationConfigFactory'
+import IntegrationFactory from '../fixtures/IntegrationFactory'
+import LeaderboardEntryFactory from '../fixtures/LeaderboardEntryFactory'
 import LeaderboardFactory from '../fixtures/LeaderboardFactory'
 import PlayerFactory from '../fixtures/PlayerFactory'
-import LeaderboardEntryFactory from '../fixtures/LeaderboardEntryFactory'
-import { sub } from 'date-fns'
-import IntegrationFactory from '../fixtures/IntegrationFactory'
-import { IntegrationType } from '../../src/entities/integration'
-import IntegrationConfigFactory from '../fixtures/IntegrationConfigFactory'
-import AxiosMockAdapter from 'axios-mock-adapter'
-import axios from 'axios'
-import archiveLeaderboardEntries from '../../src/tasks/archiveLeaderboardEntries'
-import SteamworksLeaderboardMapping from '../../src/entities/steamworks-leaderboard-mapping'
-import { randNumber } from '@ngneat/falso'
 import createOrganisationAndGame from '../utils/createOrganisationAndGame'
 
 describe('archiveLeaderboardEntries', () => {
@@ -29,9 +29,11 @@ describe('archiveLeaderboardEntries', () => {
   it('should archive daily entries older than today', async () => {
     const [, game] = await createOrganisationAndGame()
 
-    const leaderboard = await new LeaderboardFactory([game]).state(() => ({
-      refreshInterval: LeaderboardRefreshInterval.DAILY
-    })).one()
+    const leaderboard = await new LeaderboardFactory([game])
+      .state(() => ({
+        refreshInterval: LeaderboardRefreshInterval.DAILY,
+      }))
+      .one()
 
     const player = await new PlayerFactory([game]).one()
 
@@ -55,9 +57,11 @@ describe('archiveLeaderboardEntries', () => {
   it('should archive weekly entries from previous weeks', async () => {
     const [, game] = await createOrganisationAndGame()
 
-    const leaderboard = await new LeaderboardFactory([game]).state(() => ({
-      refreshInterval: LeaderboardRefreshInterval.WEEKLY
-    })).one()
+    const leaderboard = await new LeaderboardFactory([game])
+      .state(() => ({
+        refreshInterval: LeaderboardRefreshInterval.WEEKLY,
+      }))
+      .one()
 
     const player = await new PlayerFactory([game]).one()
 
@@ -81,9 +85,11 @@ describe('archiveLeaderboardEntries', () => {
   it('should archive monthly entries from previous months', async () => {
     const [, game] = await createOrganisationAndGame()
 
-    const leaderboard = await new LeaderboardFactory([game]).state(() => ({
-      refreshInterval: LeaderboardRefreshInterval.MONTHLY
-    })).one()
+    const leaderboard = await new LeaderboardFactory([game])
+      .state(() => ({
+        refreshInterval: LeaderboardRefreshInterval.MONTHLY,
+      }))
+      .one()
 
     const player = await new PlayerFactory([game]).one()
 
@@ -107,9 +113,11 @@ describe('archiveLeaderboardEntries', () => {
   it('should archive yearly entries from previous years', async () => {
     const [, game] = await createOrganisationAndGame()
 
-    const leaderboard = await new LeaderboardFactory([game]).state(() => ({
-      refreshInterval: LeaderboardRefreshInterval.YEARLY
-    })).one()
+    const leaderboard = await new LeaderboardFactory([game])
+      .state(() => ({
+        refreshInterval: LeaderboardRefreshInterval.YEARLY,
+      }))
+      .one()
 
     const player = await new PlayerFactory([game]).one()
 
@@ -133,21 +141,30 @@ describe('archiveLeaderboardEntries', () => {
   it('should trigger steamworks integration when archiving entries', async () => {
     const [, game] = await createOrganisationAndGame()
 
-    const leaderboard = await new LeaderboardFactory([game]).state(() => ({
-      refreshInterval: LeaderboardRefreshInterval.DAILY
-    })).one()
+    const leaderboard = await new LeaderboardFactory([game])
+      .state(() => ({
+        refreshInterval: LeaderboardRefreshInterval.DAILY,
+      }))
+      .one()
 
     const deleteMock = vi.fn(() => [200, { result: { result: 1 } }])
-    axiosMock.onPost('https://partner.steam-api.com/ISteamLeaderboards/DeleteLeaderboardScore/v1').reply(deleteMock)
+    axiosMock
+      .onPost('https://partner.steam-api.com/ISteamLeaderboards/DeleteLeaderboardScore/v1')
+      .reply(deleteMock)
 
-    const mapping = new SteamworksLeaderboardMapping(randNumber({ min: 100_000, max: 999_999 }), leaderboard)
+    const mapping = new SteamworksLeaderboardMapping(
+      randNumber({ min: 100_000, max: 999_999 }),
+      leaderboard,
+    )
 
     const player = await new PlayerFactory([game]).withSteamAlias().one()
     const oldEntry = await new LeaderboardEntryFactory(leaderboard, [player])
       .state(() => ({ createdAt: sub(new Date(), { days: 2 }) }))
       .one()
 
-    const config = await new IntegrationConfigFactory().state(() => ({ syncLeaderboards: true })).one()
+    const config = await new IntegrationConfigFactory()
+      .state(() => ({ syncLeaderboards: true }))
+      .one()
     const integration = await new IntegrationFactory()
       .construct(IntegrationType.STEAMWORKS, game, config)
       .one()

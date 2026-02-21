@@ -18,10 +18,7 @@ describe('Game config API - index', () => {
   it('should not return the game config if the scope is not valid', async () => {
     const [, token] = await createAPIKeyAndToken([])
 
-    await request(app)
-      .get('/v1/game-config')
-      .auth(token, { type: 'bearer' })
-      .expect(403)
+    await request(app).get('/v1/game-config').auth(token, { type: 'bearer' }).expect(403)
   })
 
   it('should filter out meta props from the game config', async () => {

@@ -1,11 +1,11 @@
 import 'dotenv/config'
-import { entities } from '../entities'
-import { subscribers } from '../subscribers'
-import migrationsList from '../migrations'
-import { TsMorphMetadataProvider } from '@mikro-orm/reflection'
 import { Migrator } from '@mikro-orm/migrations'
 import { defineConfig, MikroORM } from '@mikro-orm/mysql'
+import { TsMorphMetadataProvider } from '@mikro-orm/reflection'
 import { RedisCacheAdapter } from 'mikro-orm-cache-adapter-redis'
+import { entities } from '../entities'
+import migrationsList from '../migrations'
+import { subscribers } from '../subscribers'
 import redisConfig from './redis.config'
 
 const ormConfig = defineConfig({
@@ -18,7 +18,7 @@ const ormConfig = defineConfig({
   password: process.env.DB_PASS,
   migrations: {
     migrationsList,
-    path: 'src/migrations' // for generating migrations via the cli
+    path: 'src/migrations', // for generating migrations via the cli
   },
   metadataProvider: TsMorphMetadataProvider,
   extensions: [Migrator],
@@ -26,13 +26,13 @@ const ormConfig = defineConfig({
     min: Number(process.env.MIKRO_ORM_POOL_MIN) || 0,
     max: Number(process.env.MIKRO_ORM_POOL_MAX) || 10,
     idleTimeoutMillis: Number(process.env.MIKRO_ORM_POOL_IDLE_TIMEOUT) || undefined,
-    acquireTimeoutMillis: Number(process.env.MIKRO_ORM_POOL_ACQUIRE_TIMEOUT) || undefined
+    acquireTimeoutMillis: Number(process.env.MIKRO_ORM_POOL_ACQUIRE_TIMEOUT) || undefined,
   },
   resultCache: {
     adapter: RedisCacheAdapter,
-    options: redisConfig
+    options: redisConfig,
   },
-  loadStrategy: 'balanced'
+  loadStrategy: 'balanced',
 })
 
 export default ormConfig // loaded in package.json

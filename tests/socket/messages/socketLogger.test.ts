@@ -1,11 +1,16 @@
-import { WebSocket } from 'ws'
-import TaloSocket from '../../../src/socket'
-import SocketConnection from '../../../src/socket/socketConnection'
-import createAPIKeyAndToken from '../../utils/createAPIKeyAndToken'
 import { createServer, IncomingMessage } from 'http'
 import { Socket } from 'net'
-import { logConnection, logConnectionClosed, logRequest, logResponse } from '../../../src/socket/messages/socketLogger'
+import { WebSocket } from 'ws'
+import TaloSocket from '../../../src/socket'
+import {
+  logConnection,
+  logConnectionClosed,
+  logRequest,
+  logResponse,
+} from '../../../src/socket/messages/socketLogger'
+import SocketConnection from '../../../src/socket/socketConnection'
 import SocketTicket from '../../../src/socket/socketTicket'
+import createAPIKeyAndToken from '../../utils/createAPIKeyAndToken'
 
 describe('Socket logger', () => {
   const consoleMock = vi.spyOn(console, 'info').mockImplementation(() => undefined)
@@ -38,10 +43,7 @@ describe('Socket logger', () => {
     const ws = new WebSocket(null, [], {})
     const conn = new SocketConnection(wss, ws, ticket, '0.0.0.0')
 
-    return [
-      conn,
-      () => server.close()
-    ]
+    return [conn, () => server.close()]
   }
 
   it('should log requests', async () => {
@@ -77,7 +79,11 @@ describe('Socket logger', () => {
   it('should log responses', async () => {
     const [conn, cleanup] = await createSocketConnection()
 
-    logResponse(conn, 'v1.players.identify.success', JSON.stringify({ res: 'v1.players.identify.success', data: {} }))
+    logResponse(
+      conn,
+      'v1.players.identify.success',
+      JSON.stringify({ res: 'v1.players.identify.success', data: {} }),
+    )
 
     expect(consoleMock).toHaveBeenLastCalledWith('<-- WSS v1.players.identify.success')
 

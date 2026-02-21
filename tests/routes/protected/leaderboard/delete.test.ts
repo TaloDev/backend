@@ -1,39 +1,42 @@
 import request from 'supertest'
+import GameActivity, { GameActivityType } from '../../../../src/entities/game-activity'
 import { UserType } from '../../../../src/entities/user'
 import LeaderboardFactory from '../../../fixtures/LeaderboardFactory'
-import GameActivity, { GameActivityType } from '../../../../src/entities/game-activity'
-import userPermissionProvider from '../../../utils/userPermissionProvider'
-import createUserAndToken from '../../../utils/createUserAndToken'
 import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
+import createUserAndToken from '../../../utils/createUserAndToken'
+import userPermissionProvider from '../../../utils/userPermissionProvider'
 
 describe('Leaderboard - delete', () => {
-  it.each(userPermissionProvider([
-    UserType.ADMIN
-  ], 204))('should return a %i for a %s user', async (statusCode, _, type) => {
-    const [organisation, game] = await createOrganisationAndGame()
-    const [token] = await createUserAndToken({ type }, organisation)
+  it.each(userPermissionProvider([UserType.ADMIN], 204))(
+    'should return a %i for a %s user',
+    async (statusCode, _, type) => {
+      const [organisation, game] = await createOrganisationAndGame()
+      const [token] = await createUserAndToken({ type }, organisation)
 
-    const leaderboard = await new LeaderboardFactory([game]).one()
-    await em.persistAndFlush(leaderboard)
+      const leaderboard = await new LeaderboardFactory([game]).one()
+      await em.persistAndFlush(leaderboard)
 
-    const res = await request(app)
-      .delete(`/games/${game.id}/leaderboards/${leaderboard.id}`)
-      .auth(token, { type: 'bearer' })
-      .expect(statusCode)
+      const res = await request(app)
+        .delete(`/games/${game.id}/leaderboards/${leaderboard.id}`)
+        .auth(token, { type: 'bearer' })
+        .expect(statusCode)
 
-    const activity = await em.getRepository(GameActivity).findOne({
-      type: GameActivityType.LEADERBOARD_DELETED,
-      game
-    })
+      const activity = await em.getRepository(GameActivity).findOne({
+        type: GameActivityType.LEADERBOARD_DELETED,
+        game,
+      })
 
-    if (statusCode === 204) {
-      expect(activity!.extra.leaderboardInternalName).toBe(leaderboard.internalName)
-    } else {
-      expect(res.body).toStrictEqual({ message: 'You do not have permissions to delete leaderboards' })
+      if (statusCode === 204) {
+        expect(activity!.extra.leaderboardInternalName).toBe(leaderboard.internalName)
+      } else {
+        expect(res.body).toStrictEqual({
+          message: 'You do not have permissions to delete leaderboards',
+        })
 
-      expect(activity).toBeNull()
-    }
-  })
+        expect(activity).toBeNull()
+      }
+    },
+  )
 
   it('should not delete a leaderboard for a game the user has no access to', async () => {
     const [, otherGame] = await createOrganisationAndGame()

@@ -1,23 +1,17 @@
-import { protectedRoute, withMiddleware } from '../../../lib/routing/router'
-import { loadGame } from '../../../middleware/game-middleware'
-import GameFeedbackCategory from '../../../entities/game-feedback-category'
 import { EntityManager } from '@mikro-orm/mysql'
 import Game from '../../../entities/game'
+import GameFeedbackCategory from '../../../entities/game-feedback-category'
+import { protectedRoute, withMiddleware } from '../../../lib/routing/router'
+import { loadGame } from '../../../middleware/game-middleware'
 
-export async function listCategoriesHandler({
-  em,
-  game
-}: {
-  em: EntityManager
-  game: Game
-}) {
+export async function listCategoriesHandler({ em, game }: { em: EntityManager; game: Game }) {
   const feedbackCategories = await em.repo(GameFeedbackCategory).find({ game })
 
   return {
     status: 200,
     body: {
-      feedbackCategories
-    }
+      feedbackCategories,
+    },
   }
 }
 
@@ -27,5 +21,5 @@ export const listCategoriesRoute = protectedRoute({
   middleware: withMiddleware(loadGame),
   handler: (ctx) => {
     return listCategoriesHandler({ em: ctx.em, game: ctx.state.game })
-  }
+  },
 })

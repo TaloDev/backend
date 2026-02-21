@@ -1,15 +1,15 @@
-import { protectedRoute, withMiddleware } from '../../../lib/routing/router'
-import { userTypeGate } from '../../../middleware/policy-middleware'
 import Game from '../../../entities/game'
 import GameSecret from '../../../entities/game-secret'
 import { UserType } from '../../../entities/user'
+import { protectedRoute, withMiddleware } from '../../../lib/routing/router'
+import { userTypeGate } from '../../../middleware/policy-middleware'
 
 export const createRoute = protectedRoute({
   method: 'post',
   schema: (z) => ({
     body: z.object({
-      name: z.string()
-    })
+      name: z.string(),
+    }),
   }),
   middleware: withMiddleware(userTypeGate([UserType.ADMIN, UserType.DEV], 'create games')),
   handler: async (ctx) => {
@@ -27,8 +27,8 @@ export const createRoute = protectedRoute({
     return {
       status: 200,
       body: {
-        game
-      }
+        game,
+      },
     }
-  }
+  },
 })

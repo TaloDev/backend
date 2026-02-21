@@ -1,9 +1,9 @@
 import request from 'supertest'
+import UserPinnedGroup from '../../../../src/entities/user-pinned-group'
+import PlayerGroupFactory from '../../../fixtures/PlayerGroupFactory'
+import UserPinnedGroupFactory from '../../../fixtures/UserPinnedGroupFactory'
 import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
 import createUserAndToken from '../../../utils/createUserAndToken'
-import UserPinnedGroupFactory from '../../../fixtures/UserPinnedGroupFactory'
-import PlayerGroupFactory from '../../../fixtures/PlayerGroupFactory'
-import UserPinnedGroup from '../../../../src/entities/user-pinned-group'
 
 describe('Player group - toggle pinned', () => {
   it('should pin a group', async () => {
@@ -56,7 +56,7 @@ describe('Player group - toggle pinned', () => {
     expect(await em.find(UserPinnedGroup, { group })).toHaveLength(1)
   })
 
-  it('should handle unpinning a group that isn\'t pinned', async () => {
+  it("should handle unpinning a group that isn't pinned", async () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({}, organisation)
 

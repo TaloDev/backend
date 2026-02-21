@@ -1,21 +1,19 @@
 import { EntityManager } from '@mikro-orm/mysql'
-import { getMikroORM } from '../config/mikro-orm.config'
-import { PlayerToDelete } from '../entities/player-to-delete'
-import Player from '../entities/player'
-import { getGlobalQueue } from '../config/global-queues'
 import { captureException } from '@sentry/node'
+import { getGlobalQueue } from '../config/global-queues'
+import { getMikroORM } from '../config/mikro-orm.config'
+import Player from '../entities/player'
+import { PlayerToDelete } from '../entities/player-to-delete'
 import { DeleteClickHousePlayerDataConfig } from '../lib/queues/createDeleteClickHousePlayerDataQueue'
 
-export async function deleteClickHousePlayerData(
-  options: DeleteClickHousePlayerDataConfig
-) {
+export async function deleteClickHousePlayerData(options: DeleteClickHousePlayerDataConfig) {
   const queue = getGlobalQueue('delete-clickhouse-player-data')
   await queue.add('delete-clickhouse-player-data', options, {
     attempts: 5,
     backoff: {
       type: 'exponential',
-      delay: 3000
-    }
+      delay: 3000,
+    },
   })
 }
 
@@ -24,7 +22,7 @@ export async function deletePlayersFromDB(em: EntityManager, players: Player[]) 
   const aliasIds = players.flatMap((player) => player.aliases.map((alias) => alias.id))
 
   await em.transactional(async (trx) => {
-    await trx.remove(players)
+    trx.remove(players)
     await deleteClickHousePlayerData({ playerIds, aliasIds })
   })
 }
@@ -35,7 +33,7 @@ export default async function deletePlayers() {
 
   const playersToDelete = await em.repo(PlayerToDelete).findAll({
     limit: 100,
-    populate: ['player', 'player.aliases:ref']
+    populate: ['player', 'player.aliases:ref'],
   })
 
   const count = playersToDelete.length
@@ -46,7 +44,10 @@ export default async function deletePlayers() {
   console.info(`Found ${count} players to delete`)
 
   try {
-    await deletePlayersFromDB(em, playersToDelete.map((ptd) => ptd.player))
+    await deletePlayersFromDB(
+      em,
+      playersToDelete.map((ptd) => ptd.player),
+    )
     console.info(`Deleted ${count} players`)
   } catch (err) {
     console.error('Failed to delete players', err)

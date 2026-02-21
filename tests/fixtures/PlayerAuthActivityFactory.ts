@@ -1,8 +1,8 @@
+import { rand } from '@ngneat/falso'
 import { Factory } from 'hefty'
+import Game from '../../src/entities/game'
 import PlayerAuthActivity, { PlayerAuthActivityType } from '../../src/entities/player-auth-activity'
 import PlayerFactory from './PlayerFactory'
-import Game from '../../src/entities/game'
-import { rand } from '@ngneat/falso'
 
 export default class PlayerAuthActivityFactory extends Factory<PlayerAuthActivity> {
   game: Game
@@ -19,9 +19,9 @@ export default class PlayerAuthActivityFactory extends Factory<PlayerAuthActivit
         PlayerAuthActivityType.REGISTERED,
         PlayerAuthActivityType.VERIFICATION_STARTED,
         PlayerAuthActivityType.LOGGED_IN,
-        PlayerAuthActivityType.LOGGED_OUT
+        PlayerAuthActivityType.LOGGED_OUT,
       ]),
-      player: await new PlayerFactory([this.game]).withTaloAlias().one()
+      player: await new PlayerFactory([this.game]).withTaloAlias().one(),
     }))
   }
 }

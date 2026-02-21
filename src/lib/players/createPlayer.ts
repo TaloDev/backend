@@ -1,15 +1,15 @@
 import { EntityManager } from '@mikro-orm/mysql'
+import APIKey, { APIKeyScope } from '../../entities/api-key'
+import Game from '../../entities/game'
 import Player from '../../entities/player'
 import PlayerAlias from '../../entities/player-alias'
-import Game from '../../entities/game'
-import { hardSanitiseProps } from '../props/sanitiseProps'
 import checkScope from '../../policies/checkScope'
-import APIKey, { APIKeyScope } from '../../entities/api-key'
 import checkPricingPlanPlayerLimit from '../billing/checkPricingPlanPlayerLimit'
+import { hardSanitiseProps } from '../props/sanitiseProps'
 
 export type CreatePlayerInput = {
-  aliases?: { service: string, identifier: string }[]
-  props?: { key: string, value: string }[]
+  aliases?: { service: string; identifier: string }[]
+  props?: { key: string; value: string }[]
   devBuild?: boolean
 }
 
@@ -34,11 +34,7 @@ export class PlayerCreationError extends Error {
   }
 }
 
-export async function createPlayer(
-  em: EntityManager,
-  game: Game,
-  input: CreatePlayerInput
-){
+export async function createPlayer(em: EntityManager, game: Game, input: CreatePlayerInput) {
   const { aliases, props, devBuild } = input
 
   await em.populate(game, ['organisation.pricingPlan.pricingPlan'])
@@ -54,7 +50,7 @@ export async function createPlayer(
       const count = await em.repo(PlayerAlias).count({
         service: trimmedService,
         identifier: trimmedIdentifier,
-        player: { game }
+        player: { game },
       })
 
       if (count > 0) {
@@ -62,7 +58,7 @@ export async function createPlayer(
           statusCode: 400,
           message: `Player with identifier '${trimmedIdentifier}' already exists`,
           errorCode: 'IDENTIFIER_TAKEN',
-          field: 'aliases'
+          field: 'aliases',
         })
       }
 
@@ -80,7 +76,7 @@ export async function createPlayer(
       throw new PlayerCreationError({
         statusCode: 400,
         message: (err as Error).message,
-        field: 'props'
+        field: 'props',
       })
     }
   }
@@ -101,25 +97,26 @@ export async function createPlayerFromIdentifyRequest({
   service,
   identifier,
   initialProps,
-  devBuild
+  devBuild,
 }: {
   em: EntityManager
   key: APIKey
   service: string
   identifier: string
-  initialProps?: { key: string, value: string }[]
+  initialProps?: { key: string; value: string }[]
   devBuild?: boolean
 }) {
   if (checkScope(key, APIKeyScope.WRITE_PLAYERS)) {
     return createPlayer(em, key.game, {
       aliases: [{ service, identifier }],
       props: initialProps,
-      devBuild
+      devBuild,
     })
   } else {
     throw new PlayerCreationError({
       statusCode: 404,
-      message: 'Player not found. Use an access key with the write:players scope to automatically create players'
+      message:
+        'Player not found. Use an access key with the write:players scope to automatically create players',
     })
   }
 }

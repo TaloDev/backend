@@ -1,8 +1,8 @@
 import 'vitest'
-import { EntityManager } from '@mikro-orm/mysql'
-import Koa from 'koa'
 import { ClickHouseClient } from '@clickhouse/client'
+import { EntityManager } from '@mikro-orm/mysql'
 import Redis from 'ioredis'
+import Koa from 'koa'
 import { DocsRegistry } from './lib/docs/docs-registry'
 
 declare global {

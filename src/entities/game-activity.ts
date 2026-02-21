@@ -42,7 +42,7 @@ export enum GameActivityType {
   LEADERBOARD_ENTRIES_RESET,
   GAME_STAT_RESET,
   PLAYER_DELETED,
-  GAME_SETTINGS_UPDATED
+  GAME_SETTINGS_UPDATED,
 }
 
 @Entity()
@@ -168,7 +168,7 @@ export default class GameActivity {
       type: this.type,
       description: this.getActivity(),
       extra: this.extra.display,
-      createdAt: this.createdAt
+      createdAt: this.createdAt,
     }
   }
 }

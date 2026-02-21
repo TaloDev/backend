@@ -1,25 +1,30 @@
 import axios from 'axios'
 import AxiosMockAdapter from 'axios-mock-adapter'
 import Integration, { IntegrationType } from '../../src/entities/integration'
+import SteamworksIntegrationEvent from '../../src/entities/steamworks-integration-event'
 import { SteamworksPlayerStat } from '../../src/entities/steamworks-player-stat'
 import cleanupSteamworksPlayerStats from '../../src/tasks/cleanupSteamworksPlayerStats'
+import GameStatFactory from '../fixtures/GameStatFactory'
 import IntegrationConfigFactory from '../fixtures/IntegrationConfigFactory'
 import IntegrationFactory from '../fixtures/IntegrationFactory'
 import PlayerFactory from '../fixtures/PlayerFactory'
-import GameStatFactory from '../fixtures/GameStatFactory'
 import PlayerGameStatFactory from '../fixtures/PlayerGameStatFactory'
 import createOrganisationAndGame from '../utils/createOrganisationAndGame'
-import SteamworksIntegrationEvent from '../../src/entities/steamworks-integration-event'
 
 describe('cleanupSteamworksPlayerStats', () => {
   const axiosMock = new AxiosMockAdapter(axios)
 
-  const setMock = vi.fn(() => [200, {
-    result: {
-      result: 1
-    }
-  }])
-  axiosMock.onPost('https://partner.steam-api.com/ISteamUserStats/SetUserStatsForGame/v1').reply(setMock)
+  const setMock = vi.fn(() => [
+    200,
+    {
+      result: {
+        result: 1,
+      },
+    },
+  ])
+  axiosMock
+    .onPost('https://partner.steam-api.com/ISteamUserStats/SetUserStatsForGame/v1')
+    .reply(setMock)
 
   beforeEach(async () => {
     setMock.mockReset()
@@ -34,18 +39,22 @@ describe('cleanupSteamworksPlayerStats', () => {
   it('should cleanup steamworks player stats with null player stats', async () => {
     const [, game] = await createOrganisationAndGame()
     const config = await new IntegrationConfigFactory().one()
-    const integration = await new IntegrationFactory().construct(IntegrationType.STEAMWORKS, game, config).one()
+    const integration = await new IntegrationFactory()
+      .construct(IntegrationType.STEAMWORKS, game, config)
+      .one()
 
     const stat = await new GameStatFactory([game]).one()
     const players = await new PlayerFactory([game]).withSteamAlias().many(10)
 
-    const playerStats = await Promise.all(players.map(async (player) => {
-      return new SteamworksPlayerStat({
-        stat,
-        playerStat: await new PlayerGameStatFactory().construct(player, stat).one(),
-        steamUserId: player.aliases[0].identifier
-      })
-    }))
+    const playerStats = await Promise.all(
+      players.map(async (player) => {
+        return new SteamworksPlayerStat({
+          stat,
+          playerStat: await new PlayerGameStatFactory().construct(player, stat).one(),
+          steamUserId: player.aliases[0].identifier,
+        })
+      }),
+    )
 
     playerStats[0].playerStat = null
     playerStats[1].playerStat = null
@@ -65,11 +74,15 @@ describe('cleanupSteamworksPlayerStats', () => {
 
   it('should carry on even if one player stat cleanup fails', async () => {
     const consoleSpy = vi.spyOn(console, 'error')
-    vi.spyOn(Integration.prototype, 'cleanupSteamworksPlayerStat').mockRejectedValueOnce(new Error())
+    vi.spyOn(Integration.prototype, 'cleanupSteamworksPlayerStat').mockRejectedValueOnce(
+      new Error(),
+    )
 
     const [, game] = await createOrganisationAndGame()
     const config = await new IntegrationConfigFactory().one()
-    const integration = await new IntegrationFactory().construct(IntegrationType.STEAMWORKS, game, config).one()
+    const integration = await new IntegrationFactory()
+      .construct(IntegrationType.STEAMWORKS, game, config)
+      .one()
 
     const stat = await new GameStatFactory([game]).one()
     const players = await new PlayerFactory([game]).withSteamAlias().many(5)
@@ -78,7 +91,7 @@ describe('cleanupSteamworksPlayerStats', () => {
       return new SteamworksPlayerStat({
         stat,
         playerStat: null,
-        steamUserId: player.aliases[0].identifier
+        steamUserId: player.aliases[0].identifier,
       })
     })
 
@@ -106,7 +119,7 @@ describe('cleanupSteamworksPlayerStats', () => {
       return new SteamworksPlayerStat({
         stat,
         playerStat: null,
-        steamUserId: player.aliases[0].identifier
+        steamUserId: player.aliases[0].identifier,
       })
     })
 
@@ -126,7 +139,9 @@ describe('cleanupSteamworksPlayerStats', () => {
   it('should set stats to default values when cleaning up', async () => {
     const [, game] = await createOrganisationAndGame()
     const config = await new IntegrationConfigFactory().one()
-    const integration = await new IntegrationFactory().construct(IntegrationType.STEAMWORKS, game, config).one()
+    const integration = await new IntegrationFactory()
+      .construct(IntegrationType.STEAMWORKS, game, config)
+      .one()
 
     const stat = await new GameStatFactory([game]).state(() => ({ defaultValue: 100 })).one()
     const player = await new PlayerFactory([game]).withSteamAlias().one()
@@ -134,7 +149,7 @@ describe('cleanupSteamworksPlayerStats', () => {
     const playerStat = new SteamworksPlayerStat({
       stat,
       playerStat: null,
-      steamUserId: player.aliases[0].identifier
+      steamUserId: player.aliases[0].identifier,
     })
 
     await em.persistAndFlush([integration, playerStat])
@@ -155,18 +170,22 @@ describe('cleanupSteamworksPlayerStats', () => {
   it('should only cleanup steamworks player stats with null player stats', async () => {
     const [, game] = await createOrganisationAndGame()
     const config = await new IntegrationConfigFactory().one()
-    const integration = await new IntegrationFactory().construct(IntegrationType.STEAMWORKS, game, config).one()
+    const integration = await new IntegrationFactory()
+      .construct(IntegrationType.STEAMWORKS, game, config)
+      .one()
 
     const stat = await new GameStatFactory([game]).one()
     const players = await new PlayerFactory([game]).withSteamAlias().many(5)
 
-    const playerStats = await Promise.all(players.map(async (player) => {
-      return new SteamworksPlayerStat({
-        stat,
-        playerStat: await new PlayerGameStatFactory().construct(player, stat).one(),
-        steamUserId: player.aliases[0].identifier
-      })
-    }))
+    const playerStats = await Promise.all(
+      players.map(async (player) => {
+        return new SteamworksPlayerStat({
+          stat,
+          playerStat: await new PlayerGameStatFactory().construct(player, stat).one(),
+          steamUserId: player.aliases[0].identifier,
+        })
+      }),
+    )
 
     playerStats[0].playerStat = null
     playerStats[1].playerStat = null

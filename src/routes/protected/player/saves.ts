@@ -11,14 +11,14 @@ export const savesRoute = protectedRoute({
     const em = ctx.em
 
     const saves = await em.repo(GameSave).find({
-      player: ctx.state.player
+      player: ctx.state.player,
     })
 
     return {
       status: 200,
       body: {
-        saves
-      }
+        saves,
+      },
     }
-  }
+  },
 })

@@ -1,6 +1,6 @@
 import type { Next } from 'koa'
-import { APIRouteContext } from '../../../lib/routing/context'
 import GameFeedbackCategory from '../../../entities/game-feedback-category'
+import { APIRouteContext } from '../../../lib/routing/context'
 import { PlayerAliasRouteState } from '../../../middleware/player-alias-middleware'
 
 type GameFeedbackCategoryRouteContext = APIRouteContext<
@@ -14,7 +14,7 @@ export async function loadCategory(ctx: GameFeedbackCategoryRouteContext, next: 
 
   const category = await ctx.em.repo(GameFeedbackCategory).findOne({
     internalName,
-    game: ctx.state.game
+    game: ctx.state.game,
   })
 
   if (!category) {

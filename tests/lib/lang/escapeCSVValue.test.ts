@@ -29,7 +29,9 @@ describe('escapeCSVValue', () => {
 
   it('should escape values with multiple special characters', () => {
     expect(escapeCSVValue('Hello, "World"\nNew line')).toBe('"Hello, ""World""\nNew line"')
-    expect(escapeCSVValue('Complex, value with "quotes" and\nnewlines')).toBe('"Complex, value with ""quotes"" and\nnewlines"')
+    expect(escapeCSVValue('Complex, value with "quotes" and\nnewlines')).toBe(
+      '"Complex, value with ""quotes"" and\nnewlines"',
+    )
   })
 
   it('should handle empty strings', () => {

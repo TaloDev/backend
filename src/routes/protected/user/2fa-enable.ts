@@ -1,7 +1,7 @@
-import { protectedRoute } from '../../../lib/routing/router'
 import { authenticator } from '@otplib/preset-default'
-import UserTwoFactorAuth from '../../../entities/user-two-factor-auth'
 import qrcode from 'qrcode'
+import UserTwoFactorAuth from '../../../entities/user-two-factor-auth'
+import { protectedRoute } from '../../../lib/routing/router'
 
 export const enable2faRoute = protectedRoute({
   method: 'get',
@@ -13,7 +13,7 @@ export const enable2faRoute = protectedRoute({
     if (user.twoFactorAuth?.enabled) {
       return {
         status: 403,
-        body: { message: 'Two factor authentication is already enabled' }
+        body: { message: 'Two factor authentication is already enabled' },
       }
     }
 
@@ -27,8 +27,8 @@ export const enable2faRoute = protectedRoute({
     return {
       status: 200,
       body: {
-        qr
-      }
+        qr,
+      },
     }
-  }
+  },
 })

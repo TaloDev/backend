@@ -1,7 +1,7 @@
 import { EventArgs, EventSubscriber } from '@mikro-orm/mysql'
-import { deferClearResponseCache } from '../lib/perf/responseCacheQueue'
 import GameChannel from '../entities/game-channel'
 import GameChannelProp from '../entities/game-channel-prop'
+import { deferClearResponseCache } from '../lib/perf/responseCacheQueue'
 
 export class GameChannelSubscriber implements EventSubscriber {
   getSubscribedEntities() {

@@ -1,9 +1,9 @@
-import { apiRoute, withMiddleware } from '../../../lib/routing/router'
-import { requireScopes } from '../../../middleware/policy-middleware'
 import { APIKeyScope } from '../../../entities/api-key'
 import PlayerAlias from '../../../entities/player-alias'
-import { createPlayerAuthActivity, getRedisAuthKey } from './common'
 import { PlayerAuthActivityType } from '../../../entities/player-auth-activity'
+import { apiRoute, withMiddleware } from '../../../lib/routing/router'
+import { requireScopes } from '../../../middleware/policy-middleware'
+import { createPlayerAuthActivity, getRedisAuthKey } from './common'
 import { verifyDocs } from './docs'
 
 export const verifyRoute = apiRoute({
@@ -13,31 +13,34 @@ export const verifyRoute = apiRoute({
   schema: (z) => ({
     body: z.object({
       aliasId: z.number().meta({ description: 'The ID of the alias to verify' }),
-      code: z.string().meta({ description: 'The 6-digit verification code sent to the player (must be a string)' })
-    })
+      code: z.string().meta({
+        description: 'The 6-digit verification code sent to the player (must be a string)',
+      }),
+    }),
   }),
-  middleware: withMiddleware(
-    requireScopes([APIKeyScope.READ_PLAYERS, APIKeyScope.WRITE_PLAYERS])
-  ),
+  middleware: withMiddleware(requireScopes([APIKeyScope.READ_PLAYERS, APIKeyScope.WRITE_PLAYERS])),
   handler: async (ctx) => {
     const { aliasId, code } = ctx.state.validated.body
     const em = ctx.em
 
     const key = ctx.state.key
 
-    const alias = await em.repo(PlayerAlias).findOne({
-      id: aliasId,
-      player: {
-        game: ctx.state.game
-      }
-    }, {
-      populate: ['player.auth']
-    })
+    const alias = await em.repo(PlayerAlias).findOne(
+      {
+        id: aliasId,
+        player: {
+          game: ctx.state.game,
+        },
+      },
+      {
+        populate: ['player.auth'],
+      },
+    )
 
     if (!alias) {
       return ctx.throw(403, {
         message: 'Player alias not found',
-        errorCode: 'VERIFICATION_ALIAS_NOT_FOUND'
+        errorCode: 'VERIFICATION_ALIAS_NOT_FOUND',
       })
     }
 
@@ -50,13 +53,13 @@ export const verifyRoute = apiRoute({
 
     if (!redisCode || code !== redisCode) {
       createPlayerAuthActivity(ctx, alias.player, {
-        type: PlayerAuthActivityType.VERIFICATION_FAILED
+        type: PlayerAuthActivityType.VERIFICATION_FAILED,
       })
       await em.flush()
 
       return ctx.throw(403, {
         message: 'Invalid code',
-        errorCode: 'VERIFICATION_CODE_INVALID'
+        errorCode: 'VERIFICATION_CODE_INVALID',
       })
     }
 
@@ -66,7 +69,7 @@ export const verifyRoute = apiRoute({
     const socketToken = await alias.createSocketToken(redis)
 
     createPlayerAuthActivity(ctx, alias.player, {
-      type: PlayerAuthActivityType.LOGGED_IN
+      type: PlayerAuthActivityType.LOGGED_IN,
     })
 
     await em.flush()
@@ -76,8 +79,8 @@ export const verifyRoute = apiRoute({
       body: {
         alias,
         sessionToken,
-        socketToken
-      }
+        socketToken,
+      },
     }
-  }
+  },
 })

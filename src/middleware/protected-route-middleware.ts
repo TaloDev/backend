@@ -1,15 +1,15 @@
+import { setTraceAttributes } from '@hyperdx/node-opentelemetry'
 import { Context, Next } from 'koa'
 import jwt from 'koa-jwt'
-import { setTraceAttributes } from '@hyperdx/node-opentelemetry'
-import { ProtectedRouteContext } from '../lib/routing/context'
 import { getUserFromToken } from '../lib/auth/getUserFromToken'
+import { ProtectedRouteContext } from '../lib/routing/context'
 import { isProtectedRoute } from '../lib/routing/route-info'
 
 export async function protectedRouteAuthMiddleware(ctx: Context, next: Next) {
   if (isProtectedRoute(ctx)) {
     return jwt({
       secret: process.env.JWT_SECRET!,
-      key: 'jwt'
+      key: 'jwt',
     })(ctx, next)
   } else {
     await next()

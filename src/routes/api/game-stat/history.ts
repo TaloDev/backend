@@ -1,13 +1,15 @@
-import { apiRoute, withMiddleware } from '../../../lib/routing/router'
-import { requireScopes } from '../../../middleware/policy-middleware'
 import { APIKeyScope } from '../../../entities/api-key'
-import { loadPlayer } from '../../../middleware/player-middleware'
-import PlayerGameStatSnapshot, { ClickHousePlayerGameStatSnapshot } from '../../../entities/player-game-stat-snapshot'
+import PlayerGameStatSnapshot, {
+  ClickHousePlayerGameStatSnapshot,
+} from '../../../entities/player-game-stat-snapshot'
 import { DEFAULT_PAGE_SIZE } from '../../../lib/pagination/itemsPerPage'
+import { apiRoute, withMiddleware } from '../../../lib/routing/router'
+import { pageSchema } from '../../../lib/validation/pageSchema'
+import { playerHeaderSchema } from '../../../lib/validation/playerHeaderSchema'
+import { loadPlayer } from '../../../middleware/player-middleware'
+import { requireScopes } from '../../../middleware/policy-middleware'
 import { loadStatWithPlayer } from './common'
 import { historyDocs } from './docs'
-import { playerHeaderSchema } from '../../../lib/validation/playerHeaderSchema'
-import { pageSchema } from '../../../lib/validation/pageSchema'
 
 export const historyRoute = apiRoute({
   method: 'get',
@@ -15,21 +17,25 @@ export const historyRoute = apiRoute({
   docs: historyDocs,
   schema: (z) => ({
     headers: z.looseObject({
-      'x-talo-player': playerHeaderSchema
+      'x-talo-player': playerHeaderSchema,
     }),
     route: z.object({
-      internalName: z.string().meta({ description: 'The internal name of the stat' })
+      internalName: z.string().meta({ description: 'The internal name of the stat' }),
     }),
     query: z.object({
       page: pageSchema.meta({ description: 'The current pagination index (starting at 0)' }),
-      startDate: z.string().optional().meta({ description: 'A UTC Date (YYYY-MM-DD), DateTime (ISO 8601) or millisecond timestamp' }),
-      endDate: z.string().optional().meta({ description: 'A UTC Date (YYYY-MM-DD), DateTime (ISO 8601) or millisecond timestamp' })
-    })
+      startDate: z.string().optional().meta({
+        description: 'A UTC Date (YYYY-MM-DD), DateTime (ISO 8601) or millisecond timestamp',
+      }),
+      endDate: z.string().optional().meta({
+        description: 'A UTC Date (YYYY-MM-DD), DateTime (ISO 8601) or millisecond timestamp',
+      }),
+    }),
   }),
   middleware: withMiddleware(
     requireScopes([APIKeyScope.READ_GAME_STATS]),
     loadPlayer,
-    loadStatWithPlayer
+    loadStatWithPlayer,
   ),
   handler: async (ctx) => {
     const itemsPerPage = DEFAULT_PAGE_SIZE
@@ -52,10 +58,12 @@ export const historyRoute = apiRoute({
       LIMIT ${itemsPerPage + 1} OFFSET ${page * itemsPerPage}
     `
 
-    const snapshots = await clickhouse.query({
-      query,
-      format: 'JSONEachRow'
-    }).then((res) => res.json<ClickHousePlayerGameStatSnapshot & { count: string }>())
+    const snapshots = await clickhouse
+      .query({
+        query,
+        format: 'JSONEachRow',
+      })
+      .then((res) => res.json<ClickHousePlayerGameStatSnapshot & { count: string }>())
 
     const count = Number(snapshots[0]?.count ?? 0)
     const history = await PlayerGameStatSnapshot.massHydrate(em, snapshots.slice(0, itemsPerPage))
@@ -66,8 +74,8 @@ export const historyRoute = apiRoute({
         history,
         count,
         itemsPerPage,
-        isLastPage: snapshots.length <= itemsPerPage
-      }
+        isLastPage: snapshots.length <= itemsPerPage,
+      },
     }
-  }
+  },
 })

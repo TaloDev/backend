@@ -1,13 +1,15 @@
+import { SandboxedJob } from 'bullmq'
 import { rm } from 'fs/promises'
+import { DataExportAvailableEntities, DataExportStatus } from '../../../../src/entities/data-export'
+import * as sendEmail from '../../../../src/lib/messaging/sendEmail'
+import { DataExportJob } from '../../../../src/lib/queues/data-exports/createDataExportQueue'
+import dataExportProcessor, {
+  DataExporter,
+} from '../../../../src/lib/queues/data-exports/dataExportProcessor'
+import DataExportFactory from '../../../fixtures/DataExportFactory'
+import GameActivityFactory from '../../../fixtures/GameActivityFactory'
 import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
 import createUserAndToken from '../../../utils/createUserAndToken'
-import GameActivityFactory from '../../../fixtures/GameActivityFactory'
-import DataExportFactory from '../../../fixtures/DataExportFactory'
-import { DataExportAvailableEntities, DataExportStatus } from '../../../../src/entities/data-export'
-import { SandboxedJob } from 'bullmq'
-import dataExportProcessor, { DataExporter } from '../../../../src/lib/queues/data-exports/dataExportProcessor'
-import { DataExportJob } from '../../../../src/lib/queues/data-exports/createDataExportQueue'
-import * as sendEmail from '../../../../src/lib/messaging/sendEmail'
 
 describe('Data export - processor', () => {
   afterEach(async () => {
@@ -22,17 +24,19 @@ describe('Data export - processor', () => {
 
     const gameActivities = await new GameActivityFactory([game], [user]).many(10)
 
-    const dataExport = await new DataExportFactory(game).state(() => ({
-      entities: [DataExportAvailableEntities.GAME_ACTIVITIES]
-    })).one()
+    const dataExport = await new DataExportFactory(game)
+      .state(() => ({
+        entities: [DataExportAvailableEntities.GAME_ACTIVITIES],
+      }))
+      .one()
 
     await em.persistAndFlush([...gameActivities, dataExport])
 
     const job = {
       data: {
         dataExportId: dataExport.id,
-        includeDevData: true
-      }
+        includeDevData: true,
+      },
     } as unknown as SandboxedJob<DataExportJob>
     await dataExportProcessor(job)
 
@@ -45,17 +49,19 @@ describe('Data export - processor', () => {
 
     const [, game] = await createOrganisationAndGame()
 
-    const dataExport = await new DataExportFactory(game).state(() => ({
-      entities: [DataExportAvailableEntities.GAME_FEEDBACK]
-    })).one()
+    const dataExport = await new DataExportFactory(game)
+      .state(() => ({
+        entities: [DataExportAvailableEntities.GAME_FEEDBACK],
+      }))
+      .one()
 
     await em.persist(dataExport).flush()
 
     const job = {
       data: {
         dataExportId: dataExport.id,
-        includeDevData: true
-      }
+        includeDevData: true,
+      },
     } as unknown as SandboxedJob<DataExportJob>
 
     await expect(dataExportProcessor(job)).rejects.toThrow('bad news')

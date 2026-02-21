@@ -1,8 +1,8 @@
 import request from 'supertest'
+import PlayerGroup from '../../../../src/entities/player-group'
 import PlayerGroupFactory from '../../../fixtures/PlayerGroupFactory'
 import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
 import createUserAndToken from '../../../utils/createUserAndToken'
-import PlayerGroup from '../../../../src/entities/player-group'
 
 describe('Player group - index', () => {
   it('should return a list of groups', async () => {
@@ -17,7 +17,9 @@ describe('Player group - index', () => {
       .auth(token, { type: 'bearer' })
       .expect(200)
 
-    const sortedRes = res.body.groups.sort((a: PlayerGroup, b: PlayerGroup) => a.id.localeCompare(b.id))
+    const sortedRes = res.body.groups.sort((a: PlayerGroup, b: PlayerGroup) =>
+      a.id.localeCompare(b.id),
+    )
     const sortedGroups = groups.sort((a, b) => a.id.localeCompare(b.id))
 
     sortedRes.forEach((group: PlayerGroup, idx: number) => {

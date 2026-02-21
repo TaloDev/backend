@@ -31,8 +31,8 @@ export default class Organisation {
       name: this.name,
       games: this.games,
       pricingPlan: {
-        status: this.pricingPlan.status
-      }
+        status: this.pricingPlan.status,
+      },
     }
   }
 }

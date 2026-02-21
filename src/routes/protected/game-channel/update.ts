@@ -1,17 +1,17 @@
 import { EntityManager } from '@mikro-orm/mysql'
-import { protectedRoute, withMiddleware } from '../../../lib/routing/router'
-import { loadGame } from '../../../middleware/game-middleware'
+import { GameActivityType } from '../../../entities/game-activity'
 import GameChannel from '../../../entities/game-channel'
 import PlayerAlias from '../../../entities/player-alias'
 import User from '../../../entities/user'
-import { GameActivityType } from '../../../entities/game-activity'
+import buildErrorResponse from '../../../lib/errors/buildErrorResponse'
+import { PropSizeError } from '../../../lib/errors/propSizeError'
 import createGameActivity from '../../../lib/logging/createGameActivity'
 import { mergeAndSanitiseProps } from '../../../lib/props/sanitiseProps'
-import { PropSizeError } from '../../../lib/errors/propSizeError'
-import buildErrorResponse from '../../../lib/errors/buildErrorResponse'
+import { protectedRoute, withMiddleware } from '../../../lib/routing/router'
+import { updatePropsSchema } from '../../../lib/validation/propsSchema'
+import { loadGame } from '../../../middleware/game-middleware'
 import Socket from '../../../socket'
 import { loadChannel } from './common'
-import { updatePropsSchema } from '../../../lib/validation/propsSchema'
 
 type UpdateChannelParams = {
   em: EntityManager
@@ -22,7 +22,7 @@ type UpdateChannelParams = {
   user?: User
   name?: string
   ownerAliasId?: number | null
-  props?: { key: string, value: string | null }[]
+  props?: { key: string; value: string | null }[]
   autoCleanup?: boolean
   isPrivate?: boolean
   temporaryMembership?: boolean
@@ -40,7 +40,7 @@ export async function updateChannelHandler({
   props,
   autoCleanup,
   isPrivate,
-  temporaryMembership
+  temporaryMembership,
 }: UpdateChannelParams) {
   const changedProperties: string[] = []
 
@@ -51,11 +51,13 @@ export async function updateChannelHandler({
 
   if (props) {
     try {
-      channel.setProps(mergeAndSanitiseProps({ prevProps: channel.props.getItems(), newProps: props }))
+      channel.setProps(
+        mergeAndSanitiseProps({ prevProps: channel.props.getItems(), newProps: props }),
+      )
     } catch (err) {
       if (err instanceof PropSizeError) {
         return buildErrorResponse({ props: [err.message] })
-      /* v8 ignore next 3 */
+        /* v8 ignore next 3 */
       }
       throw err
     }
@@ -66,13 +68,13 @@ export async function updateChannelHandler({
     if (ownerAliasId !== null) {
       const newOwner = await em.repo(PlayerAlias).findOne({
         id: ownerAliasId,
-        player: { game: channel.game }
+        player: { game: channel.game },
       })
 
       if (!newOwner) {
         return {
           status: 404,
-          body: { message: 'New owner not found' }
+          body: { message: 'New owner not found' },
         }
       }
 
@@ -84,7 +86,7 @@ export async function updateChannelHandler({
 
       await channel.sendMessageToMembers(wss, 'v1.channels.ownership-transferred', {
         channel,
-        newOwner
+        newOwner,
       })
     } else {
       channel.owner = null
@@ -114,7 +116,7 @@ export async function updateChannelHandler({
     if (!(changedProperties.length === 1 && changedProperties[0] === 'ownerAliasId')) {
       await channel.sendMessageToMembers(wss, 'v1.channels.updated', {
         channel,
-        changedProperties
+        changedProperties,
       })
     }
   }
@@ -126,7 +128,7 @@ export async function updateChannelHandler({
       ownerAliasId,
       autoCleanup,
       private: isPrivate,
-      temporaryMembership
+      temporaryMembership,
     }
 
     createGameActivity(em, {
@@ -136,13 +138,15 @@ export async function updateChannelHandler({
       extra: {
         channelName: channel.name,
         display: {
-          'Updated properties': changedProperties.map((key) => {
-            const value = propertyValues[key]
-            const property = typeof value === 'object' ? JSON.stringify(value) : value
-            return `${key}: ${property}`
-          }).join(', ')
-        }
-      }
+          'Updated properties': changedProperties
+            .map((key) => {
+              const value = propertyValues[key]
+              const property = typeof value === 'object' ? JSON.stringify(value) : value
+              return `${key}: ${property}`
+            })
+            .join(', '),
+        },
+      },
     })
   }
 
@@ -151,8 +155,8 @@ export async function updateChannelHandler({
   return {
     status: 200,
     body: {
-      channel: await channel.toJSONWithCount(includeDevData)
-    }
+      channel: await channel.toJSONWithCount(includeDevData),
+    },
   }
 }
 
@@ -166,12 +170,19 @@ export const updateRoute = protectedRoute({
       props: updatePropsSchema.optional(),
       autoCleanup: z.boolean().optional(),
       private: z.boolean().optional(),
-      temporaryMembership: z.boolean().optional()
-    })
+      temporaryMembership: z.boolean().optional(),
+    }),
   }),
   middleware: withMiddleware(loadGame, loadChannel),
   handler: async (ctx) => {
-    const { name, ownerAliasId, props, autoCleanup, private: isPrivate, temporaryMembership } = ctx.state.validated.body
+    const {
+      name,
+      ownerAliasId,
+      props,
+      autoCleanup,
+      private: isPrivate,
+      temporaryMembership,
+    } = ctx.state.validated.body
 
     return updateChannelHandler({
       em: ctx.em,
@@ -184,7 +195,7 @@ export const updateRoute = protectedRoute({
       props,
       autoCleanup,
       isPrivate,
-      temporaryMembership
+      temporaryMembership,
     })
-  }
+  },
 })

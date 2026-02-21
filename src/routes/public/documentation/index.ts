@@ -9,11 +9,11 @@ export function documentationRouter() {
           status: 200,
           body: {
             docs: {
-              services: globalThis.talo.docs.getServices()
-            }
-          }
+              services: globalThis.talo.docs.getServices(),
+            },
+          },
         }
-      }
+      },
     })
   })
 }

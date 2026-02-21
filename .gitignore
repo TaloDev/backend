@@ -6,6 +6,5 @@ dist/
 .env
 coverage/
 backup.sql
-.eslintcache
 storage
 temp

@@ -1,21 +1,29 @@
 import request from 'supertest'
 import { APIKeyScope } from '../../../../src/entities/api-key'
-import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
+import PlayerGroupRule, {
+  PlayerGroupRuleCastType,
+  PlayerGroupRuleName,
+} from '../../../../src/entities/player-group-rule'
 import PlayerFactory from '../../../fixtures/PlayerFactory'
-import PlayerGroupRule, { PlayerGroupRuleCastType, PlayerGroupRuleName } from '../../../../src/entities/player-group-rule'
 import PlayerGroupFactory from '../../../fixtures/PlayerGroupFactory'
+import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
 
 describe('Player group API - get', () => {
   it('should return a group if the scope is valid', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_PLAYER_GROUPS])
     await em.populate(apiKey, ['game'])
 
-    const player = await new PlayerFactory([apiKey.game]).state(() => ({ lastSeenAt: new Date(2024, 1, 2) })).one()
+    const player = await new PlayerFactory([apiKey.game])
+      .state(() => ({ lastSeenAt: new Date(2024, 1, 2) }))
+      .one()
     const dateRule = new PlayerGroupRule(PlayerGroupRuleName.GTE, 'lastSeenAt')
     dateRule.castType = PlayerGroupRuleCastType.DATETIME
     dateRule.operands = ['2024-01-01']
 
-    const group = await new PlayerGroupFactory().construct(apiKey.game).state(() => ({ rules: [dateRule], membersVisible: true })).one()
+    const group = await new PlayerGroupFactory()
+      .construct(apiKey.game)
+      .state(() => ({ rules: [dateRule], membersVisible: true }))
+      .one()
     await em.persistAndFlush([player, group])
     await group.checkMembership(em)
 
@@ -31,14 +39,17 @@ describe('Player group API - get', () => {
     expect(res.body.membersPagination).toStrictEqual({
       count: 1,
       itemsPerPage: 50,
-      isLastPage: true
+      isLastPage: true,
     })
   })
 
   it('should not return a group if the scope is not valid', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([])
 
-    const group = await new PlayerGroupFactory().construct(apiKey.game).state(() => ({ rules: [] })).one()
+    const group = await new PlayerGroupFactory()
+      .construct(apiKey.game)
+      .state(() => ({ rules: [] }))
+      .one()
     await em.persistAndFlush(group)
 
     await request(app)
@@ -60,12 +71,17 @@ describe('Player group API - get', () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_PLAYER_GROUPS])
     await em.populate(apiKey, ['game'])
 
-    const player = await new PlayerFactory([apiKey.game]).state(() => ({ lastSeenAt: new Date(2024, 1, 2) })).one()
+    const player = await new PlayerFactory([apiKey.game])
+      .state(() => ({ lastSeenAt: new Date(2024, 1, 2) }))
+      .one()
     const dateRule = new PlayerGroupRule(PlayerGroupRuleName.GTE, 'lastSeenAt')
     dateRule.castType = PlayerGroupRuleCastType.DATETIME
     dateRule.operands = ['2024-01-01']
 
-    const group = await new PlayerGroupFactory().construct(apiKey.game).state(() => ({ rules: [dateRule], membersVisible: false })).one()
+    const group = await new PlayerGroupFactory()
+      .construct(apiKey.game)
+      .state(() => ({ rules: [dateRule], membersVisible: false }))
+      .one()
     await em.persistAndFlush([player, group])
     await group.checkMembership(em)
 
@@ -83,12 +99,18 @@ describe('Player group API - get', () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_PLAYER_GROUPS])
     await em.populate(apiKey, ['game'])
 
-    const player = await new PlayerFactory([apiKey.game]).state(() => ({ lastSeenAt: new Date(2024, 1, 2) })).devBuild().one()
+    const player = await new PlayerFactory([apiKey.game])
+      .state(() => ({ lastSeenAt: new Date(2024, 1, 2) }))
+      .devBuild()
+      .one()
     const dateRule = new PlayerGroupRule(PlayerGroupRuleName.GTE, 'lastSeenAt')
     dateRule.castType = PlayerGroupRuleCastType.DATETIME
     dateRule.operands = ['2024-01-01']
 
-    const group = await new PlayerGroupFactory().construct(apiKey.game).state(() => ({ rules: [dateRule], membersVisible: true })).one()
+    const group = await new PlayerGroupFactory()
+      .construct(apiKey.game)
+      .state(() => ({ rules: [dateRule], membersVisible: true }))
+      .one()
     await em.persistAndFlush([player, group])
 
     const res = await request(app)
@@ -105,12 +127,18 @@ describe('Player group API - get', () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_PLAYER_GROUPS])
     await em.populate(apiKey, ['game'])
 
-    const player = await new PlayerFactory([apiKey.game]).state(() => ({ lastSeenAt: new Date(2024, 1, 2) })).devBuild().one()
+    const player = await new PlayerFactory([apiKey.game])
+      .state(() => ({ lastSeenAt: new Date(2024, 1, 2) }))
+      .devBuild()
+      .one()
     const dateRule = new PlayerGroupRule(PlayerGroupRuleName.GTE, 'lastSeenAt')
     dateRule.castType = PlayerGroupRuleCastType.DATETIME
     dateRule.operands = ['2024-01-01']
 
-    const group = await new PlayerGroupFactory().construct(apiKey.game).state(() => ({ rules: [dateRule], membersVisible: true })).one()
+    const group = await new PlayerGroupFactory()
+      .construct(apiKey.game)
+      .state(() => ({ rules: [dateRule], membersVisible: true }))
+      .one()
     await em.persistAndFlush([player, group])
     await group.checkMembership(em)
 
@@ -129,12 +157,17 @@ describe('Player group API - get', () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_PLAYER_GROUPS])
     await em.populate(apiKey, ['game'])
 
-    const players = await new PlayerFactory([apiKey.game]).state(() => ({ lastSeenAt: new Date(2024, 1, 2) })).many(101)
+    const players = await new PlayerFactory([apiKey.game])
+      .state(() => ({ lastSeenAt: new Date(2024, 1, 2) }))
+      .many(101)
     const dateRule = new PlayerGroupRule(PlayerGroupRuleName.GTE, 'lastSeenAt')
     dateRule.castType = PlayerGroupRuleCastType.DATETIME
     dateRule.operands = ['2024-01-01']
 
-    const group = await new PlayerGroupFactory().construct(apiKey.game).state(() => ({ rules: [dateRule], membersVisible: true })).one()
+    const group = await new PlayerGroupFactory()
+      .construct(apiKey.game)
+      .state(() => ({ rules: [dateRule], membersVisible: true }))
+      .one()
     await em.persistAndFlush([...players, group])
     await group.checkMembership(em)
 
@@ -148,7 +181,7 @@ describe('Player group API - get', () => {
     expect(res.body.membersPagination).toStrictEqual({
       count: 101,
       itemsPerPage: 50,
-      isLastPage: false
+      isLastPage: false,
     })
   })
 })

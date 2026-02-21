@@ -12,14 +12,14 @@ const sampleSave = {
           {
             key: 'pickedUp',
             value: 'True',
-            type: 'System.Boolean'
+            type: 'System.Boolean',
           },
           {
             key: 'meta.destroyed',
             value: 'True',
-            type: 'System.Boolean'
-          }
-        ]
+            type: 'System.Boolean',
+          },
+        ],
       },
       {
         id: '9b772ede-ddd0-4dc0-aaf3-e59c9258e672',
@@ -28,35 +28,35 @@ const sampleSave = {
           {
             key: 'lastWords',
             value: 'Wait...where did you find that knife?',
-            type: 'System.String'
+            type: 'System.String',
           },
           {
             key: 'isAlive',
             value: 'False',
-            type: 'System.Boolean'
+            type: 'System.Boolean',
           },
           {
             key: 'meta.destroyed',
             value: 'False',
-            type: 'System.Boolean'
-          }
-        ]
-      }
-    ]
+            type: 'System.Boolean',
+          },
+        ],
+      },
+    ],
   },
-  updatedAt: '2022-06-07T14:58:13.771Z'
+  updatedAt: '2022-06-07T14:58:13.771Z',
 }
 
 export const listDocs = {
-  description: 'Get a player\'s saves',
+  description: "Get a player's saves",
   samples: [
     {
       title: 'Sample response',
       sample: {
-        saves: [sampleSave]
-      }
-    }
-  ]
+        saves: [sampleSave],
+      },
+    },
+  ],
 } satisfies RouteDocs
 
 export const postDocs = {
@@ -66,16 +66,16 @@ export const postDocs = {
       title: 'Sample request',
       sample: {
         name: sampleSave.name,
-        content: sampleSave.content
-      }
+        content: sampleSave.content,
+      },
     },
     {
       title: 'Sample response',
       sample: {
-        save: sampleSave
-      }
-    }
-  ]
+        save: sampleSave,
+      },
+    },
+  ],
 } satisfies RouteDocs
 
 export const patchDocs = {
@@ -85,18 +85,18 @@ export const patchDocs = {
       title: 'Sample request',
       sample: {
         name: sampleSave.name,
-        content: sampleSave.content
-      }
+        content: sampleSave.content,
+      },
     },
     {
       title: 'Sample response',
       sample: {
-        save: sampleSave
-      }
-    }
-  ]
+        save: sampleSave,
+      },
+    },
+  ],
 } satisfies RouteDocs
 
 export const deleteDocs = {
-  description: 'Delete a save'
+  description: 'Delete a save',
 } satisfies RouteDocs

@@ -1,21 +1,21 @@
-import { publicRoute } from '../../../lib/routing/router'
-import User, { UserType } from '../../../entities/user'
-import Organisation from '../../../entities/organisation'
-import Invite from '../../../entities/invite'
-import UserAccessCode from '../../../entities/user-access-code'
+import { metrics } from '@opentelemetry/api'
+import axios from 'axios'
 import bcrypt from 'bcrypt'
 import { add } from 'date-fns'
-import { GameActivityType } from '../../../entities/game-activity'
-import createGameActivity from '../../../lib/logging/createGameActivity'
-import createDefaultPricingPlan from '../../../lib/billing/createDefaultPricingPlan'
-import queueEmail from '../../../lib/messaging/queueEmail'
-import ConfirmEmail from '../../../emails/confirm-email-mail'
-import { getGlobalQueue } from '../../../config/global-queues'
-import { buildTokenPair } from '../../../lib/auth/buildTokenPair'
-import { passwordSchema } from '../../../lib/validation/passwordSchema'
-import axios from 'axios'
-import { metrics } from '@opentelemetry/api'
 import assert from 'node:assert'
+import { getGlobalQueue } from '../../../config/global-queues'
+import ConfirmEmail from '../../../emails/confirm-email-mail'
+import { GameActivityType } from '../../../entities/game-activity'
+import Invite from '../../../entities/invite'
+import Organisation from '../../../entities/organisation'
+import User, { UserType } from '../../../entities/user'
+import UserAccessCode from '../../../entities/user-access-code'
+import { buildTokenPair } from '../../../lib/auth/buildTokenPair'
+import createDefaultPricingPlan from '../../../lib/billing/createDefaultPricingPlan'
+import createGameActivity from '../../../lib/logging/createGameActivity'
+import queueEmail from '../../../lib/messaging/queueEmail'
+import { publicRoute } from '../../../lib/routing/router'
+import { passwordSchema } from '../../../lib/validation/passwordSchema'
 
 const hcaptchaMonitorMeter = metrics.getMeter('hcaptcha-monitor-meter')
 const hcaptchaSuccessCounter = hcaptchaMonitorMeter.createCounter('talo.hcaptcha.success_total')
@@ -29,40 +29,44 @@ export const registerRoute = publicRoute({
   method: 'post',
   path: '/register',
   schema: (z) => ({
-    body: z.object({
-      email: z.email('Email address is invalid'),
-      username: z.string().min(1),
-      password: passwordSchema,
-      organisationName: z.string().optional(),
-      inviteToken: z.string().optional(),
-      captchaToken: z.string().optional()
-    }).refine((data) => data.organisationName || data.inviteToken, {
-      error: 'Either organisationName or inviteToken is required'
-    }).superRefine((data, zodCtx) => {
-      if (getCaptchaSecret() && !data.captchaToken) {
-        zodCtx.addIssue({
-          code: 'custom',
-          path: ['captchaToken'],
-          message: 'Captcha is required'
-        })
-      }
-    })
+    body: z
+      .object({
+        email: z.email('Email address is invalid'),
+        username: z.string().min(1),
+        password: passwordSchema,
+        organisationName: z.string().optional(),
+        inviteToken: z.string().optional(),
+        captchaToken: z.string().optional(),
+      })
+      .refine((data) => data.organisationName || data.inviteToken, {
+        error: 'Either organisationName or inviteToken is required',
+      })
+      .superRefine((data, zodCtx) => {
+        if (getCaptchaSecret() && !data.captchaToken) {
+          zodCtx.addIssue({
+            code: 'custom',
+            path: ['captchaToken'],
+            message: 'Captcha is required',
+          })
+        }
+      }),
   }),
   handler: async (ctx) => {
-    const { email, username, password, organisationName, inviteToken, captchaToken } = ctx.state.validated.body
+    const { email, username, password, organisationName, inviteToken, captchaToken } =
+      ctx.state.validated.body
     const em = ctx.em
 
     const registrationMode = process.env.REGISTRATION_MODE || 'open'
     if (registrationMode === 'disabled') {
       return {
         status: 400,
-        body: { message: 'Registration is disabled' }
+        body: { message: 'Registration is disabled' },
       }
     }
     if (registrationMode === 'exclusive' && !inviteToken) {
       return {
         status: 400,
-        body: { message: 'Registration requires an invitation' }
+        body: { message: 'Registration requires an invitation' },
       }
     }
 
@@ -73,7 +77,7 @@ export const registerRoute = publicRoute({
 
         return {
           status: 400,
-          body: { message: 'Captcha verification failed, please try again' }
+          body: { message: 'Captcha verification failed, please try again' },
         }
       }
 
@@ -85,7 +89,7 @@ export const registerRoute = publicRoute({
     if (userWithEmail || orgWithEmail) {
       return {
         status: 400,
-        body: { message: 'Email address is already in use' }
+        body: { message: 'Email address is already in use' },
       }
     }
 
@@ -96,16 +100,19 @@ export const registerRoute = publicRoute({
     user.emailConfirmed = process.env.AUTO_CONFIRM_EMAIL === 'true'
 
     if (inviteToken) {
-      const invite = await em.repo(Invite).findOne({
-        token: inviteToken
-      }, {
-        populate: ['organisation.games']
-      })
+      const invite = await em.repo(Invite).findOne(
+        {
+          token: inviteToken,
+        },
+        {
+          populate: ['organisation.games'],
+        },
+      )
 
       if (!invite || invite.email !== email) {
         return {
           status: 404,
-          body: { message: 'Invite not found' }
+          body: { message: 'Invite not found' },
         }
       }
 
@@ -141,10 +148,10 @@ export const registerRoute = publicRoute({
       status: 200,
       body: {
         accessToken,
-        user
-      }
+        user,
+      },
     }
-  }
+  },
 })
 
 async function verifyCaptcha(token: string, ip: string) {

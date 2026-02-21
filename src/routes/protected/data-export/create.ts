@@ -1,12 +1,15 @@
+import type { Queue } from 'bullmq'
+import DataExport, { DataExportAvailableEntities } from '../../../entities/data-export'
+import { GameActivityType } from '../../../entities/game-activity'
+import { UserType } from '../../../entities/user'
+import createGameActivity from '../../../lib/logging/createGameActivity'
+import {
+  createDataExportQueue,
+  DataExportJob,
+} from '../../../lib/queues/data-exports/createDataExportQueue'
 import { protectedRoute, withMiddleware } from '../../../lib/routing/router'
 import { loadGame } from '../../../middleware/game-middleware'
 import { userTypeGate, requireEmailConfirmed } from '../../../middleware/policy-middleware'
-import { UserType } from '../../../entities/user'
-import DataExport, { DataExportAvailableEntities } from '../../../entities/data-export'
-import { GameActivityType } from '../../../entities/game-activity'
-import createGameActivity from '../../../lib/logging/createGameActivity'
-import { createDataExportQueue, DataExportJob } from '../../../lib/queues/data-exports/createDataExportQueue'
-import type { Queue } from 'bullmq'
 
 let dataExportQueue: Queue<DataExportJob> | null = null
 
@@ -21,13 +24,13 @@ export const createRoute = protectedRoute({
   method: 'post',
   schema: (z) => ({
     body: z.object({
-      entities: z.array(z.enum(DataExportAvailableEntities)).nonempty()
-    })
+      entities: z.array(z.enum(DataExportAvailableEntities)).nonempty(),
+    }),
   }),
   middleware: withMiddleware(
     userTypeGate([UserType.ADMIN], 'create data exports'),
     requireEmailConfirmed('create data exports'),
-    loadGame
+    loadGame,
   ),
   handler: async (ctx) => {
     const { entities } = ctx.state.validated.body
@@ -44,23 +47,23 @@ export const createRoute = protectedRoute({
       extra: {
         dataExportId: dataExport.id,
         display: {
-          'Entities': entities.join(', ')
-        }
-      }
+          Entities: entities.join(', '),
+        },
+      },
     })
 
     await em.flush()
 
     await getDataExportQueue().add('data-export', {
       dataExportId: dataExport.id,
-      includeDevData: ctx.state.includeDevData
+      includeDevData: ctx.state.includeDevData,
     })
 
     return {
       status: 200,
       body: {
-        dataExport
-      }
+        dataExport,
+      },
     }
-  }
+  },
 })

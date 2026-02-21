@@ -1,12 +1,16 @@
-import { Context, Next } from 'koa'
-import { isAPIRoute } from '../lib/routing/route-info'
-import getAPIKeyFromToken from '../lib/auth/getAPIKeyFromToken'
-import { EntityManager } from '@mikro-orm/mysql'
 import { setTraceAttributes } from '@hyperdx/node-opentelemetry'
-import APIKey from '../entities/api-key'
+import { EntityManager } from '@mikro-orm/mysql'
 import Redis from 'ioredis'
+import { Context, Next } from 'koa'
+import APIKey from '../entities/api-key'
+import getAPIKeyFromToken from '../lib/auth/getAPIKeyFromToken'
+import { isAPIRoute } from '../lib/routing/route-info'
 
-async function updateLastUsedAt(ctx: Context, apiKey: Pick<APIKey, 'id' | 'revokedAt'>, lastUsedAt: Date) {
+async function updateLastUsedAt(
+  ctx: Context,
+  apiKey: Pick<APIKey, 'id' | 'revokedAt'>,
+  lastUsedAt: Date,
+) {
   const em: EntityManager = ctx.em
   const redis: Redis = ctx.redis
 
@@ -14,11 +18,14 @@ async function updateLastUsedAt(ctx: Context, apiKey: Pick<APIKey, 'id' | 'revok
     const key = `api-key:last-used:${apiKey.id}`
     const result = await redis.set(key, lastUsedAt.getTime(), 'EX', 60, 'NX')
     if (result === 'OK') {
-      await em.repo(APIKey).nativeUpdate({
-        id: apiKey.id
-      }, {
-        lastUsedAt
-      })
+      await em.repo(APIKey).nativeUpdate(
+        {
+          id: apiKey.id,
+        },
+        {
+          lastUsedAt,
+        },
+      )
     }
   }
 }

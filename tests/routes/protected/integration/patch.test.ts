@@ -1,56 +1,63 @@
 import request from 'supertest'
-import { UserType } from '../../../../src/entities/user'
-import createUserAndToken from '../../../utils/createUserAndToken'
-import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
-import userPermissionProvider from '../../../utils/userPermissionProvider'
+import GameActivity, { GameActivityType } from '../../../../src/entities/game-activity'
 import { IntegrationType } from '../../../../src/entities/integration'
+import { UserType } from '../../../../src/entities/user'
 import IntegrationConfigFactory from '../../../fixtures/IntegrationConfigFactory'
 import IntegrationFactory from '../../../fixtures/IntegrationFactory'
-import GameActivity, { GameActivityType } from '../../../../src/entities/game-activity'
+import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
+import createUserAndToken from '../../../utils/createUserAndToken'
+import userPermissionProvider from '../../../utils/userPermissionProvider'
 
 describe('Integration - patch', () => {
-  it.each(userPermissionProvider([
-    UserType.ADMIN
-  ]))('should return a %i for a %s user', async (statusCode, _, type) => {
-    const [organisation, game] = await createOrganisationAndGame()
-    const [token] = await createUserAndToken({ type }, organisation)
+  it.each(userPermissionProvider([UserType.ADMIN]))(
+    'should return a %i for a %s user',
+    async (statusCode, _, type) => {
+      const [organisation, game] = await createOrganisationAndGame()
+      const [token] = await createUserAndToken({ type }, organisation)
 
-    const config = await new IntegrationConfigFactory().one()
-    const integration = await new IntegrationFactory().construct(IntegrationType.STEAMWORKS, game, config).one()
-    await em.persistAndFlush(integration)
+      const config = await new IntegrationConfigFactory().one()
+      const integration = await new IntegrationFactory()
+        .construct(IntegrationType.STEAMWORKS, game, config)
+        .one()
+      await em.persistAndFlush(integration)
 
-    const res = await request(app)
-      .patch(`/games/${game.id}/integrations/${integration.id}`)
-      .send({ config: { appId: 377999 } })
-      .auth(token, { type: 'bearer' })
-      .expect(statusCode)
+      const res = await request(app)
+        .patch(`/games/${game.id}/integrations/${integration.id}`)
+        .send({ config: { appId: 377999 } })
+        .auth(token, { type: 'bearer' })
+        .expect(statusCode)
 
-    const activity = await em.getRepository(GameActivity).findOne({
-      type: GameActivityType.GAME_INTEGRATION_UPDATED,
-      game
-    })
-
-    if (statusCode === 200) {
-      expect(res.body.integration.config.appId).toBe(377999)
-
-      expect(activity!.extra.integrationType).toBe(IntegrationType.STEAMWORKS)
-
-      expect(activity!.extra.display).toStrictEqual({
-        'Updated properties': 'appId'
+      const activity = await em.getRepository(GameActivity).findOne({
+        type: GameActivityType.GAME_INTEGRATION_UPDATED,
+        game,
       })
-    } else {
-      expect(res.body).toStrictEqual({ message: 'You do not have permissions to update integrations' })
 
-      expect(activity).toBeNull()
-    }
-  })
+      if (statusCode === 200) {
+        expect(res.body.integration.config.appId).toBe(377999)
+
+        expect(activity!.extra.integrationType).toBe(IntegrationType.STEAMWORKS)
+
+        expect(activity!.extra.display).toStrictEqual({
+          'Updated properties': 'appId',
+        })
+      } else {
+        expect(res.body).toStrictEqual({
+          message: 'You do not have permissions to update integrations',
+        })
+
+        expect(activity).toBeNull()
+      }
+    },
+  )
 
   it('should update the api key', async () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({ type: UserType.ADMIN }, organisation)
 
     const config = await new IntegrationConfigFactory().one()
-    const integration = await new IntegrationFactory().construct(IntegrationType.STEAMWORKS, game, config).one()
+    const integration = await new IntegrationFactory()
+      .construct(IntegrationType.STEAMWORKS, game, config)
+      .one()
     await em.persistAndFlush(integration)
 
     const oldApiKey = integration.getSteamAPIKey()
@@ -70,7 +77,9 @@ describe('Integration - patch', () => {
     const [token] = await createUserAndToken({ type: UserType.ADMIN })
 
     const config = await new IntegrationConfigFactory().one()
-    const integration = await new IntegrationFactory().construct(IntegrationType.STEAMWORKS, game, config).one()
+    const integration = await new IntegrationFactory()
+      .construct(IntegrationType.STEAMWORKS, game, config)
+      .one()
     await em.persistAndFlush(integration)
 
     const res = await request(app)
@@ -81,7 +90,7 @@ describe('Integration - patch', () => {
 
     const activity = await em.getRepository(GameActivity).findOne({
       type: GameActivityType.GAME_INTEGRATION_UPDATED,
-      game
+      game,
     })
 
     expect(res.body).toStrictEqual({ message: 'Forbidden' })
@@ -94,7 +103,9 @@ describe('Integration - patch', () => {
     const [token] = await createUserAndToken({ type: UserType.ADMIN })
 
     const config = await new IntegrationConfigFactory().one()
-    const integration = await new IntegrationFactory().construct(IntegrationType.STEAMWORKS, game, config).one()
+    const integration = await new IntegrationFactory()
+      .construct(IntegrationType.STEAMWORKS, game, config)
+      .one()
     await em.persistAndFlush(integration)
 
     const res = await request(app)
@@ -105,7 +116,7 @@ describe('Integration - patch', () => {
 
     const activity = await em.getRepository(GameActivity).findOne({
       type: GameActivityType.GAME_INTEGRATION_UPDATED,
-      game
+      game,
     })
 
     expect(res.body).toStrictEqual({ message: 'Integration not found' })

@@ -1,9 +1,9 @@
 import request from 'supertest'
 import { APIKeyScope } from '../../../../src/entities/api-key'
-import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
-import PlayerFactory from '../../../fixtures/PlayerFactory'
-import PlayerAliasSubscriptionFactory from '../../../fixtures/PlayerAliasSubscriptionFactory'
 import { RelationshipType } from '../../../../src/entities/player-alias-subscription'
+import PlayerAliasSubscriptionFactory from '../../../fixtures/PlayerAliasSubscriptionFactory'
+import PlayerFactory from '../../../fixtures/PlayerFactory'
+import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
 
 describe('Player relationships API - getSubscriptions', () => {
   it('should get confirmed subscriptions', async () => {
@@ -33,7 +33,9 @@ describe('Player relationships API - getSubscriptions', () => {
     expect(res.body.subscriptions).toHaveLength(2)
     expect(res.body.count).toBe(2)
     expect(res.body.isLastPage).toBe(true)
-    const subscriptionIds = res.body.subscriptions.map((s: { subscribedTo: { id: number } }) => s.subscribedTo.id)
+    const subscriptionIds = res.body.subscriptions.map(
+      (s: { subscribedTo: { id: number } }) => s.subscribedTo.id,
+    )
     expect(subscriptionIds).toContain(player2.aliases[0].id)
     expect(subscriptionIds).toContain(player3.aliases[0].id)
   })
@@ -54,7 +56,9 @@ describe('Player relationships API - getSubscriptions', () => {
       .withSubscribedTo(player3.aliases[0])
       .confirmed()
       .one()
-    await em.persist([player1, player2, player3, pendingSubscription, confirmedSubscription]).flush()
+    await em
+      .persist([player1, player2, player3, pendingSubscription, confirmedSubscription])
+      .flush()
 
     const res = await request(app)
       .get('/v1/players/relationships/subscriptions')
@@ -65,7 +69,9 @@ describe('Player relationships API - getSubscriptions', () => {
     expect(res.body.subscriptions).toHaveLength(2)
     expect(res.body.count).toBe(2)
     expect(res.body.isLastPage).toBe(true)
-    const subscriptionIds = res.body.subscriptions.map((s: { subscribedTo: { id: number } }) => s.subscribedTo.id)
+    const subscriptionIds = res.body.subscriptions.map(
+      (s: { subscribedTo: { id: number } }) => s.subscribedTo.id,
+    )
     expect(subscriptionIds).toContain(player2.aliases[0].id)
     expect(subscriptionIds).toContain(player3.aliases[0].id)
   })
@@ -126,7 +132,9 @@ describe('Player relationships API - getSubscriptions', () => {
       .withSubscribedTo(player3.aliases[0])
       .confirmed()
       .one()
-    await em.persist([player1, player2, player3, pendingSubscription, confirmedSubscription]).flush()
+    await em
+      .persist([player1, player2, player3, pendingSubscription, confirmedSubscription])
+      .flush()
 
     const res = await request(app)
       .get('/v1/players/relationships/subscriptions?confirmed=false')
@@ -156,7 +164,9 @@ describe('Player relationships API - getSubscriptions', () => {
       .withSubscribedTo(player3.aliases[0])
       .confirmed()
       .one()
-    await em.persist([player1, player2, player3, pendingSubscription, confirmedSubscription]).flush()
+    await em
+      .persist([player1, player2, player3, pendingSubscription, confirmedSubscription])
+      .flush()
 
     const res = await request(app)
       .get('/v1/players/relationships/subscriptions?confirmed=true')
@@ -218,10 +228,14 @@ describe('Player relationships API - getSubscriptions', () => {
       .bidirectional()
       .confirmed()
       .one()
-    await em.persist([player1, player2, player3, unidirectionalSubscription, bidirectionalSubscription]).flush()
+    await em
+      .persist([player1, player2, player3, unidirectionalSubscription, bidirectionalSubscription])
+      .flush()
 
     const res = await request(app)
-      .get(`/v1/players/relationships/subscriptions?relationshipType=${RelationshipType.UNIDIRECTIONAL}`)
+      .get(
+        `/v1/players/relationships/subscriptions?relationshipType=${RelationshipType.UNIDIRECTIONAL}`,
+      )
       .auth(token, { type: 'bearer' })
       .set('x-talo-alias', String(player1.aliases[0].id))
       .expect(200)
@@ -251,10 +265,14 @@ describe('Player relationships API - getSubscriptions', () => {
       .bidirectional()
       .confirmed()
       .one()
-    await em.persist([player1, player2, player3, unidirectionalSubscription, bidirectionalSubscription]).flush()
+    await em
+      .persist([player1, player2, player3, unidirectionalSubscription, bidirectionalSubscription])
+      .flush()
 
     const res = await request(app)
-      .get(`/v1/players/relationships/subscriptions?relationshipType=${RelationshipType.BIDIRECTIONAL}`)
+      .get(
+        `/v1/players/relationships/subscriptions?relationshipType=${RelationshipType.BIDIRECTIONAL}`,
+      )
       .auth(token, { type: 'bearer' })
       .set('x-talo-alias', String(player1.aliases[0].id))
       .expect(200)

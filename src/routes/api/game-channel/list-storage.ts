@@ -1,13 +1,13 @@
 import Redis from 'ioredis'
-import { apiRoute, withMiddleware } from '../../../lib/routing/router'
-import { requireScopes } from '../../../middleware/policy-middleware'
 import { APIKeyScope } from '../../../entities/api-key'
-import { loadAlias } from '../../../middleware/player-alias-middleware'
-import { loadChannel } from './common'
 import GameChannelStorageProp from '../../../entities/game-channel-storage-prop'
-import { listStorageDocs } from './docs'
-import { playerAliasHeaderSchema } from '../../../lib/validation/playerAliasHeaderSchema'
+import { apiRoute, withMiddleware } from '../../../lib/routing/router'
 import { numericStringSchema } from '../../../lib/validation/numericStringSchema'
+import { playerAliasHeaderSchema } from '../../../lib/validation/playerAliasHeaderSchema'
+import { loadAlias } from '../../../middleware/player-alias-middleware'
+import { requireScopes } from '../../../middleware/policy-middleware'
+import { loadChannel } from './common'
+import { listStorageDocs } from './docs'
 
 export const listStorageRoute = apiRoute({
   method: 'get',
@@ -15,27 +15,30 @@ export const listStorageRoute = apiRoute({
   docs: listStorageDocs,
   schema: (z) => ({
     route: z.object({
-      id: numericStringSchema.meta({ description: 'The ID of the channel' })
+      id: numericStringSchema.meta({ description: 'The ID of the channel' }),
     }),
     headers: z.looseObject({
-      'x-talo-alias': playerAliasHeaderSchema
+      'x-talo-alias': playerAliasHeaderSchema,
     }),
     query: z.object({
-      propKeys: z.union(
-        [z.string(), z.array(z.string())], // allow one string or an array of strings
-        { error: 'propKeys is missing from the request query' }
-      )
-        .transform((val) => Array.isArray(val) ? val : [val])
+      propKeys: z
+        .union(
+          [z.string(), z.array(z.string())], // allow one string or an array of strings
+          { error: 'propKeys is missing from the request query' },
+        )
+        .transform((val) => (Array.isArray(val) ? val : [val]))
         .refine((arr) => arr.length > 0, { error: 'At least one key must be provided' })
         .refine((arr) => arr.length <= 50, { error: 'Maximum 50 keys allowed per request' })
-        .refine((arr) => arr.every((key) => typeof key === 'string' && key.trim().length > 0), { error: 'All keys must be non-empty strings' })
-        .meta({ description: 'An array of storage property keys to retrieve (maximum 50 keys)' })
-    })
+        .refine((arr) => arr.every((key) => typeof key === 'string' && key.trim().length > 0), {
+          error: 'All keys must be non-empty strings',
+        })
+        .meta({ description: 'An array of storage property keys to retrieve (maximum 50 keys)' }),
+    }),
   }),
   middleware: withMiddleware(
     requireScopes([APIKeyScope.READ_GAME_CHANNELS]),
     loadAlias,
-    loadChannel
+    loadChannel,
   ),
   handler: async (ctx) => {
     const { propKeys } = ctx.state.validated.query
@@ -66,7 +69,7 @@ export const listStorageRoute = apiRoute({
     if (missingKeys.length > 0) {
       const propsFromDB = await em.repo(GameChannelStorageProp).find({
         gameChannel: channel,
-        key: { $in: missingKeys }
+        key: { $in: missingKeys },
       })
 
       // cache the results using a single operation
@@ -84,14 +87,15 @@ export const listStorageRoute = apiRoute({
       }
     }
 
-    const props = keys.map((key) => resultMap.get(key))
+    const props = keys
+      .map((key) => resultMap.get(key))
       .filter((prop): prop is GameChannelStorageProp => prop !== undefined)
 
     return {
       status: 200,
       body: {
-        props
-      }
+        props,
+      },
     }
-  }
+  },
 })

@@ -1,9 +1,9 @@
-import { Next } from 'koa'
 import { EntityManager } from '@mikro-orm/mysql'
+import { Next } from 'koa'
 import APIKey from '../../../entities/api-key'
+import { sign } from '../../../lib/auth/jwt'
 import { ProtectedRouteContext } from '../../../lib/routing/context'
 import { GameRouteState } from '../../../middleware/game-middleware'
-import { sign } from '../../../lib/auth/jwt'
 
 type APIKeyRouteContext = ProtectedRouteContext<GameRouteState & { apiKey: APIKey }>
 
@@ -13,7 +13,7 @@ export async function loadAPIKey(ctx: APIKeyRouteContext, next: Next) {
 
   const apiKey = await em.repo(APIKey).findOne({
     id: Number(id),
-    game: ctx.state.game
+    game: ctx.state.game,
   })
 
   if (!apiKey) {
@@ -30,7 +30,7 @@ export async function createToken(em: EntityManager, apiKey: APIKey): Promise<st
   const payload = {
     sub: apiKey.id,
     api: true,
-    iat: Math.floor(new Date(apiKey.createdAt).getTime() / 1000)
+    iat: Math.floor(new Date(apiKey.createdAt).getTime() / 1000),
   }
 
   const token = await sign(payload, apiKey.game.apiSecret.getPlainSecret()!)

@@ -1,7 +1,7 @@
 import { Entity, OneToOne, PrimaryKey, Property } from '@mikro-orm/mysql'
+import crypto from 'crypto'
 import { decrypt, encrypt } from '../lib/crypto/string-encryption'
 import Game from './game'
-import crypto from 'crypto'
 
 @Entity()
 export default class GameSecret {
@@ -34,7 +34,7 @@ export default class GameSecret {
   /* v8 ignore start */
   toJSON() {
     return {
-      id: this.id
+      id: this.id,
     }
   }
   /* v8 ignore stop */

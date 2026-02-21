@@ -1,8 +1,8 @@
 import request from 'supertest'
+import PlayerGroupFactory from '../../../fixtures/PlayerGroupFactory'
+import UserPinnedGroupFactory from '../../../fixtures/UserPinnedGroupFactory'
 import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
 import createUserAndToken from '../../../utils/createUserAndToken'
-import UserPinnedGroupFactory from '../../../fixtures/UserPinnedGroupFactory'
-import PlayerGroupFactory from '../../../fixtures/PlayerGroupFactory'
 
 describe('Player group - index pinned', () => {
   it('should return a list of groups', async () => {

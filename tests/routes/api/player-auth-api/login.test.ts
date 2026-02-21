@@ -1,11 +1,13 @@
+import bcrypt from 'bcrypt'
 import request from 'supertest'
 import { APIKeyScope } from '../../../../src/entities/api-key'
-import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
-import PlayerFactory from '../../../fixtures/PlayerFactory'
-import PlayerAuthFactory from '../../../fixtures/PlayerAuthFactory'
-import bcrypt from 'bcrypt'
+import PlayerAuthActivity, {
+  PlayerAuthActivityType,
+} from '../../../../src/entities/player-auth-activity'
 import * as sendEmail from '../../../../src/lib/messaging/sendEmail'
-import PlayerAuthActivity, { PlayerAuthActivityType } from '../../../../src/entities/player-auth-activity'
+import PlayerAuthFactory from '../../../fixtures/PlayerAuthFactory'
+import PlayerFactory from '../../../fixtures/PlayerFactory'
+import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
 
 describe('Player auth API - login', () => {
   const sendMock = vi.spyOn(sendEmail, 'default')
@@ -15,15 +17,23 @@ describe('Player auth API - login', () => {
   })
 
   it('should login a player if the api key has the correct scopes', async () => {
-    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_PLAYERS, APIKeyScope.WRITE_PLAYERS])
+    const [apiKey, token] = await createAPIKeyAndToken([
+      APIKeyScope.READ_PLAYERS,
+      APIKeyScope.WRITE_PLAYERS,
+    ])
 
-    const player = await new PlayerFactory([apiKey.game]).withTaloAlias().state(async () => ({
-      auth: await new PlayerAuthFactory().state(async () => ({
-        password: await bcrypt.hash('password', 10),
-        email: 'boz@mail.com',
-        verificationEnabled: false
-      })).one()
-    })).one()
+    const player = await new PlayerFactory([apiKey.game])
+      .withTaloAlias()
+      .state(async () => ({
+        auth: await new PlayerAuthFactory()
+          .state(async () => ({
+            password: await bcrypt.hash('password', 10),
+            email: 'boz@mail.com',
+            verificationEnabled: false,
+          }))
+          .one(),
+      }))
+      .one()
     const alias = player.aliases[0]
 
     await em.persistAndFlush(player)
@@ -38,14 +48,14 @@ describe('Player auth API - login', () => {
     expect(res.body.alias.player.auth).toStrictEqual({
       email: 'boz@mail.com',
       sessionCreatedAt: expect.any(String),
-      verificationEnabled: false
+      verificationEnabled: false,
     })
 
     expect(res.body.sessionToken).toBeTruthy()
 
     const activity = await em.getRepository(PlayerAuthActivity).findOne({
       type: PlayerAuthActivityType.LOGGED_IN,
-      player: player.id
+      player: player.id,
     })
     expect(activity).not.toBeNull()
   })
@@ -53,11 +63,16 @@ describe('Player auth API - login', () => {
   it('should not login a player if the api key does not have the correct scopes', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([])
 
-    const player = await new PlayerFactory([apiKey.game]).withTaloAlias().state(async () => ({
-      auth: await new PlayerAuthFactory().state(async () => ({
-        password: await bcrypt.hash('password', 10)
-      })).one()
-    })).one()
+    const player = await new PlayerFactory([apiKey.game])
+      .withTaloAlias()
+      .state(async () => ({
+        auth: await new PlayerAuthFactory()
+          .state(async () => ({
+            password: await bcrypt.hash('password', 10),
+          }))
+          .one(),
+      }))
+      .one()
     const alias = player.aliases[0]
 
     await em.persistAndFlush(player)
@@ -70,15 +85,23 @@ describe('Player auth API - login', () => {
   })
 
   it('should not login a player if the password is incorrect', async () => {
-    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_PLAYERS, APIKeyScope.WRITE_PLAYERS])
+    const [apiKey, token] = await createAPIKeyAndToken([
+      APIKeyScope.READ_PLAYERS,
+      APIKeyScope.WRITE_PLAYERS,
+    ])
 
-    const player = await new PlayerFactory([apiKey.game]).withTaloAlias().state(async () => ({
-      auth: await new PlayerAuthFactory().state(async () => ({
-        password: await bcrypt.hash('password', 10),
-        email: 'boz@mail.com',
-        verificationEnabled: false
-      })).one()
-    })).one()
+    const player = await new PlayerFactory([apiKey.game])
+      .withTaloAlias()
+      .state(async () => ({
+        auth: await new PlayerAuthFactory()
+          .state(async () => ({
+            password: await bcrypt.hash('password', 10),
+            email: 'boz@mail.com',
+            verificationEnabled: false,
+          }))
+          .one(),
+      }))
+      .one()
     const alias = player.aliases[0]
 
     await em.persistAndFlush(player)
@@ -91,20 +114,28 @@ describe('Player auth API - login', () => {
 
     expect(res.body).toStrictEqual({
       message: 'Incorrect identifier or password',
-      errorCode: 'INVALID_CREDENTIALS'
+      errorCode: 'INVALID_CREDENTIALS',
     })
   })
 
   it('should not login a player if the identifier does not exist', async () => {
-    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_PLAYERS, APIKeyScope.WRITE_PLAYERS])
+    const [apiKey, token] = await createAPIKeyAndToken([
+      APIKeyScope.READ_PLAYERS,
+      APIKeyScope.WRITE_PLAYERS,
+    ])
 
-    const player = await new PlayerFactory([apiKey.game]).withTaloAlias().state(async () => ({
-      auth: await new PlayerAuthFactory().state(async () => ({
-        password: await bcrypt.hash('password', 10),
-        email: 'boz@mail.com',
-        verificationEnabled: false
-      })).one()
-    })).one()
+    const player = await new PlayerFactory([apiKey.game])
+      .withTaloAlias()
+      .state(async () => ({
+        auth: await new PlayerAuthFactory()
+          .state(async () => ({
+            password: await bcrypt.hash('password', 10),
+            email: 'boz@mail.com',
+            verificationEnabled: false,
+          }))
+          .one(),
+      }))
+      .one()
 
     await em.persistAndFlush(player)
 
@@ -116,20 +147,28 @@ describe('Player auth API - login', () => {
 
     expect(res.body).toStrictEqual({
       message: 'Incorrect identifier or password',
-      errorCode: 'INVALID_CREDENTIALS'
+      errorCode: 'INVALID_CREDENTIALS',
     })
   })
 
   it('should send a verification code if verification is enabled', async () => {
-    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_PLAYERS, APIKeyScope.WRITE_PLAYERS])
+    const [apiKey, token] = await createAPIKeyAndToken([
+      APIKeyScope.READ_PLAYERS,
+      APIKeyScope.WRITE_PLAYERS,
+    ])
 
-    const player = await new PlayerFactory([apiKey.game]).withTaloAlias().state(async () => ({
-      auth: await new PlayerAuthFactory().state(async () => ({
-        password: await bcrypt.hash('password', 10),
-        email: 'boz@mail.com',
-        verificationEnabled: true
-      })).one()
-    })).one()
+    const player = await new PlayerFactory([apiKey.game])
+      .withTaloAlias()
+      .state(async () => ({
+        auth: await new PlayerAuthFactory()
+          .state(async () => ({
+            password: await bcrypt.hash('password', 10),
+            email: 'boz@mail.com',
+            verificationEnabled: true,
+          }))
+          .one(),
+      }))
+      .one()
     const alias = player.aliases[0]
 
     await em.persistAndFlush(player)
@@ -142,28 +181,38 @@ describe('Player auth API - login', () => {
 
     expect(res.body).toStrictEqual({
       aliasId: alias.id,
-      verificationRequired: true
+      verificationRequired: true,
     })
 
-    expect(await redis.get(`player-auth:${apiKey.game.id}:verification:${alias.id}`)).toHaveLength(6)
+    expect(await redis.get(`player-auth:${apiKey.game.id}:verification:${alias.id}`)).toHaveLength(
+      6,
+    )
     expect(sendMock).toHaveBeenCalledOnce()
 
     const activity = await em.getRepository(PlayerAuthActivity).findOne({
       type: PlayerAuthActivityType.VERIFICATION_STARTED,
-      player: player.id
+      player: player.id,
     })
     expect(activity).not.toBeNull()
   })
 
   it('should login successfully when identifier has whitespace', async () => {
-    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_PLAYERS, APIKeyScope.WRITE_PLAYERS])
+    const [apiKey, token] = await createAPIKeyAndToken([
+      APIKeyScope.READ_PLAYERS,
+      APIKeyScope.WRITE_PLAYERS,
+    ])
 
-    const player = await new PlayerFactory([apiKey.game]).withTaloAlias().state(async () => ({
-      auth: await new PlayerAuthFactory().state(async () => ({
-        password: await bcrypt.hash('password', 10),
-        verificationEnabled: false
-      })).one()
-    })).one()
+    const player = await new PlayerFactory([apiKey.game])
+      .withTaloAlias()
+      .state(async () => ({
+        auth: await new PlayerAuthFactory()
+          .state(async () => ({
+            password: await bcrypt.hash('password', 10),
+            verificationEnabled: false,
+          }))
+          .one(),
+      }))
+      .one()
     const alias = player.aliases[0]
 
     await em.persistAndFlush(player)

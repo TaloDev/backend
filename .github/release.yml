@@ -14,4 +14,4 @@ changelog:
         - fix
     - title: Other
       labels:
-        - "*"
+        - '*'

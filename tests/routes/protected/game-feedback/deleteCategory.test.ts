@@ -1,40 +1,41 @@
 import request from 'supertest'
-import { UserType } from '../../../../src/entities/user'
 import GameActivity, { GameActivityType } from '../../../../src/entities/game-activity'
-import userPermissionProvider from '../../../utils/userPermissionProvider'
+import { UserType } from '../../../../src/entities/user'
+import GameFeedbackCategoryFactory from '../../../fixtures/GameFeedbackCategoryFactory'
 import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
 import createUserAndToken from '../../../utils/createUserAndToken'
-import GameFeedbackCategoryFactory from '../../../fixtures/GameFeedbackCategoryFactory'
+import userPermissionProvider from '../../../utils/userPermissionProvider'
 
 describe('Game feedback - delete category', () => {
-  it.each(userPermissionProvider([
-    UserType.ADMIN
-  ], 204))('should return a %i for a %s user', async (statusCode, _, type) => {
-    const [organisation, game] = await createOrganisationAndGame()
-    const [token] = await createUserAndToken({ type, emailConfirmed: true }, organisation)
+  it.each(userPermissionProvider([UserType.ADMIN], 204))(
+    'should return a %i for a %s user',
+    async (statusCode, _, type) => {
+      const [organisation, game] = await createOrganisationAndGame()
+      const [token] = await createUserAndToken({ type, emailConfirmed: true }, organisation)
 
-    const feedbackCategory = await new GameFeedbackCategoryFactory(game).one()
-    await em.persistAndFlush(feedbackCategory)
+      const feedbackCategory = await new GameFeedbackCategoryFactory(game).one()
+      await em.persistAndFlush(feedbackCategory)
 
-    await request(app)
-      .delete(`/games/${game.id}/game-feedback/categories/${feedbackCategory.id}`)
-      .auth(token, { type: 'bearer' })
-      .expect(statusCode)
+      await request(app)
+        .delete(`/games/${game.id}/game-feedback/categories/${feedbackCategory.id}`)
+        .auth(token, { type: 'bearer' })
+        .expect(statusCode)
 
-    const activity = await em.getRepository(GameActivity).findOne({
-      type: GameActivityType.GAME_FEEDBACK_CATEGORY_DELETED,
-      game,
-      extra: {
-        feedbackCategoryInternalName: feedbackCategory.internalName
+      const activity = await em.getRepository(GameActivity).findOne({
+        type: GameActivityType.GAME_FEEDBACK_CATEGORY_DELETED,
+        game,
+        extra: {
+          feedbackCategoryInternalName: feedbackCategory.internalName,
+        },
+      })
+
+      if (statusCode === 204) {
+        expect(activity).not.toBeNull()
+      } else {
+        expect(activity).toBeNull()
       }
-    })
-
-    if (statusCode === 204) {
-      expect(activity).not.toBeNull()
-    } else {
-      expect(activity).toBeNull()
-    }
-  })
+    },
+  )
 
   it('should not delete a feedback category for a game the user has no access to', async () => {
     const [, otherGame] = await createOrganisationAndGame()

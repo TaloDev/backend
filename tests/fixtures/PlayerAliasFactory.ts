@@ -1,7 +1,7 @@
-import { Factory } from 'hefty'
-import PlayerAlias, { PlayerAliasService } from '../../src/entities/player-alias'
-import Player from '../../src/entities/player'
 import { rand, randCreditCardNumber, randNumber, randUserName, randUuid } from '@ngneat/falso'
+import { Factory } from 'hefty'
+import Player from '../../src/entities/player'
+import PlayerAlias, { PlayerAliasService } from '../../src/entities/player-alias'
 
 export default class PlayerAliasFactory extends Factory<PlayerAlias> {
   private player: Player
@@ -20,31 +20,31 @@ export default class PlayerAliasFactory extends Factory<PlayerAlias> {
         PlayerAliasService.EPIC,
         PlayerAliasService.USERNAME,
         PlayerAliasService.EMAIL,
-        PlayerAliasService.CUSTOM
+        PlayerAliasService.CUSTOM,
       ]),
       identifier: rand(identifiers),
-      player: this.player
+      player: this.player,
     }))
   }
 
   steam(): this {
     return this.state(() => ({
       service: PlayerAliasService.STEAM,
-      identifier: randNumber({ min: 100_000, max: 1_000_000 }).toString()
+      identifier: randNumber({ min: 100_000, max: 1_000_000 }).toString(),
     }))
   }
 
   username(): this {
     return this.state(() => ({
       service: PlayerAliasService.USERNAME,
-      identifier: randUserName()
+      identifier: randUserName(),
     }))
   }
 
   talo(): this {
     return this.state(() => ({
       service: PlayerAliasService.TALO,
-      identifier: randUuid()
+      identifier: randUuid(),
     }))
   }
 }

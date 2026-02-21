@@ -1,20 +1,21 @@
 import request from 'supertest'
-import PlayerFactory from '../../../fixtures/PlayerFactory'
 import GameStatFactory from '../../../fixtures/GameStatFactory'
+import PlayerFactory from '../../../fixtures/PlayerFactory'
 import PlayerGameStatFactory from '../../../fixtures/PlayerGameStatFactory'
-import createUserAndToken from '../../../utils/createUserAndToken'
 import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
+import createUserAndToken from '../../../utils/createUserAndToken'
 
 describe('Player - get stats', () => {
-
-  it('should get a player\'s stats', async () => {
+  it("should get a player's stats", async () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({}, organisation)
 
     const stats = await new GameStatFactory([game]).many(3)
 
     const player = await new PlayerFactory([game]).one()
-    const playerStats = await Promise.all(stats.map((stat) => new PlayerGameStatFactory().construct(player, stat).one()))
+    const playerStats = await Promise.all(
+      stats.map((stat) => new PlayerGameStatFactory().construct(player, stat).one()),
+    )
 
     await em.persist([player, ...playerStats]).flush()
 
@@ -26,7 +27,7 @@ describe('Player - get stats', () => {
     expect(res.body.stats).toHaveLength(3)
   })
 
-  it('should not get a player\'s stats for a player they have no access to', async () => {
+  it("should not get a player's stats for a player they have no access to", async () => {
     const [, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken()
 
@@ -40,7 +41,7 @@ describe('Player - get stats', () => {
       .expect(403)
   })
 
-  it('should not get a player\'s stats if they do not exist', async () => {
+  it("should not get a player's stats if they do not exist", async () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({}, organisation)
 

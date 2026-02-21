@@ -6,10 +6,12 @@ import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
 describe('User public - refresh', () => {
   it('should let a user refresh their session if they have one', async () => {
     const [organisation] = await createOrganisationAndGame()
-    const user = await new UserFactory().state(() => ({
-      organisation,
-      lastSeenAt: new Date(2020, 1, 1)
-    })).one()
+    const user = await new UserFactory()
+      .state(() => ({
+        organisation,
+        lastSeenAt: new Date(2020, 1, 1),
+      }))
+      .one()
     const session = new UserSession(user)
     await em.persistAndFlush(session)
 
@@ -26,10 +28,8 @@ describe('User public - refresh', () => {
     expect(new Date(res.body.user.lastSeenAt).getDay()).toEqual(new Date().getDay())
   })
 
-  it('should not let a user refresh their session if they don\'t have one', async () => {
-    const res = await request(app)
-      .get('/public/users/refresh')
-      .expect(401)
+  it("should not let a user refresh their session if they don't have one", async () => {
+    const res = await request(app).get('/public/users/refresh').expect(401)
 
     expect(res.body).toStrictEqual({ message: 'Session not found' })
   })

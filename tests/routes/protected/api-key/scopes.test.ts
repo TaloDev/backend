@@ -1,6 +1,6 @@
 import request from 'supertest'
-import { UserType } from '../../../../src/entities/user'
 import { APIKeyScope } from '../../../../src/entities/api-key'
+import { UserType } from '../../../../src/entities/user'
 import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
 import createUserAndToken from '../../../utils/createUserAndToken'
 

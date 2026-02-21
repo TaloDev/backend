@@ -1,30 +1,29 @@
-import { apiRoute, withMiddleware } from '../../../lib/routing/router'
-import { requireScopes } from '../../../middleware/policy-middleware'
 import { APIKeyScope } from '../../../entities/api-key'
-import { loadAlias } from '../../../middleware/player-alias-middleware'
-import PlayerAliasSubscription from '../../../entities/player-alias-subscription'
 import PlayerAlias from '../../../entities/player-alias'
-import { sendMessages } from '../../../socket/messages/socketMessage'
-import { postDocs } from './docs'
+import PlayerAliasSubscription from '../../../entities/player-alias-subscription'
+import { apiRoute, withMiddleware } from '../../../lib/routing/router'
 import { playerAliasHeaderSchema } from '../../../lib/validation/playerAliasHeaderSchema'
+import { loadAlias } from '../../../middleware/player-alias-middleware'
+import { requireScopes } from '../../../middleware/policy-middleware'
+import { sendMessages } from '../../../socket/messages/socketMessage'
 import { relationshipTypeSchema } from './common'
+import { postDocs } from './docs'
 
 export const postRoute = apiRoute({
   method: 'post',
   docs: postDocs,
   schema: (z) => ({
     headers: z.looseObject({
-      'x-talo-alias': playerAliasHeaderSchema
+      'x-talo-alias': playerAliasHeaderSchema,
     }),
     body: z.object({
       aliasId: z.number().int().meta({ description: 'The ID of the player alias to subscribe to' }),
-      relationshipType: relationshipTypeSchema.meta({ description: 'The type of relationship: "unidirectional" or "bidirectional"' })
-    })
+      relationshipType: relationshipTypeSchema.meta({
+        description: 'The type of relationship: "unidirectional" or "bidirectional"',
+      }),
+    }),
   }),
-  middleware: withMiddleware(
-    requireScopes([APIKeyScope.WRITE_PLAYER_RELATIONSHIPS]),
-    loadAlias
-  ),
+  middleware: withMiddleware(requireScopes([APIKeyScope.WRITE_PLAYER_RELATIONSHIPS]), loadAlias),
   handler: async (ctx) => {
     const em = ctx.em
     const { aliasId, relationshipType } = ctx.state.validated.body
@@ -33,8 +32,8 @@ export const postRoute = apiRoute({
     const subscribedTo = await em.repo(PlayerAlias).findOne({
       id: aliasId,
       player: {
-        game: ctx.state.game
-      }
+        game: ctx.state.game,
+      },
     })
 
     if (!subscribedTo) {
@@ -47,18 +46,14 @@ export const postRoute = apiRoute({
 
     const existing = await em.repo(PlayerAliasSubscription).findOne({
       subscriber: currentAlias,
-      subscribedTo
+      subscribedTo,
     })
 
     if (existing) {
       return ctx.throw(400, 'Subscription already exists')
     }
 
-    const subscription = new PlayerAliasSubscription(
-      currentAlias,
-      subscribedTo,
-      relationshipType
-    )
+    const subscription = new PlayerAliasSubscription(currentAlias, subscribedTo, relationshipType)
     await em.persist(subscription).flush()
 
     const conns = ctx.wss.findConnections((conn) => {
@@ -68,14 +63,14 @@ export const postRoute = apiRoute({
       )
     })
     await sendMessages(conns, 'v1.player-relationships.subscription-created', {
-      subscription
+      subscription,
     })
 
     return {
       status: 200,
       body: {
-        subscription
-      }
+        subscription,
+      },
     }
-  }
+  },
 })

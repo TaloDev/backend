@@ -1,7 +1,9 @@
 {
   "name": "game-services",
-  "version": "0.104.1",
+  "version": "0.105.0",
   "description": "",
+  "license": "MIT",
+  "author": "Talo Platform Ltd",
   "main": "src/index.ts",
   "scripts": {
     "watch": "nodemon --watch src --ext ts,json --exec ts-node src/index.ts",
@@ -16,56 +18,21 @@
     "migration:create": "DB_HOST=127.0.0.1 mikro-orm migration:create",
     "migration:up": "DB_HOST=127.0.0.1 mikro-orm migration:up",
     "prepare": "husky || true",
-    "lint": "eslint src/**/*.ts tests/**/*.ts",
-    "stripe:webhooks": "stripe listen --forward-to localhost:3000/public/webhooks/subscriptions"
-  },
-  "author": "Sleepy Studios",
-  "license": "MIT",
-  "devDependencies": {
-    "@mikro-orm/cli": "^6.6.6",
-    "@stylistic/eslint-plugin": "^5.5.0",
-    "@types/archiver": "^6.0.3",
-    "@types/bcrypt": "^5.0.2",
-    "@types/jsonwebtoken": "^9.0.9",
-    "@types/koa": "^3.0.1",
-    "@types/koa__cors": "^5.0.0",
-    "@types/koa-bodyparser": "^4.3.12",
-    "@types/koa-compress": "^4.0.7",
-    "@types/koa-logger": "^3.1.2",
-    "@types/lodash": "^4.14.182",
-    "@types/node": "24",
-    "@types/nodemailer": "^6.4.17",
-    "@types/qrcode": "^1.5.5",
-    "@types/supertest": "^6.0.2",
-    "@types/unzipper": "^0.10.11",
-    "@types/uuid": "^10.0.0",
-    "@types/ws": "^8.5.13",
-    "@typescript-eslint/eslint-plugin": "^8.46.2",
-    "@typescript-eslint/parser": "^8.46.2",
-    "@vitest/coverage-v8": "^4.0.18",
-    "axios-mock-adapter": "^1.22.0",
-    "csv-parse": "^5.6.0",
-    "eslint": "^9.38.0",
-    "hefty": "^2.0.0",
-    "husky": "^9.0.11",
-    "lint-staged": ">=10",
-    "nodemon": "^3.1.11",
-    "supertest": "^7.0.0",
-    "ts-node": "^10.7.0",
-    "typescript": "^5.9.3",
-    "unzipper": "^0.12.3",
-    "vite": "^6.4.1",
-    "vitest": "^4.0.18"
+    "stripe:webhooks": "stripe listen --forward-to localhost:3000/public/webhooks/subscriptions",
+    "lint": "oxlint --type-aware",
+    "lint:fix": "oxlint --type-aware --fix",
+    "fmt": "oxfmt --check",
+    "fmt:fix": "oxfmt"
   },
   "dependencies": {
     "@clickhouse/client": "^1.15.0",
     "@dinero.js/currencies": "^2.0.0-alpha.14",
     "@hyperdx/node-opentelemetry": "^0.8.2",
     "@koa/cors": "^5.0.0",
-    "@mikro-orm/core": "^6.6.6",
-    "@mikro-orm/migrations": "^6.6.6",
-    "@mikro-orm/mysql": "^6.6.6",
-    "@mikro-orm/reflection": "^6.6.6",
+    "@mikro-orm/core": "^6.6.7",
+    "@mikro-orm/migrations": "^6.6.7",
+    "@mikro-orm/mysql": "^6.6.7",
+    "@mikro-orm/reflection": "^6.6.7",
     "@ngneat/falso": "^7.2.0",
     "@opentelemetry/api": "^1.9.0",
     "@sentry/node": "^9.29.0",
@@ -100,21 +67,56 @@
     "ws": "^8.18.0",
     "zod": "^4.3.6"
   },
-  "mikro-orm": {
-    "configPaths": [
-      "./src/config/mikro-orm.config.ts",
-      "./config/mikro-orm.config.js"
-    ]
-  },
-  "lint-staged": {
-    "*.{js,ts}": "eslint --fix"
-  },
-  "engines": {
-    "node": ">=24.0.0"
+  "devDependencies": {
+    "@mikro-orm/cli": "^6.6.7",
+    "@types/archiver": "^6.0.3",
+    "@types/bcrypt": "^5.0.2",
+    "@types/jsonwebtoken": "^9.0.9",
+    "@types/koa": "^3.0.1",
+    "@types/koa-bodyparser": "^4.3.12",
+    "@types/koa-compress": "^4.0.7",
+    "@types/koa-logger": "^3.1.2",
+    "@types/koa__cors": "^5.0.0",
+    "@types/lodash": "^4.14.182",
+    "@types/node": "24",
+    "@types/nodemailer": "^6.4.17",
+    "@types/qrcode": "^1.5.5",
+    "@types/supertest": "^6.0.2",
+    "@types/unzipper": "^0.10.11",
+    "@types/uuid": "^10.0.0",
+    "@types/ws": "^8.5.13",
+    "@vitest/coverage-v8": "^4.0.18",
+    "axios-mock-adapter": "^1.22.0",
+    "csv-parse": "^5.6.0",
+    "hefty": "^2.0.0",
+    "husky": "^9.0.11",
+    "lint-staged": ">=10",
+    "nodemon": "^3.1.11",
+    "oxfmt": "^0.34.0",
+    "oxlint": "^1.49.0",
+    "oxlint-tsgolint": "^0.14.1",
+    "supertest": "^7.0.0",
+    "ts-node": "^10.7.0",
+    "typescript": "^5.9.3",
+    "unzipper": "^0.12.3",
+    "vite": "^6.4.1",
+    "vitest": "^4.0.18"
   },
   "overrides": {
     "koa-tree-router": {
       "@types/koa": "$@types/koa"
     }
+  },
+  "lint-staged": {
+    "*.{js,ts}": "npm run lint"
+  },
+  "engines": {
+    "node": ">=24.0.0"
+  },
+  "mikro-orm": {
+    "configPaths": [
+      "./src/config/mikro-orm.config.ts",
+      "./config/mikro-orm.config.js"
+    ]
   }
 }

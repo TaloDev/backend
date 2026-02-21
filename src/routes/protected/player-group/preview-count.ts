@@ -1,11 +1,11 @@
 import { createHash } from 'crypto'
 import { z } from 'zod'
+import PlayerGroup from '../../../entities/player-group'
+import buildErrorResponse from '../../../lib/errors/buildErrorResponse'
+import { withResponseCache } from '../../../lib/perf/responseCache'
 import { protectedRoute, withMiddleware } from '../../../lib/routing/router'
 import { loadGame } from '../../../middleware/game-middleware'
-import PlayerGroup from '../../../entities/player-group'
-import { withResponseCache } from '../../../lib/perf/responseCache'
 import { buildRulesFromData, rulesAndModeSchema } from './common'
-import buildErrorResponse from '../../../lib/errors/buildErrorResponse'
 
 export const previewCountRoute = protectedRoute({
   method: 'get',
@@ -13,8 +13,8 @@ export const previewCountRoute = protectedRoute({
   schema: (z) => ({
     query: z.object({
       rules: z.string(),
-      ruleMode: z.string()
-    })
+      ruleMode: z.string(),
+    }),
   }),
   middleware: withMiddleware(loadGame),
   handler: async (ctx) => {
@@ -25,7 +25,7 @@ export const previewCountRoute = protectedRoute({
     try {
       parsedData = {
         rules: JSON.parse(decodeURI(rulesStr)),
-        ruleMode
+        ruleMode,
       }
     } catch {
       return buildErrorResponse({ rules: ['Rules must be valid JSON'] })
@@ -46,12 +46,14 @@ export const previewCountRoute = protectedRoute({
 
     const devDataComponent = ctx.state.includeDevData ? 'dev' : 'no-dev'
     const hash = createHash('sha256')
-      .update(JSON.stringify({
-        rules: rulesStr,
-        ruleMode,
-        gameId: ctx.state.game.id,
-        includeDevData: devDataComponent
-      }))
+      .update(
+        JSON.stringify({
+          rules: rulesStr,
+          ruleMode,
+          gameId: ctx.state.game.id,
+          includeDevData: devDataComponent,
+        }),
+      )
       .digest('hex')
 
     return withResponseCache({ key: hash }, async () => {
@@ -68,9 +70,9 @@ export const previewCountRoute = protectedRoute({
       return {
         status: 200,
         body: {
-          count
-        }
+          count,
+        },
       }
     })
-  }
+  },
 })

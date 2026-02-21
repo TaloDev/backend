@@ -1,6 +1,6 @@
+import { getGlobalQueue } from '../../config/global-queues'
 import createQueue from '../queues/createQueue'
 import { clearResponseCache } from './responseCache'
-import { getGlobalQueue } from '../../config/global-queues'
 
 export function createClearResponseCacheQueue() {
   return createQueue<string>('clearResponseCache', async (job) => {
@@ -13,6 +13,6 @@ export async function deferClearResponseCache(key: string) {
   await queue.add('clear-key', key, {
     jobId: `clear-cache-${key}`,
     removeOnComplete: true,
-    removeOnFail: true
+    removeOnFail: true,
   })
 }

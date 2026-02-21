@@ -2,7 +2,7 @@ import { Cursor, Loaded } from '@mikro-orm/mysql'
 
 export async function* streamByCursor<T extends object>(
   fetchPage: (batchSize: number, after?: string) => Promise<Cursor<T>>,
-  batchSize = 1000
+  batchSize = 1000,
 ): AsyncGenerator<Loaded<T>> {
   let cursor: string | undefined
 

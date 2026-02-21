@@ -1,10 +1,10 @@
 import { protectedRouter } from '../../../lib/routing/router'
-import { listRoute } from './list'
 import { createRoute } from './create'
-import { updateRoute } from './update'
 import { deleteRoute } from './delete'
+import { listRoute } from './list'
 import { syncLeaderboardsRoute } from './sync-leaderboards'
 import { syncStatsRoute } from './sync-stats'
+import { updateRoute } from './update'
 
 export function integrationRouter() {
   return protectedRouter('/games/:gameId/integrations', ({ route }) => {

@@ -1,53 +1,59 @@
 import request from 'supertest'
-import { UserType } from '../../../../src/entities/user'
 import APIKey from '../../../../src/entities/api-key'
-import UserFactory from '../../../fixtures/UserFactory'
 import GameActivity, { GameActivityType } from '../../../../src/entities/game-activity'
-import userPermissionProvider from '../../../utils/userPermissionProvider'
-import createUserAndToken from '../../../utils/createUserAndToken'
-import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
+import { UserType } from '../../../../src/entities/user'
 import { createSocketTicket } from '../../../../src/lib/sockets/createSocketTicket'
+import UserFactory from '../../../fixtures/UserFactory'
+import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
 import createTestSocket from '../../../utils/createTestSocket'
+import createUserAndToken from '../../../utils/createUserAndToken'
+import userPermissionProvider from '../../../utils/userPermissionProvider'
 
 describe('API key - delete', () => {
-  it.each(userPermissionProvider([
-    UserType.ADMIN
-  ], 204))('should return a %i for a %s user', async (statusCode, _, type) => {
-    const [organisation, game] = await createOrganisationAndGame()
-    const [token, user] = await createUserAndToken({ type, emailConfirmed: true }, organisation)
+  it.each(userPermissionProvider([UserType.ADMIN], 204))(
+    'should return a %i for a %s user',
+    async (statusCode, _, type) => {
+      const [organisation, game] = await createOrganisationAndGame()
+      const [token, user] = await createUserAndToken({ type, emailConfirmed: true }, organisation)
 
-    const key = new APIKey(game, user)
-    await em.persistAndFlush(key)
+      const key = new APIKey(game, user)
+      await em.persistAndFlush(key)
 
-    const res = await request(app)
-      .delete(`/games/${game.id}/api-keys/${key.id}`)
-      .auth(token, { type: 'bearer' })
-      .expect(statusCode)
+      const res = await request(app)
+        .delete(`/games/${game.id}/api-keys/${key.id}`)
+        .auth(token, { type: 'bearer' })
+        .expect(statusCode)
 
-    await em.refresh(key)
+      await em.refresh(key)
 
-    const activity = await em.getRepository(GameActivity).findOne({
-      type: GameActivityType.API_KEY_REVOKED,
-      game,
-      extra: {
-        keyId: key.id
+      const activity = await em.getRepository(GameActivity).findOne({
+        type: GameActivityType.API_KEY_REVOKED,
+        game,
+        extra: {
+          keyId: key.id,
+        },
+      })
+
+      if (statusCode === 204) {
+        expect(key.revokedAt).toBeTruthy()
+        expect(activity).not.toBeNull()
+      } else {
+        expect(res.body).toStrictEqual({
+          message: 'You do not have permissions to revoke API keys',
+        })
+
+        expect(key.revokedAt).toBeNull()
+        expect(activity).toBeNull()
       }
-    })
+    },
+  )
 
-    if (statusCode === 204) {
-      expect(key.revokedAt).toBeTruthy()
-      expect(activity).not.toBeNull()
-    } else {
-      expect(res.body).toStrictEqual({ message: 'You do not have permissions to revoke API keys' })
-
-      expect(key.revokedAt).toBeNull()
-      expect(activity).toBeNull()
-    }
-  })
-
-  it('should not delete an api key that doesn\'t exist', async () => {
+  it("should not delete an api key that doesn't exist", async () => {
     const [organisation, game] = await createOrganisationAndGame()
-    const [token] = await createUserAndToken({ type: UserType.ADMIN, emailConfirmed: true }, organisation)
+    const [token] = await createUserAndToken(
+      { type: UserType.ADMIN, emailConfirmed: true },
+      organisation,
+    )
 
     const res = await request(app)
       .delete(`/games/${game.id}/api-keys/99`)
@@ -70,12 +76,17 @@ describe('API key - delete', () => {
       .auth(token, { type: 'bearer' })
       .expect(403)
 
-    expect(res.body).toStrictEqual({ message: 'You need to confirm your email address to revoke API keys' })
+    expect(res.body).toStrictEqual({
+      message: 'You need to confirm your email address to revoke API keys',
+    })
   })
 
   it('should disconnect socket connections for the api key', async () => {
     const [organisation, game] = await createOrganisationAndGame()
-    const [token, user] = await createUserAndToken({ type: UserType.ADMIN, emailConfirmed: true }, organisation)
+    const [token, user] = await createUserAndToken(
+      { type: UserType.ADMIN, emailConfirmed: true },
+      organisation,
+    )
 
     const key = new APIKey(game, user)
     await em.persistAndFlush(key)

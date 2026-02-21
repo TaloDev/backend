@@ -1,10 +1,20 @@
-import { Collection, Entity, EntityManager, Enum, Index, ManyToOne, OneToMany, PrimaryKey, Property } from '@mikro-orm/mysql'
+import {
+  Collection,
+  Entity,
+  EntityManager,
+  Enum,
+  Index,
+  ManyToOne,
+  OneToMany,
+  PrimaryKey,
+  Property,
+} from '@mikro-orm/mysql'
 import Game from './game'
 import LeaderboardEntry from './leaderboard-entry'
 
 export enum LeaderboardSortMode {
   DESC = 'desc',
-  ASC = 'asc'
+  ASC = 'asc',
 }
 
 export enum LeaderboardRefreshInterval {
@@ -12,7 +22,7 @@ export enum LeaderboardRefreshInterval {
   DAILY = 'daily',
   WEEKLY = 'weekly',
   MONTHLY = 'monthly',
-  YEARLY = 'yearly'
+  YEARLY = 'yearly',
 }
 
 @Entity()
@@ -64,17 +74,17 @@ export default class Leaderboard {
   async findEntryWithProps({
     em,
     playerAliasId,
-    props
-  }:{
+    props,
+  }: {
     em: EntityManager
     playerAliasId: number
-    props: { key: string, value: string }[]
+    props: { key: string; value: string }[]
   }): Promise<LeaderboardEntry | null> {
     return em.repo(LeaderboardEntry).findOne({
       leaderboard: this,
       playerAlias: playerAliasId,
       deletedAt: null,
-      propsDigest: LeaderboardEntry.createPropsDigest(props)
+      propsDigest: LeaderboardEntry.createPropsDigest(props),
     })
   }
 
@@ -88,7 +98,7 @@ export default class Leaderboard {
       uniqueByProps: this.uniqueByProps,
       refreshInterval: this.refreshInterval,
       createdAt: this.createdAt,
-      updatedAt: this.updatedAt
+      updatedAt: this.updatedAt,
     }
   }
 }

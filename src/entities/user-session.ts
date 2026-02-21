@@ -1,7 +1,7 @@
 import { Entity, ManyToOne, PrimaryKey, Property } from '@mikro-orm/mysql'
+import { add } from 'date-fns'
 import { v4 } from 'uuid'
 import User from './user'
-import { add } from 'date-fns'
 
 @Entity()
 export default class UserSession {

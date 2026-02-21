@@ -1,8 +1,8 @@
-import createQueue from './createQueue'
 import { getMikroORM } from '../../config/mikro-orm.config'
-import UserSession from '../../entities/user-session'
 import GameActivity from '../../entities/game-activity'
 import User from '../../entities/user'
+import UserSession from '../../entities/user-session'
+import createQueue from './createQueue'
 
 type DemoUserConfig = {
   userId: number

@@ -4,10 +4,10 @@ import { getSocketTracer } from '../socketTracer'
 export const requests = [
   'v1.players.identify',
   'v1.channels.message',
-  'v1.player-relationships.broadcast'
+  'v1.player-relationships.broadcast',
 ] as const
 
-export type SocketMessageRequest = typeof requests[number]
+export type SocketMessageRequest = (typeof requests)[number]
 
 export const responses = [
   'v1.connected',
@@ -25,18 +25,26 @@ export const responses = [
   'v1.player-relationships.broadcast',
   'v1.player-relationships.subscription-created',
   'v1.player-relationships.subscription-confirmed',
-  'v1.player-relationships.subscription-deleted'
+  'v1.player-relationships.subscription-deleted',
 ] as const
 
-export type SocketMessageResponse = typeof responses[number]
+export type SocketMessageResponse = (typeof responses)[number]
 
 export const heartbeatMessage = 'v1.heartbeat'
 
-export async function sendMessage<T extends object>(conn: SocketConnection, res: SocketMessageResponse, data: T) {
+export async function sendMessage<T extends object>(
+  conn: SocketConnection,
+  res: SocketMessageResponse,
+  data: T,
+) {
   await conn.sendMessage(res, data)
 }
 
-export async function sendMessages<T extends object>(conns: SocketConnection[], type: SocketMessageResponse, data: T) {
+export async function sendMessages<T extends object>(
+  conns: SocketConnection[],
+  type: SocketMessageResponse,
+  data: T,
+) {
   await getSocketTracer().startActiveSpan('socket.send_many_messages', async (span) => {
     try {
       const message = JSON.stringify({ res: type, data })

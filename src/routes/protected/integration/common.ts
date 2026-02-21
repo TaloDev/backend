@@ -1,11 +1,11 @@
-import { Next } from 'koa'
 import { EntityManager } from '@mikro-orm/mysql'
 import { Job, Queue } from 'bullmq'
-import Integration, { IntegrationConfig, IntegrationType } from '../../../entities/integration'
-import { ProtectedRouteContext } from '../../../lib/routing/context'
-import createQueue from '../../../lib/queues/createQueue'
+import { Next } from 'koa'
 import { getMikroORM } from '../../../config/mikro-orm.config'
 import Game from '../../../entities/game'
+import Integration, { IntegrationConfig, IntegrationType } from '../../../entities/integration'
+import createQueue from '../../../lib/queues/createQueue'
+import { ProtectedRouteContext } from '../../../lib/routing/context'
 
 type IntegrationRouteContext = ProtectedRouteContext<{
   game: Game
@@ -20,10 +20,9 @@ export async function loadIntegration(ctx: IntegrationRouteContext, next: Next) 
   const { id } = ctx.params as { id: string }
   const em = ctx.em
 
-  const integration = await em.repo(Integration).findOne(
-    Number(id),
-    { populate: ['game.organisation'] }
-  )
+  const integration = await em
+    .repo(Integration)
+    .findOne(Number(id), { populate: ['game.organisation'] })
 
   if (!integration) {
     return ctx.throw(404, 'Integration not found')
@@ -48,19 +47,22 @@ let integrationSyncQueue: Queue<SyncJob> | null = null
 
 function getIntegrationSyncQueue() {
   if (!integrationSyncQueue) {
-    integrationSyncQueue = createQueue<SyncJob>('integration-syncing', async (job: Job<SyncJob>) => {
-      const { integrationId, type } = job.data
+    integrationSyncQueue = createQueue<SyncJob>(
+      'integration-syncing',
+      async (job: Job<SyncJob>) => {
+        const { integrationId, type } = job.data
 
-      const orm = await getMikroORM()
-      const em = orm.em.fork() as EntityManager
-      const integration = await em.repo(Integration).findOneOrFail(integrationId)
+        const orm = await getMikroORM()
+        const em = orm.em.fork() as EntityManager
+        const integration = await em.repo(Integration).findOneOrFail(integrationId)
 
-      if (type === 'leaderboards') {
-        await integration.handleSyncLeaderboards(em)
-      } else if (type === 'stats') {
-        await integration.handleSyncStats(em)
-      }
-    })
+        if (type === 'leaderboards') {
+          await integration.handleSyncLeaderboards(em)
+        } else if (type === 'stats') {
+          await integration.handleSyncStats(em)
+        }
+      },
+    )
   }
   return integrationSyncQueue
 }
@@ -74,5 +76,5 @@ export function addStatSyncJob(integrationId: number) {
 }
 
 export const configKeys: IntegrationUpdateableKeys = {
-  [IntegrationType.STEAMWORKS]: ['apiKey', 'appId', 'syncLeaderboards', 'syncStats']
+  [IntegrationType.STEAMWORKS]: ['apiKey', 'appId', 'syncLeaderboards', 'syncStats'],
 }

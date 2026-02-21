@@ -2,19 +2,24 @@ import { UserType } from '../../src/entities/user'
 
 type UserTypeStatusCodeProvider = [number, string, UserType][]
 
-export default function userPermissionProvider(allowedUserTypes: UserType[] = [], successCode = 200): UserTypeStatusCodeProvider {
+export default function userPermissionProvider(
+  allowedUserTypes: UserType[] = [],
+  successCode = 200,
+): UserTypeStatusCodeProvider {
   const userTypeMap: Record<UserType, string> = {
     [UserType.OWNER]: 'owner',
     [UserType.ADMIN]: 'admin',
     [UserType.DEV]: 'dev',
-    [UserType.DEMO]: 'demo'
+    [UserType.DEMO]: 'demo',
   }
 
   const provider: UserTypeStatusCodeProvider = [
-    [successCode, userTypeMap[UserType.OWNER], UserType.OWNER]
+    [successCode, userTypeMap[UserType.OWNER], UserType.OWNER],
   ]
 
-  allowedUserTypes.forEach((userType) => provider.push([successCode, userTypeMap[userType], userType]))
+  allowedUserTypes.forEach((userType) =>
+    provider.push([successCode, userTypeMap[userType], userType]),
+  )
 
   Object.keys(userTypeMap)
     .map((key) => Number(key) as UserType)

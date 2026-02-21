@@ -1,13 +1,15 @@
+import assert from 'node:assert'
 import { APIKeyScope } from '../../src/entities/api-key'
 import GameChannel from '../../src/entities/game-channel'
 import GameChannelFactory from '../fixtures/GameChannelFactory'
 import createSocketIdentifyMessage from '../utils/createSocketIdentifyMessage'
 import createTestSocket from '../utils/createTestSocket'
-import assert from 'node:assert'
 
 describe('Socket presence', () => {
   it('should set the player presence to online when identifying', async () => {
-    const { identifyMessage, ticket, player } = await createSocketIdentifyMessage([APIKeyScope.READ_PLAYERS])
+    const { identifyMessage, ticket, player } = await createSocketIdentifyMessage([
+      APIKeyScope.READ_PLAYERS,
+    ])
 
     await createTestSocket(`/?ticket=${ticket}`, async (client) => {
       await client.identify(identifyMessage)
@@ -22,7 +24,9 @@ describe('Socket presence', () => {
   })
 
   it('should set the player presence to offline when socket disconnects', async () => {
-    const { identifyMessage, ticket, player } = await createSocketIdentifyMessage([APIKeyScope.READ_PLAYERS])
+    const { identifyMessage, ticket, player } = await createSocketIdentifyMessage([
+      APIKeyScope.READ_PLAYERS,
+    ])
 
     await createTestSocket(`/?ticket=${ticket}`, async (client) => {
       await client.identify(identifyMessage)
@@ -38,7 +42,9 @@ describe('Socket presence', () => {
   })
 
   it('should remove player from temporary channels when going offline', async () => {
-    const { identifyMessage, ticket, player } = await createSocketIdentifyMessage([APIKeyScope.READ_PLAYERS])
+    const { identifyMessage, ticket, player } = await createSocketIdentifyMessage([
+      APIKeyScope.READ_PLAYERS,
+    ])
 
     const channel = await new GameChannelFactory(player.game).temporaryMembership().one()
     channel.members.add(player.aliases[0])
@@ -55,7 +61,9 @@ describe('Socket presence', () => {
   it('should run auto-cleanup on temporary membership channels', async () => {
     const sendMessageToMembersMock = vi.spyOn(GameChannel.prototype, 'sendMessageToMembers')
 
-    const { identifyMessage, ticket, player } = await createSocketIdentifyMessage([APIKeyScope.READ_PLAYERS])
+    const { identifyMessage, ticket, player } = await createSocketIdentifyMessage([
+      APIKeyScope.READ_PLAYERS,
+    ])
 
     const channel = await new GameChannelFactory(player.game)
       .temporaryMembership()

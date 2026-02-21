@@ -1,11 +1,14 @@
 import { EntityManager } from '@mikro-orm/mysql'
+import assert from 'node:assert'
 import Organisation from '../../entities/organisation'
 import OrganisationPricingPlan from '../../entities/organisation-pricing-plan'
 import PricingPlan from '../../entities/pricing-plan'
 import initStripe from './initStripe'
-import assert from 'node:assert'
 
-export default async function createDefaultPricingPlan(em: EntityManager, organisation: Organisation): Promise<OrganisationPricingPlan> {
+export default async function createDefaultPricingPlan(
+  em: EntityManager,
+  organisation: Organisation,
+): Promise<OrganisationPricingPlan> {
   const stripe = initStripe()
 
   let defaultPlan = await em.getRepository(PricingPlan).findOne({ default: true })

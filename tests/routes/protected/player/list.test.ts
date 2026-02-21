@@ -1,12 +1,15 @@
 import { Collection } from '@mikro-orm/mysql'
 import request from 'supertest'
-import PlayerFactory from '../../../fixtures/PlayerFactory'
+import PlayerGroupRule, {
+  PlayerGroupRuleCastType,
+  PlayerGroupRuleName,
+} from '../../../../src/entities/player-group-rule'
 import PlayerProp from '../../../../src/entities/player-prop'
+import GameChannelFactory from '../../../fixtures/GameChannelFactory'
+import PlayerFactory from '../../../fixtures/PlayerFactory'
+import PlayerGroupFactory from '../../../fixtures/PlayerGroupFactory'
 import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
 import createUserAndToken from '../../../utils/createUserAndToken'
-import PlayerGroupFactory from '../../../fixtures/PlayerGroupFactory'
-import PlayerGroupRule, { PlayerGroupRuleCastType, PlayerGroupRuleName } from '../../../../src/entities/player-group-rule'
-import GameChannelFactory from '../../../fixtures/GameChannelFactory'
 
 describe('Player - index', () => {
   it('should return a list of players', async () => {
@@ -51,11 +54,13 @@ describe('Player - index', () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({ organisation })
 
-    const players = await new PlayerFactory([game]).state((player) => ({
-      props: new Collection<PlayerProp>(player, [
-        new PlayerProp(player, 'guildName', 'The Best Guild')
-      ])
-    })).many(2)
+    const players = await new PlayerFactory([game])
+      .state((player) => ({
+        props: new Collection<PlayerProp>(player, [
+          new PlayerProp(player, 'guildName', 'The Best Guild'),
+        ]),
+      }))
+      .many(2)
 
     const otherPlayers = await new PlayerFactory([game]).many(3)
 
@@ -163,14 +168,21 @@ describe('Player - index', () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({ organisation })
 
-    const player = await new PlayerFactory([game]).state(() => ({ lastSeenAt: new Date(2022, 1, 1) })).one()
-    const otherPlayers = await new PlayerFactory([game]).state(() => ({ lastSeenAt: new Date(2023, 1, 1) })).many(3)
+    const player = await new PlayerFactory([game])
+      .state(() => ({ lastSeenAt: new Date(2022, 1, 1) }))
+      .one()
+    const otherPlayers = await new PlayerFactory([game])
+      .state(() => ({ lastSeenAt: new Date(2023, 1, 1) }))
+      .many(3)
 
     const dateRule = new PlayerGroupRule(PlayerGroupRuleName.LT, 'lastSeenAt')
     dateRule.castType = PlayerGroupRuleCastType.DATETIME
     dateRule.operands = ['2023-01-01']
 
-    const group = await new PlayerGroupFactory().construct(game).state(() => ({ rules: [dateRule] })).one()
+    const group = await new PlayerGroupFactory()
+      .construct(game)
+      .state(() => ({ rules: [dateRule] }))
+      .one()
     await em.persistAndFlush([player, ...otherPlayers, group])
     await group.checkMembership(em)
 
@@ -208,11 +220,11 @@ describe('Player - index', () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({ organisation })
 
-    const player = await new PlayerFactory([game]).state((player) => ({
-      props: new Collection<PlayerProp>(player, [
-        new PlayerProp(player, 'level', '25')
-      ])
-    })).one()
+    const player = await new PlayerFactory([game])
+      .state((player) => ({
+        props: new Collection<PlayerProp>(player, [new PlayerProp(player, 'level', '25')]),
+      }))
+      .one()
     await em.persistAndFlush(player)
 
     const res = await request(app)

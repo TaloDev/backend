@@ -1,28 +1,27 @@
-import { protectedRoute, withMiddleware } from '../../../lib/routing/router'
-import { userTypeGate, requireEmailConfirmed } from '../../../middleware/policy-middleware'
-import { UserType } from '../../../entities/user'
-import Invite from '../../../entities/invite'
-import User from '../../../entities/user'
-import { GameActivityType } from '../../../entities/game-activity'
-import createGameActivity from '../../../lib/logging/createGameActivity'
-import queueEmail from '../../../lib/messaging/queueEmail'
 import { getGlobalQueue } from '../../../config/global-queues'
 import JoinOrganisation from '../../../emails/join-organisation-mail'
+import { GameActivityType } from '../../../entities/game-activity'
+import Invite from '../../../entities/invite'
+import { UserType } from '../../../entities/user'
+import User from '../../../entities/user'
+import createGameActivity from '../../../lib/logging/createGameActivity'
+import queueEmail from '../../../lib/messaging/queueEmail'
+import { protectedRoute, withMiddleware } from '../../../lib/routing/router'
+import { userTypeGate, requireEmailConfirmed } from '../../../middleware/policy-middleware'
 
 export const createRoute = protectedRoute({
   method: 'post',
   schema: (z) => ({
     body: z.object({
       email: z.email(),
-      type: z.enum(UserType).refine(
-        (val) => [UserType.ADMIN, UserType.DEV].includes(val),
-        { error: 'You can only invite an admin or developer user' }
-      )
-    })
+      type: z.enum(UserType).refine((val) => [UserType.ADMIN, UserType.DEV].includes(val), {
+        error: 'You can only invite an admin or developer user',
+      }),
+    }),
   }),
   middleware: withMiddleware(
     userTypeGate([UserType.ADMIN], 'create invites'),
-    requireEmailConfirmed('create invites')
+    requireEmailConfirmed('create invites'),
   ),
   handler: async (ctx) => {
     const { email, type } = ctx.state.validated.body
@@ -37,9 +36,11 @@ export const createRoute = protectedRoute({
 
     const duplicateEmailInvite = await em.repo(Invite).findOne({ email: email.toLowerCase() })
     if (duplicateEmailInvite) {
-      return ctx.throw(400, duplicateEmailInvite.organisation.id === inviter.organisation.id
-        ? 'An invite for this email address already exists'
-        : 'This email address is already in use'
+      return ctx.throw(
+        400,
+        duplicateEmailInvite.organisation.id === inviter.organisation.id
+          ? 'An invite for this email address already exists'
+          : 'This email address is already in use',
       )
     }
 
@@ -54,9 +55,9 @@ export const createRoute = protectedRoute({
       extra: {
         inviteEmail: invite.email,
         display: {
-          'User type': type === UserType.ADMIN ? 'Admin' : 'Developer'
-        }
-      }
+          'User type': type === UserType.ADMIN ? 'Admin' : 'Developer',
+        },
+      },
     })
 
     await em.persist(invite).flush()
@@ -66,8 +67,8 @@ export const createRoute = protectedRoute({
     return {
       status: 200,
       body: {
-        invite
-      }
+        invite,
+      },
     }
-  }
+  },
 })

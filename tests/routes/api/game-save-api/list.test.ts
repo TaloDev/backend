@@ -1,7 +1,7 @@
 import request from 'supertest'
 import { APIKeyScope } from '../../../../src/entities/api-key'
-import PlayerFactory from '../../../fixtures/PlayerFactory'
 import GameSaveFactory from '../../../fixtures/GameSaveFactory'
+import PlayerFactory from '../../../fixtures/PlayerFactory'
 import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
 import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
 

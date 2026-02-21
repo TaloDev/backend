@@ -1,7 +1,7 @@
 import request from 'supertest'
 import { APIKeyScope } from '../../../../src/entities/api-key'
-import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
 import PlayerFactory from '../../../fixtures/PlayerFactory'
+import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
 import createSocketIdentifyMessage from '../../../utils/createSocketIdentifyMessage'
 import createTestSocket from '../../../utils/createTestSocket'
 
@@ -48,7 +48,7 @@ describe('Player presence API - put', () => {
       .expect(404)
 
     expect(res.body).toStrictEqual({
-      message: 'Player not found'
+      message: 'Player not found',
     })
   })
 
@@ -56,7 +56,7 @@ describe('Player presence API - put', () => {
     const { identifyMessage, ticket, player, token } = await createSocketIdentifyMessage([
       APIKeyScope.READ_PLAYERS,
       APIKeyScope.READ_PLAYER_PRESENCE,
-      APIKeyScope.WRITE_PLAYER_PRESENCE
+      APIKeyScope.WRITE_PLAYER_PRESENCE,
     ])
 
     await em.persistAndFlush(player)

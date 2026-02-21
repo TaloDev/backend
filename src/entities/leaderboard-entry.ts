@@ -1,8 +1,16 @@
-import { Collection, Entity, Index, ManyToOne, OneToMany, PrimaryKey, Property } from '@mikro-orm/mysql'
-import Leaderboard from './leaderboard'
-import PlayerAlias from './player-alias'
-import LeaderboardEntryProp from './leaderboard-entry-prop'
+import {
+  Collection,
+  Entity,
+  Index,
+  ManyToOne,
+  OneToMany,
+  PrimaryKey,
+  Property,
+} from '@mikro-orm/mysql'
 import { createHash } from 'node:crypto'
+import Leaderboard from './leaderboard'
+import LeaderboardEntryProp from './leaderboard-entry-prop'
+import PlayerAlias from './player-alias'
 
 const scoreIndexName = 'idx_leaderboardentry_hidden_leaderboard_id_score'
 const scoreIndexExpr = `alter table \`leaderboard_entry\` add index \`${scoreIndexName}\`(\`hidden\`, \`leaderboard_id\`, \`score\`)`
@@ -22,7 +30,10 @@ export default class LeaderboardEntry {
   @ManyToOne(() => PlayerAlias, { deleteRule: 'cascade', eager: true })
   playerAlias!: PlayerAlias
 
-  @OneToMany(() => LeaderboardEntryProp, (prop) => prop.leaderboardEntry, { eager: true, orphanRemoval: true })
+  @OneToMany(() => LeaderboardEntryProp, (prop) => prop.leaderboardEntry, {
+    eager: true,
+    orphanRemoval: true,
+  })
   props: Collection<LeaderboardEntryProp> = new Collection<LeaderboardEntryProp>(this)
 
   @Index()
@@ -42,24 +53,22 @@ export default class LeaderboardEntry {
   @Property({ nullable: true })
   deletedAt: Date | null = null
 
-  static createPropsDigest(props: { key: string, value: string }[]) {
+  static createPropsDigest(props: { key: string; value: string }[]) {
     const propsToHash = props.map((prop) => ({
       key: prop.key,
-      value: prop.value
+      value: prop.value,
     }))
 
     propsToHash.sort((a, b) => a.key.localeCompare(b.key))
 
-    return createHash('sha256')
-      .update(JSON.stringify(propsToHash))
-      .digest('hex')
+    return createHash('sha256').update(JSON.stringify(propsToHash)).digest('hex')
   }
 
   constructor(leaderboard: Leaderboard) {
     this.leaderboard = leaderboard
   }
 
-  setProps(props: { key: string, value: string }[]) {
+  setProps(props: { key: string; value: string }[]) {
     this.props.set(props.map(({ key, value }) => new LeaderboardEntryProp(this, key, value)))
   }
 
@@ -75,7 +84,7 @@ export default class LeaderboardEntry {
       props: this.props,
       createdAt: this.createdAt,
       updatedAt: this.updatedAt,
-      deletedAt: this.deletedAt
+      deletedAt: this.deletedAt,
     }
   }
 }

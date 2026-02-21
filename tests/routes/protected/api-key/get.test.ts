@@ -8,7 +8,7 @@ describe('API key - get', () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token, user] = await createUserAndToken({}, organisation)
 
-    const keys: APIKey[] = [...new Array(3)].map(() => new APIKey(game, user))
+    const keys: APIKey[] = Array.from({ length: 3 }).map(() => new APIKey(game, user))
     await em.persistAndFlush(keys)
 
     const res = await request(app)
@@ -34,9 +34,6 @@ describe('API key - get', () => {
     const [, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({})
 
-    await request(app)
-      .get(`/games/${game.id}/api-keys`)
-      .auth(token, { type: 'bearer' })
-      .expect(403)
+    await request(app).get(`/games/${game.id}/api-keys`).auth(token, { type: 'bearer' }).expect(403)
   })
 })

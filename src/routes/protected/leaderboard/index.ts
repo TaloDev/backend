@@ -1,11 +1,11 @@
 import { protectedRouter } from '../../../lib/routing/router'
-import { listRoute } from './list'
 import { createRoute } from './create'
-import { entriesRoute } from './entries'
-import { updateEntryRoute } from './update-entry'
-import { updateRoute } from './update'
 import { deleteRoute } from './delete'
+import { entriesRoute } from './entries'
+import { listRoute } from './list'
 import { resetRoute } from './reset'
+import { updateRoute } from './update'
+import { updateEntryRoute } from './update-entry'
 
 export function leaderboardRouter() {
   return protectedRouter('/games/:gameId/leaderboards', ({ route }) => {

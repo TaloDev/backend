@@ -1,10 +1,11 @@
-import { LockMode } from '@mikro-orm/mysql'
+import { raw } from '@mikro-orm/mysql'
 import { differenceInSeconds } from 'date-fns'
+import assert from 'node:assert'
 import { APIKeyScope } from '../../../entities/api-key'
-import GameStat from '../../../entities/game-stat'
 import PlayerGameStat from '../../../entities/player-game-stat'
 import PlayerGameStatSnapshot from '../../../entities/player-game-stat-snapshot'
 import triggerIntegrations from '../../../lib/integrations/triggerIntegrations'
+import { deferClearResponseCache } from '../../../lib/perf/responseCacheQueue'
 import { FlushStatSnapshotsQueueHandler } from '../../../lib/queues/game-metrics/flush-stat-snapshots-queue-handler'
 import { apiRoute, withMiddleware } from '../../../lib/routing/router'
 import { playerAliasHeaderSchema } from '../../../lib/validation/playerAliasHeaderSchema'
@@ -52,115 +53,98 @@ export const putRoute = apiRoute({
     const alias = ctx.state.alias
     const continuityDate = ctx.state.continuityDate
 
-    type PutTransactionResponse = [
-      PlayerGameStat | null,
-      { status: number; body: { message: string } } | null,
-    ]
+    const existingPlayerStat = await em.repo(PlayerGameStat).findOne({
+      player: alias.player,
+      stat,
+    })
 
-    const [playerStat, errorResponse] = await em.transactional(
-      async (trx): Promise<PutTransactionResponse> => {
-        const lockedStat = await trx
-          .repo(GameStat)
-          .findOneOrFail({ id: stat.id }, { lockMode: LockMode.PESSIMISTIC_WRITE, refresh: true })
-
-        let playerStat = await trx.repo(PlayerGameStat).findOne(
-          {
-            player: alias.player,
-            stat: lockedStat,
-          },
-          { lockMode: LockMode.PESSIMISTIC_WRITE },
-        )
-
-        if (
-          playerStat &&
-          differenceInSeconds(new Date(), playerStat.updatedAt) < lockedStat.minTimeBetweenUpdates
-        ) {
-          return [
-            null,
-            {
-              status: 400,
-              body: {
-                message: `Stat cannot be updated more often than every ${lockedStat.minTimeBetweenUpdates} seconds`,
-              },
-            },
-          ]
-        }
-
-        if (Math.abs(change) > (lockedStat.maxChange ?? Infinity)) {
-          return [
-            null,
-            {
-              status: 400,
-              body: {
-                message: `Stat change cannot be more than ${lockedStat.maxChange}`,
-              },
-            },
-          ]
-        }
-
-        const currentValue = playerStat?.value ?? lockedStat.defaultValue
-
-        if (currentValue + change < (lockedStat.minValue ?? -Infinity)) {
-          return [
-            null,
-            {
-              status: 400,
-              body: {
-                message: `Stat would go below the minValue of ${lockedStat.minValue}`,
-              },
-            },
-          ]
-        }
-
-        if (currentValue + change > (lockedStat.maxValue ?? Infinity)) {
-          return [
-            null,
-            {
-              status: 400,
-              body: {
-                message: `Stat would go above the maxValue of ${lockedStat.maxValue}`,
-              },
-            },
-          ]
-        }
-
-        if (!playerStat) {
-          playerStat = new PlayerGameStat(alias.player, lockedStat)
-          if (continuityDate) {
-            playerStat.createdAt = continuityDate
-          }
-          trx.persist(playerStat)
-        }
-
-        playerStat.value += change
-        if (lockedStat.global) lockedStat.globalValue += change
-
-        return [playerStat, null]
-      },
-    )
-
-    if (errorResponse) {
-      return errorResponse
-    }
-
-    if (playerStat) {
-      await triggerIntegrations(em, playerStat.stat.game, (integration) => {
-        return integration.handleStatUpdated(em, playerStat)
-      })
-
-      const snapshot = new PlayerGameStatSnapshot()
-      snapshot.construct(alias, playerStat)
-      snapshot.change = change
-      if (continuityDate) {
-        snapshot.createdAt = continuityDate
+    if (
+      existingPlayerStat &&
+      differenceInSeconds(new Date(), existingPlayerStat.updatedAt) < stat.minTimeBetweenUpdates
+    ) {
+      return {
+        status: 400,
+        body: {
+          message: `Stat cannot be updated more often than every ${stat.minTimeBetweenUpdates} seconds`,
+        },
       }
-      await getQueueHandler().add(snapshot)
     }
+
+    if (Math.abs(change) > (stat.maxChange ?? Infinity)) {
+      return {
+        status: 400,
+        body: {
+          message: `Stat change cannot be more than ${stat.maxChange}`,
+        },
+      }
+    }
+
+    const currentValue = existingPlayerStat?.value ?? stat.defaultValue
+
+    if (currentValue + change < (stat.minValue ?? -Infinity)) {
+      return {
+        status: 400,
+        body: {
+          message: `Stat would go below the minValue of ${stat.minValue}`,
+        },
+      }
+    }
+
+    if (currentValue + change > (stat.maxValue ?? Infinity)) {
+      return {
+        status: 400,
+        body: {
+          message: `Stat would go above the maxValue of ${stat.maxValue}`,
+        },
+      }
+    }
+
+    const newValue = currentValue + change
+    const now = new Date()
+    const createdAt = continuityDate ?? now
+
+    // upsert - on conflict, add the change to the existing value
+    await em
+      .qb(PlayerGameStat)
+      .insert({
+        player: alias.player.id,
+        stat: stat.id,
+        value: newValue,
+        createdAt,
+        updatedAt: now,
+      })
+      .onConflict(['player_id', 'stat_id'])
+      .merge({ value: raw('player_game_stat.value + ?', [change]), updatedAt: now })
+      .execute()
+
+    const refreshedPlayerStat = await em
+      .repo(PlayerGameStat)
+      .findOne({ player: alias.player, stat }, { refresh: true })
+
+    assert(refreshedPlayerStat)
+
+    await Promise.all([
+      deferClearResponseCache(PlayerGameStat.getCacheKey(alias.player, stat)),
+      deferClearResponseCache(PlayerGameStat.getListCacheKey(alias.player)),
+      stat.global ? stat.incrementGlobalValue(ctx.redis, change) : Promise.resolve(),
+    ])
+
+    await triggerIntegrations(em, ctx.state.game, (integration) => {
+      return integration.handleStatUpdated(em, refreshedPlayerStat)
+    })
+
+    const snapshot = new PlayerGameStatSnapshot()
+    snapshot.construct(alias, refreshedPlayerStat)
+    snapshot.change = change
+    if (continuityDate) {
+      snapshot.createdAt = continuityDate
+    }
+    await getQueueHandler().add(snapshot)
 
     return {
       status: 200,
       body: {
-        playerStat,
+        playerStat: refreshedPlayerStat,
       },
     }
   },

@@ -1,3 +1,4 @@
+import type Redis from 'ioredis'
 import { ClickHouseClient } from '@clickhouse/client'
 import {
   Entity,
@@ -86,6 +87,26 @@ export default class GameStat {
     let key = `stats-index-${game.id}`
     if (wildcard) key += '-*'
     return key
+  }
+
+  static getGlobalValueCacheKey(id: number) {
+    return `stat:global-value:${id}`
+  }
+
+  async incrementGlobalValue(redis: Redis, change: number) {
+    const key = GameStat.getGlobalValueCacheKey(this.id)
+    await redis.setnx(key, this.globalValue)
+    this.globalValue = Number(await redis.incrbyfloat(key, change))
+  }
+
+  async getGlobalValueFromCache(redis: Redis) {
+    const key = GameStat.getGlobalValueCacheKey(this.id)
+    const value = await redis.get(key)
+    if (value !== null) {
+      this.globalValue = Number(value)
+    }
+
+    return this.globalValue
   }
 
   constructor(game: Game) {

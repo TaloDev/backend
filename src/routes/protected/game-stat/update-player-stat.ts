@@ -36,7 +36,7 @@ export const updatePlayerStatRoute = protectedRoute({
 
     playerStat.value = newValue
     if (playerStat.stat.global) {
-      playerStat.stat.globalValue += newValue - oldValue
+      await playerStat.stat.incrementGlobalValue(ctx.redis, newValue - oldValue)
     }
 
     await triggerIntegrations(em, playerStat.player.game, (integration) => {

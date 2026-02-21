@@ -1,4 +1,4 @@
-import { subHours } from 'date-fns'
+import { startOfSecond, subHours } from 'date-fns'
 import request from 'supertest'
 import { APIKeyScope } from '../../../../src/entities/api-key'
 import Game from '../../../../src/entities/game'
@@ -241,9 +241,9 @@ describe('Game stats API - put', () => {
       .expect(200)
 
     expect(res.body.playerStat.value).toBe(50)
+    expect(res.body.playerStat.stat.globalValue).toBe(50)
 
-    await em.refresh(stat)
-    expect(stat.globalValue).toBe(50)
+    expect(await stat.getGlobalValueFromCache(redis)).toBe(50)
   })
 
   it('should not update a non-existent stat', async () => {
@@ -270,7 +270,7 @@ describe('Game stats API - put', () => {
     const player = await new PlayerFactory([apiKey.game]).one()
     await em.persist(player).flush()
 
-    const continuityDate = subHours(new Date(), 1)
+    const continuityDate = startOfSecond(subHours(new Date(), 1))
 
     const res = await request(app)
       .put(`/v1/game-stats/${stat.internalName}`)
@@ -280,7 +280,7 @@ describe('Game stats API - put', () => {
       .set('x-talo-continuity-timestamp', String(continuityDate.getTime()))
       .expect(200)
 
-    expect(res.body.playerStat.createdAt).toBe(continuityDate.toISOString())
+    expect(new Date(res.body.playerStat.createdAt).getTime()).toBe(continuityDate.getTime())
   })
 
   it('should create a player game stat snapshot', async () => {
@@ -379,8 +379,7 @@ describe('Game stats API - put', () => {
       expect(res.status).toBe(200)
     })
 
-    await em.refresh(stat)
-    expect(stat.globalValue).toBe(100)
+    expect(await stat.getGlobalValueFromCache(redis)).toBe(100)
   })
 
   it('should handle concurrent first-time updates to a non-global stat for the same player', async () => {

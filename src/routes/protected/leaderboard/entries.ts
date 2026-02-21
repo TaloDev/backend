@@ -30,6 +30,9 @@ async function getGlobalEntryIds({
 }) {
   if (aliasId && entries.length > 0) {
     const scores = entries.map((entry) => entry.score)
+    const minScore = Math.min(...scores)
+    const maxScore = Math.max(...scores)
+
     const globalQuery = em
       .qb(LeaderboardEntry)
       .select('id')
@@ -41,12 +44,12 @@ async function getGlobalEntryIds({
           {
             score:
               leaderboard.sortMode === LeaderboardSortMode.ASC
-                ? { $lt: Math.min(...scores) }
-                : { $gt: Math.max(...scores) },
+                ? { $lt: minScore }
+                : { $gt: maxScore },
           },
-          // entries with equal scores
+          // entries at the same score level, using range instead of $in to avoid float equality issues
           {
-            score: { $in: scores },
+            score: { $gte: minScore, $lte: maxScore },
           },
         ],
       })

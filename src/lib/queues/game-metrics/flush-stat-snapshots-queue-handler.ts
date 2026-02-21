@@ -74,7 +74,7 @@ async function syncGlobalValuesFromRedis(redis: Redis, statIds: number[]) {
       try {
         await em
           .qb(GameStat, 'gs')
-          .update({ globalValue: Number(value) })
+          .update({ globalValue: Number(value), updatedAt: new Date() })
           .where({ id, global: true })
           .execute()
       } catch (err) {

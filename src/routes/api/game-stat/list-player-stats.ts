@@ -23,7 +23,7 @@ export const listPlayerStatsRoute = apiRoute({
     return withResponseCache(
       {
         key: PlayerGameStat.getListCacheKey(alias.player),
-        slidingWindow: true,
+        ttl: 30, // similar to stat snapshot flushing
       },
       async () => {
         const playerStats = await ctx.em.repo(PlayerGameStat).find({

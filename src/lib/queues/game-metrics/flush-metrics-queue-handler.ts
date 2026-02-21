@@ -89,20 +89,26 @@ export abstract class FlushMetricsQueueHandler<
     const intervalWithJitter = Math.max(flushInterval + jitter, 25_000)
 
     setImmediate(async () => {
-      const schedulerName = `flush-${metricName}-scheduler`
-      await this.queue.upsertJobScheduler(
-        schedulerName,
-        { every: intervalWithJitter },
-        { name: `flush-${metricName}-job` },
-      )
-
-      /* v8 ignore next 3 */
+      /* v8 ignore start */
       if (process.env.NODE_ENV !== 'test') {
+        const schedulerName = `flush-${metricName}-scheduler`
+
+        await this.queue.upsertJobScheduler(
+          schedulerName,
+          { every: intervalWithJitter },
+          { name: `flush-${metricName}-job` },
+        )
+
         console.info(
           `Upserted ${schedulerName} with interval: ${(intervalWithJitter / 1000).toFixed(2)}s`,
         )
       }
+      /* v8 ignore stop */
     })
+  }
+
+  getRedis() {
+    return redis
   }
 
   async handle() {
@@ -145,7 +151,7 @@ export abstract class FlushMetricsQueueHandler<
   }
 
   async add(item: T) {
-    void this.addBufferedItem(item)
+    await this.addBufferedItem(item)
   }
 
   private async addBufferedItem(item: T): Promise<void> {

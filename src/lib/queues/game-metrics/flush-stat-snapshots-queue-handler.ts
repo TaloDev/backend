@@ -1,4 +1,6 @@
-import { EntityManager, raw } from '@mikro-orm/mysql'
+import { EntityManager } from '@mikro-orm/mysql'
+import { captureException } from '@sentry/node'
+import { Redis } from 'ioredis'
 import { getMikroORM } from '../../../config/mikro-orm.config'
 import GameStat from '../../../entities/game-stat'
 import PlayerGameStatSnapshot from '../../../entities/player-game-stat-snapshot'
@@ -33,9 +35,7 @@ export class FlushStatSnapshotsQueueHandler extends FlushMetricsQueueHandler<
           }
 
           const statIds = buildStatIdSet(values)
-          if (statIds.size > 0) {
-            await recalculateGlobalValues(Array.from(statIds))
-          }
+          await syncGlobalValuesFromRedis(this.getRedis(), Array.from(statIds))
         },
       },
     )
@@ -58,25 +58,29 @@ function buildStatIdSet(values: SerialisedStatSnapshot[]) {
   return new Set(values.map((item) => item.gameStatId))
 }
 
-async function recalculateGlobalValues(statIds: number[]) {
+async function syncGlobalValuesFromRedis(redis: Redis, statIds: number[]) {
   const orm = await getMikroORM()
   const em = orm.em.fork() as EntityManager
 
   try {
-    await em
-      .qb(GameStat, 'gs')
-      .update({
-        globalValue: raw(`(
-          SELECT SUM(pgs.value)
-          FROM player_game_stat pgs
-          WHERE pgs.stat_id = gs.id
-        )`),
-      })
-      .where({
-        id: { $in: statIds },
-        global: true,
-      })
-      .execute()
+    const keys = statIds.map((id) => GameStat.getGlobalValueCacheKey(id))
+    const values = await redis.mget(...keys)
+
+    const updates = statIds
+      .map((statId, idx) => ({ id: statId, value: values[idx] }))
+      .filter((update) => update.value !== null)
+
+    for (const { id, value } of updates) {
+      try {
+        await em
+          .qb(GameStat, 'gs')
+          .update({ globalValue: Number(value) })
+          .where({ id, global: true })
+          .execute()
+      } catch (err) {
+        captureException(err)
+      }
+    }
   } finally {
     em.clear()
   }

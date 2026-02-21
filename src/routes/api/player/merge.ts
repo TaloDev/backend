@@ -23,6 +23,46 @@ async function findMergeAliasServiceConflicts(em: EntityManager, player1: Player
   return player1Services.intersection(player2Services)
 }
 
+function mergeProps(em: EntityManager, player1: Player, player2: Player) {
+  const player1Props = player1.props.getItems().map(({ key, value }) => ({ key, value }))
+  const player2Props = player2.props.getItems().map(({ key, value }) => ({ key, value }))
+  const mergedProps = uniqWith([...player2Props, ...player1Props], (a, b) => a.key === b.key)
+
+  em.remove(player1.props)
+  em.remove(player2.props)
+  player1.setProps(mergedProps)
+}
+
+async function mergePlayerStats(em: EntityManager, player1: Player, player2: Player) {
+  const player1Stats = await em.repo(PlayerGameStat).find({ player: player1 })
+  const player2Stats = await em.repo(PlayerGameStat).find({ player: player2 })
+
+  const player1StatsMap = new Map(player1Stats.map((pgs) => [pgs.stat.internalName, pgs]))
+  const player2StatsMap = new Map(player2Stats.map((pgs) => [pgs.stat.internalName, pgs]))
+
+  const statsToTransfer: PlayerGameStat[] = []
+
+  for (const [statName, player2Stat] of player2StatsMap.entries()) {
+    const player1Stat = player1StatsMap.get(statName)
+    if (player1Stat) {
+      const maxValue = player1Stat.stat.maxValue ?? Infinity
+      const minValue = player1Stat.stat.minValue ?? -Infinity
+      player1Stat.value = Math.max(
+        Math.min(player1Stat.value + player2Stat.value, maxValue),
+        minValue,
+      )
+
+      em.remove(player2Stat)
+    } else {
+      statsToTransfer.push(player2Stat)
+    }
+  }
+
+  await em
+    .repo(PlayerGameStat)
+    .nativeUpdate({ id: statsToTransfer.map((s) => s.id) }, { player: player1 })
+}
+
 export const mergeRoute = apiRoute({
   method: 'post',
   path: '/merge',
@@ -89,17 +129,11 @@ export const mergeRoute = apiRoute({
     }
 
     const updatedPlayer = await em.transactional(async (trx) => {
-      const player1Props = player1.props.getItems().map(({ key, value }) => ({ key, value }))
-      const player2Props = player2.props.getItems().map(({ key, value }) => ({ key, value }))
-      const mergedProps = uniqWith([...player2Props, ...player1Props], (a, b) => a.key === b.key)
+      mergeProps(trx, player1, player2)
+      await mergePlayerStats(trx, player1, player2)
 
-      trx.remove(player1.props)
-      trx.remove(player2.props)
-      player1.setProps(mergedProps)
-
-      await trx.repo(PlayerAlias).nativeUpdate({ player: player2 }, { player: player1 })
       await trx.repo(GameSave).nativeUpdate({ player: player2 }, { player: player1 })
-      await trx.repo(PlayerGameStat).nativeUpdate({ player: player2 }, { player: player1 })
+      await trx.repo(PlayerAlias).nativeUpdate({ player: player2 }, { player: player1 })
       await trx.repo(Player).nativeDelete(player2)
 
       await ctx.clickhouse.exec({

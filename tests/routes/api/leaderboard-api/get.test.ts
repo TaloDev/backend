@@ -163,7 +163,7 @@ describe('Leaderboard API - get', () => {
     expect(res.body.entries[0].position).toBe(5)
   })
 
-  it('should correctly calculate positions for float scores when filtering by player alias', async () => {
+  it('should correctly calculate position 0 for the top float score in a desc leaderboard when filtering by player alias', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_LEADERBOARDS])
 
     const player = await new PlayerFactory([apiKey.game]).one()
@@ -173,9 +173,10 @@ describe('Leaderboard API - get', () => {
       .state(() => ({ sortMode: LeaderboardSortMode.DESC, unique: false }))
       .one()
 
+    // player has the highest score so should be at position 0
     const entry = await new LeaderboardEntryFactory(leaderboard, [player])
       .state(() => ({
-        score: 37.44100189208984,
+        score: 37.441001892089844,
         playerAlias: player.aliases[0],
       }))
       .one()
@@ -200,6 +201,46 @@ describe('Leaderboard API - get', () => {
 
     expect(res.body.entries).toHaveLength(1)
     expect(res.body.entries[0].position).toBe(0)
+  })
+
+  it('should correctly calculate last place for the highest float score in an asc leaderboard when filtering by player alias', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_LEADERBOARDS])
+
+    const player = await new PlayerFactory([apiKey.game]).one()
+    const otherPlayers = await new PlayerFactory([apiKey.game]).many(2)
+
+    const leaderboard = await new LeaderboardFactory([apiKey.game])
+      .state(() => ({ sortMode: LeaderboardSortMode.ASC, unique: false }))
+      .one()
+
+    // player has the highest score so should be in last place (position 2)
+    const entry = await new LeaderboardEntryFactory(leaderboard, [player])
+      .state(() => ({
+        score: 37.441001892089844,
+        playerAlias: player.aliases[0],
+      }))
+      .one()
+
+    const lowerScoringEntry1 = await new LeaderboardEntryFactory(leaderboard, [otherPlayers[0]])
+      .state(() => ({ score: 20.45199966430664 }))
+      .one()
+
+    const lowerScoringEntry2 = await new LeaderboardEntryFactory(leaderboard, [otherPlayers[1]])
+      .state(() => ({ score: 21.559999465942383 }))
+      .one()
+
+    await em
+      .persist([player, entry, ...otherPlayers, lowerScoringEntry1, lowerScoringEntry2])
+      .flush()
+
+    const res = await request(app)
+      .get(`/v1/leaderboards/${leaderboard.internalName}/entries`)
+      .query({ aliasId: player.aliases[0].id, page: 0 })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    expect(res.body.entries).toHaveLength(1)
+    expect(res.body.entries[0].position).toBe(2)
   })
 
   it('should return a consistent position for scores when filtering by player alias', async () => {

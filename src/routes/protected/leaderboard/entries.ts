@@ -30,6 +30,7 @@ async function getGlobalEntryIds({
 }) {
   if (aliasId && entries.length > 0) {
     const scores = entries.map((entry) => entry.score)
+    const entryIds = entries.map((entry) => entry.id)
     const minScore = Math.min(...scores)
     const maxScore = Math.max(...scores)
 
@@ -40,16 +41,21 @@ async function getGlobalEntryIds({
       .andWhere(includeDeleted ? {} : { deletedAt: null })
       .andWhere({
         $or: [
-          // entries with better scores
+          // entries with better scores than the player's best
           {
             score:
               leaderboard.sortMode === LeaderboardSortMode.ASC
                 ? { $lt: minScore }
                 : { $gt: maxScore },
           },
-          // entries at the same score level, using range instead of $in to avoid float equality issues
+          // entries tied within the player's score range
           {
             score: { $gte: minScore, $lte: maxScore },
+          },
+          // the player's own entries by id — guarantees inclusion even if the score
+          // range misses them due to float decimal serialisation differences
+          {
+            id: { $in: entryIds },
           },
         ],
       })

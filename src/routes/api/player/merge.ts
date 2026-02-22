@@ -148,21 +148,17 @@ export const mergeRoute = apiRoute({
       return player1
     })
 
-    const integrationCount = await em.repo(Integration).count({ game: ctx.state.game })
-    if (integrationCount > 0) {
-      const playerStats = await em.repo(PlayerGameStat).find({ player: updatedPlayer })
-
-      // sync all stats for the updated player
-      await triggerIntegrations(em, ctx.state.game, async (integration) => {
-        for (const playerStat of playerStats) {
-          try {
-            await integration.handleStatUpdated(em, playerStat)
-          } catch (err) {
-            captureException(err)
-          }
+    // sync all stats for the updated player
+    const playerStats = await em.repo(PlayerGameStat).find({ player: updatedPlayer })
+    await triggerIntegrations(em, ctx.state.game, async (integration) => {
+      for (const playerStat of playerStats) {
+        try {
+          await integration.handleStatUpdated(em, playerStat)
+        } catch (err) {
+          captureException(err)
         }
-      })
-    }
+      }
+    })
 
     await em.populate(updatedPlayer, ['aliases'])
 

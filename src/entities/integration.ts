@@ -198,6 +198,7 @@ export default class Integration {
     }
   }
 
+  // TODO: should be more generic (drop the Steamworks)
   async cleanupSteamworksLeaderboardEntry(
     em: EntityManager,
     steamworksEntry: SteamworksLeaderboardEntry,
@@ -205,6 +206,7 @@ export default class Integration {
     await cleanupSteamworksLeaderboardEntry(em, this, steamworksEntry)
   }
 
+  // TODO: should be more generic (drop the Steamworks)
   async cleanupSteamworksPlayerStat(em: EntityManager, steamworksPlayerStat: SteamworksPlayerStat) {
     await cleanupSteamworksPlayerStat(em, this, steamworksPlayerStat)
   }

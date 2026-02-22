@@ -183,7 +183,7 @@ export default async function cleanupOnlinePlayers() {
     presenceStillOnline: 0,
   }
 
-  // todo: find out how this is happening
+  // TODO: find out how this is happening
   await deleteDisconnectedPresence(em)
 
   await cleanupStaleOnlinePresence(em, clickhouse)

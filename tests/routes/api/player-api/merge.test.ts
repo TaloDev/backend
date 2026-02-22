@@ -1,18 +1,25 @@
 import { Collection } from '@mikro-orm/mysql'
 import request from 'supertest'
 import { APIKeyScope } from '../../../../src/entities/api-key'
+import Integration, { IntegrationType } from '../../../../src/entities/integration'
 import PlayerAlias from '../../../../src/entities/player-alias'
 import PlayerGameStat from '../../../../src/entities/player-game-stat'
 import PlayerProp from '../../../../src/entities/player-prop'
 import PlayerSession from '../../../../src/entities/player-session'
 import GameSaveFactory from '../../../fixtures/GameSaveFactory'
 import GameStatFactory from '../../../fixtures/GameStatFactory'
+import IntegrationConfigFactory from '../../../fixtures/IntegrationConfigFactory'
+import IntegrationFactory from '../../../fixtures/IntegrationFactory'
 import PlayerAliasFactory from '../../../fixtures/PlayerAliasFactory'
 import PlayerFactory from '../../../fixtures/PlayerFactory'
 import PlayerGameStatFactory from '../../../fixtures/PlayerGameStatFactory'
 import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
 
 describe('Player API - merge', () => {
+  afterEach(() => {
+    vi.restoreAllMocks()
+  })
+
   it('should not merge with no scopes', async () => {
     const [, token] = await createAPIKeyAndToken([])
 
@@ -470,6 +477,103 @@ describe('Player API - merge', () => {
 
       return updatedPlayerSessionsCount === 0
     })
+  })
+
+  it('should sync all stats for the merged player to integrations', async () => {
+    const handleStatUpdatedSpy = vi
+      .spyOn(Integration.prototype, 'handleStatUpdated')
+      .mockResolvedValue()
+
+    const [apiKey, token] = await createAPIKeyAndToken([
+      APIKeyScope.READ_PLAYERS,
+      APIKeyScope.WRITE_PLAYERS,
+    ])
+
+    const player1 = await new PlayerFactory([apiKey.game]).withSteamAlias().one()
+    const player2 = await new PlayerFactory([apiKey.game]).withUsernameAlias().one()
+
+    const sharedStat = await new GameStatFactory([apiKey.game])
+      .state(() => ({ minValue: null, maxValue: null }))
+      .one()
+    const uniqueStat = await new GameStatFactory([apiKey.game]).one()
+
+    // these will be summed during the merge
+    const player1SharedStat = await new PlayerGameStatFactory()
+      .construct(player1, sharedStat)
+      .state(() => ({ value: 10 }))
+      .one()
+    const player2SharedStat = await new PlayerGameStatFactory()
+      .construct(player2, sharedStat)
+      .state(() => ({ value: 5 }))
+      .one()
+
+    const player1UniqueStat = await new PlayerGameStatFactory().construct(player1, uniqueStat).one()
+
+    const config = await new IntegrationConfigFactory().one()
+    const integration = await new IntegrationFactory()
+      .construct(IntegrationType.STEAMWORKS, apiKey.game, config)
+      .one()
+
+    await em
+      .persist([
+        player1,
+        player2,
+        player1SharedStat,
+        player2SharedStat,
+        player1UniqueStat,
+        integration,
+      ])
+      .flush()
+
+    await request(app)
+      .post('/v1/players/merge')
+      .send({ playerId1: player1.id, playerId2: player2.id })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    const calledWithStats = handleStatUpdatedSpy.mock.calls.map(([, playerStat]) => playerStat)
+    expect(handleStatUpdatedSpy).toHaveBeenCalledTimes(2)
+    expect(calledWithStats.every((s) => s.player.id === player1.id)).toBe(true)
+
+    const mergedStatCall = calledWithStats.find((s) => s.stat.id === sharedStat.id)
+    expect(mergedStatCall?.value).toBe(15)
+  })
+
+  it('should continue syncing stats to integrations even if one handleStatUpdated call fails', async () => {
+    const handleStatUpdatedSpy = vi
+      .spyOn(Integration.prototype, 'handleStatUpdated')
+      .mockRejectedValueOnce(new Error('Integration error'))
+      .mockResolvedValue()
+
+    const [apiKey, token] = await createAPIKeyAndToken([
+      APIKeyScope.READ_PLAYERS,
+      APIKeyScope.WRITE_PLAYERS,
+    ])
+
+    const player1 = await new PlayerFactory([apiKey.game]).withSteamAlias().one()
+    const player2 = await new PlayerFactory([apiKey.game]).withUsernameAlias().one()
+
+    const stat1 = await new GameStatFactory([apiKey.game]).one()
+    const stat2 = await new GameStatFactory([apiKey.game]).one()
+    const player1Stat1 = await new PlayerGameStatFactory().construct(player1, stat1).one()
+    const player1Stat2 = await new PlayerGameStatFactory().construct(player1, stat2).one()
+
+    const config = await new IntegrationConfigFactory().one()
+    const integration = await new IntegrationFactory()
+      .construct(IntegrationType.STEAMWORKS, apiKey.game, config)
+      .one()
+
+    await em.persist([player1, player2, player1Stat1, player1Stat2, integration]).flush()
+
+    console.log('-- STARTING MERGE --')
+
+    await request(app)
+      .post('/v1/players/merge')
+      .send({ playerId1: player1.id, playerId2: player2.id })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    expect(handleStatUpdatedSpy).toHaveBeenCalledTimes(2)
   })
 
   it('should not merge if both players have aliases with the same service', async () => {

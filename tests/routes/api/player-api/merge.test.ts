@@ -565,8 +565,6 @@ describe('Player API - merge', () => {
 
     await em.persist([player1, player2, player1Stat1, player1Stat2, integration]).flush()
 
-    console.log('-- STARTING MERGE --')
-
     await request(app)
       .post('/v1/players/merge')
       .send({ playerId1: player1.id, playerId2: player2.id })

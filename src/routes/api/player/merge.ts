@@ -3,6 +3,7 @@ import { captureException } from '@sentry/node'
 import { uniqWith } from 'lodash'
 import { APIKeyScope } from '../../../entities/api-key'
 import GameSave from '../../../entities/game-save'
+import Integration from '../../../entities/integration'
 import Player from '../../../entities/player'
 import PlayerAlias from '../../../entities/player-alias'
 import PlayerGameStat from '../../../entities/player-game-stat'
@@ -15,6 +16,7 @@ async function findMergeAliasServiceConflicts(em: EntityManager, player1: Player
   const player1Aliases = await em
     .repo(PlayerAlias)
     .find({ player: player1 }, { fields: ['service'] })
+
   const player2Aliases = await em
     .repo(PlayerAlias)
     .find({ player: player2 }, { fields: ['service'] })
@@ -146,21 +148,21 @@ export const mergeRoute = apiRoute({
       return player1
     })
 
-    // sync all stats for the updated player to integrations
-    let playerStatsToSync: PlayerGameStat[] | null = null
-    await triggerIntegrations(em, ctx.state.game, async (integration) => {
-      if (!playerStatsToSync) {
-        playerStatsToSync = await em.repo(PlayerGameStat).find({ player: updatedPlayer })
-      }
+    const integrationCount = await em.repo(Integration).count({ game: ctx.state.game })
+    if (integrationCount > 0) {
+      const playerStats = await em.repo(PlayerGameStat).find({ player: updatedPlayer })
 
-      for (const playerStat of playerStatsToSync) {
-        try {
-          await integration.handleStatUpdated(em, playerStat)
-        } catch (err) {
-          captureException(err)
+      // sync all stats for the updated player
+      await triggerIntegrations(em, ctx.state.game, async (integration) => {
+        for (const playerStat of playerStats) {
+          try {
+            await integration.handleStatUpdated(em, playerStat)
+          } catch (err) {
+            captureException(err)
+          }
         }
-      }
-    })
+      })
+    }
 
     await em.populate(updatedPlayer, ['aliases'])
 

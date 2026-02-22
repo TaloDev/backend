@@ -164,7 +164,7 @@ async function cleanupUnfinishedSessions(em: EntityManager, clickhouse: ClickHou
 
   if (sessionsToDelete.length > 0) {
     cleanupStats.sessionsDeleted += sessionsToDelete.length
-    await clickhouse.exec({
+    await clickhouse.command({
       query: 'DELETE FROM player_sessions WHERE id IN ({sessionIds:Array(String)})',
       query_params: { sessionIds: sessionsToDelete },
     })

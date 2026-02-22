@@ -43,7 +43,7 @@ const migrations: ClickHouseMigration[] = [
 export async function runClickHouseMigrations(clickhouse: ClickHouseClient) {
   console.info('Running ClickHouse migrations...')
 
-  await clickhouse.query({ query: CreateMigrationsTable })
+  await clickhouse.command({ query: CreateMigrationsTable })
 
   const completedMigrations = await clickhouse
     .query({
@@ -60,7 +60,7 @@ export async function runClickHouseMigrations(clickhouse: ClickHouseClient) {
     console.info(`Processing '${migration.name}'`)
     const queries = migration.sql.split(';').filter((query) => query.trim() !== '')
     for (const query of queries) {
-      await clickhouse.query({ query })
+      await clickhouse.command({ query })
     }
     await clickhouse.insert({
       table: 'migrations',

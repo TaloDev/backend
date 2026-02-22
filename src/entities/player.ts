@@ -127,7 +127,7 @@ export default class Player {
         const prevSessionId = currentSession.id
         currentSession.endSession()
 
-        await clickhouse.exec({
+        await clickhouse.command({
           query: `DELETE FROM player_sessions WHERE id = '${prevSessionId}'`,
         })
         await this.insertSession(clickhouse, currentSession)

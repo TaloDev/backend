@@ -24,7 +24,7 @@ export function createDeleteClickHousePlayerDataQueue() {
 
         await Promise.allSettled(
           queries.map((query) => {
-            return clickhouse.exec({
+            return clickhouse.command({
               query,
               query_params: {
                 aliasIds: aliasIds,

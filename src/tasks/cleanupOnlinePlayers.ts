@@ -164,7 +164,7 @@ async function cleanupUnfinishedSessions(em: EntityManager, clickhouse: ClickHou
 
   if (sessionsToDelete.length > 0) {
     cleanupStats.sessionsDeleted += sessionsToDelete.length
-    await clickhouse.exec({
+    await clickhouse.command({
       query: 'DELETE FROM player_sessions WHERE id IN ({sessionIds:Array(String)})',
       query_params: { sessionIds: sessionsToDelete },
     })
@@ -183,7 +183,7 @@ export default async function cleanupOnlinePlayers() {
     presenceStillOnline: 0,
   }
 
-  // todo: find out how this is happening
+  // TODO: find out how this is happening
   await deleteDisconnectedPresence(em)
 
   await cleanupStaleOnlinePresence(em, clickhouse)

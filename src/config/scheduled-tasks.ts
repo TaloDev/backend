@@ -22,13 +22,13 @@ export async function initScheduledTasks() {
     addScheduledTask(
       'cleanup-steamworks-leaderboard-entries',
       cleanupSteamworksLeaderboardEntries,
-      '0 0 */1 * * *',
-    ), // every hour
+      '0 */15 * * * *',
+    ), // every 15 minutes
     addScheduledTask(
       'cleanup-steamworks-player-stats',
       cleanupSteamworksPlayerStats,
-      '0 0 */1 * * *',
-    ), // every hour
+      '0 */15 * * * *',
+    ), // every 15 minutes
   ]
 
   /* v8 ignore next 3 */

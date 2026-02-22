@@ -95,7 +95,7 @@ function createClickHouseTracingProxyHandler(): ProxyHandler<ClickHouseClient> {
         return (...args: unknown[]) => {
           const attributes = buildOtelAttributes(prop, args[0])
           const table = attributes['db.clickhouse.table'] ?? 'unknown_table'
-          const operation = `clickhouse.${prop}.${table}`
+          const operation = `clickhouse.${prop}.${table.toString()}`
           return withTracing(operation, attributes, () => originalMethod.apply(target, args))
         }
       }

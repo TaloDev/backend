@@ -1,10 +1,13 @@
 import { EntityManager } from '@mikro-orm/mysql'
+import { captureException } from '@sentry/node'
 import { uniqWith } from 'lodash'
 import { APIKeyScope } from '../../../entities/api-key'
 import GameSave from '../../../entities/game-save'
+import Integration from '../../../entities/integration'
 import Player from '../../../entities/player'
 import PlayerAlias from '../../../entities/player-alias'
 import PlayerGameStat from '../../../entities/player-game-stat'
+import triggerIntegrations from '../../../lib/integrations/triggerIntegrations'
 import { apiRoute, withMiddleware } from '../../../lib/routing/router'
 import { requireScopes } from '../../../middleware/policy-middleware'
 import { mergeDocs } from './docs'
@@ -13,6 +16,7 @@ async function findMergeAliasServiceConflicts(em: EntityManager, player1: Player
   const player1Aliases = await em
     .repo(PlayerAlias)
     .find({ player: player1 }, { fields: ['service'] })
+
   const player2Aliases = await em
     .repo(PlayerAlias)
     .find({ player: player2 }, { fields: ['service'] })
@@ -136,11 +140,24 @@ export const mergeRoute = apiRoute({
       await trx.repo(PlayerAlias).nativeUpdate({ player: player2 }, { player: player1 })
       await trx.repo(Player).nativeDelete(player2)
 
-      await ctx.clickhouse.exec({
+      await ctx.clickhouse.command({
         query: 'DELETE FROM player_sessions WHERE player_id = {playerId:String}',
         query_params: { playerId: player2.id },
       })
+
       return player1
+    })
+
+    // sync all stats for the updated player
+    const playerStats = await em.repo(PlayerGameStat).find({ player: updatedPlayer })
+    await triggerIntegrations(em, ctx.state.game, async (integration) => {
+      for (const playerStat of playerStats) {
+        try {
+          await integration.handleStatUpdated(em, playerStat)
+        } catch (err) {
+          captureException(err)
+        }
+      }
     })
 
     await em.populate(updatedPlayer, ['aliases'])

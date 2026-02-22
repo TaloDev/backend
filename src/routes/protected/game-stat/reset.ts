@@ -94,7 +94,7 @@ export const resetRoute = protectedRoute({
 
         if (aliasIds.length >= CLICKHOUSE_BATCH_SIZE) {
           const batchIds = aliasIds.splice(0, CLICKHOUSE_BATCH_SIZE)
-          await clickhouse.exec({
+          await clickhouse.command({
             query,
             query_params: {
               statId: stat.id,
@@ -106,7 +106,7 @@ export const resetRoute = protectedRoute({
 
       // delete any remaining unspliced aliases
       if (aliasIds.length > 0) {
-        await clickhouse.exec({
+        await clickhouse.command({
           query,
           query_params: {
             statId: stat.id,

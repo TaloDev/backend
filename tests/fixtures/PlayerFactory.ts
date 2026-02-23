@@ -117,6 +117,16 @@ export default class PlayerFactory extends Factory<Player> {
     })
   }
 
+  withGuestAlias(): this {
+    return this.state(async (player: Player) => {
+      const alias = await new PlayerAliasFactory(player).guest().one()
+
+      return {
+        aliases: new Collection<PlayerAlias>(player, [alias]),
+      }
+    })
+  }
+
   withTaloAlias(): this {
     return this.state(async (player: Player) => {
       const alias = await new PlayerAliasFactory(player).talo().one()

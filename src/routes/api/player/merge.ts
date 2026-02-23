@@ -1,11 +1,17 @@
 import { EntityManager } from '@mikro-orm/mysql'
+import { captureException } from '@sentry/node'
+import { Context } from 'koa'
 import { uniqWith } from 'lodash'
 import { APIKeyScope } from '../../../entities/api-key'
+import Game from '../../../entities/game'
 import GameSave from '../../../entities/game-save'
 import Player from '../../../entities/player'
-import PlayerAlias from '../../../entities/player-alias'
+import PlayerAlias, { PlayerAliasService } from '../../../entities/player-alias'
+import PlayerAuthActivity, { PlayerAuthActivityType } from '../../../entities/player-auth-activity'
 import PlayerGameStat from '../../../entities/player-game-stat'
+import triggerIntegrations from '../../../lib/integrations/triggerIntegrations'
 import { apiRoute, withMiddleware } from '../../../lib/routing/router'
+import { playerAliasHeaderSchema } from '../../../lib/validation/playerAliasHeaderSchema'
 import { requireScopes } from '../../../middleware/policy-middleware'
 import { mergeDocs } from './docs'
 
@@ -13,6 +19,7 @@ async function findMergeAliasServiceConflicts(em: EntityManager, player1: Player
   const player1Aliases = await em
     .repo(PlayerAlias)
     .find({ player: player1 }, { fields: ['service'] })
+
   const player2Aliases = await em
     .repo(PlayerAlias)
     .find({ player: player2 }, { fields: ['service'] })
@@ -21,6 +28,17 @@ async function findMergeAliasServiceConflicts(em: EntityManager, player1: Player
   const player2Services = new Set(player2Aliases.map((a) => a.service))
 
   return player1Services.intersection(player2Services)
+}
+
+async function findRestrictedAlias(em: EntityManager, player: Player) {
+  const restrictedAlias = await em
+    .repo(PlayerAlias)
+    .findOne(
+      { player: player, service: { $in: [PlayerAliasService.TALO, PlayerAliasService.STEAM] } },
+      { fields: ['id', 'service'] },
+    )
+
+  return restrictedAlias
 }
 
 function mergeProps(em: EntityManager, player1: Player, player2: Player) {
@@ -63,16 +81,53 @@ async function mergePlayerStats(em: EntityManager, player1: Player, player2: Pla
     .nativeUpdate({ id: statsToTransfer.map((s) => s.id) }, { player: player1 })
 }
 
+async function postMergeSyncPlayerStats(em: EntityManager, game: Game, player: Player) {
+  const playerStats = await em.repo(PlayerGameStat).find({ player })
+  await triggerIntegrations(em, game, async (integration) => {
+    for (const playerStat of playerStats) {
+      try {
+        await integration.handleStatUpdated(em, playerStat)
+      } catch (err) {
+        captureException(err)
+      }
+    }
+  })
+}
+
+async function postMergeCreateAuthActivity(
+  em: EntityManager,
+  request: Context['request'],
+  player: Player,
+) {
+  const taloAlias = player.aliases.find((alias) => alias.service === PlayerAliasService.TALO)
+  if (taloAlias) {
+    const activity = new PlayerAuthActivity(player)
+    activity.type = PlayerAuthActivityType.PLAYER_MERGED
+    activity.extra = {
+      userAgent: request.headers['user-agent'],
+      ip: request.ip,
+    }
+    await em.persist(activity).flush()
+  }
+}
+
 export const mergeRoute = apiRoute({
   method: 'post',
   path: '/merge',
   docs: mergeDocs,
   schema: (z) => ({
+    headers: z.looseObject({
+      'x-talo-alias': playerAliasHeaderSchema,
+    }),
     body: z.object({
       playerId1: z.uuid().meta({
-        description: 'The first player ID - the second player will be merged into this player',
+        description:
+          'The first player ID - the second player will be merged into this player. If this player is using Steamworks or Talo Player Authentication, they must be the one initiating the merge.',
       }),
-      playerId2: z.uuid().meta({ description: 'The second player ID' }),
+      playerId2: z.uuid().meta({
+        description:
+          'The second player ID. This player cannot be a player with Steamworks or Talo Player Authentication enabled.',
+      }),
     }),
   }),
   middleware: withMiddleware(requireScopes([APIKeyScope.READ_PLAYERS, APIKeyScope.WRITE_PLAYERS])),
@@ -81,43 +136,46 @@ export const mergeRoute = apiRoute({
     const em = ctx.em.fork()
 
     if (playerId1 === playerId2) {
-      return ctx.throw(400, 'Cannot merge a player into itself')
+      return ctx.throw(400, 'Cannot merge a player into themselves')
     }
 
     const key = ctx.state.key
 
-    const player1 = await em.repo(Player).findOne(
-      {
-        id: playerId1,
-        game: key.game,
-      },
-      {
-        populate: ['auth'],
-      },
-    )
+    const player1 = await em.repo(Player).findOne({
+      id: playerId1,
+      game: key.game,
+    })
 
     if (!player1) {
       return ctx.throw(404, `Player ${playerId1} does not exist`)
     }
-    if (player1.auth) {
-      return ctx.throw(400, `Player ${playerId1} has authentication enabled and cannot be merged`)
-    }
 
-    const player2 = await em.repo(Player).findOne(
-      {
-        id: playerId2,
-        game: key.game,
-      },
-      {
-        populate: ['auth'],
-      },
-    )
+    const player2 = await em.repo(Player).findOne({
+      id: playerId2,
+      game: key.game,
+    })
 
     if (!player2) {
       return ctx.throw(404, `Player ${playerId2} does not exist`)
     }
-    if (player2.auth) {
-      return ctx.throw(400, `Player ${playerId2} has authentication enabled and cannot be merged`)
+
+    const player1RestrictedAlias = await findRestrictedAlias(em, player1)
+    if (player1RestrictedAlias) {
+      const currentAliasId = ctx.state.currentAliasId
+      if (player1RestrictedAlias.id !== currentAliasId) {
+        return ctx.throw(403, `This merge must be initiated by player ${playerId1}`)
+      }
+    }
+
+    const player2RestrictedAlias = await findRestrictedAlias(em, player2)
+    if (player2RestrictedAlias) {
+      if (player2RestrictedAlias.service === PlayerAliasService.TALO) {
+        return ctx.throw(400, `Player ${playerId2} has authentication enabled and cannot be merged`)
+      }
+
+      if (player2RestrictedAlias.service === PlayerAliasService.STEAM) {
+        return ctx.throw(400, `Player ${playerId2} has a Steam alias and cannot be merged`)
+      }
     }
 
     const sharedServices = await findMergeAliasServiceConflicts(em, player1, player2)
@@ -136,14 +194,21 @@ export const mergeRoute = apiRoute({
       await trx.repo(PlayerAlias).nativeUpdate({ player: player2 }, { player: player1 })
       await trx.repo(Player).nativeDelete(player2)
 
-      await ctx.clickhouse.exec({
+      await ctx.clickhouse.command({
         query: 'DELETE FROM player_sessions WHERE player_id = {playerId:String}',
         query_params: { playerId: player2.id },
       })
+
       return player1
     })
 
+    // sync all stats for the updated player
+    await postMergeSyncPlayerStats(em, player1.game, updatedPlayer)
+
     await em.populate(updatedPlayer, ['aliases'])
+
+    // create an auth activity if the player has a Talo alias
+    await postMergeCreateAuthActivity(em, ctx.request, updatedPlayer)
 
     return {
       status: 200,

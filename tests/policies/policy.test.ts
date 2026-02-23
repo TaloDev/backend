@@ -24,12 +24,13 @@ describe('Policy base class', () => {
   it('should correctly verify having all scopes when the key has full access', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.FULL_ACCESS])
 
-    const player1 = await new PlayerFactory([apiKey.game]).withSteamAlias().one()
+    const player1 = await new PlayerFactory([apiKey.game]).withGuestAlias().one()
     const player2 = await new PlayerFactory([apiKey.game]).withUsernameAlias().one()
     await em.persist([player1, player2]).flush()
 
     await request(app)
       .post('/v1/players/merge')
+      .set('x-talo-alias', String(player1.aliases[0].id))
       .send({ playerId1: player1.id, playerId2: player2.id })
       .auth(token, { type: 'bearer' })
       .expect(200)
@@ -38,12 +39,13 @@ describe('Policy base class', () => {
   it('should show all missing scopes if using hasScopes', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([])
 
-    const player1 = await new PlayerFactory([apiKey.game]).one()
-    const player2 = await new PlayerFactory([apiKey.game]).one()
+    const player1 = await new PlayerFactory([apiKey.game]).withGuestAlias().one()
+    const player2 = await new PlayerFactory([apiKey.game]).withUsernameAlias().one()
     await em.persist([player1, player2]).flush()
 
     const res = await request(app)
       .post('/v1/players/merge')
+      .set('x-talo-alias', String(player1.aliases[0].id))
       .send({ playerId1: player1.id, playerId2: player2.id })
       .auth(token, { type: 'bearer' })
       .expect(403)

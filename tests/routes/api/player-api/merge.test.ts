@@ -1,23 +1,34 @@
 import { Collection } from '@mikro-orm/mysql'
 import request from 'supertest'
 import { APIKeyScope } from '../../../../src/entities/api-key'
+import Integration, { IntegrationType } from '../../../../src/entities/integration'
 import PlayerAlias from '../../../../src/entities/player-alias'
+import PlayerAuthActivity, {
+  PlayerAuthActivityType,
+} from '../../../../src/entities/player-auth-activity'
 import PlayerGameStat from '../../../../src/entities/player-game-stat'
 import PlayerProp from '../../../../src/entities/player-prop'
 import PlayerSession from '../../../../src/entities/player-session'
 import GameSaveFactory from '../../../fixtures/GameSaveFactory'
 import GameStatFactory from '../../../fixtures/GameStatFactory'
+import IntegrationConfigFactory from '../../../fixtures/IntegrationConfigFactory'
+import IntegrationFactory from '../../../fixtures/IntegrationFactory'
 import PlayerAliasFactory from '../../../fixtures/PlayerAliasFactory'
 import PlayerFactory from '../../../fixtures/PlayerFactory'
 import PlayerGameStatFactory from '../../../fixtures/PlayerGameStatFactory'
 import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
 
 describe('Player API - merge', () => {
+  afterEach(() => {
+    vi.restoreAllMocks()
+  })
+
   it('should not merge with no scopes', async () => {
     const [, token] = await createAPIKeyAndToken([])
 
     const res = await request(app)
       .post('/v1/players/merge')
+      .set('x-talo-alias', '123')
       .send({
         playerId1: '6901af6c-7581-40ec-83c8-c8866e77dbea',
         playerId2: 'cbc774b1-1542-4bce-b33f-4f090f53de68',
@@ -35,6 +46,7 @@ describe('Player API - merge', () => {
 
     const res = await request(app)
       .post('/v1/players/merge')
+      .set('x-talo-alias', '123')
       .send({
         playerId1: '6901af6c-7581-40ec-83c8-c8866e77dbea',
         playerId2: 'cbc774b1-1542-4bce-b33f-4f090f53de68',
@@ -50,6 +62,7 @@ describe('Player API - merge', () => {
 
     const res = await request(app)
       .post('/v1/players/merge')
+      .set('x-talo-alias', '123')
       .send({
         playerId1: '6901af6c-7581-40ec-83c8-c8866e77dbea',
         playerId2: 'cbc774b1-1542-4bce-b33f-4f090f53de68',
@@ -60,23 +73,47 @@ describe('Player API - merge', () => {
     expect(res.body).toStrictEqual({ message: 'Missing access key scope(s): read:players' })
   })
 
-  it('should not merge a player into itself', async () => {
+  it('should not merge a player into themselves', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([
       APIKeyScope.READ_PLAYERS,
       APIKeyScope.WRITE_PLAYERS,
     ])
 
-    const player = await new PlayerFactory([apiKey.game]).one()
+    const player = await new PlayerFactory([apiKey.game]).withUsernameAlias().one()
     await em.persist(player).flush()
 
     const res = await request(app)
       .post('/v1/players/merge')
+      .set('x-talo-alias', String(player.aliases[0].id))
       .send({ playerId1: player.id, playerId2: player.id })
       .auth(token, { type: 'bearer' })
       .expect(400)
 
     expect(res.body).toStrictEqual({
-      message: 'Cannot merge a player into itself',
+      message: 'Cannot merge a player into themselves',
+    })
+  })
+
+  it('should not merge if the x-talo-alias header does not match player1', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([
+      APIKeyScope.READ_PLAYERS,
+      APIKeyScope.WRITE_PLAYERS,
+    ])
+
+    const player1 = await new PlayerFactory([apiKey.game]).withSteamAlias().one()
+    const player2 = await new PlayerFactory([apiKey.game]).withUsernameAlias().one()
+
+    await em.persist([player1, player2]).flush()
+
+    const res = await request(app)
+      .post('/v1/players/merge')
+      .set('x-talo-alias', String(player2.aliases[0].id))
+      .send({ playerId1: player1.id, playerId2: player2.id })
+      .auth(token, { type: 'bearer' })
+      .expect(403)
+
+    expect(res.body).toStrictEqual({
+      message: `This merge must be initiated by player ${player1.id}`,
     })
   })
 
@@ -93,6 +130,7 @@ describe('Player API - merge', () => {
 
     const res = await request(app)
       .post('/v1/players/merge')
+      .set('x-talo-alias', String(player1.aliases[0].id))
       .send({ playerId1: player1.id, playerId2: player2.id })
       .auth(token, { type: 'bearer' })
       .expect(200)
@@ -117,7 +155,7 @@ describe('Player API - merge', () => {
     ])
 
     const player1 = await new PlayerFactory([apiKey.game])
-      .withSteamAlias()
+      .withGuestAlias()
       .state((player) => ({
         props: new Collection<PlayerProp>(player, [
           new PlayerProp(player, 'currentLevel', '60'),
@@ -144,6 +182,7 @@ describe('Player API - merge', () => {
 
     const res = await request(app)
       .post('/v1/players/merge')
+      .set('x-talo-alias', String(player1.aliases[0].id))
       .send({ playerId1: player1.id, playerId2: player2.id })
       .auth(token, { type: 'bearer' })
       .expect(200)
@@ -180,7 +219,7 @@ describe('Player API - merge', () => {
     expect(player2PropCount).toBe(0)
   })
 
-  it('should not merge players if alias1 does not exist', async () => {
+  it('should not merge players if player1 does not exist', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([
       APIKeyScope.READ_PLAYERS,
       APIKeyScope.WRITE_PLAYERS,
@@ -192,6 +231,7 @@ describe('Player API - merge', () => {
 
     const res = await request(app)
       .post('/v1/players/merge')
+      .set('x-talo-alias', '123')
       .send({ playerId1: '600dc817-8664-4a22-8ce6-cce0d2b683dd', playerId2: player2.id })
       .auth(token, { type: 'bearer' })
       .expect(404)
@@ -207,12 +247,13 @@ describe('Player API - merge', () => {
       APIKeyScope.WRITE_PLAYERS,
     ])
 
-    const player1 = await new PlayerFactory([apiKey.game]).one()
+    const player1 = await new PlayerFactory([apiKey.game]).withUsernameAlias().one()
 
     await em.persist(player1).flush()
 
     const res = await request(app)
       .post('/v1/players/merge')
+      .set('x-talo-alias', String(player1.aliases[0].id))
       .send({ playerId1: player1.id, playerId2: '600dc817-8664-4a22-8ce6-cce0d2b683dd' })
       .auth(token, { type: 'bearer' })
       .expect(404)
@@ -235,6 +276,7 @@ describe('Player API - merge', () => {
 
     await request(app)
       .post('/v1/players/merge')
+      .set('x-talo-alias', String(player1.aliases[0].id))
       .send({ playerId1: player1.id, playerId2: player2.id })
       .auth(token, { type: 'bearer' })
       .expect(200)
@@ -258,6 +300,7 @@ describe('Player API - merge', () => {
 
     await request(app)
       .post('/v1/players/merge')
+      .set('x-talo-alias', String(player1.aliases[0].id))
       .send({ playerId1: player1.id, playerId2: player2.id })
       .auth(token, { type: 'bearer' })
       .expect(200)
@@ -290,6 +333,7 @@ describe('Player API - merge', () => {
 
     await request(app)
       .post('/v1/players/merge')
+      .set('x-talo-alias', String(player1.aliases[0].id))
       .send({ playerId1: player1.id, playerId2: player2.id })
       .auth(token, { type: 'bearer' })
       .expect(200)
@@ -319,6 +363,7 @@ describe('Player API - merge', () => {
 
     await request(app)
       .post('/v1/players/merge')
+      .set('x-talo-alias', String(player1.aliases[0].id))
       .send({ playerId1: player1.id, playerId2: player2.id })
       .auth(token, { type: 'bearer' })
       .expect(200)
@@ -350,6 +395,7 @@ describe('Player API - merge', () => {
 
     await request(app)
       .post('/v1/players/merge')
+      .set('x-talo-alias', String(player1.aliases[0].id))
       .send({ playerId1: player1.id, playerId2: player2.id })
       .auth(token, { type: 'bearer' })
       .expect(200)
@@ -380,6 +426,7 @@ describe('Player API - merge', () => {
 
     await request(app)
       .post('/v1/players/merge')
+      .set('x-talo-alias', String(player1.aliases[0].id))
       .send({ playerId1: player1.id, playerId2: player2.id })
       .auth(token, { type: 'bearer' })
       .expect(200)
@@ -388,41 +435,20 @@ describe('Player API - merge', () => {
     expect(player1Stat.value).toBe(0)
   })
 
-  it('should not merge if player1 has auth', async () => {
+  it('should not merge if player2 has a talo alias', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([
       APIKeyScope.READ_PLAYERS,
       APIKeyScope.WRITE_PLAYERS,
     ])
 
-    const player1 = await new PlayerFactory([apiKey.game]).withTaloAlias().one()
-    const player2 = await new PlayerFactory([apiKey.game]).one()
-
-    await em.persist([player1, player2]).flush()
-
-    const res = await request(app)
-      .post('/v1/players/merge')
-      .send({ playerId1: player1.id, playerId2: player2.id })
-      .auth(token, { type: 'bearer' })
-      .expect(400)
-
-    expect(res.body).toStrictEqual({
-      message: `Player ${player1.id} has authentication enabled and cannot be merged`,
-    })
-  })
-
-  it('should not merge if player2 has auth', async () => {
-    const [apiKey, token] = await createAPIKeyAndToken([
-      APIKeyScope.READ_PLAYERS,
-      APIKeyScope.WRITE_PLAYERS,
-    ])
-
-    const player1 = await new PlayerFactory([apiKey.game]).one()
+    const player1 = await new PlayerFactory([apiKey.game]).withUsernameAlias().one()
     const player2 = await new PlayerFactory([apiKey.game]).withTaloAlias().one()
 
     await em.persist([player1, player2]).flush()
 
     const res = await request(app)
       .post('/v1/players/merge')
+      .set('x-talo-alias', String(player1.aliases[0].id))
       .send({ playerId1: player1.id, playerId2: player2.id })
       .auth(token, { type: 'bearer' })
       .expect(400)
@@ -430,6 +456,83 @@ describe('Player API - merge', () => {
     expect(res.body).toStrictEqual({
       message: `Player ${player2.id} has authentication enabled and cannot be merged`,
     })
+  })
+
+  it('should not merge if player2 has a steam alias', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([
+      APIKeyScope.READ_PLAYERS,
+      APIKeyScope.WRITE_PLAYERS,
+    ])
+
+    const player1 = await new PlayerFactory([apiKey.game]).withUsernameAlias().one()
+    const player2 = await new PlayerFactory([apiKey.game]).withSteamAlias().one()
+
+    await em.persist([player1, player2]).flush()
+
+    const res = await request(app)
+      .post('/v1/players/merge')
+      .set('x-talo-alias', String(player1.aliases[0].id))
+      .send({ playerId1: player1.id, playerId2: player2.id })
+      .auth(token, { type: 'bearer' })
+      .expect(400)
+
+    expect(res.body).toStrictEqual({
+      message: `Player ${player2.id} has a Steam alias and cannot be merged`,
+    })
+  })
+
+  it('should merge a non-restricted player into a talo player', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([
+      APIKeyScope.READ_PLAYERS,
+      APIKeyScope.WRITE_PLAYERS,
+    ])
+
+    const player1 = await new PlayerFactory([apiKey.game]).withTaloAlias().one()
+    const player2 = await new PlayerFactory([apiKey.game]).withUsernameAlias().one()
+
+    await em.persist([player1, player2]).flush()
+
+    const sessionToken = await player1.auth!.createSession(player1.aliases[0])
+    await em.flush()
+
+    const res = await request(app)
+      .post('/v1/players/merge')
+      .set('x-talo-player', player1.id)
+      .set('x-talo-alias', String(player1.aliases[0].id))
+      .set('x-talo-session', sessionToken)
+      .send({ playerId1: player1.id, playerId2: player2.id })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    expect(res.body.player.id).toBe(player1.id)
+
+    const activity = await em.getRepository(PlayerAuthActivity).findOne({
+      player: player1,
+      type: PlayerAuthActivityType.PLAYER_MERGED,
+    })
+    expect(activity).not.toBeNull()
+  })
+
+  it('should not create a player auth activity when merging into a non-talo player', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([
+      APIKeyScope.READ_PLAYERS,
+      APIKeyScope.WRITE_PLAYERS,
+    ])
+
+    const player1 = await new PlayerFactory([apiKey.game]).withUsernameAlias().one()
+    const player2 = await new PlayerFactory([apiKey.game]).withGuestAlias().one()
+
+    await em.persist([player1, player2]).flush()
+
+    await request(app)
+      .post('/v1/players/merge')
+      .set('x-talo-alias', String(player1.aliases[0].id))
+      .send({ playerId1: player1.id, playerId2: player2.id })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    const activityCount = await em.getRepository(PlayerAuthActivity).count({ player: player1 })
+    expect(activityCount).toBe(0)
   })
 
   it("should delete player2's sessions", async () => {
@@ -455,6 +558,7 @@ describe('Player API - merge', () => {
 
     await request(app)
       .post('/v1/players/merge')
+      .set('x-talo-alias', String(player1.aliases[0].id))
       .send({ playerId1: player1.id, playerId2: player2.id })
       .auth(token, { type: 'bearer' })
       .expect(200)
@@ -470,6 +574,103 @@ describe('Player API - merge', () => {
 
       return updatedPlayerSessionsCount === 0
     })
+  })
+
+  it('should sync all stats for the merged player to integrations', async () => {
+    const handleStatUpdatedSpy = vi
+      .spyOn(Integration.prototype, 'handleStatUpdated')
+      .mockResolvedValue()
+
+    const [apiKey, token] = await createAPIKeyAndToken([
+      APIKeyScope.READ_PLAYERS,
+      APIKeyScope.WRITE_PLAYERS,
+    ])
+
+    const player1 = await new PlayerFactory([apiKey.game]).withSteamAlias().one()
+    const player2 = await new PlayerFactory([apiKey.game]).withUsernameAlias().one()
+
+    const sharedStat = await new GameStatFactory([apiKey.game])
+      .state(() => ({ minValue: null, maxValue: null }))
+      .one()
+    const uniqueStat = await new GameStatFactory([apiKey.game]).one()
+
+    // these will be summed during the merge
+    const player1SharedStat = await new PlayerGameStatFactory()
+      .construct(player1, sharedStat)
+      .state(() => ({ value: 10 }))
+      .one()
+    const player2SharedStat = await new PlayerGameStatFactory()
+      .construct(player2, sharedStat)
+      .state(() => ({ value: 5 }))
+      .one()
+
+    const player1UniqueStat = await new PlayerGameStatFactory().construct(player1, uniqueStat).one()
+
+    const config = await new IntegrationConfigFactory().one()
+    const integration = await new IntegrationFactory()
+      .construct(IntegrationType.STEAMWORKS, apiKey.game, config)
+      .one()
+
+    await em
+      .persist([
+        player1,
+        player2,
+        player1SharedStat,
+        player2SharedStat,
+        player1UniqueStat,
+        integration,
+      ])
+      .flush()
+
+    await request(app)
+      .post('/v1/players/merge')
+      .set('x-talo-alias', String(player1.aliases[0].id))
+      .send({ playerId1: player1.id, playerId2: player2.id })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    const calledWithStats = handleStatUpdatedSpy.mock.calls.map(([, playerStat]) => playerStat)
+    expect(handleStatUpdatedSpy).toHaveBeenCalledTimes(2)
+    expect(calledWithStats.every((s) => s.player.id === player1.id)).toBe(true)
+
+    const mergedStatCall = calledWithStats.find((s) => s.stat.id === sharedStat.id)
+    expect(mergedStatCall?.value).toBe(15)
+  })
+
+  it('should continue syncing stats to integrations even if one handleStatUpdated call fails', async () => {
+    const handleStatUpdatedSpy = vi
+      .spyOn(Integration.prototype, 'handleStatUpdated')
+      .mockRejectedValueOnce(new Error('Integration error'))
+      .mockResolvedValue()
+
+    const [apiKey, token] = await createAPIKeyAndToken([
+      APIKeyScope.READ_PLAYERS,
+      APIKeyScope.WRITE_PLAYERS,
+    ])
+
+    const player1 = await new PlayerFactory([apiKey.game]).withSteamAlias().one()
+    const player2 = await new PlayerFactory([apiKey.game]).withUsernameAlias().one()
+
+    const stat1 = await new GameStatFactory([apiKey.game]).one()
+    const stat2 = await new GameStatFactory([apiKey.game]).one()
+    const player1Stat1 = await new PlayerGameStatFactory().construct(player1, stat1).one()
+    const player1Stat2 = await new PlayerGameStatFactory().construct(player1, stat2).one()
+
+    const config = await new IntegrationConfigFactory().one()
+    const integration = await new IntegrationFactory()
+      .construct(IntegrationType.STEAMWORKS, apiKey.game, config)
+      .one()
+
+    await em.persist([player1, player2, player1Stat1, player1Stat2, integration]).flush()
+
+    await request(app)
+      .post('/v1/players/merge')
+      .set('x-talo-alias', String(player1.aliases[0].id))
+      .send({ playerId1: player1.id, playerId2: player2.id })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    expect(handleStatUpdatedSpy).toHaveBeenCalledTimes(2)
   })
 
   it('should not merge if both players have aliases with the same service', async () => {
@@ -489,36 +690,37 @@ describe('Player API - merge', () => {
       }))
       .one()
 
-    const steamAlias1 = await new PlayerAliasFactory(player1)
-      .steam()
+    const usernameAlias1 = await new PlayerAliasFactory(player1)
+      .username()
       .state(() => ({
-        identifier: 'player1_steam_id',
+        identifier: 'player1_username',
         lastSeenAt: new Date('2024-01-01'),
       }))
       .one()
 
-    const steamAlias2 = await new PlayerAliasFactory(player2)
-      .steam()
+    const usernameAlias2 = await new PlayerAliasFactory(player2)
+      .username()
       .state(() => ({
-        identifier: 'player2_steam_id',
+        identifier: 'player2_username',
         lastSeenAt: new Date('2024-06-01'),
       }))
       .one()
 
-    player1.aliases.add(steamAlias1)
-    player2.aliases.add(steamAlias2)
+    player1.aliases.add(usernameAlias1)
+    player2.aliases.add(usernameAlias2)
 
-    await em.persist([player1, player2, steamAlias1, steamAlias2]).flush()
+    await em.persist([player1, player2, usernameAlias1, usernameAlias2]).flush()
 
     const res = await request(app)
       .post('/v1/players/merge')
+      .set('x-talo-alias', String(usernameAlias1.id))
       .send({ playerId1: player1.id, playerId2: player2.id })
       .auth(token, { type: 'bearer' })
       .expect(400)
 
     expect(res.body).toStrictEqual({
       message:
-        'Cannot merge players: both players have aliases with the following service(s): steam',
+        'Cannot merge players: both players have aliases with the following service(s): username',
     })
   })
 })

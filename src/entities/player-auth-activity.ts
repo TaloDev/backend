@@ -19,6 +19,7 @@ export enum PlayerAuthActivityType {
   TOGGLE_VERIFICATION_FAILED,
   DELETED_AUTH,
   DELETE_AUTH_FAILED,
+  PLAYER_MERGED,
 }
 
 @Entity()
@@ -87,6 +88,8 @@ export default class PlayerAuthActivity {
         return `${authAlias.identifier} deleted their account`
       case PlayerAuthActivityType.DELETE_AUTH_FAILED:
         return `${authAlias.identifier} failed to delete their account`
+      case PlayerAuthActivityType.PLAYER_MERGED:
+        return `A player was merged into ${authAlias.identifier}'s account`
       default:
         return ''
     }

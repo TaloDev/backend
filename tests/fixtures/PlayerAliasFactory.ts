@@ -41,6 +41,13 @@ export default class PlayerAliasFactory extends Factory<PlayerAlias> {
     }))
   }
 
+  guest(): this {
+    return this.state(() => ({
+      service: PlayerAliasService.CUSTOM,
+      identifier: `guest_${randUuid()}`,
+    }))
+  }
+
   talo(): this {
     return this.state(() => ({
       service: PlayerAliasService.TALO,

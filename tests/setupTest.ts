@@ -14,5 +14,13 @@ beforeAll(async () => {
 
 beforeEach(async () => {
   global.em.clear()
-  await global.redis.flushall()
+
+  const clickhouseTablesToTruncate = ['events', 'player_game_stat_snapshots']
+
+  await Promise.all([
+    global.redis.flushall(),
+    ...clickhouseTablesToTruncate.map((table) =>
+      global.clickhouse.command({ query: `TRUNCATE TABLE ${table}` }),
+    ),
+  ])
 })

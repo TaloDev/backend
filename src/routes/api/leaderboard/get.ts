@@ -43,12 +43,24 @@ export const getRoute = apiRoute({
         description:
           'Only return entries for this player alias service (e.g. steam, epic, username)',
       }),
+      playerId: z.uuid().optional().meta({
+        description: 'Only return entries for this player ID',
+      }),
     }),
   }),
   middleware: withMiddleware(requireScopes([APIKeyScope.READ_LEADERBOARDS]), loadLeaderboard),
   handler: async (ctx) => {
-    const { page, aliasId, withDeleted, propKey, propValue, startDate, endDate, service } =
-      ctx.state.validated.query
+    const {
+      page,
+      aliasId,
+      withDeleted,
+      propKey,
+      propValue,
+      startDate,
+      endDate,
+      service,
+      playerId,
+    } = ctx.state.validated.query
 
     return listEntriesHandler({
       em: ctx.em,
@@ -63,6 +75,7 @@ export const getRoute = apiRoute({
       startDate,
       endDate,
       service,
+      playerId,
     })
   },
 })

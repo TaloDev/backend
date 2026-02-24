@@ -1,7 +1,9 @@
 import { EntityManager, FilterQuery, ObjectQuery } from '@mikro-orm/mysql'
+import { createHash } from 'crypto'
 import { endOfDay, startOfDay } from 'date-fns'
 import Leaderboard, { LeaderboardSortMode } from '../../../entities/leaderboard'
 import LeaderboardEntry from '../../../entities/leaderboard-entry'
+import Player from '../../../entities/player'
 import PlayerAlias from '../../../entities/player-alias'
 import { DEFAULT_PAGE_SIZE } from '../../../lib/pagination/itemsPerPage'
 import { withResponseCache } from '../../../lib/perf/responseCache'
@@ -16,6 +18,7 @@ const itemsPerPage = DEFAULT_PAGE_SIZE
 async function getGlobalEntryIds({
   em,
   aliasId,
+  playerId,
   leaderboard,
   entries,
   includeDevData,
@@ -24,11 +27,12 @@ async function getGlobalEntryIds({
   em: EntityManager
   includeDevData: boolean
   aliasId?: number
+  playerId?: string
   leaderboard: Leaderboard
   entries: LeaderboardEntry[]
   includeDeleted: boolean
 }) {
-  if (aliasId && entries.length > 0) {
+  if ((aliasId || playerId) && entries.length > 0) {
     const scores = entries.map((entry) => entry.score)
     const entryIds = entries.map((entry) => entry.id)
     const minScore = Math.min(...scores)
@@ -93,6 +97,7 @@ type ListEntriesParams = {
   startDate?: string
   endDate?: string
   service?: string
+  playerId?: string
 }
 
 export async function listEntriesHandler({
@@ -108,11 +113,27 @@ export async function listEntriesHandler({
   startDate,
   endDate,
   service,
+  playerId,
 }: ListEntriesParams) {
-  const includeDeleted = withDeleted === true
+  const argsDigest = createHash('sha256')
+    .update(
+      JSON.stringify({
+        devDataComponent: includeDevData ? 'dev' : 'no-dev',
+        forwarded,
+        page,
+        aliasId,
+        withDeleted,
+        propKey,
+        propValue,
+        startDate,
+        endDate,
+        service,
+        playerId,
+      }),
+    )
+    .digest('hex')
 
-  const devDataComponent = includeDevData ? 'dev' : 'no-dev'
-  const cacheKey = `${leaderboard.getEntriesCacheKey()}-${page}-${aliasId}-${withDeleted}-${propKey}-${propValue}-${startDate}-${endDate}-${service}-${devDataComponent}`
+  const cacheKey = `${leaderboard.getEntriesCacheKey()}-${argsDigest}`
 
   return withResponseCache(
     {
@@ -120,6 +141,8 @@ export async function listEntriesHandler({
       ttl: 600,
     },
     async () => {
+      const includeDeleted = withDeleted === true
+
       const where: FilterQuery<LeaderboardEntry> = { leaderboard }
 
       if (!includeDeleted) {
@@ -139,6 +162,15 @@ export async function listEntriesHandler({
         }
       }
 
+      if (playerId) {
+        where.playerAlias = {
+          ...(where.playerAlias as ObjectQuery<PlayerAlias>),
+          player: {
+            id: playerId,
+          },
+        }
+      }
+
       if (forwarded) {
         where.hidden = false
       }
@@ -147,6 +179,7 @@ export async function listEntriesHandler({
         where.playerAlias = {
           ...(where.playerAlias as ObjectQuery<PlayerAlias>),
           player: {
+            ...((where.playerAlias as ObjectQuery<PlayerAlias>)?.player as ObjectQuery<Player>),
             devBuild: false,
           },
         }
@@ -196,6 +229,7 @@ export async function listEntriesHandler({
       const globalEntryIds: number[] = await getGlobalEntryIds({
         em,
         aliasId,
+        playerId,
         leaderboard,
         entries,
         includeDevData,
@@ -204,7 +238,8 @@ export async function listEntriesHandler({
 
       const mappedEntries = await Promise.all(
         entries.slice(0, itemsPerPage).map(async (entry, idx) => {
-          const position = aliasId ? globalEntryIds.indexOf(entry.id) : idx + page * itemsPerPage
+          const position =
+            aliasId || playerId ? globalEntryIds.indexOf(entry.id) : idx + page * itemsPerPage
 
           return {
             position,
@@ -242,12 +277,22 @@ export const entriesRoute = protectedRoute({
       startDate: z.string().optional(),
       endDate: z.string().optional(),
       service: z.string().optional(),
+      playerId: z.uuid().optional(),
     }),
   }),
   middleware: withMiddleware(loadGame, loadLeaderboard()),
   handler: async (ctx) => {
-    const { page, aliasId, withDeleted, propKey, propValue, startDate, endDate, service } =
-      ctx.state.validated.query
+    const {
+      page,
+      aliasId,
+      withDeleted,
+      propKey,
+      propValue,
+      startDate,
+      endDate,
+      service,
+      playerId,
+    } = ctx.state.validated.query
 
     return listEntriesHandler({
       em: ctx.em,
@@ -261,6 +306,7 @@ export const entriesRoute = protectedRoute({
       startDate,
       endDate,
       service,
+      playerId,
     })
   },
 })

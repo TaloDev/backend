@@ -43,17 +43,16 @@ describe('Player auth API - change identifier', () => {
     const sessionToken = await player.auth!.createSession(alias)
     await em.flush()
 
-    await request(app)
+    const res = await request(app)
       .post('/v1/players/auth/change_identifier')
       .send({ currentPassword: 'password', newIdentifier: 'bozza' })
       .auth(token, { type: 'bearer' })
       .set('x-talo-player', player.id)
       .set('x-talo-alias', String(alias.id))
       .set('x-talo-session', sessionToken)
-      .expect(204)
+      .expect(200)
 
-    await em.refresh(alias)
-    expect(alias.identifier).toBe('bozza')
+    expect(res.body.alias.identifier).toBe('bozza')
 
     const activity = await em.getRepository(PlayerAuthActivity).findOne({
       type: PlayerAuthActivityType.CHANGED_IDENTIFIER,

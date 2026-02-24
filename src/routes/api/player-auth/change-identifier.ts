@@ -106,7 +106,10 @@ export const changeIdentifierRoute = apiRoute({
     await em.flush()
 
     return {
-      status: 204,
+      status: 200,
+      body: {
+        alias,
+      },
     }
   },
 })

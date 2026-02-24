@@ -122,6 +122,19 @@ export const changeEmailDocs = {
   ],
 } satisfies RouteDocs
 
+export const changeIdentifierDocs = {
+  description: 'Change the identifier of a player account',
+  samples: [
+    {
+      title: 'Sample request',
+      sample: {
+        currentPassword: 'password',
+        newIdentifier: 'boz2',
+      },
+    },
+  ],
+} satisfies RouteDocs
+
 export const forgotPasswordDocs = {
   description: 'Send a password reset email to an email address',
   samples: [

@@ -54,7 +54,7 @@ describe('Leaderboard API - get', () => {
     const otherPlayers = await new PlayerFactory([apiKey.game]).many(3)
     const otherEntries = await new LeaderboardEntryFactory(leaderboard, otherPlayers).many(5)
 
-    await em.persistAndFlush([player, ...entries, ...otherPlayers, ...otherEntries])
+    await em.persist([player, ...entries, ...otherPlayers, ...otherEntries]).flush()
 
     const res = await request(app)
       .get(`/v1/leaderboards/${leaderboard.internalName}/entries`)
@@ -84,7 +84,7 @@ describe('Leaderboard API - get', () => {
   it('should not get leaderboard entries if the scope is not valid', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([])
     const leaderboard = await new LeaderboardFactory([apiKey.game]).one()
-    await em.persistAndFlush(leaderboard)
+    await em.persist(leaderboard).flush()
 
     await request(app)
       .get(`/v1/leaderboards/${leaderboard.internalName}/entries`)
@@ -122,7 +122,7 @@ describe('Leaderboard API - get', () => {
       .state(() => ({ score: 300 }))
       .many(5)
 
-    await em.persistAndFlush([player, entry, ...otherPlayers, ...otherEntries])
+    await em.persist([player, entry, ...otherPlayers, ...otherEntries]).flush()
 
     const res = await request(app)
       .get(`/v1/leaderboards/${leaderboard.internalName}/entries`)
@@ -152,7 +152,7 @@ describe('Leaderboard API - get', () => {
       .state(() => ({ score: 300 }))
       .many(5)
 
-    await em.persistAndFlush([player, entry, ...otherPlayers, ...otherEntries])
+    await em.persist([player, entry, ...otherPlayers, ...otherEntries]).flush()
 
     const res = await request(app)
       .get(`/v1/leaderboards/${leaderboard.internalName}/entries`)
@@ -272,7 +272,7 @@ describe('Leaderboard API - get', () => {
       }))
       .one()
 
-    await em.persistAndFlush([entry, otherEntry, irrelevantEntry])
+    await em.persist([entry, otherEntry, irrelevantEntry]).flush()
 
     const filteredRes = await request(app)
       .get(`/v1/leaderboards/${leaderboard.internalName}/entries`)
@@ -291,5 +291,141 @@ describe('Leaderboard API - get', () => {
       globalRes.body.entries[0].playerAlias.id,
     )
     expect(filteredRes.body.entries[0].position).toBe(globalRes.body.entries[0].position)
+  })
+
+  it('should get leaderboard entries for a specific player using playerId', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_LEADERBOARDS])
+    const leaderboard = await new LeaderboardFactory([apiKey.game]).one()
+
+    const player = await new PlayerFactory([apiKey.game]).one()
+    const entries = await new LeaderboardEntryFactory(leaderboard, [player])
+      .state(() => ({ playerAlias: player.aliases[0] }))
+      .many(2)
+
+    const otherPlayers = await new PlayerFactory([apiKey.game]).many(3)
+    const otherEntries = await new LeaderboardEntryFactory(leaderboard, otherPlayers).many(5)
+
+    await em.persist([player, ...entries, ...otherPlayers, ...otherEntries]).flush()
+
+    const res = await request(app)
+      .get(`/v1/leaderboards/${leaderboard.internalName}/entries`)
+      .query({ playerId: player.id, page: 0 })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    expect(res.body.entries).toHaveLength(entries.length)
+    expect(
+      res.body.entries.every(
+        (e: { playerAlias: { id: number } }) => e.playerAlias.id === player.aliases[0].id,
+      ),
+    ).toBe(true)
+  })
+
+  it('should correctly calculate positions when filtering by playerId', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_LEADERBOARDS])
+    const leaderboard = await new LeaderboardFactory([apiKey.game])
+      .state(() => ({ sortMode: LeaderboardSortMode.DESC }))
+      .one()
+
+    const player = await new PlayerFactory([apiKey.game]).one()
+    const entry = await new LeaderboardEntryFactory(leaderboard, [player])
+      .state(() => ({
+        playerAlias: player.aliases[0],
+        score: 200,
+      }))
+      .one()
+
+    const otherPlayers = await new PlayerFactory([apiKey.game]).many(3)
+    const otherEntries = await new LeaderboardEntryFactory(leaderboard, otherPlayers)
+      .state(() => ({ score: 300 }))
+      .many(3)
+
+    await em.persist([player, entry, ...otherPlayers, ...otherEntries]).flush()
+
+    const res = await request(app)
+      .get(`/v1/leaderboards/${leaderboard.internalName}/entries`)
+      .query({ playerId: player.id, page: 0 })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    expect(res.body.entries).toHaveLength(1)
+    expect(res.body.entries[0].position).toBe(3)
+  })
+
+  it('should get leaderboard entries filtered by both playerId and aliasId', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_LEADERBOARDS])
+    const leaderboard = await new LeaderboardFactory([apiKey.game]).one()
+
+    const player = await new PlayerFactory([apiKey.game]).one()
+    const alias = player.aliases[0]
+    const entriesForAlias = await new LeaderboardEntryFactory(leaderboard, [player])
+      .state(() => ({ playerAlias: alias }))
+      .many(2)
+
+    const otherPlayers = await new PlayerFactory([apiKey.game]).many(3)
+    const otherEntries = await new LeaderboardEntryFactory(leaderboard, otherPlayers).many(5)
+
+    await em.persist([player, ...entriesForAlias, ...otherPlayers, ...otherEntries]).flush()
+
+    const res = await request(app)
+      .get(`/v1/leaderboards/${leaderboard.internalName}/entries`)
+      .query({ playerId: player.id, aliasId: alias.id, page: 0 })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    expect(res.body.entries).toHaveLength(entriesForAlias.length)
+    expect(
+      res.body.entries.every((e: { playerAlias: { id: number } }) => e.playerAlias.id === alias.id),
+    ).toBe(true)
+  })
+
+  it('should not return entries for an aliasId that does not belong to the playerId', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_LEADERBOARDS])
+    const leaderboard = await new LeaderboardFactory([apiKey.game]).one()
+
+    const player = await new PlayerFactory([apiKey.game]).one()
+    const otherPlayer = await new PlayerFactory([apiKey.game]).one()
+
+    const entries = await new LeaderboardEntryFactory(leaderboard, [player])
+      .state(() => ({ playerAlias: player.aliases[0] }))
+      .many(2)
+    const otherEntries = await new LeaderboardEntryFactory(leaderboard, [otherPlayer])
+      .state(() => ({ playerAlias: otherPlayer.aliases[0] }))
+      .many(2)
+
+    await em.persist([player, ...entries, otherPlayer, ...otherEntries]).flush()
+
+    const res = await request(app)
+      .get(`/v1/leaderboards/${leaderboard.internalName}/entries`)
+      .query({ playerId: player.id, aliasId: otherPlayer.aliases[0].id, page: 0 })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    expect(res.body.entries).toHaveLength(0)
+  })
+
+  it('should not return dev build entries when filtering by playerId', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_LEADERBOARDS])
+    const leaderboard = await new LeaderboardFactory([apiKey.game]).one()
+
+    const devPlayer = await new PlayerFactory([apiKey.game]).devBuild().one()
+    const devEntries = await new LeaderboardEntryFactory(leaderboard, [devPlayer])
+      .state(() => ({ playerAlias: devPlayer.aliases[0] }))
+      .many(2)
+
+    const normalPlayer = await new PlayerFactory([apiKey.game]).one()
+    const normalEntries = await new LeaderboardEntryFactory(leaderboard, [normalPlayer])
+      .state(() => ({ playerAlias: normalPlayer.aliases[0] }))
+      .many(2)
+
+    await em.persist([devPlayer, ...devEntries, normalPlayer, ...normalEntries]).flush()
+
+    const res = await request(app)
+      .get(`/v1/leaderboards/${leaderboard.internalName}/entries`)
+      .query({ playerId: devPlayer.id, page: 0 })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    expect(res.body.entries).toHaveLength(0)
   })
 })

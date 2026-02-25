@@ -4,7 +4,7 @@ import LeaderboardFactory from '../../../fixtures/LeaderboardFactory'
 import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
 import createUserAndToken from '../../../utils/createUserAndToken'
 
-describe('Leaderboard - index', () => {
+describe('Leaderboard - list', () => {
   it('should return a list of leaderboards', async () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({}, organisation)

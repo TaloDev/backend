@@ -8,7 +8,7 @@ import PlayerFactory from '../../../fixtures/PlayerFactory'
 import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
 import createUserAndToken from '../../../utils/createUserAndToken'
 
-describe('Game feedback - index', () => {
+describe('Game feedback - list', () => {
   it('should return a list of game feedback', async () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({}, organisation)

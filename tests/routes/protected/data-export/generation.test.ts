@@ -187,7 +187,7 @@ describe('Data export - generation', () => {
   })
 })
 
-describe('Data export - createZipStream', () => {
+describe('Data export - create zip stream', () => {
   let tempDir: string
   let dataExporter: DataExporter
 

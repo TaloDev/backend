@@ -8,7 +8,7 @@ import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
 import createUserAndToken from '../../../utils/createUserAndToken'
 import userPermissionProvider from '../../../utils/userPermissionProvider'
 
-describe('Player - get auth activities', () => {
+describe('Player - auth activities', () => {
   it.each(userPermissionProvider([UserType.ADMIN]))(
     'should return a %i for a %s user',
     async (statusCode, _, type) => {

@@ -4,7 +4,7 @@ import PlayerGroupFactory from '../../../fixtures/PlayerGroupFactory'
 import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
 import createUserAndToken from '../../../utils/createUserAndToken'
 
-describe('Player group - index', () => {
+describe('Player group - list', () => {
   it('should return a list of groups', async () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({}, organisation)

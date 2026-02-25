@@ -2,6 +2,7 @@ import { addDays } from 'date-fns'
 import request from 'supertest'
 import { APIKeyScope } from '../../../../src/entities/api-key'
 import { LeaderboardSortMode } from '../../../../src/entities/leaderboard'
+import LeaderboardEntry from '../../../../src/entities/leaderboard-entry'
 import LeaderboardEntryFactory from '../../../fixtures/LeaderboardEntryFactory'
 import LeaderboardFactory from '../../../fixtures/LeaderboardFactory'
 import PlayerFactory from '../../../fixtures/PlayerFactory'
@@ -427,5 +428,31 @@ describe('Leaderboard API - get', () => {
       .expect(200)
 
     expect(res.body.entries).toHaveLength(0)
+  })
+
+  it('should filter leaderboard entries by player alias service', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_LEADERBOARDS])
+
+    const steamPlayers = await new PlayerFactory([apiKey.game]).withSteamAlias().many(2)
+    const usernamePlayers = await new PlayerFactory([apiKey.game]).withUsernameAlias().many(2)
+    const leaderboard = await new LeaderboardFactory([apiKey.game])
+      .state(() => ({ unique: false }))
+      .one()
+
+    const steamEntries = await new LeaderboardEntryFactory(leaderboard, steamPlayers).many(2)
+    const usernameEntries = await new LeaderboardEntryFactory(leaderboard, usernamePlayers).many(2)
+
+    await em.persist([leaderboard, ...steamEntries, ...usernameEntries]).flush()
+
+    const res = await request(app)
+      .get(`/v1/leaderboards/${leaderboard.internalName}/entries`)
+      .query({ page: 0, aliasService: 'steam' })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    expect(res.body.entries).toHaveLength(2)
+    expect(
+      res.body.entries.every((entry: LeaderboardEntry) => entry.playerAlias.service === 'steam'),
+    ).toBe(true)
   })
 })

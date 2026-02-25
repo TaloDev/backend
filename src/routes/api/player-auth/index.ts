@@ -1,5 +1,6 @@
 import { apiRouter } from '../../../lib/routing/router'
 import { changeEmailRoute } from './change-email'
+import { changeIdentifierRoute } from './change-identifier'
 import { changePasswordRoute } from './change-password'
 import { deleteRoute } from './delete'
 import { forgotPasswordRoute } from './forgot-password'
@@ -20,6 +21,7 @@ export function playerAuthAPIRouter() {
       route(logoutRoute)
       route(changePasswordRoute)
       route(changeEmailRoute)
+      route(changeIdentifierRoute)
       route(forgotPasswordRoute)
       route(resetPasswordRoute)
       route(toggleVerificationRoute)

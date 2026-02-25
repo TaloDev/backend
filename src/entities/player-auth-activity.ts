@@ -1,7 +1,7 @@
 import { Entity, Enum, ManyToOne, PrimaryKey, Property } from '@mikro-orm/mysql'
 import assert from 'node:assert'
 import Player from './player'
-import PlayerAlias, { PlayerAliasService } from './player-alias'
+import { PlayerAliasService } from './player-alias'
 
 export enum PlayerAuthActivityType {
   REGISTERED,
@@ -20,6 +20,8 @@ export enum PlayerAuthActivityType {
   DELETED_AUTH,
   DELETE_AUTH_FAILED,
   PLAYER_MERGED,
+  CHANGED_IDENTIFIER,
+  CHANGE_IDENTIFIER_FAILED,
 }
 
 @Entity()
@@ -45,9 +47,9 @@ export default class PlayerAuthActivity {
     this.player = player
   }
 
-  private getAuthAlias(): PlayerAlias {
+  private getAuthAlias() {
     const alias = this.player.aliases.find((alias) => alias.service === PlayerAliasService.TALO)
-    // technically this should never happen,
+    // this should never happen:
     // if an alias is deleted, so are the auth activities
     assert(alias, 'No Talo alias found for player')
     return alias
@@ -90,6 +92,10 @@ export default class PlayerAuthActivity {
         return `${authAlias.identifier} failed to delete their account`
       case PlayerAuthActivityType.PLAYER_MERGED:
         return `A player was merged into ${authAlias.identifier}'s account`
+      case PlayerAuthActivityType.CHANGED_IDENTIFIER:
+        return `${authAlias.identifier} changed their identifier`
+      case PlayerAuthActivityType.CHANGE_IDENTIFIER_FAILED:
+        return `${authAlias.identifier} failed to change their identifier`
       default:
         return ''
     }

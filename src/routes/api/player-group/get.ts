@@ -33,7 +33,12 @@ export const getRoute = apiRoute({
     const group = ctx.state.group
     const { membersPage } = ctx.state.validated.query
 
-    const hydratedGroup: HydratedGroup = await group.toJSONWithCount(ctx.state.includeDevData)
+    const counts = await PlayerGroup.getManyCounts({
+      em: ctx.em,
+      groupIds: [group.id],
+      includeDevData: ctx.state.includeDevData,
+    })
+    const hydratedGroup: HydratedGroup = group.toJSONWithCount(counts)
 
     let paginationCount = 0
     let isLastPage = true

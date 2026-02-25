@@ -100,10 +100,12 @@ export async function createChannelHandler({
     playerAlias: alias,
   })
 
+  const counts = await GameChannel.getManyCounts({ em, channelIds: [channel.id], includeDevData })
+
   return {
     status: 200,
     body: {
-      channel: await channel.toJSONWithCount(includeDevData),
+      channel: channel.toJSONWithCount(counts),
     },
   }
 }

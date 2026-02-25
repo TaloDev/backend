@@ -1,4 +1,5 @@
 import { APIKeyScope } from '../../../entities/api-key'
+import GameChannel from '../../../entities/game-channel'
 import { apiRoute, withMiddleware } from '../../../lib/routing/router'
 import { numericStringSchema } from '../../../lib/validation/numericStringSchema'
 import { playerAliasHeaderSchema } from '../../../lib/validation/playerAliasHeaderSchema'
@@ -33,10 +34,16 @@ export const joinRoute = apiRoute({
 
     await joinChannel(ctx.em, ctx.wss, channel, ctx.state.alias)
 
+    const counts = await GameChannel.getManyCounts({
+      em: ctx.em,
+      channelIds: [channel.id],
+      includeDevData: ctx.state.includeDevData,
+    })
+
     return {
       status: 200,
       body: {
-        channel: await channel.toJSONWithCount(ctx.state.includeDevData),
+        channel: channel.toJSONWithCount(counts),
       },
     }
   },

@@ -96,6 +96,40 @@ export default class PlayerGroup {
   @Property({ onUpdate: () => new Date() })
   updatedAt: Date = new Date()
 
+  // this is not ideal, but it builds a much more efficient query than mikro-orm
+  static async getManyCounts({
+    em,
+    groupIds,
+    includeDevData,
+  }: {
+    em: EntityManager
+    groupIds: string[]
+    includeDevData: boolean
+  }) {
+    const countsMap = new Map(groupIds.map((id) => [id, 0]))
+    if (groupIds.length === 0) {
+      return countsMap
+    }
+
+    const results = await em.getConnection().execute<{ player_group_id: string; count: number }[]>(
+      `
+      select p1.player_group_id, count(*) as count
+      from player_group_members as p1
+      straight_join player as p0 on p0.id = p1.player_id
+      where p1.player_group_id in (?)
+        ${includeDevData ? '' : 'and p0.dev_build = 0'}
+      group by p1.player_group_id
+    `,
+      [groupIds],
+    )
+
+    for (const r of results) {
+      countsMap.set(r.player_group_id, r.count)
+    }
+
+    return countsMap
+  }
+
   constructor(game: Game) {
     this.game = game
   }
@@ -143,12 +177,10 @@ export default class PlayerGroup {
     }
   }
 
-  async toJSONWithCount(includeDevData: boolean) {
+  toJSONWithCount(countsMap: Map<string, number>) {
     return {
       ...this.toJSON(),
-      count: await this.members.loadCount({
-        where: includeDevData ? {} : { devBuild: false },
-      }),
+      count: countsMap.get(this.id),
     }
   }
 }

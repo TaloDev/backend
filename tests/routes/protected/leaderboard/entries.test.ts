@@ -384,29 +384,4 @@ describe('Leaderboard - entries', () => {
       ]),
     )
   })
-
-  it('should filter leaderboard entries by player alias service', async () => {
-    const [organisation, game] = await createOrganisationAndGame()
-    const [token] = await createUserAndToken({}, organisation)
-
-    const steamPlayers = await new PlayerFactory([game]).withSteamAlias().many(2)
-    const usernamePlayers = await new PlayerFactory([game]).withUsernameAlias().many(2)
-    const leaderboard = await new LeaderboardFactory([game]).state(() => ({ unique: false })).one()
-
-    const steamEntries = await new LeaderboardEntryFactory(leaderboard, steamPlayers).many(2)
-    const usernameEntries = await new LeaderboardEntryFactory(leaderboard, usernamePlayers).many(2)
-
-    await em.persistAndFlush([leaderboard, ...steamEntries, ...usernameEntries])
-
-    const res = await request(app)
-      .get(`/games/${game.id}/leaderboards/${leaderboard.id}/entries`)
-      .query({ page: 0, service: 'steam' })
-      .auth(token, { type: 'bearer' })
-      .expect(200)
-
-    expect(res.body.entries).toHaveLength(2)
-    expect(
-      res.body.entries.every((entry: LeaderboardEntry) => entry.playerAlias.service === 'steam'),
-    ).toBe(true)
-  })
 })

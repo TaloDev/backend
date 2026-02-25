@@ -236,17 +236,15 @@ export async function listEntriesHandler({
         includeDeleted,
       })
 
-      const mappedEntries = await Promise.all(
-        entries.slice(0, itemsPerPage).map(async (entry, idx) => {
-          const position =
-            aliasId || playerId ? globalEntryIds.indexOf(entry.id) : idx + page * itemsPerPage
+      const mappedEntries = entries.slice(0, itemsPerPage).map((entry, idx) => {
+        const position =
+          aliasId || playerId ? globalEntryIds.indexOf(entry.id) : idx + page * itemsPerPage
 
-          return {
-            position,
-            ...entry.toJSON(),
-          }
-        }),
-      )
+        return {
+          position,
+          ...entry.toJSON(),
+        }
+      })
 
       return {
         status: 200,

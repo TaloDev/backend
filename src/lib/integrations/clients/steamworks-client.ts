@@ -1,10 +1,9 @@
 import axios, { AxiosError, AxiosResponse } from 'axios'
 import pRetry, { AbortError } from 'p-retry'
 import Integration from '../../../entities/integration'
-import SteamworksIntegrationEvent from '../../../entities/steamworks-integration-event'
-
-export type SteamworksRequestMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE'
-export type SteamworksResponseStatusCode = 200 | 400 | 401 | 403 | 404 | 405 | 429 | 500 | 503
+import SteamworksIntegrationEvent, {
+  SteamworksRequestMethod,
+} from '../../../entities/steamworks-integration-event'
 
 export type SteamworksRequestConfig = {
   method: SteamworksRequestMethod
@@ -14,18 +13,6 @@ export type SteamworksRequestConfig = {
     'x-webapi-key': string
   }
   data: string
-}
-
-export type SteamworksRequest = {
-  url: string
-  method: SteamworksRequestMethod
-  body: string
-}
-
-export type SteamworksResponse<T = { [key: string]: unknown }> = {
-  status: SteamworksResponseStatusCode
-  body: T
-  timeTaken: number
 }
 
 export type FindOrCreateLeaderboardResponseLeaderboard = {
@@ -239,7 +226,7 @@ export class SteamworksClient {
       const endTime = performance.now()
 
       event.response = {
-        status: res.status as SteamworksResponseStatusCode,
+        status: res.status,
         body: res.data,
         timeTaken: endTime - startTime,
       }
@@ -259,7 +246,7 @@ export class SteamworksClient {
       }
 
       event.response = {
-        status: axiosErr.response.status as SteamworksResponseStatusCode,
+        status: axiosErr.response.status,
         body: axiosErr.response.data as { [key: string]: unknown },
         timeTaken: endTime - startTime,
       }

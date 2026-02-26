@@ -12,7 +12,7 @@ import userPermissionProvider from '../../../utils/userPermissionProvider'
 describe('Integration - sync stats', () => {
   const syncMock = vi
     .spyOn(steamworksIntegration, 'syncSteamworksStats')
-    .mockImplementation(Promise.resolve)
+    .mockImplementation(() => Promise.resolve())
 
   beforeEach(async () => {
     syncMock.mockReset()

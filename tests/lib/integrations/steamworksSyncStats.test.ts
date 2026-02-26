@@ -9,8 +9,8 @@ import { SteamworksPlayerStat } from '../../../src/entities/steamworks-player-st
 import {
   GetSchemaForGameResponse,
   GetUserStatsForGameResponse,
-  syncSteamworksStats,
-} from '../../../src/lib/integrations/steamworks-integration'
+} from '../../../src/lib/integrations/clients/steamworks-client'
+import { syncSteamworksStats } from '../../../src/lib/integrations/steamworks-integration'
 import GameStatFactory from '../../fixtures/GameStatFactory'
 import IntegrationConfigFactory from '../../fixtures/IntegrationConfigFactory'
 import IntegrationFactory from '../../fixtures/IntegrationFactory'
@@ -20,6 +20,10 @@ import createOrganisationAndGame from '../../utils/createOrganisationAndGame'
 
 describe('Steamworks integration - sync stats', () => {
   const axiosMock = new AxiosMockAdapter(axios)
+
+  afterEach(() => {
+    axiosMock.reset()
+  })
 
   it('should pull in stats from steamworks', async () => {
     const [, game] = await createOrganisationAndGame()

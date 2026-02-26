@@ -1,8 +1,6 @@
 import { EntityManager } from '@mikro-orm/mysql'
 import { captureException } from '@sentry/node'
-import axios, { AxiosError, AxiosResponse } from 'axios'
 import assert from 'node:assert'
-import { performance } from 'perf_hooks'
 import querystring from 'qs'
 import GameStat from '../../entities/game-stat'
 import Integration from '../../entities/integration'
@@ -11,209 +9,32 @@ import LeaderboardEntry from '../../entities/leaderboard-entry'
 import Player from '../../entities/player'
 import PlayerAlias, { PlayerAliasService } from '../../entities/player-alias'
 import PlayerGameStat from '../../entities/player-game-stat'
-import SteamworksIntegrationEvent, {
-  SteamworksRequestMethod,
-  SteamworksResponseStatusCode,
-} from '../../entities/steamworks-integration-event'
 import { SteamworksLeaderboardEntry } from '../../entities/steamworks-leaderboard-entry'
 import SteamworksLeaderboardMapping from '../../entities/steamworks-leaderboard-mapping'
 import { SteamworksPlayerStat } from '../../entities/steamworks-player-stat'
 import { getResultCacheOptions } from '../perf/getResultCacheOptions'
 import { streamByCursor } from '../perf/streamByCursor'
-
-type SteamworksRequestConfig = {
-  method: SteamworksRequestMethod
-  baseURL: string
-  url: string
-  headers: {
-    'x-webapi-key': string
-  }
-  data: string
-}
-
-type FindOrCreateLeaderboardResponseLeaderboard = {
-  leaderBoardID: number
-  leaderboardName: string
-  onlyfriendsreads: boolean
-  onlytrustedwrites: boolean
-  leaderBoardEntries: number
-  leaderBoardSortMethod: 'Ascending' | 'Descending'
-  leaderBoardDisplayType: 'Numeric'
-}
-
-type FindOrCreateLeaderboardResponse = {
-  result: {
-    result: number
-    leaderboard?: FindOrCreateLeaderboardResponseLeaderboard
-  }
-}
-
-type GetLeaderboardsForGameResponseLeaderboard = {
-  id: number
-  name: string
-  entries: number
-  sortmethod: 'Ascending' | 'Descending'
-  displaytype: 'Numeric'
-  onlyfriendsreads: boolean
-  onlytrustedwrites: boolean
-}
-
-export type GetLeaderboardsForGameResponse = {
-  response: {
-    result: number
-    leaderboards?: GetLeaderboardsForGameResponseLeaderboard[]
-  }
-}
-
-export type GetLeaderboardEntriesResponse = {
-  leaderboardEntryInformation: {
-    appID: number
-    leaderboardID: number
-    totalLeaderBoardEntryCount: number
-    leaderboardEntries: {
-      steamID: string
-      score: number
-      rank: number
-      ugcid: string
-    }[]
-  }
-}
-
-type GetLeaderboardEntriesResponseEntry =
-  GetLeaderboardEntriesResponse['leaderboardEntryInformation']['leaderboardEntries'][number]
+import {
+  AuthenticateUserTicketResponse,
+  CheckAppOwnershipResponse,
+  FindOrCreateLeaderboardResponse,
+  GetLeaderboardEntriesResponse,
+  GetLeaderboardEntriesResponseEntry,
+  GetLeaderboardsForGameResponse,
+  GetLeaderboardsForGameResponseLeaderboard,
+  GetPlayerSummariesResponse,
+  GetSchemaForGameResponse,
+  GetUserStatsForGameResponse,
+  SteamworksClient,
+  SteamworksGameStat,
+  SteamworksNetworkError,
+} from './clients/steamworks-client'
 
 type CombinedLeaderboards = [
   Leaderboard,
   GetLeaderboardsForGameResponseLeaderboard | null,
   SteamworksLeaderboardMapping | null,
 ]
-
-type SteamworksGameStat = {
-  name: string
-  defaultvalue: number
-  displayName: string
-}
-
-export type GetSchemaForGameResponse = {
-  game: {
-    gameName: string
-    gameVersion: string
-    availableGameStats: {
-      stats: SteamworksGameStat[]
-      achievements: unknown[]
-    }
-  }
-}
-
-export type GetUserStatsForGameResponse = {
-  playerstats: {
-    steamID: string
-    gameName: string
-    stats: {
-      name: string
-      value: number
-    }[]
-    achievements: unknown[]
-  }
-}
-
-export type AuthenticateUserTicketResponse = {
-  response: {
-    params?: {
-      result: 'OK'
-      steamid: string
-      ownersteamid: string
-      vacbanned: boolean
-      publisherbanned: boolean
-    }
-    error?: {
-      errorcode: number
-      errordesc: string
-    }
-  }
-}
-
-export type CheckAppOwnershipResponse = {
-  appownership: {
-    ownsapp: boolean
-    permanent: boolean
-    timestamp: string
-    ownersteamid: string
-    sitelicense: boolean
-    timedtrial: boolean
-    usercanceled: boolean
-    result: 'OK'
-  }
-}
-
-export type GetPlayerSummariesResponse = {
-  response: {
-    players: {
-      steamid: string
-      personaname: string
-      avatarhash: string
-    }[]
-  }
-}
-
-function createSteamworksRequestConfig(
-  integration: Integration,
-  method: SteamworksRequestMethod,
-  url: string,
-  body = '',
-): SteamworksRequestConfig {
-  return {
-    method,
-    baseURL: 'https://partner.steam-api.com',
-    url,
-    headers: { 'x-webapi-key': integration.getSteamAPIKey() },
-    data: body,
-  }
-}
-
-function createSteamworksIntegrationEvent(
-  integration: Integration,
-  config: SteamworksRequestConfig,
-): SteamworksIntegrationEvent {
-  const event = new SteamworksIntegrationEvent(integration)
-  event.request = {
-    method: config.method,
-    url: config.baseURL + config.url,
-    body: config.data,
-  }
-
-  return event
-}
-
-async function makeRequest<T>(
-  config: SteamworksRequestConfig,
-  event: SteamworksIntegrationEvent,
-): Promise<AxiosResponse<T, SteamworksRequestConfig>> {
-  const startTime = performance.now()
-
-  try {
-    const res = await axios(config)
-    const endTime = performance.now()
-
-    event.response = {
-      status: res.status as SteamworksResponseStatusCode,
-      body: res.data,
-      timeTaken: endTime - startTime,
-    }
-
-    return res
-  } catch (err) {
-    const endTime = performance.now()
-
-    event.response = {
-      status: (err as AxiosError).response!.status as SteamworksResponseStatusCode,
-      body: (err as AxiosError).response!.data as { [key: string]: unknown },
-      timeTaken: endTime - startTime,
-    }
-
-    return (err as AxiosError).response as AxiosResponse
-  }
-}
 
 export async function createSteamworksLeaderboard(
   em: EntityManager,
@@ -230,15 +51,12 @@ export async function createSteamworksLeaderboard(
     onlyfriendsreads: false,
   })
 
-  const config = createSteamworksRequestConfig(
-    integration,
-    'POST',
-    '/ISteamLeaderboards/FindOrCreateLeaderboard/v2',
+  const client = new SteamworksClient(integration)
+  const { res, event } = await client.makeRequest<FindOrCreateLeaderboardResponse>({
+    method: 'POST',
+    url: '/ISteamLeaderboards/FindOrCreateLeaderboard/v2',
     body,
-  )
-  const event = createSteamworksIntegrationEvent(integration, config)
-
-  const res = await makeRequest<FindOrCreateLeaderboardResponse>(config, event)
+  })
   await em.persist(event).flush()
 
   const steamworksLeaderboard = res.data?.result?.leaderboard
@@ -261,14 +79,12 @@ export async function deleteSteamworksLeaderboard(
     name: leaderboardInternalName,
   })
 
-  const config = createSteamworksRequestConfig(
-    integration,
-    'POST',
-    '/ISteamLeaderboards/DeleteLeaderboard/v1',
+  const client = new SteamworksClient(integration)
+  const { event } = await client.makeRequest({
+    method: 'POST',
+    url: '/ISteamLeaderboards/DeleteLeaderboard/v1',
     body,
-  )
-  const event = createSteamworksIntegrationEvent(integration, config)
-  await makeRequest(config, event)
+  })
 
   await em.persist(event).flush()
 }
@@ -291,15 +107,20 @@ export async function createSteamworksLeaderboardEntry(
       scoremethod: 'KeepBest',
     })
 
-    const config = createSteamworksRequestConfig(
-      integration,
-      'POST',
-      '/ISteamLeaderboards/SetLeaderboardScore/v1',
-      body,
-    )
-    const event = createSteamworksIntegrationEvent(integration, config)
-    await makeRequest(config, event)
-    await em.persist(event).flush()
+    const client = new SteamworksClient(integration)
+    try {
+      const { event } = await client.makeRequest({
+        method: 'POST',
+        url: '/ISteamLeaderboards/SetLeaderboardScore/v1',
+        body,
+      })
+      await em.persist(event).flush()
+    } catch (err) {
+      if (err instanceof SteamworksNetworkError) {
+        await em.persist(err.event).flush()
+      }
+      throw err
+    }
 
     await em.upsert(
       new SteamworksLeaderboardEntry({
@@ -326,14 +147,12 @@ async function requestDeleteLeaderboardScore({
     steamid: steamUserId,
   })
 
-  const config = createSteamworksRequestConfig(
-    integration,
-    'POST',
-    '/ISteamLeaderboards/DeleteLeaderboardScore/v1',
+  const client = new SteamworksClient(integration)
+  const { event } = await client.makeRequest({
+    method: 'POST',
+    url: '/ISteamLeaderboards/DeleteLeaderboardScore/v1',
     body,
-  )
-  const event = createSteamworksIntegrationEvent(integration, config)
-  await makeRequest(config, event)
+  })
   return event
 }
 
@@ -369,7 +188,7 @@ async function getEntriesForSteamworksLeaderboard(
   em: EntityManager,
   integration: Integration,
   leaderboardId: number,
-): Promise<GetLeaderboardEntriesResponse> {
+) {
   const qs = querystring.stringify({
     appid: integration.getConfig().appId,
     leaderboardid: leaderboardId,
@@ -378,13 +197,11 @@ async function getEntriesForSteamworksLeaderboard(
     datarequest: 'RequestGlobal',
   })
 
-  const config = createSteamworksRequestConfig(
-    integration,
-    'GET',
-    `/ISteamLeaderboards/GetLeaderboardEntries/v1?${qs}`,
-  )
-  const event = createSteamworksIntegrationEvent(integration, config)
-  const res = await makeRequest<GetLeaderboardEntriesResponse>(config, event)
+  const client = new SteamworksClient(integration)
+  const { res, event } = await client.makeRequest<GetLeaderboardEntriesResponse>({
+    method: 'GET',
+    url: `/ISteamLeaderboards/GetLeaderboardEntries/v1?${qs}`,
+  })
   await em.persist(event).flush()
 
   return res.data
@@ -559,13 +376,11 @@ async function pushEntriesToSteamworks({
 }
 
 export async function syncSteamworksLeaderboards(em: EntityManager, integration: Integration) {
-  const config = createSteamworksRequestConfig(
-    integration,
-    'GET',
-    `/ISteamLeaderboards/GetLeaderboardsForGame/v2?appid=${integration.getConfig().appId}`,
-  )
-  const event = createSteamworksIntegrationEvent(integration, config)
-  const res = await makeRequest<GetLeaderboardsForGameResponse>(config, event)
+  const client = new SteamworksClient(integration)
+  const { res, event } = await client.makeRequest<GetLeaderboardsForGameResponse>({
+    method: 'GET',
+    url: `/ISteamLeaderboards/GetLeaderboardsForGame/v2?appid=${integration.getConfig().appId}`,
+  })
   await em.persist(event).flush()
 
   const steamworksLeaderboards = res.data?.response?.leaderboards
@@ -658,14 +473,12 @@ async function getSteamworksStatsForPlayer(
   em: EntityManager,
   integration: Integration,
   steamId: string,
-): Promise<GetUserStatsForGameResponse> {
-  const config = createSteamworksRequestConfig(
-    integration,
-    'GET',
-    `/ISteamUserStats/GetUserStatsForGame/v2?appid=${integration.getConfig().appId}&steamid=${steamId}`,
-  )
-  const event = createSteamworksIntegrationEvent(integration, config)
-  const res = await makeRequest<GetUserStatsForGameResponse>(config, event)
+) {
+  const client = new SteamworksClient(integration)
+  const { res, event } = await client.makeRequest<GetUserStatsForGameResponse>({
+    method: 'GET',
+    url: `/ISteamUserStats/GetUserStatsForGame/v2?appid=${integration.getConfig().appId}&steamid=${steamId}`,
+  })
   await em.persist(event).flush()
 
   return res.data
@@ -690,14 +503,12 @@ async function requestSetSteamworksUserStat({
     value: [value],
   })
 
-  const config = createSteamworksRequestConfig(
-    integration,
-    'POST',
-    '/ISteamUserStats/SetUserStatsForGame/v1',
+  const client = new SteamworksClient(integration)
+  const { event } = await client.makeRequest({
+    method: 'POST',
+    url: '/ISteamUserStats/SetUserStatsForGame/v1',
     body,
-  )
-  const event = createSteamworksIntegrationEvent(integration, config)
-  await makeRequest(config, event)
+  })
   return event
 }
 
@@ -707,12 +518,20 @@ export async function setSteamworksStat(
   playerStat: PlayerGameStat,
   playerAlias: PlayerAlias,
 ) {
-  const event = await requestSetSteamworksUserStat({
-    integration,
-    stat: playerStat.stat,
-    steamUserId: playerAlias.identifier,
-    value: playerStat.value,
-  })
+  let event
+  try {
+    event = await requestSetSteamworksUserStat({
+      integration,
+      stat: playerStat.stat,
+      steamUserId: playerAlias.identifier,
+      value: playerStat.value,
+    })
+  } catch (err) {
+    if (err instanceof SteamworksNetworkError) {
+      await em.persist(err.event).flush()
+    }
+    throw err
+  }
   await em.persist(event).flush()
 
   await em.upsert(
@@ -881,13 +700,11 @@ async function pushPlayerStatsToSteamworks({
 }
 
 export async function syncSteamworksStats(em: EntityManager, integration: Integration) {
-  const config = createSteamworksRequestConfig(
-    integration,
-    'GET',
-    `/ISteamUserStats/GetSchemaForGame/v2?appid=${integration.getConfig().appId}`,
-  )
-  const event = createSteamworksIntegrationEvent(integration, config)
-  const res = await makeRequest<GetSchemaForGameResponse>(config, event)
+  const client = new SteamworksClient(integration)
+  const { res, event } = await client.makeRequest<GetSchemaForGameResponse>({
+    method: 'GET',
+    url: `/ISteamUserStats/GetSchemaForGame/v2?appid=${integration.getConfig().appId}`,
+  })
   await em.persist(event).flush()
 
   const steamworksStats = res.data?.game?.availableGameStats?.stats
@@ -918,14 +735,12 @@ async function requestAuthenticateUserTicket({
   integration: Integration
   ticket: string
   identity?: string
-}): Promise<{ status: number; data: AuthenticateUserTicketResponse }> {
-  const config = createSteamworksRequestConfig(
-    integration,
-    'GET',
-    `/ISteamUserAuth/AuthenticateUserTicket/v1?appid=${integration.getConfig().appId}&ticket=${ticket}${identity ? `&identity=${identity}` : ''}`,
-  )
-  const event = createSteamworksIntegrationEvent(integration, config)
-  const res = await makeRequest<AuthenticateUserTicketResponse>(config, event)
+}) {
+  const client = new SteamworksClient(integration)
+  const { res, event } = await client.makeRequest<AuthenticateUserTicketResponse>({
+    method: 'GET',
+    url: `/ISteamUserAuth/AuthenticateUserTicket/v1?appid=${integration.getConfig().appId}&ticket=${ticket}${identity ? `&identity=${identity}` : ''}`,
+  })
   await em.persist(event).flush()
 
   // set the cause to 400 so the api doesn't return a 500
@@ -1039,14 +854,12 @@ export async function verifyOwnership({
   em: EntityManager
   integration: Integration
   steamId: string
-}): Promise<{ status: number; data: CheckAppOwnershipResponse }> {
-  const config = createSteamworksRequestConfig(
-    integration,
-    'GET',
-    `/ISteamUser/CheckAppOwnership/v3?appid=${integration.getConfig().appId}&steamid=${steamId}`,
-  )
-  const event = createSteamworksIntegrationEvent(integration, config)
-  const res = await makeRequest<CheckAppOwnershipResponse>(config, event)
+}) {
+  const client = new SteamworksClient(integration)
+  const { res, event } = await client.makeRequest<CheckAppOwnershipResponse>({
+    method: 'GET',
+    url: `/ISteamUser/CheckAppOwnership/v3?appid=${integration.getConfig().appId}&steamid=${steamId}`,
+  })
   await em.persist(event).flush()
 
   if (res.status >= 500) {
@@ -1073,13 +886,11 @@ export async function getPlayerSummary({
   integration: Integration
   steamId: string
 }): Promise<GetPlayerSummariesResponse['response']['players'][number] | null> {
-  const config = createSteamworksRequestConfig(
-    integration,
-    'GET',
-    `/ISteamUser/GetPlayerSummaries/v2?steamids=${steamId}`,
-  )
-  const event = createSteamworksIntegrationEvent(integration, config)
-  const res = await makeRequest<GetPlayerSummariesResponse>(config, event)
+  const client = new SteamworksClient(integration)
+  const { res, event } = await client.makeRequest<GetPlayerSummariesResponse>({
+    method: 'GET',
+    url: `/ISteamUser/GetPlayerSummaries/v2?steamids=${steamId}`,
+  })
   await em.persist(event).flush()
 
   if (res.status !== 200) {

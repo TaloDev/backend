@@ -518,7 +518,15 @@ describe('Steamworks integration - sync stats', () => {
       },
     ])
     const url = 'https://partner.steam-api.com/ISteamUserStats/SetUserStatsForGame/v1'
-    axiosMock.onPost(url).networkErrorOnce().onPost(url).reply(setMock)
+    axiosMock
+      .onPost(url)
+      .networkErrorOnce()
+      .onPost(url)
+      .networkErrorOnce() // retry 1
+      .onPost(url)
+      .networkErrorOnce() // retry 2
+      .onPost(url)
+      .reply(setMock)
 
     await syncSteamworksStats(em, integration)
 

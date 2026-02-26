@@ -207,7 +207,7 @@ async function getEntriesForSteamworksLeaderboard(
   return res.data
 }
 
-async function createLeaderboardEntry({
+function createLeaderboardEntry({
   leaderboardMapping,
   playerAlias,
   score,
@@ -276,7 +276,7 @@ async function matchAliasAndLeaderboardEntry({
     playerAlias.identifier = steamEntryData.steamID
   }
 
-  const newEntry = await createLeaderboardEntry({
+  const newEntry = createLeaderboardEntry({
     leaderboardMapping,
     playerAlias,
     score: steamEntryData.score,
@@ -586,7 +586,7 @@ async function ingestSteamworksPlayerStatForAlias(
       const id = await em.transactional(async (trx) => {
         const stat = await trx
           .repo(GameStat)
-          .findOneOrFail({ internalName: steamworksPlayerStat.name })
+          .findOneOrFail({ internalName: steamworksPlayerStat.name, game: integration.game })
         const existingPlayerStat = await trx.repo(PlayerGameStat).findOne({
           player: alias.player,
           stat,

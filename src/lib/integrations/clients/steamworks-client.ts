@@ -1,4 +1,5 @@
 import axios, { AxiosError, AxiosResponse } from 'axios'
+import pRetry, { AbortError } from 'p-retry'
 import Integration from '../../../entities/integration'
 import SteamworksIntegrationEvent from '../../../entities/steamworks-integration-event'
 
@@ -21,11 +22,9 @@ export type SteamworksRequest = {
   body: string
 }
 
-export type SteamworksResponse = {
+export type SteamworksResponse<T = { [key: string]: unknown }> = {
   status: SteamworksResponseStatusCode
-  body: {
-    [key: string]: unknown
-  }
+  body: T
   timeTaken: number
 }
 
@@ -163,7 +162,7 @@ export class SteamworksClient {
   private createSteamworksRequestConfig({
     method,
     url,
-    body = '',
+    body,
   }: {
     method: SteamworksRequestMethod
     url: string
@@ -189,7 +188,7 @@ export class SteamworksClient {
     return event
   }
 
-  async makeRequest<T>({
+  async makeRequest<T extends { [key: string]: unknown }>({
     method,
     url,
     body = '',
@@ -204,10 +203,39 @@ export class SteamworksClient {
     const config = this.createSteamworksRequestConfig({ method, url, body })
     const event = this.createSteamworksIntegrationEvent(config)
 
+    const retryTimeout = 100
+    const abortTimeout = 1000
+
     const startTime = performance.now()
 
     try {
-      const res = await axios(config)
+      const res = await pRetry(
+        async () => {
+          const controller = new AbortController()
+          const timeout = setTimeout(() => controller.abort(), abortTimeout)
+          try {
+            return await axios<T>({ ...config, signal: controller.signal })
+          } catch (err) {
+            const axiosErr = err as AxiosError
+            if (axiosErr.response && axiosErr.response.status <= 500) throw new AbortError(axiosErr)
+            throw err
+          } finally {
+            clearTimeout(timeout)
+          }
+        },
+        {
+          retries: 2,
+          minTimeout: retryTimeout,
+          maxTimeout: retryTimeout,
+          onFailedAttempt: ({ attemptNumber, retriesLeft }) => {
+            if (retriesLeft > 0) {
+              console.info(
+                `Steamworks ${config.method} ${config.baseURL + config.url} failed (attempt ${attemptNumber}/3), retrying in ${retryTimeout}ms (${retriesLeft} left)`,
+              )
+            }
+          },
+        },
+      )
       const endTime = performance.now()
 
       event.response = {
@@ -222,6 +250,11 @@ export class SteamworksClient {
       const axiosErr = err as AxiosError
 
       if (!axiosErr.response) {
+        event.response = {
+          status: 503,
+          body: { error: axiosErr.message },
+          timeTaken: endTime - startTime,
+        }
         throw new SteamworksNetworkError(event, err)
       }
 

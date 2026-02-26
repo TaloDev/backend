@@ -598,7 +598,15 @@ describe('Steamworks integration - sync leaderboards', () => {
       },
     ])
     const url = 'https://partner.steam-api.com/ISteamLeaderboards/SetLeaderboardScore/v1'
-    axiosMock.onPost(url).networkErrorOnce().onPost(url).reply(createMock)
+    axiosMock
+      .onPost(url)
+      .networkErrorOnce()
+      .onPost(url)
+      .networkErrorOnce() // retry 1
+      .onPost(url)
+      .networkErrorOnce() // retry 2
+      .onPost(url)
+      .reply(createMock)
 
     await syncSteamworksLeaderboards(em, integration)
 

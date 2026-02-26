@@ -5,7 +5,7 @@ import GameFeedbackFactory from '../../../fixtures/GameFeedbackFactory'
 import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
 import createUserAndToken from '../../../utils/createUserAndToken'
 
-describe('Game feedback - index categories', () => {
+describe('Game feedback - list categories', () => {
   it('should return a list of categories', async () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({}, organisation)

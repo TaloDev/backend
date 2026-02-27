@@ -103,7 +103,7 @@ export const putStorageRoute = apiRoute({
               if (error instanceof PropSizeError) {
                 failedProps.push({ key: existingProp.key, error: error.message })
                 continue
-                /* v8 ignore next 3 */
+                /* v8 ignore next 3 -- @preserve */
               } else {
                 throw error
               }
@@ -125,7 +125,7 @@ export const putStorageRoute = apiRoute({
               if (error instanceof PropSizeError) {
                 failedProps.push({ key, error: error.message })
                 continue
-                /* v8 ignore next 3 */
+                /* v8 ignore next 3 -- @preserve */
               } else {
                 throw error
               }

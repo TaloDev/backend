@@ -100,7 +100,7 @@ async function getEventCount(
       .then((res) => res.json<{ count: string }>())
 
     return Number(result[0].count)
-    /* v8 ignore next 4 */
+    /* v8 ignore next 4 -- @preserve */
   } catch (err) {
     console.error('Error fetching event count from ClickHouse:', err)
     return 0

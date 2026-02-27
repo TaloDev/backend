@@ -117,7 +117,7 @@ export default class Player {
           })
           .then((res) => res.json<ClickHousePlayerSession>())
 
-        /* v8 ignore next 4 */
+        /* v8 ignore next 4 -- @preserve */
         if (clickhouseSessions.length === 0) {
           captureException(new Error('Player went offline without ending session'))
           return

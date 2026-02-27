@@ -1,3 +1,4 @@
+import { DeadlockException } from '@mikro-orm/mysql'
 import { startOfSecond, subHours } from 'date-fns'
 import request from 'supertest'
 import { APIKeyScope } from '../../../../src/entities/api-key'
@@ -439,5 +440,24 @@ describe('Game stat API - update', () => {
 
     const playerStats = await em.repo(PlayerGameStat).find({ player, stat })
     expect(playerStats).toHaveLength(1)
+  })
+
+  it('should retry deadlock exceptions', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_STATS])
+    const stat = await createStat(apiKey.game, { maxValue: 999, maxChange: 99 })
+    const player = await new PlayerFactory([apiKey.game]).one()
+    await em.persist(player).flush()
+
+    const spy = vi.spyOn(PlayerGameStat, 'upsert')
+    spy.mockRejectedValueOnce(new DeadlockException(new Error()))
+
+    await request(app)
+      .put(`/v1/game-stats/${stat.internalName}`)
+      .send({ change: 10 })
+      .auth(token, { type: 'bearer' })
+      .set('x-talo-alias', String(player.aliases[0].id))
+      .expect(200)
+
+    expect(spy).toHaveBeenCalledTimes(2)
   })
 })

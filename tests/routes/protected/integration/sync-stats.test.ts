@@ -2,7 +2,7 @@ import request from 'supertest'
 import GameActivity, { GameActivityType } from '../../../../src/entities/game-activity'
 import { IntegrationType } from '../../../../src/entities/integration'
 import { UserType } from '../../../../src/entities/user'
-import * as steamworksIntegration from '../../../../src/lib/integrations/steamworks-integration'
+import * as steamworksStats from '../../../../src/lib/integrations/steamworks/steamworks-stats'
 import IntegrationConfigFactory from '../../../fixtures/IntegrationConfigFactory'
 import IntegrationFactory from '../../../fixtures/IntegrationFactory'
 import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
@@ -11,7 +11,7 @@ import userPermissionProvider from '../../../utils/userPermissionProvider'
 
 describe('Integration - sync stats', () => {
   const syncMock = vi
-    .spyOn(steamworksIntegration, 'syncSteamworksStats')
+    .spyOn(steamworksStats, 'syncSteamworksStats')
     .mockImplementation(() => Promise.resolve())
 
   beforeEach(async () => {

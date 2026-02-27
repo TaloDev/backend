@@ -11,7 +11,7 @@ import {
   GetLeaderboardEntriesResponse,
   GetLeaderboardsForGameResponse,
 } from '../../../src/lib/integrations/clients/steamworks-client'
-import { syncSteamworksLeaderboards } from '../../../src/lib/integrations/steamworks-integration'
+import { syncSteamworksLeaderboards } from '../../../src/lib/integrations/steamworks/steamworks-leaderboards'
 import IntegrationConfigFactory from '../../fixtures/IntegrationConfigFactory'
 import IntegrationFactory from '../../fixtures/IntegrationFactory'
 import LeaderboardEntryFactory from '../../fixtures/LeaderboardEntryFactory'

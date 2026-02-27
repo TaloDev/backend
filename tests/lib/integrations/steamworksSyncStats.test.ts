@@ -10,7 +10,7 @@ import {
   GetSchemaForGameResponse,
   GetUserStatsForGameResponse,
 } from '../../../src/lib/integrations/clients/steamworks-client'
-import { syncSteamworksStats } from '../../../src/lib/integrations/steamworks-integration'
+import { syncSteamworksStats } from '../../../src/lib/integrations/steamworks/steamworks-stats'
 import GameStatFactory from '../../fixtures/GameStatFactory'
 import IntegrationConfigFactory from '../../fixtures/IntegrationConfigFactory'
 import IntegrationFactory from '../../fixtures/IntegrationFactory'

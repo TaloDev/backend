@@ -135,11 +135,8 @@ export type GetPlayerSummariesResponse = {
 }
 
 export class SteamworksNetworkError extends Error {
-  constructor(
-    public readonly event: SteamworksIntegrationEvent,
-    cause: unknown,
-  ) {
-    super('Steamworks network error', { cause })
+  constructor() {
+    super('Steamworks network error')
   }
 }
 
@@ -184,8 +181,9 @@ export class SteamworksClient {
     url: string
     body?: string
   }): Promise<{
-    res: AxiosResponse<T, SteamworksRequestConfig>
+    res: AxiosResponse<T, SteamworksRequestConfig> | null
     event: SteamworksIntegrationEvent
+    success: boolean
   }> {
     const config = this.createSteamworksRequestConfig({ method, url, body })
     const event = this.createSteamworksIntegrationEvent(config)
@@ -217,7 +215,7 @@ export class SteamworksClient {
           onFailedAttempt: ({ attemptNumber, retriesLeft }) => {
             if (retriesLeft > 0) {
               console.info(
-                `Steamworks ${config.method} ${config.baseURL + config.url} failed (attempt ${attemptNumber}/3), retrying in ${retryTimeout}ms (${retriesLeft} left)`,
+                `Steamworks ${config.method} ${config.baseURL + config.url} failed (attempt ${attemptNumber}/3), retrying in ${retryTimeout}ms)`,
               )
             }
           },
@@ -231,7 +229,7 @@ export class SteamworksClient {
         timeTaken: endTime - startTime,
       }
 
-      return { res, event }
+      return { res, event, success: true }
     } catch (err) {
       const endTime = performance.now()
       const axiosErr = err as AxiosError
@@ -242,7 +240,7 @@ export class SteamworksClient {
           body: { error: axiosErr.message },
           timeTaken: endTime - startTime,
         }
-        throw new SteamworksNetworkError(event, err)
+        return { res: null, event, success: false }
       }
 
       event.response = {
@@ -251,7 +249,7 @@ export class SteamworksClient {
         timeTaken: endTime - startTime,
       }
 
-      return { res: axiosErr.response as AxiosResponse, event }
+      return { res: axiosErr.response as AxiosResponse, event, success: true }
     }
   }
 }

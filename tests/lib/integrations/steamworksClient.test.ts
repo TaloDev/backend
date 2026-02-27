@@ -1,10 +1,7 @@
 import axios from 'axios'
 import AxiosMockAdapter from 'axios-mock-adapter'
 import { IntegrationType } from '../../../src/entities/integration'
-import {
-  SteamworksClient,
-  SteamworksNetworkError,
-} from '../../../src/lib/integrations/clients/steamworks-client'
+import { SteamworksClient } from '../../../src/lib/integrations/clients/steamworks-client'
 import IntegrationConfigFactory from '../../fixtures/IntegrationConfigFactory'
 import IntegrationFactory from '../../fixtures/IntegrationFactory'
 import createOrganisationAndGame from '../../utils/createOrganisationAndGame'
@@ -52,10 +49,10 @@ describe('SteamworksClient - retry mechanism', () => {
     const { res } = await client.makeRequest({ method: 'GET', url: '/test' })
 
     expect(successMock).toHaveBeenCalledTimes(1)
-    expect(res.status).toBe(200)
+    expect(res?.status).toBe(200)
   })
 
-  it('should retry up to 2 times and throw SteamworksNetworkError after all attempts fail', async () => {
+  it('should retry up to 2 times and return success: false after all attempts fail', async () => {
     const [, game] = await createOrganisationAndGame()
     const config = await new IntegrationConfigFactory().one()
     const integration = await new IntegrationFactory()
@@ -66,12 +63,13 @@ describe('SteamworksClient - retry mechanism', () => {
     axiosMock.onGet('https://partner.steam-api.com/test').networkError()
 
     const client = new SteamworksClient(integration)
-    const err = await client.makeRequest({ method: 'GET', url: '/test' }).catch((e) => e)
+    const { res, event, success } = await client.makeRequest({ method: 'GET', url: '/test' })
 
-    expect(err).toBeInstanceOf(SteamworksNetworkError)
-    expect(err.event.response.status).toBe(503)
-    expect(err.event.response.body).toMatchObject({ error: expect.any(String) })
-    expect(err.event.response.timeTaken).toBeGreaterThan(0)
+    expect(success).toBe(false)
+    expect(res).toBeNull()
+    expect(event.response.status).toBe(503)
+    expect(event.response.body).toMatchObject({ error: expect.any(String) })
+    expect(event.response.timeTaken).toBeGreaterThan(0)
   })
 
   it('should make exactly 3 attempts (1 initial + 2 retries) before failing', async () => {
@@ -89,8 +87,9 @@ describe('SteamworksClient - retry mechanism', () => {
     })
 
     const client = new SteamworksClient(integration)
-    await expect(client.makeRequest({ method: 'GET', url: '/test' })).rejects.toThrow()
+    const { success } = await client.makeRequest({ method: 'GET', url: '/test' })
 
+    expect(success).toBe(false)
     expect(callCount).toBe(3)
   })
 
@@ -115,7 +114,7 @@ describe('SteamworksClient - retry mechanism', () => {
     const { res } = await client.makeRequest({ method: 'GET', url: '/test' })
 
     expect(successMock).toHaveBeenCalledTimes(1)
-    expect(res.status).toBe(200)
+    expect(res?.status).toBe(200)
   })
 
   it('should not retry 4xx HTTP error responses', async () => {
@@ -133,7 +132,7 @@ describe('SteamworksClient - retry mechanism', () => {
     const { res } = await client.makeRequest({ method: 'GET', url: '/test' })
 
     expect(mock).toHaveBeenCalledTimes(1)
-    expect(res.status).toBe(400)
+    expect(res?.status).toBe(400)
   })
 
   it('should retry 5xx HTTP error responses above 500', async () => {
@@ -155,7 +154,7 @@ describe('SteamworksClient - retry mechanism', () => {
     const { res } = await client.makeRequest({ method: 'GET', url: '/test' })
 
     expect(successMock).toHaveBeenCalledTimes(1)
-    expect(res.status).toBe(200)
+    expect(res?.status).toBe(200)
   })
 
   it('should not retry 500 HTTP error responses', async () => {
@@ -173,7 +172,7 @@ describe('SteamworksClient - retry mechanism', () => {
     const { res } = await client.makeRequest({ method: 'GET', url: '/test' })
 
     expect(mock).toHaveBeenCalledTimes(1)
-    expect(res.status).toBe(500)
+    expect(res?.status).toBe(500)
   })
 
   it('should abort the request after 1000ms and retry', { timeout: 10_000 }, async () => {
@@ -205,6 +204,6 @@ describe('SteamworksClient - retry mechanism', () => {
 
     expect(callCount).toBe(2)
     expect(successMock).toHaveBeenCalledTimes(1)
-    expect(res.status).toBe(200)
+    expect(res?.status).toBe(200)
   })
 })

@@ -29,6 +29,7 @@ export default defineConfig({
         'src/lib/clickhouse/createClient.ts',
         'src/lib/errors/checkRateLimitExceeded.ts',
         'src/lib/tracing',
+        'src/socket/enableSocketTracing.ts',
       ],
     },
   },

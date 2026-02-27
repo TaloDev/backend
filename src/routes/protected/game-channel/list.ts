@@ -88,14 +88,17 @@ export async function listChannelsHandler({
 
       await em.populate(channels, ['owner'])
 
-      const channelPromises = channels
-        .slice(0, itemsPerPage)
-        .map((channel) => channel.toJSONWithCount(includeDevData))
+      const slicedChannels = channels.slice(0, itemsPerPage)
+      const counts = await GameChannel.getManyCounts({
+        em,
+        channelIds: slicedChannels.map((c) => c.id),
+        includeDevData,
+      })
 
       return {
         status: 200,
         body: {
-          channels: await Promise.all(channelPromises),
+          channels: slicedChannels.map((channel) => channel.toJSONWithCount(counts)),
           count,
           itemsPerPage,
           isLastPage: channels.length <= itemsPerPage,

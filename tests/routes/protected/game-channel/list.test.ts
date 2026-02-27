@@ -8,7 +8,7 @@ import PlayerFactory from '../../../fixtures/PlayerFactory'
 import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
 import createUserAndToken from '../../../utils/createUserAndToken'
 
-describe('Game channel - index', () => {
+describe('Game channel - list', () => {
   it('should return a list of game channels', async () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({}, organisation)

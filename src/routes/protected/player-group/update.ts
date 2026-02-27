@@ -41,10 +41,16 @@ export const updateRoute = protectedRoute({
     await group.checkMembership(em)
     await em.clearCache(PlayerGroup.getCacheKey(group.game))
 
+    const counts = await PlayerGroup.getManyCounts({
+      em,
+      groupIds: [group.id],
+      includeDevData: ctx.state.includeDevData,
+    })
+
     return {
       status: 200,
       body: {
-        group: await group.toJSONWithCount(ctx.state.includeDevData),
+        group: group.toJSONWithCount(counts),
       },
     }
   },

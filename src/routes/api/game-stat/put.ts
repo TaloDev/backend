@@ -1,6 +1,7 @@
-import { raw } from '@mikro-orm/mysql'
+import { DeadlockException } from '@mikro-orm/mysql'
 import { differenceInSeconds } from 'date-fns'
 import assert from 'node:assert'
+import pRetry from 'p-retry'
 import { APIKeyScope } from '../../../entities/api-key'
 import PlayerGameStat from '../../../entities/player-game-stat'
 import PlayerGameStatSnapshot from '../../../entities/player-game-stat-snapshot'
@@ -103,19 +104,31 @@ export const putRoute = apiRoute({
     const now = new Date()
     const createdAt = continuityDate ?? now
 
-    // upsert - on conflict, add the change to the existing value
-    await em
-      .qb(PlayerGameStat)
-      .insert({
-        player: alias.player.id,
-        stat: stat.id,
-        value: newValue,
-        createdAt,
-        updatedAt: now,
-      })
-      .onConflict(['player_id', 'stat_id'])
-      .merge({ value: raw('player_game_stat.value + ?', [change]), updatedAt: now })
-      .execute()
+    await pRetry(
+      async () => {
+        // upsert - on conflict, add the change to the existing value
+        await PlayerGameStat.upsert({
+          em,
+          player: alias.player,
+          stat,
+          value: newValue,
+          change,
+          createdAt,
+          updatedAt: now,
+        })
+      },
+      {
+        retries: 2,
+        minTimeout: 50,
+        maxTimeout: 200,
+        onFailedAttempt: ({ attemptNumber, retriesLeft }) => {
+          if (retriesLeft > 0) {
+            console.info(`Player game stat upsert failed (attempt ${attemptNumber}/3), retrying...`)
+          }
+        },
+        shouldRetry: ({ error }) => error instanceof DeadlockException,
+      },
+    )
 
     const refreshedPlayerStat = await em
       .repo(PlayerGameStat)

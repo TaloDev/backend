@@ -2,7 +2,6 @@ import { Entity, ManyToOne, PrimaryKey, Property } from '@mikro-orm/mysql'
 import Integration from './integration'
 
 export type SteamworksRequestMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE'
-export type SteamworksResponseStatusCode = 200 | 400 | 401 | 403 | 404 | 405 | 429 | 500 | 503
 
 export type SteamworksRequest = {
   url: string
@@ -10,11 +9,9 @@ export type SteamworksRequest = {
   body: string
 }
 
-export type SteamworksResponse = {
-  status: SteamworksResponseStatusCode
-  body: {
-    [key: string]: unknown
-  }
+export type SteamworksResponse<T = { [key: string]: unknown }> = {
+  status: number
+  body: T
   timeTaken: number
 }
 

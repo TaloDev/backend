@@ -39,7 +39,7 @@ export const getRoute = apiRoute({
       endDate: z.string().optional().meta({
         description: 'A UTC Date (YYYY-MM-DD), DateTime (ISO 8601) or millisecond timestamp',
       }),
-      service: z.string().optional().meta({
+      aliasService: z.string().optional().meta({
         description:
           'Only return entries for this player alias service (e.g. steam, epic, username)',
       }),
@@ -58,7 +58,7 @@ export const getRoute = apiRoute({
       propValue,
       startDate,
       endDate,
-      service,
+      aliasService,
       playerId,
     } = ctx.state.validated.query
 
@@ -74,7 +74,7 @@ export const getRoute = apiRoute({
       propValue,
       startDate,
       endDate,
-      service,
+      aliasService,
       playerId,
     })
   },

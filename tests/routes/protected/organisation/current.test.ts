@@ -18,7 +18,7 @@ describe('Organisation - current', () => {
         .construct(organisation)
         .state(() => ({ invitedByUser: user }))
         .many(3)
-      await em.persistAndFlush([otherUser, ...invites])
+      await em.persist([otherUser, ...invites]).flush()
 
       const res = await request(app)
         .get('/organisations/current')

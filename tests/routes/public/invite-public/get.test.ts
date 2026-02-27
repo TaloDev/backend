@@ -6,7 +6,7 @@ describe('Invite public - get', () => {
   it('should return an existing invite', async () => {
     const organisation = await new OrganisationFactory().one()
     const invite = await new InviteFactory().construct(organisation).one()
-    await em.persistAndFlush(invite)
+    await em.persist(invite).flush()
 
     const res = await request(app).get(`/public/invites/${invite.token}`).expect(200)
 

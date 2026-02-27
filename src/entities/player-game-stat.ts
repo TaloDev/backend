@@ -1,4 +1,13 @@
-import { Entity, Index, ManyToOne, PrimaryKey, Property, Unique } from '@mikro-orm/mysql'
+import {
+  Entity,
+  EntityManager,
+  Index,
+  ManyToOne,
+  PrimaryKey,
+  Property,
+  raw,
+  Unique,
+} from '@mikro-orm/mysql'
 import GameStat from './game-stat'
 import Player from './player'
 
@@ -39,6 +48,37 @@ export default class PlayerGameStat {
 
   static getListCacheKey(player: Player) {
     return `player-stats-list-${player.id}`
+  }
+
+  static async upsert({
+    em,
+    player,
+    stat,
+    value,
+    change,
+    createdAt,
+    updatedAt,
+  }: {
+    em: EntityManager
+    player: Player
+    stat: GameStat
+    value: number
+    change: number
+    createdAt: Date
+    updatedAt: Date
+  }) {
+    await em
+      .qb(PlayerGameStat)
+      .insert({
+        player,
+        stat,
+        value,
+        createdAt,
+        updatedAt,
+      })
+      .onConflict(['player_id', 'stat_id'])
+      .merge({ value: raw('player_game_stat.value + ?', [change]), updatedAt })
+      .execute()
   }
 
   constructor(player: Player, stat: GameStat) {

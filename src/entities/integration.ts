@@ -10,17 +10,19 @@ import {
 import { pick } from 'lodash'
 import { decrypt, encrypt } from '../lib/crypto/string-encryption'
 import {
-  authenticateTicket,
   cleanupSteamworksLeaderboardEntry,
-  cleanupSteamworksPlayerStat,
   createSteamworksLeaderboard,
   createSteamworksLeaderboardEntry,
   deleteSteamworksLeaderboard,
   deleteSteamworksLeaderboardEntry,
-  setSteamworksStat,
   syncSteamworksLeaderboards,
+} from '../lib/integrations/steamworks/steamworks-leaderboards'
+import { authenticateTicket } from '../lib/integrations/steamworks/steamworks-players'
+import {
+  cleanupSteamworksPlayerStat,
+  setSteamworksStat,
   syncSteamworksStats,
-} from '../lib/integrations/steamworks-integration'
+} from '../lib/integrations/steamworks/steamworks-stats'
 import Game from './game'
 import Leaderboard from './leaderboard'
 import LeaderboardEntry from './leaderboard-entry'

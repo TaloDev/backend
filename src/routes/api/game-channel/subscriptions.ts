@@ -59,13 +59,16 @@ export const subscriptionsRoute = apiRoute({
     }
 
     const channels = await em.repo(GameChannel).find(where)
+    const counts = await GameChannel.getManyCounts({
+      em,
+      channelIds: channels.map((c) => c.id),
+      includeDevData: ctx.state.includeDevData,
+    })
 
     return {
       status: 200,
       body: {
-        channels: await Promise.all(
-          channels.map((channel) => channel.toJSONWithCount(ctx.state.includeDevData)),
-        ),
+        channels: channels.map((channel) => channel.toJSONWithCount(counts)),
       },
     }
   },

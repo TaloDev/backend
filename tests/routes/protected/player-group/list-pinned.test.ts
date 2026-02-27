@@ -4,7 +4,7 @@ import UserPinnedGroupFactory from '../../../fixtures/UserPinnedGroupFactory'
 import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
 import createUserAndToken from '../../../utils/createUserAndToken'
 
-describe('Player group - index pinned', () => {
+describe('Player group - list pinned', () => {
   it('should return a list of groups', async () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token, user] = await createUserAndToken({}, organisation)
@@ -14,7 +14,7 @@ describe('Player group - index pinned', () => {
       .state(async () => ({ group: await new PlayerGroupFactory().construct(game).one() }))
       .many(3)
 
-    await em.persistAndFlush(pinned)
+    await em.persist(pinned).flush()
 
     const res = await request(app)
       .get(`/games/${game.id}/player-groups/pinned`)
@@ -43,5 +43,17 @@ describe('Player group - index pinned', () => {
       .get(`/games/${game.id}/player-groups/pinned`)
       .auth(token, { type: 'bearer' })
       .expect(403)
+  })
+
+  it('should handle having no pinned groups', async () => {
+    const [organisation, game] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken({}, organisation)
+
+    const res = await request(app)
+      .get(`/games/${game.id}/player-groups/pinned`)
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    expect(res.body.groups).toHaveLength(0)
   })
 })

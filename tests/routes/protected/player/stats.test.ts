@@ -5,7 +5,7 @@ import PlayerGameStatFactory from '../../../fixtures/PlayerGameStatFactory'
 import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
 import createUserAndToken from '../../../utils/createUserAndToken'
 
-describe('Player - get stats', () => {
+describe('Player - stats', () => {
   it("should get a player's stats", async () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({}, organisation)

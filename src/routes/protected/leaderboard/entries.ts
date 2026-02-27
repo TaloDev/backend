@@ -96,7 +96,7 @@ type ListEntriesParams = {
   propValue?: string
   startDate?: string
   endDate?: string
-  service?: string
+  aliasService?: string
   playerId?: string
 }
 
@@ -112,7 +112,7 @@ export async function listEntriesHandler({
   propValue,
   startDate,
   endDate,
-  service,
+  aliasService,
   playerId,
 }: ListEntriesParams) {
   const argsDigest = createHash('sha256')
@@ -127,7 +127,7 @@ export async function listEntriesHandler({
         propValue,
         startDate,
         endDate,
-        service,
+        aliasService,
         playerId,
       }),
     )
@@ -155,10 +155,10 @@ export async function listEntriesHandler({
         }
       }
 
-      if (service) {
+      if (aliasService) {
         where.playerAlias = {
           ...(where.playerAlias as ObjectQuery<PlayerAlias>),
-          service,
+          service: aliasService,
         }
       }
 
@@ -236,17 +236,15 @@ export async function listEntriesHandler({
         includeDeleted,
       })
 
-      const mappedEntries = await Promise.all(
-        entries.slice(0, itemsPerPage).map(async (entry, idx) => {
-          const position =
-            aliasId || playerId ? globalEntryIds.indexOf(entry.id) : idx + page * itemsPerPage
+      const mappedEntries = entries.slice(0, itemsPerPage).map((entry, idx) => {
+        const position =
+          aliasId || playerId ? globalEntryIds.indexOf(entry.id) : idx + page * itemsPerPage
 
-          return {
-            position,
-            ...entry.toJSON(),
-          }
-        }),
-      )
+        return {
+          position,
+          ...entry.toJSON(),
+        }
+      })
 
       return {
         status: 200,
@@ -276,7 +274,7 @@ export const entriesRoute = protectedRoute({
       propValue: z.string().optional(),
       startDate: z.string().optional(),
       endDate: z.string().optional(),
-      service: z.string().optional(),
+      aliasService: z.string().optional(),
       playerId: z.uuid().optional(),
     }),
   }),
@@ -290,7 +288,7 @@ export const entriesRoute = protectedRoute({
       propValue,
       startDate,
       endDate,
-      service,
+      aliasService,
       playerId,
     } = ctx.state.validated.query
 
@@ -305,7 +303,7 @@ export const entriesRoute = protectedRoute({
       propValue,
       startDate,
       endDate,
-      service,
+      aliasService,
       playerId,
     })
   },

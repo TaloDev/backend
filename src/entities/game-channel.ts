@@ -1,6 +1,7 @@
 import {
   Collection,
   Entity,
+  EntityManager,
   ManyToMany,
   ManyToOne,
   OneToMany,
@@ -116,14 +117,44 @@ export default class GameChannel {
     }
   }
 
-  async toJSONWithCount(includeDevData: boolean) {
+  // this is not ideal, but it builds a much more efficient query than mikro-orm
+  static async getManyCounts({
+    em,
+    channelIds,
+    includeDevData,
+  }: {
+    em: EntityManager
+    channelIds: number[]
+    includeDevData: boolean
+  }) {
+    const countsMap = new Map(channelIds.map((id) => [id, 0]))
+    if (channelIds.length === 0) {
+      return countsMap
+    }
+
+    const results = await em.getConnection().execute<{ game_channel_id: number; count: number }[]>(
+      `
+      select gcm.game_channel_id, count(*) as count
+      from game_channel_members as gcm
+      straight_join player_alias as pa on pa.id = gcm.player_alias_id
+      straight_join player as p0 on p0.id = pa.player_id
+      where gcm.game_channel_id in (?)
+        ${includeDevData ? '' : 'and p0.dev_build = 0'}
+      group by gcm.game_channel_id
+    `,
+      [channelIds],
+    )
+
+    for (const r of results) {
+      countsMap.set(r.game_channel_id, r.count)
+    }
+    return countsMap
+  }
+
+  toJSONWithCount(countsMap: Map<number, number>) {
     return {
       ...this.toJSON(),
-      memberCount: await this.members.loadCount({
-        where: {
-          player: includeDevData ? {} : { devBuild: false },
-        },
-      }),
+      memberCount: countsMap.get(this.id),
     }
   }
 }

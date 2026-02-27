@@ -14,7 +14,7 @@ import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
 import createUserAndToken from '../../../utils/createUserAndToken'
 import userPermissionProvider from '../../../utils/userPermissionProvider'
 
-describe('GameStat - reset', () => {
+describe('Game stat - reset', () => {
   it.each(userPermissionProvider([UserType.ADMIN], 200))(
     'should return a %i for a %s user',
     async (statusCode, _, type) => {

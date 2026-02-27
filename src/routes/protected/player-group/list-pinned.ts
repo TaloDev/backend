@@ -1,3 +1,4 @@
+import PlayerGroup from '../../../entities/player-group'
 import UserPinnedGroup from '../../../entities/user-pinned-group'
 import { withResponseCache } from '../../../lib/perf/responseCache'
 import { protectedRoute, withMiddleware } from '../../../lib/routing/router'
@@ -29,11 +30,13 @@ export const listPinnedRoute = protectedRoute({
           },
         )
 
-        const groups = await Promise.all(
-          pinnedGroups.map(({ group }) => {
-            return group.toJSONWithCount(ctx.state.includeDevData)
-          }),
-        )
+        const counts = await PlayerGroup.getManyCounts({
+          em,
+          groupIds: pinnedGroups.map(({ group }) => group.id),
+          includeDevData: ctx.state.includeDevData,
+        })
+
+        const groups = pinnedGroups.map(({ group }) => group.toJSONWithCount(counts))
 
         return {
           status: 200,

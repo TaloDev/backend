@@ -4,7 +4,7 @@ import PlayerFactory from '../../../fixtures/PlayerFactory'
 import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
 import createUserAndToken from '../../../utils/createUserAndToken'
 
-describe('Player - get saves', () => {
+describe('Player - saves', () => {
   it("should get a player's saves", async () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({}, organisation)

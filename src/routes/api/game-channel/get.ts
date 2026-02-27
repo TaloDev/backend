@@ -1,4 +1,5 @@
 import { APIKeyScope } from '../../../entities/api-key'
+import GameChannel from '../../../entities/game-channel'
 import { apiRoute, withMiddleware } from '../../../lib/routing/router'
 import { numericStringSchema } from '../../../lib/validation/numericStringSchema'
 import { requireScopes } from '../../../middleware/policy-middleware'
@@ -18,10 +19,16 @@ export const getRoute = apiRoute({
   handler: async (ctx) => {
     const channel = ctx.state.channel
 
+    const counts = await GameChannel.getManyCounts({
+      em: ctx.em,
+      channelIds: [channel.id],
+      includeDevData: ctx.state.includeDevData,
+    })
+
     return {
       status: 200,
       body: {
-        channel: await channel.toJSONWithCount(ctx.state.includeDevData),
+        channel: channel.toJSONWithCount(counts),
       },
     }
   },

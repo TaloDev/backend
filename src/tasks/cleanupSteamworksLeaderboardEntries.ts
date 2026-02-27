@@ -42,7 +42,7 @@ export default async function cleanupSteamworksLeaderboardEntries() {
             await em.repo(SteamworksLeaderboardEntry).nativeDelete(entry.id)
             continue
           }
-          /* v8 ignore next */
+          /* v8 ignore next -- @preserve */
           throw err
         }
         integrationsMap.set(game.id, integration)

@@ -11,12 +11,12 @@ async function handleJobFailure<T>(job: Job<T>, err: Error): Promise<void> {
   failedJob.payload = job.data as unknown as typeof failedJob.payload
   failedJob.queue = job.queueName
   failedJob.reason = err.message.substring(0, 255)
-  /* v8 ignore next */
+  /* v8 ignore next -- @preserve */
   failedJob.stack = err.stack ?? ''
 
   await em.persist(failedJob).flush()
 
-  /* v8 ignore next 3 */
+  /* v8 ignore next 3 -- @preserve */
   if (process.env.NODE_ENV !== 'test') {
     console.error(`Job failed in ${failedJob.queue} queue: ${failedJob.reason}`)
   }

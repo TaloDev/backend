@@ -56,7 +56,7 @@ export default class Socket {
     return this.wss
   }
 
-  /* v8 ignore start */
+  /* v8 ignore start -- @preserve */
   heartbeat() {
     return setInterval(async () => {
       for (const [ws, conn] of this.connections.entries()) {
@@ -69,7 +69,7 @@ export default class Socket {
       }
     }, 30_000)
   }
-  /* v8 ignore stop */
+  /* v8 ignore stop -- @preserve */
 
   async handleConnection(ws: WebSocket, req: IncomingMessage) {
     await withIsolationScope(async () => {
@@ -105,7 +105,7 @@ export default class Socket {
             const connection = this.connections.get(ws)
             if (connection) {
               await this.router.handleMessage(connection, data)
-              /* v8 ignore next 3 */
+              /* v8 ignore next 3 -- @preserve */
             } else {
               await this.closeConnection(ws)
             }
@@ -117,20 +117,20 @@ export default class Socket {
     })
   }
 
-  /* v8 ignore start */
+  /* v8 ignore start -- @preserve */
   handlePong(ws: WebSocket) {
     const connection = this.findConnection(ws)
     if (!connection) return
     connection.handleHeartbeat()
   }
-  /* v8 ignore stop */
+  /* v8 ignore stop -- @preserve */
 
   async closeConnection(ws: WebSocket, options: CloseConnectionOptions = {}) {
     const terminate = options.terminate ?? false
     const preclosed = options.preclosed ?? false
     const code = options.code ?? 3000
 
-    /* v8 ignore next 2 */
+    /* v8 ignore next 2 -- @preserve */
     if (terminate) {
       ws.terminate()
     } else if (!preclosed) {
@@ -138,7 +138,7 @@ export default class Socket {
     }
 
     const connection = this.findConnection(ws)
-    /* v8 ignore next */
+    /* v8 ignore next -- @preserve */
     if (!connection) return
 
     // delete before async work to prevent duplicate handleClosed calls

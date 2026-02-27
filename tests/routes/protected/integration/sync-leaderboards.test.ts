@@ -2,7 +2,7 @@ import request from 'supertest'
 import GameActivity, { GameActivityType } from '../../../../src/entities/game-activity'
 import { IntegrationType } from '../../../../src/entities/integration'
 import { UserType } from '../../../../src/entities/user'
-import * as steamworksIntegration from '../../../../src/lib/integrations/steamworks-integration'
+import * as steamworksLeaderboards from '../../../../src/lib/integrations/steamworks/steamworks-leaderboards'
 import IntegrationConfigFactory from '../../../fixtures/IntegrationConfigFactory'
 import IntegrationFactory from '../../../fixtures/IntegrationFactory'
 import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
@@ -11,8 +11,8 @@ import userPermissionProvider from '../../../utils/userPermissionProvider'
 
 describe('Integration - sync leaderboards', () => {
   const syncMock = vi
-    .spyOn(steamworksIntegration, 'syncSteamworksLeaderboards')
-    .mockImplementation(Promise.resolve)
+    .spyOn(steamworksLeaderboards, 'syncSteamworksLeaderboards')
+    .mockImplementation(() => Promise.resolve())
 
   beforeEach(async () => {
     syncMock.mockReset()

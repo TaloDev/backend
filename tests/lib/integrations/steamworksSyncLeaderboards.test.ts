@@ -10,8 +10,8 @@ import SteamworksLeaderboardMapping from '../../../src/entities/steamworks-leade
 import {
   GetLeaderboardEntriesResponse,
   GetLeaderboardsForGameResponse,
-  syncSteamworksLeaderboards,
-} from '../../../src/lib/integrations/steamworks-integration'
+} from '../../../src/lib/integrations/clients/steamworks-client'
+import { syncSteamworksLeaderboards } from '../../../src/lib/integrations/steamworks/steamworks-leaderboards'
 import IntegrationConfigFactory from '../../fixtures/IntegrationConfigFactory'
 import IntegrationFactory from '../../fixtures/IntegrationFactory'
 import LeaderboardEntryFactory from '../../fixtures/LeaderboardEntryFactory'
@@ -21,6 +21,10 @@ import createOrganisationAndGame from '../../utils/createOrganisationAndGame'
 
 describe('Steamworks integration - sync leaderboards', () => {
   const axiosMock = new AxiosMockAdapter(axios)
+
+  afterEach(() => {
+    axiosMock.reset()
+  })
 
   it('should pull in leaderboards and entries from steamworks', async () => {
     const [, game] = await createOrganisationAndGame()
@@ -594,7 +598,15 @@ describe('Steamworks integration - sync leaderboards', () => {
       },
     ])
     const url = 'https://partner.steam-api.com/ISteamLeaderboards/SetLeaderboardScore/v1'
-    axiosMock.onPost(url).networkErrorOnce().onPost(url).reply(createMock)
+    axiosMock
+      .onPost(url)
+      .networkErrorOnce()
+      .onPost(url)
+      .networkErrorOnce() // retry 1
+      .onPost(url)
+      .networkErrorOnce() // retry 2
+      .onPost(url)
+      .reply(createMock)
 
     await syncSteamworksLeaderboards(em, integration)
 

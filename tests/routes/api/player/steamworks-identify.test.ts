@@ -932,7 +932,7 @@ describe('Player API - steamworks identify', () => {
       )
       .reply(authenticateTicketMock)
 
-    const verifyOwnershipMock = vi.fn(() => [503, {}])
+    const verifyOwnershipMock = vi.fn(() => [500, {}])
     axiosMock
       .onGet(
         `https://partner.steam-api.com/ISteamUser/CheckAppOwnership/v3?appid=${appId}&steamid=${steamId}`,
@@ -1068,7 +1068,7 @@ describe('Player API - steamworks identify', () => {
       )
       .reply(verifyOwnershipMock)
 
-    const playerSummaryMock = vi.fn(() => [502, {}])
+    const playerSummaryMock = vi.fn(() => [500, {}])
     axiosMock
       .onGet(`https://partner.steam-api.com/ISteamUser/GetPlayerSummaries/v2?steamids=${steamId}`)
       .reply(playerSummaryMock)

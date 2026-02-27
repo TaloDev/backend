@@ -23,11 +23,15 @@ describe('cleanupSteamworksLeaderboardEntries', () => {
       },
     },
   ])
-  axiosMock
-    .onPost('https://partner.steam-api.com/ISteamLeaderboards/DeleteLeaderboardScore/v1')
-    .reply(deleteMock)
+
+  beforeEach(() => {
+    axiosMock
+      .onPost('https://partner.steam-api.com/ISteamLeaderboards/DeleteLeaderboardScore/v1')
+      .reply(deleteMock)
+  })
 
   afterEach(async () => {
+    axiosMock.reset()
     deleteMock.mockReset()
     vi.restoreAllMocks()
     // these tests run globally, not per-game

@@ -4,14 +4,13 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Talo is a self-hostable game development services platform providing leaderboards, player authentication, peer-to-peer multiplayer, event tracking, and more. The backend is built with Koa (Node.js web framework) using `koa-tree-router` for routing.
+Talo is a self-hostable game development services platform providing leaderboards, player authentication, peer-to-peer multiplayer, event tracking and more.
 
 ### Testing
 
 ```bash
 npm test                # Run all tests with Vitest
 npm test path/to/file   # Run specific test file
-npm test -- --coverage  # Run with coverage report
 ```
 
 Tests run against fresh Docker containers. Environment variables from `.env` are combined with `envs/.env.test`.
@@ -19,7 +18,7 @@ Tests run against fresh Docker containers. Environment variables from `.env` are
 ### Building & Linting
 
 ```bash
-npm run lint -- --check   # Run Oxlint + type-checker
+npm run lint -- --type-check   # Run Oxlint + tsc
 ```
 
 ### Database Migrations
@@ -70,35 +69,6 @@ Then route-specific middleware:
 
 Finally, route handlers execute.
 
-### Entity Layer (Models)
-
-MikroORM entities with TypeScript decorators:
-
-```typescript
-import { Entity, Property, ManyToOne } from '@mikro-orm/core'
-
-@Entity()
-export default class Player {
-  @PrimaryKey()
-  id: number
-
-  @Property()
-  createdAt: Date = new Date()
-
-  @ManyToOne(() => Game, { lazy: true })
-  game: Game
-
-  @Property()
-  props: PlayerProp[] = []
-}
-```
-
-### Database Architecture
-
-- **MySQL** (MikroORM): Core relational data (users, games, players, leaderboards)
-- **Redis**: Caching, job queue storage (BullMQ), session data
-- **ClickHouse**: Analytics time-series data (events, metrics)
-
 All handlers receive `ctx.em` (EntityManager) for queries. Migrations run automatically on startup (except in test mode).
 
 ### MikroORM Identity Map & Request Context
@@ -123,16 +93,6 @@ const alias = await ctx.em.repo(PlayerAlias).findOne({
 // alias.player.game is automatically populated from the Identity Map
 // No need to explicitly load it via `fields: ['player.game.id']`
 ```
-
-The request context is set up via middleware using Node's `AsyncLocalStorage`, ensuring parallel requests don't interfere with each other.
-
-### Background Jobs & Scheduling
-
-BullMQ for async jobs, configured in `src/config/global-queues.ts`. Scheduled tasks defined in `src/config/scheduled-tasks.ts`:
-
-- Archive leaderboard entries
-- Delete inactive players
-- Cleanup jobs
 
 ### WebSocket Layer
 
@@ -178,9 +138,10 @@ Use the `/new-route` skill for step-by-step guidance on creating routes.
 ### Adding a New Entity
 
 1. Create entity in `src/entities/my-entity.ts` with decorators
-2. Run `npm run migration:create` to generate migration
-3. Rename and register migration in `src/migrations/index.ts`
-4. MikroORM will auto-migrate on next startup
+2. Register it in `src/entities/index.ts`
+3. Run `npm run migration:create` to generate migration
+4. Rename and register migration in `src/migrations/index.ts`
+5. MikroORM will auto-migrate on next startup
 
 ### Error Handling
 
@@ -189,8 +150,6 @@ All errors caught by `src/middleware/error-middleware.ts`:
 - Automatic HTTP status code mapping
 - Sentry integration for production
 - OpenTelemetry tracing context
-
-Throw errors with status codes: `ctx.throw(400, 'Invalid request')`
 
 Use `return ctx.throw()` pattern when you need TypeScript to narrow types after the throw:
 
@@ -207,19 +166,10 @@ if (!player) {
 - **Authentication**: Handled by middleware (JWT validation, API key extraction)
 - **Authorization**: Handled by middleware (user type gates, API scopes)
 
-### Working with Props
-
-Props are flexible key-value pairs on entities (Player, Game, LeaderboardEntry):
-
-- Validated size limits (prevent abuse)
-- Stored as JSON in database
-- Access via entity's `props` array
-
 ## Important Conventions
 
 - Entity names are singular (Player, not Players)
 - Router functions are named `[feature]Router` or `[feature]APIRouter`
-- Test files end with `.test.ts`
 - Migration files: `[Timestamp][PascalCaseDescription].ts`
 - Use lazy loading for entity relationships to avoid circular dependencies
 - API endpoints require scope checks via `requireScopes()` middleware

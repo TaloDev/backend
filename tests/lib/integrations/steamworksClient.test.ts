@@ -175,6 +175,43 @@ describe('SteamworksClient - retry mechanism', () => {
     expect(res?.status).toBe(500)
   })
 
+  it(
+    'should use the longer abort timeout only on the final attempt',
+    { timeout: 15_000 },
+    async () => {
+      const [, game] = await createOrganisationAndGame()
+      const config = await new IntegrationConfigFactory().one()
+      const integration = await new IntegrationFactory()
+        .construct(IntegrationType.STEAMWORKS, game, config)
+        .one()
+      await em.persist(integration).flush()
+
+      let callCount = 0
+
+      axiosMock.onGet('https://partner.steam-api.com/test').reply(async (axiosConfig) => {
+        callCount++
+        if (callCount < 3) {
+          // hang until the abort signal fires (1000ms timeout on early attempts)
+          await new Promise((_, reject) => {
+            const signal = axiosConfig.signal as AbortSignal
+            signal.addEventListener('abort', () =>
+              reject(new DOMException('The operation was aborted.', 'AbortError')),
+            )
+          })
+        }
+        // respond after 1500ms — exceeds the 1000ms early timeout but within the 5000ms final timeout
+        await new Promise((resolve) => setTimeout(resolve, 1500))
+        return [200, { response: { result: 1 } }]
+      })
+
+      const client = new SteamworksClient(integration)
+      const { res } = await client.makeRequest({ method: 'GET', url: '/test' })
+
+      expect(callCount).toBe(3)
+      expect(res?.status).toBe(200)
+    },
+  )
+
   it('should abort the request after 1000ms and retry', { timeout: 10_000 }, async () => {
     const [, game] = await createOrganisationAndGame()
     const config = await new IntegrationConfigFactory().one()

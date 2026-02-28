@@ -899,7 +899,7 @@ describe('Player API - steamworks identify', () => {
       .get('/v1/players/identify')
       .query({ service: PlayerAliasService.STEAM, identifier: ticket })
       .auth(token, { type: 'bearer' })
-      .expect(400)
+      .expect(503)
 
     expect(authenticateTicketMock).toHaveBeenCalledTimes(1)
 
@@ -954,7 +954,7 @@ describe('Player API - steamworks identify', () => {
       .get('/v1/players/identify')
       .query({ service: PlayerAliasService.STEAM, identifier: ticket })
       .auth(token, { type: 'bearer' })
-      .expect(400)
+      .expect(503)
 
     expect(authenticateTicketMock).toHaveBeenCalledTimes(1)
     expect(verifyOwnershipMock).toHaveBeenCalledTimes(1)

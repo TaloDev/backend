@@ -32,10 +32,9 @@ async function requestAuthenticateUserTicket({
   const errorOpts = { cause: 400 }
 
   if (!res || res.status >= 500) {
-    throw new Error(
-      'Failed to authenticate Steamworks ticket: Steam service unavailable',
-      errorOpts,
-    )
+    throw new Error('Failed to authenticate Steamworks ticket: Steam service unavailable', {
+      cause: 503,
+    })
   } else if (res.data?.response?.error) {
     const message = `Failed to authenticate Steamworks ticket: ${res.data.response.error.errordesc} (${res.data.response.error.errorcode})`
     throw new Error(message, errorOpts)
@@ -149,7 +148,7 @@ export async function verifyOwnership({
 
   if (!res || res.status >= 500) {
     throw new Error('Failed to verify Steamworks ownership: Steam service unavailable', {
-      cause: 400,
+      cause: 503,
     })
   }
 

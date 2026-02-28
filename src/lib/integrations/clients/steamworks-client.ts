@@ -188,34 +188,41 @@ export class SteamworksClient {
     const config = this.createSteamworksRequestConfig({ method, url, body })
     const event = this.createSteamworksIntegrationEvent(config)
 
-    const retryTimeout = 100
+    const totalAttempts = 3
     const abortTimeout = 1000
+    const finalAbortTimeout = 5000
 
     const startTime = performance.now()
 
     try {
       const res = await pRetry(
-        async () => {
+        async (attemptNumber) => {
+          const isLastAttempt = attemptNumber === totalAttempts
           const controller = new AbortController()
-          const timeout = setTimeout(() => controller.abort(), abortTimeout)
+          const timeout = setTimeout(
+            () => controller.abort(),
+            isLastAttempt ? finalAbortTimeout : abortTimeout,
+          )
           try {
             return await axios<T>({ ...config, signal: controller.signal })
           } catch (err) {
             const axiosErr = err as AxiosError
-            if (axiosErr.response && axiosErr.response.status <= 500) throw new AbortError(axiosErr)
+            if (axiosErr.response && axiosErr.response.status <= 500) {
+              throw new AbortError(axiosErr)
+            }
             throw err
           } finally {
             clearTimeout(timeout)
           }
         },
         {
-          retries: 2,
-          minTimeout: retryTimeout,
-          maxTimeout: retryTimeout,
+          retries: totalAttempts - 1,
+          minTimeout: 100,
+          maxTimeout: 1000,
           onFailedAttempt: ({ attemptNumber, retriesLeft }) => {
             if (retriesLeft > 0) {
               console.info(
-                `Steamworks ${config.method} ${config.baseURL + config.url} failed (attempt ${attemptNumber}/3), retrying in ${retryTimeout}ms)`,
+                `Steamworks ${config.method} ${config.baseURL + config.url} failed (attempt ${attemptNumber}/${totalAttempts}), retrying)`,
               )
             }
           },

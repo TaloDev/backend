@@ -93,8 +93,8 @@ export const identifyRoute = apiRoute({
         return ctx.throw(402, err.message)
       }
       // catches steam integration errors
-      if (err instanceof Error && err.cause === 400) {
-        return ctx.throw(400, err.message)
+      if (err instanceof Error && typeof err.cause === 'number') {
+        return ctx.throw(err.cause, err.message)
       }
       throw err
     }

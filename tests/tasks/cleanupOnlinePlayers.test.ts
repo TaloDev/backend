@@ -256,6 +256,37 @@ describe('cleanupOnlinePlayers', () => {
     })
   })
 
+  it('should not delete an unfinished session if the player has an active socket connection, even if their presence is offline', async () => {
+    vi.useRealTimers()
+
+    const { identifyMessage, ticket, player } = await createSocketIdentifyMessage([
+      APIKeyScope.READ_PLAYERS,
+    ])
+
+    await createTestSocket(`/?ticket=${ticket}`, async (client, wss) => {
+      await client.identify(identifyMessage)
+
+      // force presence offline to simulate the race condition
+      // (e.g. REST API set online: false while WebSocket is still alive)
+      await em.nativeUpdate(PlayerPresence, { player: player.id }, { online: false })
+
+      setSocketInstance(wss)
+
+      await cleanupOnlinePlayers()
+
+      await vi.waitFor(async () => {
+        const sessions = await clickhouse
+          .query({
+            query: `SELECT * FROM player_sessions WHERE player_id = '${player.id}' AND ended_at IS NULL`,
+            format: 'JSONEachRow',
+          })
+          .then((res) => res.json<ClickHousePlayerSession>())
+        // session must be preserved because the player has an active socket
+        expect(sessions.length).toBe(1)
+      })
+    })
+  })
+
   it('should handle multiple online players and find the oldest updatedAt', async () => {
     vi.useRealTimers()
 

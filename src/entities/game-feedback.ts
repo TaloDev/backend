@@ -26,6 +26,9 @@ export default class GameFeedback {
   })
   props: Collection<GameFeedbackProp> = new Collection<GameFeedbackProp>(this)
 
+  @Property({ nullable: true })
+  deletedAt: Date | null = null
+
   @Property()
   createdAt: Date = new Date()
 
@@ -51,6 +54,7 @@ export default class GameFeedback {
       devBuild: this.playerAlias.player.devBuild,
       props: this.props,
       createdAt: this.createdAt,
+      deletedAt: this.deletedAt,
     }
   }
 }

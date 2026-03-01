@@ -43,6 +43,8 @@ export enum GameActivityType {
   GAME_STAT_RESET,
   PLAYER_DELETED,
   GAME_SETTINGS_UPDATED,
+  GAME_FEEDBACK_ARCHIVED,
+  GAME_FEEDBACK_RESTORED,
 }
 
 @Entity()
@@ -156,6 +158,10 @@ export default class GameActivity {
         return `${this.user.username} deleted a player`
       case GameActivityType.GAME_SETTINGS_UPDATED:
         return `${this.user.username} updated game settings`
+      case GameActivityType.GAME_FEEDBACK_ARCHIVED:
+        return `${this.user.username} archived feedback from ${(this.extra.aliasIdentifier as string | null) ?? 'an anonymous player'}`
+      case GameActivityType.GAME_FEEDBACK_RESTORED:
+        return `${this.user.username} restored feedback from ${(this.extra.aliasIdentifier as string | null) ?? 'an anonymous player'}`
       default:
         return ''
     }

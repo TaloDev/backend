@@ -45,6 +45,7 @@ export enum GameActivityType {
   GAME_SETTINGS_UPDATED,
   GAME_FEEDBACK_ARCHIVED,
   GAME_FEEDBACK_RESTORED,
+  GAME_FEEDBACK_CATEGORY_RESET,
 }
 
 @Entity()
@@ -162,6 +163,8 @@ export default class GameActivity {
         return `${this.user.username} archived feedback from ${(this.extra.aliasIdentifier as string | null) ?? 'an anonymous player'}`
       case GameActivityType.GAME_FEEDBACK_RESTORED:
         return `${this.user.username} restored feedback from ${(this.extra.aliasIdentifier as string | null) ?? 'an anonymous player'}`
+      case GameActivityType.GAME_FEEDBACK_CATEGORY_RESET:
+        return `${this.user.username} reset feedback for the category ${this.extra.feedbackCategoryInternalName}`
       default:
         return ''
     }

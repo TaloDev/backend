@@ -62,6 +62,7 @@ import { AddLeaderboardEntryPropsDigestColumn } from './20251019231730AddLeaderb
 import { CreatePlayersToDeleteTable } from './20251102174957CreatePlayersToDeleteTable'
 import { CreatePlayerAliasSubscriptionTable } from './20251222221535CreatePlayerAliasSubscriptionTable'
 import { AddPlayerGameStatUniqueConstraint } from './20260214224025AddPlayerGameStatUniqueConstraint'
+import { AddGameFeedbackDeletedAtColumn } from './20260301000000AddGameFeedbackDeletedAtColumn'
 
 export default [
   {
@@ -319,5 +320,9 @@ export default [
   {
     name: 'AddPlayerGameStatUniqueConstraint',
     class: AddPlayerGameStatUniqueConstraint,
+  },
+  {
+    name: 'AddGameFeedbackDeletedAtColumn',
+    class: AddGameFeedbackDeletedAtColumn,
   },
 ]

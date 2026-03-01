@@ -3,6 +3,7 @@ import { createCategoryRoute } from './create-category'
 import { deleteCategoryRoute } from './delete-category'
 import { listRoute } from './list'
 import { listCategoriesRoute } from './list-categories'
+import { toggleArchivedRoute } from './toggle-archived'
 import { updateCategoryRoute } from './update-category'
 
 export function gameFeedbackRouter() {
@@ -12,5 +13,6 @@ export function gameFeedbackRouter() {
     route(createCategoryRoute)
     route(updateCategoryRoute)
     route(deleteCategoryRoute)
+    route(toggleArchivedRoute)
   })
 }

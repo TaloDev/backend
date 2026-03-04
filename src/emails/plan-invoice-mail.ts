@@ -1,4 +1,4 @@
-import { USD } from '@dinero.js/currencies'
+import { USD } from 'dinero.js/currencies'
 import { format } from 'date-fns'
 import { dinero, toDecimal } from 'dinero.js'
 import Stripe from 'stripe'

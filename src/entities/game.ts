@@ -2,12 +2,14 @@ import {
   Collection,
   Embedded,
   Entity,
+  EntityManager,
   ManyToOne,
   OneToMany,
   OneToOne,
   PrimaryKey,
   Property,
 } from '@mikro-orm/mysql'
+import Sqids from 'sqids'
 import GameSecret from './game-secret'
 import Organisation from './organisation'
 import Player from './player'
@@ -59,6 +61,20 @@ export default class Game {
   constructor(name: string, organisation: Organisation) {
     this.name = name
     this.organisation = organisation
+  }
+
+  getToken() {
+    return new Sqids({ minLength: 8 }).encode([this.id])
+  }
+
+  static async fromToken(token: string, em: EntityManager) {
+    const ids = new Sqids({ minLength: 8 }).decode(token)
+
+    if (ids.length !== 1) {
+      return null
+    }
+
+    return em.repo(Game).findOne({ id: ids[0] })
   }
 
   static getLiveConfigCacheKey(game: Game) {

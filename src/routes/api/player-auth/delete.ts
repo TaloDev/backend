@@ -26,9 +26,9 @@ export async function performDelete({
   ip: string
   userAgent?: string
 }) {
-  await em.repo(PlayerAuthActivity).nativeDelete({ player: alias.player })
-
   await em.transactional(async (trx) => {
+    await em.repo(PlayerAuthActivity).nativeDelete({ player: alias.player })
+
     buildPlayerAuthActivity({
       em: trx,
       player: alias.player,

@@ -38,7 +38,7 @@ export default class SocketConnection {
 
   async getPlayerAlias() {
     const em = RequestContext.getEntityManager() as EntityManager
-    /* v8 ignore next 3 */
+    /* v8 ignore next 3 -- @preserve */
     if (!em) {
       throw new Error('Missing request context for entity manager')
     }

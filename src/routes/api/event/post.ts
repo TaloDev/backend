@@ -65,7 +65,7 @@ export const postRoute = apiRoute({
           } catch (err) {
             if (err instanceof PropSizeError) {
               errors[i].push(`${err.message} (${item.name})`)
-              /* v8 ignore next 3 */
+              /* v8 ignore next 3 -- @preserve */
             } else {
               throw err
             }
@@ -106,14 +106,14 @@ export const postRoute = apiRoute({
 
     const results = await pipeline.exec()
 
-    /* v8 ignore start */
+    /* v8 ignore start -- @preserve */
     if (!results) {
       for (let i = 0; i < items.length; i++) {
         if (eventsMap.has(i)) {
           errors[i].push('Redis pipeline failed')
         }
       }
-      /* v8 ignore stop */
+      /* v8 ignore stop -- @preserve */
     } else {
       let resultIndex = 0
       for (const index of Array.from(eventsMap.keys())) {
@@ -121,11 +121,11 @@ export const postRoute = apiRoute({
         // each event has 2 operations (setnx + expire), so we check the setnx result
         const [err, result] = results[resultIndex * 2]
 
-        /* v8 ignore start */
+        /* v8 ignore start -- @preserve */
         if (err) {
           eventsMap.delete(index)
           errors[index].push(`Duplicate detection failed (${item.name}): ${err.message}`)
-          /* v8 ignore stop */
+          /* v8 ignore stop -- @preserve */
         } else if (result !== 1) {
           eventsMap.delete(index)
           errors[index].push(`Duplicate event detected (${item.name})`)

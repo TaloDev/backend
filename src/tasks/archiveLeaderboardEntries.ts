@@ -16,11 +16,11 @@ export async function archiveEntriesForLeaderboard(em: EntityManager, leaderboar
     `Leaderboard ${leaderboard.id} has a NEVER refresh interval, skipping...`,
   )
 
-  /* v8 ignore start */
+  /* v8 ignore start -- @preserve */
   if (process.env.NODE_ENV !== 'test') {
     console.info(`Archiving entries for leaderboard ${leaderboard.id}...`)
   }
-  /* v8 ignore stop */
+  /* v8 ignore stop -- @preserve */
 
   const refreshCheckers = {
     [LeaderboardRefreshInterval.DAILY]: (date: Date) => isToday(date),

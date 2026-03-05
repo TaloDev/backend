@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "module": "commonjs",
+    "module": "nodenext",
     "moduleDetection": "force",
     "lib": ["ESNext", "ES2024.Collection"],
     "target": "esnext",
@@ -12,7 +12,8 @@
     "types": ["vitest/globals", "./src/global.d.ts"],
     "skipLibCheck": true,
     "strict": true,
-    "noImplicitOverride": true
+    "noImplicitOverride": true,
+    "moduleResolution": "nodenext"
   },
   "ts-node": {
     "transpileOnly": true

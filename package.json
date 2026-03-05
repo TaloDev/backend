@@ -1,6 +1,6 @@
 {
   "name": "game-services",
-  "version": "0.108.0",
+  "version": "0.109.0",
   "description": "",
   "license": "MIT",
   "author": "Talo Platform Ltd",
@@ -26,7 +26,6 @@
   },
   "dependencies": {
     "@clickhouse/client": "^1.15.0",
-    "@dinero.js/currencies": "^2.0.0-alpha.14",
     "@hyperdx/node-opentelemetry": "^0.8.2",
     "@koa/cors": "^5.0.0",
     "@mikro-orm/core": "^6.6.7",
@@ -42,7 +41,7 @@
     "bullmq": "^5.40.2",
     "bullmq-otel": "^1.0.1",
     "date-fns": "^4.1.0",
-    "dinero.js": "^2.0.0-alpha.14",
+    "dinero.js": "^2.0.0",
     "dotenv": "^16.0.0",
     "handlebars": "^4.7.7",
     "ioredis": "^5.2.4",
@@ -100,7 +99,7 @@
     "ts-node": "^10.7.0",
     "typescript": "^5.9.3",
     "unzipper": "^0.12.3",
-    "vite": "^6.4.1",
+    "vite": "^7.3.1",
     "vitest": "^4.0.18"
   },
   "overrides": {

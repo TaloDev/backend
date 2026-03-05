@@ -23,7 +23,7 @@ export async function postFlushCheckMemberships(handlerName: string, playerIds: 
   const canLog = process.env.NODE_ENV !== 'test'
   const timeLabel = `${handlerName} checking groups for ${playerIds.length} players`
 
-  /* v8 ignore next 3 */
+  /* v8 ignore next 3 -- @preserve */
   if (canLog) {
     console.time(timeLabel)
   }
@@ -41,7 +41,7 @@ export async function postFlushCheckMemberships(handlerName: string, playerIds: 
     }
   }
 
-  /* v8 ignore next 3 */
+  /* v8 ignore next 3 -- @preserve */
   if (canLog) {
     console.timeEnd(timeLabel)
   }
@@ -63,7 +63,7 @@ export abstract class FlushMetricsQueueHandler<
     private flushFunc: FlushFunc<S>,
     options?: HandlerOptions<S>,
   ) {
-    /* v8 ignore next */
+    /* v8 ignore next -- @preserve */
     this.options = options ?? { logsInTests: true }
     this.redisKey = `metrics:buffer:${metricName}`
 
@@ -76,11 +76,11 @@ export abstract class FlushMetricsQueueHandler<
     }
 
     this.queue = createQueue(`flush-${metricName}`, async () => {
-      /* v8 ignore next - called manually in tests */
+      /* v8 ignore next -- called manually in tests @preserve */
       await this.handle()
     })
 
-    /* v8 ignore next 3 */
+    /* v8 ignore next 3 -- @preserve */
     const flushInterval = process.env.GAME_METRICS_FLUSH_INTERVAL
       ? Number(process.env.GAME_METRICS_FLUSH_INTERVAL)
       : 30_000
@@ -89,7 +89,7 @@ export abstract class FlushMetricsQueueHandler<
     const intervalWithJitter = Math.max(flushInterval + jitter, 25_000)
 
     setImmediate(async () => {
-      /* v8 ignore start */
+      /* v8 ignore start -- @preserve */
       if (process.env.NODE_ENV !== 'test') {
         const schedulerName = `flush-${metricName}-scheduler`
 
@@ -103,7 +103,7 @@ export abstract class FlushMetricsQueueHandler<
           `Upserted ${schedulerName} with interval: ${(intervalWithJitter / 1000).toFixed(2)}s`,
         )
       }
-      /* v8 ignore stop */
+      /* v8 ignore stop -- @preserve */
     })
   }
 
@@ -123,7 +123,7 @@ export abstract class FlushMetricsQueueHandler<
     const canLog = process.env.NODE_ENV !== 'test' || (this.options.logsInTests ?? true)
     const timeLabel = `Flushed ${bufferSize} ${this.getFriendlyName()}`
 
-    /* v8 ignore next 3 */
+    /* v8 ignore next 3 -- @preserve */
     if (canLog) {
       console.time(timeLabel)
     }
@@ -136,14 +136,14 @@ export abstract class FlushMetricsQueueHandler<
 
       await this.removeBufferedItems(values.map(({ id }) => id))
 
-      /* v8 ignore start */
+      /* v8 ignore start -- @preserve */
       if (canLog) {
         console.timeEnd(timeLabel)
       }
     } catch (err) {
       captureException(err)
     }
-    /* v8 ignore stop */
+    /* v8 ignore stop -- @preserve */
   }
 
   getFriendlyName() {

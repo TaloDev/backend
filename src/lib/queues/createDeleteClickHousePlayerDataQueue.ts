@@ -33,10 +33,10 @@ export function createDeleteClickHousePlayerDataQueue() {
             })
           }),
         )
-        /* v8 ignore start */
+        /* v8 ignore start -- @preserve */
       } catch (error) {
         captureException(error)
-        /* v8 ignore stop */
+        /* v8 ignore stop -- @preserve */
       } finally {
         await clickhouse.close()
       }

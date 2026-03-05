@@ -31,7 +31,7 @@ export async function initScheduledTasks() {
     ), // every 15 minutes
   ]
 
-  /* v8 ignore next 3 */
+  /* v8 ignore next 3 -- @preserve */
   if (process.env.NODE_ENV !== 'test') {
     tasks.push(addScheduledTask('delete-players', deletePlayers, '0 */2 * * * *')) // every 2 mins
   }

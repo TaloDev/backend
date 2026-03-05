@@ -399,14 +399,14 @@ export class DataExporter {
       let passThrough = createStreamPart(partNum, finalColumns)
 
       for (const entity of entitiesToProcess) {
-        /* v8 ignore start */
+        /* v8 ignore start -- @preserve */
         if (rowCount >= maxRowsPerFile) {
           passThrough.end()
           partNum++
           rowCount = 0
           passThrough = createStreamPart(partNum, finalColumns)
         }
-        /* v8 ignore stop */
+        /* v8 ignore stop -- @preserve */
 
         const row = finalColumns.map((col) => this.transformColumn(col, entity)).join(',')
         passThrough.write(row + '\n')
@@ -450,14 +450,14 @@ export class DataExporter {
     let passThrough = createStreamPart(partNum, finalColumns)
 
     for (const entity of allEntities) {
-      /* v8 ignore start */
+      /* v8 ignore start -- @preserve */
       if (rowCount >= maxRowsPerFile) {
         passThrough.end()
         partNum++
         rowCount = 0
         passThrough = createStreamPart(partNum, finalColumns)
       }
-      /* v8 ignore stop */
+      /* v8 ignore stop -- @preserve */
 
       const row = finalColumns.map((col) => this.transformColumn(col, entity)).join(',')
       passThrough.write(row + '\n')

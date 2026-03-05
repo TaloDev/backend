@@ -75,14 +75,14 @@ async function findAndQueueInactivePlayers(em: EntityManager, game: Game, devBui
 
     for await (const player of getPlayers(em, game, devBuild)) {
       batch.push(player)
-      /* v8 ignore start */
+      /* v8 ignore start -- @preserve */
       if (batch.length >= playersBatchSize) {
         const playersToDelete = batch.map((player) => new PlayerToDelete(player))
         await em.persistAndFlush(playersToDelete)
         totalQueued += batch.length
         batch = []
       }
-      /* v8 ignore stop */
+      /* v8 ignore stop -- @preserve */
     }
 
     // Queue any remaining players in the last batch

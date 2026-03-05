@@ -59,7 +59,26 @@ async function getSessions(clickhouse: ClickHouseClient, onlinePresence: PlayerP
   return sessionsByPlayer
 }
 
-async function cleanupStaleOnlinePresence(em: EntityManager, clickhouse: ClickHouseClient) {
+function getActivePlayerAliasIds() {
+  const socket = getSocketInstance()
+  const ids = new Set<number>()
+
+  if (socket) {
+    for (const conn of socket.findConnections(() => true)) {
+      if (conn.playerAliasId) {
+        ids.add(conn.playerAliasId)
+      }
+    }
+  }
+
+  return ids
+}
+
+async function cleanupStaleOnlinePresence(
+  em: EntityManager,
+  clickhouse: ClickHouseClient,
+  activePlayerAliasIds: Set<number>,
+) {
   const onlinePresence = await em.repo(PlayerPresence).find(
     {
       online: true,
@@ -75,17 +94,6 @@ async function cleanupStaleOnlinePresence(em: EntityManager, clickhouse: ClickHo
 
   if (onlinePresence.length === 0) {
     return
-  }
-
-  const socket = getSocketInstance()
-  const activePlayerAliasIds = new Set<number>()
-  if (socket) {
-    const activeConnections = socket.findConnections(() => true)
-    for (const conn of activeConnections) {
-      if (conn.playerAliasId) {
-        activePlayerAliasIds.add(conn.playerAliasId)
-      }
-    }
   }
 
   const sessionsByPlayer = await getSessions(clickhouse, onlinePresence)
@@ -115,7 +123,11 @@ async function cleanupStaleOnlinePresence(em: EntityManager, clickhouse: ClickHo
   }
 }
 
-async function cleanupUnfinishedSessions(em: EntityManager, clickhouse: ClickHouseClient) {
+async function cleanupUnfinishedSessions(
+  em: EntityManager,
+  clickhouse: ClickHouseClient,
+  activePlayerAliasIds: Set<number>,
+) {
   const unfinishedSessions = await clickhouse
     .query({
       query: `
@@ -153,13 +165,14 @@ async function cleanupUnfinishedSessions(em: EntityManager, clickhouse: ClickHou
       return map
     })
 
-  // delete sessions where the player is offline (or has no presence)
+  // delete sessions where the player has no active WebSocket connection
   const sessionsToDelete: string[] = []
   for (const session of unfinishedSessions) {
     const presence = presenceMap.get(session.player_id)
-    if (!presence || !presence.online) {
-      sessionsToDelete.push(session.id)
+    if (presence && activePlayerAliasIds.has(presence.playerAlias.id)) {
+      continue
     }
+    sessionsToDelete.push(session.id)
   }
 
   if (sessionsToDelete.length > 0) {
@@ -186,10 +199,11 @@ export default async function cleanupOnlinePlayers() {
   // TODO: find out how this is happening
   await deleteDisconnectedPresence(em)
 
-  await cleanupStaleOnlinePresence(em, clickhouse)
+  const activePlayerAliasIds = getActivePlayerAliasIds()
+  await cleanupStaleOnlinePresence(em, clickhouse, activePlayerAliasIds)
   await em.flush()
 
-  await cleanupUnfinishedSessions(em, clickhouse)
+  await cleanupUnfinishedSessions(em, clickhouse, activePlayerAliasIds)
   await clickhouse.close()
 
   console.info(`Cleanup online players stats: ${JSON.stringify(cleanupStats, null, 2)}`)

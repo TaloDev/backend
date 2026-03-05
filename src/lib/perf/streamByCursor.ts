@@ -15,7 +15,7 @@ export async function* streamByCursor<T extends object>(
       yield item
     }
 
-    /* v8 ignore next 3 */
+    /* v8 ignore next 3 -- @preserve */
     if (!page.endCursor || page.items.length < batchSize) break
     cursor = page.endCursor
   }

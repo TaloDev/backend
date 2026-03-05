@@ -1,4 +1,4 @@
-import { DeadlockException } from '@mikro-orm/mysql'
+import { DeadlockException, LockWaitTimeoutException } from '@mikro-orm/mysql'
 import { differenceInSeconds } from 'date-fns'
 import assert from 'node:assert'
 import pRetry from 'p-retry'
@@ -126,7 +126,8 @@ export const putRoute = apiRoute({
             console.info(`Player game stat upsert failed (attempt ${attemptNumber}/3), retrying...`)
           }
         },
-        shouldRetry: ({ error }) => error instanceof DeadlockException,
+        shouldRetry: ({ error }) =>
+          error instanceof DeadlockException || error instanceof LockWaitTimeoutException,
       },
     )
 

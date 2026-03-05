@@ -93,10 +93,10 @@ export const updateRoute = protectedRoute({
       } catch (err) {
         if (err instanceof PropSizeError) {
           return buildErrorResponse({ props: [err.message] })
-          /* v8 ignore start */
+          /* v8 ignore start -- @preserve */
         }
         throw err
-        /* v8 ignore stop */
+        /* v8 ignore stop -- @preserve */
       }
 
       await em.clearCache(Game.getLiveConfigCacheKey(game))

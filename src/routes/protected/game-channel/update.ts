@@ -57,7 +57,7 @@ export async function updateChannelHandler({
     } catch (err) {
       if (err instanceof PropSizeError) {
         return buildErrorResponse({ props: [err.message] })
-        /* v8 ignore next 3 */
+        /* v8 ignore next 3 -- @preserve */
       }
       throw err
     }

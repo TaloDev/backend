@@ -42,7 +42,7 @@ export default async function cleanupSteamworksPlayerStats() {
             await em.repo(SteamworksPlayerStat).nativeDelete(playerStat.id)
             continue
           }
-          /* v8 ignore next */
+          /* v8 ignore next -- @preserve */
           throw err
         }
         integrationsMap.set(game.id, integration)

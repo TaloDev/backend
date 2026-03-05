@@ -116,17 +116,21 @@ export default class GameStat {
   async recalculateGlobalValue({
     em,
     includeDevData,
+    devOnly,
   }: {
     em: EntityManager
     includeDevData: boolean
+    devOnly?: boolean
   }) {
     const qb = em
       .qb(PlayerGameStat, 'pgs')
       .select(raw('SUM(pgs.value) as total'))
       .where({ stat: this.id })
 
-    if (!includeDevData) {
-      qb.innerJoin('pgs.player', 'p').andWhere({ 'p.devBuild': false })
+    if (!includeDevData || devOnly) {
+      qb.innerJoin('pgs.player', 'p')
+      if (!includeDevData) qb.andWhere({ 'p.devBuild': false })
+      if (devOnly) qb.andWhere({ 'p.devBuild': true })
     }
 
     const result = await qb.execute<{ total: string | null }>('get')

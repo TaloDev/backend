@@ -14,16 +14,21 @@ export const listRoute = protectedRoute({
       page: pageSchema,
       feedbackCategoryInternalName: z.string().optional(),
       search: z.string().optional(),
+      withDeleted: z
+        .enum(['0', '1'])
+        .optional()
+        .transform((v) => v === '1'),
     }),
   }),
   middleware: withMiddleware(loadGame),
   handler: async (ctx) => {
-    const { feedbackCategoryInternalName, search, page } = ctx.state.validated.query
+    const { feedbackCategoryInternalName, search, page, withDeleted } = ctx.state.validated.query
     const em = ctx.em
 
     const query = em
       .qb(GameFeedback, 'gf')
       .select('gf.*')
+      .andWhere(withDeleted ? {} : { deletedAt: null })
       .orderBy({ createdAt: QueryOrder.DESC })
       .limit(itemsPerPage)
       .offset(page * itemsPerPage)

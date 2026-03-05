@@ -14,7 +14,7 @@ describe('Game feedback - list', () => {
     const [token] = await createUserAndToken({}, organisation)
 
     const feedback = await new GameFeedbackFactory(game).many(10)
-    await em.persistAndFlush(feedback)
+    await em.persist(feedback).flush()
 
     const res = await request(app)
       .get(`/games/${game.id}/game-feedback`)
@@ -35,7 +35,7 @@ describe('Game feedback - list', () => {
       .state(() => ({ category }))
       .many(5)
     const feedbackWithoutRelevantCategory = await new GameFeedbackFactory(game).many(5)
-    await em.persistAndFlush([...feedbackWithRelevantCategory, ...feedbackWithoutRelevantCategory])
+    await em.persist([...feedbackWithRelevantCategory, ...feedbackWithoutRelevantCategory]).flush()
 
     const res = await request(app)
       .get(`/games/${game.id}/game-feedback`)
@@ -77,7 +77,7 @@ describe('Game feedback - list', () => {
 
     const count = 82
     const feedback = await new GameFeedbackFactory(game).many(count)
-    await em.persistAndFlush(feedback)
+    await em.persist(feedback).flush()
 
     const page = Math.floor(count / 50)
 
@@ -104,7 +104,7 @@ describe('Game feedback - list', () => {
     const feedbackWithoutRelevantComment = await new GameFeedbackFactory(game)
       .state(() => ({ comment: 'bleh' }))
       .many(5)
-    await em.persistAndFlush([...feedbackWithRelevantComment, ...feedbackWithoutRelevantComment])
+    await em.persist([...feedbackWithRelevantComment, ...feedbackWithoutRelevantComment]).flush()
 
     const res = await request(app)
       .get(`/games/${game.id}/game-feedback`)
@@ -130,11 +130,13 @@ describe('Game feedback - list', () => {
     const feedbackWithoutRelevantCategory = await new GameFeedbackFactory(game)
       .state(() => ({ comment: 'blah' }))
       .many(5)
-    await em.persistAndFlush([
-      ...feedbackWithRelevantCategory,
-      ...feedbackWithRelevantCategoryAndComment,
-      ...feedbackWithoutRelevantCategory,
-    ])
+    await em
+      .persist([
+        ...feedbackWithRelevantCategory,
+        ...feedbackWithRelevantCategoryAndComment,
+        ...feedbackWithoutRelevantCategory,
+      ])
+      .flush()
 
     const res = await request(app)
       .get(`/games/${game.id}/game-feedback`)
@@ -166,7 +168,7 @@ describe('Game feedback - list', () => {
 
     const feedbackWithoutRelevantAlias = await new GameFeedbackFactory(game).many(5)
 
-    await em.persistAndFlush([...feedbackWithRelevantAlias, ...feedbackWithoutRelevantAlias])
+    await em.persist([...feedbackWithRelevantAlias, ...feedbackWithoutRelevantAlias]).flush()
 
     const res = await request(app)
       .get(`/games/${game.id}/game-feedback`)
@@ -196,7 +198,7 @@ describe('Game feedback - list', () => {
       }))
       .many(3)
 
-    await em.persistAndFlush(feedbackWithRelevantAlias)
+    await em.persist(feedbackWithRelevantAlias).flush()
 
     const res = await request(app)
       .get(`/games/${game.id}/game-feedback`)
@@ -238,11 +240,13 @@ describe('Game feedback - list', () => {
       }))
       .many(5)
 
-    await em.persistAndFlush([
-      ...feedbackWithRelevantCategory,
-      ...feedbackWithRelevantCategoryAndAlias,
-      ...feedbackWithoutRelevantCategory,
-    ])
+    await em
+      .persist([
+        ...feedbackWithRelevantCategory,
+        ...feedbackWithRelevantCategoryAndAlias,
+        ...feedbackWithoutRelevantCategory,
+      ])
+      .flush()
 
     const res = await request(app)
       .get(`/games/${game.id}/game-feedback`)
@@ -265,7 +269,7 @@ describe('Game feedback - list', () => {
     const feedback = await new GameFeedbackFactory(game)
       .state(() => ({ playerAlias: player.aliases[0] }))
       .many(10)
-    await em.persistAndFlush(feedback)
+    await em.persist(feedback).flush()
 
     const res = await request(app)
       .get(`/games/${game.id}/game-feedback`)
@@ -291,7 +295,7 @@ describe('Game feedback - list', () => {
       }))
       .many(3)
     const feedbackWithoutRelevantPropKey = await new GameFeedbackFactory(game).many(5)
-    await em.persistAndFlush([...feedbackWithRelevantPropKey, ...feedbackWithoutRelevantPropKey])
+    await em.persist([...feedbackWithRelevantPropKey, ...feedbackWithoutRelevantPropKey]).flush()
 
     const res = await request(app)
       .get(`/games/${game.id}/game-feedback`)
@@ -317,10 +321,9 @@ describe('Game feedback - list', () => {
       }))
       .many(3)
     const feedbackWithoutRelevantPropValue = await new GameFeedbackFactory(game).many(5)
-    await em.persistAndFlush([
-      ...feedbackWithRelevantPropValue,
-      ...feedbackWithoutRelevantPropValue,
-    ])
+    await em
+      .persist([...feedbackWithRelevantPropValue, ...feedbackWithoutRelevantPropValue])
+      .flush()
 
     const res = await request(app)
       .get(`/games/${game.id}/game-feedback`)
@@ -329,6 +332,46 @@ describe('Game feedback - list', () => {
       .expect(200)
 
     expect(res.body.feedback).toHaveLength(feedbackWithRelevantPropValue.length)
+  })
+
+  it('should not return deleted game feedback by default', async () => {
+    const [organisation, game] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken({}, organisation)
+
+    const activeFeedback = await new GameFeedbackFactory(game).many(5)
+    const deletedFeedback = await new GameFeedbackFactory(game)
+      .state(() => ({ deletedAt: new Date() }))
+      .many(3)
+    await em.persist([...activeFeedback, ...deletedFeedback]).flush()
+
+    const res = await request(app)
+      .get(`/games/${game.id}/game-feedback`)
+      .query({ page: 0 })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    expect(res.body.feedback).toHaveLength(activeFeedback.length)
+    expect(res.body.count).toBe(activeFeedback.length)
+  })
+
+  it('should return deleted game feedback when withDeleted is true', async () => {
+    const [organisation, game] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken({}, organisation)
+
+    const activeFeedback = await new GameFeedbackFactory(game).many(5)
+    const deletedFeedback = await new GameFeedbackFactory(game)
+      .state(() => ({ deletedAt: new Date() }))
+      .many(3)
+    await em.persist([...activeFeedback, ...deletedFeedback]).flush()
+
+    const res = await request(app)
+      .get(`/games/${game.id}/game-feedback`)
+      .query({ page: 0, withDeleted: 1 })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    expect(res.body.feedback).toHaveLength(activeFeedback.length + deletedFeedback.length)
+    expect(res.body.count).toBe(activeFeedback.length + deletedFeedback.length)
   })
 
   it('should return a list of game feedback for a specific prop key and value', async () => {
@@ -346,7 +389,7 @@ describe('Game feedback - list', () => {
       }))
       .many(3)
     const feedbackWithoutRelevantProp = await new GameFeedbackFactory(game).many(5)
-    await em.persistAndFlush([...feedbackWithRelevantProp, ...feedbackWithoutRelevantProp])
+    await em.persist([...feedbackWithRelevantProp, ...feedbackWithoutRelevantProp]).flush()
 
     const res = await request(app)
       .get(`/games/${game.id}/game-feedback`)

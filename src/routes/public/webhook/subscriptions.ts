@@ -106,12 +106,12 @@ export const subscriptionsRoute = publicRoute({
         ctx.get('stripe-signature'),
         process.env.STRIPE_WEBHOOK_SECRET!,
       )
-      /* v8 ignore start */
+      /* v8 ignore start -- @preserve */
     } catch (err) {
       captureException(err)
       return ctx.throw(401)
     }
-    /* v8 ignore stop */
+    /* v8 ignore stop -- @preserve */
 
     switch (event.type) {
       case 'customer.subscription.deleted':

@@ -43,6 +43,9 @@ export enum GameActivityType {
   GAME_STAT_RESET,
   PLAYER_DELETED,
   GAME_SETTINGS_UPDATED,
+  GAME_FEEDBACK_ARCHIVED,
+  GAME_FEEDBACK_RESTORED,
+  GAME_FEEDBACK_CATEGORY_RESET,
 }
 
 @Entity()
@@ -75,7 +78,7 @@ export default class GameActivity {
     this.user = user
   }
 
-  /* v8 ignore start */
+  /* v8 ignore start -- @preserve */
   private getActivity(): string {
     switch (this.type) {
       case GameActivityType.PLAYER_PROPS_UPDATED:
@@ -156,11 +159,17 @@ export default class GameActivity {
         return `${this.user.username} deleted a player`
       case GameActivityType.GAME_SETTINGS_UPDATED:
         return `${this.user.username} updated game settings`
+      case GameActivityType.GAME_FEEDBACK_ARCHIVED:
+        return `${this.user.username} archived feedback from ${(this.extra.aliasIdentifier as string | null) ?? 'an anonymous player'}`
+      case GameActivityType.GAME_FEEDBACK_RESTORED:
+        return `${this.user.username} restored feedback from ${(this.extra.aliasIdentifier as string | null) ?? 'an anonymous player'}`
+      case GameActivityType.GAME_FEEDBACK_CATEGORY_RESET:
+        return `${this.user.username} reset feedback for the category ${this.extra.feedbackCategoryInternalName}`
       default:
         return ''
     }
   }
-  /* v8 ignore stop */
+  /* v8 ignore stop -- @preserve */
 
   toJSON() {
     return {

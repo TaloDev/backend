@@ -17,7 +17,7 @@ export async function verifyHandler({
   ip,
   userAgent,
   sessionBuilder = defaultSessionBuilder,
-  createSocketToken = true,
+  selfService,
 }: {
   em: EntityManager
   alias: PlayerAlias | null
@@ -26,7 +26,7 @@ export async function verifyHandler({
   ip: string
   userAgent?: string
   sessionBuilder?: (alias: PlayerAlias) => Promise<string>
-  createSocketToken?: boolean
+  selfService?: boolean
 }) {
   if (!alias) {
     return {
@@ -48,6 +48,7 @@ export async function verifyHandler({
       type: PlayerAuthActivityType.VERIFICATION_FAILED,
       ip,
       userAgent,
+      selfService,
     })
     await em.flush()
 
@@ -60,7 +61,7 @@ export async function verifyHandler({
   await redis.del(getRedisAuthKey(alias))
 
   const sessionToken = await sessionBuilder(alias)
-  const socketToken = createSocketToken ? await alias.createSocketToken(redis) : undefined
+  const socketToken = selfService ? undefined : await alias.createSocketToken(redis)
 
   buildPlayerAuthActivity({
     em,
@@ -68,6 +69,7 @@ export async function verifyHandler({
     type: PlayerAuthActivityType.LOGGED_IN,
     ip,
     userAgent,
+    selfService,
   })
 
   await em.flush()

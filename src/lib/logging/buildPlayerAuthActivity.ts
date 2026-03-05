@@ -8,6 +8,7 @@ export function buildPlayerAuthActivity({
   type,
   ip,
   userAgent,
+  selfService,
   extra,
 }: {
   em: EntityManager
@@ -15,6 +16,7 @@ export function buildPlayerAuthActivity({
   type: PlayerAuthActivityType
   ip: string
   userAgent?: string
+  selfService?: boolean
   extra?: Record<string, unknown>
 }) {
   const activity = new PlayerAuthActivity(player)
@@ -23,6 +25,7 @@ export function buildPlayerAuthActivity({
     ...extra,
     userAgent,
     ip: type === PlayerAuthActivityType.DELETED_AUTH ? undefined : ip,
+    selfService: selfService || undefined,
   }
 
   em.persist(activity)

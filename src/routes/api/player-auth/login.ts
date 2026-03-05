@@ -25,7 +25,7 @@ export async function loginHandler({
   ip,
   userAgent,
   sessionBuilder = defaultSessionBuilder,
-  createSocketToken = true,
+  selfService,
 }: {
   alias: PlayerAlias | null
   password: string
@@ -34,7 +34,7 @@ export async function loginHandler({
   ip: string
   userAgent?: string
   sessionBuilder?: (alias: PlayerAlias) => Promise<string>
-  createSocketToken?: boolean
+  selfService?: boolean
 }) {
   if (!alias) {
     return {
@@ -65,6 +65,7 @@ export async function loginHandler({
       type: PlayerAuthActivityType.VERIFICATION_STARTED,
       ip,
       userAgent,
+      selfService,
     })
 
     await em.flush()
@@ -78,7 +79,7 @@ export async function loginHandler({
     }
   } else {
     const sessionToken = await sessionBuilder(alias)
-    const socketToken = createSocketToken ? await alias.createSocketToken(redis) : undefined
+    const socketToken = selfService ? undefined : await alias.createSocketToken(redis)
 
     buildPlayerAuthActivity({
       em,
@@ -86,6 +87,7 @@ export async function loginHandler({
       type: PlayerAuthActivityType.LOGGED_IN,
       ip,
       userAgent,
+      selfService,
     })
 
     await em.flush()

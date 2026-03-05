@@ -99,6 +99,9 @@ describe('Player public - verify', () => {
     const activity = await em.getRepository(PlayerAuthActivity).findOne({
       type: PlayerAuthActivityType.VERIFICATION_FAILED,
       player: player.id,
+      extra: {
+        selfService: true,
+      },
     })
     expect(activity).not.toBeNull()
   })

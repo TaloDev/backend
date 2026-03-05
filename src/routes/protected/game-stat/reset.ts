@@ -49,7 +49,13 @@ export const resetRoute = protectedRoute({
       })
 
       const deletedCount = await trx.repo(PlayerGameStat).nativeDelete(where)
-      await trx.repo(GameStat).nativeUpdate(stat.id, { globalValue: stat.defaultValue })
+
+      await stat.recalculateGlobalValue({
+        em: trx,
+        includeDevData: mode !== 'dev',
+        devOnly: mode === 'live',
+      })
+      await trx.repo(GameStat).nativeUpdate(stat.id, { globalValue: stat.globalValue })
 
       createGameActivity(trx, {
         user: ctx.state.user,
@@ -117,6 +123,9 @@ export const resetRoute = protectedRoute({
 
       return deletedCount
     })
+
+    await em.refresh(stat)
+    await ctx.redis.set(GameStat.getGlobalValueCacheKey(stat.id), stat.globalValue)
 
     await Promise.allSettled([
       deferClearResponseCache(GameStat.getIndexCacheKey(stat.game, true)),

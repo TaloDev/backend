@@ -12,19 +12,21 @@ import { playerHeaderSchema } from '../../../lib/validation/playerHeaderSchema'
 import { sessionHeaderSchema } from '../../../lib/validation/sessionHeaderSchema'
 import { requireScopes } from '../../../middleware/policy-middleware'
 import { deleteClickHousePlayerData } from '../../../tasks/deletePlayers'
-import { loadAliasWithAuth } from './common'
+import { createPlayerAuthActivity, loadAliasWithAuth } from './common'
 import { deleteDocs } from './docs'
 
-export async function performDelete({
+export async function deleteHandler({
   em,
   alias,
   ip,
   userAgent,
+  selfService,
 }: {
   em: EntityManager
   alias: PlayerAlias
   ip: string
   userAgent?: string
+  selfService?: boolean
 }) {
   await em.transactional(async (trx) => {
     await em.repo(PlayerAuthActivity).nativeDelete({ player: alias.player })
@@ -35,6 +37,7 @@ export async function performDelete({
       type: PlayerAuthActivityType.DELETED_AUTH,
       ip,
       userAgent,
+      selfService,
       extra: { identifier: alias.identifier },
     })
 
@@ -49,44 +52,6 @@ export async function performDelete({
   })
 
   return { status: 204 }
-}
-
-export async function deleteHandler({
-  em,
-  alias,
-  currentPassword,
-  ip,
-  userAgent,
-}: {
-  em: EntityManager
-  alias: PlayerAlias
-  currentPassword: string
-  ip: string
-  userAgent?: string
-}) {
-  if (!alias.player.auth) {
-    return { status: 400, body: { message: 'Player does not have authentication' } }
-  }
-
-  const passwordMatches = await bcrypt.compare(currentPassword, alias.player.auth.password)
-  if (!passwordMatches) {
-    buildPlayerAuthActivity({
-      em,
-      player: alias.player,
-      type: PlayerAuthActivityType.DELETE_AUTH_FAILED,
-      ip,
-      userAgent,
-      extra: { errorCode: 'INVALID_CREDENTIALS' },
-    })
-    await em.flush()
-
-    return {
-      status: 403,
-      body: { message: 'Current password is incorrect', errorCode: 'INVALID_CREDENTIALS' },
-    }
-  }
-
-  return performDelete({ em, alias, ip, userAgent })
 }
 
 export const deleteRoute = apiRoute({
@@ -108,13 +73,30 @@ export const deleteRoute = apiRoute({
   ),
   handler: async (ctx) => {
     const { currentPassword } = ctx.state.validated.body
+    const ip = ctx.request.ip
+    const userAgent = ctx.request.headers['user-agent']
 
-    return deleteHandler({
-      em: ctx.em,
-      alias: ctx.state.alias,
-      currentPassword,
-      ip: ctx.request.ip,
-      userAgent: ctx.request.headers['user-agent'],
-    })
+    const em = ctx.em
+    const alias = ctx.state.alias
+
+    if (!alias.player.auth) {
+      return { status: 400, body: { message: 'Player does not have authentication' } }
+    }
+
+    const passwordMatches = await bcrypt.compare(currentPassword, alias.player.auth.password)
+    if (!passwordMatches) {
+      createPlayerAuthActivity(ctx, alias.player, {
+        type: PlayerAuthActivityType.DELETE_AUTH_FAILED,
+        extra: { errorCode: 'INVALID_CREDENTIALS' },
+      })
+      await em.flush()
+
+      return {
+        status: 403,
+        body: { message: 'Current password is incorrect', errorCode: 'INVALID_CREDENTIALS' },
+      }
+    }
+
+    return deleteHandler({ em, alias, ip, userAgent })
   },
 })

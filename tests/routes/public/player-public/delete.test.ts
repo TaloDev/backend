@@ -50,7 +50,10 @@ describe('Player public - delete', { timeout: 30_000 }, () => {
     const activity = await em.getRepository(PlayerAuthActivity).findOne({
       type: PlayerAuthActivityType.DELETED_AUTH,
       player: player.id,
-      extra: { identifier: prevIdentifier },
+      extra: {
+        selfService: true,
+        identifier: prevIdentifier,
+      },
     })
     assert(activity)
     expect(activity.extra.ip).toBeUndefined()

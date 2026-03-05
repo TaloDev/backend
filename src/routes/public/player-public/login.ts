@@ -32,7 +32,7 @@ export const loginRoute = publicRoute({
       ip: ctx.request.ip,
       userAgent: ctx.request.headers['user-agent'],
       sessionBuilder: buildPublicPlayerSession,
-      createSocketToken: false,
+      selfService: true,
     })
   },
 })

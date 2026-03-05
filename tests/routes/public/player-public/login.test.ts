@@ -49,6 +49,9 @@ describe('Player public - login', () => {
     const activity = await em.getRepository(PlayerAuthActivity).findOne({
       type: PlayerAuthActivityType.LOGGED_IN,
       player: player.id,
+      extra: {
+        selfService: true,
+      },
     })
     expect(activity).not.toBeNull()
   })
@@ -137,6 +140,9 @@ describe('Player public - login', () => {
     const activity = await em.getRepository(PlayerAuthActivity).findOne({
       type: PlayerAuthActivityType.VERIFICATION_STARTED,
       player: player.id,
+      extra: {
+        selfService: true,
+      },
     })
     expect(activity).not.toBeNull()
   })

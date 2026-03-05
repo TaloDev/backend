@@ -2,7 +2,7 @@ import PlayerAlias from '../../../entities/player-alias'
 import { publicRoute, withMiddleware } from '../../../lib/routing/router'
 import { sessionHeaderSchema } from '../../../lib/validation/sessionHeaderSchema'
 import { throwInvalidSessionError } from '../../../middleware/player-auth-middleware'
-import { performDelete } from '../../api/player-auth/delete'
+import { deleteHandler } from '../../api/player-auth/delete'
 import { loadGameFromToken, verifyPublicPlayerSession } from './common'
 
 export const deleteRoute = publicRoute({
@@ -39,11 +39,12 @@ export const deleteRoute = publicRoute({
       return ctx.throw(400, 'Player does not have authentication')
     }
 
-    return performDelete({
+    return deleteHandler({
       em,
       alias,
       ip: ctx.request.ip,
       userAgent: ctx.request.headers['user-agent'],
+      selfService: true,
     })
   },
 })

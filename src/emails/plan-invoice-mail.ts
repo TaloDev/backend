@@ -1,6 +1,6 @@
-import { USD } from 'dinero.js/currencies'
 import { format } from 'date-fns'
 import { dinero, toDecimal } from 'dinero.js'
+import { USD } from 'dinero.js/currencies'
 import Stripe from 'stripe'
 import Organisation from '../entities/organisation'
 import Mail from './mail'
@@ -20,7 +20,6 @@ export default class PlanInvoice extends Mail {
 
   private getPrice(amount: number): string {
     const d = dinero({ amount, currency: USD })
-    const transformer = ({ value }: { value: unknown }) => `$${value}`
-    return toDecimal(d, transformer)
+    return toDecimal(d, ({ value }) => `$${value}`)
   }
 }

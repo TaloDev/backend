@@ -137,11 +137,7 @@ export default class GameStat {
     this.globalValue = Number(result?.total ?? 0)
   }
 
-  async buildMetricsWhereConditions(
-    startDate?: string,
-    endDate?: string,
-    player?: Player,
-  ): Promise<string> {
+  async buildMetricsWhereConditions(startDate?: string, endDate?: string, player?: Player) {
     let whereConditions = `WHERE game_stat_id = ${this.id}`
 
     if (startDate) {
@@ -167,7 +163,7 @@ export default class GameStat {
     clickhouse: ClickHouseClient,
     metricsStartDate?: string,
     metricsEndDate?: string,
-  ): Promise<void> {
+  ) {
     const whereConditions = await this.buildMetricsWhereConditions(metricsStartDate, metricsEndDate)
 
     const [globalCount, globalValue] = await this.getGlobalValueMetrics(clickhouse, whereConditions)

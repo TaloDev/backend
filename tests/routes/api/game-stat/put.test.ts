@@ -461,7 +461,7 @@ describe('Game stat API - update', () => {
     expect(spy).toHaveBeenCalledTimes(2)
   })
 
-  it('should retry lock tineout exceptions', async () => {
+  it('should retry lock timeout exceptions', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_STATS])
     const stat = await createStat(apiKey.game, { maxValue: 999, maxChange: 99 })
     const player = await new PlayerFactory([apiKey.game]).one()

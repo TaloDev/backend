@@ -37,7 +37,7 @@ describe('Game stat - reset', () => {
             .one()
         }),
       )
-      await em.persistAndFlush(playerStats)
+      await em.persist(playerStats).flush()
 
       const res = await request(app)
         .delete(`/games/${game.id}/game-stats/${stat.id}/player-stats`)
@@ -56,7 +56,7 @@ describe('Game stat - reset', () => {
         expect(playerStats).toHaveLength(0)
 
         await em.refresh(stat)
-        expect(stat.globalValue).toBe(stat.defaultValue)
+        expect(stat.globalValue).toBe(0)
 
         assert(activity?.extra.display)
         expect(activity.extra.statInternalName).toBe(stat.internalName)
@@ -89,7 +89,7 @@ describe('Game stat - reset', () => {
           .one()
       }),
     )
-    await em.persistAndFlush(playerStats)
+    await em.persist(playerStats).flush()
 
     const res = await request(app)
       .delete(`/games/${game.id}/game-stats/${stat.id}/player-stats`)
@@ -134,7 +134,7 @@ describe('Game stat - reset', () => {
       }),
     )
 
-    await em.persistAndFlush([...devPlayerStats, ...livePlayerStats])
+    await em.persist([...devPlayerStats, ...livePlayerStats]).flush()
 
     const res = await request(app)
       .delete(`/games/${game.id}/game-stats/${stat.id}/player-stats`)
@@ -156,7 +156,7 @@ describe('Game stat - reset', () => {
     expect(remainingPlayerStats.every((playerStat) => !playerStat.player.devBuild)).toBe(true)
 
     await em.refresh(stat)
-    expect(stat.globalValue).toBe(stat.defaultValue)
+    expect(stat.globalValue).toBe(3 * 40) // sum of remaining live players
   })
 
   it('should reset only live player stats when mode is "live"', async () => {
@@ -187,7 +187,7 @@ describe('Game stat - reset', () => {
       }),
     )
 
-    await em.persistAndFlush([...devPlayerStats, ...livePlayerStats])
+    await em.persist([...devPlayerStats, ...livePlayerStats]).flush()
 
     const res = await request(app)
       .delete(`/games/${game.id}/game-stats/${stat.id}/player-stats`)
@@ -209,7 +209,7 @@ describe('Game stat - reset', () => {
     expect(remainingPlayerStats.every((playerStat) => playerStat.player.devBuild)).toBe(true)
 
     await em.refresh(stat)
-    expect(stat.globalValue).toBe(stat.defaultValue)
+    expect(stat.globalValue).toBe(2 * 35) // sum of remaining dev players
   })
 
   it('should return 0 deleted count when no player stats match the mode', async () => {
@@ -230,7 +230,7 @@ describe('Game stat - reset', () => {
       }),
     )
 
-    await em.persistAndFlush(devPlayerStats)
+    await em.persist(devPlayerStats).flush()
 
     const res = await request(app)
       .delete(`/games/${game.id}/game-stats/${stat.id}/player-stats`)
@@ -244,7 +244,7 @@ describe('Game stat - reset', () => {
     expect(remainingPlayerStats).toHaveLength(2)
 
     await em.refresh(stat)
-    expect(stat.globalValue).toBe(stat.defaultValue)
+    expect(stat.globalValue).toBe(2 * 20) // sum of remaining dev players
   })
 
   it('should create game activity with correct data', async () => {
@@ -259,7 +259,7 @@ describe('Game stat - reset', () => {
       }),
     )
 
-    await em.persistAndFlush(playerStats)
+    await em.persist(playerStats).flush()
 
     await request(app)
       .delete(`/games/${game.id}/game-stats/${stat.id}/player-stats`)
@@ -295,7 +295,7 @@ describe('Game stat - reset', () => {
       }),
     )
 
-    await em.persistAndFlush(playerStats)
+    await em.persist(playerStats).flush()
 
     const res = await request(app)
       .delete(`/games/${otherGame.id}/game-stats/${stat.id}/player-stats`)
@@ -325,7 +325,7 @@ describe('Game stat - reset', () => {
     const [token] = await createUserAndToken({ type: UserType.ADMIN }, organisation)
 
     const stat = await new GameStatFactory([game]).one()
-    await em.persistAndFlush(stat)
+    await em.persist(stat).flush()
 
     const res = await request(app)
       .delete(`/games/${game.id}/game-stats/${stat.id}/player-stats`)
@@ -352,7 +352,7 @@ describe('Game stat - reset', () => {
       }),
     )
 
-    await em.persistAndFlush(playerStats)
+    await em.persist(playerStats).flush()
 
     await request(app)
       .delete(`/games/${game.id}/game-stats/${stat.id}/player-stats`)
@@ -366,7 +366,7 @@ describe('Game stat - reset', () => {
     expect(existingPlayers.length).toBeGreaterThanOrEqual(2)
   })
 
-  it('should reset global stat value to default value for global stats', async () => {
+  it('should recalculate global stat value to 0 when all players are reset', async () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({ type: UserType.ADMIN }, organisation)
 
@@ -388,7 +388,7 @@ describe('Game stat - reset', () => {
       }),
     )
 
-    await em.persistAndFlush(playerStats)
+    await em.persist(playerStats).flush()
 
     await request(app)
       .delete(`/games/${game.id}/game-stats/${stat.id}/player-stats`)
@@ -396,7 +396,7 @@ describe('Game stat - reset', () => {
       .expect(200)
 
     await em.refresh(stat)
-    expect(stat.globalValue).toBe(250)
+    expect(stat.globalValue).toBe(0) // no players remain
   })
 
   it('should handle resetting stats with no player stats gracefully', async () => {
@@ -411,7 +411,7 @@ describe('Game stat - reset', () => {
       }))
       .one()
 
-    await em.persistAndFlush(stat)
+    await em.persist(stat).flush()
 
     const res = await request(app)
       .delete(`/games/${game.id}/game-stats/${stat.id}/player-stats`)
@@ -428,6 +428,49 @@ describe('Game stat - reset', () => {
       game,
     })
     expect(activity.extra.display?.['Deleted count']).toBe(0)
+  })
+
+  it('should update the redis cache with the recalculated global value after reset', async () => {
+    const [organisation, game] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken({ type: UserType.ADMIN }, organisation)
+
+    const stat = await new GameStatFactory([game])
+      .state(() => ({ global: true, globalValue: 0, defaultValue: 0 }))
+      .one()
+
+    const devPlayers = await new PlayerFactory([game]).devBuild().many(2)
+    const livePlayers = await new PlayerFactory([game]).many(3)
+
+    const devPlayerStats = await Promise.all(
+      devPlayers.map((player) =>
+        new PlayerGameStatFactory()
+          .construct(player, stat)
+          .state(() => ({ value: 10 }))
+          .one(),
+      ),
+    )
+    const livePlayerStats = await Promise.all(
+      livePlayers.map((player) =>
+        new PlayerGameStatFactory()
+          .construct(player, stat)
+          .state(() => ({ value: 20 }))
+          .one(),
+      ),
+    )
+
+    await em.persist([...devPlayerStats, ...livePlayerStats]).flush()
+
+    // prime the cache
+    await redis.set(GameStat.getGlobalValueCacheKey(stat.id), 999)
+
+    await request(app)
+      .delete(`/games/${game.id}/game-stats/${stat.id}/player-stats`)
+      .query({ mode: 'dev' })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    const cached = await redis.get(GameStat.getGlobalValueCacheKey(stat.id))
+    expect(Number(cached)).toBe(3 * 20) // sum of remaining live players
   })
 
   it('should batch clickhouse deletions when resetting stats with over 100 player aliases', async () => {
@@ -452,7 +495,7 @@ describe('Game stat - reset', () => {
       }),
     )
 
-    await em.persistAndFlush(playerStats)
+    await em.persist(playerStats).flush()
 
     const handler = new FlushStatSnapshotsQueueHandler()
     for (const playerStat of playerStats) {

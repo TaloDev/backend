@@ -5,9 +5,11 @@ import { isAPIRoute } from '../lib/routing/route-info'
 const limitMap = {
   default: Number(process.env.API_RATE_LIMIT) || 100,
   auth: Number(process.env.API_RATE_LIMIT_AUTH) || 20,
+  playerPublic: Number(process.env.PUBLIC_RATE_LIMIT_PLAYERS) || 10,
 } as const
 
 const rateLimitOverrides = new Map<string, keyof typeof limitMap>([
+  ['/public/players', 'playerPublic'],
   ['/v1/players/auth', 'auth'],
   ['/v1/players/identify', 'auth'],
   ['/v1/players/socket-token', 'auth'],
@@ -25,12 +27,14 @@ export function getMaxRequestsForPath(requestPath: string) {
   }
 }
 
-export async function limiterMiddleware(ctx: Context, next: Next): Promise<void> {
-  if (
-    isAPIRoute(ctx) &&
-    process.env.NODE_ENV !== 'test' &&
-    !rateLimitBypass.has(ctx.request.path)
-  ) {
+function isPlayerPublicRoute(ctx: Context) {
+  return ctx.path.match(/^\/(public\/players)\//) !== null
+}
+
+export async function limiterMiddleware(ctx: Context, next: Next) {
+  const routeMatches = isPlayerPublicRoute(ctx) || isAPIRoute(ctx)
+
+  if (routeMatches && process.env.NODE_ENV !== 'test' && !rateLimitBypass.has(ctx.request.path)) {
     const { limitMapKey, maxRequests } = getMaxRequestsForPath(ctx.request.path)
     const userId = ctx.state.jwt?.sub || 'anonymous'
     const redisKey = `requests:${userId}:${ctx.request.ip}:${limitMapKey}`

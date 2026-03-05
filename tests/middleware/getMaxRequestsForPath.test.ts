@@ -2,6 +2,7 @@ import { getMaxRequestsForPath } from '../../src/middleware/limiter-middleware'
 
 describe('getMaxRequestsForPath', () => {
   it.each([
+    ['playerPublic', 10, '/public/players'],
     ['auth', 20, '/v1/players/auth'],
     ['auth', 20, '/v1/players/identify'],
     ['auth', 20, '/v1/socket-tickets'],

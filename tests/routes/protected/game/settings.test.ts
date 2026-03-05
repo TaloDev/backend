@@ -30,6 +30,7 @@ describe('Game - settings', () => {
           purgeDevPlayersRetention: 30,
           purgeLivePlayersRetention: 60,
           website: 'https://example.com',
+          gameToken: expect.any(String),
         })
       }
     },

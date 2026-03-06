@@ -10,6 +10,10 @@ import {
 import { pick } from 'lodash'
 import { decrypt, encrypt } from '../lib/crypto/string-encryption'
 import {
+  authenticateAuthCode,
+  AuthenticateAuthCodeResult,
+} from '../lib/integrations/google-play-games/google-play-games-players'
+import {
   cleanupSteamworksLeaderboardEntry,
   createSteamworksLeaderboard,
   createSteamworksLeaderboardEntry,
@@ -17,7 +21,10 @@ import {
   deleteSteamworksLeaderboardEntry,
   syncSteamworksLeaderboards,
 } from '../lib/integrations/steamworks/steamworks-leaderboards'
-import { authenticateTicket } from '../lib/integrations/steamworks/steamworks-players'
+import {
+  authenticateTicket,
+  AuthenticateTicketResult,
+} from '../lib/integrations/steamworks/steamworks-players'
 import {
   cleanupSteamworksPlayerStat,
   setSteamworksStat,
@@ -33,6 +40,7 @@ import { SteamworksPlayerStat } from './steamworks-player-stat'
 
 export enum IntegrationType {
   STEAMWORKS = 'steamworks',
+  GOOGLE_PLAY_GAMES = 'google-play-games',
 }
 
 export type SteamIntegrationConfig = {
@@ -42,22 +50,32 @@ export type SteamIntegrationConfig = {
   syncStats: boolean
 }
 
-export type IntegrationConfig = SteamIntegrationConfig
+export type GooglePlayGamesIntegrationConfig = {
+  clientId: string
+  clientSecret: string
+}
+
+export type IntegrationConfigMap = {
+  [IntegrationType.STEAMWORKS]: SteamIntegrationConfig
+  [IntegrationType.GOOGLE_PLAY_GAMES]: GooglePlayGamesIntegrationConfig
+}
+
+export type IntegrationConfig = IntegrationConfigMap[keyof IntegrationConfigMap]
 
 @Entity()
 @Filter({ name: 'active', cond: { deletedAt: null }, default: true })
-export default class Integration {
+export default class Integration<T extends IntegrationType = IntegrationType> {
   @PrimaryKey()
   id!: number
 
   @Enum(() => IntegrationType)
-  type: IntegrationType
+  type: T
 
   @ManyToOne(() => Game)
   game: Game
 
   @Property({ type: 'json' })
-  private config: IntegrationConfig
+  private config: IntegrationConfigMap[T]
 
   @Property({ nullable: true })
   deletedAt: Date | null = null
@@ -68,18 +86,54 @@ export default class Integration {
   @Property({ onUpdate: () => new Date() })
   updatedAt: Date = new Date()
 
-  constructor(type: IntegrationType, game: Game, config: IntegrationConfig) {
+  constructor(type: T, game: Game, config: IntegrationConfigMap[T]) {
     this.type = type
     this.game = game
 
-    this.config = {
-      ...config,
-      apiKey: encrypt(config.apiKey, process.env.STEAM_INTEGRATION_SECRET!),
+    switch (type) {
+      case IntegrationType.STEAMWORKS: {
+        const steamConfig = config as SteamIntegrationConfig
+        this.config = {
+          ...steamConfig,
+          apiKey: encrypt(steamConfig.apiKey, process.env.STEAM_INTEGRATION_SECRET!),
+        } as IntegrationConfigMap[T]
+        break
+      }
+      case IntegrationType.GOOGLE_PLAY_GAMES: {
+        const gpgConfig = config as GooglePlayGamesIntegrationConfig
+        this.config = {
+          ...gpgConfig,
+          clientSecret: encrypt(
+            gpgConfig.clientSecret,
+            process.env.GOOGLE_PLAY_GAMES_INTEGRATION_SECRET!,
+          ),
+        } as IntegrationConfigMap[T]
+        break
+      }
     }
   }
 
-  updateConfig(config: Partial<IntegrationConfig>) {
-    if (config.apiKey) config.apiKey = encrypt(config.apiKey, process.env.STEAM_INTEGRATION_SECRET!)
+  updateConfig(config: Partial<IntegrationConfigMap[T]>) {
+    const mutable = config as Record<string, unknown>
+    switch (this.type) {
+      case IntegrationType.STEAMWORKS: {
+        const steamConfig = config as Partial<SteamIntegrationConfig>
+        if (steamConfig.apiKey) {
+          mutable.apiKey = encrypt(steamConfig.apiKey, process.env.STEAM_INTEGRATION_SECRET!)
+        }
+        break
+      }
+      case IntegrationType.GOOGLE_PLAY_GAMES: {
+        const gpgConfig = config as Partial<GooglePlayGamesIntegrationConfig>
+        if (gpgConfig.clientSecret) {
+          mutable.clientSecret = encrypt(
+            gpgConfig.clientSecret,
+            process.env.GOOGLE_PLAY_GAMES_INTEGRATION_SECRET!,
+          )
+        }
+        break
+      }
+    }
 
     this.config = {
       ...this.config,
@@ -87,21 +141,43 @@ export default class Integration {
     }
   }
 
-  getConfig(): Omit<IntegrationConfig, 'apiKey'> {
+  getSteamConfig(): Omit<SteamIntegrationConfig, 'apiKey'> {
+    return pick(this.config as SteamIntegrationConfig, ['appId', 'syncLeaderboards', 'syncStats'])
+  }
+
+  getGooglePlayGamesConfig(): Omit<GooglePlayGamesIntegrationConfig, 'clientSecret'> {
+    return pick(this.config as GooglePlayGamesIntegrationConfig, ['clientId'])
+  }
+
+  getConfig():
+    | Omit<SteamIntegrationConfig, 'apiKey'>
+    | Omit<GooglePlayGamesIntegrationConfig, 'clientSecret'> {
     switch (this.type) {
       case IntegrationType.STEAMWORKS:
-        return pick(this.config, ['appId', 'syncLeaderboards', 'syncStats'])
+        return this.getSteamConfig()
+      case IntegrationType.GOOGLE_PLAY_GAMES:
+        return this.getGooglePlayGamesConfig()
     }
   }
 
   getSteamAPIKey(): string {
-    return decrypt(this.config.apiKey, process.env.STEAM_INTEGRATION_SECRET!)
+    return decrypt(
+      (this.config as SteamIntegrationConfig).apiKey,
+      process.env.STEAM_INTEGRATION_SECRET!,
+    )
+  }
+
+  getGooglePlayGamesClientSecret(): string {
+    return decrypt(
+      (this.config as GooglePlayGamesIntegrationConfig).clientSecret,
+      process.env.GOOGLE_PLAY_GAMES_INTEGRATION_SECRET!,
+    )
   }
 
   async handleLeaderboardCreated(em: EntityManager, leaderboard: Leaderboard) {
     switch (this.type) {
       case IntegrationType.STEAMWORKS:
-        if (this.config.syncLeaderboards) {
+        if (this.getSteamConfig().syncLeaderboards) {
           await createSteamworksLeaderboard(em, this, leaderboard)
         }
     }
@@ -110,7 +186,7 @@ export default class Integration {
   async handleLeaderboardUpdated(em: EntityManager, leaderboard: Leaderboard) {
     switch (this.type) {
       case IntegrationType.STEAMWORKS:
-        if (this.config.syncLeaderboards) {
+        if (this.getSteamConfig().syncLeaderboards) {
           await createSteamworksLeaderboard(em, this, leaderboard) // create if doesn't exist
         }
     }
@@ -119,7 +195,7 @@ export default class Integration {
   async handleLeaderboardDeleted(em: EntityManager, leaderboardInternalName: string) {
     switch (this.type) {
       case IntegrationType.STEAMWORKS:
-        if (this.config.syncLeaderboards) {
+        if (this.getSteamConfig().syncLeaderboards) {
           await deleteSteamworksLeaderboard(em, this, leaderboardInternalName)
         }
     }
@@ -130,7 +206,7 @@ export default class Integration {
       case IntegrationType.STEAMWORKS:
         if (
           entry.playerAlias.service === PlayerAliasService.STEAM &&
-          this.config.syncLeaderboards
+          this.getSteamConfig().syncLeaderboards
         ) {
           await createSteamworksLeaderboardEntry(em, this, entry)
         }
@@ -142,7 +218,7 @@ export default class Integration {
       case IntegrationType.STEAMWORKS:
         if (
           entry.playerAlias.service === PlayerAliasService.STEAM &&
-          this.config.syncLeaderboards
+          this.getSteamConfig().syncLeaderboards
         ) {
           if (entry.hidden || entry.deletedAt) {
             await deleteSteamworksLeaderboardEntry(em, this, entry)
@@ -158,7 +234,7 @@ export default class Integration {
       case IntegrationType.STEAMWORKS:
         if (
           entry.playerAlias.service === PlayerAliasService.STEAM &&
-          this.config.syncLeaderboards
+          this.getSteamConfig().syncLeaderboards
         ) {
           await deleteSteamworksLeaderboardEntry(em, this, entry)
         }
@@ -180,7 +256,7 @@ export default class Integration {
 
     switch (this.type) {
       case IntegrationType.STEAMWORKS:
-        if (steamAlias && this.config.syncStats) {
+        if (steamAlias && this.getSteamConfig().syncStats) {
           await setSteamworksStat(em, this, playerStat, steamAlias)
         }
     }
@@ -193,10 +269,15 @@ export default class Integration {
     }
   }
 
-  async getPlayerIdentifier(em: EntityManager, identifier: string) {
+  async getPlayerIdentifier(
+    em: EntityManager,
+    identifier: string,
+  ): Promise<AuthenticateTicketResult | AuthenticateAuthCodeResult> {
     switch (this.type) {
       case IntegrationType.STEAMWORKS:
         return authenticateTicket(em, this, identifier)
+      case IntegrationType.GOOGLE_PLAY_GAMES:
+        return authenticateAuthCode(em, this, identifier)
     }
   }
 

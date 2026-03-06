@@ -19,7 +19,7 @@ describe('Integration - update', () => {
       const integration = await new IntegrationFactory()
         .construct(IntegrationType.STEAMWORKS, game, config)
         .one()
-      await em.persistAndFlush(integration)
+      await em.persist(integration).flush()
 
       const res = await request(app)
         .patch(`/games/${game.id}/integrations/${integration.id}`)
@@ -58,7 +58,7 @@ describe('Integration - update', () => {
     const integration = await new IntegrationFactory()
       .construct(IntegrationType.STEAMWORKS, game, config)
       .one()
-    await em.persistAndFlush(integration)
+    await em.persist(integration).flush()
 
     const oldApiKey = integration.getSteamAPIKey()
 
@@ -80,7 +80,7 @@ describe('Integration - update', () => {
     const integration = await new IntegrationFactory()
       .construct(IntegrationType.STEAMWORKS, game, config)
       .one()
-    await em.persistAndFlush(integration)
+    await em.persist(integration).flush()
 
     const res = await request(app)
       .patch(`/games/${game.id}/integrations/${integration.id}`)
@@ -98,6 +98,61 @@ describe('Integration - update', () => {
     expect(activity).toBeNull()
   })
 
+  it('should update the google play games clientId', async () => {
+    const [organisation, game] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken({ type: UserType.ADMIN }, organisation)
+
+    const integration = await new IntegrationFactory()
+      .construct(IntegrationType.GOOGLE_PLAY_GAMES, game, {
+        clientId: 'old-client-id',
+        clientSecret: 'old-client-secret',
+      })
+      .one()
+    await em.persist(integration).flush()
+
+    const res = await request(app)
+      .patch(`/games/${game.id}/integrations/${integration.id}`)
+      .send({ config: { clientId: 'new-client-id' } })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    expect(res.body.integration.config.clientId).toBe('new-client-id')
+
+    const activity = await em.getRepository(GameActivity).findOne({
+      type: GameActivityType.GAME_INTEGRATION_UPDATED,
+      game,
+    })
+    expect(activity!.extra.integrationType).toBe(IntegrationType.GOOGLE_PLAY_GAMES)
+    expect(activity!.extra.display).toStrictEqual({
+      'Updated properties': 'clientId',
+    })
+  })
+
+  it('should update the google play games clientSecret', async () => {
+    const [organisation, game] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken({ type: UserType.ADMIN }, organisation)
+
+    const integration = await new IntegrationFactory()
+      .construct(IntegrationType.GOOGLE_PLAY_GAMES, game, {
+        clientId: 'test-client-id',
+        clientSecret: 'old-client-secret',
+      })
+      .one()
+    await em.persist(integration).flush()
+
+    const oldClientSecret = integration.getGooglePlayGamesClientSecret()
+
+    await request(app)
+      .patch(`/games/${game.id}/integrations/${integration.id}`)
+      .send({ config: { clientSecret: 'new-client-secret' } })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    await em.refresh(integration)
+    expect(integration.getGooglePlayGamesClientSecret()).not.toBe(oldClientSecret)
+    expect(integration.getGooglePlayGamesClientSecret()).toBe('new-client-secret')
+  })
+
   it('should not update an integration that does not exist', async () => {
     const [, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({ type: UserType.ADMIN })
@@ -106,7 +161,7 @@ describe('Integration - update', () => {
     const integration = await new IntegrationFactory()
       .construct(IntegrationType.STEAMWORKS, game, config)
       .one()
-    await em.persistAndFlush(integration)
+    await em.persist(integration).flush()
 
     const res = await request(app)
       .patch(`/games/${game.id}/integrations/1243`)

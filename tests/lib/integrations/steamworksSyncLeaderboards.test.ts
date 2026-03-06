@@ -58,7 +58,7 @@ describe('Steamworks integration - sync leaderboards', () => {
     ])
     axiosMock
       .onGet(
-        `https://partner.steam-api.com/ISteamLeaderboards/GetLeaderboardsForGame/v2?appid=${integration.getConfig().appId}`,
+        `https://partner.steam-api.com/ISteamLeaderboards/GetLeaderboardsForGame/v2?appid=${integration.getSteamConfig().appId}`,
       )
       .replyOnce(getLeaderboardsMock)
 
@@ -82,7 +82,7 @@ describe('Steamworks integration - sync leaderboards', () => {
     ])
     axiosMock
       .onGet(
-        `https://partner.steam-api.com/ISteamLeaderboards/GetLeaderboardEntries/v1?appid=${integration.getConfig().appId}&leaderboardid=${steamworksLeaderboardId}&rangestart=0&rangeend=1.7976931348623157e%2B308&datarequest=RequestGlobal`,
+        `https://partner.steam-api.com/ISteamLeaderboards/GetLeaderboardEntries/v1?appid=${integration.getSteamConfig().appId}&leaderboardid=${steamworksLeaderboardId}&rangestart=0&rangeend=1.7976931348623157e%2B308&datarequest=RequestGlobal`,
       )
       .replyOnce(getEntriesMock)
 
@@ -93,7 +93,7 @@ describe('Steamworks integration - sync leaderboards', () => {
 
     const event = await em.getRepository(SteamworksIntegrationEvent).findOneOrFail({ integration })
     expect(event.request).toStrictEqual({
-      url: `https://partner.steam-api.com/ISteamLeaderboards/GetLeaderboardsForGame/v2?appid=${integration.getConfig().appId}`,
+      url: `https://partner.steam-api.com/ISteamLeaderboards/GetLeaderboardsForGame/v2?appid=${integration.getSteamConfig().appId}`,
       body: '',
       method: 'GET',
     })
@@ -138,7 +138,7 @@ describe('Steamworks integration - sync leaderboards', () => {
     const getLeaderboardsMock = vi.fn((): [number] => [404])
     axiosMock
       .onGet(
-        `https://partner.steam-api.com/ISteamLeaderboards/GetLeaderboardsForGame/v2?appid=${integration.getConfig().appId}`,
+        `https://partner.steam-api.com/ISteamLeaderboards/GetLeaderboardsForGame/v2?appid=${integration.getSteamConfig().appId}`,
       )
       .replyOnce(getLeaderboardsMock)
 
@@ -191,7 +191,7 @@ describe('Steamworks integration - sync leaderboards', () => {
     ])
     axiosMock
       .onGet(
-        `https://partner.steam-api.com/ISteamLeaderboards/GetLeaderboardsForGame/v2?appid=${integration.getConfig().appId}`,
+        `https://partner.steam-api.com/ISteamLeaderboards/GetLeaderboardsForGame/v2?appid=${integration.getSteamConfig().appId}`,
       )
       .replyOnce(getLeaderboardsMock)
 
@@ -208,7 +208,7 @@ describe('Steamworks integration - sync leaderboards', () => {
     ])
     axiosMock
       .onGet(
-        `https://partner.steam-api.com/ISteamLeaderboards/GetLeaderboardEntries/v1?appid=${integration.getConfig().appId}&leaderboardid=${mapping.steamworksLeaderboardId}&rangestart=0&rangeend=1.7976931348623157e%2B308&datarequest=RequestGlobal`,
+        `https://partner.steam-api.com/ISteamLeaderboards/GetLeaderboardEntries/v1?appid=${integration.getSteamConfig().appId}&leaderboardid=${mapping.steamworksLeaderboardId}&rangestart=0&rangeend=1.7976931348623157e%2B308&datarequest=RequestGlobal`,
       )
       .replyOnce(getEntriesMock)
 
@@ -261,7 +261,7 @@ describe('Steamworks integration - sync leaderboards', () => {
     ])
     axiosMock
       .onGet(
-        `https://partner.steam-api.com/ISteamLeaderboards/GetLeaderboardsForGame/v2?appid=${integration.getConfig().appId}`,
+        `https://partner.steam-api.com/ISteamLeaderboards/GetLeaderboardsForGame/v2?appid=${integration.getSteamConfig().appId}`,
       )
       .replyOnce(getLeaderboardsMock)
 
@@ -278,7 +278,7 @@ describe('Steamworks integration - sync leaderboards', () => {
     ])
     axiosMock
       .onGet(
-        `https://partner.steam-api.com/ISteamLeaderboards/GetLeaderboardEntries/v1?appid=${integration.getConfig().appId}&leaderboardid=${steamworksLeaderboardId}&rangestart=0&rangeend=1.7976931348623157e%2B308&datarequest=RequestGlobal`,
+        `https://partner.steam-api.com/ISteamLeaderboards/GetLeaderboardEntries/v1?appid=${integration.getSteamConfig().appId}&leaderboardid=${steamworksLeaderboardId}&rangestart=0&rangeend=1.7976931348623157e%2B308&datarequest=RequestGlobal`,
       )
       .replyOnce(getEntriesMock)
 
@@ -319,7 +319,7 @@ describe('Steamworks integration - sync leaderboards', () => {
     ])
     axiosMock
       .onGet(
-        `https://partner.steam-api.com/ISteamLeaderboards/GetLeaderboardsForGame/v2?appid=${integration.getConfig().appId}`,
+        `https://partner.steam-api.com/ISteamLeaderboards/GetLeaderboardsForGame/v2?appid=${integration.getSteamConfig().appId}`,
       )
       .replyOnce(getLeaderboardsMock)
 
@@ -392,7 +392,7 @@ describe('Steamworks integration - sync leaderboards', () => {
     ])
     axiosMock
       .onGet(
-        `https://partner.steam-api.com/ISteamLeaderboards/GetLeaderboardsForGame/v2?appid=${integration.getConfig().appId}`,
+        `https://partner.steam-api.com/ISteamLeaderboards/GetLeaderboardsForGame/v2?appid=${integration.getSteamConfig().appId}`,
       )
       .replyOnce(getLeaderboardsMock)
 
@@ -416,7 +416,7 @@ describe('Steamworks integration - sync leaderboards', () => {
     ])
     axiosMock
       .onGet(
-        `https://partner.steam-api.com/ISteamLeaderboards/GetLeaderboardEntries/v1?appid=${integration.getConfig().appId}&leaderboardid=${steamworksLeaderboardId}&rangestart=0&rangeend=1.7976931348623157e%2B308&datarequest=RequestGlobal`,
+        `https://partner.steam-api.com/ISteamLeaderboards/GetLeaderboardEntries/v1?appid=${integration.getSteamConfig().appId}&leaderboardid=${steamworksLeaderboardId}&rangestart=0&rangeend=1.7976931348623157e%2B308&datarequest=RequestGlobal`,
       )
       .replyOnce(getEntriesMock)
 
@@ -475,7 +475,7 @@ describe('Steamworks integration - sync leaderboards', () => {
     ])
     axiosMock
       .onGet(
-        `https://partner.steam-api.com/ISteamLeaderboards/GetLeaderboardsForGame/v2?appid=${integration.getConfig().appId}`,
+        `https://partner.steam-api.com/ISteamLeaderboards/GetLeaderboardsForGame/v2?appid=${integration.getSteamConfig().appId}`,
       )
       .replyOnce(getLeaderboardsMock)
 
@@ -492,7 +492,7 @@ describe('Steamworks integration - sync leaderboards', () => {
     ])
     axiosMock
       .onGet(
-        `https://partner.steam-api.com/ISteamLeaderboards/GetLeaderboardEntries/v1?appid=${integration.getConfig().appId}&leaderboardid=${mapping.steamworksLeaderboardId}&rangestart=0&rangeend=1.7976931348623157e%2B308&datarequest=RequestGlobal`,
+        `https://partner.steam-api.com/ISteamLeaderboards/GetLeaderboardEntries/v1?appid=${integration.getSteamConfig().appId}&leaderboardid=${mapping.steamworksLeaderboardId}&rangestart=0&rangeend=1.7976931348623157e%2B308&datarequest=RequestGlobal`,
       )
       .replyOnce(getEntriesMock)
 
@@ -568,7 +568,7 @@ describe('Steamworks integration - sync leaderboards', () => {
     ])
     axiosMock
       .onGet(
-        `https://partner.steam-api.com/ISteamLeaderboards/GetLeaderboardsForGame/v2?appid=${integration.getConfig().appId}`,
+        `https://partner.steam-api.com/ISteamLeaderboards/GetLeaderboardsForGame/v2?appid=${integration.getSteamConfig().appId}`,
       )
       .replyOnce(getLeaderboardsMock)
 
@@ -585,7 +585,7 @@ describe('Steamworks integration - sync leaderboards', () => {
     ])
     axiosMock
       .onGet(
-        `https://partner.steam-api.com/ISteamLeaderboards/GetLeaderboardEntries/v1?appid=${integration.getConfig().appId}&leaderboardid=${mapping.steamworksLeaderboardId}&rangestart=0&rangeend=1.7976931348623157e%2B308&datarequest=RequestGlobal`,
+        `https://partner.steam-api.com/ISteamLeaderboards/GetLeaderboardEntries/v1?appid=${integration.getSteamConfig().appId}&leaderboardid=${mapping.steamworksLeaderboardId}&rangestart=0&rangeend=1.7976931348623157e%2B308&datarequest=RequestGlobal`,
       )
       .replyOnce(getEntriesMock)
 
@@ -652,7 +652,7 @@ describe('Steamworks integration - sync leaderboards', () => {
     ])
     axiosMock
       .onGet(
-        `https://partner.steam-api.com/ISteamLeaderboards/GetLeaderboardsForGame/v2?appid=${integration.getConfig().appId}`,
+        `https://partner.steam-api.com/ISteamLeaderboards/GetLeaderboardsForGame/v2?appid=${integration.getSteamConfig().appId}`,
       )
       .replyOnce(getLeaderboardsMock)
 
@@ -688,7 +688,7 @@ describe('Steamworks integration - sync leaderboards', () => {
     ])
     axiosMock
       .onGet(
-        `https://partner.steam-api.com/ISteamLeaderboards/GetLeaderboardEntries/v1?appid=${integration.getConfig().appId}&leaderboardid=${steamworksLeaderboardId}&rangestart=0&rangeend=1.7976931348623157e%2B308&datarequest=RequestGlobal`,
+        `https://partner.steam-api.com/ISteamLeaderboards/GetLeaderboardEntries/v1?appid=${integration.getSteamConfig().appId}&leaderboardid=${steamworksLeaderboardId}&rangestart=0&rangeend=1.7976931348623157e%2B308&datarequest=RequestGlobal`,
       )
       .replyOnce(getEntriesMock)
 
@@ -756,7 +756,7 @@ describe('Steamworks integration - sync leaderboards', () => {
     ])
     axiosMock
       .onGet(
-        `https://partner.steam-api.com/ISteamLeaderboards/GetLeaderboardsForGame/v2?appid=${integration.getConfig().appId}`,
+        `https://partner.steam-api.com/ISteamLeaderboards/GetLeaderboardsForGame/v2?appid=${integration.getSteamConfig().appId}`,
       )
       .replyOnce(getLeaderboardsMock)
 
@@ -780,7 +780,7 @@ describe('Steamworks integration - sync leaderboards', () => {
     ])
     axiosMock
       .onGet(
-        `https://partner.steam-api.com/ISteamLeaderboards/GetLeaderboardEntries/v1?appid=${integration.getConfig().appId}&leaderboardid=${mapping.steamworksLeaderboardId}&rangestart=0&rangeend=1.7976931348623157e%2B308&datarequest=RequestGlobal`,
+        `https://partner.steam-api.com/ISteamLeaderboards/GetLeaderboardEntries/v1?appid=${integration.getSteamConfig().appId}&leaderboardid=${mapping.steamworksLeaderboardId}&rangestart=0&rangeend=1.7976931348623157e%2B308&datarequest=RequestGlobal`,
       )
       .replyOnce(getEntriesMock)
 
@@ -829,7 +829,7 @@ describe('Steamworks integration - sync leaderboards', () => {
     ])
     axiosMock
       .onGet(
-        `https://partner.steam-api.com/ISteamLeaderboards/GetLeaderboardsForGame/v2?appid=${integration.getConfig().appId}`,
+        `https://partner.steam-api.com/ISteamLeaderboards/GetLeaderboardsForGame/v2?appid=${integration.getSteamConfig().appId}`,
       )
       .replyOnce(getLeaderboardsMock)
 
@@ -846,7 +846,7 @@ describe('Steamworks integration - sync leaderboards', () => {
     ])
     axiosMock
       .onGet(
-        `https://partner.steam-api.com/ISteamLeaderboards/GetLeaderboardEntries/v1?appid=${integration.getConfig().appId}&leaderboardid=${mapping.steamworksLeaderboardId}&rangestart=0&rangeend=1.7976931348623157e%2B308&datarequest=RequestGlobal`,
+        `https://partner.steam-api.com/ISteamLeaderboards/GetLeaderboardEntries/v1?appid=${integration.getSteamConfig().appId}&leaderboardid=${mapping.steamworksLeaderboardId}&rangestart=0&rangeend=1.7976931348623157e%2B308&datarequest=RequestGlobal`,
       )
       .replyOnce(getEntriesMock)
 

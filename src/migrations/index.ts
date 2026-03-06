@@ -63,6 +63,7 @@ import { CreatePlayersToDeleteTable } from './20251102174957CreatePlayersToDelet
 import { CreatePlayerAliasSubscriptionTable } from './20251222221535CreatePlayerAliasSubscriptionTable'
 import { AddPlayerGameStatUniqueConstraint } from './20260214224025AddPlayerGameStatUniqueConstraint'
 import { AddGameFeedbackDeletedAtColumn } from './20260301000000AddGameFeedbackDeletedAtColumn'
+import { CreateGooglePlayGamesIntegrationEventTable } from './20260306091456CreateGooglePlayGamesIntegrationEventTable'
 
 export default [
   {
@@ -324,5 +325,9 @@ export default [
   {
     name: 'AddGameFeedbackDeletedAtColumn',
     class: AddGameFeedbackDeletedAtColumn,
+  },
+  {
+    name: 'CreateGooglePlayGamesIntegrationEventTable',
+    class: CreateGooglePlayGamesIntegrationEventTable,
   },
 ]

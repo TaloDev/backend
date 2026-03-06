@@ -24,7 +24,7 @@ async function requestAuthenticateUserTicket({
   const client = new SteamworksClient(integration)
   const { res, event } = await client.makeRequest<AuthenticateUserTicketResponse>({
     method: 'GET',
-    url: `/ISteamUserAuth/AuthenticateUserTicket/v1?appid=${integration.getConfig().appId}&ticket=${ticket}${identity ? `&identity=${identity}` : ''}`,
+    url: `/ISteamUserAuth/AuthenticateUserTicket/v1?appid=${integration.getSteamConfig().appId}&ticket=${ticket}${identity ? `&identity=${identity}` : ''}`,
   })
   await em.persist(event).flush()
 
@@ -142,7 +142,7 @@ export async function verifyOwnership({
   const client = new SteamworksClient(integration)
   const { res, event } = await client.makeRequest<CheckAppOwnershipResponse>({
     method: 'GET',
-    url: `/ISteamUser/CheckAppOwnership/v3?appid=${integration.getConfig().appId}&steamid=${steamId}`,
+    url: `/ISteamUser/CheckAppOwnership/v3?appid=${integration.getSteamConfig().appId}&steamid=${steamId}`,
   })
   await em.persist(event).flush()
 

@@ -22,6 +22,8 @@ export const createRoute = protectedRoute({
         appId: z.number().optional(),
         syncLeaderboards: z.boolean().optional(),
         syncStats: z.boolean().optional(),
+        clientId: z.string().optional(),
+        clientSecret: z.string().optional(),
       }),
     }),
   }),

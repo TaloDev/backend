@@ -106,7 +106,7 @@ describe('Chart - stats global value', () => {
     const playerStat = await new PlayerGameStatFactory().construct(player, stat).one()
     await em.persist(playerStat).flush()
 
-    const today = new Date()
+    const today = startOfDay(new Date())
 
     await clickhouse.insert({
       table: 'player_game_stat_snapshots',

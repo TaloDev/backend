@@ -64,7 +64,7 @@ describe('Player relationship API - create', () => {
 
     const res = await request(app)
       .post('/v1/players/relationships')
-      .send({ aliasId: 999, relationshipType: 'unidirectional' })
+      .send({ aliasId: 999999, relationshipType: 'unidirectional' })
       .auth(token, { type: 'bearer' })
       .set('x-talo-alias', String(player.aliases[0].id))
       .expect(404)

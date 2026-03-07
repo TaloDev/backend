@@ -1,9 +1,11 @@
 import type { Next } from 'koa'
+import assert from 'node:assert'
 import type { APIRouteContext } from '../../../lib/routing/context'
 import APIKey from '../../../entities/api-key'
 import Player from '../../../entities/player'
 import PlayerAlias from '../../../entities/player-alias'
 import PlayerAuthActivity, { PlayerAuthActivityType } from '../../../entities/player-auth-activity'
+import { buildPlayerAuthActivity } from '../../../lib/logging/buildPlayerAuthActivity'
 
 export type PlayerAuthRouteState = {
   alias: PlayerAlias
@@ -27,19 +29,12 @@ export async function loadAliasWithAuth(ctx: APIRouteContext<PlayerAuthRouteStat
   await next()
 }
 
-export function getRedisAuthKey(key: APIKey, alias: PlayerAlias): string {
-  return `player-auth:${key.game.id}:verification:${alias.id}`
+export function getRedisAuthKey(alias: PlayerAlias) {
+  return `player-auth:${alias.player.game.id}:verification:${alias.id}`
 }
 
-export function getRedisPasswordResetKey(key: APIKey, code: string): string {
+export function getRedisPasswordResetKey(key: APIKey, code: string) {
   return `player-auth:${key.game.id}:password-reset:${code}`
-}
-
-export function handleFailedLogin(ctx: APIRouteContext): never {
-  return ctx.throw(401, {
-    message: 'Incorrect identifier or password',
-    errorCode: 'INVALID_CREDENTIALS',
-  })
 }
 
 export function createPlayerAuthActivity(
@@ -47,17 +42,17 @@ export function createPlayerAuthActivity(
   player: Player,
   data: { type: PlayerAuthActivityType; extra?: Record<string, unknown> },
 ): PlayerAuthActivity {
-  const ip = ctx.request.ip
-
-  const activity = new PlayerAuthActivity(player)
-  activity.type = data.type
-  activity.extra = {
-    ...data.extra,
+  return buildPlayerAuthActivity({
+    em: ctx.em,
+    player,
+    type: data.type,
+    ip: ctx.request.ip,
     userAgent: ctx.request.headers['user-agent'],
-    ip: data.type === PlayerAuthActivityType.DELETED_AUTH ? undefined : ip,
-  }
+    extra: data.extra,
+  })
+}
 
-  ctx.em.persist(activity)
-
-  return activity
+export function sessionBuilder(alias: PlayerAlias) {
+  assert(alias.player.auth)
+  return alias.player.auth.createSession(alias)
 }

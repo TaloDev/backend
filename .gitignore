@@ -8,3 +8,4 @@ coverage/
 backup.sql
 storage
 temp
+.snapshot-gs_test.json

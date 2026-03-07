@@ -1,4 +1,5 @@
 import { recordException as hdxRecordException } from '@hyperdx/node-opentelemetry'
+import { trace } from '@opentelemetry/api'
 import * as Sentry from '@sentry/node'
 import { Context, Next } from 'koa'
 
@@ -8,12 +9,18 @@ export async function errorMiddleware(ctx: Context, next: Next) {
   } catch (err) {
     if (err instanceof Error) {
       const isJWTError = 'originalError' in err && Boolean(err.originalError)
+      const traceId = trace.getActiveSpan()?.spanContext().traceId
 
       ctx.status = 'status' in err ? (err.status as number) : 500
       ctx.body =
-        ctx.status === 401 && isJWTError // dont expose jwt error
-          ? { message: 'Please provide a valid token in the Authorization header' }
-          : { ...err, headers: undefined } // koa cors is inserting headers into the body for some reason
+        ctx.status === 401 && isJWTError
+          ? { message: 'Please provide a valid token in the Authorization header', traceId }
+          : process.env.NODE_ENV === 'production' && ctx.status >= 500
+            ? {
+                message: 'Something went wrong, please try again later',
+                traceId,
+              }
+            : { ...err, message: err.message, headers: undefined, traceId }
 
       if (isJWTError) {
         const originalError = err.originalError
@@ -67,6 +74,10 @@ export async function errorMiddleware(ctx: Context, next: Next) {
 
           if (ctx.state.game) {
             scope.setContext('game', { id: ctx.state.game.id })
+          }
+
+          if (traceId) {
+            scope.setTag('traceId', traceId)
           }
 
           Sentry.captureException(err)

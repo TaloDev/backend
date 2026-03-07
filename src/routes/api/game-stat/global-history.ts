@@ -77,9 +77,12 @@ export const globalHistoryRoute = apiRoute({
       })
       .then((res) => res.json<ClickHousePlayerGameStatSnapshot>())
 
-    const history = await PlayerGameStatSnapshot.massHydrate(em, snapshots.slice(0, itemsPerPage))
-    const [count, globalValue] = await stat.getGlobalValueMetrics(clickhouse, whereConditions)
-    const playerValue = await stat.getPlayerValueMetrics(clickhouse, whereConditions)
+    const [history, globalValueMetrics, playerValue] = await Promise.all([
+      PlayerGameStatSnapshot.massHydrate(em, snapshots.slice(0, itemsPerPage)),
+      stat.getGlobalValueMetrics(clickhouse, whereConditions),
+      stat.getPlayerValueMetrics(clickhouse, whereConditions),
+    ])
+    const [count, globalValue] = globalValueMetrics
 
     return {
       status: 200,

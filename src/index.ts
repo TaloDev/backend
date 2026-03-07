@@ -17,6 +17,7 @@ import { corsMiddleware } from './middleware/cors-middleware'
 import { devDataMiddleware } from './middleware/dev-data-middleware'
 import { errorMiddleware } from './middleware/error-middleware'
 import { httpTracingMiddleware } from './middleware/http-tracing-middleware'
+import { limiterMiddleware } from './middleware/limiter-middleware'
 import { loggerMiddleware } from './middleware/logger-middleware'
 import { requestContextMiddleware } from './middleware/request-context-middleware'
 import { trailingSlashMiddleware } from './middleware/trailing-slash-middleware'
@@ -41,6 +42,7 @@ export default async function init() {
   app.use(corsMiddleware)
   app.use(devDataMiddleware)
   app.use(requestContextMiddleware)
+  app.use(limiterMiddleware)
 
   configurePublicRoutes(app)
   configureProtectedRoutes(app)

@@ -6,6 +6,7 @@ describe('getMaxRequestsForPath', () => {
     ['auth', 20, '/v1/players/identify'],
     ['auth', 20, '/v1/socket-tickets'],
     ['default', 100, '/v1/events'],
+    ['playerPublic', 10, '/public/players/abc/game'],
   ])(
     'limit map key %s should allow %i requests per second for the path %s',
     async (limitMapKey, maxRequests, path) => {

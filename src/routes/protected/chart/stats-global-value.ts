@@ -68,24 +68,27 @@ export const statsGlobalValueRoute = protectedRoute({
       return ctx.throw(404, 'Stat not found')
     }
 
+    const includeDevData = ctx.state.includeDevData
+
     return withResponseCache(
       {
-        key: `stats-global-value-${stat.id}-${startDateQuery}-${endDateQuery}`,
+        key: `stats-global-value-${stat.id}-${startDateQuery}-${endDateQuery}-${includeDevData ? 'dev' : 'no-dev'}`,
       },
       async () => {
         const startDate = formatDateForClickHouse(new Date(startDateQuery))
         const endDate = formatDateForClickHouse(endOfDay(new Date(endDateQuery)))
 
         const query = `
-        SELECT
-          toUnixTimestamp(toStartOfDay(created_at)) * 1000 AS date,
-          argMax(global_value, created_at) AS global_value
-        FROM player_game_stat_snapshots
-        WHERE created_at BETWEEN {startDate:String} AND {endDate:String}
-          AND game_stat_id = {statId:Int32}
-        GROUP BY date
-        ORDER BY date
-      `
+          SELECT
+            toUnixTimestamp(toStartOfDay(created_at)) * 1000 AS date,
+            argMax(global_value, created_at) AS global_value
+          FROM player_game_stat_snapshots
+          WHERE created_at BETWEEN {startDate:String} AND {endDate:String}
+            AND game_stat_id = {statId:Int32}
+            ${includeDevData ? '' : 'AND dev_build = false'}
+          GROUP BY date
+          ORDER BY date
+        `
 
         const snapshots = await clickhouse
           .query({

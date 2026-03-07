@@ -7,6 +7,7 @@ import { CreatePlayerGameStatSnapshotsTable } from './003CreatePlayerGameStatSna
 import { MigrateEventsTimestampsToDate64 } from './004MigrateEventsTimestampsToDate64'
 import { CreatePlayerSessionsTable } from './005CreatePlayerSessionsTable'
 import { AddEventPropsEventIdIndex } from './006AddEventPropsEventIdIndex'
+import { AddDevBuildToPlayerGameStatSnapshots } from './007AddDevBuildToPlayerGameStatSnapshots'
 
 type ClickHouseMigration = {
   name: string
@@ -37,6 +38,10 @@ const migrations: ClickHouseMigration[] = [
   {
     name: 'AddEventPropsEventIdIndex',
     sql: AddEventPropsEventIdIndex,
+  },
+  {
+    name: 'AddDevBuildToPlayerGameStatSnapshots',
+    sql: AddDevBuildToPlayerGameStatSnapshots,
   },
 ]
 

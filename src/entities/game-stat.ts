@@ -137,7 +137,17 @@ export default class GameStat {
     this.globalValue = Number(result?.total ?? 0)
   }
 
-  async buildMetricsWhereConditions(startDate?: string, endDate?: string, player?: Player) {
+  async buildMetricsWhereConditions({
+    startDate,
+    endDate,
+    player,
+    includeDevData,
+  }: {
+    startDate?: string
+    endDate?: string
+    player?: Player
+    includeDevData?: boolean
+  }) {
     let whereConditions = `WHERE game_stat_id = ${this.id}`
 
     if (startDate) {
@@ -155,16 +165,29 @@ export default class GameStat {
       const aliasIds = player.aliases.getIdentifiers()
       whereConditions += ` AND player_alias_id IN (${aliasIds.join(', ')})`
     }
+    if (!includeDevData) {
+      whereConditions += ' AND dev_build = false'
+    }
 
     return whereConditions
   }
 
-  async loadMetrics(
-    clickhouse: ClickHouseClient,
-    metricsStartDate?: string,
-    metricsEndDate?: string,
-  ) {
-    const whereConditions = await this.buildMetricsWhereConditions(metricsStartDate, metricsEndDate)
+  async loadMetrics({
+    clickhouse,
+    startDate,
+    endDate,
+    includeDevData,
+  }: {
+    clickhouse: ClickHouseClient
+    startDate?: string
+    endDate?: string
+    includeDevData?: boolean
+  }) {
+    const whereConditions = await this.buildMetricsWhereConditions({
+      startDate,
+      endDate,
+      includeDevData,
+    })
 
     const [globalCount, globalValue] = await this.getGlobalValueMetrics(clickhouse, whereConditions)
     const playerValue = await this.getPlayerValueMetrics(clickhouse, whereConditions)

@@ -301,6 +301,106 @@ describe('Chart - stats global value', () => {
     expect(res.body.data[1].change).toBe(0)
   })
 
+  it('should not include dev build snapshots when includeDevData is false', async () => {
+    const [organisation, game] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken({ organisation })
+
+    const stat = await new GameStatFactory([game])
+      .state(() => ({
+        internalName: 'total-coins',
+        name: 'Total coins',
+        global: true,
+        globalValue: 0,
+        defaultValue: 0,
+      }))
+      .one()
+    const player = await new PlayerFactory([game]).one()
+    const devPlayer = await new PlayerFactory([game]).devBuild().one()
+    const playerStat = await new PlayerGameStatFactory().construct(player, stat).one()
+    const devPlayerStat = await new PlayerGameStatFactory().construct(devPlayer, stat).one()
+    await em.persist([playerStat, devPlayerStat]).flush()
+
+    const today = new Date()
+
+    const regularSnapshot = new PlayerGameStatSnapshot()
+    regularSnapshot.construct(player.aliases[0], playerStat)
+    regularSnapshot.globalValue = 100
+    regularSnapshot.createdAt = today
+
+    const devSnapshot = new PlayerGameStatSnapshot()
+    devSnapshot.construct(devPlayer.aliases[0], devPlayerStat)
+    devSnapshot.globalValue = 999
+    devSnapshot.createdAt = today
+
+    await clickhouse.insert({
+      table: 'player_game_stat_snapshots',
+      values: [regularSnapshot.toInsertable(), devSnapshot.toInsertable()],
+      format: 'JSONEachRow',
+    })
+
+    const startDate = format(today, 'yyyy-MM-dd')
+    const endDate = format(today, 'yyyy-MM-dd')
+
+    const res = await request(app)
+      .get(`/games/${game.id}/charts/global-stats/total-coins`)
+      .query({ startDate, endDate })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    expect(res.body.data[0].value).toBe(100)
+  })
+
+  it('should include dev build snapshots when includeDevData is true', async () => {
+    const [organisation, game] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken({ organisation })
+
+    const stat = await new GameStatFactory([game])
+      .state(() => ({
+        internalName: 'total-coins',
+        name: 'Total coins',
+        global: true,
+        globalValue: 0,
+        defaultValue: 0,
+      }))
+      .one()
+    const player = await new PlayerFactory([game]).one()
+    const devPlayer = await new PlayerFactory([game]).devBuild().one()
+    const playerStat = await new PlayerGameStatFactory().construct(player, stat).one()
+    const devPlayerStat = await new PlayerGameStatFactory().construct(devPlayer, stat).one()
+    await em.persist([playerStat, devPlayerStat]).flush()
+
+    const today = new Date()
+
+    const regularSnapshot = new PlayerGameStatSnapshot()
+    regularSnapshot.construct(player.aliases[0], playerStat)
+    regularSnapshot.globalValue = 100
+    regularSnapshot.createdAt = today
+
+    const devSnapshot = new PlayerGameStatSnapshot()
+    devSnapshot.construct(devPlayer.aliases[0], devPlayerStat)
+    devSnapshot.globalValue = 999
+    devSnapshot.createdAt = addMinutes(today, 1)
+
+    await clickhouse.insert({
+      table: 'player_game_stat_snapshots',
+      values: [regularSnapshot.toInsertable(), devSnapshot.toInsertable()],
+      format: 'JSONEachRow',
+    })
+
+    const startDate = format(today, 'yyyy-MM-dd')
+    const endDate = format(today, 'yyyy-MM-dd')
+
+    const res = await request(app)
+      .get(`/games/${game.id}/charts/global-stats/total-coins`)
+      .query({ startDate, endDate })
+      .auth(token, { type: 'bearer' })
+      .set('x-talo-include-dev-data', '1')
+      .expect(200)
+
+    // argMax picks the dev snapshot (latest timestamp, value 999)
+    expect(res.body.data[0].value).toBe(999)
+  })
+
   it('should return 404 for a non-global stat', async () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({ organisation })

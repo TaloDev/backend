@@ -21,7 +21,7 @@ export const listRoute = protectedRoute({
 
     return withResponseCache(
       {
-        key: `${GameStat.getIndexCacheKey(game)}-${withMetrics}-${metricsStartDate}-${metricsEndDate}-${includeDevData ? 'dev' : 'live'}`,
+        key: `${GameStat.getIndexCacheKey(game)}-${withMetrics}-${metricsStartDate}-${metricsEndDate}-${includeDevData ? 'dev' : 'no-dev'}`,
       },
       async () => {
         const stats = await em.repo(GameStat).find({ game })
@@ -33,7 +33,12 @@ export const listRoute = protectedRoute({
           if (withMetrics === '1') {
             promises.push(
               ...globalStats.map((stat) =>
-                stat.loadMetrics(ctx.clickhouse, metricsStartDate, metricsEndDate),
+                stat.loadMetrics({
+                  clickhouse: ctx.clickhouse,
+                  startDate: metricsStartDate,
+                  endDate: metricsEndDate,
+                  includeDevData,
+                }),
               ),
             )
           }

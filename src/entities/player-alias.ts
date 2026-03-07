@@ -10,6 +10,8 @@ import {
 } from '@mikro-orm/mysql'
 import Redis from 'ioredis'
 import { v4 } from 'uuid'
+import { AuthenticateAuthCodeResult } from '../lib/integrations/google-play-games/google-play-games-players'
+import { AuthenticateTicketResult } from '../lib/integrations/steamworks/steamworks-players'
 import Socket from '../socket'
 import Game from './game'
 import GameChannel, { GameChannelLeavingReason } from './game-channel'
@@ -23,6 +25,7 @@ export enum PlayerAliasService {
   EMAIL = 'email',
   CUSTOM = 'custom',
   TALO = 'talo',
+  GOOGLE_PLAY_GAMES = 'google_play_games',
 }
 
 const serviceIdentifierIndexName = 'idx_player_alias_service_identifier'
@@ -76,11 +79,26 @@ export default class PlayerAlias {
       })
 
       if (integration) {
-        const result = await integration.getPlayerIdentifier(em, trimmedIdentifier)
-        return {
-          identifier: result.steamId,
-          initialPlayerProps: result.initialPlayerProps,
-        }
+        const { steamId, initialPlayerProps } = (await integration.getPlayerIdentifier(
+          em,
+          trimmedIdentifier,
+        )) as AuthenticateTicketResult
+        return { identifier: steamId, initialPlayerProps }
+      }
+    }
+
+    if (trimmedService === PlayerAliasService.GOOGLE_PLAY_GAMES) {
+      const integration = await em.repo(Integration).findOne({
+        game,
+        type: IntegrationType.GOOGLE_PLAY_GAMES,
+      })
+
+      if (integration) {
+        const { playerId, initialPlayerProps } = (await integration.getPlayerIdentifier(
+          em,
+          trimmedIdentifier,
+        )) as AuthenticateAuthCodeResult
+        return { identifier: playerId, initialPlayerProps }
       }
     }
 

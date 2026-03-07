@@ -1,5 +1,6 @@
 import createQueue from '../lib/queues/createQueue'
 import archiveLeaderboardEntries from '../tasks/archiveLeaderboardEntries'
+import { cleanupIntegrationEvents } from '../tasks/cleanupIntegrationEvents'
 import cleanupOnlinePlayers from '../tasks/cleanupOnlinePlayers'
 import cleanupSteamworksLeaderboardEntries from '../tasks/cleanupSteamworksLeaderboardEntries'
 import cleanupSteamworksPlayerStats from '../tasks/cleanupSteamworksPlayerStats'
@@ -29,6 +30,7 @@ export async function initScheduledTasks() {
       cleanupSteamworksPlayerStats,
       '0 */15 * * * *',
     ), // every 15 minutes
+    addScheduledTask('cleanup-integration-events', cleanupIntegrationEvents, '0 0 0 * * *'), // midnight daily
   ]
 
   /* v8 ignore next 3 -- @preserve */

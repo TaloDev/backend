@@ -1,20 +1,20 @@
 import { Entity, ManyToOne, PrimaryKey, Property } from '@mikro-orm/mysql'
 import Integration from './integration'
 
-export type SteamworksRequest = {
+export type GooglePlayGamesRequest = {
   url: string
   method: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE'
   body: string
 }
 
-export type SteamworksResponse<T = { [key: string]: unknown }> = {
+export type GooglePlayGamesResponse<T = { [key: string]: unknown }> = {
   status: number
   body: T
   timeTaken: number
 }
 
 @Entity()
-export default class SteamworksIntegrationEvent {
+export default class GooglePlayGamesIntegrationEvent {
   @PrimaryKey()
   id!: number
 
@@ -22,10 +22,10 @@ export default class SteamworksIntegrationEvent {
   integration: Integration
 
   @Property({ type: 'json' })
-  request!: SteamworksRequest
+  request!: GooglePlayGamesRequest
 
   @Property({ type: 'json' })
-  response!: SteamworksResponse
+  response!: GooglePlayGamesResponse
 
   @Property()
   createdAt: Date = new Date()

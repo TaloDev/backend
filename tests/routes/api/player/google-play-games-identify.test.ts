@@ -140,7 +140,6 @@ describe('Player API - Google Play Games identify', () => {
 
     expect(res.body.alias.identifier).toBe(playerId)
     expect(res.body.alias.player.props).toStrictEqual([
-      { key: 'META_GOOGLE_PLAY_GAMES_PLAYER_ID', value: playerId },
       { key: 'META_GOOGLE_PLAY_GAMES_DISPLAY_NAME', value: displayName },
       { key: 'META_GOOGLE_PLAY_GAMES_AVATAR_URL', value: avatarImageUrl },
     ])
@@ -179,7 +178,6 @@ describe('Player API - Google Play Games identify', () => {
 
     expect(res.body.alias.identifier).toBe(playerId)
     expect(res.body.alias.player.props).toStrictEqual([
-      { key: 'META_GOOGLE_PLAY_GAMES_PLAYER_ID', value: playerId },
       { key: 'META_GOOGLE_PLAY_GAMES_DISPLAY_NAME', value: displayName },
     ])
   })

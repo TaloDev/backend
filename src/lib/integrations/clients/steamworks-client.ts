@@ -222,7 +222,7 @@ export class SteamworksClient {
           onFailedAttempt: ({ attemptNumber, retriesLeft }) => {
             if (retriesLeft > 0) {
               console.info(
-                `Steamworks ${config.method} ${config.baseURL + config.url} failed (attempt ${attemptNumber}/${totalAttempts}), retrying)`,
+                `Steamworks ${config.method} ${config.baseURL + config.url} failed (attempt ${attemptNumber}/${totalAttempts}), retrying`,
               )
             }
           },

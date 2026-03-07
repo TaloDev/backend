@@ -8,19 +8,21 @@ const limitMap = {
   playerPublic: Number(process.env.PUBLIC_RATE_LIMIT_PLAYERS) || 10,
 } as const
 
-const rateLimitOverrides = new Map<string, keyof typeof limitMap>([
-  ['/public/players', 'playerPublic'],
-  ['/v1/players/auth', 'auth'],
-  ['/v1/players/identify', 'auth'],
-  ['/v1/players/socket-token', 'auth'],
-  ['/v1/socket-tickets', 'auth'],
-])
+const rateLimitOverrides = [
+  { prefix: '/public/players', key: 'playerPublic' },
+  { prefix: '/v1/players/auth', key: 'auth' },
+  { prefix: '/v1/players/identify', key: 'auth' },
+  { prefix: '/v1/players/socket-token', key: 'auth' },
+  { prefix: '/v1/socket-tickets', key: 'auth' },
+] as const
 
 const rateLimitBypass = new Set<string>(['/v1/health-check'])
 
 export function getMaxRequestsForPath(requestPath: string) {
-  const limitMapKey = rateLimitOverrides.get(requestPath) ?? 'default'
+  const override = rateLimitOverrides.find((override) => requestPath.startsWith(override.prefix))
+  const limitMapKey = override ? override.key : 'default'
   const maxRequests = limitMap[limitMapKey]
+
   return {
     limitMapKey,
     maxRequests,

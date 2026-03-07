@@ -25,12 +25,6 @@ export type GetPlayerResponse = {
   avatarImageUrl?: string
 }
 
-export class GooglePlayGamesNetworkError extends Error {
-  constructor() {
-    super('Google Play Games network error')
-  }
-}
-
 export class GooglePlayGamesClient {
   constructor(private readonly integration: Integration) {}
 

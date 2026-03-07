@@ -29,7 +29,7 @@ export async function deleteHandler({
   selfService?: boolean
 }) {
   await em.transactional(async (trx) => {
-    await em.repo(PlayerAuthActivity).nativeDelete({ player: alias.player })
+    await trx.repo(PlayerAuthActivity).nativeDelete({ player: alias.player })
 
     buildPlayerAuthActivity({
       em: trx,

@@ -78,7 +78,6 @@ export async function authenticateAuthCode(
   const { playerId, displayName, avatarImageUrl } = playerRes.data
 
   const props = [
-    { key: 'META_GOOGLE_PLAY_GAMES_PLAYER_ID', value: playerId },
     { key: 'META_GOOGLE_PLAY_GAMES_DISPLAY_NAME', value: displayName },
     ...(avatarImageUrl
       ? [{ key: 'META_GOOGLE_PLAY_GAMES_AVATAR_URL', value: avatarImageUrl }]

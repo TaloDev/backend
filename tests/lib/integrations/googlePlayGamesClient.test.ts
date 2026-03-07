@@ -140,18 +140,17 @@ describe('GooglePlayGamesClient - retry mechanism', () => {
     expect(res?.status).toBe(200)
   })
 
-  it('should retry up to 2 times and return success: false after all attempts fail', async () => {
+  it('should retry up to 2 times and return null res after all attempts fail', async () => {
     const client = await createClient()
 
     axiosMock.onGet('https://www.googleapis.com/games/v1/players/me').networkError()
 
-    const { res, event, success } = await client.makeRequest({
+    const { res, event } = await client.makeRequest({
       method: 'GET',
       baseURL: 'https://www.googleapis.com',
       url: '/games/v1/players/me',
     })
 
-    expect(success).toBe(false)
     expect(res).toBeNull()
     expect(event.response.status).toBe(503)
     expect(event.response.body).toMatchObject({ error: expect.any(String) })
@@ -167,13 +166,13 @@ describe('GooglePlayGamesClient - retry mechanism', () => {
       throw new Error('Network error')
     })
 
-    const { success } = await client.makeRequest({
+    const { res } = await client.makeRequest({
       method: 'GET',
       baseURL: 'https://www.googleapis.com',
       url: '/games/v1/players/me',
     })
 
-    expect(success).toBe(false)
+    expect(res).toBeNull()
     expect(callCount).toBe(3)
   })
 

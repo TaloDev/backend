@@ -25,12 +25,6 @@ export type GetPlayerResponse = {
   avatarImageUrl?: string
 }
 
-export class GooglePlayGamesNetworkError extends Error {
-  constructor() {
-    super('Google Play Games network error')
-  }
-}
-
 export class GooglePlayGamesClient {
   constructor(private readonly integration: Integration) {}
 
@@ -95,7 +89,6 @@ export class GooglePlayGamesClient {
   }): Promise<{
     res: AxiosResponse<T, GooglePlayGamesRequestConfig> | null
     event: GooglePlayGamesIntegrationEvent
-    success: boolean
   }> {
     const config = this.createRequestConfig({ method, baseURL, url, headers, body })
     const event = this.createIntegrationEvent(config)
@@ -134,7 +127,7 @@ export class GooglePlayGamesClient {
           onFailedAttempt: ({ attemptNumber, retriesLeft }) => {
             if (retriesLeft > 0) {
               console.info(
-                `Google Play Games ${config.method} ${config.baseURL + config.url} failed (attempt ${attemptNumber}/${totalAttempts}), retrying)`,
+                `Google Play Games ${config.method} ${config.baseURL + config.url} failed (attempt ${attemptNumber}/${totalAttempts}), retrying`,
               )
             }
           },
@@ -148,7 +141,7 @@ export class GooglePlayGamesClient {
         timeTaken: endTime - startTime,
       }
 
-      return { res, event, success: true }
+      return { res, event }
     } catch (err) {
       const endTime = performance.now()
       const axiosErr = err as AxiosError
@@ -159,7 +152,7 @@ export class GooglePlayGamesClient {
           body: { error: axiosErr.message },
           timeTaken: endTime - startTime,
         }
-        return { res: null, event, success: false }
+        return { res: null, event }
       }
 
       event.response = {
@@ -168,7 +161,7 @@ export class GooglePlayGamesClient {
         timeTaken: endTime - startTime,
       }
 
-      return { res: axiosErr.response as AxiosResponse, event, success: true }
+      return { res: axiosErr.response as AxiosResponse, event }
     }
   }
 }

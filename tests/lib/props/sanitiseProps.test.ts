@@ -7,20 +7,22 @@ function makeProp(key: string, value: string) {
 
 describe('mergeAndSanitiseProps', () => {
   describe('scalar keys', () => {
-    it('should keep new prop when key not in prev', () => {
+    it('should keep a new prop', () => {
       const result = mergeAndSanitiseProps({
         prevProps: [],
         newProps: [{ key: 'foo', value: 'bar' }],
       })
+
       expect(result).toHaveLength(1)
       expect(result[0]).toMatchObject({ key: 'foo', value: 'bar' })
     })
 
-    it('should override prev prop with same key', () => {
+    it('should override a prev prop with the same key', () => {
       const result = mergeAndSanitiseProps({
         prevProps: [makeProp('foo', 'old')],
         newProps: [{ key: 'foo', value: 'new' }],
       })
+
       expect(result).toHaveLength(1)
       expect(result[0]).toMatchObject({ key: 'foo', value: 'new' })
     })
@@ -30,21 +32,23 @@ describe('mergeAndSanitiseProps', () => {
         prevProps: [makeProp('a', '1'), makeProp('b', '2')],
         newProps: [{ key: 'a', value: 'updated' }],
       })
+
       expect(result).toHaveLength(2)
       expect(result.find((p) => p.key === 'a')?.value).toBe('updated')
       expect(result.find((p) => p.key === 'b')?.value).toBe('2')
     })
 
-    it('should delete scalar prop when value is null', () => {
+    it('should delete scalar props when their value is null', () => {
       const result = mergeAndSanitiseProps({
         prevProps: [makeProp('foo', 'bar')],
         newProps: [{ key: 'foo', value: null }],
       })
+
       expect(result).toHaveLength(0)
     })
   })
 
-  describe('array keys ([] suffix)', () => {
+  describe('array keys', () => {
     it('should store multiple props with the same [] key', () => {
       const result = mergeAndSanitiseProps({
         prevProps: [],
@@ -53,6 +57,7 @@ describe('mergeAndSanitiseProps', () => {
           { key: 'tags[]', value: 'b' },
         ],
       })
+
       expect(result).toHaveLength(2)
       expect(result.map((p) => p.value).sort()).toEqual(['a', 'b'])
     })
@@ -65,15 +70,17 @@ describe('mergeAndSanitiseProps', () => {
           { key: 'tags[]', value: 'new2' },
         ],
       })
+
       expect(result).toHaveLength(2)
       expect(result.map((p) => p.value).sort()).toEqual(['new1', 'new2'])
     })
 
-    it('should delete all [] props with the given key when value is null', () => {
+    it('should delete all [] props with the given key when the value is null', () => {
       const result = mergeAndSanitiseProps({
         prevProps: [makeProp('tags[]', 'a'), makeProp('tags[]', 'b')],
         newProps: [{ key: 'tags[]', value: null }],
       })
+
       expect(result).toHaveLength(0)
     })
 
@@ -86,6 +93,7 @@ describe('mergeAndSanitiseProps', () => {
           { key: 'tags[]', value: 'b' },
         ],
       })
+
       expect(result).toHaveLength(2)
       expect(result.map((p) => p.value).sort()).toEqual(['a', 'b'])
     })
@@ -95,9 +103,24 @@ describe('mergeAndSanitiseProps', () => {
         prevProps: [makeProp('colors[]', 'red')],
         newProps: [{ key: 'tags[]', value: 'a' }],
       })
+
       expect(result).toHaveLength(2)
       expect(result.find((p) => p.key === 'colors[]')?.value).toBe('red')
       expect(result.find((p) => p.key === 'tags[]')?.value).toBe('a')
+    })
+
+    it('should filter out null values from arrays', () => {
+      const result = mergeAndSanitiseProps({
+        prevProps: [],
+        newProps: [
+          { key: 'tags[]', value: 'a' },
+          { key: 'tags[]', value: 'b' },
+          { key: 'tags[]', value: null },
+        ],
+      })
+
+      expect(result).toHaveLength(2)
+      expect(result.map((p) => p.value).sort()).toEqual(['a', 'b'])
     })
   })
 
@@ -107,6 +130,7 @@ describe('mergeAndSanitiseProps', () => {
         key: 'tags[]',
         value: String(i),
       }))
+
       expect(() => mergeAndSanitiseProps({ prevProps: [], newProps })).toThrow(
         `Prop array length (${MAX_ARRAY_LENGTH + 1}) for key 'tags[]' exceeds ${MAX_ARRAY_LENGTH} items`,
       )
@@ -117,6 +141,7 @@ describe('mergeAndSanitiseProps', () => {
         key: 'tags[]',
         value: String(i),
       }))
+
       expect(() => mergeAndSanitiseProps({ prevProps: [], newProps })).not.toThrow()
     })
   })
@@ -128,6 +153,7 @@ describe('mergeAndSanitiseProps', () => {
         newProps: [{ key: 'META_tags[]', value: 'override' }],
         extraFilter: (p) => !p.key.startsWith('META_'),
       })
+
       expect(result).toHaveLength(1)
       expect(result[0]).toMatchObject({ key: 'META_tags[]', value: 'internal' })
     })
@@ -143,8 +169,10 @@ describe('mergeAndSanitiseProps', () => {
           { key: 'tags[]', value: 'new2' },
         ],
       })
+
       expect(result).toHaveLength(3)
       expect(result.find((p) => p.key === 'name')?.value).toBe('Bob')
+
       const tags = result
         .filter((p) => p.key === 'tags[]')
         .map((p) => p.value)

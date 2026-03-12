@@ -62,7 +62,7 @@ export const postRoute = apiRoute({
         conn.playerAliasId === subscribedTo.id
       )
     })
-    await sendMessages(conns, 'v1.player-relationships.subscription-created', {
+    sendMessages(conns, 'v1.player-relationships.subscription-created', {
       subscription,
     })
 

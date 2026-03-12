@@ -1,4 +1,3 @@
-import { setTraceAttributes } from '@hyperdx/node-opentelemetry'
 import { RequestContext, EntityManager } from '@mikro-orm/mysql'
 import Redis from 'ioredis'
 import { v4 } from 'uuid'
@@ -7,11 +6,9 @@ import Socket from '.'
 import { APIKeyScope } from '../entities/api-key'
 import PlayerAlias from '../entities/player-alias'
 import checkRateLimitExceeded from '../lib/errors/checkRateLimitExceeded'
-import { getResultCacheOptions } from '../lib/perf/getResultCacheOptions'
 import { logResponse } from './messages/socketLogger'
 import { heartbeatMessage, SocketMessageResponse } from './messages/socketMessage'
 import SocketTicket from './socketTicket'
-import { getSocketTracer } from './socketTracer'
 
 export default class SocketConnection {
   alive: boolean = true
@@ -37,17 +34,24 @@ export default class SocketConnection {
   }
 
   async getPlayerAlias() {
+    const aliasKey = `socketConnection:alias:${this.playerAliasId}`
+
+    const cache = await this.wss.redis.get(aliasKey)
+    if (cache) {
+      return JSON.parse(cache) as ReturnType<PlayerAlias['toJSON']>
+    }
+
     const em = RequestContext.getEntityManager() as EntityManager
     /* v8 ignore next 3 -- @preserve */
     if (!em) {
       throw new Error('Missing request context for entity manager')
     }
-    return em
-      .repo(PlayerAlias)
-      .findOne(
-        this.playerAliasId,
-        getResultCacheOptions(`socket-connection-alias-${this.playerAliasId}`, 1000),
-      )
+
+    const playerAlias = await em.repo(PlayerAlias).findOneOrFail(this.playerAliasId)
+    const data = playerAlias.toJSON()
+    await this.wss.redis.set(aliasKey, JSON.stringify(data), 'EX', 1)
+
+    return data
   }
 
   getAPIKeyId() {
@@ -63,8 +67,8 @@ export default class SocketConnection {
   }
 
   getRateLimitMaxRequests() {
-    // 60 rps for authed, 1 for unauthed
-    return this.playerAliasId ? 3600 : 60
+    // 60 rps for authed, 5 for unauthed
+    return this.playerAliasId ? 3600 : 300
   }
 
   async checkRateLimitExceeded(redis: Redis): Promise<boolean> {
@@ -93,30 +97,12 @@ export default class SocketConnection {
     return this.devBuild
   }
 
-  async sendMessage<T extends object>(
-    res: SocketMessageResponse,
-    data: T,
-    serialisedMessage?: string,
-  ) {
-    await getSocketTracer().startActiveSpan('socket.send_message', async (span) => {
-      try {
-        if (this.ws.readyState === this.ws.OPEN) {
-          const devBuild = this.isDevBuild()
-          const message = serialisedMessage ?? JSON.stringify({ res, data })
-
-          setTraceAttributes({
-            'socket.message_receiver.alias_id': this.playerAliasId,
-            'socket.message_receiver.dev_build': devBuild,
-          })
-
-          logResponse(this, res, message)
-
-          this.ws.send(message)
-        }
-      } finally {
-        span.end()
-      }
-    })
+  sendMessage<T extends object>(res: SocketMessageResponse, data: T, serialisedMessage?: string) {
+    if (this.ws.readyState === this.ws.OPEN) {
+      const message = serialisedMessage ?? JSON.stringify({ res, data })
+      logResponse(this, res, message)
+      this.ws.send(message)
+    }
   }
 
   ping() {
@@ -137,9 +123,10 @@ export default class SocketConnection {
 
   async handleClosed() {
     if (this.playerAliasId) {
-      const playerAlias = await this.getPlayerAlias()
+      const em = RequestContext.getEntityManager() as EntityManager
+      const playerAlias = await em.repo(PlayerAlias).findOne(this.playerAliasId)
+
       if (playerAlias) {
-        const em = RequestContext.getEntityManager() as EntityManager
         await playerAlias.player.handleSession(em, false)
         await playerAlias.player.setPresence(em, this.wss, playerAlias, false)
       }

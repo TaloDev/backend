@@ -32,7 +32,7 @@ export default class SocketError {
 
 type SocketErrorReq = SocketMessageRequest | 'unknown'
 
-export async function sendError({
+export function sendError({
   conn,
   req,
   error,
@@ -54,7 +54,7 @@ export async function sendError({
     })
   }
 
-  await sendMessage<{
+  sendMessage<{
     req: SocketErrorReq
     message: string
     errorCode: SocketErrorCode

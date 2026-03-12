@@ -182,7 +182,7 @@ export default class Player {
         this.game.id === conn.gameId
       )
     })
-    await sendMessages(conns, 'v1.players.presence.updated', {
+    sendMessages(conns, 'v1.players.presence.updated', {
       presence: this.presence,
       meta: {
         onlineChanged: prevOnline !== online,

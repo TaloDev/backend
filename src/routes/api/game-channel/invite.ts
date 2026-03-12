@@ -52,7 +52,12 @@ export const inviteRoute = apiRoute({
       return ctx.throw(400, 'Players cannot invite themselves')
     }
 
-    await joinChannel(em, ctx.wss, channel, inviteeAlias)
+    await joinChannel({
+      em,
+      wss: ctx.wss,
+      channel,
+      playerAlias: inviteeAlias,
+    })
 
     return {
       status: 204,

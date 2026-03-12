@@ -25,7 +25,7 @@ async function runMembershipChecksForGroups(
   em: EntityManager,
   player: Player,
   groups: LoadedGroups,
-): Promise<boolean> {
+) {
   let shouldFlush = false
 
   for (const group of groups) {

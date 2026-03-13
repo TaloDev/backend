@@ -48,7 +48,7 @@ describe('Socket presence', () => {
 
     const channel = await new GameChannelFactory(player.game).temporaryMembership().one()
     channel.members.add(player.aliases[0])
-    await em.persistAndFlush(channel)
+    await em.persist(channel).flush()
 
     await createTestSocket(`/?ticket=${ticket}`, async (client) => {
       await client.identify(identifyMessage)
@@ -70,7 +70,7 @@ describe('Socket presence', () => {
       .state(() => ({ autoCleanup: true }))
       .one()
     channel.members.add(player.aliases[0])
-    await em.persistAndFlush(channel)
+    await em.persist(channel).flush()
 
     await createTestSocket(`/?ticket=${ticket}`, async (client) => {
       await client.identify(identifyMessage)
@@ -79,7 +79,7 @@ describe('Socket presence', () => {
     const refreshedChannel = await em.refresh(channel)
     expect(refreshedChannel).toBeNull()
 
-    expect(sendMessageToMembersMock).toHaveBeenCalledOnce()
+    expect(sendMessageToMembersMock).toHaveBeenCalledTimes(2)
     const lastCall = sendMessageToMembersMock.mock.lastCall
     assert(lastCall)
 

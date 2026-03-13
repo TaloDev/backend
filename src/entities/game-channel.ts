@@ -71,6 +71,18 @@ export default class GameChannel {
     return key
   }
 
+  static getSocketExistenceKey(id: number) {
+    return `gameChannelListeners:channel:${id}:exists`
+  }
+
+  static getSocketMembersKey(id: number) {
+    return `gameChannelListeners:channel:${id}:members`
+  }
+
+  static getSocketDataKey(id: number) {
+    return `gameChannelListeners:channel:${id}:data`
+  }
+
   constructor(game: Game) {
     this.game = game
   }
@@ -83,7 +95,7 @@ export default class GameChannel {
     const conns = socket.findConnections((conn) => {
       return conn.hasScope(APIKeyScope.READ_GAME_CHANNELS) && this.hasMember(conn.playerAliasId)
     })
-    await sendMessages(conns, res, data)
+    sendMessages(conns, res, data)
   }
 
   setProps(props: { key: string; value: string }[]) {
@@ -100,6 +112,36 @@ export default class GameChannel {
 
   async sendDeletedMessage(socket: Socket) {
     await this.sendMessageToMembers(socket, 'v1.channels.deleted', { channel: this })
+  }
+
+  async removeMember({
+    socket,
+    playerAlias,
+    reason,
+  }: {
+    socket: Socket
+    playerAlias: PlayerAlias
+    reason: GameChannelLeavingReason
+  }) {
+    const shouldDelete = this.shouldAutoCleanup(playerAlias)
+
+    await this.sendMessageToMembers(socket, 'v1.channels.player-left', {
+      channel: this,
+      playerAlias,
+      meta: { reason },
+    })
+
+    if (shouldDelete) {
+      await this.sendDeletedMessage(socket)
+    }
+
+    this.members.remove(playerAlias)
+
+    if (this.owner?.id === playerAlias.id) {
+      this.owner = null
+    }
+
+    return shouldDelete
   }
 
   toJSON() {

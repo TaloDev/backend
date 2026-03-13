@@ -20,17 +20,17 @@ const playerRelationshipsListeners = [
         confirmed: true,
       })
 
-      const subscriberAliasIds = subscriptions.map((sub) => sub.subscriber.id)
+      const subscriberAliasIds = new Set(subscriptions.map((sub) => sub.subscriber.id))
 
       const conns = socket.findConnections((connection) => {
         return (
           connection.hasScope(APIKeyScope.READ_PLAYER_BROADCASTS) &&
           !!connection.playerAliasId &&
-          subscriberAliasIds.includes(connection.playerAliasId)
+          subscriberAliasIds.has(connection.playerAliasId)
         )
       })
 
-      await sendMessages(conns, 'v1.player-relationships.broadcast', {
+      sendMessages(conns, 'v1.player-relationships.broadcast', {
         message: data.message,
         playerAlias: await conn.getPlayerAlias(),
       })

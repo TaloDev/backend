@@ -11,8 +11,9 @@ describe('GameChannel subscriber', () => {
         APIKeyScope.READ_GAME_CHANNELS,
         APIKeyScope.WRITE_GAME_CHANNELS,
       ])
+
       const player = await new PlayerFactory([apiKey.game]).one()
-      await em.persistAndFlush([player])
+      await em.persist([player]).flush()
 
       // populate the cache with empty list
       const res1 = await request(app)
@@ -47,8 +48,9 @@ describe('GameChannel subscriber', () => {
         APIKeyScope.READ_GAME_CHANNELS,
         APIKeyScope.WRITE_GAME_CHANNELS,
       ])
+
       const player = await new PlayerFactory([apiKey.game]).one()
-      await em.persistAndFlush([player])
+      await em.persist([player]).flush()
 
       // populate the cache with empty list
       const res1 = await request(app)
@@ -96,11 +98,53 @@ describe('GameChannel subscriber', () => {
   })
 
   describe('cache invalidation on update', () => {
+    it('should not invalidate cache when only totalMessages changes', async () => {
+      const [apiKey, token] = await createAPIKeyAndToken([
+        APIKeyScope.READ_GAME_CHANNELS,
+        APIKeyScope.WRITE_GAME_CHANNELS,
+      ])
+
+      const player = await new PlayerFactory([apiKey.game]).one()
+      const channel = await new GameChannelFactory(apiKey.game)
+        .state(() => ({ owner: player.aliases[0], name: 'Test Channel' }))
+        .one()
+
+      channel.members.add(player.aliases[0])
+
+      await em.persist([player, channel]).flush()
+
+      // populate cache
+      const res1 = await request(app)
+        .get('/v1/game-channels')
+        .set('x-talo-alias', String(player.aliases[0].id))
+        .auth(token, { type: 'bearer' })
+        .expect(200)
+
+      expect(res1.body.channels).toHaveLength(1)
+      expect(res1.body.channels[0].name).toBe('Test Channel')
+
+      // directly mutate totalMessages (simulating the flush handler)
+      channel.totalMessages = 42
+      await em.flush()
+
+      // cache should still be warm — name update not triggered
+      const res2 = await request(app)
+        .get('/v1/game-channels')
+        .set('x-talo-alias', String(player.aliases[0].id))
+        .auth(token, { type: 'bearer' })
+        .expect(200)
+
+      expect(res2.body.channels).toHaveLength(1)
+      // cached response: totalMessages still 0 (not updated by subscriber)
+      expect(res2.body.channels[0].totalMessages).toBe(0)
+    })
+
     it('should invalidate cache when channel props are updated', async () => {
       const [apiKey, token] = await createAPIKeyAndToken([
         APIKeyScope.READ_GAME_CHANNELS,
         APIKeyScope.WRITE_GAME_CHANNELS,
       ])
+
       const player = await new PlayerFactory([apiKey.game]).one()
       const channel = await new GameChannelFactory(apiKey.game)
         .state(() => ({
@@ -108,9 +152,11 @@ describe('GameChannel subscriber', () => {
           name: 'Test Channel',
         }))
         .one()
+
       channel.members.add(player.aliases[0])
       channel.setProps([{ key: 'level', value: '1' }])
-      await em.persistAndFlush([player, channel])
+
+      await em.persist([player, channel]).flush()
 
       // populate cache
       const res1 = await request(app)
@@ -150,12 +196,15 @@ describe('GameChannel subscriber', () => {
         APIKeyScope.READ_GAME_CHANNELS,
         APIKeyScope.WRITE_GAME_CHANNELS,
       ])
+
       const player = await new PlayerFactory([apiKey.game]).one()
       const channel = await new GameChannelFactory(apiKey.game)
         .state(() => ({ owner: player.aliases[0] }))
         .one()
+
       channel.members.add(player.aliases[0])
-      await em.persistAndFlush([player, channel])
+
+      await em.persist([player, channel]).flush()
 
       // populate cache with the channel
       const res1 = await request(app)
@@ -188,6 +237,7 @@ describe('GameChannel subscriber', () => {
         APIKeyScope.READ_GAME_CHANNELS,
         APIKeyScope.WRITE_GAME_CHANNELS,
       ])
+
       const player = await new PlayerFactory([apiKey.game]).one()
       const channel = await new GameChannelFactory(apiKey.game)
         .state(() => ({
@@ -195,8 +245,10 @@ describe('GameChannel subscriber', () => {
           autoCleanup: true,
         }))
         .one()
+
       channel.members.add(player.aliases[0])
-      await em.persistAndFlush([player, channel])
+
+      await em.persist([player, channel]).flush()
 
       // populate cache
       const res1 = await request(app)
@@ -249,7 +301,7 @@ describe('GameChannel subscriber', () => {
       channel1.members.add(player1.aliases[0])
       channel2.members.add(player2.aliases[0])
 
-      await em.persistAndFlush([player1, player2, channel1, channel2])
+      await em.persist([player1, player2, channel1, channel2]).flush()
 
       // cache both games
       const res1Game1 = await request(app)

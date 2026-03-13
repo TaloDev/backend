@@ -73,7 +73,7 @@ export const confirmRoute = apiRoute({
         conn.playerAliasId === subscription.subscriber.id
       )
     })
-    await sendMessages(subscriberConns, 'v1.player-relationships.subscription-confirmed', {
+    sendMessages(subscriberConns, 'v1.player-relationships.subscription-confirmed', {
       subscription,
     })
 

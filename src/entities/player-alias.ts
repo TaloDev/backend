@@ -107,19 +107,14 @@ export default class PlayerAlias {
     )
 
     for (const channel of temporaryChannels) {
-      channel.members.remove(this)
+      const deleted = await channel.removeMember({
+        socket,
+        playerAlias: this,
+        reason: GameChannelLeavingReason.TEMPORARY_MEMBERSHIP,
+      })
 
-      if (channel.shouldAutoCleanup(this)) {
+      if (deleted) {
         em.remove(channel)
-        await channel.sendDeletedMessage(socket)
-      } else {
-        await channel.sendMessageToMembers(socket, 'v1.channels.player-left', {
-          channel,
-          playerAlias: this,
-          meta: {
-            reason: GameChannelLeavingReason.TEMPORARY_MEMBERSHIP,
-          },
-        })
       }
     }
   }

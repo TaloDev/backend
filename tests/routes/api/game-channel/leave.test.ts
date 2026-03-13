@@ -13,7 +13,7 @@ describe('Game channel API - leave', () => {
     const channel = await new GameChannelFactory(apiKey.game).one()
     const player = await new PlayerFactory([apiKey.game]).one()
     channel.members.add(player.aliases[0])
-    await em.persistAndFlush(channel)
+    await em.persist(channel).flush()
 
     await request(app)
       .post(`/v1/game-channels/${channel.id}/leave`)
@@ -28,7 +28,7 @@ describe('Game channel API - leave', () => {
     const channel = await new GameChannelFactory(apiKey.game).one()
     const player = await new PlayerFactory([apiKey.game]).one()
     channel.members.add(player.aliases[0])
-    await em.persistAndFlush(channel)
+    await em.persist(channel).flush()
 
     await request(app)
       .post(`/v1/game-channels/${channel.id}/leave`)
@@ -42,8 +42,8 @@ describe('Game channel API - leave', () => {
 
     const channel = await new GameChannelFactory(apiKey.game).one()
     const player = await new PlayerFactory([apiKey.game]).one()
-    channel.members.add(player.aliases[0])
-    await em.persistAndFlush(channel)
+
+    await em.persist([channel, player]).flush()
 
     await request(app)
       .post(`/v1/game-channels/${channel.id}/leave`)
@@ -65,7 +65,7 @@ describe('Game channel API - leave', () => {
       (await new PlayerFactory([apiKey.game]).one()).aliases[0],
       (await new PlayerFactory([apiKey.game]).one()).aliases[0],
     ])
-    await em.persistAndFlush(channel)
+    await em.persist(channel).flush()
 
     await request(app)
       .post(`/v1/game-channels/${channel.id}/leave`)
@@ -88,7 +88,7 @@ describe('Game channel API - leave', () => {
       .state(() => ({ autoCleanup: true }))
       .one()
     channel.members.add(player.aliases[0])
-    await em.persistAndFlush(channel)
+    await em.persist(channel).flush()
 
     await createTestSocket(`/?ticket=${ticket}`, async (client) => {
       await client.identify(identifyMessage)
@@ -125,7 +125,7 @@ describe('Game channel API - leave', () => {
       (await new PlayerFactory([apiKey.game]).one()).aliases[0],
       (await new PlayerFactory([apiKey.game]).one()).aliases[0],
     ])
-    await em.persistAndFlush(channel)
+    await em.persist(channel).flush()
 
     await request(app)
       .post(`/v1/game-channels/${channel.id}/leave`)
@@ -144,7 +144,7 @@ describe('Game channel API - leave', () => {
     const channel = await new GameChannelFactory(apiKey.game).one()
     const player = await new PlayerFactory([apiKey.game]).one()
     channel.members.add(player.aliases[0])
-    await em.persistAndFlush(channel)
+    await em.persist(channel).flush()
 
     const res = await request(app)
       .post(`/v1/game-channels/${channel.id}/leave`)
@@ -164,7 +164,7 @@ describe('Game channel API - leave', () => {
     const player = await new PlayerFactory([apiKey.game]).one()
     channel.owner = player.aliases[0]
     channel.members.add(player.aliases[0])
-    await em.persistAndFlush(channel)
+    await em.persist(channel).flush()
 
     const res = await request(app)
       .post('/v1/game-channels/54252/leave')
@@ -186,7 +186,7 @@ describe('Game channel API - leave', () => {
 
     const channel = await new GameChannelFactory(player.game).one()
     channel.members.add(player.aliases[0])
-    await em.persistAndFlush(channel)
+    await em.persist(channel).flush()
 
     await createTestSocket(`/?ticket=${ticket}`, async (client) => {
       await client.identify(identifyMessage)
@@ -210,7 +210,7 @@ describe('Game channel API - leave', () => {
     const player = await new PlayerFactory([apiKey.game]).one()
     channel.owner = null
     channel.members.add(player.aliases[0])
-    await em.persistAndFlush(channel)
+    await em.persist(channel).flush()
 
     await request(app)
       .post(`/v1/game-channels/${channel.id}/leave`)

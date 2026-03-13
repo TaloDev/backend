@@ -61,7 +61,7 @@ export const deleteRoute = apiRoute({
         (conn.playerAliasId === subscribedToId || conn.playerAliasId === subscriberId)
       )
     })
-    await sendMessages(conns, 'v1.player-relationships.subscription-deleted', {
+    sendMessages(conns, 'v1.player-relationships.subscription-deleted', {
       subscription,
       reciprocalSubscription,
     })

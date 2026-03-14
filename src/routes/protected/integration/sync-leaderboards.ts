@@ -13,7 +13,7 @@ export const syncLeaderboardsRoute = protectedRoute({
     const em = ctx.em
     const integration = ctx.state.integration
 
-    if (!integration.getConfig().syncLeaderboards) {
+    if (!integration.getSteamConfig().syncLeaderboards) {
       return ctx.throw(400, 'Leaderboard syncing is not enabled')
     }
 

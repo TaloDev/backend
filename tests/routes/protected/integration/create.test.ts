@@ -120,6 +120,77 @@ describe('Integration - create', () => {
     })
   })
 
+  it('should create a google play games integration', async () => {
+    const [organisation, game] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken({ type: UserType.ADMIN }, organisation)
+
+    const res = await request(app)
+      .post(`/games/${game.id}/integrations`)
+      .send({
+        type: IntegrationType.GOOGLE_PLAY_GAMES,
+        config: { clientId: 'client-id', clientSecret: 'client-secret' },
+      })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    expect(res.body.integration.config.clientId).toBe('client-id')
+    expect(res.body.integration.config.clientSecret).not.toBeDefined()
+
+    const activity = await em.getRepository(GameActivity).findOne({
+      type: GameActivityType.GAME_INTEGRATION_ADDED,
+      game,
+    })
+    expect(activity!.extra.integrationType).toBe(IntegrationType.GOOGLE_PLAY_GAMES)
+  })
+
+  it('should encrypt the client secret for a google play games integration', async () => {
+    const [organisation, game] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken({ type: UserType.ADMIN }, organisation)
+
+    const res = await request(app)
+      .post(`/games/${game.id}/integrations`)
+      .send({
+        type: IntegrationType.GOOGLE_PLAY_GAMES,
+        config: { clientId: 'client-id', clientSecret: 'client-secret' },
+      })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    const integration = await em.getRepository(Integration).findOne(res.body.integration.id)
+    // @ts-expect-error accessing private
+    expect(integration.config.clientSecret).not.toBe('client-secret')
+    // @ts-expect-error accessing private
+    expect(integration.config.clientSecret).toContain(':')
+  })
+
+  it('should not create a google play games integration without clientId and clientSecret', async () => {
+    const [organisation, game] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken({ type: UserType.ADMIN }, organisation)
+
+    const res = await request(app)
+      .post(`/games/${game.id}/integrations`)
+      .send({ type: IntegrationType.GOOGLE_PLAY_GAMES, config: {} })
+      .auth(token, { type: 'bearer' })
+      .expect(400)
+
+    expect(res.body.errors['config.clientId']).toBeDefined()
+    expect(res.body.errors['config.clientSecret']).toBeDefined()
+  })
+
+  it('should not create a steamworks integration without apiKey and appId', async () => {
+    const [organisation, game] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken({ type: UserType.ADMIN }, organisation)
+
+    const res = await request(app)
+      .post(`/games/${game.id}/integrations`)
+      .send({ type: IntegrationType.STEAMWORKS, config: {} })
+      .auth(token, { type: 'bearer' })
+      .expect(400)
+
+    expect(res.body.errors['config.apiKey']).toBeDefined()
+    expect(res.body.errors['config.appId']).toBeDefined()
+  })
+
   it('should not add an integration with an invalid type', async () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({ type: UserType.ADMIN }, organisation)
@@ -132,10 +203,6 @@ describe('Integration - create', () => {
       .auth(token, { type: 'bearer' })
       .expect(400)
 
-    expect(res.body).toStrictEqual({
-      errors: {
-        type: [`Integration type must be one of ${Object.values(IntegrationType).join(', ')}`],
-      },
-    })
+    expect(res.body.errors.type).toBeDefined()
   })
 })

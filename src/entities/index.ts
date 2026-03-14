@@ -11,6 +11,7 @@ import GameFeedbackProp from './game-feedback-prop'
 import GameSave from './game-save'
 import GameSecret from './game-secret'
 import GameStat from './game-stat'
+import GooglePlayGamesIntegrationEvent from './google-play-games-integration-event'
 import Integration from './integration'
 import Invite from './invite'
 import Leaderboard from './leaderboard'
@@ -42,6 +43,7 @@ import UserSession from './user-session'
 import UserTwoFactorAuth from './user-two-factor-auth'
 
 export const entities = [
+  GooglePlayGamesIntegrationEvent,
   PlayerAliasSubscription,
   PlayerToDelete,
   SteamworksPlayerStat,

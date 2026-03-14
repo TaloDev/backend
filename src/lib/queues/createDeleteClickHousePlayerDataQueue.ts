@@ -33,10 +33,9 @@ export function createDeleteClickHousePlayerDataQueue() {
             })
           }),
         )
-        /* v8 ignore start -- @preserve */
+        /* istanbul ignore next -- @preserve */
       } catch (error) {
         captureException(error)
-        /* v8 ignore stop -- @preserve */
       } finally {
         await clickhouse.close()
       }

@@ -14,9 +14,8 @@ export default function handleSQLError(err: Error) {
     return buildErrorResponse({
       [camelCase(match[1])]: [`${match[1]} is too long`],
     })
-    /* v8 ignore start -- @preserve */
+    /* istanbul ignore next -- @preserve */
   } else {
     throw err
   }
-  /* v8 ignore stop -- @preserve */
 }

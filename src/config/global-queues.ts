@@ -26,7 +26,7 @@ export function setupGlobalQueues() {
 
 export function getGlobalQueue<T extends QueueName>(queueName: T): QueueTypeMapping[T] {
   const queue = queueMap.get(queueName)
-  /* v8 ignore next 3 -- @preserve */
+  /* istanbul ignore next -- @preserve */
   if (!queue) {
     throw new Error(`Queue not found: ${queueName}`)
   }

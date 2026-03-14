@@ -41,7 +41,7 @@ export async function apiKeyMiddleware(ctx: Context, next: Next) {
 
         setTraceAttributes({ game_id: apiKey.game.id })
 
-        /* v8 ignore start -- @preserve */
+        /* istanbul ignore next -- @preserve */
         const now = new Date()
         if (process.env.NODE_ENV !== 'test') {
           ctx.res.on('finish', async () => {
@@ -51,7 +51,6 @@ export async function apiKeyMiddleware(ctx: Context, next: Next) {
           // in tests the connection would already be closed after the response is sent
           await updateLastUsedAt(ctx, apiKey, now)
         }
-        /* v8 ignore stop -- @preserve */
       }
     } catch {
       return ctx.throw(401)

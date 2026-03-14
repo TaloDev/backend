@@ -42,7 +42,7 @@ export default class SocketConnection {
     }
 
     const em = RequestContext.getEntityManager() as EntityManager
-    /* v8 ignore next 3 -- @preserve */
+    /* istanbul ignore next -- @preserve */
     if (!em) {
       throw new Error('Missing request context for entity manager')
     }

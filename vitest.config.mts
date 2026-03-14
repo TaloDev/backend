@@ -9,7 +9,7 @@ export default defineConfig({
     maxWorkers: 1,
     isolate: false,
     coverage: {
-      provider: 'v8',
+      provider: 'istanbul',
       reporter: 'lcov',
       include: ['src/**/*.ts'],
       exclude: [

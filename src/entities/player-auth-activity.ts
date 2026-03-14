@@ -55,7 +55,7 @@ export default class PlayerAuthActivity {
     return alias
   }
 
-  /* v8 ignore start -- @preserve */
+  /* istanbul ignore next -- @preserve */
   private getActivity(): string {
     const authAlias = this.getAuthAlias()
 
@@ -100,7 +100,6 @@ export default class PlayerAuthActivity {
         return ''
     }
   }
-  /* v8 ignore stop -- @preserve */
 
   toJSON() {
     return {

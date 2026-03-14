@@ -8,7 +8,7 @@ import { sendMessages } from '../messages/socketMessage'
 import { SocketMessageListener } from '../router/createListener'
 import createListener from '../router/createListener'
 
-const ttl = 1
+const ttl = 600
 
 async function checkChannelExists({
   em,

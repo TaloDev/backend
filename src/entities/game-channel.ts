@@ -8,6 +8,7 @@ import {
   PrimaryKey,
   Property,
 } from '@mikro-orm/mysql'
+import { getGlobalRedis } from '../config/redis.config'
 import Socket from '../socket'
 import { sendMessages, SocketMessageResponse } from '../socket/messages/socketMessage'
 import { APIKeyScope } from './api-key'
@@ -92,6 +93,16 @@ export default class GameChannel {
     res: SocketMessageResponse,
     data: T,
   ) {
+    switch (res) {
+      case 'v1.channels.player-joined':
+      case 'v1.channels.player-left':
+        await this.clearSocketMembersKey()
+        break
+      case 'v1.channels.deleted':
+        await this.clearSocketExistenceKey()
+        break
+    }
+
     const conns = socket.findConnections((conn) => {
       return conn.hasScope(APIKeyScope.READ_GAME_CHANNELS) && this.hasMember(conn.playerAliasId)
     })
@@ -112,6 +123,15 @@ export default class GameChannel {
 
   async sendDeletedMessage(socket: Socket) {
     await this.sendMessageToMembers(socket, 'v1.channels.deleted', { channel: this })
+  }
+
+  async addMember({ socket, playerAlias }: { socket: Socket; playerAlias: PlayerAlias }) {
+    this.members.add(playerAlias)
+
+    await this.sendMessageToMembers(socket, 'v1.channels.player-joined', {
+      channel: this,
+      playerAlias,
+    })
   }
 
   async removeMember({
@@ -142,6 +162,18 @@ export default class GameChannel {
     }
 
     return shouldDelete
+  }
+
+  async clearSocketExistenceKey() {
+    await getGlobalRedis().del(GameChannel.getSocketExistenceKey(this.id))
+  }
+
+  async clearSocketMembersKey() {
+    await getGlobalRedis().del(GameChannel.getSocketMembersKey(this.id))
+  }
+
+  async clearSocketDataKey() {
+    await getGlobalRedis().del(GameChannel.getSocketDataKey(this.id))
   }
 
   toJSON() {

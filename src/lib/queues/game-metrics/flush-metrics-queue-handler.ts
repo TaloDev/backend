@@ -3,9 +3,8 @@ import { setTraceAttributes } from '@hyperdx/node-opentelemetry'
 import { EntityManager } from '@mikro-orm/mysql'
 import { captureException } from '@sentry/node'
 import { Queue } from 'bullmq'
-import Redis from 'ioredis'
 import { getMikroORM } from '../../../config/mikro-orm.config'
-import { createRedisConnection } from '../../../config/redis.config'
+import { getGlobalRedis } from '../../../config/redis.config'
 import Player from '../../../entities/player'
 import createClickHouseClient from '../../clickhouse/createClient'
 import createQueue from '../createQueue'
@@ -17,7 +16,6 @@ type HandlerOptions<S> = {
 }
 
 let clickhouse: ReturnType<typeof createClickHouseClient>
-let redis: Redis
 
 export async function postFlushCheckMemberships(handlerName: string, playerIds: string[]) {
   const canLog = process.env.NODE_ENV !== 'test'
@@ -71,10 +69,6 @@ export abstract class FlushMetricsQueueHandler<
       clickhouse = createClickHouseClient()
     }
 
-    if (!redis) {
-      redis = createRedisConnection()
-    }
-
     this.queue = createQueue(`flush-${metricName}`, async () => {
       /* v8 ignore next -- called manually in tests @preserve */
       await this.handle()
@@ -108,7 +102,7 @@ export abstract class FlushMetricsQueueHandler<
   }
 
   getRedis() {
-    return redis
+    return getGlobalRedis()
   }
 
   async handle() {
@@ -158,7 +152,7 @@ export abstract class FlushMetricsQueueHandler<
     const serialised = this.serialiseItem(item)
 
     try {
-      const pipeline = redis.pipeline()
+      const pipeline = this.getRedis().pipeline()
       pipeline.hset(this.redisKey, serialised.id, JSON.stringify(serialised))
       pipeline.expire(this.redisKey, 300) // 5 mins, ~10 retries
       await pipeline.exec()
@@ -172,7 +166,7 @@ export abstract class FlushMetricsQueueHandler<
     const itemsMap = new Map<string, S>()
 
     try {
-      const items = await redis.hgetall(this.redisKey)
+      const items = await this.getRedis().hgetall(this.redisKey)
       for (const [id, itemJson] of Object.entries(items)) {
         const parsedItem = JSON.parse(itemJson) as S
         itemsMap.set(id, parsedItem)
@@ -194,11 +188,9 @@ export abstract class FlushMetricsQueueHandler<
 
   protected abstract serialiseItem(item: T): S
 
-  private async removeBufferedItems(ids: string[]): Promise<void> {
-    if (ids.length === 0) return
-
+  private async removeBufferedItems(ids: string[]) {
     try {
-      await redis.hdel(this.redisKey, ...ids)
+      await this.getRedis().hdel(this.redisKey, ...ids)
     } catch (err) {
       captureException(err)
     }

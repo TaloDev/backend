@@ -3,7 +3,7 @@ import { captureException, withIsolationScope } from '@sentry/node'
 import { IncomingMessage, Server } from 'http'
 import Redis from 'ioredis'
 import { RawData, WebSocket, WebSocketServer } from 'ws'
-import { createRedisConnection } from '../config/redis.config'
+import { getGlobalRedis } from '../config/redis.config'
 import { enableSocketTracing } from './enableSocketTracing'
 import { logConnection, logConnectionClosed } from './messages/socketLogger'
 import { sendMessage } from './messages/socketMessage'
@@ -47,7 +47,7 @@ export default class Socket {
       clearInterval(interval)
     })
 
-    this.redis = createRedisConnection()
+    this.redis = getGlobalRedis()
 
     enableSocketTracing(this)
   }

@@ -87,6 +87,10 @@ export default class PlayerAlias {
     return { identifier: trimmedIdentifier }
   }
 
+  static getSocketDataKey(id: number) {
+    return `socketConnection:alias:${id}`
+  }
+
   async createSocketToken(redis: Redis) {
     const token = v4()
     await redis.set(`socketTokens.${this.id}`, token, 'EX', 3600)

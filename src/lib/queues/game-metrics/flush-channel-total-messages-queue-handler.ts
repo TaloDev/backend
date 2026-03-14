@@ -1,24 +1,18 @@
 import { EntityManager, raw } from '@mikro-orm/mysql'
 import { captureException } from '@sentry/node'
 import { getMikroORM } from '../../../config/mikro-orm.config'
-import { createRedisConnection } from '../../../config/redis.config'
+import { getGlobalRedis } from '../../../config/redis.config'
 import GameChannel from '../../../entities/game-channel'
 import createQueue from '../createQueue'
 
 const REDIS_KEY = 'channel:total-messages'
 
-let redis: ReturnType<typeof createRedisConnection>
 let queueInitialised = false
 
-function getRedis() {
-  if (!redis) {
-    redis = createRedisConnection()
-  }
-  return redis
-}
-
 export async function flush() {
-  const items = await getRedis().hgetall(REDIS_KEY)
+  const redis = getGlobalRedis()
+
+  const items = await redis.hgetall(REDIS_KEY)
   if (!items || Object.keys(items).length === 0) {
     return
   }
@@ -47,7 +41,7 @@ export async function flush() {
       }
     }
 
-    await getRedis().hdel(REDIS_KEY, ...Object.keys(items))
+    await redis.hdel(REDIS_KEY, ...Object.keys(items))
   } finally {
     em.clear()
   }
@@ -79,7 +73,7 @@ export async function incrementChannelTotalMessages(channelId: number) {
   }
 
   try {
-    await getRedis().hincrby(REDIS_KEY, String(channelId), 1)
+    await getGlobalRedis().hincrby(REDIS_KEY, String(channelId), 1)
   } catch (err) {
     captureException(err)
   }

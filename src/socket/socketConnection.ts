@@ -34,7 +34,7 @@ export default class SocketConnection {
   }
 
   async getPlayerAlias() {
-    const aliasKey = `socketConnection:alias:${this.playerAliasId}`
+    const aliasKey = PlayerAlias.getSocketDataKey(this.playerAliasId)
 
     const cache = await this.wss.redis.get(aliasKey)
     if (cache) {
@@ -49,7 +49,7 @@ export default class SocketConnection {
 
     const playerAlias = await em.repo(PlayerAlias).findOneOrFail(this.playerAliasId)
     const data = playerAlias.toJSON()
-    await this.wss.redis.set(aliasKey, JSON.stringify(data), 'EX', 1)
+    await this.wss.redis.set(aliasKey, JSON.stringify(data), 'EX', 5)
 
     return data
   }

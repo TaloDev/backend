@@ -3,7 +3,7 @@ import { captureException, withIsolationScope } from '@sentry/node'
 import { IncomingMessage, Server } from 'http'
 import Redis from 'ioredis'
 import { RawData, WebSocket, WebSocketServer } from 'ws'
-import { createRedisConnection } from '../config/redis.config'
+import { getGlobalRedis } from '../config/redis.config'
 import { enableSocketTracing } from './enableSocketTracing'
 import { logConnection, logConnectionClosed } from './messages/socketLogger'
 import { sendMessage } from './messages/socketMessage'
@@ -47,7 +47,7 @@ export default class Socket {
       clearInterval(interval)
     })
 
-    this.redis = createRedisConnection()
+    this.redis = getGlobalRedis()
 
     enableSocketTracing(this)
   }
@@ -85,7 +85,7 @@ export default class Socket {
               const connection = new SocketConnection(this, ws, ticket, req.socket.remoteAddress!)
               this.connections.set(ws, connection)
 
-              await sendMessage(connection, 'v1.connected', {})
+              sendMessage(connection, 'v1.connected', {})
             } else {
               await this.closeConnection(ws)
             }
@@ -101,15 +101,13 @@ export default class Socket {
     await withIsolationScope(async () => {
       await getSocketTracer().startActiveSpan('socket.message', async (span) => {
         try {
-          await RequestContext.create(this.em, async () => {
-            const connection = this.connections.get(ws)
-            if (connection) {
-              await this.router.handleMessage(connection, data)
-              /* v8 ignore next 3 -- @preserve */
-            } else {
-              await this.closeConnection(ws)
-            }
-          })
+          const connection = this.connections.get(ws)
+          if (connection) {
+            await this.router.handleMessage({ conn: connection, rawData: data, em: this.em })
+            /* v8 ignore next 3 -- @preserve */
+          } else {
+            await this.closeConnection(ws)
+          }
         } finally {
           span.end()
         }

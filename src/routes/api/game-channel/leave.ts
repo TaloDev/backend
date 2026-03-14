@@ -31,29 +31,17 @@ export const leaveRoute = apiRoute({
     const playerAlias = ctx.state.alias
 
     if (channel.hasMember(playerAlias.id)) {
-      await channel.sendMessageToMembers(ctx.wss, 'v1.channels.player-left', {
-        channel,
+      const deleted = await channel.removeMember({
+        socket: ctx.wss,
         playerAlias,
-        meta: {
-          reason: GameChannelLeavingReason.DEFAULT,
-        },
+        reason: GameChannelLeavingReason.DEFAULT,
       })
 
-      if (channel.shouldAutoCleanup(playerAlias)) {
-        await channel.sendDeletedMessage(ctx.wss)
+      if (deleted) {
         await em.remove(channel).flush()
-
-        return {
-          status: 204,
-        }
+      } else {
+        await em.flush()
       }
-
-      if (channel.owner?.id === playerAlias.id) {
-        channel.owner = null
-      }
-      channel.members.remove(playerAlias)
-
-      await em.flush()
     }
 
     return {

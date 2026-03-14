@@ -45,7 +45,11 @@ export const globalHistoryRoute = apiRoute({
       return ctx.throw(400, 'This stat is not globally available')
     }
 
-    let whereConditions = await stat.buildMetricsWhereConditions(startDate, endDate)
+    let whereConditions = await stat.buildMetricsWhereConditions({
+      startDate,
+      endDate,
+      includeDevData: ctx.state.includeDevData,
+    })
 
     if (playerId) {
       try {

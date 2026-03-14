@@ -35,20 +35,19 @@ export function canModifyChannel(channel: GameChannel, alias: PlayerAlias) {
   return channel.owner?.id === alias.id
 }
 
-export async function joinChannel(
-  em: EntityManager,
-  wss: APIRouteContext['wss'],
-  channel: GameChannel,
-  playerAlias: PlayerAlias,
-) {
+export async function joinChannel({
+  em,
+  wss,
+  channel,
+  playerAlias,
+}: {
+  em: EntityManager
+  wss: APIRouteContext['wss']
+  channel: GameChannel
+  playerAlias: PlayerAlias
+}) {
   if (!channel.hasMember(playerAlias.id)) {
-    channel.members.add(playerAlias)
-
-    await channel.sendMessageToMembers(wss, 'v1.channels.player-joined', {
-      channel,
-      playerAlias,
-    })
-
+    await channel.addMember({ socket: wss, playerAlias })
     await em.flush()
   }
 }

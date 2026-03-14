@@ -1,5 +1,6 @@
 import request from 'supertest'
 import { APIKeyScope } from '../../../../src/entities/api-key'
+import GameChannel from '../../../../src/entities/game-channel'
 import GameChannelFactory from '../../../fixtures/GameChannelFactory'
 import PlayerFactory from '../../../fixtures/PlayerFactory'
 import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
@@ -13,7 +14,7 @@ describe('Game channel API - leave', () => {
     const channel = await new GameChannelFactory(apiKey.game).one()
     const player = await new PlayerFactory([apiKey.game]).one()
     channel.members.add(player.aliases[0])
-    await em.persistAndFlush(channel)
+    await em.persist(channel).flush()
 
     await request(app)
       .post(`/v1/game-channels/${channel.id}/leave`)
@@ -28,7 +29,7 @@ describe('Game channel API - leave', () => {
     const channel = await new GameChannelFactory(apiKey.game).one()
     const player = await new PlayerFactory([apiKey.game]).one()
     channel.members.add(player.aliases[0])
-    await em.persistAndFlush(channel)
+    await em.persist(channel).flush()
 
     await request(app)
       .post(`/v1/game-channels/${channel.id}/leave`)
@@ -42,8 +43,8 @@ describe('Game channel API - leave', () => {
 
     const channel = await new GameChannelFactory(apiKey.game).one()
     const player = await new PlayerFactory([apiKey.game]).one()
-    channel.members.add(player.aliases[0])
-    await em.persistAndFlush(channel)
+
+    await em.persist([channel, player]).flush()
 
     await request(app)
       .post(`/v1/game-channels/${channel.id}/leave`)
@@ -65,7 +66,7 @@ describe('Game channel API - leave', () => {
       (await new PlayerFactory([apiKey.game]).one()).aliases[0],
       (await new PlayerFactory([apiKey.game]).one()).aliases[0],
     ])
-    await em.persistAndFlush(channel)
+    await em.persist(channel).flush()
 
     await request(app)
       .post(`/v1/game-channels/${channel.id}/leave`)
@@ -88,7 +89,7 @@ describe('Game channel API - leave', () => {
       .state(() => ({ autoCleanup: true }))
       .one()
     channel.members.add(player.aliases[0])
-    await em.persistAndFlush(channel)
+    await em.persist(channel).flush()
 
     await createTestSocket(`/?ticket=${ticket}`, async (client) => {
       await client.identify(identifyMessage)
@@ -125,7 +126,7 @@ describe('Game channel API - leave', () => {
       (await new PlayerFactory([apiKey.game]).one()).aliases[0],
       (await new PlayerFactory([apiKey.game]).one()).aliases[0],
     ])
-    await em.persistAndFlush(channel)
+    await em.persist(channel).flush()
 
     await request(app)
       .post(`/v1/game-channels/${channel.id}/leave`)
@@ -138,13 +139,55 @@ describe('Game channel API - leave', () => {
     expect(refreshedChannel.owner).toBe(null)
   })
 
+  it('should clear the socket members key when a player leaves', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_CHANNELS])
+
+    const channel = await new GameChannelFactory(apiKey.game).one()
+    const player = await new PlayerFactory([apiKey.game]).one()
+    channel.members.add(player.aliases[0])
+    await em.persist(channel).flush()
+
+    const membersKey = GameChannel.getSocketMembersKey(channel.id)
+    await redis.set(membersKey, String(player.aliases[0].id))
+
+    await request(app)
+      .post(`/v1/game-channels/${channel.id}/leave`)
+      .auth(token, { type: 'bearer' })
+      .set('x-talo-alias', String(player.aliases[0].id))
+      .expect(204)
+
+    expect(await redis.get(membersKey)).toBeNull()
+  })
+
+  it('should clear the socket existence key when a channel is auto-deleted on last player leaving', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_CHANNELS])
+
+    const channel = await new GameChannelFactory(apiKey.game)
+      .state(() => ({ autoCleanup: true }))
+      .one()
+    const player = await new PlayerFactory([apiKey.game]).one()
+    channel.members.add(player.aliases[0])
+    await em.persist(channel).flush()
+
+    const existenceKey = GameChannel.getSocketExistenceKey(channel.id)
+    await redis.set(existenceKey, '1')
+
+    await request(app)
+      .post(`/v1/game-channels/${channel.id}/leave`)
+      .auth(token, { type: 'bearer' })
+      .set('x-talo-alias', String(player.aliases[0].id))
+      .expect(204)
+
+    expect(await redis.get(existenceKey)).toBeNull()
+  })
+
   it('should not leave a channel with an invalid alias', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_CHANNELS])
 
     const channel = await new GameChannelFactory(apiKey.game).one()
     const player = await new PlayerFactory([apiKey.game]).one()
     channel.members.add(player.aliases[0])
-    await em.persistAndFlush(channel)
+    await em.persist(channel).flush()
 
     const res = await request(app)
       .post(`/v1/game-channels/${channel.id}/leave`)
@@ -164,7 +207,7 @@ describe('Game channel API - leave', () => {
     const player = await new PlayerFactory([apiKey.game]).one()
     channel.owner = player.aliases[0]
     channel.members.add(player.aliases[0])
-    await em.persistAndFlush(channel)
+    await em.persist(channel).flush()
 
     const res = await request(app)
       .post('/v1/game-channels/54252/leave')
@@ -177,6 +220,25 @@ describe('Game channel API - leave', () => {
     })
   })
 
+  it('should allow leaving a channel with a null owner', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_CHANNELS])
+
+    const channel = await new GameChannelFactory(apiKey.game).one()
+    const player = await new PlayerFactory([apiKey.game]).one()
+    channel.owner = null
+    channel.members.add(player.aliases[0])
+    await em.persist(channel).flush()
+
+    await request(app)
+      .post(`/v1/game-channels/${channel.id}/leave`)
+      .auth(token, { type: 'bearer' })
+      .set('x-talo-alias', String(player.aliases[0].id))
+      .expect(204)
+
+    const updatedChannel = await em.refreshOrFail(channel, { populate: ['members'] })
+    expect(updatedChannel.members.count()).toBe(0)
+  })
+
   it('should notify players in the channel when a player leaves', async () => {
     const { identifyMessage, ticket, player, token } = await createSocketIdentifyMessage([
       APIKeyScope.READ_PLAYERS,
@@ -186,7 +248,7 @@ describe('Game channel API - leave', () => {
 
     const channel = await new GameChannelFactory(player.game).one()
     channel.members.add(player.aliases[0])
-    await em.persistAndFlush(channel)
+    await em.persist(channel).flush()
 
     await createTestSocket(`/?ticket=${ticket}`, async (client) => {
       await client.identify(identifyMessage)
@@ -201,24 +263,5 @@ describe('Game channel API - leave', () => {
         expect(actual.data.playerAlias.id).toBe(player.aliases[0].id)
       })
     })
-  })
-
-  it('should allow leaving a channel with a null owner', async () => {
-    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_CHANNELS])
-
-    const channel = await new GameChannelFactory(apiKey.game).one()
-    const player = await new PlayerFactory([apiKey.game]).one()
-    channel.owner = null
-    channel.members.add(player.aliases[0])
-    await em.persistAndFlush(channel)
-
-    await request(app)
-      .post(`/v1/game-channels/${channel.id}/leave`)
-      .auth(token, { type: 'bearer' })
-      .set('x-talo-alias', String(player.aliases[0].id))
-      .expect(204)
-
-    const updatedChannel = await em.refreshOrFail(channel, { populate: ['members'] })
-    expect(updatedChannel.members.count()).toBe(0)
   })
 })

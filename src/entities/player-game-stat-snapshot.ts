@@ -1,6 +1,5 @@
 import { EntityManager } from '@mikro-orm/mysql'
 import { captureException } from '@sentry/node'
-import assert from 'node:assert'
 import { v4 } from 'uuid'
 import ClickHouseEntity from '../lib/clickhouse/clickhouse-entity'
 import { formatDateForClickHouse } from '../lib/clickhouse/formatDateTime'
@@ -16,6 +15,7 @@ export type ClickHousePlayerGameStatSnapshot = {
   value: number
   global_value: number
   created_at: string
+  dev_build: boolean
 }
 
 export default class PlayerGameStatSnapshot extends ClickHouseEntity<
@@ -28,6 +28,7 @@ export default class PlayerGameStatSnapshot extends ClickHouseEntity<
   change: number = 0
   value!: number
   globalValue!: number
+  devBuild!: boolean
   createdAt: Date = new Date()
 
   static async massHydrate(
@@ -85,6 +86,7 @@ export default class PlayerGameStatSnapshot extends ClickHouseEntity<
         snapshot.change = snapshotData.change
         snapshot.value = snapshotData.value
         snapshot.globalValue = snapshotData.global_value
+        snapshot.devBuild = snapshotData.dev_build
         snapshot.createdAt = new Date(snapshotData.created_at)
 
         return snapshot
@@ -98,6 +100,7 @@ export default class PlayerGameStatSnapshot extends ClickHouseEntity<
 
     this.value = playerStat.value
     this.globalValue = this.stat.globalValue
+    this.devBuild = playerAlias.player.devBuild
 
     return this
   }
@@ -111,35 +114,8 @@ export default class PlayerGameStatSnapshot extends ClickHouseEntity<
       value: this.value,
       global_value: this.globalValue,
       created_at: formatDateForClickHouse(this.createdAt),
+      dev_build: this.devBuild,
     }
-  }
-
-  override async hydrate(em: EntityManager, data: ClickHousePlayerGameStatSnapshot): Promise<this> {
-    const playerStat = await em.repo(PlayerGameStat).findOneOrFail(
-      {
-        player: {
-          aliases: {
-            $in: [data.player_alias_id],
-          },
-        },
-        stat: data.game_stat_id,
-      },
-      {
-        populate: ['player.aliases'],
-      },
-    )
-
-    const playerAlias = playerStat.player.aliases.find((alias) => alias.id === data.player_alias_id)
-    assert(playerAlias)
-
-    this.construct(playerAlias, playerStat)
-    this.id = data.id
-    this.change = data.change
-    this.value = data.value
-    this.globalValue = data.global_value
-    this.createdAt = new Date(data.created_at)
-
-    return this
   }
 
   toJSON() {

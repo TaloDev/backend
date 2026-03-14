@@ -47,13 +47,7 @@ export async function joinChannel({
   playerAlias: PlayerAlias
 }) {
   if (!channel.hasMember(playerAlias.id)) {
-    channel.members.add(playerAlias)
-
-    await channel.sendMessageToMembers(wss, 'v1.channels.player-joined', {
-      channel,
-      playerAlias,
-    })
-
+    await channel.addMember({ socket: wss, playerAlias })
     await em.flush()
   }
 }

@@ -8,7 +8,7 @@ export class GameChannelSubscriber implements EventSubscriber {
     return [GameChannel, GameChannelProp]
   }
 
-  async clearSearchCacheKey(entity: GameChannel | GameChannelProp) {
+  clearCacheKeys(entity: GameChannel | GameChannelProp) {
     const channel = entity instanceof GameChannel ? entity : entity.gameChannel
 
     if (!channel) {
@@ -16,11 +16,12 @@ export class GameChannelSubscriber implements EventSubscriber {
       return
     }
 
-    await deferClearResponseCache(GameChannel.getSearchCacheKey(channel.game, true))
+    void deferClearResponseCache(GameChannel.getSearchCacheKey(channel.game, true))
+    void channel.clearSocketDataKey()
   }
 
   afterCreate(args: EventArgs<GameChannel | GameChannelProp>) {
-    void this.clearSearchCacheKey(args.entity)
+    this.clearCacheKeys(args.entity)
   }
 
   afterUpdate(args: EventArgs<GameChannel | GameChannelProp>): void | Promise<void> {
@@ -33,10 +34,10 @@ export class GameChannelSubscriber implements EventSubscriber {
       return
     }
 
-    void this.clearSearchCacheKey(args.entity)
+    this.clearCacheKeys(args.entity)
   }
 
   afterDelete(args: EventArgs<GameChannel | GameChannelProp>) {
-    void this.clearSearchCacheKey(args.entity)
+    this.clearCacheKeys(args.entity)
   }
 }

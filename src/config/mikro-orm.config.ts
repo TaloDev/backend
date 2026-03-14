@@ -6,7 +6,7 @@ import { RedisCacheAdapter } from 'mikro-orm-cache-adapter-redis'
 import { entities } from '../entities'
 import migrationsList from '../migrations'
 import { subscribers } from '../subscribers'
-import redisConfig from './redis.config'
+import { redisConfig } from './redis.config'
 
 const ormConfig = defineConfig({
   entities,

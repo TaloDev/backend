@@ -1,11 +1,9 @@
 import { EntityManager, UniqueConstraintViolationException } from '@mikro-orm/mysql'
 import { captureException } from '@sentry/node'
-import { createRedisConnection } from '../../config/redis.config'
+import { getGlobalRedis } from '../../config/redis.config'
 import Player from '../../entities/player'
 import PlayerGroup from '../../entities/player-group'
 import { getResultCacheOptions } from '../perf/getResultCacheOptions'
-
-let redis: ReturnType<typeof createRedisConnection>
 
 function getGroupsFromPlayer(em: EntityManager, player: Player) {
   return em.repo(PlayerGroup).find(
@@ -54,11 +52,7 @@ export default async function checkGroupMemberships(em: EntityManager, player: P
   const redisKey = `checkMembership:${player.id}`
 
   try {
-    if (!redis) {
-      redis = createRedisConnection()
-    }
-
-    lockCreated = await redis.set(redisKey, '1', 'EX', 30, 'NX')
+    lockCreated = await getGlobalRedis().set(redisKey, '1', 'EX', 30, 'NX')
     if (!lockCreated) {
       return
     }
@@ -82,7 +76,7 @@ export default async function checkGroupMemberships(em: EntityManager, player: P
     captureException(err)
   } finally {
     if (lockCreated) {
-      await redis.del(redisKey)
+      await getGlobalRedis().del(redisKey)
     }
   }
 }

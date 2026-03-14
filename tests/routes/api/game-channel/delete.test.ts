@@ -1,5 +1,6 @@
 import request from 'supertest'
 import { APIKeyScope } from '../../../../src/entities/api-key'
+import GameChannel from '../../../../src/entities/game-channel'
 import GameChannelFactory from '../../../fixtures/GameChannelFactory'
 import PlayerFactory from '../../../fixtures/PlayerFactory'
 import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
@@ -115,6 +116,27 @@ describe('Game channel API - delete', () => {
     expect(res.body).toStrictEqual({
       message: 'Channel not found',
     })
+  })
+
+  it('should clear the socket existence key when a channel is deleted', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_CHANNELS])
+
+    const channel = await new GameChannelFactory(apiKey.game).one()
+    const player = await new PlayerFactory([apiKey.game]).one()
+    channel.owner = player.aliases[0]
+    channel.members.add(player.aliases[0])
+    await em.persistAndFlush(channel)
+
+    const existenceKey = GameChannel.getSocketExistenceKey(channel.id)
+    await redis.set(existenceKey, '1')
+
+    await request(app)
+      .delete(`/v1/game-channels/${channel.id}`)
+      .auth(token, { type: 'bearer' })
+      .set('x-talo-alias', String(player.aliases[0].id))
+      .expect(204)
+
+    expect(await redis.get(existenceKey)).toBeNull()
   })
 
   it('should notify players in the channel when the channel is deleted', async () => {

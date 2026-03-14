@@ -1,5 +1,4 @@
-import Redis from 'ioredis'
-import redisConfig from '../../src/config/redis.config'
+import { getGlobalRedis } from '../../src/config/redis.config'
 import APIKey, { APIKeyScope } from '../../src/entities/api-key'
 import Player from '../../src/entities/player'
 import { createSocketTicket } from '../../src/lib/sockets/createSocketTicket'
@@ -26,10 +25,9 @@ export async function persistTestSocketTicket(
   apiKey: APIKey,
   player: Player,
 ): Promise<Pick<SocketIdentifyData, 'identifyMessage' | 'ticket'>> {
-  const redis = new Redis(redisConfig)
+  const redis = getGlobalRedis()
   const ticket = await createSocketTicket(redis, apiKey, false)
   const socketToken = await player.aliases[0].createSocketToken(redis)
-  await redis.quit()
 
   return {
     identifyMessage: {

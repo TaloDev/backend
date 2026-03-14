@@ -1,5 +1,6 @@
 import request from 'supertest'
 import { APIKeyScope } from '../../src/entities/api-key'
+import GameChannel from '../../src/entities/game-channel'
 import GameChannelFactory from '../fixtures/GameChannelFactory'
 import PlayerFactory from '../fixtures/PlayerFactory'
 import createAPIKeyAndToken from '../utils/createAPIKeyAndToken'
@@ -274,6 +275,108 @@ describe('GameChannel subscriber', () => {
         .expect(200)
 
       expect(res2.body.channels).toHaveLength(0)
+    })
+  })
+
+  describe('socket data key invalidation', () => {
+    it('should clear the socket data key when a channel is updated', async () => {
+      const [apiKey, token] = await createAPIKeyAndToken([
+        APIKeyScope.READ_GAME_CHANNELS,
+        APIKeyScope.WRITE_GAME_CHANNELS,
+      ])
+
+      const player = await new PlayerFactory([apiKey.game]).one()
+      const channel = await new GameChannelFactory(apiKey.game)
+        .state(() => ({ owner: player.aliases[0] }))
+        .one()
+      channel.members.add(player.aliases[0])
+      await em.persist([player, channel]).flush()
+
+      const dataKey = GameChannel.getSocketDataKey(channel.id)
+      await redis.set(dataKey, JSON.stringify({ name: 'stale' }))
+
+      await request(app)
+        .put(`/v1/game-channels/${channel.id}`)
+        .send({ name: 'Updated Channel' })
+        .auth(token, { type: 'bearer' })
+        .set('x-talo-alias', String(player.aliases[0].id))
+        .expect(200)
+
+      expect(await redis.get(dataKey)).toBeNull()
+    })
+
+    it('should not clear the socket data key when only totalMessages changes', async () => {
+      const [apiKey, token] = await createAPIKeyAndToken([
+        APIKeyScope.READ_GAME_CHANNELS,
+        APIKeyScope.WRITE_GAME_CHANNELS,
+      ])
+
+      const player = await new PlayerFactory([apiKey.game]).one()
+      const channel = await new GameChannelFactory(apiKey.game)
+        .state(() => ({ owner: player.aliases[0], name: 'Test Channel' }))
+        .one()
+      channel.members.add(player.aliases[0])
+      await em.persist([player, channel]).flush()
+
+      const dataKey = GameChannel.getSocketDataKey(channel.id)
+      await redis.set(dataKey, JSON.stringify({ name: 'Test Channel' }))
+
+      channel.totalMessages = 42
+      await em.flush()
+
+      expect(await redis.get(dataKey)).not.toBeNull()
+    })
+
+    it('should clear the socket data key when a channel is deleted', async () => {
+      const [apiKey, token] = await createAPIKeyAndToken([
+        APIKeyScope.READ_GAME_CHANNELS,
+        APIKeyScope.WRITE_GAME_CHANNELS,
+      ])
+
+      const player = await new PlayerFactory([apiKey.game]).one()
+      const channel = await new GameChannelFactory(apiKey.game)
+        .state(() => ({ owner: player.aliases[0] }))
+        .one()
+      channel.members.add(player.aliases[0])
+      await em.persist([player, channel]).flush()
+
+      const dataKey = GameChannel.getSocketDataKey(channel.id)
+      await redis.set(dataKey, JSON.stringify({ name: 'stale' }))
+
+      await request(app)
+        .delete(`/v1/game-channels/${channel.id}`)
+        .auth(token, { type: 'bearer' })
+        .set('x-talo-alias', String(player.aliases[0].id))
+        .expect(204)
+
+      expect(await redis.get(dataKey)).toBeNull()
+    })
+
+    it('should clear the socket data key when channel props are updated', async () => {
+      const [apiKey, token] = await createAPIKeyAndToken([
+        APIKeyScope.READ_GAME_CHANNELS,
+        APIKeyScope.WRITE_GAME_CHANNELS,
+      ])
+
+      const player = await new PlayerFactory([apiKey.game]).one()
+      const channel = await new GameChannelFactory(apiKey.game)
+        .state(() => ({ owner: player.aliases[0] }))
+        .one()
+      channel.members.add(player.aliases[0])
+      channel.setProps([{ key: 'level', value: '1' }])
+      await em.persist([player, channel]).flush()
+
+      const dataKey = GameChannel.getSocketDataKey(channel.id)
+      await redis.set(dataKey, JSON.stringify({ name: 'stale' }))
+
+      await request(app)
+        .put(`/v1/game-channels/${channel.id}`)
+        .send({ props: [{ key: 'level', value: '5' }] })
+        .auth(token, { type: 'bearer' })
+        .set('x-talo-alias', String(player.aliases[0].id))
+        .expect(200)
+
+      expect(await redis.get(dataKey)).toBeNull()
     })
   })
 

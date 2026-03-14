@@ -33,7 +33,7 @@ export async function initScheduledTasks() {
     addScheduledTask('cleanup-integration-events', cleanupIntegrationEvents, '0 0 0 * * *'), // midnight daily
   ]
 
-  /* v8 ignore next 3 -- @preserve */
+  /* istanbul ignore next -- @preserve */
   if (process.env.NODE_ENV !== 'test') {
     tasks.push(addScheduledTask('delete-players', deletePlayers, '0 */2 * * * *')) // every 2 mins
   }

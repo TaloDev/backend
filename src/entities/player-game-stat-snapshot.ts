@@ -62,23 +62,21 @@ export default class PlayerGameStatSnapshot extends ClickHouseEntity<
     return data
       .map((snapshotData) => {
         const playerAlias = playerAliasesMap.get(snapshotData.player_alias_id)
-        /* v8 ignore start -- @preserve */
+        /* istanbul ignore next -- @preserve */
         if (!playerAlias) {
           captureException(
             new Error(`Player alias with ID ${snapshotData.player_alias_id} not found.`),
           )
           return null
         }
-        /* v8 ignore stop -- @preserve */
 
         const playerStatKey = `${playerAlias.player.id}:${snapshotData.game_stat_id}`
         const playerGameStat = playerStatsMap.get(playerStatKey)
-        /* v8 ignore start -- @preserve */
+        /* istanbul ignore next -- @preserve */
         if (!playerGameStat) {
           captureException(new Error(`PlayerGameStat with key ${playerStatKey} not found.`))
           return null
         }
-        /* v8 ignore stop -- @preserve */
 
         const snapshot = new PlayerGameStatSnapshot()
         snapshot.construct(playerAlias, playerGameStat)

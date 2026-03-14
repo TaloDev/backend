@@ -49,11 +49,11 @@ export async function flush() {
 
 function setupQueue() {
   const queue = createQueue('flush-channel-total-messages', async () => {
-    /* v8 ignore next -- called manually in tests @preserve */
+    /* istanbul ignore next -- called manually in tests @preserve */
     await flush()
   })
 
-  /* v8 ignore start -- @preserve */
+  /* istanbul ignore next -- @preserve */
   if (process.env.NODE_ENV !== 'test') {
     setImmediate(async () => {
       await queue.upsertJobScheduler(
@@ -63,7 +63,6 @@ function setupQueue() {
       )
     })
   }
-  /* v8 ignore stop -- @preserve */
 }
 
 export async function incrementChannelTotalMessages(channelId: number) {

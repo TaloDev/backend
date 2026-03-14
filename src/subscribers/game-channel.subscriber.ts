@@ -25,7 +25,7 @@ export class GameChannelSubscriber implements EventSubscriber {
   }
 
   afterUpdate(args: EventArgs<GameChannel | GameChannelProp>): void | Promise<void> {
-    /* v8 ignore next -- @preserve */
+    /* istanbul ignore next -- @preserve */
     const changedFields = Object.keys(args.changeSet?.payload ?? {})
 
     // no need to clear the cache for a message count update

@@ -15,7 +15,7 @@ export function createDataExportQueue() {
   const cjsProcessorPath = path.join(__dirname, `${filename}.cjs`)
 
   let processorPath: string
-  /* v8 ignore start -- @preserve */
+  /* istanbul ignore next -- @preserve */
   if (fs.existsSync(jsProcessorPath)) {
     processorPath = jsProcessorPath
   } else if (fs.existsSync(cjsProcessorPath)) {
@@ -26,7 +26,6 @@ export function createDataExportQueue() {
       `Data export processor file not found at either ${jsProcessorPath} or ${cjsProcessorPath}`,
     )
   }
-  /* v8 ignore stop -- @preserve */
 
   return createQueue<DataExportJob>('data-export', processorPath, {
     failed: async (job: Job<DataExportJob>) => {

@@ -3,7 +3,7 @@ import { Job, Queue } from 'bullmq'
 import { Next } from 'koa'
 import { getMikroORM } from '../../../config/mikro-orm.config'
 import Game from '../../../entities/game'
-import Integration, { IntegrationConfig, IntegrationType } from '../../../entities/integration'
+import Integration, { IntegrationConfigMap, IntegrationType } from '../../../entities/integration'
 import createQueue from '../../../lib/queues/createQueue'
 import { ProtectedRouteContext } from '../../../lib/routing/context'
 
@@ -12,8 +12,8 @@ type IntegrationRouteContext = ProtectedRouteContext<{
   integration: Integration
 }>
 
-type IntegrationUpdateableKeys = {
-  [key in IntegrationType]: (keyof IntegrationConfig)[]
+type IntegrationConfigKeys = {
+  [T in IntegrationType]: (keyof IntegrationConfigMap[T])[]
 }
 
 export async function loadIntegration(ctx: IntegrationRouteContext, next: Next) {
@@ -75,6 +75,7 @@ export function addStatSyncJob(integrationId: number) {
   return getIntegrationSyncQueue().add('sync', { integrationId, type: 'stats' })
 }
 
-export const configKeys: IntegrationUpdateableKeys = {
+export const configKeys: IntegrationConfigKeys = {
   [IntegrationType.STEAMWORKS]: ['apiKey', 'appId', 'syncLeaderboards', 'syncStats'],
+  [IntegrationType.GOOGLE_PLAY_GAMES]: ['clientId', 'clientSecret'],
 }

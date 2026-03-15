@@ -2,11 +2,11 @@ import axios, { AxiosError, AxiosResponse } from 'axios'
 import pRetry, { AbortError } from 'p-retry'
 import Integration from '../../../entities/integration'
 import SteamworksIntegrationEvent, {
-  SteamworksRequestMethod,
+  SteamworksRequest,
 } from '../../../entities/steamworks-integration-event'
 
 export type SteamworksRequestConfig = {
-  method: SteamworksRequestMethod
+  method: SteamworksRequest['method']
   baseURL: string
   url: string
   headers: {
@@ -148,7 +148,7 @@ export class SteamworksClient {
     url,
     body,
   }: {
-    method: SteamworksRequestMethod
+    method: SteamworksRequest['method']
     url: string
     body: string
   }): SteamworksRequestConfig {
@@ -177,7 +177,7 @@ export class SteamworksClient {
     url,
     body = '',
   }: {
-    method: SteamworksRequestMethod
+    method: SteamworksRequest['method']
     url: string
     body?: string
   }): Promise<{
@@ -222,7 +222,7 @@ export class SteamworksClient {
           onFailedAttempt: ({ attemptNumber, retriesLeft }) => {
             if (retriesLeft > 0) {
               console.info(
-                `Steamworks ${config.method} ${config.baseURL + config.url} failed (attempt ${attemptNumber}/${totalAttempts}), retrying)`,
+                `Steamworks ${config.method} ${config.baseURL + config.url} failed (attempt ${attemptNumber}/${totalAttempts}), retrying`,
               )
             }
           },

@@ -32,7 +32,7 @@ export async function createSteamworksLeaderboard(
   leaderboard: Leaderboard,
 ) {
   const body = querystring.stringify({
-    appid: integration.getConfig().appId,
+    appid: integration.getSteamConfig().appId,
     name: leaderboard.internalName,
     sortmethod: leaderboard.sortMode === LeaderboardSortMode.ASC ? 'Ascending' : 'Descending',
     displaytype: 'Numeric',
@@ -65,7 +65,7 @@ export async function deleteSteamworksLeaderboard(
   leaderboardInternalName: string,
 ) {
   const body = querystring.stringify({
-    appid: integration.getConfig().appId,
+    appid: integration.getSteamConfig().appId,
     name: leaderboardInternalName,
   })
 
@@ -90,7 +90,7 @@ export async function createSteamworksLeaderboardEntry(
 
   if (leaderboardMapping) {
     const body = querystring.stringify({
-      appid: integration.getConfig().appId,
+      appid: integration.getSteamConfig().appId,
       leaderboardid: leaderboardMapping.steamworksLeaderboardId,
       steamid: entry.playerAlias.identifier,
       score: entry.score,
@@ -129,7 +129,7 @@ async function requestDeleteLeaderboardScore({
   steamUserId: string
 }) {
   const body = querystring.stringify({
-    appid: integration.getConfig().appId,
+    appid: integration.getSteamConfig().appId,
     leaderboardid: steamworksLeaderboardId,
     steamid: steamUserId,
   })
@@ -177,7 +177,7 @@ async function getEntriesForSteamworksLeaderboard(
   leaderboardId: number,
 ) {
   const qs = querystring.stringify({
-    appid: integration.getConfig().appId,
+    appid: integration.getSteamConfig().appId,
     leaderboardid: leaderboardId,
     rangestart: 0,
     rangeend: Number.MAX_VALUE,
@@ -366,7 +366,7 @@ export async function syncSteamworksLeaderboards(em: EntityManager, integration:
   const client = new SteamworksClient(integration)
   const { res, event } = await client.makeRequest<GetLeaderboardsForGameResponse>({
     method: 'GET',
-    url: `/ISteamLeaderboards/GetLeaderboardsForGame/v2?appid=${integration.getConfig().appId}`,
+    url: `/ISteamLeaderboards/GetLeaderboardsForGame/v2?appid=${integration.getSteamConfig().appId}`,
   })
   await em.persist(event).flush()
 

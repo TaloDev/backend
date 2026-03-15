@@ -69,10 +69,11 @@ export const statsActivityRoute = protectedRoute({
     const clickhouse = ctx.clickhouse
 
     const game = ctx.state.game
+    const includeDevData = ctx.state.includeDevData
 
     return withResponseCache(
       {
-        key: `stats-activity-${game.id}-${startDateQuery}-${endDateQuery}`,
+        key: `stats-activity-${game.id}-${startDateQuery}-${endDateQuery}-${includeDevData ? 'dev' : 'no-dev'}`,
       },
       async () => {
         const startDate = formatDateForClickHouse(new Date(startDateQuery))
@@ -96,16 +97,17 @@ export const statsActivityRoute = protectedRoute({
         }
 
         const query = `
-        SELECT
-          game_stat_id,
-          toUnixTimestamp(toStartOfDay(created_at)) * 1000 AS date,
-          count() AS count
-        FROM player_game_stat_snapshots
-        WHERE created_at BETWEEN {startDate:String} AND {endDate:String}
-          AND game_stat_id IN ({statIds:Array(Int32)})
-        GROUP BY game_stat_id, date
-        ORDER BY game_stat_id, date
-      `
+          SELECT
+            game_stat_id,
+            toUnixTimestamp(toStartOfDay(created_at)) * 1000 AS date,
+            count() AS count
+          FROM player_game_stat_snapshots
+          WHERE created_at BETWEEN {startDate:String} AND {endDate:String}
+            AND game_stat_id IN ({statIds:Array(Int32)})
+            ${includeDevData ? '' : 'AND dev_build = false'}
+          GROUP BY game_stat_id, date
+          ORDER BY game_stat_id, date
+        `
 
         const snapshots = await clickhouse
           .query({

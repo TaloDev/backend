@@ -5,7 +5,7 @@ import createClickHouseClient from '../lib/clickhouse/createClient'
 import { runClickHouseMigrations } from '../migrations/clickhouse'
 import { setupGlobalQueues } from './global-queues'
 import { getMikroORM } from './mikro-orm.config'
-import { createRedisConnection } from './redis.config'
+import { getGlobalRedis } from './redis.config'
 import { initScheduledTasks } from './scheduled-tasks'
 
 export async function initProviders(app: Koa, isTest: boolean) {
@@ -22,7 +22,7 @@ export async function initProviders(app: Koa, isTest: boolean) {
     process.exit(1)
   }
 
-  app.context.redis = createRedisConnection()
+  app.context.redis = getGlobalRedis()
   setupGlobalQueues()
 
   if (!isTest) {

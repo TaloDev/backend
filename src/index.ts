@@ -51,9 +51,9 @@ export default async function init() {
   const server = createServer(
     {
       connectionsCheckingInterval: secondsToMilliseconds(5),
-      headersTimeout: secondsToMilliseconds(15),
+      headersTimeout: secondsToMilliseconds(10),
       requestTimeout: secondsToMilliseconds(20),
-      keepAliveTimeout: secondsToMilliseconds(60),
+      keepAliveTimeout: secondsToMilliseconds(30),
     },
     app.callback(),
   )

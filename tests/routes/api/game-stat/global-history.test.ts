@@ -401,6 +401,72 @@ describe('Game stat API - global history', () => {
     )
   })
 
+  it('should not return dev build snapshots when includeDevData is false', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_GAME_STATS])
+    const stat = await createStat(apiKey.game)
+    const devPlayer = await new PlayerFactory([apiKey.game]).devBuild().one()
+    const devPlayerStat = await new PlayerGameStatFactory().construct(devPlayer, stat).one()
+    const regularPlayerStat = await createPlayerStat(stat)
+    await em.persist([devPlayer, devPlayerStat]).flush()
+
+    const regularSnapshot = new PlayerGameStatSnapshot()
+    regularSnapshot.construct(regularPlayerStat.player.aliases[0], regularPlayerStat)
+    regularSnapshot.change = 10
+
+    const devSnapshot = new PlayerGameStatSnapshot()
+    devSnapshot.construct(devPlayer.aliases[0], devPlayerStat)
+    devSnapshot.change = 20
+
+    await clickhouse.insert({
+      table: 'player_game_stat_snapshots',
+      values: [regularSnapshot.toInsertable(), devSnapshot.toInsertable()],
+      format: 'JSONEachRow',
+    })
+
+    const res = await request(app)
+      .get(`/v1/game-stats/${stat.internalName}/global-history`)
+      .query({ page: 0 })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    expect(res.body.history).toHaveLength(1)
+    expect(res.body.count).toBe(1)
+    expect(res.body.history[0].change).toBe(10)
+  })
+
+  it('should return dev build snapshots when includeDevData is true', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_GAME_STATS])
+    const stat = await createStat(apiKey.game)
+    const devPlayer = await new PlayerFactory([apiKey.game]).devBuild().one()
+    const devPlayerStat = await new PlayerGameStatFactory().construct(devPlayer, stat).one()
+    const regularPlayerStat = await createPlayerStat(stat)
+    await em.persist([devPlayer, devPlayerStat]).flush()
+
+    const regularSnapshot = new PlayerGameStatSnapshot()
+    regularSnapshot.construct(regularPlayerStat.player.aliases[0], regularPlayerStat)
+    regularSnapshot.change = 10
+
+    const devSnapshot = new PlayerGameStatSnapshot()
+    devSnapshot.construct(devPlayer.aliases[0], devPlayerStat)
+    devSnapshot.change = 20
+
+    await clickhouse.insert({
+      table: 'player_game_stat_snapshots',
+      values: [regularSnapshot.toInsertable(), devSnapshot.toInsertable()],
+      format: 'JSONEachRow',
+    })
+
+    const res = await request(app)
+      .get(`/v1/game-stats/${stat.internalName}/global-history`)
+      .query({ page: 0 })
+      .auth(token, { type: 'bearer' })
+      .set('x-talo-include-dev-data', '1')
+      .expect(200)
+
+    expect(res.body.history).toHaveLength(2)
+    expect(res.body.count).toBe(2)
+  })
+
   it('should return globalValue metrics equal to the stat default when there are no snapshots', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_GAME_STATS])
     const stat = await createStat(apiKey.game)

@@ -1,5 +1,6 @@
 import request from 'supertest'
 import { APIKeyScope } from '../../../../src/entities/api-key'
+import GameChannel from '../../../../src/entities/game-channel'
 import GameChannelFactory from '../../../fixtures/GameChannelFactory'
 import PlayerFactory from '../../../fixtures/PlayerFactory'
 import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
@@ -133,6 +134,25 @@ describe('Game channel API - join', () => {
     expect(res.body).toStrictEqual({
       message: 'This channel is private',
     })
+  })
+
+  it('should clear the socket members key when a player joins', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_CHANNELS])
+
+    const channel = await new GameChannelFactory(apiKey.game).one()
+    const player = await new PlayerFactory([apiKey.game]).one()
+    await em.persist([channel, player]).flush()
+
+    const membersKey = GameChannel.getSocketMembersKey(channel.id)
+    await redis.set(membersKey, String(player.aliases[0].id))
+
+    await request(app)
+      .post(`/v1/game-channels/${channel.id}/join`)
+      .auth(token, { type: 'bearer' })
+      .set('x-talo-alias', String(player.aliases[0].id))
+      .expect(200)
+
+    expect(await redis.get(membersKey)).toBeNull()
   })
 
   it('should not join a channel if the id is not numeric', async () => {

@@ -1,3 +1,4 @@
+import { EntityManager, RequestContext } from '@mikro-orm/mysql'
 import { SpanStatusCode } from '@opentelemetry/api'
 import { addBreadcrumb } from '@sentry/node'
 import { RawData } from 'ws'
@@ -30,7 +31,15 @@ const routes: SocketMessageListener<ZodType>[][] = [
 export default class SocketRouter {
   constructor(readonly wss: Socket) {}
 
-  async handleMessage(conn: SocketConnection, rawData: RawData): Promise<void> {
+  async handleMessage({
+    conn,
+    rawData,
+    em,
+  }: {
+    conn: SocketConnection
+    rawData: RawData
+    em: EntityManager
+  }) {
     await getSocketTracer().startActiveSpan('socket.message_received', async (span) => {
       const message = rawData.toString()
 
@@ -44,7 +53,7 @@ export default class SocketRouter {
             reason: 'RATE_LIMIT_EXCEEDED',
           })
         } else {
-          await sendError({
+          sendError({
             conn,
             req: 'unknown',
             error: new SocketError('RATE_LIMIT_EXCEEDED', 'Rate limit exceeded'),
@@ -61,7 +70,7 @@ export default class SocketRouter {
       let parsedMessage: SocketMessage | null = null
 
       try {
-        parsedMessage = await socketMessageValidator.parseAsync(JSON.parse(message))
+        parsedMessage = socketMessageValidator.parse(JSON.parse(message))
 
         addBreadcrumb({
           category: 'message',
@@ -69,9 +78,9 @@ export default class SocketRouter {
           level: 'info',
         })
 
-        const handled = await this.routeMessage(conn, parsedMessage)
+        const handled = await this.routeMessage({ conn, message: parsedMessage, em })
         if (!handled) {
-          await sendError({
+          sendError({
             conn,
             req: parsedMessage.req,
             error: new SocketError('UNHANDLED_REQUEST', 'Request not handled'),
@@ -82,14 +91,14 @@ export default class SocketRouter {
         }
       } catch (err) {
         if (err instanceof ZodError) {
-          await sendError({
+          sendError({
             conn,
             req: 'unknown',
             error: new SocketError('INVALID_MESSAGE', 'Invalid message request', message),
           })
         } else {
           const originalError = err as Error
-          await sendError({
+          sendError({
             conn,
             req: parsedMessage?.req ?? 'unknown',
             error: new SocketError('ROUTING_ERROR', 'An error occurred while routing the message'),
@@ -103,13 +112,21 @@ export default class SocketRouter {
     })
   }
 
-  async routeMessage(conn: SocketConnection, message: SocketMessage): Promise<boolean> {
+  async routeMessage({
+    conn,
+    message,
+    em,
+  }: {
+    conn: SocketConnection
+    message: SocketMessage
+    em: EntityManager
+  }) {
     for (const route of routes) {
       for (const listener of route) {
         if (listener.req === message.req) {
           try {
             if (!this.meetsPlayerRequirement(conn, listener)) {
-              await sendError({
+              sendError({
                 conn,
                 req: message.req,
                 error: new SocketError(
@@ -119,7 +136,7 @@ export default class SocketRouter {
               })
             } else if (!this.meetsScopeRequirements(conn, listener)) {
               const missing = this.getMissingScopes(conn, listener)
-              await sendError({
+              sendError({
                 conn,
                 req: message.req,
                 error: new SocketError(
@@ -129,12 +146,14 @@ export default class SocketRouter {
               })
             } else {
               const data = await listener.validator.parseAsync(message.data)
-              await listener.handler({ conn, req: listener.req, data, socket: this.wss })
+              await RequestContext.create(em, async () => {
+                await listener.handler({ conn, req: listener.req, data, socket: this.wss })
+              })
             }
             return true
           } catch (err) {
             if (err instanceof ZodError) {
-              await sendError({
+              sendError({
                 conn,
                 req: message.req,
                 error: new SocketError(
@@ -145,7 +164,7 @@ export default class SocketRouter {
               })
             } else {
               const originalError = err as Error
-              await sendError({
+              sendError({
                 conn,
                 req: message?.req ?? 'unknown',
                 error: new SocketError(

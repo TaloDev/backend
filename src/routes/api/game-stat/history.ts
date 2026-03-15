@@ -47,7 +47,12 @@ export const historyRoute = apiRoute({
     const stat = ctx.state.stat
     const player = ctx.state.player
 
-    const whereConditions = await stat.buildMetricsWhereConditions(startDate, endDate, player)
+    const whereConditions = await stat.buildMetricsWhereConditions({
+      startDate,
+      endDate,
+      player,
+      includeDevData: ctx.state.includeDevData,
+    })
 
     const query = `
       WITH (SELECT count() FROM player_game_stat_snapshots ${whereConditions}) AS count

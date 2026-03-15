@@ -32,7 +32,12 @@ export const joinRoute = apiRoute({
       return ctx.throw(403, 'This channel is private')
     }
 
-    await joinChannel(ctx.em, ctx.wss, channel, ctx.state.alias)
+    await joinChannel({
+      em: ctx.em,
+      wss: ctx.wss,
+      channel,
+      playerAlias: ctx.state.alias,
+    })
 
     const counts = await GameChannel.getManyCounts({
       em: ctx.em,

@@ -12,7 +12,7 @@ describe('Game stat - list', () => {
     const [token] = await createUserAndToken({}, organisation)
 
     const stats = await new GameStatFactory([game]).many(3)
-    await em.persistAndFlush([game, ...stats])
+    await em.persist([game, ...stats]).flush()
 
     const res = await request(app)
       .get(`/games/${game.id}/game-stats`)
@@ -27,7 +27,7 @@ describe('Game stat - list', () => {
     const [token] = await createUserAndToken()
 
     const stats = await new GameStatFactory([game]).many(3)
-    await em.persistAndFlush([game, ...stats])
+    await em.persist([game, ...stats]).flush()
 
     await request(app)
       .get(`/games/${game.id}/game-stats`)
@@ -56,7 +56,7 @@ describe('Game stat - list', () => {
       .state(() => ({ value: 40 }))
       .one()
 
-    await em.persistAndFlush([playerStat, otherPlayerStat])
+    await em.persist([playerStat, otherPlayerStat]).flush()
 
     const res = await request(app)
       .get(`/games/${game.id}/game-stats`)
@@ -79,7 +79,7 @@ describe('Game stat - list', () => {
       .construct(player, stat)
       .state(() => ({ value: 10 }))
       .one()
-    await em.persistAndFlush(playerStat)
+    await em.persist(playerStat).flush()
 
     const res = await request(app)
       .get(`/games/${game.id}/game-stats`)
@@ -88,6 +88,81 @@ describe('Game stat - list', () => {
       .expect(200)
 
     expect(res.body.stats[0].globalValue).toBe(50)
+  })
+
+  it('should exclude dev build snapshots from metrics when includeDevData is false', async () => {
+    const [organisation, game] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken({}, organisation)
+
+    const stat = await new GameStatFactory([game])
+      .global()
+      .state(() => ({ globalValue: 0 }))
+      .one()
+    const player = await new PlayerFactory([game]).one()
+    const devPlayer = await new PlayerFactory([game]).devBuild().one()
+    const playerStat = await new PlayerGameStatFactory().construct(player, stat).one()
+    const devPlayerStat = await new PlayerGameStatFactory().construct(devPlayer, stat).one()
+    await em.persist([playerStat, devPlayerStat]).flush()
+
+    const regularSnapshot = new PlayerGameStatSnapshot()
+    regularSnapshot.construct(player.aliases[0], playerStat)
+    regularSnapshot.change = 5
+
+    const devSnapshot = new PlayerGameStatSnapshot()
+    devSnapshot.construct(devPlayer.aliases[0], devPlayerStat)
+    devSnapshot.change = 10
+
+    await clickhouse.insert({
+      table: 'player_game_stat_snapshots',
+      values: [regularSnapshot.toInsertable(), devSnapshot.toInsertable()],
+      format: 'JSONEachRow',
+    })
+
+    const res = await request(app)
+      .get(`/games/${game.id}/game-stats`)
+      .query({ withMetrics: '1' })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    expect(res.body.stats[0].metrics.globalCount).toBe(1)
+  })
+
+  it('should include dev build snapshots in metrics when includeDevData is true', async () => {
+    const [organisation, game] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken({}, organisation)
+
+    const stat = await new GameStatFactory([game])
+      .global()
+      .state(() => ({ globalValue: 0 }))
+      .one()
+    const player = await new PlayerFactory([game]).one()
+    const devPlayer = await new PlayerFactory([game]).devBuild().one()
+    const playerStat = await new PlayerGameStatFactory().construct(player, stat).one()
+    const devPlayerStat = await new PlayerGameStatFactory().construct(devPlayer, stat).one()
+    await em.persist([playerStat, devPlayerStat]).flush()
+
+    const regularSnapshot = new PlayerGameStatSnapshot()
+    regularSnapshot.construct(player.aliases[0], playerStat)
+    regularSnapshot.change = 5
+
+    const devSnapshot = new PlayerGameStatSnapshot()
+    devSnapshot.construct(devPlayer.aliases[0], devPlayerStat)
+    devSnapshot.change = 10
+
+    await clickhouse.insert({
+      table: 'player_game_stat_snapshots',
+      values: [regularSnapshot.toInsertable(), devSnapshot.toInsertable()],
+      format: 'JSONEachRow',
+    })
+
+    const res = await request(app)
+      .get(`/games/${game.id}/game-stats`)
+      .query({ withMetrics: '1' })
+      .auth(token, { type: 'bearer' })
+      .set('x-talo-include-dev-data', '1')
+      .expect(200)
+
+    expect(res.body.stats[0].metrics.globalCount).toBe(2)
   })
 
   it('should load metrics filtered by startDate', async () => {
@@ -99,7 +174,7 @@ describe('Game stat - list', () => {
       .state(() => ({ globalValue: 0 }))
       .one()
     const player = await new PlayerFactory([game]).one()
-    await em.persistAndFlush([stat, player])
+    await em.persist([stat, player]).flush()
 
     const values: [Date, number][] = [
       [new Date('2025-06-09T09:00:00.000Z'), 1],
@@ -150,7 +225,7 @@ describe('Game stat - list', () => {
       .state(() => ({ globalValue: 0 }))
       .one()
     const player = await new PlayerFactory([game]).one()
-    await em.persistAndFlush([stat, player])
+    await em.persist([stat, player]).flush()
 
     const values: [Date, number][] = [
       [new Date('2025-06-09T09:00:00.000Z'), 1],
@@ -201,7 +276,7 @@ describe('Game stat - list', () => {
       .state(() => ({ globalValue: 0 }))
       .one()
     const player = await new PlayerFactory([game]).one()
-    await em.persistAndFlush([stat, player])
+    await em.persist([stat, player]).flush()
 
     const values: [Date, number][] = [
       [new Date('2025-06-09T09:00:00.000Z'), 1],
@@ -245,5 +320,21 @@ describe('Game stat - list', () => {
     expect(res.body.stats[0].metrics.globalValue.maxValue).toBe(6)
     expect(res.body.stats[0].metrics.playerValue.minValue).toBe(5)
     expect(res.body.stats[0].metrics.playerValue.maxValue).toBe(5)
+  })
+
+  it('should return a list of game stats even if metrics are requested but no global stats exist', async () => {
+    const [organisation, game] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken({}, organisation)
+
+    const stats = await new GameStatFactory([game]).state(() => ({ global: false })).many(3)
+    await em.persist([game, ...stats]).flush()
+
+    const res = await request(app)
+      .get(`/games/${game.id}/game-stats`)
+      .query({ withMetrics: '1' })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    expect(res.body.stats).toHaveLength(stats.length)
   })
 })

@@ -14,12 +14,12 @@ import { loadGame } from '../../../middleware/game-middleware'
 import { userTypeGate } from '../../../middleware/policy-middleware'
 import { sendMessages } from '../../../socket/messages/socketMessage'
 
-async function sendLiveConfigUpdatedMessage(ctx: ProtectedRouteContext, game: Game) {
+function sendLiveConfigUpdatedMessage(ctx: ProtectedRouteContext, game: Game) {
   const socket = ctx.wss
   const conns = socket.findConnections((conn) => {
     return conn.gameId === game.id && conn.hasScope(APIKeyScope.READ_GAME_CONFIG)
   })
-  await sendMessages(conns, 'v1.live-config.updated', {
+  sendMessages(conns, 'v1.live-config.updated', {
     config: game.getLiveConfig(),
   })
 }
@@ -100,7 +100,7 @@ export const updateRoute = protectedRoute({
       }
 
       await em.clearCache(Game.getLiveConfigCacheKey(game))
-      await sendLiveConfigUpdatedMessage(ctx, game)
+      sendLiveConfigUpdatedMessage(ctx, game)
 
       createGameActivity(em, {
         user: ctx.state.user,

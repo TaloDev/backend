@@ -261,6 +261,63 @@ describe('Game stat API - history', () => {
     expect(res.body.isLastPage).toBe(true)
   })
 
+  it('should not return a dev player snapshot when includeDevData is false', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_GAME_STATS])
+    const stat = await createStat(apiKey.game)
+    const devPlayer = await new PlayerFactory([apiKey.game]).devBuild().one()
+    const devPlayerStat = await new PlayerGameStatFactory().construct(devPlayer, stat).one()
+    await em.persist(devPlayerStat).flush()
+
+    const snapshot = new PlayerGameStatSnapshot()
+    snapshot.construct(devPlayer.aliases[0], devPlayerStat)
+    snapshot.change = 10
+
+    await clickhouse.insert({
+      table: 'player_game_stat_snapshots',
+      values: [snapshot.toInsertable()],
+      format: 'JSONEachRow',
+    })
+
+    const res = await request(app)
+      .get(`/v1/game-stats/${stat.internalName}/history`)
+      .query({ page: 0 })
+      .auth(token, { type: 'bearer' })
+      .set('x-talo-player', devPlayer.id)
+      .expect(200)
+
+    expect(res.body.history).toHaveLength(0)
+    expect(res.body.count).toBe(0)
+  })
+
+  it('should return a dev player snapshot when includeDevData is true', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_GAME_STATS])
+    const stat = await createStat(apiKey.game)
+    const devPlayer = await new PlayerFactory([apiKey.game]).devBuild().one()
+    const devPlayerStat = await new PlayerGameStatFactory().construct(devPlayer, stat).one()
+    await em.persist(devPlayerStat).flush()
+
+    const snapshot = new PlayerGameStatSnapshot()
+    snapshot.construct(devPlayer.aliases[0], devPlayerStat)
+    snapshot.change = 10
+
+    await clickhouse.insert({
+      table: 'player_game_stat_snapshots',
+      values: [snapshot.toInsertable()],
+      format: 'JSONEachRow',
+    })
+
+    const res = await request(app)
+      .get(`/v1/game-stats/${stat.internalName}/history`)
+      .query({ page: 0 })
+      .auth(token, { type: 'bearer' })
+      .set('x-talo-player', devPlayer.id)
+      .set('x-talo-include-dev-data', '1')
+      .expect(200)
+
+    expect(res.body.history).toHaveLength(1)
+    expect(res.body.count).toBe(1)
+  })
+
   it('should return an empty array and count 0 if there are no snapshots', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_GAME_STATS])
     const stat = await createStat(apiKey.game)

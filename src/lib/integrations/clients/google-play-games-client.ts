@@ -13,11 +13,16 @@ export type GooglePlayGamesRequestConfig = {
   data: string
 }
 
-export type ExchangeAuthCodeResponse = {
-  access_token: string
-  token_type: string
-  expires_in: number
-}
+export type ExchangeAuthCodeResponse =
+  | {
+      access_token: string
+      token_type: string
+      expires_in: number
+    }
+  | {
+      error: string
+      error_description: string
+    }
 
 export type GetPlayerResponse = {
   playerId: string

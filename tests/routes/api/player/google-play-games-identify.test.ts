@@ -206,10 +206,85 @@ describe('Player API - Google Play Games identify', () => {
     })
   })
 
+  it('should return an error when the integration has no client ID', async () => {
+    const authCode = 'valid-auth-code'
+
+    const [apiKey, token] = await createAPIKeyAndToken([
+      APIKeyScope.READ_PLAYERS,
+      APIKeyScope.WRITE_PLAYERS,
+    ])
+
+    const integration = await new IntegrationFactory()
+      .construct(IntegrationType.GOOGLE_PLAY_GAMES, apiKey.game, { clientId: '', clientSecret })
+      .one()
+    await em.persist(integration).flush()
+
+    const res = await request(app)
+      .get('/v1/players/identify')
+      .query({ service: PlayerAliasService.GOOGLE_PLAY_GAMES, identifier: authCode })
+      .auth(token, { type: 'bearer' })
+      .expect(400)
+
+    expect(res.body).toStrictEqual({
+      message: 'Failed to exchange Google Play Games auth code: invalid client ID',
+    })
+  })
+
+  it('should return an error when the integration has no client secret', async () => {
+    const authCode = 'valid-auth-code'
+
+    const [apiKey, token] = await createAPIKeyAndToken([
+      APIKeyScope.READ_PLAYERS,
+      APIKeyScope.WRITE_PLAYERS,
+    ])
+
+    const integration = await new IntegrationFactory()
+      .construct(IntegrationType.GOOGLE_PLAY_GAMES, apiKey.game, { clientId, clientSecret: '' })
+      .one()
+    await em.persist(integration).flush()
+
+    const res = await request(app)
+      .get('/v1/players/identify')
+      .query({ service: PlayerAliasService.GOOGLE_PLAY_GAMES, identifier: authCode })
+      .auth(token, { type: 'bearer' })
+      .expect(400)
+
+    expect(res.body).toStrictEqual({
+      message: 'Failed to exchange Google Play Games auth code: invalid client secret',
+    })
+  })
+
+  it('should handle token exchange errors returned by Google', async () => {
+    const authCode = 'old-auth-code'
+
+    axiosMock.onPost('https://oauth2.googleapis.com/token').reply(400, {
+      error: 'invalid_grant',
+      error_description: 'Bad request',
+    })
+
+    const [apiKey, token] = await createAPIKeyAndToken([
+      APIKeyScope.READ_PLAYERS,
+      APIKeyScope.WRITE_PLAYERS,
+    ])
+
+    const integration = await makeGPGIntegration(apiKey.game)
+    await em.persist(integration).flush()
+
+    const res = await request(app)
+      .get('/v1/players/identify')
+      .query({ service: PlayerAliasService.GOOGLE_PLAY_GAMES, identifier: authCode })
+      .auth(token, { type: 'bearer' })
+      .expect(400)
+
+    expect(res.body).toStrictEqual({
+      message: 'Failed to exchange Google Play Games auth code: Bad request (invalid_grant)',
+    })
+  })
+
   it('should handle invalid token exchange responses', async () => {
     const authCode = 'valid-auth-code'
 
-    axiosMock.onPost('https://oauth2.googleapis.com/token').reply(400, { error: 'invalid_grant' })
+    axiosMock.onPost('https://oauth2.googleapis.com/token').reply(400, {})
 
     const [apiKey, token] = await createAPIKeyAndToken([
       APIKeyScope.READ_PLAYERS,

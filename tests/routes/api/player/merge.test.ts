@@ -481,6 +481,29 @@ describe('Player API - merge', () => {
     })
   })
 
+  it('should not merge if player2 has a google play games alias', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([
+      APIKeyScope.READ_PLAYERS,
+      APIKeyScope.WRITE_PLAYERS,
+    ])
+
+    const player1 = await new PlayerFactory([apiKey.game]).withUsernameAlias().one()
+    const player2 = await new PlayerFactory([apiKey.game]).withGooglePlayGamesAlias().one()
+
+    await em.persist([player1, player2]).flush()
+
+    const res = await request(app)
+      .post('/v1/players/merge')
+      .set('x-talo-alias', String(player1.aliases[0].id))
+      .send({ playerId1: player1.id, playerId2: player2.id })
+      .auth(token, { type: 'bearer' })
+      .expect(400)
+
+    expect(res.body).toStrictEqual({
+      message: `Player ${player2.id} has a Google Play Games alias and cannot be merged`,
+    })
+  })
+
   it('should merge a non-restricted player into a talo player', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([
       APIKeyScope.READ_PLAYERS,

@@ -34,7 +34,16 @@ async function findRestrictedAlias(em: EntityManager, player: Player) {
   const restrictedAlias = await em
     .repo(PlayerAlias)
     .findOne(
-      { player: player, service: { $in: [PlayerAliasService.TALO, PlayerAliasService.STEAM] } },
+      {
+        player: player,
+        service: {
+          $in: [
+            PlayerAliasService.TALO,
+            PlayerAliasService.STEAM,
+            PlayerAliasService.GOOGLE_PLAY_GAMES,
+          ],
+        },
+      },
       { fields: ['id', 'service'] },
     )
 
@@ -175,6 +184,13 @@ export const mergeRoute = apiRoute({
 
       if (player2RestrictedAlias.service === PlayerAliasService.STEAM) {
         return ctx.throw(400, `Player ${playerId2} has a Steam alias and cannot be merged`)
+      }
+
+      if (player2RestrictedAlias.service === PlayerAliasService.GOOGLE_PLAY_GAMES) {
+        return ctx.throw(
+          400,
+          `Player ${playerId2} has a Google Play Games alias and cannot be merged`,
+        )
       }
     }
 

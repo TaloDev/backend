@@ -34,6 +34,13 @@ export default class PlayerAliasFactory extends Factory<PlayerAlias> {
     }))
   }
 
+  googlePlayGames(): this {
+    return this.state(() => ({
+      service: PlayerAliasService.GOOGLE_PLAY_GAMES,
+      identifier: `a_${randNumber({ min: 100_000, max: 1_000_000 })}`,
+    }))
+  }
+
   username(): this {
     return this.state(() => ({
       service: PlayerAliasService.USERNAME,

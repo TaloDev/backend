@@ -38,7 +38,7 @@ export async function authenticateAuthCode(
     grant_type: 'authorization_code',
     code: authCode,
     client_id: config.clientId,
-    client_secret: integration.getGooglePlayGamesClientSecret(),
+    client_secret: secret,
     redirect_uri: '',
   }).toString()
 

@@ -31,21 +31,19 @@ async function findMergeAliasServiceConflicts(em: EntityManager, player1: Player
 }
 
 async function findRestrictedAlias(em: EntityManager, player: Player) {
-  const restrictedAlias = await em
-    .repo(PlayerAlias)
-    .findOne(
-      {
-        player: player,
-        service: {
-          $in: [
-            PlayerAliasService.TALO,
-            PlayerAliasService.STEAM,
-            PlayerAliasService.GOOGLE_PLAY_GAMES,
-          ],
-        },
+  const restrictedAlias = await em.repo(PlayerAlias).findOne(
+    {
+      player: player,
+      service: {
+        $in: [
+          PlayerAliasService.TALO,
+          PlayerAliasService.STEAM,
+          PlayerAliasService.GOOGLE_PLAY_GAMES,
+        ],
       },
-      { fields: ['id', 'service'] },
-    )
+    },
+    { fields: ['id', 'service'] },
+  )
 
   return restrictedAlias
 }
@@ -131,11 +129,11 @@ export const mergeRoute = apiRoute({
     body: z.object({
       playerId1: z.uuid().meta({
         description:
-          'The first player ID - the second player will be merged into this player. If this player is using Steamworks or Talo Player Authentication, they must be the one initiating the merge.',
+          'The first player ID - the second player will be merged into this player. If this player has a Steamworks, Google Play Games, or Talo Player Authentication alias, that alias must be the one initiating the merge.',
       }),
       playerId2: z.uuid().meta({
         description:
-          'The second player ID. This player cannot be a player with Steamworks or Talo Player Authentication enabled.',
+          'The second player ID. This player cannot have a Steamworks, Google Play Games, or Talo Player Authentication alias.',
       }),
     }),
   }),

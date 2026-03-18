@@ -20,6 +20,20 @@ export async function authenticateAuthCode(
   const client = new GooglePlayGamesClient(integration)
   const config = integration.getGooglePlayGamesConfig()
 
+  const errorOpts = { cause: 400 }
+
+  if (!config.clientId) {
+    throw new Error('Failed to exchange Google Play Games auth code: invalid client ID', errorOpts)
+  }
+
+  const secret = integration.getGooglePlayGamesClientSecret()
+  if (!secret) {
+    throw new Error(
+      'Failed to exchange Google Play Games auth code: invalid client secret',
+      errorOpts,
+    )
+  }
+
   const tokenBody = new URLSearchParams({
     grant_type: 'authorization_code',
     code: authCode,
@@ -37,12 +51,17 @@ export async function authenticateAuthCode(
   })
   await em.persist(tokenEvent).flush()
 
-  const errorOpts = { cause: 400 }
-
   if (!tokenRes || tokenRes.status >= 500) {
     throw new Error('Failed to exchange Google Play Games auth code: service unavailable', {
       cause: 503,
     })
+  }
+
+  if (tokenRes.data && 'error' in tokenRes.data) {
+    throw new Error(
+      `Failed to exchange Google Play Games auth code: ${tokenRes.data.error_description} (${tokenRes.data.error})`,
+      errorOpts,
+    )
   }
 
   if (tokenRes.status !== 200 || !tokenRes.data?.access_token) {

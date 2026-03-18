@@ -23,7 +23,7 @@ async function getSteamworksStatsForPlayer(
   const client = new SteamworksClient(integration)
   const { res, event } = await client.makeRequest<GetUserStatsForGameResponse>({
     method: 'GET',
-    url: `/ISteamUserStats/GetUserStatsForGame/v2?appid=${integration.getConfig().appId}&steamid=${steamId}`,
+    url: `/ISteamUserStats/GetUserStatsForGame/v2?appid=${integration.getSteamConfig().appId}&steamid=${steamId}`,
   })
   await em.persist(event).flush()
 
@@ -42,7 +42,7 @@ async function requestSetSteamworksUserStat({
   value: number
 }) {
   const body = querystring.stringify({
-    appid: integration.getConfig().appId,
+    appid: integration.getSteamConfig().appId,
     steamid: steamUserId,
     count: 1,
     name: [stat.internalName],
@@ -245,7 +245,7 @@ export async function syncSteamworksStats(em: EntityManager, integration: Integr
   const client = new SteamworksClient(integration)
   const { res, event } = await client.makeRequest<GetSchemaForGameResponse>({
     method: 'GET',
-    url: `/ISteamUserStats/GetSchemaForGame/v2?appid=${integration.getConfig().appId}`,
+    url: `/ISteamUserStats/GetSchemaForGame/v2?appid=${integration.getSteamConfig().appId}`,
   })
   await em.persist(event).flush()
 

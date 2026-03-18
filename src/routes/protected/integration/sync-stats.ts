@@ -13,7 +13,7 @@ export const syncStatsRoute = protectedRoute({
     const em = ctx.em
     const integration = ctx.state.integration
 
-    if (!integration.getConfig().syncStats) {
+    if (!integration.getSteamConfig().syncStats) {
       return ctx.throw(400, 'Stat syncing is not enabled')
     }
 

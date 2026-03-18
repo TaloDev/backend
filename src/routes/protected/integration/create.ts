@@ -8,22 +8,27 @@ import { loadGame } from '../../../middleware/game-middleware'
 import { userTypeGate } from '../../../middleware/policy-middleware'
 import { configKeys } from './common'
 
-const integrationTypeValues = Object.values(IntegrationType).join(', ')
-
 export const createRoute = protectedRoute({
   method: 'post',
   schema: (z) => ({
-    body: z.object({
-      type: z.enum(IntegrationType, {
-        error: `Integration type must be one of ${integrationTypeValues}`,
+    body: z.discriminatedUnion('type', [
+      z.object({
+        type: z.literal(IntegrationType.STEAMWORKS),
+        config: z.object({
+          apiKey: z.string(),
+          appId: z.number(),
+          syncLeaderboards: z.boolean().optional(),
+          syncStats: z.boolean().optional(),
+        }),
       }),
-      config: z.object({
-        apiKey: z.string().optional(),
-        appId: z.number().optional(),
-        syncLeaderboards: z.boolean().optional(),
-        syncStats: z.boolean().optional(),
+      z.object({
+        type: z.literal(IntegrationType.GOOGLE_PLAY_GAMES),
+        config: z.object({
+          clientId: z.string(),
+          clientSecret: z.string(),
+        }),
       }),
-    }),
+    ]),
   }),
   middleware: withMiddleware(userTypeGate([UserType.ADMIN], 'add integrations'), loadGame),
   handler: async (ctx) => {

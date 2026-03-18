@@ -57,7 +57,7 @@ describe('Steamworks integration - sync stats', () => {
     ])
     axiosMock
       .onGet(
-        `https://partner.steam-api.com/ISteamUserStats/GetSchemaForGame/v2?appid=${integration.getConfig().appId}`,
+        `https://partner.steam-api.com/ISteamUserStats/GetSchemaForGame/v2?appid=${integration.getSteamConfig().appId}`,
       )
       .replyOnce(getSchemaMock)
 
@@ -67,7 +67,7 @@ describe('Steamworks integration - sync stats', () => {
 
     const event = await em.getRepository(SteamworksIntegrationEvent).findOneOrFail({ integration })
     expect(event.request).toStrictEqual({
-      url: `https://partner.steam-api.com/ISteamUserStats/GetSchemaForGame/v2?appid=${integration.getConfig().appId}`,
+      url: `https://partner.steam-api.com/ISteamUserStats/GetSchemaForGame/v2?appid=${integration.getSteamConfig().appId}`,
       body: '',
       method: 'GET',
     })
@@ -120,7 +120,7 @@ describe('Steamworks integration - sync stats', () => {
     ])
     axiosMock
       .onGet(
-        `https://partner.steam-api.com/ISteamUserStats/GetSchemaForGame/v2?appid=${integration.getConfig().appId}`,
+        `https://partner.steam-api.com/ISteamUserStats/GetSchemaForGame/v2?appid=${integration.getSteamConfig().appId}`,
       )
       .replyOnce(getSchemaMock)
 
@@ -168,7 +168,7 @@ describe('Steamworks integration - sync stats', () => {
     ])
     axiosMock
       .onGet(
-        `https://partner.steam-api.com/ISteamUserStats/GetSchemaForGame/v2?appid=${integration.getConfig().appId}`,
+        `https://partner.steam-api.com/ISteamUserStats/GetSchemaForGame/v2?appid=${integration.getSteamConfig().appId}`,
       )
       .replyOnce(getSchemaMock)
 
@@ -190,7 +190,7 @@ describe('Steamworks integration - sync stats', () => {
     ])
     axiosMock
       .onGet(
-        `https://partner.steam-api.com/ISteamUserStats/GetUserStatsForGame/v2?appid=${integration.getConfig().appId}&steamid=${player.aliases[0].identifier}`,
+        `https://partner.steam-api.com/ISteamUserStats/GetUserStatsForGame/v2?appid=${integration.getSteamConfig().appId}&steamid=${player.aliases[0].identifier}`,
       )
       .replyOnce(getUserStatsMock)
 
@@ -239,14 +239,14 @@ describe('Steamworks integration - sync stats', () => {
     ])
     axiosMock
       .onGet(
-        `https://partner.steam-api.com/ISteamUserStats/GetSchemaForGame/v2?appid=${integration.getConfig().appId}`,
+        `https://partner.steam-api.com/ISteamUserStats/GetSchemaForGame/v2?appid=${integration.getSteamConfig().appId}`,
       )
       .replyOnce(getSchemaMock)
 
     const getUserStatsMock = vi.fn((): [number] => [400])
     axiosMock
       .onGet(
-        `https://partner.steam-api.com/ISteamUserStats/GetUserStatsForGame/v2?appid=${integration.getConfig().appId}&steamid=${player.aliases[0].identifier}`,
+        `https://partner.steam-api.com/ISteamUserStats/GetUserStatsForGame/v2?appid=${integration.getSteamConfig().appId}&steamid=${player.aliases[0].identifier}`,
       )
       .replyOnce(getUserStatsMock)
 
@@ -299,7 +299,7 @@ describe('Steamworks integration - sync stats', () => {
     ])
     axiosMock
       .onGet(
-        `https://partner.steam-api.com/ISteamUserStats/GetSchemaForGame/v2?appid=${integration.getConfig().appId}`,
+        `https://partner.steam-api.com/ISteamUserStats/GetSchemaForGame/v2?appid=${integration.getSteamConfig().appId}`,
       )
       .replyOnce(getSchemaMock)
 
@@ -321,7 +321,7 @@ describe('Steamworks integration - sync stats', () => {
     ])
     axiosMock
       .onGet(
-        `https://partner.steam-api.com/ISteamUserStats/GetUserStatsForGame/v2?appid=${integration.getConfig().appId}&steamid=${player.aliases[0].identifier}`,
+        `https://partner.steam-api.com/ISteamUserStats/GetUserStatsForGame/v2?appid=${integration.getSteamConfig().appId}&steamid=${player.aliases[0].identifier}`,
       )
       .replyOnce(getUserStatsMock)
 
@@ -373,7 +373,7 @@ describe('Steamworks integration - sync stats', () => {
     ])
     axiosMock
       .onGet(
-        `https://partner.steam-api.com/ISteamUserStats/GetSchemaForGame/v2?appid=${integration.getConfig().appId}`,
+        `https://partner.steam-api.com/ISteamUserStats/GetSchemaForGame/v2?appid=${integration.getSteamConfig().appId}`,
       )
       .replyOnce(getSchemaMock)
 
@@ -390,7 +390,7 @@ describe('Steamworks integration - sync stats', () => {
     ])
     axiosMock
       .onGet(
-        `https://partner.steam-api.com/ISteamUserStats/GetUserStatsForGame/v2?appid=${integration.getConfig().appId}&steamid=${player.aliases[0].identifier}`,
+        `https://partner.steam-api.com/ISteamUserStats/GetUserStatsForGame/v2?appid=${integration.getSteamConfig().appId}&steamid=${player.aliases[0].identifier}`,
       )
       .replyOnce(getUserStatsMock)
 
@@ -434,7 +434,7 @@ describe('Steamworks integration - sync stats', () => {
     const getSchemaMock = vi.fn((): [number] => [404])
     axiosMock
       .onGet(
-        `https://partner.steam-api.com/ISteamUserStats/GetSchemaForGame/v2?appid=${integration.getConfig().appId}`,
+        `https://partner.steam-api.com/ISteamUserStats/GetSchemaForGame/v2?appid=${integration.getSteamConfig().appId}`,
       )
       .replyOnce(getSchemaMock)
 
@@ -486,7 +486,7 @@ describe('Steamworks integration - sync stats', () => {
     ])
     axiosMock
       .onGet(
-        `https://partner.steam-api.com/ISteamUserStats/GetSchemaForGame/v2?appid=${integration.getConfig().appId}`,
+        `https://partner.steam-api.com/ISteamUserStats/GetSchemaForGame/v2?appid=${integration.getSteamConfig().appId}`,
       )
       .replyOnce(getSchemaMock)
 
@@ -504,7 +504,7 @@ describe('Steamworks integration - sync stats', () => {
       ])
       axiosMock
         .onGet(
-          `https://partner.steam-api.com/ISteamUserStats/GetUserStatsForGame/v2?appid=${integration.getConfig().appId}&steamid=${player.aliases[0].identifier}`,
+          `https://partner.steam-api.com/ISteamUserStats/GetUserStatsForGame/v2?appid=${integration.getSteamConfig().appId}&steamid=${player.aliases[0].identifier}`,
         )
         .replyOnce(getUserStatsMock)
     })
@@ -576,7 +576,7 @@ describe('Steamworks integration - sync stats', () => {
     ])
     axiosMock
       .onGet(
-        `https://partner.steam-api.com/ISteamUserStats/GetSchemaForGame/v2?appid=${integration.getConfig().appId}`,
+        `https://partner.steam-api.com/ISteamUserStats/GetSchemaForGame/v2?appid=${integration.getSteamConfig().appId}`,
       )
       .replyOnce(getSchemaMock)
 
@@ -598,7 +598,7 @@ describe('Steamworks integration - sync stats', () => {
     ])
     axiosMock
       .onGet(
-        `https://partner.steam-api.com/ISteamUserStats/GetUserStatsForGame/v2?appid=${integration.getConfig().appId}&steamid=${players[0].aliases[0].identifier}`,
+        `https://partner.steam-api.com/ISteamUserStats/GetUserStatsForGame/v2?appid=${integration.getSteamConfig().appId}&steamid=${players[0].aliases[0].identifier}`,
       )
       .replyOnce(getUserStatsMock1)
 
@@ -620,7 +620,7 @@ describe('Steamworks integration - sync stats', () => {
     ])
     axiosMock
       .onGet(
-        `https://partner.steam-api.com/ISteamUserStats/GetUserStatsForGame/v2?appid=${integration.getConfig().appId}&steamid=${players[1].aliases[0].identifier}`,
+        `https://partner.steam-api.com/ISteamUserStats/GetUserStatsForGame/v2?appid=${integration.getSteamConfig().appId}&steamid=${players[1].aliases[0].identifier}`,
       )
       .replyOnce(getUserStatsMock2)
 
@@ -642,7 +642,7 @@ describe('Steamworks integration - sync stats', () => {
     ])
     axiosMock
       .onGet(
-        `https://partner.steam-api.com/ISteamUserStats/GetUserStatsForGame/v2?appid=${integration.getConfig().appId}&steamid=${players[2].aliases[0].identifier}`,
+        `https://partner.steam-api.com/ISteamUserStats/GetUserStatsForGame/v2?appid=${integration.getSteamConfig().appId}&steamid=${players[2].aliases[0].identifier}`,
       )
       .replyOnce(getUserStatsMock3)
 
@@ -705,7 +705,7 @@ describe('Steamworks integration - sync stats', () => {
     ])
     axiosMock
       .onGet(
-        `https://partner.steam-api.com/ISteamUserStats/GetSchemaForGame/v2?appid=${integration.getConfig().appId}`,
+        `https://partner.steam-api.com/ISteamUserStats/GetSchemaForGame/v2?appid=${integration.getSteamConfig().appId}`,
       )
       .replyOnce(getSchemaMock)
 
@@ -726,7 +726,7 @@ describe('Steamworks integration - sync stats', () => {
     ])
     axiosMock
       .onGet(
-        `https://partner.steam-api.com/ISteamUserStats/GetUserStatsForGame/v2?appid=${integration.getConfig().appId}&steamid=${player.aliases[0].identifier}`,
+        `https://partner.steam-api.com/ISteamUserStats/GetUserStatsForGame/v2?appid=${integration.getSteamConfig().appId}&steamid=${player.aliases[0].identifier}`,
       )
       .replyOnce(getUserStatsMock)
 
@@ -791,7 +791,7 @@ describe('Steamworks integration - sync stats', () => {
     ])
     axiosMock
       .onGet(
-        `https://partner.steam-api.com/ISteamUserStats/GetSchemaForGame/v2?appid=${integration.getConfig().appId}`,
+        `https://partner.steam-api.com/ISteamUserStats/GetSchemaForGame/v2?appid=${integration.getSteamConfig().appId}`,
       )
       .replyOnce(getSchemaMock)
 

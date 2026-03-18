@@ -139,6 +139,16 @@ export default class PlayerFactory extends Factory<Player> {
     })
   }
 
+  withGooglePlayGamesAlias(): this {
+    return this.state(async (player: Player) => {
+      const alias = await new PlayerAliasFactory(player).googlePlayGames().one()
+
+      return {
+        aliases: new Collection<PlayerAlias>(player, [alias]),
+      }
+    })
+  }
+
   withPresence(): this {
     return this.state(async (player) => {
       return {

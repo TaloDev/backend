@@ -1,8 +1,7 @@
 import { randBoolean, randNumber, randUuid } from '@ngneat/falso'
 import { Factory } from 'hefty'
-import { IntegrationConfig } from '../../src/entities/integration'
 
-class IntegrationConfigProvider implements IntegrationConfig {
+class IntegrationConfigProvider {
   apiKey!: string
   appId!: number
   syncLeaderboards!: boolean

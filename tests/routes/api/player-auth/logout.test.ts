@@ -15,7 +15,7 @@ describe('Player auth API - logout', () => {
 
     const player = await new PlayerFactory([apiKey.game]).withTaloAlias().one()
     const alias = player.aliases[0]
-    await em.persistAndFlush(player)
+    await em.persist(player).flush()
 
     const sessionToken = await player.auth!.createSession(alias)
     await em.flush()
@@ -44,7 +44,7 @@ describe('Player auth API - logout', () => {
 
     const player = await new PlayerFactory([apiKey.game]).withTaloAlias().one()
     const alias = player.aliases[0]
-    await em.persistAndFlush(player)
+    await em.persist(player).flush()
 
     const sessionToken = await player.auth!.createSession(alias)
     await em.flush()
@@ -65,7 +65,7 @@ describe('Player auth API - logout', () => {
     ])
 
     const player = await new PlayerFactory([apiKey.game]).one()
-    await em.persistAndFlush(player)
+    await em.persist(player).flush()
 
     const alias = player.aliases[0]
 

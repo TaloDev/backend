@@ -7,7 +7,7 @@ describe('Player API - get', () => {
   it('should get a player by ID', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_PLAYERS])
     const player = await new PlayerFactory([apiKey.game]).one()
-    await em.persistAndFlush(player)
+    await em.persist(player).flush()
 
     const res = await request(app)
       .get(`/v1/players/${player.id}`)

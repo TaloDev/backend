@@ -15,7 +15,7 @@ describe('Game channel API - invite', () => {
     const invitee = await new PlayerFactory([apiKey.game]).one()
 
     channel.owner = owner.aliases[0]
-    await em.persistAndFlush([channel, owner, invitee])
+    await em.persist([channel, owner, invitee]).flush()
 
     await request(app)
       .post(`/v1/game-channels/${channel.id}/invite`)
@@ -31,7 +31,7 @@ describe('Game channel API - invite', () => {
     const channel = await new GameChannelFactory(apiKey.game).one()
     const nonOwner = await new PlayerFactory([apiKey.game]).one()
     const invitee = await new PlayerFactory([apiKey.game]).one()
-    await em.persistAndFlush([channel, nonOwner, invitee])
+    await em.persist([channel, nonOwner, invitee]).flush()
 
     const res = await request(app)
       .post(`/v1/game-channels/${channel.id}/invite`)
@@ -53,7 +53,7 @@ describe('Game channel API - invite', () => {
     const invitee = await new PlayerFactory([apiKey.game]).one()
 
     channel.owner = owner.aliases[0]
-    await em.persistAndFlush([channel, owner, invitee])
+    await em.persist([channel, owner, invitee]).flush()
 
     await request(app)
       .post(`/v1/game-channels/${channel.id}/invite`)
@@ -67,7 +67,7 @@ describe('Game channel API - invite', () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_CHANNELS])
 
     const channel = await new GameChannelFactory(apiKey.game).one()
-    await em.persistAndFlush(channel)
+    await em.persist(channel).flush()
 
     const res = await request(app)
       .post(`/v1/game-channels/${channel.id}/invite`)
@@ -107,7 +107,7 @@ describe('Game channel API - invite', () => {
     const owner = await new PlayerFactory([apiKey.game]).one()
 
     channel.owner = owner.aliases[0]
-    await em.persistAndFlush([channel, owner])
+    await em.persist([channel, owner]).flush()
 
     const res = await request(app)
       .post(`/v1/game-channels/${channel.id}/invite`)
@@ -128,7 +128,7 @@ describe('Game channel API - invite', () => {
     const owner = await new PlayerFactory([apiKey.game]).one()
 
     channel.owner = owner.aliases[0]
-    await em.persistAndFlush([channel, owner])
+    await em.persist([channel, owner]).flush()
 
     const res = await request(app)
       .post(`/v1/game-channels/${channel.id}/invite`)
@@ -154,7 +154,7 @@ describe('Game channel API - invite', () => {
     channel.members.add(player.aliases[0])
 
     const invitee = await new PlayerFactory([player.game]).one()
-    await em.persistAndFlush([channel, player, invitee])
+    await em.persist([channel, player, invitee]).flush()
 
     await createTestSocket(`/?ticket=${ticket}`, async (client) => {
       await client.identify(identifyMessage)

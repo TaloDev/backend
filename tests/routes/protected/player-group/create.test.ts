@@ -72,7 +72,7 @@ describe('Player group - create', () => {
       }))
       .one()
     const player2 = await new PlayerFactory([game]).one()
-    await em.persistAndFlush([player1, player2])
+    await em.persist([player1, player2]).flush()
 
     const rules: Partial<PlayerGroupRule>[] = [
       {

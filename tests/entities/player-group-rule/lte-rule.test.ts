@@ -24,7 +24,7 @@ describe('LTE rule', () => {
     const player2 = await new PlayerFactory([game])
       .state(() => ({ lastSeenAt: new Date(2022, 1, 3) }))
       .one()
-    await em.persistAndFlush([player1, player2])
+    await em.persist([player1, player2]).flush()
 
     const rules: Partial<PlayerGroupRule>[] = [
       {
@@ -55,7 +55,7 @@ describe('LTE rule', () => {
     const player2 = await new PlayerFactory([game])
       .state(() => ({ lastSeenAt: new Date(2022, 6, 3) }))
       .one()
-    await em.persistAndFlush([player1, player2])
+    await em.persist([player1, player2]).flush()
 
     const rules: Partial<PlayerGroupRule>[] = [
       {
@@ -90,7 +90,7 @@ describe('LTE rule', () => {
         props: new Collection<PlayerProp>(player, [new PlayerProp(player, 'currentLevel', '70')]),
       }))
       .one()
-    await em.persistAndFlush([player1, player2])
+    await em.persist([player1, player2]).flush()
 
     const rules: Partial<PlayerGroupRule>[] = [
       {
@@ -125,7 +125,7 @@ describe('LTE rule', () => {
         props: new Collection<PlayerProp>(player, [new PlayerProp(player, 'currentLevel', '69')]),
       }))
       .one()
-    await em.persistAndFlush([player1, player2])
+    await em.persist([player1, player2]).flush()
 
     const rules: Partial<PlayerGroupRule>[] = [
       {
@@ -160,7 +160,7 @@ describe('LTE rule', () => {
       .construct(player1, stat)
       .state(() => ({ value: 60 }))
       .one()
-    await em.persistAndFlush([player1, player2, playerStat])
+    await em.persist([player1, player2, playerStat]).flush()
 
     const rules: Partial<PlayerGroupRule>[] = [
       {
@@ -195,7 +195,7 @@ describe('LTE rule', () => {
       .construct(player1, stat)
       .state(() => ({ value: 60 }))
       .one()
-    await em.persistAndFlush([player1, player2, playerStat])
+    await em.persist([player1, player2, playerStat]).flush()
 
     const rules: Partial<PlayerGroupRule>[] = [
       {
@@ -227,7 +227,7 @@ describe('LTE rule', () => {
     const leaderboardEntry = await new LeaderboardEntryFactory(leaderboard, [player1])
       .state(() => ({ score: 60 }))
       .one()
-    await em.persistAndFlush([player1, player2, leaderboardEntry])
+    await em.persist([player1, player2, leaderboardEntry]).flush()
 
     const rules: Partial<PlayerGroupRule>[] = [
       {
@@ -259,7 +259,7 @@ describe('LTE rule', () => {
     const leaderboardEntry = await new LeaderboardEntryFactory(leaderboard, [player1])
       .state(() => ({ score: 60 }))
       .one()
-    await em.persistAndFlush([player1, player2, leaderboardEntry])
+    await em.persist([player1, player2, leaderboardEntry]).flush()
 
     const rules: Partial<PlayerGroupRule>[] = [
       {

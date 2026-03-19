@@ -17,7 +17,7 @@ describe('API key - revoke', () => {
       const [token, user] = await createUserAndToken({ type, emailConfirmed: true }, organisation)
 
       const key = new APIKey(game, user)
-      await em.persistAndFlush(key)
+      await em.persist(key).flush()
 
       const res = await request(app)
         .delete(`/games/${game.id}/api-keys/${key.id}`)
@@ -69,7 +69,7 @@ describe('API key - revoke', () => {
 
     const user = await new UserFactory().state(() => ({ organisation: otherOrg })).one()
     const key = new APIKey(otherGame, user)
-    await em.persistAndFlush(key)
+    await em.persist(key).flush()
 
     const res = await request(app)
       .delete(`/games/${otherGame.id}/api-keys/${key.id}`)
@@ -89,7 +89,7 @@ describe('API key - revoke', () => {
     )
 
     const key = new APIKey(game, user)
-    await em.persistAndFlush(key)
+    await em.persist(key).flush()
 
     const ticket = await createSocketTicket(redis, key, false)
 

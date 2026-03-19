@@ -15,7 +15,7 @@ describe('Game channel API - delete', () => {
     const player = await new PlayerFactory([apiKey.game]).one()
     channel.owner = player.aliases[0]
     channel.members.add(player.aliases[0])
-    await em.persistAndFlush(channel)
+    await em.persist(channel).flush()
 
     await request(app)
       .delete(`/v1/game-channels/${channel.id}`)
@@ -34,7 +34,7 @@ describe('Game channel API - delete', () => {
     const player = await new PlayerFactory([apiKey.game]).one()
     channel.owner = player.aliases[0]
     channel.members.add(player.aliases[0])
-    await em.persistAndFlush(channel)
+    await em.persist(channel).flush()
 
     await request(app)
       .delete(`/v1/game-channels/${channel.id}`)
@@ -49,7 +49,7 @@ describe('Game channel API - delete', () => {
     const channel = await new GameChannelFactory(apiKey.game).state(() => ({ owner: null })).one()
     const player = await new PlayerFactory([apiKey.game]).one()
     channel.members.add(player.aliases[0])
-    await em.persistAndFlush(channel)
+    await em.persist(channel).flush()
 
     const res = await request(app)
       .delete(`/v1/game-channels/${channel.id}`)
@@ -67,7 +67,7 @@ describe('Game channel API - delete', () => {
     const player = await new PlayerFactory([apiKey.game]).one()
     channel.owner = (await new PlayerFactory([apiKey.game]).one()).aliases[0]
     channel.members.add(player.aliases[0])
-    await em.persistAndFlush(channel)
+    await em.persist(channel).flush()
 
     const res = await request(app)
       .delete(`/v1/game-channels/${channel.id}`)
@@ -85,7 +85,7 @@ describe('Game channel API - delete', () => {
     const player = await new PlayerFactory([apiKey.game]).one()
     channel.owner = player.aliases[0]
     channel.members.add(player.aliases[0])
-    await em.persistAndFlush(channel)
+    await em.persist(channel).flush()
 
     const res = await request(app)
       .delete(`/v1/game-channels/${channel.id}`)
@@ -105,7 +105,7 @@ describe('Game channel API - delete', () => {
     const player = await new PlayerFactory([apiKey.game]).one()
     channel.owner = player.aliases[0]
     channel.members.add(player.aliases[0])
-    await em.persistAndFlush(channel)
+    await em.persist(channel).flush()
 
     const res = await request(app)
       .delete('/v1/game-channels/54252')
@@ -125,7 +125,7 @@ describe('Game channel API - delete', () => {
     const player = await new PlayerFactory([apiKey.game]).one()
     channel.owner = player.aliases[0]
     channel.members.add(player.aliases[0])
-    await em.persistAndFlush(channel)
+    await em.persist(channel).flush()
 
     const existenceKey = GameChannel.getSocketExistenceKey(channel.id)
     await redis.set(existenceKey, '1')
@@ -149,7 +149,7 @@ describe('Game channel API - delete', () => {
     const channel = await new GameChannelFactory(player.game).one()
     channel.owner = player.aliases[0]
     channel.members.add(player.aliases[0])
-    await em.persistAndFlush(channel)
+    await em.persist(channel).flush()
 
     await createTestSocket(`/?ticket=${ticket}`, async (client) => {
       await client.identify(identifyMessage)

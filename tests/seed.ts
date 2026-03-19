@@ -138,7 +138,7 @@ void (async () => {
 
   const em = orm.em.fork()
 
-  await em.persistAndFlush([
+  await em.persist([
     ...pricingPlans,
     ownerUser,
     adminUser,
@@ -152,7 +152,7 @@ void (async () => {
     ...gameStats,
     ...playerGameStats,
     ...feedback,
-  ])
+  ]).flush()
 
   await orm.close(true)
 

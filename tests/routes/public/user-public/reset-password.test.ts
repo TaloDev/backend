@@ -7,7 +7,7 @@ describe('User public - reset password', () => {
   it('should let a user reset their password', async () => {
     const password = await bcrypt.hash('p4ssw0rd112233', 10)
     const user = await new UserFactory().state(() => ({ password })).one()
-    await em.persistAndFlush(user)
+    await em.persist(user).flush()
 
     const token = await sign({ sub: user.id }, user.password.substring(0, 10), { expiresIn: '15m' })
 
@@ -23,7 +23,7 @@ describe('User public - reset password', () => {
   it('should not let a user reset their password if they supply the same one', async () => {
     const password = await bcrypt.hash('p4ssw0rd112233', 10)
     const user = await new UserFactory().state(() => ({ password })).one()
-    await em.persistAndFlush(user)
+    await em.persist(user).flush()
 
     const token = await sign({ sub: user.id }, user.password.substring(0, 10), { expiresIn: '15m' })
 

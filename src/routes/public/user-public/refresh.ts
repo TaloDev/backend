@@ -29,7 +29,7 @@ export const refreshRoute = publicRoute({
     }
 
     if (new Date() > session.validUntil) {
-      await em.removeAndFlush(session)
+      await em.remove(session).flush()
       return {
         status: 401,
         body: { message: 'Refresh token expired' },

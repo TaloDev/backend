@@ -9,7 +9,7 @@ describe('API key - list', () => {
     const [token, user] = await createUserAndToken({}, organisation)
 
     const keys: APIKey[] = Array.from({ length: 3 }).map(() => new APIKey(game, user))
-    await em.persistAndFlush(keys)
+    await em.persist(keys).flush()
 
     const res = await request(app)
       .get(`/games/${game.id}/api-keys`)

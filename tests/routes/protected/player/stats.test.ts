@@ -33,7 +33,7 @@ describe('Player - stats', () => {
 
     const player = await new PlayerFactory([game]).one()
 
-    await em.persistAndFlush(player)
+    await em.persist(player).flush()
 
     await request(app)
       .get(`/games/${game.id}/players/${player.id}/stats`)

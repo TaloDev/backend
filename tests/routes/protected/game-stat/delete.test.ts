@@ -14,7 +14,7 @@ describe('Game stat - delete', () => {
       const [token] = await createUserAndToken({ type, emailConfirmed: true }, organisation)
 
       const stat = await new GameStatFactory([game]).one()
-      await em.persistAndFlush(stat)
+      await em.persist(stat).flush()
 
       await request(app)
         .delete(`/games/${game.id}/game-stats/${stat.id}`)
@@ -42,7 +42,7 @@ describe('Game stat - delete', () => {
     const [token] = await createUserAndToken({ type: UserType.ADMIN })
 
     const stat = await new GameStatFactory([otherGame]).one()
-    await em.persistAndFlush(stat)
+    await em.persist(stat).flush()
 
     const res = await request(app)
       .delete(`/games/${otherGame.id}/game-stats/${stat.id}`)

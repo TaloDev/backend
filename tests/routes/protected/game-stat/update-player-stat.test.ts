@@ -39,7 +39,7 @@ describe('Game stat - update player stat', () => {
         .state(() => ({ value: 10 }))
         .one()
 
-      await em.persistAndFlush([stat, player, playerStat])
+      await em.persist([stat, player, playerStat]).flush()
 
       const res = await request(app)
         .patch(`/games/${game.id}/game-stats/${stat.id}/player-stats/${playerStat.id}`)
@@ -87,7 +87,7 @@ describe('Game stat - update player stat', () => {
       .state(() => ({ value: 10 }))
       .one()
 
-    await em.persistAndFlush([stat, player, playerStat])
+    await em.persist([stat, player, playerStat]).flush()
 
     await request(app)
       .patch(`/games/${game.id}/game-stats/${stat.id}/player-stats/${playerStat.id}`)
@@ -114,7 +114,7 @@ describe('Game stat - update player stat', () => {
       .state(() => ({ value: 10 }))
       .one()
 
-    await em.persistAndFlush([stat, player, playerStat])
+    await em.persist([stat, player, playerStat]).flush()
 
     const res = await request(app)
       .patch(`/games/${game.id}/game-stats/${stat.id}/player-stats/${playerStat.id}`)
@@ -142,7 +142,7 @@ describe('Game stat - update player stat', () => {
       .state(() => ({ value: 90 }))
       .one()
 
-    await em.persistAndFlush([stat, player, playerStat])
+    await em.persist([stat, player, playerStat]).flush()
 
     const res = await request(app)
       .patch(`/games/${game.id}/game-stats/${stat.id}/player-stats/${playerStat.id}`)
@@ -171,7 +171,7 @@ describe('Game stat - update player stat', () => {
       .state(() => ({ value: 50 }))
       .one()
 
-    await em.persistAndFlush([stat, player, playerStat])
+    await em.persist([stat, player, playerStat]).flush()
 
     await request(app)
       .patch(`/games/${game.id}/game-stats/${stat.id}/player-stats/${playerStat.id}`)
@@ -241,7 +241,7 @@ describe('Game stat - update player stat', () => {
       .state(() => ({ value: 10 }))
       .one()
 
-    await em.persistAndFlush([stat, player, playerStat])
+    await em.persist([stat, player, playerStat]).flush()
 
     await request(app)
       .patch(`/games/${otherGame.id}/game-stats/${stat.id}/player-stats/${playerStat.id}`)
@@ -257,7 +257,7 @@ describe('Game stat - update player stat', () => {
     const stat = await new GameStatFactory([game]).one()
     const player = await new PlayerFactory([game]).one()
 
-    await em.persistAndFlush([stat, player])
+    await em.persist([stat, player]).flush()
 
     const res = await request(app)
       .patch(`/games/${game.id}/game-stats/${stat.id}/player-stats/999999`)
@@ -277,7 +277,7 @@ describe('Game stat - update player stat', () => {
     const stat = await new GameStatFactory([game]).one()
     const player = await new PlayerFactory([game]).one()
 
-    await em.persistAndFlush([stat, player])
+    await em.persist([stat, player]).flush()
 
     const res = await request(app)
       .patch(`/games/${game.id}/game-stats/999/player-stats/999999`)

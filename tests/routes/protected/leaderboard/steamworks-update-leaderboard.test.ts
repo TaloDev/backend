@@ -50,7 +50,7 @@ describe('Leaderboard - steamworks update', () => {
     const integration = await new IntegrationFactory()
       .construct(IntegrationType.STEAMWORKS, game, config)
       .one()
-    await em.persistAndFlush([integration, leaderboard])
+    await em.persist([integration, leaderboard]).flush()
 
     await request(app)
       .put(`/games/${game.id}/leaderboards/${leaderboard.id}`)
@@ -91,7 +91,7 @@ describe('Leaderboard - steamworks update', () => {
     const integration = await new IntegrationFactory()
       .construct(IntegrationType.STEAMWORKS, game, config)
       .one()
-    await em.persistAndFlush([integration, leaderboard])
+    await em.persist([integration, leaderboard]).flush()
 
     await request(app)
       .put(`/games/${game.id}/leaderboards/${leaderboard.id}`)

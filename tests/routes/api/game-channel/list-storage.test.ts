@@ -13,7 +13,7 @@ describe('Game channel API - list storage', () => {
     const player = await new PlayerFactory([apiKey.game]).one()
     channel.owner = player.aliases[0]
     channel.members.add(player.aliases[0])
-    await em.persistAndFlush([channel, player])
+    await em.persist([channel, player]).flush()
 
     const prop1 = await new GameChannelStoragePropFactory(channel)
       .state(() => ({ key: 'key1' }))
@@ -21,7 +21,7 @@ describe('Game channel API - list storage', () => {
     const prop2 = await new GameChannelStoragePropFactory(channel)
       .state(() => ({ key: 'key2' }))
       .one()
-    await em.persistAndFlush([prop1, prop2])
+    await em.persist([prop1, prop2]).flush()
     await prop1.persistToRedis(redis)
     await prop2.persistToRedis(redis)
 
@@ -53,7 +53,7 @@ describe('Game channel API - list storage', () => {
     const prop2 = await new GameChannelStoragePropFactory(channel)
       .state(() => ({ key: 'testKey2' }))
       .one()
-    await em.persistAndFlush([channel, player, prop1, prop2])
+    await em.persist([channel, player, prop1, prop2]).flush()
 
     const res = await request(app)
       .get(`/v1/game-channels/${channel.id}/storage/list`)
@@ -83,7 +83,7 @@ describe('Game channel API - list storage', () => {
     const dbProp = await new GameChannelStoragePropFactory(channel)
       .state(() => ({ key: 'fromdb' }))
       .one()
-    await em.persistAndFlush([channel, player, cachedProp, dbProp])
+    await em.persist([channel, player, cachedProp, dbProp]).flush()
 
     await cachedProp.persistToRedis(redis)
 
@@ -107,7 +107,7 @@ describe('Game channel API - list storage', () => {
     const channel = await new GameChannelFactory(apiKey.game).one()
     const player = await new PlayerFactory([apiKey.game]).one()
     channel.members.add(player.aliases[0])
-    await em.persistAndFlush([channel, player])
+    await em.persist([channel, player]).flush()
 
     const res = await request(app)
       .get(`/v1/game-channels/${channel.id}/storage/list`)
@@ -129,7 +129,7 @@ describe('Game channel API - list storage', () => {
     const existingProp = await new GameChannelStoragePropFactory(channel)
       .state(() => ({ key: 'exists' }))
       .one()
-    await em.persistAndFlush([channel, player, existingProp])
+    await em.persist([channel, player, existingProp]).flush()
 
     const res = await request(app)
       .get(`/v1/game-channels/${channel.id}/storage/list`)
@@ -148,7 +148,7 @@ describe('Game channel API - list storage', () => {
     const channel = await new GameChannelFactory(apiKey.game).one()
     const player = await new PlayerFactory([apiKey.game]).one()
     channel.members.add(player.aliases[0])
-    await em.persistAndFlush([channel, player])
+    await em.persist([channel, player]).flush()
 
     const tooManyKeys = Array.from({ length: 51 }, (_, i) => `key${i}`)
 
@@ -170,7 +170,7 @@ describe('Game channel API - list storage', () => {
     const channel = await new GameChannelFactory(apiKey.game).one()
     const player = await new PlayerFactory([apiKey.game]).one()
     channel.members.add(player.aliases[0])
-    await em.persistAndFlush([channel, player])
+    await em.persist([channel, player]).flush()
 
     const res = await request(app)
       .get(`/v1/game-channels/${channel.id}/storage/list`)
@@ -192,7 +192,7 @@ describe('Game channel API - list storage', () => {
     const channel = await new GameChannelFactory(apiKey.game).one()
     const player = await new PlayerFactory([apiKey.game]).one()
     channel.members.add(player.aliases[0])
-    await em.persistAndFlush([channel, player])
+    await em.persist([channel, player]).flush()
 
     const res = await request(app)
       .get(`/v1/game-channels/${channel.id}/storage/list`)
@@ -218,7 +218,7 @@ describe('Game channel API - list storage', () => {
     const prop = await new GameChannelStoragePropFactory(channel)
       .state(() => ({ key: 'singleKey' }))
       .one()
-    await em.persistAndFlush([channel, player, prop])
+    await em.persist([channel, player, prop]).flush()
 
     const res = await request(app)
       .get(`/v1/game-channels/${channel.id}/storage/list`)
@@ -237,7 +237,7 @@ describe('Game channel API - list storage', () => {
 
     const channel = await new GameChannelFactory(apiKey.game).one()
     const player = await new PlayerFactory([apiKey.game]).one()
-    await em.persistAndFlush([channel, player])
+    await em.persist([channel, player]).flush()
 
     const res = await request(app)
       .get(`/v1/game-channels/${channel.id}/storage/list`)
@@ -255,7 +255,7 @@ describe('Game channel API - list storage', () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_GAME_CHANNELS])
 
     const channel = await new GameChannelFactory(apiKey.game).one()
-    await em.persistAndFlush([channel])
+    await em.persist([channel]).flush()
 
     const res = await request(app)
       .get(`/v1/game-channels/${channel.id}/storage/list`)
@@ -271,7 +271,7 @@ describe('Game channel API - list storage', () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_GAME_CHANNELS])
 
     const player = await new PlayerFactory([apiKey.game]).one()
-    await em.persistAndFlush([player])
+    await em.persist([player]).flush()
 
     const res = await request(app)
       .get('/v1/game-channels/999999/storage/list')

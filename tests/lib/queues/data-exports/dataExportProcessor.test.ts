@@ -30,7 +30,7 @@ describe('Data export - processor', () => {
       }))
       .one()
 
-    await em.persistAndFlush([...gameActivities, dataExport])
+    await em.persist([...gameActivities, dataExport]).flush()
 
     const job = {
       data: {

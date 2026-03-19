@@ -52,7 +52,7 @@ describe('Leaderboard - steamworks create', () => {
     const integration = await new IntegrationFactory()
       .construct(IntegrationType.STEAMWORKS, game, config)
       .one()
-    await em.persistAndFlush(integration)
+    await em.persist(integration).flush()
 
     await request(app)
       .post(`/games/${game.id}/leaderboards`)
@@ -100,7 +100,7 @@ describe('Leaderboard - steamworks create', () => {
     const integration = await new IntegrationFactory()
       .construct(IntegrationType.STEAMWORKS, game, config)
       .one()
-    await em.persistAndFlush(integration)
+    await em.persist(integration).flush()
 
     await request(app)
       .post(`/games/${game.id}/leaderboards`)
@@ -142,7 +142,7 @@ describe('Leaderboard - steamworks create', () => {
     const integration = await new IntegrationFactory()
       .construct(IntegrationType.STEAMWORKS, game, config)
       .one()
-    await em.persistAndFlush(integration)
+    await em.persist(integration).flush()
 
     await request(app)
       .post(`/games/${game.id}/leaderboards`)

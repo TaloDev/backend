@@ -12,7 +12,7 @@ describe('Player - saves', () => {
     const player = await new PlayerFactory([game]).one()
     const saves = await new GameSaveFactory([player]).many(3)
 
-    await em.persistAndFlush([player, ...saves])
+    await em.persist([player, ...saves]).flush()
 
     const res = await request(app)
       .get(`/games/${game.id}/players/${player.id}/saves`)
@@ -28,7 +28,7 @@ describe('Player - saves', () => {
 
     const player = await new PlayerFactory([game]).one()
 
-    await em.persistAndFlush(player)
+    await em.persist(player).flush()
 
     await request(app)
       .get(`/games/${game.id}/players/${player.id}/saves`)

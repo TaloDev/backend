@@ -20,7 +20,7 @@ describe('Event - list', () => {
       }))
       .many(2)
 
-    await em.persistAndFlush(player)
+    await em.persist(player).flush()
     await clickhouse.insert({
       table: 'events',
       values: events.map((event) => event.toInsertable()),
@@ -178,7 +178,7 @@ describe('Event - list', () => {
       }))
       .one()
 
-    await em.persistAndFlush(player)
+    await em.persist(player).flush()
     await clickhouse.insert({
       table: 'events',
       values: [firstEvent, ...moreEvents, ...evenMoreEvents, lastEvent].map((event) =>
@@ -215,7 +215,7 @@ describe('Event - list', () => {
       }))
       .one()
 
-    await em.persistAndFlush(player)
+    await em.persist(player).flush()
     await clickhouse.insert({
       table: 'events',
       values: event.toInsertable(),
@@ -262,7 +262,7 @@ describe('Event - list', () => {
     const events = await new EventFactory([player])
       .state(() => ({ name: 'Talk to NPC', createdAt: new Date() }))
       .many(3)
-    await em.persistAndFlush(player)
+    await em.persist(player).flush()
     await clickhouse.insert({
       table: 'events',
       values: events.map((event) => event.toInsertable()),
@@ -291,7 +291,7 @@ describe('Event - list', () => {
     const events = await new EventFactory([player])
       .state(() => ({ name: 'Talk to NPC', createdAt: new Date() }))
       .many(3)
-    await em.persistAndFlush(player)
+    await em.persist(player).flush()
     await clickhouse.insert({
       table: 'events',
       values: events.map((event) => event.toInsertable()),
@@ -315,7 +315,7 @@ describe('Event - list', () => {
     const events = await new EventFactory([player])
       .state(() => ({ name: 'Talk to NPC', createdAt: new Date() }))
       .many(3)
-    await em.persistAndFlush(player)
+    await em.persist(player).flush()
     await clickhouse.insert({
       table: 'events',
       values: events.map((event) => event.toInsertable()),
@@ -359,7 +359,7 @@ describe('Event - list', () => {
       }))
       .many(3)
 
-    await em.persistAndFlush(player)
+    await em.persist(player).flush()
     await clickhouse.insert({
       table: 'events',
       values: [...events, ...moreEvents].map((event) => event.toInsertable()),

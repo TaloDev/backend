@@ -114,7 +114,7 @@ describe('Leaderboard - create', () => {
     const leaderboard = await new LeaderboardFactory([game])
       .state(() => ({ internalName: 'highscores' }))
       .one()
-    await em.persistAndFlush(leaderboard)
+    await em.persist(leaderboard).flush()
 
     const res = await request(app)
       .post(`/games/${game.id}/leaderboards`)
@@ -143,7 +143,7 @@ describe('Leaderboard - create', () => {
     const otherLeaderboard = await new LeaderboardFactory([otherGame])
       .state(() => ({ internalName: 'time-survived' }))
       .one()
-    await em.persistAndFlush(otherLeaderboard)
+    await em.persist(otherLeaderboard).flush()
 
     await request(app)
       .post(`/games/${game.id}/leaderboards`)

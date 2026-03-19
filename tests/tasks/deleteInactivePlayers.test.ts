@@ -484,7 +484,7 @@ describe('deleteInactivePlayers', () => {
     await em.persist([owner1, owner2, player1, player2]).flush()
 
     // makes persisting the first player_to_delete fail
-    vi.spyOn(EntityManager.prototype, 'persistAndFlush').mockRejectedValueOnce(new Error())
+    vi.spyOn(EntityManager.prototype, 'flush').mockRejectedValueOnce(new Error())
 
     await deleteInactivePlayers()
     // actually delete the players
@@ -538,7 +538,7 @@ describe('deleteInactivePlayers', () => {
         .withPresence()
         .many(playerCount)
 
-      await em.persistAndFlush([owner, ...players])
+      await em.persist([owner, ...players]).flush()
 
       await deleteInactivePlayers()
 

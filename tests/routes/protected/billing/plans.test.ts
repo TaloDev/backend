@@ -48,7 +48,7 @@ describe('Billing - plans', () => {
     const [organisation] = await createOrganisationAndGame({}, {}, plan)
     const [token] = await createUserAndToken({}, organisation)
     organisation.pricingPlan.stripePriceId = price.id
-    await em.persistAndFlush(hiddenPlan)
+    await em.persist(hiddenPlan).flush()
 
     const res = await request(app).get('/billing/plans').auth(token, { type: 'bearer' }).expect(200)
 

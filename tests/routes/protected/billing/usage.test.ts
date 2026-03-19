@@ -16,7 +16,7 @@ describe('Billing - usage', () => {
 
       organisation.pricingPlan.pricingPlan.playerLimit = limit
       const players = await new PlayerFactory(organisation.games.getItems()).many(used)
-      await em.persistAndFlush(players)
+      await em.persist(players).flush()
 
       const res = await request(app)
         .get('/billing/usage')

@@ -10,7 +10,7 @@ describe('Player - events', () => {
     const [token] = await createUserAndToken({}, organisation)
 
     const player = await new PlayerFactory([game]).one()
-    await em.persistAndFlush(player)
+    await em.persist(player).flush()
 
     const events = await new EventFactory([player]).many(3)
     await clickhouse.insert({
@@ -38,7 +38,7 @@ describe('Player - events', () => {
     const [token] = await createUserAndToken()
 
     const player = await new PlayerFactory([game]).one()
-    await em.persistAndFlush(player)
+    await em.persist(player).flush()
 
     await request(app)
       .get(`/games/${game.id}/players/${player.id}/events`)
@@ -52,7 +52,7 @@ describe('Player - events', () => {
     const [token] = await createUserAndToken({}, organisation)
 
     const player = await new PlayerFactory([game]).one()
-    await em.persistAndFlush(player)
+    await em.persist(player).flush()
 
     const events = await new EventFactory([player]).state(() => ({ name: 'Find secret' })).many(3)
     const otherEvents = await new EventFactory([player])
@@ -80,7 +80,7 @@ describe('Player - events', () => {
     const count = 82
 
     const player = await new PlayerFactory([game]).one()
-    await em.persistAndFlush(player)
+    await em.persist(player).flush()
 
     const events = await new EventFactory([player]).many(count)
     await clickhouse.insert({

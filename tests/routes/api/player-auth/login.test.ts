@@ -36,7 +36,7 @@ describe('Player auth API - login', () => {
       .one()
     const alias = player.aliases[0]
 
-    await em.persistAndFlush(player)
+    await em.persist(player).flush()
 
     const res = await request(app)
       .post('/v1/players/auth/login')
@@ -75,7 +75,7 @@ describe('Player auth API - login', () => {
       .one()
     const alias = player.aliases[0]
 
-    await em.persistAndFlush(player)
+    await em.persist(player).flush()
 
     await request(app)
       .post('/v1/players/auth/login')
@@ -104,7 +104,7 @@ describe('Player auth API - login', () => {
       .one()
     const alias = player.aliases[0]
 
-    await em.persistAndFlush(player)
+    await em.persist(player).flush()
 
     const res = await request(app)
       .post('/v1/players/auth/login')
@@ -137,7 +137,7 @@ describe('Player auth API - login', () => {
       }))
       .one()
 
-    await em.persistAndFlush(player)
+    await em.persist(player).flush()
 
     const res = await request(app)
       .post('/v1/players/auth/login')
@@ -171,7 +171,7 @@ describe('Player auth API - login', () => {
       .one()
     const alias = player.aliases[0]
 
-    await em.persistAndFlush(player)
+    await em.persist(player).flush()
 
     const res = await request(app)
       .post('/v1/players/auth/login')
@@ -215,7 +215,7 @@ describe('Player auth API - login', () => {
       .one()
     const alias = player.aliases[0]
 
-    await em.persistAndFlush(player)
+    await em.persist(player).flush()
 
     const res = await request(app)
       .post('/v1/players/auth/login')

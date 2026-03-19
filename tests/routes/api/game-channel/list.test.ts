@@ -9,7 +9,7 @@ describe('Game channel API - list', () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_GAME_CHANNELS])
 
     const channels = await new GameChannelFactory(apiKey.game).many(10)
-    await em.persistAndFlush(channels)
+    await em.persist(channels).flush()
 
     const res = await request(app)
       .get('/v1/game-channels')
@@ -26,7 +26,7 @@ describe('Game channel API - list', () => {
     const [apiKey, token] = await createAPIKeyAndToken([])
 
     const channels = await new GameChannelFactory(apiKey.game).many(10)
-    await em.persistAndFlush(channels)
+    await em.persist(channels).flush()
 
     await request(app)
       .get('/v1/game-channels')
@@ -40,7 +40,7 @@ describe('Game channel API - list', () => {
 
     const publicChannels = await new GameChannelFactory(apiKey.game).many(3)
     const privateChannels = await new GameChannelFactory(apiKey.game).private().many(1)
-    await em.persistAndFlush([...publicChannels, ...privateChannels])
+    await em.persist([...publicChannels, ...privateChannels]).flush()
 
     const res = await request(app)
       .get('/v1/game-channels')

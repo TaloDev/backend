@@ -20,7 +20,7 @@ describe('Game stat API - list player stats', () => {
       .construct(player, stat2)
       .state(() => ({ value: 66 }))
       .one()
-    await em.persistAndFlush([playerStat1, playerStat2])
+    await em.persist([playerStat1, playerStat2]).flush()
 
     const res = await request(app)
       .get('/v1/game-stats/player-stats')
@@ -38,7 +38,7 @@ describe('Game stat API - list player stats', () => {
   it('should return an empty array if the player has no stats', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_GAME_STATS])
     const player = await new PlayerFactory([apiKey.game]).one()
-    await em.persistAndFlush(player)
+    await em.persist(player).flush()
 
     const res = await request(app)
       .get('/v1/game-stats/player-stats')
@@ -52,7 +52,7 @@ describe('Game stat API - list player stats', () => {
   it('should not return player stats if the scope is not valid', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([])
     const player = await new PlayerFactory([apiKey.game]).one()
-    await em.persistAndFlush(player)
+    await em.persist(player).flush()
 
     await request(app)
       .get('/v1/game-stats/player-stats')

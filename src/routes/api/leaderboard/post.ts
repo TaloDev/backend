@@ -131,7 +131,7 @@ export const postRoute = apiRoute({
             continuityDate: ctx.state.continuityDate,
             props: createProps,
           })
-          await trx.persistAndFlush(entry)
+          await trx.persist(entry).flush()
         }
       } catch (err) {
         // handle PropSizeError from setProps or createEntry
@@ -153,7 +153,7 @@ export const postRoute = apiRoute({
               continuityDate: ctx.state.continuityDate,
               props: createProps,
             })
-            await trx.persistAndFlush(entry)
+            await trx.persist(entry).flush()
           } catch (createErr) {
             // handle PropSizeError from creating new entry
             if (createErr instanceof PropSizeError) {

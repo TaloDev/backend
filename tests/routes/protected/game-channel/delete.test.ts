@@ -14,7 +14,7 @@ describe('Game channel - delete', () => {
       const [token] = await createUserAndToken({ type }, organisation)
 
       const channel = await new GameChannelFactory(game).one()
-      await em.persistAndFlush(channel)
+      await em.persist(channel).flush()
 
       const res = await request(app)
         .delete(`/games/${game.id}/game-channels/${channel.id}`)
@@ -42,7 +42,7 @@ describe('Game channel - delete', () => {
     const [token] = await createUserAndToken({ type: UserType.ADMIN })
 
     const channel = await new GameChannelFactory(game).one()
-    await em.persistAndFlush(channel)
+    await em.persist(channel).flush()
 
     const res = await request(app)
       .delete(`/games/${game.id}/game-channels/${channel.id}`)
@@ -57,7 +57,7 @@ describe('Game channel - delete', () => {
     const [token] = await createUserAndToken({ type: UserType.ADMIN })
 
     const channel = await new GameChannelFactory(game).one()
-    await em.persistAndFlush(channel)
+    await em.persist(channel).flush()
 
     const res = await request(app)
       .delete(`/games/99999/game-channels/${channel.id}`)

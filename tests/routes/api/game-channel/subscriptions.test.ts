@@ -15,7 +15,7 @@ describe('Game channel API - subscriptions', () => {
     subscribedChannel.members.add(player.aliases[0])
 
     const notSubscribedChannels = await new GameChannelFactory(apiKey.game).many(5)
-    await em.persistAndFlush([subscribedChannel, ...notSubscribedChannels, player])
+    await em.persist([subscribedChannel, ...notSubscribedChannels, player]).flush()
 
     const res = await request(app)
       .get('/v1/game-channels/subscriptions')
@@ -33,7 +33,7 @@ describe('Game channel API - subscriptions', () => {
     const channels = await new GameChannelFactory(apiKey.game).many(10)
     const player = await new PlayerFactory([apiKey.game]).one()
     channels[0].members.add(player.aliases[0])
-    await em.persistAndFlush([...channels, player])
+    await em.persist([...channels, player]).flush()
 
     await request(app)
       .get('/v1/game-channels/subscriptions')
@@ -48,7 +48,7 @@ describe('Game channel API - subscriptions', () => {
     const channel = await new GameChannelFactory(apiKey.game).one()
     const player = await new PlayerFactory([apiKey.game]).one()
     channel.members.add(player.aliases[0])
-    await em.persistAndFlush(channel)
+    await em.persist(channel).flush()
 
     const res = await request(app)
       .get('/v1/game-channels/subscriptions')
@@ -77,7 +77,7 @@ describe('Game channel API - subscriptions', () => {
     const otherChannel = await new GameChannelFactory(apiKey.game).one()
     otherChannel.members.add(player.aliases[0])
 
-    await em.persistAndFlush([channel, otherChannel, player])
+    await em.persist([channel, otherChannel, player]).flush()
 
     const res = await request(app)
       .get('/v1/game-channels/subscriptions')
@@ -116,7 +116,7 @@ describe('Game channel API - subscriptions', () => {
     const irrelevantChannel = await new GameChannelFactory(apiKey.game).one()
     irrelevantChannel.members.add(player.aliases[0])
 
-    await em.persistAndFlush([channel, otherChannel, irrelevantChannel, player])
+    await em.persist([channel, otherChannel, irrelevantChannel, player]).flush()
 
     const res = await request(app)
       .get('/v1/game-channels/subscriptions')

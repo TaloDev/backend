@@ -11,7 +11,7 @@ describe('Invite - list', () => {
       const [token, user] = await createUserAndToken({ type })
 
       const invites = await new InviteFactory().construct(user.organisation).many(3)
-      await em.persistAndFlush(invites)
+      await em.persist(invites).flush()
 
       const res = await request(app)
         .get('/invites')

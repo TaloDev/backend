@@ -12,7 +12,7 @@ describe('PlayerAliasSubscription subscriber', () => {
         APIKeyScope.WRITE_PLAYER_RELATIONSHIPS,
       ])
       const [player1, player2] = await new PlayerFactory([apiKey.game]).many(2)
-      await em.persistAndFlush([player1, player2])
+      await em.persist([player1, player2]).flush()
 
       const alias1 = player1.aliases[0]
       const alias2 = player2.aliases[0]
@@ -70,7 +70,7 @@ describe('PlayerAliasSubscription subscriber', () => {
         APIKeyScope.WRITE_PLAYER_RELATIONSHIPS,
       ])
       const [player1, player2] = await new PlayerFactory([apiKey.game]).many(2)
-      await em.persistAndFlush([player1, player2])
+      await em.persist([player1, player2]).flush()
 
       const alias1 = player1.aliases[0]
       const alias2 = player2.aliases[0]
@@ -110,7 +110,7 @@ describe('PlayerAliasSubscription subscriber', () => {
         APIKeyScope.WRITE_PLAYER_RELATIONSHIPS,
       ])
       const [player1, player2] = await new PlayerFactory([apiKey.game]).many(2)
-      await em.persistAndFlush([player1, player2])
+      await em.persist([player1, player2]).flush()
 
       const alias1 = player1.aliases[0]
       const alias2 = player2.aliases[0]
@@ -176,7 +176,7 @@ describe('PlayerAliasSubscription subscriber', () => {
         APIKeyScope.WRITE_PLAYER_RELATIONSHIPS,
       ])
       const [player1, player2] = await new PlayerFactory([apiKey.game]).many(2)
-      await em.persistAndFlush([player1, player2])
+      await em.persist([player1, player2]).flush()
 
       const alias1 = player1.aliases[0]
       const alias2 = player2.aliases[0]
@@ -289,7 +289,7 @@ describe('PlayerAliasSubscription subscriber', () => {
         APIKeyScope.WRITE_PLAYER_RELATIONSHIPS,
       ])
       const [player1, player2] = await new PlayerFactory([apiKey.game]).many(2)
-      await em.persistAndFlush([player1, player2])
+      await em.persist([player1, player2]).flush()
 
       const alias1 = player1.aliases[0]
       const alias2 = player2.aliases[0]
@@ -352,7 +352,7 @@ describe('PlayerAliasSubscription subscriber', () => {
         APIKeyScope.WRITE_PLAYER_RELATIONSHIPS,
       ])
       const [player1, player2] = await new PlayerFactory([apiKey.game]).many(2)
-      await em.persistAndFlush([player1, player2])
+      await em.persist([player1, player2]).flush()
 
       const alias1 = player1.aliases[0]
       const alias2 = player2.aliases[0]
@@ -449,7 +449,7 @@ describe('PlayerAliasSubscription subscriber', () => {
         APIKeyScope.WRITE_PLAYER_RELATIONSHIPS,
       ])
       const [player1, player2, player3] = await new PlayerFactory([apiKey.game]).many(3)
-      await em.persistAndFlush([player1, player2, player3])
+      await em.persist([player1, player2, player3]).flush()
 
       const alias1 = player1.aliases[0]
       const alias2 = player2.aliases[0]

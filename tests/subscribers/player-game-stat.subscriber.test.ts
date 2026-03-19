@@ -15,7 +15,7 @@ describe('PlayerGameStat subscriber', () => {
         .state(() => ({ maxValue: 999, maxChange: 99, defaultValue: 0 }))
         .one()
       const player = await new PlayerFactory([apiKey.game]).one()
-      await em.persistAndFlush([stat, player])
+      await em.persist([stat, player]).flush()
 
       // this will populate the cache (null value)
       const res1 = await request(app)
@@ -54,7 +54,7 @@ describe('PlayerGameStat subscriber', () => {
         .state(() => ({ maxValue: 999, maxChange: 99, defaultValue: 0 }))
         .many(2)
       const player = await new PlayerFactory([apiKey.game]).one()
-      await em.persistAndFlush([...stats, player])
+      await em.persist([...stats, player]).flush()
 
       // populate the cache with empty list
       const res1 = await request(app)
@@ -111,7 +111,7 @@ describe('PlayerGameStat subscriber', () => {
         .state(() => ({ maxValue: 999, maxChange: 99, defaultValue: 0, minTimeBetweenUpdates: 0 }))
         .one()
       const player = await new PlayerFactory([apiKey.game]).one()
-      await em.persistAndFlush([stat, player])
+      await em.persist([stat, player]).flush()
 
       // create the initial stat
       await request(app)
@@ -157,7 +157,7 @@ describe('PlayerGameStat subscriber', () => {
         .state(() => ({ maxValue: 999, maxChange: 99, defaultValue: 0, minTimeBetweenUpdates: 0 }))
         .one()
       const player = await new PlayerFactory([apiKey.game]).one()
-      await em.persistAndFlush([stat, player])
+      await em.persist([stat, player]).flush()
 
       // create the initial stat
       await request(app)
@@ -210,7 +210,7 @@ describe('PlayerGameStat subscriber', () => {
         }))
         .one()
       const player = await new PlayerFactory([apiKey.game]).one()
-      await em.persistAndFlush([stat, player])
+      await em.persist([stat, player]).flush()
 
       // create the initial stat
       await request(app)
@@ -264,7 +264,7 @@ describe('PlayerGameStat subscriber', () => {
         .state(() => ({ maxValue: 999, maxChange: 150, defaultValue: 0, minTimeBetweenUpdates: 0 }))
         .one()
       const players = await new PlayerFactory([apiKey.game]).many(2)
-      await em.persistAndFlush([stat, ...players])
+      await em.persist([stat, ...players]).flush()
 
       // create a stat for the first player
       await request(app)

@@ -24,7 +24,7 @@ describe('Event - breakdown', () => {
       }))
       .many(2)
 
-    await em.persistAndFlush(player)
+    await em.persist(player).flush()
     await clickhouse.insert({
       table: 'events',
       values: events.map((event) => event.toInsertable()),
@@ -121,7 +121,7 @@ describe('Event - breakdown', () => {
 
     const events = [firstEvent, ...moreEvents, ...evenMoreEvents, lastEvent]
 
-    await em.persistAndFlush(player)
+    await em.persist(player).flush()
     await clickhouse.insert({
       table: 'events',
       values: events.map((event) => event.toInsertable()),
@@ -180,7 +180,7 @@ describe('Event - breakdown', () => {
         props: [{ key: 'itemId', value: '1' }],
       }))
       .many(3)
-    await em.persistAndFlush(player)
+    await em.persist(player).flush()
 
     await clickhouse.insert({
       table: 'events',
@@ -223,7 +223,7 @@ describe('Event - breakdown', () => {
         props: [{ key: 'itemId', value: '1' }],
       }))
       .many(3)
-    await em.persistAndFlush(player)
+    await em.persist(player).flush()
 
     await clickhouse.insert({
       table: 'events',
@@ -261,7 +261,7 @@ describe('Event - breakdown', () => {
         props: [{ key: 'itemId', value: '1' }],
       }))
       .many(3)
-    await em.persistAndFlush(player)
+    await em.persist(player).flush()
 
     await clickhouse.insert({
       table: 'events',
@@ -308,7 +308,7 @@ describe('Event - breakdown', () => {
       }))
       .many(2)
 
-    await em.persistAndFlush(player)
+    await em.persist(player).flush()
     await clickhouse.insert({
       table: 'events',
       values: events.map((event) => event.toInsertable()),
@@ -353,7 +353,7 @@ describe('Event - breakdown', () => {
       }))
       .many(3)
 
-    await em.persistAndFlush(player)
+    await em.persist(player).flush()
     await clickhouse.insert({
       table: 'events',
       values: [...events, ...moreEvents].map((event) => event.toInsertable()),

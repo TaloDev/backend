@@ -45,7 +45,7 @@ describe('archiveLeaderboardEntries', () => {
       .state(() => ({ createdAt: new Date() }))
       .one()
 
-    await em.persistAndFlush([oldEntry, todayEntry])
+    await em.persist([oldEntry, todayEntry]).flush()
     await archiveLeaderboardEntries()
     await em.refresh(oldEntry)
     await em.refresh(todayEntry)
@@ -73,7 +73,7 @@ describe('archiveLeaderboardEntries', () => {
       .state(() => ({ createdAt: new Date() }))
       .one()
 
-    await em.persistAndFlush([oldEntry, thisWeekEntry])
+    await em.persist([oldEntry, thisWeekEntry]).flush()
     await archiveLeaderboardEntries()
     await em.refresh(oldEntry)
     await em.refresh(thisWeekEntry)
@@ -101,7 +101,7 @@ describe('archiveLeaderboardEntries', () => {
       .state(() => ({ createdAt: new Date() }))
       .one()
 
-    await em.persistAndFlush([oldEntry, thisMonthEntry])
+    await em.persist([oldEntry, thisMonthEntry]).flush()
     await archiveLeaderboardEntries()
     await em.refresh(oldEntry)
     await em.refresh(thisMonthEntry)
@@ -129,7 +129,7 @@ describe('archiveLeaderboardEntries', () => {
       .state(() => ({ createdAt: new Date() }))
       .one()
 
-    await em.persistAndFlush([oldEntry, thisYearEntry])
+    await em.persist([oldEntry, thisYearEntry]).flush()
     await archiveLeaderboardEntries()
     await em.refresh(oldEntry)
     await em.refresh(thisYearEntry)
@@ -169,7 +169,7 @@ describe('archiveLeaderboardEntries', () => {
       .construct(IntegrationType.STEAMWORKS, game, config)
       .one()
 
-    await em.persistAndFlush([integration, oldEntry, mapping])
+    await em.persist([integration, oldEntry, mapping]).flush()
     await archiveLeaderboardEntries()
 
     expect(deleteMock).toHaveBeenCalledTimes(1)

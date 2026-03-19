@@ -14,7 +14,7 @@ describe('LeaderboardEntry subscriber', () => {
       ])
       const leaderboard = await new LeaderboardFactory([apiKey.game]).one()
       const player = await new PlayerFactory([apiKey.game]).one()
-      await em.persistAndFlush([leaderboard, player])
+      await em.persist([leaderboard, player]).flush()
 
       // this will populate the cache
       const res1 = await request(app)
@@ -53,7 +53,7 @@ describe('LeaderboardEntry subscriber', () => {
         .state(() => ({ unique: false }))
         .one()
       const players = await new PlayerFactory([apiKey.game]).many(2)
-      await em.persistAndFlush([leaderboard, ...players])
+      await em.persist([leaderboard, ...players]).flush()
 
       // populate the cache with empty result
       const res1 = await request(app)
@@ -113,7 +113,7 @@ describe('LeaderboardEntry subscriber', () => {
         }))
         .one()
       const player = await new PlayerFactory([apiKey.game]).one()
-      await em.persistAndFlush([leaderboard, player])
+      await em.persist([leaderboard, player]).flush()
 
       // create the initial entry
       await request(app)
@@ -164,7 +164,7 @@ describe('LeaderboardEntry subscriber', () => {
         }))
         .one()
       const players = await new PlayerFactory([apiKey.game]).many(2)
-      await em.persistAndFlush([leaderboard, ...players])
+      await em.persist([leaderboard, ...players]).flush()
 
       await request(app)
         .post(`/v1/leaderboards/${leaderboard.internalName}/entries`)

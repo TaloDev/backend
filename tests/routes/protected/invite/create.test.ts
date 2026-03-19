@@ -51,7 +51,7 @@ describe('Invite - create', () => {
       .construct(user.organisation)
       .state(() => ({ email: randEmail() }))
       .one()
-    await em.persistAndFlush(invite)
+    await em.persist(invite).flush()
 
     const res = await request(app)
       .post('/invites')
@@ -93,7 +93,7 @@ describe('Invite - create', () => {
       .construct(otherOrg)
       .state(() => ({ email: randEmail() }))
       .one()
-    await em.persistAndFlush(invite)
+    await em.persist(invite).flush()
 
     const res = await request(app)
       .post('/invites')
@@ -108,7 +108,7 @@ describe('Invite - create', () => {
     const [token] = await createUserAndToken({ type: UserType.ADMIN, emailConfirmed: true })
 
     const user = await new UserFactory().state(() => ({ email: randEmail() })).one()
-    await em.persistAndFlush(user)
+    await em.persist(user).flush()
 
     const res = await request(app)
       .post('/invites')

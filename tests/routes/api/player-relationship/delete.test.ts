@@ -102,7 +102,7 @@ describe('Player relationship API - delete', () => {
   it('should not delete a subscription that does not exist', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_PLAYER_RELATIONSHIPS])
     const player = await new PlayerFactory([apiKey.game]).one()
-    await em.persistAndFlush(player)
+    await em.persist(player).flush()
 
     const res = await request(app)
       .delete('/v1/players/relationships/214324')

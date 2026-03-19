@@ -17,7 +17,7 @@ describe('Game channel API - update', () => {
     const player = await new PlayerFactory([apiKey.game]).one()
     channel.owner = player.aliases[0]
     channel.members.add(player.aliases[0])
-    await em.persistAndFlush(channel)
+    await em.persist(channel).flush()
 
     const res = await request(app)
       .put(`/v1/game-channels/${channel.id}`)
@@ -36,7 +36,7 @@ describe('Game channel API - update', () => {
     const player = await new PlayerFactory([apiKey.game]).one()
     channel.owner = player.aliases[0]
     channel.members.add(player.aliases[0])
-    await em.persistAndFlush(channel)
+    await em.persist(channel).flush()
 
     await request(app)
       .put(`/v1/game-channels/${channel.id}`)
@@ -52,7 +52,7 @@ describe('Game channel API - update', () => {
     const channel = await new GameChannelFactory(apiKey.game).one()
     const player = await new PlayerFactory([apiKey.game]).one()
     channel.members.add(player.aliases[0])
-    await em.persistAndFlush(channel)
+    await em.persist(channel).flush()
 
     const res = await request(app)
       .put(`/v1/game-channels/${channel.id}`)
@@ -71,7 +71,7 @@ describe('Game channel API - update', () => {
     const player = await new PlayerFactory([apiKey.game]).one()
     channel.owner = (await new PlayerFactory([apiKey.game]).one()).aliases[0]
     channel.members.add(player.aliases[0])
-    await em.persistAndFlush(channel)
+    await em.persist(channel).flush()
 
     const res = await request(app)
       .put(`/v1/game-channels/${channel.id}`)
@@ -98,7 +98,7 @@ describe('Game channel API - update', () => {
     const player = await new PlayerFactory([apiKey.game]).one()
     channel.owner = player.aliases[0]
     channel.members.add(player.aliases[0])
-    await em.persistAndFlush(channel)
+    await em.persist(channel).flush()
 
     const res = await request(app)
       .put(`/v1/game-channels/${channel.id}`)
@@ -131,7 +131,7 @@ describe('Game channel API - update', () => {
     channel.owner = player.aliases[0]
     channel.members.add(player.aliases[0])
 
-    await em.persistAndFlush(channel)
+    await em.persist(channel).flush()
 
     const res = await request(app)
       .put(`/v1/game-channels/${channel.id}`)
@@ -161,7 +161,7 @@ describe('Game channel API - update', () => {
     channel.owner = player.aliases[0]
     channel.members.add(player.aliases[0], newOwner.aliases[0])
 
-    await em.persistAndFlush(channel)
+    await em.persist(channel).flush()
 
     const res = await request(app)
       .put(`/v1/game-channels/${channel.id}`)
@@ -180,7 +180,7 @@ describe('Game channel API - update', () => {
     const player = await new PlayerFactory([apiKey.game]).one()
     channel.owner = player.aliases[0]
     channel.members.add(player.aliases[0])
-    await em.persistAndFlush(channel)
+    await em.persist(channel).flush()
 
     const res = await request(app)
       .put(`/v1/game-channels/${channel.id}`)
@@ -199,7 +199,7 @@ describe('Game channel API - update', () => {
     const player = await new PlayerFactory([apiKey.game]).one()
     channel.owner = player.aliases[0]
     channel.members.add(player.aliases[0])
-    await em.persistAndFlush(channel)
+    await em.persist(channel).flush()
 
     const res = await request(app)
       .put(`/v1/game-channels/${channel.id}`)
@@ -218,7 +218,7 @@ describe('Game channel API - update', () => {
     const player = await new PlayerFactory([apiKey.game]).one()
     channel.owner = player.aliases[0]
     channel.members.add(player.aliases[0])
-    await em.persistAndFlush(channel)
+    await em.persist(channel).flush()
 
     const res = await request(app)
       .put(`/v1/game-channels/${channel.id}`)
@@ -239,7 +239,7 @@ describe('Game channel API - update', () => {
     const player = await new PlayerFactory([apiKey.game]).one()
     channel.owner = player.aliases[0]
     channel.members.add(player.aliases[0])
-    await em.persistAndFlush(channel)
+    await em.persist(channel).flush()
 
     const res = await request(app)
       .put('/v1/game-channels/54252')
@@ -266,7 +266,7 @@ describe('Game channel API - update', () => {
     channel.owner = player.aliases[0]
     channel.members.add(player.aliases[0], newOwner.aliases[0])
 
-    await em.persistAndFlush(channel)
+    await em.persist(channel).flush()
 
     await createTestSocket(`/?ticket=${ticket}`, async (client) => {
       await client.identify(identifyMessage)
@@ -295,7 +295,7 @@ describe('Game channel API - update', () => {
     const player = await new PlayerFactory([apiKey.game]).one()
     channel.owner = player.aliases[0]
     channel.members.add(player.aliases[0])
-    await em.persistAndFlush(channel)
+    await em.persist(channel).flush()
 
     const res = await request(app)
       .put(`/v1/game-channels/${channel.id}`)
@@ -325,7 +325,7 @@ describe('Game channel API - update', () => {
     const player = await new PlayerFactory([apiKey.game]).one()
     channel.owner = player.aliases[0]
     channel.members.add(player.aliases[0])
-    await em.persistAndFlush(channel)
+    await em.persist(channel).flush()
 
     const res = await request(app)
       .put(`/v1/game-channels/${channel.id}`)
@@ -361,7 +361,7 @@ describe('Game channel API - update', () => {
     channel.owner = player.aliases[0]
     channel.members.add(player.aliases[0], newOwner.aliases[0])
 
-    await em.persistAndFlush(channel)
+    await em.persist(channel).flush()
 
     await createTestSocket(`/?ticket=${ticket}`, async (client) => {
       await client.identify(identifyMessage)
@@ -392,7 +392,7 @@ describe('Game channel API - update', () => {
     channel.owner = player.aliases[0]
     channel.members.add(player.aliases[0], newOwner.aliases[0])
 
-    await em.persistAndFlush(channel)
+    await em.persist(channel).flush()
 
     await createTestSocket(`/?ticket=${ticket}`, async (client) => {
       await client.identify(identifyMessage)

@@ -35,7 +35,7 @@ describe('Steamworks integration - sync leaderboards', () => {
     const integration = await new IntegrationFactory()
       .construct(IntegrationType.STEAMWORKS, game, config)
       .one()
-    await em.persistAndFlush(integration)
+    await em.persist(integration).flush()
 
     const getLeaderboardsMock = vi.fn((): [number, GetLeaderboardsForGameResponse] => [
       200,
@@ -133,7 +133,7 @@ describe('Steamworks integration - sync leaderboards', () => {
     const integration = await new IntegrationFactory()
       .construct(IntegrationType.STEAMWORKS, game, config)
       .one()
-    await em.persistAndFlush(integration)
+    await em.persist(integration).flush()
 
     const getLeaderboardsMock = vi.fn((): [number] => [404])
     axiosMock
@@ -168,7 +168,7 @@ describe('Steamworks integration - sync leaderboards', () => {
     const integration = await new IntegrationFactory()
       .construct(IntegrationType.STEAMWORKS, game, config)
       .one()
-    await em.persistAndFlush([leaderboard, mapping, integration])
+    await em.persist([leaderboard, mapping, integration]).flush()
 
     const getLeaderboardsMock = vi.fn((): [number, GetLeaderboardsForGameResponse] => [
       200,
@@ -238,7 +238,7 @@ describe('Steamworks integration - sync leaderboards', () => {
     const integration = await new IntegrationFactory()
       .construct(IntegrationType.STEAMWORKS, game, config)
       .one()
-    await em.persistAndFlush([leaderboard, integration])
+    await em.persist([leaderboard, integration]).flush()
 
     const getLeaderboardsMock = vi.fn((): [number, GetLeaderboardsForGameResponse] => [
       200,
@@ -306,7 +306,7 @@ describe('Steamworks integration - sync leaderboards', () => {
     const integration = await new IntegrationFactory()
       .construct(IntegrationType.STEAMWORKS, game, config)
       .one()
-    await em.persistAndFlush([leaderboard, integration])
+    await em.persist([leaderboard, integration]).flush()
 
     const getLeaderboardsMock = vi.fn((): [number, GetLeaderboardsForGameResponse] => [
       200,
@@ -369,7 +369,7 @@ describe('Steamworks integration - sync leaderboards', () => {
     const integration = await new IntegrationFactory()
       .construct(IntegrationType.STEAMWORKS, game, config)
       .one()
-    await em.persistAndFlush([player, integration])
+    await em.persist([player, integration]).flush()
 
     const getLeaderboardsMock = vi.fn((): [number, GetLeaderboardsForGameResponse] => [
       200,
@@ -452,7 +452,7 @@ describe('Steamworks integration - sync leaderboards', () => {
     const integration = await new IntegrationFactory()
       .construct(IntegrationType.STEAMWORKS, game, config)
       .one()
-    await em.persistAndFlush([leaderboard, mapping, player, entry, integration])
+    await em.persist([leaderboard, mapping, player, entry, integration]).flush()
 
     const getLeaderboardsMock = vi.fn((): [number, GetLeaderboardsForGameResponse] => [
       200,
@@ -545,7 +545,7 @@ describe('Steamworks integration - sync leaderboards', () => {
     const integration = await new IntegrationFactory()
       .construct(IntegrationType.STEAMWORKS, game, config)
       .one()
-    await em.persistAndFlush([leaderboard, mapping, player, ...entries, integration])
+    await em.persist([leaderboard, mapping, player, ...entries, integration]).flush()
 
     const getLeaderboardsMock = vi.fn((): [number, GetLeaderboardsForGameResponse] => [
       200,
@@ -629,7 +629,7 @@ describe('Steamworks integration - sync leaderboards', () => {
     const integration = await new IntegrationFactory()
       .construct(IntegrationType.STEAMWORKS, game, config)
       .one()
-    await em.persistAndFlush(integration)
+    await em.persist(integration).flush()
 
     const getLeaderboardsMock = vi.fn((): [number, GetLeaderboardsForGameResponse] => [
       200,
@@ -733,7 +733,7 @@ describe('Steamworks integration - sync leaderboards', () => {
     const integration = await new IntegrationFactory()
       .construct(IntegrationType.STEAMWORKS, game, config)
       .one()
-    await em.persistAndFlush([leaderboard, mapping, integration, entry])
+    await em.persist([leaderboard, mapping, integration, entry]).flush()
 
     const getLeaderboardsMock = vi.fn((): [number, GetLeaderboardsForGameResponse] => [
       200,
@@ -806,7 +806,7 @@ describe('Steamworks integration - sync leaderboards', () => {
     const integration = await new IntegrationFactory()
       .construct(IntegrationType.STEAMWORKS, game, config)
       .one()
-    await em.persistAndFlush([leaderboard, mapping, player, entry, integration])
+    await em.persist([leaderboard, mapping, player, entry, integration]).flush()
 
     const getLeaderboardsMock = vi.fn((): [number, GetLeaderboardsForGameResponse] => [
       200,

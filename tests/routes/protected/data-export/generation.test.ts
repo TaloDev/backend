@@ -237,7 +237,7 @@ describe('Data export - create zip stream', () => {
 
     const dataExport = await new DataExportFactory(game).one()
     dataExport.entities = [DataExportAvailableEntities.PLAYERS]
-    await em.persistAndFlush([player1, player2, player3, player4, dataExport])
+    await em.persist([player1, player2, player3, player4, dataExport]).flush()
 
     const zipFilePath = path.join(tempDir, 'test-export.zip')
     await dataExporter.createZipStream(zipFilePath, dataExport, em, true)

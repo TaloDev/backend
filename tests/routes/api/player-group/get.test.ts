@@ -24,7 +24,7 @@ describe('Player group API - get', () => {
       .construct(apiKey.game)
       .state(() => ({ rules: [dateRule], membersVisible: true }))
       .one()
-    await em.persistAndFlush([player, group])
+    await em.persist([player, group]).flush()
     await group.checkMembership(em)
 
     const res = await request(app)
@@ -50,7 +50,7 @@ describe('Player group API - get', () => {
       .construct(apiKey.game)
       .state(() => ({ rules: [] }))
       .one()
-    await em.persistAndFlush(group)
+    await em.persist(group).flush()
 
     await request(app)
       .get(`/v1/player-groups/${group.id}`)
@@ -82,7 +82,7 @@ describe('Player group API - get', () => {
       .construct(apiKey.game)
       .state(() => ({ rules: [dateRule], membersVisible: false }))
       .one()
-    await em.persistAndFlush([player, group])
+    await em.persist([player, group]).flush()
     await group.checkMembership(em)
 
     const res = await request(app)
@@ -111,7 +111,7 @@ describe('Player group API - get', () => {
       .construct(apiKey.game)
       .state(() => ({ rules: [dateRule], membersVisible: true }))
       .one()
-    await em.persistAndFlush([player, group])
+    await em.persist([player, group]).flush()
 
     const res = await request(app)
       .get(`/v1/player-groups/${group.id}`)
@@ -139,7 +139,7 @@ describe('Player group API - get', () => {
       .construct(apiKey.game)
       .state(() => ({ rules: [dateRule], membersVisible: true }))
       .one()
-    await em.persistAndFlush([player, group])
+    await em.persist([player, group]).flush()
     await group.checkMembership(em)
 
     const res = await request(app)
@@ -168,7 +168,7 @@ describe('Player group API - get', () => {
       .construct(apiKey.game)
       .state(() => ({ rules: [dateRule], membersVisible: true }))
       .one()
-    await em.persistAndFlush([...players, group])
+    await em.persist([...players, group]).flush()
     await group.checkMembership(em)
 
     const res = await request(app)

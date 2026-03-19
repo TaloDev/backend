@@ -48,7 +48,7 @@ describe('Leaderboard API - steamworks create', () => {
     const integration = await new IntegrationFactory()
       .construct(IntegrationType.STEAMWORKS, apiKey.game, config)
       .one()
-    await em.persistAndFlush([integration, leaderboard, player, mapping])
+    await em.persist([integration, leaderboard, player, mapping]).flush()
 
     await request(app)
       .post(`/v1/leaderboards/${leaderboard.internalName}/entries`)
@@ -96,7 +96,7 @@ describe('Leaderboard API - steamworks create', () => {
     const integration = await new IntegrationFactory()
       .construct(IntegrationType.STEAMWORKS, apiKey.game, config)
       .one()
-    await em.persistAndFlush([integration, leaderboard, player])
+    await em.persist([integration, leaderboard, player]).flush()
 
     await request(app)
       .post(`/v1/leaderboards/${leaderboard.internalName}/entries`)
@@ -144,7 +144,7 @@ describe('Leaderboard API - steamworks create', () => {
     const integration = await new IntegrationFactory()
       .construct(IntegrationType.STEAMWORKS, apiKey.game, config)
       .one()
-    await em.persistAndFlush([integration, leaderboard, player])
+    await em.persist([integration, leaderboard, player]).flush()
 
     await request(app)
       .post(`/v1/leaderboards/${leaderboard.internalName}/entries`)

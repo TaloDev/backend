@@ -15,7 +15,7 @@ describe('Event API - create', () => {
 
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_EVENTS])
     const player = await new PlayerFactory([apiKey.game]).one()
-    await em.persistAndFlush(player)
+    await em.persist(player).flush()
 
     const res = await request(app)
       .post('/v1/events')
@@ -39,7 +39,7 @@ describe('Event API - create', () => {
   it('should create multiple events if the scope is valid', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_EVENTS])
     const player = await new PlayerFactory([apiKey.game]).one()
-    await em.persistAndFlush(player)
+    await em.persist(player).flush()
 
     const res = await request(app)
       .post('/v1/events')
@@ -60,7 +60,7 @@ describe('Event API - create', () => {
   it('should not create an event if the scope is invalid', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([])
     const player = await new PlayerFactory([apiKey.game]).one()
-    await em.persistAndFlush(player)
+    await em.persist(player).flush()
 
     await request(app)
       .post('/v1/events')
@@ -87,7 +87,7 @@ describe('Event API - create', () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_EVENTS])
     const otherGame = await new GameFactory(apiKey.game.organisation).one()
     const invalidPlayer = await new PlayerFactory([otherGame]).one()
-    await em.persistAndFlush([invalidPlayer])
+    await em.persist([invalidPlayer]).flush()
 
     const res = await request(app)
       .post('/v1/events')
@@ -102,7 +102,7 @@ describe('Event API - create', () => {
   it('should not create an event if the name is missing', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_EVENTS])
     const player = await new PlayerFactory([apiKey.game]).one()
-    await em.persistAndFlush(player)
+    await em.persist(player).flush()
 
     const res = await request(app)
       .post('/v1/events')
@@ -117,7 +117,7 @@ describe('Event API - create', () => {
   it('should not create an event if the timestamp is missing', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_EVENTS])
     const player = await new PlayerFactory([apiKey.game]).one()
-    await em.persistAndFlush(player)
+    await em.persist(player).flush()
 
     const res = await request(app)
       .post('/v1/events')
@@ -132,7 +132,7 @@ describe('Event API - create', () => {
   it('should not create any events if the events body key is not an array', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_EVENTS])
     const player = await new PlayerFactory([apiKey.game]).one()
-    await em.persistAndFlush(player)
+    await em.persist(player).flush()
 
     const res = await request(app)
       .post('/v1/events')
@@ -151,7 +151,7 @@ describe('Event API - create', () => {
   it('should sanitise event props into strings', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_EVENTS])
     const player = await new PlayerFactory([apiKey.game]).one()
-    await em.persistAndFlush(player)
+    await em.persist(player).flush()
 
     const res = await request(app)
       .post('/v1/events')
@@ -171,7 +171,7 @@ describe('Event API - create', () => {
   it('should delete null event props', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_EVENTS])
     const player = await new PlayerFactory([apiKey.game]).one()
-    await em.persistAndFlush(player)
+    await em.persist(player).flush()
 
     const res = await request(app)
       .post('/v1/events')
@@ -197,7 +197,7 @@ describe('Event API - create', () => {
   it('should not delete event props with values that are empty strings', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_EVENTS])
     const player = await new PlayerFactory([apiKey.game]).one()
-    await em.persistAndFlush(player)
+    await em.persist(player).flush()
 
     const res = await request(app)
       .post('/v1/events')
@@ -217,7 +217,7 @@ describe('Event API - create', () => {
   it('should capture an error if the event props are not an array', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_EVENTS])
     const player = await new PlayerFactory([apiKey.game]).one()
-    await em.persistAndFlush(player)
+    await em.persist(player).flush()
 
     const res = await request(app)
       .post('/v1/events')
@@ -234,7 +234,7 @@ describe('Event API - create', () => {
   it("should add valid meta props to the player's props", async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_EVENTS])
     const player = await new PlayerFactory([apiKey.game]).one()
-    await em.persistAndFlush(player)
+    await em.persist(player).flush()
 
     await request(app)
       .post('/v1/events')
@@ -258,7 +258,7 @@ describe('Event API - create', () => {
   it("should strip out event props that start with META_ but aren't in the meta props list", async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_EVENTS])
     const player = await new PlayerFactory([apiKey.game]).one()
-    await em.persistAndFlush(player)
+    await em.persist(player).flush()
 
     const res = await request(app)
       .post('/v1/events')
@@ -289,7 +289,7 @@ describe('Event API - create', () => {
         props: new Collection<PlayerProp>(player, [new PlayerProp(player, 'META_OS', 'Windows')]),
       }))
       .one()
-    await em.persistAndFlush(player)
+    await em.persist(player).flush()
 
     await request(app)
       .post('/v1/events')
@@ -313,7 +313,7 @@ describe('Event API - create', () => {
   it('should reject props where the key is greater than 128 characters', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_EVENTS])
     const player = await new PlayerFactory([apiKey.game]).one()
-    await em.persistAndFlush(player)
+    await em.persist(player).flush()
 
     const res = await request(app)
       .post('/v1/events')
@@ -339,7 +339,7 @@ describe('Event API - create', () => {
   it('should reject props where the value is greater than 512 characters', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_EVENTS])
     const player = await new PlayerFactory([apiKey.game]).one()
-    await em.persistAndFlush(player)
+    await em.persist(player).flush()
 
     const res = await request(app)
       .post('/v1/events')
@@ -365,7 +365,7 @@ describe('Event API - create', () => {
   it('should capture an error if the event timestamp is invalid', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_EVENTS])
     const player = await new PlayerFactory([apiKey.game]).one()
-    await em.persistAndFlush(player)
+    await em.persist(player).flush()
 
     const res = await request(app)
       .post('/v1/events')
@@ -382,7 +382,7 @@ describe('Event API - create', () => {
   it('should de-duplicate events', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_EVENTS])
     const player = await new PlayerFactory([apiKey.game]).one()
-    await em.persistAndFlush(player)
+    await em.persist(player).flush()
 
     const res = await request(app)
       .post('/v1/events')

@@ -25,7 +25,7 @@ describe('Player - update', () => {
         }))
         .one()
 
-      await em.persistAndFlush(player)
+      await em.persist(player).flush()
 
       const res = await request(app)
         .patch(`/games/${game.id}/players/${player.id}`)
@@ -81,7 +81,7 @@ describe('Player - update', () => {
       }))
       .one()
 
-    await em.persistAndFlush(player)
+    await em.persist(player).flush()
 
     const res = await request(app)
       .patch(`/games/${game.id}/players/${player.id}`)
@@ -113,7 +113,7 @@ describe('Player - update', () => {
     const [token] = await createUserAndToken({}, organisation)
 
     const player = await new PlayerFactory([game]).one()
-    await em.persistAndFlush(player)
+    await em.persist(player).flush()
 
     const res = await request(app)
       .patch(`/games/${game.id}/players/${player.id}`)
@@ -157,7 +157,7 @@ describe('Player - update', () => {
     const [token] = await createUserAndToken({})
 
     const player = await new PlayerFactory([otherGame]).one()
-    await em.persistAndFlush(player)
+    await em.persist(player).flush()
 
     const res = await request(app)
       .patch(`/games/${otherGame.id}/players/${player.id}`)
@@ -184,7 +184,7 @@ describe('Player - update', () => {
         props: new Collection<PlayerProp>(player, []),
       }))
       .one()
-    await em.persistAndFlush(player)
+    await em.persist(player).flush()
 
     const res = await request(app)
       .patch(`/games/${game.id}/players/${player.id}`)
@@ -216,7 +216,7 @@ describe('Player - update', () => {
     const [token] = await createUserAndToken({}, organisation)
 
     const player = await new PlayerFactory([game]).one()
-    await em.persistAndFlush(player)
+    await em.persist(player).flush()
 
     const propsLength = player.props.length
 
@@ -255,7 +255,7 @@ describe('Player - update', () => {
 
     const player = await new PlayerFactory([game]).one()
 
-    await em.persistAndFlush(player)
+    await em.persist(player).flush()
 
     const res = await request(app)
       .patch(`/games/${game.id}/players/${player.id}`)
@@ -283,7 +283,7 @@ describe('Player - update', () => {
 
     const player = await new PlayerFactory([game]).one()
 
-    await em.persistAndFlush(player)
+    await em.persist(player).flush()
 
     const res = await request(app)
       .patch(`/games/${game.id}/players/${player.id}`)
@@ -314,7 +314,7 @@ describe('Player - update', () => {
         props: new Collection<PlayerProp>(player, []),
       }))
       .one()
-    await em.persistAndFlush(player)
+    await em.persist(player).flush()
 
     await Promise.all(
       ['1', '2', '3']

@@ -17,7 +17,7 @@ describe('Player auth API - reset password', () => {
     const player = await new PlayerFactory([apiKey.game]).withTaloAlias().one()
     const alias = player.aliases[0]
 
-    await em.persistAndFlush(player)
+    await em.persist(player).flush()
 
     await redis.set(`player-auth:${apiKey.game.id}:password-reset:123456`, alias.id)
 
@@ -47,7 +47,7 @@ describe('Player auth API - reset password', () => {
     const player = await new PlayerFactory([apiKey.game]).withTaloAlias().one()
     const alias = player.aliases[0]
 
-    await em.persistAndFlush(player)
+    await em.persist(player).flush()
 
     await redis.set(`player-auth:${apiKey.game.id}:password-reset:123456`, alias.id)
 
@@ -71,7 +71,7 @@ describe('Player auth API - reset password', () => {
     const player = await new PlayerFactory([apiKey.game]).withTaloAlias().one()
     const alias = player.aliases[0]
 
-    await em.persistAndFlush(player)
+    await em.persist(player).flush()
 
     await redis.set(`player-auth:${apiKey.game.id}:password-reset:123456`, alias.id)
 
@@ -98,7 +98,7 @@ describe('Player auth API - reset password', () => {
     ])
 
     const player = await new PlayerFactory([apiKey.game]).one()
-    await em.persistAndFlush(player)
+    await em.persist(player).flush()
 
     const alias = player.aliases[0]
 

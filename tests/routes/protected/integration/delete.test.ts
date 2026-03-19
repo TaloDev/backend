@@ -19,7 +19,7 @@ describe('Integration - delete', () => {
       const integration = await new IntegrationFactory()
         .construct(IntegrationType.STEAMWORKS, game, config)
         .one()
-      await em.persistAndFlush(integration)
+      await em.persist(integration).flush()
 
       const res = await request(app)
         .delete(`/games/${game.id}/integrations/${integration.id}`)
@@ -51,7 +51,7 @@ describe('Integration - delete', () => {
     const integration = await new IntegrationFactory()
       .construct(IntegrationType.STEAMWORKS, game, config)
       .one()
-    await em.persistAndFlush(integration)
+    await em.persist(integration).flush()
 
     const res = await request(app)
       .delete(`/games/${game.id}/integrations/${integration.id}`)
@@ -76,7 +76,7 @@ describe('Integration - delete', () => {
     const integration = await new IntegrationFactory()
       .construct(IntegrationType.STEAMWORKS, game, config)
       .one()
-    await em.persistAndFlush(integration)
+    await em.persist(integration).flush()
 
     const res = await request(app)
       .delete(`/games/${game.id}/integrations/433`)

@@ -26,7 +26,7 @@ describe('Leaderboard - reset', () => {
       const allPlayers = [...devPlayers, ...livePlayers]
 
       const entries = await new LeaderboardEntryFactory(leaderboard, allPlayers).many(6)
-      await em.persistAndFlush(entries)
+      await em.persist(entries).flush()
 
       const res = await request(app)
         .delete(`/games/${game.id}/leaderboards/${leaderboard.id}/entries`)
@@ -68,7 +68,7 @@ describe('Leaderboard - reset', () => {
     const allPlayers = [...devPlayers, ...livePlayers]
 
     const entries = await new LeaderboardEntryFactory(leaderboard, allPlayers).many(5)
-    await em.persistAndFlush(entries)
+    await em.persist(entries).flush()
 
     const res = await request(app)
       .delete(`/games/${game.id}/leaderboards/${leaderboard.id}/entries`)
@@ -94,7 +94,7 @@ describe('Leaderboard - reset', () => {
     const devEntries = await new LeaderboardEntryFactory(leaderboard, devPlayers).many(2)
     const liveEntries = await new LeaderboardEntryFactory(leaderboard, livePlayers).many(3)
 
-    await em.persistAndFlush([...devEntries, ...liveEntries])
+    await em.persist([...devEntries, ...liveEntries]).flush()
 
     const res = await request(app)
       .delete(`/games/${game.id}/leaderboards/${leaderboard.id}/entries`)
@@ -128,7 +128,7 @@ describe('Leaderboard - reset', () => {
     const devEntries = await new LeaderboardEntryFactory(leaderboard, devPlayers).many(2)
     const liveEntries = await new LeaderboardEntryFactory(leaderboard, livePlayers).many(3)
 
-    await em.persistAndFlush([...devEntries, ...liveEntries])
+    await em.persist([...devEntries, ...liveEntries]).flush()
 
     const res = await request(app)
       .delete(`/games/${game.id}/leaderboards/${leaderboard.id}/entries`)
@@ -159,7 +159,7 @@ describe('Leaderboard - reset', () => {
     const devPlayers = await new PlayerFactory([game]).devBuild().many(2)
     const entries = await new LeaderboardEntryFactory(leaderboard, devPlayers).many(2)
 
-    await em.persistAndFlush(entries)
+    await em.persist(entries).flush()
 
     const res = await request(app)
       .delete(`/games/${game.id}/leaderboards/${leaderboard.id}/entries`)
@@ -181,7 +181,7 @@ describe('Leaderboard - reset', () => {
     const players = await new PlayerFactory([game]).many(3)
     const entries = await new LeaderboardEntryFactory(leaderboard, players).many(3)
 
-    await em.persistAndFlush(entries)
+    await em.persist(entries).flush()
 
     await request(app)
       .delete(`/games/${game.id}/leaderboards/${leaderboard.id}/entries`)
@@ -213,7 +213,7 @@ describe('Leaderboard - reset', () => {
     const players = await new PlayerFactory([otherGame]).many(2)
     const entries = await new LeaderboardEntryFactory(leaderboard, players).many(2)
 
-    await em.persistAndFlush(entries)
+    await em.persist(entries).flush()
 
     const res = await request(app)
       .delete(`/games/${otherGame.id}/leaderboards/${leaderboard.id}/entries`)
@@ -243,7 +243,7 @@ describe('Leaderboard - reset', () => {
     const [token] = await createUserAndToken({ type: UserType.ADMIN }, organisation)
 
     const leaderboard = await new LeaderboardFactory([game]).one()
-    await em.persistAndFlush(leaderboard)
+    await em.persist(leaderboard).flush()
 
     const res = await request(app)
       .delete(`/games/${game.id}/leaderboards/${leaderboard.id}/entries`)
@@ -266,7 +266,7 @@ describe('Leaderboard - reset', () => {
     const players = await new PlayerFactory([game]).many(2)
     const entries = await new LeaderboardEntryFactory(leaderboard, players).many(2)
 
-    await em.persistAndFlush(entries)
+    await em.persist(entries).flush()
 
     await request(app)
       .delete(`/games/${game.id}/leaderboards/${leaderboard.id}/entries`)

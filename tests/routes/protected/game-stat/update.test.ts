@@ -10,7 +10,7 @@ describe('Game stat - update', () => {
     const [token] = await createUserAndToken({}, organisation)
 
     const stat = await new GameStatFactory([game]).one()
-    await em.persistAndFlush(stat)
+    await em.persist(stat).flush()
 
     const res = await request(app)
       .put(`/games/${game.id}/game-stats/${stat.id}`)
@@ -47,7 +47,7 @@ describe('Game stat - update', () => {
     const [token] = await createUserAndToken({}, organisation)
 
     const stat = await new GameStatFactory([game]).state(() => ({ global: false })).one()
-    await em.persistAndFlush(stat)
+    await em.persist(stat).flush()
 
     const res = await request(app)
       .put(`/games/${game.id}/game-stats/${stat.id}`)
@@ -84,7 +84,7 @@ describe('Game stat - update', () => {
     const [token] = await createUserAndToken({}, organisation)
 
     const stat = await new GameStatFactory([game]).one()
-    await em.persistAndFlush(stat)
+    await em.persist(stat).flush()
 
     const res = await request(app)
       .put(`/games/${game.id}/game-stats/${stat.id}`)
@@ -127,7 +127,7 @@ describe('Game stat - update', () => {
         maxValue: 600,
       }))
       .one()
-    await em.persistAndFlush(stat)
+    await em.persist(stat).flush()
 
     const res = await request(app)
       .put(`/games/${game.id}/game-stats/${stat.id}`)
@@ -170,7 +170,7 @@ describe('Game stat - update', () => {
         maxValue: 100,
       }))
       .one()
-    await em.persistAndFlush(stat)
+    await em.persist(stat).flush()
 
     const res = await request(app)
       .put(`/games/${game.id}/game-stats/${stat.id}`)
@@ -213,7 +213,7 @@ describe('Game stat - update', () => {
         defaultValue: 99,
       }))
       .one()
-    await em.persistAndFlush(stat)
+    await em.persist(stat).flush()
 
     const res = await request(app)
       .put(`/games/${game.id}/game-stats/${stat.id}`)
@@ -250,7 +250,7 @@ describe('Game stat - update', () => {
     const [token] = await createUserAndToken({}, organisation)
 
     const stat = await new GameStatFactory([game]).one()
-    await em.persistAndFlush(stat)
+    await em.persist(stat).flush()
 
     const res = await request(app)
       .put(`/games/${game.id}/game-stats/${stat.id}`)
@@ -287,7 +287,7 @@ describe('Game stat - update', () => {
     const [token] = await createUserAndToken({}, organisation)
 
     const stat = await new GameStatFactory([game]).one()
-    await em.persistAndFlush(stat)
+    await em.persist(stat).flush()
 
     const res = await request(app)
       .put(`/games/${game.id}/game-stats/${stat.id}`)
@@ -324,7 +324,7 @@ describe('Game stat - update', () => {
     const [token] = await createUserAndToken()
 
     const stat = await new GameStatFactory([otherGame]).one()
-    await em.persistAndFlush(stat)
+    await em.persist(stat).flush()
 
     const res = await request(app)
       .put(`/games/${otherGame.id}/game-stats/${stat.id}`)
@@ -379,7 +379,7 @@ describe('Game stat - update', () => {
         maxValue: 600,
       }))
       .one()
-    await em.persistAndFlush(stat)
+    await em.persist(stat).flush()
 
     const res = await request(app)
       .put(`/games/${game.id}/game-stats/${stat.id}`)

@@ -7,7 +7,7 @@ describe('Game stat API - get', () => {
   it('should get a game stat if the scope is valid', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_GAME_STATS])
     const gameStat = await new GameStatFactory([apiKey.game]).one()
-    await em.persistAndFlush(gameStat)
+    await em.persist(gameStat).flush()
 
     await request(app)
       .get(`/v1/game-stats/${gameStat.internalName}`)
@@ -18,7 +18,7 @@ describe('Game stat API - get', () => {
   it('should not get a game stat if the scope is invalid', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([])
     const gameStat = await new GameStatFactory([apiKey.game]).one()
-    await em.persistAndFlush(gameStat)
+    await em.persist(gameStat).flush()
 
     await request(app)
       .get(`/v1/game-stats/${gameStat.internalName}`)

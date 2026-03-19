@@ -18,7 +18,7 @@ describe('Integration - list', () => {
       const integrations = await new IntegrationFactory()
         .construct(IntegrationType.STEAMWORKS, game, config)
         .many(3)
-      await em.persistAndFlush(integrations)
+      await em.persist(integrations).flush()
 
       const res = await request(app)
         .get(`/games/${game.id}/integrations`)
@@ -47,7 +47,7 @@ describe('Integration - list', () => {
     const integrations = await new IntegrationFactory()
       .construct(IntegrationType.STEAMWORKS, game, config)
       .many(3)
-    await em.persistAndFlush(integrations)
+    await em.persist(integrations).flush()
 
     const res = await request(app)
       .get(`/games/${game.id}/integrations`)

@@ -19,7 +19,7 @@ describe('Socket rate limiting', () => {
     ])
     const channel = await new GameChannelFactory(player.game).one()
     channel.members.add(player.aliases[0])
-    await em.persistAndFlush(channel)
+    await em.persist(channel).flush()
 
     await createTestSocket(`/?ticket=${ticket}`, async (client) => {
       await client.identify(identifyMessage)
@@ -54,7 +54,7 @@ describe('Socket rate limiting', () => {
     ])
     const channel = await new GameChannelFactory(player.game).one()
     channel.members.add(player.aliases[0])
-    await em.persistAndFlush(channel)
+    await em.persist(channel).flush()
 
     await createTestSocket(`/?ticket=${ticket}`, async (client, socket) => {
       await client.identify(identifyMessage)

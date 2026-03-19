@@ -19,7 +19,7 @@ describe('Player API - identify', () => {
   it('should identify a player', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_PLAYERS])
     const player = await new PlayerFactory([apiKey.game]).one()
-    await em.persistAndFlush(player)
+    await em.persist(player).flush()
 
     const res = await request(app)
       .get('/v1/players/identify')
@@ -47,7 +47,7 @@ describe('Player API - identify', () => {
         }
       })
       .one()
-    await em.persistAndFlush(player)
+    await em.persist(player).flush()
 
     await request(app)
       .get('/v1/players/identify')
@@ -127,7 +127,7 @@ describe('Player API - identify', () => {
         ]),
       }))
       .one()
-    await em.persistAndFlush([group, player])
+    await em.persist([group, player]).flush()
 
     await group.checkMembership(em)
     expect(group.members.count()).toBe(0)
@@ -166,7 +166,7 @@ describe('Player API - identify', () => {
   it('should require the service to be set', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_PLAYERS])
     const player = await new PlayerFactory([apiKey.game]).one()
-    await em.persistAndFlush(player)
+    await em.persist(player).flush()
 
     const res = await request(app)
       .get('/v1/players/identify')
@@ -184,7 +184,7 @@ describe('Player API - identify', () => {
   it('should require the service to be a non-empty string', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_PLAYERS])
     const player = await new PlayerFactory([apiKey.game]).one()
-    await em.persistAndFlush(player)
+    await em.persist(player).flush()
 
     const res = await request(app)
       .get('/v1/players/identify')
@@ -202,7 +202,7 @@ describe('Player API - identify', () => {
   it('should require the identifier to be set', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_PLAYERS])
     const player = await new PlayerFactory([apiKey.game]).one()
-    await em.persistAndFlush(player)
+    await em.persist(player).flush()
 
     const res = await request(app)
       .get('/v1/players/identify')
@@ -220,7 +220,7 @@ describe('Player API - identify', () => {
   it('should require the identifier to be a non-empty string', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_PLAYERS])
     const player = await new PlayerFactory([apiKey.game]).one()
-    await em.persistAndFlush(player)
+    await em.persist(player).flush()
 
     const res = await request(app)
       .get('/v1/players/identify')
@@ -242,7 +242,7 @@ describe('Player API - identify', () => {
     ])
     const player = await new PlayerFactory([apiKey.game]).withTaloAlias().one()
 
-    await em.persistAndFlush(player)
+    await em.persist(player).flush()
     const sessionToken = await player.auth!.createSession(player.aliases[0])
     await em.flush()
 
@@ -260,7 +260,7 @@ describe('Player API - identify', () => {
       APIKeyScope.WRITE_PLAYERS,
     ])
     const player = await new PlayerFactory([apiKey.game]).withTaloAlias().one()
-    await em.persistAndFlush(player)
+    await em.persist(player).flush()
 
     const res = await request(app)
       .get('/v1/players/identify')
@@ -280,7 +280,7 @@ describe('Player API - identify', () => {
       APIKeyScope.WRITE_PLAYERS,
     ])
     const player = await new PlayerFactory([apiKey.game]).withTaloAlias().one()
-    await em.persistAndFlush(player)
+    await em.persist(player).flush()
 
     const res = await request(app)
       .get('/v1/players/identify')

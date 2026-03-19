@@ -38,7 +38,7 @@ describe('Leaderboard - steamworks delete', () => {
     const integration = await new IntegrationFactory()
       .construct(IntegrationType.STEAMWORKS, game, config)
       .one()
-    await em.persistAndFlush([integration, leaderboard])
+    await em.persist([integration, leaderboard]).flush()
 
     await request(app)
       .delete(`/games/${game.id}/leaderboards/${leaderboard.id}`)
@@ -72,7 +72,7 @@ describe('Leaderboard - steamworks delete', () => {
     const integration = await new IntegrationFactory()
       .construct(IntegrationType.STEAMWORKS, game, config)
       .one()
-    await em.persistAndFlush([integration, leaderboard])
+    await em.persist([integration, leaderboard]).flush()
 
     await request(app)
       .delete(`/games/${game.id}/leaderboards/${leaderboard.id}`)
@@ -115,7 +115,7 @@ describe('Leaderboard - steamworks delete', () => {
       }),
     )
 
-    await em.persistAndFlush([integration, ...entries])
+    await em.persist([integration, ...entries]).flush()
 
     await request(app)
       .delete(`/games/${game.id}/leaderboards/${leaderboard.id}`)

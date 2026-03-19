@@ -21,7 +21,7 @@ describe('Player group - update', () => {
       const [token] = await createUserAndToken({ type }, organisation)
 
       const group = await new PlayerGroupFactory().construct(game).one()
-      await em.persistAndFlush(group)
+      await em.persist(group).flush()
 
       const rules: Partial<PlayerGroupRule & { namespaced: boolean }>[] = [
         {
@@ -70,7 +70,7 @@ describe('Player group - update', () => {
     const [token] = await createUserAndToken({}, organisation)
 
     const group = await new PlayerGroupFactory().construct(game).one()
-    await em.persistAndFlush(group)
+    await em.persist(group).flush()
 
     const player1 = await new PlayerFactory([game])
       .state((player) => ({
@@ -78,7 +78,7 @@ describe('Player group - update', () => {
       }))
       .one()
     const player2 = await new PlayerFactory([game]).one()
-    await em.persistAndFlush([player1, player2])
+    await em.persist([player1, player2]).flush()
 
     const rules: Partial<PlayerGroupRule>[] = [
       {
@@ -111,7 +111,7 @@ describe('Player group - update', () => {
     const [token] = await createUserAndToken({ type: UserType.ADMIN })
 
     const group = await new PlayerGroupFactory().construct(otherGame).one()
-    await em.persistAndFlush(group)
+    await em.persist(group).flush()
 
     const res = await request(app)
       .put(`/games/${otherGame.id}/player-groups/${group.id}`)

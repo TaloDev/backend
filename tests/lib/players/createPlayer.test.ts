@@ -64,7 +64,7 @@ describe('createPlayer', () => {
       .construct(game)
       .state(() => ({ rules: [rule] }))
       .one()
-    await em.persistAndFlush(group)
+    await em.persist(group).flush()
     await group.checkMembership(em)
 
     const player = await createPlayer(em, game, {
@@ -110,7 +110,7 @@ describe('createPlayer', () => {
     const [, game] = await createOrganisationAndGame()
 
     const existingPlayer = await new PlayerFactory([game]).one()
-    await em.persistAndFlush(existingPlayer)
+    await em.persist(existingPlayer).flush()
 
     try {
       await createPlayer(em, game, {

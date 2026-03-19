@@ -8,7 +8,7 @@ describe('Game feedback API - list categories', () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_GAME_FEEDBACK])
 
     const feedbackCategory = await new GameFeedbackCategoryFactory(apiKey.game).one()
-    await em.persistAndFlush(feedbackCategory)
+    await em.persist(feedbackCategory).flush()
 
     const res = await request(app)
       .get('/v1/game-feedback/categories')
@@ -30,7 +30,7 @@ describe('Game feedback API - list categories', () => {
     const [apiKey, token] = await createAPIKeyAndToken([])
 
     const feedbackCategory = await new GameFeedbackCategoryFactory(apiKey.game).one()
-    await em.persistAndFlush(feedbackCategory)
+    await em.persist(feedbackCategory).flush()
 
     const res = await request(app)
       .get('/v1/game-feedback/categories')

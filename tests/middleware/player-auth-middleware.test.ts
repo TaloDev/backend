@@ -17,7 +17,7 @@ describe('Player auth middleware', () => {
       .one()
     const player = await new PlayerFactory([apiKey.game]).withTaloAlias().one()
 
-    await em.persistAndFlush([stat, player])
+    await em.persist([stat, player]).flush()
     const sessionToken = await player.auth!.createSession(player.aliases[0])
     await em.flush()
 
@@ -36,7 +36,7 @@ describe('Player auth middleware', () => {
     const stat = await new GameStatFactory([apiKey.game]).one()
     const player = await new PlayerFactory([apiKey.game]).one()
 
-    await em.persistAndFlush([stat, player])
+    await em.persist([stat, player]).flush()
 
     await request(app)
       .put(`/v1/game-stats/${stat.internalName}`)
@@ -52,7 +52,7 @@ describe('Player auth middleware', () => {
     const stat = await new GameStatFactory([apiKey.game]).one()
     const player = await new PlayerFactory([apiKey.game]).withTaloAlias().one()
 
-    await em.persistAndFlush([stat, player])
+    await em.persist([stat, player]).flush()
 
     const res = await request(app)
       .put(`/v1/game-stats/${stat.internalName}`)
@@ -72,7 +72,7 @@ describe('Player auth middleware', () => {
     const stat = await new GameStatFactory([apiKey.game]).one()
     const player = await new PlayerFactory([apiKey.game]).withTaloAlias().one()
 
-    await em.persistAndFlush([stat, player])
+    await em.persist([stat, player]).flush()
 
     const res = await request(app)
       .put(`/v1/game-stats/${stat.internalName}`)
@@ -92,7 +92,7 @@ describe('Player auth middleware', () => {
     const stat = await new GameStatFactory([apiKey.game]).one()
     const player = await new PlayerFactory([apiKey.game]).withTaloAlias().one()
 
-    await em.persistAndFlush([stat, player])
+    await em.persist([stat, player]).flush()
     const oldSessionToken = await player.auth!.createSession(player.aliases[0])
 
     await player.auth!.createSession(player.aliases[0])
@@ -120,7 +120,7 @@ describe('Player auth middleware', () => {
 
     player.aliases.add(await new PlayerAliasFactory(player).one())
 
-    await em.persistAndFlush([stat, player])
+    await em.persist([stat, player]).flush()
     const sessionToken = await player.auth!.createSession(player.aliases[0])
     await em.flush()
 
@@ -145,7 +145,7 @@ describe('Player auth middleware', () => {
     const player = await new PlayerFactory([apiKey.game]).withTaloAlias().one()
     const otherPlayer = await new PlayerFactory([apiKey.game]).withTaloAlias().one()
 
-    await em.persistAndFlush([stat, otherPlayer, player])
+    await em.persist([stat, otherPlayer, player]).flush()
     const sessionToken = await player.auth!.createSession(player.aliases[0])
     await otherPlayer.auth!.createSession(otherPlayer.aliases[0])
     await em.flush()

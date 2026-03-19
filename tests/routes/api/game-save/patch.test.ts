@@ -11,7 +11,7 @@ describe('Game save API - update', () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_SAVES])
     const player = await new PlayerFactory([apiKey.game]).one()
     const save = await new GameSaveFactory([player]).one()
-    await em.persistAndFlush(save)
+    await em.persist(save).flush()
 
     const res = await request(app)
       .patch(`/v1/game-saves/${save.id}`)
@@ -29,7 +29,7 @@ describe('Game save API - update', () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_SAVES])
     const player = await new PlayerFactory([apiKey.game]).one()
     const save = await new GameSaveFactory([player]).one()
-    await em.persistAndFlush(save)
+    await em.persist(save).flush()
 
     const res = await request(app)
       .patch(`/v1/game-saves/${save.id}`)
@@ -45,7 +45,7 @@ describe('Game save API - update', () => {
     const [apiKey, token] = await createAPIKeyAndToken([])
     const player = await new PlayerFactory([apiKey.game]).one()
     const save = await new GameSaveFactory([player]).one()
-    await em.persistAndFlush(save)
+    await em.persist(save).flush()
 
     await request(app)
       .patch(`/v1/game-saves/${save.id}`)
@@ -64,7 +64,7 @@ describe('Game save API - update', () => {
     const otherPlayer = await new PlayerFactory([game]).one()
     const otherSave = await new GameSaveFactory([otherPlayer]).one()
 
-    await em.persistAndFlush([save, otherSave])
+    await em.persist([save, otherSave]).flush()
 
     const res = await request(app)
       .patch(`/v1/game-saves/${otherSave.id}`)
@@ -80,7 +80,7 @@ describe('Game save API - update', () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_SAVES])
     const player = await new PlayerFactory([apiKey.game]).one()
     const save = await new GameSaveFactory([player]).one()
-    await em.persistAndFlush(save)
+    await em.persist(save).flush()
 
     const res = await request(app)
       .patch(`/v1/game-saves/${save.id}`)

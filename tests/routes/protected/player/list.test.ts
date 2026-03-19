@@ -64,7 +64,7 @@ describe('Player - list', () => {
 
     const otherPlayers = await new PlayerFactory([game]).many(3)
 
-    await em.persistAndFlush([...players, ...otherPlayers])
+    await em.persist([...players, ...otherPlayers]).flush()
 
     const res = await request(app)
       .get(`/games/${game.id}/players`)
@@ -82,7 +82,7 @@ describe('Player - list', () => {
     const player = await new PlayerFactory([game]).one()
     const otherPlayers = await new PlayerFactory([game]).many(3)
 
-    await em.persistAndFlush([player, ...otherPlayers])
+    await em.persist([player, ...otherPlayers]).flush()
 
     const res = await request(app)
       .get(`/games/${game.id}/players`)
@@ -100,7 +100,7 @@ describe('Player - list', () => {
     const player = await new PlayerFactory([game]).state(() => ({ id: 'abc12345678' })).one()
     const otherPlayers = await new PlayerFactory([game]).many(3)
 
-    await em.persistAndFlush([player, ...otherPlayers])
+    await em.persist([player, ...otherPlayers]).flush()
 
     const res = await request(app)
       .get(`/games/${game.id}/players`)
@@ -116,7 +116,7 @@ describe('Player - list', () => {
     const [token] = await createUserAndToken({ organisation })
 
     const players = await new PlayerFactory([game]).many(36)
-    await em.persistAndFlush(players)
+    await em.persist(players).flush()
 
     const page = Math.floor(players.length / 25)
 
@@ -136,7 +136,7 @@ describe('Player - list', () => {
     const [token] = await createUserAndToken({ organisation })
 
     const players = await new PlayerFactory([game]).devBuild().many(5)
-    await em.persistAndFlush(players)
+    await em.persist(players).flush()
 
     const res = await request(app)
       .get(`/games/${game.id}/players`)
@@ -152,7 +152,7 @@ describe('Player - list', () => {
     const [token] = await createUserAndToken({ organisation })
 
     const players = await new PlayerFactory([game]).devBuild().many(5)
-    await em.persistAndFlush(players)
+    await em.persist(players).flush()
 
     const res = await request(app)
       .get(`/games/${game.id}/players`)
@@ -183,7 +183,7 @@ describe('Player - list', () => {
       .construct(game)
       .state(() => ({ rules: [dateRule] }))
       .one()
-    await em.persistAndFlush([player, ...otherPlayers, group])
+    await em.persist([player, ...otherPlayers, group]).flush()
     await group.checkMembership(em)
 
     const res = await request(app)
@@ -205,7 +205,7 @@ describe('Player - list', () => {
     const channel = await new GameChannelFactory(game).one()
     channel.members.add(player.aliases[0])
 
-    await em.persistAndFlush([player, ...otherPlayers, channel])
+    await em.persist([player, ...otherPlayers, channel]).flush()
 
     const res = await request(app)
       .get(`/games/${game.id}/players`)
@@ -225,7 +225,7 @@ describe('Player - list', () => {
         props: new Collection<PlayerProp>(player, [new PlayerProp(player, 'level', '25')]),
       }))
       .one()
-    await em.persistAndFlush(player)
+    await em.persist(player).flush()
 
     const res = await request(app)
       .get(`/games/${game.id}/players`)

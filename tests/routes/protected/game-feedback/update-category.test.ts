@@ -12,7 +12,7 @@ describe('Game feedback - update category', () => {
     const feedbackCategory = await new GameFeedbackCategoryFactory(game)
       .state(() => ({ anonymised: false }))
       .one()
-    await em.persistAndFlush(feedbackCategory)
+    await em.persist(feedbackCategory).flush()
 
     const res = await request(app)
       .put(`/games/${game.id}/game-feedback/categories/${feedbackCategory.id}`)
@@ -53,7 +53,7 @@ describe('Game feedback - update category', () => {
       }))
       .one()
 
-    await em.persistAndFlush(feedbackCategory)
+    await em.persist(feedbackCategory).flush()
 
     const res = await request(app)
       .put(`/games/${game.id}/game-feedback/categories/${feedbackCategory.id}`)
@@ -88,7 +88,7 @@ describe('Game feedback - update category', () => {
     const feedbackCategory = await new GameFeedbackCategoryFactory(game)
       .state(() => ({ anonymised: false }))
       .one()
-    await em.persistAndFlush(feedbackCategory)
+    await em.persist(feedbackCategory).flush()
 
     const res = await request(app)
       .put(`/games/${game.id}/game-feedback/categories/${feedbackCategory.id}`)

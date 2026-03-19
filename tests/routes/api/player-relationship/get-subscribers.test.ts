@@ -79,7 +79,7 @@ describe('Player relationship API - get subscribers', () => {
   it('should not get subscribers if the scope is not valid', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([])
     const player = await new PlayerFactory([apiKey.game]).one()
-    await em.persistAndFlush(player)
+    await em.persist(player).flush()
 
     await request(app)
       .get('/v1/players/relationships/subscribers')

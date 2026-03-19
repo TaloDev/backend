@@ -11,7 +11,7 @@ describe('Game feedback - list categories', () => {
     const [token] = await createUserAndToken({}, organisation)
 
     const categories = await new GameFeedbackCategoryFactory(game).many(10)
-    await em.persistAndFlush(categories)
+    await em.persist(categories).flush()
 
     const res = await request(app)
       .get(`/games/${game.id}/game-feedback/categories`)

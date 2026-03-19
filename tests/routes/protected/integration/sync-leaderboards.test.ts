@@ -30,7 +30,7 @@ describe('Integration - sync leaderboards', () => {
       const integration = await new IntegrationFactory()
         .construct(IntegrationType.STEAMWORKS, game, config)
         .one()
-      await em.persistAndFlush(integration)
+      await em.persist(integration).flush()
 
       const res = await request(app)
         .post(`/games/${game.id}/integrations/${integration.id}/sync-leaderboards`)
@@ -68,7 +68,7 @@ describe('Integration - sync leaderboards', () => {
     const integration = await new IntegrationFactory()
       .construct(IntegrationType.STEAMWORKS, game, config)
       .one()
-    await em.persistAndFlush(integration)
+    await em.persist(integration).flush()
 
     const res = await request(app)
       .post(`/games/${game.id}/integrations/${integration.id}/sync-leaderboards`)
@@ -95,7 +95,7 @@ describe('Integration - sync leaderboards', () => {
     const integration = await new IntegrationFactory()
       .construct(IntegrationType.STEAMWORKS, game, config)
       .one()
-    await em.persistAndFlush(integration)
+    await em.persist(integration).flush()
 
     const res = await request(app)
       .post(`/games/${game.id}/integrations/${integration.id}/sync-leaderboards`)

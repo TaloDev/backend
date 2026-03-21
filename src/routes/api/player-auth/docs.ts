@@ -199,3 +199,32 @@ export const deleteDocs = {
     },
   ],
 } satisfies RouteDocs
+
+export const migrateDocs = {
+  description:
+    "Migrate a Talo player account to another service\nThe player's auth details will be removed and they will need to login using the new service and identifier",
+  samples: [
+    {
+      title: 'Sample request',
+      sample: {
+        currentPassword: 'password',
+        service: 'google_play_games',
+        identifier: '<auth_code>',
+      },
+    },
+    {
+      title: 'Sample response',
+      sample: {
+        alias: {
+          ...sampleAlias,
+          service: 'google_play_games',
+          identifier: 'a_1234567890',
+          player: {
+            ...sampleAlias.player,
+            auth: undefined,
+          },
+        },
+      },
+    },
+  ],
+} satisfies RouteDocs

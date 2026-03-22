@@ -53,7 +53,7 @@ export const migrateRoute = apiRoute({
       })
     }
 
-    if (service.trim() === PlayerAliasService.TALO) {
+    if (service.toLowerCase().trim() === PlayerAliasService.TALO) {
       return ctx.throw(400, {
         message: 'Cannot migrate to the Talo service',
         errorCode: 'INVALID_MIGRATION_TARGET',

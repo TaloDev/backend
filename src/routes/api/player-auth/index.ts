@@ -6,6 +6,7 @@ import { deleteRoute } from './delete'
 import { forgotPasswordRoute } from './forgot-password'
 import { loginRoute } from './login'
 import { logoutRoute } from './logout'
+import { migrateRoute } from './migrate'
 import { registerRoute } from './register'
 import { resetPasswordRoute } from './reset-password'
 import { toggleVerificationRoute } from './toggle-verification'
@@ -26,6 +27,7 @@ export function playerAuthAPIRouter() {
       route(resetPasswordRoute)
       route(toggleVerificationRoute)
       route(deleteRoute)
+      route(migrateRoute)
     },
     {
       docsKey: 'PlayerAuthAPI',

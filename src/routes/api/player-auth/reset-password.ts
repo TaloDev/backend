@@ -2,6 +2,7 @@ import bcrypt from 'bcrypt'
 import { APIKeyScope } from '../../../entities/api-key'
 import PlayerAlias from '../../../entities/player-alias'
 import { PlayerAuthActivityType } from '../../../entities/player-auth-activity'
+import { throwPlayerAuthError } from '../../../lib/errors/throwPlayerAuthError'
 import { apiRoute, withMiddleware } from '../../../lib/routing/router'
 import { requireScopes } from '../../../middleware/policy-middleware'
 import { createPlayerAuthActivity, getRedisPasswordResetKey } from './common'
@@ -41,7 +42,9 @@ export const resetPasswordRoute = apiRoute({
     )
 
     if (!aliasId || !alias || !alias.player.auth) {
-      return ctx.throw(401, {
+      return throwPlayerAuthError({
+        ctx,
+        status: 401,
         message: 'This code is either invalid or has expired',
         errorCode: 'PASSWORD_RESET_CODE_INVALID',
       })

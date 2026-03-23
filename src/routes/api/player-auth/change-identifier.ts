@@ -2,6 +2,7 @@ import bcrypt from 'bcrypt'
 import { APIKeyScope } from '../../../entities/api-key'
 import PlayerAlias from '../../../entities/player-alias'
 import { PlayerAuthActivityType } from '../../../entities/player-auth-activity'
+import { throwPlayerAuthError } from '../../../lib/errors/throwPlayerAuthError'
 import { apiRoute, withMiddleware } from '../../../lib/routing/router'
 import { playerAliasHeaderSchema } from '../../../lib/validation/playerAliasHeaderSchema'
 import { playerHeaderSchema } from '../../../lib/validation/playerHeaderSchema'
@@ -48,7 +49,9 @@ export const changeIdentifierRoute = apiRoute({
       })
       await em.flush()
 
-      return ctx.throw(403, {
+      return throwPlayerAuthError({
+        ctx,
+        status: 403,
         message: 'Current password is incorrect',
         errorCode: 'INVALID_CREDENTIALS',
       })
@@ -65,7 +68,9 @@ export const changeIdentifierRoute = apiRoute({
       })
       await em.flush()
 
-      return ctx.throw(400, {
+      return throwPlayerAuthError({
+        ctx,
+        status: 400,
         message: 'Please choose a different identifier',
         errorCode: 'NEW_IDENTIFIER_MATCHES_CURRENT_IDENTIFIER',
       })
@@ -87,7 +92,9 @@ export const changeIdentifierRoute = apiRoute({
       })
       await em.flush()
 
-      return ctx.throw(400, {
+      return throwPlayerAuthError({
+        ctx,
+        status: 400,
         message: 'This identifier is already taken',
         errorCode: 'IDENTIFIER_TAKEN',
       })

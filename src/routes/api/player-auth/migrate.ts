@@ -4,6 +4,7 @@ import { APIKeyScope } from '../../../entities/api-key'
 import PlayerAlias, { PlayerAliasService } from '../../../entities/player-alias'
 import PlayerAuth from '../../../entities/player-auth'
 import PlayerAuthActivity, { PlayerAuthActivityType } from '../../../entities/player-auth-activity'
+import { throwPlayerAuthError } from '../../../lib/errors/throwPlayerAuthError'
 import { buildPlayerAuthActivity } from '../../../lib/logging/buildPlayerAuthActivity'
 import { findAliasFromIdentifyRequest } from '../../../lib/players/findAlias'
 import { apiRoute, withMiddleware } from '../../../lib/routing/router'
@@ -47,14 +48,18 @@ export const migrateRoute = apiRoute({
 
     const passwordMatches = await bcrypt.compare(currentPassword, alias.player.auth.password)
     if (!passwordMatches) {
-      return ctx.throw(403, {
+      return throwPlayerAuthError({
+        ctx,
+        status: 403,
         message: 'Current password is incorrect',
         errorCode: 'INVALID_CREDENTIALS',
       })
     }
 
     if (service.toLowerCase().trim() === PlayerAliasService.TALO) {
-      return ctx.throw(400, {
+      return throwPlayerAuthError({
+        ctx,
+        status: 400,
         message: 'Cannot migrate to the Talo service',
         errorCode: 'INVALID_MIGRATION_TARGET',
       })
@@ -82,7 +87,9 @@ export const migrateRoute = apiRoute({
       })
 
       if (existingAlias) {
-        return ctx.throw(409, {
+        return throwPlayerAuthError({
+          ctx,
+          status: 409,
           message: 'A player already exists with this identifier',
           errorCode: 'IDENTIFIER_TAKEN',
         })

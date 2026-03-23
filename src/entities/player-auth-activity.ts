@@ -23,6 +23,7 @@ export enum PlayerAuthActivityType {
   CHANGED_IDENTIFIER,
   CHANGE_IDENTIFIER_FAILED,
   MIGRATED_AUTH,
+  SESSION_REFRESHED,
 }
 
 @Entity()
@@ -99,6 +100,8 @@ export default class PlayerAuthActivity {
         return `${authAlias.identifier} failed to change their identifier`
       case PlayerAuthActivityType.MIGRATED_AUTH:
         return `${this.extra.oldIdentifier} migrated to ${this.extra.newService}`
+      case PlayerAuthActivityType.SESSION_REFRESHED:
+        return `${authAlias.identifier} refreshed their session`
       default:
         return ''
     }

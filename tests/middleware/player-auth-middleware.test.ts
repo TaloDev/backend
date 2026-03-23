@@ -18,7 +18,7 @@ describe('Player auth middleware', () => {
     const player = await new PlayerFactory([apiKey.game]).withTaloAlias().one()
 
     await em.persist([stat, player]).flush()
-    const sessionToken = await player.auth!.createSession(player.aliases[0])
+    const { sessionToken } = await player.auth!.createSession(player.aliases[0])
     await em.flush()
 
     await request(app)
@@ -93,7 +93,7 @@ describe('Player auth middleware', () => {
     const player = await new PlayerFactory([apiKey.game]).withTaloAlias().one()
 
     await em.persist([stat, player]).flush()
-    const oldSessionToken = await player.auth!.createSession(player.aliases[0])
+    const { sessionToken: oldSessionToken } = await player.auth!.createSession(player.aliases[0])
 
     await player.auth!.createSession(player.aliases[0])
     await em.flush()
@@ -121,7 +121,7 @@ describe('Player auth middleware', () => {
     player.aliases.add(await new PlayerAliasFactory(player).one())
 
     await em.persist([stat, player]).flush()
-    const sessionToken = await player.auth!.createSession(player.aliases[0])
+    const { sessionToken } = await player.auth!.createSession(player.aliases[0])
     await em.flush()
 
     const res = await request(app)
@@ -146,7 +146,7 @@ describe('Player auth middleware', () => {
     const otherPlayer = await new PlayerFactory([apiKey.game]).withTaloAlias().one()
 
     await em.persist([stat, otherPlayer, player]).flush()
-    const sessionToken = await player.auth!.createSession(player.aliases[0])
+    const { sessionToken } = await player.auth!.createSession(player.aliases[0])
     await otherPlayer.auth!.createSession(otherPlayer.aliases[0])
     await em.flush()
 
@@ -157,6 +157,30 @@ describe('Player auth middleware', () => {
       .set('x-talo-player', otherPlayer.id)
       .set('x-talo-alias', String(player.aliases[0].id))
       .set('x-talo-session', sessionToken)
+      .expect(401)
+
+    expect(res.body).toStrictEqual({
+      message: 'The x-talo-session header is invalid',
+      errorCode: 'INVALID_SESSION',
+    })
+  })
+
+  it('should block access if a refresh token is used as a session token', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_STATS])
+    const stat = await new GameStatFactory([apiKey.game]).one()
+    const player = await new PlayerFactory([apiKey.game]).withTaloAlias().one()
+
+    await em.persist([stat, player]).flush()
+    const { refreshToken } = await player.auth!.createSession(player.aliases[0], true)
+    await em.flush()
+
+    const res = await request(app)
+      .put(`/v1/game-stats/${stat.internalName}`)
+      .send({ change: 1 })
+      .auth(token, { type: 'bearer' })
+      .set('x-talo-player', player.id)
+      .set('x-talo-alias', String(player.aliases[0].id))
+      .set('x-talo-session', refreshToken!)
       .expect(401)
 
     expect(res.body).toStrictEqual({

@@ -33,7 +33,7 @@ describe('Player public - delete', { timeout: 30_000 }, () => {
     const activities = await new PlayerAuthActivityFactory(game).state(() => ({ player })).many(10)
     await em.persist([player, ...activities]).flush()
 
-    const sessionToken = await buildPublicPlayerSession(alias)
+    const { sessionToken } = await buildPublicPlayerSession(alias)
     const prevIdentifier = alias.identifier
 
     await request(app)
@@ -96,7 +96,7 @@ describe('Player public - delete', { timeout: 30_000 }, () => {
     await em.persist(player).flush()
 
     const alias = player.aliases[0]
-    const sessionToken = await buildPublicPlayerSession(alias)
+    const { sessionToken } = await buildPublicPlayerSession(alias)
 
     const res = await request(app)
       .delete(`/public/players/${game.getToken()}`)
@@ -123,7 +123,7 @@ describe('Player public - delete', { timeout: 30_000 }, () => {
     const alias = player.aliases[0]
     await em.persist(player).flush()
 
-    const sessionToken = await buildPublicPlayerSession(alias)
+    const { sessionToken } = await buildPublicPlayerSession(alias)
 
     await request(app)
       .delete(`/public/players/${game.getToken()}`)
@@ -150,7 +150,7 @@ describe('Player public - delete', { timeout: 30_000 }, () => {
     const alias = player.aliases[0]
     await em.persist(player).flush()
 
-    const sessionToken = await buildPublicPlayerSession(alias)
+    const { sessionToken } = await buildPublicPlayerSession(alias)
 
     const res = await request(app)
       .delete(`/public/players/${game2.getToken()}`)

@@ -515,7 +515,7 @@ describe('Player API - merge', () => {
 
     await em.persist([player1, player2]).flush()
 
-    const sessionToken = await player1.auth!.createSession(player1.aliases[0])
+    const { sessionToken } = await player1.auth!.createSession(player1.aliases[0])
     await em.flush()
 
     const res = await request(app)

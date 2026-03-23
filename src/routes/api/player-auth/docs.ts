@@ -200,6 +200,25 @@ export const deleteDocs = {
   ],
 } satisfies RouteDocs
 
+export const refreshDocs = {
+  description: 'Refresh a player session token using a refresh token',
+  samples: [
+    {
+      title: 'Sample request',
+      sample: {
+        refreshToken: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
+      },
+    },
+    {
+      title: 'Sample response',
+      sample: {
+        sessionToken: sampleSessionToken,
+        refreshToken: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuZXciOiJ0b2tlbiJ9...',
+      },
+    },
+  ],
+} satisfies RouteDocs
+
 export const migrateDocs = {
   description:
     "Migrate a Talo player account to another service\nThe player's auth details will be removed and they will need to login using the new service and identifier",

@@ -90,13 +90,16 @@ export async function validateSessionTokenJWT(
   expectedPlayerId: string,
   expectedAliasId: number,
 ) {
-  if (!alias.player.auth?.sessionKey) return false
+  if (!alias.player.auth?.sessionKey) {
+    return false
+  }
 
   try {
     const payload = await verify<{ playerId: string; aliasId: number }>(
       sessionToken,
       alias.player.auth.sessionKey,
     )
+
     return payload.playerId === expectedPlayerId && payload.aliasId === expectedAliasId
   } catch {
     return false

@@ -35,6 +35,10 @@ export const registerRoute = apiRoute({
           description:
             'Required when verification is enabled. This is also used for password resets: players without an email cannot reset their password',
         }),
+        withRefresh: z.boolean().optional().meta({
+          description:
+            'When true, the response will include a refreshToken alongside a short-lived sessionToken',
+        }),
       })
       .refine((data) => !data.verificationEnabled || data.email, {
         message: 'email is required when verificationEnabled is true',
@@ -43,7 +47,8 @@ export const registerRoute = apiRoute({
   }),
   middleware: withMiddleware(requireScopes([APIKeyScope.READ_PLAYERS, APIKeyScope.WRITE_PLAYERS])),
   handler: async (ctx) => {
-    const { identifier, password, email, verificationEnabled } = ctx.state.validated.body
+    const { identifier, password, email, verificationEnabled, withRefresh } =
+      ctx.state.validated.body
     const em = ctx.em
 
     const key = ctx.state.key
@@ -98,7 +103,7 @@ export const registerRoute = apiRoute({
     alias.player.auth.verificationEnabled = Boolean(verificationEnabled)
     em.persist(alias.player.auth)
 
-    const sessionToken = await alias.player.auth.createSession(alias)
+    const { sessionToken, refreshToken } = await alias.player.auth.createSession(alias, withRefresh)
     const socketToken = await alias.createSocketToken(ctx.redis)
 
     createPlayerAuthActivity(ctx, alias.player, {
@@ -115,6 +120,7 @@ export const registerRoute = apiRoute({
       body: {
         alias,
         sessionToken,
+        refreshToken,
         socketToken,
       },
     }

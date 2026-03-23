@@ -226,4 +226,35 @@ describe('Player auth API - login', () => {
     expect(res.body.alias.identifier).toBe(alias.identifier)
     expect(res.body.sessionToken).toBeTruthy()
   })
+
+  it('should return a refreshToken when withRefresh is true', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([
+      APIKeyScope.READ_PLAYERS,
+      APIKeyScope.WRITE_PLAYERS,
+    ])
+
+    const player = await new PlayerFactory([apiKey.game])
+      .withTaloAlias()
+      .state(async () => ({
+        auth: await new PlayerAuthFactory()
+          .state(async () => ({
+            password: await bcrypt.hash('password', 10),
+            verificationEnabled: false,
+          }))
+          .one(),
+      }))
+      .one()
+    const alias = player.aliases[0]
+
+    await em.persist(player).flush()
+
+    const res = await request(app)
+      .post('/v1/players/auth/login')
+      .send({ identifier: alias.identifier, password: 'password', withRefresh: true })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    expect(res.body.sessionToken).toBeTruthy()
+    expect(res.body.refreshToken).toBeTruthy()
+  })
 })

@@ -25,10 +25,15 @@ export async function loadGameFromToken(
 }
 
 export async function buildPublicPlayerSession(alias: PlayerAlias) {
-  return await sign({ playerId: alias.player.id, aliasId: alias.id }, process.env.JWT_SECRET!, {
-    expiresIn: '5m',
-    audience: PUBLIC_SESSION_AUDIENCE,
-  })
+  const sessionToken = await sign(
+    { playerId: alias.player.id, aliasId: alias.id },
+    process.env.JWT_SECRET!,
+    {
+      expiresIn: '5m',
+      audience: PUBLIC_SESSION_AUDIENCE,
+    },
+  )
+  return { sessionToken }
 }
 
 export async function verifyPublicPlayerSession(token: string) {

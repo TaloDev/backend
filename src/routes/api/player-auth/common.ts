@@ -55,9 +55,9 @@ export function createPlayerAuthActivity(
   })
 }
 
-export function sessionBuilder(alias: PlayerAlias) {
+export function sessionBuilder(alias: PlayerAlias, withRefresh = false) {
   assert(alias.player.auth)
-  return alias.player.auth.createSession(alias)
+  return alias.player.auth.createSession(alias, withRefresh)
 }
 
 export async function isEmailTakenForGame(

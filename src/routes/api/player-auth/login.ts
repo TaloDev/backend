@@ -26,6 +26,7 @@ export async function loginHandler({
   userAgent,
   sessionBuilder = defaultSessionBuilder,
   selfService,
+  withRefresh,
 }: {
   alias: PlayerAlias | null
   password: string
@@ -33,8 +34,12 @@ export async function loginHandler({
   redis: Redis
   ip: string
   userAgent?: string
-  sessionBuilder?: (alias: PlayerAlias) => Promise<string>
+  sessionBuilder?: (
+    alias: PlayerAlias,
+    withRefresh?: boolean,
+  ) => Promise<{ sessionToken: string; refreshToken?: string }>
   selfService?: boolean
+  withRefresh?: boolean
 }) {
   if (!alias) {
     return {
@@ -78,7 +83,7 @@ export async function loginHandler({
       },
     }
   } else {
-    const sessionToken = await sessionBuilder(alias)
+    const { sessionToken, refreshToken } = await sessionBuilder(alias, withRefresh)
     const socketToken = selfService ? undefined : await alias.createSocketToken(redis)
 
     buildPlayerAuthActivity({
@@ -97,6 +102,7 @@ export async function loginHandler({
       body: {
         alias,
         sessionToken,
+        refreshToken,
         socketToken,
       },
     }
@@ -114,11 +120,15 @@ export const loginRoute = apiRoute({
           'The unique identifier of the player. This can be their username, an email or a numeric ID',
       }),
       password: z.string().meta({ description: "The player's password" }),
+      withRefresh: z.boolean().optional().meta({
+        description:
+          'When true, the response will include a refreshToken alongside a short-lived sessionToken',
+      }),
     }),
   }),
   middleware: withMiddleware(requireScopes([APIKeyScope.READ_PLAYERS, APIKeyScope.WRITE_PLAYERS])),
   handler: async (ctx) => {
-    const { identifier, password } = ctx.state.validated.body
+    const { identifier, password, withRefresh } = ctx.state.validated.body
     const em = ctx.em
     const key = ctx.state.key
 
@@ -136,6 +146,7 @@ export const loginRoute = apiRoute({
       redis: ctx.redis,
       ip: ctx.request.ip,
       userAgent: ctx.request.headers['user-agent'],
+      withRefresh,
     })
   },
 })

@@ -286,4 +286,20 @@ describe('Player auth API - register', () => {
 
     expect(res.body.message).toBe('Limit reached')
   })
+
+  it('should return a refreshToken when withRefresh is true', async () => {
+    const [, token] = await createAPIKeyAndToken([
+      APIKeyScope.READ_PLAYERS,
+      APIKeyScope.WRITE_PLAYERS,
+    ])
+
+    const res = await request(app)
+      .post('/v1/players/auth/register')
+      .send({ identifier: randUserName(), password: 'password', withRefresh: true })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    expect(res.body.sessionToken).toBeTruthy()
+    expect(res.body.refreshToken).toBeTruthy()
+  })
 })

@@ -18,6 +18,7 @@ export async function verifyHandler({
   userAgent,
   sessionBuilder = defaultSessionBuilder,
   selfService,
+  withRefresh,
 }: {
   em: EntityManager
   alias: PlayerAlias | null
@@ -25,8 +26,12 @@ export async function verifyHandler({
   redis: Redis
   ip: string
   userAgent?: string
-  sessionBuilder?: (alias: PlayerAlias) => Promise<string>
+  sessionBuilder?: (
+    alias: PlayerAlias,
+    withRefresh?: boolean,
+  ) => Promise<{ sessionToken: string; refreshToken?: string }>
   selfService?: boolean
+  withRefresh?: boolean
 }) {
   if (!alias) {
     return {
@@ -60,7 +65,7 @@ export async function verifyHandler({
 
   await redis.del(getRedisAuthKey(alias))
 
-  const sessionToken = await sessionBuilder(alias)
+  const { sessionToken, refreshToken } = await sessionBuilder(alias, withRefresh)
   const socketToken = selfService ? undefined : await alias.createSocketToken(redis)
 
   buildPlayerAuthActivity({
@@ -76,7 +81,7 @@ export async function verifyHandler({
 
   return {
     status: 200,
-    body: { alias, sessionToken, socketToken },
+    body: { alias, sessionToken, refreshToken, socketToken },
   }
 }
 
@@ -90,11 +95,15 @@ export const verifyRoute = apiRoute({
       code: z.string().meta({
         description: 'The 6-digit verification code sent to the player (must be a string)',
       }),
+      withRefresh: z.boolean().optional().meta({
+        description:
+          'When true, the response will include a refreshToken alongside a short-lived sessionToken',
+      }),
     }),
   }),
   middleware: withMiddleware(requireScopes([APIKeyScope.READ_PLAYERS, APIKeyScope.WRITE_PLAYERS])),
   handler: async (ctx) => {
-    const { aliasId, code } = ctx.state.validated.body
+    const { aliasId, code, withRefresh } = ctx.state.validated.body
     const em = ctx.em
 
     const alias = await em.repo(PlayerAlias).findOne(
@@ -112,6 +121,7 @@ export const verifyRoute = apiRoute({
       redis: ctx.redis,
       ip: ctx.request.ip,
       userAgent: ctx.request.headers['user-agent'],
+      withRefresh,
     })
   },
 })

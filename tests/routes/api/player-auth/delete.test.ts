@@ -40,7 +40,7 @@ describe('Player auth API - delete', { timeout: 30_000 }, () => {
       .many(10)
     await em.persist([player, ...activities]).flush()
 
-    const sessionToken = await player.auth!.createSession(alias)
+    const { sessionToken } = await player.auth!.createSession(alias)
     await em.flush()
 
     const prevIdentifier = alias.identifier
@@ -95,7 +95,7 @@ describe('Player auth API - delete', { timeout: 30_000 }, () => {
     const alias = player.aliases[0]
     await em.persist(player).flush()
 
-    const sessionToken = await player.auth!.createSession(alias)
+    const { sessionToken } = await player.auth!.createSession(alias)
     await em.flush()
 
     const events = await new EventFactory([player]).many(3)
@@ -164,7 +164,7 @@ describe('Player auth API - delete', { timeout: 30_000 }, () => {
     const alias = player.aliases[0]
     await em.persist(player).flush()
 
-    const sessionToken = await player.auth!.createSession(alias)
+    const { sessionToken } = await player.auth!.createSession(alias)
     await em.flush()
 
     const res = await request(app)
@@ -207,7 +207,7 @@ describe('Player auth API - delete', { timeout: 30_000 }, () => {
     const alias = player.aliases[0]
     await em.persist(player).flush()
 
-    const sessionToken = await player.auth!.createSession(alias)
+    const { sessionToken } = await player.auth!.createSession(alias)
     await em.flush()
 
     await request(app)
@@ -248,7 +248,7 @@ describe('Player auth API - delete', { timeout: 30_000 }, () => {
     player.presence = presence
     await em.persist(player).flush()
 
-    const sessionToken = await player.auth!.createSession(alias)
+    const { sessionToken } = await player.auth!.createSession(alias)
     await em.flush()
 
     await request(app)
@@ -281,7 +281,7 @@ describe('Player auth API - delete', { timeout: 30_000 }, () => {
     const alias = player.aliases[0]
     await em.persist(player).flush()
 
-    const sessionToken = await player.auth!.createSession(alias)
+    const { sessionToken } = await player.auth!.createSession(alias)
     await em.flush()
 
     await request(app)

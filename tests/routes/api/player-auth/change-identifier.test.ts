@@ -40,7 +40,7 @@ describe('Player auth API - change identifier', () => {
     const alias = player.aliases[0]
     await em.persist(player).flush()
 
-    const sessionToken = await player.auth!.createSession(alias)
+    const { sessionToken } = await player.auth!.createSession(alias)
     await em.flush()
 
     const res = await request(app)
@@ -89,7 +89,7 @@ describe('Player auth API - change identifier', () => {
     const alias = player.aliases[0]
     await em.persist(player).flush()
 
-    const sessionToken = await player.auth!.createSession(alias)
+    const { sessionToken } = await player.auth!.createSession(alias)
     await em.flush()
 
     await request(app)
@@ -130,7 +130,7 @@ describe('Player auth API - change identifier', () => {
     const alias = player.aliases[0]
     await em.persist(player).flush()
 
-    const sessionToken = await player.auth!.createSession(alias)
+    const { sessionToken } = await player.auth!.createSession(alias)
     await em.flush()
 
     const res = await request(app)
@@ -185,7 +185,7 @@ describe('Player auth API - change identifier', () => {
     const alias = player.aliases[0]
     await em.persist(player).flush()
 
-    const sessionToken = await player.auth!.createSession(alias)
+    const { sessionToken } = await player.auth!.createSession(alias)
     await em.flush()
 
     const res = await request(app)
@@ -257,7 +257,7 @@ describe('Player auth API - change identifier', () => {
     const alias = player.aliases[0]
     await em.persist([otherPlayer, player]).flush()
 
-    const sessionToken = await player.auth!.createSession(alias)
+    const { sessionToken } = await player.auth!.createSession(alias)
     await em.flush()
 
     const res = await request(app)

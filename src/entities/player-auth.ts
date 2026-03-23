@@ -52,14 +52,30 @@ export default class PlayerAuth {
   @Property({ onUpdate: () => new Date() })
   updatedAt: Date = new Date()
 
-  async createSession(alias: PlayerAlias): Promise<string> {
+  async createSession(alias: PlayerAlias, withRefresh = false) {
     this.player.lastSeenAt = new Date()
 
     this.sessionKey = v4()
     this.sessionCreatedAt = new Date()
 
     const payload = { playerId: this.player.id, aliasId: alias.id }
-    return sign(payload, this.sessionKey)
+
+    if (withRefresh) {
+      const sessionToken = await sign({ ...payload, type: 'session' }, this.sessionKey, {
+        expiresIn: '15m',
+      })
+
+      const refreshToken = await sign(
+        { ...payload, type: 'refresh' },
+        `${this.sessionKey}:refresh`,
+        { expiresIn: '30d' },
+      )
+
+      return { sessionToken, refreshToken }
+    }
+
+    const sessionToken = await sign(payload, this.sessionKey)
+    return { sessionToken }
   }
 
   clearSession() {

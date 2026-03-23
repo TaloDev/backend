@@ -7,7 +7,7 @@ import { playerAliasHeaderSchema } from '../../../lib/validation/playerAliasHead
 import { playerHeaderSchema } from '../../../lib/validation/playerHeaderSchema'
 import { sessionHeaderSchema } from '../../../lib/validation/sessionHeaderSchema'
 import { requireScopes } from '../../../middleware/policy-middleware'
-import { createPlayerAuthActivity, loadAliasWithAuth } from './common'
+import { createPlayerAuthActivity, isEmailTakenForGame, loadAliasWithAuth } from './common'
 import { changeEmailDocs } from './docs'
 
 export const changeEmailRoute = apiRoute({
@@ -73,6 +73,20 @@ export const changeEmailRoute = apiRoute({
 
     const oldEmail = alias.player.auth.email
     if (emailRegex.test(sanitisedEmail)) {
+      if (await isEmailTakenForGame(em, { email: sanitisedEmail, game: ctx.state.game })) {
+        createPlayerAuthActivity(ctx, alias.player, {
+          type: PlayerAuthActivityType.CHANGE_EMAIL_FAILED,
+          extra: {
+            errorCode: 'EMAIL_TAKEN',
+          },
+        })
+        await em.flush()
+
+        return ctx.throw(400, {
+          message: 'This email address is already in use',
+          errorCode: 'EMAIL_TAKEN',
+        })
+      }
       alias.player.auth.email = sanitisedEmail
     } else {
       createPlayerAuthActivity(ctx, alias.player, {

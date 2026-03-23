@@ -12,7 +12,7 @@ import {
 } from '../../../lib/players/createPlayer'
 import { apiRoute, withMiddleware } from '../../../lib/routing/router'
 import { requireScopes } from '../../../middleware/policy-middleware'
-import { createPlayerAuthActivity } from './common'
+import { createPlayerAuthActivity, isEmailTakenForGame } from './common'
 import { registerDocs } from './docs'
 
 export const registerRoute = apiRoute({
@@ -78,6 +78,12 @@ export const registerRoute = apiRoute({
     if (email?.trim()) {
       const sanitisedEmail = email.trim().toLowerCase()
       if (emailRegex.test(sanitisedEmail)) {
+        if (await isEmailTakenForGame(em, { email: sanitisedEmail, game: key.game })) {
+          return ctx.throw(400, {
+            message: 'This email address is already in use',
+            errorCode: 'EMAIL_TAKEN',
+          })
+        }
         alias.player.auth.email = sanitisedEmail
       } else {
         return ctx.throw(400, {

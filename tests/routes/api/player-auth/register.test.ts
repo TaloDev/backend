@@ -1,9 +1,11 @@
 import { randUserName } from '@ngneat/falso'
+import bcrypt from 'bcrypt'
 import request from 'supertest'
 import { APIKeyScope } from '../../../../src/entities/api-key'
 import PlayerAuthActivity, {
   PlayerAuthActivityType,
 } from '../../../../src/entities/player-auth-activity'
+import PlayerAuthFactory from '../../../fixtures/PlayerAuthFactory'
 import PlayerFactory from '../../../fixtures/PlayerFactory'
 import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
 
@@ -196,6 +198,72 @@ describe('Player auth API - register', () => {
       message: `Player with identifier '${existingIdentifier}' already exists`,
       errorCode: 'IDENTIFIER_TAKEN',
       field: 'aliases',
+    })
+  })
+
+  it('should register a player if the email is only in use in another game', async () => {
+    const [, token] = await createAPIKeyAndToken([
+      APIKeyScope.READ_PLAYERS,
+      APIKeyScope.WRITE_PLAYERS,
+    ])
+
+    const [otherApiKey] = await createAPIKeyAndToken([
+      APIKeyScope.READ_PLAYERS,
+      APIKeyScope.WRITE_PLAYERS,
+    ])
+
+    const otherPlayer = await new PlayerFactory([otherApiKey.game])
+      .withTaloAlias()
+      .state(async () => ({
+        auth: await new PlayerAuthFactory()
+          .state(async () => ({
+            password: await bcrypt.hash('password', 10),
+            email: 'boz@mail.com',
+            verificationEnabled: false,
+          }))
+          .one(),
+      }))
+      .one()
+    await em.persist(otherPlayer).flush()
+
+    const res = await request(app)
+      .post('/v1/players/auth/register')
+      .send({ identifier: randUserName(), password: 'password', email: 'boz@mail.com' })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    expect(res.body.alias.player.auth.email).toBe('boz@mail.com')
+  })
+
+  it('should not register a player if the email is already in use within the game', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([
+      APIKeyScope.READ_PLAYERS,
+      APIKeyScope.WRITE_PLAYERS,
+    ])
+
+    const existingPlayer = await new PlayerFactory([apiKey.game])
+      .withTaloAlias()
+      .state(async () => ({
+        auth: await new PlayerAuthFactory()
+          .state(async () => ({
+            password: await bcrypt.hash('password', 10),
+            email: 'boz@mail.com',
+            verificationEnabled: false,
+          }))
+          .one(),
+      }))
+      .one()
+    await em.persist(existingPlayer).flush()
+
+    const res = await request(app)
+      .post('/v1/players/auth/register')
+      .send({ identifier: randUserName(), password: 'password', email: 'boz@mail.com' })
+      .auth(token, { type: 'bearer' })
+      .expect(400)
+
+    expect(res.body).toStrictEqual({
+      message: 'This email address is already in use',
+      errorCode: 'EMAIL_TAKEN',
     })
   })
 

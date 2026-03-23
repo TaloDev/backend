@@ -7,7 +7,7 @@ import { playerAliasHeaderSchema } from '../../../lib/validation/playerAliasHead
 import { playerHeaderSchema } from '../../../lib/validation/playerHeaderSchema'
 import { sessionHeaderSchema } from '../../../lib/validation/sessionHeaderSchema'
 import { requireScopes } from '../../../middleware/policy-middleware'
-import { createPlayerAuthActivity, loadAliasWithAuth } from './common'
+import { createPlayerAuthActivity, isEmailTakenForGame, loadAliasWithAuth } from './common'
 import { toggleVerificationDocs } from './docs'
 
 export const toggleVerificationRoute = apiRoute({
@@ -81,6 +81,27 @@ export const toggleVerificationRoute = apiRoute({
     if (email?.trim()) {
       const sanitisedEmail = email.trim().toLowerCase()
       if (emailRegex.test(sanitisedEmail)) {
+        if (
+          await isEmailTakenForGame(em, {
+            email: sanitisedEmail,
+            game: ctx.state.game,
+            excludePlayer: alias.player,
+          })
+        ) {
+          createPlayerAuthActivity(ctx, alias.player, {
+            type: PlayerAuthActivityType.TOGGLE_VERIFICATION_FAILED,
+            extra: {
+              errorCode: 'EMAIL_TAKEN',
+              verificationEnabled: Boolean(verificationEnabled),
+            },
+          })
+          await em.flush()
+
+          return ctx.throw(400, {
+            message: 'This email address is already in use',
+            errorCode: 'EMAIL_TAKEN',
+          })
+        }
         alias.player.auth.email = sanitisedEmail
       } else {
         createPlayerAuthActivity(ctx, alias.player, {

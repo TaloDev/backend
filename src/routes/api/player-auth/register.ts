@@ -5,6 +5,7 @@ import { PlayerAliasService } from '../../../entities/player-alias'
 import PlayerAuth from '../../../entities/player-auth'
 import { PlayerAuthActivityType } from '../../../entities/player-auth-activity'
 import { PricingPlanLimitError } from '../../../lib/billing/checkPricingPlanPlayerLimit'
+import { throwPlayerAuthError } from '../../../lib/errors/throwPlayerAuthError'
 import emailRegex from '../../../lib/lang/emailRegex'
 import {
   createPlayerFromIdentifyRequest,
@@ -84,14 +85,18 @@ export const registerRoute = apiRoute({
       const sanitisedEmail = email.trim().toLowerCase()
       if (emailRegex.test(sanitisedEmail)) {
         if (await isEmailTakenForGame(em, { email: sanitisedEmail, game: key.game })) {
-          return ctx.throw(400, {
+          return throwPlayerAuthError({
+            ctx,
+            status: 400,
             message: 'This email address is already in use',
             errorCode: 'EMAIL_TAKEN',
           })
         }
         alias.player.auth.email = sanitisedEmail
       } else {
-        return ctx.throw(400, {
+        return throwPlayerAuthError({
+          ctx,
+          status: 400,
           message: 'Invalid email address',
           errorCode: 'INVALID_EMAIL',
         })

@@ -3,6 +3,7 @@ import { APIKeyScope } from '../../../entities/api-key'
 import PlayerAlias, { PlayerAliasService } from '../../../entities/player-alias'
 import { PlayerAuthActivityType } from '../../../entities/player-auth-activity'
 import { verify } from '../../../lib/auth/jwt'
+import { throwPlayerAuthError } from '../../../lib/errors/throwPlayerAuthError'
 import { apiRoute, withMiddleware } from '../../../lib/routing/router'
 import { requireScopes } from '../../../middleware/policy-middleware'
 import { createPlayerAuthActivity } from './common'
@@ -31,7 +32,12 @@ export const refreshRoute = apiRoute({
     } | null
 
     if (!decoded?.aliasId || !decoded?.playerId || decoded.type !== 'refresh') {
-      return ctx.throw(401, { message: 'Invalid refresh token', errorCode: 'INVALID_SESSION' })
+      return throwPlayerAuthError({
+        ctx,
+        status: 401,
+        message: 'Invalid refresh token',
+        errorCode: 'INVALID_SESSION',
+      })
     }
 
     const alias = await em.repo(PlayerAlias).findOne(
@@ -47,7 +53,12 @@ export const refreshRoute = apiRoute({
     )
 
     if (!alias?.player.auth?.sessionKey) {
-      return ctx.throw(401, { message: 'Invalid refresh token', errorCode: 'INVALID_SESSION' })
+      return throwPlayerAuthError({
+        ctx,
+        status: 401,
+        message: 'Invalid refresh token',
+        errorCode: 'INVALID_SESSION',
+      })
     }
 
     try {
@@ -56,7 +67,12 @@ export const refreshRoute = apiRoute({
         `${alias.player.auth.sessionKey}:refresh`,
       )
     } catch {
-      return ctx.throw(401, { message: 'Invalid refresh token', errorCode: 'INVALID_SESSION' })
+      return throwPlayerAuthError({
+        ctx,
+        status: 401,
+        message: 'Invalid refresh token',
+        errorCode: 'INVALID_SESSION',
+      })
     }
 
     const { sessionToken, refreshToken: newRefreshToken } = await alias.player.auth.createSession(

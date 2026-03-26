@@ -1,6 +1,7 @@
 import bcrypt from 'bcrypt'
 import { APIKeyScope } from '../../../entities/api-key'
 import { PlayerAuthActivityType } from '../../../entities/player-auth-activity'
+import { throwPlayerAuthError } from '../../../lib/errors/throwPlayerAuthError'
 import emailRegex from '../../../lib/lang/emailRegex'
 import { apiRoute, withMiddleware } from '../../../lib/routing/router'
 import { playerAliasHeaderSchema } from '../../../lib/validation/playerAliasHeaderSchema'
@@ -48,7 +49,9 @@ export const changeEmailRoute = apiRoute({
       })
       await em.flush()
 
-      return ctx.throw(403, {
+      return throwPlayerAuthError({
+        ctx,
+        status: 403,
         message: 'Current password is incorrect',
         errorCode: 'INVALID_CREDENTIALS',
       })
@@ -65,7 +68,9 @@ export const changeEmailRoute = apiRoute({
       })
       await em.flush()
 
-      return ctx.throw(400, {
+      return throwPlayerAuthError({
+        ctx,
+        status: 400,
         message: 'Please choose a different email address',
         errorCode: 'NEW_EMAIL_MATCHES_CURRENT_EMAIL',
       })
@@ -82,7 +87,9 @@ export const changeEmailRoute = apiRoute({
         })
         await em.flush()
 
-        return ctx.throw(400, {
+        return throwPlayerAuthError({
+          ctx,
+          status: 400,
           message: 'This email address is already in use',
           errorCode: 'EMAIL_TAKEN',
         })
@@ -97,7 +104,9 @@ export const changeEmailRoute = apiRoute({
       })
       await em.flush()
 
-      return ctx.throw(400, {
+      return throwPlayerAuthError({
+        ctx,
+        status: 400,
         message: 'Invalid email address',
         errorCode: 'INVALID_EMAIL',
       })

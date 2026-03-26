@@ -2,6 +2,7 @@ import { EntityManager, FilterQuery, Loaded } from '@mikro-orm/mysql'
 import { Context, Next } from 'koa'
 import PlayerAlias, { PlayerAliasService } from '../entities/player-alias'
 import { verify } from '../lib/auth/jwt'
+import { throwPlayerAuthError } from '../lib/errors/throwPlayerAuthError'
 import { APIRouteContext } from '../lib/routing/context'
 import { isAPIRoute } from '../lib/routing/route-info'
 
@@ -58,7 +59,9 @@ export async function playerAuthMiddleware(ctx: APIRouteContext, next: Next) {
 export async function validateAuthSessionToken(ctx: Context, alias: PlayerAliasPartial) {
   const sessionToken = ctx.headers['x-talo-session']
   if (!sessionToken) {
-    return ctx.throw(401, {
+    return throwPlayerAuthError({
+      ctx,
+      status: 401,
       message: 'The x-talo-session header is required for this player',
       errorCode: 'MISSING_SESSION',
     })
@@ -77,7 +80,9 @@ export async function validateAuthSessionToken(ctx: Context, alias: PlayerAliasP
 }
 
 export function throwInvalidSessionError(ctx: Context): never {
-  return ctx.throw(401, {
+  return throwPlayerAuthError({
+    ctx,
+    status: 401,
     message: 'The x-talo-session header is invalid',
     errorCode: 'INVALID_SESSION',
   })

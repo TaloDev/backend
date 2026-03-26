@@ -43,7 +43,7 @@
     "date-fns": "^4.1.0",
     "dinero.js": "^2.0.0",
     "dotenv": "^16.0.0",
-    "handlebars": "^4.7.7",
+    "handlebars": "^4.7.9",
     "ioredis": "^5.2.4",
     "jsonwebtoken": "^9.0.0",
     "koa": "^3.1.2",

@@ -65,6 +65,7 @@ import { AddPlayerGameStatUniqueConstraint } from './20260214224025AddPlayerGame
 import { AddGameFeedbackDeletedAtColumn } from './20260301000000AddGameFeedbackDeletedAtColumn'
 import { CreateGooglePlayGamesIntegrationEventTable } from './20260306091456CreateGooglePlayGamesIntegrationEventTable'
 import { AddLastUsageWarningThresholdColumn } from './20260327081802AddLastUsageWarningThresholdColumn'
+import { SchemaSnapshotChanges } from './20260327224537SchemaSnapshotChanges'
 
 export default [
   {
@@ -334,5 +335,9 @@ export default [
   {
     name: 'AddLastUsageWarningThresholdColumn',
     class: AddLastUsageWarningThresholdColumn,
+  },
+  {
+    name: 'SchemaSnapshotChanges',
+    class: SchemaSnapshotChanges,
   },
 ]

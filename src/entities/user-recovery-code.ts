@@ -7,7 +7,7 @@ export default class UserRecoveryCode {
   @PrimaryKey()
   id!: number
 
-  @ManyToOne(() => User)
+  @ManyToOne(() => User, { deleteRule: 'cascade' })
   user: User
 
   @Property()
@@ -20,7 +20,7 @@ export default class UserRecoveryCode {
     this.user = user
   }
 
-  generateCode(): string {
+  generateCode() {
     const characters = 'ABCDEFGHIJKMNOPQRSTUVWXYZ0123456789'
     let code = ''
 
@@ -31,7 +31,7 @@ export default class UserRecoveryCode {
     return encrypt(code, process.env.RECOVERY_CODES_SECRET!)
   }
 
-  getPlainCode(): string {
+  getPlainCode() {
     return decrypt(this.code, process.env.RECOVERY_CODES_SECRET!)
   }
 

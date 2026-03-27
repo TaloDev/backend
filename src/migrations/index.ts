@@ -66,6 +66,7 @@ import { AddGameFeedbackDeletedAtColumn } from './20260301000000AddGameFeedbackD
 import { CreateGooglePlayGamesIntegrationEventTable } from './20260306091456CreateGooglePlayGamesIntegrationEventTable'
 import { AddLastUsageWarningThresholdColumn } from './20260327081802AddLastUsageWarningThresholdColumn'
 import { SchemaSnapshotChanges } from './20260327224537SchemaSnapshotChanges'
+import { AddFailedJobFailedAtIndex } from './20260327225535AddFailedJobFailedAtIndex'
 
 export default [
   {
@@ -339,5 +340,9 @@ export default [
   {
     name: 'SchemaSnapshotChanges',
     class: SchemaSnapshotChanges,
+  },
+  {
+    name: 'AddFailedJobFailedAtIndex',
+    class: AddFailedJobFailedAtIndex,
   },
 ]

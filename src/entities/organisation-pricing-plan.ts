@@ -26,6 +26,9 @@ export default class OrganisationPricingPlan {
   @Property({ nullable: true })
   endDate: Date | null = null
 
+  @Property({ nullable: true })
+  lastUsageWarningThreshold: number | null = null
+
   @Property()
   createdAt: Date = new Date()
 

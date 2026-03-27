@@ -17,6 +17,14 @@ export class PricingPlanLimitError<T> extends Error {
   }
 }
 
+export function getUsageBucket(usagePercentage: number) {
+  if (usagePercentage >= 101) return Math.floor(usagePercentage)
+  if (usagePercentage >= 100) return 100
+  if (usagePercentage >= 90) return 90
+  if (usagePercentage >= 75) return 75
+  return null
+}
+
 export default async function checkPricingPlanPlayerLimit(
   em: EntityManager,
   organisation: Organisation,
@@ -34,9 +42,16 @@ export default async function checkPricingPlanPlayerLimit(
 
   if (playerCount > planPlayerLimit * OVERAGE_PERCENTAGE) {
     throw new PricingPlanLimitError('Limit reached', { limit: planPlayerLimit })
-  } else {
-    const usagePercentage = (playerCount / planPlayerLimit) * 100
-    if (usagePercentage == 75 || usagePercentage == 90 || usagePercentage == 100) {
+  }
+
+  const usagePercentage = (playerCount / planPlayerLimit) * 100
+  const currentBucket = getUsageBucket(usagePercentage)
+
+  if (currentBucket !== organisationPricingPlan.lastUsageWarningThreshold) {
+    organisationPricingPlan.lastUsageWarningThreshold = currentBucket
+    await em.flush()
+
+    if (currentBucket !== null) {
       await queueEmail(
         getGlobalQueue('email'),
         new PlanUsageWarning(organisation, playerCount, planPlayerLimit),

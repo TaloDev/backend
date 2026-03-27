@@ -1,4 +1,4 @@
-import { Entity, PrimaryKey, Property } from '@mikro-orm/mysql'
+import { Entity, Index, PrimaryKey, Property } from '@mikro-orm/mysql'
 
 @Entity()
 export default class FailedJob {
@@ -17,6 +17,7 @@ export default class FailedJob {
   @Property({ columnType: 'text' })
   stack!: string
 
+  @Index()
   @Property()
   failedAt: Date = new Date()
 }

@@ -8,8 +8,16 @@ import { isAPIRoute } from '../lib/routing/route-info'
 
 type PlayerAliasPartial = Loaded<PlayerAlias, 'player.auth', 'id' | 'player.auth' | 'player.id'>
 
+function isRefreshRoute(ctx: APIRouteContext) {
+  return ctx.path === '/v1/players/auth/refresh'
+}
+
 export async function playerAuthMiddleware(ctx: APIRouteContext, next: Next) {
-  if (isAPIRoute(ctx) && (ctx.state.currentPlayerId || ctx.state.currentAliasId)) {
+  if (
+    isAPIRoute(ctx) &&
+    (ctx.state.currentPlayerId || ctx.state.currentAliasId) &&
+    !isRefreshRoute(ctx)
+  ) {
     const conditions: FilterQuery<PlayerAlias>[] = [
       ctx.state.currentAliasId
         ? {

@@ -207,6 +207,42 @@ describe('Player auth API - refresh', () => {
     expect(res.body.errorCode).toBe('INVALID_SESSION')
   })
 
+  it('should succeed even when x-talo-player and x-talo-alias headers are provided', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([
+      APIKeyScope.READ_PLAYERS,
+      APIKeyScope.WRITE_PLAYERS,
+    ])
+
+    const player = await new PlayerFactory([apiKey.game])
+      .withTaloAlias()
+      .state(async () => ({
+        auth: await new PlayerAuthFactory()
+          .state(async () => ({
+            password: await bcrypt.hash('password', 10),
+            verificationEnabled: false,
+          }))
+          .one(),
+      }))
+      .one()
+    const alias = player.aliases[0]
+
+    await em.persist(player).flush()
+
+    const { refreshToken } = await player.auth!.createSession(alias, true)
+    await em.flush()
+
+    const res = await request(app)
+      .post('/v1/players/auth/refresh')
+      .send({ refreshToken })
+      .auth(token, { type: 'bearer' })
+      .set('x-talo-player', player.id)
+      .set('x-talo-alias', String(alias.id))
+      .expect(200)
+
+    expect(res.body.sessionToken).toBeTruthy()
+    expect(res.body.refreshToken).toBeTruthy()
+  })
+
   it('should not refresh without the correct api key scopes', async () => {
     const [, token] = await createAPIKeyAndToken([])
 

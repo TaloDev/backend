@@ -64,6 +64,7 @@ import { CreatePlayerAliasSubscriptionTable } from './20251222221535CreatePlayer
 import { AddPlayerGameStatUniqueConstraint } from './20260214224025AddPlayerGameStatUniqueConstraint'
 import { AddGameFeedbackDeletedAtColumn } from './20260301000000AddGameFeedbackDeletedAtColumn'
 import { CreateGooglePlayGamesIntegrationEventTable } from './20260306091456CreateGooglePlayGamesIntegrationEventTable'
+import { AddLastUsageWarningThresholdColumn } from './20260327081802AddLastUsageWarningThresholdColumn'
 
 export default [
   {
@@ -329,5 +330,9 @@ export default [
   {
     name: 'CreateGooglePlayGamesIntegrationEventTable',
     class: CreateGooglePlayGamesIntegrationEventTable,
+  },
+  {
+    name: 'AddLastUsageWarningThresholdColumn',
+    class: AddLastUsageWarningThresholdColumn,
   },
 ]

@@ -50,7 +50,7 @@ describe('Game stat API - get player stat', () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_GAME_STATS])
     const stat = await createStat(apiKey.game)
     const player = await new PlayerFactory([apiKey.game]).one()
-    await em.persistAndFlush(player)
+    await em.persist(player).flush()
 
     const res = await request(app)
       .get(`/v1/game-stats/${stat.internalName}/player-stat`)
@@ -77,7 +77,7 @@ describe('Game stat API - get player stat', () => {
   it('should return a 404 for a non-existent stat', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_GAME_STATS])
     const player = await new PlayerFactory([apiKey.game]).one()
-    await em.persistAndFlush(player)
+    await em.persist(player).flush()
 
     const res = await request(app)
       .get('/v1/game-stats/non-existent/player-stat')

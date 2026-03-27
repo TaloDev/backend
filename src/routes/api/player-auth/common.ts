@@ -1,9 +1,12 @@
+import type { EntityManager } from '@mikro-orm/mysql'
 import type { Next } from 'koa'
 import assert from 'node:assert'
 import type { APIRouteContext } from '../../../lib/routing/context'
 import APIKey from '../../../entities/api-key'
+import Game from '../../../entities/game'
 import Player from '../../../entities/player'
 import PlayerAlias from '../../../entities/player-alias'
+import PlayerAuth from '../../../entities/player-auth'
 import PlayerAuthActivity, { PlayerAuthActivityType } from '../../../entities/player-auth-activity'
 import { buildPlayerAuthActivity } from '../../../lib/logging/buildPlayerAuthActivity'
 
@@ -52,7 +55,22 @@ export function createPlayerAuthActivity(
   })
 }
 
-export function sessionBuilder(alias: PlayerAlias) {
+export function sessionBuilder(alias: PlayerAlias, withRefresh = false) {
   assert(alias.player.auth)
-  return alias.player.auth.createSession(alias)
+  return alias.player.auth.createSession(alias, withRefresh)
+}
+
+export async function isEmailTakenForGame(
+  em: EntityManager,
+  { email, game, excludePlayer }: { email: string; game: Game; excludePlayer?: Player },
+): Promise<boolean> {
+  const where: Record<string, unknown> = {
+    email,
+    player: { game },
+  }
+  if (excludePlayer) {
+    where.player = { game, id: { $ne: excludePlayer.id } }
+  }
+  const existing = await em.repo(PlayerAuth).findOne(where)
+  return existing !== null
 }

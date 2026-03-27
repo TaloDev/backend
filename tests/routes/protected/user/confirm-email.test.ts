@@ -11,7 +11,7 @@ describe('User - confirm email', () => {
     const date = new Date()
     date.setDate(date.getDate() + 1)
     const accessCode = new UserAccessCode(user, date)
-    await em.persistAndFlush(accessCode)
+    await em.persist(accessCode).flush()
 
     const res = await request(app)
       .post('/users/confirm_email')
@@ -35,7 +35,7 @@ describe('User - confirm email', () => {
     const date = new Date()
     date.setDate(date.getDate() - 1)
     const accessCode = new UserAccessCode(user, date)
-    await em.persistAndFlush(accessCode)
+    await em.persist(accessCode).flush()
 
     const res = await request(app)
       .post('/users/confirm_email')

@@ -24,7 +24,7 @@ describe('Webhook - subscription deleted', () => {
     organisation.pricingPlan.stripePriceId = price.id
 
     const defaultPlan = await new PricingPlanFactory().state(() => ({ default: true })).one()
-    await em.persistAndFlush(defaultPlan)
+    await em.persist(defaultPlan).flush()
 
     const payload = JSON.stringify(
       {

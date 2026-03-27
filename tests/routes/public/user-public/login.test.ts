@@ -13,7 +13,7 @@ describe('User public - login', () => {
         lastSeenAt: new Date(2020, 1, 1),
       }))
       .one()
-    await em.persistAndFlush(user)
+    await em.persist(user).flush()
 
     const res = await request(app)
       .post('/public/users/login')
@@ -29,7 +29,7 @@ describe('User public - login', () => {
 
   it('should not let a user login with the wrong password', async () => {
     const user = await new UserFactory().one()
-    await em.persistAndFlush(user)
+    await em.persist(user).flush()
 
     const res = await request(app)
       .post('/public/users/login')
@@ -55,7 +55,7 @@ describe('User public - login', () => {
       .loginable()
       .state(() => ({ lastSeenAt }))
       .one()
-    await em.persistAndFlush(user)
+    await em.persist(user).flush()
 
     const res = await request(app)
       .post('/public/users/login')
@@ -67,7 +67,7 @@ describe('User public - login', () => {
 
   it('should initialise the 2fa flow if it is enabled', async () => {
     const user = await new UserFactory().loginable().has2fa().one()
-    await em.persistAndFlush(user)
+    await em.persist(user).flush()
 
     const res = await request(app)
       .post('/public/users/login')

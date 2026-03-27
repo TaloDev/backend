@@ -22,7 +22,7 @@ describe('Player auth API - forgot password', () => {
     ])
 
     const player = await new PlayerFactory([apiKey.game]).withTaloAlias().one()
-    await em.persistAndFlush(player)
+    await em.persist(player).flush()
 
     await request(app)
       .post('/v1/players/auth/forgot_password')
@@ -44,7 +44,7 @@ describe('Player auth API - forgot password', () => {
     const [apiKey, token] = await createAPIKeyAndToken([])
 
     const player = await new PlayerFactory([apiKey.game]).withTaloAlias().one()
-    await em.persistAndFlush(player)
+    await em.persist(player).flush()
 
     await request(app)
       .post('/v1/players/auth/forgot_password')
@@ -63,7 +63,7 @@ describe('Player auth API - forgot password', () => {
     ])
 
     const player = await new PlayerFactory([apiKey.game]).withTaloAlias().one()
-    await em.persistAndFlush(player)
+    await em.persist(player).flush()
 
     await request(app)
       .post('/v1/players/auth/forgot_password')
@@ -87,7 +87,7 @@ describe('Player auth API - forgot password', () => {
 
     const player = await new PlayerFactory([apiKey.game]).withTaloAlias().one()
     const otherPlayer = await new PlayerFactory([otherKey.game]).withTaloAlias().one()
-    await em.persistAndFlush([player, otherPlayer])
+    await em.persist([player, otherPlayer]).flush()
 
     await request(app)
       .post('/v1/players/auth/forgot_password')

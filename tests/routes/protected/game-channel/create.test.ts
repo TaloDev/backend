@@ -53,7 +53,7 @@ describe('Game channel - create', () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({}, organisation)
     const player = await new PlayerFactory([game]).one()
-    await em.persistAndFlush(player)
+    await em.persist(player).flush()
 
     const res = await request(app)
       .post(`/games/${game.id}/game-channels`)

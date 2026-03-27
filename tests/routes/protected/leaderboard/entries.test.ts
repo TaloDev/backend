@@ -19,7 +19,7 @@ describe('Leaderboard - entries', () => {
     em.persist(players)
 
     const leaderboard = await new LeaderboardFactory([game]).withEntries().one()
-    await em.persistAndFlush(leaderboard)
+    await em.persist(leaderboard).flush()
 
     const res = await request(app)
       .get(`/games/${game.id}/leaderboards/${leaderboard.id}/entries`)
@@ -49,7 +49,7 @@ describe('Leaderboard - entries', () => {
     const [token] = await createUserAndToken()
 
     const leaderboard = await new LeaderboardFactory([game]).withEntries().one()
-    await em.persistAndFlush(leaderboard)
+    await em.persist(leaderboard).flush()
 
     await request(app)
       .get(`/games/${game.id}/leaderboards/${leaderboard.id}/entries`)
@@ -69,7 +69,7 @@ describe('Leaderboard - entries', () => {
     const entries = await new LeaderboardEntryFactory(leaderboard, game.players.getItems()).many(
       106,
     )
-    await em.persistAndFlush([leaderboard, ...entries])
+    await em.persist([leaderboard, ...entries]).flush()
 
     for (let i = 0; i < 3; i++) {
       const res = await request(app)
@@ -90,7 +90,7 @@ describe('Leaderboard - entries', () => {
     const [token] = await createUserAndToken({}, organisation)
 
     const leaderboard = await new LeaderboardFactory([game]).withEntries().devBuildPlayers().one()
-    await em.persistAndFlush(leaderboard)
+    await em.persist(leaderboard).flush()
 
     const res = await request(app)
       .get(`/games/${game.id}/leaderboards/${leaderboard.id}/entries`)
@@ -106,7 +106,7 @@ describe('Leaderboard - entries', () => {
     const [token] = await createUserAndToken({}, organisation)
 
     const leaderboard = await new LeaderboardFactory([game]).withEntries().devBuildPlayers().one()
-    await em.persistAndFlush(leaderboard)
+    await em.persist(leaderboard).flush()
 
     const res = await request(app)
       .get(`/games/${game.id}/leaderboards/${leaderboard.id}/entries`)
@@ -128,7 +128,7 @@ describe('Leaderboard - entries', () => {
 
     entries[0].deletedAt = new Date()
     entries[1].deletedAt = new Date()
-    await em.persistAndFlush(entries)
+    await em.persist(entries).flush()
 
     const resWithDeleted = await request(app)
       .get(`/games/${game.id}/leaderboards/${leaderboard.id}/entries`)
@@ -159,7 +159,7 @@ describe('Leaderboard - entries', () => {
 
     const otherEntry = await new LeaderboardEntryFactory(leaderboard, players).one()
 
-    await em.persistAndFlush([leaderboard, entry, otherEntry])
+    await em.persist([leaderboard, entry, otherEntry]).flush()
 
     const res = await request(app)
       .get(`/games/${game.id}/leaderboards/${leaderboard.id}/entries`)
@@ -196,7 +196,7 @@ describe('Leaderboard - entries', () => {
 
     const irrelevantEntry = await new LeaderboardEntryFactory(leaderboard, players).one()
 
-    await em.persistAndFlush([leaderboard, entry, otherEntry, irrelevantEntry])
+    await em.persist([leaderboard, entry, otherEntry, irrelevantEntry]).flush()
 
     const res = await request(app)
       .get(`/games/${game.id}/leaderboards/${leaderboard.id}/entries`)
@@ -230,7 +230,7 @@ describe('Leaderboard - entries', () => {
 
     entries[0].deletedAt = new Date()
     entries[1].deletedAt = new Date()
-    await em.persistAndFlush([...entries, hiddenEntry])
+    await em.persist([...entries, hiddenEntry]).flush()
 
     const res = await request(app)
       .get(`/games/${game.id}/leaderboards/${leaderboard.id}/entries`)
@@ -266,7 +266,7 @@ describe('Leaderboard - entries', () => {
       }))
       .one()
 
-    await em.persistAndFlush([leaderboard, oldEntry, recentEntry])
+    await em.persist([leaderboard, oldEntry, recentEntry]).flush()
 
     const res = await request(app)
       .get(`/games/${game.id}/leaderboards/${leaderboard.id}/entries`)
@@ -310,7 +310,7 @@ describe('Leaderboard - entries', () => {
       }))
       .one()
 
-    await em.persistAndFlush([leaderboard, oldEntry, recentEntry, futureEntry])
+    await em.persist([leaderboard, oldEntry, recentEntry, futureEntry]).flush()
 
     const res = await request(app)
       .get(`/games/${game.id}/leaderboards/${leaderboard.id}/entries`)
@@ -364,7 +364,7 @@ describe('Leaderboard - entries', () => {
       }))
       .one()
 
-    await em.persistAndFlush([leaderboard, veryOldEntry, oldEntry, recentEntry, futureEntry])
+    await em.persist([leaderboard, veryOldEntry, oldEntry, recentEntry, futureEntry]).flush()
 
     const res = await request(app)
       .get(`/games/${game.id}/leaderboards/${leaderboard.id}/entries`)

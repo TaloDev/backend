@@ -121,7 +121,7 @@ describe('Billing - create checkout session', () => {
     const games = await orgPlan.organisation.games.loadItems()
     const players = await new PlayerFactory(games).many(10)
 
-    await em.persistAndFlush([organisation, ...players])
+    await em.persist([organisation, ...players]).flush()
 
     const res = await request(app)
       .post('/billing/checkout-session')

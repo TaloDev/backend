@@ -10,7 +10,7 @@ describe('Player presence API - update', () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_PLAYER_PRESENCE])
 
     const player = await new PlayerFactory([apiKey.game]).one()
-    await em.persistAndFlush(player)
+    await em.persist(player).flush()
 
     const res = await request(app)
       .put('/v1/players/presence')
@@ -27,7 +27,7 @@ describe('Player presence API - update', () => {
     const [apiKey, token] = await createAPIKeyAndToken([])
 
     const player = await new PlayerFactory([apiKey.game]).one()
-    await em.persistAndFlush(player)
+    await em.persist(player).flush()
 
     await request(app)
       .put('/v1/players/presence')
@@ -59,7 +59,7 @@ describe('Player presence API - update', () => {
       APIKeyScope.WRITE_PLAYER_PRESENCE,
     ])
 
-    await em.persistAndFlush(player)
+    await em.persist(player).flush()
 
     await createTestSocket(`/?ticket=${ticket}`, async (client) => {
       await client.identify(identifyMessage)
@@ -85,7 +85,7 @@ describe('Player presence API - update', () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_PLAYER_PRESENCE])
 
     const player = await new PlayerFactory([apiKey.game]).one()
-    await em.persistAndFlush(player)
+    await em.persist(player).flush()
 
     await request(app)
       .put('/v1/players/presence')

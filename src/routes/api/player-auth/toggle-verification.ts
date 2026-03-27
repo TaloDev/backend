@@ -1,13 +1,14 @@
 import bcrypt from 'bcrypt'
 import { APIKeyScope } from '../../../entities/api-key'
 import { PlayerAuthActivityType } from '../../../entities/player-auth-activity'
+import { throwPlayerAuthError } from '../../../lib/errors/throwPlayerAuthError'
 import emailRegex from '../../../lib/lang/emailRegex'
 import { apiRoute, withMiddleware } from '../../../lib/routing/router'
 import { playerAliasHeaderSchema } from '../../../lib/validation/playerAliasHeaderSchema'
 import { playerHeaderSchema } from '../../../lib/validation/playerHeaderSchema'
 import { sessionHeaderSchema } from '../../../lib/validation/sessionHeaderSchema'
 import { requireScopes } from '../../../middleware/policy-middleware'
-import { createPlayerAuthActivity, loadAliasWithAuth } from './common'
+import { createPlayerAuthActivity, isEmailTakenForGame, loadAliasWithAuth } from './common'
 import { toggleVerificationDocs } from './docs'
 
 export const toggleVerificationRoute = apiRoute({
@@ -54,7 +55,9 @@ export const toggleVerificationRoute = apiRoute({
       })
       await em.flush()
 
-      return ctx.throw(400, {
+      return throwPlayerAuthError({
+        ctx,
+        status: 400,
         message: 'An email address is required to enable verification',
         errorCode: 'VERIFICATION_EMAIL_REQUIRED',
       })
@@ -71,7 +74,9 @@ export const toggleVerificationRoute = apiRoute({
       })
       await em.flush()
 
-      return ctx.throw(403, {
+      return throwPlayerAuthError({
+        ctx,
+        status: 403,
         message: 'Current password is incorrect',
         errorCode: 'INVALID_CREDENTIALS',
       })
@@ -81,6 +86,29 @@ export const toggleVerificationRoute = apiRoute({
     if (email?.trim()) {
       const sanitisedEmail = email.trim().toLowerCase()
       if (emailRegex.test(sanitisedEmail)) {
+        if (
+          await isEmailTakenForGame(em, {
+            email: sanitisedEmail,
+            game: ctx.state.game,
+            excludePlayer: alias.player,
+          })
+        ) {
+          createPlayerAuthActivity(ctx, alias.player, {
+            type: PlayerAuthActivityType.TOGGLE_VERIFICATION_FAILED,
+            extra: {
+              errorCode: 'EMAIL_TAKEN',
+              verificationEnabled: Boolean(verificationEnabled),
+            },
+          })
+          await em.flush()
+
+          return throwPlayerAuthError({
+            ctx,
+            status: 400,
+            message: 'This email address is already in use',
+            errorCode: 'EMAIL_TAKEN',
+          })
+        }
         alias.player.auth.email = sanitisedEmail
       } else {
         createPlayerAuthActivity(ctx, alias.player, {
@@ -92,7 +120,9 @@ export const toggleVerificationRoute = apiRoute({
         })
         await em.flush()
 
-        return ctx.throw(400, {
+        return throwPlayerAuthError({
+          ctx,
+          status: 400,
           message: 'Invalid email address',
           errorCode: 'INVALID_EMAIL',
         })

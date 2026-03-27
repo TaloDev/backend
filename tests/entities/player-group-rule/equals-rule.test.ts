@@ -22,7 +22,7 @@ describe('EQUALS rule', () => {
       .state(() => ({ lastSeenAt: new Date(2022, 4, 3) }))
       .one()
     const player2 = await new PlayerFactory([game]).one()
-    await em.persistAndFlush([player1, player2])
+    await em.persist([player1, player2]).flush()
 
     const rules: Partial<PlayerGroupRule>[] = [
       {
@@ -51,7 +51,7 @@ describe('EQUALS rule', () => {
       .state(() => ({ lastSeenAt: new Date(2022, 4, 3) }))
       .one()
     const player2 = await new PlayerFactory([game]).one()
-    await em.persistAndFlush([player1, player2])
+    await em.persist([player1, player2]).flush()
 
     const rules: Partial<PlayerGroupRule>[] = [
       {
@@ -82,7 +82,7 @@ describe('EQUALS rule', () => {
       }))
       .one()
     const player2 = await new PlayerFactory([game]).one()
-    await em.persistAndFlush([player1, player2])
+    await em.persist([player1, player2]).flush()
 
     const rules: Partial<PlayerGroupRule>[] = [
       {
@@ -113,7 +113,7 @@ describe('EQUALS rule', () => {
       }))
       .one()
     const player2 = await new PlayerFactory([game]).one()
-    await em.persistAndFlush([player1, player2])
+    await em.persist([player1, player2]).flush()
 
     const rules: Partial<PlayerGroupRule>[] = [
       {
@@ -148,7 +148,7 @@ describe('EQUALS rule', () => {
       .construct(player1, stat)
       .state(() => ({ value: 60 }))
       .one()
-    await em.persistAndFlush([player1, player2, playerStat])
+    await em.persist([player1, player2, playerStat]).flush()
 
     const rules: Partial<PlayerGroupRule>[] = [
       {
@@ -183,7 +183,7 @@ describe('EQUALS rule', () => {
       .construct(player1, stat)
       .state(() => ({ value: 60 }))
       .one()
-    await em.persistAndFlush([player1, player2, playerStat])
+    await em.persist([player1, player2, playerStat]).flush()
 
     const rules: Partial<PlayerGroupRule>[] = [
       {
@@ -215,7 +215,7 @@ describe('EQUALS rule', () => {
     const leaderboardEntry = await new LeaderboardEntryFactory(leaderboard, [player1])
       .state(() => ({ score: 60 }))
       .one()
-    await em.persistAndFlush([player1, player2, leaderboardEntry])
+    await em.persist([player1, player2, leaderboardEntry]).flush()
 
     const rules: Partial<PlayerGroupRule>[] = [
       {
@@ -247,7 +247,7 @@ describe('EQUALS rule', () => {
     const leaderboardEntry = await new LeaderboardEntryFactory(leaderboard, [player1])
       .state(() => ({ score: 60 }))
       .one()
-    await em.persistAndFlush([player1, player2, leaderboardEntry])
+    await em.persist([player1, player2, leaderboardEntry]).flush()
 
     const rules: Partial<PlayerGroupRule>[] = [
       {
@@ -279,7 +279,7 @@ describe('EQUALS rule', () => {
     const leaderboardEntry = await new LeaderboardEntryFactory(leaderboard, [player1])
       .state(() => ({ score: 60, hidden: true }))
       .one()
-    await em.persistAndFlush([player1, player2, leaderboardEntry])
+    await em.persist([player1, player2, leaderboardEntry]).flush()
 
     const rules: Partial<PlayerGroupRule>[] = [
       {

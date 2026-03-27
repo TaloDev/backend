@@ -18,7 +18,7 @@ describe('Leaderboard - update entry', () => {
       const leaderboard = await new LeaderboardFactory([game]).one()
       const players = await new PlayerFactory([game]).many(10)
       const entry = await new LeaderboardEntryFactory(leaderboard, players).one()
-      await em.persistAndFlush(entry)
+      await em.persist(entry).flush()
 
       const res = await request(app)
         .patch(`/games/${game.id}/leaderboards/${leaderboard.id}/entries/${entry.id}`)
@@ -54,7 +54,7 @@ describe('Leaderboard - update entry', () => {
     const leaderboard = await new LeaderboardFactory([game]).one()
     const players = await new PlayerFactory([game]).many(10)
     const entry = await new LeaderboardEntryFactory(leaderboard, players).hidden().one()
-    await em.persistAndFlush(entry)
+    await em.persist(entry).flush()
 
     const res = await request(app)
       .patch(`/games/${game.id}/leaderboards/${leaderboard.id}/entries/${entry.id}`)
@@ -86,7 +86,7 @@ describe('Leaderboard - update entry', () => {
     const leaderboard = await new LeaderboardFactory([game]).one()
     const players = await new PlayerFactory([game]).many(10)
     const entry = await new LeaderboardEntryFactory(leaderboard, players).hidden().one()
-    await em.persistAndFlush(entry)
+    await em.persist(entry).flush()
 
     const res = await request(app)
       .patch(`/games/${game.id}/leaderboards/${leaderboard.id}/entries/${entry.id}`)
@@ -116,7 +116,7 @@ describe('Leaderboard - update entry', () => {
     const [token] = await createUserAndToken({ type: UserType.ADMIN }, organisation)
 
     const leaderboard = await new LeaderboardFactory([game]).one()
-    await em.persistAndFlush(leaderboard)
+    await em.persist(leaderboard).flush()
 
     const res = await request(app)
       .patch(`/games/${game.id}/leaderboards/${leaderboard.id}/entries/12312321`)
@@ -136,7 +136,7 @@ describe('Leaderboard - update entry', () => {
     const entry = await new LeaderboardEntryFactory(leaderboard, players)
       .state(() => ({ score: 100 }))
       .one()
-    await em.persistAndFlush(entry)
+    await em.persist(entry).flush()
 
     const res = await request(app)
       .patch(`/games/${game.id}/leaderboards/${leaderboard.id}/entries/${entry.id}`)

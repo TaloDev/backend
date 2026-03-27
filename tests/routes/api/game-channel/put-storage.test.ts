@@ -60,7 +60,7 @@ describe('Game channel API - update storage', () => {
       }))
       .one()
 
-    await em.persistAndFlush([channel, existingProp])
+    await em.persist([channel, existingProp]).flush()
 
     const res = await request(app)
       .put(`/v1/game-channels/${channel.id}/storage`)
@@ -96,7 +96,7 @@ describe('Game channel API - update storage', () => {
       }))
       .one()
 
-    await em.persistAndFlush([channel, existingProp])
+    await em.persist([channel, existingProp]).flush()
 
     const res = await request(app)
       .put(`/v1/game-channels/${channel.id}/storage`)
@@ -124,7 +124,7 @@ describe('Game channel API - update storage', () => {
     const channel = await new GameChannelFactory(apiKey.game).one()
     const player = await new PlayerFactory([apiKey.game]).one()
     channel.members.add(player.aliases[0])
-    await em.persistAndFlush(channel)
+    await em.persist(channel).flush()
 
     const res = await request(app)
       .put(`/v1/game-channels/${channel.id}/storage`)
@@ -150,7 +150,7 @@ describe('Game channel API - update storage', () => {
     const channel = await new GameChannelFactory(apiKey.game).one()
     const player = await new PlayerFactory([apiKey.game]).one()
     channel.members.add(player.aliases[0])
-    await em.persistAndFlush(channel)
+    await em.persist(channel).flush()
 
     const res = await request(app)
       .put(`/v1/game-channels/${channel.id}/storage`)
@@ -176,7 +176,7 @@ describe('Game channel API - update storage', () => {
     const channel = await new GameChannelFactory(apiKey.game).one()
     const player = await new PlayerFactory([apiKey.game]).one()
     channel.members.add(player.aliases[0])
-    await em.persistAndFlush(channel)
+    await em.persist(channel).flush()
 
     const res = await request(app)
       .put(`/v1/game-channels/${channel.id}/storage`)
@@ -198,7 +198,7 @@ describe('Game channel API - update storage', () => {
     const channel = await new GameChannelFactory(apiKey.game).one()
     const player = await new PlayerFactory([apiKey.game]).one()
     channel.members.add(player.aliases[0])
-    await em.persistAndFlush(channel)
+    await em.persist(channel).flush()
 
     await request(app)
       .put(`/v1/game-channels/${channel.id}/storage`)
@@ -219,7 +219,7 @@ describe('Game channel API - update storage', () => {
 
     const channel = await new GameChannelFactory(apiKey.game).one()
     const player = await new PlayerFactory([apiKey.game]).one()
-    await em.persistAndFlush([channel, player])
+    await em.persist([channel, player]).flush()
 
     const res = await request(app)
       .put(`/v1/game-channels/${channel.id}/storage`)
@@ -242,7 +242,7 @@ describe('Game channel API - update storage', () => {
 
     const channel = await new GameChannelFactory(player.game).one()
     channel.members.add(player.aliases[0])
-    await em.persistAndFlush(channel)
+    await em.persist(channel).flush()
 
     await createTestSocket(`/?ticket=${ticket}`, async (client) => {
       await client.identify(identifyMessage)
@@ -269,7 +269,7 @@ describe('Game channel API - update storage', () => {
     const channel = await new GameChannelFactory(apiKey.game).one()
     const player = await new PlayerFactory([apiKey.game]).one()
     channel.members.add(player.aliases[0])
-    await em.persistAndFlush(channel)
+    await em.persist(channel).flush()
 
     await request(app)
       .put(`/v1/game-channels/${channel.id}/storage`)
@@ -284,7 +284,7 @@ describe('Game channel API - update storage', () => {
   it('should return a 404 if the channel does not exist', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_CHANNELS])
     const player = await new PlayerFactory([apiKey.game]).one()
-    await em.persistAndFlush(player)
+    await em.persist(player).flush()
 
     const res = await request(app)
       .put('/v1/game-channels/999999/storage')
@@ -301,7 +301,7 @@ describe('Game channel API - update storage', () => {
   it('should return a 404 if the player does not exist', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_CHANNELS])
     const channel = await new GameChannelFactory(apiKey.game).one()
-    await em.persistAndFlush(channel)
+    await em.persist(channel).flush()
 
     const res = await request(app)
       .put(`/v1/game-channels/${channel.id}/storage`)
@@ -320,7 +320,7 @@ describe('Game channel API - update storage', () => {
     const channel = await new GameChannelFactory(apiKey.game).one()
     const player = await new PlayerFactory([apiKey.game]).one()
     channel.members.add(player.aliases[0])
-    await em.persistAndFlush(channel)
+    await em.persist(channel).flush()
 
     const res = await request(app)
       .put(`/v1/game-channels/${channel.id}/storage`)
@@ -352,7 +352,7 @@ describe('Game channel API - update storage', () => {
       }))
       .one()
 
-    await em.persistAndFlush([channel, existingProp])
+    await em.persist([channel, existingProp]).flush()
 
     const res = await request(app)
       .put(`/v1/game-channels/${channel.id}/storage`)

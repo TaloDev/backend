@@ -5,6 +5,7 @@ import { PlayerAliasService } from '../../../entities/player-alias'
 import PlayerAuth from '../../../entities/player-auth'
 import { PlayerAuthActivityType } from '../../../entities/player-auth-activity'
 import { PricingPlanLimitError } from '../../../lib/billing/checkPricingPlanPlayerLimit'
+import { throwPlayerAuthError } from '../../../lib/errors/throwPlayerAuthError'
 import emailRegex from '../../../lib/lang/emailRegex'
 import {
   createPlayerFromIdentifyRequest,
@@ -12,7 +13,7 @@ import {
 } from '../../../lib/players/createPlayer'
 import { apiRoute, withMiddleware } from '../../../lib/routing/router'
 import { requireScopes } from '../../../middleware/policy-middleware'
-import { createPlayerAuthActivity } from './common'
+import { createPlayerAuthActivity, isEmailTakenForGame } from './common'
 import { registerDocs } from './docs'
 
 export const registerRoute = apiRoute({
@@ -35,6 +36,10 @@ export const registerRoute = apiRoute({
           description:
             'Required when verification is enabled. This is also used for password resets: players without an email cannot reset their password',
         }),
+        withRefresh: z.boolean().optional().meta({
+          description:
+            'When true, the response will include a refreshToken alongside a short-lived sessionToken',
+        }),
       })
       .refine((data) => !data.verificationEnabled || data.email, {
         message: 'email is required when verificationEnabled is true',
@@ -43,7 +48,8 @@ export const registerRoute = apiRoute({
   }),
   middleware: withMiddleware(requireScopes([APIKeyScope.READ_PLAYERS, APIKeyScope.WRITE_PLAYERS])),
   handler: async (ctx) => {
-    const { identifier, password, email, verificationEnabled } = ctx.state.validated.body
+    const { identifier, password, email, verificationEnabled, withRefresh } =
+      ctx.state.validated.body
     const em = ctx.em
 
     const key = ctx.state.key
@@ -78,9 +84,19 @@ export const registerRoute = apiRoute({
     if (email?.trim()) {
       const sanitisedEmail = email.trim().toLowerCase()
       if (emailRegex.test(sanitisedEmail)) {
+        if (await isEmailTakenForGame(em, { email: sanitisedEmail, game: key.game })) {
+          return throwPlayerAuthError({
+            ctx,
+            status: 400,
+            message: 'This email address is already in use',
+            errorCode: 'EMAIL_TAKEN',
+          })
+        }
         alias.player.auth.email = sanitisedEmail
       } else {
-        return ctx.throw(400, {
+        return throwPlayerAuthError({
+          ctx,
+          status: 400,
           message: 'Invalid email address',
           errorCode: 'INVALID_EMAIL',
         })
@@ -92,7 +108,7 @@ export const registerRoute = apiRoute({
     alias.player.auth.verificationEnabled = Boolean(verificationEnabled)
     em.persist(alias.player.auth)
 
-    const sessionToken = await alias.player.auth.createSession(alias)
+    const { sessionToken, refreshToken } = await alias.player.auth.createSession(alias, withRefresh)
     const socketToken = await alias.createSocketToken(ctx.redis)
 
     createPlayerAuthActivity(ctx, alias.player, {
@@ -109,6 +125,7 @@ export const registerRoute = apiRoute({
       body: {
         alias,
         sessionToken,
+        refreshToken,
         socketToken,
       },
     }

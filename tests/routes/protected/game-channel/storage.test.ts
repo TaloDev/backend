@@ -21,7 +21,7 @@ describe('Game channel - storage', () => {
       .one()
 
     const storageProps = await new GameChannelStoragePropFactory(channel).many(5)
-    await em.persistAndFlush([channel, ...storageProps])
+    await em.persist([channel, ...storageProps]).flush()
 
     const res = await request(app)
       .get(`/games/${game.id}/game-channels/${channel.id}/storage`)
@@ -62,7 +62,7 @@ describe('Game channel - storage', () => {
       }))
       .one()
 
-    await em.persistAndFlush(channel)
+    await em.persist(channel).flush()
 
     await request(app)
       .get(`/games/${game.id}/game-channels/${channel.id}/storage`)
@@ -86,7 +86,7 @@ describe('Game channel - storage', () => {
 
     const count = 82
     const storageProps = await new GameChannelStoragePropFactory(channel).many(count)
-    await em.persistAndFlush([channel, ...storageProps])
+    await em.persist([channel, ...storageProps]).flush()
 
     const page = Math.floor(count / 50)
 
@@ -127,7 +127,7 @@ describe('Game channel - storage', () => {
       }))
       .many(2)
 
-    await em.persistAndFlush([channel, ...matchingProps, ...nonMatchingProps])
+    await em.persist([channel, ...matchingProps, ...nonMatchingProps]).flush()
 
     const res = await request(app)
       .get(`/games/${game.id}/game-channels/${channel.id}/storage`)
@@ -163,7 +163,7 @@ describe('Game channel - storage', () => {
       }))
       .many(3)
 
-    await em.persistAndFlush([channel, ...matchingProps, ...nonMatchingProps])
+    await em.persist([channel, ...matchingProps, ...nonMatchingProps]).flush()
 
     const res = await request(app)
       .get(`/games/${game.id}/game-channels/${channel.id}/storage`)
@@ -211,7 +211,7 @@ describe('Game channel - storage', () => {
       }))
       .many(2)
 
-    await em.persistAndFlush([channel, ...propsCreatedByAdmin, ...propsCreatedByOther])
+    await em.persist([channel, ...propsCreatedByAdmin, ...propsCreatedByOther]).flush()
 
     const res = await request(app)
       .get(`/games/${game.id}/game-channels/${channel.id}/storage`)
@@ -259,7 +259,7 @@ describe('Game channel - storage', () => {
       }))
       .many(2)
 
-    await em.persistAndFlush([channel, ...propsUpdatedByEditor, ...propsUpdatedByCreator])
+    await em.persist([channel, ...propsUpdatedByEditor, ...propsUpdatedByCreator]).flush()
 
     const res = await request(app)
       .get(`/games/${game.id}/game-channels/${channel.id}/storage`)

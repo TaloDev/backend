@@ -1,13 +1,14 @@
 import bcrypt from 'bcrypt'
 import { APIKeyScope } from '../../../entities/api-key'
 import { PlayerAuthActivityType } from '../../../entities/player-auth-activity'
+import { throwPlayerAuthError } from '../../../lib/errors/throwPlayerAuthError'
 import emailRegex from '../../../lib/lang/emailRegex'
 import { apiRoute, withMiddleware } from '../../../lib/routing/router'
 import { playerAliasHeaderSchema } from '../../../lib/validation/playerAliasHeaderSchema'
 import { playerHeaderSchema } from '../../../lib/validation/playerHeaderSchema'
 import { sessionHeaderSchema } from '../../../lib/validation/sessionHeaderSchema'
 import { requireScopes } from '../../../middleware/policy-middleware'
-import { createPlayerAuthActivity, loadAliasWithAuth } from './common'
+import { createPlayerAuthActivity, isEmailTakenForGame, loadAliasWithAuth } from './common'
 import { changeEmailDocs } from './docs'
 
 export const changeEmailRoute = apiRoute({
@@ -48,7 +49,9 @@ export const changeEmailRoute = apiRoute({
       })
       await em.flush()
 
-      return ctx.throw(403, {
+      return throwPlayerAuthError({
+        ctx,
+        status: 403,
         message: 'Current password is incorrect',
         errorCode: 'INVALID_CREDENTIALS',
       })
@@ -65,7 +68,9 @@ export const changeEmailRoute = apiRoute({
       })
       await em.flush()
 
-      return ctx.throw(400, {
+      return throwPlayerAuthError({
+        ctx,
+        status: 400,
         message: 'Please choose a different email address',
         errorCode: 'NEW_EMAIL_MATCHES_CURRENT_EMAIL',
       })
@@ -73,6 +78,22 @@ export const changeEmailRoute = apiRoute({
 
     const oldEmail = alias.player.auth.email
     if (emailRegex.test(sanitisedEmail)) {
+      if (await isEmailTakenForGame(em, { email: sanitisedEmail, game: ctx.state.game })) {
+        createPlayerAuthActivity(ctx, alias.player, {
+          type: PlayerAuthActivityType.CHANGE_EMAIL_FAILED,
+          extra: {
+            errorCode: 'EMAIL_TAKEN',
+          },
+        })
+        await em.flush()
+
+        return throwPlayerAuthError({
+          ctx,
+          status: 400,
+          message: 'This email address is already in use',
+          errorCode: 'EMAIL_TAKEN',
+        })
+      }
       alias.player.auth.email = sanitisedEmail
     } else {
       createPlayerAuthActivity(ctx, alias.player, {
@@ -83,7 +104,9 @@ export const changeEmailRoute = apiRoute({
       })
       await em.flush()
 
-      return ctx.throw(400, {
+      return throwPlayerAuthError({
+        ctx,
+        status: 400,
         message: 'Invalid email address',
         errorCode: 'INVALID_EMAIL',
       })

@@ -13,7 +13,7 @@ describe('Game channel API - join', () => {
 
     const channel = await new GameChannelFactory(apiKey.game).one()
     const player = await new PlayerFactory([apiKey.game]).one()
-    await em.persistAndFlush([channel, player])
+    await em.persist([channel, player]).flush()
 
     const res = await request(app)
       .post(`/v1/game-channels/${channel.id}/join`)
@@ -30,7 +30,7 @@ describe('Game channel API - join', () => {
 
     const channel = await new GameChannelFactory(apiKey.game).one()
     const player = await new PlayerFactory([apiKey.game]).one()
-    await em.persistAndFlush([channel, player])
+    await em.persist([channel, player]).flush()
 
     await request(app)
       .post(`/v1/game-channels/${channel.id}/join`)
@@ -45,7 +45,7 @@ describe('Game channel API - join', () => {
     const channel = await new GameChannelFactory(apiKey.game).one()
     const player = await new PlayerFactory([apiKey.game]).one()
     channel.members.add(player.aliases[0])
-    await em.persistAndFlush(channel)
+    await em.persist(channel).flush()
 
     const res = await request(app)
       .post(`/v1/game-channels/${channel.id}/join`)
@@ -61,7 +61,7 @@ describe('Game channel API - join', () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_CHANNELS])
 
     const channel = await new GameChannelFactory(apiKey.game).one()
-    await em.persistAndFlush(channel)
+    await em.persist(channel).flush()
 
     const res = await request(app)
       .post(`/v1/game-channels/${channel.id}/join`)
@@ -100,7 +100,7 @@ describe('Game channel API - join', () => {
     ])
 
     const channel = await new GameChannelFactory(player.game).one()
-    await em.persistAndFlush([channel, player])
+    await em.persist([channel, player]).flush()
 
     await createTestSocket(`/?ticket=${ticket}`, async (client) => {
       await client.identify(identifyMessage)
@@ -123,7 +123,7 @@ describe('Game channel API - join', () => {
     const channel = await new GameChannelFactory(apiKey.game).one()
     channel.private = true
     const player = await new PlayerFactory([apiKey.game]).one()
-    await em.persistAndFlush([channel, player])
+    await em.persist([channel, player]).flush()
 
     const res = await request(app)
       .post(`/v1/game-channels/${channel.id}/join`)

@@ -41,7 +41,7 @@ describe('Game stat API - steamworks update', () => {
     const integration = await new IntegrationFactory()
       .construct(IntegrationType.STEAMWORKS, apiKey.game, config)
       .one()
-    await em.persistAndFlush([integration, stat, player])
+    await em.persist([integration, stat, player]).flush()
 
     await request(app)
       .put(`/v1/game-stats/${stat.internalName}`)
@@ -84,7 +84,7 @@ describe('Game stat API - steamworks update', () => {
     const integration = await new IntegrationFactory()
       .construct(IntegrationType.STEAMWORKS, apiKey.game, config)
       .one()
-    await em.persistAndFlush([integration, stat, player])
+    await em.persist([integration, stat, player]).flush()
 
     await request(app)
       .put(`/v1/game-stats/${stat.internalName}`)

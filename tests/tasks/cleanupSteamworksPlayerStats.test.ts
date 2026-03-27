@@ -59,7 +59,7 @@ describe('cleanupSteamworksPlayerStats', () => {
     playerStats[0].playerStat = null
     playerStats[1].playerStat = null
     playerStats[2].playerStat = null
-    await em.persistAndFlush([integration, ...playerStats])
+    await em.persist([integration, ...playerStats]).flush()
 
     await cleanupSteamworksPlayerStats()
 
@@ -95,7 +95,7 @@ describe('cleanupSteamworksPlayerStats', () => {
       })
     })
 
-    await em.persistAndFlush([integration, ...playerStats])
+    await em.persist([integration, ...playerStats]).flush()
 
     await cleanupSteamworksPlayerStats()
     expect(consoleSpy).toHaveBeenCalled()
@@ -123,7 +123,7 @@ describe('cleanupSteamworksPlayerStats', () => {
       })
     })
 
-    await em.persistAndFlush(playerStats)
+    await em.persist(playerStats).flush()
 
     await cleanupSteamworksPlayerStats()
 
@@ -152,7 +152,7 @@ describe('cleanupSteamworksPlayerStats', () => {
       steamUserId: player.aliases[0].identifier,
     })
 
-    await em.persistAndFlush([integration, playerStat])
+    await em.persist([integration, playerStat]).flush()
 
     await cleanupSteamworksPlayerStats()
 
@@ -190,7 +190,7 @@ describe('cleanupSteamworksPlayerStats', () => {
     playerStats[0].playerStat = null
     playerStats[1].playerStat = null
 
-    await em.persistAndFlush([integration, ...playerStats])
+    await em.persist([integration, ...playerStats]).flush()
 
     await cleanupSteamworksPlayerStats()
 

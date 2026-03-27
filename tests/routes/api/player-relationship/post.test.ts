@@ -32,7 +32,7 @@ describe('Player relationship API - create', () => {
     const [apiKey, token] = await createAPIKeyAndToken([])
     const player1 = await new PlayerFactory([apiKey.game]).one()
     const player2 = await new PlayerFactory([apiKey.game]).one()
-    await em.persistAndFlush([player1, player2])
+    await em.persist([player1, player2]).flush()
 
     await request(app)
       .post('/v1/players/relationships')

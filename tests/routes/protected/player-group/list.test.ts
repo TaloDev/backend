@@ -10,7 +10,7 @@ describe('Player group - list', () => {
     const [token] = await createUserAndToken({}, organisation)
 
     const groups = await new PlayerGroupFactory().construct(game).many(3)
-    await em.persistAndFlush(groups)
+    await em.persist(groups).flush()
 
     const res = await request(app)
       .get(`/games/${game.id}/player-groups`)

@@ -2,13 +2,22 @@ import { EntityManager, FilterQuery, Loaded } from '@mikro-orm/mysql'
 import { Context, Next } from 'koa'
 import PlayerAlias, { PlayerAliasService } from '../entities/player-alias'
 import { verify } from '../lib/auth/jwt'
+import { throwPlayerAuthError } from '../lib/errors/throwPlayerAuthError'
 import { APIRouteContext } from '../lib/routing/context'
 import { isAPIRoute } from '../lib/routing/route-info'
 
 type PlayerAliasPartial = Loaded<PlayerAlias, 'player.auth', 'id' | 'player.auth' | 'player.id'>
 
+function isRefreshRoute(ctx: APIRouteContext) {
+  return ctx.path === '/v1/players/auth/refresh'
+}
+
 export async function playerAuthMiddleware(ctx: APIRouteContext, next: Next) {
-  if (isAPIRoute(ctx) && (ctx.state.currentPlayerId || ctx.state.currentAliasId)) {
+  if (
+    isAPIRoute(ctx) &&
+    (ctx.state.currentPlayerId || ctx.state.currentAliasId) &&
+    !isRefreshRoute(ctx)
+  ) {
     const conditions: FilterQuery<PlayerAlias>[] = [
       ctx.state.currentAliasId
         ? {
@@ -58,7 +67,9 @@ export async function playerAuthMiddleware(ctx: APIRouteContext, next: Next) {
 export async function validateAuthSessionToken(ctx: Context, alias: PlayerAliasPartial) {
   const sessionToken = ctx.headers['x-talo-session']
   if (!sessionToken) {
-    return ctx.throw(401, {
+    return throwPlayerAuthError({
+      ctx,
+      status: 401,
       message: 'The x-talo-session header is required for this player',
       errorCode: 'MISSING_SESSION',
     })
@@ -77,7 +88,9 @@ export async function validateAuthSessionToken(ctx: Context, alias: PlayerAliasP
 }
 
 export function throwInvalidSessionError(ctx: Context): never {
-  return ctx.throw(401, {
+  return throwPlayerAuthError({
+    ctx,
+    status: 401,
     message: 'The x-talo-session header is invalid',
     errorCode: 'INVALID_SESSION',
   })
@@ -90,13 +103,16 @@ export async function validateSessionTokenJWT(
   expectedPlayerId: string,
   expectedAliasId: number,
 ) {
-  if (!alias.player.auth?.sessionKey) return false
+  if (!alias.player.auth?.sessionKey) {
+    return false
+  }
 
   try {
     const payload = await verify<{ playerId: string; aliasId: number }>(
       sessionToken,
       alias.player.auth.sessionKey,
     )
+
     return payload.playerId === expectedPlayerId && payload.aliasId === expectedAliasId
   } catch {
     return false

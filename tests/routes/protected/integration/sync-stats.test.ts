@@ -28,7 +28,7 @@ describe('Integration - sync stats', () => {
       const integration = await new IntegrationFactory()
         .construct(IntegrationType.STEAMWORKS, game, config)
         .one()
-      await em.persistAndFlush(integration)
+      await em.persist(integration).flush()
 
       const res = await request(app)
         .post(`/games/${game.id}/integrations/${integration.id}/sync-stats`)
@@ -62,7 +62,7 @@ describe('Integration - sync stats', () => {
     const integration = await new IntegrationFactory()
       .construct(IntegrationType.STEAMWORKS, game, config)
       .one()
-    await em.persistAndFlush(integration)
+    await em.persist(integration).flush()
 
     const res = await request(app)
       .post(`/games/${game.id}/integrations/${integration.id}/sync-stats`)
@@ -87,7 +87,7 @@ describe('Integration - sync stats', () => {
     const integration = await new IntegrationFactory()
       .construct(IntegrationType.STEAMWORKS, game, config)
       .one()
-    await em.persistAndFlush(integration)
+    await em.persist(integration).flush()
 
     const res = await request(app)
       .post(`/games/${game.id}/integrations/${integration.id}/sync-stats`)

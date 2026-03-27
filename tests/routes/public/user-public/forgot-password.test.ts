@@ -11,7 +11,7 @@ describe('User public - forgot password', () => {
 
   it('should let a user request a forgot password email for an existing user', async () => {
     const user = await new UserFactory().state(() => ({ password: 'p4ssw0rd' })).one()
-    await em.persistAndFlush(user)
+    await em.persist(user).flush()
 
     await request(app).post('/public/users/forgot_password').send({ email: user.email }).expect(204)
 

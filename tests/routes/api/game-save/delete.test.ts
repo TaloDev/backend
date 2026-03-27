@@ -10,7 +10,7 @@ describe('Game save API - delete', () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_SAVES])
     const player = await new PlayerFactory([apiKey.game]).one()
     const save = await new GameSaveFactory([player]).one()
-    await em.persistAndFlush(save)
+    await em.persist(save).flush()
 
     await request(app)
       .delete(`/v1/game-saves/${save.id}`)
@@ -23,7 +23,7 @@ describe('Game save API - delete', () => {
     const [apiKey, token] = await createAPIKeyAndToken([])
     const player = await new PlayerFactory([apiKey.game]).one()
     const save = await new GameSaveFactory([player]).one()
-    await em.persistAndFlush(save)
+    await em.persist(save).flush()
 
     await request(app)
       .delete(`/v1/game-saves/${save.id}`)
@@ -40,7 +40,7 @@ describe('Game save API - delete', () => {
     const otherPlayer = await new PlayerFactory([game]).one()
     const otherSave = await new GameSaveFactory([otherPlayer]).one()
 
-    await em.persistAndFlush([player, otherSave])
+    await em.persist([player, otherSave]).flush()
 
     const res = await request(app)
       .delete(`/v1/game-saves/${otherSave.id}`)
@@ -60,7 +60,7 @@ describe('Game save API - delete', () => {
     const otherPlayer = await new PlayerFactory([game]).one()
     const otherSave = await new GameSaveFactory([otherPlayer]).one()
 
-    await em.persistAndFlush([save, otherSave])
+    await em.persist([save, otherSave]).flush()
 
     const res = await request(app)
       .delete(`/v1/game-saves/${otherSave.id}`)

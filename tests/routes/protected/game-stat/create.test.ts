@@ -143,7 +143,7 @@ describe('Game stat - create', () => {
     const stat = await new GameStatFactory([game])
       .state(() => ({ internalName: 'levels-completed' }))
       .one()
-    await em.persistAndFlush(stat)
+    await em.persist(stat).flush()
 
     const res = await request(app)
       .post(`/games/${game.id}/game-stats`)
@@ -175,7 +175,7 @@ describe('Game stat - create', () => {
     const stat = await new GameStatFactory([otherGame])
       .state(() => ({ internalName: 'levels-completed' }))
       .one()
-    await em.persistAndFlush(stat)
+    await em.persist(stat).flush()
 
     await request(app)
       .post(`/games/${game.id}/game-stats`)

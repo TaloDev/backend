@@ -107,7 +107,7 @@ describe('Integration - create', () => {
 
     const config = await new IntegrationConfigFactory().one()
     const integration = new Integration(IntegrationType.STEAMWORKS, game, config)
-    await em.persistAndFlush(integration)
+    await em.persist(integration).flush()
 
     const res = await request(app)
       .post(`/games/${game.id}/integrations`)

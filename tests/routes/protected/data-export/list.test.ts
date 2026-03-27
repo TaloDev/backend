@@ -13,7 +13,7 @@ describe('Data export - list', () => {
     )
 
     const exports = await new DataExportFactory(game).many(5)
-    await em.persistAndFlush(exports)
+    await em.persist(exports).flush()
 
     const res = await request(app)
       .get(`/games/${game.id}/data-exports`)

@@ -13,10 +13,10 @@ describe('Game channel API - get storage', () => {
     const player = await new PlayerFactory([apiKey.game]).one()
     channel.owner = player.aliases[0]
     channel.members.add(player.aliases[0])
-    await em.persistAndFlush([channel, player])
+    await em.persist([channel, player]).flush()
 
     const prop = await new GameChannelStoragePropFactory(channel).one()
-    await em.persistAndFlush(prop)
+    await em.persist(prop).flush()
     await prop.persistToRedis(redis)
 
     const res = await request(app)
@@ -43,7 +43,7 @@ describe('Game channel API - get storage', () => {
     const prop = await new GameChannelStoragePropFactory(channel)
       .state(() => ({ key: 'testKey' }))
       .one()
-    await em.persistAndFlush([channel, player, prop])
+    await em.persist([channel, player, prop]).flush()
 
     const res = await request(app)
       .get(`/v1/game-channels/${channel.id}/storage`)
@@ -62,7 +62,7 @@ describe('Game channel API - get storage', () => {
     const channel = await new GameChannelFactory(apiKey.game).one()
     const player = await new PlayerFactory([apiKey.game]).one()
     channel.members.add(player.aliases[0])
-    await em.persistAndFlush([channel, player])
+    await em.persist([channel, player]).flush()
 
     const res = await request(app)
       .get(`/v1/game-channels/${channel.id}/storage`)
@@ -81,10 +81,10 @@ describe('Game channel API - get storage', () => {
     const player = await new PlayerFactory([apiKey.game]).one()
     channel.owner = player.aliases[0]
     channel.members.add(player.aliases[0])
-    await em.persistAndFlush([channel, player])
+    await em.persist([channel, player]).flush()
 
     const prop = await new GameChannelStoragePropFactory(channel).one()
-    await em.persistAndFlush(prop)
+    await em.persist(prop).flush()
 
     await request(app)
       .get(`/v1/game-channels/${channel.id}/storage`)
@@ -100,10 +100,10 @@ describe('Game channel API - get storage', () => {
     const channel = await new GameChannelFactory(apiKey.game).one()
     const nonMember = await new PlayerFactory([apiKey.game]).one()
     channel.owner = (await new PlayerFactory([apiKey.game]).one()).aliases[0]
-    await em.persistAndFlush([channel, nonMember])
+    await em.persist([channel, nonMember]).flush()
 
     const prop = await new GameChannelStoragePropFactory(channel).one()
-    await em.persistAndFlush(prop)
+    await em.persist(prop).flush()
 
     const res = await request(app)
       .get(`/v1/game-channels/${channel.id}/storage`)
@@ -119,7 +119,7 @@ describe('Game channel API - get storage', () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_GAME_CHANNELS])
 
     const player = await new PlayerFactory([apiKey.game]).one()
-    await em.persistAndFlush(player)
+    await em.persist(player).flush()
 
     const res = await request(app)
       .get('/v1/game-channels/999999/storage')
@@ -135,7 +135,7 @@ describe('Game channel API - get storage', () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_GAME_CHANNELS])
 
     const channel = await new GameChannelFactory(apiKey.game).one()
-    await em.persistAndFlush(channel)
+    await em.persist(channel).flush()
 
     const res = await request(app)
       .get(`/v1/game-channels/${channel.id}/storage`)

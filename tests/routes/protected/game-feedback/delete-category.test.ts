@@ -14,7 +14,7 @@ describe('Game feedback - delete category', () => {
       const [token] = await createUserAndToken({ type, emailConfirmed: true }, organisation)
 
       const feedbackCategory = await new GameFeedbackCategoryFactory(game).one()
-      await em.persistAndFlush(feedbackCategory)
+      await em.persist(feedbackCategory).flush()
 
       await request(app)
         .delete(`/games/${game.id}/game-feedback/categories/${feedbackCategory.id}`)
@@ -42,7 +42,7 @@ describe('Game feedback - delete category', () => {
     const [token] = await createUserAndToken({ type: UserType.ADMIN })
 
     const feedbackCategory = await new GameFeedbackCategoryFactory(otherGame).one()
-    await em.persistAndFlush(feedbackCategory)
+    await em.persist(feedbackCategory).flush()
 
     const res = await request(app)
       .delete(`/games/${otherGame.id}/game-feedback/categories/${feedbackCategory.id}`)

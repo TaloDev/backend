@@ -22,7 +22,7 @@ export default async function createOrganisationAndGame(
   }
 
   const game = await new GameFactory(organisation).state(() => gamePartial ?? {}).one()
-  await em.persistAndFlush([organisation, game])
+  await em.persist([organisation, game]).flush()
 
   return [organisation, game]
 }

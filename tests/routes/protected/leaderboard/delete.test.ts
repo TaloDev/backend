@@ -14,7 +14,7 @@ describe('Leaderboard - delete', () => {
       const [token] = await createUserAndToken({ type }, organisation)
 
       const leaderboard = await new LeaderboardFactory([game]).one()
-      await em.persistAndFlush(leaderboard)
+      await em.persist(leaderboard).flush()
 
       const res = await request(app)
         .delete(`/games/${game.id}/leaderboards/${leaderboard.id}`)
@@ -43,7 +43,7 @@ describe('Leaderboard - delete', () => {
     const [token] = await createUserAndToken({ type: UserType.ADMIN })
 
     const leaderboard = await new LeaderboardFactory([otherGame]).one()
-    await em.persistAndFlush([leaderboard])
+    await em.persist([leaderboard]).flush()
 
     const res = await request(app)
       .delete(`/games/${otherGame.id}/leaderboards/${leaderboard.id}`)

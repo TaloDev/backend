@@ -13,10 +13,10 @@ describe('deletePlayers', () => {
   it('should delete players from the PlayerToDelete table', async () => {
     const [, game] = await createOrganisationAndGame()
     const players = await new PlayerFactory([game]).many(3)
-    await em.persistAndFlush(players)
+    await em.persist(players).flush()
 
     const playersToDelete = players.map((player) => new PlayerToDelete(player))
-    await em.persistAndFlush(playersToDelete)
+    await em.persist(playersToDelete).flush()
 
     expect(await em.count(PlayerToDelete)).toBe(3)
     expect(await em.count(Player, { id: { $in: players.map((p) => p.id) } })).toBe(3)
@@ -30,10 +30,10 @@ describe('deletePlayers', () => {
   it('should process only up to 100 players at a time', async () => {
     const [, game] = await createOrganisationAndGame()
     const players = await new PlayerFactory([game]).many(150)
-    await em.persistAndFlush(players)
+    await em.persist(players).flush()
 
     const playersToDelete = players.map((player) => new PlayerToDelete(player))
-    await em.persistAndFlush(playersToDelete)
+    await em.persist(playersToDelete).flush()
 
     expect(await em.count(PlayerToDelete)).toBe(150)
 
@@ -47,13 +47,13 @@ describe('deletePlayers', () => {
   it('should handle errors gracefully and continue processing', async () => {
     const [, game] = await createOrganisationAndGame()
     const players = await new PlayerFactory([game]).many(2)
-    await em.persistAndFlush(players)
+    await em.persist(players).flush()
 
     const playersToDelete = players.map((player) => new PlayerToDelete(player))
-    await em.persistAndFlush(playersToDelete)
+    await em.persist(playersToDelete).flush()
 
     // after cascade delete, only 1 PlayerToDelete entry remains
-    await em.removeAndFlush(players[0])
+    await em.remove(players[0]).flush()
     expect(await em.count(PlayerToDelete)).toBe(1)
 
     await deletePlayers()
@@ -72,7 +72,7 @@ describe('deletePlayers', () => {
     const [, game] = await createOrganisationAndGame()
     const players = await new PlayerFactory([game]).many(10)
     const playersToDelete = players.map((player) => new PlayerToDelete(player))
-    await em.persistAndFlush(playersToDelete)
+    await em.persist(playersToDelete).flush()
 
     vi.spyOn(EntityManager.prototype, 'removeAndFlush').mockRejectedValueOnce(new Error())
 

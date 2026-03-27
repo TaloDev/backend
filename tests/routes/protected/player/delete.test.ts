@@ -16,7 +16,7 @@ describe('Player - delete', () => {
       const [token] = await createUserAndToken({ type }, organisation)
 
       const player = await new PlayerFactory([game]).one()
-      await em.persistAndFlush(player)
+      await em.persist(player).flush()
 
       const res = await request(app)
         .delete(`/games/${game.id}/players/${player.id}`)
@@ -62,7 +62,7 @@ describe('Player - delete', () => {
     const [otherToken] = await createUserAndToken({ type: UserType.ADMIN })
 
     const player = await new PlayerFactory([game]).one()
-    await em.persistAndFlush(player)
+    await em.persist(player).flush()
 
     await request(app)
       .delete(`/games/${game.id}/players/${player.id}`)
@@ -79,7 +79,7 @@ describe('Player - delete', () => {
         aliases: new Collection<PlayerAlias>(player, []),
       }))
       .one()
-    await em.persistAndFlush(player)
+    await em.persist(player).flush()
 
     await request(app)
       .delete(`/games/${game.id}/players/${player.id}`)

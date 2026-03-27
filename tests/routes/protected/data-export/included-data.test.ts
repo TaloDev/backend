@@ -32,7 +32,7 @@ describe('Data export - included data (unit tests)', () => {
     event.setProps([new Prop('currentLevel', '80')])
 
     const dataExport = await new DataExportFactory(game).one()
-    await em.persistAndFlush(dataExport)
+    await em.persist(dataExport).flush()
 
     await clickhouse.insert({
       table: 'events',
@@ -62,7 +62,7 @@ describe('Data export - included data (unit tests)', () => {
 
     const dataExport = await new DataExportFactory(game).one()
 
-    await em.persistAndFlush(dataExport)
+    await em.persist(dataExport).flush()
     await clickhouse.insert({
       table: 'events',
       values: event.toInsertable(),
@@ -86,7 +86,7 @@ describe('Data export - included data (unit tests)', () => {
 
     const player = await new PlayerFactory([game]).devBuild().one()
     const dataExport = await new DataExportFactory(game).one()
-    await em.persistAndFlush([player, dataExport])
+    await em.persist([player, dataExport]).flush()
 
     const items = await collect(proto.streamPlayers(dataExport, em, false))
     expect(items).toHaveLength(0)
@@ -100,7 +100,7 @@ describe('Data export - included data (unit tests)', () => {
 
     const player = await new PlayerFactory([game]).devBuild().one()
     const dataExport = await new DataExportFactory(game).one()
-    await em.persistAndFlush([player, dataExport])
+    await em.persist([player, dataExport]).flush()
 
     const items = await collect(proto.streamPlayers(dataExport, em, true))
     expect(items).toHaveLength(1)
@@ -114,7 +114,7 @@ describe('Data export - included data (unit tests)', () => {
 
     const player = await new PlayerFactory([game]).devBuild().one()
     const dataExport = await new DataExportFactory(game).one()
-    await em.persistAndFlush([player, dataExport])
+    await em.persist([player, dataExport]).flush()
 
     const items = await collect(proto.streamPlayerAliases(dataExport, em, false))
     expect(items).toHaveLength(0)
@@ -128,7 +128,7 @@ describe('Data export - included data (unit tests)', () => {
 
     const player = await new PlayerFactory([game]).devBuild().one()
     const dataExport = await new DataExportFactory(game).one()
-    await em.persistAndFlush([player, dataExport])
+    await em.persist([player, dataExport]).flush()
 
     const items = await collect(proto.streamPlayerAliases(dataExport, em, true))
     expect(items).toHaveLength(player.aliases.length)
@@ -144,7 +144,7 @@ describe('Data export - included data (unit tests)', () => {
     const leaderboard = await new LeaderboardFactory([game]).one()
     const entry = await new LeaderboardEntryFactory(leaderboard, [player]).one()
     const dataExport = await new DataExportFactory(game).one()
-    await em.persistAndFlush([entry, dataExport])
+    await em.persist([entry, dataExport]).flush()
 
     const items = await collect(proto.streamLeaderboardEntries(dataExport, em, false))
     expect(items).toHaveLength(0)
@@ -160,7 +160,7 @@ describe('Data export - included data (unit tests)', () => {
     const leaderboard = await new LeaderboardFactory([game]).one()
     const entry = await new LeaderboardEntryFactory(leaderboard, [player]).one()
     const dataExport = await new DataExportFactory(game).one()
-    await em.persistAndFlush([entry, dataExport])
+    await em.persist([entry, dataExport]).flush()
 
     const items = await collect(proto.streamLeaderboardEntries(dataExport, em, true))
     expect(items).toHaveLength(1)
@@ -190,7 +190,7 @@ describe('Data export - included data (unit tests)', () => {
       .one()
 
     const dataExport = await new DataExportFactory(game).one()
-    await em.persistAndFlush([devPlayerStat, livePlayerStat, dataExport])
+    await em.persist([devPlayerStat, livePlayerStat, dataExport]).flush()
 
     const items = (await collect(proto.streamGameStats(dataExport, em, false))) as GameStat[]
     expect(items[0].globalValue).toBe(40)
@@ -212,7 +212,7 @@ describe('Data export - included data (unit tests)', () => {
       .state(() => ({ value: 10 }))
       .one()
     const dataExport = await new DataExportFactory(game).one()
-    await em.persistAndFlush([playerStat, dataExport])
+    await em.persist([playerStat, dataExport]).flush()
 
     const items = (await collect(proto.streamGameStats(dataExport, em, true))) as GameStat[]
     expect(items[0].globalValue).toBe(50)
@@ -234,7 +234,7 @@ describe('Data export - included data (unit tests)', () => {
       .state(() => ({ value: 10 }))
       .one()
     const dataExport = await new DataExportFactory(game).one()
-    await em.persistAndFlush([playerStat, dataExport])
+    await em.persist([playerStat, dataExport]).flush()
 
     const items = await collect(proto.streamPlayerGameStats(dataExport, em, false))
     expect(items).toHaveLength(0)
@@ -256,7 +256,7 @@ describe('Data export - included data (unit tests)', () => {
       .state(() => ({ value: 10 }))
       .one()
     const dataExport = await new DataExportFactory(game).one()
-    await em.persistAndFlush([playerStat, dataExport])
+    await em.persist([playerStat, dataExport]).flush()
 
     const items = await collect(proto.streamPlayerGameStats(dataExport, em, true))
     expect(items).toHaveLength(1)
@@ -275,7 +275,7 @@ describe('Data export - included data (unit tests)', () => {
       }))
       .one()
     const dataExport = await new DataExportFactory(game).one()
-    await em.persistAndFlush([feedback, dataExport])
+    await em.persist([feedback, dataExport]).flush()
 
     const items = await collect(proto.streamGameFeedback(dataExport, em, false))
     expect(items).toHaveLength(0)
@@ -294,7 +294,7 @@ describe('Data export - included data (unit tests)', () => {
       }))
       .one()
     const dataExport = await new DataExportFactory(game).one()
-    await em.persistAndFlush([feedback, dataExport])
+    await em.persist([feedback, dataExport]).flush()
 
     const items = await collect(proto.streamGameFeedback(dataExport, em, true))
     expect(items).toHaveLength(1)

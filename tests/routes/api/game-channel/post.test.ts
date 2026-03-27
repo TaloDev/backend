@@ -9,7 +9,7 @@ describe('Game channel API - create', () => {
   it('should create a game channel if the scope is valid', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_CHANNELS])
     const player = await new PlayerFactory([apiKey.game]).one()
-    await em.persistAndFlush(player)
+    await em.persist(player).flush()
 
     const res = await request(app)
       .post('/v1/game-channels')
@@ -31,7 +31,7 @@ describe('Game channel API - create', () => {
   it('should not create a game channel if the scope is not valid', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([])
     const player = await new PlayerFactory([apiKey.game]).one()
-    await em.persistAndFlush(player)
+    await em.persist(player).flush()
 
     await request(app)
       .post('/v1/game-channels')
@@ -44,7 +44,7 @@ describe('Game channel API - create', () => {
   it('should not create a game channel if the alias does not exist', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_CHANNELS])
     const player = await new PlayerFactory([apiKey.game]).one()
-    await em.persistAndFlush(player)
+    await em.persist(player).flush()
 
     const res = await request(app)
       .post('/v1/game-channels')
@@ -59,7 +59,7 @@ describe('Game channel API - create', () => {
   it('should create a game channel with props', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_CHANNELS])
     const player = await new PlayerFactory([apiKey.game]).one()
-    await em.persistAndFlush(player)
+    await em.persist(player).flush()
 
     const res = await request(app)
       .post('/v1/game-channels')
@@ -77,7 +77,7 @@ describe('Game channel API - create', () => {
   it('should reject props where the key is greater than 128 characters', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_CHANNELS])
     const player = await new PlayerFactory([apiKey.game]).one()
-    await em.persistAndFlush(player)
+    await em.persist(player).flush()
 
     const res = await request(app)
       .post('/v1/game-channels')
@@ -104,7 +104,7 @@ describe('Game channel API - create', () => {
   it('should reject props where the value is greater than 512 characters', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_CHANNELS])
     const player = await new PlayerFactory([apiKey.game]).one()
-    await em.persistAndFlush(player)
+    await em.persist(player).flush()
 
     const res = await request(app)
       .post('/v1/game-channels')
@@ -131,7 +131,7 @@ describe('Game channel API - create', () => {
   it('should create a private game channel', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_CHANNELS])
     const player = await new PlayerFactory([apiKey.game]).one()
-    await em.persistAndFlush(player)
+    await em.persist(player).flush()
 
     const res = await request(app)
       .post('/v1/game-channels')
@@ -146,7 +146,7 @@ describe('Game channel API - create', () => {
   it('should create a game channel with temporary membership', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_CHANNELS])
     const player = await new PlayerFactory([apiKey.game]).one()
-    await em.persistAndFlush(player)
+    await em.persist(player).flush()
 
     const res = await request(app)
       .post('/v1/game-channels')
@@ -165,7 +165,7 @@ describe('Game channel API - create', () => {
 
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_CHANNELS])
     const player = await new PlayerFactory([apiKey.game]).one()
-    await em.persistAndFlush(player)
+    await em.persist(player).flush()
 
     const res = await request(app)
       .post('/v1/game-channels')

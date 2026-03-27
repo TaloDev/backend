@@ -12,7 +12,7 @@ describe('Continuity middleware', () => {
       .state(() => ({ maxValue: 999, maxChange: 99 }))
       .one()
     const player = await new PlayerFactory([apiKey.game]).one()
-    await em.persistAndFlush([stat, player])
+    await em.persist([stat, player]).flush()
 
     const continuityDate = subHours(new Date(), 1)
 
@@ -36,7 +36,7 @@ describe('Continuity middleware', () => {
       .state(() => ({ maxValue: 999, maxChange: 99 }))
       .one()
     const player = await new PlayerFactory([apiKey.game]).one()
-    await em.persistAndFlush([stat, player])
+    await em.persist([stat, player]).flush()
 
     const continuityDate = subHours(new Date(), 1)
 

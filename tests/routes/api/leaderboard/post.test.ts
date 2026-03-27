@@ -21,7 +21,7 @@ describe('Leaderboard API - create', () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_LEADERBOARDS])
     const player = await new PlayerFactory([apiKey.game]).one()
     const leaderboard = await new LeaderboardFactory([apiKey.game]).one()
-    await em.persistAndFlush([player, leaderboard])
+    await em.persist([player, leaderboard]).flush()
 
     const res = await request(app)
       .post(`/v1/leaderboards/${leaderboard.internalName}/entries`)
@@ -39,7 +39,7 @@ describe('Leaderboard API - create', () => {
     const [apiKey, token] = await createAPIKeyAndToken([])
     const player = await new PlayerFactory([apiKey.game]).one()
     const leaderboard = await new LeaderboardFactory([apiKey.game]).one()
-    await em.persistAndFlush([player, leaderboard])
+    await em.persist([player, leaderboard]).flush()
 
     await request(app)
       .post(`/v1/leaderboards/${leaderboard.internalName}/entries`)
@@ -53,7 +53,7 @@ describe('Leaderboard API - create', () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_LEADERBOARDS])
     const player = await new PlayerFactory([apiKey.game]).one()
     const leaderboard = await new LeaderboardFactory([apiKey.game]).one()
-    await em.persistAndFlush([player, leaderboard])
+    await em.persist([player, leaderboard]).flush()
 
     await request(app)
       .post(`/v1/leaderboards/${leaderboard.internalName}/entries`)
@@ -80,7 +80,7 @@ describe('Leaderboard API - create', () => {
     const leaderboard = await new LeaderboardFactory([apiKey.game])
       .state(() => ({ unique: true, sortMode: LeaderboardSortMode.DESC }))
       .one()
-    await em.persistAndFlush([player, leaderboard])
+    await em.persist([player, leaderboard]).flush()
 
     let res = await request(app)
       .post(`/v1/leaderboards/${leaderboard.internalName}/entries`)
@@ -121,7 +121,7 @@ describe('Leaderboard API - create', () => {
       }))
       .one()
 
-    await em.persistAndFlush([player, leaderboard, entry])
+    await em.persist([player, leaderboard, entry]).flush()
 
     const res = await request(app)
       .post(`/v1/leaderboards/${leaderboard.internalName}/entries`)
@@ -142,7 +142,7 @@ describe('Leaderboard API - create', () => {
     const leaderboard = await new LeaderboardFactory([apiKey.game])
       .state(() => ({ unique: false }))
       .one()
-    await em.persistAndFlush([player, leaderboard])
+    await em.persist([player, leaderboard]).flush()
 
     let res = await request(app)
       .post(`/v1/leaderboards/${leaderboard.internalName}/entries`)
@@ -171,7 +171,7 @@ describe('Leaderboard API - create', () => {
     const leaderboard = await new LeaderboardFactory([apiKey.game])
       .state(() => ({ unique: true, sortMode: LeaderboardSortMode.DESC }))
       .one()
-    await em.persistAndFlush([player, leaderboard])
+    await em.persist([player, leaderboard]).flush()
 
     let res = await request(app)
       .post(`/v1/leaderboards/${leaderboard.internalName}/entries`)
@@ -199,7 +199,7 @@ describe('Leaderboard API - create', () => {
     const leaderboard = await new LeaderboardFactory([apiKey.game])
       .state(() => ({ unique: true, sortMode: LeaderboardSortMode.ASC }))
       .one()
-    await em.persistAndFlush([player, leaderboard])
+    await em.persist([player, leaderboard]).flush()
 
     let res = await request(app)
       .post(`/v1/leaderboards/${leaderboard.internalName}/entries`)
@@ -233,7 +233,7 @@ describe('Leaderboard API - create', () => {
       .state(() => ({ score: 100 }))
       .one()
 
-    await em.persistAndFlush([leaderboard, player, devEntry])
+    await em.persist([leaderboard, player, devEntry]).flush()
 
     const res = await request(app)
       .post(`/v1/leaderboards/${leaderboard.internalName}/entries`)
@@ -252,7 +252,7 @@ describe('Leaderboard API - create', () => {
     ])
     const player = await new PlayerFactory([apiKey.game]).one()
     const leaderboard = await new LeaderboardFactory([apiKey.game]).one()
-    await em.persistAndFlush([player, leaderboard])
+    await em.persist([player, leaderboard]).flush()
 
     const continuityDate = subHours(new Date(), 1)
 
@@ -288,7 +288,7 @@ describe('Leaderboard API - create', () => {
       }))
       .one()
 
-    await em.persistAndFlush([player, leaderboard, entry])
+    await em.persist([player, leaderboard, entry]).flush()
 
     const res = await request(app)
       .post(`/v1/leaderboards/${leaderboard.internalName}/entries`)
@@ -307,7 +307,7 @@ describe('Leaderboard API - create', () => {
     const leaderboard = await new LeaderboardFactory([apiKey.game])
       .state(() => ({ unique: false }))
       .one()
-    await em.persistAndFlush([player, leaderboard])
+    await em.persist([player, leaderboard]).flush()
 
     const res = await request(app)
       .post(`/v1/leaderboards/${leaderboard.internalName}/entries`)
@@ -347,7 +347,7 @@ describe('Leaderboard API - create', () => {
       }))
       .one()
 
-    await em.persistAndFlush([player, leaderboard, entry])
+    await em.persist([player, leaderboard, entry]).flush()
 
     const res = await request(app)
       .post(`/v1/leaderboards/${leaderboard.internalName}/entries`)
@@ -388,7 +388,7 @@ describe('Leaderboard API - create', () => {
       }))
       .one()
 
-    await em.persistAndFlush([player, leaderboard, entry])
+    await em.persist([player, leaderboard, entry]).flush()
 
     const res = await request(app)
       .post(`/v1/leaderboards/${leaderboard.internalName}/entries`)
@@ -411,7 +411,7 @@ describe('Leaderboard API - create', () => {
     const leaderboard = await new LeaderboardFactory([apiKey.game])
       .state(() => ({ unique: false }))
       .one()
-    await em.persistAndFlush([player, leaderboard])
+    await em.persist([player, leaderboard]).flush()
 
     const res = await request(app)
       .post(`/v1/leaderboards/${leaderboard.internalName}/entries`)
@@ -439,7 +439,7 @@ describe('Leaderboard API - create', () => {
     const leaderboard = await new LeaderboardFactory([apiKey.game])
       .state(() => ({ sortMode: LeaderboardSortMode.DESC, unique: false }))
       .one()
-    await em.persistAndFlush([player, leaderboard])
+    await em.persist([player, leaderboard]).flush()
 
     await request(app)
       .post(`/v1/leaderboards/${leaderboard.internalName}/entries`)
@@ -452,7 +452,7 @@ describe('Leaderboard API - create', () => {
       .state(() => ({ score: 250 }))
       .hidden()
       .one()
-    await em.persistAndFlush(hiddenEntry)
+    await em.persist(hiddenEntry).flush()
 
     const res = await request(app)
       .post(`/v1/leaderboards/${leaderboard.internalName}/entries`)
@@ -470,7 +470,7 @@ describe('Leaderboard API - create', () => {
     const leaderboard = await new LeaderboardFactory([apiKey.game])
       .state(() => ({ sortMode: LeaderboardSortMode.DESC, unique: false }))
       .one()
-    await em.persistAndFlush([player, leaderboard])
+    await em.persist([player, leaderboard]).flush()
 
     await request(app)
       .post(`/v1/leaderboards/${leaderboard.internalName}/entries`)
@@ -483,7 +483,7 @@ describe('Leaderboard API - create', () => {
       .state(() => ({ score: 250 }))
       .archived()
       .one()
-    await em.persistAndFlush(archivedEntry)
+    await em.persist(archivedEntry).flush()
 
     const res = await request(app)
       .post(`/v1/leaderboards/${leaderboard.internalName}/entries`)
@@ -501,7 +501,7 @@ describe('Leaderboard API - create', () => {
     const leaderboard = await new LeaderboardFactory([apiKey.game])
       .state(() => ({ unique: false }))
       .one()
-    await em.persistAndFlush([player, leaderboard])
+    await em.persist([player, leaderboard]).flush()
 
     const res = await request(app)
       .post(`/v1/leaderboards/${leaderboard.internalName}/entries`)
@@ -531,7 +531,7 @@ describe('Leaderboard API - create', () => {
     const leaderboard = await new LeaderboardFactory([apiKey.game])
       .state(() => ({ unique: false }))
       .one()
-    await em.persistAndFlush([player, leaderboard])
+    await em.persist([player, leaderboard]).flush()
 
     const res = await request(app)
       .post(`/v1/leaderboards/${leaderboard.internalName}/entries`)
@@ -561,7 +561,7 @@ describe('Leaderboard API - create', () => {
     const leaderboard = await new LeaderboardFactory([apiKey.game])
       .state(() => ({ unique: false, sortMode: LeaderboardSortMode.ASC }))
       .one()
-    await em.persistAndFlush([player, leaderboard])
+    await em.persist([player, leaderboard]).flush()
 
     let res = await request(app)
       .post(`/v1/leaderboards/${leaderboard.internalName}/entries`)
@@ -619,7 +619,7 @@ describe('Leaderboard API - create', () => {
     const leaderboard = await new LeaderboardFactory([apiKey.game])
       .state(() => ({ unique: false, sortMode: LeaderboardSortMode.DESC }))
       .one()
-    await em.persistAndFlush([player, leaderboard])
+    await em.persist([player, leaderboard]).flush()
 
     let res = await request(app)
       .post(`/v1/leaderboards/${leaderboard.internalName}/entries`)
@@ -682,7 +682,7 @@ describe('Leaderboard API - create', () => {
       .state(() => ({ score: 300 }))
       .hidden()
       .one()
-    await em.persistAndFlush([player, leaderboard, hiddenEntry])
+    await em.persist([player, leaderboard, hiddenEntry]).flush()
 
     const res = await request(app)
       .post(`/v1/leaderboards/${leaderboard.internalName}/entries`)
@@ -710,7 +710,7 @@ describe('Leaderboard API - create', () => {
       .construct(apiKey.game)
       .state(() => ({ rules: [rule] }))
       .one()
-    await em.persistAndFlush([player, leaderboard, group])
+    await em.persist([player, leaderboard, group]).flush()
 
     const res = await request(app)
       .post(`/v1/leaderboards/${leaderboard.internalName}/entries`)
@@ -755,7 +755,7 @@ describe('Leaderboard API - create', () => {
       .construct(apiKey.game)
       .state(() => ({ rules: [rule] }))
       .one()
-    await em.persistAndFlush([player, leaderboard, entry, group])
+    await em.persist([player, leaderboard, entry, group]).flush()
     await group.checkMembership(em)
 
     expect(group.members).toHaveLength(1)
@@ -791,7 +791,7 @@ describe('Leaderboard API - create', () => {
       }))
       .one()
 
-    await em.persistAndFlush([player, leaderboard, entry])
+    await em.persist([player, leaderboard, entry]).flush()
 
     const res = await request(app)
       .post(`/v1/leaderboards/${leaderboard.internalName}/entries`)
@@ -831,7 +831,7 @@ describe('Leaderboard API - create', () => {
       }))
       .one()
 
-    await em.persistAndFlush([player, leaderboard, entry])
+    await em.persist([player, leaderboard, entry]).flush()
 
     const res = await request(app)
       .post(`/v1/leaderboards/${leaderboard.internalName}/entries`)
@@ -869,7 +869,7 @@ describe('Leaderboard API - create', () => {
       }))
       .one()
 
-    await em.persistAndFlush([player, leaderboard, entry])
+    await em.persist([player, leaderboard, entry]).flush()
 
     const res = await request(app)
       .post(`/v1/leaderboards/${leaderboard.internalName}/entries`)
@@ -904,7 +904,7 @@ describe('Leaderboard API - create', () => {
       }))
       .one()
 
-    await em.persistAndFlush([player, leaderboard, entry])
+    await em.persist([player, leaderboard, entry]).flush()
 
     const res = await request(app)
       .post(`/v1/leaderboards/${leaderboard.internalName}/entries`)
@@ -960,7 +960,7 @@ describe('Leaderboard API - create', () => {
       }))
       .one()
 
-    await em.persistAndFlush([player, leaderboard, oldEntry, newerEntry])
+    await em.persist([player, leaderboard, oldEntry, newerEntry]).flush()
 
     const res = await request(app)
       .post(`/v1/leaderboards/${leaderboard.internalName}/entries`)
@@ -1002,7 +1002,7 @@ describe('Leaderboard API - create', () => {
       }))
       .one()
 
-    await em.persistAndFlush([player, leaderboard, entry])
+    await em.persist([player, leaderboard, entry]).flush()
 
     // level 2
     const level2Res = await request(app)
@@ -1067,7 +1067,7 @@ describe('Leaderboard API - create', () => {
     const leaderboard = await new LeaderboardFactory([apiKey.game])
       .state(() => ({ unique: false }))
       .one()
-    await em.persistAndFlush([player, leaderboard])
+    await em.persist([player, leaderboard]).flush()
 
     const results = await Promise.all(
       Array.from({ length: 3 }, () =>
@@ -1098,7 +1098,7 @@ describe('Leaderboard API - create', () => {
         sortMode: LeaderboardSortMode.DESC,
       }))
       .one()
-    await em.persistAndFlush([player, leaderboard])
+    await em.persist([player, leaderboard]).flush()
 
     const results = await Promise.all(
       Array.from({ length: 3 }, (_, i) =>
@@ -1140,7 +1140,7 @@ describe('Leaderboard API - create', () => {
         sortMode: LeaderboardSortMode.DESC,
       }))
       .one()
-    await em.persistAndFlush([player, leaderboard])
+    await em.persist([player, leaderboard]).flush()
 
     const res = await request(app)
       .post(`/v1/leaderboards/${leaderboard.internalName}/entries`)
@@ -1187,7 +1187,7 @@ describe('Leaderboard API - create', () => {
       }))
       .one()
 
-    await em.persistAndFlush([player, leaderboard, entry])
+    await em.persist([player, leaderboard, entry]).flush()
 
     const res = await request(app)
       .post(`/v1/leaderboards/${leaderboard.internalName}/entries`)

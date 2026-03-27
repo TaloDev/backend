@@ -29,7 +29,7 @@ describe('Socket logger', () => {
 
   async function createSocketConnection(): Promise<[SocketConnection, () => void]> {
     const [apiKey] = await createAPIKeyAndToken([])
-    await em.persistAndFlush(apiKey)
+    await em.persist(apiKey).flush()
 
     const ticket = new SocketTicket('')
     ticket.apiKey = apiKey

@@ -14,7 +14,7 @@ describe('Game channel - list', () => {
     const [token] = await createUserAndToken({}, organisation)
 
     const channels = await new GameChannelFactory(game).many(10)
-    await em.persistAndFlush(channels)
+    await em.persist(channels).flush()
 
     const res = await request(app)
       .get(`/games/${game.id}/game-channels`)
@@ -58,7 +58,7 @@ describe('Game channel - list', () => {
 
     const count = 82
     const channels = await new GameChannelFactory(game).many(count)
-    await em.persistAndFlush(channels)
+    await em.persist(channels).flush()
 
     const page = Math.floor(count / 50)
 
@@ -83,7 +83,7 @@ describe('Game channel - list', () => {
     const channelsWithoutName = await new GameChannelFactory(game)
       .state(() => ({ name: 'Guild chat' }))
       .many(3)
-    await em.persistAndFlush([...channelsWithName, ...channelsWithoutName])
+    await em.persist([...channelsWithName, ...channelsWithoutName]).flush()
 
     const res = await request(app)
       .get(`/games/${game.id}/game-channels`)
@@ -111,7 +111,7 @@ describe('Game channel - list', () => {
 
     const channelsWithoutOwner = await new GameChannelFactory(game).many(5)
 
-    await em.persistAndFlush([...channelsWithOwner, ...channelsWithoutOwner])
+    await em.persist([...channelsWithOwner, ...channelsWithoutOwner]).flush()
 
     const res = await request(app)
       .get(`/games/${game.id}/game-channels`)
@@ -131,7 +131,7 @@ describe('Game channel - list', () => {
       (await new PlayerFactory([game]).devBuild().one()).aliases[0],
       (await new PlayerFactory([game]).one()).aliases[0],
     )
-    await em.persistAndFlush(channel)
+    await em.persist(channel).flush()
 
     const res = await request(app)
       .get(`/games/${game.id}/game-channels`)
@@ -152,7 +152,7 @@ describe('Game channel - list', () => {
       (await new PlayerFactory([game]).devBuild().one()).aliases[0],
       (await new PlayerFactory([game]).one()).aliases[0],
     )
-    await em.persistAndFlush(channel)
+    await em.persist(channel).flush()
 
     const res = await request(app)
       .get(`/games/${game.id}/game-channels`)
@@ -168,7 +168,7 @@ describe('Game channel - list', () => {
     const [token] = await createUserAndToken({}, organisation)
 
     const channels = await new GameChannelFactory(game).many(208)
-    await em.persistAndFlush(channels)
+    await em.persist(channels).flush()
 
     const res = await request(app)
       .get(`/games/${game.id}/game-channels`)
@@ -188,7 +188,7 @@ describe('Game channel - list', () => {
 
     const publicChannels = await new GameChannelFactory(game).many(3)
     const privateChannels = await new GameChannelFactory(game).private().many(1)
-    await em.persistAndFlush([...publicChannels, ...privateChannels])
+    await em.persist([...publicChannels, ...privateChannels]).flush()
 
     const res = await request(app)
       .get(`/games/${game.id}/game-channels`)
@@ -213,7 +213,7 @@ describe('Game channel - list', () => {
 
     const otherChannel = await new GameChannelFactory(game).one()
 
-    await em.persistAndFlush([channel, otherChannel])
+    await em.persist([channel, otherChannel]).flush()
 
     const res = await request(app)
       .get(`/games/${game.id}/game-channels`)
@@ -247,7 +247,7 @@ describe('Game channel - list', () => {
 
     const irrelevantChannel = await new GameChannelFactory(game).one()
 
-    await em.persistAndFlush([channel, otherChannel, irrelevantChannel])
+    await em.persist([channel, otherChannel, irrelevantChannel]).flush()
 
     const res = await request(app)
       .get(`/games/${game.id}/game-channels`)

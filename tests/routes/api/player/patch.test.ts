@@ -26,7 +26,7 @@ describe('Player API - update', () => {
         ]),
       }))
       .one()
-    await em.persistAndFlush(player)
+    await em.persist(player).flush()
 
     const res = await request(app)
       .patch(`/v1/players/${player.id}`)
@@ -66,7 +66,7 @@ describe('Player API - update', () => {
         ]),
       }))
       .one()
-    await em.persistAndFlush(player)
+    await em.persist(player).flush()
 
     await request(app)
       .patch(`/v1/players/${player.id}`)
@@ -106,7 +106,7 @@ describe('Player API - update', () => {
 
     const [, otherGame] = await createOrganisationAndGame()
     const otherPlayer = await new PlayerFactory([otherGame]).one()
-    await em.persistAndFlush(otherPlayer)
+    await em.persist(otherPlayer).flush()
 
     const res = await request(app)
       .patch(`/v1/players/${otherPlayer.id}`)
@@ -144,7 +144,7 @@ describe('Player API - update', () => {
         ]),
       }))
       .one()
-    await em.persistAndFlush([group, player])
+    await em.persist([group, player]).flush()
 
     const res = await request(app)
       .patch(`/v1/players/${player.id}`)
@@ -187,7 +187,7 @@ describe('Player API - update', () => {
         ]),
       }))
       .one()
-    await em.persistAndFlush([group, player])
+    await em.persist([group, player]).flush()
 
     await group.checkMembership(em)
     expect(group.members).toHaveLength(1)
@@ -218,7 +218,7 @@ describe('Player API - update', () => {
         value: randWord(),
       },
     ])
-    await em.persistAndFlush(player)
+    await em.persist(player).flush()
 
     const res = await request(app)
       .patch(`/v1/players/${player.id}`)
@@ -252,7 +252,7 @@ describe('Player API - update', () => {
         ]),
       }))
       .one()
-    await em.persistAndFlush(player)
+    await em.persist(player).flush()
 
     const res = await request(app)
       .patch(`/v1/players/${player.id}`)
@@ -318,7 +318,7 @@ describe('Player API - update', () => {
         ]),
       }))
       .one()
-    await em.persistAndFlush([group, player])
+    await em.persist([group, player]).flush()
 
     await Promise.allSettled(
       ['60', '61', '62', '63', '64', '65'].map((level) => {
@@ -366,7 +366,7 @@ describe('Player API - update', () => {
         ]),
       }))
       .one()
-    await em.persistAndFlush([group, player])
+    await em.persist([group, player]).flush()
 
     await request(app)
       .patch(`/v1/players/${player.id}`)
@@ -410,7 +410,7 @@ describe('Player API - update', () => {
         ]),
       }))
       .one()
-    await em.persistAndFlush([group, player])
+    await em.persist([group, player]).flush()
 
     await Promise.allSettled(
       ['60', '61', '62', '63', '64', '65'].map((level) => {

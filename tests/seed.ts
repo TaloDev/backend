@@ -138,21 +138,23 @@ void (async () => {
 
   const em = orm.em.fork()
 
-  await em.persistAndFlush([
-    ...pricingPlans,
-    ownerUser,
-    adminUser,
-    devUser,
-    organisation,
-    ...games,
-    ...apiKeys,
-    ...players,
-    ...leaderboards,
-    ...gameSaves,
-    ...gameStats,
-    ...playerGameStats,
-    ...feedback,
-  ])
+  await em
+    .persist([
+      ...pricingPlans,
+      ownerUser,
+      adminUser,
+      devUser,
+      organisation,
+      ...games,
+      ...apiKeys,
+      ...players,
+      ...leaderboards,
+      ...gameSaves,
+      ...gameStats,
+      ...playerGameStats,
+      ...feedback,
+    ])
+    .flush()
 
   await orm.close(true)
 

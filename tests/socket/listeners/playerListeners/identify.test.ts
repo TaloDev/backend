@@ -47,12 +47,12 @@ describe('Player listeners - identify', () => {
   it('should require a valid session token to identify Talo aliases', async () => {
     const [apiKey] = await createAPIKeyAndToken([APIKeyScope.READ_PLAYERS])
     const player = await new PlayerFactory([apiKey.game]).withTaloAlias().one()
-    await em.persistAndFlush(player)
+    await em.persist(player).flush()
 
     const ticket = await createSocketTicket(redis, apiKey, false)
     const socketToken = await player.aliases[0].createSocketToken(redis)
 
-    const sessionToken = await player.auth!.createSession(player.aliases[0])
+    const { sessionToken } = await player.auth!.createSession(player.aliases[0])
     await em.flush()
 
     await createTestSocket(`/?ticket=${ticket}`, async (client) => {
@@ -74,7 +74,7 @@ describe('Player listeners - identify', () => {
   it('should reject identify for Talo aliases without a valid session token', async () => {
     const [apiKey] = await createAPIKeyAndToken([APIKeyScope.READ_PLAYERS])
     const player = await new PlayerFactory([apiKey.game]).withTaloAlias().one()
-    await em.persistAndFlush(player)
+    await em.persist(player).flush()
 
     const ticket = await createSocketTicket(redis, apiKey, false)
     const socketToken = await player.aliases[0].createSocketToken(redis)
@@ -102,7 +102,7 @@ describe('Player listeners - identify', () => {
   it('should reject identify for Talo aliases a missing session token', async () => {
     const [apiKey] = await createAPIKeyAndToken([APIKeyScope.READ_PLAYERS])
     const player = await new PlayerFactory([apiKey.game]).withTaloAlias().one()
-    await em.persistAndFlush(player)
+    await em.persist(player).flush()
 
     const ticket = await createSocketTicket(redis, apiKey, false)
     const socketToken = await player.aliases[0].createSocketToken(redis)

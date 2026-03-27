@@ -58,7 +58,7 @@ describe('Leaderboard - steamworks update entry', () => {
     const integration = await new IntegrationFactory()
       .construct(IntegrationType.STEAMWORKS, game, config)
       .one()
-    await em.persistAndFlush([integration, steamworksEntry])
+    await em.persist([integration, steamworksEntry]).flush()
 
     await request(app)
       .patch(`/games/${game.id}/leaderboards/${leaderboard.id}/entries/${entry.id}`)
@@ -115,7 +115,7 @@ describe('Leaderboard - steamworks update entry', () => {
     const integration = await new IntegrationFactory()
       .construct(IntegrationType.STEAMWORKS, game, config)
       .one()
-    await em.persistAndFlush([integration, entry, mapping])
+    await em.persist([integration, entry, mapping]).flush()
 
     await request(app)
       .patch(`/games/${game.id}/leaderboards/${leaderboard.id}/entries/${entry.id}`)
@@ -159,7 +159,7 @@ describe('Leaderboard - steamworks update entry', () => {
     const integration = await new IntegrationFactory()
       .construct(IntegrationType.STEAMWORKS, game, config)
       .one()
-    await em.persistAndFlush([integration, entry, mapping])
+    await em.persist([integration, entry, mapping]).flush()
 
     await request(app)
       .patch(`/games/${game.id}/leaderboards/${leaderboard.id}/entries/${entry.id}`)
@@ -196,7 +196,7 @@ describe('Leaderboard - steamworks update entry', () => {
     const integration = await new IntegrationFactory()
       .construct(IntegrationType.STEAMWORKS, game, config)
       .one()
-    await em.persistAndFlush([integration, entry, mapping])
+    await em.persist([integration, entry, mapping]).flush()
 
     await request(app)
       .patch(`/games/${game.id}/leaderboards/${leaderboard.id}/entries/${entry.id}`)
@@ -229,7 +229,7 @@ describe('Leaderboard - steamworks update entry', () => {
     const integration = await new IntegrationFactory()
       .construct(IntegrationType.STEAMWORKS, game, config)
       .one()
-    await em.persistAndFlush([integration, entry])
+    await em.persist([integration, entry]).flush()
 
     await request(app)
       .patch(`/games/${game.id}/leaderboards/${leaderboard.id}/entries/${entry.id}`)
@@ -277,7 +277,7 @@ describe('Leaderboard - steamworks update entry', () => {
     const integration = await new IntegrationFactory()
       .construct(IntegrationType.STEAMWORKS, game, config)
       .one()
-    await em.persistAndFlush([integration, entry, mapping])
+    await em.persist([integration, entry, mapping]).flush()
 
     await request(app)
       .patch(`/games/${game.id}/leaderboards/${leaderboard.id}/entries/${entry.id}`)

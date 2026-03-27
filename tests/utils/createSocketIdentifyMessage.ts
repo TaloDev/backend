@@ -46,7 +46,7 @@ export default async function createSocketIdentifyMessage(
 ): Promise<SocketIdentifyData> {
   const [apiKey, token] = await createAPIKeyAndToken(scopes)
   const player = await new PlayerFactory([apiKey.game]).one()
-  await em.persistAndFlush(player)
+  await em.persist(player).flush()
 
   const { identifyMessage, ticket } = await persistTestSocketTicket(apiKey, player)
 

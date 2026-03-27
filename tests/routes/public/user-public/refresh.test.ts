@@ -13,7 +13,7 @@ describe('User public - refresh', () => {
       }))
       .one()
     const session = new UserSession(user)
-    await em.persistAndFlush(session)
+    await em.persist(session).flush()
 
     const res = await request(app)
       .get('/public/users/refresh')
@@ -38,7 +38,7 @@ describe('User public - refresh', () => {
     const user = await new UserFactory().one()
     const session = new UserSession(user)
     session.validUntil = new Date(2020, 1, 1)
-    await em.persistAndFlush(session)
+    await em.persist(session).flush()
 
     const res = await request(app)
       .get('/public/users/refresh')

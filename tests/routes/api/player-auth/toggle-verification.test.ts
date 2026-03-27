@@ -28,9 +28,9 @@ describe('Player auth API - toggle verification', () => {
       }))
       .one()
     const alias = player.aliases[0]
-    await em.persistAndFlush(player)
+    await em.persist(player).flush()
 
-    const sessionToken = await player.auth!.createSession(alias)
+    const { sessionToken } = await player.auth!.createSession(alias)
     await em.flush()
 
     await request(app)
@@ -74,9 +74,9 @@ describe('Player auth API - toggle verification', () => {
       }))
       .one()
     const alias = player.aliases[0]
-    await em.persistAndFlush(player)
+    await em.persist(player).flush()
 
-    const sessionToken = await player.auth!.createSession(alias)
+    const { sessionToken } = await player.auth!.createSession(alias)
     await em.flush()
 
     await request(app)
@@ -120,9 +120,9 @@ describe('Player auth API - toggle verification', () => {
       }))
       .one()
     const alias = player.aliases[0]
-    await em.persistAndFlush(player)
+    await em.persist(player).flush()
 
-    const sessionToken = await player.auth!.createSession(alias)
+    const { sessionToken } = await player.auth!.createSession(alias)
     await em.flush()
 
     const res = await request(app)
@@ -169,9 +169,9 @@ describe('Player auth API - toggle verification', () => {
       }))
       .one()
     const alias = player.aliases[0]
-    await em.persistAndFlush(player)
+    await em.persist(player).flush()
 
-    const sessionToken = await player.auth!.createSession(alias)
+    const { sessionToken } = await player.auth!.createSession(alias)
     await em.flush()
 
     await request(app)
@@ -216,9 +216,9 @@ describe('Player auth API - toggle verification', () => {
       }))
       .one()
     const alias = player.aliases[0]
-    await em.persistAndFlush(player)
+    await em.persist(player).flush()
 
-    const sessionToken = await player.auth!.createSession(alias)
+    const { sessionToken } = await player.auth!.createSession(alias)
     await em.flush()
 
     const res = await request(app)
@@ -262,9 +262,9 @@ describe('Player auth API - toggle verification', () => {
       }))
       .one()
     const alias = player.aliases[0]
-    await em.persistAndFlush(player)
+    await em.persist(player).flush()
 
-    const sessionToken = await player.auth!.createSession(alias)
+    const { sessionToken } = await player.auth!.createSession(alias)
     await em.flush()
 
     await request(app)
@@ -296,9 +296,9 @@ describe('Player auth API - toggle verification', () => {
       }))
       .one()
     const alias = player.aliases[0]
-    await em.persistAndFlush(player)
+    await em.persist(player).flush()
 
-    const sessionToken = await player.auth!.createSession(alias)
+    const { sessionToken } = await player.auth!.createSession(alias)
     await em.flush()
 
     const res = await request(app)
@@ -326,6 +326,125 @@ describe('Player auth API - toggle verification', () => {
     expect(activity).not.toBeNull()
   })
 
+  it('should update the email if it is only in use in another game', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([
+      APIKeyScope.READ_PLAYERS,
+      APIKeyScope.WRITE_PLAYERS,
+    ])
+
+    const [otherApiKey] = await createAPIKeyAndToken([
+      APIKeyScope.READ_PLAYERS,
+      APIKeyScope.WRITE_PLAYERS,
+    ])
+
+    const otherPlayer = await new PlayerFactory([otherApiKey.game])
+      .withTaloAlias()
+      .state(async () => ({
+        auth: await new PlayerAuthFactory()
+          .state(async () => ({
+            password: await bcrypt.hash('password', 10),
+            email: 'taken@mail.com',
+            verificationEnabled: false,
+          }))
+          .one(),
+      }))
+      .one()
+    await em.persist(otherPlayer).flush()
+
+    const player = await new PlayerFactory([apiKey.game])
+      .withTaloAlias()
+      .state(async () => ({
+        auth: await new PlayerAuthFactory()
+          .state(async () => ({
+            password: await bcrypt.hash('password', 10),
+            email: null,
+            verificationEnabled: false,
+          }))
+          .one(),
+      }))
+      .one()
+    const alias = player.aliases[0]
+    await em.persist(player).flush()
+
+    const { sessionToken } = await player.auth!.createSession(alias)
+    await em.flush()
+
+    await request(app)
+      .patch('/v1/players/auth/toggle_verification')
+      .send({ currentPassword: 'password', verificationEnabled: true, email: 'taken@mail.com' })
+      .auth(token, { type: 'bearer' })
+      .set('x-talo-player', player.id)
+      .set('x-talo-alias', String(alias.id))
+      .set('x-talo-session', sessionToken)
+      .expect(204)
+
+    await em.refresh(player.auth!)
+    expect(player.auth!.email).toBe('taken@mail.com')
+  })
+
+  it('should not enable verification if the provided email is already in use within the game', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([
+      APIKeyScope.READ_PLAYERS,
+      APIKeyScope.WRITE_PLAYERS,
+    ])
+
+    const otherPlayer = await new PlayerFactory([apiKey.game])
+      .withTaloAlias()
+      .state(async () => ({
+        auth: await new PlayerAuthFactory()
+          .state(async () => ({
+            password: await bcrypt.hash('password', 10),
+            email: 'taken@mail.com',
+            verificationEnabled: false,
+          }))
+          .one(),
+      }))
+      .one()
+    await em.persist(otherPlayer).flush()
+
+    const player = await new PlayerFactory([apiKey.game])
+      .withTaloAlias()
+      .state(async () => ({
+        auth: await new PlayerAuthFactory()
+          .state(async () => ({
+            password: await bcrypt.hash('password', 10),
+            email: null,
+            verificationEnabled: false,
+          }))
+          .one(),
+      }))
+      .one()
+    const alias = player.aliases[0]
+    await em.persist(player).flush()
+
+    const { sessionToken } = await player.auth!.createSession(alias)
+    await em.flush()
+
+    const res = await request(app)
+      .patch('/v1/players/auth/toggle_verification')
+      .send({ currentPassword: 'password', verificationEnabled: true, email: 'taken@mail.com' })
+      .auth(token, { type: 'bearer' })
+      .set('x-talo-player', player.id)
+      .set('x-talo-alias', String(alias.id))
+      .set('x-talo-session', sessionToken)
+      .expect(400)
+
+    expect(res.body).toStrictEqual({
+      message: 'This email address is already in use',
+      errorCode: 'EMAIL_TAKEN',
+    })
+
+    const activity = await em.getRepository(PlayerAuthActivity).findOne({
+      type: PlayerAuthActivityType.TOGGLE_VERIFICATION_FAILED,
+      player: player.id,
+      extra: {
+        errorCode: 'EMAIL_TAKEN',
+        verificationEnabled: true,
+      },
+    })
+    expect(activity).not.toBeNull()
+  })
+
   it('should return a 400 if the player does not have authentication', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([
       APIKeyScope.READ_PLAYERS,
@@ -333,7 +452,7 @@ describe('Player auth API - toggle verification', () => {
     ])
 
     const player = await new PlayerFactory([apiKey.game]).one()
-    await em.persistAndFlush(player)
+    await em.persist(player).flush()
 
     const alias = player.aliases[0]
 

@@ -34,7 +34,7 @@ describe('Steamworks integration - sync stats', () => {
     const integration = await new IntegrationFactory()
       .construct(IntegrationType.STEAMWORKS, game, config)
       .one()
-    await em.persistAndFlush(integration)
+    await em.persist(integration).flush()
 
     const getSchemaMock = vi.fn((): [number, GetSchemaForGameResponse] => [
       200,
@@ -97,7 +97,7 @@ describe('Steamworks integration - sync stats', () => {
       .construct(IntegrationType.STEAMWORKS, game, config)
       .one()
 
-    await em.persistAndFlush([stat, integration])
+    await em.persist([stat, integration]).flush()
 
     const getSchemaMock = vi.fn((): [number, GetSchemaForGameResponse] => [
       200,
@@ -145,7 +145,7 @@ describe('Steamworks integration - sync stats', () => {
       .construct(IntegrationType.STEAMWORKS, game, config)
       .one()
 
-    await em.persistAndFlush([player, integration])
+    await em.persist([player, integration]).flush()
 
     const getSchemaMock = vi.fn((): [number, GetSchemaForGameResponse] => [
       200,
@@ -216,7 +216,7 @@ describe('Steamworks integration - sync stats', () => {
       .construct(IntegrationType.STEAMWORKS, game, config)
       .one()
 
-    await em.persistAndFlush([player, integration])
+    await em.persist([player, integration]).flush()
 
     const getSchemaMock = vi.fn((): [number, GetSchemaForGameResponse] => [
       200,
@@ -276,7 +276,7 @@ describe('Steamworks integration - sync stats', () => {
       .construct(IntegrationType.STEAMWORKS, game, config)
       .one()
 
-    await em.persistAndFlush([player, playerStat, integration])
+    await em.persist([player, playerStat, integration]).flush()
 
     const getSchemaMock = vi.fn((): [number, GetSchemaForGameResponse] => [
       200,
@@ -350,7 +350,7 @@ describe('Steamworks integration - sync stats', () => {
       .construct(IntegrationType.STEAMWORKS, game, config)
       .one()
 
-    await em.persistAndFlush([player, playerStat, integration])
+    await em.persist([player, playerStat, integration]).flush()
 
     const getSchemaMock = vi.fn((): [number, GetSchemaForGameResponse] => [
       200,
@@ -429,7 +429,7 @@ describe('Steamworks integration - sync stats', () => {
     const integration = await new IntegrationFactory()
       .construct(IntegrationType.STEAMWORKS, game, config)
       .one()
-    await em.persistAndFlush(integration)
+    await em.persist(integration).flush()
 
     const getSchemaMock = vi.fn((): [number] => [404])
     axiosMock
@@ -463,7 +463,7 @@ describe('Steamworks integration - sync stats', () => {
       .construct(IntegrationType.STEAMWORKS, game, config)
       .one()
 
-    await em.persistAndFlush([stat, ...players, ...playerStats, integration])
+    await em.persist([stat, ...players, ...playerStats, integration]).flush()
 
     const getSchemaMock = vi.fn((): [number, GetSchemaForGameResponse] => [
       200,
@@ -553,7 +553,7 @@ describe('Steamworks integration - sync stats', () => {
       .construct(IntegrationType.STEAMWORKS, game, config)
       .one()
 
-    await em.persistAndFlush([...players, integration])
+    await em.persist([...players, integration]).flush()
 
     const getSchemaMock = vi.fn((): [number, GetSchemaForGameResponse] => [
       200,
@@ -684,7 +684,7 @@ describe('Steamworks integration - sync stats', () => {
       .construct(IntegrationType.STEAMWORKS, game, config)
       .one()
 
-    await em.persistAndFlush([player, integration])
+    await em.persist([player, integration]).flush()
 
     const getSchemaMock = vi.fn((): [number, GetSchemaForGameResponse] => [
       200,
@@ -758,7 +758,7 @@ describe('Steamworks integration - sync stats', () => {
       .construct(IntegrationType.STEAMWORKS, game, config)
       .one()
 
-    await em.persistAndFlush(integration)
+    await em.persist(integration).flush()
 
     const getSchemaMock = vi.fn((): [number, GetSchemaForGameResponse] => [
       200,

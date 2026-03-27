@@ -15,7 +15,7 @@ describe('Player group - rules', () => {
     const player = await new PlayerFactory([game])
       .state(() => ({ lastSeenAt: new Date(2022, 4, 3) }))
       .one()
-    await em.persistAndFlush(player)
+    await em.persist(player).flush()
 
     const rules: Partial<PlayerGroupRule>[] = [
       {

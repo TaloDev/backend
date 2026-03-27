@@ -8,7 +8,7 @@ describe('Player API - socket token', () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_PLAYERS])
 
     const player = await new PlayerFactory([apiKey.game]).one()
-    await em.persistAndFlush(player)
+    await em.persist(player).flush()
 
     const res = await request(app)
       .post('/v1/players/socket-token')
@@ -23,7 +23,7 @@ describe('Player API - socket token', () => {
     const [apiKey, token] = await createAPIKeyAndToken([])
 
     const player = await new PlayerFactory([apiKey.game]).one()
-    await em.persistAndFlush(player)
+    await em.persist(player).flush()
 
     await request(app)
       .post('/v1/players/socket-token')
@@ -64,7 +64,7 @@ describe('Player API - socket token', () => {
     const [apiKey2] = await createAPIKeyAndToken([APIKeyScope.WRITE_PLAYERS])
 
     const player = await new PlayerFactory([apiKey2.game]).one()
-    await em.persistAndFlush(player)
+    await em.persist(player).flush()
 
     const res = await request(app)
       .post('/v1/players/socket-token')

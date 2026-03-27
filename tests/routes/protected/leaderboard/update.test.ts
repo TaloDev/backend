@@ -22,7 +22,7 @@ describe('Leaderboard - update', () => {
     const [token] = await createUserAndToken({}, organisation)
 
     const leaderboard = await new LeaderboardFactory([game]).one()
-    await em.persistAndFlush(leaderboard)
+    await em.persist(leaderboard).flush()
 
     const res = await request(app)
       .put(`/games/${game.id}/leaderboards/${leaderboard.id}`)
@@ -54,7 +54,7 @@ describe('Leaderboard - update', () => {
     const [token] = await createUserAndToken({}, organisation)
 
     const leaderboard = await new LeaderboardFactory([game]).desc().one()
-    await em.persistAndFlush(leaderboard)
+    await em.persist(leaderboard).flush()
 
     const res = await request(app)
       .put(`/games/${game.id}/leaderboards/${leaderboard.id}`)
@@ -76,7 +76,7 @@ describe('Leaderboard - update', () => {
     const [token] = await createUserAndToken({}, organisation)
 
     const leaderboard = await new LeaderboardFactory([game]).unique().one()
-    await em.persistAndFlush(leaderboard)
+    await em.persist(leaderboard).flush()
 
     const res = await request(app)
       .put(`/games/${game.id}/leaderboards/${leaderboard.id}`)

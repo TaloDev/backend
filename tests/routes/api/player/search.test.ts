@@ -15,7 +15,7 @@ describe('Player API - search', () => {
   it('should search for a player by ID', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_PLAYERS])
     const player = await new PlayerFactory([apiKey.game]).one()
-    await em.persistAndFlush(player)
+    await em.persist(player).flush()
 
     const res = await request(app)
       .get('/v1/players/search')
@@ -32,7 +32,7 @@ describe('Player API - search', () => {
     const channel = await new GameChannelFactory(apiKey.game).one()
     const player = await new PlayerFactory([apiKey.game]).one()
     channel.members.add(player.aliases[0])
-    await em.persistAndFlush([channel, player])
+    await em.persist([channel, player]).flush()
 
     const res = await request(app)
       .get('/v1/players/search')
@@ -59,7 +59,7 @@ describe('Player API - search', () => {
         props: new Collection<PlayerProp>(player, [new PlayerProp(player, 'currentLevel', '60')]),
       }))
       .one()
-    await em.persistAndFlush([group, player])
+    await em.persist([group, player]).flush()
 
     const res = await request(app)
       .get('/v1/players/search')

@@ -75,7 +75,7 @@ describe('Game feedback - create category', () => {
     const category = await new GameFeedbackCategoryFactory(game)
       .state(() => ({ internalName: 'bugs' }))
       .one()
-    await em.persistAndFlush(category)
+    await em.persist(category).flush()
 
     const res = await request(app)
       .post(`/games/${game.id}/game-feedback/categories`)

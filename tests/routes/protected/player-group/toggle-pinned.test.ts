@@ -11,7 +11,7 @@ describe('Player group - toggle pinned', () => {
     const [token] = await createUserAndToken({}, organisation)
 
     const group = await new PlayerGroupFactory().construct(game).one()
-    await em.persistAndFlush(group)
+    await em.persist(group).flush()
 
     await request(app)
       .put(`/games/${game.id}/player-groups/${group.id}/toggle-pinned`)
@@ -28,7 +28,7 @@ describe('Player group - toggle pinned', () => {
 
     const group = await new PlayerGroupFactory().construct(game).one()
     const pinnedGroup = await new UserPinnedGroupFactory().state(() => ({ user, group })).one()
-    await em.persistAndFlush([group, pinnedGroup])
+    await em.persist([group, pinnedGroup]).flush()
 
     await request(app)
       .put(`/games/${game.id}/player-groups/${group.id}/toggle-pinned`)
@@ -45,7 +45,7 @@ describe('Player group - toggle pinned', () => {
 
     const group = await new PlayerGroupFactory().construct(game).one()
     const pinnedGroup = await new UserPinnedGroupFactory().state(() => ({ user, group })).one()
-    await em.persistAndFlush([group, pinnedGroup])
+    await em.persist([group, pinnedGroup]).flush()
 
     await request(app)
       .put(`/games/${game.id}/player-groups/${group.id}/toggle-pinned`)
@@ -61,7 +61,7 @@ describe('Player group - toggle pinned', () => {
     const [token] = await createUserAndToken({}, organisation)
 
     const group = await new PlayerGroupFactory().construct(game).one()
-    await em.persistAndFlush(group)
+    await em.persist(group).flush()
 
     await request(app)
       .put(`/games/${game.id}/player-groups/${group.id}/toggle-pinned`)
@@ -77,7 +77,7 @@ describe('Player group - toggle pinned', () => {
     const [token] = await createUserAndToken({})
 
     const group = await new PlayerGroupFactory().construct(otherGame).one()
-    await em.persistAndFlush(group)
+    await em.persist(group).flush()
 
     const res = await request(app)
       .put(`/games/${otherGame.id}/player-groups/${group.id}/toggle-pinned`)

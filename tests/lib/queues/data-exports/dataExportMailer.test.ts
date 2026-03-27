@@ -24,7 +24,7 @@ describe('DataExportMailer', () => {
 
     const [, game] = await createOrganisationAndGame()
     const dataExport = await new DataExportFactory(game).one()
-    await em.persistAndFlush(dataExport)
+    await em.persist(dataExport).flush()
 
     const mailer = new DataExportMailer()
     await mailer.send(dataExport, '/fake/storage', 'export.zip')
@@ -38,7 +38,7 @@ describe('DataExportMailer', () => {
 
     const [, game] = await createOrganisationAndGame()
     const dataExport = await new DataExportFactory(game).one()
-    await em.persistAndFlush(dataExport)
+    await em.persist(dataExport).flush()
 
     const mailer = new DataExportMailer()
     await mailer.send(dataExport, '/fake/storage', 'export.zip')

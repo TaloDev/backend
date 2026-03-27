@@ -14,7 +14,7 @@ describe('Game feedback API - create', () => {
     const feedbackCategory = await new GameFeedbackCategoryFactory(apiKey.game).one()
     const player = await new PlayerFactory([apiKey.game]).one()
 
-    await em.persistAndFlush([feedbackCategory, player])
+    await em.persist([feedbackCategory, player]).flush()
 
     const res = await request(app)
       .post(`/v1/game-feedback/categories/${feedbackCategory.internalName}`)
@@ -35,7 +35,7 @@ describe('Game feedback API - create', () => {
     const feedbackCategory = await new GameFeedbackCategoryFactory(apiKey.game).one()
     const player = await new PlayerFactory([apiKey.game]).one()
 
-    await em.persistAndFlush([feedbackCategory, player])
+    await em.persist([feedbackCategory, player]).flush()
 
     const res = await request(app)
       .post(`/v1/game-feedback/categories/${feedbackCategory.internalName}`)
@@ -51,7 +51,7 @@ describe('Game feedback API - create', () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_FEEDBACK])
 
     const feedbackCategory = await new GameFeedbackCategoryFactory(apiKey.game).one()
-    await em.persistAndFlush(feedbackCategory)
+    await em.persist(feedbackCategory).flush()
 
     const res = await request(app)
       .post(`/v1/game-feedback/categories/${feedbackCategory.internalName}`)
@@ -67,7 +67,7 @@ describe('Game feedback API - create', () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_FEEDBACK])
 
     const player = await new PlayerFactory([apiKey.game]).one()
-    await em.persistAndFlush(player)
+    await em.persist(player).flush()
 
     const res = await request(app)
       .post('/v1/game-feedback/categories/non-existent')
@@ -88,7 +88,7 @@ describe('Game feedback API - create', () => {
     const feedbackCategory = await new GameFeedbackCategoryFactory(apiKey.game).one()
     const player = await new PlayerFactory([apiKey.game]).one()
 
-    await em.persistAndFlush([feedbackCategory, player])
+    await em.persist([feedbackCategory, player]).flush()
 
     const continuityDate = subHours(new Date(), 1)
 
@@ -109,7 +109,7 @@ describe('Game feedback API - create', () => {
     const feedbackCategory = await new GameFeedbackCategoryFactory(apiKey.game).one()
     const player = await new PlayerFactory([apiKey.game]).one()
 
-    await em.persistAndFlush([feedbackCategory, player])
+    await em.persist([feedbackCategory, player]).flush()
 
     const res = await request(app)
       .post(`/v1/game-feedback/categories/${feedbackCategory.internalName}`)
@@ -127,7 +127,7 @@ describe('Game feedback API - create', () => {
     const feedbackCategory = await new GameFeedbackCategoryFactory(apiKey.game).one()
     const player = await new PlayerFactory([apiKey.game]).one()
 
-    await em.persistAndFlush([feedbackCategory, player])
+    await em.persist([feedbackCategory, player]).flush()
 
     const res = await request(app)
       .post(`/v1/game-feedback/categories/${feedbackCategory.internalName}`)
@@ -157,7 +157,7 @@ describe('Game feedback API - create', () => {
     const feedbackCategory = await new GameFeedbackCategoryFactory(apiKey.game).one()
     const player = await new PlayerFactory([apiKey.game]).one()
 
-    await em.persistAndFlush([feedbackCategory, player])
+    await em.persist([feedbackCategory, player]).flush()
 
     const res = await request(app)
       .post(`/v1/game-feedback/categories/${feedbackCategory.internalName}`)
@@ -191,7 +191,7 @@ describe('Game feedback API - create', () => {
     const feedbackCategory = await new GameFeedbackCategoryFactory(apiKey.game).one()
     const player = await new PlayerFactory([apiKey.game]).one()
 
-    await em.persistAndFlush([feedbackCategory, player])
+    await em.persist([feedbackCategory, player]).flush()
 
     const res = await request(app)
       .post(`/v1/game-feedback/categories/${feedbackCategory.internalName}`)

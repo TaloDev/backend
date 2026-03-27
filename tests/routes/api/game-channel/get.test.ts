@@ -8,7 +8,7 @@ describe('Game channel API - get', () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_GAME_CHANNELS])
 
     const channel = await new GameChannelFactory(apiKey.game).one()
-    await em.persistAndFlush(channel)
+    await em.persist(channel).flush()
 
     const res = await request(app)
       .get(`/v1/game-channels/${channel.id}`)
@@ -23,7 +23,7 @@ describe('Game channel API - get', () => {
     const [apiKey, token] = await createAPIKeyAndToken([])
 
     const channel = await new GameChannelFactory(apiKey.game).one()
-    await em.persistAndFlush(channel)
+    await em.persist(channel).flush()
 
     await request(app)
       .get(`/v1/game-channels/${channel.id}`)

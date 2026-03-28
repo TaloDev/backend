@@ -44,9 +44,10 @@ export function createPlayerAuthActivity(
   ctx: APIRouteContext,
   player: Player,
   data: { type: PlayerAuthActivityType; extra?: Record<string, unknown> },
+  em: EntityManager = ctx.em,
 ): PlayerAuthActivity {
   return buildPlayerAuthActivity({
-    em: ctx.em,
+    em,
     player,
     type: data.type,
     ip: ctx.request.ip,

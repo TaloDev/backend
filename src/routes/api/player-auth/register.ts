@@ -54,71 +54,86 @@ export const registerRoute = apiRoute({
 
     const key = ctx.state.key
 
-    let player: Player | null = null
-    try {
-      player = await createPlayerFromIdentifyRequest({
-        em,
-        key,
-        service: PlayerAliasService.TALO,
-        identifier,
-        devBuild: ctx.state.devBuild,
+    const sanitisedEmail = email?.trim().toLowerCase()
+    if (sanitisedEmail && !emailRegex.test(sanitisedEmail)) {
+      return throwPlayerAuthError({
+        ctx,
+        status: 400,
+        message: 'Invalid email address',
+        errorCode: 'INVALID_EMAIL',
       })
-    } catch (err) {
-      if (err instanceof PlayerCreationError) {
-        return ctx.throw(err.statusCode, {
-          message: err.message,
-          errorCode: err.errorCode,
-          field: err.field,
-        })
-      }
-      if (err instanceof PricingPlanLimitError) {
-        return ctx.throw(402, err.message)
-      }
-      throw err
     }
-    const alias = player.aliases[0]
 
-    alias.player.auth = new PlayerAuth()
-    alias.player.auth.password = await bcrypt.hash(password, 10)
+    const hashedPassword = await bcrypt.hash(password, 10)
 
-    if (email?.trim()) {
-      const sanitisedEmail = email.trim().toLowerCase()
-      if (emailRegex.test(sanitisedEmail)) {
-        if (await isEmailTakenForGame(em, { email: sanitisedEmail, game: key.game })) {
-          return throwPlayerAuthError({
-            ctx,
-            status: 400,
-            message: 'This email address is already in use',
-            errorCode: 'EMAIL_TAKEN',
-          })
-        }
-        alias.player.auth.email = sanitisedEmail
-      } else {
+    const { alias, sessionToken, refreshToken } = await em.transactional(async (trx) => {
+      if (
+        sanitisedEmail &&
+        (await isEmailTakenForGame(trx, { email: sanitisedEmail, game: key.game }))
+      ) {
         return throwPlayerAuthError({
           ctx,
           status: 400,
-          message: 'Invalid email address',
-          errorCode: 'INVALID_EMAIL',
+          message: 'This email address is already in use',
+          errorCode: 'EMAIL_TAKEN',
         })
       }
-    } else {
-      alias.player.auth.email = null
-    }
 
-    alias.player.auth.verificationEnabled = Boolean(verificationEnabled)
-    em.persist(alias.player.auth)
+      let player: Player | null = null
 
-    const { sessionToken, refreshToken } = await alias.player.auth.createSession(alias, withRefresh)
-    const socketToken = await alias.createSocketToken(ctx.redis)
+      try {
+        player = await createPlayerFromIdentifyRequest({
+          em: trx,
+          key,
+          service: PlayerAliasService.TALO,
+          identifier,
+          devBuild: ctx.state.devBuild,
+        })
+      } catch (err) {
+        if (err instanceof PlayerCreationError) {
+          return ctx.throw(err.statusCode, {
+            message: err.message,
+            errorCode: err.errorCode,
+            field: err.field,
+          })
+        }
+        if (err instanceof PricingPlanLimitError) {
+          return ctx.throw(402, err.message)
+        }
+        throw err
+      }
 
-    createPlayerAuthActivity(ctx, alias.player, {
-      type: PlayerAuthActivityType.REGISTERED,
-      extra: {
-        verificationEnabled: alias.player.auth.verificationEnabled,
-      },
+      const alias = player.aliases[0]
+      alias.player.auth = new PlayerAuth()
+      alias.player.auth.password = hashedPassword
+      if (sanitisedEmail) {
+        alias.player.auth.email = sanitisedEmail
+      }
+
+      alias.player.auth.verificationEnabled = Boolean(verificationEnabled)
+      trx.persist(alias.player.auth)
+
+      const { sessionToken, refreshToken } = await alias.player.auth.createSession(
+        alias,
+        withRefresh,
+      )
+
+      createPlayerAuthActivity(
+        ctx,
+        alias.player,
+        {
+          type: PlayerAuthActivityType.REGISTERED,
+          extra: {
+            verificationEnabled: alias.player.auth.verificationEnabled,
+          },
+        },
+        trx,
+      )
+
+      return { alias, sessionToken, refreshToken }
     })
 
-    await em.flush()
+    const socketToken = await alias.createSocketToken(ctx.redis)
 
     return {
       status: 200,

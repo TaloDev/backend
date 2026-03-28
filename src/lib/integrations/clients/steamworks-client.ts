@@ -189,7 +189,7 @@ export class SteamworksClient {
     const event = this.createSteamworksIntegrationEvent(config)
 
     const totalAttempts = 3
-    const abortTimeout = 1000
+    const abortTimeout = 2000
     const finalAbortTimeout = 5000
 
     const startTime = performance.now()

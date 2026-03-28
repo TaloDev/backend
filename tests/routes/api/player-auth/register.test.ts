@@ -1,7 +1,10 @@
 import { randUserName } from '@ngneat/falso'
 import bcrypt from 'bcrypt'
 import request from 'supertest'
+import { vi } from 'vitest'
 import { APIKeyScope } from '../../../../src/entities/api-key'
+import Player from '../../../../src/entities/player'
+import PlayerAuth from '../../../../src/entities/player-auth'
 import PlayerAuthActivity, {
   PlayerAuthActivityType,
 } from '../../../../src/entities/player-auth-activity'
@@ -159,6 +162,24 @@ describe('Player auth API - register', () => {
     })
   })
 
+  it('should not register a player if the email is invalid even without verificationEnabled', async () => {
+    const [, token] = await createAPIKeyAndToken([
+      APIKeyScope.READ_PLAYERS,
+      APIKeyScope.WRITE_PLAYERS,
+    ])
+
+    const res = await request(app)
+      .post('/v1/players/auth/register')
+      .send({ identifier: randUserName(), email: 'blah', password: 'password' })
+      .auth(token, { type: 'bearer' })
+      .expect(400)
+
+    expect(res.body).toStrictEqual({
+      message: 'Invalid email address',
+      errorCode: 'INVALID_EMAIL',
+    })
+  })
+
   it('should trim whitespace from identifiers before storing', async () => {
     const [, token] = await createAPIKeyAndToken([
       APIKeyScope.READ_PLAYERS,
@@ -285,6 +306,28 @@ describe('Player auth API - register', () => {
       .expect(402)
 
     expect(res.body.message).toBe('Limit reached')
+  })
+
+  it('should not leave behind an orphaned player if auth creation fails inside the transaction', async () => {
+    const [, token] = await createAPIKeyAndToken([
+      APIKeyScope.READ_PLAYERS,
+      APIKeyScope.WRITE_PLAYERS,
+    ])
+
+    const identifier = randUserName()
+
+    vi.spyOn(PlayerAuth.prototype, 'createSession').mockRejectedValueOnce(
+      new Error('session failure'),
+    )
+
+    await request(app)
+      .post('/v1/players/auth/register')
+      .send({ identifier, password: 'password' })
+      .auth(token, { type: 'bearer' })
+      .expect(500)
+
+    const player = await em.getRepository(Player).findOne({ aliases: { identifier } })
+    expect(player).toBeNull()
   })
 
   it('should return a refreshToken when withRefresh is true', async () => {

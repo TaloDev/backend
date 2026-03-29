@@ -9,6 +9,8 @@ import { requireScopes } from '../../../middleware/policy-middleware'
 import { loadChannel } from './common'
 import { listStorageDocs } from './docs'
 
+type FlattenedProp = ReturnType<typeof GameChannelStorageProp.flatten>
+
 export const listStorageRoute = apiRoute({
   method: 'get',
   path: '/:id/storage/list',
@@ -50,19 +52,18 @@ export const listStorageRoute = apiRoute({
       return ctx.throw(403, 'This player is not a member of the channel')
     }
 
-    const keys = propKeys
-    const redisKeys = keys.map((key) => GameChannelStorageProp.getRedisKey(channel.id, key))
-    const cachedProps = await redis.mget(...redisKeys)
+    const redisKeys = propKeys.map((key) => GameChannelStorageProp.getRedisKey(channel.id, key))
+    const cachedValues = await redis.mget(...redisKeys)
 
-    const resultMap = new Map<string, GameChannelStorageProp>()
+    const resultMap = new Map<string, FlattenedProp>()
     const missingKeys: string[] = []
 
-    cachedProps.forEach((cachedProp, index) => {
-      const originalKey = keys[index]
-      if (cachedProp) {
-        resultMap.set(originalKey, JSON.parse(cachedProp))
+    cachedValues.forEach((cached, index) => {
+      const key = propKeys[index]
+      if (cached) {
+        resultMap.set(key, JSON.parse(cached))
       } else {
-        missingKeys.push(originalKey)
+        missingKeys.push(key)
       }
     })
 
@@ -72,24 +73,31 @@ export const listStorageRoute = apiRoute({
         key: { $in: missingKeys },
       })
 
-      // cache the results using a single operation
-      if (propsFromDB.length > 0) {
-        const pipeline = redis.pipeline()
-
-        for (const prop of propsFromDB) {
-          resultMap.set(prop.key, prop)
-          const redisKey = GameChannelStorageProp.getRedisKey(channel.id, prop.key)
-          const expirationSeconds = GameChannelStorageProp.redisExpirationSeconds
-          pipeline.set(redisKey, JSON.stringify(prop), 'EX', expirationSeconds)
-        }
-
-        await pipeline.exec()
+      const propsByKey = new Map<string, GameChannelStorageProp[]>()
+      for (const prop of propsFromDB) {
+        const group = propsByKey.get(prop.key) ?? []
+        group.push(prop)
+        propsByKey.set(prop.key, group)
       }
+
+      const pipeline = redis.pipeline()
+
+      for (const key of missingKeys) {
+        const rows = propsByKey.get(key) ?? []
+        const flattened = GameChannelStorageProp.flatten(rows)
+        resultMap.set(key, flattened)
+        const redisKey = GameChannelStorageProp.getRedisKey(channel.id, key)
+        const expirationSeconds = GameChannelStorageProp.redisExpirationSeconds
+        pipeline.set(redisKey, JSON.stringify(flattened), 'EX', expirationSeconds)
+      }
+
+      await pipeline.exec()
     }
 
-    const props = keys
-      .map((key) => resultMap.get(key))
-      .filter((prop): prop is GameChannelStorageProp => prop !== undefined)
+    const props = propKeys.flatMap((key) => {
+      const prop = resultMap.get(key)
+      return prop ? [prop] : []
+    })
 
     return {
       status: 200,

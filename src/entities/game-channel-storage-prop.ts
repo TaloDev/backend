@@ -1,5 +1,6 @@
 import { Entity, Index, ManyToOne, PrimaryKey, Property } from '@mikro-orm/mysql'
 import Redis from 'ioredis'
+import { isArrayKey } from '../lib/props/sanitiseProps'
 import GameChannel from './game-channel'
 import PlayerAlias from './player-alias'
 import { MAX_KEY_LENGTH, MAX_VALUE_LENGTH } from './prop'
@@ -43,10 +44,38 @@ export default class GameChannelStorageProp {
     this.value = value
   }
 
-  persistToRedis(redis: Redis) {
-    const redisKey = GameChannelStorageProp.getRedisKey(this.gameChannel.id, this.key)
+  static flatten(
+    props: GameChannelStorageProp[],
+  ): ReturnType<GameChannelStorageProp['toJSON']> | null {
+    if (props.length === 0) {
+      return null
+    }
+
+    if (props.length === 1 && !isArrayKey(props[0].key)) {
+      return props[0].toJSON()
+    }
+
+    const sorted = [...props].sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime())
+    const representative = sorted[0].toJSON()
+    representative.value = JSON.stringify(sorted.map((p) => p.value))
+    return representative
+  }
+
+  static persistToRedis({
+    redis,
+    channelId,
+    key,
+    props,
+  }: {
+    redis: Redis
+    channelId: number
+    key: string
+    props: GameChannelStorageProp[]
+  }) {
+    const flattened = GameChannelStorageProp.flatten(props)
+    const redisKey = GameChannelStorageProp.getRedisKey(channelId, key)
     const expirationSeconds = GameChannelStorageProp.redisExpirationSeconds
-    return redis.set(redisKey, JSON.stringify(this), 'EX', expirationSeconds)
+    return redis.set(redisKey, JSON.stringify(flattened), 'EX', expirationSeconds)
   }
 
   toJSON() {

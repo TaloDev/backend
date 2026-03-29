@@ -39,33 +39,35 @@ export const getStorageRoute = apiRoute({
       return ctx.throw(403, 'This player is not a member of the channel')
     }
 
-    let result: GameChannelStorageProp | null = null
-
     const redis: Redis = ctx.redis
-    const cachedProp = await redis.get(GameChannelStorageProp.getRedisKey(channel.id, propKey))
+    const cached = await redis.get(GameChannelStorageProp.getRedisKey(channel.id, propKey))
 
-    if (cachedProp) {
+    if (cached) {
       return {
         status: 200,
         body: {
-          prop: JSON.parse(cachedProp),
+          prop: JSON.parse(cached),
         },
       }
     }
 
-    result = await em.repo(GameChannelStorageProp).findOne({
+    const results = await em.repo(GameChannelStorageProp).find({
       gameChannel: channel,
       key: propKey,
     })
 
-    if (result) {
-      await result.persistToRedis(redis)
-    }
+    const prop = GameChannelStorageProp.flatten(results)
+    await GameChannelStorageProp.persistToRedis({
+      redis,
+      channelId: channel.id,
+      key: propKey,
+      props: results,
+    })
 
     return {
       status: 200,
       body: {
-        prop: result,
+        prop,
       },
     }
   },

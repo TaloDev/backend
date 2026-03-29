@@ -6,7 +6,7 @@ export const MAX_ARRAY_LENGTH = 1000
 
 type UnsanitisedProp = { key: string; value: string | null }
 
-function isArrayKey(key: string): boolean {
+export function isArrayKey(key: string): boolean {
   return key.endsWith('[]')
 }
 

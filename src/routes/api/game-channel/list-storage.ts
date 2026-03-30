@@ -1,6 +1,7 @@
 import Redis from 'ioredis'
 import { APIKeyScope } from '../../../entities/api-key'
 import GameChannelStorageProp from '../../../entities/game-channel-storage-prop'
+import { isArrayKey } from '../../../lib/props/sanitiseProps'
 import { apiRoute, withMiddleware } from '../../../lib/routing/router'
 import { numericStringSchema } from '../../../lib/validation/numericStringSchema'
 import { playerAliasHeaderSchema } from '../../../lib/validation/playerAliasHeaderSchema'
@@ -96,7 +97,17 @@ export const listStorageRoute = apiRoute({
 
     const props = propKeys.flatMap((key) => {
       const prop = resultMap.get(key)
-      return prop ? [prop] : []
+      if (!prop) {
+        return []
+      }
+
+      // expand array props
+      if (isArrayKey(key)) {
+        const values: string[] = JSON.parse(prop.value)
+        return values.map((v) => ({ ...prop, value: v }))
+      }
+
+      return [prop]
     })
 
     return {

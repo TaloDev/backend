@@ -19,6 +19,9 @@ jobs:
     #   github.event.pull_request.author_association == 'FIRST_TIME_CONTRIBUTOR'
 
     runs-on: ubuntu-latest
+
+    timeout-minutes: 5
+
     permissions:
       contents: read
       pull-requests: read
@@ -27,7 +30,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           fetch-depth: 1
 
@@ -37,9 +40,10 @@ jobs:
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           prompt: |
-            You are reviewing PR #${{ github.event.pull_request.number }} in the repository ${{ github.repository }}.
+            REPO: ${{ github.repository }}
+            PR NUMBER: ${{ github.event.pull_request.number }}
 
-            Review this pull request and provide feedback focused only on improvements needed (not what works well):
+            Review this pull request and provide feedback on areas for improvement.
 
             **Categories to check:**
             1. Code quality and best practices
@@ -49,9 +53,7 @@ jobs:
             5. Test coverage
 
             **Process:**
-            - The PR number is: ${{ github.event.pull_request.number }}
             - View the PR using: `gh pr view ${{ github.event.pull_request.number }} --repo ${{ github.repository }}`
-            - Read CLAUDE.md to understand best practices
             - View the PR diff using: `gh pr diff ${{ github.event.pull_request.number }} --repo ${{ github.repository }}`
             - If an issue spans multiple categories, list it only once in the most relevant section
             - Prioritize by severity: 🔴 Critical → 🟡 Major → 🔵 Minor
@@ -80,16 +82,13 @@ jobs:
 
             Ignore theoretical issues that require multiple unlikely conditions or malicious input patterns.
             Use the "would this bother a pragmatic senior developer?" test.
-
             Maximum chain of assumptions: 2 levels deep. Skip exotic input combinations that violate documented assumptions.
 
             **Feedback style:**
             - Provide specific code examples or line references showing the issue
             - Suggest concrete fixes with code snippets where helpful
-            - Keep total feedback under 500 words
-            - Use section headers with emojis and horizontal dividers (---)
+            - Use section headers with severity emojis and horizontal dividers (---)
             - If no improvements needed in a category, simply state "No issues found"
-            - Use neutral language; focus on the code, not the author
             - If the PR looks good overall, say so clearly rather than forcing criticism
 
             **Comment Management (IMPORTANT):**
@@ -98,6 +97,6 @@ jobs:
               gh pr comment ${{ github.event.pull_request.number }} --repo ${{ github.repository }} --edit-last --create-if-none --body "<review>"
             ```
 
-            Ensure proper escaping of quotes and special characters in the comment body. Use single quotes around the body and escape any single quotes inside with '\''
+            Ensure the markdown you generate is well-formatted and renders correctly on GitHub. Use code blocks for snippets and proper markdown for lists and headers.
           claude_args: |
-            --allowedTools "Read,Bash(gh pr:*),Grep,Glob"
+            --allowedTools "Read,Bash(gh pr*),Grep,Glob"

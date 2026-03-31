@@ -7,7 +7,7 @@ import PlayerFactory from '../../../fixtures/PlayerFactory'
 import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
 
 describe('Game channel API - list storage', () => {
-  it('should return multiple storage props from Redis if they exist in the cache', async () => {
+  it('should return multiple storage props from redis if they exist in the cache', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_GAME_CHANNELS])
 
     const channel = await new GameChannelFactory(apiKey.game).one()
@@ -443,4 +443,5 @@ describe('Game channel API - list storage', () => {
 
     expect(res.body).toStrictEqual({ message: 'Channel not found' })
   })
+
 })

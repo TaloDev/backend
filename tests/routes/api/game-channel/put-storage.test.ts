@@ -1,4 +1,5 @@
 import { randText, randWord } from '@ngneat/falso'
+import assert from 'node:assert'
 import request from 'supertest'
 import { APIKeyScope } from '../../../../src/entities/api-key'
 import GameChannelStorageProp from '../../../../src/entities/game-channel-storage-prop'
@@ -38,10 +39,10 @@ describe('Game channel API - update storage', () => {
     expect(props).toHaveLength(2)
 
     const scoreProp = props.find((p) => p.key === 'score')
-    expect(scoreProp).toBeDefined()
-    expect(scoreProp!.value).toBe('100')
-    expect(scoreProp!.createdBy.id).toBe(player.aliases[0].id)
-    expect(scoreProp!.lastUpdatedBy.id).toBe(player.aliases[0].id)
+    assert(scoreProp)
+    expect(scoreProp.value).toBe('100')
+    expect(scoreProp.createdBy.id).toBe(player.aliases[0].id)
+    expect(scoreProp.lastUpdatedBy.id).toBe(player.aliases[0].id)
   })
 
   it('should update existing storage props', async () => {
@@ -210,7 +211,8 @@ describe('Game channel API - update storage', () => {
       .expect(200)
 
     const cachedValue = await redis.get(GameChannelStorageProp.getRedisKey(channel.id, 'score'))
-    const parsedValue = JSON.parse(cachedValue!)
+    assert(cachedValue)
+    const parsedValue = JSON.parse(cachedValue)
     expect(parsedValue.value).toBe('100')
   })
 
@@ -372,6 +374,12 @@ describe('Game channel API - update storage', () => {
     const props = await em.getRepository(GameChannelStorageProp).find({ gameChannel: channel })
     expect(props).toHaveLength(3)
     expect(props.map((p) => p.value).sort()).toStrictEqual(['potion', 'shield', 'sword'])
+
+    const cachedValue = await redis.get(GameChannelStorageProp.getRedisKey(channel.id, 'items[]'))
+    assert(cachedValue)
+    const parsed = JSON.parse(cachedValue)
+    expect(parsed.key).toBe('items[]')
+    expect(JSON.parse(parsed.value).sort()).toStrictEqual(['potion', 'shield', 'sword'])
   })
 
   it('should replace existing array props entirely when new values are provided', async () => {
@@ -419,6 +427,12 @@ describe('Game channel API - update storage', () => {
     const props = await em.getRepository(GameChannelStorageProp).find({ gameChannel: channel })
     expect(props).toHaveLength(2)
     expect(props.map((p) => p.value).sort()).toStrictEqual(['arrow', 'bow'])
+
+    const cachedValue = await redis.get(GameChannelStorageProp.getRedisKey(channel.id, 'items[]'))
+    assert(cachedValue)
+    const parsed = JSON.parse(cachedValue)
+    expect(parsed.key).toBe('items[]')
+    expect(JSON.parse(parsed.value).sort()).toStrictEqual(['arrow', 'bow'])
   })
 
   it('should preserve createdBy and createdAt for retained array prop values', async () => {
@@ -496,8 +510,10 @@ describe('Game channel API - update storage', () => {
     const newProp = await em
       .repo(GameChannelStorageProp)
       .findOne({ gameChannel: channel, key: 'items[]', value: 'shield' })
-    expect(newProp!.createdBy.id).toBe(originalCreator.aliases[0].id)
-    expect(newProp!.lastUpdatedBy.id).toBe(player.aliases[0].id)
+
+    assert(newProp)
+    expect(newProp.createdBy.id).toBe(originalCreator.aliases[0].id)
+    expect(newProp.lastUpdatedBy.id).toBe(player.aliases[0].id)
   })
 
   it('should delete all array prop rows when all values are null', async () => {
@@ -543,6 +559,10 @@ describe('Game channel API - update storage', () => {
       .getRepository(GameChannelStorageProp)
       .find({ gameChannel: channel, key: 'items[]' })
     expect(props).toHaveLength(0)
+
+    const cachedValue = await redis.get(GameChannelStorageProp.getRedisKey(channel.id, 'items[]'))
+    assert(cachedValue)
+    expect(JSON.parse(cachedValue)).toBeNull()
   })
 
   it('should reject array props where the key exceeds the max length', async () => {

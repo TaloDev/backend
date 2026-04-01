@@ -24,6 +24,10 @@ describe('cleanupSteamworksLeaderboardEntries', () => {
     },
   ])
 
+  beforeAll(async () => {
+    await global.em.repo(SteamworksLeaderboardEntry).nativeDelete({})
+  })
+
   beforeEach(() => {
     axiosMock
       .onPost('https://partner.steam-api.com/ISteamLeaderboards/DeleteLeaderboardScore/v1')

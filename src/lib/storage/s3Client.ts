@@ -30,11 +30,11 @@ export function isS3Configured() {
 export async function uploadToS3({
   filepath,
   key,
-  expiryMinutes,
+  linkExpiryMinutes,
 }: {
   filepath: string
   key: string
-  expiryMinutes?: number
+  linkExpiryMinutes?: number
 }) {
   const s3 = createS3Client()
   const data = await fs.readFile(filepath)
@@ -44,6 +44,6 @@ export async function uploadToS3({
     throw new Error(`S3 upload failed with status ${res.status}`)
   }
 
-  const expiresIn = (expiryMinutes ?? DEFAULT_EXPIRY_MINUTES) * 60
+  const expiresIn = (linkExpiryMinutes ?? DEFAULT_EXPIRY_MINUTES) * 60
   return s3.getPresignedUrl('GET', key, expiresIn)
 }

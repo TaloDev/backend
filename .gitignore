@@ -6,6 +6,6 @@ dist/
 .env
 coverage/
 backup.sql
-storage
+/storage
 temp
 .snapshot-gs_test.json

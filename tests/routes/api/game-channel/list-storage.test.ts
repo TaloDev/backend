@@ -443,5 +443,4 @@ describe('Game channel API - list storage', () => {
 
     expect(res.body).toStrictEqual({ message: 'Channel not found' })
   })
-
 })

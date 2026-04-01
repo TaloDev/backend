@@ -14,7 +14,7 @@ function createS3Client() {
     accessKeyId: process.env.S3_ACCESS_KEY_ID!,
     secretAccessKey: process.env.S3_SECRET_ACCESS_KEY!,
     endpoint: endpointWithBucket,
-    region: process.env.S3_REGION ?? 'auto',
+    region: process.env.S3_REGION,
   })
 }
 

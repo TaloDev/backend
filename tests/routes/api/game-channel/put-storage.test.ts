@@ -1,4 +1,5 @@
 import { randText, randWord } from '@ngneat/falso'
+import assert from 'node:assert'
 import request from 'supertest'
 import { APIKeyScope } from '../../../../src/entities/api-key'
 import GameChannelStorageProp from '../../../../src/entities/game-channel-storage-prop'
@@ -38,10 +39,10 @@ describe('Game channel API - update storage', () => {
     expect(props).toHaveLength(2)
 
     const scoreProp = props.find((p) => p.key === 'score')
-    expect(scoreProp).toBeDefined()
-    expect(scoreProp!.value).toBe('100')
-    expect(scoreProp!.createdBy.id).toBe(player.aliases[0].id)
-    expect(scoreProp!.lastUpdatedBy.id).toBe(player.aliases[0].id)
+    assert(scoreProp)
+    expect(scoreProp.value).toBe('100')
+    expect(scoreProp.createdBy.id).toBe(player.aliases[0].id)
+    expect(scoreProp.lastUpdatedBy.id).toBe(player.aliases[0].id)
   })
 
   it('should update existing storage props', async () => {
@@ -210,7 +211,8 @@ describe('Game channel API - update storage', () => {
       .expect(200)
 
     const cachedValue = await redis.get(GameChannelStorageProp.getRedisKey(channel.id, 'score'))
-    const parsedValue = JSON.parse(cachedValue!)
+    assert(cachedValue)
+    const parsedValue = JSON.parse(cachedValue)
     expect(parsedValue.value).toBe('100')
   })
 
@@ -313,6 +315,329 @@ describe('Game channel API - update storage', () => {
       .expect(404)
 
     expect(res.body).toStrictEqual({ message: 'Player not found' })
+  })
+
+  it('should deduplicate prop array values', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_CHANNELS])
+
+    const channel = await new GameChannelFactory(apiKey.game).one()
+    const player = await new PlayerFactory([apiKey.game]).one()
+    channel.members.add(player.aliases[0])
+    await em.persist(channel).flush()
+
+    const res = await request(app)
+      .put(`/v1/game-channels/${channel.id}/storage`)
+      .send({
+        props: [
+          { key: 'items[]', value: 'sword' },
+          { key: 'items[]', value: 'sword' },
+          { key: 'items[]', value: 'shield' },
+        ],
+      })
+      .auth(token, { type: 'bearer' })
+      .set('x-talo-alias', String(player.aliases[0].id))
+      .expect(200)
+
+    expect(res.body.upsertedProps).toHaveLength(2)
+    expect(res.body.failedProps).toHaveLength(0)
+
+    const props = await em.getRepository(GameChannelStorageProp).find({ gameChannel: channel })
+    expect(props).toHaveLength(2)
+    expect(props.map((p) => p.value).sort()).toStrictEqual(['shield', 'sword'])
+  })
+
+  it('should create new array storage props', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_CHANNELS])
+
+    const channel = await new GameChannelFactory(apiKey.game).one()
+    const player = await new PlayerFactory([apiKey.game]).one()
+    channel.members.add(player.aliases[0])
+    await em.persist(channel).flush()
+
+    const res = await request(app)
+      .put(`/v1/game-channels/${channel.id}/storage`)
+      .send({
+        props: [
+          { key: 'items[]', value: 'sword' },
+          { key: 'items[]', value: 'shield' },
+          { key: 'items[]', value: 'potion' },
+        ],
+      })
+      .auth(token, { type: 'bearer' })
+      .set('x-talo-alias', String(player.aliases[0].id))
+      .expect(200)
+
+    expect(res.body.upsertedProps).toHaveLength(3)
+    expect(res.body.deletedProps).toHaveLength(0)
+    expect(res.body.failedProps).toHaveLength(0)
+
+    const props = await em.getRepository(GameChannelStorageProp).find({ gameChannel: channel })
+    expect(props).toHaveLength(3)
+    expect(props.map((p) => p.value).sort()).toStrictEqual(['potion', 'shield', 'sword'])
+
+    const cachedValue = await redis.get(GameChannelStorageProp.getRedisKey(channel.id, 'items[]'))
+    assert(cachedValue)
+    const parsed = JSON.parse(cachedValue)
+    expect(parsed.key).toBe('items[]')
+    expect(JSON.parse(parsed.value).sort()).toStrictEqual(['potion', 'shield', 'sword'])
+  })
+
+  it('should replace existing array props entirely when new values are provided', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_CHANNELS])
+
+    const channel = await new GameChannelFactory(apiKey.game).one()
+    const player = await new PlayerFactory([apiKey.game]).one()
+    channel.members.add(player.aliases[0])
+
+    const existingProp1 = await new GameChannelStoragePropFactory(channel)
+      .state(() => ({
+        key: 'items[]',
+        value: 'sword',
+        createdBy: player.aliases[0],
+        lastUpdatedBy: player.aliases[0],
+      }))
+      .one()
+    const existingProp2 = await new GameChannelStoragePropFactory(channel)
+      .state(() => ({
+        key: 'items[]',
+        value: 'shield',
+        createdBy: player.aliases[0],
+        lastUpdatedBy: player.aliases[0],
+      }))
+      .one()
+
+    await em.persist([channel, existingProp1, existingProp2]).flush()
+
+    const res = await request(app)
+      .put(`/v1/game-channels/${channel.id}/storage`)
+      .send({
+        props: [
+          { key: 'items[]', value: 'bow' },
+          { key: 'items[]', value: 'arrow' },
+        ],
+      })
+      .auth(token, { type: 'bearer' })
+      .set('x-talo-alias', String(player.aliases[0].id))
+      .expect(200)
+
+    expect(res.body.upsertedProps).toHaveLength(2)
+    expect(res.body.deletedProps).toHaveLength(2)
+    expect(res.body.failedProps).toHaveLength(0)
+
+    const props = await em.getRepository(GameChannelStorageProp).find({ gameChannel: channel })
+    expect(props).toHaveLength(2)
+    expect(props.map((p) => p.value).sort()).toStrictEqual(['arrow', 'bow'])
+
+    const cachedValue = await redis.get(GameChannelStorageProp.getRedisKey(channel.id, 'items[]'))
+    assert(cachedValue)
+    const parsed = JSON.parse(cachedValue)
+    expect(parsed.key).toBe('items[]')
+    expect(JSON.parse(parsed.value).sort()).toStrictEqual(['arrow', 'bow'])
+  })
+
+  it('should preserve createdBy and createdAt for retained array prop values', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_CHANNELS])
+
+    const channel = await new GameChannelFactory(apiKey.game).one()
+    const player = await new PlayerFactory([apiKey.game]).one()
+    const otherPlayer = await new PlayerFactory([apiKey.game]).one()
+    channel.members.add(player.aliases[0])
+
+    const existingProp = await new GameChannelStoragePropFactory(channel)
+      .state(() => ({
+        key: 'items[]',
+        value: 'sword',
+        createdBy: otherPlayer.aliases[0],
+        lastUpdatedBy: otherPlayer.aliases[0],
+      }))
+      .one()
+
+    await em.persist([channel, existingProp]).flush()
+    const originalCreatedAt = existingProp.createdAt
+
+    const res = await request(app)
+      .put(`/v1/game-channels/${channel.id}/storage`)
+      .send({
+        props: [
+          { key: 'items[]', value: 'sword' }, // existing value — should be preserved
+          { key: 'items[]', value: 'shield' }, // new value
+        ],
+      })
+      .auth(token, { type: 'bearer' })
+      .set('x-talo-alias', String(player.aliases[0].id))
+      .expect(200)
+
+    expect(res.body.upsertedProps).toHaveLength(2)
+    expect(res.body.deletedProps).toHaveLength(0)
+    expect(res.body.failedProps).toHaveLength(0)
+
+    await em.refresh(existingProp)
+    expect(existingProp.createdBy.id).toBe(otherPlayer.aliases[0].id)
+    expect(existingProp.createdAt.getTime()).toBeCloseTo(originalCreatedAt.getTime(), -3)
+    expect(existingProp.lastUpdatedBy.id).toBe(player.aliases[0].id)
+  })
+
+  it('should use the original creator for new values added to an existing array', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_CHANNELS])
+
+    const channel = await new GameChannelFactory(apiKey.game).one()
+    const player = await new PlayerFactory([apiKey.game]).one()
+    const originalCreator = await new PlayerFactory([apiKey.game]).one()
+    channel.members.add(player.aliases[0])
+
+    const existingProp = await new GameChannelStoragePropFactory(channel)
+      .state(() => ({
+        key: 'items[]',
+        value: 'sword',
+        createdBy: originalCreator.aliases[0],
+        lastUpdatedBy: originalCreator.aliases[0],
+      }))
+      .one()
+    await em.persist([channel, existingProp]).flush()
+
+    await request(app)
+      .put(`/v1/game-channels/${channel.id}/storage`)
+      .send({
+        props: [
+          { key: 'items[]', value: 'sword' },
+          { key: 'items[]', value: 'shield' }, // new value
+        ],
+      })
+      .auth(token, { type: 'bearer' })
+      .set('x-talo-alias', String(player.aliases[0].id))
+      .expect(200)
+
+    const newProp = await em
+      .repo(GameChannelStorageProp)
+      .findOne({ gameChannel: channel, key: 'items[]', value: 'shield' })
+
+    assert(newProp)
+    expect(newProp.createdBy.id).toBe(originalCreator.aliases[0].id)
+    expect(newProp.lastUpdatedBy.id).toBe(player.aliases[0].id)
+  })
+
+  it('should delete all array prop rows when all values are null', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_CHANNELS])
+
+    const channel = await new GameChannelFactory(apiKey.game).one()
+    const player = await new PlayerFactory([apiKey.game]).one()
+    channel.members.add(player.aliases[0])
+
+    const existingProp1 = await new GameChannelStoragePropFactory(channel)
+      .state(() => ({
+        key: 'items[]',
+        value: 'sword',
+        createdBy: player.aliases[0],
+        lastUpdatedBy: player.aliases[0],
+      }))
+      .one()
+    const existingProp2 = await new GameChannelStoragePropFactory(channel)
+      .state(() => ({
+        key: 'items[]',
+        value: 'shield',
+        createdBy: player.aliases[0],
+        lastUpdatedBy: player.aliases[0],
+      }))
+      .one()
+
+    await em.persist([channel, existingProp1, existingProp2]).flush()
+
+    const res = await request(app)
+      .put(`/v1/game-channels/${channel.id}/storage`)
+      .send({
+        props: [{ key: 'items[]', value: null }],
+      })
+      .auth(token, { type: 'bearer' })
+      .set('x-talo-alias', String(player.aliases[0].id))
+      .expect(200)
+
+    expect(res.body.upsertedProps).toHaveLength(0)
+    expect(res.body.deletedProps).toHaveLength(2)
+    expect(res.body.failedProps).toHaveLength(0)
+
+    const props = await em
+      .getRepository(GameChannelStorageProp)
+      .find({ gameChannel: channel, key: 'items[]' })
+    expect(props).toHaveLength(0)
+
+    const cachedValue = await redis.get(GameChannelStorageProp.getRedisKey(channel.id, 'items[]'))
+    assert(cachedValue)
+    expect(JSON.parse(cachedValue)).toBeNull()
+  })
+
+  it('should reject array props where the key exceeds the max length', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_CHANNELS])
+
+    const channel = await new GameChannelFactory(apiKey.game).one()
+    const player = await new PlayerFactory([apiKey.game]).one()
+    channel.members.add(player.aliases[0])
+    await em.persist(channel).flush()
+
+    const res = await request(app)
+      .put(`/v1/game-channels/${channel.id}/storage`)
+      .send({
+        props: [{ key: `${randText({ charCount: 127 })}[]`, value: 'value' }],
+      })
+      .auth(token, { type: 'bearer' })
+      .set('x-talo-alias', String(player.aliases[0].id))
+      .expect(200)
+
+    expect(res.body.failedProps).toHaveLength(1)
+    expect(res.body.failedProps[0].error).toMatch(/exceeds 128 characters/)
+  })
+
+  it('should reject array props where the array length exceeds the maximum', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_CHANNELS])
+
+    const channel = await new GameChannelFactory(apiKey.game).one()
+    const player = await new PlayerFactory([apiKey.game]).one()
+    channel.members.add(player.aliases[0])
+    await em.persist(channel).flush()
+
+    const res = await request(app)
+      .put(`/v1/game-channels/${channel.id}/storage`)
+      .send({
+        props: Array.from({ length: 1001 }, (_, i) => ({ key: 'items[]', value: String(i) })),
+      })
+      .auth(token, { type: 'bearer' })
+      .set('x-talo-alias', String(player.aliases[0].id))
+      .expect(200)
+
+    expect(res.body.failedProps).toHaveLength(1)
+    expect(res.body.failedProps[0].key).toBe('items[]')
+    expect(res.body.failedProps[0].error).toBe(
+      `Prop array length (1001) for key 'items[]' exceeds 1000 items`,
+    )
+  })
+
+  it('should reject array props where a value exceeds the max length', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_CHANNELS])
+
+    const channel = await new GameChannelFactory(apiKey.game).one()
+    const player = await new PlayerFactory([apiKey.game]).one()
+    channel.members.add(player.aliases[0])
+    await em.persist(channel).flush()
+
+    const res = await request(app)
+      .put(`/v1/game-channels/${channel.id}/storage`)
+      .send({
+        props: [
+          { key: 'items[]', value: 'valid' },
+          { key: 'items[]', value: randText({ charCount: 513 }) },
+        ],
+      })
+      .auth(token, { type: 'bearer' })
+      .set('x-talo-alias', String(player.aliases[0].id))
+      .expect(200)
+
+    expect(res.body.failedProps).toHaveLength(1)
+    expect(res.body.failedProps[0].key).toBe('items[]')
+    expect(res.body.failedProps[0].error).toBe('Prop value length (513) exceeds 512 characters')
+    // no rows should have been created since the whole key failed
+    const props = await em
+      .getRepository(GameChannelStorageProp)
+      .find({ gameChannel: channel, key: 'items[]' })
+    expect(props).toHaveLength(0)
   })
 
   it('should accept an empty array of props', async () => {

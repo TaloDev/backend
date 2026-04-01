@@ -247,7 +247,7 @@ describe('Event API - create', () => {
       .set('x-talo-alias', String(player.aliases[0].id))
       .expect(200)
 
-    const prop = await em.getRepository(PlayerProp).findOne({
+    const prop = await em.repo(PlayerProp).findOne({
       player: player.id,
       key: 'META_OS',
       value: 'macOS',
@@ -302,7 +302,7 @@ describe('Event API - create', () => {
       .set('x-talo-alias', String(player.aliases[0].id))
       .expect(200)
 
-    const prop = await em.getRepository(PlayerProp).findOne({
+    const prop = await em.repo(PlayerProp).findOne({
       player: player.id,
       key: 'META_OS',
       value: 'macOS',

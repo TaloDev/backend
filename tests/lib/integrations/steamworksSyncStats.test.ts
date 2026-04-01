@@ -65,14 +65,14 @@ describe('Steamworks integration - sync stats', () => {
 
     expect(getSchemaMock).toHaveBeenCalledTimes(1)
 
-    const event = await em.getRepository(SteamworksIntegrationEvent).findOneOrFail({ integration })
+    const event = await em.repo(SteamworksIntegrationEvent).findOneOrFail({ integration })
     expect(event.request).toStrictEqual({
       url: `https://partner.steam-api.com/ISteamUserStats/GetSchemaForGame/v2?appid=${integration.getSteamConfig().appId}`,
       body: '',
       method: 'GET',
     })
 
-    const createdStat = await em.getRepository(GameStat).findOne({
+    const createdStat = await em.repo(GameStat).findOne({
       game: integration.game,
       name: statDisplayName,
       globalValue: 500,
@@ -199,10 +199,10 @@ describe('Steamworks integration - sync stats', () => {
     expect(getSchemaMock).toHaveBeenCalledTimes(1)
     expect(getUserStatsMock).toHaveBeenCalledTimes(1)
 
-    const playerStat = await em.getRepository(PlayerGameStat).findOne({ value: 301 })
+    const playerStat = await em.repo(PlayerGameStat).findOne({ value: 301 })
     expect(playerStat).toBeTruthy()
 
-    const steamworksEntry = await em.getRepository(SteamworksPlayerStat).findOne({ playerStat })
+    const steamworksEntry = await em.repo(SteamworksPlayerStat).findOne({ playerStat })
     expect(steamworksEntry).toBeTruthy()
   })
 
@@ -255,7 +255,7 @@ describe('Steamworks integration - sync stats', () => {
     expect(getSchemaMock).toHaveBeenCalledTimes(1)
     expect(getUserStatsMock).toHaveBeenCalledTimes(1)
 
-    const playerStat = await em.getRepository(PlayerGameStat).findOne({ player })
+    const playerStat = await em.repo(PlayerGameStat).findOne({ player })
     expect(playerStat).toBeNull()
   })
 
@@ -413,7 +413,7 @@ describe('Steamworks integration - sync stats', () => {
     expect(setMock).toHaveBeenCalledTimes(1)
 
     const event = await em
-      .getRepository(SteamworksIntegrationEvent)
+      .repo(SteamworksIntegrationEvent)
       .findOneOrFail({ integration }, { orderBy: { id: 'desc' } })
     expect(event.request).toStrictEqual({
       url: 'https://partner.steam-api.com/ISteamUserStats/SetUserStatsForGame/v1',
@@ -533,7 +533,7 @@ describe('Steamworks integration - sync stats', () => {
     expect(getSchemaMock).toHaveBeenCalledTimes(1)
     expect(setMock).toHaveBeenCalledTimes(players.length - 1) // networkErrorOnce doesn't have a mock callback
 
-    const steamworksStatCount = await em.getRepository(SteamworksPlayerStat).count({
+    const steamworksStatCount = await em.repo(SteamworksPlayerStat).count({
       playerStat: {
         stat,
       },
@@ -653,14 +653,14 @@ describe('Steamworks integration - sync stats', () => {
     expect(getUserStatsMock2).toHaveBeenCalledTimes(1)
     expect(getUserStatsMock3).toHaveBeenCalledTimes(1)
 
-    const playerStatCount = await em.getRepository(PlayerGameStat).count({
+    const playerStatCount = await em.repo(PlayerGameStat).count({
       stat: {
         game,
       },
     })
     expect(playerStatCount).toBe(2) // 1 failed
 
-    const steamworksStatCount = await em.getRepository(SteamworksPlayerStat).count({
+    const steamworksStatCount = await em.repo(SteamworksPlayerStat).count({
       playerStat: {
         stat: {
           game,
@@ -735,15 +735,13 @@ describe('Steamworks integration - sync stats', () => {
     expect(getSchemaMock).toHaveBeenCalledTimes(1)
     expect(getUserStatsMock).toHaveBeenCalledTimes(1)
 
-    const playerStats = await em.getRepository(PlayerGameStat).find({ player })
+    const playerStats = await em.repo(PlayerGameStat).find({ player })
     expect(playerStats).toHaveLength(3)
 
     const values = playerStats.map((ps) => ps.value).sort((a, b) => a - b)
     expect(values).toStrictEqual([111, 222, 333])
 
-    const steamworksStats = await em
-      .getRepository(SteamworksPlayerStat)
-      .find({ playerStat: { player } })
+    const steamworksStats = await em.repo(SteamworksPlayerStat).find({ playerStat: { player } })
     expect(steamworksStats).toHaveLength(3)
   })
 
@@ -801,7 +799,7 @@ describe('Steamworks integration - sync stats', () => {
 
     // Should have created 2 new stats (first and third), the second one failed due to column length
     const createdStats = await em
-      .getRepository(GameStat)
+      .repo(GameStat)
       .find({ game }, { orderBy: { internalName: 'ASC' } })
     expect(createdStats).toHaveLength(2)
 

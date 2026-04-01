@@ -26,7 +26,7 @@ describe('Demo - create', () => {
 
     expect(res.body.accessToken).toBeTruthy()
 
-    const user = await em.getRepository(User).findOne(res.body.user.id)
+    const user = await em.repo(User).findOne(res.body.user.id)
     expect(user).toBeNull()
   })
 

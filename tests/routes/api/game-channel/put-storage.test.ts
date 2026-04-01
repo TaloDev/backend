@@ -35,7 +35,7 @@ describe('Game channel API - update storage', () => {
     expect(res.body.deletedProps).toHaveLength(0)
     expect(res.body.failedProps).toHaveLength(0)
 
-    const props = await em.getRepository(GameChannelStorageProp).find({ gameChannel: channel })
+    const props = await em.repo(GameChannelStorageProp).find({ gameChannel: channel })
     expect(props).toHaveLength(2)
 
     const scoreProp = props.find((p) => p.key === 'score')
@@ -112,7 +112,7 @@ describe('Game channel API - update storage', () => {
     expect(res.body.deletedProps).toHaveLength(1)
     expect(res.body.failedProps).toHaveLength(0)
 
-    const props = await em.getRepository(GameChannelStorageProp).find({
+    const props = await em.repo(GameChannelStorageProp).find({
       key: 'score',
       gameChannel: channel,
     })
@@ -341,7 +341,7 @@ describe('Game channel API - update storage', () => {
     expect(res.body.upsertedProps).toHaveLength(2)
     expect(res.body.failedProps).toHaveLength(0)
 
-    const props = await em.getRepository(GameChannelStorageProp).find({ gameChannel: channel })
+    const props = await em.repo(GameChannelStorageProp).find({ gameChannel: channel })
     expect(props).toHaveLength(2)
     expect(props.map((p) => p.value).sort()).toStrictEqual(['shield', 'sword'])
   })
@@ -371,7 +371,7 @@ describe('Game channel API - update storage', () => {
     expect(res.body.deletedProps).toHaveLength(0)
     expect(res.body.failedProps).toHaveLength(0)
 
-    const props = await em.getRepository(GameChannelStorageProp).find({ gameChannel: channel })
+    const props = await em.repo(GameChannelStorageProp).find({ gameChannel: channel })
     expect(props).toHaveLength(3)
     expect(props.map((p) => p.value).sort()).toStrictEqual(['potion', 'shield', 'sword'])
 
@@ -424,7 +424,7 @@ describe('Game channel API - update storage', () => {
     expect(res.body.deletedProps).toHaveLength(2)
     expect(res.body.failedProps).toHaveLength(0)
 
-    const props = await em.getRepository(GameChannelStorageProp).find({ gameChannel: channel })
+    const props = await em.repo(GameChannelStorageProp).find({ gameChannel: channel })
     expect(props).toHaveLength(2)
     expect(props.map((p) => p.value).sort()).toStrictEqual(['arrow', 'bow'])
 
@@ -556,7 +556,7 @@ describe('Game channel API - update storage', () => {
     expect(res.body.failedProps).toHaveLength(0)
 
     const props = await em
-      .getRepository(GameChannelStorageProp)
+      .repo(GameChannelStorageProp)
       .find({ gameChannel: channel, key: 'items[]' })
     expect(props).toHaveLength(0)
 
@@ -635,7 +635,7 @@ describe('Game channel API - update storage', () => {
     expect(res.body.failedProps[0].error).toBe('Prop value length (513) exceeds 512 characters')
     // no rows should have been created since the whole key failed
     const props = await em
-      .getRepository(GameChannelStorageProp)
+      .repo(GameChannelStorageProp)
       .find({ gameChannel: channel, key: 'items[]' })
     expect(props).toHaveLength(0)
   })

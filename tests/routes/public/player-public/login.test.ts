@@ -46,7 +46,7 @@ describe('Player public - login', () => {
     })
     expect(res.body.sessionToken).toBeTruthy()
 
-    const activity = await em.getRepository(PlayerAuthActivity).findOne({
+    const activity = await em.repo(PlayerAuthActivity).findOne({
       type: PlayerAuthActivityType.LOGGED_IN,
       player: player.id,
       extra: {
@@ -137,7 +137,7 @@ describe('Player public - login', () => {
     expect(await redis.get(`player-auth:${game.id}:verification:${alias.id}`)).toHaveLength(6)
     expect(sendMock).toHaveBeenCalledOnce()
 
-    const activity = await em.getRepository(PlayerAuthActivity).findOne({
+    const activity = await em.repo(PlayerAuthActivity).findOne({
       type: PlayerAuthActivityType.VERIFICATION_STARTED,
       player: player.id,
       extra: {

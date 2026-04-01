@@ -13,7 +13,7 @@ export async function updateDataExportStatus(
   const orm = await getMikroORM()
   const em = orm.em.fork()
 
-  const dataExport = await em.getRepository(DataExport).findOneOrFail(dataExportId)
+  const dataExport = await em.repo(DataExport).findOneOrFail(dataExportId)
   if (newStatus.id) {
     console.info(
       `Data export (${dataExportId}) - status updated from ${dataExport.status} to ${newStatus.id}`,

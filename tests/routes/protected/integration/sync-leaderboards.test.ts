@@ -37,7 +37,7 @@ describe('Integration - sync leaderboards', () => {
         .auth(token, { type: 'bearer' })
         .expect(statusCode)
 
-      const activity = await em.getRepository(GameActivity).findOne({
+      const activity = await em.repo(GameActivity).findOne({
         type: GameActivityType.GAME_INTEGRATION_STEAMWORKS_LEADERBOARDS_SYNCED,
         game,
       })
@@ -75,7 +75,7 @@ describe('Integration - sync leaderboards', () => {
       .auth(token, { type: 'bearer' })
       .expect(403)
 
-    const activity = await em.getRepository(GameActivity).findOne({
+    const activity = await em.repo(GameActivity).findOne({
       type: GameActivityType.GAME_INTEGRATION_STEAMWORKS_LEADERBOARDS_SYNCED,
       game,
     })
@@ -102,7 +102,7 @@ describe('Integration - sync leaderboards', () => {
       .auth(token, { type: 'bearer' })
       .expect(400)
 
-    const activity = await em.getRepository(GameActivity).findOne({
+    const activity = await em.repo(GameActivity).findOne({
       type: GameActivityType.GAME_INTEGRATION_STEAMWORKS_LEADERBOARDS_SYNCED,
       game,
     })
@@ -129,7 +129,7 @@ describe('Integration - sync leaderboards', () => {
       .auth(token, { type: 'bearer' })
       .expect(404)
 
-    const activity = await em.getRepository(GameActivity).findOne({
+    const activity = await em.repo(GameActivity).findOne({
       type: GameActivityType.GAME_INTEGRATION_STEAMWORKS_LEADERBOARDS_SYNCED,
       game,
     })

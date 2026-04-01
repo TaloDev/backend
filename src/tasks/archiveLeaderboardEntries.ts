@@ -65,7 +65,7 @@ export default async function archiveLeaderboardEntries() {
   const orm = await getMikroORM()
   const em = orm.em.fork()
 
-  const leaderboards = await em.getRepository(Leaderboard).find({
+  const leaderboards = await em.repo(Leaderboard).find({
     refreshInterval: { $ne: LeaderboardRefreshInterval.NEVER },
   })
 

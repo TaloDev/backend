@@ -42,7 +42,7 @@ describe('Player group - create', () => {
         .auth(token, { type: 'bearer' })
         .expect(statusCode)
 
-      const activity = await em.getRepository(GameActivity).findOne({
+      const activity = await em.repo(GameActivity).findOne({
         type: GameActivityType.PLAYER_GROUP_CREATED,
         game,
       })

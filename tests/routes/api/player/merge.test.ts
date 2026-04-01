@@ -529,7 +529,7 @@ describe('Player API - merge', () => {
 
     expect(res.body.player.id).toBe(player1.id)
 
-    const activity = await em.getRepository(PlayerAuthActivity).findOne({
+    const activity = await em.repo(PlayerAuthActivity).findOne({
       player: player1,
       type: PlayerAuthActivityType.PLAYER_MERGED,
     })
@@ -554,7 +554,7 @@ describe('Player API - merge', () => {
       .auth(token, { type: 'bearer' })
       .expect(200)
 
-    const activityCount = await em.getRepository(PlayerAuthActivity).count({ player: player1 })
+    const activityCount = await em.repo(PlayerAuthActivity).count({ player: player1 })
     expect(activityCount).toBe(0)
   })
 

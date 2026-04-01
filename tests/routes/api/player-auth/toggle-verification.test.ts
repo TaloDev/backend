@@ -45,7 +45,7 @@ describe('Player auth API - toggle verification', () => {
     await em.refresh(player.auth!)
     expect(player.auth!.verificationEnabled).toBe(true)
 
-    const activity = await em.getRepository(PlayerAuthActivity).findOne({
+    const activity = await em.repo(PlayerAuthActivity).findOne({
       type: PlayerAuthActivityType.VERIFICATION_TOGGLED,
       player: player.id,
       extra: {
@@ -91,7 +91,7 @@ describe('Player auth API - toggle verification', () => {
     await em.refresh(player.auth!)
     expect(player.auth!.verificationEnabled).toBe(false)
 
-    const activity = await em.getRepository(PlayerAuthActivity).findOne({
+    const activity = await em.repo(PlayerAuthActivity).findOne({
       type: PlayerAuthActivityType.VERIFICATION_TOGGLED,
       player: player.id,
       extra: {
@@ -139,7 +139,7 @@ describe('Player auth API - toggle verification', () => {
       errorCode: 'VERIFICATION_EMAIL_REQUIRED',
     })
 
-    const activity = await em.getRepository(PlayerAuthActivity).findOne({
+    const activity = await em.repo(PlayerAuthActivity).findOne({
       type: PlayerAuthActivityType.TOGGLE_VERIFICATION_FAILED,
       player: player.id,
       extra: {
@@ -187,7 +187,7 @@ describe('Player auth API - toggle verification', () => {
     expect(player.auth!.verificationEnabled).toBe(true)
     expect(player.auth!.email).toBe('bozzz@mail.com')
 
-    const activity = await em.getRepository(PlayerAuthActivity).findOne({
+    const activity = await em.repo(PlayerAuthActivity).findOne({
       type: PlayerAuthActivityType.VERIFICATION_TOGGLED,
       player: player.id,
       extra: {
@@ -235,7 +235,7 @@ describe('Player auth API - toggle verification', () => {
       errorCode: 'INVALID_CREDENTIALS',
     })
 
-    const activity = await em.getRepository(PlayerAuthActivity).findOne({
+    const activity = await em.repo(PlayerAuthActivity).findOne({
       type: PlayerAuthActivityType.TOGGLE_VERIFICATION_FAILED,
       player: player.id,
       extra: {
@@ -315,7 +315,7 @@ describe('Player auth API - toggle verification', () => {
       errorCode: 'INVALID_EMAIL',
     })
 
-    const activity = await em.getRepository(PlayerAuthActivity).findOne({
+    const activity = await em.repo(PlayerAuthActivity).findOne({
       type: PlayerAuthActivityType.TOGGLE_VERIFICATION_FAILED,
       player: player.id,
       extra: {
@@ -434,7 +434,7 @@ describe('Player auth API - toggle verification', () => {
       errorCode: 'EMAIL_TAKEN',
     })
 
-    const activity = await em.getRepository(PlayerAuthActivity).findOne({
+    const activity = await em.repo(PlayerAuthActivity).findOne({
       type: PlayerAuthActivityType.TOGGLE_VERIFICATION_FAILED,
       player: player.id,
       extra: {

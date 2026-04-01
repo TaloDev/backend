@@ -7,6 +7,6 @@ export default async function triggerIntegrations(
   game: Game,
   callback: (integration: Integration) => void,
 ) {
-  const integrations = await em.getRepository(Integration).find({ game })
+  const integrations = await em.repo(Integration).find({ game })
   await Promise.all(integrations.map((integration) => callback(integration)))
 }

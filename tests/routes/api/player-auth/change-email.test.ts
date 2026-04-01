@@ -46,7 +46,7 @@ describe('Player auth API - change email', () => {
     await em.refresh(player.auth!)
     expect(player.auth!.email).toBe('bozza@mail.com')
 
-    const activity = await em.getRepository(PlayerAuthActivity).findOne({
+    const activity = await em.repo(PlayerAuthActivity).findOne({
       type: PlayerAuthActivityType.CHANGED_EMAIL,
       player: player.id,
       extra: {
@@ -125,7 +125,7 @@ describe('Player auth API - change email', () => {
       errorCode: 'INVALID_CREDENTIALS',
     })
 
-    const activity = await em.getRepository(PlayerAuthActivity).findOne({
+    const activity = await em.repo(PlayerAuthActivity).findOne({
       type: PlayerAuthActivityType.CHANGE_EMAIL_FAILED,
       player: player.id,
       extra: {
@@ -173,7 +173,7 @@ describe('Player auth API - change email', () => {
       errorCode: 'NEW_EMAIL_MATCHES_CURRENT_EMAIL',
     })
 
-    const activity = await em.getRepository(PlayerAuthActivity).findOne({
+    const activity = await em.repo(PlayerAuthActivity).findOne({
       type: PlayerAuthActivityType.CHANGE_EMAIL_FAILED,
       player: player.id,
       extra: {
@@ -221,7 +221,7 @@ describe('Player auth API - change email', () => {
       errorCode: 'INVALID_EMAIL',
     })
 
-    const activity = await em.getRepository(PlayerAuthActivity).findOne({
+    const activity = await em.repo(PlayerAuthActivity).findOne({
       type: PlayerAuthActivityType.CHANGE_EMAIL_FAILED,
       player: player.id,
       extra: {
@@ -339,7 +339,7 @@ describe('Player auth API - change email', () => {
       errorCode: 'EMAIL_TAKEN',
     })
 
-    const activity = await em.getRepository(PlayerAuthActivity).findOne({
+    const activity = await em.repo(PlayerAuthActivity).findOne({
       type: PlayerAuthActivityType.CHANGE_EMAIL_FAILED,
       player: player.id,
       extra: {

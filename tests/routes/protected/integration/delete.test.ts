@@ -26,7 +26,7 @@ describe('Integration - delete', () => {
         .auth(token, { type: 'bearer' })
         .expect(statusCode)
 
-      const activity = await em.getRepository(GameActivity).findOne({
+      const activity = await em.repo(GameActivity).findOne({
         type: GameActivityType.GAME_INTEGRATION_DELETED,
         game,
       })
@@ -58,7 +58,7 @@ describe('Integration - delete', () => {
       .auth(token, { type: 'bearer' })
       .expect(403)
 
-    const activity = await em.getRepository(GameActivity).findOne({
+    const activity = await em.repo(GameActivity).findOne({
       type: GameActivityType.GAME_INTEGRATION_DELETED,
       game,
     })
@@ -83,7 +83,7 @@ describe('Integration - delete', () => {
       .auth(token, { type: 'bearer' })
       .expect(404)
 
-    const activity = await em.getRepository(GameActivity).findOne({
+    const activity = await em.repo(GameActivity).findOne({
       type: GameActivityType.GAME_INTEGRATION_DELETED,
       game,
     })

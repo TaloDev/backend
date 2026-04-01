@@ -21,7 +21,7 @@ describe('Leaderboard - delete', () => {
         .auth(token, { type: 'bearer' })
         .expect(statusCode)
 
-      const activity = await em.getRepository(GameActivity).findOne({
+      const activity = await em.repo(GameActivity).findOne({
         type: GameActivityType.LEADERBOARD_DELETED,
         game,
       })

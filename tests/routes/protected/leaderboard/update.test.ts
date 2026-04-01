@@ -38,7 +38,7 @@ describe('Leaderboard - update', () => {
 
     expect(res.body.leaderboard.name).toBe('The new name')
 
-    const activity = await em.getRepository(GameActivity).findOne({
+    const activity = await em.repo(GameActivity).findOne({
       type: GameActivityType.LEADERBOARD_UPDATED,
       game,
       extra: {

@@ -26,7 +26,7 @@ describe('Leaderboard - update entry', () => {
         .auth(token, { type: 'bearer' })
         .expect(statusCode)
 
-      const activity = await em.getRepository(GameActivity).findOne({
+      const activity = await em.repo(GameActivity).findOne({
         type: GameActivityType.LEADERBOARD_ENTRY_HIDDEN,
         game,
         extra: {
@@ -64,7 +64,7 @@ describe('Leaderboard - update entry', () => {
 
     expect(res.body.entry.hidden).toBe(false)
 
-    const activity = await em.getRepository(GameActivity).findOne({
+    const activity = await em.repo(GameActivity).findOne({
       type: GameActivityType.LEADERBOARD_ENTRY_RESTORED,
       game,
       extra: {
@@ -96,7 +96,7 @@ describe('Leaderboard - update entry', () => {
 
     expect(res.body.entry.hidden).toBe(true)
 
-    const activity = await em.getRepository(GameActivity).findOne({
+    const activity = await em.repo(GameActivity).findOne({
       type: GameActivityType.LEADERBOARD_ENTRY_HIDDEN,
       game,
       extra: {
@@ -146,7 +146,7 @@ describe('Leaderboard - update entry', () => {
 
     expect(res.body.entry.score).toBe(200)
 
-    const activity = await em.getRepository(GameActivity).findOne({
+    const activity = await em.repo(GameActivity).findOne({
       type: GameActivityType.LEADERBOARD_ENTRY_UPDATED,
       game,
       extra: {

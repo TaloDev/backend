@@ -28,7 +28,7 @@ describe('Game feedback - update category', () => {
     expect(res.body.feedbackCategory.name).toBe('Bugs')
     expect(res.body.feedbackCategory.description).toBe('Bug reports')
 
-    const activity = await em.getRepository(GameActivity).findOne({
+    const activity = await em.repo(GameActivity).findOne({
       type: GameActivityType.GAME_FEEDBACK_CATEGORY_UPDATED,
       game,
       extra: {
@@ -68,7 +68,7 @@ describe('Game feedback - update category', () => {
 
     expect(res.body.feedbackCategory.anonymised).toBe(false)
 
-    const activity = await em.getRepository(GameActivity).findOne({
+    const activity = await em.repo(GameActivity).findOne({
       type: GameActivityType.GAME_FEEDBACK_CATEGORY_UPDATED,
       game,
       extra: {
@@ -98,7 +98,7 @@ describe('Game feedback - update category', () => {
 
     expect(res.body.feedbackCategory.internalName).toBe(feedbackCategory.internalName)
 
-    const activity = await em.getRepository(GameActivity).findOne({
+    const activity = await em.repo(GameActivity).findOne({
       type: GameActivityType.GAME_FEEDBACK_CATEGORY_UPDATED,
       game,
       extra: {

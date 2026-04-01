@@ -45,7 +45,7 @@ describe('Player auth API - change password', () => {
     await em.refresh(player.auth!)
     expect(await bcrypt.compare('password1', player.auth!.password)).toBe(true)
 
-    const activity = await em.getRepository(PlayerAuthActivity).findOne({
+    const activity = await em.repo(PlayerAuthActivity).findOne({
       type: PlayerAuthActivityType.CHANGED_PASSWORD,
       player: player.id,
     })
@@ -121,7 +121,7 @@ describe('Player auth API - change password', () => {
       errorCode: 'INVALID_CREDENTIALS',
     })
 
-    const activity = await em.getRepository(PlayerAuthActivity).findOne({
+    const activity = await em.repo(PlayerAuthActivity).findOne({
       type: PlayerAuthActivityType.CHANGE_PASSWORD_FAILED,
       player: player.id,
       extra: {
@@ -169,7 +169,7 @@ describe('Player auth API - change password', () => {
       errorCode: 'NEW_PASSWORD_MATCHES_CURRENT_PASSWORD',
     })
 
-    const activity = await em.getRepository(PlayerAuthActivity).findOne({
+    const activity = await em.repo(PlayerAuthActivity).findOne({
       type: PlayerAuthActivityType.CHANGE_PASSWORD_FAILED,
       player: player.id,
       extra: {

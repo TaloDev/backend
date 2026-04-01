@@ -54,7 +54,7 @@ describe('User public - register', () => {
       .send({ email, username: randUserName(), password: 'password', organisationName: 'Talo' })
       .expect(200)
 
-    const accessCode = await em.getRepository(UserAccessCode).findOne({
+    const accessCode = await em.repo(UserAccessCode).findOne({
       user: {
         email,
       },
@@ -83,7 +83,7 @@ describe('User public - register', () => {
     expect(res.body.user.organisation.id).toBe(organisation.id)
     expect(res.body.user.organisation.games).toHaveLength(1)
 
-    const activity = await em.getRepository(GameActivity).findOne({
+    const activity = await em.repo(GameActivity).findOne({
       type: GameActivityType.INVITE_ACCEPTED,
     })
 

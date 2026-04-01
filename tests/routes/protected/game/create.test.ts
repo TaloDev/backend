@@ -20,7 +20,7 @@ describe('Game - create', () => {
         expect(res.body.game.name).toBe('Twodoors')
 
         const game = await em
-          .getRepository(Game)
+          .repo(Game)
           .findOneOrFail(res.body.game.id, { populate: ['organisation'] })
         expect(game.organisation.id).toBe(user.organisation.id)
       } else {

@@ -68,14 +68,14 @@ describe('Leaderboard - steamworks create', () => {
 
     expect(createMock).toHaveBeenCalledTimes(1)
 
-    const event = await em.getRepository(SteamworksIntegrationEvent).findOneOrFail({ integration })
+    const event = await em.repo(SteamworksIntegrationEvent).findOneOrFail({ integration })
     expect(event.request).toStrictEqual({
       url: 'https://partner.steam-api.com/ISteamLeaderboards/FindOrCreateLeaderboard/v2',
       body: `appid=${config.appId}&name=highscores&sortmethod=Descending&displaytype=Numeric&createifnotfound=true&onlytrustedwrites=true&onlyfriendsreads=false`,
       method: 'POST',
     })
 
-    const mapping = await em.getRepository(SteamworksLeaderboardMapping).findOneOrFail(
+    const mapping = await em.repo(SteamworksLeaderboardMapping).findOneOrFail(
       {
         steamworksLeaderboardId: 12233213,
       },
@@ -116,11 +116,11 @@ describe('Leaderboard - steamworks create', () => {
 
     expect(createMock).not.toHaveBeenCalled()
 
-    const event = await em.getRepository(SteamworksIntegrationEvent).findOne({ integration })
+    const event = await em.repo(SteamworksIntegrationEvent).findOne({ integration })
     expect(event).toBeNull()
 
     const mapping = await em
-      .getRepository(SteamworksLeaderboardMapping)
+      .repo(SteamworksLeaderboardMapping)
       .findOne({ steamworksLeaderboardId: 3242332 })
     expect(mapping).toBeNull()
 
@@ -158,14 +158,14 @@ describe('Leaderboard - steamworks create', () => {
 
     expect(createMock).toHaveBeenCalledTimes(1)
 
-    const event = await em.getRepository(SteamworksIntegrationEvent).findOneOrFail({ integration })
+    const event = await em.repo(SteamworksIntegrationEvent).findOneOrFail({ integration })
     expect(event.request).toStrictEqual({
       url: 'https://partner.steam-api.com/ISteamLeaderboards/FindOrCreateLeaderboard/v2',
       body: `appid=${config.appId}&name=highscores&sortmethod=Descending&displaytype=Numeric&createifnotfound=true&onlytrustedwrites=true&onlyfriendsreads=false`,
       method: 'POST',
     })
 
-    const mappings = await em.getRepository(SteamworksLeaderboardMapping).findAll()
+    const mappings = await em.repo(SteamworksLeaderboardMapping).findAll()
     expect(mappings).toHaveLength(0)
   })
 })

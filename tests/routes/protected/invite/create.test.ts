@@ -27,7 +27,7 @@ describe('Invite - create', () => {
         .auth(token, { type: 'bearer' })
         .expect(statusCode)
 
-      const activity = await em.getRepository(GameActivity).findOne({
+      const activity = await em.repo(GameActivity).findOne({
         type: GameActivityType.INVITE_CREATED,
       })
 

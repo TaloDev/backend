@@ -11,7 +11,7 @@ export default async function createDefaultPricingPlan(
 ): Promise<OrganisationPricingPlan> {
   const stripe = initStripe()
 
-  let defaultPlan = await em.getRepository(PricingPlan).findOne({ default: true })
+  let defaultPlan = await em.repo(PricingPlan).findOne({ default: true })
 
   let price: string | null = null
   if (process.env.STRIPE_KEY && defaultPlan) {

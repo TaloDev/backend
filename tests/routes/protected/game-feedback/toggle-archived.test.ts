@@ -108,7 +108,7 @@ describe('Game feedback - toggle archived', () => {
       .auth(token, { type: 'bearer' })
       .expect(200)
 
-    const activity = await em.getRepository(GameActivity).findOne({
+    const activity = await em.repo(GameActivity).findOne({
       type: GameActivityType.GAME_FEEDBACK_ARCHIVED,
       game,
     })
@@ -130,7 +130,7 @@ describe('Game feedback - toggle archived', () => {
       .auth(token, { type: 'bearer' })
       .expect(200)
 
-    const activity = await em.getRepository(GameActivity).findOne({
+    const activity = await em.repo(GameActivity).findOne({
       type: GameActivityType.GAME_FEEDBACK_ARCHIVED,
       game,
     })
@@ -154,7 +154,7 @@ describe('Game feedback - toggle archived', () => {
       .auth(token, { type: 'bearer' })
       .expect(200)
 
-    const activity = await em.getRepository(GameActivity).findOne({
+    const activity = await em.repo(GameActivity).findOne({
       type: GameActivityType.GAME_FEEDBACK_RESTORED,
       game,
     })

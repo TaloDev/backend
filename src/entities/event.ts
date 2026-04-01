@@ -53,7 +53,7 @@ export default class Event extends ClickHouseEntity<
   ): Promise<Event[]> {
     const playerAliasIds = Array.from(new Set(data.map((event) => event.player_alias_id)))
 
-    const playerAliases = await em.getRepository(PlayerAlias).find({
+    const playerAliases = await em.repo(PlayerAlias).find({
       id: {
         $in: playerAliasIds,
       },
@@ -161,8 +161,8 @@ export default class Event extends ClickHouseEntity<
     clickhouse: ClickHouseClient,
     loadProps: boolean = false,
   ): Promise<this> {
-    const game = await em.getRepository(Game).findOneOrFail(data.game_id)
-    const playerAlias = await em.getRepository(PlayerAlias).findOneOrFail(data.player_alias_id)
+    const game = await em.repo(Game).findOneOrFail(data.game_id)
+    const playerAlias = await em.repo(PlayerAlias).findOneOrFail(data.player_alias_id)
 
     this.construct(data.name, game)
     this.id = data.id

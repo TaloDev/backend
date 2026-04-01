@@ -33,7 +33,7 @@ describe('Player auth API - forgot password', () => {
     expect(await redis.keys(`player-auth:${apiKey.game.id}:password-reset:*`)).toHaveLength(1)
     expect(sendMock).toHaveBeenCalledOnce()
 
-    const activity = await em.getRepository(PlayerAuthActivity).findOne({
+    const activity = await em.repo(PlayerAuthActivity).findOne({
       type: PlayerAuthActivityType.PASSWORD_RESET_REQUESTED,
       player: player.id,
     })

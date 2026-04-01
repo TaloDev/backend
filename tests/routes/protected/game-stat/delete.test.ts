@@ -21,7 +21,7 @@ describe('Game stat - delete', () => {
         .auth(token, { type: 'bearer' })
         .expect(statusCode)
 
-      const activity = await em.getRepository(GameActivity).findOne({
+      const activity = await em.repo(GameActivity).findOne({
         type: GameActivityType.GAME_STAT_DELETED,
         game,
         extra: {

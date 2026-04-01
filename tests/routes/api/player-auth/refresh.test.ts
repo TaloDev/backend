@@ -43,7 +43,7 @@ describe('Player auth API - refresh', () => {
     expect(res.body.refreshToken).toBeTruthy()
     expect(res.body.refreshToken).not.toBe(refreshToken)
 
-    const activity = await em.getRepository(PlayerAuthActivity).findOne({
+    const activity = await em.repo(PlayerAuthActivity).findOne({
       type: PlayerAuthActivityType.SESSION_REFRESHED,
       player: player.id,
     })

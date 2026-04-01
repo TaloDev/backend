@@ -6,6 +6,7 @@ import DataExportReady from '../../../emails/data-export-ready-mail'
 import { EmailConfig } from '../../../emails/mail'
 import DataExport, { DataExportStatus } from '../../../entities/data-export'
 import queueEmail from '../../messaging/queueEmail'
+import { isS3Configured, uploadToS3 } from '../../storage/s3Client'
 import { createEmailQueue } from '../createEmailQueue'
 import { updateDataExportStatus } from './updateDataExportStatus'
 
@@ -35,19 +36,32 @@ export class DataExportMailer {
   }
 
   async send(dataExport: DataExport, filepath: string, filename: string) {
-    await queueEmail(
-      this.emailQueue,
-      new DataExportReady(dataExport.createdByUser.email, [
-        {
-          content: fs.readFileSync(filepath).toString('base64'),
-          filename,
-          type: 'application/zip',
-          disposition: 'attachment',
-        },
-      ]),
-      { dataExportId: dataExport.id },
-    )
+    try {
+      if (isS3Configured()) {
+        const key = `data-exports/game-id=${dataExport.game.id}/${filename}`
+        const downloadUrl = await uploadToS3({ filepath, key })
 
-    await fsp.unlink(filepath)
+        await queueEmail(
+          this.emailQueue,
+          new DataExportReady(dataExport.createdByUser.email, [], downloadUrl),
+          { dataExportId: dataExport.id },
+        )
+      } else {
+        await queueEmail(
+          this.emailQueue,
+          new DataExportReady(dataExport.createdByUser.email, [
+            {
+              content: fs.readFileSync(filepath).toString('base64'),
+              filename,
+              type: 'application/zip',
+              disposition: 'attachment',
+            },
+          ]),
+          { dataExportId: dataExport.id },
+        )
+      }
+    } finally {
+      await fsp.unlink(filepath)
+    }
   }
 }

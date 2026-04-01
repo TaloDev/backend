@@ -1,7 +1,7 @@
 import Mail, { AttachmentData } from './mail'
 
 export default class DataExportReady extends Mail {
-  constructor(to: string, attachments: AttachmentData[]) {
+  constructor(to: string, attachments: AttachmentData[], downloadUrl?: string) {
     super(
       to,
       'Your data export is ready',
@@ -9,10 +9,15 @@ export default class DataExportReady extends Mail {
     )
 
     this.title = 'Your data export is ready'
-    this.mainText = "We've attached it to this email for you."
-
     this.why = 'You are receiving this email because you requested a data export'
 
-    this.attachments = attachments
+    if (downloadUrl) {
+      this.mainText = "We've generated your data export. The link below will expire in 7 days."
+      this.ctaLink = downloadUrl
+      this.ctaText = 'Download export'
+    } else {
+      this.mainText = "We've attached it to this email for you."
+      this.attachments = attachments
+    }
   }
 }

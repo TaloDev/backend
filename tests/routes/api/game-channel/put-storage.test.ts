@@ -193,7 +193,7 @@ describe('Game channel API - update storage', () => {
     expect(res.body).toStrictEqual({ errors: { props: ['Props must be an array'] } })
   })
 
-  it('should verify props are cached in Redis', async () => {
+  it('should verify props are cached in redis', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_CHANNELS])
 
     const channel = await new GameChannelFactory(apiKey.game).one()
@@ -433,6 +433,49 @@ describe('Game channel API - update storage', () => {
     const parsed = JSON.parse(cachedValue)
     expect(parsed.key).toBe('items[]')
     expect(JSON.parse(parsed.value).sort()).toStrictEqual(['arrow', 'bow'])
+  })
+
+  it('should include all array prop items in upsertedProps and only removed items in deletedProps', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_CHANNELS])
+
+    const channel = await new GameChannelFactory(apiKey.game).one()
+    const player = await new PlayerFactory([apiKey.game]).one()
+    channel.members.add(player.aliases[0])
+    await em.persist(channel).flush()
+
+    const firstRes = await request(app)
+      .put(`/v1/game-channels/${channel.id}/storage`)
+      .send({
+        props: [
+          { key: 'items[]', value: 'sword' },
+          { key: 'items[]', value: 'shield' },
+          { key: 'items[]', value: 'potion' },
+        ],
+      })
+      .auth(token, { type: 'bearer' })
+      .set('x-talo-alias', String(player.aliases[0].id))
+      .expect(200)
+
+    expect(firstRes.body.upsertedProps).toHaveLength(3)
+    expect(firstRes.body.upsertedProps.map((p: { value: string }) => p.value).sort()).toStrictEqual(['potion', 'shield', 'sword'])
+    expect(firstRes.body.deletedProps).toHaveLength(0)
+
+    const secondRes = await request(app)
+      .put(`/v1/game-channels/${channel.id}/storage`)
+      .send({
+        props: [
+          { key: 'items[]', value: 'sword' },
+          { key: 'items[]', value: 'shield' },
+        ],
+      })
+      .auth(token, { type: 'bearer' })
+      .set('x-talo-alias', String(player.aliases[0].id))
+      .expect(200)
+
+    expect(secondRes.body.upsertedProps).toHaveLength(2)
+    expect(secondRes.body.upsertedProps.map((p: { value: string }) => p.value).sort()).toStrictEqual(['shield', 'sword'])
+    expect(secondRes.body.deletedProps).toHaveLength(1)
+    expect(secondRes.body.deletedProps[0].value).toBe('potion')
   })
 
   it('should preserve createdBy and createdAt for retained array prop values', async () => {

@@ -457,7 +457,9 @@ describe('Game channel API - update storage', () => {
       .expect(200)
 
     expect(firstRes.body.upsertedProps).toHaveLength(3)
-    expect(firstRes.body.upsertedProps.map((p: { value: string }) => p.value).sort()).toStrictEqual(['potion', 'shield', 'sword'])
+    expect(firstRes.body.upsertedProps.map((p: { value: string }) => p.value).sort()).toStrictEqual(
+      ['potion', 'shield', 'sword'],
+    )
     expect(firstRes.body.deletedProps).toHaveLength(0)
 
     const secondRes = await request(app)
@@ -473,7 +475,9 @@ describe('Game channel API - update storage', () => {
       .expect(200)
 
     expect(secondRes.body.upsertedProps).toHaveLength(2)
-    expect(secondRes.body.upsertedProps.map((p: { value: string }) => p.value).sort()).toStrictEqual(['shield', 'sword'])
+    expect(
+      secondRes.body.upsertedProps.map((p: { value: string }) => p.value).sort(),
+    ).toStrictEqual(['shield', 'sword'])
     expect(secondRes.body.deletedProps).toHaveLength(1)
     expect(secondRes.body.deletedProps[0].value).toBe('potion')
   })

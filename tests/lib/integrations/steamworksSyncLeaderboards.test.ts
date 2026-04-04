@@ -91,14 +91,14 @@ describe('Steamworks integration - sync leaderboards', () => {
     expect(getLeaderboardsMock).toHaveBeenCalledTimes(1)
     expect(getEntriesMock).toHaveBeenCalledTimes(1)
 
-    const event = await em.getRepository(SteamworksIntegrationEvent).findOneOrFail({ integration })
+    const event = await em.repo(SteamworksIntegrationEvent).findOneOrFail({ integration })
     expect(event.request).toStrictEqual({
       url: `https://partner.steam-api.com/ISteamLeaderboards/GetLeaderboardsForGame/v2?appid=${integration.getSteamConfig().appId}`,
       body: '',
       method: 'GET',
     })
 
-    const createdLeaderboard = await em.getRepository(Leaderboard).findOne({
+    const createdLeaderboard = await em.repo(Leaderboard).findOne({
       game: integration.game,
       internalName: 'Quickest Win',
       name: 'Quickest Win',
@@ -108,20 +108,18 @@ describe('Steamworks integration - sync leaderboards', () => {
 
     expect(createdLeaderboard).toBeTruthy()
 
-    const mapping = await em.getRepository(SteamworksLeaderboardMapping).findOne({
+    const mapping = await em.repo(SteamworksLeaderboardMapping).findOne({
       leaderboard: createdLeaderboard,
       steamworksLeaderboardId,
     })
 
     expect(mapping).toBeTruthy()
 
-    const entry = await em
-      .getRepository(LeaderboardEntry)
-      .findOne({ score: 1030 }, { refresh: true })
+    const entry = await em.repo(LeaderboardEntry).findOne({ score: 1030 }, { refresh: true })
     expect(entry).toBeTruthy()
 
     const steamworksEntry = await em
-      .getRepository(SteamworksLeaderboardEntry)
+      .repo(SteamworksLeaderboardEntry)
       .findOne({ leaderboardEntry: entry }, { refresh: true })
     expect(steamworksEntry).toBeTruthy()
   })
@@ -217,7 +215,7 @@ describe('Steamworks integration - sync leaderboards', () => {
     expect(getLeaderboardsMock).toHaveBeenCalledTimes(1)
     expect(getEntriesMock).toHaveBeenCalledTimes(1)
 
-    const updatedLeaderboard = await em.getRepository(Leaderboard).findOne({
+    const updatedLeaderboard = await em.repo(Leaderboard).findOne({
       game: integration.game,
       internalName: 'Biggest Combo',
       name: 'Biggest Combo',
@@ -287,7 +285,7 @@ describe('Steamworks integration - sync leaderboards', () => {
     expect(getLeaderboardsMock).toHaveBeenCalledTimes(1)
     expect(getEntriesMock).toHaveBeenCalledTimes(1)
 
-    const mapping = await em.getRepository(SteamworksLeaderboardMapping).findOne({
+    const mapping = await em.repo(SteamworksLeaderboardMapping).findOne({
       leaderboard,
       steamworksLeaderboardId,
     })
@@ -349,7 +347,7 @@ describe('Steamworks integration - sync leaderboards', () => {
     expect(getLeaderboardsMock).toHaveBeenCalledTimes(1)
 
     const event = await em
-      .getRepository(SteamworksIntegrationEvent)
+      .repo(SteamworksIntegrationEvent)
       .findOneOrFail({ integration }, { orderBy: { id: 'desc' } })
     expect(event.request).toStrictEqual({
       url: 'https://partner.steam-api.com/ISteamLeaderboards/FindOrCreateLeaderboard/v2',
@@ -426,12 +424,12 @@ describe('Steamworks integration - sync leaderboards', () => {
     expect(getEntriesMock).toHaveBeenCalledTimes(1)
 
     const entry = await em
-      .getRepository(LeaderboardEntry)
+      .repo(LeaderboardEntry)
       .findOne({ playerAlias: player.aliases[0] }, { refresh: true })
     expect(entry).toBeTruthy()
 
     const steamworksEntry = await em
-      .getRepository(SteamworksLeaderboardEntry)
+      .repo(SteamworksLeaderboardEntry)
       .findOne({ leaderboardEntry: entry })
     expect(steamworksEntry).toBeTruthy()
   })
@@ -515,7 +513,7 @@ describe('Steamworks integration - sync leaderboards', () => {
     expect(createMock).toHaveBeenCalledTimes(1)
 
     const event = await em
-      .getRepository(SteamworksIntegrationEvent)
+      .repo(SteamworksIntegrationEvent)
       .findOneOrFail({ integration }, { orderBy: { id: 'desc' } })
     expect(event.request).toStrictEqual({
       url: 'https://partner.steam-api.com/ISteamLeaderboards/SetLeaderboardScore/v1',
@@ -524,7 +522,7 @@ describe('Steamworks integration - sync leaderboards', () => {
     })
 
     const steamworksEntry = await em
-      .getRepository(SteamworksLeaderboardEntry)
+      .repo(SteamworksLeaderboardEntry)
       .findOne({ leaderboardEntry: entry }, { refresh: true })
     expect(steamworksEntry).toBeTruthy()
   })
@@ -615,7 +613,7 @@ describe('Steamworks integration - sync leaderboards', () => {
     expect(createMock).toHaveBeenCalledTimes(entries.length - 1) // networkErrorOnce doesn't have a mock callback
 
     const steamworksEntryCount = await em
-      .getRepository(SteamworksLeaderboardEntry)
+      .repo(SteamworksLeaderboardEntry)
       .count({ steamworksLeaderboard: mapping })
     expect(steamworksEntryCount).toBe(entries.length - 1) // 1 failed
   })
@@ -697,14 +695,14 @@ describe('Steamworks integration - sync leaderboards', () => {
     expect(getLeaderboardsMock).toHaveBeenCalledTimes(1)
     expect(getEntriesMock).toHaveBeenCalledTimes(1)
 
-    const entryCount = await em.getRepository(LeaderboardEntry).count({
+    const entryCount = await em.repo(LeaderboardEntry).count({
       leaderboard: {
         game,
       },
     })
     expect(entryCount).toBe(2) // 1 failed
 
-    const steamworksEntryCount = await em.getRepository(SteamworksLeaderboardEntry).count({
+    const steamworksEntryCount = await em.repo(SteamworksLeaderboardEntry).count({
       leaderboardEntry: {
         leaderboard: {
           game,
@@ -869,7 +867,7 @@ describe('Steamworks integration - sync leaderboards', () => {
     expect(createMock).toHaveBeenCalledTimes(0)
 
     const steamworksEntry = await em
-      .getRepository(SteamworksLeaderboardEntry)
+      .repo(SteamworksLeaderboardEntry)
       .findOne({ leaderboardEntry: entry }, { refresh: true })
     expect(steamworksEntry).toBeNull()
   })

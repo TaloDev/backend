@@ -60,7 +60,7 @@ describe('Player auth API - delete', { timeout: 30_000 }, () => {
 
     expect(await em.refresh(alias)).toBeNull()
 
-    const activity = await em.getRepository(PlayerAuthActivity).findOne({
+    const activity = await em.repo(PlayerAuthActivity).findOne({
       type: PlayerAuthActivityType.DELETED_AUTH,
       player: player.id,
       extra: {
@@ -70,7 +70,7 @@ describe('Player auth API - delete', { timeout: 30_000 }, () => {
     assert(activity)
     expect(activity.extra.ip).toBeUndefined()
 
-    const activityCount = await em.getRepository(PlayerAuthActivity).count({
+    const activityCount = await em.repo(PlayerAuthActivity).count({
       player: player.id,
     })
     expect(activityCount).toBe(1)
@@ -184,7 +184,7 @@ describe('Player auth API - delete', { timeout: 30_000 }, () => {
     await em.refresh(player.auth!)
     expect(player.auth).not.toBeUndefined()
 
-    const activity = await em.getRepository(PlayerAuthActivity).findOne({
+    const activity = await em.repo(PlayerAuthActivity).findOne({
       type: PlayerAuthActivityType.DELETE_AUTH_FAILED,
       player: player.id,
     })

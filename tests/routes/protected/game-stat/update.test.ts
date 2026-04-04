@@ -29,7 +29,7 @@ describe('Game stat - update', () => {
 
     expect(res.body.stat.name).toBe('New name')
 
-    const activity = await em.getRepository(GameActivity).findOne({
+    const activity = await em.repo(GameActivity).findOne({
       type: GameActivityType.GAME_STAT_UPDATED,
       game,
       extra: {
@@ -66,7 +66,7 @@ describe('Game stat - update', () => {
 
     expect(res.body.stat.global).toBe(true)
 
-    const activity = await em.getRepository(GameActivity).findOne({
+    const activity = await em.repo(GameActivity).findOne({
       type: GameActivityType.GAME_STAT_UPDATED,
       game,
       extra: {
@@ -103,7 +103,7 @@ describe('Game stat - update', () => {
 
     expect(res.body.stat.maxChange).toBe(90)
 
-    const activity = await em.getRepository(GameActivity).findOne({
+    const activity = await em.repo(GameActivity).findOne({
       type: GameActivityType.GAME_STAT_UPDATED,
       game,
       extra: {
@@ -146,7 +146,7 @@ describe('Game stat - update', () => {
 
     expect(res.body.stat.minValue).toBe(-300)
 
-    const activity = await em.getRepository(GameActivity).findOne({
+    const activity = await em.repo(GameActivity).findOne({
       type: GameActivityType.GAME_STAT_UPDATED,
       game,
       extra: {
@@ -189,7 +189,7 @@ describe('Game stat - update', () => {
 
     expect(res.body.stat.maxValue).toBe(200)
 
-    const activity = await em.getRepository(GameActivity).findOne({
+    const activity = await em.repo(GameActivity).findOne({
       type: GameActivityType.GAME_STAT_UPDATED,
       game,
       extra: {
@@ -232,7 +232,7 @@ describe('Game stat - update', () => {
 
     expect(res.body.stat.defaultValue).toBe(100)
 
-    const activity = await em.getRepository(GameActivity).findOne({
+    const activity = await em.repo(GameActivity).findOne({
       type: GameActivityType.GAME_STAT_UPDATED,
       game,
       extra: {
@@ -269,7 +269,7 @@ describe('Game stat - update', () => {
 
     expect(res.body.stat.minTimeBetweenUpdates).toBe(10242)
 
-    const activity = await em.getRepository(GameActivity).findOne({
+    const activity = await em.repo(GameActivity).findOne({
       type: GameActivityType.GAME_STAT_UPDATED,
       game,
       extra: {
@@ -306,7 +306,7 @@ describe('Game stat - update', () => {
 
     expect(res.body.stat.internalName).toBe(stat.internalName)
 
-    const activity = await em.getRepository(GameActivity).findOne({
+    const activity = await em.repo(GameActivity).findOne({
       type: GameActivityType.GAME_STAT_UPDATED,
       game,
       extra: {

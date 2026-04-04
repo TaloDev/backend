@@ -34,7 +34,7 @@ describe('Player auth API - reset password', () => {
     expect(player.auth!.sessionKey).toBeNull()
     expect(player.auth!.sessionCreatedAt).toBeNull()
 
-    const activity = await em.getRepository(PlayerAuthActivity).findOne({
+    const activity = await em.repo(PlayerAuthActivity).findOne({
       type: PlayerAuthActivityType.PASSWORD_RESET_COMPLETED,
       player: player.id,
     })

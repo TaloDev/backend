@@ -68,7 +68,7 @@ describe('Leaderboard - steamworks update entry', () => {
 
     expect(updateMock).toHaveBeenCalledTimes(1)
 
-    const event = await em.getRepository(SteamworksIntegrationEvent).findOneOrFail({ integration })
+    const event = await em.repo(SteamworksIntegrationEvent).findOneOrFail({ integration })
     expect(event.request).toStrictEqual({
       url: 'https://partner.steam-api.com/ISteamLeaderboards/DeleteLeaderboardScore/v1',
       body: `appid=${config.appId}&leaderboardid=${mapping.steamworksLeaderboardId}&steamid=${player.aliases[0].identifier}`,
@@ -125,7 +125,7 @@ describe('Leaderboard - steamworks update entry', () => {
 
     expect(updateMock).toHaveBeenCalledTimes(1)
 
-    const event = await em.getRepository(SteamworksIntegrationEvent).findOneOrFail({ integration })
+    const event = await em.repo(SteamworksIntegrationEvent).findOneOrFail({ integration })
     expect(event.request).toStrictEqual({
       url: 'https://partner.steam-api.com/ISteamLeaderboards/SetLeaderboardScore/v1',
       body: `appid=${config.appId}&leaderboardid=${mapping.steamworksLeaderboardId}&steamid=${player.aliases[0].identifier}&score=${entry.score}&scoremethod=KeepBest`,
@@ -287,7 +287,7 @@ describe('Leaderboard - steamworks update entry', () => {
 
     expect(updateMock).toHaveBeenCalledTimes(1)
 
-    const event = await em.getRepository(SteamworksIntegrationEvent).findOneOrFail({ integration })
+    const event = await em.repo(SteamworksIntegrationEvent).findOneOrFail({ integration })
     expect(event.request).toStrictEqual({
       url: 'https://partner.steam-api.com/ISteamLeaderboards/SetLeaderboardScore/v1',
       body: `appid=${config.appId}&leaderboardid=${mapping.steamworksLeaderboardId}&steamid=${player.aliases[0].identifier}&score=200&scoremethod=KeepBest`,

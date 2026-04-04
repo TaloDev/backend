@@ -53,7 +53,7 @@ describe('Player auth API - login', () => {
 
     expect(res.body.sessionToken).toBeTruthy()
 
-    const activity = await em.getRepository(PlayerAuthActivity).findOne({
+    const activity = await em.repo(PlayerAuthActivity).findOne({
       type: PlayerAuthActivityType.LOGGED_IN,
       player: player.id,
     })
@@ -189,7 +189,7 @@ describe('Player auth API - login', () => {
     )
     expect(sendMock).toHaveBeenCalledOnce()
 
-    const activity = await em.getRepository(PlayerAuthActivity).findOne({
+    const activity = await em.repo(PlayerAuthActivity).findOne({
       type: PlayerAuthActivityType.VERIFICATION_STARTED,
       player: player.id,
     })

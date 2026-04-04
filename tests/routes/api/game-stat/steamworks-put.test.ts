@@ -52,7 +52,7 @@ describe('Game stat API - steamworks update', () => {
 
     expect(setMock).toHaveBeenCalledTimes(1)
 
-    const event = await em.getRepository(SteamworksIntegrationEvent).findOneOrFail({ integration })
+    const event = await em.repo(SteamworksIntegrationEvent).findOneOrFail({ integration })
     expect(event.request).toStrictEqual({
       url: 'https://partner.steam-api.com/ISteamUserStats/SetUserStatsForGame/v1',
       body: `appid=${config.appId}&steamid=${player.aliases[0].identifier}&count=1&name%5B0%5D=${stat.internalName}&value%5B0%5D=${stat.defaultValue + 10}`,
@@ -95,7 +95,7 @@ describe('Game stat API - steamworks update', () => {
 
     expect(setMock).not.toHaveBeenCalled()
 
-    const event = await em.getRepository(SteamworksIntegrationEvent).findOne({ integration })
+    const event = await em.repo(SteamworksIntegrationEvent).findOne({ integration })
     expect(event).toBeNull()
   })
 })

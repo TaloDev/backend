@@ -10,7 +10,7 @@ type PlayerGroupRouteState = APIRouteState & {
 export async function loadGroup(ctx: APIRouteContext<PlayerGroupRouteState>, next: Next) {
   const { id } = ctx.params
 
-  const group = await ctx.em.getRepository(PlayerGroup).findOne({
+  const group = await ctx.em.repo(PlayerGroup).findOne({
     id,
     game: ctx.state.game,
   })

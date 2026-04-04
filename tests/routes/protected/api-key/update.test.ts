@@ -27,7 +27,7 @@ describe('API key - update', () => {
         expect(res.body.apiKey.scopes).toStrictEqual(['read:players', 'write:events'])
       }
 
-      const activity = await em.getRepository(GameActivity).findOne({
+      const activity = await em.repo(GameActivity).findOne({
         type: GameActivityType.API_KEY_UPDATED,
         game,
         extra: {

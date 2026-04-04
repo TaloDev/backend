@@ -39,7 +39,7 @@ describe('Game - update', () => {
         .auth(token, { type: 'bearer' })
         .expect(statusCode)
 
-      const activity = await em.getRepository(GameActivity).findOne({
+      const activity = await em.repo(GameActivity).findOne({
         type: GameActivityType.GAME_PROPS_UPDATED,
         game,
       })
@@ -182,7 +182,7 @@ describe('Game - update', () => {
 
     expect(res.body.game.name).toBe('New game name')
 
-    const activity = await em.getRepository(GameActivity).findOne({
+    const activity = await em.repo(GameActivity).findOne({
       type: GameActivityType.GAME_NAME_UPDATED,
       game,
       extra: {
@@ -432,7 +432,7 @@ describe('Game - update', () => {
       .auth(token, { type: 'bearer' })
       .expect(200)
 
-    const activity = await em.getRepository(GameActivity).findOne({
+    const activity = await em.repo(GameActivity).findOne({
       type: GameActivityType.GAME_SETTINGS_UPDATED,
       game,
     })
@@ -460,7 +460,7 @@ describe('Game - update', () => {
       .auth(token, { type: 'bearer' })
       .expect(200)
 
-    const activity = await em.getRepository(GameActivity).findOne({
+    const activity = await em.repo(GameActivity).findOne({
       type: GameActivityType.GAME_SETTINGS_UPDATED,
       game,
     })

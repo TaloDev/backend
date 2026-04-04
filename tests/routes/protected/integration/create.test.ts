@@ -22,7 +22,7 @@ describe('Integration - create', () => {
         .auth(token, { type: 'bearer' })
         .expect(statusCode)
 
-      const activity = await em.getRepository(GameActivity).findOne({
+      const activity = await em.repo(GameActivity).findOne({
         type: GameActivityType.GAME_INTEGRATION_ADDED,
         game,
       })
@@ -54,7 +54,7 @@ describe('Integration - create', () => {
       .auth(token, { type: 'bearer' })
       .expect(200)
 
-    const integration = await em.getRepository(Integration).findOne(res.body.integration.id)
+    const integration = await em.repo(Integration).findOne(res.body.integration.id)
     // @ts-expect-error accessing private
     expect(integration.config.apiKey).not.toBe(config.apiKey)
     // @ts-expect-error accessing private
@@ -76,7 +76,7 @@ describe('Integration - create', () => {
       .auth(token, { type: 'bearer' })
       .expect(200)
 
-    const integration = await em.getRepository(Integration).findOne(res.body.integration.id)
+    const integration = await em.repo(Integration).findOne(res.body.integration.id)
     // @ts-expect-error accessing private
     expect(integration.config.syncCrazyNewSteamworksFeature).not.toBeDefined()
   })
@@ -93,7 +93,7 @@ describe('Integration - create', () => {
       .auth(token, { type: 'bearer' })
       .expect(403)
 
-    const activity = await em.getRepository(GameActivity).findOne({
+    const activity = await em.repo(GameActivity).findOne({
       type: GameActivityType.GAME_INTEGRATION_ADDED,
       game,
     })
@@ -136,7 +136,7 @@ describe('Integration - create', () => {
     expect(res.body.integration.config.clientId).toBe('client-id')
     expect(res.body.integration.config.clientSecret).not.toBeDefined()
 
-    const activity = await em.getRepository(GameActivity).findOne({
+    const activity = await em.repo(GameActivity).findOne({
       type: GameActivityType.GAME_INTEGRATION_ADDED,
       game,
     })
@@ -156,7 +156,7 @@ describe('Integration - create', () => {
       .auth(token, { type: 'bearer' })
       .expect(200)
 
-    const integration = await em.getRepository(Integration).findOne(res.body.integration.id)
+    const integration = await em.repo(Integration).findOne(res.body.integration.id)
     // @ts-expect-error accessing private
     expect(integration.config.clientSecret).not.toBe('client-secret')
     // @ts-expect-error accessing private

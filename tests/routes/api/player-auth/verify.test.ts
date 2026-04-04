@@ -110,7 +110,7 @@ describe('Player auth API - verify', () => {
 
     expect(await redis.get(`player-auth:${apiKey.game.id}:verification:${alias.id}`)).toBe('123456')
 
-    const activity = await em.getRepository(PlayerAuthActivity).findOne({
+    const activity = await em.repo(PlayerAuthActivity).findOne({
       type: PlayerAuthActivityType.VERIFICATION_FAILED,
       player: player.id,
     })

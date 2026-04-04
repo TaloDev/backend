@@ -32,7 +32,7 @@ describe('Player auth API - logout', () => {
     expect(player.auth!.sessionKey).toBeNull()
     expect(player.auth!.sessionCreatedAt).toBeNull()
 
-    const activity = await em.getRepository(PlayerAuthActivity).findOne({
+    const activity = await em.repo(PlayerAuthActivity).findOne({
       type: PlayerAuthActivityType.LOGGED_OUT,
       player: player.id,
     })

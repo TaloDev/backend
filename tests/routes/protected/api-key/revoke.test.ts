@@ -26,7 +26,7 @@ describe('API key - revoke', () => {
 
       await em.refresh(key)
 
-      const activity = await em.getRepository(GameActivity).findOne({
+      const activity = await em.repo(GameActivity).findOne({
         type: GameActivityType.API_KEY_REVOKED,
         game,
         extra: {

@@ -18,7 +18,7 @@ export default class SocketTicket {
         this.devBuild = devBuild === '1'
 
         const em = RequestContext.getEntityManager()!
-        this.apiKey = await em.getRepository(APIKey).findOneOrFail(
+        this.apiKey = await em.repo(APIKey).findOneOrFail(
           {
             id: Number(keyId),
             revokedAt: null,

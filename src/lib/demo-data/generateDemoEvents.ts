@@ -111,7 +111,7 @@ export async function generateDemoEvents(ctx: PublicRouteContext): Promise<void>
   const em = ctx.em
   const clickhouse = ctx.clickhouse
 
-  const games = await em.getRepository(Game).find({
+  const games = await em.repo(Game).find({
     organisation: {
       name: process.env.DEMO_ORGANISATION_NAME,
     },
@@ -127,7 +127,7 @@ export async function generateDemoEvents(ctx: PublicRouteContext): Promise<void>
 
       const prev: { [key: string]: number } = {}
 
-      const playerAliases = await em.getRepository(PlayerAlias).find({
+      const playerAliases = await em.repo(PlayerAlias).find({
         player: {
           game,
         },

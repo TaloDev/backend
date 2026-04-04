@@ -74,7 +74,6 @@ jobs:
 
             Ignore theoretical issues that require multiple unlikely conditions or malicious input patterns.
             Use the "would this bother a pragmatic senior developer?" test.
-            Maximum chain of assumptions: 2 levels deep. Skip exotic input combinations that violate documented assumptions.
 
             **Feedback style:**
             - Provide specific code examples or line references showing the issue
@@ -89,6 +88,10 @@ jobs:
               gh pr comment ${{ github.event.pull_request.number }} --repo ${{ github.repository }} --edit-last --create-if-none --body "<review>"
             ```
 
-            Ensure the markdown you generate is well-formatted and renders correctly on GitHub. Use code blocks for snippets and proper markdown for lists and headers.
+            - Only post your review when it is ready.
+            - Do not try to post anything other than a completed review.
+            - Do not post multiple comments.
+            - Ensure the markdown you generate is well-formatted and renders correctly on GitHub.
+            - Use code blocks for snippets and proper markdown for lists and headers.
           claude_args: |
             --allowedTools "Read,Bash(gh pr*),Grep,Glob"

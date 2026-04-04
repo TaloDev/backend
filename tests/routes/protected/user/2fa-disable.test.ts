@@ -22,10 +22,10 @@ describe('User - disable 2fa', () => {
     expect(res.body.user.organisation).toBeTruthy()
     expect(res.body.user.organisation.games).toHaveLength(1)
 
-    const recoveryCodes = await em.getRepository(UserRecoveryCode).find({ user })
+    const recoveryCodes = await em.repo(UserRecoveryCode).find({ user })
     expect(recoveryCodes).toHaveLength(0)
 
-    const user2fa = await em.getRepository(UserTwoFactorAuth).findOne({ user })
+    const user2fa = await em.repo(UserTwoFactorAuth).findOne({ user })
     expect(user2fa).toBeNull()
   })
 

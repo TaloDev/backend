@@ -23,9 +23,7 @@ describe('User - confirm email', () => {
     expect(res.body.user.organisation).toBeTruthy()
     expect(res.body.user.organisation.games).toHaveLength(1)
 
-    const updatedAccessCode = await em
-      .getRepository(UserAccessCode)
-      .findOne({ code: accessCode.code })
+    const updatedAccessCode = await em.repo(UserAccessCode).findOne({ code: accessCode.code })
     expect(updatedAccessCode).toBeNull()
   })
 

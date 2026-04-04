@@ -26,7 +26,7 @@ describe('Leaderboard - create', () => {
         .auth(token, { type: 'bearer' })
         .expect(statusCode)
 
-      const activity = await em.getRepository(GameActivity).findOne({
+      const activity = await em.repo(GameActivity).findOne({
         type: GameActivityType.LEADERBOARD_CREATED,
         game,
       })

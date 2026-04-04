@@ -20,7 +20,7 @@ describe('Game channel - update', () => {
       .auth(token, { type: 'bearer' })
       .expect(200)
 
-    const activity = await em.getRepository(GameActivity).findOne({
+    const activity = await em.repo(GameActivity).findOne({
       type: GameActivityType.GAME_CHANNEL_UPDATED,
       game,
     })
@@ -128,7 +128,7 @@ describe('Game channel - update', () => {
       .auth(token, { type: 'bearer' })
       .expect(200)
 
-    const updatedChannel = await em.getRepository(GameChannel).findOneOrFail(channel.id)
+    const updatedChannel = await em.repo(GameChannel).findOneOrFail(channel.id)
     expect(updatedChannel.name).toBe(originalName)
   })
 

@@ -39,7 +39,7 @@ describe('Player auth API - register', () => {
 
     expect(res.body.sessionToken).toBeTruthy()
 
-    const activity = await em.getRepository(PlayerAuthActivity).findOne({
+    const activity = await em.repo(PlayerAuthActivity).findOne({
       type: PlayerAuthActivityType.REGISTERED,
       extra: {
         verificationEnabled: false,
@@ -111,7 +111,7 @@ describe('Player auth API - register', () => {
 
     expect(res.body.sessionToken).toBeTruthy()
 
-    const activity = await em.getRepository(PlayerAuthActivity).findOne({
+    const activity = await em.repo(PlayerAuthActivity).findOne({
       type: PlayerAuthActivityType.REGISTERED,
       extra: {
         verificationEnabled: true,
@@ -326,7 +326,7 @@ describe('Player auth API - register', () => {
       .auth(token, { type: 'bearer' })
       .expect(500)
 
-    const player = await em.getRepository(Player).findOne({ aliases: { identifier } })
+    const player = await em.repo(Player).findOne({ aliases: { identifier } })
     expect(player).toBeNull()
   })
 

@@ -21,7 +21,7 @@ describe('Game feedback - delete category', () => {
         .auth(token, { type: 'bearer' })
         .expect(statusCode)
 
-      const activity = await em.getRepository(GameActivity).findOne({
+      const activity = await em.repo(GameActivity).findOne({
         type: GameActivityType.GAME_FEEDBACK_CATEGORY_DELETED,
         game,
         extra: {

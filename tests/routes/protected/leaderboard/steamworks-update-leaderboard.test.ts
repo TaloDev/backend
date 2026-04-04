@@ -66,7 +66,7 @@ describe('Leaderboard - steamworks update', () => {
 
     expect(createMock).toHaveBeenCalledTimes(1)
 
-    const event = await em.getRepository(SteamworksIntegrationEvent).findOneOrFail({ integration })
+    const event = await em.repo(SteamworksIntegrationEvent).findOneOrFail({ integration })
     expect(event.request).toStrictEqual({
       url: 'https://partner.steam-api.com/ISteamLeaderboards/FindOrCreateLeaderboard/v2',
       body: `appid=${config.appId}&name=${leaderboard.internalName}&sortmethod=Ascending&displaytype=Numeric&createifnotfound=true&onlytrustedwrites=true&onlyfriendsreads=false`,
@@ -107,7 +107,7 @@ describe('Leaderboard - steamworks update', () => {
 
     expect(createMock).not.toHaveBeenCalled()
 
-    const event = await em.getRepository(SteamworksIntegrationEvent).findOne({ integration })
+    const event = await em.repo(SteamworksIntegrationEvent).findOne({ integration })
     expect(event).toBeNull()
 
     axiosMock.reset()

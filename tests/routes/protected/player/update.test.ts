@@ -40,7 +40,7 @@ describe('Player - update', () => {
         .auth(token, { type: 'bearer' })
         .expect(statusCode)
 
-      const activity = await em.getRepository(GameActivity).findOne({
+      const activity = await em.repo(GameActivity).findOne({
         type: GameActivityType.PLAYER_PROPS_UPDATED,
         extra: {
           playerId: player.id,

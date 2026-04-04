@@ -47,7 +47,7 @@ describe('Player public - delete', { timeout: 30_000 }, () => {
 
     expect(await em.refresh(alias)).toBeNull()
 
-    const activity = await em.getRepository(PlayerAuthActivity).findOne({
+    const activity = await em.repo(PlayerAuthActivity).findOne({
       type: PlayerAuthActivityType.DELETED_AUTH,
       player: player.id,
       extra: {
@@ -58,7 +58,7 @@ describe('Player public - delete', { timeout: 30_000 }, () => {
     assert(activity)
     expect(activity.extra.ip).toBeUndefined()
 
-    const activityCount = await em.getRepository(PlayerAuthActivity).count({ player: player.id })
+    const activityCount = await em.repo(PlayerAuthActivity).count({ player: player.id })
     expect(activityCount).toBe(1)
   })
 

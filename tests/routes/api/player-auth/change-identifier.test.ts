@@ -54,7 +54,7 @@ describe('Player auth API - change identifier', () => {
 
     expect(res.body.alias.identifier).toBe('bozza')
 
-    const activity = await em.getRepository(PlayerAuthActivity).findOne({
+    const activity = await em.repo(PlayerAuthActivity).findOne({
       type: PlayerAuthActivityType.CHANGED_IDENTIFIER,
       player: player.id,
       extra: {
@@ -147,7 +147,7 @@ describe('Player auth API - change identifier', () => {
       errorCode: 'INVALID_CREDENTIALS',
     })
 
-    const activity = await em.getRepository(PlayerAuthActivity).findOne({
+    const activity = await em.repo(PlayerAuthActivity).findOne({
       type: PlayerAuthActivityType.CHANGE_IDENTIFIER_FAILED,
       player: player.id,
       extra: {
@@ -202,7 +202,7 @@ describe('Player auth API - change identifier', () => {
       errorCode: 'NEW_IDENTIFIER_MATCHES_CURRENT_IDENTIFIER',
     })
 
-    const activity = await em.getRepository(PlayerAuthActivity).findOne({
+    const activity = await em.repo(PlayerAuthActivity).findOne({
       type: PlayerAuthActivityType.CHANGE_IDENTIFIER_FAILED,
       player: player.id,
       extra: {
@@ -274,7 +274,7 @@ describe('Player auth API - change identifier', () => {
       errorCode: 'IDENTIFIER_TAKEN',
     })
 
-    const activity = await em.getRepository(PlayerAuthActivity).findOne({
+    const activity = await em.repo(PlayerAuthActivity).findOne({
       type: PlayerAuthActivityType.CHANGE_IDENTIFIER_FAILED,
       player: player.id,
       extra: {

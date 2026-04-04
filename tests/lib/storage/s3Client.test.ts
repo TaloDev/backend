@@ -101,11 +101,11 @@ describe('uploadToS3', () => {
     expect(url).toBe('https://s3.example.com/presigned-url')
   })
 
-  it('should use expiryMinutes when provided', async () => {
+  it('should use linkExpiryMinutes when provided', async () => {
     await uploadToS3({
       filepath: '/tmp/export.zip',
       key: 'data-exports/game-id=42/export.zip',
-      expiryMinutes: 30,
+      linkExpiryMinutes: 30,
     })
 
     expect(S3mini.prototype.getPresignedUrl).toHaveBeenCalledWith(

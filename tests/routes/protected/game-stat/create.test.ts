@@ -28,7 +28,7 @@ describe('Game stat - create', () => {
         .auth(token, { type: 'bearer' })
         .expect(statusCode)
 
-      const activity = await em.getRepository(GameActivity).findOne({
+      const activity = await em.repo(GameActivity).findOne({
         type: GameActivityType.GAME_STAT_CREATED,
         game,
       })
@@ -82,7 +82,7 @@ describe('Game stat - create', () => {
     expect(res.body.stat.maxValue).toBe(10)
     expect(res.body.stat.minTimeBetweenUpdates).toBe(0)
 
-    const activity = await em.getRepository(GameActivity).findOne({
+    const activity = await em.repo(GameActivity).findOne({
       type: GameActivityType.GAME_STAT_CREATED,
       game,
       extra: {

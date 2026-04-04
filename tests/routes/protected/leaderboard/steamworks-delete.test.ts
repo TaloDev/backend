@@ -47,7 +47,7 @@ describe('Leaderboard - steamworks delete', () => {
 
     expect(deleteMock).toHaveBeenCalledTimes(1)
 
-    const event = await em.getRepository(SteamworksIntegrationEvent).findOneOrFail({ integration })
+    const event = await em.repo(SteamworksIntegrationEvent).findOneOrFail({ integration })
     expect(event.request).toStrictEqual({
       url: 'https://partner.steam-api.com/ISteamLeaderboards/DeleteLeaderboard/v1',
       body: `appid=${config.appId}&name=${leaderboard.internalName}`,
@@ -81,7 +81,7 @@ describe('Leaderboard - steamworks delete', () => {
 
     expect(deleteMock).not.toHaveBeenCalled()
 
-    const event = await em.getRepository(SteamworksIntegrationEvent).findOne({ integration })
+    const event = await em.repo(SteamworksIntegrationEvent).findOne({ integration })
     expect(event).toBeNull()
   })
 
@@ -124,7 +124,7 @@ describe('Leaderboard - steamworks delete', () => {
 
     expect(deleteMock).toHaveBeenCalledTimes(1)
 
-    const event = await em.getRepository(SteamworksIntegrationEvent).findOneOrFail({ integration })
+    const event = await em.repo(SteamworksIntegrationEvent).findOneOrFail({ integration })
     expect(event.request).toStrictEqual({
       url: 'https://partner.steam-api.com/ISteamLeaderboards/DeleteLeaderboard/v1',
       body: `appid=${config.appId}&name=${leaderboard.internalName}`,

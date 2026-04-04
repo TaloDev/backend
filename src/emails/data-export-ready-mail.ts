@@ -12,7 +12,7 @@ export default class DataExportReady extends Mail {
     this.why = 'You are receiving this email because you requested a data export'
 
     if (downloadUrl) {
-      this.mainText = "We've generated your data export. The link below will expire in 7 days."
+      this.mainText = "We've generated your data export. This link will expire in 7 days."
       this.ctaLink = downloadUrl
       this.ctaText = 'Download export'
     } else {

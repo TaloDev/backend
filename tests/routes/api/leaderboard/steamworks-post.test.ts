@@ -59,7 +59,7 @@ describe('Leaderboard API - steamworks create', () => {
 
     expect(createMock).toHaveBeenCalledTimes(1)
 
-    const event = await em.getRepository(SteamworksIntegrationEvent).findOneOrFail({ integration })
+    const event = await em.repo(SteamworksIntegrationEvent).findOneOrFail({ integration })
     expect(event.request).toStrictEqual({
       url: 'https://partner.steam-api.com/ISteamLeaderboards/SetLeaderboardScore/v1',
       body: `appid=${config.appId}&leaderboardid=${mapping.steamworksLeaderboardId}&steamid=${player.aliases[0].identifier}&score=300&scoremethod=KeepBest`,
@@ -67,7 +67,7 @@ describe('Leaderboard API - steamworks create', () => {
     })
 
     const steamworksEntry = await em
-      .getRepository(SteamworksLeaderboardEntry)
+      .repo(SteamworksLeaderboardEntry)
       .findOne({ steamworksLeaderboard: mapping })
     expect(steamworksEntry).toBeTruthy()
   })
@@ -107,10 +107,10 @@ describe('Leaderboard API - steamworks create', () => {
 
     expect(createMock).not.toHaveBeenCalled()
 
-    const event = await em.getRepository(SteamworksIntegrationEvent).findOne({ integration })
+    const event = await em.repo(SteamworksIntegrationEvent).findOne({ integration })
     expect(event).toBeNull()
 
-    const steamworksEntry = await em.getRepository(SteamworksLeaderboardEntry).findOne({
+    const steamworksEntry = await em.repo(SteamworksLeaderboardEntry).findOne({
       steamworksLeaderboard: {
         leaderboard,
       },
@@ -155,10 +155,10 @@ describe('Leaderboard API - steamworks create', () => {
 
     expect(createMock).not.toHaveBeenCalled()
 
-    const event = await em.getRepository(SteamworksIntegrationEvent).findOne({ integration })
+    const event = await em.repo(SteamworksIntegrationEvent).findOne({ integration })
     expect(event).toBeNull()
 
-    const steamworksEntry = await em.getRepository(SteamworksLeaderboardEntry).findOne({
+    const steamworksEntry = await em.repo(SteamworksLeaderboardEntry).findOne({
       steamworksLeaderboard: {
         leaderboard,
       },

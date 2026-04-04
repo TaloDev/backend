@@ -1,5 +1,5 @@
 import { Entity, Enum, ManyToOne, PrimaryKey, Property } from '@mikro-orm/mysql'
-import startCase from 'lodash'
+import { startCase } from 'lodash'
 import Game from './game'
 import User from './user'
 
@@ -78,7 +78,7 @@ export default class GameActivity {
     this.user = user
   }
 
-  transformIntegrationType(integrationType: string) {
+  private transformIntegrationType(integrationType: string) {
     return startCase(integrationType.replaceAll('-', ' '))
   }
 

@@ -39,6 +39,7 @@ async function findRestrictedAlias(em: EntityManager, player: Player) {
           PlayerAliasService.TALO,
           PlayerAliasService.STEAM,
           PlayerAliasService.GOOGLE_PLAY_GAMES,
+          PlayerAliasService.GAME_CENTER,
         ],
       },
     },

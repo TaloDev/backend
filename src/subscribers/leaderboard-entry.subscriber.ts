@@ -7,8 +7,8 @@ export class LeaderboardEntrySubscriber implements EventSubscriber {
     return [LeaderboardEntry]
   }
 
-  clearCacheKeys(entry: LeaderboardEntry) {
-    void deferClearResponseCache(entry.leaderboard.getEntriesCacheKey(true))
+  async clearCacheKeys(entry: LeaderboardEntry) {
+    await deferClearResponseCache(entry.leaderboard.getEntriesCacheKey(true))
   }
 
   createPropsDigest(entry: LeaderboardEntry) {
@@ -19,8 +19,8 @@ export class LeaderboardEntrySubscriber implements EventSubscriber {
     args.entity.propsDigest = this.createPropsDigest(args.entity)
   }
 
-  afterCreate(args: EventArgs<LeaderboardEntry>) {
-    this.clearCacheKeys(args.entity)
+  async afterCreate(args: EventArgs<LeaderboardEntry>) {
+    await this.clearCacheKeys(args.entity)
   }
 
   beforeUpdate(args: EventArgs<LeaderboardEntry>) {
@@ -29,7 +29,7 @@ export class LeaderboardEntrySubscriber implements EventSubscriber {
     }
   }
 
-  afterUpdate(args: EventArgs<LeaderboardEntry>) {
-    this.clearCacheKeys(args.entity)
+  async afterUpdate(args: EventArgs<LeaderboardEntry>) {
+    await this.clearCacheKeys(args.entity)
   }
 }

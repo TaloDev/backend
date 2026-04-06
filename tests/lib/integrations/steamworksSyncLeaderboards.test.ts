@@ -1,4 +1,4 @@
-import { randNumber, randText } from '@ngneat/falso'
+import { randNumber, randText, randUuid } from '@ngneat/falso'
 import axios from 'axios'
 import AxiosMockAdapter from 'axios-mock-adapter'
 import { IntegrationType } from '../../../src/entities/integration'
@@ -30,6 +30,7 @@ describe('Steamworks integration - sync leaderboards', () => {
     const [, game] = await createOrganisationAndGame()
 
     const steamworksLeaderboardId = randNumber({ min: 100_000, max: 999_999 })
+    const steamID = randUuid()
 
     const config = await new IntegrationConfigFactory().one()
     const integration = await new IntegrationFactory()
@@ -71,7 +72,7 @@ describe('Steamworks integration - sync leaderboards', () => {
           totalLeaderBoardEntryCount: 1,
           leaderboardEntries: [
             {
-              steamID: '76561198053368114',
+              steamID,
               score: 1030,
               rank: 1,
               ugcid: '-1',
@@ -115,8 +116,10 @@ describe('Steamworks integration - sync leaderboards', () => {
 
     expect(mapping).toBeTruthy()
 
-    const entry = await em.repo(LeaderboardEntry).findOne({ score: 1030 }, { refresh: true })
-    expect(entry).toBeTruthy()
+    const entry = await em
+      .repo(LeaderboardEntry)
+      .findOneOrFail({ leaderboard: createdLeaderboard }, { refresh: true })
+    expect(entry.score).toBe(1030)
 
     const steamworksEntry = await em
       .repo(SteamworksLeaderboardEntry)
@@ -622,6 +625,7 @@ describe('Steamworks integration - sync leaderboards', () => {
     const [, game] = await createOrganisationAndGame()
 
     const steamworksLeaderboardId = randNumber({ min: 100_000, max: 999_999 })
+    const [steamID1, steamID2] = [randUuid(), randUuid()]
 
     const config = await new IntegrationConfigFactory().one()
     const integration = await new IntegrationFactory()
@@ -669,13 +673,13 @@ describe('Steamworks integration - sync leaderboards', () => {
               ugcid: '-1',
             },
             {
-              steamID: '71361095054762901',
+              steamID: steamID1,
               score: 276,
               rank: 22,
               ugcid: '-1',
             },
             {
-              steamID: '76561198053368114',
+              steamID: steamID2,
               score: 301,
               rank: 23,
               ugcid: '-1',

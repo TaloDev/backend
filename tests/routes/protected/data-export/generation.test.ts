@@ -8,6 +8,7 @@ import * as unzipper from 'unzipper'
 import { DataExportAvailableEntities } from '../../../../src/entities/data-export'
 import { GameActivityType } from '../../../../src/entities/game-activity'
 import PlayerProp from '../../../../src/entities/player-prop'
+import Prop from '../../../../src/entities/prop'
 import { UserType } from '../../../../src/entities/user'
 import { DataExporter } from '../../../../src/lib/queues/data-exports/dataExportProcessor'
 import DataExportFactory from '../../../fixtures/DataExportFactory'
@@ -199,9 +200,16 @@ describe('Data export - events pagination', () => {
 
     const EVENT_COUNT = 20_002
     const events = await new EventFactory([player]).many(EVENT_COUNT)
+    events.forEach((e) => e.setProps([new Prop('level', '1'), new Prop('area', 'forest')]))
+
     await clickhouse.insert({
       table: 'events',
       values: events.map((e) => e.toInsertable()),
+      format: 'JSONEachRow',
+    })
+    await clickhouse.insert({
+      table: 'event_props',
+      values: events.flatMap((e) => e.getInsertableProps()),
       format: 'JSONEachRow',
     })
 
@@ -209,8 +217,11 @@ describe('Data export - events pagination', () => {
     await em.persist(dataExport).flush()
 
     let count = 0
-    for await (const _ of proto.streamEvents(dataExport, em, true)) {
+    for await (const event of proto.streamEvents(dataExport, em, true)) {
       count++
+      expect(event.props).toHaveLength(2)
+      expect(event.props.find((p: Prop) => p.key === 'level')?.value).toBe('1')
+      expect(event.props.find((p: Prop) => p.key === 'area')?.value).toBe('forest')
     }
 
     expect(count).toBe(EVENT_COUNT)

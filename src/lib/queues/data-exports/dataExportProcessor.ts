@@ -100,7 +100,7 @@ export class DataExporter {
       `
 
       // step 4: paginate query using the last created_at and id as a cursor
-      const PAGE_SIZE = 10_000
+      const PAGE_SIZE = 1000
       let lastCreatedAt: Date | null = null
       let lastId: string | null = null
 

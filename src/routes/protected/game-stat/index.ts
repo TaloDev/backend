@@ -1,4 +1,5 @@
 import { protectedRouter } from '../../../lib/routing/router'
+import { bulkCreateRoute } from './bulk-create'
 import { createRoute } from './create'
 import { deleteRoute } from './delete'
 import { listRoute } from './list'
@@ -10,6 +11,7 @@ export function gameStatRouter() {
   return protectedRouter('/games/:gameId/game-stats', ({ route }) => {
     route(listRoute)
     route(createRoute)
+    route(bulkCreateRoute)
     route(updateRoute)
     route(deleteRoute)
     route(updatePlayerStatRoute)

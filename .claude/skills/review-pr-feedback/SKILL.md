@@ -1,7 +1,6 @@
 ---
 name: review-pr-feedback
 description: Review and analyze PR feedback comments from Claude bot on the current branch's PR
-argument-hint: '[--all]'
 disable-model-invocation: true
 ---
 
@@ -18,9 +17,7 @@ PR number and title: !`gh pr view --json number,title --jq '"#\(.number): \(.tit
 
 ## PR Comments from Claude
 
-!`gh api repos/{owner}/{repo}/pulls/$(gh pr view --json number --jq '.number' 2>/dev/null)/comments --jq '[.[] | select(.user.login == "claude[bot]")] | if length == 0 then "No inline review comments from Claude found." else .[] | "### Comment on \(.path):\(.line // .original_line // "file-level")\n\n\(.body)\n\n---" end' 2>/dev/null || echo "Could not fetch PR review comments"`
-
-!`gh api repos/{owner}/{repo}/issues/$(gh pr view --json number --jq '.number' 2>/dev/null)/comments --jq '[.[] | select(.user.login == "claude[bot]")] | if length == 0 then "No general PR comments from Claude found." else .[] | "### General Comment\n\n\(.body)\n\n---" end' 2>/dev/null || echo "Could not fetch PR issue comments"`
+!`gh pr view --json comments --jq '[.comments[] | select(.author.login | ascii_downcase | contains("claude"))] | if length == 0 then "No PR comments from Claude found." else .[] | "### Comment by \(.author.login)\n\n\(.body)\n\n---" end' 2>/dev/null || echo "Could not fetch PR comments"`
 
 ## Your Analysis Process
 
@@ -71,6 +68,6 @@ After analyzing all feedback, provide:
 - Don't implement changes just because they were suggested. Each change must earn its place.
 - Consider the cognitive load of changes - sometimes "good enough" code that's simple is better than "perfect" code that's complex.
 - If the feedback points out genuine bugs or security issues, prioritize those.
-- Style suggestions and minor refactors should have a high bar for implementation.
+- "Style" is not the same as "wrong". If code is objectively incorrect (e.g. unnecessary `async` on a synchronous function, unused return type wrapper, misleading type annotation), treat it as IMPLEMENT — fix it, don't dismiss it. The bar for inaction is "debatable preference", not "small change".
 
 </review-pr-feedback>

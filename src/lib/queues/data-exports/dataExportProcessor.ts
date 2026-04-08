@@ -24,6 +24,7 @@ import PlayerGameStat from '../../../entities/player-game-stat'
 import PlayerProp from '../../../entities/player-prop'
 import Prop from '../../../entities/prop'
 import createClickHouseClient from '../../clickhouse/createClient'
+import { formatDateForClickHouse } from '../../clickhouse/formatDateTime'
 import { escapeCSVValue } from '../../lang/escapeCSVValue'
 import { streamByCursor } from '../../perf/streamByCursor'
 import { DataExportJob } from './createDataExportQueue'
@@ -79,7 +80,7 @@ export class DataExporter {
         .join(',\n  ')
 
       // step 3: build full pivot query
-      const query = `
+      const baseQuery = `
         SELECT
           e.id,
           e.name,
@@ -92,21 +93,30 @@ export class DataExporter {
         LEFT JOIN event_props p ON e.id = p.event_id
         WHERE e.game_id = ${dataExport.game.id}
         ${includeDevData ? '' : 'AND e.dev_build = false'}
+        {cursorFilter}
         GROUP BY
           e.id, e.name, e.game_id, e.player_alias_id, e.created_at, e.updated_at
-        ORDER BY e.created_at ASC
+        ORDER BY e.created_at ASC, e.id ASC
       `
 
-      // step 4: stream the query
-      const rows = await clickhouse.query({
-        query,
-        format: 'JSONEachRow',
-      })
+      // step 4: paginate query using the last created_at and id as a cursor
+      const PAGE_SIZE = 10_000
+      let lastCreatedAt: Date | null = null
+      let lastId: string | null = null
 
-      const stream = rows.stream<ClickHouseEvent & Record<string, string>>()
+      while (true) {
+        const cursorFilter =
+          lastCreatedAt && lastId
+            ? `AND (e.created_at, e.id) > (toDateTime64('${formatDateForClickHouse(lastCreatedAt)}', 3), '${lastId}')`
+            : ''
+        const pagedQuery = baseQuery.replace('{cursorFilter}', cursorFilter) + ` LIMIT ${PAGE_SIZE}`
 
-      for await (const chunk of stream) {
-        const rawEvents = chunk.map((row) => row.json())
+        const rows = await clickhouse.query({
+          query: pagedQuery,
+          format: 'JSONEachRow',
+        })
+
+        const rawEvents = (await rows.json()) as (ClickHouseEvent & Record<string, string>)[]
 
         const aliasIds = [...new Set(rawEvents.map((e) => e.player_alias_id))]
         const unknownAliasIds = aliasIds.filter((id) => !playerAliasCache.has(id))
@@ -159,6 +169,14 @@ export class DataExporter {
 
           yield event
         }
+
+        if (rawEvents.length < PAGE_SIZE) {
+          break
+        }
+
+        const last = rawEvents.at(-1)!
+        lastCreatedAt = new Date(last.created_at)
+        lastId = last.id
       }
     } finally {
       await clickhouse.close()

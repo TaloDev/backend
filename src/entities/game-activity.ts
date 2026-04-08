@@ -78,10 +78,6 @@ export default class GameActivity {
     this.user = user
   }
 
-  private transformIntegrationType(integrationType: string) {
-    return startCase(integrationType.replaceAll('-', ' '))
-  }
-
   /* v8 ignore start -- @preserve */
   private getActivity(): string {
     switch (this.type) {
@@ -114,11 +110,11 @@ export default class GameActivity {
       case GameActivityType.DATA_EXPORT_REQUESTED:
         return `${this.user.username} requested a data export`
       case GameActivityType.GAME_INTEGRATION_ADDED:
-        return `${this.user.username} enabled the ${this.transformIntegrationType(this.extra.integrationType as string)} integration`
+        return `${this.user.username} enabled the ${startCase(this.extra.integrationType as string)} integration`
       case GameActivityType.GAME_INTEGRATION_UPDATED:
-        return `${this.user.username} updated the ${this.transformIntegrationType(this.extra.integrationType as string)} integration`
+        return `${this.user.username} updated the ${startCase(this.extra.integrationType as string)} integration`
       case GameActivityType.GAME_INTEGRATION_DELETED:
-        return `${this.user.username} disabled the ${this.transformIntegrationType(this.extra.integrationType as string)} integration`
+        return `${this.user.username} disabled the ${startCase(this.extra.integrationType as string)} integration`
       case GameActivityType.GAME_INTEGRATION_STEAMWORKS_LEADERBOARDS_SYNCED:
         return `${this.user.username} initiated a manual sync for Steamworks leaderboards`
       case GameActivityType.GAME_INTEGRATION_STEAMWORKS_STATS_SYNCED:

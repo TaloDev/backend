@@ -29,8 +29,11 @@ export function createDataExportQueue() {
   /* v8 ignore stop -- @preserve */
 
   return createQueue<DataExportJob>('data-export', processorPath, {
-    failed: async (job: Job<DataExportJob>) => {
-      await updateDataExportStatus(job.data.dataExportId, { failedAt: new Date() })
+    events: {
+      failed: async (job: Job<DataExportJob>) => {
+        await updateDataExportStatus(job.data.dataExportId, { failedAt: new Date() })
+      },
     },
+    workerOptions: { lockDuration: 600_000 }, // 10 minutes
   })
 }

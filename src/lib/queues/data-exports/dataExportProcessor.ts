@@ -97,16 +97,19 @@ export class DataExporter {
         ORDER BY e.created_at ASC
       `
 
-      // step 4: stream the query
-      const rows = await clickhouse.query({
-        query,
-        format: 'JSONEachRow',
-      })
+      // step 4: paginate query to avoid overloading ClickHouse with a single unbounded query
+      const PAGE_SIZE = 10_000
+      let offset = 0
 
-      const stream = rows.stream<ClickHouseEvent & Record<string, string>>()
+      while (true) {
+        const pagedQuery = `${query} LIMIT ${PAGE_SIZE} OFFSET ${offset}`
 
-      for await (const chunk of stream) {
-        const rawEvents = chunk.map((row) => row.json())
+        const rows = await clickhouse.query({
+          query: pagedQuery,
+          format: 'JSONEachRow',
+        })
+
+        const rawEvents = await rows.json<ClickHouseEvent & Record<string, string>>()
 
         const aliasIds = [...new Set(rawEvents.map((e) => e.player_alias_id))]
         const unknownAliasIds = aliasIds.filter((id) => !playerAliasCache.has(id))
@@ -158,6 +161,11 @@ export class DataExporter {
           event.props = props
 
           yield event
+        }
+
+        offset += rawEvents.length
+        if (rawEvents.length < PAGE_SIZE) {
+          break
         }
       }
     } finally {

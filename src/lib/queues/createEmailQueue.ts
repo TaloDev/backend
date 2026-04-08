@@ -8,7 +8,7 @@ export function createEmailQueue(events: WorkerEvents<EmailConfig> = {}, prefix 
     async (job) => {
       await sendEmail(job.data.mail)
     },
-    events,
+    { events },
   )
 
   return queue

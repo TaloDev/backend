@@ -187,6 +187,36 @@ describe('Data export - generation', () => {
   })
 })
 
+describe('Data export - events pagination', () => {
+  it('should return all events when there are more than PAGE_SIZE (10,000)', async () => {
+    const [, game] = await createOrganisationAndGame()
+
+    const exporter = new DataExporter()
+    const proto = Object.getPrototypeOf(exporter)
+
+    const player = await new PlayerFactory([game]).one()
+    await em.persist(player).flush()
+
+    const EVENT_COUNT = 20_002
+    const events = await new EventFactory([player]).many(EVENT_COUNT)
+    await clickhouse.insert({
+      table: 'events',
+      values: events.map((e) => e.toInsertable()),
+      format: 'JSONEachRow',
+    })
+
+    const dataExport = await new DataExportFactory(game).one()
+    await em.persist(dataExport).flush()
+
+    let count = 0
+    for await (const _ of proto.streamEvents(dataExport, em, true)) {
+      count++
+    }
+
+    expect(count).toBe(EVENT_COUNT)
+  })
+})
+
 describe('Data export - create zip stream', () => {
   let tempDir: string
   let dataExporter: DataExporter

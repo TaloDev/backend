@@ -1,4 +1,4 @@
-import { Job, Processor, Queue, Worker } from 'bullmq'
+import { Job, Processor, Queue, Worker, WorkerOptions } from 'bullmq'
 import { BullMQOtel } from 'bullmq-otel'
 import { createRedisConnection } from '../../config/redis.config'
 import handleJobFailure from './handleJobFailure'
@@ -13,7 +13,13 @@ let redis: ReturnType<typeof createRedisConnection>
 function createQueue<T>(
   name: string,
   processor: Processor<T, unknown, string> | string,
-  events: WorkerEvents<T> = {},
+  {
+    events = {},
+    workerOptions = {},
+  }: {
+    events?: WorkerEvents<T>
+    workerOptions?: Partial<Omit<WorkerOptions, 'connection' | 'telemetry'>>
+  } = {},
 ): Queue<T> {
   if (!redis) {
     redis = createRedisConnection({
@@ -23,6 +29,7 @@ function createQueue<T>(
 
   const queue = new Queue<T>(name, { connection: redis, telemetry: new BullMQOtel('talo.queue') })
   const worker = new Worker<T>(queue.name, processor, {
+    ...workerOptions,
     connection: redis,
     telemetry: new BullMQOtel('talo.worker'),
   })

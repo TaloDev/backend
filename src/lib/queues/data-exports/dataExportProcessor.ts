@@ -58,24 +58,7 @@ export class DataExporter {
     const playerAliasCache = new Map<number, Partial<PlayerAlias>>()
 
     try {
-      // step 1: fetch distinct prop keys for this game
-      const keyQuery = `
-        SELECT DISTINCT p.prop_key
-        FROM event_props p
-        INNER JOIN events e ON p.event_id = e.id
-        WHERE e.game_id = ${dataExport.game.id}
-        ${includeDevData ? '' : 'AND e.dev_build = false'}
-      `
-
-      const propKeys = await clickhouse
-        .query({
-          query: keyQuery,
-          format: 'JSONEachRow',
-        })
-        .then((res) => res.json<ClickHouseEventProp>())
-        .then((rows) => rows.map((row) => row.prop_key))
-
-      // step 2: paginate events using cursor-based pagination
+      // step 1: paginate events using cursor-based pagination
       const PAGE_SIZE = 10_000
       let lastCreatedAt: Date | null = null
       let lastId: string | null = null
@@ -172,9 +155,7 @@ export class DataExporter {
           }
 
           const eventProps = propsByEventId.get(data.id) ?? {}
-          event.props = propKeys
-            .filter((key) => eventProps[key] != null)
-            .map((key) => ({ key, value: eventProps[key] }))
+          event.props = Object.entries(eventProps).map(([key, value]) => ({ key, value }))
 
           yield event
         }

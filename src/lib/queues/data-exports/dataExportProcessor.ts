@@ -5,6 +5,7 @@ import { format } from 'date-fns'
 import { createWriteStream } from 'fs'
 import { mkdir } from 'fs/promises'
 import { get } from 'lodash'
+import assert from 'node:assert'
 import path from 'path'
 import { PassThrough } from 'stream'
 import ormConfig from '../../../config/mikro-orm.config'
@@ -57,78 +58,74 @@ export class DataExporter {
     const playerAliasCache = new Map<number, Partial<PlayerAlias>>()
 
     try {
-      // step 1: fetch distinct prop keys for this game
-      const keyQuery = `
-        SELECT DISTINCT p.prop_key
-        FROM event_props p
-        INNER JOIN events e ON p.event_id = e.id
-        WHERE e.game_id = ${dataExport.game.id}
-        ${includeDevData ? '' : 'AND e.dev_build = false'}
-      `
-
-      const propKeys = await clickhouse
-        .query({
-          query: keyQuery,
-          format: 'JSONEachRow',
-        })
-        .then((res) => res.json<ClickHouseEventProp>())
-        .then((rows) => rows.map((row) => row.prop_key))
-
-      // step 2: dynamically build pivot select clause
-      const pivotCols = propKeys
-        .map((key) => `MAX(IF(p.prop_key = '${key}', p.prop_value, NULL)) AS "props.${key}"`)
-        .join(',\n  ')
-
-      // step 3: build full pivot query
-      const baseQuery = `
-        SELECT
-          e.id,
-          e.name,
-          e.game_id,
-          e.player_alias_id,
-          e.created_at,
-          e.updated_at,
-          ${pivotCols}
-        FROM events e
-        LEFT JOIN event_props p ON e.id = p.event_id
-        WHERE e.game_id = ${dataExport.game.id}
-        ${includeDevData ? '' : 'AND e.dev_build = false'}
-        {cursorFilter}
-        GROUP BY
-          e.id, e.name, e.game_id, e.player_alias_id, e.created_at, e.updated_at
-        ORDER BY e.created_at ASC, e.id ASC
-      `
-
-      // step 4: paginate query using the last created_at and id as a cursor
-      const PAGE_SIZE = 1000
+      // step 1: paginate events using cursor-based pagination
+      const PAGE_SIZE = 10_000
       let lastCreatedAt: Date | null = null
       let lastId: string | null = null
 
       while (true) {
-        const cursorFilter =
+        const cursorFilter: string =
           lastCreatedAt && lastId
-            ? `AND (e.created_at, e.id) > (toDateTime64('${formatDateForClickHouse(lastCreatedAt)}', 3), '${lastId}')`
+            ? `AND (created_at, id) > (toDateTime64('${formatDateForClickHouse(lastCreatedAt)}', 3), '${lastId}')`
             : ''
-        const pagedQuery = baseQuery.replace('{cursorFilter}', cursorFilter) + ` LIMIT ${PAGE_SIZE}`
 
-        const rows = await clickhouse.query({
-          query: pagedQuery,
-          format: 'JSONEachRow',
-        })
+        const rawEvents = await clickhouse
+          .query({
+            query: `
+              SELECT id, name, game_id, player_alias_id, created_at, updated_at
+              FROM events
+              WHERE game_id = ${dataExport.game.id}
+              ${includeDevData ? '' : 'AND dev_build = false'}
+              ${cursorFilter}
+              ORDER BY created_at ASC, id ASC
+              LIMIT ${PAGE_SIZE}
+            `,
+            format: 'JSONEachRow',
+          })
+          .then((res) => res.json<ClickHouseEvent>())
 
-        const rawEvents = (await rows.json()) as (ClickHouseEvent & Record<string, string>)[]
+        // step 3: fetch props for this page's events using a subquery to avoid large HTTP params
+        const rawProps =
+          rawEvents.length > 0
+            ? await clickhouse
+                .query({
+                  query: `
+                  SELECT event_id, prop_key, prop_value
+                  FROM event_props
+                  WHERE event_id IN (
+                    SELECT id FROM events
+                    WHERE game_id = ${dataExport.game.id}
+                    ${includeDevData ? '' : 'AND dev_build = false'}
+                    ${cursorFilter}
+                    ORDER BY created_at ASC, id ASC
+                    LIMIT ${PAGE_SIZE}
+                  )
+                `,
+                  format: 'JSONEachRow',
+                })
+                .then((res) => res.json<ClickHouseEventProp>())
+            : []
+
+        const propsByEventId = new Map<string, Record<string, string>>()
+        for (const prop of rawProps) {
+          if (!propsByEventId.has(prop.event_id)) {
+            propsByEventId.set(prop.event_id, {})
+          }
+
+          const eventProps = propsByEventId.get(prop.event_id)
+          assert(eventProps)
+          eventProps[prop.prop_key] = prop.prop_value
+        }
 
         const aliasIds = [...new Set(rawEvents.map((e) => e.player_alias_id))]
         const unknownAliasIds = aliasIds.filter((id) => !playerAliasCache.has(id))
 
-        // step 5: load aliases
+        // step 4: load aliases
         if (unknownAliasIds.length > 0) {
           /* @ts-expect-error types don't work nicely with partial loading */
           const aliasStream = streamByCursor<Partial<PlayerAlias>>(async (batchSize, after) => {
             return em.repo(PlayerAlias).findByCursor(
-              {
-                id: { $in: unknownAliasIds },
-              },
+              { id: { $in: unknownAliasIds } },
               {
                 first: batchSize,
                 after,
@@ -144,28 +141,21 @@ export class DataExporter {
           }
         }
 
-        // step 6: hydrate events
+        // step 5: hydrate events
         for (const data of rawEvents) {
-          const playerAlias = playerAliasCache.get(data.player_alias_id as number)
+          const playerAlias = playerAliasCache.get(data.player_alias_id)
 
           const event = new Event()
-          event.construct(data.name as string, dataExport.game)
-          event.id = data.id as string
-          event.createdAt = new Date(data.created_at as string)
-          event.updatedAt = new Date(data.updated_at as string)
+          event.construct(data.name, dataExport.game)
+          event.id = data.id
+          event.createdAt = new Date(data.created_at)
+          event.updatedAt = new Date(data.updated_at)
           if (playerAlias) {
             event.playerAlias = playerAlias as PlayerAlias
           }
 
-          // hydrate props from flattened keys
-          const props: { key: string; value: string }[] = []
-          for (const key of propKeys) {
-            const value = data[`props.${key}`]
-            if (value != null) {
-              props.push({ key, value })
-            }
-          }
-          event.props = props
+          const eventProps = propsByEventId.get(data.id) ?? {}
+          event.props = Object.entries(eventProps).map(([key, value]) => ({ key, value }))
 
           yield event
         }

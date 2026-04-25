@@ -39,14 +39,18 @@ export const breakdownRoute = protectedRoute({
       SELECT
         prop_key,
         prop_value,
-        toUnixTimestamp(toStartOfDay(events.created_at)) * 1000 AS date,
+        toUnixTimestamp(toStartOfDay(created_at)) * 1000 AS date,
         count() AS count
       FROM event_props
-      LEFT JOIN events ON events.id = event_props.event_id
-      WHERE events.name = {eventName: String}
-        AND events.created_at BETWEEN '${startDate}' AND '${endDate}'
-        AND events.game_id = ${ctx.state.game.id}
-        AND NOT startsWith(event_props.prop_key, 'META_')
+      WHERE game_id = ${ctx.state.game.id}
+        AND created_at BETWEEN '${startDate}' AND '${endDate}'
+        AND NOT startsWith(prop_key, 'META_')
+        AND event_id IN (
+          SELECT id FROM events
+          WHERE game_id = ${ctx.state.game.id}
+            AND name = {eventName: String}
+            AND created_at BETWEEN '${startDate}' AND '${endDate}'
+        )
     `
 
     if (!ctx.state.includeDevData) {

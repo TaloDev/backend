@@ -11,10 +11,10 @@ import Organisation from '../../../entities/organisation'
 import User, { UserType } from '../../../entities/user'
 import UserAccessCode from '../../../entities/user-access-code'
 import { buildTokenPair } from '../../../lib/auth/buildTokenPair'
-import createDefaultPricingPlan from '../../../lib/billing/createDefaultPricingPlan'
 import createGameActivity from '../../../lib/logging/createGameActivity'
 import queueEmail from '../../../lib/messaging/queueEmail'
 import { publicRoute } from '../../../lib/routing/router'
+import { createOrganisationForUser } from '../../../lib/users/createOrganisationForUser'
 import { passwordSchema } from '../../../lib/validation/passwordSchema'
 
 const hcaptchaMonitorMeter = metrics.getMeter('hcaptcha-monitor-meter')
@@ -124,12 +124,8 @@ export const registerRoute = publicRoute({
 
       em.remove(invite)
     } else {
-      const organisation = new Organisation()
-      organisation.email = email
-      organisation.name = organisationName!
-      organisation.pricingPlan = await createDefaultPricingPlan(em, organisation)
-
-      user.organisation = organisation
+      assert(organisationName)
+      user.organisation = await createOrganisationForUser(em, organisationName, email)
       user.type = UserType.OWNER
     }
 

@@ -25,7 +25,7 @@ export const eventsRoute = protectedRoute({
     const clickhouse = ctx.clickhouse
 
     const searchQuery = search
-      ? 'AND (e.name ILIKE {search: String} OR e.id IN (SELECT event_id FROM event_props WHERE prop_value ILIKE {search: String}))'
+      ? `AND (e.name ILIKE {search: String} OR e.id IN (SELECT event_id FROM event_props WHERE game_id = ${ctx.state.game.id} AND prop_value ILIKE {search: String}))`
       : ''
 
     const baseQuery = `FROM events e

@@ -87,7 +87,7 @@ export class DataExporter {
           })
           .then((res) => res.json<ClickHouseEvent>())
 
-        // step 3: fetch props for this page's events using a subquery to avoid large HTTP params
+        // step 3: fetch props for this page's events
         const rawProps =
           rawEvents.length > 0
             ? await clickhouse
@@ -95,7 +95,9 @@ export class DataExporter {
                   query: `
                   SELECT event_id, prop_key, prop_value
                   FROM event_props
-                  WHERE event_id IN (
+                  WHERE game_id = ${dataExport.game.id}
+                  ${includeDevData ? '' : 'AND dev_build = false'}
+                  AND event_id IN (
                     SELECT id FROM events
                     WHERE game_id = ${dataExport.game.id}
                     ${includeDevData ? '' : 'AND dev_build = false'}
@@ -366,11 +368,8 @@ export class DataExporter {
           query: `
             SELECT DISTINCT prop_key
             FROM event_props
-            WHERE event_id IN (
-              SELECT id FROM events
-              WHERE game_id = ${dataExport.game.id}
-              ${includeDevData ? '' : 'AND dev_build = false'}
-            )
+            WHERE game_id = ${dataExport.game.id}
+            ${includeDevData ? '' : 'AND dev_build = false'}
             ORDER BY prop_key ASC
           `,
           format: 'JSONEachRow',

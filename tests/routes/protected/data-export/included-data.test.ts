@@ -40,7 +40,7 @@ describe('Data export - included data (unit tests)', () => {
       format: 'JSON',
     })
     await clickhouse.insert({
-      table: 'events',
+      table: 'event_props',
       values: event.getInsertableProps(),
       format: 'JSONEachRow',
     })
@@ -69,12 +69,41 @@ describe('Data export - included data (unit tests)', () => {
       format: 'JSON',
     })
     await clickhouse.insert({
-      table: 'events',
+      table: 'event_props',
       values: event.getInsertableProps(),
       format: 'JSONEachRow',
     })
 
     const items = await collect(proto.streamEvents(dataExport, em, true))
+    expect(items).toHaveLength(1)
+  })
+
+  it('should fetch props for live players when includeDevData is false', async () => {
+    const [, game] = await createOrganisationAndGame()
+
+    const exporter = new DataExporter()
+    const proto = Object.getPrototypeOf(exporter)
+
+    const player = await new PlayerFactory([game]).one()
+
+    const event = await new EventFactory([player]).one()
+    event.setProps([new Prop('currentLevel', '80')])
+
+    const dataExport = await new DataExportFactory(game).one()
+    await em.persist(dataExport).flush()
+
+    await clickhouse.insert({
+      table: 'events',
+      values: event.toInsertable(),
+      format: 'JSON',
+    })
+    await clickhouse.insert({
+      table: 'event_props',
+      values: event.getInsertableProps(),
+      format: 'JSONEachRow',
+    })
+
+    const items = await collect(proto.streamEvents(dataExport, em, false))
     expect(items).toHaveLength(1)
   })
 

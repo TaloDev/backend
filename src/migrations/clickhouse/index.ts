@@ -9,6 +9,7 @@ import { CreatePlayerSessionsTable } from './005CreatePlayerSessionsTable'
 import { AddEventPropsEventIdIndex } from './006AddEventPropsEventIdIndex'
 import { AddDevBuildToPlayerGameStatSnapshots } from './007AddDevBuildToPlayerGameStatSnapshots'
 import { ReorderEventsSortKey } from './008ReorderEventsSortKey'
+import { AddGameIdToEventProps } from './009AddGameIdToEventProps'
 
 type ClickHouseMigration = {
   name: string
@@ -47,6 +48,10 @@ const migrations: ClickHouseMigration[] = [
   {
     name: 'ReorderEventsSortKey',
     sql: ReorderEventsSortKey,
+  },
+  {
+    name: 'AddGameIdToEventProps',
+    sql: AddGameIdToEventProps,
   },
 ]
 

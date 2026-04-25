@@ -30,6 +30,9 @@ export type ClickHouseEventProp = {
   event_id: string
   prop_key: string
   prop_value: string
+  game_id: number
+  dev_build: boolean
+  created_at: string
 }
 
 export default class Event extends ClickHouseEntity<
@@ -152,6 +155,9 @@ export default class Event extends ClickHouseEntity<
       event_id: this.id,
       prop_key: prop.key,
       prop_value: prop.value,
+      game_id: this.game.id,
+      dev_build: this.playerAlias.player.devBuild,
+      created_at: formatDateForClickHouse(this.createdAt),
     }))
   }
 

@@ -142,7 +142,7 @@ export default class PlayerGroupRule {
   private getPropsQuery(em: EntityManager, fieldQuery: FilterValue<string>) {
     return em
       .qb(PlayerProp)
-      .select(raw('player_id'))
+      .select('player.id')
       .where({
         key: this.getNamespacedValue('props'),
         [this.getCastedKey('value')]: fieldQuery,
@@ -152,7 +152,7 @@ export default class PlayerGroupRule {
   private getStatsQuery(em: EntityManager, fieldQuery: FilterValue<string>) {
     return em
       .qb(PlayerGameStat)
-      .select(raw('player_id'))
+      .select('player.id')
       .where({
         stat: {
           internalName: this.getNamespacedValue('statValue'),
@@ -165,7 +165,7 @@ export default class PlayerGroupRule {
     return em
       .qb(LeaderboardEntry)
       .join('playerAlias', 'pa')
-      .select(raw('pa.player_id'))
+      .select('pa.player.id')
       .where({
         leaderboard: {
           internalName: this.getNamespacedValue('leaderboardEntryScore'),
@@ -185,7 +185,7 @@ export default class PlayerGroupRule {
         id: {
           $nin: em
             .qb(PlayerProp)
-            .select(raw('player_id'))
+            .select('player.id')
             .where({
               key: this.getNamespacedValue('props'),
             }),

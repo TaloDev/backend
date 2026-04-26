@@ -33,7 +33,7 @@ export default class Player {
   @OneToMany(() => PlayerAlias, (alias) => alias.player)
   aliases: Collection<PlayerAlias> = new Collection<PlayerAlias>(this)
 
-  @OneToMany(() => PlayerProp, (prop) => prop.player, { eager: true, orphanRemoval: true })
+  @OneToMany(() => PlayerProp, (prop) => prop.player, { orphanRemoval: true, eager: true })
   props: Collection<PlayerProp> = new Collection<PlayerProp>(this)
 
   @ManyToMany(() => PlayerGroup, (group) => group.members, { eager: true })

@@ -67,6 +67,7 @@ import { CreateGooglePlayGamesIntegrationEventTable } from './20260306091456Crea
 import { AddLastUsageWarningThresholdColumn } from './20260327081802AddLastUsageWarningThresholdColumn'
 import { SchemaSnapshotChanges } from './20260327224537SchemaSnapshotChanges'
 import { AddFailedJobFailedAtIndex } from './20260327225535AddFailedJobFailedAtIndex'
+import { MikroORMV7FKDecouple } from './20260426103634MikroORMV7FKDecouple'
 
 export default [
   {
@@ -344,5 +345,9 @@ export default [
   {
     name: 'AddFailedJobFailedAtIndex',
     class: AddFailedJobFailedAtIndex,
+  },
+  {
+    name: 'MikroORMV7FKDecouple',
+    class: MikroORMV7FKDecouple,
   },
 ]

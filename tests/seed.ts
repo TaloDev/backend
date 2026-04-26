@@ -28,7 +28,7 @@ void (async () => {
   }
 
   const orm = await MikroORM.init(seedOrmConfig)
-  await orm.schema.dropSchema()
+  await orm.schema.drop()
   await orm.em.getConnection().execute('drop table if exists mikro_orm_migrations')
   await orm.migrator.up()
 

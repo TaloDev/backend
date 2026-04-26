@@ -1,9 +1,14 @@
-import { Cursor, Loaded } from '@mikro-orm/mysql'
+import type { Cursor } from '@mikro-orm/mysql'
 
-export async function* streamByCursor<T extends object>(
-  fetchPage: (batchSize: number, after?: string) => Promise<Cursor<T>>,
+export async function* streamByCursor<
+  T extends object,
+  Hint extends string = never,
+  Fields extends string = never,
+  Excludes extends string = never,
+>(
+  fetchPage: (batchSize: number, after?: string) => Promise<Cursor<T, Hint, Fields, Excludes>>,
   batchSize = 1000,
-): AsyncGenerator<Loaded<T>> {
+) {
   let cursor: string | undefined
 
   while (true) {
@@ -16,7 +21,10 @@ export async function* streamByCursor<T extends object>(
     }
 
     /* v8 ignore next 3 -- @preserve */
-    if (!page.endCursor || page.items.length < batchSize) break
+    if (!page.endCursor || page.items.length < batchSize) {
+      break
+    }
+
     cursor = page.endCursor
   }
 }

@@ -1,13 +1,12 @@
 import {
-  Collection,
   Entity,
-  EntityManager,
   ManyToMany,
   ManyToOne,
   OneToMany,
   PrimaryKey,
   Property,
-} from '@mikro-orm/mysql'
+} from '@mikro-orm/decorators/es'
+import { Collection, EntityManager } from '@mikro-orm/mysql'
 import { getGlobalRedis } from '../config/redis.config'
 import Socket from '../socket'
 import { sendMessages, SocketMessageResponse } from '../socket/messages/socketMessage'

@@ -23,15 +23,12 @@ export class AddLeaderboardEntryPropsDigestColumn extends Migration {
     const em = this.getEntityManager()
     await em.execute('alter table `leaderboard_entry` add `props_digest` varchar(255);')
 
-    const entryStream = streamByCursor<LeaderboardEntry>(async (batchSize, after) => {
-      return em.repo(LeaderboardEntry).findByCursor(
-        {},
-        {
-          first: batchSize,
-          after,
-          orderBy: { id: 'asc' },
-        },
-      )
+    const entryStream = streamByCursor(async (batchSize, after) => {
+      return em.repo(LeaderboardEntry).findByCursor({
+        first: batchSize,
+        after,
+        orderBy: { id: 'asc' },
+      })
     }, 100)
 
     const batch: LeaderboardEntryBatch[] = []

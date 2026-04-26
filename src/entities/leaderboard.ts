@@ -1,14 +1,13 @@
 import {
-  Collection,
   Entity,
-  EntityManager,
   Enum,
   Index,
   ManyToOne,
   OneToMany,
   PrimaryKey,
   Property,
-} from '@mikro-orm/mysql'
+} from '@mikro-orm/decorators/es'
+import { Collection, EntityManager } from '@mikro-orm/mysql'
 import Game from './game'
 import LeaderboardEntry from './leaderboard-entry'
 

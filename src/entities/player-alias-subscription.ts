@@ -1,4 +1,12 @@
-import { Entity, Enum, Index, ManyToOne, PrimaryKey, Property, Unique } from '@mikro-orm/mysql'
+import {
+  Entity,
+  Enum,
+  Index,
+  ManyToOne,
+  PrimaryKey,
+  Property,
+  Unique,
+} from '@mikro-orm/decorators/es'
 import PlayerAlias from './player-alias'
 
 export enum RelationshipType {

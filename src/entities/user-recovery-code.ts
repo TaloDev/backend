@@ -1,4 +1,4 @@
-import { Entity, ManyToOne, PrimaryKey, Property } from '@mikro-orm/mysql'
+import { Entity, ManyToOne, PrimaryKey, Property } from '@mikro-orm/decorators/es'
 import { decrypt, encrypt } from '../lib/crypto/string-encryption'
 import User from './user'
 

@@ -1,12 +1,5 @@
-import {
-  Entity,
-  EntityManager,
-  Enum,
-  Filter,
-  ManyToOne,
-  PrimaryKey,
-  Property,
-} from '@mikro-orm/mysql'
+import { Entity, Enum, Filter, ManyToOne, PrimaryKey, Property } from '@mikro-orm/decorators/es'
+import { EntityManager } from '@mikro-orm/mysql'
 import { pick } from 'lodash'
 import { decrypt, encrypt } from '../lib/crypto/string-encryption'
 import {

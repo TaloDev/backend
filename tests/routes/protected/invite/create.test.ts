@@ -4,14 +4,14 @@ import GameActivity, { GameActivityType } from '../../../../src/entities/game-ac
 import { UserType } from '../../../../src/entities/user'
 import InviteFactory from '../../../fixtures/InviteFactory'
 import UserFactory from '../../../fixtures/UserFactory'
-import clearEntities from '../../../utils/clearEntities'
+import { clearEntities } from '../../../utils/clearEntities'
 import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
 import createUserAndToken from '../../../utils/createUserAndToken'
 import userPermissionProvider from '../../../utils/userPermissionProvider'
 
 describe('Invite - create', () => {
   beforeEach(async () => {
-    await clearEntities(['GameActivity'])
+    await clearEntities([GameActivity])
   })
 
   it.each(userPermissionProvider([UserType.ADMIN]))(

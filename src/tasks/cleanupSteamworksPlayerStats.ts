@@ -11,18 +11,16 @@ export default async function cleanupSteamworksPlayerStats() {
   const orm = await getMikroORM()
   const em = orm.em.fork() as EntityManager
 
-  const playerStatStream = streamByCursor<SteamworksPlayerStat>(async (batchSize, after) => {
-    return em.repo(SteamworksPlayerStat).findByCursor(
-      {
+  const playerStatStream = streamByCursor(async (batchSize, after) => {
+    return em.repo(SteamworksPlayerStat).findByCursor({
+      where: {
         playerStat: null,
       },
-      {
-        first: batchSize,
-        after,
-        orderBy: { id: 'asc' },
-        populate: ['stat.game'] as const,
-      },
-    )
+      first: batchSize,
+      after,
+      orderBy: { id: 'asc' },
+      populate: ['stat.game'] as const,
+    })
   }, 100)
 
   const integrationsMap = new Map<number, Integration>()

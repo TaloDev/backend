@@ -1,5 +1,4 @@
 import {
-  Collection,
   Entity,
   Enum,
   ManyToOne,
@@ -7,7 +6,8 @@ import {
   OneToOne,
   PrimaryKey,
   Property,
-} from '@mikro-orm/mysql'
+} from '@mikro-orm/decorators/es'
+import { Collection } from '@mikro-orm/mysql'
 import Organisation from './organisation'
 import UserRecoveryCode from './user-recovery-code'
 import UserTwoFactorAuth from './user-two-factor-auth'

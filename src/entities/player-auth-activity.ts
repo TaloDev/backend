@@ -1,4 +1,4 @@
-import { Entity, Enum, ManyToOne, PrimaryKey, Property } from '@mikro-orm/mysql'
+import { Entity, Enum, ManyToOne, PrimaryKey, Property } from '@mikro-orm/decorators/es'
 import assert from 'node:assert'
 import Player from './player'
 import { PlayerAliasService } from './player-alias'

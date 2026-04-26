@@ -10,7 +10,7 @@ export default class PlayerProp {
   @PrimaryKey()
   id!: number
 
-  @ManyToOne(() => Player)
+  @ManyToOne(() => Player, { deleteRule: 'cascade' })
   player: Player
 
   @Index()

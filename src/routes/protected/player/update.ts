@@ -43,9 +43,13 @@ export async function updatePlayerHandler({
       }
 
       try {
+        // TODO: a mikro-orm bug stops us from relying on orphanRemoval
+        const prevProps = [...lockedPlayer.props.getItems()]
+        em.remove(lockedPlayer.props)
+
         lockedPlayer.setProps(
           mergeAndSanitiseProps({
-            prevProps: lockedPlayer.props.getItems(),
+            prevProps,
             newProps: props,
             extraFilter: (prop) => !prop.key.startsWith('META_'),
           }),

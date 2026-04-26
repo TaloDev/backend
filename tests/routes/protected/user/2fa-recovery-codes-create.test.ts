@@ -21,7 +21,7 @@ describe('User - create recovery codes', () => {
 
     expect(res.body.recoveryCodes).toHaveLength(8)
 
-    const recoveryCodes = await em.repo(UserRecoveryCode).find({ user })
+    const recoveryCodes = await em.repo(UserRecoveryCode).find({ user }, { refresh: true })
     expect(recoveryCodes).toHaveLength(8)
   })
 

@@ -1,11 +1,4 @@
-import {
-  Entity,
-  Index,
-  ManyToOne,
-  PrimaryKey,
-  Property,
-  Unique,
-} from '@mikro-orm/decorators/es'
+import { Entity, Index, ManyToOne, PrimaryKey, Property, Unique } from '@mikro-orm/decorators/es'
 import { EntityManager, raw } from '@mikro-orm/mysql'
 import GameStat from './game-stat'
 import Player from './player'

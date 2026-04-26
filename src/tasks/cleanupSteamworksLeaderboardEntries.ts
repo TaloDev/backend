@@ -11,18 +11,16 @@ export default async function cleanupSteamworksLeaderboardEntries() {
   const orm = await getMikroORM()
   const em = orm.em.fork() as EntityManager
 
-  const entryStream = streamByCursor<SteamworksLeaderboardEntry>(async (batchSize, after) => {
-    return em.repo(SteamworksLeaderboardEntry).findByCursor(
-      {
+  const entryStream = streamByCursor(async (batchSize, after) => {
+    return em.repo(SteamworksLeaderboardEntry).findByCursor({
+      where: {
         leaderboardEntry: null,
       },
-      {
-        first: batchSize,
-        after,
-        orderBy: { id: 'asc' },
-        populate: ['steamworksLeaderboard.leaderboard.game'] as const,
-      },
-    )
+      first: batchSize,
+      after,
+      orderBy: { id: 'asc' },
+      populate: ['steamworksLeaderboard.leaderboard.game'] as const,
+    })
   }, 100)
 
   const integrationsMap = new Map<number, Integration>()

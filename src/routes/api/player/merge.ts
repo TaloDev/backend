@@ -9,6 +9,7 @@ import Player from '../../../entities/player'
 import PlayerAlias, { PlayerAliasService } from '../../../entities/player-alias'
 import PlayerAuthActivity, { PlayerAuthActivityType } from '../../../entities/player-auth-activity'
 import PlayerGameStat from '../../../entities/player-game-stat'
+import PlayerProp from '../../../entities/player-prop'
 import triggerIntegrations from '../../../lib/integrations/triggerIntegrations'
 import { apiRoute, withMiddleware } from '../../../lib/routing/router'
 import { playerAliasHeaderSchema } from '../../../lib/validation/playerAliasHeaderSchema'
@@ -48,14 +49,17 @@ async function findRestrictedAlias(em: EntityManager, player: Player) {
   return restrictedAlias
 }
 
-function mergeProps(em: EntityManager, player1: Player, player2: Player) {
+async function mergeProps(em: EntityManager, player1: Player, player2: Player) {
   const player1Props = player1.props.getItems().map(({ key, value }) => ({ key, value }))
   const player2Props = player2.props.getItems().map(({ key, value }) => ({ key, value }))
   const mergedProps = uniqWith([...player2Props, ...player1Props], (a, b) => a.key === b.key)
 
-  em.remove(player1.props)
-  em.remove(player2.props)
-  player1.setProps(mergedProps)
+  await em.nativeDelete(PlayerProp, { player: { $in: [player1, player2] } })
+  const newProps = mergedProps.map(({ key, value }) => new PlayerProp(player1, key, value))
+  em.persist(newProps)
+
+  // re-initialise the collection with the new props
+  player1.props.hydrate(newProps)
 }
 
 async function mergePlayerStats(em: EntityManager, player1: Player, player2: Player) {
@@ -201,7 +205,7 @@ export const mergeRoute = apiRoute({
     }
 
     const updatedPlayer = await em.transactional(async (trx) => {
-      mergeProps(trx, player1, player2)
+      await mergeProps(trx, player1, player2)
       await mergePlayerStats(trx, player1, player2)
 
       await trx.repo(GameSave).nativeUpdate({ player: player2 }, { player: player1 })

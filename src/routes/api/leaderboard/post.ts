@@ -206,7 +206,8 @@ export const postRoute = apiRoute({
       })
     }
 
-    const position = Math.max((await query.count()) - 1, 0)
+    const { count } = await query.count().execute('get')
+    const position = Math.max(count - 1, 0)
     await entry.playerAlias.player.checkGroupMemberships(em)
 
     return {

@@ -5,8 +5,6 @@
     "lib": ["ESNext", "ES2024.Collection"],
     "target": "esnext",
     "outDir": "dist",
-    "experimentalDecorators": true,
-    "emitDecoratorMetadata": true,
     "esModuleInterop": true,
     "declaration": true,
     "types": ["vitest/globals", "./src/global.d.ts"],

@@ -1,5 +1,6 @@
 import { wrap } from '@mikro-orm/mysql'
 import { authenticator } from '@otplib/preset-default'
+import assert from 'node:assert'
 import request from 'supertest'
 import UserTwoFactorAuth from '../../../../src/entities/user-two-factor-auth'
 import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
@@ -29,8 +30,10 @@ describe('User - confirm 2fa', () => {
 
     expect(res.body.recoveryCodes).toHaveLength(8)
 
-    await wrap(user.twoFactorAuth!).init()
-    expect(user.twoFactorAuth!.enabled).toBe(true)
+    assert(user.twoFactorAuth)
+
+    await wrap(user.twoFactorAuth).init()
+    expect(user.twoFactorAuth.enabled).toBe(true)
   })
 
   it('should not let users confirm enabling 2fa if it is already enabled', async () => {

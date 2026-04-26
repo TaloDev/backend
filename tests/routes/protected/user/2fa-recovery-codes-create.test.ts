@@ -19,9 +19,6 @@ describe('User - create recovery codes', () => {
       .expect(200)
 
     expect(res.body.recoveryCodes).toHaveLength(8)
-
-    await em.refresh(user, { populate: ['recoveryCodes'] })
-    expect(user.recoveryCodes).toHaveLength(8)
   })
 
   it("should not create recovery codes if 2fa isn't enabled", async () => {

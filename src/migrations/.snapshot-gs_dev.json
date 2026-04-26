@@ -2,6 +2,7 @@
   "namespaces": [],
   "tables": [
     {
+      "name": "failed_job",
       "columns": {
         "id": {
           "name": "id",
@@ -100,7 +101,6 @@
           "mappedType": "datetime"
         }
       },
-      "name": "failed_job",
       "indexes": [
         {
           "columnNames": ["failed_at"],
@@ -124,6 +124,7 @@
       "nativeEnums": {}
     },
     {
+      "name": "game_secret",
       "columns": {
         "id": {
           "name": "id",
@@ -158,7 +159,6 @@
           "mappedType": "string"
         }
       },
-      "name": "game_secret",
       "indexes": [
         {
           "keyName": "PRIMARY",
@@ -174,6 +174,7 @@
       "nativeEnums": {}
     },
     {
+      "name": "player_auth",
       "columns": {
         "id": {
           "name": "id",
@@ -304,7 +305,6 @@
           "mappedType": "datetime"
         }
       },
-      "name": "player_auth",
       "indexes": [
         {
           "keyName": "PRIMARY",
@@ -320,6 +320,7 @@
       "nativeEnums": {}
     },
     {
+      "name": "pricing_plan",
       "columns": {
         "id": {
           "name": "id",
@@ -434,7 +435,6 @@
           "mappedType": "datetime"
         }
       },
-      "name": "pricing_plan",
       "indexes": [
         {
           "keyName": "PRIMARY",
@@ -450,6 +450,7 @@
       "nativeEnums": {}
     },
     {
+      "name": "organisation_pricing_plan",
       "columns": {
         "id": {
           "name": "id",
@@ -596,7 +597,6 @@
           "mappedType": "datetime"
         }
       },
-      "name": "organisation_pricing_plan",
       "indexes": [
         {
           "columnNames": ["pricing_plan_id"],
@@ -622,13 +622,13 @@
           "columnNames": ["pricing_plan_id"],
           "localTableName": "organisation_pricing_plan",
           "referencedColumnNames": ["id"],
-          "referencedTableName": "pricing_plan",
-          "updateRule": "cascade"
+          "referencedTableName": "pricing_plan"
         }
       },
       "nativeEnums": {}
     },
     {
+      "name": "organisation",
       "columns": {
         "id": {
           "name": "id",
@@ -727,7 +727,6 @@
           "mappedType": "datetime"
         }
       },
-      "name": "organisation",
       "indexes": [
         {
           "columnNames": ["pricing_plan_id"],
@@ -753,13 +752,13 @@
           "columnNames": ["pricing_plan_id"],
           "localTableName": "organisation",
           "referencedColumnNames": ["id"],
-          "referencedTableName": "organisation_pricing_plan",
-          "updateRule": "cascade"
+          "referencedTableName": "organisation_pricing_plan"
         }
       },
       "nativeEnums": {}
     },
     {
+      "name": "game",
       "columns": {
         "id": {
           "name": "id",
@@ -954,7 +953,6 @@
           "mappedType": "datetime"
         }
       },
-      "name": "game",
       "indexes": [
         {
           "columnNames": ["organisation_id"],
@@ -988,21 +986,20 @@
           "columnNames": ["organisation_id"],
           "localTableName": "game",
           "referencedColumnNames": ["id"],
-          "referencedTableName": "organisation",
-          "updateRule": "cascade"
+          "referencedTableName": "organisation"
         },
         "game_api_secret_id_foreign": {
           "constraintName": "game_api_secret_id_foreign",
           "columnNames": ["api_secret_id"],
           "localTableName": "game",
           "referencedColumnNames": ["id"],
-          "referencedTableName": "game_secret",
-          "updateRule": "cascade"
+          "referencedTableName": "game_secret"
         }
       },
       "nativeEnums": {}
     },
     {
+      "name": "player_group",
       "columns": {
         "id": {
           "name": "id",
@@ -1149,7 +1146,6 @@
           "mappedType": "datetime"
         }
       },
-      "name": "player_group",
       "indexes": [
         {
           "columnNames": ["game_id"],
@@ -1175,13 +1171,13 @@
           "columnNames": ["game_id"],
           "localTableName": "player_group",
           "referencedColumnNames": ["id"],
-          "referencedTableName": "game",
-          "updateRule": "cascade"
+          "referencedTableName": "game"
         }
       },
       "nativeEnums": {}
     },
     {
+      "name": "player",
       "columns": {
         "id": {
           "name": "id",
@@ -1312,7 +1308,6 @@
           "mappedType": "datetime"
         }
       },
-      "name": "player",
       "indexes": [
         {
           "columnNames": ["game_id"],
@@ -1370,8 +1365,7 @@
           "columnNames": ["game_id"],
           "localTableName": "player",
           "referencedColumnNames": ["id"],
-          "referencedTableName": "game",
-          "updateRule": "cascade"
+          "referencedTableName": "game"
         },
         "player_auth_id_foreign": {
           "constraintName": "player_auth_id_foreign",
@@ -1379,8 +1373,7 @@
           "localTableName": "player",
           "referencedColumnNames": ["id"],
           "referencedTableName": "player_auth",
-          "deleteRule": "set null",
-          "updateRule": "cascade"
+          "deleteRule": "set null"
         },
         "player_presence_id_foreign": {
           "constraintName": "player_presence_id_foreign",
@@ -1388,13 +1381,13 @@
           "localTableName": "player",
           "referencedColumnNames": ["id"],
           "referencedTableName": "player_presence",
-          "deleteRule": "set null",
-          "updateRule": "cascade"
+          "deleteRule": "set null"
         }
       },
       "nativeEnums": {}
     },
     {
+      "name": "players_to_delete",
       "columns": {
         "id": {
           "name": "id",
@@ -1445,7 +1438,6 @@
           "mappedType": "datetime"
         }
       },
-      "name": "players_to_delete",
       "indexes": [
         {
           "columnNames": ["player_id"],
@@ -1472,13 +1464,13 @@
           "localTableName": "players_to_delete",
           "referencedColumnNames": ["id"],
           "referencedTableName": "player",
-          "deleteRule": "cascade",
-          "updateRule": "cascade"
+          "deleteRule": "cascade"
         }
       },
       "nativeEnums": {}
     },
     {
+      "name": "player_prop",
       "columns": {
         "id": {
           "name": "id",
@@ -1561,7 +1553,6 @@
           "mappedType": "datetime"
         }
       },
-      "name": "player_prop",
       "indexes": [
         {
           "columnNames": ["player_id"],
@@ -1604,14 +1595,13 @@
           "columnNames": ["player_id"],
           "localTableName": "player_prop",
           "referencedColumnNames": ["id"],
-          "referencedTableName": "player",
-          "deleteRule": "cascade",
-          "updateRule": "cascade"
+          "referencedTableName": "player"
         }
       },
       "nativeEnums": {}
     },
     {
+      "name": "player_auth_activity",
       "columns": {
         "id": {
           "name": "id",
@@ -1694,7 +1684,6 @@
           "mappedType": "datetime"
         }
       },
-      "name": "player_auth_activity",
       "indexes": [
         {
           "columnNames": ["player_id"],
@@ -1721,13 +1710,13 @@
           "localTableName": "player_auth_activity",
           "referencedColumnNames": ["id"],
           "referencedTableName": "player",
-          "deleteRule": "cascade",
-          "updateRule": "cascade"
+          "deleteRule": "cascade"
         }
       },
       "nativeEnums": {}
     },
     {
+      "name": "player_alias",
       "columns": {
         "id": {
           "name": "id",
@@ -1842,7 +1831,6 @@
           "mappedType": "datetime"
         }
       },
-      "name": "player_alias",
       "indexes": [
         {
           "columnNames": ["player_id"],
@@ -1878,13 +1866,13 @@
           "localTableName": "player_alias",
           "referencedColumnNames": ["id"],
           "referencedTableName": "player",
-          "deleteRule": "cascade",
-          "updateRule": "cascade"
+          "deleteRule": "cascade"
         }
       },
       "nativeEnums": {}
     },
     {
+      "name": "player_presence",
       "columns": {
         "id": {
           "name": "id",
@@ -1983,7 +1971,6 @@
           "mappedType": "datetime"
         }
       },
-      "name": "player_presence",
       "indexes": [
         {
           "columnNames": ["player_alias_id"],
@@ -2010,13 +1997,13 @@
           "localTableName": "player_presence",
           "referencedColumnNames": ["id"],
           "referencedTableName": "player_alias",
-          "deleteRule": "cascade",
-          "updateRule": "cascade"
+          "deleteRule": "cascade"
         }
       },
       "nativeEnums": {}
     },
     {
+      "name": "player_alias_subscription",
       "columns": {
         "id": {
           "name": "id",
@@ -2131,7 +2118,6 @@
           "mappedType": "datetime"
         }
       },
-      "name": "player_alias_subscription",
       "indexes": [
         {
           "columnNames": ["subscriber_id"],
@@ -2182,8 +2168,7 @@
           "localTableName": "player_alias_subscription",
           "referencedColumnNames": ["id"],
           "referencedTableName": "player_alias",
-          "deleteRule": "cascade",
-          "updateRule": "cascade"
+          "deleteRule": "cascade"
         },
         "player_alias_subscription_subscribed_to_id_foreign": {
           "constraintName": "player_alias_subscription_subscribed_to_id_foreign",
@@ -2191,20 +2176,20 @@
           "localTableName": "player_alias_subscription",
           "referencedColumnNames": ["id"],
           "referencedTableName": "player_alias",
-          "deleteRule": "cascade",
-          "updateRule": "cascade"
+          "deleteRule": "cascade"
         }
       },
       "nativeEnums": {}
     },
     {
+      "name": "player_group_members",
       "columns": {
         "player_group_id": {
           "name": "player_group_id",
           "type": "varchar(255)",
           "unsigned": false,
           "autoincrement": false,
-          "primary": true,
+          "primary": false,
           "nullable": false,
           "unique": false,
           "length": 255,
@@ -2220,7 +2205,7 @@
           "type": "varchar(255)",
           "unsigned": false,
           "autoincrement": false,
-          "primary": true,
+          "primary": false,
           "nullable": false,
           "unique": false,
           "length": 255,
@@ -2232,7 +2217,6 @@
           "mappedType": "string"
         }
       },
-      "name": "player_group_members",
       "indexes": [
         {
           "columnNames": ["player_group_id"],
@@ -2283,6 +2267,7 @@
       "nativeEnums": {}
     },
     {
+      "name": "game_save",
       "columns": {
         "id": {
           "name": "id",
@@ -2381,7 +2366,6 @@
           "mappedType": "datetime"
         }
       },
-      "name": "game_save",
       "indexes": [
         {
           "columnNames": ["player_id"],
@@ -2408,13 +2392,13 @@
           "localTableName": "game_save",
           "referencedColumnNames": ["id"],
           "referencedTableName": "player",
-          "deleteRule": "cascade",
-          "updateRule": "cascade"
+          "deleteRule": "cascade"
         }
       },
       "nativeEnums": {}
     },
     {
+      "name": "leaderboard",
       "columns": {
         "id": {
           "name": "id",
@@ -2577,7 +2561,6 @@
           "mappedType": "datetime"
         }
       },
-      "name": "leaderboard",
       "indexes": [
         {
           "columnNames": ["game_id"],
@@ -2611,13 +2594,13 @@
           "columnNames": ["game_id"],
           "localTableName": "leaderboard",
           "referencedColumnNames": ["id"],
-          "referencedTableName": "game",
-          "updateRule": "cascade"
+          "referencedTableName": "game"
         }
       },
       "nativeEnums": {}
     },
     {
+      "name": "leaderboard_entry",
       "columns": {
         "id": {
           "name": "id",
@@ -2764,7 +2747,6 @@
           "mappedType": "datetime"
         }
       },
-      "name": "leaderboard_entry",
       "indexes": [
         {
           "columnNames": ["leaderboard_id"],
@@ -2824,8 +2806,7 @@
           "localTableName": "leaderboard_entry",
           "referencedColumnNames": ["id"],
           "referencedTableName": "leaderboard",
-          "deleteRule": "cascade",
-          "updateRule": "cascade"
+          "deleteRule": "cascade"
         },
         "leaderboard_entry_player_alias_id_foreign": {
           "constraintName": "leaderboard_entry_player_alias_id_foreign",
@@ -2833,13 +2814,13 @@
           "localTableName": "leaderboard_entry",
           "referencedColumnNames": ["id"],
           "referencedTableName": "player_alias",
-          "deleteRule": "cascade",
-          "updateRule": "cascade"
+          "deleteRule": "cascade"
         }
       },
       "nativeEnums": {}
     },
     {
+      "name": "leaderboard_entry_prop",
       "columns": {
         "id": {
           "name": "id",
@@ -2922,7 +2903,6 @@
           "mappedType": "datetime"
         }
       },
-      "name": "leaderboard_entry_prop",
       "indexes": [
         {
           "columnNames": ["leaderboard_entry_id"],
@@ -2949,13 +2929,13 @@
           "localTableName": "leaderboard_entry_prop",
           "referencedColumnNames": ["id"],
           "referencedTableName": "leaderboard_entry",
-          "deleteRule": "cascade",
-          "updateRule": "cascade"
+          "deleteRule": "cascade"
         }
       },
       "nativeEnums": {}
     },
     {
+      "name": "integration",
       "columns": {
         "id": {
           "name": "id",
@@ -3070,7 +3050,6 @@
           "mappedType": "datetime"
         }
       },
-      "name": "integration",
       "indexes": [
         {
           "columnNames": ["game_id"],
@@ -3096,13 +3075,13 @@
           "columnNames": ["game_id"],
           "localTableName": "integration",
           "referencedColumnNames": ["id"],
-          "referencedTableName": "game",
-          "updateRule": "cascade"
+          "referencedTableName": "game"
         }
       },
       "nativeEnums": {}
     },
     {
+      "name": "google_play_games_integration_event",
       "columns": {
         "id": {
           "name": "id",
@@ -3185,7 +3164,6 @@
           "mappedType": "datetime"
         }
       },
-      "name": "google_play_games_integration_event",
       "indexes": [
         {
           "columnNames": ["integration_id"],
@@ -3211,13 +3189,13 @@
           "columnNames": ["integration_id"],
           "localTableName": "google_play_games_integration_event",
           "referencedColumnNames": ["id"],
-          "referencedTableName": "integration",
-          "updateRule": "cascade"
+          "referencedTableName": "integration"
         }
       },
       "nativeEnums": {}
     },
     {
+      "name": "game_stat",
       "columns": {
         "id": {
           "name": "id",
@@ -3428,7 +3406,6 @@
           "mappedType": "datetime"
         }
       },
-      "name": "game_stat",
       "indexes": [
         {
           "columnNames": ["game_id"],
@@ -3462,13 +3439,13 @@
           "columnNames": ["game_id"],
           "localTableName": "game_stat",
           "referencedColumnNames": ["id"],
-          "referencedTableName": "game",
-          "updateRule": "cascade"
+          "referencedTableName": "game"
         }
       },
       "nativeEnums": {}
     },
     {
+      "name": "player_game_stat",
       "columns": {
         "id": {
           "name": "id",
@@ -3567,7 +3544,6 @@
           "mappedType": "datetime"
         }
       },
-      "name": "player_game_stat",
       "indexes": [
         {
           "columnNames": ["player_id"],
@@ -3619,8 +3595,7 @@
           "localTableName": "player_game_stat",
           "referencedColumnNames": ["id"],
           "referencedTableName": "player",
-          "deleteRule": "cascade",
-          "updateRule": "cascade"
+          "deleteRule": "cascade"
         },
         "player_game_stat_stat_id_foreign": {
           "constraintName": "player_game_stat_stat_id_foreign",
@@ -3628,13 +3603,13 @@
           "localTableName": "player_game_stat",
           "referencedColumnNames": ["id"],
           "referencedTableName": "game_stat",
-          "deleteRule": "cascade",
-          "updateRule": "cascade"
+          "deleteRule": "cascade"
         }
       },
       "nativeEnums": {}
     },
     {
+      "name": "game_feedback_category",
       "columns": {
         "id": {
           "name": "id",
@@ -3765,7 +3740,6 @@
           "mappedType": "datetime"
         }
       },
-      "name": "game_feedback_category",
       "indexes": [
         {
           "columnNames": ["game_id"],
@@ -3799,13 +3773,13 @@
           "columnNames": ["game_id"],
           "localTableName": "game_feedback_category",
           "referencedColumnNames": ["id"],
-          "referencedTableName": "game",
-          "updateRule": "cascade"
+          "referencedTableName": "game"
         }
       },
       "nativeEnums": {}
     },
     {
+      "name": "game_feedback",
       "columns": {
         "id": {
           "name": "id",
@@ -3936,7 +3910,6 @@
           "mappedType": "datetime"
         }
       },
-      "name": "game_feedback",
       "indexes": [
         {
           "columnNames": ["category_id"],
@@ -3971,8 +3944,7 @@
           "localTableName": "game_feedback",
           "referencedColumnNames": ["id"],
           "referencedTableName": "game_feedback_category",
-          "deleteRule": "cascade",
-          "updateRule": "cascade"
+          "deleteRule": "cascade"
         },
         "game_feedback_player_alias_id_foreign": {
           "constraintName": "game_feedback_player_alias_id_foreign",
@@ -3980,13 +3952,13 @@
           "localTableName": "game_feedback",
           "referencedColumnNames": ["id"],
           "referencedTableName": "player_alias",
-          "deleteRule": "cascade",
-          "updateRule": "cascade"
+          "deleteRule": "cascade"
         }
       },
       "nativeEnums": {}
     },
     {
+      "name": "game_feedback_prop",
       "columns": {
         "id": {
           "name": "id",
@@ -4069,7 +4041,6 @@
           "mappedType": "datetime"
         }
       },
-      "name": "game_feedback_prop",
       "indexes": [
         {
           "columnNames": ["game_feedback_id"],
@@ -4096,13 +4067,13 @@
           "localTableName": "game_feedback_prop",
           "referencedColumnNames": ["id"],
           "referencedTableName": "game_feedback",
-          "deleteRule": "cascade",
-          "updateRule": "cascade"
+          "deleteRule": "cascade"
         }
       },
       "nativeEnums": {}
     },
     {
+      "name": "game_channel",
       "columns": {
         "id": {
           "name": "id",
@@ -4265,7 +4236,6 @@
           "mappedType": "datetime"
         }
       },
-      "name": "game_channel",
       "indexes": [
         {
           "columnNames": ["owner_id"],
@@ -4300,21 +4270,20 @@
           "localTableName": "game_channel",
           "referencedColumnNames": ["id"],
           "referencedTableName": "player_alias",
-          "deleteRule": "set null",
-          "updateRule": "cascade"
+          "deleteRule": "set null"
         },
         "game_channel_game_id_foreign": {
           "constraintName": "game_channel_game_id_foreign",
           "columnNames": ["game_id"],
           "localTableName": "game_channel",
           "referencedColumnNames": ["id"],
-          "referencedTableName": "game",
-          "updateRule": "cascade"
+          "referencedTableName": "game"
         }
       },
       "nativeEnums": {}
     },
     {
+      "name": "game_channel_storage_prop",
       "columns": {
         "id": {
           "name": "id",
@@ -4445,7 +4414,6 @@
           "mappedType": "datetime"
         }
       },
-      "name": "game_channel_storage_prop",
       "indexes": [
         {
           "columnNames": ["game_channel_id"],
@@ -4496,8 +4464,7 @@
           "localTableName": "game_channel_storage_prop",
           "referencedColumnNames": ["id"],
           "referencedTableName": "game_channel",
-          "deleteRule": "cascade",
-          "updateRule": "cascade"
+          "deleteRule": "cascade"
         },
         "game_channel_storage_prop_created_by_id_foreign": {
           "constraintName": "game_channel_storage_prop_created_by_id_foreign",
@@ -4505,8 +4472,7 @@
           "localTableName": "game_channel_storage_prop",
           "referencedColumnNames": ["id"],
           "referencedTableName": "player_alias",
-          "deleteRule": "cascade",
-          "updateRule": "cascade"
+          "deleteRule": "cascade"
         },
         "game_channel_storage_prop_last_updated_by_id_foreign": {
           "constraintName": "game_channel_storage_prop_last_updated_by_id_foreign",
@@ -4514,13 +4480,13 @@
           "localTableName": "game_channel_storage_prop",
           "referencedColumnNames": ["id"],
           "referencedTableName": "player_alias",
-          "deleteRule": "cascade",
-          "updateRule": "cascade"
+          "deleteRule": "cascade"
         }
       },
       "nativeEnums": {}
     },
     {
+      "name": "game_channel_prop",
       "columns": {
         "id": {
           "name": "id",
@@ -4603,7 +4569,6 @@
           "mappedType": "datetime"
         }
       },
-      "name": "game_channel_prop",
       "indexes": [
         {
           "columnNames": ["game_channel_id"],
@@ -4630,20 +4595,20 @@
           "localTableName": "game_channel_prop",
           "referencedColumnNames": ["id"],
           "referencedTableName": "game_channel",
-          "deleteRule": "cascade",
-          "updateRule": "cascade"
+          "deleteRule": "cascade"
         }
       },
       "nativeEnums": {}
     },
     {
+      "name": "game_channel_members",
       "columns": {
         "game_channel_id": {
           "name": "game_channel_id",
           "type": "int",
           "unsigned": true,
           "autoincrement": false,
-          "primary": true,
+          "primary": false,
           "nullable": false,
           "unique": false,
           "length": null,
@@ -4659,7 +4624,7 @@
           "type": "int",
           "unsigned": true,
           "autoincrement": false,
-          "primary": true,
+          "primary": false,
           "nullable": false,
           "unique": false,
           "length": null,
@@ -4671,7 +4636,6 @@
           "mappedType": "integer"
         }
       },
-      "name": "game_channel_members",
       "indexes": [
         {
           "columnNames": ["game_channel_id"],
@@ -4722,6 +4686,7 @@
       "nativeEnums": {}
     },
     {
+      "name": "steamworks_integration_event",
       "columns": {
         "id": {
           "name": "id",
@@ -4804,7 +4769,6 @@
           "mappedType": "datetime"
         }
       },
-      "name": "steamworks_integration_event",
       "indexes": [
         {
           "columnNames": ["integration_id"],
@@ -4830,20 +4794,20 @@
           "columnNames": ["integration_id"],
           "localTableName": "steamworks_integration_event",
           "referencedColumnNames": ["id"],
-          "referencedTableName": "integration",
-          "updateRule": "cascade"
+          "referencedTableName": "integration"
         }
       },
       "nativeEnums": {}
     },
     {
+      "name": "steamworks_leaderboard_mapping",
       "columns": {
         "steamworks_leaderboard_id": {
           "name": "steamworks_leaderboard_id",
           "type": "int",
           "unsigned": true,
           "autoincrement": false,
-          "primary": true,
+          "primary": false,
           "nullable": false,
           "unique": false,
           "length": null,
@@ -4859,7 +4823,7 @@
           "type": "int",
           "unsigned": true,
           "autoincrement": false,
-          "primary": true,
+          "primary": false,
           "nullable": false,
           "unique": false,
           "length": null,
@@ -4887,7 +4851,6 @@
           "mappedType": "datetime"
         }
       },
-      "name": "steamworks_leaderboard_mapping",
       "indexes": [
         {
           "columnNames": ["leaderboard_id"],
@@ -4914,13 +4877,13 @@
           "localTableName": "steamworks_leaderboard_mapping",
           "referencedColumnNames": ["id"],
           "referencedTableName": "leaderboard",
-          "deleteRule": "cascade",
-          "updateRule": "cascade"
+          "deleteRule": "cascade"
         }
       },
       "nativeEnums": {}
     },
     {
+      "name": "steamworks_leaderboard_entry",
       "columns": {
         "id": {
           "name": "id",
@@ -5035,7 +4998,6 @@
           "mappedType": "datetime"
         }
       },
-      "name": "steamworks_leaderboard_entry",
       "indexes": [
         {
           "columnNames": ["leaderboard_entry_id"],
@@ -5046,7 +5008,7 @@
           "unique": true
         },
         {
-          "keyName": "steamworks_leaderboard_entry_steamworks_leaderboard_aa6b4_index",
+          "keyName": "steamworks_leaderboard_entry_steamworks_leaderboard_47d69_index",
           "columnNames": ["steamworks_leaderboard_id", "leaderboard_id"],
           "composite": true,
           "constraint": false,
@@ -5064,8 +5026,8 @@
       ],
       "checks": [],
       "foreignKeys": {
-        "steamworks_leaderboard_entry_steamworks_leaderboa_6dc1e_foreign": {
-          "constraintName": "steamworks_leaderboard_entry_steamworks_leaderboa_6dc1e_foreign",
+        "steamworks_leaderboard_entry_steamworks_leaderboa_15279_foreign": {
+          "constraintName": "steamworks_leaderboard_entry_steamworks_leaderboa_15279_foreign",
           "columnNames": ["steamworks_leaderboard_id", "leaderboard_id"],
           "localTableName": "steamworks_leaderboard_entry",
           "referencedColumnNames": ["steamworks_leaderboard_id", "leaderboard_id"],
@@ -5079,13 +5041,13 @@
           "localTableName": "steamworks_leaderboard_entry",
           "referencedColumnNames": ["id"],
           "referencedTableName": "leaderboard_entry",
-          "deleteRule": "set null",
-          "updateRule": "cascade"
+          "deleteRule": "set null"
         }
       },
       "nativeEnums": {}
     },
     {
+      "name": "steamworks_player_stat",
       "columns": {
         "id": {
           "name": "id",
@@ -5184,7 +5146,6 @@
           "mappedType": "datetime"
         }
       },
-      "name": "steamworks_player_stat",
       "indexes": [
         {
           "columnNames": ["stat_id"],
@@ -5219,8 +5180,7 @@
           "localTableName": "steamworks_player_stat",
           "referencedColumnNames": ["id"],
           "referencedTableName": "game_stat",
-          "deleteRule": "cascade",
-          "updateRule": "cascade"
+          "deleteRule": "cascade"
         },
         "steamworks_player_stat_player_stat_id_foreign": {
           "constraintName": "steamworks_player_stat_player_stat_id_foreign",
@@ -5228,13 +5188,13 @@
           "localTableName": "steamworks_player_stat",
           "referencedColumnNames": ["id"],
           "referencedTableName": "player_game_stat",
-          "deleteRule": "set null",
-          "updateRule": "cascade"
+          "deleteRule": "set null"
         }
       },
       "nativeEnums": {}
     },
     {
+      "name": "user_two_factor_auth",
       "columns": {
         "id": {
           "name": "id",
@@ -5285,7 +5245,6 @@
           "mappedType": "boolean"
         }
       },
-      "name": "user_two_factor_auth",
       "indexes": [
         {
           "keyName": "PRIMARY",
@@ -5301,6 +5260,7 @@
       "nativeEnums": {}
     },
     {
+      "name": "user",
       "columns": {
         "id": {
           "name": "id",
@@ -5479,7 +5439,6 @@
           "mappedType": "datetime"
         }
       },
-      "name": "user",
       "indexes": [
         {
           "columnNames": ["organisation_id"],
@@ -5513,8 +5472,7 @@
           "columnNames": ["organisation_id"],
           "localTableName": "user",
           "referencedColumnNames": ["id"],
-          "referencedTableName": "organisation",
-          "updateRule": "cascade"
+          "referencedTableName": "organisation"
         },
         "user_two_factor_auth_id_foreign": {
           "constraintName": "user_two_factor_auth_id_foreign",
@@ -5522,13 +5480,13 @@
           "localTableName": "user",
           "referencedColumnNames": ["id"],
           "referencedTableName": "user_two_factor_auth",
-          "deleteRule": "set null",
-          "updateRule": "cascade"
+          "deleteRule": "set null"
         }
       },
       "nativeEnums": {}
     },
     {
+      "name": "user_session",
       "columns": {
         "id": {
           "name": "id",
@@ -5627,7 +5585,6 @@
           "mappedType": "datetime"
         }
       },
-      "name": "user_session",
       "indexes": [
         {
           "columnNames": ["user_id"],
@@ -5653,13 +5610,13 @@
           "columnNames": ["user_id"],
           "localTableName": "user_session",
           "referencedColumnNames": ["id"],
-          "referencedTableName": "user",
-          "updateRule": "cascade"
+          "referencedTableName": "user"
         }
       },
       "nativeEnums": {}
     },
     {
+      "name": "user_recovery_code",
       "columns": {
         "id": {
           "name": "id",
@@ -5726,7 +5683,6 @@
           "mappedType": "datetime"
         }
       },
-      "name": "user_recovery_code",
       "indexes": [
         {
           "columnNames": ["user_id"],
@@ -5753,13 +5709,13 @@
           "localTableName": "user_recovery_code",
           "referencedColumnNames": ["id"],
           "referencedTableName": "user",
-          "deleteRule": "cascade",
-          "updateRule": "cascade"
+          "deleteRule": "cascade"
         }
       },
       "nativeEnums": {}
     },
     {
+      "name": "user_pinned_group",
       "columns": {
         "id": {
           "name": "id",
@@ -5826,7 +5782,6 @@
           "mappedType": "datetime"
         }
       },
-      "name": "user_pinned_group",
       "indexes": [
         {
           "columnNames": ["user_id"],
@@ -5868,21 +5823,20 @@
           "columnNames": ["user_id"],
           "localTableName": "user_pinned_group",
           "referencedColumnNames": ["id"],
-          "referencedTableName": "user",
-          "updateRule": "cascade"
+          "referencedTableName": "user"
         },
         "user_pinned_group_group_id_foreign": {
           "constraintName": "user_pinned_group_group_id_foreign",
           "columnNames": ["group_id"],
           "localTableName": "user_pinned_group",
           "referencedColumnNames": ["id"],
-          "referencedTableName": "player_group",
-          "updateRule": "cascade"
+          "referencedTableName": "player_group"
         }
       },
       "nativeEnums": {}
     },
     {
+      "name": "user_access_code",
       "columns": {
         "id": {
           "name": "id",
@@ -5965,7 +5919,6 @@
           "mappedType": "datetime"
         }
       },
-      "name": "user_access_code",
       "indexes": [
         {
           "columnNames": ["user_id"],
@@ -5991,13 +5944,13 @@
           "columnNames": ["user_id"],
           "localTableName": "user_access_code",
           "referencedColumnNames": ["id"],
-          "referencedTableName": "user",
-          "updateRule": "cascade"
+          "referencedTableName": "user"
         }
       },
       "nativeEnums": {}
     },
     {
+      "name": "invite",
       "columns": {
         "id": {
           "name": "id",
@@ -6112,7 +6065,6 @@
           "mappedType": "datetime"
         }
       },
-      "name": "invite",
       "indexes": [
         {
           "columnNames": ["organisation_id"],
@@ -6146,21 +6098,20 @@
           "columnNames": ["organisation_id"],
           "localTableName": "invite",
           "referencedColumnNames": ["id"],
-          "referencedTableName": "organisation",
-          "updateRule": "cascade"
+          "referencedTableName": "organisation"
         },
         "invite_invited_by_user_id_foreign": {
           "constraintName": "invite_invited_by_user_id_foreign",
           "columnNames": ["invited_by_user_id"],
           "localTableName": "invite",
           "referencedColumnNames": ["id"],
-          "referencedTableName": "user",
-          "updateRule": "cascade"
+          "referencedTableName": "user"
         }
       },
       "nativeEnums": {}
     },
     {
+      "name": "game_activity",
       "columns": {
         "id": {
           "name": "id",
@@ -6259,7 +6210,6 @@
           "mappedType": "datetime"
         }
       },
-      "name": "game_activity",
       "indexes": [
         {
           "columnNames": ["game_id"],
@@ -6294,21 +6244,20 @@
           "localTableName": "game_activity",
           "referencedColumnNames": ["id"],
           "referencedTableName": "game",
-          "deleteRule": "set null",
-          "updateRule": "cascade"
+          "deleteRule": "set null"
         },
         "game_activity_user_id_foreign": {
           "constraintName": "game_activity_user_id_foreign",
           "columnNames": ["user_id"],
           "localTableName": "game_activity",
           "referencedColumnNames": ["id"],
-          "referencedTableName": "user",
-          "updateRule": "cascade"
+          "referencedTableName": "user"
         }
       },
       "nativeEnums": {}
     },
     {
+      "name": "data_export",
       "columns": {
         "id": {
           "name": "id",
@@ -6448,7 +6397,6 @@
           "mappedType": "datetime"
         }
       },
-      "name": "data_export",
       "indexes": [
         {
           "columnNames": ["created_by_user_id"],
@@ -6482,21 +6430,20 @@
           "columnNames": ["created_by_user_id"],
           "localTableName": "data_export",
           "referencedColumnNames": ["id"],
-          "referencedTableName": "user",
-          "updateRule": "cascade"
+          "referencedTableName": "user"
         },
         "data_export_game_id_foreign": {
           "constraintName": "data_export_game_id_foreign",
           "columnNames": ["game_id"],
           "localTableName": "data_export",
           "referencedColumnNames": ["id"],
-          "referencedTableName": "game",
-          "updateRule": "cascade"
+          "referencedTableName": "game"
         }
       },
       "nativeEnums": {}
     },
     {
+      "name": "apikey",
       "columns": {
         "id": {
           "name": "id",
@@ -6653,7 +6600,6 @@
           "mappedType": "datetime"
         }
       },
-      "name": "apikey",
       "indexes": [
         {
           "columnNames": ["game_id"],
@@ -6687,20 +6633,19 @@
           "columnNames": ["game_id"],
           "localTableName": "apikey",
           "referencedColumnNames": ["id"],
-          "referencedTableName": "game",
-          "updateRule": "cascade"
+          "referencedTableName": "game"
         },
         "apikey_created_by_user_id_foreign": {
           "constraintName": "apikey_created_by_user_id_foreign",
           "columnNames": ["created_by_user_id"],
           "localTableName": "apikey",
           "referencedColumnNames": ["id"],
-          "referencedTableName": "user",
-          "updateRule": "cascade"
+          "referencedTableName": "user"
         }
       },
       "nativeEnums": {}
     }
   ],
+  "views": [],
   "nativeEnums": {}
 }

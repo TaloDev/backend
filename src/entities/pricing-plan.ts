@@ -1,4 +1,4 @@
-import { Entity, PrimaryKey, Property } from '@mikro-orm/mysql'
+import { Entity, PrimaryKey, Property } from '@mikro-orm/decorators/es'
 
 @Entity()
 export default class PricingPlan {

@@ -6,7 +6,7 @@ import SteamworksIntegrationEvent from '../../../../src/entities/steamworks-inte
 import SteamworksLeaderboardMapping from '../../../../src/entities/steamworks-leaderboard-mapping'
 import IntegrationConfigFactory from '../../../fixtures/IntegrationConfigFactory'
 import IntegrationFactory from '../../../fixtures/IntegrationFactory'
-import clearEntities from '../../../utils/clearEntities'
+import { clearEntities } from '../../../utils/clearEntities'
 import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
 import createUserAndToken from '../../../utils/createUserAndToken'
 
@@ -14,7 +14,7 @@ describe('Leaderboard - steamworks create', () => {
   const axiosMock = new AxiosMockAdapter(axios)
 
   beforeEach(async () => {
-    await clearEntities(['SteamworksLeaderboardMapping'])
+    await clearEntities([SteamworksLeaderboardMapping])
   })
 
   afterAll(async () => {

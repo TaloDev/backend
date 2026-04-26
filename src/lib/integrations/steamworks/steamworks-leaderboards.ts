@@ -330,17 +330,15 @@ async function pushEntriesToSteamworks({
   let processed = 0
   let pushed = 0
 
-  const entryStream = streamByCursor<LeaderboardEntry>(async (batchSize, after) => {
-    return em.repo(LeaderboardEntry).findByCursor(
-      {
+  const entryStream = streamByCursor(async (batchSize, after) => {
+    return em.repo(LeaderboardEntry).findByCursor({
+      where: {
         leaderboard,
       },
-      {
-        first: batchSize,
-        after,
-        orderBy: { id: 'asc' },
-      },
-    )
+      first: batchSize,
+      after,
+      orderBy: { id: 'asc' },
+    })
   }, 10)
 
   for await (const entry of entryStream) {

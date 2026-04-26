@@ -1,4 +1,5 @@
-import { Entity, ManyToOne, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/mysql'
+import { Entity, ManyToOne, PrimaryKey, Property } from '@mikro-orm/decorators/es'
+import { PrimaryKeyProp } from '@mikro-orm/mysql'
 import Leaderboard from './leaderboard'
 
 @Entity()

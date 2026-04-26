@@ -74,7 +74,7 @@ describe('deletePlayers', () => {
     const playersToDelete = players.map((player) => new PlayerToDelete(player))
     await em.persist(playersToDelete).flush()
 
-    vi.spyOn(EntityManager.prototype, 'removeAndFlush').mockRejectedValueOnce(new Error())
+    vi.spyOn(EntityManager.prototype, 'transactional').mockRejectedValueOnce(new Error())
 
     await expect(deletePlayers()).resolves.not.toThrow()
   })

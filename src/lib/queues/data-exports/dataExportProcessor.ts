@@ -27,7 +27,6 @@ import Prop from '../../../entities/prop'
 import createClickHouseClient from '../../clickhouse/createClient'
 import { formatDateForClickHouse } from '../../clickhouse/formatDateTime'
 import { escapeCSVValue } from '../../lang/escapeCSVValue'
-import { streamByCursor } from '../../perf/streamByCursor'
 import { DataExportJob } from './createDataExportQueue'
 import { DataExportMailer } from './dataExportMailer'
 
@@ -127,18 +126,10 @@ export class DataExporter {
 
         // step 4: load aliases
         if (unknownAliasIds.length > 0) {
-          const aliasStream = streamByCursor<
-            PlayerAlias,
-            never,
-            'service' | 'identifier' | 'player:ref'
-          >(async (batchSize, after) => {
-            return em.repo(PlayerAlias).findByCursor({
-              where: { id: { $in: unknownAliasIds } },
-              first: batchSize,
-              after,
-              orderBy: { id: 'asc' },
-              fields: ['service', 'identifier', 'player:ref'],
-            })
+          const aliasStream = em.stream(PlayerAlias, {
+            where: { id: { $in: unknownAliasIds } },
+            orderBy: { id: 'asc' },
+            fields: ['service', 'identifier', 'player:ref'],
           })
 
           for await (const alias of aliasStream) {
@@ -189,17 +180,12 @@ export class DataExporter {
     em: EntityManager,
     includeDevData: boolean,
   ): AsyncGenerator<Player> {
-    yield* streamByCursor(async (batchSize, after) => {
-      const page = await em.repo(Player).findByCursor({
-        where: {
-          game: dataExport.game,
-          ...(includeDevData ? {} : { devBuild: false }),
-        },
-        first: batchSize,
-        after,
-        orderBy: { id: 'asc' },
-      })
-      return page
+    yield* em.stream(Player, {
+      where: {
+        game: dataExport.game,
+        ...(includeDevData ? {} : { devBuild: false }),
+      },
+      orderBy: { id: 'asc' },
     })
   }
 
@@ -208,18 +194,14 @@ export class DataExporter {
     em: EntityManager,
     includeDevData: boolean,
   ): AsyncGenerator<PlayerAlias> {
-    yield* streamByCursor(async (batchSize, after) => {
-      return em.repo(PlayerAlias).findByCursor({
-        where: {
-          player: {
-            game: dataExport.game,
-            ...(includeDevData ? {} : { devBuild: false }),
-          },
+    yield* em.stream(PlayerAlias, {
+      where: {
+        player: {
+          game: dataExport.game,
+          ...(includeDevData ? {} : { devBuild: false }),
         },
-        first: batchSize,
-        after,
-        orderBy: { id: 'asc' },
-      })
+      },
+      orderBy: { id: 'asc' },
     })
   }
 
@@ -228,24 +210,20 @@ export class DataExporter {
     em: EntityManager,
     includeDevData: boolean,
   ): AsyncGenerator<LeaderboardEntry> {
-    yield* streamByCursor(async (batchSize, after) => {
-      return em.repo(LeaderboardEntry).findByCursor({
-        where: {
-          leaderboard: {
+    yield* em.stream(LeaderboardEntry, {
+      where: {
+        leaderboard: {
+          game: dataExport.game,
+        },
+        playerAlias: {
+          player: {
             game: dataExport.game,
-          },
-          playerAlias: {
-            player: {
-              game: dataExport.game,
-              ...(includeDevData ? {} : { devBuild: false }),
-            },
+            ...(includeDevData ? {} : { devBuild: false }),
           },
         },
-        first: batchSize,
-        after,
-        orderBy: { id: 'asc' },
-        populate: ['leaderboard'] as const,
-      })
+      },
+      orderBy: { id: 'asc' },
+      populate: ['leaderboard'] as const,
     })
   }
 
@@ -254,29 +232,16 @@ export class DataExporter {
     em: EntityManager,
     includeDevData: boolean,
   ): AsyncGenerator<GameStat> {
-    yield* streamByCursor(async (batchSize, after) => {
-      const page = await em.repo(GameStat).findByCursor({
-        where: {
-          game: dataExport.game,
-        },
-        first: batchSize,
-        after,
-        orderBy: { id: 'asc' },
-      })
-
+    for await (const stat of em.stream(GameStat, {
+      where: { game: dataExport.game },
+      orderBy: { id: 'asc' },
+    })) {
       // for data exports excluding dev data, recalculate global values without dev players
-      if (!includeDevData) {
-        await Promise.all(
-          page.items.map(async (stat) => {
-            if (stat.global) {
-              await stat.recalculateGlobalValue({ em, includeDevData: false })
-            }
-          }),
-        )
+      if (!includeDevData && stat.global) {
+        await stat.recalculateGlobalValue({ em, includeDevData: false })
       }
-
-      return page
-    })
+      yield stat
+    }
   }
 
   private async *streamPlayerGameStats(
@@ -284,22 +249,18 @@ export class DataExporter {
     em: EntityManager,
     includeDevData: boolean,
   ): AsyncGenerator<PlayerGameStat> {
-    yield* streamByCursor(async (batchSize, after) => {
-      return em.repo(PlayerGameStat).findByCursor({
-        where: {
-          stat: {
-            game: dataExport.game,
-          },
-          player: {
-            game: dataExport.game,
-            ...(includeDevData ? {} : { devBuild: false }),
-          },
+    yield* em.stream(PlayerGameStat, {
+      where: {
+        stat: {
+          game: dataExport.game,
         },
-        first: batchSize,
-        after,
-        orderBy: { id: 'asc' },
-        populate: ['player'] as const,
-      })
+        player: {
+          game: dataExport.game,
+          ...(includeDevData ? {} : { devBuild: false }),
+        },
+      },
+      orderBy: { id: 'asc' },
+      populate: ['player'] as const,
     })
   }
 
@@ -307,16 +268,10 @@ export class DataExporter {
     dataExport: DataExport,
     em: EntityManager,
   ): AsyncGenerator<GameActivity> {
-    yield* streamByCursor(async (batchSize, after) => {
-      return em.repo(GameActivity).findByCursor({
-        where: {
-          game: dataExport.game,
-        },
-        first: batchSize,
-        after,
-        orderBy: { id: 'asc' },
-        populate: ['user'] as const,
-      })
+    yield* em.stream(GameActivity, {
+      where: { game: dataExport.game },
+      orderBy: { id: 'asc' },
+      populate: ['user'] as const,
     })
   }
 
@@ -325,21 +280,17 @@ export class DataExporter {
     em: EntityManager,
     includeDevData: boolean,
   ): AsyncGenerator<GameFeedback> {
-    yield* streamByCursor(async (batchSize, after) => {
-      return em.repo(GameFeedback).findByCursor({
-        where: {
-          playerAlias: {
-            player: {
-              game: dataExport.game,
-              ...(includeDevData ? {} : { devBuild: false }),
-            },
+    yield* em.stream(GameFeedback, {
+      where: {
+        playerAlias: {
+          player: {
+            game: dataExport.game,
+            ...(includeDevData ? {} : { devBuild: false }),
           },
         },
-        first: batchSize,
-        after,
-        orderBy: { id: 'asc' },
-        populate: ['playerAlias.player'] as const,
-      })
+      },
+      orderBy: { id: 'asc' },
+      populate: ['playerAlias.player'] as const,
     })
   }
 

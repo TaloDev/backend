@@ -6,7 +6,7 @@
   "author": "Talo Platform Ltd",
   "main": "src/index.ts",
   "scripts": {
-    "watch": "nodemon --watch src --ext ts,json --exec ts-node src/index.ts",
+    "watch": "nodemon --watch src --ext ts,json --exec tsx src/index.ts",
     "build": "npx tsc -p tsconfig.build.json",
     "build:sourcemaps": "npx tsc -p tsconfig.sourcemaps.json",
     "seed": "DB_HOST=127.0.0.1 CLICKHOUSE_HOST=127.0.0.1 ts-node tests/seed.ts",

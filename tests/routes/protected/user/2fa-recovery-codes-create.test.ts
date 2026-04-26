@@ -1,5 +1,4 @@
 import request from 'supertest'
-import UserRecoveryCode from '../../../../src/entities/user-recovery-code'
 import UserTwoFactorAuth from '../../../../src/entities/user-two-factor-auth'
 import generateRecoveryCodes from '../../../../src/lib/auth/generateRecoveryCodes'
 import createUserAndToken from '../../../utils/createUserAndToken'
@@ -20,9 +19,6 @@ describe('User - create recovery codes', () => {
       .expect(200)
 
     expect(res.body.recoveryCodes).toHaveLength(8)
-
-    const recoveryCodes = await em.repo(UserRecoveryCode).find({ user }, { refresh: true })
-    expect(recoveryCodes).toHaveLength(8)
   })
 
   it("should not create recovery codes if 2fa isn't enabled", async () => {

@@ -1,13 +1,6 @@
 import type Redis from 'ioredis'
 import { ClickHouseClient } from '@clickhouse/client'
-import {
-  Entity,
-  ManyToOne,
-  PrimaryKey,
-  Property,
-  OneToMany,
-  Index,
-} from '@mikro-orm/decorators/es'
+import { Entity, ManyToOne, PrimaryKey, Property, OneToMany, Index } from '@mikro-orm/decorators/es'
 import { Collection, raw, EntityManager } from '@mikro-orm/mysql'
 import { endOfDay, startOfDay } from 'date-fns'
 import { formatDateForClickHouse } from '../lib/clickhouse/formatDateTime'

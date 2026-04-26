@@ -150,8 +150,10 @@ export default class PlayerGroup {
   }
 
   async checkMembership(em: EntityManager) {
-    const players = await this.getQuery(em).getResult()
-    this.members.set(players as Player[])
+    const results = await this.getQuery(em).getResult()
+    const players = results.map((p) => em.getReference(Player, p.id))
+
+    this.members.set(players)
     await em.flush()
   }
 

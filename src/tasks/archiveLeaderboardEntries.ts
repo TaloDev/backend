@@ -31,18 +31,16 @@ export async function archiveEntriesForLeaderboard(em: EntityManager, leaderboar
 
   const shouldKeepEntry = refreshCheckers[leaderboard.refreshInterval]
 
-  const entryStream = streamByCursor<LeaderboardEntry>(async (batchSize, after) => {
-    return em.repo(LeaderboardEntry).findByCursor(
-      {
+  const entryStream = streamByCursor(async (batchSize, after) => {
+    return em.repo(LeaderboardEntry).findByCursor({
+      where: {
         leaderboard,
         deletedAt: null,
       },
-      {
-        first: batchSize,
-        after,
-        orderBy: { id: 'asc' },
-      },
-    )
+      first: batchSize,
+      after,
+      orderBy: { id: 'asc' },
+    })
   }, 100)
 
   for await (const entry of entryStream) {

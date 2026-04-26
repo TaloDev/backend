@@ -71,19 +71,17 @@ export const resetRoute = protectedRoute({
       })
 
       const clickhouse = ctx.clickhouse
-      const aliasStream = streamByCursor<{ id: number }>(async (batchSize, after) => {
-        return trx.repo(PlayerAlias).findByCursor(
-          {
+      const aliasStream = streamByCursor<PlayerAlias, never, 'id'>(async (batchSize, after) => {
+        return trx.repo(PlayerAlias).findByCursor({
+          where: {
             player: { id: playerIds.map((p) => p.player.id) },
           },
-          {
-            first: batchSize,
-            after,
-            orderBy: { id: 'asc' },
-            fields: ['id'],
-            strategy: 'joined',
-          },
-        )
+          first: batchSize,
+          after,
+          orderBy: { id: 'asc' },
+          fields: ['id'],
+          strategy: 'joined',
+        })
       }, 1000)
 
       const query = `

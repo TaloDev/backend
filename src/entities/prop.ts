@@ -1,4 +1,4 @@
-import { Embeddable, Property } from '@mikro-orm/mysql'
+import { Embeddable, Property } from '@mikro-orm/decorators/es'
 
 export const MAX_KEY_LENGTH = 128
 export const MAX_VALUE_LENGTH = 512

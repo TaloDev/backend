@@ -15,22 +15,20 @@ const playersBatchSize = 100
 function getPlayers(em: EntityManager, game: Game, devBuild: boolean) {
   const days = devBuild ? game.purgeDevPlayersRetention : game.purgeLivePlayersRetention
 
-  return streamByCursor<Player>(async (batchSize, after) => {
-    return em.repo(Player).findByCursor(
-      {
+  return streamByCursor(async (batchSize, after) => {
+    return em.repo(Player).findByCursor({
+      where: {
         game,
         devBuild,
         lastSeenAt: {
           $lt: subDays(new Date(), days),
         },
       },
-      {
-        first: batchSize,
-        after,
-        orderBy: { id: 'asc' },
-        populate: ['aliases', 'auth'] as const,
-      },
-    )
+      first: batchSize,
+      after,
+      orderBy: { id: 'asc' },
+      populate: ['aliases', 'auth'] as const,
+    })
   }, playersBatchSize)
 }
 

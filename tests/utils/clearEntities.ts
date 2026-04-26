@@ -1,6 +1,7 @@
-export default async function clearEntities(entities: string[]) {
-  for (const entityName of entities) {
-    const items = await em.repo(entityName).findAll()
-    await em.remove(items).flush()
+import { EntityClass } from '@mikro-orm/mysql'
+
+export async function clearEntities(entities: EntityClass[]) {
+  for (const entity of entities) {
+    await em.nativeDelete(entity, {})
   }
 }

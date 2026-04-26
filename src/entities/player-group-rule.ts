@@ -1,12 +1,5 @@
-import {
-  EntityManager,
-  Embeddable,
-  Enum,
-  Property,
-  QBFilterQuery,
-  raw,
-  QueryBuilder,
-} from '@mikro-orm/mysql'
+import { Embeddable, Enum, Property } from '@mikro-orm/decorators/es'
+import { EntityManager, FilterValue, raw } from '@mikro-orm/mysql'
 import LeaderboardEntry from './leaderboard-entry'
 import Player from './player'
 import PlayerGameStat from './player-game-stat'
@@ -79,8 +72,8 @@ export default class PlayerGroupRule {
     )
   }
 
-  getQuery(em: EntityManager): QBFilterQuery<Player> {
-    let query: QBFilterQuery<Player>
+  getQuery(em: EntityManager) {
+    let query
 
     switch (this.name) {
       case PlayerGroupRuleName.EQUALS:
@@ -120,23 +113,23 @@ export default class PlayerGroupRule {
     return raw(`cast('${this.operands[idx]}' as ${this.castType})`)
   }
 
-  private buildQuery(em: EntityManager, fieldQuery: QBFilterQuery<Player>): QBFilterQuery<Player> {
+  private buildQuery(em: EntityManager, fieldQuery: FilterValue<string>) {
     if (this.fieldMatchesNamespace('props')) {
       return {
         id: {
-          $in: this.getPropsQuery(em, fieldQuery).getKnexQuery(),
+          $in: this.getPropsQuery(em, fieldQuery),
         },
       }
     } else if (this.fieldMatchesNamespace('statValue')) {
       return {
         id: {
-          $in: this.getStatsQuery(em, fieldQuery).getKnexQuery(),
+          $in: this.getStatsQuery(em, fieldQuery),
         },
       }
     } else if (this.fieldMatchesNamespace('leaderboardEntryScore')) {
       return {
         id: {
-          $in: this.getLeaderboardEntriesQuery(em, fieldQuery).getKnexQuery(),
+          $in: this.getLeaderboardEntriesQuery(em, fieldQuery),
         },
       }
     } else {
@@ -146,26 +139,20 @@ export default class PlayerGroupRule {
     }
   }
 
-  private getPropsQuery(
-    em: EntityManager,
-    fieldQuery: QBFilterQuery<Player>,
-  ): QueryBuilder<PlayerProp> {
+  private getPropsQuery(em: EntityManager, fieldQuery: FilterValue<string>) {
     return em
       .qb(PlayerProp)
-      .select('player_id')
+      .select(raw('player_id'))
       .where({
         key: this.getNamespacedValue('props'),
         [this.getCastedKey('value')]: fieldQuery,
       })
   }
 
-  private getStatsQuery(
-    em: EntityManager,
-    fieldQuery: QBFilterQuery<Player>,
-  ): QueryBuilder<PlayerGameStat> {
+  private getStatsQuery(em: EntityManager, fieldQuery: FilterValue<string>) {
     return em
       .qb(PlayerGameStat)
-      .select('player_id')
+      .select(raw('player_id'))
       .where({
         stat: {
           internalName: this.getNamespacedValue('statValue'),
@@ -174,14 +161,11 @@ export default class PlayerGroupRule {
       })
   }
 
-  private getLeaderboardEntriesQuery(
-    em: EntityManager,
-    fieldQuery: QBFilterQuery<Player>,
-  ): QueryBuilder<LeaderboardEntry> {
+  private getLeaderboardEntriesQuery(em: EntityManager, fieldQuery: FilterValue<string>) {
     return em
       .qb(LeaderboardEntry)
       .join('playerAlias', 'pa')
-      .select('pa.player_id')
+      .select(raw('pa.player_id'))
       .where({
         leaderboard: {
           internalName: this.getNamespacedValue('leaderboardEntryScore'),
@@ -191,54 +175,41 @@ export default class PlayerGroupRule {
       })
   }
 
-  private getEqualsQuery(em: EntityManager): QBFilterQuery<Player> {
-    return this.buildQuery(em, {
-      $eq: this.getOperand(0),
-    })
+  private getEqualsQuery(em: EntityManager) {
+    return this.buildQuery(em, { $eq: this.getOperand(0) })
   }
 
-  private getSetQuery(em: EntityManager): QBFilterQuery<Player> {
+  private getSetQuery(em: EntityManager) {
     if (this.isPropsNotSetQuery()) {
       return {
         id: {
           $nin: em
             .qb(PlayerProp)
-            .select('player_id', true)
+            .select(raw('player_id'))
             .where({
               key: this.getNamespacedValue('props'),
-            })
-            .getKnexQuery(),
+            }),
         },
       }
     }
 
-    return this.buildQuery(em, {
-      $ne: null,
-    })
+    return this.buildQuery(em, { $ne: null })
   }
 
-  private getGreaterThanQuery(em: EntityManager): QBFilterQuery<Player> {
-    return this.buildQuery(em, {
-      $gt: this.getOperand(0),
-    })
+  private getGreaterThanQuery(em: EntityManager) {
+    return this.buildQuery(em, { $gt: this.getOperand(0) })
   }
 
-  private getGreaterThanEqualQuery(em: EntityManager): QBFilterQuery<Player> {
-    return this.buildQuery(em, {
-      $gte: this.getOperand(0),
-    })
+  private getGreaterThanEqualQuery(em: EntityManager) {
+    return this.buildQuery(em, { $gte: this.getOperand(0) })
   }
 
-  private getLessThanQuery(em: EntityManager): QBFilterQuery<Player> {
-    return this.buildQuery(em, {
-      $lt: this.getOperand(0),
-    })
+  private getLessThanQuery(em: EntityManager) {
+    return this.buildQuery(em, { $lt: this.getOperand(0) })
   }
 
-  private getLessThanEqualQuery(em: EntityManager): QBFilterQuery<Player> {
-    return this.buildQuery(em, {
-      $lte: this.getOperand(0),
-    })
+  private getLessThanEqualQuery(em: EntityManager) {
+    return this.buildQuery(em, { $lte: this.getOperand(0) })
   }
 
   toJSON() {

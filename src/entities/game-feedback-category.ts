@@ -1,4 +1,4 @@
-import { Entity, Index, ManyToOne, PrimaryKey, Property } from '@mikro-orm/mysql'
+import { Entity, Index, ManyToOne, PrimaryKey, Property } from '@mikro-orm/decorators/es'
 import Game from './game'
 
 @Entity()

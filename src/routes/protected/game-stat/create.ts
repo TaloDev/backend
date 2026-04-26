@@ -68,7 +68,7 @@ export async function createStatHandler({
   await em.flush()
 
   return {
-    status: 200 as const,
+    status: 200,
     body: { stat },
   }
 }

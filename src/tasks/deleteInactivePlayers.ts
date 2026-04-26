@@ -27,7 +27,7 @@ function getPlayers(em: EntityManager, game: Game, devBuild: boolean) {
       first: batchSize,
       after,
       orderBy: { id: 'asc' },
-      populate: ['aliases', 'auth'] as const,
+      populate: ['aliases', 'auth'],
     })
   }, playersBatchSize)
 }

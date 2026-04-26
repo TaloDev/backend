@@ -223,7 +223,7 @@ export class DataExporter {
         },
       },
       orderBy: { id: 'asc' },
-      populate: ['leaderboard'] as const,
+      populate: ['leaderboard'],
     })
   }
 
@@ -260,7 +260,7 @@ export class DataExporter {
         },
       },
       orderBy: { id: 'asc' },
-      populate: ['player'] as const,
+      populate: ['player'],
     })
   }
 
@@ -271,7 +271,7 @@ export class DataExporter {
     yield* em.stream(GameActivity, {
       where: { game: dataExport.game },
       orderBy: { id: 'asc' },
-      populate: ['user'] as const,
+      populate: ['user'],
     })
   }
 
@@ -290,7 +290,7 @@ export class DataExporter {
         },
       },
       orderBy: { id: 'asc' },
-      populate: ['playerAlias.player'] as const,
+      populate: ['playerAlias.player'],
     })
   }
 

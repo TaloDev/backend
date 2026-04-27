@@ -10,6 +10,7 @@ import {
 } from '@mikro-orm/mysql'
 import Redis from 'ioredis'
 import { v4 } from 'uuid'
+import { AuthenticateSignatureResult } from '../lib/integrations/game-center/game-center-players'
 import { AuthenticateAuthCodeResult } from '../lib/integrations/google-play-games/google-play-games-players'
 import { AuthenticateTicketResult } from '../lib/integrations/steamworks/steamworks-players'
 import Socket from '../socket'
@@ -26,6 +27,7 @@ export enum PlayerAliasService {
   CUSTOM = 'custom',
   TALO = 'talo',
   GOOGLE_PLAY_GAMES = 'google_play_games',
+  GAME_CENTER = 'game_center',
 }
 
 const serviceIdentifierIndexName = 'idx_player_alias_service_identifier'
@@ -83,6 +85,7 @@ export default class PlayerAlias {
           em,
           trimmedIdentifier,
         )) as AuthenticateTicketResult
+
         return { identifier: steamId, initialPlayerProps }
       }
     }
@@ -98,6 +101,23 @@ export default class PlayerAlias {
           em,
           trimmedIdentifier,
         )) as AuthenticateAuthCodeResult
+
+        return { identifier: playerId, initialPlayerProps }
+      }
+    }
+
+    if (trimmedService === PlayerAliasService.GAME_CENTER) {
+      const integration = await em.repo(Integration).findOne({
+        game,
+        type: IntegrationType.GAME_CENTER,
+      })
+
+      if (integration) {
+        const { playerId, initialPlayerProps } = (await integration.getPlayerIdentifier(
+          em,
+          trimmedIdentifier,
+        )) as AuthenticateSignatureResult
+
         return { identifier: playerId, initialPlayerProps }
       }
     }

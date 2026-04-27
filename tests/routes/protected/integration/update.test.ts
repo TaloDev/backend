@@ -1,3 +1,4 @@
+import assert from 'node:assert'
 import request from 'supertest'
 import GameActivity, { GameActivityType } from '../../../../src/entities/game-activity'
 import { IntegrationType } from '../../../../src/entities/integration'
@@ -151,6 +152,34 @@ describe('Integration - update', () => {
     await em.refresh(integration)
     expect(integration.getGooglePlayGamesClientSecret()).not.toBe(oldClientSecret)
     expect(integration.getGooglePlayGamesClientSecret()).toBe('new-client-secret')
+  })
+
+  it('should update the game center bundleId', async () => {
+    const [organisation, game] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken({ type: UserType.ADMIN }, organisation)
+
+    const integration = await new IntegrationFactory()
+      .construct(IntegrationType.GAME_CENTER, game, { bundleId: 'com.example.old' })
+      .one()
+    await em.persist(integration).flush()
+
+    const res = await request(app)
+      .patch(`/games/${game.id}/integrations/${integration.id}`)
+      .send({ config: { bundleId: 'com.example.new' } })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    expect(res.body.integration.config.bundleId).toBe('com.example.new')
+
+    const activity = await em.repo(GameActivity).findOne({
+      type: GameActivityType.GAME_INTEGRATION_UPDATED,
+      game,
+    })
+    assert(activity)
+    expect(activity.extra.integrationType).toBe(IntegrationType.GAME_CENTER)
+    expect(activity.extra.display).toStrictEqual({
+      'Updated properties': 'bundleId',
+    })
   })
 
   it('should not update an integration that does not exist', async () => {

@@ -28,10 +28,10 @@
     "@clickhouse/client": "^1.15.0",
     "@hyperdx/node-opentelemetry": "^0.8.2",
     "@koa/cors": "^5.0.0",
-    "@mikro-orm/core": "^6.6.12",
-    "@mikro-orm/migrations": "^6.6.12",
-    "@mikro-orm/mysql": "^6.6.12",
-    "@mikro-orm/reflection": "^6.6.12",
+    "@mikro-orm/core": "^6.6.13",
+    "@mikro-orm/migrations": "^6.6.13",
+    "@mikro-orm/mysql": "^6.6.13",
+    "@mikro-orm/reflection": "^6.6.13",
     "@ngneat/falso": "^7.2.0",
     "@opentelemetry/api": "^1.9.0",
     "@sentry/node": "^9.29.0",
@@ -70,7 +70,7 @@
     "zod": "^4.3.6"
   },
   "devDependencies": {
-    "@mikro-orm/cli": "^6.6.12",
+    "@mikro-orm/cli": "^6.6.13",
     "@types/archiver": "^6.0.3",
     "@types/bcrypt": "^5.0.2",
     "@types/jsonwebtoken": "^9.0.9",

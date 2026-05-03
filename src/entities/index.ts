@@ -3,6 +3,7 @@ import DataExport from './data-export'
 import FailedJob from './failed-job'
 import Game from './game'
 import GameActivity from './game-activity'
+import GameCenterIntegrationEvent from './game-center-integration-event'
 import GameChannel from './game-channel'
 import GameChannelProp from './game-channel-prop'
 import GameChannelStorageProp from './game-channel-storage-prop'
@@ -43,6 +44,7 @@ import UserSession from './user-session'
 import UserTwoFactorAuth from './user-two-factor-auth'
 
 export const entities = [
+  GameCenterIntegrationEvent,
   GooglePlayGamesIntegrationEvent,
   PlayerAliasSubscription,
   PlayerToDelete,

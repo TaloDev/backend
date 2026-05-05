@@ -1,8 +1,6 @@
 ---
 name: new-route
 description: Create a new route in the Talo backend following project conventions
-argument-hint: "<route description, e.g. 'GET /v1/players/:id for fetching a player'>"
-disable-model-invocation: true
 ---
 
 <new-route>

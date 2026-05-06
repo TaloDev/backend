@@ -1,10 +1,10 @@
-import { rand } from '@ngneat/falso'
-import { sub } from 'date-fns'
+import { rand, randNumber, randWord } from '@ngneat/falso'
+import { endOfDay, startOfDay, sub } from 'date-fns'
 import { Factory } from 'hefty'
 import Event from '../../src/entities/event'
 import Player from '../../src/entities/player'
+import Prop from '../../src/entities/prop'
 import randomDate from '../../src/lib/dates/randomDate'
-import { generateEventData } from '../../src/lib/demo-data/generateDemoEvents'
 
 export default class EventFactory extends Factory<Event> {
   private availablePlayers: Player[]
@@ -18,7 +18,9 @@ export default class EventFactory extends Factory<Event> {
     const player: Player = rand(this.availablePlayers)
 
     this.state(() => ({
-      ...generateEventData(new Date()),
+      name: randWord(),
+      props: [new Prop('version', randNumber({ min: 1, max: 10 }).toString())],
+      createdAt: randomDate(startOfDay(new Date()), endOfDay(new Date())),
       game: player.game,
       playerAlias: rand(player.aliases.getItems()),
     }))

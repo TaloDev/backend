@@ -81,7 +81,7 @@ export class GameCenterClient {
       let ttl = DEFAULT_CERT_TTL_MS
 
       const cacheControl = response.headers['cache-control']
-      if (cacheControl) {
+      if (typeof cacheControl === 'string') {
         const match = cacheControl.match(/max-age=(\d+)/)
         if (match) {
           ttl = parseInt(match[1], 10) * 1000

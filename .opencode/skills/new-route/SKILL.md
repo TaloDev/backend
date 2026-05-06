@@ -1,17 +1,11 @@
 ---
 name: new-route
-description: Create a new route in the Talo backend following project conventions
+description: Create a new backend route following project conventions
 ---
-
-<new-route>
 
 # Create a New Route
 
 You are implementing a new route in the Talo backend. Follow all conventions and patterns exactly as described below.
-
-## User Request
-
-$ARGUMENTS
 
 ## Three-Tier Routing System
 
@@ -22,6 +16,8 @@ Choose the correct tier based on what's being built:
 | **Protected** | `/`        | JWT (`JWT_SECRET`)     | `src/config/protected-routes.ts` | `src/routes/protected/` |
 | **API**       | `/v1/`     | JWT (`game.apiSecret`) | `src/config/api-routes.ts`       | `src/routes/api/`       |
 | **Public**    | `/public/` | None                   | `src/config/public-routes.ts`    | `src/routes/public/`    |
+
+If you are unsure, ask the user before proceeding.
 
 ## Step-by-Step Checklist
 
@@ -144,7 +140,7 @@ Always wrap inline routes with the route helper when using `schema`:
 
 ```typescript
 route(apiRoute({ schema: ..., handler: ... }))  // ✅
-route({ schema: ..., handler: ... })             // ❌ loses type inference
+route({ schema: ..., handler: ... })            // ❌ loses type inference
 ```
 
 ### 5. Create or update `index.ts`
@@ -228,5 +224,3 @@ Follow the pattern of existing test files in the project. Run `npm test path/to/
 - Use `return ctx.throw(status, message)` for type narrowing
 - MikroORM Identity Map: don't re-query entities already loaded in the request
 - TypeScript types are fully inferred - never pass explicit generics to route helpers
-
-</new-route>

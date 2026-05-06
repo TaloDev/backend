@@ -16,7 +16,6 @@ export enum UserType {
   OWNER,
   ADMIN,
   DEV,
-  DEMO,
 }
 
 @Entity()

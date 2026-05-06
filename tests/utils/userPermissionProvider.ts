@@ -10,7 +10,6 @@ export default function userPermissionProvider(
     [UserType.OWNER]: 'owner',
     [UserType.ADMIN]: 'admin',
     [UserType.DEV]: 'dev',
-    [UserType.DEMO]: 'demo',
   }
 
   const provider: UserTypeStatusCodeProvider = [

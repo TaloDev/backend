@@ -48,14 +48,6 @@ export default class UserFactory extends Factory<User> {
     }))
   }
 
-  demo(): this {
-    return this.state(() => ({
-      type: UserType.DEMO,
-      email: `demo+${Date.now()}@demo.io`,
-      emailConfirmed: true,
-    }))
-  }
-
   has2fa() {
     return this.state(async (user) => {
       const twoFactorAuth = new UserTwoFactorAuth(randWord())

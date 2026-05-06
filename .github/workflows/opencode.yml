@@ -35,4 +35,4 @@ jobs:
         env:
           OPENCODE_API_KEY: ${{ secrets.OPENCODE_API_KEY }}
         with:
-          model: opencode-go/kimi-k2.6
+          model: opencode-go/deepseek-v4-flash

@@ -58,6 +58,7 @@ Use the "would this bother a pragmatic senior developer?" test.
 
 1. Running the linter/formatter: these kinds of errors will be caught by CI.
 2. Running tests just to check output: same as above.
+3. Reading all the files in the repo without a good reason.
 
 # Feedback style
 

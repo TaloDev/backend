@@ -13,6 +13,7 @@ Your job is to act as a rigorous fact-checker and quality gate for code reviews 
 ## Input
 
 You will receive:
+
 1. **The original code** (files, snippets, or diff)
 2. **A "final" review** from the code-reviewer agent containing a list of findings, suggestions and critiques
 

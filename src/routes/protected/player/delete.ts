@@ -24,9 +24,6 @@ export const deleteRoute = protectedRoute({
 
     await deletePlayersFromDB(em, [player])
 
-    // we need this to handle orphaned entities like props
-    em.clear()
-
     createGameActivity(em, {
       user: ctx.state.user,
       game,

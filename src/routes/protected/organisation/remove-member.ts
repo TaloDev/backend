@@ -61,7 +61,7 @@ export const removeMemberRoute = protectedRoute({
 
     await deferClearResponseCache(UserPinnedGroup.getCacheKeyForUser(target))
 
-    await queueEmail(getGlobalQueue('email'), new MemberRemovedMail(target))
+    await queueEmail(getGlobalQueue('email'), new MemberRemovedMail(target, caller.organisation))
 
     return { status: 204 }
   },

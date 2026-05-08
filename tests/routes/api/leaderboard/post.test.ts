@@ -820,14 +820,20 @@ describe('Leaderboard API - create', () => {
       }))
       .one()
 
+    const props = [
+      { key: 'level', value: '1' },
+      { key: 'difficulty', value: 'hard' },
+    ]
+
     const entry = await new LeaderboardEntryFactory(leaderboard, [player])
-      .state((entry) => ({
+      .state((e) => ({
         score: 100,
         playerAlias: player.aliases[0],
-        props: new Collection<LeaderboardEntryProp>(entry, [
-          new LeaderboardEntryProp(entry, 'level', '1'),
-          new LeaderboardEntryProp(entry, 'difficulty', 'hard'),
-        ]),
+        props: new Collection<LeaderboardEntryProp>(
+          e,
+          props.map((p) => new LeaderboardEntryProp(e, p.key, p.value)),
+        ),
+        propsDigest: LeaderboardEntry.createPropsDigest(props),
       }))
       .one()
 
@@ -835,18 +841,13 @@ describe('Leaderboard API - create', () => {
 
     const res = await request(app)
       .post(`/v1/leaderboards/${leaderboard.internalName}/entries`)
-      .send({
-        score: 200,
-        props: [
-          { key: 'level', value: '1' },
-          { key: 'difficulty', value: 'hard' },
-        ],
-      })
+      .send({ score: 200, props })
       .auth(token, { type: 'bearer' })
       .set('x-talo-alias', String(player.aliases[0].id))
       .expect(200)
 
-    expect(res.body.entry.id).toBe(entry.id)
+    const entryCount = await em.repo(LeaderboardEntry).count({ leaderboard })
+    expect(entryCount).toBe(1)
     expect(res.body.entry.score).toBe(200)
     expect(res.body.updated).toBe(true)
   })
@@ -949,14 +950,20 @@ describe('Leaderboard API - create', () => {
         createdAt: subMinutes(new Date(), 10),
       }))
       .one()
+    const props = [
+      { key: 'level', value: '1' },
+      { key: 'difficulty', value: 'hard' },
+    ]
+
     const newerEntry = await new LeaderboardEntryFactory(leaderboard, [player])
-      .state((entry) => ({
+      .state((e) => ({
         score: 100,
         playerAlias: player.aliases[0],
-        props: new Collection<LeaderboardEntryProp>(entry, [
-          new LeaderboardEntryProp(entry, 'level', '1'),
-          new LeaderboardEntryProp(entry, 'difficulty', 'hard'),
-        ]),
+        props: new Collection<LeaderboardEntryProp>(
+          e,
+          props.map((p) => new LeaderboardEntryProp(e, p.key, p.value)),
+        ),
+        propsDigest: LeaderboardEntry.createPropsDigest(props),
       }))
       .one()
 
@@ -964,18 +971,13 @@ describe('Leaderboard API - create', () => {
 
     const res = await request(app)
       .post(`/v1/leaderboards/${leaderboard.internalName}/entries`)
-      .send({
-        score: 200,
-        props: [
-          { key: 'level', value: '1' },
-          { key: 'difficulty', value: 'hard' },
-        ],
-      })
+      .send({ score: 200, props })
       .auth(token, { type: 'bearer' })
       .set('x-talo-alias', String(player.aliases[0].id))
       .expect(200)
 
-    expect(res.body.entry.id).toBe(newerEntry.id)
+    const entryCount = await em.repo(LeaderboardEntry).count({ leaderboard })
+    expect(entryCount).toBe(2)
     expect(res.body.entry.score).toBe(200)
     expect(res.body.updated).toBe(true)
   })

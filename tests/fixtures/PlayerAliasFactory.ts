@@ -41,6 +41,13 @@ export default class PlayerAliasFactory extends Factory<PlayerAlias> {
     }))
   }
 
+  gameCenter(): this {
+    return this.state(() => ({
+      service: PlayerAliasService.GAME_CENTER,
+      identifier: `G:${randNumber({ min: 100_000, max: 1_000_000 })}`,
+    }))
+  }
+
   username(): this {
     return this.state(() => ({
       service: PlayerAliasService.USERNAME,

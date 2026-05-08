@@ -10,6 +10,10 @@ import {
 import { pick } from 'lodash'
 import { decrypt, encrypt } from '../lib/crypto/string-encryption'
 import {
+  authenticateSignature,
+  AuthenticateSignatureResult,
+} from '../lib/integrations/game-center/game-center-players'
+import {
   authenticateAuthCode,
   AuthenticateAuthCodeResult,
 } from '../lib/integrations/google-play-games/google-play-games-players'
@@ -41,6 +45,7 @@ import { SteamworksPlayerStat } from './steamworks-player-stat'
 export enum IntegrationType {
   STEAMWORKS = 'steamworks',
   GOOGLE_PLAY_GAMES = 'google-play-games',
+  GAME_CENTER = 'game-center',
 }
 
 export type SteamIntegrationConfig = {
@@ -55,9 +60,14 @@ export type GooglePlayGamesIntegrationConfig = {
   clientSecret: string
 }
 
+export type GameCenterIntegrationConfig = {
+  bundleId: string
+}
+
 export type IntegrationConfigMap = {
   [IntegrationType.STEAMWORKS]: SteamIntegrationConfig
   [IntegrationType.GOOGLE_PLAY_GAMES]: GooglePlayGamesIntegrationConfig
+  [IntegrationType.GAME_CENTER]: GameCenterIntegrationConfig
 }
 
 export type IntegrationConfig = IntegrationConfigMap[keyof IntegrationConfigMap]
@@ -110,6 +120,10 @@ export default class Integration<T extends IntegrationType = IntegrationType> {
         } as IntegrationConfigMap[T]
         break
       }
+      case IntegrationType.GAME_CENTER: {
+        this.config = config
+        break
+      }
     }
   }
 
@@ -133,6 +147,9 @@ export default class Integration<T extends IntegrationType = IntegrationType> {
         }
         break
       }
+      case IntegrationType.GAME_CENTER:
+        // nothing to encrypt
+        break
     }
 
     this.config = {
@@ -149,14 +166,21 @@ export default class Integration<T extends IntegrationType = IntegrationType> {
     return pick(this.config as GooglePlayGamesIntegrationConfig, ['clientId'])
   }
 
+  getGameCenterConfig() {
+    return this.config as GameCenterIntegrationConfig
+  }
+
   getConfig():
     | Omit<SteamIntegrationConfig, 'apiKey'>
-    | Omit<GooglePlayGamesIntegrationConfig, 'clientSecret'> {
+    | Omit<GooglePlayGamesIntegrationConfig, 'clientSecret'>
+    | GameCenterIntegrationConfig {
     switch (this.type) {
       case IntegrationType.STEAMWORKS:
         return this.getSteamConfig()
       case IntegrationType.GOOGLE_PLAY_GAMES:
         return this.getGooglePlayGamesConfig()
+      case IntegrationType.GAME_CENTER:
+        return this.getGameCenterConfig()
     }
   }
 
@@ -272,12 +296,14 @@ export default class Integration<T extends IntegrationType = IntegrationType> {
   async getPlayerIdentifier(
     em: EntityManager,
     identifier: string,
-  ): Promise<AuthenticateTicketResult | AuthenticateAuthCodeResult> {
+  ): Promise<AuthenticateTicketResult | AuthenticateAuthCodeResult | AuthenticateSignatureResult> {
     switch (this.type) {
       case IntegrationType.STEAMWORKS:
         return authenticateTicket(em, this, identifier)
       case IntegrationType.GOOGLE_PLAY_GAMES:
         return authenticateAuthCode(em, this, identifier)
+      case IntegrationType.GAME_CENTER:
+        return authenticateSignature(em, this, identifier)
     }
   }
 

@@ -28,6 +28,12 @@ export const createRoute = protectedRoute({
           clientSecret: z.string(),
         }),
       }),
+      z.object({
+        type: z.literal(IntegrationType.GAME_CENTER),
+        config: z.object({
+          bundleId: z.string(),
+        }),
+      }),
     ]),
   }),
   middleware: withMiddleware(userTypeGate([UserType.ADMIN], 'add integrations'), loadGame),

@@ -1,6 +1,7 @@
 import request from 'supertest'
 import { APIKeyScope } from '../../src/entities/api-key'
 import { LeaderboardSortMode } from '../../src/entities/leaderboard'
+import LeaderboardEntry from '../../src/entities/leaderboard-entry'
 import LeaderboardFactory from '../fixtures/LeaderboardFactory'
 import PlayerFactory from '../fixtures/PlayerFactory'
 import createAPIKeyAndToken from '../utils/createAPIKeyAndToken'
@@ -211,6 +212,34 @@ describe('LeaderboardEntry subscriber', () => {
       expect(res2.body.entries[0].position).toBe(0)
       expect(res2.body.entries[1].score).toBe(200)
       expect(res2.body.entries[1].position).toBe(1)
+    })
+  })
+
+  describe('propsDigest generation', () => {
+    it('should generate the correct propsDigest on create', async () => {
+      const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_LEADERBOARDS])
+      const leaderboard = await new LeaderboardFactory([apiKey.game]).one()
+      const player = await new PlayerFactory([apiKey.game]).one()
+      await em.persist([leaderboard, player]).flush()
+
+      const props = [
+        { key: 'character', value: 'mario' },
+        { key: 'level', value: '1-1' },
+      ]
+
+      const res = await request(app)
+        .post(`/v1/leaderboards/${leaderboard.internalName}/entries`)
+        .send({ score: 500, props })
+        .auth(token, { type: 'bearer' })
+        .set('x-talo-alias', String(player.aliases[0].id))
+        .expect(200)
+
+      const createdEntry = await em
+        .repo(LeaderboardEntry)
+        .findOneOrFail(res.body.entry.id, { refresh: true })
+
+      const expectedDigest = LeaderboardEntry.createPropsDigest(props)
+      expect(createdEntry.propsDigest).toBe(expectedDigest)
     })
   })
 })

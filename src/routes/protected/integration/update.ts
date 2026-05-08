@@ -18,6 +18,7 @@ export const updateRoute = protectedRoute({
         syncStats: z.boolean().optional(),
         clientId: z.string().optional(),
         clientSecret: z.string().optional(),
+        bundleId: z.string().optional(),
       }),
     }),
   }),

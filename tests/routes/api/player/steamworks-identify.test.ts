@@ -12,7 +12,7 @@ import IntegrationFactory from '../../../fixtures/IntegrationFactory'
 import PlayerFactory from '../../../fixtures/PlayerFactory'
 import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
 
-describe('Player API - steamworks identify', () => {
+describe('Player API - Steamworks identify', () => {
   const axiosMock = new AxiosMockAdapter(axios)
 
   afterEach(async () => {

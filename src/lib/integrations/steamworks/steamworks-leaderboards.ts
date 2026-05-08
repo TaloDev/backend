@@ -206,6 +206,8 @@ function createLeaderboardEntry({
   const entry = new LeaderboardEntry(leaderboardMapping.leaderboard)
   entry.playerAlias = playerAlias
   entry.score = score
+  // TODO: remove after mikro-orm v7 upgrade
+  entry.propsDigest = LeaderboardEntry.createPropsDigest([])
 
   const steamworksEntry = new SteamworksLeaderboardEntry({
     steamworksLeaderboard: leaderboardMapping,
@@ -250,7 +252,6 @@ async function matchAliasAndLeaderboardEntry({
       .findOne({ leaderboard: leaderboardMapping.leaderboard, playerAlias })
     if (existingEntry) {
       existingEntry.score = steamEntryData.score
-      await em.flush()
       return { newEntry: undefined, updated: true }
     }
   } else {
@@ -268,7 +269,7 @@ async function matchAliasAndLeaderboardEntry({
     playerAlias,
     score: steamEntryData.score,
   })
-  await em.persist(newEntry).flush()
+  em.persist(newEntry)
 
   return { newEntry: newEntry.leaderboardEntry, updated: false }
 }
@@ -293,10 +294,12 @@ async function ingestEntriesFromSteamworks({
 
   for (const steamEntryData of entriesRes?.leaderboardEntryInformation.leaderboardEntries ?? []) {
     try {
-      const { newEntry, updated } = await matchAliasAndLeaderboardEntry({
-        em: em.fork(),
-        steamworksLeaderboard,
-        steamEntryData,
+      const { newEntry, updated } = await em.fork().transactional((trx) => {
+        return matchAliasAndLeaderboardEntry({
+          em: trx,
+          steamworksLeaderboard,
+          steamEntryData,
+        })
       })
 
       if (newEntry) {

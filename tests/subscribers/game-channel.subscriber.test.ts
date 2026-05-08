@@ -306,7 +306,7 @@ describe('GameChannel subscriber', () => {
     })
 
     it('should not clear the socket data key when only totalMessages changes', async () => {
-      const [apiKey, token] = await createAPIKeyAndToken([
+      const [apiKey] = await createAPIKeyAndToken([
         APIKeyScope.READ_GAME_CHANNELS,
         APIKeyScope.WRITE_GAME_CHANNELS,
       ])

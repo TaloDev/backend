@@ -1,3 +1,4 @@
+import GameCenterIntegrationEvent from '../../src/entities/game-center-integration-event'
 import GooglePlayGamesIntegrationEvent from '../../src/entities/google-play-games-integration-event'
 import { IntegrationType } from '../../src/entities/integration'
 import SteamworksIntegrationEvent from '../../src/entities/steamworks-integration-event'
@@ -54,6 +55,31 @@ describe('cleanupIntegrationEvents', () => {
     await cleanupIntegrationEvents()
 
     const remaining = await em.repo(GooglePlayGamesIntegrationEvent).count({ integration })
+    expect(remaining).toBe(1)
+  })
+
+  it('should delete game center integration events older than 6 months', async () => {
+    const [, game] = await createOrganisationAndGame()
+    const integration = await new IntegrationFactory()
+      .construct(IntegrationType.GAME_CENTER, game, {
+        bundleId: 'com.example.game',
+      })
+      .one()
+
+    const oldEvent = new GameCenterIntegrationEvent(integration)
+    oldEvent.request = { url: 'https://example.com', method: 'GET' }
+    oldEvent.response = { status: 200, body: {}, timeTaken: 10 }
+    oldEvent.createdAt = new Date('2020-01-01')
+
+    const recentEvent = new GameCenterIntegrationEvent(integration)
+    recentEvent.request = { url: 'https://example.com', method: 'GET' }
+    recentEvent.response = { status: 200, body: {}, timeTaken: 10 }
+
+    await em.persist([integration, oldEvent, recentEvent]).flush()
+
+    await cleanupIntegrationEvents()
+
+    const remaining = await em.repo(GameCenterIntegrationEvent).count({ integration })
     expect(remaining).toBe(1)
   })
 

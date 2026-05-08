@@ -20,7 +20,7 @@ export function gameActivityRouter() {
           }),
         }),
         middleware: withMiddleware(
-          userTypeGate([UserType.ADMIN, UserType.DEMO], 'view game activities'),
+          userTypeGate([UserType.ADMIN], 'view game activities'),
           loadGame,
         ),
         handler: async (ctx) => {

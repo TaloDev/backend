@@ -1,7 +1,6 @@
 {
   "$schema": "./node_modules/oxlint/configuration_schema.json",
   "plugins": ["typescript"],
-  "categories": {},
   "rules": {
     "no-restricted-imports": ["error", { "patterns": ["@mikro-orm/core"] }],
     "typescript/consistent-type-definitions": ["error", "type"],
@@ -23,7 +22,5 @@
   },
   "env": {
     "builtin": true
-  },
-  "globals": {},
-  "ignorePatterns": []
+  }
 }

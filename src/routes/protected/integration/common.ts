@@ -78,4 +78,5 @@ export function addStatSyncJob(integrationId: number) {
 export const configKeys: IntegrationConfigKeys = {
   [IntegrationType.STEAMWORKS]: ['apiKey', 'appId', 'syncLeaderboards', 'syncStats'],
   [IntegrationType.GOOGLE_PLAY_GAMES]: ['clientId', 'clientSecret'],
+  [IntegrationType.GAME_CENTER]: ['bundleId'],
 }

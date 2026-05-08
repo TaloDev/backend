@@ -1,3 +1,4 @@
+import assert from 'node:assert'
 import request from 'supertest'
 import GameActivity, { GameActivityType } from '../../../../src/entities/game-activity'
 import Integration, { IntegrationType } from '../../../../src/entities/integration'
@@ -189,6 +190,42 @@ describe('Integration - create', () => {
 
     expect(res.body.errors['config.apiKey']).toBeDefined()
     expect(res.body.errors['config.appId']).toBeDefined()
+  })
+
+  it('should create a game center integration', async () => {
+    const [organisation, game] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken({ type: UserType.ADMIN }, organisation)
+
+    const res = await request(app)
+      .post(`/games/${game.id}/integrations`)
+      .send({
+        type: IntegrationType.GAME_CENTER,
+        config: { bundleId: 'com.example.game' },
+      })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    expect(res.body.integration.config.bundleId).toBe('com.example.game')
+
+    const activity = await em.repo(GameActivity).findOne({
+      type: GameActivityType.GAME_INTEGRATION_ADDED,
+      game,
+    })
+    assert(activity)
+    expect(activity.extra.integrationType).toBe(IntegrationType.GAME_CENTER)
+  })
+
+  it('should not create a game center integration without a bundleId', async () => {
+    const [organisation, game] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken({ type: UserType.ADMIN }, organisation)
+
+    const res = await request(app)
+      .post(`/games/${game.id}/integrations`)
+      .send({ type: IntegrationType.GAME_CENTER, config: {} })
+      .auth(token, { type: 'bearer' })
+      .expect(400)
+
+    expect(res.body.errors['config.bundleId']).toBeDefined()
   })
 
   it('should not add an integration with an invalid type', async () => {

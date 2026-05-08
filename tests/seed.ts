@@ -53,7 +53,7 @@ void (async () => {
         .one()
 
       return {
-        name: process.env.DEMO_ORGANISATION_NAME,
+        name: 'Talo',
         pricingPlan: orgPlan,
       }
     })

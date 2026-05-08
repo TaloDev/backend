@@ -26,10 +26,4 @@ export default class OrganisationFactory extends Factory<Organisation> {
       }
     })
   }
-
-  demo(): this {
-    return this.state(() => ({
-      name: process.env.DEMO_ORGANISATION_NAME,
-    }))
-  }
 }

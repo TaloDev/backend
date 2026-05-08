@@ -66,7 +66,6 @@ describe('Invite - create', () => {
     [400, 'owner', UserType.OWNER],
     [200, 'admin', UserType.ADMIN],
     [200, 'dev', UserType.DEV],
-    [400, 'demo', UserType.DEMO],
   ])('should return a %i for a %s user type invite', async (statusCode, _, type) => {
     const [token] = await createUserAndToken({ type: UserType.ADMIN, emailConfirmed: true })
 

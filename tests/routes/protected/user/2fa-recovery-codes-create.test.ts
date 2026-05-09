@@ -21,8 +21,7 @@ describe('User - create recovery codes', () => {
 
     expect(res.body.recoveryCodes).toHaveLength(8)
 
-    const recoveryCodes = await em.repo(UserRecoveryCode).find({ user })
-    expect(recoveryCodes).toHaveLength(8)
+    expect(em.repo(UserRecoveryCode).count({ user })).toBe(8)
   })
 
   it("should not create recovery codes if 2fa isn't enabled", async () => {

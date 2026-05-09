@@ -18,6 +18,7 @@ const ormConfig = defineConfig({
   password: process.env.DB_PASS,
   migrations: {
     migrationsList,
+    path: 'src/migrations', // for generating migrations via the cli
   },
   metadataProvider: TsMorphMetadataProvider,
   extensions: [Migrator],

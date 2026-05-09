@@ -16,14 +16,15 @@ export const createRecoveryCodesRoute = protectedRoute({
     const em = ctx.em
 
     const user = ctx.state.user
-    const newCodes = generateRecoveryCodes(user)
-    user.recoveryCodes.set(newCodes)
+    await user.recoveryCodes.init()
+    user.recoveryCodes.set(generateRecoveryCodes(user))
+
     await em.flush()
 
     return {
       status: 200,
       body: {
-        recoveryCodes: newCodes,
+        recoveryCodes: user.recoveryCodes,
       },
     }
   },

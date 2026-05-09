@@ -166,16 +166,14 @@
           "constraintName": "apikey_created_by_user_id_foreign",
           "localTableName": "apikey",
           "referencedColumnNames": ["id"],
-          "referencedTableName": "user",
-          "updateRule": "cascade"
+          "referencedTableName": "user"
         },
         "apikey_game_id_foreign": {
           "columnNames": ["game_id"],
           "constraintName": "apikey_game_id_foreign",
           "localTableName": "apikey",
           "referencedColumnNames": ["id"],
-          "referencedTableName": "game",
-          "updateRule": "cascade"
+          "referencedTableName": "game"
         }
       },
       "comment": ""
@@ -345,16 +343,14 @@
           "constraintName": "data_export_created_by_user_id_foreign",
           "localTableName": "data_export",
           "referencedColumnNames": ["id"],
-          "referencedTableName": "user",
-          "updateRule": "cascade"
+          "referencedTableName": "user"
         },
         "data_export_game_id_foreign": {
           "columnNames": ["game_id"],
           "constraintName": "data_export_game_id_foreign",
           "localTableName": "data_export",
           "referencedColumnNames": ["id"],
-          "referencedTableName": "game",
-          "updateRule": "cascade"
+          "referencedTableName": "game"
         }
       },
       "comment": ""
@@ -710,16 +706,14 @@
           "constraintName": "game_api_secret_id_foreign",
           "localTableName": "game",
           "referencedColumnNames": ["id"],
-          "referencedTableName": "game_secret",
-          "updateRule": "cascade"
+          "referencedTableName": "game_secret"
         },
         "game_organisation_id_foreign": {
           "columnNames": ["organisation_id"],
           "constraintName": "game_organisation_id_foreign",
           "localTableName": "game",
           "referencedColumnNames": ["id"],
-          "referencedTableName": "organisation",
-          "updateRule": "cascade"
+          "referencedTableName": "organisation"
         }
       },
       "comment": ""
@@ -858,7 +852,6 @@
           "localTableName": "game_activity",
           "referencedColumnNames": ["id"],
           "referencedTableName": "game",
-          "updateRule": "cascade",
           "deleteRule": "set null"
         },
         "game_activity_user_id_foreign": {
@@ -866,8 +859,7 @@
           "constraintName": "game_activity_user_id_foreign",
           "localTableName": "game_activity",
           "referencedColumnNames": ["id"],
-          "referencedTableName": "user",
-          "updateRule": "cascade"
+          "referencedTableName": "user"
         }
       },
       "comment": ""
@@ -981,8 +973,7 @@
           "constraintName": "game_center_integration_event_integration_id_foreign",
           "localTableName": "game_center_integration_event",
           "referencedColumnNames": ["id"],
-          "referencedTableName": "integration",
-          "updateRule": "cascade"
+          "referencedTableName": "integration"
         }
       },
       "comment": ""
@@ -1184,8 +1175,7 @@
           "constraintName": "game_channel_game_id_foreign",
           "localTableName": "game_channel",
           "referencedColumnNames": ["id"],
-          "referencedTableName": "game",
-          "updateRule": "cascade"
+          "referencedTableName": "game"
         },
         "game_channel_owner_id_foreign": {
           "columnNames": ["owner_id"],
@@ -1193,7 +1183,6 @@
           "localTableName": "game_channel",
           "referencedColumnNames": ["id"],
           "referencedTableName": "player_alias",
-          "updateRule": "cascade",
           "deleteRule": "set null"
         }
       },
@@ -1394,7 +1383,6 @@
           "localTableName": "game_channel_prop",
           "referencedColumnNames": ["id"],
           "referencedTableName": "game_channel",
-          "updateRule": "cascade",
           "deleteRule": "cascade"
         }
       },
@@ -1582,7 +1570,6 @@
           "localTableName": "game_channel_storage_prop",
           "referencedColumnNames": ["id"],
           "referencedTableName": "player_alias",
-          "updateRule": "cascade",
           "deleteRule": "cascade"
         },
         "game_channel_storage_prop_game_channel_id_foreign": {
@@ -1591,7 +1578,6 @@
           "localTableName": "game_channel_storage_prop",
           "referencedColumnNames": ["id"],
           "referencedTableName": "game_channel",
-          "updateRule": "cascade",
           "deleteRule": "cascade"
         },
         "game_channel_storage_prop_last_updated_by_id_foreign": {
@@ -1600,7 +1586,6 @@
           "localTableName": "game_channel_storage_prop",
           "referencedColumnNames": ["id"],
           "referencedTableName": "player_alias",
-          "updateRule": "cascade",
           "deleteRule": "cascade"
         }
       },
@@ -1772,7 +1757,6 @@
           "localTableName": "game_feedback",
           "referencedColumnNames": ["id"],
           "referencedTableName": "game_feedback_category",
-          "updateRule": "cascade",
           "deleteRule": "cascade"
         },
         "game_feedback_player_alias_id_foreign": {
@@ -1781,7 +1765,6 @@
           "localTableName": "game_feedback",
           "referencedColumnNames": ["id"],
           "referencedTableName": "player_alias",
-          "updateRule": "cascade",
           "deleteRule": "cascade"
         }
       },
@@ -1952,8 +1935,7 @@
           "constraintName": "game_feedback_category_game_id_foreign",
           "localTableName": "game_feedback_category",
           "referencedColumnNames": ["id"],
-          "referencedTableName": "game",
-          "updateRule": "cascade"
+          "referencedTableName": "game"
         }
       },
       "comment": ""
@@ -2068,7 +2050,6 @@
           "localTableName": "game_feedback_prop",
           "referencedColumnNames": ["id"],
           "referencedTableName": "game_feedback",
-          "updateRule": "cascade",
           "deleteRule": "cascade"
         }
       },
@@ -2200,7 +2181,6 @@
           "localTableName": "game_save",
           "referencedColumnNames": ["id"],
           "referencedTableName": "player",
-          "updateRule": "cascade",
           "deleteRule": "cascade"
         }
       },
@@ -2501,8 +2481,7 @@
           "constraintName": "game_stat_game_id_foreign",
           "localTableName": "game_stat",
           "referencedColumnNames": ["id"],
-          "referencedTableName": "game",
-          "updateRule": "cascade"
+          "referencedTableName": "game"
         }
       },
       "comment": ""
@@ -2616,8 +2595,7 @@
           "constraintName": "google_play_games_integration_event_integration_id_foreign",
           "localTableName": "google_play_games_integration_event",
           "referencedColumnNames": ["id"],
-          "referencedTableName": "integration",
-          "updateRule": "cascade"
+          "referencedTableName": "integration"
         }
       },
       "comment": ""
@@ -2763,8 +2741,7 @@
           "constraintName": "integration_game_id_foreign",
           "localTableName": "integration",
           "referencedColumnNames": ["id"],
-          "referencedTableName": "game",
-          "updateRule": "cascade"
+          "referencedTableName": "game"
         }
       },
       "comment": ""
@@ -2918,16 +2895,14 @@
           "constraintName": "invite_invited_by_user_id_foreign",
           "localTableName": "invite",
           "referencedColumnNames": ["id"],
-          "referencedTableName": "user",
-          "updateRule": "cascade"
+          "referencedTableName": "user"
         },
         "invite_organisation_id_foreign": {
           "columnNames": ["organisation_id"],
           "constraintName": "invite_organisation_id_foreign",
           "localTableName": "invite",
           "referencedColumnNames": ["id"],
-          "referencedTableName": "organisation",
-          "updateRule": "cascade"
+          "referencedTableName": "organisation"
         }
       },
       "comment": ""
@@ -3129,8 +3104,7 @@
           "constraintName": "leaderboard_game_id_foreign",
           "localTableName": "leaderboard",
           "referencedColumnNames": ["id"],
-          "referencedTableName": "game",
-          "updateRule": "cascade"
+          "referencedTableName": "game"
         }
       },
       "comment": ""
@@ -3341,7 +3315,6 @@
           "localTableName": "leaderboard_entry",
           "referencedColumnNames": ["id"],
           "referencedTableName": "leaderboard",
-          "updateRule": "cascade",
           "deleteRule": "cascade"
         },
         "leaderboard_entry_player_alias_id_foreign": {
@@ -3350,7 +3323,6 @@
           "localTableName": "leaderboard_entry",
           "referencedColumnNames": ["id"],
           "referencedTableName": "player_alias",
-          "updateRule": "cascade",
           "deleteRule": "cascade"
         }
       },
@@ -3466,7 +3438,6 @@
           "localTableName": "leaderboard_entry_prop",
           "referencedColumnNames": ["id"],
           "referencedTableName": "leaderboard_entry",
-          "updateRule": "cascade",
           "deleteRule": "cascade"
         }
       },
@@ -3597,8 +3568,7 @@
           "constraintName": "organisation_pricing_plan_id_foreign",
           "localTableName": "organisation",
           "referencedColumnNames": ["id"],
-          "referencedTableName": "organisation_pricing_plan",
-          "updateRule": "cascade"
+          "referencedTableName": "organisation_pricing_plan"
         }
       },
       "comment": ""
@@ -3776,8 +3746,7 @@
           "constraintName": "organisation_pricing_plan_pricing_plan_id_foreign",
           "localTableName": "organisation_pricing_plan",
           "referencedColumnNames": ["id"],
-          "referencedTableName": "pricing_plan",
-          "updateRule": "cascade"
+          "referencedTableName": "pricing_plan"
         }
       },
       "comment": ""
@@ -3972,7 +3941,6 @@
           "localTableName": "player",
           "referencedColumnNames": ["id"],
           "referencedTableName": "player_auth",
-          "updateRule": "cascade",
           "deleteRule": "set null"
         },
         "player_game_id_foreign": {
@@ -3980,8 +3948,7 @@
           "constraintName": "player_game_id_foreign",
           "localTableName": "player",
           "referencedColumnNames": ["id"],
-          "referencedTableName": "game",
-          "updateRule": "cascade"
+          "referencedTableName": "game"
         },
         "player_presence_id_foreign": {
           "columnNames": ["presence_id"],
@@ -3989,7 +3956,6 @@
           "localTableName": "player",
           "referencedColumnNames": ["id"],
           "referencedTableName": "player_presence",
-          "updateRule": "cascade",
           "deleteRule": "set null"
         }
       },
@@ -4155,7 +4121,6 @@
           "localTableName": "player_alias",
           "referencedColumnNames": ["id"],
           "referencedTableName": "player",
-          "updateRule": "cascade",
           "deleteRule": "cascade"
         }
       },
@@ -4327,7 +4292,6 @@
           "localTableName": "player_alias_subscription",
           "referencedColumnNames": ["id"],
           "referencedTableName": "player_alias",
-          "updateRule": "cascade",
           "deleteRule": "cascade"
         },
         "player_alias_subscription_subscriber_id_foreign": {
@@ -4336,7 +4300,6 @@
           "localTableName": "player_alias_subscription",
           "referencedColumnNames": ["id"],
           "referencedTableName": "player_alias",
-          "updateRule": "cascade",
           "deleteRule": "cascade"
         }
       },
@@ -4598,7 +4561,6 @@
           "localTableName": "player_auth_activity",
           "referencedColumnNames": ["id"],
           "referencedTableName": "player",
-          "updateRule": "cascade",
           "deleteRule": "cascade"
         }
       },
@@ -4754,7 +4716,6 @@
           "localTableName": "player_game_stat",
           "referencedColumnNames": ["id"],
           "referencedTableName": "player",
-          "updateRule": "cascade",
           "deleteRule": "cascade"
         },
         "player_game_stat_stat_id_foreign": {
@@ -4763,7 +4724,6 @@
           "localTableName": "player_game_stat",
           "referencedColumnNames": ["id"],
           "referencedTableName": "game_stat",
-          "updateRule": "cascade",
           "deleteRule": "cascade"
         }
       },
@@ -4942,8 +4902,7 @@
           "constraintName": "player_group_game_id_foreign",
           "localTableName": "player_group",
           "referencedColumnNames": ["id"],
-          "referencedTableName": "game",
-          "updateRule": "cascade"
+          "referencedTableName": "game"
         }
       },
       "comment": ""
@@ -5159,7 +5118,6 @@
           "localTableName": "player_presence",
           "referencedColumnNames": ["id"],
           "referencedTableName": "player_alias",
-          "updateRule": "cascade",
           "deleteRule": "cascade"
         }
       },
@@ -5291,7 +5249,6 @@
           "localTableName": "player_prop",
           "referencedColumnNames": ["id"],
           "referencedTableName": "player",
-          "updateRule": "cascade",
           "deleteRule": "cascade"
         }
       },
@@ -5375,7 +5332,6 @@
           "localTableName": "players_to_delete",
           "referencedColumnNames": ["id"],
           "referencedTableName": "player",
-          "updateRule": "cascade",
           "deleteRule": "cascade"
         }
       },
@@ -5620,8 +5576,7 @@
           "constraintName": "steamworks_integration_event_integration_id_foreign",
           "localTableName": "steamworks_integration_event",
           "referencedColumnNames": ["id"],
-          "referencedTableName": "integration",
-          "updateRule": "cascade"
+          "referencedTableName": "integration"
         }
       },
       "comment": ""
@@ -5763,7 +5718,7 @@
           "columnNames": ["steamworks_leaderboard_id", "leaderboard_id"],
           "composite": true,
           "constraint": false,
-          "keyName": "steamworks_leaderboard_entry_steamworks_leaderboard_aa6b4_index",
+          "keyName": "steamworks_leaderboard_entry_steamworks_leaderboard_47d69_index",
           "primary": false,
           "unique": false
         }
@@ -5776,12 +5731,11 @@
           "localTableName": "steamworks_leaderboard_entry",
           "referencedColumnNames": ["id"],
           "referencedTableName": "leaderboard_entry",
-          "updateRule": "cascade",
           "deleteRule": "set null"
         },
-        "steamworks_leaderboard_entry_steamworks_leaderboa_6dc1e_foreign": {
+        "steamworks_leaderboard_entry_steamworks_leaderboa_15279_foreign": {
           "columnNames": ["steamworks_leaderboard_id", "leaderboard_id"],
-          "constraintName": "steamworks_leaderboard_entry_steamworks_leaderboa_6dc1e_foreign",
+          "constraintName": "steamworks_leaderboard_entry_steamworks_leaderboa_15279_foreign",
           "localTableName": "steamworks_leaderboard_entry",
           "referencedColumnNames": ["steamworks_leaderboard_id", "leaderboard_id"],
           "referencedTableName": "steamworks_leaderboard_mapping",
@@ -5869,7 +5823,6 @@
           "localTableName": "steamworks_leaderboard_mapping",
           "referencedColumnNames": ["id"],
           "referencedTableName": "leaderboard",
-          "updateRule": "cascade",
           "deleteRule": "cascade"
         }
       },
@@ -6009,7 +5962,6 @@
           "localTableName": "steamworks_player_stat",
           "referencedColumnNames": ["id"],
           "referencedTableName": "player_game_stat",
-          "updateRule": "cascade",
           "deleteRule": "set null"
         },
         "steamworks_player_stat_stat_id_foreign": {
@@ -6018,7 +5970,6 @@
           "localTableName": "steamworks_player_stat",
           "referencedColumnNames": ["id"],
           "referencedTableName": "game_stat",
-          "updateRule": "cascade",
           "deleteRule": "cascade"
         }
       },
@@ -6237,8 +6188,7 @@
           "constraintName": "user_organisation_id_foreign",
           "localTableName": "user",
           "referencedColumnNames": ["id"],
-          "referencedTableName": "organisation",
-          "updateRule": "cascade"
+          "referencedTableName": "organisation"
         },
         "user_two_factor_auth_id_foreign": {
           "columnNames": ["two_factor_auth_id"],
@@ -6246,7 +6196,6 @@
           "localTableName": "user",
           "referencedColumnNames": ["id"],
           "referencedTableName": "user_two_factor_auth",
-          "updateRule": "cascade",
           "deleteRule": "set null"
         }
       },
@@ -6361,8 +6310,7 @@
           "constraintName": "user_access_code_user_id_foreign",
           "localTableName": "user_access_code",
           "referencedColumnNames": ["id"],
-          "referencedTableName": "user",
-          "updateRule": "cascade"
+          "referencedTableName": "user"
         }
       },
       "comment": ""
@@ -6476,16 +6424,14 @@
           "constraintName": "user_pinned_group_group_id_foreign",
           "localTableName": "user_pinned_group",
           "referencedColumnNames": ["id"],
-          "referencedTableName": "player_group",
-          "updateRule": "cascade"
+          "referencedTableName": "player_group"
         },
         "user_pinned_group_user_id_foreign": {
           "columnNames": ["user_id"],
           "constraintName": "user_pinned_group_user_id_foreign",
           "localTableName": "user_pinned_group",
           "referencedColumnNames": ["id"],
-          "referencedTableName": "user",
-          "updateRule": "cascade"
+          "referencedTableName": "user"
         }
       },
       "comment": ""
@@ -6584,7 +6530,6 @@
           "localTableName": "user_recovery_code",
           "referencedColumnNames": ["id"],
           "referencedTableName": "user",
-          "updateRule": "cascade",
           "deleteRule": "cascade"
         }
       },
@@ -6715,8 +6660,7 @@
           "constraintName": "user_session_user_id_foreign",
           "localTableName": "user_session",
           "referencedColumnNames": ["id"],
-          "referencedTableName": "user",
-          "updateRule": "cascade"
+          "referencedTableName": "user"
         }
       },
       "comment": ""

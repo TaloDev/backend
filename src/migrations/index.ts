@@ -68,7 +68,6 @@ import { AddLastUsageWarningThresholdColumn } from './20260327081802AddLastUsage
 import { SchemaSnapshotChanges } from './20260327224537SchemaSnapshotChanges'
 import { AddFailedJobFailedAtIndex } from './20260327225535AddFailedJobFailedAtIndex'
 import { CreateGameCenterIntegrationEventTable } from './20260404213749CreateGameCenterIntegrationEventTable'
-import { MikroORMV7FKDecouple } from './20260426103634MikroORMV7FKDecouple'
 
 export default [
   {
@@ -350,9 +349,5 @@ export default [
   {
     name: 'CreateGameCenterIntegrationEventTable',
     class: CreateGameCenterIntegrationEventTable,
-  },
-  {
-    name: 'MikroORMV7FKDecouple',
-    class: MikroORMV7FKDecouple,
   },
 ]

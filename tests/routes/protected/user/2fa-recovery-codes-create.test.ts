@@ -21,12 +21,6 @@ describe('User - create recovery codes', () => {
 
     expect(res.body.recoveryCodes).toHaveLength(8)
 
-    const [rows] = await em.execute(
-      `SELECT COUNT(*) as count FROM user_recovery_code WHERE user_id = ?`,
-      [user.id],
-    )
-    expect(Number((rows as { count: string }).count)).toBe(8)
-
     expect(await em.repo(UserRecoveryCode).count({ user })).toBe(8)
   })
 

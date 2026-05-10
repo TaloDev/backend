@@ -4,6 +4,7 @@ import { Factory } from 'hefty'
 import Game from '../../src/entities/game.js'
 import LeaderboardEntry from '../../src/entities/leaderboard-entry.js'
 import Leaderboard, { LeaderboardSortMode } from '../../src/entities/leaderboard.js'
+import { DEV_BUILD_META_KEY } from '../../src/entities/player.js'
 import LeaderboardEntryFactory from './LeaderboardEntryFactory.js'
 
 export default class LeaderboardFactory extends Factory<Leaderboard> {
@@ -55,7 +56,7 @@ export default class LeaderboardFactory extends Factory<Leaderboard> {
   devBuildPlayers(): this {
     return this.state((leaderboard: Leaderboard) => {
       leaderboard.entries.getItems().forEach((entry) => {
-        entry.playerAlias.player.addProp('META_DEV_BUILD', '1')
+        entry.playerAlias.player.addProp(DEV_BUILD_META_KEY, '1')
       })
 
       return {

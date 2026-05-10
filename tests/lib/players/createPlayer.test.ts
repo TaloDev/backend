@@ -3,7 +3,7 @@ import PlayerGroupRule, {
   PlayerGroupRuleCastType,
   PlayerGroupRuleName,
 } from '../../../src/entities/player-group-rule.js'
-import Player from '../../../src/entities/player.js'
+import Player, { DEV_BUILD_META_KEY } from '../../../src/entities/player.js'
 import { createPlayer, PlayerCreationError } from '../../../src/lib/players/createPlayer.js'
 import PlayerFactory from '../../fixtures/PlayerFactory.js'
 import PlayerGroupFactory from '../../fixtures/PlayerGroupFactory.js'
@@ -100,7 +100,7 @@ describe('createPlayer', () => {
     expect(player).toBeTruthy()
     expect(player.aliases).toHaveLength(1)
     expect(player.props.map((p) => ({ key: p.key, value: p.value }))).toContainEqual({
-      key: 'META_DEV_BUILD',
+      key: DEV_BUILD_META_KEY,
       value: '1',
     })
     expect(player.devBuild).toBe(true)

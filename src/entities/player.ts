@@ -25,6 +25,8 @@ import PlayerPresence from './player-presence.js'
 import PlayerProp from './player-prop.js'
 import PlayerSession, { ClickHousePlayerSession } from './player-session.js'
 
+export const DEV_BUILD_META_KEY = 'META_DEV_BUILD'
+
 @Entity()
 export default class Player {
   @PrimaryKey()
@@ -192,7 +194,7 @@ export default class Player {
 
   markAsDevBuild() {
     this.devBuild = true
-    this.addProp('META_DEV_BUILD', '1')
+    this.addProp(DEV_BUILD_META_KEY, '1')
   }
 
   async checkGroupMemberships(em: EntityManager) {

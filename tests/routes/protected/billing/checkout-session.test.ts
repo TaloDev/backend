@@ -1,13 +1,13 @@
 import assert from 'node:assert'
 import request from 'supertest'
-import { UserType } from '../../../../src/entities/user'
-import initStripe from '../../../../src/lib/billing/initStripe'
-import OrganisationPricingPlanFactory from '../../../fixtures/OrganisationPricingPlanFactory'
-import PlayerFactory from '../../../fixtures/PlayerFactory'
-import PricingPlanFactory from '../../../fixtures/PricingPlanFactory'
-import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
-import createUserAndToken from '../../../utils/createUserAndToken'
-import userPermissionProvider from '../../../utils/userPermissionProvider'
+import { UserType } from '../../../../src/entities/user.js'
+import initStripe from '../../../../src/lib/billing/initStripe.js'
+import OrganisationPricingPlanFactory from '../../../fixtures/OrganisationPricingPlanFactory.js'
+import PlayerFactory from '../../../fixtures/PlayerFactory.js'
+import PricingPlanFactory from '../../../fixtures/PricingPlanFactory.js'
+import createOrganisationAndGame from '../../../utils/createOrganisationAndGame.js'
+import createUserAndToken from '../../../utils/createUserAndToken.js'
+import userPermissionProvider from '../../../utils/userPermissionProvider.js'
 
 describe('Billing - create checkout session', () => {
   const stripe = initStripe()

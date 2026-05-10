@@ -1,11 +1,11 @@
 import { EntityManager, FilterQuery, QueryOrder } from '@mikro-orm/mysql'
-import Game from '../../../entities/game'
-import Player from '../../../entities/player'
-import { SMALL_PAGE_SIZE } from '../../../lib/pagination/itemsPerPage'
-import { withResponseCache } from '../../../lib/perf/responseCache'
-import { protectedRoute, withMiddleware } from '../../../lib/routing/router'
-import { pageSchema } from '../../../lib/validation/pageSchema'
-import { loadGame } from '../../../middleware/game-middleware'
+import Game from '../../../entities/game.js'
+import Player from '../../../entities/player.js'
+import { SMALL_PAGE_SIZE } from '../../../lib/pagination/itemsPerPage.js'
+import { withResponseCache } from '../../../lib/perf/responseCache.js'
+import { protectedRoute, withMiddleware } from '../../../lib/routing/router.js'
+import { pageSchema } from '../../../lib/validation/pageSchema.js'
+import { loadGame } from '../../../middleware/game-middleware.js'
 
 type SearchPlayersParams = {
   em: EntityManager

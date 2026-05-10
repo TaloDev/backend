@@ -9,9 +9,9 @@ import {
 } from '@mikro-orm/decorators/es'
 import { Collection, EntityManager, QueryBuilder } from '@mikro-orm/mysql'
 import { v4 } from 'uuid'
-import Game from './game'
-import Player from './player'
-import PlayerGroupRule, { PlayerGroupRuleCastType } from './player-group-rule'
+import Game from './game.js'
+import PlayerGroupRule, { PlayerGroupRuleCastType } from './player-group-rule.js'
+import Player from './player.js'
 
 export enum RuleMode {
   AND = '$and',

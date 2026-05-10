@@ -1,9 +1,9 @@
-import { APIKeyScope } from '../../../entities/api-key'
-import Player from '../../../entities/player'
-import PlayerPresence from '../../../entities/player-presence'
-import { RouteDocs } from '../../../lib/docs/docs-registry'
-import { apiRoute, withMiddleware } from '../../../lib/routing/router'
-import { requireScopes } from '../../../middleware/policy-middleware'
+import { APIKeyScope } from '../../../entities/api-key.js'
+import PlayerPresence from '../../../entities/player-presence.js'
+import Player from '../../../entities/player.js'
+import { RouteDocs } from '../../../lib/docs/docs-registry.js'
+import { apiRoute, withMiddleware } from '../../../lib/routing/router.js'
+import { requireScopes } from '../../../middleware/policy-middleware.js'
 
 const docs: RouteDocs = {
   description: "Get a player's online status and custom status",

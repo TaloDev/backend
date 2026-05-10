@@ -1,8 +1,8 @@
 import request from 'supertest'
-import GameActivity, { GameActivityType } from '../../../../src/entities/game-activity'
-import GameFeedbackCategoryFactory from '../../../fixtures/GameFeedbackCategoryFactory'
-import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
-import createUserAndToken from '../../../utils/createUserAndToken'
+import GameActivity, { GameActivityType } from '../../../../src/entities/game-activity.js'
+import GameFeedbackCategoryFactory from '../../../fixtures/GameFeedbackCategoryFactory.js'
+import createOrganisationAndGame from '../../../utils/createOrganisationAndGame.js'
+import createUserAndToken from '../../../utils/createUserAndToken.js'
 
 describe('Game feedback - update category', () => {
   it('should update the name and description', async () => {

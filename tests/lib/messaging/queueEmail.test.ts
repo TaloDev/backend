@@ -1,10 +1,10 @@
 import { Queue } from 'bullmq'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import DataExportReady from '../../../src/emails/data-export-ready-mail'
-import Mail, { EmailConfig } from '../../../src/emails/mail'
-import * as checkRateLimitExceeded from '../../../src/lib/errors/checkRateLimitExceeded'
-import queueEmail from '../../../src/lib/messaging/queueEmail'
-import { createEmailQueue } from '../../../src/lib/queues/createEmailQueue'
+import DataExportReady from '../../../src/emails/data-export-ready-mail.js'
+import Mail, { EmailConfig } from '../../../src/emails/mail.js'
+import * as checkRateLimitExceeded from '../../../src/lib/errors/checkRateLimitExceeded.js'
+import queueEmail from '../../../src/lib/messaging/queueEmail.js'
+import { createEmailQueue } from '../../../src/lib/queues/createEmailQueue.js'
 
 const consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
 const checkRateLimitExceededMock = vi.spyOn(checkRateLimitExceeded, 'default')

@@ -1,12 +1,12 @@
 import { sub } from 'date-fns'
 import request from 'supertest'
-import GameActivity, { GameActivityType } from '../../../../src/entities/game-activity'
-import { LeaderboardSortMode } from '../../../../src/entities/leaderboard'
-import LeaderboardEntryFactory from '../../../fixtures/LeaderboardEntryFactory'
-import LeaderboardFactory from '../../../fixtures/LeaderboardFactory'
-import PlayerFactory from '../../../fixtures/PlayerFactory'
-import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
-import createUserAndToken from '../../../utils/createUserAndToken'
+import GameActivity, { GameActivityType } from '../../../../src/entities/game-activity.js'
+import { LeaderboardSortMode } from '../../../../src/entities/leaderboard.js'
+import LeaderboardEntryFactory from '../../../fixtures/LeaderboardEntryFactory.js'
+import LeaderboardFactory from '../../../fixtures/LeaderboardFactory.js'
+import PlayerFactory from '../../../fixtures/PlayerFactory.js'
+import createOrganisationAndGame from '../../../utils/createOrganisationAndGame.js'
+import createUserAndToken from '../../../utils/createUserAndToken.js'
 
 describe('Leaderboard - update', () => {
   beforeEach(() => {

@@ -1,6 +1,6 @@
 import { EntityManager } from '@mikro-orm/mysql'
-import Player from '../../entities/player'
-import PlayerAuthActivity, { PlayerAuthActivityType } from '../../entities/player-auth-activity'
+import PlayerAuthActivity, { PlayerAuthActivityType } from '../../entities/player-auth-activity.js'
+import Player from '../../entities/player.js'
 
 export function buildPlayerAuthActivity({
   em,

@@ -1,12 +1,12 @@
-import type Redis from 'ioredis'
+import type { Redis } from 'ioredis'
 import { ClickHouseClient } from '@clickhouse/client'
 import { Entity, ManyToOne, PrimaryKey, Property, OneToMany, Index } from '@mikro-orm/decorators/es'
 import { Collection, raw, EntityManager } from '@mikro-orm/mysql'
 import { endOfDay, startOfDay } from 'date-fns'
-import { formatDateForClickHouse } from '../lib/clickhouse/formatDateTime'
-import Game from './game'
-import Player from './player'
-import PlayerGameStat from './player-game-stat'
+import { formatDateForClickHouse } from '../lib/clickhouse/formatDateTime.js'
+import Game from './game.js'
+import PlayerGameStat from './player-game-stat.js'
+import Player from './player.js'
 
 type GlobalValueMetrics = {
   minValue: number

@@ -1,15 +1,15 @@
 import { EntityManager } from '@mikro-orm/mysql'
 import { captureException } from '@sentry/node'
 import querystring from 'qs'
-import Integration from '../../../entities/integration'
-import Leaderboard, { LeaderboardSortMode } from '../../../entities/leaderboard'
-import LeaderboardEntry from '../../../entities/leaderboard-entry'
-import Player from '../../../entities/player'
-import PlayerAlias, { PlayerAliasService } from '../../../entities/player-alias'
-import { SteamworksLeaderboardEntry } from '../../../entities/steamworks-leaderboard-entry'
-import SteamworksLeaderboardMapping from '../../../entities/steamworks-leaderboard-mapping'
-import { getResultCacheOptions } from '../../perf/getResultCacheOptions'
-import { streamByCursor } from '../../perf/streamByCursor'
+import Integration from '../../../entities/integration.js'
+import LeaderboardEntry from '../../../entities/leaderboard-entry.js'
+import Leaderboard, { LeaderboardSortMode } from '../../../entities/leaderboard.js'
+import PlayerAlias, { PlayerAliasService } from '../../../entities/player-alias.js'
+import Player from '../../../entities/player.js'
+import { SteamworksLeaderboardEntry } from '../../../entities/steamworks-leaderboard-entry.js'
+import SteamworksLeaderboardMapping from '../../../entities/steamworks-leaderboard-mapping.js'
+import { getResultCacheOptions } from '../../perf/getResultCacheOptions.js'
+import { streamByCursor } from '../../perf/streamByCursor.js'
 import {
   FindOrCreateLeaderboardResponse,
   GetLeaderboardEntriesResponse,
@@ -18,7 +18,7 @@ import {
   GetLeaderboardsForGameResponseLeaderboard,
   SteamworksClient,
   SteamworksNetworkError,
-} from '../clients/steamworks-client'
+} from '../clients/steamworks-client.js'
 
 type CombinedLeaderboards = [
   Leaderboard,

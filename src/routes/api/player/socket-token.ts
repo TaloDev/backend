@@ -1,9 +1,9 @@
-import { APIKeyScope } from '../../../entities/api-key'
-import { apiRoute, withMiddleware } from '../../../lib/routing/router'
-import { playerAliasHeaderSchema } from '../../../lib/validation/playerAliasHeaderSchema'
-import { loadAlias } from '../../../middleware/player-alias-middleware'
-import { requireScopes } from '../../../middleware/policy-middleware'
-import { socketTokenDocs } from './docs'
+import { APIKeyScope } from '../../../entities/api-key.js'
+import { apiRoute, withMiddleware } from '../../../lib/routing/router.js'
+import { playerAliasHeaderSchema } from '../../../lib/validation/playerAliasHeaderSchema.js'
+import { loadAlias } from '../../../middleware/player-alias-middleware.js'
+import { requireScopes } from '../../../middleware/policy-middleware.js'
+import { socketTokenDocs } from './docs.js'
 
 export const socketTokenRoute = apiRoute({
   method: 'post',

@@ -1,12 +1,12 @@
-import { APIKeyScope } from '../../../entities/api-key'
-import { PlayerAuthActivityType } from '../../../entities/player-auth-activity'
-import { apiRoute, withMiddleware } from '../../../lib/routing/router'
-import { playerAliasHeaderSchema } from '../../../lib/validation/playerAliasHeaderSchema'
-import { playerHeaderSchema } from '../../../lib/validation/playerHeaderSchema'
-import { sessionHeaderSchema } from '../../../lib/validation/sessionHeaderSchema'
-import { requireScopes } from '../../../middleware/policy-middleware'
-import { createPlayerAuthActivity, loadAliasWithAuth } from './common'
-import { logoutDocs } from './docs'
+import { APIKeyScope } from '../../../entities/api-key.js'
+import { PlayerAuthActivityType } from '../../../entities/player-auth-activity.js'
+import { apiRoute, withMiddleware } from '../../../lib/routing/router.js'
+import { playerAliasHeaderSchema } from '../../../lib/validation/playerAliasHeaderSchema.js'
+import { playerHeaderSchema } from '../../../lib/validation/playerHeaderSchema.js'
+import { sessionHeaderSchema } from '../../../lib/validation/sessionHeaderSchema.js'
+import { requireScopes } from '../../../middleware/policy-middleware.js'
+import { createPlayerAuthActivity, loadAliasWithAuth } from './common.js'
+import { logoutDocs } from './docs.js'
 
 export const logoutRoute = apiRoute({
   method: 'post',

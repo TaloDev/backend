@@ -3,11 +3,11 @@ import request from 'supertest'
 import PlayerGroupRule, {
   PlayerGroupRuleCastType,
   PlayerGroupRuleName,
-} from '../../../src/entities/player-group-rule'
-import PlayerProp from '../../../src/entities/player-prop'
-import PlayerFactory from '../../fixtures/PlayerFactory'
-import createOrganisationAndGame from '../../utils/createOrganisationAndGame'
-import createUserAndToken from '../../utils/createUserAndToken'
+} from '../../../src/entities/player-group-rule.js'
+import PlayerProp from '../../../src/entities/player-prop.js'
+import PlayerFactory from '../../fixtures/PlayerFactory.js'
+import createOrganisationAndGame from '../../utils/createOrganisationAndGame.js'
+import createUserAndToken from '../../utils/createUserAndToken.js'
 
 describe('PlayerGroupRule casting', () => {
   it('should correctly evaluate an EQUALS rule with fields casted to CHAR', async () => {

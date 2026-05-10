@@ -1,10 +1,10 @@
 import request from 'supertest'
-import GameActivity, { GameActivityType } from '../../../../src/entities/game-activity'
-import { UserType } from '../../../../src/entities/user'
-import GameChannelFactory from '../../../fixtures/GameChannelFactory'
-import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
-import createUserAndToken from '../../../utils/createUserAndToken'
-import userPermissionProvider from '../../../utils/userPermissionProvider'
+import GameActivity, { GameActivityType } from '../../../../src/entities/game-activity.js'
+import { UserType } from '../../../../src/entities/user.js'
+import GameChannelFactory from '../../../fixtures/GameChannelFactory.js'
+import createOrganisationAndGame from '../../../utils/createOrganisationAndGame.js'
+import createUserAndToken from '../../../utils/createUserAndToken.js'
+import userPermissionProvider from '../../../utils/userPermissionProvider.js'
 
 describe('Game channel - delete', () => {
   it.each(userPermissionProvider([UserType.ADMIN], 204))(

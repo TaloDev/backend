@@ -1,13 +1,13 @@
 import jwt from 'jsonwebtoken'
-import { APIKeyScope } from '../../../entities/api-key'
-import PlayerAlias, { PlayerAliasService } from '../../../entities/player-alias'
-import { PlayerAuthActivityType } from '../../../entities/player-auth-activity'
-import { verify } from '../../../lib/auth/jwt'
-import { throwPlayerAuthError } from '../../../lib/errors/throwPlayerAuthError'
-import { apiRoute, withMiddleware } from '../../../lib/routing/router'
-import { requireScopes } from '../../../middleware/policy-middleware'
-import { createPlayerAuthActivity } from './common'
-import { refreshDocs } from './docs'
+import { APIKeyScope } from '../../../entities/api-key.js'
+import PlayerAlias, { PlayerAliasService } from '../../../entities/player-alias.js'
+import { PlayerAuthActivityType } from '../../../entities/player-auth-activity.js'
+import { verify } from '../../../lib/auth/jwt.js'
+import { throwPlayerAuthError } from '../../../lib/errors/throwPlayerAuthError.js'
+import { apiRoute, withMiddleware } from '../../../lib/routing/router.js'
+import { requireScopes } from '../../../middleware/policy-middleware.js'
+import { createPlayerAuthActivity } from './common.js'
+import { refreshDocs } from './docs.js'
 
 export const refreshRoute = apiRoute({
   method: 'post',

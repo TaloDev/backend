@@ -1,7 +1,7 @@
-import GameSave from '../../../entities/game-save'
-import { protectedRoute, withMiddleware } from '../../../lib/routing/router'
-import { loadGame } from '../../../middleware/game-middleware'
-import { loadPlayer } from './common'
+import GameSave from '../../../entities/game-save.js'
+import { protectedRoute, withMiddleware } from '../../../lib/routing/router.js'
+import { loadGame } from '../../../middleware/game-middleware.js'
+import { loadPlayer } from './common.js'
 
 export const savesRoute = protectedRoute({
   method: 'get',

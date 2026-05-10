@@ -1,10 +1,10 @@
 import { endOfDay } from 'date-fns'
 import { z } from 'zod'
-import { formatDateForClickHouse } from '../../../lib/clickhouse/formatDateTime'
-import { protectedRoute, withMiddleware } from '../../../lib/routing/router'
-import { dateRangeSchema } from '../../../lib/validation/dateRangeSchema'
-import { loadGame } from '../../../middleware/game-middleware'
-import { EventData, fillDateGaps } from './common'
+import { formatDateForClickHouse } from '../../../lib/clickhouse/formatDateTime.js'
+import { protectedRoute, withMiddleware } from '../../../lib/routing/router.js'
+import { dateRangeSchema } from '../../../lib/validation/dateRangeSchema.js'
+import { loadGame } from '../../../middleware/game-middleware.js'
+import { EventData, fillDateGaps } from './common.js'
 
 type AggregatedClickHouseEventProps = {
   prop_key: string

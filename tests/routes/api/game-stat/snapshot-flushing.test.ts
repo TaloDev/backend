@@ -1,14 +1,14 @@
-import { APIKeyScope } from '../../../../src/entities/api-key'
-import Game from '../../../../src/entities/game'
-import GameStat from '../../../../src/entities/game-stat'
+import { APIKeyScope } from '../../../../src/entities/api-key.js'
+import GameStat from '../../../../src/entities/game-stat.js'
+import Game from '../../../../src/entities/game.js'
 import PlayerGameStatSnapshot, {
   ClickHousePlayerGameStatSnapshot,
-} from '../../../../src/entities/player-game-stat-snapshot'
-import { FlushStatSnapshotsQueueHandler } from '../../../../src/lib/queues/game-metrics/flush-stat-snapshots-queue-handler'
-import GameStatFactory from '../../../fixtures/GameStatFactory'
-import PlayerFactory from '../../../fixtures/PlayerFactory'
-import PlayerGameStatFactory from '../../../fixtures/PlayerGameStatFactory'
-import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
+} from '../../../../src/entities/player-game-stat-snapshot.js'
+import { FlushStatSnapshotsQueueHandler } from '../../../../src/lib/queues/game-metrics/flush-stat-snapshots-queue-handler.js'
+import GameStatFactory from '../../../fixtures/GameStatFactory.js'
+import PlayerFactory from '../../../fixtures/PlayerFactory.js'
+import PlayerGameStatFactory from '../../../fixtures/PlayerGameStatFactory.js'
+import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken.js'
 
 describe('Game stat API - snapshot flushing', () => {
   const createStat = async (game: Game) => {

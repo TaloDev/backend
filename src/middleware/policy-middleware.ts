@@ -1,10 +1,10 @@
 import type Koa from 'koa'
-import { APIKeyScope } from '../entities/api-key'
-import { UserType } from '../entities/user'
-import { APIRouteContext, ProtectedRouteContext } from '../lib/routing/context'
-import { Middleware } from '../lib/routing/router'
-import { APIRouteState, ProtectedRouteState } from '../lib/routing/state'
-import checkScope from '../policies/checkScope'
+import { APIKeyScope } from '../entities/api-key.js'
+import { UserType } from '../entities/user.js'
+import { APIRouteContext, ProtectedRouteContext } from '../lib/routing/context.js'
+import { Middleware } from '../lib/routing/router.js'
+import { APIRouteState, ProtectedRouteState } from '../lib/routing/state.js'
+import checkScope from '../policies/checkScope.js'
 
 export type RequireScopesMiddleware = Middleware<APIRouteState> & {
   readonly scopes: APIKeyScope[]

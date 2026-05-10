@@ -1,8 +1,8 @@
 import { EntityManager, FilterQuery } from '@mikro-orm/mysql'
-import Game from '../../../entities/game'
-import Leaderboard from '../../../entities/leaderboard'
-import { protectedRoute, withMiddleware } from '../../../lib/routing/router'
-import { loadGame } from '../../../middleware/game-middleware'
+import Game from '../../../entities/game.js'
+import Leaderboard from '../../../entities/leaderboard.js'
+import { protectedRoute, withMiddleware } from '../../../lib/routing/router.js'
+import { loadGame } from '../../../middleware/game-middleware.js'
 
 type ListLeaderboardsParams = {
   em: EntityManager

@@ -1,9 +1,9 @@
 import type { ClickHouseClient } from '@clickhouse/client'
 import type { EntityManager } from '@mikro-orm/mysql'
-import type Redis from 'ioredis'
+import type { Redis } from 'ioredis'
 import type Koa from 'koa'
-import type Socket from '../../socket'
-import type { APIRouteState, ProtectedRouteState, PublicRouteState, RouteState } from './state'
+import type Socket from '../../socket/index.js'
+import type { APIRouteState, ProtectedRouteState, PublicRouteState, RouteState } from './state.js'
 
 type AppContext = {
   em: EntityManager

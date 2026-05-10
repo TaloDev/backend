@@ -1,20 +1,20 @@
 import bcrypt from 'bcrypt'
-import { APIKeyScope } from '../../../entities/api-key'
-import Player from '../../../entities/player'
-import { PlayerAliasService } from '../../../entities/player-alias'
-import PlayerAuth from '../../../entities/player-auth'
-import { PlayerAuthActivityType } from '../../../entities/player-auth-activity'
-import { PricingPlanLimitError } from '../../../lib/billing/checkPricingPlanPlayerLimit'
-import { throwPlayerAuthError } from '../../../lib/errors/throwPlayerAuthError'
-import emailRegex from '../../../lib/lang/emailRegex'
+import { APIKeyScope } from '../../../entities/api-key.js'
+import { PlayerAliasService } from '../../../entities/player-alias.js'
+import { PlayerAuthActivityType } from '../../../entities/player-auth-activity.js'
+import PlayerAuth from '../../../entities/player-auth.js'
+import Player from '../../../entities/player.js'
+import { PricingPlanLimitError } from '../../../lib/billing/checkPricingPlanPlayerLimit.js'
+import { throwPlayerAuthError } from '../../../lib/errors/throwPlayerAuthError.js'
+import emailRegex from '../../../lib/lang/emailRegex.js'
 import {
   createPlayerFromIdentifyRequest,
   PlayerCreationError,
-} from '../../../lib/players/createPlayer'
-import { apiRoute, withMiddleware } from '../../../lib/routing/router'
-import { requireScopes } from '../../../middleware/policy-middleware'
-import { createPlayerAuthActivity, isEmailTakenForGame } from './common'
-import { registerDocs } from './docs'
+} from '../../../lib/players/createPlayer.js'
+import { apiRoute, withMiddleware } from '../../../lib/routing/router.js'
+import { requireScopes } from '../../../middleware/policy-middleware.js'
+import { createPlayerAuthActivity, isEmailTakenForGame } from './common.js'
+import { registerDocs } from './docs.js'
 
 export const registerRoute = apiRoute({
   method: 'post',

@@ -1,6 +1,6 @@
 import { EntityManager } from '@mikro-orm/mysql'
-import APIKey from '../../entities/api-key'
-import PlayerAlias from '../../entities/player-alias'
+import APIKey from '../../entities/api-key.js'
+import PlayerAlias from '../../entities/player-alias.js'
 
 export async function findAliasFromIdentifyRequest({
   em,

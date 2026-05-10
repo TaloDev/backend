@@ -1,8 +1,8 @@
 import request from 'supertest'
-import Leaderboard from '../../../../src/entities/leaderboard'
-import LeaderboardFactory from '../../../fixtures/LeaderboardFactory'
-import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
-import createUserAndToken from '../../../utils/createUserAndToken'
+import Leaderboard from '../../../../src/entities/leaderboard.js'
+import LeaderboardFactory from '../../../fixtures/LeaderboardFactory.js'
+import createOrganisationAndGame from '../../../utils/createOrganisationAndGame.js'
+import createUserAndToken from '../../../utils/createUserAndToken.js'
 
 describe('Leaderboard - list', () => {
   it('should return a list of leaderboards', async () => {

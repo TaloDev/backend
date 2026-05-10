@@ -1,7 +1,7 @@
 import { Entity, Enum, ManyToOne, PrimaryKey, Property } from '@mikro-orm/decorators/es'
 import assert from 'node:assert'
-import Player from './player'
-import { PlayerAliasService } from './player-alias'
+import { PlayerAliasService } from './player-alias.js'
+import Player from './player.js'
 
 export enum PlayerAuthActivityType {
   REGISTERED,

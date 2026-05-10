@@ -1,6 +1,6 @@
 import { Entity, Index, ManyToOne, PrimaryKey, Property } from '@mikro-orm/decorators/es'
-import Player from './player'
-import { MAX_KEY_LENGTH, MAX_VALUE_LENGTH } from './prop'
+import Player from './player.js'
+import { MAX_KEY_LENGTH, MAX_VALUE_LENGTH } from './prop.js'
 
 const valueIndexName = 'idx_playerprop_key_value'
 const valueIndexExpr = `alter table \`player_prop\` add index \`${valueIndexName}\`(\`key\`, \`value\`)`

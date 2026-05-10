@@ -1,9 +1,9 @@
 import { sub, format } from 'date-fns'
 import request from 'supertest'
 import { v4 } from 'uuid'
-import PlayerFactory from '../../../fixtures/PlayerFactory'
-import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
-import createUserAndToken from '../../../utils/createUserAndToken'
+import PlayerFactory from '../../../fixtures/PlayerFactory.js'
+import createOrganisationAndGame from '../../../utils/createOrganisationAndGame.js'
+import createUserAndToken from '../../../utils/createUserAndToken.js'
 
 describe('Headline - total sessions', () => {
   const startDate = format(sub(new Date(), { days: 7 }), 'yyyy-MM-dd')

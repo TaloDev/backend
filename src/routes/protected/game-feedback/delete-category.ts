@@ -1,10 +1,10 @@
-import { GameActivityType } from '../../../entities/game-activity'
-import { UserType } from '../../../entities/user'
-import createGameActivity from '../../../lib/logging/createGameActivity'
-import { protectedRoute, withMiddleware } from '../../../lib/routing/router'
-import { loadGame } from '../../../middleware/game-middleware'
-import { userTypeGate } from '../../../middleware/policy-middleware'
-import { loadFeedbackCategory } from './common'
+import { GameActivityType } from '../../../entities/game-activity.js'
+import { UserType } from '../../../entities/user.js'
+import createGameActivity from '../../../lib/logging/createGameActivity.js'
+import { protectedRoute, withMiddleware } from '../../../lib/routing/router.js'
+import { loadGame } from '../../../middleware/game-middleware.js'
+import { userTypeGate } from '../../../middleware/policy-middleware.js'
+import { loadFeedbackCategory } from './common.js'
 
 export const deleteCategoryRoute = protectedRoute({
   method: 'delete',

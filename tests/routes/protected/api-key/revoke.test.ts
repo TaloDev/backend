@@ -1,13 +1,13 @@
 import request from 'supertest'
-import APIKey from '../../../../src/entities/api-key'
-import GameActivity, { GameActivityType } from '../../../../src/entities/game-activity'
-import { UserType } from '../../../../src/entities/user'
-import { createSocketTicket } from '../../../../src/lib/sockets/createSocketTicket'
-import UserFactory from '../../../fixtures/UserFactory'
-import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
-import createTestSocket from '../../../utils/createTestSocket'
-import createUserAndToken from '../../../utils/createUserAndToken'
-import userPermissionProvider from '../../../utils/userPermissionProvider'
+import APIKey from '../../../../src/entities/api-key.js'
+import GameActivity, { GameActivityType } from '../../../../src/entities/game-activity.js'
+import { UserType } from '../../../../src/entities/user.js'
+import { createSocketTicket } from '../../../../src/lib/sockets/createSocketTicket.js'
+import UserFactory from '../../../fixtures/UserFactory.js'
+import createOrganisationAndGame from '../../../utils/createOrganisationAndGame.js'
+import createTestSocket from '../../../utils/createTestSocket.js'
+import createUserAndToken from '../../../utils/createUserAndToken.js'
+import userPermissionProvider from '../../../utils/userPermissionProvider.js'
 
 describe('API key - revoke', () => {
   it.each(userPermissionProvider([UserType.ADMIN], 204))(

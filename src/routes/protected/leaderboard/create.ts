@@ -1,18 +1,18 @@
 import { EntityManager } from '@mikro-orm/mysql'
-import Game from '../../../entities/game'
-import { GameActivityType } from '../../../entities/game-activity'
+import { GameActivityType } from '../../../entities/game-activity.js'
+import Game from '../../../entities/game.js'
 import Leaderboard, {
   LeaderboardSortMode,
   LeaderboardRefreshInterval,
-} from '../../../entities/leaderboard'
-import { UserType } from '../../../entities/user'
-import User from '../../../entities/user'
-import buildErrorResponse from '../../../lib/errors/buildErrorResponse'
-import triggerIntegrations from '../../../lib/integrations/triggerIntegrations'
-import createGameActivity from '../../../lib/logging/createGameActivity'
-import { protectedRoute, withMiddleware } from '../../../lib/routing/router'
-import { loadGame } from '../../../middleware/game-middleware'
-import { userTypeGate } from '../../../middleware/policy-middleware'
+} from '../../../entities/leaderboard.js'
+import { UserType } from '../../../entities/user.js'
+import User from '../../../entities/user.js'
+import buildErrorResponse from '../../../lib/errors/buildErrorResponse.js'
+import triggerIntegrations from '../../../lib/integrations/triggerIntegrations.js'
+import createGameActivity from '../../../lib/logging/createGameActivity.js'
+import { protectedRoute, withMiddleware } from '../../../lib/routing/router.js'
+import { loadGame } from '../../../middleware/game-middleware.js'
+import { userTypeGate } from '../../../middleware/policy-middleware.js'
 
 type CreateLeaderboardParams = {
   em: EntityManager

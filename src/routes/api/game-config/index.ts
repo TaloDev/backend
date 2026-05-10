@@ -1,9 +1,9 @@
-import { APIKeyScope } from '../../../entities/api-key'
-import Game from '../../../entities/game'
-import { RouteDocs } from '../../../lib/docs/docs-registry'
-import { getResultCacheOptions } from '../../../lib/perf/getResultCacheOptions'
-import { apiRouter, withMiddleware } from '../../../lib/routing/router'
-import { requireScopes } from '../../../middleware/policy-middleware'
+import { APIKeyScope } from '../../../entities/api-key.js'
+import Game from '../../../entities/game.js'
+import { RouteDocs } from '../../../lib/docs/docs-registry.js'
+import { getResultCacheOptions } from '../../../lib/perf/getResultCacheOptions.js'
+import { apiRouter, withMiddleware } from '../../../lib/routing/router.js'
+import { requireScopes } from '../../../middleware/policy-middleware.js'
 
 export function gameConfigAPIRouter() {
   return apiRouter(

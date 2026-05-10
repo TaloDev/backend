@@ -1,4 +1,4 @@
-import { getTestContext } from './testContext'
+import { getTestContext } from './testContext.js'
 
 beforeAll(async () => {
   vi.mock('nodemailer')

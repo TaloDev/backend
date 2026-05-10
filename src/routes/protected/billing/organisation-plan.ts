@@ -1,5 +1,5 @@
-import { protectedRoute, withMiddleware } from '../../../lib/routing/router'
-import { ownerGate } from '../../../middleware/policy-middleware'
+import { protectedRoute, withMiddleware } from '../../../lib/routing/router.js'
+import { ownerGate } from '../../../middleware/policy-middleware.js'
 
 export const organisationPlanRoute = protectedRoute({
   method: 'get',

@@ -1,13 +1,13 @@
 import axios from 'axios'
 import AxiosMockAdapter from 'axios-mock-adapter'
 import assert from 'node:assert'
-import { IntegrationType } from '../../../src/entities/integration'
+import { IntegrationType } from '../../../src/entities/integration.js'
 import {
   clearCertCache,
   GameCenterClient,
-} from '../../../src/lib/integrations/clients/game-center-client'
-import IntegrationFactory from '../../fixtures/IntegrationFactory'
-import createOrganisationAndGame from '../../utils/createOrganisationAndGame'
+} from '../../../src/lib/integrations/clients/game-center-client.js'
+import IntegrationFactory from '../../fixtures/IntegrationFactory.js'
+import createOrganisationAndGame from '../../utils/createOrganisationAndGame.js'
 
 const publicKeyUrl = 'https://static.gc.apple.com/public-key/gc-prod-6.cer'
 

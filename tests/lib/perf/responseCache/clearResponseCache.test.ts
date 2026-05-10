@@ -1,10 +1,10 @@
-import Redis from 'ioredis'
-import * as clearCachePattern from '../../../../src/lib/perf/clearCachePattern'
+import { Redis } from 'ioredis'
+import * as clearCachePattern from '../../../../src/lib/perf/clearCachePattern.js'
 import {
   clearResponseCache,
   getResponseCacheRedisConnection,
   prefix,
-} from '../../../../src/lib/perf/responseCache'
+} from '../../../../src/lib/perf/responseCache.js'
 
 describe('clearResponseCache', () => {
   const responseCacheRedis = getResponseCacheRedisConnection()

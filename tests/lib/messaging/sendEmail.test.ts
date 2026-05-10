@@ -1,9 +1,9 @@
 import fs from 'fs/promises'
 import nodemailer from 'nodemailer'
-import { mockTransport } from '../../../__mocks__/nodemailer'
-import ConfirmEmail from '../../../src/emails/confirm-email-mail'
-import sendEmail from '../../../src/lib/messaging/sendEmail'
-import UserFactory from '../../fixtures/UserFactory'
+import { mockTransport } from '../../../__mocks__/nodemailer.js'
+import ConfirmEmail from '../../../src/emails/confirm-email-mail.js'
+import sendEmail from '../../../src/lib/messaging/sendEmail.js'
+import UserFactory from '../../fixtures/UserFactory.js'
 
 describe('Send email', () => {
   const originalDriver = process.env.EMAIL_DRIVER

@@ -1,5 +1,5 @@
-import createClickHouseClient from '../src/lib/clickhouse/createClient'
-import { runClickHouseMigrations } from '../src/migrations/clickhouse'
+import createClickHouseClient from '../src/lib/clickhouse/createClient.js'
+import { runClickHouseMigrations } from '../src/migrations/clickhouse/index.js'
 
 async function run() {
   const clickhouse = createClickHouseClient()

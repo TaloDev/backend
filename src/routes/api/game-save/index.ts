@@ -1,8 +1,8 @@
-import { apiRouter } from '../../../lib/routing/router'
-import { deleteRoute } from './delete'
-import { listRoute } from './list'
-import { patchRoute } from './patch'
-import { postRoute } from './post'
+import { apiRouter } from '../../../lib/routing/router.js'
+import { deleteRoute } from './delete.js'
+import { listRoute } from './list.js'
+import { patchRoute } from './patch.js'
+import { postRoute } from './post.js'
 
 export function gameSaveAPIRouter() {
   return apiRouter(

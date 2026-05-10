@@ -1,9 +1,9 @@
 import { QueryOrder } from '@mikro-orm/mysql'
-import GameFeedback from '../../../entities/game-feedback'
-import { DEFAULT_PAGE_SIZE } from '../../../lib/pagination/itemsPerPage'
-import { protectedRoute, withMiddleware } from '../../../lib/routing/router'
-import { pageSchema } from '../../../lib/validation/pageSchema'
-import { loadGame } from '../../../middleware/game-middleware'
+import GameFeedback from '../../../entities/game-feedback.js'
+import { DEFAULT_PAGE_SIZE } from '../../../lib/pagination/itemsPerPage.js'
+import { protectedRoute, withMiddleware } from '../../../lib/routing/router.js'
+import { pageSchema } from '../../../lib/validation/pageSchema.js'
+import { loadGame } from '../../../middleware/game-middleware.js'
 
 const itemsPerPage = DEFAULT_PAGE_SIZE
 

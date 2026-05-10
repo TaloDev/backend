@@ -1,7 +1,7 @@
 import { Queue } from 'bullmq'
-import { createClearResponseCacheQueue } from '../lib/perf/responseCacheQueue'
-import { createDeleteClickHousePlayerDataQueue } from '../lib/queues/createDeleteClickHousePlayerDataQueue'
-import { createEmailQueue } from '../lib/queues/createEmailQueue'
+import { createClearResponseCacheQueue } from '../lib/perf/responseCacheQueue.js'
+import { createDeleteClickHousePlayerDataQueue } from '../lib/queues/createDeleteClickHousePlayerDataQueue.js'
+import { createEmailQueue } from '../lib/queues/createEmailQueue.js'
 
 const queueFactories = {
   email: createEmailQueue,

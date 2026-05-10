@@ -1,7 +1,7 @@
 import * as Sentry from '@sentry/node'
 import { Job } from 'bullmq'
-import { getMikroORM } from '../../config/mikro-orm.config'
-import FailedJob from '../../entities/failed-job'
+import { getMikroORM } from '../../config/mikro-orm.config.js'
+import FailedJob from '../../entities/failed-job.js'
 
 async function handleJobFailure<T>(job: Job<T>, err: Error): Promise<void> {
   const orm = await getMikroORM()

@@ -1,7 +1,7 @@
 import { Entity, Enum, ManyToOne, PrimaryKey, Property } from '@mikro-orm/decorators/es'
-import { startCase } from 'lodash'
-import Game from './game'
-import User from './user'
+import { startCase } from 'lodash-es'
+import Game from './game.js'
+import User from './user.js'
 
 export enum GameActivityType {
   PLAYER_PROPS_UPDATED,

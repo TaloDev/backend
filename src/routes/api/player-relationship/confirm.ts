@@ -1,14 +1,14 @@
-import { APIKeyScope } from '../../../entities/api-key'
+import { APIKeyScope } from '../../../entities/api-key.js'
 import PlayerAliasSubscription, {
   RelationshipType,
-} from '../../../entities/player-alias-subscription'
-import { apiRoute, withMiddleware } from '../../../lib/routing/router'
-import { numericStringSchema } from '../../../lib/validation/numericStringSchema'
-import { playerAliasHeaderSchema } from '../../../lib/validation/playerAliasHeaderSchema'
-import { loadAlias } from '../../../middleware/player-alias-middleware'
-import { requireScopes } from '../../../middleware/policy-middleware'
-import { sendMessages } from '../../../socket/messages/socketMessage'
-import { confirmDocs } from './docs'
+} from '../../../entities/player-alias-subscription.js'
+import { apiRoute, withMiddleware } from '../../../lib/routing/router.js'
+import { numericStringSchema } from '../../../lib/validation/numericStringSchema.js'
+import { playerAliasHeaderSchema } from '../../../lib/validation/playerAliasHeaderSchema.js'
+import { loadAlias } from '../../../middleware/player-alias-middleware.js'
+import { requireScopes } from '../../../middleware/policy-middleware.js'
+import { sendMessages } from '../../../socket/messages/socketMessage.js'
+import { confirmDocs } from './docs.js'
 
 export const confirmRoute = apiRoute({
   method: 'put',

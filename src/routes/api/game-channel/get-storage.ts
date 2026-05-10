@@ -1,13 +1,13 @@
-import Redis from 'ioredis'
-import { APIKeyScope } from '../../../entities/api-key'
-import GameChannelStorageProp from '../../../entities/game-channel-storage-prop'
-import { apiRoute, withMiddleware } from '../../../lib/routing/router'
-import { numericStringSchema } from '../../../lib/validation/numericStringSchema'
-import { playerAliasHeaderSchema } from '../../../lib/validation/playerAliasHeaderSchema'
-import { loadAlias } from '../../../middleware/player-alias-middleware'
-import { requireScopes } from '../../../middleware/policy-middleware'
-import { loadChannel } from './common'
-import { getStorageDocs } from './docs'
+import { Redis } from 'ioredis'
+import { APIKeyScope } from '../../../entities/api-key.js'
+import GameChannelStorageProp from '../../../entities/game-channel-storage-prop.js'
+import { apiRoute, withMiddleware } from '../../../lib/routing/router.js'
+import { numericStringSchema } from '../../../lib/validation/numericStringSchema.js'
+import { playerAliasHeaderSchema } from '../../../lib/validation/playerAliasHeaderSchema.js'
+import { loadAlias } from '../../../middleware/player-alias-middleware.js'
+import { requireScopes } from '../../../middleware/policy-middleware.js'
+import { loadChannel } from './common.js'
+import { getStorageDocs } from './docs.js'
 
 export const getStorageRoute = apiRoute({
   method: 'get',

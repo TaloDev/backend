@@ -1,8 +1,8 @@
 import request from 'supertest'
-import UserRecoveryCode from '../../../../src/entities/user-recovery-code'
-import UserTwoFactorAuth from '../../../../src/entities/user-two-factor-auth'
-import generateRecoveryCodes from '../../../../src/lib/auth/generateRecoveryCodes'
-import createUserAndToken from '../../../utils/createUserAndToken'
+import UserRecoveryCode from '../../../../src/entities/user-recovery-code.js'
+import UserTwoFactorAuth from '../../../../src/entities/user-two-factor-auth.js'
+import generateRecoveryCodes from '../../../../src/lib/auth/generateRecoveryCodes.js'
+import createUserAndToken from '../../../utils/createUserAndToken.js'
 
 describe('User - create recovery codes', () => {
   it('should let users create a new set of recovery codes', async () => {

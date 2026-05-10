@@ -1,6 +1,6 @@
 import { Migration } from '@mikro-orm/migrations'
-import LeaderboardEntry from '../entities/leaderboard-entry'
-import { streamByCursor } from '../lib/perf/streamByCursor'
+import LeaderboardEntry from '../entities/leaderboard-entry.js'
+import { streamByCursor } from '../lib/perf/streamByCursor.js'
 
 type LeaderboardEntryBatch = { id: number; propsDigest: string }
 const MAX_BATCH_SIZE = 100

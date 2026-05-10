@@ -1,10 +1,10 @@
-import { GameActivityType } from '../../../entities/game-activity'
-import { UserType } from '../../../entities/user'
-import triggerIntegrations from '../../../lib/integrations/triggerIntegrations'
-import createGameActivity from '../../../lib/logging/createGameActivity'
-import { protectedRoute, withMiddleware } from '../../../lib/routing/router'
-import { userTypeGate } from '../../../middleware/policy-middleware'
-import { loadStat, loadPlayerStat, clearStatIndexResponseCache } from './common'
+import { GameActivityType } from '../../../entities/game-activity.js'
+import { UserType } from '../../../entities/user.js'
+import triggerIntegrations from '../../../lib/integrations/triggerIntegrations.js'
+import createGameActivity from '../../../lib/logging/createGameActivity.js'
+import { protectedRoute, withMiddleware } from '../../../lib/routing/router.js'
+import { userTypeGate } from '../../../middleware/policy-middleware.js'
+import { loadStat, loadPlayerStat, clearStatIndexResponseCache } from './common.js'
 
 export const updatePlayerStatRoute = protectedRoute({
   method: 'patch',

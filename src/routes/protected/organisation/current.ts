@@ -1,9 +1,9 @@
-import Game from '../../../entities/game'
-import Invite from '../../../entities/invite'
-import Player from '../../../entities/player'
-import User, { UserType } from '../../../entities/user'
-import { protectedRoute, withMiddleware } from '../../../lib/routing/router'
-import { userTypeGate } from '../../../middleware/policy-middleware'
+import Game from '../../../entities/game.js'
+import Invite from '../../../entities/invite.js'
+import Player from '../../../entities/player.js'
+import User, { UserType } from '../../../entities/user.js'
+import { protectedRoute, withMiddleware } from '../../../lib/routing/router.js'
+import { userTypeGate } from '../../../middleware/policy-middleware.js'
 
 export const currentRoute = protectedRoute({
   method: 'get',

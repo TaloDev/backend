@@ -1,4 +1,4 @@
-import { publicRouter } from '../../../lib/routing/router'
+import { publicRouter } from '../../../lib/routing/router.js'
 
 export function documentationRouter() {
   return publicRouter('/public/docs', ({ route }) => {

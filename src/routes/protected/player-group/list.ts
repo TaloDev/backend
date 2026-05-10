@@ -1,6 +1,6 @@
-import PlayerGroup from '../../../entities/player-group'
-import { protectedRoute, withMiddleware } from '../../../lib/routing/router'
-import { loadGame } from '../../../middleware/game-middleware'
+import PlayerGroup from '../../../entities/player-group.js'
+import { protectedRoute, withMiddleware } from '../../../lib/routing/router.js'
+import { loadGame } from '../../../middleware/game-middleware.js'
 
 export const listRoute = protectedRoute({
   method: 'get',

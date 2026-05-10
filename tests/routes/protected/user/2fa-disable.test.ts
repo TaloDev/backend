@@ -1,8 +1,8 @@
 import request from 'supertest'
-import UserRecoveryCode from '../../../../src/entities/user-recovery-code'
-import UserTwoFactorAuth from '../../../../src/entities/user-two-factor-auth'
-import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
-import createUserAndToken from '../../../utils/createUserAndToken'
+import UserRecoveryCode from '../../../../src/entities/user-recovery-code.js'
+import UserTwoFactorAuth from '../../../../src/entities/user-two-factor-auth.js'
+import createOrganisationAndGame from '../../../utils/createOrganisationAndGame.js'
+import createUserAndToken from '../../../utils/createUserAndToken.js'
 
 describe('User - disable 2fa', () => {
   it('should let users disable 2fa', async () => {

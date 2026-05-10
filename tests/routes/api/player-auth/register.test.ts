@@ -2,15 +2,15 @@ import { randUserName } from '@ngneat/falso'
 import bcrypt from 'bcrypt'
 import request from 'supertest'
 import { vi } from 'vitest'
-import { APIKeyScope } from '../../../../src/entities/api-key'
-import Player from '../../../../src/entities/player'
-import PlayerAuth from '../../../../src/entities/player-auth'
+import { APIKeyScope } from '../../../../src/entities/api-key.js'
 import PlayerAuthActivity, {
   PlayerAuthActivityType,
-} from '../../../../src/entities/player-auth-activity'
-import PlayerAuthFactory from '../../../fixtures/PlayerAuthFactory'
-import PlayerFactory from '../../../fixtures/PlayerFactory'
-import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
+} from '../../../../src/entities/player-auth-activity.js'
+import PlayerAuth from '../../../../src/entities/player-auth.js'
+import Player from '../../../../src/entities/player.js'
+import PlayerAuthFactory from '../../../fixtures/PlayerAuthFactory.js'
+import PlayerFactory from '../../../fixtures/PlayerFactory.js'
+import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken.js'
 
 describe('Player auth API - register', () => {
   it('should register a player if the api key has the correct scopes', async () => {

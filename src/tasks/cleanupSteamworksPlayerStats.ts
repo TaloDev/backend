@@ -1,9 +1,9 @@
 import { EntityManager, NotFoundError } from '@mikro-orm/mysql'
 import { captureException } from '@sentry/node'
-import { getMikroORM } from '../config/mikro-orm.config'
-import Integration, { IntegrationType } from '../entities/integration'
-import { SteamworksPlayerStat } from '../entities/steamworks-player-stat'
-import { streamByCursor } from '../lib/perf/streamByCursor'
+import { getMikroORM } from '../config/mikro-orm.config.js'
+import Integration, { IntegrationType } from '../entities/integration.js'
+import { SteamworksPlayerStat } from '../entities/steamworks-player-stat.js'
+import { streamByCursor } from '../lib/perf/streamByCursor.js'
 
 export default async function cleanupSteamworksPlayerStats() {
   const startTime = performance.now()

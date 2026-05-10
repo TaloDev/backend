@@ -1,10 +1,10 @@
-import Redis from 'ioredis'
+import { Redis } from 'ioredis'
 import assert from 'node:assert'
 import {
   getResponseCacheRedisConnection,
   prefix,
   withResponseCache,
-} from '../../../../src/lib/perf/responseCache'
+} from '../../../../src/lib/perf/responseCache.js'
 
 describe('withResponseCache', () => {
   const responseCacheRedis = getResponseCacheRedisConnection()

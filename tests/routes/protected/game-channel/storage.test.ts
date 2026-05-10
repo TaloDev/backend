@@ -1,10 +1,10 @@
 import request from 'supertest'
-import GameChannelFactory from '../../../fixtures/GameChannelFactory'
-import GameChannelStoragePropFactory from '../../../fixtures/GameChannelStoragePropFactory'
-import PlayerAliasFactory from '../../../fixtures/PlayerAliasFactory'
-import PlayerFactory from '../../../fixtures/PlayerFactory'
-import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
-import createUserAndToken from '../../../utils/createUserAndToken'
+import GameChannelFactory from '../../../fixtures/GameChannelFactory.js'
+import GameChannelStoragePropFactory from '../../../fixtures/GameChannelStoragePropFactory.js'
+import PlayerAliasFactory from '../../../fixtures/PlayerAliasFactory.js'
+import PlayerFactory from '../../../fixtures/PlayerFactory.js'
+import createOrganisationAndGame from '../../../utils/createOrganisationAndGame.js'
+import createUserAndToken from '../../../utils/createUserAndToken.js'
 
 describe('Game channel - storage', () => {
   it('should return a list of storage props for a channel', async () => {

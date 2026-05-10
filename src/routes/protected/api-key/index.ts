@@ -1,9 +1,9 @@
-import { protectedRouter } from '../../../lib/routing/router'
-import { createRoute } from './create'
-import { listRoute } from './list'
-import { revokeRoute } from './revoke'
-import { scopesRoute } from './scopes'
-import { updateRoute } from './update'
+import { protectedRouter } from '../../../lib/routing/router.js'
+import { createRoute } from './create.js'
+import { listRoute } from './list.js'
+import { revokeRoute } from './revoke.js'
+import { scopesRoute } from './scopes.js'
+import { updateRoute } from './update.js'
 
 export function apiKeyRouter() {
   return protectedRouter('/games/:gameId/api-keys', ({ route }) => {

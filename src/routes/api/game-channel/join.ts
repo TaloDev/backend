@@ -1,12 +1,12 @@
-import { APIKeyScope } from '../../../entities/api-key'
-import GameChannel from '../../../entities/game-channel'
-import { apiRoute, withMiddleware } from '../../../lib/routing/router'
-import { numericStringSchema } from '../../../lib/validation/numericStringSchema'
-import { playerAliasHeaderSchema } from '../../../lib/validation/playerAliasHeaderSchema'
-import { loadAlias } from '../../../middleware/player-alias-middleware'
-import { requireScopes } from '../../../middleware/policy-middleware'
-import { loadChannel, joinChannel } from './common'
-import { joinDocs } from './docs'
+import { APIKeyScope } from '../../../entities/api-key.js'
+import GameChannel from '../../../entities/game-channel.js'
+import { apiRoute, withMiddleware } from '../../../lib/routing/router.js'
+import { numericStringSchema } from '../../../lib/validation/numericStringSchema.js'
+import { playerAliasHeaderSchema } from '../../../lib/validation/playerAliasHeaderSchema.js'
+import { loadAlias } from '../../../middleware/player-alias-middleware.js'
+import { requireScopes } from '../../../middleware/policy-middleware.js'
+import { loadChannel, joinChannel } from './common.js'
+import { joinDocs } from './docs.js'
 
 export const joinRoute = apiRoute({
   method: 'post',

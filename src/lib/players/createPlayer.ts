@@ -1,11 +1,11 @@
 import { EntityManager } from '@mikro-orm/mysql'
-import APIKey, { APIKeyScope } from '../../entities/api-key'
-import Game from '../../entities/game'
-import Player from '../../entities/player'
-import PlayerAlias from '../../entities/player-alias'
-import checkScope from '../../policies/checkScope'
-import checkPricingPlanPlayerLimit from '../billing/checkPricingPlanPlayerLimit'
-import { hardSanitiseProps } from '../props/sanitiseProps'
+import APIKey, { APIKeyScope } from '../../entities/api-key.js'
+import Game from '../../entities/game.js'
+import PlayerAlias from '../../entities/player-alias.js'
+import Player from '../../entities/player.js'
+import checkScope from '../../policies/checkScope.js'
+import checkPricingPlanPlayerLimit from '../billing/checkPricingPlanPlayerLimit.js'
+import { hardSanitiseProps } from '../props/sanitiseProps.js'
 
 export type CreatePlayerInput = {
   aliases?: { service: string; identifier: string }[]

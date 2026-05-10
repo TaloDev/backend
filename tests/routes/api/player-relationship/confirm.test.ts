@@ -1,13 +1,13 @@
 import request from 'supertest'
-import { APIKeyScope } from '../../../../src/entities/api-key'
-import PlayerAliasSubscription from '../../../../src/entities/player-alias-subscription'
-import PlayerAliasSubscriptionFactory from '../../../fixtures/PlayerAliasSubscriptionFactory'
-import PlayerFactory from '../../../fixtures/PlayerFactory'
-import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
+import { APIKeyScope } from '../../../../src/entities/api-key.js'
+import PlayerAliasSubscription from '../../../../src/entities/player-alias-subscription.js'
+import PlayerAliasSubscriptionFactory from '../../../fixtures/PlayerAliasSubscriptionFactory.js'
+import PlayerFactory from '../../../fixtures/PlayerFactory.js'
+import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken.js'
 import createSocketIdentifyMessage, {
   persistTestSocketTicket,
-} from '../../../utils/createSocketIdentifyMessage'
-import createTestSocket, { createTestClient } from '../../../utils/createTestSocket'
+} from '../../../utils/createSocketIdentifyMessage.js'
+import createTestSocket, { createTestClient } from '../../../utils/createTestSocket.js'
 
 describe('Player relationship API - confirm', () => {
   it('should confirm a pending subscription request', async () => {

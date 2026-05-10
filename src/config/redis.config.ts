@@ -1,4 +1,4 @@
-import Redis, { RedisOptions } from 'ioredis'
+import { Redis, RedisOptions } from 'ioredis'
 
 export const RESPONSE_CACHE_DB = 1
 

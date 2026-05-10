@@ -1,6 +1,6 @@
 import { EventArgs, EventSubscriber } from '@mikro-orm/mysql'
-import PlayerGameStat from '../entities/player-game-stat'
-import { deferClearResponseCache } from '../lib/perf/responseCacheQueue'
+import PlayerGameStat from '../entities/player-game-stat.js'
+import { deferClearResponseCache } from '../lib/perf/responseCacheQueue.js'
 
 export class PlayerGameStatSubscriber implements EventSubscriber {
   getSubscribedEntities() {

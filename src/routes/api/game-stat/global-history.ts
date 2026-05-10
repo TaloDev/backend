@@ -1,14 +1,14 @@
-import { APIKeyScope } from '../../../entities/api-key'
-import Player from '../../../entities/player'
+import { APIKeyScope } from '../../../entities/api-key.js'
 import PlayerGameStatSnapshot, {
   ClickHousePlayerGameStatSnapshot,
-} from '../../../entities/player-game-stat-snapshot'
-import { DEFAULT_PAGE_SIZE } from '../../../lib/pagination/itemsPerPage'
-import { apiRoute, withMiddleware } from '../../../lib/routing/router'
-import { pageSchema } from '../../../lib/validation/pageSchema'
-import { requireScopes } from '../../../middleware/policy-middleware'
-import { loadStat } from './common'
-import { globalHistoryDocs } from './docs'
+} from '../../../entities/player-game-stat-snapshot.js'
+import Player from '../../../entities/player.js'
+import { DEFAULT_PAGE_SIZE } from '../../../lib/pagination/itemsPerPage.js'
+import { apiRoute, withMiddleware } from '../../../lib/routing/router.js'
+import { pageSchema } from '../../../lib/validation/pageSchema.js'
+import { requireScopes } from '../../../middleware/policy-middleware.js'
+import { loadStat } from './common.js'
+import { globalHistoryDocs } from './docs.js'
 
 export const globalHistoryRoute = apiRoute({
   method: 'get',

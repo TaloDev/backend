@@ -1,7 +1,7 @@
 import { differenceInMinutes, sub } from 'date-fns'
 import request from 'supertest'
-import UserFactory from '../../../fixtures/UserFactory'
-import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
+import UserFactory from '../../../fixtures/UserFactory.js'
+import createOrganisationAndGame from '../../../utils/createOrganisationAndGame.js'
 
 describe('User public - login', () => {
   it('should let a user login', async () => {

@@ -9,10 +9,10 @@ import {
 } from '@mikro-orm/decorators/es'
 import { Collection, EntityManager } from '@mikro-orm/mysql'
 import Sqids from 'sqids'
-import GameSecret from './game-secret'
-import Organisation from './organisation'
-import Player from './player'
-import Prop from './prop'
+import GameSecret from './game-secret.js'
+import Organisation from './organisation.js'
+import Player from './player.js'
+import Prop from './prop.js'
 
 export const MAX_LIVE_CONFIG_VALUE_LENGTH = 4096
 

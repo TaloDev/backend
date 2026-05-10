@@ -1,9 +1,9 @@
 import { Factory } from 'hefty'
-import UserPinnedGroup from '../../src/entities/user-pinned-group'
-import GameFactory from './GameFactory'
-import OrganisationFactory from './OrganisationFactory'
-import PlayerGroupFactory from './PlayerGroupFactory'
-import UserFactory from './UserFactory'
+import UserPinnedGroup from '../../src/entities/user-pinned-group.js'
+import GameFactory from './GameFactory.js'
+import OrganisationFactory from './OrganisationFactory.js'
+import PlayerGroupFactory from './PlayerGroupFactory.js'
+import UserFactory from './UserFactory.js'
 
 export default class UserPinnedGroupFactory extends Factory<UserPinnedGroup> {
   constructor() {

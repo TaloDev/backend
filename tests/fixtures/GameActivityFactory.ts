@@ -1,8 +1,8 @@
 import { rand, randWord } from '@ngneat/falso'
 import { Factory } from 'hefty'
-import Game from '../../src/entities/game'
-import GameActivity, { GameActivityType } from '../../src/entities/game-activity'
-import User from '../../src/entities/user'
+import GameActivity, { GameActivityType } from '../../src/entities/game-activity.js'
+import Game from '../../src/entities/game.js'
+import User from '../../src/entities/user.js'
 
 export default class GameActivityFactory extends Factory<GameActivity> {
   private availableGames: Game[]

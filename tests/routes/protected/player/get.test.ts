@@ -1,9 +1,9 @@
 import { Collection } from '@mikro-orm/mysql'
 import request from 'supertest'
-import PlayerProp from '../../../../src/entities/player-prop'
-import PlayerFactory from '../../../fixtures/PlayerFactory'
-import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
-import createUserAndToken from '../../../utils/createUserAndToken'
+import PlayerProp from '../../../../src/entities/player-prop.js'
+import PlayerFactory from '../../../fixtures/PlayerFactory.js'
+import createOrganisationAndGame from '../../../utils/createOrganisationAndGame.js'
+import createUserAndToken from '../../../utils/createUserAndToken.js'
 
 describe('Player - get', () => {
   it('should return a player', async () => {

@@ -1,5 +1,5 @@
 import type { Context } from 'koa'
-import type { PlayerAuthErrorCode } from '../../entities/player-auth'
+import type { PlayerAuthErrorCode } from '../../entities/player-auth.js'
 
 export function throwPlayerAuthError({
   ctx,

@@ -1,8 +1,8 @@
 import { authenticator } from '@otplib/preset-default'
-import User from '../../../entities/user'
-import { buildTokenPair } from '../../../lib/auth/buildTokenPair'
-import { publicRoute } from '../../../lib/routing/router'
-import { setUserLastSeenAt } from '../../../lib/users/setUserLastSeenAt'
+import User from '../../../entities/user.js'
+import { buildTokenPair } from '../../../lib/auth/buildTokenPair.js'
+import { publicRoute } from '../../../lib/routing/router.js'
+import { setUserLastSeenAt } from '../../../lib/users/setUserLastSeenAt.js'
 
 export const verify2faRoute = publicRoute({
   method: 'post',

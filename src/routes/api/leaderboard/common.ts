@@ -1,7 +1,7 @@
 import { Next } from 'koa'
-import Leaderboard from '../../../entities/leaderboard'
-import { APIRouteContext } from '../../../lib/routing/context'
-import { PlayerAliasRouteState } from '../../../middleware/player-alias-middleware'
+import Leaderboard from '../../../entities/leaderboard.js'
+import { APIRouteContext } from '../../../lib/routing/context.js'
+import { PlayerAliasRouteState } from '../../../middleware/player-alias-middleware.js'
 
 export type LeaderboardRouteState = PlayerAliasRouteState & {
   leaderboard: Leaderboard

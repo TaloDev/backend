@@ -1,11 +1,11 @@
 import { createHash } from 'crypto'
 import { z } from 'zod'
-import PlayerGroup from '../../../entities/player-group'
-import buildErrorResponse from '../../../lib/errors/buildErrorResponse'
-import { withResponseCache } from '../../../lib/perf/responseCache'
-import { protectedRoute, withMiddleware } from '../../../lib/routing/router'
-import { loadGame } from '../../../middleware/game-middleware'
-import { buildRulesFromData, rulesAndModeSchema } from './common'
+import PlayerGroup from '../../../entities/player-group.js'
+import buildErrorResponse from '../../../lib/errors/buildErrorResponse.js'
+import { withResponseCache } from '../../../lib/perf/responseCache.js'
+import { protectedRoute, withMiddleware } from '../../../lib/routing/router.js'
+import { loadGame } from '../../../middleware/game-middleware.js'
+import { buildRulesFromData, rulesAndModeSchema } from './common.js'
 
 export const previewCountRoute = protectedRoute({
   method: 'get',

@@ -1,11 +1,11 @@
-import { GameActivityType } from '../../../entities/game-activity'
-import { UserType } from '../../../entities/user'
-import updateAllowedKeys from '../../../lib/entities/updateAllowedKeys'
-import createGameActivity from '../../../lib/logging/createGameActivity'
-import { protectedRoute, withMiddleware } from '../../../lib/routing/router'
-import { loadGame } from '../../../middleware/game-middleware'
-import { userTypeGate } from '../../../middleware/policy-middleware'
-import { loadFeedbackCategory } from './common'
+import { GameActivityType } from '../../../entities/game-activity.js'
+import { UserType } from '../../../entities/user.js'
+import updateAllowedKeys from '../../../lib/entities/updateAllowedKeys.js'
+import createGameActivity from '../../../lib/logging/createGameActivity.js'
+import { protectedRoute, withMiddleware } from '../../../lib/routing/router.js'
+import { loadGame } from '../../../middleware/game-middleware.js'
+import { userTypeGate } from '../../../middleware/policy-middleware.js'
+import { loadFeedbackCategory } from './common.js'
 
 export const updateCategoryRoute = protectedRoute({
   method: 'put',

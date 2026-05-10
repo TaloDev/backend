@@ -1,13 +1,13 @@
 import { z } from 'zod'
-import { GameActivityType } from '../../../entities/game-activity'
-import GameFeedback from '../../../entities/game-feedback'
-import { UserType } from '../../../entities/user'
-import createGameActivity from '../../../lib/logging/createGameActivity'
-import { protectedRoute, withMiddleware } from '../../../lib/routing/router'
-import { ProtectedRouteState } from '../../../lib/routing/state'
-import { GameRouteState, loadGame } from '../../../middleware/game-middleware'
-import { userTypeGate } from '../../../middleware/policy-middleware'
-import { loadFeedback } from './common'
+import { GameActivityType } from '../../../entities/game-activity.js'
+import GameFeedback from '../../../entities/game-feedback.js'
+import { UserType } from '../../../entities/user.js'
+import createGameActivity from '../../../lib/logging/createGameActivity.js'
+import { protectedRoute, withMiddleware } from '../../../lib/routing/router.js'
+import { ProtectedRouteState } from '../../../lib/routing/state.js'
+import { GameRouteState, loadGame } from '../../../middleware/game-middleware.js'
+import { userTypeGate } from '../../../middleware/policy-middleware.js'
+import { loadFeedback } from './common.js'
 
 type FeedbackRouteState = ProtectedRouteState & GameRouteState & { feedback: GameFeedback }
 

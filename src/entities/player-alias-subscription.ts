@@ -7,7 +7,7 @@ import {
   Property,
   Unique,
 } from '@mikro-orm/decorators/es'
-import PlayerAlias from './player-alias'
+import PlayerAlias from './player-alias.js'
 
 export enum RelationshipType {
   UNIDIRECTIONAL = 'unidirectional',

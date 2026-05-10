@@ -1,9 +1,9 @@
-import { apiRouter } from '../../../lib/routing/router'
-import { confirmRoute } from './confirm'
-import { deleteRoute } from './delete'
-import { getSubscribersRoute } from './get-subscribers'
-import { getSubscriptionsRoute } from './get-subscriptions'
-import { postRoute } from './post'
+import { apiRouter } from '../../../lib/routing/router.js'
+import { confirmRoute } from './confirm.js'
+import { deleteRoute } from './delete.js'
+import { getSubscribersRoute } from './get-subscribers.js'
+import { getSubscriptionsRoute } from './get-subscriptions.js'
+import { postRoute } from './post.js'
 
 export function playerRelationshipAPIRouter() {
   return apiRouter(

@@ -1,12 +1,12 @@
 import bcrypt from 'bcrypt'
 import request from 'supertest'
-import { APIKeyScope } from '../../../../src/entities/api-key'
+import { APIKeyScope } from '../../../../src/entities/api-key.js'
 import PlayerAuthActivity, {
   PlayerAuthActivityType,
-} from '../../../../src/entities/player-auth-activity'
-import PlayerAuthFactory from '../../../fixtures/PlayerAuthFactory'
-import PlayerFactory from '../../../fixtures/PlayerFactory'
-import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
+} from '../../../../src/entities/player-auth-activity.js'
+import PlayerAuthFactory from '../../../fixtures/PlayerAuthFactory.js'
+import PlayerFactory from '../../../fixtures/PlayerFactory.js'
+import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken.js'
 
 describe('Player auth API - verify', () => {
   it('should login a player if the verification code is correct and if the api key has the correct scopes', async () => {

@@ -1,17 +1,17 @@
 import assert from 'node:assert'
-import { APIKeyScope } from '../../../entities/api-key'
-import PlayerAlias, { PlayerAliasService } from '../../../entities/player-alias'
-import { PricingPlanLimitError } from '../../../lib/billing/checkPricingPlanPlayerLimit'
+import { APIKeyScope } from '../../../entities/api-key.js'
+import PlayerAlias, { PlayerAliasService } from '../../../entities/player-alias.js'
+import { PricingPlanLimitError } from '../../../lib/billing/checkPricingPlanPlayerLimit.js'
 import {
   createPlayerFromIdentifyRequest,
   PlayerCreationError,
-} from '../../../lib/players/createPlayer'
-import { findAliasFromIdentifyRequest } from '../../../lib/players/findAlias'
-import { apiRoute, withMiddleware } from '../../../lib/routing/router'
-import { setCurrentPlayerState } from '../../../middleware/current-player-middleware'
-import { validateAuthSessionToken } from '../../../middleware/player-auth-middleware'
-import { requireScopes } from '../../../middleware/policy-middleware'
-import { identifyDocs } from './docs'
+} from '../../../lib/players/createPlayer.js'
+import { findAliasFromIdentifyRequest } from '../../../lib/players/findAlias.js'
+import { apiRoute, withMiddleware } from '../../../lib/routing/router.js'
+import { setCurrentPlayerState } from '../../../middleware/current-player-middleware.js'
+import { validateAuthSessionToken } from '../../../middleware/player-auth-middleware.js'
+import { requireScopes } from '../../../middleware/policy-middleware.js'
+import { identifyDocs } from './docs.js'
 
 export const identifyRoute = apiRoute({
   method: 'get',

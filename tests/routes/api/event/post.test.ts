@@ -1,13 +1,13 @@
 import { Collection } from '@mikro-orm/mysql'
 import { randText } from '@ngneat/falso'
 import request from 'supertest'
-import { APIKeyScope } from '../../../../src/entities/api-key'
-import Event from '../../../../src/entities/event'
-import PlayerProp from '../../../../src/entities/player-prop'
-import { FlushEventsQueueHandler } from '../../../../src/lib/queues/game-metrics/flush-events-queue-handler'
-import GameFactory from '../../../fixtures/GameFactory'
-import PlayerFactory from '../../../fixtures/PlayerFactory'
-import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
+import { APIKeyScope } from '../../../../src/entities/api-key.js'
+import Event from '../../../../src/entities/event.js'
+import PlayerProp from '../../../../src/entities/player-prop.js'
+import { FlushEventsQueueHandler } from '../../../../src/lib/queues/game-metrics/flush-events-queue-handler.js'
+import GameFactory from '../../../fixtures/GameFactory.js'
+import PlayerFactory from '../../../fixtures/PlayerFactory.js'
+import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken.js'
 
 describe('Event API - create', () => {
   it('should create an event if the scope is valid', async () => {

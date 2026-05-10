@@ -1,9 +1,9 @@
 import { subHours } from 'date-fns'
 import request from 'supertest'
-import { APIKeyScope } from '../../src/entities/api-key'
-import GameStatFactory from '../fixtures/GameStatFactory'
-import PlayerFactory from '../fixtures/PlayerFactory'
-import createAPIKeyAndToken from '../utils/createAPIKeyAndToken'
+import { APIKeyScope } from '../../src/entities/api-key.js'
+import GameStatFactory from '../fixtures/GameStatFactory.js'
+import PlayerFactory from '../fixtures/PlayerFactory.js'
+import createAPIKeyAndToken from '../utils/createAPIKeyAndToken.js'
 
 describe('Continuity middleware', () => {
   it("should not set the createdAt of the player stat to the continuity date if the write continuity requests scope isn't set", async () => {

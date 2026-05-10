@@ -1,10 +1,10 @@
 import request from 'supertest'
-import { APIKeyScope } from '../../../../src/entities/api-key'
-import GameChannelStorageProp from '../../../../src/entities/game-channel-storage-prop'
-import GameChannelFactory from '../../../fixtures/GameChannelFactory'
-import GameChannelStoragePropFactory from '../../../fixtures/GameChannelStoragePropFactory'
-import PlayerFactory from '../../../fixtures/PlayerFactory'
-import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
+import { APIKeyScope } from '../../../../src/entities/api-key.js'
+import GameChannelStorageProp from '../../../../src/entities/game-channel-storage-prop.js'
+import GameChannelFactory from '../../../fixtures/GameChannelFactory.js'
+import GameChannelStoragePropFactory from '../../../fixtures/GameChannelStoragePropFactory.js'
+import PlayerFactory from '../../../fixtures/PlayerFactory.js'
+import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken.js'
 
 describe('Game channel API - list storage', () => {
   it('should return multiple storage props from redis if they exist in the cache', async () => {

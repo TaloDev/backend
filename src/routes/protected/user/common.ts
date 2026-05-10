@@ -1,6 +1,6 @@
 import bcrypt from 'bcrypt'
 import { Next } from 'koa'
-import { ProtectedRouteContext } from '../../../lib/routing/context'
+import { ProtectedRouteContext } from '../../../lib/routing/context.js'
 
 export async function confirmPassword(ctx: ProtectedRouteContext, next: Next) {
   const { password } = ctx.request.body as { password: string }

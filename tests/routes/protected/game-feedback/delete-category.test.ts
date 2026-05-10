@@ -1,10 +1,10 @@
 import request from 'supertest'
-import GameActivity, { GameActivityType } from '../../../../src/entities/game-activity'
-import { UserType } from '../../../../src/entities/user'
-import GameFeedbackCategoryFactory from '../../../fixtures/GameFeedbackCategoryFactory'
-import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
-import createUserAndToken from '../../../utils/createUserAndToken'
-import userPermissionProvider from '../../../utils/userPermissionProvider'
+import GameActivity, { GameActivityType } from '../../../../src/entities/game-activity.js'
+import { UserType } from '../../../../src/entities/user.js'
+import GameFeedbackCategoryFactory from '../../../fixtures/GameFeedbackCategoryFactory.js'
+import createOrganisationAndGame from '../../../utils/createOrganisationAndGame.js'
+import createUserAndToken from '../../../utils/createUserAndToken.js'
+import userPermissionProvider from '../../../utils/userPermissionProvider.js'
 
 describe('Game feedback - delete category', () => {
   it.each(userPermissionProvider([UserType.ADMIN], 204))(

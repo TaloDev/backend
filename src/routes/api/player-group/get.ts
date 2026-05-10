@@ -1,12 +1,12 @@
-import { APIKeyScope } from '../../../entities/api-key'
-import Player from '../../../entities/player'
-import PlayerGroup from '../../../entities/player-group'
-import { DEFAULT_PAGE_SIZE } from '../../../lib/pagination/itemsPerPage'
-import { apiRoute, withMiddleware } from '../../../lib/routing/router'
-import { pageSchema } from '../../../lib/validation/pageSchema'
-import { requireScopes } from '../../../middleware/policy-middleware'
-import { loadGroup } from './common'
-import { getDocs } from './docs'
+import { APIKeyScope } from '../../../entities/api-key.js'
+import PlayerGroup from '../../../entities/player-group.js'
+import Player from '../../../entities/player.js'
+import { DEFAULT_PAGE_SIZE } from '../../../lib/pagination/itemsPerPage.js'
+import { apiRoute, withMiddleware } from '../../../lib/routing/router.js'
+import { pageSchema } from '../../../lib/validation/pageSchema.js'
+import { requireScopes } from '../../../middleware/policy-middleware.js'
+import { loadGroup } from './common.js'
+import { getDocs } from './docs.js'
 
 export type HydratedGroup = Awaited<ReturnType<PlayerGroup['toJSONWithCount']>> & {
   members?: Player[]

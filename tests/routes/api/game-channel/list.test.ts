@@ -1,8 +1,8 @@
 import request from 'supertest'
-import { APIKeyScope } from '../../../../src/entities/api-key'
-import GameChannel from '../../../../src/entities/game-channel'
-import GameChannelFactory from '../../../fixtures/GameChannelFactory'
-import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
+import { APIKeyScope } from '../../../../src/entities/api-key.js'
+import GameChannel from '../../../../src/entities/game-channel.js'
+import GameChannelFactory from '../../../fixtures/GameChannelFactory.js'
+import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken.js'
 
 describe('Game channel API - list', () => {
   it('should return a list of game channels if the scope is valid', async () => {

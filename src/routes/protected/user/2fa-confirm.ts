@@ -1,8 +1,8 @@
 import { authenticator } from '@otplib/preset-default'
 import { randomBytes } from 'crypto'
 import assert from 'node:assert'
-import generateRecoveryCodes from '../../../lib/auth/generateRecoveryCodes'
-import { protectedRoute } from '../../../lib/routing/router'
+import generateRecoveryCodes from '../../../lib/auth/generateRecoveryCodes.js'
+import { protectedRoute } from '../../../lib/routing/router.js'
 
 export const confirm2faRoute = protectedRoute({
   method: 'post',

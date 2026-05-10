@@ -1,4 +1,4 @@
-import Redis from 'ioredis'
+import { Redis } from 'ioredis'
 
 export async function clearCachePattern(redis: Redis, pattern: string) {
   const script = `

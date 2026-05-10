@@ -1,13 +1,13 @@
 import type { EntityManager } from '@mikro-orm/mysql'
-import type Redis from 'ioredis'
-import { APIKeyScope } from '../../../entities/api-key'
-import PlayerAlias from '../../../entities/player-alias'
-import { PlayerAuthActivityType } from '../../../entities/player-auth-activity'
-import { buildPlayerAuthActivity } from '../../../lib/logging/buildPlayerAuthActivity'
-import { apiRoute, withMiddleware } from '../../../lib/routing/router'
-import { requireScopes } from '../../../middleware/policy-middleware'
-import { getRedisAuthKey, sessionBuilder as defaultSessionBuilder } from './common'
-import { verifyDocs } from './docs'
+import type { Redis } from 'ioredis'
+import { APIKeyScope } from '../../../entities/api-key.js'
+import PlayerAlias from '../../../entities/player-alias.js'
+import { PlayerAuthActivityType } from '../../../entities/player-auth-activity.js'
+import { buildPlayerAuthActivity } from '../../../lib/logging/buildPlayerAuthActivity.js'
+import { apiRoute, withMiddleware } from '../../../lib/routing/router.js'
+import { requireScopes } from '../../../middleware/policy-middleware.js'
+import { getRedisAuthKey, sessionBuilder as defaultSessionBuilder } from './common.js'
+import { verifyDocs } from './docs.js'
 
 export async function verifyHandler({
   em,

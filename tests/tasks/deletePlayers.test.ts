@@ -1,9 +1,9 @@
 import { EntityManager } from '@mikro-orm/mysql'
-import Player from '../../src/entities/player'
-import { PlayerToDelete } from '../../src/entities/player-to-delete'
-import deletePlayers from '../../src/tasks/deletePlayers'
-import PlayerFactory from '../fixtures/PlayerFactory'
-import createOrganisationAndGame from '../utils/createOrganisationAndGame'
+import { PlayerToDelete } from '../../src/entities/player-to-delete.js'
+import Player from '../../src/entities/player.js'
+import deletePlayers from '../../src/tasks/deletePlayers.js'
+import PlayerFactory from '../fixtures/PlayerFactory.js'
+import createOrganisationAndGame from '../utils/createOrganisationAndGame.js'
 
 describe('deletePlayers', () => {
   beforeEach(async () => {

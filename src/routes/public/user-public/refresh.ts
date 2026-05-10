@@ -1,7 +1,7 @@
-import UserSession from '../../../entities/user-session'
-import { genAccessToken } from '../../../lib/auth/buildTokenPair'
-import { publicRoute } from '../../../lib/routing/router'
-import { setUserLastSeenAt } from '../../../lib/users/setUserLastSeenAt'
+import UserSession from '../../../entities/user-session.js'
+import { genAccessToken } from '../../../lib/auth/buildTokenPair.js'
+import { publicRoute } from '../../../lib/routing/router.js'
+import { setUserLastSeenAt } from '../../../lib/users/setUserLastSeenAt.js'
 
 export const refreshRoute = publicRoute({
   method: 'get',

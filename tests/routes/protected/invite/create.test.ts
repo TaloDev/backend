@@ -1,13 +1,13 @@
 import { randEmail } from '@ngneat/falso'
 import request from 'supertest'
-import GameActivity, { GameActivityType } from '../../../../src/entities/game-activity'
-import { UserType } from '../../../../src/entities/user'
-import InviteFactory from '../../../fixtures/InviteFactory'
-import UserFactory from '../../../fixtures/UserFactory'
-import { clearEntities } from '../../../utils/clearEntities'
-import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
-import createUserAndToken from '../../../utils/createUserAndToken'
-import userPermissionProvider from '../../../utils/userPermissionProvider'
+import GameActivity, { GameActivityType } from '../../../../src/entities/game-activity.js'
+import { UserType } from '../../../../src/entities/user.js'
+import InviteFactory from '../../../fixtures/InviteFactory.js'
+import UserFactory from '../../../fixtures/UserFactory.js'
+import { clearEntities } from '../../../utils/clearEntities.js'
+import createOrganisationAndGame from '../../../utils/createOrganisationAndGame.js'
+import createUserAndToken from '../../../utils/createUserAndToken.js'
+import userPermissionProvider from '../../../utils/userPermissionProvider.js'
 
 describe('Invite - create', () => {
   beforeEach(async () => {

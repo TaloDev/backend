@@ -1,12 +1,12 @@
-import { apiRouter } from '../../../lib/routing/router'
-import { RouterGroup } from '../../../lib/routing/router-group'
-import { getRoute } from './get'
-import { getPlayerStatRoute } from './get-player-stat'
-import { globalHistoryRoute } from './global-history'
-import { historyRoute } from './history'
-import { listRoute } from './list'
-import { listPlayerStatsRoute } from './list-player-stats'
-import { putRoute } from './put'
+import { RouterGroup } from '../../../lib/routing/router-group.js'
+import { apiRouter } from '../../../lib/routing/router.js'
+import { getPlayerStatRoute } from './get-player-stat.js'
+import { getRoute } from './get.js'
+import { globalHistoryRoute } from './global-history.js'
+import { historyRoute } from './history.js'
+import { listPlayerStatsRoute } from './list-player-stats.js'
+import { listRoute } from './list.js'
+import { putRoute } from './put.js'
 
 export function gameStatAPIRouter() {
   const opts = {

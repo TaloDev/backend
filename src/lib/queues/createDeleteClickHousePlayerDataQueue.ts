@@ -1,6 +1,6 @@
 import { captureException } from '@sentry/node'
-import createClickHouseClient from '../clickhouse/createClient'
-import createQueue from './createQueue'
+import createClickHouseClient from '../clickhouse/createClient.js'
+import createQueue from './createQueue.js'
 
 export type DeleteClickHousePlayerDataConfig = { playerIds: string[]; aliasIds: number[] }
 

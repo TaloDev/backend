@@ -1,10 +1,10 @@
 import { Collection } from '@mikro-orm/mysql'
 import request from 'supertest'
-import { APIKeyScope } from '../../../../src/entities/api-key'
-import GameChannelProp from '../../../../src/entities/game-channel-prop'
-import GameChannelFactory from '../../../fixtures/GameChannelFactory'
-import PlayerFactory from '../../../fixtures/PlayerFactory'
-import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
+import { APIKeyScope } from '../../../../src/entities/api-key.js'
+import GameChannelProp from '../../../../src/entities/game-channel-prop.js'
+import GameChannelFactory from '../../../fixtures/GameChannelFactory.js'
+import PlayerFactory from '../../../fixtures/PlayerFactory.js'
+import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken.js'
 
 describe('Game channel API - subscriptions', () => {
   it('should return a list of game channel subscriptions if the scope is valid', async () => {

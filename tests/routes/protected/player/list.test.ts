@@ -3,13 +3,13 @@ import request from 'supertest'
 import PlayerGroupRule, {
   PlayerGroupRuleCastType,
   PlayerGroupRuleName,
-} from '../../../../src/entities/player-group-rule'
-import PlayerProp from '../../../../src/entities/player-prop'
-import GameChannelFactory from '../../../fixtures/GameChannelFactory'
-import PlayerFactory from '../../../fixtures/PlayerFactory'
-import PlayerGroupFactory from '../../../fixtures/PlayerGroupFactory'
-import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
-import createUserAndToken from '../../../utils/createUserAndToken'
+} from '../../../../src/entities/player-group-rule.js'
+import PlayerProp from '../../../../src/entities/player-prop.js'
+import GameChannelFactory from '../../../fixtures/GameChannelFactory.js'
+import PlayerFactory from '../../../fixtures/PlayerFactory.js'
+import PlayerGroupFactory from '../../../fixtures/PlayerGroupFactory.js'
+import createOrganisationAndGame from '../../../utils/createOrganisationAndGame.js'
+import createUserAndToken from '../../../utils/createUserAndToken.js'
 
 describe('Player - list', () => {
   it('should return a list of players', async () => {

@@ -1,8 +1,8 @@
-import { APIKeyScope } from '../../../entities/api-key'
-import GameStat from '../../../entities/game-stat'
-import { apiRoute, withMiddleware } from '../../../lib/routing/router'
-import { requireScopes } from '../../../middleware/policy-middleware'
-import { indexDocs } from './docs'
+import { APIKeyScope } from '../../../entities/api-key.js'
+import GameStat from '../../../entities/game-stat.js'
+import { apiRoute, withMiddleware } from '../../../lib/routing/router.js'
+import { requireScopes } from '../../../middleware/policy-middleware.js'
+import { indexDocs } from './docs.js'
 
 export const listRoute = apiRoute({
   method: 'get',

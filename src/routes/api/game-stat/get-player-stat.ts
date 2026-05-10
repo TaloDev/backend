@@ -1,12 +1,12 @@
-import { APIKeyScope } from '../../../entities/api-key'
-import PlayerGameStat from '../../../entities/player-game-stat'
-import { withResponseCache } from '../../../lib/perf/responseCache'
-import { apiRoute, withMiddleware } from '../../../lib/routing/router'
-import { playerAliasHeaderSchema } from '../../../lib/validation/playerAliasHeaderSchema'
-import { loadAlias } from '../../../middleware/player-alias-middleware'
-import { requireScopes } from '../../../middleware/policy-middleware'
-import { loadStatWithAlias } from './common'
-import { getPlayerStatDocs } from './docs'
+import { APIKeyScope } from '../../../entities/api-key.js'
+import PlayerGameStat from '../../../entities/player-game-stat.js'
+import { withResponseCache } from '../../../lib/perf/responseCache.js'
+import { apiRoute, withMiddleware } from '../../../lib/routing/router.js'
+import { playerAliasHeaderSchema } from '../../../lib/validation/playerAliasHeaderSchema.js'
+import { loadAlias } from '../../../middleware/player-alias-middleware.js'
+import { requireScopes } from '../../../middleware/policy-middleware.js'
+import { loadStatWithAlias } from './common.js'
+import { getPlayerStatDocs } from './docs.js'
 
 export const getPlayerStatRoute = apiRoute({
   method: 'get',

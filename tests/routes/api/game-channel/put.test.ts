@@ -1,13 +1,13 @@
 import { Collection } from '@mikro-orm/mysql'
 import { randText } from '@ngneat/falso'
 import request from 'supertest'
-import { APIKeyScope } from '../../../../src/entities/api-key'
-import GameChannelProp from '../../../../src/entities/game-channel-prop'
-import GameChannelFactory from '../../../fixtures/GameChannelFactory'
-import PlayerFactory from '../../../fixtures/PlayerFactory'
-import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
-import createSocketIdentifyMessage from '../../../utils/createSocketIdentifyMessage'
-import createTestSocket from '../../../utils/createTestSocket'
+import { APIKeyScope } from '../../../../src/entities/api-key.js'
+import GameChannelProp from '../../../../src/entities/game-channel-prop.js'
+import GameChannelFactory from '../../../fixtures/GameChannelFactory.js'
+import PlayerFactory from '../../../fixtures/PlayerFactory.js'
+import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken.js'
+import createSocketIdentifyMessage from '../../../utils/createSocketIdentifyMessage.js'
+import createTestSocket from '../../../utils/createTestSocket.js'
 
 describe('Game channel API - update', () => {
   it('should update a channel if the scope is valid', async () => {

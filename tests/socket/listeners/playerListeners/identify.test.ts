@@ -1,9 +1,9 @@
-import { APIKeyScope } from '../../../../src/entities/api-key'
-import { createSocketTicket } from '../../../../src/lib/sockets/createSocketTicket'
-import PlayerFactory from '../../../fixtures/PlayerFactory'
-import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
-import createSocketIdentifyMessage from '../../../utils/createSocketIdentifyMessage'
-import createTestSocket from '../../../utils/createTestSocket'
+import { APIKeyScope } from '../../../../src/entities/api-key.js'
+import { createSocketTicket } from '../../../../src/lib/sockets/createSocketTicket.js'
+import PlayerFactory from '../../../fixtures/PlayerFactory.js'
+import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken.js'
+import createSocketIdentifyMessage from '../../../utils/createSocketIdentifyMessage.js'
+import createTestSocket from '../../../utils/createTestSocket.js'
 
 describe('Player listeners - identify', () => {
   it('should successfully identify a player', async () => {

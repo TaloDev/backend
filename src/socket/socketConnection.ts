@@ -1,14 +1,14 @@
 import { RequestContext, EntityManager } from '@mikro-orm/mysql'
-import Redis from 'ioredis'
+import { Redis } from 'ioredis'
 import { v4 } from 'uuid'
 import { WebSocket } from 'ws'
-import Socket from '.'
-import { APIKeyScope } from '../entities/api-key'
-import PlayerAlias from '../entities/player-alias'
-import checkRateLimitExceeded from '../lib/errors/checkRateLimitExceeded'
-import { logResponse } from './messages/socketLogger'
-import { heartbeatMessage, SocketMessageResponse } from './messages/socketMessage'
-import SocketTicket from './socketTicket'
+import { APIKeyScope } from '../entities/api-key.js'
+import PlayerAlias from '../entities/player-alias.js'
+import checkRateLimitExceeded from '../lib/errors/checkRateLimitExceeded.js'
+import Socket from './index.js'
+import { logResponse } from './messages/socketLogger.js'
+import { heartbeatMessage, SocketMessageResponse } from './messages/socketMessage.js'
+import SocketTicket from './socketTicket.js'
 
 export default class SocketConnection {
   alive: boolean = true

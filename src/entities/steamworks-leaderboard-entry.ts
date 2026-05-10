@@ -1,6 +1,6 @@
 import { Entity, ManyToOne, OneToOne, PrimaryKey, Property } from '@mikro-orm/decorators/es'
-import LeaderboardEntry from './leaderboard-entry'
-import SteamworksLeaderboardMapping from './steamworks-leaderboard-mapping'
+import LeaderboardEntry from './leaderboard-entry.js'
+import SteamworksLeaderboardMapping from './steamworks-leaderboard-mapping.js'
 
 @Entity()
 export class SteamworksLeaderboardEntry {

@@ -1,6 +1,6 @@
 import { EntityManager } from '@mikro-orm/mysql'
-import Game from '../../entities/game'
-import GameActivity from '../../entities/game-activity'
+import GameActivity from '../../entities/game-activity.js'
+import Game from '../../entities/game.js'
 
 type GameActivityData = Pick<GameActivity, 'user' | 'type'> & {
   game?: Game

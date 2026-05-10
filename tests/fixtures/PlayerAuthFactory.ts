@@ -1,6 +1,6 @@
 import { randEmail } from '@ngneat/falso'
 import { Factory } from 'hefty'
-import PlayerAuth from '../../src/entities/player-auth'
+import PlayerAuth from '../../src/entities/player-auth.js'
 
 export default class PlayerAuthFactory extends Factory<PlayerAuth> {
   constructor() {

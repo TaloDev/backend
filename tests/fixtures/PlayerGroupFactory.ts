@@ -1,6 +1,6 @@
 import { rand, randText } from '@ngneat/falso'
 import { Factory } from 'hefty'
-import PlayerGroup, { RuleMode } from '../../src/entities/player-group'
+import PlayerGroup, { RuleMode } from '../../src/entities/player-group.js'
 
 export default class PlayerGroupFactory extends Factory<PlayerGroup> {
   constructor() {

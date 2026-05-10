@@ -3,13 +3,13 @@ import assert from 'node:assert'
 import request from 'supertest'
 import PlayerAuthActivity, {
   PlayerAuthActivityType,
-} from '../../../../src/entities/player-auth-activity'
-import { buildPublicPlayerSession } from '../../../../src/routes/public/player-public/common'
-import * as deletePlayers from '../../../../src/tasks/deletePlayers'
-import PlayerAuthActivityFactory from '../../../fixtures/PlayerAuthActivityFactory'
-import PlayerAuthFactory from '../../../fixtures/PlayerAuthFactory'
-import PlayerFactory from '../../../fixtures/PlayerFactory'
-import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
+} from '../../../../src/entities/player-auth-activity.js'
+import { buildPublicPlayerSession } from '../../../../src/routes/public/player-public/common.js'
+import * as deletePlayers from '../../../../src/tasks/deletePlayers.js'
+import PlayerAuthActivityFactory from '../../../fixtures/PlayerAuthActivityFactory.js'
+import PlayerAuthFactory from '../../../fixtures/PlayerAuthFactory.js'
+import PlayerFactory from '../../../fixtures/PlayerFactory.js'
+import createOrganisationAndGame from '../../../utils/createOrganisationAndGame.js'
 
 describe('Player public - delete', { timeout: 30_000 }, () => {
   afterEach(() => {

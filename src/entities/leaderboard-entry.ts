@@ -1,9 +1,9 @@
 import { Entity, Index, ManyToOne, OneToMany, PrimaryKey, Property } from '@mikro-orm/decorators/es'
 import { Collection } from '@mikro-orm/mysql'
 import { createHash } from 'node:crypto'
-import Leaderboard from './leaderboard'
-import LeaderboardEntryProp from './leaderboard-entry-prop'
-import PlayerAlias from './player-alias'
+import LeaderboardEntryProp from './leaderboard-entry-prop.js'
+import Leaderboard from './leaderboard.js'
+import PlayerAlias from './player-alias.js'
 
 const scoreIndexName = 'idx_leaderboardentry_hidden_leaderboard_id_score'
 const scoreIndexExpr = `alter table \`leaderboard_entry\` add index \`${scoreIndexName}\`(\`hidden\`, \`leaderboard_id\`, \`score\`)`

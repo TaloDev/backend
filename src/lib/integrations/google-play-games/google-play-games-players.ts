@@ -1,11 +1,11 @@
 import { EntityManager } from '@mikro-orm/mysql'
-import Integration from '../../../entities/integration'
-import PlayerAlias, { PlayerAliasService } from '../../../entities/player-alias'
+import Integration from '../../../entities/integration.js'
+import PlayerAlias, { PlayerAliasService } from '../../../entities/player-alias.js'
 import {
   ExchangeAuthCodeResponse,
   GetPlayerResponse,
   GooglePlayGamesClient,
-} from '../clients/google-play-games-client'
+} from '../clients/google-play-games-client.js'
 
 export type AuthenticateAuthCodeResult = {
   playerId: string

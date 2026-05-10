@@ -1,11 +1,11 @@
 import fs from 'fs'
 import fsp from 'fs/promises'
-import { DataExportStatus } from '../../../../src/entities/data-export'
-import * as sendEmail from '../../../../src/lib/messaging/sendEmail'
-import { DataExportMailer } from '../../../../src/lib/queues/data-exports/dataExportMailer'
-import * as s3Client from '../../../../src/lib/storage/s3Client'
-import DataExportFactory from '../../../fixtures/DataExportFactory'
-import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
+import { DataExportStatus } from '../../../../src/entities/data-export.js'
+import * as sendEmail from '../../../../src/lib/messaging/sendEmail.js'
+import { DataExportMailer } from '../../../../src/lib/queues/data-exports/dataExportMailer.js'
+import * as s3Client from '../../../../src/lib/storage/s3Client.js'
+import DataExportFactory from '../../../fixtures/DataExportFactory.js'
+import createOrganisationAndGame from '../../../utils/createOrganisationAndGame.js'
 
 describe('DataExportMailer', () => {
   beforeAll(() => {

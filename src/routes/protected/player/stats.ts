@@ -1,7 +1,7 @@
-import PlayerGameStat from '../../../entities/player-game-stat'
-import { protectedRoute, withMiddleware } from '../../../lib/routing/router'
-import { loadGame } from '../../../middleware/game-middleware'
-import { loadPlayer } from './common'
+import PlayerGameStat from '../../../entities/player-game-stat.js'
+import { protectedRoute, withMiddleware } from '../../../lib/routing/router.js'
+import { loadGame } from '../../../middleware/game-middleware.js'
+import { loadPlayer } from './common.js'
 
 export const statsRoute = protectedRoute({
   method: 'get',

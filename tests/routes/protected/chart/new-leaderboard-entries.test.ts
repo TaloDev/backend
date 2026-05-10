@@ -1,10 +1,10 @@
 import { subDays, format, startOfDay } from 'date-fns'
 import request from 'supertest'
-import LeaderboardEntryFactory from '../../../fixtures/LeaderboardEntryFactory'
-import LeaderboardFactory from '../../../fixtures/LeaderboardFactory'
-import PlayerFactory from '../../../fixtures/PlayerFactory'
-import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
-import createUserAndToken from '../../../utils/createUserAndToken'
+import LeaderboardEntryFactory from '../../../fixtures/LeaderboardEntryFactory.js'
+import LeaderboardFactory from '../../../fixtures/LeaderboardFactory.js'
+import PlayerFactory from '../../../fixtures/PlayerFactory.js'
+import createOrganisationAndGame from '../../../utils/createOrganisationAndGame.js'
+import createUserAndToken from '../../../utils/createUserAndToken.js'
 
 describe('Chart - new leaderboard entries', () => {
   it('should return leaderboard entry counts by day', async () => {

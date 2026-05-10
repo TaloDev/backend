@@ -1,6 +1,6 @@
-import { uniqWith } from 'lodash'
-import Prop, { MAX_KEY_LENGTH, MAX_VALUE_LENGTH } from '../../entities/prop'
-import { PropSizeError } from '../errors/propSizeError'
+import { uniqWith } from 'lodash-es'
+import Prop, { MAX_KEY_LENGTH, MAX_VALUE_LENGTH } from '../../entities/prop.js'
+import { PropSizeError } from '../errors/propSizeError.js'
 
 export const MAX_ARRAY_LENGTH = 1000
 

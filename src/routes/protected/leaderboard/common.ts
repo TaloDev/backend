@@ -1,7 +1,7 @@
 import { Next } from 'koa'
-import Leaderboard from '../../../entities/leaderboard'
-import { ProtectedRouteContext } from '../../../lib/routing/context'
-import { GameRouteState } from '../../../middleware/game-middleware'
+import Leaderboard from '../../../entities/leaderboard.js'
+import { ProtectedRouteContext } from '../../../lib/routing/context.js'
+import { GameRouteState } from '../../../middleware/game-middleware.js'
 
 type LeaderboardRouteContext = ProtectedRouteContext<GameRouteState & { leaderboard: Leaderboard }>
 

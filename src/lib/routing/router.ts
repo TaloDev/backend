@@ -1,12 +1,12 @@
 import type Koa from 'koa'
 import Router from 'koa-tree-router'
 import { z } from 'zod'
-import type { ValidationSchema, ValidatedContext } from '../../middleware/validator-middleware'
-import type { AppParameterizedContext } from './context'
-import { decodeParamsMiddleware } from '../../middleware/decode-params-middleware'
-import { validate } from '../../middleware/validator-middleware'
-import { HttpMethod, RouteDocs } from '../docs/docs-registry'
-import { APIRouteState, ProtectedRouteState, PublicRouteState, RouteState } from './state'
+import type { ValidationSchema, ValidatedContext } from '../../middleware/validator-middleware.js'
+import type { AppParameterizedContext } from './context.js'
+import { decodeParamsMiddleware } from '../../middleware/decode-params-middleware.js'
+import { validate } from '../../middleware/validator-middleware.js'
+import { HttpMethod, RouteDocs } from '../docs/docs-registry.js'
+import { APIRouteState, ProtectedRouteState, PublicRouteState, RouteState } from './state.js'
 
 type HandlerResponse = {
   status: number

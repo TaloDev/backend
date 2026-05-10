@@ -1,10 +1,10 @@
 import { endOfDay, startOfDay } from 'date-fns'
-import { formatDateForClickHouse } from '../../../lib/clickhouse/formatDateTime'
-import { withResponseCache } from '../../../lib/perf/responseCache'
-import { protectedRoute, withMiddleware } from '../../../lib/routing/router'
-import { dateRangeSchema } from '../../../lib/validation/dateRangeSchema'
-import { loadGame } from '../../../middleware/game-middleware'
-import { HEADLINES_CACHE_TTL_MS } from './common'
+import { formatDateForClickHouse } from '../../../lib/clickhouse/formatDateTime.js'
+import { withResponseCache } from '../../../lib/perf/responseCache.js'
+import { protectedRoute, withMiddleware } from '../../../lib/routing/router.js'
+import { dateRangeSchema } from '../../../lib/validation/dateRangeSchema.js'
+import { loadGame } from '../../../middleware/game-middleware.js'
+import { HEADLINES_CACHE_TTL_MS } from './common.js'
 
 export const averageSessionDurationRoute = protectedRoute({
   method: 'get',

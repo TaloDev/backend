@@ -1,11 +1,11 @@
 import { subDays, format, startOfDay } from 'date-fns'
 import request from 'supertest'
-import PlayerGameStatSnapshot from '../../../../src/entities/player-game-stat-snapshot'
-import GameStatFactory from '../../../fixtures/GameStatFactory'
-import PlayerFactory from '../../../fixtures/PlayerFactory'
-import PlayerGameStatFactory from '../../../fixtures/PlayerGameStatFactory'
-import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
-import createUserAndToken from '../../../utils/createUserAndToken'
+import PlayerGameStatSnapshot from '../../../../src/entities/player-game-stat-snapshot.js'
+import GameStatFactory from '../../../fixtures/GameStatFactory.js'
+import PlayerFactory from '../../../fixtures/PlayerFactory.js'
+import PlayerGameStatFactory from '../../../fixtures/PlayerGameStatFactory.js'
+import createOrganisationAndGame from '../../../utils/createOrganisationAndGame.js'
+import createUserAndToken from '../../../utils/createUserAndToken.js'
 
 describe('Chart - stats activity', () => {
   it('should return stat snapshot counts by day', async () => {

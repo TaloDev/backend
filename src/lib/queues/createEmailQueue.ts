@@ -1,6 +1,6 @@
-import { EmailConfig } from '../../emails/mail'
-import sendEmail from '../messaging/sendEmail'
-import createQueue, { WorkerEvents } from './createQueue'
+import { EmailConfig } from '../../emails/mail.js'
+import sendEmail from '../messaging/sendEmail.js'
+import createQueue, { WorkerEvents } from './createQueue.js'
 
 export function createEmailQueue(events: WorkerEvents<EmailConfig> = {}, prefix = '') {
   const queue = createQueue<EmailConfig>(

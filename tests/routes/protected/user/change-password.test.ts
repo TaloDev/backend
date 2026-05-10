@@ -1,6 +1,6 @@
 import bcrypt from 'bcrypt'
 import request from 'supertest'
-import createUserAndToken from '../../../utils/createUserAndToken'
+import createUserAndToken from '../../../utils/createUserAndToken.js'
 
 describe('User - change password', () => {
   it('should let users change their password', async () => {

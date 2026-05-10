@@ -1,12 +1,12 @@
-import { APIKeyScope } from '../../../entities/api-key'
-import { GameChannelLeavingReason } from '../../../entities/game-channel'
-import { apiRoute, withMiddleware } from '../../../lib/routing/router'
-import { numericStringSchema } from '../../../lib/validation/numericStringSchema'
-import { playerAliasHeaderSchema } from '../../../lib/validation/playerAliasHeaderSchema'
-import { loadAlias } from '../../../middleware/player-alias-middleware'
-import { requireScopes } from '../../../middleware/policy-middleware'
-import { loadChannel } from './common'
-import { leaveDocs } from './docs'
+import { APIKeyScope } from '../../../entities/api-key.js'
+import { GameChannelLeavingReason } from '../../../entities/game-channel.js'
+import { apiRoute, withMiddleware } from '../../../lib/routing/router.js'
+import { numericStringSchema } from '../../../lib/validation/numericStringSchema.js'
+import { playerAliasHeaderSchema } from '../../../lib/validation/playerAliasHeaderSchema.js'
+import { loadAlias } from '../../../middleware/player-alias-middleware.js'
+import { requireScopes } from '../../../middleware/policy-middleware.js'
+import { loadChannel } from './common.js'
+import { leaveDocs } from './docs.js'
 
 export const leaveRoute = apiRoute({
   method: 'post',

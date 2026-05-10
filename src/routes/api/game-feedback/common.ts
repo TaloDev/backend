@@ -1,7 +1,7 @@
 import type { Next } from 'koa'
-import GameFeedbackCategory from '../../../entities/game-feedback-category'
-import { APIRouteContext } from '../../../lib/routing/context'
-import { PlayerAliasRouteState } from '../../../middleware/player-alias-middleware'
+import GameFeedbackCategory from '../../../entities/game-feedback-category.js'
+import { APIRouteContext } from '../../../lib/routing/context.js'
+import { PlayerAliasRouteState } from '../../../middleware/player-alias-middleware.js'
 
 type GameFeedbackCategoryRouteContext = APIRouteContext<
   PlayerAliasRouteState & {

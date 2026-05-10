@@ -1,5 +1,5 @@
-import { apiRouter } from '../../../lib/routing/router'
-import { postRoute } from './post'
+import { apiRouter } from '../../../lib/routing/router.js'
+import { postRoute } from './post.js'
 
 export function eventAPIRouter() {
   return apiRouter(

@@ -2,11 +2,11 @@ import { EntityManager } from '@mikro-orm/mysql'
 import { Next } from 'koa'
 import assert from 'node:assert'
 import Stripe from 'stripe'
-import Organisation from '../../../entities/organisation'
-import Player from '../../../entities/player'
-import PricingPlan from '../../../entities/pricing-plan'
-import initStripe from '../../../lib/billing/initStripe'
-import { ProtectedRouteContext } from '../../../lib/routing/context'
+import Organisation from '../../../entities/organisation.js'
+import Player from '../../../entities/player.js'
+import PricingPlan from '../../../entities/pricing-plan.js'
+import initStripe from '../../../lib/billing/initStripe.js'
+import { ProtectedRouteContext } from '../../../lib/routing/context.js'
 
 type RequireStripeContext = ProtectedRouteContext<{ stripe: Stripe }>
 

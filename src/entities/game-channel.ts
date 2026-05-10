@@ -7,14 +7,14 @@ import {
   Property,
 } from '@mikro-orm/decorators/es'
 import { Collection, EntityManager } from '@mikro-orm/mysql'
-import { getGlobalRedis } from '../config/redis.config'
-import Socket from '../socket'
-import { sendMessages, SocketMessageResponse } from '../socket/messages/socketMessage'
-import { APIKeyScope } from './api-key'
-import Game from './game'
-import GameChannelProp from './game-channel-prop'
-import GameChannelStorageProp from './game-channel-storage-prop'
-import PlayerAlias from './player-alias'
+import { getGlobalRedis } from '../config/redis.config.js'
+import Socket from '../socket/index.js'
+import { sendMessages, SocketMessageResponse } from '../socket/messages/socketMessage.js'
+import { APIKeyScope } from './api-key.js'
+import GameChannelProp from './game-channel-prop.js'
+import GameChannelStorageProp from './game-channel-storage-prop.js'
+import Game from './game.js'
+import PlayerAlias from './player-alias.js'
 
 export enum GameChannelLeavingReason {
   DEFAULT,

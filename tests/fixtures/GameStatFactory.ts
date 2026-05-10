@@ -1,7 +1,7 @@
 import { rand, randBoolean, randNumber, randSlug, randText } from '@ngneat/falso'
 import { Factory } from 'hefty'
-import Game from '../../src/entities/game'
-import GameStat from '../../src/entities/game-stat'
+import GameStat from '../../src/entities/game-stat.js'
+import Game from '../../src/entities/game.js'
 
 export default class GameStatFactory extends Factory<GameStat> {
   private availableGames: Game[]

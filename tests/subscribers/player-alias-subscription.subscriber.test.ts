@@ -1,8 +1,8 @@
 import request from 'supertest'
-import { APIKeyScope } from '../../src/entities/api-key'
-import { RelationshipType } from '../../src/entities/player-alias-subscription'
-import PlayerFactory from '../fixtures/PlayerFactory'
-import createAPIKeyAndToken from '../utils/createAPIKeyAndToken'
+import { APIKeyScope } from '../../src/entities/api-key.js'
+import { RelationshipType } from '../../src/entities/player-alias-subscription.js'
+import PlayerFactory from '../fixtures/PlayerFactory.js'
+import createAPIKeyAndToken from '../utils/createAPIKeyAndToken.js'
 
 describe('PlayerAliasSubscription subscriber', () => {
   describe('cache invalidation on create', () => {

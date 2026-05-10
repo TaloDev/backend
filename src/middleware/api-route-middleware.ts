@@ -1,6 +1,6 @@
 import { Context, Next } from 'koa'
 import jwt from 'koa-jwt'
-import { isAPIRoute } from '../lib/routing/route-info'
+import { isAPIRoute } from '../lib/routing/route-info.js'
 
 export async function apiRouteAuthMiddleware(ctx: Context, next: Next) {
   if (isAPIRoute(ctx)) {

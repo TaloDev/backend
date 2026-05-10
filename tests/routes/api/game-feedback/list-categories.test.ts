@@ -1,7 +1,7 @@
 import request from 'supertest'
-import { APIKeyScope } from '../../../../src/entities/api-key'
-import GameFeedbackCategoryFactory from '../../../fixtures/GameFeedbackCategoryFactory'
-import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
+import { APIKeyScope } from '../../../../src/entities/api-key.js'
+import GameFeedbackCategoryFactory from '../../../fixtures/GameFeedbackCategoryFactory.js'
+import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken.js'
 
 describe('Game feedback API - list categories', () => {
   it('should get categories if the scope is valid', async () => {

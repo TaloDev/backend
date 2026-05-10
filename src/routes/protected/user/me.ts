@@ -1,4 +1,4 @@
-import { protectedRoute } from '../../../lib/routing/router'
+import { protectedRoute } from '../../../lib/routing/router.js'
 
 export const meRoute = protectedRoute({
   method: 'get',

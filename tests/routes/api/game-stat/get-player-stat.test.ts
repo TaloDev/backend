@@ -1,12 +1,12 @@
 import request from 'supertest'
-import { APIKeyScope } from '../../../../src/entities/api-key'
-import Game from '../../../../src/entities/game'
-import GameStat from '../../../../src/entities/game-stat'
-import PlayerGameStat from '../../../../src/entities/player-game-stat'
-import GameStatFactory from '../../../fixtures/GameStatFactory'
-import PlayerFactory from '../../../fixtures/PlayerFactory'
-import PlayerGameStatFactory from '../../../fixtures/PlayerGameStatFactory'
-import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
+import { APIKeyScope } from '../../../../src/entities/api-key.js'
+import GameStat from '../../../../src/entities/game-stat.js'
+import Game from '../../../../src/entities/game.js'
+import PlayerGameStat from '../../../../src/entities/player-game-stat.js'
+import GameStatFactory from '../../../fixtures/GameStatFactory.js'
+import PlayerFactory from '../../../fixtures/PlayerFactory.js'
+import PlayerGameStatFactory from '../../../fixtures/PlayerGameStatFactory.js'
+import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken.js'
 
 describe('Game stat API - get player stat', () => {
   const createStat = async (game: Game) => {

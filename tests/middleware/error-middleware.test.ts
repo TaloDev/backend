@@ -1,6 +1,6 @@
 import Koa from 'koa'
 import request from 'supertest'
-import { errorMiddleware } from '../../src/middleware/error-middleware'
+import { errorMiddleware } from '../../src/middleware/error-middleware.js'
 
 vi.mock('@hyperdx/node-opentelemetry', () => ({ recordException: vi.fn() }))
 vi.mock('@sentry/node', () => ({ withScope: vi.fn(), captureException: vi.fn() }))

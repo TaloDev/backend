@@ -1,7 +1,7 @@
 import type { Next } from 'koa'
-import GameSave from '../../../entities/game-save'
-import { APIRouteContext } from '../../../lib/routing/context'
-import { PlayerRouteState } from '../../../middleware/player-middleware'
+import GameSave from '../../../entities/game-save.js'
+import { APIRouteContext } from '../../../lib/routing/context.js'
+import { PlayerRouteState } from '../../../middleware/player-middleware.js'
 
 export type GameSaveRouteState = PlayerRouteState & {
   save: GameSave

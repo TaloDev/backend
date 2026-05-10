@@ -1,10 +1,10 @@
 import Koa from 'koa'
-import { documentationRouter } from '../routes/public/documentation'
-import { healthCheckRouter } from '../routes/public/health-check'
-import { invitePublicRouter } from '../routes/public/invite-public'
-import { playerPublicRouter } from '../routes/public/player-public'
-import { userPublicRouter } from '../routes/public/user-public'
-import { webhookRouter } from '../routes/public/webhook'
+import { documentationRouter } from '../routes/public/documentation/index.js'
+import { healthCheckRouter } from '../routes/public/health-check/index.js'
+import { invitePublicRouter } from '../routes/public/invite-public/index.js'
+import { playerPublicRouter } from '../routes/public/player-public/index.js'
+import { userPublicRouter } from '../routes/public/user-public/index.js'
+import { webhookRouter } from '../routes/public/webhook/index.js'
 
 export function configurePublicRoutes(app: Koa) {
   app.use(documentationRouter().routes())

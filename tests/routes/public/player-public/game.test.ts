@@ -1,7 +1,7 @@
 import { randNumber } from '@ngneat/falso'
 import Sqids from 'sqids'
 import request from 'supertest'
-import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
+import createOrganisationAndGame from '../../../utils/createOrganisationAndGame.js'
 
 describe('Player public - game', () => {
   it('should return the game name for a valid token', async () => {

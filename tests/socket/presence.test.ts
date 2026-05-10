@@ -1,9 +1,9 @@
 import assert from 'node:assert'
-import { APIKeyScope } from '../../src/entities/api-key'
-import GameChannel from '../../src/entities/game-channel'
-import GameChannelFactory from '../fixtures/GameChannelFactory'
-import createSocketIdentifyMessage from '../utils/createSocketIdentifyMessage'
-import createTestSocket from '../utils/createTestSocket'
+import { APIKeyScope } from '../../src/entities/api-key.js'
+import GameChannel from '../../src/entities/game-channel.js'
+import GameChannelFactory from '../fixtures/GameChannelFactory.js'
+import createSocketIdentifyMessage from '../utils/createSocketIdentifyMessage.js'
+import createTestSocket from '../utils/createTestSocket.js'
 
 describe('Socket presence', () => {
   it('should set the player presence to online when identifying', async () => {

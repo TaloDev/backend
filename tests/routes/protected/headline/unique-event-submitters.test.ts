@@ -1,12 +1,12 @@
 import { Collection } from '@mikro-orm/mysql'
 import { sub, format } from 'date-fns'
 import request from 'supertest'
-import PlayerAlias from '../../../../src/entities/player-alias'
-import EventFactory from '../../../fixtures/EventFactory'
-import PlayerAliasFactory from '../../../fixtures/PlayerAliasFactory'
-import PlayerFactory from '../../../fixtures/PlayerFactory'
-import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
-import createUserAndToken from '../../../utils/createUserAndToken'
+import PlayerAlias from '../../../../src/entities/player-alias.js'
+import EventFactory from '../../../fixtures/EventFactory.js'
+import PlayerAliasFactory from '../../../fixtures/PlayerAliasFactory.js'
+import PlayerFactory from '../../../fixtures/PlayerFactory.js'
+import createOrganisationAndGame from '../../../utils/createOrganisationAndGame.js'
+import createUserAndToken from '../../../utils/createUserAndToken.js'
 
 describe('Headline - unique event submitters', () => {
   const startDate = format(sub(new Date(), { days: 7 }), 'yyyy-MM-dd')

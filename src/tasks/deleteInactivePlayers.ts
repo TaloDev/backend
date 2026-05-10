@@ -1,14 +1,14 @@
 import { EntityManager } from '@mikro-orm/mysql'
 import { captureException } from '@sentry/node'
 import { subDays } from 'date-fns'
-import { getMikroORM } from '../config/mikro-orm.config'
-import Game from '../entities/game'
-import { GameActivityType } from '../entities/game-activity'
-import Player from '../entities/player'
-import { PlayerToDelete } from '../entities/player-to-delete'
-import User, { UserType } from '../entities/user'
-import createGameActivity from '../lib/logging/createGameActivity'
-import { streamByCursor } from '../lib/perf/streamByCursor'
+import { getMikroORM } from '../config/mikro-orm.config.js'
+import { GameActivityType } from '../entities/game-activity.js'
+import Game from '../entities/game.js'
+import { PlayerToDelete } from '../entities/player-to-delete.js'
+import Player from '../entities/player.js'
+import User, { UserType } from '../entities/user.js'
+import createGameActivity from '../lib/logging/createGameActivity.js'
+import { streamByCursor } from '../lib/perf/streamByCursor.js'
 
 const playersBatchSize = 100
 

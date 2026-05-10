@@ -1,9 +1,9 @@
 import request from 'supertest'
-import { APIKeyScope } from '../../../../src/entities/api-key'
-import { RelationshipType } from '../../../../src/entities/player-alias-subscription'
-import PlayerAliasSubscriptionFactory from '../../../fixtures/PlayerAliasSubscriptionFactory'
-import PlayerFactory from '../../../fixtures/PlayerFactory'
-import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
+import { APIKeyScope } from '../../../../src/entities/api-key.js'
+import { RelationshipType } from '../../../../src/entities/player-alias-subscription.js'
+import PlayerAliasSubscriptionFactory from '../../../fixtures/PlayerAliasSubscriptionFactory.js'
+import PlayerFactory from '../../../fixtures/PlayerFactory.js'
+import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken.js'
 
 describe('Player relationship API - get subscriptions', () => {
   it('should get confirmed subscriptions', async () => {

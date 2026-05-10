@@ -1,16 +1,16 @@
 {
   "compilerOptions": {
+    "declaration": true,
+    "esModuleInterop": true,
+    "lib": ["ESNext", "ES2024.Collection"],
     "module": "nodenext",
     "moduleDetection": "force",
-    "lib": ["ESNext", "ES2024.Collection"],
-    "target": "esnext",
+    "moduleResolution": "nodenext",
+    "noImplicitOverride": true,
     "outDir": "dist",
-    "esModuleInterop": true,
-    "declaration": true,
-    "types": ["vitest/globals", "./src/global.d.ts"],
     "skipLibCheck": true,
     "strict": true,
-    "noImplicitOverride": true,
-    "moduleResolution": "nodenext"
+    "target": "es2024",
+    "types": ["vitest/globals", "./src/global.d.ts"]
   }
 }

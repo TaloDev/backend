@@ -9,6 +9,7 @@ import PlayerGroupRule, {
 } from '../../../../src/entities/player-group-rule.js'
 import PlayerGroup from '../../../../src/entities/player-group.js'
 import PlayerProp from '../../../../src/entities/player-prop.js'
+import { DEV_BUILD_META_KEY } from '../../../../src/entities/player.js'
 import PlayerFactory from '../../../fixtures/PlayerFactory.js'
 import PlayerGroupFactory from '../../../fixtures/PlayerGroupFactory.js'
 import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken.js'
@@ -248,7 +249,7 @@ describe('Player API - update', () => {
         props: new Collection<PlayerProp>(player, [
           new PlayerProp(player, 'collectibles', '0'),
           new PlayerProp(player, 'zonesExplored', '1'),
-          new PlayerProp(player, 'META_DEV_BUILD', '1'),
+          new PlayerProp(player, DEV_BUILD_META_KEY, '1'),
         ]),
       }))
       .one()
@@ -275,7 +276,7 @@ describe('Player API - update', () => {
     expect(res.body.player.props).toEqual(
       expect.arrayContaining([
         {
-          key: 'META_DEV_BUILD',
+          key: DEV_BUILD_META_KEY,
           value: '1',
         },
         {

@@ -5,7 +5,7 @@ import { Factory } from 'hefty'
 import Game from '../../src/entities/game.js'
 import PlayerAlias from '../../src/entities/player-alias.js'
 import PlayerProp from '../../src/entities/player-prop.js'
-import Player from '../../src/entities/player.js'
+import Player, { DEV_BUILD_META_KEY } from '../../src/entities/player.js'
 import PlayerAliasFactory from './PlayerAliasFactory.js'
 import PlayerAuthFactory from './PlayerAuthFactory.js'
 import PlayerPresenceFactory from './PlayerPresenceFactory.js'
@@ -87,7 +87,7 @@ export default class PlayerFactory extends Factory<Player> {
   devBuild(): this {
     return this.state((player: Player) => {
       player.devBuild = true
-      player.addProp('META_DEV_BUILD', '1')
+      player.addProp(DEV_BUILD_META_KEY, '1')
       return player
     })
   }

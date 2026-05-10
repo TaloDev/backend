@@ -27,4 +27,4 @@ FROM base AS prod
 ENV NODE_ENV=production
 RUN --mount=type=cache,target=/root/.npm npm ci --omit=dev
 COPY --from=build /usr/backend/dist .
-CMD [ "node", "--experimental-decorators", "index.js" ]
+CMD [ "node", "index.js" ]

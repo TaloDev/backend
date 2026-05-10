@@ -1,8 +1,8 @@
 import assert from 'node:assert'
 import Stripe from 'stripe'
-import PricingPlan from '../../../entities/pricing-plan'
-import initStripe from '../../../lib/billing/initStripe'
-import { protectedRoute } from '../../../lib/routing/router'
+import PricingPlan from '../../../entities/pricing-plan.js'
+import initStripe from '../../../lib/billing/initStripe.js'
+import { protectedRoute } from '../../../lib/routing/router.js'
 
 type PricingPlanProduct = Omit<
   PricingPlan & {

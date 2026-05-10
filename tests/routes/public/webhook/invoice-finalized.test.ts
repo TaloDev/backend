@@ -1,12 +1,12 @@
 import assert from 'node:assert'
 import request from 'supertest'
 import { v4 } from 'uuid'
-import PlanInvoice from '../../../../src/emails/plan-invoice-mail'
-import initStripe from '../../../../src/lib/billing/initStripe'
-import * as sendEmail from '../../../../src/lib/messaging/sendEmail'
-import PricingPlanFactory from '../../../fixtures/PricingPlanFactory'
-import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
-import { truncateTables } from '../../../utils/truncateTables'
+import PlanInvoice from '../../../../src/emails/plan-invoice-mail.js'
+import initStripe from '../../../../src/lib/billing/initStripe.js'
+import * as sendEmail from '../../../../src/lib/messaging/sendEmail.js'
+import PricingPlanFactory from '../../../fixtures/PricingPlanFactory.js'
+import createOrganisationAndGame from '../../../utils/createOrganisationAndGame.js'
+import { truncateTables } from '../../../utils/truncateTables.js'
 
 describe('Webhook - invoice finalized', () => {
   const sendMock = vi.spyOn(sendEmail, 'default')

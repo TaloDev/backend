@@ -1,8 +1,8 @@
 import { EntityManager } from '@mikro-orm/mysql'
-import Game from '../../../entities/game'
-import GameFeedbackCategory from '../../../entities/game-feedback-category'
-import { protectedRoute, withMiddleware } from '../../../lib/routing/router'
-import { loadGame } from '../../../middleware/game-middleware'
+import GameFeedbackCategory from '../../../entities/game-feedback-category.js'
+import Game from '../../../entities/game.js'
+import { protectedRoute, withMiddleware } from '../../../lib/routing/router.js'
+import { loadGame } from '../../../middleware/game-middleware.js'
 
 export async function listCategoriesHandler({ em, game }: { em: EntityManager; game: Game }) {
   const feedbackCategories = await em.repo(GameFeedbackCategory).find({ game })

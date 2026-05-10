@@ -1,6 +1,6 @@
 import request from 'supertest'
-import * as sendEmail from '../../../../src/lib/messaging/sendEmail'
-import UserFactory from '../../../fixtures/UserFactory'
+import * as sendEmail from '../../../../src/lib/messaging/sendEmail.js'
+import UserFactory from '../../../fixtures/UserFactory.js'
 
 describe('User public - forgot password', () => {
   const sendMock = vi.spyOn(sendEmail, 'default')

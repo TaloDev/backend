@@ -1,11 +1,11 @@
 import bcrypt from 'bcrypt'
 import jwt from 'jsonwebtoken'
 import assert from 'node:assert'
-import User from '../../../entities/user'
-import UserSession from '../../../entities/user-session'
-import { verify } from '../../../lib/auth/jwt'
-import { publicRoute } from '../../../lib/routing/router'
-import { passwordSchema } from '../../../lib/validation/passwordSchema'
+import UserSession from '../../../entities/user-session.js'
+import User from '../../../entities/user.js'
+import { verify } from '../../../lib/auth/jwt.js'
+import { publicRoute } from '../../../lib/routing/router.js'
+import { passwordSchema } from '../../../lib/validation/passwordSchema.js'
 
 export const resetPasswordRoute = publicRoute({
   method: 'post',

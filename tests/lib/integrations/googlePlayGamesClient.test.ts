@@ -1,9 +1,9 @@
 import axios from 'axios'
 import AxiosMockAdapter from 'axios-mock-adapter'
-import { IntegrationType } from '../../../src/entities/integration'
-import { GooglePlayGamesClient } from '../../../src/lib/integrations/clients/google-play-games-client'
-import IntegrationFactory from '../../fixtures/IntegrationFactory'
-import createOrganisationAndGame from '../../utils/createOrganisationAndGame'
+import { IntegrationType } from '../../../src/entities/integration.js'
+import { GooglePlayGamesClient } from '../../../src/lib/integrations/clients/google-play-games-client.js'
+import IntegrationFactory from '../../fixtures/IntegrationFactory.js'
+import createOrganisationAndGame from '../../utils/createOrganisationAndGame.js'
 
 async function createClient() {
   const [, game] = await createOrganisationAndGame()

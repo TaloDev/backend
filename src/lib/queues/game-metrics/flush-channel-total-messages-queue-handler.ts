@@ -1,9 +1,9 @@
 import { EntityManager, raw } from '@mikro-orm/mysql'
 import { captureException } from '@sentry/node'
-import { getMikroORM } from '../../../config/mikro-orm.config'
-import { getGlobalRedis } from '../../../config/redis.config'
-import GameChannel from '../../../entities/game-channel'
-import createQueue from '../createQueue'
+import { getMikroORM } from '../../../config/mikro-orm.config.js'
+import { getGlobalRedis } from '../../../config/redis.config.js'
+import GameChannel from '../../../entities/game-channel.js'
+import createQueue from '../createQueue.js'
 
 const REDIS_KEY = 'channel:total-messages'
 

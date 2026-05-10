@@ -1,6 +1,6 @@
 import * as Sentry from '@sentry/node'
-import SocketConnection from '../socketConnection'
-import { sendMessage, SocketMessageRequest } from './socketMessage'
+import SocketConnection from '../socketConnection.js'
+import { sendMessage, SocketMessageRequest } from './socketMessage.js'
 
 export type SocketErrorCode = [
   'INVALID_MESSAGE',

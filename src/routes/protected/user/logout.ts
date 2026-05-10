@@ -1,5 +1,5 @@
-import UserSession from '../../../entities/user-session'
-import { protectedRoute } from '../../../lib/routing/router'
+import UserSession from '../../../entities/user-session.js'
+import { protectedRoute } from '../../../lib/routing/router.js'
 
 export const logoutRoute = protectedRoute({
   method: 'post',

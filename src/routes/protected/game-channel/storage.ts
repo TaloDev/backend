@@ -1,10 +1,10 @@
 import { QueryOrder } from '@mikro-orm/mysql'
-import GameChannelStorageProp from '../../../entities/game-channel-storage-prop'
-import { DEFAULT_PAGE_SIZE } from '../../../lib/pagination/itemsPerPage'
-import { protectedRoute, withMiddleware } from '../../../lib/routing/router'
-import { pageSchema } from '../../../lib/validation/pageSchema'
-import { loadGame } from '../../../middleware/game-middleware'
-import { loadChannel } from './common'
+import GameChannelStorageProp from '../../../entities/game-channel-storage-prop.js'
+import { DEFAULT_PAGE_SIZE } from '../../../lib/pagination/itemsPerPage.js'
+import { protectedRoute, withMiddleware } from '../../../lib/routing/router.js'
+import { pageSchema } from '../../../lib/validation/pageSchema.js'
+import { loadGame } from '../../../middleware/game-middleware.js'
+import { loadChannel } from './common.js'
 
 const itemsPerPage = DEFAULT_PAGE_SIZE
 

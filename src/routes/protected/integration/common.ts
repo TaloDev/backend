@@ -1,11 +1,14 @@
 import { EntityManager } from '@mikro-orm/mysql'
 import { Job, Queue } from 'bullmq'
 import { Next } from 'koa'
-import { getMikroORM } from '../../../config/mikro-orm.config'
-import Game from '../../../entities/game'
-import Integration, { IntegrationConfigMap, IntegrationType } from '../../../entities/integration'
-import createQueue from '../../../lib/queues/createQueue'
-import { ProtectedRouteContext } from '../../../lib/routing/context'
+import { getMikroORM } from '../../../config/mikro-orm.config.js'
+import Game from '../../../entities/game.js'
+import Integration, {
+  IntegrationConfigMap,
+  IntegrationType,
+} from '../../../entities/integration.js'
+import createQueue from '../../../lib/queues/createQueue.js'
+import { ProtectedRouteContext } from '../../../lib/routing/context.js'
 
 type IntegrationRouteContext = ProtectedRouteContext<{
   game: Game

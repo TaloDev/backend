@@ -1,10 +1,10 @@
 import { Collection } from '@mikro-orm/mysql'
 import { rand, randBoolean, randNumber, randSlug, randText } from '@ngneat/falso'
 import { Factory } from 'hefty'
-import Game from '../../src/entities/game'
-import Leaderboard, { LeaderboardSortMode } from '../../src/entities/leaderboard'
-import LeaderboardEntry from '../../src/entities/leaderboard-entry'
-import LeaderboardEntryFactory from './LeaderboardEntryFactory'
+import Game from '../../src/entities/game.js'
+import LeaderboardEntry from '../../src/entities/leaderboard-entry.js'
+import Leaderboard, { LeaderboardSortMode } from '../../src/entities/leaderboard.js'
+import LeaderboardEntryFactory from './LeaderboardEntryFactory.js'
 
 export default class LeaderboardFactory extends Factory<Leaderboard> {
   private availableGames: Game[]

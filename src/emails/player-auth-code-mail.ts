@@ -1,5 +1,5 @@
-import PlayerAlias from '../entities/player-alias'
-import Mail from './mail'
+import PlayerAlias from '../entities/player-alias.js'
+import Mail from './mail.js'
 
 export default class PlayerAuthCode extends Mail {
   constructor(alias: PlayerAlias, code: string) {

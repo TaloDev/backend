@@ -1,9 +1,9 @@
 import { rand, randFloat, randNumber, randText, randUuid } from '@ngneat/falso'
 import { sub } from 'date-fns'
 import { Factory } from 'hefty'
-import GameSave from '../../src/entities/game-save'
-import Player from '../../src/entities/player'
-import randomDate from '../../src/lib/dates/randomDate'
+import GameSave from '../../src/entities/game-save.js'
+import Player from '../../src/entities/player.js'
+import randomDate from '../../src/lib/dates/randomDate.js'
 
 export default class GameSaveFactory extends Factory<GameSave> {
   private availablePlayers: Player[]

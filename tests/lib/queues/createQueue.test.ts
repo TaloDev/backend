@@ -1,6 +1,6 @@
 import { differenceInDays } from 'date-fns'
-import FailedJob from '../../../src/entities/failed-job'
-import createQueue from '../../../src/lib/queues/createQueue'
+import FailedJob from '../../../src/entities/failed-job.js'
+import createQueue from '../../../src/lib/queues/createQueue.js'
 
 describe('Create queue', () => {
   beforeAll(async () => {

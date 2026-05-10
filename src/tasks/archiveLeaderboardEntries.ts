@@ -1,13 +1,13 @@
 import { EntityManager } from '@mikro-orm/mysql'
 import { isToday, isThisWeek, isThisMonth, isThisYear } from 'date-fns'
 import assert from 'node:assert'
-import { getMikroORM } from '../config/mikro-orm.config'
-import { LeaderboardRefreshInterval } from '../entities/leaderboard'
-import Leaderboard from '../entities/leaderboard'
-import LeaderboardEntry from '../entities/leaderboard-entry'
-import triggerIntegrations from '../lib/integrations/triggerIntegrations'
-import { deferClearResponseCache } from '../lib/perf/responseCacheQueue'
-import { streamByCursor } from '../lib/perf/streamByCursor'
+import { getMikroORM } from '../config/mikro-orm.config.js'
+import LeaderboardEntry from '../entities/leaderboard-entry.js'
+import { LeaderboardRefreshInterval } from '../entities/leaderboard.js'
+import Leaderboard from '../entities/leaderboard.js'
+import triggerIntegrations from '../lib/integrations/triggerIntegrations.js'
+import { deferClearResponseCache } from '../lib/perf/responseCacheQueue.js'
+import { streamByCursor } from '../lib/perf/streamByCursor.js'
 
 export async function archiveEntriesForLeaderboard(em: EntityManager, leaderboard: Leaderboard) {
   // this should never happen, but it enforces correct typing for refreshCheckers

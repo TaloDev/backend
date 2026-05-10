@@ -1,13 +1,13 @@
 import { FilterQuery } from '@mikro-orm/mysql'
-import { GameActivityType } from '../../../entities/game-activity'
-import GameFeedback from '../../../entities/game-feedback'
-import { UserType } from '../../../entities/user'
-import createGameActivity from '../../../lib/logging/createGameActivity'
-import { protectedRoute, withMiddleware } from '../../../lib/routing/router'
-import { resetModes, translateResetMode } from '../../../lib/validation/resetModeValidation'
-import { loadGame } from '../../../middleware/game-middleware'
-import { userTypeGate } from '../../../middleware/policy-middleware'
-import { loadFeedbackCategory } from './common'
+import { GameActivityType } from '../../../entities/game-activity.js'
+import GameFeedback from '../../../entities/game-feedback.js'
+import { UserType } from '../../../entities/user.js'
+import createGameActivity from '../../../lib/logging/createGameActivity.js'
+import { protectedRoute, withMiddleware } from '../../../lib/routing/router.js'
+import { resetModes, translateResetMode } from '../../../lib/validation/resetModeValidation.js'
+import { loadGame } from '../../../middleware/game-middleware.js'
+import { userTypeGate } from '../../../middleware/policy-middleware.js'
+import { loadFeedbackCategory } from './common.js'
 
 export const resetCategoryRoute = protectedRoute({
   method: 'delete',

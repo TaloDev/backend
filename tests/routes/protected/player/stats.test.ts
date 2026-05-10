@@ -1,9 +1,9 @@
 import request from 'supertest'
-import GameStatFactory from '../../../fixtures/GameStatFactory'
-import PlayerFactory from '../../../fixtures/PlayerFactory'
-import PlayerGameStatFactory from '../../../fixtures/PlayerGameStatFactory'
-import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
-import createUserAndToken from '../../../utils/createUserAndToken'
+import GameStatFactory from '../../../fixtures/GameStatFactory.js'
+import PlayerFactory from '../../../fixtures/PlayerFactory.js'
+import PlayerGameStatFactory from '../../../fixtures/PlayerGameStatFactory.js'
+import createOrganisationAndGame from '../../../utils/createOrganisationAndGame.js'
+import createUserAndToken from '../../../utils/createUserAndToken.js'
 
 describe('Player - stats', () => {
   it("should get a player's stats", async () => {

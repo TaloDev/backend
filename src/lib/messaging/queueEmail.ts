@@ -1,8 +1,8 @@
 import { Queue } from 'bullmq'
 import { createHash } from 'crypto'
-import { getGlobalRedis } from '../../config/redis.config'
-import Mail, { EmailConfig, EmailConfigMetadata } from '../../emails/mail'
-import checkRateLimitExceeded from '../errors/checkRateLimitExceeded'
+import { getGlobalRedis } from '../../config/redis.config.js'
+import Mail, { EmailConfig, EmailConfigMetadata } from '../../emails/mail.js'
+import checkRateLimitExceeded from '../errors/checkRateLimitExceeded.js'
 
 export default async function queueEmail(
   emailQueue: Queue<EmailConfig>,

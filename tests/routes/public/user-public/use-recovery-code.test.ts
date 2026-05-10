@@ -1,11 +1,11 @@
 import { Collection, EntityManager } from '@mikro-orm/mysql'
 import request from 'supertest'
-import User from '../../../../src/entities/user'
-import UserRecoveryCode from '../../../../src/entities/user-recovery-code'
-import UserTwoFactorAuth from '../../../../src/entities/user-two-factor-auth'
-import generateRecoveryCodes from '../../../../src/lib/auth/generateRecoveryCodes'
-import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
-import createUserAndToken from '../../../utils/createUserAndToken'
+import UserRecoveryCode from '../../../../src/entities/user-recovery-code.js'
+import UserTwoFactorAuth from '../../../../src/entities/user-two-factor-auth.js'
+import User from '../../../../src/entities/user.js'
+import generateRecoveryCodes from '../../../../src/lib/auth/generateRecoveryCodes.js'
+import createOrganisationAndGame from '../../../utils/createOrganisationAndGame.js'
+import createUserAndToken from '../../../utils/createUserAndToken.js'
 
 async function setTwoFactorAuthSession(user: User) {
   await redis.set(`2fa:${user.id}`, 'true')

@@ -1,12 +1,12 @@
 import { ClickHouseClient } from '@clickhouse/client'
 import { EntityManager } from '@mikro-orm/mysql'
 import { v4 } from 'uuid'
-import ClickHouseEntity from '../lib/clickhouse/clickhouse-entity'
-import { formatDateForClickHouse } from '../lib/clickhouse/formatDateTime'
-import { hardSanitiseProps } from '../lib/props/sanitiseProps'
-import Game from './game'
-import PlayerAlias from './player-alias'
-import Prop from './prop'
+import ClickHouseEntity from '../lib/clickhouse/clickhouse-entity.js'
+import { formatDateForClickHouse } from '../lib/clickhouse/formatDateTime.js'
+import { hardSanitiseProps } from '../lib/props/sanitiseProps.js'
+import Game from './game.js'
+import PlayerAlias from './player-alias.js'
+import Prop from './prop.js'
 
 const eventMetaProps = [
   'META_OS',

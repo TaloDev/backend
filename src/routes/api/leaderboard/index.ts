@@ -1,6 +1,6 @@
-import { apiRouter } from '../../../lib/routing/router'
-import { getRoute } from './get'
-import { postRoute } from './post'
+import { apiRouter } from '../../../lib/routing/router.js'
+import { getRoute } from './get.js'
+import { postRoute } from './post.js'
 
 export function leaderboardAPIRouter() {
   return apiRouter(

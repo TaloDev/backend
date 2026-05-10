@@ -1,7 +1,7 @@
 import { Next } from 'koa'
-import GameChannel from '../../../entities/game-channel'
-import { ProtectedRouteContext } from '../../../lib/routing/context'
-import { GameRouteState } from '../../../middleware/game-middleware'
+import GameChannel from '../../../entities/game-channel.js'
+import { ProtectedRouteContext } from '../../../lib/routing/context.js'
+import { GameRouteState } from '../../../middleware/game-middleware.js'
 
 type GameChannelRouteContext = ProtectedRouteContext<GameRouteState & { channel: GameChannel }>
 

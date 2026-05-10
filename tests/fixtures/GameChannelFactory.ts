@@ -1,8 +1,8 @@
 import { randText } from '@ngneat/falso'
 import { Factory } from 'hefty'
-import Game from '../../src/entities/game'
-import GameChannel from '../../src/entities/game-channel'
-import PlayerFactory from './PlayerFactory'
+import GameChannel from '../../src/entities/game-channel.js'
+import Game from '../../src/entities/game.js'
+import PlayerFactory from './PlayerFactory.js'
 
 export default class GameChannelFactory extends Factory<GameChannel> {
   private game: Game

@@ -1,8 +1,8 @@
-import { APIKeyScope } from '../../../entities/api-key'
-import { apiRoute, withMiddleware } from '../../../lib/routing/router'
-import { requireScopes } from '../../../middleware/policy-middleware'
-import { listPlayersHandler } from '../../protected/player/list'
-import { searchDocs } from './docs'
+import { APIKeyScope } from '../../../entities/api-key.js'
+import { apiRoute, withMiddleware } from '../../../lib/routing/router.js'
+import { requireScopes } from '../../../middleware/policy-middleware.js'
+import { listPlayersHandler } from '../../protected/player/list.js'
+import { searchDocs } from './docs.js'
 
 export const searchRoute = apiRoute({
   method: 'get',

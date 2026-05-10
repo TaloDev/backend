@@ -1,7 +1,7 @@
 import { setTraceAttributes } from '@hyperdx/node-opentelemetry'
 import { IncomingMessage } from 'http'
-import SocketConnection from '../socketConnection'
-import { heartbeatMessage, SocketMessageResponse } from './socketMessage'
+import SocketConnection from '../socketConnection.js'
+import { heartbeatMessage, SocketMessageResponse } from './socketMessage.js'
 
 function canLog(): boolean {
   return process.env.NODE_ENV !== 'test'

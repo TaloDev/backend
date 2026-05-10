@@ -1,9 +1,9 @@
 import { EntityManager, UniqueConstraintViolationException } from '@mikro-orm/mysql'
 import { captureException } from '@sentry/node'
-import { getGlobalRedis } from '../../config/redis.config'
-import Player from '../../entities/player'
-import PlayerGroup from '../../entities/player-group'
-import { getResultCacheOptions } from '../perf/getResultCacheOptions'
+import { getGlobalRedis } from '../../config/redis.config.js'
+import PlayerGroup from '../../entities/player-group.js'
+import Player from '../../entities/player.js'
+import { getResultCacheOptions } from '../perf/getResultCacheOptions.js'
 
 function getGroupsFromPlayer(em: EntityManager, player: Player) {
   return em.repo(PlayerGroup).find(

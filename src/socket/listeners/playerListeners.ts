@@ -1,13 +1,13 @@
 import { setTraceAttributes } from '@hyperdx/node-opentelemetry'
 import { EntityManager, RequestContext } from '@mikro-orm/mysql'
 import { z, ZodType } from 'zod'
-import { APIKeyScope } from '../../entities/api-key'
-import PlayerAlias, { PlayerAliasService } from '../../entities/player-alias'
-import { validateSessionTokenJWT } from '../../middleware/player-auth-middleware'
-import SocketError, { sendError } from '../messages/socketError'
-import { sendMessage } from '../messages/socketMessage'
-import createListener from '../router/createListener'
-import { SocketMessageListener } from '../router/createListener'
+import { APIKeyScope } from '../../entities/api-key.js'
+import PlayerAlias, { PlayerAliasService } from '../../entities/player-alias.js'
+import { validateSessionTokenJWT } from '../../middleware/player-auth-middleware.js'
+import SocketError, { sendError } from '../messages/socketError.js'
+import { sendMessage } from '../messages/socketMessage.js'
+import createListener from '../router/createListener.js'
+import { SocketMessageListener } from '../router/createListener.js'
 
 const playerListeners = [
   createListener(

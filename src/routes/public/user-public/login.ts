@@ -1,9 +1,9 @@
 import bcrypt from 'bcrypt'
-import User from '../../../entities/user'
-import { buildTokenPair } from '../../../lib/auth/buildTokenPair'
-import { publicRoute } from '../../../lib/routing/router'
-import { setUserLastSeenAt } from '../../../lib/users/setUserLastSeenAt'
-import { passwordSchema } from '../../../lib/validation/passwordSchema'
+import User from '../../../entities/user.js'
+import { buildTokenPair } from '../../../lib/auth/buildTokenPair.js'
+import { publicRoute } from '../../../lib/routing/router.js'
+import { setUserLastSeenAt } from '../../../lib/users/setUserLastSeenAt.js'
+import { passwordSchema } from '../../../lib/validation/passwordSchema.js'
 
 export const loginRoute = publicRoute({
   method: 'post',

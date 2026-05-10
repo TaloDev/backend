@@ -1,10 +1,10 @@
 import request from 'supertest'
-import { APIKeyScope } from '../../../../src/entities/api-key'
+import { APIKeyScope } from '../../../../src/entities/api-key.js'
 import PlayerAuthActivity, {
   PlayerAuthActivityType,
-} from '../../../../src/entities/player-auth-activity'
-import PlayerFactory from '../../../fixtures/PlayerFactory'
-import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
+} from '../../../../src/entities/player-auth-activity.js'
+import PlayerFactory from '../../../fixtures/PlayerFactory.js'
+import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken.js'
 
 describe('Player auth API - logout', () => {
   it('should logout a player if the api key has the correct scopes', async () => {

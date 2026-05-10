@@ -1,10 +1,10 @@
 import { EntityManager } from '@mikro-orm/mysql'
 import { captureException } from '@sentry/node'
-import { getGlobalQueue } from '../config/global-queues'
-import { getMikroORM } from '../config/mikro-orm.config'
-import Player from '../entities/player'
-import { PlayerToDelete } from '../entities/player-to-delete'
-import { DeleteClickHousePlayerDataConfig } from '../lib/queues/createDeleteClickHousePlayerDataQueue'
+import { getGlobalQueue } from '../config/global-queues.js'
+import { getMikroORM } from '../config/mikro-orm.config.js'
+import { PlayerToDelete } from '../entities/player-to-delete.js'
+import Player from '../entities/player.js'
+import { DeleteClickHousePlayerDataConfig } from '../lib/queues/createDeleteClickHousePlayerDataQueue.js'
 
 export async function deleteClickHousePlayerData(options: DeleteClickHousePlayerDataConfig) {
   const queue = getGlobalQueue('delete-clickhouse-player-data')

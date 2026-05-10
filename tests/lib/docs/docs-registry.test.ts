@@ -1,6 +1,6 @@
 import assert from 'node:assert'
 import { describe, it, expect, beforeEach } from 'vitest'
-import { DocsRegistry } from '../../../src/lib/docs/docs-registry'
+import { DocsRegistry } from '../../../src/lib/docs/docs-registry.js'
 
 describe('DocsRegistry', () => {
   let registry: DocsRegistry

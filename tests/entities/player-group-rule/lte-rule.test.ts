@@ -3,15 +3,15 @@ import request from 'supertest'
 import PlayerGroupRule, {
   PlayerGroupRuleCastType,
   PlayerGroupRuleName,
-} from '../../../src/entities/player-group-rule'
-import PlayerProp from '../../../src/entities/player-prop'
-import GameStatFactory from '../../fixtures/GameStatFactory'
-import LeaderboardEntryFactory from '../../fixtures/LeaderboardEntryFactory'
-import LeaderboardFactory from '../../fixtures/LeaderboardFactory'
-import PlayerFactory from '../../fixtures/PlayerFactory'
-import PlayerGameStatFactory from '../../fixtures/PlayerGameStatFactory'
-import createOrganisationAndGame from '../../utils/createOrganisationAndGame'
-import createUserAndToken from '../../utils/createUserAndToken'
+} from '../../../src/entities/player-group-rule.js'
+import PlayerProp from '../../../src/entities/player-prop.js'
+import GameStatFactory from '../../fixtures/GameStatFactory.js'
+import LeaderboardEntryFactory from '../../fixtures/LeaderboardEntryFactory.js'
+import LeaderboardFactory from '../../fixtures/LeaderboardFactory.js'
+import PlayerFactory from '../../fixtures/PlayerFactory.js'
+import PlayerGameStatFactory from '../../fixtures/PlayerGameStatFactory.js'
+import createOrganisationAndGame from '../../utils/createOrganisationAndGame.js'
+import createUserAndToken from '../../utils/createUserAndToken.js'
 
 describe('LTE rule', () => {
   it('should correctly evaluate a LTE rule', async () => {

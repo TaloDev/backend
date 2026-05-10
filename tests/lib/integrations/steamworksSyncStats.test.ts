@@ -1,22 +1,22 @@
 import { randSlug, randText } from '@ngneat/falso'
 import axios from 'axios'
 import AxiosMockAdapter from 'axios-mock-adapter'
-import GameStat from '../../../src/entities/game-stat'
-import { IntegrationType } from '../../../src/entities/integration'
-import PlayerGameStat from '../../../src/entities/player-game-stat'
-import SteamworksIntegrationEvent from '../../../src/entities/steamworks-integration-event'
-import { SteamworksPlayerStat } from '../../../src/entities/steamworks-player-stat'
+import GameStat from '../../../src/entities/game-stat.js'
+import { IntegrationType } from '../../../src/entities/integration.js'
+import PlayerGameStat from '../../../src/entities/player-game-stat.js'
+import SteamworksIntegrationEvent from '../../../src/entities/steamworks-integration-event.js'
+import { SteamworksPlayerStat } from '../../../src/entities/steamworks-player-stat.js'
 import {
   GetSchemaForGameResponse,
   GetUserStatsForGameResponse,
-} from '../../../src/lib/integrations/clients/steamworks-client'
-import { syncSteamworksStats } from '../../../src/lib/integrations/steamworks/steamworks-stats'
-import GameStatFactory from '../../fixtures/GameStatFactory'
-import IntegrationConfigFactory from '../../fixtures/IntegrationConfigFactory'
-import IntegrationFactory from '../../fixtures/IntegrationFactory'
-import PlayerFactory from '../../fixtures/PlayerFactory'
-import PlayerGameStatFactory from '../../fixtures/PlayerGameStatFactory'
-import createOrganisationAndGame from '../../utils/createOrganisationAndGame'
+} from '../../../src/lib/integrations/clients/steamworks-client.js'
+import { syncSteamworksStats } from '../../../src/lib/integrations/steamworks/steamworks-stats.js'
+import GameStatFactory from '../../fixtures/GameStatFactory.js'
+import IntegrationConfigFactory from '../../fixtures/IntegrationConfigFactory.js'
+import IntegrationFactory from '../../fixtures/IntegrationFactory.js'
+import PlayerFactory from '../../fixtures/PlayerFactory.js'
+import PlayerGameStatFactory from '../../fixtures/PlayerGameStatFactory.js'
+import createOrganisationAndGame from '../../utils/createOrganisationAndGame.js'
 
 describe('Steamworks integration - sync stats', () => {
   const axiosMock = new AxiosMockAdapter(axios)

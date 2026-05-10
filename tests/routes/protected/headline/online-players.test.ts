@@ -1,8 +1,8 @@
 import request from 'supertest'
-import PlayerFactory from '../../../fixtures/PlayerFactory'
-import PlayerPresenceFactory from '../../../fixtures/PlayerPresenceFactory'
-import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
-import createUserAndToken from '../../../utils/createUserAndToken'
+import PlayerFactory from '../../../fixtures/PlayerFactory.js'
+import PlayerPresenceFactory from '../../../fixtures/PlayerPresenceFactory.js'
+import createOrganisationAndGame from '../../../utils/createOrganisationAndGame.js'
+import createUserAndToken from '../../../utils/createUserAndToken.js'
 
 describe('Headline - online players', () => {
   it('should return the number of online players', async () => {

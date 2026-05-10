@@ -1,7 +1,7 @@
 import { randBoolean, randSlug, randText } from '@ngneat/falso'
 import { Factory } from 'hefty'
-import Game from '../../src/entities/game'
-import GameFeedbackCategory from '../../src/entities/game-feedback-category'
+import GameFeedbackCategory from '../../src/entities/game-feedback-category.js'
+import Game from '../../src/entities/game.js'
 
 export default class GameFeedbackCategoryFactory extends Factory<GameFeedbackCategory> {
   private game: Game

@@ -1,11 +1,11 @@
 import request from 'supertest'
-import { UserType } from '../../../../src/entities/user'
-import { DEFAULT_PAGE_SIZE } from '../../../../src/lib/pagination/itemsPerPage'
-import GameActivityFactory from '../../../fixtures/GameActivityFactory'
-import UserFactory from '../../../fixtures/UserFactory'
-import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
-import createUserAndToken from '../../../utils/createUserAndToken'
-import userPermissionProvider from '../../../utils/userPermissionProvider'
+import { UserType } from '../../../../src/entities/user.js'
+import { DEFAULT_PAGE_SIZE } from '../../../../src/lib/pagination/itemsPerPage.js'
+import GameActivityFactory from '../../../fixtures/GameActivityFactory.js'
+import UserFactory from '../../../fixtures/UserFactory.js'
+import createOrganisationAndGame from '../../../utils/createOrganisationAndGame.js'
+import createUserAndToken from '../../../utils/createUserAndToken.js'
+import userPermissionProvider from '../../../utils/userPermissionProvider.js'
 
 describe('Game activity - list', () => {
   it.each(userPermissionProvider([UserType.ADMIN]))(

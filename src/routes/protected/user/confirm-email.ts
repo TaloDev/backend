@@ -1,5 +1,5 @@
-import UserAccessCode from '../../../entities/user-access-code'
-import { protectedRoute } from '../../../lib/routing/router'
+import UserAccessCode from '../../../entities/user-access-code.js'
+import { protectedRoute } from '../../../lib/routing/router.js'
 
 export const confirmEmailRoute = protectedRoute({
   method: 'post',

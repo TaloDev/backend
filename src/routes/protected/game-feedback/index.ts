@@ -1,11 +1,11 @@
-import { protectedRouter } from '../../../lib/routing/router'
-import { createCategoryRoute } from './create-category'
-import { deleteCategoryRoute } from './delete-category'
-import { listRoute } from './list'
-import { listCategoriesRoute } from './list-categories'
-import { resetCategoryRoute } from './reset-category'
-import { toggleArchivedRoute } from './toggle-archived'
-import { updateCategoryRoute } from './update-category'
+import { protectedRouter } from '../../../lib/routing/router.js'
+import { createCategoryRoute } from './create-category.js'
+import { deleteCategoryRoute } from './delete-category.js'
+import { listCategoriesRoute } from './list-categories.js'
+import { listRoute } from './list.js'
+import { resetCategoryRoute } from './reset-category.js'
+import { toggleArchivedRoute } from './toggle-archived.js'
+import { updateCategoryRoute } from './update-category.js'
 
 export function gameFeedbackRouter() {
   return protectedRouter('/games/:gameId/game-feedback', ({ route }) => {

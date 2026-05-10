@@ -1,9 +1,9 @@
 import type { Next } from 'koa'
 import { EntityManager } from '@mikro-orm/mysql'
-import GameChannel from '../../../entities/game-channel'
-import PlayerAlias from '../../../entities/player-alias'
-import { APIRouteContext } from '../../../lib/routing/context'
-import { PlayerAliasRouteState } from '../../../middleware/player-alias-middleware'
+import GameChannel from '../../../entities/game-channel.js'
+import PlayerAlias from '../../../entities/player-alias.js'
+import { APIRouteContext } from '../../../lib/routing/context.js'
+import { PlayerAliasRouteState } from '../../../middleware/player-alias-middleware.js'
 
 type GameChannelRouteState = PlayerAliasRouteState & {
   channel: GameChannel

@@ -1,11 +1,11 @@
 import { EntityManager } from '@mikro-orm/mysql'
-import Redis from 'ioredis'
+import { Redis } from 'ioredis'
 import {
   flush,
   incrementChannelTotalMessages,
-} from '../../../../src/lib/queues/game-metrics/flush-channel-total-messages-queue-handler'
-import GameChannelFactory from '../../../fixtures/GameChannelFactory'
-import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
+} from '../../../../src/lib/queues/game-metrics/flush-channel-total-messages-queue-handler.js'
+import GameChannelFactory from '../../../fixtures/GameChannelFactory.js'
+import createOrganisationAndGame from '../../../utils/createOrganisationAndGame.js'
 
 describe('FlushChannelTotalMessages', () => {
   afterEach(() => {

@@ -1,13 +1,13 @@
 import bcrypt from 'bcrypt'
 import request from 'supertest'
-import { APIKeyScope } from '../../../../src/entities/api-key'
+import { APIKeyScope } from '../../../../src/entities/api-key.js'
 import PlayerAuthActivity, {
   PlayerAuthActivityType,
-} from '../../../../src/entities/player-auth-activity'
-import * as sendEmail from '../../../../src/lib/messaging/sendEmail'
-import PlayerAuthFactory from '../../../fixtures/PlayerAuthFactory'
-import PlayerFactory from '../../../fixtures/PlayerFactory'
-import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
+} from '../../../../src/entities/player-auth-activity.js'
+import * as sendEmail from '../../../../src/lib/messaging/sendEmail.js'
+import PlayerAuthFactory from '../../../fixtures/PlayerAuthFactory.js'
+import PlayerFactory from '../../../fixtures/PlayerFactory.js'
+import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken.js'
 
 describe('Player auth API - login', () => {
   const sendMock = vi.spyOn(sendEmail, 'default')

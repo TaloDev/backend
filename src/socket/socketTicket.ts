@@ -1,6 +1,6 @@
 import { RequestContext } from '@mikro-orm/mysql'
 import { Redis } from 'ioredis'
-import APIKey from '../entities/api-key'
+import APIKey from '../entities/api-key.js'
 
 export default class SocketTicket {
   apiKey!: APIKey

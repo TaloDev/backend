@@ -39,7 +39,7 @@ Determine which tier applies and whether a feature directory already exists (e.g
 
 ```typescript
 // src/routes/api/my-feature/get.ts
-import { apiRoute } from '../../../lib/routing/router'
+import { apiRoute } from '../../../lib/routing/router.js'
 
 // If using docs AND this is a module-level export, define docs FIRST (before the route)
 const docs = {
@@ -98,7 +98,7 @@ middleware: withMiddleware(
 
 ```typescript
 // src/routes/api/my-feature/common.ts
-import { APIRouteContext } from '../../../lib/routing/context'
+import { APIRouteContext } from '../../../lib/routing/context.js'
 import { Next } from 'koa'
 
 export async function loadMyEntity(ctx: APIRouteContext<{ entity: MyEntity }>, next: Next) {
@@ -147,9 +147,9 @@ route({ schema: ..., handler: ... })            // ❌ loses type inference
 
 ```typescript
 // src/routes/api/my-feature/index.ts
-import { apiRouter } from '../../../lib/routing/router'
-import { getRoute } from './get'
-import { postRoute } from './post'
+import { apiRouter } from '../../../lib/routing/router.js'
+import { getRoute } from './get.js'
+import { postRoute } from './post.js'
 
 export function myFeatureAPIRouter() {
   return apiRouter(
@@ -171,7 +171,7 @@ Add to the appropriate config file if it's a new router:
 
 ```typescript
 // src/config/api-routes.ts
-import { myFeatureAPIRouter } from '../routes/api/my-feature'
+import { myFeatureAPIRouter } from '../routes/api/my-feature.js'
 
 export default function apiRoutes(app: Koa) {
   // ...existing routers...
@@ -185,7 +185,7 @@ If docs exist for other routes in this folder, add to `docs.ts`. If this is the 
 
 ```typescript
 // src/routes/api/my-feature/docs.ts
-import { RouteDocs } from '../../../lib/docs/docs-registry'
+import { RouteDocs } from '../../../lib/docs/docs-registry.js'
 
 export const getDocs = {
   description: 'Get a my-feature by ID',

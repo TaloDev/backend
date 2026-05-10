@@ -1,8 +1,8 @@
 import request from 'supertest'
-import GameActivity, { GameActivityType } from '../../../../src/entities/game-activity'
-import GameStatFactory from '../../../fixtures/GameStatFactory'
-import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
-import createUserAndToken from '../../../utils/createUserAndToken'
+import GameActivity, { GameActivityType } from '../../../../src/entities/game-activity.js'
+import GameStatFactory from '../../../fixtures/GameStatFactory.js'
+import createOrganisationAndGame from '../../../utils/createOrganisationAndGame.js'
+import createUserAndToken from '../../../utils/createUserAndToken.js'
 
 describe('Game stat - update', () => {
   it('should update the name', async () => {

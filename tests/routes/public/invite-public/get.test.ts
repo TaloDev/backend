@@ -1,6 +1,6 @@
 import request from 'supertest'
-import InviteFactory from '../../../fixtures/InviteFactory'
-import OrganisationFactory from '../../../fixtures/OrganisationFactory'
+import InviteFactory from '../../../fixtures/InviteFactory.js'
+import OrganisationFactory from '../../../fixtures/OrganisationFactory.js'
 
 describe('Invite public - get', () => {
   it('should return an existing invite', async () => {

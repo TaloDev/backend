@@ -1,9 +1,9 @@
 import { EntityManager } from '@mikro-orm/mysql'
 import { v4 } from 'uuid'
-import ClickHouseEntity from '../lib/clickhouse/clickhouse-entity'
-import { formatDateForClickHouse } from '../lib/clickhouse/formatDateTime'
-import Game from './game'
-import Player from './player'
+import ClickHouseEntity from '../lib/clickhouse/clickhouse-entity.js'
+import { formatDateForClickHouse } from '../lib/clickhouse/formatDateTime.js'
+import Game from './game.js'
+import Player from './player.js'
 
 export type ClickHousePlayerSession = {
   id: string

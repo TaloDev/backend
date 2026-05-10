@@ -1,9 +1,9 @@
-import { getGlobalRedis } from '../../src/config/redis.config'
-import APIKey, { APIKeyScope } from '../../src/entities/api-key'
-import Player from '../../src/entities/player'
-import { createSocketTicket } from '../../src/lib/sockets/createSocketTicket'
-import PlayerFactory from '../fixtures/PlayerFactory'
-import createAPIKeyAndToken from './createAPIKeyAndToken'
+import { getGlobalRedis } from '../../src/config/redis.config.js'
+import APIKey, { APIKeyScope } from '../../src/entities/api-key.js'
+import Player from '../../src/entities/player.js'
+import { createSocketTicket } from '../../src/lib/sockets/createSocketTicket.js'
+import PlayerFactory from '../fixtures/PlayerFactory.js'
+import createAPIKeyAndToken from './createAPIKeyAndToken.js'
 
 export type IdentifyMessage = {
   req: 'v1.players.identify'

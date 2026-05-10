@@ -1,6 +1,6 @@
 import Stripe from 'stripe'
-import Organisation from '../entities/organisation'
-import Mail from './mail'
+import Organisation from '../entities/organisation.js'
+import Mail from './mail.js'
 
 export default class PlanUpgraded extends Mail {
   constructor(organisation: Organisation, price: Stripe.Price, product: Stripe.Product) {

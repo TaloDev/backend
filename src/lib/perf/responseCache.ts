@@ -1,7 +1,7 @@
 import { captureException } from '@sentry/node'
-import Redis from 'ioredis'
-import { createRedisConnection, RESPONSE_CACHE_DB } from '../../config/redis.config'
-import { clearCachePattern } from './clearCachePattern'
+import { Redis } from 'ioredis'
+import { createRedisConnection, RESPONSE_CACHE_DB } from '../../config/redis.config.js'
+import { clearCachePattern } from './clearCachePattern.js'
 
 type Response<T = unknown> = {
   status: number

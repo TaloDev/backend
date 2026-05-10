@@ -1,8 +1,8 @@
 import { Entity, OneToOne, PrimaryKey, Property } from '@mikro-orm/decorators/es'
 import { v4 } from 'uuid'
-import { sign } from '../lib/auth/jwt'
-import Player from './player'
-import PlayerAlias from './player-alias'
+import { sign } from '../lib/auth/jwt.js'
+import PlayerAlias from './player-alias.js'
+import Player from './player.js'
 
 export const playerAuthErrorCodes = [
   'INVALID_CREDENTIALS',

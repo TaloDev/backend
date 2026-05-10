@@ -1,6 +1,6 @@
-import { apiRouter } from '../../../lib/routing/router'
-import { getRoute } from './get'
-import { putRoute } from './put'
+import { apiRouter } from '../../../lib/routing/router.js'
+import { getRoute } from './get.js'
+import { putRoute } from './put.js'
 
 export function playerPresenceAPIRouter() {
   return apiRouter(

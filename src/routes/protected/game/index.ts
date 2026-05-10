@@ -1,7 +1,7 @@
-import { protectedRouter } from '../../../lib/routing/router'
-import { createRoute } from './create'
-import { settingsRoute } from './settings'
-import { updateRoute } from './update'
+import { protectedRouter } from '../../../lib/routing/router.js'
+import { createRoute } from './create.js'
+import { settingsRoute } from './settings.js'
+import { updateRoute } from './update.js'
 
 export function gameRouter() {
   return protectedRouter('/games', ({ route }) => {

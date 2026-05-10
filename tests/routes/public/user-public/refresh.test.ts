@@ -1,7 +1,7 @@
 import request from 'supertest'
-import UserSession from '../../../../src/entities/user-session'
-import UserFactory from '../../../fixtures/UserFactory'
-import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
+import UserSession from '../../../../src/entities/user-session.js'
+import UserFactory from '../../../fixtures/UserFactory.js'
+import createOrganisationAndGame from '../../../utils/createOrganisationAndGame.js'
 
 describe('User public - refresh', () => {
   it('should let a user refresh their session if they have one', async () => {

@@ -1,6 +1,6 @@
 import { setTraceAttributes } from '@hyperdx/node-opentelemetry'
 import { Context, Next } from 'koa'
-import { isPublicHealthCheck } from '../lib/routing/route-info'
+import { isPublicHealthCheck } from '../lib/routing/route-info.js'
 
 export async function loggerMiddleware(ctx: Context, next: Next) {
   if (isPublicHealthCheck(ctx)) {

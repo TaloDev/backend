@@ -1,7 +1,7 @@
-import APIKey, { APIKeyScope } from '../../src/entities/api-key'
-import { createToken } from '../../src/routes/protected/api-key/common'
-import GameFactory from '../fixtures/GameFactory'
-import UserFactory from '../fixtures/UserFactory'
+import APIKey, { APIKeyScope } from '../../src/entities/api-key.js'
+import { createToken } from '../../src/routes/protected/api-key/common.js'
+import GameFactory from '../fixtures/GameFactory.js'
+import UserFactory from '../fixtures/UserFactory.js'
 
 export default async function createAPIKeyAndToken(
   scopes: APIKeyScope[],

@@ -1,6 +1,6 @@
 import { Next } from 'koa'
-import Game from '../entities/game'
-import { ProtectedRouteContext } from '../lib/routing/context'
+import Game from '../entities/game.js'
+import { ProtectedRouteContext } from '../lib/routing/context.js'
 
 export type GameRouteState = { game: Game }
 type GameRouteContext = ProtectedRouteContext<GameRouteState>

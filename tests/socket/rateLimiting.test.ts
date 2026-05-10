@@ -1,8 +1,8 @@
-import { APIKeyScope } from '../../src/entities/api-key'
-import * as checkRateLimitExceeded from '../../src/lib/errors/checkRateLimitExceeded'
-import GameChannelFactory from '../fixtures/GameChannelFactory'
-import createSocketIdentifyMessage from '../utils/createSocketIdentifyMessage'
-import createTestSocket from '../utils/createTestSocket'
+import { APIKeyScope } from '../../src/entities/api-key.js'
+import * as checkRateLimitExceeded from '../../src/lib/errors/checkRateLimitExceeded.js'
+import GameChannelFactory from '../fixtures/GameChannelFactory.js'
+import createSocketIdentifyMessage from '../utils/createSocketIdentifyMessage.js'
+import createTestSocket from '../utils/createTestSocket.js'
 
 describe('Socket rate limiting', () => {
   const checkRateLimitExceededMock = vi.spyOn(checkRateLimitExceeded, 'default')

@@ -1,7 +1,7 @@
 import { EntityManager } from '@mikro-orm/mysql'
-import Organisation from '../../entities/organisation'
-import Player from '../../entities/player'
-import { getResultCacheOptions } from '../perf/getResultCacheOptions'
+import Organisation from '../../entities/organisation.js'
+import Player from '../../entities/player.js'
+import { getResultCacheOptions } from '../perf/getResultCacheOptions.js'
 
 export default async function getBillablePlayerCount(
   em: EntityManager,

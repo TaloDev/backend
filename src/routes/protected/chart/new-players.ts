@@ -1,12 +1,12 @@
 import { raw } from '@mikro-orm/mysql'
 import { endOfDay, startOfDay } from 'date-fns'
 import { millisecondsInDay } from 'date-fns/constants'
-import Player from '../../../entities/player'
-import { calculateChange } from '../../../lib/math/calculateChange'
-import { withResponseCache } from '../../../lib/perf/responseCache'
-import { protectedRoute, withMiddleware } from '../../../lib/routing/router'
-import { dateRangeSchema } from '../../../lib/validation/dateRangeSchema'
-import { loadGame } from '../../../middleware/game-middleware'
+import Player from '../../../entities/player.js'
+import { calculateChange } from '../../../lib/math/calculateChange.js'
+import { withResponseCache } from '../../../lib/perf/responseCache.js'
+import { protectedRoute, withMiddleware } from '../../../lib/routing/router.js'
+import { dateRangeSchema } from '../../../lib/validation/dateRangeSchema.js'
+import { loadGame } from '../../../middleware/game-middleware.js'
 
 type PlayerCountData = {
   date: number

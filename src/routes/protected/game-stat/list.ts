@@ -1,7 +1,7 @@
-import GameStat from '../../../entities/game-stat'
-import { withResponseCache } from '../../../lib/perf/responseCache'
-import { protectedRoute, withMiddleware } from '../../../lib/routing/router'
-import { loadGame } from '../../../middleware/game-middleware'
+import GameStat from '../../../entities/game-stat.js'
+import { withResponseCache } from '../../../lib/perf/responseCache.js'
+import { protectedRoute, withMiddleware } from '../../../lib/routing/router.js'
+import { loadGame } from '../../../middleware/game-middleware.js'
 
 export const listRoute = protectedRoute({
   method: 'get',

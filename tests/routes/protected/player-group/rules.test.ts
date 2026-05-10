@@ -2,10 +2,10 @@ import request from 'supertest'
 import PlayerGroupRule, {
   PlayerGroupRuleName,
   PlayerGroupRuleCastType,
-} from '../../../../src/entities/player-group-rule'
-import PlayerFactory from '../../../fixtures/PlayerFactory'
-import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
-import createUserAndToken from '../../../utils/createUserAndToken'
+} from '../../../../src/entities/player-group-rule.js'
+import PlayerFactory from '../../../fixtures/PlayerFactory.js'
+import createOrganisationAndGame from '../../../utils/createOrganisationAndGame.js'
+import createUserAndToken from '../../../utils/createUserAndToken.js'
 
 describe('Player group - rules', () => {
   it('should return a list of available rules and player fields', async () => {

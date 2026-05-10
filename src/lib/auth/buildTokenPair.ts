@@ -1,8 +1,8 @@
 import type { EntityManager } from '@mikro-orm/mysql'
 import type Koa from 'koa'
-import User from '../../entities/user'
-import UserSession from '../../entities/user-session'
-import { sign } from './jwt'
+import UserSession from '../../entities/user-session.js'
+import User from '../../entities/user.js'
+import { sign } from './jwt.js'
 
 export async function genAccessToken(user: User) {
   const payload = { sub: user.id }

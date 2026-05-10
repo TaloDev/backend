@@ -1,8 +1,8 @@
 import { randNumber } from '@ngneat/falso'
 import { createServer } from 'http'
 import { WebSocket } from 'ws'
-import Socket from '../../src/socket'
-import { IdentifyMessage } from './createSocketIdentifyMessage'
+import Socket from '../../src/socket/index.js'
+import { IdentifyMessage } from './createSocketIdentifyMessage.js'
 
 class TestClient extends WebSocket {
   private messages: string[] = []

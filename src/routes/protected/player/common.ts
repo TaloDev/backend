@@ -1,7 +1,7 @@
 import { Next } from 'koa'
-import Player from '../../../entities/player'
-import { ProtectedRouteContext } from '../../../lib/routing/context'
-import { GameRouteState } from '../../../middleware/game-middleware'
+import Player from '../../../entities/player.js'
+import { ProtectedRouteContext } from '../../../lib/routing/context.js'
+import { GameRouteState } from '../../../middleware/game-middleware.js'
 
 type PlayerRouteContext = ProtectedRouteContext<GameRouteState & { player: Player }>
 

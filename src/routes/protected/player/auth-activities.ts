@@ -1,13 +1,13 @@
 import { QueryOrder } from '@mikro-orm/mysql'
-import PlayerAlias, { PlayerAliasService } from '../../../entities/player-alias'
-import PlayerAuthActivity from '../../../entities/player-auth-activity'
-import { UserType } from '../../../entities/user'
-import { DEFAULT_PAGE_SIZE } from '../../../lib/pagination/itemsPerPage'
-import { protectedRoute, withMiddleware } from '../../../lib/routing/router'
-import { pageSchema } from '../../../lib/validation/pageSchema'
-import { loadGame } from '../../../middleware/game-middleware'
-import { userTypeGate } from '../../../middleware/policy-middleware'
-import { loadPlayer } from './common'
+import PlayerAlias, { PlayerAliasService } from '../../../entities/player-alias.js'
+import PlayerAuthActivity from '../../../entities/player-auth-activity.js'
+import { UserType } from '../../../entities/user.js'
+import { DEFAULT_PAGE_SIZE } from '../../../lib/pagination/itemsPerPage.js'
+import { protectedRoute, withMiddleware } from '../../../lib/routing/router.js'
+import { pageSchema } from '../../../lib/validation/pageSchema.js'
+import { loadGame } from '../../../middleware/game-middleware.js'
+import { userTypeGate } from '../../../middleware/policy-middleware.js'
+import { loadPlayer } from './common.js'
 
 const itemsPerPage = DEFAULT_PAGE_SIZE
 

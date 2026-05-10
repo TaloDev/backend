@@ -1,12 +1,12 @@
 import { Next } from 'koa'
 import { RefinementCtx, z as zodLib } from 'zod'
-import PlayerGroup, { PlayerRuleFields, RuleMode } from '../../../entities/player-group'
 import PlayerGroupRule, {
   PlayerGroupRuleCastType,
   PlayerGroupRuleName,
-} from '../../../entities/player-group-rule'
-import { ProtectedRouteContext } from '../../../lib/routing/context'
-import { GameRouteState } from '../../../middleware/game-middleware'
+} from '../../../entities/player-group-rule.js'
+import PlayerGroup, { PlayerRuleFields, RuleMode } from '../../../entities/player-group.js'
+import { ProtectedRouteContext } from '../../../lib/routing/context.js'
+import { GameRouteState } from '../../../middleware/game-middleware.js'
 
 type Z = typeof zodLib
 

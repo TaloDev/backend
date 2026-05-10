@@ -1,11 +1,11 @@
 import { QueryOrder } from '@mikro-orm/mysql'
-import GameActivity from '../../../entities/game-activity'
-import { UserType } from '../../../entities/user'
-import { DEFAULT_PAGE_SIZE } from '../../../lib/pagination/itemsPerPage'
-import { protectedRouter, protectedRoute, withMiddleware } from '../../../lib/routing/router'
-import { pageSchema } from '../../../lib/validation/pageSchema'
-import { loadGame } from '../../../middleware/game-middleware'
-import { userTypeGate } from '../../../middleware/policy-middleware'
+import GameActivity from '../../../entities/game-activity.js'
+import { UserType } from '../../../entities/user.js'
+import { DEFAULT_PAGE_SIZE } from '../../../lib/pagination/itemsPerPage.js'
+import { protectedRouter, protectedRoute, withMiddleware } from '../../../lib/routing/router.js'
+import { pageSchema } from '../../../lib/validation/pageSchema.js'
+import { loadGame } from '../../../middleware/game-middleware.js'
+import { userTypeGate } from '../../../middleware/policy-middleware.js'
 
 const itemsPerPage = DEFAULT_PAGE_SIZE
 

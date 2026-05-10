@@ -1,12 +1,12 @@
-import { protectedRouter } from '../../../lib/routing/router'
-import { averageSessionDurationRoute } from './average-session-duration'
-import { eventsRoute } from './events'
-import { newPlayersRoute } from './new-players'
-import { onlinePlayersRoute } from './online-players'
-import { returningPlayersRoute } from './returning-players'
-import { totalPlayersRoute } from './total-players'
-import { totalSessionsRoute } from './total-sessions'
-import { uniqueEventSubmittersRoute } from './unique-event-submitters'
+import { protectedRouter } from '../../../lib/routing/router.js'
+import { averageSessionDurationRoute } from './average-session-duration.js'
+import { eventsRoute } from './events.js'
+import { newPlayersRoute } from './new-players.js'
+import { onlinePlayersRoute } from './online-players.js'
+import { returningPlayersRoute } from './returning-players.js'
+import { totalPlayersRoute } from './total-players.js'
+import { totalSessionsRoute } from './total-sessions.js'
+import { uniqueEventSubmittersRoute } from './unique-event-submitters.js'
 
 export function headlineRouter() {
   return protectedRouter('/games/:gameId/headlines', ({ route }) => {

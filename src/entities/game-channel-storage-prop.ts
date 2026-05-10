@@ -1,9 +1,9 @@
 import { Entity, Index, ManyToOne, PrimaryKey, Property } from '@mikro-orm/decorators/es'
-import Redis from 'ioredis'
-import { isArrayKey } from '../lib/props/sanitiseProps'
-import GameChannel from './game-channel'
-import PlayerAlias from './player-alias'
-import { MAX_KEY_LENGTH, MAX_VALUE_LENGTH } from './prop'
+import { Redis } from 'ioredis'
+import { isArrayKey } from '../lib/props/sanitiseProps.js'
+import GameChannel from './game-channel.js'
+import PlayerAlias from './player-alias.js'
+import { MAX_KEY_LENGTH, MAX_VALUE_LENGTH } from './prop.js'
 
 @Entity()
 @Index({ properties: ['gameChannel', 'key'] })

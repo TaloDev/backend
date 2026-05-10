@@ -1,6 +1,9 @@
-import Event from '../../../entities/event'
-import { ClickHouseEvent, ClickHouseEventProp } from '../../../entities/event'
-import { FlushMetricsQueueHandler, postFlushCheckMemberships } from './flush-metrics-queue-handler'
+import Event from '../../../entities/event.js'
+import { ClickHouseEvent, ClickHouseEventProp } from '../../../entities/event.js'
+import {
+  FlushMetricsQueueHandler,
+  postFlushCheckMemberships,
+} from './flush-metrics-queue-handler.js'
 
 type SerialisedEvent = {
   id: string

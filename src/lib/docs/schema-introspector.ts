@@ -1,6 +1,6 @@
 import type { ZodType } from 'zod'
 import assert from 'node:assert'
-import type { ValidationSchema } from '../../middleware/validator-middleware'
+import type { ValidationSchema } from '../../middleware/validator-middleware.js'
 
 export type ExtractedParam = {
   type: 'string' | 'number' | 'boolean' | 'array' | 'object' | 'enum' | 'unknown'

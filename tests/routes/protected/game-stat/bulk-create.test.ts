@@ -1,13 +1,13 @@
 import request from 'supertest'
 import { vi } from 'vitest'
-import GameActivity, { GameActivityType } from '../../../../src/entities/game-activity'
-import GameStat from '../../../../src/entities/game-stat'
-import { UserType } from '../../../../src/entities/user'
-import * as createModule from '../../../../src/routes/protected/game-stat/create'
-import GameStatFactory from '../../../fixtures/GameStatFactory'
-import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
-import createUserAndToken from '../../../utils/createUserAndToken'
-import userPermissionProvider from '../../../utils/userPermissionProvider'
+import GameActivity, { GameActivityType } from '../../../../src/entities/game-activity.js'
+import GameStat from '../../../../src/entities/game-stat.js'
+import { UserType } from '../../../../src/entities/user.js'
+import * as createModule from '../../../../src/routes/protected/game-stat/create.js'
+import GameStatFactory from '../../../fixtures/GameStatFactory.js'
+import createOrganisationAndGame from '../../../utils/createOrganisationAndGame.js'
+import createUserAndToken from '../../../utils/createUserAndToken.js'
+import userPermissionProvider from '../../../utils/userPermissionProvider.js'
 
 function statPayload(overrides?: Partial<GameStat>) {
   return {

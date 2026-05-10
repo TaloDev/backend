@@ -1,11 +1,11 @@
 import { FilterQuery } from '@mikro-orm/mysql'
-import { APIKeyScope } from '../../../entities/api-key'
-import GameChannel from '../../../entities/game-channel'
-import { apiRoute, withMiddleware } from '../../../lib/routing/router'
-import { playerAliasHeaderSchema } from '../../../lib/validation/playerAliasHeaderSchema'
-import { loadAlias } from '../../../middleware/player-alias-middleware'
-import { requireScopes } from '../../../middleware/policy-middleware'
-import { subscriptionsDocs } from './docs'
+import { APIKeyScope } from '../../../entities/api-key.js'
+import GameChannel from '../../../entities/game-channel.js'
+import { apiRoute, withMiddleware } from '../../../lib/routing/router.js'
+import { playerAliasHeaderSchema } from '../../../lib/validation/playerAliasHeaderSchema.js'
+import { loadAlias } from '../../../middleware/player-alias-middleware.js'
+import { requireScopes } from '../../../middleware/policy-middleware.js'
+import { subscriptionsDocs } from './docs.js'
 
 export const subscriptionsRoute = apiRoute({
   method: 'get',

@@ -1,7 +1,7 @@
 import axios, { AxiosError, AxiosResponse } from 'axios'
 import pRetry, { AbortError } from 'p-retry'
-import GameCenterIntegrationEvent from '../../../entities/game-center-integration-event'
-import Integration from '../../../entities/integration'
+import GameCenterIntegrationEvent from '../../../entities/game-center-integration-event.js'
+import Integration from '../../../entities/integration.js'
 
 type FetchCertificateResult = {
   res: AxiosResponse<ArrayBuffer> | null

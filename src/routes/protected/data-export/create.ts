@@ -1,15 +1,15 @@
 import type { Queue } from 'bullmq'
-import DataExport, { DataExportAvailableEntities } from '../../../entities/data-export'
-import { GameActivityType } from '../../../entities/game-activity'
-import { UserType } from '../../../entities/user'
-import createGameActivity from '../../../lib/logging/createGameActivity'
+import DataExport, { DataExportAvailableEntities } from '../../../entities/data-export.js'
+import { GameActivityType } from '../../../entities/game-activity.js'
+import { UserType } from '../../../entities/user.js'
+import createGameActivity from '../../../lib/logging/createGameActivity.js'
 import {
   createDataExportQueue,
   DataExportJob,
-} from '../../../lib/queues/data-exports/createDataExportQueue'
-import { protectedRoute, withMiddleware } from '../../../lib/routing/router'
-import { loadGame } from '../../../middleware/game-middleware'
-import { userTypeGate, requireEmailConfirmed } from '../../../middleware/policy-middleware'
+} from '../../../lib/queues/data-exports/createDataExportQueue.js'
+import { protectedRoute, withMiddleware } from '../../../lib/routing/router.js'
+import { loadGame } from '../../../middleware/game-middleware.js'
+import { userTypeGate, requireEmailConfirmed } from '../../../middleware/policy-middleware.js'
 
 let dataExportQueue: Queue<DataExportJob> | null = null
 

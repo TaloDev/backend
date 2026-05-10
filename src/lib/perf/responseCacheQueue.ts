@@ -1,6 +1,6 @@
-import { getGlobalQueue } from '../../config/global-queues'
-import createQueue from '../queues/createQueue'
-import { clearResponseCache } from './responseCache'
+import { getGlobalQueue } from '../../config/global-queues.js'
+import createQueue from '../queues/createQueue.js'
+import { clearResponseCache } from './responseCache.js'
 
 export function createClearResponseCacheQueue() {
   return createQueue<string>('clearResponseCache', async (job) => {

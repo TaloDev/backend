@@ -2,8 +2,8 @@ import { format } from 'date-fns'
 import { dinero, toDecimal } from 'dinero.js'
 import { USD } from 'dinero.js/currencies'
 import Stripe from 'stripe'
-import Organisation from '../entities/organisation'
-import Mail from './mail'
+import Organisation from '../entities/organisation.js'
+import Mail from './mail.js'
 
 export default class PlanInvoice extends Mail {
   constructor(organisation: Organisation, invoice: Stripe.Invoice) {

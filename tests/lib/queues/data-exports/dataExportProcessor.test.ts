@@ -1,15 +1,18 @@
 import { SandboxedJob } from 'bullmq'
 import { rm } from 'fs/promises'
-import { DataExportAvailableEntities, DataExportStatus } from '../../../../src/entities/data-export'
-import * as sendEmail from '../../../../src/lib/messaging/sendEmail'
-import { DataExportJob } from '../../../../src/lib/queues/data-exports/createDataExportQueue'
+import {
+  DataExportAvailableEntities,
+  DataExportStatus,
+} from '../../../../src/entities/data-export.js'
+import * as sendEmail from '../../../../src/lib/messaging/sendEmail.js'
+import { DataExportJob } from '../../../../src/lib/queues/data-exports/createDataExportQueue.js'
 import dataExportProcessor, {
   DataExporter,
-} from '../../../../src/lib/queues/data-exports/dataExportProcessor'
-import DataExportFactory from '../../../fixtures/DataExportFactory'
-import GameActivityFactory from '../../../fixtures/GameActivityFactory'
-import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
-import createUserAndToken from '../../../utils/createUserAndToken'
+} from '../../../../src/lib/queues/data-exports/dataExportProcessor.js'
+import DataExportFactory from '../../../fixtures/DataExportFactory.js'
+import GameActivityFactory from '../../../fixtures/GameActivityFactory.js'
+import createOrganisationAndGame from '../../../utils/createOrganisationAndGame.js'
+import createUserAndToken from '../../../utils/createUserAndToken.js'
 
 describe('Data export - processor', () => {
   afterEach(async () => {

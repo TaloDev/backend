@@ -1,6 +1,6 @@
 import { Entity, Enum, ManyToOne, PrimaryKey, Property } from '@mikro-orm/decorators/es'
-import Game from './game'
-import User from './user'
+import Game from './game.js'
+import User from './user.js'
 
 export enum DataExportStatus {
   REQUESTED,

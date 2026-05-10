@@ -1,6 +1,6 @@
 import fs from 'fs/promises'
 import S3mini from 's3mini'
-import { isS3Configured, uploadToS3 } from '../../../src/lib/storage/s3Client'
+import { isS3Configured, uploadToS3 } from '../../../src/lib/storage/s3Client.js'
 
 beforeEach(() => {
   vi.spyOn(fs, 'readFile').mockResolvedValue(Buffer.from('zip content') as unknown as string)

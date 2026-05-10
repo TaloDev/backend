@@ -1,3 +1,4 @@
+import type { Redis } from 'ioredis'
 import {
   Entity,
   Index,
@@ -7,16 +8,15 @@ import {
   Property,
 } from '@mikro-orm/decorators/es'
 import { Collection, EntityManager } from '@mikro-orm/mysql'
-import Redis from 'ioredis'
 import { v4 } from 'uuid'
-import { AuthenticateSignatureResult } from '../lib/integrations/game-center/game-center-players'
-import { AuthenticateAuthCodeResult } from '../lib/integrations/google-play-games/google-play-games-players'
-import { AuthenticateTicketResult } from '../lib/integrations/steamworks/steamworks-players'
-import Socket from '../socket'
-import Game from './game'
-import GameChannel, { GameChannelLeavingReason } from './game-channel'
-import Integration, { IntegrationType } from './integration'
-import Player from './player'
+import { AuthenticateSignatureResult } from '../lib/integrations/game-center/game-center-players.js'
+import { AuthenticateAuthCodeResult } from '../lib/integrations/google-play-games/google-play-games-players.js'
+import { AuthenticateTicketResult } from '../lib/integrations/steamworks/steamworks-players.js'
+import Socket from '../socket/index.js'
+import GameChannel, { GameChannelLeavingReason } from './game-channel.js'
+import Game from './game.js'
+import Integration, { IntegrationType } from './integration.js'
+import Player from './player.js'
 
 export enum PlayerAliasService {
   STEAM = 'steam',

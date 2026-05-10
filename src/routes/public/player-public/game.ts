@@ -1,5 +1,5 @@
-import { publicRoute, withMiddleware } from '../../../lib/routing/router'
-import { loadGameFromToken } from './common'
+import { publicRoute, withMiddleware } from '../../../lib/routing/router.js'
+import { loadGameFromToken } from './common.js'
 
 export const gameRoute = publicRoute({
   method: 'get',

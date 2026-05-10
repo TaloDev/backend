@@ -1,9 +1,9 @@
 import request from 'supertest'
-import UserPinnedGroup from '../../../../src/entities/user-pinned-group'
-import PlayerGroupFactory from '../../../fixtures/PlayerGroupFactory'
-import UserPinnedGroupFactory from '../../../fixtures/UserPinnedGroupFactory'
-import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
-import createUserAndToken from '../../../utils/createUserAndToken'
+import UserPinnedGroup from '../../../../src/entities/user-pinned-group.js'
+import PlayerGroupFactory from '../../../fixtures/PlayerGroupFactory.js'
+import UserPinnedGroupFactory from '../../../fixtures/UserPinnedGroupFactory.js'
+import createOrganisationAndGame from '../../../utils/createOrganisationAndGame.js'
+import createUserAndToken from '../../../utils/createUserAndToken.js'
 
 describe('Player group - toggle pinned', () => {
   it('should pin a group', async () => {

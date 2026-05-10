@@ -1,9 +1,9 @@
-import Event, { ClickHouseEvent } from '../../../entities/event'
-import { DEFAULT_PAGE_SIZE } from '../../../lib/pagination/itemsPerPage'
-import { protectedRoute, withMiddleware } from '../../../lib/routing/router'
-import { pageSchema } from '../../../lib/validation/pageSchema'
-import { loadGame } from '../../../middleware/game-middleware'
-import { loadPlayer } from './common'
+import Event, { ClickHouseEvent } from '../../../entities/event.js'
+import { DEFAULT_PAGE_SIZE } from '../../../lib/pagination/itemsPerPage.js'
+import { protectedRoute, withMiddleware } from '../../../lib/routing/router.js'
+import { pageSchema } from '../../../lib/validation/pageSchema.js'
+import { loadGame } from '../../../middleware/game-middleware.js'
+import { loadPlayer } from './common.js'
 
 export const eventsRoute = protectedRoute({
   method: 'get',

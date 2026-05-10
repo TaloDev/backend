@@ -1,8 +1,8 @@
-import DataExport from '../../../entities/data-export'
-import { UserType } from '../../../entities/user'
-import { protectedRoute, withMiddleware } from '../../../lib/routing/router'
-import { loadGame } from '../../../middleware/game-middleware'
-import { userTypeGate } from '../../../middleware/policy-middleware'
+import DataExport from '../../../entities/data-export.js'
+import { UserType } from '../../../entities/user.js'
+import { protectedRoute, withMiddleware } from '../../../lib/routing/router.js'
+import { loadGame } from '../../../middleware/game-middleware.js'
+import { userTypeGate } from '../../../middleware/policy-middleware.js'
 
 export const listRoute = protectedRoute({
   method: 'get',

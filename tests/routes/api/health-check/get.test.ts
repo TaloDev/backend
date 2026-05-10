@@ -1,5 +1,5 @@
 import request from 'supertest'
-import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
+import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken.js'
 
 describe('Health check API - get', () => {
   it('should return a 204', async () => {

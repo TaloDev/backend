@@ -1,12 +1,12 @@
 import { addDays } from 'date-fns'
 import request from 'supertest'
-import { APIKeyScope } from '../../../../src/entities/api-key'
-import { LeaderboardSortMode } from '../../../../src/entities/leaderboard'
-import LeaderboardEntry from '../../../../src/entities/leaderboard-entry'
-import LeaderboardEntryFactory from '../../../fixtures/LeaderboardEntryFactory'
-import LeaderboardFactory from '../../../fixtures/LeaderboardFactory'
-import PlayerFactory from '../../../fixtures/PlayerFactory'
-import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
+import { APIKeyScope } from '../../../../src/entities/api-key.js'
+import LeaderboardEntry from '../../../../src/entities/leaderboard-entry.js'
+import { LeaderboardSortMode } from '../../../../src/entities/leaderboard.js'
+import LeaderboardEntryFactory from '../../../fixtures/LeaderboardEntryFactory.js'
+import LeaderboardFactory from '../../../fixtures/LeaderboardFactory.js'
+import PlayerFactory from '../../../fixtures/PlayerFactory.js'
+import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken.js'
 
 describe('Leaderboard API - get', () => {
   it('should get leaderboard entries if the scope is valid', async () => {

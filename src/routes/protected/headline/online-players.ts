@@ -1,8 +1,8 @@
-import Player from '../../../entities/player'
-import { getResultCacheOptions } from '../../../lib/perf/getResultCacheOptions'
-import { protectedRoute, withMiddleware } from '../../../lib/routing/router'
-import { loadGame } from '../../../middleware/game-middleware'
-import { ONLINE_PLAYERS_CACHE_TTL_MS } from './common'
+import Player from '../../../entities/player.js'
+import { getResultCacheOptions } from '../../../lib/perf/getResultCacheOptions.js'
+import { protectedRoute, withMiddleware } from '../../../lib/routing/router.js'
+import { loadGame } from '../../../middleware/game-middleware.js'
+import { ONLINE_PLAYERS_CACHE_TTL_MS } from './common.js'
 
 export const onlinePlayersRoute = protectedRoute({
   method: 'get',

@@ -1,9 +1,9 @@
-import { getGlobalQueue } from '../../../config/global-queues'
-import ResetPassword from '../../../emails/reset-password'
-import User from '../../../entities/user'
-import { sign } from '../../../lib/auth/jwt'
-import queueEmail from '../../../lib/messaging/queueEmail'
-import { publicRoute } from '../../../lib/routing/router'
+import { getGlobalQueue } from '../../../config/global-queues.js'
+import ResetPassword from '../../../emails/reset-password.js'
+import User from '../../../entities/user.js'
+import { sign } from '../../../lib/auth/jwt.js'
+import queueEmail from '../../../lib/messaging/queueEmail.js'
+import { publicRoute } from '../../../lib/routing/router.js'
 
 export const forgotPasswordRoute = publicRoute({
   method: 'post',

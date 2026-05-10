@@ -1,8 +1,8 @@
-import PlayerGroup from '../../../entities/player-group'
-import UserPinnedGroup from '../../../entities/user-pinned-group'
-import { withResponseCache } from '../../../lib/perf/responseCache'
-import { protectedRoute, withMiddleware } from '../../../lib/routing/router'
-import { loadGame } from '../../../middleware/game-middleware'
+import PlayerGroup from '../../../entities/player-group.js'
+import UserPinnedGroup from '../../../entities/user-pinned-group.js'
+import { withResponseCache } from '../../../lib/perf/responseCache.js'
+import { protectedRoute, withMiddleware } from '../../../lib/routing/router.js'
+import { loadGame } from '../../../middleware/game-middleware.js'
 
 export const listPinnedRoute = protectedRoute({
   method: 'get',

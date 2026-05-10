@@ -1,7 +1,7 @@
-import { APIKeyScope } from '../../../../src/entities/api-key'
-import GameChannelFactory from '../../../fixtures/GameChannelFactory'
-import createSocketIdentifyMessage from '../../../utils/createSocketIdentifyMessage'
-import createTestSocket from '../../../utils/createTestSocket'
+import { APIKeyScope } from '../../../../src/entities/api-key.js'
+import GameChannelFactory from '../../../fixtures/GameChannelFactory.js'
+import createSocketIdentifyMessage from '../../../utils/createSocketIdentifyMessage.js'
+import createTestSocket from '../../../utils/createTestSocket.js'
 
 describe('Game channel listeners - message', () => {
   it('should successfully send a message', async () => {

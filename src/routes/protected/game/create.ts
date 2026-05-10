@@ -1,8 +1,8 @@
-import Game from '../../../entities/game'
-import GameSecret from '../../../entities/game-secret'
-import { UserType } from '../../../entities/user'
-import { protectedRoute, withMiddleware } from '../../../lib/routing/router'
-import { userTypeGate } from '../../../middleware/policy-middleware'
+import GameSecret from '../../../entities/game-secret.js'
+import Game from '../../../entities/game.js'
+import { UserType } from '../../../entities/user.js'
+import { protectedRoute, withMiddleware } from '../../../lib/routing/router.js'
+import { userTypeGate } from '../../../middleware/policy-middleware.js'
 
 export const createRoute = protectedRoute({
   method: 'post',

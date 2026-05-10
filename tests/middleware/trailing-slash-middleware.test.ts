@@ -1,6 +1,6 @@
 import request from 'supertest'
-import { APIKeyScope } from '../../src/entities/api-key'
-import createAPIKeyAndToken from '../utils/createAPIKeyAndToken'
+import { APIKeyScope } from '../../src/entities/api-key.js'
+import createAPIKeyAndToken from '../utils/createAPIKeyAndToken.js'
 
 describe('Trailing slash middleware', () => {
   it('should strip a trailing slash and route correctly', async () => {

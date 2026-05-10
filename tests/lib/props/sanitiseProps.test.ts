@@ -1,5 +1,5 @@
-import Prop from '../../../src/entities/prop'
-import { MAX_ARRAY_LENGTH, mergeAndSanitiseProps } from '../../../src/lib/props/sanitiseProps'
+import Prop from '../../../src/entities/prop.js'
+import { MAX_ARRAY_LENGTH, mergeAndSanitiseProps } from '../../../src/lib/props/sanitiseProps.js'
 
 function makeProp(key: string, value: string) {
   return new Prop(key, value)

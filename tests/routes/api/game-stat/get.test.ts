@@ -1,7 +1,7 @@
 import request from 'supertest'
-import { APIKeyScope } from '../../../../src/entities/api-key'
-import GameStatFactory from '../../../fixtures/GameStatFactory'
-import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
+import { APIKeyScope } from '../../../../src/entities/api-key.js'
+import GameStatFactory from '../../../fixtures/GameStatFactory.js'
+import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken.js'
 
 describe('Game stat API - get', () => {
   it('should get a game stat if the scope is valid', async () => {

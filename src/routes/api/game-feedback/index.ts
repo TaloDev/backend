@@ -1,6 +1,6 @@
-import { apiRouter } from '../../../lib/routing/router'
-import { listCategoriesRoute } from './list-categories'
-import { postRoute } from './post'
+import { apiRouter } from '../../../lib/routing/router.js'
+import { listCategoriesRoute } from './list-categories.js'
+import { postRoute } from './post.js'
 
 export function gameFeedbackAPIRouter() {
   return apiRouter(

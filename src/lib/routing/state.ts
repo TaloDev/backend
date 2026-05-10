@@ -1,6 +1,6 @@
-import type APIKey from '../../entities/api-key'
-import type Game from '../../entities/game'
-import type User from '../../entities/user'
+import type APIKey from '../../entities/api-key.js'
+import type Game from '../../entities/game.js'
+import type User from '../../entities/user.js'
 
 export type PublicRouteState = Record<string, unknown>
 

@@ -1,23 +1,23 @@
 import { EntityManager, LockMode } from '@mikro-orm/mysql'
-import Redis from 'ioredis'
-import { APIKeyScope } from '../../../entities/api-key'
-import GameChannel from '../../../entities/game-channel'
-import GameChannelStorageProp from '../../../entities/game-channel-storage-prop'
-import PlayerAlias from '../../../entities/player-alias'
-import { PropSizeError } from '../../../lib/errors/propSizeError'
+import { Redis } from 'ioredis'
+import { APIKeyScope } from '../../../entities/api-key.js'
+import GameChannelStorageProp from '../../../entities/game-channel-storage-prop.js'
+import GameChannel from '../../../entities/game-channel.js'
+import PlayerAlias from '../../../entities/player-alias.js'
+import { PropSizeError } from '../../../lib/errors/propSizeError.js'
 import {
   isArrayKey,
   MAX_ARRAY_LENGTH,
   sanitiseProps,
   testPropSize,
-} from '../../../lib/props/sanitiseProps'
-import { apiRoute, withMiddleware } from '../../../lib/routing/router'
-import { numericStringSchema } from '../../../lib/validation/numericStringSchema'
-import { playerAliasHeaderSchema } from '../../../lib/validation/playerAliasHeaderSchema'
-import { loadAlias } from '../../../middleware/player-alias-middleware'
-import { requireScopes } from '../../../middleware/policy-middleware'
-import { loadChannel } from './common'
-import { putStorageDocs } from './docs'
+} from '../../../lib/props/sanitiseProps.js'
+import { apiRoute, withMiddleware } from '../../../lib/routing/router.js'
+import { numericStringSchema } from '../../../lib/validation/numericStringSchema.js'
+import { playerAliasHeaderSchema } from '../../../lib/validation/playerAliasHeaderSchema.js'
+import { loadAlias } from '../../../middleware/player-alias-middleware.js'
+import { requireScopes } from '../../../middleware/policy-middleware.js'
+import { loadChannel } from './common.js'
+import { putStorageDocs } from './docs.js'
 
 type FailedProp = { key: string; error: string }
 

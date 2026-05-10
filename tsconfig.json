@@ -12,8 +12,5 @@
     "strict": true,
     "noImplicitOverride": true,
     "moduleResolution": "nodenext"
-  },
-  "ts-node": {
-    "transpileOnly": true
   }
 }

@@ -1,10 +1,10 @@
 import assert from 'node:assert'
 import request from 'supertest'
 import { v4 } from 'uuid'
-import initStripe from '../../../../src/lib/billing/initStripe'
-import PricingPlanFactory from '../../../fixtures/PricingPlanFactory'
-import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
-import { truncateTables } from '../../../utils/truncateTables'
+import initStripe from '../../../../src/lib/billing/initStripe.js'
+import PricingPlanFactory from '../../../fixtures/PricingPlanFactory.js'
+import createOrganisationAndGame from '../../../utils/createOrganisationAndGame.js'
+import { truncateTables } from '../../../utils/truncateTables.js'
 
 describe('Webhook - subscription deleted', () => {
   const stripe = initStripe()

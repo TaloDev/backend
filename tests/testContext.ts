@@ -1,5 +1,5 @@
-import init from '../src'
-import { createRedisConnection } from '../src/config/redis.config'
+import { createRedisConnection } from '../src/config/redis.config.js'
+import init from '../src/index.js'
 
 type TestContext = {
   app: typeof global.app

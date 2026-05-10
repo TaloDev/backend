@@ -1,12 +1,12 @@
 import { Collection } from '@mikro-orm/mysql'
 import request from 'supertest'
-import GameChannel from '../../../../src/entities/game-channel'
-import GameChannelProp from '../../../../src/entities/game-channel-prop'
-import GameChannelFactory from '../../../fixtures/GameChannelFactory'
-import PlayerAliasFactory from '../../../fixtures/PlayerAliasFactory'
-import PlayerFactory from '../../../fixtures/PlayerFactory'
-import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
-import createUserAndToken from '../../../utils/createUserAndToken'
+import GameChannelProp from '../../../../src/entities/game-channel-prop.js'
+import GameChannel from '../../../../src/entities/game-channel.js'
+import GameChannelFactory from '../../../fixtures/GameChannelFactory.js'
+import PlayerAliasFactory from '../../../fixtures/PlayerAliasFactory.js'
+import PlayerFactory from '../../../fixtures/PlayerFactory.js'
+import createOrganisationAndGame from '../../../utils/createOrganisationAndGame.js'
+import createUserAndToken from '../../../utils/createUserAndToken.js'
 
 describe('Game channel - list', () => {
   it('should return a list of game channels', async () => {

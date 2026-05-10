@@ -1,9 +1,9 @@
 import { EntityManager } from '@mikro-orm/mysql'
 import assert from 'node:assert'
-import Organisation from '../../entities/organisation'
-import OrganisationPricingPlan from '../../entities/organisation-pricing-plan'
-import PricingPlan from '../../entities/pricing-plan'
-import initStripe from './initStripe'
+import OrganisationPricingPlan from '../../entities/organisation-pricing-plan.js'
+import Organisation from '../../entities/organisation.js'
+import PricingPlan from '../../entities/pricing-plan.js'
+import initStripe from './initStripe.js'
 
 export default async function createDefaultPricingPlan(
   em: EntityManager,

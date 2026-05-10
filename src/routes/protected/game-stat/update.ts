@@ -1,9 +1,9 @@
-import { GameActivityType } from '../../../entities/game-activity'
-import updateAllowedKeys from '../../../lib/entities/updateAllowedKeys'
-import handleSQLError from '../../../lib/errors/handleSQLError'
-import createGameActivity from '../../../lib/logging/createGameActivity'
-import { protectedRoute, withMiddleware } from '../../../lib/routing/router'
-import { clearStatIndexResponseCache, loadStat, updateStatBodySchema } from './common'
+import { GameActivityType } from '../../../entities/game-activity.js'
+import updateAllowedKeys from '../../../lib/entities/updateAllowedKeys.js'
+import handleSQLError from '../../../lib/errors/handleSQLError.js'
+import createGameActivity from '../../../lib/logging/createGameActivity.js'
+import { protectedRoute, withMiddleware } from '../../../lib/routing/router.js'
+import { clearStatIndexResponseCache, loadStat, updateStatBodySchema } from './common.js'
 
 export const updateRoute = protectedRoute({
   method: 'put',

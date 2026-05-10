@@ -1,7 +1,7 @@
 import { Next } from 'koa'
-import PlayerGroup from '../../../entities/player-group'
-import { APIRouteContext } from '../../../lib/routing/context'
-import { APIRouteState } from '../../../lib/routing/state'
+import PlayerGroup from '../../../entities/player-group.js'
+import { APIRouteContext } from '../../../lib/routing/context.js'
+import { APIRouteState } from '../../../lib/routing/state.js'
 
 type PlayerGroupRouteState = APIRouteState & {
   group: PlayerGroup

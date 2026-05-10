@@ -1,7 +1,7 @@
 import { Entity, ManyToOne, OneToOne, PrimaryKey, Property } from '@mikro-orm/decorators/es'
 import Stripe from 'stripe'
-import Organisation from './organisation'
-import PricingPlan from './pricing-plan'
+import Organisation from './organisation.js'
+import PricingPlan from './pricing-plan.js'
 
 @Entity()
 export default class OrganisationPricingPlan {

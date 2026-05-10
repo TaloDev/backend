@@ -1,8 +1,8 @@
 import { rand, randFloat } from '@ngneat/falso'
 import { Factory } from 'hefty'
-import Leaderboard from '../../src/entities/leaderboard'
-import LeaderboardEntry from '../../src/entities/leaderboard-entry'
-import Player from '../../src/entities/player'
+import LeaderboardEntry from '../../src/entities/leaderboard-entry.js'
+import Leaderboard from '../../src/entities/leaderboard.js'
+import Player from '../../src/entities/player.js'
 
 export default class LeaderboardEntryFactory extends Factory<LeaderboardEntry> {
   private leaderboard: Leaderboard

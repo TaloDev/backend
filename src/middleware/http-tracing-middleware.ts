@@ -1,7 +1,7 @@
 import { setTraceAttributes } from '@hyperdx/node-opentelemetry'
 import { IncomingHttpHeaders, OutgoingHttpHeaders } from 'http'
 import { Context, Next } from 'koa'
-import { isPublicHealthCheck } from '../lib/routing/route-info'
+import { isPublicHealthCheck } from '../lib/routing/route-info.js'
 
 const DENYLIST = [
   'code',

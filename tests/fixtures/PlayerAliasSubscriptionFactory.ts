@@ -1,8 +1,8 @@
 import { Factory } from 'hefty'
-import PlayerAlias from '../../src/entities/player-alias'
 import PlayerAliasSubscription, {
   RelationshipType,
-} from '../../src/entities/player-alias-subscription'
+} from '../../src/entities/player-alias-subscription.js'
+import PlayerAlias from '../../src/entities/player-alias.js'
 
 export default class PlayerAliasSubscriptionFactory extends Factory<PlayerAliasSubscription> {
   constructor() {

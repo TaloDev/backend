@@ -1,8 +1,8 @@
 import request from 'supertest'
-import EventFactory from '../../../fixtures/EventFactory'
-import PlayerFactory from '../../../fixtures/PlayerFactory'
-import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
-import createUserAndToken from '../../../utils/createUserAndToken'
+import EventFactory from '../../../fixtures/EventFactory.js'
+import PlayerFactory from '../../../fixtures/PlayerFactory.js'
+import createOrganisationAndGame from '../../../utils/createOrganisationAndGame.js'
+import createUserAndToken from '../../../utils/createUserAndToken.js'
 
 describe('Player - events', () => {
   it("should get a player's events", async () => {

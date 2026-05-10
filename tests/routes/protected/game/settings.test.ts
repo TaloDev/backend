@@ -1,8 +1,8 @@
 import request from 'supertest'
-import { UserType } from '../../../../src/entities/user'
-import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
-import createUserAndToken from '../../../utils/createUserAndToken'
-import userPermissionProvider from '../../../utils/userPermissionProvider'
+import { UserType } from '../../../../src/entities/user.js'
+import createOrganisationAndGame from '../../../utils/createOrganisationAndGame.js'
+import createUserAndToken from '../../../utils/createUserAndToken.js'
+import userPermissionProvider from '../../../utils/userPermissionProvider.js'
 
 describe('Game - settings', () => {
   it.each(userPermissionProvider([]))(

@@ -1,6 +1,6 @@
 import { EventArgs, EventSubscriber } from '@mikro-orm/mysql'
-import LeaderboardEntry from '../entities/leaderboard-entry'
-import { deferClearResponseCache } from '../lib/perf/responseCacheQueue'
+import LeaderboardEntry from '../entities/leaderboard-entry.js'
+import { deferClearResponseCache } from '../lib/perf/responseCacheQueue.js'
 
 export class LeaderboardEntrySubscriber implements EventSubscriber {
   getSubscribedEntities() {

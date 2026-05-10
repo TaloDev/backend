@@ -1,6 +1,6 @@
-import getBillablePlayerCount from '../../../lib/billing/getBillablePlayerCount'
-import { protectedRoute, withMiddleware } from '../../../lib/routing/router'
-import { ownerGate } from '../../../middleware/policy-middleware'
+import getBillablePlayerCount from '../../../lib/billing/getBillablePlayerCount.js'
+import { protectedRoute, withMiddleware } from '../../../lib/routing/router.js'
+import { ownerGate } from '../../../middleware/policy-middleware.js'
 
 export const usageRoute = protectedRoute({
   method: 'get',

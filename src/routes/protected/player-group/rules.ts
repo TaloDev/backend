@@ -1,6 +1,9 @@
-import { PlayerRuleFields } from '../../../entities/player-group'
-import { PlayerGroupRuleCastType, PlayerGroupRuleName } from '../../../entities/player-group-rule'
-import { protectedRoute } from '../../../lib/routing/router'
+import {
+  PlayerGroupRuleCastType,
+  PlayerGroupRuleName,
+} from '../../../entities/player-group-rule.js'
+import { PlayerRuleFields } from '../../../entities/player-group.js'
+import { protectedRoute } from '../../../lib/routing/router.js'
 
 export const rulesRoute = protectedRoute({
   method: 'get',

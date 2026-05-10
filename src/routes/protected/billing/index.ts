@@ -1,10 +1,10 @@
-import { protectedRouter } from '../../../lib/routing/router'
-import { checkoutSessionRoute } from './checkout-session'
-import { confirmPlanRoute } from './confirm-plan'
-import { organisationPlanRoute } from './organisation-plan'
-import { plansRoute } from './plans'
-import { portalSessionRoute } from './portal-session'
-import { usageRoute } from './usage'
+import { protectedRouter } from '../../../lib/routing/router.js'
+import { checkoutSessionRoute } from './checkout-session.js'
+import { confirmPlanRoute } from './confirm-plan.js'
+import { organisationPlanRoute } from './organisation-plan.js'
+import { plansRoute } from './plans.js'
+import { portalSessionRoute } from './portal-session.js'
+import { usageRoute } from './usage.js'
 
 export function billingRouter() {
   return protectedRouter('/billing', ({ route }) => {

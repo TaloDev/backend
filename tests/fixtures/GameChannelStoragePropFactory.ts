@@ -1,8 +1,8 @@
 import { randWord } from '@ngneat/falso'
 import { Factory } from 'hefty'
-import GameChannel from '../../src/entities/game-channel'
-import GameChannelStorageProp from '../../src/entities/game-channel-storage-prop'
-import PlayerAliasFactory from './PlayerAliasFactory'
+import GameChannelStorageProp from '../../src/entities/game-channel-storage-prop.js'
+import GameChannel from '../../src/entities/game-channel.js'
+import PlayerAliasFactory from './PlayerAliasFactory.js'
 
 export default class GameChannelStoragePropFactory extends Factory<GameChannelStorageProp> {
   private channel: GameChannel

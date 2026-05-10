@@ -1,8 +1,8 @@
-import User from '../../../entities/user'
-import UserRecoveryCode from '../../../entities/user-recovery-code'
-import { buildTokenPair } from '../../../lib/auth/buildTokenPair'
-import generateRecoveryCodes from '../../../lib/auth/generateRecoveryCodes'
-import { publicRoute } from '../../../lib/routing/router'
+import UserRecoveryCode from '../../../entities/user-recovery-code.js'
+import User from '../../../entities/user.js'
+import { buildTokenPair } from '../../../lib/auth/buildTokenPair.js'
+import generateRecoveryCodes from '../../../lib/auth/generateRecoveryCodes.js'
+import { publicRoute } from '../../../lib/routing/router.js'
 
 export const useRecoveryCodeRoute = publicRoute({
   method: 'post',

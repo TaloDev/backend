@@ -1,10 +1,10 @@
-import { protectedRouter } from '../../../lib/routing/router'
-import { createRoute } from './create'
-import { deleteRoute } from './delete'
-import { listRoute } from './list'
-import { syncLeaderboardsRoute } from './sync-leaderboards'
-import { syncStatsRoute } from './sync-stats'
-import { updateRoute } from './update'
+import { protectedRouter } from '../../../lib/routing/router.js'
+import { createRoute } from './create.js'
+import { deleteRoute } from './delete.js'
+import { listRoute } from './list.js'
+import { syncLeaderboardsRoute } from './sync-leaderboards.js'
+import { syncStatsRoute } from './sync-stats.js'
+import { updateRoute } from './update.js'
 
 export function integrationRouter() {
   return protectedRouter('/games/:gameId/integrations', ({ route }) => {

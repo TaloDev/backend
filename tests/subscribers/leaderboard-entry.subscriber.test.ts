@@ -1,10 +1,10 @@
 import request from 'supertest'
-import { APIKeyScope } from '../../src/entities/api-key'
-import { LeaderboardSortMode } from '../../src/entities/leaderboard'
-import LeaderboardEntry from '../../src/entities/leaderboard-entry'
-import LeaderboardFactory from '../fixtures/LeaderboardFactory'
-import PlayerFactory from '../fixtures/PlayerFactory'
-import createAPIKeyAndToken from '../utils/createAPIKeyAndToken'
+import { APIKeyScope } from '../../src/entities/api-key.js'
+import LeaderboardEntry from '../../src/entities/leaderboard-entry.js'
+import { LeaderboardSortMode } from '../../src/entities/leaderboard.js'
+import LeaderboardFactory from '../fixtures/LeaderboardFactory.js'
+import PlayerFactory from '../fixtures/PlayerFactory.js'
+import createAPIKeyAndToken from '../utils/createAPIKeyAndToken.js'
 
 describe('LeaderboardEntry subscriber', () => {
   describe('cache invalidation on create', () => {

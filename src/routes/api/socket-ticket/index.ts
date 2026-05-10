@@ -1,6 +1,6 @@
-import { RouteDocs } from '../../../lib/docs/docs-registry'
-import { apiRouter } from '../../../lib/routing/router'
-import { createSocketTicket } from '../../../lib/sockets/createSocketTicket'
+import { RouteDocs } from '../../../lib/docs/docs-registry.js'
+import { apiRouter } from '../../../lib/routing/router.js'
+import { createSocketTicket } from '../../../lib/sockets/createSocketTicket.js'
 
 export function socketTicketAPIRouter() {
   return apiRouter(

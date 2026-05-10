@@ -3,11 +3,11 @@ import { setTraceAttributes } from '@hyperdx/node-opentelemetry'
 import { EntityManager } from '@mikro-orm/mysql'
 import { captureException } from '@sentry/node'
 import { Queue } from 'bullmq'
-import { getMikroORM } from '../../../config/mikro-orm.config'
-import { getGlobalRedis } from '../../../config/redis.config'
-import Player from '../../../entities/player'
-import createClickHouseClient from '../../clickhouse/createClient'
-import createQueue from '../createQueue'
+import { getMikroORM } from '../../../config/mikro-orm.config.js'
+import { getGlobalRedis } from '../../../config/redis.config.js'
+import Player from '../../../entities/player.js'
+import createClickHouseClient from '../../clickhouse/createClient.js'
+import createQueue from '../createQueue.js'
 
 type FlushFunc<S> = (clickhouse: ClickHouseClient, values: S[]) => Promise<void>
 type HandlerOptions<S> = {

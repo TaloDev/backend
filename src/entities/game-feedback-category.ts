@@ -1,5 +1,5 @@
 import { Entity, Index, ManyToOne, PrimaryKey, Property } from '@mikro-orm/decorators/es'
-import Game from './game'
+import Game from './game.js'
 
 @Entity()
 @Index({ properties: ['game', 'internalName'] })

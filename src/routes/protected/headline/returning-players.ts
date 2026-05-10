@@ -1,11 +1,11 @@
 import { raw } from '@mikro-orm/mysql'
 import { endOfDay, startOfDay } from 'date-fns'
-import Player from '../../../entities/player'
-import { getResultCacheOptions } from '../../../lib/perf/getResultCacheOptions'
-import { protectedRoute, withMiddleware } from '../../../lib/routing/router'
-import { dateRangeSchema } from '../../../lib/validation/dateRangeSchema'
-import { loadGame } from '../../../middleware/game-middleware'
-import { HEADLINES_CACHE_TTL_MS } from './common'
+import Player from '../../../entities/player.js'
+import { getResultCacheOptions } from '../../../lib/perf/getResultCacheOptions.js'
+import { protectedRoute, withMiddleware } from '../../../lib/routing/router.js'
+import { dateRangeSchema } from '../../../lib/validation/dateRangeSchema.js'
+import { loadGame } from '../../../middleware/game-middleware.js'
+import { HEADLINES_CACHE_TTL_MS } from './common.js'
 
 export const returningPlayersRoute = protectedRoute({
   method: 'get',

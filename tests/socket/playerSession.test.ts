@@ -1,6 +1,6 @@
-import { APIKeyScope } from '../../src/entities/api-key'
-import createSocketIdentifyMessage from '../utils/createSocketIdentifyMessage'
-import createTestSocket from '../utils/createTestSocket'
+import { APIKeyScope } from '../../src/entities/api-key.js'
+import createSocketIdentifyMessage from '../utils/createSocketIdentifyMessage.js'
+import createTestSocket from '../utils/createTestSocket.js'
 
 describe('Socket player sessions', () => {
   it('should create a player session row with a null end date', async () => {

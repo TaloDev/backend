@@ -1,8 +1,8 @@
 import { randCompanyName, randEmail } from '@ngneat/falso'
 import { Factory } from 'hefty'
-import Organisation from '../../src/entities/organisation'
-import OrganisationPricingPlanFactory from './OrganisationPricingPlanFactory'
-import PricingPlanFactory from './PricingPlanFactory'
+import Organisation from '../../src/entities/organisation.js'
+import OrganisationPricingPlanFactory from './OrganisationPricingPlanFactory.js'
+import PricingPlanFactory from './PricingPlanFactory.js'
 
 export default class OrganisationFactory extends Factory<Organisation> {
   constructor() {

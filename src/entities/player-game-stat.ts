@@ -1,7 +1,7 @@
 import { Entity, Index, ManyToOne, PrimaryKey, Property, Unique } from '@mikro-orm/decorators/es'
 import { EntityManager, raw } from '@mikro-orm/mysql'
-import GameStat from './game-stat'
-import Player from './player'
+import GameStat from './game-stat.js'
+import Player from './player.js'
 
 const valueIndexName = 'idx_playergamestat_stat_id_value'
 const valueIndexExpr = `alter table \`player_game_stat\` add index \`${valueIndexName}\`(\`stat_id\`, \`value\`)`

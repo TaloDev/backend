@@ -1,7 +1,7 @@
 import request from 'supertest'
-import UserAccessCode from '../../../../src/entities/user-access-code'
-import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
-import createUserAndToken from '../../../utils/createUserAndToken'
+import UserAccessCode from '../../../../src/entities/user-access-code.js'
+import createOrganisationAndGame from '../../../utils/createOrganisationAndGame.js'
+import createUserAndToken from '../../../utils/createUserAndToken.js'
 
 describe('User - confirm email', () => {
   it('should let a user confirm their email', async () => {

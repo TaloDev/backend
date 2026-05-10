@@ -1,14 +1,14 @@
 import axios from 'axios'
 import AxiosMockAdapter from 'axios-mock-adapter'
 import request from 'supertest'
-import { APIKeyScope } from '../../../../src/entities/api-key'
-import { IntegrationType } from '../../../../src/entities/integration'
-import SteamworksIntegrationEvent from '../../../../src/entities/steamworks-integration-event'
-import GameStatFactory from '../../../fixtures/GameStatFactory'
-import IntegrationConfigFactory from '../../../fixtures/IntegrationConfigFactory'
-import IntegrationFactory from '../../../fixtures/IntegrationFactory'
-import PlayerFactory from '../../../fixtures/PlayerFactory'
-import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
+import { APIKeyScope } from '../../../../src/entities/api-key.js'
+import { IntegrationType } from '../../../../src/entities/integration.js'
+import SteamworksIntegrationEvent from '../../../../src/entities/steamworks-integration-event.js'
+import GameStatFactory from '../../../fixtures/GameStatFactory.js'
+import IntegrationConfigFactory from '../../../fixtures/IntegrationConfigFactory.js'
+import IntegrationFactory from '../../../fixtures/IntegrationFactory.js'
+import PlayerFactory from '../../../fixtures/PlayerFactory.js'
+import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken.js'
 
 describe('Game stat API - steamworks update', () => {
   const axiosMock = new AxiosMockAdapter(axios)

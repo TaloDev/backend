@@ -1,11 +1,11 @@
 import request from 'supertest'
-import GameActivity, { GameActivityType } from '../../../../src/entities/game-activity'
-import { UserType } from '../../../../src/entities/user'
-import PlayerGroupFactory from '../../../fixtures/PlayerGroupFactory'
-import UserPinnedGroupFactory from '../../../fixtures/UserPinnedGroupFactory'
-import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
-import createUserAndToken from '../../../utils/createUserAndToken'
-import userPermissionProvider from '../../../utils/userPermissionProvider'
+import GameActivity, { GameActivityType } from '../../../../src/entities/game-activity.js'
+import { UserType } from '../../../../src/entities/user.js'
+import PlayerGroupFactory from '../../../fixtures/PlayerGroupFactory.js'
+import UserPinnedGroupFactory from '../../../fixtures/UserPinnedGroupFactory.js'
+import createOrganisationAndGame from '../../../utils/createOrganisationAndGame.js'
+import createUserAndToken from '../../../utils/createUserAndToken.js'
+import userPermissionProvider from '../../../utils/userPermissionProvider.js'
 
 describe('Player group - delete', () => {
   it.each(userPermissionProvider([UserType.DEV, UserType.ADMIN], 204))(

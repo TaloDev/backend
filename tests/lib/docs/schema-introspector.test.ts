@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { z } from 'zod'
-import { extractParamsFromSchema } from '../../../src/lib/docs/schema-introspector'
+import { extractParamsFromSchema } from '../../../src/lib/docs/schema-introspector.js'
 
 describe('extractParamsFromSchema', () => {
   describe('basic types', () => {

@@ -2,8 +2,8 @@ import axios, { AxiosError, AxiosResponse } from 'axios'
 import pRetry, { AbortError } from 'p-retry'
 import GooglePlayGamesIntegrationEvent, {
   GooglePlayGamesRequest,
-} from '../../../entities/google-play-games-integration-event'
-import Integration from '../../../entities/integration'
+} from '../../../entities/google-play-games-integration-event.js'
+import Integration from '../../../entities/integration.js'
 
 export type GooglePlayGamesRequestConfig = {
   method: GooglePlayGamesRequest['method']

@@ -1,10 +1,10 @@
-import { APIKeyScope } from '../../../entities/api-key'
-import { apiRoute, withMiddleware } from '../../../lib/routing/router'
-import { updatePropsSchema } from '../../../lib/validation/propsSchema'
-import { requireScopes } from '../../../middleware/policy-middleware'
-import { updatePlayerHandler } from '../../protected/player/update'
-import { loadPlayer } from './common'
-import { patchDocs } from './docs'
+import { APIKeyScope } from '../../../entities/api-key.js'
+import { apiRoute, withMiddleware } from '../../../lib/routing/router.js'
+import { updatePropsSchema } from '../../../lib/validation/propsSchema.js'
+import { requireScopes } from '../../../middleware/policy-middleware.js'
+import { updatePlayerHandler } from '../../protected/player/update.js'
+import { loadPlayer } from './common.js'
+import { patchDocs } from './docs.js'
 
 export const patchRoute = apiRoute({
   method: 'patch',

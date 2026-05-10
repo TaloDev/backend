@@ -1,5 +1,5 @@
-import Invite from '../../../entities/invite'
-import { publicRouter } from '../../../lib/routing/router'
+import Invite from '../../../entities/invite.js'
+import { publicRouter } from '../../../lib/routing/router.js'
 
 export function invitePublicRouter() {
   return publicRouter('/public/invites', ({ route }) => {

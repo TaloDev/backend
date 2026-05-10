@@ -1,11 +1,11 @@
-import { protectedRouter } from '../../../lib/routing/router'
-import { createRoute } from './create'
-import { deleteRoute } from './delete'
-import { entriesRoute } from './entries'
-import { listRoute } from './list'
-import { resetRoute } from './reset'
-import { updateRoute } from './update'
-import { updateEntryRoute } from './update-entry'
+import { protectedRouter } from '../../../lib/routing/router.js'
+import { createRoute } from './create.js'
+import { deleteRoute } from './delete.js'
+import { entriesRoute } from './entries.js'
+import { listRoute } from './list.js'
+import { resetRoute } from './reset.js'
+import { updateEntryRoute } from './update-entry.js'
+import { updateRoute } from './update.js'
 
 export function leaderboardRouter() {
   return protectedRouter('/games/:gameId/leaderboards', ({ route }) => {

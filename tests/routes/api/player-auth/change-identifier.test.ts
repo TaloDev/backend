@@ -1,15 +1,15 @@
 import { Collection } from '@mikro-orm/mysql'
 import bcrypt from 'bcrypt'
 import request from 'supertest'
-import { APIKeyScope } from '../../../../src/entities/api-key'
-import PlayerAlias from '../../../../src/entities/player-alias'
+import { APIKeyScope } from '../../../../src/entities/api-key.js'
+import PlayerAlias from '../../../../src/entities/player-alias.js'
 import PlayerAuthActivity, {
   PlayerAuthActivityType,
-} from '../../../../src/entities/player-auth-activity'
-import PlayerAliasFactory from '../../../fixtures/PlayerAliasFactory'
-import PlayerAuthFactory from '../../../fixtures/PlayerAuthFactory'
-import PlayerFactory from '../../../fixtures/PlayerFactory'
-import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
+} from '../../../../src/entities/player-auth-activity.js'
+import PlayerAliasFactory from '../../../fixtures/PlayerAliasFactory.js'
+import PlayerAuthFactory from '../../../fixtures/PlayerAuthFactory.js'
+import PlayerFactory from '../../../fixtures/PlayerFactory.js'
+import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken.js'
 
 describe('Player auth API - change identifier', () => {
   it("should change a player's identifier if the current password is correct and the api key has the correct scopes", async () => {

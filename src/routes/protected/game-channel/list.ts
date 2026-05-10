@@ -1,11 +1,11 @@
 import { QueryOrder, EntityManager } from '@mikro-orm/mysql'
-import Game from '../../../entities/game'
-import GameChannel from '../../../entities/game-channel'
-import { DEFAULT_PAGE_SIZE } from '../../../lib/pagination/itemsPerPage'
-import { withResponseCache } from '../../../lib/perf/responseCache'
-import { protectedRoute, withMiddleware } from '../../../lib/routing/router'
-import { pageSchema } from '../../../lib/validation/pageSchema'
-import { loadGame } from '../../../middleware/game-middleware'
+import GameChannel from '../../../entities/game-channel.js'
+import Game from '../../../entities/game.js'
+import { DEFAULT_PAGE_SIZE } from '../../../lib/pagination/itemsPerPage.js'
+import { withResponseCache } from '../../../lib/perf/responseCache.js'
+import { protectedRoute, withMiddleware } from '../../../lib/routing/router.js'
+import { pageSchema } from '../../../lib/validation/pageSchema.js'
+import { loadGame } from '../../../middleware/game-middleware.js'
 
 const itemsPerPage = DEFAULT_PAGE_SIZE
 

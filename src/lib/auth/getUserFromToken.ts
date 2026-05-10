@@ -1,5 +1,5 @@
-import User from '../../entities/user'
-import { ProtectedRouteContext } from '../routing/context'
+import User from '../../entities/user.js'
+import { ProtectedRouteContext } from '../routing/context.js'
 
 export async function getUserFromToken(ctx: ProtectedRouteContext) {
   const em = ctx.em

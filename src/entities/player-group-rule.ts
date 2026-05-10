@@ -1,14 +1,14 @@
 import { Embeddable, Enum, Property } from '@mikro-orm/decorators/es'
 import { EntityManager, FilterValue, raw } from '@mikro-orm/mysql'
-import LeaderboardEntry from './leaderboard-entry'
-import Player from './player'
-import PlayerGameStat from './player-game-stat'
+import LeaderboardEntry from './leaderboard-entry.js'
+import PlayerGameStat from './player-game-stat.js'
 import {
   leaderboardEntryScoreNamespace,
   propWithKeyNamespace,
   statValueNamespace,
-} from './player-group'
-import PlayerProp from './player-prop'
+} from './player-group.js'
+import PlayerProp from './player-prop.js'
+import Player from './player.js'
 
 export enum PlayerGroupRuleName {
   EQUALS = 'EQUALS',

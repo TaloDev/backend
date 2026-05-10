@@ -1,11 +1,11 @@
-import { APIKeyScope } from '../../../entities/api-key'
-import { apiRoute, withMiddleware } from '../../../lib/routing/router'
-import { numericStringSchema } from '../../../lib/validation/numericStringSchema'
-import { playerHeaderSchema } from '../../../lib/validation/playerHeaderSchema'
-import { loadPlayer } from '../../../middleware/player-middleware'
-import { requireScopes } from '../../../middleware/policy-middleware'
-import { loadSave } from './common'
-import { deleteDocs } from './docs'
+import { APIKeyScope } from '../../../entities/api-key.js'
+import { apiRoute, withMiddleware } from '../../../lib/routing/router.js'
+import { numericStringSchema } from '../../../lib/validation/numericStringSchema.js'
+import { playerHeaderSchema } from '../../../lib/validation/playerHeaderSchema.js'
+import { loadPlayer } from '../../../middleware/player-middleware.js'
+import { requireScopes } from '../../../middleware/policy-middleware.js'
+import { loadSave } from './common.js'
+import { deleteDocs } from './docs.js'
 
 export const deleteRoute = apiRoute({
   method: 'delete',

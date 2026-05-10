@@ -1,11 +1,14 @@
 import { EntityManager } from '@mikro-orm/mysql'
 import { captureException } from '@sentry/node'
 import { Redis } from 'ioredis'
-import { getMikroORM } from '../../../config/mikro-orm.config'
-import GameStat from '../../../entities/game-stat'
-import PlayerGameStatSnapshot from '../../../entities/player-game-stat-snapshot'
-import { ClickHousePlayerGameStatSnapshot } from '../../../entities/player-game-stat-snapshot'
-import { FlushMetricsQueueHandler, postFlushCheckMemberships } from './flush-metrics-queue-handler'
+import { getMikroORM } from '../../../config/mikro-orm.config.js'
+import GameStat from '../../../entities/game-stat.js'
+import PlayerGameStatSnapshot from '../../../entities/player-game-stat-snapshot.js'
+import { ClickHousePlayerGameStatSnapshot } from '../../../entities/player-game-stat-snapshot.js'
+import {
+  FlushMetricsQueueHandler,
+  postFlushCheckMemberships,
+} from './flush-metrics-queue-handler.js'
 
 type SerialisedStatSnapshot = ClickHousePlayerGameStatSnapshot & {
   playerId: string

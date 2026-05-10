@@ -1,6 +1,6 @@
 import { Entity, ManyToOne, PrimaryKey, Property } from '@mikro-orm/decorators/es'
-import GameFeedback from './game-feedback'
-import { MAX_KEY_LENGTH, MAX_VALUE_LENGTH } from './prop'
+import GameFeedback from './game-feedback.js'
+import { MAX_KEY_LENGTH, MAX_VALUE_LENGTH } from './prop.js'
 
 @Entity()
 export default class GameFeedbackProp {

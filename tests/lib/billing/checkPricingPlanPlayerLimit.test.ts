@@ -1,11 +1,11 @@
 import { randText } from '@ngneat/falso'
 import request from 'supertest'
-import PlanUsageWarning from '../../../src/emails/plan-usage-warning-mail'
-import { APIKeyScope } from '../../../src/entities/api-key'
-import { getUsageBucket } from '../../../src/lib/billing/checkPricingPlanPlayerLimit'
-import * as sendEmail from '../../../src/lib/messaging/sendEmail'
-import PlayerFactory from '../../fixtures/PlayerFactory'
-import createAPIKeyAndToken from '../../utils/createAPIKeyAndToken'
+import PlanUsageWarning from '../../../src/emails/plan-usage-warning-mail.js'
+import { APIKeyScope } from '../../../src/entities/api-key.js'
+import { getUsageBucket } from '../../../src/lib/billing/checkPricingPlanPlayerLimit.js'
+import * as sendEmail from '../../../src/lib/messaging/sendEmail.js'
+import PlayerFactory from '../../fixtures/PlayerFactory.js'
+import createAPIKeyAndToken from '../../utils/createAPIKeyAndToken.js'
 
 describe('getUsageBucket', () => {
   it.each([

@@ -1,12 +1,12 @@
-import { protectedRouter } from '../../../lib/routing/router'
-import { createRoute } from './create'
-import { deleteRoute } from './delete'
-import { listRoute } from './list'
-import { listPinnedRoute } from './list-pinned'
-import { previewCountRoute } from './preview-count'
-import { rulesRoute } from './rules'
-import { togglePinnedRoute } from './toggle-pinned'
-import { updateRoute } from './update'
+import { protectedRouter } from '../../../lib/routing/router.js'
+import { createRoute } from './create.js'
+import { deleteRoute } from './delete.js'
+import { listPinnedRoute } from './list-pinned.js'
+import { listRoute } from './list.js'
+import { previewCountRoute } from './preview-count.js'
+import { rulesRoute } from './rules.js'
+import { togglePinnedRoute } from './toggle-pinned.js'
+import { updateRoute } from './update.js'
 
 export function playerGroupRouter() {
   return protectedRouter('/games/:gameId/player-groups', ({ route }) => {

@@ -1,12 +1,12 @@
 import request from 'supertest'
-import { PlayerAuthActivityType } from '../../../../src/entities/player-auth-activity'
-import { UserType } from '../../../../src/entities/user'
-import { DEFAULT_PAGE_SIZE } from '../../../../src/lib/pagination/itemsPerPage'
-import PlayerAuthActivityFactory from '../../../fixtures/PlayerAuthActivityFactory'
-import PlayerFactory from '../../../fixtures/PlayerFactory'
-import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
-import createUserAndToken from '../../../utils/createUserAndToken'
-import userPermissionProvider from '../../../utils/userPermissionProvider'
+import { PlayerAuthActivityType } from '../../../../src/entities/player-auth-activity.js'
+import { UserType } from '../../../../src/entities/user.js'
+import { DEFAULT_PAGE_SIZE } from '../../../../src/lib/pagination/itemsPerPage.js'
+import PlayerAuthActivityFactory from '../../../fixtures/PlayerAuthActivityFactory.js'
+import PlayerFactory from '../../../fixtures/PlayerFactory.js'
+import createOrganisationAndGame from '../../../utils/createOrganisationAndGame.js'
+import createUserAndToken from '../../../utils/createUserAndToken.js'
+import userPermissionProvider from '../../../utils/userPermissionProvider.js'
 
 describe('Player - auth activities', () => {
   it.each(userPermissionProvider([UserType.ADMIN]))(

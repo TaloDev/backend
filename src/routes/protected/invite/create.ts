@@ -1,13 +1,13 @@
-import { getGlobalQueue } from '../../../config/global-queues'
-import JoinOrganisation from '../../../emails/join-organisation-mail'
-import { GameActivityType } from '../../../entities/game-activity'
-import Invite from '../../../entities/invite'
-import { UserType } from '../../../entities/user'
-import User from '../../../entities/user'
-import createGameActivity from '../../../lib/logging/createGameActivity'
-import queueEmail from '../../../lib/messaging/queueEmail'
-import { protectedRoute, withMiddleware } from '../../../lib/routing/router'
-import { userTypeGate, requireEmailConfirmed } from '../../../middleware/policy-middleware'
+import { getGlobalQueue } from '../../../config/global-queues.js'
+import JoinOrganisation from '../../../emails/join-organisation-mail.js'
+import { GameActivityType } from '../../../entities/game-activity.js'
+import Invite from '../../../entities/invite.js'
+import { UserType } from '../../../entities/user.js'
+import User from '../../../entities/user.js'
+import createGameActivity from '../../../lib/logging/createGameActivity.js'
+import queueEmail from '../../../lib/messaging/queueEmail.js'
+import { protectedRoute, withMiddleware } from '../../../lib/routing/router.js'
+import { userTypeGate, requireEmailConfirmed } from '../../../middleware/policy-middleware.js'
 
 export const createRoute = protectedRoute({
   method: 'post',

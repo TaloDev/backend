@@ -1,12 +1,12 @@
-import { APIKeyScope } from '../../../entities/api-key'
-import PlayerAlias from '../../../entities/player-alias'
-import { apiRoute, withMiddleware } from '../../../lib/routing/router'
-import { numericStringSchema } from '../../../lib/validation/numericStringSchema'
-import { playerAliasHeaderSchema } from '../../../lib/validation/playerAliasHeaderSchema'
-import { loadAlias } from '../../../middleware/player-alias-middleware'
-import { requireScopes } from '../../../middleware/policy-middleware'
-import { loadChannel, canModifyChannel, joinChannel } from './common'
-import { inviteDocs } from './docs'
+import { APIKeyScope } from '../../../entities/api-key.js'
+import PlayerAlias from '../../../entities/player-alias.js'
+import { apiRoute, withMiddleware } from '../../../lib/routing/router.js'
+import { numericStringSchema } from '../../../lib/validation/numericStringSchema.js'
+import { playerAliasHeaderSchema } from '../../../lib/validation/playerAliasHeaderSchema.js'
+import { loadAlias } from '../../../middleware/player-alias-middleware.js'
+import { requireScopes } from '../../../middleware/policy-middleware.js'
+import { loadChannel, canModifyChannel, joinChannel } from './common.js'
+import { inviteDocs } from './docs.js'
 
 export const inviteRoute = apiRoute({
   method: 'post',

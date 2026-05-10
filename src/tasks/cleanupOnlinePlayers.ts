@@ -1,12 +1,12 @@
 import { ClickHouseClient } from '@clickhouse/client'
 import { EntityManager } from '@mikro-orm/mysql'
 import { subMinutes } from 'date-fns'
-import { getMikroORM } from '../config/mikro-orm.config'
-import PlayerPresence from '../entities/player-presence'
-import { ClickHousePlayerSession } from '../entities/player-session'
-import createClickHouseClient from '../lib/clickhouse/createClient'
-import { formatDateForClickHouse } from '../lib/clickhouse/formatDateTime'
-import { getSocketInstance } from '../socket/socketRegistry'
+import { getMikroORM } from '../config/mikro-orm.config.js'
+import PlayerPresence from '../entities/player-presence.js'
+import { ClickHousePlayerSession } from '../entities/player-session.js'
+import createClickHouseClient from '../lib/clickhouse/createClient.js'
+import { formatDateForClickHouse } from '../lib/clickhouse/formatDateTime.js'
+import { getSocketInstance } from '../socket/socketRegistry.js'
 
 const BATCH_SIZE = 500
 

@@ -1,6 +1,6 @@
 import { Entity, Enum, ManyToOne, PrimaryKey, Property } from '@mikro-orm/decorators/es'
-import Organisation from './organisation'
-import User, { UserType } from './user'
+import Organisation from './organisation.js'
+import User, { UserType } from './user.js'
 
 @Entity()
 export default class Invite {

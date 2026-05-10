@@ -1,5 +1,5 @@
 import { Next } from 'koa'
-import { GlobalContext } from '../lib/routing/context'
+import { GlobalContext } from '../lib/routing/context.js'
 
 export async function decodeParamsMiddleware(ctx: GlobalContext, next: Next) {
   for (const param in ctx.params) {

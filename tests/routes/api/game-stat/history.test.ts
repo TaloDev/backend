@@ -1,13 +1,13 @@
 import { randNumber } from '@ngneat/falso'
 import { addMinutes, isSameDay } from 'date-fns'
 import request from 'supertest'
-import { APIKeyScope } from '../../../../src/entities/api-key'
-import Game from '../../../../src/entities/game'
-import PlayerGameStatSnapshot from '../../../../src/entities/player-game-stat-snapshot'
-import GameStatFactory from '../../../fixtures/GameStatFactory'
-import PlayerFactory from '../../../fixtures/PlayerFactory'
-import PlayerGameStatFactory from '../../../fixtures/PlayerGameStatFactory'
-import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
+import { APIKeyScope } from '../../../../src/entities/api-key.js'
+import Game from '../../../../src/entities/game.js'
+import PlayerGameStatSnapshot from '../../../../src/entities/player-game-stat-snapshot.js'
+import GameStatFactory from '../../../fixtures/GameStatFactory.js'
+import PlayerFactory from '../../../fixtures/PlayerFactory.js'
+import PlayerGameStatFactory from '../../../fixtures/PlayerGameStatFactory.js'
+import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken.js'
 
 describe('Game stat API - history', () => {
   const createStat = async (game: Game) => {

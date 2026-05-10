@@ -1,11 +1,11 @@
 import request from 'supertest'
-import GameActivity, { GameActivityType } from '../../../../src/entities/game-activity'
-import { UserType } from '../../../../src/entities/user'
-import GameFactory from '../../../fixtures/GameFactory'
-import LeaderboardFactory from '../../../fixtures/LeaderboardFactory'
-import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
-import createUserAndToken from '../../../utils/createUserAndToken'
-import userPermissionProvider from '../../../utils/userPermissionProvider'
+import GameActivity, { GameActivityType } from '../../../../src/entities/game-activity.js'
+import { UserType } from '../../../../src/entities/user.js'
+import GameFactory from '../../../fixtures/GameFactory.js'
+import LeaderboardFactory from '../../../fixtures/LeaderboardFactory.js'
+import createOrganisationAndGame from '../../../utils/createOrganisationAndGame.js'
+import createUserAndToken from '../../../utils/createUserAndToken.js'
+import userPermissionProvider from '../../../utils/userPermissionProvider.js'
 
 describe('Leaderboard - create', () => {
   it.each(userPermissionProvider([UserType.ADMIN, UserType.DEV]))(

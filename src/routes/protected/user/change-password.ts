@@ -1,8 +1,8 @@
 import bcrypt from 'bcrypt'
-import UserSession from '../../../entities/user-session'
-import { buildTokenPair } from '../../../lib/auth/buildTokenPair'
-import { protectedRoute } from '../../../lib/routing/router'
-import { passwordSchema } from '../../../lib/validation/passwordSchema'
+import UserSession from '../../../entities/user-session.js'
+import { buildTokenPair } from '../../../lib/auth/buildTokenPair.js'
+import { protectedRoute } from '../../../lib/routing/router.js'
+import { passwordSchema } from '../../../lib/validation/passwordSchema.js'
 
 export const changePasswordRoute = protectedRoute({
   method: 'post',

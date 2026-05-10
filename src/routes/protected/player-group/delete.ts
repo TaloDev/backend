@@ -1,13 +1,13 @@
-import { GameActivityType } from '../../../entities/game-activity'
-import PlayerGroup from '../../../entities/player-group'
-import { UserType } from '../../../entities/user'
-import UserPinnedGroup from '../../../entities/user-pinned-group'
-import createGameActivity from '../../../lib/logging/createGameActivity'
-import { deferClearResponseCache } from '../../../lib/perf/responseCacheQueue'
-import { protectedRoute, withMiddleware } from '../../../lib/routing/router'
-import { loadGame } from '../../../middleware/game-middleware'
-import { userTypeGate } from '../../../middleware/policy-middleware'
-import { loadGroup } from './common'
+import { GameActivityType } from '../../../entities/game-activity.js'
+import PlayerGroup from '../../../entities/player-group.js'
+import UserPinnedGroup from '../../../entities/user-pinned-group.js'
+import { UserType } from '../../../entities/user.js'
+import createGameActivity from '../../../lib/logging/createGameActivity.js'
+import { deferClearResponseCache } from '../../../lib/perf/responseCacheQueue.js'
+import { protectedRoute, withMiddleware } from '../../../lib/routing/router.js'
+import { loadGame } from '../../../middleware/game-middleware.js'
+import { userTypeGate } from '../../../middleware/policy-middleware.js'
+import { loadGroup } from './common.js'
 
 export const deleteRoute = protectedRoute({
   method: 'delete',

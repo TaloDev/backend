@@ -1,6 +1,6 @@
-import { protectedRoute, withMiddleware } from '../../../lib/routing/router'
-import { loadGame } from '../../../middleware/game-middleware'
-import { ownerGate } from '../../../middleware/policy-middleware'
+import { protectedRoute, withMiddleware } from '../../../lib/routing/router.js'
+import { loadGame } from '../../../middleware/game-middleware.js'
+import { ownerGate } from '../../../middleware/policy-middleware.js'
 
 export const settingsRoute = protectedRoute({
   method: 'get',

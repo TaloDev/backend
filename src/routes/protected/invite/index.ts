@@ -1,6 +1,6 @@
-import { protectedRouter } from '../../../lib/routing/router'
-import { createRoute } from './create'
-import { listRoute } from './list'
+import { protectedRouter } from '../../../lib/routing/router.js'
+import { createRoute } from './create.js'
+import { listRoute } from './list.js'
 
 export function inviteRouter() {
   return protectedRouter('/invites', ({ route }) => {

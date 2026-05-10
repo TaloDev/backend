@@ -1,8 +1,8 @@
-import UserPinnedGroup from '../../../entities/user-pinned-group'
-import { deferClearResponseCache } from '../../../lib/perf/responseCacheQueue'
-import { protectedRoute, withMiddleware } from '../../../lib/routing/router'
-import { loadGame } from '../../../middleware/game-middleware'
-import { loadGroup } from './common'
+import UserPinnedGroup from '../../../entities/user-pinned-group.js'
+import { deferClearResponseCache } from '../../../lib/perf/responseCacheQueue.js'
+import { protectedRoute, withMiddleware } from '../../../lib/routing/router.js'
+import { loadGame } from '../../../middleware/game-middleware.js'
+import { loadGroup } from './common.js'
 
 export const togglePinnedRoute = protectedRoute({
   method: 'put',

@@ -1,8 +1,8 @@
 import { Next } from 'koa'
-import GameStat from '../../../entities/game-stat'
-import { APIRouteContext } from '../../../lib/routing/context'
-import { PlayerAliasRouteState } from '../../../middleware/player-alias-middleware'
-import { PlayerRouteState } from '../../../middleware/player-middleware'
+import GameStat from '../../../entities/game-stat.js'
+import { APIRouteContext } from '../../../lib/routing/context.js'
+import { PlayerAliasRouteState } from '../../../middleware/player-alias-middleware.js'
+import { PlayerRouteState } from '../../../middleware/player-middleware.js'
 
 export type GameStatRouteState = {
   stat: GameStat

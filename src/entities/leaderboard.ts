@@ -8,8 +8,8 @@ import {
   Property,
 } from '@mikro-orm/decorators/es'
 import { Collection, EntityManager } from '@mikro-orm/mysql'
-import Game from './game'
-import LeaderboardEntry from './leaderboard-entry'
+import Game from './game.js'
+import LeaderboardEntry from './leaderboard-entry.js'
 
 export enum LeaderboardSortMode {
   DESC = 'desc',

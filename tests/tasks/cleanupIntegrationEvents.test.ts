@@ -1,11 +1,11 @@
-import GameCenterIntegrationEvent from '../../src/entities/game-center-integration-event'
-import GooglePlayGamesIntegrationEvent from '../../src/entities/google-play-games-integration-event'
-import { IntegrationType } from '../../src/entities/integration'
-import SteamworksIntegrationEvent from '../../src/entities/steamworks-integration-event'
-import { cleanupIntegrationEvents } from '../../src/tasks/cleanupIntegrationEvents'
-import IntegrationConfigFactory from '../fixtures/IntegrationConfigFactory'
-import IntegrationFactory from '../fixtures/IntegrationFactory'
-import createOrganisationAndGame from '../utils/createOrganisationAndGame'
+import GameCenterIntegrationEvent from '../../src/entities/game-center-integration-event.js'
+import GooglePlayGamesIntegrationEvent from '../../src/entities/google-play-games-integration-event.js'
+import { IntegrationType } from '../../src/entities/integration.js'
+import SteamworksIntegrationEvent from '../../src/entities/steamworks-integration-event.js'
+import { cleanupIntegrationEvents } from '../../src/tasks/cleanupIntegrationEvents.js'
+import IntegrationConfigFactory from '../fixtures/IntegrationConfigFactory.js'
+import IntegrationFactory from '../fixtures/IntegrationFactory.js'
+import createOrganisationAndGame from '../utils/createOrganisationAndGame.js'
 
 describe('cleanupIntegrationEvents', () => {
   it('should delete steamworks integration events older than 6 months', async () => {

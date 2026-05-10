@@ -1,13 +1,13 @@
 import assert from 'node:assert'
 import request from 'supertest'
-import GameActivity, { GameActivityType } from '../../../../src/entities/game-activity'
-import { IntegrationType } from '../../../../src/entities/integration'
-import { UserType } from '../../../../src/entities/user'
-import IntegrationConfigFactory from '../../../fixtures/IntegrationConfigFactory'
-import IntegrationFactory from '../../../fixtures/IntegrationFactory'
-import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
-import createUserAndToken from '../../../utils/createUserAndToken'
-import userPermissionProvider from '../../../utils/userPermissionProvider'
+import GameActivity, { GameActivityType } from '../../../../src/entities/game-activity.js'
+import { IntegrationType } from '../../../../src/entities/integration.js'
+import { UserType } from '../../../../src/entities/user.js'
+import IntegrationConfigFactory from '../../../fixtures/IntegrationConfigFactory.js'
+import IntegrationFactory from '../../../fixtures/IntegrationFactory.js'
+import createOrganisationAndGame from '../../../utils/createOrganisationAndGame.js'
+import createUserAndToken from '../../../utils/createUserAndToken.js'
+import userPermissionProvider from '../../../utils/userPermissionProvider.js'
 
 describe('Integration - update', () => {
   it.each(userPermissionProvider([UserType.ADMIN]))(

@@ -1,4 +1,4 @@
-import { RouteDocs } from '../../../lib/docs/docs-registry'
+import { RouteDocs } from '../../../lib/docs/docs-registry.js'
 
 export const listCategoriesDocs = {
   description: 'Get available feedback categories',

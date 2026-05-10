@@ -1,11 +1,11 @@
 import { randText } from '@ngneat/falso'
 import { subHours } from 'date-fns'
 import request from 'supertest'
-import { APIKeyScope } from '../../../../src/entities/api-key'
-import GameFeedback from '../../../../src/entities/game-feedback'
-import GameFeedbackCategoryFactory from '../../../fixtures/GameFeedbackCategoryFactory'
-import PlayerFactory from '../../../fixtures/PlayerFactory'
-import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
+import { APIKeyScope } from '../../../../src/entities/api-key.js'
+import GameFeedback from '../../../../src/entities/game-feedback.js'
+import GameFeedbackCategoryFactory from '../../../fixtures/GameFeedbackCategoryFactory.js'
+import PlayerFactory from '../../../fixtures/PlayerFactory.js'
+import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken.js'
 
 describe('Game feedback API - create', () => {
   it('should create feedback if the scope is valid', async () => {

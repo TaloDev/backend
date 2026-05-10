@@ -1,9 +1,9 @@
 import request from 'supertest'
-import { APIKeyScope } from '../../src/entities/api-key'
-import GameStatFactory from '../fixtures/GameStatFactory'
-import PlayerAliasFactory from '../fixtures/PlayerAliasFactory'
-import PlayerFactory from '../fixtures/PlayerFactory'
-import createAPIKeyAndToken from '../utils/createAPIKeyAndToken'
+import { APIKeyScope } from '../../src/entities/api-key.js'
+import GameStatFactory from '../fixtures/GameStatFactory.js'
+import PlayerAliasFactory from '../fixtures/PlayerAliasFactory.js'
+import PlayerFactory from '../fixtures/PlayerFactory.js'
+import createAPIKeyAndToken from '../utils/createAPIKeyAndToken.js'
 
 describe('Player auth middleware', () => {
   it('should allow access to api endpoints when valid session headers are provided', async () => {

@@ -1,13 +1,13 @@
 import { Collection } from '@mikro-orm/mysql'
 import { randText, randWord } from '@ngneat/falso'
 import request from 'supertest'
-import GameActivity, { GameActivityType } from '../../../../src/entities/game-activity'
-import PlayerProp from '../../../../src/entities/player-prop'
-import { UserType } from '../../../../src/entities/user'
-import PlayerFactory from '../../../fixtures/PlayerFactory'
-import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
-import createUserAndToken from '../../../utils/createUserAndToken'
-import userPermissionProvider from '../../../utils/userPermissionProvider'
+import GameActivity, { GameActivityType } from '../../../../src/entities/game-activity.js'
+import PlayerProp from '../../../../src/entities/player-prop.js'
+import { UserType } from '../../../../src/entities/user.js'
+import PlayerFactory from '../../../fixtures/PlayerFactory.js'
+import createOrganisationAndGame from '../../../utils/createOrganisationAndGame.js'
+import createUserAndToken from '../../../utils/createUserAndToken.js'
+import userPermissionProvider from '../../../utils/userPermissionProvider.js'
 
 describe('Player - update', () => {
   it.each(userPermissionProvider([UserType.ADMIN, UserType.DEV]))(

@@ -1,5 +1,5 @@
-import { camelCase } from 'lodash'
-import buildErrorResponse from './buildErrorResponse'
+import { camelCase } from 'lodash-es'
+import buildErrorResponse from './buildErrorResponse.js'
 
 export default function handleSQLError(err: Error) {
   if ('sqlState' in err && err.sqlState === '22003') {

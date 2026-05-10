@@ -1,11 +1,11 @@
-import { protectedRouter } from '../../../lib/routing/router'
-import { bulkCreateRoute } from './bulk-create'
-import { createRoute } from './create'
-import { deleteRoute } from './delete'
-import { listRoute } from './list'
-import { resetRoute } from './reset'
-import { updateRoute } from './update'
-import { updatePlayerStatRoute } from './update-player-stat'
+import { protectedRouter } from '../../../lib/routing/router.js'
+import { bulkCreateRoute } from './bulk-create.js'
+import { createRoute } from './create.js'
+import { deleteRoute } from './delete.js'
+import { listRoute } from './list.js'
+import { resetRoute } from './reset.js'
+import { updatePlayerStatRoute } from './update-player-stat.js'
+import { updateRoute } from './update.js'
 
 export function gameStatRouter() {
   return protectedRouter('/games/:gameId/game-stats', ({ route }) => {

@@ -1,12 +1,12 @@
 import bcrypt from 'bcrypt'
-import { APIKeyScope } from '../../../entities/api-key'
-import PlayerAlias from '../../../entities/player-alias'
-import { PlayerAuthActivityType } from '../../../entities/player-auth-activity'
-import { throwPlayerAuthError } from '../../../lib/errors/throwPlayerAuthError'
-import { apiRoute, withMiddleware } from '../../../lib/routing/router'
-import { requireScopes } from '../../../middleware/policy-middleware'
-import { createPlayerAuthActivity, getRedisPasswordResetKey } from './common'
-import { resetPasswordDocs } from './docs'
+import { APIKeyScope } from '../../../entities/api-key.js'
+import PlayerAlias from '../../../entities/player-alias.js'
+import { PlayerAuthActivityType } from '../../../entities/player-auth-activity.js'
+import { throwPlayerAuthError } from '../../../lib/errors/throwPlayerAuthError.js'
+import { apiRoute, withMiddleware } from '../../../lib/routing/router.js'
+import { requireScopes } from '../../../middleware/policy-middleware.js'
+import { createPlayerAuthActivity, getRedisPasswordResetKey } from './common.js'
+import { resetPasswordDocs } from './docs.js'
 
 export const resetPasswordRoute = apiRoute({
   method: 'post',

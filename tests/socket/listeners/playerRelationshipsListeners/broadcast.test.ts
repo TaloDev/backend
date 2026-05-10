@@ -1,10 +1,10 @@
-import APIKey, { APIKeyScope } from '../../../../src/entities/api-key'
-import PlayerAliasSubscriptionFactory from '../../../fixtures/PlayerAliasSubscriptionFactory'
-import PlayerFactory from '../../../fixtures/PlayerFactory'
+import APIKey, { APIKeyScope } from '../../../../src/entities/api-key.js'
+import PlayerAliasSubscriptionFactory from '../../../fixtures/PlayerAliasSubscriptionFactory.js'
+import PlayerFactory from '../../../fixtures/PlayerFactory.js'
 import createSocketIdentifyMessage, {
   persistTestSocketTicket,
-} from '../../../utils/createSocketIdentifyMessage'
-import createTestSocket, { createTestClient } from '../../../utils/createTestSocket'
+} from '../../../utils/createSocketIdentifyMessage.js'
+import createTestSocket, { createTestClient } from '../../../utils/createTestSocket.js'
 
 describe('Player relationship listeners - broadcast', () => {
   it('should broadcast to multiple confirmed subscribers', async () => {

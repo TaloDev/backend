@@ -1,12 +1,12 @@
 import { Collection } from '@mikro-orm/mysql'
 import request from 'supertest'
-import GameFeedbackProp from '../../../../src/entities/game-feedback-prop'
-import GameFeedbackCategoryFactory from '../../../fixtures/GameFeedbackCategoryFactory'
-import GameFeedbackFactory from '../../../fixtures/GameFeedbackFactory'
-import PlayerAliasFactory from '../../../fixtures/PlayerAliasFactory'
-import PlayerFactory from '../../../fixtures/PlayerFactory'
-import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
-import createUserAndToken from '../../../utils/createUserAndToken'
+import GameFeedbackProp from '../../../../src/entities/game-feedback-prop.js'
+import GameFeedbackCategoryFactory from '../../../fixtures/GameFeedbackCategoryFactory.js'
+import GameFeedbackFactory from '../../../fixtures/GameFeedbackFactory.js'
+import PlayerAliasFactory from '../../../fixtures/PlayerAliasFactory.js'
+import PlayerFactory from '../../../fixtures/PlayerFactory.js'
+import createOrganisationAndGame from '../../../utils/createOrganisationAndGame.js'
+import createUserAndToken from '../../../utils/createUserAndToken.js'
 
 describe('Game feedback - list', () => {
   it('should return a list of game feedback', async () => {

@@ -1,14 +1,16 @@
 import type { EntityManager } from '@mikro-orm/mysql'
 import type { Next } from 'koa'
 import assert from 'node:assert'
-import type { APIRouteContext } from '../../../lib/routing/context'
-import APIKey from '../../../entities/api-key'
-import Game from '../../../entities/game'
-import Player from '../../../entities/player'
-import PlayerAlias from '../../../entities/player-alias'
-import PlayerAuth from '../../../entities/player-auth'
-import PlayerAuthActivity, { PlayerAuthActivityType } from '../../../entities/player-auth-activity'
-import { buildPlayerAuthActivity } from '../../../lib/logging/buildPlayerAuthActivity'
+import type { APIRouteContext } from '../../../lib/routing/context.js'
+import APIKey from '../../../entities/api-key.js'
+import Game from '../../../entities/game.js'
+import PlayerAlias from '../../../entities/player-alias.js'
+import PlayerAuthActivity, {
+  PlayerAuthActivityType,
+} from '../../../entities/player-auth-activity.js'
+import PlayerAuth from '../../../entities/player-auth.js'
+import Player from '../../../entities/player.js'
+import { buildPlayerAuthActivity } from '../../../lib/logging/buildPlayerAuthActivity.js'
 
 export type PlayerAuthRouteState = {
   alias: PlayerAlias

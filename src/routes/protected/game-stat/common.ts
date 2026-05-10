@@ -1,11 +1,11 @@
 import { Next } from 'koa'
 import assert from 'node:assert'
 import { RefinementCtx, z } from 'zod'
-import GameStat from '../../../entities/game-stat'
-import PlayerGameStat from '../../../entities/player-game-stat'
-import { deferClearResponseCache } from '../../../lib/perf/responseCacheQueue'
-import { ProtectedRouteContext } from '../../../lib/routing/context'
-import { GameRouteState } from '../../../middleware/game-middleware'
+import GameStat from '../../../entities/game-stat.js'
+import PlayerGameStat from '../../../entities/player-game-stat.js'
+import { deferClearResponseCache } from '../../../lib/perf/responseCacheQueue.js'
+import { ProtectedRouteContext } from '../../../lib/routing/context.js'
+import { GameRouteState } from '../../../middleware/game-middleware.js'
 
 type Z = typeof z
 

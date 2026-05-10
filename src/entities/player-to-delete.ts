@@ -1,5 +1,5 @@
 import { Entity, ManyToOne, PrimaryKey, Property } from '@mikro-orm/decorators/es'
-import Player from './player'
+import Player from './player.js'
 
 @Entity({ tableName: 'players_to_delete' })
 export class PlayerToDelete {

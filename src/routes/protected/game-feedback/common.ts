@@ -1,8 +1,8 @@
 import { Next } from 'koa'
-import GameFeedback from '../../../entities/game-feedback'
-import GameFeedbackCategory from '../../../entities/game-feedback-category'
-import { ProtectedRouteContext } from '../../../lib/routing/context'
-import { GameRouteState } from '../../../middleware/game-middleware'
+import GameFeedbackCategory from '../../../entities/game-feedback-category.js'
+import GameFeedback from '../../../entities/game-feedback.js'
+import { ProtectedRouteContext } from '../../../lib/routing/context.js'
+import { GameRouteState } from '../../../middleware/game-middleware.js'
 
 type FeedbackCategoryRouteContext = ProtectedRouteContext<
   GameRouteState & { feedbackCategory: GameFeedbackCategory }

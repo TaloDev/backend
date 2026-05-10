@@ -2,11 +2,11 @@ import bcrypt from 'bcrypt'
 import request from 'supertest'
 import PlayerAuthActivity, {
   PlayerAuthActivityType,
-} from '../../../../src/entities/player-auth-activity'
-import * as sendEmail from '../../../../src/lib/messaging/sendEmail'
-import PlayerAuthFactory from '../../../fixtures/PlayerAuthFactory'
-import PlayerFactory from '../../../fixtures/PlayerFactory'
-import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
+} from '../../../../src/entities/player-auth-activity.js'
+import * as sendEmail from '../../../../src/lib/messaging/sendEmail.js'
+import PlayerAuthFactory from '../../../fixtures/PlayerAuthFactory.js'
+import PlayerFactory from '../../../fixtures/PlayerFactory.js'
+import createOrganisationAndGame from '../../../utils/createOrganisationAndGame.js'
 
 describe('Player public - login', () => {
   const sendMock = vi.spyOn(sendEmail, 'default')

@@ -1,9 +1,9 @@
-import PlayerAlias from '../../../entities/player-alias'
-import { publicRoute, withMiddleware } from '../../../lib/routing/router'
-import { sessionHeaderSchema } from '../../../lib/validation/sessionHeaderSchema'
-import { throwInvalidSessionError } from '../../../middleware/player-auth-middleware'
-import { deleteHandler } from '../../api/player-auth/delete'
-import { loadGameFromToken, verifyPublicPlayerSession } from './common'
+import PlayerAlias from '../../../entities/player-alias.js'
+import { publicRoute, withMiddleware } from '../../../lib/routing/router.js'
+import { sessionHeaderSchema } from '../../../lib/validation/sessionHeaderSchema.js'
+import { throwInvalidSessionError } from '../../../middleware/player-auth-middleware.js'
+import { deleteHandler } from '../../api/player-auth/delete.js'
+import { loadGameFromToken, verifyPublicPlayerSession } from './common.js'
 
 export const deleteRoute = publicRoute({
   method: 'delete',

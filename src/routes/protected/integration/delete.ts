@@ -1,9 +1,9 @@
-import { GameActivityType } from '../../../entities/game-activity'
-import { UserType } from '../../../entities/user'
-import createGameActivity from '../../../lib/logging/createGameActivity'
-import { protectedRoute, withMiddleware } from '../../../lib/routing/router'
-import { userTypeGate } from '../../../middleware/policy-middleware'
-import { loadIntegration } from './common'
+import { GameActivityType } from '../../../entities/game-activity.js'
+import { UserType } from '../../../entities/user.js'
+import createGameActivity from '../../../lib/logging/createGameActivity.js'
+import { protectedRoute, withMiddleware } from '../../../lib/routing/router.js'
+import { userTypeGate } from '../../../middleware/policy-middleware.js'
+import { loadIntegration } from './common.js'
 
 export const deleteRoute = protectedRoute({
   method: 'delete',

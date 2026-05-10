@@ -1,9 +1,9 @@
-import { APIKeyScope } from '../../src/entities/api-key'
-import { createSocketTicket } from '../../src/lib/sockets/createSocketTicket'
-import GameChannelFactory from '../fixtures/GameChannelFactory'
-import createAPIKeyAndToken from '../utils/createAPIKeyAndToken'
-import createSocketIdentifyMessage from '../utils/createSocketIdentifyMessage'
-import createTestSocket from '../utils/createTestSocket'
+import { APIKeyScope } from '../../src/entities/api-key.js'
+import { createSocketTicket } from '../../src/lib/sockets/createSocketTicket.js'
+import GameChannelFactory from '../fixtures/GameChannelFactory.js'
+import createAPIKeyAndToken from '../utils/createAPIKeyAndToken.js'
+import createSocketIdentifyMessage from '../utils/createSocketIdentifyMessage.js'
+import createTestSocket from '../utils/createTestSocket.js'
 
 describe('Socket router', () => {
   it('should reject invalid messages', async () => {

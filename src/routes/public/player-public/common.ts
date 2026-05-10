@@ -1,8 +1,8 @@
 import type { Next } from 'koa'
-import type { PublicRouteContext } from '../../../lib/routing/context'
-import Game from '../../../entities/game'
-import PlayerAlias from '../../../entities/player-alias'
-import { sign, verify } from '../../../lib/auth/jwt'
+import type { PublicRouteContext } from '../../../lib/routing/context.js'
+import Game from '../../../entities/game.js'
+import PlayerAlias from '../../../entities/player-alias.js'
+import { sign, verify } from '../../../lib/auth/jwt.js'
 
 const PUBLIC_SESSION_AUDIENCE = 'player-public'
 

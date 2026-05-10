@@ -1,6 +1,6 @@
-import APIKey from '../../../entities/api-key'
-import { protectedRoute, withMiddleware } from '../../../lib/routing/router'
-import { loadGame } from '../../../middleware/game-middleware'
+import APIKey from '../../../entities/api-key.js'
+import { protectedRoute, withMiddleware } from '../../../lib/routing/router.js'
+import { loadGame } from '../../../middleware/game-middleware.js'
 
 export const listRoute = protectedRoute({
   method: 'get',

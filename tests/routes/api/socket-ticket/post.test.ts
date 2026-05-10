@@ -1,5 +1,5 @@
 import request from 'supertest'
-import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
+import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken.js'
 
 describe('Socket ticket API - create', () => {
   it('should return a valid socket ticket', async () => {

@@ -1,8 +1,8 @@
 import request from 'supertest'
-import GameSaveFactory from '../../../fixtures/GameSaveFactory'
-import PlayerFactory from '../../../fixtures/PlayerFactory'
-import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
-import createUserAndToken from '../../../utils/createUserAndToken'
+import GameSaveFactory from '../../../fixtures/GameSaveFactory.js'
+import PlayerFactory from '../../../fixtures/PlayerFactory.js'
+import createOrganisationAndGame from '../../../utils/createOrganisationAndGame.js'
+import createUserAndToken from '../../../utils/createUserAndToken.js'
 
 describe('Player - saves', () => {
   it("should get a player's saves", async () => {

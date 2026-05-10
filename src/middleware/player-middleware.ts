@@ -1,6 +1,6 @@
 import { Next } from 'koa'
-import Player from '../entities/player'
-import { APIRouteContext } from '../lib/routing/context'
+import Player from '../entities/player.js'
+import { APIRouteContext } from '../lib/routing/context.js'
 
 export type PlayerRouteState = {
   player: Player

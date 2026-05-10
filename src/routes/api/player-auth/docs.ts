@@ -1,4 +1,4 @@
-import { RouteDocs } from '../../../lib/docs/docs-registry'
+import { RouteDocs } from '../../../lib/docs/docs-registry.js'
 
 const sampleAlias = {
   id: 1,

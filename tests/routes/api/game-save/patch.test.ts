@@ -1,10 +1,10 @@
 import { randText } from '@ngneat/falso'
 import request from 'supertest'
-import { APIKeyScope } from '../../../../src/entities/api-key'
-import GameSaveFactory from '../../../fixtures/GameSaveFactory'
-import PlayerFactory from '../../../fixtures/PlayerFactory'
-import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
-import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
+import { APIKeyScope } from '../../../../src/entities/api-key.js'
+import GameSaveFactory from '../../../fixtures/GameSaveFactory.js'
+import PlayerFactory from '../../../fixtures/PlayerFactory.js'
+import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken.js'
+import createOrganisationAndGame from '../../../utils/createOrganisationAndGame.js'
 
 describe('Game save API - update', () => {
   it('should update a game save if the scope is valid', async () => {

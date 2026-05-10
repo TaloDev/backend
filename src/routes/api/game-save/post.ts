@@ -1,12 +1,12 @@
-import { APIKeyScope } from '../../../entities/api-key'
-import GameSave from '../../../entities/game-save'
-import handleSQLError from '../../../lib/errors/handleSQLError'
-import { apiRoute, withMiddleware } from '../../../lib/routing/router'
-import { playerHeaderSchema } from '../../../lib/validation/playerHeaderSchema'
-import { loadPlayer } from '../../../middleware/player-middleware'
-import { requireScopes } from '../../../middleware/policy-middleware'
-import { decodeContent } from './common'
-import { postDocs } from './docs'
+import { APIKeyScope } from '../../../entities/api-key.js'
+import GameSave from '../../../entities/game-save.js'
+import handleSQLError from '../../../lib/errors/handleSQLError.js'
+import { apiRoute, withMiddleware } from '../../../lib/routing/router.js'
+import { playerHeaderSchema } from '../../../lib/validation/playerHeaderSchema.js'
+import { loadPlayer } from '../../../middleware/player-middleware.js'
+import { requireScopes } from '../../../middleware/policy-middleware.js'
+import { decodeContent } from './common.js'
+import { postDocs } from './docs.js'
 
 export const postRoute = apiRoute({
   method: 'post',

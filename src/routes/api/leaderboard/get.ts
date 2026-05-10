@@ -1,11 +1,11 @@
-import { APIKeyScope } from '../../../entities/api-key'
-import { apiRoute, withMiddleware } from '../../../lib/routing/router'
-import { numericStringSchema } from '../../../lib/validation/numericStringSchema'
-import { pageSchema } from '../../../lib/validation/pageSchema'
-import { requireScopes } from '../../../middleware/policy-middleware'
-import { listEntriesHandler } from '../../protected/leaderboard/entries'
-import { loadLeaderboard } from './common'
-import { getDocs } from './docs'
+import { APIKeyScope } from '../../../entities/api-key.js'
+import { apiRoute, withMiddleware } from '../../../lib/routing/router.js'
+import { numericStringSchema } from '../../../lib/validation/numericStringSchema.js'
+import { pageSchema } from '../../../lib/validation/pageSchema.js'
+import { requireScopes } from '../../../middleware/policy-middleware.js'
+import { listEntriesHandler } from '../../protected/leaderboard/entries.js'
+import { loadLeaderboard } from './common.js'
+import { getDocs } from './docs.js'
 
 export const getRoute = apiRoute({
   method: 'get',

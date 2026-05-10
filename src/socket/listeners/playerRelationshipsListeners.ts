@@ -1,10 +1,10 @@
 import { RequestContext } from '@mikro-orm/mysql'
 import { z, ZodType } from 'zod'
-import { APIKeyScope } from '../../entities/api-key'
-import PlayerAliasSubscription from '../../entities/player-alias-subscription'
-import { sendMessages } from '../messages/socketMessage'
-import { SocketMessageListener } from '../router/createListener'
-import createListener from '../router/createListener'
+import { APIKeyScope } from '../../entities/api-key.js'
+import PlayerAliasSubscription from '../../entities/player-alias-subscription.js'
+import { sendMessages } from '../messages/socketMessage.js'
+import { SocketMessageListener } from '../router/createListener.js'
+import createListener from '../router/createListener.js'
 
 const playerRelationshipsListeners = [
   createListener(

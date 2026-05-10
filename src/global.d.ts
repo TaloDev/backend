@@ -1,9 +1,9 @@
 import 'vitest'
 import { ClickHouseClient } from '@clickhouse/client'
 import { EntityManager } from '@mikro-orm/mysql'
-import Redis from 'ioredis'
+import { Redis } from 'ioredis'
 import Koa from 'koa'
-import { DocsRegistry } from './lib/docs/docs-registry'
+import { DocsRegistry } from './lib/docs/docs-registry.js'
 
 declare global {
   var talo: {

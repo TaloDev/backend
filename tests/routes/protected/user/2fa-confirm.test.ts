@@ -2,9 +2,9 @@ import { wrap } from '@mikro-orm/mysql'
 import { authenticator } from '@otplib/preset-default'
 import assert from 'node:assert'
 import request from 'supertest'
-import UserTwoFactorAuth from '../../../../src/entities/user-two-factor-auth'
-import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
-import createUserAndToken from '../../../utils/createUserAndToken'
+import UserTwoFactorAuth from '../../../../src/entities/user-two-factor-auth.js'
+import createOrganisationAndGame from '../../../utils/createOrganisationAndGame.js'
+import createUserAndToken from '../../../utils/createUserAndToken.js'
 
 describe('User - confirm 2fa', () => {
   it('should let users confirm enabling 2fa', async () => {

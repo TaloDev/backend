@@ -1,4 +1,4 @@
-import { apiRouter } from '../../../lib/routing/router'
+import { apiRouter } from '../../../lib/routing/router.js'
 
 export function healthCheckAPIRouter() {
   return apiRouter('/v1/health-check', ({ route }) => {

@@ -1,16 +1,16 @@
 import { Collection } from '@mikro-orm/mysql'
 import request from 'supertest'
-import { APIKeyScope } from '../../../../src/entities/api-key'
+import { APIKeyScope } from '../../../../src/entities/api-key.js'
 import PlayerGroupRule, {
   PlayerGroupRuleCastType,
   PlayerGroupRuleName,
-} from '../../../../src/entities/player-group-rule'
-import PlayerProp from '../../../../src/entities/player-prop'
-import GameChannelFactory from '../../../fixtures/GameChannelFactory'
-import PlayerAliasFactory from '../../../fixtures/PlayerAliasFactory'
-import PlayerFactory from '../../../fixtures/PlayerFactory'
-import PlayerGroupFactory from '../../../fixtures/PlayerGroupFactory'
-import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
+} from '../../../../src/entities/player-group-rule.js'
+import PlayerProp from '../../../../src/entities/player-prop.js'
+import GameChannelFactory from '../../../fixtures/GameChannelFactory.js'
+import PlayerAliasFactory from '../../../fixtures/PlayerAliasFactory.js'
+import PlayerFactory from '../../../fixtures/PlayerFactory.js'
+import PlayerGroupFactory from '../../../fixtures/PlayerGroupFactory.js'
+import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken.js'
 
 describe('Game channel API - members', () => {
   it('should return channel members if the scope is valid', async () => {

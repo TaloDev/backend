@@ -1,10 +1,10 @@
-import GameStat from '../../../entities/game-stat'
-import { UserType } from '../../../entities/user'
-import { protectedRoute, withMiddleware } from '../../../lib/routing/router'
-import { loadGame } from '../../../middleware/game-middleware'
-import { userTypeGate } from '../../../middleware/policy-middleware'
-import { clearStatIndexResponseCache, createStatBodySchema } from './common'
-import { createStatHandler } from './create'
+import GameStat from '../../../entities/game-stat.js'
+import { UserType } from '../../../entities/user.js'
+import { protectedRoute, withMiddleware } from '../../../lib/routing/router.js'
+import { loadGame } from '../../../middleware/game-middleware.js'
+import { userTypeGate } from '../../../middleware/policy-middleware.js'
+import { clearStatIndexResponseCache, createStatBodySchema } from './common.js'
+import { createStatHandler } from './create.js'
 
 export const bulkCreateRoute = protectedRoute({
   method: 'post',

@@ -1,9 +1,9 @@
-import Redis from 'ioredis'
-import { APIKeyScope } from '../../../../src/entities/api-key'
-import Event, { ClickHouseEvent } from '../../../../src/entities/event'
-import { FlushEventsQueueHandler } from '../../../../src/lib/queues/game-metrics/flush-events-queue-handler'
-import PlayerFactory from '../../../fixtures/PlayerFactory'
-import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
+import { Redis } from 'ioredis'
+import { APIKeyScope } from '../../../../src/entities/api-key.js'
+import Event, { ClickHouseEvent } from '../../../../src/entities/event.js'
+import { FlushEventsQueueHandler } from '../../../../src/lib/queues/game-metrics/flush-events-queue-handler.js'
+import PlayerFactory from '../../../fixtures/PlayerFactory.js'
+import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken.js'
 
 describe('Event API - event flushing', () => {
   afterEach(() => {

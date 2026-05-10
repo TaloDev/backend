@@ -1,15 +1,15 @@
-import { APIKeyScope } from '../../../entities/api-key'
+import { APIKeyScope } from '../../../entities/api-key.js'
 import PlayerGameStatSnapshot, {
   ClickHousePlayerGameStatSnapshot,
-} from '../../../entities/player-game-stat-snapshot'
-import { DEFAULT_PAGE_SIZE } from '../../../lib/pagination/itemsPerPage'
-import { apiRoute, withMiddleware } from '../../../lib/routing/router'
-import { pageSchema } from '../../../lib/validation/pageSchema'
-import { playerHeaderSchema } from '../../../lib/validation/playerHeaderSchema'
-import { loadPlayer } from '../../../middleware/player-middleware'
-import { requireScopes } from '../../../middleware/policy-middleware'
-import { loadStatWithPlayer } from './common'
-import { historyDocs } from './docs'
+} from '../../../entities/player-game-stat-snapshot.js'
+import { DEFAULT_PAGE_SIZE } from '../../../lib/pagination/itemsPerPage.js'
+import { apiRoute, withMiddleware } from '../../../lib/routing/router.js'
+import { pageSchema } from '../../../lib/validation/pageSchema.js'
+import { playerHeaderSchema } from '../../../lib/validation/playerHeaderSchema.js'
+import { loadPlayer } from '../../../middleware/player-middleware.js'
+import { requireScopes } from '../../../middleware/policy-middleware.js'
+import { loadStatWithPlayer } from './common.js'
+import { historyDocs } from './docs.js'
 
 export const historyRoute = apiRoute({
   method: 'get',

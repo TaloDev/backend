@@ -1,19 +1,19 @@
 import { EntityManager } from '@mikro-orm/mysql'
 import { captureException } from '@sentry/node'
 import querystring from 'qs'
-import GameStat from '../../../entities/game-stat'
-import Integration from '../../../entities/integration'
-import PlayerAlias, { PlayerAliasService } from '../../../entities/player-alias'
-import PlayerGameStat from '../../../entities/player-game-stat'
-import { SteamworksPlayerStat } from '../../../entities/steamworks-player-stat'
-import { streamByCursor } from '../../perf/streamByCursor'
+import GameStat from '../../../entities/game-stat.js'
+import Integration from '../../../entities/integration.js'
+import PlayerAlias, { PlayerAliasService } from '../../../entities/player-alias.js'
+import PlayerGameStat from '../../../entities/player-game-stat.js'
+import { SteamworksPlayerStat } from '../../../entities/steamworks-player-stat.js'
+import { streamByCursor } from '../../perf/streamByCursor.js'
 import {
   GetSchemaForGameResponse,
   GetUserStatsForGameResponse,
   SteamworksClient,
   SteamworksGameStat,
   SteamworksNetworkError,
-} from '../clients/steamworks-client'
+} from '../clients/steamworks-client.js'
 
 async function getSteamworksStatsForPlayer(
   em: EntityManager,

@@ -3,10 +3,10 @@ import { Migrator } from '@mikro-orm/migrations'
 import { defineConfig, MikroORM } from '@mikro-orm/mysql'
 import { TsMorphMetadataProvider } from '@mikro-orm/reflection'
 import { RedisCacheAdapter } from 'mikro-orm-cache-adapter-redis'
-import { entities } from '../entities'
-import migrationsList from '../migrations'
-import { subscribers } from '../subscribers'
-import { redisConfig } from './redis.config'
+import { entities } from '../entities/index.js'
+import migrationsList from '../migrations/index.js'
+import { subscribers } from '../subscribers/index.js'
+import { redisConfig } from './redis.config.js'
 
 const ormConfig = defineConfig({
   entities,

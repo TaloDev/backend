@@ -1,14 +1,14 @@
 import { Collection } from '@mikro-orm/mysql'
 import { subDays, addDays, format } from 'date-fns'
 import request from 'supertest'
-import { LeaderboardSortMode } from '../../../../src/entities/leaderboard'
-import LeaderboardEntry from '../../../../src/entities/leaderboard-entry'
-import LeaderboardEntryProp from '../../../../src/entities/leaderboard-entry-prop'
-import LeaderboardEntryFactory from '../../../fixtures/LeaderboardEntryFactory'
-import LeaderboardFactory from '../../../fixtures/LeaderboardFactory'
-import PlayerFactory from '../../../fixtures/PlayerFactory'
-import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
-import createUserAndToken from '../../../utils/createUserAndToken'
+import LeaderboardEntryProp from '../../../../src/entities/leaderboard-entry-prop.js'
+import LeaderboardEntry from '../../../../src/entities/leaderboard-entry.js'
+import { LeaderboardSortMode } from '../../../../src/entities/leaderboard.js'
+import LeaderboardEntryFactory from '../../../fixtures/LeaderboardEntryFactory.js'
+import LeaderboardFactory from '../../../fixtures/LeaderboardFactory.js'
+import PlayerFactory from '../../../fixtures/PlayerFactory.js'
+import createOrganisationAndGame from '../../../utils/createOrganisationAndGame.js'
+import createUserAndToken from '../../../utils/createUserAndToken.js'
 
 describe('Leaderboard - entries', () => {
   it("should return a leaderboard's entries", async () => {

@@ -1,9 +1,9 @@
 import { randText } from '@ngneat/falso'
 import request from 'supertest'
-import { APIKeyScope } from '../../../../src/entities/api-key'
-import GameChannel from '../../../../src/entities/game-channel'
-import PlayerFactory from '../../../fixtures/PlayerFactory'
-import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
+import { APIKeyScope } from '../../../../src/entities/api-key.js'
+import GameChannel from '../../../../src/entities/game-channel.js'
+import PlayerFactory from '../../../fixtures/PlayerFactory.js'
+import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken.js'
 
 describe('Game channel API - create', () => {
   it('should create a game channel if the scope is valid', async () => {

@@ -1,5 +1,5 @@
-import { getMikroORM } from '../../../config/mikro-orm.config'
-import DataExport, { DataExportStatus } from '../../../entities/data-export'
+import { getMikroORM } from '../../../config/mikro-orm.config.js'
+import DataExport, { DataExportStatus } from '../../../entities/data-export.js'
 
 type UpdatedDataExportStatus = {
   id?: DataExportStatus

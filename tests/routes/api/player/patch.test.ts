@@ -1,18 +1,18 @@
 import { Collection } from '@mikro-orm/mysql'
 import { randWord } from '@ngneat/falso'
-import Redis from 'ioredis'
+import { Redis } from 'ioredis'
 import request from 'supertest'
-import { APIKeyScope } from '../../../../src/entities/api-key'
-import PlayerGroup from '../../../../src/entities/player-group'
+import { APIKeyScope } from '../../../../src/entities/api-key.js'
 import PlayerGroupRule, {
   PlayerGroupRuleCastType,
   PlayerGroupRuleName,
-} from '../../../../src/entities/player-group-rule'
-import PlayerProp from '../../../../src/entities/player-prop'
-import PlayerFactory from '../../../fixtures/PlayerFactory'
-import PlayerGroupFactory from '../../../fixtures/PlayerGroupFactory'
-import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
-import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
+} from '../../../../src/entities/player-group-rule.js'
+import PlayerGroup from '../../../../src/entities/player-group.js'
+import PlayerProp from '../../../../src/entities/player-prop.js'
+import PlayerFactory from '../../../fixtures/PlayerFactory.js'
+import PlayerGroupFactory from '../../../fixtures/PlayerGroupFactory.js'
+import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken.js'
+import createOrganisationAndGame from '../../../utils/createOrganisationAndGame.js'
 
 describe('Player API - update', () => {
   it("should update a player's properties", async () => {

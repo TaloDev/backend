@@ -1,10 +1,10 @@
 import { EntityManager, FilterQuery, Loaded } from '@mikro-orm/mysql'
 import { Context, Next } from 'koa'
-import PlayerAlias, { PlayerAliasService } from '../entities/player-alias'
-import { verify } from '../lib/auth/jwt'
-import { throwPlayerAuthError } from '../lib/errors/throwPlayerAuthError'
-import { APIRouteContext } from '../lib/routing/context'
-import { isAPIRoute } from '../lib/routing/route-info'
+import PlayerAlias, { PlayerAliasService } from '../entities/player-alias.js'
+import { verify } from '../lib/auth/jwt.js'
+import { throwPlayerAuthError } from '../lib/errors/throwPlayerAuthError.js'
+import { APIRouteContext } from '../lib/routing/context.js'
+import { isAPIRoute } from '../lib/routing/route-info.js'
 
 type PlayerAliasPartial = Loaded<PlayerAlias, 'player.auth', 'id' | 'player.auth' | 'player.id'>
 

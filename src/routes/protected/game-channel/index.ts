@@ -1,9 +1,9 @@
-import { protectedRouter } from '../../../lib/routing/router'
-import { createRoute } from './create'
-import { deleteRoute } from './delete'
-import { listRoute } from './list'
-import { storageRoute } from './storage'
-import { updateRoute } from './update'
+import { protectedRouter } from '../../../lib/routing/router.js'
+import { createRoute } from './create.js'
+import { deleteRoute } from './delete.js'
+import { listRoute } from './list.js'
+import { storageRoute } from './storage.js'
+import { updateRoute } from './update.js'
 
 export function gameChannelRouter() {
   return protectedRouter('/games/:gameId/game-channels', ({ route }) => {

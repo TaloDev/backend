@@ -1,6 +1,6 @@
 import { Entity, ManyToOne, OneToOne, PrimaryKey, Property } from '@mikro-orm/decorators/es'
-import Player from './player'
-import PlayerAlias from './player-alias'
+import PlayerAlias from './player-alias.js'
+import Player from './player.js'
 
 export enum PlayerPresenceStatus {
   ONLINE = 'online',

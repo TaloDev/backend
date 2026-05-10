@@ -1,10 +1,10 @@
 import { setTraceAttributes } from '@hyperdx/node-opentelemetry'
 import { EntityManager } from '@mikro-orm/mysql'
-import Redis from 'ioredis'
+import { Redis } from 'ioredis'
 import { Context, Next } from 'koa'
-import APIKey from '../entities/api-key'
-import getAPIKeyFromToken from '../lib/auth/getAPIKeyFromToken'
-import { isAPIRoute } from '../lib/routing/route-info'
+import APIKey from '../entities/api-key.js'
+import getAPIKeyFromToken from '../lib/auth/getAPIKeyFromToken.js'
+import { isAPIRoute } from '../lib/routing/route-info.js'
 
 async function updateLastUsedAt(
   ctx: Context,

@@ -1,23 +1,23 @@
 import { randNumber, randText, randUuid } from '@ngneat/falso'
 import axios from 'axios'
 import AxiosMockAdapter from 'axios-mock-adapter'
-import { IntegrationType } from '../../../src/entities/integration'
-import Leaderboard, { LeaderboardSortMode } from '../../../src/entities/leaderboard'
-import LeaderboardEntry from '../../../src/entities/leaderboard-entry'
-import SteamworksIntegrationEvent from '../../../src/entities/steamworks-integration-event'
-import { SteamworksLeaderboardEntry } from '../../../src/entities/steamworks-leaderboard-entry'
-import SteamworksLeaderboardMapping from '../../../src/entities/steamworks-leaderboard-mapping'
+import { IntegrationType } from '../../../src/entities/integration.js'
+import LeaderboardEntry from '../../../src/entities/leaderboard-entry.js'
+import Leaderboard, { LeaderboardSortMode } from '../../../src/entities/leaderboard.js'
+import SteamworksIntegrationEvent from '../../../src/entities/steamworks-integration-event.js'
+import { SteamworksLeaderboardEntry } from '../../../src/entities/steamworks-leaderboard-entry.js'
+import SteamworksLeaderboardMapping from '../../../src/entities/steamworks-leaderboard-mapping.js'
 import {
   GetLeaderboardEntriesResponse,
   GetLeaderboardsForGameResponse,
-} from '../../../src/lib/integrations/clients/steamworks-client'
-import { syncSteamworksLeaderboards } from '../../../src/lib/integrations/steamworks/steamworks-leaderboards'
-import IntegrationConfigFactory from '../../fixtures/IntegrationConfigFactory'
-import IntegrationFactory from '../../fixtures/IntegrationFactory'
-import LeaderboardEntryFactory from '../../fixtures/LeaderboardEntryFactory'
-import LeaderboardFactory from '../../fixtures/LeaderboardFactory'
-import PlayerFactory from '../../fixtures/PlayerFactory'
-import createOrganisationAndGame from '../../utils/createOrganisationAndGame'
+} from '../../../src/lib/integrations/clients/steamworks-client.js'
+import { syncSteamworksLeaderboards } from '../../../src/lib/integrations/steamworks/steamworks-leaderboards.js'
+import IntegrationConfigFactory from '../../fixtures/IntegrationConfigFactory.js'
+import IntegrationFactory from '../../fixtures/IntegrationFactory.js'
+import LeaderboardEntryFactory from '../../fixtures/LeaderboardEntryFactory.js'
+import LeaderboardFactory from '../../fixtures/LeaderboardFactory.js'
+import PlayerFactory from '../../fixtures/PlayerFactory.js'
+import createOrganisationAndGame from '../../utils/createOrganisationAndGame.js'
 
 describe('Steamworks integration - sync leaderboards', () => {
   const axiosMock = new AxiosMockAdapter(axios)

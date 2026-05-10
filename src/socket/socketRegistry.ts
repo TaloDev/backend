@@ -1,4 +1,4 @@
-import Socket from './index'
+import Socket from './index.js'
 
 let socketInstance: Socket | null = null
 

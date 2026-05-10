@@ -1,16 +1,16 @@
 import { createServer, IncomingMessage } from 'http'
 import { Socket } from 'net'
 import { WebSocket } from 'ws'
-import TaloSocket from '../../../src/socket'
+import TaloSocket from '../../../src/socket/index.js'
 import {
   logConnection,
   logConnectionClosed,
   logRequest,
   logResponse,
-} from '../../../src/socket/messages/socketLogger'
-import SocketConnection from '../../../src/socket/socketConnection'
-import SocketTicket from '../../../src/socket/socketTicket'
-import createAPIKeyAndToken from '../../utils/createAPIKeyAndToken'
+} from '../../../src/socket/messages/socketLogger.js'
+import SocketConnection from '../../../src/socket/socketConnection.js'
+import SocketTicket from '../../../src/socket/socketTicket.js'
+import createAPIKeyAndToken from '../../utils/createAPIKeyAndToken.js'
 
 describe('Socket logger', () => {
   const consoleMock = vi.spyOn(console, 'info').mockImplementation(() => undefined)

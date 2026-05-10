@@ -1,11 +1,11 @@
 import { Entity, Enum, ManyToOne, PrimaryKey, Property } from '@mikro-orm/decorators/es'
-import Game from './game'
-import User from './user'
+import Game from './game.js'
+import User from './user.js'
 
 export enum APIKeyScope {
   READ_PLAYER_PRESENCE = 'read:playerPresence',
   WRITE_PLAYER_PRESENCE = 'write:playerPresence',
-  READ_GAME_CHANNELS = 'read:gameChannels',
+  READ_GAME_CHANNELS = 'read:gameChann els',
   WRITE_GAME_CHANNELS = 'write:gameChannels',
   READ_PLAYER_GROUPS = 'read:playerGroups',
   WRITE_CONTINUITY_REQUESTS = 'write:continuityRequests',

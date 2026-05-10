@@ -1,12 +1,12 @@
 import z from 'zod'
-import type { ValidationSchema } from '../../middleware/validator-middleware'
-import { Middleware } from '../routing/router'
-import { RouteState } from '../routing/state'
+import type { ValidationSchema } from '../../middleware/validator-middleware.js'
+import { Middleware } from '../routing/router.js'
+import { RouteState } from '../routing/state.js'
 import {
   extractParamsFromSchema,
   type ExtractedParam,
   type ExtractedParams,
-} from './schema-introspector'
+} from './schema-introspector.js'
 
 type ZodType = typeof z
 

@@ -1,8 +1,11 @@
 import { Job } from 'bullmq'
 import fs from 'fs'
 import path from 'path'
-import createQueue from '../createQueue'
-import { updateDataExportStatus } from './updateDataExportStatus'
+import { fileURLToPath } from 'url'
+import createQueue from '../createQueue.js'
+import { updateDataExportStatus } from './updateDataExportStatus.js'
+
+const dir = path.dirname(fileURLToPath(import.meta.url))
 
 export type DataExportJob = {
   dataExportId: number
@@ -11,19 +14,19 @@ export type DataExportJob = {
 
 export function createDataExportQueue() {
   const filename = 'dataExportProcessor'
-  const jsProcessorPath = path.join(__dirname, `${filename}.js`)
-  const cjsProcessorPath = path.join(__dirname, `${filename}.cjs`)
+  const jsProcessorPath = path.join(dir, `${filename}.js`)
+  const devProcessorPath = path.join(dir, `${filename}.dev.js`)
 
   let processorPath: string
   /* v8 ignore start -- @preserve */
   if (fs.existsSync(jsProcessorPath)) {
     processorPath = jsProcessorPath
-  } else if (fs.existsSync(cjsProcessorPath)) {
-    // in development use a wrapper that loads the file via ts-node
-    processorPath = cjsProcessorPath
+  } else if (fs.existsSync(devProcessorPath)) {
+    // in development use a wrapper that registers tsx/esm to load the typescript file
+    processorPath = devProcessorPath
   } else {
     throw new Error(
-      `Data export processor file not found at either ${jsProcessorPath} or ${cjsProcessorPath}`,
+      `Data export processor file not found at either ${jsProcessorPath} or ${devProcessorPath}`,
     )
   }
   /* v8 ignore stop -- @preserve */

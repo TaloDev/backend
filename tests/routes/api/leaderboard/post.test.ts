@@ -2,19 +2,19 @@ import { Collection } from '@mikro-orm/mysql'
 import { randText } from '@ngneat/falso'
 import { subHours, subMinutes } from 'date-fns'
 import request from 'supertest'
-import { APIKeyScope } from '../../../../src/entities/api-key'
-import { LeaderboardSortMode } from '../../../../src/entities/leaderboard'
-import LeaderboardEntry from '../../../../src/entities/leaderboard-entry'
-import LeaderboardEntryProp from '../../../../src/entities/leaderboard-entry-prop'
+import { APIKeyScope } from '../../../../src/entities/api-key.js'
+import LeaderboardEntryProp from '../../../../src/entities/leaderboard-entry-prop.js'
+import LeaderboardEntry from '../../../../src/entities/leaderboard-entry.js'
+import { LeaderboardSortMode } from '../../../../src/entities/leaderboard.js'
 import PlayerGroupRule, {
   PlayerGroupRuleCastType,
   PlayerGroupRuleName,
-} from '../../../../src/entities/player-group-rule'
-import LeaderboardEntryFactory from '../../../fixtures/LeaderboardEntryFactory'
-import LeaderboardFactory from '../../../fixtures/LeaderboardFactory'
-import PlayerFactory from '../../../fixtures/PlayerFactory'
-import PlayerGroupFactory from '../../../fixtures/PlayerGroupFactory'
-import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
+} from '../../../../src/entities/player-group-rule.js'
+import LeaderboardEntryFactory from '../../../fixtures/LeaderboardEntryFactory.js'
+import LeaderboardFactory from '../../../fixtures/LeaderboardFactory.js'
+import PlayerFactory from '../../../fixtures/PlayerFactory.js'
+import PlayerGroupFactory from '../../../fixtures/PlayerGroupFactory.js'
+import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken.js'
 
 describe('Leaderboard API - create', () => {
   it('should create a leaderboard entry if the scope is valid', async () => {

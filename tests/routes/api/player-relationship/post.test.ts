@@ -1,12 +1,12 @@
 import request from 'supertest'
-import { APIKeyScope } from '../../../../src/entities/api-key'
-import PlayerAliasSubscriptionFactory from '../../../fixtures/PlayerAliasSubscriptionFactory'
-import PlayerFactory from '../../../fixtures/PlayerFactory'
-import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
+import { APIKeyScope } from '../../../../src/entities/api-key.js'
+import PlayerAliasSubscriptionFactory from '../../../fixtures/PlayerAliasSubscriptionFactory.js'
+import PlayerFactory from '../../../fixtures/PlayerFactory.js'
+import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken.js'
 import createSocketIdentifyMessage, {
   persistTestSocketTicket,
-} from '../../../utils/createSocketIdentifyMessage'
-import createTestSocket, { createTestClient } from '../../../utils/createTestSocket'
+} from '../../../utils/createSocketIdentifyMessage.js'
+import createTestSocket, { createTestClient } from '../../../utils/createTestSocket.js'
 
 describe('Player relationship API - create', () => {
   it('should create a subscription if the scope is valid', async () => {

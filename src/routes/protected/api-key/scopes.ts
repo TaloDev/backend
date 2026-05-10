@@ -1,6 +1,6 @@
-import { groupBy } from 'lodash'
-import { APIKeyScope } from '../../../entities/api-key'
-import { protectedRoute } from '../../../lib/routing/router'
+import { groupBy } from 'lodash-es'
+import { APIKeyScope } from '../../../entities/api-key.js'
+import { protectedRoute } from '../../../lib/routing/router.js'
 
 type ScopeKey = keyof typeof APIKeyScope
 

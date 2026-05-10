@@ -1,8 +1,8 @@
 import { RequestContext } from '@mikro-orm/mysql'
 import jwt from 'jsonwebtoken'
-import APIKey from '../../entities/api-key'
-import GameSecret from '../../entities/game-secret'
-import { getResultCacheOptions } from '../perf/getResultCacheOptions'
+import APIKey from '../../entities/api-key.js'
+import GameSecret from '../../entities/game-secret.js'
+import { getResultCacheOptions } from '../perf/getResultCacheOptions.js'
 
 export function getTokenCacheKey(sub: number) {
   return `api-key-from-token-${sub}`

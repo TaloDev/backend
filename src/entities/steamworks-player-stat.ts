@@ -1,6 +1,6 @@
 import { Entity, ManyToOne, OneToOne, PrimaryKey, Property } from '@mikro-orm/decorators/es'
-import GameStat from './game-stat'
-import PlayerGameStat from './player-game-stat'
+import GameStat from './game-stat.js'
+import PlayerGameStat from './player-game-stat.js'
 
 @Entity()
 export class SteamworksPlayerStat {

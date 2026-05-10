@@ -1,8 +1,8 @@
 import { EntityManager } from '@mikro-orm/mysql'
 import crypto from 'crypto'
-import Integration from '../../../entities/integration'
-import PlayerAlias, { PlayerAliasService } from '../../../entities/player-alias'
-import { GameCenterClient } from '../clients/game-center-client'
+import Integration from '../../../entities/integration.js'
+import PlayerAlias, { PlayerAliasService } from '../../../entities/player-alias.js'
+import { GameCenterClient } from '../clients/game-center-client.js'
 
 type GameCenterIdentity = {
   publicKeyUrl: string

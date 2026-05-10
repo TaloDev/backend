@@ -1,13 +1,13 @@
-import { GameActivityType } from '../../../entities/game-activity'
-import Player from '../../../entities/player'
-import { UserType } from '../../../entities/user'
-import createGameActivity from '../../../lib/logging/createGameActivity'
-import { deferClearResponseCache } from '../../../lib/perf/responseCacheQueue'
-import { protectedRoute, withMiddleware } from '../../../lib/routing/router'
-import { loadGame } from '../../../middleware/game-middleware'
-import { userTypeGate } from '../../../middleware/policy-middleware'
-import { deletePlayersFromDB } from '../../../tasks/deletePlayers'
-import { loadPlayer } from './common'
+import { GameActivityType } from '../../../entities/game-activity.js'
+import Player from '../../../entities/player.js'
+import { UserType } from '../../../entities/user.js'
+import createGameActivity from '../../../lib/logging/createGameActivity.js'
+import { deferClearResponseCache } from '../../../lib/perf/responseCacheQueue.js'
+import { protectedRoute, withMiddleware } from '../../../lib/routing/router.js'
+import { loadGame } from '../../../middleware/game-middleware.js'
+import { userTypeGate } from '../../../middleware/policy-middleware.js'
+import { deletePlayersFromDB } from '../../../tasks/deletePlayers.js'
+import { loadPlayer } from './common.js'
 
 export const deleteRoute = protectedRoute({
   method: 'delete',

@@ -1,6 +1,6 @@
-import Redis from 'ioredis'
+import { Redis } from 'ioredis'
 import { v4 } from 'uuid'
-import APIKey from '../../entities/api-key'
+import APIKey from '../../entities/api-key.js'
 
 export async function createSocketTicket(redis: Redis, key: APIKey, devBuild: boolean) {
   const ticket = v4()

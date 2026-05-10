@@ -1,6 +1,6 @@
 import { startOfDay } from 'date-fns'
 import { millisecondsInDay } from 'date-fns/constants'
-import { calculateChange } from '../../../lib/math/calculateChange'
+import { calculateChange } from '../../../lib/math/calculateChange.js'
 
 export type EventData = {
   name: string

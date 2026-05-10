@@ -1,6 +1,6 @@
-import { protectedRoute, withMiddleware } from '../../../lib/routing/router'
-import { ownerGate } from '../../../middleware/policy-middleware'
-import { requireStripe, getPrice } from './common'
+import { protectedRoute, withMiddleware } from '../../../lib/routing/router.js'
+import { ownerGate } from '../../../middleware/policy-middleware.js'
+import { requireStripe, getPrice } from './common.js'
 
 export const checkoutSessionRoute = protectedRoute({
   method: 'post',

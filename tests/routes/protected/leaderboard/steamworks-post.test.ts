@@ -1,14 +1,14 @@
 import axios from 'axios'
 import AxiosMockAdapter from 'axios-mock-adapter'
 import request from 'supertest'
-import { IntegrationType } from '../../../../src/entities/integration'
-import SteamworksIntegrationEvent from '../../../../src/entities/steamworks-integration-event'
-import SteamworksLeaderboardMapping from '../../../../src/entities/steamworks-leaderboard-mapping'
-import IntegrationConfigFactory from '../../../fixtures/IntegrationConfigFactory'
-import IntegrationFactory from '../../../fixtures/IntegrationFactory'
-import { clearEntities } from '../../../utils/clearEntities'
-import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
-import createUserAndToken from '../../../utils/createUserAndToken'
+import { IntegrationType } from '../../../../src/entities/integration.js'
+import SteamworksIntegrationEvent from '../../../../src/entities/steamworks-integration-event.js'
+import SteamworksLeaderboardMapping from '../../../../src/entities/steamworks-leaderboard-mapping.js'
+import IntegrationConfigFactory from '../../../fixtures/IntegrationConfigFactory.js'
+import IntegrationFactory from '../../../fixtures/IntegrationFactory.js'
+import { clearEntities } from '../../../utils/clearEntities.js'
+import createOrganisationAndGame from '../../../utils/createOrganisationAndGame.js'
+import createUserAndToken from '../../../utils/createUserAndToken.js'
 
 describe('Leaderboard - steamworks create', () => {
   const axiosMock = new AxiosMockAdapter(axios)

@@ -1,9 +1,9 @@
 import { EntityClass, EntityManager } from '@mikro-orm/mysql'
 import { subMonths } from 'date-fns'
-import { getMikroORM } from '../config/mikro-orm.config'
-import GameCenterIntegrationEvent from '../entities/game-center-integration-event'
-import GooglePlayGamesIntegrationEvent from '../entities/google-play-games-integration-event'
-import SteamworksIntegrationEvent from '../entities/steamworks-integration-event'
+import { getMikroORM } from '../config/mikro-orm.config.js'
+import GameCenterIntegrationEvent from '../entities/game-center-integration-event.js'
+import GooglePlayGamesIntegrationEvent from '../entities/google-play-games-integration-event.js'
+import SteamworksIntegrationEvent from '../entities/steamworks-integration-event.js'
 
 type CleanupTarget = {
   label: string

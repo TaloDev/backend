@@ -1,9 +1,9 @@
 import axios, { AxiosError, AxiosResponse } from 'axios'
 import pRetry, { AbortError } from 'p-retry'
-import Integration from '../../../entities/integration'
+import Integration from '../../../entities/integration.js'
 import SteamworksIntegrationEvent, {
   SteamworksRequest,
-} from '../../../entities/steamworks-integration-event'
+} from '../../../entities/steamworks-integration-event.js'
 
 export type SteamworksRequestConfig = {
   method: SteamworksRequest['method']

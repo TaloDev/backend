@@ -1,14 +1,14 @@
 import axios from 'axios'
 import AxiosMockAdapter from 'axios-mock-adapter'
 import request from 'supertest'
-import { IntegrationType } from '../../../../src/entities/integration'
-import { LeaderboardSortMode } from '../../../../src/entities/leaderboard'
-import SteamworksIntegrationEvent from '../../../../src/entities/steamworks-integration-event'
-import IntegrationConfigFactory from '../../../fixtures/IntegrationConfigFactory'
-import IntegrationFactory from '../../../fixtures/IntegrationFactory'
-import LeaderboardFactory from '../../../fixtures/LeaderboardFactory'
-import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
-import createUserAndToken from '../../../utils/createUserAndToken'
+import { IntegrationType } from '../../../../src/entities/integration.js'
+import { LeaderboardSortMode } from '../../../../src/entities/leaderboard.js'
+import SteamworksIntegrationEvent from '../../../../src/entities/steamworks-integration-event.js'
+import IntegrationConfigFactory from '../../../fixtures/IntegrationConfigFactory.js'
+import IntegrationFactory from '../../../fixtures/IntegrationFactory.js'
+import LeaderboardFactory from '../../../fixtures/LeaderboardFactory.js'
+import createOrganisationAndGame from '../../../utils/createOrganisationAndGame.js'
+import createUserAndToken from '../../../utils/createUserAndToken.js'
 
 describe('Leaderboard - steamworks update', () => {
   const axiosMock = new AxiosMockAdapter(axios)

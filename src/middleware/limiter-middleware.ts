@@ -1,6 +1,6 @@
 import { Context, Next } from 'koa'
-import checkRateLimitExceeded from '../lib/errors/checkRateLimitExceeded'
-import { isAPIRoute } from '../lib/routing/route-info'
+import checkRateLimitExceeded from '../lib/errors/checkRateLimitExceeded.js'
+import { isAPIRoute } from '../lib/routing/route-info.js'
 
 const limitMap = {
   default: Number(process.env.API_RATE_LIMIT) || 100,

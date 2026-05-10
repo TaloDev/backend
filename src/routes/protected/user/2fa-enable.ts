@@ -1,7 +1,7 @@
 import { authenticator } from '@otplib/preset-default'
 import qrcode from 'qrcode'
-import UserTwoFactorAuth from '../../../entities/user-two-factor-auth'
-import { protectedRoute } from '../../../lib/routing/router'
+import UserTwoFactorAuth from '../../../entities/user-two-factor-auth.js'
+import { protectedRoute } from '../../../lib/routing/router.js'
 
 export const enable2faRoute = protectedRoute({
   method: 'get',

@@ -1,7 +1,7 @@
 import { rand, randCreditCardNumber, randNumber, randUserName, randUuid } from '@ngneat/falso'
 import { Factory } from 'hefty'
-import Player from '../../src/entities/player'
-import PlayerAlias, { PlayerAliasService } from '../../src/entities/player-alias'
+import PlayerAlias, { PlayerAliasService } from '../../src/entities/player-alias.js'
+import Player from '../../src/entities/player.js'
 
 export default class PlayerAliasFactory extends Factory<PlayerAlias> {
   private player: Player

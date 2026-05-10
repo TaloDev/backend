@@ -1,14 +1,14 @@
 import { EntityManager } from '@mikro-orm/mysql'
 import { captureException } from '@sentry/node'
 import assert from 'node:assert'
-import Integration from '../../../entities/integration'
-import PlayerAlias, { PlayerAliasService } from '../../../entities/player-alias'
+import Integration from '../../../entities/integration.js'
+import PlayerAlias, { PlayerAliasService } from '../../../entities/player-alias.js'
 import {
   AuthenticateUserTicketResponse,
   CheckAppOwnershipResponse,
   GetPlayerSummariesResponse,
   SteamworksClient,
-} from '../clients/steamworks-client'
+} from '../clients/steamworks-client.js'
 
 async function requestAuthenticateUserTicket({
   em,

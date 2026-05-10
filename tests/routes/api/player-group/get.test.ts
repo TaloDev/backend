@@ -1,12 +1,12 @@
 import request from 'supertest'
-import { APIKeyScope } from '../../../../src/entities/api-key'
+import { APIKeyScope } from '../../../../src/entities/api-key.js'
 import PlayerGroupRule, {
   PlayerGroupRuleCastType,
   PlayerGroupRuleName,
-} from '../../../../src/entities/player-group-rule'
-import PlayerFactory from '../../../fixtures/PlayerFactory'
-import PlayerGroupFactory from '../../../fixtures/PlayerGroupFactory'
-import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
+} from '../../../../src/entities/player-group-rule.js'
+import PlayerFactory from '../../../fixtures/PlayerFactory.js'
+import PlayerGroupFactory from '../../../fixtures/PlayerGroupFactory.js'
+import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken.js'
 
 describe('Player group API - get', () => {
   it('should return a group if the scope is valid', async () => {

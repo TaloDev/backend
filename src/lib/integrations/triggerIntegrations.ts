@@ -1,6 +1,6 @@
 import { EntityManager } from '@mikro-orm/mysql'
-import Game from '../../entities/game'
-import Integration from '../../entities/integration'
+import Game from '../../entities/game.js'
+import Integration from '../../entities/integration.js'
 
 export default async function triggerIntegrations(
   em: EntityManager,

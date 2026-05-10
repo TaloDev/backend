@@ -4,7 +4,7 @@ import { captureException } from '@sentry/node'
 import fs from 'fs/promises'
 import nodemailer from 'nodemailer'
 import path from 'path'
-import { MailData } from '../../emails/mail'
+import { MailData } from '../../emails/mail.js'
 
 type MailDriver = 'relay' | 'log'
 

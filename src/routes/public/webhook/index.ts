@@ -1,5 +1,5 @@
-import { publicRouter } from '../../../lib/routing/router'
-import { subscriptionsRoute } from './subscriptions'
+import { publicRouter } from '../../../lib/routing/router.js'
+import { subscriptionsRoute } from './subscriptions.js'
 
 export function webhookRouter() {
   return publicRouter('/public/webhooks', ({ route }) => {

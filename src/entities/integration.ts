@@ -1,15 +1,15 @@
 import { Entity, Enum, Filter, ManyToOne, PrimaryKey, Property } from '@mikro-orm/decorators/es'
 import { EntityManager } from '@mikro-orm/mysql'
-import { pick } from 'lodash'
-import { decrypt, encrypt } from '../lib/crypto/string-encryption'
+import { pick } from 'lodash-es'
+import { decrypt, encrypt } from '../lib/crypto/string-encryption.js'
 import {
   authenticateSignature,
   AuthenticateSignatureResult,
-} from '../lib/integrations/game-center/game-center-players'
+} from '../lib/integrations/game-center/game-center-players.js'
 import {
   authenticateAuthCode,
   AuthenticateAuthCodeResult,
-} from '../lib/integrations/google-play-games/google-play-games-players'
+} from '../lib/integrations/google-play-games/google-play-games-players.js'
 import {
   cleanupSteamworksLeaderboardEntry,
   createSteamworksLeaderboard,
@@ -17,23 +17,23 @@ import {
   deleteSteamworksLeaderboard,
   deleteSteamworksLeaderboardEntry,
   syncSteamworksLeaderboards,
-} from '../lib/integrations/steamworks/steamworks-leaderboards'
+} from '../lib/integrations/steamworks/steamworks-leaderboards.js'
 import {
   authenticateTicket,
   AuthenticateTicketResult,
-} from '../lib/integrations/steamworks/steamworks-players'
+} from '../lib/integrations/steamworks/steamworks-players.js'
 import {
   cleanupSteamworksPlayerStat,
   setSteamworksStat,
   syncSteamworksStats,
-} from '../lib/integrations/steamworks/steamworks-stats'
-import Game from './game'
-import Leaderboard from './leaderboard'
-import LeaderboardEntry from './leaderboard-entry'
-import { PlayerAliasService } from './player-alias'
-import PlayerGameStat from './player-game-stat'
-import { SteamworksLeaderboardEntry } from './steamworks-leaderboard-entry'
-import { SteamworksPlayerStat } from './steamworks-player-stat'
+} from '../lib/integrations/steamworks/steamworks-stats.js'
+import Game from './game.js'
+import LeaderboardEntry from './leaderboard-entry.js'
+import Leaderboard from './leaderboard.js'
+import { PlayerAliasService } from './player-alias.js'
+import PlayerGameStat from './player-game-stat.js'
+import { SteamworksLeaderboardEntry } from './steamworks-leaderboard-entry.js'
+import { SteamworksPlayerStat } from './steamworks-player-stat.js'
 
 export enum IntegrationType {
   STEAMWORKS = 'steamworks',

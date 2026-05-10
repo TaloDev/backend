@@ -1,13 +1,13 @@
-import { APIKeyScope } from '../../../entities/api-key'
-import { apiRoute, withMiddleware } from '../../../lib/routing/router'
-import { numericStringSchema } from '../../../lib/validation/numericStringSchema'
-import { playerAliasHeaderSchema } from '../../../lib/validation/playerAliasHeaderSchema'
-import { updatePropsSchema } from '../../../lib/validation/propsSchema'
-import { loadAlias } from '../../../middleware/player-alias-middleware'
-import { requireScopes } from '../../../middleware/policy-middleware'
-import { updateChannelHandler } from '../../protected/game-channel/update'
-import { loadChannel, canModifyChannel } from './common'
-import { putDocs } from './docs'
+import { APIKeyScope } from '../../../entities/api-key.js'
+import { apiRoute, withMiddleware } from '../../../lib/routing/router.js'
+import { numericStringSchema } from '../../../lib/validation/numericStringSchema.js'
+import { playerAliasHeaderSchema } from '../../../lib/validation/playerAliasHeaderSchema.js'
+import { updatePropsSchema } from '../../../lib/validation/propsSchema.js'
+import { loadAlias } from '../../../middleware/player-alias-middleware.js'
+import { requireScopes } from '../../../middleware/policy-middleware.js'
+import { updateChannelHandler } from '../../protected/game-channel/update.js'
+import { loadChannel, canModifyChannel } from './common.js'
+import { putDocs } from './docs.js'
 
 export const putRoute = apiRoute({
   method: 'put',

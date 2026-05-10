@@ -1,4 +1,4 @@
-import { RouteDocs } from '../../../lib/docs/docs-registry'
+import { RouteDocs } from '../../../lib/docs/docs-registry.js'
 
 export const getDocs = {
   description: 'Get a group and its members',

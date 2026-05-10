@@ -1,5 +1,5 @@
 import { Entity, ManyToOne, PrimaryKey, Property } from '@mikro-orm/decorators/es'
-import Integration from './integration'
+import Integration from './integration.js'
 
 type GameCenterRequest = {
   url: string

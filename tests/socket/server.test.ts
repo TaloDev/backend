@@ -1,6 +1,6 @@
-import { createSocketTicket } from '../../src/lib/sockets/createSocketTicket'
-import createAPIKeyAndToken from '../utils/createAPIKeyAndToken'
-import createTestSocket from '../utils/createTestSocket'
+import { createSocketTicket } from '../../src/lib/sockets/createSocketTicket.js'
+import createAPIKeyAndToken from '../utils/createAPIKeyAndToken.js'
+import createTestSocket from '../utils/createTestSocket.js'
 
 describe('Socket server', () => {
   it('should send a connected message when sending an auth ticket', async () => {

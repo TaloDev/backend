@@ -1,4 +1,4 @@
-import { getMaxRequestsForPath } from '../../src/middleware/limiter-middleware'
+import { getMaxRequestsForPath } from '../../src/middleware/limiter-middleware.js'
 
 describe('getMaxRequestsForPath', () => {
   it.each([

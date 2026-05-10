@@ -1,6 +1,6 @@
 import { Next } from 'koa'
-import PlayerAlias from '../entities/player-alias'
-import { APIRouteContext } from '../lib/routing/context'
+import PlayerAlias from '../entities/player-alias.js'
+import { APIRouteContext } from '../lib/routing/context.js'
 
 export type PlayerAliasRouteState = {
   alias: PlayerAlias

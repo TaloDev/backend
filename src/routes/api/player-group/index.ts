@@ -1,5 +1,5 @@
-import { apiRouter } from '../../../lib/routing/router'
-import { getRoute } from './get'
+import { apiRouter } from '../../../lib/routing/router.js'
+import { getRoute } from './get.js'
 
 export function playerGroupAPIRouter() {
   return apiRouter(

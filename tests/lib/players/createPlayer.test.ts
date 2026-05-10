@@ -1,13 +1,13 @@
 import { randText } from '@ngneat/falso'
-import Player from '../../../src/entities/player'
 import PlayerGroupRule, {
   PlayerGroupRuleCastType,
   PlayerGroupRuleName,
-} from '../../../src/entities/player-group-rule'
-import { createPlayer, PlayerCreationError } from '../../../src/lib/players/createPlayer'
-import PlayerFactory from '../../fixtures/PlayerFactory'
-import PlayerGroupFactory from '../../fixtures/PlayerGroupFactory'
-import createOrganisationAndGame from '../../utils/createOrganisationAndGame'
+} from '../../../src/entities/player-group-rule.js'
+import Player from '../../../src/entities/player.js'
+import { createPlayer, PlayerCreationError } from '../../../src/lib/players/createPlayer.js'
+import PlayerFactory from '../../fixtures/PlayerFactory.js'
+import PlayerGroupFactory from '../../fixtures/PlayerGroupFactory.js'
+import createOrganisationAndGame from '../../utils/createOrganisationAndGame.js'
 
 describe('createPlayer', () => {
   it('should create a player', async () => {

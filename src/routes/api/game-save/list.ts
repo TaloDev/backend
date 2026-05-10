@@ -1,10 +1,10 @@
-import { APIKeyScope } from '../../../entities/api-key'
-import GameSave from '../../../entities/game-save'
-import { apiRoute, withMiddleware } from '../../../lib/routing/router'
-import { playerHeaderSchema } from '../../../lib/validation/playerHeaderSchema'
-import { loadPlayer } from '../../../middleware/player-middleware'
-import { requireScopes } from '../../../middleware/policy-middleware'
-import { listDocs } from './docs'
+import { APIKeyScope } from '../../../entities/api-key.js'
+import GameSave from '../../../entities/game-save.js'
+import { apiRoute, withMiddleware } from '../../../lib/routing/router.js'
+import { playerHeaderSchema } from '../../../lib/validation/playerHeaderSchema.js'
+import { loadPlayer } from '../../../middleware/player-middleware.js'
+import { requireScopes } from '../../../middleware/policy-middleware.js'
+import { listDocs } from './docs.js'
 
 export const listRoute = apiRoute({
   method: 'get',

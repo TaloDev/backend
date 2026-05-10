@@ -1,13 +1,13 @@
-import { APIKeyScope } from '../../../entities/api-key'
-import PlayerAlias from '../../../entities/player-alias'
-import PlayerAliasSubscription from '../../../entities/player-alias-subscription'
-import { apiRoute, withMiddleware } from '../../../lib/routing/router'
-import { playerAliasHeaderSchema } from '../../../lib/validation/playerAliasHeaderSchema'
-import { loadAlias } from '../../../middleware/player-alias-middleware'
-import { requireScopes } from '../../../middleware/policy-middleware'
-import { sendMessages } from '../../../socket/messages/socketMessage'
-import { relationshipTypeSchema } from './common'
-import { postDocs } from './docs'
+import { APIKeyScope } from '../../../entities/api-key.js'
+import PlayerAliasSubscription from '../../../entities/player-alias-subscription.js'
+import PlayerAlias from '../../../entities/player-alias.js'
+import { apiRoute, withMiddleware } from '../../../lib/routing/router.js'
+import { playerAliasHeaderSchema } from '../../../lib/validation/playerAliasHeaderSchema.js'
+import { loadAlias } from '../../../middleware/player-alias-middleware.js'
+import { requireScopes } from '../../../middleware/policy-middleware.js'
+import { sendMessages } from '../../../socket/messages/socketMessage.js'
+import { relationshipTypeSchema } from './common.js'
+import { postDocs } from './docs.js'
 
 export const postRoute = apiRoute({
   method: 'post',

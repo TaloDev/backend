@@ -1,10 +1,10 @@
 import request from 'supertest'
-import { UserType } from '../../../../src/entities/user'
-import InviteFactory from '../../../fixtures/InviteFactory'
-import UserFactory from '../../../fixtures/UserFactory'
-import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
-import createUserAndToken from '../../../utils/createUserAndToken'
-import userPermissionProvider from '../../../utils/userPermissionProvider'
+import { UserType } from '../../../../src/entities/user.js'
+import InviteFactory from '../../../fixtures/InviteFactory.js'
+import UserFactory from '../../../fixtures/UserFactory.js'
+import createOrganisationAndGame from '../../../utils/createOrganisationAndGame.js'
+import createUserAndToken from '../../../utils/createUserAndToken.js'
+import userPermissionProvider from '../../../utils/userPermissionProvider.js'
 
 describe('Organisation - current', () => {
   it.each(userPermissionProvider([UserType.ADMIN]))(

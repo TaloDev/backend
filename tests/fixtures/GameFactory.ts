@@ -1,9 +1,9 @@
 import { rand, randNumber } from '@ngneat/falso'
 import { Factory } from 'hefty'
-import Game from '../../src/entities/game'
-import GameSecret from '../../src/entities/game-secret'
-import Organisation from '../../src/entities/organisation'
-import Prop from '../../src/entities/prop'
+import GameSecret from '../../src/entities/game-secret.js'
+import Game from '../../src/entities/game.js'
+import Organisation from '../../src/entities/organisation.js'
+import Prop from '../../src/entities/prop.js'
 
 export default class GameFactory extends Factory<Game> {
   private organisation: Organisation

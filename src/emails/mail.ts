@@ -1,5 +1,5 @@
-import * as Handlebars from 'handlebars'
-import emailTemplate from './email-template'
+import Handlebars from 'handlebars'
+import emailTemplate from './email-template.js'
 
 export type EmailConfigMetadata = {
   [key: string]: string | number

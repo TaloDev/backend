@@ -1,7 +1,7 @@
-import PlayerAlias from '../../../entities/player-alias'
-import { publicRoute, withMiddleware } from '../../../lib/routing/router'
-import { verifyHandler } from '../../api/player-auth/verify'
-import { buildPublicPlayerSession, loadGameFromToken } from './common'
+import PlayerAlias from '../../../entities/player-alias.js'
+import { publicRoute, withMiddleware } from '../../../lib/routing/router.js'
+import { verifyHandler } from '../../api/player-auth/verify.js'
+import { buildPublicPlayerSession, loadGameFromToken } from './common.js'
 
 export const verifyRoute = publicRoute({
   method: 'post',

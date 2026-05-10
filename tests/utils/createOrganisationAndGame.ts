@@ -1,9 +1,9 @@
-import Game from '../../src/entities/game'
-import Organisation from '../../src/entities/organisation'
-import PricingPlan from '../../src/entities/pricing-plan'
-import GameFactory from '../fixtures/GameFactory'
-import OrganisationFactory from '../fixtures/OrganisationFactory'
-import OrganisationPricingPlanFactory from '../fixtures/OrganisationPricingPlanFactory'
+import Game from '../../src/entities/game.js'
+import Organisation from '../../src/entities/organisation.js'
+import PricingPlan from '../../src/entities/pricing-plan.js'
+import GameFactory from '../fixtures/GameFactory.js'
+import OrganisationFactory from '../fixtures/OrganisationFactory.js'
+import OrganisationPricingPlanFactory from '../fixtures/OrganisationPricingPlanFactory.js'
 
 export default async function createOrganisationAndGame(
   orgPartial?: Partial<Organisation>,

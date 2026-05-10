@@ -1,6 +1,6 @@
-import Organisation from '../entities/organisation'
-import User from '../entities/user'
-import Mail from './mail'
+import Organisation from '../entities/organisation.js'
+import User from '../entities/user.js'
+import Mail from './mail.js'
 
 export default class MemberRemovedMail extends Mail {
   constructor(user: User, organisation: Organisation) {

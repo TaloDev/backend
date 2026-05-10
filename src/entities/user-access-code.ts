@@ -1,6 +1,6 @@
 import { Entity, ManyToOne, PrimaryKey, Property } from '@mikro-orm/decorators/es'
-import generateSixDigitCode from '../lib/auth/generateSixDigitCode'
-import User from './user'
+import generateSixDigitCode from '../lib/auth/generateSixDigitCode.js'
+import User from './user.js'
 
 @Entity()
 export default class UserAccessCode {

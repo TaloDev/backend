@@ -1,10 +1,10 @@
 import request from 'supertest'
-import { APIKeyScope } from '../../../../src/entities/api-key'
-import GameChannelFactory from '../../../fixtures/GameChannelFactory'
-import PlayerFactory from '../../../fixtures/PlayerFactory'
-import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
-import createSocketIdentifyMessage from '../../../utils/createSocketIdentifyMessage'
-import createTestSocket from '../../../utils/createTestSocket'
+import { APIKeyScope } from '../../../../src/entities/api-key.js'
+import GameChannelFactory from '../../../fixtures/GameChannelFactory.js'
+import PlayerFactory from '../../../fixtures/PlayerFactory.js'
+import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken.js'
+import createSocketIdentifyMessage from '../../../utils/createSocketIdentifyMessage.js'
+import createTestSocket from '../../../utils/createTestSocket.js'
 
 describe('Game channel API - invite', () => {
   it('should invite a player to a channel if the inviter is the owner', async () => {

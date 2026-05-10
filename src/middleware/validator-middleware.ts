@@ -1,7 +1,7 @@
 import type Koa from 'koa'
 import type { ZodType, z } from 'zod'
-import type { AppParameterizedContext } from '../lib/routing/context'
-import { RouteState } from '../lib/routing/state'
+import type { AppParameterizedContext } from '../lib/routing/context.js'
+import { RouteState } from '../lib/routing/state.js'
 
 export type ValidationSchema = {
   body?: ZodType

@@ -1,6 +1,6 @@
 import { metrics } from '@opentelemetry/api'
 import { WebSocket } from 'ws'
-import Socket from '.'
+import Socket from './index.js'
 
 export function enableSocketTracing(socket: Socket) {
   if (process.env.NODE_ENV === 'test') {

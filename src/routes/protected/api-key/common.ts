@@ -1,9 +1,9 @@
 import { EntityManager } from '@mikro-orm/mysql'
 import { Next } from 'koa'
-import APIKey from '../../../entities/api-key'
-import { sign } from '../../../lib/auth/jwt'
-import { ProtectedRouteContext } from '../../../lib/routing/context'
-import { GameRouteState } from '../../../middleware/game-middleware'
+import APIKey from '../../../entities/api-key.js'
+import { sign } from '../../../lib/auth/jwt.js'
+import { ProtectedRouteContext } from '../../../lib/routing/context.js'
+import { GameRouteState } from '../../../middleware/game-middleware.js'
 
 type APIKeyRouteContext = ProtectedRouteContext<GameRouteState & { apiKey: APIKey }>
 

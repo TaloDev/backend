@@ -1,6 +1,6 @@
 import { randUuid } from '@ngneat/falso'
 import { Factory } from 'hefty'
-import OrganisationPricingPlan from '../../src/entities/organisation-pricing-plan'
+import OrganisationPricingPlan from '../../src/entities/organisation-pricing-plan.js'
 
 export default class OrganisationPricingPlanFactory extends Factory<OrganisationPricingPlan> {
   constructor() {

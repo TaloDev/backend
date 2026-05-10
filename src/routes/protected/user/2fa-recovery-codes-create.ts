@@ -1,7 +1,7 @@
-import generateRecoveryCodes from '../../../lib/auth/generateRecoveryCodes'
-import { protectedRoute, withMiddleware } from '../../../lib/routing/router'
-import { passwordSchema } from '../../../lib/validation/passwordSchema'
-import { confirmPassword, requires2fa } from './common'
+import generateRecoveryCodes from '../../../lib/auth/generateRecoveryCodes.js'
+import { protectedRoute, withMiddleware } from '../../../lib/routing/router.js'
+import { passwordSchema } from '../../../lib/validation/passwordSchema.js'
+import { confirmPassword, requires2fa } from './common.js'
 
 export const createRecoveryCodesRoute = protectedRoute({
   method: 'post',

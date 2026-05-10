@@ -1,17 +1,17 @@
 import { Collection } from '@mikro-orm/mysql'
 import request from 'supertest'
-import GameActivity, { GameActivityType } from '../../../../src/entities/game-activity'
+import GameActivity, { GameActivityType } from '../../../../src/entities/game-activity.js'
 import PlayerGroupRule, {
   PlayerGroupRuleCastType,
   PlayerGroupRuleName,
-} from '../../../../src/entities/player-group-rule'
-import PlayerProp from '../../../../src/entities/player-prop'
-import { UserType } from '../../../../src/entities/user'
-import PlayerFactory from '../../../fixtures/PlayerFactory'
-import PlayerGroupFactory from '../../../fixtures/PlayerGroupFactory'
-import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
-import createUserAndToken from '../../../utils/createUserAndToken'
-import userPermissionProvider from '../../../utils/userPermissionProvider'
+} from '../../../../src/entities/player-group-rule.js'
+import PlayerProp from '../../../../src/entities/player-prop.js'
+import { UserType } from '../../../../src/entities/user.js'
+import PlayerFactory from '../../../fixtures/PlayerFactory.js'
+import PlayerGroupFactory from '../../../fixtures/PlayerGroupFactory.js'
+import createOrganisationAndGame from '../../../utils/createOrganisationAndGame.js'
+import createUserAndToken from '../../../utils/createUserAndToken.js'
+import userPermissionProvider from '../../../utils/userPermissionProvider.js'
 
 describe('Player group - update', () => {
   it.each(userPermissionProvider([UserType.DEV, UserType.ADMIN], 200))(

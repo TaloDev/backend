@@ -1,11 +1,11 @@
-import createQueue from '../lib/queues/createQueue'
-import archiveLeaderboardEntries from '../tasks/archiveLeaderboardEntries'
-import { cleanupIntegrationEvents } from '../tasks/cleanupIntegrationEvents'
-import cleanupOnlinePlayers from '../tasks/cleanupOnlinePlayers'
-import cleanupSteamworksLeaderboardEntries from '../tasks/cleanupSteamworksLeaderboardEntries'
-import cleanupSteamworksPlayerStats from '../tasks/cleanupSteamworksPlayerStats'
-import deleteInactivePlayers from '../tasks/deleteInactivePlayers'
-import deletePlayers from '../tasks/deletePlayers'
+import createQueue from '../lib/queues/createQueue.js'
+import archiveLeaderboardEntries from '../tasks/archiveLeaderboardEntries.js'
+import { cleanupIntegrationEvents } from '../tasks/cleanupIntegrationEvents.js'
+import cleanupOnlinePlayers from '../tasks/cleanupOnlinePlayers.js'
+import cleanupSteamworksLeaderboardEntries from '../tasks/cleanupSteamworksLeaderboardEntries.js'
+import cleanupSteamworksPlayerStats from '../tasks/cleanupSteamworksPlayerStats.js'
+import deleteInactivePlayers from '../tasks/deleteInactivePlayers.js'
+import deletePlayers from '../tasks/deletePlayers.js'
 
 function addScheduledTask(name: string, task: () => Promise<void>, pattern: string) {
   return createQueue(name, task).upsertJobScheduler(

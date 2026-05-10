@@ -1,8 +1,8 @@
 import request from 'supertest'
-import { UserType } from '../../../../src/entities/user'
-import DataExportFactory from '../../../fixtures/DataExportFactory'
-import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
-import createUserAndToken from '../../../utils/createUserAndToken'
+import { UserType } from '../../../../src/entities/user.js'
+import DataExportFactory from '../../../fixtures/DataExportFactory.js'
+import createOrganisationAndGame from '../../../utils/createOrganisationAndGame.js'
+import createUserAndToken from '../../../utils/createUserAndToken.js'
 
 describe('Data export - list', () => {
   it('should return a list of data exports', async () => {

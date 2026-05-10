@@ -1,8 +1,8 @@
 import { z, ZodType } from 'zod'
-import Socket from '..'
-import { APIKeyScope } from '../../entities/api-key'
-import { SocketMessageRequest } from '../messages/socketMessage'
-import SocketConnection from '../socketConnection'
+import { APIKeyScope } from '../../entities/api-key.js'
+import Socket from '../index.js'
+import { SocketMessageRequest } from '../messages/socketMessage.js'
+import SocketConnection from '../socketConnection.js'
 
 type SocketMessageListenerHandlerParams<T> = {
   conn: SocketConnection

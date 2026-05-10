@@ -1,7 +1,7 @@
-import PlayerAlias, { PlayerAliasService } from '../../../entities/player-alias'
-import { publicRoute, withMiddleware } from '../../../lib/routing/router'
-import { loginHandler } from '../../api/player-auth/login'
-import { buildPublicPlayerSession, loadGameFromToken } from './common'
+import PlayerAlias, { PlayerAliasService } from '../../../entities/player-alias.js'
+import { publicRoute, withMiddleware } from '../../../lib/routing/router.js'
+import { loginHandler } from '../../api/player-auth/login.js'
+import { buildPublicPlayerSession, loadGameFromToken } from './common.js'
 
 export const loginRoute = publicRoute({
   method: 'post',

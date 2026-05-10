@@ -1,11 +1,11 @@
-import { apiRouter } from '../../../lib/routing/router'
-import { RouterGroup } from '../../../lib/routing/router-group'
-import { getRoute } from './get'
-import { identifyRoute } from './identify'
-import { mergeRoute } from './merge'
-import { patchRoute } from './patch'
-import { searchRoute } from './search'
-import { socketTokenRoute } from './socket-token'
+import { RouterGroup } from '../../../lib/routing/router-group.js'
+import { apiRouter } from '../../../lib/routing/router.js'
+import { getRoute } from './get.js'
+import { identifyRoute } from './identify.js'
+import { mergeRoute } from './merge.js'
+import { patchRoute } from './patch.js'
+import { searchRoute } from './search.js'
+import { socketTokenRoute } from './socket-token.js'
 
 export function playerAPIRouter() {
   const opts = {

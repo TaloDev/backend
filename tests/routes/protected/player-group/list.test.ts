@@ -1,8 +1,8 @@
 import request from 'supertest'
-import PlayerGroup from '../../../../src/entities/player-group'
-import PlayerGroupFactory from '../../../fixtures/PlayerGroupFactory'
-import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
-import createUserAndToken from '../../../utils/createUserAndToken'
+import PlayerGroup from '../../../../src/entities/player-group.js'
+import PlayerGroupFactory from '../../../fixtures/PlayerGroupFactory.js'
+import createOrganisationAndGame from '../../../utils/createOrganisationAndGame.js'
+import createUserAndToken from '../../../utils/createUserAndToken.js'
 
 describe('Player group - list', () => {
   it('should return a list of groups', async () => {

@@ -1,11 +1,11 @@
-import APIKey, { APIKeyScope } from '../../../entities/api-key'
-import { GameActivityType } from '../../../entities/game-activity'
-import { UserType } from '../../../entities/user'
-import createGameActivity from '../../../lib/logging/createGameActivity'
-import { protectedRoute, withMiddleware } from '../../../lib/routing/router'
-import { loadGame } from '../../../middleware/game-middleware'
-import { userTypeGate, requireEmailConfirmed } from '../../../middleware/policy-middleware'
-import { createToken } from './common'
+import APIKey, { APIKeyScope } from '../../../entities/api-key.js'
+import { GameActivityType } from '../../../entities/game-activity.js'
+import { UserType } from '../../../entities/user.js'
+import createGameActivity from '../../../lib/logging/createGameActivity.js'
+import { protectedRoute, withMiddleware } from '../../../lib/routing/router.js'
+import { loadGame } from '../../../middleware/game-middleware.js'
+import { userTypeGate, requireEmailConfirmed } from '../../../middleware/policy-middleware.js'
+import { createToken } from './common.js'
 
 export const createRoute = protectedRoute({
   method: 'post',

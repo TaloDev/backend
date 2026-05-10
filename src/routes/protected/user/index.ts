@@ -1,13 +1,13 @@
-import { protectedRouter } from '../../../lib/routing/router'
-import { confirm2faRoute } from './2fa-confirm'
-import { disable2faRoute } from './2fa-disable'
-import { enable2faRoute } from './2fa-enable'
-import { createRecoveryCodesRoute } from './2fa-recovery-codes-create'
-import { viewRecoveryCodesRoute } from './2fa-recovery-codes-view'
-import { changePasswordRoute } from './change-password'
-import { confirmEmailRoute } from './confirm-email'
-import { logoutRoute } from './logout'
-import { meRoute } from './me'
+import { protectedRouter } from '../../../lib/routing/router.js'
+import { confirm2faRoute } from './2fa-confirm.js'
+import { disable2faRoute } from './2fa-disable.js'
+import { enable2faRoute } from './2fa-enable.js'
+import { createRecoveryCodesRoute } from './2fa-recovery-codes-create.js'
+import { viewRecoveryCodesRoute } from './2fa-recovery-codes-view.js'
+import { changePasswordRoute } from './change-password.js'
+import { confirmEmailRoute } from './confirm-email.js'
+import { logoutRoute } from './logout.js'
+import { meRoute } from './me.js'
 
 export function userRouter() {
   return protectedRouter('/users', ({ route }) => {

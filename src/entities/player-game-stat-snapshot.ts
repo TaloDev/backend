@@ -1,11 +1,11 @@
 import { EntityManager } from '@mikro-orm/mysql'
 import { captureException } from '@sentry/node'
 import { v4 } from 'uuid'
-import ClickHouseEntity from '../lib/clickhouse/clickhouse-entity'
-import { formatDateForClickHouse } from '../lib/clickhouse/formatDateTime'
-import GameStat from './game-stat'
-import PlayerAlias from './player-alias'
-import PlayerGameStat from './player-game-stat'
+import ClickHouseEntity from '../lib/clickhouse/clickhouse-entity.js'
+import { formatDateForClickHouse } from '../lib/clickhouse/formatDateTime.js'
+import GameStat from './game-stat.js'
+import PlayerAlias from './player-alias.js'
+import PlayerGameStat from './player-game-stat.js'
 
 export type ClickHousePlayerGameStatSnapshot = {
   id: string

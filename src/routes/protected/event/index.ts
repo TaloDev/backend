@@ -1,6 +1,6 @@
-import { protectedRouter } from '../../../lib/routing/router'
-import { breakdownRoute } from './breakdown'
-import { listRoute } from './list'
+import { protectedRouter } from '../../../lib/routing/router.js'
+import { breakdownRoute } from './breakdown.js'
+import { listRoute } from './list.js'
 
 export function eventRouter() {
   return protectedRouter('/games/:gameId/events', ({ route }) => {

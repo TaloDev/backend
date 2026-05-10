@@ -1,12 +1,12 @@
 import { EntityManager, RequestContext } from '@mikro-orm/mysql'
 import { Redis } from 'ioredis'
 import { z, ZodType } from 'zod'
-import { APIKeyScope } from '../../entities/api-key'
-import GameChannel from '../../entities/game-channel'
-import { incrementChannelTotalMessages } from '../../lib/queues/game-metrics/flush-channel-total-messages-queue-handler'
-import { sendMessages } from '../messages/socketMessage'
-import { SocketMessageListener } from '../router/createListener'
-import createListener from '../router/createListener'
+import { APIKeyScope } from '../../entities/api-key.js'
+import GameChannel from '../../entities/game-channel.js'
+import { incrementChannelTotalMessages } from '../../lib/queues/game-metrics/flush-channel-total-messages-queue-handler.js'
+import { sendMessages } from '../messages/socketMessage.js'
+import { SocketMessageListener } from '../router/createListener.js'
+import createListener from '../router/createListener.js'
 
 const ttl = 600
 

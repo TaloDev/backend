@@ -1,4 +1,4 @@
-import { escapeCSVValue } from '../../../src/lib/lang/escapeCSVValue'
+import { escapeCSVValue } from '../../../src/lib/lang/escapeCSVValue.js'
 
 describe('escapeCSVValue', () => {
   it('should not escape simple values without special characters', () => {

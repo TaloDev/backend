@@ -1,4 +1,4 @@
-import SocketConnection from '../socketConnection'
+import SocketConnection from '../socketConnection.js'
 
 export const requests = [
   'v1.players.identify',

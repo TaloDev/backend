@@ -1,9 +1,9 @@
 import { setTraceAttributes } from '@hyperdx/node-opentelemetry'
 import { Context, Next } from 'koa'
 import jwt from 'koa-jwt'
-import { getUserFromToken } from '../lib/auth/getUserFromToken'
-import { ProtectedRouteContext } from '../lib/routing/context'
-import { isProtectedRoute } from '../lib/routing/route-info'
+import { getUserFromToken } from '../lib/auth/getUserFromToken.js'
+import { ProtectedRouteContext } from '../lib/routing/context.js'
+import { isProtectedRoute } from '../lib/routing/route-info.js'
 
 export async function protectedRouteAuthMiddleware(ctx: Context, next: Next) {
   if (isProtectedRoute(ctx)) {

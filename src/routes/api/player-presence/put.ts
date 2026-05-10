@@ -1,9 +1,9 @@
-import { APIKeyScope } from '../../../entities/api-key'
-import { RouteDocs } from '../../../lib/docs/docs-registry'
-import { apiRoute, withMiddleware } from '../../../lib/routing/router'
-import { playerAliasHeaderSchema } from '../../../lib/validation/playerAliasHeaderSchema'
-import { loadAlias } from '../../../middleware/player-alias-middleware'
-import { requireScopes } from '../../../middleware/policy-middleware'
+import { APIKeyScope } from '../../../entities/api-key.js'
+import { RouteDocs } from '../../../lib/docs/docs-registry.js'
+import { apiRoute, withMiddleware } from '../../../lib/routing/router.js'
+import { playerAliasHeaderSchema } from '../../../lib/validation/playerAliasHeaderSchema.js'
+import { loadAlias } from '../../../middleware/player-alias-middleware.js'
+import { requireScopes } from '../../../middleware/policy-middleware.js'
 
 const docs: RouteDocs = {
   description: "Update a player's online status and custom status",

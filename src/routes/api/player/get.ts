@@ -1,8 +1,8 @@
-import { APIKeyScope } from '../../../entities/api-key'
-import { apiRoute, withMiddleware } from '../../../lib/routing/router'
-import { requireScopes } from '../../../middleware/policy-middleware'
-import { loadPlayerWithAliases } from './common'
-import { getDocs } from './docs'
+import { APIKeyScope } from '../../../entities/api-key.js'
+import { apiRoute, withMiddleware } from '../../../lib/routing/router.js'
+import { requireScopes } from '../../../middleware/policy-middleware.js'
+import { loadPlayerWithAliases } from './common.js'
+import { getDocs } from './docs.js'
 
 export const getRoute = apiRoute({
   method: 'get',

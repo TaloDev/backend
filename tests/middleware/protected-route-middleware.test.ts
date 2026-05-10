@@ -1,5 +1,5 @@
 import request from 'supertest'
-import { sign } from '../../src/lib/auth/jwt'
+import { sign } from '../../src/lib/auth/jwt.js'
 
 describe('Protected route user middleware', () => {
   it('should reject requests when the user cannot be found', async () => {

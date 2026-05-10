@@ -1,8 +1,8 @@
 import request from 'supertest'
-import { UserType } from '../../../../src/entities/user'
-import InviteFactory from '../../../fixtures/InviteFactory'
-import createUserAndToken from '../../../utils/createUserAndToken'
-import userPermissionProvider from '../../../utils/userPermissionProvider'
+import { UserType } from '../../../../src/entities/user.js'
+import InviteFactory from '../../../fixtures/InviteFactory.js'
+import createUserAndToken from '../../../utils/createUserAndToken.js'
+import userPermissionProvider from '../../../utils/userPermissionProvider.js'
 
 describe('Invite - list', () => {
   it.each(userPermissionProvider([UserType.ADMIN]))(

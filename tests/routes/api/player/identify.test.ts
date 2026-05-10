@@ -2,18 +2,18 @@ import { Collection } from '@mikro-orm/mysql'
 import { randNumber } from '@ngneat/falso'
 import { isToday, subDays } from 'date-fns'
 import request from 'supertest'
-import { APIKeyScope } from '../../../../src/entities/api-key'
-import PlayerAlias from '../../../../src/entities/player-alias'
-import { RuleMode } from '../../../../src/entities/player-group'
+import { APIKeyScope } from '../../../../src/entities/api-key.js'
+import PlayerAlias from '../../../../src/entities/player-alias.js'
 import PlayerGroupRule, {
   PlayerGroupRuleName,
   PlayerGroupRuleCastType,
-} from '../../../../src/entities/player-group-rule'
-import PlayerProp from '../../../../src/entities/player-prop'
-import PlayerAliasFactory from '../../../fixtures/PlayerAliasFactory'
-import PlayerFactory from '../../../fixtures/PlayerFactory'
-import PlayerGroupFactory from '../../../fixtures/PlayerGroupFactory'
-import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken'
+} from '../../../../src/entities/player-group-rule.js'
+import { RuleMode } from '../../../../src/entities/player-group.js'
+import PlayerProp from '../../../../src/entities/player-prop.js'
+import PlayerAliasFactory from '../../../fixtures/PlayerAliasFactory.js'
+import PlayerFactory from '../../../fixtures/PlayerFactory.js'
+import PlayerGroupFactory from '../../../fixtures/PlayerGroupFactory.js'
+import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken.js'
 
 describe('Player API - identify', () => {
   it('should identify a player', async () => {

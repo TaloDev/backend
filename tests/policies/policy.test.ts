@@ -1,7 +1,7 @@
 import request from 'supertest'
-import { APIKeyScope } from '../../src/entities/api-key'
-import PlayerFactory from '../fixtures/PlayerFactory'
-import createAPIKeyAndToken from '../utils/createAPIKeyAndToken'
+import { APIKeyScope } from '../../src/entities/api-key.js'
+import PlayerFactory from '../fixtures/PlayerFactory.js'
+import createAPIKeyAndToken from '../utils/createAPIKeyAndToken.js'
 
 describe('Policy base class', () => {
   it('should reject a revoked api key', async () => {

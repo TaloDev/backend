@@ -1,9 +1,9 @@
-import { APIKeyScope } from '../../../entities/api-key'
-import { apiRoute, withMiddleware } from '../../../lib/routing/router'
-import { pageSchema } from '../../../lib/validation/pageSchema'
-import { requireScopes } from '../../../middleware/policy-middleware'
-import { listChannelsHandler } from '../../protected/game-channel/list'
-import { listDocs } from './docs'
+import { APIKeyScope } from '../../../entities/api-key.js'
+import { apiRoute, withMiddleware } from '../../../lib/routing/router.js'
+import { pageSchema } from '../../../lib/validation/pageSchema.js'
+import { requireScopes } from '../../../middleware/policy-middleware.js'
+import { listChannelsHandler } from '../../protected/game-channel/list.js'
+import { listDocs } from './docs.js'
 
 export const listRoute = apiRoute({
   method: 'get',

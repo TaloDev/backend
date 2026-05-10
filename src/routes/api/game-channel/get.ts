@@ -1,10 +1,10 @@
-import { APIKeyScope } from '../../../entities/api-key'
-import GameChannel from '../../../entities/game-channel'
-import { apiRoute, withMiddleware } from '../../../lib/routing/router'
-import { numericStringSchema } from '../../../lib/validation/numericStringSchema'
-import { requireScopes } from '../../../middleware/policy-middleware'
-import { loadChannel } from './common'
-import { getDocs } from './docs'
+import { APIKeyScope } from '../../../entities/api-key.js'
+import GameChannel from '../../../entities/game-channel.js'
+import { apiRoute, withMiddleware } from '../../../lib/routing/router.js'
+import { numericStringSchema } from '../../../lib/validation/numericStringSchema.js'
+import { requireScopes } from '../../../middleware/policy-middleware.js'
+import { loadChannel } from './common.js'
+import { getDocs } from './docs.js'
 
 export const getRoute = apiRoute({
   method: 'get',

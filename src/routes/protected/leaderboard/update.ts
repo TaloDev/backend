@@ -1,16 +1,16 @@
-import { GameActivityType } from '../../../entities/game-activity'
+import { GameActivityType } from '../../../entities/game-activity.js'
 import Leaderboard, {
   LeaderboardSortMode,
   LeaderboardRefreshInterval,
-} from '../../../entities/leaderboard'
-import updateAllowedKeys from '../../../lib/entities/updateAllowedKeys'
-import triggerIntegrations from '../../../lib/integrations/triggerIntegrations'
-import createGameActivity from '../../../lib/logging/createGameActivity'
-import { deferClearResponseCache } from '../../../lib/perf/responseCacheQueue'
-import { protectedRoute, withMiddleware } from '../../../lib/routing/router'
-import { loadGame } from '../../../middleware/game-middleware'
-import { archiveEntriesForLeaderboard } from '../../../tasks/archiveLeaderboardEntries'
-import { loadLeaderboard } from './common'
+} from '../../../entities/leaderboard.js'
+import updateAllowedKeys from '../../../lib/entities/updateAllowedKeys.js'
+import triggerIntegrations from '../../../lib/integrations/triggerIntegrations.js'
+import createGameActivity from '../../../lib/logging/createGameActivity.js'
+import { deferClearResponseCache } from '../../../lib/perf/responseCacheQueue.js'
+import { protectedRoute, withMiddleware } from '../../../lib/routing/router.js'
+import { loadGame } from '../../../middleware/game-middleware.js'
+import { archiveEntriesForLeaderboard } from '../../../tasks/archiveLeaderboardEntries.js'
+import { loadLeaderboard } from './common.js'
 
 const sortModeValues = Object.values(LeaderboardSortMode).join(', ')
 const refreshIntervalValues = Object.values(LeaderboardRefreshInterval).join(', ')

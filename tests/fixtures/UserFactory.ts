@@ -2,11 +2,11 @@ import { Collection } from '@mikro-orm/mysql'
 import { randEmail, randUserName, randWord } from '@ngneat/falso'
 import bcrypt from 'bcrypt'
 import { Factory } from 'hefty'
-import User, { UserType } from '../../src/entities/user'
-import UserRecoveryCode from '../../src/entities/user-recovery-code'
-import UserTwoFactorAuth from '../../src/entities/user-two-factor-auth'
-import generateRecoveryCodes from '../../src/lib/auth/generateRecoveryCodes'
-import OrganisationFactory from './OrganisationFactory'
+import UserRecoveryCode from '../../src/entities/user-recovery-code.js'
+import UserTwoFactorAuth from '../../src/entities/user-two-factor-auth.js'
+import User, { UserType } from '../../src/entities/user.js'
+import generateRecoveryCodes from '../../src/lib/auth/generateRecoveryCodes.js'
+import OrganisationFactory from './OrganisationFactory.js'
 
 export default class UserFactory extends Factory<User> {
   constructor() {

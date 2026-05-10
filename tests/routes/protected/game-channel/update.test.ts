@@ -1,10 +1,10 @@
 import request from 'supertest'
-import GameActivity, { GameActivityType } from '../../../../src/entities/game-activity'
-import GameChannel from '../../../../src/entities/game-channel'
-import GameChannelFactory from '../../../fixtures/GameChannelFactory'
-import PlayerFactory from '../../../fixtures/PlayerFactory'
-import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
-import createUserAndToken from '../../../utils/createUserAndToken'
+import GameActivity, { GameActivityType } from '../../../../src/entities/game-activity.js'
+import GameChannel from '../../../../src/entities/game-channel.js'
+import GameChannelFactory from '../../../fixtures/GameChannelFactory.js'
+import PlayerFactory from '../../../fixtures/PlayerFactory.js'
+import createOrganisationAndGame from '../../../utils/createOrganisationAndGame.js'
+import createUserAndToken from '../../../utils/createUserAndToken.js'
 
 describe('Game channel - update', () => {
   it('should update a game channel', async () => {

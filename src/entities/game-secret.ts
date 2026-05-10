@@ -1,7 +1,7 @@
 import { Entity, OneToOne, PrimaryKey, Property } from '@mikro-orm/decorators/es'
 import crypto from 'crypto'
-import { decrypt, encrypt } from '../lib/crypto/string-encryption'
-import Game from './game'
+import { decrypt, encrypt } from '../lib/crypto/string-encryption.js'
+import Game from './game.js'
 
 @Entity()
 export default class GameSecret {

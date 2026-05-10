@@ -1,12 +1,5 @@
-import {
-  Collection,
-  Entity,
-  Index,
-  ManyToOne,
-  OneToMany,
-  PrimaryKey,
-  Property,
-} from '@mikro-orm/mysql'
+import { Entity, Index, ManyToOne, OneToMany, PrimaryKey, Property } from '@mikro-orm/decorators/es'
+import { Collection } from '@mikro-orm/mysql'
 import { createHash } from 'node:crypto'
 import Leaderboard from './leaderboard'
 import LeaderboardEntryProp from './leaderboard-entry-prop'

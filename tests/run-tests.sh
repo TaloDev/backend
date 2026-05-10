@@ -22,7 +22,7 @@ set -e
 dc up -d
 
 npx mikro-orm migration:up &
-ts-node ./tests/migrateClickHouse.ts &
+tsx ./tests/migrateClickHouse.ts &
 wait
 
 echo "\n"

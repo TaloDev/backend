@@ -13,7 +13,7 @@ jobs:
       SHARD_COUNT: 4
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Setup
         uses: ./.github/actions/setup
 
@@ -31,7 +31,7 @@ jobs:
 
       - name: Upload test reports
         if: ${{ !cancelled() }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: test-reports-${{ matrix.shard }}
           path: .vitest-reports/*

@@ -1,4 +1,4 @@
-import { Entity, Enum, ManyToOne, PrimaryKey, Property } from '@mikro-orm/mysql'
+import { Entity, Enum, ManyToOne, PrimaryKey, Property } from '@mikro-orm/decorators/es'
 import Organisation from './organisation'
 import User, { UserType } from './user'
 

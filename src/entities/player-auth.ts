@@ -1,4 +1,4 @@
-import { Entity, OneToOne, PrimaryKey, Property } from '@mikro-orm/mysql'
+import { Entity, OneToOne, PrimaryKey, Property } from '@mikro-orm/decorators/es'
 import { v4 } from 'uuid'
 import { sign } from '../lib/auth/jwt'
 import Player from './player'

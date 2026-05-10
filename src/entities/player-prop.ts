@@ -1,4 +1,4 @@
-import { Entity, Index, ManyToOne, PrimaryKey, Property } from '@mikro-orm/mysql'
+import { Entity, Index, ManyToOne, PrimaryKey, Property } from '@mikro-orm/decorators/es'
 import Player from './player'
 import { MAX_KEY_LENGTH, MAX_VALUE_LENGTH } from './prop'
 

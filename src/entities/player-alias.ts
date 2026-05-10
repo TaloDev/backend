@@ -1,13 +1,12 @@
 import {
-  Collection,
   Entity,
-  EntityManager,
   Index,
   ManyToMany,
   ManyToOne,
   PrimaryKey,
   Property,
-} from '@mikro-orm/mysql'
+} from '@mikro-orm/decorators/es'
+import { Collection, EntityManager } from '@mikro-orm/mysql'
 import Redis from 'ioredis'
 import { v4 } from 'uuid'
 import { AuthenticateSignatureResult } from '../lib/integrations/game-center/game-center-players'

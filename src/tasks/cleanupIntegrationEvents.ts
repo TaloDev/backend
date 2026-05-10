@@ -1,9 +1,14 @@
-import { EntityManager } from '@mikro-orm/mysql'
+import { EntityClass, EntityManager } from '@mikro-orm/mysql'
 import { subMonths } from 'date-fns'
 import { getMikroORM } from '../config/mikro-orm.config'
 import GameCenterIntegrationEvent from '../entities/game-center-integration-event'
 import GooglePlayGamesIntegrationEvent from '../entities/google-play-games-integration-event'
 import SteamworksIntegrationEvent from '../entities/steamworks-integration-event'
+
+type CleanupTarget = {
+  label: string
+  entity: EntityClass
+}
 
 export async function cleanupIntegrationEvents() {
   const startTime = performance.now()
@@ -12,7 +17,7 @@ export async function cleanupIntegrationEvents() {
   const em = orm.em.fork() as EntityManager
   const sixMonthsAgo = subMonths(new Date(), 6)
 
-  const targets = [
+  const targets: CleanupTarget[] = [
     { label: 'Steamworks', entity: SteamworksIntegrationEvent },
     { label: 'Google Play Games', entity: GooglePlayGamesIntegrationEvent },
     { label: 'Game Center', entity: GameCenterIntegrationEvent },

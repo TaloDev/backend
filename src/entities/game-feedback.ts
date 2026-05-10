@@ -1,4 +1,5 @@
-import { Collection, Entity, ManyToOne, OneToMany, PrimaryKey, Property } from '@mikro-orm/mysql'
+import { Entity, ManyToOne, OneToMany, PrimaryKey, Property } from '@mikro-orm/decorators/es'
+import { Collection } from '@mikro-orm/mysql'
 import GameFeedbackCategory from './game-feedback-category'
 import GameFeedbackProp from './game-feedback-prop'
 import PlayerAlias from './player-alias'

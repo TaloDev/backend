@@ -1,4 +1,4 @@
-import { Entity, ManyToOne, OneToOne, PrimaryKey, Property } from '@mikro-orm/mysql'
+import { Entity, ManyToOne, OneToOne, PrimaryKey, Property } from '@mikro-orm/decorators/es'
 import LeaderboardEntry from './leaderboard-entry'
 import SteamworksLeaderboardMapping from './steamworks-leaderboard-mapping'
 

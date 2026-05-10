@@ -1,13 +1,5 @@
-import {
-  Entity,
-  EntityManager,
-  Index,
-  ManyToOne,
-  PrimaryKey,
-  Property,
-  raw,
-  Unique,
-} from '@mikro-orm/mysql'
+import { Entity, Index, ManyToOne, PrimaryKey, Property, Unique } from '@mikro-orm/decorators/es'
+import { EntityManager, raw } from '@mikro-orm/mysql'
 import GameStat from './game-stat'
 import Player from './player'
 
@@ -76,7 +68,7 @@ export default class PlayerGameStat {
         createdAt,
         updatedAt,
       })
-      .onConflict(['player_id', 'stat_id'])
+      .onConflict(['player', 'stat'])
       .merge({ value: raw('player_game_stat.value + ?', [change]), updatedAt })
       .execute()
   }

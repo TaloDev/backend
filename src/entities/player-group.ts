@@ -1,5 +1,4 @@
 import {
-  Collection,
   Embedded,
   Entity,
   Enum,
@@ -7,9 +6,8 @@ import {
   ManyToOne,
   PrimaryKey,
   Property,
-  EntityManager,
-  QueryBuilder,
-} from '@mikro-orm/mysql'
+} from '@mikro-orm/decorators/es'
+import { Collection, EntityManager, QueryBuilder } from '@mikro-orm/mysql'
 import { v4 } from 'uuid'
 import Game from './game'
 import Player from './player'
@@ -152,7 +150,9 @@ export default class PlayerGroup {
   }
 
   async checkMembership(em: EntityManager) {
-    const players = await this.getQuery(em).getResultList()
+    const results = await this.getQuery(em).getResult()
+    const players = results.map((p) => em.getReference(Player, p.id))
+
     this.members.set(players)
     await em.flush()
   }
@@ -162,7 +162,8 @@ export default class PlayerGroup {
       id: player.id,
     })
 
-    return (await query.count()) > 0
+    const { count } = await query.count().execute('get')
+    return count > 0
   }
 
   toJSON() {

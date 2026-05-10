@@ -114,14 +114,13 @@ export const newLeaderboardEntriesRoute = protectedRoute({
           })
         }
 
-        const results =
-          await qb.execute<
-            {
-              leaderboard: string
-              date_group: string
-              count: string
-            }[]
-          >()
+        const results = await qb.execute<
+          {
+            leaderboard: string
+            date_group: string
+            count: string
+          }[]
+        >()
 
         const leaderboardsMap = new Map<number, LeaderboardValues>()
         for (const row of results) {

@@ -16,7 +16,6 @@ export const createRecoveryCodesRoute = protectedRoute({
     const em = ctx.em
 
     const user = ctx.state.user
-    await user.recoveryCodes.init()
     user.recoveryCodes.set(generateRecoveryCodes(user))
 
     await em.flush()

@@ -8,14 +8,14 @@ import UserSession from '../../../../src/entities/user-session'
 import InviteFactory from '../../../fixtures/InviteFactory'
 import PlayerGroupFactory from '../../../fixtures/PlayerGroupFactory'
 import UserFactory from '../../../fixtures/UserFactory'
-import clearEntities from '../../../utils/clearEntities'
+import { clearEntities } from '../../../utils/clearEntities'
 import createOrganisationAndGame from '../../../utils/createOrganisationAndGame'
 import createUserAndToken from '../../../utils/createUserAndToken'
 import userPermissionProvider from '../../../utils/userPermissionProvider'
 
 describe('Organisation - remove member', () => {
   beforeEach(async () => {
-    await clearEntities(['GameActivity', 'UserSession', 'UserPinnedGroup', 'Invite'])
+    await clearEntities([GameActivity, UserSession, UserPinnedGroup, Invite])
   })
 
   it.each(userPermissionProvider([], 204))(

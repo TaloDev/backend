@@ -33,8 +33,11 @@ async function parseCsvString(csvString: string): Promise<string[][]> {
         skip_empty_lines: true,
       },
       (err, records) => {
-        if (err) reject(err)
-        else resolve(records)
+        if (err) {
+          reject(err)
+        } else {
+          resolve(records)
+        }
       },
     )
   })

@@ -18,6 +18,7 @@ Talo is available to use via our [Godot plugin](https://github.com/TaloDev/godot
 - ⚙️ [Live config](https://trytalo.com/live-config): Update game settings from the web with zero downtime.
 - 🔧 [Steamworks integration](https://trytalo.com/steamworks-integration): Hook into Steamworks for authentication and ownership checks.
 - ▶️ [Google Play Games integration](https://trytalo.com/google-play-games-integration): Use Google Play Games to authenticate players.
+- 🍎 [Apple Game Center integration](https://trytalo.com/apple-game-center-integration): Use Apple Game Center to authenticate players.
 - 🗣️ [Game feedback](https://trytalo.com/feedback): Collect and manage feedback from your players.
 - 🔔 [Player presence](https://trytalo.com/players#presence): See if players are online and set custom statuses.
 - 🤝 [Player relationships](https://trytalo.com/player-relationships): Easily add friends, followers and social systems to your game.

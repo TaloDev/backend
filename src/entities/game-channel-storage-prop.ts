@@ -1,4 +1,4 @@
-import { Entity, Index, ManyToOne, PrimaryKey, Property } from '@mikro-orm/mysql'
+import { Entity, Index, ManyToOne, PrimaryKey, Property } from '@mikro-orm/decorators/es'
 import Redis from 'ioredis'
 import { isArrayKey } from '../lib/props/sanitiseProps'
 import GameChannel from './game-channel'

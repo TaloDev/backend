@@ -1,16 +1,7 @@
 import type Redis from 'ioredis'
 import { ClickHouseClient } from '@clickhouse/client'
-import {
-  Entity,
-  ManyToOne,
-  PrimaryKey,
-  Property,
-  Collection,
-  OneToMany,
-  Index,
-  raw,
-  EntityManager,
-} from '@mikro-orm/mysql'
+import { Entity, ManyToOne, PrimaryKey, Property, OneToMany, Index } from '@mikro-orm/decorators/es'
+import { Collection, raw, EntityManager } from '@mikro-orm/mysql'
 import { endOfDay, startOfDay } from 'date-fns'
 import { formatDateForClickHouse } from '../lib/clickhouse/formatDateTime'
 import Game from './game'
@@ -129,8 +120,12 @@ export default class GameStat {
 
     if (!includeDevData || devOnly) {
       qb.innerJoin('pgs.player', 'p')
-      if (!includeDevData) qb.andWhere({ 'p.devBuild': false })
-      if (devOnly) qb.andWhere({ 'p.devBuild': true })
+      if (!includeDevData) {
+        qb.andWhere({ player: { devBuild: false } })
+      }
+      if (devOnly) {
+        qb.andWhere({ player: { devBuild: true } })
+      }
     }
 
     const result = await qb.execute<{ total: string | null }>('get')

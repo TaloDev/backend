@@ -26,13 +26,11 @@ const ormConfig = defineConfig({
     min: Number(process.env.MIKRO_ORM_POOL_MIN) || 0,
     max: Number(process.env.MIKRO_ORM_POOL_MAX) || 10,
     idleTimeoutMillis: Number(process.env.MIKRO_ORM_POOL_IDLE_TIMEOUT) || undefined,
-    acquireTimeoutMillis: Number(process.env.MIKRO_ORM_POOL_ACQUIRE_TIMEOUT) || undefined,
   },
   resultCache: {
     adapter: RedisCacheAdapter,
     options: redisConfig,
   },
-  loadStrategy: 'balanced',
 })
 
 export default ormConfig // loaded in package.json

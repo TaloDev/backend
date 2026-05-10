@@ -1,8 +1,6 @@
 import { ClickHouseClient } from '@clickhouse/client'
 import {
-  Collection,
   Entity,
-  EntityManager,
   Index,
   ManyToMany,
   ManyToOne,
@@ -10,7 +8,8 @@ import {
   OneToOne,
   PrimaryKey,
   Property,
-} from '@mikro-orm/mysql'
+} from '@mikro-orm/decorators/es'
+import { Collection, EntityManager } from '@mikro-orm/mysql'
 import { captureException } from '@sentry/node'
 import { v4 } from 'uuid'
 import createClickHouseClient from '../lib/clickhouse/createClient'
@@ -34,7 +33,7 @@ export default class Player {
   @OneToMany(() => PlayerAlias, (alias) => alias.player)
   aliases: Collection<PlayerAlias> = new Collection<PlayerAlias>(this)
 
-  @OneToMany(() => PlayerProp, (prop) => prop.player, { eager: true, orphanRemoval: true })
+  @OneToMany(() => PlayerProp, (prop) => prop.player, { orphanRemoval: true, eager: true })
   props: Collection<PlayerProp> = new Collection<PlayerProp>(this)
 
   @ManyToMany(() => PlayerGroup, (group) => group.members, { eager: true })

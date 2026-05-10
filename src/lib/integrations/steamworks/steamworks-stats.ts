@@ -162,20 +162,18 @@ async function ingestSteamworksPlayerStatForAlias(
 }
 
 async function ingestSteamworksPlayerStats(em: EntityManager, integration: Integration) {
-  const aliasStream = streamByCursor<PlayerAlias>(async (batchSize, after) => {
-    return em.repo(PlayerAlias).findByCursor(
-      {
+  const aliasStream = streamByCursor(async (batchSize, after) => {
+    return em.repo(PlayerAlias).findByCursor({
+      where: {
         service: PlayerAliasService.STEAM,
         player: {
           game: integration.game,
         },
       },
-      {
-        first: batchSize,
-        after,
-        orderBy: { id: 'asc' },
-      },
-    )
+      first: batchSize,
+      after,
+      orderBy: { id: 'asc' },
+    })
   }, 100)
 
   const syncedPlayerStatIds = new Set<number>()
@@ -201,9 +199,9 @@ async function pushPlayerStatsToSteamworks({
   steamworksStats: SteamworksGameStat[]
   syncedPlayerStatIds: Set<number>
 }) {
-  const playerStatStream = streamByCursor<PlayerGameStat>(async (batchSize, after) => {
-    return em.repo(PlayerGameStat).findByCursor(
-      {
+  const playerStatStream = streamByCursor(async (batchSize, after) => {
+    return em.repo(PlayerGameStat).findByCursor({
+      where: {
         id: {
           $nin: Array.from(syncedPlayerStatIds),
         },
@@ -218,13 +216,11 @@ async function pushPlayerStatsToSteamworks({
           internalName: steamworksStats.map((steamworksStat) => steamworksStat.name),
         },
       },
-      {
-        first: batchSize,
-        after,
-        orderBy: { id: 'asc' },
-        populate: ['player.aliases'] as const,
-      },
-    )
+      first: batchSize,
+      after,
+      orderBy: { id: 'asc' },
+      populate: ['player.aliases'] as const,
+    })
   }, 100)
 
   for await (const unsyncedPlayerStat of playerStatStream) {

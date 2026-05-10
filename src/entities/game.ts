@@ -1,14 +1,13 @@
 import {
-  Collection,
   Embedded,
   Entity,
-  EntityManager,
   ManyToOne,
   OneToMany,
   OneToOne,
   PrimaryKey,
   Property,
-} from '@mikro-orm/mysql'
+} from '@mikro-orm/decorators/es'
+import { Collection, EntityManager } from '@mikro-orm/mysql'
 import Sqids from 'sqids'
 import GameSecret from './game-secret'
 import Organisation from './organisation'

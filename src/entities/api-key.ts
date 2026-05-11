@@ -5,7 +5,7 @@ import User from './user.js'
 export enum APIKeyScope {
   READ_PLAYER_PRESENCE = 'read:playerPresence',
   WRITE_PLAYER_PRESENCE = 'write:playerPresence',
-  READ_GAME_CHANNELS = 'read:gameChann els',
+  READ_GAME_CHANNELS = 'read:gameChannels',
   WRITE_GAME_CHANNELS = 'write:gameChannels',
   READ_PLAYER_GROUPS = 'read:playerGroups',
   WRITE_CONTINUITY_REQUESTS = 'write:continuityRequests',

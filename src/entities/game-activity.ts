@@ -47,6 +47,7 @@ export enum GameActivityType {
   GAME_FEEDBACK_RESTORED,
   GAME_FEEDBACK_CATEGORY_RESET,
   ORGANISATION_MEMBER_REMOVED,
+  PLAYER_DEV_BUILD_TOGGLED,
 }
 
 @Entity()
@@ -168,6 +169,8 @@ export default class GameActivity {
         return `${this.user.username} reset feedback for the category ${this.extra.feedbackCategoryInternalName}`
       case GameActivityType.ORGANISATION_MEMBER_REMOVED:
         return `${this.user.username} removed ${this.extra.removedUsername} from the organisation`
+      case GameActivityType.PLAYER_DEV_BUILD_TOGGLED:
+        return `${this.user.username} toggled a player's dev build status`
       default:
         return ''
     }

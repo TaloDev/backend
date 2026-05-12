@@ -88,6 +88,14 @@ export default class Player {
     }
   }
 
+  removeProp(key: string) {
+    const prop = this.props.getItems().find((prop) => prop.key === key)
+
+    if (prop) {
+      this.props.remove(prop)
+    }
+  }
+
   setProps(props: { key: string; value: string }[]) {
     this.props.set(props.map(({ key, value }) => new PlayerProp(this, key, value)))
   }
@@ -194,7 +202,7 @@ export default class Player {
 
   markAsDevBuild() {
     this.devBuild = true
-    this.addProp(DEV_BUILD_META_KEY, '1')
+    this.upsertProp(DEV_BUILD_META_KEY, '1')
   }
 
   async checkGroupMemberships(em: EntityManager) {

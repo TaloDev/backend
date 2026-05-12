@@ -6,6 +6,7 @@ import { getRoute } from './get.js'
 import { listRoute } from './list.js'
 import { savesRoute } from './saves.js'
 import { statsRoute } from './stats.js'
+import { toggleDevBuildRoute } from './toggle-dev-build.js'
 import { updateRoute } from './update.js'
 
 export function playerRouter() {
@@ -13,6 +14,7 @@ export function playerRouter() {
     route(listRoute)
     route(getRoute)
     route(updateRoute)
+    route(toggleDevBuildRoute)
     route(deleteRoute)
     route(eventsRoute)
     route(statsRoute)

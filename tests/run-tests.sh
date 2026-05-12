@@ -17,6 +17,9 @@ cleanup() {
   fi
 }
 
+# temp dir stores entity data
+rm -rf temp
+
 set -e
 
 dc up -d

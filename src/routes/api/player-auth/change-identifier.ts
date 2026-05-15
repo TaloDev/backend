@@ -3,6 +3,7 @@ import { APIKeyScope } from '../../../entities/api-key.js'
 import PlayerAlias from '../../../entities/player-alias.js'
 import { PlayerAuthActivityType } from '../../../entities/player-auth-activity.js'
 import { throwPlayerAuthError } from '../../../lib/errors/throwPlayerAuthError.js'
+import { hasProfanity } from '../../../lib/filters/profanity.js'
 import { apiRoute, withMiddleware } from '../../../lib/routing/router.js'
 import { playerAliasHeaderSchema } from '../../../lib/validation/playerAliasHeaderSchema.js'
 import { playerHeaderSchema } from '../../../lib/validation/playerHeaderSchema.js'
@@ -58,6 +59,15 @@ export const changeIdentifierRoute = apiRoute({
     }
 
     const sanitisedIdentifier = newIdentifier.trim().toLowerCase()
+
+    if (ctx.state.key.game.blockAliasIdentifierProfanity && hasProfanity(sanitisedIdentifier)) {
+      return throwPlayerAuthError({
+        ctx,
+        status: 400,
+        message: 'Alias identifier contains inappropriate language',
+        errorCode: 'IDENTIFIER_PROFANITY',
+      })
+    }
 
     if (sanitisedIdentifier === alias.identifier) {
       createPlayerAuthActivity(ctx, alias.player, {

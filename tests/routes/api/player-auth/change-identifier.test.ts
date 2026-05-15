@@ -284,6 +284,97 @@ describe('Player auth API - change identifier', () => {
     expect(activity).not.toBeNull()
   })
 
+  it("should not change a player's identifier to a profane one when the filter is enabled", async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([
+      APIKeyScope.READ_PLAYERS,
+      APIKeyScope.WRITE_PLAYERS,
+    ])
+    apiKey.game.blockAliasIdentifierProfanity = true
+    await em.flush()
+
+    const player = await new PlayerFactory([apiKey.game])
+      .state(async (player) => {
+        const alias = await new PlayerAliasFactory(player)
+          .talo()
+          .state(() => ({
+            identifier: 'boz',
+          }))
+          .one()
+
+        return {
+          aliases: new Collection<PlayerAlias>(player, [alias]),
+          auth: await new PlayerAuthFactory()
+            .state(async () => ({
+              password: await bcrypt.hash('password', 10),
+            }))
+            .one(),
+        }
+      })
+      .one()
+    const alias = player.aliases[0]
+    await em.persist(player).flush()
+
+    const { sessionToken } = await player.auth!.createSession(alias)
+    await em.flush()
+
+    const res = await request(app)
+      .post('/v1/players/auth/change_identifier')
+      .send({ currentPassword: 'password', newIdentifier: 'fuck' })
+      .auth(token, { type: 'bearer' })
+      .set('x-talo-player', player.id)
+      .set('x-talo-alias', String(alias.id))
+      .set('x-talo-session', sessionToken)
+      .expect(400)
+
+    expect(res.body).toStrictEqual({
+      message: 'Alias identifier contains inappropriate language',
+      errorCode: 'IDENTIFIER_PROFANITY',
+    })
+  })
+
+  it("should allow changing a player's identifier to a profane one when the filter is disabled", async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([
+      APIKeyScope.READ_PLAYERS,
+      APIKeyScope.WRITE_PLAYERS,
+    ])
+
+    const player = await new PlayerFactory([apiKey.game])
+      .state(async (player) => {
+        const alias = await new PlayerAliasFactory(player)
+          .talo()
+          .state(() => ({
+            identifier: 'boz',
+          }))
+          .one()
+
+        return {
+          aliases: new Collection<PlayerAlias>(player, [alias]),
+          auth: await new PlayerAuthFactory()
+            .state(async () => ({
+              password: await bcrypt.hash('password', 10),
+            }))
+            .one(),
+        }
+      })
+      .one()
+    const alias = player.aliases[0]
+    await em.persist(player).flush()
+
+    const { sessionToken } = await player.auth!.createSession(alias)
+    await em.flush()
+
+    const res = await request(app)
+      .post('/v1/players/auth/change_identifier')
+      .send({ currentPassword: 'password', newIdentifier: 'fuck' })
+      .auth(token, { type: 'bearer' })
+      .set('x-talo-player', player.id)
+      .set('x-talo-alias', String(alias.id))
+      .set('x-talo-session', sessionToken)
+      .expect(200)
+
+    expect(res.body.alias.identifier).toBe('fuck')
+  })
+
   it('should return a 400 if the player does not have authentication', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([
       APIKeyScope.READ_PLAYERS,

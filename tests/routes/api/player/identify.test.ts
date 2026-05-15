@@ -294,4 +294,56 @@ describe('Player API - identify', () => {
       errorCode: 'INVALID_SESSION',
     })
   })
+
+  it('should reject a profane identifier when the filter is enabled', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([
+      APIKeyScope.READ_PLAYERS,
+      APIKeyScope.WRITE_PLAYERS,
+    ])
+    apiKey.game.blockAliasIdentifierProfanity = true
+    await em.flush()
+
+    const res = await request(app)
+      .get('/v1/players/identify')
+      .query({ service: 'username', identifier: 'fuck' })
+      .auth(token, { type: 'bearer' })
+      .expect(400)
+
+    expect(res.body).toStrictEqual({
+      message: 'Alias identifier contains inappropriate language',
+      errorCode: 'IDENTIFIER_PROFANITY',
+    })
+  })
+
+  it('should allow a clean identifier when the filter is enabled', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([
+      APIKeyScope.READ_PLAYERS,
+      APIKeyScope.WRITE_PLAYERS,
+    ])
+    apiKey.game.blockAliasIdentifierProfanity = true
+    await em.flush()
+
+    const res = await request(app)
+      .get('/v1/players/identify')
+      .query({ service: 'username', identifier: 'cleanplayer' })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    expect(res.body.alias.identifier).toBe('cleanplayer')
+  })
+
+  it('should allow a profane identifier when the filter is disabled', async () => {
+    const [, token] = await createAPIKeyAndToken([
+      APIKeyScope.READ_PLAYERS,
+      APIKeyScope.WRITE_PLAYERS,
+    ])
+
+    const res = await request(app)
+      .get('/v1/players/identify')
+      .query({ service: 'username', identifier: 'fuck' })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    expect(res.body.alias.identifier).toBe('fuck')
+  })
 })

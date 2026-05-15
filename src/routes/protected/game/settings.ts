@@ -18,6 +18,7 @@ export const settingsRoute = protectedRoute({
           purgeDevPlayersRetention: game.purgeDevPlayersRetention,
           purgeLivePlayersRetention: game.purgeLivePlayersRetention,
           website: game.website,
+          blockAliasIdentifierProfanity: game.blockAliasIdentifierProfanity,
           gameToken: game.getToken(),
         },
       },

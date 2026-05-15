@@ -52,6 +52,9 @@ export default class Game {
   purgeLivePlayersRetention: number = 90
 
   @Property()
+  blockAliasIdentifierProfanity: boolean = false
+
+  @Property()
   createdAt: Date = new Date()
 
   @Property({ onUpdate: () => new Date() })

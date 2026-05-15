@@ -6,6 +6,7 @@ import PlayerAuth from '../../../entities/player-auth.js'
 import Player from '../../../entities/player.js'
 import { PricingPlanLimitError } from '../../../lib/billing/checkPricingPlanPlayerLimit.js'
 import { throwPlayerAuthError } from '../../../lib/errors/throwPlayerAuthError.js'
+import { hasProfanity } from '../../../lib/filters/profanity.js'
 import emailRegex from '../../../lib/lang/emailRegex.js'
 import {
   createPlayerFromIdentifyRequest,
@@ -53,6 +54,15 @@ export const registerRoute = apiRoute({
     const em = ctx.em
 
     const key = ctx.state.key
+
+    if (key.game.blockAliasIdentifierProfanity && hasProfanity(identifier)) {
+      return throwPlayerAuthError({
+        ctx,
+        status: 400,
+        message: 'Alias identifier contains inappropriate language',
+        errorCode: 'IDENTIFIER_PROFANITY',
+      })
+    }
 
     const sanitisedEmail = email?.trim().toLowerCase()
     if (sanitisedEmail && !emailRegex.test(sanitisedEmail)) {

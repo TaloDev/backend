@@ -6,6 +6,7 @@ import User from '../../../entities/user.js'
 import buildErrorResponse from '../../../lib/errors/buildErrorResponse.js'
 import { PropSizeError } from '../../../lib/errors/propSizeError.js'
 import createGameActivity from '../../../lib/logging/createGameActivity.js'
+import { filterProfaneProps, type RejectedProp } from '../../../lib/props/filterProfaneProps.js'
 import { mergeAndSanitiseProps } from '../../../lib/props/sanitiseProps.js'
 import { protectedRoute, withMiddleware } from '../../../lib/routing/router.js'
 import { updatePropsSchema } from '../../../lib/validation/propsSchema.js'
@@ -43,6 +44,7 @@ export async function updateChannelHandler({
   temporaryMembership,
 }: UpdateChannelParams) {
   const changedProperties: string[] = []
+  let rejectedProps: RejectedProp[] = []
 
   if (typeof name === 'string' && name.trim().length > 0) {
     channel.name = name.trim()
@@ -51,9 +53,18 @@ export async function updateChannelHandler({
 
   if (props) {
     try {
-      channel.setProps(
-        mergeAndSanitiseProps({ prevProps: channel.props.getItems(), newProps: props }),
-      )
+      const mergedProps = mergeAndSanitiseProps({
+        prevProps: channel.props.getItems(),
+        newProps: props,
+      })
+
+      if (forwarded && channel.game.blockPropsProfanity) {
+        const { accepted, rejected } = filterProfaneProps(mergedProps, true)
+        channel.setProps(accepted)
+        rejectedProps = rejected
+      } else {
+        channel.setProps(mergedProps)
+      }
     } catch (err) {
       if (err instanceof PropSizeError) {
         return buildErrorResponse({ props: [err.message] })
@@ -158,6 +169,7 @@ export async function updateChannelHandler({
     status: 200,
     body: {
       channel: channel.toJSONWithCount(counts),
+      rejectedProps,
     },
   }
 }

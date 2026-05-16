@@ -420,6 +420,24 @@ describe('Game - update', () => {
     },
   )
 
+  it.each(userPermissionProvider([]))(
+    'should update blockPropsProfanity for a %s user',
+    async (statusCode, _, type) => {
+      const [organisation, game] = await createOrganisationAndGame()
+      const [token] = await createUserAndToken({ type }, organisation)
+
+      await request(app)
+        .patch(`/games/${game.id}`)
+        .send({ blockPropsProfanity: true })
+        .auth(token, { type: 'bearer' })
+        .expect(statusCode)
+
+      if (statusCode === 200) {
+        expect((await em.refreshOrFail(game)).blockPropsProfanity).toBe(true)
+      }
+    },
+  )
+
   it('should not update game names if an empty string is sent', async () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({ type: UserType.ADMIN }, organisation)

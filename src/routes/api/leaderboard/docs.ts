@@ -153,6 +153,7 @@ export const postDocs = {
           updatedAt: '2022-02-16T16:03:53.123Z',
         },
         updated: true,
+        rejectedProps: [{ key: 'nickname', error: 'Prop value contains profanity' }],
       },
     },
   ],

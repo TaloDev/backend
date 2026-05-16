@@ -5,6 +5,7 @@ import GameChannelStorageProp from '../../../entities/game-channel-storage-prop.
 import GameChannel from '../../../entities/game-channel.js'
 import PlayerAlias from '../../../entities/player-alias.js'
 import { PropSizeError } from '../../../lib/errors/propSizeError.js'
+import { filterProfaneProps } from '../../../lib/props/filterProfaneProps.js'
 import {
   isArrayKey,
   MAX_ARRAY_LENGTH,
@@ -200,13 +201,17 @@ export const putStorageRoute = apiRoute({
       return ctx.throw(403, 'This player is not a member of the channel')
     }
 
+    const sanitised = sanitiseProps({ props })
+    const { accepted, rejected: profanityRejected } = filterProfaneProps(
+      sanitised,
+      ctx.state.game.blockPropsProfanity,
+    )
+
     const { upsertedProps, deletedProps, failedProps } = await em.transactional(
       async (trx): Promise<TransactionResult> => {
-        const sanitised = sanitiseProps({ props })
-
         const newScalarMap = new Map<string, string | null>()
         const newArrayMap = new Map<string, (string | null)[]>()
-        for (const { key, value } of sanitised) {
+        for (const { key, value } of accepted) {
           if (isArrayKey(key)) {
             const existing = newArrayMap.get(key) ?? []
             existing.push(value)
@@ -274,7 +279,7 @@ export const putStorageRoute = apiRoute({
         channel,
         upsertedProps,
         deletedProps,
-        failedProps,
+        failedProps: [...profanityRejected, ...failedProps],
       },
     }
   },

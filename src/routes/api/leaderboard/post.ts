@@ -7,6 +7,7 @@ import buildErrorResponse from '../../../lib/errors/buildErrorResponse.js'
 import { PropSizeError } from '../../../lib/errors/propSizeError.js'
 import { UniqueLeaderboardEntryPropsDigestError } from '../../../lib/errors/uniqueLeaderboardEntryPropsDigestError.js'
 import triggerIntegrations from '../../../lib/integrations/triggerIntegrations.js'
+import { filterProfaneProps } from '../../../lib/props/filterProfaneProps.js'
 import { hardSanitiseProps, mergeAndSanitiseProps } from '../../../lib/props/sanitiseProps.js'
 import { apiRoute, withMiddleware } from '../../../lib/routing/router.js'
 import { playerAliasHeaderSchema } from '../../../lib/validation/playerAliasHeaderSchema.js'
@@ -71,6 +72,10 @@ export const postRoute = apiRoute({
   ),
   handler: async (ctx) => {
     const { score, props = [] } = ctx.state.validated.body
+    const { accepted: acceptedProps, rejected: rejectedProps } = filterProfaneProps(
+      props,
+      ctx.state.game.blockPropsProfanity,
+    )
     const em = ctx.em
 
     const leaderboard = ctx.state.leaderboard
@@ -85,7 +90,9 @@ export const postRoute = apiRoute({
       let updated = false
 
       // filter out props with null values for createEntry (only used for merging in updates)
-      const createProps = props.filter((p): p is { key: string; value: string } => p.value !== null)
+      const createProps = acceptedProps.filter(
+        (p): p is { key: string; value: string } => p.value !== null,
+      )
 
       try {
         if (leaderboard.unique) {
@@ -115,9 +122,12 @@ export const postRoute = apiRoute({
           if (shouldUpdate) {
             entry.score = score
             entry.createdAt = ctx.state.continuityDate ?? new Date()
-            if (props.length > 0) {
+            if (acceptedProps.length > 0) {
               entry.setProps(
-                mergeAndSanitiseProps({ prevProps: entry.props.getItems(), newProps: props }),
+                mergeAndSanitiseProps({
+                  prevProps: entry.props.getItems(),
+                  newProps: acceptedProps,
+                }),
               )
             }
             updated = true
@@ -215,6 +225,7 @@ export const postRoute = apiRoute({
       body: {
         entry: { position, ...entry.toJSON() },
         updated,
+        rejectedProps,
       },
     }
   },

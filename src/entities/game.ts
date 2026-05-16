@@ -55,6 +55,9 @@ export default class Game {
   blockAliasIdentifierProfanity: boolean = false
 
   @Property()
+  blockPropsProfanity: boolean = false
+
+  @Property()
   createdAt: Date = new Date()
 
   @Property({ onUpdate: () => new Date() })

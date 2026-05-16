@@ -1230,4 +1230,61 @@ describe('Leaderboard API - create', () => {
     expect(res.body.updated).toBe(false)
     expect(res.body.entry.position).toBe(0)
   })
+
+  it('should reject profane props when blockPropsProfanity is enabled', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_LEADERBOARDS])
+    apiKey.game.blockPropsProfanity = true
+    await em.flush()
+
+    const player = await new PlayerFactory([apiKey.game]).one()
+    const leaderboard = await new LeaderboardFactory([apiKey.game]).one()
+    await em.persist([player, leaderboard]).flush()
+
+    const res = await request(app)
+      .post(`/v1/leaderboards/${leaderboard.internalName}/entries`)
+      .send({
+        score: 300,
+        props: [
+          { key: 'nickname', value: 'fuck' },
+          { key: 'level', value: '5' },
+        ],
+      })
+      .auth(token, { type: 'bearer' })
+      .set('x-talo-alias', String(player.aliases[0].id))
+      .expect(200)
+
+    expect(res.body.entry.props).toEqual([{ key: 'level', value: '5' }])
+    expect(res.body.rejectedProps).toEqual([
+      { key: 'nickname', error: 'Prop value contains profanity' },
+    ])
+  })
+
+  it('should allow profane props when blockPropsProfanity is disabled', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_LEADERBOARDS])
+
+    const player = await new PlayerFactory([apiKey.game]).one()
+    const leaderboard = await new LeaderboardFactory([apiKey.game]).one()
+    await em.persist([player, leaderboard]).flush()
+
+    const res = await request(app)
+      .post(`/v1/leaderboards/${leaderboard.internalName}/entries`)
+      .send({
+        score: 300,
+        props: [
+          { key: 'nickname', value: 'fuck' },
+          { key: 'level', value: '5' },
+        ],
+      })
+      .auth(token, { type: 'bearer' })
+      .set('x-talo-alias', String(player.aliases[0].id))
+      .expect(200)
+
+    expect(res.body.entry.props).toEqual(
+      expect.arrayContaining([
+        { key: 'nickname', value: 'fuck' },
+        { key: 'level', value: '5' },
+      ]),
+    )
+    expect(res.body.rejectedProps).toEqual([])
+  })
 })

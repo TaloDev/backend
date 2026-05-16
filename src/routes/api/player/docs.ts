@@ -187,6 +187,7 @@ export const patchDocs = {
           lastSeenAt: '2022-04-12T15:09:43.066Z',
           groups: [{ id: '5826ca71-1964-4a1b-abcb-a61ffbe003be', name: 'Winners' }],
         },
+        rejectedProps: [{ key: 'nickname', error: 'Prop value contains profanity' }],
       },
     },
   ],

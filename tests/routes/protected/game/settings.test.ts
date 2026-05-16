@@ -29,8 +29,9 @@ describe('Game - settings', () => {
           purgeLivePlayers: false,
           purgeDevPlayersRetention: 30,
           purgeLivePlayersRetention: 60,
-          website: 'https://example.com',
           blockAliasIdentifierProfanity: false,
+          blockPropsProfanity: false,
+          website: 'https://example.com',
           gameToken: expect.any(String),
         })
       }

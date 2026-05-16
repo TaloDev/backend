@@ -379,6 +379,77 @@ describe('Game channel API - update', () => {
     })
   })
 
+  it('should reject profane props when blockPropsProfanity is enabled', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_CHANNELS])
+    apiKey.game.blockPropsProfanity = true
+    await em.flush()
+
+    const channel = await new GameChannelFactory(apiKey.game)
+      .state((channel) => ({
+        props: new Collection<GameChannelProp>(channel, [
+          new GameChannelProp(channel, 'guildId', '1234'),
+        ]),
+      }))
+      .one()
+    const player = await new PlayerFactory([apiKey.game]).one()
+    channel.owner = player.aliases[0]
+    channel.members.add(player.aliases[0])
+    await em.persist(channel).flush()
+
+    const res = await request(app)
+      .put(`/v1/game-channels/${channel.id}`)
+      .send({
+        props: [
+          { key: 'guildId', value: 'fuck' },
+          { key: 'level', value: '5' },
+        ],
+      })
+      .auth(token, { type: 'bearer' })
+      .set('x-talo-alias', String(player.aliases[0].id))
+      .expect(200)
+
+    expect(res.body.channel.props).toEqual([{ key: 'level', value: '5' }])
+    expect(res.body.rejectedProps).toEqual([
+      { key: 'guildId', error: 'Prop value contains profanity' },
+    ])
+  })
+
+  it('should allow profane props when blockPropsProfanity is disabled', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_CHANNELS])
+
+    const channel = await new GameChannelFactory(apiKey.game)
+      .state((channel) => ({
+        props: new Collection<GameChannelProp>(channel, [
+          new GameChannelProp(channel, 'guildId', '1234'),
+        ]),
+      }))
+      .one()
+    const player = await new PlayerFactory([apiKey.game]).one()
+    channel.owner = player.aliases[0]
+    channel.members.add(player.aliases[0])
+    await em.persist(channel).flush()
+
+    const res = await request(app)
+      .put(`/v1/game-channels/${channel.id}`)
+      .send({
+        props: [
+          { key: 'guildId', value: 'fuck' },
+          { key: 'level', value: '5' },
+        ],
+      })
+      .auth(token, { type: 'bearer' })
+      .set('x-talo-alias', String(player.aliases[0].id))
+      .expect(200)
+
+    expect(res.body.channel.props).toEqual(
+      expect.arrayContaining([
+        { key: 'guildId', value: 'fuck' },
+        { key: 'level', value: '5' },
+      ]),
+    )
+    expect(res.body.rejectedProps).toEqual([])
+  })
+
   it('should not notify players in the channel if a channel attempt is made but nothing changes', async () => {
     const { identifyMessage, ticket, player, token } = await createSocketIdentifyMessage([
       APIKeyScope.READ_PLAYERS,

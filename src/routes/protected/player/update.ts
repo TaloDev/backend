@@ -5,6 +5,7 @@ import User, { UserType } from '../../../entities/user.js'
 import buildErrorResponse from '../../../lib/errors/buildErrorResponse.js'
 import { PropSizeError } from '../../../lib/errors/propSizeError.js'
 import createGameActivity from '../../../lib/logging/createGameActivity.js'
+import { filterProfaneProps, type RejectedProp } from '../../../lib/props/filterProfaneProps.js'
 import { sanitiseProps, mergeAndSanitiseProps } from '../../../lib/props/sanitiseProps.js'
 import { protectedRoute, withMiddleware } from '../../../lib/routing/router.js'
 import { updatePropsSchema } from '../../../lib/validation/propsSchema.js'
@@ -30,8 +31,14 @@ export async function updatePlayerHandler({
   forwarded,
   user,
 }: UpdatePlayerParams) {
-  const { player: updatedPlayer, errorMessage } = await em.transactional(async (trx) => {
+  const {
+    player: updatedPlayer,
+    errorMessage,
+    rejectedProps,
+  } = await em.transactional(async (trx) => {
     const lockedPlayer = await trx.refreshOrFail(player, { lockMode: LockMode.PESSIMISTIC_WRITE })
+
+    let rejectedProps: RejectedProp[] = []
 
     if (props) {
       if (!forwarded && props.some((prop) => prop.key.startsWith('META_'))) {
@@ -39,22 +46,30 @@ export async function updatePlayerHandler({
           player: null,
           errorMessage:
             "Prop keys starting with 'META_' are reserved for internal systems, please use another key name",
+          rejectedProps: [],
         }
       }
 
       try {
-        lockedPlayer.setProps(
-          mergeAndSanitiseProps({
-            prevProps: lockedPlayer.props.getItems(),
-            newProps: props,
-            extraFilter: (prop) => !prop.key.startsWith('META_'),
-          }),
-        )
+        const mergedProps = mergeAndSanitiseProps({
+          prevProps: lockedPlayer.props.getItems(),
+          newProps: props,
+          extraFilter: (prop) => !prop.key.startsWith('META_'),
+        })
+
+        if (forwarded && lockedPlayer.game.blockPropsProfanity) {
+          const { accepted, rejected } = filterProfaneProps(mergedProps, true)
+          lockedPlayer.setProps(accepted)
+          rejectedProps = rejected
+        } else {
+          lockedPlayer.setProps(mergedProps)
+        }
       } catch (err) {
         if (err instanceof PropSizeError) {
           return {
             player: null,
             errorMessage: err.message,
+            rejectedProps: [],
           }
         }
         throw err
@@ -81,6 +96,7 @@ export async function updatePlayerHandler({
     return {
       player: lockedPlayer,
       errorMessage: null,
+      rejectedProps,
     }
   })
 
@@ -98,6 +114,7 @@ export async function updatePlayerHandler({
     status: 200,
     body: {
       player: updatedPlayer,
+      rejectedProps,
     },
   }
 }

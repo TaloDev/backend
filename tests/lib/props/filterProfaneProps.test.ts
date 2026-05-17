@@ -13,7 +13,9 @@ describe('filterProfaneProps', () => {
     const props = [new Prop('name', 'fuck'), new Prop('level', '5')]
     const { accepted, rejected } = filterProfaneProps(props, true)
     expect(accepted).toEqual([props[1]])
-    expect(rejected).toEqual([{ key: 'name', error: 'Prop value contains profanity' }])
+    expect(rejected).toEqual([
+      { key: 'name', error: 'PROP_CONTAINS_PROFANITY', message: 'Prop value contains profanity' },
+    ])
   })
 
   it('should accept all props with clean values when enabled', () => {
@@ -37,7 +39,9 @@ describe('filterProfaneProps', () => {
     ]
     const { accepted, rejected } = filterProfaneProps(props, true)
     expect(accepted).toEqual([props[2]])
-    expect(rejected).toEqual([{ key: 'tags[]', error: 'Prop value contains profanity' }])
+    expect(rejected).toEqual([
+      { key: 'tags[]', error: 'PROP_CONTAINS_PROFANITY', message: 'Prop value contains profanity' },
+    ])
   })
 
   it('should deduplicate rejections for the same key', () => {
@@ -54,7 +58,9 @@ describe('filterProfaneProps', () => {
     ]
     const { accepted, rejected } = filterProfaneProps(props, true)
     expect(accepted).toEqual([{ key: 'name', value: 'Alice' }])
-    expect(rejected).toEqual([{ key: 'bio', error: 'Prop value contains profanity' }])
+    expect(rejected).toEqual([
+      { key: 'bio', error: 'PROP_CONTAINS_PROFANITY', message: 'Prop value contains profanity' },
+    ])
   })
 
   it('should reject entire array key for unsanitised props if any value is profane', () => {
@@ -66,7 +72,9 @@ describe('filterProfaneProps', () => {
     ]
     const { accepted, rejected } = filterProfaneProps(props, true)
     expect(accepted).toEqual([{ key: 'name', value: 'Alice' }])
-    expect(rejected).toEqual([{ key: 'tags[]', error: 'Prop value contains profanity' }])
+    expect(rejected).toEqual([
+      { key: 'tags[]', error: 'PROP_CONTAINS_PROFANITY', message: 'Prop value contains profanity' },
+    ])
   })
 
   it('should accept array keys with all clean values for unsanitised props', () => {
@@ -97,6 +105,8 @@ describe('filterProfaneProps', () => {
     ]
     const { accepted, rejected } = filterProfaneProps(props, true)
     expect(accepted).toEqual([{ key: 'name', value: 'Alice' }])
-    expect(rejected).toEqual([{ key: 'tags[]', error: 'Prop value contains profanity' }])
+    expect(rejected).toEqual([
+      { key: 'tags[]', error: 'PROP_CONTAINS_PROFANITY', message: 'Prop value contains profanity' },
+    ])
   })
 })

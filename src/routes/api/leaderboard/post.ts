@@ -1,10 +1,9 @@
 import { NotFoundError, LockMode } from '@mikro-orm/mysql'
+import type { RejectedProp } from '../../../lib/props/sanitiseProps.js'
 import { APIKeyScope } from '../../../entities/api-key.js'
 import LeaderboardEntry from '../../../entities/leaderboard-entry.js'
 import Leaderboard, { LeaderboardSortMode } from '../../../entities/leaderboard.js'
 import PlayerAlias from '../../../entities/player-alias.js'
-import buildErrorResponse from '../../../lib/errors/buildErrorResponse.js'
-import { PropSizeError } from '../../../lib/errors/propSizeError.js'
 import { UniqueLeaderboardEntryPropsDigestError } from '../../../lib/errors/uniqueLeaderboardEntryPropsDigestError.js'
 import triggerIntegrations from '../../../lib/integrations/triggerIntegrations.js'
 import { filterProfaneProps } from '../../../lib/props/filterProfaneProps.js'
@@ -28,17 +27,19 @@ function createEntry({
   score: number
   continuityDate?: Date
   props: { key: string; value: string }[]
-}): LeaderboardEntry {
+}): { entry: LeaderboardEntry; rejected: RejectedProp[] } {
+  const { accepted, rejected } = hardSanitiseProps({ props })
+
   const entry = new LeaderboardEntry(leaderboard)
   entry.playerAlias = playerAlias
   entry.score = score
   if (continuityDate) {
     entry.createdAt = continuityDate
   }
-  if (props.length > 0) {
-    entry.setProps(hardSanitiseProps({ props }))
+  if (accepted.length > 0) {
+    entry.setProps(accepted)
   }
-  return entry
+  return { entry, rejected }
 }
 
 export const postRoute = apiRoute({
@@ -72,7 +73,7 @@ export const postRoute = apiRoute({
   ),
   handler: async (ctx) => {
     const { score, props = [] } = ctx.state.validated.body
-    const { accepted: acceptedProps, rejected: rejectedProps } = filterProfaneProps(
+    const { accepted: acceptedProps, rejected: profanityRejected } = filterProfaneProps(
       props,
       ctx.state.game.blockPropsProfanity,
     )
@@ -88,6 +89,7 @@ export const postRoute = apiRoute({
 
       let entry: LeaderboardEntry | null = null
       let updated = false
+      let sizeRejected: RejectedProp[] = []
 
       // filter out props with null values for createEntry (only used for merging in updates)
       const createProps = acceptedProps.filter(
@@ -123,71 +125,50 @@ export const postRoute = apiRoute({
             entry.score = score
             entry.createdAt = ctx.state.continuityDate ?? new Date()
             if (acceptedProps.length > 0) {
-              entry.setProps(
-                mergeAndSanitiseProps({
-                  prevProps: entry.props.getItems(),
-                  newProps: acceptedProps,
-                }),
-              )
+              const { accepted, rejected } = mergeAndSanitiseProps({
+                prevProps: entry.props.getItems(),
+                newProps: acceptedProps,
+              })
+              sizeRejected = rejected
+              entry.setProps(accepted)
             }
             updated = true
           }
         } else {
           // for non-unique leaderboards, always create a new entry
-          entry = createEntry({
+          const createResult = createEntry({
             leaderboard,
             playerAlias: lockedAlias,
             score,
             continuityDate: ctx.state.continuityDate,
             props: createProps,
           })
+          sizeRejected = createResult.rejected
+          entry = createResult.entry
           await trx.persist(entry).flush()
         }
       } catch (err) {
-        // handle PropSizeError from setProps or createEntry
-        if (err instanceof PropSizeError) {
-          return {
-            entry: null,
-            updated: false,
-            errorResponse: buildErrorResponse({ props: [err.message] }),
-          }
-        }
-
         // if unique entry doesn't exist, create it
         if (err instanceof NotFoundError || err instanceof UniqueLeaderboardEntryPropsDigestError) {
-          try {
-            entry = createEntry({
-              leaderboard,
-              playerAlias: lockedAlias,
-              score,
-              continuityDate: ctx.state.continuityDate,
-              props: createProps,
-            })
-            await trx.persist(entry).flush()
-          } catch (createErr) {
-            // handle PropSizeError from creating new entry
-            if (createErr instanceof PropSizeError) {
-              return {
-                entry: null,
-                updated: false,
-                errorResponse: buildErrorResponse({ props: [createErr.message] }),
-              }
-            }
-            throw createErr
-          }
+          const createResult = createEntry({
+            leaderboard,
+            playerAlias: lockedAlias,
+            score,
+            continuityDate: ctx.state.continuityDate,
+            props: createProps,
+          })
+          sizeRejected = createResult.rejected
+          entry = createResult.entry
+          await trx.persist(entry).flush()
         } else {
           throw err
         }
       }
 
-      return { entry, updated }
+      return { entry, updated, sizeRejected }
     })
 
-    if (result.errorResponse) {
-      return result.errorResponse
-    }
-
-    const { entry, updated } = result
+    const { entry, updated, sizeRejected } = result
 
     await triggerIntegrations(em, leaderboard.game, (integration) => {
       return integration.handleLeaderboardEntryCreated(em, entry)
@@ -225,7 +206,7 @@ export const postRoute = apiRoute({
       body: {
         entry: { position, ...entry.toJSON() },
         updated,
-        rejectedProps,
+        rejectedProps: [...sizeRejected, ...profanityRejected],
       },
     }
   },

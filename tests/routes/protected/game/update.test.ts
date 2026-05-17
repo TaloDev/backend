@@ -267,24 +267,27 @@ describe('Game - update', () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({ type: UserType.ADMIN }, organisation)
 
+    const longKey = randText({ charCount: 129 })
     const res = await request(app)
       .patch(`/games/${game.id}`)
       .send({
         props: [
           {
-            key: randText({ charCount: 129 }),
+            key: longKey,
             value: '1',
           },
         ],
       })
       .auth(token, { type: 'bearer' })
-      .expect(400)
+      .expect(200)
 
-    expect(res.body).toStrictEqual({
-      errors: {
-        props: ['Prop key length (129) exceeds 128 characters'],
+    expect(res.body.rejectedProps).toEqual([
+      {
+        key: longKey,
+        error: 'PROP_KEY_TOO_LONG',
+        message: 'Prop key length (129) exceeds 128 characters',
       },
-    })
+    ])
   })
 
   it('should reject props where the value is greater than 4096 characters', async () => {
@@ -302,13 +305,15 @@ describe('Game - update', () => {
         ],
       })
       .auth(token, { type: 'bearer' })
-      .expect(400)
+      .expect(200)
 
-    expect(res.body).toStrictEqual({
-      errors: {
-        props: ['Prop value length (4097) exceeds 4096 characters'],
+    expect(res.body.rejectedProps).toEqual([
+      {
+        key: 'bio',
+        error: 'PROP_VALUE_TOO_LONG',
+        message: 'Prop value length (4097) exceeds 4096 characters',
       },
-    })
+    ])
   })
 
   it.each(userPermissionProvider([]))(

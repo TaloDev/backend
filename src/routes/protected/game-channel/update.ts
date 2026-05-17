@@ -1,12 +1,11 @@
 import { EntityManager } from '@mikro-orm/mysql'
+import type { RejectedProp } from '../../../lib/props/sanitiseProps.js'
 import { GameActivityType } from '../../../entities/game-activity.js'
 import GameChannel from '../../../entities/game-channel.js'
 import PlayerAlias from '../../../entities/player-alias.js'
 import User from '../../../entities/user.js'
-import buildErrorResponse from '../../../lib/errors/buildErrorResponse.js'
-import { PropSizeError } from '../../../lib/errors/propSizeError.js'
 import createGameActivity from '../../../lib/logging/createGameActivity.js'
-import { filterProfaneProps, type RejectedProp } from '../../../lib/props/filterProfaneProps.js'
+import { filterProfaneProps } from '../../../lib/props/filterProfaneProps.js'
 import { mergeAndSanitiseProps } from '../../../lib/props/sanitiseProps.js'
 import { protectedRoute, withMiddleware } from '../../../lib/routing/router.js'
 import { updatePropsSchema } from '../../../lib/validation/propsSchema.js'
@@ -52,26 +51,20 @@ export async function updateChannelHandler({
   }
 
   if (props) {
-    try {
-      const mergedProps = mergeAndSanitiseProps({
-        prevProps: channel.props.getItems(),
-        newProps: props,
-      })
+    const { accepted: sizeAccepted, rejected: sizeRejected } = mergeAndSanitiseProps({
+      prevProps: channel.props.getItems(),
+      newProps: props,
+    })
 
-      if (forwarded && channel.game.blockPropsProfanity) {
-        const { accepted, rejected } = filterProfaneProps(mergedProps, true)
-        channel.setProps(accepted)
-        rejectedProps = rejected
-      } else {
-        channel.setProps(mergedProps)
-      }
-    } catch (err) {
-      if (err instanceof PropSizeError) {
-        return buildErrorResponse({ props: [err.message] })
-        /* v8 ignore next 3 -- @preserve */
-      }
-      throw err
+    if (channel.game.blockPropsProfanity) {
+      const { accepted, rejected: profanityRejected } = filterProfaneProps(sizeAccepted, true)
+      channel.setProps(accepted)
+      rejectedProps = [...sizeRejected, ...profanityRejected]
+    } else {
+      channel.setProps(sizeAccepted)
+      rejectedProps = sizeRejected
     }
+
     changedProperties.push('props')
   }
 

@@ -1,13 +1,12 @@
 import { EntityManager } from '@mikro-orm/mysql'
-import { captureException } from '@sentry/node'
+import type { RejectedProp } from '../../../lib/props/sanitiseProps.js'
 import { GameActivityType } from '../../../entities/game-activity.js'
 import GameChannel from '../../../entities/game-channel.js'
 import Game from '../../../entities/game.js'
 import PlayerAlias from '../../../entities/player-alias.js'
 import User from '../../../entities/user.js'
-import buildErrorResponse from '../../../lib/errors/buildErrorResponse.js'
-import { PropSizeError } from '../../../lib/errors/propSizeError.js'
 import createGameActivity from '../../../lib/logging/createGameActivity.js'
+import { filterProfaneProps } from '../../../lib/props/filterProfaneProps.js'
 import { hardSanitiseProps } from '../../../lib/props/sanitiseProps.js'
 import { protectedRoute, withMiddleware } from '../../../lib/routing/router.js'
 import { createPropsSchema } from '../../../lib/validation/propsSchema.js'
@@ -51,6 +50,8 @@ export async function createChannelHandler({
   channel.private = isPrivate ?? false
   channel.temporaryMembership = temporaryMembership ?? false
 
+  let rejectedProps: RejectedProp[] = []
+
   if (ownerAliasId) {
     const owner = await em.repo(PlayerAlias).findOne({
       id: ownerAliasId,
@@ -72,13 +73,15 @@ export async function createChannelHandler({
   }
 
   if (props) {
-    try {
-      channel.setProps(hardSanitiseProps({ props }))
-    } catch (err) {
-      if (!(err instanceof PropSizeError)) {
-        captureException(err)
-      }
-      return buildErrorResponse({ props: [(err as Error).message] })
+    const { accepted: sizeAccepted, rejected: sizeRejected } = hardSanitiseProps({ props })
+
+    if (game.blockPropsProfanity) {
+      const { accepted, rejected: profanityRejected } = filterProfaneProps(sizeAccepted, true)
+      channel.setProps(accepted)
+      rejectedProps = [...sizeRejected, ...profanityRejected]
+    } else {
+      channel.setProps(sizeAccepted)
+      rejectedProps = sizeRejected
     }
   }
 
@@ -106,6 +109,7 @@ export async function createChannelHandler({
     status: 200,
     body: {
       channel: channel.toJSONWithCount(counts),
+      rejectedProps,
     },
   }
 }

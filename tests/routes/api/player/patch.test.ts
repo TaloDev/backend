@@ -408,7 +408,11 @@ describe('Player API - update', () => {
 
     expect(res.body.player.props).toEqual(expect.arrayContaining([{ key: 'level', value: '5' }]))
     expect(res.body.rejectedProps).toEqual([
-      { key: 'nickname', error: 'Prop value contains profanity' },
+      {
+        key: 'nickname',
+        error: 'PROP_CONTAINS_PROFANITY',
+        message: 'Prop value contains profanity',
+      },
     ])
   })
 

@@ -45,7 +45,11 @@ export const postRoute = apiRoute({
 
     if (props) {
       try {
-        feedback.setProps(hardSanitiseProps({ props }))
+        const { accepted, rejected } = hardSanitiseProps({ props })
+        if (rejected.length > 0) {
+          throw new PropSizeError(rejected.map((r) => r.message).join('; '))
+        }
+        feedback.setProps(accepted)
       } catch (err) {
         if (!(err instanceof PropSizeError)) {
           captureException(err)

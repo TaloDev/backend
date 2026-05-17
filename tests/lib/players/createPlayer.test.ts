@@ -3,7 +3,7 @@ import PlayerGroupRule, {
   PlayerGroupRuleCastType,
   PlayerGroupRuleName,
 } from '../../../src/entities/player-group-rule.js'
-import Player, { DEV_BUILD_META_KEY } from '../../../src/entities/player.js'
+import { DEV_BUILD_META_KEY } from '../../../src/entities/player.js'
 import { createPlayer, PlayerCreationError } from '../../../src/lib/players/createPlayer.js'
 import PlayerFactory from '../../fixtures/PlayerFactory.js'
 import PlayerGroupFactory from '../../fixtures/PlayerGroupFactory.js'
@@ -152,7 +152,7 @@ describe('createPlayer', () => {
       const error = err as PlayerCreationError
       expect(error.statusCode).toBe(400)
       expect(error.field).toBe('props')
-      expect(error.message).toBe('Prop key length (129) exceeds 128 characters')
+      expect(error.message).toContain('exceeds 128 characters')
     }
   })
 
@@ -174,35 +174,7 @@ describe('createPlayer', () => {
       const error = err as PlayerCreationError
       expect(error.statusCode).toBe(400)
       expect(error.field).toBe('props')
-      expect(error.message).toBe('Prop value length (513) exceeds 512 characters')
+      expect(error.message).toContain('exceeds 512 characters')
     }
-  })
-
-  it('should reject props if an unknown error occurs', async () => {
-    vi.spyOn(Player.prototype, 'setProps').mockImplementation(() => {
-      throw new Error('Unknown error')
-    })
-
-    const [, game] = await createOrganisationAndGame()
-
-    try {
-      await createPlayer(em, game, {
-        props: [
-          {
-            key: 'bio',
-            value: randText({ charCount: 500 }),
-          },
-        ],
-      })
-      expect.fail('Should have thrown')
-    } catch (err) {
-      expect(err).toBeInstanceOf(PlayerCreationError)
-      const error = err as PlayerCreationError
-      expect(error.statusCode).toBe(400)
-      expect(error.field).toBe('props')
-      expect(error.message).toBe('Unknown error')
-    }
-
-    vi.restoreAllMocks()
   })
 })

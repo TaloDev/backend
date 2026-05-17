@@ -1,10 +1,10 @@
+import type { RejectedProp } from '../../../lib/props/sanitiseProps.js'
 import { APIKeyScope } from '../../../entities/api-key.js'
 import { GameActivityType } from '../../../entities/game-activity.js'
 import Game, { MAX_LIVE_CONFIG_VALUE_LENGTH } from '../../../entities/game.js'
 import { UserType } from '../../../entities/user.js'
 import updateAllowedKeys from '../../../lib/entities/updateAllowedKeys.js'
 import buildErrorResponse from '../../../lib/errors/buildErrorResponse.js'
-import { PropSizeError } from '../../../lib/errors/propSizeError.js'
 import createGameActivity from '../../../lib/logging/createGameActivity.js'
 import { mergeAndSanitiseProps, sanitiseProps } from '../../../lib/props/sanitiseProps.js'
 import { ProtectedRouteContext } from '../../../lib/routing/context.js'
@@ -62,6 +62,7 @@ export const updateRoute = protectedRoute({
 
     const em = ctx.em
     const game = ctx.state.game
+    let rejectedProps: RejectedProp[] = []
 
     if (typeof name === 'string') {
       const prevName = game.name
@@ -88,20 +89,13 @@ export const updateRoute = protectedRoute({
         })
       }
 
-      try {
-        game.props = mergeAndSanitiseProps({
-          prevProps: game.props,
-          newProps: props,
-          valueLimit: MAX_LIVE_CONFIG_VALUE_LENGTH,
-        })
-      } catch (err) {
-        if (err instanceof PropSizeError) {
-          return buildErrorResponse({ props: [err.message] })
-          /* v8 ignore start -- @preserve */
-        }
-        throw err
-        /* v8 ignore stop -- @preserve */
-      }
+      const { accepted, rejected } = mergeAndSanitiseProps({
+        prevProps: game.props,
+        newProps: props,
+        valueLimit: MAX_LIVE_CONFIG_VALUE_LENGTH,
+      })
+      game.props = accepted
+      rejectedProps = rejected
 
       await em.clearCache(Game.getLiveConfigCacheKey(game))
       sendLiveConfigUpdatedMessage(ctx, game)
@@ -182,6 +176,7 @@ export const updateRoute = protectedRoute({
       status: 200,
       body: {
         game,
+        rejectedProps,
       },
     }
   },

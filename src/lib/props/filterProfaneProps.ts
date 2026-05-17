@@ -1,7 +1,6 @@
+import type { RejectedProp } from './sanitiseProps.js'
 import { hasProfanity } from '../filters/profanity.js'
 import { isArrayKey, type UnsanitisedProp } from './sanitiseProps.js'
-
-export type RejectedProp = { key: string; error: string }
 
 function isProfaneValue(value: string | null) {
   return value !== null && hasProfanity(value)
@@ -29,7 +28,11 @@ export function filterProfaneProps<T extends UnsanitisedProp>(
 
   for (const [key, group] of arrayGroups) {
     if (group.some((p) => isProfaneValue(p.value))) {
-      rejectedMap.set(key, { key, error: 'Prop value contains profanity' })
+      rejectedMap.set(key, {
+        key,
+        error: 'PROP_CONTAINS_PROFANITY',
+        message: 'Prop value contains profanity',
+      })
     }
   }
 
@@ -44,7 +47,11 @@ export function filterProfaneProps<T extends UnsanitisedProp>(
     }
 
     if (isProfaneValue(prop.value)) {
-      rejectedMap.set(prop.key, { key: prop.key, error: 'Prop value contains profanity' })
+      rejectedMap.set(prop.key, {
+        key: prop.key,
+        error: 'PROP_CONTAINS_PROFANITY',
+        message: 'Prop value contains profanity',
+      })
     } else {
       accepted.push(prop)
     }

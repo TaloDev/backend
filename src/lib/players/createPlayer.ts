@@ -70,15 +70,15 @@ export async function createPlayer(em: EntityManager, game: Game, input: CreateP
   }
 
   if (props) {
-    try {
-      player.setProps(hardSanitiseProps({ props }))
-    } catch (err) {
+    const { accepted, rejected } = hardSanitiseProps({ props })
+    if (rejected.length > 0) {
       throw new PlayerCreationError({
         statusCode: 400,
-        message: (err as Error).message,
+        message: rejected.map((r) => r.message).join('; '),
         field: 'props',
       })
     }
+    player.setProps(accepted)
   }
 
   if (devBuild) {

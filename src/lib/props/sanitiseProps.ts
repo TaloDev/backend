@@ -1,6 +1,18 @@
 import { uniqWith } from 'lodash-es'
 import Prop, { MAX_KEY_LENGTH, MAX_VALUE_LENGTH } from '../../entities/prop.js'
-import { PropSizeError } from '../errors/propSizeError.js'
+
+type PropRejectionReason =
+  | 'PROP_KEY_TOO_LONG'
+  | 'PROP_VALUE_TOO_LONG'
+  | 'PROP_ARRAY_TOO_LONG'
+  | 'PROP_CONTAINS_PROFANITY'
+  | 'PROP_KEY_RESERVED'
+
+export type RejectedProp = {
+  key: string
+  error: PropRejectionReason
+  message: string
+}
 
 export const MAX_ARRAY_LENGTH = 1000
 
@@ -20,7 +32,7 @@ export function mergeAndSanitiseProps({
   newProps: UnsanitisedProp[]
   extraFilter?: (prop: UnsanitisedProp) => boolean
   valueLimit?: number
-}): Prop[] {
+}): { accepted: Prop[]; rejected: RejectedProp[] } {
   const sanitisedNew = sanitiseProps({ props: newProps, deleteNull: false, extraFilter })
 
   // scalar properties - simple strings
@@ -38,20 +50,33 @@ export function mergeAndSanitiseProps({
     (a, b) => a.key === b.key && a.value === b.value,
   )
 
+  const rejected: RejectedProp[] = []
+
   const arrayKeyCounts = mergedArray.reduce<Record<string, number>>((acc, p) => {
     acc[p.key] = (acc[p.key] ?? 0) + 1
     return acc
   }, {})
 
+  const overLimitKeys = new Set<string>()
   for (const [key, count] of Object.entries(arrayKeyCounts)) {
     if (count > MAX_ARRAY_LENGTH) {
-      throw new PropSizeError(
-        `Prop array length (${count}) for key '${key}' exceeds ${MAX_ARRAY_LENGTH} items`,
-      )
+      overLimitKeys.add(key)
+      rejected.push({
+        key,
+        error: 'PROP_ARRAY_TOO_LONG',
+        message: `Prop array length (${count}) for key '${key}' exceeds ${MAX_ARRAY_LENGTH} items`,
+      })
     }
   }
 
-  return hardSanitiseProps({ props: [...mergedScalar, ...mergedArray], valueLimit })
+  const filteredMergedArray = mergedArray.filter((p) => !overLimitKeys.has(p.key))
+
+  const { accepted: hardAccepted, rejected: hardRejected } = hardSanitiseProps({
+    props: [...mergedScalar, ...filteredMergedArray],
+    valueLimit,
+  })
+
+  return { accepted: hardAccepted, rejected: [...rejected, ...hardRejected] }
 }
 
 export function sanitiseProps({
@@ -85,17 +110,25 @@ export function testPropSize({
   key: string
   value: string | null
   valueLimit?: number
-}): void {
+}): RejectedProp | null {
   if (key.length > MAX_KEY_LENGTH) {
-    throw new PropSizeError(`Prop key length (${key.length}) exceeds ${MAX_KEY_LENGTH} characters`)
+    return {
+      key,
+      error: 'PROP_KEY_TOO_LONG',
+      message: `Prop key length (${key.length}) exceeds ${MAX_KEY_LENGTH} characters`,
+    }
   }
 
   const safeValueLimit = valueLimit || MAX_VALUE_LENGTH
   if (value && value.length > safeValueLimit) {
-    throw new PropSizeError(
-      `Prop value length (${value.length}) exceeds ${safeValueLimit} characters`,
-    )
+    return {
+      key,
+      error: 'PROP_VALUE_TOO_LONG',
+      message: `Prop value length (${value.length}) exceeds ${safeValueLimit} characters`,
+    }
   }
+
+  return null
 }
 
 export function hardSanitiseProps({
@@ -106,9 +139,18 @@ export function hardSanitiseProps({
   props: UnsanitisedProp[]
   extraFilter?: (prop: UnsanitisedProp) => boolean
   valueLimit?: number
-}): Prop[] {
-  return sanitiseProps({ props, deleteNull: true, extraFilter }).map((prop) => {
-    testPropSize({ key: prop.key, value: prop.value, valueLimit })
-    return new Prop(prop.key, prop.value as string)
+}): { accepted: Prop[]; rejected: RejectedProp[] } {
+  const rejected: RejectedProp[] = []
+  const accepted: Prop[] = []
+
+  sanitiseProps({ props, deleteNull: true, extraFilter }).forEach((prop) => {
+    const sizeRejection = testPropSize({ key: prop.key, value: prop.value, valueLimit })
+    if (sizeRejection) {
+      rejected.push(sizeRejection)
+    } else {
+      accepted.push(new Prop(prop.key, prop.value as string))
+    }
   })
+
+  return { accepted, rejected }
 }

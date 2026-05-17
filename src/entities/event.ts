@@ -3,6 +3,7 @@ import { EntityManager } from '@mikro-orm/mysql'
 import { v4 } from 'uuid'
 import ClickHouseEntity from '../lib/clickhouse/clickhouse-entity.js'
 import { formatDateForClickHouse } from '../lib/clickhouse/formatDateTime.js'
+import { PropSizeError } from '../lib/errors/propSizeError.js'
 import { hardSanitiseProps } from '../lib/props/sanitiseProps.js'
 import Game from './game.js'
 import PlayerAlias from './player-alias.js'
@@ -117,12 +118,16 @@ export default class Event extends ClickHouseEntity<
   }
 
   setProps(props: Prop[]) {
-    this.props = hardSanitiseProps({
+    const { accepted, rejected } = hardSanitiseProps({
       props,
       extraFilter: (prop) => {
         return !prop.key.startsWith('META_') || eventMetaProps.includes(prop.key)
       },
     })
+    if (rejected.length > 0) {
+      throw new PropSizeError(rejected.map((r) => r.message).join('; '))
+    }
+    this.props = accepted
 
     this.props.forEach((prop) => {
       if (eventMetaProps.includes(prop.key)) {

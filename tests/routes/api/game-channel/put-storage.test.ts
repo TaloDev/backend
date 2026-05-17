@@ -142,7 +142,7 @@ describe('Game channel API - update storage', () => {
       .expect(200)
 
     expect(res.body.failedProps).toHaveLength(1)
-    expect(res.body.failedProps[0].error).toBe('Prop key length (129) exceeds 128 characters')
+    expect(res.body.failedProps[0].error).toBe('PROP_KEY_TOO_LONG')
   })
 
   it('should reject props where the value is greater than 512 characters', async () => {
@@ -168,7 +168,7 @@ describe('Game channel API - update storage', () => {
       .expect(200)
 
     expect(res.body.failedProps).toHaveLength(1)
-    expect(res.body.failedProps[0].error).toBe('Prop value length (513) exceeds 512 characters')
+    expect(res.body.failedProps[0].error).toBe('PROP_VALUE_TOO_LONG')
   })
 
   it('should require props to be an array', async () => {
@@ -630,7 +630,7 @@ describe('Game channel API - update storage', () => {
       .expect(200)
 
     expect(res.body.failedProps).toHaveLength(1)
-    expect(res.body.failedProps[0].error).toMatch(/exceeds 128 characters/)
+    expect(res.body.failedProps[0].error).toMatch(/PROP_KEY_TOO_LONG/)
   })
 
   it('should reject array props where the array length exceeds the maximum', async () => {
@@ -652,9 +652,7 @@ describe('Game channel API - update storage', () => {
 
     expect(res.body.failedProps).toHaveLength(1)
     expect(res.body.failedProps[0].key).toBe('items[]')
-    expect(res.body.failedProps[0].error).toBe(
-      `Prop array length (1001) for key 'items[]' exceeds 1000 items`,
-    )
+    expect(res.body.failedProps[0].error).toBe(`PROP_ARRAY_TOO_LONG`)
   })
 
   it('should reject array props where a value exceeds the max length', async () => {
@@ -679,7 +677,7 @@ describe('Game channel API - update storage', () => {
 
     expect(res.body.failedProps).toHaveLength(1)
     expect(res.body.failedProps[0].key).toBe('items[]')
-    expect(res.body.failedProps[0].error).toBe('Prop value length (513) exceeds 512 characters')
+    expect(res.body.failedProps[0].error).toBe('PROP_VALUE_TOO_LONG')
     // no rows should have been created since the whole key failed
     const props = await em
       .repo(GameChannelStorageProp)
@@ -733,7 +731,11 @@ describe('Game channel API - update storage', () => {
     expect(res.body.upsertedProps).toHaveLength(1)
     expect(res.body.upsertedProps[0].key).toBe('level')
     expect(res.body.failedProps).toEqual([
-      { key: 'nickname', error: 'Prop value contains profanity' },
+      {
+        key: 'nickname',
+        error: 'PROP_CONTAINS_PROFANITY',
+        message: 'Prop value contains profanity',
+      },
     ])
   })
 
@@ -797,9 +799,9 @@ describe('Game channel API - update storage', () => {
     expect(res.body.deletedProps).toHaveLength(0)
 
     expect(res.body.failedProps).toHaveLength(3)
-    expect(res.body.failedProps[0].error).toBe('Prop value length (513) exceeds 512 characters')
-    expect(res.body.failedProps[1].error).toBe('Prop key length (129) exceeds 128 characters')
-    expect(res.body.failedProps[2].error).toBe('Prop value length (513) exceeds 512 characters')
+    expect(res.body.failedProps[0].error).toBe('PROP_VALUE_TOO_LONG')
+    expect(res.body.failedProps[1].error).toBe('PROP_KEY_TOO_LONG')
+    expect(res.body.failedProps[2].error).toBe('PROP_VALUE_TOO_LONG')
 
     await em.refresh(existingProp)
     expect(existingProp.value).toBe('50') // should remain unchanged

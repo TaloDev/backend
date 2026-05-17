@@ -297,25 +297,28 @@ describe('Game channel API - update', () => {
     channel.members.add(player.aliases[0])
     await em.persist(channel).flush()
 
+    const longKey = randText({ charCount: 129 })
     const res = await request(app)
       .put(`/v1/game-channels/${channel.id}`)
       .send({
         props: [
           {
-            key: randText({ charCount: 129 }),
+            key: longKey,
             value: '1',
           },
         ],
       })
       .auth(token, { type: 'bearer' })
       .set('x-talo-alias', String(player.aliases[0].id))
-      .expect(400)
+      .expect(200)
 
-    expect(res.body).toStrictEqual({
-      errors: {
-        props: ['Prop key length (129) exceeds 128 characters'],
+    expect(res.body.rejectedProps).toEqual([
+      {
+        key: longKey,
+        error: 'PROP_KEY_TOO_LONG',
+        message: 'Prop key length (129) exceeds 128 characters',
       },
-    })
+    ])
   })
 
   it('should reject props where the value is greater than 512 characters', async () => {
@@ -339,13 +342,15 @@ describe('Game channel API - update', () => {
       })
       .auth(token, { type: 'bearer' })
       .set('x-talo-alias', String(player.aliases[0].id))
-      .expect(400)
+      .expect(200)
 
-    expect(res.body).toStrictEqual({
-      errors: {
-        props: ['Prop value length (513) exceeds 512 characters'],
+    expect(res.body.rejectedProps).toEqual([
+      {
+        key: 'bio',
+        error: 'PROP_VALUE_TOO_LONG',
+        message: 'Prop value length (513) exceeds 512 characters',
       },
-    })
+    ])
   })
 
   it('should notify players in the channel when the channel is updated', async () => {
@@ -410,7 +415,11 @@ describe('Game channel API - update', () => {
 
     expect(res.body.channel.props).toEqual([{ key: 'level', value: '5' }])
     expect(res.body.rejectedProps).toEqual([
-      { key: 'guildId', error: 'Prop value contains profanity' },
+      {
+        key: 'guildId',
+        error: 'PROP_CONTAINS_PROFANITY',
+        message: 'Prop value contains profanity',
+      },
     ])
   })
 

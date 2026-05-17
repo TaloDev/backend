@@ -503,26 +503,29 @@ describe('Leaderboard API - create', () => {
       .one()
     await em.persist([player, leaderboard]).flush()
 
+    const longKey = randText({ charCount: 129 })
     const res = await request(app)
       .post(`/v1/leaderboards/${leaderboard.internalName}/entries`)
       .send({
         score: 300,
         props: [
           {
-            key: randText({ charCount: 129 }),
+            key: longKey,
             value: '1',
           },
         ],
       })
       .auth(token, { type: 'bearer' })
       .set('x-talo-alias', String(player.aliases[0].id))
-      .expect(400)
+      .expect(200)
 
-    expect(res.body).toStrictEqual({
-      errors: {
-        props: ['Prop key length (129) exceeds 128 characters'],
+    expect(res.body.rejectedProps).toEqual([
+      {
+        key: longKey,
+        error: 'PROP_KEY_TOO_LONG',
+        message: 'Prop key length (129) exceeds 128 characters',
       },
-    })
+    ])
   })
 
   it('should reject props where the value is greater than 512 characters', async () => {
@@ -546,13 +549,15 @@ describe('Leaderboard API - create', () => {
       })
       .auth(token, { type: 'bearer' })
       .set('x-talo-alias', String(player.aliases[0].id))
-      .expect(400)
+      .expect(200)
 
-    expect(res.body).toStrictEqual({
-      errors: {
-        props: ['Prop value length (513) exceeds 512 characters'],
+    expect(res.body.rejectedProps).toEqual([
+      {
+        key: 'bio',
+        error: 'PROP_VALUE_TOO_LONG',
+        message: 'Prop value length (513) exceeds 512 characters',
       },
-    })
+    ])
   })
 
   it('should correctly return the position for an ascending leaderboard', async () => {
@@ -1157,19 +1162,21 @@ describe('Leaderboard API - create', () => {
       })
       .auth(token, { type: 'bearer' })
       .set('x-talo-alias', String(player.aliases[0].id))
-      .expect(400)
+      .expect(200)
 
-    expect(res.body).toStrictEqual({
-      errors: {
-        props: ['Prop value length (513) exceeds 512 characters'],
+    expect(res.body.rejectedProps).toEqual([
+      {
+        key: 'description',
+        error: 'PROP_VALUE_TOO_LONG',
+        message: 'Prop value length (513) exceeds 512 characters',
       },
-    })
+    ])
 
     const entryCount = await em.repo(LeaderboardEntry).count({
       leaderboard,
       playerAlias: player.aliases[0],
     })
-    expect(entryCount).toBe(0)
+    expect(entryCount).toBe(1)
   })
 
   it('should handle prop size errors when score would not be updated', async () => {
@@ -1255,7 +1262,11 @@ describe('Leaderboard API - create', () => {
 
     expect(res.body.entry.props).toEqual([{ key: 'level', value: '5' }])
     expect(res.body.rejectedProps).toEqual([
-      { key: 'nickname', error: 'Prop value contains profanity' },
+      {
+        key: 'nickname',
+        error: 'PROP_CONTAINS_PROFANITY',
+        message: 'Prop value contains profanity',
+      },
     ])
   })
 

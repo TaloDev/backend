@@ -34,11 +34,11 @@ export type RejectedProp = {
 
 `PropRejectionReason` is a union of known error codes:
 
-| Code | Meaning |
-|------|---------|
-| `PROP_KEY_TOO_LONG` | Key exceeds `MAX_KEY_LENGTH` (128 chars) |
-| `PROP_VALUE_TOO_LONG` | Value exceeds `MAX_VALUE_LENGTH` (512 chars, or custom limit) |
-| `PROP_ARRAY_TOO_LONG` | Array prop exceeds `MAX_ARRAY_LENGTH` (1000 items) |
+| Code                      | Meaning                                                          |
+| ------------------------- | ---------------------------------------------------------------- |
+| `PROP_KEY_TOO_LONG`       | Key exceeds `MAX_KEY_LENGTH` (128 chars)                         |
+| `PROP_VALUE_TOO_LONG`     | Value exceeds `MAX_VALUE_LENGTH` (512 chars, or custom limit)    |
+| `PROP_ARRAY_TOO_LONG`     | Array prop exceeds `MAX_ARRAY_LENGTH` (1000 items)               |
 | `PROP_CONTAINS_PROFANITY` | Value contains profanity (when `blockPropsProfanity` is enabled) |
 
 ### `filterProfaneProps.ts`
@@ -85,11 +85,19 @@ export function testPropSize({ key, value, valueLimit }): void {
 // After:
 export function testPropSize({ key, value, valueLimit }): RejectedProp | null {
   if (key.length > MAX_KEY_LENGTH) {
-    return { key, error: 'PROP_KEY_TOO_LONG', message: `Prop key length (${key.length}) exceeds ${MAX_KEY_LENGTH} characters` }
+    return {
+      key,
+      error: 'PROP_KEY_TOO_LONG',
+      message: `Prop key length (${key.length}) exceeds ${MAX_KEY_LENGTH} characters`,
+    }
   }
   const safeValueLimit = valueLimit || MAX_VALUE_LENGTH
   if (value && value.length > safeValueLimit) {
-    return { key, error: 'PROP_VALUE_TOO_LONG', message: `Prop value length (${value.length}) exceeds ${safeValueLimit} characters` }
+    return {
+      key,
+      error: 'PROP_VALUE_TOO_LONG',
+      message: `Prop value length (${value.length}) exceeds ${safeValueLimit} characters`,
+    }
   }
   return null
 }
@@ -200,20 +208,21 @@ Both API and protected routes return 200 with the entity in its updated state (o
 
 ## Files Changed
 
-| File | Change |
-|------|--------|
-| `src/lib/props/rejectedProp.ts` | **New.** `RejectedProp` type, `PropRejectionReason` type |
-| `src/lib/props/sanitiseProps.ts` | `testPropSize` returns `RejectedProp \| null`. `hardSanitiseProps` and `mergeAndSanitiseProps` return `{ accepted, rejected }`. No longer throw |
-| `src/lib/props/filterProfaneProps.ts` | Remove local `RejectedProp` type. Import from `rejectedProp.ts`. Use `PROP_CONTAINS_PROFANITY` code |
-| `src/routes/api/game-channel/put-storage.ts` | Remove `FailedProp` type and `tryTestPropSize`. Import `RejectedProp`. Rename `failedProps` → `rejectedProps` |
-| `src/routes/protected/player/update.ts` | Remove `PropSizeError` try/catch. Use accepted/rejected from `mergeAndSanitiseProps`. Return `rejectedProps` for both forwarded and non-forwarded calls |
-| `src/routes/api/player/patch.ts` | No changes needed (delegates to `updatePlayerHandler`) |
-| `src/routes/protected/game/update.ts` | Remove `PropSizeError` try/catch. Use accepted/rejected from `mergeAndSanitiseProps`. Return `rejectedProps` in 200 response |
-| `src/routes/protected/game-channel/update.ts` | Remove `PropSizeError` try/catch. Use accepted/rejected from `mergeAndSanitiseProps`. Return `rejectedProps` in 200 response |
-| `src/routes/protected/game-channel/create.ts` | Remove `PropSizeError` try/catch. Use accepted/rejected from `hardSanitiseProps`. Return `rejectedProps` in 200 response |
-| `src/routes/api/game-feedback/post.ts` | Remove `PropSizeError` try/catch. Use accepted/rejected from `hardSanitiseProps`. Return `rejectedProps` in 200 response |
-| `src/routes/api/leaderboard/post.ts` | Remove `PropSizeError` try/catch. Use accepted/rejected from `hardSanitiseProps`/`mergeAndSanitiseProps`. Merge size rejections with profanity rejections into `rejectedProps` |
+| File                                          | Change                                                                                                                                                                         |
+| --------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `src/lib/props/rejectedProp.ts`               | **New.** `RejectedProp` type, `PropRejectionReason` type                                                                                                                       |
+| `src/lib/props/sanitiseProps.ts`              | `testPropSize` returns `RejectedProp \| null`. `hardSanitiseProps` and `mergeAndSanitiseProps` return `{ accepted, rejected }`. No longer throw                                |
+| `src/lib/props/filterProfaneProps.ts`         | Remove local `RejectedProp` type. Import from `rejectedProp.ts`. Use `PROP_CONTAINS_PROFANITY` code                                                                            |
+| `src/routes/api/game-channel/put-storage.ts`  | Remove `FailedProp` type and `tryTestPropSize`. Import `RejectedProp`. Rename `failedProps` → `rejectedProps`                                                                  |
+| `src/routes/protected/player/update.ts`       | Remove `PropSizeError` try/catch. Use accepted/rejected from `mergeAndSanitiseProps`. Return `rejectedProps` for both forwarded and non-forwarded calls                        |
+| `src/routes/api/player/patch.ts`              | No changes needed (delegates to `updatePlayerHandler`)                                                                                                                         |
+| `src/routes/protected/game/update.ts`         | Remove `PropSizeError` try/catch. Use accepted/rejected from `mergeAndSanitiseProps`. Return `rejectedProps` in 200 response                                                   |
+| `src/routes/protected/game-channel/update.ts` | Remove `PropSizeError` try/catch. Use accepted/rejected from `mergeAndSanitiseProps`. Return `rejectedProps` in 200 response                                                   |
+| `src/routes/protected/game-channel/create.ts` | Remove `PropSizeError` try/catch. Use accepted/rejected from `hardSanitiseProps`. Return `rejectedProps` in 200 response                                                       |
+| `src/routes/api/game-feedback/post.ts`        | Remove `PropSizeError` try/catch. Use accepted/rejected from `hardSanitiseProps`. Return `rejectedProps` in 200 response                                                       |
+| `src/routes/api/leaderboard/post.ts`          | Remove `PropSizeError` try/catch. Use accepted/rejected from `hardSanitiseProps`/`mergeAndSanitiseProps`. Merge size rejections with profanity rejections into `rejectedProps` |
 
 **Not changed:**
+
 - `src/routes/api/event/post.ts` — Events out of scope, keeps current throw pattern
 - `src/lib/errors/propSizeError.ts` — Kept for events, no changes

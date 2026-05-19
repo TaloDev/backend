@@ -245,8 +245,7 @@ describe('Player - update', () => {
       },
     ])
 
-    await em.refresh(player)
-    expect(player.props.length).toBe(propsLength + 1)
+    expect(await em.repo(PlayerProp).count({ player })).toBe(propsLength + 1)
   })
 
   it('should reject props where the key is greater than 128 characters', async () => {

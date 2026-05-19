@@ -111,7 +111,13 @@ describe('Event API - create', () => {
       .set('x-talo-alias', String(player.aliases[0].id))
       .expect(200)
 
-    expect(res.body.errors[0]).toStrictEqual(['Event is missing the key: name'])
+    expect(res.body.errors[0]).toStrictEqual([
+      {
+        field: 'name',
+        error: 'MISSING_NAME',
+        message: 'Event is missing the key: name',
+      },
+    ])
   })
 
   it('should not create an event if the timestamp is missing', async () => {
@@ -126,7 +132,13 @@ describe('Event API - create', () => {
       .set('x-talo-alias', String(player.aliases[0].id))
       .expect(200)
 
-    expect(res.body.errors[0]).toStrictEqual(['Event is missing the key: timestamp (Craft bow)'])
+    expect(res.body.errors[0]).toStrictEqual([
+      {
+        field: 'timestamp',
+        error: 'MISSING_TIMESTAMP',
+        message: 'Event is missing the key: timestamp (Craft bow)',
+      },
+    ])
   })
 
   it('should not create any events if the events body key is not an array', async () => {
@@ -228,7 +240,13 @@ describe('Event API - create', () => {
       .set('x-talo-alias', String(player.aliases[0].id))
       .expect(200)
 
-    expect(res.body.errors[0]).toStrictEqual(['Props must be an array (Equip bow)'])
+    expect(res.body.errors[0]).toStrictEqual([
+      {
+        field: 'props',
+        error: 'PROPS_NOT_ARRAY',
+        message: 'Props must be an array (Equip bow)',
+      },
+    ])
   })
 
   it("should add valid meta props to the player's props", async () => {
@@ -315,6 +333,8 @@ describe('Event API - create', () => {
     const player = await new PlayerFactory([apiKey.game]).one()
     await em.persist(player).flush()
 
+    const key = randText({ charCount: 129 })
+
     const res = await request(app)
       .post('/v1/events')
       .send({
@@ -322,7 +342,7 @@ describe('Event API - create', () => {
           {
             name: 'Equip bow',
             timestamp: Date.now(),
-            props: [{ key: randText({ charCount: 129 }), value: '1' }],
+            props: [{ key, value: '1' }],
           },
         ],
       })
@@ -330,10 +350,16 @@ describe('Event API - create', () => {
       .set('x-talo-alias', String(player.aliases[0].id))
       .expect(200)
 
-    expect(res.body).toStrictEqual({
-      events: [],
-      errors: [['Prop key length (129) exceeds 128 characters (Equip bow)']],
-    })
+    expect(res.body.events).toStrictEqual([])
+    expect(res.body.errors[0]).toStrictEqual([
+      {
+        field: `props.${key}`,
+        error: 'PROP_KEY_TOO_LONG',
+        message: expect.stringContaining(
+          'Prop key length (129) exceeds 128 characters (Equip bow)',
+        ),
+      },
+    ])
   })
 
   it('should reject props where the value is greater than 512 characters', async () => {
@@ -356,10 +382,16 @@ describe('Event API - create', () => {
       .set('x-talo-alias', String(player.aliases[0].id))
       .expect(200)
 
-    expect(res.body).toStrictEqual({
-      events: [],
-      errors: [['Prop value length (513) exceeds 512 characters (Equip bow)']],
-    })
+    expect(res.body.events).toStrictEqual([])
+    expect(res.body.errors[0]).toStrictEqual([
+      {
+        field: 'props.bio',
+        error: 'PROP_VALUE_TOO_LONG',
+        message: expect.stringContaining(
+          'Prop value length (513) exceeds 512 characters (Equip bow)',
+        ),
+      },
+    ])
   })
 
   it('should capture an error if the event timestamp is invalid', async () => {
@@ -376,7 +408,13 @@ describe('Event API - create', () => {
       .set('x-talo-alias', String(player.aliases[0].id))
       .expect(200)
 
-    expect(res.body.errors[0]).toStrictEqual(['Event timestamp is invalid (Equip bow)'])
+    expect(res.body.errors[0]).toStrictEqual([
+      {
+        field: 'timestamp',
+        error: 'INVALID_TIMESTAMP',
+        message: 'Event timestamp is invalid (Equip bow)',
+      },
+    ])
   })
 
   it('should de-duplicate events', async () => {
@@ -399,7 +437,19 @@ describe('Event API - create', () => {
 
     expect(res.body.events).toHaveLength(1)
     expect(res.body.errors[0]).toStrictEqual([])
-    expect(res.body.errors[1]).toStrictEqual(['Duplicate event detected (Craft bow)'])
-    expect(res.body.errors[2]).toStrictEqual(['Duplicate event detected (Craft bow)'])
+    expect(res.body.errors[1]).toStrictEqual([
+      {
+        field: 'event',
+        error: 'DUPLICATE_EVENT',
+        message: 'Duplicate event detected (Craft bow)',
+      },
+    ])
+    expect(res.body.errors[2]).toStrictEqual([
+      {
+        field: 'event',
+        error: 'DUPLICATE_EVENT',
+        message: 'Duplicate event detected (Craft bow)',
+      },
+    ])
   })
 })

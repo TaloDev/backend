@@ -1,7 +1,7 @@
 import { uniqWith } from 'lodash-es'
 import Prop, { MAX_KEY_LENGTH, MAX_VALUE_LENGTH } from '../../entities/prop.js'
 
-type PropRejectionReason =
+export type PropRejectionReason =
   | 'PROP_KEY_TOO_LONG'
   | 'PROP_VALUE_TOO_LONG'
   | 'PROP_ARRAY_TOO_LONG'

@@ -3,7 +3,7 @@ import { EntityManager } from '@mikro-orm/mysql'
 import { v4 } from 'uuid'
 import ClickHouseEntity from '../lib/clickhouse/clickhouse-entity.js'
 import { formatDateForClickHouse } from '../lib/clickhouse/formatDateTime.js'
-import { PropSizeError } from '../lib/errors/propSizeError.js'
+import { PropRejectionError } from '../lib/errors/propRejectionError.js'
 import { hardSanitiseProps } from '../lib/props/sanitiseProps.js'
 import Game from './game.js'
 import PlayerAlias from './player-alias.js'
@@ -125,7 +125,7 @@ export default class Event extends ClickHouseEntity<
       },
     })
     if (rejected.length > 0) {
-      throw new PropSizeError(rejected.map((r) => r.message).join('; '))
+      throw new PropRejectionError(rejected)
     }
     this.props = accepted
 

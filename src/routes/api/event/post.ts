@@ -1,15 +1,32 @@
 import { createHash } from 'crypto'
 import { isValid } from 'date-fns'
+import type { PropRejectionReason } from '../../../lib/props/sanitiseProps.js'
 import { APIKeyScope } from '../../../entities/api-key.js'
 import Event from '../../../entities/event.js'
 import Prop from '../../../entities/prop.js'
-import { PropSizeError } from '../../../lib/errors/propSizeError.js'
+import { PropRejectionError } from '../../../lib/errors/propRejectionError.js'
 import { FlushEventsQueueHandler } from '../../../lib/queues/game-metrics/flush-events-queue-handler.js'
 import { apiRoute, withMiddleware } from '../../../lib/routing/router.js'
 import { playerAliasHeaderSchema } from '../../../lib/validation/playerAliasHeaderSchema.js'
 import { loadAlias } from '../../../middleware/player-alias-middleware.js'
 import { requireScopes } from '../../../middleware/policy-middleware.js'
 import { postDocs } from './docs.js'
+
+type EventErrorCode =
+  | 'MISSING_NAME'
+  | 'MISSING_TIMESTAMP'
+  | 'INVALID_TIMESTAMP'
+  | 'PROPS_NOT_ARRAY'
+  | 'DUPLICATE_EVENT'
+  | 'DUPLICATE_DETECTION_FAILED'
+  | 'REDIS_PIPELINE_FAILED'
+  | PropRejectionReason
+
+type EventError = {
+  field: string
+  error: EventErrorCode
+  message: string
+}
 
 let queueHandler: FlushEventsQueueHandler
 
@@ -38,7 +55,7 @@ export const postRoute = apiRoute({
     const redis = ctx.redis
 
     const eventsMap: Map<number, Event> = new Map()
-    const errors: string[][] = Array.from({ length: items.length }, () => [])
+    const errors: EventError[][] = Array.from({ length: items.length }, () => [])
 
     const playerAlias = ctx.state.alias
 
@@ -47,9 +64,11 @@ export const postRoute = apiRoute({
 
       for (const key of ['name', 'timestamp']) {
         if (!item[key]) {
-          errors[i].push(
-            `Event is missing the key: ${key}${key === 'name' ? '' : ` (${item.name})`}`,
-          )
+          errors[i].push({
+            field: key,
+            error: key === 'name' ? 'MISSING_NAME' : 'MISSING_TIMESTAMP',
+            message: `Event is missing the key: ${key}${key === 'name' ? '' : ` (${item.name})`}`,
+          })
         }
       }
 
@@ -63,19 +82,33 @@ export const postRoute = apiRoute({
           try {
             event.setProps(item.props.map((prop: Prop) => new Prop(prop.key, prop.value)))
           } catch (err) {
-            if (err instanceof PropSizeError) {
-              errors[i].push(`${err.message} (${item.name})`)
+            if (err instanceof PropRejectionError) {
+              for (const rejectedItem of err.rejected) {
+                errors[i].push({
+                  field: `props.${rejectedItem.key}`,
+                  error: rejectedItem.error,
+                  message: `${rejectedItem.message} (${item.name})`,
+                })
+              }
               /* v8 ignore next 3 -- @preserve */
             } else {
               throw err
             }
           }
         } else if (item.props) {
-          errors[i].push(`Props must be an array (${item.name})`)
+          errors[i].push({
+            field: 'props',
+            error: 'PROPS_NOT_ARRAY',
+            message: `Props must be an array (${item.name})`,
+          })
         }
 
         if (!isValid(event.createdAt)) {
-          errors[i].push(`Event timestamp is invalid (${item.name})`)
+          errors[i].push({
+            field: 'timestamp',
+            error: 'INVALID_TIMESTAMP',
+            message: `Event timestamp is invalid (${item.name})`,
+          })
         }
 
         if (errors[i].length === 0) {
@@ -110,7 +143,11 @@ export const postRoute = apiRoute({
     if (!results) {
       for (let i = 0; i < items.length; i++) {
         if (eventsMap.has(i)) {
-          errors[i].push('Redis pipeline failed')
+          errors[i].push({
+            field: 'event',
+            error: 'REDIS_PIPELINE_FAILED',
+            message: 'Redis pipeline failed',
+          })
         }
       }
       /* v8 ignore stop -- @preserve */
@@ -124,11 +161,19 @@ export const postRoute = apiRoute({
         /* v8 ignore start -- @preserve */
         if (err) {
           eventsMap.delete(index)
-          errors[index].push(`Duplicate detection failed (${item.name}): ${err.message}`)
+          errors[index].push({
+            field: 'event',
+            error: 'DUPLICATE_DETECTION_FAILED',
+            message: `Duplicate detection failed (${item.name}): ${err.message}`,
+          })
           /* v8 ignore stop -- @preserve */
         } else if (result !== 1) {
           eventsMap.delete(index)
-          errors[index].push(`Duplicate event detected (${item.name})`)
+          errors[index].push({
+            field: 'event',
+            error: 'DUPLICATE_EVENT',
+            message: `Duplicate event detected (${item.name})`,
+          })
         }
         resultIndex++
       }

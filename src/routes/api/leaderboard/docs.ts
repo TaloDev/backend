@@ -153,11 +153,19 @@ export const postDocs = {
           updatedAt: '2022-02-16T16:03:53.123Z',
         },
         updated: true,
+      },
+    },
+    {
+      title: 'Sample error response with rejected props',
+      sample: {
+        errors: {
+          props: ['One or more props are invalid, see rejectedProps'],
+        },
         rejectedProps: [
           {
-            key: 'nickname',
-            error: 'PROP_CONTAINS_PROFANITY',
-            message: 'Prop value contains profanity',
+            key: 'longKey',
+            error: 'PROP_KEY_TOO_LONG',
+            message: 'Prop key length (255) exceeds 128 characters',
           },
         ],
       },

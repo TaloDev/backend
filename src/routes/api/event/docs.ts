@@ -72,7 +72,17 @@ export const postDocs = {
             createdAt: '2022-07-05T12:26:09.324Z',
           },
         ],
-        errors: [[], [], ['Event is missing the key: timestamp']],
+        errors: [
+          [],
+          [],
+          [
+            {
+              field: 'timestamp',
+              error: 'MISSING_TIMESTAMP',
+              message: 'Event is missing the key: timestamp (Quested started)',
+            },
+          ],
+        ],
       },
     },
   ],

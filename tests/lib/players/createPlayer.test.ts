@@ -152,7 +152,14 @@ describe('createPlayer', () => {
       const error = err as PlayerCreationError
       expect(error.statusCode).toBe(400)
       expect(error.field).toBe('props')
-      expect(error.message).toContain('exceeds 128 characters')
+      expect(error.message).toBe('One or more props are invalid, see rejectedProps')
+      expect(error.rejectedProps).toEqual([
+        {
+          key: expect.any(String),
+          error: 'PROP_KEY_TOO_LONG',
+          message: expect.stringContaining('exceeds 128 characters'),
+        },
+      ])
     }
   })
 
@@ -174,7 +181,14 @@ describe('createPlayer', () => {
       const error = err as PlayerCreationError
       expect(error.statusCode).toBe(400)
       expect(error.field).toBe('props')
-      expect(error.message).toContain('exceeds 512 characters')
+      expect(error.message).toBe('One or more props are invalid, see rejectedProps')
+      expect(error.rejectedProps).toEqual([
+        {
+          key: 'bio',
+          error: 'PROP_VALUE_TOO_LONG',
+          message: 'Prop value length (513) exceeds 512 characters',
+        },
+      ])
     }
   })
 })

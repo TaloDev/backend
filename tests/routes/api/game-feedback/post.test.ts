@@ -146,8 +146,15 @@ describe('Game feedback API - create', () => {
 
     expect(res.body).toStrictEqual({
       errors: {
-        props: ['Prop key length (129) exceeds 128 characters'],
+        props: ['One or more props are invalid, see rejectedProps'],
       },
+      rejectedProps: [
+        {
+          key: expect.any(String),
+          error: 'PROP_KEY_TOO_LONG',
+          message: expect.stringContaining('Prop key length (129) exceeds 128 characters'),
+        },
+      ],
     })
   })
 
@@ -176,8 +183,15 @@ describe('Game feedback API - create', () => {
 
     expect(res.body).toStrictEqual({
       errors: {
-        props: ['Prop value length (513) exceeds 512 characters'],
+        props: ['One or more props are invalid, see rejectedProps'],
       },
+      rejectedProps: [
+        {
+          key: 'bio',
+          error: 'PROP_VALUE_TOO_LONG',
+          message: 'Prop value length (513) exceeds 512 characters',
+        },
+      ],
     })
   })
 

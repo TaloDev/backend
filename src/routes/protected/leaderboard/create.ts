@@ -7,7 +7,7 @@ import Leaderboard, {
 } from '../../../entities/leaderboard.js'
 import { UserType } from '../../../entities/user.js'
 import User from '../../../entities/user.js'
-import buildErrorResponse from '../../../lib/errors/buildErrorResponse.js'
+import { buildErrorResponse } from '../../../lib/errors/buildErrorResponse.js'
 import triggerIntegrations from '../../../lib/integrations/triggerIntegrations.js'
 import createGameActivity from '../../../lib/logging/createGameActivity.js'
 import { protectedRoute, withMiddleware } from '../../../lib/routing/router.js'

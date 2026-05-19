@@ -1,7 +1,7 @@
 import { createHash } from 'crypto'
 import { z } from 'zod'
 import PlayerGroup from '../../../entities/player-group.js'
-import buildErrorResponse from '../../../lib/errors/buildErrorResponse.js'
+import { buildErrorResponse } from '../../../lib/errors/buildErrorResponse.js'
 import { withResponseCache } from '../../../lib/perf/responseCache.js'
 import { protectedRoute, withMiddleware } from '../../../lib/routing/router.js'
 import { loadGame } from '../../../middleware/game-middleware.js'

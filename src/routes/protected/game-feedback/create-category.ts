@@ -1,7 +1,7 @@
 import { GameActivityType } from '../../../entities/game-activity.js'
 import GameFeedbackCategory from '../../../entities/game-feedback-category.js'
 import { UserType } from '../../../entities/user.js'
-import buildErrorResponse from '../../../lib/errors/buildErrorResponse.js'
+import { buildErrorResponse } from '../../../lib/errors/buildErrorResponse.js'
 import createGameActivity from '../../../lib/logging/createGameActivity.js'
 import { protectedRoute, withMiddleware } from '../../../lib/routing/router.js'
 import { loadGame } from '../../../middleware/game-middleware.js'

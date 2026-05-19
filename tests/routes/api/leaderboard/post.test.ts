@@ -517,8 +517,9 @@ describe('Leaderboard API - create', () => {
       })
       .auth(token, { type: 'bearer' })
       .set('x-talo-alias', String(player.aliases[0].id))
-      .expect(200)
+      .expect(400)
 
+    expect(res.body.errors.props).toEqual(['One or more props are invalid, see rejectedProps'])
     expect(res.body.rejectedProps).toEqual([
       {
         key: longKey,
@@ -549,8 +550,9 @@ describe('Leaderboard API - create', () => {
       })
       .auth(token, { type: 'bearer' })
       .set('x-talo-alias', String(player.aliases[0].id))
-      .expect(200)
+      .expect(400)
 
+    expect(res.body.errors.props).toEqual(['One or more props are invalid, see rejectedProps'])
     expect(res.body.rejectedProps).toEqual([
       {
         key: 'bio',
@@ -1162,8 +1164,9 @@ describe('Leaderboard API - create', () => {
       })
       .auth(token, { type: 'bearer' })
       .set('x-talo-alias', String(player.aliases[0].id))
-      .expect(200)
+      .expect(400)
 
+    expect(res.body.errors.props).toEqual(['One or more props are invalid, see rejectedProps'])
     expect(res.body.rejectedProps).toEqual([
       {
         key: 'description',
@@ -1176,7 +1179,7 @@ describe('Leaderboard API - create', () => {
       leaderboard,
       playerAlias: player.aliases[0],
     })
-    expect(entryCount).toBe(1)
+    expect(entryCount).toBe(0)
   })
 
   it('should handle prop size errors when score would not be updated', async () => {
@@ -1216,6 +1219,53 @@ describe('Leaderboard API - create', () => {
     // should pass because the entry wasn't going to be updated
     expect(res.body.entry.score).toBe(200)
     expect(res.body.updated).toBe(false)
+  })
+
+  it('should reject props when updating a unique leaderboard entry', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_LEADERBOARDS])
+    const player = await new PlayerFactory([apiKey.game]).one()
+    const leaderboard = await new LeaderboardFactory([apiKey.game])
+      .state(() => ({
+        unique: true,
+        sortMode: LeaderboardSortMode.DESC,
+      }))
+      .one()
+
+    const entry = await new LeaderboardEntryFactory(leaderboard, [player])
+      .state(() => ({
+        score: 100,
+        playerAlias: player.aliases[0],
+      }))
+      .one()
+
+    await em.persist([player, leaderboard, entry]).flush()
+
+    const res = await request(app)
+      .post(`/v1/leaderboards/${leaderboard.internalName}/entries`)
+      .send({
+        score: 200,
+        props: [
+          {
+            key: 'bio',
+            value: randText({ charCount: 513 }),
+          },
+        ],
+      })
+      .auth(token, { type: 'bearer' })
+      .set('x-talo-alias', String(player.aliases[0].id))
+      .expect(400)
+
+    expect(res.body.errors.props).toEqual(['One or more props are invalid, see rejectedProps'])
+    expect(res.body.rejectedProps).toEqual([
+      {
+        key: 'bio',
+        error: 'PROP_VALUE_TOO_LONG',
+        message: 'Prop value length (513) exceeds 512 characters',
+      },
+    ])
+
+    await em.refresh(entry)
+    expect(entry.score).toBe(100)
   })
 
   it('should handle spaces in the internal name', async () => {
@@ -1258,9 +1308,9 @@ describe('Leaderboard API - create', () => {
       })
       .auth(token, { type: 'bearer' })
       .set('x-talo-alias', String(player.aliases[0].id))
-      .expect(200)
+      .expect(400)
 
-    expect(res.body.entry.props).toEqual([{ key: 'level', value: '5' }])
+    expect(res.body.errors.props).toEqual(['One or more props are invalid, see rejectedProps'])
     expect(res.body.rejectedProps).toEqual([
       {
         key: 'nickname',
@@ -1296,6 +1346,6 @@ describe('Leaderboard API - create', () => {
         { key: 'level', value: '5' },
       ]),
     )
-    expect(res.body.rejectedProps).toEqual([])
+    expect(res.body.rejectedProps).toBeUndefined()
   })
 })

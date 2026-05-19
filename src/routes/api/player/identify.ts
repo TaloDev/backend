@@ -97,6 +97,7 @@ export const identifyRoute = apiRoute({
           message: err.message,
           errorCode: err.errorCode,
           field: err.field,
+          rejectedProps: err.rejectedProps,
         })
       }
       if (err instanceof PricingPlanLimitError) {

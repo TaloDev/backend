@@ -1,4 +1,4 @@
-export const CreatePlayerGameStatSnapshotsTable = `CREATE TABLE IF NOT EXISTS ${process.env.CLICKHOUSE_DB}.player_game_stat_snapshots (
+export const CreatePlayerGameStatSnapshotsTable = `CREATE TABLE IF NOT EXISTS player_game_stat_snapshots (
   id UUID DEFAULT generateUUIDv4(),
   player_alias_id UInt32,
   game_stat_id UInt32,

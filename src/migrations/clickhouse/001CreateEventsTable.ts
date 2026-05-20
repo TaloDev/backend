@@ -1,4 +1,4 @@
-export const CreateEventsTable = `CREATE TABLE IF NOT EXISTS ${process.env.CLICKHOUSE_DB}.events (
+export const CreateEventsTable = `CREATE TABLE IF NOT EXISTS events (
   id String,
   name String,
   game_id UInt32,

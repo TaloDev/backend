@@ -758,8 +758,4 @@ export class MikroORMV7FKDecouple extends Migration {
       `alter table \`user_session\` add constraint \`user_session_user_id_foreign\` foreign key (\`user_id\`) references \`user\` (\`id\`) on update cascade;`,
     )
   }
-
-  override isTransactional() {
-    return false
-  }
 }

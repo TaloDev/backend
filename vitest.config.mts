@@ -6,7 +6,7 @@ export default defineConfig({
     globals: true,
     dir: './tests',
     setupFiles: './tests/setupTest.ts',
-    maxWorkers: 1,
+    maxWorkers: 8,
     isolate: false,
     coverage: {
       provider: 'v8',

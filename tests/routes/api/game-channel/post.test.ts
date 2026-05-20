@@ -92,15 +92,20 @@ describe('Game channel API - create', () => {
       })
       .auth(token, { type: 'bearer' })
       .set('x-talo-alias', String(player.aliases[0].id))
-      .expect(200)
+      .expect(400)
 
-    expect(res.body.rejectedProps).toEqual([
-      {
-        key: longKey,
-        error: 'PROP_KEY_TOO_LONG',
-        message: 'Prop key length (129) exceeds 128 characters',
+    expect(res.body).toStrictEqual({
+      errors: {
+        props: ['One or more props are invalid, see rejectedProps'],
       },
-    ])
+      rejectedProps: [
+        {
+          key: longKey,
+          error: 'PROP_KEY_TOO_LONG',
+          message: 'Prop key length (129) exceeds 128 characters',
+        },
+      ],
+    })
   })
 
   it('should reject props where the value is greater than 512 characters', async () => {
@@ -121,15 +126,20 @@ describe('Game channel API - create', () => {
       })
       .auth(token, { type: 'bearer' })
       .set('x-talo-alias', String(player.aliases[0].id))
-      .expect(200)
+      .expect(400)
 
-    expect(res.body.rejectedProps).toEqual([
-      {
-        key: 'bio',
-        error: 'PROP_VALUE_TOO_LONG',
-        message: 'Prop value length (513) exceeds 512 characters',
+    expect(res.body).toStrictEqual({
+      errors: {
+        props: ['One or more props are invalid, see rejectedProps'],
       },
-    ])
+      rejectedProps: [
+        {
+          key: 'bio',
+          error: 'PROP_VALUE_TOO_LONG',
+          message: 'Prop value length (513) exceeds 512 characters',
+        },
+      ],
+    })
   })
 
   it('should create a private game channel', async () => {
@@ -163,6 +173,35 @@ describe('Game channel API - create', () => {
   })
 })
 
+it('should accept valid props when blockPropsProfanity is enabled', async () => {
+  const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_CHANNELS])
+  apiKey.game.blockPropsProfanity = true
+  await em.flush()
+
+  const player = await new PlayerFactory([apiKey.game]).one()
+  await em.persist(player).flush()
+
+  const res = await request(app)
+    .post('/v1/game-channels')
+    .send({
+      name: 'Guild chat',
+      props: [
+        { key: 'guildId', value: '1234' },
+        { key: 'level', value: '5' },
+      ],
+    })
+    .auth(token, { type: 'bearer' })
+    .set('x-talo-alias', String(player.aliases[0].id))
+    .expect(200)
+
+  expect(res.body.channel.props).toEqual(
+    expect.arrayContaining([
+      { key: 'guildId', value: '1234' },
+      { key: 'level', value: '5' },
+    ]),
+  )
+})
+
 it('should reject profane props when blockPropsProfanity is enabled', async () => {
   const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_CHANNELS])
   apiKey.game.blockPropsProfanity = true
@@ -182,16 +221,20 @@ it('should reject profane props when blockPropsProfanity is enabled', async () =
     })
     .auth(token, { type: 'bearer' })
     .set('x-talo-alias', String(player.aliases[0].id))
-    .expect(200)
+    .expect(400)
 
-  expect(res.body.channel.props).toEqual([{ key: 'level', value: '5' }])
-  expect(res.body.rejectedProps).toEqual([
-    {
-      key: 'guildId',
-      error: 'PROP_CONTAINS_PROFANITY',
-      message: 'Prop value contains profanity',
+  expect(res.body).toStrictEqual({
+    errors: {
+      props: ['One or more props are invalid, see rejectedProps'],
     },
-  ])
+    rejectedProps: [
+      {
+        key: 'guildId',
+        error: 'PROP_CONTAINS_PROFANITY',
+        message: 'Prop value contains profanity',
+      },
+    ],
+  })
 })
 
 it('should allow profane props when blockPropsProfanity is disabled', async () => {
@@ -219,5 +262,4 @@ it('should allow profane props when blockPropsProfanity is disabled', async () =
       { key: 'level', value: '5' },
     ]),
   )
-  expect(res.body.rejectedProps).toEqual([])
 })

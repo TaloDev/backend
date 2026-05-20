@@ -519,14 +519,18 @@ describe('Leaderboard API - create', () => {
       .set('x-talo-alias', String(player.aliases[0].id))
       .expect(400)
 
-    expect(res.body.errors.props).toEqual(['One or more props are invalid, see rejectedProps'])
-    expect(res.body.rejectedProps).toEqual([
-      {
-        key: longKey,
-        error: 'PROP_KEY_TOO_LONG',
-        message: 'Prop key length (129) exceeds 128 characters',
+    expect(res.body).toStrictEqual({
+      errors: {
+        props: ['One or more props are invalid, see rejectedProps'],
       },
-    ])
+      rejectedProps: [
+        {
+          key: longKey,
+          error: 'PROP_KEY_TOO_LONG',
+          message: 'Prop key length (129) exceeds 128 characters',
+        },
+      ],
+    })
   })
 
   it('should reject props where the value is greater than 512 characters', async () => {
@@ -552,14 +556,18 @@ describe('Leaderboard API - create', () => {
       .set('x-talo-alias', String(player.aliases[0].id))
       .expect(400)
 
-    expect(res.body.errors.props).toEqual(['One or more props are invalid, see rejectedProps'])
-    expect(res.body.rejectedProps).toEqual([
-      {
-        key: 'bio',
-        error: 'PROP_VALUE_TOO_LONG',
-        message: 'Prop value length (513) exceeds 512 characters',
+    expect(res.body).toStrictEqual({
+      errors: {
+        props: ['One or more props are invalid, see rejectedProps'],
       },
-    ])
+      rejectedProps: [
+        {
+          key: 'bio',
+          error: 'PROP_VALUE_TOO_LONG',
+          message: 'Prop value length (513) exceeds 512 characters',
+        },
+      ],
+    })
   })
 
   it('should correctly return the position for an ascending leaderboard', async () => {
@@ -1166,14 +1174,18 @@ describe('Leaderboard API - create', () => {
       .set('x-talo-alias', String(player.aliases[0].id))
       .expect(400)
 
-    expect(res.body.errors.props).toEqual(['One or more props are invalid, see rejectedProps'])
-    expect(res.body.rejectedProps).toEqual([
-      {
-        key: 'description',
-        error: 'PROP_VALUE_TOO_LONG',
-        message: 'Prop value length (513) exceeds 512 characters',
+    expect(res.body).toStrictEqual({
+      errors: {
+        props: ['One or more props are invalid, see rejectedProps'],
       },
-    ])
+      rejectedProps: [
+        {
+          key: 'description',
+          error: 'PROP_VALUE_TOO_LONG',
+          message: 'Prop value length (513) exceeds 512 characters',
+        },
+      ],
+    })
 
     const entryCount = await em.repo(LeaderboardEntry).count({
       leaderboard,
@@ -1255,14 +1267,18 @@ describe('Leaderboard API - create', () => {
       .set('x-talo-alias', String(player.aliases[0].id))
       .expect(400)
 
-    expect(res.body.errors.props).toEqual(['One or more props are invalid, see rejectedProps'])
-    expect(res.body.rejectedProps).toEqual([
-      {
-        key: 'bio',
-        error: 'PROP_VALUE_TOO_LONG',
-        message: 'Prop value length (513) exceeds 512 characters',
+    expect(res.body).toStrictEqual({
+      errors: {
+        props: ['One or more props are invalid, see rejectedProps'],
       },
-    ])
+      rejectedProps: [
+        {
+          key: 'bio',
+          error: 'PROP_VALUE_TOO_LONG',
+          message: 'Prop value length (513) exceeds 512 characters',
+        },
+      ],
+    })
 
     await em.refresh(entry)
     expect(entry.score).toBe(100)
@@ -1288,6 +1304,31 @@ describe('Leaderboard API - create', () => {
     expect(res.body.entry.position).toBe(0)
   })
 
+  it('should accept clean props when blockPropsProfanity is enabled', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_LEADERBOARDS])
+    apiKey.game.blockPropsProfanity = true
+    await em.flush()
+
+    const player = await new PlayerFactory([apiKey.game]).one()
+    const leaderboard = await new LeaderboardFactory([apiKey.game]).one()
+    await em.persist([player, leaderboard]).flush()
+
+    const res = await request(app)
+      .post(`/v1/leaderboards/${leaderboard.internalName}/entries`)
+      .send({
+        score: 300,
+        props: [
+          { key: 'nickname', value: 'tud0r' },
+          { key: 'level', value: '5' },
+        ],
+      })
+      .auth(token, { type: 'bearer' })
+      .set('x-talo-alias', String(player.aliases[0].id))
+      .expect(200)
+
+    expect(res.body.entry.score).toBe(300)
+  })
+
   it('should reject profane props when blockPropsProfanity is enabled', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_LEADERBOARDS])
     apiKey.game.blockPropsProfanity = true
@@ -1310,14 +1351,18 @@ describe('Leaderboard API - create', () => {
       .set('x-talo-alias', String(player.aliases[0].id))
       .expect(400)
 
-    expect(res.body.errors.props).toEqual(['One or more props are invalid, see rejectedProps'])
-    expect(res.body.rejectedProps).toEqual([
-      {
-        key: 'nickname',
-        error: 'PROP_CONTAINS_PROFANITY',
-        message: 'Prop value contains profanity',
+    expect(res.body).toStrictEqual({
+      errors: {
+        props: ['One or more props are invalid, see rejectedProps'],
       },
-    ])
+      rejectedProps: [
+        {
+          key: 'nickname',
+          error: 'PROP_CONTAINS_PROFANITY',
+          message: 'Prop value contains profanity',
+        },
+      ],
+    })
   })
 
   it('should allow profane props when blockPropsProfanity is disabled', async () => {

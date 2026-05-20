@@ -279,15 +279,20 @@ describe('Game - update', () => {
         ],
       })
       .auth(token, { type: 'bearer' })
-      .expect(200)
+      .expect(400)
 
-    expect(res.body.rejectedProps).toEqual([
-      {
-        key: longKey,
-        error: 'PROP_KEY_TOO_LONG',
-        message: 'Prop key length (129) exceeds 128 characters',
+    expect(res.body).toStrictEqual({
+      errors: {
+        props: ['One or more props are invalid, see rejectedProps'],
       },
-    ])
+      rejectedProps: [
+        {
+          key: longKey,
+          error: 'PROP_KEY_TOO_LONG',
+          message: 'Prop key length (129) exceeds 128 characters',
+        },
+      ],
+    })
   })
 
   it('should reject props where the value is greater than 4096 characters', async () => {
@@ -305,15 +310,20 @@ describe('Game - update', () => {
         ],
       })
       .auth(token, { type: 'bearer' })
-      .expect(200)
+      .expect(400)
 
-    expect(res.body.rejectedProps).toEqual([
-      {
-        key: 'bio',
-        error: 'PROP_VALUE_TOO_LONG',
-        message: 'Prop value length (4097) exceeds 4096 characters',
+    expect(res.body).toStrictEqual({
+      errors: {
+        props: ['One or more props are invalid, see rejectedProps'],
       },
-    ])
+      rejectedProps: [
+        {
+          key: 'bio',
+          error: 'PROP_VALUE_TOO_LONG',
+          message: 'Prop value length (4097) exceeds 4096 characters',
+        },
+      ],
+    })
   })
 
   it.each(userPermissionProvider([]))(

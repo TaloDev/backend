@@ -1,7 +1,7 @@
 export const ReorderEventsSortKey = `
-  DROP TABLE IF EXISTS ${process.env.CLICKHOUSE_DB}.events_new;
+  DROP TABLE IF EXISTS events_new;
 
-  CREATE TABLE ${process.env.CLICKHOUSE_DB}.events_new
+  CREATE TABLE events_new
   (
     id String,
     name String,
@@ -15,10 +15,10 @@ export const ReorderEventsSortKey = `
   ) ENGINE = MergeTree()
   ORDER BY (game_id, created_at, id);
 
-  INSERT INTO ${process.env.CLICKHOUSE_DB}.events_new
-  SELECT id, name, game_id, player_alias_id, dev_build, created_at, updated_at FROM ${process.env.CLICKHOUSE_DB}.events;
+  INSERT INTO events_new
+  SELECT id, name, game_id, player_alias_id, dev_build, created_at, updated_at FROM events;
 
-  EXCHANGE TABLES ${process.env.CLICKHOUSE_DB}.events AND ${process.env.CLICKHOUSE_DB}.events_new;
+  EXCHANGE TABLES events AND events_new;
 
-  DROP TABLE ${process.env.CLICKHOUSE_DB}.events_new;
+  DROP TABLE events_new;
 `

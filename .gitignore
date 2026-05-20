@@ -8,4 +8,4 @@ coverage/
 backup.sql
 /storage
 temp
-.snapshot-gs_test.json
+.snapshot-gs_test*.json

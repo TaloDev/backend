@@ -51,15 +51,17 @@ export class Worker<T> extends EventEmitter {
 export class Queue<T> {
   name: string
   workers: Worker<T>[] = []
+  private listener: (worker: Worker<T>) => void
 
   constructor(name: string) {
     this.name = name
-    bullEmitter.on('worker-registered', (worker: Worker<T>) => {
+    this.listener = (worker: Worker<T>) => {
       if (worker.queueName === this.name) {
         this.workers.push(worker)
-        bullEmitter.removeAllListeners('worker-registered')
+        bullEmitter.removeListener('worker-registered', this.listener)
       }
-    })
+    }
+    bullEmitter.on('worker-registered', this.listener)
   }
 
   async add(jobName: string, data: T) {

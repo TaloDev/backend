@@ -23,7 +23,7 @@ beforeEach(async () => {
   ]
 
   await Promise.all([
-    global.redis.flushall(),
+    global.redis.flushdb(),
     ...clickhouseTablesToTruncate.map((table) =>
       global.clickhouse.command({ query: `TRUNCATE TABLE ${table}` }),
     ),

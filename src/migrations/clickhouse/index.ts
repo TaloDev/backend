@@ -55,8 +55,10 @@ const migrations: ClickHouseMigration[] = [
   },
 ]
 
-export async function runClickHouseMigrations(clickhouse: ClickHouseClient) {
-  console.info('Running ClickHouse migrations...')
+export async function runClickHouseMigrations(clickhouse: ClickHouseClient, logMigrations = true) {
+  if (logMigrations) {
+    console.info('Running ClickHouse migrations...')
+  }
 
   await clickhouse.command({ query: CreateMigrationsTable })
 
@@ -72,7 +74,10 @@ export async function runClickHouseMigrations(clickhouse: ClickHouseClient) {
   })
 
   for (const migration of pendingMigrations) {
-    console.info(`Processing '${migration.name}'`)
+    if (logMigrations) {
+      console.info(`Processing '${migration.name}'`)
+    }
+
     const queries = migration.sql.split(';').filter((query) => query.trim() !== '')
     for (const query of queries) {
       await clickhouse.command({ query })
@@ -87,8 +92,13 @@ export async function runClickHouseMigrations(clickhouse: ClickHouseClient) {
       ],
       format: 'JSONEachRow',
     })
-    console.info(`Applied '${migration.name}'`)
+
+    if (logMigrations) {
+      console.info(`Applied '${migration.name}'`)
+    }
   }
 
-  console.info('ClickHouse up to date!')
+  if (logMigrations) {
+    console.info('ClickHouse up to date!')
+  }
 }

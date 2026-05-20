@@ -38,8 +38,9 @@ export default class PlayerFactory extends Factory<Player> {
 
     this.state(async (player) => {
       const propsCount = randNumber({ max: 5 })
-      const props: PlayerProp[] = Array.from({ length: propsCount }, () => {
-        return new PlayerProp(player, rand(availableProps), String(randNumber({ max: 99 })))
+      const shuffled = [...availableProps].sort(() => Math.random() - 0.5)
+      const props: PlayerProp[] = shuffled.slice(0, propsCount).map((key) => {
+        return new PlayerProp(player, key, String(randNumber({ max: 99 })))
       })
 
       const aliases = await new PlayerAliasFactory(player).many(randNumber({ min: 1, max: 2 }))

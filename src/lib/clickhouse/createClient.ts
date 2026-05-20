@@ -105,9 +105,36 @@ function createClickHouseTracingProxyHandler(): ProxyHandler<ClickHouseClient> {
   }
 }
 
-export default function createTracedClickHouseClient(): ClickHouseClient {
+function getDbName(override?: string) {
+  if (override) {
+    return override
+  }
+
+  const dbName = process.env.CLICKHOUSE_DB
+  const poolId = process.env.VITEST_POOL_ID
+
+  if (poolId) {
+    return `${dbName}_${poolId}`
+  }
+
+  return dbName
+}
+
+export type CreateClickHouseClientOptions = {
+  dbName?: string
+  connectToDb?: boolean
+}
+
+export default function createTracedClickHouseClient(options: CreateClickHouseClientOptions = {}) {
+  const connectToDb = options.connectToDb ?? true
+
+  let url = `http://${process.env.CLICKHOUSE_USER}:${process.env.CLICKHOUSE_PASSWORD}@${process.env.CLICKHOUSE_HOST}:${process.env.CLICKHOUSE_PORT}`
+  if (connectToDb) {
+    url += `/${getDbName(options.dbName)}`
+  }
+
   const client = createClient({
-    url: `http://${process.env.CLICKHOUSE_USER}:${process.env.CLICKHOUSE_PASSWORD}@${process.env.CLICKHOUSE_HOST}:${process.env.CLICKHOUSE_PORT}/${process.env.CLICKHOUSE_DB}`,
+    url,
     request_timeout: 120_000,
   })
 

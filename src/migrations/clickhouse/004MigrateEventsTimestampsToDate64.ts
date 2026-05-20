@@ -1,5 +1,5 @@
 export const MigrateEventsTimestampsToDate64 = `
-  CREATE TABLE ${process.env.CLICKHOUSE_DB}.events_new
+  CREATE TABLE events_new
   (
     id String,
     name String,
@@ -14,11 +14,11 @@ export const MigrateEventsTimestampsToDate64 = `
   ) ENGINE = MergeTree()
   ORDER BY (id, created_at, game_id, player_alias_id);
 
-  INSERT INTO ${process.env.CLICKHOUSE_DB}.events_new
-  SELECT id, name, game_id, player_alias_id, dev_build, created_at, updated_at FROM ${process.env.CLICKHOUSE_DB}.events;
+  INSERT INTO events_new
+  SELECT id, name, game_id, player_alias_id, dev_build, created_at, updated_at FROM events;
 
-  RENAME TABLE ${process.env.CLICKHOUSE_DB}.events TO ${process.env.CLICKHOUSE_DB}.events_old,
-                ${process.env.CLICKHOUSE_DB}.events_new TO ${process.env.CLICKHOUSE_DB}.events;
+  RENAME TABLE events TO events_old,
+                events_new TO events;
 
-  DROP TABLE ${process.env.CLICKHOUSE_DB}.events_old;
+  DROP TABLE events_old;
 `

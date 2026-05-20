@@ -7,16 +7,16 @@ export class PlayerGameStatSubscriber implements EventSubscriber {
     return [PlayerGameStat]
   }
 
-  clearCacheKeys(playerStat: PlayerGameStat) {
-    void deferClearResponseCache(PlayerGameStat.getCacheKey(playerStat.player, playerStat.stat))
-    void deferClearResponseCache(PlayerGameStat.getListCacheKey(playerStat.player))
+  async clearCacheKeys(playerStat: PlayerGameStat) {
+    await deferClearResponseCache(PlayerGameStat.getCacheKey(playerStat.player, playerStat.stat))
+    await deferClearResponseCache(PlayerGameStat.getListCacheKey(playerStat.player))
   }
 
   afterCreate(args: EventArgs<PlayerGameStat>) {
-    this.clearCacheKeys(args.entity)
+    return this.clearCacheKeys(args.entity)
   }
 
   afterUpdate(args: EventArgs<PlayerGameStat>) {
-    this.clearCacheKeys(args.entity)
+    return this.clearCacheKeys(args.entity)
   }
 }

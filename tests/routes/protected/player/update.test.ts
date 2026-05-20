@@ -1,8 +1,9 @@
 import { Collection } from '@mikro-orm/mysql'
-import { randText, randWord } from '@ngneat/falso'
+import { randText } from '@ngneat/falso'
 import request from 'supertest'
 import GameActivity, { GameActivityType } from '../../../../src/entities/game-activity.js'
 import PlayerProp from '../../../../src/entities/player-prop.js'
+import Player from '../../../../src/entities/player.js'
 import { UserType } from '../../../../src/entities/user.js'
 import PlayerFactory from '../../../fixtures/PlayerFactory.js'
 import createOrganisationAndGame from '../../../utils/createOrganisationAndGame.js'
@@ -215,18 +216,20 @@ describe('Player - update', () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({}, organisation)
 
-    const player = await new PlayerFactory([game]).one()
+    const player = await new PlayerFactory([game])
+      .state((p: Player) => ({
+        props: new Collection(p),
+      }))
+      .one()
     await em.persist(player).flush()
-
-    const propsLength = player.props.length
 
     const res = await request(app)
       .patch(`/games/${game.id}/players/${player.id}`)
       .send({
         props: [
           {
-            key: randWord(),
-            value: randWord(),
+            key: 'testKey',
+            value: 'testValue',
           },
           {
             key: 'META_BREAK_THINGS',
@@ -245,7 +248,7 @@ describe('Player - update', () => {
       },
     ])
 
-    expect(await em.repo(PlayerProp).count({ player })).toBe(propsLength + 1)
+    expect(await em.repo(PlayerProp).count({ player })).toBe(1)
   })
 
   it('should reject props where the key is greater than 128 characters', async () => {

@@ -17,6 +17,8 @@ export const settingsRoute = protectedRoute({
           purgeLivePlayers: game.purgeLivePlayers,
           purgeDevPlayersRetention: game.purgeDevPlayersRetention,
           purgeLivePlayersRetention: game.purgeLivePlayersRetention,
+          blockAliasIdentifierProfanity: game.blockAliasIdentifierProfanity,
+          blockPropsProfanity: game.blockPropsProfanity,
           website: game.website,
           gameToken: game.getToken(),
         },

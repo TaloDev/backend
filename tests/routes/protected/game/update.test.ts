@@ -267,12 +267,13 @@ describe('Game - update', () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({ type: UserType.ADMIN }, organisation)
 
+    const longKey = randText({ charCount: 129 })
     const res = await request(app)
       .patch(`/games/${game.id}`)
       .send({
         props: [
           {
-            key: randText({ charCount: 129 }),
+            key: longKey,
             value: '1',
           },
         ],
@@ -282,8 +283,15 @@ describe('Game - update', () => {
 
     expect(res.body).toStrictEqual({
       errors: {
-        props: ['Prop key length (129) exceeds 128 characters'],
+        props: ['One or more props are invalid, see rejectedProps'],
       },
+      rejectedProps: [
+        {
+          key: longKey,
+          error: 'PROP_KEY_TOO_LONG',
+          message: 'Prop key length (129) exceeds 128 characters',
+        },
+      ],
     })
   })
 
@@ -306,8 +314,15 @@ describe('Game - update', () => {
 
     expect(res.body).toStrictEqual({
       errors: {
-        props: ['Prop value length (4097) exceeds 4096 characters'],
+        props: ['One or more props are invalid, see rejectedProps'],
       },
+      rejectedProps: [
+        {
+          key: 'bio',
+          error: 'PROP_VALUE_TOO_LONG',
+          message: 'Prop value length (4097) exceeds 4096 characters',
+        },
+      ],
     })
   })
 
@@ -398,6 +413,42 @@ describe('Game - update', () => {
 
       if (statusCode === 200) {
         expect((await em.refreshOrFail(game)).purgeLivePlayersRetention).toBe(60)
+      }
+    },
+  )
+
+  it.each(userPermissionProvider([]))(
+    'should update blockAliasIdentifierProfanity for a %s user',
+    async (statusCode, _, type) => {
+      const [organisation, game] = await createOrganisationAndGame()
+      const [token] = await createUserAndToken({ type }, organisation)
+
+      await request(app)
+        .patch(`/games/${game.id}`)
+        .send({ blockAliasIdentifierProfanity: true })
+        .auth(token, { type: 'bearer' })
+        .expect(statusCode)
+
+      if (statusCode === 200) {
+        expect((await em.refreshOrFail(game)).blockAliasIdentifierProfanity).toBe(true)
+      }
+    },
+  )
+
+  it.each(userPermissionProvider([]))(
+    'should update blockPropsProfanity for a %s user',
+    async (statusCode, _, type) => {
+      const [organisation, game] = await createOrganisationAndGame()
+      const [token] = await createUserAndToken({ type }, organisation)
+
+      await request(app)
+        .patch(`/games/${game.id}`)
+        .send({ blockPropsProfanity: true })
+        .auth(token, { type: 'bearer' })
+        .expect(statusCode)
+
+      if (statusCode === 200) {
+        expect((await em.refreshOrFail(game)).blockPropsProfanity).toBe(true)
       }
     },
   )

@@ -288,6 +288,41 @@ describe('Player auth API - register', () => {
     })
   })
 
+  it('should not register a player with a profane identifier when the filter is enabled', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([
+      APIKeyScope.READ_PLAYERS,
+      APIKeyScope.WRITE_PLAYERS,
+    ])
+    apiKey.game.blockAliasIdentifierProfanity = true
+    await em.flush()
+
+    const res = await request(app)
+      .post('/v1/players/auth/register')
+      .send({ identifier: 'fuck', password: 'password' })
+      .auth(token, { type: 'bearer' })
+      .expect(400)
+
+    expect(res.body).toStrictEqual({
+      message: 'Alias identifier contains inappropriate language',
+      errorCode: 'IDENTIFIER_PROFANITY',
+    })
+  })
+
+  it('should register a player with a profane identifier when the filter is disabled', async () => {
+    const [, token] = await createAPIKeyAndToken([
+      APIKeyScope.READ_PLAYERS,
+      APIKeyScope.WRITE_PLAYERS,
+    ])
+
+    const res = await request(app)
+      .post('/v1/players/auth/register')
+      .send({ identifier: 'fuck', password: 'password' })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    expect(res.body.alias.identifier).toBe('fuck')
+  })
+
   it('should return a 402 when the player limit is exceeded', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([
       APIKeyScope.READ_PLAYERS,

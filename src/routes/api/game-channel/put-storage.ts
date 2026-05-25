@@ -1,10 +1,11 @@
 import { EntityManager, LockMode } from '@mikro-orm/mysql'
 import { Redis } from 'ioredis'
+import type { RejectedProp } from '../../../lib/props/sanitiseProps.js'
 import { APIKeyScope } from '../../../entities/api-key.js'
 import GameChannelStorageProp from '../../../entities/game-channel-storage-prop.js'
 import GameChannel from '../../../entities/game-channel.js'
 import PlayerAlias from '../../../entities/player-alias.js'
-import { PropSizeError } from '../../../lib/errors/propSizeError.js'
+import { filterProfaneProps } from '../../../lib/props/filterProfaneProps.js'
 import {
   isArrayKey,
   MAX_ARRAY_LENGTH,
@@ -19,25 +20,10 @@ import { requireScopes } from '../../../middleware/policy-middleware.js'
 import { loadChannel } from './common.js'
 import { putStorageDocs } from './docs.js'
 
-type FailedProp = { key: string; error: string }
-
 type TransactionResult = {
   upsertedProps: GameChannelStorageProp[]
   deletedProps: GameChannelStorageProp[]
-  failedProps: FailedProp[]
-}
-
-function tryTestPropSize(key: string, value: string | null): string | null {
-  try {
-    testPropSize({ key, value })
-    return null
-  } catch (error) {
-    if (error instanceof PropSizeError) {
-      return error.message
-    }
-    /* v8 ignore next 2 -- @preserve */
-    throw error
-  }
+  rejectedProps: RejectedProp[]
 }
 
 function processScalars(
@@ -46,10 +32,10 @@ function processScalars(
   channel: GameChannel,
   newScalarMap: Map<string, string | null>,
   existingProps: GameChannelStorageProp[],
-): Pick<TransactionResult, 'upsertedProps' | 'deletedProps' | 'failedProps'> {
+): Pick<TransactionResult, 'upsertedProps' | 'deletedProps' | 'rejectedProps'> {
   const upsertedProps: GameChannelStorageProp[] = []
   const deletedProps: GameChannelStorageProp[] = []
-  const failedProps: FailedProp[] = []
+  const rejectedProps: RejectedProp[] = []
 
   const existingScalarMap = new Map(existingProps.map((p) => [p.key, p]))
 
@@ -66,9 +52,9 @@ function processScalars(
       continue
     }
 
-    const sizeError = tryTestPropSize(key, value)
-    if (sizeError) {
-      failedProps.push({ key, error: sizeError })
+    const sizeRejection = testPropSize({ key, value })
+    if (sizeRejection) {
+      rejectedProps.push(sizeRejection)
       continue
     }
 
@@ -85,7 +71,7 @@ function processScalars(
     }
   }
 
-  return { upsertedProps, deletedProps, failedProps }
+  return { upsertedProps, deletedProps, rejectedProps }
 }
 
 function processArrays(
@@ -94,30 +80,33 @@ function processArrays(
   channel: GameChannel,
   newArrayMap: Map<string, (string | null)[]>,
   existingProps: GameChannelStorageProp[],
-): Pick<TransactionResult, 'upsertedProps' | 'deletedProps' | 'failedProps'> {
+): Pick<TransactionResult, 'upsertedProps' | 'deletedProps' | 'rejectedProps'> {
   const upsertedProps: GameChannelStorageProp[] = []
   const deletedProps: GameChannelStorageProp[] = []
-  const failedProps: FailedProp[] = []
+  const rejectedProps: RejectedProp[] = []
 
   for (const [key, values] of newArrayMap.entries()) {
     const nonNullValues = [...new Set(values.filter((v): v is string => v !== null))]
 
-    const keySizeError = tryTestPropSize(key, null)
-    if (keySizeError) {
-      failedProps.push({ key, error: keySizeError })
+    const keySizeRejection = testPropSize({ key, value: null })
+    if (keySizeRejection) {
+      rejectedProps.push(keySizeRejection)
       continue
     }
 
-    const valueSizeError = nonNullValues.map((v) => tryTestPropSize(key, v)).find(Boolean)
-    if (valueSizeError) {
-      failedProps.push({ key, error: valueSizeError })
+    const valueSizeRejection = nonNullValues
+      .map((v) => testPropSize({ key, value: v }))
+      .find(Boolean)
+    if (valueSizeRejection) {
+      rejectedProps.push(valueSizeRejection)
       continue
     }
 
     if (nonNullValues.length > MAX_ARRAY_LENGTH) {
-      failedProps.push({
+      rejectedProps.push({
         key,
-        error: `Prop array length (${nonNullValues.length}) for key '${key}' exceeds ${MAX_ARRAY_LENGTH} items`,
+        error: 'PROP_ARRAY_TOO_LONG',
+        message: `Prop array length (${nonNullValues.length}) for key '${key}' exceeds ${MAX_ARRAY_LENGTH} items`,
       })
       continue
     }
@@ -154,7 +143,7 @@ function processArrays(
     }
   }
 
-  return { upsertedProps, deletedProps, failedProps }
+  return { upsertedProps, deletedProps, rejectedProps }
 }
 
 export const putStorageRoute = apiRoute({
@@ -200,67 +189,73 @@ export const putStorageRoute = apiRoute({
       return ctx.throw(403, 'This player is not a member of the channel')
     }
 
-    const { upsertedProps, deletedProps, failedProps } = await em.transactional(
-      async (trx): Promise<TransactionResult> => {
-        const sanitised = sanitiseProps({ props })
-
-        const newScalarMap = new Map<string, string | null>()
-        const newArrayMap = new Map<string, (string | null)[]>()
-        for (const { key, value } of sanitised) {
-          if (isArrayKey(key)) {
-            const existing = newArrayMap.get(key) ?? []
-            existing.push(value)
-            newArrayMap.set(key, existing)
-          } else {
-            newScalarMap.set(key, value)
-          }
-        }
-
-        if (newScalarMap.size === 0 && newArrayMap.size === 0) {
-          return { upsertedProps: [], deletedProps: [], failedProps: [] }
-        }
-
-        const allIncomingKeys = [...newScalarMap.keys(), ...newArrayMap.keys()]
-        const existingStorageProps = await trx
-          .repo(GameChannelStorageProp)
-          .find(
-            { gameChannel: channel, key: { $in: allIncomingKeys } },
-            { lockMode: LockMode.PESSIMISTIC_WRITE },
-          )
-
-        const scalarResult = processScalars(
-          trx,
-          alias,
-          channel,
-          newScalarMap,
-          existingStorageProps.filter((p) => !isArrayKey(p.key)),
-        )
-        const arrayResult = processArrays(
-          trx,
-          alias,
-          channel,
-          newArrayMap,
-          existingStorageProps.filter((p) => isArrayKey(p.key)),
-        )
-
-        const upsertedProps = [...scalarResult.upsertedProps, ...arrayResult.upsertedProps]
-        const deletedProps = [...scalarResult.deletedProps, ...arrayResult.deletedProps]
-        const failedProps = [...scalarResult.failedProps, ...arrayResult.failedProps]
-
-        const touchedKeys = new Set([...upsertedProps, ...deletedProps].map((p) => p.key))
-        for (const key of touchedKeys) {
-          const remaining = upsertedProps.filter((p) => p.key === key)
-          await GameChannelStorageProp.persistToRedis({
-            redis: redis as Redis,
-            channelId: channel.id,
-            key,
-            props: remaining,
-          })
-        }
-
-        return { upsertedProps, deletedProps, failedProps }
-      },
+    const sanitised = sanitiseProps({ props })
+    const { accepted, rejected: profanityRejected } = filterProfaneProps(
+      sanitised,
+      ctx.state.game.blockPropsProfanity,
     )
+
+    const {
+      upsertedProps,
+      deletedProps,
+      rejectedProps: sizeRejected,
+    } = await em.transactional(async (trx): Promise<TransactionResult> => {
+      const newScalarMap = new Map<string, string | null>()
+      const newArrayMap = new Map<string, (string | null)[]>()
+      for (const { key, value } of accepted) {
+        if (isArrayKey(key)) {
+          const existing = newArrayMap.get(key) ?? []
+          existing.push(value)
+          newArrayMap.set(key, existing)
+        } else {
+          newScalarMap.set(key, value)
+        }
+      }
+
+      if (newScalarMap.size === 0 && newArrayMap.size === 0) {
+        return { upsertedProps: [], deletedProps: [], rejectedProps: [] }
+      }
+
+      const allIncomingKeys = [...newScalarMap.keys(), ...newArrayMap.keys()]
+      const existingStorageProps = await trx
+        .repo(GameChannelStorageProp)
+        .find(
+          { gameChannel: channel, key: { $in: allIncomingKeys } },
+          { lockMode: LockMode.PESSIMISTIC_WRITE },
+        )
+
+      const scalarResult = processScalars(
+        trx,
+        alias,
+        channel,
+        newScalarMap,
+        existingStorageProps.filter((p) => !isArrayKey(p.key)),
+      )
+      const arrayResult = processArrays(
+        trx,
+        alias,
+        channel,
+        newArrayMap,
+        existingStorageProps.filter((p) => isArrayKey(p.key)),
+      )
+
+      const upsertedProps = [...scalarResult.upsertedProps, ...arrayResult.upsertedProps]
+      const deletedProps = [...scalarResult.deletedProps, ...arrayResult.deletedProps]
+      const rejectedProps = [...scalarResult.rejectedProps, ...arrayResult.rejectedProps]
+
+      const touchedKeys = new Set([...upsertedProps, ...deletedProps].map((p) => p.key))
+      for (const key of touchedKeys) {
+        const remaining = upsertedProps.filter((p) => p.key === key)
+        await GameChannelStorageProp.persistToRedis({
+          redis: redis as Redis,
+          channelId: channel.id,
+          key,
+          props: remaining,
+        })
+      }
+
+      return { upsertedProps, deletedProps, rejectedProps }
+    })
 
     await channel.sendMessageToMembers(ctx.wss, 'v1.channels.storage.updated', {
       channel,
@@ -274,7 +269,7 @@ export const putStorageRoute = apiRoute({
         channel,
         upsertedProps,
         deletedProps,
-        failedProps,
+        failedProps: [...sizeRejected, ...profanityRejected],
       },
     }
   },

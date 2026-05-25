@@ -1,4 +1,5 @@
 import { EntityManager } from '@mikro-orm/mysql'
+import type { RejectedProp } from '../props/sanitiseProps.js'
 import APIKey, { APIKeyScope } from '../../entities/api-key.js'
 import Game from '../../entities/game.js'
 import PlayerAlias from '../../entities/player-alias.js'
@@ -18,19 +19,22 @@ type PlayerCreationErrorParams = {
   message: string
   errorCode?: string
   field?: string
+  rejectedProps?: RejectedProp[]
 }
 
 export class PlayerCreationError extends Error {
   statusCode: number
   errorCode?: string
   field?: string
+  rejectedProps?: RejectedProp[]
 
-  constructor({ statusCode, message, errorCode, field }: PlayerCreationErrorParams) {
+  constructor({ statusCode, message, errorCode, field, rejectedProps }: PlayerCreationErrorParams) {
     super(message)
     this.name = 'PlayerCreationError'
     this.statusCode = statusCode
     this.errorCode = errorCode
     this.field = field
+    this.rejectedProps = rejectedProps
   }
 }
 
@@ -70,15 +74,16 @@ export async function createPlayer(em: EntityManager, game: Game, input: CreateP
   }
 
   if (props) {
-    try {
-      player.setProps(hardSanitiseProps({ props }))
-    } catch (err) {
+    const { accepted, rejected } = hardSanitiseProps({ props })
+    if (rejected.length > 0) {
       throw new PlayerCreationError({
         statusCode: 400,
-        message: (err as Error).message,
+        message: 'One or more props are invalid, see rejectedProps',
         field: 'props',
+        rejectedProps: rejected,
       })
     }
+    player.setProps(accepted)
   }
 
   if (devBuild) {

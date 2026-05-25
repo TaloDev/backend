@@ -1,8 +1,9 @@
 import { Collection } from '@mikro-orm/mysql'
-import { randText, randWord } from '@ngneat/falso'
+import { randText } from '@ngneat/falso'
 import request from 'supertest'
 import GameActivity, { GameActivityType } from '../../../../src/entities/game-activity.js'
 import PlayerProp from '../../../../src/entities/player-prop.js'
+import Player from '../../../../src/entities/player.js'
 import { UserType } from '../../../../src/entities/user.js'
 import PlayerFactory from '../../../fixtures/PlayerFactory.js'
 import createOrganisationAndGame from '../../../utils/createOrganisationAndGame.js'
@@ -215,18 +216,20 @@ describe('Player - update', () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({}, organisation)
 
-    const player = await new PlayerFactory([game]).one()
+    const player = await new PlayerFactory([game])
+      .state((p: Player) => ({
+        props: new Collection(p),
+      }))
+      .one()
     await em.persist(player).flush()
-
-    const propsLength = player.props.length
 
     const res = await request(app)
       .patch(`/games/${game.id}/players/${player.id}`)
       .send({
         props: [
           {
-            key: randWord(),
-            value: randWord(),
+            key: 'testKey',
+            value: 'testValue',
           },
           {
             key: 'META_BREAK_THINGS',
@@ -235,18 +238,17 @@ describe('Player - update', () => {
         ],
       })
       .auth(token, { type: 'bearer' })
-      .expect(400)
+      .expect(200)
 
-    expect(res.body).toStrictEqual({
-      errors: {
-        props: [
-          "Prop keys starting with 'META_' are reserved for internal systems, please use another key name",
-        ],
+    expect(res.body.rejectedProps).toEqual([
+      {
+        key: 'META_BREAK_THINGS',
+        error: 'PROP_KEY_RESERVED',
+        message: "Prop keys starting with 'META_' are reserved for internal systems",
       },
-    })
+    ])
 
-    await em.refresh(player)
-    expect(player.props.length).toBe(propsLength)
+    expect(await em.repo(PlayerProp).count({ player })).toBe(1)
   })
 
   it('should reject props where the key is greater than 128 characters', async () => {
@@ -257,24 +259,27 @@ describe('Player - update', () => {
 
     await em.persist(player).flush()
 
+    const longKey = randText({ charCount: 129 })
     const res = await request(app)
       .patch(`/games/${game.id}/players/${player.id}`)
       .send({
         props: [
           {
-            key: randText({ charCount: 129 }),
+            key: longKey,
             value: '1',
           },
         ],
       })
       .auth(token, { type: 'bearer' })
-      .expect(400)
+      .expect(200)
 
-    expect(res.body).toStrictEqual({
-      errors: {
-        props: ['Prop key length (129) exceeds 128 characters'],
+    expect(res.body.rejectedProps).toEqual([
+      {
+        key: longKey,
+        error: 'PROP_KEY_TOO_LONG',
+        message: 'Prop key length (129) exceeds 128 characters',
       },
-    })
+    ])
   })
 
   it('should reject props where the value is greater than 512 characters', async () => {
@@ -296,13 +301,15 @@ describe('Player - update', () => {
         ],
       })
       .auth(token, { type: 'bearer' })
-      .expect(400)
+      .expect(200)
 
-    expect(res.body).toStrictEqual({
-      errors: {
-        props: ['Prop value length (513) exceeds 512 characters'],
+    expect(res.body.rejectedProps).toEqual([
+      {
+        key: 'bio',
+        error: 'PROP_VALUE_TOO_LONG',
+        message: 'Prop value length (513) exceeds 512 characters',
       },
-    })
+    ])
   })
 
   it('should de-dupe props and take the latest updates', async () => {

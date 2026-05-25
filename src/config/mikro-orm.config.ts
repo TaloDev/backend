@@ -8,17 +8,29 @@ import migrationsList from '../migrations/index.js'
 import { subscribers } from '../subscribers/index.js'
 import { redisConfig } from './redis.config.js'
 
+function getDbName() {
+  const dbName = process.env.DB_NAME
+  const poolId = process.env.VITEST_POOL_ID
+
+  if (poolId) {
+    return `${dbName}_${poolId}`
+  }
+
+  return dbName
+}
+
 const ormConfig = defineConfig({
   entities,
   subscribers,
   host: process.env.DB_HOST,
   port: Number(process.env.DB_PORT),
-  dbName: process.env.DB_NAME,
+  dbName: getDbName(),
   user: process.env.DB_USER,
   password: process.env.DB_PASS,
   migrations: {
     migrationsList,
     path: 'src/migrations', // for generating migrations via the cli
+    transactional: false,
   },
   metadataProvider: TsMorphMetadataProvider,
   extensions: [Migrator],
@@ -33,8 +45,6 @@ const ormConfig = defineConfig({
   },
 })
 
-export default ormConfig // loaded in package.json
-
 let orm: Awaited<ReturnType<typeof MikroORM.init>>
 export async function getMikroORM() {
   if (!orm || !(await orm.checkConnection())) {
@@ -42,3 +52,5 @@ export async function getMikroORM() {
   }
   return orm
 }
+
+export default ormConfig

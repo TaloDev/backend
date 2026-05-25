@@ -387,6 +387,61 @@ describe('Player API - update', () => {
     consoleSpy.mockRestore()
   })
 
+  it('should reject profane props when blockPropsProfanity is enabled', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_PLAYERS])
+    apiKey.game.blockPropsProfanity = true
+    await em.flush()
+
+    const player = await new PlayerFactory([apiKey.game]).one()
+    await em.persist(player).flush()
+
+    const res = await request(app)
+      .patch(`/v1/players/${player.id}`)
+      .send({
+        props: [
+          { key: 'nickname', value: 'fuck' },
+          { key: 'level', value: '5' },
+        ],
+      })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    expect(res.body.player.props).toEqual(expect.arrayContaining([{ key: 'level', value: '5' }]))
+    expect(res.body.rejectedProps).toEqual([
+      {
+        key: 'nickname',
+        error: 'PROP_CONTAINS_PROFANITY',
+        message: 'Prop value contains profanity',
+      },
+    ])
+  })
+
+  it('should allow profane props when blockPropsProfanity is disabled', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_PLAYERS])
+
+    const player = await new PlayerFactory([apiKey.game]).one()
+    await em.persist(player).flush()
+
+    const res = await request(app)
+      .patch(`/v1/players/${player.id}`)
+      .send({
+        props: [
+          { key: 'nickname', value: 'fuck' },
+          { key: 'level', value: '5' },
+        ],
+      })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    expect(res.body.player.props).toEqual(
+      expect.arrayContaining([
+        { key: 'nickname', value: 'fuck' },
+        { key: 'level', value: '5' },
+      ]),
+    )
+    expect(res.body.rejectedProps).toEqual([])
+  })
+
   // this is more likely to happen with event/stat flushing, but easier to test it here
   it('should handle unique constraint failures for groups', async () => {
     const redisSetSpy = vi.spyOn(Redis.prototype, 'set').mockResolvedValue('OK')

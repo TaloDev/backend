@@ -1,4 +1,4 @@
-export const CreatePlayerSessionsTable = `CREATE TABLE IF NOT EXISTS ${process.env.CLICKHOUSE_DB}.player_sessions (
+export const CreatePlayerSessionsTable = `CREATE TABLE IF NOT EXISTS player_sessions (
   id UUID DEFAULT generateUUIDv4(),
   player_id String,
   game_id UInt32,

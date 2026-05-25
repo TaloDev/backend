@@ -7,13 +7,15 @@ import * as s3Client from '../../../../src/lib/storage/s3Client.js'
 import DataExportFactory from '../../../fixtures/DataExportFactory.js'
 import createOrganisationAndGame from '../../../utils/createOrganisationAndGame.js'
 
+const originalReadFileSync = fs.readFileSync
+
 describe('DataExportMailer', () => {
   beforeAll(() => {
-    vi.spyOn(fs, 'readFileSync').mockImplementation((path) => {
+    vi.spyOn(fs, 'readFileSync').mockImplementation((path, options) => {
       if (path === '/fake/storage') {
         return Buffer.from('blah')
       }
-      throw new Error(`Unexpected path: ${path}`)
+      return originalReadFileSync(path, options)
     })
     vi.spyOn(fsp, 'unlink').mockResolvedValue()
     vi.spyOn(s3Client, 'isS3Configured').mockReturnValue(false)

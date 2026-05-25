@@ -142,7 +142,7 @@ describe('Game channel API - update storage', () => {
       .expect(200)
 
     expect(res.body.failedProps).toHaveLength(1)
-    expect(res.body.failedProps[0].error).toBe('Prop key length (129) exceeds 128 characters')
+    expect(res.body.failedProps[0].error).toBe('PROP_KEY_TOO_LONG')
   })
 
   it('should reject props where the value is greater than 512 characters', async () => {
@@ -168,7 +168,7 @@ describe('Game channel API - update storage', () => {
       .expect(200)
 
     expect(res.body.failedProps).toHaveLength(1)
-    expect(res.body.failedProps[0].error).toBe('Prop value length (513) exceeds 512 characters')
+    expect(res.body.failedProps[0].error).toBe('PROP_VALUE_TOO_LONG')
   })
 
   it('should require props to be an array', async () => {
@@ -630,7 +630,7 @@ describe('Game channel API - update storage', () => {
       .expect(200)
 
     expect(res.body.failedProps).toHaveLength(1)
-    expect(res.body.failedProps[0].error).toMatch(/exceeds 128 characters/)
+    expect(res.body.failedProps[0].error).toMatch(/PROP_KEY_TOO_LONG/)
   })
 
   it('should reject array props where the array length exceeds the maximum', async () => {
@@ -652,9 +652,7 @@ describe('Game channel API - update storage', () => {
 
     expect(res.body.failedProps).toHaveLength(1)
     expect(res.body.failedProps[0].key).toBe('items[]')
-    expect(res.body.failedProps[0].error).toBe(
-      `Prop array length (1001) for key 'items[]' exceeds 1000 items`,
-    )
+    expect(res.body.failedProps[0].error).toBe(`PROP_ARRAY_TOO_LONG`)
   })
 
   it('should reject array props where a value exceeds the max length', async () => {
@@ -679,7 +677,7 @@ describe('Game channel API - update storage', () => {
 
     expect(res.body.failedProps).toHaveLength(1)
     expect(res.body.failedProps[0].key).toBe('items[]')
-    expect(res.body.failedProps[0].error).toBe('Prop value length (513) exceeds 512 characters')
+    expect(res.body.failedProps[0].error).toBe('PROP_VALUE_TOO_LONG')
     // no rows should have been created since the whole key failed
     const props = await em
       .repo(GameChannelStorageProp)
@@ -705,6 +703,63 @@ describe('Game channel API - update storage', () => {
 
     expect(res.body.upsertedProps).toHaveLength(0)
     expect(res.body.deletedProps).toHaveLength(0)
+    expect(res.body.failedProps).toHaveLength(0)
+  })
+
+  it('should reject profane storage props when blockPropsProfanity is enabled', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_CHANNELS])
+    apiKey.game.blockPropsProfanity = true
+    await em.flush()
+
+    const channel = await new GameChannelFactory(apiKey.game).one()
+    const player = await new PlayerFactory([apiKey.game]).one()
+    channel.members.add(player.aliases[0])
+    await em.persist(channel).flush()
+
+    const res = await request(app)
+      .put(`/v1/game-channels/${channel.id}/storage`)
+      .send({
+        props: [
+          { key: 'nickname', value: 'fuck' },
+          { key: 'level', value: '5' },
+        ],
+      })
+      .auth(token, { type: 'bearer' })
+      .set('x-talo-alias', String(player.aliases[0].id))
+      .expect(200)
+
+    expect(res.body.upsertedProps).toHaveLength(1)
+    expect(res.body.upsertedProps[0].key).toBe('level')
+    expect(res.body.failedProps).toEqual([
+      {
+        key: 'nickname',
+        error: 'PROP_CONTAINS_PROFANITY',
+        message: 'Prop value contains profanity',
+      },
+    ])
+  })
+
+  it('should allow profane storage props when blockPropsProfanity is disabled', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_CHANNELS])
+
+    const channel = await new GameChannelFactory(apiKey.game).one()
+    const player = await new PlayerFactory([apiKey.game]).one()
+    channel.members.add(player.aliases[0])
+    await em.persist(channel).flush()
+
+    const res = await request(app)
+      .put(`/v1/game-channels/${channel.id}/storage`)
+      .send({
+        props: [
+          { key: 'nickname', value: 'fuck' },
+          { key: 'level', value: '5' },
+        ],
+      })
+      .auth(token, { type: 'bearer' })
+      .set('x-talo-alias', String(player.aliases[0].id))
+      .expect(200)
+
+    expect(res.body.upsertedProps).toHaveLength(2)
     expect(res.body.failedProps).toHaveLength(0)
   })
 
@@ -744,9 +799,9 @@ describe('Game channel API - update storage', () => {
     expect(res.body.deletedProps).toHaveLength(0)
 
     expect(res.body.failedProps).toHaveLength(3)
-    expect(res.body.failedProps[0].error).toBe('Prop value length (513) exceeds 512 characters')
-    expect(res.body.failedProps[1].error).toBe('Prop key length (129) exceeds 128 characters')
-    expect(res.body.failedProps[2].error).toBe('Prop value length (513) exceeds 512 characters')
+    expect(res.body.failedProps[0].error).toBe('PROP_VALUE_TOO_LONG')
+    expect(res.body.failedProps[1].error).toBe('PROP_KEY_TOO_LONG')
+    expect(res.body.failedProps[2].error).toBe('PROP_VALUE_TOO_LONG')
 
     await em.refresh(existingProp)
     expect(existingProp.value).toBe('50') // should remain unchanged

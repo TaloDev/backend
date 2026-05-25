@@ -17,12 +17,13 @@ cleanup() {
   fi
 }
 
+# temp dir stores entity data
+rm -rf temp
+
 set -e
 
 dc up -d
-
-npx mikro-orm migration:up &
-tsx ./tests/migrateClickHouse.ts &
+tsx ./tests/migrateTestDatabases.ts &
 wait
 
 echo "\n"

@@ -19,6 +19,7 @@ export const playerAuthErrorCodes = [
   'NEW_IDENTIFIER_MATCHES_CURRENT_IDENTIFIER',
   'INVALID_MIGRATION_TARGET',
   'EMAIL_TAKEN',
+  'IDENTIFIER_PROFANITY',
 ] as const
 
 export type PlayerAuthErrorCode = (typeof playerAuthErrorCodes)[number]

@@ -155,5 +155,20 @@ export const postDocs = {
         updated: true,
       },
     },
+    {
+      title: 'Sample error response with rejected props',
+      sample: {
+        errors: {
+          props: ['One or more props are invalid, see rejectedProps'],
+        },
+        rejectedProps: [
+          {
+            key: 'longKey',
+            error: 'PROP_KEY_TOO_LONG',
+            message: 'Prop key length (255) exceeds 128 characters',
+          },
+        ],
+      },
+    },
   ],
 } satisfies RouteDocs

@@ -69,6 +69,8 @@ import { SchemaSnapshotChanges } from './20260327224537SchemaSnapshotChanges.js'
 import { AddFailedJobFailedAtIndex } from './20260327225535AddFailedJobFailedAtIndex.js'
 import { CreateGameCenterIntegrationEventTable } from './20260404213749CreateGameCenterIntegrationEventTable.js'
 import { MikroORMV7FKDecouple } from './20260509215853MikroORMV7FKDecouple.js'
+import { AddBlockAliasIdentifierProfanityColumn } from './20260514072111AddBlockAliasIdentifierProfanityColumn.js'
+import { AddBlockPropsProfanityColumn } from './20260515181220AddBlockPropsProfanityColumn.js'
 
 export default [
   {
@@ -354,5 +356,13 @@ export default [
   {
     name: 'MikroORMV7FKDecouple',
     class: MikroORMV7FKDecouple,
+  },
+  {
+    name: 'AddBlockAliasIdentifierProfanityColumn',
+    class: AddBlockAliasIdentifierProfanityColumn,
+  },
+  {
+    name: 'AddBlockPropsProfanityColumn',
+    class: AddBlockPropsProfanityColumn,
   },
 ]

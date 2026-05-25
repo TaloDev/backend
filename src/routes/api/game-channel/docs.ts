@@ -283,6 +283,13 @@ export const putDocs = {
           createdAt: '2024-12-09T12:00:00.000Z',
           updatedAt: '2024-12-09T12:01:00.000Z',
         },
+        rejectedProps: [
+          {
+            key: 'messageOfTheDay',
+            error: 'PROP_CONTAINS_PROFANITY',
+            message: 'Prop value contains profanity',
+          },
+        ],
       },
     },
   ],
@@ -482,7 +489,8 @@ export const listStorageDocs = {
 } satisfies RouteDocs
 
 export const putStorageDocs = {
-  description: 'Create or update storage properties in a game channel',
+  description:
+    'Create or update storage properties in a game channel. The failedProps array contains props that were rejected due to size constraints or because their values contain profanity (when profanity blocking is enabled).',
   samples: [
     {
       title: 'Sample request to create/update properties',
@@ -574,7 +582,13 @@ export const putStorageDocs = {
           },
         ],
         deletedProps: [],
-        failedProps: [],
+        failedProps: [
+          {
+            key: 'guildMotto',
+            error: 'PROP_CONTAINS_PROFANITY',
+            message: 'Prop value contains profanity',
+          },
+        ],
       },
     },
   ],

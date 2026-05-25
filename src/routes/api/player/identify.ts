@@ -2,6 +2,7 @@ import assert from 'node:assert'
 import { APIKeyScope } from '../../../entities/api-key.js'
 import PlayerAlias, { PlayerAliasService } from '../../../entities/player-alias.js'
 import { PricingPlanLimitError } from '../../../lib/billing/checkPricingPlanPlayerLimit.js'
+import { hasProfanity } from '../../../lib/filters/profanity.js'
 import {
   createPlayerFromIdentifyRequest,
   PlayerCreationError,
@@ -41,6 +42,15 @@ export const identifyRoute = apiRoute({
     const em = ctx.em
 
     const key = ctx.state.key
+    const game = key.game
+
+    if (game.blockAliasIdentifierProfanity && hasProfanity(identifier)) {
+      return ctx.throw(400, {
+        message: 'Alias identifier contains inappropriate language',
+        errorCode: 'IDENTIFIER_PROFANITY',
+      })
+    }
+
     let alias: PlayerAlias | null = null
     let justCreated = false
 
@@ -87,6 +97,7 @@ export const identifyRoute = apiRoute({
           message: err.message,
           errorCode: err.errorCode,
           field: err.field,
+          rejectedProps: err.rejectedProps,
         })
       }
       if (err instanceof PricingPlanLimitError) {

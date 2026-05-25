@@ -1,8 +1,8 @@
 import { captureException } from '@sentry/node'
 import { APIKeyScope } from '../../../entities/api-key.js'
 import GameFeedback from '../../../entities/game-feedback.js'
-import buildErrorResponse from '../../../lib/errors/buildErrorResponse.js'
-import { PropSizeError } from '../../../lib/errors/propSizeError.js'
+import { buildErrorResponse } from '../../../lib/errors/buildErrorResponse.js'
+import { PropRejectionError } from '../../../lib/errors/propRejectionError.js'
 import { hardSanitiseProps } from '../../../lib/props/sanitiseProps.js'
 import { apiRoute, withMiddleware } from '../../../lib/routing/router.js'
 import { playerAliasHeaderSchema } from '../../../lib/validation/playerAliasHeaderSchema.js'
@@ -45,11 +45,16 @@ export const postRoute = apiRoute({
 
     if (props) {
       try {
-        feedback.setProps(hardSanitiseProps({ props }))
-      } catch (err) {
-        if (!(err instanceof PropSizeError)) {
-          captureException(err)
+        const { accepted, rejected } = hardSanitiseProps({ props })
+        if (rejected.length > 0) {
+          throw new PropRejectionError(rejected)
         }
+        feedback.setProps(accepted)
+      } catch (err) {
+        if (err instanceof PropRejectionError) {
+          return buildErrorResponse({ props: [err.message] }, { rejectedProps: err.rejected })
+        }
+        captureException(err)
         return buildErrorResponse({ props: [(err as Error).message] })
       }
     }

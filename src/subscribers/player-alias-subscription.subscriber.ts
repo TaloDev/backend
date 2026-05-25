@@ -7,24 +7,24 @@ export class PlayerAliasSubscriptionSubscriber implements EventSubscriber {
     return [PlayerAliasSubscription]
   }
 
-  clearCacheKeys(subscription: PlayerAliasSubscription) {
-    void deferClearResponseCache(
+  async clearCacheKeys(subscription: PlayerAliasSubscription) {
+    await deferClearResponseCache(
       PlayerAliasSubscription.getSubscribersCacheKey(subscription.subscribedTo, true),
     )
-    void deferClearResponseCache(
+    await deferClearResponseCache(
       PlayerAliasSubscription.getSubscriptionsCacheKey(subscription.subscriber, true),
     )
   }
 
   afterCreate(args: EventArgs<PlayerAliasSubscription>) {
-    this.clearCacheKeys(args.entity)
+    return this.clearCacheKeys(args.entity)
   }
 
   afterUpdate(args: EventArgs<PlayerAliasSubscription>) {
-    this.clearCacheKeys(args.entity)
+    return this.clearCacheKeys(args.entity)
   }
 
   afterDelete(args: EventArgs<PlayerAliasSubscription>) {
-    this.clearCacheKeys(args.entity)
+    return this.clearCacheKeys(args.entity)
   }
 }

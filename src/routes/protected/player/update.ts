@@ -1,10 +1,10 @@
 import { EntityManager, LockMode } from '@mikro-orm/mysql'
+import type { RejectedProp } from '../../../lib/props/sanitiseProps.js'
 import { GameActivityType } from '../../../entities/game-activity.js'
 import Player from '../../../entities/player.js'
 import User, { UserType } from '../../../entities/user.js'
-import buildErrorResponse from '../../../lib/errors/buildErrorResponse.js'
-import { PropSizeError } from '../../../lib/errors/propSizeError.js'
 import createGameActivity from '../../../lib/logging/createGameActivity.js'
+import { filterProfaneProps } from '../../../lib/props/filterProfaneProps.js'
 import { sanitiseProps, mergeAndSanitiseProps } from '../../../lib/props/sanitiseProps.js'
 import { protectedRoute, withMiddleware } from '../../../lib/routing/router.js'
 import { updatePropsSchema } from '../../../lib/validation/propsSchema.js'
@@ -30,34 +30,35 @@ export async function updatePlayerHandler({
   forwarded,
   user,
 }: UpdatePlayerParams) {
-  const { player: updatedPlayer, errorMessage } = await em.transactional(async (trx) => {
+  const { updatedPlayer, rejectedProps } = await em.transactional(async (trx) => {
     const lockedPlayer = await trx.refreshOrFail(player, { lockMode: LockMode.PESSIMISTIC_WRITE })
 
-    if (props) {
-      if (!forwarded && props.some((prop) => prop.key.startsWith('META_'))) {
-        return {
-          player: null,
-          errorMessage:
-            "Prop keys starting with 'META_' are reserved for internal systems, please use another key name",
-        }
-      }
+    let rejectedProps: RejectedProp[] = []
 
-      try {
-        lockedPlayer.setProps(
-          mergeAndSanitiseProps({
-            prevProps: lockedPlayer.props.getItems(),
-            newProps: props,
-            extraFilter: (prop) => !prop.key.startsWith('META_'),
-          }),
-        )
-      } catch (err) {
-        if (err instanceof PropSizeError) {
-          return {
-            player: null,
-            errorMessage: err.message,
-          }
-        }
-        throw err
+    if (props) {
+      const metaRejected: RejectedProp[] = !forwarded
+        ? props
+            .filter((prop) => prop.key.startsWith('META_'))
+            .map((prop) => ({
+              key: prop.key,
+              error: 'PROP_KEY_RESERVED',
+              message: "Prop keys starting with 'META_' are reserved for internal systems",
+            }))
+        : []
+
+      const { accepted: sizeAccepted, rejected: sizeRejected } = mergeAndSanitiseProps({
+        prevProps: lockedPlayer.props.getItems(),
+        newProps: props,
+        extraFilter: (prop) => !prop.key.startsWith('META_'),
+      })
+
+      if (lockedPlayer.game.blockPropsProfanity) {
+        const { accepted, rejected: profanityRejected } = filterProfaneProps(sizeAccepted, true)
+        lockedPlayer.setProps(accepted)
+        rejectedProps = [...metaRejected, ...sizeRejected, ...profanityRejected]
+      } else {
+        lockedPlayer.setProps(sizeAccepted)
+        rejectedProps = [...metaRejected, ...sizeRejected]
       }
 
       if (!forwarded && user) {
@@ -79,25 +80,18 @@ export async function updatePlayerHandler({
     }
 
     return {
-      player: lockedPlayer,
-      errorMessage: null,
+      updatedPlayer: lockedPlayer,
+      rejectedProps,
     }
   })
 
-  if (errorMessage) {
-    return buildErrorResponse({
-      props: [errorMessage],
-    })
-  }
-
-  if (updatedPlayer) {
-    await updatedPlayer.checkGroupMemberships(em)
-  }
+  await updatedPlayer.checkGroupMemberships(em)
 
   return {
     status: 200,
     body: {
       player: updatedPlayer,
+      rejectedProps,
     },
   }
 }

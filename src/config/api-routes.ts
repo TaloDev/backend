@@ -4,6 +4,7 @@ import { apiRouteAuthMiddleware } from '../middleware/api-route-middleware.js'
 import { continuityMiddleware } from '../middleware/continuity-middleware.js'
 import { currentPlayerMiddleware } from '../middleware/current-player-middleware.js'
 import { playerAuthMiddleware } from '../middleware/player-auth-middleware.js'
+import { signatureMiddleware } from '../middleware/signature-middleware.js'
 import { eventAPIRouter } from '../routes/api/event/index.js'
 import { gameChannelAPIRouter } from '../routes/api/game-channel/index.js'
 import { gameConfigAPIRouter } from '../routes/api/game-config/index.js'
@@ -25,6 +26,7 @@ export function configureAPIRoutes(app: Koa) {
 
   app.use(currentPlayerMiddleware)
   app.use(playerAuthMiddleware)
+  app.use(signatureMiddleware)
   app.use(continuityMiddleware)
 
   app.use(eventAPIRouter().routes())

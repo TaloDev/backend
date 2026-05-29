@@ -1,10 +1,13 @@
 import { randText } from '@ngneat/falso'
 import request from 'supertest'
-import { APIKeyScope } from '../../../../src/entities/api-key.js'
+import APIKey, { APIKeyScope } from '../../../../src/entities/api-key.js'
 import GameActivity, { GameActivityType } from '../../../../src/entities/game-activity.js'
 import Prop from '../../../../src/entities/prop.js'
 import { UserType } from '../../../../src/entities/user.js'
 import { genAccessToken } from '../../../../src/lib/auth/buildTokenPair.js'
+import { createToken } from '../../../../src/routes/protected/api-key/common.js'
+import GameStatFactory from '../../../fixtures/GameStatFactory.js'
+import PlayerFactory from '../../../fixtures/PlayerFactory.js'
 import createOrganisationAndGame from '../../../utils/createOrganisationAndGame.js'
 import createSocketIdentifyMessage from '../../../utils/createSocketIdentifyMessage.js'
 import createTestSocket from '../../../utils/createTestSocket.js'
@@ -326,7 +329,7 @@ describe('Game - update', () => {
     })
   })
 
-  it.each(userPermissionProvider([]))(
+  it.each(userPermissionProvider())(
     'should update purgeDevPlayers for a %s user',
     async (statusCode, _, type) => {
       const [organisation, game] = await createOrganisationAndGame()
@@ -344,7 +347,7 @@ describe('Game - update', () => {
     },
   )
 
-  it.each(userPermissionProvider([]))(
+  it.each(userPermissionProvider())(
     'should update purgeLivePlayers for a %s user',
     async (statusCode, _, type) => {
       const [organisation, game] = await createOrganisationAndGame()
@@ -362,7 +365,7 @@ describe('Game - update', () => {
     },
   )
 
-  it.each(userPermissionProvider([]))(
+  it.each(userPermissionProvider())(
     'should update the website for a %s user',
     async (statusCode, _, type) => {
       const [organisation, game] = await createOrganisationAndGame()
@@ -381,7 +384,7 @@ describe('Game - update', () => {
     },
   )
 
-  it.each(userPermissionProvider([]))(
+  it.each(userPermissionProvider())(
     'should update purgeDevPlayersRetention for a %s user',
     async (statusCode, _, type) => {
       const [organisation, game] = await createOrganisationAndGame()
@@ -399,7 +402,7 @@ describe('Game - update', () => {
     },
   )
 
-  it.each(userPermissionProvider([]))(
+  it.each(userPermissionProvider())(
     'should update purgeLivePlayersRetention for a %s user',
     async (statusCode, _, type) => {
       const [organisation, game] = await createOrganisationAndGame()
@@ -417,7 +420,7 @@ describe('Game - update', () => {
     },
   )
 
-  it.each(userPermissionProvider([]))(
+  it.each(userPermissionProvider())(
     'should update blockAliasIdentifierProfanity for a %s user',
     async (statusCode, _, type) => {
       const [organisation, game] = await createOrganisationAndGame()
@@ -435,7 +438,7 @@ describe('Game - update', () => {
     },
   )
 
-  it.each(userPermissionProvider([]))(
+  it.each(userPermissionProvider())(
     'should update blockPropsProfanity for a %s user',
     async (statusCode, _, type) => {
       const [organisation, game] = await createOrganisationAndGame()
@@ -449,6 +452,24 @@ describe('Game - update', () => {
 
       if (statusCode === 200) {
         expect((await em.refreshOrFail(game)).blockPropsProfanity).toBe(true)
+      }
+    },
+  )
+
+  it.each(userPermissionProvider())(
+    'should update verifyRequests for a %s user',
+    async (statusCode, _, type) => {
+      const [organisation, game] = await createOrganisationAndGame()
+      const [token] = await createUserAndToken({ type }, organisation)
+
+      await request(app)
+        .patch(`/games/${game.id}`)
+        .send({ verifyRequests: true })
+        .auth(token, { type: 'bearer' })
+        .expect(statusCode)
+
+      if (statusCode === 200) {
+        expect((await em.refreshOrFail(game)).verifyRequests).toBe(true)
       }
     },
   )
@@ -517,5 +538,43 @@ describe('Game - update', () => {
     })
 
     expect(activity).toBeNull()
+  })
+
+  it('should clear cached api keys after updating settings', async () => {
+    const [organisation, game] = await createOrganisationAndGame()
+    const [token, user] = await createUserAndToken({ type: UserType.OWNER }, organisation)
+
+    const apiKey = new APIKey(game, user)
+    apiKey.scopes = [APIKeyScope.WRITE_GAME_STATS]
+    await em.persist(apiKey).flush()
+    const apiToken = await createToken(em, apiKey)
+
+    const stat = await new GameStatFactory([game])
+      .state(() => ({ defaultValue: 0, maxChange: 1, maxValue: 1000 }))
+      .one()
+    const player = await new PlayerFactory([game]).one()
+
+    await em.persist([stat, player]).flush()
+
+    await request(app)
+      .put(`/v1/game-stats/${stat.internalName}`)
+      .send({ change: 1 })
+      .auth(apiToken, { type: 'bearer' })
+      .set('x-talo-alias', String(player.aliases[0].id))
+      .expect(200)
+
+    await request(app)
+      .patch(`/games/${game.id}`)
+      .send({ verifyRequests: true })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    // now requires a signature
+    await request(app)
+      .put(`/v1/game-stats/${stat.internalName}`)
+      .send({ change: 1 })
+      .auth(apiToken, { type: 'bearer' })
+      .set('x-talo-alias', String(player.aliases[0].id))
+      .expect(401)
   })
 })

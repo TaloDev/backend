@@ -1,7 +1,8 @@
-import { APIKeyScope } from '../../../entities/api-key.js'
+import APIKey, { APIKeyScope } from '../../../entities/api-key.js'
 import { GameActivityType } from '../../../entities/game-activity.js'
 import Game, { MAX_LIVE_CONFIG_VALUE_LENGTH } from '../../../entities/game.js'
 import { UserType } from '../../../entities/user.js'
+import { getTokenCacheKey } from '../../../lib/auth/getAPIKeyFromToken.js'
 import updateAllowedKeys from '../../../lib/entities/updateAllowedKeys.js'
 import { buildErrorResponse } from '../../../lib/errors/buildErrorResponse.js'
 import { PropRejectionError } from '../../../lib/errors/propRejectionError.js'
@@ -44,6 +45,7 @@ export const updateRoute = protectedRoute({
       website: z.string().nullable().optional(),
       blockAliasIdentifierProfanity: z.boolean().optional(),
       blockPropsProfanity: z.boolean().optional(),
+      verifyRequests: z.boolean().optional(),
     }),
   }),
   middleware: withMiddleware(userTypeGate([UserType.ADMIN], 'update games'), loadGame),
@@ -58,6 +60,7 @@ export const updateRoute = protectedRoute({
       website,
       blockAliasIdentifierProfanity,
       blockPropsProfanity,
+      verifyRequests,
     } = ctx.state.validated.body
 
     const em = ctx.em
@@ -146,6 +149,10 @@ export const updateRoute = protectedRoute({
         throwUnlessOwner(ctx)
         settingsToUpdate.blockPropsProfanity = blockPropsProfanity
       }
+      if (typeof verifyRequests === 'boolean') {
+        throwUnlessOwner(ctx)
+        settingsToUpdate.verifyRequests = verifyRequests
+      }
 
       const [, changedProperties] = updateAllowedKeys(game, settingsToUpdate, [
         'purgeDevPlayers',
@@ -154,6 +161,7 @@ export const updateRoute = protectedRoute({
         'purgeLivePlayersRetention',
         'blockAliasIdentifierProfanity',
         'blockPropsProfanity',
+        'verifyRequests',
         'website',
       ])
 
@@ -170,6 +178,13 @@ export const updateRoute = protectedRoute({
             },
           },
         })
+
+        const apiKeys = await em.repo(APIKey).find({ game })
+        await Promise.all(
+          apiKeys.map((key) => {
+            return em.clearCache(getTokenCacheKey(key.id))
+          }),
+        )
       }
 
       await em.flush()

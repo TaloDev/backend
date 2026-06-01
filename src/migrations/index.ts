@@ -71,6 +71,8 @@ import { CreateGameCenterIntegrationEventTable } from './20260404213749CreateGam
 import { MikroORMV7FKDecouple } from './20260509215853MikroORMV7FKDecouple.js'
 import { AddBlockAliasIdentifierProfanityColumn } from './20260514072111AddBlockAliasIdentifierProfanityColumn.js'
 import { AddBlockPropsProfanityColumn } from './20260515181220AddBlockPropsProfanityColumn.js'
+import { CreateGameVerificationKeyTable } from './20260528190642CreateGameVerificationKeyTable.js'
+import { AddVerifyRequestsColumn } from './20260529204749AddVerifyRequestsColumn.js'
 
 export default [
   {
@@ -364,5 +366,13 @@ export default [
   {
     name: 'AddBlockPropsProfanityColumn',
     class: AddBlockPropsProfanityColumn,
+  },
+  {
+    name: 'CreateGameVerificationKeyTable',
+    class: CreateGameVerificationKeyTable,
+  },
+  {
+    name: 'AddVerifyRequestsColumn',
+    class: AddVerifyRequestsColumn,
   },
 ]

@@ -58,6 +58,9 @@ export default class Game {
   blockPropsProfanity: boolean = false
 
   @Property()
+  verifyRequests: boolean = false
+
+  @Property()
   createdAt: Date = new Date()
 
   @Property({ onUpdate: () => new Date() })

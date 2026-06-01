@@ -5,7 +5,7 @@ import createUserAndToken from '../../../utils/createUserAndToken.js'
 import userPermissionProvider from '../../../utils/userPermissionProvider.js'
 
 describe('Game - settings', () => {
-  it.each(userPermissionProvider([]))(
+  it.each(userPermissionProvider())(
     'should return settings for a %s user',
     async (statusCode, _, type) => {
       const [organisation, game] = await createOrganisationAndGame()
@@ -31,6 +31,7 @@ describe('Game - settings', () => {
           purgeLivePlayersRetention: 60,
           blockAliasIdentifierProfanity: false,
           blockPropsProfanity: false,
+          verifyRequests: false,
           website: 'https://example.com',
           gameToken: expect.any(String),
         })

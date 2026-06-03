@@ -13,6 +13,7 @@ export type SocketErrorCode = [
   'INVALID_SESSION_TOKEN',
   'MISSING_ACCESS_KEY_SCOPES',
   'RATE_LIMIT_EXCEEDED',
+  'INVALID_SIGNATURE',
 ][number]
 
 const validSentryErrorCodes: SocketErrorCode[] = [

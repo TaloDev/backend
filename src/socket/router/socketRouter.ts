@@ -4,6 +4,8 @@ import { addBreadcrumb } from '@sentry/node'
 import { RawData } from 'ws'
 import { z, ZodError, ZodType } from 'zod'
 import { APIKeyScope } from '../../entities/api-key.js'
+import Game from '../../entities/game.js'
+import { verifySignature } from '../../lib/auth/verify-signature.js'
 import Socket from '../index.js'
 import gameChannelListeners from '../listeners/gameChannelListeners.js'
 import playerListeners from '../listeners/playerListeners.js'
@@ -70,7 +72,18 @@ export default class SocketRouter {
       let parsedMessage: SocketMessage | null = null
 
       try {
-        parsedMessage = socketMessageValidator.parse(JSON.parse(message))
+        let signature: string | undefined
+        let jsonString = message
+
+        if (conn.verifyRequests) {
+          const newlineIndex = message.indexOf('\n')
+          if (newlineIndex !== -1) {
+            signature = message.slice(0, newlineIndex)
+            jsonString = message.slice(newlineIndex + 1)
+          }
+        }
+
+        parsedMessage = socketMessageValidator.parse(JSON.parse(jsonString))
 
         addBreadcrumb({
           category: 'message',
@@ -78,7 +91,13 @@ export default class SocketRouter {
           level: 'info',
         })
 
-        const handled = await this.routeMessage({ conn, message: parsedMessage, em })
+        const handled = await this.routeMessage({
+          conn,
+          message: parsedMessage,
+          em,
+          signature,
+          rawPayload: jsonString,
+        })
         if (!handled) {
           sendError({
             conn,
@@ -116,11 +135,25 @@ export default class SocketRouter {
     conn,
     message,
     em,
+    signature,
+    rawPayload,
   }: {
     conn: SocketConnection
     message: SocketMessage
     em: EntityManager
+    signature?: string
+    rawPayload: string
   }) {
+    const valid = await this.verifySocketSignature({ conn, signature, rawPayload, em })
+    if (!valid) {
+      sendError({
+        conn,
+        req: message.req,
+        error: new SocketError('INVALID_SIGNATURE', 'Invalid signature'),
+      })
+      return true
+    }
+
     for (const route of routes) {
       for (const listener of route) {
         if (listener.req === message.req) {
@@ -198,6 +231,41 @@ export default class SocketRouter {
   ): boolean {
     const requiredScopes = listener.options?.apiKeyScopes ?? []
     return conn.hasScopes(requiredScopes)
+  }
+
+  private async verifySocketSignature({
+    conn,
+    signature,
+    rawPayload,
+    em,
+  }: {
+    conn: SocketConnection
+    signature?: string
+    rawPayload: string
+    em: EntityManager
+  }) {
+    if (!conn.verifyRequests) {
+      return true
+    }
+
+    if (!conn.playerAliasId) {
+      return true
+    }
+
+    if (!signature) {
+      return false
+    }
+
+    const game = await em.repo(Game).findOneOrFail(conn.gameId)
+
+    return verifySignature({
+      signature,
+      rawPayload,
+      game,
+      aliasId: conn.playerAliasId,
+      em,
+      redis: this.wss.redis,
+    })
   }
 
   getMissingScopes(

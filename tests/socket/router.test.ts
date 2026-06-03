@@ -4,6 +4,7 @@ import GameChannelFactory from '../fixtures/GameChannelFactory.js'
 import createAPIKeyAndToken from '../utils/createAPIKeyAndToken.js'
 import createSocketIdentifyMessage from '../utils/createSocketIdentifyMessage.js'
 import createTestSocket from '../utils/createTestSocket.js'
+import { createEncryptedKey, buildSignature } from '../utils/signatureHelpers.js'
 
 describe('Socket router', () => {
   it('should reject invalid messages', async () => {
@@ -155,6 +156,153 @@ describe('Socket router', () => {
           errorCode: 'INVALID_MESSAGE_DATA',
           cause: '{"channel":{"id":1},"myMessageToTheChannelIsGoingToBeThis":"Hello world"}',
         },
+      })
+    })
+  })
+
+  it('should reject socket messages with a missing signature when verifyRequests is true', async () => {
+    const { identifyMessage, ticket, apiKey } = await createSocketIdentifyMessage([
+      APIKeyScope.READ_PLAYERS,
+      APIKeyScope.WRITE_GAME_CHANNELS,
+    ])
+    apiKey.game.verifyRequests = true
+    await em.flush()
+
+    await createTestSocket(`/?ticket=${ticket}`, async (client) => {
+      await client.identify(identifyMessage)
+
+      client.sendJson({
+        req: 'v1.channels.message',
+        data: {
+          channel: { id: 1 },
+          message: 'Hello world',
+        },
+      })
+
+      await client.expectJsonToStrictEqual({
+        res: 'v1.error',
+        data: {
+          req: 'v1.channels.message',
+          message: 'Invalid signature',
+          errorCode: 'INVALID_SIGNATURE',
+        },
+      })
+    })
+  })
+
+  it('should reject socket messages with an invalid signature payload', async () => {
+    const { identifyMessage, ticket, apiKey } = await createSocketIdentifyMessage([
+      APIKeyScope.READ_PLAYERS,
+      APIKeyScope.WRITE_GAME_CHANNELS,
+    ])
+    apiKey.game.verifyRequests = true
+
+    const verificationKey = await createEncryptedKey(apiKey.game, 'test-verification-key-1')
+    await em.persist(verificationKey).flush()
+
+    await createTestSocket(`/?ticket=${ticket}`, async (client) => {
+      await client.identify(identifyMessage)
+
+      const wrongPayload = JSON.stringify({
+        req: 'v1.player-relationships.broadcast',
+        data: {},
+      })
+      const sig = buildSignature(wrongPayload, 'test-verification-key-1', '1')
+
+      client.sendJson(
+        {
+          req: 'v1.channels.message',
+          data: {
+            channel: { id: 1 },
+            message: 'Hello world',
+          },
+        },
+        sig,
+      )
+
+      await client.expectJsonToStrictEqual({
+        res: 'v1.error',
+        data: {
+          req: 'v1.channels.message',
+          message: 'Invalid signature',
+          errorCode: 'INVALID_SIGNATURE',
+        },
+      })
+    })
+  })
+
+  it('should accept socket messages with a valid signature', async () => {
+    const { identifyMessage, ticket, player, apiKey } = await createSocketIdentifyMessage([
+      APIKeyScope.READ_PLAYERS,
+      APIKeyScope.WRITE_GAME_CHANNELS,
+      APIKeyScope.READ_GAME_CHANNELS,
+    ])
+    apiKey.game.verifyRequests = true
+
+    const channel = await new GameChannelFactory(player.game).one()
+    channel.members.add(player.aliases[0])
+    em.persist(channel)
+
+    const verificationKey = await createEncryptedKey(apiKey.game, 'test-verification-key-1')
+    await em.persist(verificationKey).flush()
+
+    await createTestSocket(`/?ticket=${ticket}`, async (client) => {
+      await client.identify(identifyMessage)
+
+      const payload = JSON.stringify({
+        req: 'v1.channels.message',
+        data: {
+          channel: { id: channel.id },
+          message: 'Hello world',
+        },
+      })
+      const sig = buildSignature(payload, 'test-verification-key-1', '1')
+
+      client.sendJson(
+        {
+          req: 'v1.channels.message',
+          data: {
+            channel: { id: channel.id },
+            message: 'Hello world',
+          },
+        },
+        sig,
+      )
+
+      await client.expectJson((actual) => {
+        expect(actual.res).toBe('v1.channels.message')
+        expect(actual.data.channel.id).toBe(channel.id)
+        expect(actual.data.message).toBe('Hello world')
+        expect(actual.data.playerAlias.id).toBe(player.aliases[0].id)
+      })
+    })
+  })
+
+  it('should skip signature verification when verifyRequests is false', async () => {
+    const { identifyMessage, ticket, player } = await createSocketIdentifyMessage([
+      APIKeyScope.READ_PLAYERS,
+      APIKeyScope.WRITE_GAME_CHANNELS,
+      APIKeyScope.READ_GAME_CHANNELS,
+    ])
+
+    const channel = await new GameChannelFactory(player.game).one()
+    channel.members.add(player.aliases[0])
+    await em.persist(channel).flush()
+
+    await createTestSocket(`/?ticket=${ticket}`, async (client) => {
+      await client.identify(identifyMessage)
+
+      client.sendJson({
+        req: 'v1.channels.message',
+        data: {
+          channel: { id: channel.id },
+          message: 'Hello world',
+        },
+      })
+
+      await client.expectJson((actual) => {
+        expect(actual.res).toBe('v1.channels.message')
+        expect(actual.data.channel.id).toBe(channel.id)
       })
     })
   })

@@ -48,9 +48,13 @@ class TestClient extends WebSocket {
     })
   }
 
-  sendJson<T extends object>(json: T) {
+  sendJson<T extends object>(json: T, signature?: string) {
     this.messages = []
-    this.send(JSON.stringify(json))
+    if (signature) {
+      this.send(`${signature}\n${JSON.stringify(json)}`)
+    } else {
+      this.send(JSON.stringify(json))
+    }
   }
 
   // oxlint-disable-next-line typescript/no-explicit-any

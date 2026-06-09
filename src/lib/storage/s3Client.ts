@@ -20,7 +20,7 @@ function createS3Client() {
 
 export function isS3Configured() {
   return (
-    process.env.STORAGE_DRIVER === 's3' &&
+    process.env.STORAGE_DRIVER?.toLowerCase() === 's3' &&
     Boolean(process.env.S3_ACCESS_KEY_ID) &&
     Boolean(process.env.S3_SECRET_ACCESS_KEY) &&
     Boolean(process.env.S3_BUCKET)

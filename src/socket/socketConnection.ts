@@ -14,6 +14,7 @@ export default class SocketConnection {
   alive: boolean = true
   playerAliasId!: number
   readonly gameId: number
+  readonly verifyRequests: boolean
   private readonly apiKeyId: number
   private readonly apiKeyScopes: APIKeyScope[]
   private readonly devBuild: boolean
@@ -28,6 +29,7 @@ export default class SocketConnection {
     private readonly remoteAddress: string,
   ) {
     this.gameId = ticket.apiKey.game.id
+    this.verifyRequests = ticket.apiKey.game.verifyRequests
     this.apiKeyId = ticket.apiKey.id
     this.apiKeyScopes = ticket.apiKey.scopes
     this.devBuild = ticket.devBuild

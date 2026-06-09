@@ -11,6 +11,7 @@ import GameFeedback from './game-feedback.js'
 import GameSave from './game-save.js'
 import GameSecret from './game-secret.js'
 import GameStat from './game-stat.js'
+import GameVerificationKey from './game-verification-key.js'
 import Game from './game.js'
 import GooglePlayGamesIntegrationEvent from './google-play-games-integration-event.js'
 import Integration from './integration.js'
@@ -44,6 +45,7 @@ import UserTwoFactorAuth from './user-two-factor-auth.js'
 import User from './user.js'
 
 export const entities = [
+  GameVerificationKey,
   GameCenterIntegrationEvent,
   GooglePlayGamesIntegrationEvent,
   PlayerAliasSubscription,

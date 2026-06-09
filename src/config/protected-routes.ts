@@ -12,6 +12,7 @@ import { gameActivityRouter } from '../routes/protected/game-activity/index.js'
 import { gameChannelRouter } from '../routes/protected/game-channel/index.js'
 import { gameFeedbackRouter } from '../routes/protected/game-feedback/index.js'
 import { gameStatRouter } from '../routes/protected/game-stat/index.js'
+import { gameVerificationKeyRouter } from '../routes/protected/game-verification-key/index.js'
 import { gameRouter } from '../routes/protected/game/index.js'
 import { headlineRouter } from '../routes/protected/headline/index.js'
 import { integrationRouter } from '../routes/protected/integration/index.js'
@@ -36,6 +37,7 @@ export function configureProtectedRoutes(app: Koa) {
   app.use(gameFeedbackRouter().routes())
   app.use(gameRouter().routes())
   app.use(gameStatRouter().routes())
+  app.use(gameVerificationKeyRouter().routes())
   app.use(headlineRouter().routes())
   app.use(integrationRouter().routes())
   app.use(inviteRouter().routes())

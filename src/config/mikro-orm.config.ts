@@ -1,6 +1,6 @@
 import 'dotenv/config'
 import { Migrator } from '@mikro-orm/migrations'
-import { defineConfig, MikroORM } from '@mikro-orm/mysql'
+import { defineConfig, MikroORM, MemoryCacheAdapter } from '@mikro-orm/mysql'
 import { TsMorphMetadataProvider } from '@mikro-orm/reflection'
 import { RedisCacheAdapter } from 'mikro-orm-cache-adapter-redis'
 import { entities } from '../entities/index.js'
@@ -40,7 +40,7 @@ const ormConfig = defineConfig({
     idleTimeoutMillis: Number(process.env.MIKRO_ORM_POOL_IDLE_TIMEOUT) || undefined,
   },
   resultCache: {
-    adapter: RedisCacheAdapter,
+    adapter: process.env.RESULT_CACHE_DRIVER === 'redis' ? RedisCacheAdapter : MemoryCacheAdapter,
     options: redisConfig,
   },
 })

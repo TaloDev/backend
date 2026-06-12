@@ -17,22 +17,54 @@ const DENYLIST = [
 
 const ALLOWLIST = new Set(['emailconfirmed'])
 
+function isShallowFilteredObject(obj: unknown): obj is Record<string, unknown> {
+  if (obj === null || typeof obj !== 'object') return false
+  if (Array.isArray(obj) || obj instanceof Date || obj instanceof RegExp) return false
+  if (typeof obj === 'function') return false
+  for (const key in obj) {
+    if (!Object.prototype.hasOwnProperty.call(obj, key)) continue
+    const value = (obj as Record<string, unknown>)[key]
+    if (value !== null && typeof value === 'object') return false
+  }
+  return true
+}
+
+function filterShallow(obj: Record<string, unknown>) {
+  const filtered: Record<string, unknown> = {}
+  for (const key in obj) {
+    if (!Object.prototype.hasOwnProperty.call(obj, key)) continue
+    const value = obj[key]
+    const keyLower = key.toLowerCase()
+    const inDenyList = DENYLIST.some((deniedKey) => keyLower.includes(deniedKey))
+    const inAllowList = ALLOWLIST.has(keyLower)
+
+    if (inDenyList && !inAllowList) {
+      filtered[key] = Array.isArray(value) ? value.map(() => '[Filtered]') : '[Filtered]'
+    } else {
+      filtered[key] = value
+    }
+  }
+  return filtered
+}
+
 function deepFilterDataInternal<T>(obj: T, visited: WeakSet<object>): T {
   if (obj === null || obj === undefined || typeof obj !== 'object') {
     return obj
   }
 
-  // prevent infinite recursion from circular references
   if (visited.has(obj as object)) {
     return '[Circular]' as T
   }
   visited.add(obj as object)
 
+  if (isShallowFilteredObject(obj)) {
+    return filterShallow(obj) as T
+  }
+
   if (Array.isArray(obj)) {
     return obj.map((item) => deepFilterDataInternal(item, visited)) as T
   }
 
-  // skip objects that can't be safely iterated (like functions, dates, etc.)
   if (obj instanceof Date || obj instanceof RegExp || typeof obj === 'function') {
     return obj
   }
@@ -45,35 +77,20 @@ function deepFilterDataInternal<T>(obj: T, visited: WeakSet<object>): T {
       const inAllowList = ALLOWLIST.has(keyLower)
 
       if (inDenyList && !inAllowList) {
-        // handle array values in filtered fields (like headers)
-        if (Array.isArray(value)) {
-          filtered[key] = value.map(() => '[Filtered]')
-        } else {
-          filtered[key] = '[Filtered]'
-        }
+        filtered[key] = Array.isArray(value) ? value.map(() => '[Filtered]') : '[Filtered]'
       } else {
         filtered[key] = deepFilterDataInternal(value, visited)
       }
     }
     return filtered as T
   } catch {
-    // if we can't iterate the object safely, return it as-is
     return obj
   }
 }
 
-export function deepFilterData<T>(obj: T | string, lengthCheck?: boolean): T {
-  // strings don't need filtering
+export function deepFilterData<T>(obj: T | string): T {
   if (typeof obj === 'string') {
     return obj as T
-  }
-
-  // max 20kb for parsing
-  if (lengthCheck) {
-    const stringified = JSON.stringify(obj)
-    if (stringified.length > 20 * 1024) {
-      return '[Too large]' as T
-    }
   }
 
   return deepFilterDataInternal(obj, new WeakSet())
@@ -83,12 +100,39 @@ function buildHeaders(
   prefix: 'request' | 'response',
   headers: IncomingHttpHeaders | OutgoingHttpHeaders,
 ) {
-  return Object.entries(deepFilterData(headers)).reduce((acc, [key, value]) => {
-    return {
-      ...acc,
-      [`http.${prefix}.header.${key.toLowerCase()}`]: value,
+  const filtered = deepFilterData(headers) as Record<string, unknown>
+  const out: Record<string, unknown> = {}
+  for (const key in filtered) {
+    if (!Object.prototype.hasOwnProperty.call(filtered, key)) {
+      continue
     }
-  }, {})
+    out[`http.${prefix}.header.${key.toLowerCase()}`] = filtered[key]
+  }
+
+  return out
+}
+
+function safeStringifyBody(body: unknown) {
+  if (!body) {
+    return ''
+  }
+
+  const maxSize = 20 * 1024
+
+  try {
+    if (typeof body === 'string') {
+      return body.length > maxSize ? '[Too large]' : body
+    }
+
+    const preliminary = JSON.stringify(body)
+    if (preliminary.length > maxSize) {
+      return '[Too large]'
+    }
+
+    return JSON.stringify(deepFilterData(body))
+  } catch {
+    return ''
+  }
 }
 
 export async function httpTracingMiddleware(ctx: Context, next: Next) {
@@ -100,18 +144,14 @@ export async function httpTracingMiddleware(ctx: Context, next: Next) {
     ...buildHeaders('request', ctx.request.headers),
     'http.method': ctx.method,
     'http.route': ctx.path,
-    'http.request.body': ctx.request.body
-      ? JSON.stringify(deepFilterData(ctx.request.body, true))
-      : undefined,
+    'http.request.body': safeStringifyBody(ctx.request.body),
   })
 
   ctx.res.on('finish', () => {
     setTraceAttributes({
       ...buildHeaders('response', ctx.response.headers),
       'http.response_size': ctx.response.length,
-      'http.response.body': ctx.response.body
-        ? JSON.stringify(deepFilterData(ctx.response.body, true))
-        : undefined,
+      'http.response.body': safeStringifyBody(ctx.response.body),
     })
   })
 

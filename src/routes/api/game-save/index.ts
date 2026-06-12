@@ -1,11 +1,12 @@
+import type Router from 'koa-tree-router'
 import { apiRouter } from '../../../lib/routing/router.js'
 import { deleteRoute } from './delete.js'
 import { listRoute } from './list.js'
 import { patchRoute } from './patch.js'
 import { postRoute } from './post.js'
 
-export function gameSaveAPIRouter() {
-  return apiRouter(
+export function gameSaveAPIRouter(router: Router) {
+  apiRouter(
     '/v1/game-saves',
     ({ route }) => {
       route(listRoute)
@@ -14,6 +15,7 @@ export function gameSaveAPIRouter() {
       route(deleteRoute)
     },
     {
+      router,
       docsKey: 'GameSaveAPI',
     },
   )

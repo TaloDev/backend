@@ -143,13 +143,17 @@ function mountRoute<S extends RouteState, V extends ValidationSchema | undefined
   }
 }
 
-function createRouter<S extends RouteState>(
-  basePath: string,
-  builder: (helpers: RouteHelpers<S>) => void,
-  docsKey?: string,
-): Router {
-  const router = new Router()
-
+function createRouter<S extends RouteState>({
+  basePath,
+  builder,
+  router,
+  docsKey,
+}: {
+  basePath: string
+  builder: (helpers: RouteHelpers<S>) => void
+  router: Router
+  docsKey?: string
+}): Router {
   const helpers: RouteHelpers<S> = {
     route: <RS extends S = S, V extends ValidationSchema | undefined = undefined>(
       config: RouteConfig<RS, V>,
@@ -165,25 +169,32 @@ function createRouter<S extends RouteState>(
 export function publicRouter<S extends PublicRouteState = PublicRouteState>(
   basePath: string,
   builder: (helpers: RouteHelpers<S>) => void,
+  opts: {
+    router: Router
+  },
 ): Router {
-  return createRouter<S>(basePath, builder)
+  return createRouter<S>({ basePath, builder, router: opts.router })
 }
 
 export function protectedRouter<S extends ProtectedRouteState = ProtectedRouteState>(
   basePath: string,
   builder: (helpers: RouteHelpers<S>) => void,
+  opts: {
+    router: Router
+  },
 ): Router {
-  return createRouter<S>(basePath, builder)
+  return createRouter<S>({ basePath, builder, router: opts.router })
 }
 
 export function apiRouter<S extends APIRouteState = APIRouteState>(
   basePath: string,
   builder: (helpers: RouteHelpers<S>) => void,
   opts: {
+    router: Router
     docsKey?: string
-  } = {},
+  },
 ): Router {
-  return createRouter<S>(basePath, builder, opts.docsKey)
+  return createRouter<S>({ basePath, builder, router: opts.router, docsKey: opts.docsKey })
 }
 
 // validated route

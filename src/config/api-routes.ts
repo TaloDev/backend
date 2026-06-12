@@ -1,4 +1,5 @@
 import Koa from 'koa'
+import Router from 'koa-tree-router'
 import { apiKeyMiddleware } from '../middleware/api-key-middleware.js'
 import { apiRouteAuthMiddleware } from '../middleware/api-route-middleware.js'
 import { continuityMiddleware } from '../middleware/continuity-middleware.js'
@@ -29,18 +30,30 @@ export function configureAPIRoutes(app: Koa) {
   app.use(signatureMiddleware)
   app.use(continuityMiddleware)
 
-  app.use(eventAPIRouter().routes())
-  app.use(gameChannelAPIRouter().routes())
-  app.use(leaderboardAPIRouter().routes())
-  app.use(gameConfigAPIRouter().routes())
-  app.use(gameFeedbackAPIRouter().routes())
-  app.use(gameSaveAPIRouter().routes())
-  app.use(gameStatAPIRouter().routes())
-  app.use(healthCheckAPIRouter().routes())
-  app.use(playerAPIRouter().routes())
-  app.use(playerAuthAPIRouter().routes())
-  app.use(playerGroupAPIRouter().routes())
-  app.use(playerPresenceAPIRouter().routes())
-  app.use(playerRelationshipAPIRouter().routes())
-  app.use(socketTicketAPIRouter().routes())
+  const mainRouter = new Router()
+  const playerParamRouter = new Router()
+  const gameChannelParamRouter = new Router()
+  const gameStatParamRouter = new Router()
+
+  eventAPIRouter(mainRouter)
+  gameConfigAPIRouter(mainRouter)
+  gameFeedbackAPIRouter(mainRouter)
+  gameSaveAPIRouter(mainRouter)
+  healthCheckAPIRouter(mainRouter)
+  leaderboardAPIRouter(mainRouter)
+  playerAuthAPIRouter(mainRouter)
+  playerGroupAPIRouter(mainRouter)
+  playerPresenceAPIRouter(mainRouter)
+  playerRelationshipAPIRouter(mainRouter)
+  socketTicketAPIRouter(mainRouter)
+
+  // these have static + parameterized routes
+  playerAPIRouter(mainRouter, playerParamRouter)
+  gameChannelAPIRouter(mainRouter, gameChannelParamRouter)
+  gameStatAPIRouter(mainRouter, gameStatParamRouter)
+
+  app.use(mainRouter.routes())
+  app.use(playerParamRouter.routes())
+  app.use(gameChannelParamRouter.routes())
+  app.use(gameStatParamRouter.routes())
 }

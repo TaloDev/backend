@@ -32,7 +32,6 @@ export default async function init() {
 
   await initProviders(app, isTest)
 
-  app.use(compress())
   app.use(trailingSlashMiddleware)
   if (!isTest) app.use(loggerMiddleware)
   app.use(errorMiddleware)
@@ -41,8 +40,9 @@ export default async function init() {
   app.use(helmet())
   app.use(corsMiddleware)
   app.use(devDataMiddleware)
-  app.use(requestContextMiddleware)
   app.use(limiterMiddleware)
+  app.use(requestContextMiddleware)
+  app.use(compress())
 
   configurePublicRoutes(app)
   configureProtectedRoutes(app)

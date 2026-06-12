@@ -1,3 +1,4 @@
+import type Router from 'koa-tree-router'
 import { protectedRouter } from '../../../lib/routing/router.js'
 import { authActivitiesRoute } from './auth-activities.js'
 import { deleteRoute } from './delete.js'
@@ -9,16 +10,20 @@ import { statsRoute } from './stats.js'
 import { toggleDevBuildRoute } from './toggle-dev-build.js'
 import { updateRoute } from './update.js'
 
-export function playerRouter() {
-  return protectedRouter('/games/:gameId/players', ({ route }) => {
-    route(listRoute)
-    route(getRoute)
-    route(updateRoute)
-    route(toggleDevBuildRoute)
-    route(deleteRoute)
-    route(eventsRoute)
-    route(statsRoute)
-    route(savesRoute)
-    route(authActivitiesRoute)
-  })
+export function playerRouter(router: Router) {
+  protectedRouter(
+    '/games/:gameId/players',
+    ({ route }) => {
+      route(listRoute)
+      route(getRoute)
+      route(updateRoute)
+      route(toggleDevBuildRoute)
+      route(deleteRoute)
+      route(eventsRoute)
+      route(statsRoute)
+      route(savesRoute)
+      route(authActivitiesRoute)
+    },
+    { router },
+  )
 }

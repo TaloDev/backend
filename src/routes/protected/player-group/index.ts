@@ -1,3 +1,4 @@
+import type Router from 'koa-tree-router'
 import { protectedRouter } from '../../../lib/routing/router.js'
 import { createRoute } from './create.js'
 import { deleteRoute } from './delete.js'
@@ -8,15 +9,19 @@ import { rulesRoute } from './rules.js'
 import { togglePinnedRoute } from './toggle-pinned.js'
 import { updateRoute } from './update.js'
 
-export function playerGroupRouter() {
-  return protectedRouter('/games/:gameId/player-groups', ({ route }) => {
-    route(listRoute)
-    route(createRoute)
-    route(updateRoute)
-    route(deleteRoute)
-    route(rulesRoute)
-    route(previewCountRoute)
-    route(listPinnedRoute)
-    route(togglePinnedRoute)
-  })
+export function playerGroupRouter(router: Router) {
+  protectedRouter(
+    '/games/:gameId/player-groups',
+    ({ route }) => {
+      route(listRoute)
+      route(createRoute)
+      route(updateRoute)
+      route(deleteRoute)
+      route(rulesRoute)
+      route(previewCountRoute)
+      route(listPinnedRoute)
+      route(togglePinnedRoute)
+    },
+    { router },
+  )
 }

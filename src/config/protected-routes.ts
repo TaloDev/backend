@@ -1,4 +1,5 @@
 import Koa from 'koa'
+import Router from 'koa-tree-router'
 import {
   protectedRouteAuthMiddleware,
   protectedRouteUserMiddleware,
@@ -27,23 +28,27 @@ export function configureProtectedRoutes(app: Koa) {
   app.use(protectedRouteAuthMiddleware)
   app.use(protectedRouteUserMiddleware)
 
-  app.use(apiKeyRouter().routes())
-  app.use(billingRouter().routes())
-  app.use(chartRouter().routes())
-  app.use(dataExportRouter().routes())
-  app.use(eventRouter().routes())
-  app.use(gameActivityRouter().routes())
-  app.use(gameChannelRouter().routes())
-  app.use(gameFeedbackRouter().routes())
-  app.use(gameRouter().routes())
-  app.use(gameStatRouter().routes())
-  app.use(gameVerificationKeyRouter().routes())
-  app.use(headlineRouter().routes())
-  app.use(integrationRouter().routes())
-  app.use(inviteRouter().routes())
-  app.use(leaderboardRouter().routes())
-  app.use(organisationRouter().routes())
-  app.use(playerGroupRouter().routes())
-  app.use(playerRouter().routes())
-  app.use(userRouter().routes())
+  const router = new Router()
+
+  apiKeyRouter(router)
+  billingRouter(router)
+  chartRouter(router)
+  dataExportRouter(router)
+  eventRouter(router)
+  gameActivityRouter(router)
+  gameChannelRouter(router)
+  gameFeedbackRouter(router)
+  gameRouter(router)
+  gameStatRouter(router)
+  gameVerificationKeyRouter(router)
+  headlineRouter(router)
+  integrationRouter(router)
+  inviteRouter(router)
+  leaderboardRouter(router)
+  organisationRouter(router)
+  playerGroupRouter(router)
+  playerRouter(router)
+  userRouter(router)
+
+  app.use(router.routes())
 }

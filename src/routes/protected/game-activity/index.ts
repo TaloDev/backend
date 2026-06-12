@@ -1,3 +1,4 @@
+import type Router from 'koa-tree-router'
 import { QueryOrder } from '@mikro-orm/mysql'
 import GameActivity from '../../../entities/game-activity.js'
 import { UserType } from '../../../entities/user.js'
@@ -9,62 +10,66 @@ import { userTypeGate } from '../../../middleware/policy-middleware.js'
 
 const itemsPerPage = DEFAULT_PAGE_SIZE
 
-export function gameActivityRouter() {
-  return protectedRouter('/games/:gameId/game-activities', ({ route }) => {
-    route(
-      protectedRoute({
-        method: 'get',
-        schema: (z) => ({
-          query: z.object({
-            page: pageSchema,
+export function gameActivityRouter(router: Router) {
+  protectedRouter(
+    '/games/:gameId/game-activities',
+    ({ route }) => {
+      route(
+        protectedRoute({
+          method: 'get',
+          schema: (z) => ({
+            query: z.object({
+              page: pageSchema,
+            }),
           }),
-        }),
-        middleware: withMiddleware(
-          userTypeGate([UserType.ADMIN], 'view game activities'),
-          loadGame,
-        ),
-        handler: async (ctx) => {
-          const em = ctx.em
-          const game = ctx.state.game
-          const { page } = ctx.state.validated.query
+          middleware: withMiddleware(
+            userTypeGate([UserType.ADMIN], 'view game activities'),
+            loadGame,
+          ),
+          handler: async (ctx) => {
+            const em = ctx.em
+            const game = ctx.state.game
+            const { page } = ctx.state.validated.query
 
-          const [allActivities, count] = await em.repo(GameActivity).findAndCount(
-            {
-              $or: [
-                { game },
-                {
-                  $and: [
-                    {
-                      game: null,
-                      user: {
-                        organisation: ctx.state.user.organisation,
+            const [allActivities, count] = await em.repo(GameActivity).findAndCount(
+              {
+                $or: [
+                  { game },
+                  {
+                    $and: [
+                      {
+                        game: null,
+                        user: {
+                          organisation: ctx.state.user.organisation,
+                        },
                       },
-                    },
-                  ],
-                },
-              ],
-            },
-            {
-              populate: ['user'],
-              orderBy: { createdAt: QueryOrder.DESC },
-              limit: itemsPerPage + 1,
-              offset: page * itemsPerPage,
-            },
-          )
+                    ],
+                  },
+                ],
+              },
+              {
+                populate: ['user'],
+                orderBy: { createdAt: QueryOrder.DESC },
+                limit: itemsPerPage + 1,
+                offset: page * itemsPerPage,
+              },
+            )
 
-          const activities = allActivities.slice(0, itemsPerPage)
+            const activities = allActivities.slice(0, itemsPerPage)
 
-          return {
-            status: 200,
-            body: {
-              activities,
-              count,
-              itemsPerPage,
-              isLastPage: allActivities.length <= itemsPerPage,
-            },
-          }
-        },
-      }),
-    )
-  })
+            return {
+              status: 200,
+              body: {
+                activities,
+                count,
+                itemsPerPage,
+                isLastPage: allActivities.length <= itemsPerPage,
+              },
+            }
+          },
+        }),
+      )
+    },
+    { router },
+  )
 }

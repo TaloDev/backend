@@ -1,9 +1,10 @@
+import type Router from 'koa-tree-router'
 import { RouteDocs } from '../../../lib/docs/docs-registry.js'
 import { apiRouter } from '../../../lib/routing/router.js'
 import { createSocketTicket } from '../../../lib/sockets/createSocketTicket.js'
 
-export function socketTicketAPIRouter() {
-  return apiRouter(
+export function socketTicketAPIRouter(router: Router) {
+  apiRouter(
     '/v1/socket-tickets',
     ({ route }) => {
       route({
@@ -22,6 +23,7 @@ export function socketTicketAPIRouter() {
       })
     },
     {
+      router,
       docsKey: 'SocketTicketAPI',
     },
   )

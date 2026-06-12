@@ -1,3 +1,4 @@
+import type Router from 'koa-tree-router'
 import { apiRouter } from '../../../lib/routing/router.js'
 import { changeEmailRoute } from './change-email.js'
 import { changeIdentifierRoute } from './change-identifier.js'
@@ -13,8 +14,8 @@ import { resetPasswordRoute } from './reset-password.js'
 import { toggleVerificationRoute } from './toggle-verification.js'
 import { verifyRoute } from './verify.js'
 
-export function playerAuthAPIRouter() {
-  return apiRouter(
+export function playerAuthAPIRouter(router: Router) {
+  apiRouter(
     '/v1/players/auth',
     ({ route }) => {
       route(registerRoute)
@@ -32,6 +33,7 @@ export function playerAuthAPIRouter() {
       route(migrateRoute)
     },
     {
+      router,
       docsKey: 'PlayerAuthAPI',
     },
   )

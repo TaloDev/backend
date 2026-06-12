@@ -63,17 +63,20 @@ function deepFilterDataInternal<T>(obj: T, visited: WeakSet<object>): T {
 }
 
 export function deepFilterData<T>(obj: T | string, lengthCheck?: boolean): T {
-  // serialise the data first
-  const stringified = JSON.stringify(obj)
-
-  // max 20kb for parsing
-  if (lengthCheck && stringified.length > 20 * 1024) {
-    return '[Too large]' as T
+  // strings don't need filtering
+  if (typeof obj === 'string') {
+    return obj as T
   }
 
-  // parse the toJSON'd data
-  const parsed = JSON.parse(stringified)
-  return deepFilterDataInternal(parsed, new WeakSet())
+  // max 20kb for parsing
+  if (lengthCheck) {
+    const stringified = JSON.stringify(obj)
+    if (stringified.length > 20 * 1024) {
+      return '[Too large]' as T
+    }
+  }
+
+  return deepFilterDataInternal(obj, new WeakSet())
 }
 
 function buildHeaders(

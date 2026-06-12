@@ -147,20 +147,19 @@ route({ schema: ..., handler: ... })            // ❌ loses type inference
 
 ```typescript
 // src/routes/api/my-feature/index.ts
+import type Router from 'koa-tree-router'
 import { apiRouter } from '../../../lib/routing/router.js'
 import { getRoute } from './get.js'
 import { postRoute } from './post.js'
 
-export function myFeatureAPIRouter() {
-  return apiRouter(
+export function myFeatureAPIRouter(router: Router) {
+  apiRouter(
     '/v1/my-feature',
     ({ route }) => {
       route(getRoute)
       route(postRoute)
     },
-    {
-      docsKey: 'MyFeatureAPI', // set if this router has docs
-    },
+    { router, docsKey: 'MyFeatureAPI' },
   )
 }
 ```
@@ -171,11 +170,15 @@ Add to the appropriate config file if it's a new router:
 
 ```typescript
 // src/config/api-routes.ts
-import { myFeatureAPIRouter } from '../routes/api/my-feature.js'
+import { myFeatureAPIRouter } from '../routes/api/my-feature/index.js'
 
-export default function apiRoutes(app: Koa) {
-  // ...existing routers...
-  app.use(myFeatureAPIRouter().routes())
+export function configureAPIRoutes(app: Koa) {
+  const mainRouter = new Router()
+  // ... other routers
+
+  myFeatureAPIRouter(mainRouter)
+
+  app.use(mainRouter.routes())
 }
 ```
 

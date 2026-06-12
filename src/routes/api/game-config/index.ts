@@ -1,3 +1,4 @@
+import type Router from 'koa-tree-router'
 import { APIKeyScope } from '../../../entities/api-key.js'
 import Game from '../../../entities/game.js'
 import { RouteDocs } from '../../../lib/docs/docs-registry.js'
@@ -5,8 +6,8 @@ import { getResultCacheOptions } from '../../../lib/perf/getResultCacheOptions.j
 import { apiRouter, withMiddleware } from '../../../lib/routing/router.js'
 import { requireScopes } from '../../../middleware/policy-middleware.js'
 
-export function gameConfigAPIRouter() {
-  return apiRouter(
+export function gameConfigAPIRouter(router: Router) {
+  apiRouter(
     '/v1/game-config',
     ({ route }) => {
       route({
@@ -35,6 +36,7 @@ export function gameConfigAPIRouter() {
       })
     },
     {
+      router,
       docsKey: 'GameConfigAPI',
     },
   )

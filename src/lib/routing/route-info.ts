@@ -1,7 +1,10 @@
 import { Context } from 'koa'
 
+const PUBLIC_PREFIX = /^\/(public)\//
+const API_PREFIX = /^\/(v1)\//
+
 export function isPublicRoute(ctx: Context) {
-  return ctx.path.match(/^\/(public)\//) !== null
+  return PUBLIC_PREFIX.test(ctx.path)
 }
 
 export function isPublicHealthCheck(ctx: Context) {
@@ -9,7 +12,7 @@ export function isPublicHealthCheck(ctx: Context) {
 }
 
 export function isAPIRoute(ctx: Context) {
-  return ctx.path.match(/^\/(v1)\//) !== null
+  return API_PREFIX.test(ctx.path)
 }
 
 export function isProtectedRoute(ctx: Context) {

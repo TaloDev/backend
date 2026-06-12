@@ -1,16 +1,16 @@
-import assert from 'node:assert'
 import request from 'supertest'
 import APIKey, { APIKeyScope } from '../../src/entities/api-key.js'
+import { API_KEY_LAST_USED_HASH } from '../../src/middleware/api-key-middleware.js'
 import createAPIKeyAndToken from '../utils/createAPIKeyAndToken.js'
 
 describe('API key middleware', () => {
-  it('should accept a valid api request', async () => {
+  it('should accept a valid api request and record lastUsedAt in the redis hash', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_GAME_CONFIG])
 
     await request(app).get('/v1/game-config').auth(token, { type: 'bearer' }).expect(200)
 
-    await em.refresh(apiKey)
-    expect(apiKey.lastUsedAt).not.toBeNull()
+    const recorded = await redis.hget(API_KEY_LAST_USED_HASH, String(apiKey.id))
+    expect(recorded).not.toBeNull()
   })
 
   it('should reject unknown api keys', async () => {
@@ -70,20 +70,14 @@ describe('API key middleware', () => {
     })
   })
 
-  it('should not update an api key last used at if the difference in minutes is less than 1', async () => {
+  it('should not record lastUsedAt for a revoked api key', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_GAME_CONFIG])
+    apiKey.revokedAt = new Date()
+    await em.flush()
 
-    await request(app).get('/v1/game-config').auth(token, { type: 'bearer' }).expect(200)
+    await request(app).get('/v1/game-config').auth(token, { type: 'bearer' }).expect(401)
 
-    await em.refresh(apiKey)
-    const lastUsedAt = apiKey.lastUsedAt
-    assert(lastUsedAt)
-
-    await request(app).get('/v1/game-config').auth(token, { type: 'bearer' }).expect(200)
-
-    await em.refresh(apiKey)
-    assert(apiKey.lastUsedAt)
-
-    expect(apiKey.lastUsedAt.toISOString()).toBe(lastUsedAt.toISOString())
+    const recorded = await redis.hget(API_KEY_LAST_USED_HASH, String(apiKey.id))
+    expect(recorded).toBeNull()
   })
 })

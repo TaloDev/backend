@@ -1,32 +1,19 @@
 import { setTraceAttributes } from '@hyperdx/node-opentelemetry'
-import { EntityManager } from '@mikro-orm/mysql'
 import { Redis } from 'ioredis'
 import { Context, Next } from 'koa'
 import APIKey from '../entities/api-key.js'
 import getAPIKeyFromToken from '../lib/auth/getAPIKeyFromToken.js'
 import { isAPIRoute } from '../lib/routing/route-info.js'
 
-async function updateLastUsedAt(
-  ctx: Context,
+export const API_KEY_LAST_USED_HASH = 'api-key:last-used'
+
+async function recordLastUsedAt(
+  redis: Redis,
   apiKey: Pick<APIKey, 'id' | 'revokedAt'>,
   lastUsedAt: Date,
 ) {
-  const em: EntityManager = ctx.em
-  const redis: Redis = ctx.redis
-
   if (!apiKey.revokedAt) {
-    const key = `api-key:last-used:${apiKey.id}`
-    const result = await redis.set(key, lastUsedAt.getTime(), 'EX', 60, 'NX')
-    if (result === 'OK') {
-      await em.repo(APIKey).nativeUpdate(
-        {
-          id: apiKey.id,
-        },
-        {
-          lastUsedAt,
-        },
-      )
-    }
+    await redis.hset(API_KEY_LAST_USED_HASH, String(apiKey.id), lastUsedAt.getTime())
   }
 }
 
@@ -45,11 +32,11 @@ export async function apiKeyMiddleware(ctx: Context, next: Next) {
         const now = new Date()
         if (process.env.NODE_ENV !== 'test') {
           ctx.res.on('finish', async () => {
-            await updateLastUsedAt(ctx, apiKey, now)
+            await recordLastUsedAt(ctx.redis, apiKey, now)
           })
         } else {
           // in tests the connection would already be closed after the response is sent
-          await updateLastUsedAt(ctx, apiKey, now)
+          await recordLastUsedAt(ctx.redis, apiKey, now)
         }
         /* v8 ignore stop -- @preserve */
       }

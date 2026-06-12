@@ -6,6 +6,7 @@ import cleanupSteamworksLeaderboardEntries from '../tasks/cleanupSteamworksLeade
 import cleanupSteamworksPlayerStats from '../tasks/cleanupSteamworksPlayerStats.js'
 import deleteInactivePlayers from '../tasks/deleteInactivePlayers.js'
 import deletePlayers from '../tasks/deletePlayers.js'
+import { drainApiKeyLastUsed } from '../tasks/drainApiKeyLastUsed.js'
 
 function addScheduledTask(name: string, task: () => Promise<void>, pattern: string) {
   return createQueue(name, task).upsertJobScheduler(
@@ -24,13 +25,14 @@ export async function initScheduledTasks() {
       'cleanup-steamworks-leaderboard-entries',
       cleanupSteamworksLeaderboardEntries,
       '0 */15 * * * *',
-    ), // every 15 minutes
+    ),
     addScheduledTask(
       'cleanup-steamworks-player-stats',
       cleanupSteamworksPlayerStats,
       '0 */15 * * * *',
-    ), // every 15 minutes
+    ),
     addScheduledTask('cleanup-integration-events', cleanupIntegrationEvents, '0 0 0 * * *'), // midnight daily
+    addScheduledTask('drain-api-key-last-used', drainApiKeyLastUsed, '0 */1 * * * *'), // every minute
   ]
 
   /* v8 ignore next 3 -- @preserve */

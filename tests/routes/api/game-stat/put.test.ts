@@ -1,4 +1,3 @@
-import { DeadlockException, LockWaitTimeoutException } from '@mikro-orm/mysql'
 import { startOfSecond, subHours } from 'date-fns'
 import request from 'supertest'
 import { APIKeyScope } from '../../../../src/entities/api-key.js'
@@ -442,41 +441,76 @@ describe('Game stat API - update', () => {
     expect(playerStats).toHaveLength(1)
   })
 
-  it('should retry deadlock exceptions', async () => {
+  it('should reject updates within minTimeBetweenUpdates across concurrent requests', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_STATS])
-    const stat = await createStat(apiKey.game, { maxValue: 999, maxChange: 99 })
+    const stat = await createStat(apiKey.game, {
+      maxValue: 999,
+      maxChange: 99,
+      defaultValue: 0,
+      minTimeBetweenUpdates: 1,
+    })
     const player = await new PlayerFactory([apiKey.game]).one()
     await em.persist(player).flush()
 
-    const spy = vi.spyOn(PlayerGameStat, 'upsert')
-    spy.mockRejectedValueOnce(new DeadlockException(new Error()))
+    const makeRequest = () =>
+      request(app)
+        .put(`/v1/game-stats/${stat.internalName}`)
+        .send({ change: 1 })
+        .auth(token, { type: 'bearer' })
+        .set('x-talo-alias', String(player.aliases[0].id))
 
-    await request(app)
-      .put(`/v1/game-stats/${stat.internalName}`)
-      .send({ change: 10 })
-      .auth(token, { type: 'bearer' })
-      .set('x-talo-alias', String(player.aliases[0].id))
-      .expect(200)
+    const responses = await Promise.all(Array.from({ length: 5 }, makeRequest))
+    const statuses = responses.map((res) => res.status)
 
-    expect(spy).toHaveBeenCalledTimes(2)
+    expect(statuses.filter((s) => s === 200)).toHaveLength(1)
+    expect(statuses.filter((s) => s === 400)).toHaveLength(4)
   })
 
-  it('should retry lock timeout exceptions', async () => {
+  it('should not block concurrent requests for different (player, stat) keys', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_STATS])
-    const stat = await createStat(apiKey.game, { maxValue: 999, maxChange: 99 })
+    const stat = await createStat(apiKey.game, {
+      maxValue: 999,
+      maxChange: 99,
+      defaultValue: 0,
+      minTimeBetweenUpdates: 0,
+    })
+    const players = await new PlayerFactory([apiKey.game]).many(5)
+    await em.persist(players).flush()
+
+    const requests = players.map((player) =>
+      request(app)
+        .put(`/v1/game-stats/${stat.internalName}`)
+        .send({ change: 1 })
+        .auth(token, { type: 'bearer' })
+        .set('x-talo-alias', String(player.aliases[0].id)),
+    )
+
+    const responses = await Promise.all(requests)
+    responses.forEach((res) => {
+      expect(res.status).toBe(200)
+    })
+  })
+
+  it('should release the redlock on validation failure', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_STATS])
+    const stat = await createStat(apiKey.game, {
+      maxValue: 999,
+      maxChange: 99,
+      defaultValue: 0,
+      minTimeBetweenUpdates: 0,
+    })
     const player = await new PlayerFactory([apiKey.game]).one()
     await em.persist(player).flush()
 
-    const spy = vi.spyOn(PlayerGameStat, 'upsert')
-    spy.mockRejectedValueOnce(new LockWaitTimeoutException(new Error()))
-
     await request(app)
       .put(`/v1/game-stats/${stat.internalName}`)
-      .send({ change: 10 })
+      .send({ change: 10000 })
       .auth(token, { type: 'bearer' })
       .set('x-talo-alias', String(player.aliases[0].id))
-      .expect(200)
+      .expect(400)
 
-    expect(spy).toHaveBeenCalledTimes(2)
+    const lockKey = `locks:player-stat:${player.id}:${stat.id}`
+    const value = await redis.get(lockKey)
+    expect(value).toBeNull()
   })
 })

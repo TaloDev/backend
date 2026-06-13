@@ -1,9 +1,10 @@
-import { EntityManager, LockMode } from '@mikro-orm/mysql'
+import { EntityManager } from '@mikro-orm/mysql'
 import type { RejectedProp } from '../../../lib/props/sanitiseProps.js'
 import { GameActivityType } from '../../../entities/game-activity.js'
 import Player from '../../../entities/player.js'
 import User, { UserType } from '../../../entities/user.js'
 import createGameActivity from '../../../lib/logging/createGameActivity.js'
+import { withRedisLock } from '../../../lib/perf/redisLock.js'
 import { filterProfaneProps } from '../../../lib/props/filterProfaneProps.js'
 import { sanitiseProps, mergeAndSanitiseProps } from '../../../lib/props/sanitiseProps.js'
 import { protectedRoute, withMiddleware } from '../../../lib/routing/router.js'
@@ -30,60 +31,64 @@ export async function updatePlayerHandler({
   forwarded,
   user,
 }: UpdatePlayerParams) {
-  const { updatedPlayer, rejectedProps } = await em.transactional(async (trx) => {
-    const lockedPlayer = await trx.refreshOrFail(player, { lockMode: LockMode.PESSIMISTIC_WRITE })
+  const { updatedPlayer, rejectedProps } = await withRedisLock(
+    { key: `locks:player-props:${player.id}` },
+    () =>
+      em.transactional(async (trx) => {
+        const lockedPlayer = await trx.refreshOrFail(player)
 
-    let rejectedProps: RejectedProp[] = []
+        let rejectedProps: RejectedProp[] = []
 
-    if (props) {
-      const metaRejected: RejectedProp[] = !forwarded
-        ? props
-            .filter((prop) => prop.key.startsWith('META_'))
-            .map((prop) => ({
-              key: prop.key,
-              error: 'PROP_KEY_RESERVED',
-              message: "Prop keys starting with 'META_' are reserved for internal systems",
-            }))
-        : []
+        if (props) {
+          const metaRejected: RejectedProp[] = !forwarded
+            ? props
+                .filter((prop) => prop.key.startsWith('META_'))
+                .map((prop) => ({
+                  key: prop.key,
+                  error: 'PROP_KEY_RESERVED',
+                  message: "Prop keys starting with 'META_' are reserved for internal systems",
+                }))
+            : []
 
-      const { accepted: sizeAccepted, rejected: sizeRejected } = mergeAndSanitiseProps({
-        prevProps: lockedPlayer.props.getItems(),
-        newProps: props,
-        extraFilter: (prop) => !prop.key.startsWith('META_'),
-      })
+          const { accepted: sizeAccepted, rejected: sizeRejected } = mergeAndSanitiseProps({
+            prevProps: lockedPlayer.props.getItems(),
+            newProps: props,
+            extraFilter: (prop) => !prop.key.startsWith('META_'),
+          })
 
-      if (lockedPlayer.game.blockPropsProfanity) {
-        const { accepted, rejected: profanityRejected } = filterProfaneProps(sizeAccepted, true)
-        lockedPlayer.setProps(accepted)
-        rejectedProps = [...metaRejected, ...sizeRejected, ...profanityRejected]
-      } else {
-        lockedPlayer.setProps(sizeAccepted)
-        rejectedProps = [...metaRejected, ...sizeRejected]
-      }
+          if (lockedPlayer.game.blockPropsProfanity) {
+            const { accepted, rejected: profanityRejected } = filterProfaneProps(sizeAccepted, true)
+            lockedPlayer.setProps(accepted)
+            rejectedProps = [...metaRejected, ...sizeRejected, ...profanityRejected]
+          } else {
+            lockedPlayer.setProps(sizeAccepted)
+            rejectedProps = [...metaRejected, ...sizeRejected]
+          }
 
-      if (!forwarded && user) {
-        createGameActivity(trx, {
-          user,
-          game: player.game,
-          type: GameActivityType.PLAYER_PROPS_UPDATED,
-          extra: {
-            playerId: player.id,
-            display: {
-              Player: player.id,
-              'Updated props': sanitiseProps({ props })
-                .map((prop) => `${prop.key}: ${prop.value ?? '[deleted]'}`)
-                .join(', '),
-            },
-          },
-        })
-      }
-    }
+          if (!forwarded && user) {
+            createGameActivity(trx, {
+              user,
+              game: player.game,
+              type: GameActivityType.PLAYER_PROPS_UPDATED,
+              extra: {
+                playerId: player.id,
+                display: {
+                  Player: player.id,
+                  'Updated props': sanitiseProps({ props })
+                    .map((prop) => `${prop.key}: ${prop.value ?? '[deleted]'}`)
+                    .join(', '),
+                },
+              },
+            })
+          }
+        }
 
-    return {
-      updatedPlayer: lockedPlayer,
-      rejectedProps,
-    }
-  })
+        return {
+          updatedPlayer: lockedPlayer,
+          rejectedProps,
+        }
+      }),
+  )
 
   await updatedPlayer.checkGroupMemberships(em)
 

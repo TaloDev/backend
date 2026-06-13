@@ -18,6 +18,8 @@ const rateLimitOverrides = [
 
 const rateLimitBypass = new Set<string>(['/v1/health-check'])
 
+const PLAYER_PUBLIC_PREFIX = /^\/(public\/players)\//
+
 export function getMaxRequestsForPath(requestPath: string) {
   const override = rateLimitOverrides.find((override) => requestPath.startsWith(override.prefix))
   const limitMapKey = override ? override.key : 'default'
@@ -30,7 +32,7 @@ export function getMaxRequestsForPath(requestPath: string) {
 }
 
 function isPlayerPublicRoute(ctx: Context) {
-  return ctx.path.match(/^\/(public\/players)\//) !== null
+  return PLAYER_PUBLIC_PREFIX.test(ctx.path)
 }
 
 export async function limiterMiddleware(ctx: Context, next: Next) {

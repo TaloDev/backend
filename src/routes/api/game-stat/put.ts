@@ -1,11 +1,9 @@
-import { DeadlockException, LockWaitTimeoutException } from '@mikro-orm/mysql'
 import { differenceInSeconds } from 'date-fns'
-import assert from 'node:assert'
-import pRetry from 'p-retry'
 import { APIKeyScope } from '../../../entities/api-key.js'
 import PlayerGameStatSnapshot from '../../../entities/player-game-stat-snapshot.js'
 import PlayerGameStat from '../../../entities/player-game-stat.js'
 import triggerIntegrations from '../../../lib/integrations/triggerIntegrations.js'
+import { withRedisLock } from '../../../lib/perf/redisLock.js'
 import { deferClearResponseCache } from '../../../lib/perf/responseCacheQueue.js'
 import { FlushStatSnapshotsQueueHandler } from '../../../lib/queues/game-metrics/flush-stat-snapshots-queue-handler.js'
 import { apiRoute, withMiddleware } from '../../../lib/routing/router.js'
@@ -53,89 +51,74 @@ export const putRoute = apiRoute({
     const stat = ctx.state.stat
     const alias = ctx.state.alias
     const continuityDate = ctx.state.continuityDate
+    const lockKey = `locks:player-stat:${alias.player.id}:${stat.id}`
 
-    const existingPlayerStat = await em.repo(PlayerGameStat).findOne({
-      player: alias.player,
-      stat,
+    const result = await withRedisLock({ key: lockKey }, async () => {
+      const existingPlayerStat = await em.repo(PlayerGameStat).findOne({
+        player: alias.player,
+        stat,
+      })
+
+      if (
+        existingPlayerStat &&
+        differenceInSeconds(new Date(), existingPlayerStat.updatedAt) < stat.minTimeBetweenUpdates
+      ) {
+        return {
+          error: `Stat cannot be updated more often than every ${stat.minTimeBetweenUpdates} seconds`,
+        }
+      }
+
+      if (Math.abs(change) > (stat.maxChange ?? Infinity)) {
+        return {
+          error: `Stat change cannot be more than ${stat.maxChange}`,
+        }
+      }
+
+      const currentValue = existingPlayerStat?.value ?? stat.defaultValue
+
+      if (currentValue + change < (stat.minValue ?? -Infinity)) {
+        return {
+          error: `Stat would go below the minValue of ${stat.minValue}`,
+        }
+      }
+
+      if (currentValue + change > (stat.maxValue ?? Infinity)) {
+        return {
+          error: `Stat would go above the maxValue of ${stat.maxValue}`,
+        }
+      }
+
+      const newValue = currentValue + change
+      const now = new Date()
+      const createdAt = continuityDate ?? now
+
+      await PlayerGameStat.upsert({
+        em,
+        player: alias.player,
+        stat,
+        value: newValue,
+        change,
+        createdAt,
+        updatedAt: now,
+      })
+
+      const refreshed = await em
+        .repo(PlayerGameStat)
+        .findOneOrFail({ player: alias.player, stat }, { refresh: true })
+
+      return refreshed
     })
 
-    if (
-      existingPlayerStat &&
-      differenceInSeconds(new Date(), existingPlayerStat.updatedAt) < stat.minTimeBetweenUpdates
-    ) {
+    if ('error' in result) {
       return {
         status: 400,
         body: {
-          message: `Stat cannot be updated more often than every ${stat.minTimeBetweenUpdates} seconds`,
+          message: result.error,
         },
       }
     }
 
-    if (Math.abs(change) > (stat.maxChange ?? Infinity)) {
-      return {
-        status: 400,
-        body: {
-          message: `Stat change cannot be more than ${stat.maxChange}`,
-        },
-      }
-    }
-
-    const currentValue = existingPlayerStat?.value ?? stat.defaultValue
-
-    if (currentValue + change < (stat.minValue ?? -Infinity)) {
-      return {
-        status: 400,
-        body: {
-          message: `Stat would go below the minValue of ${stat.minValue}`,
-        },
-      }
-    }
-
-    if (currentValue + change > (stat.maxValue ?? Infinity)) {
-      return {
-        status: 400,
-        body: {
-          message: `Stat would go above the maxValue of ${stat.maxValue}`,
-        },
-      }
-    }
-
-    const newValue = currentValue + change
-    const now = new Date()
-    const createdAt = continuityDate ?? now
-
-    await pRetry(
-      async () => {
-        // upsert - on conflict, add the change to the existing value
-        await PlayerGameStat.upsert({
-          em,
-          player: alias.player,
-          stat,
-          value: newValue,
-          change,
-          createdAt,
-          updatedAt: now,
-        })
-      },
-      {
-        retries: 2,
-        minTimeout: 50,
-        maxTimeout: 200,
-        onFailedAttempt: ({ attemptNumber, retriesLeft }) => {
-          if (retriesLeft > 0) {
-            console.info(`Player game stat upsert failed (attempt ${attemptNumber}/3), retrying...`)
-          }
-        },
-        shouldRetry: ({ error }) =>
-          error instanceof DeadlockException || error instanceof LockWaitTimeoutException,
-      },
-    )
-
-    const refreshedPlayerStat = await em
-      .repo(PlayerGameStat)
-      .findOne({ player: alias.player, stat }, { refresh: true })
-
-    assert(refreshedPlayerStat)
+    const refreshedPlayerStat = result
 
     await Promise.all([
       deferClearResponseCache(PlayerGameStat.getCacheKey(alias.player, stat)),

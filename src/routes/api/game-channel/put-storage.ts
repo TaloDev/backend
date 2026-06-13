@@ -1,10 +1,11 @@
-import { EntityManager, LockMode } from '@mikro-orm/mysql'
+import { EntityManager } from '@mikro-orm/mysql'
 import { Redis } from 'ioredis'
 import type { RejectedProp } from '../../../lib/props/sanitiseProps.js'
 import { APIKeyScope } from '../../../entities/api-key.js'
 import GameChannelStorageProp from '../../../entities/game-channel-storage-prop.js'
 import GameChannel from '../../../entities/game-channel.js'
 import PlayerAlias from '../../../entities/player-alias.js'
+import { withRedisLock } from '../../../lib/perf/redisLock.js'
 import { filterProfaneProps } from '../../../lib/props/filterProfaneProps.js'
 import {
   isArrayKey,
@@ -199,63 +200,62 @@ export const putStorageRoute = apiRoute({
       upsertedProps,
       deletedProps,
       rejectedProps: sizeRejected,
-    } = await em.transactional(async (trx): Promise<TransactionResult> => {
-      const newScalarMap = new Map<string, string | null>()
-      const newArrayMap = new Map<string, (string | null)[]>()
-      for (const { key, value } of accepted) {
-        if (isArrayKey(key)) {
-          const existing = newArrayMap.get(key) ?? []
-          existing.push(value)
-          newArrayMap.set(key, existing)
-        } else {
-          newScalarMap.set(key, value)
+    } = await withRedisLock({ key: `locks:channel-storage:${channel.id}` }, () =>
+      em.transactional(async (trx): Promise<TransactionResult> => {
+        const newScalarMap = new Map<string, string | null>()
+        const newArrayMap = new Map<string, (string | null)[]>()
+        for (const { key, value } of accepted) {
+          if (isArrayKey(key)) {
+            const existing = newArrayMap.get(key) ?? []
+            existing.push(value)
+            newArrayMap.set(key, existing)
+          } else {
+            newScalarMap.set(key, value)
+          }
         }
-      }
 
-      if (newScalarMap.size === 0 && newArrayMap.size === 0) {
-        return { upsertedProps: [], deletedProps: [], rejectedProps: [] }
-      }
+        if (newScalarMap.size === 0 && newArrayMap.size === 0) {
+          return { upsertedProps: [], deletedProps: [], rejectedProps: [] }
+        }
 
-      const allIncomingKeys = [...newScalarMap.keys(), ...newArrayMap.keys()]
-      const existingStorageProps = await trx
-        .repo(GameChannelStorageProp)
-        .find(
-          { gameChannel: channel, key: { $in: allIncomingKeys } },
-          { lockMode: LockMode.PESSIMISTIC_WRITE },
+        const allIncomingKeys = [...newScalarMap.keys(), ...newArrayMap.keys()]
+        const existingStorageProps = await trx
+          .repo(GameChannelStorageProp)
+          .find({ gameChannel: channel, key: { $in: allIncomingKeys } })
+
+        const scalarResult = processScalars(
+          trx,
+          alias,
+          channel,
+          newScalarMap,
+          existingStorageProps.filter((p) => !isArrayKey(p.key)),
+        )
+        const arrayResult = processArrays(
+          trx,
+          alias,
+          channel,
+          newArrayMap,
+          existingStorageProps.filter((p) => isArrayKey(p.key)),
         )
 
-      const scalarResult = processScalars(
-        trx,
-        alias,
-        channel,
-        newScalarMap,
-        existingStorageProps.filter((p) => !isArrayKey(p.key)),
-      )
-      const arrayResult = processArrays(
-        trx,
-        alias,
-        channel,
-        newArrayMap,
-        existingStorageProps.filter((p) => isArrayKey(p.key)),
-      )
+        const upsertedProps = [...scalarResult.upsertedProps, ...arrayResult.upsertedProps]
+        const deletedProps = [...scalarResult.deletedProps, ...arrayResult.deletedProps]
+        const rejectedProps = [...scalarResult.rejectedProps, ...arrayResult.rejectedProps]
 
-      const upsertedProps = [...scalarResult.upsertedProps, ...arrayResult.upsertedProps]
-      const deletedProps = [...scalarResult.deletedProps, ...arrayResult.deletedProps]
-      const rejectedProps = [...scalarResult.rejectedProps, ...arrayResult.rejectedProps]
+        const touchedKeys = new Set([...upsertedProps, ...deletedProps].map((p) => p.key))
+        for (const key of touchedKeys) {
+          const remaining = upsertedProps.filter((p) => p.key === key)
+          await GameChannelStorageProp.persistToRedis({
+            redis: redis as Redis,
+            channelId: channel.id,
+            key,
+            props: remaining,
+          })
+        }
 
-      const touchedKeys = new Set([...upsertedProps, ...deletedProps].map((p) => p.key))
-      for (const key of touchedKeys) {
-        const remaining = upsertedProps.filter((p) => p.key === key)
-        await GameChannelStorageProp.persistToRedis({
-          redis: redis as Redis,
-          channelId: channel.id,
-          key,
-          props: remaining,
-        })
-      }
-
-      return { upsertedProps, deletedProps, rejectedProps }
-    })
+        return { upsertedProps, deletedProps, rejectedProps }
+      }),
+    )
 
     await channel.sendMessageToMembers(ctx.wss, 'v1.channels.storage.updated', {
       channel,

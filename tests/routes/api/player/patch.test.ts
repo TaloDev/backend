@@ -295,7 +295,7 @@ describe('Player API - update', () => {
     )
   })
 
-  it('should only allow memberships to be checked for a player once per request lifecycle', async () => {
+  it('should skip checkGroupMemberships when the checkMembership redis lock is already held', async () => {
     const isPlayerEligibleSpy = vi
       .spyOn(PlayerGroup.prototype, 'isPlayerEligible')
       .mockResolvedValue(true)
@@ -321,24 +321,25 @@ describe('Player API - update', () => {
       .one()
     await em.persist([group, player]).flush()
 
-    await Promise.allSettled(
-      ['60', '61', '62', '63', '64', '65'].map((level) => {
-        return request(app)
-          .patch(`/v1/players/${player.id}`)
-          .send({
-            props: [
-              {
-                key: 'currentLevel',
-                value: level,
-              },
-            ],
-          })
-          .auth(token, { type: 'bearer' })
-          .expect(200)
-      }),
-    )
+    // Pre-hold the checkMembership redis lock to verify the early-return path.
+    // Cross-request serialisation is handled by the redlock in `updatePlayerHandler`.
+    // This lock is a defensive backstop.
+    await redis.set(`checkMembership:${player.id}`, '1', 'EX', 30)
 
-    expect(isPlayerEligibleSpy).toHaveBeenCalledTimes(1)
+    await request(app)
+      .patch(`/v1/players/${player.id}`)
+      .send({
+        props: [
+          {
+            key: 'currentLevel',
+            value: '60',
+          },
+        ],
+      })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    expect(isPlayerEligibleSpy).not.toHaveBeenCalled()
     isPlayerEligibleSpy.mockRestore()
   })
 
@@ -489,5 +490,60 @@ describe('Player API - update', () => {
 
     redisSetSpy.mockRestore()
     consoleSpy.mockRestore()
+  })
+
+  it('should serialize concurrent updates for the same player', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_PLAYERS])
+    const player = await new PlayerFactory([apiKey.game])
+      .state((p) => ({ props: new Collection<PlayerProp>(p) }))
+      .one()
+    await em.persist(player).flush()
+
+    const results = await Promise.allSettled(
+      ['a', 'b', 'c', 'd', 'e'].map((suffix) =>
+        request(app)
+          .patch(`/v1/players/${player.id}`)
+          .send({
+            props: [{ key: `prop-${suffix}`, value: '1' }],
+          })
+          .auth(token, { type: 'bearer' }),
+      ),
+    )
+
+    results.forEach((res) => {
+      if (res.status === 'rejected') throw res.reason
+      expect(res.value.status).toBe(200)
+    })
+
+    await em.refresh(player)
+    const props = player.props.getItems()
+    expect(props.length).toBe(5)
+  })
+
+  it('should not block concurrent PATCHes for different players', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_PLAYERS])
+    const players = await new PlayerFactory([apiKey.game]).many(5)
+    await em.persist(players).flush()
+
+    const results = await Promise.all(
+      players.map((player) =>
+        request(app)
+          .patch(`/v1/players/${player.id}`)
+          .send({
+            props: [{ key: 'foo', value: 'bar' }],
+          })
+          .auth(token, { type: 'bearer' }),
+      ),
+    )
+
+    results.forEach((res) => {
+      expect(res.status).toBe(200)
+    })
+
+    for (const player of players) {
+      await em.refresh(player)
+      const prop = player.props.getItems().find((p) => p.key === 'foo')
+      expect(prop?.value).toBe('bar')
+    }
   })
 })

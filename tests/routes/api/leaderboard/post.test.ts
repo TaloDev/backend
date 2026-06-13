@@ -1393,4 +1393,72 @@ describe('Leaderboard API - create', () => {
     )
     expect(res.body.rejectedProps).toBeUndefined()
   })
+
+  it('should not block concurrent posts to different leaderboards for the same alias', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_LEADERBOARDS])
+    const player = await new PlayerFactory([apiKey.game]).one()
+
+    const leaderboards = await new LeaderboardFactory([apiKey.game])
+      .state(() => ({ unique: false }))
+      .many(2)
+    await em.persist([player, ...leaderboards]).flush()
+
+    const results = await Promise.allSettled(
+      leaderboards.flatMap((leaderboard) =>
+        Array.from({ length: 5 }, () =>
+          request(app)
+            .post(`/v1/leaderboards/${leaderboard.internalName}/entries`)
+            .send({ score: 100 })
+            .auth(token, { type: 'bearer' })
+            .set('x-talo-alias', String(player.aliases[0].id)),
+        ),
+      ),
+    )
+
+    results.forEach((res) => {
+      if (res.status === 'rejected') {
+        throw res.reason
+      }
+      expect(res.value.status).toBe(200)
+    })
+
+    for (const leaderboard of leaderboards) {
+      const entryCount = await em.repo(LeaderboardEntry).count({
+        leaderboard,
+        playerAlias: player.aliases[0],
+      })
+      expect(entryCount).toBe(5)
+    }
+  })
+
+  it('should not block concurrent posts for the same leaderboard across different aliases', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_LEADERBOARDS])
+    const players = await new PlayerFactory([apiKey.game]).many(5)
+    const leaderboard = await new LeaderboardFactory([apiKey.game])
+      .state(() => ({ unique: false }))
+      .one()
+    await em.persist([...players, leaderboard]).flush()
+
+    const results = await Promise.allSettled(
+      players.map((player) =>
+        request(app)
+          .post(`/v1/leaderboards/${leaderboard.internalName}/entries`)
+          .send({ score: 100 })
+          .auth(token, { type: 'bearer' })
+          .set('x-talo-alias', String(player.aliases[0].id)),
+      ),
+    )
+
+    results.forEach((res) => {
+      if (res.status === 'rejected') {
+        throw res.reason
+      }
+      expect(res.value.status).toBe(200)
+    })
+
+    const entryCount = await em.repo(LeaderboardEntry).count({
+      leaderboard,
+    })
+    expect(entryCount).toBe(5)
+  })
 })

@@ -1,5 +1,4 @@
 import { EntityManager } from '@mikro-orm/mysql'
-import { isToday, isThisWeek, isThisMonth, isThisYear } from 'date-fns'
 import assert from 'node:assert'
 import { getMikroORM } from '../config/mikro-orm.config.js'
 import LeaderboardEntry from '../entities/leaderboard-entry.js'
@@ -22,15 +21,6 @@ export async function archiveEntriesForLeaderboard(em: EntityManager, leaderboar
   }
   /* v8 ignore stop -- @preserve */
 
-  const refreshCheckers = {
-    [LeaderboardRefreshInterval.DAILY]: (date: Date) => isToday(date),
-    [LeaderboardRefreshInterval.WEEKLY]: (date: Date) => isThisWeek(date, { weekStartsOn: 1 }),
-    [LeaderboardRefreshInterval.MONTHLY]: (date: Date) => isThisMonth(date),
-    [LeaderboardRefreshInterval.YEARLY]: (date: Date) => isThisYear(date),
-  }
-
-  const shouldKeepEntry = refreshCheckers[leaderboard.refreshInterval]
-
   const entryStream = streamByCursor(async (batchSize, after) => {
     return em.repo(LeaderboardEntry).findByCursor({
       where: {
@@ -44,7 +34,7 @@ export async function archiveEntriesForLeaderboard(em: EntityManager, leaderboar
   }, 100)
 
   for await (const entry of entryStream) {
-    if (!shouldKeepEntry(entry.createdAt)) {
+    if (!leaderboard.isDateInCurrentPeriod(entry.createdAt)) {
       entry.deletedAt = new Date()
 
       // try to avoid rate limits

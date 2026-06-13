@@ -1,11 +1,14 @@
 import { Collection } from '@mikro-orm/mysql'
 import { randText } from '@ngneat/falso'
-import { subHours, subMinutes } from 'date-fns'
+import { subDays, subHours, subMinutes } from 'date-fns'
 import request from 'supertest'
 import { APIKeyScope } from '../../../../src/entities/api-key.js'
 import LeaderboardEntryProp from '../../../../src/entities/leaderboard-entry-prop.js'
 import LeaderboardEntry from '../../../../src/entities/leaderboard-entry.js'
-import { LeaderboardSortMode } from '../../../../src/entities/leaderboard.js'
+import {
+  LeaderboardRefreshInterval,
+  LeaderboardSortMode,
+} from '../../../../src/entities/leaderboard.js'
 import PlayerGroupRule, {
   PlayerGroupRuleCastType,
   PlayerGroupRuleName,
@@ -299,6 +302,207 @@ describe('Leaderboard API - create', () => {
       .expect(200)
 
     expect(new Date(res.body.entry.createdAt).getHours()).toBe(continuityDate.getHours())
+  })
+
+  it('should update in place (staying archived) when a continuity replay for a prior period arrives after the archive', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([
+      APIKeyScope.WRITE_LEADERBOARDS,
+      APIKeyScope.WRITE_CONTINUITY_REQUESTS,
+    ])
+    const player = await new PlayerFactory([apiKey.game]).one()
+    const leaderboard = await new LeaderboardFactory([apiKey.game])
+      .state(() => ({
+        unique: true,
+        sortMode: LeaderboardSortMode.DESC,
+        refreshInterval: LeaderboardRefreshInterval.DAILY,
+      }))
+      .one()
+
+    const yesterday = subDays(new Date(), 1)
+    const entry = await new LeaderboardEntryFactory(leaderboard, [player])
+      .state(() => ({
+        score: 100,
+        createdAt: yesterday,
+        deletedAt: yesterday,
+        playerAlias: player.aliases[0],
+      }))
+      .one()
+
+    await em.persist([player, leaderboard, entry]).flush()
+
+    const res = await request(app)
+      .post(`/v1/leaderboards/${leaderboard.internalName}/entries`)
+      .send({ score: 300 })
+      .auth(token, { type: 'bearer' })
+      .set('x-talo-alias', String(player.aliases[0].id))
+      .set('x-talo-continuity-timestamp', String(yesterday.getTime()))
+      .expect(200)
+
+    expect(res.body.entry.id).toBe(entry.id)
+    expect(res.body.entry.score).toBe(300)
+    expect(res.body.updated).toBe(true)
+
+    const entryCount = await em.repo(LeaderboardEntry).count({
+      leaderboard,
+      playerAlias: player.aliases[0],
+    })
+    expect(entryCount).toBe(1)
+
+    await em.refresh(entry)
+    expect(entry.deletedAt).not.toBeNull()
+    expect(entry.score).toBe(300)
+  })
+
+  it('should update in place (staying archived) when a continuity replay for a prior period arrives after the archive on an ASC leaderboard', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([
+      APIKeyScope.WRITE_LEADERBOARDS,
+      APIKeyScope.WRITE_CONTINUITY_REQUESTS,
+    ])
+    const player = await new PlayerFactory([apiKey.game]).one()
+    const leaderboard = await new LeaderboardFactory([apiKey.game])
+      .state(() => ({
+        unique: true,
+        sortMode: LeaderboardSortMode.ASC,
+        refreshInterval: LeaderboardRefreshInterval.DAILY,
+      }))
+      .one()
+
+    const yesterday = subDays(new Date(), 1)
+    const entry = await new LeaderboardEntryFactory(leaderboard, [player])
+      .state(() => ({
+        score: 500,
+        createdAt: yesterday,
+        deletedAt: yesterday,
+        playerAlias: player.aliases[0],
+      }))
+      .one()
+
+    await em.persist([player, leaderboard, entry]).flush()
+
+    const res = await request(app)
+      .post(`/v1/leaderboards/${leaderboard.internalName}/entries`)
+      .send({ score: 100 })
+      .auth(token, { type: 'bearer' })
+      .set('x-talo-alias', String(player.aliases[0].id))
+      .set('x-talo-continuity-timestamp', String(yesterday.getTime()))
+      .expect(200)
+
+    expect(res.body.entry.id).toBe(entry.id)
+    expect(res.body.entry.score).toBe(100)
+    expect(res.body.updated).toBe(true)
+
+    await em.refresh(entry)
+    expect(entry.deletedAt).not.toBeNull()
+    expect(entry.score).toBe(100)
+  })
+
+  it('should update the archived entry (staying archived) over an existing active one when both exist for a prior-period continuity replay', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([
+      APIKeyScope.WRITE_LEADERBOARDS,
+      APIKeyScope.WRITE_CONTINUITY_REQUESTS,
+    ])
+    const player = await new PlayerFactory([apiKey.game]).one()
+    const leaderboard = await new LeaderboardFactory([apiKey.game])
+      .state(() => ({
+        unique: true,
+        sortMode: LeaderboardSortMode.DESC,
+        refreshInterval: LeaderboardRefreshInterval.DAILY,
+      }))
+      .one()
+    await em.persist([player, leaderboard]).flush()
+
+    const yesterday = subDays(new Date(), 1)
+
+    // persist the active entry first so it has a lower id than the archived one
+    const activeEntry = await new LeaderboardEntryFactory(leaderboard, [player])
+      .state(() => ({
+        score: 200,
+        playerAlias: player.aliases[0],
+      }))
+      .one()
+    await em.persist(activeEntry).flush()
+
+    const archivedEntry = await new LeaderboardEntryFactory(leaderboard, [player])
+      .state(() => ({
+        score: 100,
+        createdAt: yesterday,
+        deletedAt: yesterday,
+        playerAlias: player.aliases[0],
+      }))
+      .one()
+    await em.persist(archivedEntry).flush()
+
+    const res = await request(app)
+      .post(`/v1/leaderboards/${leaderboard.internalName}/entries`)
+      .send({ score: 150 })
+      .auth(token, { type: 'bearer' })
+      .set('x-talo-alias', String(player.aliases[0].id))
+      .set('x-talo-continuity-timestamp', String(yesterday.getTime()))
+      .expect(200)
+
+    // the archived entry should be the one updated (still in the archive)
+    expect(res.body.entry.id).toBe(archivedEntry.id)
+    expect(res.body.entry.score).toBe(150)
+
+    await em.refresh(archivedEntry)
+    expect(archivedEntry.deletedAt).not.toBeNull()
+    expect(archivedEntry.score).toBe(150)
+
+    // the active entry should be untouched
+    await em.refresh(activeEntry)
+    expect(activeEntry.deletedAt).toBeNull()
+    expect(activeEntry.score).toBe(200)
+  })
+
+  it('should update a uniqueByProps entry in place (staying archived) when a continuity replay for a prior period arrives after the archive', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([
+      APIKeyScope.WRITE_LEADERBOARDS,
+      APIKeyScope.WRITE_CONTINUITY_REQUESTS,
+    ])
+    const player = await new PlayerFactory([apiKey.game]).one()
+    const leaderboard = await new LeaderboardFactory([apiKey.game])
+      .state(() => ({
+        unique: true,
+        uniqueByProps: true,
+        sortMode: LeaderboardSortMode.DESC,
+        refreshInterval: LeaderboardRefreshInterval.DAILY,
+      }))
+      .one()
+
+    const yesterday = subDays(new Date(), 1)
+    const props = [{ key: 'level', value: '1' }]
+
+    const entry = await new LeaderboardEntryFactory(leaderboard, [player])
+      .state((e) => ({
+        score: 100,
+        createdAt: yesterday,
+        deletedAt: yesterday,
+        playerAlias: player.aliases[0],
+        props: new Collection<LeaderboardEntryProp>(
+          e,
+          props.map((p) => new LeaderboardEntryProp(e, p.key, p.value)),
+        ),
+        propsDigest: LeaderboardEntry.createPropsDigest(props),
+      }))
+      .one()
+
+    await em.persist([player, leaderboard, entry]).flush()
+
+    const res = await request(app)
+      .post(`/v1/leaderboards/${leaderboard.internalName}/entries`)
+      .send({ score: 300, props })
+      .auth(token, { type: 'bearer' })
+      .set('x-talo-alias', String(player.aliases[0].id))
+      .set('x-talo-continuity-timestamp', String(yesterday.getTime()))
+      .expect(200)
+
+    expect(res.body.entry.id).toBe(entry.id)
+    expect(res.body.entry.score).toBe(300)
+    expect(res.body.updated).toBe(true)
+
+    await em.refresh(entry)
+    expect(entry.deletedAt).not.toBeNull()
+    expect(entry.score).toBe(300)
   })
 
   it('should create entries with props', async () => {

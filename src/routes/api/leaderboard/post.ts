@@ -1,4 +1,4 @@
-import { NotFoundError, LockMode } from '@mikro-orm/mysql'
+import { NotFoundError } from '@mikro-orm/mysql'
 import type { RejectedProp } from '../../../lib/props/sanitiseProps.js'
 import { APIKeyScope } from '../../../entities/api-key.js'
 import LeaderboardEntry from '../../../entities/leaderboard-entry.js'
@@ -8,6 +8,7 @@ import { buildErrorResponse } from '../../../lib/errors/buildErrorResponse.js'
 import { PropRejectionError } from '../../../lib/errors/propRejectionError.js'
 import { UniqueLeaderboardEntryPropsDigestError } from '../../../lib/errors/uniqueLeaderboardEntryPropsDigestError.js'
 import triggerIntegrations from '../../../lib/integrations/triggerIntegrations.js'
+import { withRedisLock } from '../../../lib/perf/redisLock.js'
 import { filterProfaneProps } from '../../../lib/props/filterProfaneProps.js'
 import { hardSanitiseProps, mergeAndSanitiseProps } from '../../../lib/props/sanitiseProps.js'
 import { apiRoute, withMiddleware } from '../../../lib/routing/router.js'
@@ -90,95 +91,96 @@ export const postRoute = apiRoute({
     const leaderboard = ctx.state.leaderboard
 
     try {
-      const result = await em.transactional(async (trx) => {
-        // lock the alias to prevent concurrent entry creation
-        const lockedAlias = await trx.findOneOrFail(PlayerAlias, ctx.state.alias.id, {
-          lockMode: LockMode.PESSIMISTIC_WRITE,
-        })
+      const result = await withRedisLock(
+        { key: `locks:leaderboard-entry:${ctx.state.alias.id}:${ctx.state.leaderboard.id}` },
+        () =>
+          em.transactional(async (trx) => {
+            const playerAlias = await trx.findOneOrFail(PlayerAlias, ctx.state.alias.id)
 
-        let entry: LeaderboardEntry | null = null
-        let updated = false
+            let entry: LeaderboardEntry | null = null
+            let updated = false
 
-        // filter out props with null values for createEntry (only used for merging in updates)
-        const createProps = acceptedProps.filter(
-          (p): p is { key: string; value: string } => p.value !== null,
-        )
+            // filter out props with null values for createEntry (only used for merging in updates)
+            const createProps = acceptedProps.filter(
+              (p): p is { key: string; value: string } => p.value !== null,
+            )
 
-        try {
-          if (leaderboard.unique) {
-            // try to find existing entry for unique leaderboards
-            if (leaderboard.uniqueByProps) {
-              entry = await leaderboard.findEntryWithProps({
-                em: trx,
-                playerAliasId: lockedAlias.id,
-                props: createProps,
-              })
-              if (!entry) {
-                throw new UniqueLeaderboardEntryPropsDigestError()
-              }
-            } else {
-              entry = await trx.repo(LeaderboardEntry).findOneOrFail({
-                leaderboard,
-                playerAlias: lockedAlias,
-                deletedAt: null,
-              })
-            }
-
-            // update entry if new score is better
-            const shouldUpdate =
-              (leaderboard.sortMode === LeaderboardSortMode.ASC && score < entry.score) ||
-              (leaderboard.sortMode === LeaderboardSortMode.DESC && score > entry.score)
-
-            if (shouldUpdate) {
-              entry.score = score
-              entry.createdAt = ctx.state.continuityDate ?? new Date()
-              if (acceptedProps.length > 0) {
-                const { accepted, rejected } = mergeAndSanitiseProps({
-                  prevProps: entry.props.getItems(),
-                  newProps: acceptedProps,
-                })
-                if (rejected.length > 0) {
-                  throw new PropRejectionError([...profanityRejected, ...rejected])
+            try {
+              if (leaderboard.unique) {
+                // try to find existing entry for unique leaderboards
+                if (leaderboard.uniqueByProps) {
+                  entry = await leaderboard.findEntryWithProps({
+                    em: trx,
+                    playerAliasId: playerAlias.id,
+                    props: createProps,
+                  })
+                  if (!entry) {
+                    throw new UniqueLeaderboardEntryPropsDigestError()
+                  }
+                } else {
+                  entry = await trx.repo(LeaderboardEntry).findOneOrFail({
+                    leaderboard,
+                    playerAlias,
+                    deletedAt: null,
+                  })
                 }
-                entry.setProps(accepted)
-              }
-              updated = true
-            }
-          } else {
-            // for non-unique leaderboards, always create a new entry
-            entry = createEntry({
-              leaderboard,
-              playerAlias: lockedAlias,
-              score,
-              continuityDate: ctx.state.continuityDate,
-              props: createProps,
-              profanityRejected,
-            })
-            await trx.persist(entry).flush()
-          }
-        } catch (err) {
-          // if unique entry doesn't exist, create it
-          if (
-            err instanceof NotFoundError ||
-            err instanceof UniqueLeaderboardEntryPropsDigestError
-          ) {
-            entry = createEntry({
-              leaderboard,
-              playerAlias: lockedAlias,
-              score,
-              continuityDate: ctx.state.continuityDate,
-              props: createProps,
-              profanityRejected,
-            })
-            await trx.persist(entry).flush()
-            /* v8 ignore next 3 -- @preserve */
-          } else {
-            throw err
-          }
-        }
 
-        return { entry, updated }
-      })
+                // update entry if new score is better
+                const shouldUpdate =
+                  (leaderboard.sortMode === LeaderboardSortMode.ASC && score < entry.score) ||
+                  (leaderboard.sortMode === LeaderboardSortMode.DESC && score > entry.score)
+
+                if (shouldUpdate) {
+                  entry.score = score
+                  entry.createdAt = ctx.state.continuityDate ?? new Date()
+                  if (acceptedProps.length > 0) {
+                    const { accepted, rejected } = mergeAndSanitiseProps({
+                      prevProps: entry.props.getItems(),
+                      newProps: acceptedProps,
+                    })
+                    if (rejected.length > 0) {
+                      throw new PropRejectionError([...profanityRejected, ...rejected])
+                    }
+                    entry.setProps(accepted)
+                  }
+                  updated = true
+                }
+              } else {
+                // for non-unique leaderboards, always create a new entry
+                entry = createEntry({
+                  leaderboard,
+                  playerAlias,
+                  score,
+                  continuityDate: ctx.state.continuityDate,
+                  props: createProps,
+                  profanityRejected,
+                })
+                await trx.persist(entry).flush()
+              }
+            } catch (err) {
+              // if unique entry doesn't exist, create it
+              if (
+                err instanceof NotFoundError ||
+                err instanceof UniqueLeaderboardEntryPropsDigestError
+              ) {
+                entry = createEntry({
+                  leaderboard,
+                  playerAlias,
+                  score,
+                  continuityDate: ctx.state.continuityDate,
+                  props: createProps,
+                  profanityRejected,
+                })
+                await trx.persist(entry).flush()
+                /* v8 ignore next 3 -- @preserve */
+              } else {
+                throw err
+              }
+            }
+
+            return { entry, updated }
+          }),
+      )
 
       const { entry, updated } = result
 

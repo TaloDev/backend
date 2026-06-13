@@ -50,4 +50,31 @@ describe('Continuity middleware', () => {
 
     expect(res.body.playerStat.createdAt).not.toBe(continuityDate.toISOString())
   })
+
+  it('should ignore a future continuity timestamp', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([
+      APIKeyScope.WRITE_GAME_STATS,
+      APIKeyScope.WRITE_CONTINUITY_REQUESTS,
+    ])
+    const stat = await new GameStatFactory([apiKey.game])
+      .state(() => ({ maxValue: 999, maxChange: 99 }))
+      .one()
+    const player = await new PlayerFactory([apiKey.game]).one()
+    await em.persist([stat, player]).flush()
+
+    const futureDate = new Date(Date.now() + 24 * 60 * 60 * 1000)
+    const before = Date.now()
+
+    const res = await request(app)
+      .put(`/v1/game-stats/${stat.internalName}`)
+      .send({ change: 10 })
+      .auth(token, { type: 'bearer' })
+      .set('x-talo-alias', String(player.aliases[0].id))
+      .set('x-talo-continuity-timestamp', String(futureDate.getTime()))
+      .expect(200)
+
+    const createdAt = new Date(res.body.playerStat.createdAt).getTime()
+    expect(createdAt).toBeLessThanOrEqual(before + 1000)
+    expect(createdAt).toBeLessThan(futureDate.getTime())
+  })
 })

@@ -252,4 +252,44 @@ describe('Player auth API - refresh', () => {
       .auth(token, { type: 'bearer' })
       .expect(403)
   })
+
+  it('should serialize concurrent refreshes for the same player without deadlocks', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([
+      APIKeyScope.READ_PLAYERS,
+      APIKeyScope.WRITE_PLAYERS,
+    ])
+
+    const player = await new PlayerFactory([apiKey.game])
+      .withTaloAlias()
+      .state(async () => ({
+        auth: await new PlayerAuthFactory()
+          .state(async () => ({
+            password: await bcrypt.hash('password', 10),
+            verificationEnabled: false,
+          }))
+          .one(),
+      }))
+      .one()
+    const alias = player.aliases[0]
+
+    await em.persist(player).flush()
+
+    const { refreshToken } = await player.auth!.createSession(alias, true)
+    await em.flush()
+
+    const results = await Promise.all(
+      Array.from({ length: 3 }, () =>
+        request(app)
+          .post('/v1/players/auth/refresh')
+          .send({ refreshToken })
+          .auth(token, { type: 'bearer' }),
+      ),
+    )
+
+    // exactly one request acquires the lock first, rotates sessionKey, and returns 200
+    // the other two acquire the lock after, re-lookup, see the new sessionKey,
+    // fail to verify the old refresh token, and return 401
+    expect(results.filter((res) => res.status === 200)).toHaveLength(1)
+    expect(results.filter((res) => res.status === 401)).toHaveLength(2)
+  })
 })

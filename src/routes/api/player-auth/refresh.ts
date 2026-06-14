@@ -4,6 +4,7 @@ import PlayerAlias, { PlayerAliasService } from '../../../entities/player-alias.
 import { PlayerAuthActivityType } from '../../../entities/player-auth-activity.js'
 import { verify } from '../../../lib/auth/jwt.js'
 import { throwPlayerAuthError } from '../../../lib/errors/throwPlayerAuthError.js'
+import { withRedisLock } from '../../../lib/perf/redisLock.js'
 import { apiRoute, withMiddleware } from '../../../lib/routing/router.js'
 import { requireScopes } from '../../../middleware/policy-middleware.js'
 import { createPlayerAuthActivity } from './common.js'
@@ -40,55 +41,57 @@ export const refreshRoute = apiRoute({
       })
     }
 
-    const alias = await em.repo(PlayerAlias).findOne(
-      {
-        id: decoded.aliasId,
-        service: PlayerAliasService.TALO,
-        player: {
-          id: decoded.playerId,
-          game: ctx.state.game,
+    return withRedisLock({ key: `locks:player-auth-refresh:${decoded.playerId}` }, async () => {
+      const alias = await em.repo(PlayerAlias).findOne(
+        {
+          id: decoded.aliasId,
+          service: PlayerAliasService.TALO,
+          player: {
+            id: decoded.playerId,
+            game: ctx.state.game,
+          },
         },
-      },
-      { populate: ['player.auth'] },
-    )
-
-    if (!alias?.player.auth?.sessionKey) {
-      return throwPlayerAuthError({
-        ctx,
-        status: 401,
-        message: 'Invalid refresh token',
-        errorCode: 'INVALID_SESSION',
-      })
-    }
-
-    try {
-      await verify<{ playerId: string; aliasId: number }>(
-        refreshToken,
-        `${alias.player.auth.sessionKey}:refresh`,
+        { populate: ['player.auth'] },
       )
-    } catch {
-      return throwPlayerAuthError({
-        ctx,
-        status: 401,
-        message: 'Invalid refresh token',
-        errorCode: 'INVALID_SESSION',
+
+      if (!alias?.player.auth?.sessionKey) {
+        return throwPlayerAuthError({
+          ctx,
+          status: 401,
+          message: 'Invalid refresh token',
+          errorCode: 'INVALID_SESSION',
+        })
+      }
+
+      try {
+        await verify<{ playerId: string; aliasId: number }>(
+          refreshToken,
+          `${alias.player.auth.sessionKey}:refresh`,
+        )
+      } catch {
+        return throwPlayerAuthError({
+          ctx,
+          status: 401,
+          message: 'Invalid refresh token',
+          errorCode: 'INVALID_SESSION',
+        })
+      }
+
+      const { sessionToken, refreshToken: newRefreshToken } = await alias.player.auth.createSession(
+        alias,
+        true,
+      )
+
+      createPlayerAuthActivity(ctx, alias.player, {
+        type: PlayerAuthActivityType.SESSION_REFRESHED,
       })
-    }
 
-    const { sessionToken, refreshToken: newRefreshToken } = await alias.player.auth.createSession(
-      alias,
-      true,
-    )
+      await em.flush()
 
-    createPlayerAuthActivity(ctx, alias.player, {
-      type: PlayerAuthActivityType.SESSION_REFRESHED,
+      return {
+        status: 200,
+        body: { sessionToken, refreshToken: newRefreshToken },
+      }
     })
-
-    await em.flush()
-
-    return {
-      status: 200,
-      body: { sessionToken, refreshToken: newRefreshToken },
-    }
   },
 })

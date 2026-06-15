@@ -8,6 +8,7 @@ import {
   Property,
 } from '@mikro-orm/decorators/es'
 import { Collection, EntityManager } from '@mikro-orm/mysql'
+import { isThisMonth, isThisWeek, isThisYear, isToday } from 'date-fns'
 import Game from './game.js'
 import LeaderboardEntry from './leaderboard-entry.js'
 
@@ -22,6 +23,14 @@ export enum LeaderboardRefreshInterval {
   WEEKLY = 'weekly',
   MONTHLY = 'monthly',
   YEARLY = 'yearly',
+}
+
+const refreshCheckers: Record<LeaderboardRefreshInterval, (d: Date) => boolean> = {
+  [LeaderboardRefreshInterval.NEVER]: () => true,
+  [LeaderboardRefreshInterval.DAILY]: (d) => isToday(d),
+  [LeaderboardRefreshInterval.WEEKLY]: (d) => isThisWeek(d, { weekStartsOn: 1 }),
+  [LeaderboardRefreshInterval.MONTHLY]: (d) => isThisMonth(d),
+  [LeaderboardRefreshInterval.YEARLY]: (d) => isThisYear(d),
 }
 
 @Entity()
@@ -70,19 +79,25 @@ export default class Leaderboard {
     return key
   }
 
+  isDateInCurrentPeriod(date: Date) {
+    return refreshCheckers[this.refreshInterval](date)
+  }
+
   async findEntryWithProps({
     em,
     playerAliasId,
     props,
+    onlyDeleted = false,
   }: {
     em: EntityManager
     playerAliasId: number
     props: { key: string; value: string }[]
-  }): Promise<LeaderboardEntry | null> {
+    onlyDeleted?: boolean
+  }) {
     return em.repo(LeaderboardEntry).findOne({
       leaderboard: this,
       playerAlias: playerAliasId,
-      deletedAt: null,
+      deletedAt: onlyDeleted ? { $ne: null } : null,
       propsDigest: LeaderboardEntry.createPropsDigest(props),
     })
   }

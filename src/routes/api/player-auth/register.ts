@@ -7,7 +7,7 @@ import Player from '../../../entities/player.js'
 import { PricingPlanLimitError } from '../../../lib/billing/checkPricingPlanPlayerLimit.js'
 import { throwPlayerAuthError } from '../../../lib/errors/throwPlayerAuthError.js'
 import { hasProfanity } from '../../../lib/filters/profanity.js'
-import emailRegex from '../../../lib/lang/emailRegex.js'
+import { isEmailValid } from '../../../lib/lang/isEmailValid.js'
 import {
   createPlayerFromIdentifyRequest,
   PlayerCreationError,
@@ -65,7 +65,7 @@ export const registerRoute = apiRoute({
     }
 
     const sanitisedEmail = email?.trim().toLowerCase()
-    if (sanitisedEmail && !emailRegex.test(sanitisedEmail)) {
+    if (sanitisedEmail && !isEmailValid(sanitisedEmail)) {
       return throwPlayerAuthError({
         ctx,
         status: 400,

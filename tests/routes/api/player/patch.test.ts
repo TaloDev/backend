@@ -520,7 +520,7 @@ describe('Player API - update', () => {
     expect(props.length).toBe(5)
   })
 
-  it('should not block concurrent PATCHes for different players', async () => {
+  it('should not block concurrent updates for different players', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_PLAYERS])
     const players = await new PlayerFactory([apiKey.game]).many(5)
     await em.persist(players).flush()

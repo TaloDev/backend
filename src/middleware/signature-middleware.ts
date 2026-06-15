@@ -3,7 +3,7 @@ import { verifySignature } from '../lib/auth/verify-signature.js'
 import { APIRouteContext } from '../lib/routing/context.js'
 
 export async function signatureMiddleware(ctx: APIRouteContext, next: Next) {
-  if (!ctx.state.game.verifyRequests) {
+  if (!ctx.state.game?.verifyRequests) {
     return next()
   }
 

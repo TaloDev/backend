@@ -121,12 +121,12 @@ function safeStringifyBody(body: unknown) {
 
   try {
     if (typeof body === 'string') {
-      return body.length > maxSize ? '[Too large]' : body
+      return body.length > maxSize ? `[Too large (${body.length.toLocaleString()}kb)]` : body
     }
 
     const preliminary = JSON.stringify(body)
     if (preliminary.length > maxSize) {
-      return '[Too large]'
+      return `[Too large (${preliminary.length.toLocaleString()}kb)]`
     }
 
     return JSON.stringify(deepFilterData(body))

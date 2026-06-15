@@ -11,7 +11,7 @@ export async function continuityMiddleware(ctx: Context, next: Next) {
 
     if (header) {
       const date = new Date(Number(header))
-      if (isValid(date)) {
+      if (isValid(date) && date.getTime() <= Date.now() + 1000) {
         ctx.state.continuityDate = date
         setTraceAttributes({ continuity_date: date.toISOString() })
       }

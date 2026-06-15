@@ -127,8 +127,9 @@ export type CreateClickHouseClientOptions = {
 
 export default function createTracedClickHouseClient(options: CreateClickHouseClientOptions = {}) {
   const connectToDb = options.connectToDb ?? true
+  const port = process.env.CLICKHOUSE_PORT ?? 8123
 
-  let url = `http://${process.env.CLICKHOUSE_USER}:${process.env.CLICKHOUSE_PASSWORD}@${process.env.CLICKHOUSE_HOST}:${process.env.CLICKHOUSE_PORT}`
+  let url = `http://${process.env.CLICKHOUSE_USER}:${process.env.CLICKHOUSE_PASSWORD}@${process.env.CLICKHOUSE_HOST}:${port}`
   if (connectToDb) {
     url += `/${getDbName(options.dbName)}`
   }

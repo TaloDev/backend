@@ -2,7 +2,7 @@ import bcrypt from 'bcrypt'
 import { APIKeyScope } from '../../../entities/api-key.js'
 import { PlayerAuthActivityType } from '../../../entities/player-auth-activity.js'
 import { throwPlayerAuthError } from '../../../lib/errors/throwPlayerAuthError.js'
-import emailRegex from '../../../lib/lang/emailRegex.js'
+import { isEmailValid } from '../../../lib/lang/isEmailValid.js'
 import { apiRoute, withMiddleware } from '../../../lib/routing/router.js'
 import { playerAliasHeaderSchema } from '../../../lib/validation/playerAliasHeaderSchema.js'
 import { playerHeaderSchema } from '../../../lib/validation/playerHeaderSchema.js'
@@ -77,7 +77,7 @@ export const changeEmailRoute = apiRoute({
     }
 
     const oldEmail = alias.player.auth.email
-    if (emailRegex.test(sanitisedEmail)) {
+    if (isEmailValid(sanitisedEmail)) {
       if (await isEmailTakenForGame(em, { email: sanitisedEmail, game: ctx.state.game })) {
         createPlayerAuthActivity(ctx, alias.player, {
           type: PlayerAuthActivityType.CHANGE_EMAIL_FAILED,

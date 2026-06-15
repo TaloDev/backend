@@ -107,12 +107,17 @@ export const postRoute = apiRoute({
 
             try {
               if (leaderboard.unique) {
+                const onlyDeleted =
+                  ctx.state.continuityDate &&
+                  !leaderboard.isDateInCurrentPeriod(ctx.state.continuityDate)
+
                 // try to find existing entry for unique leaderboards
                 if (leaderboard.uniqueByProps) {
                   entry = await leaderboard.findEntryWithProps({
                     em: trx,
                     playerAliasId: playerAlias.id,
                     props: createProps,
+                    onlyDeleted,
                   })
                   if (!entry) {
                     throw new UniqueLeaderboardEntryPropsDigestError()
@@ -121,7 +126,7 @@ export const postRoute = apiRoute({
                   entry = await trx.repo(LeaderboardEntry).findOneOrFail({
                     leaderboard,
                     playerAlias,
-                    deletedAt: null,
+                    deletedAt: onlyDeleted ? { $ne: null } : null,
                   })
                 }
 

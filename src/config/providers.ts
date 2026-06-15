@@ -1,5 +1,5 @@
 import type { EntityManager } from '@mikro-orm/mysql'
-import { setupKoaErrorHandler as setupSentryErrorHandler } from '@sentry/node'
+import { setupKoaErrorHandler } from '@sentry/node'
 import Koa from 'koa'
 import createClickHouseClient from '../lib/clickhouse/createClient.js'
 import { runClickHouseMigrations } from '../migrations/clickhouse/index.js'
@@ -35,6 +35,14 @@ export async function initProviders(app: Koa, isTest: boolean) {
   }
 
   if (!isTest) {
-    setupSentryErrorHandler(app)
+    const otelUse: typeof app.use = app.use.bind(app)
+    const namedUse: typeof app.use = (middleware) => {
+      Object.defineProperty(middleware, 'name', { value: 'sentryErrorHandler', configurable: true })
+      return otelUse(middleware)
+    }
+
+    app.use = namedUse
+    setupKoaErrorHandler(app)
+    app.use = otelUse
   }
 }

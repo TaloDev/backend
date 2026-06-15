@@ -2,13 +2,12 @@ import 'dotenv/config'
 import './lib/tracing/sentry-instrument.js'
 import './lib/tracing/enable-tracing.js'
 import './lib/docs/docs-registry.js'
+import { bodyParser } from '@koa/bodyparser'
 import { EntityManager } from '@mikro-orm/mysql'
 import { secondsToMilliseconds } from 'date-fns'
 import { createServer } from 'http'
 import Koa from 'koa'
-import bodyParser from 'koa-bodyparser'
 import compress from 'koa-compress'
-import helmet from 'koa-helmet'
 import { configureAPIRoutes } from './config/api-routes.js'
 import { configureProtectedRoutes } from './config/protected-routes.js'
 import { initProviders } from './config/providers.js'
@@ -16,6 +15,7 @@ import { configurePublicRoutes } from './config/public-routes.js'
 import { corsMiddleware } from './middleware/cors-middleware.js'
 import { devDataMiddleware } from './middleware/dev-data-middleware.js'
 import { errorMiddleware } from './middleware/error-middleware.js'
+import { helmetMiddleware } from './middleware/helmet-middleware.js'
 import { httpTracingMiddleware } from './middleware/http-tracing-middleware.js'
 import { limiterMiddleware } from './middleware/limiter-middleware.js'
 import { loggerMiddleware } from './middleware/logger-middleware.js'
@@ -35,9 +35,9 @@ export default async function init() {
   app.use(trailingSlashMiddleware)
   if (!isTest) app.use(loggerMiddleware)
   app.use(errorMiddleware)
-  app.use(bodyParser())
+  app.use(bodyParser({ parsedMethods: ['POST', 'PUT', 'PATCH', 'DELETE'] }))
   if (!isTest) app.use(httpTracingMiddleware)
-  app.use(helmet())
+  app.use(helmetMiddleware)
   app.use(corsMiddleware)
   app.use(devDataMiddleware)
   app.use(limiterMiddleware)

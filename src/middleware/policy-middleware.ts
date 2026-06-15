@@ -11,7 +11,7 @@ export type RequireScopesMiddleware = Middleware<APIRouteState> & {
 }
 
 export function requireScopes(scopes: APIKeyScope[]): RequireScopesMiddleware {
-  const middleware = async (ctx: APIRouteContext, next: Koa.Next) => {
+  const requireScopes = async (ctx: APIRouteContext, next: Koa.Next) => {
     const key = ctx.state.key
     const missing = scopes.filter((scope) => !checkScope(key, scope))
 
@@ -26,11 +26,11 @@ export function requireScopes(scopes: APIKeyScope[]): RequireScopesMiddleware {
     await next()
   }
 
-  return Object.assign(middleware, { scopes })
+  return Object.assign(requireScopes, { scopes })
 }
 
 export function userTypeGate(types: UserType[], action: string): Middleware<ProtectedRouteState> {
-  return async (ctx: ProtectedRouteContext, next: Koa.Next) => {
+  const userTypeGate = async (ctx: ProtectedRouteContext, next: Koa.Next) => {
     const user = ctx.state.user
 
     if (user.type !== UserType.OWNER && !types.includes(user.type)) {
@@ -43,10 +43,12 @@ export function userTypeGate(types: UserType[], action: string): Middleware<Prot
 
     await next()
   }
+
+  return userTypeGate
 }
 
 export function ownerGate(action: string): Middleware<ProtectedRouteState> {
-  return async (ctx: ProtectedRouteContext, next: Koa.Next) => {
+  const ownerGate = async (ctx: ProtectedRouteContext, next: Koa.Next) => {
     const user = ctx.state.user
 
     if (user.type !== UserType.OWNER) {
@@ -59,10 +61,12 @@ export function ownerGate(action: string): Middleware<ProtectedRouteState> {
 
     await next()
   }
+
+  return ownerGate
 }
 
 export function requireEmailConfirmed(action: string): Middleware<ProtectedRouteState> {
-  return async (ctx: ProtectedRouteContext, next: Koa.Next) => {
+  const requireEmailConfirmed = async (ctx: ProtectedRouteContext, next: Koa.Next) => {
     const user = ctx.state.user
 
     if (!user.emailConfirmed) {
@@ -75,4 +79,6 @@ export function requireEmailConfirmed(action: string): Middleware<ProtectedRoute
 
     await next()
   }
+
+  return requireEmailConfirmed
 }

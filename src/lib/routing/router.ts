@@ -1,4 +1,5 @@
 import type Koa from 'koa'
+import { SpanStatusCode, trace } from '@opentelemetry/api'
 import Router from 'koa-tree-router'
 import { z } from 'zod'
 import type { ValidationSchema, ValidatedContext } from '../../middleware/validator-middleware.js'
@@ -14,18 +15,64 @@ type HandlerResponse = {
   headers?: Record<string, string>
 }
 
+type MaybePromiseHandlerResponse = HandlerResponse | Promise<HandlerResponse>
+
 type Handler<S extends RouteState> = (
   ctx: AppParameterizedContext<S>,
-) => HandlerResponse | Promise<HandlerResponse>
+) => MaybePromiseHandlerResponse
 
 type ValidatedHandler<V extends ValidationSchema, S extends RouteState> = (
   ctx: ValidatedContext<V, S>,
-) => HandlerResponse | Promise<HandlerResponse>
+) => MaybePromiseHandlerResponse
 
 export type Middleware<S extends RouteState> = (
   ctx: AppParameterizedContext<S>,
   next: Koa.Next,
 ) => Promise<void> | void
+
+const tracer = trace.getTracer('talo.router')
+
+function tracedMiddleware<S extends RouteState>(
+  name: string,
+  middleware: Middleware<S>,
+): Middleware<S> {
+  return async (ctx, next) => {
+    await tracer.startActiveSpan(`middleware.${name}`, async (span) => {
+      try {
+        await middleware(ctx, next)
+        span.setStatus({ code: SpanStatusCode.OK })
+      } catch (err) {
+        span.recordException(err as Error)
+        span.setStatus({
+          code: SpanStatusCode.ERROR,
+          message: (err as Error).message,
+        })
+        throw err
+      } finally {
+        span.end()
+      }
+    })
+  }
+}
+
+async function tracedHandler(handler: () => MaybePromiseHandlerResponse) {
+  return tracer.startActiveSpan('route.handler', async (span) => {
+    try {
+      const response = await handler()
+      span.setStatus({ code: SpanStatusCode.OK })
+      return response
+    } catch (err) {
+      span.recordException(err as Error)
+      span.setStatus({
+        code: SpanStatusCode.ERROR,
+        message: (err as Error).message,
+      })
+      throw err
+    } finally {
+      span.end()
+    }
+  })
+}
 
 export function withMiddleware<S extends RouteState>(...middleware: Middleware<S>[]) {
   return middleware
@@ -92,21 +139,27 @@ function mountRoute<S extends RouteState, V extends ValidationSchema | undefined
     }
   }
 
+  const traced = middleware.map((mw) => tracedMiddleware(mw.name || 'anonymous', mw))
+
   const allMiddleware = ('schema' in config && config.schema
     ? [
-        validate(config.schema(z)),
-        ...middleware,
+        tracedMiddleware('validate', validate(config.schema(z)) as Middleware<S>),
+        ...traced,
         async (ctx: ValidatedContext<V extends ValidationSchema ? V : never, S>) => {
-          const response = await (
-            config as ValidatedRouteConfig<S, V extends ValidationSchema ? V : never>
-          ).handler(ctx)
+          const response = await tracedHandler(() => {
+            return (
+              config as ValidatedRouteConfig<S, V extends ValidationSchema ? V : never>
+            ).handler(ctx)
+          })
           applyResponse(ctx, response)
         },
       ]
     : [
-        ...middleware,
+        ...traced,
         async (ctx: AppParameterizedContext<S>) => {
-          const response = await (config as UnvalidatedRouteConfig<S>).handler(ctx)
+          const response = await tracedHandler(() => {
+            return (config as UnvalidatedRouteConfig<S>).handler(ctx)
+          })
           applyResponse(ctx, response)
         },
         // koa doesn't handle generic context very well

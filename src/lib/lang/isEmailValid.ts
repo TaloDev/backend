@@ -1,6 +1,6 @@
 import { z } from 'zod'
 
-const emailFormatSchema = z.string().email()
+const emailFormatSchema = z.email()
 
 export function isEmailValid(email: string) {
   const result = emailFormatSchema.safeParse(email)

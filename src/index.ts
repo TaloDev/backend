@@ -35,7 +35,7 @@ export default async function init() {
   app.use(trailingSlashMiddleware)
   if (!isTest) app.use(loggerMiddleware)
   app.use(errorMiddleware)
-  app.use(bodyParser())
+  app.use(bodyParser({ parsedMethods: ['POST', 'PUT', 'PATCH', 'DELETE'] }))
   if (!isTest) app.use(httpTracingMiddleware)
   app.use(helmetMiddleware)
   app.use(corsMiddleware)

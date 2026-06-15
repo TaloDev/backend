@@ -9,9 +9,6 @@ if (process.env.NODE_ENV !== 'test' && typeof process.env.HYPERDX_API_KEY === 's
       '@opentelemetry/instrumentation-http': {
         ignoreOutgoingRequestHook: (req) => req.hostname === process.env.CLICKHOUSE_HOST,
       },
-      '@opentelemetry/instrumentation-koa': {
-        enabled: false,
-      },
     },
   })
 

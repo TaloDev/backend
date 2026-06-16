@@ -19,6 +19,7 @@ export const postDocs = {
             id: 105,
             service: 'username',
             identifier: 'player_one',
+            displayName: 'player_one',
             player: {
               id: '85d67584-1346-4fad-a17f-fd7bd6c85364',
               props: [],
@@ -35,6 +36,7 @@ export const postDocs = {
             id: 42,
             service: 'username',
             identifier: 'player_two',
+            displayName: 'player_two',
             player: {
               id: 'a1b2c3d4-5678-90ab-cdef-1234567890ab',
               props: [],
@@ -69,6 +71,7 @@ export const confirmDocs = {
             id: 108,
             service: 'username',
             identifier: 'subscriber_one',
+            displayName: 'subscriber_one',
             player: {
               id: 'b2c3d4e5-6789-01bc-def2-234567890abc',
               props: [],
@@ -85,6 +88,7 @@ export const confirmDocs = {
             id: 42,
             service: 'username',
             identifier: 'current_player',
+            displayName: 'current_player',
             player: {
               id: 'a1b2c3d4-5678-90ab-cdef-1234567890ab',
               props: [],
@@ -120,6 +124,7 @@ export const getSubscribersDocs = {
               id: 108,
               service: 'username',
               identifier: 'subscriber_one',
+              displayName: 'subscriber_one',
               player: {
                 id: 'b2c3d4e5-6789-01bc-def2-234567890abc',
                 props: [],
@@ -136,6 +141,7 @@ export const getSubscribersDocs = {
               id: 42,
               service: 'username',
               identifier: 'current_player',
+              displayName: 'current_player',
               player: {
                 id: 'a1b2c3d4-5678-90ab-cdef-1234567890ab',
                 props: [],
@@ -159,6 +165,7 @@ export const getSubscribersDocs = {
               id: 109,
               service: 'username',
               identifier: 'subscriber_two',
+              displayName: 'subscriber_two',
               player: {
                 id: 'c3d4e5f6-7890-12cd-ef34-567890abcdef',
                 props: [],
@@ -175,6 +182,7 @@ export const getSubscribersDocs = {
               id: 42,
               service: 'username',
               identifier: 'current_player',
+              displayName: 'current_player',
               player: {
                 id: 'a1b2c3d4-5678-90ab-cdef-1234567890ab',
                 props: [],
@@ -214,6 +222,7 @@ export const getSubscriptionsDocs = {
               id: 105,
               service: 'username',
               identifier: 'current_player',
+              displayName: 'current_player',
               player: {
                 id: '85d67584-1346-4fad-a17f-fd7bd6c85364',
                 props: [],
@@ -230,6 +239,7 @@ export const getSubscriptionsDocs = {
               id: 42,
               service: 'username',
               identifier: 'player_two',
+              displayName: 'player_two',
               player: {
                 id: 'a1b2c3d4-5678-90ab-cdef-1234567890ab',
                 props: [],
@@ -253,6 +263,7 @@ export const getSubscriptionsDocs = {
               id: 105,
               service: 'username',
               identifier: 'current_player',
+              displayName: 'current_player',
               player: {
                 id: '85d67584-1346-4fad-a17f-fd7bd6c85364',
                 props: [],
@@ -269,6 +280,7 @@ export const getSubscriptionsDocs = {
               id: 43,
               service: 'username',
               identifier: 'player_three',
+              displayName: 'player_three',
               player: {
                 id: 'e5f6a7b8-9012-34ef-5678-90abcdef1234',
                 props: [],

@@ -19,6 +19,7 @@ export const getDocs = {
               id: 1,
               service: 'steam',
               identifier: '11133645',
+              displayName: '11133645',
               player: {
                 id: '7a4e70ec-6ee6-418e-923d-b3a45051b7f9',
                 props: [
@@ -46,6 +47,7 @@ export const getDocs = {
               id: 1,
               service: 'epic',
               identifier: '44661821',
+              displayName: '44661821',
               player: {
                 id: '1c4d8680-8865-4bfa-8212-f9a405e77897',
                 props: [
@@ -136,6 +138,7 @@ export const postDocs = {
             id: 1,
             service: 'steam',
             identifier: '11133645',
+            displayName: '11133645',
             player: {
               id: '7a4e70ec-6ee6-418e-923d-b3a45051b7f9',
               props: [

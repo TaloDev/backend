@@ -20,6 +20,7 @@ export const settingsRoute = protectedRoute({
           blockAliasIdentifierProfanity: game.blockAliasIdentifierProfanity,
           blockPropsProfanity: game.blockPropsProfanity,
           verifyRequests: game.verifyRequests,
+          displayNamePropKey: game.displayNamePropKey,
           website: game.website,
           gameToken: game.getToken(),
         },

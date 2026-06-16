@@ -160,11 +160,23 @@ export default class PlayerAlias {
     }
   }
 
+  getDisplayName() {
+    const propKey = this.player.game.displayNamePropKey
+    if (propKey) {
+      const prop = this.player.props.getItems().find((p) => p.key === propKey)
+      if (prop) {
+        return prop.value
+      }
+    }
+    return this.identifier
+  }
+
   toJSON() {
     return {
       id: this.id,
       service: this.service,
       identifier: this.identifier,
+      displayName: this.getDisplayName(),
       player: { ...this.player.toJSON(), aliases: undefined },
       lastSeenAt: this.lastSeenAt,
       createdAt: this.createdAt,

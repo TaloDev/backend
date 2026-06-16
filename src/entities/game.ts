@@ -60,6 +60,9 @@ export default class Game {
   @Property()
   verifyRequests: boolean = false
 
+  @Property({ nullable: true })
+  displayNamePropKey: string | null = null
+
   @Property()
   createdAt: Date = new Date()
 
@@ -98,6 +101,7 @@ export default class Game {
       id: this.id,
       name: this.name,
       props: this.props,
+      displayNamePropKey: this.displayNamePropKey,
       createdAt: this.createdAt,
     }
   }

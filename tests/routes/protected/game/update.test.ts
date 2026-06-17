@@ -1,7 +1,9 @@
+import { Collection } from '@mikro-orm/mysql'
 import { randText } from '@ngneat/falso'
 import request from 'supertest'
 import APIKey, { APIKeyScope } from '../../../../src/entities/api-key.js'
 import GameActivity, { GameActivityType } from '../../../../src/entities/game-activity.js'
+import PlayerProp from '../../../../src/entities/player-prop.js'
 import Prop from '../../../../src/entities/prop.js'
 import { UserType } from '../../../../src/entities/user.js'
 import { genAccessToken } from '../../../../src/lib/auth/buildTokenPair.js'
@@ -474,6 +476,24 @@ describe('Game - update', () => {
     },
   )
 
+  it.each(userPermissionProvider())(
+    'should update displayNamePropKey for a %s user',
+    async (statusCode, _, type) => {
+      const [organisation, game] = await createOrganisationAndGame()
+      const [token] = await createUserAndToken({ type }, organisation)
+
+      await request(app)
+        .patch(`/games/${game.id}`)
+        .send({ displayNamePropKey: 'playerChosenName' })
+        .auth(token, { type: 'bearer' })
+        .expect(statusCode)
+
+      if (statusCode === 200) {
+        expect((await em.refreshOrFail(game)).displayNamePropKey).toBe('playerChosenName')
+      }
+    },
+  )
+
   it('should not update game names if an empty string is sent', async () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({ type: UserType.ADMIN }, organisation)
@@ -576,5 +596,64 @@ describe('Game - update', () => {
       .auth(apiToken, { type: 'bearer' })
       .set('x-talo-alias', String(player.aliases[0].id))
       .expect(401)
+  })
+
+  it('should return the correct displayName based on displayNamePropKey', async () => {
+    const [organisation, game] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken({ type: UserType.OWNER }, organisation)
+
+    const player = await new PlayerFactory([game])
+      .state((p) => ({
+        props: new Collection<PlayerProp>(p, [
+          new PlayerProp(p, 'displayNameOne', 'Alice'),
+          new PlayerProp(p, 'displayNameTwo', 'Bob'),
+        ]),
+      }))
+      .one()
+    await em.persist(player).flush()
+
+    // first search: should use the identifier
+    const resBefore = await request(app)
+      .get(`/games/${game.id}/players`)
+      .query({ page: 0 })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    expect(resBefore.body.players).toHaveLength(1)
+    expect(resBefore.body.players[0].aliases[0].displayName).toBe(player.aliases[0].identifier)
+
+    // set the display name prop key to displayNameOne
+    await request(app)
+      .patch(`/games/${game.id}`)
+      .send({ displayNamePropKey: 'displayNameOne' })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    // second search: should use displayNameOne
+    const resAfterSettingOne = await request(app)
+      .get(`/games/${game.id}/players`)
+      .query({ page: 0 })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    expect(resAfterSettingOne.body.players).toHaveLength(1)
+    expect(resAfterSettingOne.body.players[0].aliases[0].displayName).toBe('Alice')
+
+    // set the display name prop key to displayNameTwo
+    await request(app)
+      .patch(`/games/${game.id}`)
+      .send({ displayNamePropKey: 'displayNameTwo' })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    // third search: should use displayNameTwo
+    const resAfterSettingTwo = await request(app)
+      .get(`/games/${game.id}/players`)
+      .query({ page: 0 })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    expect(resAfterSettingTwo.body.players).toHaveLength(1)
+    expect(resAfterSettingTwo.body.players[0].aliases[0].displayName).toBe('Bob')
   })
 })

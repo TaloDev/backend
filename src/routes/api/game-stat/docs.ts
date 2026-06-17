@@ -146,6 +146,7 @@ export const historyDocs = {
               id: 79,
               service: 'username',
               identifier: 'jonas',
+              displayName: 'jonas',
               player: {
                 id: '19750d91-92b2-4dbb-a4b2-e9827751e929',
                 props: [],
@@ -169,6 +170,7 @@ export const historyDocs = {
               id: 79,
               service: 'username',
               identifier: 'jonas',
+              displayName: 'jonas',
               player: {
                 id: '19750d91-92b2-4dbb-a4b2-e9827751e929',
                 props: [],
@@ -192,6 +194,7 @@ export const historyDocs = {
               id: 79,
               service: 'username',
               identifier: 'jonas',
+              displayName: 'jonas',
               player: {
                 id: '19750d91-92b2-4dbb-a4b2-e9827751e929',
                 props: [],
@@ -242,6 +245,7 @@ export const globalHistoryDocs = {
               id: 79,
               service: 'username',
               identifier: 'jonas',
+              displayName: 'jonas',
               player: {
                 id: '19750d91-92b2-4dbb-a4b2-e9827751e929',
                 props: [],
@@ -265,6 +269,7 @@ export const globalHistoryDocs = {
               id: 79,
               service: 'username',
               identifier: 'joe',
+              displayName: 'joe',
               player: {
                 id: '19750d91-92b2-4dbb-a4b2-e9827751e929',
                 props: [],
@@ -288,6 +293,7 @@ export const globalHistoryDocs = {
               id: 79,
               service: 'username',
               identifier: 'bob',
+              displayName: 'bob',
               player: {
                 id: '19750d91-92b2-4dbb-a4b2-e9827751e929',
                 props: [],
@@ -311,6 +317,7 @@ export const globalHistoryDocs = {
               id: 79,
               service: 'username',
               identifier: 'jim',
+              displayName: 'jim',
               player: {
                 id: '19750d91-92b2-4dbb-a4b2-e9827751e929',
                 props: [],
@@ -334,6 +341,7 @@ export const globalHistoryDocs = {
               id: 79,
               service: 'username',
               identifier: 'billy',
+              displayName: 'billy',
               player: {
                 id: '19750d91-92b2-4dbb-a4b2-e9827751e929',
                 props: [],

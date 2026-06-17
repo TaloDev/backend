@@ -17,6 +17,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "datetime"
         },
@@ -33,6 +34,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "integer"
         },
@@ -49,6 +51,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "integer"
         },
@@ -65,6 +68,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "integer"
         },
@@ -81,6 +85,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "datetime"
         },
@@ -97,6 +102,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "datetime"
         },
@@ -108,12 +114,39 @@
           "primary": false,
           "nullable": false,
           "unique": false,
-          "length": 65535,
+          "length": null,
           "precision": null,
           "scale": null,
           "default": null,
           "comment": null,
-          "enumItems": [],
+          "collation": null,
+          "enumItems": [
+            "read:playerPresence",
+            "write:playerPresence",
+            "read:gameChannels",
+            "write:gameChannels",
+            "read:playerGroups",
+            "write:continuityRequests",
+            "read:gameFeedback",
+            "write:gameFeedback",
+            "read:gameConfig",
+            "write:gameConfig",
+            "read:gameStats",
+            "write:gameStats",
+            "read:gameSaves",
+            "write:gameSaves",
+            "read:leaderboards",
+            "write:leaderboards",
+            "read:players",
+            "write:players",
+            "read:events",
+            "write:events",
+            "read:playerRelationships",
+            "write:playerRelationships",
+            "read:playerBroadcasts",
+            "write:playerBroadcasts",
+            "*"
+          ],
           "mappedType": "text"
         },
         "updated_at": {
@@ -129,6 +162,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "datetime"
         }
@@ -160,6 +194,7 @@
         }
       ],
       "checks": [],
+      "triggers": [],
       "foreignKeys": {
         "apikey_created_by_user_id_foreign": {
           "columnNames": ["created_by_user_id"],
@@ -176,7 +211,7 @@
           "referencedTableName": "game"
         }
       },
-      "comment": ""
+      "comment": null
     },
     {
       "name": "data_export",
@@ -194,6 +229,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "datetime"
         },
@@ -210,6 +246,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "integer"
         },
@@ -221,12 +258,22 @@
           "primary": false,
           "nullable": false,
           "unique": false,
-          "length": 65535,
+          "length": null,
           "precision": null,
           "scale": null,
           "default": null,
           "comment": null,
-          "enumItems": [],
+          "collation": null,
+          "enumItems": [
+            "events",
+            "players",
+            "playerAliases",
+            "leaderboardEntries",
+            "gameStats",
+            "playerGameStats",
+            "gameActivities",
+            "gameFeedback"
+          ],
           "mappedType": "text"
         },
         "failed_at": {
@@ -242,6 +289,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "datetime"
         },
@@ -258,6 +306,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "integer"
         },
@@ -274,6 +323,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "integer"
         },
@@ -290,6 +340,7 @@
           "scale": null,
           "default": "0",
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "tinyint"
         },
@@ -306,6 +357,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "datetime"
         }
@@ -337,6 +389,7 @@
         }
       ],
       "checks": [],
+      "triggers": [],
       "foreignKeys": {
         "data_export_created_by_user_id_foreign": {
           "columnNames": ["created_by_user_id"],
@@ -353,7 +406,7 @@
           "referencedTableName": "game"
         }
       },
-      "comment": ""
+      "comment": null
     },
     {
       "name": "failed_job",
@@ -371,6 +424,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "datetime"
         },
@@ -387,6 +441,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "integer"
         },
@@ -403,6 +458,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "json"
         },
@@ -419,6 +475,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "string"
         },
@@ -435,6 +492,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "string"
         },
@@ -446,11 +504,12 @@
           "primary": false,
           "nullable": false,
           "unique": false,
-          "length": 65535,
+          "length": null,
           "precision": null,
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "text"
         }
@@ -474,8 +533,9 @@
         }
       ],
       "checks": [],
+      "triggers": [],
       "foreignKeys": {},
-      "comment": ""
+      "comment": null
     },
     {
       "name": "game",
@@ -493,6 +553,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "integer"
         },
@@ -505,10 +566,11 @@
           "nullable": false,
           "unique": false,
           "length": null,
-          "precision": 3,
-          "scale": 0,
+          "precision": null,
+          "scale": null,
           "default": "false",
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "boolean"
         },
@@ -521,10 +583,11 @@
           "nullable": false,
           "unique": false,
           "length": null,
-          "precision": 3,
-          "scale": 0,
+          "precision": null,
+          "scale": null,
           "default": "false",
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "boolean"
         },
@@ -541,8 +604,26 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "datetime"
+        },
+        "display_name_prop_key": {
+          "name": "display_name_prop_key",
+          "type": "varchar(255)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "unique": false,
+          "length": 255,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "string"
         },
         "id": {
           "name": "id",
@@ -557,6 +638,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "integer"
         },
@@ -573,6 +655,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "string"
         },
@@ -589,6 +672,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "integer"
         },
@@ -605,6 +689,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "json"
         },
@@ -617,10 +702,11 @@
           "nullable": false,
           "unique": false,
           "length": null,
-          "precision": 3,
-          "scale": 0,
+          "precision": null,
+          "scale": null,
           "default": "false",
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "boolean"
         },
@@ -637,6 +723,7 @@
           "scale": null,
           "default": "60",
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "integer"
         },
@@ -649,10 +736,11 @@
           "nullable": false,
           "unique": false,
           "length": null,
-          "precision": 3,
-          "scale": 0,
+          "precision": null,
+          "scale": null,
           "default": "false",
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "boolean"
         },
@@ -669,6 +757,7 @@
           "scale": null,
           "default": "90",
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "integer"
         },
@@ -685,6 +774,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "datetime"
         },
@@ -697,10 +787,11 @@
           "nullable": false,
           "unique": false,
           "length": null,
-          "precision": 3,
-          "scale": 0,
+          "precision": null,
+          "scale": null,
           "default": "false",
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "boolean"
         },
@@ -717,6 +808,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "string"
         }
@@ -748,6 +840,7 @@
         }
       ],
       "checks": [],
+      "triggers": [],
       "foreignKeys": {
         "game_api_secret_id_foreign": {
           "columnNames": ["api_secret_id"],
@@ -764,7 +857,7 @@
           "referencedTableName": "organisation"
         }
       },
-      "comment": ""
+      "comment": null
     },
     {
       "name": "game_activity",
@@ -782,6 +875,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "datetime"
         },
@@ -798,6 +892,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "json"
         },
@@ -814,6 +909,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "integer"
         },
@@ -830,6 +926,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "integer"
         },
@@ -846,6 +943,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "tinyint"
         },
@@ -862,6 +960,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "integer"
         }
@@ -893,6 +992,7 @@
         }
       ],
       "checks": [],
+      "triggers": [],
       "foreignKeys": {
         "game_activity_game_id_foreign": {
           "columnNames": ["game_id"],
@@ -910,7 +1010,7 @@
           "referencedTableName": "user"
         }
       },
-      "comment": ""
+      "comment": null
     },
     {
       "name": "game_center_integration_event",
@@ -928,6 +1028,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "datetime"
         },
@@ -944,6 +1045,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "integer"
         },
@@ -960,6 +1062,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "integer"
         },
@@ -976,6 +1079,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "json"
         },
@@ -992,6 +1096,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "json"
         }
@@ -1015,6 +1120,7 @@
         }
       ],
       "checks": [],
+      "triggers": [],
       "foreignKeys": {
         "game_center_integration_event_integration_id_foreign": {
           "columnNames": ["integration_id"],
@@ -1024,7 +1130,7 @@
           "referencedTableName": "integration"
         }
       },
-      "comment": ""
+      "comment": null
     },
     {
       "name": "game_channel",
@@ -1038,10 +1144,11 @@
           "nullable": false,
           "unique": false,
           "length": null,
-          "precision": 3,
-          "scale": 0,
+          "precision": null,
+          "scale": null,
           "default": "false",
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "boolean"
         },
@@ -1058,6 +1165,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "datetime"
         },
@@ -1074,6 +1182,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "integer"
         },
@@ -1090,6 +1199,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "integer"
         },
@@ -1106,6 +1216,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "string"
         },
@@ -1122,6 +1233,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "integer"
         },
@@ -1134,10 +1246,11 @@
           "nullable": false,
           "unique": false,
           "length": null,
-          "precision": 3,
-          "scale": 0,
+          "precision": null,
+          "scale": null,
           "default": "false",
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "boolean"
         },
@@ -1150,10 +1263,11 @@
           "nullable": false,
           "unique": false,
           "length": null,
-          "precision": 3,
-          "scale": 0,
+          "precision": null,
+          "scale": null,
           "default": "false",
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "boolean"
         },
@@ -1170,6 +1284,7 @@
           "scale": null,
           "default": "0",
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "integer"
         },
@@ -1186,6 +1301,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "datetime"
         }
@@ -1217,6 +1333,7 @@
         }
       ],
       "checks": [],
+      "triggers": [],
       "foreignKeys": {
         "game_channel_game_id_foreign": {
           "columnNames": ["game_id"],
@@ -1234,7 +1351,7 @@
           "deleteRule": "set null"
         }
       },
-      "comment": ""
+      "comment": null
     },
     {
       "name": "game_channel_members",
@@ -1252,6 +1369,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "integer"
         },
@@ -1268,6 +1386,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "integer"
         }
@@ -1299,6 +1418,7 @@
         }
       ],
       "checks": [],
+      "triggers": [],
       "foreignKeys": {
         "game_channel_members_game_channel_id_foreign": {
           "columnNames": ["game_channel_id"],
@@ -1319,7 +1439,7 @@
           "deleteRule": "cascade"
         }
       },
-      "comment": ""
+      "comment": null
     },
     {
       "name": "game_channel_prop",
@@ -1337,6 +1457,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "datetime"
         },
@@ -1353,6 +1474,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "integer"
         },
@@ -1369,6 +1491,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "integer"
         },
@@ -1385,6 +1508,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "string"
         },
@@ -1401,6 +1525,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "string"
         }
@@ -1424,6 +1549,7 @@
         }
       ],
       "checks": [],
+      "triggers": [],
       "foreignKeys": {
         "game_channel_prop_game_channel_id_foreign": {
           "columnNames": ["game_channel_id"],
@@ -1434,7 +1560,7 @@
           "deleteRule": "cascade"
         }
       },
-      "comment": ""
+      "comment": null
     },
     {
       "name": "game_channel_storage_prop",
@@ -1452,6 +1578,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "datetime"
         },
@@ -1468,6 +1595,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "integer"
         },
@@ -1484,6 +1612,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "integer"
         },
@@ -1500,6 +1629,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "integer"
         },
@@ -1516,6 +1646,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "string"
         },
@@ -1532,6 +1663,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "integer"
         },
@@ -1548,6 +1680,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "datetime"
         },
@@ -1564,6 +1697,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "string"
         }
@@ -1611,6 +1745,7 @@
         }
       ],
       "checks": [],
+      "triggers": [],
       "foreignKeys": {
         "game_channel_storage_prop_created_by_id_foreign": {
           "columnNames": ["created_by_id"],
@@ -1637,7 +1772,7 @@
           "deleteRule": "cascade"
         }
       },
-      "comment": ""
+      "comment": null
     },
     {
       "name": "game_feedback",
@@ -1651,10 +1786,11 @@
           "nullable": false,
           "unique": false,
           "length": null,
-          "precision": 3,
-          "scale": 0,
+          "precision": null,
+          "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "boolean"
         },
@@ -1671,6 +1807,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "integer"
         },
@@ -1682,11 +1819,12 @@
           "primary": false,
           "nullable": false,
           "unique": false,
-          "length": 65535,
+          "length": null,
           "precision": null,
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "text"
         },
@@ -1703,6 +1841,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "datetime"
         },
@@ -1719,6 +1858,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "datetime"
         },
@@ -1735,6 +1875,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "integer"
         },
@@ -1751,6 +1892,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "integer"
         },
@@ -1767,6 +1909,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "datetime"
         }
@@ -1798,6 +1941,7 @@
         }
       ],
       "checks": [],
+      "triggers": [],
       "foreignKeys": {
         "game_feedback_category_id_foreign": {
           "columnNames": ["category_id"],
@@ -1816,7 +1960,7 @@
           "deleteRule": "cascade"
         }
       },
-      "comment": ""
+      "comment": null
     },
     {
       "name": "game_feedback_category",
@@ -1830,10 +1974,11 @@
           "nullable": false,
           "unique": false,
           "length": null,
-          "precision": 3,
-          "scale": 0,
+          "precision": null,
+          "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "boolean"
         },
@@ -1850,6 +1995,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "datetime"
         },
@@ -1866,6 +2012,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "string"
         },
@@ -1882,6 +2029,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "integer"
         },
@@ -1898,6 +2046,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "integer"
         },
@@ -1914,6 +2063,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "string"
         },
@@ -1930,6 +2080,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "string"
         },
@@ -1946,6 +2097,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "datetime"
         }
@@ -1977,6 +2129,7 @@
         }
       ],
       "checks": [],
+      "triggers": [],
       "foreignKeys": {
         "game_feedback_category_game_id_foreign": {
           "columnNames": ["game_id"],
@@ -1986,7 +2139,7 @@
           "referencedTableName": "game"
         }
       },
-      "comment": ""
+      "comment": null
     },
     {
       "name": "game_feedback_prop",
@@ -2004,6 +2157,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "datetime"
         },
@@ -2020,6 +2174,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "integer"
         },
@@ -2036,6 +2191,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "integer"
         },
@@ -2052,6 +2208,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "string"
         },
@@ -2068,6 +2225,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "string"
         }
@@ -2091,6 +2249,7 @@
         }
       ],
       "checks": [],
+      "triggers": [],
       "foreignKeys": {
         "game_feedback_prop_game_feedback_id_foreign": {
           "columnNames": ["game_feedback_id"],
@@ -2101,7 +2260,7 @@
           "deleteRule": "cascade"
         }
       },
-      "comment": ""
+      "comment": null
     },
     {
       "name": "game_save",
@@ -2119,6 +2278,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "json"
         },
@@ -2135,6 +2295,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "datetime"
         },
@@ -2151,6 +2312,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "integer"
         },
@@ -2167,6 +2329,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "string"
         },
@@ -2183,6 +2346,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "string"
         },
@@ -2199,6 +2363,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "datetime"
         }
@@ -2222,6 +2387,7 @@
         }
       ],
       "checks": [],
+      "triggers": [],
       "foreignKeys": {
         "game_save_player_id_foreign": {
           "columnNames": ["player_id"],
@@ -2232,7 +2398,7 @@
           "deleteRule": "cascade"
         }
       },
-      "comment": ""
+      "comment": null
     },
     {
       "name": "game_secret",
@@ -2250,6 +2416,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "integer"
         },
@@ -2266,6 +2433,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "string"
         }
@@ -2281,8 +2449,9 @@
         }
       ],
       "checks": [],
+      "triggers": [],
       "foreignKeys": {},
-      "comment": ""
+      "comment": null
     },
     {
       "name": "game_stat",
@@ -2300,6 +2469,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "datetime"
         },
@@ -2316,6 +2486,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "double"
         },
@@ -2332,6 +2503,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "integer"
         },
@@ -2344,10 +2516,11 @@
           "nullable": false,
           "unique": false,
           "length": null,
-          "precision": 3,
-          "scale": 0,
+          "precision": null,
+          "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "boolean"
         },
@@ -2364,6 +2537,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "double"
         },
@@ -2380,6 +2554,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "integer"
         },
@@ -2396,6 +2571,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "string"
         },
@@ -2412,6 +2588,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "double"
         },
@@ -2428,6 +2605,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "double"
         },
@@ -2444,6 +2622,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "integer"
         },
@@ -2460,6 +2639,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "double"
         },
@@ -2476,6 +2656,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "string"
         },
@@ -2492,6 +2673,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "datetime"
         }
@@ -2523,6 +2705,7 @@
         }
       ],
       "checks": [],
+      "triggers": [],
       "foreignKeys": {
         "game_stat_game_id_foreign": {
           "columnNames": ["game_id"],
@@ -2532,7 +2715,7 @@
           "referencedTableName": "game"
         }
       },
-      "comment": ""
+      "comment": null
     },
     {
       "name": "game_verification_key",
@@ -2550,6 +2733,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "datetime"
         },
@@ -2566,6 +2750,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "integer"
         },
@@ -2582,6 +2767,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "integer"
         },
@@ -2598,6 +2784,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "string"
         },
@@ -2614,6 +2801,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "string"
         }
@@ -2637,6 +2825,7 @@
         }
       ],
       "checks": [],
+      "triggers": [],
       "foreignKeys": {
         "game_verification_key_game_id_foreign": {
           "columnNames": ["game_id"],
@@ -2646,7 +2835,7 @@
           "referencedTableName": "game"
         }
       },
-      "comment": ""
+      "comment": null
     },
     {
       "name": "google_play_games_integration_event",
@@ -2664,6 +2853,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "datetime"
         },
@@ -2680,6 +2870,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "integer"
         },
@@ -2696,6 +2887,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "integer"
         },
@@ -2712,6 +2904,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "json"
         },
@@ -2728,6 +2921,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "json"
         }
@@ -2751,6 +2945,7 @@
         }
       ],
       "checks": [],
+      "triggers": [],
       "foreignKeys": {
         "google_play_games_integration_event_integration_id_foreign": {
           "columnNames": ["integration_id"],
@@ -2760,7 +2955,7 @@
           "referencedTableName": "integration"
         }
       },
-      "comment": ""
+      "comment": null
     },
     {
       "name": "integration",
@@ -2778,6 +2973,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "json"
         },
@@ -2794,6 +2990,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "datetime"
         },
@@ -2810,6 +3007,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "datetime"
         },
@@ -2826,6 +3024,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "integer"
         },
@@ -2842,6 +3041,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "integer"
         },
@@ -2853,11 +3053,12 @@
           "primary": false,
           "nullable": false,
           "unique": false,
-          "length": 17,
+          "length": null,
           "precision": null,
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": ["steamworks", "google-play-games", "game-center"],
           "mappedType": "enum"
         },
@@ -2874,6 +3075,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "datetime"
         }
@@ -2897,6 +3099,7 @@
         }
       ],
       "checks": [],
+      "triggers": [],
       "foreignKeys": {
         "integration_game_id_foreign": {
           "columnNames": ["game_id"],
@@ -2906,7 +3109,7 @@
           "referencedTableName": "game"
         }
       },
-      "comment": ""
+      "comment": null
     },
     {
       "name": "invite",
@@ -2924,6 +3127,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "datetime"
         },
@@ -2940,6 +3144,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "string"
         },
@@ -2956,6 +3161,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "integer"
         },
@@ -2972,6 +3178,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "integer"
         },
@@ -2988,6 +3195,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "integer"
         },
@@ -3004,6 +3212,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "string"
         },
@@ -3020,6 +3229,7 @@
           "scale": null,
           "default": "2",
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "tinyint"
         }
@@ -3051,6 +3261,7 @@
         }
       ],
       "checks": [],
+      "triggers": [],
       "foreignKeys": {
         "invite_invited_by_user_id_foreign": {
           "columnNames": ["invited_by_user_id"],
@@ -3067,7 +3278,7 @@
           "referencedTableName": "organisation"
         }
       },
-      "comment": ""
+      "comment": null
     },
     {
       "name": "leaderboard",
@@ -3085,6 +3296,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "datetime"
         },
@@ -3101,6 +3313,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "integer"
         },
@@ -3117,6 +3330,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "integer"
         },
@@ -3133,6 +3347,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "string"
         },
@@ -3149,6 +3364,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "string"
         },
@@ -3160,11 +3376,12 @@
           "primary": false,
           "nullable": false,
           "unique": false,
-          "length": 7,
+          "length": null,
           "precision": null,
           "scale": null,
           "default": "'never'",
           "comment": null,
+          "collation": null,
           "enumItems": ["never", "daily", "weekly", "monthly", "yearly"],
           "mappedType": "enum"
         },
@@ -3176,11 +3393,12 @@
           "primary": false,
           "nullable": false,
           "unique": false,
-          "length": 4,
+          "length": null,
           "precision": null,
           "scale": null,
           "default": "'desc'",
           "comment": null,
+          "collation": null,
           "enumItems": ["desc", "asc"],
           "mappedType": "enum"
         },
@@ -3193,10 +3411,11 @@
           "nullable": false,
           "unique": false,
           "length": null,
-          "precision": 3,
-          "scale": 0,
+          "precision": null,
+          "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "boolean"
         },
@@ -3209,10 +3428,11 @@
           "nullable": false,
           "unique": false,
           "length": null,
-          "precision": 3,
-          "scale": 0,
+          "precision": null,
+          "scale": null,
           "default": "false",
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "boolean"
         },
@@ -3229,6 +3449,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "datetime"
         }
@@ -3260,6 +3481,7 @@
         }
       ],
       "checks": [],
+      "triggers": [],
       "foreignKeys": {
         "leaderboard_game_id_foreign": {
           "columnNames": ["game_id"],
@@ -3269,7 +3491,7 @@
           "referencedTableName": "game"
         }
       },
-      "comment": ""
+      "comment": null
     },
     {
       "name": "leaderboard_entry",
@@ -3287,6 +3509,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "datetime"
         },
@@ -3303,6 +3526,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "datetime"
         },
@@ -3315,10 +3539,11 @@
           "nullable": false,
           "unique": false,
           "length": null,
-          "precision": 3,
-          "scale": 0,
+          "precision": null,
+          "scale": null,
           "default": "false",
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "boolean"
         },
@@ -3335,6 +3560,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "integer"
         },
@@ -3351,6 +3577,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "integer"
         },
@@ -3367,6 +3594,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "integer"
         },
@@ -3383,6 +3611,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "string"
         },
@@ -3399,6 +3628,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "double"
         },
@@ -3415,6 +3645,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "datetime"
         }
@@ -3429,12 +3660,13 @@
           "unique": true
         },
         {
-          "columnNames": ["hidden", "leaderboard_id", "score"],
-          "composite": true,
+          "columnNames": ["score"],
+          "composite": false,
           "constraint": false,
           "keyName": "idx_leaderboardentry_hidden_leaderboard_id_score",
           "primary": false,
-          "unique": false
+          "unique": false,
+          "expression": "alter table `leaderboard_entry` add index `idx_leaderboardentry_hidden_leaderboard_id_score`(`hidden`, `leaderboard_id`, `score`)"
         },
         {
           "columnNames": ["hidden"],
@@ -3470,6 +3702,7 @@
         }
       ],
       "checks": [],
+      "triggers": [],
       "foreignKeys": {
         "leaderboard_entry_leaderboard_id_foreign": {
           "columnNames": ["leaderboard_id"],
@@ -3488,7 +3721,7 @@
           "deleteRule": "cascade"
         }
       },
-      "comment": ""
+      "comment": null
     },
     {
       "name": "leaderboard_entry_prop",
@@ -3506,6 +3739,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "datetime"
         },
@@ -3522,6 +3756,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "integer"
         },
@@ -3538,6 +3773,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "string"
         },
@@ -3554,6 +3790,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "integer"
         },
@@ -3570,6 +3807,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "string"
         }
@@ -3593,6 +3831,7 @@
         }
       ],
       "checks": [],
+      "triggers": [],
       "foreignKeys": {
         "leaderboard_entry_prop_leaderboard_entry_id_foreign": {
           "columnNames": ["leaderboard_entry_id"],
@@ -3603,7 +3842,7 @@
           "deleteRule": "cascade"
         }
       },
-      "comment": ""
+      "comment": null
     },
     {
       "name": "organisation",
@@ -3621,6 +3860,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "datetime"
         },
@@ -3637,6 +3877,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "string"
         },
@@ -3653,6 +3894,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "integer"
         },
@@ -3669,6 +3911,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "string"
         },
@@ -3685,6 +3928,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "integer"
         },
@@ -3701,6 +3945,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "datetime"
         }
@@ -3724,6 +3969,7 @@
         }
       ],
       "checks": [],
+      "triggers": [],
       "foreignKeys": {
         "organisation_pricing_plan_id_foreign": {
           "columnNames": ["pricing_plan_id"],
@@ -3733,7 +3979,7 @@
           "referencedTableName": "organisation_pricing_plan"
         }
       },
-      "comment": ""
+      "comment": null
     },
     {
       "name": "organisation_pricing_plan",
@@ -3751,6 +3997,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "datetime"
         },
@@ -3767,6 +4014,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "datetime"
         },
@@ -3783,6 +4031,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "integer"
         },
@@ -3799,6 +4048,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "integer"
         },
@@ -3815,6 +4065,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "integer"
         },
@@ -3831,6 +4082,7 @@
           "scale": null,
           "default": "'active'",
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "string"
         },
@@ -3847,6 +4099,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "string"
         },
@@ -3863,6 +4116,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "string"
         },
@@ -3879,6 +4133,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "datetime"
         }
@@ -3902,6 +4157,7 @@
         }
       ],
       "checks": [],
+      "triggers": [],
       "foreignKeys": {
         "organisation_pricing_plan_pricing_plan_id_foreign": {
           "columnNames": ["pricing_plan_id"],
@@ -3911,7 +4167,7 @@
           "referencedTableName": "pricing_plan"
         }
       },
-      "comment": ""
+      "comment": null
     },
     {
       "name": "player",
@@ -3929,6 +4185,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "integer"
         },
@@ -3945,6 +4202,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "datetime"
         },
@@ -3957,10 +4215,11 @@
           "nullable": false,
           "unique": false,
           "length": null,
-          "precision": 3,
-          "scale": 0,
+          "precision": null,
+          "scale": null,
           "default": "false",
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "boolean"
         },
@@ -3977,6 +4236,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "integer"
         },
@@ -3993,6 +4253,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "string"
         },
@@ -4009,6 +4270,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "datetime"
         },
@@ -4025,6 +4287,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "integer"
         },
@@ -4041,6 +4304,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "datetime"
         }
@@ -4096,6 +4360,7 @@
         }
       ],
       "checks": [],
+      "triggers": [],
       "foreignKeys": {
         "player_auth_id_foreign": {
           "columnNames": ["auth_id"],
@@ -4121,7 +4386,7 @@
           "deleteRule": "set null"
         }
       },
-      "comment": ""
+      "comment": null
     },
     {
       "name": "player_alias",
@@ -4139,6 +4404,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "datetime"
         },
@@ -4155,6 +4421,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "integer"
         },
@@ -4171,6 +4438,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "string"
         },
@@ -4187,6 +4455,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "datetime"
         },
@@ -4203,6 +4472,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "string"
         },
@@ -4219,6 +4489,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "string"
         },
@@ -4235,6 +4506,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "datetime"
         }
@@ -4249,22 +4521,13 @@
           "unique": true
         },
         {
-          "columnNames": ["service", "identifier"],
-          "composite": true,
+          "columnNames": [],
+          "composite": false,
           "constraint": false,
           "keyName": "idx_player_alias_service_identifier",
           "primary": false,
           "unique": false,
-          "columns": [
-            {
-              "name": "service",
-              "length": 191
-            },
-            {
-              "name": "identifier",
-              "length": 191
-            }
-          ]
+          "expression": "alter table `player_alias` add index `idx_player_alias_service_identifier`(`service`(191), `identifier`(191))"
         },
         {
           "columnNames": ["player_id"],
@@ -4276,6 +4539,7 @@
         }
       ],
       "checks": [],
+      "triggers": [],
       "foreignKeys": {
         "player_alias_player_id_foreign": {
           "columnNames": ["player_id"],
@@ -4286,7 +4550,7 @@
           "deleteRule": "cascade"
         }
       },
-      "comment": ""
+      "comment": null
     },
     {
       "name": "player_alias_subscription",
@@ -4300,10 +4564,11 @@
           "nullable": false,
           "unique": false,
           "length": null,
-          "precision": 3,
-          "scale": 0,
+          "precision": null,
+          "scale": null,
           "default": "false",
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "boolean"
         },
@@ -4320,6 +4585,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "datetime"
         },
@@ -4336,6 +4602,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "integer"
         },
@@ -4347,11 +4614,12 @@
           "primary": false,
           "nullable": false,
           "unique": false,
-          "length": 14,
+          "length": null,
           "precision": null,
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": ["unidirectional", "bidirectional"],
           "mappedType": "enum"
         },
@@ -4368,6 +4636,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "integer"
         },
@@ -4384,6 +4653,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "integer"
         },
@@ -4400,6 +4670,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "datetime"
         }
@@ -4447,6 +4718,7 @@
         }
       ],
       "checks": [],
+      "triggers": [],
       "foreignKeys": {
         "player_alias_subscription_subscribed_to_id_foreign": {
           "columnNames": ["subscribed_to_id"],
@@ -4465,7 +4737,7 @@
           "deleteRule": "cascade"
         }
       },
-      "comment": ""
+      "comment": null
     },
     {
       "name": "player_auth",
@@ -4483,6 +4755,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "datetime"
         },
@@ -4499,6 +4772,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "string"
         },
@@ -4515,6 +4789,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "integer"
         },
@@ -4531,6 +4806,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "string"
         },
@@ -4547,6 +4823,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "datetime"
         },
@@ -4563,6 +4840,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "string"
         },
@@ -4579,6 +4857,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "datetime"
         },
@@ -4591,10 +4870,11 @@
           "nullable": false,
           "unique": false,
           "length": null,
-          "precision": 3,
-          "scale": 0,
+          "precision": null,
+          "scale": null,
           "default": "false",
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "boolean"
         }
@@ -4610,8 +4890,9 @@
         }
       ],
       "checks": [],
+      "triggers": [],
       "foreignKeys": {},
-      "comment": ""
+      "comment": null
     },
     {
       "name": "player_auth_activity",
@@ -4629,6 +4910,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "datetime"
         },
@@ -4645,6 +4927,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "json"
         },
@@ -4661,6 +4944,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "integer"
         },
@@ -4677,6 +4961,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "string"
         },
@@ -4693,6 +4978,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "tinyint"
         }
@@ -4716,6 +5002,7 @@
         }
       ],
       "checks": [],
+      "triggers": [],
       "foreignKeys": {
         "player_auth_activity_player_id_foreign": {
           "columnNames": ["player_id"],
@@ -4726,7 +5013,7 @@
           "deleteRule": "cascade"
         }
       },
-      "comment": ""
+      "comment": null
     },
     {
       "name": "player_game_stat",
@@ -4744,6 +5031,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "datetime"
         },
@@ -4760,6 +5048,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "integer"
         },
@@ -4776,6 +5065,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "string"
         },
@@ -4792,6 +5082,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "integer"
         },
@@ -4808,6 +5099,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "datetime"
         },
@@ -4824,6 +5116,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "double"
         }
@@ -4838,12 +5131,13 @@
           "unique": true
         },
         {
-          "columnNames": ["stat_id", "value"],
-          "composite": true,
+          "columnNames": ["value"],
+          "composite": false,
           "constraint": false,
           "keyName": "idx_playergamestat_stat_id_value",
           "primary": false,
-          "unique": false
+          "unique": false,
+          "expression": "alter table `player_game_stat` add index `idx_playergamestat_stat_id_value`(`stat_id`, `value`)"
         },
         {
           "columnNames": ["player_id"],
@@ -4871,6 +5165,7 @@
         }
       ],
       "checks": [],
+      "triggers": [],
       "foreignKeys": {
         "player_game_stat_player_id_foreign": {
           "columnNames": ["player_id"],
@@ -4889,7 +5184,7 @@
           "deleteRule": "cascade"
         }
       },
-      "comment": ""
+      "comment": null
     },
     {
       "name": "player_group",
@@ -4907,6 +5202,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "datetime"
         },
@@ -4923,6 +5219,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "string"
         },
@@ -4939,6 +5236,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "integer"
         },
@@ -4955,6 +5253,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "string"
         },
@@ -4967,10 +5266,11 @@
           "nullable": false,
           "unique": false,
           "length": null,
-          "precision": 3,
-          "scale": 0,
+          "precision": null,
+          "scale": null,
           "default": "false",
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "boolean"
         },
@@ -4987,6 +5287,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "string"
         },
@@ -4998,11 +5299,12 @@
           "primary": false,
           "nullable": false,
           "unique": false,
-          "length": 4,
+          "length": null,
           "precision": null,
           "scale": null,
           "default": "'$and'",
           "comment": null,
+          "collation": null,
           "enumItems": ["$and", "$or"],
           "mappedType": "enum"
         },
@@ -5019,6 +5321,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "json"
         },
@@ -5035,6 +5338,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "datetime"
         }
@@ -5058,6 +5362,7 @@
         }
       ],
       "checks": [],
+      "triggers": [],
       "foreignKeys": {
         "player_group_game_id_foreign": {
           "columnNames": ["game_id"],
@@ -5067,7 +5372,7 @@
           "referencedTableName": "game"
         }
       },
-      "comment": ""
+      "comment": null
     },
     {
       "name": "player_group_members",
@@ -5085,6 +5390,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "string"
         },
@@ -5101,6 +5407,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "string"
         }
@@ -5132,6 +5439,7 @@
         }
       ],
       "checks": [],
+      "triggers": [],
       "foreignKeys": {
         "player_group_members_player_group_id_foreign": {
           "columnNames": ["player_group_id"],
@@ -5152,7 +5460,7 @@
           "deleteRule": "cascade"
         }
       },
-      "comment": ""
+      "comment": null
     },
     {
       "name": "player_presence",
@@ -5170,6 +5478,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "datetime"
         },
@@ -5184,8 +5493,9 @@
           "length": 255,
           "precision": null,
           "scale": null,
-          "default": "",
+          "default": "''",
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "string"
         },
@@ -5202,6 +5512,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "integer"
         },
@@ -5214,10 +5525,11 @@
           "nullable": false,
           "unique": false,
           "length": null,
-          "precision": 3,
-          "scale": 0,
+          "precision": null,
+          "scale": null,
           "default": "false",
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "boolean"
         },
@@ -5234,6 +5546,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "integer"
         },
@@ -5250,6 +5563,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "datetime"
         }
@@ -5273,6 +5587,7 @@
         }
       ],
       "checks": [],
+      "triggers": [],
       "foreignKeys": {
         "player_presence_player_alias_id_foreign": {
           "columnNames": ["player_alias_id"],
@@ -5283,7 +5598,7 @@
           "deleteRule": "cascade"
         }
       },
-      "comment": ""
+      "comment": null
     },
     {
       "name": "player_prop",
@@ -5301,6 +5616,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "datetime"
         },
@@ -5317,6 +5633,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "integer"
         },
@@ -5333,6 +5650,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "string"
         },
@@ -5349,6 +5667,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "string"
         },
@@ -5365,6 +5684,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "string"
         }
@@ -5379,12 +5699,13 @@
           "unique": true
         },
         {
-          "columnNames": ["key", "value"],
-          "composite": true,
+          "columnNames": ["value"],
+          "composite": false,
           "constraint": false,
           "keyName": "idx_playerprop_key_value",
           "primary": false,
-          "unique": false
+          "unique": false,
+          "expression": "alter table `player_prop` add index `idx_playerprop_key_value`(`key`, `value`)"
         },
         {
           "columnNames": ["key"],
@@ -5404,6 +5725,7 @@
         }
       ],
       "checks": [],
+      "triggers": [],
       "foreignKeys": {
         "player_prop_player_id_foreign": {
           "columnNames": ["player_id"],
@@ -5414,7 +5736,7 @@
           "deleteRule": "cascade"
         }
       },
-      "comment": ""
+      "comment": null
     },
     {
       "name": "players_to_delete",
@@ -5432,6 +5754,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "integer"
         },
@@ -5448,6 +5771,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "string"
         },
@@ -5464,6 +5788,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "datetime"
         }
@@ -5487,6 +5812,7 @@
         }
       ],
       "checks": [],
+      "triggers": [],
       "foreignKeys": {
         "players_to_delete_player_id_foreign": {
           "columnNames": ["player_id"],
@@ -5497,7 +5823,7 @@
           "deleteRule": "cascade"
         }
       },
-      "comment": ""
+      "comment": null
     },
     {
       "name": "pricing_plan",
@@ -5515,6 +5841,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "datetime"
         },
@@ -5527,10 +5854,11 @@
           "nullable": false,
           "unique": false,
           "length": null,
-          "precision": 3,
-          "scale": 0,
+          "precision": null,
+          "scale": null,
           "default": "false",
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "boolean"
         },
@@ -5543,10 +5871,11 @@
           "nullable": false,
           "unique": false,
           "length": null,
-          "precision": 3,
-          "scale": 0,
+          "precision": null,
+          "scale": null,
           "default": "false",
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "boolean"
         },
@@ -5563,6 +5892,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "integer"
         },
@@ -5579,6 +5909,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "integer"
         },
@@ -5595,6 +5926,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "string"
         },
@@ -5611,6 +5943,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "datetime"
         }
@@ -5626,8 +5959,9 @@
         }
       ],
       "checks": [],
+      "triggers": [],
       "foreignKeys": {},
-      "comment": ""
+      "comment": null
     },
     {
       "name": "steamworks_integration_event",
@@ -5645,6 +5979,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "datetime"
         },
@@ -5661,6 +5996,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "integer"
         },
@@ -5677,6 +6013,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "integer"
         },
@@ -5693,6 +6030,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "json"
         },
@@ -5709,6 +6047,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "json"
         }
@@ -5732,6 +6071,7 @@
         }
       ],
       "checks": [],
+      "triggers": [],
       "foreignKeys": {
         "steamworks_integration_event_integration_id_foreign": {
           "columnNames": ["integration_id"],
@@ -5741,7 +6081,7 @@
           "referencedTableName": "integration"
         }
       },
-      "comment": ""
+      "comment": null
     },
     {
       "name": "steamworks_leaderboard_entry",
@@ -5759,6 +6099,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "datetime"
         },
@@ -5775,6 +6116,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "integer"
         },
@@ -5791,6 +6133,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "integer"
         },
@@ -5807,6 +6150,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "integer"
         },
@@ -5823,6 +6167,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "string"
         },
@@ -5839,6 +6184,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "integer"
         },
@@ -5855,6 +6201,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "datetime"
         }
@@ -5886,6 +6233,7 @@
         }
       ],
       "checks": [],
+      "triggers": [],
       "foreignKeys": {
         "steamworks_leaderboard_entry_leaderboard_entry_id_foreign": {
           "columnNames": ["leaderboard_entry_id"],
@@ -5905,7 +6253,7 @@
           "deleteRule": "cascade"
         }
       },
-      "comment": ""
+      "comment": null
     },
     {
       "name": "steamworks_leaderboard_mapping",
@@ -5923,6 +6271,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "datetime"
         },
@@ -5939,6 +6288,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "integer"
         },
@@ -5955,6 +6305,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "integer"
         }
@@ -5978,6 +6329,7 @@
         }
       ],
       "checks": [],
+      "triggers": [],
       "foreignKeys": {
         "steamworks_leaderboard_mapping_leaderboard_id_foreign": {
           "columnNames": ["leaderboard_id"],
@@ -5988,7 +6340,7 @@
           "deleteRule": "cascade"
         }
       },
-      "comment": ""
+      "comment": null
     },
     {
       "name": "steamworks_player_stat",
@@ -6006,6 +6358,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "datetime"
         },
@@ -6022,6 +6375,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "integer"
         },
@@ -6038,6 +6392,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "integer"
         },
@@ -6054,6 +6409,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "integer"
         },
@@ -6070,6 +6426,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "string"
         },
@@ -6086,6 +6443,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "datetime"
         }
@@ -6117,6 +6475,7 @@
         }
       ],
       "checks": [],
+      "triggers": [],
       "foreignKeys": {
         "steamworks_player_stat_player_stat_id_foreign": {
           "columnNames": ["player_stat_id"],
@@ -6135,7 +6494,7 @@
           "deleteRule": "cascade"
         }
       },
-      "comment": ""
+      "comment": null
     },
     {
       "name": "user",
@@ -6153,6 +6512,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "datetime"
         },
@@ -6169,6 +6529,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "string"
         },
@@ -6181,10 +6542,11 @@
           "nullable": false,
           "unique": false,
           "length": null,
-          "precision": 3,
-          "scale": 0,
+          "precision": null,
+          "scale": null,
           "default": "false",
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "boolean"
         },
@@ -6201,6 +6563,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "integer"
         },
@@ -6217,6 +6580,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "datetime"
         },
@@ -6233,6 +6597,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "integer"
         },
@@ -6249,6 +6614,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "string"
         },
@@ -6265,6 +6631,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "integer"
         },
@@ -6281,6 +6648,7 @@
           "scale": null,
           "default": "2",
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "tinyint"
         },
@@ -6297,6 +6665,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "datetime"
         },
@@ -6313,6 +6682,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "string"
         }
@@ -6344,6 +6714,7 @@
         }
       ],
       "checks": [],
+      "triggers": [],
       "foreignKeys": {
         "user_organisation_id_foreign": {
           "columnNames": ["organisation_id"],
@@ -6361,7 +6732,7 @@
           "deleteRule": "set null"
         }
       },
-      "comment": ""
+      "comment": null
     },
     {
       "name": "user_access_code",
@@ -6379,6 +6750,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "string"
         },
@@ -6395,6 +6767,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "datetime"
         },
@@ -6411,6 +6784,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "integer"
         },
@@ -6427,6 +6801,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "integer"
         },
@@ -6443,6 +6818,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "datetime"
         }
@@ -6466,6 +6842,7 @@
         }
       ],
       "checks": [],
+      "triggers": [],
       "foreignKeys": {
         "user_access_code_user_id_foreign": {
           "columnNames": ["user_id"],
@@ -6475,7 +6852,7 @@
           "referencedTableName": "user"
         }
       },
-      "comment": ""
+      "comment": null
     },
     {
       "name": "user_pinned_group",
@@ -6493,6 +6870,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "datetime"
         },
@@ -6509,6 +6887,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "string"
         },
@@ -6525,6 +6904,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "integer"
         },
@@ -6541,6 +6921,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "integer"
         }
@@ -6580,6 +6961,7 @@
         }
       ],
       "checks": [],
+      "triggers": [],
       "foreignKeys": {
         "user_pinned_group_group_id_foreign": {
           "columnNames": ["group_id"],
@@ -6596,7 +6978,7 @@
           "referencedTableName": "user"
         }
       },
-      "comment": ""
+      "comment": null
     },
     {
       "name": "user_recovery_code",
@@ -6614,6 +6996,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "string"
         },
@@ -6630,6 +7013,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "datetime"
         },
@@ -6646,6 +7030,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "integer"
         },
@@ -6662,6 +7047,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "integer"
         }
@@ -6685,6 +7071,7 @@
         }
       ],
       "checks": [],
+      "triggers": [],
       "foreignKeys": {
         "user_recovery_code_user_id_foreign": {
           "columnNames": ["user_id"],
@@ -6695,7 +7082,7 @@
           "deleteRule": "cascade"
         }
       },
-      "comment": ""
+      "comment": null
     },
     {
       "name": "user_session",
@@ -6713,6 +7100,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "datetime"
         },
@@ -6729,6 +7117,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "integer"
         },
@@ -6745,6 +7134,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "string"
         },
@@ -6761,6 +7151,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "string"
         },
@@ -6777,6 +7168,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "integer"
         },
@@ -6793,6 +7185,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "datetime"
         }
@@ -6816,6 +7209,7 @@
         }
       ],
       "checks": [],
+      "triggers": [],
       "foreignKeys": {
         "user_session_user_id_foreign": {
           "columnNames": ["user_id"],
@@ -6825,7 +7219,7 @@
           "referencedTableName": "user"
         }
       },
-      "comment": ""
+      "comment": null
     },
     {
       "name": "user_two_factor_auth",
@@ -6839,10 +7233,11 @@
           "nullable": false,
           "unique": false,
           "length": null,
-          "precision": 3,
-          "scale": 0,
+          "precision": null,
+          "scale": null,
           "default": "false",
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "boolean"
         },
@@ -6859,6 +7254,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "integer"
         },
@@ -6875,6 +7271,7 @@
           "scale": null,
           "default": null,
           "comment": null,
+          "collation": null,
           "enumItems": [],
           "mappedType": "string"
         }
@@ -6890,8 +7287,9 @@
         }
       ],
       "checks": [],
+      "triggers": [],
       "foreignKeys": {},
-      "comment": ""
+      "comment": null
     }
   ],
   "views": [],

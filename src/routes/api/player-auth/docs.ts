@@ -4,6 +4,7 @@ const sampleAlias = {
   id: 1,
   service: 'talo',
   identifier: 'boz',
+  displayName: 'boz',
   player: {
     id: '7a4e70ec-6ee6-418e-923d-b3a45051b7f9',
     props: [],
@@ -238,6 +239,7 @@ export const migrateDocs = {
           ...sampleAlias,
           service: 'google_play_games',
           identifier: 'a_1234567890',
+          displayName: 'a_1234567890',
           player: {
             ...sampleAlias.player,
             auth: undefined,

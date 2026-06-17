@@ -1,12 +1,14 @@
 import APIKey, { APIKeyScope } from '../../../entities/api-key.js'
 import { GameActivityType } from '../../../entities/game-activity.js'
 import Game, { MAX_LIVE_CONFIG_VALUE_LENGTH } from '../../../entities/game.js'
+import Player from '../../../entities/player.js'
 import { UserType } from '../../../entities/user.js'
 import { getTokenCacheKey } from '../../../lib/auth/getAPIKeyFromToken.js'
 import updateAllowedKeys from '../../../lib/entities/updateAllowedKeys.js'
 import { buildErrorResponse } from '../../../lib/errors/buildErrorResponse.js'
 import { PropRejectionError } from '../../../lib/errors/propRejectionError.js'
 import createGameActivity from '../../../lib/logging/createGameActivity.js'
+import { deferClearResponseCache } from '../../../lib/perf/responseCacheQueue.js'
 import { mergeAndSanitiseProps, sanitiseProps } from '../../../lib/props/sanitiseProps.js'
 import { ProtectedRouteContext } from '../../../lib/routing/context.js'
 import { protectedRoute, withMiddleware } from '../../../lib/routing/router.js'
@@ -46,6 +48,7 @@ export const updateRoute = protectedRoute({
       blockAliasIdentifierProfanity: z.boolean().optional(),
       blockPropsProfanity: z.boolean().optional(),
       verifyRequests: z.boolean().optional(),
+      displayNamePropKey: z.string().nullable().optional(),
     }),
   }),
   middleware: withMiddleware(userTypeGate([UserType.ADMIN], 'update games'), loadGame),
@@ -61,6 +64,7 @@ export const updateRoute = protectedRoute({
       blockAliasIdentifierProfanity,
       blockPropsProfanity,
       verifyRequests,
+      displayNamePropKey,
     } = ctx.state.validated.body
 
     const em = ctx.em
@@ -153,6 +157,10 @@ export const updateRoute = protectedRoute({
         throwUnlessOwner(ctx)
         settingsToUpdate.verifyRequests = verifyRequests
       }
+      if (typeof displayNamePropKey === 'string') {
+        throwUnlessOwner(ctx)
+        settingsToUpdate.displayNamePropKey = displayNamePropKey
+      }
 
       const [, changedProperties] = updateAllowedKeys(game, settingsToUpdate, [
         'purgeDevPlayers',
@@ -162,6 +170,7 @@ export const updateRoute = protectedRoute({
         'blockAliasIdentifierProfanity',
         'blockPropsProfanity',
         'verifyRequests',
+        'displayNamePropKey',
         'website',
       ])
 
@@ -185,6 +194,10 @@ export const updateRoute = protectedRoute({
             return em.clearCache(getTokenCacheKey(key.id))
           }),
         )
+
+        if (changedProperties.includes('displayNamePropKey')) {
+          await deferClearResponseCache(Player.getSearchCacheKey(game, true))
+        }
       }
 
       await em.flush()

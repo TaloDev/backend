@@ -346,4 +346,60 @@ describe('Player API - identify', () => {
 
     expect(res.body.alias.identifier).toBe('fuck')
   })
+
+  it('should resolve displayName to the matching prop value when the game has a displayNamePropKey', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_PLAYERS])
+    apiKey.game.displayNamePropKey = 'playerChosenName'
+    const player = await new PlayerFactory([apiKey.game])
+      .state((p) => ({
+        props: new Collection<PlayerProp>(p, [new PlayerProp(p, 'playerChosenName', 'TheGuy')]),
+      }))
+      .one()
+    await em.persist(player).flush()
+
+    const res = await request(app)
+      .get('/v1/players/identify')
+      .query({ service: player.aliases[0].service, identifier: player.aliases[0].identifier })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    expect(res.body.alias.displayName).toBe('TheGuy')
+  })
+
+  it('should fall back to the alias identifier when the game has a displayNamePropKey but the player has no matching prop', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_PLAYERS])
+    apiKey.game.displayNamePropKey = 'playerChosenName'
+    const player = await new PlayerFactory([apiKey.game])
+      .state((p) => ({
+        props: new Collection<PlayerProp>(p, [new PlayerProp(p, 'currentLevel', '10')]),
+      }))
+      .one()
+    await em.persist(player).flush()
+
+    const res = await request(app)
+      .get('/v1/players/identify')
+      .query({ service: player.aliases[0].service, identifier: player.aliases[0].identifier })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    expect(res.body.alias.displayName).toBe(player.aliases[0].identifier)
+  })
+
+  it('should fall back to the alias identifier when the game has no displayNamePropKey set', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_PLAYERS])
+    const player = await new PlayerFactory([apiKey.game])
+      .state((p) => ({
+        props: new Collection<PlayerProp>(p, [new PlayerProp(p, 'playerChosenName', 'TheGuy')]),
+      }))
+      .one()
+    await em.persist(player).flush()
+
+    const res = await request(app)
+      .get('/v1/players/identify')
+      .query({ service: player.aliases[0].service, identifier: player.aliases[0].identifier })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    expect(res.body.alias.displayName).toBe(player.aliases[0].identifier)
+  })
 })

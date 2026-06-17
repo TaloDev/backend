@@ -33,6 +33,7 @@ export const postDocs = {
               id: 1,
               service: 'steam',
               identifier: '11133645',
+              displayName: '11133645',
               player: {
                 id: '7a4e70ec-6ee6-418e-923d-b3a45051b7f9',
                 props: [
@@ -56,6 +57,7 @@ export const postDocs = {
               id: 1,
               service: 'steam',
               identifier: '11133645',
+              displayName: '11133645',
               player: {
                 id: '7a4e70ec-6ee6-418e-923d-b3a45051b7f9',
                 props: [

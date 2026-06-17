@@ -62,6 +62,19 @@ export async function listPlayersHandler({
         },
       ]
 
+      if (game.displayNamePropKey) {
+        searchConditions.push({
+          props: {
+            $some: {
+              key: game.displayNamePropKey,
+              value: {
+                $like: `%${search}%`,
+              },
+            },
+          },
+        })
+      }
+
       if (!forwarded) {
         const splitSearch = search.split(' ')
         const groupFilters = splitSearch.filter((part) => part.startsWith('group:'))

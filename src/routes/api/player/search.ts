@@ -15,7 +15,10 @@ export const searchRoute = apiRoute({
         .refine((val) => val.trim().replaceAll('-', '').length > 0, {
           message: 'Query must be a non-empty string',
         })
-        .meta({ description: 'Search for players by IDs, prop values and alias identifiers' }),
+        .meta({
+          description:
+            'Search for players by IDs, prop values, alias identifiers and display names',
+        }),
     }),
   }),
   middleware: withMiddleware(requireScopes([APIKeyScope.READ_PLAYERS])),

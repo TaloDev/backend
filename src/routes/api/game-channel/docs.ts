@@ -26,6 +26,7 @@ export const listDocs = {
               id: 105,
               service: 'username',
               identifier: 'johnny_the_admin',
+              displayName: 'johnny_the_admin',
               player: {
                 id: '85d67584-1346-4fad-a17f-fd7bd6c85364',
                 props: [],
@@ -181,6 +182,7 @@ export const postDocs = {
             id: 105,
             service: 'username',
             identifier: 'johnny_the_admin',
+            displayName: 'johnny_the_admin',
             player: {
               id: '85d67584-1346-4fad-a17f-fd7bd6c85364',
               props: [],
@@ -260,6 +262,7 @@ export const putDocs = {
             id: 2,
             service: 'username',
             identifier: 'general_chat_admin',
+            displayName: 'general_chat_admin',
             player: {
               id: '85d67584-1346-4fad-a17f-fd7bd6c85364',
               props: [],
@@ -314,6 +317,7 @@ export const membersDocs = {
             id: 105,
             service: 'username',
             identifier: 'player_one',
+            displayName: 'player_one',
             player: {
               id: '85d67584-1346-4fad-a17f-fd7bd6c85364',
               props: [],
@@ -348,6 +352,7 @@ export const getStorageDocs = {
             id: 105,
             service: 'username',
             identifier: 'guild_admin',
+            displayName: 'guild_admin',
             player: {
               id: '85d67584-1346-4fad-a17f-fd7bd6c85364',
               props: [],
@@ -364,6 +369,7 @@ export const getStorageDocs = {
             id: 105,
             service: 'username',
             identifier: 'guild_admin',
+            displayName: 'guild_admin',
             player: {
               id: '85d67584-1346-4fad-a17f-fd7bd6c85364',
               props: [],
@@ -413,6 +419,7 @@ export const listStorageDocs = {
               id: 105,
               service: 'username',
               identifier: 'guild_admin',
+              displayName: 'guild_admin',
               player: {
                 id: '85d67584-1346-4fad-a17f-fd7bd6c85364',
                 props: [],
@@ -429,6 +436,7 @@ export const listStorageDocs = {
               id: 105,
               service: 'username',
               identifier: 'guild_admin',
+              displayName: 'guild_admin',
               player: {
                 id: '85d67584-1346-4fad-a17f-fd7bd6c85364',
                 props: [],
@@ -451,6 +459,7 @@ export const listStorageDocs = {
               id: 105,
               service: 'username',
               identifier: 'guild_admin',
+              displayName: 'guild_admin',
               player: {
                 id: '85d67584-1346-4fad-a17f-fd7bd6c85364',
                 props: [],
@@ -467,6 +476,7 @@ export const listStorageDocs = {
               id: 107,
               service: 'username',
               identifier: 'member_manager',
+              displayName: 'member_manager',
               player: {
                 id: '96e78695-2457-5fbe-b28f-fe8ce7d96f75',
                 props: [],
@@ -518,6 +528,7 @@ export const putStorageDocs = {
             id: 105,
             service: 'username',
             identifier: 'guild_admin',
+            displayName: 'guild_admin',
             player: {
               id: '85d67584-1346-4fad-a17f-fd7bd6c85364',
               props: [],
@@ -549,6 +560,7 @@ export const putStorageDocs = {
               id: 105,
               service: 'username',
               identifier: 'guild_admin',
+              displayName: 'guild_admin',
               player: {
                 id: '85d67584-1346-4fad-a17f-fd7bd6c85364',
                 props: [],
@@ -565,6 +577,7 @@ export const putStorageDocs = {
               id: 105,
               service: 'username',
               identifier: 'guild_admin',
+              displayName: 'guild_admin',
               player: {
                 id: '85d67584-1346-4fad-a17f-fd7bd6c85364',
                 props: [],

@@ -16,6 +16,7 @@ describe('Game - settings', () => {
       game.purgeDevPlayersRetention = 30
       game.purgeLivePlayersRetention = 60
       game.website = 'https://example.com'
+      game.displayNamePropKey = 'playerChosenName'
       await em.flush()
 
       const res = await request(app)
@@ -33,6 +34,7 @@ describe('Game - settings', () => {
           blockPropsProfanity: false,
           verifyRequests: false,
           website: 'https://example.com',
+          displayNamePropKey: 'playerChosenName',
           gameToken: expect.any(String),
         })
       }

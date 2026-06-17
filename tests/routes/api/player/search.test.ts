@@ -127,4 +127,44 @@ describe('Player API - search', () => {
       .auth(token, { type: 'bearer' })
       .expect(403)
   })
+
+  it('should search for players by their displayName prop value when the game has a displayNamePropKey', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_PLAYERS])
+    apiKey.game.displayNamePropKey = 'playerChosenName'
+    const player = await new PlayerFactory([apiKey.game])
+      .state((p) => ({
+        props: new Collection<PlayerProp>(p, [new PlayerProp(p, 'playerChosenName', 'TheGuy')]),
+      }))
+      .one()
+    await em.persist(player).flush()
+
+    const res = await request(app)
+      .get('/v1/players/search')
+      .query({ query: 'TheGuy' })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    expect(res.body.players).toHaveLength(1)
+    expect(res.body.players[0].id).toBe(player.id)
+  })
+
+  it('should search for players by alias identifier when the game has a displayNamePropKey but the player has no matching prop', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_PLAYERS])
+    apiKey.game.displayNamePropKey = 'playerChosenName'
+    const player = await new PlayerFactory([apiKey.game])
+      .state((p) => ({
+        props: new Collection<PlayerProp>(p, [new PlayerProp(p, 'currentLevel', '10')]),
+      }))
+      .one()
+    await em.persist(player).flush()
+
+    const res = await request(app)
+      .get('/v1/players/search')
+      .query({ query: player.aliases[0].identifier })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    expect(res.body.players).toHaveLength(1)
+    expect(res.body.players[0].id).toBe(player.id)
+  })
 })

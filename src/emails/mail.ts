@@ -20,6 +20,8 @@ export type MailData = {
   html: string
   templateData: {
     preheader: string
+    logoUrl: string
+    logoLink: string
     title: string
     mainText: string
     ctaLink: string
@@ -42,10 +44,14 @@ export default class Mail {
   template: string
 
   to: string
+  fromName: string
   attachments: AttachmentData[] = []
 
   subject: string
   preheader: string
+
+  logoUrl: string
+  logoLink: string
 
   title!: string
   mainText!: string
@@ -62,8 +68,14 @@ export default class Mail {
     this.template = emailTemplate
 
     this.to = to
+    this.fromName = 'Talo Team'
+
     this.subject = subject
     this.preheader = preheader
+
+    this.logoUrl =
+      'https://vcqcmc.stripocdn.email/content/guids/CABINET_36f41aac90bd55e3df541bc73a2e062a/images/logo.png'
+    this.logoLink = 'https://trytalo.com'
 
     this.footer = 'Need help?'
     this.footerText =
@@ -76,6 +88,8 @@ export default class Mail {
     const template = Handlebars.compile(this.template)
     const templateData = {
       preheader: this.preheader,
+      logoUrl: this.logoUrl,
+      logoLink: this.logoLink,
       title: this.title,
       mainText: this.mainText,
       ctaLink: this.ctaLink,
@@ -91,7 +105,7 @@ export default class Mail {
       to: this.to,
       from: {
         email: process.env.FROM_EMAIL!,
-        name: 'Talo Team',
+        name: this.fromName,
       },
       subject: this.subject,
       html,

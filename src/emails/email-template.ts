@@ -85,9 +85,11 @@ a[x-apple-data-detectors] {
                  <tr style="border-collapse:collapse"> 
                   <td valign="top" align="center" style="padding:0;Margin:0;width:600px"> 
                    <table width="100%" cellspacing="0" cellpadding="0" role="presentation" style="mso-table-lspace:0pt;mso-table-rspace:0pt;border-collapse:collapse;border-spacing:0px"> 
-                     <tr style="border-collapse:collapse"> 
-                      <td class="es-m-p20" style="padding:40px;Margin:0;" align="center"><a href="https://trytalo.com" target="_blank" style="-webkit-text-size-adjust:none;-ms-text-size-adjust:none;mso-line-height-rule:exactly;text-decoration:underline;color:#111111;font-size:14px"><img src="https://vcqcmc.stripocdn.email/content/guids/CABINET_36f41aac90bd55e3df541bc73a2e062a/images/logo.png" alt style="display:block;border:0;outline:none;text-decoration:none;-ms-interpolation-mode:bicubic" width="60"></a></td> 
-                     </tr> 
+                      <tr style="border-collapse:collapse"> 
+                       {{#if logoUrl}}{{#if logoLink}}
+                       <td class="es-m-p20" style="padding:40px;Margin:0;" align="center"><a href="{{logoLink}}" target="_blank" style="-webkit-text-size-adjust:none;-ms-text-size-adjust:none;mso-line-height-rule:exactly;text-decoration:underline;color:#111111;font-size:14px"><img src="{{logoUrl}}" alt style="display:block;border:0;outline:none;text-decoration:none;-ms-interpolation-mode:bicubic;width:auto" height="60"></a></td> 
+                       {{/if}}{{/if}}
+                      </tr> 
                    </table></td> 
                  </tr> 
                </table></td> 
@@ -199,9 +201,11 @@ a[x-apple-data-detectors] {
                  <tr style="border-collapse:collapse"> 
                   <td valign="top" align="center" style="padding:0;Margin:0;width:520px"> 
                    <table width="100%" cellspacing="0" cellpadding="0" role="presentation" style="mso-table-lspace:0pt;mso-table-rspace:0pt;border-collapse:collapse;border-spacing:0px"> 
-                     <tr style="border-collapse:collapse"> 
-                      <td align="left" style="padding:0;Margin:0"><p style="Margin:0;-webkit-text-size-adjust:none;-ms-text-size-adjust:none;mso-line-height-rule:exactly;font-family:helvetica, 'helvetica neue', arial, verdana, sans-serif;line-height:21px;color:#ffffff;font-size:14px">{{why}}. If something doesn't look right, <a target="_blank" style="-webkit-text-size-adjust:none;-ms-text-size-adjust:none;mso-line-height-rule:exactly;text-decoration:underline;color:#ff3c7d;font-size:14px" href="mailto:hello@trytalo.com">contact us</a>.</p></td> 
-                     </tr> 
+                      <tr style="border-collapse:collapse"> 
+                       {{#if why}}
+                       <td align="left" style="padding:0;Margin:0"><p style="Margin:0;-webkit-text-size-adjust:none;-ms-text-size-adjust:none;mso-line-height-rule:exactly;font-family:helvetica, 'helvetica neue', arial, verdana, sans-serif;line-height:21px;color:#ffffff;font-size:14px">{{why}}. If something doesn't look right, <a target="_blank" style="-webkit-text-size-adjust:none;-ms-text-size-adjust:none;mso-line-height-rule:exactly;text-decoration:underline;color:#ff3c7d;font-size:14px" href="mailto:hello@trytalo.com">contact us</a>.</p></td> 
+                       {{/if}}
+                      </tr> 
                    </table></td> 
                  </tr> 
                </table></td> 

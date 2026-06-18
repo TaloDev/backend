@@ -49,6 +49,7 @@ export const updateRoute = protectedRoute({
       blockPropsProfanity: z.boolean().optional(),
       verifyRequests: z.boolean().optional(),
       displayNamePropKey: z.string().nullable().optional(),
+      logoUrl: z.string().nullable().optional(),
     }),
   }),
   middleware: withMiddleware(userTypeGate([UserType.ADMIN], 'update games'), loadGame),
@@ -65,6 +66,7 @@ export const updateRoute = protectedRoute({
       blockPropsProfanity,
       verifyRequests,
       displayNamePropKey,
+      logoUrl,
     } = ctx.state.validated.body
 
     const em = ctx.em
@@ -161,6 +163,10 @@ export const updateRoute = protectedRoute({
         throwUnlessOwner(ctx)
         settingsToUpdate.displayNamePropKey = displayNamePropKey
       }
+      if (typeof logoUrl === 'string') {
+        throwUnlessOwner(ctx)
+        settingsToUpdate.logoUrl = logoUrl
+      }
 
       const [, changedProperties] = updateAllowedKeys(game, settingsToUpdate, [
         'purgeDevPlayers',
@@ -172,6 +178,7 @@ export const updateRoute = protectedRoute({
         'verifyRequests',
         'displayNamePropKey',
         'website',
+        'logoUrl',
       ])
 
       if (changedProperties.length > 0) {

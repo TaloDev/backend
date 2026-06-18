@@ -22,6 +22,7 @@ export const settingsRoute = protectedRoute({
           verifyRequests: game.verifyRequests,
           displayNamePropKey: game.displayNamePropKey,
           website: game.website,
+          logoUrl: game.logoUrl,
           gameToken: game.getToken(),
         },
       },

@@ -11,6 +11,10 @@ export async function signatureMiddleware(ctx: APIRouteContext, next: Next) {
     return next()
   }
 
+  if (ctx.method === 'GET') {
+    return next()
+  }
+
   const signature = ctx.headers['x-talo-signature']
   if (typeof signature !== 'string') {
     console.warn('signatureMiddleware: missing signature', {

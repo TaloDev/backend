@@ -74,6 +74,7 @@ import { AddBlockPropsProfanityColumn } from './20260515181220AddBlockPropsProfa
 import { CreateGameVerificationKeyTable } from './20260528190642CreateGameVerificationKeyTable.js'
 import { AddVerifyRequestsColumn } from './20260529204749AddVerifyRequestsColumn.js'
 import { AddGameDisplayNamePropKeyColumn } from './20260615220055AddGameDisplayNamePropKeyColumn.js'
+import { AddGameLogoUrlColumn } from './20260618133542AddGameLogoUrlColumn.js'
 
 export default [
   {
@@ -379,5 +380,9 @@ export default [
   {
     name: 'AddGameDisplayNamePropKeyColumn',
     class: AddGameDisplayNamePropKeyColumn,
+  },
+  {
+    name: 'AddGameLogoUrlColumn',
+    class: AddGameLogoUrlColumn,
   },
 ]

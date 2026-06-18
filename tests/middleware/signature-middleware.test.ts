@@ -33,6 +33,19 @@ describe('Signature middleware', () => {
     await request(app).get('/v1/game-config').auth(token, { type: 'bearer' }).expect(200)
   })
 
+  it('should skip verification for GET requests even with alias set', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_GAME_CONFIG])
+    apiKey.game.verifyRequests = true
+    const player = await new PlayerFactory([apiKey.game]).one()
+    await em.persist(player).flush()
+
+    await request(app)
+      .get('/v1/game-config')
+      .auth(token, { type: 'bearer' })
+      .set('x-talo-alias', String(player.aliases[0].id))
+      .expect(200)
+  })
+
   it('should skip verification when verifyRequests is false', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_GAME_STATS])
     const stat = await new GameStatFactory([apiKey.game])

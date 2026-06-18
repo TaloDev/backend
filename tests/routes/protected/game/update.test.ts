@@ -494,6 +494,25 @@ describe('Game - update', () => {
     },
   )
 
+  it.each(userPermissionProvider())(
+    'should update the logoUrl for a %s user',
+    async (statusCode, _, type) => {
+      const [organisation, game] = await createOrganisationAndGame()
+      const [token] = await createUserAndToken({ type }, organisation)
+
+      const logoUrl = 'https://example.com/logo.png'
+      await request(app)
+        .patch(`/games/${game.id}`)
+        .send({ logoUrl })
+        .auth(token, { type: 'bearer' })
+        .expect(statusCode)
+
+      if (statusCode === 200) {
+        expect((await em.refreshOrFail(game)).logoUrl).toBe(logoUrl)
+      }
+    },
+  )
+
   it('should not update game names if an empty string is sent', async () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({ type: UserType.ADMIN }, organisation)

@@ -13,10 +13,7 @@ async function migrateTestDatabases() {
     Array.from({ length: workerCount }, (_, i) => {
       const poolId = String(i + 1)
 
-      return Promise.all([
-        migrateMikroORM(poolId, i, workerCount),
-        migrateClickHouse(poolId, i, workerCount),
-      ])
+      return Promise.all([migrateMikroORM(poolId, i), migrateClickHouse(poolId, i)])
     }),
   )
 
@@ -25,7 +22,7 @@ async function migrateTestDatabases() {
   process.exit(0)
 }
 
-async function migrateMikroORM(poolId: string, currentWorker: number, workerCount: number) {
+async function migrateMikroORM(poolId: string, currentWorker: number) {
   console.time(`Migrating MikroORM ${currentWorker + 1}`)
 
   const dbName = `${process.env.DB_NAME}_${poolId}`
@@ -44,7 +41,7 @@ async function migrateMikroORM(poolId: string, currentWorker: number, workerCoun
   console.timeEnd(`Migrating MikroORM ${currentWorker + 1}`)
 }
 
-async function migrateClickHouse(poolId: string, currentWorker: number, workerCount: number) {
+async function migrateClickHouse(poolId: string, currentWorker: number) {
   console.time(`Migrating ClickHouse ${currentWorker + 1}`)
 
   const dbName = `${process.env.CLICKHOUSE_DB}_${poolId}`

@@ -3,7 +3,7 @@ import { getGlobalQueue } from '../../config/global-queues.js'
 import PlanUsageWarning from '../../emails/plan-usage-warning-mail.js'
 import Organisation from '../../entities/organisation.js'
 import queueEmail from '../messaging/queueEmail.js'
-import getBillablePlayerCount from './getBillablePlayerCount.js'
+import { getBillablePlayerCount } from './getBillablePlayerCount.js'
 
 const OVERAGE_PERCENTAGE = 1.05
 
@@ -25,10 +25,7 @@ export function getUsageBucket(usagePercentage: number) {
   return null
 }
 
-export default async function checkPricingPlanPlayerLimit(
-  em: EntityManager,
-  organisation: Organisation,
-) {
+export async function checkPricingPlanPlayerLimit(em: EntityManager, organisation: Organisation) {
   const organisationPricingPlan = organisation.pricingPlan
 
   if (organisationPricingPlan.status !== 'active') {

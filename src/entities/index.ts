@@ -1,5 +1,6 @@
 import APIKey from './api-key.js'
 import DataExport from './data-export.js'
+import DeletedPlayer from './deleted-player.js'
 import FailedJob from './failed-job.js'
 import GameActivity from './game-activity.js'
 import GameCenterIntegrationEvent from './game-center-integration-event.js'
@@ -45,6 +46,7 @@ import UserTwoFactorAuth from './user-two-factor-auth.js'
 import User from './user.js'
 
 export const entities = [
+  DeletedPlayer,
   GameVerificationKey,
   GameCenterIntegrationEvent,
   GooglePlayGamesIntegrationEvent,

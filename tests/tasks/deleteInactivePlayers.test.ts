@@ -2,6 +2,7 @@ import { EntityManager } from '@mikro-orm/mysql'
 import { randBoolean, randNumber, randWord } from '@ngneat/falso'
 import { sub } from 'date-fns'
 import { v4 } from 'uuid'
+import DeletedPlayer from '../../src/entities/deleted-player.js'
 import GameActivity, { GameActivityType } from '../../src/entities/game-activity.js'
 import PlayerAlias from '../../src/entities/player-alias.js'
 import PlayerAuth from '../../src/entities/player-auth.js'
@@ -9,7 +10,7 @@ import PlayerPresence from '../../src/entities/player-presence.js'
 import PlayerProp from '../../src/entities/player-prop.js'
 import { PlayerToDelete } from '../../src/entities/player-to-delete.js'
 import Player from '../../src/entities/player.js'
-import getBillablePlayerCount from '../../src/lib/billing/getBillablePlayerCount.js'
+import { getBillablePlayerCount } from '../../src/lib/billing/getBillablePlayerCount.js'
 import { formatDateForClickHouse } from '../../src/lib/clickhouse/formatDateTime.js'
 import deleteInactivePlayers from '../../src/tasks/deleteInactivePlayers.js'
 import deletePlayers from '../../src/tasks/deletePlayers.js'
@@ -574,8 +575,11 @@ describe('deleteInactivePlayers', () => {
       const updatedPropCount = await em.repo(PlayerProp).count()
       expect(updatedPropCount).toBe(0)
 
-      // just in case
-      expect(await getBillablePlayerCount(em, game.organisation)).toBe(0)
+      // deleted players are billable for the month they were created in; every player in
+      // this test was created this month, so the count equals the deleted-this-month total
+      expect(await getBillablePlayerCount(em, game.organisation)).toBe(
+        await em.repo(DeletedPlayer).count({ game: { organisation: game.organisation } }),
+      )
     })
 
     it('should delete players across multiple games', async () => {
@@ -629,8 +633,11 @@ describe('deleteInactivePlayers', () => {
         })
         expect(liveActivity).not.toBeNull()
 
-        // just in case
-        expect(await getBillablePlayerCount(em, game.organisation)).toBe(0)
+        // deleted players are billable for the month they were created in; every player in
+        // this test was created this month, so the count equals the deleted-this-month total
+        expect(await getBillablePlayerCount(em, game.organisation)).toBe(
+          await em.repo(DeletedPlayer).count({ game: { organisation: game.organisation } }),
+        )
       }
 
       const updatedPlayerCount = await em.repo(Player).count()

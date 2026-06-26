@@ -2,6 +2,7 @@ import { EntityManager } from '@mikro-orm/mysql'
 import { captureException } from '@sentry/node'
 import { getGlobalQueue } from '../config/global-queues.js'
 import { getMikroORM } from '../config/mikro-orm.config.js'
+import DeletedPlayer from '../entities/deleted-player.js'
 import { PlayerToDelete } from '../entities/player-to-delete.js'
 import Player from '../entities/player.js'
 import { DeleteClickHousePlayerDataConfig } from '../lib/queues/createDeleteClickHousePlayerDataQueue.js'
@@ -22,6 +23,7 @@ export async function deletePlayersFromDB(em: EntityManager, players: Player[]) 
   const aliasIds = players.flatMap((player) => player.aliases.map((alias) => alias.id))
 
   await em.transactional(async (trx) => {
+    trx.persist(players.map((player) => new DeletedPlayer(player)))
     trx.remove(players)
     await deleteClickHousePlayerData({ playerIds, aliasIds })
   })

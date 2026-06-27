@@ -46,7 +46,7 @@ jobs:
           export PATH="$HOME/.opencode/bin:$PATH"
           PROMPT="$(cat <<'EOF'
           Summarise the changes in this pull request at a high level.
-          1-5 paragraphs. Each paragraph must start with a bolded theme title of a few words on its own line (e.g. **Authentication overhaul**), followed by bullet points for the individual points within that theme.
+          1-5 paragraphs. Each paragraph must start with a bolded theme title of a few words on its own line (e.g. **Authentication overhaul**), followed by one bullet point for each individual point within that theme.
           Separate paragraphs with a blank line.
           Focus on substantive changes. Skip tests, fixtures, formatting and wiring unless they are the point of the PR.
           Describe what changed and why, not how it works internally.

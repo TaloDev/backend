@@ -149,7 +149,8 @@ export const forgotPasswordDocs = {
 } satisfies RouteDocs
 
 export const resetPasswordDocs = {
-  description: 'Reset the password of a player account (invalidates any existing session tokens)',
+  description:
+    'Reset the password of a player account\nThis invalidates any existing session tokens.',
   samples: [
     {
       title: 'Sample request',

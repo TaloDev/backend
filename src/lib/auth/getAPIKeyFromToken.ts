@@ -7,7 +7,7 @@ export function getTokenCacheKey(sub: number) {
   return `api-key-from-token-${sub}`
 }
 
-export default async function getAPIKeyFromToken(authHeader: string) {
+export async function getAPIKeyFromToken(authHeader: string) {
   const parts = authHeader.split('Bearer ')
   if (parts.length === 2) {
     const em = RequestContext.getEntityManager()!
@@ -15,12 +15,10 @@ export default async function getAPIKeyFromToken(authHeader: string) {
 
     if (decodedToken) {
       const sub = Number(decodedToken.sub)
-      const apiKey = await em.transactional(async (trx) => {
-        return trx.repo(APIKey).findOneOrFail(sub, {
-          ...getResultCacheOptions(getTokenCacheKey(sub), 600_000),
-          exclude: ['game.props'],
-          populate: ['game', 'game.apiSecret'],
-        })
+      const apiKey = await em.repo(APIKey).findOneOrFail(sub, {
+        ...getResultCacheOptions(getTokenCacheKey(sub), 600_000),
+        exclude: ['game.props'],
+        populate: ['game', 'game.apiSecret'],
       })
 
       return apiKey

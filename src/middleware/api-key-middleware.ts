@@ -2,7 +2,7 @@ import { setTraceAttributes } from '@hyperdx/node-opentelemetry'
 import { Redis } from 'ioredis'
 import { Context, Next } from 'koa'
 import APIKey from '../entities/api-key.js'
-import getAPIKeyFromToken from '../lib/auth/getAPIKeyFromToken.js'
+import { getAPIKeyFromToken } from '../lib/auth/getAPIKeyFromToken.js'
 import { isAPIRoute } from '../lib/routing/route-info.js'
 
 export const API_KEY_LAST_USED_HASH = 'api-key:last-used'

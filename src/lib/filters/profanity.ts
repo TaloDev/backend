@@ -1,11 +1,14 @@
-import { RegExpMatcher, englishDataset, englishRecommendedTransformers } from 'obscenity'
+import { DataSet, RegExpMatcher, englishDataset, englishRecommendedTransformers } from 'obscenity'
+import { portugueseDataset } from './datasets/portuguese.js'
 
 let matcher: RegExpMatcher | null = null
 
 function getMatcher() {
   if (!matcher) {
+    const combined = new DataSet().addAll(englishDataset).addAll(portugueseDataset)
+
     matcher = new RegExpMatcher({
-      ...englishDataset.build(),
+      ...combined.build(),
       ...englishRecommendedTransformers,
     })
   }

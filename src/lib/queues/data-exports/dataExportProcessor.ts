@@ -1,5 +1,5 @@
 import { Collection, EntityManager, MikroORM } from '@mikro-orm/mysql'
-import archiver from 'archiver'
+import { type Archiver, ZipArchive } from 'archiver'
 import { SandboxedJob } from 'bullmq'
 import { format } from 'date-fns'
 import { createWriteStream } from 'fs'
@@ -356,7 +356,7 @@ export class DataExporter {
   }
 
   private async streamCSVToArchive<T extends ExportableEntity>(
-    archive: archiver.Archiver,
+    archive: Archiver,
     filename: string,
     generatorFactory: (
       dataExport: DataExport,
@@ -422,7 +422,7 @@ export class DataExporter {
     await mkdir(dir, { recursive: true })
 
     const output = createWriteStream(filepath)
-    const archive = archiver('zip', { zlib: { level: 9 } })
+    const archive = new ZipArchive({ zlib: { level: 9 } })
 
     archive.pipe(output)
     archive.on('error', (err) => {

@@ -1,4 +1,4 @@
-import getBillablePlayerCount from '../../../lib/billing/getBillablePlayerCount.js'
+import { getPlayerUsageBreakdown } from '../../../lib/billing/getPlayerUsageBreakdown.js'
 import { protectedRoute, withMiddleware } from '../../../lib/routing/router.js'
 import { ownerGate } from '../../../middleware/policy-middleware.js'
 
@@ -11,14 +11,19 @@ export const usageRoute = protectedRoute({
 
     const organisation = ctx.state.user.organisation
     const playerLimit = organisation.pricingPlan.pricingPlan.playerLimit
-    const playerCount = await getBillablePlayerCount(em, organisation)
+    const { live, dev, deleted } = await getPlayerUsageBreakdown(em, organisation)
 
     return {
       status: 200,
       body: {
         usage: {
           limit: playerLimit,
-          used: playerCount,
+          used: live + dev + deleted,
+        },
+        breakdown: {
+          live,
+          dev,
+          deleted,
         },
       },
     }

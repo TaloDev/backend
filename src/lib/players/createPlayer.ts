@@ -5,7 +5,7 @@ import Game from '../../entities/game.js'
 import PlayerAlias from '../../entities/player-alias.js'
 import Player from '../../entities/player.js'
 import checkScope from '../../policies/checkScope.js'
-import checkPricingPlanPlayerLimit from '../billing/checkPricingPlanPlayerLimit.js'
+import { checkPricingPlanPlayerLimit } from '../billing/checkPricingPlanPlayerLimit.js'
 import { hardSanitiseProps } from '../props/sanitiseProps.js'
 
 export type CreatePlayerInput = {

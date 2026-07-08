@@ -1,16 +1,8 @@
 import { EntityManager } from '@mikro-orm/mysql'
 import Organisation from '../../entities/organisation.js'
-import Player from '../../entities/player.js'
-import { getResultCacheOptions } from '../perf/getResultCacheOptions.js'
+import { getPlayerUsageBreakdown } from './getPlayerUsageBreakdown.js'
 
-export default async function getBillablePlayerCount(
-  em: EntityManager,
-  organisation: Organisation,
-): Promise<number> {
-  return em.repo(Player).count(
-    {
-      game: { organisation },
-    },
-    getResultCacheOptions(`billable-player-count-${organisation.id}`),
-  )
+export async function getBillablePlayerCount(em: EntityManager, organisation: Organisation) {
+  const { live, dev, deleted } = await getPlayerUsageBreakdown(em, organisation)
+  return live + dev + deleted
 }

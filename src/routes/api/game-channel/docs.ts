@@ -500,7 +500,7 @@ export const listStorageDocs = {
 
 export const putStorageDocs = {
   description:
-    'Create or update storage properties in a game channel. The failedProps array contains props that were rejected due to size constraints or because their values contain profanity (when profanity blocking is enabled).',
+    'Create or update storage properties in a game channel.\nThe failedProps array contains props that were rejected due to size constraints or because their values contain profanity (when profanity blocking is enabled).',
   samples: [
     {
       title: 'Sample request to create/update properties',

@@ -1,5 +1,6 @@
 import { Collection } from '@mikro-orm/mysql'
 import request from 'supertest'
+import DeletedPlayer from '../../../../src/entities/deleted-player.js'
 import GameActivity, { GameActivityType } from '../../../../src/entities/game-activity.js'
 import PlayerAlias from '../../../../src/entities/player-alias.js'
 import { UserType } from '../../../../src/entities/user.js'
@@ -34,6 +35,10 @@ describe('Player - delete', () => {
       if (statusCode === 204) {
         expect(activity).not.toBeNull()
         expect(deletedPlayer).toBeNull()
+
+        const recordedDeletedPlayers = await em.repo(DeletedPlayer).find({ game })
+        expect(recordedDeletedPlayers).toHaveLength(1)
+        expect(recordedDeletedPlayers[0].devBuild).toBe(false)
       } else {
         expect(res.body).toStrictEqual({
           message: 'You do not have permissions to delete players',
@@ -41,6 +46,7 @@ describe('Player - delete', () => {
 
         expect(activity).toBeNull()
         expect(deletedPlayer).not.toBeNull()
+        expect(await em.count(DeletedPlayer, { game })).toBe(0)
       }
     },
   )

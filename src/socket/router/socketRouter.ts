@@ -256,7 +256,7 @@ export default class SocketRouter {
       return false
     }
 
-    const game = await em.repo(Game).findOneOrFail(conn.gameId)
+    const game = await em.repo(Game).findOneOrFail(conn.gameId, { populate: ['apiSecret'] })
 
     return verifySignature({
       signature,

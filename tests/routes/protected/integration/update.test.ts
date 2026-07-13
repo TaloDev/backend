@@ -1,4 +1,3 @@
-import assert from 'node:assert'
 import request from 'supertest'
 import GameActivity, { GameActivityType } from '../../../../src/entities/game-activity.js'
 import { IntegrationType } from '../../../../src/entities/integration.js'
@@ -36,9 +35,9 @@ describe('Integration - update', () => {
       if (statusCode === 200) {
         expect(res.body.integration.config.appId).toBe(377999)
 
-        expect(activity!.extra.integrationType).toBe(IntegrationType.STEAMWORKS)
+        expect(activity?.extra.integrationType).toBe(IntegrationType.STEAMWORKS)
 
-        expect(activity!.extra.display).toStrictEqual({
+        expect(activity?.extra.display).toStrictEqual({
           'Updated properties': 'appId',
         })
       } else {
@@ -119,12 +118,12 @@ describe('Integration - update', () => {
 
     expect(res.body.integration.config.clientId).toBe('new-client-id')
 
-    const activity = await em.repo(GameActivity).findOne({
+    const activity = await em.repo(GameActivity).findOneOrFail({
       type: GameActivityType.GAME_INTEGRATION_UPDATED,
       game,
     })
-    expect(activity!.extra.integrationType).toBe(IntegrationType.GOOGLE_PLAY_GAMES)
-    expect(activity!.extra.display).toStrictEqual({
+    expect(activity.extra.integrationType).toBe(IntegrationType.GOOGLE_PLAY_GAMES)
+    expect(activity.extra.display).toStrictEqual({
       'Updated properties': 'clientId',
     })
   })
@@ -171,11 +170,10 @@ describe('Integration - update', () => {
 
     expect(res.body.integration.config.bundleId).toBe('com.example.new')
 
-    const activity = await em.repo(GameActivity).findOne({
+    const activity = await em.repo(GameActivity).findOneOrFail({
       type: GameActivityType.GAME_INTEGRATION_UPDATED,
       game,
     })
-    assert(activity)
     expect(activity.extra.integrationType).toBe(IntegrationType.GAME_CENTER)
     expect(activity.extra.display).toStrictEqual({
       'Updated properties': 'bundleId',

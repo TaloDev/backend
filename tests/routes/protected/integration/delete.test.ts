@@ -32,7 +32,7 @@ describe('Integration - delete', () => {
       })
 
       if (statusCode === 204) {
-        expect(activity!.extra.integrationType).toBe(IntegrationType.STEAMWORKS)
+        expect(activity?.extra.integrationType).toBe(IntegrationType.STEAMWORKS)
       } else {
         expect(res.body).toStrictEqual({
           message: 'You do not have permissions to delete integrations',

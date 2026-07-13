@@ -50,7 +50,7 @@ export const createRoute = protectedRoute({
     invite.invitedByUser = inviter
 
     createGameActivity(em, {
-      user: ctx.state.user,
+      actor: ctx.state.user,
       type: GameActivityType.INVITE_CREATED,
       extra: {
         inviteEmail: invite.email,

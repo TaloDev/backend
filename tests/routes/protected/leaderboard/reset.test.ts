@@ -189,14 +189,13 @@ describe('Leaderboard - reset', () => {
       .auth(token, { type: 'bearer' })
       .expect(200)
 
-    const activity = await em.repo(GameActivity).findOne({
+    const activity = await em.repo(GameActivity).findOneOrFail({
       type: GameActivityType.LEADERBOARD_ENTRIES_RESET,
       game,
       user,
     })
 
-    expect(activity).not.toBeNull()
-    expect(activity!.extra).toEqual({
+    expect(activity?.extra).toEqual({
       leaderboardInternalName: leaderboard.internalName,
       display: {
         'Reset mode': 'Dev players',

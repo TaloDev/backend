@@ -8,6 +8,7 @@ import { secondsToMilliseconds } from 'date-fns'
 import { createServer } from 'http'
 import Koa from 'koa'
 import compress from 'koa-compress'
+import { configureAdminAPIRoutes } from './config/admin-api-routes.js'
 import { configureAPIRoutes } from './config/api-routes.js'
 import { configureProtectedRoutes } from './config/protected-routes.js'
 import { initProviders } from './config/providers.js'
@@ -47,6 +48,7 @@ export default async function init() {
   configurePublicRoutes(app)
   configureProtectedRoutes(app)
   configureAPIRoutes(app)
+  configureAdminAPIRoutes(app)
 
   const server = createServer(
     {

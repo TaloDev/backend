@@ -10,7 +10,7 @@ export default async function triggerIntegrations(
 ) {
   const integrations = await em
     .repo(Integration)
-    .find({ game }, getResultCacheOptions(`integrations-${game.id}`))
+    .find({ game }, getResultCacheOptions(Integration.getCacheKeyForGame(game)))
 
   await Promise.all(integrations.map(async (integration) => await callback(integration)))
 }

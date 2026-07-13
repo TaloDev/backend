@@ -27,7 +27,7 @@ describe('Game channel - delete', () => {
       })
 
       if (statusCode === 204) {
-        expect(activity!.extra.channelName).toBe(channel.name)
+        expect(activity?.extra.channelName).toBe(channel.name)
       } else {
         expect(res.body).toStrictEqual({
           message: 'You do not have permissions to delete game channels',

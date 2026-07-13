@@ -47,7 +47,7 @@ export const removeMemberRoute = protectedRoute({
       await trx.nativeDelete(Invite, { invitedByUser: target, organisation: caller.organisation })
 
       createGameActivity(trx, {
-        user: caller,
+        actor: caller,
         type: GameActivityType.ORGANISATION_MEMBER_REMOVED,
         extra: {
           removedUserId: target.id,

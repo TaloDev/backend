@@ -27,7 +27,7 @@ export const toggleDevBuildRoute = protectedRoute({
     }
 
     createGameActivity(em, {
-      user: ctx.state.user,
+      actor: ctx.state.user,
       game: ctx.state.game,
       type: GameActivityType.PLAYER_DEV_BUILD_TOGGLED,
       extra: {

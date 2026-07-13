@@ -1,4 +1,3 @@
-import assert from 'node:assert'
 import request from 'supertest'
 import GameActivity, { GameActivityType } from '../../../../src/entities/game-activity.js'
 import Invite from '../../../../src/entities/invite.js'
@@ -136,12 +135,11 @@ describe('Organisation - remove member', () => {
       .auth(token, { type: 'bearer' })
       .expect(204)
 
-    const activity = await em.repo(GameActivity).findOne({
+    const activity = await em.repo(GameActivity).findOneOrFail({
       type: GameActivityType.ORGANISATION_MEMBER_REMOVED,
     })
 
-    assert(activity)
-    expect(activity.user.id).toBe(caller.id)
+    expect(activity.user?.id).toBe(caller.id)
     expect(activity.extra.removedUsername).toBe(target.username)
   })
 

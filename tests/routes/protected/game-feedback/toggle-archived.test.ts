@@ -108,13 +108,12 @@ describe('Game feedback - toggle archived', () => {
       .auth(token, { type: 'bearer' })
       .expect(200)
 
-    const activity = await em.repo(GameActivity).findOne({
+    const activity = await em.repo(GameActivity).findOneOrFail({
       type: GameActivityType.GAME_FEEDBACK_ARCHIVED,
       game,
     })
 
-    expect(activity).not.toBeNull()
-    expect(activity?.extra.aliasIdentifier).toBe(feedback.playerAlias.identifier)
+    expect(activity.extra.aliasIdentifier).toBe(feedback.playerAlias.identifier)
   })
 
   it('should set aliasIdentifier to null in the activity when the feedback is anonymised', async () => {
@@ -130,13 +129,12 @@ describe('Game feedback - toggle archived', () => {
       .auth(token, { type: 'bearer' })
       .expect(200)
 
-    const activity = await em.repo(GameActivity).findOne({
+    const activity = await em.repo(GameActivity).findOneOrFail({
       type: GameActivityType.GAME_FEEDBACK_ARCHIVED,
       game,
     })
 
-    expect(activity).not.toBeNull()
-    expect(activity?.extra.aliasIdentifier).toBeNull()
+    expect(activity.extra.aliasIdentifier).toBeNull()
   })
 
   it('should create a GAME_FEEDBACK_RESTORED activity with the player identifier when archived is false', async () => {

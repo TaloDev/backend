@@ -30,7 +30,7 @@ describe('Data export - create', () => {
       })
 
       if (statusCode === 200) {
-        expect(activity!.extra.dataExportId).toBe(res.body.dataExport.id)
+        expect(activity?.extra.dataExportId).toBe(res.body.dataExport.id)
       } else {
         expect(activity).toBeNull()
       }

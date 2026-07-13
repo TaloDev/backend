@@ -142,7 +142,7 @@ export async function updateChannelHandler({
       }
 
       createGameActivity(em, {
-        user,
+        actor: user,
         game: channel.game,
         type: GameActivityType.GAME_CHANNEL_UPDATED,
         extra: {

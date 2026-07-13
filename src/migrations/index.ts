@@ -76,6 +76,7 @@ import { AddVerifyRequestsColumn } from './20260529204749AddVerifyRequestsColumn
 import { AddGameDisplayNamePropKeyColumn } from './20260615220055AddGameDisplayNamePropKeyColumn.js'
 import { AddGameLogoUrlColumn } from './20260618133542AddGameLogoUrlColumn.js'
 import { CreateDeletedPlayerTable } from './20260626204938CreateDeletedPlayerTable.js'
+import { CreateAdminAPIKeysTable } from './20260711094253CreateAdminAPIKeysTable.js'
 
 export default [
   {
@@ -389,5 +390,9 @@ export default [
   {
     name: 'CreateDeletedPlayerTable',
     class: CreateDeletedPlayerTable,
+  },
+  {
+    name: 'CreateAdminAPIKeysTable',
+    class: CreateAdminAPIKeysTable,
   },
 ]

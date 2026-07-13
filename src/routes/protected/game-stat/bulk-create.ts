@@ -3,7 +3,7 @@ import { UserType } from '../../../entities/user.js'
 import { protectedRoute, withMiddleware } from '../../../lib/routing/router.js'
 import { loadGame } from '../../../middleware/game-middleware.js'
 import { userTypeGate } from '../../../middleware/policy-middleware.js'
-import { clearStatIndexResponseCache, createStatBodySchema } from './common.js'
+import { createStatBodySchema } from './common.js'
 import { createStatHandler } from './create.js'
 
 export const bulkCreateRoute = protectedRoute({
@@ -17,7 +17,6 @@ export const bulkCreateRoute = protectedRoute({
   middleware: withMiddleware(
     userTypeGate([UserType.ADMIN, UserType.DEV], 'create stats'),
     loadGame,
-    clearStatIndexResponseCache,
   ),
   handler: async (ctx) => {
     const { stats: items } = ctx.state.validated.body
@@ -29,7 +28,7 @@ export const bulkCreateRoute = protectedRoute({
         const result = await createStatHandler({
           em: ctx.em,
           game: ctx.state.game,
-          user: ctx.state.user,
+          actor: ctx.state.user,
           data: items[i],
         })
         if ('errors' in result.body) {

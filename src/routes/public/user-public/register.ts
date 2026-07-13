@@ -120,7 +120,7 @@ export const registerRoute = publicRoute({
       user.type = invite.type
       user.emailConfirmed = true
 
-      createGameActivity(em, { user, type: GameActivityType.INVITE_ACCEPTED })
+      createGameActivity(em, { actor: user, type: GameActivityType.INVITE_ACCEPTED })
 
       em.remove(invite)
     } else {

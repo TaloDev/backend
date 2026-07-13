@@ -46,7 +46,7 @@ export const createCategoryRoute = protectedRoute({
     feedbackCategory.anonymised = anonymised
 
     createGameActivity(em, {
-      user: ctx.state.user,
+      actor: ctx.state.user,
       game: feedbackCategory.game,
       type: GameActivityType.GAME_FEEDBACK_CATEGORY_CREATED,
       extra: {

@@ -92,7 +92,7 @@ export async function createChannelHandler({
 
     if (!forwarded && user) {
       createGameActivity(em, {
-        user,
+        actor: user,
         game,
         type: GameActivityType.GAME_CHANNEL_CREATED,
         extra: {

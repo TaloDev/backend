@@ -27,7 +27,7 @@ export const updateRoute = protectedRoute({
     ])
 
     createGameActivity(em, {
-      user: ctx.state.user,
+      actor: ctx.state.user,
       game: stat.game,
       type: GameActivityType.GAME_STAT_UPDATED,
       extra: {

@@ -37,6 +37,6 @@ describe('Game feedback API - list categories', () => {
       .auth(token, { type: 'bearer' })
       .expect(403)
 
-    expect(res.body).toStrictEqual({ message: 'Missing access key scope(s): read:gameFeedback' })
+    expect(res.body).toStrictEqual({ message: 'Missing API key scope(s): read:gameFeedback' })
   })
 })

@@ -27,7 +27,7 @@ export function requireScopes(scopes: APIKeyScope[]): RequireScopesMiddleware {
     if (missing.length > 0) {
       ctx.status = 403
       ctx.body = {
-        message: `Missing access key scope(s): ${missing.join(', ')}`,
+        message: `Missing API key scope(s): ${missing.join(', ')}`,
       }
       return
     }
@@ -101,7 +101,7 @@ export function requireAdminScopes(scopes: AdminAPIKeyScope[]): RequireAdminScop
 
     if (missing.length > 0) {
       ctx.status = 403
-      ctx.body = { message: `Missing admin access key scope(s): ${missing.join(', ')}` }
+      ctx.body = { message: `Missing admin API key scope(s): ${missing.join(', ')}` }
       return
     }
 

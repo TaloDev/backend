@@ -44,7 +44,7 @@ describe('Game feedback API - create', () => {
       .set('x-talo-alias', String(player.aliases[0].id))
       .expect(403)
 
-    expect(res.body).toStrictEqual({ message: 'Missing access key scope(s): write:gameFeedback' })
+    expect(res.body).toStrictEqual({ message: 'Missing API key scope(s): write:gameFeedback' })
   })
 
   it('should not create feedback for a missing player', async () => {

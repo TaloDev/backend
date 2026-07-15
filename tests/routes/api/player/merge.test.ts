@@ -37,7 +37,7 @@ describe('Player API - merge', () => {
       .expect(403)
 
     expect(res.body).toStrictEqual({
-      message: 'Missing access key scope(s): read:players, write:players',
+      message: 'Missing API key scope(s): read:players, write:players',
     })
   })
 
@@ -54,7 +54,7 @@ describe('Player API - merge', () => {
       .auth(token, { type: 'bearer' })
       .expect(403)
 
-    expect(res.body).toStrictEqual({ message: 'Missing access key scope(s): write:players' })
+    expect(res.body).toStrictEqual({ message: 'Missing API key scope(s): write:players' })
   })
 
   it('should not merge without the read scope', async () => {
@@ -70,7 +70,7 @@ describe('Player API - merge', () => {
       .auth(token, { type: 'bearer' })
       .expect(403)
 
-    expect(res.body).toStrictEqual({ message: 'Missing access key scope(s): read:players' })
+    expect(res.body).toStrictEqual({ message: 'Missing API key scope(s): read:players' })
   })
 
   it('should not merge a player into themselves', async () => {

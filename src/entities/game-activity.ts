@@ -121,9 +121,9 @@ export default class GameActivity {
       case GameActivityType.LEADERBOARD_ENTRY_RESTORED:
         return `${this.actor()} restored a leaderboard entry in ${this.extra.leaderboardInternalName}`
       case GameActivityType.API_KEY_CREATED:
-        return `${this.actor()} created an access key`
+        return `${this.actor()} created an API key`
       case GameActivityType.API_KEY_REVOKED:
-        return `${this.actor()} revoked an access key`
+        return `${this.actor()} revoked an API key`
       case GameActivityType.GAME_STAT_CREATED:
         return `${this.actor()} created the stat ${this.extra.statInternalName}`
       case GameActivityType.GAME_STAT_UPDATED:
@@ -161,7 +161,7 @@ export default class GameActivity {
       case GameActivityType.GAME_FEEDBACK_CATEGORY_DELETED:
         return `${this.actor()} deleted the feedback category ${this.extra.feedbackCategoryInternalName}`
       case GameActivityType.API_KEY_UPDATED:
-        return `${this.actor()} updated an access key`
+        return `${this.actor()} updated an API key`
       case GameActivityType.GAME_NAME_UPDATED:
         return `${this.actor()} updated the game name`
       case GameActivityType.PLAYER_STAT_UPDATED:

@@ -121,7 +121,7 @@ export async function createPlayerFromIdentifyRequest({
     throw new PlayerCreationError({
       statusCode: 404,
       message:
-        'Player not found. Use an access key with the write:players scope to automatically create players',
+        'Player not found. Use an API key with the write:players scope to automatically create players',
     })
   }
 }

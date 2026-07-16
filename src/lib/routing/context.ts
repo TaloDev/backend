@@ -3,7 +3,13 @@ import type { EntityManager } from '@mikro-orm/mysql'
 import type { Redis } from 'ioredis'
 import type Koa from 'koa'
 import type Socket from '../../socket/index.js'
-import type { APIRouteState, ProtectedRouteState, PublicRouteState, RouteState } from './state.js'
+import type {
+  AdminAPIRouteState,
+  APIRouteState,
+  ProtectedRouteState,
+  PublicRouteState,
+  RouteState,
+} from './state.js'
 
 type AppContext = {
   em: EntityManager
@@ -25,3 +31,7 @@ export type ProtectedRouteContext<T = ExtendedRouteContext> = AppParameterizedCo
   ProtectedRouteState & T
 >
 export type APIRouteContext<T = ExtendedRouteContext> = AppParameterizedContext<APIRouteState & T>
+
+export type AdminAPIRouteContext<T = ExtendedRouteContext> = AppParameterizedContext<
+  AdminAPIRouteState & T
+>

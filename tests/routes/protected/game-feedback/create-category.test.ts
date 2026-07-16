@@ -30,7 +30,7 @@ describe('Game feedback - create category', () => {
         expect(res.body.feedbackCategory.description).toBe('Bug reports')
         expect(res.body.feedbackCategory.anonymised).toBe(false)
 
-        expect(activity!.extra.feedbackCategoryInternalName).toBe(
+        expect(activity?.extra.feedbackCategoryInternalName).toBe(
           res.body.feedbackCategory.internalName,
         )
       } else {

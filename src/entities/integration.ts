@@ -89,6 +89,10 @@ export default class Integration<T extends IntegrationType = IntegrationType> {
   @Property({ onUpdate: () => new Date() })
   updatedAt: Date = new Date()
 
+  static getCacheKeyForGame(game: Game) {
+    return `integrations-${game.id}`
+  }
+
   constructor(type: T, game: Game, config: IntegrationConfigMap[T]) {
     this.type = type
     this.game = game

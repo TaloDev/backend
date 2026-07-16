@@ -157,8 +157,8 @@ describe('Player relationship listeners - broadcast', () => {
         res: 'v1.error',
         data: {
           req: 'v1.player-relationships.broadcast',
-          message: 'Missing access key scope(s): write:playerBroadcasts',
-          errorCode: 'MISSING_ACCESS_KEY_SCOPES',
+          message: 'Missing API key scope(s): write:playerBroadcasts',
+          errorCode: 'MISSING_API_KEY_SCOPES',
         },
       })
     })

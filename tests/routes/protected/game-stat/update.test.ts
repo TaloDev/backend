@@ -29,7 +29,7 @@ describe('Game stat - update', () => {
 
     expect(res.body.stat.name).toBe('New name')
 
-    const activity = await em.repo(GameActivity).findOne({
+    const activity = await em.repo(GameActivity).findOneOrFail({
       type: GameActivityType.GAME_STAT_UPDATED,
       game,
       extra: {
@@ -37,7 +37,7 @@ describe('Game stat - update', () => {
       },
     })
 
-    expect(activity!.extra.display).toStrictEqual({
+    expect(activity.extra.display).toStrictEqual({
       'Updated properties': 'name: New name',
     })
   })
@@ -66,7 +66,7 @@ describe('Game stat - update', () => {
 
     expect(res.body.stat.global).toBe(true)
 
-    const activity = await em.repo(GameActivity).findOne({
+    const activity = await em.repo(GameActivity).findOneOrFail({
       type: GameActivityType.GAME_STAT_UPDATED,
       game,
       extra: {
@@ -74,7 +74,7 @@ describe('Game stat - update', () => {
       },
     })
 
-    expect(activity!.extra.display).toStrictEqual({
+    expect(activity.extra.display).toStrictEqual({
       'Updated properties': 'global: true',
     })
   })
@@ -103,7 +103,7 @@ describe('Game stat - update', () => {
 
     expect(res.body.stat.maxChange).toBe(90)
 
-    const activity = await em.repo(GameActivity).findOne({
+    const activity = await em.repo(GameActivity).findOneOrFail({
       type: GameActivityType.GAME_STAT_UPDATED,
       game,
       extra: {
@@ -111,7 +111,7 @@ describe('Game stat - update', () => {
       },
     })
 
-    expect(activity!.extra.display).toStrictEqual({
+    expect(activity.extra.display).toStrictEqual({
       'Updated properties': 'maxChange: 90',
     })
   })
@@ -146,7 +146,7 @@ describe('Game stat - update', () => {
 
     expect(res.body.stat.minValue).toBe(-300)
 
-    const activity = await em.repo(GameActivity).findOne({
+    const activity = await em.repo(GameActivity).findOneOrFail({
       type: GameActivityType.GAME_STAT_UPDATED,
       game,
       extra: {
@@ -154,7 +154,7 @@ describe('Game stat - update', () => {
       },
     })
 
-    expect(activity!.extra.display).toStrictEqual({
+    expect(activity.extra.display).toStrictEqual({
       'Updated properties': 'minValue: -300',
     })
   })
@@ -189,7 +189,7 @@ describe('Game stat - update', () => {
 
     expect(res.body.stat.maxValue).toBe(200)
 
-    const activity = await em.repo(GameActivity).findOne({
+    const activity = await em.repo(GameActivity).findOneOrFail({
       type: GameActivityType.GAME_STAT_UPDATED,
       game,
       extra: {
@@ -197,7 +197,7 @@ describe('Game stat - update', () => {
       },
     })
 
-    expect(activity!.extra.display).toStrictEqual({
+    expect(activity.extra.display).toStrictEqual({
       'Updated properties': 'maxValue: 200',
     })
   })
@@ -232,7 +232,7 @@ describe('Game stat - update', () => {
 
     expect(res.body.stat.defaultValue).toBe(100)
 
-    const activity = await em.repo(GameActivity).findOne({
+    const activity = await em.repo(GameActivity).findOneOrFail({
       type: GameActivityType.GAME_STAT_UPDATED,
       game,
       extra: {
@@ -240,7 +240,7 @@ describe('Game stat - update', () => {
       },
     })
 
-    expect(activity!.extra.display).toStrictEqual({
+    expect(activity.extra.display).toStrictEqual({
       'Updated properties': 'defaultValue: 100',
     })
   })
@@ -269,7 +269,7 @@ describe('Game stat - update', () => {
 
     expect(res.body.stat.minTimeBetweenUpdates).toBe(10242)
 
-    const activity = await em.repo(GameActivity).findOne({
+    const activity = await em.repo(GameActivity).findOneOrFail({
       type: GameActivityType.GAME_STAT_UPDATED,
       game,
       extra: {
@@ -277,7 +277,7 @@ describe('Game stat - update', () => {
       },
     })
 
-    expect(activity!.extra.display).toStrictEqual({
+    expect(activity.extra.display).toStrictEqual({
       'Updated properties': 'minTimeBetweenUpdates: 10242',
     })
   })
@@ -306,7 +306,7 @@ describe('Game stat - update', () => {
 
     expect(res.body.stat.internalName).toBe(stat.internalName)
 
-    const activity = await em.repo(GameActivity).findOne({
+    const activity = await em.repo(GameActivity).findOneOrFail({
       type: GameActivityType.GAME_STAT_UPDATED,
       game,
       extra: {
@@ -314,7 +314,7 @@ describe('Game stat - update', () => {
       },
     })
 
-    expect(activity!.extra.display).toStrictEqual({
+    expect(activity.extra.display).toStrictEqual({
       'Updated properties': '',
     })
   })

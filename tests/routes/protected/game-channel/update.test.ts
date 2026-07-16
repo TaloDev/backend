@@ -20,15 +20,15 @@ describe('Game channel - update', () => {
       .auth(token, { type: 'bearer' })
       .expect(200)
 
-    const activity = await em.repo(GameActivity).findOne({
+    const activity = await em.repo(GameActivity).findOneOrFail({
       type: GameActivityType.GAME_CHANNEL_UPDATED,
       game,
     })
 
     expect(res.body.channel.name).toBe('Updated channel')
-    expect(activity!.extra.channelName).toBe('Updated channel')
+    expect(activity.extra.channelName).toBe('Updated channel')
 
-    expect(activity!.extra.display).toStrictEqual({
+    expect(activity.extra.display).toStrictEqual({
       'Updated properties': 'name: Updated channel, props: [{"key":"test","value":"value"}]',
     })
   })

@@ -1,4 +1,5 @@
 import { GameActivityType } from '../../../entities/game-activity.js'
+import Integration from '../../../entities/integration.js'
 import { UserType } from '../../../entities/user.js'
 import createGameActivity from '../../../lib/logging/createGameActivity.js'
 import { protectedRoute, withMiddleware } from '../../../lib/routing/router.js'
@@ -19,7 +20,7 @@ export const deleteRoute = protectedRoute({
     integration.deletedAt = new Date()
 
     createGameActivity(em, {
-      user: ctx.state.user,
+      actor: ctx.state.user,
       game: ctx.state.game,
       type: GameActivityType.GAME_INTEGRATION_DELETED,
       extra: {
@@ -28,6 +29,7 @@ export const deleteRoute = protectedRoute({
     })
 
     await em.flush()
+    await em.clearCache(Integration.getCacheKeyForGame(integration.game))
 
     return {
       status: 204,

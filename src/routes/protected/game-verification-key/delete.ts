@@ -20,7 +20,7 @@ export const deleteRoute = protectedRoute({
     const em = ctx.em
 
     createGameActivity(em, {
-      user: ctx.state.user,
+      actor: ctx.state.user,
       game: ctx.state.game,
       type: GameActivityType.VERIFICATION_KEY_DELETED,
       extra: {

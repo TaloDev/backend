@@ -4,6 +4,7 @@ import {
   protectedRouteAuthMiddleware,
   protectedRouteUserMiddleware,
 } from '../middleware/protected-route-middleware.js'
+import { adminAPIKeyRouter } from '../routes/protected/admin-api-key/index.js'
 import { apiKeyRouter } from '../routes/protected/api-key/index.js'
 import { billingRouter } from '../routes/protected/billing/index.js'
 import { chartRouter } from '../routes/protected/chart/index.js'
@@ -30,6 +31,7 @@ export function configureProtectedRoutes(app: Koa) {
 
   const router = new Router()
 
+  adminAPIKeyRouter(router)
   apiKeyRouter(router)
   billingRouter(router)
   chartRouter(router)

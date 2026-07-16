@@ -94,8 +94,8 @@ describe('Socket router', () => {
         res: 'v1.error',
         data: {
           req: 'v1.channels.message',
-          message: 'Missing access key scope(s): write:gameChannels',
-          errorCode: 'MISSING_ACCESS_KEY_SCOPES',
+          message: 'Missing API key scope(s): write:gameChannels',
+          errorCode: 'MISSING_API_KEY_SCOPES',
         },
       })
     })

@@ -1,13 +1,22 @@
 import type Koa from 'koa'
+import { AdminAPIKeyScope } from '../entities/admin-api-key.js'
 import { APIKeyScope } from '../entities/api-key.js'
 import { UserType } from '../entities/user.js'
-import { APIRouteContext, ProtectedRouteContext } from '../lib/routing/context.js'
+import {
+  AdminAPIRouteContext,
+  APIRouteContext,
+  ProtectedRouteContext,
+} from '../lib/routing/context.js'
 import { Middleware } from '../lib/routing/router.js'
-import { APIRouteState, ProtectedRouteState } from '../lib/routing/state.js'
+import { AdminAPIRouteState, APIRouteState, ProtectedRouteState } from '../lib/routing/state.js'
 import checkScope from '../policies/checkScope.js'
 
-export type RequireScopesMiddleware = Middleware<APIRouteState> & {
+type RequireScopesMiddleware = Middleware<APIRouteState> & {
   readonly scopes: APIKeyScope[]
+}
+
+type RequireAdminScopesMiddleware = Middleware<AdminAPIRouteState> & {
+  readonly scopes: AdminAPIKeyScope[]
 }
 
 export function requireScopes(scopes: APIKeyScope[]): RequireScopesMiddleware {
@@ -18,7 +27,7 @@ export function requireScopes(scopes: APIKeyScope[]): RequireScopesMiddleware {
     if (missing.length > 0) {
       ctx.status = 403
       ctx.body = {
-        message: `Missing access key scope(s): ${missing.join(', ')}`,
+        message: `Missing API key scope(s): ${missing.join(', ')}`,
       }
       return
     }
@@ -81,4 +90,23 @@ export function requireEmailConfirmed(action: string): Middleware<ProtectedRoute
   }
 
   return requireEmailConfirmed
+}
+
+export function requireAdminScopes(scopes: AdminAPIKeyScope[]): RequireAdminScopesMiddleware {
+  const requireAdminScopes = async (ctx: AdminAPIRouteContext, next: Koa.Next) => {
+    const key = ctx.state.key
+    const missing = scopes.filter(
+      (scope) => !key.scopes.includes(AdminAPIKeyScope.FULL_ACCESS) && !key.scopes.includes(scope),
+    )
+
+    if (missing.length > 0) {
+      ctx.status = 403
+      ctx.body = { message: `Missing admin API key scope(s): ${missing.join(', ')}` }
+      return
+    }
+
+    await next()
+  }
+
+  return Object.assign(requireAdminScopes, { scopes })
 }

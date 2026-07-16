@@ -44,7 +44,7 @@ async function createPurgeActivity({
   count: number
 }) {
   createGameActivity(em, {
-    user: await em.repo(User).findOneOrFail({
+    actor: await em.repo(User).findOneOrFail({
       type: UserType.OWNER,
       organisation: game.organisation,
     }),

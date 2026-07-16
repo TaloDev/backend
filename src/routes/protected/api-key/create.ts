@@ -25,9 +25,10 @@ export const createRoute = protectedRoute({
 
     const apiKey = new APIKey(ctx.state.game, ctx.state.user)
     apiKey.scopes = scopes
+    await em.persist(apiKey).flush()
 
     createGameActivity(em, {
-      user: ctx.state.user,
+      actor: ctx.state.user,
       game: ctx.state.game,
       type: GameActivityType.API_KEY_CREATED,
       extra: {
@@ -38,7 +39,7 @@ export const createRoute = protectedRoute({
       },
     })
 
-    await em.persist(apiKey).flush()
+    await em.flush()
 
     const token = await createToken(em, apiKey)
 

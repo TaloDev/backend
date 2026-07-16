@@ -7,7 +7,13 @@ import type { AppParameterizedContext } from './context.js'
 import { decodeParamsMiddleware } from '../../middleware/decode-params-middleware.js'
 import { validate } from '../../middleware/validator-middleware.js'
 import { HttpMethod, RouteDocs } from '../docs/docs-registry.js'
-import { APIRouteState, ProtectedRouteState, PublicRouteState, RouteState } from './state.js'
+import {
+  AdminAPIRouteState,
+  APIRouteState,
+  ProtectedRouteState,
+  PublicRouteState,
+  RouteState,
+} from './state.js'
 
 type HandlerResponse = {
   status: number
@@ -250,6 +256,17 @@ export function apiRouter<S extends APIRouteState = APIRouteState>(
   return createRouter<S>({ basePath, builder, router: opts.router, docsKey: opts.docsKey })
 }
 
+export function adminRouter<S extends AdminAPIRouteState = AdminAPIRouteState>(
+  basePath: string,
+  builder: (helpers: RouteHelpers<S>) => void,
+  opts: {
+    router: Router
+    docsKey?: string
+  },
+): Router {
+  return createRouter<S>({ basePath, builder, router: opts.router, docsKey: opts.docsKey })
+}
+
 // validated route
 export function publicRoute<S extends PublicRouteState, V extends ValidationSchema>(
   config: ValidatedRouteConfig<S, V>,
@@ -288,5 +305,19 @@ export function apiRoute<S extends APIRouteState = APIRouteState>(
 ): UnvalidatedRouteConfig<S>
 // implementation signature required for overloads
 export function apiRoute(config: unknown) {
+  return config
+}
+
+// validated route
+export function adminRoute<
+  S extends AdminAPIRouteState = AdminAPIRouteState,
+  V extends ValidationSchema = ValidationSchema,
+>(config: ValidatedRouteConfig<S, V>): ValidatedRouteConfig<S, V>
+// unvalidated route
+export function adminRoute<S extends AdminAPIRouteState = AdminAPIRouteState>(
+  config: UnvalidatedRouteConfig<S>,
+): UnvalidatedRouteConfig<S>
+// implementation signature required for overloads
+export function adminRoute(config: unknown) {
   return config
 }

@@ -1,6 +1,6 @@
 import { Context, Next } from 'koa'
 import checkRateLimitExceeded from '../lib/errors/checkRateLimitExceeded.js'
-import { isAPIRoute } from '../lib/routing/route-info.js'
+import { isAdminAPIRoute, isAPIRoute } from '../lib/routing/route-info.js'
 
 const limitMap = {
   default: Number(process.env.API_RATE_LIMIT) || 100,
@@ -36,7 +36,7 @@ function isPlayerPublicRoute(ctx: Context) {
 }
 
 export async function limiterMiddleware(ctx: Context, next: Next) {
-  const routeMatches = isPlayerPublicRoute(ctx) || isAPIRoute(ctx)
+  const routeMatches = isPlayerPublicRoute(ctx) || isAPIRoute(ctx) || isAdminAPIRoute(ctx)
 
   if (routeMatches && process.env.NODE_ENV !== 'test' && !rateLimitBypass.has(ctx.request.path)) {
     const { limitMapKey, maxRequests } = getMaxRequestsForPath(ctx.request.path)

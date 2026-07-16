@@ -15,11 +15,14 @@ export async function getAPIKeyFromToken(authHeader: string) {
 
     if (decodedToken) {
       const sub = Number(decodedToken.sub)
-      const apiKey = await em.repo(APIKey).findOneOrFail(sub, {
-        ...getResultCacheOptions(getTokenCacheKey(sub), 600_000),
-        exclude: ['game.props'],
-        populate: ['game', 'game.apiSecret'],
-      })
+      const apiKey = await em.repo(APIKey).findOneOrFail(
+        { id: sub, revokedAt: null },
+        {
+          ...getResultCacheOptions(getTokenCacheKey(sub), 600_000),
+          exclude: ['game.props'],
+          populate: ['game', 'game.apiSecret'],
+        },
+      )
 
       return apiKey
     }

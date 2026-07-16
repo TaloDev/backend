@@ -35,7 +35,7 @@ describe('Invite - create', () => {
         expect(res.body.invite.email).toBe(email)
         expect(res.body.invite.organisation.id).toBe(user.organisation.id)
 
-        expect(activity!.extra.inviteEmail).toBe(email)
+        expect(activity?.extra.inviteEmail).toBe(email)
       } else {
         expect(res.body).toStrictEqual({ message: 'You do not have permissions to create invites' })
 

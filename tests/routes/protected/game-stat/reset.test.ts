@@ -267,14 +267,13 @@ describe('Game stat - reset', () => {
       .auth(token, { type: 'bearer' })
       .expect(200)
 
-    const activity = await em.repo(GameActivity).findOne({
+    const activity = await em.repo(GameActivity).findOneOrFail({
       type: GameActivityType.GAME_STAT_RESET,
       game,
       user,
     })
 
-    expect(activity).not.toBeNull()
-    expect(activity!.extra).toEqual({
+    expect(activity?.extra).toEqual({
       statInternalName: stat.internalName,
       display: {
         'Reset mode': 'Dev players',

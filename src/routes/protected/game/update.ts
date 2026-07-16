@@ -78,7 +78,7 @@ export const updateRoute = protectedRoute({
         game.name = name
 
         createGameActivity(em, {
-          user: ctx.state.user,
+          actor: ctx.state.user,
           game,
           type: GameActivityType.GAME_NAME_UPDATED,
           extra: {
@@ -112,7 +112,7 @@ export const updateRoute = protectedRoute({
         sendLiveConfigUpdatedMessage(ctx, game)
 
         createGameActivity(em, {
-          user: ctx.state.user,
+          actor: ctx.state.user,
           game,
           type: GameActivityType.GAME_PROPS_UPDATED,
           extra: {
@@ -183,7 +183,7 @@ export const updateRoute = protectedRoute({
 
       if (changedProperties.length > 0) {
         createGameActivity(em, {
-          user: ctx.state.user,
+          actor: ctx.state.user,
           game,
           type: GameActivityType.GAME_SETTINGS_UPDATED,
           extra: {

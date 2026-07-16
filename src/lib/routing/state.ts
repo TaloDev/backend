@@ -1,3 +1,4 @@
+import type AdminAPIKey from '../../entities/admin-api-key.js'
 import type APIKey from '../../entities/api-key.js'
 import type Game from '../../entities/game.js'
 import type User from '../../entities/user.js'
@@ -27,4 +28,10 @@ export type APIRouteState = {
   continuityDate?: Date
 }
 
-export type RouteState = PublicRouteState | ProtectedRouteState | APIRouteState
+export type AdminAPIRouteState = {
+  key: AdminAPIKey
+  game: Game
+  includeDevData: boolean
+}
+
+export type RouteState = PublicRouteState | ProtectedRouteState | APIRouteState | AdminAPIRouteState

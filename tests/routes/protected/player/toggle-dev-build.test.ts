@@ -89,14 +89,13 @@ describe('Player - toggle dev build', () => {
       .auth(token, { type: 'bearer' })
       .expect(200)
 
-    const activity = await em.repo(GameActivity).findOne({
+    const activity = await em.repo(GameActivity).findOneOrFail({
       type: GameActivityType.PLAYER_DEV_BUILD_TOGGLED,
       game,
       extra: { playerId: player.id },
     })
 
-    expect(activity).not.toBeNull()
-    expect(activity?.extra.devBuild).toBe(true)
+    expect(activity.extra.devBuild).toBe(true)
   })
 
   it('should create a PLAYER_DEV_BUILD_TOGGLED activity when disabling dev build', async () => {
@@ -112,14 +111,13 @@ describe('Player - toggle dev build', () => {
       .auth(token, { type: 'bearer' })
       .expect(200)
 
-    const activity = await em.repo(GameActivity).findOne({
+    const activity = await em.repo(GameActivity).findOneOrFail({
       type: GameActivityType.PLAYER_DEV_BUILD_TOGGLED,
       game,
       extra: { playerId: player.id },
     })
 
-    expect(activity).not.toBeNull()
-    expect(activity?.extra.devBuild).toBe(false)
+    expect(activity.extra.devBuild).toBe(false)
   })
 
   it('should toggle dev build off for a player without the META_DEV_BUILD prop', async () => {

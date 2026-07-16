@@ -35,7 +35,7 @@ export const updateRoute = protectedRoute({
     integration.updateConfig(newConfig)
 
     createGameActivity(em, {
-      user: ctx.state.user,
+      actor: ctx.state.user,
       game: ctx.state.game,
       type: GameActivityType.GAME_INTEGRATION_UPDATED,
       extra: {

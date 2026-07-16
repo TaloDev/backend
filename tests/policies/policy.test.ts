@@ -51,7 +51,7 @@ describe('Policy base class', () => {
       .expect(403)
 
     expect(res.body).toStrictEqual({
-      message: 'Missing access key scope(s): read:players, write:players',
+      message: 'Missing API key scope(s): read:players, write:players',
     })
   })
 })

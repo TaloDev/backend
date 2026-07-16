@@ -1,5 +1,6 @@
 import { EntityManager } from '@mikro-orm/mysql'
 import { z } from 'zod'
+import AdminAPIKey from '../../../entities/admin-api-key.js'
 import { GameActivityType } from '../../../entities/game-activity.js'
 import GameStat from '../../../entities/game-stat.js'
 import Game from '../../../entities/game.js'
@@ -7,20 +8,21 @@ import User, { UserType } from '../../../entities/user.js'
 import { buildErrorResponse } from '../../../lib/errors/buildErrorResponse.js'
 import handleSQLError from '../../../lib/errors/handleSQLError.js'
 import createGameActivity from '../../../lib/logging/createGameActivity.js'
+import { deferClearResponseCache } from '../../../lib/perf/responseCacheQueue.js'
 import { protectedRoute, withMiddleware } from '../../../lib/routing/router.js'
 import { loadGame } from '../../../middleware/game-middleware.js'
 import { userTypeGate } from '../../../middleware/policy-middleware.js'
-import { clearStatIndexResponseCache, createStatBodySchema } from './common.js'
+import { createStatBodySchema } from './common.js'
 
 export async function createStatHandler({
   em,
   game,
-  user,
+  actor,
   data,
 }: {
   em: EntityManager
   game: Game
-  user: User
+  actor: User | AdminAPIKey
   data: z.infer<ReturnType<typeof createStatBodySchema>>
 }) {
   const {
@@ -58,7 +60,7 @@ export async function createStatHandler({
   }
 
   createGameActivity(em, {
-    user,
+    actor,
     game: stat.game,
     type: GameActivityType.GAME_STAT_CREATED,
     extra: {
@@ -66,6 +68,8 @@ export async function createStatHandler({
     },
   })
   await em.flush()
+
+  await deferClearResponseCache(GameStat.getIndexCacheKey(game, true))
 
   return {
     status: 200,
@@ -81,13 +85,12 @@ export const createRoute = protectedRoute({
   middleware: withMiddleware(
     userTypeGate([UserType.ADMIN, UserType.DEV], 'create stats'),
     loadGame,
-    clearStatIndexResponseCache,
   ),
   handler: (ctx) => {
     return createStatHandler({
       em: ctx.em,
       game: ctx.state.game,
-      user: ctx.state.user,
+      actor: ctx.state.user,
       data: ctx.state.validated.body,
     })
   },

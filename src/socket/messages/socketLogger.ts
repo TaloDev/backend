@@ -18,7 +18,11 @@ export function logRequest(conn: SocketConnection, message: string) {
 
   let req = ''
   try {
-    req = JSON.parse(message).req ?? 'unknown'
+    const jsonStr =
+      conn.verifyRequests && message.includes('\n')
+        ? message.slice(message.indexOf('\n') + 1)
+        : message
+    req = JSON.parse(jsonStr).req ?? 'unknown'
   } catch {
     req = 'unknown'
   } finally {

@@ -29,7 +29,7 @@ export async function deleteChannelHandler({
 
   if (!forwarded && user) {
     createGameActivity(em, {
-      user,
+      actor: user,
       game: channel.game,
       type: GameActivityType.GAME_CHANNEL_DELETED,
       extra: {

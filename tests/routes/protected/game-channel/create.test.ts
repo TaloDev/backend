@@ -15,13 +15,13 @@ describe('Game channel - create', () => {
       .auth(token, { type: 'bearer' })
       .expect(200)
 
-    const activity = await em.repo(GameActivity).findOne({
+    const activity = await em.repo(GameActivity).findOneOrFail({
       type: GameActivityType.GAME_CHANNEL_CREATED,
       game,
     })
 
     expect(res.body.channel.name).toBe('Test channel')
-    expect(activity!.extra.channelName).toBe('Test channel')
+    expect(activity.extra.channelName).toBe('Test channel')
   })
 
   it('should not create a game channel for a game the user has no access to', async () => {

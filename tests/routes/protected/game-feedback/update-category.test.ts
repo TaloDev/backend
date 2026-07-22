@@ -28,7 +28,7 @@ describe('Game feedback - update category', () => {
     expect(res.body.feedbackCategory.name).toBe('Bugs')
     expect(res.body.feedbackCategory.description).toBe('Bug reports')
 
-    const activity = await em.repo(GameActivity).findOne({
+    const activity = await em.repo(GameActivity).findOneOrFail({
       type: GameActivityType.GAME_FEEDBACK_CATEGORY_UPDATED,
       game,
       extra: {
@@ -36,7 +36,7 @@ describe('Game feedback - update category', () => {
       },
     })
 
-    expect(activity!.extra.display).toStrictEqual({
+    expect(activity.extra.display).toStrictEqual({
       'Updated properties': 'name: Bugs, description: Bug reports',
     })
   })
@@ -68,7 +68,7 @@ describe('Game feedback - update category', () => {
 
     expect(res.body.feedbackCategory.anonymised).toBe(false)
 
-    const activity = await em.repo(GameActivity).findOne({
+    const activity = await em.repo(GameActivity).findOneOrFail({
       type: GameActivityType.GAME_FEEDBACK_CATEGORY_UPDATED,
       game,
       extra: {
@@ -76,7 +76,7 @@ describe('Game feedback - update category', () => {
       },
     })
 
-    expect(activity!.extra.display).toStrictEqual({
+    expect(activity.extra.display).toStrictEqual({
       'Updated properties': 'anonymised: false',
     })
   })
@@ -98,7 +98,7 @@ describe('Game feedback - update category', () => {
 
     expect(res.body.feedbackCategory.internalName).toBe(feedbackCategory.internalName)
 
-    const activity = await em.repo(GameActivity).findOne({
+    const activity = await em.repo(GameActivity).findOneOrFail({
       type: GameActivityType.GAME_FEEDBACK_CATEGORY_UPDATED,
       game,
       extra: {
@@ -106,7 +106,7 @@ describe('Game feedback - update category', () => {
       },
     })
 
-    expect(activity!.extra.display).toStrictEqual({
+    expect(activity.extra.display).toStrictEqual({
       'Updated properties': 'name: Bugs, description: Bug reports',
     })
   })

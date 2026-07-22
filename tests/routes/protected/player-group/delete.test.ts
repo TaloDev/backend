@@ -28,7 +28,7 @@ describe('Player group - delete', () => {
       })
 
       if (statusCode === 204) {
-        expect(activity!.extra.groupName).toBe(group.name)
+        expect(activity?.extra.groupName).toBe(group.name)
         expect(await em.refresh(group)).toBeNull()
       } else {
         expect(res.body).toStrictEqual({ message: 'You do not have permissions to delete groups' })

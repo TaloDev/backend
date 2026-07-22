@@ -41,7 +41,7 @@ export const createRoute = protectedRoute({
     await em.persist(dataExport).flush()
 
     createGameActivity(em, {
-      user: ctx.state.user,
+      actor: ctx.state.user,
       game: ctx.state.game,
       type: GameActivityType.DATA_EXPORT_REQUESTED,
       extra: {

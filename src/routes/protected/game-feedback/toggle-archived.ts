@@ -38,7 +38,7 @@ export const toggleArchivedRoute = protectedRoute<FeedbackRouteState, ToggleArch
     const aliasIdentifier = feedback.anonymised ? null : feedback.playerAlias.identifier
 
     createGameActivity(em, {
-      user: ctx.state.user,
+      actor: ctx.state.user,
       game: ctx.state.game,
       type: archived
         ? GameActivityType.GAME_FEEDBACK_ARCHIVED

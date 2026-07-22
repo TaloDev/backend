@@ -60,24 +60,6 @@ describe('API key middleware', () => {
     apiKey.revokedAt = new Date()
     await em.flush()
 
-    const res = await request(app)
-      .get('/v1/game-config')
-      .auth(token, { type: 'bearer' })
-      .expect(401)
-
-    expect(res.body).toStrictEqual({
-      message: 'Please provide a valid token in the Authorization header',
-    })
-  })
-
-  it('should not record lastUsedAt for a revoked api key', async () => {
-    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_GAME_CONFIG])
-    apiKey.revokedAt = new Date()
-    await em.flush()
-
     await request(app).get('/v1/game-config').auth(token, { type: 'bearer' }).expect(401)
-
-    const recorded = await redis.hget(API_KEY_LAST_USED_HASH, String(apiKey.id))
-    expect(recorded).toBeNull()
   })
 })

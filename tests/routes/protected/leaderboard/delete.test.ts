@@ -27,7 +27,7 @@ describe('Leaderboard - delete', () => {
       })
 
       if (statusCode === 204) {
-        expect(activity!.extra.leaderboardInternalName).toBe(leaderboard.internalName)
+        expect(activity?.extra.leaderboardInternalName).toBe(leaderboard.internalName)
       } else {
         expect(res.body).toStrictEqual({
           message: 'You do not have permissions to delete leaderboards',

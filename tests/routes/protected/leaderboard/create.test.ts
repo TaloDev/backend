@@ -36,7 +36,7 @@ describe('Leaderboard - create', () => {
         expect(res.body.leaderboard.name).toBe('Highscores')
         expect(res.body.leaderboard.sortMode).toBe('desc')
 
-        expect(activity!.extra.leaderboardInternalName).toBe(res.body.leaderboard.internalName)
+        expect(activity?.extra.leaderboardInternalName).toBe(res.body.leaderboard.internalName)
       } else {
         expect(res.body).toStrictEqual({
           message: 'You do not have permissions to create leaderboards',

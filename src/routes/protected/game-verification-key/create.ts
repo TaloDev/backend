@@ -37,7 +37,7 @@ export const createRoute = protectedRoute({
     verificationKey.value = encrypted
 
     createGameActivity(em, {
-      user: ctx.state.user,
+      actor: ctx.state.user,
       game: ctx.state.game,
       type: GameActivityType.VERIFICATION_KEY_CREATED,
       extra: {

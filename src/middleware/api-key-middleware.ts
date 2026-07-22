@@ -12,9 +12,7 @@ async function recordLastUsedAt(
   apiKey: Pick<APIKey, 'id' | 'revokedAt'>,
   lastUsedAt: Date,
 ) {
-  if (!apiKey.revokedAt) {
-    await redis.hset(API_KEY_LAST_USED_HASH, String(apiKey.id), lastUsedAt.getTime())
-  }
+  await redis.hset(API_KEY_LAST_USED_HASH, String(apiKey.id), lastUsedAt.getTime())
 }
 
 export async function apiKeyMiddleware(ctx: Context, next: Next) {

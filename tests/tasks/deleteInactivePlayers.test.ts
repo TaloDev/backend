@@ -552,11 +552,11 @@ describe('deleteInactivePlayers', () => {
 
       em.clear()
 
-      const activity = await em.repo(GameActivity).findOne({
+      const activity = await em.repo(GameActivity).findOneOrFail({
         game,
         type: GameActivityType.INACTIVE_LIVE_PLAYERS_DELETED,
       })
-      expect(activity?.extra).toStrictEqual({
+      expect(activity.extra).toStrictEqual({
         count: playerCount,
       })
 

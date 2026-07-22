@@ -173,8 +173,8 @@ export default class SocketRouter {
                 conn,
                 req: message.req,
                 error: new SocketError(
-                  'MISSING_ACCESS_KEY_SCOPES',
-                  `Missing access key scope(s): ${missing.join(', ')}`,
+                  'MISSING_API_KEY_SCOPES',
+                  `Missing API key scope(s): ${missing.join(', ')}`,
                 ),
               })
             } else {

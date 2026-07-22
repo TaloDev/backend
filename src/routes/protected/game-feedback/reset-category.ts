@@ -48,7 +48,7 @@ export const resetCategoryRoute = protectedRoute({
       const deletedCount = await trx.repo(GameFeedback).nativeDelete(where)
 
       createGameActivity(trx, {
-        user: ctx.state.user,
+        actor: ctx.state.user,
         game: feedbackCategory.game,
         type: GameActivityType.GAME_FEEDBACK_CATEGORY_RESET,
         extra: {

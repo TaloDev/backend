@@ -17,6 +17,7 @@ describe('API key - list', () => {
       .expect(200)
 
     expect(res.body.apiKeys).toHaveLength(keys.length)
+    expect(res.body.apiKeys.every(({ keyEnding }: { keyEnding: string }) => keyEnding.length === 4))
   })
 
   it('should not return a list of api keys for a non-existent game', async () => {

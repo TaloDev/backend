@@ -57,7 +57,7 @@ export async function createLeaderboardHandler({
   leaderboard.uniqueByProps = uniqueByProps
 
   createGameActivity(em, {
-    user,
+    actor: user,
     game: leaderboard.game,
     type: GameActivityType.LEADERBOARD_CREATED,
     extra: {

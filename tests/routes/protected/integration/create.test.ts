@@ -1,4 +1,3 @@
-import assert from 'node:assert'
 import request from 'supertest'
 import GameActivity, { GameActivityType } from '../../../../src/entities/game-activity.js'
 import Integration, { IntegrationType } from '../../../../src/entities/integration.js'
@@ -32,7 +31,7 @@ describe('Integration - create', () => {
         expect(res.body.integration.config.appId).toBeDefined()
         expect(res.body.integration.config.apiKey).not.toBeDefined()
 
-        expect(activity!.extra.integrationType).toBe(IntegrationType.STEAMWORKS)
+        expect(activity?.extra.integrationType).toBe(IntegrationType.STEAMWORKS)
       } else {
         expect(res.body).toStrictEqual({
           message: 'You do not have permissions to add integrations',
@@ -137,11 +136,11 @@ describe('Integration - create', () => {
     expect(res.body.integration.config.clientId).toBe('client-id')
     expect(res.body.integration.config.clientSecret).not.toBeDefined()
 
-    const activity = await em.repo(GameActivity).findOne({
+    const activity = await em.repo(GameActivity).findOneOrFail({
       type: GameActivityType.GAME_INTEGRATION_ADDED,
       game,
     })
-    expect(activity!.extra.integrationType).toBe(IntegrationType.GOOGLE_PLAY_GAMES)
+    expect(activity.extra.integrationType).toBe(IntegrationType.GOOGLE_PLAY_GAMES)
   })
 
   it('should encrypt the client secret for a google play games integration', async () => {
@@ -207,11 +206,10 @@ describe('Integration - create', () => {
 
     expect(res.body.integration.config.bundleId).toBe('com.example.game')
 
-    const activity = await em.repo(GameActivity).findOne({
+    const activity = await em.repo(GameActivity).findOneOrFail({
       type: GameActivityType.GAME_INTEGRATION_ADDED,
       game,
     })
-    assert(activity)
     expect(activity.extra.integrationType).toBe(IntegrationType.GAME_CENTER)
   })
 

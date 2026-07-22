@@ -40,7 +40,7 @@ export const updateEntryRoute = protectedRoute({
       entry.hidden = hidden
 
       createGameActivity(em, {
-        user: ctx.state.user,
+        actor: ctx.state.user,
         game: entry.leaderboard.game,
         type: hidden
           ? GameActivityType.LEADERBOARD_ENTRY_HIDDEN
@@ -65,7 +65,7 @@ export const updateEntryRoute = protectedRoute({
       entry.score = newScore
 
       createGameActivity(em, {
-        user: ctx.state.user,
+        actor: ctx.state.user,
         game: entry.leaderboard.game,
         type: GameActivityType.LEADERBOARD_ENTRY_UPDATED,
         extra: {

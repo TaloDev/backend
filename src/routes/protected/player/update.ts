@@ -67,7 +67,7 @@ export async function updatePlayerHandler({
 
           if (!forwarded && user) {
             createGameActivity(trx, {
-              user,
+              actor: user,
               game: player.game,
               type: GameActivityType.PLAYER_PROPS_UPDATED,
               extra: {

@@ -6,7 +6,7 @@ on:
 
 jobs:
   summarise:
-    if: github.event.pull_request.head.repo.fork == false
+    if: ${{ !github.event.pull_request.body }}
     runs-on: ubuntu-latest
     timeout-minutes: 10
 
@@ -15,10 +15,6 @@ jobs:
       pull-requests: write
 
     steps:
-      - uses: actions/checkout@v6
-        with:
-          persist-credentials: false
-
       - name: Get opencode version
         id: version
         run: |

@@ -6,7 +6,6 @@ on:
 
 jobs:
   summarise:
-    if: ${{ github.event.pull_request.author_association == 'MEMBER' }}
     runs-on: ubuntu-latest
     timeout-minutes: 10
 
@@ -19,13 +18,29 @@ jobs:
         with:
           persist-credentials: false
 
+      - name: Check can edit PR
+        id: can-edit
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          BODY="$(gh api "repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER" --jq '.body // ""')"
+          if gh api --method PATCH "repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER" \
+            -f "body=$BODY" --jq .number >/dev/null 2>&1; then
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Get opencode version
+        if: steps.can-edit.outputs.skip != 'true'
         id: version
         run: |
           VERSION=$(curl -sf https://api.github.com/repos/anomalyco/opencode/releases/latest | grep -o '"tag_name": *"[^"]*"' | cut -d'"' -f4)
           echo "version=${VERSION:-latest}" >> "$GITHUB_OUTPUT"
 
       - name: Cache opencode
+        if: steps.can-edit.outputs.skip != 'true'
         id: cache
         uses: actions/cache@v5
         with:
@@ -33,10 +48,11 @@ jobs:
           key: opencode-${{ runner.os }}-${{ runner.arch }}-${{ steps.version.outputs.version }}
 
       - name: Install opencode
-        if: steps.cache.outputs.cache-hit != 'true'
+        if: steps.can-edit.outputs.skip != 'true' && steps.cache.outputs.cache-hit != 'true'
         run: curl -fsSL https://opencode.ai/install | bash
 
       - name: Generate and apply summary
+        if: steps.can-edit.outputs.skip != 'true'
         env:
           OPENCODE_API_KEY: ${{ secrets.OPENCODE_API_KEY }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -56,15 +72,3 @@ jobs:
           )"
           BODY="$(gh pr diff "$PR_NUMBER" | opencode run --model "$MODEL" "$PROMPT")"
           gh pr edit "$PR_NUMBER" --body "$BODY"
-
-  debug:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Dump PR author fields
-        run: |
-          echo "author_association=${{ github.event.pull_request.author_association }}"
-          echo "user_type=${{ github.event.pull_request.user.type }}"
-          echo "user_login=${{ github.event.pull_request.user.login }}"
-          echo "number=${{ github.event.pull_request.number }}"
-          echo "--- full payload ---"
-          echo "${{ toJSON(github.event.pull_request) }}"

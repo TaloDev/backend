@@ -56,3 +56,15 @@ jobs:
           )"
           BODY="$(gh pr diff "$PR_NUMBER" | opencode run --model "$MODEL" "$PROMPT")"
           gh pr edit "$PR_NUMBER" --body "$BODY"
+
+  debug:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Dump PR author fields
+        run: |
+          echo "author_association=${{ github.event.pull_request.author_association }}"
+          echo "user_type=${{ github.event.pull_request.user.type }}"
+          echo "user_login=${{ github.event.pull_request.user.login }}"
+          echo "number=${{ github.event.pull_request.number }}"
+          echo "--- full payload ---"
+          echo "${{ toJSON(github.event.pull_request) }}"

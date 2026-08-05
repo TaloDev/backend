@@ -16,5 +16,10 @@ function getMatcher() {
 }
 
 export function hasProfanity(text: string) {
+  // numeric/punctuation values can leetspeak-decode into profane words (e.g. "460240" -> "goza").
+  // skip the check unless the value contains any letter.
+  if (!/\p{L}/u.test(text)) {
+    return false
+  }
   return getMatcher().hasMatch(text)
 }

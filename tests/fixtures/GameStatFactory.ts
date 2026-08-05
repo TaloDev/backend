@@ -28,7 +28,7 @@ export default class GameStatFactory extends Factory<GameStat> {
         maxValue: randBoolean() ? maxValue : null,
         defaultValue,
         globalValue: defaultValue,
-        maxChange: randNumber({ max: 1000 }),
+        maxChange: randNumber({ min: 1, max: 1000 }),
         minTimeBetweenUpdates: randNumber({ max: 5 }),
       }
     })

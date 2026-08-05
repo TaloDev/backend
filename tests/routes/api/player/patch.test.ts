@@ -417,6 +417,36 @@ describe('Player API - update', () => {
     ])
   })
 
+  it('should accept numeric coordinate values when blockPropsProfanity is enabled', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_PLAYERS])
+    apiKey.game.blockPropsProfanity = true
+    await em.flush()
+
+    const player = await new PlayerFactory([apiKey.game]).one()
+    await em.persist(player).flush()
+
+    const res = await request(app)
+      .patch(`/v1/players/${player.id}`)
+      .send({
+        props: [
+          { key: 'path[]', value: '0,0' },
+          { key: 'path[]', value: '142,460' },
+          { key: 'path[]', value: '240,555' },
+        ],
+      })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    expect(res.body.rejectedProps).toEqual([])
+    expect(res.body.player.props).toEqual(
+      expect.arrayContaining([
+        { key: 'path[]', value: '0,0' },
+        { key: 'path[]', value: '142,460' },
+        { key: 'path[]', value: '240,555' },
+      ]),
+    )
+  })
+
   it('should allow profane props when blockPropsProfanity is disabled', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_PLAYERS])
 

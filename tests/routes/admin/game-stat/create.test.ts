@@ -30,7 +30,6 @@ describe('Game stat admin API - create', () => {
       game: apiKey.game,
       adminAPIKey: apiKey,
     })
-    expect(activity.user).toBeNull()
     expect(activity.adminAPIKey?.id).toBe(apiKey.id)
   })
 

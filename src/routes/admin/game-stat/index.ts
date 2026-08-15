@@ -4,6 +4,7 @@ import { createStatAdminRoute } from './create.js'
 import { deleteStatAdminRoute } from './delete.js'
 import { findStatAdminRoute } from './find.js'
 import { listStatsAdminRoute } from './list.js'
+import { resetStatAdminRoute } from './reset.js'
 import { updateStatAdminRoute } from './update.js'
 
 export function gameStatAdminRouter(router: Router) {
@@ -15,6 +16,7 @@ export function gameStatAdminRouter(router: Router) {
       route(findStatAdminRoute)
       route(updateStatAdminRoute)
       route(deleteStatAdminRoute)
+      route(resetStatAdminRoute)
     },
     { router, docsKey: 'GameStatAdminAPI' },
   )

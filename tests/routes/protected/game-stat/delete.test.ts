@@ -30,6 +30,7 @@ describe('Game stat - delete', () => {
       })
 
       if (statusCode === 204) {
+        expect(await em.refresh(stat)).toBeNull()
         expect(activity).not.toBeNull()
       } else {
         expect(activity).toBeNull()

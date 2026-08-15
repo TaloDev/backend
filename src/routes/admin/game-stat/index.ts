@@ -1,6 +1,7 @@
 import type Router from 'koa-tree-router'
 import { adminRouter } from '../../../lib/routing/router.js'
 import { createStatAdminRoute } from './create.js'
+import { deleteStatAdminRoute } from './delete.js'
 import { findStatAdminRoute } from './find.js'
 import { listStatsAdminRoute } from './list.js'
 import { updateStatAdminRoute } from './update.js'
@@ -13,6 +14,7 @@ export function gameStatAdminRouter(router: Router) {
       route(listStatsAdminRoute)
       route(findStatAdminRoute)
       route(updateStatAdminRoute)
+      route(deleteStatAdminRoute)
     },
     { router, docsKey: 'GameStatAdminAPI' },
   )

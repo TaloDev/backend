@@ -10,6 +10,6 @@ export function gameStatAdminRouter(router: Router) {
       route(createStatAdminRoute)
       route(listStatsAdminRoute)
     },
-    { router, docsKey: 'adminGameStats' },
+    { router, docsKey: 'GameStatAdminAPI' },
   )
 }

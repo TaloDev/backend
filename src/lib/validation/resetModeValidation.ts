@@ -1,6 +1,8 @@
 export const resetModes = ['all', 'live', 'dev'] as const
 
-export function translateResetMode(resetMode: (typeof resetModes)[number]) {
+export type ResetMode = (typeof resetModes)[number]
+
+export function translateResetMode(resetMode: ResetMode) {
   switch (resetMode) {
     case 'all':
       return 'All players'

@@ -1,6 +1,6 @@
 import { Next } from 'koa'
 import assert from 'node:assert'
-import { RefinementCtx, z } from 'zod'
+import { RefinementCtx, ZodType, z } from 'zod'
 import GameStat from '../../../entities/game-stat.js'
 import PlayerGameStat from '../../../entities/player-game-stat.js'
 import { deferClearResponseCache } from '../../../lib/perf/responseCacheQueue.js'
@@ -61,27 +61,46 @@ function validateStatBody(data: StatSchemaData, ctx: RefinementCtx) {
 
 function statFields(z: Z) {
   return {
-    name: z.string(),
-    global: z.boolean(),
-    maxChange: z.number().nullable().optional(),
-    minValue: z.number().nullable().optional(),
-    maxValue: z.number().nullable().optional(),
-    defaultValue: z.number(),
-    minTimeBetweenUpdates: z.number().min(0),
+    name: z.string().meta({ description: 'The display name of the stat' }),
+    global: z
+      .boolean()
+      .meta({ description: 'Whether the stat value is shared across all players' }),
+    maxChange: z.number().nullable().optional().meta({
+      description: 'The maximum allowed change to the stat per update',
+    }),
+    minValue: z.number().nullable().optional().meta({
+      description: 'The minimum value the stat can be set to',
+    }),
+    maxValue: z.number().nullable().optional().meta({
+      description: 'The maximum value the stat can be set to',
+    }),
+    defaultValue: z.number().meta({ description: 'The default value for the stat' }),
+    minTimeBetweenUpdates: z.number().min(0).meta({
+      description: 'The minimum time in seconds between updates',
+    }),
   }
 }
 
 export function createStatBodySchema(z: Z) {
   return z
     .object({
-      internalName: z.string(),
+      internalName: z.string().meta({ description: 'The internal name of the stat' }),
       ...statFields(z),
     })
     .superRefine(validateStatBody)
 }
 
+function optionalFields(fields: Record<string, ZodType>): Record<string, ZodType> {
+  const result: Record<string, ZodType> = {}
+  for (const [key, schema] of Object.entries(fields)) {
+    const description = schema.meta?.()?.description
+    result[key] = schema.optional().meta({ description })
+  }
+  return result
+}
+
 export function updateStatBodySchema(z: Z) {
-  return z.object(statFields(z)).partial().superRefine(validateStatBody)
+  return z.object(optionalFields(statFields(z))).superRefine(validateStatBody)
 }
 
 export async function loadStat(ctx: StatRouteContext, next: Next) {

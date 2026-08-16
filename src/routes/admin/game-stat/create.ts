@@ -3,9 +3,11 @@ import { adminRoute, withMiddleware } from '../../../lib/routing/router.js'
 import { requireAdminScopes } from '../../../middleware/policy-middleware.js'
 import { createStatBodySchema } from '../../protected/game-stat/common.js'
 import { createStatHandler } from '../../protected/game-stat/create.js'
+import { createDocs } from './docs.js'
 
 export const createStatAdminRoute = adminRoute({
   method: 'post',
+  docs: createDocs,
   schema: (z) => ({
     body: createStatBodySchema(z),
   }),

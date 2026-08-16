@@ -1,14 +1,20 @@
 import { AdminAPIKeyScope } from '../../../entities/admin-api-key.js'
 import { adminRoute, withMiddleware } from '../../../lib/routing/router.js'
+import { numericStringSchema } from '../../../lib/validation/numericStringSchema.js'
 import { requireAdminScopes } from '../../../middleware/policy-middleware.js'
 import { updateStatBodySchema } from '../../protected/game-stat/common.js'
 import { updateStatHandler } from '../../protected/game-stat/update.js'
 import { loadStat } from './common.js'
+import { updateDocs } from './docs.js'
 
 export const updateStatAdminRoute = adminRoute({
   method: 'put',
   path: '/:id',
+  docs: updateDocs,
   schema: (z) => ({
+    route: z.object({
+      id: numericStringSchema.meta({ description: 'The ID of the stat' }),
+    }),
     body: updateStatBodySchema(z),
   }),
   middleware: withMiddleware(requireAdminScopes([AdminAPIKeyScope.WRITE_STATS]), loadStat),

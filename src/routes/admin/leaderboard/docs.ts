@@ -33,3 +33,37 @@ export const createDocs = {
     },
   ],
 } satisfies RouteDocs
+
+export const listDocs = {
+  description: 'List all leaderboards',
+  samples: [
+    {
+      title: 'Sample response',
+      sample: {
+        leaderboards: [
+          leaderboardSample,
+          {
+            id: 7,
+            internalName: 'time-survived',
+            name: 'Time survived',
+            sortMode: 'asc',
+            unique: true,
+            uniqueByProps: true,
+            refreshInterval: 'daily',
+            createdAt: '2026-08-15T12:50:21.803Z',
+            updatedAt: '2026-08-15T12:52:47.511Z',
+          },
+        ],
+      },
+    },
+    {
+      title: 'Sample request with filter',
+      sample: {
+        url: '/admin/v1/leaderboards?internalName=highscores',
+        query: {
+          internalName: 'highscores',
+        },
+      },
+    },
+  ],
+} satisfies RouteDocs

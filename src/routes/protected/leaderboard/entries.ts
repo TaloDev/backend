@@ -8,8 +8,7 @@ import Player from '../../../entities/player.js'
 import { DEFAULT_PAGE_SIZE } from '../../../lib/pagination/itemsPerPage.js'
 import { withResponseCache } from '../../../lib/perf/responseCache.js'
 import { protectedRoute, withMiddleware } from '../../../lib/routing/router.js'
-import { numericStringSchema } from '../../../lib/validation/numericStringSchema.js'
-import { pageSchema } from '../../../lib/validation/pageSchema.js'
+import { entriesQuerySchema } from '../../../lib/validation/routes/leaderboards/entriesQuerySchema.js'
 import { loadGame } from '../../../middleware/game-middleware.js'
 import { loadLeaderboard } from './common.js'
 
@@ -262,21 +261,8 @@ export async function listEntriesHandler({
 export const entriesRoute = protectedRoute({
   method: 'get',
   path: '/:id/entries',
-  schema: (z) => ({
-    query: z.object({
-      page: pageSchema,
-      aliasId: numericStringSchema.optional(),
-      withDeleted: z
-        .enum(['0', '1'])
-        .optional()
-        .transform((val) => val === '1'),
-      propKey: z.string().optional(),
-      propValue: z.string().optional(),
-      startDate: z.string().optional(),
-      endDate: z.string().optional(),
-      aliasService: z.string().optional(),
-      playerId: z.uuid().optional(),
-    }),
+  schema: () => ({
+    query: entriesQuerySchema,
   }),
   middleware: withMiddleware(loadGame, loadLeaderboard()),
   handler: async (ctx) => {

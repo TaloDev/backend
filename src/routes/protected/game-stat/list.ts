@@ -4,6 +4,7 @@ import type Game from '../../../entities/game.js'
 import GameStat from '../../../entities/game-stat.js'
 import { withResponseCache } from '../../../lib/perf/responseCache.js'
 import { protectedRoute, withMiddleware } from '../../../lib/routing/router.js'
+import { listStatsQuerySchema } from '../../../lib/validation/routes/game-stats/listStatsQuerySchema.js'
 import { loadGame } from '../../../middleware/game-middleware.js'
 
 export async function listStatsHandler({
@@ -70,12 +71,8 @@ export async function listStatsHandler({
 
 export const listRoute = protectedRoute({
   method: 'get',
-  schema: (z) => ({
-    query: z.object({
-      withMetrics: z.string().optional(),
-      metricsStartDate: z.string().optional(),
-      metricsEndDate: z.string().optional(),
-    }),
+  schema: () => ({
+    query: listStatsQuerySchema,
   }),
   middleware: withMiddleware(loadGame),
   handler: async (ctx) => {

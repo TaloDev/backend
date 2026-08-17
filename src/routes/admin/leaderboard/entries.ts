@@ -1,23 +1,27 @@
-import { APIKeyScope } from '../../../entities/api-key.js'
-import { apiRoute, withMiddleware } from '../../../lib/routing/router.js'
+import { AdminAPIKeyScope } from '../../../entities/admin-api-key.js'
+import { adminRoute, withMiddleware } from '../../../lib/routing/router.js'
+import { numericStringSchema } from '../../../lib/validation/numericStringSchema.js'
 import { entriesQuerySchema } from '../../../lib/validation/routes/leaderboards/entriesQuerySchema.js'
-import { requireScopes } from '../../../middleware/policy-middleware.js'
+import { requireAdminScopes } from '../../../middleware/policy-middleware.js'
 import { listEntriesHandler } from '../../protected/leaderboard/entries.js'
 import { loadLeaderboard } from './common.js'
-import { getDocs } from './docs.js'
+import { entriesDocs } from './docs.js'
 
-export const getRoute = apiRoute({
+export const listEntriesAdminRoute = adminRoute({
   method: 'get',
-  path: '/:internalName/entries',
-  docs: getDocs,
+  path: '/:id/entries',
+  docs: entriesDocs,
   schema: (z) => ({
     route: z.object({
-      internalName: z.string().meta({ description: 'The internal name of the leaderboard' }),
+      id: numericStringSchema.meta({ description: 'The ID of the leaderboard' }),
     }),
     query: entriesQuerySchema,
   }),
-  middleware: withMiddleware(requireScopes([APIKeyScope.READ_LEADERBOARDS]), loadLeaderboard),
-  handler: async (ctx) => {
+  middleware: withMiddleware(
+    requireAdminScopes([AdminAPIKeyScope.READ_LEADERBOARDS]),
+    loadLeaderboard,
+  ),
+  handler: (ctx) => {
     const {
       page,
       aliasId,
@@ -34,7 +38,6 @@ export const getRoute = apiRoute({
       em: ctx.em,
       leaderboard: ctx.state.leaderboard,
       includeDevData: ctx.state.includeDevData,
-      forwarded: true,
       page,
       aliasId,
       withDeleted,

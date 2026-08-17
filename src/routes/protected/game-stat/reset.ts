@@ -14,7 +14,7 @@ import { streamByCursor } from '../../../lib/perf/streamByCursor.js'
 import { protectedRoute, withMiddleware } from '../../../lib/routing/router.js'
 import {
   ResetMode,
-  resetModes,
+  resetModeQuerySchema,
   translateResetMode,
 } from '../../../lib/validation/resetModeValidation.js'
 import { userTypeGate } from '../../../middleware/policy-middleware.js'
@@ -144,15 +144,8 @@ export async function resetStatHandler({
 export const resetRoute = protectedRoute({
   method: 'delete',
   path: '/:id/player-stats',
-  schema: (z) => ({
-    query: z.object({
-      mode: z
-        .enum(resetModes, {
-          error: `Mode must be one of: ${resetModes.join(', ')}`,
-        })
-        .optional()
-        .default('all'),
-    }),
+  schema: () => ({
+    query: resetModeQuerySchema,
   }),
   middleware: withMiddleware(userTypeGate([UserType.ADMIN], 'reset stats'), loadStat),
   handler: async (ctx) => {

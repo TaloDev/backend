@@ -5,7 +5,10 @@ import { UserType } from '../../../entities/user.js'
 import createGameActivity from '../../../lib/logging/createGameActivity.js'
 import { deferClearResponseCache } from '../../../lib/perf/responseCacheQueue.js'
 import { protectedRoute, withMiddleware } from '../../../lib/routing/router.js'
-import { resetModes, translateResetMode } from '../../../lib/validation/resetModeValidation.js'
+import {
+  resetModeQuerySchema,
+  translateResetMode,
+} from '../../../lib/validation/resetModeValidation.js'
 import { loadGame } from '../../../middleware/game-middleware.js'
 import { userTypeGate } from '../../../middleware/policy-middleware.js'
 import { loadLeaderboard } from './common.js'
@@ -13,15 +16,8 @@ import { loadLeaderboard } from './common.js'
 export const resetRoute = protectedRoute({
   method: 'delete',
   path: '/:id/entries',
-  schema: (z) => ({
-    query: z.object({
-      mode: z
-        .enum(resetModes, {
-          error: `Mode must be one of: ${resetModes.join(', ')}`,
-        })
-        .optional()
-        .default('all'),
-    }),
+  schema: () => ({
+    query: resetModeQuerySchema,
   }),
   middleware: withMiddleware(
     userTypeGate([UserType.ADMIN], 'reset leaderboard entries'),

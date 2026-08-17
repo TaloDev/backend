@@ -220,7 +220,7 @@ describe('Leaderboard - steamworks update entry', () => {
 
     const player = await new PlayerFactory([game]).withSteamAlias().one()
     const entry = await new LeaderboardEntryFactory(leaderboard, [player])
-      .state(() => ({ hidden: randBoolean() }))
+      .state(() => ({ hidden: false }))
       .one()
 
     const config = await new IntegrationConfigFactory()
@@ -233,7 +233,7 @@ describe('Leaderboard - steamworks update entry', () => {
 
     await request(app)
       .patch(`/games/${game.id}/leaderboards/${leaderboard.id}/entries/${entry.id}`)
-      .send({ hidden: !entry.hidden })
+      .send({ hidden: true })
       .auth(token, { type: 'bearer' })
       .expect(200)
 

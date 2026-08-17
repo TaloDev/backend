@@ -5,6 +5,8 @@ import User from './user.js'
 export enum AdminAPIKeyScope {
   READ_STATS = 'read:stats',
   WRITE_STATS = 'write:stats',
+  READ_LEADERBOARDS = 'read:leaderboards',
+  WRITE_LEADERBOARDS = 'write:leaderboards',
   FULL_ACCESS = '*',
 }
 

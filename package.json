@@ -7,7 +7,7 @@
   "type": "module",
   "main": "src/index.ts",
   "scripts": {
-    "watch": "nodemon --watch src --ext ts,json --exec tsx src/index.ts",
+    "watch": "tsx watch --include src src/index.ts",
     "build": "npx tsc -p tsconfig.build.json",
     "build:sourcemaps": "npx tsc -p tsconfig.sourcemaps.json",
     "seed": "DB_HOST=127.0.0.1 CLICKHOUSE_HOST=127.0.0.1 tsx tests/seed.ts",
@@ -97,7 +97,6 @@
     "hefty": "^2.0.0",
     "husky": "^9.0.11",
     "lint-staged": ">=10",
-    "nodemon": "^3.1.14",
     "oxfmt": "^0.48.0",
     "oxlint": "^1.63.0",
     "oxlint-tsgolint": "^0.22.1",

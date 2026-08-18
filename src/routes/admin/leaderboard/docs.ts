@@ -129,6 +129,27 @@ export const updateDocs = {
   ],
 } satisfies RouteDocs
 
+export const resetDocs = {
+  description: 'Reset a leaderboard\u2019s entries\nOptionally filtered to live or dev players',
+  samples: [
+    {
+      title: 'Sample request',
+      sample: {
+        url: '/admin/v1/leaderboards/4/entries?mode=dev',
+        query: {
+          mode: 'dev',
+        },
+      },
+    },
+    {
+      title: 'Sample response',
+      sample: {
+        deletedCount: 12,
+      },
+    },
+  ],
+} satisfies RouteDocs
+
 export const listDocs = {
   description: 'List all leaderboards',
   samples: [

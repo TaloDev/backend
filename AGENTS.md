@@ -38,7 +38,6 @@ ClickHouse migrations are created manually in `src/migrations/clickhouse/` and r
 
 ### Four-Tier Routing System
 
-
 1. **Protected Routes** (`/` prefix) - Web dashboard endpoints
    - Auth: JWT signed with `JWT_SECRET` (user identity)
    - Configured in: `src/config/protected-routes.ts`

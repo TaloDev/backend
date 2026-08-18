@@ -91,6 +91,25 @@ export const entriesDocs = {
   ],
 } satisfies RouteDocs
 
+export const updateEntryDocs = {
+  description: 'Update a leaderboard entry',
+  samples: [
+    {
+      title: 'Sample request',
+      sample: {
+        newScore: 725.5,
+        hidden: false,
+      },
+    },
+    {
+      title: 'Sample response',
+      sample: {
+        entry: entrySample,
+      },
+    },
+  ],
+} satisfies RouteDocs
+
 export const listDocs = {
   description: 'List all leaderboards',
   samples: [

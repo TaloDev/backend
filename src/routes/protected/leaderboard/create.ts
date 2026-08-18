@@ -12,9 +12,9 @@ import { buildErrorResponse } from '../../../lib/errors/buildErrorResponse.js'
 import triggerIntegrations from '../../../lib/integrations/triggerIntegrations.js'
 import createGameActivity from '../../../lib/logging/createGameActivity.js'
 import { protectedRoute, withMiddleware } from '../../../lib/routing/router.js'
+import { createLeaderboardBodySchema } from '../../../lib/validation/routes/leaderboards/createLeaderboardBodySchema.js'
 import { loadGame } from '../../../middleware/game-middleware.js'
 import { userTypeGate } from '../../../middleware/policy-middleware.js'
-import { createLeaderboardBodySchema } from './common.js'
 
 type CreateLeaderboardParams = {
   em: EntityManager

@@ -3,6 +3,7 @@ import { adminRouter } from '../../../lib/routing/router.js'
 import { createLeaderboardAdminRoute } from './create.js'
 import { listEntriesAdminRoute } from './entries.js'
 import { listLeaderboardsAdminRoute } from './list.js'
+import { updateLeaderboardEntryAdminRoute } from './update-entry.js'
 
 export function leaderboardAdminRouter(router: Router) {
   adminRouter(
@@ -11,6 +12,7 @@ export function leaderboardAdminRouter(router: Router) {
       route(createLeaderboardAdminRoute)
       route(listLeaderboardsAdminRoute)
       route(listEntriesAdminRoute)
+      route(updateLeaderboardEntryAdminRoute)
     },
     { router, docsKey: 'LeaderboardAdminAPI' },
   )

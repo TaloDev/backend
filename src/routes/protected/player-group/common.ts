@@ -1,5 +1,5 @@
 import { Next } from 'koa'
-import { RefinementCtx, z as zodLib } from 'zod'
+import { RefinementCtx, z as zod } from 'zod'
 import PlayerGroupRule, {
   PlayerGroupRuleCastType,
   PlayerGroupRuleName,
@@ -7,8 +7,6 @@ import PlayerGroupRule, {
 import PlayerGroup, { PlayerRuleFields, RuleMode } from '../../../entities/player-group.js'
 import { ProtectedRouteContext } from '../../../lib/routing/context.js'
 import { GameRouteState } from '../../../middleware/game-middleware.js'
-
-type Z = typeof zodLib
 
 type PlayerGroupRouteContext = ProtectedRouteContext<GameRouteState & { group: PlayerGroup }>
 
@@ -55,7 +53,7 @@ function validateRules(rules: RuleInput[], ctx: RefinementCtx) {
   }
 }
 
-const ruleSchema = (z: Z) =>
+const ruleSchema = (z: typeof zod) =>
   z.object({
     name: z.enum(PlayerGroupRuleName),
     field: z.string(),
@@ -64,18 +62,18 @@ const ruleSchema = (z: Z) =>
     castType: z.enum(PlayerGroupRuleCastType),
   })
 
-const rulesAndModeFields = (z: Z) => ({
+const rulesAndModeFields = (z: typeof zod) => ({
   ruleMode: z.enum(RuleMode),
   rules: z.array(ruleSchema(z)),
 })
 
-export function rulesAndModeSchema(z: Z) {
+export function rulesAndModeSchema(z: typeof zod) {
   return z.object(rulesAndModeFields(z)).superRefine((data, ctx) => {
     validateRules(data.rules, ctx)
   })
 }
 
-export function groupBodySchema(z: Z) {
+export function groupBodySchema(z: typeof zod) {
   return z
     .object({
       ...rulesAndModeFields(z),

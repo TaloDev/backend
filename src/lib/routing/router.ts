@@ -1,7 +1,7 @@
 import type Koa from 'koa'
 import { SpanStatusCode, trace } from '@opentelemetry/api'
 import Router from 'koa-tree-router'
-import { z } from 'zod'
+import { z as zod } from 'zod'
 import type { ValidationSchema, ValidatedContext } from '../../middleware/validator-middleware.js'
 import type { AppParameterizedContext } from './context.js'
 import { decodeParamsMiddleware } from '../../middleware/decode-params-middleware.js'
@@ -90,8 +90,6 @@ type RouteHelpers<S extends RouteState> = {
   ) => void
 }
 
-type ZodBuilder = typeof z
-
 // used to ensure we only pass in the schema properties
 // while keeping type inference
 type Exact<T, Shape> = {
@@ -106,7 +104,7 @@ export type ValidatedRouteConfig<
   path?: string
   docs?: RouteDocs
   middleware?: Middleware<S>[]
-  schema: (z: ZodBuilder) => V & Exact<V, ValidationSchema>
+  schema: (z: typeof zod) => V & Exact<V, ValidationSchema>
   handler: ValidatedHandler<V, S>
 }
 
@@ -149,7 +147,7 @@ function mountRoute<S extends RouteState, V extends ValidationSchema | undefined
 
   const allMiddleware = ('schema' in config && config.schema
     ? [
-        tracedMiddleware('validate', validate(config.schema(z)) as Middleware<S>),
+        tracedMiddleware('validate', validate(config.schema(zod)) as Middleware<S>),
         ...traced,
         async (ctx: ValidatedContext<V extends ValidationSchema ? V : never, S>) => {
           const response = await tracedHandler(() => {

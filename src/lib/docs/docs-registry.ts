@@ -1,4 +1,4 @@
-import z from 'zod'
+import { z as zod } from 'zod'
 import type { ValidationSchema } from '../../middleware/validator-middleware.js'
 import { Middleware } from '../routing/router.js'
 import { RouteState } from '../routing/state.js'
@@ -7,8 +7,6 @@ import {
   type ExtractedParam,
   type ExtractedParams,
 } from './schema-introspector.js'
-
-type ZodType = typeof z
 
 export type HttpMethod = 'get' | 'post' | 'put' | 'patch' | 'delete'
 
@@ -87,13 +85,13 @@ export class DocsRegistry {
     key: string
     method: HttpMethod
     path: string
-    schema?: (z: ZodType) => ValidationSchema
+    schema?: (z: typeof zod) => ValidationSchema
     middleware?: Middleware<S>[]
     docs?: RouteDocs
   }) {
     const service = this.services.get(key) ?? this.addService(key, path)
 
-    const params = schema ? extractParamsFromSchema(schema(z)) : undefined
+    const params = schema ? extractParamsFromSchema(schema(zod)) : undefined
 
     service.routes.push({
       method: method,

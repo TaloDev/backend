@@ -1,13 +1,11 @@
 import { Next } from 'koa'
 import assert from 'node:assert'
-import { RefinementCtx, ZodType, z } from 'zod'
+import { RefinementCtx, ZodType, z as zod } from 'zod'
 import GameStat from '../../../entities/game-stat.js'
 import PlayerGameStat from '../../../entities/player-game-stat.js'
 import { deferClearResponseCache } from '../../../lib/perf/responseCacheQueue.js'
 import { ProtectedRouteContext } from '../../../lib/routing/context.js'
 import { GameRouteState } from '../../../middleware/game-middleware.js'
-
-type Z = typeof z
 
 type StatSchemaData = {
   maxChange?: number | null
@@ -59,7 +57,7 @@ function validateStatBody(data: StatSchemaData, ctx: RefinementCtx) {
   }
 }
 
-function statFields(z: Z) {
+function statFields(z: typeof zod) {
   return {
     name: z.string().meta({ description: 'The display name of the stat' }),
     global: z
@@ -81,7 +79,7 @@ function statFields(z: Z) {
   }
 }
 
-export function createStatBodySchema(z: Z) {
+export function createStatBodySchema(z: typeof zod) {
   return z
     .object({
       internalName: z.string().meta({ description: 'The internal name of the stat' }),
@@ -99,7 +97,7 @@ function optionalFields(fields: Record<string, ZodType>): Record<string, ZodType
   return result
 }
 
-export function updateStatBodySchema(z: Z) {
+export function updateStatBodySchema(z: typeof zod) {
   return z.object(optionalFields(statFields(z))).superRefine(validateStatBody)
 }
 

@@ -36,9 +36,8 @@ ClickHouse migrations are created manually in `src/migrations/clickhouse/` and r
 
 ## Architecture
 
-### Three-Tier Routing System
+### Four-Tier Routing System
 
-The application uses three distinct routing layers with different authentication:
 
 1. **Protected Routes** (`/` prefix) - Web dashboard endpoints
    - Auth: JWT signed with `JWT_SECRET` (user identity)
@@ -50,10 +49,26 @@ The application uses three distinct routing layers with different authentication
    - Configured in: `src/config/api-routes.ts`
    - Routes in: `src/routes/api/`
 
-3. **Public Routes** (`/public/` prefix) - Unauthenticated endpoints
+3. **Admin API Routes** (`/admin/v1/` prefix) - Dashboard/ops endpoints authenticated by admin API keys
+   - Auth: game-specific admin API keys with scope-based authorization
+   - Configured in: `src/config/admin-api-routes.ts`
+   - Routes in: `src/routes/admin/`
+   - Scopes defined in the `AdminAPIKeyScope` enum in `src/entities/admin-api-key.ts`
+
+4. **Public Routes** (`/public/` prefix) - Unauthenticated endpoints
    - Use cases: Webhooks, health checks, password reset
    - Configured in: `src/config/public-routes.ts`
    - Routes in: `src/routes/public/`
+
+### Admin API Route Pattern
+
+Admin API routes mirror the game-facing API routes and share logic with protected dashboard routes:
+
+- **Extract a shared handler** from the protected route (e.g. `createStatHandler`, `listLeaderboardsHandler`) that both the protected and admin routes call. The handler takes `actor: User | AdminAPIKey`, so the protected route passes `ctx.state.user` and the admin route passes `ctx.state.key`.
+- **Authorization** via `requireAdminScopes([AdminAPIKeyScope.X])` (see `src/middleware/policy-middleware.ts`).
+- **Game scoping** comes free from the admin API key middleware (`ctx.state.game` is the key's game). Resources loaded by id must be scoped to it (404 for cross-game), using a per-tree `common.ts` loader (e.g. `src/routes/admin/game-stat/common.ts`). Resource loaders are duplicated per route tree (protected/api/admin each have their own `loadStat`); only generic middleware lives in `src/middleware/`.
+- **Docs are added as you go**: each feature dir has a `docs.ts` exporting `RouteDocs` constants wired via `docs:` on the route config. Schema params get descriptions via `.meta({ description })` (note: `z.object().partial()` strips meta — re-apply it, see `optionalFields` in `src/routes/protected/game-stat/common.ts`).
+- **Register** the feature router in `src/config/admin-api-routes.ts` with a `[feature]AdminRouter` factory and `docsKey`.
 
 ### Request Flow
 
@@ -63,6 +78,7 @@ Then route-specific middleware:
 
 - **API Routes**: API key extraction → JWT auth → rate limiting → current player resolution → player auth validation → continuity checks
 - **Protected Routes**: JWT auth → user authorization
+- **Admin API Routes**: admin API key extraction → scope checks
 - **Public Routes**: No authentication
 
 Finally, route handlers execute.
@@ -109,6 +125,7 @@ src/
 ├── routes/                  # Route handlers
 │   ├── api/                 # Game-facing API endpoints (/v1/*)
 │   ├── protected/           # Dashboard endpoints (/*)
+│   ├── admin/               # Admin API endpoints (/admin/v1/*)
 │   └── public/              # Unauthenticated endpoints (/public/*)
 ├── middleware/              # Request pipeline processors
 ├── config/                  # Route registration, providers, scheduled tasks
@@ -171,4 +188,5 @@ if (!player) {
 - Migration files: `[Timestamp][PascalCaseDescription].ts`
 - Use lazy loading for entity relationships to avoid circular dependencies
 - API endpoints require scope checks via `requireScopes()` middleware
+- Admin API endpoints require scope checks via `requireAdminScopes()` middleware
 - Protected endpoints require user type checks via `userTypeGate()` or `ownerGate()` middleware

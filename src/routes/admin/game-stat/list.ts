@@ -8,7 +8,13 @@ import { listDocs } from './docs.js'
 export const listStatsAdminRoute = adminRoute({
   method: 'get',
   docs: listDocs,
-  schema: () => ({
+  schema: (z) => ({
+    headers: z.looseObject({
+      'x-talo-include-dev-data': z
+        .string()
+        .optional()
+        .meta({ description: 'Set to 1 to include dev data in stat metrics' }),
+    }),
     query: listStatsQuerySchema,
   }),
   middleware: withMiddleware(requireAdminScopes([AdminAPIKeyScope.READ_STATS])),

@@ -12,6 +12,12 @@ export const listEntriesAdminRoute = adminRoute({
   path: '/:id/entries',
   docs: entriesDocs,
   schema: (z) => ({
+    headers: z.looseObject({
+      'x-talo-include-dev-data': z
+        .string()
+        .optional()
+        .meta({ description: 'Set to 1 to include entries belonging to dev players' }),
+    }),
     route: z.object({
       id: numericStringSchema.meta({ description: 'The ID of the leaderboard' }),
     }),

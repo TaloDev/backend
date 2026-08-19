@@ -11,6 +11,12 @@ export const findStatAdminRoute = adminRoute({
   path: '/:id',
   docs: findDocs,
   schema: (z) => ({
+    headers: z.looseObject({
+      'x-talo-include-dev-data': z
+        .string()
+        .optional()
+        .meta({ description: 'Set to 1 to include dev data in stat metrics' }),
+    }),
     route: z.object({
       id: numericStringSchema.meta({ description: 'The ID of the stat' }),
     }),

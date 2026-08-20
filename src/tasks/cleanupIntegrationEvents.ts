@@ -1,5 +1,5 @@
 import { EntityClass, EntityManager } from '@mikro-orm/mysql'
-import { subMonths } from 'date-fns'
+import { subDays } from 'date-fns'
 import { getMikroORM } from '../config/mikro-orm.config.js'
 import GameCenterIntegrationEvent from '../entities/game-center-integration-event.js'
 import GooglePlayGamesIntegrationEvent from '../entities/google-play-games-integration-event.js'
@@ -15,7 +15,7 @@ export async function cleanupIntegrationEvents() {
 
   const orm = await getMikroORM()
   const em = orm.em.fork() as EntityManager
-  const sixMonthsAgo = subMonths(new Date(), 6)
+  const sixtyDaysAgo = subDays(new Date(), 60)
 
   const targets: CleanupTarget[] = [
     { label: 'Steamworks', entity: SteamworksIntegrationEvent },
@@ -24,7 +24,7 @@ export async function cleanupIntegrationEvents() {
   ]
 
   const counts = await Promise.all(
-    targets.map((t) => em.repo(t.entity).nativeDelete({ createdAt: { $lt: sixMonthsAgo } })),
+    targets.map((t) => em.repo(t.entity).nativeDelete({ createdAt: { $lt: sixtyDaysAgo } })),
   )
 
   const timeTakenSec = (performance.now() - startTime) / 1000

@@ -1,4 +1,5 @@
 import { EntityManager } from '@mikro-orm/mysql'
+import AdminAPIKey from '../../../entities/admin-api-key.js'
 import { GameActivityType } from '../../../entities/game-activity.js'
 import Game from '../../../entities/game.js'
 import Leaderboard, {
@@ -11,13 +12,14 @@ import { buildErrorResponse } from '../../../lib/errors/buildErrorResponse.js'
 import triggerIntegrations from '../../../lib/integrations/triggerIntegrations.js'
 import createGameActivity from '../../../lib/logging/createGameActivity.js'
 import { protectedRoute, withMiddleware } from '../../../lib/routing/router.js'
+import { createLeaderboardBodySchema } from '../../../lib/validation/routes/leaderboards/createLeaderboardBodySchema.js'
 import { loadGame } from '../../../middleware/game-middleware.js'
 import { userTypeGate } from '../../../middleware/policy-middleware.js'
 
 type CreateLeaderboardParams = {
   em: EntityManager
   game: Game
-  user: User
+  actor: User | AdminAPIKey
   internalName: string
   name: string
   sortMode: LeaderboardSortMode
@@ -29,7 +31,7 @@ type CreateLeaderboardParams = {
 export async function createLeaderboardHandler({
   em,
   game,
-  user,
+  actor,
   internalName,
   name,
   sortMode,
@@ -57,7 +59,7 @@ export async function createLeaderboardHandler({
   leaderboard.uniqueByProps = uniqueByProps
 
   createGameActivity(em, {
-    actor: user,
+    actor,
     game: leaderboard.game,
     type: GameActivityType.LEADERBOARD_CREATED,
     extra: {
@@ -79,26 +81,10 @@ export async function createLeaderboardHandler({
   }
 }
 
-const sortModeValues = Object.values(LeaderboardSortMode).join(', ')
-const refreshIntervalValues = Object.values(LeaderboardRefreshInterval).join(', ')
-
 export const createRoute = protectedRoute({
   method: 'post',
   schema: (z) => ({
-    body: z.object({
-      internalName: z.string(),
-      name: z.string(),
-      sortMode: z.enum(LeaderboardSortMode, {
-        error: `Sort mode must be one of ${sortModeValues}`,
-      }),
-      unique: z.boolean(),
-      refreshInterval: z
-        .enum(LeaderboardRefreshInterval, {
-          error: `Refresh interval must be one of ${refreshIntervalValues}`,
-        })
-        .optional(),
-      uniqueByProps: z.boolean().optional(),
-    }),
+    body: createLeaderboardBodySchema(z),
   }),
   middleware: withMiddleware(
     userTypeGate([UserType.ADMIN, UserType.DEV], 'create leaderboards'),
@@ -111,7 +97,7 @@ export const createRoute = protectedRoute({
     return createLeaderboardHandler({
       em: ctx.em,
       game: ctx.state.game,
-      user: ctx.state.user,
+      actor: ctx.state.user,
       internalName,
       name,
       sortMode,

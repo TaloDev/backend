@@ -1,79 +1,92 @@
-import { FilterQuery } from '@mikro-orm/mysql'
+import { EntityManager, FilterQuery } from '@mikro-orm/mysql'
+import AdminAPIKey from '../../../entities/admin-api-key.js'
 import { GameActivityType } from '../../../entities/game-activity.js'
 import LeaderboardEntry from '../../../entities/leaderboard-entry.js'
-import { UserType } from '../../../entities/user.js'
+import Leaderboard from '../../../entities/leaderboard.js'
+import User, { UserType } from '../../../entities/user.js'
 import createGameActivity from '../../../lib/logging/createGameActivity.js'
 import { deferClearResponseCache } from '../../../lib/perf/responseCacheQueue.js'
 import { protectedRoute, withMiddleware } from '../../../lib/routing/router.js'
-import { resetModes, translateResetMode } from '../../../lib/validation/resetModeValidation.js'
+import {
+  ResetMode,
+  resetModeQuerySchema,
+  translateResetMode,
+} from '../../../lib/validation/resetModeValidation.js'
 import { loadGame } from '../../../middleware/game-middleware.js'
 import { userTypeGate } from '../../../middleware/policy-middleware.js'
 import { loadLeaderboard } from './common.js'
 
+export async function resetLeaderboardEntriesHandler({
+  em,
+  leaderboard,
+  mode,
+  actor,
+}: {
+  em: EntityManager
+  leaderboard: Leaderboard
+  mode: ResetMode
+  actor: User | AdminAPIKey
+}) {
+  const where: FilterQuery<LeaderboardEntry> = { leaderboard }
+
+  if (mode === 'dev') {
+    where.playerAlias = {
+      player: {
+        devBuild: true,
+      },
+    }
+  } else if (mode === 'live') {
+    where.playerAlias = {
+      player: {
+        devBuild: false,
+      },
+    }
+  }
+
+  const deletedCount = await em.transactional(async (trx) => {
+    const count = await trx.repo(LeaderboardEntry).nativeDelete(where)
+    createGameActivity(trx, {
+      actor,
+      game: leaderboard.game,
+      type: GameActivityType.LEADERBOARD_ENTRIES_RESET,
+      extra: {
+        leaderboardInternalName: leaderboard.internalName,
+        display: {
+          'Reset mode': translateResetMode(mode),
+          'Deleted count': count,
+        },
+      },
+    })
+
+    return count
+  })
+
+  await deferClearResponseCache(leaderboard.getEntriesCacheKey(true))
+
+  return {
+    status: 200,
+    body: {
+      deletedCount,
+    },
+  }
+}
+
 export const resetRoute = protectedRoute({
   method: 'delete',
   path: '/:id/entries',
-  schema: (z) => ({
-    query: z.object({
-      mode: z
-        .enum(resetModes, {
-          error: `Mode must be one of: ${resetModes.join(', ')}`,
-        })
-        .optional()
-        .default('all'),
-    }),
+  schema: () => ({
+    query: resetModeQuerySchema,
   }),
   middleware: withMiddleware(
     userTypeGate([UserType.ADMIN], 'reset leaderboard entries'),
     loadGame,
     loadLeaderboard(),
   ),
-  handler: async (ctx) => {
-    const { mode } = ctx.state.validated.query
-    const em = ctx.em
-    const leaderboard = ctx.state.leaderboard
-
-    const where: FilterQuery<LeaderboardEntry> = { leaderboard }
-
-    if (mode === 'dev') {
-      where.playerAlias = {
-        player: {
-          devBuild: true,
-        },
-      }
-    } else if (mode === 'live') {
-      where.playerAlias = {
-        player: {
-          devBuild: false,
-        },
-      }
-    }
-
-    const deletedCount = await em.transactional(async (trx) => {
-      const count = await trx.repo(LeaderboardEntry).nativeDelete(where)
-      createGameActivity(trx, {
-        actor: ctx.state.user,
-        game: leaderboard.game,
-        type: GameActivityType.LEADERBOARD_ENTRIES_RESET,
-        extra: {
-          leaderboardInternalName: leaderboard.internalName,
-          display: {
-            'Reset mode': translateResetMode(mode),
-            'Deleted count': count,
-          },
-        },
-      })
-
-      return count
-    })
-
-    await deferClearResponseCache(leaderboard.getEntriesCacheKey(true))
-
-    return {
-      status: 200,
-      body: {
-        deletedCount,
-      },
-    }
-  },
+  handler: (ctx) =>
+    resetLeaderboardEntriesHandler({
+      em: ctx.em,
+      leaderboard: ctx.state.leaderboard as Leaderboard,
+      mode: ctx.state.validated.query.mode,
+      actor: ctx.state.user,
+    }),
 })

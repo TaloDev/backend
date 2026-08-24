@@ -1,3 +1,4 @@
+import { subDays } from 'date-fns'
 import GameCenterIntegrationEvent from '../../src/entities/game-center-integration-event.js'
 import GooglePlayGamesIntegrationEvent from '../../src/entities/google-play-games-integration-event.js'
 import { IntegrationType } from '../../src/entities/integration.js'
@@ -8,7 +9,7 @@ import IntegrationFactory from '../fixtures/IntegrationFactory.js'
 import createOrganisationAndGame from '../utils/createOrganisationAndGame.js'
 
 describe('cleanupIntegrationEvents', () => {
-  it('should delete steamworks integration events older than 6 months', async () => {
+  it('should delete steamworks integration events older than 60 days', async () => {
     const [, game] = await createOrganisationAndGame()
     const config = await new IntegrationConfigFactory().one()
     const integration = await new IntegrationFactory()
@@ -18,7 +19,7 @@ describe('cleanupIntegrationEvents', () => {
     const oldEvent = new SteamworksIntegrationEvent(integration)
     oldEvent.request = { url: 'https://example.com', method: 'GET', body: '' }
     oldEvent.response = { status: 200, body: {}, timeTaken: 10 }
-    oldEvent.createdAt = new Date('2020-01-01')
+    oldEvent.createdAt = subDays(new Date(), 61)
 
     const recentEvent = new SteamworksIntegrationEvent(integration)
     recentEvent.request = { url: 'https://example.com', method: 'GET', body: '' }
@@ -32,7 +33,7 @@ describe('cleanupIntegrationEvents', () => {
     expect(remaining).toBe(1)
   })
 
-  it('should delete google play games integration events older than 6 months', async () => {
+  it('should delete google play games integration events older than 60 days', async () => {
     const [, game] = await createOrganisationAndGame()
     const integration = await new IntegrationFactory()
       .construct(IntegrationType.GOOGLE_PLAY_GAMES, game, {
@@ -58,7 +59,7 @@ describe('cleanupIntegrationEvents', () => {
     expect(remaining).toBe(1)
   })
 
-  it('should delete game center integration events older than 6 months', async () => {
+  it('should delete game center integration events older than 60 days', async () => {
     const [, game] = await createOrganisationAndGame()
     const integration = await new IntegrationFactory()
       .construct(IntegrationType.GAME_CENTER, game, {

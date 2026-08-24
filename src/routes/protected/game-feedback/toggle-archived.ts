@@ -1,4 +1,4 @@
-import { z } from 'zod'
+import { z as zod } from 'zod'
 import { GameActivityType } from '../../../entities/game-activity.js'
 import GameFeedback from '../../../entities/game-feedback.js'
 import { UserType } from '../../../entities/user.js'
@@ -11,9 +11,9 @@ import { loadFeedback } from './common.js'
 
 type FeedbackRouteState = ProtectedRouteState & GameRouteState & { feedback: GameFeedback }
 
-const toggleArchivedSchema = (zod: typeof z) => ({
-  body: zod.object({
-    archived: zod.boolean(),
+const toggleArchivedSchema = (z: typeof zod) => ({
+  body: z.object({
+    archived: z.boolean(),
   }),
 })
 

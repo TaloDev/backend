@@ -1,87 +1,88 @@
+import { EntityManager } from '@mikro-orm/mysql'
+import { z } from 'zod'
+import AdminAPIKey from '../../../entities/admin-api-key.js'
 import { GameActivityType } from '../../../entities/game-activity.js'
-import Leaderboard, {
-  LeaderboardSortMode,
-  LeaderboardRefreshInterval,
-} from '../../../entities/leaderboard.js'
+import Leaderboard, { LeaderboardRefreshInterval } from '../../../entities/leaderboard.js'
+import User from '../../../entities/user.js'
 import updateAllowedKeys from '../../../lib/entities/updateAllowedKeys.js'
 import triggerIntegrations from '../../../lib/integrations/triggerIntegrations.js'
 import createGameActivity from '../../../lib/logging/createGameActivity.js'
 import { deferClearResponseCache } from '../../../lib/perf/responseCacheQueue.js'
 import { protectedRoute, withMiddleware } from '../../../lib/routing/router.js'
+import { updateLeaderboardBodySchema } from '../../../lib/validation/routes/leaderboards/updateLeaderboardBodySchema.js'
 import { loadGame } from '../../../middleware/game-middleware.js'
 import { archiveEntriesForLeaderboard } from '../../../tasks/archiveLeaderboardEntries.js'
 import { loadLeaderboard } from './common.js'
 
-const sortModeValues = Object.values(LeaderboardSortMode).join(', ')
-const refreshIntervalValues = Object.values(LeaderboardRefreshInterval).join(', ')
+export async function updateLeaderboardHandler({
+  em,
+  leaderboard,
+  body,
+  actor,
+}: {
+  em: EntityManager
+  leaderboard: Leaderboard
+  body: z.infer<ReturnType<typeof updateLeaderboardBodySchema>>
+  actor: User | AdminAPIKey
+}) {
+  const [, changedProperties] = updateAllowedKeys(leaderboard, body, [
+    'name',
+    'sortMode',
+    'unique',
+    'refreshInterval',
+    'uniqueByProps',
+  ])
+
+  if (
+    changedProperties.includes('refreshInterval') &&
+    leaderboard.refreshInterval !== LeaderboardRefreshInterval.NEVER
+  ) {
+    await archiveEntriesForLeaderboard(em, leaderboard)
+  }
+
+  await deferClearResponseCache(leaderboard.getEntriesCacheKey(true))
+
+  createGameActivity(em, {
+    actor,
+    game: leaderboard.game,
+    type: GameActivityType.LEADERBOARD_UPDATED,
+    extra: {
+      leaderboardInternalName: leaderboard.internalName,
+      display: {
+        'Updated properties': changedProperties
+          .map((prop) => `${prop}: ${body[prop as keyof typeof body]}`)
+          .join(', '),
+      },
+    },
+  })
+
+  await em.flush()
+
+  await triggerIntegrations(em, leaderboard.game, (integration) => {
+    return integration.handleLeaderboardUpdated(em, leaderboard)
+  })
+
+  return {
+    status: 200,
+    body: {
+      leaderboard,
+    },
+  }
+}
 
 export const updateRoute = protectedRoute({
   method: 'put',
   path: '/:id',
   schema: (z) => ({
-    body: z.object({
-      name: z.string().optional(),
-      sortMode: z
-        .enum(LeaderboardSortMode, {
-          error: `Sort mode must be one of ${sortModeValues}`,
-        })
-        .optional(),
-      unique: z.boolean().optional(),
-      refreshInterval: z
-        .enum(LeaderboardRefreshInterval, {
-          error: `Refresh interval must be one of ${refreshIntervalValues}`,
-        })
-        .optional(),
-      uniqueByProps: z.boolean().optional(),
-    }),
+    body: updateLeaderboardBodySchema(z),
   }),
   middleware: withMiddleware(loadGame, loadLeaderboard()),
   handler: async (ctx) => {
-    const em = ctx.em
-
-    const [leaderboard, changedProperties] = updateAllowedKeys(
-      ctx.state.leaderboard as Leaderboard,
-      ctx.state.validated.body,
-      ['name', 'sortMode', 'unique', 'refreshInterval', 'uniqueByProps'],
-    )
-
-    if (
-      changedProperties.includes('refreshInterval') &&
-      leaderboard.refreshInterval !== LeaderboardRefreshInterval.NEVER
-    ) {
-      await archiveEntriesForLeaderboard(em, leaderboard)
-    }
-
-    await deferClearResponseCache(leaderboard.getEntriesCacheKey(true))
-
-    createGameActivity(em, {
+    return updateLeaderboardHandler({
+      em: ctx.em,
+      leaderboard: ctx.state.leaderboard as Leaderboard,
+      body: ctx.state.validated.body,
       actor: ctx.state.user,
-      game: leaderboard.game,
-      type: GameActivityType.LEADERBOARD_UPDATED,
-      extra: {
-        leaderboardInternalName: leaderboard.internalName,
-        display: {
-          'Updated properties': changedProperties
-            .map((prop) => {
-              const value = ctx.state.validated.body[prop as keyof typeof ctx.state.validated.body]
-              return `${prop}: ${value}`
-            })
-            .join(', '),
-        },
-      },
     })
-
-    await em.flush()
-
-    await triggerIntegrations(em, leaderboard.game, (integration) => {
-      return integration.handleLeaderboardUpdated(em, leaderboard)
-    })
-
-    return {
-      status: 200,
-      body: {
-        leaderboard,
-      },
-    }
   },
 })

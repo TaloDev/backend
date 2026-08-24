@@ -1,3 +1,5 @@
+name: talo
+
 services:
   backend:
     build:

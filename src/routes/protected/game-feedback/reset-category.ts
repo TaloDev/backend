@@ -4,7 +4,10 @@ import GameFeedback from '../../../entities/game-feedback.js'
 import { UserType } from '../../../entities/user.js'
 import createGameActivity from '../../../lib/logging/createGameActivity.js'
 import { protectedRoute, withMiddleware } from '../../../lib/routing/router.js'
-import { resetModes, translateResetMode } from '../../../lib/validation/resetModeValidation.js'
+import {
+  resetModeQuerySchema,
+  translateResetMode,
+} from '../../../lib/validation/resetModeValidation.js'
 import { loadGame } from '../../../middleware/game-middleware.js'
 import { userTypeGate } from '../../../middleware/policy-middleware.js'
 import { loadFeedbackCategory } from './common.js'
@@ -12,15 +15,8 @@ import { loadFeedbackCategory } from './common.js'
 export const resetCategoryRoute = protectedRoute({
   method: 'delete',
   path: '/categories/:id/feedback',
-  schema: (z) => ({
-    query: z.object({
-      mode: z
-        .enum(resetModes, {
-          error: `Mode must be one of: ${resetModes.join(', ')}`,
-        })
-        .optional()
-        .default('all'),
-    }),
+  schema: () => ({
+    query: resetModeQuerySchema,
   }),
   middleware: withMiddleware(
     userTypeGate([UserType.ADMIN], 'reset feedback'),

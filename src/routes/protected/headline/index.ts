@@ -1,6 +1,7 @@
 import type Router from 'koa-tree-router'
 import { protectedRouter } from '../../../lib/routing/router.js'
 import { averageSessionDurationRoute } from './average-session-duration.js'
+import { clearHeadlinesRoute } from './clear.js'
 import { eventsRoute } from './events.js'
 import { newPlayersRoute } from './new-players.js'
 import { onlinePlayersRoute } from './online-players.js'
@@ -21,6 +22,7 @@ export function headlineRouter(router: Router) {
       route(onlinePlayersRoute)
       route(totalSessionsRoute)
       route(averageSessionDurationRoute)
+      route(clearHeadlinesRoute)
     },
     { router },
   )

@@ -17,6 +17,7 @@ describe('Headline - total players', () => {
       .expect(200)
 
     expect(res.body.count).toBe(10)
+    expect(typeof res.body.lastUpdatedAt).toBe('number')
   })
 
   it('should not return dev build players in total count without the dev data header', async () => {

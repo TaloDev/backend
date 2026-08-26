@@ -40,11 +40,12 @@ describe('Headline - average session duration', () => {
       .auth(token, { type: 'bearer' })
       .expect(200)
 
-    expect(res.body).toStrictEqual({
+    expect(res.body).toMatchObject({
       hours: 2,
       minutes: 0,
       seconds: 0,
     })
+    expect(typeof res.body.lastUpdatedAt).toBe('number')
   })
 
   it('should not include dev build sessions in average duration without the dev data header', async () => {
@@ -77,7 +78,7 @@ describe('Headline - average session duration', () => {
       .auth(token, { type: 'bearer' })
       .expect(200)
 
-    expect(res.body).toStrictEqual({
+    expect(res.body).toMatchObject({
       hours: 0,
       minutes: 0,
       seconds: 0,
@@ -115,7 +116,7 @@ describe('Headline - average session duration', () => {
       .set('x-talo-include-dev-data', '1')
       .expect(200)
 
-    expect(res.body).toStrictEqual({
+    expect(res.body).toMatchObject({
       hours: 2,
       minutes: 0,
       seconds: 0,

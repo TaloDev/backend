@@ -4,7 +4,7 @@ import { withResponseCache } from '../../../lib/perf/responseCache.js'
 import { protectedRoute, withMiddleware } from '../../../lib/routing/router.js'
 import { dateRangeSchema } from '../../../lib/validation/dateRangeSchema.js'
 import { loadGame } from '../../../middleware/game-middleware.js'
-import { HEADLINES_CACHE_TTL_MS } from './common.js'
+import { HEADLINES_CACHE_TTL } from './common.js'
 
 export const averageSessionDurationRoute = protectedRoute({
   method: 'get',
@@ -21,8 +21,8 @@ export const averageSessionDurationRoute = protectedRoute({
 
     return withResponseCache(
       {
-        key: `average-session-duration-${game.id}-${includeDevData}-${startDateQuery}-${endDateQuery}`,
-        ttl: HEADLINES_CACHE_TTL_MS / 1000,
+        key: `headline-${game.id}-average-session-duration-${includeDevData}-${startDateQuery}-${endDateQuery}`,
+        ttl: HEADLINES_CACHE_TTL,
       },
       async () => {
         const startDate = formatDateForClickHouse(startOfDay(new Date(startDateQuery)))
@@ -55,6 +55,7 @@ export const averageSessionDurationRoute = protectedRoute({
             hours: Math.floor(seconds / 3600),
             minutes: Math.floor((seconds % 3600) / 60),
             seconds: seconds % 60,
+            lastUpdatedAt: Date.now(),
           },
         }
       },

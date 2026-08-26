@@ -4,7 +4,7 @@ import { withResponseCache } from '../../../lib/perf/responseCache.js'
 import { protectedRoute, withMiddleware } from '../../../lib/routing/router.js'
 import { dateRangeSchema } from '../../../lib/validation/dateRangeSchema.js'
 import { loadGame } from '../../../middleware/game-middleware.js'
-import { HEADLINES_CACHE_TTL_MS } from './common.js'
+import { HEADLINES_CACHE_TTL } from './common.js'
 
 export const totalSessionsRoute = protectedRoute({
   method: 'get',
@@ -21,8 +21,8 @@ export const totalSessionsRoute = protectedRoute({
 
     return withResponseCache(
       {
-        key: `total-sessions-${game.id}-${includeDevData}-${startDateQuery}-${endDateQuery}`,
-        ttl: HEADLINES_CACHE_TTL_MS / 1000,
+        key: `headline-${game.id}-total-sessions-${includeDevData}-${startDateQuery}-${endDateQuery}`,
+        ttl: HEADLINES_CACHE_TTL,
       },
       async () => {
         const startDate = formatDateForClickHouse(startOfDay(new Date(startDateQuery)))
@@ -50,6 +50,7 @@ export const totalSessionsRoute = protectedRoute({
           status: 200,
           body: {
             count: Number(result[0].count),
+            lastUpdatedAt: Date.now(),
           },
         }
       },

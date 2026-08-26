@@ -2,6 +2,7 @@ import type Router from 'koa-tree-router'
 import { protectedRouter } from '../../../lib/routing/router.js'
 import { createRoute } from './create.js'
 import { listRoute } from './list.js'
+import { resendRoute } from './resend.js'
 
 export function inviteRouter(router: Router) {
   protectedRouter(
@@ -9,6 +10,7 @@ export function inviteRouter(router: Router) {
     ({ route }) => {
       route(listRoute)
       route(createRoute)
+      route(resendRoute)
     },
     { router },
   )

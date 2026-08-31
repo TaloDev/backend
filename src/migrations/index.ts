@@ -78,6 +78,7 @@ import { AddGameLogoUrlColumn } from './20260618133542AddGameLogoUrlColumn.js'
 import { CreateDeletedPlayerTable } from './20260626204938CreateDeletedPlayerTable.js'
 import { CreateAdminAPIKeysTable } from './20260711094253CreateAdminAPIKeysTable.js'
 import { AddOrganisationAndUserDeletedAtColumns } from './20260830202536AddOrganisationAndUserDeletedAtColumns.js'
+import { AddPlayersToDeleteUniqueConstraint } from './20260831000000AddPlayersToDeleteUniqueConstraint.js'
 
 export default [
   {
@@ -399,5 +400,9 @@ export default [
   {
     name: 'AddOrganisationAndUserDeletedAtColumns',
     class: AddOrganisationAndUserDeletedAtColumns,
+  },
+  {
+    name: 'AddPlayersToDeleteUniqueConstraint',
+    class: AddPlayersToDeleteUniqueConstraint,
   },
 ]

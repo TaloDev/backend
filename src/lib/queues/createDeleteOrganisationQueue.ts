@@ -1,9 +1,9 @@
 import { EntityManager } from '@mikro-orm/mysql'
 import { getMikroORM } from '../../config/mikro-orm.config.js'
 import Organisation from '../../entities/organisation.js'
-import { PlayerToDelete } from '../../entities/player-to-delete.js'
 import Player from '../../entities/player.js'
 import { streamByCursorPages } from '../perf/streamByCursor.js'
+import { queuePlayersForDeletion } from '../players/queuePlayersForDeletion.js'
 import createQueue from './createQueue.js'
 
 export type DeleteOrganisationConfig = { organisationId: number }
@@ -19,8 +19,7 @@ async function queueGamePlayersForDeletion(em: EntityManager, gameId: number) {
   })
 
   for await (const players of pages) {
-    const playersToDelete = players.map((player) => new PlayerToDelete(player))
-    await em.persist(playersToDelete).flush()
+    await queuePlayersForDeletion(em, players)
     em.clear()
   }
 }

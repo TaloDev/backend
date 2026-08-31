@@ -6236,10 +6236,10 @@
         {
           "columnNames": ["player_id"],
           "composite": false,
-          "constraint": false,
-          "keyName": "players_to_delete_player_id_index",
+          "constraint": true,
+          "keyName": "players_to_delete_player_id_unique",
           "primary": false,
-          "unique": false
+          "unique": true
         }
       ],
       "checks": [],

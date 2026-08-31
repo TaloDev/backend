@@ -4,11 +4,11 @@ import { subDays } from 'date-fns'
 import { getMikroORM } from '../config/mikro-orm.config.js'
 import { GameActivityType } from '../entities/game-activity.js'
 import Game from '../entities/game.js'
-import { PlayerToDelete } from '../entities/player-to-delete.js'
 import Player from '../entities/player.js'
 import User, { UserType } from '../entities/user.js'
 import createGameActivity from '../lib/logging/createGameActivity.js'
 import { streamByCursorPages } from '../lib/perf/streamByCursor.js'
+import { queuePlayersForDeletion } from '../lib/players/queuePlayersForDeletion.js'
 
 const playersBatchSize = 100
 
@@ -74,9 +74,8 @@ async function findAndQueueInactivePlayers(em: EntityManager, game: Game, devBui
     let totalQueued = 0
 
     for await (const players of getPlayers(em, game, devBuild)) {
-      const playersToDelete = players.map((player) => new PlayerToDelete(player))
-      await em.persist(playersToDelete).flush()
-      totalQueued += players.length
+      const queued = await queuePlayersForDeletion(em, players)
+      totalQueued += queued
     }
 
     if (totalQueued > 0) {

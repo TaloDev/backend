@@ -6,7 +6,7 @@ export class PlayerToDelete {
   @PrimaryKey()
   id!: number
 
-  @ManyToOne(() => Player, { deleteRule: 'cascade' })
+  @ManyToOne(() => Player, { deleteRule: 'cascade', unique: true })
   player: Player
 
   @Property()

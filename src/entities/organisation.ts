@@ -1,9 +1,10 @@
-import { Entity, OneToMany, OneToOne, PrimaryKey, Property } from '@mikro-orm/decorators/es'
+import { Entity, Filter, OneToMany, OneToOne, PrimaryKey, Property } from '@mikro-orm/decorators/es'
 import { Collection } from '@mikro-orm/mysql'
 import Game from './game.js'
 import OrganisationPricingPlan from './organisation-pricing-plan.js'
 
 @Entity()
+@Filter({ name: 'active', cond: { deletedAt: null }, default: true })
 export default class Organisation {
   @PrimaryKey()
   id!: number
@@ -19,6 +20,9 @@ export default class Organisation {
 
   @OneToOne({ orphanRemoval: true, eager: true })
   pricingPlan!: OrganisationPricingPlan
+
+  @Property({ nullable: true })
+  deletedAt: Date | null = null
 
   @Property()
   createdAt: Date = new Date()

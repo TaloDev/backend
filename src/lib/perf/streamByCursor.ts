@@ -1,13 +1,15 @@
 import type { Cursor } from '@mikro-orm/mysql'
 
-export async function* streamByCursor<
+const DEFAULT_BATCH_SIZE = 1000
+
+export async function* streamByCursorPages<
   T extends object,
   Hint extends string = never,
   Fields extends string = never,
   Excludes extends string = never,
 >(
   fetchPage: (batchSize: number, after?: string) => Promise<Cursor<T, Hint, Fields, Excludes>>,
-  batchSize = 1000,
+  batchSize = DEFAULT_BATCH_SIZE,
 ) {
   let cursor: string | undefined
 
@@ -16,9 +18,7 @@ export async function* streamByCursor<
 
     if (!page?.items?.length) break
 
-    for (const item of page.items) {
-      yield item
-    }
+    yield page.items
 
     /* v8 ignore next 3 -- @preserve */
     if (!page.endCursor || page.items.length < batchSize) {
@@ -26,5 +26,19 @@ export async function* streamByCursor<
     }
 
     cursor = page.endCursor
+  }
+}
+
+export async function* streamByCursor<
+  T extends object,
+  Hint extends string = never,
+  Fields extends string = never,
+  Excludes extends string = never,
+>(
+  fetchPage: (batchSize: number, after?: string) => Promise<Cursor<T, Hint, Fields, Excludes>>,
+  batchSize = DEFAULT_BATCH_SIZE,
+) {
+  for await (const items of streamByCursorPages(fetchPage, batchSize)) {
+    yield* items
   }
 }

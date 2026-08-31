@@ -656,4 +656,38 @@ describe('deleteInactivePlayers', () => {
       expect(updatedPropCount).toBe(0)
     })
   })
+
+  it('should purge players of a deleted organisation', async () => {
+    const [organisation, game] = await createOrganisationAndGame(
+      {},
+      { purgeDevPlayers: true, purgeLivePlayers: true },
+    )
+
+    const owner = await new UserFactory()
+      .owner()
+      .state(() => ({
+        organisation,
+      }))
+      .one()
+
+    const player = await new PlayerFactory([game])
+      .state(() => ({
+        lastSeenAt: sub(new Date(), { days: 61 }),
+      }))
+      .devBuild()
+      .one()
+    await em.persist([owner, player]).flush()
+
+    organisation.deletedAt = new Date()
+    await em.flush()
+
+    await deleteInactivePlayers()
+
+    expect(await em.repo(PlayerToDelete).count()).toBe(1)
+    expect(
+      await em
+        .repo(GameActivity)
+        .count({ game, type: GameActivityType.INACTIVE_DEV_PLAYERS_DELETED }),
+    ).toBe(1)
+  })
 })

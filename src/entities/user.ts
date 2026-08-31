@@ -1,6 +1,7 @@
 import {
   Entity,
   Enum,
+  Filter,
   ManyToOne,
   OneToMany,
   OneToOne,
@@ -19,6 +20,7 @@ export enum UserType {
 }
 
 @Entity()
+@Filter({ name: 'active', cond: { deletedAt: null }, default: true })
 export default class User {
   @PrimaryKey()
   id!: number
@@ -49,6 +51,9 @@ export default class User {
 
   @OneToMany(() => UserRecoveryCode, (recoveryCode) => recoveryCode.user, { orphanRemoval: true })
   recoveryCodes: Collection<UserRecoveryCode> = new Collection<UserRecoveryCode>(this)
+
+  @Property({ nullable: true })
+  deletedAt: Date | null = null
 
   @Property()
   createdAt: Date = new Date()

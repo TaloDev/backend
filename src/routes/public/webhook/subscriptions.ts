@@ -24,6 +24,7 @@ async function getOrganisationPricingPlan(ctx: PublicRouteContext, stripeCustome
     },
     {
       populate: ['organisation'],
+      filters: false,
     },
   )
 

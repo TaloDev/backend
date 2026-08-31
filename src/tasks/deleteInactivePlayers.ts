@@ -8,14 +8,14 @@ import { PlayerToDelete } from '../entities/player-to-delete.js'
 import Player from '../entities/player.js'
 import User, { UserType } from '../entities/user.js'
 import createGameActivity from '../lib/logging/createGameActivity.js'
-import { streamByCursor } from '../lib/perf/streamByCursor.js'
+import { streamByCursorPages } from '../lib/perf/streamByCursor.js'
 
 const playersBatchSize = 100
 
 function getPlayers(em: EntityManager, game: Game, devBuild: boolean) {
   const days = devBuild ? game.purgeDevPlayersRetention : game.purgeLivePlayersRetention
 
-  return streamByCursor(async (batchSize, after) => {
+  return streamByCursorPages(async (batchSize, after) => {
     return em.repo(Player).findByCursor({
       where: {
         game,
@@ -44,10 +44,13 @@ async function createPurgeActivity({
   count: number
 }) {
   createGameActivity(em, {
-    actor: await em.repo(User).findOneOrFail({
-      type: UserType.OWNER,
-      organisation: game.organisation,
-    }),
+    actor: await em.repo(User).findOneOrFail(
+      {
+        type: UserType.OWNER,
+        organisation: game.organisation,
+      },
+      { filters: false },
+    ),
     game,
     type: devBuild
       ? GameActivityType.INACTIVE_DEV_PLAYERS_DELETED
@@ -68,26 +71,12 @@ async function findAndQueueInactivePlayers(em: EntityManager, game: Game, devBui
   console.info(`Queueing ${devBuild ? 'dev' : 'live'} players for deletion for game ${game.id}`)
 
   try {
-    let batch: Player[] = []
     let totalQueued = 0
 
-    for await (const player of getPlayers(em, game, devBuild)) {
-      batch.push(player)
-      /* v8 ignore start -- @preserve */
-      if (batch.length >= playersBatchSize) {
-        const playersToDelete = batch.map((player) => new PlayerToDelete(player))
-        await em.persist(playersToDelete).flush()
-        totalQueued += batch.length
-        batch = []
-      }
-      /* v8 ignore stop -- @preserve */
-    }
-
-    // Queue any remaining players in the last batch
-    if (batch.length > 0) {
-      const playersToDelete = batch.map((player) => new PlayerToDelete(player))
+    for await (const players of getPlayers(em, game, devBuild)) {
+      const playersToDelete = players.map((player) => new PlayerToDelete(player))
       await em.persist(playersToDelete).flush()
-      totalQueued += batch.length
+      totalQueued += players.length
     }
 
     if (totalQueued > 0) {
@@ -106,9 +95,12 @@ export default async function deleteInactivePlayers() {
   const orm = await getMikroORM()
   const em = orm.em.fork() as EntityManager
 
-  const games = await em.repo(Game).find({
-    $or: [{ purgeDevPlayers: true }, { purgeLivePlayers: true }],
-  })
+  const games = await em.repo(Game).find(
+    {
+      $or: [{ purgeDevPlayers: true }, { purgeLivePlayers: true }],
+    },
+    { populate: ['organisation'], filters: false },
+  )
 
   for (const game of games) {
     await findAndQueueInactivePlayers(em.fork(), game, true)

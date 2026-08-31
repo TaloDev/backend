@@ -23,3 +23,7 @@ export async function requires2fa(ctx: ProtectedRouteContext, next: Next) {
 
   await next()
 }
+
+export function clearRefreshTokenCookie(ctx: ProtectedRouteContext) {
+  ctx.cookies.set('refreshToken', null, { expires: new Date(0) })
+}

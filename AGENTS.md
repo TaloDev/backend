@@ -7,8 +7,8 @@ Talo is a self-hostable game development services platform providing leaderboard
 ### Testing
 
 ```bash
-npm test                # Run all tests with Vitest
-npm test path/to/file   # Run specific test file
+pnpm test                # Run all tests with Vitest
+pnpm test path/to/file   # Run specific test file
 ```
 
 Tests run against fresh Docker containers. Environment variables from `.env` are combined with `envs/.env.test`.
@@ -16,14 +16,14 @@ Tests run against fresh Docker containers. Environment variables from `.env` are
 ### Building & Linting
 
 ```bash
-npm run lint -- --type-check   # Run Oxlint + tsc
+pnpm lint -- --type-check   # Run Oxlint + tsc
 ```
 
 ### Database Migrations
 
 ```bash
-npm run migration:create    # Create new MikroORM migration
-npm run migration:up        # Run pending migrations
+pnpm migration:create    # Create new MikroORM migration
+pnpm migration:up        # Run pending migrations
 ```
 
 After creating a migration:
@@ -159,7 +159,7 @@ Use the `/new-route` skill for step-by-step guidance on creating routes.
 
 1. Create entity in `src/entities/my-entity.ts` with decorators
 2. Register it in `src/entities/index.ts`
-3. Run `npm run migration:create` to generate migration
+3. Run `pnpm migration:create` to generate migration
 4. Rename and register migration in `src/migrations/index.ts`
 5. MikroORM will auto-migrate on next startup
 

@@ -11,20 +11,13 @@ jobs:
         with:
           fetch-depth: 0
 
-      - uses: actions/setup-node@v6
+      - uses: pnpm/setup@v2
         with:
-          node-version: 24
-
-      - uses: actions/cache@v5
-        with:
-          path: '**/node_modules'
-          key: ${{ runner.os }}-modules-${{ hashFiles('**/package-lock.json') }}
-
-      - name: Install deps
-        run: npm ci --prefer-offline
+          runtime: node@24
+          cache: true
 
       - name: Build
-        run: npm run build:sourcemaps
+        run: pnpm build:sourcemaps
 
       - name: Create GitHub release
         uses: softprops/action-gh-release@v3

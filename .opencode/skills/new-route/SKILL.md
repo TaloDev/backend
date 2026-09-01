@@ -216,7 +216,7 @@ Create tests in the matching location:
 - API route at `src/routes/api/my-feature/` → tests at `tests/routes/api/my-feature-api/`
 - Protected route at `src/routes/protected/my-feature/` → tests at `tests/routes/protected/my-feature/`
 
-Follow the pattern of existing test files in the project. Run `npm test path/to/test` to verify.
+Follow the pattern of existing test files in the project. Run `pnpm test path/to/test` to verify.
 
 ## Key Conventions Summary
 

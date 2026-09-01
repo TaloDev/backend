@@ -20,6 +20,10 @@ cleanup() {
 # temp dir stores entity data
 rm -rf temp
 
+# pnpm forwards the `--` separator as a literal arg; vitest treats it as a
+# positional filter and ignores every option after it, so drop it
+[ "$1" = "--" ] && shift
+
 set -e
 
 dc up -d
@@ -30,7 +34,7 @@ echo "\n"
 
 if [ -z "$EXPOSE_GC" ]
 then
-  node --trace-warnings ./node_modules/.bin/vitest "$@"
+  ./node_modules/.bin/vitest "$@"
 else
-  node --expose-gc --trace-warnings ./node_modules/.bin/vitest "$@" --logHeapUsage
+  NODE_OPTIONS=--expose-gc ./node_modules/.bin/vitest "$@" --logHeapUsage
 fi

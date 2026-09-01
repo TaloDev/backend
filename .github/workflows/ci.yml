@@ -29,7 +29,7 @@ jobs:
           echo "CLICKHOUSE_PORT=$((8123 + ${{ matrix.shard }}))" >> envs/.env.test
 
       - name: Run tests
-        run: npm test -- --coverage --reporter=blob --shard=${{ matrix.shard }}/${{ env.SHARD_COUNT }}
+        run: pnpm test -- --coverage --reporter=blob --shard=${{ matrix.shard }}/${{ env.SHARD_COUNT }}
         continue-on-error: true
 
       - name: Upload test reports
@@ -59,7 +59,7 @@ jobs:
           merge-multiple: true
 
       - name: Merge reports
-        run: npx vitest --merge-reports --coverage
+        run: pnpm exec vitest --merge-reports --coverage
 
       - uses: codecov/codecov-action@v6
         if: always()
@@ -75,10 +75,10 @@ jobs:
         uses: ./.github/actions/setup
 
       - name: Type check
-        run: npx tsc --noEmit
+        run: pnpm exec tsc --noEmit
 
       - name: Build
-        run: npm run build
+        run: pnpm build
 
   lint:
     runs-on: ubuntu-latest
@@ -89,7 +89,7 @@ jobs:
         uses: ./.github/actions/setup
 
       - name: Format
-        run: npm run fmt
+        run: pnpm fmt
 
       - name: Lint
-        run: npm run lint
+        run: pnpm lint

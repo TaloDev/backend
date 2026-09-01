@@ -1,10 +1,10 @@
-import { vi } from 'vitest'
+import { vi, type Mock } from 'vitest'
 
-export const mockTransport = {
+export const mockTransport: { verify: Mock; sendMail: Mock } = {
   verify: vi.fn().mockResolvedValue(true),
   sendMail: vi.fn().mockResolvedValue(true),
 }
 
-export default {
-  createTransport: vi.fn(() => mockTransport),
-}
+const createTransport: Mock = vi.fn(() => mockTransport)
+
+export default { createTransport }

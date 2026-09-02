@@ -3,7 +3,6 @@ import JoinOrganisation from '../../../emails/join-organisation-mail.js'
 import { GameActivityType } from '../../../entities/game-activity.js'
 import Invite from '../../../entities/invite.js'
 import { UserType } from '../../../entities/user.js'
-import User from '../../../entities/user.js'
 import createGameActivity from '../../../lib/logging/createGameActivity.js'
 import queueEmail from '../../../lib/messaging/queueEmail.js'
 import { protectedRoute, withMiddleware } from '../../../lib/routing/router.js'
@@ -29,23 +28,16 @@ export const createRoute = protectedRoute({
 
     const inviter = ctx.state.user
 
-    const duplicateEmailUser = await em.repo(User).findOne({ email: email.toLowerCase() })
-    if (duplicateEmailUser) {
-      return ctx.throw(400, 'This email address is already in use')
-    }
-
-    const duplicateEmailInvite = await em.repo(Invite).findOne({ email: email.toLowerCase() })
+    const duplicateEmailInvite = await em.repo(Invite).findOne({
+      email: email.toLowerCase(),
+      organisation: inviter.organisation,
+    })
     if (duplicateEmailInvite) {
-      return ctx.throw(
-        400,
-        duplicateEmailInvite.organisation.id === inviter.organisation.id
-          ? 'An invite for this email address already exists'
-          : 'This email address is already in use',
-      )
+      return ctx.throw(400, 'An invite for this email address already exists')
     }
 
     const invite = new Invite(inviter.organisation)
-    invite.email = email
+    invite.email = email.toLowerCase()
     invite.type = type
     invite.invitedByUser = inviter
 

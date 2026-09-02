@@ -21,6 +21,7 @@ import Invite from './invite.js'
 import LeaderboardEntryProp from './leaderboard-entry-prop.js'
 import LeaderboardEntry from './leaderboard-entry.js'
 import Leaderboard from './leaderboard.js'
+import OrganisationMember from './organisation-member.js'
 import OrganisationPricingPlan from './organisation-pricing-plan.js'
 import Organisation from './organisation.js'
 import PlayerAliasSubscription from './player-alias-subscription.js'
@@ -72,6 +73,7 @@ export const entities = [
   SteamworksLeaderboardMapping,
   SteamworksIntegrationEvent,
   Integration,
+  OrganisationMember,
   OrganisationPricingPlan,
   PricingPlan,
   Invite,

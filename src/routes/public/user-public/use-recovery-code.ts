@@ -19,7 +19,7 @@ export const useRecoveryCodeRoute = publicRoute({
     const redis = ctx.redis
 
     const user = await em.repo(User).findOneOrFail(userId, {
-      populate: ['recoveryCodes', 'organisation.games'],
+      populate: ['recoveryCodes', 'organisation.games', 'memberships.organisation'],
     })
 
     const hasSession = (await redis.get(`2fa:${user.id}`)) === 'true'

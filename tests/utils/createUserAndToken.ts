@@ -1,3 +1,4 @@
+import OrganisationMember from '../../src/entities/organisation-member.js'
 import Organisation from '../../src/entities/organisation.js'
 import User from '../../src/entities/user.js'
 import { genAccessToken } from '../../src/lib/auth/buildTokenPair.js'
@@ -13,6 +14,8 @@ export default async function createUserAndToken(
     .one()
   if (organisation) {
     user.organisation = organisation
+    user.memberships.removeAll()
+    user.memberships.add(new OrganisationMember(user, organisation, user.type))
   }
 
   await em.persist(user).flush()

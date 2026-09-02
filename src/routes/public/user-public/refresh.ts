@@ -17,7 +17,7 @@ export const refreshRoute = publicRoute({
         userAgent,
       },
       {
-        populate: ['user.organisation.games'],
+        populate: ['user.organisation.games', 'user.memberships.organisation'],
       },
     )
 

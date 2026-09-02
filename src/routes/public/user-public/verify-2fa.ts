@@ -18,7 +18,9 @@ export const verify2faRoute = publicRoute({
     const em = ctx.em
     const redis = ctx.redis
 
-    const user = await em.repo(User).findOneOrFail(userId, { populate: ['organisation.games'] })
+    const user = await em.repo(User).findOneOrFail(userId, {
+      populate: ['organisation.games', 'memberships.organisation'],
+    })
 
     const hasSession = (await redis.get(`2fa:${user.id}`)) === 'true'
 

@@ -19,7 +19,9 @@ export const loginRoute = publicRoute({
     const em = ctx.em
     const redis = ctx.redis
 
-    const user = await em.repo(User).findOne({ email }, { populate: ['organisation.games'] })
+    const user = await em
+      .repo(User)
+      .findOne({ email }, { populate: ['organisation.games', 'memberships.organisation'] })
     if (!user) {
       return {
         status: 401,

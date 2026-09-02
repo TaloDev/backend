@@ -1,5 +1,5 @@
+import OrganisationMember from '../../../entities/organisation-member.js'
 import { UserType } from '../../../entities/user.js'
-import User from '../../../entities/user.js'
 import { protectedRoute, withMiddleware } from '../../../lib/routing/router.js'
 import { ownerGate, requireEmailConfirmed } from '../../../middleware/policy-middleware.js'
 
@@ -30,13 +30,19 @@ export const changeMemberTypeRoute = protectedRoute({
       return ctx.throw(403, 'You cannot change your own user type')
     }
 
-    const target = await em.repo(User).findOne({ id: userId, organisation: caller.organisation })
-    if (!target) {
+    const membership = await em
+      .repo(OrganisationMember)
+      .findOne({ user: userId, organisation: caller.organisation }, { populate: ['user'] })
+    if (!membership) {
       return ctx.throw(404, 'User not found')
     }
+    const target = membership.user
 
-    target.type = type
-    await em.persist(target).flush()
+    membership.type = type
+    if (target.organisation.id === caller.organisation.id) {
+      target.type = type
+    }
+    await em.persist([membership, target]).flush()
 
     return {
       status: 200,

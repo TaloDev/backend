@@ -8,6 +8,7 @@ import {
   Property,
 } from '@mikro-orm/decorators/es'
 import { Collection } from '@mikro-orm/mysql'
+import OrganisationMember from './organisation-member.js'
 import Organisation from './organisation.js'
 import UserRecoveryCode from './user-recovery-code.js'
 import UserTwoFactorAuth from './user-two-factor-auth.js'
@@ -34,6 +35,9 @@ export default class User {
 
   @ManyToOne(() => Organisation, { eager: true })
   organisation!: Organisation
+
+  @OneToMany(() => OrganisationMember, (member) => member.user, { orphanRemoval: true })
+  memberships = new Collection<OrganisationMember>(this)
 
   @Enum(() => UserType)
   type: UserType = UserType.DEV
@@ -64,6 +68,7 @@ export default class User {
       lastSeenAt: this.lastSeenAt,
       emailConfirmed: this.emailConfirmed,
       organisation: this.organisation,
+      memberships: this.memberships.toJSON(),
       type: this.type,
       has2fa: this.twoFactorAuth?.enabled ?? false,
       createdAt: this.createdAt,

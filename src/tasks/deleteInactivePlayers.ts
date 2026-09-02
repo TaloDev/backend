@@ -4,9 +4,10 @@ import { subDays } from 'date-fns'
 import { getMikroORM } from '../config/mikro-orm.config.js'
 import { GameActivityType } from '../entities/game-activity.js'
 import Game from '../entities/game.js'
+import OrganisationMember from '../entities/organisation-member.js'
 import { PlayerToDelete } from '../entities/player-to-delete.js'
 import Player from '../entities/player.js'
-import User, { UserType } from '../entities/user.js'
+import { UserType } from '../entities/user.js'
 import createGameActivity from '../lib/logging/createGameActivity.js'
 import { streamByCursor } from '../lib/perf/streamByCursor.js'
 
@@ -43,11 +44,15 @@ async function createPurgeActivity({
   devBuild: boolean
   count: number
 }) {
+  const owner = await em
+    .repo(OrganisationMember)
+    .findOneOrFail(
+      { type: UserType.OWNER, organisation: game.organisation },
+      { populate: ['user'] },
+    )
+
   createGameActivity(em, {
-    actor: await em.repo(User).findOneOrFail({
-      type: UserType.OWNER,
-      organisation: game.organisation,
-    }),
+    actor: owner.user,
     game,
     type: devBuild
       ? GameActivityType.INACTIVE_DEV_PLAYERS_DELETED

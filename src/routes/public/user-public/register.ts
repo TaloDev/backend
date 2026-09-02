@@ -7,6 +7,7 @@ import { getGlobalQueue } from '../../../config/global-queues.js'
 import ConfirmEmail from '../../../emails/confirm-email-mail.js'
 import { GameActivityType } from '../../../entities/game-activity.js'
 import Invite from '../../../entities/invite.js'
+import OrganisationMember from '../../../entities/organisation-member.js'
 import Organisation from '../../../entities/organisation.js'
 import UserAccessCode from '../../../entities/user-access-code.js'
 import User, { UserType } from '../../../entities/user.js'
@@ -109,7 +110,7 @@ export const registerRoute = publicRoute({
         },
       )
 
-      if (!invite || invite.email !== email) {
+      if (!invite || invite.email !== email.toLowerCase()) {
         return {
           status: 404,
           body: { message: 'Invite not found' },
@@ -118,6 +119,7 @@ export const registerRoute = publicRoute({
 
       user.organisation = invite.organisation
       user.type = invite.type
+      user.memberships.add(new OrganisationMember(user, invite.organisation, invite.type))
       user.emailConfirmed = true
 
       createGameActivity(em, { actor: user, type: GameActivityType.INVITE_ACCEPTED })
@@ -127,6 +129,7 @@ export const registerRoute = publicRoute({
       assert(organisationName)
       user.organisation = await createOrganisationForUser(em, organisationName, email)
       user.type = UserType.OWNER
+      user.memberships.add(new OrganisationMember(user, user.organisation, user.type))
     }
 
     await em.persist(user).flush()

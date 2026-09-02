@@ -18,7 +18,7 @@ export default class UserPinnedGroup {
   createdAt: Date = new Date()
 
   static getCacheKeyForUser(user: User) {
-    return `pinned-group-${user.id}`
+    return `pinned-group-${user.organisation.id}:${user.id}`
   }
 
   constructor(user: User, group: PlayerGroup) {

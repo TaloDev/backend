@@ -2,6 +2,7 @@ import { Collection } from '@mikro-orm/mysql'
 import { randEmail, randUserName, randWord } from '@ngneat/falso'
 import bcrypt from 'bcrypt'
 import { Factory } from 'hefty'
+import OrganisationMember from '../../src/entities/organisation-member.js'
 import UserRecoveryCode from '../../src/entities/user-recovery-code.js'
 import UserTwoFactorAuth from '../../src/entities/user-two-factor-auth.js'
 import User, { UserType } from '../../src/entities/user.js'
@@ -21,6 +22,12 @@ export default class UserFactory extends Factory<User> {
       organisation: await new OrganisationFactory().one(),
       type: UserType.DEV,
     }))
+  }
+
+  override async one() {
+    const user = await super.one()
+    user.memberships.add(new OrganisationMember(user, user.organisation, user.type))
+    return user
   }
 
   emailConfirmed(): this {

@@ -1,7 +1,8 @@
 import Game from '../../../entities/game.js'
 import Invite from '../../../entities/invite.js'
+import OrganisationMember from '../../../entities/organisation-member.js'
 import Player from '../../../entities/player.js'
-import User, { UserType } from '../../../entities/user.js'
+import { UserType } from '../../../entities/user.js'
 import { protectedRoute, withMiddleware } from '../../../lib/routing/router.js'
 import { userTypeGate } from '../../../middleware/policy-middleware.js'
 
@@ -21,7 +22,9 @@ export const currentRoute = protectedRoute({
       playerCountMap.set(game.id, playerCount)
     }
 
-    const members = await em.repo(User).find({ organisation })
+    const memberships = await em
+      .repo(OrganisationMember)
+      .find({ organisation }, { populate: ['user'] })
     const pendingInvites = await em.repo(Invite).find({ organisation })
 
     return {
@@ -31,7 +34,7 @@ export const currentRoute = protectedRoute({
           ...game.toJSON(),
           playerCount: playerCountMap.get(game.id),
         })),
-        members,
+        members: memberships.map(({ user, type }) => ({ ...user.toJSON(), type })),
         pendingInvites,
       },
     }

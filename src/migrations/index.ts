@@ -77,6 +77,7 @@ import { AddGameDisplayNamePropKeyColumn } from './20260615220055AddGameDisplayN
 import { AddGameLogoUrlColumn } from './20260618133542AddGameLogoUrlColumn.js'
 import { CreateDeletedPlayerTable } from './20260626204938CreateDeletedPlayerTable.js'
 import { CreateAdminAPIKeysTable } from './20260711094253CreateAdminAPIKeysTable.js'
+import { CreateOrganisationMemberTable } from './20260826120000CreateOrganisationMemberTable.js'
 
 export default [
   {
@@ -394,5 +395,9 @@ export default [
   {
     name: 'CreateAdminAPIKeysTable',
     class: CreateAdminAPIKeysTable,
+  },
+  {
+    name: 'CreateOrganisationMemberTable',
+    class: CreateOrganisationMemberTable,
   },
 ]

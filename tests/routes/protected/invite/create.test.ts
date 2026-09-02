@@ -84,9 +84,9 @@ describe('Invite - create', () => {
     }
   })
 
-  it('should not create an invite when an invite exists for the same email on another organisation', async () => {
+  it('should create an invite when an invite exists for the same email on another organisation', async () => {
     const [otherOrg] = await createOrganisationAndGame()
-    const [token] = await createUserAndToken({ type: UserType.ADMIN, emailConfirmed: true })
+    const [token, user] = await createUserAndToken({ type: UserType.ADMIN, emailConfirmed: true })
 
     const invite = await new InviteFactory()
       .construct(otherOrg)
@@ -98,12 +98,12 @@ describe('Invite - create', () => {
       .post('/invites')
       .send({ email: invite.email, type: UserType.ADMIN })
       .auth(token, { type: 'bearer' })
-      .expect(400)
+      .expect(200)
 
-    expect(res.body).toStrictEqual({ message: 'This email address is already in use' })
+    expect(res.body.invite.organisation.id).toBe(user.organisation.id)
   })
 
-  it('should not create an invite when a user exists for the same email', async () => {
+  it('should create an invite when a user exists for the same email', async () => {
     const [token] = await createUserAndToken({ type: UserType.ADMIN, emailConfirmed: true })
 
     const user = await new UserFactory().state(() => ({ email: randEmail() })).one()
@@ -113,9 +113,9 @@ describe('Invite - create', () => {
       .post('/invites')
       .send({ email: user.email, type: UserType.ADMIN })
       .auth(token, { type: 'bearer' })
-      .expect(400)
+      .expect(200)
 
-    expect(res.body).toStrictEqual({ message: 'This email address is already in use' })
+    expect(res.body.invite.email).toBe(user.email)
   })
 
   it("should not create an invite if the user's email is not confirmed", async () => {

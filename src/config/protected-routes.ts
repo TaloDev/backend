@@ -9,6 +9,7 @@ import { apiKeyRouter } from '../routes/protected/api-key/index.js'
 import { billingRouter } from '../routes/protected/billing/index.js'
 import { chartRouter } from '../routes/protected/chart/index.js'
 import { dataExportRouter } from '../routes/protected/data-export/index.js'
+import { eventFunnelRouter } from '../routes/protected/event-funnel/index.js'
 import { eventRouter } from '../routes/protected/event/index.js'
 import { gameActivityRouter } from '../routes/protected/game-activity/index.js'
 import { gameChannelRouter } from '../routes/protected/game-channel/index.js'
@@ -37,6 +38,7 @@ export function configureProtectedRoutes(app: Koa) {
   chartRouter(router)
   dataExportRouter(router)
   eventRouter(router)
+  eventFunnelRouter(router)
   gameActivityRouter(router)
   gameChannelRouter(router)
   gameFeedbackRouter(router)

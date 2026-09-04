@@ -79,6 +79,7 @@ import { CreateDeletedPlayerTable } from './20260626204938CreateDeletedPlayerTab
 import { CreateAdminAPIKeysTable } from './20260711094253CreateAdminAPIKeysTable.js'
 import { AddOrganisationAndUserDeletedAtColumns } from './20260830202536AddOrganisationAndUserDeletedAtColumns.js'
 import { AddPlayersToDeleteUniqueConstraint } from './20260831000000AddPlayersToDeleteUniqueConstraint.js'
+import { CreateEventFunnelsTable } from './20260902191008CreateEventFunnelsTable.js'
 
 export default [
   {
@@ -404,5 +405,9 @@ export default [
   {
     name: 'AddPlayersToDeleteUniqueConstraint',
     class: AddPlayersToDeleteUniqueConstraint,
+  },
+  {
+    name: 'CreateEventFunnelsTable',
+    class: CreateEventFunnelsTable,
   },
 ]

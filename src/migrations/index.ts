@@ -83,6 +83,7 @@ import { CreateEventFunnelsTable } from './20260902191008CreateEventFunnelsTable
 import { RemoveIntegrationSoftDelete } from './20260905054226RemoveIntegrationSoftDelete.js'
 import { LinkSteamworksEntitiesToIntegration } from './20260905070622LinkSteamworksEntitiesToIntegration.js'
 import { WidenSteamworksLeaderboardMappingPk } from './20260905094358WidenSteamworksLeaderboardMappingPk.js'
+import { CreateEventRetentionTable } from './20260905132019CreateEventRetentionTable.js'
 
 export default [
   InitialMigration,
@@ -170,4 +171,5 @@ export default [
   RemoveIntegrationSoftDelete,
   LinkSteamworksEntitiesToIntegration,
   WidenSteamworksLeaderboardMappingPk,
+  CreateEventRetentionTable,
 ]

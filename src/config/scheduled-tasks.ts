@@ -1,5 +1,6 @@
 import createQueue from '../lib/queues/createQueue.js'
 import archiveLeaderboardEntries from '../tasks/archiveLeaderboardEntries.js'
+import { cleanupEventsByRetention } from '../tasks/cleanupEventsByRetention.js'
 import { cleanupIntegrationEvents } from '../tasks/cleanupIntegrationEvents.js'
 import cleanupOnlinePlayers from '../tasks/cleanupOnlinePlayers.js'
 import cleanupSteamworksLeaderboardEntries from '../tasks/cleanupSteamworksLeaderboardEntries.js'
@@ -32,6 +33,7 @@ export async function initScheduledTasks() {
       '0 */15 * * * *',
     ),
     addScheduledTask('cleanup-integration-events', cleanupIntegrationEvents, '0 0 0 * * *'), // midnight daily
+    addScheduledTask('cleanup-events-by-retention', cleanupEventsByRetention, '0 1 0 * * *'), // 00:01 daily
     addScheduledTask('drain-api-key-last-used', drainApiKeyLastUsed, '0 */1 * * * *'), // every minute
   ]
 

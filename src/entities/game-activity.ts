@@ -54,6 +54,9 @@ export enum GameActivityType {
   ADMIN_API_KEY_CREATED,
   ADMIN_API_KEY_REVOKED,
   ADMIN_API_KEY_UPDATED,
+  EVENT_RETENTION_UPDATED,
+  EVENT_RETENTION_DELETED,
+  EVENTS_PURGED,
 }
 
 @Entity()
@@ -206,6 +209,12 @@ export default class GameActivity {
         return `${this.actor()} revoked an admin API key`
       case GameActivityType.ADMIN_API_KEY_UPDATED:
         return `${this.actor()} updated an admin API key`
+      case GameActivityType.EVENT_RETENTION_UPDATED:
+        return `${this.actor()} set the retention for ${this.extra.eventName} to ${this.extra.retentionDays} days`
+      case GameActivityType.EVENT_RETENTION_DELETED:
+        return `${this.actor()} deleted the retention for ${this.extra.eventName}`
+      case GameActivityType.EVENTS_PURGED:
+        return `${this.actor()} purged ${this.extra.count} ${this.extra.eventName} events`
       default:
         return ''
     }

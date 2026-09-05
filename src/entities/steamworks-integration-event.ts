@@ -18,7 +18,7 @@ export default class SteamworksIntegrationEvent {
   @PrimaryKey()
   id!: number
 
-  @ManyToOne(() => Integration)
+  @ManyToOne(() => Integration, { deleteRule: 'cascade' })
   integration: Integration
 
   @Property({ type: 'json' })

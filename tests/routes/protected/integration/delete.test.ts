@@ -1,6 +1,7 @@
 import request from 'supertest'
 import GameActivity, { GameActivityType } from '../../../../src/entities/game-activity.js'
 import { IntegrationType } from '../../../../src/entities/integration.js'
+import SteamworksIntegrationEvent from '../../../../src/entities/steamworks-integration-event.js'
 import { UserType } from '../../../../src/entities/user.js'
 import IntegrationConfigFactory from '../../../fixtures/IntegrationConfigFactory.js'
 import IntegrationFactory from '../../../fixtures/IntegrationFactory.js'
@@ -21,6 +22,11 @@ describe('Integration - delete', () => {
         .one()
       await em.persist(integration).flush()
 
+      const event = new SteamworksIntegrationEvent(integration)
+      event.request = { url: '', method: 'GET', body: '' }
+      event.response = { status: 200, body: {}, timeTaken: 0 }
+      await em.persist(event).flush()
+
       const res = await request(app)
         .delete(`/games/${game.id}/integrations/${integration.id}`)
         .auth(token, { type: 'bearer' })
@@ -33,6 +39,9 @@ describe('Integration - delete', () => {
 
       if (statusCode === 204) {
         expect(activity?.extra.integrationType).toBe(IntegrationType.STEAMWORKS)
+
+        expect(await em.refresh(integration)).toBeNull()
+        expect(await em.repo(SteamworksIntegrationEvent).count({ integration })).toBe(0)
       } else {
         expect(res.body).toStrictEqual({
           message: 'You do not have permissions to delete integrations',

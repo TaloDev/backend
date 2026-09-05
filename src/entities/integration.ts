@@ -1,4 +1,4 @@
-import { Entity, Enum, Filter, ManyToOne, PrimaryKey, Property } from '@mikro-orm/decorators/es'
+import { Entity, Enum, ManyToOne, PrimaryKey, Property } from '@mikro-orm/decorators/es'
 import { EntityManager } from '@mikro-orm/mysql'
 import { pick } from 'lodash-es'
 import { decrypt, encrypt } from '../lib/crypto/string-encryption.js'
@@ -66,7 +66,6 @@ export type IntegrationConfigMap = {
 export type IntegrationConfig = IntegrationConfigMap[keyof IntegrationConfigMap]
 
 @Entity()
-@Filter({ name: 'active', cond: { deletedAt: null }, default: true })
 export default class Integration<T extends IntegrationType = IntegrationType> {
   @PrimaryKey()
   id!: number
@@ -79,9 +78,6 @@ export default class Integration<T extends IntegrationType = IntegrationType> {
 
   @Property({ type: 'json' })
   private config: IntegrationConfigMap[T]
-
-  @Property({ nullable: true })
-  deletedAt: Date | null = null
 
   @Property()
   createdAt: Date = new Date()

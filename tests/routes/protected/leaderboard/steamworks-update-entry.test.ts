@@ -39,18 +39,9 @@ describe('Leaderboard - steamworks update entry', () => {
       .replyOnce(updateMock)
 
     const leaderboard = await new LeaderboardFactory([game]).one()
-    const mapping = new SteamworksLeaderboardMapping(
-      randNumber({ min: 100_000, max: 999_999 }),
-      leaderboard,
-    )
 
     const player = await new PlayerFactory([game]).withSteamAlias().one()
     const entry = await new LeaderboardEntryFactory(leaderboard, [player]).one()
-    const steamworksEntry = new SteamworksLeaderboardEntry({
-      steamworksLeaderboard: mapping,
-      leaderboardEntry: entry,
-      steamUserId: player.aliases[0].identifier,
-    })
 
     const config = await new IntegrationConfigFactory()
       .state(() => ({ syncLeaderboards: true }))
@@ -58,6 +49,17 @@ describe('Leaderboard - steamworks update entry', () => {
     const integration = await new IntegrationFactory()
       .construct(IntegrationType.STEAMWORKS, game, config)
       .one()
+    const mapping = new SteamworksLeaderboardMapping({
+      steamworksLeaderboardId: randNumber({ min: 100_000, max: 999_999 }),
+      leaderboard,
+      integration,
+    })
+    const steamworksEntry = new SteamworksLeaderboardEntry({
+      steamworksLeaderboard: mapping,
+      leaderboardEntry: entry,
+      steamUserId: player.aliases[0].identifier,
+    })
+
     await em.persist([integration, steamworksEntry]).flush()
 
     await request(app)
@@ -99,10 +101,6 @@ describe('Leaderboard - steamworks update entry', () => {
       .replyOnce(updateMock)
 
     const leaderboard = await new LeaderboardFactory([game]).one()
-    const mapping = new SteamworksLeaderboardMapping(
-      randNumber({ min: 100_000, max: 999_999 }),
-      leaderboard,
-    )
 
     const player = await new PlayerFactory([game]).withSteamAlias().one()
     const entry = await new LeaderboardEntryFactory(leaderboard, [player])
@@ -115,6 +113,12 @@ describe('Leaderboard - steamworks update entry', () => {
     const integration = await new IntegrationFactory()
       .construct(IntegrationType.STEAMWORKS, game, config)
       .one()
+    const mapping = new SteamworksLeaderboardMapping({
+      steamworksLeaderboardId: randNumber({ min: 100_000, max: 999_999 }),
+      leaderboard,
+      integration,
+    })
+
     await em.persist([integration, entry, mapping]).flush()
 
     await request(app)
@@ -143,10 +147,6 @@ describe('Leaderboard - steamworks update entry', () => {
       .replyOnce(updateMock)
 
     const leaderboard = await new LeaderboardFactory([game]).one()
-    const mapping = new SteamworksLeaderboardMapping(
-      randNumber({ min: 100_000, max: 999_999 }),
-      leaderboard,
-    )
 
     const player = await new PlayerFactory([game]).withSteamAlias().one()
     const entry = await new LeaderboardEntryFactory(leaderboard, [player])
@@ -159,6 +159,12 @@ describe('Leaderboard - steamworks update entry', () => {
     const integration = await new IntegrationFactory()
       .construct(IntegrationType.STEAMWORKS, game, config)
       .one()
+    const mapping = new SteamworksLeaderboardMapping({
+      steamworksLeaderboardId: randNumber({ min: 100_000, max: 999_999 }),
+      leaderboard,
+      integration,
+    })
+
     await em.persist([integration, entry, mapping]).flush()
 
     await request(app)
@@ -180,10 +186,6 @@ describe('Leaderboard - steamworks update entry', () => {
       .replyOnce(updateMock)
 
     const leaderboard = await new LeaderboardFactory([game]).one()
-    const mapping = new SteamworksLeaderboardMapping(
-      randNumber({ min: 100_000, max: 999_999 }),
-      leaderboard,
-    )
 
     const player = await new PlayerFactory([game]).withUsernameAlias().one()
     const entry = await new LeaderboardEntryFactory(leaderboard, [player])
@@ -196,6 +198,12 @@ describe('Leaderboard - steamworks update entry', () => {
     const integration = await new IntegrationFactory()
       .construct(IntegrationType.STEAMWORKS, game, config)
       .one()
+    const mapping = new SteamworksLeaderboardMapping({
+      steamworksLeaderboardId: randNumber({ min: 100_000, max: 999_999 }),
+      leaderboard,
+      integration,
+    })
+
     await em.persist([integration, entry, mapping]).flush()
 
     await request(app)
@@ -261,10 +269,6 @@ describe('Leaderboard - steamworks update entry', () => {
       .replyOnce(updateMock)
 
     const leaderboard = await new LeaderboardFactory([game]).one()
-    const mapping = new SteamworksLeaderboardMapping(
-      randNumber({ min: 100_000, max: 999_999 }),
-      leaderboard,
-    )
 
     const player = await new PlayerFactory([game]).withSteamAlias().one()
     const entry = await new LeaderboardEntryFactory(leaderboard, [player])
@@ -277,6 +281,12 @@ describe('Leaderboard - steamworks update entry', () => {
     const integration = await new IntegrationFactory()
       .construct(IntegrationType.STEAMWORKS, game, config)
       .one()
+    const mapping = new SteamworksLeaderboardMapping({
+      steamworksLeaderboardId: randNumber({ min: 100_000, max: 999_999 }),
+      leaderboard,
+      integration,
+    })
+
     await em.persist([integration, entry, mapping]).flush()
 
     await request(app)

@@ -79,6 +79,7 @@ export async function setSteamworksStat(
   await em.upsert(
     new SteamworksPlayerStat({
       stat: playerStat.stat,
+      integration,
       playerStat,
       steamUserId: playerAlias.identifier,
     }),
@@ -144,6 +145,7 @@ async function ingestSteamworksPlayerStatForAlias(
 
           const steamsWorksPlayerStat = new SteamworksPlayerStat({
             stat,
+            integration,
             playerStat,
             steamUserId: alias.identifier,
           })

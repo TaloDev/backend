@@ -152,11 +152,6 @@ describe('archiveLeaderboardEntries', () => {
       .onPost('https://partner.steam-api.com/ISteamLeaderboards/DeleteLeaderboardScore/v1')
       .reply(deleteMock)
 
-    const mapping = new SteamworksLeaderboardMapping(
-      randNumber({ min: 100_000, max: 999_999 }),
-      leaderboard,
-    )
-
     const player = await new PlayerFactory([game]).withSteamAlias().one()
     const oldEntry = await new LeaderboardEntryFactory(leaderboard, [player])
       .state(() => ({ createdAt: sub(new Date(), { days: 2 }) }))
@@ -168,6 +163,11 @@ describe('archiveLeaderboardEntries', () => {
     const integration = await new IntegrationFactory()
       .construct(IntegrationType.STEAMWORKS, game, config)
       .one()
+    const mapping = new SteamworksLeaderboardMapping({
+      steamworksLeaderboardId: randNumber({ min: 100_000, max: 999_999 }),
+      leaderboard,
+      integration,
+    })
 
     await em.persist([integration, oldEntry, mapping]).flush()
     await archiveLeaderboardEntries()

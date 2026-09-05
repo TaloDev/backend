@@ -1,4 +1,5 @@
 import { EntityManager } from '@mikro-orm/mysql'
+import { captureException } from '@sentry/node'
 import Game from '../../entities/game.js'
 import Integration from '../../entities/integration.js'
 import { getResultCacheOptions } from '../perf/getResultCacheOptions.js'
@@ -12,5 +13,12 @@ export default async function triggerIntegrations(
     .repo(Integration)
     .find({ game }, getResultCacheOptions(Integration.getCacheKeyForGame(game)))
 
-  await Promise.all(integrations.map(async (integration) => await callback(integration)))
+  // one failing integration must not block the others
+  for (const integration of integrations) {
+    try {
+      await callback(integration)
+    } catch (err) {
+      captureException(err)
+    }
+  }
 }

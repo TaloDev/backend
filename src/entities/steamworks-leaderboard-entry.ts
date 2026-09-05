@@ -1,19 +1,21 @@
-import { Entity, ManyToOne, OneToOne, PrimaryKey, Property } from '@mikro-orm/decorators/es'
+import { Entity, ManyToOne, PrimaryKey, Property, Unique } from '@mikro-orm/decorators/es'
 import LeaderboardEntry from './leaderboard-entry.js'
 import SteamworksLeaderboardMapping from './steamworks-leaderboard-mapping.js'
 
 @Entity()
+@Unique({ properties: ['steamworksLeaderboard', 'leaderboardEntry'] })
 export class SteamworksLeaderboardEntry {
   @PrimaryKey()
   id!: number
 
   @ManyToOne(() => SteamworksLeaderboardMapping, {
     deleteRule: 'cascade',
-    fieldNames: ['steamworks_leaderboard_id', 'leaderboard_id'],
+    fieldNames: ['steamworks_leaderboard_id', 'leaderboard_id', 'integration_id'],
+    referencedColumnNames: ['steamworks_leaderboard_id', 'leaderboard_id', 'integration_id'],
   })
   steamworksLeaderboard: SteamworksLeaderboardMapping
 
-  @OneToOne(() => LeaderboardEntry, { nullable: true })
+  @ManyToOne(() => LeaderboardEntry, { nullable: true, deleteRule: 'set null' })
   leaderboardEntry: LeaderboardEntry | null
 
   @Property()

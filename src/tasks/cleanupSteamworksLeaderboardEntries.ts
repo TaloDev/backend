@@ -1,7 +1,6 @@
-import { EntityManager, NotFoundError } from '@mikro-orm/mysql'
+import { EntityManager } from '@mikro-orm/mysql'
 import { captureException } from '@sentry/node'
 import { getMikroORM } from '../config/mikro-orm.config.js'
-import Integration, { IntegrationType } from '../entities/integration.js'
 import { SteamworksLeaderboardEntry } from '../entities/steamworks-leaderboard-entry.js'
 import { streamByCursor } from '../lib/perf/streamByCursor.js'
 
@@ -19,34 +18,18 @@ export default async function cleanupSteamworksLeaderboardEntries() {
       first: batchSize,
       after,
       orderBy: { id: 'asc' },
-      populate: ['steamworksLeaderboard.leaderboard.game'] as const,
+      populate: [
+        'steamworksLeaderboard.integration',
+        'steamworksLeaderboard.leaderboard.game',
+      ] as const,
     })
   }, 100)
 
-  const integrationsMap = new Map<number, Integration>()
   let processed = 0
 
   for await (const entry of entryStream) {
     try {
-      const game = entry.steamworksLeaderboard.leaderboard.game
-      let integration = integrationsMap.get(game.id)
-      if (!integration) {
-        try {
-          integration = await em
-            .repo(Integration)
-            .findOneOrFail({ game, type: IntegrationType.STEAMWORKS })
-        } catch (err) {
-          if (err instanceof NotFoundError) {
-            await em.repo(SteamworksLeaderboardEntry).nativeDelete(entry.id)
-            continue
-          }
-          /* v8 ignore next -- @preserve */
-          throw err
-        }
-        integrationsMap.set(game.id, integration)
-      }
-
-      await integration.cleanupSteamworksLeaderboardEntry(em, entry)
+      await entry.steamworksLeaderboard.integration.cleanupSteamworksLeaderboardEntry(em, entry)
       await new Promise((resolve) => setTimeout(resolve, 100))
     } catch (err) {
       console.error(

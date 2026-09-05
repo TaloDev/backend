@@ -9,9 +9,6 @@ import {
 } from '@mikro-orm/decorators/es'
 import { Collection, EntityManager } from '@mikro-orm/mysql'
 import { v4 } from 'uuid'
-import { AuthenticateSignatureResult } from '../lib/integrations/game-center/game-center-players.js'
-import { AuthenticateAuthCodeResult } from '../lib/integrations/google-play-games/google-play-games-players.js'
-import { AuthenticateTicketResult } from '../lib/integrations/steamworks/steamworks-players.js'
 import Socket from '../socket/index.js'
 import GameChannel, { GameChannelLeavingReason } from './game-channel.js'
 import Game from './game.js'
@@ -73,55 +70,55 @@ export default class PlayerAlias {
     const trimmedService = service.trim()
     const trimmedIdentifier = identifier.trim()
 
-    if (trimmedService === PlayerAliasService.STEAM) {
-      const integration = await em.repo(Integration).findOne({
-        game,
-        type: IntegrationType.STEAMWORKS,
-      })
+    const type = {
+      [PlayerAliasService.STEAM]: IntegrationType.STEAMWORKS,
+      [PlayerAliasService.GOOGLE_PLAY_GAMES]: IntegrationType.GOOGLE_PLAY_GAMES,
+      [PlayerAliasService.GAME_CENTER]: IntegrationType.GAME_CENTER,
+    }[trimmedService]
 
-      if (integration) {
-        const { steamId, initialPlayerProps } = (await integration.getPlayerIdentifier(
-          em,
-          trimmedIdentifier,
-        )) as AuthenticateTicketResult
+    if (!type) {
+      return { identifier: trimmedIdentifier }
+    }
 
-        return { identifier: steamId, initialPlayerProps }
+    return PlayerAlias.resolveWithIntegrations({
+      em,
+      game,
+      type,
+      identifier: trimmedIdentifier,
+    })
+  }
+
+  // try every integration for the service until one accepts the credentials
+  private static async resolveWithIntegrations({
+    em,
+    game,
+    type,
+    identifier,
+  }: {
+    em: EntityManager
+    game: Game
+    type: IntegrationType
+    identifier: string
+  }) {
+    // newest integrations first - their credentials are the most likely to be current
+    const integrations = await em
+      .repo(Integration)
+      .find({ game, type }, { orderBy: { createdAt: 'desc' } })
+
+    if (integrations.length === 0) {
+      return { identifier }
+    }
+
+    let lastError: unknown
+    for (const integration of integrations) {
+      try {
+        return await integration.getPlayerIdentifier(em, identifier)
+      } catch (err) {
+        lastError = err
       }
     }
 
-    if (trimmedService === PlayerAliasService.GOOGLE_PLAY_GAMES) {
-      const integration = await em.repo(Integration).findOne({
-        game,
-        type: IntegrationType.GOOGLE_PLAY_GAMES,
-      })
-
-      if (integration) {
-        const { playerId, initialPlayerProps } = (await integration.getPlayerIdentifier(
-          em,
-          trimmedIdentifier,
-        )) as AuthenticateAuthCodeResult
-
-        return { identifier: playerId, initialPlayerProps }
-      }
-    }
-
-    if (trimmedService === PlayerAliasService.GAME_CENTER) {
-      const integration = await em.repo(Integration).findOne({
-        game,
-        type: IntegrationType.GAME_CENTER,
-      })
-
-      if (integration) {
-        const { playerId, initialPlayerProps } = (await integration.getPlayerIdentifier(
-          em,
-          trimmedIdentifier,
-        )) as AuthenticateSignatureResult
-
-        return { identifier: playerId, initialPlayerProps }
-      }
-    }
-
-    return { identifier: trimmedIdentifier }
+    throw lastError
   }
 
   static getSocketDataKey(id: number) {

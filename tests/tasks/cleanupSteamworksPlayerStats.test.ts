@@ -50,6 +50,7 @@ describe('cleanupSteamworksPlayerStats', () => {
       players.map(async (player) => {
         return new SteamworksPlayerStat({
           stat,
+          integration,
           playerStat: await new PlayerGameStatFactory().construct(player, stat).one(),
           steamUserId: player.aliases[0].identifier,
         })
@@ -90,6 +91,7 @@ describe('cleanupSteamworksPlayerStats', () => {
     const playerStats = players.map((player) => {
       return new SteamworksPlayerStat({
         stat,
+        integration,
         playerStat: null,
         steamUserId: player.aliases[0].identifier,
       })
@@ -109,33 +111,6 @@ describe('cleanupSteamworksPlayerStats', () => {
     expect(playerStatCount).toBe(1)
   })
 
-  it('should still delete steamworks player stats for games without integrations', async () => {
-    const [, game] = await createOrganisationAndGame()
-
-    const stat = await new GameStatFactory([game]).one()
-    const players = await new PlayerFactory([game]).withSteamAlias().many(5)
-
-    const playerStats = players.map((player) => {
-      return new SteamworksPlayerStat({
-        stat,
-        playerStat: null,
-        steamUserId: player.aliases[0].identifier,
-      })
-    })
-
-    await em.persist(playerStats).flush()
-
-    await cleanupSteamworksPlayerStats()
-
-    expect(setMock).toHaveBeenCalledTimes(0)
-
-    const eventCount = await em.repo(SteamworksIntegrationEvent).count({ integration: { game } })
-    expect(eventCount).toBe(0)
-
-    const playerStatCount = await em.repo(SteamworksPlayerStat).count()
-    expect(playerStatCount).toBe(0)
-  })
-
   it('should set stats to default values when cleaning up', async () => {
     const [, game] = await createOrganisationAndGame()
     const config = await new IntegrationConfigFactory().one()
@@ -148,6 +123,7 @@ describe('cleanupSteamworksPlayerStats', () => {
 
     const playerStat = new SteamworksPlayerStat({
       stat,
+      integration,
       playerStat: null,
       steamUserId: player.aliases[0].identifier,
     })
@@ -181,6 +157,7 @@ describe('cleanupSteamworksPlayerStats', () => {
       players.map(async (player) => {
         return new SteamworksPlayerStat({
           stat,
+          integration,
           playerStat: await new PlayerGameStatFactory().construct(player, stat).one(),
           steamUserId: player.aliases[0].identifier,
         })
@@ -201,5 +178,54 @@ describe('cleanupSteamworksPlayerStats', () => {
 
     const playerStatCount = await em.repo(SteamworksPlayerStat).count()
     expect(playerStatCount).toBe(3)
+  })
+
+  it('should cleanup player stats via their own integration', async () => {
+    const [, game] = await createOrganisationAndGame()
+    const configA = await new IntegrationConfigFactory().one()
+    const integrationA = await new IntegrationFactory()
+      .construct(IntegrationType.STEAMWORKS, game, configA)
+      .one()
+    const configB = await new IntegrationConfigFactory()
+      .state(() => ({ appId: configA.appId + 1 }))
+      .one()
+    const integrationB = await new IntegrationFactory()
+      .construct(IntegrationType.STEAMWORKS, game, configB)
+      .one()
+
+    const stat = await new GameStatFactory([game]).one()
+    const [playerA, playerB] = await new PlayerFactory([game]).withSteamAlias().many(2)
+
+    const statA = new SteamworksPlayerStat({
+      stat,
+      integration: integrationA,
+      playerStat: null,
+      steamUserId: playerA.aliases[0].identifier,
+    })
+    const statB = new SteamworksPlayerStat({
+      stat,
+      integration: integrationB,
+      playerStat: null,
+      steamUserId: playerB.aliases[0].identifier,
+    })
+
+    await em.persist([integrationA, integrationB, statA, statB]).flush()
+
+    await cleanupSteamworksPlayerStats()
+
+    expect(setMock).toHaveBeenCalledTimes(2)
+
+    expect(await em.repo(SteamworksIntegrationEvent).count({ integration: integrationA })).toBe(1)
+    expect(await em.repo(SteamworksIntegrationEvent).count({ integration: integrationB })).toBe(1)
+
+    // each row was reset against its own integration's app
+    const events = await em.repo(SteamworksIntegrationEvent).findAll()
+    const bodies = events.map((event) => event.request.body)
+    expect(bodies).toContain(
+      `appid=${configA.appId}&steamid=${playerA.aliases[0].identifier}&count=1&name%5B0%5D=${stat.internalName}&value%5B0%5D=${stat.defaultValue}`,
+    )
+    expect(bodies).toContain(
+      `appid=${configB.appId}&steamid=${playerB.aliases[0].identifier}&count=1&name%5B0%5D=${stat.internalName}&value%5B0%5D=${stat.defaultValue}`,
+    )
   })
 })

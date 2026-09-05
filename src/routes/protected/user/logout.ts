@@ -1,5 +1,6 @@
 import UserSession from '../../../entities/user-session.js'
 import { protectedRoute } from '../../../lib/routing/router.js'
+import { clearRefreshTokenCookie } from './common.js'
 
 export const logoutRoute = protectedRoute({
   method: 'post',
@@ -14,7 +15,7 @@ export const logoutRoute = protectedRoute({
     })
     await em.remove(sessions).flush()
 
-    ctx.cookies.set('refreshToken', null, { expires: new Date(0) })
+    clearRefreshTokenCookie(ctx)
 
     return {
       status: 204,

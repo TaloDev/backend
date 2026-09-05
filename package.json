@@ -1,6 +1,6 @@
 {
-  "name": "game-services",
-  "version": "1.1.0",
+  "name": "talo-backend",
+  "version": "1.2.0",
   "description": "",
   "license": "MIT",
   "author": "Talo Platform Ltd",
@@ -8,15 +8,15 @@
   "main": "src/index.ts",
   "scripts": {
     "watch": "tsx watch --include src src/index.ts",
-    "build": "npx tsc -p tsconfig.build.json",
-    "build:sourcemaps": "npx tsc -p tsconfig.sourcemaps.json",
+    "build": "tsc -p tsconfig.build.json",
+    "build:sourcemaps": "tsc -p tsconfig.sourcemaps.json",
     "seed": "DB_HOST=127.0.0.1 CLICKHOUSE_HOST=127.0.0.1 tsx tests/seed.ts",
     "test": "TZ=UTC ./tests/run-tests.sh",
     "up": "docker compose up --build -d",
     "down": "docker compose down",
-    "restart": "docker compose restart backend && npm run logs",
+    "restart": "docker compose restart backend && pnpm logs",
     "logs": "docker compose logs backend --follow",
-    "migration:create": "DB_HOST=127.0.0.1 mikro-orm migration:create",
+    "migration:create": "DB_HOST=127.0.0.1 mikro-orm migration:create && pnpm fmt:fix",
     "migration:up": "DB_HOST=127.0.0.1 mikro-orm migration:up",
     "prepare": "husky || true",
     "stripe:webhooks": "stripe listen --forward-to localhost:3000/public/webhooks/subscriptions",
@@ -37,6 +37,7 @@
     "@mikro-orm/reflection": "^7.1.13",
     "@ngneat/falso": "^7.2.0",
     "@opentelemetry/api": "^1.9.1",
+    "@otplib/preset-default": "^12.0.1",
     "@sentry/node": "^10.57.0",
     "archiver": "^8.0.0",
     "axios": "^1.18.1",
@@ -68,7 +69,7 @@
     "redlock-universal": "^0.8.4",
     "s3mini": "^0.9.2",
     "sqids": "^0.3.0",
-    "stripe": "^18.0.0",
+    "stripe": "18.0.0",
     "uuid": "^14.0.0",
     "ws": "^8.21.0",
     "zod": "^4.3.6"
@@ -87,6 +88,7 @@
     "@types/node": "24",
     "@types/nodemailer": "^6.4.17",
     "@types/qrcode": "^1.5.5",
+    "@types/qs": "^6.9.18",
     "@types/supertest": "^6.0.2",
     "@types/unzipper": "^0.10.11",
     "@types/uuid": "^10.0.0",
@@ -113,7 +115,14 @@
     }
   },
   "lint-staged": {
-    "*.{js,ts}": "npm run lint"
+    "*.{js,ts}": "pnpm lint"
+  },
+  "devEngines": {
+    "packageManager": {
+      "name": "pnpm",
+      "version": "12.0.0",
+      "onFail": "error"
+    }
   },
   "engines": {
     "node": ">=24.0.0"

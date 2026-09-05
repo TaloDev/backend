@@ -1,12 +1,14 @@
 import { Queue } from 'bullmq'
 import { createClearResponseCacheQueue } from '../lib/perf/responseCacheQueue.js'
 import { createDeleteClickHousePlayerDataQueue } from '../lib/queues/createDeleteClickHousePlayerDataQueue.js'
+import { createDeleteOrganisationQueue } from '../lib/queues/createDeleteOrganisationQueue.js'
 import { createEmailQueue } from '../lib/queues/createEmailQueue.js'
 
 const queueFactories = {
   email: createEmailQueue,
   'clear-response-cache': createClearResponseCacheQueue,
   'delete-clickhouse-player-data': createDeleteClickHousePlayerDataQueue,
+  'delete-organisation': createDeleteOrganisationQueue,
 } as const
 
 export const queueNames = Object.keys(queueFactories) as (keyof typeof queueFactories)[]

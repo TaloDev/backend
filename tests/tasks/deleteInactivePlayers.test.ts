@@ -484,8 +484,8 @@ describe('deleteInactivePlayers', () => {
 
     await em.persist([owner1, owner2, player1, player2]).flush()
 
-    // makes persisting the first player_to_delete fail
-    vi.spyOn(EntityManager.prototype, 'flush').mockRejectedValueOnce(new Error())
+    // makes queueing the first game's players fail
+    vi.spyOn(EntityManager.prototype, 'upsertMany').mockRejectedValueOnce(new Error())
 
     await deleteInactivePlayers()
     // actually delete the players
@@ -511,6 +511,22 @@ describe('deleteInactivePlayers', () => {
       },
     })
     expect(activity2).not.toBeNull()
+  })
+
+  it('should not queue the same player twice', async () => {
+    const [organisation, game] = await createOrganisationAndGame({}, { purgeLivePlayers: true })
+    const owner = await new UserFactory()
+      .owner()
+      .state(() => ({ organisation }))
+      .one()
+    const player = await new PlayerFactory([game])
+      .state(() => ({ lastSeenAt: sub(new Date(), { days: 91 }) }))
+      .one()
+    await em.persist([owner, player]).flush()
+
+    await Promise.all([deleteInactivePlayers(), deleteInactivePlayers()])
+
+    expect(await em.count(PlayerToDelete, { player: { id: player.id } })).toBe(1)
   })
 
   describe('integration tests', () => {
@@ -655,5 +671,39 @@ describe('deleteInactivePlayers', () => {
       const updatedPropCount = await em.repo(PlayerProp).count()
       expect(updatedPropCount).toBe(0)
     })
+  })
+
+  it('should purge players of a deleted organisation', async () => {
+    const [organisation, game] = await createOrganisationAndGame(
+      {},
+      { purgeDevPlayers: true, purgeLivePlayers: true },
+    )
+
+    const owner = await new UserFactory()
+      .owner()
+      .state(() => ({
+        organisation,
+      }))
+      .one()
+
+    const player = await new PlayerFactory([game])
+      .state(() => ({
+        lastSeenAt: sub(new Date(), { days: 61 }),
+      }))
+      .devBuild()
+      .one()
+    await em.persist([owner, player]).flush()
+
+    organisation.deletedAt = new Date()
+    await em.flush()
+
+    await deleteInactivePlayers()
+
+    expect(await em.repo(PlayerToDelete).count()).toBe(1)
+    expect(
+      await em
+        .repo(GameActivity)
+        .count({ game, type: GameActivityType.INACTIVE_DEV_PLAYERS_DELETED }),
+    ).toBe(1)
   })
 })

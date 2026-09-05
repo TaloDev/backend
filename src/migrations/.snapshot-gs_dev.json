@@ -154,7 +154,13 @@
           "default": null,
           "comment": null,
           "collation": null,
-          "enumItems": [],
+          "enumItems": [
+            "read:stats",
+            "write:stats",
+            "read:leaderboards",
+            "write:leaderboards",
+            "*"
+          ],
           "mappedType": "text"
         },
         "updated_at": {
@@ -348,7 +354,33 @@
           "default": null,
           "comment": null,
           "collation": null,
-          "enumItems": [],
+          "enumItems": [
+            "read:playerPresence",
+            "write:playerPresence",
+            "read:gameChannels",
+            "write:gameChannels",
+            "read:playerGroups",
+            "write:continuityRequests",
+            "read:gameFeedback",
+            "write:gameFeedback",
+            "read:gameConfig",
+            "write:gameConfig",
+            "read:gameStats",
+            "write:gameStats",
+            "read:gameSaves",
+            "write:gameSaves",
+            "read:leaderboards",
+            "write:leaderboards",
+            "read:players",
+            "write:players",
+            "read:events",
+            "write:events",
+            "read:playerRelationships",
+            "write:playerRelationships",
+            "read:playerBroadcasts",
+            "write:playerBroadcasts",
+            "*"
+          ],
           "mappedType": "text"
         },
         "updated_at": {
@@ -466,7 +498,16 @@
           "default": null,
           "comment": null,
           "collation": null,
-          "enumItems": [],
+          "enumItems": [
+            "events",
+            "players",
+            "playerAliases",
+            "leaderboardEntries",
+            "gameStats",
+            "playerGameStats",
+            "gameActivities",
+            "gameFeedback"
+          ],
           "mappedType": "text"
         },
         "failed_at": {
@@ -647,8 +688,8 @@
           "nullable": false,
           "unique": false,
           "length": null,
-          "precision": 3,
-          "scale": 0,
+          "precision": null,
+          "scale": null,
           "default": null,
           "comment": null,
           "collation": null,
@@ -726,6 +767,305 @@
           "referencedColumnNames": ["id"],
           "referencedTableName": "game",
           "deleteRule": "cascade"
+        }
+      },
+      "comment": null
+    },
+    {
+      "name": "event_funnel",
+      "columns": {
+        "created_at": {
+          "name": "created_at",
+          "type": "datetime",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "datetime"
+        },
+        "game_id": {
+          "name": "game_id",
+          "type": "int",
+          "unsigned": true,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "integer"
+        },
+        "id": {
+          "name": "id",
+          "type": "int",
+          "unsigned": true,
+          "autoincrement": true,
+          "primary": true,
+          "nullable": false,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "integer"
+        },
+        "max_gap": {
+          "name": "max_gap",
+          "type": "int",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "integer"
+        },
+        "name": {
+          "name": "name",
+          "type": "varchar(255)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": 255,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "string"
+        },
+        "steps": {
+          "name": "steps",
+          "type": "json",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "json"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "datetime",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "datetime"
+        }
+      },
+      "indexes": [
+        {
+          "columnNames": ["id"],
+          "composite": false,
+          "constraint": true,
+          "keyName": "PRIMARY",
+          "primary": true,
+          "unique": true
+        },
+        {
+          "columnNames": ["game_id"],
+          "composite": false,
+          "constraint": false,
+          "keyName": "event_funnel_game_id_index",
+          "primary": false,
+          "unique": false
+        }
+      ],
+      "checks": [],
+      "triggers": [],
+      "foreignKeys": {
+        "event_funnel_game_id_foreign": {
+          "columnNames": ["game_id"],
+          "constraintName": "event_funnel_game_id_foreign",
+          "localTableName": "event_funnel",
+          "referencedColumnNames": ["id"],
+          "referencedTableName": "game"
+        }
+      },
+      "comment": null
+    },
+    {
+      "name": "event_retention",
+      "columns": {
+        "created_at": {
+          "name": "created_at",
+          "type": "datetime",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "datetime"
+        },
+        "event_name": {
+          "name": "event_name",
+          "type": "varchar(255)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": 255,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "string"
+        },
+        "game_id": {
+          "name": "game_id",
+          "type": "int",
+          "unsigned": true,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": true,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "integer"
+        },
+        "id": {
+          "name": "id",
+          "type": "int",
+          "unsigned": true,
+          "autoincrement": true,
+          "primary": true,
+          "nullable": false,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "integer"
+        },
+        "retention_days": {
+          "name": "retention_days",
+          "type": "int",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "integer"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "datetime",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "datetime"
+        }
+      },
+      "indexes": [
+        {
+          "columnNames": ["id"],
+          "composite": false,
+          "constraint": true,
+          "keyName": "PRIMARY",
+          "primary": true,
+          "unique": true
+        },
+        {
+          "columnNames": ["game_id", "event_name"],
+          "composite": true,
+          "constraint": true,
+          "keyName": "event_retention_game_id_event_name_unique",
+          "primary": false,
+          "unique": true
+        },
+        {
+          "columnNames": ["game_id"],
+          "composite": false,
+          "constraint": false,
+          "keyName": "event_retention_game_id_index",
+          "primary": false,
+          "unique": false
+        }
+      ],
+      "checks": [],
+      "triggers": [],
+      "foreignKeys": {
+        "event_retention_game_id_foreign": {
+          "columnNames": ["game_id"],
+          "constraintName": "event_retention_game_id_foreign",
+          "localTableName": "event_retention",
+          "referencedColumnNames": ["id"],
+          "referencedTableName": "game"
         }
       },
       "comment": null
@@ -888,8 +1228,8 @@
           "nullable": false,
           "unique": false,
           "length": null,
-          "precision": 3,
-          "scale": 0,
+          "precision": null,
+          "scale": null,
           "default": "false",
           "comment": null,
           "collation": null,
@@ -905,8 +1245,8 @@
           "nullable": false,
           "unique": false,
           "length": null,
-          "precision": 3,
-          "scale": 0,
+          "precision": null,
+          "scale": null,
           "default": "false",
           "comment": null,
           "collation": null,
@@ -1041,8 +1381,8 @@
           "nullable": false,
           "unique": false,
           "length": null,
-          "precision": 3,
-          "scale": 0,
+          "precision": null,
+          "scale": null,
           "default": "false",
           "comment": null,
           "collation": null,
@@ -1075,8 +1415,8 @@
           "nullable": false,
           "unique": false,
           "length": null,
-          "precision": 3,
-          "scale": 0,
+          "precision": null,
+          "scale": null,
           "default": "false",
           "comment": null,
           "collation": null,
@@ -1126,8 +1466,8 @@
           "nullable": false,
           "unique": false,
           "length": null,
-          "precision": 3,
-          "scale": 0,
+          "precision": null,
+          "scale": null,
           "default": "false",
           "comment": null,
           "collation": null,
@@ -1500,7 +1840,8 @@
           "constraintName": "game_center_integration_event_integration_id_foreign",
           "localTableName": "game_center_integration_event",
           "referencedColumnNames": ["id"],
-          "referencedTableName": "integration"
+          "referencedTableName": "integration",
+          "deleteRule": "cascade"
         }
       },
       "comment": null
@@ -1517,8 +1858,8 @@
           "nullable": false,
           "unique": false,
           "length": null,
-          "precision": 3,
-          "scale": 0,
+          "precision": null,
+          "scale": null,
           "default": "false",
           "comment": null,
           "collation": null,
@@ -1619,8 +1960,8 @@
           "nullable": false,
           "unique": false,
           "length": null,
-          "precision": 3,
-          "scale": 0,
+          "precision": null,
+          "scale": null,
           "default": "false",
           "comment": null,
           "collation": null,
@@ -1636,8 +1977,8 @@
           "nullable": false,
           "unique": false,
           "length": null,
-          "precision": 3,
-          "scale": 0,
+          "precision": null,
+          "scale": null,
           "default": "false",
           "comment": null,
           "collation": null,
@@ -2159,8 +2500,8 @@
           "nullable": false,
           "unique": false,
           "length": null,
-          "precision": 3,
-          "scale": 0,
+          "precision": null,
+          "scale": null,
           "default": null,
           "comment": null,
           "collation": null,
@@ -2347,8 +2688,8 @@
           "nullable": false,
           "unique": false,
           "length": null,
-          "precision": 3,
-          "scale": 0,
+          "precision": null,
+          "scale": null,
           "default": null,
           "comment": null,
           "collation": null,
@@ -2889,8 +3230,8 @@
           "nullable": false,
           "unique": false,
           "length": null,
-          "precision": 3,
-          "scale": 0,
+          "precision": null,
+          "scale": null,
           "default": null,
           "comment": null,
           "collation": null,
@@ -3325,7 +3666,8 @@
           "constraintName": "google_play_games_integration_event_integration_id_foreign",
           "localTableName": "google_play_games_integration_event",
           "referencedColumnNames": ["id"],
-          "referencedTableName": "integration"
+          "referencedTableName": "integration",
+          "deleteRule": "cascade"
         }
       },
       "comment": null
@@ -3357,23 +3699,6 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
-          "unique": false,
-          "length": null,
-          "precision": null,
-          "scale": null,
-          "default": null,
-          "comment": null,
-          "collation": null,
-          "enumItems": [],
-          "mappedType": "datetime"
-        },
-        "deleted_at": {
-          "name": "deleted_at",
-          "type": "datetime",
-          "unsigned": false,
-          "autoincrement": false,
-          "primary": false,
-          "nullable": true,
           "unique": false,
           "length": null,
           "precision": null,
@@ -3784,8 +4109,8 @@
           "nullable": false,
           "unique": false,
           "length": null,
-          "precision": 3,
-          "scale": 0,
+          "precision": null,
+          "scale": null,
           "default": null,
           "comment": null,
           "collation": null,
@@ -3801,8 +4126,8 @@
           "nullable": false,
           "unique": false,
           "length": null,
-          "precision": 3,
-          "scale": 0,
+          "precision": null,
+          "scale": null,
           "default": "false",
           "comment": null,
           "collation": null,
@@ -3912,8 +4237,8 @@
           "nullable": false,
           "unique": false,
           "length": null,
-          "precision": 3,
-          "scale": 0,
+          "precision": null,
+          "scale": null,
           "default": "false",
           "comment": null,
           "collation": null,
@@ -4033,12 +4358,13 @@
           "unique": true
         },
         {
-          "columnNames": ["hidden", "leaderboard_id", "score"],
-          "composite": true,
+          "columnNames": ["score"],
+          "composite": false,
           "constraint": false,
           "keyName": "idx_leaderboardentry_hidden_leaderboard_id_score",
           "primary": false,
-          "unique": false
+          "unique": false,
+          "expression": "alter table `leaderboard_entry` add index `idx_leaderboardentry_hidden_leaderboard_id_score`(`hidden`, `leaderboard_id`, `score`)"
         },
         {
           "columnNames": ["hidden"],
@@ -4226,6 +4552,23 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "datetime"
+        },
+        "deleted_at": {
+          "name": "deleted_at",
+          "type": "datetime",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
           "unique": false,
           "length": null,
           "precision": null,
@@ -4587,8 +4930,8 @@
           "nullable": false,
           "unique": false,
           "length": null,
-          "precision": 3,
-          "scale": 0,
+          "precision": null,
+          "scale": null,
           "default": "false",
           "comment": null,
           "collation": null,
@@ -4893,22 +5236,13 @@
           "unique": true
         },
         {
-          "columnNames": ["service", "identifier"],
-          "composite": true,
+          "columnNames": [],
+          "composite": false,
           "constraint": false,
           "keyName": "idx_player_alias_service_identifier",
           "primary": false,
           "unique": false,
-          "columns": [
-            {
-              "name": "service",
-              "length": 191
-            },
-            {
-              "name": "identifier",
-              "length": 191
-            }
-          ]
+          "expression": "alter table `player_alias` add index `idx_player_alias_service_identifier`(`service`(191), `identifier`(191))"
         },
         {
           "columnNames": ["player_id"],
@@ -4945,8 +5279,8 @@
           "nullable": false,
           "unique": false,
           "length": null,
-          "precision": 3,
-          "scale": 0,
+          "precision": null,
+          "scale": null,
           "default": "false",
           "comment": null,
           "collation": null,
@@ -5251,8 +5585,8 @@
           "nullable": false,
           "unique": false,
           "length": null,
-          "precision": 3,
-          "scale": 0,
+          "precision": null,
+          "scale": null,
           "default": "false",
           "comment": null,
           "collation": null,
@@ -5512,12 +5846,13 @@
           "unique": true
         },
         {
-          "columnNames": ["stat_id", "value"],
-          "composite": true,
+          "columnNames": ["value"],
+          "composite": false,
           "constraint": false,
           "keyName": "idx_playergamestat_stat_id_value",
           "primary": false,
-          "unique": false
+          "unique": false,
+          "expression": "alter table `player_game_stat` add index `idx_playergamestat_stat_id_value`(`stat_id`, `value`)"
         },
         {
           "columnNames": ["player_id"],
@@ -5646,8 +5981,8 @@
           "nullable": false,
           "unique": false,
           "length": null,
-          "precision": 3,
-          "scale": 0,
+          "precision": null,
+          "scale": null,
           "default": "false",
           "comment": null,
           "collation": null,
@@ -5873,7 +6208,7 @@
           "length": 255,
           "precision": null,
           "scale": null,
-          "default": "",
+          "default": "''",
           "comment": null,
           "collation": null,
           "enumItems": [],
@@ -5905,8 +6240,8 @@
           "nullable": false,
           "unique": false,
           "length": null,
-          "precision": 3,
-          "scale": 0,
+          "precision": null,
+          "scale": null,
           "default": "false",
           "comment": null,
           "collation": null,
@@ -6079,12 +6414,13 @@
           "unique": true
         },
         {
-          "columnNames": ["key", "value"],
-          "composite": true,
+          "columnNames": ["value"],
+          "composite": false,
           "constraint": false,
           "keyName": "idx_playerprop_key_value",
           "primary": false,
-          "unique": false
+          "unique": false,
+          "expression": "alter table `player_prop` add index `idx_playerprop_key_value`(`key`, `value`)"
         },
         {
           "columnNames": ["key"],
@@ -6144,7 +6480,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
-          "unique": false,
+          "unique": true,
           "length": 255,
           "precision": null,
           "scale": null,
@@ -6188,6 +6524,14 @@
           "keyName": "players_to_delete_player_id_index",
           "primary": false,
           "unique": false
+        },
+        {
+          "columnNames": ["player_id"],
+          "composite": false,
+          "constraint": true,
+          "keyName": "players_to_delete_player_id_unique",
+          "primary": false,
+          "unique": true
         }
       ],
       "checks": [],
@@ -6233,8 +6577,8 @@
           "nullable": false,
           "unique": false,
           "length": null,
-          "precision": 3,
-          "scale": 0,
+          "precision": null,
+          "scale": null,
           "default": "false",
           "comment": null,
           "collation": null,
@@ -6250,8 +6594,8 @@
           "nullable": false,
           "unique": false,
           "length": null,
-          "precision": 3,
-          "scale": 0,
+          "precision": null,
+          "scale": null,
           "default": "false",
           "comment": null,
           "collation": null,
@@ -6457,7 +6801,8 @@
           "constraintName": "steamworks_integration_event_integration_id_foreign",
           "localTableName": "steamworks_integration_event",
           "referencedColumnNames": ["id"],
-          "referencedTableName": "integration"
+          "referencedTableName": "integration",
+          "deleteRule": "cascade"
         }
       },
       "comment": null
@@ -6499,6 +6844,23 @@
           "enumItems": [],
           "mappedType": "integer"
         },
+        "integration_id": {
+          "name": "integration_id",
+          "type": "int",
+          "unsigned": true,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "integer"
+        },
         "leaderboard_entry_id": {
           "name": "leaderboard_entry_id",
           "type": "int",
@@ -6506,7 +6868,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": true,
-          "unique": true,
+          "unique": false,
           "length": null,
           "precision": null,
           "scale": null,
@@ -6557,7 +6919,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
-          "unique": false,
+          "unique": true,
           "length": null,
           "precision": null,
           "scale": null,
@@ -6597,16 +6959,29 @@
         {
           "columnNames": ["leaderboard_entry_id"],
           "composite": false,
+          "constraint": false,
+          "keyName": "steamworks_leaderboard_entry_leaderboard_entry_id_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "steamworks_leaderboard_id",
+            "leaderboard_id",
+            "integration_id",
+            "leaderboard_entry_id"
+          ],
+          "composite": true,
           "constraint": true,
-          "keyName": "steamworks_leaderboard_entry_leaderboard_entry_id_unique",
+          "keyName": "steamworks_leaderboard_entry_steamworks_leaderboar_3f388_unique",
           "primary": false,
           "unique": true
         },
         {
-          "columnNames": ["steamworks_leaderboard_id", "leaderboard_id"],
+          "columnNames": ["steamworks_leaderboard_id", "leaderboard_id", "integration_id"],
           "composite": true,
           "constraint": false,
-          "keyName": "steamworks_leaderboard_entry_steamworks_leaderboard_47d69_index",
+          "keyName": "steamworks_leaderboard_entry_steamworks_leaderboard_54c77_index",
           "primary": false,
           "unique": false
         }
@@ -6622,11 +6997,15 @@
           "referencedTableName": "leaderboard_entry",
           "deleteRule": "set null"
         },
-        "steamworks_leaderboard_entry_steamworks_leaderboa_15279_foreign": {
-          "columnNames": ["steamworks_leaderboard_id", "leaderboard_id"],
-          "constraintName": "steamworks_leaderboard_entry_steamworks_leaderboa_15279_foreign",
+        "steamworks_leaderboard_entry_steamworks_leaderboa_6bddf_foreign": {
+          "columnNames": ["steamworks_leaderboard_id", "leaderboard_id", "integration_id"],
+          "constraintName": "steamworks_leaderboard_entry_steamworks_leaderboa_6bddf_foreign",
           "localTableName": "steamworks_leaderboard_entry",
-          "referencedColumnNames": ["steamworks_leaderboard_id", "leaderboard_id"],
+          "referencedColumnNames": [
+            "steamworks_leaderboard_id",
+            "leaderboard_id",
+            "integration_id"
+          ],
           "referencedTableName": "steamworks_leaderboard_mapping",
           "updateRule": "cascade",
           "deleteRule": "cascade"
@@ -6653,6 +7032,23 @@
           "collation": null,
           "enumItems": [],
           "mappedType": "datetime"
+        },
+        "integration_id": {
+          "name": "integration_id",
+          "type": "int",
+          "unsigned": true,
+          "autoincrement": false,
+          "primary": true,
+          "nullable": false,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "integer"
         },
         "leaderboard_id": {
           "name": "leaderboard_id",
@@ -6691,12 +7087,20 @@
       },
       "indexes": [
         {
-          "columnNames": ["steamworks_leaderboard_id", "leaderboard_id"],
+          "columnNames": ["steamworks_leaderboard_id", "leaderboard_id", "integration_id"],
           "composite": true,
           "constraint": true,
           "keyName": "PRIMARY",
           "primary": true,
           "unique": true
+        },
+        {
+          "columnNames": ["integration_id"],
+          "composite": false,
+          "constraint": false,
+          "keyName": "steamworks_leaderboard_mapping_integration_id_index",
+          "primary": false,
+          "unique": false
         },
         {
           "columnNames": ["leaderboard_id"],
@@ -6710,6 +7114,14 @@
       "checks": [],
       "triggers": [],
       "foreignKeys": {
+        "steamworks_leaderboard_mapping_integration_id_foreign": {
+          "columnNames": ["integration_id"],
+          "constraintName": "steamworks_leaderboard_mapping_integration_id_foreign",
+          "localTableName": "steamworks_leaderboard_mapping",
+          "referencedColumnNames": ["id"],
+          "referencedTableName": "integration",
+          "deleteRule": "cascade"
+        },
         "steamworks_leaderboard_mapping_leaderboard_id_foreign": {
           "columnNames": ["leaderboard_id"],
           "constraintName": "steamworks_leaderboard_mapping_leaderboard_id_foreign",
@@ -6758,6 +7170,23 @@
           "enumItems": [],
           "mappedType": "integer"
         },
+        "integration_id": {
+          "name": "integration_id",
+          "type": "int",
+          "unsigned": true,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": true,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "integer"
+        },
         "player_stat_id": {
           "name": "player_stat_id",
           "type": "int",
@@ -6765,7 +7194,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": true,
-          "unique": true,
+          "unique": false,
           "length": null,
           "precision": null,
           "scale": null,
@@ -6837,12 +7266,28 @@
           "unique": true
         },
         {
-          "columnNames": ["player_stat_id"],
+          "columnNames": ["integration_id"],
           "composite": false,
+          "constraint": false,
+          "keyName": "steamworks_player_stat_integration_id_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": ["integration_id", "player_stat_id"],
+          "composite": true,
           "constraint": true,
-          "keyName": "steamworks_player_stat_player_stat_id_unique",
+          "keyName": "steamworks_player_stat_integration_id_player_stat_id_unique",
           "primary": false,
           "unique": true
+        },
+        {
+          "columnNames": ["player_stat_id"],
+          "composite": false,
+          "constraint": false,
+          "keyName": "steamworks_player_stat_player_stat_id_index",
+          "primary": false,
+          "unique": false
         },
         {
           "columnNames": ["stat_id"],
@@ -6856,6 +7301,14 @@
       "checks": [],
       "triggers": [],
       "foreignKeys": {
+        "steamworks_player_stat_integration_id_foreign": {
+          "columnNames": ["integration_id"],
+          "constraintName": "steamworks_player_stat_integration_id_foreign",
+          "localTableName": "steamworks_player_stat",
+          "referencedColumnNames": ["id"],
+          "referencedTableName": "integration",
+          "deleteRule": "cascade"
+        },
         "steamworks_player_stat_player_stat_id_foreign": {
           "columnNames": ["player_stat_id"],
           "constraintName": "steamworks_player_stat_player_stat_id_foreign",
@@ -6895,6 +7348,23 @@
           "enumItems": [],
           "mappedType": "datetime"
         },
+        "deleted_at": {
+          "name": "deleted_at",
+          "type": "datetime",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "datetime"
+        },
         "email": {
           "name": "email",
           "type": "varchar(255)",
@@ -6921,8 +7391,8 @@
           "nullable": false,
           "unique": false,
           "length": null,
-          "precision": 3,
-          "scale": 0,
+          "precision": null,
+          "scale": null,
           "default": "false",
           "comment": null,
           "collation": null,
@@ -7612,8 +8082,8 @@
           "nullable": false,
           "unique": false,
           "length": null,
-          "precision": 3,
-          "scale": 0,
+          "precision": null,
+          "scale": null,
           "default": "false",
           "comment": null,
           "collation": null,

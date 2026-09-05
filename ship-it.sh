@@ -8,7 +8,7 @@ if [ -n "$1" ]; then
     exit 1
   fi
 
-  npm version "$VERSION_TYPE"
+  pnpm version "$VERSION_TYPE"
   git push
 fi
 

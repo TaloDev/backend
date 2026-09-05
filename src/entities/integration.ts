@@ -1,15 +1,9 @@
-import { Entity, Enum, Filter, ManyToOne, PrimaryKey, Property } from '@mikro-orm/decorators/es'
+import { Entity, Enum, ManyToOne, PrimaryKey, Property } from '@mikro-orm/decorators/es'
 import { EntityManager } from '@mikro-orm/mysql'
 import { pick } from 'lodash-es'
 import { decrypt, encrypt } from '../lib/crypto/string-encryption.js'
-import {
-  authenticateSignature,
-  AuthenticateSignatureResult,
-} from '../lib/integrations/game-center/game-center-players.js'
-import {
-  authenticateAuthCode,
-  AuthenticateAuthCodeResult,
-} from '../lib/integrations/google-play-games/google-play-games-players.js'
+import { authenticateSignature } from '../lib/integrations/game-center/game-center-players.js'
+import { authenticateAuthCode } from '../lib/integrations/google-play-games/google-play-games-players.js'
 import {
   cleanupSteamworksLeaderboardEntry,
   createSteamworksLeaderboard,
@@ -18,10 +12,7 @@ import {
   deleteSteamworksLeaderboardEntry,
   syncSteamworksLeaderboards,
 } from '../lib/integrations/steamworks/steamworks-leaderboards.js'
-import {
-  authenticateTicket,
-  AuthenticateTicketResult,
-} from '../lib/integrations/steamworks/steamworks-players.js'
+import { authenticateTicket } from '../lib/integrations/steamworks/steamworks-players.js'
 import {
   cleanupSteamworksPlayerStat,
   setSteamworksStat,
@@ -65,8 +56,15 @@ export type IntegrationConfigMap = {
 
 export type IntegrationConfig = IntegrationConfigMap[keyof IntegrationConfigMap]
 
+type ResolveIdentifierResult = {
+  identifier: string
+  initialPlayerProps?: {
+    key: string
+    value: string
+  }[]
+}
+
 @Entity()
-@Filter({ name: 'active', cond: { deletedAt: null }, default: true })
 export default class Integration<T extends IntegrationType = IntegrationType> {
   @PrimaryKey()
   id!: number
@@ -79,9 +77,6 @@ export default class Integration<T extends IntegrationType = IntegrationType> {
 
   @Property({ type: 'json' })
   private config: IntegrationConfigMap[T]
-
-  @Property({ nullable: true })
-  deletedAt: Date | null = null
 
   @Property()
   createdAt: Date = new Date()
@@ -293,14 +288,20 @@ export default class Integration<T extends IntegrationType = IntegrationType> {
   async getPlayerIdentifier(
     em: EntityManager,
     identifier: string,
-  ): Promise<AuthenticateTicketResult | AuthenticateAuthCodeResult | AuthenticateSignatureResult> {
+  ): Promise<ResolveIdentifierResult> {
     switch (this.type) {
-      case IntegrationType.STEAMWORKS:
-        return authenticateTicket(em, this, identifier)
-      case IntegrationType.GOOGLE_PLAY_GAMES:
-        return authenticateAuthCode(em, this, identifier)
-      case IntegrationType.GAME_CENTER:
-        return authenticateSignature(em, this, identifier)
+      case IntegrationType.STEAMWORKS: {
+        const { steamId, initialPlayerProps } = await authenticateTicket(em, this, identifier)
+        return { identifier: steamId, initialPlayerProps }
+      }
+      case IntegrationType.GOOGLE_PLAY_GAMES: {
+        const { playerId, initialPlayerProps } = await authenticateAuthCode(em, this, identifier)
+        return { identifier: playerId, initialPlayerProps }
+      }
+      case IntegrationType.GAME_CENTER: {
+        const { playerId, initialPlayerProps } = await authenticateSignature(em, this, identifier)
+        return { identifier: playerId, initialPlayerProps }
+      }
     }
   }
 

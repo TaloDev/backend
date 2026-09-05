@@ -1,8 +1,10 @@
-import { Entity, ManyToOne, OneToOne, PrimaryKey, Property } from '@mikro-orm/decorators/es'
+import { Entity, ManyToOne, PrimaryKey, Property, Unique } from '@mikro-orm/decorators/es'
 import GameStat from './game-stat.js'
+import Integration from './integration.js'
 import PlayerGameStat from './player-game-stat.js'
 
 @Entity()
+@Unique({ properties: ['integration', 'playerStat'] })
 export class SteamworksPlayerStat {
   @PrimaryKey()
   id!: number
@@ -10,7 +12,10 @@ export class SteamworksPlayerStat {
   @ManyToOne(() => GameStat, { deleteRule: 'cascade' })
   stat: GameStat
 
-  @OneToOne(() => PlayerGameStat, { nullable: true })
+  @ManyToOne(() => Integration, { deleteRule: 'cascade' })
+  integration: Integration
+
+  @ManyToOne(() => PlayerGameStat, { nullable: true, deleteRule: 'set null' })
   playerStat: PlayerGameStat | null
 
   @Property()
@@ -24,14 +29,17 @@ export class SteamworksPlayerStat {
 
   constructor({
     stat,
+    integration,
     playerStat,
     steamUserId,
   }: {
     stat: GameStat
+    integration: Integration
     playerStat: PlayerGameStat | null
     steamUserId: string
   }) {
     this.stat = stat
+    this.integration = integration
     this.playerStat = playerStat
     this.steamUserId = steamUserId
   }

@@ -7,6 +7,7 @@ import { createRecoveryCodesRoute } from './2fa-recovery-codes-create.js'
 import { viewRecoveryCodesRoute } from './2fa-recovery-codes-view.js'
 import { changePasswordRoute } from './change-password.js'
 import { confirmEmailRoute } from './confirm-email.js'
+import { deleteRoute } from './delete.js'
 import { logoutRoute } from './logout.js'
 import { meRoute } from './me.js'
 
@@ -23,6 +24,7 @@ export function userRouter(router: Router) {
       route(disable2faRoute)
       route(createRecoveryCodesRoute)
       route(viewRecoveryCodesRoute)
+      route(deleteRoute)
     },
     { router },
   )

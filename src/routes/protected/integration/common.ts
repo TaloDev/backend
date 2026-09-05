@@ -83,3 +83,46 @@ export const configKeys: IntegrationConfigKeys = {
   [IntegrationType.GOOGLE_PLAY_GAMES]: ['clientId', 'clientSecret'],
   [IntegrationType.GAME_CENTER]: ['bundleId'],
 }
+
+function getAppIdentity(config: Record<string, unknown>): {
+  key: string
+  value: string
+} {
+  if ('appId' in config) {
+    return { key: 'appId', value: String(config.appId) }
+  }
+  if ('clientId' in config) {
+    return { key: 'clientId', value: String(config.clientId) }
+  }
+  return { key: 'bundleId', value: String(config.bundleId) }
+}
+
+// returns the identity key (e.g. "appId") when another integration of the same
+// type already points at the same external app - two integrations of the same
+// type can't point at the same app, they would fight over the same remote data
+export async function findDuplicateAppIdentity({
+  ctx,
+  type,
+  config,
+  ignoreId,
+}: {
+  ctx: ProtectedRouteContext<{ game: Game }>
+  type: IntegrationType
+  config: Record<string, unknown>
+  ignoreId?: number
+}) {
+  const appIdentity = getAppIdentity(config).value
+
+  const integrations = await ctx.em.repo(Integration).find({ type, game: ctx.state.game })
+  for (const integration of integrations) {
+    if (integration.id === ignoreId) {
+      continue
+    }
+
+    const identity = getAppIdentity(integration.getConfig())
+    if (identity.value === appIdentity) {
+      return identity.key
+    }
+  }
+  return null
+}

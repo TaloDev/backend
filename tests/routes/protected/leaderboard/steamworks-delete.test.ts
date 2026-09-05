@@ -95,7 +95,6 @@ describe('Leaderboard - steamworks delete', () => {
       .replyOnce(deleteMock)
 
     const leaderboard = await new LeaderboardFactory([game]).state(() => ({ unique: false })).one()
-    const steamworksLeaderboard = new SteamworksLeaderboardMapping(12345, leaderboard)
 
     const config = await new IntegrationConfigFactory()
       .state(() => ({ syncLeaderboards: true }))
@@ -103,6 +102,11 @@ describe('Leaderboard - steamworks delete', () => {
     const integration = await new IntegrationFactory()
       .construct(IntegrationType.STEAMWORKS, game, config)
       .one()
+    const steamworksLeaderboard = new SteamworksLeaderboardMapping({
+      steamworksLeaderboardId: 12345,
+      leaderboard,
+      integration,
+    })
 
     const players = await new PlayerFactory([game]).many(10)
     const entries = await Promise.all(

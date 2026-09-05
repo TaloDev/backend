@@ -1,10 +1,16 @@
 import request from 'supertest'
 import GameActivity, { GameActivityType } from '../../../../src/entities/game-activity.js'
-import { IntegrationType } from '../../../../src/entities/integration.js'
+import Integration, { IntegrationType } from '../../../../src/entities/integration.js'
 import SteamworksIntegrationEvent from '../../../../src/entities/steamworks-integration-event.js'
+import { SteamworksLeaderboardEntry } from '../../../../src/entities/steamworks-leaderboard-entry.js'
+import SteamworksLeaderboardMapping from '../../../../src/entities/steamworks-leaderboard-mapping.js'
+import { SteamworksPlayerStat } from '../../../../src/entities/steamworks-player-stat.js'
 import { UserType } from '../../../../src/entities/user.js'
+import GameStatFactory from '../../../fixtures/GameStatFactory.js'
 import IntegrationConfigFactory from '../../../fixtures/IntegrationConfigFactory.js'
 import IntegrationFactory from '../../../fixtures/IntegrationFactory.js'
+import LeaderboardFactory from '../../../fixtures/LeaderboardFactory.js'
+import PlayerFactory from '../../../fixtures/PlayerFactory.js'
 import createOrganisationAndGame from '../../../utils/createOrganisationAndGame.js'
 import createUserAndToken from '../../../utils/createUserAndToken.js'
 import userPermissionProvider from '../../../utils/userPermissionProvider.js'
@@ -100,5 +106,50 @@ describe('Integration - delete', () => {
     expect(res.body).toStrictEqual({ message: 'Integration not found' })
 
     expect(activity).toBeNull()
+  })
+
+  it('should delete steamworks entities when deleting an integration', async () => {
+    const [organisation, game] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken({ type: UserType.ADMIN }, organisation)
+
+    const config = await new IntegrationConfigFactory().one()
+    const integration = await new IntegrationFactory()
+      .construct(IntegrationType.STEAMWORKS, game, config)
+      .one()
+
+    const leaderboard = await new LeaderboardFactory([game]).state(() => ({ unique: false })).one()
+    const mapping = new SteamworksLeaderboardMapping({
+      steamworksLeaderboardId: 12345,
+      leaderboard,
+      integration,
+    })
+    const player = await new PlayerFactory([game]).withSteamAlias().one()
+    const steamworksEntry = new SteamworksLeaderboardEntry({
+      steamworksLeaderboard: mapping,
+      leaderboardEntry: null,
+      steamUserId: player.aliases[0].identifier,
+    })
+    const steamworksPlayerStat = new SteamworksPlayerStat({
+      stat: await new GameStatFactory([game]).one(),
+      integration,
+      playerStat: null,
+      steamUserId: player.aliases[0].identifier,
+    })
+
+    await em
+      .persist([integration, leaderboard, player, mapping, steamworksEntry, steamworksPlayerStat])
+      .flush()
+
+    await request(app)
+      .delete(`/games/${game.id}/integrations/${integration.id}`)
+      .auth(token, { type: 'bearer' })
+      .expect(204)
+
+    expect(await em.repo(Integration).count({ game })).toBe(0)
+    expect(await em.repo(SteamworksLeaderboardMapping).count({ leaderboard })).toBe(0)
+    expect(
+      await em.repo(SteamworksLeaderboardEntry).count({ steamworksLeaderboard: { leaderboard } }),
+    ).toBe(0)
+    expect(await em.repo(SteamworksPlayerStat).count({ stat: steamworksPlayerStat.stat })).toBe(0)
   })
 })

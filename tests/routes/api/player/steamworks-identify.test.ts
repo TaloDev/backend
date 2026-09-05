@@ -143,6 +143,164 @@ describe('Player API - Steamworks identify', () => {
     )
   })
 
+  it('should identify a steamworks player with multiple integrations of the same type', async () => {
+    const appId = randNumber({ min: 1000, max: 1_000_000 })
+    const otherAppId = appId + 1
+    const steamId = randNumber({ min: 100_000, max: 1_000_000 }).toString()
+    const ticket = '000validticket'
+    const identity = 'talo'
+
+    // the ticket only validates against the matching integration's app
+    axiosMock
+      .onGet(
+        `https://partner.steam-api.com/ISteamUserAuth/AuthenticateUserTicket/v1?appid=${otherAppId}&ticket=${ticket}&identity=${identity}`,
+      )
+      .reply(400, {
+        response: { error: { errorcode: 3, errordesc: 'Bad Request' } },
+      })
+
+    const authenticateTicketMock = vi.fn(() => [
+      200,
+      {
+        response: {
+          params: {
+            steamid: steamId,
+            ownersteamid: steamId,
+            vacbanned: false,
+            publisherbanned: false,
+          },
+        },
+      },
+    ])
+    axiosMock
+      .onGet(
+        `https://partner.steam-api.com/ISteamUserAuth/AuthenticateUserTicket/v1?appid=${appId}&ticket=${ticket}&identity=${identity}`,
+      )
+      .reply(authenticateTicketMock)
+
+    axiosMock
+      .onGet(
+        `https://partner.steam-api.com/ISteamUser/CheckAppOwnership/v3?appid=${appId}&steamid=${steamId}`,
+      )
+      .reply(() => [
+        200,
+        {
+          appownership: {
+            appid: appId,
+            ownsapp: true,
+            permanent: true,
+            timestamp: '2021-08-01T00:00:00.000Z',
+            ownersteamid: steamId,
+            usercanceled: false,
+          },
+        },
+      ])
+
+    axiosMock
+      .onGet(`https://partner.steam-api.com/ISteamUser/GetPlayerSummaries/v2?steamids=${steamId}`)
+      .reply(() => [
+        200,
+        {
+          response: {
+            players: [
+              {
+                steamid: steamId,
+                personaname: 'TestPlayer',
+                avatarhash: 'abcd1234',
+              },
+            ],
+          },
+        },
+      ])
+
+    const [apiKey, token] = await createAPIKeyAndToken([
+      APIKeyScope.READ_PLAYERS,
+      APIKeyScope.WRITE_PLAYERS,
+    ])
+
+    const otherConfig = await new IntegrationConfigFactory()
+      .state(() => ({ appId: otherAppId }))
+      .one()
+    const otherIntegration = await new IntegrationFactory()
+      .construct(IntegrationType.STEAMWORKS, apiKey.game, otherConfig)
+      .one()
+    const config = await new IntegrationConfigFactory().state(() => ({ appId })).one()
+    const integration = await new IntegrationFactory()
+      .construct(IntegrationType.STEAMWORKS, apiKey.game, config)
+      .one()
+    await em.persist([otherIntegration, integration]).flush()
+
+    const res = await request(app)
+      .get('/v1/players/identify')
+      .query({ service: PlayerAliasService.STEAM, identifier: `${identity}:${ticket}` })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    expect(authenticateTicketMock).toHaveBeenCalledOnce()
+    expect(res.body.alias.identifier).toBe(steamId)
+    expect(res.body.alias.player.props).toEqual(
+      expect.arrayContaining([{ key: 'META_STEAMWORKS_OWNS_APP', value: 'true' }]),
+    )
+  })
+
+  it('should return the last error when all integrations fail to authenticate the ticket', async () => {
+    const appId = randNumber({ min: 1000, max: 1_000_000 })
+    const otherAppId = appId + 1
+    const ticket = '000invalidticket'
+    const identity = 'talo'
+
+    const authenticateTicketMock = vi.fn(() => [
+      200,
+      {
+        response: { error: { errorcode: 101, errordesc: 'Invalid ticket' } },
+      },
+    ])
+    const otherAuthenticateTicketMock = vi.fn(() => [
+      200,
+      {
+        response: { error: { errorcode: 102, errordesc: 'Expired ticket' } },
+      },
+    ])
+    axiosMock
+      .onGet(
+        `https://partner.steam-api.com/ISteamUserAuth/AuthenticateUserTicket/v1?appid=${appId}&ticket=${ticket}&identity=${identity}`,
+      )
+      .reply(authenticateTicketMock)
+    axiosMock
+      .onGet(
+        `https://partner.steam-api.com/ISteamUserAuth/AuthenticateUserTicket/v1?appid=${otherAppId}&ticket=${ticket}&identity=${identity}`,
+      )
+      .reply(otherAuthenticateTicketMock)
+
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_PLAYERS])
+
+    const config = await new IntegrationConfigFactory().state(() => ({ appId })).one()
+    const integration = await new IntegrationFactory()
+      .construct(IntegrationType.STEAMWORKS, apiKey.game, config)
+      .one()
+    const otherConfig = await new IntegrationConfigFactory()
+      .state(() => ({ appId: otherAppId }))
+      .one()
+    const otherIntegration = await new IntegrationFactory()
+      .construct(IntegrationType.STEAMWORKS, apiKey.game, otherConfig)
+      .one()
+    await em.persist([integration, otherIntegration]).flush()
+
+    const res = await request(app)
+      .get('/v1/players/identify')
+      .query({ service: PlayerAliasService.STEAM, identifier: `${identity}:${ticket}` })
+      .auth(token, { type: 'bearer' })
+      .expect(400)
+
+    expect(authenticateTicketMock).toHaveBeenCalledOnce()
+    expect(otherAuthenticateTicketMock).toHaveBeenCalledOnce()
+
+    // the last integration's error is what surfaces
+    expect(res.body).toStrictEqual({
+      message: 'Failed to authenticate Steamworks ticket: Expired ticket (102)',
+    })
+  })
+
   it('should identify a non-existent steamworks player by creating a new player with the write scope', async () => {
     const appId = randNumber({ min: 1000, max: 1_000_000 })
     const steamId = randNumber({ min: 100_000, max: 1_000_000 }).toString()

@@ -54,6 +54,7 @@ export async function createSteamworksLeaderboard(
     await em.repo(SteamworksLeaderboardMapping).upsert({
       steamworksLeaderboardId: steamworksLeaderboard.leaderBoardID,
       leaderboard,
+      integration,
       createdAt: new Date(),
     })
   }
@@ -84,9 +85,10 @@ export async function createSteamworksLeaderboardEntry(
   integration: Integration,
   entry: LeaderboardEntry,
 ) {
-  const leaderboardMapping = await em
-    .repo(SteamworksLeaderboardMapping)
-    .findOne({ leaderboard: entry.leaderboard })
+  const leaderboardMapping = await em.repo(SteamworksLeaderboardMapping).findOne({
+    leaderboard: entry.leaderboard,
+    integration,
+  })
 
   if (leaderboardMapping) {
     const body = querystring.stringify({
@@ -148,9 +150,10 @@ export async function deleteSteamworksLeaderboardEntry(
   integration: Integration,
   entry: LeaderboardEntry,
 ) {
-  const leaderboardMapping = await em
-    .repo(SteamworksLeaderboardMapping)
-    .findOne({ leaderboard: entry.leaderboard })
+  const leaderboardMapping = await em.repo(SteamworksLeaderboardMapping).findOne({
+    leaderboard: entry.leaderboard,
+    integration,
+  })
 
   if (leaderboardMapping) {
     const { event } = await requestDeleteLeaderboardScore({
@@ -220,10 +223,12 @@ function createLeaderboardEntry({
 
 async function matchAliasAndLeaderboardEntry({
   em,
+  integration,
   steamworksLeaderboard,
   steamEntryData,
 }: {
   em: EntityManager
+  integration: Integration
   steamworksLeaderboard: GetLeaderboardsForGameResponseLeaderboard
   steamEntryData: GetLeaderboardEntriesResponseEntry
 }) {
@@ -231,9 +236,12 @@ async function matchAliasAndLeaderboardEntry({
   const leaderboardMapping = await em.repo(SteamworksLeaderboardMapping).findOneOrFail(
     {
       steamworksLeaderboardId: steamworksLeaderboard.id,
+      integration,
     },
     {
-      ...getResultCacheOptions(`sync-leaderboards-mapping-${steamworksLeaderboard.id}`),
+      ...getResultCacheOptions(
+        `sync-leaderboards-mapping-${integration.id}-${steamworksLeaderboard.id}`,
+      ),
       populate: ['leaderboard.game'],
     },
   )
@@ -297,6 +305,7 @@ async function ingestEntriesFromSteamworks({
       const { newEntry, updated } = await em.fork().transactional((trx) => {
         return matchAliasAndLeaderboardEntry({
           em: trx,
+          integration,
           steamworksLeaderboard,
           steamEntryData,
         })
@@ -380,9 +389,10 @@ export async function syncSteamworksLeaderboards(em: EntityManager, integration:
 
   const combinedLeaderboards = await Promise.all(
     leaderboards.map(async (leaderboard): Promise<CombinedLeaderboards> => {
-      const leaderboardMapping = await em
-        .repo(SteamworksLeaderboardMapping)
-        .findOne({ leaderboard })
+      const leaderboardMapping = await em.repo(SteamworksLeaderboardMapping).findOne({
+        leaderboard,
+        integration,
+      })
 
       const mappingMatch = steamworksLeaderboards.find(
         (steamworksLeaderboard) =>
@@ -401,7 +411,13 @@ export async function syncSteamworksLeaderboards(em: EntityManager, integration:
       // update talo leaderboards with properties from steamworks - because we can't do the other way around
       if (leaderboard && steamworksLeaderboard) {
         if (!leaderboardMapping)
-          trx.persist(new SteamworksLeaderboardMapping(steamworksLeaderboard.id, leaderboard))
+          trx.persist(
+            new SteamworksLeaderboardMapping({
+              steamworksLeaderboardId: steamworksLeaderboard.id,
+              leaderboard: leaderboard,
+              integration: integration,
+            }),
+          )
 
         leaderboard.internalName = leaderboard.name = steamworksLeaderboard.name
         leaderboard.sortMode = mapSteamworksLeaderboardSortMode(steamworksLeaderboard.sortmethod)
@@ -426,7 +442,13 @@ export async function syncSteamworksLeaderboards(em: EntityManager, integration:
       leaderboard.sortMode = mapSteamworksLeaderboardSortMode(steamworksLeaderboard.sortmethod)
       leaderboard.unique = true
 
-      trx.persist(new SteamworksLeaderboardMapping(steamworksLeaderboard.id, leaderboard))
+      trx.persist(
+        new SteamworksLeaderboardMapping({
+          steamworksLeaderboardId: steamworksLeaderboard.id,
+          leaderboard: leaderboard,
+          integration: integration,
+        }),
+      )
       trx.persist(leaderboard)
       leaderboards.push(leaderboard)
     })

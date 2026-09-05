@@ -36,10 +36,6 @@ describe('Leaderboard API - steamworks create', () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_LEADERBOARDS])
 
     const leaderboard = await new LeaderboardFactory([apiKey.game]).notUnique().one()
-    const mapping = new SteamworksLeaderboardMapping(
-      randNumber({ min: 100_000, max: 999_999 }),
-      leaderboard,
-    )
     const player = await new PlayerFactory([apiKey.game]).withSteamAlias().one()
 
     const config = await new IntegrationConfigFactory()
@@ -48,6 +44,12 @@ describe('Leaderboard API - steamworks create', () => {
     const integration = await new IntegrationFactory()
       .construct(IntegrationType.STEAMWORKS, apiKey.game, config)
       .one()
+    const mapping = new SteamworksLeaderboardMapping({
+      steamworksLeaderboardId: randNumber({ min: 100_000, max: 999_999 }),
+      leaderboard,
+      integration,
+    })
+
     await em.persist([integration, leaderboard, player, mapping]).flush()
 
     await request(app)
@@ -70,6 +72,69 @@ describe('Leaderboard API - steamworks create', () => {
       .repo(SteamworksLeaderboardEntry)
       .findOne({ steamworksLeaderboard: mapping })
     expect(steamworksEntry).toBeTruthy()
+  })
+
+  it('should create a leaderboard entry in steamworks for every integration', async () => {
+    const createMock = vi.fn(() => [
+      200,
+      {
+        result: {
+          result: 1,
+        },
+      },
+    ])
+    axiosMock
+      .onPost('https://partner.steam-api.com/ISteamLeaderboards/SetLeaderboardScore/v1')
+      .reply(createMock)
+
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_LEADERBOARDS])
+
+    const leaderboard = await new LeaderboardFactory([apiKey.game]).notUnique().one()
+    const player = await new PlayerFactory([apiKey.game]).withSteamAlias().one()
+
+    const integrations = []
+    const mappings = []
+    for (let i = 0; i < 2; i++) {
+      const config = await new IntegrationConfigFactory()
+        .state(() => ({ syncLeaderboards: true }))
+        .one()
+      const integration = await new IntegrationFactory()
+        .construct(IntegrationType.STEAMWORKS, apiKey.game, config)
+        .one()
+      integrations.push(integration)
+      mappings.push(
+        new SteamworksLeaderboardMapping({
+          steamworksLeaderboardId: randNumber({ min: 100_000, max: 999_999 }),
+          leaderboard,
+          integration,
+        }),
+      )
+    }
+
+    await em.persist([...integrations, leaderboard, player, ...mappings]).flush()
+
+    await request(app)
+      .post(`/v1/leaderboards/${leaderboard.internalName}/entries`)
+      .send({ score: 300 })
+      .auth(token, { type: 'bearer' })
+      .set('x-talo-alias', String(player.aliases[0].id))
+      .expect(200)
+
+    expect(createMock).toHaveBeenCalledTimes(2)
+    for (const mapping of mappings) {
+      expect(createMock).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.stringContaining(`leaderboardid=${mapping.steamworksLeaderboardId}`),
+        }),
+      )
+
+      const steamworksEntry = await em
+        .repo(SteamworksLeaderboardEntry)
+        .findOne({ steamworksLeaderboard: mapping })
+      expect(steamworksEntry).toBeTruthy()
+    }
+
+    axiosMock.reset()
   })
 
   it('should not create a leaderboard entry in steamworks if there is no mapping', async () => {

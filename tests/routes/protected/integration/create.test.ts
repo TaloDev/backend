@@ -101,7 +101,30 @@ describe('Integration - create', () => {
     expect(activity).toBe(null)
   })
 
-  it('should not add a duplicate integration for the same type', async () => {
+  it('should allow multiple integrations of the same type', async () => {
+    const [organisation, game] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken({ type: UserType.ADMIN }, organisation)
+
+    const config = await new IntegrationConfigFactory().one()
+    const integration = new Integration(IntegrationType.STEAMWORKS, game, config)
+    await em.persist(integration).flush()
+
+    const res = await request(app)
+      .post(`/games/${game.id}/integrations`)
+      .send({
+        type: IntegrationType.STEAMWORKS,
+        config: { ...config, appId: config.appId + 1 },
+      })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    expect(res.body.integration.id).not.toBe(integration.id)
+
+    const count = await em.repo(Integration).count({ game, type: IntegrationType.STEAMWORKS })
+    expect(count).toBe(2)
+  })
+
+  it('should not add an integration for the same external app', async () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({ type: UserType.ADMIN }, organisation)
 
@@ -116,7 +139,7 @@ describe('Integration - create', () => {
       .expect(400)
 
     expect(res.body).toStrictEqual({
-      message: `This game already has an integration for ${IntegrationType.STEAMWORKS}`,
+      message: `This game already has an integration for ${IntegrationType.STEAMWORKS} with this appId`,
     })
   })
 

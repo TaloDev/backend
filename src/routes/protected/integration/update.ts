@@ -4,7 +4,7 @@ import { UserType } from '../../../entities/user.js'
 import createGameActivity from '../../../lib/logging/createGameActivity.js'
 import { protectedRoute, withMiddleware } from '../../../lib/routing/router.js'
 import { userTypeGate } from '../../../middleware/policy-middleware.js'
-import { loadIntegration, configKeys } from './common.js'
+import { loadIntegration, configKeys, findDuplicateAppIdentity } from './common.js'
 
 export const updateRoute = protectedRoute({
   method: 'patch',
@@ -33,6 +33,19 @@ export const updateRoute = protectedRoute({
     const integration = ctx.state.integration
     const newConfig = pick(config, configKeys[integration.type])
     integration.updateConfig(newConfig)
+
+    const identityKey = await findDuplicateAppIdentity({
+      ctx,
+      type: integration.type,
+      config: integration.getConfig(),
+      ignoreId: integration.id,
+    })
+    if (identityKey) {
+      return ctx.throw(
+        400,
+        `This game already has an integration for ${integration.type} with this ${identityKey}`,
+      )
+    }
 
     createGameActivity(em, {
       actor: ctx.state.user,

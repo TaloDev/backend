@@ -205,4 +205,36 @@ describe('Integration - update', () => {
 
     expect(activity).toBeNull()
   })
+
+  it('should not update an integration to the same external app as another integration', async () => {
+    const [organisation, game] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken({ type: UserType.ADMIN }, organisation)
+
+    const config = await new IntegrationConfigFactory().one()
+    const integration = await new IntegrationFactory()
+      .construct(IntegrationType.STEAMWORKS, game, config)
+      .one()
+    const otherConfig = await new IntegrationConfigFactory()
+      .state(() => ({ appId: config.appId + 1 }))
+      .one()
+    const otherIntegration = await new IntegrationFactory()
+      .construct(IntegrationType.STEAMWORKS, game, otherConfig)
+      .one()
+    await em.persist([integration, otherIntegration]).flush()
+    await em.refresh(integration)
+
+    const res = await request(app)
+      .patch(`/games/${game.id}/integrations/${integration.id}`)
+      .send({ config: { appId: otherConfig.appId } })
+      .auth(token, { type: 'bearer' })
+      .expect(400)
+
+    expect(res.body).toStrictEqual({
+      message: `This game already has an integration for ${IntegrationType.STEAMWORKS} with this appId`,
+    })
+
+    // the conflicting update must not have been applied
+    await em.refresh(integration)
+    expect(integration.getSteamConfig().appId).toBe(config.appId)
+  })
 })

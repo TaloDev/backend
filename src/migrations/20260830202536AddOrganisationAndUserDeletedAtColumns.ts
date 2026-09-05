@@ -1,8 +1,6 @@
 import { Migration } from '@mikro-orm/migrations'
 
 export class AddOrganisationAndUserDeletedAtColumns extends Migration {
-  override name = 'AddOrganisationAndUserDeletedAtColumns'
-
   override up(): void | Promise<void> {
     this.addSql(`alter table \`organisation\` add \`deleted_at\` datetime null;`)
 

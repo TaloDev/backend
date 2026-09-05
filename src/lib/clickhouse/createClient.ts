@@ -137,6 +137,10 @@ export default function createTracedClickHouseClient(options: CreateClickHouseCl
   const client = createClient({
     url,
     request_timeout: 120_000,
+    clickhouse_settings: {
+      send_progress_in_http_headers: 1,
+      http_headers_progress_interval_ms: '10000',
+    },
   })
 
   return new Proxy(client, createClickHouseTracingProxyHandler())

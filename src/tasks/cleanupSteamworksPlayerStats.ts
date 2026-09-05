@@ -1,7 +1,6 @@
-import { EntityManager, NotFoundError } from '@mikro-orm/mysql'
+import { EntityManager } from '@mikro-orm/mysql'
 import { captureException } from '@sentry/node'
 import { getMikroORM } from '../config/mikro-orm.config.js'
-import Integration, { IntegrationType } from '../entities/integration.js'
 import { SteamworksPlayerStat } from '../entities/steamworks-player-stat.js'
 import { streamByCursor } from '../lib/perf/streamByCursor.js'
 
@@ -19,34 +18,15 @@ export default async function cleanupSteamworksPlayerStats() {
       first: batchSize,
       after,
       orderBy: { id: 'asc' },
-      populate: ['stat.game'] as const,
+      populate: ['stat.game', 'integration'] as const,
     })
   }, 100)
 
-  const integrationsMap = new Map<number, Integration>()
   let processed = 0
 
   for await (const playerStat of playerStatStream) {
     try {
-      const game = playerStat.stat.game
-      let integration = integrationsMap.get(game.id)
-      if (!integration) {
-        try {
-          integration = await em
-            .repo(Integration)
-            .findOneOrFail({ game, type: IntegrationType.STEAMWORKS })
-        } catch (err) {
-          if (err instanceof NotFoundError) {
-            await em.repo(SteamworksPlayerStat).nativeDelete(playerStat.id)
-            continue
-          }
-          /* v8 ignore next -- @preserve */
-          throw err
-        }
-        integrationsMap.set(game.id, integration)
-      }
-
-      await integration.cleanupSteamworksPlayerStat(em, playerStat)
+      await playerStat.integration.cleanupSteamworksPlayerStat(em, playerStat)
       await new Promise((resolve) => setTimeout(resolve, 100))
     } catch (err) {
       console.error(

@@ -6699,6 +6699,23 @@
           "enumItems": [],
           "mappedType": "integer"
         },
+        "integration_id": {
+          "name": "integration_id",
+          "type": "int",
+          "unsigned": true,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "integer"
+        },
         "leaderboard_entry_id": {
           "name": "leaderboard_entry_id",
           "type": "int",
@@ -6706,7 +6723,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": true,
-          "unique": true,
+          "unique": false,
           "length": null,
           "precision": null,
           "scale": null,
@@ -6757,7 +6774,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
-          "unique": false,
+          "unique": true,
           "length": null,
           "precision": null,
           "scale": null,
@@ -6797,16 +6814,29 @@
         {
           "columnNames": ["leaderboard_entry_id"],
           "composite": false,
+          "constraint": false,
+          "keyName": "steamworks_leaderboard_entry_leaderboard_entry_id_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": [
+            "steamworks_leaderboard_id",
+            "leaderboard_id",
+            "integration_id",
+            "leaderboard_entry_id"
+          ],
+          "composite": true,
           "constraint": true,
-          "keyName": "steamworks_leaderboard_entry_leaderboard_entry_id_unique",
+          "keyName": "steamworks_leaderboard_entry_steamworks_leaderboar_3f388_unique",
           "primary": false,
           "unique": true
         },
         {
-          "columnNames": ["steamworks_leaderboard_id", "leaderboard_id"],
+          "columnNames": ["steamworks_leaderboard_id", "leaderboard_id", "integration_id"],
           "composite": true,
           "constraint": false,
-          "keyName": "steamworks_leaderboard_entry_steamworks_leaderboard_47d69_index",
+          "keyName": "steamworks_leaderboard_entry_steamworks_leaderboard_54c77_index",
           "primary": false,
           "unique": false
         }
@@ -6822,11 +6852,15 @@
           "referencedTableName": "leaderboard_entry",
           "deleteRule": "set null"
         },
-        "steamworks_leaderboard_entry_steamworks_leaderboa_15279_foreign": {
-          "columnNames": ["steamworks_leaderboard_id", "leaderboard_id"],
-          "constraintName": "steamworks_leaderboard_entry_steamworks_leaderboa_15279_foreign",
+        "steamworks_leaderboard_entry_steamworks_leaderboa_6bddf_foreign": {
+          "columnNames": ["steamworks_leaderboard_id", "leaderboard_id", "integration_id"],
+          "constraintName": "steamworks_leaderboard_entry_steamworks_leaderboa_6bddf_foreign",
           "localTableName": "steamworks_leaderboard_entry",
-          "referencedColumnNames": ["steamworks_leaderboard_id", "leaderboard_id"],
+          "referencedColumnNames": [
+            "steamworks_leaderboard_id",
+            "leaderboard_id",
+            "integration_id"
+          ],
           "referencedTableName": "steamworks_leaderboard_mapping",
           "updateRule": "cascade",
           "deleteRule": "cascade"
@@ -6853,6 +6887,23 @@
           "collation": null,
           "enumItems": [],
           "mappedType": "datetime"
+        },
+        "integration_id": {
+          "name": "integration_id",
+          "type": "int",
+          "unsigned": true,
+          "autoincrement": false,
+          "primary": true,
+          "nullable": false,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "integer"
         },
         "leaderboard_id": {
           "name": "leaderboard_id",
@@ -6891,12 +6942,20 @@
       },
       "indexes": [
         {
-          "columnNames": ["steamworks_leaderboard_id", "leaderboard_id"],
+          "columnNames": ["steamworks_leaderboard_id", "leaderboard_id", "integration_id"],
           "composite": true,
           "constraint": true,
           "keyName": "PRIMARY",
           "primary": true,
           "unique": true
+        },
+        {
+          "columnNames": ["integration_id"],
+          "composite": false,
+          "constraint": false,
+          "keyName": "steamworks_leaderboard_mapping_integration_id_index",
+          "primary": false,
+          "unique": false
         },
         {
           "columnNames": ["leaderboard_id"],
@@ -6910,6 +6969,14 @@
       "checks": [],
       "triggers": [],
       "foreignKeys": {
+        "steamworks_leaderboard_mapping_integration_id_foreign": {
+          "columnNames": ["integration_id"],
+          "constraintName": "steamworks_leaderboard_mapping_integration_id_foreign",
+          "localTableName": "steamworks_leaderboard_mapping",
+          "referencedColumnNames": ["id"],
+          "referencedTableName": "integration",
+          "deleteRule": "cascade"
+        },
         "steamworks_leaderboard_mapping_leaderboard_id_foreign": {
           "columnNames": ["leaderboard_id"],
           "constraintName": "steamworks_leaderboard_mapping_leaderboard_id_foreign",
@@ -6958,6 +7025,23 @@
           "enumItems": [],
           "mappedType": "integer"
         },
+        "integration_id": {
+          "name": "integration_id",
+          "type": "int",
+          "unsigned": true,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": true,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "integer"
+        },
         "player_stat_id": {
           "name": "player_stat_id",
           "type": "int",
@@ -6965,7 +7049,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": true,
-          "unique": true,
+          "unique": false,
           "length": null,
           "precision": null,
           "scale": null,
@@ -7037,12 +7121,28 @@
           "unique": true
         },
         {
-          "columnNames": ["player_stat_id"],
+          "columnNames": ["integration_id"],
           "composite": false,
+          "constraint": false,
+          "keyName": "steamworks_player_stat_integration_id_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": ["integration_id", "player_stat_id"],
+          "composite": true,
           "constraint": true,
-          "keyName": "steamworks_player_stat_player_stat_id_unique",
+          "keyName": "steamworks_player_stat_integration_id_player_stat_id_unique",
           "primary": false,
           "unique": true
+        },
+        {
+          "columnNames": ["player_stat_id"],
+          "composite": false,
+          "constraint": false,
+          "keyName": "steamworks_player_stat_player_stat_id_index",
+          "primary": false,
+          "unique": false
         },
         {
           "columnNames": ["stat_id"],
@@ -7056,6 +7156,14 @@
       "checks": [],
       "triggers": [],
       "foreignKeys": {
+        "steamworks_player_stat_integration_id_foreign": {
+          "columnNames": ["integration_id"],
+          "constraintName": "steamworks_player_stat_integration_id_foreign",
+          "localTableName": "steamworks_player_stat",
+          "referencedColumnNames": ["id"],
+          "referencedTableName": "integration",
+          "deleteRule": "cascade"
+        },
         "steamworks_player_stat_player_stat_id_foreign": {
           "columnNames": ["player_stat_id"],
           "constraintName": "steamworks_player_stat_player_stat_id_foreign",

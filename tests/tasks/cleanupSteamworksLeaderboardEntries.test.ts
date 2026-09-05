@@ -50,7 +50,11 @@ describe('cleanupSteamworksLeaderboardEntries', () => {
       .one()
 
     const leaderboard = await new LeaderboardFactory([game]).state(() => ({ unique: false })).one()
-    const steamworksLeaderboard = new SteamworksLeaderboardMapping(12345, leaderboard)
+    const steamworksLeaderboard = new SteamworksLeaderboardMapping({
+      steamworksLeaderboardId: 12345,
+      leaderboard,
+      integration,
+    })
 
     const players = await new PlayerFactory([game]).many(10)
     const entries = await Promise.all(
@@ -96,7 +100,11 @@ describe('cleanupSteamworksLeaderboardEntries', () => {
       .one()
 
     const leaderboard = await new LeaderboardFactory([game]).state(() => ({ unique: false })).one()
-    const steamworksLeaderboard = new SteamworksLeaderboardMapping(12345, leaderboard)
+    const steamworksLeaderboard = new SteamworksLeaderboardMapping({
+      steamworksLeaderboardId: 12345,
+      leaderboard,
+      integration,
+    })
 
     const players = await new PlayerFactory([game]).many(5)
     const entries = players.map((player) => {
@@ -121,30 +129,52 @@ describe('cleanupSteamworksLeaderboardEntries', () => {
     expect(entryCount).toBe(1)
   })
 
-  it('should still delete steamworks leaderboard entries for games without integrations', async () => {
+  it('should cleanup leaderboard entries via their own integration', async () => {
     const [, game] = await createOrganisationAndGame()
+    const integrationA = await new IntegrationFactory()
+      .construct(IntegrationType.STEAMWORKS, game, await new IntegrationConfigFactory().one())
+      .one()
+    const configA = integrationA.getSteamConfig()
+    const integrationB = await new IntegrationFactory()
+      .construct(
+        IntegrationType.STEAMWORKS,
+        game,
+        await new IntegrationConfigFactory().state(() => ({ appId: configA.appId! + 1 })).one(),
+      )
+      .one()
 
     const leaderboard = await new LeaderboardFactory([game]).state(() => ({ unique: false })).one()
-    const steamworksLeaderboard = new SteamworksLeaderboardMapping(12345, leaderboard)
+    const mappingA = new SteamworksLeaderboardMapping({
+      steamworksLeaderboardId: 12345,
+      leaderboard,
+      integration: integrationA,
+    })
+    const mappingB = new SteamworksLeaderboardMapping({
+      steamworksLeaderboardId: 54321,
+      leaderboard,
+      integration: integrationB,
+    })
 
-    const players = await new PlayerFactory([game]).many(5)
-    const entries = await Promise.all(
-      players.map(async (player) => {
-        return new SteamworksLeaderboardEntry({
-          steamworksLeaderboard,
-          leaderboardEntry: null,
-          steamUserId: player.aliases[0].identifier,
-        })
-      }),
-    )
-    await em.persist(entries).flush()
+    const [playerA, playerB] = await new PlayerFactory([game]).many(2)
+    const entryA = new SteamworksLeaderboardEntry({
+      steamworksLeaderboard: mappingA,
+      leaderboardEntry: null,
+      steamUserId: playerA.aliases[0].identifier,
+    })
+    const entryB = new SteamworksLeaderboardEntry({
+      steamworksLeaderboard: mappingB,
+      leaderboardEntry: null,
+      steamUserId: playerB.aliases[0].identifier,
+    })
+
+    await em.persist([integrationA, integrationB, mappingA, mappingB, entryA, entryB]).flush()
 
     await cleanupSteamworksLeaderboardEntries()
 
-    expect(deleteMock).toHaveBeenCalledTimes(0)
+    expect(deleteMock).toHaveBeenCalledTimes(2)
 
-    const eventCount = await em.repo(SteamworksIntegrationEvent).count({ integration: { game } })
-    expect(eventCount).toBe(0)
+    expect(await em.repo(SteamworksIntegrationEvent).count({ integration: integrationA })).toBe(1)
+    expect(await em.repo(SteamworksIntegrationEvent).count({ integration: integrationB })).toBe(1)
 
     const entryCount = await em.repo(SteamworksLeaderboardEntry).count()
     expect(entryCount).toBe(0)

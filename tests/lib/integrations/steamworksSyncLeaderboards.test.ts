@@ -160,15 +160,17 @@ describe('Steamworks integration - sync leaderboards', () => {
     const leaderboard = await new LeaderboardFactory([game])
       .state(() => ({ sortMode: LeaderboardSortMode.ASC }))
       .one()
-    const mapping = new SteamworksLeaderboardMapping(
-      randNumber({ min: 100_000, max: 999_999 }),
-      leaderboard,
-    )
 
     const config = await new IntegrationConfigFactory().one()
     const integration = await new IntegrationFactory()
       .construct(IntegrationType.STEAMWORKS, game, config)
       .one()
+    const mapping = new SteamworksLeaderboardMapping({
+      steamworksLeaderboardId: randNumber({ min: 100_000, max: 999_999 }),
+      leaderboard,
+      integration,
+    })
+
     await em.persist([leaderboard, mapping, integration]).flush()
 
     const getLeaderboardsMock = vi.fn((): [number, GetLeaderboardsForGameResponse] => [
@@ -441,10 +443,6 @@ describe('Steamworks integration - sync leaderboards', () => {
     const [, game] = await createOrganisationAndGame()
 
     const leaderboard = await new LeaderboardFactory([game]).one()
-    const mapping = new SteamworksLeaderboardMapping(
-      randNumber({ min: 100_000, max: 999_999 }),
-      leaderboard,
-    )
 
     const player = await new PlayerFactory([game]).withSteamAlias().one()
     const entry = await new LeaderboardEntryFactory(leaderboard, [player]).one()
@@ -453,6 +451,12 @@ describe('Steamworks integration - sync leaderboards', () => {
     const integration = await new IntegrationFactory()
       .construct(IntegrationType.STEAMWORKS, game, config)
       .one()
+    const mapping = new SteamworksLeaderboardMapping({
+      steamworksLeaderboardId: randNumber({ min: 100_000, max: 999_999 }),
+      leaderboard,
+      integration,
+    })
+
     await em.persist([leaderboard, mapping, player, entry, integration]).flush()
 
     const getLeaderboardsMock = vi.fn((): [number, GetLeaderboardsForGameResponse] => [
@@ -534,10 +538,6 @@ describe('Steamworks integration - sync leaderboards', () => {
     const [, game] = await createOrganisationAndGame()
 
     const leaderboard = await new LeaderboardFactory([game]).state(() => ({ unique: false })).one()
-    const mapping = new SteamworksLeaderboardMapping(
-      randNumber({ min: 100_000, max: 999_999 }),
-      leaderboard,
-    )
 
     const player = await new PlayerFactory([game]).withSteamAlias().one()
     const entries = await new LeaderboardEntryFactory(leaderboard, [player]).many(15)
@@ -546,6 +546,12 @@ describe('Steamworks integration - sync leaderboards', () => {
     const integration = await new IntegrationFactory()
       .construct(IntegrationType.STEAMWORKS, game, config)
       .one()
+    const mapping = new SteamworksLeaderboardMapping({
+      steamworksLeaderboardId: randNumber({ min: 100_000, max: 999_999 }),
+      leaderboard,
+      integration,
+    })
+
     await em.persist([leaderboard, mapping, player, ...entries, integration]).flush()
 
     const getLeaderboardsMock = vi.fn((): [number, GetLeaderboardsForGameResponse] => [
@@ -722,10 +728,6 @@ describe('Steamworks integration - sync leaderboards', () => {
     const leaderboard = await new LeaderboardFactory([game])
       .state(() => ({ sortMode: LeaderboardSortMode.ASC }))
       .one()
-    const mapping = new SteamworksLeaderboardMapping(
-      randNumber({ min: 100_000, max: 999_999 }),
-      leaderboard,
-    )
     const player = await new PlayerFactory([game]).withSteamAlias().one()
     const entry = await new LeaderboardEntryFactory(leaderboard, [player])
       .state(() => ({ score: 10 }))
@@ -735,6 +737,12 @@ describe('Steamworks integration - sync leaderboards', () => {
     const integration = await new IntegrationFactory()
       .construct(IntegrationType.STEAMWORKS, game, config)
       .one()
+    const mapping = new SteamworksLeaderboardMapping({
+      steamworksLeaderboardId: randNumber({ min: 100_000, max: 999_999 }),
+      leaderboard,
+      integration,
+    })
+
     await em.persist([leaderboard, mapping, integration, entry]).flush()
 
     const getLeaderboardsMock = vi.fn((): [number, GetLeaderboardsForGameResponse] => [
@@ -796,10 +804,6 @@ describe('Steamworks integration - sync leaderboards', () => {
     const [, game] = await createOrganisationAndGame()
 
     const leaderboard = await new LeaderboardFactory([game]).one()
-    const mapping = new SteamworksLeaderboardMapping(
-      randNumber({ min: 100_000, max: 999_999 }),
-      leaderboard,
-    )
 
     const player = await new PlayerFactory([game]).withUsernameAlias().one()
     const entry = await new LeaderboardEntryFactory(leaderboard, [player]).one()
@@ -808,6 +812,12 @@ describe('Steamworks integration - sync leaderboards', () => {
     const integration = await new IntegrationFactory()
       .construct(IntegrationType.STEAMWORKS, game, config)
       .one()
+    const mapping = new SteamworksLeaderboardMapping({
+      steamworksLeaderboardId: randNumber({ min: 100_000, max: 999_999 }),
+      leaderboard,
+      integration,
+    })
+
     await em.persist([leaderboard, mapping, player, entry, integration]).flush()
 
     const getLeaderboardsMock = vi.fn((): [number, GetLeaderboardsForGameResponse] => [
@@ -874,5 +884,88 @@ describe('Steamworks integration - sync leaderboards', () => {
       .repo(SteamworksLeaderboardEntry)
       .findOne({ leaderboardEntry: entry }, { refresh: true })
     expect(steamworksEntry).toBeNull()
+  })
+
+  it('should create a mapping for a second integration without touching the first', async () => {
+    const [, game] = await createOrganisationAndGame()
+
+    const leaderboard = await new LeaderboardFactory([game]).one()
+
+    const configA = await new IntegrationConfigFactory().one()
+    const integrationA = await new IntegrationFactory()
+      .construct(IntegrationType.STEAMWORKS, game, configA)
+      .one()
+    const mappingA = new SteamworksLeaderboardMapping({
+      steamworksLeaderboardId: 111111,
+      leaderboard,
+      integration: integrationA,
+    })
+
+    const configB = await new IntegrationConfigFactory()
+      .state(() => ({ appId: configA.appId + 1 }))
+      .one()
+    const integrationB = await new IntegrationFactory()
+      .construct(IntegrationType.STEAMWORKS, game, configB)
+      .one()
+    await em.persist([leaderboard, integrationA, mappingA, integrationB]).flush()
+
+    const getLeaderboardsMock = vi.fn((): [number, GetLeaderboardsForGameResponse] => [
+      200,
+      {
+        response: {
+          result: 1,
+          leaderboards: [
+            {
+              id: 222222,
+              name: leaderboard.internalName,
+              entries: 0,
+              sortmethod: 'Descending',
+              displaytype: 'Numeric',
+              onlytrustedwrites: false,
+              onlyfriendsreads: false,
+            },
+          ],
+        },
+      },
+    ])
+    axiosMock
+      .onGet(
+        `https://partner.steam-api.com/ISteamLeaderboards/GetLeaderboardsForGame/v2?appid=${integrationB.getSteamConfig().appId}`,
+      )
+      .replyOnce(getLeaderboardsMock)
+
+    const getEntriesMock = vi.fn((): [number, GetLeaderboardEntriesResponse] => [
+      200,
+      {
+        leaderboardEntryInformation: {
+          appID: 375290,
+          leaderboardID: 222222,
+          totalLeaderBoardEntryCount: 0,
+          leaderboardEntries: [],
+        },
+      },
+    ])
+    axiosMock
+      .onGet(
+        `https://partner.steam-api.com/ISteamLeaderboards/GetLeaderboardEntries/v1?appid=${integrationB.getSteamConfig().appId}&leaderboardid=222222&rangestart=0&rangeend=1.7976931348623157e%2B308&datarequest=RequestGlobal`,
+      )
+      .replyOnce(getEntriesMock)
+
+    await syncSteamworksLeaderboards(em, integrationB)
+
+    // integration B got its own mapping for the same talo leaderboard
+    const mappingB = await em.repo(SteamworksLeaderboardMapping).findOne({
+      leaderboard,
+      integration: integrationB,
+      steamworksLeaderboardId: 222222,
+    })
+    expect(mappingB).toBeTruthy()
+
+    // integration A's mapping is untouched
+    const unchangedMappingA = await em.repo(SteamworksLeaderboardMapping).findOneOrFail({
+      leaderboard,
+      integration: integrationA,
+    })
+    expect(unchangedMappingA.steamworksLeaderboardId).toBe(111111)
   })
 })

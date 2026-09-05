@@ -6,7 +6,7 @@ import createGameActivity from '../../../lib/logging/createGameActivity.js'
 import { protectedRoute, withMiddleware } from '../../../lib/routing/router.js'
 import { loadGame } from '../../../middleware/game-middleware.js'
 import { userTypeGate } from '../../../middleware/policy-middleware.js'
-import { configKeys } from './common.js'
+import { configKeys, findDuplicateAppIdentity } from './common.js'
 
 export const createRoute = protectedRoute({
   method: 'post',
@@ -41,13 +41,16 @@ export const createRoute = protectedRoute({
     const { type, config } = ctx.state.validated.body
     const em = ctx.em
 
-    const existingIntegration = await em.repo(Integration).findOne({
+    const identityKey = await findDuplicateAppIdentity({
+      ctx,
       type,
-      game: ctx.state.game,
+      config,
     })
-
-    if (existingIntegration) {
-      return ctx.throw(400, `This game already has an integration for ${type}`)
+    if (identityKey) {
+      return ctx.throw(
+        400,
+        `This game already has an integration for ${type} with this ${identityKey}`,
+      )
     }
 
     const integration = new Integration(

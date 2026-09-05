@@ -81,6 +81,8 @@ import { AddOrganisationAndUserDeletedAtColumns } from './20260830202536AddOrgan
 import { AddPlayersToDeleteUniqueConstraint } from './20260831000000AddPlayersToDeleteUniqueConstraint.js'
 import { CreateEventFunnelsTable } from './20260902191008CreateEventFunnelsTable.js'
 import { RemoveIntegrationSoftDelete } from './20260905054226RemoveIntegrationSoftDelete.js'
+import { LinkSteamworksEntitiesToIntegration } from './20260905070622LinkSteamworksEntitiesToIntegration.js'
+import { WidenSteamworksLeaderboardMappingPk } from './20260905094358WidenSteamworksLeaderboardMappingPk.js'
 
 export default [
   InitialMigration,
@@ -166,4 +168,6 @@ export default [
   AddPlayersToDeleteUniqueConstraint,
   CreateEventFunnelsTable,
   RemoveIntegrationSoftDelete,
+  LinkSteamworksEntitiesToIntegration,
+  WidenSteamworksLeaderboardMappingPk,
 ]

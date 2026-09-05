@@ -122,20 +122,20 @@ importers:
         specifier: ^5.0.0
         version: 5.0.0
       '@mikro-orm/core':
-        specifier: ^7.1.13
-        version: 7.1.14
+        specifier: ^7.1.15
+        version: 7.1.15
       '@mikro-orm/decorators':
-        specifier: ^7.1.13
-        version: 7.1.14(@mikro-orm/core@7.1.14)
+        specifier: ^7.1.15
+        version: 7.1.15(@mikro-orm/core@7.1.15)
       '@mikro-orm/migrations':
-        specifier: ^7.1.13
-        version: 7.1.14(@mikro-orm/core@7.1.14)
+        specifier: ^7.1.15
+        version: 7.1.15(@mikro-orm/core@7.1.15)
       '@mikro-orm/mysql':
-        specifier: ^7.1.13
-        version: 7.1.14(@mikro-orm/core@7.1.14)(@types/node@24.13.3)
+        specifier: ^7.1.15
+        version: 7.1.15(@mikro-orm/core@7.1.15)(@types/node@24.13.3)
       '@mikro-orm/reflection':
-        specifier: ^7.1.13
-        version: 7.1.14(@mikro-orm/core@7.1.14)
+        specifier: ^7.1.15
+        version: 7.1.15(@mikro-orm/core@7.1.15)
       '@ngneat/falso':
         specifier: ^7.2.0
         version: 7.4.0
@@ -252,8 +252,8 @@ importers:
         version: 4.5.4
     devDependencies:
       '@mikro-orm/cli':
-        specifier: ^7.1.13
-        version: 7.1.14
+        specifier: ^7.1.15
+        version: 7.1.15
       '@types/archiver':
         specifier: ^8.0.0
         version: 8.0.0
@@ -597,13 +597,13 @@ packages:
     resolution: {integrity: sha512-x/iUDjcS90W69PryLDIMgFyV21YLTnG9zOpPXS7Bkt2b8AsY3zZsIpOLBkYr9fBcF3HbkKaER5hOBZLfpLgYNw==}
     engines: {node: '>= 14.0.0'}
 
-  '@mikro-orm/cli@7.1.14':
-    resolution: {integrity: sha512-JnkkmMie0KwzuIPjlnpRdWZZUV3DzQvcKY0fjJJOZSSmJK7rM+QDhMrcSTNIxhNWxDaXdOuhZDK7Vpwqcck69w==}
+  '@mikro-orm/cli@7.1.15':
+    resolution: {integrity: sha512-VMR0+A/654ZNK8mx+okQw4Kjg+tsdMoOlRo2+XsQ09nuPaj/g3TkhWg8fNOS5i+xByP015gwD4Mg87fSR13KEQ==}
     engines: {node: '>= 22.17.0'}
     hasBin: true
 
-  '@mikro-orm/core@7.1.14':
-    resolution: {integrity: sha512-q/2UWNX7Z9ZLgwkG6yHtKki3RnQ/ETygrSLXfvBXnaXPQvOY/G9PK/RJLoclo7UtHiHIOmbh/iiwiXiErfpBaQ==}
+  '@mikro-orm/core@7.1.15':
+    resolution: {integrity: sha512-2u7UuZ3IXRsqEnOVNxh1Lf8R3rzTj1Uqem/Xdo/iEpeRls3QUOAIar3Qm0LjpaSyaRIVOrohXFg2Wk+acJEbeA==}
     engines: {node: '>= 22.17.0'}
     peerDependencies:
       dataloader: 2.2.3
@@ -611,39 +611,39 @@ packages:
       dataloader:
         optional: true
 
-  '@mikro-orm/decorators@7.1.14':
-    resolution: {integrity: sha512-Bj6VbgIpn5iISeCPqphpPXlud7iUD5+JhwZCoWgsZPAKxU1e6CKflnlHTdr0ASFLBPu3FXQB6sjXFd9a1NtqMA==}
+  '@mikro-orm/decorators@7.1.15':
+    resolution: {integrity: sha512-H4i6Tm+Wml+rXw34oxfl3dCkwQr+lAQW0L+b+SZ/uf2WbbX0BCYiTv3M4EwGHJEuWVB3V0lGrTK+IzkIqzaO+w==}
     engines: {node: '>= 22.17.0'}
     peerDependencies:
-      '@mikro-orm/core': 7.1.14
+      '@mikro-orm/core': 7.1.15
       reflect-metadata: ^0.1.0 || ^0.2.0
     peerDependenciesMeta:
       reflect-metadata:
         optional: true
 
-  '@mikro-orm/migrations@7.1.14':
-    resolution: {integrity: sha512-9+N1t11hOwalyCb/bSkAkCNKCXrT9MXmmoftu+oqLFLBEGkWsjH4/mvm53I0UGX1uBemYmtY1pWMnyP5iBW/xA==}
+  '@mikro-orm/migrations@7.1.15':
+    resolution: {integrity: sha512-ublCLE5kpmGvtZJaJJyjioDuCy9lS18Q6pp+BMBIYGEzlYcwdpp9br3js3gYDMNr86VZgnZBkByLAg0X5Yu+SA==}
     engines: {node: '>= 22.17.0'}
     peerDependencies:
-      '@mikro-orm/core': 7.1.14
+      '@mikro-orm/core': 7.1.15
 
-  '@mikro-orm/mysql@7.1.14':
-    resolution: {integrity: sha512-qeLHgX9x2fiOUAnG0d/VPty7Yo+LHKlHdtJHlKN+ULk+kH/Nvs0luOc02X9dNLq2WAVcYvTYkyq+VhLwyrrPUg==}
+  '@mikro-orm/mysql@7.1.15':
+    resolution: {integrity: sha512-2NujFmbqJ72cqCO3Ihw4QukbtraUv0pNizEJ0UODNOf9cWeFn8KOzU3XzBVaZFF9z4d9mT/hd3Kx7m07jOu6HA==}
     engines: {node: '>= 22.17.0'}
     peerDependencies:
-      '@mikro-orm/core': 7.1.14
+      '@mikro-orm/core': 7.1.15
 
-  '@mikro-orm/reflection@7.1.14':
-    resolution: {integrity: sha512-kky4RnfPG1FaRhszDJErW0aSlRDi58s+3GcCraNdokJccpUNcN3BaNwOzuzz8GYaT9hbBAvLBBDrXGxSw++LOg==}
+  '@mikro-orm/reflection@7.1.15':
+    resolution: {integrity: sha512-8cw5d4SdgtTIppTp7JOHMClTn6ZeAWLEFoI+K/MdhIqKKqmVXlIpHLuIu147FaOwbcqNLs/cfFO6n2vBGIXQeA==}
     engines: {node: '>= 22.17.0'}
     peerDependencies:
-      '@mikro-orm/core': 7.1.14
+      '@mikro-orm/core': 7.1.15
 
-  '@mikro-orm/sql@7.1.14':
-    resolution: {integrity: sha512-4deS9ep+CVPx48z6AdE6KUPdUbMRNvCsaA4XQPU8YRf3D501z6SIxwk/9JyIWtR3r1DwHYGdwfYUjckPSC9BmQ==}
+  '@mikro-orm/sql@7.1.15':
+    resolution: {integrity: sha512-5vuPeOC381j2sTH3xiHqKSolq9f0T4CHkQaGmEGO4a8PHyUUkExd7uZ41q50+9azgrMBdtP7vlmNVatB0/ntKQ==}
     engines: {node: '>= 22.17.0'}
     peerDependencies:
-      '@mikro-orm/core': 7.1.14
+      '@mikro-orm/core': 7.1.15
 
   '@msgpackr-extract/msgpackr-extract-darwin-arm64@3.0.4':
     resolution: {integrity: sha512-LCkGo6JDfaBhgST7UpPWgNgLINpcpabaHfyz5OBx75nUYxBsaEPxjnyNjWpeb/xBup/682QnBfRBy2/LvPutZQ==}
@@ -2797,8 +2797,8 @@ packages:
     peerDependencies:
       ioredis: ^5.3.2
 
-  mikro-orm@7.1.14:
-    resolution: {integrity: sha512-2HEwjJqldBN2dSlpr+mc/gDUbsDlZTd6nZ4Y0Bv2TIkj/AlsL/UTZryjAr2B4rL0rqUIb13fc3IAFXYlFhPOlQ==}
+  mikro-orm@7.1.15:
+    resolution: {integrity: sha512-q6dWO1IrX3n41itJlkprr2VH850oxMXoIez9pRRP48hCU028HQoEdq90wRQ/vlMLWx5P3VThM4l6AotI4eCM2Q==}
     engines: {node: '>= 22.17.0'}
 
   mime-db@1.52.0:
@@ -2854,8 +2854,8 @@ packages:
   msgpackr@2.0.5:
     resolution: {integrity: sha512-cef05H/dSYpLpqp3sj/qyZh5vhUYCalnaLO7j1yOmpsR0y/XwLVtK7r5gn+U/F7CTEfMowcGhlUQJDLcLf7jcA==}
 
-  mysql2@3.24.2:
-    resolution: {integrity: sha512-l9kXeKGwd6VCbSjmpO/bLWb+YCYpbvE4whte8ec6InXebvCNyEEydyRCnRU+TSHNqRLJ8B+Tk1uWb+vMCJgJzA==}
+  mysql2@3.24.3:
+    resolution: {integrity: sha512-OKfWHkMAg9v06neq8FmSyhbxPQKABN9PAW5G9/bDTXzJBO5xXtkKL0V27vju7HQWk9UD4Od5BZsvCtBTB1CPEw==}
     engines: {node: '>= 8.0'}
     peerDependencies:
       '@types/node': '>= 8'
@@ -3840,43 +3840,43 @@ snapshots:
     dependencies:
       vary: 1.1.2
 
-  '@mikro-orm/cli@7.1.14':
+  '@mikro-orm/cli@7.1.15':
     dependencies:
-      '@mikro-orm/core': 7.1.14
-      mikro-orm: 7.1.14
+      '@mikro-orm/core': 7.1.15
+      mikro-orm: 7.1.15
       yargs: 17.7.2
     transitivePeerDependencies:
       - dataloader
 
-  '@mikro-orm/core@7.1.14': {}
+  '@mikro-orm/core@7.1.15': {}
 
-  '@mikro-orm/decorators@7.1.14(@mikro-orm/core@7.1.14)':
+  '@mikro-orm/decorators@7.1.15(@mikro-orm/core@7.1.15)':
     dependencies:
-      '@mikro-orm/core': 7.1.14
+      '@mikro-orm/core': 7.1.15
 
-  '@mikro-orm/migrations@7.1.14(@mikro-orm/core@7.1.14)':
+  '@mikro-orm/migrations@7.1.15(@mikro-orm/core@7.1.15)':
     dependencies:
-      '@mikro-orm/core': 7.1.14
-      '@mikro-orm/sql': 7.1.14(@mikro-orm/core@7.1.14)
+      '@mikro-orm/core': 7.1.15
+      '@mikro-orm/sql': 7.1.15(@mikro-orm/core@7.1.15)
 
-  '@mikro-orm/mysql@7.1.14(@mikro-orm/core@7.1.14)(@types/node@24.13.3)':
+  '@mikro-orm/mysql@7.1.15(@mikro-orm/core@7.1.15)(@types/node@24.13.3)':
     dependencies:
-      '@mikro-orm/core': 7.1.14
-      '@mikro-orm/sql': 7.1.14(@mikro-orm/core@7.1.14)
+      '@mikro-orm/core': 7.1.15
+      '@mikro-orm/sql': 7.1.15(@mikro-orm/core@7.1.15)
       kysely: 0.29.5
-      mysql2: 3.24.2(@types/node@24.13.3)
+      mysql2: 3.24.3(@types/node@24.13.3)
       sqlstring: 2.3.3
     transitivePeerDependencies:
       - '@types/node'
 
-  '@mikro-orm/reflection@7.1.14(@mikro-orm/core@7.1.14)':
+  '@mikro-orm/reflection@7.1.15(@mikro-orm/core@7.1.15)':
     dependencies:
-      '@mikro-orm/core': 7.1.14
+      '@mikro-orm/core': 7.1.15
       ts-morph: 28.0.0
 
-  '@mikro-orm/sql@7.1.14(@mikro-orm/core@7.1.14)':
+  '@mikro-orm/sql@7.1.15(@mikro-orm/core@7.1.15)':
     dependencies:
-      '@mikro-orm/core': 7.1.14
+      '@mikro-orm/core': 7.1.15
       kysely: 0.29.5
 
   '@msgpackr-extract/msgpackr-extract-darwin-arm64@3.0.4':
@@ -6117,7 +6117,7 @@ snapshots:
     dependencies:
       ioredis: 5.11.1(supports-color@7.2.0)
 
-  mikro-orm@7.1.14: {}
+  mikro-orm@7.1.15: {}
 
   mime-db@1.52.0: {}
 
@@ -6167,7 +6167,7 @@ snapshots:
     optionalDependencies:
       msgpackr-extract: 3.0.4
 
-  mysql2@3.24.2(@types/node@24.13.3):
+  mysql2@3.24.3(@types/node@24.13.3):
     dependencies:
       '@types/node': 24.13.3
       aws-ssl-profiles: 1.1.2

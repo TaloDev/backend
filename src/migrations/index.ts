@@ -80,6 +80,7 @@ import { CreateAdminAPIKeysTable } from './20260711094253CreateAdminAPIKeysTable
 import { AddOrganisationAndUserDeletedAtColumns } from './20260830202536AddOrganisationAndUserDeletedAtColumns.js'
 import { AddPlayersToDeleteUniqueConstraint } from './20260831000000AddPlayersToDeleteUniqueConstraint.js'
 import { CreateEventFunnelsTable } from './20260902191008CreateEventFunnelsTable.js'
+import { RemoveIntegrationSoftDelete } from './20260905054226RemoveIntegrationSoftDelete.js'
 
 export default [
   {
@@ -409,5 +410,9 @@ export default [
   {
     name: 'CreateEventFunnelsTable',
     class: CreateEventFunnelsTable,
+  },
+  {
+    name: 'RemoveIntegrationSoftDelete',
+    class: RemoveIntegrationSoftDelete,
   },
 ]

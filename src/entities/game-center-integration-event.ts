@@ -17,7 +17,7 @@ export default class GameCenterIntegrationEvent {
   @PrimaryKey()
   id!: number
 
-  @ManyToOne(() => Integration)
+  @ManyToOne(() => Integration, { deleteRule: 'cascade' })
   integration: Integration
 
   @Property({ type: 'json' })

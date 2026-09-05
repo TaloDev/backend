@@ -83,336 +83,87 @@ import { CreateEventFunnelsTable } from './20260902191008CreateEventFunnelsTable
 import { RemoveIntegrationSoftDelete } from './20260905054226RemoveIntegrationSoftDelete.js'
 
 export default [
-  {
-    name: 'InitialMigration',
-    class: InitialMigration,
-  },
-  {
-    name: 'CreateDataExportsTable',
-    class: CreateDataExportsTable,
-  },
-  {
-    name: 'CreateLeaderboardsTable',
-    class: CreateLeaderboardsTable,
-  },
-  {
-    name: 'CreateUserTwoFactorAuthTable',
-    class: CreateUserTwoFactorAuthTable,
-  },
-  {
-    name: 'CreateUserRecoveryCodeTable',
-    class: CreateUserRecoveryCodeTable,
-  },
-  {
-    name: 'AddLeaderboardEntryHiddenColumn',
-    class: AddLeaderboardEntryHiddenColumn,
-  },
-  {
-    name: 'CreateGameSavesTable',
-    class: CreateGameSavesTable,
-  },
-  {
-    name: 'CreateGameActivitiesTable',
-    class: CreateGameActivitiesTable,
-  },
-  {
-    name: 'SetUserTwoFactorAuthEnabledDefaultFalse',
-    class: SetUserTwoFactorAuthEnabledDefaultFalse,
-  },
-  {
-    name: 'CreateGameStatsTable',
-    class: CreateGameStatsTable,
-  },
-  {
-    name: 'AddUsernameColumn',
-    class: AddUsernameColumn,
-  },
-  {
-    name: 'CreateInvitesTable',
-    class: CreateInvitesTable,
-  },
-  {
-    name: 'MakeGameActivityUserNullable',
-    class: MakeGameActivityUserNullable,
-  },
-  {
-    name: 'CreatePricingPlansTable',
-    class: CreatePricingPlansTable,
-  },
-  {
-    name: 'CreateIntegrationsTable',
-    class: CreateIntegrationsTable,
-  },
-  {
-    name: 'CreateSteamIntegrationTables',
-    class: CreateSteamIntegrationTables,
-  },
-  {
-    name: 'PlayerAliasServiceUseEnum',
-    class: PlayerAliasServiceUseEnum,
-  },
-  {
-    name: 'CreatePlayerPropsTable',
-    class: CreatePlayerPropsTable,
-  },
-  {
-    name: 'CreatePlayerGroupsTables',
-    class: CreatePlayerGroupsTables,
-  },
-  {
-    name: 'AddFailedJobStackColumn',
-    class: AddFailedJobStackColumn,
-  },
-  {
-    name: 'DropSteamworksLeaderboardMappingUnique',
-    class: DropSteamworksLeaderboardMappingUnique,
-  },
-  {
-    name: 'UpdateTableDefaultValues',
-    class: UpdateTableDefaultValues,
-  },
-  {
-    name: 'CreateGameSecretsTable',
-    class: CreateGameSecretsTable,
-  },
-  {
-    name: 'AddAPIKeyLastUsedAtColumn',
-    class: AddAPIKeyLastUsedAtColumn,
-  },
-  {
-    name: 'CreateGameFeedbackAndCategoryTables',
-    class: CreateGameFeedbackAndCategoryTables,
-  },
-  {
-    name: 'AddAPIKeyUpdatedAtColumn',
-    class: AddAPIKeyUpdatedAtColumn,
-  },
-  {
-    name: 'CreatePlayerAuthTable',
-    class: CreatePlayerAuthTable,
-  },
-  {
-    name: 'CreatePlayerAuthActivityTable',
-    class: CreatePlayerAuthActivityTable,
-  },
-  {
-    name: 'UpdatePlayerAliasServiceColumn',
-    class: UpdatePlayerAliasServiceColumn,
-  },
-  {
-    name: 'AddPlayerAliasAnonymisedColumn',
-    class: AddPlayerAliasAnonymisedColumn,
-  },
-  {
-    name: 'AddLeaderboardEntryPropsColumn',
-    class: AddLeaderboardEntryPropsColumn,
-  },
-  {
-    name: 'CreateUserPinnedGroupsTable',
-    class: CreateUserPinnedGroupsTable,
-  },
-  {
-    name: 'AddPlayerGroupMembersVisibleColumn',
-    class: AddPlayerGroupMembersVisibleColumn,
-  },
-  {
-    name: 'AddPlayerPropCreatedAtColumn',
-    class: AddPlayerPropCreatedAtColumn,
-  },
-  {
-    name: 'AddPlayerAliasLastSeenAtColumn',
-    class: AddPlayerAliasLastSeenAtColumn,
-  },
-  {
-    name: 'CreateGameChannelTables',
-    class: CreateGameChannelTables,
-  },
-  {
-    name: 'IncreasePlayerAliasIdentifierLength',
-    class: IncreasePlayerAliasIdentifierLength,
-  },
-  {
-    name: 'DropPlanActionTablesAddPlayerLimit',
-    class: DropPlanActionTablesAddPlayerLimit,
-  },
-  {
-    name: 'AddLeaderboardRefreshIntervalAndEntryDeletedAt',
-    class: AddLeaderboardRefreshIntervalAndEntryDeletedAt,
-  },
-  {
-    name: 'DeletePlayerAliasAnonymisedColumn',
-    class: DeletePlayerAliasAnonymisedColumn,
-  },
-  {
-    name: 'CreatePlayerPresenceTable',
-    class: CreatePlayerPresenceTable,
-  },
-  {
-    name: 'CascadePlayerPresenceAlias',
-    class: CascadePlayerPresenceAlias,
-  },
-  {
-    name: 'ModifyPlayerPropLengths',
-    class: ModifyPlayerPropLengths,
-  },
-  {
-    name: 'AddGameChannelPrivateColumn',
-    class: AddGameChannelPrivateColumn,
-  },
-  {
-    name: 'CreateLeaderboardEntryPropTable',
-    class: CreateLeaderboardEntryPropTable,
-  },
-  {
-    name: 'AddCascadeDeleteRules',
-    class: AddCascadeDeleteRules,
-  },
-  {
-    name: 'AddPurgeAndWebsiteGameColumns',
-    class: AddPurgeAndWebsiteGameColumns,
-  },
-  {
-    name: 'CreateGameChannelPropTable',
-    class: CreateGameChannelPropTable,
-  },
-  {
-    name: 'AddGameChannelTemporaryMembershipColumn',
-    class: AddGameChannelTemporaryMembershipColumn,
-  },
-  {
-    name: 'CreateGameChannelStoragePropTable',
-    class: CreateGameChannelStoragePropTable,
-  },
-  {
-    name: 'AddPlayerGroupQueryIndexes',
-    class: AddPlayerGroupQueryIndexes,
-  },
-  {
-    name: 'AddPurgeRetentionDaysColumns',
-    class: AddPurgeRetentionDaysColumns,
-  },
-  {
-    name: 'CreateGameFeedbackPropTable',
-    class: CreateGameFeedbackPropTable,
-  },
-  {
-    name: 'AddPlayerDevBuildColumn',
-    class: AddPlayerDevBuildColumn,
-  },
-  {
-    name: 'PlayerAliasIdentifierServiceIndex',
-    class: PlayerAliasIdentifierServiceIndex,
-  },
-  {
-    name: 'InternalNameGameIndexes',
-    class: InternalNameGameIndexes,
-  },
-  {
-    name: 'CreateSteamworksLeaderboardEntryTable',
-    class: CreateSteamworksLeaderboardEntryTable,
-  },
-  {
-    name: 'CreateSteamworksPlayerStatTable',
-    class: CreateSteamworksPlayerStatTable,
-  },
-  {
-    name: 'AddGameChannelStoragePropKeyIndex',
-    class: AddGameChannelStoragePropKeyIndex,
-  },
-  {
-    name: 'AddLeaderboardUniqueByPropsColumn',
-    class: AddLeaderboardUniqueByPropsColumn,
-  },
-  {
-    name: 'AddLeaderboardEntryPropsDigestColumn',
-    class: AddLeaderboardEntryPropsDigestColumn,
-  },
-  {
-    name: 'CreatePlayersToDeleteTable',
-    class: CreatePlayersToDeleteTable,
-  },
-  {
-    name: 'CreatePlayerAliasSubscriptionTable',
-    class: CreatePlayerAliasSubscriptionTable,
-  },
-  {
-    name: 'AddPlayerGameStatUniqueConstraint',
-    class: AddPlayerGameStatUniqueConstraint,
-  },
-  {
-    name: 'AddGameFeedbackDeletedAtColumn',
-    class: AddGameFeedbackDeletedAtColumn,
-  },
-  {
-    name: 'CreateGooglePlayGamesIntegrationEventTable',
-    class: CreateGooglePlayGamesIntegrationEventTable,
-  },
-  {
-    name: 'AddLastUsageWarningThresholdColumn',
-    class: AddLastUsageWarningThresholdColumn,
-  },
-  {
-    name: 'SchemaSnapshotChanges',
-    class: SchemaSnapshotChanges,
-  },
-  {
-    name: 'AddFailedJobFailedAtIndex',
-    class: AddFailedJobFailedAtIndex,
-  },
-  {
-    name: 'CreateGameCenterIntegrationEventTable',
-    class: CreateGameCenterIntegrationEventTable,
-  },
-  {
-    name: 'MikroORMV7FKDecouple',
-    class: MikroORMV7FKDecouple,
-  },
-  {
-    name: 'AddBlockAliasIdentifierProfanityColumn',
-    class: AddBlockAliasIdentifierProfanityColumn,
-  },
-  {
-    name: 'AddBlockPropsProfanityColumn',
-    class: AddBlockPropsProfanityColumn,
-  },
-  {
-    name: 'CreateGameVerificationKeyTable',
-    class: CreateGameVerificationKeyTable,
-  },
-  {
-    name: 'AddVerifyRequestsColumn',
-    class: AddVerifyRequestsColumn,
-  },
-  {
-    name: 'AddGameDisplayNamePropKeyColumn',
-    class: AddGameDisplayNamePropKeyColumn,
-  },
-  {
-    name: 'AddGameLogoUrlColumn',
-    class: AddGameLogoUrlColumn,
-  },
-  {
-    name: 'CreateDeletedPlayerTable',
-    class: CreateDeletedPlayerTable,
-  },
-  {
-    name: 'CreateAdminAPIKeysTable',
-    class: CreateAdminAPIKeysTable,
-  },
-  {
-    name: 'AddOrganisationAndUserDeletedAtColumns',
-    class: AddOrganisationAndUserDeletedAtColumns,
-  },
-  {
-    name: 'AddPlayersToDeleteUniqueConstraint',
-    class: AddPlayersToDeleteUniqueConstraint,
-  },
-  {
-    name: 'CreateEventFunnelsTable',
-    class: CreateEventFunnelsTable,
-  },
-  {
-    name: 'RemoveIntegrationSoftDelete',
-    class: RemoveIntegrationSoftDelete,
-  },
+  InitialMigration,
+  CreateDataExportsTable,
+  CreateLeaderboardsTable,
+  CreateUserTwoFactorAuthTable,
+  CreateUserRecoveryCodeTable,
+  AddLeaderboardEntryHiddenColumn,
+  CreateGameSavesTable,
+  CreateGameActivitiesTable,
+  SetUserTwoFactorAuthEnabledDefaultFalse,
+  CreateGameStatsTable,
+  AddUsernameColumn,
+  CreateInvitesTable,
+  MakeGameActivityUserNullable,
+  CreatePricingPlansTable,
+  CreateIntegrationsTable,
+  CreateSteamIntegrationTables,
+  PlayerAliasServiceUseEnum,
+  CreatePlayerPropsTable,
+  CreatePlayerGroupsTables,
+  AddFailedJobStackColumn,
+  DropSteamworksLeaderboardMappingUnique,
+  UpdateTableDefaultValues,
+  CreateGameSecretsTable,
+  AddAPIKeyLastUsedAtColumn,
+  CreateGameFeedbackAndCategoryTables,
+  AddAPIKeyUpdatedAtColumn,
+  CreatePlayerAuthTable,
+  CreatePlayerAuthActivityTable,
+  UpdatePlayerAliasServiceColumn,
+  AddPlayerAliasAnonymisedColumn,
+  AddLeaderboardEntryPropsColumn,
+  CreateUserPinnedGroupsTable,
+  AddPlayerGroupMembersVisibleColumn,
+  AddPlayerPropCreatedAtColumn,
+  AddPlayerAliasLastSeenAtColumn,
+  CreateGameChannelTables,
+  IncreasePlayerAliasIdentifierLength,
+  DropPlanActionTablesAddPlayerLimit,
+  AddLeaderboardRefreshIntervalAndEntryDeletedAt,
+  CreatePlayerPresenceTable,
+  DeletePlayerAliasAnonymisedColumn,
+  CascadePlayerPresenceAlias,
+  ModifyPlayerPropLengths,
+  AddGameChannelPrivateColumn,
+  CreateLeaderboardEntryPropTable,
+  AddCascadeDeleteRules,
+  AddPurgeAndWebsiteGameColumns,
+  CreateGameChannelPropTable,
+  AddGameChannelTemporaryMembershipColumn,
+  CreateGameChannelStoragePropTable,
+  AddPlayerGroupQueryIndexes,
+  AddPurgeRetentionDaysColumns,
+  CreateGameFeedbackPropTable,
+  AddPlayerDevBuildColumn,
+  PlayerAliasIdentifierServiceIndex,
+  InternalNameGameIndexes,
+  CreateSteamworksLeaderboardEntryTable,
+  CreateSteamworksPlayerStatTable,
+  AddGameChannelStoragePropKeyIndex,
+  AddLeaderboardUniqueByPropsColumn,
+  AddLeaderboardEntryPropsDigestColumn,
+  CreatePlayersToDeleteTable,
+  CreatePlayerAliasSubscriptionTable,
+  AddPlayerGameStatUniqueConstraint,
+  AddGameFeedbackDeletedAtColumn,
+  CreateGooglePlayGamesIntegrationEventTable,
+  AddLastUsageWarningThresholdColumn,
+  SchemaSnapshotChanges,
+  AddFailedJobFailedAtIndex,
+  CreateGameCenterIntegrationEventTable,
+  MikroORMV7FKDecouple,
+  AddBlockAliasIdentifierProfanityColumn,
+  AddBlockPropsProfanityColumn,
+  CreateGameVerificationKeyTable,
+  AddVerifyRequestsColumn,
+  AddGameDisplayNamePropKeyColumn,
+  AddGameLogoUrlColumn,
+  CreateDeletedPlayerTable,
+  CreateAdminAPIKeysTable,
+  AddOrganisationAndUserDeletedAtColumns,
+  AddPlayersToDeleteUniqueConstraint,
+  CreateEventFunnelsTable,
+  RemoveIntegrationSoftDelete,
 ]

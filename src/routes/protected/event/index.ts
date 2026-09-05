@@ -1,7 +1,9 @@
 import type Router from 'koa-tree-router'
 import { protectedRouter } from '../../../lib/routing/router.js'
 import { breakdownRoute } from './breakdown.js'
+import { catalogueRoute } from './catalogue.js'
 import { listRoute } from './list.js'
+import { purgeRoute } from './purge.js'
 
 export function eventRouter(router: Router) {
   protectedRouter(
@@ -9,6 +11,8 @@ export function eventRouter(router: Router) {
     ({ route }) => {
       route(listRoute)
       route(breakdownRoute)
+      route(catalogueRoute)
+      route(purgeRoute)
     },
     { router },
   )

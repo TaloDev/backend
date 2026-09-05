@@ -1,9 +1,11 @@
 import { ClickHouseClient } from '@clickhouse/client'
 import { EntityManager } from '@mikro-orm/mysql'
 import { v4 } from 'uuid'
+import { getGlobalRedis } from '../config/redis.config.js'
 import ClickHouseEntity from '../lib/clickhouse/clickhouse-entity.js'
 import { formatDateForClickHouse } from '../lib/clickhouse/formatDateTime.js'
 import { PropRejectionError } from '../lib/errors/propRejectionError.js'
+import { clearCachePattern } from '../lib/perf/clearCachePattern.js'
 import { hardSanitiseProps } from '../lib/props/sanitiseProps.js'
 import Game from './game.js'
 import PlayerAlias from './player-alias.js'
@@ -48,6 +50,22 @@ export default class Event extends ClickHouseEntity<
   playerAlias!: PlayerAlias
   createdAt!: Date
   updatedAt: Date = new Date()
+
+  static getCatalogueCacheKey({
+    game,
+    includeDevData = false,
+    wildcard = false,
+  }: {
+    game: Game
+    includeDevData?: boolean
+    wildcard?: boolean
+  }) {
+    return `event-catalogue-${game.id}-${wildcard ? '*' : includeDevData}`
+  }
+
+  static async clearCatalogueCache(game: Game) {
+    await clearCachePattern(getGlobalRedis(), Event.getCatalogueCacheKey({ game, wildcard: true }))
+  }
 
   static async massHydrate(
     em: EntityManager,

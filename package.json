@@ -16,7 +16,7 @@
     "down": "docker compose down",
     "restart": "docker compose restart backend && pnpm logs",
     "logs": "docker compose logs backend --follow",
-    "migration:create": "DB_HOST=127.0.0.1 mikro-orm migration:create",
+    "migration:create": "DB_HOST=127.0.0.1 mikro-orm migration:create && pnpm fmt:fix",
     "migration:up": "DB_HOST=127.0.0.1 mikro-orm migration:up",
     "prepare": "husky || true",
     "stripe:webhooks": "stripe listen --forward-to localhost:3000/public/webhooks/subscriptions",

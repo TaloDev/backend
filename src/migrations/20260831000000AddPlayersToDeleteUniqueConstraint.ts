@@ -1,6 +1,8 @@
 import { Migration } from '@mikro-orm/migrations'
 
 export class AddPlayersToDeleteUniqueConstraint extends Migration {
+  override name = 'AddPlayersToDeleteUniqueConstraint'
+
   override async up(): Promise<void> {
     this.addSql(
       'alter table `players_to_delete` drop index `players_to_delete_player_id_index`, add unique `players_to_delete_player_id_unique`(`player_id`);',

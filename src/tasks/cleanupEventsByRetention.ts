@@ -21,7 +21,12 @@ export async function cleanupEventsByRetention() {
   for (const retention of retentions) {
     try {
       const cutoff = subDays(new Date(), retention.retentionDays)
-      const deleted = await purgeEvents(clickhouse, retention.game.id, retention.eventName, cutoff)
+      const deleted = await purgeEvents({
+        clickhouse,
+        gameId: retention.game.id,
+        eventName: retention.eventName,
+        cutoff,
+      })
 
       if (deleted > 0) {
         gamesWithPurges.add(retention.game)

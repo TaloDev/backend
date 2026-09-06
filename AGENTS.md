@@ -156,6 +156,19 @@ src/
 
 ## Common Patterns
 
+### ClickHouse DELETE/UPDATE mutations
+
+Never issue a `DELETE` or `UPDATE` with a subquery against ClickHouse
+(`DELETE FROM t WHERE id IN (SELECT ...)`). ClickHouse rewrites these into
+mutations that reference a temporary table; if the server restarts the temp
+table is lost and the mutation retries forever with `UNKNOWN_TABLE`, eventually
+hitting the 1000-mutation cap and rejecting every mutation on that table.
+Instead: SELECT the ids first, then delete/update with chunked, parameterized id arrays (`query_params`).
+Keep each chunk small — the client sends params in the request URL, capped at
+128KB per field and 1MB per URL — see `src/lib/clickhouse/deleteEventProps.ts`.
+Killed mutations stay visible in `system.mutations` with their failure reason,
+which is how these are diagnosed.
+
 ### Adding a New API Endpoint
 
 Use the `/new-route` skill for step-by-step guidance on creating routes.

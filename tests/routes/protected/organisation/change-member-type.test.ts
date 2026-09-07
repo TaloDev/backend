@@ -1,5 +1,5 @@
 import request from 'supertest'
-import User, { UserType } from '../../../../src/entities/user.js'
+import { UserType } from '../../../../src/entities/user.js'
 import UserFactory from '../../../fixtures/UserFactory.js'
 import createOrganisationAndGame from '../../../utils/createOrganisationAndGame.js'
 import createUserAndToken from '../../../utils/createUserAndToken.js'

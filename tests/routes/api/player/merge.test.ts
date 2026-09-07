@@ -571,7 +571,7 @@ describe('Player API - merge', () => {
 
     await clickhouse.insert({
       table: 'player_sessions',
-      values: Array.from({ length: 10 }).map((_) => {
+      values: Array.from({ length: 10 }).map(() => {
         const session = new PlayerSession()
         session.construct(player2)
         return session.toInsertable()

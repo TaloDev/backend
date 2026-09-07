@@ -8,7 +8,7 @@ import createOrganisationAndGame from '../utils/createOrganisationAndGame.js'
 
 describe('cleanupEventsByRetention', () => {
   it('should delete events and props past their retention period', async () => {
-    const [organisation, game] = await createOrganisationAndGame()
+    const [, game] = await createOrganisationAndGame()
     const player = await new PlayerFactory([game]).one()
     await em.persist(player).flush()
 
@@ -56,7 +56,7 @@ describe('cleanupEventsByRetention', () => {
   })
 
   it('should not touch events without a retention config', async () => {
-    const [organisation, game] = await createOrganisationAndGame()
+    const [, game] = await createOrganisationAndGame()
     const player = await new PlayerFactory([game]).one()
     await em.persist(player).flush()
 

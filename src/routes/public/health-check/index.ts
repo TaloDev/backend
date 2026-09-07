@@ -7,7 +7,14 @@ export function healthCheckRouter(router: Router) {
     ({ route }) => {
       route({
         method: 'get',
-        handler: () => {
+        handler: (ctx) => {
+          if (ctx.query.body === '1') {
+            return {
+              status: 200,
+              body: 'OK',
+            }
+          }
+
           return {
             status: 204,
           }

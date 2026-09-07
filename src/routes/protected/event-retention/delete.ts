@@ -1,6 +1,6 @@
 import { z } from 'zod'
 import EventRetention from '../../../entities/event-retention.js'
-import GameActivity, { GameActivityType } from '../../../entities/game-activity.js'
+import { GameActivityType } from '../../../entities/game-activity.js'
 import { UserType } from '../../../entities/user.js'
 import createGameActivity from '../../../lib/logging/createGameActivity.js'
 import { protectedRoute, withMiddleware } from '../../../lib/routing/router.js'

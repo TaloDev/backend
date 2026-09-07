@@ -76,7 +76,7 @@ describe('Leaderboard admin API - reset entries', () => {
   })
 
   it('should return 404 for a leaderboard in another game', async () => {
-    const { apiKey, keyString } = await createAdminAPIKey([AdminAPIKeyScope.WRITE_LEADERBOARDS])
+    const { keyString } = await createAdminAPIKey([AdminAPIKeyScope.WRITE_LEADERBOARDS])
     const { apiKey: otherKey } = await createAdminAPIKey([AdminAPIKeyScope.WRITE_LEADERBOARDS])
 
     const leaderboard = await new LeaderboardFactory([otherKey.game]).one()

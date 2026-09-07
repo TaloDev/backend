@@ -1,4 +1,4 @@
-import { subDays } from 'date-fns'
+import { sub, subDays } from 'date-fns'
 import request from 'supertest'
 import EventRetention from '../../../../src/entities/event-retention.js'
 import { UserType } from '../../../../src/entities/user.js'
@@ -293,7 +293,7 @@ describe('Event - catalogue', () => {
 
     const player = await new PlayerFactory([game]).one()
     const events = await new EventFactory([player])
-      .state(() => ({ name: 'Open inventory' }))
+      .state(() => ({ name: 'Open inventory', createdAt: sub(new Date(), { minutes: 30 }) }))
       .many(2)
 
     await em.persist(player).flush()

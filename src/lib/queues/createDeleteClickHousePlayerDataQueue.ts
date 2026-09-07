@@ -1,5 +1,6 @@
 import { captureException } from '@sentry/node'
 import createClickHouseClient from '../clickhouse/createClient.js'
+import { deleteEventPropsWhere } from '../clickhouse/deleteEventProps.js'
 import createQueue from './createQueue.js'
 
 export type DeleteClickHousePlayerDataConfig = { playerIds: string[]; aliasIds: number[] }
@@ -12,30 +13,37 @@ export function createDeleteClickHousePlayerDataQueue() {
       try {
         const { aliasIds, playerIds } = job.data
 
-        const queries: string[] =
-          aliasIds.length > 0
-            ? [
-                'DELETE FROM event_props WHERE event_id IN (SELECT id FROM events WHERE player_alias_id IN ({aliasIds:Array(UInt32)}))',
-                'DELETE FROM events WHERE player_alias_id IN ({aliasIds:Array(UInt32)})',
-                'DELETE FROM player_game_stat_snapshots WHERE player_alias_id IN ({aliasIds:Array(UInt32)})',
-                'DELETE FROM player_sessions WHERE player_id IN ({playerIds:Array(String)})',
-              ]
-            : []
+        if (aliasIds.length === 0) {
+          return
+        }
 
-        await Promise.allSettled(
-          queries.map((query) => {
-            return clickhouse.command({
-              query,
-              query_params: {
-                aliasIds: aliasIds,
-                playerIds: playerIds,
-              },
-            })
-          }),
+        await deleteEventPropsWhere({
+          clickhouse,
+          where: 'player_alias_id IN {aliasIds:Array(UInt32)}',
+          params: { aliasIds },
+        })
+
+        await Promise.all(
+          [
+            {
+              query: 'DELETE FROM events WHERE player_alias_id IN {aliasIds:Array(UInt32)}',
+              query_params: { aliasIds },
+            },
+            {
+              query:
+                'DELETE FROM player_game_stat_snapshots WHERE player_alias_id IN {aliasIds:Array(UInt32)}',
+              query_params: { aliasIds },
+            },
+            {
+              query: 'DELETE FROM player_sessions WHERE player_id IN {playerIds:Array(String)}',
+              query_params: { playerIds },
+            },
+          ].map((params) => clickhouse.command(params)),
         )
         /* v8 ignore start -- @preserve */
       } catch (error) {
         captureException(error)
+        throw error
         /* v8 ignore stop -- @preserve */
       } finally {
         await clickhouse.close()

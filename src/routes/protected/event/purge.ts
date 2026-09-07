@@ -1,6 +1,6 @@
 import { z } from 'zod'
 import Event from '../../../entities/event.js'
-import GameActivity, { GameActivityType } from '../../../entities/game-activity.js'
+import { GameActivityType } from '../../../entities/game-activity.js'
 import { UserType } from '../../../entities/user.js'
 import { purgeEvents } from '../../../lib/clickhouse/purgeEvents.js'
 import createGameActivity from '../../../lib/logging/createGameActivity.js'
@@ -20,7 +20,11 @@ export const purgeRoute = protectedRoute({
   handler: async (ctx) => {
     const { eventName } = ctx.state.validated.query
 
-    const purged = await purgeEvents(ctx.clickhouse, ctx.state.game.id, eventName)
+    const purged = await purgeEvents({
+      clickhouse: ctx.clickhouse,
+      gameId: ctx.state.game.id,
+      eventName,
+    })
 
     if (purged > 0) {
       await Event.clearCatalogueCache(ctx.state.game)

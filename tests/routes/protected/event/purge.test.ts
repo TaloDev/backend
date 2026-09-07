@@ -1,3 +1,4 @@
+import { sub } from 'date-fns'
 import request from 'supertest'
 import EventRetention from '../../../../src/entities/event-retention.js'
 import GameActivity, { GameActivityType } from '../../../../src/entities/game-activity.js'
@@ -20,7 +21,7 @@ describe('Event - purge', () => {
       await em.persist(player).flush()
 
       const events = await new EventFactory([player])
-        .state(() => ({ name: 'Open inventory' }))
+        .state(() => ({ name: 'Open inventory', createdAt: sub(new Date(), { minutes: 30 }) }))
         .many(2)
 
       await em.persist(player).flush()

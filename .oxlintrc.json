@@ -5,7 +5,8 @@
     "no-restricted-imports": ["error", { "patterns": ["@mikro-orm/core"] }],
     "typescript/consistent-type-definitions": ["error", "type"],
     "typescript/no-explicit-any": "error",
-    "typescript/no-floating-promises": "error"
+    "typescript/no-floating-promises": "error",
+    "no-unused-vars": "error"
   },
   "overrides": [
     {

@@ -8,7 +8,7 @@ if [ -n "$1" ]; then
     exit 1
   fi
 
-  pnpm version "$VERSION_TYPE"
+  pnpm version "$VERSION_TYPE" --no-git-checks
   git push
 fi
 

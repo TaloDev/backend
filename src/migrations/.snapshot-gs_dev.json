@@ -4358,21 +4358,22 @@
           "unique": true
         },
         {
-          "columnNames": ["score"],
+          "columnNames": [],
           "composite": false,
           "constraint": false,
-          "keyName": "idx_leaderboardentry_hidden_leaderboard_id_score",
+          "keyName": "idx_leaderboardentry_order_asc",
           "primary": false,
           "unique": false,
-          "expression": "alter table `leaderboard_entry` add index `idx_leaderboardentry_hidden_leaderboard_id_score`(`hidden`, `leaderboard_id`, `score`)"
+          "expression": "alter table `leaderboard_entry` add index `idx_leaderboardentry_order_asc`(`leaderboard_id`, `hidden`, `deleted_at`, `score`, `created_at`, `id`)"
         },
         {
-          "columnNames": ["hidden"],
+          "columnNames": [],
           "composite": false,
           "constraint": false,
-          "keyName": "leaderboard_entry_hidden_index",
+          "keyName": "idx_leaderboardentry_order_desc",
           "primary": false,
-          "unique": false
+          "unique": false,
+          "expression": "alter table `leaderboard_entry` add index `idx_leaderboardentry_order_desc`(`leaderboard_id`, `hidden`, `deleted_at`, `score` desc, `created_at`, `id`)"
         },
         {
           "columnNames": ["leaderboard_id"],

@@ -84,6 +84,8 @@ import { RemoveIntegrationSoftDelete } from './20260905054226RemoveIntegrationSo
 import { LinkSteamworksEntitiesToIntegration } from './20260905070622LinkSteamworksEntitiesToIntegration.js'
 import { WidenSteamworksLeaderboardMappingPk } from './20260905094358WidenSteamworksLeaderboardMappingPk.js'
 import { CreateEventRetentionTable } from './20260905132019CreateEventRetentionTable.js'
+import { AddLeaderboardEntryOrderIndexes } from './20260909210826AddLeaderboardEntryOrderIndexes.js'
+import { DropRedundantLeaderboardEntryIndexes } from './20260909211348DropRedundantLeaderboardEntryIndexes.js'
 
 export default [
   InitialMigration,
@@ -172,4 +174,6 @@ export default [
   LinkSteamworksEntitiesToIntegration,
   WidenSteamworksLeaderboardMappingPk,
   CreateEventRetentionTable,
+  AddLeaderboardEntryOrderIndexes,
+  DropRedundantLeaderboardEntryIndexes,
 ]

@@ -10,7 +10,7 @@ import {
 import { Collection, EntityManager, OrderDefinition } from '@mikro-orm/mysql'
 import { isThisMonth, isThisWeek, isThisYear, isToday } from 'date-fns'
 import Game from './game.js'
-import LeaderboardEntry from './leaderboard-entry.js'
+import LeaderboardEntry, { ascOrderIndexName, descOrderIndexName } from './leaderboard-entry.js'
 
 export enum LeaderboardSortMode {
   DESC = 'desc',
@@ -121,10 +121,14 @@ export default class Leaderboard {
     // rounded to second precision to match MySQL datetime storage
     const createdAt = new Date(Math.round(entry.createdAt.getTime() / 1000) * 1000)
 
-    const betterScore = await em.repo(LeaderboardEntry).count({
-      ...this.getBaseEntryFilters(includeDevData),
-      score: asc ? { $lt: entry.score } : { $gt: entry.score },
-    })
+    const betterScore = await em.repo(LeaderboardEntry).count(
+      {
+        ...this.getBaseEntryFilters(includeDevData),
+        score: asc ? { $lt: entry.score } : { $gt: entry.score },
+      },
+      // the dev_build join makes the planner skip the order index
+      { indexHint: `force index(${asc ? ascOrderIndexName : descOrderIndexName})` },
+    )
 
     const betterTie = await em.repo(LeaderboardEntry).count({
       ...this.getBaseEntryFilters(includeDevData),

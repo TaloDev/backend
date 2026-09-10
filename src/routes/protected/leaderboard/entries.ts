@@ -62,10 +62,7 @@ async function getGlobalEntryIds({
           },
         ],
       })
-      .orderBy({
-        score: leaderboard.sortMode,
-        createdAt: 'asc',
-      })
+      .orderBy(leaderboard.getEntryOrder())
 
     if (!includeDevData) {
       globalQuery.andWhere({
@@ -216,10 +213,7 @@ export async function listEntriesHandler({
       }
 
       const [entries, count] = await em.repo(LeaderboardEntry).findAndCount(where, {
-        orderBy: {
-          score: leaderboard.sortMode,
-          createdAt: 'asc',
-        },
+        orderBy: leaderboard.getEntryOrder(),
         limit: itemsPerPage + 1,
         offset: page * itemsPerPage,
         populate: ['playerAlias'],

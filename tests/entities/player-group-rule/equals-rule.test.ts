@@ -169,6 +169,41 @@ describe('EQUALS rule', () => {
     expect(res.body.count).toEqual(1)
   })
 
+  it('should correctly evaluate an EQUALS rule with stat values casted to CHAR', async () => {
+    const [organisation, game] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken({}, organisation)
+
+    const player1 = await new PlayerFactory([game]).one()
+    const player2 = await new PlayerFactory([game]).one()
+
+    const stat = await new GameStatFactory([game])
+      .state(() => ({ minValue: 1, maxValue: 80 }))
+      .one()
+    const playerStat = await new PlayerGameStatFactory()
+      .construct(player1, stat)
+      .state(() => ({ value: 60 }))
+      .one()
+    await em.persist([player1, player2, playerStat]).flush()
+
+    const rules: Partial<PlayerGroupRule>[] = [
+      {
+        name: PlayerGroupRuleName.EQUALS,
+        field: `statValue.${stat.internalName}`,
+        operands: ['60'],
+        negate: false,
+        castType: PlayerGroupRuleCastType.CHAR,
+      },
+    ]
+
+    const res = await request(app)
+      .get(`/games/${game.id}/player-groups/preview-count`)
+      .query({ ruleMode: '$and', rules: encodeURI(JSON.stringify(rules)) })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    expect(res.body.count).toEqual(1)
+  })
+
   it('should correctly evaluate a negated EQUALS rule with stat values', async () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({}, organisation)

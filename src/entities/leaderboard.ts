@@ -7,7 +7,7 @@ import {
   PrimaryKey,
   Property,
 } from '@mikro-orm/decorators/es'
-import { Collection, EntityManager } from '@mikro-orm/mysql'
+import { Collection, EntityManager, OrderDefinition } from '@mikro-orm/mysql'
 import { isThisMonth, isThisWeek, isThisYear, isToday } from 'date-fns'
 import Game from './game.js'
 import LeaderboardEntry from './leaderboard-entry.js'
@@ -81,6 +81,58 @@ export default class Leaderboard {
 
   isDateInCurrentPeriod(date: Date) {
     return refreshCheckers[this.refreshInterval](date)
+  }
+
+  getEntryOrder(): OrderDefinition<LeaderboardEntry> {
+    return {
+      score: this.sortMode,
+      createdAt: 'asc',
+      id: 'asc',
+    }
+  }
+
+  getBaseEntryFilters(includeDevData: boolean): {
+    leaderboard: Leaderboard
+    hidden: boolean
+    deletedAt: Date | null
+    playerAlias?: { player: { devBuild: boolean } }
+  } {
+    return {
+      leaderboard: this,
+      hidden: false,
+      deletedAt: null,
+      ...(includeDevData ? {} : { playerAlias: { player: { devBuild: false } } }),
+    }
+  }
+
+  // position = number of entries sorting before this one, per getEntryOrder()
+  // two separate range counts so both can use the score indexes
+  async getEntryPosition({
+    em,
+    entry,
+    includeDevData,
+  }: {
+    em: EntityManager
+    entry: LeaderboardEntry
+    includeDevData: boolean
+  }) {
+    const asc = this.sortMode === LeaderboardSortMode.ASC
+
+    // rounded to second precision to match MySQL datetime storage
+    const createdAt = new Date(Math.round(entry.createdAt.getTime() / 1000) * 1000)
+
+    const betterScore = await em.repo(LeaderboardEntry).count({
+      ...this.getBaseEntryFilters(includeDevData),
+      score: asc ? { $lt: entry.score } : { $gt: entry.score },
+    })
+
+    const betterTie = await em.repo(LeaderboardEntry).count({
+      ...this.getBaseEntryFilters(includeDevData),
+      score: entry.score,
+      $or: [{ createdAt: { $lt: createdAt } }, { createdAt, id: { $lt: entry.id } }],
+    })
+
+    return betterScore + betterTie
   }
 
   async findEntryWithProps({

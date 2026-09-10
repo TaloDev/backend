@@ -193,31 +193,11 @@ export const postRoute = apiRoute({
         return integration.handleLeaderboardEntryCreated(em, entry)
       })
 
-      const query = em
-        .qb(LeaderboardEntry)
-        .where({
-          leaderboard,
-          hidden: false,
-          deletedAt: null,
-          score:
-            leaderboard.sortMode === LeaderboardSortMode.ASC
-              ? { $lte: entry.score }
-              : { $gte: entry.score },
-        })
-        .orderBy({ createdAt: 'asc' })
-
-      if (!ctx.state.includeDevData) {
-        query.andWhere({
-          playerAlias: {
-            player: {
-              devBuild: false,
-            },
-          },
-        })
-      }
-
-      const { count } = await query.count().execute('get')
-      const position = Math.max(count - 1, 0)
+      const position = await leaderboard.getEntryPosition({
+        em,
+        entry,
+        includeDevData: ctx.state.includeDevData,
+      })
       await entry.playerAlias.player.checkGroupMemberships(em)
 
       return {

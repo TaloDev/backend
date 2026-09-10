@@ -14,7 +14,7 @@ export const getDocs = {
             score: 593.21,
             leaderboardName: 'Highscore',
             leaderboardInternalName: 'highscore',
-            leaderboardSortMode: 'asc',
+            leaderboardSortMode: 'desc',
             playerAlias: {
               id: 1,
               service: 'steam',
@@ -42,7 +42,7 @@ export const getDocs = {
             score: 400.06,
             leaderboardName: 'Highscore',
             leaderboardInternalName: 'highscore',
-            leaderboardSortMode: 'asc',
+            leaderboardSortMode: 'desc',
             playerAlias: {
               id: 1,
               service: 'epic',
@@ -120,6 +120,75 @@ export const getDocs = {
   ],
 } satisfies RouteDocs
 
+export const topDocs = {
+  description: "Get a leaderboard's top entries alongside the current player's entries",
+  samples: [
+    {
+      title: 'Sample response',
+      sample: {
+        topEntries: [
+          {
+            id: 4,
+            position: 0,
+            score: 593.21,
+            leaderboardName: 'Highscore',
+            leaderboardInternalName: 'highscore',
+            leaderboardSortMode: 'desc',
+            playerAlias: {
+              id: 1,
+              service: 'steam',
+              identifier: '11133645',
+              displayName: '11133645',
+              player: {
+                id: '7a4e70ec-6ee6-418e-923d-b3a45051b7f9',
+                devBuild: false,
+              },
+            },
+            hidden: false,
+            createdAt: '2022-01-15T14:01:18.727Z',
+            updatedAt: '2022-01-15T14:01:18.727Z',
+          },
+          '/* ...9 more entries */',
+        ],
+        playerEntries: [
+          {
+            position: 41,
+            id: 126,
+            score: 100,
+            leaderboardName: 'Highscore',
+            leaderboardInternalName: 'highscore',
+            leaderboardSortMode: 'desc',
+            playerAlias: {
+              id: 41,
+              service: 'steam',
+              identifier: '11133645',
+              displayName: '11133645',
+              player: {
+                id: '7a4e70ec-6ee6-418e-923d-b3a45051b7f9',
+                devBuild: false,
+              },
+            },
+            hidden: false,
+            props: [],
+            createdAt: '2022-01-15T14:01:18.727Z',
+            updatedAt: '2022-01-15T14:01:18.727Z',
+            deletedAt: null,
+          },
+        ],
+      },
+    },
+    {
+      title: 'Sample request with a limit',
+      sample: {
+        url: '/v1/leaderboards/highscore/entries/top?limit=25',
+        query: {
+          limit: '25',
+        },
+      },
+    },
+  ],
+} satisfies RouteDocs
+
 export const postDocs = {
   description:
     "Create or update a leaderboard's entry\nIf an entry exists for the player and the leaderboard mode is set to unique, that entry will be updated with the new score (and the updated key will return true)",
@@ -133,7 +202,7 @@ export const postDocs = {
           score: 593.21,
           leaderboardName: 'Highscore',
           leaderboardInternalName: 'highscore',
-          leaderboardSortMode: 'asc',
+          leaderboardSortMode: 'desc',
           playerAlias: {
             id: 1,
             service: 'steam',

@@ -5,15 +5,23 @@ import LeaderboardEntryProp from './leaderboard-entry-prop.js'
 import Leaderboard from './leaderboard.js'
 import PlayerAlias from './player-alias.js'
 
-const scoreIndexName = 'idx_leaderboardentry_hidden_leaderboard_id_score'
-const scoreIndexExpr = `alter table \`leaderboard_entry\` add index \`${scoreIndexName}\`(\`hidden\`, \`leaderboard_id\`, \`score\`)`
+// asc leaderboard entry ordering
+// deleted_at sits in the prefix so soft-deleted rows never get scanned
+const ascOrderIndexName = 'idx_leaderboardentry_order_asc'
+const ascOrderIndexExpr = `alter table \`leaderboard_entry\` add index \`${ascOrderIndexName}\`(\`leaderboard_id\`, \`hidden\`, \`deleted_at\`, \`score\`, \`created_at\`, \`id\`)`
+
+// desc leaderboard entry ordering - a reverse scan of the asc index would also reverse
+// the createdAt/id tie-breaks, so score needs an explicit descending index part
+const descOrderIndexName = 'idx_leaderboardentry_order_desc'
+const descOrderIndexExpr = `alter table \`leaderboard_entry\` add index \`${descOrderIndexName}\`(\`leaderboard_id\`, \`hidden\`, \`deleted_at\`, \`score\` desc, \`created_at\`, \`id\`)`
 
 @Entity()
+@Index({ name: ascOrderIndexName, expression: ascOrderIndexExpr })
+@Index({ name: descOrderIndexName, expression: descOrderIndexExpr })
 export default class LeaderboardEntry {
   @PrimaryKey()
   id!: number
 
-  @Index({ name: scoreIndexName, expression: scoreIndexExpr })
   @Property({ type: 'double' })
   score!: number
 
@@ -29,7 +37,6 @@ export default class LeaderboardEntry {
   })
   props: Collection<LeaderboardEntryProp> = new Collection<LeaderboardEntryProp>(this)
 
-  @Index()
   @Property({ default: false })
   hidden!: boolean
 

@@ -109,6 +109,13 @@ export default class PlayerGroupRule {
     return raw((alias) => `cast(${alias}.${key} as ${this.castType})`)
   }
 
+  // ensure native DOUBLE columns aren't casted so they can use the right indexes
+  private getComparisonKey(key: string): string {
+    return this.castType === PlayerGroupRuleCastType.DOUBLE
+      ? raw((alias) => `${alias}.${key}`)
+      : this.getCastedKey(key)
+  }
+
   private getOperand(idx: number): string {
     return raw(`cast('${this.operands[idx]}' as ${this.castType})`)
   }
@@ -157,7 +164,7 @@ export default class PlayerGroupRule {
         stat: {
           internalName: this.getNamespacedValue('statValue'),
         },
-        [this.getCastedKey('value')]: fieldQuery,
+        [this.getComparisonKey('value')]: fieldQuery,
       })
   }
 
@@ -171,7 +178,8 @@ export default class PlayerGroupRule {
           internalName: this.getNamespacedValue('leaderboardEntryScore'),
         },
         hidden: false,
-        [this.getCastedKey('score')]: fieldQuery,
+        deletedAt: null,
+        [this.getComparisonKey('score')]: fieldQuery,
       })
   }
 

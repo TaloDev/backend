@@ -19,6 +19,7 @@ export default async function cleanupSteamworksPlayerStats() {
       after,
       orderBy: { id: 'asc' },
       populate: ['stat.game', 'integration'] as const,
+      includeCount: false,
     })
   }, 100)
 

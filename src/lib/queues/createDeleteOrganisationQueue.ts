@@ -15,6 +15,7 @@ async function queueGamePlayersForDeletion(em: EntityManager, gameId: number) {
       first: batchSize,
       after,
       orderBy: { id: 'asc' },
+      includeCount: false,
     })
   })
 

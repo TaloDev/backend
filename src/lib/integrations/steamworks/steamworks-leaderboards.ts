@@ -350,6 +350,7 @@ async function pushEntriesToSteamworks({
       first: batchSize,
       after,
       orderBy: { id: 'asc' },
+      includeCount: false,
     })
   }, 10)
 

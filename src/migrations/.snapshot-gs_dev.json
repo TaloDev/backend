@@ -4521,6 +4521,14 @@
           "unique": true
         },
         {
+          "columnNames": ["key", "value"],
+          "composite": true,
+          "constraint": false,
+          "keyName": "leaderboard_entry_prop_key_value_index",
+          "primary": false,
+          "unique": false
+        },
+        {
           "columnNames": ["leaderboard_entry_id"],
           "composite": false,
           "constraint": false,

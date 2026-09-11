@@ -21,4 +21,6 @@ export default async function triggerIntegrations(
       captureException(err)
     }
   }
+
+  return integrations.length
 }

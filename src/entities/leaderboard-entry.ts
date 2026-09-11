@@ -7,12 +7,12 @@ import PlayerAlias from './player-alias.js'
 
 // asc leaderboard entry ordering
 // deleted_at sits in the prefix so soft-deleted rows never get scanned
-const ascOrderIndexName = 'idx_leaderboardentry_order_asc'
+export const ascOrderIndexName = 'idx_leaderboardentry_order_asc'
 const ascOrderIndexExpr = `alter table \`leaderboard_entry\` add index \`${ascOrderIndexName}\`(\`leaderboard_id\`, \`hidden\`, \`deleted_at\`, \`score\`, \`created_at\`, \`id\`)`
 
 // desc leaderboard entry ordering - a reverse scan of the asc index would also reverse
 // the createdAt/id tie-breaks, so score needs an explicit descending index part
-const descOrderIndexName = 'idx_leaderboardentry_order_desc'
+export const descOrderIndexName = 'idx_leaderboardentry_order_desc'
 const descOrderIndexExpr = `alter table \`leaderboard_entry\` add index \`${descOrderIndexName}\`(\`leaderboard_id\`, \`hidden\`, \`deleted_at\`, \`score\` desc, \`created_at\`, \`id\`)`
 
 @Entity()

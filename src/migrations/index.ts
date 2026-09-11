@@ -86,6 +86,7 @@ import { WidenSteamworksLeaderboardMappingPk } from './20260905094358WidenSteamw
 import { CreateEventRetentionTable } from './20260905132019CreateEventRetentionTable.js'
 import { AddLeaderboardEntryOrderIndexes } from './20260909210826AddLeaderboardEntryOrderIndexes.js'
 import { DropRedundantLeaderboardEntryIndexes } from './20260909211348DropRedundantLeaderboardEntryIndexes.js'
+import { AddLeaderboardEntryPropKeyValueIndex } from './20260911052057AddLeaderboardEntryPropKeyValueIndex.js'
 
 export default [
   InitialMigration,
@@ -176,4 +177,5 @@ export default [
   CreateEventRetentionTable,
   AddLeaderboardEntryOrderIndexes,
   DropRedundantLeaderboardEntryIndexes,
+  AddLeaderboardEntryPropKeyValueIndex,
 ]

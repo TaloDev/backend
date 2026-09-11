@@ -1,8 +1,9 @@
-import { Entity, ManyToOne, PrimaryKey, Property } from '@mikro-orm/decorators/es'
+import { Entity, Index, ManyToOne, PrimaryKey, Property } from '@mikro-orm/decorators/es'
 import LeaderboardEntry from './leaderboard-entry.js'
 import { MAX_KEY_LENGTH, MAX_VALUE_LENGTH } from './prop.js'
 
 @Entity()
+@Index({ properties: ['key', 'value'] })
 export default class LeaderboardEntryProp {
   @PrimaryKey()
   id!: number

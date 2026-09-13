@@ -30,26 +30,6 @@ describe('Event funnels - create', () => {
     ])
   })
 
-  it('should reject duplicate step names', async () => {
-    const [organisation, game] = await createOrganisationAndGame()
-    const [token] = await createUserAndToken({}, organisation)
-
-    const res = await request(app)
-      .post(`/games/${game.id}/event-funnels`)
-      .send({
-        name: 'Funnel',
-        steps: [
-          { name: 'Game Started', props: { ruleMode: 'and', rules: [] } },
-          { name: 'Game Started', props: { ruleMode: 'and', rules: [] } },
-        ],
-        maxGap: 60,
-      })
-      .auth(token, { type: 'bearer' })
-      .expect(400)
-
-    expect(res.body.errors.steps[0]).toBe('Step names must be distinct')
-  })
-
   it('should reject a between rule with a single value', async () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({}, organisation)

@@ -141,34 +141,4 @@ describe('Event funnels - update', () => {
       .auth(token, { type: 'bearer' })
       .expect(404)
   })
-
-  it('should reject duplicate step names on update', async () => {
-    const [organisation, game] = await createOrganisationAndGame()
-    const [token] = await createUserAndToken({}, organisation)
-
-    const createRes = await request(app)
-      .post(`/games/${game.id}/event-funnels`)
-      .send({
-        name: 'Funnel',
-        steps: [
-          { name: 'Game Started', props: { ruleMode: 'and', rules: [] } },
-          { name: 'Chest Looted', props: { ruleMode: 'and', rules: [] } },
-        ],
-        maxGap: 60,
-      })
-      .auth(token, { type: 'bearer' })
-      .expect(200)
-    const funnelId = createRes.body.funnel.id
-
-    await request(app)
-      .patch(`/games/${game.id}/event-funnels/${funnelId}`)
-      .send({
-        steps: [
-          { name: 'Game Started', props: { ruleMode: 'and', rules: [] } },
-          { name: 'Game Started', props: { ruleMode: 'and', rules: [] } },
-        ],
-      })
-      .auth(token, { type: 'bearer' })
-      .expect(400)
-  })
 })

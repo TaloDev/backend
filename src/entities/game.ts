@@ -67,6 +67,9 @@ export default class Game {
   logoUrl: string | null = null
 
   @Property()
+  playerAuthActivityEnrichment: boolean = false
+
+  @Property()
   createdAt: Date = new Date()
 
   @Property({ onUpdate: () => new Date() })

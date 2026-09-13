@@ -87,6 +87,7 @@ import { CreateEventRetentionTable } from './20260905132019CreateEventRetentionT
 import { AddLeaderboardEntryOrderIndexes } from './20260909210826AddLeaderboardEntryOrderIndexes.js'
 import { DropRedundantLeaderboardEntryIndexes } from './20260909211348DropRedundantLeaderboardEntryIndexes.js'
 import { AddLeaderboardEntryPropKeyValueIndex } from './20260911052057AddLeaderboardEntryPropKeyValueIndex.js'
+import { AddPlayerAuthActivityEnrichmentColumn } from './20260913145315AddPlayerAuthActivityEnrichmentColumn.js'
 
 export default [
   InitialMigration,
@@ -178,4 +179,5 @@ export default [
   AddLeaderboardEntryOrderIndexes,
   DropRedundantLeaderboardEntryIndexes,
   AddLeaderboardEntryPropKeyValueIndex,
+  AddPlayerAuthActivityEnrichmentColumn,
 ]

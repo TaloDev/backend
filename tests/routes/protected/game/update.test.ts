@@ -675,4 +675,22 @@ describe('Game - update', () => {
     expect(resAfterSettingTwo.body.players).toHaveLength(1)
     expect(resAfterSettingTwo.body.players[0].aliases[0].displayName).toBe('Bob')
   })
+
+  it.each(userPermissionProvider())(
+    'should update playerAuthActivityEnrichment for a %s user',
+    async (statusCode, _, type) => {
+      const [organisation, game] = await createOrganisationAndGame()
+      const [token] = await createUserAndToken({ type }, organisation)
+
+      await request(app)
+        .patch(`/games/${game.id}`)
+        .send({ playerAuthActivityEnrichment: true })
+        .auth(token, { type: 'bearer' })
+        .expect(statusCode)
+
+      if (statusCode === 200) {
+        expect((await em.refreshOrFail(game)).playerAuthActivityEnrichment).toBe(true)
+      }
+    },
+  )
 })

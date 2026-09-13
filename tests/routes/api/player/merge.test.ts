@@ -536,6 +536,49 @@ describe('Player API - merge', () => {
     expect(activity).not.toBeNull()
   })
 
+  it.each([false, true])(
+    'should only store the ip and user agent on a merge auth activity when enrichment is %s',
+    async (enriched) => {
+      const [apiKey, token] = await createAPIKeyAndToken([
+        APIKeyScope.READ_PLAYERS,
+        APIKeyScope.WRITE_PLAYERS,
+      ])
+
+      apiKey.game.playerAuthActivityEnrichment = enriched
+      await em.flush()
+
+      const player1 = await new PlayerFactory([apiKey.game]).withTaloAlias().one()
+      const player2 = await new PlayerFactory([apiKey.game]).withUsernameAlias().one()
+
+      await em.persist([player1, player2]).flush()
+
+      const { sessionToken } = await player1.auth!.createSession(player1.aliases[0])
+      await em.flush()
+
+      await request(app)
+        .post('/v1/players/merge')
+        .set('x-talo-player', player1.id)
+        .set('x-talo-alias', String(player1.aliases[0].id))
+        .set('x-talo-session', sessionToken)
+        .set('user-agent', 'testybrowser')
+        .send({ playerId1: player1.id, playerId2: player2.id })
+        .auth(token, { type: 'bearer' })
+        .expect(200)
+
+      const activity = await em.repo(PlayerAuthActivity).findOneOrFail({
+        player: player1,
+        type: PlayerAuthActivityType.PLAYER_MERGED,
+      })
+      if (enriched) {
+        expect(activity.extra.ip).toEqual(expect.any(String))
+        expect(activity.extra.userAgent).toBe('testybrowser')
+      } else {
+        expect(activity.extra.ip).toBeUndefined()
+        expect(activity.extra.userAgent).toBeUndefined()
+      }
+    },
+  )
+
   it('should not create a player auth activity when merging into a non-talo player', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([
       APIKeyScope.READ_PLAYERS,

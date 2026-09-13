@@ -1355,6 +1355,23 @@
           "enumItems": [],
           "mappedType": "integer"
         },
+        "player_auth_activity_enrichment": {
+          "name": "player_auth_activity_enrichment",
+          "type": "tinyint(1)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": "false",
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "boolean"
+        },
         "props": {
           "name": "props",
           "type": "json",

@@ -14,6 +14,7 @@ import { eventRetentionRouter } from '../routes/protected/event-retention/index.
 import { eventRouter } from '../routes/protected/event/index.js'
 import { gameActivityRouter } from '../routes/protected/game-activity/index.js'
 import { gameChannelRouter } from '../routes/protected/game-channel/index.js'
+import { gameConfigRouter } from '../routes/protected/game-config/index.js'
 import { gameFeedbackRouter } from '../routes/protected/game-feedback/index.js'
 import { gameStatRouter } from '../routes/protected/game-stat/index.js'
 import { gameVerificationKeyRouter } from '../routes/protected/game-verification-key/index.js'
@@ -43,6 +44,7 @@ export function configureProtectedRoutes(app: Koa) {
   eventFunnelRouter(router)
   gameActivityRouter(router)
   gameChannelRouter(router)
+  gameConfigRouter(router)
   gameFeedbackRouter(router)
   gameRouter(router)
   gameStatRouter(router)

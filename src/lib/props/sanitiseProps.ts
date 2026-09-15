@@ -14,9 +14,16 @@ export type RejectedProp = {
   message: string
 }
 
+export type UnsanitisedProp = { key: string; value: string | null }
+
 export const MAX_ARRAY_LENGTH = 1000
 
-export type UnsanitisedProp = { key: string; value: string | null }
+export const RESERVED_PROP_KEY_MESSAGE =
+  "Prop keys starting with 'META_' are reserved for internal systems, please use another key name"
+
+export function isReservedPropKey(key: string): boolean {
+  return key.startsWith('META_')
+}
 
 export function isArrayKey(key: string): boolean {
   return key.endsWith('[]')
@@ -77,6 +84,44 @@ export function mergeAndSanitiseProps({
   })
 
   return { accepted: hardAccepted, rejected: [...rejected, ...hardRejected] }
+}
+
+// applies changes in order so later changes to the same key win
+// a change that fails validation is skipped and its reasons collected
+export function applyPropsInOrder<T extends UnsanitisedProp>({
+  prevProps,
+  changes,
+  valueLimit,
+}: {
+  prevProps: Prop[]
+  changes: T[]
+  valueLimit?: number
+}): {
+  accepted: Prop[]
+  applied: T[]
+  rejected: { change: T; reasons: RejectedProp[] }[]
+} {
+  let accepted = prevProps
+  const applied: T[] = []
+  const rejected: { change: T; reasons: RejectedProp[] }[] = []
+
+  for (const change of changes) {
+    const result = mergeAndSanitiseProps({
+      prevProps: accepted,
+      newProps: [change],
+      valueLimit,
+    })
+
+    if (result.rejected.length > 0) {
+      rejected.push({ change, reasons: result.rejected })
+      continue
+    }
+
+    accepted = result.accepted
+    applied.push(change)
+  }
+
+  return { accepted, applied, rejected }
 }
 
 export function sanitiseProps({

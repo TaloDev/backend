@@ -244,7 +244,8 @@ describe('Player - update', () => {
       {
         key: 'META_BREAK_THINGS',
         error: 'PROP_KEY_RESERVED',
-        message: "Prop keys starting with 'META_' are reserved for internal systems",
+        message:
+          "Prop keys starting with 'META_' are reserved for internal systems, please use another key name",
       },
     ])
 

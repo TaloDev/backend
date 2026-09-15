@@ -1,4 +1,5 @@
 import createQueue from '../lib/queues/createQueue.js'
+import { applyScheduledGameConfigChanges } from '../tasks/applyScheduledGameConfigChanges.js'
 import archiveLeaderboardEntries from '../tasks/archiveLeaderboardEntries.js'
 import { cleanupEventsByRetention } from '../tasks/cleanupEventsByRetention.js'
 import { cleanupIntegrationEvents } from '../tasks/cleanupIntegrationEvents.js'
@@ -35,6 +36,11 @@ export async function initScheduledTasks() {
     addScheduledTask('cleanup-integration-events', cleanupIntegrationEvents, '0 0 0 * * *'), // midnight daily
     addScheduledTask('cleanup-events-by-retention', cleanupEventsByRetention, '0 1 0 * * *'), // 00:01 daily
     addScheduledTask('drain-api-key-last-used', drainApiKeyLastUsed, '0 */1 * * * *'), // every minute
+    addScheduledTask(
+      'apply-scheduled-game-config-changes',
+      applyScheduledGameConfigChanges,
+      '0 */1 * * * *',
+    ), // every minute
   ]
 
   /* v8 ignore next 3 -- @preserve */

@@ -9,6 +9,10 @@ import {
 } from '@mikro-orm/decorators/es'
 import { Collection, EntityManager } from '@mikro-orm/mysql'
 import Sqids from 'sqids'
+import type Socket from '../socket/index.js'
+import { isReservedPropKey } from '../lib/props/sanitiseProps.js'
+import { sendMessages } from '../socket/messages/socketMessage.js'
+import { APIKeyScope } from './api-key.js'
 import GameSecret from './game-secret.js'
 import Organisation from './organisation.js'
 import Player from './player.js'
@@ -98,8 +102,18 @@ export default class Game {
     return `live-config-${game.id}`
   }
 
-  getLiveConfig(): Prop[] {
-    return this.props.filter((prop) => !prop.key.startsWith('META_'))
+  getLiveConfig() {
+    return this.props.filter((prop) => !isReservedPropKey(prop.key))
+  }
+
+  notifyLiveConfigUpdated(socket: Socket) {
+    const conns = socket.findConnections((conn) => {
+      return conn.gameId === this.id && conn.hasScope(APIKeyScope.READ_GAME_CONFIG)
+    })
+
+    sendMessages(conns, 'v1.live-config.updated', {
+      config: this.getLiveConfig(),
+    })
   }
 
   toJSON() {

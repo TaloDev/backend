@@ -146,8 +146,11 @@ importers:
         specifier: ^12.0.1
         version: 12.0.1
       '@sentry/node':
-        specifier: ^10.57.0
+        specifier: ^10.72.0
         version: 10.72.0(@opentelemetry/core@2.10.0(@opentelemetry/api@1.9.1))(@opentelemetry/exporter-trace-otlp-http@0.218.0(@opentelemetry/api@1.9.1))(supports-color@7.2.0)
+      '@sentry/node-core':
+        specifier: ^10.72.0
+        version: 10.72.0(@opentelemetry/api@1.9.1)(@opentelemetry/core@2.10.0(@opentelemetry/api@1.9.1))(@opentelemetry/exporter-trace-otlp-http@0.218.0(@opentelemetry/api@1.9.1))(@opentelemetry/instrumentation@0.220.0(@opentelemetry/api@1.9.1)(supports-color@7.2.0))(@opentelemetry/sdk-trace-base@2.10.0(@opentelemetry/api@1.9.1))
       archiver:
         specifier: ^8.0.0
         version: 8.0.0

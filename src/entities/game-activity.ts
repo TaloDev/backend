@@ -57,6 +57,9 @@ export enum GameActivityType {
   EVENT_RETENTION_UPDATED,
   EVENT_RETENTION_DELETED,
   EVENTS_PURGED,
+  GAME_PROPS_SCHEDULED_CHANGE_CREATED,
+  GAME_PROPS_SCHEDULED_CHANGE_CANCELLED,
+  GAME_PROPS_SCHEDULED_CHANGE_SKIPPED,
 }
 
 @Entity()
@@ -215,6 +218,12 @@ export default class GameActivity {
         return `${this.actor()} deleted the retention for ${this.extra.eventName}`
       case GameActivityType.EVENTS_PURGED:
         return `${this.actor()} purged ${this.extra.count} ${this.extra.eventName} events`
+      case GameActivityType.GAME_PROPS_SCHEDULED_CHANGE_CREATED:
+        return `${this.actor()} scheduled a live config change`
+      case GameActivityType.GAME_PROPS_SCHEDULED_CHANGE_CANCELLED:
+        return `${this.actor()} cancelled a scheduled live config change`
+      case GameActivityType.GAME_PROPS_SCHEDULED_CHANGE_SKIPPED:
+        return `${this.actor()}'s scheduled live config change was skipped`
       default:
         return ''
     }

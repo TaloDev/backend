@@ -16,11 +16,11 @@ Tests run against fresh Docker containers. Environment variables from `.env` are
 ### Building + Linting
 
 ```bash
-pnpm lint                # Oxlint (already type-aware via --type-aware)
-pnpm exec tsc --noEmit   # Full typecheck (not part of lint)
+pnpm lint
+pnpm fmt
 ```
 
-Use `pnpm` only — `devEngines` rejects npm/npx (`EBADDEVENGINES`). For one-off binaries use `pnpm exec <bin>`.
+Use `pnpm` only — `devEngines` rejects npm/npx (`EBADDEVENGINES`).
 
 ### Database Migrations
 

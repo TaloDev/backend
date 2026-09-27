@@ -37,6 +37,7 @@ import { PlayerToDelete } from './player-to-delete.js'
 import Player from './player.js'
 import PricingPlan from './pricing-plan.js'
 import Prop from './prop.js'
+import ScheduledGameConfigChange from './scheduled-game-config-change.js'
 import SteamworksIntegrationEvent from './steamworks-integration-event.js'
 import { SteamworksLeaderboardEntry } from './steamworks-leaderboard-entry.js'
 import SteamworksLeaderboardMapping from './steamworks-leaderboard-mapping.js'
@@ -49,6 +50,7 @@ import UserTwoFactorAuth from './user-two-factor-auth.js'
 import User from './user.js'
 
 export const entities = [
+  ScheduledGameConfigChange,
   EventRetention,
   EventFunnel,
   AdminAPIKey,

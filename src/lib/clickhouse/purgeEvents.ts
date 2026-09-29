@@ -1,5 +1,6 @@
 import { ClickHouseClient } from '@clickhouse/client'
 import { deleteEventPropsByIds } from './deleteEventProps.js'
+import { eventCursorClause } from './eventCursor.js'
 import { formatDateForClickHouse } from './formatDateTime.js'
 
 const PAGE_SIZE = 2_000
@@ -45,7 +46,7 @@ export async function purgeEvents({
   while (hasMore) {
     const cursorClause =
       lastCreatedAt && lastId
-        ? ' AND (created_at, id) > ({lastCreatedAt:String}, {lastId:String})'
+        ? ` AND ${eventCursorClause('{lastCreatedAt:String}', '{lastId:String}')}`
         : ''
 
     const rows = await clickhouse

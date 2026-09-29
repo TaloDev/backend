@@ -1,4 +1,5 @@
 import request from 'supertest'
+import Prop from '../../../../src/entities/prop.js'
 import EventFactory from '../../../fixtures/EventFactory.js'
 import PlayerFactory from '../../../fixtures/PlayerFactory.js'
 import createOrganisationAndGame from '../../../utils/createOrganisationAndGame.js'
@@ -31,6 +32,41 @@ describe('Player - events', () => {
       .expect(200)
 
     expect(res.body.events).toHaveLength(3)
+  })
+
+  it("should get a player's events with their props", async () => {
+    const [organisation, game] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken({}, organisation)
+
+    const player = await new PlayerFactory([game]).one()
+    await em.persist(player).flush()
+
+    const events = await new EventFactory([player]).many(3)
+    events.forEach((event, i) => event.setProps([new Prop('level', String(i))]))
+
+    await clickhouse.insert({
+      table: 'events',
+      values: events.map((event) => event.toInsertable()),
+      format: 'JSONEachRow',
+    })
+    await clickhouse.insert({
+      table: 'event_props',
+      values: events.flatMap((event) => event.getInsertableProps()),
+      format: 'JSONEachRow',
+    })
+
+    const res = await request(app)
+      .get(`/games/${game.id}/players/${player.id}/events`)
+      .query({ page: 0 })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    const levels = res.body.events
+      .map((event: { props: Prop[] }) => event.props.find((prop) => prop.key === 'level')?.value)
+      .sort()
+
+    expect(res.body.events).toHaveLength(3)
+    expect(levels).toStrictEqual(['0', '1', '2'])
   })
 
   it("should not get a player's events for a player they have no access to", async () => {

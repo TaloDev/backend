@@ -140,6 +140,57 @@ describe('Data export - included data', () => {
     expect(records[1][propIndex]).toBe('80')
   })
 
+  it('should export every event and its props across multiple pages', async () => {
+    const [, game] = await createOrganisationAndGame()
+    const player = await new PlayerFactory([game]).one()
+
+    const baseTime = new Date('2026-01-01T00:00:00.000Z').getTime()
+    const expectedLevels = new Set<string>()
+
+    // 5 events, 2 per page. Three share the first timestamp so a page boundary lands
+    // inside that group, forcing the cursor's id tie-break
+    for (let i = 0; i < 5; i++) {
+      const event = await new EventFactory([player])
+        .state(() => ({ createdAt: new Date(baseTime + Math.floor(i / 3) * 1000) }))
+        .one()
+      const level = String(i)
+      event.setProps([new Prop('level', level)])
+      expectedLevels.add(level)
+
+      await clickhouse.insert({ table: 'events', values: event.toInsertable(), format: 'JSON' })
+      await clickhouse.insert({
+        table: 'event_props',
+        values: event.getInsertableProps(),
+        format: 'JSONEachRow',
+      })
+    }
+
+    const previousPageSize = DataExporter.EVENT_PAGE_SIZE
+    DataExporter.EVENT_PAGE_SIZE = 2
+
+    try {
+      const dataExport = await new DataExportFactory(game).one()
+      dataExport.entities = [DataExportAvailableEntities.EVENTS]
+      await em.persist(dataExport).flush()
+
+      const zipFilePath = path.join(tempDir, 'export.zip')
+      await dataExporter.createZipStream(zipFilePath, dataExport, em, true)
+
+      const directory = await unzipper.Open.file(zipFilePath)
+      const csvFile = directory.files.find((f) => f.path === 'events-1.csv')
+      assert(csvFile)
+      const records = await parseCsvString((await csvFile.buffer()).toString('utf8'))
+
+      expect(records).toHaveLength(6) // header + 5 events
+
+      const propIndex = records[0].indexOf('props.level')
+      const exportedLevels = new Set(records.slice(1).map((row) => row[propIndex]))
+      expect(exportedLevels).toStrictEqual(expectedLevels)
+    } finally {
+      DataExporter.EVENT_PAGE_SIZE = previousPageSize
+    }
+  })
+
   it('should not include dev build players without the dev data header', async () => {
     const [, game] = await createOrganisationAndGame()
 

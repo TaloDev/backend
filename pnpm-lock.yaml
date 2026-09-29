@@ -212,8 +212,8 @@ importers:
         specifier: ^4.0.0
         version: 4.0.1(ioredis@5.11.1(supports-color@7.2.0))
       nodemailer:
-        specifier: ^9.0.1
-        version: 9.0.6
+        specifier: ^10.0.2
+        version: 10.0.12
       obscenity:
         specifier: ^0.4.6
         version: 0.4.6
@@ -2919,9 +2919,9 @@ packages:
   node-int64@0.4.0:
     resolution: {integrity: sha512-O5lz91xSOeoXP6DulyHfllpq+Eg00MWitZIbtPfoSEvqIHdl5gfcY6hYzDWnj0qD5tz52PI08u9qUvSVeUBeHw==}
 
-  nodemailer@9.0.6:
-    resolution: {integrity: sha512-IQUGFdhdGwI9+AWX+FpUt4DLmvFaOjTMEoneTIWX/RXxuy1TdenPwWrvFMSfLkPKl+HQEXWuSAxEMMbPYXtBmg==}
-    engines: {node: '>=6.0.0'}
+  nodemailer@10.0.12:
+    resolution: {integrity: sha512-PQ46oNbNMuH/Sno7B5IWIU9etytwrO0xdTFvWXpIQFRXhBAXtzD48243AS+BCbQQTPD8y3fqUrgLn0tSo77gvg==}
+    engines: {node: '>=20.0.0'}
 
   normalize-path@3.0.0:
     resolution: {integrity: sha512-6eZs5Ls3WtCisHWp9S2GUy8dqkpGi4BVSz3GaqiE6ezub0512ESztXUwUB6C6IKbQkY2Pnb/mD4WYojCRwcwLA==}
@@ -6220,7 +6220,7 @@ snapshots:
 
   node-int64@0.4.0: {}
 
-  nodemailer@9.0.6: {}
+  nodemailer@10.0.12: {}
 
   normalize-path@3.0.0: {}
 

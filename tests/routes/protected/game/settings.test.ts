@@ -37,6 +37,7 @@ describe('Game - settings', () => {
           website: 'https://example.com',
           logoUrl: 'https://example.com/logo.png',
           displayNamePropKey: 'playerChosenName',
+          playerAuthActivityEnrichment: false,
           gameToken: expect.any(String),
         })
       }

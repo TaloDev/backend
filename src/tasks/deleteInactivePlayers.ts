@@ -10,8 +10,6 @@ import createGameActivity from '../lib/logging/createGameActivity.js'
 import { streamByCursorPages } from '../lib/perf/streamByCursor.js'
 import { queuePlayersForDeletion } from '../lib/players/queuePlayersForDeletion.js'
 
-const playersBatchSize = 100
-
 function getPlayers(em: EntityManager, game: Game, devBuild: boolean) {
   const days = devBuild ? game.purgeDevPlayersRetention : game.purgeLivePlayersRetention
 
@@ -28,8 +26,9 @@ function getPlayers(em: EntityManager, game: Game, devBuild: boolean) {
       after,
       orderBy: { id: 'asc' },
       populate: ['aliases', 'auth'],
+      includeCount: false,
     })
-  }, playersBatchSize)
+  }, 100)
 }
 
 async function createPurgeActivity({

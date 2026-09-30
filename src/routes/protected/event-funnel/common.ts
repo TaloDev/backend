@@ -65,19 +65,7 @@ const stepSchema = z.object({
   }),
 })
 
-const stepsSchema = z
-  .array(stepSchema)
-  .min(2)
-  .max(5)
-  .superRefine((steps, ctx) => {
-    const names = steps.map((step) => step.name)
-    if (new Set(names).size !== names.length) {
-      ctx.addIssue({
-        code: 'custom',
-        message: 'Step names must be distinct',
-      })
-    }
-  })
+const stepsSchema = z.array(stepSchema).min(2).max(5)
 
 const funnelContentSchema = z.object({
   steps: stepsSchema,

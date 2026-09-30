@@ -21,10 +21,17 @@ export function buildPlayerAuthActivity({
 }) {
   const activity = new PlayerAuthActivity(player)
   activity.type = type
+
+  const enrichment = player.game.playerAuthActivityEnrichment
+    ? {
+        userAgent,
+        ip: type === PlayerAuthActivityType.DELETED_AUTH ? undefined : ip,
+      }
+    : {}
+
   activity.extra = {
     ...extra,
-    userAgent,
-    ip: type === PlayerAuthActivityType.DELETED_AUTH ? undefined : ip,
+    ...enrichment,
     selfService: selfService || undefined,
   }
 

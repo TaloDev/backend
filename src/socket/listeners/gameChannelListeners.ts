@@ -4,6 +4,7 @@ import { z, ZodType } from 'zod'
 import { APIKeyScope } from '../../entities/api-key.js'
 import GameChannel from '../../entities/game-channel.js'
 import { incrementChannelTotalMessages } from '../../lib/queues/game-metrics/flush-channel-total-messages-queue-handler.js'
+import { SocketClientError } from '../messages/socketError.js'
 import { sendMessages } from '../messages/socketMessage.js'
 import { SocketMessageListener } from '../router/createListener.js'
 import createListener from '../router/createListener.js'
@@ -115,11 +116,11 @@ const gameChannelListeners = [
       const channelMembers = await getChannelMembers({ em, redis, channelId })
 
       if (!channelExists) {
-        throw new Error('Channel not found')
+        throw new SocketClientError('Channel not found')
       }
 
       if (!channelMembers.has(String(aliasId))) {
-        throw new Error('Player not in channel')
+        throw new SocketClientError('Player not in channel')
       }
 
       const conns = socket.findConnections((conn) => {

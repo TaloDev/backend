@@ -6,7 +6,12 @@ import User, { UserType } from '../../../entities/user.js'
 import createGameActivity from '../../../lib/logging/createGameActivity.js'
 import { withRedisLock } from '../../../lib/perf/redisLock.js'
 import { filterProfaneProps } from '../../../lib/props/filterProfaneProps.js'
-import { sanitiseProps, mergeAndSanitiseProps } from '../../../lib/props/sanitiseProps.js'
+import {
+  isReservedPropKey,
+  mergeAndSanitiseProps,
+  RESERVED_PROP_KEY_MESSAGE,
+  sanitiseProps,
+} from '../../../lib/props/sanitiseProps.js'
 import { protectedRoute, withMiddleware } from '../../../lib/routing/router.js'
 import { updatePropsSchema } from '../../../lib/validation/propsSchema.js'
 import { loadGame } from '../../../middleware/game-middleware.js'
@@ -42,18 +47,18 @@ export async function updatePlayerHandler({
         if (props) {
           const metaRejected: RejectedProp[] = !forwarded
             ? props
-                .filter((prop) => prop.key.startsWith('META_'))
+                .filter((prop) => isReservedPropKey(prop.key))
                 .map((prop) => ({
                   key: prop.key,
                   error: 'PROP_KEY_RESERVED',
-                  message: "Prop keys starting with 'META_' are reserved for internal systems",
+                  message: RESERVED_PROP_KEY_MESSAGE,
                 }))
             : []
 
           const { accepted: sizeAccepted, rejected: sizeRejected } = mergeAndSanitiseProps({
             prevProps: lockedPlayer.props.getItems(),
             newProps: props,
-            extraFilter: (prop) => !prop.key.startsWith('META_'),
+            extraFilter: (prop) => !isReservedPropKey(prop.key),
           })
 
           if (lockedPlayer.game.blockPropsProfanity) {

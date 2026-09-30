@@ -22,6 +22,7 @@ export default async function cleanupSteamworksLeaderboardEntries() {
         'steamworksLeaderboard.integration',
         'steamworksLeaderboard.leaderboard.game',
       ] as const,
+      includeCount: false,
     })
   }, 100)
 

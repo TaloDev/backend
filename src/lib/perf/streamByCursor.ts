@@ -7,8 +7,12 @@ export async function* streamByCursorPages<
   Hint extends string = never,
   Fields extends string = never,
   Excludes extends string = never,
+  IncludeCount extends boolean = true,
 >(
-  fetchPage: (batchSize: number, after?: string) => Promise<Cursor<T, Hint, Fields, Excludes>>,
+  fetchPage: (
+    batchSize: number,
+    after?: string,
+  ) => Promise<Cursor<T, Hint, Fields, Excludes, IncludeCount>>,
   batchSize = DEFAULT_BATCH_SIZE,
 ) {
   let cursor: string | undefined
@@ -34,8 +38,12 @@ export async function* streamByCursor<
   Hint extends string = never,
   Fields extends string = never,
   Excludes extends string = never,
+  IncludeCount extends boolean = true,
 >(
-  fetchPage: (batchSize: number, after?: string) => Promise<Cursor<T, Hint, Fields, Excludes>>,
+  fetchPage: (
+    batchSize: number,
+    after?: string,
+  ) => Promise<Cursor<T, Hint, Fields, Excludes, IncludeCount>>,
   batchSize = DEFAULT_BATCH_SIZE,
 ) {
   for await (const items of streamByCursorPages(fetchPage, batchSize)) {

@@ -6,9 +6,12 @@ import { LeaderboardRefreshInterval } from '../entities/leaderboard.js'
 import Leaderboard from '../entities/leaderboard.js'
 import triggerIntegrations from '../lib/integrations/triggerIntegrations.js'
 import { deferClearResponseCache } from '../lib/perf/responseCacheQueue.js'
-import { streamByCursor } from '../lib/perf/streamByCursor.js'
+import { streamByCursorPages } from '../lib/perf/streamByCursor.js'
 
-export async function archiveEntriesForLeaderboard(em: EntityManager, leaderboard: Leaderboard) {
+export async function archiveEntriesForLeaderboard(
+  baseEm: EntityManager,
+  leaderboard: Leaderboard,
+) {
   // this should never happen, but it enforces correct typing for refreshCheckers
   assert(
     leaderboard.refreshInterval !== LeaderboardRefreshInterval.NEVER,
@@ -21,7 +24,9 @@ export async function archiveEntriesForLeaderboard(em: EntityManager, leaderboar
   }
   /* v8 ignore stop -- @preserve */
 
-  const entryStream = streamByCursor(async (batchSize, after) => {
+  const em = baseEm.fork()
+
+  const entryPages = streamByCursorPages(async (batchSize, after) => {
     return em.repo(LeaderboardEntry).findByCursor({
       where: {
         leaderboard,
@@ -30,19 +35,33 @@ export async function archiveEntriesForLeaderboard(em: EntityManager, leaderboar
       first: batchSize,
       after,
       orderBy: { id: 'asc' },
+      populate: ['leaderboard.game'] as const,
+      includeCount: false,
     })
   }, 100)
 
-  for await (const entry of entryStream) {
-    if (!leaderboard.isDateInCurrentPeriod(entry.createdAt)) {
+  for await (const entries of entryPages) {
+    for (const entry of entries) {
+      if (leaderboard.isDateInCurrentPeriod(entry.createdAt)) {
+        continue
+      }
+
       entry.deletedAt = new Date()
 
+      const integrationsTriggered = await triggerIntegrations(
+        em,
+        entry.leaderboard.game,
+        (integration) => integration.handleLeaderboardEntryArchived(em, entry),
+      )
+
       // try to avoid rate limits
-      await new Promise((resolve) => setTimeout(resolve, 100))
-      await triggerIntegrations(em, entry.leaderboard.game, (integration) => {
-        return integration.handleLeaderboardEntryArchived(em, entry)
-      })
+      if (integrationsTriggered > 0) {
+        await new Promise((resolve) => setTimeout(resolve, 100))
+      }
     }
+
+    await em.flush()
+    em.clear()
   }
 
   await em.flush()

@@ -1,4 +1,10 @@
 import { init as initSentry } from '@sentry/node'
+import { setAsyncLocalStorageAsyncContextStrategy } from '@sentry/node-core/light'
+
+// needed for scope isolation
+export function enableSentryScopeIsolation() {
+  setAsyncLocalStorageAsyncContextStrategy()
+}
 
 if (process.env.NODE_ENV !== 'test') {
   initSentry({
@@ -7,4 +13,6 @@ if (process.env.NODE_ENV !== 'test') {
     maxValueLength: 4096,
     skipOpenTelemetrySetup: true,
   })
+
+  enableSentryScopeIsolation()
 }

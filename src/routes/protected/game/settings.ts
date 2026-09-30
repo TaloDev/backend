@@ -23,6 +23,7 @@ export const settingsRoute = protectedRoute({
           displayNamePropKey: game.displayNamePropKey,
           website: game.website,
           logoUrl: game.logoUrl,
+          playerAuthActivityEnrichment: game.playerAuthActivityEnrichment,
           gameToken: game.getToken(),
         },
       },

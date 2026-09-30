@@ -175,6 +175,7 @@ async function ingestSteamworksPlayerStats(em: EntityManager, integration: Integ
       first: batchSize,
       after,
       orderBy: { id: 'asc' },
+      includeCount: false,
     })
   }, 100)
 
@@ -222,6 +223,7 @@ async function pushPlayerStatsToSteamworks({
       after,
       orderBy: { id: 'asc' },
       populate: ['player.aliases'] as const,
+      includeCount: false,
     })
   }, 100)
 

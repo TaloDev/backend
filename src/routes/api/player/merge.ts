@@ -6,12 +6,11 @@ import { APIKeyScope } from '../../../entities/api-key.js'
 import GameSave from '../../../entities/game-save.js'
 import Game from '../../../entities/game.js'
 import PlayerAlias, { PlayerAliasService } from '../../../entities/player-alias.js'
-import PlayerAuthActivity, {
-  PlayerAuthActivityType,
-} from '../../../entities/player-auth-activity.js'
+import { PlayerAuthActivityType } from '../../../entities/player-auth-activity.js'
 import PlayerGameStat from '../../../entities/player-game-stat.js'
 import Player from '../../../entities/player.js'
 import triggerIntegrations from '../../../lib/integrations/triggerIntegrations.js'
+import { buildPlayerAuthActivity } from '../../../lib/logging/buildPlayerAuthActivity.js'
 import { apiRoute, withMiddleware } from '../../../lib/routing/router.js'
 import { playerAliasHeaderSchema } from '../../../lib/validation/playerAliasHeaderSchema.js'
 import { requireScopes } from '../../../middleware/policy-middleware.js'
@@ -111,13 +110,14 @@ async function postMergeCreateAuthActivity(
 ) {
   const taloAlias = player.aliases.find((alias) => alias.service === PlayerAliasService.TALO)
   if (taloAlias) {
-    const activity = new PlayerAuthActivity(player)
-    activity.type = PlayerAuthActivityType.PLAYER_MERGED
-    activity.extra = {
-      userAgent: request.headers['user-agent'],
+    buildPlayerAuthActivity({
+      em,
+      player,
+      type: PlayerAuthActivityType.PLAYER_MERGED,
       ip: request.ip,
-    }
-    await em.persist(activity).flush()
+      userAgent: request.headers['user-agent'],
+    })
+    await em.flush()
   }
 }
 
@@ -222,7 +222,8 @@ export const mergeRoute = apiRoute({
     // sync all stats for the updated player
     await postMergeSyncPlayerStats(em, player1.game, updatedPlayer)
 
-    await em.populate(updatedPlayer, ['aliases'])
+    // the fork has a fresh identity map, so load the game to read its enrichment setting
+    await em.populate(updatedPlayer, ['aliases', 'game'])
 
     // create an auth activity if the player has a Talo alias
     await postMergeCreateAuthActivity(em, ctx.request, updatedPlayer)

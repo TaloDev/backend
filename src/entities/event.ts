@@ -85,24 +85,38 @@ export default class Event extends ClickHouseEntity<
     playerAliases.forEach((alias) => playerAliasesMap.set(alias.id, alias))
 
     const propsMap = new Map<string, Prop[]>()
-    if (loadProps) {
+    if (loadProps && data.length > 0) {
       const eventIds = data.map((event) => event.id)
-      if (eventIds.length > 0) {
-        const props = await clickhouse
-          .query({
-            query: 'SELECT * FROM event_props WHERE event_id IN ({eventIds:Array(String)})',
-            query_params: { eventIds },
-            format: 'JSONEachRow',
-          })
-          .then((res) => res.json<ClickHouseEventProp>())
+      const gameIds = Array.from(new Set(data.map((event) => event.game_id)))
+      const times = data.map((event) => new Date(event.created_at).getTime())
 
-        props.forEach((prop) => {
-          if (!propsMap.has(prop.event_id)) {
-            propsMap.set(prop.event_id, [])
-          }
-          propsMap.get(prop.event_id)!.push(new Prop(prop.prop_key, prop.prop_value))
+      // props share the event's created_at, so we only read the ones inside this page's time range
+      const props = await clickhouse
+        .query({
+          query: `
+            SELECT *
+            FROM event_props
+            WHERE game_id IN ({gameIds:Array(UInt32)})
+              AND created_at >= {start:DateTime64(3)}
+              AND created_at <= {end:DateTime64(3)}
+              AND event_id IN ({eventIds:Array(String)})
+          `,
+          query_params: {
+            gameIds,
+            start: formatDateForClickHouse(new Date(Math.min(...times))),
+            end: formatDateForClickHouse(new Date(Math.max(...times))),
+            eventIds,
+          },
+          format: 'JSONEachRow',
         })
-      }
+        .then((res) => res.json<ClickHouseEventProp>())
+
+      props.forEach((prop) => {
+        if (!propsMap.has(prop.event_id)) {
+          propsMap.set(prop.event_id, [])
+        }
+        propsMap.get(prop.event_id)!.push(new Prop(prop.prop_key, prop.prop_value))
+      })
     }
 
     return data
@@ -182,36 +196,6 @@ export default class Event extends ClickHouseEntity<
       dev_build: this.playerAlias.player.devBuild,
       created_at: formatDateForClickHouse(this.createdAt),
     }))
-  }
-
-  override async hydrate(
-    em: EntityManager,
-    data: ClickHouseEvent,
-    clickhouse: ClickHouseClient,
-    loadProps: boolean = false,
-  ): Promise<this> {
-    const game = await em.repo(Game).findOneOrFail(data.game_id)
-    const playerAlias = await em.repo(PlayerAlias).findOneOrFail(data.player_alias_id)
-
-    this.construct(data.name, game)
-    this.id = data.id
-    this.playerAlias = playerAlias
-    this.createdAt = new Date(data.created_at)
-    this.updatedAt = new Date(data.updated_at)
-
-    if (loadProps) {
-      const props = await clickhouse
-        .query({
-          query: 'SELECT * FROM event_props WHERE event_id = {eventId:String}',
-          query_params: { eventId: data.id },
-          format: 'JSONEachRow',
-        })
-        .then((res) => res.json<ClickHouseEventProp>())
-
-      this.props = props.map((prop) => new Prop(prop.prop_key, prop.prop_value))
-    }
-
-    return this
   }
 
   toJSON() {

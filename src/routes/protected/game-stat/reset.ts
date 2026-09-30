@@ -74,18 +74,22 @@ export async function resetStatHandler({
       },
     })
 
-    const aliasStream = streamByCursor<PlayerAlias, never, 'id'>(async (batchSize, after) => {
-      return trx.repo(PlayerAlias).findByCursor({
-        where: {
-          player: { id: playerIds.map((p) => p.player.id) },
-        },
-        first: batchSize,
-        after,
-        orderBy: { id: 'asc' },
-        fields: ['id'],
-        strategy: 'joined',
-      })
-    }, 1000)
+    const aliasStream = streamByCursor<PlayerAlias, never, 'id', never, false>(
+      async (batchSize, after) => {
+        return trx.repo(PlayerAlias).findByCursor({
+          where: {
+            player: { id: playerIds.map((p) => p.player.id) },
+          },
+          first: batchSize,
+          after,
+          orderBy: { id: 'asc' },
+          fields: ['id'],
+          strategy: 'joined',
+          includeCount: false,
+        })
+      },
+      1000,
+    )
 
     const query = `
       DELETE FROM player_game_stat_snapshots

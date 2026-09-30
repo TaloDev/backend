@@ -25,6 +25,7 @@ import PlayerProp from '../../../entities/player-prop.js'
 import Player from '../../../entities/player.js'
 import Prop from '../../../entities/prop.js'
 import createClickHouseClient from '../../clickhouse/createClient.js'
+import { eventCursorClause } from '../../clickhouse/eventCursor.js'
 import { formatDateForClickHouse } from '../../clickhouse/formatDateTime.js'
 import { escapeCSVValue } from '../../lang/escapeCSVValue.js'
 import { DataExportJob } from './createDataExportQueue.js'
@@ -68,7 +69,10 @@ export class DataExporter {
       while (true) {
         const cursorFilter: string =
           lastCreatedAt && lastId
-            ? `AND (created_at, id) > (toDateTime64('${formatDateForClickHouse(lastCreatedAt)}', 3), '${lastId}')`
+            ? `AND ${eventCursorClause(
+                `toDateTime64('${formatDateForClickHouse(lastCreatedAt)}', 3)`,
+                `'${lastId}'`,
+              )}`
             : ''
 
         const rawEvents = await clickhouse
@@ -86,6 +90,15 @@ export class DataExporter {
           })
           .then((res) => res.json<ClickHouseEvent>())
 
+        // props share the event's created_at, so we only read the ones whose time
+        // falls inside this page
+        const pageStart =
+          rawEvents.length > 0 ? formatDateForClickHouse(new Date(rawEvents[0].created_at)) : ''
+        const pageEnd =
+          rawEvents.length > 0
+            ? formatDateForClickHouse(new Date(rawEvents.at(-1)!.created_at))
+            : ''
+
         // step 3: fetch props for this page's events
         const rawProps =
           rawEvents.length > 0
@@ -96,6 +109,8 @@ export class DataExporter {
                   FROM event_props
                   WHERE game_id = ${dataExport.game.id}
                   ${includeDevData ? '' : 'AND dev_build = false'}
+                  AND created_at >= toDateTime64('${pageStart}', 3)
+                  AND created_at <= toDateTime64('${pageEnd}', 3)
                   AND event_id IN (
                     SELECT id FROM events
                     WHERE game_id = ${dataExport.game.id}

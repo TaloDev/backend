@@ -31,7 +31,14 @@ export default class SocketError {
   ) {}
 }
 
+// client-caused errors that get echoed to the client but not reported to Sentry
+export class SocketClientError extends Error {}
+
 type SocketErrorReq = SocketMessageRequest | 'unknown'
+
+export function shouldReportToSentry(error: SocketError, originalError?: Error) {
+  return validSentryErrorCodes.includes(error.code) && !(originalError instanceof SocketClientError)
+}
 
 export function sendError({
   conn,
@@ -44,7 +51,7 @@ export function sendError({
   error: SocketError
   originalError?: Error
 }) {
-  if (validSentryErrorCodes.includes(error.code)) {
+  if (shouldReportToSentry(error, originalError)) {
     Sentry.withScope((scope) => {
       scope.setTag('request', req)
       scope.setTag('errorCode', error.code)

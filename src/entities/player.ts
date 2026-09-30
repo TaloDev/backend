@@ -131,9 +131,6 @@ export default class Player {
       closedSession.startedAt = session.startedAt
       closedSession.endSession()
 
-      await clickhouse.command({
-        query: `DELETE FROM player_sessions WHERE id = '${session.id}'`,
-      })
       await this.insertSession(clickhouse, closedSession)
     } finally {
       if (clickhouse) {

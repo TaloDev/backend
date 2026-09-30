@@ -30,7 +30,7 @@ export const totalSessionsRoute = protectedRoute({
 
         let query = `
         SELECT count() AS count
-        FROM player_sessions
+        FROM player_sessions FINAL
         WHERE started_at BETWEEN '${startDate}' AND '${endDate}'
           AND game_id = ${game.id}
       `

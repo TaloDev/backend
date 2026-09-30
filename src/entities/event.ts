@@ -38,11 +38,7 @@ export type ClickHouseEventProp = {
   created_at: string
 }
 
-export default class Event extends ClickHouseEntity<
-  ClickHouseEvent,
-  [string, Game],
-  [ClickHouseClient, boolean]
-> {
+export default class Event extends ClickHouseEntity<ClickHouseEvent, [string, Game]> {
   id: string = v4()
   name!: string
   props: Prop[] = []

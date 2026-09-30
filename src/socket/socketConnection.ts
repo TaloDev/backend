@@ -2,6 +2,7 @@ import { RequestContext, EntityManager } from '@mikro-orm/mysql'
 import { Redis } from 'ioredis'
 import { v4 } from 'uuid'
 import { WebSocket } from 'ws'
+import type { PlayerSessionRef } from '../entities/player-session.js'
 import { APIKeyScope } from '../entities/api-key.js'
 import PlayerAlias from '../entities/player-alias.js'
 import checkRateLimitExceeded from '../lib/errors/checkRateLimitExceeded.js'
@@ -13,6 +14,7 @@ import SocketTicket from './socketTicket.js'
 export default class SocketConnection {
   alive: boolean = true
   playerAliasId!: number
+  private playerSession?: PlayerSessionRef
   readonly gameId: number
   readonly verifyRequests: boolean
   private readonly apiKeyId: number
@@ -99,6 +101,10 @@ export default class SocketConnection {
     return this.devBuild
   }
 
+  setPlayerSession(session: PlayerSessionRef) {
+    this.playerSession = session
+  }
+
   sendMessage<T extends object>(res: SocketMessageResponse, data: T, serialisedMessage?: string) {
     if (this.ws.readyState === this.ws.OPEN) {
       const message = serialisedMessage ?? JSON.stringify({ res, data })
@@ -129,7 +135,7 @@ export default class SocketConnection {
       const playerAlias = await em.repo(PlayerAlias).findOne(this.playerAliasId)
 
       if (playerAlias) {
-        await playerAlias.player.handleSession(em, false)
+        await playerAlias.player.handleSession(false, this.playerSession)
         await playerAlias.player.setPresence(em, this.wss, playerAlias, false)
       }
     }

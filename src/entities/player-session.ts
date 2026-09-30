@@ -1,9 +1,13 @@
-import { EntityManager } from '@mikro-orm/mysql'
 import { v4 } from 'uuid'
 import ClickHouseEntity from '../lib/clickhouse/clickhouse-entity.js'
 import { formatDateForClickHouse } from '../lib/clickhouse/formatDateTime.js'
 import Game from './game.js'
 import Player from './player.js'
+
+export type PlayerSessionRef = {
+  id: string
+  startedAt: Date
+}
 
 export type ClickHousePlayerSession = {
   id: string
@@ -41,19 +45,6 @@ export default class PlayerSession extends ClickHouseEntity<ClickHousePlayerSess
 
   endSession() {
     this.endedAt = new Date()
-    // we'll be inserting a new row so we need a new id
-    this.id = v4()
-  }
-
-  override async hydrate(em: EntityManager, data: ClickHousePlayerSession): Promise<this> {
-    const player = await em.repo(Player).findOneOrFail(data.player_id)
-
-    this.construct(player)
-    this.id = data.id
-    this.startedAt = new Date(data.started_at)
-    this.endedAt = data.ended_at ? new Date(data.ended_at) : null
-
-    return this
   }
 
   toJSON() {

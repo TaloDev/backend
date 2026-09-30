@@ -16,6 +16,7 @@ export type ClickHousePlayerSession = {
   dev_build: boolean
   started_at: string
   ended_at: string | null
+  version: string
 }
 
 export default class PlayerSession extends ClickHouseEntity<ClickHousePlayerSession, [Player]> {
@@ -40,6 +41,7 @@ export default class PlayerSession extends ClickHouseEntity<ClickHousePlayerSess
       dev_build: this.player.devBuild,
       started_at: formatDateForClickHouse(this.startedAt),
       ended_at: this.endedAt ? formatDateForClickHouse(this.endedAt) : null,
+      version: String(this.endedAt?.getTime() ?? 0),
     }
   }
 

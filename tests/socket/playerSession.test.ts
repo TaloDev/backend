@@ -7,7 +7,7 @@ import createTestSocket, { createTestClient } from '../utils/createTestSocket.js
 async function getPlayerSessions(playerId: string) {
   return clickhouse
     .query({
-      query: `SELECT * FROM player_sessions WHERE player_id = '${playerId}'`,
+      query: `SELECT * FROM player_sessions FINAL WHERE player_id = '${playerId}'`,
       format: 'JSONEachRow',
     })
     .then((res) => res.json<ClickHousePlayerSession>())
@@ -37,7 +37,7 @@ describe('Socket player sessions', () => {
     })
   })
 
-  it('should create a player session row with an end date and delete the previous row', async () => {
+  it('should replace the open row with a closed row when the session ends', async () => {
     const { identifyMessage, ticket, player } = await createSocketIdentifyMessage([
       APIKeyScope.READ_PLAYERS,
     ])
@@ -50,7 +50,7 @@ describe('Socket player sessions', () => {
 
       const count = await clickhouse
         .query({
-          query: `SELECT count() as count FROM player_sessions WHERE player_id = '${player.id}' AND ended_at IS NULL`,
+          query: `SELECT count() as count FROM player_sessions FINAL WHERE player_id = '${player.id}' AND ended_at IS NULL`,
           format: 'JSONEachRow',
         })
         .then((res) => res.json<{ count: string }>())
@@ -61,7 +61,7 @@ describe('Socket player sessions', () => {
 
     const count = await clickhouse
       .query({
-        query: `SELECT count() as count FROM player_sessions WHERE player_id = '${player.id}' AND ended_at IS NOT NULL`,
+        query: `SELECT count() as count FROM player_sessions FINAL WHERE player_id = '${player.id}' AND ended_at IS NOT NULL`,
         format: 'JSONEachRow',
       })
       .then((res) => res.json<{ count: string }>())

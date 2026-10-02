@@ -3,8 +3,8 @@ import checkRateLimitExceeded from '../lib/errors/checkRateLimitExceeded.js'
 import { isAdminAPIRoute, isAPIRoute } from '../lib/routing/route-info.js'
 
 const limitMap = {
-  default: Number(process.env.API_RATE_LIMIT) || 100,
-  auth: Number(process.env.API_RATE_LIMIT_AUTH) || 20,
+  default: Number(process.env.API_RATE_LIMIT) || 300,
+  auth: Number(process.env.API_RATE_LIMIT_AUTH) || 30,
   playerPublic: Number(process.env.PUBLIC_RATE_LIMIT_PLAYERS) || 10,
 } as const
 

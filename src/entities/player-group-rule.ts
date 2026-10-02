@@ -193,7 +193,7 @@ export default class PlayerGroupRule {
         id: {
           $nin: em
             .qb(PlayerProp)
-            .select('player.id')
+            .select('player')
             .where({
               key: this.getNamespacedValue('props'),
             }),

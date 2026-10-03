@@ -188,21 +188,16 @@ export class SteamworksClient {
     const config = this.createSteamworksRequestConfig({ method, url, body })
     const event = this.createSteamworksIntegrationEvent(config)
 
-    const totalAttempts = 3
-    const abortTimeout = 2000
-    const finalAbortTimeout = 5000
+    const totalAttempts = 2
+    const abortTimeout = 5000
 
     const startTime = performance.now()
 
     try {
       const res = await pRetry(
-        async (attemptNumber) => {
-          const isLastAttempt = attemptNumber === totalAttempts
+        async () => {
           const controller = new AbortController()
-          const timeout = setTimeout(
-            () => controller.abort(),
-            isLastAttempt ? finalAbortTimeout : abortTimeout,
-          )
+          const timeout = setTimeout(() => controller.abort(), abortTimeout)
           try {
             return await axios<T>({ ...config, signal: controller.signal })
           } catch (err) {

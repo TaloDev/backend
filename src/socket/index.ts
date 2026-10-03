@@ -5,7 +5,7 @@ import { Redis } from 'ioredis'
 import { RawData, WebSocket, WebSocketServer } from 'ws'
 import { getGlobalRedis } from '../config/redis.config.js'
 import { enableSocketTracing } from './enableSocketTracing.js'
-import { logConnection, logConnectionClosed } from './messages/socketLogger.js'
+import { traceConnection } from './messages/socketLogger.js'
 import { sendMessage } from './messages/socketMessage.js'
 import SocketRouter from './router/socketRouter.js'
 import SocketConnection from './socketConnection.js'
@@ -75,7 +75,7 @@ export default class Socket {
     await withIsolationScope(async () => {
       await getSocketTracer().startActiveSpan('socket.open', async (span) => {
         try {
-          logConnection(req)
+          traceConnection(req)
 
           await RequestContext.create(this.em, async () => {
             const url = new URL(req.url!, 'http://localhost')
@@ -142,12 +142,7 @@ export default class Socket {
     // delete before async work to prevent duplicate handleClosed calls
     this.connections.delete(ws)
 
-    const closeOperation = this.createCloseOperation({
-      connection,
-      preclosed,
-      code,
-      reason: options.reason,
-    })
+    const closeOperation = this.createCloseOperation(connection)
     this.pendingCloseOperations.add(closeOperation)
     try {
       await closeOperation
@@ -156,21 +151,10 @@ export default class Socket {
     }
   }
 
-  private async createCloseOperation({
-    connection,
-    preclosed,
-    code,
-    reason,
-  }: {
-    connection: SocketConnection
-    preclosed: boolean
-    code: number
-    reason?: string
-  }) {
+  private async createCloseOperation(connection: SocketConnection) {
     await RequestContext.create(this.em, async () => {
       await connection.handleClosed()
     })
-    logConnectionClosed(connection, preclosed, code, reason)
   }
 
   async waitForPendingOperations() {

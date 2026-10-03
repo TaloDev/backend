@@ -36,6 +36,8 @@ export function logRequest(conn: SocketConnection, message: string) {
   }
 }
 
+const silentResponses: SocketMessageResponse[] = ['v1.connected']
+
 export function logResponse(conn: SocketConnection, res: SocketMessageResponse, message: string) {
   if (!canLog()) {
     return
@@ -47,10 +49,14 @@ export function logResponse(conn: SocketConnection, res: SocketMessageResponse, 
     'socket.message.size': getSize(message),
   })
 
+  if (silentResponses.includes(res)) {
+    return
+  }
+
   console.info(`<-- WSS ${res}`)
 }
 
-export function logConnection(req: IncomingMessage) {
+export function traceConnection(req: IncomingMessage) {
   if (!canLog()) {
     return
   }
@@ -58,27 +64,4 @@ export function logConnection(req: IncomingMessage) {
   setTraceAttributes({
     'socket.ip': req.socket.remoteAddress,
   })
-
-  console.info('--> WSS open')
-}
-
-export function logConnectionClosed(
-  conn: SocketConnection | undefined,
-  preclosed: boolean,
-  code: number = -1,
-  reason?: string,
-) {
-  if (!canLog()) {
-    return
-  }
-
-  setTraceAttributes({
-    'socket.ip': conn?.getRemoteAddress() ?? 'unknown',
-    'socket.pre_closed': preclosed ? 'true' : 'false',
-    'socket.close_code': code,
-    'socket.close_reason': reason,
-  })
-
-  const direction = preclosed ? '-->' : '<--'
-  console.info(`${direction} WSS close`)
 }

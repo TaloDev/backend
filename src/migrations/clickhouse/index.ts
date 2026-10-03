@@ -10,6 +10,7 @@ import { AddEventPropsEventIdIndex } from './006AddEventPropsEventIdIndex.js'
 import { AddDevBuildToPlayerGameStatSnapshots } from './007AddDevBuildToPlayerGameStatSnapshots.js'
 import { ReorderEventsSortKey } from './008ReorderEventsSortKey.js'
 import { AddGameIdToEventProps } from './009AddGameIdToEventProps.js'
+import { SwitchPlayerSessionsToReplacingMergeTree } from './010SwitchPlayerSessionsToReplacingMergeTree.js'
 
 type ClickHouseMigration = {
   name: string
@@ -52,6 +53,10 @@ const migrations: ClickHouseMigration[] = [
   {
     name: 'AddGameIdToEventProps',
     sql: AddGameIdToEventProps,
+  },
+  {
+    name: 'SwitchPlayerSessionsToReplacingMergeTree',
+    sql: SwitchPlayerSessionsToReplacingMergeTree,
   },
 ]
 

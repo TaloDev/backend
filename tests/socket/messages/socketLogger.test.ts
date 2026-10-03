@@ -1,18 +1,20 @@
+import * as otel from '@hyperdx/node-opentelemetry/build/src/otel.js'
 import { createServer, IncomingMessage } from 'http'
 import { Socket } from 'net'
 import { WebSocket } from 'ws'
 import TaloSocket from '../../../src/socket/index.js'
 import {
-  logConnection,
-  logConnectionClosed,
   logRequest,
   logResponse,
+  traceConnection,
 } from '../../../src/socket/messages/socketLogger.js'
 import SocketConnection from '../../../src/socket/socketConnection.js'
 import SocketTicket from '../../../src/socket/socketTicket.js'
 import createAPIKeyAndToken from '../../utils/createAPIKeyAndToken.js'
 
 describe('Socket logger', () => {
+  // hyperdx re-exports otel's function
+  const setTraceAttributesMock = vi.spyOn(otel, 'setTraceAttributes')
   const consoleMock = vi.spyOn(console, 'info').mockImplementation(() => undefined)
 
   beforeAll(() => {
@@ -21,10 +23,12 @@ describe('Socket logger', () => {
 
   afterEach(() => {
     consoleMock.mockReset()
+    setTraceAttributesMock.mockReset()
   })
 
   afterAll(() => {
     vi.unstubAllEnvs()
+    setTraceAttributesMock.mockRestore()
   })
 
   async function createSocketConnection(): Promise<[SocketConnection, () => void]> {
@@ -90,35 +94,22 @@ describe('Socket logger', () => {
     cleanup()
   })
 
-  it('should log connections', async () => {
-    logConnection(new IncomingMessage(new Socket()))
+  it('should trace connections', () => {
+    const req = new IncomingMessage(new Socket())
+    Object.defineProperty(req.socket, 'remoteAddress', { value: '1.1.1.1' })
 
-    expect(consoleMock).toHaveBeenLastCalledWith('--> WSS open')
+    traceConnection(req)
+
+    expect(setTraceAttributesMock).toHaveBeenLastCalledWith({ 'socket.ip': '1.1.1.1' })
   })
 
-  it('should log pre-closed connections', async () => {
+  it('should not log connected responses', async () => {
     const [conn, cleanup] = await createSocketConnection()
 
-    logConnectionClosed(conn, true, 3000)
+    logResponse(conn, 'v1.connected', JSON.stringify({ res: 'v1.connected', data: {} }))
 
-    expect(consoleMock).toHaveBeenLastCalledWith('--> WSS close')
-
-    cleanup()
-  })
-
-  it('should log manually-closed connections', async () => {
-    const [conn, cleanup] = await createSocketConnection()
-
-    logConnectionClosed(conn, false, 3000, 'Unauthorised')
-
-    expect(consoleMock).toHaveBeenLastCalledWith('<-- WSS close')
+    expect(consoleMock).not.toHaveBeenCalled()
 
     cleanup()
-  })
-
-  it('should log manually-closed connections without a SocketConnection', async () => {
-    logConnectionClosed(undefined, false, 3000)
-
-    expect(consoleMock).toHaveBeenLastCalledWith('<-- WSS close')
   })
 })

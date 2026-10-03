@@ -69,7 +69,11 @@ const playerListeners = [
         'socket.connection.dev_build': conn.isDevBuild(),
       })
 
-      await alias.player.handleSession(em, true)
+      const session = await alias.player.handleSession(true)
+      /* v8 ignore next 3 -- @preserve */
+      if (session) {
+        conn.setPlayerSession(session)
+      }
       conn.playerAliasId = alias.id
       await alias.player.setPresence(em, socket, alias, true)
 

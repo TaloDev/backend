@@ -178,7 +178,9 @@ async function cleanupUnfinishedSessions(
   if (sessionsToDelete.length > 0) {
     cleanupStats.sessionsDeleted += sessionsToDelete.length
     await clickhouse.command({
-      query: 'DELETE FROM player_sessions WHERE id IN ({sessionIds:Array(String)})',
+      // only rows still open - a captured id may already point to a closed row
+      query:
+        'DELETE FROM player_sessions WHERE id IN ({sessionIds:Array(String)}) AND ended_at IS NULL',
       query_params: { sessionIds: sessionsToDelete },
     })
   }

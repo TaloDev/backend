@@ -122,20 +122,20 @@ importers:
         specifier: ^5.0.0
         version: 5.0.0
       '@mikro-orm/core':
-        specifier: ^7.2.1
-        version: 7.2.1
+        specifier: ^7.2.3
+        version: 7.2.3
       '@mikro-orm/decorators':
-        specifier: ^7.2.1
-        version: 7.2.1(@mikro-orm/core@7.2.1)
+        specifier: ^7.2.3
+        version: 7.2.3(@mikro-orm/core@7.2.3)
       '@mikro-orm/migrations':
-        specifier: ^7.2.1
-        version: 7.2.1(@mikro-orm/core@7.2.1)
+        specifier: ^7.2.3
+        version: 7.2.3(@mikro-orm/core@7.2.3)
       '@mikro-orm/mysql':
-        specifier: ^7.2.1
-        version: 7.2.1(@mikro-orm/core@7.2.1)(@types/node@24.13.3)
+        specifier: ^7.2.3
+        version: 7.2.3(@mikro-orm/core@7.2.3)(@types/node@24.13.3)
       '@mikro-orm/reflection':
-        specifier: ^7.2.1
-        version: 7.2.1(@mikro-orm/core@7.2.1)
+        specifier: ^7.2.3
+        version: 7.2.3(@mikro-orm/core@7.2.3)
       '@ngneat/falso':
         specifier: ^7.2.0
         version: 7.4.0
@@ -212,8 +212,8 @@ importers:
         specifier: ^4.0.0
         version: 4.0.1(ioredis@5.11.1(supports-color@7.2.0))
       nodemailer:
-        specifier: ^9.0.1
-        version: 9.0.6
+        specifier: ^10.0.0
+        version: 10.0.12
       obscenity:
         specifier: ^0.4.6
         version: 0.4.6
@@ -255,8 +255,8 @@ importers:
         version: 4.5.4
     devDependencies:
       '@mikro-orm/cli':
-        specifier: ^7.2.1
-        version: 7.2.1
+        specifier: ^7.2.3
+        version: 7.2.3
       '@types/archiver':
         specifier: ^8.0.0
         version: 8.0.0
@@ -600,13 +600,13 @@ packages:
     resolution: {integrity: sha512-x/iUDjcS90W69PryLDIMgFyV21YLTnG9zOpPXS7Bkt2b8AsY3zZsIpOLBkYr9fBcF3HbkKaER5hOBZLfpLgYNw==}
     engines: {node: '>= 14.0.0'}
 
-  '@mikro-orm/cli@7.2.1':
-    resolution: {integrity: sha512-YNt8HKsb90awZqcionp1oZgL2ZLRyGl76x0lYdcfVkYkYY0zrNQs3ZZ76+6AS/FXSX5oEp6q94LCIiYwnr04jA==}
+  '@mikro-orm/cli@7.2.3':
+    resolution: {integrity: sha512-iuZ1IIyy1b3ifVAmStSv1QNWIObCefmJLPpoZagiB6wTU8xB8H3HIg95mqDWAZeKg5Y7v8QKQJDgl93a2Os2Rw==}
     engines: {node: '>= 22.17.0'}
     hasBin: true
 
-  '@mikro-orm/core@7.2.1':
-    resolution: {integrity: sha512-+gtJoScbin/C3wPItSZkj5vlMTq/LphBLIxHyi5brCbeA6VDcYuoMopiqoFUMQxdhXXrZlKNIHXGrhb8r3biVg==}
+  '@mikro-orm/core@7.2.3':
+    resolution: {integrity: sha512-c/OHEApYBzfUtr1VoBe5hiTDEV+tHZJifdgF4RlGrmuhuNJCsgWHxdv1ZjI0zzG79B6QdxqQ8ujgGqwLhCzOPg==}
     engines: {node: '>= 22.17.0'}
     peerDependencies:
       dataloader: 2.2.3
@@ -614,39 +614,39 @@ packages:
       dataloader:
         optional: true
 
-  '@mikro-orm/decorators@7.2.1':
-    resolution: {integrity: sha512-qdBoFBYWVwYfKl4aqi/gksr/SdT+2Me0kIew1MmWp6fWeeP5V5qPKSb1ZQW6RR4z+Df+DuFcbyBt6qm4n9Ltbg==}
+  '@mikro-orm/decorators@7.2.3':
+    resolution: {integrity: sha512-tEENXFR2ZNIG337n5kVmSwSCfwOZMBfcC2SBHv2f5JF5tlxsaM6W1A9ptmLEurT/mZJlsTfhNUj2/FXFjmZ7qA==}
     engines: {node: '>= 22.17.0'}
     peerDependencies:
-      '@mikro-orm/core': 7.2.1
+      '@mikro-orm/core': 7.2.3
       reflect-metadata: ^0.1.0 || ^0.2.0
     peerDependenciesMeta:
       reflect-metadata:
         optional: true
 
-  '@mikro-orm/migrations@7.2.1':
-    resolution: {integrity: sha512-sxGcB7na0AkcREsD5U3xP+Psb/nhQFkx7/eY1Nsqq9MBs67O5RoCL97bn3lmgq6GwKZFbktMuuOGozq42+GaNg==}
+  '@mikro-orm/migrations@7.2.3':
+    resolution: {integrity: sha512-mI1+xP6AJyFyu343bQXK+kiHweMJaYUy2zJlgvxym+PnIRY2PZQqdKE2mSbNOI1tOmwoQgR9kI+6BO7Xjbu6MQ==}
     engines: {node: '>= 22.17.0'}
     peerDependencies:
-      '@mikro-orm/core': 7.2.1
+      '@mikro-orm/core': 7.2.3
 
-  '@mikro-orm/mysql@7.2.1':
-    resolution: {integrity: sha512-IxCEnfHUzFcxVkRCVaC0KtGoHRRLogxxgeI+J4Pk7oxtDf/jtvYQuFL4tSbmlrH3qzmLQeYYPyJPuDr+a2F7ag==}
+  '@mikro-orm/mysql@7.2.3':
+    resolution: {integrity: sha512-00P8gI0x3t3CI51Xi5XNbR5O7J1ov+lnB165r/WEKhrUKn5PWIWecv3QTIbBpbXSkWrwyLAGHwbGrzFRH/HW8g==}
     engines: {node: '>= 22.17.0'}
     peerDependencies:
-      '@mikro-orm/core': 7.2.1
+      '@mikro-orm/core': 7.2.3
 
-  '@mikro-orm/reflection@7.2.1':
-    resolution: {integrity: sha512-lOyUgM/Q7XZy9KQGcjWSfAxLyYzqjBF/A3qfNNuock1OwU9ih+st34OlESlilKykck/er9bLTRd1KBQd8PGYxw==}
+  '@mikro-orm/reflection@7.2.3':
+    resolution: {integrity: sha512-LAYXYaHj//4OOoRoz94yGo7ZCBgDOpaHiWl2G8HETKggxEr04hGikrR3k0KeiCR7SL49DKZ3bQHXX0yurDTJVQ==}
     engines: {node: '>= 22.17.0'}
     peerDependencies:
-      '@mikro-orm/core': 7.2.1
+      '@mikro-orm/core': 7.2.3
 
-  '@mikro-orm/sql@7.2.1':
-    resolution: {integrity: sha512-3M9dQeUDLlvAT5VJr/KBGAk9C7xez+psVCnvNkAO4hRhwx2Wm7N1HkuyP4Bwj0MjkHVB6LYvhTw/V6pYsVM8lA==}
+  '@mikro-orm/sql@7.2.3':
+    resolution: {integrity: sha512-lRciF3CGPJbwEyk2yiUHK/7SUgFegt1ULQ9quQ08nvo3hFVnAy25IGxZRgp7hrsTBaNOuRSj+VvBswztqRIrKg==}
     engines: {node: '>= 22.17.0'}
     peerDependencies:
-      '@mikro-orm/core': 7.2.1
+      '@mikro-orm/core': 7.2.3
 
   '@msgpackr-extract/msgpackr-extract-darwin-arm64@3.0.4':
     resolution: {integrity: sha512-LCkGo6JDfaBhgST7UpPWgNgLINpcpabaHfyz5OBx75nUYxBsaEPxjnyNjWpeb/xBup/682QnBfRBy2/LvPutZQ==}
@@ -2800,8 +2800,8 @@ packages:
     peerDependencies:
       ioredis: ^5.3.2
 
-  mikro-orm@7.2.1:
-    resolution: {integrity: sha512-IUUYgO5T+S67sw1Xp5r3vL0JeYnkampUIRJaHG6AzTcjujRbyRUOEc6NVAIsojKdXq9WbWRU0hI6ivUv9qSDLA==}
+  mikro-orm@7.2.3:
+    resolution: {integrity: sha512-gB44siyXW5GGVxi8quW6A8QdfdVS83NLXBUIJCWe+BSj0roFdDI6FMwXaGdK7EODirPcRDujwrw+YoU+txta+g==}
     engines: {node: '>= 22.17.0'}
 
   mime-db@1.52.0:
@@ -2919,9 +2919,9 @@ packages:
   node-int64@0.4.0:
     resolution: {integrity: sha512-O5lz91xSOeoXP6DulyHfllpq+Eg00MWitZIbtPfoSEvqIHdl5gfcY6hYzDWnj0qD5tz52PI08u9qUvSVeUBeHw==}
 
-  nodemailer@9.0.6:
-    resolution: {integrity: sha512-IQUGFdhdGwI9+AWX+FpUt4DLmvFaOjTMEoneTIWX/RXxuy1TdenPwWrvFMSfLkPKl+HQEXWuSAxEMMbPYXtBmg==}
-    engines: {node: '>=6.0.0'}
+  nodemailer@10.0.12:
+    resolution: {integrity: sha512-PQ46oNbNMuH/Sno7B5IWIU9etytwrO0xdTFvWXpIQFRXhBAXtzD48243AS+BCbQQTPD8y3fqUrgLn0tSo77gvg==}
+    engines: {node: '>=20.0.0'}
 
   normalize-path@3.0.0:
     resolution: {integrity: sha512-6eZs5Ls3WtCisHWp9S2GUy8dqkpGi4BVSz3GaqiE6ezub0512ESztXUwUB6C6IKbQkY2Pnb/mD4WYojCRwcwLA==}
@@ -3843,43 +3843,43 @@ snapshots:
     dependencies:
       vary: 1.1.2
 
-  '@mikro-orm/cli@7.2.1':
+  '@mikro-orm/cli@7.2.3':
     dependencies:
-      '@mikro-orm/core': 7.2.1
-      mikro-orm: 7.2.1
+      '@mikro-orm/core': 7.2.3
+      mikro-orm: 7.2.3
       yargs: 17.7.2
     transitivePeerDependencies:
       - dataloader
 
-  '@mikro-orm/core@7.2.1': {}
+  '@mikro-orm/core@7.2.3': {}
 
-  '@mikro-orm/decorators@7.2.1(@mikro-orm/core@7.2.1)':
+  '@mikro-orm/decorators@7.2.3(@mikro-orm/core@7.2.3)':
     dependencies:
-      '@mikro-orm/core': 7.2.1
+      '@mikro-orm/core': 7.2.3
 
-  '@mikro-orm/migrations@7.2.1(@mikro-orm/core@7.2.1)':
+  '@mikro-orm/migrations@7.2.3(@mikro-orm/core@7.2.3)':
     dependencies:
-      '@mikro-orm/core': 7.2.1
-      '@mikro-orm/sql': 7.2.1(@mikro-orm/core@7.2.1)
+      '@mikro-orm/core': 7.2.3
+      '@mikro-orm/sql': 7.2.3(@mikro-orm/core@7.2.3)
 
-  '@mikro-orm/mysql@7.2.1(@mikro-orm/core@7.2.1)(@types/node@24.13.3)':
+  '@mikro-orm/mysql@7.2.3(@mikro-orm/core@7.2.3)(@types/node@24.13.3)':
     dependencies:
-      '@mikro-orm/core': 7.2.1
-      '@mikro-orm/sql': 7.2.1(@mikro-orm/core@7.2.1)
+      '@mikro-orm/core': 7.2.3
+      '@mikro-orm/sql': 7.2.3(@mikro-orm/core@7.2.3)
       kysely: 0.29.6
       mysql2: 3.24.4(@types/node@24.13.3)
       sqlstring: 2.3.3
     transitivePeerDependencies:
       - '@types/node'
 
-  '@mikro-orm/reflection@7.2.1(@mikro-orm/core@7.2.1)':
+  '@mikro-orm/reflection@7.2.3(@mikro-orm/core@7.2.3)':
     dependencies:
-      '@mikro-orm/core': 7.2.1
+      '@mikro-orm/core': 7.2.3
       ts-morph: 28.0.0
 
-  '@mikro-orm/sql@7.2.1(@mikro-orm/core@7.2.1)':
+  '@mikro-orm/sql@7.2.3(@mikro-orm/core@7.2.3)':
     dependencies:
-      '@mikro-orm/core': 7.2.1
+      '@mikro-orm/core': 7.2.3
       kysely: 0.29.6
 
   '@msgpackr-extract/msgpackr-extract-darwin-arm64@3.0.4':
@@ -6120,7 +6120,7 @@ snapshots:
     dependencies:
       ioredis: 5.11.1(supports-color@7.2.0)
 
-  mikro-orm@7.2.1: {}
+  mikro-orm@7.2.3: {}
 
   mime-db@1.52.0: {}
 
@@ -6220,7 +6220,7 @@ snapshots:
 
   node-int64@0.4.0: {}
 
-  nodemailer@9.0.6: {}
+  nodemailer@10.0.12: {}
 
   normalize-path@3.0.0: {}
 

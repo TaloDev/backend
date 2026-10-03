@@ -48,6 +48,55 @@ describe('Headline - average session duration', () => {
     expect(typeof res.body.lastUpdatedAt).toBe('number')
   })
 
+  it('should not count the open row of a closed session twice', async () => {
+    const [organisation, game] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken({}, organisation)
+
+    const player = await new PlayerFactory([game]).one()
+    await em.persist(player).flush()
+
+    const sessionStartDate = new Date(startDate)
+    const sessionId = v4()
+
+    // the open and closed rows share a key; only the closed one has an end date
+    await clickhouse.insert({
+      table: 'player_sessions',
+      values: [
+        {
+          id: sessionId,
+          player_id: player.id,
+          game_id: game.id,
+          dev_build: false,
+          started_at: formatDateForClickHouse(sessionStartDate),
+          ended_at: null,
+          version: 0,
+        },
+        {
+          id: sessionId,
+          player_id: player.id,
+          game_id: game.id,
+          dev_build: false,
+          started_at: formatDateForClickHouse(sessionStartDate),
+          ended_at: formatDateForClickHouse(new Date(sessionStartDate.getTime() + 7200000)), // 2 hours later
+          version: sessionStartDate.getTime() + 7200000,
+        },
+      ],
+      format: 'JSONEachRow',
+    })
+
+    const res = await request(app)
+      .get(`/games/${game.id}/headlines/average_session_duration`)
+      .query({ startDate, endDate })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    expect(res.body).toMatchObject({
+      hours: 2,
+      minutes: 0,
+      seconds: 0,
+    })
+  })
+
   it('should not include dev build sessions in average duration without the dev data header', async () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({}, organisation)

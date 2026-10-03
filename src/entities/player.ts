@@ -10,7 +10,6 @@ import {
   Property,
 } from '@mikro-orm/decorators/es'
 import { Collection, EntityManager } from '@mikro-orm/mysql'
-import { captureException } from '@sentry/node'
 import { v4 } from 'uuid'
 import createClickHouseClient from '../lib/clickhouse/createClient.js'
 import checkGroupMemberships from '../lib/groups/checkGroupMemberships.js'
@@ -23,7 +22,7 @@ import PlayerAuth from './player-auth.js'
 import PlayerGroup from './player-group.js'
 import PlayerPresence from './player-presence.js'
 import PlayerProp from './player-prop.js'
-import PlayerSession, { ClickHousePlayerSession } from './player-session.js'
+import PlayerSession, { PlayerSessionRef } from './player-session.js'
 
 export const DEV_BUILD_META_KEY = 'META_DEV_BUILD'
 
@@ -108,39 +107,31 @@ export default class Player {
     })
   }
 
-  async handleSession(em: EntityManager, online: boolean) {
+  async handleSession(online: boolean, session?: PlayerSessionRef) {
     let clickhouse: ClickHouseClient | null = null
 
     try {
       clickhouse = createClickHouseClient()
 
       if (online) {
-        const session = new PlayerSession()
-        session.construct(this)
-        await this.insertSession(clickhouse, session)
-      } else {
-        const clickhouseSessions = await clickhouse
-          .query({
-            query: `SELECT * FROM player_sessions WHERE player_id = '${this.id}' AND ended_at IS NULL ORDER BY started_at DESC LIMIT 1`,
-            format: 'JSONEachRow',
-          })
-          .then((res) => res.json<ClickHousePlayerSession>())
-
-        /* v8 ignore next 4 -- @preserve */
-        if (clickhouseSessions.length === 0) {
-          captureException(new Error('Player went offline without ending session'))
-          return
-        }
-
-        const currentSession = await new PlayerSession().hydrate(em, clickhouseSessions[0])
-        const prevSessionId = currentSession.id
-        currentSession.endSession()
-
-        await clickhouse.command({
-          query: `DELETE FROM player_sessions WHERE id = '${prevSessionId}'`,
-        })
-        await this.insertSession(clickhouse, currentSession)
+        const newSession = new PlayerSession()
+        newSession.construct(this)
+        await this.insertSession(clickhouse, newSession)
+        return { id: newSession.id, startedAt: newSession.startedAt }
       }
+
+      // no session to close (e.g. the open insert never happened) - not an error
+      if (!session) {
+        return
+      }
+
+      const closedSession = new PlayerSession()
+      closedSession.construct(this)
+      closedSession.id = session.id
+      closedSession.startedAt = session.startedAt
+      closedSession.endSession()
+
+      await this.insertSession(clickhouse, closedSession)
     } finally {
       if (clickhouse) {
         await clickhouse.close()

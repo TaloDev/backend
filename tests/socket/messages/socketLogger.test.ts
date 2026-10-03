@@ -1,12 +1,20 @@
-import { createServer } from 'http'
+import * as otel from '@hyperdx/node-opentelemetry/build/src/otel.js'
+import { createServer, IncomingMessage } from 'http'
+import { Socket } from 'net'
 import { WebSocket } from 'ws'
 import TaloSocket from '../../../src/socket/index.js'
-import { logRequest, logResponse } from '../../../src/socket/messages/socketLogger.js'
+import {
+  logRequest,
+  logResponse,
+  traceConnection,
+} from '../../../src/socket/messages/socketLogger.js'
 import SocketConnection from '../../../src/socket/socketConnection.js'
 import SocketTicket from '../../../src/socket/socketTicket.js'
 import createAPIKeyAndToken from '../../utils/createAPIKeyAndToken.js'
 
 describe('Socket logger', () => {
+  // hyperdx re-exports otel's function
+  const setTraceAttributesMock = vi.spyOn(otel, 'setTraceAttributes')
   const consoleMock = vi.spyOn(console, 'info').mockImplementation(() => undefined)
 
   beforeAll(() => {
@@ -15,10 +23,12 @@ describe('Socket logger', () => {
 
   afterEach(() => {
     consoleMock.mockReset()
+    setTraceAttributesMock.mockReset()
   })
 
   afterAll(() => {
     vi.unstubAllEnvs()
+    setTraceAttributesMock.mockRestore()
   })
 
   async function createSocketConnection(): Promise<[SocketConnection, () => void]> {
@@ -68,6 +78,29 @@ describe('Socket logger', () => {
     expect(consoleMock).toHaveBeenLastCalledWith('--> WSS unknown')
 
     cleanup()
+  })
+
+  it('should log responses', async () => {
+    const [conn, cleanup] = await createSocketConnection()
+
+    logResponse(
+      conn,
+      'v1.players.identify.success',
+      JSON.stringify({ res: 'v1.players.identify.success', data: {} }),
+    )
+
+    expect(consoleMock).toHaveBeenLastCalledWith('<-- WSS v1.players.identify.success')
+
+    cleanup()
+  })
+
+  it('should trace connections', () => {
+    const req = new IncomingMessage(new Socket())
+    Object.defineProperty(req.socket, 'remoteAddress', { value: '1.1.1.1' })
+
+    traceConnection(req)
+
+    expect(setTraceAttributesMock).toHaveBeenLastCalledWith({ 'socket.ip': '1.1.1.1' })
   })
 
   it('should not log connected responses', async () => {

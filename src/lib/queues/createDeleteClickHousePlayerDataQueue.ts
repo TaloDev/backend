@@ -3,7 +3,11 @@ import createClickHouseClient from '../clickhouse/createClient.js'
 import { deleteEventPropsWhere } from '../clickhouse/deleteEventProps.js'
 import createQueue from './createQueue.js'
 
-export type DeleteClickHousePlayerDataConfig = { playerIds: string[]; aliasIds: number[] }
+export type DeleteClickHousePlayerDataConfig = {
+  gameId: number
+  playerIds: string[]
+  aliasIds: number[]
+}
 
 export function createDeleteClickHousePlayerDataQueue() {
   const queue = createQueue<DeleteClickHousePlayerDataConfig>(
@@ -11,7 +15,7 @@ export function createDeleteClickHousePlayerDataQueue() {
     async (job) => {
       const clickhouse = createClickHouseClient()
       try {
-        const { aliasIds, playerIds } = job.data
+        const { gameId, aliasIds, playerIds } = job.data
 
         if (aliasIds.length === 0) {
           return
@@ -19,6 +23,7 @@ export function createDeleteClickHousePlayerDataQueue() {
 
         await deleteEventPropsWhere({
           clickhouse,
+          gameId,
           where: 'player_alias_id IN {aliasIds:Array(UInt32)}',
           params: { aliasIds },
         })
@@ -26,8 +31,9 @@ export function createDeleteClickHousePlayerDataQueue() {
         await Promise.all(
           [
             {
-              query: 'DELETE FROM events WHERE player_alias_id IN {aliasIds:Array(UInt32)}',
-              query_params: { aliasIds },
+              query:
+                'DELETE FROM events WHERE game_id = {gameId:UInt32} AND player_alias_id IN {aliasIds:Array(UInt32)}',
+              query_params: { gameId, aliasIds },
             },
             {
               query:

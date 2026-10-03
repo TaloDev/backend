@@ -3,6 +3,8 @@ import DeletedPlayer from '../../src/entities/deleted-player.js'
 import { PlayerToDelete } from '../../src/entities/player-to-delete.js'
 import Player from '../../src/entities/player.js'
 import deletePlayers from '../../src/tasks/deletePlayers.js'
+import EventFactory from '../fixtures/EventFactory.js'
+import GameFactory from '../fixtures/GameFactory.js'
 import PlayerFactory from '../fixtures/PlayerFactory.js'
 import createOrganisationAndGame from '../utils/createOrganisationAndGame.js'
 
@@ -107,5 +109,45 @@ describe('deletePlayers', () => {
     expect(liveDeleted.game.id).toBe(game.id)
     expect(liveDeleted.devBuild).toBe(false)
     expect(liveDeleted.createdAt.getTime()).toBeCloseTo(livePlayer.createdAt.getTime(), -3)
+  })
+
+  it('should delete clickhouse data for a batch spanning multiple games', async () => {
+    const [organisation, game] = await createOrganisationAndGame()
+    const otherGame = await new GameFactory(organisation).one()
+
+    const player = await new PlayerFactory([game]).one()
+    const otherPlayer = await new PlayerFactory([otherGame]).one()
+    await em.persist([player, otherPlayer]).flush()
+
+    const events = await new EventFactory([player]).many(3)
+    const otherEvents = await new EventFactory([otherPlayer]).many(3)
+    const seeded = [...events, ...otherEvents]
+
+    await clickhouse.insert({
+      table: 'events',
+      values: seeded.map((event) => event.toInsertable()),
+      format: 'JSONEachRow',
+    })
+    await clickhouse.insert({
+      table: 'event_props',
+      values: seeded.flatMap((event) => event.getInsertableProps()),
+      format: 'JSONEachRow',
+    })
+
+    const playersToDelete = [player, otherPlayer].map((p) => new PlayerToDelete(p))
+    await em.persist(playersToDelete).flush()
+
+    await deletePlayers()
+
+    await vi.waitUntil(async () => {
+      const remainingEvents = await clickhouse
+        .query({ query: 'SELECT count() AS count FROM events', format: 'JSONEachRow' })
+        .then((res) => res.json<{ count: string }>())
+      const remainingProps = await clickhouse
+        .query({ query: 'SELECT count() AS count FROM event_props', format: 'JSONEachRow' })
+        .then((res) => res.json<{ count: string }>())
+
+      return Number(remainingEvents[0].count) === 0 && Number(remainingProps[0].count) === 0
+    })
   })
 })

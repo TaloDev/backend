@@ -48,6 +48,7 @@ export async function deleteHandler({
     trx.remove(trx.repo(PlayerAlias).getReference(alias.id))
 
     await deleteClickHousePlayerData({
+      gameId: alias.player.game.id,
       playerIds: [alias.player.id],
       aliasIds: [alias.id],
     })

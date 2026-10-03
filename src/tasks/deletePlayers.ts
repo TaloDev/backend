@@ -19,13 +19,24 @@ export async function deleteClickHousePlayerData(options: DeleteClickHousePlayer
 }
 
 export async function deletePlayersFromDB(em: EntityManager, players: Player[]) {
-  const playerIds = players.map((player) => player.id)
-  const aliasIds = players.flatMap((player) => player.aliases.map((alias) => alias.id))
+  const playersByGame = new Map<number, Player[]>()
+  for (const player of players) {
+    const gamePlayers = playersByGame.get(player.game.id) ?? []
+    gamePlayers.push(player)
+    playersByGame.set(player.game.id, gamePlayers)
+  }
 
   await em.transactional(async (trx) => {
     trx.persist(players.map((player) => new DeletedPlayer(player)))
     trx.remove(players)
-    await deleteClickHousePlayerData({ playerIds, aliasIds })
+
+    for (const [gameId, gamePlayers] of playersByGame) {
+      await deleteClickHousePlayerData({
+        gameId,
+        playerIds: gamePlayers.map((player) => player.id),
+        aliasIds: gamePlayers.flatMap((player) => player.aliases.map((alias) => alias.id)),
+      })
+    }
   })
 }
 
@@ -35,7 +46,7 @@ export default async function deletePlayers() {
 
   const playersToDelete = await em.repo(PlayerToDelete).findAll({
     limit: 100,
-    populate: ['player', 'player.aliases:ref'],
+    populate: ['player', 'player.game', 'player.aliases:ref'],
   })
 
   const count = playersToDelete.length

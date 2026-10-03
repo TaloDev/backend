@@ -28,6 +28,7 @@ describe('deleteEventPropsByIds', () => {
     // chunk size 3 with 7 events forces three deletes
     await deleteEventPropsByIds({
       clickhouse,
+      gameId: game.id,
       eventIds: events.map((event) => event.id),
       chunkSize: 3,
     })
@@ -75,8 +76,9 @@ describe('deleteEventPropsByIds', () => {
     // page size 3 with 7 matching events forces three pages
     await deleteEventPropsWhere({
       clickhouse,
-      where: 'game_id = {gameId:UInt32}',
-      params: { gameId: game.id },
+      gameId: game.id,
+      where: '1 = 1',
+      params: {},
       pageSize: 3,
     })
 

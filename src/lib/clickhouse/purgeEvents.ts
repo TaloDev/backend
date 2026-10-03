@@ -1,6 +1,6 @@
 import { ClickHouseClient } from '@clickhouse/client'
 import { deleteEventPropsByIds } from './deleteEventProps.js'
-import { eventCursorClause } from './eventCursor.js'
+import { forEachEventPage } from './eventCursor.js'
 import { formatDateForClickHouse } from './formatDateTime.js'
 
 const PAGE_SIZE = 2_000
@@ -39,36 +39,14 @@ export async function purgeEvents({
     return 0
   }
 
-  let lastCreatedAt = ''
-  let lastId = ''
-  let hasMore = true
-
-  while (hasMore) {
-    const cursorClause =
-      lastCreatedAt && lastId
-        ? ` AND ${eventCursorClause('{lastCreatedAt:String}', '{lastId:String}')}`
-        : ''
-
-    const rows = await clickhouse
-      .query({
-        query: `
-          SELECT id, created_at FROM events
-          WHERE game_id = {gameId:UInt32}
-            AND name = {eventName:String}${cutoffClause}${cursorClause}
-          ORDER BY created_at, id
-          LIMIT ${pageSize}
-        `,
-        query_params: { ...params, lastCreatedAt, lastId },
-        format: 'JSONEachRow',
-      })
-      .then((res) => res.json<{ id: string; created_at: string }>())
-
-    await deleteEventPropsByIds({ clickhouse, eventIds: rows.map((row) => row.id) })
-
-    hasMore = rows.length === pageSize
-    lastCreatedAt = rows.at(-1)?.created_at ?? lastCreatedAt
-    lastId = rows.at(-1)?.id ?? lastId
-  }
+  await forEachEventPage({
+    clickhouse,
+    where: `game_id = {gameId:UInt32} AND name = {eventName:String}${cutoffClause}`,
+    params,
+    pageSize,
+    onPage: (rows) =>
+      deleteEventPropsByIds({ clickhouse, gameId, eventIds: rows.map((row) => row.id) }),
+  })
 
   await clickhouse.command({
     query: `

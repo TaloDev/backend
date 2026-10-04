@@ -1,5 +1,6 @@
 import { EntityManager } from '@mikro-orm/mysql'
 import type { RejectedProp } from '../../../lib/props/sanitiseProps.js'
+import AdminAPIKey from '../../../entities/admin-api-key.js'
 import { GameActivityType } from '../../../entities/game-activity.js'
 import Player from '../../../entities/player.js'
 import User, { UserType } from '../../../entities/user.js'
@@ -26,7 +27,7 @@ type UpdatePlayerParams = {
     value: string | null
   }[]
   forwarded?: boolean
-  user?: User
+  actor?: User | AdminAPIKey
 }
 
 export async function updatePlayerHandler({
@@ -34,7 +35,7 @@ export async function updatePlayerHandler({
   player,
   props,
   forwarded,
-  user,
+  actor,
 }: UpdatePlayerParams) {
   const { updatedPlayer, rejectedProps } = await withRedisLock(
     { key: `locks:player-props:${player.id}` },
@@ -70,9 +71,9 @@ export async function updatePlayerHandler({
             rejectedProps = [...metaRejected, ...sizeRejected]
           }
 
-          if (!forwarded && user) {
+          if (!forwarded && actor) {
             createGameActivity(trx, {
-              actor: user,
+              actor,
               game: player.game,
               type: GameActivityType.PLAYER_PROPS_UPDATED,
               extra: {
@@ -122,13 +123,13 @@ export const updateRoute = protectedRoute({
   handler: (ctx) => {
     const { props } = ctx.state.validated.body
     const em = ctx.em
-    const user = ctx.state.user
+    const actor = ctx.state.user
 
     return updatePlayerHandler({
       em,
       player: ctx.state.player,
       props,
-      user,
+      actor,
     })
   },
 })

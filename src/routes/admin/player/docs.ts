@@ -31,7 +31,7 @@ const playerSample = {
 }
 
 export const listDocs = {
-  description: 'List the players in the game',
+  description: 'List players',
   samples: [
     {
       title: 'Sample response',
@@ -58,7 +58,7 @@ export const getDocs = {
 } satisfies RouteDocs
 
 export const updateDocs = {
-  description: "Update a player's props or dev build status",
+  description: "Update a player",
   samples: [
     {
       title: 'Sample request',

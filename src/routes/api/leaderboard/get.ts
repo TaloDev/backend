@@ -1,8 +1,8 @@
 import { APIKeyScope } from '../../../entities/api-key.js'
 import { apiRoute, withMiddleware } from '../../../lib/routing/router.js'
-import { entriesQuerySchema } from '../../../lib/validation/routes/leaderboards/entriesQuerySchema.js'
 import { requireScopes } from '../../../middleware/policy-middleware.js'
 import { listEntriesHandler } from '../../protected/leaderboard/entries.js'
+import { entriesQuerySchema } from '../../schemas/leaderboards/entriesQuerySchema.js'
 import { loadLeaderboard } from './common.js'
 import { getDocs } from './docs.js'
 

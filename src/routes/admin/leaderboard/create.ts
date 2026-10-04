@@ -1,8 +1,8 @@
 import { AdminAPIKeyScope } from '../../../entities/admin-api-key.js'
 import { adminRoute, withMiddleware } from '../../../lib/routing/router.js'
-import { createLeaderboardBodySchema } from '../../../lib/validation/routes/leaderboards/createLeaderboardBodySchema.js'
 import { requireAdminScopes } from '../../../middleware/policy-middleware.js'
 import { createLeaderboardHandler } from '../../protected/leaderboard/create.js'
+import { createLeaderboardBodySchema } from '../../schemas/leaderboards/createLeaderboardBodySchema.js'
 import { createDocs } from './docs.js'
 
 export const createLeaderboardAdminRoute = adminRoute({

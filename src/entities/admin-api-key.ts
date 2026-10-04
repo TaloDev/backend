@@ -7,6 +7,8 @@ export enum AdminAPIKeyScope {
   WRITE_STATS = 'write:stats',
   READ_LEADERBOARDS = 'read:leaderboards',
   WRITE_LEADERBOARDS = 'write:leaderboards',
+  READ_GAME_CONFIG = 'read:gameConfig',
+  WRITE_GAME_CONFIG = 'write:gameConfig',
   FULL_ACCESS = '*',
 }
 

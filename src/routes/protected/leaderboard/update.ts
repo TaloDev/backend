@@ -9,9 +9,9 @@ import triggerIntegrations from '../../../lib/integrations/triggerIntegrations.j
 import createGameActivity from '../../../lib/logging/createGameActivity.js'
 import { deferClearResponseCache } from '../../../lib/perf/responseCacheQueue.js'
 import { protectedRoute, withMiddleware } from '../../../lib/routing/router.js'
-import { updateLeaderboardBodySchema } from '../../../lib/validation/routes/leaderboards/updateLeaderboardBodySchema.js'
 import { loadGame } from '../../../middleware/game-middleware.js'
 import { archiveEntriesForLeaderboard } from '../../../tasks/archiveLeaderboardEntries.js'
+import { updateLeaderboardBodySchema } from '../../schemas/leaderboards/updateLeaderboardBodySchema.js'
 import { loadLeaderboard } from './common.js'
 
 export async function updateLeaderboardHandler({

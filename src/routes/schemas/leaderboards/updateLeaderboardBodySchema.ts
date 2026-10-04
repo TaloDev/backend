@@ -1,22 +1,19 @@
 import { z } from 'zod'
-import {
-  LeaderboardRefreshInterval,
-  LeaderboardSortMode,
-} from '../../../../entities/leaderboard.js'
+import { LeaderboardRefreshInterval, LeaderboardSortMode } from '../../../entities/leaderboard.js'
 
 const sortModeValues = Object.values(LeaderboardSortMode).join(', ')
 const refreshIntervalValues = Object.values(LeaderboardRefreshInterval).join(', ')
 
-export function createLeaderboardBodySchema(zod: typeof z) {
+export function updateLeaderboardBodySchema(zod: typeof z) {
   return zod.object({
-    internalName: zod.string().meta({ description: 'The internal name of the leaderboard' }),
-    name: zod.string().meta({ description: 'The display name of the leaderboard' }),
+    name: zod.string().optional().meta({ description: 'The display name of the leaderboard' }),
     sortMode: zod
       .enum(LeaderboardSortMode, {
         error: `Sort mode must be one of ${sortModeValues}`,
       })
+      .optional()
       .meta({ description: 'How entries are sorted: asc or desc' }),
-    unique: zod.boolean().meta({
+    unique: zod.boolean().optional().meta({
       description: 'Whether each player can only have a single entry',
     }),
     refreshInterval: zod

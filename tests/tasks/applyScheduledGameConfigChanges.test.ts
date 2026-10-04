@@ -5,6 +5,7 @@ import Prop from '../../src/entities/prop.js'
 import ScheduledGameConfigChange from '../../src/entities/scheduled-game-config-change.js'
 import { setSocketInstance } from '../../src/socket/socketRegistry.js'
 import { applyScheduledGameConfigChanges } from '../../src/tasks/applyScheduledGameConfigChanges.js'
+import { createAdminAPIKey } from '../utils/createAdminAPIKey.js'
 import createOrganisationAndGame from '../utils/createOrganisationAndGame.js'
 import createSocketIdentifyMessage from '../utils/createSocketIdentifyMessage.js'
 import createTestSocket from '../utils/createTestSocket.js'
@@ -92,6 +93,38 @@ describe('applyScheduledGameConfigChanges', () => {
     })
 
     expect(activity?.extra.display).toStrictEqual({ 'Updated props': 'xpRate: 2' })
+  })
+
+  it('should attribute an applied change to the admin API key that created it', async () => {
+    const { apiKey } = await createAdminAPIKey()
+
+    apiKey.game.props = [new Prop('xpRate', '1')]
+    await em.flush()
+
+    await em
+      .persist([
+        new ScheduledGameConfigChange(
+          apiKey.game,
+          apiKey,
+          'xpRate',
+          '2',
+          subMinutes(new Date(), 1),
+        ),
+      ])
+      .flush()
+
+    await applyScheduledGameConfigChanges()
+
+    const activity = await em.repo(GameActivity).findOneOrFail(
+      {
+        game: apiKey.game,
+        type: GameActivityType.GAME_PROPS_UPDATED,
+      },
+      { populate: ['adminAPIKey'] },
+    )
+
+    expect(activity.adminAPIKey?.id).toBe(apiKey.id)
+    expect(activity.user).toBeNull()
   })
 
   it('should skip changes that fail validation', async () => {

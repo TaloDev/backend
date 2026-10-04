@@ -4,8 +4,8 @@ import type Game from '../../../entities/game.js'
 import GameStat from '../../../entities/game-stat.js'
 import { withResponseCache } from '../../../lib/perf/responseCache.js'
 import { protectedRoute, withMiddleware } from '../../../lib/routing/router.js'
-import { listStatsQuerySchema } from '../../../lib/validation/routes/game-stats/listStatsQuerySchema.js'
 import { loadGame } from '../../../middleware/game-middleware.js'
+import { listStatsQuerySchema } from '../../schemas/game-stats/listStatsQuerySchema.js'
 
 export async function listStatsHandler({
   em,

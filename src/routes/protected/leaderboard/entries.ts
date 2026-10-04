@@ -8,8 +8,8 @@ import Player from '../../../entities/player.js'
 import { DEFAULT_PAGE_SIZE } from '../../../lib/pagination/itemsPerPage.js'
 import { withResponseCache } from '../../../lib/perf/responseCache.js'
 import { protectedRoute, withMiddleware } from '../../../lib/routing/router.js'
-import { entriesQuerySchema } from '../../../lib/validation/routes/leaderboards/entriesQuerySchema.js'
 import { loadGame } from '../../../middleware/game-middleware.js'
+import { entriesQuerySchema } from '../../schemas/leaderboards/entriesQuerySchema.js'
 import { loadLeaderboard } from './common.js'
 
 const itemsPerPage = DEFAULT_PAGE_SIZE

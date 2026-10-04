@@ -1,9 +1,9 @@
 import { AdminAPIKeyScope } from '../../../entities/admin-api-key.js'
 import { adminRoute, withMiddleware } from '../../../lib/routing/router.js'
 import { numericStringSchema } from '../../../lib/validation/numericStringSchema.js'
-import { entriesQuerySchema } from '../../../lib/validation/routes/leaderboards/entriesQuerySchema.js'
 import { requireAdminScopes } from '../../../middleware/policy-middleware.js'
 import { listEntriesHandler } from '../../protected/leaderboard/entries.js'
+import { entriesQuerySchema } from '../../schemas/leaderboards/entriesQuerySchema.js'
 import { loadLeaderboard } from './common.js'
 import { entriesDocs } from './docs.js'
 

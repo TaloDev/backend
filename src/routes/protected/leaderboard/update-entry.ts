@@ -8,9 +8,9 @@ import User from '../../../entities/user.js'
 import triggerIntegrations from '../../../lib/integrations/triggerIntegrations.js'
 import createGameActivity from '../../../lib/logging/createGameActivity.js'
 import { protectedRoute, withMiddleware } from '../../../lib/routing/router.js'
-import { updateLeaderboardEntryBodySchema } from '../../../lib/validation/routes/leaderboards/updateLeaderboardEntryBodySchema.js'
 import { loadGame } from '../../../middleware/game-middleware.js'
 import { userTypeGate } from '../../../middleware/policy-middleware.js'
+import { updateLeaderboardEntryBodySchema } from '../../schemas/leaderboards/updateLeaderboardEntryBodySchema.js'
 import { loadLeaderboard } from './common.js'
 
 export async function updateLeaderboardEntryHandler({

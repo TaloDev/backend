@@ -207,7 +207,7 @@ schema: (z) => ({
 
 Access validated data via `ctx.state.validated.body`, `.query`, `.route`, `.headers` - NOT `ctx.request.body`.
 
-Schema params get descriptions via `.meta({ description })`. Reuse shared schemas from `src/lib/validation/routes/[feature]/` and `src/routes/protected/[feature]/common.ts` where they exist (e.g. `createStatBodySchema`). Note: `z.object().partial()` strips meta — re-apply it (see `optionalFields` in `src/routes/protected/game-stat/common.ts`).
+Schema params get descriptions via `.meta({ description })`. Reuse shared schemas from `src/routes/schemas/[feature]/` and `src/routes/protected/[feature]/common.ts` where they exist (e.g. `createStatBodySchema`). Note: `z.object().partial()` strips meta — re-apply it (see `optionalFields` in `src/routes/protected/game-stat/common.ts`).
 
 Always wrap inline routes with the route helper when using `schema`:
 

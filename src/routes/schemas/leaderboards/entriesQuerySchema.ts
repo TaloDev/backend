@@ -1,6 +1,6 @@
 import z from 'zod'
-import { numericStringSchema } from '../../numericStringSchema.js'
-import { pageSchema } from '../../pageSchema.js'
+import { numericStringSchema } from '../../../lib/validation/numericStringSchema.js'
+import { pageSchema } from '../../../lib/validation/pageSchema.js'
 
 export const entriesQuerySchema = z.object({
   page: pageSchema.meta({ description: 'The current pagination index (starting at 0)' }),

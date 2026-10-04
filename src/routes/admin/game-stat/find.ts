@@ -1,8 +1,8 @@
 import { AdminAPIKeyScope } from '../../../entities/admin-api-key.js'
 import { adminRoute, withMiddleware } from '../../../lib/routing/router.js'
 import { numericStringSchema } from '../../../lib/validation/numericStringSchema.js'
-import { listStatsQuerySchema } from '../../../lib/validation/routes/game-stats/listStatsQuerySchema.js'
 import { requireAdminScopes } from '../../../middleware/policy-middleware.js'
+import { listStatsQuerySchema } from '../../schemas/game-stats/listStatsQuerySchema.js'
 import { loadStat } from './common.js'
 import { findDocs } from './docs.js'
 

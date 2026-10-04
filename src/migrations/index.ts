@@ -89,6 +89,7 @@ import { DropRedundantLeaderboardEntryIndexes } from './20260909211348DropRedund
 import { AddLeaderboardEntryPropKeyValueIndex } from './20260911052057AddLeaderboardEntryPropKeyValueIndex.js'
 import { AddPlayerAuthActivityEnrichmentColumn } from './20260913145315AddPlayerAuthActivityEnrichmentColumn.js'
 import { CreateScheduledGameConfigChangesTable } from './20260914074716CreateScheduledGameConfigChangesTable.js'
+import { AddAdminAPIKeyToScheduledGameConfigChanges } from './20261004085201AddAdminAPIKeyToScheduledGameConfigChanges.js'
 
 export default [
   InitialMigration,
@@ -182,4 +183,5 @@ export default [
   AddLeaderboardEntryPropKeyValueIndex,
   AddPlayerAuthActivityEnrichmentColumn,
   CreateScheduledGameConfigChangesTable,
+  AddAdminAPIKeyToScheduledGameConfigChanges,
 ]

@@ -29,7 +29,7 @@ async function applyGameChanges({
 
   for (const { change, reasons } of rejected) {
     createGameActivity(em, {
-      actor: change.createdByUser,
+      actor: change.getActor(),
       game,
       type: GameActivityType.GAME_PROPS_SCHEDULED_CHANGE_SKIPPED,
       extra: {
@@ -50,7 +50,7 @@ async function applyGameChanges({
 
     for (const change of applied) {
       createGameActivity(em, {
-        actor: change.createdByUser,
+        actor: change.getActor(),
         game,
         type: GameActivityType.GAME_PROPS_UPDATED,
         extra: {
@@ -81,12 +81,13 @@ export async function applyScheduledGameConfigChanges() {
   const em = orm.em.fork() as EntityManager
   const socket = getSocketInstance()
 
-  const due = await em
-    .repo(ScheduledGameConfigChange)
-    .find(
-      { applyAt: { $lte: new Date() } },
-      { orderBy: { applyAt: 'asc', id: 'asc' }, populate: ['game', 'createdByUser'] },
-    )
+  const due = await em.repo(ScheduledGameConfigChange).find(
+    { applyAt: { $lte: new Date() } },
+    {
+      orderBy: { applyAt: 'asc', id: 'asc' },
+      populate: ['game', 'createdByUser', 'createdByAdminAPIKey'],
+    },
+  )
 
   if (due.length === 0) {
     return

@@ -1,4 +1,5 @@
 import { EntityManager } from '@mikro-orm/mysql'
+import AdminAPIKey from '../../../../entities/admin-api-key.js'
 import { GameActivityType } from '../../../../entities/game-activity.js'
 import Game, { MAX_LIVE_CONFIG_VALUE_LENGTH } from '../../../../entities/game.js'
 import ScheduledGameConfigChange from '../../../../entities/scheduled-game-config-change.js'
@@ -11,12 +12,12 @@ import {
   RESERVED_PROP_KEY_MESSAGE,
 } from '../../../../lib/props/sanitiseProps.js'
 import { protectedRoute, withMiddleware } from '../../../../lib/routing/router.js'
-import { loadGame } from '../../../../middleware/game-middleware.js'
-import { userTypeGate } from '../../../../middleware/policy-middleware.js'
 import {
   createScheduledGameConfigChangesBodySchema,
   ScheduledGameConfigChangesData,
-} from './common.js'
+} from '../../../../lib/validation/routes/game-config/createScheduledGameConfigChangesBodySchema.js'
+import { loadGame } from '../../../../middleware/game-middleware.js'
+import { userTypeGate } from '../../../../middleware/policy-middleware.js'
 
 function validateChanges(game: Game, data: ScheduledGameConfigChangesData) {
   if (data.changes.some((change) => isReservedPropKey(change.key))) {
@@ -52,7 +53,7 @@ export async function createScheduledGameConfigChangesHandler({
 }: {
   em: EntityManager
   game: Game
-  actor: User
+  actor: User | AdminAPIKey
   data: ScheduledGameConfigChangesData
 }) {
   const error = validateChanges(game, data)

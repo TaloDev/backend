@@ -1,17 +1,13 @@
 import { Next } from 'koa'
 import ScheduledGameConfigChange from '../../../../entities/scheduled-game-config-change.js'
-import { ProtectedRouteContext } from '../../../../lib/routing/context.js'
-import { GameRouteState } from '../../../../middleware/game-middleware.js'
+import { AdminAPIRouteContext } from '../../../../lib/routing/context.js'
 
-export type ScheduledGameConfigChangeRouteState = GameRouteState & {
+type AdminScheduledGameConfigChangeRouteState = {
   scheduledGameConfigChange: ScheduledGameConfigChange
 }
 
-type ScheduledGameConfigChangeRouteContext =
-  ProtectedRouteContext<ScheduledGameConfigChangeRouteState>
-
 export async function loadScheduledGameConfigChange(
-  ctx: ScheduledGameConfigChangeRouteContext,
+  ctx: AdminAPIRouteContext<AdminScheduledGameConfigChangeRouteState>,
   next: Next,
 ) {
   const { changeId } = ctx.params as { changeId: string }

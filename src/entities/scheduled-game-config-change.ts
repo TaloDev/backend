@@ -1,4 +1,6 @@
 import { Entity, Index, ManyToOne, PrimaryKey, Property } from '@mikro-orm/decorators/es'
+import assert from 'node:assert'
+import AdminAPIKey from './admin-api-key.js'
 import Game from './game.js'
 import { MAX_KEY_LENGTH } from './prop.js'
 import User from './user.js'
@@ -22,18 +24,40 @@ export default class ScheduledGameConfigChange {
   @Index()
   applyAt!: Date
 
-  @ManyToOne(() => User)
-  createdByUser: User
+  @ManyToOne(() => User, { nullable: true })
+  createdByUser?: User
+
+  @ManyToOne(() => AdminAPIKey, { nullable: true })
+  createdByAdminAPIKey?: AdminAPIKey
 
   @Property()
   createdAt: Date = new Date()
 
-  constructor(game: Game, createdByUser: User, key: string, value: string | null, applyAt: Date) {
+  constructor(
+    game: Game,
+    actor: User | AdminAPIKey,
+    key: string,
+    value: string | null,
+    applyAt: Date,
+  ) {
     this.game = game
-    this.createdByUser = createdByUser
+
+    if (actor instanceof User) {
+      this.createdByUser = actor
+    } else {
+      this.createdByAdminAPIKey = actor
+    }
+
     this.key = key
     this.value = value
     this.applyAt = applyAt
+  }
+
+  getActor(): User | AdminAPIKey {
+    const actor = this.createdByUser ?? this.createdByAdminAPIKey
+    assert(actor)
+
+    return actor
   }
 
   toJSON() {

@@ -159,6 +159,8 @@
             "write:stats",
             "read:leaderboards",
             "write:leaderboards",
+            "read:gameConfig",
+            "write:gameConfig",
             "*"
           ],
           "mappedType": "text"
@@ -6749,13 +6751,30 @@
           "enumItems": [],
           "mappedType": "datetime"
         },
+        "created_by_admin_apikey_id": {
+          "name": "created_by_admin_apikey_id",
+          "type": "int",
+          "unsigned": true,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "integer"
+        },
         "created_by_user_id": {
           "name": "created_by_user_id",
           "type": "int",
           "unsigned": true,
           "autoincrement": false,
           "primary": false,
-          "nullable": false,
+          "nullable": true,
           "unique": false,
           "length": null,
           "precision": null,
@@ -6853,6 +6872,14 @@
           "unique": false
         },
         {
+          "columnNames": ["created_by_admin_apikey_id"],
+          "composite": false,
+          "constraint": false,
+          "keyName": "scheduled_game_config_change_created_by_admin_apikey_id_index",
+          "primary": false,
+          "unique": false
+        },
+        {
           "columnNames": ["created_by_user_id"],
           "composite": false,
           "constraint": false,
@@ -6872,12 +6899,21 @@
       "checks": [],
       "triggers": [],
       "foreignKeys": {
+        "scheduled_game_config_change_created_by_admin_apikey_id_foreign": {
+          "columnNames": ["created_by_admin_apikey_id"],
+          "constraintName": "scheduled_game_config_change_created_by_admin_apikey_id_foreign",
+          "localTableName": "scheduled_game_config_change",
+          "referencedColumnNames": ["id"],
+          "referencedTableName": "admin_apikey",
+          "deleteRule": "set null"
+        },
         "scheduled_game_config_change_created_by_user_id_foreign": {
           "columnNames": ["created_by_user_id"],
           "constraintName": "scheduled_game_config_change_created_by_user_id_foreign",
           "localTableName": "scheduled_game_config_change",
           "referencedColumnNames": ["id"],
-          "referencedTableName": "user"
+          "referencedTableName": "user",
+          "deleteRule": "set null"
         },
         "scheduled_game_config_change_game_id_foreign": {
           "columnNames": ["game_id"],

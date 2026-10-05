@@ -1,4 +1,5 @@
 import { EntityManager } from '@mikro-orm/mysql'
+import AdminAPIKey from '../../../entities/admin-api-key.js'
 import { GameActivityType } from '../../../entities/game-activity.js'
 import GameChannel from '../../../entities/game-channel.js'
 import PlayerAlias from '../../../entities/player-alias.js'
@@ -9,9 +10,9 @@ import createGameActivity from '../../../lib/logging/createGameActivity.js'
 import { filterProfaneProps } from '../../../lib/props/filterProfaneProps.js'
 import { mergeAndSanitiseProps } from '../../../lib/props/sanitiseProps.js'
 import { protectedRoute, withMiddleware } from '../../../lib/routing/router.js'
-import { updatePropsSchema } from '../../../lib/validation/propsSchema.js'
 import { loadGame } from '../../../middleware/game-middleware.js'
 import Socket from '../../../socket/index.js'
+import { updateChannelBodySchema } from '../../schemas/game-channels/updateChannelBodySchema.js'
 import { loadChannel } from './common.js'
 
 type UpdateChannelParams = {
@@ -20,7 +21,7 @@ type UpdateChannelParams = {
   includeDevData: boolean
   wss: Socket
   forwarded?: boolean
-  user?: User
+  actor?: User | AdminAPIKey
   name?: string
   ownerAliasId?: number | null
   props?: { key: string; value: string | null }[]
@@ -35,7 +36,7 @@ export async function updateChannelHandler({
   includeDevData,
   wss,
   forwarded,
-  user,
+  actor,
   name,
   ownerAliasId,
   props,
@@ -131,7 +132,7 @@ export async function updateChannelHandler({
       }
     }
 
-    if (!forwarded && user) {
+    if (!forwarded && actor) {
       const propertyValues: Record<string, unknown> = {
         name,
         props,
@@ -142,7 +143,7 @@ export async function updateChannelHandler({
       }
 
       createGameActivity(em, {
-        actor: user,
+        actor,
         game: channel.game,
         type: GameActivityType.GAME_CHANNEL_UPDATED,
         extra: {
@@ -182,14 +183,7 @@ export const updateRoute = protectedRoute({
   method: 'put',
   path: '/:id',
   schema: (z) => ({
-    body: z.object({
-      name: z.string().optional(),
-      ownerAliasId: z.number().nullable().optional(),
-      props: updatePropsSchema.optional(),
-      autoCleanup: z.boolean().optional(),
-      private: z.boolean().optional(),
-      temporaryMembership: z.boolean().optional(),
-    }),
+    body: updateChannelBodySchema(z),
   }),
   middleware: withMiddleware(loadGame, loadChannel),
   handler: async (ctx) => {
@@ -207,7 +201,7 @@ export const updateRoute = protectedRoute({
       channel: ctx.state.channel,
       includeDevData: ctx.state.includeDevData,
       wss: ctx.wss,
-      user: ctx.state.user,
+      actor: ctx.state.user,
       name,
       ownerAliasId,
       props,

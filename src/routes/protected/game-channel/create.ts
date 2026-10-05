@@ -1,4 +1,5 @@
 import { EntityManager } from '@mikro-orm/mysql'
+import AdminAPIKey from '../../../entities/admin-api-key.js'
 import { GameActivityType } from '../../../entities/game-activity.js'
 import GameChannel from '../../../entities/game-channel.js'
 import Game from '../../../entities/game.js'
@@ -10,9 +11,9 @@ import createGameActivity from '../../../lib/logging/createGameActivity.js'
 import { filterProfaneProps } from '../../../lib/props/filterProfaneProps.js'
 import { hardSanitiseProps } from '../../../lib/props/sanitiseProps.js'
 import { protectedRoute, withMiddleware } from '../../../lib/routing/router.js'
-import { createPropsSchema } from '../../../lib/validation/propsSchema.js'
 import { loadGame } from '../../../middleware/game-middleware.js'
 import Socket from '../../../socket/index.js'
+import { createChannelBodySchema } from '../../schemas/game-channels/createChannelBodySchema.js'
 
 type CreateChannelParams = {
   em: EntityManager
@@ -20,7 +21,7 @@ type CreateChannelParams = {
   includeDevData: boolean
   wss: Socket
   forwarded?: boolean
-  user?: User
+  actor?: User | AdminAPIKey
   alias?: PlayerAlias
   name: string
   ownerAliasId?: number | null
@@ -36,7 +37,7 @@ export async function createChannelHandler({
   includeDevData,
   wss,
   forwarded,
-  user,
+  actor,
   alias,
   name,
   ownerAliasId,
@@ -90,9 +91,9 @@ export async function createChannelHandler({
       }
     }
 
-    if (!forwarded && user) {
+    if (!forwarded && actor) {
       createGameActivity(em, {
-        actor: user,
+        actor,
         game,
         type: GameActivityType.GAME_CHANNEL_CREATED,
         extra: {
@@ -127,14 +128,7 @@ export async function createChannelHandler({
 export const createRoute = protectedRoute({
   method: 'post',
   schema: (z) => ({
-    body: z.object({
-      name: z.string(),
-      ownerAliasId: z.number().nullish(),
-      props: createPropsSchema.optional(),
-      autoCleanup: z.boolean().optional(),
-      private: z.boolean().optional(),
-      temporaryMembership: z.boolean().optional(),
-    }),
+    body: createChannelBodySchema(z),
   }),
   middleware: withMiddleware(loadGame),
   handler: async (ctx) => {
@@ -152,7 +146,7 @@ export const createRoute = protectedRoute({
       game: ctx.state.game,
       includeDevData: ctx.state.includeDevData,
       wss: ctx.wss,
-      user: ctx.state.user,
+      actor: ctx.state.user,
       name,
       ownerAliasId,
       props,

@@ -58,7 +58,7 @@ export const getDocs = {
 } satisfies RouteDocs
 
 export const updateDocs = {
-  description: "Update a player",
+  description: 'Update a player',
   samples: [
     {
       title: 'Sample request',

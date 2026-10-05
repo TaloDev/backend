@@ -1,4 +1,5 @@
 import { EntityManager } from '@mikro-orm/mysql'
+import AdminAPIKey from '../../../entities/admin-api-key.js'
 import { GameActivityType } from '../../../entities/game-activity.js'
 import GameChannel from '../../../entities/game-channel.js'
 import { UserType } from '../../../entities/user.js'
@@ -15,7 +16,7 @@ type DeleteChannelParams = {
   channel: GameChannel
   wss: Socket
   forwarded?: boolean
-  user?: User
+  actor?: User | AdminAPIKey
 }
 
 export async function deleteChannelHandler({
@@ -23,13 +24,13 @@ export async function deleteChannelHandler({
   channel,
   wss,
   forwarded,
-  user,
+  actor,
 }: DeleteChannelParams) {
   await channel.sendDeletedMessage(wss)
 
-  if (!forwarded && user) {
+  if (!forwarded && actor) {
     createGameActivity(em, {
-      actor: user,
+      actor,
       game: channel.game,
       type: GameActivityType.GAME_CHANNEL_DELETED,
       extra: {
@@ -58,7 +59,7 @@ export const deleteRoute = protectedRoute({
       em: ctx.em,
       channel: ctx.state.channel,
       wss: ctx.wss,
-      user: ctx.state.user,
+      actor: ctx.state.user,
     })
   },
 })

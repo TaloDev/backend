@@ -31,7 +31,9 @@ export async function listChannelsHandler({
   propValue,
 }: ListChannelsParams) {
   const searchComponent = search ? encodeURIComponent(search) : 'no-search'
-  const cacheKey = `${GameChannel.getSearchCacheKey(game)}-${searchComponent}-${page}-${propKey}-${propValue}`
+  const devDataComponent = includeDevData ? 'dev' : 'no-dev'
+  const visibilityComponent = forwarded ? 'public' : 'all'
+  const cacheKey = `${GameChannel.getSearchCacheKey(game)}-${searchComponent}-${page}-${propKey}-${propValue}-${devDataComponent}-${visibilityComponent}`
 
   return withResponseCache(
     {

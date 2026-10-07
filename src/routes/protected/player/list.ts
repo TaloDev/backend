@@ -16,6 +16,19 @@ type SearchPlayersParams = {
   forwarded?: boolean
 }
 
+const GROUP_FILTER_PREFIX = 'group:'
+const CHANNEL_FILTER_PREFIX = 'channel:'
+
+function isGroupFilter(part: string) {
+  return part.startsWith(GROUP_FILTER_PREFIX) && part.length > GROUP_FILTER_PREFIX.length
+}
+
+function isChannelFilter(part: string) {
+  return (
+    part.startsWith(CHANNEL_FILTER_PREFIX) && Number(part.slice(CHANNEL_FILTER_PREFIX.length)) > 0
+  )
+}
+
 const itemsPerPage = SMALL_PAGE_SIZE
 
 export async function listPlayersHandler({
@@ -38,47 +51,56 @@ export async function listPlayersHandler({
     }
 
     if (search) {
-      const searchConditions: FilterQuery<Player>[] = [
-        {
-          props: {
-            $some: {
-              value: {
-                $like: `%${search}%`,
-              },
-            },
-          },
-        },
-        {
-          aliases: {
-            identifier: {
-              $like: `%${search}%`,
-            },
-          },
-        },
-        {
-          id: {
-            $like: `%${search}%`,
-          },
-        },
-      ]
+      const splitSearch = search.split(' ')
 
-      if (game.displayNamePropKey) {
-        searchConditions.push({
-          props: {
-            $some: {
-              key: game.displayNamePropKey,
-              value: {
-                $like: `%${search}%`,
+      const textSearch = forwarded
+        ? search
+        : splitSearch.filter((part) => !isGroupFilter(part) && !isChannelFilter(part)).join(' ')
+
+      const searchConditions: FilterQuery<Player>[] = []
+
+      if (textSearch) {
+        searchConditions.push(
+          {
+            props: {
+              $some: {
+                value: {
+                  $like: `%${textSearch}%`,
+                },
               },
             },
           },
-        })
+          {
+            aliases: {
+              identifier: {
+                $like: `%${textSearch}%`,
+              },
+            },
+          },
+          {
+            id: {
+              $like: `%${textSearch}%`,
+            },
+          },
+        )
+
+        if (game.displayNamePropKey) {
+          searchConditions.push({
+            props: {
+              $some: {
+                key: game.displayNamePropKey,
+                value: {
+                  $like: `%${textSearch}%`,
+                },
+              },
+            },
+          })
+        }
       }
 
       if (!forwarded) {
-        const splitSearch = search.split(' ')
-        const groupFilters = splitSearch.filter((part) => part.startsWith('group:'))
-        const channelFilters = splitSearch.filter((part) => part.startsWith('channel:'))
+        const groupFilters = splitSearch.filter(isGroupFilter)
+        const channelFilters = splitSearch.filter(isChannelFilter)
 
         for (const filter of groupFilters) {
           const groupId = filter.split(':')[1]

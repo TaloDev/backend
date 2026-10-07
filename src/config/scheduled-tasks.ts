@@ -9,6 +9,7 @@ import cleanupSteamworksPlayerStats from '../tasks/cleanupSteamworksPlayerStats.
 import deleteInactivePlayers from '../tasks/deleteInactivePlayers.js'
 import deletePlayers from '../tasks/deletePlayers.js'
 import { drainApiKeyLastUsed } from '../tasks/drainApiKeyLastUsed.js'
+import { sendDowngradeNotices } from '../tasks/sendDowngradeNotices.js'
 
 function addScheduledTask(name: string, task: () => Promise<void>, pattern: string) {
   return createQueue(name, task).upsertJobScheduler(
@@ -41,6 +42,7 @@ export async function initScheduledTasks() {
       applyScheduledGameConfigChanges,
       '0 */1 * * * *',
     ), // every minute
+    addScheduledTask('send-downgrade-notices', sendDowngradeNotices, '0 0 3 * * *'), // 3am daily
   ]
 
   /* v8 ignore next 3 -- @preserve */

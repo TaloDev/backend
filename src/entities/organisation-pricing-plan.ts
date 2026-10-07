@@ -29,6 +29,12 @@ export default class OrganisationPricingPlan {
   @Property({ nullable: true })
   lastUsageWarningThreshold: number | null = null
 
+  @Property({ nullable: true })
+  downgradeNoticeSentAt: Date | null = null
+
+  @Property({ nullable: true })
+  downgradeReminderSentAt: Date | null = null
+
   @Property()
   createdAt: Date = new Date()
 

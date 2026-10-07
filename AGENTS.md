@@ -76,6 +76,7 @@ Admin API routes mirror the game-facing API routes and share logic with protecte
 - **Extract a shared handler** from the protected route (e.g. `createStatHandler`, `listLeaderboardsHandler`) that both the protected and admin routes call. The handler takes `actor: User | AdminAPIKey`, so the protected route passes `ctx.state.user` and the admin route passes `ctx.state.key`.
 - **Authorization** via `requireAdminScopes([AdminAPIKeyScope.X])` (see `src/middleware/policy-middleware.ts`).
 - **Game scoping** comes free from the admin API key middleware (`ctx.state.game` is the key's game). Resources loaded by id must be scoped to it (404 for cross-game), using a per-tree `common.ts` loader (e.g. `src/routes/admin/game-stat/common.ts`). Resource loaders are duplicated per route tree (protected/api/admin each have their own `loadStat`); only generic middleware lives in `src/middleware/`.
+- **Share schemas, never route files**: a schema reused by more than one route tree lives in `src/routes/schemas/<resource>/` and is imported by each tree (e.g. `src/routes/schemas/leaderboards/updateLeaderboardBodySchema.ts`). An admin route may import the shared _handler_ from the protected tree, but must never reach into protected for a loader, middleware or schema — those are per-tree route code.
 - **Docs are added as you go**: each feature dir has a `docs.ts` exporting `RouteDocs` constants wired via `docs:` on the route config. Schema params get descriptions via `.meta({ description })` (note: `z.object().partial()` strips meta — re-apply it, see `optionalFields` in `src/routes/protected/game-stat/common.ts`).
 - **Register** the feature router in `src/config/admin-api-routes.ts` with a `[feature]AdminRouter` factory and `docsKey`.
 
@@ -139,7 +140,8 @@ src/
 │   ├── api/                 # Game-facing API endpoints (/v1/*)
 │   ├── protected/           # Dashboard endpoints (/*)
 │   ├── admin/               # Admin API endpoints (/admin/v1/*)
-│   └── public/              # Unauthenticated endpoints (/public/*)
+│   ├── public/              # Unauthenticated endpoints (/public/*)
+│   └── schemas/             # Request/query schemas shared across route trees
 ├── middleware/              # Request pipeline processors
 ├── config/                  # Route registration, providers, scheduled tasks
 ├── lib/                     # Shared utilities

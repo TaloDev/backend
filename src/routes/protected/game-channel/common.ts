@@ -9,9 +9,15 @@ export async function loadChannel(ctx: GameChannelRouteContext, next: Next) {
   const { id } = ctx.params as { id: string }
   const em = ctx.em
 
-  const channel = await em.repo(GameChannel).findOne(Number(id), {
-    populate: ['members'],
-  })
+  const channel = await em.repo(GameChannel).findOne(
+    {
+      id: Number(id),
+      game: ctx.state.game,
+    },
+    {
+      populate: ['members'],
+    },
+  )
 
   if (!channel) {
     return ctx.throw(404, 'Game channel not found')

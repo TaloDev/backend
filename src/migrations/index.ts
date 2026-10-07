@@ -90,6 +90,7 @@ import { AddLeaderboardEntryPropKeyValueIndex } from './20260911052057AddLeaderb
 import { AddPlayerAuthActivityEnrichmentColumn } from './20260913145315AddPlayerAuthActivityEnrichmentColumn.js'
 import { CreateScheduledGameConfigChangesTable } from './20260914074716CreateScheduledGameConfigChangesTable.js'
 import { AddAdminAPIKeyToScheduledGameConfigChanges } from './20261004085201AddAdminAPIKeyToScheduledGameConfigChanges.js'
+import { AddDowngradeNoticeColumns } from './20261007190000AddDowngradeNoticeColumns.js'
 
 export default [
   InitialMigration,
@@ -184,4 +185,5 @@ export default [
   AddPlayerAuthActivityEnrichmentColumn,
   CreateScheduledGameConfigChangesTable,
   AddAdminAPIKeyToScheduledGameConfigChanges,
+  AddDowngradeNoticeColumns,
 ]

@@ -366,7 +366,7 @@ describe('Steamworks integration - sync leaderboards', () => {
 
     const steamworksLeaderboardId = randNumber({ min: 100_000, max: 999_999 })
 
-    const player = await new PlayerFactory([game]).withSteamAlias().one()
+    const player = await new PlayerFactory([game]).withSteamAlias().devBuild().one()
 
     const config = await new IntegrationConfigFactory().one()
     const integration = await new IntegrationFactory()
@@ -432,6 +432,7 @@ describe('Steamworks integration - sync leaderboards', () => {
       .repo(LeaderboardEntry)
       .findOne({ playerAlias: player.aliases[0] }, { refresh: true })
     expect(entry).toBeTruthy()
+    expect(entry?.devBuild).toBe(true)
 
     const steamworksEntry = await em
       .repo(SteamworksLeaderboardEntry)

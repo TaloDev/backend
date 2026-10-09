@@ -95,13 +95,13 @@ export default class Leaderboard {
     leaderboard: Leaderboard
     hidden: boolean
     deletedAt: Date | null
-    playerAlias?: { player: { devBuild: boolean } }
+    devBuild?: boolean
   } {
     return {
       leaderboard: this,
       hidden: false,
       deletedAt: null,
-      ...(includeDevData ? {} : { playerAlias: { player: { devBuild: false } } }),
+      ...(includeDevData ? {} : { devBuild: false }),
     }
   }
 
@@ -126,7 +126,6 @@ export default class Leaderboard {
         ...this.getBaseEntryFilters(includeDevData),
         score: asc ? { $lt: entry.score } : { $gt: entry.score },
       },
-      // the dev_build join makes the planner skip the order index
       { indexHint: `force index(${asc ? ascOrderIndexName : descOrderIndexName})` },
     )
 

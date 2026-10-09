@@ -2,6 +2,8 @@ import request from 'supertest'
 import GameActivity, { GameActivityType } from '../../../../src/entities/game-activity.js'
 import { DEV_BUILD_META_KEY } from '../../../../src/entities/player.js'
 import { UserType } from '../../../../src/entities/user.js'
+import LeaderboardEntryFactory from '../../../fixtures/LeaderboardEntryFactory.js'
+import LeaderboardFactory from '../../../fixtures/LeaderboardFactory.js'
 import PlayerFactory from '../../../fixtures/PlayerFactory.js'
 import createOrganisationAndGame from '../../../utils/createOrganisationAndGame.js'
 import createUserAndToken from '../../../utils/createUserAndToken.js'
@@ -54,6 +56,34 @@ describe('Player - toggle dev build', () => {
     await em.refresh(player)
     expect(player.devBuild).toBe(true)
     expect(player.props.getItems().some((p) => p.key === DEV_BUILD_META_KEY)).toBe(true)
+  })
+
+  it("should update the player's leaderboard entries when dev build is toggled", async () => {
+    const [organisation, game] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken({ type: UserType.ADMIN }, organisation)
+
+    const leaderboard = await new LeaderboardFactory([game]).one()
+    const player = await new PlayerFactory([game]).one()
+    const entry = await new LeaderboardEntryFactory(leaderboard, [player]).one()
+    await em.persist([leaderboard, player, entry]).flush()
+
+    await request(app)
+      .patch(`/games/${game.id}/players/${player.id}/toggle-dev-build`)
+      .send({ devBuild: true })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    await em.refresh(entry)
+    expect(entry.devBuild).toBe(true)
+
+    await request(app)
+      .patch(`/games/${game.id}/players/${player.id}/toggle-dev-build`)
+      .send({ devBuild: false })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    await em.refresh(entry)
+    expect(entry.devBuild).toBe(false)
   })
 
   it('should set devBuild to false and remove the META_DEV_BUILD prop when devBuild is false', async () => {

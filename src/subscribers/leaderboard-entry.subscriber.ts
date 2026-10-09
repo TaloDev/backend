@@ -17,6 +17,7 @@ export class LeaderboardEntrySubscriber implements EventSubscriber {
 
   beforeCreate(args: EventArgs<LeaderboardEntry>) {
     args.entity.propsDigest = this.createPropsDigest(args.entity)
+    args.entity.devBuild = args.entity.playerAlias.player.devBuild
   }
 
   async afterCreate(args: EventArgs<LeaderboardEntry>) {

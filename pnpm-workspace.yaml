@@ -3,3 +3,12 @@ allowBuilds:
   esbuild: true
   msgpackr-extract: true
   protobufjs: true
+minimumReleaseAgeExclude:
+  - '@mikro-orm/cli@7.2.5'
+  - '@mikro-orm/core@7.2.5'
+  - '@mikro-orm/decorators@7.2.5'
+  - '@mikro-orm/migrations@7.2.5'
+  - '@mikro-orm/mysql@7.2.5'
+  - '@mikro-orm/reflection@7.2.5'
+  - '@mikro-orm/sql@7.2.5'
+  - mikro-orm@7.2.5

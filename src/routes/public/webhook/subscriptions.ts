@@ -84,6 +84,10 @@ async function handleSubscriptionUpdated(
 }
 
 async function handleNewInvoice(ctx: PublicRouteContext, invoice: Stripe.Invoice) {
+  if (invoice.amount_due === 0) {
+    return
+  }
+
   const orgPlan = await getOrganisationPricingPlan(ctx, invoice.customer as string)
   await queueEmail(getGlobalQueue('email'), new PlanInvoice(orgPlan.organisation, invoice))
 }

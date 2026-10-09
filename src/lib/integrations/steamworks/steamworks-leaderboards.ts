@@ -209,8 +209,6 @@ function createLeaderboardEntry({
   const entry = new LeaderboardEntry(leaderboardMapping.leaderboard)
   entry.playerAlias = playerAlias
   entry.score = score
-  // TODO: remove after mikro-orm v7 upgrade
-  entry.propsDigest = LeaderboardEntry.createPropsDigest([])
 
   const steamworksEntry = new SteamworksLeaderboardEntry({
     steamworksLeaderboard: leaderboardMapping,

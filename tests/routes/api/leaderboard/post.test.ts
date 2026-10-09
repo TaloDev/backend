@@ -224,11 +224,11 @@ describe('Leaderboard API - create', () => {
     expect(res.body.updated).toBe(false)
   })
 
-  it('should return the correct position if there are dev entries but no dev data header sent', async () => {
+  it('should only count dev entries towards the position when dev data is included', async () => {
     const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_LEADERBOARDS])
     const player = await new PlayerFactory([apiKey.game]).one()
     const leaderboard = await new LeaderboardFactory([apiKey.game])
-      .state(() => ({ unique: false, sortMode: LeaderboardSortMode.ASC }))
+      .state(() => ({ unique: true, sortMode: LeaderboardSortMode.ASC }))
       .one()
 
     const devPlayer = await new PlayerFactory([apiKey.game]).devBuild().one()
@@ -238,7 +238,8 @@ describe('Leaderboard API - create', () => {
 
     await em.persist([leaderboard, player, devEntry]).flush()
 
-    const res = await request(app)
+    // the dev entry is filtered out, so the live entry is first
+    let res = await request(app)
       .post(`/v1/leaderboards/${leaderboard.internalName}/entries`)
       .send({ score: 300 })
       .auth(token, { type: 'bearer' })
@@ -246,6 +247,55 @@ describe('Leaderboard API - create', () => {
       .expect(200)
 
     expect(res.body.entry.position).toBe(0)
+
+    // the dev entry scores lower on an asc board, so it sorts before the live entry
+    res = await request(app)
+      .post(`/v1/leaderboards/${leaderboard.internalName}/entries`)
+      .send({ score: 300 })
+      .auth(token, { type: 'bearer' })
+      .set('x-talo-alias', String(player.aliases[0].id))
+      .set('x-talo-include-dev-data', '1')
+      .expect(200)
+
+    expect(res.body.entry.position).toBe(1)
+  })
+
+  it('should mark entries created by dev build players as dev builds', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_LEADERBOARDS])
+    const leaderboard = await new LeaderboardFactory([apiKey.game]).notUnique().one()
+    const devPlayer = await new PlayerFactory([apiKey.game]).devBuild().one()
+    await em.persist([leaderboard, devPlayer]).flush()
+
+    await request(app)
+      .post(`/v1/leaderboards/${leaderboard.internalName}/entries`)
+      .send({ score: 300 })
+      .auth(token, { type: 'bearer' })
+      .set('x-talo-alias', String(devPlayer.aliases[0].id))
+      .expect(200)
+
+    const entry = await em
+      .repo(LeaderboardEntry)
+      .findOneOrFail({ leaderboard, playerAlias: devPlayer.aliases[0] })
+    expect(entry.devBuild).toBe(true)
+  })
+
+  it('should not mark entries created by regular players as dev builds', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_LEADERBOARDS])
+    const leaderboard = await new LeaderboardFactory([apiKey.game]).notUnique().one()
+    const player = await new PlayerFactory([apiKey.game]).one()
+    await em.persist([leaderboard, player]).flush()
+
+    await request(app)
+      .post(`/v1/leaderboards/${leaderboard.internalName}/entries`)
+      .send({ score: 300 })
+      .auth(token, { type: 'bearer' })
+      .set('x-talo-alias', String(player.aliases[0].id))
+      .expect(200)
+
+    const entry = await em
+      .repo(LeaderboardEntry)
+      .findOneOrFail({ leaderboard, playerAlias: player.aliases[0] })
+    expect(entry.devBuild).toBe(false)
   })
 
   it('should set the createdAt for the entry to the continuity date', async () => {

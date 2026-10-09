@@ -64,4 +64,48 @@ describe('Webhook - invoice finalized', () => {
 
     expect(sendMock).toHaveBeenCalledWith(new PlanInvoice(organisation, invoice).getConfig())
   })
+
+  it('should not send an invoice email when there is no balance due', async () => {
+    const product = (await stripe.products.list()).data[0]
+    const plan = await new PricingPlanFactory().state(() => ({ stripeId: product.id })).one()
+
+    const [organisation] = await createOrganisationAndGame({}, {}, plan)
+
+    // if an organisation downgrades to the free plan, Stripe still invoices for $0
+    const invoice = { ...(await stripe.invoices.list()).data[0], amount_due: 0, total: 0 }
+
+    organisation.pricingPlan.stripeCustomerId = invoice.customer as string
+    await em.flush()
+
+    const payload = JSON.stringify(
+      {
+        id: v4(),
+        object: 'event',
+        data: {
+          object: invoice,
+        },
+        api_version: '2020-08-27',
+        created: Date.now(),
+        livemode: false,
+        pending_webhooks: 0,
+        request: null,
+        type: 'invoice.finalized',
+      },
+      null,
+      2,
+    )
+
+    const header = stripe.webhooks.generateTestHeaderString({
+      payload,
+      secret: process.env.STRIPE_WEBHOOK_SECRET!,
+    })
+
+    await request(app)
+      .post('/public/webhooks/subscriptions')
+      .set('stripe-signature', header)
+      .send(payload)
+      .expect(204)
+
+    expect(sendMock).not.toHaveBeenCalled()
+  })
 })

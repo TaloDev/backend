@@ -195,6 +195,47 @@ describe('Player - list', () => {
     expect(res.body.players).toHaveLength(1)
   })
 
+  it('should not match players by the text of a group filter', async () => {
+    const [organisation, game] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken({ organisation })
+
+    const player = await new PlayerFactory([game])
+      .state(() => ({ lastSeenAt: new Date(2022, 1, 1) }))
+      .one()
+
+    const dateRule = new PlayerGroupRule(PlayerGroupRuleName.LT, 'lastSeenAt')
+    dateRule.castType = PlayerGroupRuleCastType.DATETIME
+    dateRule.operands = ['2023-01-01']
+
+    const group = await new PlayerGroupFactory()
+      .construct(game)
+      .state(() => ({ rules: [dateRule] }))
+      .one()
+
+    // this player only matches if the "group:" filter is treated as text to search for
+    // text searches are significantly slower than group searches, so we need to
+    // make sure we're using the correct type of search
+    const imposter = await new PlayerFactory([game])
+      .state((player) => ({
+        props: new Collection<PlayerProp>(player, [
+          new PlayerProp(player, 'about', `group:${group.id}`),
+        ]),
+      }))
+      .one()
+
+    await em.persist([player, imposter, group]).flush()
+    await group.checkMembership(em)
+
+    const res = await request(app)
+      .get(`/games/${game.id}/players`)
+      .query({ search: `group:${group.id}`, page: 0 })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    expect(res.body.players).toHaveLength(1)
+    expect(res.body.players[0].id).toBe(player.id)
+  })
+
   it('should filter players by channels', async () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({ organisation })

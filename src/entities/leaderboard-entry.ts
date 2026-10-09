@@ -8,12 +8,12 @@ import PlayerAlias from './player-alias.js'
 // asc leaderboard entry ordering
 // deleted_at sits in the prefix so soft-deleted rows never get scanned
 export const ascOrderIndexName = 'idx_leaderboardentry_order_asc'
-const ascOrderIndexExpr = `alter table \`leaderboard_entry\` add index \`${ascOrderIndexName}\`(\`leaderboard_id\`, \`hidden\`, \`deleted_at\`, \`score\`, \`created_at\`, \`id\`)`
+const ascOrderIndexExpr = `alter table \`leaderboard_entry\` add index \`${ascOrderIndexName}\`(\`leaderboard_id\`, \`hidden\`, \`deleted_at\`, \`dev_build\`, \`score\`, \`created_at\`, \`id\`)`
 
 // desc leaderboard entry ordering - a reverse scan of the asc index would also reverse
 // the createdAt/id tie-breaks, so score needs an explicit descending index part
 export const descOrderIndexName = 'idx_leaderboardentry_order_desc'
-const descOrderIndexExpr = `alter table \`leaderboard_entry\` add index \`${descOrderIndexName}\`(\`leaderboard_id\`, \`hidden\`, \`deleted_at\`, \`score\` desc, \`created_at\`, \`id\`)`
+const descOrderIndexExpr = `alter table \`leaderboard_entry\` add index \`${descOrderIndexName}\`(\`leaderboard_id\`, \`hidden\`, \`deleted_at\`, \`dev_build\`, \`score\` desc, \`created_at\`, \`id\`)`
 
 @Entity()
 @Index({ name: ascOrderIndexName, expression: ascOrderIndexExpr })
@@ -39,6 +39,9 @@ export default class LeaderboardEntry {
 
   @Property({ default: false })
   hidden!: boolean
+
+  @Property({ default: false })
+  devBuild!: boolean
 
   @Index()
   @Property()

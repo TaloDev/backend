@@ -161,6 +161,10 @@
             "write:leaderboards",
             "read:gameConfig",
             "write:gameConfig",
+            "read:players",
+            "write:players",
+            "read:gameChannels",
+            "write:gameChannels",
             "*"
           ],
           "mappedType": "text"
@@ -4247,6 +4251,23 @@
           "enumItems": [],
           "mappedType": "datetime"
         },
+        "dev_build": {
+          "name": "dev_build",
+          "type": "tinyint(1)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": "false",
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "boolean"
+        },
         "hidden": {
           "name": "hidden",
           "type": "tinyint(1)",
@@ -4383,7 +4404,7 @@
           "keyName": "idx_leaderboardentry_order_asc",
           "primary": false,
           "unique": false,
-          "expression": "alter table `leaderboard_entry` add index `idx_leaderboardentry_order_asc`(`leaderboard_id`, `hidden`, `deleted_at`, `score`, `created_at`, `id`)"
+          "expression": "alter table `leaderboard_entry` add index `idx_leaderboardentry_order_asc`(`leaderboard_id`, `hidden`, `deleted_at`, `dev_build`, `score`, `created_at`, `id`)"
         },
         {
           "columnNames": [],
@@ -4392,7 +4413,7 @@
           "keyName": "idx_leaderboardentry_order_desc",
           "primary": false,
           "unique": false,
-          "expression": "alter table `leaderboard_entry` add index `idx_leaderboardentry_order_desc`(`leaderboard_id`, `hidden`, `deleted_at`, `score` desc, `created_at`, `id`)"
+          "expression": "alter table `leaderboard_entry` add index `idx_leaderboardentry_order_desc`(`leaderboard_id`, `hidden`, `deleted_at`, `dev_build`, `score` desc, `created_at`, `id`)"
         },
         {
           "columnNames": ["leaderboard_id"],

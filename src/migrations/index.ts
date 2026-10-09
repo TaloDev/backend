@@ -91,6 +91,7 @@ import { AddPlayerAuthActivityEnrichmentColumn } from './20260913145315AddPlayer
 import { CreateScheduledGameConfigChangesTable } from './20260914074716CreateScheduledGameConfigChangesTable.js'
 import { AddAdminAPIKeyToScheduledGameConfigChanges } from './20261004085201AddAdminAPIKeyToScheduledGameConfigChanges.js'
 import { AddDowngradeNoticeColumns } from './20261007190000AddDowngradeNoticeColumns.js'
+import { AddDevBuildToLeaderboardEntry } from './20261009113941AddDevBuildToLeaderboardEntry.js'
 
 export default [
   InitialMigration,
@@ -186,4 +187,5 @@ export default [
   CreateScheduledGameConfigChangesTable,
   AddAdminAPIKeyToScheduledGameConfigChanges,
   AddDowngradeNoticeColumns,
+  AddDevBuildToLeaderboardEntry,
 ]

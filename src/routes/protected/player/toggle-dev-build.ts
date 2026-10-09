@@ -1,7 +1,8 @@
-import { EntityManager } from '@mikro-orm/mysql'
+import { EntityManager, TransactionPropagation } from '@mikro-orm/mysql'
 import type Game from '../../../entities/game.js'
 import AdminAPIKey from '../../../entities/admin-api-key.js'
 import { GameActivityType } from '../../../entities/game-activity.js'
+import LeaderboardEntry from '../../../entities/leaderboard-entry.js'
 import Player, { DEV_BUILD_META_KEY } from '../../../entities/player.js'
 import User from '../../../entities/user.js'
 import createGameActivity from '../../../lib/logging/createGameActivity.js'
@@ -24,35 +25,44 @@ export async function toggleDevBuildHandler({
   actor,
   devBuild,
 }: ToggleDevBuildParams) {
-  if (devBuild) {
-    player.markAsDevBuild()
-  } else {
-    player.devBuild = false
-    player.removeProp(DEV_BUILD_META_KEY)
-  }
+  return em.transactional(
+    async (trx) => {
+      if (devBuild) {
+        player.markAsDevBuild()
+      } else {
+        player.devBuild = false
+        player.removeProp(DEV_BUILD_META_KEY)
+      }
 
-  createGameActivity(em, {
-    actor,
-    game,
-    type: GameActivityType.PLAYER_DEV_BUILD_TOGGLED,
-    extra: {
-      playerId: player.id,
-      devBuild,
-      display: {
-        Player: player.id,
-        'Dev build': devBuild ? 'true' : 'false',
-      },
+      createGameActivity(trx, {
+        actor,
+        game,
+        type: GameActivityType.PLAYER_DEV_BUILD_TOGGLED,
+        extra: {
+          playerId: player.id,
+          devBuild,
+          display: {
+            Player: player.id,
+            'Dev build': devBuild ? 'true' : 'false',
+          },
+        },
+      })
+
+      await trx.flush()
+
+      await trx
+        .repo(LeaderboardEntry)
+        .nativeUpdate({ playerAlias: { player: player.id } }, { devBuild })
+
+      return {
+        status: 200,
+        body: {
+          player,
+        },
+      }
     },
-  })
-
-  await em.flush()
-
-  return {
-    status: 200,
-    body: {
-      player,
-    },
-  }
+    { propagation: TransactionPropagation.REQUIRED },
+  )
 }
 
 export const toggleDevBuildRoute = protectedRoute({

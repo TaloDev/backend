@@ -13,6 +13,8 @@ import GameSaveFactory from '../../../fixtures/GameSaveFactory.js'
 import GameStatFactory from '../../../fixtures/GameStatFactory.js'
 import IntegrationConfigFactory from '../../../fixtures/IntegrationConfigFactory.js'
 import IntegrationFactory from '../../../fixtures/IntegrationFactory.js'
+import LeaderboardEntryFactory from '../../../fixtures/LeaderboardEntryFactory.js'
+import LeaderboardFactory from '../../../fixtures/LeaderboardFactory.js'
 import PlayerAliasFactory from '../../../fixtures/PlayerAliasFactory.js'
 import PlayerFactory from '../../../fixtures/PlayerFactory.js'
 import PlayerGameStatFactory from '../../../fixtures/PlayerGameStatFactory.js'
@@ -146,6 +148,30 @@ describe('Player API - merge', () => {
 
     const mergedPlayer = await em.refresh(player2)
     expect(mergedPlayer).toBeNull()
+  })
+
+  it("should update player2's leaderboard entries to player1's dev build status", async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([
+      APIKeyScope.READ_PLAYERS,
+      APIKeyScope.WRITE_PLAYERS,
+    ])
+
+    const player1 = await new PlayerFactory([apiKey.game]).withSteamAlias().one()
+    const player2 = await new PlayerFactory([apiKey.game]).withUsernameAlias().devBuild().one()
+
+    const leaderboard = await new LeaderboardFactory([apiKey.game]).notUnique().one()
+    const entry = await new LeaderboardEntryFactory(leaderboard, [player2]).one()
+    await em.persist([player1, player2, leaderboard, entry]).flush()
+
+    await request(app)
+      .post('/v1/players/merge')
+      .set('x-talo-alias', String(player1.aliases[0].id))
+      .send({ playerId1: player1.id, playerId2: player2.id })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    await em.refresh(entry)
+    expect(entry.devBuild).toBe(false)
   })
 
   it("should correctly replace properties in player1 with player2's", async () => {

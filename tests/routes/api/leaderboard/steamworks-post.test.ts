@@ -4,6 +4,7 @@ import AxiosMockAdapter from 'axios-mock-adapter'
 import request from 'supertest'
 import { APIKeyScope } from '../../../../src/entities/api-key.js'
 import { IntegrationType } from '../../../../src/entities/integration.js'
+import LeaderboardEntry from '../../../../src/entities/leaderboard-entry.js'
 import SteamworksIntegrationEvent from '../../../../src/entities/steamworks-integration-event.js'
 import { SteamworksLeaderboardEntry } from '../../../../src/entities/steamworks-leaderboard-entry.js'
 import SteamworksLeaderboardMapping from '../../../../src/entities/steamworks-leaderboard-mapping.js'
@@ -72,6 +73,45 @@ describe('Leaderboard API - steamworks create', () => {
       .repo(SteamworksLeaderboardEntry)
       .findOne({ steamworksLeaderboard: mapping })
     expect(steamworksEntry).toBeTruthy()
+  })
+
+  it('should store the dev build flag on entries for dev build steam players', async () => {
+    axiosMock
+      .onPost('https://partner.steam-api.com/ISteamLeaderboards/SetLeaderboardScore/v1')
+      .reply(200, { result: { result: 1 } })
+
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_LEADERBOARDS])
+
+    const leaderboard = await new LeaderboardFactory([apiKey.game]).notUnique().one()
+    const player = await new PlayerFactory([apiKey.game]).withSteamAlias().devBuild().one()
+
+    const config = await new IntegrationConfigFactory()
+      .state(() => ({ syncLeaderboards: true }))
+      .one()
+    const integration = await new IntegrationFactory()
+      .construct(IntegrationType.STEAMWORKS, apiKey.game, config)
+      .one()
+    const mapping = new SteamworksLeaderboardMapping({
+      steamworksLeaderboardId: randNumber({ min: 100_000, max: 999_999 }),
+      leaderboard,
+      integration,
+    })
+
+    await em.persist([integration, leaderboard, player, mapping]).flush()
+
+    await request(app)
+      .post(`/v1/leaderboards/${leaderboard.internalName}/entries`)
+      .send({ score: 300 })
+      .auth(token, { type: 'bearer' })
+      .set('x-talo-alias', String(player.aliases[0].id))
+      .expect(200)
+
+    const entry = await em
+      .repo(LeaderboardEntry)
+      .findOneOrFail({ leaderboard, playerAlias: player.aliases[0] })
+    expect(entry.devBuild).toBe(true)
+
+    axiosMock.reset()
   })
 
   it('should create a leaderboard entry in steamworks for every integration', async () => {

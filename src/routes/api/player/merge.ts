@@ -5,6 +5,7 @@ import { uniqWith } from 'lodash-es'
 import { APIKeyScope } from '../../../entities/api-key.js'
 import GameSave from '../../../entities/game-save.js'
 import Game from '../../../entities/game.js'
+import LeaderboardEntry from '../../../entities/leaderboard-entry.js'
 import PlayerAlias, { PlayerAliasService } from '../../../entities/player-alias.js'
 import { PlayerAuthActivityType } from '../../../entities/player-auth-activity.js'
 import PlayerGameStat from '../../../entities/player-game-stat.js'
@@ -209,6 +210,12 @@ export const mergeRoute = apiRoute({
 
       await trx.repo(GameSave).nativeUpdate({ player: player2 }, { player: player1 })
       await trx.repo(PlayerAlias).nativeUpdate({ player: player2 }, { player: player1 })
+      await trx
+        .repo(LeaderboardEntry)
+        .nativeUpdate(
+          { playerAlias: { player: player1 }, devBuild: { $ne: player1.devBuild } },
+          { devBuild: player1.devBuild },
+        )
       await trx.repo(Player).nativeDelete(player2)
 
       await ctx.clickhouse.command({

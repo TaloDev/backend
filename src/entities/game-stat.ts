@@ -23,6 +23,38 @@ type PlayerValueMetrics = {
   averageValue: number
 }
 
+const GLOBAL_VALUE_AGGREGATES = `
+        count() as rawCount,
+        min(global_value) as minGlobalValue,
+        max(global_value) as maxGlobalValue,
+        median(global_value) as medianGlobalValue,
+        avg(global_value) as averageGlobalValue,
+        avg(change) as averageChange`
+
+const PLAYER_VALUE_AGGREGATES = `
+        min(value) as minValue,
+        max(value) as maxValue,
+        median(value) as medianValue,
+        avg(value) as averageValue`
+
+type GlobalValueRow = {
+  rawCount: string | number
+  minGlobalValue: number | null
+  maxGlobalValue: number | null
+  medianGlobalValue: number | null
+  averageGlobalValue: number | null
+  averageChange: number | null
+}
+
+type PlayerValueRow = {
+  minValue: number | null
+  maxValue: number | null
+  medianValue: number | null
+  averageValue: number | null
+}
+
+type StatMetricsRow = GlobalValueRow & PlayerValueRow & { game_stat_id: number }
+
 @Entity()
 @Index({ properties: ['game', 'internalName'] })
 export default class GameStat {
@@ -132,6 +164,41 @@ export default class GameStat {
     this.globalValue = Number(result?.total ?? 0)
   }
 
+  private static buildMetricsWhere({
+    gameStatFilter,
+    startDate,
+    endDate,
+    aliasIds,
+    includeDevData,
+  }: {
+    gameStatFilter: string
+    startDate?: string
+    endDate?: string
+    aliasIds?: number[]
+    includeDevData?: boolean
+  }) {
+    const conditions = [gameStatFilter]
+
+    if (startDate) {
+      // when using YYYY-MM-DD, use the start of the day
+      const start = startDate.length === 10 ? startOfDay(new Date(startDate)) : new Date(startDate)
+      conditions.push(`created_at >= '${formatDateForClickHouse(start)}'`)
+    }
+    if (endDate) {
+      // when using YYYY-MM-DD, use the end of the day
+      const end = endDate.length === 10 ? endOfDay(new Date(endDate)) : new Date(endDate)
+      conditions.push(`created_at <= '${formatDateForClickHouse(end)}'`)
+    }
+    if (aliasIds) {
+      conditions.push(`player_alias_id IN (${aliasIds.join(', ')})`)
+    }
+    if (!includeDevData) {
+      conditions.push('dev_build = false')
+    }
+
+    return `WHERE ${conditions.join(' AND ')}`
+  }
+
   async buildMetricsWhereConditions({
     startDate,
     endDate,
@@ -143,28 +210,20 @@ export default class GameStat {
     player?: Player
     includeDevData?: boolean
   }) {
-    let whereConditions = `WHERE game_stat_id = ${this.id}`
+    let aliasIds: number[] | undefined
 
-    if (startDate) {
-      // when using YYYY-MM-DD, use the start of the day
-      const start = startDate.length === 10 ? startOfDay(new Date(startDate)) : new Date(startDate)
-      whereConditions += ` AND created_at >= '${formatDateForClickHouse(start)}'`
-    }
-    if (endDate) {
-      // when using YYYY-MM-DD, use the end of the day
-      const end = endDate.length === 10 ? endOfDay(new Date(endDate)) : new Date(endDate)
-      whereConditions += ` AND created_at <= '${formatDateForClickHouse(end)}'`
-    }
     if (player) {
       await player.aliases.loadItems({ ref: true })
-      const aliasIds = player.aliases.getIdentifiers()
-      whereConditions += ` AND player_alias_id IN (${aliasIds.join(', ')})`
-    }
-    if (!includeDevData) {
-      whereConditions += ' AND dev_build = false'
+      aliasIds = player.aliases.getIdentifiers()
     }
 
-    return whereConditions
+    return GameStat.buildMetricsWhere({
+      gameStatFilter: `game_stat_id = ${this.id}`,
+      startDate,
+      endDate,
+      aliasIds,
+      includeDevData,
+    })
   }
 
   async loadMetrics({
@@ -199,45 +258,97 @@ export default class GameStat {
     whereConditions: string,
   ): Promise<[number, GlobalValueMetrics]> {
     const query = `
-      SELECT
-        count() as rawCount,
-        min(global_value) as minValue,
-        max(global_value) as maxValue,
-        median(global_value) as medianValue,
-        avg(global_value) as averageValue,
-        avg(change) as averageChange
+      SELECT${GLOBAL_VALUE_AGGREGATES}
       FROM player_game_stat_snapshots
       ${whereConditions}
     `
 
-    const res = await clickhouse
+    const rows = await clickhouse
       .query({
         query: query,
         format: 'JSONEachRow',
       })
-      .then((res) =>
-        res.json<{
-          rawCount: string | number
-          minValue: number
-          maxValue: number
-          medianValue: number | null
-          averageValue: number | null
-          averageChange: number | null
-        }>(),
-      )
+      .then((res) => res.json<GlobalValueRow>())
 
-    const { rawCount, minValue, maxValue, medianValue, averageValue, averageChange } = res[0]
+    return [Number(rows[0].rawCount), GameStat.buildGlobalValueMetrics(rows[0], this.defaultValue)]
+  }
 
-    return [
-      Number(rawCount),
-      {
-        minValue: minValue || this.defaultValue,
-        maxValue: maxValue || this.defaultValue,
-        medianValue: medianValue ?? this.defaultValue,
-        averageValue: averageValue ?? this.defaultValue,
-        averageChange: averageChange ?? 0,
-      },
-    ]
+  private static buildGlobalValueMetrics(
+    row: GlobalValueRow | undefined,
+    defaultValue: number,
+  ): GlobalValueMetrics {
+    return {
+      minValue: row?.minGlobalValue || defaultValue,
+      maxValue: row?.maxGlobalValue || defaultValue,
+      medianValue: row?.medianGlobalValue ?? defaultValue,
+      averageValue: row?.averageGlobalValue ?? defaultValue,
+      averageChange: row?.averageChange ?? 0,
+    }
+  }
+
+  private static buildPlayerValueMetrics(
+    row: PlayerValueRow | undefined,
+    defaultValue: number,
+  ): PlayerValueMetrics {
+    return {
+      minValue: row?.minValue || defaultValue,
+      maxValue: row?.maxValue || defaultValue,
+      medianValue: row?.medianValue ?? defaultValue,
+      averageValue: row?.averageValue ?? defaultValue,
+    }
+  }
+
+  static async loadMetricsForStats({
+    stats,
+    clickhouse,
+    startDate,
+    endDate,
+    includeDevData,
+  }: {
+    stats: GameStat[]
+    clickhouse: ClickHouseClient
+    startDate?: string
+    endDate?: string
+    includeDevData?: boolean
+  }) {
+    if (stats.length === 0) {
+      return
+    }
+
+    const whereConditions = GameStat.buildMetricsWhere({
+      gameStatFilter: 'game_stat_id IN {ids:Array(UInt32)}',
+      startDate,
+      endDate,
+      includeDevData,
+    })
+
+    const query = `
+      SELECT
+        game_stat_id,${GLOBAL_VALUE_AGGREGATES},${PLAYER_VALUE_AGGREGATES}
+      FROM player_game_stat_snapshots
+      ${whereConditions}
+      GROUP BY game_stat_id
+    `
+
+    const rows = await clickhouse
+      .query({
+        query,
+        query_params: { ids: stats.map((stat) => stat.id) },
+        format: 'JSONEachRow',
+      })
+      .then((res) => res.json<StatMetricsRow>())
+
+    const rowsByStatId = new Map(rows.map((row) => [row.game_stat_id, row]))
+
+    stats.forEach((stat) => {
+      const row = rowsByStatId.get(stat.id)
+
+      stat.metrics = {
+        globalCount: Number(row?.rawCount ?? 0),
+        globalValue: GameStat.buildGlobalValueMetrics(row, stat.defaultValue),
+        playerValue: GameStat.buildPlayerValueMetrics(row, stat.defaultValue),
+      }
+    })
   }
 
   async getPlayerValueMetrics(
@@ -245,37 +356,19 @@ export default class GameStat {
     whereConditions: string,
   ): Promise<PlayerValueMetrics> {
     const query = `
-      SELECT
-        min(value) as minValue,
-        max(value) as maxValue,
-        median(value) as medianValue,
-        avg(value) as averageValue
+      SELECT${PLAYER_VALUE_AGGREGATES}
       FROM player_game_stat_snapshots
       ${whereConditions}
     `
 
-    const res = await clickhouse
+    const rows = await clickhouse
       .query({
         query: query,
         format: 'JSONEachRow',
       })
-      .then((res) =>
-        res.json<{
-          minValue: number
-          maxValue: number
-          medianValue: number | null
-          averageValue: number | null
-        }>(),
-      )
+      .then((res) => res.json<PlayerValueRow>())
 
-    const { minValue, maxValue, medianValue, averageValue } = res[0]
-
-    return {
-      minValue: minValue || this.defaultValue,
-      maxValue: maxValue || this.defaultValue,
-      medianValue: medianValue ?? this.defaultValue,
-      averageValue: averageValue ?? this.defaultValue,
-    }
+    return GameStat.buildPlayerValueMetrics(rows[0], this.defaultValue)
   }
 
   toJSON() {

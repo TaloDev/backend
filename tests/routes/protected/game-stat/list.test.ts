@@ -337,4 +337,67 @@ describe('Game stat - list', () => {
 
     expect(res.body.stats).toHaveLength(stats.length)
   })
+
+  it('should isolate metrics for stats with and without snapshots in one batch', async () => {
+    const [organisation, game] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken({}, organisation)
+
+    const statWithData = await new GameStatFactory([game])
+      .global()
+      .state(() => ({ globalValue: 0, defaultValue: 1 }))
+      .one()
+    const statWithoutData = await new GameStatFactory([game])
+      .global()
+      .state(() => ({ globalValue: 0, defaultValue: 42 }))
+      .one()
+
+    const player = await new PlayerFactory([game]).one()
+    const playerStat = await new PlayerGameStatFactory().construct(player, statWithData).one()
+    await em.persist([playerStat, statWithoutData]).flush()
+
+    const snapshot = new PlayerGameStatSnapshot()
+    snapshot.construct(player.aliases[0], playerStat)
+    snapshot.value = 10
+    snapshot.globalValue = 100
+    snapshot.change = 10
+
+    await clickhouse.insert({
+      table: 'player_game_stat_snapshots',
+      values: [snapshot.toInsertable()],
+      format: 'JSONEachRow',
+    })
+
+    const res = await request(app)
+      .get(`/games/${game.id}/game-stats`)
+      .query({ withMetrics: '1' })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    const metricsById = new Map(
+      res.body.stats.map((stat: { id: number; metrics: unknown }) => [stat.id, stat.metrics]),
+    )
+    const withData = metricsById.get(statWithData.id) as {
+      globalCount: number
+      globalValue: { minValue: number; averageChange: number }
+      playerValue: { minValue: number }
+    }
+    const withoutData = metricsById.get(statWithoutData.id) as {
+      globalCount: number
+      globalValue: { minValue: number; maxValue: number; averageChange: number }
+      playerValue: { minValue: number }
+    }
+
+    // the snapshot's stat gets its own numbers, not the batch's or the defaults
+    expect(withData.globalCount).toBe(1)
+    expect(withData.globalValue.minValue).toBe(100)
+    expect(withData.globalValue.averageChange).toBe(10)
+    expect(withData.playerValue.minValue).toBe(10)
+
+    // the stat with no snapshot has no row: GROUP BY drops empty groups
+    expect(withoutData.globalCount).toBe(0)
+    expect(withoutData.globalValue.minValue).toBe(42)
+    expect(withoutData.globalValue.maxValue).toBe(42)
+    expect(withoutData.globalValue.averageChange).toBe(0)
+    expect(withoutData.playerValue.minValue).toBe(42)
+  })
 })

@@ -8,6 +8,12 @@ export const postDocs = {
       sample: {
         aliasId: 42,
         relationshipType: 'unidirectional',
+        props: [
+          {
+            key: 'nickname',
+            value: 'bestie',
+          },
+        ],
       },
     },
     {
@@ -15,6 +21,7 @@ export const postDocs = {
       sample: {
         subscription: {
           id: '8f3e9a7b-4c2d-4a1e-9f8b-3c7d2e1a9b4c',
+          props: [],
           subscriber: {
             id: 105,
             service: 'username',
@@ -56,6 +63,21 @@ export const postDocs = {
         },
       },
     },
+    {
+      title: 'Sample error response with rejected props',
+      sample: {
+        errors: {
+          props: ['One or more props are invalid, see rejectedProps'],
+        },
+        rejectedProps: [
+          {
+            key: 'nickname',
+            error: 'PROP_VALUE_TOO_LONG',
+            message: 'Prop value length (513) exceeds 512 characters',
+          },
+        ],
+      },
+    },
   ],
 } satisfies RouteDocs
 
@@ -67,6 +89,7 @@ export const confirmDocs = {
       sample: {
         subscription: {
           id: '7a2b8c9d-3e4f-5a6b-7c8d-9e0f1a2b3c4d',
+          props: [],
           subscriber: {
             id: 108,
             service: 'username',
@@ -120,6 +143,7 @@ export const getSubscribersDocs = {
         subscriptions: [
           {
             id: '1a2b3c4d-5e6f-7a8b-9c0d-1e2f3a4b5c6d',
+            props: [],
             subscriber: {
               id: 108,
               service: 'username',
@@ -161,6 +185,7 @@ export const getSubscribersDocs = {
           },
           {
             id: '2b3c4d5e-6f7a-8b9c-0d1e-2f3a4b5c6d7e',
+            props: [],
             subscriber: {
               id: 109,
               service: 'username',
@@ -218,6 +243,12 @@ export const getSubscriptionsDocs = {
         subscriptions: [
           {
             id: '3c4d5e6f-7a8b-9c0d-1e2f-3a4b5c6d7e8f',
+            props: [
+              {
+                key: 'nickname',
+                value: 'bestie',
+              },
+            ],
             subscriber: {
               id: 105,
               service: 'username',
@@ -259,6 +290,7 @@ export const getSubscriptionsDocs = {
           },
           {
             id: '4d5e6f7a-8b9c-0d1e-2f3a-4b5c6d7e8f9a',
+            props: [],
             subscriber: {
               id: 105,
               service: 'username',
@@ -302,6 +334,56 @@ export const getSubscriptionsDocs = {
         count: 2,
         itemsPerPage: 50,
         isLastPage: true,
+      },
+    },
+  ],
+} satisfies RouteDocs
+
+export const patchDocs = {
+  description: 'Update the props of a subscription owned by the current player',
+  samples: [
+    {
+      title: 'Sample request',
+      sample: {
+        props: [
+          {
+            key: 'nickname',
+            value: 'bestie',
+          },
+          {
+            key: 'favourite',
+            value: null,
+          },
+        ],
+      },
+    },
+    {
+      title: 'Sample response',
+      sample: {
+        subscription: {
+          id: '3c4d5e6f-7a8b-9c0d-1e2f-3a4b5c6d7e8f',
+          props: [
+            {
+              key: 'nickname',
+              value: 'bestie',
+            },
+          ],
+        },
+      },
+    },
+    {
+      title: 'Sample error response with rejected props',
+      sample: {
+        errors: {
+          props: ['One or more props are invalid, see rejectedProps'],
+        },
+        rejectedProps: [
+          {
+            key: 'nickname',
+            error: 'PROP_CONTAINS_PROFANITY',
+            message: 'Prop value contains profanity',
+          },
+        ],
       },
     },
   ],

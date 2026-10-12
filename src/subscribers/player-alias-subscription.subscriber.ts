@@ -1,13 +1,20 @@
 import { EventArgs, EventSubscriber } from '@mikro-orm/mysql'
+import PlayerAliasSubscriptionProp from '../entities/player-alias-subscription-prop.js'
 import PlayerAliasSubscription from '../entities/player-alias-subscription.js'
 import { deferClearResponseCache } from '../lib/perf/responseCacheQueue.js'
 
 export class PlayerAliasSubscriptionSubscriber implements EventSubscriber {
   getSubscribedEntities() {
-    return [PlayerAliasSubscription]
+    return [PlayerAliasSubscription, PlayerAliasSubscriptionProp]
   }
 
-  async clearCacheKeys(subscription: PlayerAliasSubscription) {
+  async clearCacheKeys(entity: PlayerAliasSubscription | PlayerAliasSubscriptionProp) {
+    const subscription = entity instanceof PlayerAliasSubscription ? entity : entity.subscription
+
+    if (!subscription) {
+      return
+    }
+
     await deferClearResponseCache(
       PlayerAliasSubscription.getSubscribersCacheKey(subscription.subscribedTo, true),
     )
@@ -16,15 +23,15 @@ export class PlayerAliasSubscriptionSubscriber implements EventSubscriber {
     )
   }
 
-  afterCreate(args: EventArgs<PlayerAliasSubscription>) {
+  afterCreate(args: EventArgs<PlayerAliasSubscription | PlayerAliasSubscriptionProp>) {
     return this.clearCacheKeys(args.entity)
   }
 
-  afterUpdate(args: EventArgs<PlayerAliasSubscription>) {
+  afterUpdate(args: EventArgs<PlayerAliasSubscription | PlayerAliasSubscriptionProp>) {
     return this.clearCacheKeys(args.entity)
   }
 
-  afterDelete(args: EventArgs<PlayerAliasSubscription>) {
+  afterDelete(args: EventArgs<PlayerAliasSubscription | PlayerAliasSubscriptionProp>) {
     return this.clearCacheKeys(args.entity)
   }
 }

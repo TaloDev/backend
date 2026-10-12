@@ -4,6 +4,7 @@ import { confirmRoute } from './confirm.js'
 import { deleteRoute } from './delete.js'
 import { getSubscribersRoute } from './get-subscribers.js'
 import { getSubscriptionsRoute } from './get-subscriptions.js'
+import { patchRoute } from './patch.js'
 import { postRoute } from './post.js'
 
 export function playerRelationshipAPIRouter(router: Router) {
@@ -14,6 +15,7 @@ export function playerRelationshipAPIRouter(router: Router) {
       route(confirmRoute)
       route(getSubscribersRoute)
       route(getSubscriptionsRoute)
+      route(patchRoute)
       route(deleteRoute)
     },
     {

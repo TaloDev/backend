@@ -1,8 +1,13 @@
 import { APIKeyScope } from '../../../entities/api-key.js'
 import PlayerAliasSubscription from '../../../entities/player-alias-subscription.js'
 import PlayerAlias from '../../../entities/player-alias.js'
+import { buildErrorResponse } from '../../../lib/errors/buildErrorResponse.js'
+import { PropRejectionError } from '../../../lib/errors/propRejectionError.js'
+import { filterProfaneProps } from '../../../lib/props/filterProfaneProps.js'
+import { hardSanitiseProps } from '../../../lib/props/sanitiseProps.js'
 import { apiRoute, withMiddleware } from '../../../lib/routing/router.js'
 import { playerAliasHeaderSchema } from '../../../lib/validation/playerAliasHeaderSchema.js'
+import { createPropsSchema } from '../../../lib/validation/propsSchema.js'
 import { loadAlias } from '../../../middleware/player-alias-middleware.js'
 import { requireScopes } from '../../../middleware/policy-middleware.js'
 import { sendMessages } from '../../../socket/messages/socketMessage.js'
@@ -21,12 +26,13 @@ export const postRoute = apiRoute({
       relationshipType: relationshipTypeSchema.meta({
         description: 'The type of relationship: "unidirectional" or "bidirectional"',
       }),
+      props: createPropsSchema.optional().meta({ description: 'An array of @type(Props:prop)' }),
     }),
   }),
   middleware: withMiddleware(requireScopes([APIKeyScope.WRITE_PLAYER_RELATIONSHIPS]), loadAlias),
   handler: async (ctx) => {
     const em = ctx.em
-    const { aliasId, relationshipType } = ctx.state.validated.body
+    const { aliasId, relationshipType, props = [] } = ctx.state.validated.body
     const currentAlias = ctx.state.alias
 
     const subscribedTo = await em.repo(PlayerAlias).findOne({
@@ -53,7 +59,21 @@ export const postRoute = apiRoute({
       return ctx.throw(400, 'Subscription already exists')
     }
 
+    const { accepted: sizeAccepted, rejected: sizeRejected } = hardSanitiseProps({ props })
+
+    const { accepted, rejected: profanityRejected } = filterProfaneProps(
+      sizeAccepted,
+      ctx.state.game.blockPropsProfanity,
+    )
+    const rejectedProps = [...sizeRejected, ...profanityRejected]
+
+    if (rejectedProps.length > 0) {
+      const err = new PropRejectionError(rejectedProps)
+      return buildErrorResponse({ props: [err.message] }, { rejectedProps: err.rejected })
+    }
+
     const subscription = new PlayerAliasSubscription(currentAlias, subscribedTo, relationshipType)
+    subscription.setProps(accepted)
     await em.persist(subscription).flush()
 
     const conns = ctx.wss.findConnections((conn) => {

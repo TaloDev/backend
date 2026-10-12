@@ -25,6 +25,7 @@ import LeaderboardEntry from './leaderboard-entry.js'
 import Leaderboard from './leaderboard.js'
 import OrganisationPricingPlan from './organisation-pricing-plan.js'
 import Organisation from './organisation.js'
+import PlayerAliasSubscriptionProp from './player-alias-subscription-prop.js'
 import PlayerAliasSubscription from './player-alias-subscription.js'
 import PlayerAlias from './player-alias.js'
 import PlayerAuthActivity from './player-auth-activity.js'
@@ -50,6 +51,7 @@ import UserTwoFactorAuth from './user-two-factor-auth.js'
 import User from './user.js'
 
 export const entities = [
+  PlayerAliasSubscriptionProp,
   ScheduledGameConfigChange,
   EventRetention,
   EventFunnel,

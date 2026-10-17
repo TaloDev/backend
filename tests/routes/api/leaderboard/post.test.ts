@@ -3,6 +3,7 @@ import { randText } from '@ngneat/falso'
 import { subDays, subHours, subMinutes } from 'date-fns'
 import request from 'supertest'
 import { APIKeyScope } from '../../../../src/entities/api-key.js'
+import Integration, { IntegrationType } from '../../../../src/entities/integration.js'
 import LeaderboardEntryProp from '../../../../src/entities/leaderboard-entry-prop.js'
 import LeaderboardEntry from '../../../../src/entities/leaderboard-entry.js'
 import {
@@ -13,11 +14,22 @@ import PlayerGroupRule, {
   PlayerGroupRuleCastType,
   PlayerGroupRuleName,
 } from '../../../../src/entities/player-group-rule.js'
+import IntegrationConfigFactory from '../../../fixtures/IntegrationConfigFactory.js'
+import IntegrationFactory from '../../../fixtures/IntegrationFactory.js'
 import LeaderboardEntryFactory from '../../../fixtures/LeaderboardEntryFactory.js'
 import LeaderboardFactory from '../../../fixtures/LeaderboardFactory.js'
 import PlayerFactory from '../../../fixtures/PlayerFactory.js'
 import PlayerGroupFactory from '../../../fixtures/PlayerGroupFactory.js'
 import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken.js'
+
+// Pretends another request is already holding the lock for this player and leaderboard.
+// A route that can answer without the lock responds right away but one that needs the
+// lock keeps retrying and then gives up with a 429.
+async function holdEntryLock(playerAliasId: number, leaderboardId: number) {
+  const key = `locks:leaderboard-entry:${playerAliasId}:${leaderboardId}`
+  await redis.set(key, 'held', 'PX', 10000)
+  return key
+}
 
 describe('Leaderboard API - create', () => {
   it('should create a leaderboard entry if the scope is valid', async () => {
@@ -1714,5 +1726,138 @@ describe('Leaderboard API - create', () => {
       leaderboard,
     })
     expect(entryCount).toBe(5)
+  })
+
+  it('should not take the lock when a score cannot beat the stored one', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_LEADERBOARDS])
+    const player = await new PlayerFactory([apiKey.game]).one()
+    const leaderboard = await new LeaderboardFactory([apiKey.game])
+      .state(() => ({ unique: true, sortMode: LeaderboardSortMode.DESC }))
+      .one()
+
+    const entry = await new LeaderboardEntryFactory(leaderboard, [player])
+      .state((e) => ({
+        score: 300,
+        playerAlias: player.aliases[0],
+        props: new Collection<LeaderboardEntryProp>(e, [new LeaderboardEntryProp(e, 'level', '1')]),
+      }))
+      .one()
+    await em.persist([player, leaderboard, entry]).flush()
+
+    await holdEntryLock(player.aliases[0].id, leaderboard.id)
+
+    const res = await request(app)
+      .post(`/v1/leaderboards/${leaderboard.internalName}/entries`)
+      .send({ score: 100, props: [{ key: 'level', value: '2' }] })
+      .auth(token, { type: 'bearer' })
+      .set('x-talo-alias', String(player.aliases[0].id))
+      .expect(200)
+
+    expect(res.body.updated).toBe(false)
+    expect(res.body.entry.score).toBe(300)
+    expect(res.body.entry.props).toStrictEqual([{ key: 'level', value: '1' }])
+
+    const storedProps = await em.repo(LeaderboardEntryProp).find({ leaderboardEntry: entry })
+    expect(storedProps.map((p) => ({ key: p.key, value: p.value }))).toStrictEqual([
+      { key: 'level', value: '1' },
+    ])
+  })
+
+  it('should create one entry per submission on a non-unique leaderboard without taking the lock', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_LEADERBOARDS])
+    const player = await new PlayerFactory([apiKey.game]).one()
+    const leaderboard = await new LeaderboardFactory([apiKey.game]).notUnique().one()
+    await em.persist([player, leaderboard]).flush()
+
+    await holdEntryLock(player.aliases[0].id, leaderboard.id)
+
+    const responses = await Promise.all(
+      Array.from({ length: 3 }, () =>
+        request(app)
+          .post(`/v1/leaderboards/${leaderboard.internalName}/entries`)
+          .send({ score: 100 })
+          .auth(token, { type: 'bearer' })
+          .set('x-talo-alias', String(player.aliases[0].id)),
+      ),
+    )
+
+    responses.forEach((res) => expect(res.status).toBe(200))
+
+    const entryCount = await em.repo(LeaderboardEntry).count({ leaderboard })
+    expect(entryCount).toBe(3)
+  })
+
+  it('should keep the highest score when submissions arrive at the same time', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_LEADERBOARDS])
+    const player = await new PlayerFactory([apiKey.game]).one()
+    const leaderboard = await new LeaderboardFactory([apiKey.game])
+      .state(() => ({ unique: true, sortMode: LeaderboardSortMode.DESC }))
+      .one()
+
+    const entry = await new LeaderboardEntryFactory(leaderboard, [player])
+      .state(() => ({ score: 0, playerAlias: player.aliases[0] }))
+      .one()
+    await em.persist([player, leaderboard, entry]).flush()
+
+    const scores = [10, 20, 30, 40, 50]
+
+    // Hold the lock for a moment so every request reads score 0 before the first one writes,
+    // then release it and let them run one after another.
+    const lockKey = await holdEntryLock(player.aliases[0].id, leaderboard.id)
+    const pending = Promise.all(
+      scores.map((score) =>
+        request(app)
+          .post(`/v1/leaderboards/${leaderboard.internalName}/entries`)
+          .send({ score })
+          .auth(token, { type: 'bearer' })
+          .set('x-talo-alias', String(player.aliases[0].id)),
+      ),
+    )
+    await new Promise((resolve) => setTimeout(resolve, 300))
+    await redis.del(lockKey)
+
+    const responses = await pending
+    responses.forEach((res) => expect(res.status).toBe(200))
+
+    await em.refresh(entry)
+    expect(entry.score).toBe(50)
+  })
+
+  it('should only notify integrations when an entry is created or its score improves', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.WRITE_LEADERBOARDS])
+    const player = await new PlayerFactory([apiKey.game]).one()
+    const leaderboard = await new LeaderboardFactory([apiKey.game])
+      .state(() => ({ unique: true, sortMode: LeaderboardSortMode.DESC }))
+      .one()
+
+    const config = await new IntegrationConfigFactory()
+      .state(() => ({ syncLeaderboards: false }))
+      .one()
+    const integration = await new IntegrationFactory()
+      .construct(IntegrationType.STEAMWORKS, apiKey.game, config)
+      .one()
+    await em.persist([player, leaderboard, integration]).flush()
+
+    const handleEntry = vi.spyOn(Integration.prototype, 'handleLeaderboardEntryCreated')
+    const post = (score: number) =>
+      request(app)
+        .post(`/v1/leaderboards/${leaderboard.internalName}/entries`)
+        .send({ score })
+        .auth(token, { type: 'bearer' })
+        .set('x-talo-alias', String(player.aliases[0].id))
+
+    await post(100).expect(200)
+    expect(handleEntry).toHaveBeenCalledTimes(1)
+
+    await post(50).expect(200)
+    expect(handleEntry).toHaveBeenCalledTimes(1)
+
+    await post(200).expect(200)
+    expect(handleEntry).toHaveBeenCalledTimes(2)
+
+    await post(200).expect(200)
+    expect(handleEntry).toHaveBeenCalledTimes(2)
+
+    handleEntry.mockRestore()
   })
 })

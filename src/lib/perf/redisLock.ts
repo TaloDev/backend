@@ -1,4 +1,4 @@
-import { createLock, IoredisAdapter } from 'redlock-universal'
+import { createLock, IoredisAdapter, LockAcquisitionError } from 'redlock-universal'
 import { getGlobalRedis } from '../../config/redis.config.js'
 
 type RedisLockOptions = {
@@ -6,6 +6,20 @@ type RedisLockOptions = {
   ttl?: number
   retryAttempts?: number
   retryDelay?: number
+}
+
+export class LockTimeoutError extends Error {
+  get status() {
+    return 429
+  }
+
+  override get name() {
+    return 'LockTimeoutError'
+  }
+
+  constructor() {
+    super('Too Many Requests')
+  }
 }
 
 export async function withRedisLock<T>(
@@ -19,5 +33,13 @@ export async function withRedisLock<T>(
     retryAttempts,
     retryDelay,
   })
-  return lock.using(routine)
+
+  try {
+    return await lock.using(routine)
+  } catch (err) {
+    if (err instanceof LockAcquisitionError) {
+      throw new LockTimeoutError()
+    }
+    throw err
+  }
 }

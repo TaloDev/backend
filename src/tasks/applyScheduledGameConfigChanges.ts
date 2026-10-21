@@ -62,7 +62,11 @@ async function applyGameChanges({
     }
   }
 
-  await em.remove(changes).flush()
+  const now = new Date()
+  for (const change of changes) {
+    change.executedAt = now
+  }
+  await em.flush()
 
   if (applied.length === 0) {
     return

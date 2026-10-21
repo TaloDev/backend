@@ -1,4 +1,4 @@
-import { Entity, Index, ManyToOne, PrimaryKey, Property } from '@mikro-orm/decorators/es'
+import { Entity, Filter, Index, ManyToOne, PrimaryKey, Property } from '@mikro-orm/decorators/es'
 import assert from 'node:assert'
 import AdminAPIKey from './admin-api-key.js'
 import Game from './game.js'
@@ -6,6 +6,8 @@ import { MAX_KEY_LENGTH } from './prop.js'
 import User from './user.js'
 
 @Entity()
+@Index({ properties: ['executedAt', 'applyAt'] })
+@Filter({ name: 'active', cond: { executedAt: null }, default: true })
 export default class ScheduledGameConfigChange {
   @PrimaryKey()
   id!: number
@@ -21,8 +23,10 @@ export default class ScheduledGameConfigChange {
   value: string | null = null
 
   @Property()
-  @Index()
   applyAt!: Date
+
+  @Property({ nullable: true })
+  executedAt: Date | null = null
 
   @ManyToOne(() => User, { nullable: true })
   createdByUser?: User

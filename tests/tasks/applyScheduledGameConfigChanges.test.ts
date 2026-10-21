@@ -33,6 +33,53 @@ describe('applyScheduledGameConfigChanges', () => {
     expect(await em.repo(ScheduledGameConfigChange).count({ game })).toBe(1)
   })
 
+  it('should mark applied changes as executed instead of deleting them', async () => {
+    const [organisation, game] = await createOrganisationAndGame(
+      {},
+      { props: [new Prop('xpRate', '1')] },
+    )
+    const [, user] = await createUserAndToken({}, organisation)
+
+    const change = new ScheduledGameConfigChange(
+      game,
+      user,
+      'xpRate',
+      '2',
+      subMinutes(new Date(), 1),
+    )
+    await em.persist(change).flush()
+
+    await applyScheduledGameConfigChanges()
+
+    const executed = await em.refreshOrFail(change, { filters: false })
+    expect(executed.executedAt).not.toBeNull()
+    expect(await em.repo(ScheduledGameConfigChange).count({ game })).toBe(0)
+    expect(await em.repo(ScheduledGameConfigChange).count({ game }, { filters: false })).toBe(1)
+  })
+
+  it('should not re-apply changes that already executed', async () => {
+    const [organisation, game] = await createOrganisationAndGame(
+      {},
+      { props: [new Prop('xpRate', '1')] },
+    )
+    const [, user] = await createUserAndToken({}, organisation)
+
+    await em
+      .persist([
+        new ScheduledGameConfigChange(game, user, 'xpRate', '2', subMinutes(new Date(), 1)),
+      ])
+      .flush()
+
+    await applyScheduledGameConfigChanges()
+    await applyScheduledGameConfigChanges()
+
+    const activities = await em.repo(GameActivity).count({
+      game,
+      type: GameActivityType.GAME_PROPS_UPDATED,
+    })
+    expect(activities).toBe(1)
+  })
+
   it('should settle multiple changes to the same key on the latest one', async () => {
     const [organisation, game] = await createOrganisationAndGame(
       {},
@@ -168,6 +215,7 @@ describe('applyScheduledGameConfigChanges', () => {
     })
 
     expect(await em.repo(ScheduledGameConfigChange).count({ game })).toBe(0)
+    expect(await em.repo(ScheduledGameConfigChange).count({ game }, { filters: false })).toBe(1)
 
     const refreshedGame = await em.refreshOrFail(game)
     expect(refreshedGame.getLiveConfig()).toEqual([{ key: 'xpRate', value: '1' }])

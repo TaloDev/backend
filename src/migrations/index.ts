@@ -93,6 +93,7 @@ import { AddAdminAPIKeyToScheduledGameConfigChanges } from './20261004085201AddA
 import { AddDowngradeNoticeColumns } from './20261007190000AddDowngradeNoticeColumns.js'
 import { AddDevBuildToLeaderboardEntry } from './20261009113941AddDevBuildToLeaderboardEntry.js'
 import { AddPlayerAliasSubscriptionProps } from './20261012050921AddPlayerAliasSubscriptionProps.js'
+import { AddExecutedAtToScheduledGameConfigChanges } from './20261019203413AddExecutedAtToScheduledGameConfigChanges.js'
 
 export default [
   InitialMigration,
@@ -190,4 +191,5 @@ export default [
   AddDowngradeNoticeColumns,
   AddDevBuildToLeaderboardEntry,
   AddPlayerAliasSubscriptionProps,
+  AddExecutedAtToScheduledGameConfigChanges,
 ]

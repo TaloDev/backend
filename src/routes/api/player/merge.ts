@@ -133,11 +133,11 @@ export const mergeRoute = apiRoute({
     body: z.object({
       playerId1: z.uuid().meta({
         description:
-          'The first player ID - the second player will be merged into this player. If this player has a Steamworks, Google Play Games, or Talo Player Authentication alias, that alias must be the one initiating the merge.',
+          'The first player ID - the second player will be merged into this player. If this player has a Steamworks, Google Play Games, Apple Game Center, or Talo Player Authentication alias, that alias must be the one initiating the merge.',
       }),
       playerId2: z.uuid().meta({
         description:
-          'The second player ID. This player cannot have a Steamworks, Google Play Games, or Talo Player Authentication alias.',
+          'The second player ID. This player cannot have a Steamworks, Google Play Games, Apple Game Center, or Talo Player Authentication alias.',
       }),
     }),
   }),
@@ -193,6 +193,10 @@ export const mergeRoute = apiRoute({
           400,
           `Player ${playerId2} has a Google Play Games alias and cannot be merged`,
         )
+      }
+
+      if (player2RestrictedAlias.service === PlayerAliasService.GAME_CENTER) {
+        return ctx.throw(400, `Player ${playerId2} has a Game Center alias and cannot be merged`)
       }
     }
 

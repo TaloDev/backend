@@ -51,6 +51,17 @@ async function findRestrictedAlias(em: EntityManager, player: Player) {
   return restrictedAlias
 }
 
+const restrictedAliasMessages: Record<string, (playerId: string) => string> = {
+  [PlayerAliasService.TALO]: (playerId) =>
+    `Player ${playerId} has authentication enabled and cannot be merged`,
+  [PlayerAliasService.STEAM]: (playerId) =>
+    `Player ${playerId} has a Steam alias and cannot be merged`,
+  [PlayerAliasService.GOOGLE_PLAY_GAMES]: (playerId) =>
+    `Player ${playerId} has a Google Play Games alias and cannot be merged`,
+  [PlayerAliasService.GAME_CENTER]: (playerId) =>
+    `Player ${playerId} has a Game Center alias and cannot be merged`,
+}
+
 function mergeProps(em: EntityManager, player1: Player, player2: Player) {
   const player1Props = player1.props.getItems().map(({ key, value }) => ({ key, value }))
   const player2Props = player2.props.getItems().map(({ key, value }) => ({ key, value }))
@@ -180,24 +191,7 @@ export const mergeRoute = apiRoute({
 
     const player2RestrictedAlias = await findRestrictedAlias(em, player2)
     if (player2RestrictedAlias) {
-      if (player2RestrictedAlias.service === PlayerAliasService.TALO) {
-        return ctx.throw(400, `Player ${playerId2} has authentication enabled and cannot be merged`)
-      }
-
-      if (player2RestrictedAlias.service === PlayerAliasService.STEAM) {
-        return ctx.throw(400, `Player ${playerId2} has a Steam alias and cannot be merged`)
-      }
-
-      if (player2RestrictedAlias.service === PlayerAliasService.GOOGLE_PLAY_GAMES) {
-        return ctx.throw(
-          400,
-          `Player ${playerId2} has a Google Play Games alias and cannot be merged`,
-        )
-      }
-
-      if (player2RestrictedAlias.service === PlayerAliasService.GAME_CENTER) {
-        return ctx.throw(400, `Player ${playerId2} has a Game Center alias and cannot be merged`)
-      }
+      return ctx.throw(400, restrictedAliasMessages[player2RestrictedAlias.service](playerId2))
     }
 
     const sharedServices = await findMergeAliasServiceConflicts(em, player1, player2)

@@ -5538,6 +5538,127 @@
       "comment": null
     },
     {
+      "name": "player_alias_subscription_prop",
+      "columns": {
+        "created_at": {
+          "name": "created_at",
+          "type": "datetime",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "datetime"
+        },
+        "id": {
+          "name": "id",
+          "type": "int",
+          "unsigned": true,
+          "autoincrement": true,
+          "primary": true,
+          "nullable": false,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "integer"
+        },
+        "key": {
+          "name": "key",
+          "type": "varchar(128)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": 128,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "string"
+        },
+        "subscription_id": {
+          "name": "subscription_id",
+          "type": "int",
+          "unsigned": true,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "integer"
+        },
+        "value": {
+          "name": "value",
+          "type": "varchar(512)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": 512,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "string"
+        }
+      },
+      "indexes": [
+        {
+          "columnNames": ["id"],
+          "composite": false,
+          "constraint": true,
+          "keyName": "PRIMARY",
+          "primary": true,
+          "unique": true
+        },
+        {
+          "columnNames": ["subscription_id"],
+          "composite": false,
+          "constraint": false,
+          "keyName": "player_alias_subscription_prop_subscription_id_index",
+          "primary": false,
+          "unique": false
+        }
+      ],
+      "checks": [],
+      "triggers": [],
+      "foreignKeys": {
+        "player_alias_subscription_prop_subscription_id_foreign": {
+          "columnNames": ["subscription_id"],
+          "constraintName": "player_alias_subscription_prop_subscription_id_foreign",
+          "localTableName": "player_alias_subscription_prop",
+          "referencedColumnNames": ["id"],
+          "referencedTableName": "player_alias_subscription",
+          "deleteRule": "cascade"
+        }
+      },
+      "comment": null
+    },
+    {
       "name": "player_auth",
       "columns": {
         "created_at": {
@@ -6840,6 +6961,23 @@
           "enumItems": [],
           "mappedType": "integer"
         },
+        "executed_at": {
+          "name": "executed_at",
+          "type": "datetime",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "datetime"
+        },
         "game_id": {
           "name": "game_id",
           "type": "int",
@@ -6919,14 +7057,6 @@
           "unique": true
         },
         {
-          "columnNames": ["apply_at"],
-          "composite": false,
-          "constraint": false,
-          "keyName": "scheduled_game_config_change_apply_at_index",
-          "primary": false,
-          "unique": false
-        },
-        {
           "columnNames": ["created_by_admin_apikey_id"],
           "composite": false,
           "constraint": false,
@@ -6939,6 +7069,14 @@
           "composite": false,
           "constraint": false,
           "keyName": "scheduled_game_config_change_created_by_user_id_index",
+          "primary": false,
+          "unique": false
+        },
+        {
+          "columnNames": ["executed_at", "apply_at"],
+          "composite": true,
+          "constraint": false,
+          "keyName": "scheduled_game_config_change_executed_at_apply_at_index",
           "primary": false,
           "unique": false
         },

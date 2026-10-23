@@ -51,6 +51,17 @@ async function findRestrictedAlias(em: EntityManager, player: Player) {
   return restrictedAlias
 }
 
+const restrictedAliasMessages: Record<string, (playerId: string) => string> = {
+  [PlayerAliasService.TALO]: (playerId) =>
+    `Player ${playerId} has authentication enabled and cannot be merged`,
+  [PlayerAliasService.STEAM]: (playerId) =>
+    `Player ${playerId} has a Steam alias and cannot be merged`,
+  [PlayerAliasService.GOOGLE_PLAY_GAMES]: (playerId) =>
+    `Player ${playerId} has a Google Play Games alias and cannot be merged`,
+  [PlayerAliasService.GAME_CENTER]: (playerId) =>
+    `Player ${playerId} has a Game Center alias and cannot be merged`,
+}
+
 function mergeProps(em: EntityManager, player1: Player, player2: Player) {
   const player1Props = player1.props.getItems().map(({ key, value }) => ({ key, value }))
   const player2Props = player2.props.getItems().map(({ key, value }) => ({ key, value }))
@@ -133,11 +144,11 @@ export const mergeRoute = apiRoute({
     body: z.object({
       playerId1: z.uuid().meta({
         description:
-          'The first player ID - the second player will be merged into this player. If this player has a Steamworks, Google Play Games, or Talo Player Authentication alias, that alias must be the one initiating the merge.',
+          'The first player ID - the second player will be merged into this player. If this player has a Steamworks, Google Play Games, Apple Game Center, or Talo Player Authentication alias, that alias must be the one initiating the merge.',
       }),
       playerId2: z.uuid().meta({
         description:
-          'The second player ID. This player cannot have a Steamworks, Google Play Games, or Talo Player Authentication alias.',
+          'The second player ID. This player cannot have a Steamworks, Google Play Games, Apple Game Center, or Talo Player Authentication alias.',
       }),
     }),
   }),
@@ -180,20 +191,7 @@ export const mergeRoute = apiRoute({
 
     const player2RestrictedAlias = await findRestrictedAlias(em, player2)
     if (player2RestrictedAlias) {
-      if (player2RestrictedAlias.service === PlayerAliasService.TALO) {
-        return ctx.throw(400, `Player ${playerId2} has authentication enabled and cannot be merged`)
-      }
-
-      if (player2RestrictedAlias.service === PlayerAliasService.STEAM) {
-        return ctx.throw(400, `Player ${playerId2} has a Steam alias and cannot be merged`)
-      }
-
-      if (player2RestrictedAlias.service === PlayerAliasService.GOOGLE_PLAY_GAMES) {
-        return ctx.throw(
-          400,
-          `Player ${playerId2} has a Google Play Games alias and cannot be merged`,
-        )
-      }
+      return ctx.throw(400, restrictedAliasMessages[player2RestrictedAlias.service](playerId2))
     }
 
     const sharedServices = await findMergeAliasServiceConflicts(em, player1, player2)

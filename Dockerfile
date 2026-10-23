@@ -1,4 +1,4 @@
-FROM ghcr.io/pnpm/pnpm:12.0.0 AS base
+FROM ghcr.io/pnpm/pnpm:12 AS base
 WORKDIR /usr/backend
 
 RUN pnpm runtime set node 24 -g

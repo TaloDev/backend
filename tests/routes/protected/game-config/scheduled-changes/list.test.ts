@@ -26,6 +26,36 @@ describe('Scheduled game config change - list', () => {
     )
   })
 
+  it('should not return executed changes', async () => {
+    const [organisation, game] = await createOrganisationAndGame()
+    const [token, user] = await createUserAndToken({}, organisation)
+
+    const executed = new ScheduledGameConfigChange(
+      game,
+      user,
+      'xpRate',
+      '3',
+      addDays(new Date(), 1),
+    )
+    executed.executedAt = new Date()
+
+    await em
+      .persist([
+        executed,
+        new ScheduledGameConfigChange(game, user, 'xpRate', '2', addDays(new Date(), 2)),
+      ])
+      .flush()
+
+    const res = await request(app)
+      .get(`/games/${game.id}/game-config/scheduled-changes`)
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    expect(res.body.changes.map((change: ScheduledGameConfigChange) => change.value)).toStrictEqual(
+      ['2'],
+    )
+  })
+
   it('should not return changes from other games', async () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [, otherGame] = await createOrganisationAndGame()

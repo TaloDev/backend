@@ -31,33 +31,27 @@ export async function listStatsHandler({
     async () => {
       const stats = await em.repo(GameStat).find({ game })
       const globalStats = stats.filter((stat) => stat.global)
+      const promises = []
 
-      if (globalStats.length > 0) {
-        const promises = []
-
-        if (withMetrics === '1') {
-          promises.push(
-            ...globalStats.map((stat) =>
-              stat.loadMetrics({
-                clickhouse,
-                startDate: metricsStartDate,
-                endDate: metricsEndDate,
-                includeDevData,
-              }),
-            ),
-          )
-        }
-
-        if (!includeDevData) {
-          promises.push(
-            ...globalStats.map((stat) =>
-              stat.recalculateGlobalValue({ em, includeDevData: false }),
-            ),
-          )
-        }
-
-        await Promise.allSettled(promises)
+      if (withMetrics === '1') {
+        promises.push(
+          GameStat.loadMetricsForStats({
+            stats: globalStats,
+            clickhouse,
+            startDate: metricsStartDate,
+            endDate: metricsEndDate,
+            includeDevData,
+          }),
+        )
       }
+
+      if (!includeDevData) {
+        promises.push(
+          ...globalStats.map((stat) => stat.recalculateGlobalValue({ em, includeDevData: false })),
+        )
+      }
+
+      await Promise.allSettled(promises)
 
       return {
         status: 200,

@@ -3,10 +3,13 @@ import {
   Enum,
   Index,
   ManyToOne,
+  OneToMany,
   PrimaryKey,
   Property,
   Unique,
 } from '@mikro-orm/decorators/es'
+import { Collection } from '@mikro-orm/mysql'
+import PlayerAliasSubscriptionProp from './player-alias-subscription-prop.js'
 import PlayerAlias from './player-alias.js'
 
 export enum RelationshipType {
@@ -32,6 +35,12 @@ export default class PlayerAliasSubscription {
 
   @Enum(() => RelationshipType)
   relationshipType: RelationshipType = RelationshipType.UNIDIRECTIONAL
+
+  @OneToMany(() => PlayerAliasSubscriptionProp, (prop) => prop.subscription, {
+    eager: true,
+    orphanRemoval: true,
+  })
+  props: Collection<PlayerAliasSubscriptionProp> = new Collection<PlayerAliasSubscriptionProp>(this)
 
   @Property()
   createdAt: Date = new Date()
@@ -61,6 +70,10 @@ export default class PlayerAliasSubscription {
     this.relationshipType = relationshipType
   }
 
+  setProps(props: { key: string; value: string }[]) {
+    this.props.set(props.map(({ key, value }) => new PlayerAliasSubscriptionProp(this, key, value)))
+  }
+
   toJSON() {
     return {
       id: this.id,
@@ -68,6 +81,7 @@ export default class PlayerAliasSubscription {
       subscribedTo: this.subscribedTo,
       confirmed: this.confirmed,
       relationshipType: this.relationshipType,
+      props: this.props,
       createdAt: this.createdAt,
       updatedAt: this.updatedAt,
     }

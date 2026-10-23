@@ -28,6 +28,13 @@ export default class PlayerAliasSubscriptionFactory extends Factory<PlayerAliasS
     }))
   }
 
+  withProps(props: { key: string; value: string }[]): this {
+    return this.state((subscription) => {
+      subscription.setProps(props)
+      return {}
+    })
+  }
+
   confirmed(): this {
     return this.state(() => ({
       confirmed: true,

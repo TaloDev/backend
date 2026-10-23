@@ -1,7 +1,7 @@
 FROM ghcr.io/pnpm/pnpm:12 AS base
 WORKDIR /usr/backend
 
-RUN pnpm runtime set node 24 -g
+RUN pnpm runtime set node 26 -g
 
 COPY tsconfig.json .
 COPY package.json .

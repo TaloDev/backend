@@ -5,5 +5,5 @@ runs:
   steps:
     - uses: pnpm/setup@v2
       with:
-        runtime: node@24
+        runtime: node@26
         cache: true

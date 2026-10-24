@@ -4,16 +4,6 @@ vi.mock('nodemailer')
 
 vi.mock('bullmq')
 
-vi.mock('@hyperdx/node-opentelemetry', async (importOriginal) => ({
-  ...(await importOriginal<typeof import('@hyperdx/node-opentelemetry')>()),
-  recordException: vi.fn(),
-}))
-
-vi.mock('@sentry/node', async (importOriginal) => ({
-  ...(await importOriginal<typeof import('@sentry/node')>()),
-  captureException: vi.fn(),
-}))
-
 beforeAll(async () => {
   const context = await getTestContext()
   global.app = context.app

@@ -96,7 +96,7 @@ export async function errorMiddleware(ctx: Context, next: Next) {
 // API key can't be resolved, or the key was revoked
 const IGNORED_JWT_MESSAGES = new Set(['Token revoked', 'Secret not provided'])
 
-function canCaptureJWTError(err: unknown) {
+export function canCaptureJWTError(err: unknown) {
   if (!(err instanceof Error)) return false
   // any jsonwebtoken verification failure is a bad client token
   if (err instanceof jwt.JsonWebTokenError) {

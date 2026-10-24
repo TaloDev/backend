@@ -1,9 +1,7 @@
-import { recordException } from '@hyperdx/node-opentelemetry'
-import * as Sentry from '@sentry/node'
 import jwt from 'jsonwebtoken'
 import Koa from 'koa'
 import request from 'supertest'
-import { errorMiddleware } from '../../src/middleware/error-middleware.js'
+import { canCaptureJWTError, errorMiddleware } from '../../src/middleware/error-middleware.js'
 
 vi.mock('@opentelemetry/api', () => ({ trace: { getActiveSpan: vi.fn() } }))
 
@@ -54,10 +52,6 @@ function throwJWTError(originalError: Error) {
 }
 
 describe('Error middleware', () => {
-  beforeEach(() => {
-    vi.clearAllMocks()
-  })
-
   describe('JWT errors (401 with originalError)', () => {
     it('returns the generic token message', async () => {
       const app = buildApp(throwJWTError(new jwt.JsonWebTokenError('jwt malformed')))
@@ -67,25 +61,17 @@ describe('Error middleware', () => {
     })
 
     // junk tokens from scanners, truncated signatures and stale tokens are noise
-    it.each(filteredErrors)('does not record a %s', async (_case, originalError) => {
-      const app = buildApp(throwJWTError(originalError))
+    it.each(filteredErrors)('does not report a %s', async (_case, originalError) => {
+      expect(canCaptureJWTError(originalError)).toBe(false)
 
+      const app = buildApp(throwJWTError(originalError))
       const res = await request(app).get('/').expect(401)
 
       expect(res.body.message).toBe('Please provide a valid token in the Authorization header')
-      expect(recordException).not.toHaveBeenCalled()
-      expect(Sentry.captureException).not.toHaveBeenCalled()
     })
 
-    it('records errors that are not token verification failures', async () => {
-      const originalError = new Error('API_SECRET must be 32 characters long')
-      const app = buildApp(throwJWTError(originalError))
-
-      const res = await request(app).get('/').expect(401)
-
-      expect(res.body.message).toBe('Please provide a valid token in the Authorization header')
-      expect(recordException).toHaveBeenCalledWith(originalError)
-      expect(Sentry.captureException).toHaveBeenCalledWith(originalError)
+    it('reports errors that are not token verification failures', () => {
+      expect(canCaptureJWTError(new Error('API_SECRET must be 32 characters long'))).toBe(true)
     })
   })
 

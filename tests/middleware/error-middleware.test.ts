@@ -1,9 +1,10 @@
+import { recordException } from '@hyperdx/node-opentelemetry'
+import * as Sentry from '@sentry/node'
+import jwt from 'jsonwebtoken'
 import Koa from 'koa'
 import request from 'supertest'
 import { errorMiddleware } from '../../src/middleware/error-middleware.js'
 
-vi.mock('@hyperdx/node-opentelemetry', () => ({ recordException: vi.fn() }))
-vi.mock('@sentry/node', () => ({ withScope: vi.fn(), captureException: vi.fn() }))
 vi.mock('@opentelemetry/api', () => ({ trace: { getActiveSpan: vi.fn() } }))
 
 function buildApp(handler: Koa.Middleware) {
@@ -13,19 +14,78 @@ function buildApp(handler: Koa.Middleware) {
   return app.callback()
 }
 
+const SECRET = 'secret'
+
+function thrown(fn: () => unknown) {
+  try {
+    fn()
+  } catch (err) {
+    return err as Error
+  }
+  throw new Error('expected the call to throw')
+}
+
+// the real errors jsonwebtoken throws for each kind of bad token, so a
+// message can't drift from what the library actually emits
+const filteredErrors: [string, Error][] = [
+  ['expired token', thrown(() => jwt.verify(jwt.sign({}, SECRET, { expiresIn: -10 }), SECRET))],
+  [
+    'token not yet active',
+    thrown(() => jwt.verify(jwt.sign({ nbf: Math.floor(Date.now() / 1000) + 60 }, SECRET), SECRET)),
+  ],
+  ['invalid signature', thrown(() => jwt.verify(jwt.sign({}, SECRET), 'other-secret'))],
+  ['malformed token', thrown(() => jwt.verify('not-a-token', SECRET))],
+  ['invalid token', thrown(() => jwt.verify('!!!.@@@.###', SECRET))],
+  [
+    'missing signature',
+    thrown(() => jwt.verify(`${jwt.sign({}, SECRET).split('.').slice(0, 2).join('.')}.`, SECRET)),
+  ],
+  ['revoked token', new Error('Token revoked')],
+  ['unresolved api key', new Error('Secret not provided')],
+]
+
+function throwJWTError(originalError: Error) {
+  return () => {
+    throw Object.assign(new Error('Authentication Error'), {
+      status: 401,
+      originalError,
+    })
+  }
+}
+
 describe('Error middleware', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
   describe('JWT errors (401 with originalError)', () => {
     it('returns the generic token message', async () => {
-      const app = buildApp(() => {
-        const err = Object.assign(new Error('jwt malformed'), {
-          status: 401,
-          originalError: new Error('jwt malformed'),
-        })
-        throw err
-      })
+      const app = buildApp(throwJWTError(new jwt.JsonWebTokenError('jwt malformed')))
 
       const res = await request(app).get('/').expect(401)
       expect(res.body.message).toBe('Please provide a valid token in the Authorization header')
+    })
+
+    // junk tokens from scanners, truncated signatures and stale tokens are noise
+    it.each(filteredErrors)('does not record a %s', async (_case, originalError) => {
+      const app = buildApp(throwJWTError(originalError))
+
+      const res = await request(app).get('/').expect(401)
+
+      expect(res.body.message).toBe('Please provide a valid token in the Authorization header')
+      expect(recordException).not.toHaveBeenCalled()
+      expect(Sentry.captureException).not.toHaveBeenCalled()
+    })
+
+    it('records errors that are not token verification failures', async () => {
+      const originalError = new Error('API_SECRET must be 32 characters long')
+      const app = buildApp(throwJWTError(originalError))
+
+      const res = await request(app).get('/').expect(401)
+
+      expect(res.body.message).toBe('Please provide a valid token in the Authorization header')
+      expect(recordException).toHaveBeenCalledWith(originalError)
+      expect(Sentry.captureException).toHaveBeenCalledWith(originalError)
     })
   })
 

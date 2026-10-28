@@ -17,8 +17,12 @@ RUN --mount=type=cache,id=pnpm,target=/var/cache/pnpm \
   pnpm install --store-dir /var/cache/pnpm --frozen-lockfile
 CMD [ "pnpm", "watch" ]
 
-FROM base AS build
-COPY tsconfig.build.json .
+FROM --platform=$BUILDPLATFORM ghcr.io/pnpm/pnpm:12 AS build
+WORKDIR /usr/backend
+
+RUN pnpm runtime set node 26 -g
+
+COPY tsconfig.json tsconfig.build.json package.json pnpm-workspace.yaml pnpm-lock.yaml ./
 RUN --mount=type=cache,id=pnpm,target=/var/cache/pnpm \
   pnpm install --store-dir /var/cache/pnpm --frozen-lockfile
 COPY src ./src

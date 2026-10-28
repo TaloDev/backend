@@ -1,4 +1,4 @@
-import { rand, randBoolean, randNumber, randSlug, randText } from '@ngneat/falso'
+import { rand, randNumber, randSlug, randText } from '@ngneat/falso'
 import { Factory } from 'hefty'
 import GameStat from '../../src/entities/game-stat.js'
 import Game from '../../src/entities/game.js'
@@ -14,20 +14,15 @@ export default class GameStatFactory extends Factory<GameStat> {
 
   protected override definition() {
     this.state(() => {
-      const global = randBoolean()
-      const minValue = randNumber({ min: -999, max: -1 })
-      const maxValue = randNumber({ min: 1, max: 999 })
-      const defaultValue = randNumber({ min: minValue, max: maxValue })
-
       return {
         game: rand(this.availableGames),
         internalName: randSlug(),
         name: randText(),
-        global,
-        minValue: randBoolean() ? minValue : null,
-        maxValue: randBoolean() ? maxValue : null,
-        defaultValue,
-        globalValue: defaultValue,
+        global: false,
+        minValue: null,
+        maxValue: null,
+        defaultValue: 0,
+        globalValue: 0,
         maxChange: randNumber({ min: 1, max: 1000 }),
         minTimeBetweenUpdates: randNumber({ max: 5 }),
       }

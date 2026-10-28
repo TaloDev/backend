@@ -1,4 +1,3 @@
-import { randBoolean, randNumber } from '@ngneat/falso'
 import { Factory } from 'hefty'
 import PlayerGameStat from '../../src/entities/player-game-stat.js'
 
@@ -8,12 +7,8 @@ export default class PlayerGameStatFactory extends Factory<PlayerGameStat> {
   }
 
   protected override definition() {
-    this.state(async ({ stat }) => {
-      return {
-        value: randBoolean()
-          ? stat.defaultValue
-          : randNumber({ min: stat.minValue ?? undefined, max: stat.maxValue ?? undefined }),
-      }
-    })
+    this.state(async ({ stat }) => ({
+      value: stat.defaultValue,
+    }))
   }
 }

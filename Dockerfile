@@ -13,17 +13,20 @@ HEALTHCHECK --interval=5s --timeout=3s --start-period=10s --retries=5 \
   CMD curl -f -s http://localhost/public/health || exit 1
 
 FROM base AS dev
-RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile
+RUN --mount=type=cache,id=pnpm,target=/var/cache/pnpm \
+  pnpm install --store-dir /var/cache/pnpm --frozen-lockfile
 CMD [ "pnpm", "watch" ]
 
 FROM base AS build
 COPY tsconfig.build.json .
-RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile
+RUN --mount=type=cache,id=pnpm,target=/var/cache/pnpm \
+  pnpm install --store-dir /var/cache/pnpm --frozen-lockfile
 COPY src ./src
 RUN pnpm build
 
 FROM base AS prod
 ENV NODE_ENV=production
-RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile --prod
+RUN --mount=type=cache,id=pnpm,target=/var/cache/pnpm \
+  pnpm install --store-dir /var/cache/pnpm --frozen-lockfile --prod
 COPY --from=build /usr/backend/dist .
 CMD [ "node", "index.js" ]

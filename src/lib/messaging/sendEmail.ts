@@ -42,7 +42,6 @@ export default async function sendEmail(emailConfig: MailData): Promise<void> {
 
       captureException(err, {
         extra: {
-          to: emailConfig.to,
           subject: emailConfig.subject,
           attachments: emailConfig.attachments?.map((attachment) => attachment.filename),
         },

@@ -25,7 +25,7 @@ export default class PlanDowngradeReminder extends Mail {
     )
 
     this.title = 'Plan downgrade reminder'
-    this.mainText = `Your organisation still has ${playerCount.toLocaleString()} players. You can move down to ${plan} (${suggestedLimit.toLocaleString()} players). Your plan will not change until you choose a new one.`
+    this.mainText = `Your organisation currently has ${playerCount.toLocaleString()} players. You can move down to ${plan} (${suggestedLimit.toLocaleString()} players). Your plan will not change until you choose a new one.`
 
     this.ctaLink = `${process.env.DASHBOARD_URL}/billing`
     this.ctaText = 'Go to billing'

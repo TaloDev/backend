@@ -113,7 +113,6 @@ export async function authenticateTicket(
   } else {
     captureException(new Error('Failed to find Steamworks player summary'), {
       extra: {
-        steamId,
         integrationId: integration.id,
       },
     })

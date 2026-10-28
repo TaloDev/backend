@@ -5133,6 +5133,14 @@
           "unique": false
         },
         {
+          "columnNames": ["game_id", "dev_build"],
+          "composite": true,
+          "constraint": false,
+          "keyName": "player_game_id_dev_build_index",
+          "primary": false,
+          "unique": false
+        },
+        {
           "columnNames": ["game_id"],
           "composite": false,
           "constraint": false,

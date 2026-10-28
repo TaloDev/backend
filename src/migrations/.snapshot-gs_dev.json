@@ -165,6 +165,7 @@
             "write:players",
             "read:gameChannels",
             "write:gameChannels",
+            "read:events",
             "*"
           ],
           "mappedType": "text"

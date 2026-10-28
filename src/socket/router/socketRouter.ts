@@ -17,10 +17,12 @@ import SocketConnection from '../socketConnection.js'
 import { getSocketTracer } from '../socketTracer.js'
 import { SocketMessageListener } from './createListener.js'
 
-const socketMessageValidator = z.object({
-  req: z.enum(requests),
-  data: z.looseObject({}),
-})
+const socketMessageValidator = z.compile(
+  z.object({
+    req: z.enum(requests),
+    data: z.looseObject({}),
+  }),
+)
 
 type SocketMessage = z.infer<typeof socketMessageValidator>
 
@@ -28,7 +30,9 @@ const routes: SocketMessageListener<ZodType>[][] = [
   playerListeners,
   gameChannelListeners,
   playerRelationshipsListeners,
-]
+].map((listeners) =>
+  listeners.map((listener) => ({ ...listener, validator: z.compile(listener.validator) })),
+)
 
 export default class SocketRouter {
   constructor(readonly wss: Socket) {}
@@ -178,7 +182,7 @@ export default class SocketRouter {
                 ),
               })
             } else {
-              const data = await listener.validator.parseAsync(message.data)
+              const data = listener.validator.parse(message.data)
               await RequestContext.create(em, async () => {
                 await listener.handler({ conn, req: listener.req, data, socket: this.wss })
               })

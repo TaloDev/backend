@@ -27,6 +27,7 @@ import PlayerSession, { PlayerSessionRef } from './player-session.js'
 export const DEV_BUILD_META_KEY = 'META_DEV_BUILD'
 
 @Entity()
+@Index({ properties: ['game', 'devBuild'] })
 export default class Player {
   @PrimaryKey()
   id: string = v4()

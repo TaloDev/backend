@@ -1,9 +1,10 @@
 import { getTestContext } from './testContext.js'
 
-beforeAll(async () => {
-  vi.mock('nodemailer')
-  vi.mock('bullmq')
+vi.mock('nodemailer')
 
+vi.mock('bullmq')
+
+beforeAll(async () => {
   const context = await getTestContext()
   global.app = context.app
   global.ctx = context.ctx

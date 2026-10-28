@@ -1,4 +1,4 @@
-import { rand, randCreditCardNumber, randNumber, randUserName, randUuid } from '@ngneat/falso'
+import { randNumber, randUserName, randUuid } from '@ngneat/falso'
 import { Factory } from 'hefty'
 import PlayerAlias, { PlayerAliasService } from '../../src/entities/player-alias.js'
 import Player from '../../src/entities/player.js'
@@ -13,16 +13,9 @@ export default class PlayerAliasFactory extends Factory<PlayerAlias> {
   }
 
   protected override definition() {
-    const identifiers = [randUuid(), randUserName(), randCreditCardNumber()]
     this.state(() => ({
-      service: rand([
-        PlayerAliasService.STEAM,
-        PlayerAliasService.EPIC,
-        PlayerAliasService.USERNAME,
-        PlayerAliasService.EMAIL,
-        PlayerAliasService.CUSTOM,
-      ]),
-      identifier: rand(identifiers),
+      service: PlayerAliasService.USERNAME,
+      identifier: randUserName(),
       player: this.player,
     }))
   }

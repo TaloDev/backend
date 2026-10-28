@@ -1,6 +1,7 @@
 import { recordException as hdxRecordException } from '@hyperdx/node-opentelemetry'
 import { trace } from '@opentelemetry/api'
 import * as Sentry from '@sentry/node'
+import jwt from 'jsonwebtoken'
 import { Context, Next } from 'koa'
 
 export async function errorMiddleware(ctx: Context, next: Next) {
@@ -91,10 +92,15 @@ export async function errorMiddleware(ctx: Context, next: Next) {
   }
 }
 
-function canCaptureJWTError(err: unknown) {
+// expected auth failures that arrive as plain Errors from koa-jwt: the token's
+// API key can't be resolved, or the key was revoked
+const IGNORED_JWT_MESSAGES = new Set(['Token revoked', 'Secret not provided'])
+
+export function canCaptureJWTError(err: unknown) {
   if (!(err instanceof Error)) return false
-  if (err.name === 'TokenExpiredError') return false
-  if (err.message === 'Token revoked') return false
-  if (err.message === 'Secret not provided') return false
-  return true
+  // any jsonwebtoken verification failure is a bad client token
+  if (err instanceof jwt.JsonWebTokenError) {
+    return false
+  }
+  return !IGNORED_JWT_MESSAGES.has(err.message)
 }

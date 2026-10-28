@@ -1,5 +1,6 @@
 import { init as initSentry } from '@sentry/node'
 import { setAsyncLocalStorageAsyncContextStrategy } from '@sentry/node-core/light'
+import { scrubEvent } from './scrubEvent.js'
 
 // needed for scope isolation
 export function enableSentryScopeIsolation() {
@@ -12,6 +13,7 @@ if (process.env.NODE_ENV !== 'test') {
     environment: process.env.SENTRY_ENV,
     maxValueLength: 4096,
     skipOpenTelemetrySetup: true,
+    beforeSend: scrubEvent,
   })
 
   enableSentryScopeIsolation()

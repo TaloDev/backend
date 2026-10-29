@@ -116,8 +116,8 @@ export default class PlayerGroupRule {
       : this.getCastedKey(key)
   }
 
-  private getOperand(idx: number): string {
-    return raw(`cast('${this.operands[idx]}' as ${this.castType})`)
+  private getOperand(idx: number) {
+    return raw(`cast(? as ${this.castType})`, [this.operands[idx]])
   }
 
   private buildQuery(em: EntityManager, fieldQuery: FilterValue<string>) {

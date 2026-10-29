@@ -67,13 +67,13 @@ export class DataExporter {
       let lastId: string | null = null
 
       while (true) {
-        const cursorFilter: string =
+        const cursor: { filter: string; params: Record<string, string> } =
           lastCreatedAt && lastId
-            ? `AND ${eventCursorClause(
-                `toDateTime64('${formatDateForClickHouse(lastCreatedAt)}', 3)`,
-                `'${lastId}'`,
-              )}`
-            : ''
+            ? {
+                filter: `AND ${eventCursorClause('{lastCreatedAt:DateTime64(3)}', '{lastId:String}')}`,
+                params: { lastCreatedAt: formatDateForClickHouse(lastCreatedAt), lastId },
+              }
+            : { filter: '', params: {} }
 
         const rawEvents = await clickhouse
           .query({
@@ -82,10 +82,11 @@ export class DataExporter {
               FROM events
               WHERE game_id = ${dataExport.game.id}
               ${includeDevData ? '' : 'AND dev_build = false'}
-              ${cursorFilter}
+              ${cursor.filter}
               ORDER BY created_at ASC, id ASC
               LIMIT ${PAGE_SIZE}
             `,
+            query_params: cursor.params,
             format: 'JSONEachRow',
           })
           .then((res) => res.json<ClickHouseEvent>())
@@ -109,17 +110,18 @@ export class DataExporter {
                   FROM event_props
                   WHERE game_id = ${dataExport.game.id}
                   ${includeDevData ? '' : 'AND dev_build = false'}
-                  AND created_at >= toDateTime64('${pageStart}', 3)
-                  AND created_at <= toDateTime64('${pageEnd}', 3)
+                  AND created_at >= {pageStart:DateTime64(3)}
+                  AND created_at <= {pageEnd:DateTime64(3)}
                   AND event_id IN (
                     SELECT id FROM events
                     WHERE game_id = ${dataExport.game.id}
                     ${includeDevData ? '' : 'AND dev_build = false'}
-                    ${cursorFilter}
+                    ${cursor.filter}
                     ORDER BY created_at ASC, id ASC
                     LIMIT ${PAGE_SIZE}
                   )
                 `,
+                  query_params: { ...cursor.params, pageStart, pageEnd },
                   format: 'JSONEachRow',
                 })
                 .then((res) => res.json<ClickHouseEventProp>())

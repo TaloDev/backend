@@ -13,6 +13,7 @@ export enum AdminAPIKeyScope {
   WRITE_PLAYERS = 'write:players',
   READ_GAME_CHANNELS = 'read:gameChannels',
   WRITE_GAME_CHANNELS = 'write:gameChannels',
+  READ_EVENTS = 'read:events',
   FULL_ACCESS = '*',
 }
 

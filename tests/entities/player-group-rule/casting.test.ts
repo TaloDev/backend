@@ -19,7 +19,11 @@ describe('PlayerGroupRule casting', () => {
         props: new Collection<PlayerProp>(player, [new PlayerProp(player, 'currentLevel', '80')]),
       }))
       .one()
-    const player2 = await new PlayerFactory([game]).one()
+    const player2 = await new PlayerFactory([game])
+      .state((player) => ({
+        props: new Collection<PlayerProp>(player, [new PlayerProp(player, 'currentLevel', '70')]),
+      }))
+      .one()
     await em.persist([player1, player2]).flush()
 
     const rules: Partial<PlayerGroupRule>[] = [
@@ -50,7 +54,11 @@ describe('PlayerGroupRule casting', () => {
         props: new Collection<PlayerProp>(player, [new PlayerProp(player, 'currentLevel', '80')]),
       }))
       .one()
-    const player2 = await new PlayerFactory([game]).one()
+    const player2 = await new PlayerFactory([game])
+      .state((player) => ({
+        props: new Collection<PlayerProp>(player, [new PlayerProp(player, 'currentLevel', '70')]),
+      }))
+      .one()
     await em.persist([player1, player2]).flush()
 
     const rules: Partial<PlayerGroupRule>[] = [

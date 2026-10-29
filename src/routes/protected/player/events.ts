@@ -57,7 +57,7 @@ export const eventsRoute = protectedRoute({
       })
       .then((res) => res.json<ClickHouseEvent & { total_count: string }>())
 
-    const events = await Event.massHydrate(em, results, clickhouse, true)
+    const events = await Event.massHydrate(em, results, clickhouse)
     const count = results.length > 0 ? Number(results[0].total_count) : 0
 
     return {

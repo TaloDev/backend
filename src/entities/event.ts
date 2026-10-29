@@ -4,6 +4,7 @@ import { v4 } from 'uuid'
 import { getGlobalRedis } from '../config/redis.config.js'
 import ClickHouseEntity from '../lib/clickhouse/clickhouse-entity.js'
 import { formatDateForClickHouse } from '../lib/clickhouse/formatDateTime.js'
+import { readEventProps } from '../lib/clickhouse/readEventProps.js'
 import { PropRejectionError } from '../lib/errors/propRejectionError.js'
 import { clearCachePattern } from '../lib/perf/clearCachePattern.js'
 import { hardSanitiseProps } from '../lib/props/sanitiseProps.js'
@@ -67,7 +68,6 @@ export default class Event extends ClickHouseEntity<ClickHouseEvent, [string, Ga
     em: EntityManager,
     data: ClickHouseEvent[],
     clickhouse: ClickHouseClient,
-    loadProps: boolean = false,
   ): Promise<Event[]> {
     const playerAliasIds = Array.from(new Set(data.map((event) => event.player_alias_id)))
 
@@ -80,40 +80,7 @@ export default class Event extends ClickHouseEntity<ClickHouseEvent, [string, Ga
     const playerAliasesMap = new Map<number, PlayerAlias>()
     playerAliases.forEach((alias) => playerAliasesMap.set(alias.id, alias))
 
-    const propsMap = new Map<string, Prop[]>()
-    if (loadProps && data.length > 0) {
-      const eventIds = data.map((event) => event.id)
-      const gameIds = Array.from(new Set(data.map((event) => event.game_id)))
-      const times = data.map((event) => new Date(event.created_at).getTime())
-
-      // props share the event's created_at, so we only read the ones inside this page's time range
-      const props = await clickhouse
-        .query({
-          query: `
-            SELECT *
-            FROM event_props
-            WHERE game_id IN ({gameIds:Array(UInt32)})
-              AND created_at >= {start:DateTime64(3)}
-              AND created_at <= {end:DateTime64(3)}
-              AND event_id IN ({eventIds:Array(String)})
-          `,
-          query_params: {
-            gameIds,
-            start: formatDateForClickHouse(new Date(Math.min(...times))),
-            end: formatDateForClickHouse(new Date(Math.max(...times))),
-            eventIds,
-          },
-          format: 'JSONEachRow',
-        })
-        .then((res) => res.json<ClickHouseEventProp>())
-
-      props.forEach((prop) => {
-        if (!propsMap.has(prop.event_id)) {
-          propsMap.set(prop.event_id, [])
-        }
-        propsMap.get(prop.event_id)!.push(new Prop(prop.prop_key, prop.prop_value))
-      })
-    }
+    const propsMap = await readEventProps({ clickhouse, events: data })
 
     return data
       .map((eventData) => {
@@ -129,9 +96,7 @@ export default class Event extends ClickHouseEntity<ClickHouseEvent, [string, Ga
         event.createdAt = new Date(eventData.created_at)
         event.updatedAt = new Date(eventData.updated_at)
 
-        if (loadProps) {
-          event.props = propsMap.get(eventData.id) || []
-        }
+        event.props = propsMap.get(eventData.id) || []
 
         return event
       })

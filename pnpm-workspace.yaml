@@ -1,5 +1,9 @@
 allowBuilds:
   bcrypt: true
   esbuild: true
-  msgpackr-extract: true
+  msgpackr-extract: false
   protobufjs: true
+
+permissions:
+  '@clickhouse/client':
+    skills: false

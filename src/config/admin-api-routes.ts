@@ -1,6 +1,7 @@
 import Koa from 'koa'
 import Router from 'koa-tree-router'
 import { adminAPIKeyMiddleware } from '../middleware/admin-api-key-middleware.js'
+import { eventAdminRouter } from '../routes/admin/event/index.js'
 import { gameChannelAdminRouter } from '../routes/admin/game-channel/index.js'
 import { gameConfigAdminRouter } from '../routes/admin/game-config/index.js'
 import { gameStatAdminRouter } from '../routes/admin/game-stat/index.js'
@@ -12,6 +13,7 @@ export function configureAdminAPIRoutes(app: Koa) {
 
   const mainRouter = new Router()
 
+  eventAdminRouter(mainRouter)
   gameChannelAdminRouter(mainRouter)
   gameConfigAdminRouter(mainRouter)
   gameStatAdminRouter(mainRouter)

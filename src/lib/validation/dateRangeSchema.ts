@@ -1,22 +1,22 @@
 import { isBefore, isSameDay, isValid } from 'date-fns'
 import { z } from 'zod'
 
+export function isValidDateString(value: string) {
+  return isValid(new Date(value))
+}
+
+export function dateStringSchema(field: string, label: string) {
+  return z
+    .string({ error: `${field} is missing from the request query` })
+    .refine(isValidDateString, {
+      error: `Invalid ${label}, please use YYYY-MM-DD or a timestamp`,
+    })
+}
+
 export const dateRangeSchema = z
   .object({
-    startDate: z
-      .string({
-        error: 'startDate is missing from the request query',
-      })
-      .refine((val) => isValid(new Date(val)), {
-        error: 'Invalid start date, please use YYYY-MM-DD or a timestamp',
-      }),
-    endDate: z
-      .string({
-        error: 'endDate is missing from the request query',
-      })
-      .refine((val) => isValid(new Date(val)), {
-        error: 'Invalid end date, please use YYYY-MM-DD or a timestamp',
-      }),
+    startDate: dateStringSchema('startDate', 'start date'),
+    endDate: dateStringSchema('endDate', 'end date'),
   })
   .refine(
     (data) => {

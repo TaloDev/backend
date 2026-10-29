@@ -1,8 +1,10 @@
+import { Collection } from '@mikro-orm/mysql'
 import request from 'supertest'
 import PlayerGroupRule, {
   PlayerGroupRuleName,
   PlayerGroupRuleCastType,
 } from '../../../../src/entities/player-group-rule.js'
+import PlayerProp from '../../../../src/entities/player-prop.js'
 import PlayerFactory from '../../../fixtures/PlayerFactory.js'
 import createOrganisationAndGame from '../../../utils/createOrganisationAndGame.js'
 import createUserAndToken from '../../../utils/createUserAndToken.js'
@@ -164,5 +166,67 @@ describe('Player group - preview count', () => {
         'rules.0.name': ['Invalid option: expected one of "EQUALS"|"SET"|"GT"|"GTE"|"LT"|"LTE"'],
       },
     })
+  })
+
+  it('should not let a rule operand escape into the query text', async () => {
+    const [organisation, game] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken({}, organisation)
+    const [, otherGame] = await createOrganisationAndGame()
+
+    // a leaked operand matches every player, the bound one matches nobody
+    const player = await new PlayerFactory([game]).one()
+    const otherPlayer = await new PlayerFactory([otherGame]).one()
+    await em.persist([player, otherPlayer]).flush()
+
+    const rules: Partial<PlayerGroupRule>[] = [
+      {
+        name: PlayerGroupRuleName.EQUALS,
+        field: 'lastSeenAt',
+        operands: [`2020-01-01' as CHAR) or 1=1 -- `],
+        negate: false,
+        castType: PlayerGroupRuleCastType.DATETIME,
+      },
+    ]
+
+    const res = await request(app)
+      .get(`/games/${game.id}/player-groups/preview-count`)
+      .query({ ruleMode: '$and', rules: encodeURI(JSON.stringify(rules)) })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    expect(res.body.count).toEqual(0)
+  })
+
+  it('should not let a namespaced rule operand escape into the subquery text', async () => {
+    const [organisation, game] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken({}, organisation)
+    const [, otherGame] = await createOrganisationAndGame()
+
+    // the other game's player would match the leaked operand's `1' or 1=1`, the bound one matches nobody
+    const player = await new PlayerFactory([game]).one()
+    const otherPlayer = await new PlayerFactory([otherGame])
+      .state((p) => ({
+        props: new Collection<PlayerProp>(p, [new PlayerProp(p, 'currentLevel', '1')]),
+      }))
+      .one()
+    await em.persist([player, otherPlayer]).flush()
+
+    const rules: Partial<PlayerGroupRule>[] = [
+      {
+        name: PlayerGroupRuleName.EQUALS,
+        field: 'props.currentLevel',
+        operands: [`1' or 1=1 -- `],
+        negate: false,
+        castType: PlayerGroupRuleCastType.CHAR,
+      },
+    ]
+
+    const res = await request(app)
+      .get(`/games/${game.id}/player-groups/preview-count`)
+      .query({ ruleMode: '$and', rules: encodeURI(JSON.stringify(rules)) })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    expect(res.body.count).toEqual(0)
   })
 })

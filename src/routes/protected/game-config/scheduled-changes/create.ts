@@ -12,12 +12,12 @@ import {
   RESERVED_PROP_KEY_MESSAGE,
 } from '../../../../lib/props/sanitiseProps.js'
 import { protectedRoute, withMiddleware } from '../../../../lib/routing/router.js'
+import { loadGame } from '../../../../middleware/game-middleware.js'
+import { userTypeGate } from '../../../../middleware/policy-middleware.js'
 import {
   createScheduledGameConfigChangesBodySchema,
   ScheduledGameConfigChangesData,
-} from '../../../../lib/validation/routes/game-config/createScheduledGameConfigChangesBodySchema.js'
-import { loadGame } from '../../../../middleware/game-middleware.js'
-import { userTypeGate } from '../../../../middleware/policy-middleware.js'
+} from '../../../schemas/game-config/createScheduledGameConfigChangesBodySchema.js'
 
 function validateChanges(game: Game, data: ScheduledGameConfigChangesData) {
   if (data.changes.some((change) => isReservedPropKey(change.key))) {

@@ -1,8 +1,8 @@
 import { AdminAPIKeyScope } from '../../../../entities/admin-api-key.js'
 import { adminRoute, withMiddleware } from '../../../../lib/routing/router.js'
-import { createScheduledGameConfigChangesBodySchema } from '../../../../lib/validation/routes/game-config/createScheduledGameConfigChangesBodySchema.js'
 import { requireAdminScopes } from '../../../../middleware/policy-middleware.js'
 import { createScheduledGameConfigChangesHandler } from '../../../protected/game-config/scheduled-changes/create.js'
+import { createScheduledGameConfigChangesBodySchema } from '../../../schemas/game-config/createScheduledGameConfigChangesBodySchema.js'
 import { loadGameConfig } from '../common.js'
 import { createScheduledChangesDocs } from '../docs.js'
 

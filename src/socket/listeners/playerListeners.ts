@@ -3,7 +3,7 @@ import { EntityManager, RequestContext } from '@mikro-orm/mysql'
 import { z, ZodType } from 'zod'
 import { APIKeyScope } from '../../entities/api-key.js'
 import PlayerAlias, { PlayerAliasService } from '../../entities/player-alias.js'
-import { validateSessionTokenJWT } from '../../middleware/player-auth-middleware.js'
+import { validateSessionTokenJWT } from '../../lib/auth/session-token.js'
 import SocketError, { sendError } from '../messages/socketError.js'
 import { sendMessage } from '../messages/socketMessage.js'
 import createListener from '../router/createListener.js'
@@ -37,13 +37,12 @@ const playerListeners = [
         )
 
         if (alias.service === PlayerAliasService.TALO) {
-          const valid = await validateSessionTokenJWT(
-            em,
-            data.sessionToken ?? '',
-            alias,
-            alias.player.id,
-            alias.id,
-          )
+          const valid = await validateSessionTokenJWT({
+            sessionToken: data.sessionToken ?? '',
+            player: alias.player,
+            playerId: alias.player.id,
+            aliasId: alias.id,
+          })
           if (!valid) {
             sendError({
               conn,

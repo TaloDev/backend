@@ -2,7 +2,7 @@ import { RouteDocs } from '../../../lib/docs/docs-registry.js'
 
 export const identifyDocs = {
   description:
-    'Identify a player\nYou must provide the write:players scope to create a new player if one does not already exist for the provided service and identifier.',
+    'Identify a player\n⚠️ Deprecated: use `[POST] /v1/players/identify` instead.\nYou must provide the `write:players` scope to create a new player if one does not already exist for the provided service and identifier.',
   samples: [
     {
       title: 'Sample response',
@@ -86,6 +86,41 @@ export const identifyDocs = {
           playerId: 'T:_fffbbbddd',
           bundleId: 'com.example.game',
         }),
+      },
+    },
+  ],
+} satisfies RouteDocs
+
+export const claimableIdentifyDocs = {
+  description:
+    "Identify a player with a claim key\nYou must provide the `write:players` scope to create a new player if one does not already exist for the provided service and identifier.\nThe `x-talo-claim-key` header is optional: it isn't needed for integration services (e.g. Steamworks) or Talo Player Authentication. Once a player has a claim key, it's required on requests that act as them.",
+  samples: [
+    {
+      title: 'Sample request',
+      sample: {
+        service: 'username',
+        identifier: 'jimbo',
+      },
+    },
+    {
+      title: 'Sample response',
+      sample: {
+        alias: {
+          id: 1,
+          service: 'username',
+          identifier: 'jimbo',
+          displayName: 'jimbo',
+          player: {
+            id: '7a4e70ec-6ee6-418e-923d-b3a45051b7f9',
+            props: [],
+            aliases: [],
+            devBuild: false,
+            createdAt: '2022-01-15T13:20:32.133Z',
+            lastSeenAt: '2022-04-12T15:09:43.066Z',
+            groups: [],
+          },
+        },
+        socketToken: '15b49ed6-1a7b-40c3-a8c2-e79f7983b478',
       },
     },
   ],
@@ -261,13 +296,22 @@ export const patchDocs = {
 } satisfies RouteDocs
 
 export const mergeDocs = {
-  description: 'Merge two players',
+  description:
+    "Merge two players\nThe `x-talo-alias` header must belong to the first player.\nIf the second player has a claim key, it must be sent in the body as `player2ClaimKey`. If the first player doesn't have a claim key, it will take on the second player's key.",
   samples: [
     {
       title: 'Sample request',
       sample: {
         playerId1: '9dd68e65-a583-493e-9b5e-b11db5da8860',
         playerId2: 'c71bbc7c-cda8-4d0f-a869-ad608c73d43b',
+      },
+    },
+    {
+      title: 'Sample request with a claim key',
+      sample: {
+        playerId1: '9dd68e65-a583-493e-9b5e-b11db5da8860',
+        playerId2: 'c71bbc7c-cda8-4d0f-a869-ad608c73d43b',
+        player2ClaimKey: 'c1a5b8e0-2f4d-4c2b-9a63-0d1f6e2b7c94',
       },
     },
     {

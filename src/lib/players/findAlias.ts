@@ -14,7 +14,7 @@ export async function findAliasFromIdentifyRequest({
   identifier: string
 }) {
   return em.repo(PlayerAlias).findOne({
-    service: service.trim(),
+    service: service.trim().toLowerCase(),
     identifier: identifier.trim(),
     player: {
       game: key.game,

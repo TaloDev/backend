@@ -841,4 +841,153 @@ describe('Player API - merge', () => {
         'Cannot merge players: both players have aliases with the following service(s): username',
     })
   })
+
+  it('should not merge player1 without its claim key', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([
+      APIKeyScope.READ_PLAYERS,
+      APIKeyScope.WRITE_PLAYERS,
+    ])
+
+    const player1 = await new PlayerFactory([apiKey.game]).withGuestAlias().one()
+    const player2 = await new PlayerFactory([apiKey.game]).withUsernameAlias().one()
+    player1.claimKey = 'player1-key'
+    await em.persist([player1, player2]).flush()
+
+    const res = await request(app)
+      .post('/v1/players/merge')
+      .set('x-talo-alias', String(player1.aliases[0].id))
+      .send({ playerId1: player1.id, playerId2: player2.id })
+      .auth(token, { type: 'bearer' })
+      .expect(401)
+
+    expect(res.body.errorCode).toBe('INVALID_CLAIM_KEY')
+  })
+
+  it('should merge player1 with its matching claim key', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([
+      APIKeyScope.READ_PLAYERS,
+      APIKeyScope.WRITE_PLAYERS,
+    ])
+
+    const player1 = await new PlayerFactory([apiKey.game]).withGuestAlias().one()
+    const player2 = await new PlayerFactory([apiKey.game]).withUsernameAlias().one()
+    player1.claimKey = 'player1-key'
+    await em.persist([player1, player2]).flush()
+
+    const res = await request(app)
+      .post('/v1/players/merge')
+      .set('x-talo-alias', String(player1.aliases[0].id))
+      .set('x-talo-claim-key', 'player1-key')
+      .send({ playerId1: player1.id, playerId2: player2.id })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    expect(res.body.player.id).toBe(player1.id)
+  })
+
+  it('should not merge player2 without its claim key', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([
+      APIKeyScope.READ_PLAYERS,
+      APIKeyScope.WRITE_PLAYERS,
+    ])
+
+    const player1 = await new PlayerFactory([apiKey.game]).withGuestAlias().one()
+    const player2 = await new PlayerFactory([apiKey.game]).withUsernameAlias().one()
+    player2.claimKey = 'player2-key'
+    await em.persist([player1, player2]).flush()
+
+    const res = await request(app)
+      .post('/v1/players/merge')
+      .set('x-talo-alias', String(player1.aliases[0].id))
+      .send({ playerId1: player1.id, playerId2: player2.id })
+      .auth(token, { type: 'bearer' })
+      .expect(401)
+
+    expect(res.body.errorCode).toBe('INVALID_CLAIM_KEY')
+  })
+
+  it('should merge player2 with its matching claim key', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([
+      APIKeyScope.READ_PLAYERS,
+      APIKeyScope.WRITE_PLAYERS,
+    ])
+
+    const player1 = await new PlayerFactory([apiKey.game]).withGuestAlias().one()
+    const player2 = await new PlayerFactory([apiKey.game]).withUsernameAlias().one()
+    player2.claimKey = 'player2-key'
+    await em.persist([player1, player2]).flush()
+
+    const res = await request(app)
+      .post('/v1/players/merge')
+      .set('x-talo-alias', String(player1.aliases[0].id))
+      .send({ playerId1: player1.id, playerId2: player2.id, player2ClaimKey: 'player2-key' })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    expect(res.body.player.id).toBe(player1.id)
+  })
+
+  it('should absorb the claim key from player2 into player1 if they do not have one', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([
+      APIKeyScope.READ_PLAYERS,
+      APIKeyScope.WRITE_PLAYERS,
+    ])
+
+    const player1 = await new PlayerFactory([apiKey.game]).withGuestAlias().one()
+    const player2 = await new PlayerFactory([apiKey.game]).withUsernameAlias().one()
+    player2.claimKey = 'player2-key'
+    await em.persist([player1, player2]).flush()
+
+    await request(app)
+      .post('/v1/players/merge')
+      .set('x-talo-alias', String(player1.aliases[0].id))
+      .send({ playerId1: player1.id, playerId2: player2.id, player2ClaimKey: 'player2-key' })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    await em.refresh(player1)
+    expect(player1.claimKey).toBe('player2-key')
+  })
+
+  it('should merge without claim keys even if the caller alias belongs to player2', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([
+      APIKeyScope.READ_PLAYERS,
+      APIKeyScope.WRITE_PLAYERS,
+    ])
+
+    const player1 = await new PlayerFactory([apiKey.game]).withGuestAlias().one()
+    const player2 = await new PlayerFactory([apiKey.game]).withUsernameAlias().one()
+
+    await em.persist([player1, player2]).flush()
+
+    await request(app)
+      .post('/v1/players/merge')
+      .set('x-talo-alias', String(player2.aliases[0].id))
+      .send({ playerId1: player1.id, playerId2: player2.id })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+  })
+
+  it('should not merge players with claim keys if the caller alias belongs to player2', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([
+      APIKeyScope.READ_PLAYERS,
+      APIKeyScope.WRITE_PLAYERS,
+    ])
+
+    const player1 = await new PlayerFactory([apiKey.game]).withGuestAlias().one()
+    const player2 = await new PlayerFactory([apiKey.game]).withUsernameAlias().one()
+    player2.claimKey = 'player2-key'
+    await em.persist([player1, player2]).flush()
+
+    const res = await request(app)
+      .post('/v1/players/merge')
+      .set('x-talo-alias', String(player2.aliases[0].id))
+      .send({ playerId1: player1.id, playerId2: player2.id, player2ClaimKey: 'player2-key' })
+      .auth(token, { type: 'bearer' })
+      .expect(403)
+
+    expect(res.body).toStrictEqual({
+      message: `This merge must be initiated by player ${player1.id}`,
+    })
+  })
 })

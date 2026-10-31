@@ -12,7 +12,7 @@ import { withRedisLock } from '../../../lib/perf/redisLock.js'
 import { filterProfaneProps } from '../../../lib/props/filterProfaneProps.js'
 import { hardSanitiseProps, mergeAndSanitiseProps } from '../../../lib/props/sanitiseProps.js'
 import { apiRoute, withMiddleware } from '../../../lib/routing/router.js'
-import { playerAliasHeaderSchema } from '../../../lib/validation/playerAliasHeaderSchema.js'
+import { playerAliasHeaders } from '../../../lib/validation/playerHeadersSchema.js'
 import { loadAlias } from '../../../middleware/player-alias-middleware.js'
 import { requireScopes } from '../../../middleware/policy-middleware.js'
 import { loadLeaderboard } from './common.js'
@@ -166,9 +166,7 @@ export const postRoute = apiRoute({
   path: '/:internalName/entries',
   docs: postDocs,
   schema: (z) => ({
-    headers: z.looseObject({
-      'x-talo-alias': playerAliasHeaderSchema,
-    }),
+    headers: playerAliasHeaders,
     route: z.object({
       internalName: z.string().meta({ description: 'The internal name of the leaderboard' }),
     }),

@@ -6,7 +6,7 @@ import { PropRejectionError } from '../../../lib/errors/propRejectionError.js'
 import { filterProfaneProps } from '../../../lib/props/filterProfaneProps.js'
 import { hardSanitiseProps } from '../../../lib/props/sanitiseProps.js'
 import { apiRoute, withMiddleware } from '../../../lib/routing/router.js'
-import { playerAliasHeaderSchema } from '../../../lib/validation/playerAliasHeaderSchema.js'
+import { playerAliasHeaders } from '../../../lib/validation/playerHeadersSchema.js'
 import { createPropsSchema } from '../../../lib/validation/propsSchema.js'
 import { loadAlias } from '../../../middleware/player-alias-middleware.js'
 import { requireScopes } from '../../../middleware/policy-middleware.js'
@@ -18,9 +18,7 @@ export const postRoute = apiRoute({
   method: 'post',
   docs: postDocs,
   schema: (z) => ({
-    headers: z.looseObject({
-      'x-talo-alias': playerAliasHeaderSchema,
-    }),
+    headers: playerAliasHeaders,
     body: z.object({
       aliasId: z.number().int().meta({ description: 'The ID of the player alias to subscribe to' }),
       relationshipType: relationshipTypeSchema.meta({

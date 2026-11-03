@@ -284,8 +284,8 @@ importers:
         specifier: ^1.5.0
         version: 1.5.4
       qs:
-        specifier: ^6.14.2
-        version: 6.16.0
+        specifier: ^6.16.1
+        version: 6.16.1
       rate-limiter-flexible:
         specifier: ^7.3.0
         version: 7.4.0
@@ -3165,8 +3165,8 @@ packages:
     engines: {node: '>=10.13.0'}
     hasBin: true
 
-  qs@6.16.0:
-    resolution: {integrity: sha512-h6fhOIaRrID2CbEY2fqs+7t+UXZo+MLAnU5gRIq85uFtdiUPCdsApMlHhXogKVM4HM2DVbIjGNTTYH2OcmP1vA==}
+  qs@6.16.1:
+    resolution: {integrity: sha512-5Px6J7rfHBAGUhNQ3es4YzcOdBBw0SDcVtThJml4RdnKw4tKs2epA0kPZ+K8X+WiHktT93RHVcQ/3ym5aTCgtg==}
     engines: {node: '>=0.6'}
 
   rate-limiter-flexible@7.4.0:
@@ -5514,7 +5514,7 @@ snapshots:
     dependencies:
       '@hapi/bourne': 3.0.0
       inflation: 2.1.0
-      qs: 6.16.0
+      qs: 6.16.1
       raw-body: 2.5.3
       type-is: 1.6.18
 
@@ -6494,7 +6494,7 @@ snapshots:
       pngjs: 5.0.0
       yargs: 15.4.1
 
-  qs@6.16.0:
+  qs@6.16.1:
     dependencies:
       es-define-property: 1.0.1
       side-channel: 1.1.1
@@ -6722,7 +6722,7 @@ snapshots:
   stripe@18.0.0:
     dependencies:
       '@types/node': 26.6.6
-      qs: 6.16.0
+      qs: 6.16.1
 
   superagent@10.3.0(supports-color@7.2.0):
     dependencies:
@@ -6734,7 +6734,7 @@ snapshots:
       formidable: 3.5.4
       methods: 1.1.2
       mime: 2.6.0
-      qs: 6.16.0
+      qs: 6.16.1
     transitivePeerDependencies:
       - supports-color
 

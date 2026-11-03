@@ -270,7 +270,7 @@ importers:
         version: 4.0.1(ioredis@5.11.1(supports-color@7.2.0))
       nodemailer:
         specifier: ^10.0.0
-        version: 10.0.12
+        version: 10.1.4
       obscenity:
         specifier: ^0.4.6
         version: 0.4.6
@@ -2980,8 +2980,8 @@ packages:
   node-int64@0.4.0:
     resolution: {integrity: sha512-O5lz91xSOeoXP6DulyHfllpq+Eg00MWitZIbtPfoSEvqIHdl5gfcY6hYzDWnj0qD5tz52PI08u9qUvSVeUBeHw==}
 
-  nodemailer@10.0.12:
-    resolution: {integrity: sha512-PQ46oNbNMuH/Sno7B5IWIU9etytwrO0xdTFvWXpIQFRXhBAXtzD48243AS+BCbQQTPD8y3fqUrgLn0tSo77gvg==}
+  nodemailer@10.1.4:
+    resolution: {integrity: sha512-EsMnOR2oRv4LGnWvHgcVYkkQ4O2j8KO4WTw6l+PHR4sOXo8SAgIraxtEnGDmotjbhv0hDsu3IuDIFZm8iXwO4A==}
     engines: {node: '>=20.0.0'}
 
   normalize-path@3.0.0:
@@ -6281,7 +6281,7 @@ snapshots:
 
   node-int64@0.4.0: {}
 
-  nodemailer@10.0.12: {}
+  nodemailer@10.1.4: {}
 
   normalize-path@3.0.0: {}
 

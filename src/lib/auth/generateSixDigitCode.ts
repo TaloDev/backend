@@ -1,3 +1,8 @@
-export default function generateSixDigitCode() {
-  return Math.random().toString().substring(2, 8)
+import crypto from 'node:crypto'
+
+const CODE_LENGTH = 6
+const CODE_SPACE = 10 ** CODE_LENGTH
+
+export function generateSixDigitCode() {
+  return crypto.randomInt(CODE_SPACE).toString().padStart(CODE_LENGTH, '0')
 }

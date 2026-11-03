@@ -10,6 +10,7 @@ const limitMap = {
 
 const rateLimitOverrides = [
   { prefix: '/public/players', key: 'playerPublic' },
+  { prefix: '/public/users', key: 'auth' },
   { prefix: '/v1/players/auth', key: 'auth' },
   { prefix: '/v1/players/identify', key: 'auth' },
   { prefix: '/v1/players/socket-token', key: 'auth' },
@@ -18,7 +19,7 @@ const rateLimitOverrides = [
 
 const rateLimitBypass = new Set<string>(['/v1/health-check'])
 
-const PLAYER_PUBLIC_PREFIX = /^\/(public\/players)\//
+const RATE_LIMITED_PUBLIC_PREFIX = /^\/public\/(players|users)\//
 
 export function getMaxRequestsForPath(requestPath: string) {
   const override = rateLimitOverrides.find((override) => requestPath.startsWith(override.prefix))
@@ -31,12 +32,12 @@ export function getMaxRequestsForPath(requestPath: string) {
   }
 }
 
-function isPlayerPublicRoute(ctx: Context) {
-  return PLAYER_PUBLIC_PREFIX.test(ctx.path)
+export function isRateLimitedPublicRoute(ctx: Context) {
+  return RATE_LIMITED_PUBLIC_PREFIX.test(ctx.path)
 }
 
 export async function limiterMiddleware(ctx: Context, next: Next) {
-  const routeMatches = isPlayerPublicRoute(ctx) || isAPIRoute(ctx) || isAdminAPIRoute(ctx)
+  const routeMatches = isRateLimitedPublicRoute(ctx) || isAPIRoute(ctx) || isAdminAPIRoute(ctx)
 
   if (routeMatches && process.env.NODE_ENV !== 'test' && !rateLimitBypass.has(ctx.request.path)) {
     const { limitMapKey, maxRequests } = getMaxRequestsForPath(ctx.request.path)

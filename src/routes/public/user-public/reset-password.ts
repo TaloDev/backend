@@ -1,11 +1,16 @@
 import bcrypt from 'bcrypt'
-import jwt from 'jsonwebtoken'
-import assert from 'node:assert'
 import UserSession from '../../../entities/user-session.js'
 import User from '../../../entities/user.js'
-import { verify } from '../../../lib/auth/jwt.js'
+import { getHashFingerprint, getResetTokenKey } from '../../../lib/auth/resetToken.js'
 import { publicRoute } from '../../../lib/routing/router.js'
 import { passwordSchema } from '../../../lib/validation/passwordSchema.js'
+
+function expiredResponse() {
+  return {
+    status: 401 as const,
+    body: { message: 'Request expired', expired: true },
+  }
+}
 
 export const resetPasswordRoute = publicRoute({
   method: 'post',
@@ -18,23 +23,25 @@ export const resetPasswordRoute = publicRoute({
   }),
   handler: async (ctx) => {
     const { password, token } = ctx.state.validated.body
-    const decodedToken = jwt.decode(token)
+    const key = getResetTokenKey(token)
 
     const em = ctx.em
-    const user = await em.repo(User).findOne(Number(decodedToken?.sub))
-
-    try {
-      const secret = user?.password.substring(0, 10) ?? 'no-timing-attacks'
-      await verify(token, secret)
-    } catch {
-      return {
-        status: 401,
-        body: { message: 'Request expired', expired: true },
-      }
+    const storedToken = await ctx.redis.get(key)
+    if (!storedToken) {
+      return expiredResponse()
     }
 
-    // verify() would've failed if the user is not defined
-    assert(user)
+    const [userId, passwordFingerprint] = storedToken.split(':')
+    const user = await em.repo(User).findOne(Number(userId))
+    if (!user) {
+      await ctx.redis.del(key)
+      return expiredResponse()
+    }
+
+    // a password change after the link was sent invalidates it
+    if (passwordFingerprint !== getHashFingerprint(user.password)) {
+      return expiredResponse()
+    }
 
     const isSamePassword = await bcrypt.compare(password, user.password)
     if (isSamePassword) {
@@ -45,6 +52,7 @@ export const resetPasswordRoute = publicRoute({
     }
 
     user.password = await bcrypt.hash(password, 10)
+    await ctx.redis.del(key)
 
     const sessions = await em.repo(UserSession).find({ user })
     await em.remove(sessions).flush()

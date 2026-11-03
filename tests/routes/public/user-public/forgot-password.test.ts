@@ -1,4 +1,5 @@
 import request from 'supertest'
+import { getHashFingerprint } from '../../../../src/lib/auth/resetToken.js'
 import * as sendEmail from '../../../../src/lib/messaging/sendEmail.js'
 import UserFactory from '../../../fixtures/UserFactory.js'
 
@@ -16,11 +17,16 @@ describe('User public - forgot password', () => {
     await request(app).post('/public/users/forgot_password').send({ email: user.email }).expect(204)
 
     expect(sendMock).toHaveBeenCalled()
+
+    const keys = await redis.keys('user:password-reset:*')
+    expect(keys).toHaveLength(1)
+    expect(await redis.get(keys[0])).toBe(`${user.id}:${getHashFingerprint(user.password)}`)
   })
 
   it('should let a user request a forgot password email for a non-existent user', async () => {
     await request(app).post('/public/users/forgot_password').send({ email: 'blah' }).expect(204)
 
     expect(sendMock).not.toHaveBeenCalled()
+    expect(await redis.keys('user:password-reset:*')).toHaveLength(0)
   })
 })

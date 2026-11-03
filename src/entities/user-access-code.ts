@@ -1,5 +1,5 @@
 import { Entity, ManyToOne, PrimaryKey, Property } from '@mikro-orm/decorators/es'
-import generateSixDigitCode from '../lib/auth/generateSixDigitCode.js'
+import { generateSixDigitCode } from '../lib/auth/generateSixDigitCode.js'
 import User from './user.js'
 
 @Entity()

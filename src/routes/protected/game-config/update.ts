@@ -14,10 +14,10 @@ import {
 } from '../../../lib/props/sanitiseProps.js'
 import { protectedRoute, withMiddleware } from '../../../lib/routing/router.js'
 import { updatePropsSchema } from '../../../lib/validation/propsSchema.js'
-import { updateGameConfigBodySchema } from '../../../lib/validation/routes/game-config/updateGameConfigBodySchema.js'
 import { loadGame } from '../../../middleware/game-middleware.js'
 import { userTypeGate } from '../../../middleware/policy-middleware.js'
 import Socket from '../../../socket/index.js'
+import { updateGameConfigBodySchema } from '../../schemas/game-config/updateGameConfigBodySchema.js'
 
 export async function updateGameConfigHandler({
   em,

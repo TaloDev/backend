@@ -1,7 +1,12 @@
 import { getGlobalQueue } from '../../../config/global-queues.js'
 import ResetPassword from '../../../emails/reset-password.js'
 import User from '../../../entities/user.js'
-import { sign } from '../../../lib/auth/jwt.js'
+import {
+  generateResetToken,
+  getHashFingerprint,
+  getResetTokenKey,
+  RESET_TOKEN_TTL_SECONDS,
+} from '../../../lib/auth/resetToken.js'
 import queueEmail from '../../../lib/messaging/queueEmail.js'
 import { publicRoute } from '../../../lib/routing/router.js'
 
@@ -20,10 +25,10 @@ export const forgotPasswordRoute = publicRoute({
     const user = await em.repo(User).findOne({ email })
 
     if (user) {
-      const secret = user.password.substring(0, 10)
-      const payload = { sub: user.id }
-      const accessToken = await sign(payload, secret, { expiresIn: '15m' })
-      await queueEmail(getGlobalQueue('email'), new ResetPassword(user, accessToken))
+      const token = generateResetToken()
+      const value = `${user.id}:${getHashFingerprint(user.password)}`
+      await ctx.redis.set(getResetTokenKey(token), value, 'EX', RESET_TOKEN_TTL_SECONDS)
+      await queueEmail(getGlobalQueue('email'), new ResetPassword(user, token))
     }
 
     return {

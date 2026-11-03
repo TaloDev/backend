@@ -1,8 +1,8 @@
 import { AdminAPIKeyScope } from '../../../entities/admin-api-key.js'
 import { adminRoute, withMiddleware } from '../../../lib/routing/router.js'
-import { updateGameConfigBodySchema } from '../../../lib/validation/routes/game-config/updateGameConfigBodySchema.js'
 import { requireAdminScopes } from '../../../middleware/policy-middleware.js'
 import { updateGameConfigHandler } from '../../protected/game-config/update.js'
+import { updateGameConfigBodySchema } from '../../schemas/game-config/updateGameConfigBodySchema.js'
 import { loadGameConfig } from './common.js'
 import { updateDocs } from './docs.js'
 

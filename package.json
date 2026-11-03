@@ -73,7 +73,7 @@
     "stripe": "18.0.0",
     "uuid": "^14.0.0",
     "ws": "^8.21.0",
-    "zod": "^4.3.6"
+    "zod": "^4.6.6"
   },
   "devDependencies": {
     "@mikro-orm/cli": "^7.2.4",

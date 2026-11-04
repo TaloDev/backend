@@ -18,13 +18,16 @@ describe('Admin API key - update', () => {
 
       const res = await request(app)
         .put(`/games/${game.id}/admin-api-keys/${key.id}`)
-        .send({ scopes: ['read:stats', 'write:stats'] })
+        .send({ scopes: [AdminAPIKeyScope.READ_STATS, AdminAPIKeyScope.WRITE_STATS] })
         .auth(token, { type: 'bearer' })
         .expect(statusCode)
 
       if (statusCode === 200) {
         expect(res.body.apiKey.gameId).toBe(game.id)
-        expect(res.body.apiKey.scopes).toStrictEqual(['read:stats', 'write:stats'])
+        expect(res.body.apiKey.scopes).toStrictEqual([
+          AdminAPIKeyScope.READ_STATS,
+          AdminAPIKeyScope.WRITE_STATS,
+        ])
       }
 
       const activity = await em.repo(GameActivity).findOne({
@@ -46,6 +49,31 @@ describe('Admin API key - update', () => {
     },
   )
 
+  it('should rename an admin api key', async () => {
+    const [organisation, game] = await createOrganisationAndGame()
+    const [token, user] = await createUserAndToken(
+      { type: UserType.ADMIN, emailConfirmed: true },
+      organisation,
+    )
+
+    const { apiKey: key } = await createAdminAPIKey([AdminAPIKeyScope.READ_STATS], {
+      game,
+      user,
+    })
+
+    const res = await request(app)
+      .put(`/games/${game.id}/admin-api-keys/${key.id}`)
+      .send({ name: 'renamed key' })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    expect(res.body.apiKey.name).toBe('renamed key')
+    expect(res.body.apiKey.scopes).toStrictEqual([AdminAPIKeyScope.READ_STATS])
+
+    await em.refresh(key)
+    expect(key.name).toBe('renamed key')
+  })
+
   it("should not update an admin api key if the user's email is not confirmed", async () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token, user] = await createUserAndToken({ type: UserType.ADMIN }, organisation)
@@ -54,7 +82,7 @@ describe('Admin API key - update', () => {
 
     const res = await request(app)
       .put(`/games/${game.id}/admin-api-keys/${key.id}`)
-      .send({ scopes: ['read:stats', 'write:stats'] })
+      .send({ scopes: [AdminAPIKeyScope.READ_STATS, AdminAPIKeyScope.WRITE_STATS] })
       .auth(token, { type: 'bearer' })
       .expect(403)
 

@@ -95,6 +95,7 @@ import { AddDevBuildToLeaderboardEntry } from './20261009113941AddDevBuildToLead
 import { AddPlayerAliasSubscriptionProps } from './20261012050921AddPlayerAliasSubscriptionProps.js'
 import { AddExecutedAtToScheduledGameConfigChanges } from './20261019203413AddExecutedAtToScheduledGameConfigChanges.js'
 import { PlayerGameIdDevBuildIndex } from './20261028192332PlayerGameIdDevBuildIndex.js'
+import { AddNameToAPIKeys } from './20261104104321AddNameToAPIKeys.js'
 
 export default [
   InitialMigration,
@@ -194,4 +195,5 @@ export default [
   AddPlayerAliasSubscriptionProps,
   AddExecutedAtToScheduledGameConfigChanges,
   PlayerGameIdDevBuildIndex,
+  AddNameToAPIKeys,
 ]

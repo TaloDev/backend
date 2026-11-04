@@ -15,13 +15,17 @@ describe('API key - create', () => {
 
       const res = await request(app)
         .post(`/games/${game.id}/api-keys`)
-        .send({ scopes: ['read:players', 'write:events'] })
+        .send({ scopes: [APIKeyScope.READ_PLAYERS, APIKeyScope.WRITE_EVENTS], name: 'prod' })
         .auth(token, { type: 'bearer' })
         .expect(statusCode)
 
       if (statusCode === 200) {
         expect(res.body.apiKey.gameId).toBe(game.id)
-        expect(res.body.apiKey.scopes).toStrictEqual(['read:players', 'write:events'])
+        expect(res.body.apiKey.scopes).toStrictEqual([
+          APIKeyScope.READ_PLAYERS,
+          APIKeyScope.WRITE_EVENTS,
+        ])
+        expect(res.body.apiKey.name).toBe('prod')
       }
 
       const activity = await em.repo(GameActivity).findOne({
@@ -29,7 +33,8 @@ describe('API key - create', () => {
         game,
         extra: {
           display: {
-            Scopes: 'read:players, write:events',
+            Name: 'prod',
+            Scopes: `${APIKeyScope.READ_PLAYERS}, ${APIKeyScope.WRITE_EVENTS}`,
           },
         },
       })

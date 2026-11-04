@@ -12,6 +12,7 @@ export const createRoute = protectedRoute({
   schema: (z) => ({
     body: z.object({
       scopes: z.array(z.enum(AdminAPIKeyScope)).nonempty(),
+      name: z.string().trim().min(1).max(255).optional(),
     }),
   }),
   middleware: withMiddleware(
@@ -20,7 +21,7 @@ export const createRoute = protectedRoute({
     loadGame,
   ),
   handler: async (ctx) => {
-    const { scopes } = ctx.state.validated.body
+    const { scopes, name } = ctx.state.validated.body
     const em = ctx.em
 
     const { key, keyHash, keyEnding } = generateAdminAPIKey()
@@ -31,6 +32,7 @@ export const createRoute = protectedRoute({
       keyEnding,
     })
     apiKey.scopes = scopes
+    apiKey.name = name ?? ''
 
     await em.persist(apiKey).flush()
 
@@ -41,6 +43,7 @@ export const createRoute = protectedRoute({
       extra: {
         keyId: apiKey.id,
         display: {
+          ...(apiKey.name ? { Name: apiKey.name } : {}),
           'Key ending in': keyEnding,
           Scopes: scopes.join(', '),
         },

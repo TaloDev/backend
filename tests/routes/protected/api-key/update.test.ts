@@ -18,13 +18,16 @@ describe('API key - update', () => {
 
       const res = await request(app)
         .put(`/games/${game.id}/api-keys/${key.id}`)
-        .send({ scopes: ['read:players', 'write:events'] })
+        .send({ scopes: [APIKeyScope.READ_PLAYERS, APIKeyScope.WRITE_EVENTS] })
         .auth(token, { type: 'bearer' })
         .expect(statusCode)
 
       if (statusCode === 200) {
         expect(res.body.apiKey.gameId).toBe(game.id)
-        expect(res.body.apiKey.scopes).toStrictEqual(['read:players', 'write:events'])
+        expect(res.body.apiKey.scopes).toStrictEqual([
+          APIKeyScope.READ_PLAYERS,
+          APIKeyScope.WRITE_EVENTS,
+        ])
       }
 
       const activity = await em.repo(GameActivity).findOne({
@@ -46,6 +49,30 @@ describe('API key - update', () => {
     },
   )
 
+  it('should rename an api key', async () => {
+    const [organisation, game] = await createOrganisationAndGame()
+    const [token, user] = await createUserAndToken(
+      { type: UserType.ADMIN, emailConfirmed: true },
+      organisation,
+    )
+
+    const key = new APIKey(game, user)
+    key.scopes = [APIKeyScope.READ_PLAYERS]
+    await em.persist(key).flush()
+
+    const res = await request(app)
+      .put(`/games/${game.id}/api-keys/${key.id}`)
+      .send({ name: 'renamed key' })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    expect(res.body.apiKey.name).toBe('renamed key')
+    expect(res.body.apiKey.scopes).toStrictEqual([APIKeyScope.READ_PLAYERS])
+
+    await em.refresh(key)
+    expect(key.name).toBe('renamed key')
+  })
+
   it("should not update an api key if the user's email is not confirmed", async () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token, user] = await createUserAndToken({ type: UserType.ADMIN }, organisation)
@@ -55,7 +82,7 @@ describe('API key - update', () => {
 
     const res = await request(app)
       .put(`/games/${game.id}/api-keys/${key.id}`)
-      .send({ scopes: ['read:players', 'write:events'] })
+      .send({ scopes: [APIKeyScope.READ_PLAYERS, APIKeyScope.WRITE_EVENTS] })
       .auth(token, { type: 'bearer' })
       .expect(403)
 

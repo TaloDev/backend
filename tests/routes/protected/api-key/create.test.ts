@@ -47,6 +47,28 @@ describe('API key - create', () => {
     },
   )
 
+  it('should create an api key without a name', async () => {
+    const [organisation, game] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken(
+      { type: UserType.ADMIN, emailConfirmed: true },
+      organisation,
+    )
+
+    const res = await request(app)
+      .post(`/games/${game.id}/api-keys`)
+      .send({ scopes: [APIKeyScope.READ_PLAYERS] })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    expect(res.body.apiKey.name).toBe('')
+
+    const activity = await em.repo(GameActivity).findOneOrFail({
+      type: GameActivityType.API_KEY_CREATED,
+      game,
+    })
+    expect(activity.extra.display).toStrictEqual({ Scopes: APIKeyScope.READ_PLAYERS })
+  })
+
   it("should not create an api key if the user's email is not confirmed", async () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({ type: UserType.ADMIN }, organisation)

@@ -49,6 +49,31 @@ describe('Admin API key - create', () => {
     },
   )
 
+  it('should create an admin api key without a name', async () => {
+    const [organisation, game] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken(
+      { type: UserType.ADMIN, emailConfirmed: true },
+      organisation,
+    )
+
+    const res = await request(app)
+      .post(`/games/${game.id}/admin-api-keys`)
+      .send({ scopes: [AdminAPIKeyScope.READ_STATS] })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    expect(res.body.apiKey.name).toBe('')
+
+    const activity = await em.repo(GameActivity).findOneOrFail({
+      type: GameActivityType.ADMIN_API_KEY_CREATED,
+      game,
+    })
+    expect(activity.extra.display).toStrictEqual({
+      'Key ending in': res.body.apiKey.keyEnding,
+      Scopes: AdminAPIKeyScope.READ_STATS,
+    })
+  })
+
   it("should not create an admin api key if the user's email is not confirmed", async () => {
     const [organisation, game] = await createOrganisationAndGame()
     const [token] = await createUserAndToken({ type: UserType.ADMIN }, organisation)

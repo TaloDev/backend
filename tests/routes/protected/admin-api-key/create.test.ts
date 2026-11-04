@@ -15,13 +15,17 @@ describe('Admin API key - create', () => {
 
       const res = await request(app)
         .post(`/games/${game.id}/admin-api-keys`)
-        .send({ scopes: ['read:stats', 'write:stats'] })
+        .send({ scopes: [AdminAPIKeyScope.READ_STATS, AdminAPIKeyScope.WRITE_STATS], name: 'prod' })
         .auth(token, { type: 'bearer' })
         .expect(statusCode)
 
       if (statusCode === 200) {
         expect(res.body.apiKey.gameId).toBe(game.id)
-        expect(res.body.apiKey.scopes).toStrictEqual(['read:stats', 'write:stats'])
+        expect(res.body.apiKey.scopes).toStrictEqual([
+          AdminAPIKeyScope.READ_STATS,
+          AdminAPIKeyScope.WRITE_STATS,
+        ])
+        expect(res.body.apiKey.name).toBe('prod')
         expect(res.body.key).toMatch(/^ta_[a-f0-9]{64}$/)
         expect(res.body.apiKey.keyEnding).toBe(res.body.key.slice(-4))
       }
@@ -31,7 +35,8 @@ describe('Admin API key - create', () => {
         game,
         extra: {
           display: {
-            Scopes: 'read:stats, write:stats',
+            Name: 'prod',
+            Scopes: `${AdminAPIKeyScope.READ_STATS}, ${AdminAPIKeyScope.WRITE_STATS}`,
           },
         },
       })

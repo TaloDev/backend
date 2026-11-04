@@ -25,6 +25,9 @@ export default class AdminAPIKey {
   @Enum({ items: () => AdminAPIKeyScope, array: true })
   scopes: AdminAPIKeyScope[] = []
 
+  @Property({ default: '' })
+  name!: string
+
   @Property({ unique: true })
   keyHash!: string
 
@@ -70,6 +73,7 @@ export default class AdminAPIKey {
     return {
       id: this.id,
       scopes: this.scopes,
+      name: this.name,
       gameId: this.game.id,
       createdBy: this.createdByUser.username,
       keyEnding: this.keyEnding,

@@ -1,5 +1,6 @@
 import request from 'supertest'
 import Game from '../../../../src/entities/game.js'
+import { UserType } from '../../../../src/entities/user.js'
 import GameFactory from '../../../fixtures/GameFactory.js'
 import createOrganisationAndGame from '../../../utils/createOrganisationAndGame.js'
 import createUserAndToken from '../../../utils/createUserAndToken.js'
@@ -43,4 +44,28 @@ describe('Organisation - reorder games', () => {
       }
     },
   )
+
+  it('should ignore games outside the organisation', async () => {
+    const [organisation, firstGame] = await createOrganisationAndGame({}, { switcherOrder: 0 })
+    const secondGame = await new GameFactory(organisation).state(() => ({ switcherOrder: 1 })).one()
+    await em.persist(secondGame).flush()
+
+    const [, otherGame] = await createOrganisationAndGame({}, { switcherOrder: 5 })
+
+    const [token] = await createUserAndToken({ type: UserType.OWNER }, organisation)
+
+    const res = await request(app)
+      .put('/organisations/games/order')
+      .send({ gameIds: [otherGame.id, firstGame.id, secondGame.id] })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    expect(res.body.games.map((game: Game) => game.id)).toStrictEqual([firstGame.id, secondGame.id])
+
+    const updatedGames = await em
+      .repo(Game)
+      .find({ organisation }, { orderBy: { switcherOrder: 'asc' } })
+    expect(updatedGames.map((game) => game.id)).toStrictEqual([firstGame.id, secondGame.id])
+    expect((await em.refreshOrFail(otherGame)).switcherOrder).toBe(5)
+  })
 })

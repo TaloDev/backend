@@ -96,6 +96,7 @@ import { AddPlayerAliasSubscriptionProps } from './20261012050921AddPlayerAliasS
 import { AddExecutedAtToScheduledGameConfigChanges } from './20261019203413AddExecutedAtToScheduledGameConfigChanges.js'
 import { PlayerGameIdDevBuildIndex } from './20261028192332PlayerGameIdDevBuildIndex.js'
 import { AddNameToAPIKeys } from './20261104104321AddNameToAPIKeys.js'
+import { AddGameSwitcherPreferences } from './20261104215250AddGameSwitcherPreferences.js'
 
 export default [
   InitialMigration,
@@ -196,4 +197,5 @@ export default [
   AddExecutedAtToScheduledGameConfigChanges,
   PlayerGameIdDevBuildIndex,
   AddNameToAPIKeys,
+  AddGameSwitcherPreferences,
 ]

@@ -400,4 +400,40 @@ describe('Game - update', () => {
       }
     },
   )
+
+  it.each(userPermissionProvider())(
+    'should update switcherHidden for a %s user',
+    async (statusCode, _, type) => {
+      const [organisation, game] = await createOrganisationAndGame()
+      const [token] = await createUserAndToken({ type }, organisation)
+
+      await request(app)
+        .patch(`/games/${game.id}`)
+        .send({ switcherHidden: true })
+        .auth(token, { type: 'bearer' })
+        .expect(statusCode)
+
+      if (statusCode === 200) {
+        expect((await em.refreshOrFail(game)).switcherHidden).toBe(true)
+      }
+    },
+  )
+
+  it('should log hiding a game from the switcher', async () => {
+    const [organisation, game] = await createOrganisationAndGame()
+    const [token] = await createUserAndToken({ type: UserType.OWNER }, organisation)
+
+    await request(app)
+      .patch(`/games/${game.id}`)
+      .send({ switcherHidden: true })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    const activity = await em.repo(GameActivity).findOne({
+      type: GameActivityType.GAME_SETTINGS_UPDATED,
+      game,
+      extra: { display: { 'Updated properties': 'switcherHidden: true' } },
+    })
+    expect(activity).not.toBeNull()
+  })
 })

@@ -1,5 +1,6 @@
 import request from 'supertest'
 import { UserType } from '../../../../src/entities/user.js'
+import GameFactory from '../../../fixtures/GameFactory.js'
 import InviteFactory from '../../../fixtures/InviteFactory.js'
 import UserFactory from '../../../fixtures/UserFactory.js'
 import createOrganisationAndGame from '../../../utils/createOrganisationAndGame.js'
@@ -36,4 +37,22 @@ describe('Organisation - current', () => {
       }
     },
   )
+
+  it('should return games in switcher order', async () => {
+    const [organisation, lastGame] = await createOrganisationAndGame({}, { switcherOrder: 1 })
+    const firstGame = await new GameFactory(organisation).state(() => ({ switcherOrder: 0 })).one()
+    await em.persist(firstGame).flush()
+
+    const [token] = await createUserAndToken({ type: UserType.OWNER }, organisation)
+
+    const res = await request(app)
+      .get('/organisations/current')
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    expect(res.body.games.map((game: { id: number }) => game.id)).toStrictEqual([
+      firstGame.id,
+      lastGame.id,
+    ])
+  })
 })

@@ -15,7 +15,7 @@ export default class Organisation {
   @Property()
   name!: string
 
-  @OneToMany(() => Game, (game) => game.organisation)
+  @OneToMany(() => Game, (game) => game.organisation, { orderBy: { switcherOrder: 'asc' } })
   games = new Collection<Game>(this)
 
   @OneToOne({ orphanRemoval: true, eager: true })

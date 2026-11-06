@@ -1,5 +1,6 @@
 import { APIKeyScope } from '../../../entities/api-key.js'
 import { apiRoute, withMiddleware } from '../../../lib/routing/router.js'
+import { claimKeyHeaders } from '../../../lib/validation/playerHeadersSchema.js'
 import { updatePropsSchema } from '../../../lib/validation/propsSchema.js'
 import { requireScopes } from '../../../middleware/policy-middleware.js'
 import { updatePlayerHandler } from '../../protected/player/update.js'
@@ -11,6 +12,7 @@ export const patchRoute = apiRoute({
   path: '/:id',
   docs: patchDocs,
   schema: (z) => ({
+    headers: claimKeyHeaders,
     body: z.object({
       props: updatePropsSchema.optional().meta({
         description:

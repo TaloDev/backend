@@ -1,7 +1,7 @@
 import { APIKeyScope } from '../../../entities/api-key.js'
 import { RouteDocs } from '../../../lib/docs/docs-registry.js'
 import { apiRoute, withMiddleware } from '../../../lib/routing/router.js'
-import { playerAliasHeaderSchema } from '../../../lib/validation/playerAliasHeaderSchema.js'
+import { playerAliasHeaders } from '../../../lib/validation/playerHeadersSchema.js'
 import { loadAlias } from '../../../middleware/player-alias-middleware.js'
 import { requireScopes } from '../../../middleware/policy-middleware.js'
 
@@ -50,9 +50,7 @@ export const putRoute = apiRoute({
   method: 'put',
   docs,
   schema: (z) => ({
-    headers: z.looseObject({
-      'x-talo-alias': playerAliasHeaderSchema,
-    }),
+    headers: playerAliasHeaders,
     body: z.object({
       online: z.boolean().optional().meta({ description: 'Whether the player is online' }),
       customStatus: z

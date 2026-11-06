@@ -26,11 +26,11 @@ describe('Signature middleware', () => {
   })
 
   it('should skip verification when no alias is set', async () => {
-    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_GAME_CONFIG])
+    const [apiKey, token] = await createAPIKeyAndToken([])
     apiKey.game.verifyRequests = true
     await em.flush()
 
-    await request(app).get('/v1/game-config').auth(token, { type: 'bearer' }).expect(200)
+    await request(app).post('/v1/socket-tickets').auth(token, { type: 'bearer' }).expect(200)
   })
 
   it('should skip verification for GET requests even with alias set', async () => {
@@ -140,5 +140,88 @@ describe('Signature middleware', () => {
       .set('x-talo-alias', String(player.aliases[0].id))
       .set('x-talo-signature', sig)
       .expect(401)
+  })
+
+  it('should verify an identify request with a claim key', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([
+      APIKeyScope.READ_PLAYERS,
+      APIKeyScope.WRITE_PLAYERS,
+    ])
+    apiKey.game.verifyRequests = true
+
+    const verificationKey = await createEncryptedKey(apiKey.game, 'test-verification-key-1')
+    await em.persist(verificationKey).flush()
+
+    const body = JSON.stringify({ service: 'username', identifier: 'jimbo' })
+    const sig = buildSignature(body, 'test-verification-key-1', '1')
+
+    await request(app)
+      .post('/v1/players/identify')
+      .send({ service: 'username', identifier: 'jimbo' })
+      .auth(token, { type: 'bearer' })
+      .set('x-talo-claim-key', 'the-claim-key')
+      .set('x-talo-signature', sig)
+      .expect(200)
+  })
+
+  it('should return 401 when an identify request with a claim key has no signature', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([
+      APIKeyScope.READ_PLAYERS,
+      APIKeyScope.WRITE_PLAYERS,
+    ])
+    apiKey.game.verifyRequests = true
+    await em.flush()
+
+    await request(app)
+      .post('/v1/players/identify')
+      .send({ service: 'username', identifier: 'jimbo' })
+      .auth(token, { type: 'bearer' })
+      .set('x-talo-claim-key', 'the-claim-key')
+      .expect(401)
+  })
+
+  it('should return 401 for a replayed identify request id', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([
+      APIKeyScope.READ_PLAYERS,
+      APIKeyScope.WRITE_PLAYERS,
+    ])
+    apiKey.game.verifyRequests = true
+
+    const verificationKey = await createEncryptedKey(apiKey.game, 'test-verification-key-1')
+    await em.persist(verificationKey).flush()
+
+    const body = JSON.stringify({ service: 'username', identifier: 'jimbo' })
+    const rid = crypto.randomUUID()
+    const sig = buildSignature(body, 'test-verification-key-1', '1', { rid })
+
+    await request(app)
+      .post('/v1/players/identify')
+      .send({ service: 'username', identifier: 'jimbo' })
+      .auth(token, { type: 'bearer' })
+      .set('x-talo-claim-key', 'the-claim-key')
+      .set('x-talo-signature', sig)
+      .expect(200)
+
+    await request(app)
+      .post('/v1/players/identify')
+      .send({ service: 'username', identifier: 'jimbo' })
+      .auth(token, { type: 'bearer' })
+      .set('x-talo-claim-key', 'the-claim-key')
+      .set('x-talo-signature', sig)
+      .expect(401)
+  })
+
+  it('should skip verification for legacy identify requests', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_PLAYERS])
+    apiKey.game.verifyRequests = true
+
+    const player = await new PlayerFactory([apiKey.game]).withUsernameAlias().one()
+    await em.persist(player).flush()
+
+    await request(app)
+      .get('/v1/players/identify')
+      .query({ service: player.aliases[0].service, identifier: player.aliases[0].identifier })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
   })
 })

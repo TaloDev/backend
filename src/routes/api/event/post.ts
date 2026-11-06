@@ -7,7 +7,7 @@ import Prop from '../../../entities/prop.js'
 import { PropRejectionError } from '../../../lib/errors/propRejectionError.js'
 import { FlushEventsQueueHandler } from '../../../lib/queues/game-metrics/flush-events-queue-handler.js'
 import { apiRoute, withMiddleware } from '../../../lib/routing/router.js'
-import { playerAliasHeaderSchema } from '../../../lib/validation/playerAliasHeaderSchema.js'
+import { playerAliasHeaders } from '../../../lib/validation/playerHeadersSchema.js'
 import { loadAlias } from '../../../middleware/player-alias-middleware.js'
 import { requireScopes } from '../../../middleware/policy-middleware.js'
 import { postDocs } from './docs.js'
@@ -41,9 +41,7 @@ export const postRoute = apiRoute({
   method: 'post',
   docs: postDocs,
   schema: (z) => ({
-    headers: z.looseObject({
-      'x-talo-alias': playerAliasHeaderSchema,
-    }),
+    headers: playerAliasHeaders,
     body: z.object({
       events: z.array(z.unknown()).meta({ description: 'An array of @type(EventData:eventdata)' }),
     }),

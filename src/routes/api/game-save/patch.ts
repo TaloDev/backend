@@ -2,7 +2,7 @@ import { APIKeyScope } from '../../../entities/api-key.js'
 import handleSQLError from '../../../lib/errors/handleSQLError.js'
 import { apiRoute, withMiddleware } from '../../../lib/routing/router.js'
 import { numericStringSchema } from '../../../lib/validation/numericStringSchema.js'
-import { playerHeaderSchema } from '../../../lib/validation/playerHeaderSchema.js'
+import { playerHeaders } from '../../../lib/validation/playerHeadersSchema.js'
 import { loadPlayer } from '../../../middleware/player-middleware.js'
 import { requireScopes } from '../../../middleware/policy-middleware.js'
 import { decodeContent, loadSave } from './common.js'
@@ -13,9 +13,7 @@ export const patchRoute = apiRoute({
   path: '/:id',
   docs: patchDocs,
   schema: (z) => ({
-    headers: z.looseObject({
-      'x-talo-player': playerHeaderSchema,
-    }),
+    headers: playerHeaders,
     route: z.object({
       id: numericStringSchema.meta({ description: 'The ID of the save' }),
     }),

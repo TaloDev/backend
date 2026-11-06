@@ -1,5 +1,6 @@
 import { Next } from 'koa'
 import Player from '../../../entities/player.js'
+import { verifyPlayerClaimKey } from '../../../lib/auth/claim-key.js'
 import { APIRouteContext } from '../../../lib/routing/context.js'
 
 export type PlayerRouteState = {
@@ -21,6 +22,8 @@ async function fetchPlayer(ctx: APIRouteContext<PlayerRouteState>, loadAliases =
   if (!player) {
     return ctx.throw(404, 'Player not found')
   }
+
+  verifyPlayerClaimKey(ctx, player)
 
   return player
 }

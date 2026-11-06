@@ -4,7 +4,7 @@ import GameChannelStorageProp from '../../../entities/game-channel-storage-prop.
 import { isArrayKey } from '../../../lib/props/sanitiseProps.js'
 import { apiRoute, withMiddleware } from '../../../lib/routing/router.js'
 import { numericStringSchema } from '../../../lib/validation/numericStringSchema.js'
-import { playerAliasHeaderSchema } from '../../../lib/validation/playerAliasHeaderSchema.js'
+import { playerAliasHeaders } from '../../../lib/validation/playerHeadersSchema.js'
 import { loadAlias } from '../../../middleware/player-alias-middleware.js'
 import { requireScopes } from '../../../middleware/policy-middleware.js'
 import { loadChannel } from './common.js'
@@ -20,9 +20,7 @@ export const listStorageRoute = apiRoute({
     route: z.object({
       id: numericStringSchema.meta({ description: 'The ID of the channel' }),
     }),
-    headers: z.looseObject({
-      'x-talo-alias': playerAliasHeaderSchema,
-    }),
+    headers: playerAliasHeaders,
     query: z.object({
       propKeys: z
         .union(

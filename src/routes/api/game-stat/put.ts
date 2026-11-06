@@ -7,7 +7,7 @@ import { withRedisLock } from '../../../lib/perf/redisLock.js'
 import { deferClearResponseCache } from '../../../lib/perf/responseCacheQueue.js'
 import { FlushStatSnapshotsQueueHandler } from '../../../lib/queues/game-metrics/flush-stat-snapshots-queue-handler.js'
 import { apiRoute, withMiddleware } from '../../../lib/routing/router.js'
-import { playerAliasHeaderSchema } from '../../../lib/validation/playerAliasHeaderSchema.js'
+import { playerAliasHeaders } from '../../../lib/validation/playerHeadersSchema.js'
 import { loadAlias } from '../../../middleware/player-alias-middleware.js'
 import { requireScopes } from '../../../middleware/policy-middleware.js'
 import { loadStatWithAlias } from './common.js'
@@ -27,9 +27,7 @@ export const putRoute = apiRoute({
   path: '/:internalName',
   docs: putDocs,
   schema: (z) => ({
-    headers: z.looseObject({
-      'x-talo-alias': playerAliasHeaderSchema,
-    }),
+    headers: playerAliasHeaders,
     route: z.object({
       internalName: z.string().meta({ description: 'The internal name of the stat' }),
     }),

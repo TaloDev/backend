@@ -2,7 +2,7 @@ import { FilterQuery } from '@mikro-orm/mysql'
 import { APIKeyScope } from '../../../entities/api-key.js'
 import GameChannel from '../../../entities/game-channel.js'
 import { apiRoute, withMiddleware } from '../../../lib/routing/router.js'
-import { playerAliasHeaderSchema } from '../../../lib/validation/playerAliasHeaderSchema.js'
+import { playerAliasHeaders } from '../../../lib/validation/playerHeadersSchema.js'
 import { loadAlias } from '../../../middleware/player-alias-middleware.js'
 import { requireScopes } from '../../../middleware/policy-middleware.js'
 import { subscriptionsDocs } from './docs.js'
@@ -12,9 +12,7 @@ export const subscriptionsRoute = apiRoute({
   path: '/subscriptions',
   docs: subscriptionsDocs,
   schema: (z) => ({
-    headers: z.looseObject({
-      'x-talo-alias': playerAliasHeaderSchema,
-    }),
+    headers: playerAliasHeaders,
     query: z.object({
       propKey: z
         .string()

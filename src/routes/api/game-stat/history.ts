@@ -5,7 +5,7 @@ import PlayerGameStatSnapshot, {
 import { DEFAULT_PAGE_SIZE } from '../../../lib/pagination/itemsPerPage.js'
 import { apiRoute, withMiddleware } from '../../../lib/routing/router.js'
 import { pageSchema } from '../../../lib/validation/pageSchema.js'
-import { playerHeaderSchema } from '../../../lib/validation/playerHeaderSchema.js'
+import { playerHeaders } from '../../../lib/validation/playerHeadersSchema.js'
 import { loadPlayer } from '../../../middleware/player-middleware.js'
 import { requireScopes } from '../../../middleware/policy-middleware.js'
 import { loadStatWithPlayer } from './common.js'
@@ -16,9 +16,7 @@ export const historyRoute = apiRoute({
   path: '/:internalName/history',
   docs: historyDocs,
   schema: (z) => ({
-    headers: z.looseObject({
-      'x-talo-player': playerHeaderSchema,
-    }),
+    headers: playerHeaders,
     route: z.object({
       internalName: z.string().meta({ description: 'The internal name of the stat' }),
     }),

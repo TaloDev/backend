@@ -1,6 +1,4 @@
 import { randSlug, randText } from '@ngneat/falso'
-import axios from 'axios'
-import AxiosMockAdapter from 'axios-mock-adapter'
 import GameStat from '../../../src/entities/game-stat.js'
 import { IntegrationType } from '../../../src/entities/integration.js'
 import PlayerGameStat from '../../../src/entities/player-game-stat.js'
@@ -16,10 +14,11 @@ import IntegrationConfigFactory from '../../fixtures/IntegrationConfigFactory.js
 import IntegrationFactory from '../../fixtures/IntegrationFactory.js'
 import PlayerFactory from '../../fixtures/PlayerFactory.js'
 import PlayerGameStatFactory from '../../fixtures/PlayerGameStatFactory.js'
+import createAxiosMock from '../../utils/createAxiosMock.js'
 import createOrganisationAndGame from '../../utils/createOrganisationAndGame.js'
 
 describe('Steamworks integration - sync stats', () => {
-  const axiosMock = new AxiosMockAdapter(axios)
+  const axiosMock = createAxiosMock()
 
   afterEach(() => {
     axiosMock.reset()

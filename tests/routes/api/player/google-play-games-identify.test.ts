@@ -1,7 +1,5 @@
 import { Collection } from '@mikro-orm/mysql'
 import { randUuid } from '@ngneat/falso'
-import axios from 'axios'
-import AxiosMockAdapter from 'axios-mock-adapter'
 import request from 'supertest'
 import { APIKeyScope } from '../../../../src/entities/api-key.js'
 import { IntegrationType } from '../../../../src/entities/integration.js'
@@ -11,6 +9,7 @@ import IntegrationFactory from '../../../fixtures/IntegrationFactory.js'
 import PlayerAliasFactory from '../../../fixtures/PlayerAliasFactory.js'
 import PlayerFactory from '../../../fixtures/PlayerFactory.js'
 import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken.js'
+import createAxiosMock from '../../../utils/createAxiosMock.js'
 
 const clientId = 'test-client-id'
 const clientSecret = 'test-client-secret'
@@ -22,7 +21,7 @@ function makeGPGIntegration(game: Awaited<ReturnType<typeof createAPIKeyAndToken
 }
 
 describe('Player API - Google Play Games identify', () => {
-  const axiosMock = new AxiosMockAdapter(axios)
+  const axiosMock = createAxiosMock()
 
   afterEach(async () => {
     axiosMock.reset()

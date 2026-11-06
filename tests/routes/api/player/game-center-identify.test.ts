@@ -1,6 +1,4 @@
 import { Collection } from '@mikro-orm/mysql'
-import axios from 'axios'
-import AxiosMockAdapter from 'axios-mock-adapter'
 import { spawnSync } from 'child_process'
 import crypto from 'crypto'
 import { writeFileSync, unlinkSync } from 'fs'
@@ -17,6 +15,7 @@ import IntegrationFactory from '../../../fixtures/IntegrationFactory.js'
 import PlayerAliasFactory from '../../../fixtures/PlayerAliasFactory.js'
 import PlayerFactory from '../../../fixtures/PlayerFactory.js'
 import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken.js'
+import createAxiosMock from '../../../utils/createAxiosMock.js'
 
 const bundleId = 'com.example.game'
 const publicKeyUrl = 'https://static.gc.apple.com/public-key/gc-prod-12.cer'
@@ -98,7 +97,7 @@ function makeIdentifier(
 const certDer = makeCert()
 
 describe('Player API - Game Center identify', () => {
-  const axiosMock = new AxiosMockAdapter(axios)
+  const axiosMock = createAxiosMock()
 
   beforeEach(() => {
     clearCertCache()

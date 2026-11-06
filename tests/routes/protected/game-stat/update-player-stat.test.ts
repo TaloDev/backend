@@ -1,5 +1,3 @@
-import axios from 'axios'
-import AxiosMockAdapter from 'axios-mock-adapter'
 import request from 'supertest'
 import GameActivity, { GameActivityType } from '../../../../src/entities/game-activity.js'
 import { IntegrationType } from '../../../../src/entities/integration.js'
@@ -10,12 +8,13 @@ import IntegrationConfigFactory from '../../../fixtures/IntegrationConfigFactory
 import IntegrationFactory from '../../../fixtures/IntegrationFactory.js'
 import PlayerFactory from '../../../fixtures/PlayerFactory.js'
 import PlayerGameStatFactory from '../../../fixtures/PlayerGameStatFactory.js'
+import createAxiosMock from '../../../utils/createAxiosMock.js'
 import createOrganisationAndGame from '../../../utils/createOrganisationAndGame.js'
 import createUserAndToken from '../../../utils/createUserAndToken.js'
 import userPermissionProvider from '../../../utils/userPermissionProvider.js'
 
 describe('Game stat - update player stat', () => {
-  const axiosMock = new AxiosMockAdapter(axios)
+  const axiosMock = createAxiosMock()
 
   afterAll(async () => {
     axiosMock.reset()

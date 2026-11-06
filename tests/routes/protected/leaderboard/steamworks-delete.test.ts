@@ -1,5 +1,3 @@
-import axios from 'axios'
-import AxiosMockAdapter from 'axios-mock-adapter'
 import request from 'supertest'
 import { IntegrationType } from '../../../../src/entities/integration.js'
 import SteamworksIntegrationEvent from '../../../../src/entities/steamworks-integration-event.js'
@@ -11,11 +9,12 @@ import IntegrationFactory from '../../../fixtures/IntegrationFactory.js'
 import LeaderboardEntryFactory from '../../../fixtures/LeaderboardEntryFactory.js'
 import LeaderboardFactory from '../../../fixtures/LeaderboardFactory.js'
 import PlayerFactory from '../../../fixtures/PlayerFactory.js'
+import createAxiosMock from '../../../utils/createAxiosMock.js'
 import createOrganisationAndGame from '../../../utils/createOrganisationAndGame.js'
 import createUserAndToken from '../../../utils/createUserAndToken.js'
 
 describe('Leaderboard - steamworks delete', () => {
-  const axiosMock = new AxiosMockAdapter(axios)
+  const axiosMock = createAxiosMock()
 
   afterEach(() => {
     axiosMock.reset()

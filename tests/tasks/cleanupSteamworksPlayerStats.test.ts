@@ -1,5 +1,3 @@
-import axios from 'axios'
-import AxiosMockAdapter from 'axios-mock-adapter'
 import Integration, { IntegrationType } from '../../src/entities/integration.js'
 import SteamworksIntegrationEvent from '../../src/entities/steamworks-integration-event.js'
 import { SteamworksPlayerStat } from '../../src/entities/steamworks-player-stat.js'
@@ -9,10 +7,11 @@ import IntegrationConfigFactory from '../fixtures/IntegrationConfigFactory.js'
 import IntegrationFactory from '../fixtures/IntegrationFactory.js'
 import PlayerFactory from '../fixtures/PlayerFactory.js'
 import PlayerGameStatFactory from '../fixtures/PlayerGameStatFactory.js'
+import createAxiosMock from '../utils/createAxiosMock.js'
 import createOrganisationAndGame from '../utils/createOrganisationAndGame.js'
 
 describe('cleanupSteamworksPlayerStats', () => {
-  const axiosMock = new AxiosMockAdapter(axios)
+  const axiosMock = createAxiosMock()
 
   const setMock = vi.fn(() => [
     200,

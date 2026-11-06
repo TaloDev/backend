@@ -1,13 +1,12 @@
-import axios from 'axios'
-import AxiosMockAdapter from 'axios-mock-adapter'
 import { IntegrationType } from '../../../src/entities/integration.js'
 import { SteamworksClient } from '../../../src/lib/integrations/clients/steamworks-client.js'
 import IntegrationConfigFactory from '../../fixtures/IntegrationConfigFactory.js'
 import IntegrationFactory from '../../fixtures/IntegrationFactory.js'
+import createAxiosMock from '../../utils/createAxiosMock.js'
 import createOrganisationAndGame from '../../utils/createOrganisationAndGame.js'
 
 describe('SteamworksClient - retry mechanism', () => {
-  const axiosMock = new AxiosMockAdapter(axios)
+  const axiosMock = createAxiosMock()
 
   afterEach(() => {
     axiosMock.reset()

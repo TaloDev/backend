@@ -1,6 +1,4 @@
 import { randNumber } from '@ngneat/falso'
-import axios from 'axios'
-import AxiosMockAdapter from 'axios-mock-adapter'
 import request from 'supertest'
 import { APIKeyScope } from '../../../../src/entities/api-key.js'
 import { IntegrationType } from '../../../../src/entities/integration.js'
@@ -13,9 +11,10 @@ import IntegrationFactory from '../../../fixtures/IntegrationFactory.js'
 import LeaderboardFactory from '../../../fixtures/LeaderboardFactory.js'
 import PlayerFactory from '../../../fixtures/PlayerFactory.js'
 import createAPIKeyAndToken from '../../../utils/createAPIKeyAndToken.js'
+import createAxiosMock from '../../../utils/createAxiosMock.js'
 
 describe('Leaderboard API - steamworks create', () => {
-  const axiosMock = new AxiosMockAdapter(axios)
+  const axiosMock = createAxiosMock()
 
   afterAll(async () => {
     axiosMock.reset()

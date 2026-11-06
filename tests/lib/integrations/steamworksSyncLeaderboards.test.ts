@@ -1,6 +1,4 @@
 import { randNumber, randText, randUuid } from '@ngneat/falso'
-import axios from 'axios'
-import AxiosMockAdapter from 'axios-mock-adapter'
 import { IntegrationType } from '../../../src/entities/integration.js'
 import LeaderboardEntry from '../../../src/entities/leaderboard-entry.js'
 import Leaderboard, { LeaderboardSortMode } from '../../../src/entities/leaderboard.js'
@@ -17,10 +15,11 @@ import IntegrationFactory from '../../fixtures/IntegrationFactory.js'
 import LeaderboardEntryFactory from '../../fixtures/LeaderboardEntryFactory.js'
 import LeaderboardFactory from '../../fixtures/LeaderboardFactory.js'
 import PlayerFactory from '../../fixtures/PlayerFactory.js'
+import createAxiosMock from '../../utils/createAxiosMock.js'
 import createOrganisationAndGame from '../../utils/createOrganisationAndGame.js'
 
 describe('Steamworks integration - sync leaderboards', () => {
-  const axiosMock = new AxiosMockAdapter(axios)
+  const axiosMock = createAxiosMock()
 
   afterEach(() => {
     axiosMock.reset()

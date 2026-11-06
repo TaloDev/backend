@@ -1,6 +1,4 @@
 import { randEmail, randUserName } from '@ngneat/falso'
-import axios from 'axios'
-import AxiosMockAdapter from 'axios-mock-adapter'
 import request from 'supertest'
 import GameActivity, { GameActivityType } from '../../../../src/entities/game-activity.js'
 import UserAccessCode from '../../../../src/entities/user-access-code.js'
@@ -8,6 +6,7 @@ import InviteFactory from '../../../fixtures/InviteFactory.js'
 import OrganisationFactory from '../../../fixtures/OrganisationFactory.js'
 import PricingPlanFactory from '../../../fixtures/PricingPlanFactory.js'
 import UserFactory from '../../../fixtures/UserFactory.js'
+import createAxiosMock from '../../../utils/createAxiosMock.js'
 import createOrganisationAndGame from '../../../utils/createOrganisationAndGame.js'
 
 describe('User public - register', () => {
@@ -173,7 +172,7 @@ describe('User public - register', () => {
   })
 
   describe('hCaptcha', () => {
-    const axiosMock = new AxiosMockAdapter(axios)
+    const axiosMock = createAxiosMock()
 
     beforeEach(() => {
       vi.stubEnv('HCAPTCHA_SECRET', 'test-secret')

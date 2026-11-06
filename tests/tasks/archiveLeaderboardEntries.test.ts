@@ -1,6 +1,4 @@
 import { randNumber } from '@ngneat/falso'
-import axios from 'axios'
-import AxiosMockAdapter from 'axios-mock-adapter'
 import { sub } from 'date-fns'
 import { IntegrationType } from '../../src/entities/integration.js'
 import { LeaderboardRefreshInterval } from '../../src/entities/leaderboard.js'
@@ -11,10 +9,11 @@ import IntegrationFactory from '../fixtures/IntegrationFactory.js'
 import LeaderboardEntryFactory from '../fixtures/LeaderboardEntryFactory.js'
 import LeaderboardFactory from '../fixtures/LeaderboardFactory.js'
 import PlayerFactory from '../fixtures/PlayerFactory.js'
+import createAxiosMock from '../utils/createAxiosMock.js'
 import createOrganisationAndGame from '../utils/createOrganisationAndGame.js'
 
 describe('archiveLeaderboardEntries', () => {
-  const axiosMock = new AxiosMockAdapter(axios)
+  const axiosMock = createAxiosMock()
 
   beforeEach(() => {
     vi.useFakeTimers({ shouldAdvanceTime: true })

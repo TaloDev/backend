@@ -1,5 +1,3 @@
-import axios from 'axios'
-import AxiosMockAdapter from 'axios-mock-adapter'
 import Integration, { IntegrationType } from '../../src/entities/integration.js'
 import SteamworksIntegrationEvent from '../../src/entities/steamworks-integration-event.js'
 import { SteamworksLeaderboardEntry } from '../../src/entities/steamworks-leaderboard-entry.js'
@@ -10,10 +8,11 @@ import IntegrationFactory from '../fixtures/IntegrationFactory.js'
 import LeaderboardEntryFactory from '../fixtures/LeaderboardEntryFactory.js'
 import LeaderboardFactory from '../fixtures/LeaderboardFactory.js'
 import PlayerFactory from '../fixtures/PlayerFactory.js'
+import createAxiosMock from '../utils/createAxiosMock.js'
 import createOrganisationAndGame from '../utils/createOrganisationAndGame.js'
 
 describe('cleanupSteamworksLeaderboardEntries', () => {
-  const axiosMock = new AxiosMockAdapter(axios)
+  const axiosMock = createAxiosMock()
 
   const deleteMock = vi.fn(() => [
     200,

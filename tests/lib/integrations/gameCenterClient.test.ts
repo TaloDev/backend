@@ -1,5 +1,3 @@
-import axios from 'axios'
-import AxiosMockAdapter from 'axios-mock-adapter'
 import assert from 'node:assert'
 import { IntegrationType } from '../../../src/entities/integration.js'
 import {
@@ -7,6 +5,7 @@ import {
   GameCenterClient,
 } from '../../../src/lib/integrations/clients/game-center-client.js'
 import IntegrationFactory from '../../fixtures/IntegrationFactory.js'
+import createAxiosMock from '../../utils/createAxiosMock.js'
 import createOrganisationAndGame from '../../utils/createOrganisationAndGame.js'
 
 const publicKeyUrl = 'https://static.gc.apple.com/public-key/gc-prod-6.cer'
@@ -21,7 +20,7 @@ async function createClient() {
 }
 
 describe('GameCenterClient - retry mechanism', () => {
-  const axiosMock = new AxiosMockAdapter(axios)
+  const axiosMock = createAxiosMock()
 
   beforeEach(() => {
     clearCertCache()

@@ -174,7 +174,7 @@ importers:
         version: 0.11.0(supports-color@7.2.0)
       '@koa/bodyparser':
         specifier: ^6.1.0
-        version: 6.1.0(koa@3.2.1)
+        version: 6.1.0(koa@3.3.0)
       '@koa/cors':
         specifier: ^5.0.0
         version: 5.0.0
@@ -242,8 +242,8 @@ importers:
         specifier: ^9.0.0
         version: 9.0.3
       koa:
-        specifier: ^3.2.1
-        version: 3.2.1
+        specifier: ^3.3.0
+        version: 3.3.0
       koa-compose:
         specifier: ^4.1.0
         version: 4.1.0
@@ -252,7 +252,7 @@ importers:
         version: 5.2.2
       koa-helmet:
         specifier: ^9.0.0
-        version: 9.0.0(helmet@8.3.0)(koa@3.2.1)
+        version: 9.0.0(helmet@8.3.0)(koa@3.3.0)
       koa-jwt:
         specifier: ^4.0.4
         version: 4.0.4
@@ -2754,8 +2754,8 @@ packages:
   koa-unless@1.0.7:
     resolution: {integrity: sha512-NKiz+nk4KxSJFskiJMuJvxeA41Lcnx3d8Zy+8QETgifm4ab4aOeGD3RgR6bIz0FGNWwo3Fz0DtnK77mEIqHWxA==}
 
-  koa@3.2.1:
-    resolution: {integrity: sha512-e7IpWJrnanNUroVK2taAgMxoEZvHLXdQiNjeExSu/DEIWm83jaKGBgb7tLmu2rMYpA027qFB3iLR/k3AVpFRnA==}
+  koa@3.3.0:
+    resolution: {integrity: sha512-NdsWJYxVzUuYt718DtEQRhUXqqsAPA4VlaUGrlidjh/T2TP/4OQXqQg4ouUHfHD9f+tgmwLZWPm+JQLgqM9YbA==}
     engines: {node: '>= 18'}
 
   kysely@0.29.6:
@@ -3892,11 +3892,11 @@ snapshots:
 
   '@js-sdsl/ordered-map@4.4.2': {}
 
-  '@koa/bodyparser@6.1.0(koa@3.2.1)':
+  '@koa/bodyparser@6.1.0(koa@3.3.0)':
     dependencies:
       '@types/co-body': 6.1.3
       co-body: 6.2.0
-      koa: 3.2.1
+      koa: 3.3.0
       lodash.merge: 4.6.2
       type-is: 2.1.0
 
@@ -6045,10 +6045,10 @@ snapshots:
       koa-is-json: 1.0.0
       negotiator: 1.1.0
 
-  koa-helmet@9.0.0(helmet@8.3.0)(koa@3.2.1):
+  koa-helmet@9.0.0(helmet@8.3.0)(koa@3.3.0):
     dependencies:
       helmet: 8.3.0
-      koa: 3.2.1
+      koa: 3.3.0
 
   koa-is-json@1.0.0: {}
 
@@ -6072,7 +6072,7 @@ snapshots:
 
   koa-unless@1.0.7: {}
 
-  koa@3.2.1:
+  koa@3.3.0:
     dependencies:
       accepts: 1.3.8
       content-disposition: 1.0.1

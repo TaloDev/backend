@@ -13,7 +13,7 @@ export const currentRoute = protectedRoute({
     const em = ctx.em
     const organisation = ctx.state.user.organisation
 
-    const games = await em.repo(Game).find({ organisation })
+    const games = await em.repo(Game).find({ organisation }, { orderBy: { switcherOrder: 'asc' } })
     const playerCountMap = new Map<number, number>()
 
     for (const game of games) {

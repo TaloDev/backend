@@ -1,5 +1,3 @@
-import axios from 'axios'
-import AxiosMockAdapter from 'axios-mock-adapter'
 import request from 'supertest'
 import { IntegrationType } from '../../../../src/entities/integration.js'
 import { LeaderboardSortMode } from '../../../../src/entities/leaderboard.js'
@@ -7,11 +5,12 @@ import SteamworksIntegrationEvent from '../../../../src/entities/steamworks-inte
 import IntegrationConfigFactory from '../../../fixtures/IntegrationConfigFactory.js'
 import IntegrationFactory from '../../../fixtures/IntegrationFactory.js'
 import LeaderboardFactory from '../../../fixtures/LeaderboardFactory.js'
+import createAxiosMock from '../../../utils/createAxiosMock.js'
 import createOrganisationAndGame from '../../../utils/createOrganisationAndGame.js'
 import createUserAndToken from '../../../utils/createUserAndToken.js'
 
 describe('Leaderboard - steamworks update', () => {
-  const axiosMock = new AxiosMockAdapter(axios)
+  const axiosMock = createAxiosMock()
 
   afterAll(async () => {
     axiosMock.reset()

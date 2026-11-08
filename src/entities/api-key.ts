@@ -38,6 +38,9 @@ export default class APIKey {
   @Enum({ items: () => APIKeyScope, array: true })
   scopes: APIKeyScope[] = []
 
+  @Property({ default: '' })
+  name!: string
+
   @ManyToOne(() => Game)
   game: Game
 
@@ -65,6 +68,7 @@ export default class APIKey {
     return {
       id: this.id,
       scopes: this.scopes,
+      name: this.name,
       gameId: this.game.id,
       createdBy: this.createdByUser.username,
       createdAt: this.createdAt,

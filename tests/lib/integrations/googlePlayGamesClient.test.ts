@@ -1,8 +1,7 @@
-import axios from 'axios'
-import AxiosMockAdapter from 'axios-mock-adapter'
 import { IntegrationType } from '../../../src/entities/integration.js'
 import { GooglePlayGamesClient } from '../../../src/lib/integrations/clients/google-play-games-client.js'
 import IntegrationFactory from '../../fixtures/IntegrationFactory.js'
+import createAxiosMock from '../../utils/createAxiosMock.js'
 import createOrganisationAndGame from '../../utils/createOrganisationAndGame.js'
 
 async function createClient() {
@@ -18,7 +17,7 @@ async function createClient() {
 }
 
 describe('GooglePlayGamesClient - createIntegrationEvent', () => {
-  const axiosMock = new AxiosMockAdapter(axios)
+  const axiosMock = createAxiosMock()
 
   afterEach(() => {
     axiosMock.reset()
@@ -99,7 +98,7 @@ describe('GooglePlayGamesClient - createIntegrationEvent', () => {
 })
 
 describe('GooglePlayGamesClient - retry mechanism', () => {
-  const axiosMock = new AxiosMockAdapter(axios)
+  const axiosMock = createAxiosMock()
 
   afterEach(() => {
     axiosMock.reset()

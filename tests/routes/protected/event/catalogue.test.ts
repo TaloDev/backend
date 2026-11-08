@@ -14,7 +14,7 @@ describe('Event - catalogue', () => {
     const [token] = await createUserAndToken({}, organisation)
 
     const player = await new PlayerFactory([game]).one()
-    await em.persist(player)
+    em.persist(player)
 
     const events = await new EventFactory([player])
       .state(() => ({ name: 'Open inventory' }))
@@ -54,7 +54,7 @@ describe('Event - catalogue', () => {
     const [token] = await createUserAndToken({}, organisation)
 
     const player = await new PlayerFactory([game]).one()
-    await em.persist(player)
+    em.persist(player)
 
     const events = await new EventFactory([player])
       .state((event, idx) => ({ name: `Event ${idx}`, createdAt: new Date() }))
@@ -124,7 +124,7 @@ describe('Event - catalogue', () => {
     const [token] = await createUserAndToken({}, organisation)
 
     const player = await new PlayerFactory([game]).one()
-    await em.persist(player)
+    em.persist(player)
 
     const events = await new EventFactory([player])
       .state(() => ({ name: 'Open inventory', createdAt: subDays(new Date(), 40) }))

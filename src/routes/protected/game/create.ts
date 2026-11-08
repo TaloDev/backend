@@ -22,6 +22,16 @@ export const createRoute = protectedRoute({
     } catch (err) {
       return ctx.throw(500, (err as Error).message)
     }
+
+    // new games go to the end of the organisation's game switcher
+    const lastGame = await em
+      .repo(Game)
+      .findOne(
+        { organisation: ctx.state.user.organisation },
+        { orderBy: { switcherOrder: 'desc' } },
+      )
+    game.switcherOrder = (lastGame?.switcherOrder ?? -1) + 1
+
     await em.persist(game).flush()
 
     return {

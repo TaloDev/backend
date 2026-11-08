@@ -74,6 +74,12 @@ export default class Game {
   playerAuthActivityEnrichment: boolean = false
 
   @Property()
+  switcherOrder: number = 0
+
+  @Property()
+  switcherHidden: boolean = false
+
+  @Property()
   createdAt: Date = new Date()
 
   @Property({ onUpdate: () => new Date() })
@@ -121,6 +127,8 @@ export default class Game {
       id: this.id,
       name: this.name,
       props: this.props,
+      switcherOrder: this.switcherOrder,
+      switcherHidden: this.switcherHidden,
       createdAt: this.createdAt,
     }
   }

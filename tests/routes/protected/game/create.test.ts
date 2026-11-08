@@ -1,6 +1,8 @@
 import request from 'supertest'
 import Game from '../../../../src/entities/game.js'
 import { UserType } from '../../../../src/entities/user.js'
+import GameFactory from '../../../fixtures/GameFactory.js'
+import createOrganisationAndGame from '../../../utils/createOrganisationAndGame.js'
 import createUserAndToken from '../../../utils/createUserAndToken.js'
 import userPermissionProvider from '../../../utils/userPermissionProvider.js'
 
@@ -28,6 +30,22 @@ describe('Game - create', () => {
       }
     },
   )
+
+  it('should add new games to the end of the switcher', async () => {
+    const [organisation] = await createOrganisationAndGame()
+    const otherGame = await new GameFactory(organisation).state(() => ({ switcherOrder: 7 })).one()
+    await em.persist(otherGame).flush()
+
+    const [token] = await createUserAndToken({ type: UserType.OWNER }, organisation)
+
+    const res = await request(app)
+      .post('/games')
+      .send({ name: 'Twodoors' })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    expect(res.body.game.switcherOrder).toBe(8)
+  })
 
   it('should return a 500 when API_SECRET is not 32 characters long', async () => {
     const originalSecret = process.env.API_SECRET

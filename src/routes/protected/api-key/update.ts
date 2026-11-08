@@ -13,7 +13,8 @@ export const updateRoute = protectedRoute({
   path: '/:id',
   schema: (z) => ({
     body: z.object({
-      scopes: z.array(z.enum(APIKeyScope)),
+      scopes: z.array(z.enum(APIKeyScope)).optional(),
+      name: z.string().trim().min(1).max(255).optional(),
     }),
   }),
   middleware: withMiddleware(
@@ -25,11 +26,18 @@ export const updateRoute = protectedRoute({
   handler: async (ctx) => {
     const em = ctx.em
     const apiKey = ctx.state.apiKey
+    const { scopes, name } = ctx.state.validated.body
 
     await em.populate(apiKey, ['createdByUser'])
 
-    apiKey.scopes = ctx.state.validated.body.scopes
-    await em.clearCache(getTokenCacheKey(apiKey.id))
+    if (name !== undefined) {
+      apiKey.name = name
+    }
+
+    if (scopes !== undefined) {
+      apiKey.scopes = scopes
+      await em.clearCache(getTokenCacheKey(apiKey.id))
+    }
 
     const token = await createToken(em, apiKey)
 
@@ -40,6 +48,7 @@ export const updateRoute = protectedRoute({
       extra: {
         keyId: apiKey.id,
         display: {
+          ...(apiKey.name ? { Name: apiKey.name } : {}),
           'Key ending in': token.substring(token.length - 5, token.length),
           Scopes: apiKey.scopes.join(', '),
         },

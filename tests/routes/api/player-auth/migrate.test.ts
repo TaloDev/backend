@@ -355,4 +355,91 @@ describe('Player auth API - migrate', () => {
     const updatedAuth = await em.repo(PlayerAuth).findOne({ player: player.id })
     expect(updatedAuth).toBeNull()
   })
+
+  it('should store a claim key on the migrated player', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([
+      APIKeyScope.READ_PLAYERS,
+      APIKeyScope.WRITE_PLAYERS,
+    ])
+
+    const player = await new PlayerFactory([apiKey.game])
+      .state(async (player) => {
+        const alias = await new PlayerAliasFactory(player)
+          .talo()
+          .state(() => ({ identifier: 'boz' }))
+          .one()
+
+        return {
+          aliases: new Collection<PlayerAlias>(player, [alias]),
+          auth: await new PlayerAuthFactory()
+            .state(async () => ({ password: await bcrypt.hash('password', 10) }))
+            .one(),
+        }
+      })
+      .one()
+
+    const alias = player.aliases[0]
+    await em.persist(player).flush()
+
+    const { sessionToken } = await player.auth!.createSession(alias)
+    await em.flush()
+
+    const res = await request(app)
+      .post('/v1/players/auth/migrate')
+      .send({ currentPassword: 'password', service: 'custom', identifier: 'my-custom-id' })
+      .auth(token, { type: 'bearer' })
+      .set('x-talo-player', player.id)
+      .set('x-talo-alias', String(alias.id))
+      .set('x-talo-session', sessionToken)
+      .set('x-talo-claim-key', 'the-claim-key')
+      .expect(200)
+
+    expect(res.body.alias.player).not.toHaveProperty('claimKey')
+
+    await em.refresh(player)
+    expect(player.claimKey).toBe('the-claim-key')
+  })
+
+  it('should not overwrite an existing claim key', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([
+      APIKeyScope.READ_PLAYERS,
+      APIKeyScope.WRITE_PLAYERS,
+    ])
+
+    const player = await new PlayerFactory([apiKey.game])
+      .state(async (player) => {
+        const alias = await new PlayerAliasFactory(player)
+          .talo()
+          .state(() => ({ identifier: 'boz' }))
+          .one()
+
+        return {
+          aliases: new Collection<PlayerAlias>(player, [alias]),
+          auth: await new PlayerAuthFactory()
+            .state(async () => ({ password: await bcrypt.hash('password', 10) }))
+            .one(),
+        }
+      })
+      .one()
+
+    const alias = player.aliases[0]
+    player.claimKey = 'existing-key'
+    await em.persist(player).flush()
+
+    const { sessionToken } = await player.auth!.createSession(alias)
+    await em.flush()
+
+    await request(app)
+      .post('/v1/players/auth/migrate')
+      .send({ currentPassword: 'password', service: 'custom', identifier: 'my-custom-id' })
+      .auth(token, { type: 'bearer' })
+      .set('x-talo-player', player.id)
+      .set('x-talo-alias', String(alias.id))
+      .set('x-talo-session', sessionToken)
+      .set('x-talo-claim-key', 'a-different-key')
+      .expect(200)
+
+    await em.refresh(player)
+    expect(player.claimKey).toBe('existing-key')
+  })
 })

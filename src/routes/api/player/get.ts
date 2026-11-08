@@ -1,5 +1,6 @@
 import { APIKeyScope } from '../../../entities/api-key.js'
 import { apiRoute, withMiddleware } from '../../../lib/routing/router.js'
+import { claimKeyHeaders } from '../../../lib/validation/playerHeadersSchema.js'
 import { requireScopes } from '../../../middleware/policy-middleware.js'
 import { loadPlayerWithAliases } from './common.js'
 import { getDocs } from './docs.js'
@@ -8,6 +9,9 @@ export const getRoute = apiRoute({
   method: 'get',
   path: '/:id',
   docs: getDocs,
+  schema: () => ({
+    headers: claimKeyHeaders,
+  }),
   middleware: withMiddleware(requireScopes([APIKeyScope.READ_PLAYERS]), loadPlayerWithAliases),
   handler: (ctx) => {
     return {

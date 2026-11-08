@@ -18,6 +18,56 @@ describe('Player API - Steamworks identify', () => {
     axiosMock.reset()
   })
 
+  // a ticket steam accepts, plus the summary call identify makes afterwards
+  function mockVerifiedTicket(appId: number, steamId: string, ticket: string) {
+    axiosMock
+      .onGet(
+        `https://partner.steam-api.com/ISteamUserAuth/AuthenticateUserTicket/v1?appid=${appId}&ticket=${ticket}&identity=talo`,
+      )
+      .reply(200, {
+        response: {
+          params: {
+            steamid: steamId,
+            ownersteamid: steamId,
+            vacbanned: false,
+            publisherbanned: false,
+          },
+        },
+      })
+    axiosMock
+      .onGet(
+        `https://partner.steam-api.com/ISteamUser/CheckAppOwnership/v3?appid=${appId}&steamid=${steamId}`,
+      )
+      .reply(200, {
+        appownership: {
+          appid: appId,
+          ownsapp: true,
+          permanent: true,
+          timestamp: '2021-08-01T00:00:00.000Z',
+          ownersteamid: steamId,
+          usercanceled: false,
+        },
+      })
+    axiosMock
+      .onGet(`https://partner.steam-api.com/ISteamUser/GetPlayerSummaries/v2?steamids=${steamId}`)
+      .reply(200, {
+        response: { players: [{ steamid: steamId, personaname: 'TestPlayer', avatarhash: 'x' }] },
+      })
+  }
+
+  async function createSteamPlayer(appId: number, steamId: string) {
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_PLAYERS])
+    const player = await new PlayerFactory([apiKey.game]).withSteamAlias(steamId).one()
+
+    const config = await new IntegrationConfigFactory().state(() => ({ appId })).one()
+    const integration = await new IntegrationFactory()
+      .construct(IntegrationType.STEAMWORKS, apiKey.game, config)
+      .one()
+    await em.persist([integration, player]).flush()
+
+    return { token, player }
+  }
+
   it('should identify a steamworks player', async () => {
     const appId = randNumber({ min: 1000, max: 1_000_000 })
     const steamId = randNumber({ min: 100_000, max: 1_000_000 }).toString()
@@ -1378,5 +1428,43 @@ describe('Player API - Steamworks identify', () => {
 
     expect(personaProp?.value).toBe('UpdatedPlayerName')
     expect(avatarProp?.value).toBe('newhash456')
+  })
+
+  it('should store the claim key sent on a verified identify', async () => {
+    const appId = randNumber({ min: 1000, max: 1_000_000 })
+    const steamId = randNumber({ min: 100_000, max: 1_000_000 }).toString()
+    const ticket = '000validticket'
+    mockVerifiedTicket(appId, steamId, ticket)
+    const { token, player } = await createSteamPlayer(appId, steamId)
+
+    await request(app)
+      .post('/v1/players/identify')
+      .send({ service: PlayerAliasService.STEAM, identifier: `talo:${ticket}` })
+      .set('x-talo-claim-key', 'the-claim-key')
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    await em.refresh(player)
+    expect(player.claimKey).toBe('the-claim-key')
+  })
+
+  it('should not require the claim key for a verified identify', async () => {
+    const appId = randNumber({ min: 1000, max: 1_000_000 })
+    const steamId = randNumber({ min: 100_000, max: 1_000_000 }).toString()
+    const ticket = '000validticket'
+    mockVerifiedTicket(appId, steamId, ticket)
+    const { token, player } = await createSteamPlayer(appId, steamId)
+
+    player.claimKey = 'the-claim-key'
+    await em.flush()
+
+    await request(app)
+      .post('/v1/players/identify')
+      .send({ service: PlayerAliasService.STEAM, identifier: `talo:${ticket}` })
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    await em.refresh(player)
+    expect(player.claimKey).toBe('the-claim-key')
   })
 })

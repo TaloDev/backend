@@ -50,6 +50,9 @@ export default class Player {
   @OneToOne({ nullable: true, orphanRemoval: true, eager: true })
   presence: PlayerPresence | null = null
 
+  @Property({ length: 255, nullable: true })
+  claimKey: string | null = null
+
   @Property()
   devBuild: boolean = false
 

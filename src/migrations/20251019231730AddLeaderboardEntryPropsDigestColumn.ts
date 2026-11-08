@@ -1,8 +1,9 @@
 import { Migration } from '@mikro-orm/migrations'
 import LeaderboardEntry from '../entities/leaderboard-entry.js'
-import { streamByCursor } from '../lib/perf/streamByCursor.js'
 
 type LeaderboardEntryBatch = { id: number; propsDigest: string }
+type EntryPropRow = { entryId: number; key: string; value: string }
+
 const MAX_BATCH_SIZE = 100
 
 export class AddLeaderboardEntryPropsDigestColumn extends Migration {
@@ -19,32 +20,48 @@ export class AddLeaderboardEntryPropsDigestColumn extends Migration {
       )
   }
 
-  override async up(): Promise<void> {
-    const em = this.getEntityManager()
-    await em.execute('alter table `leaderboard_entry` add `props_digest` varchar(255);')
+  // reads the rows directly instead of through entities: their metadata describes a
+  // newer schema than the one this migration runs against
+  private async loadBatch(after: number): Promise<LeaderboardEntryBatch[]> {
+    const connection = this.getEntityManager().getConnection()
 
-    const entryStream = streamByCursor(async (batchSize, after) => {
-      return em.repo(LeaderboardEntry).findByCursor({
-        first: batchSize,
-        after,
-        orderBy: { id: 'asc' },
-      })
-    }, 100)
+    const entries: { id: number }[] = await connection.execute(
+      'select `id` from `leaderboard_entry` where `id` > ? order by `id` asc limit ?',
+      [after, MAX_BATCH_SIZE],
+    )
 
-    const batch: LeaderboardEntryBatch[] = []
-    for await (const entry of entryStream) {
-      const propsDigest = LeaderboardEntry.createPropsDigest(entry.props.getItems())
-      batch.push({ id: entry.id, propsDigest })
-
-      if (batch.length >= MAX_BATCH_SIZE) {
-        await this.updateBatch(batch)
-        batch.length = 0
-      }
+    if (entries.length === 0) {
+      return []
     }
 
-    // handle remaining items in batch
-    if (batch.length > 0) {
+    const ids = entries.map((entry) => entry.id)
+    const props: EntryPropRow[] = await connection.execute(
+      `select \`leaderboard_entry_id\` as \`entryId\`, \`key\`, \`value\` from \`leaderboard_entry_prop\` where \`leaderboard_entry_id\` in (${ids.map(() => '?').join(',')}) order by \`id\` asc`,
+      ids,
+    )
+
+    return entries.map(({ id }) => ({
+      id,
+      propsDigest: LeaderboardEntry.createPropsDigest(
+        props.filter((prop) => prop.entryId === id).map(({ key, value }) => ({ key, value })),
+      ),
+    }))
+  }
+
+  override async up(): Promise<void> {
+    const connection = this.getEntityManager().getConnection()
+    await connection.execute('alter table `leaderboard_entry` add `props_digest` varchar(255);')
+
+    // backfill in id order, one batch of entries at a time
+    let after = 0
+    while (true) {
+      const batch = await this.loadBatch(after)
+      if (batch.length === 0) {
+        break
+      }
+
       await this.updateBatch(batch)
+      after = batch[batch.length - 1].id
     }
 
     this.addSql('alter table `leaderboard_entry` modify `props_digest` varchar(255) not null;')

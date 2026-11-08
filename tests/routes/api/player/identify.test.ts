@@ -402,4 +402,54 @@ describe('Player API - identify', () => {
 
     expect(res.body.alias.displayName).toBe(player.aliases[0].identifier)
   })
+
+  it('should not identify a player without their claim key', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_PLAYERS])
+    const player = await new PlayerFactory([apiKey.game]).withUsernameAlias().one()
+    player.claimKey = 'the-claim-key'
+    await em.persist(player).flush()
+
+    const res = await request(app)
+      .get('/v1/players/identify')
+      .query({ service: player.aliases[0].service, identifier: player.aliases[0].identifier })
+      .auth(token, { type: 'bearer' })
+      .expect(401)
+
+    expect(res.body).toStrictEqual({
+      message: 'The x-talo-claim-key header is missing or invalid',
+      errorCode: 'INVALID_CLAIM_KEY',
+    })
+  })
+
+  it('should identify a player with their claim key', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_PLAYERS])
+    const player = await new PlayerFactory([apiKey.game]).withUsernameAlias().one()
+    player.claimKey = 'the-claim-key'
+    await em.persist(player).flush()
+
+    const res = await request(app)
+      .get('/v1/players/identify')
+      .query({ service: player.aliases[0].service, identifier: player.aliases[0].identifier })
+      .set('x-talo-claim-key', 'the-claim-key')
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    expect(res.body.alias.player.id).toBe(player.id)
+  })
+
+  it('should not adopt a claim key for a player created without one', async () => {
+    const [apiKey, token] = await createAPIKeyAndToken([APIKeyScope.READ_PLAYERS])
+    const player = await new PlayerFactory([apiKey.game]).withUsernameAlias().one()
+    await em.persist(player).flush()
+
+    await request(app)
+      .get('/v1/players/identify')
+      .query({ service: player.aliases[0].service, identifier: player.aliases[0].identifier })
+      .set('x-talo-claim-key', 'the-claim-key')
+      .auth(token, { type: 'bearer' })
+      .expect(200)
+
+    await em.refresh(player)
+    expect(player.claimKey).toBeNull()
+  })
 })

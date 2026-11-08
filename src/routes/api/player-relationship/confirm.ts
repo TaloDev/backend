@@ -4,7 +4,7 @@ import PlayerAliasSubscription, {
 } from '../../../entities/player-alias-subscription.js'
 import { apiRoute, withMiddleware } from '../../../lib/routing/router.js'
 import { numericStringSchema } from '../../../lib/validation/numericStringSchema.js'
-import { playerAliasHeaderSchema } from '../../../lib/validation/playerAliasHeaderSchema.js'
+import { playerAliasHeaders } from '../../../lib/validation/playerHeadersSchema.js'
 import { loadAlias } from '../../../middleware/player-alias-middleware.js'
 import { requireScopes } from '../../../middleware/policy-middleware.js'
 import { sendMessages } from '../../../socket/messages/socketMessage.js'
@@ -15,9 +15,7 @@ export const confirmRoute = apiRoute({
   path: '/:id/confirm',
   docs: confirmDocs,
   schema: (z) => ({
-    headers: z.looseObject({
-      'x-talo-alias': playerAliasHeaderSchema,
-    }),
+    headers: playerAliasHeaders,
     route: z.object({
       id: numericStringSchema.meta({
         description: 'The ID of the subscription request to confirm',

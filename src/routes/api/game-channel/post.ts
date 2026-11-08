@@ -1,6 +1,6 @@
 import { APIKeyScope } from '../../../entities/api-key.js'
 import { apiRoute, withMiddleware } from '../../../lib/routing/router.js'
-import { playerAliasHeaderSchema } from '../../../lib/validation/playerAliasHeaderSchema.js'
+import { playerAliasHeaders } from '../../../lib/validation/playerHeadersSchema.js'
 import { createPropsSchema } from '../../../lib/validation/propsSchema.js'
 import { loadAlias } from '../../../middleware/player-alias-middleware.js'
 import { requireScopes } from '../../../middleware/policy-middleware.js'
@@ -11,9 +11,7 @@ export const postRoute = apiRoute({
   method: 'post',
   docs: postDocs,
   schema: (z) => ({
-    headers: z.looseObject({
-      'x-talo-alias': playerAliasHeaderSchema,
-    }),
+    headers: playerAliasHeaders,
     body: z.object({
       name: z.string().meta({ description: 'The name of the channel' }),
       props: createPropsSchema.optional().meta({ description: 'An array of @type(Props:prop)' }),

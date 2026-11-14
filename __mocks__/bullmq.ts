@@ -20,12 +20,14 @@ export class Job<T> {
 export class Worker<T> extends EventEmitter {
   queueName: string
   processor: Processor<T>
+  opts: Record<string, unknown>
 
-  constructor(queueName: string, processor: Processor<T>) {
+  constructor(queueName: string, processor: Processor<T>, opts: Record<string, unknown> = {}) {
     super()
 
     this.queueName = queueName
     this.processor = processor
+    this.opts = opts
     bullEmitter.emit('worker-registered', this)
   }
 

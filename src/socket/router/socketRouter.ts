@@ -26,6 +26,14 @@ const socketMessageValidator = z.compile(
 
 type SocketMessage = z.infer<typeof socketMessageValidator>
 
+function parseJson(json: string): unknown {
+  try {
+    return JSON.parse(json)
+  } catch {
+    return undefined
+  }
+}
+
 const routes: SocketMessageListener<ZodType>[][] = [
   playerListeners,
   gameChannelListeners,
@@ -87,7 +95,7 @@ export default class SocketRouter {
           }
         }
 
-        parsedMessage = socketMessageValidator.parse(JSON.parse(jsonString))
+        parsedMessage = socketMessageValidator.parse(parseJson(jsonString))
 
         addBreadcrumb({
           category: 'message',
@@ -113,7 +121,7 @@ export default class SocketRouter {
           span.setStatus({ code: SpanStatusCode.OK })
         }
       } catch (err) {
-        if (err instanceof ZodError || err instanceof SyntaxError) {
+        if (err instanceof ZodError) {
           sendError({
             conn,
             req: 'unknown',
